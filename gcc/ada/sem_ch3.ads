@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,14 +70,6 @@ package Sem_Ch3  is
 
    procedure Analyze_Interface_Declaration (T : Entity_Id; Def : Node_Id);
    --  Analyze an interface declaration or a formal interface declaration
-
-   procedure Analyze_Per_Use_Expression (N : Node_Id; T : Entity_Id);
-   --  Default and per object expressions do not freeze their components,
-   --  and must be analyzed and resolved accordingly. The analysis is
-   --  done by calling the Pre_Analyze_And_Resolve routine and setting
-   --  the global In_Default_Expression flag. See the documentation section
-   --  entitled "Handling of Default and Per-Object Expressions" in sem.ads
-   --  for details. N is the expression to be analyzed, T is the expected type.
 
    procedure Array_Type_Declaration (T : in out Entity_Id; Def : Node_Id);
    --  Process an array type declaration. If the array is constrained, we
@@ -203,6 +195,14 @@ package Sem_Ch3  is
    function OK_For_Limited_Init (Exp : Node_Id) return Boolean;
    --  Always False in Ada 95 mode. Equivalent to OK_For_Limited_Init_In_05 in
    --  Ada 2005 mode.
+
+   procedure Preanalyze_Spec_Expression (N : Node_Id; T : Entity_Id);
+   --  Default and per object expressions do not freeze their components, and
+   --  must be analyzed and resolved accordingly. The analysis is done by
+   --  calling the Preanalyze_And_Resolve routine and setting the global
+   --  In_Default_Expression flag. See the documentation section entitled
+   --  "Handling of Default and Per-Object Expressions" in sem.ads for full
+   --  details. N is the expression to be analyzed, T is the expected type.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is

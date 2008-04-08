@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,6 +145,11 @@ package body Lib is
       return Units.Table (U).Munit_Index;
    end Munit_Index;
 
+   function OA_Setting (U : Unit_Number_Type) return Character is
+   begin
+      return Units.Table (U).OA_Setting;
+   end OA_Setting;
+
    function Source_Index (U : Unit_Number_Type) return Source_File_Index is
    begin
       return Units.Table (U).Source_Index;
@@ -222,6 +227,11 @@ package body Lib is
    begin
       Units.Table (U).Main_Priority := P;
    end Set_Main_Priority;
+
+   procedure Set_OA_Setting (U : Unit_Number_Type; C : Character) is
+   begin
+      Units.Table (U).OA_Setting := C;
+   end Set_OA_Setting;
 
    procedure Set_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type) is
    begin

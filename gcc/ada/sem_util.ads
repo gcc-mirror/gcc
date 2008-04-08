@@ -139,6 +139,13 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
+   procedure Check_Unprotected_Access
+     (Context : Node_Id;
+      Expr    : Node_Id);
+   --  Check whether the expression is a pointer to a protected component,
+   --  and the context is external to the protected operation, to warn against
+   --  a possible unlocked access to data.
+
    procedure Check_VMS (Construct : Node_Id);
    --  Check that this the target is OpenVMS, and if so, return with
    --  no effect, otherwise post an error noting this can only be used
@@ -195,6 +202,12 @@ package Sem_Util is
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
    --  Sets the Has_Delayed_Freeze flag of New if the Delayed_Freeze flag
    --  of Old is set and Old has no yet been Frozen (i.e. Is_Frozen is false);
+
+   function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
+   --  Utility to create a parameter profile for a new subprogram spec,
+   --  when the subprogram has a body that acts as spec. This is done for
+   --  some cases of inlining, and for private protected ops. Also used
+   --  to create bodies for stubbed subprograms.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    --  Find the currently visible definition for a given identifier, that is to
@@ -474,11 +487,13 @@ package Sem_Util is
    --  declaration.
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
-   --  Returns true if type or subtype T is an access type, or has a
-   --  component (at any recursive level) that is an access type. This
-   --  is a conservative predicate, if it is not known whether or not
-   --  T contains access values (happens for generic formals in some
-   --  cases), then False is returned.
+   --  Returns true if type or subtype T is an access type, or has a component
+   --  (at any recursive level) that is an access type. This is a conservative
+   --  predicate, if it is not known whether or not T contains access values
+   --  (happens for generic formals in some cases), then False is returned.
+   --  Note that tagged types return False. Even though the tag is implemented
+   --  as an access type internally, this function tests only for access types
+   --  known to the programmer. See also Has_Tagged_Component.
 
    function Has_Abstract_Interfaces
      (T             : Entity_Id;
@@ -527,6 +542,10 @@ package Sem_Util is
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
 
+   function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
+   --  Predicate to determine whether a controlled type has a user-defined
+   --  initialize procedure, which makes the type not preelaborable.
+
    function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
    --  Return True iff type E has preelaborable initialiation as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
@@ -544,8 +563,11 @@ package Sem_Util is
    --  if there is no underlying type).
 
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
-   --  Typ must be a composite type (array or record). This function is used
-   --  to check if '=' has to be expanded into a bunch component comparaisons.
+   --  Returns True if Typ is a composite type (array or record) which is
+   --  either itself a tagged type, or has a component (recursively) which is
+   --  a tagged type. Returns False for non-composite type, or if no tagged
+   --  component is present. to check if '=' has to be expanded into a bunch
+   --  component comparisons.
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
@@ -801,10 +823,10 @@ package Sem_Util is
    --  set if you want to clear only the Last_Assignment field (see above).
 
    procedure Kill_Size_Check_Code (E : Entity_Id);
-   --  Called when an address clause or pragma Import is applied to an
-   --  entity. If the entity is a variable or a constant, and size check
-   --  code is present, this size check code is killed, since the object
-   --  will not be allocated by the program.
+   --  Called when an address clause or pragma Import is applied to an entity.
+   --  If the entity is a variable or a constant, and size check code is
+   --  present, this size check code is killed, since the object will not
+   --  be allocated by the program.
 
    function Known_To_Be_Assigned (N : Node_Id) return Boolean;
    --  The node N is an entity reference. This function determines whether the
@@ -900,13 +922,17 @@ package Sem_Util is
    --  in Success indicates sucess of reordering. For more details, see body.
    --  Errors are reported only if Report is set to True.
 
-   procedure Note_Possible_Modification (N : Node_Id);
+   procedure Note_Possible_Modification (N : Node_Id; Sure : Boolean);
    --  This routine is called if the sub-expression N maybe the target of
    --  an assignment (e.g. it is the left side of an assignment, used as
    --  an out parameters, or used as prefixes of access attributes). It
    --  sets May_Be_Modified in the associated entity if there is one,
    --  taking into account the rule that in the case of renamed objects,
    --  it is the flag in the renamed object that must be set.
+   --
+   --  The parameter Sure is set True if the modification is sure to occur
+   --  (e.g. target of assignment, or out parameter), and to False if the
+   --  modification is only potential (e.g. address of entity taken).
 
    function Object_Access_Level (Obj : Node_Id) return Uint;
    --  Return the accessibility level of the view of the object Obj.
@@ -1056,6 +1082,10 @@ package Sem_Util is
    --  are the optional formal name and the actual parameter. Positional
    --  parameters are already members of a list, and do not need to be
    --  chained separately. See also First_Actual and Next_Actual.
+
+   procedure Set_Optimize_Alignment_Flags (E : Entity_Id);
+   pragma Inline (Set_Optimize_Alignment_Flags);
+   --  Sets Optimize_Aliignment_Space/Time flags in E from current settings
 
    procedure Set_Public_Status (Id : Entity_Id);
    --  If an entity (visible or otherwise) is defined in a library

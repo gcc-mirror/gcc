@@ -214,6 +214,12 @@ package Opt is
    --  GNATBIND
    --  Set to True to do checks only, no output of binder file
 
+   Check_Policy_List : Node_Id := Empty;
+   --  GNAT
+   --  This points to the list of N_Pragma nodes for Check_Policy pragmas
+   --  that are linked through the Next_Pragma fields, with the list being
+   --  terminated by Empty. The order is most recently processed first.
+
    Check_Readonly_Files : Boolean := False;
    --  GNATMAKE
    --  Set to True to check readonly files during the make process
@@ -400,7 +406,7 @@ package Opt is
    --  message routines generates one line of output as a separate message.
    --  If it is set to a non-zero value, then continuation lines are folded
    --  to make a single long message, and then this message is split up into
-   --  multiple lines not exceeding the specified length. Set by -gnatLnnn.
+   --  multiple lines not exceeding the specified length. Set by -gnatj=nn.
 
    Exception_Locations_Suppressed : Boolean := False;
    --  GNAT
@@ -619,6 +625,10 @@ package Opt is
    --  Only relevant when VM_Target /= None. The compiler will attempt to
    --  generate code even in case of unsupported construct, so that the byte
    --  code can be used by static analysis tools.
+
+   Invalid_Value_Used : Boolean := False;
+   --  GNAT
+   --  Set True if a valid Invalid_Value attribute is encountered
 
    Follow_Links_For_Files : Boolean := False;
    --  PROJECT MANAGER
@@ -862,6 +872,14 @@ package Opt is
    --  Setting of Optimize_Alignment, set to T/S/O for time/space/off. Can
    --  be modified by use of pragma Optimize_Alignment.
 
+   Optimize_Alignment_Local : Boolean := False;
+   --  Set True if Optimize_Alignment mode is set by a local configuration
+   --  pragma that overrides the gnat.adc (or other configuration file) default
+   --  so that the unit is not dependent on the default setting. Also always
+   --  set True for internal units, since these always have a default setting
+   --  of Optimize_Alignment (Off) that is enforced (essentially equivalent to
+   --  them all having such an explicit pragma in each unit).
+
    Original_Operating_Mode : Operating_Mode_Type := Generate_Code;
    --  GNAT
    --  Indicates the original operating mode of the compiler as set by
@@ -870,7 +888,7 @@ package Opt is
 
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
-   --  This constant reflects the optimization level (0,1,2 for -O0,-O1,-O2)
+   --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE, GPRMAKE
@@ -1133,7 +1151,7 @@ package Opt is
 
    Upper_Half_Encoding : Boolean := False;
    --  GNAT, GNATBIND
-   --  Normally set False, indicating that upper half ASCII characters are
+   --  Normally set False, indicating that upper half ISO 8859-1 characters are
    --  used in the normal way to represent themselves. If the wide character
    --  encoding method uses the upper bit for this encoding, then this flag is
    --  set True, and upper half characters in the source indicate the start of
@@ -1189,6 +1207,12 @@ package Opt is
    --  Set to True to generate all warnings on Ada 2005 compatibility issues,
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
    --  mode. Set False by -gnatwY.
+
+   Warn_On_Parameter_Order : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for cases where the argument list for
+   --  a call is a sequence of identifiers that match the formal identifiers,
+   --  but are in the wrong order.
 
    Warn_On_Assertion_Failure : Boolean := True;
    --  GNAT
@@ -1374,6 +1398,13 @@ package Opt is
    --  mode, as possibly set by the command line switch -gnata, and possibly
    --  modified by the use of the configuration pragma Assertion_Policy.
 
+   Check_Policy_List_Config : Node_Id;
+   --  GNAT
+   --  This points to the list of N_Pragma nodes for Check_Policy pragmas
+   --  that are linked through the Next_Pragma fields, with the list being
+   --  terminated by Empty. The order is most recently processed first. This
+   --  list includes only those pragmas in configuration pragma files.
+
    Debug_Pragmas_Enabled_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch for debug pragmas enabled
@@ -1485,9 +1516,10 @@ package Opt is
    --  call to Save_Opt_Switches.
 
    procedure Register_Opt_Config_Switches;
-   --  This procedure is called after processing the gnat.adc file to record
-   --  the values of the Config switches, as possibly modified by the use of
-   --  command line switches and configuration pragmas.
+   --  This procedure is called after processing the gnat.adc file and other
+   --  configuration pragma files to record the values of the Config switches,
+   --  as possibly modified by the use of command line switches and pragmas
+   --  appearing in these files.
 
    ------------------------
    -- Other Global Flags --
@@ -1564,6 +1596,7 @@ private
       Ada_Version                    : Ada_Version_Type;
       Ada_Version_Explicit           : Ada_Version_Type;
       Assertions_Enabled             : Boolean;
+      Check_Policy_List              : Node_Id;
       Debug_Pragmas_Enabled          : Boolean;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;
@@ -1572,6 +1605,7 @@ private
       External_Name_Imp_Casing       : External_Casing_Type;
       Fast_Math                      : Boolean;
       Optimize_Alignment             : Character;
+      Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
       Use_VADS_Size                  : Boolean;

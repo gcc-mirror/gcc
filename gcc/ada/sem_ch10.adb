@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
+with Elists;   use Elists;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
@@ -1247,6 +1248,16 @@ package body Sem_Ch10 is
          Next (Item);
       end loop;
 
+      --  This is the point at which we capture the configuration settings
+      --  for the unit. At the moment only the Optimize_Alignment setting
+      --  needs to be captured. Probably more later ???
+
+      if Optimize_Alignment_Local then
+         Set_OA_Setting (Current_Sem_Unit, 'L');
+      else
+         Set_OA_Setting (Current_Sem_Unit, Optimize_Alignment);
+      end if;
+
       --  Loop through actual context items. This is done in two passes:
 
       --  a) The first pass analyzes non-limited with-clauses and also any
@@ -1305,14 +1316,12 @@ package body Sem_Ch10 is
 
             if not Implicit_With (Item) then
 
-               --  Check compilation unit containing the limited-with clause
+               --  Verify that the illegal contexts given in 10.1.2 (18/2)
+               --  are properly rejected, including renaming declarations.
 
                if not Nkind_In (Ukind, N_Package_Declaration,
-                                       N_Subprogram_Declaration,
-                                       N_Package_Renaming_Declaration,
-                                       N_Subprogram_Renaming_Declaration)
+                                       N_Subprogram_Declaration)
                  and then Ukind not in N_Generic_Declaration
-                 and then Ukind not in N_Generic_Renaming_Declaration
                  and then Ukind not in N_Generic_Instantiation
                then
                   Error_Msg_N ("limited with_clause not allowed here", Item);
@@ -2221,12 +2230,21 @@ package body Sem_Ch10 is
                            Cunit_Boolean_Restrictions_Save;
 
    begin
+      U := Unit (Library_Unit (N));
+
+      --  Several actions are skipped for dummy packages (those supplied for
+      --  with's where no matching file could be found). Such packages are
+      --  identified by the Sloc value being set to No_Location.
+
       if Limited_Present (N) then
 
          --  Ada 2005 (AI-50217): Build visibility structures but do not
          --  analyze the unit.
 
-         Build_Limited_Views (N);
+         if Sloc (U) /= No_Location then
+            Build_Limited_Views (N);
+         end if;
+
          return;
       end if;
 
@@ -2256,12 +2274,7 @@ package body Sem_Ch10 is
          Semantics (Library_Unit (N));
       end if;
 
-      U := Unit (Library_Unit (N));
       Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
-
-      --  Following checks are skipped for dummy packages (those supplied for
-      --  with's where no matching file could be found). Such packages are
-      --  identified by the Sloc value being set to No_Location
 
       if Sloc (U) /= No_Location then
 
@@ -2529,6 +2542,7 @@ package body Sem_Ch10 is
 
          if Nkind (Item) = N_With_Clause
             and then not Implicit_With (Item)
+            and then not Limited_Present (Item)
             and then Is_Private_Descendant (Entity (Name (Item)))
          then
             Priv_Child := Entity (Name (Item));
@@ -3166,7 +3180,11 @@ package body Sem_Ch10 is
       --  Check that if a limited_with clause of a given compilation_unit
       --  mentions a descendant of a private child of some library unit,
       --  then the given compilation_unit shall be the declaration of a
-      --  private descendant of that library unit.
+      --  private descendant of that library unit, or a public descendant
+      --  of such. The code is analogous to that of Check_Private_Child_Unit
+      --  but we cannot use entities on the limited with_clauses because
+      --  their units have not been analyzed, so we have to climb the tree
+      --  of ancestors looking for private keywords.
 
       procedure Expand_Limited_With_Clause
         (Comp_Unit : Node_Id;
@@ -3277,11 +3295,12 @@ package body Sem_Ch10 is
       procedure Check_Private_Limited_Withed_Unit (Item : Node_Id) is
          Curr_Parent  : Node_Id;
          Child_Parent : Node_Id;
+         Curr_Private : Boolean;
 
       begin
          --  Compilation unit of the parent of the withed library unit
 
-         Child_Parent := Parent_Spec (Unit (Library_Unit (Item)));
+         Child_Parent := Library_Unit (Item);
 
          --  If the child unit is a public child, then locate its nearest
          --  private ancestor, if any; Child_Parent will then be set to
@@ -3297,18 +3316,21 @@ package body Sem_Ch10 is
             if No (Child_Parent) then
                return;
             end if;
-
-            Child_Parent := Parent_Spec (Unit (Child_Parent));
          end if;
+
+         Child_Parent := Parent_Spec (Unit (Child_Parent));
 
          --  Traverse all the ancestors of the current compilation
          --  unit to check if it is a descendant of named library unit.
 
          Curr_Parent := Parent (Item);
+         Curr_Private := Private_Present (Curr_Parent);
+
          while Present (Parent_Spec (Unit (Curr_Parent)))
            and then Curr_Parent /= Child_Parent
          loop
             Curr_Parent := Parent_Spec (Unit (Curr_Parent));
+            Curr_Private := Curr_Private or else Private_Present (Curr_Parent);
          end loop;
 
          if Curr_Parent /= Child_Parent then
@@ -3318,12 +3340,18 @@ package body Sem_Ch10 is
               ("\current unit must also have parent&!",
                Item, Defining_Unit_Name (Specification (Unit (Child_Parent))));
 
-         elsif not Private_Present (Parent (Item))
-           and then not Private_Present (Item)
-           and then not Nkind_In (Unit (Parent (Item)), N_Package_Body,
+         elsif Private_Present (Parent (Item))
+            or else Curr_Private
+            or else Private_Present (Item)
+            or else Nkind_In (Unit (Parent (Item)), N_Package_Body,
                                                         N_Subprogram_Body,
                                                         N_Subunit)
          then
+            --  Current unit is private, of descendant of a private unit.
+
+            null;
+
+         else
             Error_Msg_NE
               ("current unit must also be private descendant of&",
                Item, Defining_Unit_Name (Specification (Unit (Child_Parent))));
@@ -3722,16 +3750,20 @@ package body Sem_Ch10 is
       Item := First (Context_Items (N));
       while Present (Item) loop
 
-         --  Do not install private_with_clauses if the unit is a package
-         --  declaration, unless it is itself a private child unit.
+         --  Do not install private_with_clauses declaration, unless
+         --  unit is itself a private child unit, or is a body.
+         --  Note that for a subprogram body the private_with_clause does
+         --  not take effect until after the specification.
 
-         if Nkind (Item) = N_With_Clause
-           and then not Implicit_With (Item)
-           and then not Limited_Present (Item)
-           and then
-              (not Private_Present (Item)
-                 or else Nkind (Unit (N)) /= N_Package_Declaration
-                 or else Private_Present (N))
+         if Nkind (Item) /= N_With_Clause
+           or else Implicit_With (Item)
+           or else Limited_Present (Item)
+         then
+            null;
+
+         elsif not Private_Present (Item)
+           or else Private_Present (N)
+           or else Nkind (Unit (N)) = N_Package_Body
          then
             Id := Entity (Name (Item));
 
@@ -3792,15 +3824,26 @@ package body Sem_Ch10 is
                   end loop;
                end;
             end if;
+
+         --  If the item is a private with-clause on a child unit, the parent
+         --  may have been installed already, but the child unit must remain
+         --  invisible until installed in a private part or body.
+
+         elsif Private_Present (Item) then
+            Id := Entity (Name (Item));
+
+            if Is_Child_Unit (Id) then
+               Set_Is_Visible_Child_Unit (Id, False);
+            end if;
          end if;
 
          Next (Item);
       end loop;
    end Install_Siblings;
 
-   -------------------------------
-   -- Install_Limited_With_Unit --
-   -------------------------------
+   ---------------------------------
+   -- Install_Limited_Withed_Unit --
+   ---------------------------------
 
    procedure Install_Limited_Withed_Unit (N : Node_Id) is
       P_Unit           : constant Entity_Id := Unit (Library_Unit (N));
@@ -3809,6 +3852,14 @@ package body Sem_Ch10 is
       Is_Child_Package : Boolean := False;
       Lim_Header       : Entity_Id;
       Lim_Typ          : Entity_Id;
+
+      procedure Check_Body_Required;
+      --  A unit mentioned in a limited with_clause may not be mentioned in
+      --  a regular with_clause, but must still be included in the current
+      --  partition. We need to determine whether the unit needs a body, so
+      --  that the binder can determine the name of the file to be compiled.
+      --  Checking whether a unit needs a body can be done without semantic
+      --  analysis, by examining the nature of the declarations in the package.
 
       function Has_Limited_With_Clause
         (C_Unit : Entity_Id;
@@ -3827,6 +3878,157 @@ package body Sem_Ch10 is
       function Is_Visible_Through_Renamings (P : Entity_Id) return Boolean;
       --  Check if some package installed though normal with-clauses has a
       --  renaming declaration of package P. AARM 10.1.2(21/2).
+
+      -------------------------
+      -- Check_Body_Required --
+      -------------------------
+
+      --  ??? misses pragma Import on subprograms
+      --  ??? misses pragma Import on renamed subprograms
+
+      procedure Check_Body_Required is
+         PA : constant List_Id :=
+                Pragmas_After (Aux_Decls_Node (Parent (P_Unit)));
+
+         procedure Check_Declarations (Spec : Node_Id);
+         --  Recursive procedure that does the work and checks nested packages
+
+         ------------------------
+         -- Check_Declarations --
+         ------------------------
+
+         procedure Check_Declarations (Spec : Node_Id) is
+            Decl             : Node_Id;
+            Incomplete_Decls : constant Elist_Id := New_Elmt_List;
+
+         begin
+            --  Search for Elaborate Body pragma
+
+            Decl := First (Visible_Declarations (Spec));
+            while Present (Decl)
+              and then Nkind (Decl) = N_Pragma
+            loop
+               if Get_Pragma_Id (Decl) = Pragma_Elaborate_Body then
+                  Set_Body_Required (Library_Unit (N));
+                  return;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  Look for declarations that require the presence of a body
+
+            while Present (Decl) loop
+
+               --  Subprogram that comes from source means body required
+               --  This is where a test for Import is missing ???
+
+               if Comes_From_Source (Decl)
+                 and then (Nkind_In (Decl, N_Subprogram_Declaration,
+                                           N_Generic_Subprogram_Declaration))
+               then
+                  Set_Body_Required (Library_Unit (N));
+                  return;
+
+               --  Package declaration of generic package declaration. We need
+               --  to recursively examine nested declarations.
+
+               elsif Nkind_In (Decl, N_Package_Declaration,
+                                     N_Generic_Package_Declaration)
+               then
+                  Check_Declarations (Specification (Decl));
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  Same set of tests for private part. In addition to subprograms
+            --  detect the presence of Taft Amendment types (incomplete types
+            --  completed in the body).
+
+            Decl := First (Private_Declarations (Spec));
+            while Present (Decl) loop
+               if Comes_From_Source (Decl)
+                 and then (Nkind_In (Decl, N_Subprogram_Declaration,
+                                           N_Generic_Subprogram_Declaration))
+               then
+                  Set_Body_Required (Library_Unit (N));
+
+               elsif Nkind_In (Decl, N_Package_Declaration,
+                                     N_Generic_Package_Declaration)
+               then
+                  Check_Declarations (Specification (Decl));
+
+               --  Collect incomplete type declarations for separate pass
+
+               elsif Nkind (Decl) = N_Incomplete_Type_Declaration then
+                  Append_Elmt (Decl, Incomplete_Decls);
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            --  Now check incomplete declarations to locate Taft amendment
+            --  types. This can be done by examing the defining identifiers
+            --  of  type declarations without real semantic analysis.
+
+            declare
+               Inc : Elmt_Id;
+
+            begin
+               Inc := First_Elmt (Incomplete_Decls);
+               while Present (Inc) loop
+                  Decl := Next (Node (Inc));
+                  while Present (Decl) loop
+                     if Nkind (Decl) = N_Full_Type_Declaration
+                       and then Chars (Defining_Identifier (Decl)) =
+                                Chars (Defining_Identifier (Node (Inc)))
+                     then
+                        exit;
+                     end if;
+
+                     Next (Decl);
+                  end loop;
+
+                  --  If no completion, this is a TAT, and a body is needed
+
+                  if No (Decl) then
+                     Set_Body_Required (Library_Unit (N));
+                     return;
+                  end if;
+
+                  Next_Elmt (Inc);
+               end loop;
+            end;
+         end Check_Declarations;
+
+      --  Start of processing for Check_Body_Required
+
+      begin
+         --  If this is an imported package (Java and CIL usage) no body is
+         --  needed. Scan list of pragmas that may follow a compilation unit
+         --  to look for a relevant pragma Import.
+
+         if Present (PA) then
+            declare
+               Prag : Node_Id;
+
+            begin
+               Prag := First (PA);
+               while Present (Prag) loop
+                  if Nkind (Prag) = N_Pragma
+                    and then Get_Pragma_Id (Prag) = Pragma_Import
+                  then
+                     return;
+                  end if;
+
+                  Next (Prag);
+               end loop;
+            end;
+         end if;
+
+         Check_Declarations (Specification (P_Unit));
+      end Check_Body_Required;
 
       -----------------------------
       -- Has_Limited_With_Clause --
@@ -4017,9 +4219,12 @@ package body Sem_Ch10 is
 
       --  In case of limited with_clause on subprograms, generics, instances,
       --  or renamings, the corresponding error was previously posted and we
-      --  have nothing to do here.
+      --  have nothing to do here. If the file is missing altogether, it has
+      --  no source location.
 
-      if Nkind (P_Unit) /= N_Package_Declaration then
+      if Nkind (P_Unit) /= N_Package_Declaration
+        or else Sloc (P_Unit) = No_Location
+      then
          return;
       end if;
 
@@ -4105,39 +4310,11 @@ package body Sem_Ch10 is
       --  view of X supersedes its limited view.
 
       if Analyzed (P_Unit)
-        and then (Is_Immediately_Visible (P)
-                    or else (Is_Child_Package
-                               and then Is_Visible_Child_Unit (P)))
+        and then
+          (Is_Immediately_Visible (P)
+            or else
+              (Is_Child_Package and then Is_Visible_Child_Unit (P)))
       then
-         --  Ada 2005 (AI-262): Install the private declarations of P
-
-         if Private_Present (N)
-           and then not In_Private_Part (P)
-         then
-            declare
-               Id : Entity_Id;
-
-            begin
-               Id := First_Private_Entity (P);
-               while Present (Id) loop
-                  if not Is_Internal (Id)
-                    and then not Is_Child_Unit (Id)
-                  then
-                     if not In_Chain (Id) then
-                        Set_Homonym (Id, Current_Entity (Id));
-                        Set_Current_Entity (Id);
-                     end if;
-
-                     Set_Is_Immediately_Visible (Id);
-                  end if;
-
-                  Next_Entity (Id);
-               end loop;
-
-               Set_In_Private_Part (P);
-            end;
-         end if;
-
          return;
       end if;
 
@@ -4295,6 +4472,13 @@ package body Sem_Ch10 is
 
       Set_Is_Immediately_Visible (P);
       Set_Limited_View_Installed (N);
+
+      --  If unit has not been analyzed in some previous context, check
+      --  (imperfectly ???) whether it might need a body.
+
+      if not Analyzed (P_Unit) then
+         Check_Body_Required;
+      end if;
 
       --  If the package in the limited_with clause is a child unit, the
       --  clause is unanalyzed and appears as a selected component. Recast
@@ -4674,11 +4858,23 @@ package body Sem_Ch10 is
 
          --  Build corresponding class_wide type, if not previously done
 
-         --  Warning: The class-wide entity is shared by the limited-view
+         --  Note: The class-wide entity is shared by the limited-view
          --  and the full-view.
 
          if No (Class_Wide_Type (T)) then
             CW := Make_Defining_Identifier (Loc,  New_Internal_Name ('S'));
+
+            --  Set parent to be the same as the parent of the tagged type.
+            --  We need a parent field set, and it is supposed to point to
+            --  the declaration of the type. The tagged type declaration
+            --  essentially declares two separate types, the tagged type
+            --  itself and the corresponding class-wide type, so it is
+            --  reasonable for the parent fields to point to the declaration
+            --  in both cases.
+
+            Set_Parent (CW, Parent (T));
+
+            --  Set remaining fields of classwide type
 
             Set_Ekind                     (CW, E_Class_Wide_Type);
             Set_Etype                     (CW, T);
@@ -4690,6 +4886,8 @@ package body Sem_Ch10 is
             Set_Class_Wide_Type           (CW, CW);
             Set_Equivalent_Type           (CW, Empty);
             Set_From_With_Type            (CW, From_With_Type (T));
+
+            --  Link type to its class-wide type
 
             Set_Class_Wide_Type           (T, CW);
          end if;
@@ -4807,12 +5005,19 @@ package body Sem_Ch10 is
                Set_Non_Limited_View (Lim_Typ, Comp_Typ);
 
             elsif Nkind_In (Decl, N_Private_Type_Declaration,
-                                  N_Incomplete_Type_Declaration)
+                                  N_Incomplete_Type_Declaration,
+                                  N_Task_Type_Declaration,
+                                  N_Protected_Type_Declaration)
             then
                Comp_Typ := Defining_Identifier (Decl);
 
+               Is_Tagged :=
+                 Nkind_In (Decl, N_Private_Type_Declaration,
+                                 N_Incomplete_Type_Declaration)
+                 and then Tagged_Present (Decl);
+
                if not Analyzed_Unit then
-                  if Tagged_Present (Decl) then
+                  if Is_Tagged then
                      Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
                   else
                      Decorate_Incomplete_Type (Comp_Typ, Scope);
@@ -4828,7 +5033,7 @@ package body Sem_Ch10 is
                Set_Parent (Lim_Typ, Parent (Comp_Typ));
                Set_From_With_Type (Lim_Typ);
 
-               if Tagged_Present (Decl) then
+               if Is_Tagged then
                   Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
                else
                   Decorate_Incomplete_Type (Lim_Typ, Scope);
@@ -4902,13 +5107,11 @@ package body Sem_Ch10 is
    begin
       pragma Assert (Limited_Present (N));
 
-      --  A library_item mentioned in a limited_with_clause shall
-      --  be a package_declaration, not a subprogram_declaration,
-      --  generic_declaration, generic_instantiation, or
-      --  package_renaming_declaration
+      --  A library_item mentioned in a limited_with_clause is a package
+      --  declaration, not a subprogram declaration, generic declaration,
+      --  generic instantiation, or package renaming declaration.
 
       case Nkind (Unit (Library_Unit (N))) is
-
          when N_Package_Declaration =>
             null;
 

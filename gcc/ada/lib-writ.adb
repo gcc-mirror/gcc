@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,8 @@ package body Lib.Writ is
          Munit_Index      => 0,
          Serial_Number    => 0,
          Version          => 0,
-         Error_Location   => No_Location);
+         Error_Location   => No_Location,
+         OA_Setting       => 'O');
    end Add_Preprocessing_Dependency;
 
    ------------------------------
@@ -141,7 +142,8 @@ package body Lib.Writ is
         Munit_Index      => 0,
         Serial_Number    => 0,
         Version          => 0,
-        Error_Location   => No_Location);
+        Error_Location   => No_Location,
+        OA_Setting       => 'O');
 
       --  Parse system.ads so that the checksum is set right
       --  Style checks are not applied.
@@ -236,28 +238,33 @@ package body Lib.Writ is
             --  Process with clause
 
             --  Ada 2005 (AI-50217): limited with_clauses do not create
-            --  dependencies
+            --  dependencies, but must be recorded as components of the
+            --  partition, in case there is no regular with_clause for
+            --  the unit anywhere else.
 
-            if Nkind (Item) = N_With_Clause
-              and then not (Limited_Present (Item))
-            then
+            if Nkind (Item) = N_With_Clause then
                Unum := Get_Cunit_Unit_Number (Library_Unit (Item));
                With_Flags (Unum) := True;
 
-               if Elaborate_Present (Item) then
-                  Elab_Flags (Unum) := True;
-               end if;
+               if not Limited_Present (Item) then
+                  if Elaborate_Present (Item) then
+                     Elab_Flags (Unum) := True;
+                  end if;
 
-               if Elaborate_All_Present (Item) then
-                  Elab_All_Flags (Unum) := True;
-               end if;
+                  if Elaborate_All_Present (Item) then
+                     Elab_All_Flags (Unum) := True;
+                  end if;
 
-               if Elaborate_All_Desirable (Item) then
-                  Elab_All_Des_Flags (Unum) := True;
-               end if;
+                  if Elaborate_All_Desirable (Item) then
+                     Elab_All_Des_Flags (Unum) := True;
+                  end if;
 
-               if Elaborate_Desirable (Item) then
-                  Elab_Des_Flags (Unum) := True;
+                  if Elaborate_Desirable (Item) then
+                     Elab_Des_Flags (Unum) := True;
+                  end if;
+
+               else
+                  Set_From_With_Type (Cunit_Entity (Unum));
                end if;
             end if;
 
@@ -441,6 +448,9 @@ package body Lib.Writ is
             Write_Info_Str (" NE");
          end if;
 
+         Write_Info_Str (" O");
+         Write_Info_Char (OA_Setting (Unit_Num));
+
          if Is_Preelaborated (Uent) then
             Write_Info_Str (" PR");
          end if;
@@ -512,7 +522,7 @@ package body Lib.Writ is
             end case;
          end if;
 
-         if Initialize_Scalars then
+         if Initialize_Scalars or else Invalid_Value_Used then
             Write_Info_Str (" IS");
          end if;
 
@@ -696,7 +706,14 @@ package body Lib.Writ is
             Uname  := Units.Table (Unum).Unit_Name;
             Fname  := Units.Table (Unum).Unit_File_Name;
 
-            Write_Info_Initiate ('W');
+            if Ekind (Cunit_Entity (Unum)) = E_Package
+              and then From_With_Type (Cunit_Entity (Unum))
+            then
+               Write_Info_Initiate ('Y');
+            else
+               Write_Info_Initiate ('W');
+            end if;
+
             Write_Info_Char (' ');
             Write_Info_Name (Uname);
 
@@ -750,20 +767,26 @@ package body Lib.Writ is
                   Write_With_File_Names (Fname, Munit_Index (Unum));
                end if;
 
-               if Elab_Flags (Unum) then
-                  Write_Info_Str ("  E");
-               end if;
+               if Ekind (Cunit_Entity (Unum)) = E_Package
+                  and then From_With_Type (Cunit_Entity (Unum))
+               then
+                  null;
+               else
+                  if Elab_Flags (Unum) then
+                     Write_Info_Str ("  E");
+                  end if;
 
-               if Elab_All_Flags (Unum) then
-                  Write_Info_Str ("  EA");
-               end if;
+                  if Elab_All_Flags (Unum) then
+                     Write_Info_Str ("  EA");
+                  end if;
 
-               if Elab_Des_Flags (Unum) then
-                  Write_Info_Str ("  ED");
-               end if;
+                  if Elab_Des_Flags (Unum) then
+                     Write_Info_Str ("  ED");
+                  end if;
 
-               if Elab_All_Des_Flags (Unum) then
-                  Write_Info_Str ("  AD");
+                  if Elab_All_Des_Flags (Unum) then
+                     Write_Info_Str ("  AD");
+                  end if;
                end if;
             end if;
 
@@ -969,11 +992,6 @@ package body Lib.Writ is
 
       if Normalize_Scalars then
          Write_Info_Str (" NS");
-      end if;
-
-      if Optimize_Alignment /= 'O' then
-         Write_Info_Str (" O");
-         Write_Info_Char (Optimize_Alignment);
       end if;
 
       if Sec_Stack_Used then
