@@ -1,3 +1,9 @@
+2008-04-08    Andy Hutchinson   <hutchinsonandy@aim.com>
+
+	PR target/35005
+	* execute/20071221-1.c: Adapt test for 16 bit int targets.
+	* execute/pr35163.c: Ditto.
+
 2008-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/20080408-1.c: New testcase.
