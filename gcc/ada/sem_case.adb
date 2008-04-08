@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,10 +268,7 @@ package body Sem_Case is
       --  For character, or wide [wide] character. If 7-bit ASCII graphic
       --  range, then build and return appropriate character literal name
 
-      if Rtp = Standard_Character
-        or else Rtp = Standard_Wide_Character
-        or else Rtp = Standard_Wide_Wide_Character
-      then
+      if Is_Standard_Character_Type (Ctype) then
          C := UI_To_Int (Value);
 
          if C in 16#20# .. 16#7E# then
@@ -425,12 +422,7 @@ package body Sem_Case is
          --  of literals to search. Instead, a N_Character_Literal node
          --  is created with the appropriate Char_Code and Chars fields.
 
-         if Root_Type (Choice_Type) = Standard_Character
-              or else
-            Root_Type (Choice_Type) = Standard_Wide_Character
-              or else
-            Root_Type (Choice_Type) = Standard_Wide_Wide_Character
-         then
+         if Is_Standard_Character_Type (Choice_Type) then
             Set_Character_Literal_Name (Char_Code (UI_To_Int (Value)));
             Lit := New_Node (N_Character_Literal, Loc);
             Set_Chars (Lit, Name_Find);

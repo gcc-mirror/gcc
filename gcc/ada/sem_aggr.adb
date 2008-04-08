@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,6 +88,11 @@ package body Sem_Aggr is
    --  issued if the component is null excluding.
    --
    --  It would be better to pass the proper type for Typ ???
+
+   procedure Check_Expr_OK_In_Limited_Aggregate (Expr : Node_Id);
+   --  Check that Expr is either not limited or else is one of the cases of
+   --  expressions allowed for a limited component association (namely, an
+   --  aggregate, function call, or <> notation). Report error for violations.
 
    ------------------------------------------------------
    -- Subprograms used for RECORD AGGREGATE Processing --
@@ -215,10 +220,10 @@ package body Sem_Aggr is
       Index          : Node_Id;
       Index_Constr   : Node_Id;
       Component_Typ  : Entity_Id;
-      Others_Allowed : Boolean)
-      return           Boolean;
+      Others_Allowed : Boolean) return Boolean;
    --  This procedure performs the semantic checks for an array aggregate.
    --  True is returned if the aggregate resolution succeeds.
+   --
    --  The procedure works by recursively checking each nested aggregate.
    --  Specifically, after checking a sub-aggregate nested at the i-th level
    --  we recursively check all the subaggregates at the i+1-st level (if any).
@@ -412,7 +417,7 @@ package body Sem_Aggr is
       --  This is really expansion activity, so make sure that expansion
       --  is on and is allowed.
 
-      if not Expander_Active or else In_Default_Expression then
+      if not Expander_Active or else In_Spec_Expression then
          return;
       end if;
 
@@ -680,7 +685,6 @@ package body Sem_Aggr is
       Set_First_Index    (Itype, First (Index_Constraints));
       Set_Is_Constrained (Itype, True);
       Set_Is_Internal    (Itype, True);
-      Init_Size_Align    (Itype);
 
       --  A simple optimization: purely positional aggregates of static
       --  components should be passed to gigi unexpanded whenever possible,
@@ -698,7 +702,7 @@ package body Sem_Aggr is
       --  and we must not generate a freeze node for the type, or else it
       --  will appear incomplete to gigi.
 
-      if Is_Packed (Itype) and then not In_Default_Expression
+      if Is_Packed (Itype) and then not In_Spec_Expression
         and then Expander_Active
       then
          Freeze_Itype (Itype, N);
@@ -761,6 +765,23 @@ package body Sem_Aggr is
            ("\possible misspelling of& or&", Component, Suggestion_1);
       end if;
    end Check_Misspelled_Component;
+
+   ----------------------------------------
+   -- Check_Expr_OK_In_Limited_Aggregate --
+   ----------------------------------------
+
+   procedure Check_Expr_OK_In_Limited_Aggregate (Expr : Node_Id) is
+   begin
+      if Is_Limited_Type (Etype (Expr))
+         and then Comes_From_Source (Expr)
+         and then not In_Instance_Body
+      then
+         if not OK_For_Limited_Init (Expr) then
+            Error_Msg_N ("initialization not allowed for limited types", Expr);
+            Explain_Limited_Type (Etype (Expr), Expr);
+         end if;
+      end if;
+   end Check_Expr_OK_In_Limited_Aggregate;
 
    ----------------------------------------
    -- Check_Static_Discriminated_Subtype --
@@ -909,18 +930,14 @@ package body Sem_Aggr is
 
          --  First a special test, for the case of a positional aggregate
          --  of characters which can be replaced by a string literal.
+
          --  Do not perform this transformation if this was a string literal
          --  to start with, whose components needed constraint checks, or if
          --  the component type is non-static, because it will require those
          --  checks and be transformed back into an aggregate.
 
          if Number_Dimensions (Typ) = 1
-           and then
-             (Root_Type (Component_Type (Typ)) = Standard_Character
-                or else
-              Root_Type (Component_Type (Typ)) = Standard_Wide_Character
-                or else
-              Root_Type (Component_Type (Typ)) = Standard_Wide_Wide_Character)
+           and then Is_Standard_Character_Type (Component_Type (Typ))
            and then No (Component_Associations (N))
            and then not Is_Limited_Composite (Typ)
            and then not Is_Private_Composite (Typ)
@@ -1078,8 +1095,7 @@ package body Sem_Aggr is
       Index          : Node_Id;
       Index_Constr   : Node_Id;
       Component_Typ  : Entity_Id;
-      Others_Allowed : Boolean)
-      return           Boolean
+      Others_Allowed : Boolean) return Boolean
    is
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -1126,8 +1142,7 @@ package body Sem_Aggr is
 
       function Resolve_Aggr_Expr
         (Expr        : Node_Id;
-         Single_Elmt : Boolean)
-         return        Boolean;
+         Single_Elmt : Boolean) return Boolean;
       --  Resolves aggregate expression Expr. Returs False if resolution
       --  fails. If Single_Elmt is set to False, the expression Expr may be
       --  used to initialize several array aggregate elements (this can
@@ -1377,8 +1392,7 @@ package body Sem_Aggr is
 
       function Resolve_Aggr_Expr
         (Expr        : Node_Id;
-         Single_Elmt : Boolean)
-         return        Boolean
+         Single_Elmt : Boolean) return Boolean
       is
          Nxt_Ind        : constant Node_Id := Next_Index (Index);
          Nxt_Ind_Constr : constant Node_Id := Next_Index (Index_Constr);
@@ -1435,9 +1449,10 @@ package body Sem_Aggr is
 
          elsif Single_Elmt
            or else not Expander_Active
-           or else In_Default_Expression
+           or else In_Spec_Expression
          then
             Analyze_And_Resolve (Expr, Component_Typ);
+            Check_Expr_OK_In_Limited_Aggregate (Expr);
             Check_Non_Static_Context (Expr);
             Aggregate_Constraint_Checks (Expr, Component_Typ);
             Check_Unset_Reference (Expr);
@@ -1560,7 +1575,6 @@ package body Sem_Aggr is
       --  STEP 2: Process named components
 
       if No (Expressions (N)) then
-
          if Others_Present then
             Case_Table_Size := Nb_Choices - 1;
          else
@@ -1622,6 +1636,8 @@ package body Sem_Aggr is
                         return Failure;
                      end if;
 
+                  --  Case of subtype indication
+
                   elsif Nkind (Choice) = N_Subtype_Indication then
                      Resolve_Discrete_Subtype_Indication (Choice, Index_Base);
 
@@ -1631,7 +1647,9 @@ package body Sem_Aggr is
                      Get_Index_Bounds (Choice, Low, High);
                      Check_Bounds (S_Low, S_High, Low, High);
 
-                  else  --  Choice is a range or an expression
+                  --  Case of range or expression
+
+                  else
                      Resolve (Choice, Index_Base);
                      Check_Unset_Reference (Choice);
                      Check_Non_Static_Context (Choice);
@@ -1737,7 +1755,6 @@ package body Sem_Aggr is
                      return Failure;
 
                   elsif not Others_Present then
-
                      Hi_Val := Expr_Value (Table (J).Choice_Hi);
                      Lo_Val := Expr_Value (Table (J + 1).Choice_Lo);
 
@@ -1805,10 +1822,123 @@ package body Sem_Aggr is
                Choices_High := Table (Nb_Discrete_Choices).Choice_Hi;
             end if;
 
+            --  If Others is present, then bounds of aggregate come from the
+            --  index constraint (not the choices in the aggregate itself).
+
             if Others_Present then
                Get_Index_Bounds (Index_Constr, Aggr_Low, Aggr_High);
 
+            --  No others clause present
+
             else
+               --  Special processing if others allowed and not present. This
+               --  means that the bounds of the aggregate come from the index
+               --  constraint (and the length must match).
+
+               if Others_Allowed then
+                  Get_Index_Bounds (Index_Constr, Aggr_Low, Aggr_High);
+
+                  --  If others allowed, and no others present, then the array
+                  --  should cover all index values. If it does not, we will
+                  --  get a length check warning, but there is two cases where
+                  --  an additional warning is useful:
+
+                  --  If we have no positional components, and the length is
+                  --  wrong (which we can tell by others being allowed with
+                  --  missing components), and the index type is an enumeration
+                  --  type, then issue appropriate warnings about these missing
+                  --  components. They are only warnings, since the aggregate
+                  --  is fine, it's just the wrong length. We skip this check
+                  --  for standard character types (since there are no literals
+                  --  and it is too much trouble to concoct them), and also if
+                  --  any of the bounds have not-known-at-compile-time values.
+
+                  --  Another case warranting a warning is when the length is
+                  --  right, but as above we have an index type that is an
+                  --  enumeration, and the bounds do not match. This is a
+                  --  case where dubious sliding is allowed and we generate
+                  --  a warning that the bounds do not match.
+
+                  if No (Expressions (N))
+                    and then Nkind (Index) = N_Range
+                    and then Is_Enumeration_Type (Etype (Index))
+                    and then not Is_Standard_Character_Type (Etype (Index))
+                    and then Compile_Time_Known_Value (Aggr_Low)
+                    and then Compile_Time_Known_Value (Aggr_High)
+                    and then Compile_Time_Known_Value (Choices_Low)
+                    and then Compile_Time_Known_Value (Choices_High)
+                  then
+                     declare
+                        ALo : constant Node_Id := Expr_Value_E (Aggr_Low);
+                        AHi : constant Node_Id := Expr_Value_E (Aggr_High);
+                        CLo : constant Node_Id := Expr_Value_E (Choices_Low);
+                        CHi : constant Node_Id := Expr_Value_E (Choices_High);
+
+                        Ent : Entity_Id;
+
+                     begin
+                        --  Warning case one, missing values at start/end. Only
+                        --  do the check if the number of entries is too small.
+
+                        if (Enumeration_Pos (CHi) - Enumeration_Pos (CLo))
+                              <
+                           (Enumeration_Pos (AHi) - Enumeration_Pos (ALo))
+                        then
+                           Error_Msg_N
+                             ("missing index value(s) in array aggregate?", N);
+
+                           --  Output missing value(s) at start
+
+                           if Chars (ALo) /= Chars (CLo) then
+                              Ent := Prev (CLo);
+
+                              if Chars (ALo) = Chars (Ent) then
+                                 Error_Msg_Name_1 := Chars (ALo);
+                                 Error_Msg_N ("\  %?", N);
+                              else
+                                 Error_Msg_Name_1 := Chars (ALo);
+                                 Error_Msg_Name_2 := Chars (Ent);
+                                 Error_Msg_N ("\  % .. %?", N);
+                              end if;
+                           end if;
+
+                           --  Output missing value(s) at end
+
+                           if Chars (AHi) /= Chars (CHi) then
+                              Ent := Next (CHi);
+
+                              if Chars (AHi) = Chars (Ent) then
+                                 Error_Msg_Name_1 := Chars (Ent);
+                                 Error_Msg_N ("\  %?", N);
+                              else
+                                 Error_Msg_Name_1 := Chars (Ent);
+                                 Error_Msg_Name_2 := Chars (AHi);
+                                 Error_Msg_N ("\  % .. %?", N);
+                              end if;
+                           end if;
+
+                        --  Warning case 2, dubious sliding. The First_Subtype
+                        --  test distinguishes between a constrained type where
+                        --  sliding is not allowed (so we will get a warning
+                        --  later that Constraint_Error will be raised), and
+                        --  the unconstrained case where sliding is permitted.
+
+                        elsif (Enumeration_Pos (CHi) - Enumeration_Pos (CLo))
+                                 =
+                              (Enumeration_Pos (AHi) - Enumeration_Pos (ALo))
+                          and then Chars (ALo) /= Chars (CLo)
+                          and then
+                            not Is_Constrained (First_Subtype (Etype (N)))
+                        then
+                           Error_Msg_N
+                             ("bounds of aggregate do not match target?", N);
+                        end if;
+                     end;
+                  end if;
+               end if;
+
+               --  If no others, aggregate bounds come from aggegate
+
                Aggr_Low  := Choices_Low;
                Aggr_High := Choices_High;
             end if;
@@ -1976,9 +2106,43 @@ package body Sem_Aggr is
       I      : Interp_Index;
       It     : Interp;
 
+      function Valid_Limited_Ancestor (Anc : Node_Id) return Boolean;
+      --  If the type is limited, verify that the ancestor part is a legal
+      --  expression (aggregate or function call, including 'Input)) that
+      --  does not require a copy, as specified in 7.5 (2).
+
       function Valid_Ancestor_Type return Boolean;
       --  Verify that the type of the ancestor part is a non-private ancestor
       --  of the expected type.
+
+      ----------------------------
+      -- Valid_Limited_Ancestor --
+      ----------------------------
+
+      function Valid_Limited_Ancestor (Anc : Node_Id) return Boolean is
+      begin
+         if Is_Entity_Name (Anc)
+           and then Is_Type (Entity (Anc))
+         then
+            return True;
+
+         elsif Nkind_In (Anc, N_Aggregate, N_Function_Call) then
+            return True;
+
+         elsif Nkind (Anc) = N_Attribute_Reference
+           and then Attribute_Name (Anc) = Name_Input
+         then
+            return True;
+
+         elsif
+           Nkind (Anc) = N_Qualified_Expression
+         then
+            return Valid_Limited_Ancestor (Expression (Anc));
+
+         else
+            return False;
+         end if;
+      end Valid_Limited_Ancestor;
 
       -------------------------
       -- Valid_Ancestor_Type --
@@ -2020,6 +2184,13 @@ package body Sem_Aggr is
             Error_Msg_N ("aggregate type cannot be limited", N);
             Explain_Limited_Type (Typ, N);
             return;
+
+         elsif Valid_Limited_Ancestor (A) then
+            null;
+
+         else
+            Error_Msg_N
+              ("limited ancestor part must be aggregate or function call", A);
          end if;
 
       elsif Is_Class_Wide_Type (Typ) then
@@ -2429,31 +2600,6 @@ package body Sem_Aggr is
          return Expr;
       end Get_Value;
 
-      procedure Check_Non_Limited_Type (Expr : Node_Id);
-      --  Relax check to allow the default initialization of limited types.
-      --  For example:
-      --      record
-      --         C : Lim := (..., others => <>);
-      --      end record;
-
-      ----------------------------
-      -- Check_Non_Limited_Type --
-      ----------------------------
-
-      procedure Check_Non_Limited_Type (Expr : Node_Id) is
-      begin
-         if Is_Limited_Type (Etype (Expr))
-            and then Comes_From_Source (Expr)
-            and then not In_Instance_Body
-         then
-            if not OK_For_Limited_Init (Expr) then
-               Error_Msg_N
-                 ("initialization not allowed for limited types", N);
-               Explain_Limited_Type (Etype (Expr), Expr);
-            end if;
-         end if;
-      end Check_Non_Limited_Type;
-
       -----------------------
       -- Resolve_Aggr_Expr --
       -----------------------
@@ -2574,7 +2720,7 @@ package body Sem_Aggr is
          end if;
 
          Analyze_And_Resolve (Expr, Expr_Type);
-         Check_Non_Limited_Type (Expr);
+         Check_Expr_OK_In_Limited_Aggregate (Expr);
          Check_Non_Static_Context (Expr);
          Check_Unset_Reference (Expr);
 
@@ -3246,7 +3392,18 @@ package body Sem_Aggr is
                         C := First_Component (Typ);
                         while Present (C) loop
                            if Chars (C) = Chars (Selectr) then
-                              exit;
+
+                              --  If the context is an extension aggregate,
+                              --  the component must not be inherited from
+                              --  the ancestor part of the aggregate.
+
+                              if Nkind (N) /= N_Extension_Aggregate
+                                or else
+                                  Scope (Original_Record_Component (C)) /=
+                                                     Etype (Ancestor_Part (N))
+                              then
+                                 exit;
+                              end if;
                            end if;
 
                            Next_Component (C);
