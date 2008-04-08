@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,7 +138,7 @@ package Expander is
    --    (b) when starting/completing the pre-analysis of an expression
    --        (see the spec of package Sem for more info on pre-analysis.)
    --
-   --  Note that when processing a default expression (In_Default_Expression
+   --  Note that when processing a spec expression (In_Spec_Expression
    --  is True) or performing semantic analysis of a generic spec or body
    --  (Inside_A_Generic) or when performing pre-analysis (Full_Analysis is
    --  False) the Expander_Active flag is False.

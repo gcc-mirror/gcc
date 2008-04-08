@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,6 +86,9 @@ package GNAT.Traceback.Symbolic is
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String;
    --  Build a string containing a symbolic traceback of the given call chain
+   --
+   --  Note: This procedure may be installed by Set_Trace_Decorator, to get a
+   --  symbolic traceback on all exceptions raised (see GNAT.Exception_Traces).
 
    function Symbolic_Traceback (E : Exception_Occurrence) return String;
    --  Build string containing symbolic traceback of given exception occurrence

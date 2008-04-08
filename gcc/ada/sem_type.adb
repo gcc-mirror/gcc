@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1515,8 +1515,8 @@ package body Sem_Type is
       end if;
 
       --  Check for overloaded CIL convention stuff because the CIL libraries
-      --  do sick things like Console.Write_Line where it matches
-      --  two different overloads, so just pick the first ???
+      --  do sick things like Console.Write_Line where it matches two different
+      --  overloads, so just pick the first ???
 
       if Convention (Nam1) = Convention_CIL
         and then Convention (Nam2) = Convention_CIL

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -271,7 +271,7 @@ package body Bindusg is
 
       --  Line for --RTS
 
-      Write_Line ("  --RTS=dir specify the default source and " &
+      Write_Line ("  --RTS=dir Specify the default source and " &
                   "object search path");
 
       --  Line for sfile

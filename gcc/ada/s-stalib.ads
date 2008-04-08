@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,7 @@ package System.Standard_Library is
    pragma Warnings (On);
 
    type Big_String_Ptr is access all String (Positive);
+   for Big_String_Ptr'Storage_Size use 0;
    --  A non-fat pointer type for null terminated strings
 
    function To_Ptr is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -395,7 +395,6 @@ private
       Reference : String_Access := Null_String'Access;
       Last      : Natural       := 0;
    end record;
-
    --  The Unbounded_String is using a buffered implementation to increase
    --  speed of the Append/Delete/Insert procedures. The Reference string
    --  pointer above contains the current string value and extra room at the
@@ -404,6 +403,7 @@ private
    --  Reference (1 .. Last).
 
    pragma Stream_Convert (Unbounded_String, To_Unbounded, To_String);
+   --  Provide stream routines without dragging in Ada.Streams
 
    pragma Finalize_Storage_Only (Unbounded_String);
    --  Finalization is required only for freeing storage

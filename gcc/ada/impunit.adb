@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2007, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2008, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,6 +147,7 @@ package body Impunit is
    -- GNAT Defined Additions to Ada --
    -----------------------------------
 
+     "a-calcon",    -- Ada.Calendar.Conversions
      "a-chlat9",    -- Ada.Characters.Latin_9
      "a-clrefi",    -- Ada.Command_Line.Response_File
      "a-colien",    -- Ada.Command_Line.Environment
@@ -276,6 +277,7 @@ package body Impunit is
      "g-table ",    -- GNAT.Table
      "g-tasloc",    -- GNAT.Task_Lock
      "g-thread",    -- GNAT.Threads
+     "g-timsta",    -- GNAT.Time_Stamp
      "g-traceb",    -- GNAT.Traceback
      "g-trasym",    -- GNAT.Traceback.Symbolic
      "g-utf_32",    -- GNAT.UTF_32
@@ -301,6 +303,7 @@ package body Impunit is
      "i-cpp   ",    -- Interfaces.CPP
      "i-cstrea",    -- Interfaces.C.Streams
      "i-java  ",    -- Interfaces.Java
+     "i-javjni",    -- Interfaces.Java.JNI
      "i-pacdec",    -- Interfaces.Packed_Decimal
      "i-vxwoio",    -- Interfaces.VxWorks.IO
      "i-vxwork",    -- Interfaces.VxWorks
@@ -328,6 +331,7 @@ package body Impunit is
      "s-pooloc",    -- System.Pool_Local
      "s-restri",    -- System.Restrictions
      "s-rident",    -- System.Rident
+     "s-ststop",    -- System.Strings.Stream_Ops
      "s-tasinf",    -- System.Task_Info
      "s-wchcnv",    -- System.Wch_Cnv
      "s-wchcon");   -- System.Wch_Con
@@ -367,6 +371,7 @@ package body Impunit is
      "a-coteio",    -- Ada.Complex_Text_IO
      "a-direct",    -- Ada.Directories
      "a-diroro",    -- Ada.Dispatching.Round_Robin
+     "a-disedf",    -- Ada.Dispatching.EDF
      "a-dispat",    -- Ada.Dispatching
      "a-envvar",    -- Ada.Environment_Variables
      "a-exetim",    -- Ada.Execution_Time

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1944,7 +1944,7 @@ package body Uintp is
 
    function UI_Gt (Left : Uint; Right : Uint) return Boolean is
    begin
-      return UI_Lt (Right, Left);
+      return UI_Lt (Left => Right, Right => Left);
    end UI_Gt;
 
    ---------------
@@ -1990,7 +1990,7 @@ package body Uintp is
 
    function UI_Le (Left : Uint; Right : Uint) return Boolean is
    begin
-      return not UI_Lt (Right, Left);
+      return not UI_Lt (Left => Right, Right => Left);
    end UI_Le;
 
    ------------

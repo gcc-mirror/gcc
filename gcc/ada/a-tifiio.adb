@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -638,11 +638,13 @@ package body Ada.Text_IO.Fixed_IO is
          --  been generated, compute the Aft next digits (without rounding).
          --  Once a non-zero digit is generated, determine the exact number
          --  of digits remaining and compute them with rounding.
+
          --  Since a large number of iterations might be necessary in case
          --  of Aft = 1, the following optimization would be desirable.
+
          --  Count the number Z of leading zero bits in the integer
-         --  representation of X, and start with producing
-         --  Aft + Z * 1000 / 3322 digits in the first scaled division.
+         --  representation of X, and start with producing Aft + Z * 1000 /
+         --  3322 digits in the first scaled division.
 
          --  However, the floating-point routines are still used now ???
 

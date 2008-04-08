@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005, AdaCore                     --
+--                     Copyright (C) 2000-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,7 @@
 
 --  The backtrace output can also be customized by way of a "decorator" which
 --  may return any string output in association with a provided call chain.
+--  The decorator replaces the default backtrace mentioned above.
 
 with GNAT.Traceback; use GNAT.Traceback;
 
@@ -89,5 +90,9 @@ package GNAT.Exception_Traces is
    --  Set the decorator to be used for future automatic outputs. Restore
    --  the default behavior (output of raw addresses) if the provided
    --  access value is null.
+   --
+   --  Note: GNAT.Traceback.Symbolic.Symbolic_Traceback may be used as the
+   --  Decorator, to get a symbolic traceback. This will cause a significant
+   --  cpu and memory overhead.
 
 end GNAT.Exception_Traces;
