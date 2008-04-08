@@ -574,10 +574,8 @@ package body GNAT.Sockets is
 
    procedure Connect_Socket
      (Socket : Socket_Type;
-      Server : in out Sock_Addr_Type)
+      Server : Sock_Addr_Type)
    is
-      pragma Warnings (Off, Server);
-
       Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;
