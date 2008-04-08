@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,8 @@ package body Prj.Util is
       In_Tree  : Project_Tree_Ref;
       Main     : File_Name_Type;
       Index    : Int;
-      Ada_Main : Boolean := True) return File_Name_Type
+      Ada_Main : Boolean := True;
+      Language : String := "") return File_Name_Type
    is
       pragma Assert (Project /= No_Project);
 
@@ -136,13 +137,55 @@ package body Prj.Util is
 
       Naming : constant Naming_Data := In_Tree.Projects.Table (Project).Naming;
 
-      Body_Suffix : constant String :=
-                      Body_Suffix_Of (In_Tree, "ada", Naming);
+      Spec_Suffix : Name_Id := No_Name;
+      Body_Suffix : Name_Id := No_Name;
 
-      Spec_Suffix : constant String :=
-                      Spec_Suffix_Of (In_Tree, "ada", Naming);
+      Spec_Suffix_Length : Natural := 0;
+      Body_Suffix_Length : Natural := 0;
+
+      procedure Get_Suffixes
+        (B_Suffix : String;
+         S_Suffix : String);
+      --  Get the non empty suffixes in variables Spec_Suffix and Body_Suffix
+
+      ------------------
+      -- Get_Suffixes --
+      ------------------
+
+      procedure Get_Suffixes
+        (B_Suffix : String;
+         S_Suffix : String)
+      is
+      begin
+         if B_Suffix'Length > 0 then
+            Name_Len := B_Suffix'Length;
+            Name_Buffer (1 .. Name_Len) := B_Suffix;
+            Body_Suffix := Name_Find;
+            Body_Suffix_Length := B_Suffix'Length;
+         end if;
+
+         if S_Suffix'Length > 0 then
+            Name_Len := S_Suffix'Length;
+            Name_Buffer (1 .. Name_Len) := S_Suffix;
+            Spec_Suffix := Name_Find;
+            Spec_Suffix_Length := S_Suffix'Length;
+         end if;
+      end Get_Suffixes;
+
+   --  Start of processing for Executable_Of
 
    begin
+      if Ada_Main then
+         Get_Suffixes
+           (B_Suffix => Body_Suffix_Of (In_Tree, "ada", Naming),
+            S_Suffix => Spec_Suffix_Of (In_Tree, "ada", Naming));
+
+      elsif Language /= "" then
+         Get_Suffixes
+           (B_Suffix => Body_Suffix_Of (In_Tree, Language, Naming),
+            S_Suffix => Spec_Suffix_Of (In_Tree, Language, Naming));
+      end if;
+
       if Builder_Package /= No_Package then
          if Get_Mode = Multi_Language then
             Executable_Suffix_Name :=
@@ -176,21 +219,21 @@ package body Prj.Util is
                Truncated : Boolean := False;
 
             begin
-               if Last > Body_Suffix'Length
-                  and then Name (Last - Body_Suffix'Length + 1 .. Last) =
-                                                                  Body_Suffix
+               if Last > Natural (Length_Of_Name (Body_Suffix))
+                 and then Name (Last - Body_Suffix_Length + 1 .. Last) =
+                            Get_Name_String (Body_Suffix)
                then
                   Truncated := True;
-                  Last := Last - Body_Suffix'Length;
+                  Last := Last - Body_Suffix_Length;
                end if;
 
                if not Truncated
-                 and then Last > Spec_Suffix'Length
-                 and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
-                                                                 Spec_Suffix
+                 and then Last > Spec_Suffix_Length
+                 and then Name (Last - Spec_Suffix_Length + 1 .. Last) =
+                            Get_Name_String (Spec_Suffix)
                then
                   Truncated := True;
-                  Last := Last - Spec_Suffix'Length;
+                  Last := Last - Spec_Suffix_Length;
                end if;
 
                if Truncated then
@@ -238,21 +281,24 @@ package body Prj.Util is
       --  otherwise remove any suffix ('.' followed by other characters), if
       --  there is one.
 
-      if Ada_Main and then Name_Len > Body_Suffix'Length
-         and then Name_Buffer (Name_Len - Body_Suffix'Length + 1 .. Name_Len) =
-                    Body_Suffix
+      if Body_Suffix /= No_Name
+         and then Name_Len > Body_Suffix_Length
+         and then Name_Buffer (Name_Len - Body_Suffix_Length + 1 .. Name_Len) =
+                    Get_Name_String (Body_Suffix)
       then
          --  Found the body termination, remove it
 
-         Name_Len := Name_Len - Body_Suffix'Length;
+         Name_Len := Name_Len - Body_Suffix_Length;
 
-      elsif Ada_Main and then Name_Len > Spec_Suffix'Length
-         and then Name_Buffer (Name_Len - Spec_Suffix'Length + 1 .. Name_Len) =
-                    Spec_Suffix
+      elsif Spec_Suffix /= No_Name
+            and then Name_Len > Spec_Suffix_Length
+            and then
+              Name_Buffer (Name_Len - Spec_Suffix_Length + 1 .. Name_Len) =
+                Get_Name_String (Spec_Suffix)
       then
          --  Found the spec termination, remove it
 
-         Name_Len := Name_Len - Spec_Suffix'Length;
+         Name_Len := Name_Len - Spec_Suffix_Length;
 
       else
          --  Remove any suffix, if there is one
@@ -284,8 +330,13 @@ package body Prj.Util is
             Result     : File_Name_Type;
 
          begin
-            Executable_Extension_On_Target :=
-              In_Tree.Projects.Table (Project).Config.Executable_Suffix;
+            if In_Tree.Projects.Table (Project).Config.Executable_Suffix /=
+              No_Name
+            then
+               Executable_Extension_On_Target :=
+                 In_Tree.Projects.Table (Project).Config.Executable_Suffix;
+            end if;
+
             Result := Executable_Name (Name_Find);
             Executable_Extension_On_Target := Saved_EEOT;
             return Result;
@@ -418,20 +469,22 @@ package body Prj.Util is
    ---------
 
    procedure Put
-     (Into_List : in out Name_List_Index;
-      From_List : String_List_Id;
-      In_Tree   : Project_Tree_Ref)
+     (Into_List  : in out Name_List_Index;
+      From_List  : String_List_Id;
+      In_Tree    : Project_Tree_Ref;
+      Lower_Case : Boolean := False)
    is
       Current_Name : Name_List_Index;
       List         : String_List_Id;
       Element      : String_Element;
       Last         : Name_List_Index :=
                        Name_List_Table.Last (In_Tree.Name_Lists);
+      Value        : Name_Id;
 
    begin
       Current_Name := Into_List;
-      while Current_Name /= No_Name_List and then
-            In_Tree.Name_Lists.Table (Current_Name).Next /= No_Name_List
+      while Current_Name /= No_Name_List
+        and then In_Tree.Name_Lists.Table (Current_Name).Next /= No_Name_List
       loop
          Current_Name := In_Tree.Name_Lists.Table (Current_Name).Next;
       end loop;
@@ -439,10 +492,16 @@ package body Prj.Util is
       List := From_List;
       while List /= Nil_String loop
          Element := In_Tree.String_Elements.Table (List);
+         Value := Element.Value;
+
+         if Lower_Case then
+            Get_Name_String (Value);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Value := Name_Find;
+         end if;
 
          Name_List_Table.Append
-           (In_Tree.Name_Lists,
-            (Name => Element.Value, Next => No_Name_List));
+           (In_Tree.Name_Lists, (Name => Value, Next => No_Name_List));
 
          Last := Last + 1;
 

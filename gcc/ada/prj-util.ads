@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,23 +27,30 @@
 
 package Prj.Util is
 
+   --  ??? throughout this spec, parameters are not well enough documented
+
    function Executable_Of
      (Project  : Project_Id;
       In_Tree  : Project_Tree_Ref;
       Main     : File_Name_Type;
       Index    : Int;
-      Ada_Main : Boolean := True) return File_Name_Type;
+      Ada_Main : Boolean := True;
+      Language : String := "") return File_Name_Type;
    --  Return the value of the attribute Builder'Executable for file Main in
    --  the project Project, if it exists. If there is no attribute Executable
    --  for Main, remove the suffix from Main; then, if the attribute
    --  Executable_Suffix is specified, add this suffix, otherwise add the
    --  standard executable suffix for the platform.
+   --  What is Ada_Main???
+   --  What is Language???
 
    procedure Put
-     (Into_List : in out Name_List_Index;
-      From_List : String_List_Id;
-      In_Tree   : Project_Tree_Ref);
+     (Into_List  : in out Name_List_Index;
+      From_List  : String_List_Id;
+      In_Tree    : Project_Tree_Ref;
+      Lower_Case : Boolean := False);
    --  Append a name list to a string list
+   --  Describe parameters???
 
    procedure Duplicate
      (This    : in out Name_List_Index;
