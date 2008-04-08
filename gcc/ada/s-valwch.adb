@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,8 +50,8 @@ package body System.Val_WChar is
       WV : constant Unsigned_32         := Wide_Wide_Character'Pos (WC);
    begin
       if WV > 16#FFFF# then
-         raise Constraint_Error
-           with "out of range character for Value attribute";
+         raise Constraint_Error with
+           "out of range character for Value attribute";
       else
          return Wide_Character'Val (WV);
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -562,9 +562,9 @@ package body Atree is
    -- Local Subprograms --
    -----------------------
 
-   procedure Fix_Parents (Old_Node, New_Node : Node_Id);
-   --  Fixup parent pointers for the syntactic children of New_Node after
-   --  a copy, setting them to New_Node when they pointed to Old_Node.
+   procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id);
+   --  Fixup parent pointers for the syntactic children of Fix_Node after
+   --  a copy, setting them to Fix_Node when they pointed to Ref_Node.
 
    function Allocate_Initialize_Node
      (Src            : Node_Id;
@@ -988,18 +988,18 @@ package body Atree is
    -- Fix_Parents --
    -----------------
 
-   procedure Fix_Parents (Old_Node, New_Node : Node_Id) is
+   procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id) is
 
-      procedure Fix_Parent (Field : Union_Id; Old_Node, New_Node : Node_Id);
-      --  Fixup one parent pointer. Field is checked to see if it
-      --  points to a node, list, or element list that has a parent that
-      --  points to Old_Node. If so, the parent is reset to point to New_Node.
+      procedure Fix_Parent (Field : Union_Id);
+      --  Fixup one parent pointer. Field is checked to see if it points to
+      --  a node, list, or element list that has a parent that points to
+      --  Ref_Node. If so, the parent is reset to point to Fix_Node.
 
       ----------------
       -- Fix_Parent --
       ----------------
 
-      procedure Fix_Parent (Field : Union_Id; Old_Node, New_Node : Node_Id) is
+      procedure Fix_Parent (Field : Union_Id) is
       begin
          --  Fix parent of node that is referenced by Field. Note that we must
          --  exclude the case where the node is a member of a list, because in
@@ -1008,28 +1008,28 @@ package body Atree is
          if Field in Node_Range
            and then Present (Node_Id (Field))
            and then not Nodes.Table (Node_Id (Field)).In_List
-           and then Parent (Node_Id (Field)) = Old_Node
+           and then Parent (Node_Id (Field)) = Ref_Node
          then
-            Set_Parent (Node_Id (Field), New_Node);
+            Set_Parent (Node_Id (Field), Fix_Node);
 
          --  Fix parent of list that is referenced by Field
 
          elsif Field in List_Range
            and then Present (List_Id (Field))
-           and then Parent (List_Id (Field)) = Old_Node
+           and then Parent (List_Id (Field)) = Ref_Node
          then
-            Set_Parent (List_Id (Field), New_Node);
+            Set_Parent (List_Id (Field), Fix_Node);
          end if;
       end Fix_Parent;
 
    --  Start of processing for Fix_Parents
 
    begin
-      Fix_Parent (Field1 (New_Node), Old_Node, New_Node);
-      Fix_Parent (Field2 (New_Node), Old_Node, New_Node);
-      Fix_Parent (Field3 (New_Node), Old_Node, New_Node);
-      Fix_Parent (Field4 (New_Node), Old_Node, New_Node);
-      Fix_Parent (Field5 (New_Node), Old_Node, New_Node);
+      Fix_Parent (Field1 (Fix_Node));
+      Fix_Parent (Field2 (Fix_Node));
+      Fix_Parent (Field3 (Fix_Node));
+      Fix_Parent (Field4 (Fix_Node));
+      Fix_Parent (Field5 (Fix_Node));
    end Fix_Parents;
 
    -----------------------------------
@@ -2404,7 +2404,7 @@ package body Atree is
       end if;
 
       New_Node := New_Copy (Source);
-      Fix_Parents (Source, New_Node);
+      Fix_Parents (Ref_Node => Source, Fix_Node => New_Node);
 
       --  We now set the parent of the new node to be the same as the
       --  parent of the source. Almost always this parent will be
@@ -2448,7 +2448,7 @@ package body Atree is
 
       --  Fix parents of substituted node, since it has changed identity
 
-      Fix_Parents (New_Node, Old_Node);
+      Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
 
       --  Since we are doing a replace, we assume that the original node
       --  is intended to become the new replaced node. The call would be
@@ -2511,7 +2511,7 @@ package body Atree is
          Set_Must_Not_Freeze (Old_Node, Old_Must_Not_Freeze);
       end if;
 
-      Fix_Parents (New_Node, Old_Node);
+      Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
    end Rewrite;
 
    ------------------
@@ -7337,7 +7337,7 @@ package body Atree is
          pragma Assert (N <= Nodes.Last);
 
          if Val > Error then
-            Set_Parent (Val, N);
+            Set_Parent (N => Val, Val => N);
          end if;
 
          Set_Node1 (N, Val);
@@ -7348,7 +7348,7 @@ package body Atree is
          pragma Assert (N <= Nodes.Last);
 
          if Val > Error then
-            Set_Parent (Val, N);
+            Set_Parent (N => Val, Val => N);
          end if;
 
          Set_Node2 (N, Val);
@@ -7359,7 +7359,7 @@ package body Atree is
          pragma Assert (N <= Nodes.Last);
 
          if Val > Error then
-            Set_Parent (Val, N);
+            Set_Parent (N => Val, Val => N);
          end if;
 
          Set_Node3 (N, Val);
@@ -7370,7 +7370,7 @@ package body Atree is
          pragma Assert (N <= Nodes.Last);
 
          if Val > Error then
-            Set_Parent (Val, N);
+            Set_Parent (N => Val, Val => N);
          end if;
 
          Set_Node4 (N, Val);
@@ -7381,7 +7381,7 @@ package body Atree is
          pragma Assert (N <= Nodes.Last);
 
          if Val > Error then
-            Set_Parent (Val, N);
+            Set_Parent (N => Val, Val => N);
          end if;
 
          Set_Node5 (N, Val);

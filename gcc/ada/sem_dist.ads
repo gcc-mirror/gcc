@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@ with Types;  use Types;
 package Sem_Dist is
 
    function Get_PCS_Name return PCS_Names;
-   --  Return the name of a literal of type System.Partition_Interface.
-   --  DSA_Implementation_Type indicating what PCS is currently in use.
+   --  Return the name of a literal of type DSA_Implementation_Name in package
+   --  System.Partition_Interface indicating what PCS is currently in use.
 
    function Get_PCS_Version return Int;
    --  Return the version number of the PCS API implemented by the PCS.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -47,6 +47,10 @@ package Ada.Direct_IO is
    pragma Compile_Time_Warning
      (Element_Type'Has_Access_Values,
       "Element_Type for Direct_IO instance has access values");
+
+   pragma Compile_Time_Warning
+     (Element_Type'Has_Tagged_Values,
+      "Element_Type for Direct_IO instance has tagged values");
 
    type File_Type is limited private;
 

@@ -25,6 +25,9 @@ package Ada.Assertions is
    pragma Pure (Assertions);
 
    Assertion_Error : exception renames System.Assertions.Assert_Failure;
+   --  This is the renaming that is allowed by 11.4.2(24). Note that the
+   --  Exception_Name will refer to the one in System.Assertions (see
+   --  AARM-11.4.1(12.b)).
 
    procedure Assert (Check : Boolean);
 

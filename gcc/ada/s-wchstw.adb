@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,8 +74,7 @@ package body System.WCh_StW is
       function In_Char return Character is
       begin
          if P > S'Last then
-            raise Constraint_Error
-              with "badly formed wide character code";
+            raise Constraint_Error with "badly formed wide character code";
          else
             P := P + 1;
             return S (P - 1);
@@ -139,8 +138,8 @@ package body System.WCh_StW is
          Get_Next_Code (S, SP, V, EM);
 
          if V > 16#FFFF# then
-            raise Constraint_Error
-              with "out of range value for wide character";
+            raise Constraint_Error with
+              "out of range value for wide character";
          end if;
 
          L := L + 1;

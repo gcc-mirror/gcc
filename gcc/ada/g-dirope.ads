@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package GNAT.Directory_Operations is
    --  is equivalent to the UNIX basename command. The following rule is
    --  always true:
    --
-   --    'Path' and 'Dir_Name (Path) & Directory_Separator & Base_Name (Path)'
+   --    'Path' and 'Dir_Name (Path) & Dir_Separator & Base_Name (Path)'
    --    represent the same file.
    --
    --  The comparison of Suffix is case-insensitive on systems such as Windows

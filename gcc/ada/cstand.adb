@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1727,7 +1727,7 @@ package body CStand is
       Write_Eol;
 
       P ("package Standard is");
-      P ("pragma Pure(Standard);");
+      P ("pragma Pure (Standard);");
       Write_Eol;
 
       P ("   type Boolean is (False, True);");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2123,7 +2123,7 @@ package body Exp_Fixd is
 
       if Etype (Left) = Universal_Real then
          if Nkind (Left) = N_Real_Literal then
-            Do_Multiply_Fixed_Universal (N, Right, Left);
+            Do_Multiply_Fixed_Universal (N, Left => Right, Right => Left);
 
          elsif Nkind (Left) = N_Type_Conversion then
             Rewrite_Non_Static_Universal (Left);
@@ -2214,7 +2214,7 @@ package body Exp_Fixd is
       Right : constant Node_Id := Right_Opnd (N);
    begin
       if Etype (Left) = Universal_Real then
-         Do_Multiply_Fixed_Universal (N, Right, Left);
+         Do_Multiply_Fixed_Universal (N, Left => Right, Right => Left);
       elsif Etype (Right) = Universal_Real then
          Do_Multiply_Fixed_Universal (N, Left, Right);
       else

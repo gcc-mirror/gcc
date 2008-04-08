@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,7 +130,7 @@ package body Interfaces.C.Strings is
                  Offset => 0,
                  Chars  => Chars,
                  Check  => False);
-         Poke (nul, into => Pointer + size_t'(Chars'Length));
+         Poke (nul, Into => Pointer + size_t'(Chars'Length));
       end if;
 
       return Pointer;
