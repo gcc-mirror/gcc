@@ -2264,7 +2264,13 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
     {
       if (!parser->allow_non_integral_constant_expression_p)
 	{
-	  error ("%s cannot appear in a constant-expression", thing);
+	  /* Don't use `%s' to print THING, because quotations (`%<', `%>')
+	     in the message need to be interpreted.  */
+	  char *message = concat (thing,
+				  " cannot appear in a constant-expression",
+				  NULL);
+	  error (message);
+	  free (message);
 	  return true;
 	}
     }
@@ -3230,8 +3236,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	      return error_mark_node;
 	    }
 	  /* Pointers cannot appear in constant-expressions.  */
-	  if (cp_parser_non_integral_constant_expression (parser,
-							  "`this'"))
+	  if (cp_parser_non_integral_constant_expression (parser, "%<this%>"))
 	    return error_mark_node;
 	  return finish_this_expr ();
 
@@ -3276,7 +3281,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Using `va_arg' in a constant-expression is not
 	       allowed.  */
 	    if (cp_parser_non_integral_constant_expression (parser,
-							    "`va_arg'"))
+							    "%<va_arg%>"))
 	      return error_mark_node;
 	    return build_x_va_arg (expression, type);
 	  }
@@ -4399,7 +4404,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	parser->type_definition_forbidden_message = saved_message;
 	/* `typeid' may not appear in an integral constant expression.  */
 	if (cp_parser_non_integral_constant_expression(parser,
-						       "`typeid' operator"))
+						       "%<typeid%> operator"))
 	  return error_mark_node;
       }
       break;
@@ -4955,7 +4960,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
      constant-expressions.  */
   if (!for_offsetof
       && (cp_parser_non_integral_constant_expression
-	  (parser, token_type == CPP_DEREF ? "'->'" : "`.'")))
+	  (parser, token_type == CPP_DEREF ? "%<->%>" : "%<.%>")))
     postfix_expression = error_mark_node;
 
   return postfix_expression;
@@ -5368,13 +5373,13 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
       switch (unary_operator)
 	{
 	case INDIRECT_REF:
-	  non_constant_p = "`*'";
+	  non_constant_p = "%<*%>";
 	  expression = build_x_indirect_ref (cast_expression, "unary *",
                                              tf_warning_or_error);
 	  break;
 
 	case ADDR_EXPR:
-	  non_constant_p = "`&'";
+	  non_constant_p = "%<&%>";
 	  /* Fall through.  */
 	case BIT_NOT_EXPR:
 	  expression = build_x_unary_op (unary_operator, cast_expression,
@@ -5384,7 +5389,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
 	  non_constant_p = (unary_operator == PREINCREMENT_EXPR
-			    ? "`++'" : "`--'");
+			    ? "%<++%>" : "%<--%>");
 	  /* Fall through.  */
 	case UNARY_PLUS_EXPR:
 	case NEGATE_EXPR:
@@ -5505,7 +5510,7 @@ cp_parser_new_expression (cp_parser* parser)
 
   /* A new-expression may not appear in an integral constant
      expression.  */
-  if (cp_parser_non_integral_constant_expression (parser, "`new'"))
+  if (cp_parser_non_integral_constant_expression (parser, "%<new%>"))
     return error_mark_node;
 
   /* Create a representation of the new-expression.  */
@@ -5768,7 +5773,7 @@ cp_parser_delete_expression (cp_parser* parser)
 
   /* A delete-expression may not appear in an integral constant
      expression.  */
-  if (cp_parser_non_integral_constant_expression (parser, "`delete'"))
+  if (cp_parser_non_integral_constant_expression (parser, "%<delete%>"))
     return error_mark_node;
 
   return delete_sanity (expression, NULL_TREE, array_p, global_scope_p);
