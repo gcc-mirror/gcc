@@ -63,6 +63,10 @@ Boston, MA 02110-1301, USA.  */
 
 #define MAX_REPEAT 200000000
 
+#ifndef HAVE_SNPRINTF
+# undef snprintf
+# define snprintf(str, size, ...) sprintf (str, __VA_ARGS__)
+#endif
 
 /* Save a character to a string buffer, enlarging it as necessary.  */
 
@@ -1887,7 +1891,7 @@ calls:
    static void nml_match_name (char *name, int len)
    static int nml_query (st_parameter_dt *dtp)
    static int nml_get_obj_data (st_parameter_dt *dtp,
-				namelist_info **prev_nl, char *)
+				namelist_info **prev_nl, char *, size_t)
 calls:
       static void nml_untouch_nodes (st_parameter_dt *dtp)
       static namelist_info * find_nml_node (st_parameter_dt *dtp,
@@ -1896,7 +1900,7 @@ calls:
 				     array_loop_spec * ls, int rank, char *)
       static void nml_touch_nodes (namelist_info * nl)
       static int nml_read_obj (namelist_info *nl, index_type offset,
-			       namelist_info **prev_nl, char *,
+			       namelist_info **prev_nl, char *, size_t,
 			       index_type clow, index_type chigh)
 calls:
       -itself-  */
@@ -2310,7 +2314,7 @@ query_return:
 static try
 nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	      namelist_info **pprev_nl, char *nml_err_msg,
-	      index_type clow, index_type chigh)
+	      size_t nml_err_msg_size, index_type clow, index_type chigh)
 {
   namelist_info * cmp;
   char * obj_name;
@@ -2428,8 +2432,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	      {
 
 		if (nml_read_obj (dtp, cmp, (index_type)(pdata - nl->mem_pos),
-				  pprev_nl, nml_err_msg, clow, chigh)
-		    == FAILURE)
+				  pprev_nl, nml_err_msg, nml_err_msg_size,
+				  clow, chigh) == FAILURE)
 		  {
 		    free_mem (obj_name);
 		    return FAILURE;
@@ -2446,8 +2450,8 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	    goto incr_idx;
 
           default:
-	    sprintf (nml_err_msg, "Bad type for namelist object %s",
-			nl->var_name);
+	    snprintf (nml_err_msg, nml_err_msg_size,
+		      "Bad type for namelist object %s", nl->var_name);
 	    internal_error (&dtp->common, nml_err_msg);
 	    goto nml_err_ret;
           }
@@ -2535,9 +2539,9 @@ incr_idx:
 
   if (dtp->u.p.repeat_count > 1)
     {
-       sprintf (nml_err_msg, "Repeat count too large for namelist object %s" ,
-		   nl->var_name );
-       goto nml_err_ret;
+      snprintf (nml_err_msg, nml_err_msg_size,
+		"Repeat count too large for namelist object %s", nl->var_name);
+      goto nml_err_ret;
     }
   return SUCCESS;
 
@@ -2555,7 +2559,7 @@ nml_err_ret:
 
 static try
 nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
-		  char *nml_err_msg)
+		  char *nml_err_msg, size_t nml_err_msg_size)
 {
   char c;
   namelist_info * nl;
@@ -2563,7 +2567,6 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
   namelist_info * root_nl = NULL;
   int dim, parsed_rank;
   int component_flag;
-  char parse_err_msg[30];
   index_type clow, chigh;
   int non_zero_rank_count;
 
@@ -2662,12 +2665,13 @@ get_name:
   if (nl == NULL)
     {
       if (dtp->u.p.nml_read_error && *pprev_nl)
-	sprintf (nml_err_msg, "Bad data for namelist object %s",
-		    (*pprev_nl)->var_name);
+	snprintf (nml_err_msg, nml_err_msg_size,
+		  "Bad data for namelist object %s", (*pprev_nl)->var_name);
 
       else
-	sprintf (nml_err_msg, "Cannot match namelist object name %s",
-		    dtp->u.p.saved_string);
+	snprintf (nml_err_msg, nml_err_msg_size,
+		  "Cannot match namelist object name %s",
+		  dtp->u.p.saved_string);
 
       goto nml_err_ret;
     }
@@ -2689,10 +2693,12 @@ get_name:
     {
       parsed_rank = 0;
       if (nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
-			       parse_err_msg, &parsed_rank) == FAILURE)
+			       nml_err_msg, &parsed_rank) == FAILURE)
 	{
-	  sprintf (nml_err_msg, "%s for namelist variable %s",
-		      parse_err_msg, nl->var_name);
+	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
+	  snprintf (nml_err_msg_end,
+		    nml_err_msg_size - (nml_err_msg_end - nml_err_msg),
+		    " for namelist variable %s", nl->var_name);
 	  goto nml_err_ret;
 	}
 
@@ -2713,8 +2719,8 @@ get_name:
     {
       if (nl->type != GFC_DTYPE_DERIVED)
 	{
-	  sprintf (nml_err_msg, "Attempt to get derived component for %s",
-		      nl->var_name);
+	  snprintf (nml_err_msg, nml_err_msg_size,
+		    "Attempt to get derived component for %s", nl->var_name);
 	  goto nml_err_ret;
 	}
 
@@ -2738,11 +2744,13 @@ get_name:
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
       array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
-      if (nml_parse_qualifier (dtp, chd, ind, -1, parse_err_msg, &parsed_rank)
+      if (nml_parse_qualifier (dtp, chd, ind, -1, nml_err_msg, &parsed_rank)
 	  == FAILURE)
 	{
-	  sprintf (nml_err_msg, "%s for namelist variable %s",
-		      parse_err_msg, nl->var_name);
+	  char *nml_err_msg_end = strchr (nml_err_msg, '\0');
+	  snprintf (nml_err_msg_end,
+		    nml_err_msg_size - (nml_err_msg_end - nml_err_msg),
+		    " for namelist variable %s", nl->var_name);
 	  goto nml_err_ret;
 	}
 
@@ -2751,9 +2759,9 @@ get_name:
 
       if (ind[0].step != 1)
 	{
-	  sprintf (nml_err_msg,
-		   "Step not allowed in substring qualifier"
-		   " for namelist object %s", nl->var_name);
+	  snprintf (nml_err_msg, nml_err_msg_size,
+		    "Step not allowed in substring qualifier"
+		    " for namelist object %s", nl->var_name);
 	  goto nml_err_ret;
 	}
 
@@ -2774,16 +2782,18 @@ get_name:
 
   if (c == '(')
     {
-      sprintf (nml_err_msg, "Qualifier for a scalar or non-character"
-		  " namelist object %s", nl->var_name);
+      snprintf (nml_err_msg, nml_err_msg_size,
+		"Qualifier for a scalar or non-character namelist object %s",
+		nl->var_name);
       goto nml_err_ret;
     }
 
   /* Make sure there is no more than one non-zero rank object.  */
   if (non_zero_rank_count > 1)
     {
-      sprintf (nml_err_msg, "Multiple sub-objects with non-zero rank in"
-	       " namelist object %s", nl->var_name);
+      snprintf (nml_err_msg, nml_err_msg_size,
+		"Multiple sub-objects with non-zero rank in namelist object %s",
+		nl->var_name);
       non_zero_rank_count = 0;
       goto nml_err_ret;
     }
@@ -2807,12 +2817,14 @@ get_name:
 
   if (c != '=')
     {
-      sprintf (nml_err_msg, "Equal sign must follow namelist object name %s",
-		  nl->var_name);
+      snprintf (nml_err_msg, nml_err_msg_size,
+		"Equal sign must follow namelist object name %s",
+		nl->var_name);
       goto nml_err_ret;
     }
 
-  if (nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, clow, chigh) == FAILURE)
+  if (nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
+		    clow, chigh) == FAILURE)
     goto nml_err_ret;
 
   return SUCCESS;
@@ -2831,7 +2843,7 @@ namelist_read (st_parameter_dt *dtp)
 {
   char c;
   jmp_buf eof_jump;
-  char nml_err_msg[100];
+  char nml_err_msg[200];
   /* Pointer to the previously read object, in case attempt is made to read
      new object name.  Should this fail, error message can give previous
      name.  */
@@ -2899,7 +2911,8 @@ find_nml_name:
 
   while (!dtp->u.p.input_complete)
     {
-      if (nml_get_obj_data (dtp, &prev_nl, nml_err_msg) == FAILURE)
+      if (nml_get_obj_data (dtp, &prev_nl, nml_err_msg, sizeof nml_err_msg)
+			    == FAILURE)
 	{
 	  gfc_unit *u;
 

@@ -1,3 +1,17 @@
+2008-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/list_read.c (snprintf): Define if HAVE_SNPRINTF isn't defined.
+	(nml_read_obj): Add nml_err_msg_size argument.  Pass it down to
+	recursive call.  Use snprintf instead of sprintf when %s nl->var_name
+	is used.
+	(nml_get_obj_data): Add nml_err_msg_size argument.  Pass it down to
+	nml_read_obj call.  Use snprintf instead of sprintf when %s
+	nl->var_name is used.  Pass nml_err_msg to nml_parse_qualifier instead
+	of parse_err_msg array.  Append " for namelist variable " and
+	nl->var_name to it.
+	(namelist_read): Increase size of nml_err_msg array to 200.  Pass
+	sizeof nml_err_msg as extra argument to nml_get_obj_data.
+
 2008-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35699
