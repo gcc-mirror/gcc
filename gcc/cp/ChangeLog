@@ -1,5 +1,11 @@
 2008-04-09  Volker Reichelt  <v.reichelt@netcologne.de>
 
+	* parser.c (cp_parser_check_type_definition): Print error string
+	directly rather than using "%s".
+	(cp_parser_postfix_expression): Fix quotation.
+	(cp_parser_decltype): Likewise.
+	(cp_parser_sizeof_operand): Fix quotation. Simplify.
+
 	* parser.c (cp_parser_non_integral_constant_expression): Build error
 	message with CONCAT rather than using "%s".
 	(cp_parser_primary_expression): Fix quotation.
