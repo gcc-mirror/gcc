@@ -2727,7 +2727,7 @@ check_for_bare_parameter_packs (tree t)
 
   if (parameter_packs) 
     {
-      error ("parameter packs not expanded with `...':");
+      error ("parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {
           tree pack = TREE_VALUE (parameter_packs);

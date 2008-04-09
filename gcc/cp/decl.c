@@ -7892,7 +7892,7 @@ grokdeclarator (const cp_declarator *declarator,
   if (virtualp
       && (current_class_name == NULL_TREE || decl_context != FIELD))
     {
-      error ("virtual outside class declaration");
+      error ("%<virtual%> outside class declaration");
       virtualp = 0;
     }
 

@@ -1,5 +1,10 @@
 2008-04-09  Volker Reichelt  <v.reichelt@netcologne.de>
 
+	* call.c (build_op_delete_call): Fix quotation in warning message.
+	* decl.c (grokdeclarator): Quote keyword in error message.
+	* pt.c (check_for_bare_parameter_packs): Fix quotation in error
+	message.
+
 	* parser.c (cp_parser_check_type_definition): Print error string
 	directly rather than using "%s".
 	(cp_parser_postfix_expression): Fix quotation.
