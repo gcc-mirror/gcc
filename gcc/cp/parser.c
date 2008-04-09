@@ -2183,9 +2183,9 @@ cp_parser_check_type_definition (cp_parser* parser)
   /* If types are forbidden here, issue a message.  */
   if (parser->type_definition_forbidden_message)
     {
-      /* Use `%s' to print the string in case there are any escape
-	 characters in the message.  */
-      error ("%s", parser->type_definition_forbidden_message);
+      /* Don't use `%s' to print the string, because quotations (`%<', `%>')
+	 in the message need to be interpreted.  */
+      error (parser->type_definition_forbidden_message);
       return false;
     }
   return true;
@@ -4372,7 +4372,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Types cannot be defined in a `typeid' expression.  */
 	saved_message = parser->type_definition_forbidden_message;
 	parser->type_definition_forbidden_message
-	  = "types may not be defined in a `typeid\' expression";
+	  = "types may not be defined in a %<typeid%> expression";
 	/* We can't be sure yet whether we're looking at a type-id or an
 	   expression.  */
 	cp_parser_parse_tentatively (parser);
@@ -8515,7 +8515,7 @@ cp_parser_decltype (cp_parser *parser)
 
   /* And create the new one.  */
   parser->type_definition_forbidden_message
-    = "types may not be defined in `decltype' expressions";
+    = "types may not be defined in %<decltype%> expressions";
 
   /* The restrictions on constant-expressions do not apply inside
      decltype expressions.  */
@@ -17572,7 +17572,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 static tree
 cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
 {
-  static const char *format;
   tree expr = NULL_TREE;
   const char *saved_message;
   char *tmp;
@@ -17580,19 +17579,14 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   bool saved_non_integral_constant_expression_p;
   bool pack_expansion_p = false;
 
-  /* Initialize FORMAT the first time we get here.  */
-  if (!format)
-    format = "types may not be defined in '%s' expressions";
-
   /* Types cannot be defined in a `sizeof' expression.  Save away the
      old message.  */
   saved_message = parser->type_definition_forbidden_message;
   /* And create the new one.  */
-  parser->type_definition_forbidden_message = tmp
-    = XNEWVEC (char, strlen (format)
-	       + strlen (IDENTIFIER_POINTER (ridpointers[keyword]))
-	       + 1 /* `\0' */);
-  sprintf (tmp, format, IDENTIFIER_POINTER (ridpointers[keyword]));
+  tmp = concat ("types may not be defined in %<",
+		IDENTIFIER_POINTER (ridpointers[keyword]),
+		"%> expressions", NULL);
+  parser->type_definition_forbidden_message = tmp;
 
   /* The restrictions on constant-expressions do not apply inside
      sizeof expressions.  */
