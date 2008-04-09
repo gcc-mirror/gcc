@@ -1,3 +1,9 @@
+2008-04-09  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35821
+	* gcc.dg/vect/pr35821-altivec.c: New.
+	* gcc.dg/vect/pr35821-spu.c: New.
+
 2008-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/namelist_47.f90: New test.

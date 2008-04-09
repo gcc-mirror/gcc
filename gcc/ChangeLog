@@ -1,3 +1,9 @@
+2008-04-09  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35821
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Add check that
+	NEW_STMT_LIST is not NULL.
+
 2008-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_widened_comparison): Do not allow

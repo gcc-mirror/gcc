@@ -1102,8 +1102,12 @@ vect_create_data_ref_ptr (tree stmt, struct loop *at_loop,
   new_temp = vect_create_addr_base_for_vector_ref (stmt, &new_stmt_list,
                                                    offset, loop);
   pe = loop_preheader_edge (loop);
-  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt_list);
-  gcc_assert (!new_bb);
+  if (new_stmt_list)
+    {
+      new_bb = bsi_insert_on_edge_immediate (pe, new_stmt_list);
+      gcc_assert (!new_bb);
+    }
+
   *initial_address = new_temp;
 
   /* Create: p = (vectype *) initial_base  */
