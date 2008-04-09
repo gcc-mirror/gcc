@@ -2096,7 +2096,6 @@ finish_unary_op_expr (enum tree_code code, tree expr)
 tree
 finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
 {
-  tree var;
   tree compound_literal;
 
   if (!TYPE_OBJ_P (type))
@@ -2115,30 +2114,12 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
       return compound_literal;
     }
 
-  /* Create a temporary variable to represent the compound literal.  */
-  var = create_temporary_var (type);
-  if (!current_function_decl)
-    {
-      /* If this compound-literal appears outside of a function, then
-	 the corresponding variable has static storage duration, just
-	 like the variable in whose initializer it appears.  */
-      TREE_STATIC (var) = 1;
-      /* The variable has internal linkage, since there is no need to
-	 reference it from another translation unit.  */
-      TREE_PUBLIC (var) = 0;
-      /* It must have a name, so that the name mangler can mangle it.  */
-      DECL_NAME (var) = make_anon_name ();
-    }
-  /* We must call pushdecl, since the gimplifier complains if the
-     variable has not been declared via a BIND_EXPR.  */
-  pushdecl (var);
-  /* Initialize the variable as we would any other variable with a
-     brace-enclosed initializer.  */
-  cp_finish_decl (var, compound_literal,
-		  /*init_const_expr_p=*/false,
-		  /*asmspec_tree=*/NULL_TREE,
-		  LOOKUP_ONLYCONVERTING);
-  return var;
+  type = complete_type (type);
+  compound_literal = reshape_init (type, compound_literal);
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    cp_complete_array_type (&type, compound_literal, false);
+  compound_literal = digest_init (type, compound_literal);
+  return get_target_expr (compound_literal);
 }
 
 /* Return the declaration for the function-name variable indicated by
