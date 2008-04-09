@@ -1,3 +1,9 @@
+2008-04-09  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/28305
+	* sem_ch6.adb (Build_Body_To_Inline): Do not save and restore
+	environment if generic instance is a top-level one.
+
 2008-04-09  Doug Rupp  <rupp@adacore.com>
 
 	* decl.c (validate_size): Set minimum size for fat pointers same as
