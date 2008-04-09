@@ -1,3 +1,19 @@
+2008-04-09  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR testsuite/34894
+	PR testsuite/33782
+	* lib/target-supports.dg: Add check_effective_target_trampolines.
+	Disable profiling for avr-*-*.
+	* gcc.c-torture/compile/pr27889.c: dg-requires trampolines.
+	* gcc.c-torture/compile/nested-1.c: Ditto.
+	* gcc.c-torture/compile/20050122-2.c: Ditto.
+	* gcc.c-torture/compile/20010226-1.c: Ditto.
+	* gcc.c-torture/compile/20010327-1.c:  Skip for avr-*-*.
+	* gcc.c-torture/compile/980506-1.c: Ditto.
+	* gcc.c-torture/compile/20020604-1.c: Ditto.
+	* gcc.c-torture/compile/limits-stringlit.c: Ditto
+	* gcc.c-torture/compile/20001226-1.c: Ditto
+
 2008-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35708

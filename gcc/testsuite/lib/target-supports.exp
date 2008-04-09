@@ -383,6 +383,21 @@ proc check_gc_sections_available { } {
     return $gc_sections_available_saved
 }
 
+# Return 1 if according to target_info struct and explicit target list
+# target is supposed to support trampolines.
+ 
+proc check_effective_target_trampolines { } {
+    if [target_info exists no_trampolines] {
+      return 0
+    }
+    if { [istarget avr-*-*]
+	 || [istarget hppa2.0w-hp-hpux11.23]
+	|| [istarget hppa64-hp-hpux11.23] } {
+	return 0;   
+    }
+    return 1
+}
+
 # Return true if profiling is supported on the target.
 
 proc check_profiling_available { test_what } {
@@ -435,6 +450,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget arm*-*-eabi*]
 	     || [istarget arm*-*-elf]
 	     || [istarget arm*-*-symbianelf*]
+	     || [istarget avr-*-*]
 	     || [istarget bfin-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget strongarm*-*-elf]
