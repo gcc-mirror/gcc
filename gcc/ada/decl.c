@@ -6852,15 +6852,13 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
     size = size_binop (PLUS_EXPR, DECL_SIZE (TYPE_FIELDS (gnu_type)), size);
 
   /* Modify the size of the type to be that of the maximum size if it has a
-     discriminant or the size of a thin pointer if this is a fat pointer.  */
+     discriminant.  */
   if (type_size && CONTAINS_PLACEHOLDER_P (type_size))
     type_size = max_size (type_size, true);
-  else if (TYPE_FAT_POINTER_P (gnu_type))
-    type_size = bitsize_int (POINTER_SIZE);
 
-  /* If this is an access type, the minimum size is that given by the smallest
-     integral mode that's valid for pointers.  */
-  if (TREE_CODE (gnu_type) == POINTER_TYPE)
+  /* If this is an access type or a fat pointer, the minimum size is that given
+     by the smallest integral mode that's valid for pointers.  */
+  if ((TREE_CODE (gnu_type) == POINTER_TYPE) || TYPE_FAT_POINTER_P (gnu_type))
     {
       enum machine_mode p_mode;
 

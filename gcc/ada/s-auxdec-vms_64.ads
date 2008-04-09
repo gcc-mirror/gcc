@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,9 +96,10 @@ package System.Aux_DEC is
    function "or"  (Left, Right : Largest_Integer) return Largest_Integer;
    function "xor" (Left, Right : Largest_Integer) return Largest_Integer;
 
-   Address_Zero : constant Address;
-   No_Addr      : constant Address;
-   Address_Size : constant := Standard'Address_Size;
+   Address_Zero       : constant Address;
+   No_Addr            : constant Address;
+   Address_Size       : constant := Standard'Address_Size;
+   Short_Address_Size : constant := 32;
 
    function "+" (Left : Address; Right : Integer) return Address;
    function "+" (Left : Integer; Right : Address) return Address;

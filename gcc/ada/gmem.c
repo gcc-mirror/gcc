@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 2000-2007, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2000-2008, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,6 +49,13 @@
     be able to build the stack backtrace.
 
 */
+
+#ifdef VMS
+#include <string.h>
+#define xstrdup32(S)  strcpy ((__char_ptr32) _malloc32 (strlen (S) + 1), S)
+#else
+#define xstrdup32(S) S
+#endif
 
 #include <stdio.h>
 
@@ -141,8 +148,10 @@ long long __gnat_gmem_initialize (char *dumpname)
 void __gnat_gmem_a2l_initialize (char *exearg)
 {
   /* Resolve the executable filename to use in later invocations of
-     the libaddr2line symbolization service.  */
-  exename = __gnat_locate_exec_on_path (exearg);
+     the libaddr2line symbolization service. Ensure that on VMS
+     exename is allocated in 32 bit memory for compatibility
+     with libaddr2line. */
+  exename = xstrdup32 (__gnat_locate_exec_on_path (exearg));
 }
 
 /* Read next allocation of deallocation information from the GMEM file and
