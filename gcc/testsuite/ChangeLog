@@ -1,3 +1,9 @@
+2008-04-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/torture/fp-int-convert.h: Use TImode type for 
+	x86_64-pc-mingw target.
+	* gcc.dg/titype-1.c: Likewise.
+
 2008-04-09  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_vxworks_kernel):
