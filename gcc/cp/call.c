@@ -4260,7 +4260,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   if (alloc_fn)
     {
       if (!placement)
-	warning (0, "no corresponding deallocation function for `%D'", 
+	warning (0, "no corresponding deallocation function for %qD",
 		 alloc_fn);
       return NULL_TREE;
     }
