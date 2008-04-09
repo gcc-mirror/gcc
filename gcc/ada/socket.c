@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -340,7 +340,12 @@ __gnat_new_socket_set (fd_set *set)
 {
   fd_set *new;
 
+#ifdef VMS
+extern void *__gnat_malloc32 (__SIZE_TYPE__);
+  new = (fd_set *) __gnat_malloc32 (sizeof (fd_set));
+#else
   new = (fd_set *) __gnat_malloc (sizeof (fd_set));
+#endif
 
   if (set)
     memcpy (new, set, sizeof (fd_set));

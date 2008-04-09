@@ -1918,7 +1918,14 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
     {
       if (Nkind (gnat_node) != N_Allocator || !Comes_From_Source (gnat_node))
         Check_No_Implicit_Heap_Alloc (gnat_node);
-      return build_call_1_expr (malloc_decl, gnu_size);
+
+      /* If the allocator size is 32bits but the pointer size is 64bits then
+	 allocate 32bit memory (sometimes necessary on 64bit VMS). Otherwise
+	 default to standard malloc. */
+      if (UI_To_Int (Esize (Etype (gnat_node))) == 32 && POINTER_SIZE == 64)
+        return build_call_1_expr (malloc32_decl, gnu_size);
+      else
+        return build_call_1_expr (malloc_decl, gnu_size);
     }
 }
 

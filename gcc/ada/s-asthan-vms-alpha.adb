@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -545,16 +545,16 @@ package body System.AST_Handling is
       --  from which we can obtain the task and entry number information.
 
       function To_Address is new Ada.Unchecked_Conversion
-        (ST.Task_Id, System.Address);
+        (ST.Task_Id, System.Task_Primitives.Task_Address);
 
    begin
       System.Machine_Code.Asm
-        (Template => "addl $27,0,%0",
+        (Template => "addq $27,0,%0",
          Outputs  => AST_Handler_Data_Ref'Asm_Output ("=r", Handler_Data_Ptr),
          Volatile => True);
 
       System.Machine_Code.Asm
-        (Template => "ldl $27,%0",
+        (Template => "ldq $27,%0",
          Inputs  => Descriptor_Ref'Asm_Input
            ("m", Handler_Data_Ptr.Original_Descriptor_Ref),
          Volatile => True);

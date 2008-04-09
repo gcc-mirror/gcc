@@ -379,7 +379,11 @@ enum standard_datatypes
   /* Null pointer for above type */
   ADT_null_fdesc,
 
+  /* Function declaration nodes for run-time functions for allocating memory.
+     Ada allocators cause calls to these functions to be generated.  Malloc32
+     is used only on 64bit systems needing to allocate 32bit memory. */
   ADT_malloc_decl,
+  ADT_malloc32_decl,
 
   /* Likewise for freeing memory.  */
   ADT_free_decl,
@@ -413,6 +417,7 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define fdesc_type_node gnat_std_decls[(int) ADT_fdesc_type]
 #define null_fdesc_node gnat_std_decls[(int) ADT_null_fdesc]
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
+#define malloc32_decl gnat_std_decls[(int) ADT_malloc32_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
 #define jmpbuf_ptr_type gnat_std_decls[(int) ADT_jmpbuf_ptr_type]

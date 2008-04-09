@@ -584,6 +584,18 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
 				     Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
+  /* malloc32 is a function declaration tree for a function to allocate
+     32bit memory on a 64bit system. Needed only on 64bit VMS.  */
+  malloc32_decl = create_subprog_decl (get_identifier ("__gnat_malloc32"),
+				     NULL_TREE,
+				     build_function_type (ptr_void_type_node,
+							  tree_cons (NULL_TREE,
+								     sizetype,
+								     endlink)),
+				     NULL_TREE, false, true, true, NULL,
+				     Empty);
+  DECL_IS_MALLOC (malloc32_decl) = 1;
+
   /* free is a function declaration tree for a function to free memory.  */
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,

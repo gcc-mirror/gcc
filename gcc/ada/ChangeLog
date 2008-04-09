@@ -1,3 +1,50 @@
+2008-04-09  Doug Rupp  <rupp@adacore.com>
+
+	* decl.c (validate_size): Set minimum size for fat pointers same as
+	access types. Code clean ups.
+
+	* gmem.c (xstrdup32): New macro for 32bit dup on VMS, noop otherwise
+	(__gnat_gmem_a2l_initialize): Dup exename into 32 bit memory on VMS
+
+	* s-auxdec-vms_64.ads, s-auxdec.ads (Short_Address_Size): New constant
+
+	* s-crtl.ads (malloc32) New function, alias for malloc
+	(realloc32) New function, alias for realloc
+
+	* socket.c (__gnat_new_socket_set): Malloc fd_set in 32 bits on VMS
+
+	* utils2.c (build_call_alloc_dealloc): Return call to short malloc if
+	allocator size is 32 and default pointer size is 64.
+	(find_common_type): Document assumption on t1/t2 vs lhs/rhs. Force use of
+	lhs type if smaller, whatever the modes.
+
+	* gigi.h (malloc32_decl): New macro definition
+
+	* utils.c (init_gigi_decls): New malloc32_decl
+	Various code clean ups.
+
+	* s-asthan-vms-alpha.adb (Process_AST.To_Address): Unchecked convert to
+	Task_Address vice System.Address.
+
+	* s-taspri-vms.ads: Import System.Aux_DEC
+	(Task_Address): New subtype of System.Aux_DEC.Short_Address
+	(Task_Address_Size): New constant size of System.Aux_DEC.Short_Address
+
+	* s-asthan-vms-alpha.adb (Process_AST.To_Address): Unchecked convert to
+	Task_Address vice System.Address.
+
+	* s-inmaop-vms.adb: Import System.Task_Primitives
+	(To_Address): Unchecked convert to Task_Address vice System.Address
+
+	* s-taprop-vms.adb (Timed_Delay): Always set the timer even if delay
+	expires now.
+	(To_Task_ID) Unchecked convert from Task_Adddress vice System.Address
+	(To_Address) Unchecked convert to Task_Address vice System.Address
+
+	* s-tpopde-vms.adb: Remove unnecessary warning pragmas
+
+	* g-socthi-vms.ads: Add 32bit size clauses on socket access types.
+
 2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gigi.h (standard_datatypes): Add ADT_fdesc_type and ADT_null_fdesc.

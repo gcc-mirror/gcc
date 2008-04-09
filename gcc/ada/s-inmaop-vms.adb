@@ -38,6 +38,7 @@ with System.Aux_DEC;
 with System.Parameters;
 with System.Tasking;
 with System.Tasking.Initialization;
+with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with System.Task_Primitives.Operations.DEC;
 
@@ -51,7 +52,8 @@ package body System.Interrupt_Management.Operations is
    use type unsigned_short;
 
    function To_Address is
-     new Ada.Unchecked_Conversion (Task_Id, System.Address);
+     new Ada.Unchecked_Conversion
+       (Task_Id, System.Task_Primitives.Task_Address);
 
    package POP renames System.Task_Primitives.Operations;
 

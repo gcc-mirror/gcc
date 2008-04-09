@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2007, AdaCore                     --
+--                     Copyright (C) 2002-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,6 +151,7 @@ package GNAT.Sockets.Thin is
    --  Socket address
 
    type Sockaddr_Access is access all Sockaddr;
+   for Sockaddr_Access'Size use 32;
    pragma Convention (C, Sockaddr_Access);
    --  Access to socket address
 
@@ -164,6 +165,7 @@ package GNAT.Sockets.Thin is
    --  Internet socket address
 
    type Sockaddr_In_Access is access all Sockaddr_In;
+   for Sockaddr_In_Access'Size use 32;
    pragma Convention (C, Sockaddr_In_Access);
    --  Access to internet socket address
 
@@ -203,6 +205,7 @@ package GNAT.Sockets.Thin is
    --  Host entry
 
    type Hostent_Access is access all Hostent;
+   for Hostent_Access'Size use 32;
    pragma Convention (C, Hostent_Access);
    --  Access to host entry
 
@@ -216,6 +219,7 @@ package GNAT.Sockets.Thin is
    --  Service entry
 
    type Servent_Access is access all Servent;
+   for Servent_Access'Size use 32;
    pragma Convention (C, Servent_Access);
    --  Access to service entry
 
