@@ -190,16 +190,11 @@ proc libstdc++_init { testfile } {
             set cxx [transform "g++"]
             set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
             set includes "-I${srcdir}"
-	    # Guess at the location of the installed locale files.
-	    # (It would be nice if "gcc --print-file-name" could find
-	    # message files, but it cannot.)
-	    set absolute_cxx [which $cxx]
-	    if { $absolute_cxx != "" } {
-		set localedir "[file dirname $absolute_cxx]/../share/locale"
-	    }
-	    set cxxflags "$cxxflags -DLOCALEDIR=\"$localedir\""
         }
     }
+
+    # Always use MO files built by this test harness.
+    set cxxflags "$cxxflags -DLOCALEDIR=\".\""
 
     # If a PCH file is available, use it.  We must delay performing
     # this check until $cxx and such have been initialized because we
@@ -388,6 +383,20 @@ proc v3-build_support { } {
     if { [string first "__GTHREADS" $preprocessed] != -1 } {
 	verbose -log "thread support detected"
 	set v3-threads 1
+    }
+
+    # Try to build the MO files that are used by some of the locale
+    # tests.  If we can't build them, that's OK; it just means that
+    # those tests will fail.
+    foreach lang [list "fr" "de"] {
+	catch {
+	    file mkdir "$lang/LC_MESSAGES"
+	    remote_exec "build" "msgfmt" "-o $lang/LC_MESSAGES/libstdc++.mo $srcdir/../po/$lang.po"
+	    if [is_remote host] {
+		remote_exec "host" "mkdir" "-p $lang/LC_MESSAGES"
+		remote_download "host" "$lang/LC_MESSAGES/libstdc++.mo" "$lang/LC_MESSAGES/libstdc++.mo"
+	    }
+	}
     }
 
     # Build the support objects.

@@ -49,7 +49,7 @@ case ${query} in
     --cxxflags)
       CXXFLAGS_save="-g -O2 -D_GLIBCXX_ASSERT"
       CXXFLAGS_config='@SECTION_FLAGS@ @SECTION_LDFLAGS@ -fmessage-length=0 
- 		      @EXTRA_CXX_FLAGS@ -DLOCALEDIR="@glibcxx_localedir@" '
+ 		      @EXTRA_CXX_FLAGS@ '
       echo ${CXXFLAGS_save} ${CXXFLAGS_config}
       ;;
     --cxxpchflags)
