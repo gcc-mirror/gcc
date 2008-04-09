@@ -2221,11 +2221,21 @@ proc check_effective_target_simulator { } {
     return 0
 }
 
-# Return 1 if the target is a VxWorks RTP.
+# Return 1 if the target is a VxWorks kernel.
 
 proc check_effective_target_vxworks_kernel { } {
     return [check_no_compiler_messages vxworks_kernel assembly {
 	#if !defined __vxworks || defined __RTP__
+	#error NO
+	#endif
+    }]
+}
+
+# Return 1 if the target is a VxWorks RTP.
+
+proc check_effective_target_vxworks_rtp { } {
+    return [check_no_compiler_messages vxworks_rtp assembly {
+	#if !defined __vxworks || !defined __RTP__
 	#error NO
 	#endif
     }]

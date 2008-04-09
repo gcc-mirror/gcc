@@ -1,4 +1,6 @@
-// { dg-do run  }
+// The VxWorks kernel has no implementation of atexit, so local statics
+// are never destroyed. 
+// { dg-do run { xfail vxworks_kernel } }
 int count;
 
 extern "C" void _exit(int);

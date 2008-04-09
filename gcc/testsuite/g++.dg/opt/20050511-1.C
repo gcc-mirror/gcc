@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// The VxWorks kernel headers define their own UINT32
+#if defined __vxworks && !defined __RTP__
+#define UINT32 my_UINT32
+#endif
+
 typedef signed short SINT16 ;
 typedef unsigned long UINT32 ;
 typedef unsigned int UINT ;

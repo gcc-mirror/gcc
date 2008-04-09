@@ -12,6 +12,12 @@
 #define TRUE true
 #endif
 
+// The VxWorks kernel-mode headers define a macro named "OK", which is not
+// ISO-compliant, but is part of the VxWorks API.
+#if defined __vxworks && !defined __RTP__
+#undef OK
+#endif
+
 class Object {
 public:
     Object();

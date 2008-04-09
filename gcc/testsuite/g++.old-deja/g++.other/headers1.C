@@ -44,6 +44,12 @@
 #include <string>
 #include <typeinfo>
 #include <utility>
+// The VxWorks kernel-mode headers define macros named "max" and
+// "min", which is not ISO-compliant, but is part of the VxWorks API.
+#if defined __vxworks && !defined __RTP__
+#undef max
+#undef min
+#endif
 #include <valarray>
 #include <vector>
 
