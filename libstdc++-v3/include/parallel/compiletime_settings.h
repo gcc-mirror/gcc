@@ -73,17 +73,9 @@
  *  __gnu_parallel::parallel_random_shuffle(). */
 #define _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1 0
 #endif
-#ifndef _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB 
+#ifndef _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
 /** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
  *  Consider the size of the TLB for
  *  __gnu_parallel::parallel_random_shuffle(). */
 #define _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB 0
-#endif
-
-#ifndef _GLIBCXX_MULTIWAY_MERGESORT_COPY_LAST
-/** @brief First copy the data, sort it locally, and merge it back
- * (0); or copy it back after everything is done (1).
- *
- *  Recommendation: 0 */
-#define _GLIBCXX_MULTIWAY_MERGESORT_COPY_LAST 0
 #endif

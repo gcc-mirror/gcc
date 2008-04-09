@@ -1,3 +1,29 @@
+2008-04-09  Johannes Singler  <singler@ira.uka.de>
+
+         * include/parallel/multiway_merge.h:
+           Moved decisions to compiletime instead of runtime.
+         * include/parallel/losertree.h:
+           Removed obsolete variants, added variant that uses pointers
+           in the loser tree.
+         * include/parallel/types.h:
+           Remove obsolete settings options from enum.
+         * include/parallel/features.h:
+           Remove obsolete compile-time switches.
+         * include/parallel/compiletime_settings.h:
+           Remove obsolete variant that copies back *after* sorting.
+         * include/parallel/tags.h:
+           Add one new tag for compile-time switch.
+         * include/parallel/merge.h:
+           Adapt to changes in multiway_merge.h.
+         * include/parallel/multiway_mergesort.h:
+           Adapt to changes in multiway_merge.h.
+           Factor out splitting variants.
+           Remove obsolete variant that copies back *after* sorting.
+         * include/parallel/sort.h:
+           Adapt to changes in multiway_mergesort.h.
+         * testsuite/25_algorithms/sort/35588.cc:
+           Added test case from / for PR 35588.
+
 2008-03-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35725
