@@ -2929,7 +2929,11 @@ package body Sem_Ch6 is
       --  Within an instance, the body to inline must be treated as a nested
       --  generic, so that the proper global references are preserved.
 
-      if In_Instance then
+      --  Note that we do not do this at the library level, because it is not
+      --  needed, and furthermore this causes trouble if front end inlining
+      --  is activated (-gnatN).
+
+      if In_Instance and then Scope (Current_Scope) /= Standard_Standard then
          Save_Env (Scope (Current_Scope), Scope (Current_Scope));
          Original_Body := Copy_Generic_Node (N, Empty, True);
       else
@@ -2977,7 +2981,9 @@ package body Sem_Ch6 is
 
       Expander_Mode_Restore;
 
-      if In_Instance then
+      --  Restore environment if previously saved
+
+      if In_Instance and then Scope (Current_Scope) /= Standard_Standard then
          Restore_Env;
       end if;
 
