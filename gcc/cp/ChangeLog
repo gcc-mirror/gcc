@@ -1,3 +1,7 @@
+2008-04-09  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_template_parameter_list): Simplify.
+
 2008-04-07  James E. Wilson  <wilson@tuliptree.org>
 
 	* pt.c (tsubst_copy, case SIZEOF_EXPR): Initialize len.

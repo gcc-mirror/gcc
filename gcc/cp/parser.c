@@ -9303,7 +9303,6 @@ cp_parser_template_parameter_list (cp_parser* parser)
   while (true)
     {
       tree parameter;
-      cp_token *token;
       bool is_non_type;
       bool is_parameter_pack;
 
@@ -9324,10 +9323,8 @@ cp_parser_template_parameter_list (cp_parser* parser)
          parameter_list = chainon (parameter_list, err_parm);
        }
 
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If it's not a `,', we're done.  */
-      if (token->type != CPP_COMMA)
+      /* If the next token is not a `,', we're done.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
 	break;
       /* Otherwise, consume the `,' token.  */
       cp_lexer_consume_token (parser->lexer);
