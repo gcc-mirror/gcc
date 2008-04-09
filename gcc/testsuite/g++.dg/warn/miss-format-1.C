@@ -2,7 +2,8 @@
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
 /* { dg-options "-Wmissing-format-attribute" } */
-/* { dg-error "not declared" "" { target *-*-solaris2.5.1 *-*-solaris2.[5-8] } 24 } */
+/* VxWorks does not provide vscanf, either in kernel or RTP mode.  */
+/* { dg-error "not declared" "" { target *-*-solaris2.5.1 *-*-solaris2.[5-8] *-*-vxworks* } 25 } */
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -21,7 +22,7 @@ bar (const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
-  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" { xfail *-*-solaris2.5.1 *-*-solaris2.[5-8] } } */
+  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" { xfail *-*-solaris2.5.1 *-*-solaris2.[5-8] *-*-vxworks* } } */
   va_end (ap);
 }
 
