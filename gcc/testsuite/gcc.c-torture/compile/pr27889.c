@@ -1,3 +1,5 @@
+/* { dg-require-effective-target trampolines } */
+
 void h(void (*)(void));
 _Complex int g (void)
 {

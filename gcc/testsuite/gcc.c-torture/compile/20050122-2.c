@@ -1,4 +1,6 @@
 /* Related to PR 19484.  */
+/* { dg-require-effective-target trampolines } */
+
 extern void foo (void) __attribute__((noreturn));
 int n;
 

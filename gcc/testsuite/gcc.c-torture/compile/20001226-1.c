@@ -2,6 +2,7 @@
    than 64K.  */
 /* { dg-do assemble } */
 /* { dg-xfail-if "function larger than 64K" { m6811-*-* } { "*" } { "" } } */
+/* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-xfail-if "jump beyond 128K not supported" { xtensa-*-* } { "-O0" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
 
