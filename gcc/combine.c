@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -976,8 +976,18 @@ create_log_links (void)
                      assignments later.  */
                   if (regno >= FIRST_PSEUDO_REGISTER
                       || asm_noperands (PATTERN (use_insn)) < 0)
-                    LOG_LINKS (use_insn) =
-                      alloc_INSN_LIST (insn, LOG_LINKS (use_insn));
+		    {
+		      /* Don't add duplicate links between instructions.  */
+		      rtx links;
+		      for (links = LOG_LINKS (use_insn); links;
+			   links = XEXP (links, 1))
+		        if (insn == XEXP (links, 0))
+			  break;
+
+		      if (!links)
+			LOG_LINKS (use_insn) =
+			  alloc_INSN_LIST (insn, LOG_LINKS (use_insn));
+		    }
                 }
               next_use[regno] = NULL_RTX;
             }

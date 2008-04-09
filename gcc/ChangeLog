@@ -1,3 +1,10 @@
+2008-04-09 Andy Hutchinson <hutchinsonandy@aim.com>
+
+	PR rtl-optimization/34916
+	PR middle-end/35519
+	* combine.c (create_log_links): Do not create duplicate LOG_LINKS
+	between instruction pairs.
+
 2008-04-09  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35821
