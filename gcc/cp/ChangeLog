@@ -1,5 +1,88 @@
 2008-04-09  Volker Reichelt  <v.reichelt@netcologne.de>
 
+	* parser.c (cp_parser_asm_specification_opt): Print CPP_CLOSE_PAREN
+	as `)', not as `('.  Fix quotation.
+	(cp_parser_consume_semicolon_at_end_of_statement): Fix quotation.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_pseudo_destructor_name): Likewise.
+	(cp_parser_new_expression): Likewise.
+	(cp_parser_direct_new_declarator): Likewise.
+	(cp_parser_delete_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_question_colon_clause): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_trait_expr): Likewise.
+	(cp_parser_label_for_labeled_statement): Likewise.
+	(cp_parser_compound_statement): Likewise.
+	(cp_parser_selection_statement): Likewise.
+	(cp_parser_condition): Likewise.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_already_scoped_statement): Likewise.
+	(cp_parser_simple_declaration): Likewise.
+	(cp_parser_linkage_specification): Likewise.
+	(cp_parser_static_assert): Likewise.
+	(cp_parser_decltype): Likewise.
+	(cp_parser_conversion_function_id): Likewise.
+	(cp_parser_operator_function_id): Likewise.
+	(cp_parser_operator): Likewise.
+	(cp_parser_type_parameter): Likewise.
+	(cp_parser_template_id): Likewise.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_explicit_specialization): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_namespace_alias_definition): Likewise.
+	(cp_parser_using_declaration): Likewise.
+	(cp_parser_using_directive): Likewise.
+	(cp_parser_asm_definition): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_ptr_operator): Likewise.
+	(cp_parser_parameter_declaration_clause): Likewise.
+	(cp_parser_initializer_clause): Likewise.
+	(cp_parser_class_specifier): Likewise.
+	(cp_parser_member_specification_opt): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_pure_specifier): Likewise.
+	(cp_parser_constant_initializer): Likewise.
+	(cp_parser_base_clause): Likewise.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_try_block): Likewise.
+	(cp_parser_function_try_block): Likewise.
+	(cp_parser_handler): Likewise.
+	(cp_parser_throw_expression): Likewise.
+	(cp_parser_asm_operand_list): Likewise.
+	(cp_parser_attributes_opt): Likewise.
+	(cp_parser_label_declaration): Likewise.
+	(cp_parser_constructor_declarator_p): Likewise.
+	(cp_parser_template_declaration_after_export): Likewise.
+	(cp_parser_single_declaration): Likewise.
+	(cp_parser_objc_message_expression): Likewise.
+	(cp_parser_objc_message_args): Likewise.
+	(cp_parser_objc_encode_expression): Likewise.
+	(cp_parser_objc_defs_expression): Likewise.
+	(cp_parser_objc_protocol_expression): Likewise.
+	(cp_parser_objc_selector_expression): Likewise.
+	(cp_parser_objc_protocol_refs_opt): Likewise.
+	(cp_parser_objc_typename): Likewise.
+	(cp_parser_objc_method_keyword_params): Likewise.
+	(cp_parser_objc_superclass_or_category): Likewise.
+	(cp_parser_objc_try_catch_finally_statement): Likewise.
+	(cp_parser_objc_synchronized_statement): Likewise.
+	(cp_parser_objc_throw_statement): Likewise.
+	(cp_parser_omp_var_list_no_open): Likewise.
+	(cp_parser_omp_clause_default): Likewise.
+	(cp_parser_omp_clause_if): Likewise.
+	(cp_parser_omp_clause_num_threads): Likewise.
+	(cp_parser_omp_clause_reduction): Likewise.
+	(cp_parser_omp_clause_schedule): Likewise.
+	(cp_parser_omp_critical): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_sections_scope): Likewise.
+
 	* parser.c (cp_parser_template_parameter_list): Simplify.
 
 2008-04-07  James E. Wilson  <wilson@tuliptree.org>
