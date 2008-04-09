@@ -1,3 +1,9 @@
+2008-04-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/PR28690
+	* explow.c (break_out_memory_refs): Use simplify_gen_binary rather
+	than gen_rtx_fmt_ee to perform more canonicalizations.
+
 2008-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR driver/35665
