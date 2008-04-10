@@ -53,6 +53,10 @@
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <cstdatomic>
+#endif
+
 namespace __gnu_test
 {
   using __gnu_cxx::typelist::node;
@@ -259,6 +263,88 @@ namespace __gnu_test
       typedef typename append<set_typelist, unordered_set_typelist>::type a2;
       typedef typename append<a1, a2>::type type;
     };
+
+  // A typelist of all integral types.
+  struct integral_types
+  {
+    typedef bool 		a1;
+    typedef char 		a2;
+    typedef signed char 	a3;
+    typedef unsigned char 	a4;
+    typedef short 		a5;
+    typedef unsigned short 	a6;
+    typedef int 		a7;
+    typedef unsigned int 	a8;
+    typedef long 		a9;
+    typedef unsigned long 	a10;
+    typedef long long 		a11;
+    typedef unsigned long long 	a12;
+    typedef wchar_t 		a13;
+    // typedef char16_t 		a14;
+    // typedef char16_t 		a15;
+
+    typedef node<_GLIBCXX_TYPELIST_CHAIN13(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
+					   a10, a11, a12, a13)> type;
+  };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename Tp>
+    struct atomics
+    {
+      typedef Tp			value_type;
+      typedef std::atomic<value_type>	type;
+    };
+
+  typedef transform<integral_types::type, atomics>::type atomics_tl;
+#endif
+
+  // Generator to test assignment operator.
+  struct assignable
+  {
+    template<typename _T>
+      void 
+      operator()()
+      {
+        _T v1;
+        _T v2;
+        v1 = v2;
+      }
+  };
+
+  // Generator to test default constructor.
+  struct default_constructible
+  {
+    template<typename _T>
+      void 
+      operator()()
+      {
+        _T v;
+      }
+  };
+
+  // Generator to test copy constructor.
+  struct copy_constructible
+  {
+    template<typename _T>
+      void 
+      operator()()
+      {
+        _T v1;
+        _T v2(v1);
+      }
+  };
+
+  // Generator to test explicit value constructor.
+  struct explicit_value_constructible
+  {
+    template<typename _Ttype, typename _Tvalue>
+      void 
+      operator()()
+      {
+        _Tvalue a;
+	_Ttype v(a);
+      }
+  };
 
 } // namespace __gnu_test
 

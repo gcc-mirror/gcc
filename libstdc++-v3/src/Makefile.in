@@ -50,6 +50,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
+	$(top_srcdir)/../config/proginstall.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
@@ -69,18 +70,18 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
-	mt_allocator.cc codecvt.cc compatibility.cc complex_io.cc \
-	ctype.cc date_time.cc debug.cc functexcept.cc hash.cc \
-	hash_c++0x.cc globals_io.cc hashtable.cc hashtable_c++0x.cc \
-	ios.cc ios_failure.cc ios_init.cc ios_locale.cc limits.cc \
-	list.cc debug_list.cc locale.cc locale_init.cc \
-	locale_facets.cc localename.cc stdexcept.cc strstream.cc \
-	system_error.cc tree.cc allocator-inst.cc concept-inst.cc \
-	fstream-inst.cc ext-inst.cc ios-inst.cc iostream-inst.cc \
-	istream-inst.cc istream.cc locale-inst.cc misc-inst.cc \
-	ostream-inst.cc sstream-inst.cc streambuf-inst.cc streambuf.cc \
-	string-inst.cc valarray-inst.cc wlocale-inst.cc \
+am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
+	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
+	complex_io.cc ctype.cc date_time.cc debug.cc functexcept.cc \
+	hash.cc hash_c++0x.cc globals_io.cc hashtable.cc \
+	hashtable_c++0x.cc ios.cc ios_failure.cc ios_init.cc \
+	ios_locale.cc limits.cc list.cc debug_list.cc locale.cc \
+	locale_init.cc locale_facets.cc localename.cc stdexcept.cc \
+	strstream.cc system_error.cc tree.cc allocator-inst.cc \
+	concept-inst.cc fstream-inst.cc ext-inst.cc ios-inst.cc \
+	iostream-inst.cc istream-inst.cc istream.cc locale-inst.cc \
+	misc-inst.cc ostream-inst.cc sstream-inst.cc streambuf-inst.cc \
+	streambuf.cc string-inst.cc valarray-inst.cc wlocale-inst.cc \
 	wstring-inst.cc atomicity.cc codecvt_members.cc \
 	collate_members.cc ctype_members.cc messages_members.cc \
 	monetary_members.cc numeric_members.cc time_members.cc \
@@ -94,19 +95,19 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 @ENABLE_PARALLEL_TRUE@	parallel_settings.lo
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
-am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
-	codecvt.lo compatibility.lo complex_io.lo ctype.lo \
-	date_time.lo debug.lo functexcept.lo hash.lo hash_c++0x.lo \
-	globals_io.lo hashtable.lo hashtable_c++0x.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
-	debug_list.lo locale.lo locale_init.lo locale_facets.lo \
-	localename.lo stdexcept.lo strstream.lo system_error.lo \
-	tree.lo allocator-inst.lo concept-inst.lo fstream-inst.lo \
-	ext-inst.lo ios-inst.lo iostream-inst.lo istream-inst.lo \
-	istream.lo locale-inst.lo misc-inst.lo ostream-inst.lo \
-	sstream-inst.lo streambuf-inst.lo streambuf.lo string-inst.lo \
-	valarray-inst.lo wlocale-inst.lo wstring-inst.lo \
-	$(am__objects_1) $(am__objects_4)
+am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
+	mt_allocator.lo codecvt.lo compatibility.lo complex_io.lo \
+	ctype.lo date_time.lo debug.lo functexcept.lo hash.lo \
+	hash_c++0x.lo globals_io.lo hashtable.lo hashtable_c++0x.lo \
+	ios.lo ios_failure.lo ios_init.lo ios_locale.lo limits.lo \
+	list.lo debug_list.lo locale.lo locale_init.lo \
+	locale_facets.lo localename.lo stdexcept.lo strstream.lo \
+	system_error.lo tree.lo allocator-inst.lo concept-inst.lo \
+	fstream-inst.lo ext-inst.lo ios-inst.lo iostream-inst.lo \
+	istream-inst.lo istream.lo locale-inst.lo misc-inst.lo \
+	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
+	string-inst.lo valarray-inst.lo wlocale-inst.lo \
+	wstring-inst.lo $(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -367,6 +368,7 @@ host_sources_extra = \
 
 # Sources present in the src directory.
 sources = \
+	atomic.cc \
 	bitmap_allocator.cc \
 	pool_allocator.cc \
 	mt_allocator.cc \
@@ -838,6 +840,11 @@ date_time.lo: date_time.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 date_time.o: date_time.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+atomic.lo: atomic.cc
+	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
+atomic.o: atomic.cc
+	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.

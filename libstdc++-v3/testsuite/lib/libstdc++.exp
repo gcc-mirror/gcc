@@ -443,12 +443,13 @@ proc v3_target_compile_as_c { source dest type options } {
 	set includestarget "${includesbase}/${machine}"
 	set cc_final [concat $cc_final "-I$includesbase -I$includestarget"]
 
-        set libsup "${comp_base_dir}/lib"
+        set libdir "-L${comp_base_dir}/lib"
     } else {
-        set libsup "${blddir}/libsupc++/.libs"
+        set libdir "-L${blddir}/libsupc++/.libs"
+	set libdir [concat $libdir "-L${blddir}/src/.libs"]
     }
 
-    set cc_final [concat $cc_final "-L$libsup"]
+    set cc_final [concat $cc_final "$libdir"]
 
     lappend options "compiler=$cc_final"
     lappend options "timeout=600"

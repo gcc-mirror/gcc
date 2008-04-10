@@ -1,7 +1,7 @@
 // Predefined symbols and macros -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007 Free Software Foundation, Inc.
+// 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -214,6 +214,20 @@ namespace std
     inline namespace _6 { }
   }
 }
+#endif
+
+// Defines for C compatibility. In particular, define extern "C"
+// linkage only when using  C++, same with namespaces.
+#if __cplusplus
+# define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
+# define _GLIBCXX_END_EXTERN_C }
+#else
+# define _GLIBCXX_BEGIN_EXTERN_C
+# define _GLIBCXX_END_EXTERN_C
+# undef _GLIBCXX_BEGIN_NAMESPACE
+# undef _GLIBCXX_END_NAMESPACE
+# define _GLIBCXX_BEGIN_NAMESPACE(X) 
+# define _GLIBCXX_END_NAMESPACE 
 #endif
 
 // Define if compatibility should be provided for -mlong-double-64.
