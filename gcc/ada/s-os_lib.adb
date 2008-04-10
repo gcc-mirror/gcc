@@ -293,7 +293,7 @@ package body System.OS_Lib is
       --  Internal exception raised to signal error in copy
 
       function Build_Path (Dir : String; File : String) return String;
-      --  Returns pathname Dir catenated with File adding the directory
+      --  Returns pathname Dir concatenated with File adding the directory
       --  separator only if needed.
 
       procedure Copy (From, To : File_Descriptor);
@@ -1833,7 +1833,7 @@ package body System.OS_Lib is
 
       --  First, convert VMS file spec to Unix file spec.
       --  If Name is not in VMS syntax, then this is equivalent
-      --  to put Name at the begining of Path_Buffer.
+      --  to put Name at the beginning of Path_Buffer.
 
       VMS_Conversion : begin
          The_Name (1 .. Name'Length) := Name;

@@ -39,7 +39,7 @@ package System.Program_Info is
 
    function Default_Task_Stack return Integer;
    --  The default stack size for each created thread.  This default value
-   --  can be overriden on a per-task basis by the language-defined
+   --  can be overridden on a per-task basis by the language-defined
    --  Storage_Size pragma.
 
 end System.Program_Info;

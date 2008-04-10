@@ -414,7 +414,7 @@ package System.Regpat is
    --  approach, in addition to the improved efficiency, is that the same
    --  Pattern_Matcher variable can be used to hold the compiled code for
    --  several different regular expressions by setting a size that is large
-   --  enough to accomodate all possibilities.
+   --  enough to accommodate all possibilities.
    --
    --  In this version of the procedure call, the actual required code size is
    --  returned. Also if Matcher.Size is zero on entry, then the resulting code

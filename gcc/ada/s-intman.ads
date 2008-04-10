@@ -42,7 +42,7 @@
 --  Interrupt_ID into the visible part of this package. The type Interrupt_ID
 --  is used to derive the type in Ada.Interrupts, and adding more operations
 --  to that type would be illegal according to the Ada Reference Manual. This
---  is the reason why the signals sets are implemeneted using visible arrays
+--  is the reason why the signals sets are implemented using visible arrays
 --  rather than functions.
 
 with System.OS_Interface;

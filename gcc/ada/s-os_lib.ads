@@ -65,7 +65,7 @@ package System.OS_Lib is
    -----------------------
 
    --  These are reexported from package Strings (which was introduced to
-   --  avoid different packages declarting different types unnecessarily).
+   --  avoid different packages declaring different types unnecessarily).
    --  See package System.Strings for details.
 
    subtype String_Access is Strings.String_Access;
@@ -875,7 +875,7 @@ private
    --  bootstrap path problems. To be changed later ???
 
    Invalid_Time : constant OS_Time := -1;
-   --  This value should match the return valud by __gnat_file_time_*
+   --  This value should match the return value from __gnat_file_time_*
 
    pragma Inline ("<");
    pragma Inline (">");

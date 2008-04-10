@@ -136,10 +136,10 @@ package body System.Regpat is
       --  Matches after or before a word
 
       BOL,        -- no        Match "" at beginning of line
-      MBOL,       -- no        Same, assuming mutiline (match after \n)
+      MBOL,       -- no        Same, assuming multiline (match after \n)
       SBOL,       -- no        Same, assuming single line (don't match at \n)
       EOL,        -- no        Match "" at end of line
-      MEOL,       -- no        Same, assuming mutiline (match before \n)
+      MEOL,       -- no        Same, assuming multiline (match before \n)
       SEOL,       -- no        Same, assuming single line (don't match at \n)
 
       BOUND,      -- no        Match "" at any word boundary
@@ -386,7 +386,7 @@ package body System.Regpat is
       function  Emit_Node (Op : Opcode) return Pointer;
       --  If code-generation is enabled, Emit_Node outputs the
       --  opcode Op and reserves space for a pointer to the next node.
-      --  Return value is the location of new opcode, ie old Emit_Ptr.
+      --  Return value is the location of new opcode, i.e. old Emit_Ptr.
 
       procedure Emit_Natural (IP : Pointer; N : Natural);
       --  Split N on two characters at position IP
@@ -449,7 +449,7 @@ package body System.Regpat is
       --  Link_Tail sets the next-pointer at the end of a node chain
 
       procedure Link_Operand_Tail (P, Val : Pointer);
-      --  Link_Tail on operand of first argument; nop if operandless
+      --  Link_Tail on operand of first argument; noop if operand-less
 
       function  Next_Instruction (P : Pointer) return Pointer;
       --  Dig the "next" pointer out of a node
@@ -460,7 +460,7 @@ package body System.Regpat is
 
       function Is_Curly_Operator (IP : Natural) return Boolean;
       --  Return True if IP is looking at a '{' that is the beginning
-      --  of a curly operator, ie it matches {\d+,?\d*}
+      --  of a curly operator, i.e. it matches {\d+,?\d*}
 
       function Is_Mult (IP : Natural) return Boolean;
       --  Return True if C is a regexp multiplier: '+', '*' or '?'
@@ -484,8 +484,8 @@ package body System.Regpat is
       --  Parse_Literal encodes a string of characters to be matched exactly
 
       function Parse_Posix_Character_Class return Std_Class;
-      --  Parse a posic character class, like [:alpha:] or [:^alpha:].
-      --  The called is suppoed to absorbe the opening [.
+      --  Parse a posix character class, like [:alpha:] or [:^alpha:].
+      --  The caller is supposed to absorb the opening [.
 
       pragma Inline (Is_Mult);
       pragma Inline (Emit_Natural);

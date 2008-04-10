@@ -175,7 +175,7 @@ package System.OS_Interface is
    ----------
 
    Time_Slice_Supported : constant Boolean := True;
-   --  Indicates wether time slicing is supported
+   --  Indicates whether time slicing is supported
 
    type timespec is private;
 
@@ -284,9 +284,9 @@ package System.OS_Interface is
    --  No alternate signal stack is used on this platform
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target. This allows
-   --  us to share s-osinte.adb between all the FSU run time. Note that this
-   --  value can only be true if pthread_t has a complete definition that
+   --  Indicates whether the stack base is available on this target. This
+   --  allows us to share s-osinte.adb between all the FSU run time. Note that
+   --  this value can only be true if pthread_t has a complete definition that
    --  corresponds exactly to the C header files.
 
    function Get_Stack_Base (thread : pthread_t) return System.Address;

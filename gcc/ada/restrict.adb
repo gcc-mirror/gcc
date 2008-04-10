@@ -172,9 +172,9 @@ package body Restrict is
                   end if;
                end loop;
 
-               --  If not predefied unit, then one special check still remains.
-               --  GNAT.Current_Exception is not allowed if we have restriction
-               --  No_Exception_Propagation active.
+               --  If not predefined unit, then one special check still
+               --  remains. GNAT.Current_Exception is not allowed if we have
+               --  restriction No_Exception_Propagation active.
 
             else
                if Name_Buffer (1 .. 8) = "g-curexc" then

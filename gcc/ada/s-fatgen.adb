@@ -54,7 +54,7 @@ package body System.Fat_Gen is
    Invrad : constant T := 1.0 / Rad;
 
    subtype Expbits is Integer range 0 .. 6;
-   --  2 ** (2 ** 7) might overflow.  how big can radix-16 exponents get?
+   --  2 ** (2 ** 7) might overflow.  How big can radix-16 exponents get?
 
    Log_Power : constant array (Expbits) of Integer := (1, 2, 4, 8, 16, 32, 64);
 
@@ -569,7 +569,7 @@ package body System.Fat_Gen is
          return X;
       end if;
 
-      --  Nonzero x. essentially, just multiply repeatedly by Rad ** (+-2**n)
+      --  Nonzero x essentially, just multiply repeatedly by Rad ** (+-2**n)
 
       declare
          Y  : T  := X;
@@ -660,7 +660,7 @@ package body System.Fat_Gen is
          --  since the exponent is going to be reduced.
 
          --  Note that X_Frac has the same sign as X, so if X_Frac is -0.5,
-         --  then we know that we have a ngeative number (and hence a
+         --  then we know that we have a negative number (and hence a
          --  negative power of 2).
 
          if X_Frac = -0.5 then
@@ -809,14 +809,14 @@ package body System.Fat_Gen is
       --  entire floating-point value. Do not take into account excessive
       --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
       --  bits. In general, the exponent field cannot be larger than 15 bits,
-      --  even for 128-bit floating-poin t types, so the final format size
+      --  even for 128-bit floating-point types, so the final format size
       --  won't be larger than T'Mantissa + 16.
 
       type Float_Rep is
          array (Rep_Index range 0 .. Rep_Index (Rep_Words - 1)) of Float_Word;
 
       pragma Suppress_Initialization (Float_Rep);
-      --  This pragma supresses the generation of an initialization procedure
+      --  This pragma suppresses the generation of an initialization procedure
       --  for type Float_Rep when operating in Initialize/Normalize_Scalars
       --  mode. This is not just a matter of efficiency, but of functionality,
       --  since Valid has a pragma Inline_Always, which is not permitted if
@@ -873,8 +873,8 @@ package body System.Fat_Gen is
    begin
       if T'Denorm then
 
-         --  All denormalized numbers are valid, so only invalid numbers are
-         --  overflows and NaN's, both with exponent = Emax + 1.
+         --  All denormalized numbers are valid, so the only invalid numbers
+         --  are overflows and NaNs, both with exponent = Emax + 1.
 
          return E /= IEEE_Emax + 1;
 

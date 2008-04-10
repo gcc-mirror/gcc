@@ -44,7 +44,7 @@
 --  Note : Direct calls to sigaction, sigprocmask, pthread_sigsetmask or any
 --  other low-level interface that changes the interrupt action or
 --  interrupt mask needs a careful thought.
---  One may acheive the effect of system calls first masking RTS blocked
+--  One may achieve the effect of system calls first masking RTS blocked
 --  (by calling Block_Interrupt) for the interrupt under consideration.
 --  This will make all the tasks in RTS blocked for the Interrupt.
 
@@ -224,7 +224,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True means
    --  we want to detach the current handler regardless of the previous
-   --  handler's binding status (ie. do not care if it is a dynamic or static
+   --  handler's binding status (i.e. do not care if it is a dynamic or static
    --  handler).
 
    --  This option is needed so that during the finalization of a PO, we can
@@ -342,7 +342,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True means
    --  we want to detach the current handler regardless of the previous
-   --  handler's binding status (ie. do not care if it is a dynamic or static
+   --  handler's binding status (i.e. do not care if it is a dynamic or static
    --  handler).
 
    --  This option is needed so that during the finalization of a PO, we can
@@ -705,7 +705,7 @@ package body System.Interrupts is
          if not Blocked (Interrupt) then
 
             --  Mask this task for the given Interrupt so that all tasks
-            --  are masked for the Interrupt and the actuall delivery of the
+            --  are masked for the Interrupt and the actual delivery of the
             --  Interrupt will be caught using "sigwait" by the
             --  corresponding Server_Task.
 
@@ -867,7 +867,7 @@ package body System.Interrupts is
               "dynamic Handler";
          end if;
 
-         --  The interrupt should no longer be ingnored if
+         --  The interrupt should no longer be ignored if
          --  it was ever ignored.
 
          Ignored (Interrupt) := False;
@@ -958,17 +958,17 @@ package body System.Interrupts is
 
       --  This sigwaiting is needed so that we make sure a Server_Task is
       --  out of its own sigwait state. This extra synchronization is
-      --  necessary to prevent following senarios.
+      --  necessary to prevent following scenarios.
 
       --   1) Interrupt_Manager sends an Abort_Task_Interrupt to the
       --      Server_Task then changes its own interrupt mask (OS level).
       --      If an interrupt (corresponding to the Server_Task) arrives
-      --      in the nean time we have the Interrupt_Manager umnasked and
+      --      in the mean time we have the Interrupt_Manager unmasked and
       --      the Server_Task waiting on sigwait.
 
       --   2) For unbinding handler, we install a default action in the
       --      Interrupt_Manager. POSIX.1c states that the result of using
-      --      "sigwait" and "sigaction" simaltaneously on the same interrupt
+      --      "sigwait" and "sigaction" simultaneously on the same interrupt
       --      is undefined. Therefore, we need to be informed from the
       --      Server_Task of the fact that the Server_Task is out of its
       --      sigwait stage.
@@ -1029,7 +1029,7 @@ package body System.Interrupts is
                        "A binding for this interrupt is already present";
                   end if;
 
-                  --  The interrupt should no longer be ingnored if
+                  --  The interrupt should no longer be ignored if
                   --  it was ever ignored.
 
                   Ignored (Interrupt) := False;
@@ -1067,7 +1067,7 @@ package body System.Interrupts is
                      if not Is_Reserved (J) then
                         if User_Entry (J).T = T then
 
-                           --  The interrupt should no longer be ingnored if
+                           --  The interrupt should no longer be ignored if
                            --  it was ever ignored.
 
                            Ignored (J) := False;
@@ -1301,7 +1301,7 @@ package body System.Interrupts is
             --  (Abort_Task_Interrupt) from the Interrupt_Manager for unbinding
             --  a Procedure Handler or an Entry. Or it could be a wake up
             --  from status change (Unblocked -> Blocked). If that is not
-            --  the case, we should exceute the attached Procedure or Entry.
+            --  the case, we should execute the attached Procedure or Entry.
 
             Self_ID.Common.State := Interrupt_Server_Blocked_On_Event_Flag;
             POP.Unlock (Self_ID);

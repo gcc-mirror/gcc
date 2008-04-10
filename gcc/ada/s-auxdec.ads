@@ -48,7 +48,7 @@ package System.Aux_DEC is
    --  name Short_Address is used for the short address form. To avoid
    --  difficulties (in regression tests and elsewhere) with units that
    --  reference Short_Address, it is provided for other targets as a
-   --  synonum for the normal Address type, and, as in the case where
+   --  synonym for the normal Address type, and, as in the case where
    --  the lengths are different, Address and Short_Address can be
    --  freely inter-converted.
 

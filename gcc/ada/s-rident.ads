@@ -191,7 +191,7 @@ package System.Rident is
    --  Boolean restrictions that are not checked for partition consistency
    --  and that thus apply only to the current unit. Note that for these
    --  restrictions, the compiler does not apply restrictions found in
-   --  with'ed units, parent specs etc to the main unit.
+   --  with'ed units, parent specs etc. to the main unit.
 
    subtype All_Parameter_Restrictions is
      Restriction_Id range
@@ -305,7 +305,7 @@ package System.Rident is
    ----------------------------------
 
    type Profile_Name is (Ravenscar, Restricted);
-   --  Names of recognized pfofiles
+   --  Names of recognized profiles
 
    type Profile_Data is record
       Set : Restriction_Flags;

@@ -232,7 +232,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True
    --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
+   --  previous handler's binding status (i.e. do not care if it is a
    --  dynamic or static handler).
 
    --  This option is needed so that during the finalization of a PO, we
@@ -342,7 +342,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True
    --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
+   --  previous handler's binding status (i.e. do not care if it is a
    --  dynamic or static handler).
 
    --  This option is needed so that during the finalization of a PO, we
@@ -616,7 +616,7 @@ package body System.Interrupts is
 
    --  Each Interrupt_Server_Task has an associated binary semaphore
    --  on which it pends once it's been started.  This routine determines
-   --  The appropriate semaphore and and issues a semGive call, waking
+   --  The appropriate semaphore and issues a semGive call, waking
    --  the server task.  When a handler is unbound,
    --  System.Interrupts.Unbind_Handler issues a semFlush, and the
    --  server task deletes its semaphore and terminates.

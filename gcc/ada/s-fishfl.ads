@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains an instantiation of the floating-point attribute
---  runtime routines for IEEE short float. This is used on VMS targest where
+--  runtime routines for IEEE short float. This is used on VMS targets where
 --  we can't just use Float, since this may have been mapped to Vax_Float
 --  using a Float_Representation configuration pragma.
 
@@ -44,7 +44,7 @@ package System.Fat_IEEE_Short_Float is
    type Fat_IEEE_Short is digits 6;
    pragma Float_Representation (IEEE_Float, Fat_IEEE_Short);
 
-   --  Note the only entity from this package that is acccessed by Rtsfind
+   --  Note the only entity from this package that is accessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.

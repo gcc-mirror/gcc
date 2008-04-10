@@ -159,7 +159,7 @@ package body System.Img_Char is
             end;
          end if;
 
-      --  Normal characters yield the character enlosed in quotes (RM 3.5(32))
+      --  Normal characters yield the character enclosed in quotes (RM 3.5(32))
 
       else
          S (1) := ''';

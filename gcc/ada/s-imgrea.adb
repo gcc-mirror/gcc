@@ -87,7 +87,7 @@ package body System.Img_Real is
       pragma Assert (S'First = 1);
 
    begin
-      --  Decide wether a blank should be prepended before the call to
+      --  Decide whether a blank should be prepended before the call to
       --  Set_Image_Real. We generate a blank for positive values, and
       --  also for positive zeroes. For negative zeroes, we generate a
       --  space only if Signed_Zeroes is True (the RM only permits the

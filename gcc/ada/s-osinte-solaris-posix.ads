@@ -185,7 +185,7 @@ package System.OS_Interface is
    ----------
 
    Time_Slice_Supported : constant Boolean := True;
-   --  Indicates wether time slicing is supported
+   --  Indicates whether time slicing is supported
 
    type timespec is private;
 

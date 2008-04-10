@@ -88,7 +88,7 @@ package Repinfo is
    --    which contains the Size (more accurately the Object_SIze) value
    --    for the type or subtype.
 
-   --    For E_Component and E_Distriminant entities, the Esize (size
+   --    For E_Component and E_Discriminant entities, the Esize (size
    --    of component) and Component_Bit_Offset fields. Note that gigi
    --    does not (yet ???) back annotate Normalized_Position/First_Bit.
 
@@ -156,12 +156,12 @@ package Repinfo is
    Truth_Or_Expr    : constant TCode := 19; -- Boolean or               2
    Truth_Xor_Expr   : constant TCode := 20; -- Boolean xor              2
    Truth_Not_Expr   : constant TCode := 21; -- Boolean not              1
-   Lt_Expr          : constant TCode := 22; -- comparision <            2
-   Le_Expr          : constant TCode := 23; -- comparision <=           2
-   Gt_Expr          : constant TCode := 24; -- comparision >            2
-   Ge_Expr          : constant TCode := 25; -- comparision >=           2
-   Eq_Expr          : constant TCode := 26; -- comparision =            2
-   Ne_Expr          : constant TCode := 27; -- comparision /=           2
+   Lt_Expr          : constant TCode := 22; -- comparison <             2
+   Le_Expr          : constant TCode := 23; -- comparison <=            2
+   Gt_Expr          : constant TCode := 24; -- comparison >             2
+   Ge_Expr          : constant TCode := 25; -- comparison >=            2
+   Eq_Expr          : constant TCode := 26; -- comparison =             2
+   Ne_Expr          : constant TCode := 27; -- comparison /=            2
    Bit_And_Expr     : constant TCode := 28; -- Binary and               2
 
    --  The following entry is used to represent a discriminant value in
@@ -188,7 +188,7 @@ package Repinfo is
    --  => Discrim_Val, Op1 => discriminant_number).
 
    function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref;
-   --  Creates a refrerence to the discriminant whose entity is Discr
+   --  Creates a reference to the discriminant whose entity is Discr
 
    --------------------------------------------------------
    -- Front-End Interface for Dynamic Size/Offset Values --
@@ -223,7 +223,7 @@ package Repinfo is
 
    --  In the case of components, if the location of the component is static,
    --  then all four fields (Component_Bit_Offset, Normalized_Position, Esize,
-   --  and Normalized_First_Bit) are set to appropraite values. In the case of
+   --  and Normalized_First_Bit) are set to appropriate values. In the case of
    --  a non-static component location, Component_Bit_Offset is not used and
    --  is left set to Unknown. Normalized_Position and Normalized_First_Bit
    --  are set appropriately.
@@ -258,7 +258,7 @@ package Repinfo is
    --  Create_Dynamic_SO_Ref. The approach is that the front end makes
    --  the necessary Create_Dynamic_SO_Ref calls to associate the node
    --  and entity id values and the back end makes Get_Dynamic_SO_Ref
-   --  calls to retrive them.
+   --  calls to retrieve them.
 
    --------------------
    -- ASIS_Interface --

@@ -149,7 +149,7 @@ package body System.AST_Handling is
 
    --  Note: When we say it works fine, there is one delicate point, which
    --  is that the code for the AST procedure itself requires the original
-   --  descriptor address.  We handle this by saving the orignal descriptor
+   --  descriptor address.  We handle this by saving the original descriptor
    --  address in this structure and restoring in Process_AST.
 
    type AST_Handler_Data is record
@@ -237,7 +237,7 @@ package body System.AST_Handling is
    --  number of AST instances that can be stored in the buffer. Since
    --  these entries are immediately serviced by the high priority server
    --  task that does the actual entry queuing, it is very unusual to have
-   --  any significant number of entries simulaneously queued.
+   --  any significant number of entries simultaneously queued.
 
    AST_Service_Queue : array (AST_Service_Queue_Index) of AST_Instance;
    pragma Volatile_Components (AST_Service_Queue);

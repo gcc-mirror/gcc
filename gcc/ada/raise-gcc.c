@@ -362,7 +362,7 @@ db_phases (int phases)
    context stack and not the actual call chain.
 
    The ACTION and TTYPES tables remain unchanged, which allows to search them
-   during the propagation phase to determine wether or not the propagated
+   during the propagation phase to determine whether or not the propagated
    exception is handled somewhere. When it is, we only "jump" up once directly
    to the context where the handler will be found. Besides, this allows "break
    exception unhandled" to work also
@@ -811,7 +811,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 
 /* With CHOICE an exception choice representing an "exception - when"
    argument, and PROPAGATED_EXCEPTION a pointer to the currently propagated
-   occurrence, return true iif the latter matches the former, that is, if
+   occurrence, return true if the latter matches the former, that is, if
    PROPAGATED_EXCEPTION is caught by the handling code controlled by CHOICE.
    This takes care of the special Non_Ada_Error case on VMS.  */
 
@@ -1135,7 +1135,7 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   /* If we are going to install a cleanup context, decrement the cleanup
      count.  This is required in a FORCED_UNWINDing phase (for an unhandled
      exception), as this is used from the forced unwinding handler in
-     Ada.Exceptions.Exception_Propagation to decide wether unwinding should
+     Ada.Exceptions.Exception_Propagation to decide whether unwinding should
      proceed further or Unhandled_Exception_Terminate should be called.  */
   if (action.kind == cleanup)
     Adjust_N_Cleanups_For (gnat_exception, -1);

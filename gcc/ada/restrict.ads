@@ -37,7 +37,7 @@ package Restrict is
    --  This variable records restrictions found in any units in the main
    --  extended unit, and in the case of restrictions checked for partition
    --  consistency, restrictions found in any with'ed units, parent specs
-   --  etc, since we may as well check as much as we can at compile time.
+   --  etc., since we may as well check as much as we can at compile time.
    --  These variables should not be referenced directly by clients. Instead
    --  use Check_Restrictions to record a violation of a restriction, and
    --  Restriction_Active to test if a given restriction is active.
@@ -270,7 +270,7 @@ package Restrict is
    function Restricted_Profile return Boolean;
    --  Tests if set of restrictions corresponding to Profile (Restricted) is
    --  currently in effect (set by pragma Profile, or by an appropriate set
-   --  of individual Restrictions pragms). Returns True only if all the
+   --  of individual Restrictions pragmas). Returns True only if all the
    --  required restrictions are set.
 
    procedure Set_Profile_Restrictions
