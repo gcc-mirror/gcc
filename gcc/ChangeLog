@@ -1,3 +1,22 @@
+2008-04-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (absneg): New code iterator.
+	(absnegprefix): New code attribute.
+	(<code><mode>2): Macroize expander from abs<mode>2 and neg<mode>2
+	patterns using absneg code iterator.
+	(<code>tf2): Macroize expander from abstf2 and negtf2 patterns
+	using absneg code iterator.
+	(*<code><mode>2_1): Macroize insn pattern from *abs<mode>2_1 and
+	*neg<mode>2 patterns using absneg code iterator.
+	(*<code>extendsfdf2): Macroize insn pattern from *absextendsfdf2 and
+	*negextendsfdf2 patterns using absneg code iterator.
+	(*<code>extendsfxf2): Macroize insn pattern from *absextendsfxf2 and
+	*negextendsfxf2 patterns using absneg code iterator.
+	(*<code>extendsfdf2): Macroize insn pattern from *absextendsfdf2 and
+	*negextendsfdf2 patterns using absneg code iterator.
+	* config/i386/sse.md (<code><mode>2): Macroize expander from
+	abs<mode>2 and neg<mode>2 patterns using absneg code iterator. 
+
 2008-04-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h: Remove the remains of the recent search

@@ -43,8 +43,10 @@
 (define_mode_attr ssevecsize [(V16QI "b") (V8HI "w") (V4SI "d") (V2DI "q")])
 
 ;; Mapping of the sse5 suffix
-(define_mode_attr ssemodesuffixf4 [(SF "ss") (DF "sd") (V4SF "ps") (V2DF "pd")])
-(define_mode_attr ssemodesuffixf2s [(SF "ss") (DF "sd") (V4SF "ss") (V2DF "sd")])
+(define_mode_attr ssemodesuffixf4 [(SF "ss") (DF "sd")
+				   (V4SF "ps") (V2DF "pd")])
+(define_mode_attr ssemodesuffixf2s [(SF "ss") (DF "sd")
+				    (V4SF "ss") (V2DF "sd")])
 (define_mode_attr ssemodesuffixf2c [(V4SF "s") (V2DF "d")])
 
 ;; Mapping of the max integer size for sse5 rotate immediate constraint
@@ -346,17 +348,12 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "neg<mode>2"
+(define_expand "<code><mode>2"
   [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(neg:SSEMODEF2P (match_operand:SSEMODEF2P 1 "register_operand" "")))]
+	(absneg:SSEMODEF2P
+	  (match_operand:SSEMODEF2P 1 "register_operand" "")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "ix86_expand_fp_absneg_operator (NEG, <MODE>mode, operands); DONE;")
-
-(define_expand "abs<mode>2"
-  [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(abs:SSEMODEF2P (match_operand:SSEMODEF2P 1 "register_operand" "")))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "ix86_expand_fp_absneg_operator (ABS, <MODE>mode, operands); DONE;")
+  "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_expand "<addsub><mode>3"
   [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
