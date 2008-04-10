@@ -27,15 +27,15 @@ namespace std
     ...
   }
 }
-</pre><p>But.... why the elipses?
-</p><p> The elipses in the example above represent additional overloads
+</pre><p>But.... why the ellipses?
+</p><p> The ellipses in the example above represent additional overloads
 required for the parallel version of the function. These additional
 overloads are used to dispatch calls from the ISO C++ function
 signature to the appropriate parallel function (or sequential
 function, if no parallel functions are deemed worthy), based on either
 compile-time or run-time conditions.
 </p><p> Compile-time conditions are referred to as "embarrassingly
-parallel," and are denoted with the appropriate dispatch object, ie
+parallel," and are denoted with the appropriate dispatch object, i.e.,
 one of <code class="code">__gnu_parallel::sequential_tag</code>,
 <code class="code">__gnu_parallel::parallel_tag</code>,
 <code class="code">__gnu_parallel::balanced_tag</code>,
@@ -74,8 +74,6 @@ int main()
   const int threads_wanted = 20;
   omp_set_dynamic(false);
   omp_set_num_threads(threads_wanted);
-  if (omp_get_num_threads() != threads_wanted)
-    abort();
 
   // Do work.
 
@@ -107,7 +105,7 @@ at compile-time.
 See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00446.html" target="_top"><code class="filename">compiletime_settings.h</code></a> and
 See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00505.html" target="_top"><code class="filename">features.h</code></a> for details.
 </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.settings"></a>Run Time Settings and Defaults</h4></div></div></div><p>
-The default parallization strategy, the choice of specific algorithm
+The default parallelization strategy, the choice of specific algorithm
 strategy, the minimum threshold limits for individual parallel
 algorithms, and aspects of the underlying hardware can be specified as
 desired via manipulation
@@ -120,7 +118,7 @@ value of enum <span class="type">__gnu_parallel::_AlgorithmStrategy</span>
 type. Choices
 include: <span class="type">heuristic</span>, <span class="type">force_sequential</span>,
 and <span class="type">force_parallel</span>. The default is
-implementation-deduced, ie <span class="type">heuristic</span>.
+implementation-deduced, i.e. <span class="type">heuristic</span>.
 </p><p>
 Next, the sub-choices for algorithm implementation. Specific
 algorithms like <code class="function">find</code> or <code class="function">sort</code>
@@ -133,7 +131,7 @@ enum <span class="type">__gnu_parallel::_SortAlgorithm</span>: <span class="type
 or <span class="type">QS_BALANCED</span>.
 </p><p>
 Likewise for setting the minimal threshold for algorithm
-paralleization.  Parallelism always incurs some overhead. Thus, it is
+parallelization.  Parallelism always incurs some overhead. Thus, it is
 not helpful to parallelize operations on very small sets of
 data. Because of this, measures are taken to avoid parallelizing below
 a certain, pre-determined threshold. For each algorithm, a minimum

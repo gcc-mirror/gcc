@@ -511,7 +511,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        </para>
        <para> 
 	 This file indicates that the host system can run tests which
-	 incolved multiple threads.
+	 involved multiple threads.
        </para>
      </listitem>
 
@@ -563,7 +563,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
 
    <para>
       We are interested in any strange failures of the testsuite;
-      please email the main libstdc++ mainling list if you see
+      please email the main libstdc++ mailing list if you see
       something odd or have questions.
    </para>
   </sect3>

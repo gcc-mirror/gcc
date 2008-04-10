@@ -110,7 +110,7 @@
    </para>
 
    <para>
-     C++98/03 include files. These are available in the default compilation mode, ie <code>-std=c++98</code> or <code>-std=gnu++98</code>. 
+     C++98/03 include files. These are available in the default compilation mode, i.e. <code>-std=c++98</code> or <code>-std=gnu++98</code>.
    </para>
 
 <table frame='all'>
@@ -149,7 +149,7 @@
 </tgroup>
 </table>
 
-<para>C++0x include files. These are only available in C++0x compilation mode, ie <code>-std=c++0x</code> or <code>-std=gnu++0x</code>. 
+<para>C++0x include files. These are only available in C++0x compilation mode, i.e. <code>-std=c++0x</code> or <code>-std=gnu++0x</code>.
 </para>
 
 <para></para>
@@ -470,7 +470,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 <itemizedlist>
   <listitem><para>std</para>
 <para>The ISO C++ standards specify that "all library entities are defined
-within namespace std." This includes namepaces nested
+within namespace std." This includes namespaces nested
 within <code>namespace std</code>, such as <code>namespace
 std::tr1</code>.
 </para>
@@ -521,7 +521,7 @@ cases where the qualified verbiage becomes unwieldy.)
 
     </sect2>
 
-    <sect2 id="manual.intro.using.namespaces.comp" xreflabel="Using Namepace Composition">
+    <sect2 id="manual.intro.using.namespaces.comp" xreflabel="Using Namespace Composition">
       <title>Using Namespace Composition</title>
 
 <para>

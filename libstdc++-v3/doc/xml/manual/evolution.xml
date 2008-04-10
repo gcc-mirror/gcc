@@ -14,7 +14,7 @@
 <title>API Evolution and Deprecation History</title>
 
 <para>
-A list of user-visible changes, in cronological order
+A list of user-visible changes, in chronological order
 </para>
 
 <sect2 id="api.rel_300" xreflabel="api.rel_300">
@@ -135,7 +135,7 @@ _Alloc_traits</code> have been removed.
 <para>
    Previous versions prior to 3.4 cache allocations in a memory
    pool, instead of passing through to call the global allocation
-   operators (ie, <classname>__gnu_cxx::pool_allocator</classname>).  More
+   operators (i.e., <classname>__gnu_cxx::pool_allocator</classname>).  More
    recent versions default to the
    simpler <classname>__gnu_cxx::new_allocator</classname>.
 </para>

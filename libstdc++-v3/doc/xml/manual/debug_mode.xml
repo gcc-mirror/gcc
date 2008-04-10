@@ -582,7 +582,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   allows release-compiled and debug-compiled code to be linked and
   executed together without causing unpredictable behavior. This
   guarantee minimizes the recompilation that users are required to
-  perform, shortening the detect-compile-debug bughunting cycle
+  perform, shortening the detect-compile-debug bug hunting cycle
   and making the debug mode easier to incorporate into development
   environments by minimizing dependencies.</para>
 

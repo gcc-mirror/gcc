@@ -50,7 +50,7 @@ Literally, a facet is strictly defined:
 <itemizedlist>
   <listitem>
     <para>
-      Dontaining the following public data member:
+      Containing the following public data member:
     </para>
     <para>
       <code>static locale::id id;</code>
@@ -95,13 +95,13 @@ Provides an index for looking up specific facets.
 
 <para>
 The major design challenge is fitting an object-orientated and
-non-global locale design ontop of POSIX and other relevant stanards,
+non-global locale design on top of POSIX and other relevant standards,
 which include the Single Unix (nee X/Open.)
 </para>
 
 <para>
 Because C and earlier versions of POSIX falls down so completely,
-portibility is an issue.
+portability is an issue.
 </para>
 
 </sect2>
@@ -461,7 +461,7 @@ global locale" (emphasis Paolo), that is:
 <programlisting>std::setlocale(LC_ALL, "");</programlisting>
 
 <para>
-  On the other hand, there is *no* viceversa, that is, calling
+  On the other hand, there is *no* vice versa, that is, calling
   setlocale has *no* whatsoever on the C++ locale mechanism, in
   particular on the working of locale(""), which constructs the locale
   object from the environment of the running program, that is, in
@@ -486,7 +486,7 @@ global locale" (emphasis Paolo), that is:
    <listitem>
      <para> 
        Document how named locales error check when filling data
-       members. Ie, a fr_FR locale that doesn't have
+       members. I.e., a fr_FR locale that doesn't have
        numpunct::truename(): does it use "true"? Or is it a blank
        string? What's the convention? 
    </para>
@@ -504,7 +504,7 @@ global locale" (emphasis Paolo), that is:
    <listitem>
      <para> 
        What should non-required facet instantiations do?  If the
-       generic implemenation is provided, then how to end-users
+       generic implementation is provided, then how to end-users
        provide specializations? 
    </para>
    </listitem>

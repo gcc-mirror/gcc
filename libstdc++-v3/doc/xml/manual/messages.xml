@@ -238,7 +238,7 @@ model.
     library locale support is necessary for more than just the
     <code>LC_MESSAGES</code> mask: <code>LC_CTYPE</code> is also
     necessary. To avoid any unpleasantness, all bits of the "C" mask
-    (ie <code>LC_ALL</code>) are set before retrieving messages.
+    (i.e. <code>LC_ALL</code>) are set before retrieving messages.
   </para>
 
   <para>
@@ -377,7 +377,7 @@ void test01()
 	  There are issues with gettext needing the global locale set
 	  to extract a message. This dependence on the global locale
 	  makes the current "gnu" model non MT-safe. Future versions
-	  of glibc, ie glibc 2.3.x will fix this, and the C++ library
+	  of glibc, i.e. glibc 2.3.x will fix this, and the C++ library
 	  bits are already in place.
 	</para>
       </listitem>
@@ -399,7 +399,7 @@ void test01()
 <listitem>
   <para>
     At some point in the near future, std::numpunct will probably use
-    std::messages facilities to implement truename/falename
+    std::messages facilities to implement truename/falsename
     correctly. This is currently not done, but entries in
     libstdc++.pot have already been made for "true" and "false" string
     literals, so all that remains is the std::numpunct coding and the

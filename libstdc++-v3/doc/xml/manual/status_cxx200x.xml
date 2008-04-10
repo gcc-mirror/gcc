@@ -1052,7 +1052,7 @@ particular release.
     </row>
     <row>
       <entry>26.4.7.2</entry>
-      <entry>Function template <code>generate_cannonical</code></entry>
+      <entry>Function template <code>generate_canonical</code></entry>
       <entry></entry>
       <entry></entry>
       <entry>missing</entry>

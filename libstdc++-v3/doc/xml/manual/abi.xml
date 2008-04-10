@@ -99,7 +99,7 @@ given compiler ABI. In a nutshell:
 
 <para>
   To use a specific version of the C++ ABI, one must use a
-  corresponding GNU C++ toolchain (Ie, g++ and libstdc++) that
+  corresponding GNU C++ toolchain (i.e., g++ and libstdc++) that
   implements the C++ ABI in question.
 </para>
 
@@ -183,7 +183,7 @@ release of the series to remain link compatible.
     <para>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
    particular release. Labels are cumulative. If a particular release
-   is not listed, it has the same version labels as the preceeding
+   is not listed, it has the same version labels as the preceding
    release.</para>
 
     <para>This corresponds to the mapfile: gcc/libgcc-std.ver</para>
@@ -252,7 +252,7 @@ release of the series to remain link compatible.
    gcc-3.2.1 release, which has GLIBCPP_3.2.1 for new symbols and
    GLIBCPP_3.2 for symbols that were introduced in the gcc-3.2.0
    release.) If a particular release is not listed, it has the same
-   version labels as the preceeding release.
+   version labels as the preceding release.
    </para>
     <itemizedlist>
     <listitem><para>gcc-3.0.0: (Error, not versioned)</para></listitem>
@@ -737,7 +737,7 @@ class in registers, the compiler will be forced to use memory. See <ulink url="h
   <varlistentry>
 <term><code>namespace std</code></term>
 <listitem><para> Defaults to exporting all symbols in label
-<code>GLIBCXX</code> that do not begin with an underscore, ie
+<code>GLIBCXX</code> that do not begin with an underscore, i.e.,
 <code>__test_func</code> would not be exported by default. Select
 exceptional symbols are allowed to be visible.</para></listitem>
   </varlistentry>
@@ -972,7 +972,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   difficult. In particular, compiler generated constructs such as
   implicit instantiations for templates, typeinfo information, and
   virtual tables all may cause ABI leakage across shared library
-  boundaries. Because of this, mixing C++ ABI's is not recommended at
+  boundaries. Because of this, mixing C++ ABIs is not recommended at
   this time.
 </para>
 

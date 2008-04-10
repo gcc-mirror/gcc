@@ -190,7 +190,7 @@ UTF-16, UTF8, UTF16).
 
 <para>
 For iconv-based implementations, string literals for each of the
-encodings (ie. &quot;UCS-2&quot; and &quot;UTF-8&quot;) are necessary,
+encodings (i.e. &quot;UCS-2&quot; and &quot;UTF-8&quot;) are necessary,
 although for other,
 non-iconv implementations a table of enumerated values or some other
 mechanism may be required.
@@ -218,7 +218,7 @@ mechanism may be required.
 </para></listitem>
 
 <listitem><para>
- Conversion descriptors for both directions of encoding. (ie, both
+ Conversion descriptors for both directions of encoding. (i.e., both
   UCS-2 to UTF-8 and UTF-8 to UCS-2.)
 </para></listitem>
 
@@ -301,7 +301,7 @@ codecvt&lt;char, char, mbstate_t&gt;
 </code>
 </para>
 <para>
-This is a degenerate (ie, does nothing) specialization. Implementing
+This is a degenerate (i.e., does nothing) specialization. Implementing
 this was a piece of cake.
 </para>
 
