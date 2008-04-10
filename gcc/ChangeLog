@@ -1,3 +1,12 @@
+2008-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/35768
+	* pa.md: Define mode iterator P.  Define mode attribute dwc.
+	(dcacheflush): Update pattern to use iterator P and attribute dwc.
+	(icacheflush): Likewise.
+	* pa.h (INITIALIZE_TRAMPOLINE): Use dcacheflushsi/icacheflushsi if
+	!TARGET_64BIT, and dcacheflushdi/icacheflushdi if TARGET_64BIT.
+
 2008-04-11  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.c (spu_init_builtins): Mark builtins as nothrow.
