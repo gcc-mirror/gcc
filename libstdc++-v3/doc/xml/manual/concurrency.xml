@@ -194,7 +194,7 @@ host hardware and operating system.
 <sect1 id="manual.ext.concurrency.impl" xreflabel="Implementation">
   <title>Implementation</title>
   <sect2 id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F">
-    <title>Using Builitin Atomic Functions</title>
+    <title>Using Builtin Atomic Functions</title>
     
 <para>The functions for atomic operations described above are either
 implemented via compiler intrinsics (if the underlying host is
@@ -261,7 +261,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
   <sect2 id="manual.ext.concurrency.impl.thread" xreflabel="Pthread">
     <title>Thread Abstraction</title>
 
-<para>A thin layer above IEEE 1003.1 (ie pthreads) is used to abstract
+<para>A thin layer above IEEE 1003.1 (i.e. pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is
 comprised of one header file that wraps the host's default thread layer with
 a POSIX-like interface.

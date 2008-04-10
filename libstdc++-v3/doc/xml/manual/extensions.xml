@@ -357,7 +357,7 @@ get_temporary_buffer(5, (int*)0);
     <listitem><para><code>is_sorted</code> tests whether or not a range is sorted in
         nondescending order.</para></listitem>
    </itemizedlist>
-<para>25.3.8 (lexigraphical_compare) is extended with
+<para>25.3.8 (lexicographical_compare) is extended with
 </para>
    <programlisting>
    lexicographical_compare_3way(_InputIter1 first1, _InputIter1 last1,
@@ -488,7 +488,7 @@ get_temporary_buffer(5, (int*)0);
 <chapter id="manual.ext.demangle" xreflabel="Demangling">
   <title>Demangling</title>
   <para>
-    Transforming C++ ABI itentifiers (like RTTI symbols) into the
+    Transforming C++ ABI identifiers (like RTTI symbols) into the
     original C++ source identifiers is called
     <quote>demangling.</quote>
   </para>

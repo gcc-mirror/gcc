@@ -240,8 +240,8 @@ else return false.</para></listitem>
   </para>
 
   <para>
-    Where, k =&gt; The constant overhead per node. eg. for list, it is
-    8 bytes, and for map it is 12 bytes. c =&gt; The size of the
+    where k is the constant overhead per node (e.g., for list, it is
+    8 bytes, and for map it is 12 bytes) and c is the size of the
     base type on which the map/list is instantiated. Thus, suppose the
     type1 is int and type2 is double, they are related by the relation
     sizeof(double) == 2*sizeof(int). Thus, all types must have this

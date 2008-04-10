@@ -148,7 +148,7 @@ considered replaced and rewritten.
     then using that to set a value for the <code>NAMESPACE_STD</code>
     macro.  At that point, one is able to use
     <code>NAMESPACE_STD::string</code>, which will evaluate to
-    <code>std::string</code> or <code>::string</code> (ie, in the
+    <code>std::string</code> or <code>::string</code> (i.e., in the
     global namespace on systems that do not put <code>string</code> in
     <code>std::</code>).
   </para>
@@ -346,7 +346,7 @@ erase(size_type __pos = 0, size_type __n = npos)
 </programlisting>
 
 <para>
-  Unfortunately, ut <code>clear</code> is not implemented in this
+  Unfortunately, <code>clear</code> is not implemented in this
   version, so you should use <code>erase</code> (which is probably
   faster than <code>operator=(charT*)</code>).
 </para>
@@ -815,7 +815,7 @@ No <code>stream::attach(int fd)</code>
 
 <para>
       For a portable solution (among systems which use
-      filedescriptors), you need to implement a subclass of
+      file descriptors), you need to implement a subclass of
       <code>std::streambuf</code> (or
       <code>std::basic_streambuf&lt;..&gt;</code>) which opens a file
       given a descriptor, and then pass an instance of this to the

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Coding Style</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A. Contributing" /><link rel="prev" href="bk01apas02.html" title="Directory Layout and Source Conventions" /><link rel="next" href="bk01apas04.html" title="Documentation Style" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Coding Style</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01apas02.html">Prev</a> </td><th width="60%" align="center">Appendix A. Contributing</th><td width="20%" align="right"> <a accesskey="n" href="bk01apas04.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.coding_style"></a>Coding Style</h2></div></div></div><p>
-  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="coding_style.bad_identifiers"></a>Bad Itentifiers</h3></div></div></div><p>
+  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="coding_style.bad_identifiers"></a>Bad Identifiers</h3></div></div></div><p>
       Identifiers that conflict and should be avoided.
     </p><div class="literallayout"><p><br />
       This is the list of names “<span class="quote">reserved to the<br />
@@ -330,7 +330,7 @@
       for definitions. For C++, where we have member functions that can<br />
       be either inline definitions or declarations, keeping to this<br />
       standard allows all member function names for a given class to be<br />
-      aligned to the same margin, increasing readibility.<br />
+      aligned to the same margin, increasing readability.<br />
 <br />
 <br />
       10. Invocation of member functions with "this-&gt;"<br />
@@ -356,7 +356,7 @@
 <br />
       12. Spacing under protected and private in class declarations:<br />
       space above, none below<br />
-      ie<br />
+      i.e.<br />
 <br />
       public:<br />
       int foo;<br />
@@ -368,7 +368,7 @@
 <br />
       13. Spacing WRT return statements.<br />
       no extra spacing before returns, no parenthesis<br />
-      ie<br />
+      i.e.<br />
 <br />
       }<br />
       return __ret;<br />
@@ -385,7 +385,7 @@
 <br />
 <br />
       14. Location of global variables.<br />
-      All global variables of class type, whether in the "user visable"<br />
+      All global variables of class type, whether in the "user visible"<br />
       space (e.g., cin) or the implementation namespace, must be defined<br />
       as a character array with the appropriate alignment and then later<br />
       re-initialized to the correct value.<br />

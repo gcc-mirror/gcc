@@ -316,7 +316,7 @@ indicate a place that may require attention for multi-thread safety.
   <para>
   </para>
   <sect2 id="coding_style.bad_identifiers" xreflabel="coding_style.bad">
-    <title>Bad Itentifiers</title>
+    <title>Bad Identifiers</title>
     <para>
       Identifiers that conflict and should be avoided.
     </para>
@@ -653,7 +653,7 @@ indicate a place that may require attention for multi-thread safety.
       for definitions. For C++, where we have member functions that can
       be either inline definitions or declarations, keeping to this
       standard allows all member function names for a given class to be
-      aligned to the same margin, increasing readibility.
+      aligned to the same margin, increasing readability.
 
 
       10. Invocation of member functions with "this-&gt;"
@@ -679,7 +679,7 @@ indicate a place that may require attention for multi-thread safety.
 
       12. Spacing under protected and private in class declarations:
       space above, none below
-      ie
+      i.e.
 
       public:
       int foo;
@@ -691,7 +691,7 @@ indicate a place that may require attention for multi-thread safety.
 
       13. Spacing WRT return statements.
       no extra spacing before returns, no parenthesis
-      ie
+      i.e.
 
       }
       return __ret;
@@ -708,7 +708,7 @@ indicate a place that may require attention for multi-thread safety.
 
 
       14. Location of global variables.
-      All global variables of class type, whether in the "user visable"
+      All global variables of class type, whether in the "user visible"
       space (e.g., cin) or the implementation namespace, must be defined
       as a character array with the appropriate alignment and then later
       re-initialized to the correct value.
@@ -1055,7 +1055,7 @@ indicate a place that may require attention for multi-thread safety.
       <title>Prerequisites</title>
       <para>
 	Editing the DocBook sources requires an XML editor. Many
-	exist: some noteable options
+	exist: some notable options
 	include <command>emacs</command>, <application>Kate</application>,
 	or <application>Conglomerate</application>.
       </para>
@@ -1083,7 +1083,7 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
-	For procesessing XML, an XML processor and some style
+	For processing XML, an XML processor and some style
 	sheets are necessary. Defaults are <command>xsltproc</command>
 	provided by <filename>libxslt</filename>.
       </para>
@@ -1163,10 +1163,10 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       faq.xml  		- index to FAQ
       api.xml  		- index to source level / API 
 
-      All *.txml files are template xml files, ie otherwise empty files with
+      All *.txml files are template xml files, i.e., otherwise empty files with
       the correct structure, suitable for filling in with new information.
 
-      <emphasis>Cannonical Writing Style</emphasis>
+      <emphasis>Canonical Writing Style</emphasis>
 
       class template
       function template
@@ -1496,7 +1496,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     "export") is badly needed.
 
     When building a shared library, the current compiler/linker cannot
-    automatically generate the instantiatiations needed. This creates a
+    automatically generate the instantiations needed. This creates a
     miserable situation; it means any time something is changed in the
     library, before a shared library can be built someone must manually
     copy the declarations of all templates that are needed by other parts
@@ -2100,7 +2100,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     by filebuf. These wrappings have not been completed, though there
     is scaffolding in place.
 
-    The encapulation of certain C header &lt;cstdio&gt; names presents an
+    The encapsulation of certain C header &lt;cstdio&gt; names presents an
     interesting problem. It is possible to define an inline std::fprintf()
     implemented in terms of the 'extern "C"' vfprintf(), but there is no
     standard vfscanf() to use to implement std::fscanf(). It appears that

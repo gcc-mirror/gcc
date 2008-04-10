@@ -39,7 +39,7 @@
 
     <para>
       Derived from this are several classes that may have a
-      <classname>string</classname> member: a full heirarchy can be
+      <classname>string</classname> member: a full hierarchy can be
       found in the <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00233.html">source documentation</ulink>.
     </para>
 

@@ -104,7 +104,7 @@
 
   <para>
     Most comments should use {octothorpes, shibboleths, hash marks,
-    pound signs, whatevers} rather than "dnl".  Nearly all comments in
+    pound signs, whatever} rather than "dnl".  Nearly all comments in
     configure.ac should.  Comments inside macros written in ancilliary
     .m4 files should.  About the only comments which should
     <emphasis>not</emphasis> use #, but use dnl instead, are comments
