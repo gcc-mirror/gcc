@@ -3854,6 +3854,8 @@ verify_gimple_expr (tree expr)
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
+      gcc_unreachable ();
+
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
