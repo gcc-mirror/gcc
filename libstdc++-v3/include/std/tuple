@@ -31,8 +31,8 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_CXX0X_TUPLE
-#define _GLIBCXX_CXX0X_TUPLE 1
+#ifndef _GLIBCXX_TUPLE
+#define _GLIBCXX_TUPLE 1
 
 #pragma GCC system_header
 
@@ -644,4 +644,4 @@ namespace std
   }; // anonymous namespace
 }
 
-#endif // _GLIBCXX_CXX0X_TUPLE
+#endif // _GLIBCXX_TUPLE
