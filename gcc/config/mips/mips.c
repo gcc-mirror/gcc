@@ -3715,9 +3715,9 @@ mips_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
 }
 
 /* Compare CMP0 and CMP1 using ordering test CODE and store the result
-   in TARGET.  CMP0 and TARGET are register_operands that have the same
-   integer mode.  If INVERT_PTR is nonnull, it's OK to set TARGET to the
-   inverse of the result and flip *INVERT_PTR instead.  */
+   in TARGET.  CMP0 and TARGET are register_operands.  If INVERT_PTR
+   is nonnull, it's OK to set TARGET to the inverse of the result and
+   flip *INVERT_PTR instead.  */
 
 static void
 mips_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
@@ -3728,7 +3728,7 @@ mips_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
   /* First see if there is a MIPS instruction that can do this operation.
      If not, try doing the same for the inverse operation.  If that also
      fails, force CMP1 into a register and try again.  */
-  mode = GET_MODE (target);
+  mode = GET_MODE (cmp0);
   if (mips_canonicalize_int_order_test (&code, &cmp1, mode))
     mips_emit_binary (code, target, cmp0, cmp1);
   else
@@ -3741,7 +3741,7 @@ mips_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
 	}
       else if (invert_ptr == 0)
 	{
-	  rtx inv_target = gen_reg_rtx (mode);
+	  rtx inv_target = gen_reg_rtx (GET_MODE (target));
 	  mips_emit_binary (inv_code, inv_target, cmp0, cmp1);
 	  mips_emit_binary (XOR, target, inv_target, const1_rtx);
 	}
@@ -3868,7 +3868,7 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 /* Try comparing cmp_operands[0] and cmp_operands[1] using rtl code CODE.
    Store the result in TARGET and return true if successful.
 
-   On 64-bit targets, TARGET may be wider than cmp_operands[0].  */
+   On 64-bit targets, TARGET may be narrower than cmp_operands[0].  */
 
 bool
 mips_expand_scc (enum rtx_code code, rtx target)
@@ -3876,7 +3876,6 @@ mips_expand_scc (enum rtx_code code, rtx target)
   if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     return false;
 
-  target = gen_lowpart (GET_MODE (cmp_operands[0]), target);
   if (code == EQ || code == NE)
     {
       rtx zie = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);

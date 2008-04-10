@@ -1,5 +1,21 @@
 2008-04-10  Adam Nemet  <anemet@caviumnetworks.com>
 
+	* config/mips/mips.md (GPR2): New mode iterator.
+	(seq): Add comment.
+	(*seq_<mode>, *seq_<mode>_mips16, *sne_<mode>, *sgt<u>_<mode>,
+	*sgt<u>_<mode>_mips16, *sge<u>_<mode>, *slt<u>_<mode>,
+	*slt<u>_<mode>_mips16 *sle<u>_<mode>, *sle<u>_<mode>_mips16):
+	Rewrite these to take two modes, the mode of comparison and the
+	mode of the destination.
+	* config/mips/mips.c (mips_expand_scc): Instead of having
+	paradoxical subreg as destination, expand "narrowing" scc if mode
+	of comparison is SI and target is requested in DI mode.
+	(mips_emit_int_order_test): Update comment.  Make mode of
+	comparison match CMP0 rather than TARGET.  When creating inverse
+	target use mode of TARGET.
+
+2008-04-10  Adam Nemet  <anemet@caviumnetworks.com>
+
 	* gcov-dump.c (tag_summary): Only print summaries for the first
 	GCOV_COUNTERS_SUMMABLE counters.
 

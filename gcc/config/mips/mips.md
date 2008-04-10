@@ -476,6 +476,10 @@
 ;; from the same template.
 (define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 
+;; A copy of GPR that can be used when a pattern has two independent
+;; modes.
+(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT")])
+
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
@@ -5065,6 +5069,8 @@
 ;;
 ;;  ....................
 
+;; Destination is always set in SI mode.
+
 (define_expand "seq"
   [(set (match_operand:SI 0 "register_operand")
 	(eq:SI (match_dup 1)
@@ -5072,23 +5078,23 @@
   ""
   { if (mips_expand_scc (EQ, operands[0])) DONE; else FAIL; })
 
-(define_insn "*seq_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(eq:GPR (match_operand:GPR 1 "register_operand" "d")
-		(const_int 0)))]
+(define_insn "*seq_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(eq:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		 (const_int 0)))]
   "!TARGET_MIPS16"
   "sltu\t%0,%1,1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*seq_<mode>_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=t")
-	(eq:GPR (match_operand:GPR 1 "register_operand" "d")
-		(const_int 0)))]
+(define_insn "*seq_<GPR:mode><GPR2:mode>_mips16"
+  [(set (match_operand:GPR2 0 "register_operand" "=t")
+	(eq:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		 (const_int 0)))]
   "TARGET_MIPS16"
   "sltu\t%1,1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 ;; "sne" uses sltu instructions in which the first operand is $0.
 ;; This isn't possible in mips16 code.
@@ -5100,14 +5106,14 @@
   "!TARGET_MIPS16"
   { if (mips_expand_scc (NE, operands[0])) DONE; else FAIL; })
 
-(define_insn "*sne_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(ne:GPR (match_operand:GPR 1 "register_operand" "d")
-		(const_int 0)))]
+(define_insn "*sne_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(ne:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		 (const_int 0)))]
   "!TARGET_MIPS16"
   "sltu\t%0,%.,%1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_expand "sgt<u>"
   [(set (match_operand:SI 0 "register_operand")
@@ -5116,23 +5122,23 @@
   ""
   { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
-(define_insn "*sgt<u>_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(any_gt:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (match_operand:GPR 2 "reg_or_0_operand" "dJ")))]
+(define_insn "*sgt<u>_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(any_gt:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (match_operand:GPR 2 "reg_or_0_operand" "dJ")))]
   "!TARGET_MIPS16"
   "slt<u>\t%0,%z2,%1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*sgt<u>_<mode>_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=t")
-	(any_gt:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (match_operand:GPR 2 "register_operand" "d")))]
+(define_insn "*sgt<u>_<GPR:mode><GPR2:mode>_mips16"
+  [(set (match_operand:GPR2 0 "register_operand" "=t")
+	(any_gt:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "slt<u>\t%2,%1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_expand "sge<u>"
   [(set (match_operand:SI 0 "register_operand")
@@ -5141,14 +5147,14 @@
   ""
   { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
-(define_insn "*sge<u>_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(any_ge:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (const_int 1)))]
+(define_insn "*sge<u>_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(any_ge:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (const_int 1)))]
   "!TARGET_MIPS16"
   "slt<u>\t%0,%.,%1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_expand "slt<u>"
   [(set (match_operand:SI 0 "register_operand")
@@ -5157,23 +5163,23 @@
   ""
   { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
-(define_insn "*slt<u>_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(any_lt:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (match_operand:GPR 2 "arith_operand" "dI")))]
+(define_insn "*slt<u>_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(any_lt:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (match_operand:GPR 2 "arith_operand" "dI")))]
   "!TARGET_MIPS16"
   "slt<u>\t%0,%1,%2"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*slt<u>_<mode>_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=t,t")
-	(any_lt:GPR (match_operand:GPR 1 "register_operand" "d,d")
-		    (match_operand:GPR 2 "arith_operand" "d,I")))]
+(define_insn "*slt<u>_<GPR:mode><GPR2:mode>_mips16"
+  [(set (match_operand:GPR2 0 "register_operand" "=t,t")
+	(any_lt:GPR2 (match_operand:GPR 1 "register_operand" "d,d")
+		     (match_operand:GPR 2 "arith_operand" "d,I")))]
   "TARGET_MIPS16"
   "slt<u>\t%1,%2"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<GPR:MODE>")
    (set_attr_alternative "length"
 		[(const_int 4)
 		 (if_then_else (match_operand 2 "m16_uimm8_1")
@@ -5187,29 +5193,29 @@
   ""
   { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
-(define_insn "*sle<u>_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(any_le:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (match_operand:GPR 2 "sle_operand" "")))]
+(define_insn "*sle<u>_<GPR:mode><GPR2:mode>"
+  [(set (match_operand:GPR2 0 "register_operand" "=d")
+	(any_le:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (match_operand:GPR 2 "sle_operand" "")))]
   "!TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt<u>\t%0,%1,%2";
 }
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*sle<u>_<mode>_mips16"
-  [(set (match_operand:GPR 0 "register_operand" "=t")
-	(any_le:GPR (match_operand:GPR 1 "register_operand" "d")
-		    (match_operand:GPR 2 "sle_operand" "")))]
+(define_insn "*sle<u>_<GPR:mode><GPR2:mode>_mips16"
+  [(set (match_operand:GPR2 0 "register_operand" "=t")
+	(any_le:GPR2 (match_operand:GPR 1 "register_operand" "d")
+		     (match_operand:GPR 2 "sle_operand" "")))]
   "TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt<u>\t%1,%2";
 }
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<GPR:MODE>")
    (set (attr "length") (if_then_else (match_operand 2 "m16_uimm8_m1_1")
 				      (const_int 4)
 				      (const_int 8)))])

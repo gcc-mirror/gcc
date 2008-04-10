@@ -1,3 +1,9 @@
+2008-04-10  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/scc-2.c: New test.
+	* gcc.target/mips/scc-3.c: New test.
+	* gcc.target/mips/scc-4.c: New test.
+
 2008-04-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35821
