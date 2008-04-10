@@ -1095,7 +1095,7 @@ package body Repinfo is
       --  Bit_And_Expr, for which there is no direct support in uintp. Uint
       --  values out of the Int range are expected to be seen in such
       --  expressions only with overflowing byte sizes around, introducing
-      --  inherent unreliabilties in computations anyway.
+      --  inherent unreliabilities in computations anyway.
 
       -------
       -- B --

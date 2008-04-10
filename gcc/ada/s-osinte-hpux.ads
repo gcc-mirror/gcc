@@ -177,7 +177,7 @@ package System.OS_Interface is
    ----------
 
    Time_Slice_Supported : constant Boolean := True;
-   --  Indicates wether time slicing is supported
+   --  Indicates whether time slicing is supported
 
    type timespec is private;
 
@@ -299,7 +299,7 @@ package System.OS_Interface is
    --  This must be in keeping with init.c:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target
+   --  Indicates whether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);

@@ -63,7 +63,7 @@ package System.Arith_64 is
    --  or if the quotient does not fit in 64-bits. Round indicates if
    --  the result should be rounded. If Round is False, then Q, R are
    --  the normal quotient and remainder from a truncating division.
-   --  If Round is True, then Q is the rounded quotient. the remainder
+   --  If Round is True, then Q is the rounded quotient. The remainder
    --  R is not affected by the setting of the Round flag.
 
    procedure Double_Divide

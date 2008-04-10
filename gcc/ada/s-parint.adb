@@ -34,7 +34,7 @@
 
 package body System.Partition_Interface is
 
-   pragma Warnings (Off); -- supress warnings for unreferenced formals
+   pragma Warnings (Off); -- suppress warnings for unreferenced formals
 
    M : constant := 7;
 

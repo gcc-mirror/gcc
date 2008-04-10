@@ -87,7 +87,7 @@ package System.OS_Interface is
    --
    --
    --  The lowest numbered signal is 1, but 0 is a valid argument to some
-   --  library functions, eg. kill(2). However, 0 is not just another
+   --  library functions, e.g. kill(2). However, 0 is not just another
    --  signal: For instance 'I in Signal' and similar should be used with
    --  caution.
 

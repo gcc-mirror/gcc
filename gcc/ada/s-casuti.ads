@@ -53,7 +53,7 @@ package System.Case_Util is
    --  returns the input argument unchanged.
 
    procedure To_Upper (A : in out String);
-   --  Folds all characters of string A to upper csae
+   --  Folds all characters of string A to upper case
 
    function To_Lower (A : Character) return Character;
    --  Converts A to lower case if it is an upper case letter, otherwise

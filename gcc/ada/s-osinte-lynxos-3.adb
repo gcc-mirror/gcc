@@ -138,7 +138,7 @@ package body System.OS_Interface is
    --------------------------
 
    --  For all the following functions, LynxOS threads has the POSIX Draft 4
-   --  begavior; it sets errno but the standard Posix requires it to be
+   --  behavior; it sets errno but the standard Posix requires it to be
    --  returned.
 
    function pthread_mutexattr_init

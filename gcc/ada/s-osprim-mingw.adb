@@ -130,10 +130,10 @@ package body System.OS_Primitives is
         Duration (Long_Long_Float (Current_Ticks - BTA.all) /
                   Long_Long_Float (TFA.all));
 
-      --  If we have a shift of more than Max_Shift seconds we resynchonize the
-      --  Clock. This is probably due to a manual Clock adjustment, an DST
-      --  adjustment or an NTP synchronisation. And we want to adjust the time
-      --  for this system (non-monotonic) clock.
+      --  If we have a shift of more than Max_Shift seconds we resynchronize
+      --  the Clock. This is probably due to a manual Clock adjustment, an
+      --  DST adjustment or an NTP synchronisation. And we want to adjust the
+      --  time for this system (non-monotonic) clock.
 
       if abs (Elap_Secs_Sys - Elap_Secs_Tick) > Max_Shift then
          Get_Base_Time;

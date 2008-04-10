@@ -96,7 +96,7 @@ package System.Interrupt_Management.Operations is
 
    procedure Copy_Interrupt_Mask (X : out Interrupt_Mask; Y : Interrupt_Mask);
    pragma Inline (Copy_Interrupt_Mask);
-   --  Assigment needed for limited private type Interrupt_Mask
+   --  Assignment needed for limited private type Interrupt_Mask
 
    procedure Interrupt_Self_Process (Interrupt : Interrupt_ID);
    pragma Inline (Interrupt_Self_Process);

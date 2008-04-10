@@ -140,7 +140,7 @@ package body System.Regexp is
          Num_States  : out State_Index;
          Start_State : out State_Index;
          End_State   : out State_Index);
-      --  Creates the first version of the regexp (this is a non determinist
+      --  Creates the first version of the regexp (this is a non deterministic
       --  finite state machine, which is unadapted for a fast pattern
       --  matching algorithm). We use a recursive algorithm to process the
       --  parenthesis sub-expressions.
@@ -1137,7 +1137,7 @@ package body System.Regexp is
             end loop;
          end Closure;
 
-      --  Start of procesing for Create_Secondary_Table
+      --  Start of processing for Create_Secondary_Table
 
       begin
          --  Create a new state

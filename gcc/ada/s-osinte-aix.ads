@@ -132,7 +132,7 @@ package System.OS_Interface is
    SIGCPUFAIL  : constant := 59; -- Predictive De-configuration of Processors
    SIGKAP      : constant := 60; -- keep alive poll from native keyboard
    SIGGRANT    : constant := SIGKAP; -- monitor mode granted
-   SIGRETRACT  : constant := 61; -- monitor mode should be relinguished
+   SIGRETRACT  : constant := 61; -- monitor mode should be relinquished
    SIGSOUND    : constant := 62; -- sound control has completed
    SIGSAK      : constant := 63; -- secure attention key
 
@@ -311,7 +311,7 @@ package System.OS_Interface is
    --  No alternate signal stack is used on this platform
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target
+   --  Indicates whether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);

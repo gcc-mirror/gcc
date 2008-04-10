@@ -125,7 +125,7 @@ package System.Parameters is
 
    --      The system releases all storage on program termination only,
    --      but not other garbage collection occurs, so finalization calls
-   --      are ommitted only for outer level onjects can be omitted if
+   --      are omitted only for outer level objects can be omitted if
    --      pragma Finalize_Storage_Only is used.
 
    --    Garbage_Collected = True

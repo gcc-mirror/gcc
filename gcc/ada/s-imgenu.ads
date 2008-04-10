@@ -39,8 +39,8 @@
 --  Note: this is an obsolete package, replaced by System.Img_Enum_New, which
 --  provides procedures instead of functions for these enumeration image calls.
 --  The reason we maintain this package is that when bootstrapping with old
---  compilers, the old compiler will search for this unit, expectinng to find
---  these functions. The new commpiler will search for procedures in the new
+--  compilers, the old compiler will search for this unit, expecting to find
+--  these functions. The new compiler will search for procedures in the new
 --  version of the unit.
 
 pragma Warnings (Off);

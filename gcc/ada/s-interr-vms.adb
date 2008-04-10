@@ -222,7 +222,7 @@ package body System.Interrupts is
    begin
       --  This routine registers the Handler as usable for Dynamic
       --  Interrupt Handler. Routines attaching and detaching Handler
-      --  dynamically should first consult if the Handler is rgistered.
+      --  dynamically should first consult if the Handler is registered.
       --  A Program Error should be raised if it is not registered.
 
       --  The pragma Interrupt_Handler can only appear in the library
@@ -372,7 +372,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True
    --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
+   --  previous handler's binding status (i.e. do not care if it is a
    --  dynamic or static handler).
 
    --  This option is needed so that during the finalization of a PO, we
@@ -398,7 +398,7 @@ package body System.Interrupts is
 
    --  Calling this procedure with New_Handler = null and Static = True means
    --  we want to detach the current handler regardless of the previous
-   --  handler's binding status (ie. do not care if it is dynamic or static
+   --  handler's binding status (i.e. do not care if it is dynamic or static
    --  handler).
 
    --  This option is needed so that during the finalization of a PO, we can
@@ -630,7 +630,7 @@ package body System.Interrupts is
               "dynamic Handler";
          end if;
 
-         --  The interrupt should no longer be ingnored if it was ever ignored
+         --  The interrupt should no longer be ignored if it was ever ignored
 
          Ignored (Interrupt) := False;
 
@@ -715,7 +715,7 @@ package body System.Interrupts is
 
       System.Tasking.Utilities.Make_Independent;
 
-      --  Environmen task gets its own interrupt mask, saves it,
+      --  Environment task gets its own interrupt mask, saves it,
       --  and then masks all interrupts except the Keep_Unmasked set.
 
       --  During rendezvous, the Interrupt_Manager receives the old
@@ -741,17 +741,17 @@ package body System.Interrupts is
 
       --  This sigwaiting is needed so that we make sure a Server_Task is
       --  out of its own sigwait state. This extra synchronization is
-      --  necessary to prevent following senarios.
+      --  necessary to prevent following scenarios.
 
       --   1) Interrupt_Manager sends an Abort_Task_Interrupt to the
       --      Server_Task then changes its own interrupt mask (OS level).
       --      If an interrupt (corresponding to the Server_Task) arrives
-      --      in the nean time we have the Interrupt_Manager umnasked and
+      --      in the mean time we have the Interrupt_Manager unmasked and
       --      the Server_Task waiting on sigwait.
 
       --   2) For unbinding handler, we install a default action in the
       --      Interrupt_Manager. POSIX.1c states that the result of using
-      --      "sigwait" and "sigaction" simaltaneously on the same interrupt
+      --      "sigwait" and "sigaction" simultaneously on the same interrupt
       --      is undefined. Therefore, we need to be informed from the
       --      Server_Task of the fact that the Server_Task is out of its
       --      sigwait stage.
@@ -806,7 +806,7 @@ package body System.Interrupts is
                     "A binding for this interrupt is already present";
                end if;
 
-               --  The interrupt should no longer be ingnored if
+               --  The interrupt should no longer be ignored if
                --  it was ever ignored.
 
                Ignored (Interrupt) := False;
@@ -938,7 +938,7 @@ package body System.Interrupts is
          --  (Abort_Task_Interrupt) from the Interrupt_Manager for unbinding
          --  a Procedure Handler or an Entry. Or it could be a wake up
          --  from status change (Unblocked -> Blocked). If that is not
-         --  the case, we should exceute the attached Procedure or Entry.
+         --  the case, we should execute the attached Procedure or Entry.
 
          if Single_Lock then
             POP.Lock_RTS;

@@ -41,12 +41,12 @@ package System.Fat_VAX_F_Float is
 
    pragma Warnings (Off);
    --  This unit is normally used only for VMS, but we compile it for other
-   --  targest for the convenience of testing vms code using -gnatdm.
+   --  targets for the convenience of testing vms code using -gnatdm.
 
    type Fat_VAX_F is digits 6;
    pragma Float_Representation (VAX_Float, Fat_VAX_F);
 
-   --  Note the only entity from this package that is acccessed by Rtsfind
+   --  Note the only entity from this package that is accessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.

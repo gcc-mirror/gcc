@@ -1,3 +1,31 @@
+2008-04-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gnat_ugn.texi: Fix typos.
+	* raise-gcc.c, repinfo.adb, repinfo.ads, restrict.adb,
+	restrict.ads, rtsfind.adb, rtsfind.ads, s-arit64.ads,
+	s-asthan-vms-alpha.adb, s-auxdec.ads, s-casuti.ads,
+	s-fatflt.ads, s-fatgen.adb, s-fatlfl.ads,
+	s-fatllf.ads, s-fatsfl.ads, s-filofl.ads,
+	s-finimp.adb, s-finroo.ads, s-fishfl.ads,
+	s-fvadfl.ads, s-fvaffl.ads, s-fvagfl.ads,
+	s-hibaen.ads, s-htable.ads, s-imgcha.adb,
+	s-imgenu.ads, s-imgint.adb, s-imgrea.adb,
+	s-inmaop-dummy.adb, s-inmaop.ads, s-interr-vms.adb,
+	s-interr-vxworks.adb, s-interr.adb, s-interr.ads,
+	s-intman-vxworks.ads, s-intman.ads, s-mastop-irix.adb,
+	s-os_lib.adb, s-os_lib.ads, s-osinte-aix.ads,
+	s-osinte-darwin.ads, s-osinte-freebsd.ads,
+	s-osinte-hpux.ads, s-osinte-lynxos-3.adb,
+	s-osinte-lynxos-3.ads, s-osinte-lynxos.ads,
+	s-osinte-rtems.ads, s-osinte-solaris-posix.ads,
+	s-osprim-mingw.adb, s-osprim-vms.adb, s-parame-ae653.ads,
+	s-parame-hpux.ads, s-parame-vms-alpha.ads,
+	s-parame-vms-ia64.ads, s-parame-vms-restrict.ads,
+	s-parame-vxworks.ads, s-parame.ads, s-parint.adb,
+	s-parint.ads, s-poosiz.adb, s-proinf-irix-athread.ads,
+	s-proinf.ads, s-regexp.adb, s-regpat.adb, s-regpat.ads,
+	s-rident.ads: Fix comment typos.
+
 2008-04-09  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/28305

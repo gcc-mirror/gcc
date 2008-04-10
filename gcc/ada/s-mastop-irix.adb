@@ -45,7 +45,7 @@ package body System.Machine_State_Operations is
 
    use System.Storage_Elements;
 
-   --  The exc_unwind function in libexc operats on a Sigcontext
+   --  The exc_unwind function in libexc operates on a Sigcontext
 
    --  Type sigcontext_t is defined in /usr/include/sys/signal.h.
    --  We define an equivalent Ada type here. From the comments in
@@ -115,7 +115,7 @@ package body System.Machine_State_Operations is
    o32n : constant Natural := Boolean'Pos (o32);
    n32n : constant Natural := Boolean'Pos (n32);
    --  Flags to indicate which ABI is in effect for this compilation. For the
-   --  purposes of this unit, the n32 and n64 ABI's are identical.
+   --  purposes of this unit, the n32 and n64 ABIs are identical.
 
    LSC : constant Character := Character'Val (o32n * Character'Pos ('w') +
                                               n32n * Character'Pos ('d'));

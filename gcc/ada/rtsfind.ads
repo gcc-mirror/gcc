@@ -501,7 +501,7 @@ package Rtsfind is
      RE_Detach_Handler,                  -- Ada.Interrupts
      RE_Reference,                       -- Ada.Interrupts
 
-     RE_Names,                           -- Ada.Interupts.Names
+     RE_Names,                           -- Ada.Interrupts.Names
 
      RE_Root_Stream_Type,                -- Ada.Streams
      RE_Stream_Element,                  -- Ada.Streams
@@ -2788,7 +2788,7 @@ package Rtsfind is
    --  run-time library, but allows only a subset of entities to be
    --  accessed. If any other entity is accessed, then it is treated
    --  as a configurable run-time violation, and the exception
-   --  RE_Not_Availble is raised.
+   --  RE_Not_Available is raised.
 
    --  The following array defines the set of units that contain entities
    --  that can be referenced in No_Run_Time mode. For each of these units,

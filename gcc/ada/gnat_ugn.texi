@@ -22352,10 +22352,10 @@ same location as the @file{.gcno} files.  The following executions
 will update those files, so that a cumulative result of the covered
 portions of the program is generated.
 
-Finaly, you need to call the @code{gcov} tool. The different options of
+Finally, you need to call the @code{gcov} tool. The different options of
 @code{gcov} are available in the GCC User's Guide, section 'Invoking gcov'.
 
-This will create anotated source files with a @file{.gcov} extension:
+This will create annotated source files with a @file{.gcov} extension:
 @file{my_main.adb} file will be analysed in @file{my_main.adb.gcov}.
 
 @node Gnat specifics
@@ -22390,7 +22390,7 @@ most often, and are therefore the most time-consuming.
 
 @code{gprof} is the standard GNU profiling tool; it has been enhanced to
 better handle Ada programs and multitasking.
-It is currently supported on the following platoforms
+It is currently supported on the following platforms
 @itemize @bullet
 @item
 linux x86/x86_64

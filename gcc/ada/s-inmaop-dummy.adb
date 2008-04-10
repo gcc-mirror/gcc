@@ -134,9 +134,9 @@ package body System.Interrupt_Management.Operations is
       null;
    end Empty_Interrupt_Mask;
 
-   -----------------------
-   -- Add_To_Sigal_Mask --
-   -----------------------
+   ---------------------------
+   -- Add_To_Interrupt_Mask --
+   ---------------------------
 
    procedure Add_To_Interrupt_Mask
      (Mask      : access Interrupt_Mask;

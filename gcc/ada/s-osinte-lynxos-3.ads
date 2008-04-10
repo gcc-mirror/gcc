@@ -175,7 +175,7 @@ package System.OS_Interface is
    ----------
 
    Time_Slice_Supported : constant Boolean := True;
-   --  Indicates wether time slicing is supported
+   --  Indicates whether time slicing is supported
 
    type timespec is private;
 
@@ -271,7 +271,7 @@ package System.OS_Interface is
    --  No alternate signal stack is used on this platform
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target
+   --  Indicates whether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
@@ -383,7 +383,7 @@ package System.OS_Interface is
       mutex   : access pthread_mutex_t;
       reltime : access timespec) return int;
    pragma Inline (pthread_cond_timedwait);
-   --  LynxOS has a nonstandard pthrad_cond_timedwait
+   --  LynxOS has a nonstandard pthread_cond_timedwait
 
    Relative_Timed_Wait : constant Boolean := True;
    --  pthread_cond_timedwait requires a relative delay time

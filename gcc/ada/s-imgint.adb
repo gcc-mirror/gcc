@@ -65,7 +65,7 @@ package body System.Img_Int is
          end if;
       end Set_Digits;
 
-   --  Start of processinng for Image_Integer
+   --  Start of processing for Image_Integer
 
    begin
       P := 1;
