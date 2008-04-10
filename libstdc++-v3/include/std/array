@@ -31,8 +31,8 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_CXX0X_ARRAY
-#define _GLIBCXX_CXX0X_ARRAY 1
+#ifndef _GLIBCXX_ARRAY
+#define _GLIBCXX_ARRAY 1
 
 #pragma GCC system_header
 
@@ -60,4 +60,4 @@
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
 
-#endif // _GLIBCXX_CXX0X_ARRAY
+#endif // _GLIBCXX_ARRAY

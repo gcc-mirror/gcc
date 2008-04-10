@@ -31,8 +31,8 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_CXX0X_REGEX
-#define _GLIBCXX_CXX0X_REGEX 1
+#ifndef _GLIBCXX_REGEX
+#define _GLIBCXX_REGEX 1
 
 #pragma GCC system_header
 
@@ -67,4 +67,4 @@
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
 
-#endif // _GLIBCXX_CXX0X_REGEX
+#endif // _GLIBCXX_REGEX
