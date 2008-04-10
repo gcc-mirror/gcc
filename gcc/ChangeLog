@@ -1,3 +1,9 @@
+2008-04-10  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35821
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Add check that
+	NEW_STMT_LIST is not NULL.
+
 2008-04-09  David Edelsohn  <edelsohn@gnu.org>
 
 	PR libstdc++/35597
