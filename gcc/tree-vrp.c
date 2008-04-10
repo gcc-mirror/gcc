@@ -1887,8 +1887,6 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != MIN_EXPR
       && code != MAX_EXPR
       && code != BIT_AND_EXPR
-      && code != TRUTH_ANDIF_EXPR
-      && code != TRUTH_ORIF_EXPR
       && code != TRUTH_AND_EXPR
       && code != TRUTH_OR_EXPR)
     {
@@ -1975,9 +1973,7 @@ extract_range_from_binary_expr (value_range_t *vr,
 
   /* For integer ranges, apply the operation to each end of the
      range and see what we end up with.  */
-  if (code == TRUTH_ANDIF_EXPR
-      || code == TRUTH_ORIF_EXPR
-      || code == TRUTH_AND_EXPR
+  if (code == TRUTH_AND_EXPR
       || code == TRUTH_OR_EXPR)
     {
       /* If one of the operands is zero, we know that the whole
@@ -2751,8 +2747,6 @@ extract_range_from_expr (value_range_t *vr, tree expr)
   else if (code == SSA_NAME)
     extract_range_from_ssa_name (vr, expr);
   else if (TREE_CODE_CLASS (code) == tcc_binary
-	   || code == TRUTH_ANDIF_EXPR
-	   || code == TRUTH_ORIF_EXPR
 	   || code == TRUTH_AND_EXPR
 	   || code == TRUTH_OR_EXPR
 	   || code == TRUTH_XOR_EXPR)

@@ -1,3 +1,9 @@
+2008-04-10  Rafael Espindola  <espindola@google.com>
+
+	* gcc/tree-vrp.c (extract_range_from_binary_expr): Don't handle
+	TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
+	(extract_range_from_expr): The same.
+
 2008-04-10  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (GPR2): New mode iterator.
