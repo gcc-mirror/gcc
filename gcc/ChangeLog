@@ -1,3 +1,7 @@
+2008-04-11  Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu.c (spu_init_builtins): Mark builtins as nothrow.
+
 2008-04-10  Rafael Espindola  <espindola@google.com>
 
 	* gcc/tree-vrp.c (extract_range_from_binary_expr): Don't handle

@@ -4518,10 +4518,9 @@ spu_init_builtins (void)
       if (d->name == 0)
 	continue;
 
-      /* find last parm */
+      /* Find last parm.  */
       for (parm = 1; d->parm[parm] != SPU_BTI_END_OF_PARAMS; parm++)
-	{
-	}
+	;
 
       p = void_list_node;
       while (parm > 1)
@@ -4535,6 +4534,9 @@ spu_init_builtins (void)
 			      NULL, NULL_TREE);
       if (d->fcode == SPU_MASK_FOR_LOAD)
 	TREE_READONLY (d->fndecl) = 1;	
+
+      /* These builtins don't throw.  */
+      TREE_NOTHROW (d->fndecl) = 1;
     }
 }
 
