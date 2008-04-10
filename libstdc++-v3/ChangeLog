@@ -1,5 +1,93 @@
 2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/c_global/cstdatomic: C++ types only, format, doxygen markup.
+	* include/c_compatibility/stdatomic.h: "C" only, format, doxygen markup.
+	* src/atomic.c: Format, doxygen markup, edits.
+
+	* include/Makefile.am (cstdatomic, stdatomic.h): Add.
+	* src/Makefile.am (atomic.c): Add.
+	* acinclude.m4 (GLIBCXX_CHECK_STANDARD_LAYOUT): New.
+	* configure.ac: Call it.	
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.in: Same.
+	* Makefile.in: Same.
+	* doc/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* libmath/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* config.h.in: Same.
+	* configure: Same.
+	
+	* config/abi/pre/gnu.ver: Add atomics exports.
+
+	* include/ext/typelist.h (apply_generator): New.
+	* include/bits/c++config (_GLIBCXX_BEGIN_EXTERN_C): New.
+	(_GLIBCXX_END_EXTERN_C): New.
+	Deal with _GLIBCXX_BEGIN_NAMESPACE, _GLIBCXX_END_NAMESPACE when
+	compiling as C.	
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): Add -L
+	flag for libstdc++.
+	* testsuite/util/testsuite_common_types.h (integral_types): New
+	typelist.
+	(atomics, atomics_tl): Same.
+	(assignable, default_constructible, copy_constructible,
+	explicit_value_constructible): New.	
+	* testsuite/17_intro/headers/c++200x/all.cc: Test new headers.
+	* testsuite/29_atomics: New.
+	* testsuite/29_atomics/atomic_address: Same.
+	* testsuite/29_atomics/atomic_address/cons: Same.
+	* testsuite/29_atomics/atomic_address/cons/explicit_value.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Same.
+	* testsuite/29_atomics/atomic_flag: Same.
+	* testsuite/29_atomics/atomic_flag/cons: Same.
+	* testsuite/29_atomics/atomic_flag/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/aggregate.cc: Same.
+	* testsuite/29_atomics/atomic_flag/requirements: Same.
+	* testsuite/29_atomics/atomic_flag/requirements/standard_layout.cc: 
+	Same.
+	* testsuite/29_atomics/atomic_flag/
+	atomic_global_fence_compatibility.cc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.c: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.cc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.c: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.cc: Same.
+	* testsuite/29_atomics/headers: Same.
+	* testsuite/29_atomics/headers/cstdatomic: Same.
+	* testsuite/29_atomics/headers/cstdatomic/types_std_c++0x.cc: Same.
+	* testsuite/29_atomics/headers/cstdatomic/functions_std_c++0x.cc: Same.
+	* testsuite/29_atomics/headers/cstdatomic/std_c++0x_neg.cc: Same.
+	* testsuite/29_atomics/headers/cstdatomic/macros.cc: Same.
+	* testsuite/29_atomics/headers/stdatomic.h: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/macros.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/types.c: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/functions.c: Same.
+	* testsuite/29_atomics/atomic: Same.
+	* testsuite/29_atomics/atomic/cons: Same.
+	* testsuite/29_atomics/atomic/cons/explicit_value.cc: Same.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic/requirements: Same.
+	* testsuite/29_atomics/atomic/requirements/explicit_instantiation: Same.
+	* testsuite/29_atomics/atomic/requirements/explicit_instantiation/
+	1.cc: Same.
+	
+2008-04-10  Lawrence Crowl  <crowl@google.com>
+
+	* include/c_global/cstdatomic: New.
+	* include/c_compatibility/stdatomic.h: New.
+	* src/atomic.c: New.
+
+2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/std/tuple: Consistency check for include guard, doxygen
 	file markup.	
 	* include/std/date_time: Same.
@@ -165,6 +253,7 @@
 	* doc/xml/manual/parallel_mode.xml: Correct configuration documentation.
 	* doc/html/manual/bk01pt12ch31s04.html: Regenerate.
 
+>>>>>>> .r133664
 2008-03-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:11:0.

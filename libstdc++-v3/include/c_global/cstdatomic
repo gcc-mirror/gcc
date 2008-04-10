@@ -1,0 +1,4100 @@
+// -*- C++ -*- header.
+
+// Copyright (C) 2008
+// Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/** @file cstdatomic
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "*.h" implementation files.
+ *
+ *  This is the C++ version of the Standard C Library header @c stdatomic.h,
+ *  and its contents are (mostly) the same as that header, but are all
+ *  contained in the namespace @c std (except for names which are defined
+ *  as macros in C).
+ */
+
+// Based on "C++ Atomic Types and Operations" by Hans Boehm and Lawrence Crowl.
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2427.html
+
+#ifndef _GLIBCXX_STDATOMIC
+#define _GLIBCXX_STDATOMIC 1
+
+#pragma GCC system_header
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <c++0x_warning.h>
+#endif
+
+#include <stdatomic.h>
+#include <cstddef>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // Can either subclass or encapsulate "C" functionality, and here
+  // encapsulating works with C++2003's version of POD and so is
+  // portable across C++2003/200x. 
+  // Both end up being sub-optimal in terms of a constructor
+  // initialization list, but oh well.
+
+  /// atomic_flag
+  struct atomic_flag 
+  {
+    __atomic_flag_base _M_base;
+
+    bool 
+    test_and_set(memory_order __x = memory_order_seq_cst) volatile
+    { return atomic_flag_test_and_set_explicit(this, __x); }
+
+    void 
+    clear(memory_order __x = memory_order_seq_cst) volatile
+    { atomic_flag_clear_explicit(this, __x); }
+
+    void 
+    fence(memory_order __x) const volatile
+    { atomic_flag_fence(this, __x); }
+
+#if _GLIBCXX_USE_STANDARD_LAYOUT
+    // Add in non-trivial default constructor that correctly
+    // initializes member "as if" by ATOMIC_FLAG_INIT.
+    atomic_flag() { _M_base._M_b = false; }
+
+  private:
+    atomic_flag(const atomic_flag&);
+    atomic_flag& operator=(const atomic_flag&);
+#endif
+  };
+
+  /// 29.4.2, address types
+  typedef struct atomic_address
+  {
+    __atomic_address_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(void*, memory_order = memory_order_seq_cst) volatile;
+
+    void* 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    void* 
+    swap(void*, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(void*&, void*, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(void*&, void*, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    void* 
+    fetch_add(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
+    void* 
+    fetch_sub(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
+    void* 
+    operator=(void* __v) volatile
+    { store(__v); return __v; }
+
+    void* 
+    operator+=(ptrdiff_t __v) volatile
+    { return fetch_add(__v); }
+
+    void* 
+    operator-=(ptrdiff_t __v) volatile
+    { return fetch_sub(__v); }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_address*, void*, memory_order);
+
+    friend void* 
+    atomic_load_explicit(volatile atomic_address*, memory_order);
+
+    friend void* 
+    atomic_swap_explicit(volatile atomic_address*, void*, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_address*, void**, void*, 
+				 memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_address*, memory_order);
+
+    friend void* 
+    atomic_fetch_add_explicit(volatile atomic_address*, ptrdiff_t, 
+			      memory_order);
+
+    friend void* 
+    atomic_fetch_sub_explicit(volatile atomic_address*, ptrdiff_t, 
+			      memory_order);
+
+    atomic_address() { }
+
+    explicit atomic_address(void* __v)
+    { _M_base._M_i = __v; }
+
+  private:
+    atomic_address(const atomic_address&);
+    atomic_address& operator=(const atomic_address &);
+  };
+
+
+  // 29.4.1 atomic integral types
+  // For each of the integral types, define atomic_[integral type] struct
+  // 
+  // atomic_bool     bool
+  // atomic_char     char
+  // atomic_schar    signed char
+  // atomic_uchar    unsigned char
+  // atomic_short    short
+  // atomic_ushort   unsigned short
+  // atomic_int      int
+  // atomic_uint     unsigned int
+  // atomic_long     long
+  // atomic_ulong    unsigned long
+  // atomic_llong    long long
+  // atomic_ullong   unsigned long long
+  // atomic_char16_t char16_t
+  // atomic_char32_t char32_t
+  // atomic_wchar_t  wchar_t
+
+  /// atomic_bool
+  struct atomic_bool
+  {
+    __atomic_bool_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(bool, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    swap(bool, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(bool&, bool, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(bool&, bool, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    bool
+    operator=(bool __v) volatile { store(__v); return __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_bool*, bool, memory_order);
+
+    friend bool 
+    atomic_load_explicit(volatile atomic_bool*, memory_order);
+
+    friend bool 
+    atomic_swap_explicit(volatile atomic_bool*, bool, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_bool*, bool*, bool,
+				 memory_order, memory_order);
+    friend void 
+    atomic_fence(const volatile atomic_bool*, memory_order);
+
+    atomic_bool() { }
+
+    explicit atomic_bool(bool __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_bool(const atomic_bool&);
+    atomic_bool& operator=(const atomic_bool&);
+  };
+
+  /// atomic_char
+  struct atomic_char
+  {
+    __atomic_char_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    swap(char, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(char&, char, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(char&, char, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    char 
+    fetch_add(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    fetch_sub(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    fetch_and(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    fetch_or(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    fetch_xor(char, memory_order = memory_order_seq_cst) volatile;
+
+    char 
+    operator=(char __v) volatile { store(__v); return __v; }
+
+    char 
+    operator++(int) volatile { return fetch_add(1); }
+
+    char 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    char 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    char 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    char 
+    operator+=(char __v) volatile { return fetch_add(__v) + __v; }
+
+    char 
+    operator-=(char __v) volatile { return fetch_sub(__v) - __v; }
+
+    char 
+    operator&=(char __v) volatile { return fetch_and(__v) & __v; }
+
+    char 
+    operator|=(char __v) volatile { return fetch_or(__v) | __v; }
+
+    char 
+    operator^=(char __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_char*, char, memory_order);
+
+    friend char 
+    atomic_load_explicit(volatile atomic_char*, memory_order);
+
+    friend char 
+    atomic_swap_explicit(volatile atomic_char*, char, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_char*, char*, char, 
+				 memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_char*, memory_order);
+
+    friend char 
+    atomic_fetch_add_explicit(volatile atomic_char*, char, memory_order);
+
+    friend char 
+    atomic_fetch_sub_explicit(volatile atomic_char*, char, memory_order);
+
+    friend char 
+    atomic_fetch_and_explicit(volatile atomic_char*, char, memory_order);
+
+    friend char 
+    atomic_fetch_or_explicit( volatile atomic_char*, char, memory_order);
+
+    friend char 
+    atomic_fetch_xor_explicit(volatile atomic_char*, char, memory_order);
+
+    atomic_char() { }
+
+    atomic_char(char __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_char(const atomic_char&);
+    atomic_char& operator=(const atomic_char&);
+  };
+
+  /// atomic_schar
+  struct atomic_schar
+  {
+    __atomic_schar_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    swap(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(signed char&, signed char, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(signed char&, signed char, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    signed char 
+    fetch_add(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    fetch_sub(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    fetch_and(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    fetch_or(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    fetch_xor(signed char, memory_order = memory_order_seq_cst) volatile;
+
+    signed char 
+    operator=(signed char __v) volatile { store(__v); return __v; }
+
+    signed char 
+    operator++(int) volatile { return fetch_add(1); }
+
+    signed char 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    signed char 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    signed char 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    signed char 
+    operator+=(signed char __v) volatile { return fetch_add(__v) + __v; }
+
+    signed char 
+    operator-=(signed char __v) volatile { return fetch_sub(__v) - __v; }
+
+    signed char 
+    operator&=(signed char __v) volatile { return fetch_and(__v) & __v; }
+
+    signed char 
+    operator|=(signed char __v) volatile { return fetch_or(__v) | __v; }
+
+    signed char 
+    operator^=(signed char __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_schar*, signed char, memory_order);
+
+    friend signed char 
+    atomic_load_explicit(volatile atomic_schar*, memory_order);
+
+    friend signed char 
+    atomic_swap_explicit(volatile atomic_schar*, signed char, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_schar*, signed char*, 
+				 signed char, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_schar*, memory_order);
+
+    friend signed char 
+    atomic_fetch_add_explicit(volatile atomic_schar*, 
+			      signed char, memory_order);
+
+    friend signed char 
+    atomic_fetch_sub_explicit(volatile atomic_schar*, signed char, 
+			      memory_order);
+
+    friend signed char 
+    atomic_fetch_and_explicit(volatile atomic_schar*, signed char, 
+			      memory_order);
+
+    friend signed char 
+    atomic_fetch_or_explicit(volatile atomic_schar*, signed char, 
+			      memory_order);
+
+    friend signed char 
+    atomic_fetch_xor_explicit(volatile atomic_schar*, signed char, 
+			      memory_order);
+
+    atomic_schar() { }
+
+    atomic_schar(signed char __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_schar(const atomic_schar&);
+    atomic_schar& operator=(const atomic_schar&);
+  };
+
+  /// atomic_uchar
+  struct atomic_uchar
+  {
+    __atomic_uchar_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    swap(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(unsigned char&, unsigned char, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(unsigned char&, unsigned char, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    unsigned char 
+    fetch_add(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    fetch_sub(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    fetch_and(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    fetch_or(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    fetch_xor(unsigned char, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned char 
+    operator=(unsigned char __v) volatile { store(__v); return __v; }
+
+    unsigned char 
+    operator++(int) volatile { return fetch_add(1); }
+
+    unsigned char 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    unsigned char 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    unsigned char 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    unsigned char 
+    operator+=(unsigned char __v) volatile { return fetch_add(__v) + __v; }
+
+    unsigned char 
+    operator-=(unsigned char __v) volatile { return fetch_sub(__v) - __v; }
+
+    unsigned char 
+    operator&=(unsigned char __v) volatile { return fetch_and(__v) & __v; }
+
+    unsigned char 
+    operator|=(unsigned char __v) volatile { return fetch_or(__v) | __v; }
+
+    unsigned char 
+    operator^=(unsigned char __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_uchar*, unsigned char, memory_order);
+
+    friend unsigned char 
+    atomic_load_explicit(volatile atomic_uchar*, memory_order);
+
+    friend unsigned char 
+    atomic_swap_explicit(volatile atomic_uchar*, unsigned char, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_uchar*, unsigned char*, 
+				 unsigned char, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_uchar*, memory_order);
+
+    friend unsigned char 
+    atomic_fetch_add_explicit(volatile atomic_uchar*, unsigned char, 
+			      memory_order);
+
+    friend unsigned char 
+    atomic_fetch_sub_explicit(volatile atomic_uchar*, unsigned char, 
+			      memory_order);
+
+    friend unsigned char 
+    atomic_fetch_and_explicit(volatile atomic_uchar*, 
+			      unsigned char, memory_order);
+
+    friend unsigned char 
+    atomic_fetch_or_explicit( volatile atomic_uchar*, unsigned char, 
+			      memory_order);
+
+    friend unsigned char 
+    atomic_fetch_xor_explicit(volatile atomic_uchar*, unsigned char, 
+			      memory_order);
+
+    atomic_uchar() { }
+
+    atomic_uchar(unsigned char __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_uchar(const atomic_uchar&);
+    atomic_uchar& operator=(const atomic_uchar&);
+  };
+
+
+  /// atomic_short
+  struct atomic_short
+  {
+    __atomic_short_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    swap(short, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(short&, short, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(short&, short, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+    
+    short 
+    fetch_add(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    fetch_sub(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    fetch_and(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    fetch_or(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    fetch_xor(short, memory_order = memory_order_seq_cst) volatile;
+
+    short 
+    operator=(short __v) volatile { store(__v); return __v; }
+
+    short 
+    operator++(int) volatile { return fetch_add(1); }
+
+    short 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    short 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    short 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    short 
+    operator+=(short __v) volatile { return fetch_add(__v) + __v; }
+
+    short 
+    operator-=(short __v) volatile { return fetch_sub(__v) - __v; }
+
+    short 
+    operator&=(short __v) volatile { return fetch_and(__v) & __v; }
+
+    short 
+    operator|=(short __v) volatile { return fetch_or(__v) | __v; }
+
+    short 
+    operator^=(short __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_short*, short, memory_order);
+
+    friend short 
+    atomic_load_explicit(volatile atomic_short*, memory_order);
+
+    friend short 
+    atomic_swap_explicit(volatile atomic_short*, short, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_short*, short*, short, 
+				 memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_short*, memory_order);
+
+    friend short 
+    atomic_fetch_add_explicit(volatile atomic_short*, short, memory_order);
+
+    friend short 
+    atomic_fetch_sub_explicit(volatile atomic_short*, short, memory_order);
+
+    friend short 
+    atomic_fetch_and_explicit(volatile atomic_short*, short, memory_order);
+
+    friend short 
+    atomic_fetch_or_explicit( volatile atomic_short*, short, memory_order);
+
+    friend short 
+    atomic_fetch_xor_explicit(volatile atomic_short*, short, memory_order);
+
+    atomic_short() { }
+
+    atomic_short(short __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_short(const atomic_short&);
+    atomic_short& operator=(const atomic_short&);
+  };
+
+  /// atomic_ushort
+  struct atomic_ushort
+  {
+    __atomic_ushort_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    swap(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(unsigned short&, unsigned short, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(unsigned short&, unsigned short, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    unsigned short 
+    fetch_add(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    fetch_sub(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    fetch_and(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    fetch_or(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    fetch_xor(unsigned short, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned short 
+    operator=(unsigned short __v) volatile { store(__v); return __v; }
+
+    unsigned short 
+    operator++(int) volatile { return fetch_add(1); }
+
+    unsigned short 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    unsigned short 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    unsigned short 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    unsigned short 
+    operator+=(unsigned short __v) volatile { return fetch_add(__v) + __v; }
+
+    unsigned short 
+    operator-=(unsigned short __v) volatile { return fetch_sub(__v) - __v; }
+
+    unsigned short 
+    operator&=(unsigned short __v) volatile { return fetch_and(__v) & __v; }
+
+    unsigned short 
+    operator|=(unsigned short __v) volatile { return fetch_or(__v) | __v; }
+
+    unsigned short 
+    operator^=(unsigned short __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_ushort*, unsigned short, 
+			  memory_order);
+
+    friend unsigned short 
+    atomic_load_explicit(volatile atomic_ushort*, memory_order);
+
+    friend unsigned short 
+    atomic_swap_explicit(volatile atomic_ushort*, unsigned short, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_ushort*, unsigned short*, 
+				 unsigned short, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_ushort*, memory_order);
+
+    friend unsigned short 
+    atomic_fetch_add_explicit(volatile atomic_ushort*, unsigned short, 
+			      memory_order);
+
+    friend unsigned short 
+    atomic_fetch_sub_explicit(volatile atomic_ushort*, unsigned short, 
+			      memory_order);
+
+    friend unsigned short 
+    atomic_fetch_and_explicit(volatile atomic_ushort*, unsigned short, 
+			      memory_order);
+
+    friend unsigned short 
+    atomic_fetch_or_explicit( volatile atomic_ushort*, unsigned short, 
+			      memory_order);
+
+    friend unsigned short 
+    atomic_fetch_xor_explicit(volatile atomic_ushort*, unsigned short, 
+			      memory_order);
+
+    atomic_ushort() { }
+
+    atomic_ushort(unsigned short __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_ushort(const atomic_ushort&);
+    atomic_ushort& operator=(const atomic_ushort&);
+  };
+
+  /// atomic_int
+  struct atomic_int
+  {
+    __atomic_int_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    swap(int, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(int&, int, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(int&, int, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    int 
+    fetch_add(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    fetch_sub(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    fetch_and(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    fetch_or(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    fetch_xor(int, memory_order = memory_order_seq_cst) volatile;
+
+    int 
+    operator=(int __v) volatile { store(__v); return __v; }
+
+    int 
+    operator++(int) volatile { return fetch_add(1); }
+
+    int 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    int 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    int 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    int 
+    operator+=(int __v) volatile { return fetch_add(__v) + __v; }
+
+    int 
+    operator-=(int __v) volatile { return fetch_sub(__v) - __v; }
+
+    int 
+    operator&=(int __v) volatile { return fetch_and(__v) & __v; }
+
+    int 
+    operator|=(int __v) volatile { return fetch_or(__v) | __v; }
+
+    int 
+    operator^=(int __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_int*, int, memory_order);
+
+    friend int 
+    atomic_load_explicit(volatile atomic_int*, memory_order);
+
+    friend int 
+    atomic_swap_explicit(volatile atomic_int*, int, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_int*, int*, int, 
+				 memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_int*, memory_order);
+
+    friend int 
+    atomic_fetch_add_explicit(volatile atomic_int*, int, memory_order);
+
+    friend int 
+    atomic_fetch_sub_explicit(volatile atomic_int*, int, memory_order);
+
+    friend int 
+    atomic_fetch_and_explicit(volatile atomic_int*, int, memory_order);
+
+    friend int 
+    atomic_fetch_or_explicit( volatile atomic_int*, int, memory_order);
+
+    friend int 
+    atomic_fetch_xor_explicit(volatile atomic_int*, int, memory_order);
+
+    atomic_int() { }
+
+    atomic_int(int __v) { _M_base._M_i = __v; }
+    
+  private:
+    atomic_int(const atomic_int&);
+    atomic_int& operator=(const atomic_int&);
+  };
+
+  /// atomic_uint
+  struct atomic_uint
+  {
+    __atomic_uint_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    swap(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(unsigned int&, unsigned int, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(unsigned int&, unsigned int, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    unsigned int 
+    fetch_add(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    fetch_sub(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    fetch_and(unsigned int, memory_order = memory_order_seq_cst) volatile;
+ 
+    unsigned int 
+    fetch_or(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    fetch_xor(unsigned int, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned int 
+    operator=(unsigned int __v) volatile { store(__v); return __v; }
+
+    unsigned int 
+    operator++(int) volatile { return fetch_add(1); }
+
+    unsigned int 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    unsigned int 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    unsigned int 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    unsigned int 
+    operator+=(unsigned int __v) volatile { return fetch_add(__v) + __v; }
+
+    unsigned int 
+    operator-=(unsigned int __v) volatile { return fetch_sub(__v) - __v; }
+
+    unsigned int 
+    operator&=(unsigned int __v) volatile { return fetch_and(__v) & __v; }
+
+    unsigned int 
+    operator|=(unsigned int __v) volatile { return fetch_or(__v) | __v; }
+
+    unsigned int 
+    operator^=(unsigned int __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_uint*, unsigned int, memory_order);
+
+    friend unsigned int 
+    atomic_load_explicit(volatile atomic_uint*, memory_order);
+
+    friend unsigned int 
+    atomic_swap_explicit(volatile atomic_uint*, unsigned int, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_uint*, unsigned int*, 
+				 unsigned int, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_uint*, memory_order);
+
+    friend unsigned int 
+    atomic_fetch_add_explicit(volatile atomic_uint*, unsigned int, 
+			      memory_order);
+
+    friend unsigned int 
+    atomic_fetch_sub_explicit(volatile atomic_uint*, unsigned int, 
+			      memory_order);
+
+    friend unsigned int 
+    atomic_fetch_and_explicit(volatile atomic_uint*, unsigned int, 
+			      memory_order);
+
+    friend unsigned int 
+    atomic_fetch_or_explicit( volatile atomic_uint*, unsigned int, 
+			      memory_order);
+
+    friend unsigned int 
+    atomic_fetch_xor_explicit(volatile atomic_uint*, unsigned int, 
+			      memory_order);
+
+    atomic_uint() { }
+
+    atomic_uint(unsigned int __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_uint(const atomic_uint&);
+    atomic_uint& operator=(const atomic_uint&);
+  };
+
+  /// atomic_long
+  struct atomic_long
+  {
+    __atomic_long_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    load(memory_order = memory_order_seq_cst) volatile;
+    
+    long 
+    swap(long, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(long&, long, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(long&, long, memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    long 
+    fetch_add(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    fetch_sub(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    fetch_and(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    fetch_or(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    fetch_xor(long, memory_order = memory_order_seq_cst) volatile;
+
+    long 
+    operator=(long __v) volatile { store(__v); return __v; }
+
+    long 
+    operator++(int) volatile { return fetch_add(1); }
+
+    long 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    long 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    long 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    long 
+    operator+=(long __v) volatile { return fetch_add(__v) + __v; }
+
+    long 
+    operator-=(long __v) volatile { return fetch_sub(__v) - __v; }
+
+    long 
+    operator&=(long __v) volatile { return fetch_and(__v) & __v; }
+
+    long 
+    operator|=(long __v) volatile { return fetch_or(__v) | __v; }
+
+    long 
+    operator^=(long __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_long*, long, memory_order);
+
+    friend long 
+    atomic_load_explicit(volatile atomic_long*, memory_order);
+
+    friend long 
+    atomic_swap_explicit(volatile atomic_long*, long, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_long*, long*, long, 
+				 memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_long*, memory_order);
+
+    friend long 
+    atomic_fetch_add_explicit(volatile atomic_long*, long, memory_order);
+
+    friend long 
+    atomic_fetch_sub_explicit(volatile atomic_long*, long, memory_order);
+
+    friend long 
+    atomic_fetch_and_explicit(volatile atomic_long*, long, memory_order);
+
+    friend long 
+    atomic_fetch_or_explicit( volatile atomic_long*, long, memory_order);
+
+    friend long 
+    atomic_fetch_xor_explicit(volatile atomic_long*, long, memory_order);
+
+    atomic_long() { }
+
+    atomic_long(long __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_long(const atomic_long&);
+    atomic_long& operator=(const atomic_long&);
+  };
+
+  /// atomic_ulong
+  struct atomic_ulong
+  {
+    __atomic_ulong_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    swap(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(unsigned long&, unsigned long, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(unsigned long&, unsigned long, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    unsigned long 
+    fetch_add(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    fetch_sub(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    fetch_and(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    fetch_or(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    fetch_xor(unsigned long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long 
+    operator=(unsigned long __v) volatile { store(__v); return __v; }
+
+    unsigned long 
+    operator++(int) volatile { return fetch_add(1); }
+
+    unsigned long 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    unsigned long 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    unsigned long 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    unsigned long 
+    operator+=(unsigned long __v) volatile { return fetch_add(__v) + __v; }
+
+    unsigned long 
+    operator-=(unsigned long __v) volatile { return fetch_sub(__v) - __v; }
+
+    unsigned long 
+    operator&=(unsigned long __v) volatile { return fetch_and(__v) & __v; }
+
+    unsigned long 
+    operator|=(unsigned long __v) volatile { return fetch_or(__v) | __v; }
+
+    unsigned long 
+    operator^=(unsigned long __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_ulong*, unsigned long, memory_order);
+
+    friend unsigned long 
+    atomic_load_explicit(volatile atomic_ulong*, memory_order);
+
+    friend unsigned long 
+    atomic_swap_explicit(volatile atomic_ulong*, unsigned long, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_ulong*, unsigned long*, 
+				 unsigned long, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_ulong*, memory_order);
+
+    friend unsigned long 
+    atomic_fetch_add_explicit(volatile atomic_ulong*, unsigned long, 
+			      memory_order);
+
+    friend unsigned long 
+    atomic_fetch_sub_explicit(volatile atomic_ulong*, unsigned long, 
+			      memory_order);
+
+    friend unsigned long 
+    atomic_fetch_and_explicit(volatile atomic_ulong*, unsigned long, 
+			      memory_order);
+    friend unsigned long 
+    atomic_fetch_or_explicit(volatile atomic_ulong*, unsigned long, 
+			     memory_order);
+
+    friend unsigned long 
+    atomic_fetch_xor_explicit(volatile atomic_ulong*, unsigned long, 
+			      memory_order);
+
+    atomic_ulong() { }
+
+    atomic_ulong(unsigned long __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_ulong(const atomic_ulong&);
+    atomic_ulong& operator=(const atomic_ulong&);
+  };
+
+  /// atomic_llong
+  struct atomic_llong
+  {
+    __atomic_llong_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    swap(long long, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(long long&, long long, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(long long&, long long, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    long long 
+    fetch_add(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    fetch_sub(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    fetch_and(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    fetch_or(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    fetch_xor(long long, memory_order = memory_order_seq_cst) volatile;
+
+    long long 
+    operator=(long long __v) volatile { store(__v); return __v; }
+
+    long long 
+    operator++(int) volatile { return fetch_add(1); }
+
+    long long 
+    operator--(int) volatile { return fetch_sub(1); }
+
+    long long 
+    operator++() volatile { return fetch_add(1) + 1; }
+
+    long long 
+    operator--() volatile { return fetch_sub(1) - 1; }
+
+    long long 
+    operator+=(long long __v) volatile { return fetch_add(__v) + __v; }
+
+    long long 
+    operator-=(long long __v) volatile { return fetch_sub(__v) - __v; }
+
+    long long 
+    operator&=(long long __v) volatile { return fetch_and(__v) & __v; }
+
+    long long 
+    operator|=(long long __v) volatile { return fetch_or(__v) | __v; }
+
+    long long 
+    operator^=(long long __v) volatile { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend long long 
+    atomic_load_explicit(volatile atomic_llong*, memory_order);
+
+    friend long long 
+    atomic_swap_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_llong*, long long*, 
+				 long long, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_llong*, memory_order);
+
+    friend long long 
+    atomic_fetch_add_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend long long 
+    atomic_fetch_sub_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend long long 
+    atomic_fetch_and_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend long long 
+    atomic_fetch_or_explicit(volatile atomic_llong*, long long, memory_order);
+
+    friend long long 
+    atomic_fetch_xor_explicit(volatile atomic_llong*, long long, memory_order);
+
+    atomic_llong() { }
+
+    atomic_llong(long long __v) { _M_base._M_i = __v; }
+
+  private:    
+    atomic_llong(const atomic_llong&);
+    atomic_llong& operator=(const atomic_llong&);
+  };
+
+  /// atomic_ullong
+  struct atomic_ullong
+  {
+    __atomic_ullong_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    swap(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(unsigned long long&, unsigned long long, memory_order, 
+		 memory_order) volatile;
+
+    bool 
+    compare_swap(unsigned long long&, unsigned long long, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    unsigned long long 
+    fetch_add(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    fetch_sub(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    fetch_and(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    fetch_or(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    fetch_xor(unsigned long long, memory_order = memory_order_seq_cst) volatile;
+
+    unsigned long long 
+    operator=(unsigned long long __v) volatile
+    { store(__v); return __v; }
+
+    unsigned long long 
+    operator++(int) volatile
+    { return fetch_add(1); }
+
+    unsigned long long 
+    operator--(int) volatile
+    { return fetch_sub(1); }
+
+    unsigned long long 
+    operator++() volatile
+    { return fetch_add(1) + 1; }
+
+    unsigned long long 
+    operator--() volatile
+    { return fetch_sub(1) - 1; }
+
+    unsigned long long 
+    operator+=(unsigned long long __v) volatile
+    { return fetch_add(__v) + __v; }
+
+    unsigned long long 
+    operator-=(unsigned long long __v) volatile
+    { return fetch_sub(__v) - __v; }
+
+    unsigned long long 
+    operator&=(unsigned long long __v) volatile
+    { return fetch_and(__v) & __v; }
+
+    unsigned long long 
+    operator|=(unsigned long long __v) volatile
+    { return fetch_or(__v) | __v; }
+
+    unsigned long long 
+    operator^=(unsigned long long __v) volatile
+    { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_ullong*, unsigned long long,
+                                       memory_order);
+    friend unsigned long long 
+    atomic_load_explicit(volatile atomic_ullong*, memory_order);
+
+    friend unsigned long long 
+    atomic_swap_explicit(volatile atomic_ullong*, unsigned long long, 
+			 memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_ullong*, unsigned long long*, 
+				 unsigned long long, memory_order, 
+				 memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_ullong*, memory_order);
+
+    friend unsigned long long 
+    atomic_fetch_add_explicit(volatile atomic_ullong*, unsigned long long, 
+			      memory_order);
+
+    friend unsigned long long 
+    atomic_fetch_sub_explicit(volatile atomic_ullong*, unsigned long long, 
+			      memory_order);
+
+    friend unsigned long long 
+    atomic_fetch_and_explicit(volatile atomic_ullong*, unsigned long long, 
+			      memory_order);
+
+    friend unsigned long long 
+    atomic_fetch_or_explicit(volatile atomic_ullong*, unsigned long long, 
+			     memory_order);
+
+    friend unsigned long long 
+    atomic_fetch_xor_explicit(volatile atomic_ullong*, unsigned long long, 
+			      memory_order);
+
+    atomic_ullong() { }
+
+    atomic_ullong(unsigned long long __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_ullong(const atomic_ullong&);
+    atomic_ullong& operator=(const atomic_ullong&);
+  };
+
+  /// atomic_wchar_t
+  struct atomic_wchar_t
+  {
+    __atomic_wchar_t_base _M_base;
+
+    bool 
+    is_lock_free() const volatile;
+
+    void 
+    store(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    load(memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    swap(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    bool 
+    compare_swap(wchar_t&, wchar_t, memory_order, memory_order) volatile;
+
+    bool 
+    compare_swap(wchar_t&, wchar_t, 
+		 memory_order = memory_order_seq_cst) volatile;
+
+    void 
+    fence(memory_order) const volatile;
+
+    wchar_t 
+    fetch_add(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    fetch_sub(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    fetch_and(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    fetch_or(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    fetch_xor(wchar_t, memory_order = memory_order_seq_cst) volatile;
+
+    wchar_t 
+    operator=(wchar_t __v) volatile
+    { store(__v); return __v; }
+
+    wchar_t 
+    operator++(int) volatile
+    { return fetch_add(1); }
+
+    wchar_t 
+    operator--(int) volatile
+    { return fetch_sub(1); }
+
+    wchar_t 
+    operator++() volatile
+    { return fetch_add(1) + 1; }
+
+    wchar_t 
+    operator--() volatile
+    { return fetch_sub(1) - 1; }
+
+    wchar_t 
+    operator+=(wchar_t __v) volatile
+    { return fetch_add(__v) + __v; }
+
+    wchar_t 
+    operator-=(wchar_t __v) volatile
+    { return fetch_sub(__v) - __v; }
+
+    wchar_t 
+    operator&=(wchar_t __v) volatile
+    { return fetch_and(__v) & __v; }
+
+    wchar_t 
+    operator|=(wchar_t __v) volatile
+    { return fetch_or(__v) | __v; }
+
+    wchar_t 
+    operator^=(wchar_t __v) volatile
+    { return fetch_xor(__v) ^ __v; }
+
+    friend void 
+    atomic_store_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend wchar_t 
+    atomic_load_explicit(volatile atomic_wchar_t*, memory_order);
+
+    friend wchar_t 
+    atomic_swap_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend bool 
+    atomic_compare_swap_explicit(volatile atomic_wchar_t*,
+				 wchar_t*, wchar_t, memory_order, memory_order);
+
+    friend void 
+    atomic_fence(const volatile atomic_wchar_t*, memory_order);
+
+    friend wchar_t 
+    atomic_fetch_add_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend wchar_t 
+    atomic_fetch_sub_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend wchar_t 
+    atomic_fetch_and_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend wchar_t 
+    atomic_fetch_or_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    friend wchar_t 
+    atomic_fetch_xor_explicit(volatile atomic_wchar_t*, wchar_t, memory_order);
+
+    atomic_wchar_t() { }
+
+    atomic_wchar_t(wchar_t __v) { _M_base._M_i = __v; }
+
+  private:
+    atomic_wchar_t(const atomic_wchar_t&);
+    atomic_wchar_t& operator=(const atomic_wchar_t&);
+  };
+
+
+  /// atomic
+  /// 29.4.3, Generic atomic type, primary class template.
+  template<typename _Tp>
+    struct atomic
+    {
+      bool 
+      is_lock_free() const volatile;
+
+      void 
+      store(_Tp, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp 
+      load(memory_order = memory_order_seq_cst) volatile;
+
+      _Tp 
+      swap(_Tp __v, memory_order = memory_order_seq_cst) volatile;
+
+      bool 
+      compare_swap(_Tp&, _Tp, memory_order, memory_order) volatile;
+
+      bool 
+      compare_swap(_Tp&, _Tp, memory_order = memory_order_seq_cst) volatile;
+
+      void 
+      fence(memory_order) const volatile;
+
+      _Tp 
+      operator=(_Tp __v) volatile { store(__v); return __v; }
+
+      atomic() { }
+
+      explicit atomic(_Tp __v) : __f(__v) { }
+
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+
+      _Tp __f;
+    };
+
+  /// Partial specialization for pointer types.
+  template<typename _Tp> 
+    struct atomic<_Tp*> : atomic_address
+    {
+      _Tp* 
+      load(memory_order = memory_order_seq_cst) volatile;
+
+      _Tp* 
+      swap(_Tp*, memory_order = memory_order_seq_cst) volatile;
+
+      bool 
+      compare_swap(_Tp*&, _Tp*, memory_order, memory_order) volatile;
+
+      bool 
+      compare_swap(_Tp*&, _Tp*, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp* 
+      fetch_add(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp* 
+      fetch_sub(ptrdiff_t, memory_order = memory_order_seq_cst) volatile;
+
+      _Tp* 
+      operator=(_Tp* __v) volatile { store(__v); return __v; }
+
+      _Tp* 
+      operator++(int) volatile { return fetch_add(1); }
+
+      _Tp* 
+      operator--(int) volatile { return fetch_sub(1); }
+
+      _Tp* 
+      operator++() volatile { return fetch_add(1) + 1; }
+
+      _Tp* 
+      operator--() volatile { return fetch_sub(1) - 1; }
+
+      _Tp* 
+      operator+=(ptrdiff_t __v) volatile 
+      { return fetch_add(__v) + __v; }
+
+      _Tp* 
+      operator-=(ptrdiff_t __v) volatile 
+      { return fetch_sub(__v) - __v; }
+
+      atomic() { }
+
+      explicit atomic(_Tp* __v) : atomic_address(__v) { }
+
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for bool.
+  template<> 
+    struct atomic<bool> : atomic_bool
+    {
+      atomic() { }
+
+      explicit atomic(bool __v) : atomic_bool(__v) { }
+      
+      bool 
+      operator=(bool __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for void*
+  template<> 
+    struct atomic<void*> : atomic_address
+    {
+      atomic() { }
+
+      explicit atomic(void* __v) : atomic_address(__v) { }
+      
+      void* 
+      operator=(void* __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for char.
+  template<> 
+    struct atomic<char> : atomic_char
+    {
+      atomic() { }
+
+      explicit atomic(char __v) : atomic_char(__v) { }
+      
+      char 
+      operator=(char __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+
+  /// Explicit specialization for signed char.
+  template<> 
+    struct atomic<signed char> : atomic_schar
+    { 
+      atomic() { }
+
+      explicit atomic(signed char __v) : atomic_schar(__v) { }
+      
+      signed char 
+      operator=(signed char __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+  };
+
+  /// Explicit specialization for unsigned char.
+  template<> 
+    struct atomic<unsigned char> : atomic_uchar
+    {
+      atomic() { }
+
+      explicit atomic(unsigned char __v) : atomic_uchar(__v) { }
+      
+      unsigned char 
+      operator=(unsigned char __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& 
+      operator=(const atomic&);
+    };
+
+  /// Explicit specialization for short.
+  template<> 
+    struct atomic<short> : atomic_short
+    {
+      atomic() { }
+
+      explicit atomic(short __v) : atomic_short(__v) { }
+      
+      short 
+      operator=(short __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+  };
+
+  /// Explicit specialization for unsigned short.
+  template<> 
+    struct atomic<unsigned short> : atomic_ushort
+    {
+      atomic() { }
+
+      explicit atomic(unsigned short __v) : atomic_ushort(__v) { }
+      
+      unsigned short 
+      operator=(unsigned short __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for int.
+  template<> 
+    struct atomic<int> : atomic_int
+    {
+      atomic() { }
+
+      explicit atomic(int __v) : atomic_int(__v) { }
+      
+      int 
+      operator=(int __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for unsigned int.
+  template<> 
+    struct atomic<unsigned int> : atomic_uint
+    {
+      atomic() { }
+
+      explicit atomic(unsigned int __v) : atomic_uint(__v) { }
+      
+      unsigned int 
+      operator=(unsigned int __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for long.
+  template<> 
+    struct atomic<long> : atomic_long
+    {
+      atomic() { }
+
+      explicit atomic(long __v) : atomic_long(__v) { }
+      
+      long 
+      operator=(long __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for unsigned long.
+  template<> 
+    struct atomic<unsigned long> : atomic_ulong
+    {
+      atomic() { }
+
+      explicit atomic(unsigned long __v) : atomic_ulong(__v) { }
+      
+      unsigned long 
+      operator=(unsigned long __v) volatile
+      { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for long long.
+  template<> 
+    struct atomic<long long> : atomic_llong
+    {
+      atomic() { }
+
+      explicit atomic(long long __v) : atomic_llong(__v) { }
+      
+      long long 
+      operator=(long long __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);      
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for unsigned long long.
+  template<> 
+    struct atomic<unsigned long long> : atomic_ullong
+    {
+      atomic() { }
+
+      explicit atomic(unsigned long long __v) : atomic_ullong(__v) { }
+      
+      unsigned long long 
+      operator=(unsigned long long __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  /// Explicit specialization for wchar_t.
+  template<> 
+    struct atomic<wchar_t> : atomic_wchar_t
+    {
+      atomic() { }
+
+      explicit atomic(wchar_t __v) : atomic_wchar_t(__v) { }
+      
+      wchar_t 
+      operator=(wchar_t __v) volatile { store(__v); return __v; }
+      
+    private:
+      atomic(const atomic&);
+      atomic& operator=(const atomic&);
+    };
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_bool* __a)
+  { return false; }
+
+  inline bool 
+  atomic_load_explicit(volatile atomic_bool* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline bool 
+  atomic_load(volatile atomic_bool* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_bool* __a, bool __m, memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_bool* __a, bool __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_swap_explicit(volatile atomic_bool* __a, bool __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline bool 
+  atomic_swap(volatile atomic_bool* __a, bool __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_bool* __a, bool* __e, bool __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_bool* __a, bool* __e, bool __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_bool* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_address* __a)
+  { return false; }
+
+  inline void* 
+  atomic_load_explicit(volatile atomic_address* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline void* 
+  atomic_load(volatile atomic_address* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_address* __a, void* __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_address* __a, void* __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline void* 
+  atomic_swap_explicit(volatile atomic_address* __a, void* __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline void* 
+  atomic_swap(volatile atomic_address* __a, void* __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_address* __a, void** __e, 
+			       void* __m, memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_address* __a, void** __e, void* __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_address* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_char* __a)
+  { return false; }
+
+  inline char 
+  atomic_load_explicit(volatile atomic_char* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline char 
+  atomic_load(volatile atomic_char* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_char* __a, char __m, memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_char* __a, char __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline char 
+  atomic_swap_explicit(volatile atomic_char* __a, char __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline char 
+  atomic_swap(volatile atomic_char* __a, char __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_char* __a, char* __e, char __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_char* __a, char* __e, char __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_char* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_schar* __a)
+  { return false; }
+
+  inline signed char 
+  atomic_load_explicit(volatile atomic_schar* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline signed char 
+  atomic_load(volatile atomic_schar* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_schar* __a, signed char __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_schar* __a, signed char __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline signed char 
+  atomic_swap_explicit(volatile atomic_schar* __a, signed char __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline signed char 
+  atomic_swap(volatile atomic_schar* __a, signed char __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_schar* __a, signed char* __e, 
+			       signed char __m, memory_order __x, 
+			       memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_schar* __a, signed char* __e, 
+		      signed char __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_schar* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_uchar* __a)
+  { return false; }
+
+  inline unsigned char 
+  atomic_load_explicit(volatile atomic_uchar* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline unsigned char 
+  atomic_load(volatile atomic_uchar* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned char 
+  atomic_swap_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline unsigned char 
+  atomic_swap(volatile atomic_uchar* __a, unsigned char __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_uchar* __a, unsigned char* __e,
+			       unsigned char __m, memory_order __x, 
+			       memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_uchar* __a, unsigned char* __e, 
+		      unsigned char __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_uchar* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_short* __a)
+  { return false; }
+
+  inline short 
+  atomic_load_explicit(volatile atomic_short* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline short 
+  atomic_load(volatile atomic_short* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_short* __a, short __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_short* __a, short __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline short 
+  atomic_swap_explicit(volatile atomic_short* __a, short __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline short 
+  atomic_swap(volatile atomic_short* __a, short __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_short* __a, short* __e, 
+			       short __m, memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_short* __a, short* __e, short __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_short* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_ushort* __a)
+  { return false; }
+
+  inline unsigned short 
+  atomic_load_explicit(volatile atomic_ushort* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline unsigned short 
+  atomic_load(volatile atomic_ushort* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned short 
+  atomic_swap_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline unsigned short 
+  atomic_swap(volatile atomic_ushort* __a, unsigned short __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_ushort* __a, 
+			       unsigned short* __e, unsigned short __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_ushort* __a, unsigned short* __e, 
+		      unsigned short __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_ushort* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_int* __a)
+  { return false; }
+
+  inline int 
+  atomic_load_explicit(volatile atomic_int* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline int 
+  atomic_load(volatile atomic_int* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_int* __a, int __m, memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_int* __a, int __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline int 
+  atomic_swap_explicit(volatile atomic_int* __a, int __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline int 
+  atomic_swap(volatile atomic_int* __a, int __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_int* __a, int* __e, int __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_int* __a, int* __e, int __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_int* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_uint* __a)
+  { return false; }
+
+  inline unsigned int 
+  atomic_load_explicit(volatile atomic_uint* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline unsigned int 
+  atomic_load(volatile atomic_uint* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned int 
+  atomic_swap_explicit(volatile atomic_uint* __a, unsigned int __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline unsigned int 
+  atomic_swap(volatile atomic_uint* __a, unsigned int __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_uint* __a, unsigned int* __e, 
+			       unsigned int __m, memory_order __x, 
+			       memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_uint* __a, unsigned int* __e, 
+		      unsigned int __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_uint* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_long* __a)
+  { return false; }
+
+  inline long 
+  atomic_load_explicit(volatile atomic_long* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline long 
+  atomic_load(volatile atomic_long* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_long* __a, long __m, memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_long* __a, long __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long 
+  atomic_swap_explicit(volatile atomic_long* __a, long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline long 
+  atomic_swap(volatile atomic_long* __a, long __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_long* __a, long* __e, long __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_long* __a, long* __e, long __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_long* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_ulong* __a)
+  { return false; }
+
+  inline unsigned long 
+  atomic_load_explicit(volatile atomic_ulong* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline unsigned long 
+  atomic_load(volatile atomic_ulong* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long 
+  atomic_swap_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline unsigned long 
+  atomic_swap(volatile atomic_ulong* __a, unsigned long __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_ulong* __a, unsigned long* __e,
+			       unsigned long __m, memory_order __x, 
+			       memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_ulong* __a, unsigned long* __e, 
+		      unsigned long __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_ulong* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_llong* __a)
+  { return false; }
+
+  inline long long 
+  atomic_load_explicit(volatile atomic_llong* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline long long 
+  atomic_load(volatile atomic_llong* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_llong* __a, long long __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_llong* __a, long long __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long long 
+  atomic_swap_explicit(volatile atomic_llong* __a, long long __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline long long 
+  atomic_swap(volatile atomic_llong* __a, long long __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_llong* __a, long long* __e, 
+			       long long __m, memory_order __x, 
+			       memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_llong* __a, long long* __e, 
+		      long long __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_llong* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_ullong* __a)
+  { return false; }
+
+  inline unsigned long long 
+  atomic_load_explicit(volatile atomic_ullong* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline unsigned long long 
+  atomic_load(volatile atomic_ullong* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+  inline void 
+  atomic_store_explicit(volatile atomic_ullong* __a, unsigned long long __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long long 
+  atomic_swap_explicit(volatile atomic_ullong* __a, unsigned long long __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline unsigned long long 
+  atomic_swap(volatile atomic_ullong* __a, unsigned long long __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_ullong* __a, 
+			       unsigned long long* __e, unsigned long long __m,
+			       memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_ullong* __a, unsigned long long* __e, 
+		      unsigned long long __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_ullong* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+  inline bool 
+  atomic_is_lock_free(const volatile atomic_wchar_t* __a)
+  { return false; }
+
+  inline wchar_t 
+  atomic_load_explicit(volatile atomic_wchar_t* __a, memory_order __x)
+  { return _ATOMIC_LOAD_(__a, __x); }
+
+  inline wchar_t 
+  atomic_load(volatile atomic_wchar_t* __a)
+  { return atomic_load_explicit(__a, memory_order_seq_cst); }
+
+
+  inline void 
+  atomic_store_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			memory_order __x)
+  { _ATOMIC_STORE_(__a, __m, __x); }
+
+  inline void 
+  atomic_store(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_store_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline wchar_t 
+  atomic_swap_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+		       memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, =, __m, __x); }
+
+  inline wchar_t 
+  atomic_swap(volatile atomic_wchar_t* __a, wchar_t __m)
+  { return atomic_swap_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_compare_swap_explicit(volatile atomic_wchar_t* __a, wchar_t* __e, 
+			       wchar_t __m, memory_order __x, memory_order __y)
+  { return _ATOMIC_CMPSWP_(__a, __e, __m, __x); }
+
+  inline bool 
+  atomic_compare_swap(volatile atomic_wchar_t* __a, wchar_t* __e, wchar_t __m)
+  { return atomic_compare_swap_explicit(__a, __e, __m, memory_order_seq_cst, 
+					memory_order_seq_cst); }
+
+  inline void 
+  atomic_fence(const volatile atomic_wchar_t* __a, memory_order __x)
+  { _ATOMIC_FENCE_(__a, __x); }
+
+  inline void* 
+  atomic_fetch_add_explicit(volatile atomic_address* __a, ptrdiff_t __m, 
+			    memory_order __x)
+  { 
+    void* volatile* __p = &((__a)->_M_base._M_i);
+    volatile atomic_flag* __g = __atomic_flag_for_address(__p);
+    __atomic_flag_wait_explicit(__g, __x);
+    void* __r = *__p;
+    *__p = (void*)((char*)(*__p) + __m);
+    atomic_flag_clear_explicit(__g, __x);
+    return __r; 
+  }
+
+  inline void* 
+  atomic_fetch_add(volatile atomic_address* __a, ptrdiff_t __m)
+  { return atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline void* 
+  atomic_fetch_sub_explicit(volatile atomic_address* __a, ptrdiff_t __m, 
+			    memory_order __x)
+  { 
+    void* volatile* __p = &((__a)->_M_base._M_i);
+    volatile atomic_flag* __g = __atomic_flag_for_address(__p);
+    __atomic_flag_wait_explicit(__g, __x);
+    void* __r = *__p;
+    *__p = (void*)((char*)(*__p) - __m);
+    atomic_flag_clear_explicit(__g, __x);
+    return __r; 
+  }
+
+  inline void* 
+  atomic_fetch_sub(volatile atomic_address* __a, ptrdiff_t __m)
+  { return atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline char 
+  atomic_fetch_add_explicit(volatile atomic_char* __a, char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline char 
+  atomic_fetch_add(volatile atomic_char* __a, char __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline char 
+  atomic_fetch_sub_explicit(volatile atomic_char* __a, char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline char 
+  atomic_fetch_sub(volatile atomic_char* __a, char __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline char 
+  atomic_fetch_and_explicit(volatile atomic_char* __a, char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline char 
+  atomic_fetch_and(volatile atomic_char* __a, char __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline char 
+  atomic_fetch_or_explicit(volatile atomic_char* __a, char __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline char 
+  atomic_fetch_or(volatile atomic_char* __a, char __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline char 
+  atomic_fetch_xor_explicit(volatile atomic_char* __a, char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline char 
+  atomic_fetch_xor(volatile atomic_char* __a, char __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline signed char 
+  atomic_fetch_add_explicit(volatile atomic_schar* __a, signed char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline signed char 
+  atomic_fetch_add(volatile atomic_schar* __a, signed char __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline signed char 
+  atomic_fetch_sub_explicit(volatile atomic_schar* __a, signed char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline signed char 
+  atomic_fetch_sub(volatile atomic_schar* __a, signed char __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline signed char 
+  atomic_fetch_and_explicit(volatile atomic_schar* __a, signed char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline signed char 
+  atomic_fetch_and(volatile atomic_schar* __a, signed char __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline signed char 
+  atomic_fetch_or_explicit(volatile atomic_schar* __a, signed char __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline signed char 
+  atomic_fetch_or(volatile atomic_schar* __a, signed char __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline signed char 
+  atomic_fetch_xor_explicit(volatile atomic_schar* __a, signed char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline signed char 
+  atomic_fetch_xor(volatile atomic_schar* __a, signed char __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned char 
+  atomic_fetch_add_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline unsigned char 
+  atomic_fetch_add(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned char 
+  atomic_fetch_sub_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline unsigned char 
+  atomic_fetch_sub(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned char 
+  atomic_fetch_and_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline unsigned char 
+  atomic_fetch_and(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned char 
+  atomic_fetch_or_explicit(volatile atomic_uchar* __a, unsigned char __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline unsigned char 
+  atomic_fetch_or(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned char 
+  atomic_fetch_xor_explicit(volatile atomic_uchar* __a, 
+			    unsigned char __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline unsigned char 
+  atomic_fetch_xor(volatile atomic_uchar* __a, unsigned char __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline short 
+  atomic_fetch_add_explicit(volatile atomic_short* __a, short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline short 
+  atomic_fetch_add(volatile atomic_short* __a, short __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline short 
+  atomic_fetch_sub_explicit(volatile atomic_short* __a, short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline short 
+  atomic_fetch_sub(volatile atomic_short* __a, short __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline short 
+  atomic_fetch_and_explicit(volatile atomic_short* __a, short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline short 
+  atomic_fetch_and(volatile atomic_short* __a, short __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline short 
+  atomic_fetch_or_explicit(volatile atomic_short* __a, short __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline short 
+  atomic_fetch_or(volatile atomic_short* __a, short __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline short 
+  atomic_fetch_xor_explicit(volatile atomic_short* __a, short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline short 
+  atomic_fetch_xor(volatile atomic_short* __a, short __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned short 
+  atomic_fetch_add_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline unsigned short 
+  atomic_fetch_add(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned short 
+  atomic_fetch_sub_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline unsigned short 
+  atomic_fetch_sub(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned short 
+  atomic_fetch_and_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline unsigned short 
+  atomic_fetch_and(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned short 
+  atomic_fetch_or_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline unsigned short 
+  atomic_fetch_or(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned short 
+  atomic_fetch_xor_explicit(volatile atomic_ushort* __a, unsigned short __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline unsigned short 
+  atomic_fetch_xor(volatile atomic_ushort* __a, unsigned short __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline int 
+  atomic_fetch_add_explicit(volatile atomic_int* __a, int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline int 
+  atomic_fetch_add(volatile atomic_int* __a, int __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline int 
+  atomic_fetch_sub_explicit(volatile atomic_int* __a, int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline int 
+  atomic_fetch_sub(volatile atomic_int* __a, int __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline int 
+  atomic_fetch_and_explicit(volatile atomic_int* __a, int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline int 
+  atomic_fetch_and(volatile atomic_int* __a, int __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline int 
+  atomic_fetch_or_explicit(volatile atomic_int* __a, int __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline int 
+  atomic_fetch_or(volatile atomic_int* __a, int __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline int 
+  atomic_fetch_xor_explicit(volatile atomic_int* __a, int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline int 
+  atomic_fetch_xor(volatile atomic_int* __a, int __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned int 
+  atomic_fetch_add_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline unsigned int 
+  atomic_fetch_add(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned int 
+  atomic_fetch_sub_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline unsigned int 
+  atomic_fetch_sub(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned int 
+  atomic_fetch_and_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline unsigned int 
+  atomic_fetch_and(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned int 
+  atomic_fetch_or_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline unsigned int 
+  atomic_fetch_or(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned int 
+  atomic_fetch_xor_explicit(volatile atomic_uint* __a, unsigned int __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline unsigned int 
+  atomic_fetch_xor(volatile atomic_uint* __a, unsigned int __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline long 
+  atomic_fetch_add_explicit(volatile atomic_long* __a, long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline long 
+  atomic_fetch_add(volatile atomic_long* __a, long __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long 
+  atomic_fetch_sub_explicit(volatile atomic_long* __a, long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline long 
+  atomic_fetch_sub(volatile atomic_long* __a, long __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long 
+  atomic_fetch_and_explicit(volatile atomic_long* __a, long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline long 
+  atomic_fetch_and(volatile atomic_long* __a, long __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long 
+  atomic_fetch_or_explicit(volatile atomic_long* __a, long __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline long 
+  atomic_fetch_or(volatile atomic_long* __a, long __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long 
+  atomic_fetch_xor_explicit(volatile atomic_long* __a, long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline long 
+  atomic_fetch_xor(volatile atomic_long* __a, long __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned long 
+  atomic_fetch_add_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline unsigned long 
+  atomic_fetch_add(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long 
+  atomic_fetch_sub_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline unsigned long 
+  atomic_fetch_sub(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long 
+  atomic_fetch_and_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline unsigned long 
+  atomic_fetch_and(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long 
+  atomic_fetch_or_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline unsigned long 
+  atomic_fetch_or(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long 
+  atomic_fetch_xor_explicit(volatile atomic_ulong* __a, unsigned long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline unsigned long 
+  atomic_fetch_xor(volatile atomic_ulong* __a, unsigned long __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline long long 
+  atomic_fetch_add_explicit(volatile atomic_llong* __a, long long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline long long 
+  atomic_fetch_add(volatile atomic_llong* __a, long long __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long long 
+  atomic_fetch_sub_explicit(volatile atomic_llong* __a, long long __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline long long 
+  atomic_fetch_sub(volatile atomic_llong* __a, long long __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long long 
+  atomic_fetch_and_explicit(volatile atomic_llong* __a, 
+			    long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline long long 
+  atomic_fetch_and(volatile atomic_llong* __a, long long __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long long 
+  atomic_fetch_or_explicit(volatile atomic_llong* __a, 
+			   long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline long long 
+  atomic_fetch_or(volatile atomic_llong* __a, long long __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline long long 
+  atomic_fetch_xor_explicit(volatile atomic_llong* __a, 
+			    long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline long long 
+  atomic_fetch_xor(volatile atomic_llong* __a, long long __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline unsigned long long 
+  atomic_fetch_add_explicit(volatile atomic_ullong* __a, 
+			    unsigned long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline unsigned long long 
+  atomic_fetch_add(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long long 
+  atomic_fetch_sub_explicit(volatile atomic_ullong* __a, 
+			    unsigned long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline unsigned long long 
+  atomic_fetch_sub(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long long 
+  atomic_fetch_and_explicit(volatile atomic_ullong* __a, 
+			    unsigned long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline unsigned long long 
+  atomic_fetch_and(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long long 
+  atomic_fetch_or_explicit(volatile atomic_ullong* __a, 
+			   unsigned long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline unsigned long long 
+  atomic_fetch_or(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline unsigned long long 
+  atomic_fetch_xor_explicit(volatile atomic_ullong* __a, 
+			    unsigned long long __m, memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline unsigned long long 
+  atomic_fetch_xor(volatile atomic_ullong* __a, unsigned long long __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+
+  inline wchar_t 
+  atomic_fetch_add_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, +=, __m, __x); }
+
+  inline wchar_t 
+  atomic_fetch_add(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_fetch_add_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline wchar_t 
+  atomic_fetch_sub_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, -=, __m, __x); }
+
+  inline wchar_t 
+  atomic_fetch_sub(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_fetch_sub_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline wchar_t 
+  atomic_fetch_and_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, &=, __m, __x); }
+
+  inline wchar_t 
+  atomic_fetch_and(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_fetch_and_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline wchar_t 
+  atomic_fetch_or_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			   memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, |=, __m, __x); }
+
+  inline wchar_t 
+  atomic_fetch_or(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_fetch_or_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline wchar_t 
+  atomic_fetch_xor_explicit(volatile atomic_wchar_t* __a, wchar_t __m, 
+			    memory_order __x)
+  { return _ATOMIC_MODIFY_(__a, ^=, __m, __x); }
+
+  inline wchar_t 
+  atomic_fetch_xor(volatile atomic_wchar_t* __a, wchar_t __m)
+  { atomic_fetch_xor_explicit(__a, __m, memory_order_seq_cst); }
+
+  inline bool 
+  atomic_bool::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_bool::store(bool __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_bool::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline bool 
+  atomic_bool::swap(bool __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_bool::compare_swap(bool& __e, bool __m, memory_order __x, 
+			    memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_bool::compare_swap(bool& __e, bool __m, memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_bool::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_char::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_char::store(char __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline char 
+  atomic_char::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline char 
+  atomic_char::swap(char __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_char::compare_swap(char& __e, char __m,
+			    memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_char::compare_swap(char& __e, char __m, memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_char::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_schar::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_schar::store(signed char __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline signed char 
+  atomic_schar::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline signed char 
+  atomic_schar::swap(signed char __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_schar::compare_swap(signed char& __e, signed char __m,
+			     memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_schar::compare_swap(signed char& __e, signed char __m, 
+			     memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_schar::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+  inline bool 
+  atomic_uchar::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_uchar::store(unsigned char __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline unsigned char 
+  atomic_uchar::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline unsigned char 
+  atomic_uchar::swap(unsigned char __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_uchar::compare_swap(unsigned char& __e, unsigned char __m,
+			     memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_uchar::compare_swap(unsigned char& __e, unsigned char __m, 
+			     memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_uchar::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_short::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_short::store(short __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline short 
+  atomic_short::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline short 
+  atomic_short::swap(short __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_short::compare_swap(short& __e, short __m,
+			     memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_short::compare_swap(short& __e, short __m, memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_short::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_ushort::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_ushort::store(unsigned short __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline unsigned short 
+  atomic_ushort::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline unsigned short 
+  atomic_ushort::swap(unsigned short __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_ushort::compare_swap(unsigned short& __e, unsigned short __m,
+			      memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_ushort::compare_swap(unsigned short& __e, unsigned short __m, 
+			      memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_ushort::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_int::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_int::store(int __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline int 
+  atomic_int::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline int 
+  atomic_int::swap(int __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_int::compare_swap(int& __e, int __m, memory_order __x, 
+			   memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_int::compare_swap(int& __e, int __m, memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_int::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_uint::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_uint::store(unsigned int __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline unsigned int 
+  atomic_uint::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline unsigned int 
+  atomic_uint::swap(unsigned int __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_uint::compare_swap(unsigned int& __e, unsigned int __m,
+			    memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_uint::compare_swap(unsigned int& __e, unsigned int __m, 
+			    memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_uint::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_long::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_long::store(long __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline long 
+  atomic_long::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline long 
+  atomic_long::swap(long __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_long::compare_swap(long& __e, long __m,
+			    memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_long::compare_swap(long& __e, long __m, memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_long::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_ulong::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_ulong::store(unsigned long __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline unsigned long 
+  atomic_ulong::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline unsigned long 
+  atomic_ulong::swap(unsigned long __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_ulong::compare_swap(unsigned long& __e, unsigned long __m,
+			     memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_ulong::compare_swap(unsigned long& __e, unsigned long __m, 
+			     memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_ulong::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_llong::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_llong::store(long long __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline long long 
+  atomic_llong::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline long long 
+  atomic_llong::swap(long long __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_llong::compare_swap(long long& __e, long long __m,
+			     memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_llong::compare_swap(long long& __e, long long __m, 
+			     memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_llong::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_ullong::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_ullong::store(unsigned long long __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline unsigned long long 
+  atomic_ullong::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline unsigned long long 
+  atomic_ullong::swap(unsigned long long __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_ullong::compare_swap(unsigned long long& __e, unsigned long long __m,
+			      memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_ullong::compare_swap(unsigned long long& __e, unsigned long long __m, 
+			      memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_ullong::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline bool 
+  atomic_wchar_t::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_wchar_t::store(wchar_t __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline wchar_t 
+  atomic_wchar_t::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline wchar_t 
+  atomic_wchar_t::swap(wchar_t __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_wchar_t::compare_swap(wchar_t& __e, wchar_t __m,
+			       memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_wchar_t::compare_swap(wchar_t& __e, wchar_t __m, 
+			       memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_wchar_t::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  inline void* 
+  atomic_address::fetch_add(ptrdiff_t __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+  inline void* 
+  atomic_address::fetch_sub(ptrdiff_t __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline char 
+  atomic_char::fetch_add(char __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline char 
+  atomic_char::fetch_sub(char __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline char 
+  atomic_char::fetch_and(char __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline char 
+  atomic_char::fetch_or(char __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline char 
+  atomic_char::fetch_xor(char __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline signed char 
+  atomic_schar::fetch_add(signed char __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline signed char 
+  atomic_schar::fetch_sub(signed char __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline signed char 
+  atomic_schar::fetch_and(signed char __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline signed char 
+  atomic_schar::fetch_or(signed char __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline signed char 
+  atomic_schar::fetch_xor(signed char __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline unsigned char 
+  atomic_uchar::fetch_add(unsigned char __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline unsigned char 
+  atomic_uchar::fetch_sub(unsigned char __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline unsigned char 
+  atomic_uchar::fetch_and(unsigned char __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline unsigned char 
+  atomic_uchar::fetch_or(unsigned char __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline unsigned char 
+  atomic_uchar::fetch_xor(unsigned char __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline short 
+  atomic_short::fetch_add(short __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline short 
+  atomic_short::fetch_sub(short __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline short 
+  atomic_short::fetch_and(short __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline short 
+  atomic_short::fetch_or(short __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline short 
+  atomic_short::fetch_xor(short __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline unsigned short 
+  atomic_ushort::fetch_add(unsigned short __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline unsigned short 
+  atomic_ushort::fetch_sub(unsigned short __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline unsigned short 
+  atomic_ushort::fetch_and(unsigned short __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline unsigned short 
+  atomic_ushort::fetch_or(unsigned short __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline unsigned short 
+  atomic_ushort::fetch_xor(unsigned short __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline int 
+  atomic_int::fetch_add(int __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline int 
+  atomic_int::fetch_sub(int __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline int 
+  atomic_int::fetch_and(int __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline int 
+  atomic_int::fetch_or(int __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline int 
+  atomic_int::fetch_xor(int __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline unsigned int 
+  atomic_uint::fetch_add(unsigned int __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline unsigned int 
+  atomic_uint::fetch_sub(unsigned int __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline unsigned int 
+  atomic_uint::fetch_and(unsigned int __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline unsigned int 
+  atomic_uint::fetch_or(unsigned int __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline unsigned int 
+  atomic_uint::fetch_xor(unsigned int __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline long 
+  atomic_long::fetch_add(long __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline long 
+  atomic_long::fetch_sub(long __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline long 
+  atomic_long::fetch_and(long __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline long 
+  atomic_long::fetch_or(long __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline long 
+  atomic_long::fetch_xor(long __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline unsigned long 
+  atomic_ulong::fetch_add(unsigned long __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline unsigned long 
+  atomic_ulong::fetch_sub(unsigned long __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline unsigned long 
+  atomic_ulong::fetch_and(unsigned long __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline unsigned long 
+  atomic_ulong::fetch_or(unsigned long __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline unsigned long 
+  atomic_ulong::fetch_xor(unsigned long __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline long long 
+  atomic_llong::fetch_add(long long __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline long long 
+  atomic_llong::fetch_sub(long long __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline long long 
+  atomic_llong::fetch_and(long long __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline long long 
+  atomic_llong::fetch_or(long long __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline long long 
+  atomic_llong::fetch_xor(long long __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline unsigned long long 
+  atomic_ullong::fetch_add(unsigned long long __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline unsigned long long 
+  atomic_ullong::fetch_sub(unsigned long long __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline unsigned long long 
+  atomic_ullong::fetch_and(unsigned long long __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline unsigned long long 
+  atomic_ullong::fetch_or(unsigned long long __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline unsigned long long
+  atomic_ullong::fetch_xor(unsigned long long __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline wchar_t 
+  atomic_wchar_t::fetch_add(wchar_t __m, memory_order __x) volatile
+  { return atomic_fetch_add_explicit(this, __m, __x); }
+
+
+  inline wchar_t 
+  atomic_wchar_t::fetch_sub(wchar_t __m, memory_order __x) volatile
+  { return atomic_fetch_sub_explicit(this, __m, __x); }
+
+
+  inline wchar_t 
+  atomic_wchar_t::fetch_and(wchar_t __m, memory_order __x) volatile
+  { return atomic_fetch_and_explicit(this, __m, __x); }
+
+
+  inline wchar_t 
+  atomic_wchar_t::fetch_or(wchar_t __m, memory_order __x) volatile
+  { return atomic_fetch_or_explicit(this, __m, __x); }
+
+
+  inline wchar_t 
+  atomic_wchar_t::fetch_xor(wchar_t __m, memory_order __x) volatile
+  { return atomic_fetch_xor_explicit(this, __m, __x); }
+
+
+  inline bool 
+  atomic_address::is_lock_free() const volatile
+  { return false; }
+
+  inline void 
+  atomic_address::store(void* __m, memory_order __x) volatile
+  { atomic_store_explicit(this, __m, __x); }
+
+  inline void* 
+  atomic_address::load(memory_order __x) volatile
+  { return atomic_load_explicit(this, __x); }
+
+  inline void* 
+  atomic_address::swap(void* __m, memory_order __x) volatile
+  { return atomic_swap_explicit(this, __m, __x); }
+
+  inline bool 
+  atomic_address::compare_swap(void*& __e, void* __m,
+			       memory_order __x, memory_order __y) volatile
+  { return atomic_compare_swap_explicit(this, &__e, __m, __x, __y); }
+
+  inline bool 
+  atomic_address::compare_swap(void*& __e, void* __m, 
+			       memory_order __x) volatile
+  {
+    const bool __cond1 = __x == memory_order_release;
+    const bool __cond2 = __x == memory_order_acq_rel;
+    memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+    memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+    return atomic_compare_swap_explicit(this, &__e, __m, __x, __mo2);
+  }
+
+  inline void 
+  atomic_address::fence(memory_order __x) const volatile
+  { return atomic_fence(this, __x); }
+
+
+  template<typename _Tp>
+    inline bool 
+    atomic<_Tp>::is_lock_free() const volatile
+    { return false; }
+
+  template<typename _Tp>
+    inline void 
+    atomic<_Tp>::store(_Tp __v, memory_order __x) volatile
+    // XXX
+    //  { _ATOMIC_STORE_(this, __v, __x); }
+    { }
+
+  template<typename _Tp>
+    inline _Tp 
+    atomic<_Tp>::load(memory_order __x) volatile
+    // XXX
+    //  { return _ATOMIC_LOAD_(this, __x); }
+    { }
+
+  template<typename _Tp>
+    inline _Tp 
+    atomic<_Tp>::swap(_Tp __v, memory_order __x) volatile
+    // XXX
+    //  { return _ATOMIC_MODIFY_(this, =, __v, __x); }
+    { }
+
+  template<typename _Tp>
+    inline bool 
+    atomic<_Tp>::compare_swap(_Tp& __r, _Tp __v, memory_order __x, 
+			      memory_order __y) volatile
+    // XXX
+    // { return _ATOMIC_CMPSWP_(this, &__r, __v, __x); }
+    { }
+
+  template<typename _Tp>
+    inline bool 
+    atomic<_Tp>::compare_swap(_Tp& __r, _Tp __v, memory_order __x) volatile
+    { 
+      const bool __cond1 = __x == memory_order_release;
+      const bool __cond2 = __x == memory_order_acq_rel;
+      memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+      memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+      return compare_swap(__r, __v, __x, __mo2);
+    }
+
+  template<typename _Tp>
+    _Tp* 
+    atomic<_Tp*>::load(memory_order __x) volatile
+    { return static_cast<_Tp*>(atomic_address::load(__x)); }
+
+  template<typename _Tp>
+    _Tp* 
+    atomic<_Tp*>::swap(_Tp* __v, memory_order __x) volatile
+    { return static_cast<_Tp*>(atomic_address::swap(__v, __x)); }
+
+  template<typename _Tp>
+    bool 
+    atomic<_Tp*>::compare_swap(_Tp*& __r, _Tp* __v, memory_order __x, 
+			       memory_order __y) volatile
+    { return atomic_address::compare_swap(*reinterpret_cast<void**>(&__r),
+					  static_cast<void*>(__v), __x, __y); }
+
+  template<typename _Tp>
+    bool 
+    atomic<_Tp*>::compare_swap(_Tp*& __r, _Tp* __v, memory_order __x) volatile
+    { 
+      const bool __cond1 = __x == memory_order_release;
+      const bool __cond2 = __x == memory_order_acq_rel;
+      memory_order __mo1(__cond1 ? memory_order_relaxed : __x);
+      memory_order __mo2(__cond2 ? memory_order_acquire : __mo1);
+      return compare_swap(__r, __v, __x, __mo2);
+    }
+
+  template<typename _Tp>
+    _Tp* 
+    atomic<_Tp*>::fetch_add(ptrdiff_t __v, memory_order __x) volatile
+    { 
+      void* __p = atomic_fetch_add_explicit(this, sizeof(_Tp) * __v, __x);
+      return static_cast<_Tp*>(__p);
+    }
+
+  template<typename _Tp>
+    _Tp* 
+    atomic<_Tp*>::fetch_sub(ptrdiff_t __v, memory_order __x) volatile
+    { 
+      void* __p = atomic_fetch_sub_explicit(this, sizeof(_Tp) * __v, __x); 
+      return static_cast<_Tp*>(__p);    
+    }
+
+_GLIBCXX_END_NAMESPACE
+
+#endif
+
+

@@ -36,6 +36,7 @@
 #include <csetjmp>
 #include <csignal>
 #include <cstdarg>
+#include <cstdatomic>
 #include <cstdbool>
 #include <cstddef>
 #include <cstdint>
@@ -67,6 +68,7 @@
 #include <math.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdarg.h>
 #ifdef _GLIBCXX_HAVE_STDBOOL_H
 #include <stdbool.h>

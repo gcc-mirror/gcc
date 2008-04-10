@@ -815,6 +815,9 @@
    TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1
 
+/* Define if standard layout types are supported in C++200x. */
+#undef _GLIBCXX_USE_STANDARD_LAYOUT
+
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 

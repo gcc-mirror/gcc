@@ -49,6 +49,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
+	$(top_srcdir)/../config/proginstall.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
@@ -867,6 +868,7 @@ c_base_headers = \
 	${c_base_srcdir}/csetjmp \
 	${c_base_srcdir}/csignal \
 	${c_base_srcdir}/cstdarg \
+	${c_base_srcdir}/cstdatomic \
 	${c_base_srcdir}/cstdbool \
 	${c_base_srcdir}/cstddef \
 	${c_base_srcdir}/cstdint \
@@ -885,7 +887,8 @@ c_compatibility_builddir = .
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@c_compatibility_headers = \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/complex.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/fenv.h \
-@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h 
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdatomic.h 
 
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 
 @GLIBCXX_C_HEADERS_C_TRUE@c_compatibility_headers = \

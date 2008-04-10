@@ -26,7 +26,11 @@ GLIBCXX_3.4 {
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
-      std::[A-Za]*;
+      std::[A-Z]*;
+      std::a[a-c]*;
+      std::ad[a-n]*;
+      std::ad[p-z]*;
+      std::a[e-z]*;
 #     std::ba[a-r]*;
       std::basic_[a-e]*;
       std::basic_f[a-r]*;
@@ -61,7 +65,9 @@ GLIBCXX_3.4 {
       std::c[i-s]*;
       std::c[u-z]*;
 #     std::[d-g]*;
-      std::[d-e]*;
+      std::d[a-d]*;
+      std::d[f-z]*;
+      std::e*;
       std::gslice*;
       std::h[^a]*;
       std::i[a-n]*;
@@ -120,7 +126,6 @@ GLIBCXX_3.4 {
       std::_List_node_base::unhook*;
       std::_List_node_base::reverse*;
       std::_List_node_base::transfer*;
-      std::__throw_*;
       std::__timepunct*;
       std::__numeric_limits_base*;
       std::__num_base::_S_format_float*;
@@ -135,23 +140,6 @@ GLIBCXX_3.4 {
 
     # Names not in an 'extern' block are mangled names.
 
-    # __gnu_debug::_Safe_sequence_base and _Safe_iterator_base
-    _ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv;
-    _ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv;
-    _ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
-    _ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
-    _ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
-    _ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv;
-    _ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv;
-    _ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
-
-    # __gnu_debug::_Error_formatter
-    _ZNK11__gnu_debug16_Error_formatter10_M_message*;
-    _ZNK11__gnu_debug16_Error_formatter10_Parameter*;
-    _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
-    _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
-    _ZNK11__gnu_debug16_Error_formatter8_M_error*;
-    
     # std::string
     _ZNSsC*;
     _ZNSsD*;
@@ -436,6 +424,39 @@ GLIBCXX_3.4 {
     _ZN10__gnu_norm15_List_node_base7reverseEv;
     _ZN10__gnu_norm15_List_node_base8transfer*;
 
+    # __gnu_debug::_Safe_sequence_base and _Safe_iterator_base
+    _ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv;
+    _ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv;
+    _ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
+    _ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
+    _ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
+    _ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv;
+    _ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv;
+    _ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
+
+    # __gnu_debug::_Error_formatter
+    _ZNK11__gnu_debug16_Error_formatter10_M_message*;
+    _ZNK11__gnu_debug16_Error_formatter10_Parameter*;
+    _ZNK11__gnu_debug16_Error_formatter13_M_print_word*;
+    _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
+    _ZNK11__gnu_debug16_Error_formatter8_M_error*;
+    
+    # exceptions as functions
+    _ZSt16__throw_bad_castv;
+    _ZSt17__throw_bad_allocv;
+    _ZSt18__throw_bad_typeidv;
+    _ZSt19__throw_ios_failurePKc;
+    _ZSt19__throw_logic_errorPKc;
+    _ZSt19__throw_range_errorPKc;
+    _ZSt20__throw_domain_errorPKc;
+    _ZSt20__throw_length_errorPKc;
+    _ZSt20__throw_out_of_rangePKc;
+    _ZSt21__throw_bad_exceptionv;
+    _ZSt21__throw_runtime_errorPKc;
+    _ZSt22__throw_overflow_errorPKc;
+    _ZSt23__throw_underflow_errorPKc;
+    _ZSt24__throw_invalid_argumentPKc;
+
     # operator new(size_t)
     _Znw[jm];
     # operator new(size_t, std::nothrow_t const&)
@@ -464,7 +485,10 @@ GLIBCXX_3.4 {
 #   _ZTVSt[0-9][0-9][A-Za-z]*;
     _ZTVSt[0-9][0-9][A-Z]*;
     _ZTVSt[0-9][0-9][a-d]*;
-    _ZTVSt[0-9][0-9][f-r]*;
+    _ZTVSt[0-9][0-9][f-k]*;
+    _ZTVSt11logic_error;
+    _ZTVSt12length_error;
+    _ZTVSt[0-9][0-9][m-r]*;
     _ZTVSt[0-9][0-9][t-z]*;
     _ZTVSt[0-9][0-9]e[^r]*;
     _ZTVSt[0-9][0-9]s[^y]*;
@@ -484,7 +508,10 @@ GLIBCXX_3.4 {
 #   _ZTISt[0-9][0-9][A-Za-z]*;
     _ZTISt[0-9][0-9][A-Z]*;
     _ZTISt[0-9][0-9][a-d]*;
-    _ZTISt[0-9][0-9][f-r]*;
+    _ZTISt[0-9][0-9][f-k]*;
+    _ZTISt11logic_error;
+    _ZTISt12length_error;
+    _ZTISt[0-9][0-9][m-r]*;
     _ZTISt[0-9][0-9][t-z]*;
     _ZTISt[0-9][0-9]e[^r]*;
     _ZTISt[0-9][0-9]s[^y]*;
@@ -508,7 +535,10 @@ GLIBCXX_3.4 {
 #    _ZTSSt[0-9][0-9][A-Za-z]*;
     _ZTSSt[0-9][0-9][A-Z]*;
     _ZTSSt[0-9][0-9][a-d]*;
-    _ZTSSt[0-9][0-9][f-r]*;
+    _ZTSSt[0-9][0-9][f-k]*;
+    _ZTSSt11logic_error;
+    _ZTSSt12length_error;
+    _ZTSSt[0-9][0-9][m-r]*;
     _ZTSSt[0-9][0-9][t-z]*;
     _ZTSSt[0-9][0-9]e[^r]*;
     _ZTSSt[0-9][0-9]s[^y]*;
@@ -785,13 +815,23 @@ GLIBCXX_3.4.10 {
 
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
-
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9CD]*;
 
 } GLIBCXX_3.4.9;
 
 GLIBCXX_3.4.11 {
+	 
+    # atomic
+    __atomic_flag_for_address;
+    __atomic_flag_wait_explicit;
+    atomic_flag_clear;
+    atomic_flag_clear_explicit;
+    atomic_flag_fence;
+    atomic_flag_test_and_set;
+    atomic_flag_test_and_set_explicit;
+    atomic_global_fence_compatibility;
+
     # system_error
     _ZSt15system_category;
 

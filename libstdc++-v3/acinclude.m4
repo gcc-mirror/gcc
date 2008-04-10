@@ -1477,6 +1477,46 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
 ])
 
 dnl
+dnl Check whether C++200x's standard layout types are supported. 
+dnl
+AC_DEFUN([GLIBCXX_CHECK_STANDARD_LAYOUT], [
+
+  AC_MSG_CHECKING([for ISO C++200x standard layout type support])
+  AC_CACHE_VAL(ac_standard_layout, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-std=gnu++0x'
+
+  AC_TRY_COMPILE([struct b
+                  {
+  		    bool t;
+
+		    // Need standard layout relaxation from POD
+		    private:	    
+  		    b& operator=(const b&);
+  		    b(const b&);
+		    };
+
+		    int main()
+		    {
+		      b tst1 = { false };
+		       return 0;
+		    }],,
+             [ac_standard_layout=yes], [ac_standard_layout=no])
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($ac_standard_layout)
+  if test x"$ac_standard_layout" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_STANDARD_LAYOUT, 1,
+              [Define if standard layout types are supported in C++200x.])
+  fi
+])
+
+dnl
 dnl Check for what type of C headers to use.
 dnl
 dnl --enable-cheaders= [does stuff].

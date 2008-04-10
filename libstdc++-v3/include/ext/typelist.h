@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,9 +71,20 @@ namespace typelist
       typedef Typelist 	tail;
     };
 
-  template<typename Fn, class Typelist>
+  // Apply all typelist types to unary functor.
+  template<typename Fn, typename Typelist>
     void
     apply(Fn&, Typelist);
+
+  /// Apply all typelist types to generator functor.
+  template<typename Gn, typename Typelist>
+    void
+    apply_generator(Gn&, Typelist);
+
+  // Apply all typelist types and values to generator functor.
+  template<typename Gn, typename TypelistT, typename TypelistV>
+    void
+    apply_generator(Gn&, TypelistT, TypelistV);
 
   template<typename Typelist0, typename Typelist1>
     struct append;
@@ -135,20 +146,64 @@ namespace detail
     struct apply_<Fn, chain<Hd, Tl> >
     {
       void
-      operator() (Fn& f)
+      operator()(Fn& f)
       {
 	f.operator()(Hd());
 	apply_<Fn, Tl> next;
 	next(f);
       }
-  };
+    };
 
   template<typename Fn>
     struct apply_<Fn, null_type>
     {
       void
       operator()(Fn&) { }
-  };
+    };
+
+  template<typename Gn, typename Typelist_Chain>
+    struct apply_generator1_;
+
+  template<typename Gn, typename Hd, typename Tl>
+    struct apply_generator1_<Gn, chain<Hd, Tl> >
+    {
+      void
+      operator()(Gn& g)
+      {
+	g.template operator()<Hd>();
+	apply_generator1_<Gn, Tl> next;
+	next(g);
+      }
+    };
+
+  template<typename Gn>
+    struct apply_generator1_<Gn, null_type>
+    {
+      void
+      operator()(Gn&) { }
+    };
+
+  template<typename Gn, typename TypelistT_Chain, typename TypelistV_Chain>
+    struct apply_generator2_;
+
+  template<typename Gn, typename Hd1, typename TlT, typename Hd2, typename TlV>
+    struct apply_generator2_<Gn, chain<Hd1, TlT>, chain<Hd2, TlV> >
+    {
+      void
+      operator()(Gn& g)
+      {
+	g.template operator()<Hd1, Hd2>();
+	apply_generator2_<Gn, TlT, TlV> next;
+	next(g);
+      }
+    };
+
+  template<typename Gn>
+    struct apply_generator2_<Gn, null_type, null_type>
+    {
+      void
+      operator()(Gn&) { }
+    };
 
   template<typename Typelist_Chain0, typename Typelist_Chain1>
     struct append_;
@@ -294,20 +349,20 @@ namespace detail
     struct chain_flatten_;
 
   template<typename Hd_Tl>
-  struct chain_flatten_<chain<Hd_Tl, null_type> >
-  {
-    typedef typename Hd_Tl::root 				type;
-  };
+    struct chain_flatten_<chain<Hd_Tl, null_type> >
+    {
+      typedef typename Hd_Tl::root 				type;
+    };
 
   template<typename Hd_Typelist, class Tl_Typelist>
-  struct chain_flatten_<chain<Hd_Typelist, Tl_Typelist> >
-  {
-  private:
-    typedef typename chain_flatten_<Tl_Typelist>::type 		rest_type;
-    typedef append<Hd_Typelist, node<rest_type> >		append_type;
-  public:
-    typedef typename append_type::type::root 			type;
-  };
+    struct chain_flatten_<chain<Hd_Typelist, Tl_Typelist> >
+    {
+    private:
+      typedef typename chain_flatten_<Tl_Typelist>::type 	rest_type;
+      typedef append<Hd_Typelist, node<rest_type> >		append_type;
+    public:
+      typedef typename append_type::type::root 			type;
+    };
 } // namespace detail
 } // namespace typelist
 
@@ -333,11 +388,29 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 namespace typelist
 {
-  template<typename Fn, class Typelist>
+  template<typename Fn, typename Typelist>
     void
     apply(Fn& fn, Typelist)
     {
       detail::apply_<Fn, typename Typelist::root> a;
+      a(fn);
+    }
+
+  template<typename Fn, typename Typelist>
+    void
+    apply_generator(Fn& fn, Typelist)
+    {
+      detail::apply_generator1_<Fn, typename Typelist::root> a;
+      a(fn);
+    }
+
+  template<typename Fn, typename TypelistT, typename TypelistV>
+    void
+    apply_generator(Fn& fn, TypelistT, TypelistV)
+    {
+      typedef typename TypelistT::root rootT;
+      typedef typename TypelistV::root rootV;
+      detail::apply_generator2_<Fn, rootT, rootV> a;
       a(fn);
     }
 

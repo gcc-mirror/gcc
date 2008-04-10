@@ -134,6 +134,7 @@ endif
 
 # Sources present in the src directory.
 sources = \
+	atomic.cc \
 	bitmap_allocator.cc \
 	pool_allocator.cc \
 	mt_allocator.cc \
@@ -247,6 +248,11 @@ date_time.lo: date_time.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 date_time.o: date_time.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+atomic.lo: atomic.cc
+	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
+atomic.o: atomic.cc
+	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
