@@ -1,3 +1,8 @@
+2008-04-10  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.h: Remove the remains of the recent search
+	& replace action of current_function_outgoing_args_size.
+
 2008-04-10  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35821
