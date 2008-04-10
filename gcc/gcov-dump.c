@@ -420,7 +420,7 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
   gcov_read_summary (&summary);
   printf (" checksum=0x%08x", summary.checksum);
 
-  for (ix = 0; ix != GCOV_COUNTERS; ix++)
+  for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
     {
       printf ("\n");
       print_prefix (filename, 0, 0);
