@@ -253,7 +253,6 @@
 	* doc/xml/manual/parallel_mode.xml: Correct configuration documentation.
 	* doc/html/manual/bk01pt12ch31s04.html: Regenerate.
 
->>>>>>> .r133664
 2008-03-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:11:0.
