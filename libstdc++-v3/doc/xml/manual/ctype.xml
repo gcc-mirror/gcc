@@ -99,7 +99,7 @@ characters.
    <listitem>
      <para> 
        Get the ctype&lt;wchar_t&gt;::mask stuff under control. Need to
-       make some kind of static table, and not do lookup evertime
+       make some kind of static table, and not do lookup every time
        somebody hits the do_is... functions. Too bad we can't just
        redefine mask for ctype&lt;wchar_t&gt; 
    </para></listitem>

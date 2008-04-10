@@ -461,7 +461,7 @@
 </qandadiv>
 
 
-<!-- Platorm-Specific Issues -->
+<!-- Platform-Specific Issues -->
 <qandadiv id="faq.platform-specific" xreflabel="Platform-Specific Issues">
 <title>Platform-Specific Issues</title>
 
@@ -661,7 +661,7 @@
     enough to detect when the minimal support to
     enable <type>wchar_t</type> and C++ library structures
     like <classname>wstring</classname> were present. This impacted Solaris,
-    Darwin, and BSD varients, and is fixed in libstdc++ versions post 4.1.0.
+    Darwin, and BSD variants, and is fixed in libstdc++ versions post 4.1.0.
     </para> 
     <para> 
     </para> 
@@ -1098,7 +1098,7 @@
   </question>
   <answer id="a-extensions_and_backwards_compat">
     <para>
-      See the <link linkend="manual.appendix.porting.backwards">link</link> on backwards compatiblity and <link linkend="appendix.porting.api">link</link> on evolution.
+      See the <link linkend="manual.appendix.porting.backwards">link</link> on backwards compatibility and <link linkend="appendix.porting.api">link</link> on evolution.
     </para> 
   </answer>
 </qandaentry>

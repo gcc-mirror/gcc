@@ -210,7 +210,7 @@
     "export") is badly needed.<br />
 <br />
     When building a shared library, the current compiler/linker cannot<br />
-    automatically generate the instantiatiations needed. This creates a<br />
+    automatically generate the instantiations needed. This creates a<br />
     miserable situation; it means any time something is changed in the<br />
     library, before a shared library can be built someone must manually<br />
     copy the declarations of all templates that are needed by other parts<br />
@@ -814,7 +814,7 @@
     by filebuf. These wrappings have not been completed, though there<br />
     is scaffolding in place.<br />
 <br />
-    The encapulation of certain C header &lt;cstdio&gt; names presents an<br />
+    The encapsulation of certain C header &lt;cstdio&gt; names presents an<br />
     interesting problem. It is possible to define an inline std::fprintf()<br />
     implemented in terms of the 'extern "C"' vfprintf(), but there is no<br />
     standard vfscanf() to use to implement std::fscanf(). It appears that<br />

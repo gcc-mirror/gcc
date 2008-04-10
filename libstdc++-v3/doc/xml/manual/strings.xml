@@ -35,7 +35,7 @@
       <code>transform&lt;&gt;</code> is used.
    </para>
    <para>
-     This code will go through some iterations.  Here's a simiple
+     This code will go through some iterations.  Here's a simple
      version:
    </para>
    <programlisting>
@@ -126,7 +126,7 @@
  
   </sect1>
   <sect1 id="strings.string.case" xreflabel="Case Sensitivity">
-    <title>Case Sensivitity</title>
+    <title>Case Sensitivity</title>
     <para>
     </para>
 
