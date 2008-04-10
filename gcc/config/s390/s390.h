@@ -521,7 +521,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.  */
-extern int crtl->outgoing_args_size;
 #define STACK_DYNAMIC_OFFSET(FUNDECL) \
   (STACK_POINTER_OFFSET + crtl->outgoing_args_size)
 
