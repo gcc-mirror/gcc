@@ -2239,7 +2239,7 @@ range of 1 to 2047.
 
 @end table
 
-@item Blackfin family---@file{config/bfin/bfin.h}
+@item Blackfin family---@file{config/bfin/constraints.md}
 @table @code
 @item a
 P register

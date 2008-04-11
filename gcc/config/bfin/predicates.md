@@ -34,7 +34,7 @@
 ;; if the constant would be cheap to load.
 (define_predicate "highbits_operand"
   (and (match_code "const_int")
-       (match_test "log2constp (-INTVAL (op)) && !CONST_7BIT_IMM_P (INTVAL (op))")))
+       (match_test "log2constp (-INTVAL (op)) && !satisfies_constraint_Ks7 (op)")))
 
 ;; Return nonzero if OP is suitable as a right-hand side operand for an
 ;; andsi3 operation.
@@ -99,7 +99,7 @@
 (define_predicate "reg_or_7bit_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_7BIT_IMM_P (INTVAL (op))"))))
+	    (match_test "satisfies_constraint_Ks7 (op)"))))
 
 ;; Return nonzero if OP is a register other than DREG and PREG.
 (define_predicate "nondp_register_operand"
@@ -123,7 +123,7 @@
 (define_predicate "reg_or_neg7bit_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
-	    (match_test "CONST_7BIT_IMM_P (-INTVAL (op))"))))
+	    (match_test "satisfies_constraint_KN7 (op)"))))
 
 ;; Used for secondary reloads, this function returns 1 if OP is of the
 ;; form (plus (fp) (const_int)).

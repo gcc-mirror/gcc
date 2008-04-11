@@ -1,3 +1,23 @@
+2008-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/constraints.md: New file.
+	* config/bfin/bfin.md: Include it.
+	(adddi3): Use satisfies_constraint functions instead of the old macros.
+	* config/bfin/bfin.h (REG_CLASS_FROM_LETTER, CONSTRAINT_LEN,
+	CONST_18UBIT_IMM_P, CONST_16BIT_IMM_P, CONST_16UBIT_IMM_P,
+	CONST_7BIT_IMM_P, CONST_7NBIT_IMM_P, CONST_5UBIT_IMM_P,
+	CONST_4BIT_IMM_P, CONST_4UBIT_IMM_P, CONST_3BIT_IMM_P,
+	CONST_3UBIT_IMM_P, CONST_OK_FOR_K, CONST_OK_FOR_P, CONST_OK_FOR_M,
+	CONST_OK_FOR_CONSTRAINT_P, CONST_DOUBLE_OK_FOR_LETTER,
+	EXTRA_CONSTRAINT): Delete.
+	* config/bfin/predicates.md (highbits_operand, reg_or_7bit_operand,
+	reg_or_neg7bit_operand): Use satisfies_constraint functions instead
+	of the old macros.
+	* config/bfin/bfin.c: Include "tm-constrs.h".
+	(bfin_secondary_reload, split_load_immediate, bfin_rtx_costs):
+	Use satisfies_constraint functions instead of the old macros.
+	* doc/md.texi (Blackfin Constraints): Update file name reference.
+
 2008-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35869
