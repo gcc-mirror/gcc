@@ -1,3 +1,15 @@
+2008-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/35897
+	* dse.c (store_info): Change positions_needed to unsigned
+	HOST_WIDE_INT.
+	(lowpart_bitmask): New.
+	(record_store): Cast to unsigned HOST_WIDE_INT for
+	positions_needed.  Assert width <= size of positions_needed *
+	CHAR_BIT.  Call lowpart_bitmask to initialize positions_needed.
+	(check_mem_read_rtx): Use unsigned HOST_WIDE_INT on mask.  Call
+	lowpart_bitmask to set mask.
+
 2008-04-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/constraints.md: New file.
