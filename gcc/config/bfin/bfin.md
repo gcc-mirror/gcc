@@ -258,7 +258,7 @@
 ;; Operand and operator predicates
 
 (include "predicates.md")
-
+(include "constraints.md")
 
 ;;; FRIO branches have been optimized for code density
 ;;; this comes at a slight cost of complexity when
@@ -1018,7 +1018,7 @@
   xops[7] = gen_rtx_REG (BImode, REG_CC);
   if (!register_operand (xops[4], SImode)
       && (GET_CODE (xops[4]) != CONST_INT
-          || !CONST_OK_FOR_K (INTVAL (xops[4]), "Ks7")))
+          || !satisfies_constraint_Ks7 (xops[4])))
     xops[4] = force_reg (SImode, xops[4]);
   if (!reg_overlap_mentioned_p (operands[0], operands[1])
       && !reg_overlap_mentioned_p (operands[0], operands[2]))
@@ -1027,7 +1027,7 @@
   emit_insn (gen_movbisi (xops[6], xops[7]));
   if (!register_operand (xops[5], SImode)
       && (GET_CODE (xops[5]) != CONST_INT
-          || !CONST_OK_FOR_K (INTVAL (xops[5]), "Ks7")))
+          || !satisfies_constraint_Ks7 (xops[5])))
     xops[5] = force_reg (SImode, xops[5]);
   if (xops[5] != const0_rtx)
     emit_insn (gen_addsi3 (xops[1], xops[3], xops[5]));
