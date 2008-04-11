@@ -1370,8 +1370,7 @@ record_store (rtx body, bb_info_t bb_info)
       ptr = next;
     }
   
-  gcc_assert ((unsigned) width
-	      <= sizeof (store_info->positions_needed) * CHAR_BIT);
+  gcc_assert ((unsigned) width <= HOST_BITS_PER_WIDE_INT);
   
   /* Finish filling in the store_info.  */
   store_info->next = insn_info->store_rec;

@@ -1,5 +1,10 @@
 2008-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* dse.c (record_store): Use HOST_BITS_PER_WIDE_INT instead
+	of size of positions_needed * CHAR_BIT.
+
+2008-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/35897
 	* dse.c (store_info): Change positions_needed to unsigned
 	HOST_WIDE_INT.
