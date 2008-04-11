@@ -1,3 +1,9 @@
+2008-04-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* configure.ac: (need_64bit_hwint): Need 64bit hwint for sh-*-*
+	and shbe-*-*.
+	* configure: Rebuilt.
+
 2008-04-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Add used_define,

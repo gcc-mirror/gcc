@@ -1,3 +1,7 @@
+2008-04-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config.gcc (need_64bit_hwint): Need 64bit hwint for sh-*-*.
+
 2008-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/35768
