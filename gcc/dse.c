@@ -229,7 +229,7 @@ struct store_info
   /* An bitmask as wide as the number of bytes in the word that
      contains a 1 if the byte may be needed.  The store is unused if
      all of the bits are 0.  */
-  long positions_needed;
+  unsigned HOST_WIDE_INT positions_needed;
 
   /* The next store info for this insn.  */
   struct store_info *next;
@@ -239,6 +239,15 @@ struct store_info
      basic block.  */
   rtx rhs;  
 };
+
+/* Return a bitmask with the first N low bits set.  */
+
+static unsigned HOST_WIDE_INT
+lowpart_bitmask (int n)
+{
+  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT) 0;
+  return mask >> (HOST_BITS_PER_WIDE_INT - n);
+}
 
 typedef struct store_info *store_info_t;
 static alloc_pool cse_store_info_pool;
@@ -1308,7 +1317,7 @@ record_store (rtx body, bb_info_t bb_info)
 	      && (GET_MODE (mem) == entry->mode))
 	    {
 	      delete = true;
-	      s_info->positions_needed = 0;
+	      s_info->positions_needed = (unsigned HOST_WIDE_INT) 0;
 	    }
 	  if (dump_file)
 	    fprintf (dump_file, "    trying spill store in insn=%d alias_set=%d\n",
@@ -1324,7 +1333,8 @@ record_store (rtx body, bb_info_t bb_info)
 		     (int)s_info->begin, (int)s_info->end);
 	  for (i = offset; i < offset+width; i++)
 	    if (i >= s_info->begin && i < s_info->end)
-	      s_info->positions_needed &= ~(1L << (i - s_info->begin));
+	      s_info->positions_needed
+		&= ~(((unsigned HOST_WIDE_INT) 1) << (i - s_info->begin));
 	}
       else if (s_info->rhs)
 	/* Need to see if it is possible for this store to overwrite
@@ -1340,7 +1350,7 @@ record_store (rtx body, bb_info_t bb_info)
       
       /* An insn can be deleted if every position of every one of
 	 its s_infos is zero.  */
-      if (s_info->positions_needed != 0)
+      if (s_info->positions_needed != (unsigned HOST_WIDE_INT) 0)
 	delete = false;
       
       if (delete)
@@ -1360,7 +1370,8 @@ record_store (rtx body, bb_info_t bb_info)
       ptr = next;
     }
   
-  gcc_assert ((unsigned) width < sizeof (store_info->positions_needed) * CHAR_BIT);
+  gcc_assert ((unsigned) width
+	      <= sizeof (store_info->positions_needed) * CHAR_BIT);
   
   /* Finish filling in the store_info.  */
   store_info->next = insn_info->store_rec;
@@ -1369,7 +1380,7 @@ record_store (rtx body, bb_info_t bb_info)
   store_info->alias_set = spill_alias_set;
   store_info->mem_addr = get_addr (XEXP (mem, 0));
   store_info->cse_base = base;
-  store_info->positions_needed = (1L << width) - 1;
+  store_info->positions_needed = lowpart_bitmask (width);
   store_info->group_id = group_id;
   store_info->begin = offset;
   store_info->end = offset + width;
@@ -1801,8 +1812,10 @@ check_mem_read_rtx (rtx *loc, void *data)
 		      && (offset >= store_info->begin)
 		      && (offset + width <= store_info->end))
 		    {
-		      int mask = ((1L << width) - 1) << (offset - store_info->begin);
-		      
+		      unsigned HOST_WIDE_INT mask
+			= (lowpart_bitmask (width)
+			   << (offset - store_info->begin));
+
 		      if ((store_info->positions_needed & mask) == mask
 			  && replace_read (store_info, i_ptr, 
 					   read_info, insn_info, loc))
@@ -1868,8 +1881,10 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      && (offset >= store_info->begin)
 	      && (offset + width <= store_info->end))
 	    {
-	      int mask = ((1L << width) - 1) << (offset - store_info->begin);
-	      
+	      unsigned HOST_WIDE_INT mask
+		= (lowpart_bitmask (width)
+		   << (offset - store_info->begin));
+
 	      if ((store_info->positions_needed & mask) == mask
 		  && replace_read (store_info, i_ptr, 
 				   read_info, insn_info, loc))
