@@ -1,3 +1,8 @@
+2008-04-11  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35744
+	* gcc.dg/attr-error-1.c: New test.
+
 2008-04-10  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/scc-2.c: New test.
