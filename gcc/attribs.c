@@ -225,6 +225,9 @@ decl_attributes (tree *node, tree attributes, int flags)
   tree a;
   tree returned_attrs = NULL_TREE;
 
+  if (TREE_TYPE (*node) == error_mark_node)
+    return NULL_TREE;
+
   if (!attributes_initialized)
     init_attributes ();
 

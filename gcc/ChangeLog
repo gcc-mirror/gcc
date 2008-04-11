@@ -1,3 +1,8 @@
+2008-04-11  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35744
+	* attribs.c (decl_attributes): Return early on errorneous node.
+
 2008-04-10  Oleg Ryjkov  <olegr@google.com>
 
 	* tree.h (struct tree_base): Added a new flag default_def_flag.
