@@ -6734,20 +6734,6 @@ execute_vrp (void)
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
 
-  /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
-     CFG in a broken state and requires a cfg_cleanup run.  */
-  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
-    remove_edge (e);
-  /* Update SWITCH_EXPR case label vector.  */
-  for (i = 0; VEC_iterate (switch_update, to_update_switch_stmts, i, su); ++i)
-    SWITCH_LABELS (su->stmt) = su->vec;
-
-  if (VEC_length (edge, to_remove_edges) > 0)
-    free_dominance_info (CDI_DOMINATORS);
-
-  VEC_free (edge, heap, to_remove_edges);
-  VEC_free (switch_update, heap, to_update_switch_stmts);
-
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
      does not properly handle ASSERT_EXPRs.  */
@@ -6761,6 +6747,24 @@ execute_vrp (void)
   update_ssa (TODO_update_ssa);
 
   finalize_jump_threads ();
+
+  /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
+     CFG in a broken state and requires a cfg_cleanup run.  */
+  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
+    remove_edge (e);
+  /* Update SWITCH_EXPR case label vector.  */
+  for (i = 0; VEC_iterate (switch_update, to_update_switch_stmts, i, su); ++i)
+    SWITCH_LABELS (su->stmt) = su->vec;
+
+  if (VEC_length (edge, to_remove_edges) > 0)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      cleanup_tree_cfg ();
+    }
+
+  VEC_free (edge, heap, to_remove_edges);
+  VEC_free (switch_update, heap, to_update_switch_stmts);
+
   scev_finalize ();
   loop_optimizer_finalize ();
 

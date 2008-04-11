@@ -1,3 +1,8 @@
+2008-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35869
+	* gcc.c-torture/compile/pr35869.c: New testcase.
+
 2008-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse-13.c: Move __builtin_ia32_round* to new
