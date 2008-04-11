@@ -1,3 +1,9 @@
+2008-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35869
+	* tree-vrp.c (execute_vrp): Move switch statement update after
+	jump threading.  Schedule another cfg cleanup run.
+
 2008-04-11  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35744
