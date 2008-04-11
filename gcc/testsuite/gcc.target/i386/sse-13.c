@@ -21,6 +21,12 @@
 #define __builtin_ia32_aeskeygenassist128(X, C) __builtin_ia32_aeskeygenassist128(X, 1)
 #define __builtin_ia32_pclmulqdq128(X, Y, I) __builtin_ia32_pclmulqdq128(X, Y, 1)
 
+/* mmintrin-common.h */
+#define __builtin_ia32_roundpd(V, M) __builtin_ia32_roundpd(V, 1)
+#define __builtin_ia32_roundsd(D, V, M) __builtin_ia32_roundsd(D, V, 1)
+#define __builtin_ia32_roundps(V, M) __builtin_ia32_roundps(V, 1)
+#define __builtin_ia32_roundss(D, V, M) __builtin_ia32_roundss(D, V, 1)
+
 /* smmintrin.h */
 #define __builtin_ia32_pblendw128(X, Y, M) __builtin_ia32_pblendw128 (X, Y, 1)
 #define __builtin_ia32_blendps(X, Y, M) __builtin_ia32_blendps(X, Y, 1)
@@ -35,10 +41,6 @@
 #define __builtin_ia32_vec_ext_v16qi(X, N) __builtin_ia32_vec_ext_v16qi(X, 1)
 #define __builtin_ia32_vec_ext_v4si(X, N) __builtin_ia32_vec_ext_v4si(X, 1)
 #define __builtin_ia32_vec_ext_v2di(X, N) __builtin_ia32_vec_ext_v2di(X, 1)
-#define __builtin_ia32_roundpd(V, M) __builtin_ia32_roundpd(V, 1)
-#define __builtin_ia32_roundsd(D, V, M) __builtin_ia32_roundsd(D, V, 1)
-#define __builtin_ia32_roundps(V, M) __builtin_ia32_roundps(V, 1)
-#define __builtin_ia32_roundss(D, V, M) __builtin_ia32_roundss(D, V, 1)
 #define __builtin_ia32_mpsadbw128(X, Y, M) __builtin_ia32_mpsadbw128(X, Y, 1)
 #define __builtin_ia32_pcmpistrm128(X, Y, M) \
   __builtin_ia32_pcmpistrm128(X, Y, 1)
