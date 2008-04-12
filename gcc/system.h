@@ -802,7 +802,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #pragma GCC diagnostic warning "-Wcast-qual"
 /* If asserts are disabled, activate -Wuninitialized as a warning (not
    an error/-Werror).  */
-#ifndef ASSERT_CHECKING
+#ifndef ENABLE_ASSERT_CHECKING
 #pragma GCC diagnostic warning "-Wuninitialized"
 #endif
 #endif
