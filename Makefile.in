@@ -20,6 +20,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
+# First, test for a proper version of make, but only where one is required.
+
+@if gcc
+ifeq (,$(.VARIABLES)) # The variable .VARIABLES, new with 3.80, is never empty.
+$(error GNU make version 3.80 or newer is required.)
+endif
+@endif gcc
+
 # -------------------------------
 # Standard Autoconf-set variables
 # -------------------------------

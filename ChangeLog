@@ -1,3 +1,8 @@
+2008-04-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* Makefile.tpl <gcc>: Error early unless at least GNU make 3.80.
+	* Makefile.in: Regenerate.
+
 2008-04-11  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* configure.ac: Do not build libssp for the AVR.
