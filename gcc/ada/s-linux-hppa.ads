@@ -103,7 +103,7 @@ package System.Linux is
    SA_SIGINFO  : constant := 16#10#;
    SA_ONSTACK  : constant := 16#01#;
 
-   type lock_array is array (1 .. 4) of int;
+   type lock_array is array (1 .. 4) of Integer;
    type atomic_lock_t is record
       lock : lock_array;
    end record;
