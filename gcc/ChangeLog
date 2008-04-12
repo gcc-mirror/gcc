@@ -1,3 +1,11 @@
+2008-04-12  James E. Wilson  <wilson@tuliptree.org>
+
+	PR target/35695
+	* config/ia64/div.md (recip_approx_rf): Use UNSPEC not DIV.
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle
+	UNSPEC_FR_RECIP_APPROX_RES.
+	* config/ia64/ia64.md (UNSPEC_FR_RECIP_APPROX_RES): Define.
+
 2008-04-09 Andy Hutchinson <hutchinsonandy@aim.com>
 
 	PR rtl-optimization/34916
