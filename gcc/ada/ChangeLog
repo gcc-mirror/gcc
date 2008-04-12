@@ -1,3 +1,7 @@
+2008-04-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-linux-hppa.ads: Fix syntax errors.
+
 2008-04-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnat_ugn.texi: Fix typos.
