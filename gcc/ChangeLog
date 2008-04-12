@@ -1,3 +1,7 @@
+2008-04-11  James E. Wilson  <wilson@tuliptree.org>
+
+	* system.h: Change ASSERT_CHECKING to ENABLE_ASSERT_CHECKING.
+
 2008-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dse.c (record_store): Use HOST_BITS_PER_WIDE_INT instead
