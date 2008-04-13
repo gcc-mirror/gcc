@@ -60,7 +60,7 @@
 --  reasonable to include this case for consistency. In addition, we recognize
 --  any of these sequences in any of the operating systems, for better
 --  behavior in treating foreign files (e.g. a Unix file with LF terminators
---  transferred to a DOS system). Finally, wide character codes in cagtegories
+--  transferred to a DOS system). Finally, wide character codes in categories
 --  Separator, Line and Separator, Paragraph are considered to be physical
 --  line terminators.
 
@@ -162,7 +162,7 @@ package Sinput is
 
    --  Note: fields marked read-only are set by Sinput or one of its child
    --  packages when a source file table entry is created, and cannot be
-   --  subsqently modified, or alternatively are set only by very special
+   --  subsequently modified, or alternatively are set only by very special
    --  circumstances, documented in the comments.
 
    --  File_Name : File_Name_Type (read-only)
@@ -236,7 +236,7 @@ package Sinput is
    --    later on in this spec for a description of the checksum algorithm.
 
    --  Last_Source_Line : Physical_Line_Number;
-   --    Physical line number of last source line. Whlie a file is being
+   --    Physical line number of last source line. While a file is being
    --    read, this refers to the last line scanned. Once a file has been
    --    completely scanned, it is the number of the last line in the file,
    --    and hence also gives the number of source lines in the file.
@@ -517,7 +517,7 @@ package Sinput is
 
    function Num_Source_Lines (S : Source_File_Index) return Nat;
    --  Returns the number of source lines (this is equivalent to reading
-   --  the value of Last_Source_Line, but returns Nat rathern than a
+   --  the value of Last_Source_Line, but returns Nat rather than a
    --  physical line number.
 
    procedure Register_Source_Ref_Pragma
@@ -703,7 +703,7 @@ private
       Sloc_Adjust : Source_Ptr;
       --  A value to be added to Sloc values for this file to reference the
       --  corresponding lines table. This is zero for the non-instantiation
-      --  case, and set so that the adition references the ultimate template
+      --  case, and set so that the addition references the ultimate template
       --  for the instantiation case. See Sinput-L for further details.
 
       Lines_Table : Lines_Table_Ptr;

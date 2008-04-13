@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package Stringt is
    --  new string is initialized to be a copy of the given string. A test is
    --  made to see if S is the last created string, and if so it is shared,
    --  rather than copied, this can be particularly helpful for the case of
-   --  a continued concatenaion of string constants.
+   --  a continued concatenation of string constants.
 
    procedure Store_String_Char (C : Char_Code);
    procedure Store_String_Char (C : Character);

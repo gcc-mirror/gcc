@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2007, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2008, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -711,7 +711,7 @@ get_gmtoff (void)
 
 long __gnat_invalid_tzoff = 259273;
 
-/* Definition of __gnat_locatime_r used by a-calend.adb */
+/* Definition of __gnat_localtime_r used by a-calend.adb */
 
 #if defined (__EMX__) || defined (__MINGW32__)
 

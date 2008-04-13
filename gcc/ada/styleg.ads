@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,7 +136,7 @@ package Styleg is
    pragma Inline (Check_Separate_Stmt_Lines);
    --  Called after scanning THEN (not preceded by AND) or ELSE (not preceded
    --  by OR). Used to check that no tokens follow on the same line (which
-   --  would intefere with coverage testing). Handles case of THEN ABORT as
+   --  would interfere with coverage testing). Handles case of THEN ABORT as
    --  an exception, as well as PRAGMA after ELSE.
 
    procedure Check_Unary_Plus_Or_Minus;

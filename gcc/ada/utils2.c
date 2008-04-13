@@ -143,7 +143,7 @@ known_alignment (tree exp)
      both type and expression information in this case.
 
      Beware that we can still get a dummy designated subtype here (e.g. Taft
-     Amendement types), in which the alignment information is meaningless and
+     Amendment types), in which the alignment information is meaningless and
      should be ignored.
 
      We always compute a type_alignment value and return the MAX of it

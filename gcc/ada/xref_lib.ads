@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,7 +115,7 @@ package Xref_Lib is
    --  If Der_Info is true, then the derived type information will be
    --  processed.
    --
-   --  If Type_Tree is true, then the type hierarchy wil be searched
+   --  If Type_Tree is true, then the type hierarchy will be searched
    --  going from the pattern to the parent type.
 
    procedure Search_Xref

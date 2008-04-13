@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@
 --       appropriate vms equivalents. Note that replacements do not occur
 --       within ^alpha^beta^ sequences.
 
---       Any occurence of [filename].extension, where extension one of the
+--       Any occurrence of [filename].extension, where extension one of the
 --       following:
 
 --           "o", "ads", "adb", "ali", "ada", "atb", "ats", "adc", "c"

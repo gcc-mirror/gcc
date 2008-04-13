@@ -1469,7 +1469,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 		  var_name, type);
 
   /* If this is external, throw away any initializations (they will be done
-     elsewhere) unless this is a a constant for which we would like to remain
+     elsewhere) unless this is a constant for which we would like to remain
      able to get the initializer.  If we are defining a global here, leave a
      constant initialization and save any variable elaborations for the
      elaboration routine.  If we are just annotating types, throw away the
@@ -2082,7 +2082,7 @@ gnat_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       return NULL;
     }
 
-  /* Otherwise, no need to walk the the same tree twice.  */
+  /* Otherwise, no need to walk the same tree twice.  */
   if (pointer_set_contains (p_set, stmt))
     {
       *walk_subtrees = 0;
@@ -2214,7 +2214,7 @@ end_subprog_body (tree body)
   if (type_annotate_only)
     return;
 
-  /* Perform the required pre-gimplfication transformations on the tree.  */
+  /* Perform the required pre-gimplification transformations on the tree.  */
   gnat_genericize (fndecl);
 
   /* We do different things for nested and non-nested functions.
@@ -3231,7 +3231,7 @@ update_pointer_to (tree old_type, tree new_type)
      qualifiers than the new_type ones, for instance in some cases of pointers
      to private record type elaboration (see the comments around the call to
      this routine from gnat_to_gnu_entity/E_Access_Type). We have to merge the
-     qualifiers in thoses cases too, to avoid accidentally discarding the
+     qualifiers in those cases too, to avoid accidentally discarding the
      initial set, and will often end up with old_type == new_type then.  */
   new_type = build_qualified_type (new_type,
 				   TYPE_QUALS (old_type)

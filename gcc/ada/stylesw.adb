@@ -206,7 +206,7 @@ package body Stylesw is
       --  Concatenates image of N at end of Style_Msg_Buf
 
       procedure Bad_Style_Switch (Msg : String);
-      --  Called if bad style switch found. Msg is mset in Style_Msg_Buf and
+      --  Called if bad style switch found. Msg is set in Style_Msg_Buf and
       --  Style_Msg_Len. OK is set False.
 
       -------------

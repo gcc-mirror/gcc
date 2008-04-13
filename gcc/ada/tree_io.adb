@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,7 +107,7 @@ package body Tree_IO is
    -----------------------
 
    procedure Read_Buffer;
-   --  Reads data into buffer, setting Bufe appropriately
+   --  Reads data into buffer, setting Bufn appropriately
 
    function Read_Byte return Byte;
    pragma Inline (Read_Byte);

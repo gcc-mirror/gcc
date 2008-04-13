@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -233,7 +233,7 @@ package Uintp is
    function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint;
    --  Compute the multiplicative inverse of N in modular arithmetics with the
    --  given Modulo (uses Euclid's algorithm). Note: the call is considered
-   --  to be erroneous (and the behavior is undefined) if n is not inversible.
+   --  to be erroneous (and the behavior is undefined) if n is not invertible.
 
    function UI_From_Dint (Input : Dint) return Uint;
    --  Converts Dint value to universal integer form

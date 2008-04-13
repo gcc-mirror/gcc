@@ -7,6 +7,7 @@
  *                          C Implementation File                           *
  *                                                                          *
  *                     Copyright (C) 2004-2007, AdaCore                     *
+ *             Copyright (C) 2008, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,7 +38,7 @@
 #include <unwind.h>
 
 /* The implementation boils down to a call to _Unwind_Backtrace with a
-   tailored callback and carried-on datastructure to keep track of the
+   tailored callback and carried-on data structure to keep track of the
    input parameters we got as well as of the basic processing state.  */
 
 /******************

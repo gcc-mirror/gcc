@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  This package together with a child package appropriate to the client tool
---  scans switches. Note that the body of the appropraite Usage package must be
+--  scans switches. Note that the body of the appropriate Usage package must be
 --  coordinated with the switches that are recognized by this package. These
 --  Usage packages also act as the official documentation for the switches
 --  that are recognized. In addition, package Debug documents the otherwise

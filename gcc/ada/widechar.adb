@@ -126,7 +126,7 @@ package body Widechar is
    begin
       Chr := In_Char;
 
-      --  Scan out the wide character. if the first character is a bracket,
+      --  Scan out the wide character. If the first character is a bracket,
       --  we allow brackets encoding regardless of the standard encoding
       --  method being used, but otherwise we use this standard method.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@ package VMS_Conv is
    --  GNATCmd. The entries are represented by an array of records.
 
    type Parameter_Type is
-   --  A parameter is defined as a whitespace bounded string, not begining
+   --  A parameter is defined as a whitespace bounded string, not beginning
    --   with a slash. (But see note under FILES_OR_WILDCARD).
      (File,
       --  A required file or directory parameter
@@ -81,7 +81,7 @@ package VMS_Conv is
       --  parameters including wildcard specifications.
 
       Unlimited_As_Is,
-      --  Un unlimited number of whitespace separated paameters that are
+      --  An unlimited number of whitespace separated parameters that are
       --  passed through as is (not canonicalized).
 
       Files_Or_Wildcard);

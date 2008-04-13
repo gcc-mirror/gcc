@@ -89,7 +89,7 @@ package Table is
       --  chunks controlled by the allocation parameters).
 
       --  Note: We do not make the table components aliased, since this would
-      --  restict the use of table for discriminated types. If it is necessary
+      --  restrict the use of table for discriminated types. If it is necessary
       --  to take the access of a table element, use Unrestricted_Access.
 
       --  WARNING: On HPPA, the virtual addressing approach used in this unit

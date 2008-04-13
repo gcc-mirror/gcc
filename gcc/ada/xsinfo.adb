@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@
 
 --  Note: this program assumes that sinfo.ads has passed the error checks
 --  which are carried out by the CSinfo utility, so it does not duplicate
---  these checks and assumes the soruce is correct.
+--  these checks and assumes the source is correct.
 
 --  An optional argument allows the specification of an output file name to
 --  override the default sinfo.h file name for the generated output file.

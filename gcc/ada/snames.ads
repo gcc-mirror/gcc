@@ -566,7 +566,7 @@ package Snames is
    --  The following names are preset as synonyms for C
 
    Name_Default                        : constant Name_Id := N + 295;
-   --  Name_Exernal (previously defined as pragma)
+   --  Name_External (previously defined as pragma)
 
    --  The following names are preset as synonyms for CPP
 
@@ -960,7 +960,7 @@ package Snames is
    --  Names of intrinsic subprograms
 
    --  Note: Asm is missing from this list, since Asm is a legitimate
-   --  convention name. So is To_Adress, which is a GNAT attribute.
+   --  convention name. So is To_Address, which is a GNAT attribute.
 
    First_Intrinsic_Name                 : constant Name_Id := N + 603;
    Name_Divide                          : constant Name_Id := N + 603;
@@ -1347,7 +1347,7 @@ package Snames is
 
       --  Note: Convention C_Pass_By_Copy is allowed only for record
       --  types (where it is treated like C except that the appropriate
-      --  flag is set in the record type). Recognizion of this convention
+      --  flag is set in the record type). Recognizing this convention
       --  is specially handled in Sem_Prag.
 
    for Convention_Id'Size use 8;
@@ -1597,7 +1597,7 @@ package Snames is
    --  Test to see if the name N is the name of a recognized attribute
    --  that designates a renameable function, and can therefore appear in
    --  a renaming statement. Note that not all attributes designating
-   --  functions are renamable, in particular, thos returning a universal
+   --  functions are renamable, in particular, those returning a universal
    --  value cannot be renamed.
 
    function Is_Type_Attribute_Name (N : Name_Id) return Boolean;
@@ -1655,7 +1655,7 @@ package Snames is
    --  or one previously given in a call to Record_Convention_Identifier.
 
    function Get_Convention_Name (C : Convention_Id) return Name_Id;
-   --  Returns the name of language convention correspoding to given
+   --  Returns the name of language convention corresponding to given
    --  convention id.
 
    function Get_Locking_Policy_Id (N : Name_Id) return Locking_Policy_Id;
