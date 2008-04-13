@@ -1,3 +1,9 @@
+2008-04-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*andhi_lowpart_non_v32", "*andhi_lowpart_v32")
+	("*andqi_lowpart_non_v32", "*andqi_lowpart_v32"): Use "+" for the
+	operand 0 constraint, not "=".
+
 2008-04-11  James E. Wilson  <wilson@tuliptree.org>
 
 	* system.h: Change ASSERT_CHECKING to ENABLE_ASSERT_CHECKING.
