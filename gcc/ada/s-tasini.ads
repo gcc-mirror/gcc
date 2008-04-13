@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ package System.Tasking.Initialization is
    --  nested. The symptom of over-deferring abort is that an exception may
    --  fail to be raised, or an abort may fail to take place.
 
-   --  Therefore, there are two sets of the inlinable defer/undefer routines,
+   --  Therefore, there are two sets of the inlineable defer/undefer routines,
    --  which are the ones to be used inside GNARL. One set allows nesting. The
    --  other does not. People who maintain the GNARL should try to avoid using
    --  the nested versions, or at least look very critically at the places
@@ -98,8 +98,8 @@ package System.Tasking.Initialization is
    --  internal calls to the tasking runtime system assume abort is already
    --  deferred, and do not modify the deferral level.
 
-   --  There is also a set of non-linable defer/undefer routines, for direct
-   --  call from the compiler. These are not in-lineable because they may need
+   --  There is also a set of non-inlineable defer/undefer routines, for direct
+   --  call from the compiler. These are not inlineable because they may need
    --  to be called via pointers ("soft links"). For the sake of efficiency,
    --  the version with Self_ID as parameter should used wherever possible.
    --  These are all nestable.
@@ -137,7 +137,7 @@ package System.Tasking.Initialization is
 
    procedure Change_Base_Priority (T : Task_Id);
    --  Change the base priority of T. Has to be called with the affected
-   --  task's ATCB write-locked. May temporariliy release the lock.
+   --  task's ATCB write-locked. May temporarily release the lock.
 
    ----------------------
    -- Task Lock/Unlock --

@@ -407,7 +407,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       --  have read ownership of the protected object, so that this method of
       --  storing the (single) protected object's owner does not work
       --  reliably for read locks. However, this is the approach taken for two
-      --  major reasosn: first, this function is not currently being used (it
+      --  major reasons: first, this function is not currently being used (it
       --  is provided for possible future use), and second, it largely
       --  simplifies the implementation.
 

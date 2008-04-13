@@ -116,7 +116,7 @@ package System.Standard_Library is
 
    --  The following record defines the underlying representation of exceptions
 
-   --  WARNING! Any changes to this may need to be reflectd in the following
+   --  WARNING! Any changes to this may need to be reflected in the following
    --  locations in the compiler and runtime code:
 
    --    1. The Internal_Exception routine in s-exctab.adb
@@ -165,7 +165,7 @@ package System.Standard_Library is
 
    --  Definitions for standard predefined exceptions defined in Standard,
 
-   --  Why are the Nul's necessary here, seems like they should not be
+   --  Why are the NULs necessary here, seems like they should not be
    --  required, since Gigi is supposed to add a Nul to each name ???
 
    Constraint_Error_Name : constant String := "CONSTRAINT_ERROR" & ASCII.NUL;

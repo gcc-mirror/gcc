@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package System.Traces.Format is
    subtype String_Trace is String (1 .. Max_Size);
    --  Specific type in which trace information is stored. An ASCII.NUL
    --  character ends the string so that it is compatible with C strings
-   --  which is useful on some targets (eg. VxWorks)
+   --  which is useful on some targets (e.g. VxWorks)
 
    --  These private functions handles String_Trace formatting
 

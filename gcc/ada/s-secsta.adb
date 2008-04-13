@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,7 +135,7 @@ package body System.Secondary_Stack is
 
    --  For the static case, the secondary stack is a single contiguous
    --  chunk of storage, carved out of the primary stack, and represented
-   --  by the following data strcuture
+   --  by the following data structure
 
    type Fixed_Stack_Id is record
       Top : SS_Ptr;
@@ -237,7 +237,7 @@ package body System.Secondary_Stack is
             end loop;
 
             --  Find out if the available memory in the current chunk is
-            --  sufficient, if not, go to the next one and eventally create
+            --  sufficient, if not, go to the next one and eventually create
             --  the necessary room.
 
             while Chunk.Last - Stack.Top + 1 < Max_Size loop

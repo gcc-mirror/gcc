@@ -250,7 +250,7 @@ package System.Task_Primitives.Operations is
 
    --  It is not clear what to do about ceiling violations due to RTS calls
    --  done at interrupt priority. In general, it is not acceptable to give
-   --  all RTS locks interrupt priority, since that whould give terrible
+   --  all RTS locks interrupt priority, since that would give terrible
    --  performance on systems where this has the effect of masking hardware
    --  interrupts, though we could get away allowing Interrupt_Priority'last
    --  where we are layered on an OS that does not allow us to mask interrupts.
@@ -413,7 +413,7 @@ package System.Task_Primitives.Operations is
    --  thread of control in the RTS. Since we intend these routines to be used
    --  for implementing the Single_Lock RTS, Lock_RTS should follow the first
    --  Defer_Abort operation entering RTS. In the same fashion Unlock_RTS
-   --  should preceed the last Undefer_Abort exiting RTS.
+   --  should precede the last Undefer_Abort exiting RTS.
    --
    --  These routines also replace the functions Lock/Unlock_All_Tasks_List
 

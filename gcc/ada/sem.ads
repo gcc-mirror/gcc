@@ -27,8 +27,8 @@
 -- Semantic Analysis: General Model --
 --------------------------------------
 
---  Semantic processing involves 3 phases which are highly interwined
---  (ie mutually recursive):
+--  Semantic processing involves 3 phases which are highly intertwined
+--  (i.e. mutually recursive):
 
 --    Analysis     implements the bulk of semantic analysis such as
 --                 name analysis and type resolution for declarations,
@@ -51,7 +51,7 @@
 --                 recursive calls to itself to resolve operands.
 
 --    Expansion    if we are not generating code this phase is a no-op.
---                 otherwise this phase expands, ie transforms, original
+--                 otherwise this phase expands, i.e. transforms, original
 --                 declaration, expressions or instructions into simpler
 --                 structures that can be handled by the back-end. This
 --                 phase is also in charge of generating code which is
@@ -139,7 +139,7 @@
 --  it up without causing too much distortion to our basic model.
 
 --  A switch (In_Spec_Expression) is set to show that we are in the initial
---  occurence of a default expression. The analyzer is then called on this
+--  occurrence of a default expression. The analyzer is then called on this
 --  expression with the switch set true. Analysis and resolution proceed almost
 --  as usual, except that Freeze_Expression will not freeze non-static
 --  expressions if this switch is set, and the call to Expand at the end of
@@ -174,10 +174,10 @@
 --  The normal Analysis-Resolution-Expansion mechanism where expansion of the
 --  children is performed before expansion of the parent does not work if the
 --  code generated for the children by the expander needs to be evaluated
---  repeatdly (for instance in the above aggregate "new Thing (Function_Call)"
+--  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
 --  needs to be called 100 times.)
 
---  The reason why this mecanism does not work is that, the expanded code for
+--  The reason why this mechanism does not work is that, the expanded code for
 --  the children is typically inserted above the parent and thus when the
 --  father gets expanded no re-evaluation takes place. For instance in the case
 --  of aggregates if "new Thing (Function_Call)" is expanded before of the
@@ -186,7 +186,7 @@
 --  expanded code for "new Thing (Function_Call)".
 
 --  To remedy this situation we introduce a new flag which signals whether we
---  want a full analysis (ie expansion is enabled) or a pre-analysis which
+--  want a full analysis (i.e. expansion is enabled) or a pre-analysis which
 --  performs Analysis and Resolution but no expansion.
 
 --  After the complete pre-analysis of an expression has been carried out we
@@ -227,7 +227,7 @@ package Sem is
    --  expansion phase is skipped.
    --
    --  When this flag is False the flag Expander_Active is also False (the
-   --  Expander_Activer flag defined in the spec of package Expander tells you
+   --  Expander_Active flag defined in the spec of package Expander tells you
    --  whether expansion is currently enabled). You should really regard this
    --  as a read only flag.
 
@@ -286,7 +286,7 @@ package Sem is
 
    --  Scope based suppress checks for the predefined checks (from initial
    --  command line arguments, or from Suppress pragmas not including an entity
-   --  entity name) are recorded in the Sem.Supress variable, and all that is
+   --  entity name) are recorded in the Sem.Suppress variable, and all that is
    --  necessary is to save the state of this variable on scope entry, and
    --  restore it on scope exit. This mechanism allows for fast checking of
    --  the scope suppress state without needing complex data structures.
@@ -441,7 +441,7 @@ package Sem is
    --  It is clear in retrospect that all semantic processing and visibility
    --  structures should have been fully recursive. The rtsfind mechanism,
    --  and the complexities brought about by subunits and by generic child
-   --  units and their instantitions, have led to a hybrid model that carries
+   --  units and their instantiations, have led to a hybrid model that carries
    --  more state than one would wish.
 
    type Scope_Stack_Entry is record

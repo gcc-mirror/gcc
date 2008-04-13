@@ -236,7 +236,7 @@ package body Scng is
       --  Scan_Ptr points to the opening string quote (the checksum for this
       --  character has not been accumulated yet). On return Scan_Ptr points
       --  past the closing quote of the string literal, Token and Token_Node
-      --  are set appropriately, and the checksum is upated.
+      --  are set appropriately, and the checksum is updated.
 
       -----------------------
       -- Check_End_Of_Line --
@@ -2066,7 +2066,7 @@ package body Scng is
                Underline_Found := False;
                goto Scan_Identifier;
 
-            --  Mark character is an error (at start of identifer)
+            --  Mark character is an error (at start of identifier)
 
             elsif Is_UTF_32_Mark (Cat) then
                Error_Msg
@@ -2076,7 +2076,7 @@ package body Scng is
                Underline_Found := False;
                goto Scan_Identifier;
 
-            --  Other format character is an error (at start of identifer)
+            --  Other format character is an error (at start of identifier)
 
             elsif Is_UTF_32_Other (Cat) then
                Error_Msg
@@ -2108,7 +2108,7 @@ package body Scng is
 
       --  Routine to scan line terminator. On entry Scan_Ptr points to a
       --  character which is one of FF,LR,CR,VT, or one of the wide characters
-      --  that is treated as a line termiantor.
+      --  that is treated as a line terminator.
 
       <<Scan_Line_Terminator>>
 
@@ -2151,7 +2151,7 @@ package body Scng is
 
       --  Identifier scanning routine. On entry, some initial characters of
       --  the identifier may have already been stored in Name_Buffer. If so,
-      --  Name_Len has the number of characters stored. otherwise Name_Len is
+      --  Name_Len has the number of characters stored, otherwise Name_Len is
       --  set to zero on entry. Underline_Found is also set False on entry.
 
       <<Scan_Identifier>>
@@ -2324,7 +2324,7 @@ package body Scng is
                            Underline_Found := True;
                         end if;
 
-                     --  Wide character in Unicode cateogory "Other, Format"
+                     --  Wide character in Unicode category "Other, Format"
                      --  is accepted in an identifier, but is ignored and not
                      --  stored. It seems reasonable to exclude it from the
                      --  checksum.

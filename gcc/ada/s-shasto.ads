@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package manages the shared/persistant storage required for
+--  This package manages the shared/persistent storage required for
 --  full implementation of variables in Shared_Passive packages, more
 --  precisely variables whose enclosing dynamic scope is a shared
 --  passive package. This implementation is specific to GNAT and GLADE
@@ -134,7 +134,7 @@
 --    the same stream is used simultaneously, both operations can
 --    terminate abruptly by raising exception Mode_Error because the
 --    stream has been opened in read mode and then in write mode and at
---    least used by the read opartion. To avoid this unexpected
+--    least used by the read operation. To avoid this unexpected
 --    behaviour, we introduce a synchronization at the partition level.
 
 --  Note: a special circuit allows the use of stream attributes Read and
@@ -214,7 +214,7 @@ package System.Shared_Storage is
    --  the lock is busy.
 
    procedure Shared_Var_Unlock (Var : String);
-   --  This procedure releases the shared storage lock obtaind by a
+   --  This procedure releases the shared storage lock obtained by a
    --  prior call to the Shared_Mem_Lock procedure, and is to be
    --  generated as the last operation in the body of a protected
    --  subprogram.

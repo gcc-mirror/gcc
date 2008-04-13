@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,7 +219,7 @@ package body System.Stack_Usage is
 
       --  If variable GNAT_STACK_LIMIT is set, then we will take care of the
       --  environment task, using GNAT_STASK_LIMIT as the size of the stack.
-      --  It doens't make sens to process the stack when no bound is set (e.g.
+      --  It doesn't make sens to process the stack when no bound is set (e.g.
       --  limit is typically up to 4 GB).
 
       if Stack_Size_Chars /= Null_Address then

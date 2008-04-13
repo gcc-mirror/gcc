@@ -8,6 +8,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --                     Copyright (C) 1999-2006, AdaCore                     --
+--            Copyright (C) 2008, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +87,7 @@ package body System.Traceback is
    --  Frames with dynamic stack allocation are handled using the associated
    --  frame pointer, but HP compilers and GCC setup this pointer differently.
    --  HP compilers set it to point at the top (highest address) of the static
-   --  part of the frame, wheras GCC sets it to point at the bottom of this
+   --  part of the frame, whereas GCC sets it to point at the bottom of this
    --  region. We have to fake the unwinder to compensate for this difference,
    --  for which we'll need to access some subprograms unwind descriptors.
 

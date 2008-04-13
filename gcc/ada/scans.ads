@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package Scans is
 
    --  The following type is used to identify token types returned by Scan.
    --  The class column in this table indicates the token classes which
-   --  apply to the token, as defined by subsquent subtype declarations.
+   --  apply to the token, as defined by subsequent subtype declarations.
 
    --  Note: Namet.Is_Keyword_Name depends on the fact that the first entry in
    --  this type declaration is *not* for a reserved word. For details on why
@@ -65,7 +65,7 @@ package Scans is
 
       Tok_Operator_Symbol, -- op symbol    Name, Literal, Lit_Or_Name, Desig
 
-      Tok_Identifier,      -- identifer    Name, Lit_Or_Name, Desig
+      Tok_Identifier,      -- identifier   Name, Lit_Or_Name, Desig
 
       Tok_Double_Asterisk, -- **
 
@@ -206,7 +206,7 @@ package Scans is
       Tok_End_Of_Line,
       --  Represents an end of line. Not used during normal compilation scans
       --  where end of line is ignored. Active for preprocessor scanning and
-      --  also when scanning project files (where it is neede because of ???)
+      --  also when scanning project files (where it is needed because of ???)
 
       Tok_Special,
       --  Used only in preprocessor scanning (to represent one of the

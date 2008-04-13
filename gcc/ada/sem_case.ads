@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package Sem_Case is
 
    procedure No_OP (C : Node_Id);
    --  The no-operation routine. Does absolutely nothing. Can be used
-   --  in the following generic for the parameter Proces_Empty_Choice.
+   --  in the following generic for the parameter Process_Empty_Choice.
 
    generic
       with function Get_Alternatives (N : Node_Id) return List_Id;
@@ -54,7 +54,7 @@ package Sem_Case is
       --  alternatives, or array aggregate component associations or
       --  record variants from which we can then access the actual lists
       --  of discrete choices. N is the node for the original construct
-      --  ie a case statement, an array aggregate or a record variant.
+      --  i.e. a case statement, an array aggregate or a record variant.
 
       with function Get_Choices (A : Node_Id) return List_Id;
       --  Given a case statement alternative, array aggregate component

@@ -535,7 +535,7 @@ package body System.Task_Primitives.Operations is
                else
                   --  If Ticks = int'last, it was most probably truncated so
                   --  let's make another round after recomputing Ticks from
-                  --  the the absolute time.
+                  --  the absolute time.
 
                   if Ticks /= int'Last then
                      Timedout := True;
@@ -655,7 +655,7 @@ package body System.Task_Primitives.Operations is
 
                --  If Ticks = int'last, it was most probably truncated
                --  so let's make another round after recomputing Ticks
-               --  from the the absolute time.
+               --  from the absolute time.
 
                if errno = S_objLib_OBJ_TIMEOUT and then Ticks /= int'Last then
                   Timedout := True;

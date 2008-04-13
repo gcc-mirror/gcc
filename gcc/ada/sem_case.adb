@@ -52,7 +52,7 @@ package body Sem_Case is
    type Sort_Choice_Table_Type is array (Nat range <>) of Choice_Bounds;
    --  This new array type is used as the actual table type for sorting
    --  discrete choices. The reason for not using Choice_Table_Type, is that
-   --  in Sort_Choice_Table_Type we reserve entry 0 for the sorting algortim
+   --  in Sort_Choice_Table_Type we reserve entry 0 for the sorting algorithm
    --  (this is not absolutely necessary but it makes the code more
    --  efficient).
 

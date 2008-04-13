@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package Sem_Cat is
    --  True when there is a attribute definition clause specifying attribute
    --  Nam for Typ. In Ada 2005 mode, returns True only when the attribute
    --  definition clause is visible, unless At_Any_Place is True (in which case
-   --  no visiblity test is made, and True is returned as long as an attribute
+   --  no visibility test is made, and True is returned as long as an attribute
    --  is visible at any place). Note that attribute definition clauses
    --  inherited from parent types are taken into account by this predicate
    --  (to test for presence of an attribute definition clause for one

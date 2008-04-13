@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,7 +101,7 @@ package body System.WCh_WtS is
    end Wide_String_To_String;
 
    --------------------------------
-   -- Wide_Wide_Sring_To_String --
+   -- Wide_Wide_String_To_String --
    --------------------------------
 
    function Wide_Wide_String_To_String

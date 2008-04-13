@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,7 @@ package System.Tasking.Entry_Calls is
    pragma Inline (Try_To_Cancel_Entry_Call);
    --  Try to cancel async. entry call.
    --  Effect includes Abort_To_Level and Wait_For_Completion.
-   --  Cancelled = True iff the cancelation was successful, i.e.,
+   --  Cancelled = True iff the cancellation was successful, i.e.,
    --  the call was not Done before this call.
    --  On return, the call is off-queue and the ATC level is reduced by one.
 

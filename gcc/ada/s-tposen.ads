@@ -204,7 +204,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  Lock a protected object for read access.  Upon return, the caller
    --  owns the lock for read access, and no other calls to Lock
    --  with the same argument will return until the corresponding call
-   --  to Unlock has been made by the caller.  Other cals to Lock_Read_Only
+   --  to Unlock has been made by the caller.  Other calls to Lock_Read_Only
    --  may (but need not) return before the call to Unlock, and the
    --  corresponding callers will also own the lock for read access.
 

@@ -271,10 +271,10 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Intialize_TCB and the Storage_Error is
+   --        initialized in Initialize_TCB and the Storage_Error is
    --        handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
    --        used in RTS is initialized before any status change of RTS.
-   --        Therefore rasing Storage_Error in the following routines
+   --        Therefore raising Storage_Error in the following routines
    --        should be able to be handled safely.
 
    procedure Initialize_Lock

@@ -151,7 +151,7 @@ package body Sem_Cat is
          --  to apply to the same library unit, in which case the unit has
          --  all associated categories, so we need to be careful here to
          --  check pragmas in proper Categorization order in order to
-         --  return the lowest appplicable value.
+         --  return the lowest applicable value.
 
          --  Ignore Pure specification if set by pragma Pure_Function
 
@@ -194,7 +194,7 @@ package body Sem_Cat is
       Unit_Category := Get_Categorization (Unit_Entity);
       With_Category := Get_Categorization (Depended_Entity);
 
-      --  These messages are wanings in GNAT mode, to allow it to be
+      --  These messages are warnings in GNAT mode, to allow it to be
       --  judiciously turned off. Otherwise it is a real error.
 
       Error_Msg_Warn := GNAT_Mode;
@@ -762,7 +762,7 @@ package body Sem_Cat is
    -- Static_Discriminant_Expr --
    ------------------------------
 
-   --  We need to accomodate a Why_Not_Static call somehow here ???
+   --  We need to accommodate a Why_Not_Static call somehow here ???
 
    function Static_Discriminant_Expr (L : List_Id) return Boolean is
       Discriminant_Spec : Node_Id;
@@ -963,7 +963,7 @@ package body Sem_Cat is
       end;
 
       --  Child depends on parent; therefore parent should also be categorized
-      --  and satify the dependency hierarchy.
+      --  and satisfy the dependency hierarchy.
 
       --  Check if N is a child spec
 
