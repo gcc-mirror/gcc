@@ -44,12 +44,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include <errno.h>
 
-#ifdef HAVE_INTPTR_T
-# define INTPTR_T intptr_t
-#else
-# define INTPTR_T int
-#endif
-
 /* SIGNAL subroutine with PROCEDURE as handler  */
 extern void signal_sub (int *, void (*)(int), int *);
 iexport_proto(signal_sub);
@@ -58,11 +52,11 @@ void
 signal_sub (int *number, void (*handler)(int), int *status)
 {
 #ifdef HAVE_SIGNAL
-  INTPTR_T ret;
+  intptr_t ret;
 
   if (status != NULL)
     {
-      ret = (INTPTR_T) signal (*number, handler);
+      ret = (intptr_t) signal (*number, handler);
       *status = (int) ret;
     }
   else
@@ -84,11 +78,11 @@ void
 signal_sub_int (int *number, int *handler, int *status)
 {
 #ifdef HAVE_SIGNAL
-  INTPTR_T ptr = *handler, ret;
+  intptr_t ptr = *handler, ret;
 
   if (status != NULL)
     {
-      ret = (INTPTR_T) signal (*number, (void (*)(int)) ptr);
+      ret = (intptr_t) signal (*number, (void (*)(int)) ptr);
       *status = (int) ret;
     }
   else
@@ -204,14 +198,14 @@ alarm_sub_int_i4 (int *seconds __attribute__ ((unused)),
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
     {
-      if (signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler) == SIG_ERR)
+      if (signal (SIGALRM, (void (*)(int)) (intptr_t) *handler) == SIG_ERR)
 	*status = -1;
       else
 	*status = alarm (*seconds);
     }
   else
     {
-      signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler);
+      signal (SIGALRM, (void (*)(int)) (intptr_t) *handler);
       alarm (*seconds);
     }
 #else
@@ -234,14 +228,14 @@ alarm_sub_int_i8 (int *seconds __attribute__ ((unused)),
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
     {
-      if (signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler) == SIG_ERR)
+      if (signal (SIGALRM, (void (*)(int)) (intptr_t) *handler) == SIG_ERR)
 	*status = -1;
       else
 	*status = alarm (*seconds);
     }
   else
     {
-      signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler);
+      signal (SIGALRM, (void (*)(int)) (intptr_t) *handler);
       alarm (*seconds);
     }
 #else

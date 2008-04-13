@@ -281,6 +281,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
   type_size = GFC_DTYPE_TYPE_SIZE(ret);
   switch(type_size)
     {
+    case GFC_DTYPE_DERIVED_1:
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
       spread_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) source,
@@ -361,7 +362,49 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
       return;
 #endif
 
+    case GFC_DTYPE_DERIVED_2:
+      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(source->data))
+	break;
+      else
+	{
+	  spread_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) source,
+		     *along, *pncopies);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_4:
+      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(source->data))
+	break;
+      else
+	{
+	  spread_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) source,
+		     *along, *pncopies);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_8:
+      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(source->data))
+	break;
+      else
+	{
+	  spread_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) source,
+		     *along, *pncopies);
+	  return;
+	}
+
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_DERIVED_16:
+      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(source->data))
+	break;
+      else
+	{
+	  spread_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) source,
+		      *along, *pncopies);
+	  return;
+	}
+#endif
     }
+
   spread_internal (ret, source, along, pncopies, GFC_DESCRIPTOR_SIZE (source));
 }
 
@@ -398,6 +441,7 @@ spread_scalar (gfc_array_char *ret, const char *source,
   type_size = GFC_DTYPE_TYPE_SIZE(ret);
   switch(type_size)
     {
+    case GFC_DTYPE_DERIVED_1:
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
       spread_scalar_i1 ((gfc_array_i1 *) ret, (GFC_INTEGER_1 *) source,
@@ -478,6 +522,46 @@ spread_scalar (gfc_array_char *ret, const char *source,
       return;
 #endif
 
+    case GFC_DTYPE_DERIVED_2:
+      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(source))
+	break;
+      else
+	{
+	  spread_scalar_i2 ((gfc_array_i2 *) ret, (GFC_INTEGER_2 *) source,
+			    *along, *pncopies);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_4:
+      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(source))
+	break;
+      else
+	{
+	  spread_scalar_i4 ((gfc_array_i4 *) ret, (GFC_INTEGER_4 *) source,
+			    *along, *pncopies);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_8:
+      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(source))
+	break;
+      else
+	{
+	  spread_scalar_i8 ((gfc_array_i8 *) ret, (GFC_INTEGER_8 *) source,
+			    *along, *pncopies);
+	  return;
+	}
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_DERIVED_16:
+      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(source))
+	break;
+      else
+	{
+	  spread_scalar_i16 ((gfc_array_i16 *) ret, (GFC_INTEGER_16 *) source,
+			     *along, *pncopies);
+	  return;
+	}
+#endif
     }
 
   spread_internal_scalar (ret, source, along, pncopies, GFC_DESCRIPTOR_SIZE (ret));

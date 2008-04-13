@@ -196,102 +196,141 @@ void
 unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 	 const gfc_array_l1 *mask, const gfc_array_char *field)
 {
-  int type;
+  index_type type_size;
   index_type size;
 
-  type = GFC_DESCRIPTOR_TYPE (vector);
+  type_size = GFC_DTYPE_TYPE_SIZE (vector);
   size = GFC_DESCRIPTOR_SIZE (vector);
 
-  switch(type)
+  switch(type_size)
     {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
-      switch(size)
-	{
-	case sizeof (GFC_INTEGER_1):
-	  unpack1_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) vector,
-		      mask, (gfc_array_i1 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_1:
+    case GFC_DTYPE_INTEGER_1:
+    case GFC_DTYPE_DERIVED_1:
+      unpack1_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) vector,
+		  mask, (gfc_array_i1 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_2):
-	  unpack1_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
-		      mask, (gfc_array_i2 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_2:
+    case GFC_DTYPE_INTEGER_2:
+      unpack1_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
+		  mask, (gfc_array_i2 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_4):
-	  unpack1_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
-		      mask, (gfc_array_i4 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_4:
+    case GFC_DTYPE_INTEGER_4:
+      unpack1_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
+		  mask, (gfc_array_i4 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_8):
-	  unpack1_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
-		      mask, (gfc_array_i8 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_8:
+    case GFC_DTYPE_INTEGER_8:
+      unpack1_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
+		  mask, (gfc_array_i8 *) field);
+      return;
 
 #ifdef HAVE_GFC_INTEGER_16
-	case sizeof (GFC_INTEGER_16):
-	  unpack1_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
-		       mask, (gfc_array_i16 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_16:
+    case GFC_DTYPE_INTEGER_16:
+      unpack1_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
+		   mask, (gfc_array_i16 *) field);
+      return;
 #endif
-	}
-    case GFC_DTYPE_REAL:
-      switch (size)
-	{
-	case sizeof (GFC_REAL_4):
-	  unpack1_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
-		      mask, (gfc_array_r4 *) field);
-	  return;
+    case GFC_DTYPE_REAL_4:
+      unpack1_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
+		  mask, (gfc_array_r4 *) field);
+      return;
 
-	case sizeof (GFC_REAL_8):
-	  unpack1_r8 ((gfc_array_r8 *) ret, (gfc_array_r8 *) vector,
-		      mask, (gfc_array_r8 *) field);
-	  return;
+    case GFC_DTYPE_REAL_8:
+      unpack1_r8 ((gfc_array_r8 *) ret, (gfc_array_r8 *) vector,
+		  mask, (gfc_array_r8 *) field);
+      return;
 
 #ifdef HAVE_GFC_REAL_10
-	case sizeof (GFC_REAL_10):
-	  unpack1_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
-		      mask, (gfc_array_r10 *) field);
+    case GFC_DTYPE_REAL_10:
+      unpack1_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
+		   mask, (gfc_array_r10 *) field);
 	  return;
 #endif
 
 #ifdef HAVE_GFC_REAL_16
-	case sizeof (GFC_REAL_16):
-	  unpack1_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
-		      mask, (gfc_array_r16 *) field);
-	  return;
+    case GFC_DTYPE_REAL_16:
+      unpack1_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
+		   mask, (gfc_array_r16 *) field);
+      return;
 #endif
-	}
 
-    case GFC_DTYPE_COMPLEX:
-      switch (size)
-	{
-	case sizeof (GFC_COMPLEX_4):
-	  unpack1_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) vector,
-		      mask, (gfc_array_c4 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_4:
+      unpack1_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) vector,
+		  mask, (gfc_array_c4 *) field);
+      return;
 
-	case sizeof (GFC_COMPLEX_8):
-	  unpack1_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) vector,
-		      mask, (gfc_array_c8 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_8:
+      unpack1_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) vector,
+		  mask, (gfc_array_c8 *) field);
+      return;
 
 #ifdef HAVE_GFC_COMPLEX_10
-	case sizeof (GFC_COMPLEX_10):
-	  unpack1_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
-		      mask, (gfc_array_c10 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_10:
+      unpack1_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
+		   mask, (gfc_array_c10 *) field);
+      return;
 #endif
 
 #ifdef HAVE_GFC_COMPLEX_16
-	case sizeof (GFC_COMPLEX_16):
-	  unpack1_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
-		      mask, (gfc_array_c16 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_16:
+      unpack1_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
+		   mask, (gfc_array_c16 *) field);
+      return;
 #endif
+
+    case GFC_DTYPE_DERIVED_2:
+      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(vector->data)
+	  || GFC_UNALIGNED_2(field->data))
+	break;
+      else
+	{
+	  unpack1_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
+		      mask, (gfc_array_i2 *) field);
+	  return;
 	}
 
+    case GFC_DTYPE_DERIVED_4:
+      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(vector->data)
+	  || GFC_UNALIGNED_4(field->data))
+	break;
+      else
+	{
+	  unpack1_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
+		      mask, (gfc_array_i4 *) field);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_8:
+      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(vector->data)
+	  || GFC_UNALIGNED_8(field->data))
+	break;
+      else
+	{
+	  unpack1_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
+		      mask, (gfc_array_i8 *) field);
+	  return;
+	}
+
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_DERIVED_16:
+      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(vector->data)
+	  || GFC_UNALIGNED_16(field->data))
+	break;
+      else
+	{
+	  unpack1_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
+		       mask, (gfc_array_i16 *) field);
+	  return;
+	}
+#endif
     }
+
   unpack_internal (ret, vector, mask, field, size,
 		   GFC_DESCRIPTOR_SIZE (field));
 }
@@ -322,102 +361,139 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 {
   gfc_array_char tmp;
 
-  int type;
+  index_type type_size;
   index_type size;
 
-  type = GFC_DESCRIPTOR_TYPE (vector);
+  type_size = GFC_DTYPE_TYPE_SIZE (vector);
   size = GFC_DESCRIPTOR_SIZE (vector);
 
-  switch(type)
+  switch(type_size)
     {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
-      switch(size)
-	{
-	case sizeof (GFC_INTEGER_1):
-	  unpack0_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) vector,
-		      mask, (GFC_INTEGER_1 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_1:
+    case GFC_DTYPE_INTEGER_1:
+    case GFC_DTYPE_DERIVED_1:
+      unpack0_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) vector,
+		  mask, (GFC_INTEGER_1 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_2):
-	  unpack0_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
-		      mask, (GFC_INTEGER_2 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_2:
+    case GFC_DTYPE_INTEGER_2:
+      unpack0_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
+		  mask, (GFC_INTEGER_2 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_4):
-	  unpack0_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
-		      mask, (GFC_INTEGER_4 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_4:
+    case GFC_DTYPE_INTEGER_4:
+      unpack0_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
+		  mask, (GFC_INTEGER_4 *) field);
+      return;
 
-	case sizeof (GFC_INTEGER_8):
-	  unpack0_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
-		      mask, (GFC_INTEGER_8 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_8:
+    case GFC_DTYPE_INTEGER_8:
+      unpack0_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
+		  mask, (GFC_INTEGER_8 *) field);
+      return;
 
 #ifdef HAVE_GFC_INTEGER_16
-	case sizeof (GFC_INTEGER_16):
-	  unpack0_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
-		      mask, (GFC_INTEGER_16 *) field);
-	  return;
+    case GFC_DTYPE_LOGICAL_16:
+    case GFC_DTYPE_INTEGER_16:
+      unpack0_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
+		   mask, (GFC_INTEGER_16 *) field);
+      return;
 #endif
-	}
+    case GFC_DTYPE_REAL_4:
+      unpack0_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
+		  mask, (GFC_REAL_4 *) field);
+      return;
 
-    case GFC_DTYPE_REAL:
-      switch(size)
-	{
-	case sizeof (GFC_REAL_4):
-	  unpack0_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
-	  	      mask, (GFC_REAL_4 *) field);
-	  return;
-
-	case sizeof (GFC_REAL_8):
-	  unpack0_r8 ((gfc_array_r8 *) ret, (gfc_array_r8*) vector,
-	  	      mask, (GFC_REAL_8  *) field);
-	  return;
+    case GFC_DTYPE_REAL_8:
+      unpack0_r8 ((gfc_array_r8 *) ret, (gfc_array_r8*) vector,
+		  mask, (GFC_REAL_8  *) field);
+      return;
 
 #ifdef HAVE_GFC_REAL_10
-	case sizeof (GFC_REAL_10):
-	  unpack0_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
-	  	      mask, (GFC_REAL_10 *) field);
-	  return;
+    case GFC_DTYPE_REAL_10:
+      unpack0_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
+		   mask, (GFC_REAL_10 *) field);
+      return;
 #endif
 
 #ifdef HAVE_GFC_REAL_16
-	case sizeof (GFC_REAL_16):
-	  unpack0_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
-	  	      mask, (GFC_REAL_16 *) field);
-	  return;
+    case GFC_DTYPE_REAL_16:
+      unpack0_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
+		   mask, (GFC_REAL_16 *) field);
+      return;
 #endif
-	}
 
-    case GFC_DTYPE_COMPLEX:
-      switch(size)
-	{
-	case sizeof (GFC_COMPLEX_4):
-	  unpack0_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) vector,
-	  	      mask, (GFC_COMPLEX_4 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_4:
+      unpack0_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) vector,
+		  mask, (GFC_COMPLEX_4 *) field);
+      return;
 
-	case sizeof (GFC_COMPLEX_8):
-	  unpack0_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) vector,
-	  	      mask, (GFC_COMPLEX_8 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_8:
+      unpack0_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) vector,
+		  mask, (GFC_COMPLEX_8 *) field);
+      return;
 
 #ifdef HAVE_GFC_COMPLEX_10
-	case sizeof (GFC_COMPLEX_10):
-	  unpack0_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
-	  	      mask, (GFC_COMPLEX_10 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_10:
+      unpack0_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
+		   mask, (GFC_COMPLEX_10 *) field);
+      return;
 #endif
 
 #ifdef HAVE_GFC_COMPLEX_16
-	case sizeof (GFC_COMPLEX_16):
-	  unpack0_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
-	  	      mask, (GFC_COMPLEX_16 *) field);
-	  return;
+    case GFC_DTYPE_COMPLEX_16:
+      unpack0_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
+		   mask, (GFC_COMPLEX_16 *) field);
+      return;
 #endif
+    case GFC_DTYPE_DERIVED_2:
+      if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(vector->data)
+	  || GFC_UNALIGNED_2(field))
+	break;
+      else
+	{
+	  unpack0_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) vector,
+		      mask, (GFC_INTEGER_2 *) field);
+	  return;
 	}
+
+    case GFC_DTYPE_DERIVED_4:
+      if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(vector->data)
+	  || GFC_UNALIGNED_4(field))
+	break;
+      else
+	{
+	  unpack0_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) vector,
+		      mask, (GFC_INTEGER_4 *) field);
+	  return;
+	}
+
+    case GFC_DTYPE_DERIVED_8:
+      if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(vector->data)
+	  || GFC_UNALIGNED_8(field))
+	break;
+      else
+	{
+	  unpack0_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) vector,
+		      mask, (GFC_INTEGER_8 *) field);
+	  return;
+	}
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_DERIVED_16:
+      if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(vector->data)
+	  || GFC_UNALIGNED_16(field))
+	break;
+      else
+	{
+	  unpack0_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) vector,
+		       mask, (GFC_INTEGER_16 *) field);
+	  return;
+	}
+#endif
     }
+
   memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;

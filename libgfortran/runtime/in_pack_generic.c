@@ -51,7 +51,7 @@ internal_pack (gfc_array_char * source)
   int n;
   int packed;
   index_type size;
-  int type;
+  index_type type_size;
 
   if (source->dim[0].stride == 0)
     {
@@ -59,73 +59,88 @@ internal_pack (gfc_array_char * source)
       return source->data;
     }
 
-  type = GFC_DESCRIPTOR_TYPE (source);
+  type_size = GFC_DTYPE_TYPE_SIZE(source);
   size = GFC_DESCRIPTOR_SIZE (source);
-  switch (type)
+  switch (type_size)
     {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
-      switch (size)
-	{
-	case sizeof (GFC_INTEGER_1):
-	  return internal_pack_1 ((gfc_array_i1 *) source);
+    case GFC_DTYPE_INTEGER_1:
+    case GFC_DTYPE_LOGICAL_1:
+    case GFC_DTYPE_DERIVED_1:
+      return internal_pack_1 ((gfc_array_i1 *) source);
 
-	case sizeof (GFC_INTEGER_2):
-	  return internal_pack_2 ((gfc_array_i2 *) source);
+    case GFC_DTYPE_INTEGER_2:
+    case GFC_DTYPE_LOGICAL_2:
+      return internal_pack_2 ((gfc_array_i2 *) source);
 
-	case sizeof (GFC_INTEGER_4):
-	  return internal_pack_4 ((gfc_array_i4 *) source);
-	  
-	case sizeof (GFC_INTEGER_8):
-	  return internal_pack_8 ((gfc_array_i8 *) source);
+    case GFC_DTYPE_INTEGER_4:
+    case GFC_DTYPE_LOGICAL_4:
+      return internal_pack_4 ((gfc_array_i4 *) source);
+	
+    case GFC_DTYPE_INTEGER_8:
+    case GFC_DTYPE_LOGICAL_8:
+      return internal_pack_8 ((gfc_array_i8 *) source);
 
 #if defined(HAVE_GFC_INTEGER_16)
-	case sizeof (GFC_INTEGER_16):
-	  return internal_pack_16 ((gfc_array_i16 *) source);
+    case GFC_DTYPE_INTEGER_16:
+    case GFC_DTYPE_LOGICAL_16:
+      return internal_pack_16 ((gfc_array_i16 *) source);
 #endif
-	}
-      break;
+    case GFC_DTYPE_REAL_4:
+      return internal_pack_r4 ((gfc_array_r4 *) source);
 
-    case GFC_DTYPE_REAL:
-      switch (size)
-	{
-	case sizeof (GFC_REAL_4):
-	  return internal_pack_r4 ((gfc_array_r4 *) source);
-
-	case sizeof (GFC_REAL_8):
-	  return internal_pack_r8 ((gfc_array_r8 *) source);
+    case GFC_DTYPE_REAL_8:
+      return internal_pack_r8 ((gfc_array_r8 *) source);
 
 #if defined (HAVE_GFC_REAL_10)
-	case sizeof (GFC_REAL_10):
-	  return internal_pack_r10 ((gfc_array_r10 *) source);
+    case GFC_DTYPE_REAL_10:
+      return internal_pack_r10 ((gfc_array_r10 *) source);
 #endif
 
 #if defined (HAVE_GFC_REAL_16)
-	case sizeof (GFC_REAL_16):
-	  return internal_pack_r16 ((gfc_array_r16 *) source);
+    case GFC_DTYPE_REAL_16:
+      return internal_pack_r16 ((gfc_array_r16 *) source);
 #endif
-	}
-    case GFC_DTYPE_COMPLEX:
-      switch (size)
-	{
-	case sizeof (GFC_COMPLEX_4):
-	  return internal_pack_c4 ((gfc_array_c4 *) source);
-	  
-	case sizeof (GFC_COMPLEX_8):
-	  return internal_pack_c8 ((gfc_array_c8 *) source);
+    case GFC_DTYPE_COMPLEX_4:
+      return internal_pack_c4 ((gfc_array_c4 *) source);
+	
+    case GFC_DTYPE_COMPLEX_8:
+      return internal_pack_c8 ((gfc_array_c8 *) source);
 
 #if defined (HAVE_GFC_COMPLEX_10)
-	case sizeof (GFC_COMPLEX_10):
-	  return internal_pack_c10 ((gfc_array_c10 *) source);
+    case GFC_DTYPE_COMPLEX_10:
+      return internal_pack_c10 ((gfc_array_c10 *) source);
 #endif
 
 #if defined (HAVE_GFC_COMPLEX_16)
-	case sizeof (GFC_COMPLEX_16):
-	  return internal_pack_c16 ((gfc_array_c16 *) source);
+    case GFC_DTYPE_COMPLEX_16:
+      return internal_pack_c16 ((gfc_array_c16 *) source);
 #endif
 
-	}
-      break;
+    case GFC_DTYPE_DERIVED_2:
+      if (GFC_UNALIGNED_2(source->data))
+	break;
+      else
+	return internal_pack_2 ((gfc_array_i2 *) source);
+
+    case GFC_DTYPE_DERIVED_4:
+      if (GFC_UNALIGNED_4(source->data))
+	break;
+      else
+	return internal_pack_4 ((gfc_array_i4 *) source);
+
+    case GFC_DTYPE_DERIVED_8:
+      if (GFC_UNALIGNED_8(source->data))
+	break;
+      else
+	return internal_pack_8 ((gfc_array_i8 *) source);
+
+#ifdef HAVE_GFC_INTEGER_16
+    case GFC_DTYPE_DERIVED_16:
+      if (GFC_UNALIGNED_16(source->data))
+	break;
+      else
+	return internal_pack_16 ((gfc_array_i16 *) source);
+#endif
 
     default:
       break;

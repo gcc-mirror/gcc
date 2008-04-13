@@ -25,6 +25,14 @@ program foo
    complex(kind=8), dimension (10) :: c_8
    complex(kind=8), dimension (2, 3) :: ac_8
    complex(kind=8), dimension (2, 2, 3) :: bc_8
+   type i4_t
+      integer(kind=4) :: v
+   end type i4_t
+   type(i4_t), dimension (10) :: it_4
+   type(i4_t), dimension (2, 3) :: at_4
+   type(i4_t), dimension (2, 2, 3) :: bt_4
+   type(i4_t) :: iv_4
+
    character (len=200) line1, line2, line3
 
    a_1 = reshape ((/1_1, 2_1, 3_1, 4_1, 5_1, 6_1/), (/2, 3/))
@@ -158,6 +166,17 @@ program foo
    if (line1 /= line3) call abort
    c_8 = spread((1._8,-1._8),1,10)
    if (any(c_8 /= (1._8,-1._8))) call abort
+
+
+   at_4%v = reshape ((/1_4, 2_4, 3_4, 4_4, 5_4, 6_4/), (/2, 3/))
+   bt_4 = spread (at_4, 1, 2)
+   if (any (bt_4%v .ne. reshape ((/1_4, 1_4, 2_4, 2_4, 3_4, 3_4, 4_4, &
+        & 4_4, 5_4, 5_4, 6_4, 6_4/), (/2, 2, 3/)))) &
+      call abort
+   iv_4%v = 123_4
+   it_4 = spread(iv_4,1,10)
+   if (any(it_4%v /= 123_4)) call abort
+
 
 9000 format(12I3)
 9010 format(12F7.3)

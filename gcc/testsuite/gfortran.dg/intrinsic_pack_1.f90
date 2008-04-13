@@ -29,6 +29,34 @@ program main
   integer(kind=8), dimension(9) :: vi8
   integer(kind=8), dimension(9) :: ri8
 
+  type i1_t
+    integer(kind=1) :: v
+  end type i1_t
+  type(i1_t), dimension(3,3) :: d_i1
+  type(i1_t), dimension(9) :: d_vi1
+  type(i1_t), dimension(9) :: d_ri1
+
+  type i4_t
+    integer(kind=4) :: v
+  end type i4_t
+  type(i4_t), dimension(3,3) :: d_i4
+  type(i4_t), dimension(9) :: d_vi4
+  type(i4_t), dimension(9) :: d_ri4
+
+  d_vi1%v = (/(i+10,i=1,9)/)
+  d_i1%v = reshape((/1_1, -1_1, 2_1, -2_1, 3_1, -3_1, 4_1, &
+                    & -4_1, 5_1/), shape(i1))
+  d_ri1 = pack(d_i1,d_i1%v>0,d_vi1)
+  if (any(d_ri1%v /= (/1_1, 2_1, 3_1, 4_1, 5_1, 16_1, 17_1, 18_1, 19_1/))) &
+       & call abort
+
+  d_vi4%v = (/(i+10,i=1,9)/)
+  d_i4%v = reshape((/1_4, -1_4, 2_4, -2_4, 3_4, -3_4, 4_4, &
+                    & -4_4, 5_4/), shape(d_i4))
+  d_ri4 = pack(d_i4,d_i4%v>0,d_vi4)
+  if (any(d_ri4%v /= (/1_4, 2_4, 3_4, 4_4, 5_4, 16_4, 17_4, 18_4, 19_4/))) &
+       & call abort
+
   vr4 = (/(i+10,i=1,9)/)
   r4 = reshape((/1.0_4, -3.0_4, 2.1_4, -4.21_4, 1.2_4, 0.98_4, -1.2_4, &
   &              -7.1_4, -9.9_4, 0.3_4 /), shape(r4))
