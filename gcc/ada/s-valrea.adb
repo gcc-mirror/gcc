@@ -82,7 +82,7 @@ package body System.Val_Real is
 
       Num_Saved_Zeroes : Natural := 0;
       --  This counts zeroes after the decimal point. A non-zero value means
-      --  that this number of previously scanned digits are zero. if the end
+      --  that this number of previously scanned digits are zero. If the end
       --  of the number is reached, these zeroes are simply discarded, which
       --  ensures that trailing zeroes after the point never affect the value
       --  (which might otherwise happen as a result of rounding). With this

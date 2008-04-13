@@ -56,7 +56,7 @@ with System.Stack_Usage;
 with System.Soft_Links;
 --  These are procedure pointers to non-tasking routines that use task
 --  specific data. In the absence of tasking, these routines refer to global
---  data. In the presense of tasking, they must be replaced with pointers to
+--  data. In the presence of tasking, they must be replaced with pointers to
 --  task-specific versions. Also used for Create_TSD, Destroy_TSD,
 --  Get_Current_Excep, Finalize_Global_List, Task_Termination, Handler.
 
@@ -112,7 +112,7 @@ package body System.Tasking.Stages is
    procedure Vulnerable_Complete_Task (Self_ID : Task_Id);
    --  Complete the calling task. This procedure must be called with
    --  abort deferred. It should only be called by Complete_Task and
-   --  Finalizate_Global_Tasks (for the environment task).
+   --  Finalize_Global_Tasks (for the environment task).
 
    procedure Vulnerable_Complete_Master (Self_ID : Task_Id);
    --  Complete the current master of the calling task. This procedure
@@ -1883,7 +1883,7 @@ package body System.Tasking.Stages is
 --  Package elaboration code
 
 begin
-   --  Establish the Adafinal softlink
+   --  Establish the Adafinal oftlink
 
    --  This is not done inside the central RTS initialization routine
    --  to avoid with-ing this package from System.Tasking.Initialization.

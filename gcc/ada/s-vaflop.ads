@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,7 +175,7 @@ package System.Vax_Float_Operations is
    --  These routines return a decimal C string image of their argument.
    --  They are provided for implicit use by the debugger, in response to
    --  the special encoding used for Vax floating-point types (see Exp_Dbug
-   --  for details). They supercede the above Debug_Output_D/F/G routines
+   --  for details). They supersede the above Debug_Output_D/F/G routines
    --  which didn't work properly with GDBTK.
 
    procedure pd (Arg : D);

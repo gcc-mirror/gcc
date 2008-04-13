@@ -107,16 +107,16 @@ package body System.Task_Primitives.Operations is
    --  controls whether we emulate priority ceiling locking
 
    --  To get a scheduling close to annex D requirements, we use the real-time
-   --  class provided for LWP's and map each task/thread to a specific and
+   --  class provided for LWPs and map each task/thread to a specific and
    --  unique LWP (there is 1 thread per LWP, and 1 LWP per thread).
 
    --  The real time class can only be set when the process has root
-   --  priviledges, so in the other cases, we use the normal thread scheduling
+   --  privileges, so in the other cases, we use the normal thread scheduling
    --  and priority handling.
 
    Using_Real_Time_Class : Boolean := False;
-   --  indicates wether the real time class is being used (i.e the process
-   --  has root priviledges).
+   --  indicates whether the real time class is being used (i.e the process
+   --  has root privileges).
 
    Prio_Param : aliased struct_pcparms;
    --  Hold priority info (Real_Time) initialized during the package
@@ -521,7 +521,7 @@ package body System.Task_Primitives.Operations is
    --  Note: mutexes and cond_variables needed per-task basis are initialized
    --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
    --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
-   --  status change of RTS. Therefore rasing Storage_Error in the following
+   --  status change of RTS. Therefore raising Storage_Error in the following
    --  routines should be able to be handled safely.
 
    procedure Initialize_Lock
@@ -1139,11 +1139,12 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
 
-   --  Note that we are relying heaviliy here on GNAT represting Calendar.Time,
-   --  System.Real_Time.Time, Duration, System.Real_Time.Time_Span in the same
-   --  way, i.e., as a 64-bit count of nanoseconds.
+   --  Note that we are relying heavily here on GNAT representing
+   --  Calendar.Time, System.Real_Time.Time, Duration,
+   --  System.Real_Time.Time_Span in the same way, i.e., as a 64-bit count of
+   --  nanoseconds.
 
-   --  This allows us to always pass the timeout value as a Duration
+   --  This allows us to always pass the timeout value as a Duration.
 
    --  ???
    --  We are taking liberties here with the semantics of the delays. That is,

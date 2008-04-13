@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,7 @@ package System.Tasking.Queuing is
    procedure Requeue_Call_With_New_Prio
      (Entry_Call : Entry_Call_Link; Prio : System.Any_Priority);
    --  Change Priority of the call and re insert to the queue when priority
-   --  queueing is in effect. When FIFO is inforced, this routine
+   --  queueing is in effect. When FIFO is enforced, this routine
    --  should not have any effect.
 
 end System.Tasking.Queuing;

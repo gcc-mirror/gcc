@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 --  This is a dummy body for use on non-Alpha systems so that the library
 --  can compile. This dummy version uses ordinary conversions and other
---  arithmetic operations. it is used only for testing purposes in the
+--  arithmetic operations. It is used only for testing purposes in the
 --  case where the -gnatdm switch is used to force testing of VMS features
 --  on non-VMS systems.
 

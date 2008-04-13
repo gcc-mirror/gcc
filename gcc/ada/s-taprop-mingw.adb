@@ -391,7 +391,7 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are initialized
-   --  in Intialize_TCB and the Storage_Error is handled. Other mutexes (such
+   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
    --  as RTS_Lock, Memory_Lock...) used in the RTS is initialized before any
    --  status change of RTS. Therefore raising Storage_Error in the following
    --  routines should be able to be handled safely.
@@ -788,7 +788,7 @@ package body System.Task_Primitives.Operations is
 
    --  This is because the GetCurrentThread NT call does not return the real
    --  thread handler but only a "pseudo" one. It is not possible to release
-   --  the thread handle and free the system ressources from this "pseudo"
+   --  the thread handle and free the system resources from this "pseudo"
    --  handle. So we really want to keep the real thread handle set in
    --  System.Task_Primitives.Operations.Create_Task during thread creation.
 
@@ -992,7 +992,7 @@ package body System.Task_Primitives.Operations is
       if Self_ID.Common.LL.Thread /= 0 then
 
          --  This task has been activated. Wait for the thread to terminate
-         --  then close it. this is needed to release system ressources.
+         --  then close it. This is needed to release system resources.
 
          Result := WaitForSingleObject (T.Common.LL.Thread, Wait_Infinite);
          pragma Assert (Result /= WAIT_FAILED);

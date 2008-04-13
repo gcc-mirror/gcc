@@ -33,7 +33,7 @@
 
 --  This file is an alternate version of s-stratt.adb based on the XDR
 --  standard. It is especially useful for exchanging streams between two
---  different systems with different basic type representations and endianess.
+--  different systems with different basic type representations and endianness.
 
 with Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;
@@ -74,8 +74,8 @@ package body System.Stream_Attributes is
          F_Size       : Integer; --  Fraction bit size
          E_Last       : Integer; --  Max exponent value
          F_Mask       : SE;      --  Mask to apply on first fraction byte
-         E_Bytes      : SEO;     --  N. of exponent bytes completly used
-         F_Bytes      : SEO;     --  N. of fraction bytes completly used
+         E_Bytes      : SEO;     --  N. of exponent bytes completely used
+         F_Bytes      : SEO;     --  N. of fraction bytes completely used
          F_Bits       : Integer; --  N. of bits used on first fraction word
       end record;
 

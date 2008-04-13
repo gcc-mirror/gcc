@@ -60,7 +60,7 @@ package System.Tasking is
    --  Never undefer abort while holding a lock
 
    --  Overlapping critical sections must be properly nested, and locks must
-   --  be released in LIFO order. e.g., the following is not allowed:
+   --  be released in LIFO order. E.g., the following is not allowed:
 
    --         Lock (X);
    --         ...

@@ -107,7 +107,7 @@ package System.Soft_Links is
      function return String;
    pragma Favor_Top_Level (Task_Name_Call);
 
-   --  Suppress checks on all these types, since we know the corrresponding
+   --  Suppress checks on all these types, since we know the corresponding
    --  values can never be null (the soft links are always initialized).
 
    pragma Suppress (Access_Check, No_Param_Proc);

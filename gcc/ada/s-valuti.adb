@@ -294,8 +294,8 @@ package body System.Val_Util is
       P := P + 1;
 
       --  If underscore is at the end of string, then this is an error and
-      --  we raise Constraint_Error, leaving the pointer past the undescore.
-      --  This seems a bit strange. It means e,g, that if the field is:
+      --  we raise Constraint_Error, leaving the pointer past the underscore.
+      --  This seems a bit strange. It means e.g. that if the field is:
 
       --    345_
 

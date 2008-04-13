@@ -159,7 +159,7 @@ package System.Tasking.Protected_Objects.Entries is
      (Object : Protection_Entries_Access) return Boolean;
    --  Returns True if an Interrupt_Handler or Attach_Handler pragma applies
    --  to the protected object. That is to say this primitive returns False for
-   --  Protection, but is overriden to return True when interrupt handlers are
+   --  Protection, but is overridden to return True when interrupt handlers are
    --  declared so the check required by C.3.1(11) can be implemented in
    --  System.Tasking.Protected_Objects.Initialize_Protection.
 

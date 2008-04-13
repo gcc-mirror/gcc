@@ -239,7 +239,7 @@ package body System.Tasking.Protected_Objects.Entries is
          raise Program_Error;
       end if;
 
-      --  The lock is made without defering abort
+      --  The lock is made without deferring abort
 
       --  Therefore the abort has to be deferred before calling this routine.
       --  This means that the compiler has to generate a Defer_Abort call
@@ -311,7 +311,7 @@ package body System.Tasking.Protected_Objects.Entries is
       --  have read ownership of the protected object, so that this method of
       --  storing the (single) protected object's owner does not work
       --  reliably for read locks. However, this is the approach taken for two
-      --  major reasosn: first, this function is not currently being used (it
+      --  major reasons: first, this function is not currently being used (it
       --  is provided for possible future use), and second, it largely
       --  simplifies the implementation.
 

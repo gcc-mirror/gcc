@@ -387,7 +387,7 @@ package body System.Tasking.Initialization is
    --  should not be necessary here, if Abort_Task is implemented correctly,
    --  since Abort_Task should include the effect of Wakeup. However, the
    --  above call was in earlier versions of this file, and at least for
-   --  some targets Abort_Task has not beek doing Wakeup. It should not
+   --  some targets Abort_Task has not been doing Wakeup. It should not
    --  hurt to uncomment the above call, until the error is corrected for
    --  all targets.
 
@@ -402,7 +402,7 @@ package body System.Tasking.Initialization is
    --  and let it decide if it wants to complete the aborted construct
    --  immediately.
 
-   --  Note that the effect of the lowl-level Abort_Task is not persistent.
+   --  Note that the effect of the low-level Abort_Task is not persistent.
    --  If the target task is not blocked, this wakeup will be missed.
 
    --  We don't bother calling Abort_Task if this task is aborting itself,
@@ -413,7 +413,7 @@ package body System.Tasking.Initialization is
 
    --  Note that an earlier version of this code had some false reasoning
    --  about being able to reliably wake up a task that had suspended on
-   --  a blocking system call that does not atomically relase the task's
+   --  a blocking system call that does not atomically release the task's
    --  lock (e.g., UNIX nanosleep, which we once thought could be used to
    --  implement delays). That still left the possibility of missed
    --  wakeups.

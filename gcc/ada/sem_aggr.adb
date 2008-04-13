@@ -202,7 +202,7 @@ package body Sem_Aggr is
       Component     : Node_Id);
    --  Give possible misspelling diagnostic if Component is likely to be
    --  a misspelling of one of the components of the Assoc_List.
-   --  This is called by Resolv_Aggr_Expr after producing
+   --  This is called by Resolve_Aggr_Expr after producing
    --  an invalid component error message.
 
    procedure Check_Static_Discriminated_Subtype (T : Entity_Id; V : Node_Id);
@@ -254,7 +254,7 @@ package body Sem_Aggr is
    --     appears last in the sub-aggregate. Check that we do not have
    --     positional and named components in the array sub-aggregate (unless
    --     the named association is an others choice). Finally if an others
-   --     choice is present, make sure it is allowed in the aggregate contex.
+   --     choice is present, make sure it is allowed in the aggregate context.
    --
    --  2. If the array sub-aggregate contains discrete_choices:
    --
@@ -1143,7 +1143,7 @@ package body Sem_Aggr is
       function Resolve_Aggr_Expr
         (Expr        : Node_Id;
          Single_Elmt : Boolean) return Boolean;
-      --  Resolves aggregate expression Expr. Returs False if resolution
+      --  Resolves aggregate expression Expr. Returns False if resolution
       --  fails. If Single_Elmt is set to False, the expression Expr may be
       --  used to initialize several array aggregate elements (this can
       --  happen for discrete choices such as "L .. H => Expr" or the others
@@ -1396,7 +1396,7 @@ package body Sem_Aggr is
       is
          Nxt_Ind        : constant Node_Id := Next_Index (Index);
          Nxt_Ind_Constr : constant Node_Id := Next_Index (Index_Constr);
-         --  Index is the current index corresponding to the expresion
+         --  Index is the current index corresponding to the expression
 
          Resolution_OK : Boolean := True;
          --  Set to False if resolution of the expression failed
@@ -2650,7 +2650,7 @@ package body Sem_Aggr is
             Expr_Type := Etype (Component);
 
          --  Otherwise we have to pick up the new type of the component from
-         --  the new costrained subtype of the aggregate. In fact components
+         --  the new constrained subtype of the aggregate. In fact components
          --  which are of a composite type might be constrained by a
          --  discriminant, and we want to resolve Expr against the subtype were
          --  all discriminant occurrences are replaced with their actual value.
@@ -2914,11 +2914,11 @@ package body Sem_Aggr is
       --  in sem_ch3 and here rather than have a copy of the code which is a
       --  maintenance nightmare.
 
-      --  ??? Performace WARNING. The current implementation creates a new
+      --  ??? Performance WARNING. The current implementation creates a new
       --  itype for all aggregates whose base type is discriminated.
       --  This means that for record aggregates nested inside an array
       --  aggregate we will create a new itype for each record aggregate
-      --  if the array cmponent type has discriminants. For large aggregates
+      --  if the array component type has discriminants. For large aggregates
       --  this may be a problem. What should be done in this case is
       --  to reuse itypes as much as possible.
 

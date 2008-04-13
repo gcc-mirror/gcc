@@ -326,7 +326,7 @@ package Sem_Attr is
       --------------------
 
       Attribute_Mechanism_Code => True,
-      --  function'Mechanism_Code yeilds an integer code for the mechanism
+      --  function'Mechanism_Code yields an integer code for the mechanism
       --  used for the result of function, and subprogram'Mechanism_Code (n)
       --  yields the mechanism used for formal parameter number n (a static
       --  integer value, 1 = first parameter). The code returned is:
@@ -350,7 +350,7 @@ package Sem_Attr is
       --  A reference T'Null_Parameter denotes an (imaginary) object of type or
       --  subtype T allocated at (machine) address zero. The attribute is
       --  allowed only as the default expression of a formal parameter, or as
-      --  an actual expression of a subporgram call. In either case, the
+      --  an actual expression of a subprogram call. In either case, the
       --  subprogram must be imported.
       --
       --  The identity of the object is represented by the address zero in the
@@ -446,7 +446,7 @@ package Sem_Attr is
       --  to convert this to an address using the same semantics as the
       --  System.Storage_Elements.To_Address function. The important difference
       --  is that this is a static attribute so it can be used in
-      --  initializations in preealborate packages.
+      --  initializations in preelaborate packages.
 
       ----------------
       -- Type_Class --

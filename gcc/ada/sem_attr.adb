@@ -454,7 +454,7 @@ package body Sem_Attr is
             --  Note: This fragment of the tree is temporarily malformed
             --  because the correct tree requires an E_Subprogram_Type entity
             --  as the designated type. In most cases this designated type is
-            --  later overriden by the semantics with the type imposed by the
+            --  later overridden by the semantics with the type imposed by the
             --  context during the resolution phase. In the specific case of
             --  the expression Address!(Prim'Unrestricted_Access), used to
             --  initialize slots of dispatch tables, this work will be done by
@@ -5544,7 +5544,7 @@ package body Sem_Attr is
       -----------------
 
       --  Constrained is never folded for now, there may be cases that
-      --  could be handled at compile time. to be looked at later.
+      --  could be handled at compile time. To be looked at later.
 
       when Attribute_Constrained =>
          null;
@@ -6655,7 +6655,7 @@ package body Sem_Attr is
 
       when Attribute_Small =>
 
-         --  The floating-point case is present only for Ada 83 compatability.
+         --  The floating-point case is present only for Ada 83 compatibility.
          --  Note that strictly this is an illegal addition, since we are
          --  extending an Ada 95 defined attribute, but we anticipate an
          --  ARG ruling that will permit this.
@@ -6781,7 +6781,7 @@ package body Sem_Attr is
          --  We treat protected types like task types. It would make more
          --  sense to have another enumeration value, but after all the
          --  whole point of this feature is to be exactly DEC compatible,
-         --  and changing the type Type_Clas would not meet this requirement.
+         --  and changing the type Type_Class would not meet this requirement.
 
          elsif Is_Protected_Type (Typ) then
             Id := RE_Type_Class_Task;
@@ -7503,7 +7503,7 @@ package body Sem_Attr is
                   --  that generic unit. This includes any such attribute that
                   --  occurs within the body of a generic unit that is a child
                   --  of the generic unit where the subprogram is declared.
-                  --  The rule also prohibits applying the attibute when the
+                  --  The rule also prohibits applying the attribute when the
                   --  access type is a generic formal access type (since the
                   --  level of the actual type is not known). This restriction
                   --  does not apply when the attribute type is an anonymous

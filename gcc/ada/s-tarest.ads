@@ -158,7 +158,7 @@ package System.Tasking.Restricted.Stages is
    --  single argument to State.
    --
    --  Elaborated is a pointer to a Boolean that must be set to true on exit
-   --  if the task could be sucessfully elaborated.
+   --  if the task could be successfully elaborated.
    --
    --  Chain is a linked list of task that needs to be created. On exit,
    --  Created_Task.Activation_Link will be Chain.T_ID, and Chain.T_ID will be

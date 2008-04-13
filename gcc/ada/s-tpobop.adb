@@ -506,7 +506,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  See also Cancel_Protected_Entry_Call for code expansion of asynchronous
    --  entry call.
 
-   --  The initial part of this procedure does not need to lock the the calling
+   --  The initial part of this procedure does not need to lock the calling
    --  task's ATCB, up to the point where the call record first may be queued
    --  (PO_Do_Or_Queue), since before that no other task will have access to
    --  the record.
@@ -520,7 +520,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  There are some heuristics here, just to save time for frequently
    --  occurring cases. For example, we check Initially_Abortable to try to
    --  avoid calling the procedure Wait_Until_Abortable, since the normal case
-   --  for async.  entry calls is to be queued abortably.
+   --  for async. entry calls is to be queued abortably.
 
    --  Another heuristic uses the Block.Enqueued to try to avoid calling
    --  Cancel_Protected_Entry_Call if the call can be served immediately.

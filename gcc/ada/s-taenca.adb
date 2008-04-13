@@ -113,7 +113,7 @@ package body System.Tasking.Entry_Calls is
    pragma Inline (Poll_Base_Priority_Change_At_Entry_Call);
    --  A specialized version of Poll_Base_Priority_Change, that does the
    --  optional entry queue reordering. Has to be called with the Self_ID's
-   --  ATCB write-locked. May temporariliy release the lock.
+   --  ATCB write-locked. May temporarily release the lock.
 
    ---------------------
    -- Check_Exception --

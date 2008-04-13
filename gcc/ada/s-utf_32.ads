@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,14 +117,14 @@ package System.UTF_32 is
    function Is_UTF_32_Digit (U : UTF_32)   return Boolean;
    function Is_UTF_32_Digit (C : Category) return Boolean;
    pragma Inline (Is_UTF_32_Digit);
-   --  Returns true iff U is a digit that can be used to extend an identifer,
+   --  Returns true iff U is a digit that can be used to extend an identifier,
    --  or if C is one of the corresponding categories, which are the following:
    --    Number, Decimal_Digit (Nd)
 
    function Is_UTF_32_Line_Terminator (U : UTF_32) return Boolean;
    pragma Inline (Is_UTF_32_Line_Terminator);
    --  Returns true iff U is an allowed line terminator for source programs,
-   --  if U is in the category Zp (Separator, Paragaph), or Zs (Separator,
+   --  if U is in the category Zp (Separator, Paragraph), or Zs (Separator,
    --  Line), or if U is a conventional line terminator (CR, LF, VT, FF).
    --  There is no category version for this function, since the set of
    --  characters does not correspond to a set of Unicode categories.
@@ -143,7 +143,7 @@ package System.UTF_32 is
    pragma Inline (Is_UTF_32_Other);
    --  Returns true iff U is an other format character, which means that it
    --  can be used to extend an identifier, but is ignored for the purposes of
-   --  matching of identiers, or if C is one of the corresponding categories,
+   --  matching of identifiers, or if C is one of the corresponding categories,
    --  which are the following:
    --    Other, Format (Cf)
 
@@ -151,7 +151,7 @@ package System.UTF_32 is
    function Is_UTF_32_Punctuation (C : Category) return Boolean;
    pragma Inline (Is_UTF_32_Punctuation);
    --  Returns true iff U is a punctuation character that can be used to
-   --  separate pices of an identifier, or if C is one of the corresponding
+   --  separate pieces of an identifier, or if C is one of the corresponding
    --  categories, which are the following:
    --    Punctuation, Connector (Pc)
 
@@ -177,7 +177,7 @@ package System.UTF_32 is
    --  Note that the Ada category format effector is subsumed by the above
    --  list of Unicode categories.
    --
-   --  Note that Other, Unassiged (Cn) is quite deliberately not included
+   --  Note that Other, Unassigned (Cn) is quite deliberately not included
    --  in the list of categories above. This means that should any of these
    --  code positions be defined in future with graphic characters they will
    --  be allowed without a need to change implementations or the standard.

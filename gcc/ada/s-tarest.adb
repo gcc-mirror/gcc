@@ -200,7 +200,7 @@ package body System.Tasking.Restricted.Stages is
       --  a task terminating due to completing the last statement of its body.
       --  If the task terminates because of an exception raised by the
       --  execution of its task body, then Cause is set to Unhandled_Exception.
-      --  Aborts are not allowed in the restriced profile to which this file
+      --  Aborts are not allowed in the restricted profile to which this file
       --  belongs.
 
       EO : Exception_Occurrence;

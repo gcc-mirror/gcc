@@ -1,3 +1,24 @@
+2008-04-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* s-secsta.adb, s-sequio.ads, s-shasto.ads,
+	s-soflin.ads, s-stalib.ads, s-stausa.adb,
+	s-stausa.ads, s-strxdr.adb, s-taenca.adb, s-taenca.ads,
+	s-taprob.adb, s-taprop-hpux-dce.adb, s-taprop-irix.adb,
+	s-taprop-linux.adb, s-taprop-mingw.adb, s-taprop-posix.adb,
+	s-taprop-solaris.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-taprop-vxworks.adb, s-taprop.ads, s-tarest.adb,
+	s-tarest.ads, s-tasini.adb, s-tasini.ads, s-taskin.ads,
+	s-tasque.ads, s-tassta.adb, s-tassta.ads, s-tasuti.ads,
+	s-tpoben.adb, s-tpoben.ads, s-tpobop.adb,
+	s-tpopsp-posix.adb, s-tpopsp-rtems.adb, s-tposen.adb,
+	s-tposen.ads, s-traceb-hpux.adb, s-traces.ads,
+	s-trafor-default.ads, s-unstyp.ads, s-utf_32.ads,
+	s-vaflop.adb, s-vaflop.ads, s-valrea.adb, s-valuti.adb,
+	s-wchstw.ads, s-wchwts.adb, s-wchwts.ads, scans.ads,
+	scn.adb, scng.adb, seh_init.c, sem.ads, sem_aggr.adb,
+	sem_attr.adb, sem_attr.ads, sem_case.adb, sem_case.ads,
+	sem_cat.adb, sem_cat.ads: Fix comment typos.
+
 2008-04-12  Joel Sherrill  <joel@oarcorp.com>
 
 	PR ada/35825

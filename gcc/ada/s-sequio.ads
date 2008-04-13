@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2006, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2008, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the declaration of the control block used for
---  Seqential_IO. This must be declared at the outer library level. It also
+--  Sequential_IO. This must be declared at the outer library level. It also
 --  contains code that is shared between instances of Sequential_IO.
 
 with System.File_Control_Block;

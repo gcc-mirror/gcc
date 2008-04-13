@@ -95,7 +95,7 @@ package System.Tasking.Utilities is
 
    procedure Abort_Tasks (Tasks : Task_List);
    --  Abort_Tasks is called to initiate abort, however, the actual
-   --  aborti is done by aborted task by means of Abort_Handler
+   --  aborting is done by aborted task by means of Abort_Handler
 
    procedure Make_Passive (Self_ID : Task_Id; Task_Completed : Boolean);
    --  Update counts to indicate current task is either terminated or
