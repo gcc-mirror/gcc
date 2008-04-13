@@ -2958,7 +2958,7 @@
 
 (define_insn "*andhi_lowpart_non_v32"
   [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand"	       "=r,r, r,r,r,r"))
+	 (match_operand:HI 0 "register_operand"	       "+r,r, r,r,r,r"))
 	(and:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
 		(match_operand:HI 2 "general_operand"   "r,Q>,L,O,g,!To")))]
   "!TARGET_V32"
@@ -2974,7 +2974,7 @@
 
 (define_insn "*andhi_lowpart_v32"
   [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand" "=r,r,r,r,r"))
+	 (match_operand:HI 0 "register_operand" "+r,r,r,r,r"))
 	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0")
 		(match_operand:HI 2 "general_operand" "r,Q>,L,O,g")))]
   "TARGET_V32"
@@ -3025,7 +3025,7 @@
 
 (define_insn "*andqi_lowpart_non_v32"
   [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand"	       "=r,r, r,r,r"))
+	 (match_operand:QI 0 "register_operand"	       "+r,r, r,r,r"))
 	(and:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,r")
 		(match_operand:QI 2 "general_operand"   "r,Q>,O,g,!To")))]
   "!TARGET_V32"
@@ -3040,7 +3040,7 @@
 
 (define_insn "*andqi_lowpart_v32"
   [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand" "=r,r,r,r"))
+	 (match_operand:QI 0 "register_operand" "+r,r,r,r"))
 	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0,0")
 		(match_operand:QI 2 "general_operand" "r,Q>,O,g")))]
   "TARGET_V32"
