@@ -1,3 +1,8 @@
+2008-04-12  Andrew Pinski  <pinskia@gmail.com>
+
+	* config/rs6000/rs6000.c (compute_save_world_info): Set lr_save_p if
+	we are going to "save the world".
+
 2008-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md ("*andhi_lowpart_non_v32", "*andhi_lowpart_v32")

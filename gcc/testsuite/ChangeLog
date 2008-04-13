@@ -1,3 +1,7 @@
+2008-04-12  Andrew Pinski  <pinskia@gmail.com>
+
+	* gcc.target/powerpc/darwin-save-world-1.c: New test.
+
 2008-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35869

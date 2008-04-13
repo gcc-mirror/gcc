@@ -14258,6 +14258,9 @@ compute_save_world_info (rs6000_stack_t *info_ptr)
 	 will attempt to save it. */
       info_ptr->vrsave_size  = 4;
 
+      /* If we are going to save the world, we need to save the link register too.  */
+      info_ptr->lr_save_p = 1;
+
       /* "Save" the VRsave register too if we're saving the world.  */
       if (info_ptr->vrsave_mask == 0)
 	info_ptr->vrsave_mask = compute_vrsave_mask ();
