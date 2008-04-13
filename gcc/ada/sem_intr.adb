@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package body Sem_Intr is
          end if;
 
       --  Check for the case of freeing a non-null object which will raise
-      --  Constaint_Error. Issue warning here, do the expansion in Exp_Intr.
+      --  Constraint_Error. Issue warning here, do the expansion in Exp_Intr.
 
       elsif Cnam = Name_Free
         and then Can_Never_Be_Null (Etype (Arg1))
@@ -158,7 +158,7 @@ package body Sem_Intr is
       T2  : Entity_Id;
 
    begin
-      --  Aritnmetic operators
+      --  Arithmetic operators
 
       if Nam = Name_Op_Add
            or else
@@ -304,7 +304,7 @@ package body Sem_Intr is
          Errint ("unrecognized intrinsic subprogram", E, N);
 
       --  We always allow intrinsic specifications in language defined units
-      --  and in expanded code. We assume that the GNAT implemetors know what
+      --  and in expanded code. We assume that the GNAT implementors know what
       --  they are doing, and do not write or generate junk use of intrinsic!
 
       elsif not Comes_From_Source (E)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,7 @@ package Sem_Ch10 is
    --  private part of a nested package, even if this package appears in
    --  the visible part of the enclosing compilation unit. This Ada 2005
    --  rule imposes extra steps in order to install/remove the private_with
-   --  clauses of the an enclosing unit.
+   --  clauses of an enclosing unit.
 
    procedure Load_Needed_Body (N : Node_Id; OK : out Boolean);
    --  Load and analyze the body of a context unit that is generic, or

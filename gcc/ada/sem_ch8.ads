@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,7 +146,7 @@ package Sem_Ch8 is
    --  return, the contents of the scope stack must be made accessible again.
    --  The flag Handle_Use indicates whether local use clauses must be
    --  removed/installed. In the case of inlining of instance bodies, the
-   --  visiblity handling is done fully in Inline_Instance_Body, and use
+   --  visibility handling is done fully in Inline_Instance_Body, and use
    --  clauses are handled there.
 
    procedure Set_Use (L : List_Id);

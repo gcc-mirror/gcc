@@ -2731,7 +2731,7 @@ package body Sem_Util is
 
          and then Length_Of_Name (Chars (C)) /= 1
 
-         --  Don't warn for non-source eneities
+         --  Don't warn for non-source entities
 
          and then Comes_From_Source (C)
          and then Comes_From_Source (Def_Id)
@@ -2999,7 +2999,7 @@ package body Sem_Util is
         (Prim_Params  : List_Id;
          Iface_Params : List_Id) return Boolean;
       --  Determine whether a subprogram's parameter profile Prim_Params
-      --  matches that of a potentially overriden interface subprogram
+      --  matches that of a potentially overridden interface subprogram
       --  Iface_Params. Also determine if the type of first parameter of
       --  Iface_Params is an implemented interface.
 
@@ -3088,7 +3088,7 @@ package body Sem_Util is
 
          Prim_Param  := First (Prim_Params);
 
-         --  The first parameter of the potentially overriden subprogram
+         --  The first parameter of the potentially overridden subprogram
          --  must be an interface implemented by Prim.
 
          if not Is_Interface (Iface_Typ)
@@ -3173,7 +3173,7 @@ package body Sem_Util is
          return Empty;
       end if;
 
-      --  Traverse the homonym chain, looking at a potentially overriden
+      --  Traverse the homonym chain, looking at a potentially overridden
       --  subprogram that belongs to an implemented interface.
 
       Hom := First_Hom;
@@ -4472,7 +4472,7 @@ package body Sem_Util is
                   Set_Result (Unknown);
 
                   --  Now check size of Expr object. Any size that is not an
-                  --  even multiple of Maxiumum_Alignment is also worrisome
+                  --  even multiple of Maximum_Alignment is also worrisome
                   --  since it may cause the alignment of the object to be less
                   --  than the alignment of the type.
 
@@ -4942,7 +4942,7 @@ package body Sem_Util is
             then
                --  Get default expression if any. If there is no declaration
                --  node, it means we have an internal entity. The parent and
-               --  tag fields are examples of such entitires. For these cases,
+               --  tag fields are examples of such entities. For these cases,
                --  we just test the type of the entity.
 
                if Present (Declaration_Node (Ent)) then
@@ -5341,9 +5341,9 @@ package body Sem_Util is
       return False;
    end In_Instance_Visible_Part;
 
-   ----------------------
-   -- In_Packiage_Body --
-   ----------------------
+   ---------------------
+   -- In_Package_Body --
+   ---------------------
 
    function In_Package_Body return Boolean is
       S : Entity_Id;
@@ -6616,7 +6616,7 @@ package body Sem_Util is
       Indx : Node_Id;
 
    begin
-      --  For private type, test corrresponding full type
+      --  For private type, test corresponding full type
 
       if Is_Private_Type (T) then
          return Is_Potentially_Persistent_Type (Full_View (T));
@@ -7482,7 +7482,7 @@ package body Sem_Util is
          when N_Type_Conversion =>
             return Known_To_Be_Assigned (P);
 
-         --  All other references are definitely not knwon to be modifications
+         --  All other references are definitely not known to be modifications
 
          when others =>
             return False;
@@ -7611,7 +7611,7 @@ package body Sem_Util is
          when N_Type_Conversion =>
             return May_Be_Lvalue (P);
 
-         --  Test for appearence in object renaming declaration
+         --  Test for appearance in object renaming declaration
 
          when N_Object_Renaming_Declaration =>
             return True;
@@ -8819,7 +8819,7 @@ package body Sem_Util is
       function Clear_Analyzed (N : Node_Id) return Traverse_Result;
       --  Function used to reset Analyzed flags in tree. Note that we do
       --  not reset Analyzed flags in entities, since there is no need to
-      --  renalalyze entities, and indeed, it is wrong to do so, since it
+      --  reanalyze entities, and indeed, it is wrong to do so, since it
       --  can result in generating auxiliary stuff more than once.
 
       --------------------
@@ -9707,7 +9707,7 @@ package body Sem_Util is
 
          Btyp := Root_Type (Btyp);
 
-         --  The accessibility level of anonymous acccess types associated with
+         --  The accessibility level of anonymous access types associated with
          --  discriminants is that of the current instance of the type, and
          --  that's deeper than the type itself (AARM 3.10.2 (12.3.21)).
 

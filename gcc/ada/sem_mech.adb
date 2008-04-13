@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,7 +183,7 @@ package body Sem_Mech is
    is
    begin
       --  Right now we only do some checks for functions returning arguments
-      --  by desctiptor. Probably mode checks need to be added here ???
+      --  by descriptor. Probably mode checks need to be added here ???
 
       if Mech in Descriptor_Codes and then not Is_Formal (Ent) then
          if Is_Record_Type (Etype (Ent)) then
@@ -207,7 +207,7 @@ package body Sem_Mech is
 
    begin
       --  Skip this processing if inside a generic template. Not only is
-      --  it uneccessary (since neither extra formals nor mechanisms are
+      --  it unnecessary (since neither extra formals nor mechanisms are
       --  relevant for the template itself), but at least at the moment,
       --  procedures get frozen early inside a template so attempting to
       --  look at the formal types does not work too well if they are
@@ -241,7 +241,7 @@ package body Sem_Mech is
                ---------
 
                --  Note: all RM defined conventions are treated the same
-               --  from the point of view of parameter passing mechanims
+               --  from the point of view of parameter passing mechanism
 
                when Convention_Ada       |
                     Convention_Intrinsic |

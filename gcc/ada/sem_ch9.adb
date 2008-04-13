@@ -917,7 +917,7 @@ package body Sem_Ch9 is
       if Nkind (Call) = N_Attribute_Reference then
 
          --  Possibly a stream attribute, but definitely illegal. Other
-         --  illegalitles, such as procedure calls, are diagnosed after
+         --  illegalities, such as procedure calls, are diagnosed after
          --  resolution.
 
          Error_Msg_N ("entry call alternative requires an entry call", Call);
@@ -983,7 +983,7 @@ package body Sem_Ch9 is
    --  order to make it available to the barrier, we create an additional
    --  scope, as for a loop, whose only declaration is the index name. This
    --  loop is not attached to the tree and does not appear as an entity local
-   --  to the protected type, so its existence need only be knwown to routines
+   --  to the protected type, so its existence need only be known to routines
    --  that process entry families.
 
    procedure Analyze_Entry_Index_Specification (N : Node_Id) is
@@ -2175,7 +2175,7 @@ package body Sem_Ch9 is
              ("triggering statement must be delay or entry call", Trigger);
 
          --  Ada 2005 (AI-345): If a procedure_call_statement is used for a
-         --  procedure_or_entry_call, the procedure_name or pro- cedure_prefix
+         --  procedure_or_entry_call, the procedure_name or procedure_prefix
          --  of the procedure_call_statement shall denote an entry renamed by a
          --  procedure, or (a view of) a primitive subprogram of a limited
          --  interface whose first parameter is a controlling parameter.

@@ -62,10 +62,10 @@ package body Sem_Warn is
 
    --  The following table collects potential warnings for IN OUT parameters
    --  that are referenced but not modified. These warnings are processed when
-   --  the front end calls the procedure Output_Non_Modifed_In_Out_Warnings.
+   --  the front end calls the procedure Output_Non_Modified_In_Out_Warnings.
    --  The reason that we defer output of these messages is that we want to
    --  detect the case where the relevant procedure is used as a generic actual
-   --  in an instantation, since we suppress the warnings in this case. The
+   --  in an instantiation, since we suppress the warnings in this case. The
    --  flag Used_As_Generic_Actual will be set in this case, but only at the
    --  point of usage. Similarly, we suppress the message if the address of the
    --  procedure is taken, where the flag Address_Taken may be set later.
@@ -98,7 +98,7 @@ package body Sem_Warn is
 
    --  Instead the following is preferred
 
-   --     if somme-other-predicate-on-E
+   --     if some-other-predicate-on-E
    --       and then Has_Warnings_Off (E)
 
    --  This way if some-other-predicate is false, we avoid a false indication
@@ -611,7 +611,7 @@ package body Sem_Warn is
         (E                : Entity_Id;
          Accept_Statement : Node_Id) return Entity_Id;
       --  For an entry formal entity from an entry declaration, find the
-      --  corrsesponding body formal from the given accept statement.
+      --  corresponding body formal from the given accept statement.
 
       function Missing_Subunits return Boolean;
       --  We suppress warnings when there are missing subunits, because this
@@ -1067,7 +1067,7 @@ package body Sem_Warn is
                      --  actual, or its address/access is taken. In these two
                      --  cases, we suppress the warning because the context may
                      --  force use of IN OUT, even if in this particular case
-                     --  the formal is not modifed.
+                     --  the formal is not modified.
 
                      else
                         In_Out_Warnings.Append (E1);
@@ -1174,7 +1174,7 @@ package body Sem_Warn is
                         --  If the selected component comes from expansion, all
                         --  we know is that the entity is not fully initialized
                         --  at the point of the reference. Locate a random
-                        --  unintialized component to get a better message.
+                        --  uninitialized component to get a better message.
 
                      elsif Nkind (Parent (UR)) = N_Selected_Component then
                         Error_Msg_Node_2 := Selector_Name (Parent (UR));
@@ -1429,7 +1429,7 @@ package body Sem_Warn is
          end if;
 
          --  Recurse into nested package or block. Do not recurse into a
-         --  formal package, because the correponding body is not analyzed.
+         --  formal package, because the corresponding body is not analyzed.
 
          <<Continue>>
             if ((Ekind (E1) = E_Package or else Ekind (E1) = E_Generic_Package)
@@ -1539,7 +1539,7 @@ package body Sem_Warn is
 
       case Nkind (N) is
 
-         --  For identifier or exanded name, examine the entity involved
+         --  For identifier or expanded name, examine the entity involved
 
          when N_Identifier | N_Expanded_Name =>
             declare
@@ -1636,7 +1636,7 @@ package body Sem_Warn is
 
                            function Process
                              (N : Node_Id) return Traverse_Result;
-                           --  Process function for instantation of Traverse
+                           --  Process function for instantiation of Traverse
                            --  below. Checks if N contains reference to other
                            --  than a dereference.
 
@@ -1882,7 +1882,7 @@ package body Sem_Warn is
          --  The only reference to a context unit may be in a renaming
          --  declaration. If this renaming declares a visible entity, do
          --  not warn that the context clause could be moved to the body,
-         --  because the renaming may be intented to re-export the unit.
+         --  because the renaming may be intended to re-export the unit.
 
          -------------------------
          -- Check_Inner_Package --
@@ -2514,7 +2514,7 @@ package body Sem_Warn is
          end if;
       end No_Warn_On_In_Out;
 
-   --  Start of processing for Output_Non_Modifed_In_Out_Warnings
+   --  Start of processing for Output_Non_Modified_In_Out_Warnings
 
    begin
       --  Loop through entities for which a warning may be needed
@@ -3292,7 +3292,7 @@ package body Sem_Warn is
       --  to this lower bound. If not, False is returned, and Low_Bound is
       --  undefined on return.
       --
-      --  For now, we limite this to standard string types, so any other
+      --  For now, we limit this to standard string types, so any other
       --  unconstrained types return False. We may change our minds on this
       --  later on, but strings seem the most important case.
 
@@ -3369,7 +3369,7 @@ package body Sem_Warn is
       begin
          --  Nothing to do if subscript does not come from source (we don't
          --  want to give garbage warnings on compiler expanded code, e.g. the
-         --  loops generated for slice assignments. Sucb junk warnings would
+         --  loops generated for slice assignments. Such junk warnings would
          --  be placed on source constructs with no subscript in sight!)
 
          if not Comes_From_Source (Original_Node (X)) then
@@ -3411,7 +3411,7 @@ package body Sem_Warn is
                   --  Tref (Sref) is used to scan the subscript
 
                   Pctr : Natural;
-                  --  Paretheses counter when scanning subscript
+                  --  Parentheses counter when scanning subscript
 
                begin
                   --  Tref (Sref) points to start of subscript
@@ -3602,7 +3602,7 @@ package body Sem_Warn is
                Next_Formal (Form2);
             end loop;
 
-            --  Here all conditionas are met, record possible unset reference
+            --  Here all conditions are met, record possible unset reference
 
             Set_Unset_Reference (Form, Return_Node);
          end if;
@@ -3631,7 +3631,7 @@ package body Sem_Warn is
 
                --  Case of variable that is assigned but not read. We suppress
                --  the message if the variable is volatile, has an address
-               --  clause, is aliasied, or is a renaming, or is imported.
+               --  clause, is aliased, or is a renaming, or is imported.
 
                if Referenced_As_LHS_Check_Spec (E)
                  and then No (Address_Clause (E))
@@ -3879,7 +3879,7 @@ package body Sem_Warn is
                   --  If we are not at the top level, we regard an inner
                   --  exception handler as a decisive indicator that we should
                   --  not generate the warning, since the variable in question
-                  --  may be acceessed after an exception in the outer block.
+                  --  may be accessed after an exception in the outer block.
 
                   if Nkind (Parent (P)) /= N_Subprogram_Body
                     and then Nkind (Parent (P)) /= N_Package_Body

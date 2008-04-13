@@ -67,13 +67,13 @@ package body Sem_Ch13 is
 
    procedure Alignment_Check_For_Esize_Change (Typ : Entity_Id);
    --  This routine is called after setting the Esize of type entity Typ.
-   --  The purpose is to deal with the situation where an aligment has been
+   --  The purpose is to deal with the situation where an alignment has been
    --  inherited from a derived type that is no longer appropriate for the
    --  new Esize value. In this case, we reset the Alignment to unknown.
 
    procedure Check_Component_Overlap (C1_Ent, C2_Ent : Entity_Id);
    --  Given two entities for record components or discriminants, checks
-   --  if they hav overlapping component clauses and issues errors if so.
+   --  if they have overlapping component clauses and issues errors if so.
 
    function Get_Alignment_Value (Expr : Node_Id) return Uint;
    --  Given the expression for an alignment value, returns the corresponding
@@ -118,7 +118,7 @@ package body Sem_Ch13 is
    --  call to Validate_Unchecked_Conversions does the actual error
    --  checking and posting of warnings. The reason for this delayed
    --  processing is to take advantage of back-annotations of size and
-   --  alignment values peformed by the back end.
+   --  alignment values performed by the back end.
 
    type UC_Entry is record
       Enode  : Node_Id;   -- node used for posting warnings
@@ -294,7 +294,7 @@ package body Sem_Ch13 is
 
       declare
          Comps : array (0 .. Num_CC) of Entity_Id;
-         --  Array to collect component and discrimninant entities. The data
+         --  Array to collect component and discriminant entities. The data
          --  starts at index 1, the 0'th entry is for the sort routine.
 
          function CP_Lt (Op1, Op2 : Natural) return Boolean;
@@ -1490,7 +1490,7 @@ package body Sem_Ch13 is
             --  The Stack_Bounded_Pool is used internally for implementing
             --  access types with a Storage_Size. Since it only work
             --  properly when used on one specific type, we need to check
-            --  that it is not highjacked improperly:
+            --  that it is not hijacked improperly:
             --    type T is access Integer;
             --    for T'Storage_Size use n;
             --    type Q is access Float;
@@ -2394,7 +2394,7 @@ package body Sem_Ch13 is
 
                   elsif Present (Component_Clause (Comp)) then
 
-                     --  Diagose duplicate rep clause, or check consistency
+                     --  Diagnose duplicate rep clause, or check consistency
                      --  if this is an inherited component. In a double fault,
                      --  there may be a duplicate inconsistent clause for an
                      --  inherited component.
@@ -2730,7 +2730,7 @@ package body Sem_Ch13 is
 
       --  For records longer than System.Storage_Unit, and for those where not
       --  all components have component clauses, the back end determines the
-      --  length (it may for example be appopriate to round up the size
+      --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
       if Unknown_RM_Size (Rectype) and then Hbit + 1 <= 32 then
@@ -3574,7 +3574,7 @@ package body Sem_Ch13 is
 
       --  Signed case. Note that we consider types like range 1 .. -1 to be
       --  signed for the purpose of computing the size, since the bounds have
-      --  to be accomodated in the base type.
+      --  to be accommodated in the base type.
 
       if Lo < 0 or else Hi < 0 then
          S := 1;
@@ -3775,7 +3775,7 @@ package body Sem_Ch13 is
            ("representation item must be after full type declaration", N);
          return True;
 
-      --  If the type has incompleted components, a representation clause is
+      --  If the type has incomplete components, a representation clause is
       --  illegal but stream attributes and Convention pragmas are correct.
 
       elsif Has_Private_Component (T) then
@@ -4058,7 +4058,7 @@ package body Sem_Ch13 is
 
       --  For enumeration types, we must check each literal to see if the
       --  representation is the same. Note that we do not permit enumeration
-      --  reprsentation clauses for Character and Wide_Character, so these
+      --  representation clauses for Character and Wide_Character, so these
       --  cases were already dealt with.
 
       elsif Is_Enumeration_Type (T1) then

@@ -169,7 +169,7 @@ package Sem_Warn is
    --  should be given for a possible infinite loop, and if so issues it.
 
    procedure Warn_On_Known_Condition (C : Node_Id);
-   --  C is a node for a boolean expression resluting from a relational
+   --  C is a node for a boolean expression resulting from a relational
    --  or membership operation. If the expression has a compile time known
    --  value, then a warning is output if all the following conditions hold:
    --

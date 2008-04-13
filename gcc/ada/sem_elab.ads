@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,7 +85,7 @@ package Sem_Elab is
    --  Note on pragma Elaborate. The checking here assumes that a pragma
    --  Elaborate on a with'ed unit guarantees that subprograms within the
    --  unit can be called without causing an ABE. This is not in fact the
-   --  case since pragma Elaborate does not guarantee the transititive
+   --  case since pragma Elaborate does not guarantee the transitive
    --  coverage guaranteed by Elaborate_All. However, we leave this issue
    --  up to the binder, which has generates warnings if there are possible
    --  problems in the use of pragma Elaborate.

@@ -78,7 +78,7 @@ package Sem_Ch6 is
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;
       Err_Loc : Node_Id := Empty);
-   --  Check that two callable entitites (subprograms, entries, literals)
+   --  Check that two callable entities (subprograms, entries, literals)
    --  are fully conformant, post error message if not (RM 6.3.1(17)) with
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not. Note:
@@ -92,7 +92,7 @@ package Sem_Ch6 is
       Old_Id   : Entity_Id;
       Err_Loc  : Node_Id := Empty;
       Get_Inst : Boolean := False);
-   --  Check that two callable entitites (subprograms, entries, literals)
+   --  Check that two callable entities (subprograms, entries, literals)
    --  are mode conformant, post error message if not (RM 6.3.1(15)) with
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not. The
@@ -114,7 +114,7 @@ package Sem_Ch6 is
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;
       Err_Loc : Node_Id := Empty);
-   --  Check that two callable entitites (subprograms, entries, literals)
+   --  Check that two callable entities (subprograms, entries, literals)
    --  are subtype conformant, post error message if not (RM 6.3.1(16))
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not.
@@ -123,7 +123,7 @@ package Sem_Ch6 is
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;
       Err_Loc : Node_Id := Empty);
-   --  Check that two callable entitites (subprograms, entries, literals)
+   --  Check that two callable entities (subprograms, entries, literals)
    --  are type conformant, post error message if not (RM 6.3.1(14)) with
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not.

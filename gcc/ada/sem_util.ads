@@ -438,7 +438,7 @@ package Sem_Util is
       Pos : Uint;
       Loc : Source_Ptr) return Entity_Id;
    --  This function obtains the E_Enumeration_Literal entity for the
-   --  specified value from the enumneration type or subtype T. The
+   --  specified value from the enumeration type or subtype T. The
    --  second argument is the Pos value, which is assumed to be in range.
    --  The third argument supplies a source location for constructed
    --  nodes returned by this function.
@@ -547,7 +547,7 @@ package Sem_Util is
    --  initialize procedure, which makes the type not preelaborable.
 
    function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
-   --  Return True iff type E has preelaborable initialiation as defined in
+   --  Return True iff type E has preelaborable initialisation as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
 
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
@@ -566,8 +566,8 @@ package Sem_Util is
    --  Returns True if Typ is a composite type (array or record) which is
    --  either itself a tagged type, or has a component (recursively) which is
    --  a tagged type. Returns False for non-composite type, or if no tagged
-   --  component is present. to check if '=' has to be expanded into a bunch
-   --  component comparisons.
+   --  component is present. This function is used to check if '=' has to be
+   --  expanded into a bunch component comparisons.
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
@@ -690,7 +690,7 @@ package Sem_Util is
    --  i.e. a library unit or an entity declared in a library package.
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
-   --  Determines whether Expr is a refeference to a variable or IN OUT
+   --  Determines whether Expr is a reference to a variable or IN OUT
    --  mode parameter of the current enclosing subprogram.
    --  Why are OUT parameters not considered here ???
 
@@ -747,7 +747,7 @@ package Sem_Util is
    function Is_Selector_Name (N : Node_Id) return Boolean;
    --  Given an N_Identifier node N, determines if it is a Selector_Name.
    --  As described in Sinfo, Selector_Names are special because they
-   --  represent use of the N_Identifier node for a true identifer, when
+   --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
 
    function Is_Statement (N : Node_Id) return Boolean;
@@ -795,14 +795,15 @@ package Sem_Util is
    --  entities in the current scope and in any parent scopes if the current
    --  scope is a block or a package (and that recursion continues to the top
    --  scope that is not a block or a package). This is used when the
-   --  sequential flow-of-control assumption is violated (occurence of a label,
-   --  head of a loop, or start of an exception handler). The effect of the
-   --  call is to clear the Constant_Value field (but we do not need to clear
-   --  the Is_True_Constant flag, since that only gets reset if there really is
-   --  an assignment somewhere in the entity scope). This procedure also calls
-   --  Kill_All_Checks, since this is a special case of needing to forget saved
-   --  values. This procedure also clears Is_Known_Non_Null flags in variables,
-   --  constants or parameters since these are also not known to be valid.
+   --  sequential flow-of-control assumption is violated (occurrence of a
+   --  label, head of a loop, or start of an exception handler). The effect of
+   --  the call is to clear the Constant_Value field (but we do not need to
+   --  clear the Is_True_Constant flag, since that only gets reset if there
+   --  really is an assignment somewhere in the entity scope). This procedure
+   --  also calls Kill_All_Checks, since this is a special case of needing to
+   --  forget saved values. This procedure also clears Is_Known_Non_Null flags
+   --  in variables, constants or parameters since these are also not known to
+   --  be valid.
    --
    --  The Last_Assignment_Only flag is set True to clear only Last_Assignment
    --  fields and leave other fields unchanged. This is used when we encounter
@@ -911,7 +912,7 @@ package Sem_Util is
    --  next entry of the Parameter_Associations list. The argument is an
    --  actual previously returned by a call to First_Actual or Next_Actual.
    --  Note that the result produced is always an expression, not a parameter
-   --  assciation node, even if named notation was used.
+   --  association node, even if named notation was used.
 
    procedure Normalize_Actuals
      (N       : Node_Id;
@@ -919,7 +920,7 @@ package Sem_Util is
       Report  : Boolean;
       Success : out Boolean);
    --  Reorders lists of actuals according to names of formals, value returned
-   --  in Success indicates sucess of reordering. For more details, see body.
+   --  in Success indicates success of reordering. For more details, see body.
    --  Errors are reported only if Report is set to True.
 
    procedure Note_Possible_Modification (N : Node_Id; Sure : Boolean);
@@ -1019,7 +1020,7 @@ package Sem_Util is
 
    function Same_Object (Node1, Node2 : Node_Id) return Boolean;
    --  Determine if Node1 and Node2 are known to designate the same object.
-   --  This is a semantic test and both nodesmust be fully analyzed. A result
+   --  This is a semantic test and both nodes must be fully analyzed. A result
    --  of True is decisively correct. A result of False does not necessarily
    --  mean that different objects are designated, just that this could not
    --  be reliably determined at compile time.
