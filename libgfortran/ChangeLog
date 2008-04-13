@@ -1,3 +1,37 @@
+2008-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/32972
+	PR libfortran/32512
+	configure.ac:  Add test for uintptr_t.
+	configure:  Regenerated.
+	config.h.in:  Regenerated.
+	* libgfortran.h: GFC_DTYPE_DERIVED_1:  New macro.
+	GFC_DTYPE_DERIVED_2:  New macro.
+	GFC_DTYPE_DERIVED_4:  New macro.
+	GFC_DTYPE_DERIVED_8:  New macro.
+	GFC_DTYPE_DERIVED_16:  New macro.
+	GFC_UNALIGNED_2:  New macro.
+	GFC_UNALIGNED_4:  New macro.
+	GFC_UNALIGNED_8:  New macro.
+	GFC_UNALIGNED_16:  New macro.
+	intptr_t:  Define if we don't have it.
+	uintptr_t:  Likewise.
+	* runtime/backtrace.c (show_backtrace):  Use intptr_t.
+	* intrinsics/signal.c (signal_sub):  Likewise.
+	(signal_sub_int):  Likewise.
+	(alarm_sub_int_i4):  Likewise.
+	* intrinsics/spread_generic.c (spread):  Use the integer
+	routines for handling derived types of sizes 1, 2, 4, 8 and 16
+	if the alignment of all pointers is correct.
+	(spread_scalar):  Likewise.
+	* intrinsics/pack_generic.c (pack):  Likewise.
+	Use GFD_DTYPE_TYPE_SIZE to avoid nested switch statements.
+	* intrinsics/unpack_generic.c (unpack1):  Likewise.
+	(unpack0):  Likewise.
+	* runtime/in_pack_generic.c (internal_pack):  Likewise.
+	* runtime/in_unpack_generic.c (internal_unpack):  Likewise.
+
 2008-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/list_read.c (snprintf): Define if HAVE_SNPRINTF isn't defined.

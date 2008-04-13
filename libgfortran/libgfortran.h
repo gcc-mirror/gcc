@@ -71,6 +71,38 @@ typedef off_t gfc_offset;
 #endif
 
 
+/* We use intptr_t and uintptr_t, which may not be always defined in
+   system headers.  */
+
+#ifndef HAVE_INTPTR_T
+#if __SIZEOF_POINTER__ == __SIZEOF_LONG__
+#define intptr_t long
+#elif __SIZEOF_POINTER__ == __SIZEOF_LONG_LONG__
+#define intptr_t long long
+#elif __SIZEOF_POINTER__ == __SIZEOF_INT__
+#define intptr_t int
+#elif __SIZEOF_POINTER__ == __SIZEOF_SHORT__
+#define intptr_t short
+#else
+#error "Pointer type with unexpected size"
+#endif
+#endif
+
+#ifndef HAVE_UINTPTR_T
+#if __SIZEOF_POINTER__ == __SIZEOF_LONG__
+#define uintptr_t unsigned long
+#elif __SIZEOF_POINTER__ == __SIZEOF_LONG_LONG__
+#define uintptr_t unsigned long long
+#elif __SIZEOF_POINTER__ == __SIZEOF_INT__
+#define uintptr_t unsigned int
+#elif __SIZEOF_POINTER__ == __SIZEOF_SHORT__
+#define uintptr_t unsigned short
+#else
+#error "Pointer type with unexpected size"
+#endif
+#endif
+
+
 /* On mingw, work around the buggy Windows snprintf() by using the one
    mingw provides, __mingw_snprintf().  We also provide a prototype for
    __mingw_snprintf(), because the mingw headers currently don't have one.  */
@@ -367,6 +399,32 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #ifdef HAVE_GFC_COMPLEX_16
 #define GFC_DTYPE_COMPLEX_16 ((GFC_DTYPE_COMPLEX << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_COMPLEX_16) << GFC_DTYPE_SIZE_SHIFT))
+#endif
+
+#define GFC_DTYPE_DERIVED_1 ((GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))
+#define GFC_DTYPE_DERIVED_2 ((GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_INTEGER_2) << GFC_DTYPE_SIZE_SHIFT))
+#define GFC_DTYPE_DERIVED_4 ((GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_INTEGER_4) << GFC_DTYPE_SIZE_SHIFT))
+#define GFC_DTYPE_DERIVED_8 ((GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_INTEGER_8) << GFC_DTYPE_SIZE_SHIFT))
+#ifdef HAVE_GFC_INTEGER_16
+#define GFC_DTYPE_DERIVED_16 ((GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_INTEGER_16) << GFC_DTYPE_SIZE_SHIFT))
+#endif
+
+/* Macros to determine the alignment of pointers.  */
+
+#define GFC_UNALIGNED_2(x) (((uintptr_t)(x)) & \
+			    (__alignof__(GFC_INTEGER_2) - 1))
+#define GFC_UNALIGNED_4(x) (((uintptr_t)(x)) & \
+			    (__alignof__(GFC_INTEGER_4) - 1))
+#define GFC_UNALIGNED_8(x) (((uintptr_t)(x)) & \
+			    (__alignof__(GFC_INTEGER_8) - 1))
+#ifdef HAVE_GFC_INTEGER_16
+#define GFC_UNALIGNED_16(x) (((uintptr_t)(x)) & \
+			     (__alignof__(GFC_INTEGER_16) - 1))
 #endif
 
 /* Runtime library include.  */

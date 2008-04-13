@@ -43,12 +43,6 @@ Boston, MA 02110-1301, USA.  */
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_INTPTR_T
-# define INTPTR_T intptr_t
-#else
-# define INTPTR_T int
-#endif
-
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
 #endif
@@ -158,7 +152,7 @@ show_backtrace (void)
 
     /* Write the list of addresses in hexadecimal format.  */
     for (i = 0; i < depth; i++)
-      addr[i] = xtoa ((GFC_UINTEGER_LARGEST) (INTPTR_T) trace[i], addr_buf[i],
+      addr[i] = xtoa ((GFC_UINTEGER_LARGEST) (intptr_t) trace[i], addr_buf[i],
 		      sizeof (addr_buf[i]));
 
     /* Don't output an error message if something goes wrong, we'll simply

@@ -211,6 +211,7 @@ AC_CHECK_FUNCS(backtrace backtrace_symbols)
 
 # Check for types
 AC_CHECK_TYPES([intptr_t])
+AC_CHECK_TYPES([uintptr_t])
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])

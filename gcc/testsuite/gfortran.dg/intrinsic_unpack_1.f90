@@ -10,6 +10,12 @@ program intrinsic_unpack
    real(kind=8), dimension(3,3) :: ar8, br8
    complex(kind=4), dimension(3,3) :: ac4, bc4
    complex(kind=8), dimension(3,3) :: ac8, bc8
+   type i4_t
+      integer(kind=4) :: v
+   end type i4_t
+   type(i4_t), dimension(3,3) :: at4, bt4
+   type(i4_t), dimension(3) :: vt4
+
    logical, dimension(3, 3) :: mask
    character(len=500) line1, line2
    integer i
@@ -115,5 +121,15 @@ program intrinsic_unpack
    write (line2,'(18F9.5)') unpack((/(2._8, 0._8), (3._8, 0._8), (4._8,0._8)/), &
         mask, ac8)
    if (line1 .ne. line2) call abort
+
+   at4%v = reshape ((/1, 0, 0, 0, 1, 0, 0, 0, 1/), (/3, 3/));
+   vt4%v = (/2_4, 3_4, 4_4/)
+   bt4 = unpack (vt4, mask, at4)
+   if (any (bt4%v .ne. reshape ((/1, 2, 0, 3, 1, 0, 0, 0, 4/), (/3, 3/)))) &
+      call abort
+   bt4%v = -1
+   bt4 = unpack (vt4, mask, i4_t(0_4))
+   if (any (bt4%v .ne. reshape ((/0, 2, 0, 3, 0, 0, 0, 0, 4/), (/3, 3/)))) &
+        call abort
 
 end program
