@@ -1,3 +1,9 @@
+2008-04-13  Samuel Tardieu  <sam@rfc1149.net> 
+
+	PR ada/17985
+	* sem_aggr.adb (Valid_Ancestor_Type): A type is not an ancestor of
+	itself.
+
 2008-04-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* sfn_scan.adb, sfn_scan.ads, sinfo.ads,

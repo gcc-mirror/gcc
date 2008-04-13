@@ -2159,7 +2159,9 @@ package body Sem_Aggr is
             Imm_Type := Etype (Base_Type (Imm_Type));
          end loop;
 
-         if Etype (Imm_Type) /= Base_Type (A_Type) then
+         if Etype (Imm_Type) /= Base_Type (A_Type)
+           or else Base_Type (Typ) = Base_Type (A_Type)
+         then
             Error_Msg_NE ("expect ancestor type of &", A, Typ);
             return False;
          else
