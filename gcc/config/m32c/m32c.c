@@ -1281,11 +1281,11 @@ m32c_pushm_popm (Push_Pop_Type ppt)
   int n_dwarfs = 0;
   int nosave_mask = 0;
 
-  if (cfun->return_rtx
-      && GET_CODE (cfun->return_rtx) == PARALLEL
+  if (crtl->return_rtx
+      && GET_CODE (crtl->return_rtx) == PARALLEL
       && !(cfun->calls_eh_return || cfun->machine->is_interrupt))
     {
-      rtx exp = XVECEXP (cfun->return_rtx, 0, 0);
+      rtx exp = XVECEXP (crtl->return_rtx, 0, 0);
       rtx rv = XEXP (exp, 0);
       int rv_bytes = GET_MODE_SIZE (GET_MODE (rv));
 

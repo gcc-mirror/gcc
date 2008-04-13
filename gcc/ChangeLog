@@ -1,3 +1,7 @@
+2008-04-13  Jan Hubicka  <jh@suse.cz>
+
+	* m32.c (m32c_pushm_popm): Use crtl->retrun_rtx.
+
 2008-04-12  Andrew Pinski  <pinskia@gmail.com>
 
 	* config/rs6000/rs6000.c (compute_save_world_info): Set lr_save_p if
