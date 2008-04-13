@@ -279,7 +279,7 @@ package body Styleg is
       --  Determines if C is a special character (see rule 5 above)
 
       function Same_Column_As_Next_Non_Blank_Line return Boolean;
-      --  Called for a full line comment. If the indentation of this commment
+      --  Called for a full line comment. If the indentation of this comment
       --  matches that of the next non-blank line in the source, then True is
       --  returned, otherwise False.
 
@@ -517,7 +517,7 @@ package body Styleg is
 
    --  In check indentation mode (-gnatyn for n a digit), a new statement or
    --  declaration is required to start in a column that is a multiple of the
-   --  indentiation amount.
+   --  indentation amount.
 
    procedure Check_Indentation is
    begin
@@ -853,7 +853,7 @@ package body Styleg is
    -- Check_Unary_Plus_Or_Minus --
    -------------------------------
 
-   --  In check tokem mode (-gnatyt), unary plus or minus must not be
+   --  In check token mode (-gnatyt), unary plus or minus must not be
    --  followed by a space.
 
    procedure Check_Unary_Plus_Or_Minus is

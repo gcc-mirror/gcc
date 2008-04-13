@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,12 +29,12 @@
 --  overhead of the full compiler scanner and parser.
 
 --  Note that neither the package spec, nor the package body, of this
---  unit contains any with statements at all. This is a compeltely
+--  unit contains any with statements at all. This is a completely
 --  independent package, suitable for incorporation into tools that do
 --  not access any other units in the GNAT compiler or tools sources.
 
 --  This package is NOT task safe, so multiple tasks that may call the
---  Scan_SFN_Pragmas procedure at the same time are responsibible for
+--  Scan_SFN_Pragmas procedure at the same time are responsible for
 --  avoiding such multiple calls by appropriate synchronization.
 
 package SFN_Scan is
@@ -91,6 +91,6 @@ package SFN_Scan is
    --  that includes only pragmas and comments. It does not do a full
    --  syntax correctness scan by any means, but if it does find anything
    --  that it can tell is wrong it will immediately raise the exception
-   --  to indicate the aproximate location of the error
+   --  to indicate the approximate location of the error
 
 end SFN_Scan;

@@ -72,7 +72,7 @@ package body Uintp is
    Udigits_Min : Int;
    --  These values are used to make sure that the mark/release mechanism does
    --  not destroy values saved in the U_Power tables or in the hash table used
-   --  by UI_From_Int. Whenever an entry is made in either of these tabls,
+   --  by UI_From_Int. Whenever an entry is made in either of these tables,
    --  Uints_Min and Udigits_Min are updated to protect the entry, and Release
    --  never cuts back beyond these minimum values.
 
@@ -142,7 +142,7 @@ package body Uintp is
    --  is less than 2**15, the value returned is the input value, in this case
    --  the result may be negative. It is expected that any use will mask off
    --  unnecessary bits. This is used for finding Arg mod B where B is a power
-   --  of two. Hence the actual base is irrelevent as long as it is a power of
+   --  of two. Hence the actual base is irrelevant as long as it is a power of
    --  two.
 
    procedure Most_Sig_2_Digits
@@ -172,7 +172,7 @@ package body Uintp is
       Remainder         : out Uint;
       Discard_Quotient  : Boolean;
       Discard_Remainder : Boolean);
-   --  Compute euclidian division of Left by Right, and return Quotient and
+   --  Compute Euclidean division of Left by Right, and return Quotient and
    --  signed Remainder (Left rem Right).
    --
    --    If Discard_Quotient is True, Quotient is left unchanged.
@@ -750,7 +750,7 @@ package body Uintp is
 
    --  This is done in one pass
 
-   --  Mathematically: assume base congruent to 1 and compute an equivelent
+   --  Mathematically: assume base congruent to 1 and compute an equivalent
    --  integer to Left.
 
    --  If Sign = -1 return the alternating sum of the "digits"
@@ -759,7 +759,7 @@ package body Uintp is
 
    --  (where D1 is Least Significant Digit)
 
-   --  Mathematically: assume base congruent to -1 and compute an equivelent
+   --  Mathematically: assume base congruent to -1 and compute an equivalent
    --  integer to Left.
 
    --  This is used in Rem and Base is assumed to be 2 ** 15
@@ -2742,7 +2742,7 @@ package body Uintp is
 
             --  The value is outside the direct representation range and must
             --  therefore be stored in the table. Expand the table to contain
-            --  the count and tigis. The index of the new table entry will be
+            --  the count and digits. The index of the new table entry will be
             --  returned as the result.
 
             Uints.Increment_Last;

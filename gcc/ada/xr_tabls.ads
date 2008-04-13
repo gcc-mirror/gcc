@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,7 +140,7 @@ package Xr_Tabls is
      (Sorted : Boolean := True)
       return   Declaration_Array_Access;
    --  Return a sorted list of all the declarations in the application.
-   --  Freeing this array is the responsability of the caller, however it
+   --  Freeing this array is the responsibility of the caller, however it
    --  shouldn't free the actual contents of the array, which are pointers
    --  to internal data
 
@@ -274,7 +274,7 @@ package Xr_Tabls is
 
    procedure Reset_Directory (File : File_Reference);
    --  Reset the cached directory for file. Next time Get_File is called, the
-   --  directory willl be recomputed.
+   --  directory will be recomputed.
 
    procedure Set_Unvisited (File_Ref : File_Reference);
    --  Set File_Ref as unvisited. So Next_Unvisited_File will return it
@@ -282,7 +282,7 @@ package Xr_Tabls is
    procedure Read_File
      (File_Name : String;
       Contents  : out GNAT.OS_Lib.String_Access);
-   --  Reads File_Name into the newly allocated strig Contents. Types.EOF
+   --  Reads File_Name into the newly allocated string Contents. Types.EOF
    --  character will be added to the returned Contents to simplify parsing.
    --  Name_Error is raised if the file was not found. End_Error is raised if
    --  the file could not be read correctly. For most systems correct reading

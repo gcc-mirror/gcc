@@ -384,7 +384,7 @@ package Sinfo is
 
    --  In the following node definitions, all fields, both syntactic and
    --  semantic, are documented. The one exception is in the case of entities
-   --  (defining indentifiers, character literals and operator symbols), where
+   --  (defining identifiers, character literals and operator symbols), where
    --  the usage of the fields depends on the entity kind. Entity fields are
    --  fully documented in the separate package Einfo.
 
@@ -525,7 +525,7 @@ package Sinfo is
    --    Present in N_Freeze_Entity nodes for Incomplete or private types.
    --    Contains the list of access types which may require specific treatment
    --    when the nature of the type completion is completely known. An example
-   --    of such treatement is the generation of the associated_final_chain.
+   --    of such treatment is the generation of the associated_final_chain.
 
    --  Actions (List1-Sem)
    --    This field contains a sequence of actions that are associated with the
@@ -592,7 +592,7 @@ package Sinfo is
    --    that the associated object can be modified, even if this would not
    --    normally be permissible (either by direct assignment, or by being
    --    passed as an out or in-out parameter). This is used by the expander
-   --    for a number of purposes, including initialzation of constants and
+   --    for a number of purposes, including initialization of constants and
    --    limited type objects (such as tasks), setting discriminant fields,
    --    setting tag values, etc. N_Object_Declaration nodes also have this
    --    flag defined. Here it is used to indicate that an initialization
@@ -747,7 +747,7 @@ package Sinfo is
 
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
-   --    the parent unit that is the stub declaration for the subunit. it is
+   --    the parent unit that is the stub declaration for the subunit. It is
    --    set when analysis of the stub forces loading of the proper body. If
    --    expansion of the proper body creates new declarative nodes, they are
    --    inserted at the point of the corresponding_stub.
@@ -1142,7 +1142,7 @@ package Sinfo is
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of
    --    unconstrained float types defined in Standard, which include not only
-   --    the given range of values, but also legtitimately can include infinite
+   --    the given range of values, but also legitimately can include infinite
    --    values. This flag is false for any float type for which an explicit
    --    range is given by the programmer, even if that range is identical to
    --    the range for Float.
@@ -1191,7 +1191,7 @@ package Sinfo is
    --    that the reference occurs within a discriminant check. The
    --    significance is that optimizations based on assuming that the
    --    discriminant check has a correct value cannot be performed in this
-   --    case (or the disriminant check may be optimized away!)
+   --    case (or the discriminant check may be optimized away!)
 
    --  Is_Machine_Number (Flag11-Sem)
    --    This flag is set in an N_Real_Literal node to indicate that the value
@@ -1211,7 +1211,7 @@ package Sinfo is
 
    --  Is_Power_Of_2_For_Shift (Flag13-Sem)
    --    A flag present only in N_Op_Expon nodes. It is set when the
-   --    exponentiation is of the forma 2 ** N, where the type of N is an
+   --    exponentiation is of the form 2 ** N, where the type of N is an
    --    unsigned integral subtype whose size does not exceed the size of
    --    Standard_Integer (i.e. a type that can be safely converted to
    --    Natural), and the exponentiation appears as the right operand of an
@@ -1223,7 +1223,7 @@ package Sinfo is
 
    --  Is_Protected_Subprogram_Body (Flag7-Sem)
    --    A flag set in a Subprogram_Body block to indicate that it is the
-   --    implemenation of a protected subprogram. Such a body needs cleanup
+   --    implementation of a protected subprogram. Such a body needs cleanup
    --    handler to make sure that the associated protected object is unlocked
    --    when the subprogram completes.
 
@@ -1244,7 +1244,7 @@ package Sinfo is
    --    A flag set in a Block_Statement node to indicate that it is the
    --    expansion of a task allocator, or the allocator of an object
    --    containing tasks. Such a block requires a cleanup handler to call
-   --    Expunge_Unactivted_Tasks to complete any tasks that have been
+   --    Expunge_Unactivated_Tasks to complete any tasks that have been
    --    allocated but not activated when the allocator completes abnormally.
 
    --  Is_Task_Master (Flag5-Sem)
@@ -1393,7 +1393,7 @@ package Sinfo is
 
    --  No_Ctrl_Actions (Flag7-Sem)
    --    Present in N_Assignment_Statement to indicate that no finalize nor nor
-   --    adjust should take place on this assignment eventhough the rhs is
+   --    adjust should take place on this assignment even though the rhs is
    --    controlled. This is used in init procs and aggregate expansions where
    --    the generated assignments are more initialisations than real
    --    assignments.
@@ -1618,10 +1618,10 @@ package Sinfo is
    --    on fixed-point operands. It indicates that the operands are to be
    --    treated as integer values, ignoring small values. This flag is only
    --    set as a result of expansion of fixed-point operations. Typically a
-   --    fixed-point multplication in the source generates subsidiary
+   --    fixed-point multiplication in the source generates subsidiary
    --    multiplication and division operations that work with the underlying
    --    integer values and have this flag set. Note that this flag is not
-   --    needed on other arithmetic operations (add, neg, subtract etc) since
+   --    needed on other arithmetic operations (add, neg, subtract etc.) since
    --    in these cases it is always the case that fixed is treated as integer.
    --    The Etype field MUST be set if this flag is set. The analyzer knows to
    --    leave such nodes alone, and whoever makes them must set the correct
@@ -1652,7 +1652,7 @@ package Sinfo is
 
    --  Zero_Cost_Handling (Flag5-Sem)
    --    This flag is set in all handled sequence of statement and exception
-   --    handler nodes if eceptions are to be handled using the zero-cost
+   --    handler nodes if exceptions are to be handled using the zero-cost
    --    mechanism (see Ada.Exceptions and System.Exceptions in files
    --    a-except.ads/adb and s-except.ads for full details). What gigi needs
    --    to do for such a handler is simply to put the code in the handler
@@ -2143,7 +2143,7 @@ package Sinfo is
       --  the Expression may not have the form of an aggregate (since this
       --  might cause the back end to generate separate assignments). It
       --  also cannot be a reference to an object marked as a true constant
-      --  (Is_True_Constant flag set), where the object is itself initalized
+      --  (Is_True_Constant flag set), where the object is itself initialized
       --  with an aggregate. If necessary the front end must generate an
       --  extra temporary (with Is_True_Constant set False), and initialize
       --  this temporary as required (the temporary itself is not atomic).
@@ -3113,7 +3113,7 @@ package Sinfo is
       --  limited types for which no stream routines exist officially. In such
       --  case, the result is to use the stream attribute for the underlying
       --  full type, or in the case of a protected type, the components
-      --  (including any disriminants) are merely streamed in order.
+      --  (including any discriminants) are merely streamed in order.
 
       --  See Exp_Attr for a complete description of which attributes are
       --  passed onto Gigi, and which are handled entirely by the front end.
@@ -3265,9 +3265,9 @@ package Sinfo is
       --  node (which appears as a singleton list). Box_Present gives support
       --  to Ada 2005 (AI-287).
 
-      -----------------------------------
-      -- 4.3.1  Commponent Choice List --
-      -----------------------------------
+      ----------------------------------
+      -- 4.3.1  Cmmponent Choice List --
+      ----------------------------------
 
       --  COMPONENT_CHOICE_LIST ::=
       --    component_SELECTOR_NAME {| component_SELECTOR_NAME}
@@ -3362,7 +3362,7 @@ package Sinfo is
       --  No nodes are generated for any of these constructs. Instead, the
       --  node for the operator appears directly. When we refer to an
       --  expression in this description, we mean any of the possible
-      --  consistuent components of an expression (e.g. identifier is
+      --  constituent components of an expression (e.g. identifier is
       --  an example of an expression).
 
       ------------------
@@ -3394,8 +3394,8 @@ package Sinfo is
       --  subexpression node (it is actually present in all nodes, but only
       --  used in subexpression nodes). This count records the number of
       --  levels of parentheses. If the number of levels in the source exceeds
-      --  the maximum accomodated by this count, then the count is simply left
-      --  at the maximum value. This means that there are some pathalogical
+      --  the maximum accommodated by this count, then the count is simply left
+      --  at the maximum value. This means that there are some pathological
       --  cases of failure to detect conformance failures (e.g. an expression
       --  with 500 levels of parens will conform with one with 501 levels),
       --  but we do not need to lose sleep over this.
@@ -3732,7 +3732,7 @@ package Sinfo is
       --  Note: Although the parser will not accept a declaration as a
       --  statement, the semantic analyzer may insert declarations (e.g.
       --  declarations of implicit types needed for execution of other
-      --  statements) into a sequence of statements, so the code genmerator
+      --  statements) into a sequence of statements, so the code generator
       --  should be prepared to accept a declaration where a statement is
       --  expected. Note also that pragmas can appear as statements.
 
@@ -3800,7 +3800,7 @@ package Sinfo is
       -- 5.1  Statement Identifier --
       -------------------------------
 
-      --  STATEMENT_INDENTIFIER ::= DIRECT_NAME
+      --  STATEMENT_IDENTIFIER ::= DIRECT_NAME
 
       --  The IDENTIFIER of a STATEMENT_IDENTIFIER shall be an identifier
       --  (not an OPERATOR_SYMBOL)
@@ -3831,7 +3831,7 @@ package Sinfo is
       --  the Expression may not have the form of an aggregate (since this
       --  might cause the back end to generate separate assignments). It
       --  also cannot be a reference to an object marked as a true constant
-      --  (Is_True_Constant flag set), where the object is itself initalized
+      --  (Is_True_Constant flag set), where the object is itself initialized
       --  with an aggregate. If necessary the front end must generate an
       --  extra temporary (with Is_True_Constant set False), and initialize
       --  this temporary as required (the temporary itself is not atomic).
@@ -4704,7 +4704,7 @@ package Sinfo is
 
       --  TASK_TYPE_DECLARATION ::=
       --    task type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-      --      [is [new INTERFACE_LIST with] TASK_DEFINITITION];
+      --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
       --  N_Task_Type_Declaration
       --  Sloc points to TASK
@@ -4721,7 +4721,7 @@ package Sinfo is
 
       --  SINGLE_TASK_DECLARATION ::=
       --    task DEFINING_IDENTIFIER
-      --      [is [new INTERFACE_LIST with] TASK_DEFINITITION];
+      --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
       --  N_Single_Task_Declaration
       --  Sloc points to TASK
@@ -5110,7 +5110,7 @@ package Sinfo is
       --  GUARD ::= when CONDITION =>
 
       --  As noted above, the CONDITION that is part of a GUARD is included
-      --  in the node for the select alernative for convenience.
+      --  in the node for the select alternative for convenience.
 
       -------------------------------
       -- 9.7.1  Select Alternative --
@@ -5306,7 +5306,7 @@ package Sinfo is
       --    CONTEXT_CLAUSE LIBRARY_ITEM
       --  | CONTEXT_CLAUSE SUBUNIT
 
-      --  The N_Compilation_Unit node itself respresents the above syntax.
+      --  The N_Compilation_Unit node itself represents the above syntax.
       --  However, there are two additional items not reflected in the above
       --  syntax. First we have the global declarations that are added by the
       --  code generator. These are outer level declarations (so they cannot
@@ -5368,17 +5368,17 @@ package Sinfo is
       --  the declaration or body, and the flag for private if present,
       --  appear in the N_Compilation_Unit clause.
 
-      ----------------------------------------
-      -- 10.1.1  Library Unit Declararation --
-      ----------------------------------------
+      --------------------------------------
+      -- 10.1.1  Library Unit Declaration --
+      --------------------------------------
 
       --  LIBRARY_UNIT_DECLARATION ::=
       --    SUBPROGRAM_DECLARATION | PACKAGE_DECLARATION
       --  | GENERIC_DECLARATION    | GENERIC_INSTANTIATION
 
-      -------------------------------------------------
-      -- 10.1.1  Library Unit Renaming Declararation --
-      -------------------------------------------------
+      -----------------------------------------------
+      -- 10.1.1  Library Unit Renaming Declaration --
+      -----------------------------------------------
 
       --  LIBRARY_UNIT_RENAMING_DECLARATION ::=
       --    PACKAGE_RENAMING_DECLARATION
@@ -5547,10 +5547,10 @@ package Sinfo is
 
       --  EXCEPTION_DECLARATION ::= DEFINING_IDENTIFIER_LIST : exception;
 
-      --  For consistency with object declarations etc, the parser converts
+      --  For consistency with object declarations etc., the parser converts
       --  the case of multiple identifiers being declared to a series of
       --  declarations in which the expression is copied, using the More_Ids
-      --  and Prev_Ids flags to remember the souce form as described in the
+      --  and Prev_Ids flags to remember the source form as described in the
       --  section on "Handling of Defining Identifier Lists".
 
       --  N_Exception_Declaration
@@ -6604,7 +6604,7 @@ package Sinfo is
       --  the exception to be raised (i.e. it is equivalent to a raise
       --  statement that raises the corresponding exception). This use
       --  is distinguished by the fact that the Etype in this case is
-      --  Standard_Void_Type, In the subexprssion case, the Etype is the
+      --  Standard_Void_Type, In the subexpression case, the Etype is the
       --  same as the type of the subexpression which it replaces.
 
       --  If Condition is empty, then the raise is unconditional. If the
@@ -6889,7 +6889,7 @@ package Sinfo is
 
    --  The following is the definition of the Node_Kind type. As previously
    --  discussed, this is separated off to allow rearrangement of the order
-   --  to facilitiate definition of subtype ranges. The comments show the
+   --  to facilitate definition of subtype ranges. The comments show the
    --  subtype classes which apply to each set of node kinds. The first
    --  entry in the comment characterizes the following list of nodes.
 
@@ -9220,7 +9220,7 @@ package Sinfo is
    -- Node_Kind Membership Tests --
    --------------------------------
 
-   --  The following functions allow a convenient notation for testing wheter
+   --  The following functions allow a convenient notation for testing whether
    --  a Node_Kind value matches any one of a list of possible values. In each
    --  case True is returned if the given T argument is equal to any of the V
    --  arguments. Note that there is a similar set of functions defined in

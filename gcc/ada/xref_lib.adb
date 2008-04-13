@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,7 @@ package body Xref_Lib is
      (Source : not null access String;
       Ptr    : in out Positive;
       Number : out Natural);
-   --  Skips any separators and parses Source upto the first character that
+   --  Skips any separators and parses Source up to the first character that
    --  is not a decimal digit. Returns value of parsed digits or 0 if none.
 
    procedure Parse_X_Filename (File : in out ALI_File);
@@ -808,7 +808,7 @@ package body Xref_Lib is
             exit when Ali (Ptr) = EOF;
          end loop;
 
-         --  We were not able to find the symbol, this should not happend but
+         --  We were not able to find the symbol, this should not happen but
          --  since we don't want to stop here we return a string of three
          --  question marks as the symbol name.
 

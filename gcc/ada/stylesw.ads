@@ -77,7 +77,7 @@ package Stylesw is
    --    For a comment that is not at the start of a line, the only requirement
    --    is that a space follow the comment characters.
    --
-   --    For a coment that is at the start of the line, one of the following
+   --    For a comment that is at the start of the line, one of the following
    --    conditions must hold:
    --
    --      The comment characters are the only non-blank characters on the line
@@ -142,7 +142,7 @@ package Stylesw is
    --  indicated indentation value. A value of zero turns off checking. The
    --  requirement is that any new statement, line comment, declaration or
    --  keyword such as END, start on a column that is a multiple of the
-   --  indentiation value.
+   --  indentation value.
 
    Style_Check_Keyword_Casing : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatyk switches. If it is
@@ -299,7 +299,7 @@ package Stylesw is
 
    procedure Set_Style_Check_Options (Options : String);
    --  Like the above procedure, but used when the Options string is known to
-   --  be valid. This is for example appopriate for calls where the string ==
+   --  be valid. This is for example appropriate for calls where the string ==
    --  was obtained by Save_Style_Check_Options.
 
    procedure Reset_Style_Check_Options;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ package Sinput.L is
    --  Inst_Node is the instantiation node, and Template_Id is the defining
    --  identifier of the generic declaration or body unit as appropriate.
    --  A is set to an adjustment factor to be used in subsequent calls to
-   --  Adjust_Instantiation_Sloc. The instantiation mechnaism is also used
+   --  Adjust_Instantiation_Sloc. The instantiation mechanism is also used
    --  for inlined function and procedure calls. The parameter Inlined_Body
    --  is set to True in such cases, and False for a generic instantiation.
    --  This is used for generating error messages that distinguish these

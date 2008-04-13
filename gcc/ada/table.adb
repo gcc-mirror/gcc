@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,7 +295,7 @@ package body Table is
          --  allocation). Range checks are suppressed because this unit
          --  uses direct calls to System.Memory for allocation, and this can
          --  yield misaligned storage (and we cannot rely on the bootstrap
-         --  compiler supporting specifically disabling alignment cheks, so we
+         --  compiler supporting specifically disabling alignment checks, so we
          --  need to suppress all range checks). It is safe to suppress this
          --  check here because we know that a (possibly misaligned) object
          --  of that type does actually exist at that address.
@@ -307,7 +307,7 @@ package body Table is
          --  involve moving table contents around).
 
       begin
-         --  If we're going to reallocate, check wheter Item references an
+         --  If we're going to reallocate, check whether Item references an
          --  element of the currently allocated table.
 
          if Need_Realloc

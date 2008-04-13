@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -364,7 +364,7 @@ package Stand is
 
    Any_Type : Entity_Id;
    --  Used to represent some unknown type. Plays an important role in
-   --  avoiding cascaded errors, since any node that remains labaled with
+   --  avoiding cascaded errors, since any node that remains labeled with
    --  this type corresponds to an already issued error message. Any_Type
    --  is propagated to avoid cascaded errors from a single type error.
 

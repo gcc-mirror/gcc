@@ -57,7 +57,7 @@ package Tbuild is
    pragma Inline (Discard_List);
    --  This is a dummy procedure that simply returns and does nothing. It is
    --  used when a function returning a Node_Id value is called for its side
-   --  effect (e.g. a call to the pareser to parse a list of compilation
+   --  effect (e.g. a call to the parser to parse a list of compilation
    --  units), but the List_Id value is not required.
 
    function Make_Byte_Aligned_Attribute_Reference
@@ -103,7 +103,7 @@ package Tbuild is
      (Loc                 : Source_Ptr;
       Defining_Identifier : Node_Id;
       Label_Construct     : Node_Id) return Node_Id;
-   --  Used to contruct an implicit label declaration node, including setting
+   --  Used to construct an implicit label declaration node, including setting
    --  the proper Label_Construct field (since Label_Construct is a semantic
    --  field, the normal call to Make_Implicit_Label_Declaration does not
    --  set this field).
@@ -203,7 +203,7 @@ package Tbuild is
    --  Prefix is prepended only if Prefix is non-blank (in which case it
    --  must be an upper case letter other than O,Q,U,W (which are used for
    --  identifier encoding, see Namet), and T is reserved for use by implicit
-   --  types. and X is reserved for use by debug type encoding (see package
+   --  types, and X is reserved for use by debug type encoding (see package
    --  Exp_Dbug). Note: the reason that Prefix is last is that it is almost
    --  always omitted. The notable case of Prefix being non-null is when
    --  it is 'T' for an implicit type.

@@ -553,7 +553,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      required if this is a static expression because it might be used
      in a context where a dereference is inappropriate, such as a case
      statement alternative or a record discriminant.  There is no possible
-     volatile-ness shortciruit here since Volatile constants must be imported
+     volatile-ness short-circuit here since Volatile constants must be imported
      per C.6. */
   if (Ekind (gnat_temp) == E_Constant && Is_Scalar_Type (gnat_temp_type)
       && !Is_Imported (gnat_temp)
@@ -566,7 +566,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   if (use_constant_initializer)
     {
-      /* If this is a deferred constant, the initializer is attached to the
+      /* If this is a deferred constant, the initializer is attached to
 	 the full view.  */
       if (Present (Full_View (gnat_temp)))
 	gnat_temp = Full_View (gnat_temp);
@@ -2417,7 +2417,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
     {
       /* Conceptually, what we need is a COMPOUND_EXPR with the call followed
 	 by the target object converted to the proper type.  Doing so would
-	 potentially be very inefficient, however, as this expresssion might
+	 potentially be very inefficient, however, as this expression might
 	 end up wrapped into an outer SAVE_EXPR later on, which would incur a
 	 pointless temporary copy of the whole object.
 
@@ -3099,7 +3099,7 @@ gnat_to_gnu (Node_Id gnat_node)
      elaboration procedure, so mark us as being in that procedure and push our
      context.
 
-     If we are in the elaboration procedure, check if we are violating a a
+     If we are in the elaboration procedure, check if we are violating a
      No_Elaboration_Code restriction by having a statement there.  */
   if ((IN (Nkind (gnat_node), N_Statement_Other_Than_Procedure_Call)
        && Nkind (gnat_node) != N_Null_Statement)
@@ -4715,7 +4715,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    }
 
  	  /* If the object was allocated from the default storage pool, the
- 	     alignement was greater than what the allocator provides, and this
+ 	     alignment was greater than what the allocator provides, and this
  	     is not a fat or thin pointer, what we have in gnu_ptr here is an
  	     address dynamically adjusted to match the alignment requirement
  	     (see build_allocator).  What we need to pass to free is the
@@ -5842,7 +5842,7 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type)
   /* There's no good type to use here, so we might as well use
      integer_type_node. Note that the form of the check is
         (not (expr >= lo)) or (not (expr <= hi))
-      the reason for this slightly convoluted form is that NaN's
+      the reason for this slightly convoluted form is that NaNs
       are not considered to be in range in the float case. */
   return emit_check
     (build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
@@ -5864,7 +5864,7 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type)
    against which GNU_EXPR has to be checked. Note that for index
    checking we cannot use the emit_range_check function (although very
    similar code needs to be generated in both cases) since for index
-   checking the array type against which we are checking the indeces
+   checking the array type against which we are checking the indices
    may be unconstrained and consequently we need to retrieve the
    actual index bounds from the array object itself
    (GNU_ARRAY_OBJECT). The place where we need to do that is in

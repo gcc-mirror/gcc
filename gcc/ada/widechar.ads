@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package Widechar is
    Wide_Char_Byte_Count : Nat := 0;
    --  This value is incremented whenever Scan_Wide or Skip_Wide is called.
    --  The amount added is the length of the wide character sequence minus
-   --  one. This means that the count that accululates here represents the
+   --  one. This means that the count that accumulates here represents the
    --  difference between the length in characters and the length in bytes.
    --  This is used for checking the line length in characters.
 

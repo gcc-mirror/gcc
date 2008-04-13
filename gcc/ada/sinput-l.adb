@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Sinput.L is
 
    --  When a file is to be preprocessed and the options to list symbols
    --  has been selected (switch -s), Prep.List_Symbols is called with a
-   --  "foreword", a single line indicationg what source the symbols apply to.
+   --  "foreword", a single line indicating what source the symbols apply to.
    --  The following two constant String are the start and the end of this
    --  foreword.
 
@@ -581,7 +581,7 @@ package body Sinput.L is
                         Source_File.Table (X).Source_Last := Hi;
 
                         --  Reset Last_Line to 1, because the lines do not
-                        --  have neccessarily the same starts and lengths.
+                        --  have necessarily the same starts and lengths.
 
                         Source_File.Table (X).Last_Source_Line := 1;
                      end;

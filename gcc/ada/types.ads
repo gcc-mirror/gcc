@@ -212,7 +212,7 @@ package Types is
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
-   --  character in the source buffer. As noted above, diffferent source
+   --  character in the source buffer. As noted above, different source
    --  buffers have different ranges, so it is possible to tell from a
    --  Source_Ptr value which source it refers to. Note that negative numbers
    --  are allowed to accommodate the following special values.
@@ -435,7 +435,7 @@ package Types is
 
    No_List : constant List_Id := List_High_Bound;
    --  Used to indicate absence of a list. Note that the value is zero, which
-   --  is the same as Empty, which is helpful in intializing nodes where a
+   --  is the same as Empty, which is helpful in initializing nodes where a
    --  value of zero can represent either an empty node or an empty list.
 
    Error_List : constant List_Id := List_Low_Bound;
@@ -460,7 +460,7 @@ package Types is
    --  Type used to identify an element list (Elist header table subscript)
 
    No_Elist : constant Elist_Id := Elist_Low_Bound;
-   --  Used to indicate absense of an element list. Note that this is not
+   --  Used to indicate absence of an element list. Note that this is not
    --  an actual Elist header, so element list operations on this value
    --  are not valid.
 
@@ -509,7 +509,7 @@ package Types is
    --  Each character literal in the source is interpreted as being one of the
    --  16#8000_0000 possible Wide_Wide_Character codes, and a unique Integer
    --  Value is assigned, corresponding to the UTF_32 value, which also
-   --  correspondds to the POS value in the Wide_Wide_Character type, and also
+   --  corresponds to the POS value in the Wide_Wide_Character type, and also
    --  corresponds to the POS value in the Wide_Character and Character types
    --  for values that are in appropriate range. String literals are similarly
    --  interpreted as a sequence of such codes.
@@ -615,7 +615,7 @@ package Types is
 
    Dummy_Time_Stamp : constant Time_Stamp_Type := (others => '0');
    --  This is used for dummy time stamp values used in the D lines for
-   --  non-existant files, and is intended to be an impossible value.
+   --  non-existent files, and is intended to be an impossible value.
 
    function "="  (Left, Right : Time_Stamp_Type) return Boolean;
    function "<=" (Left, Right : Time_Stamp_Type) return Boolean;

@@ -1,5 +1,18 @@
 2008-04-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* sfn_scan.adb, sfn_scan.ads, sinfo.ads,
+	sinput-d.ads, sinput-l.adb, sinput-l.ads, sinput.ads,
+	snames.ads, sprint.adb, stand.ads, stringt.ads,
+	styleg.adb, styleg.ads, stylesw.adb, stylesw.ads,
+	switch.ads, sysdep.c, table.adb, table.ads,
+	targparm.ads, tb-gcc.c, tbuild.ads, tracebak.c,
+	trans.c, tree_io.adb, treepr.adb, types.adb, types.ads,
+	uintp.adb, uintp.ads, utils.c, utils2.c, validsw.ads,
+	vms_conv.adb, vms_conv.ads, vms_data.ads, widechar.adb,
+	widechar.ads, xeinfo.adb, xgnatugn.adb, xr_tabls.adb,
+	xr_tabls.ads, xref_lib.adb, xref_lib.ads, xsinfo.adb:
+	Fix comment typos.
+
 	* sem_ch10.adb, sem_ch10.ads,
 	sem_ch12.adb, sem_ch12.ads, sem_ch13.adb, sem_ch13.ads,
 	sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb,

@@ -56,7 +56,7 @@
 --         - a contiguous sequence of comments that constitute the
 --           documentation of the qualifier.
 
---    - each command zone ends with the declaration of the contant array
+--    - each command zone ends with the declaration of the constant array
 --      for the command, of the form:
 
 --      <Command>__Switches : aliased constant Switches :=
@@ -67,7 +67,7 @@ package VMS_Data is
    -- QUALIFIERS --
    ----------------
 
-   --  The syntax of a qualifier delaration is as follows:
+   --  The syntax of a qualifier declaration is as follows:
 
    --    SWITCH_STRING ::= "/ command-qualifier-name TRANSLATION"
 
@@ -109,7 +109,7 @@ package VMS_Data is
    --  The unix-switch-string always starts with a minus, and has no commas
    --  or spaces in it. Case is significant in the unix switch string. If a
    --  unix switch string is preceded by the not sign (!) it means that the
-   --  effect of the corresponding command qualifer is to remove any previous
+   --  effect of the corresponding command qualifier is to remove any previous
    --  occurrence of the given switch in the command line.
 
    --  The DIRECTORIES_TRANSLATION format is used where a list of directories
@@ -149,7 +149,7 @@ package VMS_Data is
    --  The COMMANDS_TRANSLATION case is only used for gnatmake, to correspond
    --  to the use of -cargs, -bargs and -largs (the ARGS string as indicated
    --  is one of these three possibilities). The name given by COMMAND is the
-   --  corresponding command name to be used to interprete the switches to be
+   --  corresponding command name to be used to interpret the switches to be
    --  passed on. Switches of this type set modes, e.g. /COMPILER_QUALIFIERS
    --  sets the mode so that all subsequent switches, up to another switch
    --  with COMMANDS_TRANSLATION apply to the corresponding commands issued
@@ -162,7 +162,7 @@ package VMS_Data is
    --  since all subsequent switches apply to an issued command.
 
    --  For the DIRECT_TRANSLATION case, an implicit additional qualifier
-   --  declaration is created by prepending NO to the name of the qualifer,
+   --  declaration is created by prepending NO to the name of the qualifier,
    --  and then inverting the sense of the UNIX_SWITCHES string. For example,
    --  given the qualifier definition:
 
@@ -182,7 +182,7 @@ package VMS_Data is
    --  String pointer type used throughout
 
    type Switches is array (Natural range <>) of String_Ptr;
-   --  Type used for array of swtiches
+   --  Type used for array of switches
 
    type Switches_Ptr is access constant Switches;
 
@@ -513,7 +513,7 @@ package VMS_Data is
    --        /NORESTRICTION_LIST (D)
    --        /RESTRICTION_LIST
    --
-   --   Generate list of pragma Rerstrictions that could be applied to the
+   --   Generate list of pragma Restrictions that could be applied to the
    --   current unit. This is useful for code audit purposes, and also may be
    --   used to improve code generation in some cases.
 
@@ -526,7 +526,7 @@ package VMS_Data is
    --        /RETURN_CODES=VMS
    --
    --   Specifies the style of default exit code returned. Must be used in
-   --   conjunction with and match the Link qualifer with same name.
+   --   conjunction with and match the Link qualifier with same name.
    --
    --        POSIX (D)   Return Posix success (0) by default.
    --
@@ -772,7 +772,7 @@ package VMS_Data is
    --        /NOLOCS (D)
    --        /LOCS
    --
-   --   Use full source locations referebces in the report file.
+   --   Use full source locations references in the report file.
 
    S_Check_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="       &
                                              "DEFAULT "                    &
@@ -821,7 +821,7 @@ package VMS_Data is
    --        /SECTIONS[=section-option, section-option, ...]
    --
    --   Specify what sections should be included into the report file.
-   --   By default, all three section (diagnises in the format correcponding
+   --   By default, all three section (diagnoses in the format corresponding
    --   to compiler error and warning messages, diagnoses grouped by rules and
    --   then - by files, diagnoses grouped by files and then - by rules) are
    --   included in the report file.
@@ -829,7 +829,7 @@ package VMS_Data is
    --   section-option may be one of the following:
    --
    --      COMPILER_STYLE      Include diagnostics in compile-style format
-   --                          (diagoses are grouped by files, for each file
+   --                          (diagnoses are grouped by files, for each file
    --                          they are ordered according to the references
    --                          into the source)
    --      BY_RULES            Include diagnostics grouped first by rules and
@@ -1072,7 +1072,7 @@ package VMS_Data is
    --
    --   Causes the file modification time stamp of the input file to be
    --   preserved and used for the time stamp of the output file(s). This may
-   --   be useful for preserving coherency of time stamps in an enviroment
+   --   be useful for preserving coherency of time stamps in an environment
    --   where gnatchop is used as part of a standard build process.
 
    S_Chop_Quiet  : aliased constant S := "/QUIET "                         &
@@ -1253,7 +1253,7 @@ package VMS_Data is
    --        /NOQUIET (D)
    --        /QUIET
    --
-   --   Quiet output. If there are no error, do not ouuput anything, except in
+   --   Quiet output. If there are no error, do not output anything, except in
    --   verbose mode (qualifier /VERBOSE) or in informative-only mode
    --  (qualifier /NODELETE).
 
@@ -1661,7 +1661,7 @@ package VMS_Data is
    --   forces generation of the .ALI file. This file is marked as being
    --   in error, so it cannot be used for binding purposes, but it does
    --   contain reasonably complete cross-reference information, and thus may
-   --   be useful for use by tools (e.g. semantic browing tools or integrated
+   --   be useful for use by tools (e.g. semantic browsing tools or integrated
    --   development environments) that are driven from the .ALI file.
 
    S_GCC_Full    : aliased constant S := "/FULL_PATH_IN_BRIEF_MESSAGES "   &
@@ -2404,7 +2404,7 @@ package VMS_Data is
    --                               allows proper processing of the output
    --                               generated by specialized tools including
    --                               gnatprep (where --! is used) and the SPARK
-   --                               annnotation language (where --# is used).
+   --                               annotation language (where --# is used).
    --                               For the purposes of this rule, a special
    --                               character is defined as being in one of the
    --                               ASCII ranges 16#21#..16#2F# or
@@ -3211,7 +3211,7 @@ package VMS_Data is
    --
    --   NOREDUNDANT             Suppress warnings for redundant constructs.
    --
-   --   SUPPRESS                Completely suppresse the output of all warning
+   --   SUPPRESS                Completely suppress the output of all warning
    --                           messages.  Same as /NOWARNINGS.
    --
    --   UNCHECKED_CONVERSIONS   Activates warnings on unchecked conversions.
@@ -3323,7 +3323,7 @@ package VMS_Data is
    --                   of lower case.
    --
    --   NONE            No wide characters are allowed.  Same
-   --                   as /NOWIDE_CHARCTER_ENCODING.
+   --                   as /NOWIDE_CHARACTER_ENCODING.
    --
    --   HEX             In this encoding, a wide character is represented by
    --                   the following five character sequence: ESC a b c d
@@ -3363,7 +3363,7 @@ package VMS_Data is
    --                   16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
    --
    --                   where the xxx bits correspond to the left-padded bits
-   --                   of the the 16-bit character value. Note that all lower
+   --                   of the 16-bit character value. Note that all lower
    --                   half ASCII characters are represented as ASCII bytes
    --                   and all upper half characters and other wide characters
    --                   are represented as sequences of upper-half (The full
@@ -3982,7 +3982,7 @@ package VMS_Data is
 
    S_Link_Library : aliased constant S := "/LIBRARY=|"                     &
                                             "-l|";
-   --        /LYBRARY=xyz
+   --        /LIBRARY=xyz
    --
    --   Link with library named "xyz".
 
@@ -4046,7 +4046,7 @@ package VMS_Data is
    --
    --   Specifies the style of codes returned by
    --   Ada.Command_Line.Set_Exit_Status. Must be used in conjunction with
-   --   and match the Bind qualifer with the same name.
+   --   and match the Bind qualifier with the same name.
    --
    --        POSIX (D)   Return Posix compatible exit codes.
    --
@@ -4081,7 +4081,7 @@ package VMS_Data is
                                             "--for-linker=";
    --        /<other>
    --
-   --   Any other switch that will be transmited to the underlying linker.
+   --   Any other switch that will be transmitted to the underlying linker.
 
    Link_Switches : aliased constant Switches :=
                      (S_Link_Add     'Access,
@@ -4424,7 +4424,7 @@ package VMS_Data is
    --   a Unix-style Makefile. By default, each source file is prefixed with
    --   its (relative or absolute) directory name. This name is whatever you
    --   specified in the various /SOURCE_SEARCH and /SEARCH qualifiers.  If
-   --   you also speficy the /QUIET qualifier, only the source file names,
+   --   you also specify the /QUIET qualifier, only the source file names,
    --   without relative paths, are output. If you just specify the
    --   /DEPENDENCY_LIST qualifier, dependencies of the GNAT internal system
    --   files are omitted.  This is typically what you want. If you also
@@ -4486,7 +4486,7 @@ package VMS_Data is
    --
    --   Force recompilations. Recompile all sources, even though some object
    --   files may be up to date, but don't recompile predefined or GNAT
-   --   internal files unless the /ALL_FILES qualfier is also specified.
+   --   internal files unless the /ALL_FILES qualifier is also specified.
 
    S_Make_Full    : aliased constant S := "/FULL_PATH_IN_BRIEF_MESSAGES "  &
                                             "-F";
@@ -4674,7 +4674,7 @@ package VMS_Data is
    --        /NOPROCESSES (D)
    --        /PROCESSES=NNN
    --
-   --   Use NNN processes to carry out the (re)complations. If you have a
+   --   Use NNN processes to carry out the (re)compilations. If you have a
    --   multiprocessor machine, compilations will occur in parallel.  In the
    --   event of compilation errors, messages from various compilations might
    --   get interspersed (but GNAT MAKE will give you the full ordered list of
@@ -5138,7 +5138,7 @@ package VMS_Data is
    --     CYCLOMATIC_OFF           Do not compute the McCabe Cyclomatic
    --                              Complexity
    --     ESSENTIAL_ON             Compute the Essential Complexity
-   --     ESSENTIAL_OFF            Do not ompute the Essential Complexity
+   --     ESSENTIAL_OFF            Do not compute the Essential Complexity
    --     LOOP_NESTIMG_ON          Compute the maximal loop nesting
    --     LOOP_NESTIMG_OFF         Do not compute the maximal loop nesting
    --     AVERAGE_COMPLEXITY_ON    Compute the average complexity for
@@ -5393,7 +5393,7 @@ package VMS_Data is
    --
    --   Create or update a project file. 'file_name' may include directory
    --   information. The specified file must be writable. There may be only
-   --   one qualifier /PROJECT_FILE. When a qualifier /PROJECT_DILE is
+   --   one qualifier /PROJECT_FILE. When a qualifier /PROJECT_FILE is
    --   specified, no qualifier /CONFIG_FILE may be specified.
 
    S_Name_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
@@ -5770,7 +5770,7 @@ package VMS_Data is
    --
    --   Specifies the form of the line terminators in the produced source.
    --   By default, the form of the line terminator depends on the platforms.
-   --   On Unix and VMS, it is a Line Feed (LF) chararcter. On Windows (DOS),
+   --   On Unix and VMS, it is a Line Feed (LF) character. On Windows (DOS),
    --   It is a Carriage Return (CR) followed by a Line Feed.
    --   The Options DOS and CRLF are equivalent. The options UNIX and LF are
    --   also equivalent.
@@ -5825,7 +5825,7 @@ package VMS_Data is
                                                  "-W8";
    --        /RESULT_ENCODING[=encoding-type]
    --
-   --   Specify the wide character encoding method used when writtimg the
+   --   Specify the wide character encoding method used when writing the
    --   reformatted code in the result file. 'encoding-type' is one of the
    --   following:
    --
@@ -6487,7 +6487,7 @@ package VMS_Data is
    --
    --   (nnn is a non-negative integer). Set the indentation level in the
    --   generated body stub to nnn. nnn=0 means "no indentation".
-   --   Default insdentation is 3.
+   --   Default indentation is 3.
 
    S_Stub_Keep    : aliased constant S := "/KEEP "                         &
                                             "-k";
