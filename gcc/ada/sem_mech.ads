@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,7 +144,7 @@ package Sem_Mech is
    --  this call is to set mechanism values for formals and for the
    --  function return if they have not already been explicitly set by
    --  a use of an extended Import or Export pragma. The idea is to set
-   --  mechanism values whereever the semantics is dictated by either
+   --  mechanism values wherever the semantics is dictated by either
    --  requirements or implementation advice in the RM, and to leave
    --  the mechanism set to Default if there is no requirement, so that
    --  the back-end is free to choose the most efficient method.

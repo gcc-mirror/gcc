@@ -112,7 +112,7 @@ package body Sem_Ch6 is
    procedure Build_Body_To_Inline (N : Node_Id; Subp : Entity_Id);
    --  If a subprogram has pragma Inline and inlining is active, use generic
    --  machinery to build an unexpanded body for the subprogram. This body is
-   --  subsequenty used for inline expansions at call sites. If subprogram can
+   --  subsequently used for inline expansions at call sites. If subprogram can
    --  be inlined (depending on size and nature of local declarations) this
    --  function returns true. Otherwise subprogram body is treated normally.
    --  If proper warnings are enabled and the subprogram contains a construct
@@ -673,7 +673,7 @@ package body Sem_Ch6 is
       then
          --  Apply constraint check. Note that this is done before the implicit
          --  conversion of the expression done for anonymous access types to
-         --  ensure correct generation of the null-excluding check asssociated
+         --  ensure correct generation of the null-excluding check associated
          --  with null-excluding expressions found in return statements.
 
          Apply_Constraint_Check (Expr, R_Type);
@@ -998,7 +998,7 @@ package body Sem_Ch6 is
       --  The syntactic construct: PREFIX ACTUAL_PARAMETER_PART can denote
       --  a procedure call or an entry call. The prefix may denote an access
       --  to subprogram type, in which case an implicit dereference applies.
-      --  If the prefix is an indexed component (without implicit defererence)
+      --  If the prefix is an indexed component (without implicit dereference)
       --  then the construct denotes a call to a member of an entire family.
       --  If the prefix is a simple name, it may still denote a call to a
       --  parameterless member of an entry family. Resolution of these various
@@ -2200,7 +2200,7 @@ package body Sem_Ch6 is
             if Nkind (Ostm) = N_Raise_Statement then
                Set_Trivial_Subprogram (Stm);
 
-            --  If null statement, and no following statemennts, turn on flag
+            --  If null statement, and no following statements, turn on flag
 
             elsif Nkind (Stm) = N_Null_Statement
               and then Comes_From_Source (Stm)
@@ -3618,7 +3618,7 @@ package body Sem_Ch6 is
    begin
       --  The algorithm checks every overriding dispatching operation against
       --  all the corresponding overridden dispatching operations, detecting
-      --  differences in coventions.
+      --  differences in conventions.
 
       Prim_Op_Elmt := First_Elmt (Primitive_Operations (Typ));
       while Present (Prim_Op_Elmt) loop
@@ -4260,8 +4260,8 @@ package body Sem_Ch6 is
             then
                null;
 
-            --  A loop with no exit statement or iteration scheme if either
-            --  an inifite loop, or it has some other exit (raise/return).
+            --  A loop with no exit statement or iteration scheme is either
+            --  an infinite loop, or it has some other exit (raise/return).
             --  In either case, no warning is required.
 
             else
@@ -6529,7 +6529,7 @@ package body Sem_Ch6 is
          else
             Error_Msg_Sloc := Sloc (E);
 
-            --  Generate message,with useful additionalwarning if in generic
+            --  Generate message, with useful additional warning if in generic
 
             if Is_Generic_Unit (E) then
                Error_Msg_N ("previous generic unit cannot be overloaded", S);
@@ -6580,9 +6580,9 @@ package body Sem_Ch6 is
 
                --  There are some cases when both can be implicit, for example
                --  when both a literal and a function that overrides it are
-               --  inherited in a derivation, or when an inhertited operation
+               --  inherited in a derivation, or when an inherited operation
                --  of a tagged full type overrides the inherited operation of
-               --  a private extension. Ada 83 had a special rule for the the
+               --  a private extension. Ada 83 had a special rule for the
                --  literal case. In Ada95, the later implicit operation hides
                --  the former, and the literal is always the former. In the
                --  odd case where both are derived operations declared at the
@@ -7443,7 +7443,7 @@ package body Sem_Ch6 is
       AS_Needed      : Boolean;
 
    begin
-      --  If this is an emtpy initialization procedure, no need to create
+      --  If this is an empty initialization procedure, no need to create
       --  actual subtypes (small optimization).
 
       if Ekind (Subp) = E_Procedure

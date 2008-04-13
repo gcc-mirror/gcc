@@ -94,7 +94,7 @@ package body Sem_Ch3 is
    --  Parent_Type is the entity for the parent type in the derived type
    --  definition and Derived_Type the actual derived type. Is_Completion must
    --  be set to False if Derived_Type is the N_Defining_Identifier node in N
-   --  (ie Derived_Type = Defining_Identifier (N)). In this case N is not the
+   --  (i.e. Derived_Type = Defining_Identifier (N)). In this case N is not the
    --  completion of a private type declaration. If Is_Completion is set to
    --  True, N is the completion of a private type declaration and Derived_Type
    --  is different from the defining identifier inside N (i.e. Derived_Type /=
@@ -749,7 +749,7 @@ package body Sem_Ch3 is
       --  formal part is currently being analyzed, but will be the parent scope
       --  in the case of a parameterless function, and we always want to use
       --  the function's parent scope. Finally, if the function is a child
-      --  unit, we must traverse the the tree to retrieve the proper entity.
+      --  unit, we must traverse the tree to retrieve the proper entity.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
         and then Nkind (Parent (N)) /= N_Parameter_Specification
@@ -2030,7 +2030,7 @@ package body Sem_Ch3 is
       Set_Primitive_Operations      (T, New_Elmt_List);
 
       --  Complete the decoration of the class-wide entity if it was already
-      --  built (ie. during the creation of the limited view)
+      --  built (i.e. during the creation of the limited view)
 
       if Present (CW) then
          Set_Is_Interface (CW);
@@ -2804,7 +2804,7 @@ package body Sem_Ch3 is
          end if;
 
          --  Set Has_Initial_Value if initializing expression present. Note
-         --  that if there is no initializating expression, we leave the state
+         --  that if there is no initializing expression, we leave the state
          --  of this flag unchanged (usually it will be False, but notably in
          --  the case of exception choice variables, it will already be true).
 
@@ -5969,7 +5969,7 @@ package body Sem_Ch3 is
    --  which makes the treatment for T1 and T2 identical.
 
    --  What we want when inheriting S, is that references to D1 and D2 in R are
-   --  replaced with references to their correct constraints, ie D1 and D2 in
+   --  replaced with references to their correct constraints, i.e. D1 and D2 in
    --  T1 and 1 and X in T2. So all R's discriminant references are replaced
    --  with either discriminant references in the derived type or expressions.
    --  This replacement is achieved as follows: before inheriting R's
@@ -6049,7 +6049,7 @@ package body Sem_Ch3 is
 
    --  The full view of a private extension is handled exactly as described
    --  above. The model chose for the private view of a private extension is
-   --  the same for what concerns discriminants (ie they receive the same
+   --  the same for what concerns discriminants (i.e. they receive the same
    --  treatment as in the tagged case). However, the private view of the
    --  private extension always inherits the components of the parent base,
    --  without replacing any discriminant reference. Strictly speaking this is
@@ -7381,7 +7381,7 @@ package body Sem_Ch3 is
                --  and therefore when reanalyzing "subtype W is G (D => 1);"
                --  which really looks like "subtype W is Rec (D => 1);" at
                --  the point of instantiation, we want to find the discriminant
-               --  that corresponds to D in Rec, ie X.
+               --  that corresponds to D in Rec, i.e. X.
 
                if Present (Original_Discriminant (Id)) then
                   Discr := Find_Corresponding_Discriminant (Id, T);
@@ -9193,7 +9193,7 @@ package body Sem_Ch3 is
          end if;
 
          --  Allow incomplete declaration of tags (used to handle forward
-         --  references to tags). The check on Ada_Tags avoids cicularities
+         --  references to tags). The check on Ada_Tags avoids circularities
          --  when rebuilding the compiler.
 
          if RTU_Loaded (Ada_Tags)

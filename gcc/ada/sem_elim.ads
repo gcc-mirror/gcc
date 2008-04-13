@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@ with Types; use Types;
 package Sem_Elim is
 
    procedure Initialize;
-   --  Initialize for new main souce program
+   --  Initialize for new main source program
 
    procedure Process_Eliminate_Pragma
      (Pragma_Node         : Node_Id;
@@ -53,7 +53,7 @@ package Sem_Elim is
    --  flag on the given entity.
 
    procedure Eliminate_Error_Msg (N : Node_Id; E : Entity_Id);
-   --  Called by the back end on encouterning a call to an eliminated
+   --  Called by the back end on encountering a call to an eliminated
    --  subprogram. N is the node for the call, and E is the entity of
    --  the subprogram being eliminated.
 

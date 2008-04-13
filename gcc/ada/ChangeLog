@@ -1,5 +1,15 @@
 2008-04-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* sem_ch10.adb, sem_ch10.ads,
+	sem_ch12.adb, sem_ch12.ads, sem_ch13.adb, sem_ch13.ads,
+	sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch6.ads, sem_ch8.adb, sem_ch8.ads, sem_ch9.adb,
+	sem_elab.adb, sem_elab.ads, sem_elim.ads, sem_eval.adb,
+	sem_eval.ads, sem_intr.adb, sem_mech.adb, sem_mech.ads,
+	sem_prag.adb, sem_prag.ads, sem_res.adb, sem_res.ads,
+	sem_type.adb, sem_util.adb, sem_util.ads, sem_warn.adb,
+	sem_warn.ads: Fix comment typos.
+
 	* s-secsta.adb, s-sequio.ads, s-shasto.ads,
 	s-soflin.ads, s-stalib.ads, s-stausa.adb,
 	s-stausa.ads, s-strxdr.adb, s-taenca.adb, s-taenca.ads,

@@ -491,7 +491,7 @@ package body Sem_Elab is
       --  calls and calls involving object notation) where W_Scope might not
       --  be in the context of the current unit, and there is an intermediate
       --  package that is, in which case the Elaborate_All has to be placed
-      --  on this intedermediate package. These special cases are handled in
+      --  on this intermediate package. These special cases are handled in
       --  Set_Elaboration_Constraint.
 
       Body_Acts_As_Spec : Boolean;
@@ -1795,7 +1795,7 @@ package body Sem_Elab is
       --    outer level call.
 
       --    It is an outer level instantiation from elaboration code, or the
-      --    instantiated entity is in the same elaboratoin scope.
+      --    instantiated entity is in the same elaboration scope.
 
       --  And in these cases, we will check both the inter-unit case and
       --  the intra-unit (within a single unit) case.
@@ -1877,7 +1877,7 @@ package body Sem_Elab is
          return;
 
       --  Nothing to do if analyzing in special spec-expression mode, since the
-      --  call is not actualy being made at this time.
+      --  call is not actually being made at this time.
 
       elsif In_Spec_Expression then
          return;
@@ -2408,7 +2408,7 @@ package body Sem_Elab is
               and then
                 not Restriction_Active (No_Entry_Calls_In_Elaboration_Code)
             then
-               --  Runtime elaboration check required. generate check of the
+               --  Runtime elaboration check required. Generate check of the
                --  elaboration Boolean for the unit containing the entity.
 
                Insert_Elab_Check (N,

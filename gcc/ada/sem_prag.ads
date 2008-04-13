@@ -75,7 +75,7 @@ package Sem_Prag is
    --  occurrence is a reference for the purposes of giving warnings about
    --  unreferenced variables. This function returns True if the reference is
    --  not a reference from this point of view (e.g. the occurrence in a pragma
-   --  Pack) and False if it is a real reference (e.g. the occcurrence in a
+   --  Pack) and False if it is a real reference (e.g. the occurrence in a
    --  pragma Export);
 
    function Is_Pragma_String_Literal (Par : Node_Id) return Boolean;

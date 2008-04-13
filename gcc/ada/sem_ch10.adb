@@ -489,7 +489,7 @@ package body Sem_Ch10 is
 
             --  Avoid checking implicitly generated with clauses, limited
             --  with clauses or withs that have pragma Elaborate or
-            --  Elaborate_All apllied.
+            --  Elaborate_All applied.
 
             if Nkind (Clause) = N_With_Clause
               and then not Implicit_With (Clause)
@@ -633,7 +633,7 @@ package body Sem_Ch10 is
       --  level (i.e. this subunit will be handled on the way down from the
       --  parent), so at this level we immediately return. If the subunit
       --  ends up not analyzed, it means that the parent did not contain a
-      --  stub for it, or that there errors were dectected in some ancestor.
+      --  stub for it, or that there errors were detected in some ancestor.
 
       if Nkind (Unit_Node) = N_Subunit
         and then not Analyzed (Lib_Unit)
@@ -928,7 +928,7 @@ package body Sem_Ch10 is
          Remove_Unit_From_Visibility (Defining_Entity (Unit_Node));
 
       --  If the unit is an instantiation whose body will be elaborated for
-      --  inlining purposes, use the the proper entity of the instance. The
+      --  inlining purposes, use the proper entity of the instance. The
       --  entity may be missing if the instantiation was illegal.
 
       elsif Nkind (Unit_Node) = N_Package_Instantiation
@@ -1101,7 +1101,7 @@ package body Sem_Ch10 is
 
                  or else Is_Preelaborated (Spec_Id)
 
-               --  No checks needed if pagma Elaborate_Body present
+               --  No checks needed if pragma Elaborate_Body present
 
                  or else Has_Pragma_Elaborate_Body (Spec_Id)
 
@@ -1275,7 +1275,7 @@ package body Sem_Ch10 is
            and then not Limited_Present (Item)
          then
             --  Skip analyzing with clause if no unit, nothing to do (this
-            --  happens for a with that references a non-existant unit)
+            --  happens for a with that references a non-existent unit)
 
             if Present (Library_Unit (Item)) then
                Analyze (Item);
@@ -1757,7 +1757,7 @@ package body Sem_Ch10 is
    begin
       Check_Stub_Level (N);
 
-      --  First occurence of name may have been as an incomplete type
+      --  First occurrence of name may have been as an incomplete type
 
       if Present (Nam) and then Ekind (Nam) = E_Incomplete_Type then
          Nam := Full_View (Nam);
@@ -2165,7 +2165,7 @@ package body Sem_Ch10 is
    begin
       Check_Stub_Level (N);
 
-      --  First occurence of name may have been as an incomplete type
+      --  First occurrence of name may have been as an incomplete type
 
       if Present (Nam) and then Ekind (Nam) = E_Incomplete_Type then
          Nam := Full_View (Nam);
@@ -2660,7 +2660,7 @@ package body Sem_Ch10 is
       P     : Node_Id;
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id;
-      --  Comment requireed here ???
+      --  Comment required here ???
 
       ---------------------
       -- Build_Unit_Name --
@@ -5477,7 +5477,7 @@ package body Sem_Ch10 is
                   Next_Entity (E);
                end loop;
 
-               --  If the previous search was not sucessful then the entity
+               --  If the previous search was not successful then the entity
                --  to be restored in the homonym list is the non-limited view
 
                if E = First_Private_Entity (P) then

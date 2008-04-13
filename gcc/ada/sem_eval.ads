@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,7 @@ package Sem_Eval is
 
    --    Raises_Constraint_Error
 
-   --      This flag indicatest that it is known at compile time that the
+   --      This flag indicates that it is known at compile time that the
    --      evaluation of an expression raises constraint error. If the
    --      expression is static, and this flag is off, then it is also known at
    --      compile time that the expression does not raise constraint error
@@ -159,7 +159,7 @@ package Sem_Eval is
    --  An OK static expression is one that is static in the RM definition sense
    --  and which does not raise constraint error. For most legality checking
    --  purposes you should use Is_Static_Expression. For those legality checks
-   --  where the expression N should not raise constaint error use this
+   --  where the expression N should not raise constraint error use this
    --  routine. This routine is *not* to be used in contexts where the test is
    --  for compile time evaluation purposes. Use Compile_Time_Known_Value
    --  instead (see section on "Compile-Time Known Values" above).
@@ -328,7 +328,7 @@ package Sem_Eval is
       Int_Real  : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that expression is
    --  known to be in range of the subtype Typ. If the values of N or of either
-   --  bouds of Type are unknown at compile time, False will always be
+   --  bounds of Type are unknown at compile time, False will always be
    --  returned. A result of False does not mean that the expression is out of
    --  range, merely that it cannot be determined at compile time that it is in
    --  range. If Typ is a floating point type or Int_Real is set, any integer
@@ -339,8 +339,8 @@ package Sem_Eval is
    --  is True then any fixed-point value is treated as though it was discrete
    --  value (i.e. the underlying integer value is used). In this case we use
    --  the corresponding integer value, both for the bounds of Typ, and for the
-   --  value of the expression N. If Typ is a discret type and Fixed_Int as
-   --  well as Int_Real are false, intere values are used throughout.
+   --  value of the expression N. If Typ is a discrete type and Fixed_Int as
+   --  well as Int_Real are false, integer values are used throughout.
 
    function Is_Out_Of_Range
      (N         : Node_Id;

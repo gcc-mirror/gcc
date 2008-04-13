@@ -103,7 +103,7 @@ package Sem_Res is
    --  Several forms of names can denote calls to entities without para-
    --  meters. The context determines whether the name denotes the entity
    --  or a call to it. When it is a call, the node must be rebuilt
-   --  accordingly and renalyzed to obtain possible interpretations.
+   --  accordingly and reanalyzed to obtain possible interpretations.
    --
    --  The name may be that of an overloadable construct, or it can be an
    --  explicit dereference of a prefix that denotes an access to subprogram.

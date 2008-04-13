@@ -111,7 +111,7 @@ package body Sem_Ch12 is
    --  b) Each instantiation copies the original tree, and inserts into it a
    --  series of declarations that describe the mapping between generic formals
    --  and actuals. For example, a generic In OUT parameter is an object
-   --  renaming of the corresponing actual, etc. Generic IN parameters are
+   --  renaming of the corresponding actual, etc. Generic IN parameters are
    --  constant declarations.
 
    --  c) In order to give the right visibility for these renamings, we use
@@ -465,7 +465,7 @@ package body Sem_Ch12 is
 
    function Is_Generic_Formal (E : Entity_Id) return Boolean;
    --  Utility to determine whether a given entity is declared by means of
-   --  of a formal parameter declaration. Used to set properly the visiblity
+   --  of a formal parameter declaration. Used to set properly the visibility
    --  of generic formals of a generic package declared with a box or with
    --  partial parametrization.
 
@@ -666,7 +666,7 @@ package body Sem_Ch12 is
    --
    --  Nodes that are selected components in the parse tree may be rewritten
    --  as expanded names after resolution, and must be treated as potential
-   --  entity holders. which is why they also have an Associated_Node.
+   --  entity holders, which is why they also have an Associated_Node.
    --
    --  Nodes that do not come from source, such as freeze nodes, do not appear
    --  in the generic tree, and need not have an associated node.
@@ -802,7 +802,7 @@ package body Sem_Ch12 is
      (Pack_Id    : Entity_Id;
       Is_Package : Boolean := True);
    --  Restore the private views of external types, and unmark the generic
-   --  renamings of actuals, so that they become comptible subtypes again.
+   --  renamings of actuals, so that they become compatible subtypes again.
    --  For subprograms, Pack_Id is the package constructed to hold the
    --  renamings.
 
@@ -882,7 +882,7 @@ package body Sem_Ch12 is
 
       Default_Formals : constant List_Id := New_List;
       --  If an Other_Choice is present, some of the formals may be defaulted.
-      --  To simplify the treatement of visibility in an instance, we introduce
+      --  To simplify the treatment of visibility in an instance, we introduce
       --  individual defaults for each such formal. These defaults are
       --  appended to the list of associations and replace the Others_Choice.
 
@@ -1442,8 +1442,8 @@ package body Sem_Ch12 is
          end loop;
       end;
 
-      --  If this is a formal package. normalize the parameter list by adding
-      --  explicit box asssociations for the formals that are covered by an
+      --  If this is a formal package, normalize the parameter list by adding
+      --  explicit box associations for the formals that are covered by an
       --  Others_Choice.
 
       if not Is_Empty_List (Default_Formals) then
@@ -1967,7 +1967,7 @@ package body Sem_Ch12 is
       --  The formal package is rewritten so that its parameters are replaced
       --  with corresponding declarations. For parameters with bona fide
       --  associations these declarations are created by Analyze_Associations
-      --  as for aa regular instantiation. For boxed parameters, we preserve
+      --  as for a regular instantiation. For boxed parameters, we preserve
       --  the formal declarations and analyze them, in order to introduce
       --  entities of the right kind in the environment of the formal.
 
@@ -3180,7 +3180,7 @@ package body Sem_Ch12 is
             --  body to instantiate until the enclosing generic is instantiated
             --  and there is an actual for the formal package. If the formal
             --  package has parameters, we build a regular package instance for
-            --  it, that preceeds the original formal package declaration.
+            --  it, that precedes the original formal package declaration.
 
             if In_Open_Scopes (Scope (Scope (Gen_Unit))) then
                declare
@@ -3338,8 +3338,9 @@ package body Sem_Ch12 is
          --  on current node so context is complete for analysis (including
          --  nested instantiations). If this is the main unit, the declaration
          --  eventually replaces the instantiation node. If the instance body
-         --  is later created, it replaces the instance node, and the declation
-         --  is attached to it (see Build_Instance_Compilation_Unit_Nodes).
+         --  is created later, it replaces the instance node, and the
+         --  declaration is attached to it (see
+         --  Build_Instance_Compilation_Unit_Nodes).
 
          else
             if Cunit_Entity (Current_Sem_Unit) = Defining_Entity (N) then
@@ -3535,7 +3536,7 @@ package body Sem_Ch12 is
          --  removed previously.
 
          --  If current scope is the body of a child unit, remove context of
-         --  spec as well. If an enclosing scope is an instance body. the
+         --  spec as well. If an enclosing scope is an instance body, the
          --  context has already been removed, but the entities in the body
          --  must be made invisible as well.
 
@@ -4514,7 +4515,7 @@ package body Sem_Ch12 is
          if No (E1) then
             return;
 
-         --  If the formal entity comes from a formal declaration. it was
+         --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
          elsif Nkind (Parent (E2)) =  N_Formal_Object_Declaration then
@@ -4701,7 +4702,7 @@ package body Sem_Ch12 is
    begin
       --  The instantiation appears before the generic body if we are in the
       --  scope of the unit containing the generic, either in its spec or in
-      --  the package body. and before the generic body.
+      --  the package body, and before the generic body.
 
       if Ekind (Gen_Comp) = E_Package_Body then
          Gen_Comp := Spec_Entity (Gen_Comp);
@@ -5777,7 +5778,7 @@ package body Sem_Ch12 is
 
          --  If we are not instantiating, then this is where we load and
          --  analyze subunits, i.e. at the point where the stub occurs. A
-         --  more permissivle system might defer this analysis to the point
+         --  more permissible system might defer this analysis to the point
          --  of instantiation, but this seems to complicated for now.
 
          if not Instantiating then
@@ -5796,7 +5797,7 @@ package body Sem_Ch12 is
                     Error_Node => N);
 
                --  If the proper body is not found, a warning message will be
-               --  emitted when analyzing the stub, or later at the the point
+               --  emitted when analyzing the stub, or later at the point
                --  of instantiation. Here we just leave the stub as is.
 
                if Unum = No_Unit then
@@ -5863,7 +5864,7 @@ package body Sem_Ch12 is
       --  unit field of N points to the parent unit (which is a compilation
       --  unit) and need not (and cannot!) be copied.
 
-      --  When the proper body of the stub is analyzed, thie library_unit link
+      --  When the proper body of the stub is analyzed, the library_unit link
       --  is used to establish the proper context (see sem_ch10).
 
       --  The other fields of a compilation unit are copied as usual
@@ -6253,7 +6254,7 @@ package body Sem_Ch12 is
             end loop;
          end Find_Depth;
 
-      --  Start of procesing for Earlier
+      --  Start of processing for Earlier
 
       begin
          Find_Depth (P1, D1);
@@ -6370,7 +6371,7 @@ package body Sem_Ch12 is
 
    begin
       --  If the instance and the generic body appear within the same unit, and
-      --  the instance preceeds the generic, the freeze node for the instance
+      --  the instance precedes the generic, the freeze node for the instance
       --  must appear after that of the generic. If the generic is nested
       --  within another instance I2, then current instance must be frozen
       --  after I2. In both cases, the freeze nodes are those of enclosing
@@ -6775,7 +6776,7 @@ package body Sem_Ch12 is
 
          --  The inherited context is attached to the enclosing compilation
          --  unit. This is either the main unit, or the declaration for the
-         --  main unit (in case the instantation appears within the package
+         --  main unit (in case the instantiation appears within the package
          --  declaration and the main unit is its body).
 
          Current_Unit := Parent (Inst);
@@ -7260,7 +7261,7 @@ package body Sem_Ch12 is
          Actual_Ent  : Entity_Id);
       --  Associates the formal entity with the actual. In the case
       --  where Formal_Ent is a formal package, this procedure iterates
-      --  through all of its formals and enters associations betwen the
+      --  through all of its formals and enters associations between the
       --  actuals occurring in the formal package's corresponding actual
       --  package (given by Actual_Ent) and the formal package's formal
       --  parameters. This procedure recurses if any of the parameters is
@@ -7277,7 +7278,7 @@ package body Sem_Ch12 is
       procedure Map_Entities (Form : Entity_Id; Act : Entity_Id);
       --  Within the generic part, entities in the formal package are
       --  visible. To validate subsequent type declarations, indicate
-      --  the correspondence betwen the entities in the analyzed formal,
+      --  the correspondence between the entities in the analyzed formal,
       --  and the entities in  the actual package. There are three packages
       --  involved in the instantiation of a formal package: the parent
       --  generic P1 which appears in the generic declaration, the fake
@@ -8621,7 +8622,7 @@ package body Sem_Ch12 is
               ("cannot find body of generic package &", Inst_Node, Gen_Unit);
 
          --  Don't attempt to perform any cleanup actions if some other error
-         --  was aready detected, since this can cause blowups.
+         --  was already detected, since this can cause blowups.
 
          else
             return;
@@ -8646,7 +8647,7 @@ package body Sem_Ch12 is
             Build_Elaboration_Entity (Parent (Inst_Node), Act_Decl_Id);
 
          --  If the instantiation is not a library unit, then append the
-         --  declaration to the list of implicitly generated entities. unless
+         --  declaration to the list of implicitly generated entities, unless
          --  it is already a list member which means that it was already
          --  processed
 
@@ -8715,7 +8716,7 @@ package body Sem_Ch12 is
             Set_Has_Completion (Anon_Id);
             return;
 
-         --  For other cases, commpile the body
+         --  For other cases, compile the body
 
          else
             Load_Parent_Of_Generic
@@ -8770,7 +8771,7 @@ package body Sem_Ch12 is
          Check_Generic_Actuals (Pack_Id, False);
 
          --  Generate a reference to link the visible subprogram instance to
-         --  the the generic body, which for navigation purposes is the only
+         --  the generic body, which for navigation purposes is the only
          --  available source for the instance.
 
          Generate_Reference
@@ -9386,7 +9387,7 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
          end if;
 
-         --  Ada 2005 (AI-443): Synchronized formal derived type ckecks. Note
+         --  Ada 2005 (AI-443): Synchronized formal derived type checks. Note
          --  that the formal type declaration has been rewritten as a private
          --  extension.
 
@@ -10709,7 +10710,7 @@ package body Sem_Ch12 is
 
             --  Within a nested instantiation, a defaulted actual is an empty
             --  association, so nothing to analyze. If the subprogram actual
-            --  isan attribute, analyze prefix only, because actual is not a
+            --  is an attribute, analyze prefix only, because actual is not a
             --  complete attribute reference.
 
             --  If actual is an allocator, analyze expression only. The full
@@ -11018,7 +11019,7 @@ package body Sem_Ch12 is
             --  package itself. If the instance is a subprogram, all entities
             --  in the corresponding package are renamings. If this entity is
             --  a formal package, make its own formals private as well. The
-            --  actual in this case is itself the renaming of an instantation.
+            --  actual in this case is itself the renaming of an instantiation.
             --  If the entity is not a package renaming, it is the entity
             --  created to validate formal package actuals: ignore.
 
@@ -11467,7 +11468,7 @@ package body Sem_Ch12 is
             Next (Act2);
          end loop;
 
-         --  Find the associations added for default suprograms
+         --  Find the associations added for default subprograms
 
          if Present (Act2) then
             while Nkind (Act2) /= N_Generic_Association

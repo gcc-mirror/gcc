@@ -932,7 +932,7 @@ package body Sem_Type is
 
       --  The context can be a remote access type, and the expression the
       --  corresponding source type declared in a categorized package, or
-      --  viceversa.
+      --  vice versa.
 
       elsif Is_Record_Type (T1)
         and then (Is_Remote_Call_Interface (T1)

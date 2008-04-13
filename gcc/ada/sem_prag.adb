@@ -564,7 +564,7 @@ package body Sem_Prag is
       --  Decls where Decls is the list of declarative items.
 
       function Is_Configuration_Pragma return Boolean;
-      --  Deterermines if the placement of the current pragma is appropriate
+      --  Determines if the placement of the current pragma is appropriate
       --  for a configuration pragma.
 
       function Is_In_Context_Clause return Boolean;
@@ -587,7 +587,7 @@ package body Sem_Prag is
       --  Common processing for Compile_Time_Error and Compile_Time_Warning
 
       procedure Process_Convention (C : out Convention_Id; E : out Entity_Id);
-      --  Common procesing for Convention, Interface, Import and Export.
+      --  Common processing for Convention, Interface, Import and Export.
       --  Checks first two arguments of pragma, and sets the appropriate
       --  convention value in the specified entity or entities. On return
       --  C is the convention, E is the referenced entity.
@@ -606,7 +606,7 @@ package body Sem_Prag is
         (Arg_Internal : Node_Id;
          Arg_External : Node_Id;
          Arg_Size     : Node_Id);
-      --  Common processing for the pragmass Import/Export_Object.
+      --  Common processing for the pragmas Import/Export_Object.
       --  The three arguments correspond to the three named parameters
       --  of the pragmas. An argument is empty if the corresponding
       --  parameter is not present in the pragma.
@@ -629,7 +629,7 @@ package body Sem_Prag is
          Arg_First_Optional_Parameter : Node_Id := Empty);
       --  Common processing for all extended Import and Export pragmas
       --  applying to subprograms. The caller omits any arguments that do
-      --  bnot apply to the pragma in question (for example, Arg_Result_Type
+      --  not apply to the pragma in question (for example, Arg_Result_Type
       --  can be non-Empty only in the Import_Function and Export_Function
       --  cases). The argument names correspond to the allowed pragma
       --  association identifiers.
@@ -1486,7 +1486,7 @@ package body Sem_Prag is
       --------------------------------------
 
       --  A configuration pragma must appear in the context clause of a
-      --  compilation unit, and only other pragmas may preceed it. Note that
+      --  compilation unit, and only other pragmas may precede it. Note that
       --  the test also allows use in a configuration pragma file.
 
       procedure Check_Valid_Configuration_Pragma is
@@ -2129,7 +2129,7 @@ package body Sem_Prag is
 
                --  An interesting improvement here. If an object of type X
                --  is declared atomic, and the type X is not atomic, that's
-               --  a pity, since it may not have appropraite alignment etc.
+               --  a pity, since it may not have appropriate alignment etc.
                --  We can rescue this in the special case where the object
                --  and type are in the same unit by just setting the type
                --  as atomic, so that the back end will process it as atomic.
@@ -2831,7 +2831,7 @@ package body Sem_Prag is
                end if;
 
                --  We have a match if the corresponding argument is of an
-               --  anonymous access type, and its designicated type matches
+               --  anonymous access type, and its designated type matches
                --  the type of the prefix of the access attribute
 
                return Ekind (Ftyp) = E_Anonymous_Access_Type
@@ -3040,7 +3040,7 @@ package body Sem_Prag is
          then
             null;
 
-         --  In all other cases, set entit as exported
+         --  In all other cases, set entity as exported
 
          else
             Set_Exported (Ent, Arg_Internal);
@@ -3535,7 +3535,7 @@ package body Sem_Prag is
 
          function Inlining_Not_Possible (Subp : Entity_Id) return Boolean;
          --  Returns True if it can be determined at this stage that inlining
-         --  is not possible, for examle if the body is available and contains
+         --  is not possible, for example if the body is available and contains
          --  exception handlers, we prevent inlining, since otherwise we can
          --  get undefined symbols at link time. This function also emits a
          --  warning if front-end inlining is enabled and the pragma appears
@@ -4808,7 +4808,7 @@ package body Sem_Prag is
       end;
 
       --  An enumeration type defines the pragmas that are supported by the
-      --  implementation. Get_Pragma_Id (in package Prag) transorms a name
+      --  implementation. Get_Pragma_Id (in package Prag) transforms a name
       --  into the corresponding enumeration value for the following case.
 
       case Prag_Id is
@@ -6249,7 +6249,7 @@ package body Sem_Prag is
                      --  compilation unit. If the pragma appears in some unit
                      --  in the context, there might still be a need for an
                      --  Elaborate_All_Desirable from the current compilation
-                     --  to the the named unit, so we keep the check enabled.
+                     --  to the named unit, so we keep the check enabled.
 
                      if In_Extended_Main_Source_Unit (N) then
                         Set_Suppress_Elaboration_Warnings
@@ -6271,7 +6271,7 @@ package body Sem_Prag is
             end loop Outer;
 
             --  Give a warning if operating in static mode with -gnatwl
-            --  (elaboration warnings eanbled) switch set.
+            --  (elaboration warnings enabled) switch set.
 
             if Elab_Warnings and not Dynamic_Elaboration_Checks then
                Error_Msg_N
@@ -9001,7 +9001,7 @@ package body Sem_Prag is
 
          --  pragma No_Run_Time
 
-         --  Note: this pragma is retained for backwards compatibiltiy.
+         --  Note: this pragma is retained for backwards compatibility.
          --  See body of Rtsfind for full details on its handling.
 
          when Pragma_No_Run_Time =>
@@ -10567,7 +10567,7 @@ package body Sem_Prag is
                end if;
             end Check_OK_Stream_Convert_Function;
 
-         --  Start of procecessing for Stream_Convert
+         --  Start of processing for Stream_Convert
 
          begin
             GNAT_Pragma;
@@ -11962,7 +11962,7 @@ package body Sem_Prag is
          return True;
       end Add_Config_Static_String;
 
-   --  Start of prorcessing for Is_Config_Static_String
+   --  Start of processing for Is_Config_Static_String
 
    begin
 
@@ -11977,8 +11977,8 @@ package body Sem_Prag is
    --  This function makes use of the following static table which indicates
    --  whether a given pragma is significant. A value of -1 in this table
    --  indicates that the reference is significant. A value of zero indicates
-   --  than appearence as any argument is insignificant, a positive value
-   --  indicates that appearence in that parameter position is significant.
+   --  than appearance as any argument is insignificant, a positive value
+   --  indicates that appearance in that parameter position is significant.
 
    --  A value of 99 flags a special case requiring a special check (this is
    --  used for cases not covered by this standard encoding, e.g. pragma Check

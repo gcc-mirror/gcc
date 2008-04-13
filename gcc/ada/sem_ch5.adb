@@ -818,7 +818,7 @@ package body Sem_Ch5 is
 
       begin
          --  Initialize unblocked exit count for statements of begin block
-         --  plus one for each excption handler that is present.
+         --  plus one for each exception handler that is present.
 
          Unblocked_Exit_Count := 1;
 
@@ -930,7 +930,7 @@ package body Sem_Ch5 is
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
-      --  the case statment has a non static choice.
+      --  the case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
       --  Analyzes all the statements associated to a case alternative.

@@ -132,7 +132,7 @@ package body Sem_Ch4 is
    --  an invalid selector error message.
 
    function Defined_In_Scope (T : Entity_Id; S : Entity_Id) return Boolean;
-   --  Verify that type T is declared in scope S. Used to find intepretations
+   --  Verify that type T is declared in scope S. Used to find interpretations
    --  for operators given by expanded names. This is abstracted as a separate
    --  function to handle extensions to System, where S is System, but T is
    --  declared in the extension.
@@ -1344,7 +1344,7 @@ package body Sem_Ch4 is
       if not Is_Overloaded (P) then
          if Is_Access_Type (Etype (P)) then
 
-            --  Set the Etype. We need to go thru Is_For_Access_Subtypes to
+            --  Set the Etype. We need to go through Is_For_Access_Subtypes to
             --  avoid other problems caused by the Private_Subtype and it is
             --  safe to go to the Base_Type because this is the same as
             --  converting the access value to its Base_Type.
@@ -2213,7 +2213,7 @@ package body Sem_Ch4 is
                 (N, Nam, Designated_Type (Subp_Type), Must_Skip);
 
          --  The prefix can also be a parameterless function that returns an
-         --  access to subprogram. in which case this is an indirect call.
+         --  access to subprogram, in which case this is an indirect call.
 
          elsif Is_Access_Type (Subp_Type)
            and then Ekind (Designated_Type (Subp_Type)) = E_Subprogram_Type
@@ -3195,7 +3195,7 @@ package body Sem_Ch4 is
 
             --  If the prefix is a private extension, check only the visible
             --  components of the partial view. This must include the tag,
-            --  wich can appear in expanded code in a tag check.
+            --  which can appear in expanded code in a tag check.
 
             if Ekind (Type_To_Use) = E_Record_Type_With_Private
               and then  Chars (Selector_Name (N)) /= Name_uTag
@@ -3262,7 +3262,7 @@ package body Sem_Ch4 is
                      Set_Original_Discriminant (Sel, Comp);
                   end if;
 
-               --  Before declararing an error, check whether this is tagged
+               --  Before declaring an error, check whether this is tagged
                --  private type and a call to a primitive operation.
 
                elsif Ada_Version >= Ada_05
@@ -5340,8 +5340,8 @@ package body Sem_Ch4 is
             --  is never appropriate, even when Address is defined as a visible
             --  Integer type. The reason is that we would really prefer Address
             --  to behave as a private type, even in this case, which is there
-            --  only to accomodate oddities of VMS address sizes. If Address is
-            --  a visible integer type, we get lots of overload ambiguities.
+            --  only to accommodate oddities of VMS address sizes. If Address
+            --  is a visible integer type, we get lots of overload ambiguities.
 
             if Nkind (N) in N_Binary_Op then
                declare

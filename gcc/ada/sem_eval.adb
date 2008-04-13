@@ -57,7 +57,7 @@ package body Sem_Eval is
    -----------------------------------------
 
    --  The compile time evaluation of expressions is distributed over several
-   --  Eval_xxx procedures. These procedures are called immediatedly after
+   --  Eval_xxx procedures. These procedures are called immediately after
    --  a subexpression is resolved and is therefore accomplished in a bottom
    --  up fashion. The flags are synthesized using the following approach.
 
@@ -3227,7 +3227,7 @@ package body Sem_Eval is
          return Ureal_0;
       end if;
 
-      --  If we fall through, we have a node that cannot be interepreted
+      --  If we fall through, we have a node that cannot be interpreted
       --  as a compile time constant. That is definitely an error.
 
       raise Program_Error;
@@ -3307,7 +3307,7 @@ package body Sem_Eval is
          Typ := Full_View (Typ);
       end if;
 
-      --  For a result of type integer, subsitute an N_Integer_Literal node
+      --  For a result of type integer, substitute an N_Integer_Literal node
       --  for the result of the compile time evaluation of the expression.
 
       if Is_Integer_Type (Typ) then
@@ -3497,7 +3497,7 @@ package body Sem_Eval is
       end if;
 
    --  If any exception occurs, it means that we have some bug in the compiler
-   --  possibly triggered by a previous error, or by some unforseen peculiar
+   --  possibly triggered by a previous error, or by some unforeseen peculiar
    --  occurrence. However, this is only an optimization attempt, so there is
    --  really no point in crashing the compiler. Instead we just decide, too
    --  bad, we can't figure out the answer in this case after all.
@@ -4097,7 +4097,7 @@ package body Sem_Eval is
          --  To understand the requirement for this test, see RM 4.9.1(1).
          --  As is made clear in RM 3.5.4(11), type Integer, for example
          --  is a constrained subtype with constraint bounds matching the
-         --  bounds of its corresponding uncontrained base type. In this
+         --  bounds of its corresponding unconstrained base type. In this
          --  situation, Integer and Integer'Base do not statically match,
          --  even though they have the same bounds.
 

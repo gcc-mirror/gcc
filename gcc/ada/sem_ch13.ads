@@ -99,7 +99,7 @@ package Sem_Ch13 is
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at the start of processing a representation clause or a
    --  representation pragma. Used to check that the representation item
-   --  is not being applied to an incompleted type or to a generic formal
+   --  is not being applied to an incomplete type or to a generic formal
    --  type or a type derived from a generic formal type. Returns False if
    --  no such error occurs. If this error does occur, appropriate error
    --  messages are posted on node N, and True is returned.
@@ -150,7 +150,7 @@ package Sem_Ch13 is
       Act_Unit : Entity_Id);
    --  Validate a call to unchecked conversion. N is the node for the actual
    --  instantiation, which is used only for error messages. Act_Unit is the
-   --  entity for the instantiation, from which the actual types etc for this
+   --  entity for the instantiation, from which the actual types etc. for this
    --  instantiation can be determined. This procedure makes an entry in a
    --  table and/or generates an N_Validate_Unchecked_Conversion node. The
    --  actual checking is done in Validate_Unchecked_Conversions or in the

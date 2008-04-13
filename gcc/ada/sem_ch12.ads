@@ -130,7 +130,7 @@ package Sem_Ch12 is
    --  an inlined body (so that errout can distinguish cases for generating
    --  error messages, otherwise the treatment is identical). In this call
    --  N is the subprogram body and E is the defining identifier of the
-   --  subprogram in quiestion. The resulting Sloc adjustment factor is
+   --  subprogram in question. The resulting Sloc adjustment factor is
    --  saved as part of the internal state of the Sem_Ch12 package for use
    --  in subsequent calls to copy nodes.
 

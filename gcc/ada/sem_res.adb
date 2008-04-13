@@ -828,7 +828,7 @@ package body Sem_Res is
       function Uses_SS (T : Entity_Id) return Boolean;
       --  Check whether the creation of an object of the type will involve
       --  use of the secondary stack. If T is a record type, this is true
-      --  if the expression for some component uses the secondary stack, eg.
+      --  if the expression for some component uses the secondary stack, e.g.
       --  through a call to a function that returns an unconstrained value.
       --  False if T is controlled, because cleanups occur elsewhere.
 
@@ -985,7 +985,7 @@ package body Sem_Res is
                         or else Is_Overloaded (N)))
 
       --  Rewrite as call if it is an explicit deference of an expression of
-      --  a subprogram access type, and the suprogram type is not that of a
+      --  a subprogram access type, and the subprogram type is not that of a
       --  procedure or entry.
 
       or else
@@ -2387,7 +2387,7 @@ package body Sem_Res is
             end if;
          end if;
 
-         --  A user-defined operator is tranformed into a function call at
+         --  A user-defined operator is transformed into a function call at
          --  this point, so that further processing knows that operators are
          --  really operators (i.e. are predefined operators). User-defined
          --  operators that are intrinsic are just renamings of the predefined
@@ -2869,7 +2869,7 @@ package body Sem_Res is
                Set_Parent (Actval, N);
 
                --  Resolve aggregates with their base type, to avoid scope
-               --  anomalies: the subtype was first built in the suprogram
+               --  anomalies: the subtype was first built in the subprogram
                --  declaration, and the current call may be nested.
 
                if Nkind (Actval) = N_Aggregate
@@ -3585,7 +3585,7 @@ package body Sem_Res is
       --  1) Analyze Top_Record
       --  2) Analyze Level_1_Coextension
       --  3) Analyze Level_2_Coextension
-      --  4) Resolve Level_2_Coextnesion. The allocator is marked as a
+      --  4) Resolve Level_2_Coextension. The allocator is marked as a
       --       coextension.
       --  5) Expand Level_2_Coextension. A temporary variable Temp_1 is
       --       generated to capture the allocated object. Temp_1 is attached
@@ -3675,7 +3675,7 @@ package body Sem_Res is
 
          function Process_Allocator (Nod : Node_Id) return Traverse_Result;
          --  Recognize an allocator or a rewritten allocator node and add it
-         --  allong with its nested coextensions to the list of Root.
+         --  along with its nested coextensions to the list of Root.
 
          ---------------
          -- Copy_List --
@@ -3833,7 +3833,7 @@ package body Sem_Res is
          --  A special accessibility check is needed for allocators that
          --  constrain access discriminants. The level of the type of the
          --  expression used to constrain an access discriminant cannot be
-         --  deeper than the type of the allocator (in constrast to access
+         --  deeper than the type of the allocator (in contrast to access
          --  parameters, where the level of the actual can be arbitrary).
 
          --  We can't use Valid_Conversion to perform this check because
@@ -3912,7 +3912,7 @@ package body Sem_Res is
          --  A special accessibility check is needed for allocators that
          --  constrain access discriminants. The level of the type of the
          --  expression used to constrain an access discriminant cannot be
-         --  deeper than the type of the allocator (in constrast to access
+         --  deeper than the type of the allocator (in contrast to access
          --  parameters, where the level of the actual can be arbitrary).
          --  We can't use Valid_Conversion to perform this check because
          --  in general the type of the allocator is unrelated to the type
@@ -6249,7 +6249,7 @@ package body Sem_Res is
       end if;
 
       --  If name was overloaded, set component type correctly now
-      --  If a misplaced call to an entry family (which has no index typs)
+      --  If a misplaced call to an entry family (which has no index types)
       --  return. Error will be diagnosed from calling context.
 
       if Is_Array_Type (Array_Type) then
@@ -6832,7 +6832,7 @@ package body Sem_Res is
       B_Typ : constant Entity_Id := Base_Type (Typ);
 
    begin
-      --  Catch attempts to do fixed-point exponentation with universal
+      --  Catch attempts to do fixed-point exponentiation with universal
       --  operands, which is a case where the illegality is not caught during
       --  normal operator analysis.
 
@@ -6939,7 +6939,7 @@ package body Sem_Res is
          B_Typ := Base_Type (Typ);
       end if;
 
-      --  Straigtforward case of incorrect arguments
+      --  Straightforward case of incorrect arguments
 
       if not Valid_Boolean_Arg (Typ) then
          Error_Msg_N ("invalid operand type for operator&", N);
@@ -7735,8 +7735,8 @@ package body Sem_Res is
       elsif R_Typ = Any_Character then
          return;
 
-      --  If the type is bit-packed, then we always tranform the string literal
-      --  into a full fledged aggregate.
+      --  If the type is bit-packed, then we always transform the string
+      --  literal into a full fledged aggregate.
 
       elsif Is_Bit_Packed_Array (Typ) then
          null;
@@ -8252,7 +8252,7 @@ package body Sem_Res is
             Rorig := Original_Node (Right_Opnd (Norig));
 
             --  We are looking for cases where the right operand is not
-            --  parenthesized, and is a bianry operator, multiply, divide, or
+            --  parenthesized, and is a binary operator, multiply, divide, or
             --  mod. These are the cases where the grouping can affect results.
 
             if Paren_Count (Rorig) = 0
@@ -9120,7 +9120,7 @@ package body Sem_Res is
          --  Also no need to check when in an instance or inlined body, because
          --  the legality has been established when the template was analyzed.
          --  Furthermore, numeric conversions may occur where only a private
-         --  view of the operand type is visible at the instanciation point.
+         --  view of the operand type is visible at the instantiation point.
          --  This results in a spurious error if we check that the operand type
          --  is a numeric type.
 
@@ -9223,7 +9223,7 @@ package body Sem_Res is
                --  The case of a reference to an access discriminant from
                --  within a limited type declaration (which will appear as
                --  a discriminal) is always illegal because the level of the
-               --  discriminant is considered to be deeper than any (namable)
+               --  discriminant is considered to be deeper than any (nameable)
                --  access type.
 
                if Is_Entity_Name (Operand)
@@ -9335,7 +9335,7 @@ package body Sem_Res is
                --  The case of a reference to an access discriminant from
                --  within a limited type declaration (which will appear as
                --  a discriminal) is always illegal because the level of the
-               --  discriminant is considered to be deeper than any (namable)
+               --  discriminant is considered to be deeper than any (nameable)
                --  access type.
 
                if Is_Entity_Name (Operand)
