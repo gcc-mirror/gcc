@@ -1,3 +1,9 @@
+2008-04-14  Rolf Ebert  <rolf.ebert.gcc@gmx.de>
+
+	PR ada/20822
+	* xgnatugn.adb (Put_Line): New procedure, ensuring Unix
+	line endings even on non-Unix platforms.
+
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/35050
