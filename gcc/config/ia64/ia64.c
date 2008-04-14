@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
@@ -5887,6 +5887,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	case UNSPEC_SETF_EXP:
         case UNSPEC_ADDP4:
 	case UNSPEC_FR_SQRT_RECIP_APPROX:
+	case UNSPEC_FR_SQRT_RECIP_APPROX_RES:
 	case UNSPEC_LDA:
 	case UNSPEC_LDS:
 	case UNSPEC_LDSA:
