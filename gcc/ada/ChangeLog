@@ -1,5 +1,12 @@
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/16098
+	* sem_prag.adb (Error_Pragma_Ref): New.
+	(Process_Convention): Specialized message for non-local
+	subprogram renaming. Detect the problem in homonyms as well.
+
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/15915
 	* sem_util.ads, sem_util.adb (Denotes_Variable): New function.
 	* sem_ch12.adb (Instantiate_Object): Use it.
