@@ -236,7 +236,8 @@ namespace std
 // XXX GLIBCXX_ABI Deprecated
 // Namespace associations for long double 128 mode.
 _GLIBCXX_BEGIN_NAMESPACE(std)
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
+  && defined __cplusplus
 # define _GLIBCXX_LDBL_NAMESPACE __gnu_cxx_ldbl128::
 # define _GLIBCXX_BEGIN_LDBL_NAMESPACE namespace __gnu_cxx_ldbl128 {
 # define _GLIBCXX_END_LDBL_NAMESPACE }
