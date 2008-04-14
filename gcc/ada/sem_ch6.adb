@@ -2020,7 +2020,7 @@ package body Sem_Ch6 is
 
       Process_PPCs (N, Spec_Id, Body_Id);
 
-      --  Add a declaration for the Protection objcect, renaming declarations
+      --  Add a declaration for the Protection object, renaming declarations
       --  for discriminals and privals and finally a declaration for the entry
       --  family index (if applicable). This form of early expansion is done
       --  when the Expander is active because Install_Private_Data_Declarations

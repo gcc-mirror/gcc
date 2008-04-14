@@ -457,7 +457,7 @@ package Einfo is
 --       for finalization purposes, The block entity has an implicit label
 --       declaration in the enclosing declarative part, and has otherwise
 --       no direct connection in the tree with the block statement. The
---       link is to the identifier (which is an occurence of the entity)
+--       link is to the identifier (which is an occurrence of the entity)
 --       and not to the block_statement itself, because the statement may
 --       be rewritten, e.g. in the process of removing dead code.
 
@@ -559,7 +559,7 @@ package Einfo is
 --       component clause applies to the component. First bit position of
 --       given component, computed from the first bit and position values
 --       given in the component clause. A value of No_Uint means that the
---       value is not yet known. The value can be set by the appearence of
+--       value is not yet known. The value can be set by the appearance of
 --       an explicit component clause in a record representation clause,
 --       or it can be set by the front-end in package Layout, or it can be
 --       set by the backend. By the time backend processing is completed,
@@ -873,7 +873,7 @@ package Einfo is
 --    Elaboration_Entity (Node13)
 --       Present in generic and non-generic package and subprogram
 --       entities. This is a boolean entity associated with the unit that
---       is initiallly set to False, and is set True when the unit is
+--       is initially set to False, and is set True when the unit is
 --       elaborated. This is used for two purposes. First, it is used to
 --       implement required access before elaboration checks (the flag
 --       must be true to call a subprogram at elaboration time). Second,
@@ -3534,7 +3534,7 @@ package Einfo is
 --       Present in subprogram entities. Points to a list of Precondition
 --       and Postcondition N_Pragma nodes for preconditions and postconditions
 --       declared in the spec. The last pragma encountered is at the head of
---       this list, so it is in reverse order of textual appearence.
+--       this list, so it is in reverse order of textual appearance.
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set
@@ -5645,7 +5645,7 @@ package Einfo is
    --  required discriminant values. The expander creates a set of declarations
    --  of the form:
 
-   --      discr_nameD : constant disrc_type renames _task.discr_name;
+   --      discr_nameD : constant discr_type renames _task.discr_name;
 
    --  where discr_nameD is the discriminal entity referenced by the task
    --  discriminant, and _task is the task value passed in as the parameter.

@@ -282,7 +282,7 @@ package System.Rident is
       --  If an entry for a parameter restriction is True in Violated, the
       --  corresponding entry in the Unknown array may record additional
       --  information. If the actual count is not known by the compiler (but
-      --  is nown to be non-zero), then the entry in Unknown will be True.
+      --  is known to be non-zero), then the entry in Unknown will be True.
       --  This indicates that the value in Count is not known to be exact,
       --  and the actual violation count may be higher.
 

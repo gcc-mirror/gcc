@@ -267,7 +267,7 @@ CND(EISCONN, "Socket already connected")
 #ifndef ELOOP
 #define ELOOP -1
 #endif
-CND(ELOOP, "Too many symbolic lynks")
+CND(ELOOP, "Too many symbolic links")
 
 #ifndef EMFILE
 #define EMFILE -1

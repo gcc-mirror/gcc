@@ -191,8 +191,8 @@ package body Errout is
    procedure VMS_Convert;
    --  This procedure has no effect if called when the host is not OpenVMS.
    --  If the host is indeed OpenVMS, then the error message stored in
-   --  Msg_Buffer is scanned for appearences of switch names which need
-   --  converting to corresponding VMS qualifer names. See Gnames/Vnames
+   --  Msg_Buffer is scanned for appearances of switch names which need
+   --  converting to corresponding VMS qualifier names. See Gnames/Vnames
    --  table in Errout spec for precise definition of the conversion that
    --  is performed by this routine in OpenVMS mode.
 

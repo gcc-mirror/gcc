@@ -1369,7 +1369,7 @@ package Sinfo is
 
    --  Next_Pragma (Node1-Sem)
    --    Present in N_Pragma nodes. Used to create a linked list of pragma
-   --    nodes. Curently used for two purposes:
+   --    nodes. Currently used for two purposes:
    --
    --      Create a list of linked Check_Policy pragmas. The head of this list
    --      is stored in Opt.Check_Policy_List (which has further details).

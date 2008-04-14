@@ -122,7 +122,7 @@ package Sem_Ch13 is
    --  attributes, clearly should not be subject to the para 10 restrictions
    --  (see AI95-00137). Similarly, we also skip the para 10 restrictions for
    --  the Storage_Size case where they also clearly do not apply, and for
-   --  Stream_Convert which is in the same category as the strem attributes.
+   --  Stream_Convert which is in the same category as the stream attributes.
    --
    --  If the rep item is too late, an appropriate message is output and
    --  True is returned, which is a signal that the caller should abandon

@@ -703,7 +703,7 @@ package body Bcheck is
    -----------------------------------------
 
    --  The rule is that all units which depend on the global default setting
-   --  of Optimize_Alignment must be compiled with the same settinng for this
+   --  of Optimize_Alignment must be compiled with the same setting for this
    --  default. Units which specify an explicit local value for this setting
    --  are exempt from the consistency rule (this includes all internal units).
 

@@ -3969,7 +3969,7 @@ package body Sem_Ch10 is
             end loop;
 
             --  Now check incomplete declarations to locate Taft amendment
-            --  types. This can be done by examing the defining identifiers
+            --  types. This can be done by examining the defining identifiers
             --  of  type declarations without real semantic analysis.
 
             declare

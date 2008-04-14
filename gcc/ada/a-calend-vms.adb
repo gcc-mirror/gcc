@@ -920,7 +920,7 @@ package body Ada.Calendar is
          tm_year := Year - 1900;
          tm_mon  := Month - 1;
 
-         --  Step 3: Handle leap second occurences
+         --  Step 3: Handle leap second occurrences
 
          if Leap_Sec then
             tm_sec := 60;

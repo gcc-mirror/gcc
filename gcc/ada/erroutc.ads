@@ -52,7 +52,7 @@ package Erroutc is
 
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
-   --  (i.e. a message whose text starts with the cahracters "(style)").
+   --  (i.e. a message whose text starts with the characters "(style)").
 
    Is_Serious_Error : Boolean := False;
    --  Set by Set_Msg_Text to indicate if current message is serious error

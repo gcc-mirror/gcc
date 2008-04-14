@@ -504,7 +504,7 @@ package body Erroutc is
          else
             Start := Ptr;
 
-            --  First scan forward looing for a hard end of line
+            --  First scan forward looking for a hard end of line
 
             for Scan in Ptr .. Ptr + Max - 1 loop
                if Txt (Scan) = ASCII.LF then

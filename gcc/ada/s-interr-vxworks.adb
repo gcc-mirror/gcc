@@ -607,7 +607,7 @@ package body System.Interrupts is
    --  signals and exceptions).  As opposed to the signal implementation,
    --  this handler is installed in the vector table when the first Ada
    --  handler is attached to the interrupt.  However because VxWorks don't
-   --  support disconnecting handlers, this subprogram always test wether
+   --  support disconnecting handlers, this subprogram always test whether
    --  or not an Ada handler is effectively attached.
 
    --  Otherwise, the handler that existed prior to program startup is

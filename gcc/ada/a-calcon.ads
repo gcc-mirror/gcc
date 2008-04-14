@@ -68,7 +68,7 @@ package Ada.Calendar.Conversions is
    --  The returned value is in UTC and may or may not contain leap seconds
    --  depending on whether binder flag "-y" was used. Raises Time_Error if
    --  the input values are out of the defined ranges or if tm_sec equals 60
-   --  and the instance in time is not a leap second occurence.
+   --  and the instance in time is not a leap second occurrence.
 
    function To_Duration
      (tv_sec  : Interfaces.C.long;

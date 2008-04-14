@@ -1089,7 +1089,7 @@ package Sem_Util is
 
    procedure Set_Optimize_Alignment_Flags (E : Entity_Id);
    pragma Inline (Set_Optimize_Alignment_Flags);
-   --  Sets Optimize_Aliignment_Space/Time flags in E from current settings
+   --  Sets Optimize_Alignment_Space/Time flags in E from current settings
 
    procedure Set_Public_Status (Id : Entity_Id);
    --  If an entity (visible or otherwise) is defined in a library

@@ -396,7 +396,7 @@ package body Sem_Res is
       D    : Node_Id;
 
    begin
-      --  Any use in a a spec-expression is legal
+      --  Any use in a spec-expression is legal
 
       if In_Spec_Expression then
          null;

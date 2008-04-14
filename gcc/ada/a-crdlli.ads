@@ -253,7 +253,7 @@ package Ada.Containers.Restricted_Doubly_Linked_Lists is
       Position  : Cursor := No_Element) return Cursor;
    --  Searches for the node whose element is equal to Item, starting from
    --  Position and continuing to the last end of the list. If Position equals
-   --  No_Element, the seach starts from the first node. If Position is
+   --  No_Element, the search starts from the first node. If Position is
    --  associated with a list object different from Container, then
    --  Program_Error is raised. If no node is found having an element equal to
    --  Item, then Find returns No_Element.
@@ -264,7 +264,7 @@ package Ada.Containers.Restricted_Doubly_Linked_Lists is
       Position  : Cursor := No_Element) return Cursor;
    --  Searches in reverse for the node whose element is equal to Item,
    --  starting from Position and continuing to the first end of the list. If
-   --  Position equals No_Element, the seach starts from the last node. If
+   --  Position equals No_Element, the search starts from the last node. If
    --  Position is associated with a list object different from Container, then
    --  Program_Error is raised. If no node is found having an element equal to
    --  Item, then Reverse_Find returns No_Element.

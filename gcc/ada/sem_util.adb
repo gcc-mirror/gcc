@@ -492,7 +492,7 @@ package body Sem_Util is
       if In_Spec_Expression then
          return Empty;
 
-      --  More commments for the rest of this body would be good ???
+      --  More comments for the rest of this body would be good ???
 
       elsif Nkind (N) = N_Explicit_Dereference then
          if Is_Composite_Type (T)

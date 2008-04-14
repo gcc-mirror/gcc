@@ -1937,7 +1937,7 @@ package body Sem_Aggr is
                   end if;
                end if;
 
-               --  If no others, aggregate bounds come from aggegate
+               --  If no others, aggregate bounds come from aggregate
 
                Aggr_Low  := Choices_Low;
                Aggr_High := Choices_High;

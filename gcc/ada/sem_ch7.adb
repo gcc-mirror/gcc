@@ -1002,7 +1002,7 @@ package body Sem_Ch7 is
                --  is both unnecessary and wrong, because it would cause the
                --  clauses to be chained to themselves in the use clauses
                --  list of the scope stack entry. That in turn would cause
-               --  an endless loop from End_Use_Clauses upon sccope exit.
+               --  an endless loop from End_Use_Clauses upon scope exit.
 
                --  The parent is now fully visible. It may be a hidden open
                --  scope if we are currently compiling some child instance
@@ -1383,7 +1383,7 @@ package body Sem_Ch7 is
       begin
          --  If the full view is a scalar type, the type is the anonymous
          --  base type, but the operation mentions the first subtype, so
-         --  check the signature againt the base type.
+         --  check the signature against the base type.
 
          if Base_Type (Etype (S)) = Base_Type (T) then
             return True;

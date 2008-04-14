@@ -297,7 +297,7 @@ package Sem_Attr is
       --  is identical to the value that would be set if Initialize_Scalars
       --  mode were in effect (including the behavior of its value on
       --  environment variables or binder switches). The intended use is
-      --  to set a value where intialization is required (e.g. as a result of
+      --  to set a value where initialization is required (e.g. as a result of
       --  the coding standards in use), but logically no initialization is
       --  needed, and the value should never be accessed.
 

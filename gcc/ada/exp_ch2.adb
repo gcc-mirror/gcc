@@ -184,7 +184,7 @@ package body Exp_Ch2 is
          end if;
 
          --  If constant value is an occurrence of an enumeration literal,
-         --  then we just make another occurence of the same literal.
+         --  then we just make another occurrence of the same literal.
 
          if Is_Entity_Name (Val)
            and then Ekind (Entity (Val)) = E_Enumeration_Literal
@@ -469,7 +469,7 @@ package body Exp_Ch2 is
          --  we also generate an extra parameter to hold the Constrained
          --  attribute of the actual. No renaming is generated for this flag.
 
-         --  Calling Node_Posssible_Modifications in the expander is dubious,
+         --  Calling Node_Possible_Modifications in the expander is dubious,
          --  because this generates a cross-reference entry, and should be
          --  done during semantic processing so it is called in -gnatc mode???
 

@@ -5152,7 +5152,7 @@ package VMS_Data is
                                            "ALL_ON "                          &
                                            "--coupling-all "                  &
                                            "ALL_OFF "                         &
-                                           "--no-counling-all "               &
+                                           "--no-coupling-all "               &
                                            "PACKAGE_EFFERENT_ON "             &
                                            "--package-efferent-coupling "     &
                                            "PACKAGE_EFFERENT_OFF "            &

@@ -195,7 +195,7 @@ package body Exp_Ch9 is
      (Loc    : Source_Ptr;
       Def_Id : Entity_Id;
       Ent_Id : Entity_Id) return Node_Id;
-   --  Build a specification for the procedure implementing the statemens of
+   --  Build a specification for the procedure implementing the statements of
    --  the specified entry body. Add attributes associating it with the entry
    --  defining identifier Ent_Id.
 
@@ -2027,7 +2027,7 @@ package body Exp_Ch9 is
       Add_Object_Pointer (Loc, Pid, Op_Decls);
 
       --  Add renamings for all formals, the Protection object, discriminals,
-      --  privals and the entry indix constant for use by debugger.
+      --  privals and the entry index constant for use by debugger.
 
       Add_Formal_Renamings (Espec, Op_Decls, Ent, Loc);
       Debug_Private_Data_Declarations (Decls);
@@ -3429,7 +3429,7 @@ package body Exp_Ch9 is
 
    begin
       --  Add renamings for the Protection object, discriminals, privals and
-      --  the entry indix constant for use by debugger.
+      --  the entry index constant for use by debugger.
 
       Debug_Private_Data_Declarations (Decls);
 

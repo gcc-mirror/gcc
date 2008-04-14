@@ -967,7 +967,7 @@ package body Exp_Util is
             --  A protected type without entries that covers an interface and
             --  overrides the abstract routines with protected procedures is
             --  considered equivalent to a protected type with entries in the
-            --  context of dispatching select statements. It is sufficent to
+            --  context of dispatching select statements. It is sufficient to
             --  check for the presence of an interface list in the declaration
             --  node to recognize this case.
 
@@ -3066,7 +3066,7 @@ package body Exp_Util is
 
       --  Most predefined primitives have internally generated names. Equality
       --  must be treated differently; the predefined operation is recognized
-      --  as a homgeneous binary operator that returns Boolean.
+      --  as a homogeneous binary operator that returns Boolean.
 
       if Name_Len > TSS_Name_Type'Last then
          TSS_Name := TSS_Name_Type (Name_Buffer (Name_Len - TSS_Name'Length + 1

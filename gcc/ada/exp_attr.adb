@@ -2212,7 +2212,7 @@ package body Exp_Attr is
 
             --     sourcetyp (streamread (strmtyp'Input (stream)));
 
-            --  where stmrearead is the given Read function that converts an
+            --  where streamread is the given Read function that converts an
             --  argument of type strmtyp to type sourcetyp or a type from which
             --  it is derived (extra conversion required for the derived case).
 
@@ -2810,7 +2810,7 @@ package body Exp_Attr is
          --    result is modulus + value, where the value might be as small as
          --    -modulus. The trouble is what type do we use to do the subtract.
          --    No type will do, since modulus can be as big as 2**64, and no
-         --    integer type accomodates this value. Let's do bit of algebra
+         --    integer type accommodates this value. Let's do bit of algebra
 
          --         modulus + value
          --      =  modulus - (-value)
