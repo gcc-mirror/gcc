@@ -1,3 +1,13 @@
+2008-04-14  James E. Wilson  <wilson@tuliptree.org>
+
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle
+	UNSPEC_FR_SQRT_RECIP_APPROX_RES.
+	* config/ia64/ia64.c (UNSPEC_FR_SQRT_RECIP_APPROX_RES): Define.
+	(divsi3_internal, divdi3_internal_lat, divdi3_internal_thr,
+	divsf3_internal_lat, sqrt_approx, sqrtsf2_internal_thr,
+	divdf3_internal_lat, sqrtdf2_internal_thr, divxf3_internal_lat,
+	divxf3_internal_thr, sqrtxf2_internal_thr, recip_approx): Use it.
+
 2008-04-14  Ian Lance Taylor  <iant@google.com>
 
 	* flags.h (POINTER_TYPE_OVERFLOW_UNDEFINED): Define.
