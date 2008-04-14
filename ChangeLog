@@ -1,3 +1,7 @@
+2008-04-14  Ben Elliston  <bje@au.ibm.com>
+
+	* config.sub, config.guess: Update from upstream sources.
+
 2008-04-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.tpl <gcc>: Error early unless at least GNU make 3.80.
