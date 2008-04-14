@@ -590,12 +590,6 @@ package Sem_Util is
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
 
-   function In_Subprogram return Boolean;
-   --  Determines if the current scope is within a subprogram compilation
-   --  unit (inside a subprogram declaration, subprogram body, or generic
-   --  subprogram declaration). The test is for appearing anywhere within
-   --  such a construct (that is it does not need to be directly within).
-
    function In_Subprogram_Or_Concurrent_Unit return Boolean;
    --  Determines if the current scope is within a subprogram compilation
    --  unit (inside a subprogram declaration, subprogram body, or generic
