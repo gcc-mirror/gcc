@@ -8213,7 +8213,7 @@ package body Sem_Ch12 is
 
          Resolve (Actual, Ftyp);
 
-         if not Is_Variable (Actual) or else Paren_Count (Actual) > 0 then
+         if not Denotes_Variable (Actual) then
             Error_Msg_NE
               ("actual for& must be a variable", Actual, Formal_Id);
 

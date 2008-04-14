@@ -1,5 +1,13 @@
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/15915
+	* sem_util.ads, sem_util.adb (Denotes_Variable): New function.
+	* sem_ch12.adb (Instantiate_Object): Use it.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Ensure that
+	storage pool denotes a variable as per RM 13.11(15).
+
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
 	* sem_util.ads, sem_util.adb (In_Subprogram): New function.
 	* sem_attr.adb (Analyze_Attribute, Attribute_Old case): Use it.
 

@@ -1481,6 +1481,11 @@ package body Sem_Ch13 is
             Analyze_And_Resolve
               (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
 
+            if not Denotes_Variable (Expr) then
+               Error_Msg_N ("storage pool must be a variable", Expr);
+               return;
+            end if;
+
             if Nkind (Expr) = N_Type_Conversion then
                T := Etype (Expression (Expr));
             else
