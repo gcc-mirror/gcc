@@ -1,3 +1,7 @@
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gnat.dg/specs/storage.ads: Fix expected error message.
+
 2008-04-14  Robert Dewar  <dewar@adacore.com>
 
 	* gnat.dg/specs/linker_section.ads: Check for more error conditions.
