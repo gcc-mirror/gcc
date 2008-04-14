@@ -1,5 +1,10 @@
 2008-04-14  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma, Linker_Section case): Extend error
+	to every non-object and change error message.
+
+2008-04-14  Robert Dewar  <dewar@adacore.com>
+
 	* sem_util.ads, sem_util.adb (In_Subprogram): Remove.
 	* sem_attr.adb (Anayze_Attribute): Check for Current_Subprogram
 	directly.
