@@ -1,5 +1,11 @@
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/18680
+	* sem_prag.adb (Analyze_Pragma, Linker_Section case): Refuse to
+	apply pragma Linker_Section on type.
+
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/16098
 	* sem_prag.adb (Error_Pragma_Ref): New.
 	(Process_Convention): Specialized message for non-local
