@@ -896,6 +896,22 @@ package body Xref_Lib is
          Skip_To_Matching_Closing_Bracket;
       end if;
 
+      --  Skip any renaming indication
+
+      if Ali (Ptr) = '=' then
+         declare
+            P_Line, P_Column : Natural;
+            pragma Warnings (Off, P_Line);
+            pragma Warnings (Off, P_Column);
+
+         begin
+            Ptr := Ptr + 1;
+            Parse_Number (Ali, Ptr, P_Line);
+            Ptr := Ptr + 1;
+            Parse_Number (Ali, Ptr, P_Column);
+         end;
+      end if;
+
       if Ali (Ptr) = '<'
         or else Ali (Ptr) = '('
         or else Ali (Ptr) = '{'
@@ -1036,19 +1052,6 @@ package body Xref_Lib is
             end loop;
             Ptr := Ptr + 1;
          end if;
-
-      elsif Ali (Ptr) = '=' then
-         declare
-            P_Line, P_Column : Natural;
-            pragma Warnings (Off, P_Line);
-            pragma Warnings (Off, P_Column);
-
-         begin
-            Ptr := Ptr + 1;
-            Parse_Number (Ali, Ptr, P_Line);
-            Ptr := Ptr + 1;
-            Parse_Number (Ali, Ptr, P_Column);
-         end;
       end if;
 
       --  To find the body, we will have to parse the file too
