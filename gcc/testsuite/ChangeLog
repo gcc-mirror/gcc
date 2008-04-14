@@ -1,5 +1,10 @@
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/16098
+	* gnat.dg/specs/renamings.ads: New.
+
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/15915
 	* gnat.dg/specs/storage.ads: New.
 

@@ -521,6 +521,13 @@ package body Sem_Prag is
       --  reference the identifier. After placing the message, Pragma_Exit
       --  is raised.
 
+      procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id);
+      pragma No_Return (Error_Pragma_Ref);
+      --  Outputs error message for current pragma. The message may contain
+      --  a % that will be replaced with the pragma name. The parameter Ref
+      --  must be an entity whose name can be referenced by & and sloc by #.
+      --  After placing the message, Pragma_Exit is raised.
+
       function Find_Lib_Unit_Name return Entity_Id;
       --  Used for a library unit pragma to find the entity to which the
       --  library unit pragma applies, returns the entity found.
@@ -1700,6 +1707,18 @@ package body Sem_Prag is
          raise Pragma_Exit;
       end Error_Pragma_Arg_Ident;
 
+      ----------------------
+      -- Error_Pragma_Ref --
+      ----------------------
+
+      procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id) is
+      begin
+         Error_Msg_Name_1 := Pname;
+         Error_Msg_Sloc   := Sloc (Ref);
+         Error_Msg_NE (Msg, N, Ref);
+         raise Pragma_Exit;
+      end Error_Pragma_Ref;
+
       ------------------------
       -- Find_Lib_Unit_Name --
       ------------------------
@@ -2414,6 +2433,10 @@ package body Sem_Prag is
             if Nkind (Parent (Declaration_Node (E))) =
                                        N_Subprogram_Renaming_Declaration
             then
+               if Scope (E) /= Scope (Alias (E)) then
+                  Error_Pragma_Ref
+                    ("cannot apply pragma% to non-local renaming&#", E);
+               end if;
                E := Alias (E);
 
             elsif Nkind (Parent (E)) = N_Full_Type_Declaration
@@ -2547,6 +2570,12 @@ package body Sem_Prag is
                  and then Nkind (Original_Node (Parent (E1))) /=
                    N_Full_Type_Declaration
                then
+                  if Present (Alias (E1))
+                    and then Scope (E1) /= Scope (Alias (E1))
+                  then
+                     Error_Pragma_Ref
+                       ("cannot apply pragma% to non-local renaming&#", E1);
+                  end if;
                   Set_Convention_From_Pragma (E1);
 
                   if Prag_Id = Pragma_Import then
