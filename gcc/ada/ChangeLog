@@ -1,3 +1,9 @@
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/35050
+	* xref_lib.adb (Parse_Identifier_Info): Correctly parse and ignore the
+	renaming information.
+
 2008-04-13  Samuel Tardieu  <sam@rfc1149.net> 
 
 	PR ada/17985
