@@ -2143,6 +2143,15 @@ package body Sem_Util is
 
    end Denotes_Discriminant;
 
+   ----------------------
+   -- Denotes_Variable --
+   ----------------------
+
+   function Denotes_Variable (N : Node_Id) return Boolean is
+   begin
+      return Is_Variable (N) and then Paren_Count (N) = 0;
+   end Denotes_Variable;
+
    -----------------------------
    -- Depends_On_Discriminant --
    -----------------------------
