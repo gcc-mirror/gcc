@@ -1,3 +1,9 @@
+2008-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/strict-overflow-6.c: New.
+	* gcc.dg/no-strict-overflow-7.c: New.
+	* gcc.dg/Wstrict-overflow-22.c: New.
+
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
 	* gnat.dg/specs/storage.ads: Fix expected error message.
