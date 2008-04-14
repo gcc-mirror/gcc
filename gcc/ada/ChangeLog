@@ -1,3 +1,9 @@
+2008-04-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb (In_Subprogram): Remove.
+	* sem_attr.adb (Anayze_Attribute): Check for Current_Subprogram
+	directly.
+
 2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/18680
