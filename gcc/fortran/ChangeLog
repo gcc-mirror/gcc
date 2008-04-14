@@ -1,3 +1,14 @@
+2008-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35882
+	* options.c (gfc_init_options): Set the default maximum continuation
+	lines to 255 for both free and fixed form source for warnings.
+	(gfc_handle_option): Set -std=f95 fixed form max continuations to 19 and
+	the -std=f95 free form max continuations to 39 for warnings.
+	* scanner.c (gfc_next_char_literal): Adjust the current_line number only
+	if it is less than the current locus.
+
 2008-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25829 28655
