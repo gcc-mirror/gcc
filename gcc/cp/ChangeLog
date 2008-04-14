@@ -1,3 +1,9 @@
+2008-04-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+       PR target/35921
+       * optimize.c (maybe_clone_body): Copy DECL_DLLIMPORT_P flag
+       to clone.
+
 2008-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35708
