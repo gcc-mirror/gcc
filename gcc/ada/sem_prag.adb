@@ -8450,6 +8450,12 @@ package body Sem_Prag is
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
             Check_Arg_Is_Static_Expression (Arg2, Standard_String);
 
+            --  This pragma does not apply to types
+
+            if Is_Type (Entity (Expression (Arg1))) then
+               Error_Pragma_Arg ("pragma% cannot apply to type", Arg1);
+            end if;
+
             --  The only processing required is to link this item on to the
             --  list of rep items for the given entity. This is accomplished
             --  by the call to Rep_Item_Too_Late (when no error is detected
