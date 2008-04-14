@@ -1,3 +1,9 @@
+2008-04-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	* intrinsics/spread_generic.c (spread):  Use spread_i2()
+	for GFC_DTYPE_DERIVED_2 (fix typo from previous commit).
+
 2008-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 

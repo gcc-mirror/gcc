@@ -367,7 +367,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 	break;
       else
 	{
-	  spread_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) source,
+	  spread_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) source,
 		     *along, *pncopies);
 	  return;
 	}
