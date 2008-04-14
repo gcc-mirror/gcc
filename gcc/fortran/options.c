@@ -58,8 +58,8 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.source_form = FORM_UNKNOWN;
   gfc_option.fixed_line_length = 72;
   gfc_option.free_line_length = 132;
-  gfc_option.max_continue_fixed = 19;
-  gfc_option.max_continue_free = 39;
+  gfc_option.max_continue_fixed = 255;
+  gfc_option.max_continue_free = 255;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
   gfc_option.max_subrecord_length = 0;
   gfc_option.convert = GFC_CONVERT_NATIVE;
@@ -733,6 +733,8 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_std_f95:
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77;
       gfc_option.warn_std = GFC_STD_F95_OBS;
+      gfc_option.max_continue_fixed = 19;
+      gfc_option.max_continue_free = 39;
       gfc_option.max_identifier_length = 31;
       gfc_option.warn_ampersand = 1;
       gfc_option.warn_tabs = 0;
@@ -742,8 +744,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
 	| GFC_STD_F2003 | GFC_STD_F95;
       gfc_option.warn_std = GFC_STD_F95_OBS;
-      gfc_option.max_continue_fixed = 255;
-      gfc_option.max_continue_free = 255;
       gfc_option.max_identifier_length = 63;
       gfc_option.warn_ampersand = 1;
       gfc_option.warn_tabs = 0;
@@ -753,8 +753,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F77 
 	| GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F2008;
       gfc_option.warn_std = GFC_STD_F95_OBS;
-      gfc_option.max_continue_fixed = 255;
-      gfc_option.max_continue_free = 255;
       gfc_option.max_identifier_length = 63;
       gfc_option.warn_ampersand = 1;
       gfc_option.warn_tabs = 0;
