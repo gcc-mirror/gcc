@@ -5365,6 +5365,15 @@ package body Sem_Util is
       return False;
    end In_Package_Body;
 
+   -------------------
+   -- In_Subprogram --
+   -------------------
+
+   function In_Subprogram return Boolean is
+   begin
+      return Current_Subprogram /= Empty;
+   end In_Subprogram;
+
    --------------------------------------
    -- In_Subprogram_Or_Concurrent_Unit --
    --------------------------------------
