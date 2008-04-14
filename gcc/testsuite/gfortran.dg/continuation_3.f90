@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options -pedantic }
+! { dg-options -std=f95 }
 ! PR 19262  Test limit on line continuations. Test case derived form case in PR
 ! by Steve Kargl.  Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 print *, &
