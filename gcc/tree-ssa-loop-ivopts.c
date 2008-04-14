@@ -1451,6 +1451,8 @@ may_be_nonaddressable_p (tree expr)
       if (AGGREGATE_TYPE_P (TREE_TYPE (expr))
 	  && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
 	return true;
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == INTEGER_CST)
+	return true;
 
       /* ... fall through ... */
 

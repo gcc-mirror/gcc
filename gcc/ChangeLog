@@ -1,3 +1,8 @@
+2008-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p) <VIEW_CONVERT_EXPR>:
+	Return true if the operand is an INTEGER_CST.
+
 2008-04-12  James E. Wilson  <wilson@tuliptree.org>
 
 	PR target/35695
