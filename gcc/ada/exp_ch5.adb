@@ -3467,7 +3467,7 @@ package body Exp_Ch5 is
 
    procedure Expand_N_Simple_Return_Statement (N : Node_Id) is
    begin
-      --  Defend agains previous errors (ie. the return statement calls a
+      --  Defend against previous errors (i.e. the return statement calls a
       --  function that is not available in configurable runtime).
 
       if Present (Expression (N))

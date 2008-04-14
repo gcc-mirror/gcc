@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,7 +68,7 @@ package body MLib.Tgt.Specific is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Auto_Init);
-      --  Initialization is done through the contructor mechanism
+      --  Initialization is done through the constructor mechanism
 
       Lib_File : constant String :=
                    "lib" & Fil.Append_To (Lib_Filename, DLL_Ext);

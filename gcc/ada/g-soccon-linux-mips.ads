@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@
 --  This is the version for mips-linux, manually edited for the first shot
 --  no mips hardware at hand
 --  using http://www.gelato.unsw.edu.au/lxr/source/include/asm-mips/socket.h
---  in order to find differents values
+--  in order to find different values.
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -80,7 +80,7 @@ package GNAT.Sockets.Constants is
    EINVAL             : constant :=           22; --  Invalid argument
    EIO                : constant :=            5; --  Input output error
    EISCONN            : constant :=          106; --  Socket already connected
-   ELOOP              : constant :=           40; --  Too many symbolic lynks
+   ELOOP              : constant :=           40; --  Too many symbolic links
    EMFILE             : constant :=           24; --  Too many open files
    EMSGSIZE           : constant :=           90; --  Message too long
    ENAMETOOLONG       : constant :=           36; --  Name too long

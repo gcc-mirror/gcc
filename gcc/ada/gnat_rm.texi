@@ -3551,7 +3551,7 @@ optimization setting. This would normally be achieved by use of a configuration
 pragma file containing the appropriate setting. The exception to this rule is
 that units with an explicit configuration pragma in the same file as the source
 unit are excluded from the consistency check, as are all predefined units. The
-latter are commpiled by default in pragma Optimize_Alignment (Off) mode if no
+latter are compiled by default in pragma Optimize_Alignment (Off) mode if no
 pragma appears at the start of the file.
 
 @node Pragma Passive
@@ -3740,7 +3740,7 @@ will be used as the exception message. If no message
 argument was supplied, then the default message has
 the form "Postcondition failed at file:line". The
 exception is raised in the context of the subprogram
-body, so it is posssible to catch postcondition failures
+body, so it is possible to catch postcondition failures
 within the subprogram body itself.
 
 Within a package spec, normal visibility rules

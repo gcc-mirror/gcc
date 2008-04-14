@@ -1244,7 +1244,7 @@ package body System.Interrupts is
 
       --  There are two Interrupt interrupts that this task catch through
       --  "sigwait." One is the Interrupt this task is designated to catch
-      --  in order to execure user handler or entry. The other one is the
+      --  in order to execute user handler or entry. The other one is the
       --  Abort_Task_Interrupt. This interrupt is being sent from the
       --  Interrupt_Manager to inform status changes (e.g: become Blocked,
       --  Handler or Entry is to be detached).

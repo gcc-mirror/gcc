@@ -39,7 +39,7 @@ package body Fmap is
 
    No_Mapping_File : Boolean := False;
    --  Set to True when the specified mapping file cannot be read in
-   --  procedure Initialize, so that no attempt is made to oopen the mapping
+   --  procedure Initialize, so that no attempt is made to open the mapping
    --  file in procedure Update_Mapping_File.
 
    function To_Big_String_Ptr is new Unchecked_Conversion

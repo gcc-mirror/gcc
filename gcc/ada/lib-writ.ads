@@ -472,7 +472,7 @@ package Lib.Writ is
    --             elaboration code is required. Set if N_Compilation_Unit
    --             node has flag Has_No_Elaboration_Code set.
    --
-   --         OL   The units in this file are commpiled with a local pragma
+   --         OL   The units in this file are compiled with a local pragma
    --              Optimize_Alignment, so no consistency requirement applies
    --              to these units. All internal units have this status since
    --              they have an automatic default of Optimize_Alignment (Off).
@@ -481,11 +481,11 @@ package Lib.Writ is
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
    --
-   --         OS   Optimize_Alignment (Space) is the default settinng for all
+   --         OS   Optimize_Alignment (Space) is the default setting for all
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
    --
-   --         OT   Optimize_Alignment (Time) is the default settinng for all
+   --         OT   Optimize_Alignment (Time) is the default setting for all
    --              units in this file. All files in the partition that specify
    --              a default must specify the same default.
    --

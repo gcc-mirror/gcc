@@ -51,7 +51,7 @@ package Sem_Prag is
    --  Precondition, and Postcondition to determine if Check pragmas (or
    --  corresponding Assert, Precondition, or Postcondition pragmas) are
    --  currently active, as determined by the presence of -gnata on the
-   --  command line (which sets the default), and the appearence of pragmas
+   --  command line (which sets the default), and the appearance of pragmas
    --  Check_Policy and Assertion_Policy as configuration pragmas either in
    --  a configuration pragma file, or at the start of the current unit.
    --  True is returned if the specified check is enabled.

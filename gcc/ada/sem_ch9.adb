@@ -1113,7 +1113,7 @@ package body Sem_Ch9 is
       --  all itypes within are frozen. This ensures that no freeze nodes
       --  will be generated for them.
       --
-      --  On the other hand, components of the correesponding record are
+      --  On the other hand, components of the corresponding record are
       --  frozen (or receive itype references) as for other records.
 
       --------------------

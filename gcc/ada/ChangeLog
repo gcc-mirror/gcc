@@ -1,3 +1,23 @@
+2008-04-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* vms_data.ads: Fix typo in constant.
+	* gen-soccon.c: Fix typo in error string.
+	* gnat_rm.texi (Pragma Optimize_Alignment, Pragma Postcondition):
+	Fix typos.
+	* a-calcon.ads, a-calend-vms.adb, a-calend.adb, a-crdlli.ads,
+	bcheck.adb, checks.adb, einfo.ads, errout.adb, erroutc.adb,
+	erroutc.ads, exp_attr.adb, exp_ch11.adb, exp_ch2.adb,
+	exp_ch5.adb, exp_ch9.adb, exp_ch9.ads, exp_pakd.adb,
+	exp_util.adb, fmap.adb, g-soccon-linux-mips.ads,
+	g-soccon-rtems.ads, g-timsta.adb, g-timsta.ads, lib-writ.ads,
+	mlib-tgt-specific-linux.adb, mlib-tgt-specific-tru64.adb,
+	s-interr-vxworks.adb, s-interr.adb, s-osinte-lynxos.ads,
+	s-rident.ads, s-taprop-solaris.adb, s-tassta.adb, s-win32.ads,
+	sem_aggr.adb, sem_attr.ads, sem_ch10.adb, sem_ch13.ads,
+	sem_ch3.adb, sem_ch6.adb, sem_ch7.adb, sem_ch8.adb, sem_ch9.adb,
+	sem_prag.ads, sem_res.adb, sem_util.adb, sem_util.ads,
+	sinfo.ads: Fix typos in comments.
+
 2008-04-14  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, Linker_Section case): Extend error

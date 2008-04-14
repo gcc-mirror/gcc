@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package plus its child provide the low level interface to the Win32
---  API. The core part of the Win32 API (commont to RTX and Win32) is in this
+--  API. The core part of the Win32 API (common to RTX and Win32) is in this
 --  package, and an additional part of the Win32 API which is not supported by
 --  RTX is in package System.Win33.Ext.
 

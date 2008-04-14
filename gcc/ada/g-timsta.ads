@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a lighweight mechanism for obtaining time stamps
+--  This package provides a lightweight mechanism for obtaining time stamps
 
 package GNAT.Time_Stamp is
 

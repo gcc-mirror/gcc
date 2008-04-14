@@ -39,7 +39,7 @@ package body GNAT.Time_Stamp is
    type time_stamp_ptr is access all time_stamp;
    --  The desired ISO 8601 string format has exactly 22 characters. We add
    --  one additional character for '\0'. The indexing starts from zero to
-   --  accomodate the C layout.
+   --  accommodate the C layout.
 
    procedure gnat_current_time_string (Value : time_stamp_ptr);
    pragma Import (C, gnat_current_time_string, "__gnat_current_time_string");

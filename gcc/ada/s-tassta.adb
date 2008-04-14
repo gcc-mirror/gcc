@@ -1193,7 +1193,7 @@ package body System.Tasking.Stages is
    -- Terminate_Task --
    --------------------
 
-   --  Before we allow the thread to exit, we must clean up. This is a a
+   --  Before we allow the thread to exit, we must clean up. This is a
    --  delicate job. We must wake up the task's master, who may immediately try
    --  to deallocate the ATCB out from under the current task WHILE IT IS STILL
    --  EXECUTING.

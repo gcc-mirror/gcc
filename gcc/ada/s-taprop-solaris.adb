@@ -115,7 +115,7 @@ package body System.Task_Primitives.Operations is
    --  and priority handling.
 
    Using_Real_Time_Class : Boolean := False;
-   --  indicates whether the real time class is being used (i.e the process
+   --  indicates whether the real time class is being used (i.e. the process
    --  has root privileges).
 
    Prio_Param : aliased struct_pcparms;

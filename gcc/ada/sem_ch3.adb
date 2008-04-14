@@ -2308,7 +2308,7 @@ package body Sem_Ch3 is
 
                --  The current object is a discriminal generated for an entry
                --  family index. Even though the index is a constant, in this
-               --  particular context there is no true contant redeclaration.
+               --  particular context there is no true constant redeclaration.
                --  Enter_Name will handle the visibility.
 
                or else
@@ -8153,7 +8153,7 @@ package body Sem_Ch3 is
             if Present (Alias_Subp) then
 
                --  Only perform the check for a derived subprogram when the
-               --  type has an explicit record extension. This avoids incorect
+               --  type has an explicit record extension. This avoids incorrect
                --  flagging of abstract subprograms for the case of a type
                --  without an extension that is derived from a formal type
                --  with a tagged actual (can occur within a private part).
@@ -11798,7 +11798,7 @@ package body Sem_Ch3 is
 
       --  If we are creating a renaming for a primitive operation of an
       --  actual of a generic derived type, we must examine the signature
-      --  of the actual primive, not that of the generic formal, which for
+      --  of the actual primitive, not that of the generic formal, which for
       --  example may be an interface. However the name and initial value
       --  of the inherited operation are those of the formal primitive.
 

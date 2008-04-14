@@ -1774,7 +1774,7 @@ package body Exp_Pakd is
       Ltyp := Etype (L);
       Rtyp := Etype (R);
 
-      --  Deeal with silly case of XOR where the subcomponent has a range
+      --  Deal with silly case of XOR where the subcomponent has a range
       --  True .. True where an exception must be raised.
 
       if Nkind (N) = N_Op_Xor then

@@ -4110,7 +4110,7 @@ package body Sem_Ch8 is
                --  If the renamed entity is a private protected component,
                --  reference the original component as well. This needs to be
                --  done because the private renamings are installed before any
-               --  analysis has occured. Reference to a private component will
+               --  analysis has occurred. Reference to a private component will
                --  resolve to the renaming and the original component will be
                --  left unreferenced, hence the following.
 

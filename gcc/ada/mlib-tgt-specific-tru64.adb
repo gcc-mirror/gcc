@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the True64 version of the body
+--  This is the Tru64 version of the body
 
 with MLib.Fil;
 with MLib.Utl;
