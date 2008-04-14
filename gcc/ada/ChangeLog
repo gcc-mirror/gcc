@@ -1,3 +1,8 @@
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
+	* sem_util.ads, sem_util.adb (In_Subprogram): New function.
+	* sem_attr.adb (Analyze_Attribute, Attribute_Old case): Use it.
+
 2008-04-14  Rolf Ebert  <rolf.ebert.gcc@gmx.de>
 
 	PR ada/20822

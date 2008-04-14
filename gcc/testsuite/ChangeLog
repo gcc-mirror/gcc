@@ -1,3 +1,7 @@
+2008-04-14  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gnat.dg/deep_old.adb: New.
+
 2008-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_address2.adb: New test.

@@ -3472,7 +3472,7 @@ package body Sem_Attr is
          Check_E0;
          Set_Etype (N, P_Type);
 
-         if not Is_Subprogram (Current_Scope) then
+         if not In_Subprogram then
             Error_Attr ("attribute % can only appear within subprogram", N);
          end if;
 
