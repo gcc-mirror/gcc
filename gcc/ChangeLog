@@ -1,3 +1,9 @@
+2008-04-16  Zuxy Meng  <zuxy.meng@gmail.com>
+
+	PR target/35661
+	* config/i386/winnt.c (i386_pe_section_type_flags): Mark
+	".text.unlikely" section as executable.
+
 2008-04-14  James E. Wilson  <wilson@tuliptree.org>
 
 	* config/ia64/ia64.c (rtx_needs_barrier): Handle
