@@ -8450,10 +8450,10 @@ package body Sem_Prag is
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
             Check_Arg_Is_Static_Expression (Arg2, Standard_String);
 
-            --  This pragma does not apply to types
+            --  This pragma applies only to objects
 
-            if Is_Type (Entity (Expression (Arg1))) then
-               Error_Pragma_Arg ("pragma% cannot apply to type", Arg1);
+            if not Is_Object (Entity (Expression (Arg1))) then
+               Error_Pragma_Arg ("pragma% applies only to objects", Arg1);
             end if;
 
             --  The only processing required is to link this item on to the
