@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree.h"
 #include "hashtab.h"
+#include "varray.h"
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -136,6 +137,34 @@ struct expr_status GTY(())
   rtx x_forced_labels;
 };
 
+typedef struct call_site_record *call_site_record;
+DEF_VEC_P(call_site_record);
+DEF_VEC_ALLOC_P(call_site_record, gc);
+
+/* RTL representation of exception handling.  */
+struct rtl_eh GTY(())
+{
+  rtx filter;
+  rtx exc_ptr;
+
+  int built_landing_pads;
+
+  rtx ehr_stackadj;
+  rtx ehr_handler;
+  rtx ehr_label;
+
+  rtx sjlj_fc;
+  rtx sjlj_exit_after;
+
+  htab_t GTY ((param_is (struct ehl_map_entry))) exception_handler_label_map;
+
+  VEC(tree,gc) *ttype_data;
+  varray_type ehspec_data;
+  varray_type action_record_data;
+
+  VEC(call_site_record,gc) *call_site_record;
+};
+
 #define pending_stack_adjust (crtl->expr.x_pending_stack_adjust)
 #define inhibit_defer_pop (crtl->expr.x_inhibit_defer_pop)
 #define saveregs_value (crtl->expr.x_saveregs_value)
@@ -146,6 +175,7 @@ struct expr_status GTY(())
 struct gimple_df;
 struct temp_slot;
 typedef struct temp_slot *temp_slot_p;
+struct call_site_record;
 
 DEF_VEC_P(temp_slot_p);
 DEF_VEC_ALLOC_P(temp_slot_p,gc);
@@ -227,6 +257,7 @@ struct rtl_data GTY(())
   struct varasm_status varasm;
   struct incoming_args args;
   struct function_subsections subsections;
+  struct rtl_eh eh;
 
   /* For function.c  */
 

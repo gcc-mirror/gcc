@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 #define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM
 #endif
 
-
 /* Protect cleanup actions with must-not-throw regions, with a call
    to the given failure handler.  */
 tree (*lang_protect_cleanup_actions) (void);
@@ -218,36 +217,7 @@ struct eh_status GTY(())
 
   /* The same information as an indexable array.  */
   VEC(eh_region,gc) *region_array;
-
-  /* The most recently open region.  */
-  struct eh_region *cur_region;
-
-  /* This is the region for which we are processing catch blocks.  */
-  struct eh_region *try_region;
-
-  rtx filter;
-  rtx exc_ptr;
-
-  int built_landing_pads;
   int last_region_number;
-
-  VEC(tree,gc) *ttype_data;
-  varray_type ehspec_data;
-  varray_type action_record_data;
-
-  htab_t GTY ((param_is (struct ehl_map_entry))) exception_handler_label_map;
-
-  struct call_site_record * GTY ((length ("%h.call_site_data_used")))
-    call_site_data;
-  int call_site_data_used;
-  int call_site_data_size;
-
-  rtx ehr_stackadj;
-  rtx ehr_handler;
-  rtx ehr_label;
-
-  rtx sjlj_fc;
-  rtx sjlj_exit_after;
 
   htab_t GTY((param_is (struct throw_stmt_node))) throw_stmt_table;
 };
@@ -587,41 +557,27 @@ note_eh_region_may_contain_throw (struct eh_region *region)
     }
 }
 
-void
-note_current_region_may_contain_throw (void)
-{
-  note_eh_region_may_contain_throw (cfun->eh->cur_region);
-}
-
 
 /* Return an rtl expression for a pointer to the exception object
    within a handler.  */
 
 rtx
-get_exception_pointer (struct function *fun)
+get_exception_pointer (void)
 {
-  rtx exc_ptr = fun->eh->exc_ptr;
-  if (fun == cfun && ! exc_ptr)
-    {
-      exc_ptr = gen_reg_rtx (ptr_mode);
-      fun->eh->exc_ptr = exc_ptr;
-    }
-  return exc_ptr;
+  if (! crtl->eh.exc_ptr)
+    crtl->eh.exc_ptr = gen_reg_rtx (ptr_mode);
+  return crtl->eh.exc_ptr;
 }
 
 /* Return an rtl expression for the exception dispatch filter
    within a handler.  */
 
 rtx
-get_exception_filter (struct function *fun)
+get_exception_filter (void)
 {
-  rtx filter = fun->eh->filter;
-  if (fun == cfun && ! filter)
-    {
-      filter = gen_reg_rtx (targetm.eh_return_filter_mode ());
-      fun->eh->filter = filter;
-    }
-  return filter;
+  if (! crtl->eh.filter)
+    crtl->eh.filter = gen_reg_rtx (targetm.eh_return_filter_mode ());
+  return crtl->eh.filter;
 }
 
 /* This section is for the exception handling specific optimization pass.  */
@@ -783,13 +739,13 @@ add_ehl_entry (rtx label, struct eh_region *region)
   entry->region = region;
 
   slot = (struct ehl_map_entry **)
-    htab_find_slot (cfun->eh->exception_handler_label_map, entry, INSERT);
+    htab_find_slot (crtl->eh.exception_handler_label_map, entry, INSERT);
 
   /* Before landing pad creation, each exception handler has its own
      label.  After landing pad creation, the exception handlers may
      share landing pads.  This is ok, since maybe_remove_eh_handler
      only requires the 1-1 mapping before landing pad creation.  */
-  gcc_assert (!*slot || cfun->eh->built_landing_pads);
+  gcc_assert (!*slot || crtl->eh.built_landing_pads);
 
   *slot = entry;
 }
@@ -799,13 +755,13 @@ find_exception_handler_labels (void)
 {
   int i;
 
-  if (cfun->eh->exception_handler_label_map)
-    htab_empty (cfun->eh->exception_handler_label_map);
+  if (crtl->eh.exception_handler_label_map)
+    htab_empty (crtl->eh.exception_handler_label_map);
   else
     {
       /* ??? The expansion factor here (3/2) must be greater than the htab
 	 occupancy factor (4/3) to avoid unnecessary resizing.  */
-      cfun->eh->exception_handler_label_map
+      crtl->eh.exception_handler_label_map
         = htab_create_ggc (cfun->eh->last_region_number * 3 / 2,
 			   ehl_hash, ehl_eq, NULL);
     }
@@ -821,7 +777,7 @@ find_exception_handler_labels (void)
       region = VEC_index (eh_region, cfun->eh->region_array, i);
       if (! region || region->region_number != i)
 	continue;
-      if (cfun->eh->built_landing_pads)
+      if (crtl->eh.built_landing_pads)
 	lab = region->landing_pad;
       else
 	lab = region->label;
@@ -832,7 +788,7 @@ find_exception_handler_labels (void)
 
   /* For sjlj exceptions, need the return label to remain live until
      after landing pad generation.  */
-  if (USING_SJLJ_EXCEPTIONS && ! cfun->eh->built_landing_pads)
+  if (USING_SJLJ_EXCEPTIONS && ! crtl->eh.built_landing_pads)
     add_ehl_entry (return_label, NULL);
 }
 
@@ -1227,7 +1183,7 @@ ehspec_filter_hash (const void *pentry)
   return h;
 }
 
-/* Add TYPE (which may be NULL) to cfun->eh->ttype_data, using TYPES_HASH
+/* Add TYPE (which may be NULL) to crtl->eh.ttype_data, using TYPES_HASH
    to speed up the search.  Return the filter value to be used.  */
 
 static int
@@ -1244,16 +1200,16 @@ add_ttypes_entry (htab_t ttypes_hash, tree type)
 
       n = XNEW (struct ttypes_filter);
       n->t = type;
-      n->filter = VEC_length (tree, cfun->eh->ttype_data) + 1;
+      n->filter = VEC_length (tree, crtl->eh.ttype_data) + 1;
       *slot = n;
 
-      VEC_safe_push (tree, gc, cfun->eh->ttype_data, type);
+      VEC_safe_push (tree, gc, crtl->eh.ttype_data, type);
     }
 
   return n->filter;
 }
 
-/* Add LIST to cfun->eh->ehspec_data, using EHSPEC_HASH and TYPES_HASH
+/* Add LIST to crtl->eh.ehspec_data, using EHSPEC_HASH and TYPES_HASH
    to speed up the search.  Return the filter value to be used.  */
 
 static int
@@ -1272,26 +1228,26 @@ add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
 
       n = XNEW (struct ttypes_filter);
       n->t = list;
-      n->filter = -(VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) + 1);
+      n->filter = -(VARRAY_ACTIVE_SIZE (crtl->eh.ehspec_data) + 1);
       *slot = n;
 
       /* Generate a 0 terminated list of filter values.  */
       for (; list ; list = TREE_CHAIN (list))
 	{
 	  if (targetm.arm_eabi_unwinder)
-	    VARRAY_PUSH_TREE (cfun->eh->ehspec_data, TREE_VALUE (list));
+	    VARRAY_PUSH_TREE (crtl->eh.ehspec_data, TREE_VALUE (list));
 	  else
 	    {
 	      /* Look up each type in the list and encode its filter
 		 value as a uleb128.  */
-	      push_uleb128 (&cfun->eh->ehspec_data,
+	      push_uleb128 (&crtl->eh.ehspec_data,
 		  add_ttypes_entry (ttypes_hash, TREE_VALUE (list)));
 	    }
 	}
       if (targetm.arm_eabi_unwinder)
-	VARRAY_PUSH_TREE (cfun->eh->ehspec_data, NULL_TREE);
+	VARRAY_PUSH_TREE (crtl->eh.ehspec_data, NULL_TREE);
       else
-	VARRAY_PUSH_UCHAR (cfun->eh->ehspec_data, 0);
+	VARRAY_PUSH_UCHAR (crtl->eh.ehspec_data, 0);
     }
 
   return n->filter;
@@ -1308,11 +1264,11 @@ assign_filter_values (void)
   int i;
   htab_t ttypes, ehspec;
 
-  cfun->eh->ttype_data = VEC_alloc (tree, gc, 16);
+  crtl->eh.ttype_data = VEC_alloc (tree, gc, 16);
   if (targetm.arm_eabi_unwinder)
-    VARRAY_TREE_INIT (cfun->eh->ehspec_data, 64, "ehspec_data");
+    VARRAY_TREE_INIT (crtl->eh.ehspec_data, 64, "ehspec_data");
   else
-    VARRAY_UCHAR_INIT (cfun->eh->ehspec_data, 64, "ehspec_data");
+    VARRAY_UCHAR_INIT (crtl->eh.ehspec_data, 64, "ehspec_data");
 
   ttypes = htab_create (31, ttypes_filter_hash, ttypes_filter_eq, free);
   ehspec = htab_create (31, ehspec_filter_hash, ehspec_filter_eq, free);
@@ -1457,7 +1413,7 @@ build_post_landing_pads (void)
 		    for (; tp_node; )
 		      {
 			emit_cmp_and_jump_insns
-			  (cfun->eh->filter,
+			  (crtl->eh.filter,
 			   GEN_INT (tree_low_cst (TREE_VALUE (flt_node), 0)),
 			   EQ, NULL_RTX,
 			   targetm.eh_return_filter_mode (), 0, c->label);
@@ -1490,7 +1446,7 @@ build_post_landing_pads (void)
 
 	  emit_label (region->post_landing_pad);
 
-	  emit_cmp_and_jump_insns (cfun->eh->filter,
+	  emit_cmp_and_jump_insns (crtl->eh.filter,
 				   GEN_INT (region->u.allowed.filter),
 				   EQ, NULL_RTX,
 				   targetm.eh_return_filter_mode (), 0, region->label);
@@ -1573,7 +1529,7 @@ connect_post_landing_pads (void)
       else
 	{
 	  emit_library_call (unwind_resume_libfunc, LCT_THROW,
-			     VOIDmode, 1, cfun->eh->exc_ptr, ptr_mode);
+			     VOIDmode, 1, crtl->eh.exc_ptr, ptr_mode);
 
 	  /* What we just emitted was a throwing libcall, so it got a
 	     barrier automatically added after it.  If the last insn in
@@ -1643,9 +1599,9 @@ dw2_build_landing_pads (void)
 #endif
 	  { /* Nothing */ }
 
-      emit_move_insn (cfun->eh->exc_ptr,
+      emit_move_insn (crtl->eh.exc_ptr,
 		      gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
-      emit_move_insn (cfun->eh->filter,
+      emit_move_insn (crtl->eh.filter,
 		      gen_rtx_REG (targetm.eh_return_filter_mode (),
 				   EH_RETURN_DATA_REGNO (1)));
 
@@ -1724,7 +1680,7 @@ sjlj_assign_call_site_values (rtx dispatch_label, struct sjlj_lp_info *lp_info)
 
   /* First task: build the action table.  */
 
-  VARRAY_UCHAR_INIT (cfun->eh->action_record_data, 64, "action_record_data");
+  VARRAY_UCHAR_INIT (crtl->eh.action_record_data, 64, "action_record_data");
   ar_hash = htab_create (31, action_record_hash, action_record_eq, free);
 
   for (i = cfun->eh->last_region_number; i > 0; --i)
@@ -1830,7 +1786,7 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
 	before = find_first_parameter_load (insn, NULL_RTX);
 
       start_sequence ();
-      mem = adjust_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
+      mem = adjust_address (crtl->eh.sjlj_fc, TYPE_MODE (integer_type_node),
 			    sjlj_fc_call_site_ofs);
       emit_move_insn (mem, GEN_INT (this_call_site));
       p = get_insns ();
@@ -1849,7 +1805,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
   rtx fn_begin, fc, mem, seq;
   bool fn_begin_outside_block;
 
-  fc = cfun->eh->sjlj_fc;
+  fc = crtl->eh.sjlj_fc;
 
   start_sequence ();
 
@@ -1923,7 +1879,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
 void
 sjlj_emit_function_exit_after (rtx after)
 {
-  cfun->eh->sjlj_exit_after = after;
+  crtl->eh.sjlj_exit_after = after;
 }
 
 static void
@@ -1936,7 +1892,7 @@ sjlj_emit_function_exit (void)
   start_sequence ();
 
   emit_library_call (unwind_sjlj_unregister_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (cfun->eh->sjlj_fc, 0), Pmode);
+		     1, XEXP (crtl->eh.sjlj_fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1958,7 +1914,7 @@ sjlj_emit_function_exit (void)
       gcc_assert (e->src->next_bb == EXIT_BLOCK_PTR);
       for (insn = BB_HEAD (e->src); ; insn = NEXT_INSN (insn))
 	{
-	  if (insn == cfun->eh->sjlj_exit_after)
+	  if (insn == crtl->eh.sjlj_exit_after)
 	    {
 	      if (LABEL_P (insn))
 		insn = NEXT_INSN (insn);
@@ -1981,7 +1937,7 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
   basic_block bb;
   edge e;
 
-  fc = cfun->eh->sjlj_fc;
+  fc = crtl->eh.sjlj_fc;
 
   start_sequence ();
 
@@ -2006,10 +1962,10 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
       mem = convert_to_mode (ptr_mode, mem, 0);
 #endif
     }
-  emit_move_insn (cfun->eh->exc_ptr, mem);
+  emit_move_insn (crtl->eh.exc_ptr, mem);
 
   mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs + UNITS_PER_WORD);
-  emit_move_insn (cfun->eh->filter, mem);
+  emit_move_insn (crtl->eh.filter, mem);
 
   /* Jump to one of the directly reachable regions.  */
   /* ??? This really ought to be using a switch statement.  */
@@ -2055,7 +2011,7 @@ sjlj_build_landing_pads (void)
     {
       rtx dispatch_label = gen_label_rtx ();
 
-      cfun->eh->sjlj_fc
+      crtl->eh.sjlj_fc
 	= assign_stack_local (TYPE_MODE (sjlj_fc_type_node),
 			      int_size_in_bytes (sjlj_fc_type_node),
 			      TYPE_ALIGN (sjlj_fc_type_node));
@@ -2091,8 +2047,8 @@ finish_eh_generation (void)
 
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
-  get_exception_pointer (cfun);
-  get_exception_filter (cfun);
+  get_exception_pointer ();
+  get_exception_filter ();
 
   /* Construct the landing pads.  */
 
@@ -2104,7 +2060,7 @@ finish_eh_generation (void)
   else
     dw2_build_landing_pads ();
 
-  cfun->eh->built_landing_pads = 1;
+  crtl->eh.built_landing_pads = 1;
 
   /* We've totally changed the CFG.  Start over.  */
   find_exception_handler_labels ();
@@ -2166,15 +2122,15 @@ remove_exception_handler_label (rtx label)
 
   /* If exception_handler_label_map was not built yet,
      there is nothing to do.  */
-  if (cfun->eh->exception_handler_label_map == NULL)
+  if (crtl->eh.exception_handler_label_map == NULL)
     return;
 
   tmp.label = label;
   slot = (struct ehl_map_entry **)
-    htab_find_slot (cfun->eh->exception_handler_label_map, &tmp, NO_INSERT);
+    htab_find_slot (crtl->eh.exception_handler_label_map, &tmp, NO_INSERT);
   gcc_assert (slot);
 
-  htab_clear_slot (cfun->eh->exception_handler_label_map, (void **) slot);
+  htab_clear_slot (crtl->eh.exception_handler_label_map, (void **) slot);
 }
 
 /* Splice REGION from the region tree etc.  */
@@ -2213,7 +2169,7 @@ remove_eh_handler (struct eh_region *region)
       bitmap_set_bit (outer->aka, region->region_number);
     }
 
-  if (cfun->eh->built_landing_pads)
+  if (crtl->eh.built_landing_pads)
     lab = region->landing_pad;
   else
     lab = region->label;
@@ -2281,12 +2237,12 @@ maybe_remove_eh_handler (rtx label)
      if the region data is completely unused.  One must examine the
      landing pad and the post landing pad, and whether an inner try block
      is referencing the catch handlers directly.  */
-  if (cfun->eh->built_landing_pads)
+  if (crtl->eh.built_landing_pads)
     return;
 
   tmp.label = label;
   slot = (struct ehl_map_entry **)
-    htab_find_slot (cfun->eh->exception_handler_label_map, &tmp, NO_INSERT);
+    htab_find_slot (crtl->eh.exception_handler_label_map, &tmp, NO_INSERT);
   if (! slot)
     return;
   region = (*slot)->region;
@@ -2299,7 +2255,7 @@ maybe_remove_eh_handler (rtx label)
      are no more contained calls, which we don't see here.  */
   if (region->type == ERT_MUST_NOT_THROW)
     {
-      htab_clear_slot (cfun->eh->exception_handler_label_map, (void **) slot);
+      htab_clear_slot (crtl->eh.exception_handler_label_map, (void **) slot);
       region->label = NULL_RTX;
     }
   else
@@ -2312,7 +2268,7 @@ maybe_remove_eh_handler (rtx label)
 void
 for_each_eh_label (void (*callback) (rtx))
 {
-  htab_traverse (cfun->eh->exception_handler_label_map, for_each_eh_label_1,
+  htab_traverse (crtl->eh.exception_handler_label_map, for_each_eh_label_1,
 		 (void *) &callback);
 }
 
@@ -2396,7 +2352,7 @@ add_reachable_handler (struct reachable_info *info,
 
   info->saw_any_handlers = true;
 
-  if (cfun->eh->built_landing_pads)
+  if (crtl->eh.built_landing_pads)
     info->callback (lp_region, info->callback_data);
   else
     info->callback (region, info->callback_data);
@@ -2658,7 +2614,7 @@ reachable_handlers (rtx insn)
     }
 
   foreach_reachable_handler (region_number, is_resx,
-			     (cfun->eh->built_landing_pads
+			     (crtl->eh.built_landing_pads
 			      ? arh_to_landing_pad
 			      : arh_to_label),
 			     &handlers);
@@ -2966,26 +2922,26 @@ expand_builtin_eh_return (tree stackadj_tree ATTRIBUTE_UNUSED,
   rtx tmp;
 
 #ifdef EH_RETURN_STACKADJ_RTX
-  tmp = expand_expr (stackadj_tree, cfun->eh->ehr_stackadj,
+  tmp = expand_expr (stackadj_tree, crtl->eh.ehr_stackadj,
 		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
-  if (!cfun->eh->ehr_stackadj)
-    cfun->eh->ehr_stackadj = copy_to_reg (tmp);
-  else if (tmp != cfun->eh->ehr_stackadj)
-    emit_move_insn (cfun->eh->ehr_stackadj, tmp);
+  if (!crtl->eh.ehr_stackadj)
+    crtl->eh.ehr_stackadj = copy_to_reg (tmp);
+  else if (tmp != crtl->eh.ehr_stackadj)
+    emit_move_insn (crtl->eh.ehr_stackadj, tmp);
 #endif
 
-  tmp = expand_expr (handler_tree, cfun->eh->ehr_handler,
+  tmp = expand_expr (handler_tree, crtl->eh.ehr_handler,
 		     VOIDmode, EXPAND_NORMAL);
   tmp = convert_memory_address (Pmode, tmp);
-  if (!cfun->eh->ehr_handler)
-    cfun->eh->ehr_handler = copy_to_reg (tmp);
-  else if (tmp != cfun->eh->ehr_handler)
-    emit_move_insn (cfun->eh->ehr_handler, tmp);
+  if (!crtl->eh.ehr_handler)
+    crtl->eh.ehr_handler = copy_to_reg (tmp);
+  else if (tmp != crtl->eh.ehr_handler)
+    emit_move_insn (crtl->eh.ehr_handler, tmp);
 
-  if (!cfun->eh->ehr_label)
-    cfun->eh->ehr_label = gen_label_rtx ();
-  emit_jump (cfun->eh->ehr_label);
+  if (!crtl->eh.ehr_label)
+    crtl->eh.ehr_label = gen_label_rtx ();
+  emit_jump (crtl->eh.ehr_label);
 }
 
 void
@@ -2993,7 +2949,7 @@ expand_eh_return (void)
 {
   rtx around_label;
 
-  if (! cfun->eh->ehr_label)
+  if (! crtl->eh.ehr_label)
     return;
 
   current_function_calls_eh_return = 1;
@@ -3005,21 +2961,21 @@ expand_eh_return (void)
   around_label = gen_label_rtx ();
   emit_jump (around_label);
 
-  emit_label (cfun->eh->ehr_label);
+  emit_label (crtl->eh.ehr_label);
   clobber_return_register ();
 
 #ifdef EH_RETURN_STACKADJ_RTX
-  emit_move_insn (EH_RETURN_STACKADJ_RTX, cfun->eh->ehr_stackadj);
+  emit_move_insn (EH_RETURN_STACKADJ_RTX, crtl->eh.ehr_stackadj);
 #endif
 
 #ifdef HAVE_eh_return
   if (HAVE_eh_return)
-    emit_insn (gen_eh_return (cfun->eh->ehr_handler));
+    emit_insn (gen_eh_return (crtl->eh.ehr_handler));
   else
 #endif
     {
 #ifdef EH_RETURN_HANDLER_RTX
-      emit_move_insn (EH_RETURN_HANDLER_RTX, cfun->eh->ehr_handler);
+      emit_move_insn (EH_RETURN_HANDLER_RTX, crtl->eh.ehr_handler);
 #else
       error ("__builtin_eh_return not supported on this target");
 #endif
@@ -3093,7 +3049,7 @@ add_action_record (htab_t ar_hash, int filter, int next)
   if ((new = *slot) == NULL)
     {
       new = xmalloc (sizeof (*new));
-      new->offset = VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data) + 1;
+      new->offset = VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data) + 1;
       new->filter = filter;
       new->next = next;
       *slot = new;
@@ -3103,10 +3059,10 @@ add_action_record (htab_t ar_hash, int filter, int next)
 	 that there is no next record.  So convert the absolute 1 based
 	 indices we've been carrying around into a displacement.  */
 
-      push_sleb128 (&cfun->eh->action_record_data, filter);
+      push_sleb128 (&crtl->eh.action_record_data, filter);
       if (next)
-	next -= VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data) + 1;
-      push_sleb128 (&cfun->eh->action_record_data, next);
+	next -= VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data) + 1;
+      push_sleb128 (&crtl->eh.action_record_data, next);
     }
 
   return new->offset;
@@ -3226,24 +3182,15 @@ collect_one_action_chain (htab_t ar_hash, struct eh_region *region)
 static int
 add_call_site (rtx landing_pad, int action)
 {
-  struct call_site_record *data = cfun->eh->call_site_data;
-  int used = cfun->eh->call_site_data_used;
-  int size = cfun->eh->call_site_data_size;
+  call_site_record record;
+  
+  record = ggc_alloc (sizeof (struct call_site_record));
+  record->landing_pad = landing_pad;
+  record->action = action;
 
-  if (used >= size)
-    {
-      size = (size ? size * 2 : 64);
-      data = ggc_realloc (data, sizeof (*data) * size);
-      cfun->eh->call_site_data = data;
-      cfun->eh->call_site_data_size = size;
-    }
+  VEC_safe_push (call_site_record, gc, crtl->eh.call_site_record, record);
 
-  data[used].landing_pad = landing_pad;
-  data[used].action = action;
-
-  cfun->eh->call_site_data_used = used + 1;
-
-  return used + call_site_base;
+  return call_site_base + VEC_length (call_site_record, crtl->eh.call_site_record) - 1;
 }
 
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
@@ -3264,7 +3211,7 @@ convert_to_eh_region_ranges (void)
   if (USING_SJLJ_EXCEPTIONS || cfun->eh->region_tree == NULL)
     return 0;
 
-  VARRAY_UCHAR_INIT (cfun->eh->action_record_data, 64, "action_record_data");
+  VARRAY_UCHAR_INIT (crtl->eh.action_record_data, 64, "action_record_data");
 
   ar_hash = htab_create (31, action_record_hash, action_record_eq, free);
 
@@ -3466,12 +3413,12 @@ sjlj_size_of_call_site_table (void)
 static void
 dw2_output_call_site_table (void)
 {
-  int n = cfun->eh->call_site_data_used;
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
   int i;
 
   for (i = 0; i < n; ++i)
     {
-      struct call_site_record *cs = &cfun->eh->call_site_data[i];
+      struct call_site_record *cs = VEC_index (call_site_record, crtl->eh.call_site_record, i);
       char reg_start_lab[32];
       char reg_end_lab[32];
       char landing_pad_lab[32];
@@ -3520,12 +3467,12 @@ dw2_output_call_site_table (void)
 static void
 sjlj_output_call_site_table (void)
 {
-  int n = cfun->eh->call_site_data_used;
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
   int i;
 
   for (i = 0; i < n; ++i)
     {
-      struct call_site_record *cs = &cfun->eh->call_site_data[i];
+      struct call_site_record *cs = VEC_index (call_site_record, crtl->eh.call_site_record, i);
 
       dw2_asm_output_data_uleb128 (INTVAL (cs->landing_pad),
 				   "region %d landing pad", i);
@@ -3672,8 +3619,8 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
   /* If the target wants a label to begin the table, emit it here.  */
   targetm.asm_out.except_table_label (asm_out_file);
 
-  have_tt_data = (VEC_length (tree, cfun->eh->ttype_data) > 0
-		  || VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) > 0);
+  have_tt_data = (VEC_length (tree, crtl->eh.ttype_data) > 0
+		  || VARRAY_ACTIVE_SIZE (crtl->eh.ehspec_data) > 0);
 
   /* Indicate the format of the @TType entries.  */
   if (! have_tt_data)
@@ -3734,8 +3681,8 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
       before_disp = 1 + 1;
       after_disp = (1 + size_of_uleb128 (call_site_len)
 		    + call_site_len
-		    + VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data)
-		    + (VEC_length (tree, cfun->eh->ttype_data)
+		    + VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data)
+		    + (VEC_length (tree, crtl->eh.ttype_data)
 		       * tt_format_size));
 
       disp = after_disp;
@@ -3789,18 +3736,18 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
 #endif
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
-  n = VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data);
+  n = VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data);
   for (i = 0; i < n; ++i)
-    dw2_asm_output_data (1, VARRAY_UCHAR (cfun->eh->action_record_data, i),
+    dw2_asm_output_data (1, VARRAY_UCHAR (crtl->eh.action_record_data, i),
 			 (i ? NULL : "Action record table"));
 
   if (have_tt_data)
     assemble_align (tt_format_size * BITS_PER_UNIT);
 
-  i = VEC_length (tree, cfun->eh->ttype_data);
+  i = VEC_length (tree, crtl->eh.ttype_data);
   while (i-- > 0)
     {
-      tree type = VEC_index (tree, cfun->eh->ttype_data, i);
+      tree type = VEC_index (tree, crtl->eh.ttype_data, i);
       output_ttype (type, tt_format, tt_format_size);
     }
 
@@ -3810,16 +3757,16 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
 #endif
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
-  n = VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data);
+  n = VARRAY_ACTIVE_SIZE (crtl->eh.ehspec_data);
   for (i = 0; i < n; ++i)
     {
       if (targetm.arm_eabi_unwinder)
 	{
-	  tree type = VARRAY_TREE (cfun->eh->ehspec_data, i);
+	  tree type = VARRAY_TREE (crtl->eh.ehspec_data, i);
 	  output_ttype (type, tt_format, tt_format_size);
 	}
       else
-	dw2_asm_output_data (1, VARRAY_UCHAR (cfun->eh->ehspec_data, i),
+	dw2_asm_output_data (1, VARRAY_UCHAR (crtl->eh.ehspec_data, i),
 			     (i ? NULL : "Exception specification table"));
     }
 
