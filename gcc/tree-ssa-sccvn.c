@@ -735,7 +735,7 @@ vn_reference_lookup_1 (vn_reference_t vr)
    it does not exist in the hash table. */
 
 tree
-vn_reference_lookup (tree op, VEC (tree, gc) *vuses)
+vn_reference_lookup (tree op, VEC (tree, gc) *vuses, bool maywalk)
 {
   struct vn_reference_s vr1;
   tree result, def_stmt;
@@ -748,6 +748,7 @@ vn_reference_lookup (tree op, VEC (tree, gc) *vuses)
   /* If there is a single defining statement for all virtual uses, we can
      use that, following virtual use-def chains.  */
   if (!result
+      && maywalk
       && vr1.vuses
       && VEC_length (tree, vr1.vuses) >= 1
       && !get_call_expr_in (op)
@@ -1188,7 +1189,7 @@ static bool
 visit_reference_op_load (tree lhs, tree op, tree stmt)
 {
   bool changed = false;
-  tree result = vn_reference_lookup (op, shared_vuses_from_stmt (stmt));
+  tree result = vn_reference_lookup (op, shared_vuses_from_stmt (stmt), true);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -1294,7 +1295,7 @@ visit_reference_op_store (tree lhs, tree op, tree stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, shared_vuses_from_stmt (stmt));
+  result = vn_reference_lookup (lhs, shared_vuses_from_stmt (stmt), false);
 
   if (result)
     {
