@@ -1,3 +1,11 @@
+2008-04-15  Samuel Tardieu  <sam@rfc1149.net>
+            Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/28733
+	* sem_ch8.adb (Analyze_Use_Package): Do not allow "use" of something
+	which is not an entity (and hence not a package).
+	(End_Use_Package): Ditto.
+
 2008-04-15  Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/16086
