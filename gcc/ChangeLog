@@ -1,3 +1,8 @@
+2008-04-15  Rafael Espindola  <espindola@google.com>
+
+	* gcc/tree-const.c (tree_call_nonnegative_warnv_p): Remove local
+	variable arg1.
+
 2008-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (vn_reference_lookup): Adjust prototype.
