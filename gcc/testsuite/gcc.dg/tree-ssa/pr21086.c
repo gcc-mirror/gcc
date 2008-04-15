@@ -15,5 +15,6 @@ foo (int *p)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate " 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate " 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "b_. =" "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

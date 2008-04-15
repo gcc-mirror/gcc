@@ -1,5 +1,11 @@
 2008-04-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-propagate.c (substitute_and_fold): Substitute
+	statements in a basic-block with a backward walk.  Do not
+	substitute into dead statements but instead remove those.
+
+2008-04-15  Richard Guenther  <rguenther@suse.de>
+
 	* params.def (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE): Set default
 	to zero, thus disable creation of SFTs.
 

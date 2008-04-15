@@ -1,5 +1,10 @@
 2008-04-15  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/fold-compare-2.c: Adjust testcase.
+	* gcc.dg/tree-ssa/pr21086.c: Likewise.
+
+2008-04-15  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/salias-1.c: Remove.
 	* gcc.dg/tree-ssa/pr26421.c: Adjust pattern.
 	* gcc.dg/tree-ssa/alias-15.c: Likewise.
