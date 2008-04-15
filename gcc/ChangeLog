@@ -1,3 +1,8 @@
+2008-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* params.def (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE): Set default
+	to zero, thus disable creation of SFTs.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-predcom.c (suitable_reference_p): Return false if the

@@ -1,3 +1,10 @@
+2008-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/salias-1.c: Remove.
+	* gcc.dg/tree-ssa/pr26421.c: Adjust pattern.
+	* gcc.dg/tree-ssa/alias-15.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Run at -O2.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization1.ad[sb]: New test.
