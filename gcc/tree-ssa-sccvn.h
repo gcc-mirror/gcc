@@ -59,7 +59,7 @@ void free_scc_vn (void);
 void switch_to_PRE_table (void);
 tree vn_nary_op_lookup (tree);
 void vn_nary_op_insert (tree, tree);
-tree vn_reference_lookup (tree, VEC (tree, gc) *);
+tree vn_reference_lookup (tree, VEC (tree, gc) *, bool);
 void vn_reference_insert (tree, tree, VEC (tree, gc) *);
 VEC (tree, gc) *shared_vuses_from_stmt (tree);
 VEC (tree, gc) *copy_vuses_from_stmt (tree);

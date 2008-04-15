@@ -1,3 +1,14 @@
+2008-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_reference_lookup): Adjust prototype.
+	* tree-ssa-sccvn.c (vn_reference_lookup): New parameter maywalk.
+	(visit_reference_op_load): Do walk vuse-vdef chains on
+	vn_reference_lookup.
+	(visit_reference_op_store): But do not here.
+	* tree-vn.c (vn_lookup): Do not walk vuse-vdef chains on
+	vn_reference_lookup.
+	(vn_lookup_with_vuses): But do so here.
+
 2008-04-14  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (fold_overflow_warning): Remove assertion.
