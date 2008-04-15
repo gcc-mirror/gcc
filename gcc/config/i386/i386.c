@@ -9288,7 +9288,7 @@ print_operand (FILE *file, rtx x, int code)
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('$', file);
-      fprintf (file, "0x%08lx", l);
+      fprintf (file, "0x%08lx", (long unsigned int) l);
     }
 
   /* These float cases don't actually occur as immediate operands.  */

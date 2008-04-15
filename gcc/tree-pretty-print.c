@@ -784,7 +784,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
 	     systems?  */
 	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   HOST_WIDE_INT_PRINT_DOUBLE_HEX, high, low);
+		   HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		   (unsigned HOST_WIDE_INT) high, low);
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
       else

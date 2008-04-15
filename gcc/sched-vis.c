@@ -434,7 +434,8 @@ print_value (char *buf, const_rtx x, int verbose)
   switch (GET_CODE (x))
     {
     case CONST_INT:
-      sprintf (t, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
+      sprintf (t, HOST_WIDE_INT_PRINT_HEX,
+	       (unsigned HOST_WIDE_INT) INTVAL (x));
       cur = safe_concat (buf, cur, t);
       break;
     case CONST_DOUBLE:
