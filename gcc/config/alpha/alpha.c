@@ -5449,7 +5449,7 @@ void
 alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
 			     int fnofs, int cxtofs, int jmpofs)
 {
-  rtx temp, temp1, addr;
+  rtx addr;
   /* VMS really uses DImode pointers in memory at this point.  */
   enum machine_mode mode = TARGET_ABI_OPEN_VMS ? Pmode : ptr_mode;
 
