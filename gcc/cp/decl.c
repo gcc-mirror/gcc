@@ -4437,7 +4437,10 @@ layout_var_decl (tree decl)
       if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	constant_expression_warning (DECL_SIZE (decl));
       else
-	error ("storage size of %qD isn't constant", decl);
+	{
+	  error ("storage size of %qD isn't constant", decl);
+	  TREE_TYPE (decl) = error_mark_node;
+	}
     }
 }
 

@@ -1,3 +1,9 @@
+2008-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35751
+	* decl.c (layout_var_decl): If extern or static var has variable
+	size, set TREE_TYPE (decl) to error_mark_node.
+
 2008-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35708

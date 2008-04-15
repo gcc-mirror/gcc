@@ -1,3 +1,9 @@
+2008-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35751
+	* gcc.dg/gomp/pr35751.c: New test.
+	* g++.dg/gomp/pr35751.C: New test.
+
 2008-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_address2.adb: New test.

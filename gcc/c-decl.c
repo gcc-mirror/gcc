@@ -3496,7 +3496,10 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	    constant_expression_warning (DECL_SIZE (decl));
 	  else
-	    error ("storage size of %q+D isn%'t constant", decl);
+	    {
+	      error ("storage size of %q+D isn%'t constant", decl);
+	      TREE_TYPE (decl) = error_mark_node;
+	    }
 	}
 
       if (TREE_USED (type))
