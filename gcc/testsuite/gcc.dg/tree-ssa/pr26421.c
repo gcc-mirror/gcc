@@ -16,5 +16,7 @@ int foo(void)
   return a.i;
 }
 
-/* { dg-final { scan-tree-dump-times "VDEF" 4 "salias" } } */
+/* Verify the call clobbers all of a.  */
+
+/* { dg-final { scan-tree-dump-times "VDEF <a_" 2 "salias" } } */
 /* { dg-final { cleanup-tree-dump "salias" } } */
