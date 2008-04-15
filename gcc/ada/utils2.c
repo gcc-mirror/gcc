@@ -687,22 +687,37 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  left_type = TREE_TYPE (left_operand);
 	}
 
-      if (!operation_type)
-	operation_type = left_type;
-
-      /* Find the best type to use for copying between aggregate types.  */
-      if (((TREE_CODE (left_type) == ARRAY_TYPE
-	    && TREE_CODE (right_type) == ARRAY_TYPE)
-	   || (TREE_CODE (left_type) == RECORD_TYPE
-	       && TREE_CODE (right_type) == RECORD_TYPE))
-	  && (best_type = find_common_type (left_type, right_type)))
-	operation_type = best_type;
-
       /* If a class-wide type may be involved, force use of the RHS type.  */
       if ((TREE_CODE (right_type) == RECORD_TYPE
 	   || TREE_CODE (right_type) == UNION_TYPE)
 	  && TYPE_ALIGN_OK (right_type))
 	operation_type = right_type;
+
+      /* If we are copying between padded objects of the same underlying
+	 type with a non-zero size, use the padded view of the type, this
+	 is very likely more efficient.  */
+      else if (TREE_CODE (left_type) == RECORD_TYPE
+	       && TYPE_IS_PADDING_P (left_type)
+	       && TREE_TYPE (TYPE_FIELDS (left_type)) == right_type
+	       && !integer_zerop (TYPE_SIZE (right_type))
+	       && TREE_CODE (right_operand) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
+		  == RECORD_TYPE
+	       && TYPE_IS_PADDING_P
+		  (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
+	operation_type = left_type;
+
+      /* Find the best type to use for copying between aggregate types.  */
+      else if (((TREE_CODE (left_type) == ARRAY_TYPE
+		 && TREE_CODE (right_type) == ARRAY_TYPE)
+		|| (TREE_CODE (left_type) == RECORD_TYPE
+		    && TREE_CODE (right_type) == RECORD_TYPE))
+	       && (best_type = find_common_type (left_type, right_type)))
+	operation_type = best_type;
+
+      /* Otherwise use the LHS type.  */
+      else if (!operation_type)
+	operation_type = left_type;
 
       /* Ensure everything on the LHS is valid.  If we have a field reference,
 	 strip anything that get_inner_reference can handle.  Then remove any

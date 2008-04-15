@@ -516,6 +516,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool mutable_p = false;
 	tree gnu_ext_name = NULL_TREE;
 	tree renamed_obj = NULL_TREE;
+	tree gnu_object_size;
 
 	if (Present (Renamed_Object (gnat_entity)) && !definition)
 	  {
@@ -771,9 +772,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  align = MINIMUM_ATOMIC_ALIGNMENT;
 #endif
 
-	/* Make a new type with the desired size and alignment, if needed. */
-	gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				   "PAD", false, definition, true);
+	/* Make a new type with the desired size and alignment, if needed.
+	   But do not take into account alignment promotions to compute the
+	   size of the object.  */
+	gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
+	if (gnu_size || align > 0)
+	  gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
+				     "PAD", false, definition,
+				     gnu_size ? true : false);
 
 	/* Make a volatile version of this object's type if we are to make
 	   the object volatile.  We also interpret 13.3(19) conservatively
@@ -1290,16 +1296,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	if (!used_by_ref && Unknown_Esize (gnat_entity))
 	  {
-	    tree gnu_back_size;
-
 	    if (TREE_CODE (gnu_type) == RECORD_TYPE
 		&& TYPE_CONTAINS_TEMPLATE_P (gnu_type))
-	      gnu_back_size
+	      gnu_object_size
 		= TYPE_SIZE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type))));
-            else
-	      gnu_back_size = TYPE_SIZE (gnu_type);
 
-	    Set_Esize (gnat_entity, annotate_value (gnu_back_size));
+	    Set_Esize (gnat_entity, annotate_value (gnu_object_size));
 	  }
       }
       break;
@@ -4237,8 +4239,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* See if we need to pad the type.  If we did, and made a record,
 	 the name of the new type may be changed.  So get it back for
 	 us when we make the new TYPE_DECL below.  */
-      gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity, "PAD",
-				 true, definition, false);
+      if (gnu_size || align > 0)
+	gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
+				   "PAD", true, definition, false);
+
       if (TREE_CODE (gnu_type) == RECORD_TYPE
 	  && TYPE_IS_PADDING_P (gnu_type))
 	{
@@ -5562,19 +5566,18 @@ make_packable_type (tree type, bool in_record)
 
    DEFINITION is true if this type is being defined.
 
-   SAME_RM_SIZE is true if the RM_Size of the resulting type is to be
-   set to its TYPE_SIZE; otherwise, it's set to the RM_Size of the original
-   type.  */
+   SAME_RM_SIZE is true if the RM_Size of the resulting type is to be set
+   to SIZE too; otherwise, it's set to the RM_Size of the original type.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
 		Entity_Id gnat_entity, const char *name_trailer,
 		bool is_user_type, bool definition, bool same_rm_size)
 {
+  tree orig_rm_size = same_rm_size ? NULL_TREE : rm_size (type);
   tree orig_size = TYPE_SIZE (type);
   unsigned int orig_align = align;
-  tree record;
-  tree field;
+  tree record, field;
 
   /* If TYPE is a padded type, see if it agrees with any size and alignment
      we were given.  If so, return the original type.  Otherwise, strip
@@ -5673,9 +5676,9 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* Do not finalize it until after the auxiliary record is built.  */
   finish_record_type (record, field, 1, true);
 
-  /* Keep the RM_Size of the padded record as that of the old record
-     if requested.  */
-  SET_TYPE_ADA_SIZE (record, same_rm_size ? size : rm_size (type));
+  /* Set the same size for its RM_size if requested; otherwise reuse
+     the RM_size of the original type.  */
+  SET_TYPE_ADA_SIZE (record, same_rm_size ? size : orig_rm_size);
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
