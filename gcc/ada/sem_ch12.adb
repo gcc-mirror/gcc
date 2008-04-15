@@ -2361,30 +2361,34 @@ package body Sem_Ch12 is
 
          --  Default name may be overloaded, in which case the interpretation
          --  with the correct profile must be  selected, as for a renaming.
+         --  If the definition is an indexed component, it must denote a
+         --  member of an entry family. If it is a selected component, it
+         --  can be a protected operation.
 
          if Etype (Def) = Any_Type then
             return;
 
          elsif Nkind (Def) = N_Selected_Component then
-            Subp := Entity (Selector_Name (Def));
-
-            if Ekind (Subp) /= E_Entry then
+            if not Is_Overloadable (Entity (Selector_Name (Def))) then
                Error_Msg_N ("expect valid subprogram name as default", Def);
-               return;
             end if;
 
          elsif Nkind (Def) = N_Indexed_Component then
-            if  Nkind (Prefix (Def)) /= N_Selected_Component then
-               Error_Msg_N ("expect valid subprogram name as default", Def);
-               return;
+            if Is_Entity_Name (Prefix (Def)) then
+               if Ekind (Entity (Prefix (Def))) /= E_Entry_Family then
+                  Error_Msg_N ("expect valid subprogram name as default", Def);
+               end if;
+
+            elsif Nkind (Prefix (Def)) = N_Selected_Component then
+               if Ekind (Entity (Selector_Name (Prefix (Def))))
+                 /= E_Entry_Family
+               then
+                  Error_Msg_N ("expect valid subprogram name as default", Def);
+               end if;
 
             else
-               Subp := Entity (Selector_Name (Prefix (Def)));
-
-               if Ekind (Subp) /= E_Entry_Family then
-                  Error_Msg_N ("expect valid subprogram name as default", Def);
-                  return;
-               end if;
+               Error_Msg_N ("expect valid subprogram name as default", Def);
+               return;
             end if;
 
          elsif Nkind (Def) = N_Character_Literal then
@@ -2410,6 +2414,9 @@ package body Sem_Ch12 is
             end if;
 
          else
+
+            --  Several interpretations. Disambiguate as for a renaming.
+
             declare
                I   : Interp_Index;
                I1  : Interp_Index := 0;
@@ -9778,6 +9785,8 @@ package body Sem_Ch12 is
          --  interface then  the generic formal is not unless declared
          --  explicitly so. If not declared limited, the actual cannot be
          --  limited (see AI05-0087).
+         --  Disable check for now, limited interfaces implemented by
+         --  protected types are common, Need to update tests ???
 
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)

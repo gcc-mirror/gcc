@@ -1,3 +1,10 @@
+2008-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/16086
+	* sem_ch12.adb (Analyze_Formal_Subprogram): The default can be any
+	protected operation that matches the signature, not only an entry, a
+	regular subprogram or a literal.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ada-tree.h (DECL_BY_COMPONENT_PTR_P): Use DECL_LANG_FLAG_3.
