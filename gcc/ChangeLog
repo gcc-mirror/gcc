@@ -1,3 +1,40 @@
+2008-04-15  Jan Hubicka  <jh@suse.cz>
+
+	* gengtype.c (write_root): Param_is argument is OK.
+	* expr.c (expand_expr_real_1): Update call of get_exception_*.
+	* function.h: Include varray.h
+	(rtl_eh): New stucture based on except.c one.
+	(call_site_record): New forward declaration and vector type.
+	* calls.c (emit_call_1): Do not call
+	note_current_region_may_contain_throw.
+	* except.c (eh_status): Remove cur_region, try_region since they are
+	unused.
+	Move filter, exc_ptr, ttype_data, ehspec_data, action_record_data and
+	exception_handler_label_map, ehr_stackadj, ehr_handler, ehr_label,
+	sjlj_fc, sjlj_exit_after to rth_eh in function.h. 
+	Remove call_site_data_used, call_site_data_size.
+	Turn call_site_record into vector in function.h.
+	(note_current_region_may_contain_throw): Remove.
+	(get_exception_pointer, get_exception_filter): Do not take struct
+	function argument; update.
+	(add_ehl_entry, find_exception_handler_labels, ehspec_filter_hash,
+	add_ttypes_entry, add_ehspec_entry, assign_filter_values,
+	build_post_landing_pads, dw2_build_landing_pads,
+	sjlj_assign_call_site_values, sjlj_mark_call_sites,
+	sjlj_emit_function_enter, sjlj_emit_function_enter, 
+	sjlj_emit_function_exit, sjlj_emit_dispatch_table,
+	sjlj_build_landing_pads, finish_eh_generation,
+	remove_exception_handler_label, remove_eh_handler,
+	maybe_remove_eh_handler, add_reachable_handler,
+	reachable_handlers, expand_builtin_eh_return,
+	expand_eh_return, add_action_record, collect_one_action_chain,
+	add_call_site, convert_to_eh_region_ranges, sjlj_size_of_call_site_table,
+	sjlj_output_call_site_table, output_function_exception_table,
+	* except.h (note_current_region_may_contain_throw): Remove
+	(get_exception_pointer, get_exception_filter): Do not take struct
+	function argument.
+	* Makefile.in (GTFILES): Put varargs before struct function.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-structalias.c (get_constraint_for_component_ref): Do not

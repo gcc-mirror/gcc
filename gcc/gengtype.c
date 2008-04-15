@@ -2980,6 +2980,8 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 		skip_p = 1;
 	      else if (strcmp (o->name, "desc") == 0)
 		desc = o->info;
+	      else if (strcmp (o->name, "param_is") == 0)
+		;
 	      else
 		error_at_line (line,
 		       "field `%s' of global `%s' has unknown option `%s'",

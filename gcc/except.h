@@ -35,7 +35,6 @@ extern int doing_eh (int);
 /* Note that the current EH region (if any) may contain a throw, or a
    call to a function which itself may contain a throw.  */
 extern void note_eh_region_may_contain_throw (struct eh_region *);
-extern void note_current_region_may_contain_throw (void);
 
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
@@ -78,8 +77,8 @@ extern rtx expand_builtin_dwarf_sp_column (void);
 extern void expand_builtin_eh_return (tree, tree);
 extern void expand_eh_return (void);
 extern rtx expand_builtin_extend_pointer (tree);
-extern rtx get_exception_pointer (struct function *);
-extern rtx get_exception_filter (struct function *);
+extern rtx get_exception_pointer (void);
+extern rtx get_exception_filter (void);
 typedef tree (*duplicate_eh_regions_map) (tree, void *);
 extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map,
 				 void *, int, int);

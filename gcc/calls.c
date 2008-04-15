@@ -389,7 +389,6 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
       if (rn > 0)
 	REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (rn),
 						   REG_NOTES (call_insn));
-      note_current_region_may_contain_throw ();
     }
 
   if (ecf_flags & ECF_NORETURN)
