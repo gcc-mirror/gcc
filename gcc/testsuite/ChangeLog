@@ -1,3 +1,8 @@
+2008-04-15  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/16086
+	* gnat.dg/prot_def.adb: New.
+
 2008-04-14  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/strict-overflow-6.c: New.
