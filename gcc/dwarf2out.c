@@ -2116,7 +2116,8 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
     dw2_asm_output_data (1, (cfi->dw_cfi_opc
 			     | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f)),
 			 "DW_CFA_advance_loc " HOST_WIDE_INT_PRINT_HEX,
-			 cfi->dw_cfi_oprnd1.dw_cfi_offset);
+			 ((unsigned HOST_WIDE_INT)
+			  cfi->dw_cfi_oprnd1.dw_cfi_offset));
   else if (cfi->dw_cfi_opc == DW_CFA_offset)
     {
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);

@@ -384,7 +384,7 @@ print_rtx (const_rtx in_rtx)
 	fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, i));
 	if (! flag_simple)
 	  fprintf (outfile, " [" HOST_WIDE_INT_PRINT_HEX "]",
-		   XWINT (in_rtx, i));
+		   (unsigned HOST_WIDE_INT) XWINT (in_rtx, i));
 	break;
 
       case 'i':

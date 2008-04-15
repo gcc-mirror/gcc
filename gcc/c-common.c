@@ -4332,7 +4332,8 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 	      -TREE_INT_CST_LOW (key));
   else
     snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-	      TREE_INT_CST_HIGH (key), TREE_INT_CST_LOW (key));
+	      (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (key),
+	      (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (key));
 
   if (TYPE_NAME (type) == 0)
     warning (warn_switch ? OPT_Wswitch : OPT_Wswitch_enum,

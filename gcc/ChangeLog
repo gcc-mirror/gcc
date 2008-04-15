@@ -1,3 +1,18 @@
+2008-04-15  Doug Kwan  <dougkwan@google.com>
+
+	* dwarf2asm.c (dw2_assemble_integer): Cast to unsigned HOST_WIDE_INT
+	for hex printing.
+	* tree-pretty-print.c (dump_generic_node): Ditto.
+	* final.c (output_addr_const): Ditto.
+	* dwarf2out.c (output_cfi): Ditto.
+	* c-pretty-print.c (pp_c_integer_constant): Ditto.
+	* print-rtl.c (print_rtx): Ditto.
+	* print-tree.c (print_node_brief, print_node): Ditto.
+	* c-common.c (match_case_to_enum_1): Ditto.
+	* sched-vis.c (print_value): Ditto.
+	* config/i386/i386.c (print_operand): Cast to long unsigned int
+	for hex printing.
+
 2008-04-15  Danny Smith  <dannysmith@users.sourceforge.net>
 	* libgcc2.c [L_trampoline]: Remove  unnecessary prototype for
 	MS Windows VirtualProtect function.
