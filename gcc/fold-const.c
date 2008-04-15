@@ -14103,12 +14103,9 @@ tree_call_nonnegative_warnv_p (enum tree_code code,  tree type, tree fndecl,
 	CASE_FLT_FN (BUILT_IN_POWI):
 	/* True if the 1st argument is nonnegative or the second
 	   argument is an even integer.  */
-	if (TREE_CODE (arg1) == INTEGER_CST)
-	  {
-	    tree arg1 = arg1;
-	    if ((TREE_INT_CST_LOW (arg1) & 1) == 0)
-	      return true;
-	  }
+	if (TREE_CODE (arg1) == INTEGER_CST
+	    && (TREE_INT_CST_LOW (arg1) & 1) == 0)
+	  return true;
 	return tree_expr_nonnegative_warnv_p (arg0,
 					      strict_overflow_p);
 
