@@ -1211,10 +1211,12 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	  replace_phi_args_in (phi, prop_value);
 
-      for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
+      /* Propagate known values into stmts.  Do a backward walk to expose
+	 more trivially deletable stmts.  */
+      for (i = bsi_last (bb); !bsi_end_p (i);)
 	{
           bool replaced_address, did_replace;
-	  tree prev_stmt = NULL;
+	  tree call, prev_stmt = NULL;
 	  tree stmt = bsi_stmt (i);
 
 	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
@@ -1222,7 +1224,33 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	     afterwards.  */
 	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ASSERT_EXPR)
-	    continue;
+	    {
+	      bsi_prev (&i);
+	      continue;
+	    }
+
+	  /* No point propagating into a stmt whose result is not used,
+	     but instead we might be able to remove a trivially dead stmt.  */
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
+	      && !stmt_ann (stmt)->has_volatile_ops
+	      && has_zero_uses (GIMPLE_STMT_OPERAND (stmt, 0))
+	      && !tree_could_throw_p (stmt)
+	      && (!(call = get_call_expr_in (stmt))
+		  || !TREE_SIDE_EFFECTS (call)))
+	    {
+	      if (dump_file && dump_flags & TDF_DETAILS)
+		{
+		  fprintf (dump_file, "Removing dead stmt ");
+		  print_generic_expr (dump_file, stmt, 0);
+		  fprintf (dump_file, "\n");
+		}
+	      bsi_remove (&i, true);
+	      release_defs (stmt);
+	      if (!bsi_end_p (i))
+	        bsi_prev (&i);
+	      continue;
+	    }
 
 	  /* Record the state of the statement before replacements.  */
 	  push_stmt_changes (bsi_stmt_ptr (i));
@@ -1298,6 +1326,8 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	     statement.  */
 	  if (use_ranges_p)
 	    simplify_stmt_using_ranges (stmt);
+
+	  bsi_prev (&i);
 	}
     }
 
