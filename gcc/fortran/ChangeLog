@@ -1,3 +1,10 @@
+2008-04-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35864
+	* expr.c (scalarize_intrinsic_call): Reorder identification of
+	array argument so that if one is not found a segfault does not
+	occur.  Return FAILURE if all scalar arguments.
+
 2008-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

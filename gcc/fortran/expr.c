@@ -1704,14 +1704,11 @@ scalarize_intrinsic_call (gfc_expr *e)
   gfc_expr *expr, *old;
   int n, i, rank[5], array_arg;
 
-  old = gfc_copy_expr (e);
-
-
   /* Find which, if any, arguments are arrays.  Assume that the old
      expression carries the type information and that the first arg
      that is an array expression carries all the shape information.*/
   n = array_arg = 0;
-  a = old->value.function.actual;
+  a = e->value.function.actual;
   for (; a; a = a->next)
     {
       n++;
@@ -1723,7 +1720,9 @@ scalarize_intrinsic_call (gfc_expr *e)
     }
 
   if (!array_arg)
-    goto cleanup;
+    return FAILURE;
+
+  old = gfc_copy_expr (e);
 
   gfc_free_constructor (expr->value.constructor);
   expr->value.constructor = NULL;
@@ -1763,7 +1762,7 @@ scalarize_intrinsic_call (gfc_expr *e)
     }
 
 
-  /* Using the first argument as the master, step through the array
+  /* Using the array argument as the master, step through the array
      calling the function for each element and advancing the array
      constructors together.  */
   ctor = args[array_arg - 1];
