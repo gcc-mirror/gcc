@@ -1012,7 +1012,6 @@ fold_deferring_overflow_warnings_p (void)
 static void
 fold_overflow_warning (const char* gmsgid, enum warn_strict_overflow_code wc)
 {
-  gcc_assert (!flag_wrapv && !flag_trapv);
   if (fold_deferring_overflow_warnings > 0)
     {
       if (fold_deferred_overflow_warning == NULL

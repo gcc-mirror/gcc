@@ -1,3 +1,7 @@
+2008-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* fold-const.c (fold_overflow_warning): Remove assertion.
+
 2008-04-15  Ben Elliston  <bje@au.ibm.com>
 
 	* config/alpha/alpha.c (alpha_initialize_trampoline): Remove temp,
