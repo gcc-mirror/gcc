@@ -1,6 +1,12 @@
+2008-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35751
+	* c-decl.c (finish_decl): If extern or static var has variable
+	size, set TREE_TYPE (decl) to error_mark_node.
+
 2008-04-15  Rafael Espindola  <espindola@google.com>
 
-	* gcc/fold-const.c (tree_call_nonnegative_warnv_p): Remove local
+	* fold-const.c (tree_call_nonnegative_warnv_p): Remove local
 	variable arg1.
 
 2008-04-15  Richard Guenther  <rguenther@suse.de>
@@ -140,7 +146,7 @@
 
 2008-04-10  Rafael Espindola  <espindola@google.com>
 
-	* gcc/tree-vrp.c (extract_range_from_binary_expr): Don't handle
+	* tree-vrp.c (extract_range_from_binary_expr): Don't handle
 	TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
 	(extract_range_from_expr): The same.
 
@@ -1057,9 +1063,9 @@
 2008-04-02  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc: Add for x86_64-*-mingw* the t-crtfm to tbuild.
-	* gcc/config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Add 8 byte
+	* config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Add 8 byte
 	offsets for 64-bit mingw.
-	* gcc/config/i386/i386.c (ix86_pass_by_reference): Correct calling
+	* config/i386/i386.c (ix86_pass_by_reference): Correct calling
 	abi for x86_64-pc-mingw.
 
 2008-04-02  Richard Guenther  <rguenther@suse.de>
@@ -2449,7 +2455,7 @@
 2008-03-15  Bjoern Haase  <bjoern.m.haase@web.de>
 	    Anatoly Sokolov <aesok@post.ru>
 
-	* gcc/gcc/config/avr/avr.c (avr_arch_types): Add avr6 entry.
+	* config/avr/avr.c (avr_arch_types): Add avr6 entry.
 	(avr_arch): Add ARCH_AVR6.
 	(avr_mcu_types): Add 'atmega2560' and 'atmega2561' entry.
  	(initial_elimination_offset): Initialize and use 'avr_pc_size' 
@@ -2458,7 +2464,7 @@
 	(avr_assemble_integer): (Ditto.).
 	(avr_output_addr_vec_elt): (Ditto.).
 	(print_operand): Handle "!" code.
-	* gcc/gcc/config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Add 
+	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Add 
 	__AVR_3_BYTE_PC__, __AVR_2_BYTE_PC__ and __AVR_HAVE_JMP_CALL__.
 	(AVR_HAVE_EIJMP_EICALL): Define.
 	(AVR_3_BYTE_PC): Redefine.
@@ -2467,7 +2473,7 @@
 	(LINK_SPEC): Add atmega2560 and atmega2561.
 	(CRT_BINUTILS_SPEC): Add atmega2560 (crtm2560.o) and atmega2561 
 	(crtm2561.o).
-	* gcc/gcc/config/avr/avr.md (call_insn): Use eicall instead of icall 
+	* config/avr/avr.md (call_insn): Use eicall instead of icall 
 	for 3 byte PC devices.
 	(call_value_insn): (Ditto.).
 	(*tablejump_enh): Use eijmp instead of ijmp for 3 byte PC devices.
@@ -2475,10 +2481,10 @@
 	(*tablejump): (Ditto.).
 	(*indirect_jump_avr6): Add insn.
 	(*tablejump_rjmp): Don't use for 3 byte PC devices.
-	* gcc/gcc/config/avr/libgcc.S (__prologue_saves__): Use eijmp 
+	* config/avr/libgcc.S (__prologue_saves__): Use eijmp 
 	instead of ijmp for 3 byte PC devices.
 	(__tablejump2__): (Ditto.).
-	* gcc/gcc/config/avr/t-avr (MULITLIB_OPTIONS): Add avr6 architecture.
+	* config/avr/t-avr (MULITLIB_OPTIONS): Add avr6 architecture.
 	(MULITLIB_DIRNAMES): (Ditto.). 
 	(MULTILIB_MATCHES): Add atmega2560 and atmega2561 to list.
 
