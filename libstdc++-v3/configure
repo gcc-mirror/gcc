@@ -17030,7 +17030,7 @@ int main()
 }
 EOF
     old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS=-S
+    CXXFLAGS='-O0 -S'
     if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -17048,6 +17048,8 @@ _ACEOF
 	atomicity_dir=cpu/generic/atomicity_builtins
       fi
     fi
+    echo "$as_me:$LINENO: result: $enable_atomic_builtins" >&5
+echo "${ECHO_T}$enable_atomic_builtins" >&6
     CXXFLAGS="$old_CXXFLAGS"
     rm -f conftest*
 
@@ -17061,8 +17063,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
- echo "$as_me:$LINENO: result: $enable_atomic_builtins" >&5
-echo "${ECHO_T}$enable_atomic_builtins" >&6
 
 if test $atomicity_dir = cpu/generic/atomicity_mutex ; then
   { echo "$as_me:$LINENO: WARNING: No native atomic operations are provided for this platform." >&5

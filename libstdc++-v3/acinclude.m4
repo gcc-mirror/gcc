@@ -2083,7 +2083,7 @@ int main()
 }
 EOF
     old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS=-S
+    CXXFLAGS='-O0 -S'
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_fetch_and_add conftest.s >/dev/null 2>&1 ; then
         enable_atomic_builtins=no
@@ -2094,6 +2094,7 @@ EOF
 	atomicity_dir=cpu/generic/atomicity_builtins
       fi
     fi
+    AC_MSG_RESULT($enable_atomic_builtins)
     CXXFLAGS="$old_CXXFLAGS"
     rm -f conftest*
 
@@ -2102,7 +2103,6 @@ EOF
 	atomicity_dir=cpu/generic/atomicity_mutex
   fi
  AC_LANG_RESTORE
- AC_MSG_RESULT($enable_atomic_builtins)
 ])
 
 
