@@ -1,3 +1,7 @@
+2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/string_slice2.adb: New test.
+
 2008-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/fold-compare-2.c: Adjust testcase.

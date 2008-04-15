@@ -1,3 +1,9 @@
+2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Do not
+	punt for STRING_CST.
+	(get_constraint_for): Deal with STRING_CST here instead.
+
 2008-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (substitute_and_fold): Substitute
