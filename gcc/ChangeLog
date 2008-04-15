@@ -1,4 +1,9 @@
-2008-04-16  Zuxy Meng  <zuxy.meng@gmail.com>
+2008-04-15  Ben Elliston  <bje@au.ibm.com>
+
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Remove temp,
+	temp1 local variables.
+
+2008-04-15  Zuxy Meng  <zuxy.meng@gmail.com>
 
 	PR target/35661
 	* config/i386/winnt.c (i386_pe_section_type_flags): Mark
