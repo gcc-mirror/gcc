@@ -996,8 +996,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       /* Remove NOPS from gnu_expr and conversions from gnu_prefix.
 	 We only use GNU_EXPR to see if a COMPONENT_REF was involved. */
       while (TREE_CODE (gnu_expr) == NOP_EXPR)
-	gnu_expr = TREE_OPERAND (gnu_expr, 0)
-	  ;
+	gnu_expr = TREE_OPERAND (gnu_expr, 0);
 
       gnu_prefix = remove_conversions (gnu_prefix, true);
       prefix_unused = true;
@@ -1018,7 +1017,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       /* If we're looking for the size of a field, return the field size.
 	 Otherwise, if the prefix is an object, or if 'Object_Size or
 	 'Max_Size_In_Storage_Elements has been specified, the result is the
-	 GCC size of the type. Otherwise, the result is the RM_Size of the
+	 GCC size of the type.  Otherwise, the result is the RM_Size of the
 	 type.  */
       if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
 	gnu_result = DECL_SIZE (TREE_OPERAND (gnu_prefix, 1));

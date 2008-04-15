@@ -243,12 +243,12 @@ struct lang_type GTY(()) {tree t; };
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
 
-/* Nonzero if this decl is a PARM_DECL for an Ada array being passed to a
-   foreign convention subprogram.  */
-#define DECL_BY_COMPONENT_PTR_P(NODE) DECL_LANG_FLAG_2 (PARM_DECL_CHECK (NODE))
-
 /* Nonzero in a FIELD_DECL that is a dummy built for some internal reason.  */
 #define DECL_INTERNAL_P(NODE) DECL_LANG_FLAG_3 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero if this decl is a PARM_DECL for an Ada array being passed to a
+   foreign convention subprogram.  */
+#define DECL_BY_COMPONENT_PTR_P(NODE) DECL_LANG_FLAG_3 (PARM_DECL_CHECK (NODE))
 
 /* Nonzero in a FUNCTION_DECL that corresponds to an elaboration procedure.  */
 #define DECL_ELABORATION_PROC_P(NODE) \
