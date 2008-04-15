@@ -1,3 +1,8 @@
+2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-predcom.c (suitable_reference_p): Return false if the
+	reference can throw.
+
 2008-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35751
