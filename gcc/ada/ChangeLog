@@ -1,3 +1,10 @@
+2008-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/22387
+	* exp_ch5.adb (Expand_Assign_Record): Within an initialization
+	procedure for a derived type retrieve the discriminant values from
+	the parent using the corresponding discriminant.
+
 2008-04-15  Samuel Tardieu  <sam@rfc1149.net>
             Gary Dismukes  <dismukes@adacore.com>
 

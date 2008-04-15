@@ -1,3 +1,8 @@
+2008-04-15  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/22387
+	* gnat.dg/specs/corr_discr.ads: New.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/string_slice2.adb: New test.
