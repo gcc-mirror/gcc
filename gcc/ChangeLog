@@ -1,3 +1,10 @@
+2008-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35944
+	* config/i386/i386.md (fmodxf3): Copy operand 1 and operand 2 into
+	temporary registers.  Change operand predicate to general_operand.
+	(remainderxf3): Ditto.
+
 2008-04-16  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (tree-affine.o): Add $(FLAGS_H) dependency.
@@ -51,9 +58,9 @@
 	sjlj_build_landing_pads, finish_eh_generation,
 	remove_exception_handler_label, remove_eh_handler,
 	maybe_remove_eh_handler, add_reachable_handler,
-	reachable_handlers, expand_builtin_eh_return,
-	expand_eh_return, add_action_record, collect_one_action_chain,
-	add_call_site, convert_to_eh_region_ranges, sjlj_size_of_call_site_table,
+	reachable_handlers, expand_builtin_eh_return, expand_eh_return,
+	add_action_record, collect_one_action_chain, add_call_site,
+	convert_to_eh_region_ranges, sjlj_size_of_call_site_table,
 	sjlj_output_call_site_table, output_function_exception_table,
 	* except.h (note_current_region_may_contain_throw): Remove
 	(get_exception_pointer, get_exception_filter): Do not take struct
