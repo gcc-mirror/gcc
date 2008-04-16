@@ -1,3 +1,9 @@
+2008-04-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/35944
+	* gfortran.dg/pr35944-1.f90: New test.
+	* gfortran.dg/pr35944-2.f90: Ditto.
+
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35739
@@ -212,7 +218,7 @@
 
 	* gfortran.dg/bind_c_usage_14.f03: Adjust.
 
-2008-04-08    Andy Hutchinson   <hutchinsonandy@aim.com>
+2008-04-08  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/35005
 	* execute/20071221-1.c: Adapt test for 16 bit int targets.
@@ -250,7 +256,7 @@
 2008-04-07  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/35842
-        * gcc.dg/torture/pr35842.c: New.
+	* gcc.dg/torture/pr35842.c: New.
 
 2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
