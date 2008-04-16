@@ -1,3 +1,9 @@
+2008-04-16  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/29015
+	* gnat.dg/incomplete1.ads, gnat.dg/incomplete2.ads,
+	gnat.dg/incomplete2.adb: New.
+
 2008-04-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR tree-optimization/35629
