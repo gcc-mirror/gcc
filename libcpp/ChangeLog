@@ -1,3 +1,8 @@
+2008-04-16  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): New variable.
+	(TAGS): New target.
+
 2008-04-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.ac: (need_64bit_hwint): Need 64bit hwint for sh-*-*
