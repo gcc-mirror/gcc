@@ -1,3 +1,9 @@
+2008-04-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR tree-optimization/35629
+	* gcc.dg/tree-ssa/loop-25.c: Xfail all but the first
+	scan-tree-dump-times.
+
 2008-04-15  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/22387

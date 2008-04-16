@@ -119,10 +119,11 @@ void test5 (void)
 }
 
 /* { dg-final { scan-tree-dump-times "Disambiguating loop" 5 "profile" } } */
-/* { dg-final { scan-tree-dump-times "Found latch edge" 5 "profile" } } */
-/* { dg-final { scan-tree-dump-times "Merged latch edges" 2 "profile" } } */
-/* { dg-final { scan-tree-dump-times "4 loops found" 2 "profile" } } */
-/* { dg-final { scan-tree-dump-times "3 loops found" 2 "profile" } } */
-/* { dg-final { scan-tree-dump-times "2 loops found" 1 "profile" } } */
+/* For the following xfail marks, see PR35629.  */
+/* { dg-final { scan-tree-dump-times "Found latch edge" 5 "profile" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Merged latch edges" 2 "profile" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "4 loops found" 2 "profile" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "3 loops found" 2 "profile" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "2 loops found" 1 "profile" { xfail *-*-* } } } */
 
 /* { dg-final { cleanup-tree-dump "profile" } } */
