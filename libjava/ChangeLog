@@ -1,6 +1,11 @@
+2008-04-16  Andrew Haley  <aph@littlepinkcloud.com>
+
+	* libgcj_bc.c: (_Jv_LookupInterfaceMethod, _Jv_MonitorExit,
+	_Jv_RegisterResource, _Jv_JNI_PopSystemFrame): Add.
+
 2008-04-16  Andrew Haley  <aph@redhat.com>
 
-	* libgcj_bc.c: 
+	* libgcj_bc.c: Sort lines.
 
 2008-04-02  Peter O'Gorman  <pogma@thewrittenword.com>
 
