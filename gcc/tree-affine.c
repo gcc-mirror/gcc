@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "tree-affine.h"
 #include "tree-gimple.h"
+#include "flags.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
@@ -578,12 +579,20 @@ aff_combination_expand (aff_tree *comb, struct pointer_map_t **cache)
   aff_combination_zero (&to_add, comb->type);
   for (i = 0; i < comb->n; i++)
     {
+      tree type, name;
       e = comb->elts[i].val;
-      if (TREE_CODE (e) != SSA_NAME)
+      type = TREE_TYPE (e);
+      name = e;
+      /* Look through some conversions.  */
+      if (TREE_CODE (e) == NOP_EXPR
+          && (TYPE_PRECISION (type)
+	      >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (e, 0)))))
+	name = TREE_OPERAND (e, 0);
+      if (TREE_CODE (name) != SSA_NAME)
 	continue;
-      def = SSA_NAME_DEF_STMT (e);
+      def = SSA_NAME_DEF_STMT (name);
       if (TREE_CODE (def) != GIMPLE_MODIFY_STMT
-	  || GIMPLE_STMT_OPERAND (def, 0) != e)
+	  || GIMPLE_STMT_OPERAND (def, 0) != name)
 	continue;
 
       rhs = GIMPLE_STMT_OPERAND (def, 1);
@@ -607,6 +616,30 @@ aff_combination_expand (aff_tree *comb, struct pointer_map_t **cache)
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  *slot = exp;
+	  if (e != name)
+	    {
+	      /* In principle this is a generally valid folding, but
+		 it is not unconditionally an optimization, so do it
+		 here and not in fold_unary.  */
+	      /* Convert (T1)(X *+- CST) into (T1)X *+- (T1)CST if T1 is wider
+		 than the type of X and overflow for the type of X is
+		 undefined.  */
+	      if (INTEGRAL_TYPE_P (type)
+	          && INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+	          && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs))
+	          && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (rhs))
+	          && (TREE_CODE (rhs) == PLUS_EXPR
+	              || TREE_CODE (rhs) == MINUS_EXPR
+	              || TREE_CODE (rhs) == MULT_EXPR)
+	          && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
+	        {
+	          rhs = fold_build2 (TREE_CODE (rhs), type,
+	                             fold_convert (type, TREE_OPERAND (rhs, 0)),
+	                             fold_convert (type, TREE_OPERAND (rhs, 1)));
+	        }
+	      else
+	        rhs = fold_convert (type, rhs);
+	    }
 	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;
