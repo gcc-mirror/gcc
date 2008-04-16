@@ -1,3 +1,9 @@
+2008-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/35899
+	* tree-inline.c (expand_call_inline): Use GIMPLE_STMT_OPERAND
+	rather than TREE_OPERAND.
+
 2008-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-predcom.c (suitable_reference_p): Return false if the

@@ -2851,15 +2851,15 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME)
 	{
-	  tree name = TREE_OPERAND (stmt, 0);
-	  tree var = SSA_NAME_VAR (TREE_OPERAND (stmt, 0));
+	  tree name = GIMPLE_STMT_OPERAND (stmt, 0);
+	  tree var = SSA_NAME_VAR (GIMPLE_STMT_OPERAND (stmt, 0));
 	  tree def = gimple_default_def (cfun, var);
 
 	  /* If the variable is used undefined, make this name undefined via
 	     move.  */
 	  if (def)
 	    {
-	      TREE_OPERAND (stmt, 1) = def;
+	      GIMPLE_STMT_OPERAND (stmt, 1) = def;
 	      update_stmt (stmt);
 	    }
 	  /* Otherwise make this variable undefined.  */
