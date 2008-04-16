@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
@@ -853,21 +853,21 @@ gfc_init_builtin_functions (void)
   ptype = build_pointer_type (float_type_node);
   tmp = tree_cons (NULL_TREE, float_type_node,
 		   tree_cons (NULL_TREE, ptype,
-		   	      build_tree_list (NULL_TREE, ptype)));
+		   	      tree_cons (NULL_TREE, ptype, void_list_node)));
   func_float_floatp_floatp =
     build_function_type (void_type_node, tmp);
 
   ptype = build_pointer_type (double_type_node);
   tmp = tree_cons (NULL_TREE, double_type_node,
 		   tree_cons (NULL_TREE, ptype,
-		   	      build_tree_list (NULL_TREE, ptype)));
+		   	      tree_cons (NULL_TREE, ptype, void_list_node)));
   func_double_doublep_doublep =
     build_function_type (void_type_node, tmp);
 
   ptype = build_pointer_type (long_double_type_node);
   tmp = tree_cons (NULL_TREE, long_double_type_node,
 		   tree_cons (NULL_TREE, ptype,
-		   	      build_tree_list (NULL_TREE, ptype)));
+		   	      tree_cons (NULL_TREE, ptype, void_list_node)));
   func_longdouble_longdoublep_longdoublep =
     build_function_type (void_type_node, tmp);
 

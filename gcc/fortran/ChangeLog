@@ -1,3 +1,9 @@
+2008-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35662
+	* f95-lang.c (gfc_init_builtin_functions): Make sure
+	BUILT_IN_SINCOS{,F,L} types aren't varargs.
+
 2008-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/35786
