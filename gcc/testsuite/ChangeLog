@@ -1,5 +1,8 @@
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/35899
+	* gcc.dg/pr35899.c: New test.
+
 	PR target/35662
 	* gfortran.dg/pr35662.f90: New test.
 
