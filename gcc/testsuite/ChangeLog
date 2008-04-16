@@ -1,5 +1,8 @@
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/35739
+	* gcc.dg/dfp/pr35739.c: New test.
+
 	PR tree-optimization/35899
 	* gcc.dg/pr35899.c: New test.
 
