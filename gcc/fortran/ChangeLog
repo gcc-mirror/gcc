@@ -1,3 +1,9 @@
+2008-04-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35932
+	* trans-intrinsic.c (gfc_conv_intrinsic_char): Even though KIND
+	is not used, the argument must be converted.
+
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35662

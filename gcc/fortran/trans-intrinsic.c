@@ -1275,19 +1275,22 @@ gfc_conv_intrinsic_dprod (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_char (gfc_se * se, gfc_expr * expr)
 {
-  tree arg;
+  tree arg[2];
   tree var;
   tree type;
+  unsigned int num_args;
 
-  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  /* We must allow for the KIND argument, even though.... */
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  gfc_conv_intrinsic_function_args (se, expr, arg, num_args);
 
-  /* We currently don't support character types != 1.  */
+  /* .... we currently don't support character types != 1.  */
   gcc_assert (expr->ts.kind == 1);
   type = gfc_character1_type_node;
   var = gfc_create_var (type, "char");
 
-  arg = convert (type, arg);
-  gfc_add_modify_expr (&se->pre, var, arg);
+  arg[0] = convert (type, arg[0]);
+  gfc_add_modify_expr (&se->pre, var, arg[0]);
   se->expr = gfc_build_addr_expr (build_pointer_type (type), var);
   se->string_length = integer_one_node;
 }
