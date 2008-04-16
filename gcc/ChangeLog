@@ -1,5 +1,9 @@
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/35739
+	* tree-nrv.c (tree_nrv): Don't optimize if result_type is GIMPLE
+	reg type.
+
 	PR tree-optimization/35899
 	* tree-inline.c (expand_call_inline): Use GIMPLE_STMT_OPERAND
 	rather than TREE_OPERAND.
