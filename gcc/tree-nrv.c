@@ -1,5 +1,5 @@
 /* Language independent return value optimizations
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -113,6 +113,11 @@ tree_nrv (void)
   /* If this function does not return an aggregate type in memory, then
      there is nothing to do.  */
   if (!aggregate_value_p (result, current_function_decl))
+    return 0;
+
+  /* If a GIMPLE type is returned in memory, finalize_nrv_r might create
+     non-GIMPLE.  */
+  if (is_gimple_reg_type (result_type))
     return 0;
 
   /* Look through each block for assignments to the RESULT_DECL.  */
