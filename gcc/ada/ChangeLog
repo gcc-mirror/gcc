@@ -1,3 +1,9 @@
+2008-04-16  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/29015
+	* sem_ch12.adb (Instantiate_Type): Check whether the full view of
+	the type is known instead of the underlying type.
+
 2008-04-15  Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/22387

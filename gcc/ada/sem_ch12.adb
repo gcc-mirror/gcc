@@ -9990,7 +9990,7 @@ package body Sem_Ch12 is
                          Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
          then
             if Is_Class_Wide_Type (Act_T)
-              or else No (Underlying_Type (Act_T))
+              or else No (Full_View (Act_T))
             then
                Error_Msg_N ("premature use of incomplete type", Actual);
                Abandon_Instantiation (Actual);
