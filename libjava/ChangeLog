@@ -1,3 +1,7 @@
+2008-04-16  Andrew Haley  <aph@redhat.com>
+
+	* libgcj_bc.c: 
+
 2008-04-02  Peter O'Gorman  <pogma@thewrittenword.com>
 
 	PR bootstrap/35216
