@@ -32,11 +32,14 @@ void _Jv_CheckArrayStore () {}
 void _Jv_CheckCast () {}
 void _Jv_InitClass () {}
 void _Jv_IsInstanceOf () {}
+void _Jv_LookupInterfaceMethod () {}
 void _Jv_LookupInterfaceMethodIdx () {}
 void _Jv_MonitorEnter () {}
+void _Jv_MonitorExit () {}
 void _Jv_NewMultiArray () {}
 void _Jv_NewObjectArray () {}
 void _Jv_NewPrimArray () {}
+void _Jv_RegisterResource () {}
 void _Jv_ResolvePoolEntry () {}
 void _Jv_Throw () {}
 void _Jv_ThrowAbstractMethodError () {}
@@ -66,6 +69,7 @@ const char **_Jv_Compiler_Properties;
 void _Jv_GetJNIEnvNewFrame () {}
 void _Jv_LookupJNIMethod () {}
 void _Jv_UnwrapJNIweakReference () {}
+void _Jv_JNI_PopSystemFrame () {}
 
 
 /* Checked divide (-fuse-divide-subroutine).  */
