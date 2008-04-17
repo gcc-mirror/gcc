@@ -1,5 +1,5 @@
 /* Entry.java - represent a single file to write to a jar
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -49,12 +49,22 @@ public class Entry
   public Entry(File file, String name)
   {
     this.file = file;
-    this.name = name;
+
+    /* Removes any './' prefixes automatically. Those caused trouble
+     * in (boot) classpath use-cases. See #32516.
+     */
+    int start = 0;
+    while (name.length() > start + 2
+           && name.codePointAt(start) == '.'
+           && name.codePointAt(start + 1) == File.separatorChar)
+      start += 2;
+
+    this.name = name.substring(start);
   }
 
   public Entry(File file)
   {
-    this.file = file;
-    this.name = file.toString();
+    this(file, file.toString());
   }
+
 }
