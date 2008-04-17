@@ -1,3 +1,10 @@
+2008-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35773
+	* call.c (build_user_type_conversion_1): Represent second step of 
+	copy-init with an rvalue conversion.
+	(convert_like_real) [ck_user]: Don't implicitly add it here.
+
 2008-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35751
