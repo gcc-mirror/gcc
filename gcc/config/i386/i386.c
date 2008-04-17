@@ -17984,31 +17984,56 @@ static const struct builtin_description bdesc_crc32[] =
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32di, 0, IX86_BUILTIN_CRC32DI, UNKNOWN, 0 },
 };
 
-/* SSE builtins with 3 arguments and the last argument must be an immediate or xmm0.  */
-static const struct builtin_description bdesc_sse_3arg[] =
+/* SSE */
+enum sse_builtin_type
+{
+  SSE_CTYPE_UNKNOWN,
+  V4SF_FTYPE_V4SF_INT,
+  V2DI_FTYPE_V2DI_INT,
+  V2DF_FTYPE_V2DF_INT,
+  V16QI_FTYPE_V16QI_V16QI_V16QI,
+  V4SF_FTYPE_V4SF_V4SF_V4SF,
+  V2DF_FTYPE_V2DF_V2DF_V2DF,
+  V16QI_FTYPE_V16QI_V16QI_INT,
+  V8HI_FTYPE_V8HI_V8HI_INT,
+  V4SI_FTYPE_V4SI_V4SI_INT,
+  V4SF_FTYPE_V4SF_V4SF_INT,
+  V2DI_FTYPE_V2DI_V2DI_INT,
+  V2DF_FTYPE_V2DF_V2DF_INT
+};
+
+/* SSE builtins with variable number of arguments.  */
+static const struct builtin_description bdesc_sse_args[] =
 {
   /* SSE */
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_shufps, "__builtin_ia32_shufps", IX86_BUILTIN_SHUFPS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_shufps, "__builtin_ia32_shufps", IX86_BUILTIN_SHUFPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
 
   /* SSE2 */
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_shufpd, "__builtin_ia32_shufpd", IX86_BUILTIN_SHUFPD, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_shufpd, "__builtin_ia32_shufpd", IX86_BUILTIN_SHUFPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
 
   /* SSE4.1 */
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendpd, "__builtin_ia32_blendpd", IX86_BUILTIN_BLENDPD, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendps, "__builtin_ia32_blendps", IX86_BUILTIN_BLENDPS, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendvpd, "__builtin_ia32_blendvpd", IX86_BUILTIN_BLENDVPD, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendvps, "__builtin_ia32_blendvps", IX86_BUILTIN_BLENDVPS, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_dppd, "__builtin_ia32_dppd", IX86_BUILTIN_DPPD, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_dpps, "__builtin_ia32_dpps", IX86_BUILTIN_DPPS, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_insertps, "__builtin_ia32_insertps128", IX86_BUILTIN_INSERTPS128, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_mpsadbw, "__builtin_ia32_mpsadbw128", IX86_BUILTIN_MPSADBW128, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_pblendvb, "__builtin_ia32_pblendvb128", IX86_BUILTIN_PBLENDVB128, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_pblendw, "__builtin_ia32_pblendw128", IX86_BUILTIN_PBLENDW128, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundsd, "__builtin_ia32_roundsd", IX86_BUILTIN_ROUNDSD, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundss, "__builtin_ia32_roundss", IX86_BUILTIN_ROUNDSS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendpd, "__builtin_ia32_blendpd", IX86_BUILTIN_BLENDPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendps, "__builtin_ia32_blendps", IX86_BUILTIN_BLENDPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendvpd, "__builtin_ia32_blendvpd", IX86_BUILTIN_BLENDVPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_V2DF },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendvps, "__builtin_ia32_blendvps", IX86_BUILTIN_BLENDVPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SF },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_dppd, "__builtin_ia32_dppd", IX86_BUILTIN_DPPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_dpps, "__builtin_ia32_dpps", IX86_BUILTIN_DPPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_insertps, "__builtin_ia32_insertps128", IX86_BUILTIN_INSERTPS128, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_mpsadbw, "__builtin_ia32_mpsadbw128", IX86_BUILTIN_MPSADBW128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI_INT },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_pblendvb, "__builtin_ia32_pblendvb128", IX86_BUILTIN_PBLENDVB128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI_V16QI },
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_pblendw, "__builtin_ia32_pblendw128", IX86_BUILTIN_PBLENDW128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI_INT },
+
+  /* SSE4.1 and SSE5 */
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundpd, "__builtin_ia32_roundpd", IX86_BUILTIN_ROUNDPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_INT },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundps, "__builtin_ia32_roundps", IX86_BUILTIN_ROUNDPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_INT },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundsd, "__builtin_ia32_roundsd", IX86_BUILTIN_ROUNDSD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundss, "__builtin_ia32_roundss", IX86_BUILTIN_ROUNDSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
+
+  /* AES */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aeskeygenassist, 0, IX86_BUILTIN_AESKEYGENASSIST128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT },
 
   /* PCLMUL */
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_pclmulqdq, 0, IX86_BUILTIN_PCLMULQDQ128, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_pclmulqdq, 0, IX86_BUILTIN_PCLMULQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_INT },
 };
 
 static const struct builtin_description bdesc_2arg[] =
@@ -18295,7 +18320,6 @@ static const struct builtin_description bdesc_2arg[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_aesenclast, 0, IX86_BUILTIN_AESENCLAST128, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_aesdec, 0, IX86_BUILTIN_AESDEC128, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_aesdeclast, 0, IX86_BUILTIN_AESDECLAST128, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_aeskeygenassist, 0, IX86_BUILTIN_AESKEYGENASSIST128, UNKNOWN, 0 },
 };
 
 static const struct builtin_description bdesc_1arg[] =
@@ -18369,10 +18393,6 @@ static const struct builtin_description bdesc_1arg[] =
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_zero_extendv2hiv2di2, 0, IX86_BUILTIN_PMOVZXWQ128, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_zero_extendv2siv2di2, 0, IX86_BUILTIN_PMOVZXDQ128, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_phminposuw, "__builtin_ia32_phminposuw128", IX86_BUILTIN_PHMINPOSUW128, UNKNOWN, 0 },
-
-  /* Fake 1 arg builtins with a constant smaller than 8 bits as the 2nd arg.  */
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_roundpd, 0, IX86_BUILTIN_ROUNDPD, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_roundps, 0, IX86_BUILTIN_ROUNDPS, UNKNOWN, 0 },
 
   /* AES */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_aesimc, 0, IX86_BUILTIN_AESIMC128, UNKNOWN, 0 },
@@ -19175,59 +19195,56 @@ ix86_init_mmx_sse_builtins (void)
       def_builtin_const (OPTION_MASK_ISA_64BIT, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
     }
 
-  /* Add all SSE builtins that are more or less simple operations on
-     three operands.  */
-  for (i = 0, d = bdesc_sse_3arg;
-       i < ARRAY_SIZE (bdesc_sse_3arg);
+  /* Add all SSE builtins with variable number of operands.  */
+  for (i = 0, d = bdesc_sse_args;
+       i < ARRAY_SIZE (bdesc_sse_args);
        i++, d++)
     {
-      /* Use one of the operands; the target can have a different mode for
-	 mask-generating compares.  */
-      enum machine_mode mode;
       tree type;
 
       if (d->name == 0)
 	continue;
-      mode = insn_data[d->icode].operand[1].mode;
 
-      switch (mode)
+      switch ((enum sse_builtin_type) d->flag)
 	{
-	case V16QImode:
+	case V4SF_FTYPE_V4SF_INT:
+	  type = v4sf_ftype_v4sf_int;
+	  break;
+	case V2DI_FTYPE_V2DI_INT:
+	  type = v2di_ftype_v2di_int;
+	  break;
+	case V2DF_FTYPE_V2DF_INT:
+	  type = v2df_ftype_v2df_int;
+	  break;
+	case V16QI_FTYPE_V16QI_V16QI_V16QI:
+	  type = v16qi_ftype_v16qi_v16qi_v16qi;
+	  break;
+	case V4SF_FTYPE_V4SF_V4SF_V4SF:
+	  type = v4sf_ftype_v4sf_v4sf_v4sf;
+	  break;
+	case V2DF_FTYPE_V2DF_V2DF_V2DF:
+	  type = v2df_ftype_v2df_v2df_v2df;
+	  break;
+	case V16QI_FTYPE_V16QI_V16QI_INT:
 	  type = v16qi_ftype_v16qi_v16qi_int;
 	  break;
-	case V8HImode:
+	case V8HI_FTYPE_V8HI_V8HI_INT:
 	  type = v8hi_ftype_v8hi_v8hi_int;
 	  break;
-	case V4SImode:
+	case V4SI_FTYPE_V4SI_V4SI_INT:
 	  type = v4si_ftype_v4si_v4si_int;
 	  break;
-	case V2DImode:
+	case V4SF_FTYPE_V4SF_V4SF_INT:
+	  type = v4sf_ftype_v4sf_v4sf_int;
+	  break;
+	case V2DI_FTYPE_V2DI_V2DI_INT:
 	  type = v2di_ftype_v2di_v2di_int;
 	  break;
-	case V2DFmode:
+	case V2DF_FTYPE_V2DF_V2DF_INT:
 	  type = v2df_ftype_v2df_v2df_int;
-	  break;
-	case V4SFmode:
-	  type = v4sf_ftype_v4sf_v4sf_int;
 	  break;
 	default:
 	  gcc_unreachable ();
-	}
-
-      /* Override for variable blends.  */
-      switch (d->icode)
-	{
-	case CODE_FOR_sse4_1_blendvpd:
-	  type = v2df_ftype_v2df_v2df_v2df;
-	  break;
-	case CODE_FOR_sse4_1_blendvps:
-	  type = v4sf_ftype_v4sf_v4sf_v4sf;
-	  break;
-	case CODE_FOR_sse4_1_pblendvb:
-	  type = v16qi_ftype_v16qi_v16qi_v16qi;
-	  break;
-	default:
-	  break;
 	}
 
       def_builtin_const (d->mask, d->name, type, d->code);
@@ -19586,10 +19603,6 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE4_1, "__builtin_ia32_pmovzxdq128", v2di_ftype_v4si, IX86_BUILTIN_PMOVZXDQ128);
   def_builtin_const (OPTION_MASK_ISA_SSE4_1, "__builtin_ia32_pmuldq128", v2di_ftype_v4si_v4si, IX86_BUILTIN_PMULDQ128);
 
-  /* SSE4.1 and SSE5 */
-  def_builtin_const (OPTION_MASK_ISA_ROUND, "__builtin_ia32_roundpd", v2df_ftype_v2df_int, IX86_BUILTIN_ROUNDPD);
-  def_builtin_const (OPTION_MASK_ISA_ROUND, "__builtin_ia32_roundps", v4sf_ftype_v4sf_int, IX86_BUILTIN_ROUNDPS);
-
   /* SSE4.2. */
   ftype = build_function_type_list (unsigned_type_node,
 				    unsigned_type_node,
@@ -19807,71 +19820,128 @@ safe_vector_operand (rtx x, enum machine_mode mode)
 }
 
 /* Subroutine of ix86_expand_builtin to take care of SSE insns with
-   4 operands. The third argument must be a constant smaller than 8
-   bits or xmm0.  */
+   variable number of operands.  */
 
 static rtx
-ix86_expand_sse_4_operands_builtin (enum insn_code icode, tree exp,
-				    rtx target)
+ix86_expand_sse_operands_builtin (enum insn_code icode, tree exp,
+				  enum sse_builtin_type type,
+				  rtx target)
 {
   rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  tree arg2 = CALL_EXPR_ARG (exp, 2);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  rtx op2 = expand_normal (arg2);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode2 = insn_data[icode].operand[2].mode;
-  enum machine_mode mode3 = insn_data[icode].operand[3].mode;
+  unsigned int i, nargs;
+  int num_memory = 0;
+  struct
+    {
+      rtx op;
+      enum machine_mode mode;
+    } args[3];
+  bool last_arg_constant = false;
+  const struct insn_data *insn_p = &insn_data[icode];
+  enum machine_mode tmode = insn_p->operand[0].mode;
 
-  if (VECTOR_MODE_P (mode1))
-    op0 = safe_vector_operand (op0, mode1);
-  if (VECTOR_MODE_P (mode2))
-    op1 = safe_vector_operand (op1, mode2);
-  if (VECTOR_MODE_P (mode3))
-    op2 = safe_vector_operand (op2, mode3);
+  switch (type)
+    {
+    case V4SF_FTYPE_V4SF_INT:
+    case V2DI_FTYPE_V2DI_INT:
+    case V2DF_FTYPE_V2DF_INT:
+      nargs = 2;
+      last_arg_constant = true;
+      break;
+    case V16QI_FTYPE_V16QI_V16QI_V16QI:
+    case V4SF_FTYPE_V4SF_V4SF_V4SF:
+    case V2DF_FTYPE_V2DF_V2DF_V2DF:
+      nargs = 3;
+      break;
+    case V16QI_FTYPE_V16QI_V16QI_INT:
+    case V8HI_FTYPE_V8HI_V8HI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_INT:
+    case V4SF_FTYPE_V4SF_V4SF_INT:
+    case V2DI_FTYPE_V2DI_V2DI_INT:
+    case V2DF_FTYPE_V2DF_V2DF_INT:
+      nargs = 3;
+      last_arg_constant = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_assert (nargs <= ARRAY_SIZE (args));
 
   if (optimize
       || target == 0
       || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+      || ! (*insn_p->operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
 
-  if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-    op0 = copy_to_mode_reg (mode1, op0);
-  if ((optimize && !register_operand (op1, mode2))
-      || !(*insn_data[icode].operand[2].predicate) (op1, mode2))
-    op1 = copy_to_mode_reg (mode2, op1);
+  for (i = 0; i < nargs; i++)
+    {
+      tree arg = CALL_EXPR_ARG (exp, i);
+      rtx op = expand_normal (arg);
+      enum machine_mode mode = insn_p->operand[i + 1].mode;
+      bool match = (*insn_p->operand[i + 1].predicate) (op, mode);
 
-  if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
-    switch (icode)
-      {
-      case CODE_FOR_sse4_1_blendvpd:
-      case CODE_FOR_sse4_1_blendvps:
-      case CODE_FOR_sse4_1_pblendvb:
-	op2 = copy_to_mode_reg (mode3, op2);
-	break;
+      if (last_arg_constant && (i + 1) == nargs)
+	{
+	  if (!match)
+	    switch (icode)
+	      {
+	      case CODE_FOR_sse4_1_roundpd:
+	      case CODE_FOR_sse4_1_roundps:
+	      case CODE_FOR_sse4_1_roundsd:
+	      case CODE_FOR_sse4_1_roundss:
+	      case CODE_FOR_sse4_1_blendps:
+		error ("the last argument must be a 4-bit immediate");
+		return const0_rtx;
 
-      case CODE_FOR_sse4_1_roundsd:
-      case CODE_FOR_sse4_1_roundss:
-      case CODE_FOR_sse4_1_blendps:
-	error ("the third argument must be a 4-bit immediate");
-	return const0_rtx;
+	      case CODE_FOR_sse4_1_blendpd:
+		error ("the last argument must be a 2-bit immediate");
+		return const0_rtx;
 
-      case CODE_FOR_sse4_1_blendpd:
-	error ("the third argument must be a 2-bit immediate");
-	return const0_rtx;
+	     default:
+		error ("the last argument must be an 8-bit immediate");
+		return const0_rtx;
+	      }
+	}
+      else
+	{
+	  if (VECTOR_MODE_P (mode))
+	    op = safe_vector_operand (op, mode);
 
-      default:
-	error ("the third argument must be an 8-bit immediate");
-	return const0_rtx;
-      }
+	  /* If we aren't optimizing, only allow one memory operand to
+	     be generated.  */
+	  if (memory_operand (op, mode))
+	    num_memory++;
 
-  pat = GEN_FCN (icode) (target, op0, op1, op2);
+	  gcc_assert (GET_MODE (op) == mode
+		      || GET_MODE (op) == VOIDmode);
+
+	  if (optimize || !match || num_memory > 1)
+	    op = copy_to_mode_reg (mode, op);
+	}
+
+      args[i].op = op;
+      args[i].mode = mode;
+    }
+
+  switch (nargs)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (target, args[0].op);
+      break;
+    case 2:
+      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      break;
+    case 3:
+      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
+			     args[2].op);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   if (! pat)
     return 0;
+
   emit_insn (pat);
   return target;
 }
@@ -20241,28 +20311,7 @@ ix86_expand_unop_builtin (enum insn_code icode, tree exp,
 	op0 = copy_to_mode_reg (mode0, op0);
     }
 
-  switch (icode)
-    {
-    case CODE_FOR_sse4_1_roundpd:
-    case CODE_FOR_sse4_1_roundps:
-	{
-	  tree arg1 = CALL_EXPR_ARG (exp, 1);
-	  rtx op1 = expand_normal (arg1);
-	  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-
-	  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
-	    {
-	      error ("the second argument must be a 4-bit immediate");
-	      return const0_rtx;
-	    }
-	  pat = GEN_FCN (icode) (target, op0, op1);
-	}
-      break;
-    default:
-      pat = GEN_FCN (icode) (target, op0);
-      break;
-    }
-
+  pat = GEN_FCN (icode) (target, op0);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -21050,10 +21099,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 					     exp, target);
       break;
 
-    case IX86_BUILTIN_AESKEYGENASSIST128:
-      return ix86_expand_binop_imm_builtin (CODE_FOR_aeskeygenassist,
-					     exp, target);
-
     case IX86_BUILTIN_FEMMS:
       emit_insn (gen_mmx_femms ());
       return NULL_RTX;
@@ -21412,12 +21457,15 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       break;
     }
 
-  for (i = 0, d = bdesc_sse_3arg;
-       i < ARRAY_SIZE (bdesc_sse_3arg);
+  for (i = 0, d = bdesc_sse_args;
+       i < ARRAY_SIZE (bdesc_sse_args);
        i++, d++)
     if (d->code == fcode)
-      return ix86_expand_sse_4_operands_builtin (d->icode, exp,
-						 target);
+      {
+	enum sse_builtin_type type = (enum sse_builtin_type) d->flag;
+	return ix86_expand_sse_operands_builtin (d->icode, exp,
+						 type, target);
+      }
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)

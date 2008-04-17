@@ -1,3 +1,21 @@
+2008-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (sse_builtin_type): New.
+	(bdesc_sse_args): Likewise.
+	(bdesc_sse_3arg): Removed.
+	(bdesc_2arg): Remove IX86_BUILTIN_AESKEYGENASSIST128.
+	(bdesc_1arg): Remove IX86_BUILTIN_ROUNDPD and
+	IX86_BUILTIN_ROUNDPS.
+	(ix86_init_mmx_sse_builtins): Handle bdesc_sse_args.  Remove
+	bdesc_sse_3arg.  Remove IX86_BUILTIN_ROUNDPD and
+	IX86_BUILTIN_ROUNDPS.
+	(ix86_expand_sse_4_operands_builtin): Removed.
+	(ix86_expand_sse_operands_builtin): New.
+	(ix86_expand_unop_builtin): Remove CODE_FOR_sse4_1_roundpd
+	and CODE_FOR_sse4_1_roundps.
+	(ix86_expand_builtin): Remove IX86_BUILTIN_AESKEYGENASSIST128.
+	Handle bdesc_sse_args.  Remove bdesc_sse_3arg.
+
 2008-04-17  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/35907
