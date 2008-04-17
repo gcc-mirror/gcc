@@ -1,3 +1,8 @@
+2008-04-17  Samuel Tardieu  <sam@rfc1149.net>
+
+	* g-socket.adb: Add a message "IPv6 not supported" to the
+	Socket_Error exception.
+
 2008-04-16  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/29015
