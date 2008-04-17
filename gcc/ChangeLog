@@ -1,3 +1,13 @@
+2008-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35944
+	* config/i386/i386.md (fmodxf3): Copy operand 1 and operand 2 into
+	temporary registers.  Change operand predicate to general_operand.
+	(remainderxf3): Ditto.
+
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35739
