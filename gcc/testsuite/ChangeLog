@@ -1,6 +1,6 @@
 2008-04-17  Christian Bruel  <christian.bruel@st.com>
 
-	* gcc.dg/dicomp.c: New testcase. 
+	* gcc.dg/long-long-compare-1.c: New testcase. 
 	
 2008-04-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
