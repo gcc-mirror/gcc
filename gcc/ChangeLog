@@ -1,3 +1,11 @@
+2008-04-17  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/35907
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Restore vr and vrsave
+	regs before frame pop when needed.  If use_backchain_to_restore_sp
+	then load backchain into a temp reg to restore vr and vrsave.  Add
+	code to restore vr after frame pop if possible.
+
 2008-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
