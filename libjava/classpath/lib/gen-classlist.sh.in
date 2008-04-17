@@ -82,26 +82,48 @@ for dir in $vm_dirlist; do
    fi
 done
 
-# FIXME: could be more efficient by constructing a series of greps.
-for filexp in `cat tmp.omit`; do
-   grep -v ${filexp} < ${top_builddir}/lib/classes.1 > ${top_builddir}/lib/classes.tmp
-   mv ${top_builddir}/lib/classes.tmp ${top_builddir}/lib/classes.1
-done
+# Mangle the omit expressions into a script suitable for old awk.
+# Exploit the fact that many omissions are not regular expressions:
+# assume a single file is listed if it does not contain '*', '$',
+# and ends in '.java'.
+sed_omit_hash='
+1i\
+  BEGIN {\
+    omit[""] = 1
+$a\
+  }
+/[*$]/d
+/\.java$/!d
+s|^|    omit["|
+s|$|"] = 1|'
+sed_omit_main_loop='
+1i\
+  {\
+    if (omit[$3]) next
+$a\
+    print\
+  }
+/^[^*$]*\.java$/d
+s|/|\\/|g
+s|^|  if ($3 ~ /|
+s|$|/) next|'
 
+sed "$sed_omit_hash" <tmp.omit >tmp.awk
+sed "$sed_omit_main_loop" <tmp.omit >>tmp.awk
+@AWK@ -f tmp.awk < ${top_builddir}/lib/classes.1 > ${top_builddir}/lib/classes.tmp
+mv ${top_builddir}/lib/classes.tmp ${top_builddir}/lib/classes.1
 
+vm_omitlist=
 for dir in $vm_dirlist; do
    if test -f $dir/$1.omit; then
-      for filexp in `cat $dir/$1.omit`; do
-	 grep -v $filexp < vm.add > vm.add.1
-	 mv vm.add.1 vm.add
-      done
+      vm_omitlist="$vm_omitlist $dir/$1.omit"
    fi
 done
-cat vm.add >> classes.1
+cat $vm_omitlist | sed "$sed_omit_hash" > tmp.awk
+cat $vm_omitlist | sed "$sed_omit_main_loop" >> tmp.awk
+@AWK@ -f tmp.awk < vm.add >>${top_builddir}/lib/classes.1
 
-rm vm.omit
-rm vm.add
-rm tmp.omit
+rm -f vm.omit vm.add tmp.omit tmp.awk
 
 new=
 if test -f ${top_builddir}/lib/classes.2; then
