@@ -1,5 +1,11 @@
 2008-04-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* lib/gen-classlist.sh.in: Avoid grepping each omission, by
+	building an awk script with a hash for literal files, and
+	awk regular expressions for the rest.
+	* configure.ac: Call AC_PROG_AWK.
+	* configure: Regenerate.
+
 	* m4/gcc_attribute.m4 (GCC_ATTRIBUTE): Fix cache variable name.
 	* tools/Makefile.am (gappletviewer, gjarsigner, gkeytool, gjar)
 	(gnative2ascii, gserialver, gjavah, grmiregistry, gtnameserv)
