@@ -1,3 +1,8 @@
+2008-04-17  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_asm_specification_opt): Print CPP_CLOSE_PAREN
+	as `)', not as `('.
+
 2008-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34950

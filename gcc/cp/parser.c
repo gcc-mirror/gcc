@@ -14669,7 +14669,7 @@ cp_parser_asm_specification_opt (cp_parser* parser)
   asm_specification = cp_parser_string_literal (parser, false, false);
 
   /* Look for the `)'.  */
-  cp_parser_require (parser, CPP_CLOSE_PAREN, "`('");
+  cp_parser_require (parser, CPP_CLOSE_PAREN, "%<)%>");
 
   return asm_specification;
 }
