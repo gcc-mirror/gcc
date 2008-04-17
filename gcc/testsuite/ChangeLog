@@ -1,3 +1,7 @@
+2008-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-17.c: New testcase.
+
 2008-04-17  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.dg/long-long-compare-1.c: New testcase. 
