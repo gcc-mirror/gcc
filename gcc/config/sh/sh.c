@@ -1685,6 +1685,14 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
     {
       rtx taken_label = operands[3];
 
+      /* Operands were possibly modified, but msw_skip doesn't expect this.
+	 Always use the original ones.  */
+      if (msw_taken != CODE_FOR_nothing)
+	{
+	  operands[1] = op1h;
+	  operands[2] = op2h;
+	}
+
       operands[3] = skip_label = gen_label_rtx ();
       expand_cbranchsi4 (operands, msw_skip, msw_skip_prob);
       operands[3] = taken_label;
