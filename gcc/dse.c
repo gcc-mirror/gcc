@@ -1446,7 +1446,7 @@ find_shift_sequence (int access_size,
        new_mode = GET_MODE_WIDER_MODE (new_mode))
     {
       rtx target, new_reg, shift_seq, insn, new_lhs;
-      int cost;
+      int cost, offset;
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
@@ -1460,8 +1460,9 @@ find_shift_sequence (int access_size,
       if (!CONSTANT_P (store_info->rhs)
 	  && !MODES_TIEABLE_P (new_mode, store_mode))
 	continue;
+      offset = subreg_lowpart_offset (new_mode, store_mode);
       new_lhs = simplify_gen_subreg (new_mode, copy_rtx (store_info->rhs),
-				     store_mode, 0);
+				     store_mode, offset);
       if (new_lhs == NULL_RTX)
 	continue;
 
