@@ -1,3 +1,8 @@
+2008-04-17  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35436
+	* c-format.c (init_dynamic_gfc_info): Ignore invalid locus type.
+
 2008-04-17  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/35907

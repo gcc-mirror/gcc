@@ -2455,7 +2455,8 @@ init_dynamic_gfc_info (void)
 	  locus = identifier_global_value (locus);
 	  if (locus)
 	    {
-	      if (TREE_CODE (locus) != TYPE_DECL)
+	      if (TREE_CODE (locus) != TYPE_DECL
+		  || TREE_TYPE (locus) == error_mark_node)
 		{
 		  error ("%<locus%> is not defined as a type");
 		  locus = 0;
