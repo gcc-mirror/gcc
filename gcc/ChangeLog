@@ -1,3 +1,18 @@
+2008-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (addti3 splitter): Pass arrays of 3 operands
+	to split_ti instead of three separate calls with single member arrays.
+	(subti3 splitter): Ditto.
+	(adddi3 splitter): Ditto with split_di.
+	(subdi3 splitter): Ditto.
+	(negti2 splitter): Pass arrays of 2 operands to split_ti instead of
+	two separate calls with single member arrays.  Swap match_dup
+	operands 1 and 2 to better fit into the array.
+	(negdi2 splitter): Ditto with split_di.
+	(movdfcc splitter):  Pass arrays of 2 operands to split_di instead of
+	two separate calls with single member arrays.  Swap match_dup operands
+	6 and 7 to better fit into the array.
+
 2008-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (sse_builtin_type): New.
