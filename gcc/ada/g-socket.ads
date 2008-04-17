@@ -900,7 +900,8 @@ package GNAT.Sockets is
    --  Create a stream associated with a datagram-based socket that is already
    --  bound. Send_To is the socket address to which messages are being sent.
 
-   function Get_Address (Stream : Stream_Access) return Sock_Addr_Type;
+   function Get_Address
+     (Stream : not null Stream_Access) return Sock_Addr_Type;
    --  Return the socket address from which the last message was received
 
    procedure Free is new Ada.Unchecked_Deallocation

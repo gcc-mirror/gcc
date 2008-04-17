@@ -763,11 +763,11 @@ package body GNAT.Sockets is
    -- Get_Address --
    -----------------
 
-   function Get_Address (Stream : Stream_Access) return Sock_Addr_Type is
+   function Get_Address
+     (Stream : not null Stream_Access) return Sock_Addr_Type
+   is
    begin
-      if Stream = null then
-         raise Socket_Error;
-      elsif Stream.all in Datagram_Socket_Stream_Type then
+      if Stream.all in Datagram_Socket_Stream_Type then
          return Datagram_Socket_Stream_Type (Stream.all).From;
       else
          return Get_Peer_Name (Stream_Socket_Stream_Type (Stream.all).Socket);

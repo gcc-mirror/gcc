@@ -1,5 +1,10 @@
 2008-04-17  Samuel Tardieu  <sam@rfc1149.net>
 
+	* g-socket.ads, g-socket.adb (Get_Address): Make Stream a
+	"not null" parameter.
+
+2008-04-17  Samuel Tardieu  <sam@rfc1149.net>
+
 	* g-socket.adb: Add a message "IPv6 not supported" to the
 	Socket_Error exception.
 
