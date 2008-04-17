@@ -2710,7 +2710,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 		 don't add a second rvalue conversion if there's already
 		 one there.  Which there really shouldn't be, but it's
 		 harmless since we'd add it here anyway. */
-	      if (ics && MAYBE_CLASS_TYPE_P (totype) && ics->kind != ck_rvalue
+	      if (ics && IS_AGGR_TYPE (totype) && ics->kind != ck_rvalue
 		  && !(convflags & LOOKUP_NO_TEMP_BIND))
 		ics = build_conv (ck_rvalue, totype, ics);
 
