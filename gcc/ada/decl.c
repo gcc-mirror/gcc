@@ -680,8 +680,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   size, or to the biggest meaningful one, whichever is smaller.  */
 	if (!gnu_size && align == 0
 	    && (Is_Atomic (gnat_entity)
-		|| (Debug_Flag_Dot_A
-		    && !Optimize_Alignment_Space (gnat_entity)
+		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind == E_Variable
 		    && AGGREGATE_TYPE_P (gnu_type)
 		    && !const_flag && No (Renamed_Object (gnat_entity))

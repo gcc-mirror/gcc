@@ -47,10 +47,7 @@ extern char Fold_Lower[], Fold_Upper[];
 /* debug: */
 
 #define Debug_Flag_NN debug__debug_flag_nn
-#define Debug_Flag_Dot_A debug__debug_flag_dot_a
-
 extern Boolean Debug_Flag_NN;
-extern Boolean Debug_Flag_Dot_A;
 
 /* einfo: We will be setting Esize for types, Component_Bit_Offset for fields,
    Alignment for types and objects, Component_Size for array types, and

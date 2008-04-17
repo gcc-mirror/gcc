@@ -14,15 +14,14 @@ procedure frame_overflow is
    function -- { dg-error "too large" }
      Set_In (Bitmap : Bitmap_T; Bitpos : Bitpos_Range_T)  return Bitmap_T
    is
-      Result: Bitmap_T := Bitmap;
+      Result: Bitmap_T := Bitmap; -- { dg-error "Storage_Error" }
    begin
       Result.Bits (Bitpos) := True;
       return Result;
    end;
 
-   function -- { dg-error "too large" }
-     Negate (Bitmap : Bitmap_T) return Bitmap_T is
-      Result: Bitmap_T;
+   function Negate (Bitmap : Bitmap_T) return Bitmap_T is
+      Result: Bitmap_T; -- { dg-error "Storage_Error" }
    begin
       for E in Bitpos_Range_T loop
         Result.Bits (E) := not Bitmap.Bits (E);
