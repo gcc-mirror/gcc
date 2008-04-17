@@ -1,3 +1,14 @@
+2008-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vn.c (expressions_equal_p): Do not check type
+	equality or compatibility before calling operand_equal_p.
+	* fold-const.c (operand_equal_p): Check equivalence of
+	integer constants before bailing out due to signedness or
+	precision differences.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Ignore
+	spurious differences in type qualification.  Ignore types
+	for COMPONENT_REFs at all.
+
 2008-04-17  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.c (expand_cbranchdi4): Use original operands for

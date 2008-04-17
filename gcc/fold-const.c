@@ -3026,6 +3026,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
     return 0;
 
+  /* Check equality of integer constants before bailing out due to
+     precision differences.  */
+  if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+    return tree_int_cst_equal (arg0, arg1);
+
   /* If both types don't have the same signedness, then we can't consider
      them equal.  We must check this before the STRIP_NOPS calls
      because they may change the signedness of the arguments.  */

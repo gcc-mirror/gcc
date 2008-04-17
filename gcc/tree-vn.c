@@ -83,8 +83,6 @@ expressions_equal_p (tree e1, tree e2)
 
     }
   else if (TREE_CODE (e1) == TREE_CODE (e2)
-	   && (te1 == te2
-	       || types_compatible_p (te1, te2))
 	   && operand_equal_p (e1, e2, OEP_PURE_SAME))
     return true;
 

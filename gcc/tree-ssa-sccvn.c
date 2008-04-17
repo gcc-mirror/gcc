@@ -511,7 +511,8 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       vn_reference_op_s temp;
 
       memset (&temp, 0, sizeof (temp));
-      temp.type = TREE_TYPE (ref);
+      /* We do not care for spurious type qualifications.  */
+      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
       temp.opcode = TREE_CODE (ref);
 
       switch (temp.opcode)
@@ -528,6 +529,10 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	  temp.op1 = TREE_OPERAND (ref, 2);
 	  break;
 	case COMPONENT_REF:
+	  /* The field decl is enough to unambiguously specify the field,
+	     a matching type is not necessary and a mismatching type
+	     is always a spurious difference.  */
+	  temp.type = NULL_TREE;
 	  /* If this is a reference to a union member, record the union
 	     member size as operand.  Do so only if we are doing
 	     expression insertion (during FRE), as PRE currently gets
@@ -536,10 +541,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	      && TREE_CODE (DECL_CONTEXT (TREE_OPERAND (ref, 1))) == UNION_TYPE
 	      && integer_zerop (DECL_FIELD_OFFSET (TREE_OPERAND (ref, 1)))
 	      && integer_zerop (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1))))
-	    {
-	      temp.type = NULL_TREE;
-	      temp.op0 = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)));
-	    }
+	    temp.op0 = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)));
 	  else
 	    /* Record field as operand.  */
 	    temp.op0 = TREE_OPERAND (ref, 1);
