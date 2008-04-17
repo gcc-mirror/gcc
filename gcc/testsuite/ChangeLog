@@ -1,5 +1,8 @@
 2008-04-17  Volker Reichelt  <v.reichelt@netcologne.de>
 
+	PR c/35744
+	* gcc.dg/attr-error-1.c: New test.
+
 	PR c/35436
 	* gcc.dg/format/gcc_gfc-2.c: New test.
 
