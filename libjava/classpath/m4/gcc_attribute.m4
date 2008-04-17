@@ -15,7 +15,7 @@ AC_DEFUN([CACHED_TRY_COMPILE],[
 
 dnl GCC_ATTRIBUTE(<short-label>,<cachevar>,<func-params>,<attribute>,<HAVE>,<desc>,[<true-cmds>],[<false-cmds>])
 AC_DEFUN([GCC_ATTRIBUTE],[
-  CACHED_TRY_COMPILE(__attribute__(($1)),cv_c_gcc_attribute_$2,,
+  CACHED_TRY_COMPILE(__attribute__(($1)),gcc_cv_c_gcc_attribute_$2,,
    [extern int testfunction($3) __attribute__(($4))],
    AC_MSG_RESULT(yes)
    AC_DEFINE(HAVE_GNUC25_$5,,$6)

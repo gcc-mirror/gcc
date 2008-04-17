@@ -100,6 +100,19 @@ noinst_SCRIPTS = gappletviewer gjarsigner gkeytool \
 	gjar gnative2ascii gserialver gjavah grmiregistry \
 	gtnameserv gorbd grmid grmic
 bin_PROGRAMS =
+## FIXME: revisit this with a newer automake.
+gappletviewer: gappletviewer.in
+gjarsigner: gjarsigner.in
+gkeytool: gkeytool.in
+gjar: gjar.in
+gnative2ascii: gnative2ascii.in
+gserialver: gserialver.in
+gjavah: gjavah.in
+grmiregistry: grmiregistry.in
+gtnameserv: gtnameserv.in
+gorbd: gorbd.in
+grmid: grmid.in
+grmic: grmic.in
 endif
 EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 	gjar.in gnative2ascii.in gserialver.in gjavah.in grmiregistry.in \
