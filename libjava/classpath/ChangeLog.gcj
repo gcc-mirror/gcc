@@ -1,3 +1,10 @@
+2008-04-17  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/35950:
+	* tools/gnu/classpath/tools/jar/Entry.java: New version from
+	Classpath.
+	* tools/classes/gnu/classpath/tools/jar/Entry.class: Update.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/java/rmi/registry/RegistryImpl.java (version): Update
