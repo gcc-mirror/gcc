@@ -1,3 +1,8 @@
+2008-04-17  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.c (expand_cbranchdi4): Use original operands for
+	msw_skip comparison.
+	
 2008-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35739
