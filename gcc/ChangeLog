@@ -1,3 +1,9 @@
+2008-04-18  Tom Tromey  <tromey@redhat.com>
+
+	PR libcpp/15500:
+	* doc/cpp.texi (Implementation-defined behavior): Mention
+	-finput-charset.
+
 2008-04-18  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (pointer_may_wrap_p): New static function.
