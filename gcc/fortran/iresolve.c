@@ -731,7 +731,8 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
  
   if (dim != NULL)
     {
-      if (dim->expr_type != EXPR_CONSTANT && dim->symtree->n.sym->attr.optional)
+      if (dim->expr_type != EXPR_CONSTANT && dim->symtree != NULL
+	  && dim->symtree->n.sym->attr.optional)
 	{
 	  /* Mark this for later setting the type in gfc_conv_missing_dummy.  */
 	  dim->representation.length = shift->ts.kind;
