@@ -1012,7 +1012,7 @@ reload (rtx first, int global)
       /* If we allocated another stack slot, redo elimination bookkeeping.  */
       if (starting_frame_size != get_frame_size ())
 	continue;
-      if (starting_frame_size && cfun->stack_alignment_needed)
+      if (starting_frame_size && crtl->stack_alignment_needed)
 	{
 	  /* If we have a stack frame, we must align it now.  The
 	     stack size may be a part of the offset computation for
@@ -1022,7 +1022,7 @@ reload (rtx first, int global)
 	     stack frame when none is needed should
 	     STARTING_FRAME_OFFSET not be already aligned to
 	     STACK_BOUNDARY.  */
-	  assign_stack_local (BLKmode, 0, cfun->stack_alignment_needed);
+	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
 	  if (starting_frame_size != get_frame_size ())
 	    continue;
 	}

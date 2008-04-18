@@ -2697,7 +2697,7 @@ set_bb_for_stmt (tree t, basic_block bb)
 	  if (uid == -1)
 	    {
 	      unsigned old_len = VEC_length (basic_block, label_to_block_map);
-	      LABEL_DECL_UID (t) = uid = cfun->last_label_uid++;
+	      LABEL_DECL_UID (t) = uid = cfun->cfg->last_label_uid++;
 	      if (old_len <= (unsigned) uid)
 		{
 		  unsigned new_len = 3 * uid / 2;
@@ -5550,8 +5550,7 @@ replace_by_duplicate_decl (tree *tp, struct pointer_map_t *vars_map,
       if (SSA_VAR_P (t))
 	{
 	  new_t = copy_var_decl (t, DECL_NAME (t), TREE_TYPE (t));
-	  f->unexpanded_var_list
-		  = tree_cons (NULL_TREE, new_t, f->unexpanded_var_list);
+	  f->local_decls = tree_cons (NULL_TREE, new_t, f->local_decls);
 	}
       else
 	{
@@ -5844,8 +5843,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
 	  gcc_assert (DECL_CONTEXT (label) == dest_cfun->decl);
 
-	  if (uid >= dest_cfun->last_label_uid)
-	    dest_cfun->last_label_uid = uid + 1;
+	  if (uid >= dest_cfun->cfg->last_label_uid)
+	    dest_cfun->cfg->last_label_uid = uid + 1;
 	}
       else if (TREE_CODE (stmt) == RESX_EXPR && eh_offset != 0)
 	TREE_OPERAND (stmt, 0) =
@@ -5918,8 +5917,8 @@ new_label_mapper (tree decl, void *data)
   m->base.from = decl;
   m->to = create_artificial_label ();
   LABEL_DECL_UID (m->to) = LABEL_DECL_UID (decl);
-  if (LABEL_DECL_UID (m->to) >= cfun->last_label_uid)
-    cfun->last_label_uid = LABEL_DECL_UID (m->to) + 1;
+  if (LABEL_DECL_UID (m->to) >= cfun->cfg->last_label_uid)
+    cfun->cfg->last_label_uid = LABEL_DECL_UID (m->to) + 1;
 
   slot = htab_find_slot_with_hash (hash, m, m->hash, INSERT);
   gcc_assert (*slot == NULL);
@@ -6161,12 +6160,12 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->decl == fn && cfun->unexpanded_var_list)
+  if (cfun && cfun->decl == fn && cfun->local_decls)
     {
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      for (vars = cfun->unexpanded_var_list; vars; vars = TREE_CHAIN (vars))
+      for (vars = cfun->local_decls; vars; vars = TREE_CHAIN (vars))
 	{
 	  var = TREE_VALUE (vars);
 

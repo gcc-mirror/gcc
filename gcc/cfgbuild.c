@@ -256,7 +256,7 @@ make_edges (basic_block min, basic_block max, int update_p)
   /* Heavy use of computed goto in machine-generated code can lead to
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
-  if (forced_labels || cfun->max_jumptable_ents > 100)
+  if (forced_labels || cfun->cfg->max_jumptable_ents > 100)
     edge_cache = sbitmap_alloc (last_basic_block);
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block

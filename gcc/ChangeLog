@@ -1,3 +1,79 @@
+2008-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (dw2_size_of_call_site_table,
+	sjlj_size_of_call_site_table): Use vector API for call_site_record.
+
+	* cgraphbuild.c (build_cgraph_edges): Update.
+	* tree-pass.h: Update comment.
+	* final.c (leaf_function_p): Update.
+	(leaf_renumber_regs): Update.
+	(rest_of_clean_state): Update.
+	* omp-low.c (expand_omp_parallel): Update.
+	* ipa-reference.c (analyze_function): Update.
+	* reorg.c (find_end_label): Update.
+	(optimize_skip): Update.
+	(fill_simple_delay_slots): Update.
+	(fill_simple_delay_slots): Update.
+	(make_return_insns): Update.
+	(dbr_schedule): Update.
+	* gimple-low.c (record_vars_into): Update.
+	* cfgbuild.c (make_edges): Update.
+	* function.c (assign_stack_local): Update.
+	(assign_parm_adjust_stack_rtl): Update.
+	(locate_and_pad_parm): Update.
+	(allocate_struct_function): Do not initialize stack_alignment_needed
+	and preferred_stack_boundary here.
+	(stack_protect_prologue): Update.
+	(stack_protect_epilogue): Update.
+	(expand_function_start): Initialize stack_alignment_needed,
+	preferred_stack_boundary and max_jumptable_ents.
+	(expand_function_end): Update.
+	(free_after_compilation): Do not NULLify epilogue_delay_list.
+	* function.h (struct rtl_data): Add stack_protect_guard,
+	stack_alignment_needed,
+	preferred_stack_boundary, epilogue_delay_list.
+	(struct function): Remove value_histograms, stack_alignment_needed,
+	preferred_stack_boundary, epilogue_delay_list, max_jumptable_ents,
+	last_label_uid,
+	unexpanded_var_list, stack_protect_guard.
+	(current_function_epilogue_delay_list): Remove.
+	* ipa-type-escape.c (analyze_function): Update.
+	* gimplify.c (pop_gimplify_context): Update comment.
+	* calls.c (expand_call): Update.
+	(emit_library_call_value_1): Update.
+	* except.c (set_nothrow_function_flags): Update.
+	* cfgexpand.c (get_decl_align_unit): Update.
+	(create_stack_guard): Update.
+	(estimated_stack_frame_size): Update.
+	(expand_used_vars): Update.
+	(tree_expand_cfg): Free histogram earliers, init expansion variables.
+	* explow.c (allocate_dynamic_stack_space): Update.
+	* tree-ssa-live.c (remove_unused_locals): Update.
+	* varasm.c (mark_constant_pool): Update.
+	* tree-inline.c (remap_decls): Update.
+	(initialize_cfun): Update.
+	(declare_return_variable): Update.
+	(inline_forbidden_p): Update.
+	(expand_call_inline): Update.
+	(declare_inline_vars): Update.
+	(tree_function_versioning): Update.
+	* tree-flow.h (value_histograms): New.
+	(VALUE_HISTOGRAMS): New macro.
+	* basic-block.h (control_flow_graph): Add max_jumptable_ents,
+	last_label_uid.
+	* tree-cfg.c (set_bb_for_stmt): Update.
+	(replace_by_duplicate_decl): Update.
+	(move_block_to_fn): Update.
+	(new_label_mapper): Update.
+	(dump_function_to_file): Update.
+	* ipa-struct-reorg.c (build_data_structure): Update.
+	* cfgrtl.c (print_rtl_with_bb): Update.
+	* reload1.c (reload): Update.
+	(reload): Update.
+	* config/i386/i386.c (setup_incoming_varargs_64,
+	ix86_compute_frame_layout): Update.
+	* config/arc/arc.c (arc_output_function_epilogue): Update.
+
 2008-04-18  Marius Strobl <marius@FreeBSD.org>
 
 	* gthr-posix.h (__gthread_active_p): Use the Solaris implementation

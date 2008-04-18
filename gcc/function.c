@@ -289,7 +289,6 @@ free_after_compilation (struct function *f)
   f->machine = NULL;
   f->cfg = NULL;
 
-  f->epilogue_delay_list = NULL;
   regno_reg_rtx = NULL;
 }
 
@@ -379,8 +378,8 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
   if (alignment * BITS_PER_UNIT > PREFERRED_STACK_BOUNDARY)
     alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
 
-  if (cfun->stack_alignment_needed < alignment * BITS_PER_UNIT)
-    cfun->stack_alignment_needed = alignment * BITS_PER_UNIT;
+  if (crtl->stack_alignment_needed < alignment * BITS_PER_UNIT)
+    crtl->stack_alignment_needed = alignment * BITS_PER_UNIT;
 
   /* Calculate how many bytes the start of local variables is off from
      stack alignment.  */
@@ -2379,7 +2378,7 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
 
   /* If stack protection is in effect for this function, don't leave any
      pointers in their passed stack slots.  */
-  else if (cfun->stack_protect_guard
+  else if (crtl->stack_protect_guard
 	   && (flag_stack_protect == 2
 	       || data->passed_pointer
 	       || POINTER_TYPE_P (data->nominal_type)))
@@ -3286,8 +3285,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
      calling function side.  */
   if (boundary > PREFERRED_STACK_BOUNDARY)
     boundary = PREFERRED_STACK_BOUNDARY;
-  if (cfun->stack_alignment_needed < boundary)
-    cfun->stack_alignment_needed = boundary;
+  if (crtl->stack_alignment_needed < boundary)
+    crtl->stack_alignment_needed = boundary;
 
 #ifdef ARGS_GROW_DOWNWARD
   locate->slot_offset.constant = -initial_offset_ptr->constant;
@@ -3842,9 +3841,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 
   cfun = ggc_alloc_cleared (sizeof (struct function));
 
-  cfun->stack_alignment_needed = STACK_BOUNDARY;
-  cfun->preferred_stack_boundary = STACK_BOUNDARY;
-
   current_function_funcdef_no = get_next_funcdef_no ();
 
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
@@ -4020,9 +4016,9 @@ stack_protect_prologue (void)
 
   /* Avoid expand_expr here, because we don't want guard_decl pulled
      into registers unless absolutely necessary.  And we know that
-     cfun->stack_protect_guard is a local stack slot, so this skips
+     crtl->stack_protect_guard is a local stack slot, so this skips
      all the fluff.  */
-  x = validize_mem (DECL_RTL (cfun->stack_protect_guard));
+  x = validize_mem (DECL_RTL (crtl->stack_protect_guard));
   y = validize_mem (DECL_RTL (guard_decl));
 
   /* Allow the target to copy from Y to X without leaking Y into a
@@ -4058,9 +4054,9 @@ stack_protect_epilogue (void)
 
   /* Avoid expand_expr here, because we don't want guard_decl pulled
      into registers unless absolutely necessary.  And we know that
-     cfun->stack_protect_guard is a local stack slot, so this skips
+     crtl->stack_protect_guard is a local stack slot, so this skips
      all the fluff.  */
-  x = validize_mem (DECL_RTL (cfun->stack_protect_guard));
+  x = validize_mem (DECL_RTL (crtl->stack_protect_guard));
   y = validize_mem (DECL_RTL (guard_decl));
 
   /* Allow the target to compare Y with X without leaking either into
@@ -4581,7 +4577,7 @@ expand_function_end (void)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
-  if (cfun->stack_protect_guard)
+  if (crtl->stack_protect_guard)
     stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs

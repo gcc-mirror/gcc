@@ -3809,7 +3809,7 @@ mark_constant_pool (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     mark_constants (insn);
 
-  for (link = current_function_epilogue_delay_list;
+  for (link = crtl->epilogue_delay_list;
        link;
        link = XEXP (link, 1))
     mark_constants (XEXP (link, 0));

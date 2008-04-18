@@ -442,14 +442,14 @@ remap_decls (tree decls, copy_body_data *id)
     {
       tree new_var;
 
-      /* We can not chain the local static declarations into the unexpanded_var_list
+      /* We can not chain the local static declarations into the local_decls
          as we can't duplicate them or break one decl rule.  Go ahead and link
-         them into unexpanded_var_list.  */
+         them into local_decls.  */
       if (!auto_var_in_fn_p (old_var, id->src_fn)
 	  && !DECL_EXTERNAL (old_var))
 	{
-	  cfun->unexpanded_var_list = tree_cons (NULL_TREE, old_var,
-						 cfun->unexpanded_var_list);
+	  cfun->local_decls = tree_cons (NULL_TREE, old_var,
+						 cfun->local_decls);
 	  continue;
 	}
 
@@ -1277,7 +1277,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
   *new_cfun = *DECL_STRUCT_FUNCTION (callee_fndecl);
   new_cfun->funcdef_no = get_next_funcdef_no ();
   VALUE_HISTOGRAMS (new_cfun) = NULL;
-  new_cfun->unexpanded_var_list = NULL;
+  new_cfun->local_decls = NULL;
   new_cfun->cfg = NULL;
   new_cfun->decl = new_fndecl /*= copy_node (callee_fndecl)*/;
   DECL_STRUCT_FUNCTION (new_fndecl) = new_cfun;
@@ -1811,9 +1811,9 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
     }
 
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
-  DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list
+  DECL_STRUCT_FUNCTION (caller)->local_decls
     = tree_cons (NULL_TREE, var,
-		 DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list);
+		 DECL_STRUCT_FUNCTION (caller)->local_decls);
 
   /* Do not have the rest of GCC warn about this variable as it should
      not be visible to the user.  */
@@ -2040,7 +2040,7 @@ inline_forbidden_p (tree fndecl)
 	  goto egress;
       }
 
-  for (step = fun->unexpanded_var_list; step; step = TREE_CHAIN (step))
+  for (step = fun->local_decls; step; step = TREE_CHAIN (step))
     {
       tree decl = TREE_VALUE (step);
       if (TREE_CODE (decl) == VAR_DECL
@@ -2831,16 +2831,16 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   copy_body (id, bb->count, bb->frequency, bb, return_block);
 
   /* Add local vars in this inlined callee to caller.  */
-  t_step = id->src_cfun->unexpanded_var_list;
+  t_step = id->src_cfun->local_decls;
   for (; t_step; t_step = TREE_CHAIN (t_step))
     {
       var = TREE_VALUE (t_step);
       if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
-	cfun->unexpanded_var_list = tree_cons (NULL_TREE, var,
-					       cfun->unexpanded_var_list);
+	cfun->local_decls = tree_cons (NULL_TREE, var,
+					       cfun->local_decls);
       else
-	cfun->unexpanded_var_list = tree_cons (NULL_TREE, remap_decl (var, id),
-					       cfun->unexpanded_var_list);
+	cfun->local_decls = tree_cons (NULL_TREE, remap_decl (var, id),
+					       cfun->local_decls);
     }
 
   /* Clean up.  */
@@ -3340,9 +3340,7 @@ declare_inline_vars (tree block, tree vars)
     {
       DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
       gcc_assert (!TREE_STATIC (t) && !TREE_ASM_WRITTEN (t));
-      cfun->unexpanded_var_list =
-	tree_cons (NULL_TREE, t,
-		   cfun->unexpanded_var_list);
+      cfun->local_decls = tree_cons (NULL_TREE, t, cfun->local_decls);
     }
 
   if (block)
@@ -3615,19 +3613,18 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (id.dst_fn);
   
-  if (DECL_STRUCT_FUNCTION (old_decl)->unexpanded_var_list != NULL_TREE)
+  if (DECL_STRUCT_FUNCTION (old_decl)->local_decls != NULL_TREE)
     /* Add local vars.  */
-    for (t_step = DECL_STRUCT_FUNCTION (old_decl)->unexpanded_var_list;
+    for (t_step = DECL_STRUCT_FUNCTION (old_decl)->local_decls;
 	 t_step; t_step = TREE_CHAIN (t_step))
       {
 	tree var = TREE_VALUE (t_step);
 	if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
-	  cfun->unexpanded_var_list = tree_cons (NULL_TREE, var,
-						 cfun->unexpanded_var_list);
+	  cfun->local_decls = tree_cons (NULL_TREE, var, cfun->local_decls);
 	else
-	  cfun->unexpanded_var_list =
+	  cfun->local_decls =
 	    tree_cons (NULL_TREE, remap_decl (var, &id),
-		       cfun->unexpanded_var_list);
+		       cfun->local_decls);
       }
   
   /* Copy the Function's body.  */

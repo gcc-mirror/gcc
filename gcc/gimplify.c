@@ -175,7 +175,7 @@ push_gimplify_context (void)
 
 /* Tear down a context for the gimplifier.  If BODY is non-null, then
    put the temporaries into the outer BIND_EXPR.  Otherwise, put them
-   in the unexpanded_var_list.  */
+   in the local_decls.  */
 
 void
 pop_gimplify_context (tree body)

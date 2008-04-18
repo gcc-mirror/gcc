@@ -229,8 +229,8 @@ struct dump_file_info
 #define TODO_update_ssa_only_virtuals	(1 << 14)
 
 /* Some passes leave unused local variables that can be removed from
-   cfun->unexpanded_var_list.  This reduces the size of dump files and
-   the memory footprint for VAR_DECLs.  */
+   cfun->local_decls.  This reduces the size of dump files
+   and the memory footprint for VAR_DECLs.  */
 #define TODO_remove_unused_locals	(1 << 15)
 
 /* Internally used for the first in a sequence of passes.  It is set

@@ -736,8 +736,8 @@ record_vars_into (tree vars, tree fn)
 	continue;
 
       /* Record the variable.  */
-      cfun->unexpanded_var_list = tree_cons (NULL_TREE, var,
-					     cfun->unexpanded_var_list);
+      cfun->local_decls = tree_cons (NULL_TREE, var,
+					     cfun->local_decls);
     }
 
   if (fn != current_function_decl)

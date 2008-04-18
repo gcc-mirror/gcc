@@ -397,6 +397,13 @@ struct control_flow_graph GTY(())
 
   /* Number of basic blocks in the dominance tree.  */
   unsigned x_n_bbs_in_dom_tree[2];
+
+  /* Maximal number of entities in the single jumptable.  Used to estimate
+     final flowgraph size.  */
+  int max_jumptable_ents;
+
+  /* UIDs for LABEL_DECLs.  */
+  int last_label_uid;
 };
 
 /* Defines for accessing the fields of the CFG structure for function FN.  */

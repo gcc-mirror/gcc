@@ -2784,7 +2784,7 @@ set_nothrow_function_flags (void)
 	  }
       }
 
-  for (insn = current_function_epilogue_delay_list; insn;
+  for (insn = crtl->epilogue_delay_list; insn;
        insn = XEXP (insn, 1))
     if (can_throw_external (insn))
       {
@@ -3379,13 +3379,13 @@ push_sleb128 (varray_type *data_area, int value)
 static int
 dw2_size_of_call_site_table (void)
 {
-  int n = cfun->eh->call_site_data_used;
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
   int size = n * (4 + 4 + 4);
   int i;
 
   for (i = 0; i < n; ++i)
     {
-      struct call_site_record *cs = &cfun->eh->call_site_data[i];
+      struct call_site_record *cs = VEC_index (call_site_record, crtl->eh.call_site_record, i);
       size += size_of_uleb128 (cs->action);
     }
 
@@ -3395,13 +3395,13 @@ dw2_size_of_call_site_table (void)
 static int
 sjlj_size_of_call_site_table (void)
 {
-  int n = cfun->eh->call_site_data_used;
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record);
   int size = 0;
   int i;
 
   for (i = 0; i < n; ++i)
     {
-      struct call_site_record *cs = &cfun->eh->call_site_data[i];
+      struct call_site_record *cs = VEC_index (call_site_record, crtl->eh.call_site_record, i);
       size += size_of_uleb128 (INTVAL (cs->landing_pad));
       size += size_of_uleb128 (cs->action);
     }
