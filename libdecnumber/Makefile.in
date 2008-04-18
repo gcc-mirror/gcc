@@ -151,7 +151,7 @@ clean: mostlyclean
 distclean: clean
 	-rm -f config.h stamp-h1 config.status config.cache config.log \
 	  configure.lineno configure.status.lineno Makefile localedir.h \
-	  localedir.hs
+	  localedir.hs gstdint.h
 
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use"
