@@ -1,3 +1,8 @@
+2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs) <COND_EXPR>: Gimplify the LHS
+	using the is_gimple_lvalue predicate instead of is_gimple_min_lval.
+
 2008-04-18  Tom Tromey  <tromey@redhat.com>
 
 	PR libcpp/15500:
