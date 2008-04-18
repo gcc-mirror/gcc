@@ -3725,11 +3725,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || Has_Foreign_Convention (gnat_entity)))
 	  gnu_return_type = TREE_TYPE (TYPE_FIELDS (gnu_return_type));
 
-	/* If the return type is unconstrained, that means it must have a
-	   maximum size.  We convert the function into a procedure and its
-	   caller will pass a pointer to an object of that maximum size as the
-	   first parameter when we call the function.  */
-	if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_return_type)))
+	/* If the return type has a non-constant size, we convert the function
+	   into a procedure and its caller will pass a pointer to an object as
+	   the first parameter when we call the function.  This can happen for
+	   an unconstrained type with a maximum size or a constrained type with
+	   a size not known at compile time.  */
+	if (TYPE_SIZE_UNIT (gnu_return_type)
+	    && !TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_return_type)))
 	  {
 	    returns_by_target_ptr = true;
 	    gnu_param_list

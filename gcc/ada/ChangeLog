@@ -1,5 +1,10 @@
 2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Use the return by
+	target pointer mechanism as soon as the size is not constant.
+
+2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gigi.h (create_var_decl_1): Declare.
 	(create_var_decl): Turn into a macro invoking create_var_decl_1.
 	(create_true_var_decl): Likewise.
