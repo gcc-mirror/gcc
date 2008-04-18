@@ -11,7 +11,7 @@
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -3857,9 +3857,10 @@ and stick to it.
 @item The mapping of physical source file multi-byte characters to the
 execution character set.
 
-Currently, CPP requires its input to be ASCII or UTF-8.  The execution
-character set may be controlled by the user, with the
-@option{-fexec-charset} and @option{-fwide-exec-charset} options.
+The input character set can be specified using the
+@option{-finput-charset} option, while the execution character set may
+be controlled using the @option{-fexec-charset} and
+@option{-fwide-exec-charset} options.
 
 @item Identifier characters.
 @anchor{Identifier characters}
