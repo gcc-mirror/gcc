@@ -5528,48 +5528,52 @@ vrp_visit_cond_stmt (tree stmt, edge *taken_edge_p)
   return (*taken_edge_p) ? SSA_PROP_INTERESTING : SSA_PROP_VARYING;
 }
 
+/* Searches the case label vector VEC for the index *IDX of the CASE_LABEL
+   that includes the value VAL.  The search is restricted to the range
+   [START_IDX, n - 2] where n is the size of VEC (n - 1 is the default label).
 
-/* Searches the case label vector VEC for the index *IDX the CASE_LABEL
-   includes the value VAL.  The search starts at index START_IDX and
-   true is returned if *IDX corresponds to such an index.  False is
-   returned in case VAL hits the default case label and *IDX in this
-   case is the next higher or the next lower case label index.  */
+   If there is a CASE_LABEL for VAL, its index is placed in IDX and true is
+   returned.
+
+   If there is no CASE_LABEL for VAL and the is one that is larger than VAL,
+   it is placed in IDX and false is returned.
+
+   If VAL is larger than any CASE_LABEL, n - 1 is placed on IDX and false is
+   returned. */
 
 static bool
 find_case_label_index (tree vec, size_t start_idx, tree val, size_t *idx)
 {
   size_t n = TREE_VEC_LENGTH (vec);
-  size_t low, high, i = start_idx;
+  size_t low, high;
 
-  /* Find case label for minimum of the value range or the next one.  */
-  for (low = start_idx - 1, high = n - 1; high - low > 1; )
+  /* Find case label for minimum of the value range or the next one.
+     At each iteration we are searching in [low, high - 1]. */
+
+  for (low = start_idx, high = n - 1; high != low; )
     {
       tree t;
       int cmp;
-      i = (high + low) / 2;
+      /* Note that i != high, so we never ask for n - 1. */
+      size_t i = (high + low) / 2;
       t = TREE_VEC_ELT (vec, i);
 
       /* Cache the result of comparing CASE_LOW and val.  */
       cmp = tree_int_cst_compare (CASE_LOW (t), val);
 
-      if (cmp > 0)
+      if (cmp == 0)
+	{
+	  /* Ranges cannot be empty. */
+	  *idx = i;
+	  return true;
+	}
+      else if (cmp > 0)
         high = i;
       else
-        low = i;
-
-      if (CASE_HIGH (t) == NULL)
-        {
-          /* A singe-valued case label.  */
-          if (cmp == 0)
-	    {
-	      *idx = i;
-	      return true;
-	    }
-        }
-      else
-        {
-          /* A case range.  We can only handle integer ranges.  */
-          if (cmp <= 0 && tree_int_cst_compare (CASE_HIGH (t), val) >= 0)
+	{
+	  low = i + 1;
+	  if (CASE_HIGH (t) != NULL
+	      && tree_int_cst_compare (CASE_HIGH (t), val) >= 0)
 	    {
 	      *idx = i;
 	      return true;
@@ -5577,8 +5581,64 @@ find_case_label_index (tree vec, size_t start_idx, tree val, size_t *idx)
         }
     }
 
-  *idx = i;
+  *idx = high;
   return false;
+}
+
+/* Searches the case label vector VEC for the range of CASE_LABELs that is used
+   for values between MIN and MAX. The first index is placed in MIN_IDX. The
+   last index is placed in MAX_IDX. If the range of CASE_LABELs is empty
+   then MAX_IDX < MIN_IDX.
+   Returns true if the default label is not needed. */
+
+static bool
+find_case_label_range (tree vec, tree min, tree max, size_t *min_idx, size_t *max_idx)
+{
+  size_t i, j;
+  bool min_take_default = !find_case_label_index (vec, 0, min, &i);
+  bool max_take_default = !find_case_label_index (vec, i, max, &j);
+
+  if (i == j
+      && min_take_default
+      && max_take_default)
+    {
+      /* Only the default case label reached. 
+         Return an empty range. */
+      *min_idx = 1;
+      *max_idx = 0;
+      return false;
+    }
+  else
+    {
+      bool take_default = min_take_default || max_take_default;
+      tree low, high;
+      size_t k;
+
+      if (max_take_default)
+	j--;
+
+      /* If the case label range is continuous, we do not need
+	 the default case label.  Verify that.  */
+      high = CASE_LOW (TREE_VEC_ELT (vec, i));
+      if (CASE_HIGH (TREE_VEC_ELT (vec, i)))
+	high = CASE_HIGH (TREE_VEC_ELT (vec, i));
+      for (k = i + 1; k <= j; ++k)
+	{
+	  low = CASE_LOW (TREE_VEC_ELT (vec, k));
+	  if (!integer_onep (int_const_binop (MINUS_EXPR, low, high, 0)))
+	    {
+	      take_default = true;
+	      break;
+	    }
+	  high = low;
+	  if (CASE_HIGH (TREE_VEC_ELT (vec, k)))
+	    high = CASE_HIGH (TREE_VEC_ELT (vec, k));
+	}
+
+      *min_idx = i;
+      *max_idx = j;
+      return !take_default;
+    }
 }
 
 /* Visit switch statement STMT.  If we can determine which edge
@@ -5593,7 +5653,7 @@ vrp_visit_switch_stmt (tree stmt, edge *taken_edge_p)
   value_range_t *vr;
   size_t i = 0, j = 0, n;
   tree vec;
-  bool min_take_default, max_take_default;
+  bool take_default;
 
   *taken_edge_p = NULL;
   op = TREE_OPERAND (stmt, 0);
@@ -5618,27 +5678,23 @@ vrp_visit_switch_stmt (tree stmt, edge *taken_edge_p)
   vec = SWITCH_LABELS (stmt);
   n = TREE_VEC_LENGTH (vec);
 
-  /* Find case label for minimum of the value range or the next one.  */
-  min_take_default = !find_case_label_index (vec, 0, vr->min, &i);
+  take_default = !find_case_label_range (vec, vr->min, vr->max, &i, &j);
 
-  /* Find case label for maximum of the value range or the previous one.  */
-  max_take_default = !find_case_label_index (vec, i, vr->max, &j);
-
-  /* Check if we reach the default label only.  */
+  /* Check if the range spans no CASE_LABEL. If so, we only reach the default
+     label */
   if (j < i)
-    val = TREE_VEC_ELT (vec, n - 1);
-  /* Check if we reach exactly one label and not the default label.  */
-  else if (i == j
-	   && !min_take_default
-	   && !max_take_default)
-    val = TREE_VEC_ELT (vec, i);
+    {
+      gcc_assert (take_default);
+      val = TREE_VEC_ELT (vec, n - 1);
+    }
   else
     {
-      /* Check if labels with index i to j are all reaching the same label.
-         If we don't hit a single case label only, the default case also has
-         to branch to the same label.  */
+      /* Check if labels with index i to j and maybe the default label
+	 are all reaching the same label.  */
+
       val = TREE_VEC_ELT (vec, i);
-      if (CASE_LABEL (TREE_VEC_ELT (vec, n - 1)) != CASE_LABEL (val))
+      if (take_default
+	  && CASE_LABEL (TREE_VEC_ELT (vec, n - 1)) != CASE_LABEL (val))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  not a single destination for this "
@@ -6323,32 +6379,7 @@ simplify_switch_using_ranges (tree stmt)
   /* Find case label for min/max of the value range.  */
   vec = SWITCH_LABELS (stmt);
   n = TREE_VEC_LENGTH (vec);
-  take_default = !find_case_label_index (vec, 0, vr->min, &i);
-  take_default |= !find_case_label_index (vec, i, vr->max, &j);
-
-  /* If the case label range is continuous, we do not need to
-     preserve the default case label.  Verify that.  */
-  if (!take_default && j > i)
-    {
-      tree low, high;
-      size_t k;
-
-      high = CASE_LOW (TREE_VEC_ELT (vec, i));
-      if (CASE_HIGH (TREE_VEC_ELT (vec, i)))
-	high = CASE_HIGH (TREE_VEC_ELT (vec, i));
-      for (k = i + 1; k <= j; ++k)
-	{
-	  low = CASE_LOW (TREE_VEC_ELT (vec, k));
-	  if (!integer_onep (int_const_binop (MINUS_EXPR, low, high, 0)))
-	    {
-	      take_default = true;
-	      break;
-	    }
-	  high = low;
-	  if (CASE_HIGH (TREE_VEC_ELT (vec, k)))
-	    high = CASE_HIGH (TREE_VEC_ELT (vec, k));
-	}
-    }
+  take_default = !find_case_label_range (vec, vr->min, vr->max, &i, &j);
 
   /* Bail out if this is just all edges taken.  */
   if (i == 0
