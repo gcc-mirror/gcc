@@ -1,3 +1,27 @@
+2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
+	  
+	* c-common.c (CHAR16_TYPE, CHAR32_TYPE): New macros.
+	(fname_as_string): Match updated cpp_interpret_string prototype.
+	(fix_string_type): Support char16_t* and char32_t*.
+	(c_common_nodes_and_builtins): Add char16_t and char32_t (and
+	derivative) nodes.  Register as builtin if C++0x.
+	(c_parse_error): Support CPP_CHAR{16,32}.
+	* c-common.h (RID_CHAR16, RID_CHAR32): New elements. 
+	(enum c_tree_index) <CTI_CHAR16_TYPE, CTI_SIGNED_CHAR16_TYPE,
+	CTI_UNSIGNED_CHAR16_TYPE, CTI_CHAR32_TYPE, CTI_SIGNED_CHAR32_TYPE,
+	CTI_UNSIGNED_CHAR32_TYPE, CTI_CHAR16_ARRAY_TYPE,
+	CTI_CHAR32_ARRAY_TYPE>: New elements.
+	(char16_type_node, signed_char16_type_node, unsigned_char16_type_node,
+	char32_type_node, signed_char32_type_node, char16_array_type_node,
+	char32_array_type_node): New defines.
+	* c-lex.c (cb_ident): Match updated cpp_interpret_string prototype.
+	(c_lex_with_flags): Support CPP_CHAR{16,32} and CPP_STRING{16,32}.
+	(lex_string): Support CPP_STRING{16,32}, match updated
+	cpp_interpret_string and cpp_interpret_string_notranslate prototypes.
+	(lex_charconst): Support CPP_CHAR{16,32}.
+	* c-parser.c (c_parser_postfix_expression): Support CPP_CHAR{16,32}
+	and CPP_STRING{16,32}.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

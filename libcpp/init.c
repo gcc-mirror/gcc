@@ -76,20 +76,21 @@ struct lang_flags
   char std;
   char cplusplus_comments;
   char digraphs;
+  char uliterals;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum xid std  //   digr  */
-  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1     },
-  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1     },
-  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0     },
-  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1     },
-  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1     },
-  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1     },
-  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1     },
-  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1     },
-  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1     },
-  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0     }
+{ /*              c99 c++ xnum xid std  //   digr ulit */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0 },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
+  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0 },
+  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0 },
+  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0 },
+  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0 },
+  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1 },
+  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1,   1 },
+  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0,   0 }
   /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX0X, and
      CXX0X when no longer experimental (when all uses of identifiers
      in the compiler have been audited for correct handling of
@@ -112,6 +113,7 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
   CPP_OPTION (pfile, trigraphs)			 = l->std;
   CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)			 = l->digraphs;
+  CPP_OPTION (pfile, uliterals)			 = l->uliterals;
 }
 
 /* Initialize library global state.  */

@@ -48,6 +48,7 @@ struct cset_converter
 {
   convert_f func;
   iconv_t cd;
+  int width;
 };
 
 #define BITS_PER_CPPCHAR_T (CHAR_BIT * sizeof (cppchar_t))
@@ -397,6 +398,14 @@ struct cpp_reader
   /* Descriptor for converting from the source character set to the
      execution character set.  */
   struct cset_converter narrow_cset_desc;
+
+  /* Descriptor for converting from the source character set to the
+     UTF-16 execution character set.  */
+  struct cset_converter char16_cset_desc;
+
+  /* Descriptor for converting from the source character set to the
+     UTF-32 execution character set.  */
+  struct cset_converter char32_cset_desc;
 
   /* Descriptor for converting from the source character set to the
      wide execution character set.  */

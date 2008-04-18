@@ -85,7 +85,7 @@ enum rid
   RID_NEW,      RID_OFFSETOF, RID_OPERATOR,
   RID_THIS,     RID_THROW,    RID_TRUE,
   RID_TRY,      RID_TYPENAME, RID_TYPEID,
-  RID_USING,
+  RID_USING,    RID_CHAR16,   RID_CHAR32,
 
   /* casts */
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
@@ -143,6 +143,8 @@ extern GTY ((length ("(int) RID_MAX"))) tree *ridpointers;
 
 enum c_tree_index
 {
+    CTI_CHAR16_TYPE,
+    CTI_CHAR32_TYPE,
     CTI_WCHAR_TYPE,
     CTI_SIGNED_WCHAR_TYPE,
     CTI_UNSIGNED_WCHAR_TYPE,
@@ -155,6 +157,8 @@ enum c_tree_index
     CTI_WIDEST_UINT_LIT_TYPE,
 
     CTI_CHAR_ARRAY_TYPE,
+    CTI_CHAR16_ARRAY_TYPE,
+    CTI_CHAR32_ARRAY_TYPE,
     CTI_WCHAR_ARRAY_TYPE,
     CTI_INT_ARRAY_TYPE,
     CTI_STRING_TYPE,
@@ -190,6 +194,8 @@ struct c_common_identifier GTY(())
   struct cpp_hashnode node;
 };
 
+#define char16_type_node		c_global_trees[CTI_CHAR16_TYPE]
+#define char32_type_node		c_global_trees[CTI_CHAR32_TYPE]
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]
@@ -206,6 +212,8 @@ struct c_common_identifier GTY(())
 #define truthvalue_false_node		c_global_trees[CTI_TRUTHVALUE_FALSE]
 
 #define char_array_type_node		c_global_trees[CTI_CHAR_ARRAY_TYPE]
+#define char16_array_type_node		c_global_trees[CTI_CHAR16_ARRAY_TYPE]
+#define char32_array_type_node		c_global_trees[CTI_CHAR32_ARRAY_TYPE]
 #define wchar_array_type_node		c_global_trees[CTI_WCHAR_ARRAY_TYPE]
 #define int_array_type_node		c_global_trees[CTI_INT_ARRAY_TYPE]
 #define string_type_node		c_global_trees[CTI_STRING_TYPE]

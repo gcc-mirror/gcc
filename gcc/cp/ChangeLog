@@ -1,3 +1,22 @@
+2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
+
+	* cvt.c (type_promotes_to): Support char16_t and char32_t.
+	* decl.c (grokdeclarator): Disallow signed/unsigned/short/long on
+	char16_t and char32_t.
+	* lex.c (reswords): Add char16_t and char32_t (for c++0x).
+	* mangle.c (write_builtin_type): Mangle char16_t/char32_t as vendor
+	extended builtin type "u8char{16,32}_t".
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Support
+	RID_CHAR{16,32}.
+	(cp_lexer_print_token): Support CPP_STRING{16,32}.
+	(cp_parser_is_string_literal): Idem.
+	(cp_parser_string_literal): Idem.
+	(cp_parser_primary_expression): Support CPP_CHAR{16,32} and
+	CPP_STRING{16,32}.
+	(cp_parser_simple_type_specifier): Support RID_CHAR{16,32}. 
+	* tree.c (char_type_p): Support char16_t and char32_t as char types.
+	* typeck.c (string_conv_p): Support char16_t and char32_t.
+
 2008-04-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35773

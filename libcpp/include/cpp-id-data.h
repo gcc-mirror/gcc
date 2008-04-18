@@ -22,7 +22,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 typedef unsigned char uchar;
 #endif
 
-#define U (const unsigned char *)  /* Intended use: U"string" */
+#define UC (const unsigned char *)  /* Intended use: UC"string" */
 
 /* Chained list of answers to an assertion.  */
 struct answer GTY(())

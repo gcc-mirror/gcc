@@ -174,7 +174,7 @@ cb_ident (cpp_reader * ARG_UNUSED (pfile),
     {
       /* Convert escapes in the string.  */
       cpp_string cstr = { 0, 0 };
-      if (cpp_interpret_string (pfile, str, 1, &cstr, false))
+      if (cpp_interpret_string (pfile, str, 1, &cstr, CPP_STRING))
 	{
 	  ASM_OUTPUT_IDENT (asm_out_file, (const char *) cstr.text);
 	  free (CONST_CAST (unsigned char *, cstr.text));
@@ -361,6 +361,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
 	    case CPP_STRING:
 	    case CPP_WSTRING:
+	    case CPP_STRING16:
+	    case CPP_STRING32:
 	      type = lex_string (tok, value, true, true);
 	      break;
 
@@ -410,11 +412,15 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
     case CPP_CHAR:
     case CPP_WCHAR:
+    case CPP_CHAR16:
+    case CPP_CHAR32:
       *value = lex_charconst (tok);
       break;
 
     case CPP_STRING:
     case CPP_WSTRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
       if ((lex_flags & C_LEX_RAW_STRINGS) == 0)
 	{
 	  type = lex_string (tok, value, false,
@@ -822,12 +828,12 @@ interpret_fixed (const cpp_token *token, unsigned int flags)
   return value;
 }
 
-/* Convert a series of STRING and/or WSTRING tokens into a tree,
-   performing string constant concatenation.  TOK is the first of
-   these.  VALP is the location to write the string into.  OBJC_STRING
-   indicates whether an '@' token preceded the incoming token.
+/* Convert a series of STRING, WSTRING, STRING16 and/or STRING32 tokens
+   into a tree, performing string constant concatenation.  TOK is the
+   first of these.  VALP is the location to write the string into.
+   OBJC_STRING indicates whether an '@' token preceded the incoming token.
    Returns the CPP token type of the result (CPP_STRING, CPP_WSTRING,
-   or CPP_OBJC_STRING).
+   CPP_STRING32, CPP_STRING16, or CPP_OBJC_STRING).
 
    This is unfortunately more work than it should be.  If any of the
    strings in the series has an L prefix, the result is a wide string
@@ -842,18 +848,15 @@ static enum cpp_ttype
 lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 {
   tree value;
-  bool wide = false;
   size_t concats = 0;
   struct obstack str_ob;
   cpp_string istr;
+  enum cpp_ttype type = tok->type;
 
   /* Try to avoid the overhead of creating and destroying an obstack
      for the common case of just one string.  */
   cpp_string str = tok->val.str;
   cpp_string *strs = &str;
-
-  if (tok->type == CPP_WSTRING)
-    wide = true;
 
  retry:
   tok = cpp_get_token (parse_in);
@@ -873,8 +876,15 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
       break;
 
     case CPP_WSTRING:
-      wide = true;
-      /* FALLTHROUGH */
+    case CPP_STRING16:
+    case CPP_STRING32:
+      if (type != tok->type)
+	{
+	  if (type == CPP_STRING)
+	    type = tok->type;
+	  else
+	    error ("unsupported non-standard concatenation of string literals");
+	}
 
     case CPP_STRING:
       if (!concats)
@@ -899,7 +909,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 
   if ((translate
        ? cpp_interpret_string : cpp_interpret_string_notranslate)
-      (parse_in, strs, concats + 1, &istr, wide))
+      (parse_in, strs, concats + 1, &istr, type))
     {
       value = build_string (istr.len, (const char *) istr.text);
       free (CONST_CAST (unsigned char *, istr.text));
@@ -909,22 +919,52 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
       /* Callers cannot generally handle error_mark_node in this context,
 	 so return the empty string instead.  cpp_interpret_string has
 	 issued an error.  */
-      if (wide)
-	value = build_string (TYPE_PRECISION (wchar_type_node)
-			      / TYPE_PRECISION (char_type_node),
-			      "\0\0\0");  /* widest supported wchar_t
-					     is 32 bits */
-      else
-	value = build_string (1, "");
+      switch (type)
+	{
+	default:
+	case CPP_STRING:
+	  value = build_string (1, "");
+	  break;
+	case CPP_STRING16:
+	  value = build_string (TYPE_PRECISION (char16_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0");  /* char16_t is 16 bits */
+	  break;
+	case CPP_STRING32:
+	  value = build_string (TYPE_PRECISION (char32_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0\0\0");  /* char32_t is 32 bits */
+	  break;
+	case CPP_WSTRING:
+	  value = build_string (TYPE_PRECISION (wchar_type_node)
+				/ TYPE_PRECISION (char_type_node),
+				"\0\0\0");  /* widest supported wchar_t
+					       is 32 bits */
+	  break;
+        }
     }
 
-  TREE_TYPE (value) = wide ? wchar_array_type_node : char_array_type_node;
+  switch (type)
+    {
+    default:
+    case CPP_STRING:
+      TREE_TYPE (value) = char_array_type_node;
+      break;
+    case CPP_STRING16:
+      TREE_TYPE (value) = char16_array_type_node;
+      break;
+    case CPP_STRING32:
+      TREE_TYPE (value) = char32_array_type_node;
+      break;
+    case CPP_WSTRING:
+      TREE_TYPE (value) = wchar_array_type_node;
+    }
   *valp = fix_string_type (value);
 
   if (concats)
     obstack_free (&str_ob, 0);
 
-  return objc_string ? CPP_OBJC_STRING : wide ? CPP_WSTRING : CPP_STRING;
+  return objc_string ? CPP_OBJC_STRING : type;
 }
 
 /* Converts a (possibly wide) character constant token into a tree.  */
@@ -941,6 +981,10 @@ lex_charconst (const cpp_token *token)
 
   if (token->type == CPP_WCHAR)
     type = wchar_type_node;
+  else if (token->type == CPP_CHAR32)
+    type = char32_type_node;
+  else if (token->type == CPP_CHAR16)
+    type = char16_type_node;
   /* In C, a character constant has type 'int'.
      In C++ 'char', but multi-char charconsts have type 'int'.  */
   else if (!c_dialect_cxx () || chars_seen > 1)
