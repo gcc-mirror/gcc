@@ -1,6 +1,7 @@
-dnl Fix Autoconf-2.59 AC_CONFIG_SUBDIRS whitespace mangling,
-dnl by overriding the broken internal Autoconf macro with a
-dnl backport of the 2.60 fix.
+dnl Fix Autoconf-2.59 bugs: by overriding broken internal
+dnl Autoconf macros with backports of the 2.60+ fix.
+dnl - AC_CONFIG_SUBDIRS whitespace mangling,
+dnl - more lenient precious variable checks
 dnl
 dnl This file should be a no-op for Autoconf versions != 2.59.
 dnl It can be removed once the complete tree has moved to a
@@ -18,8 +19,10 @@ dnl when needed.
 ifdef([m4_PACKAGE_VERSION],
 [ifelse(m4_PACKAGE_VERSION, [2.59], [
 
-dnl Redefine AC_CONFIG_SUBDIRS so this file is picked up if needed.
-AC_DEFUN([AC_CONFIG_SUBDIRS], defn([AC_CONFIG_SUBDIRS]))
+dnl AC_DEFUN a commonly used macro so this file is picked up.
+m4_copy([AC_PREREQ], [_AC_PREREQ])
+AC_DEFUN([AC_PREREQ], [frob])
+m4_copy([_AC_PREREQ], [AC_PREREQ])
 
 dnl Override the broken macro.
 # _AC_OUTPUT_SUBDIRS
@@ -124,4 +127,63 @@ if test "$no_recursion" != yes; then
   done
 fi
 ])# _AC_OUTPUT_SUBDIRS
+
+# _AC_ARG_VAR_VALIDATE
+# --------------------
+# The code is the same as autoconf 2.59, but with a more lenient check
+# on precious variables that has been added in autoconf 2.62.
+m4_define([_AC_ARG_VAR_VALIDATE],
+[# Check that the precious variables saved in the cache have kept the same
+# value.
+ac_cache_corrupted=false
+for ac_var in `(set) 2>&1 |
+	       sed -n 's/^ac_env_\([[a-zA-Z_0-9]]*\)_set=.*/\1/p'`; do
+  eval ac_old_set=\$ac_cv_env_${ac_var}_set
+  eval ac_new_set=\$ac_env_${ac_var}_set
+  eval ac_old_val="\$ac_cv_env_${ac_var}_value"
+  eval ac_new_val="\$ac_env_${ac_var}_value"
+  case $ac_old_set,$ac_new_set in
+    set,)
+      AS_MESSAGE([error: `$ac_var' was set to `$ac_old_val' in the previous run], 2)
+      ac_cache_corrupted=: ;;
+    ,set)
+      AS_MESSAGE([error: `$ac_var' was not set in the previous run], 2)
+      ac_cache_corrupted=: ;;
+    ,);;
+    *)
+      if test "x$ac_old_val" != "x$ac_new_val"; then
+        # differences in whitespace do not lead to failure.
+        ac_old_val_w=`echo x $ac_old_val`
+        ac_new_val_w=`echo x $ac_new_val`
+        if test "$ac_old_val_w" != "$ac_new_val_w"; then
+          AS_MESSAGE([error: `$ac_var' has changed since the previous run:], 2)
+          ac_cache_corrupted=:
+        else
+          AS_MESSAGE([warning: ignoring whitespace changes in `$ac_var' since the previous run:], 2)
+          eval $ac_var=\$ac_old_val
+        fi
+        AS_MESSAGE([  former value:  `$ac_old_val'], 2)
+        AS_MESSAGE([  current value: `$ac_new_val'], 2)
+      fi;;
+  esac
+  # Pass precious variables to config.status.
+  if test "$ac_new_set" = set; then
+    case $ac_new_val in
+dnl If you change this globbing pattern, test it on an old shell --
+dnl it's sensitive.  Putting any kind of quote in it causes syntax errors.
+[    *" "*|*"	"*|*[\[\]\~\#\$\^\&\*\(\)\{\}\\\|\;\<\>\?\"\']*)]
+      ac_arg=$ac_var=`echo "$ac_new_val" | sed "s/'/'\\\\\\\\''/g"` ;;
+    *) ac_arg=$ac_var=$ac_new_val ;;
+    esac
+    case " $ac_configure_args " in
+      *" '$ac_arg' "*) ;; # Avoid dups.  Use of quotes ensures accuracy.
+      *) ac_configure_args="$ac_configure_args '$ac_arg'" ;;
+    esac
+  fi
+done
+if $ac_cache_corrupted; then
+  AS_MESSAGE([error: changes in the environment can compromise the build], 2)
+  AS_ERROR([run `make distclean' and/or `rm $cache_file' and start over])
+fi
+])# _AC_ARG_VAR_VALIDATE
 ])])

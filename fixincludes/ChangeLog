@@ -1,3 +1,10 @@
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+	* Makefile.in: Rewrite aclocal.m4 rule.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2008-03-07  Peter O'Gorman  <pogma@thewrittenword.com>
 
 	PR c++/20366
