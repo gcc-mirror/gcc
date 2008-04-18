@@ -4419,6 +4419,13 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
     if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
       return true;
 
+  /* Also look down into inline namespaces.  */
+  for (value = DECL_NAMESPACE_USING (scope); value;
+       value = TREE_CHAIN (value))
+    if (is_associated_namespace (scope, TREE_PURPOSE (value)))
+      if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
+	return true;
+
   value = namespace_binding (k->name, scope);
   if (!value)
     return false;
