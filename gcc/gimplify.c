@@ -3636,7 +3636,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	    tree result = *to_p;
 
 	    ret = gimplify_expr (&result, pre_p, post_p,
-				 is_gimple_min_lval, fb_lvalue);
+				 is_gimple_lvalue, fb_lvalue);
 	    if (ret != GS_ERROR)
 	      ret = GS_OK;
 

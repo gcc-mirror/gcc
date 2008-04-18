@@ -1,3 +1,9 @@
+2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/dynamic_elab_pkg.ads: New helper.
+	* gnat.dg/dynamic_elab1.ad[sb]: New test.
+	* gnat.dg/dynamic_elab2.ad[sb]: Likewise.
+
 2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
 
 	Tests for char16_t and char32_t support.
