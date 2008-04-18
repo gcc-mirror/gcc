@@ -1,3 +1,9 @@
+2008-04-18  Rafael Espindola  <espindola@google.com>
+	* tree-vrp.c (find_case_label_index): Fix the binary search.
+	(find_case_label_range): New.
+	(vrp_visit_switch_stmt): Use find_case_label_range.
+	(simplify_switch_using_ranges): Use find_case_label_range.
+
 2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr_rhs) <COND_EXPR>: Gimplify the LHS
