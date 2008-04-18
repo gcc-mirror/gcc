@@ -8394,6 +8394,66 @@ maybe_canonicalize_comparison (enum tree_code code, tree type,
   return t;
 }
 
+/* Return whether BASE + OFFSET + BITPOS may wrap around the address
+   space.  This is used to avoid issuing overflow warnings for
+   expressions like &p->x which can not wrap.  */
+
+static bool
+pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
+{
+  tree size;
+  unsigned HOST_WIDE_INT offset_low, total_low;
+  HOST_WIDE_INT offset_high, total_high;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (base)))
+    return true;
+
+  if (bitpos < 0)
+    return true;
+
+  size = size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
+  if (size == NULL_TREE || TREE_CODE (size) != INTEGER_CST)
+    return true;
+
+  /* We can do slightly better for SIZE if we have an ADDR_EXPR of an
+     array.  */
+  if (TREE_CODE (base) == ADDR_EXPR)
+    {
+      tree base_size = size_in_bytes (TREE_TYPE (TREE_OPERAND (base, 0)));
+      if (base_size != NULL_TREE
+	  && TREE_CODE (base_size) == INTEGER_CST
+	  && INT_CST_LT_UNSIGNED (size, base_size))
+	size = base_size;
+    }
+
+  if (offset == NULL_TREE)
+    {
+      offset_low = 0;
+      offset_high = 0;
+    }
+  else if (TREE_CODE (offset) != INTEGER_CST || TREE_OVERFLOW (offset))
+    return true;
+  else
+    {
+      offset_low = TREE_INT_CST_LOW (offset);
+      offset_high = TREE_INT_CST_HIGH (offset);
+    }
+
+  if (add_double_with_sign (offset_low, offset_high,
+			    bitpos / BITS_PER_UNIT, 0,
+			    &total_low, &total_high,
+			    true))
+    return true;
+
+  if ((unsigned HOST_WIDE_INT) total_high
+      < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (size))
+    return false;
+  if ((unsigned HOST_WIDE_INT) total_high
+      > (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (size))
+    return true;
+  return total_low > TREE_INT_CST_LOW (size);
+}
+
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -8544,10 +8604,24 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  /* We can fold this expression to a constant if the non-constant
 	     offset parts are equal.  */
-	  if (offset0 == offset1
-	      || (offset0 && offset1
-		  && operand_equal_p (offset0, offset1, 0)))
+	  if ((offset0 == offset1
+	       || (offset0 && offset1
+		   && operand_equal_p (offset0, offset1, 0)))
+	      && (code == EQ_EXPR
+		  || code == NE_EXPR
+		  || POINTER_TYPE_OVERFLOW_UNDEFINED))
+		
 	    {
+	      if (code != EQ_EXPR
+		  && code != NE_EXPR
+		  && bitpos0 != bitpos1
+		  && (pointer_may_wrap_p (base0, offset0, bitpos0)
+		      || pointer_may_wrap_p (base1, offset1, bitpos1)))
+		fold_overflow_warning (("assuming pointer wraparound does not "
+					"occur when comparing P +- C1 with "
+					"P +- C2"),
+				       WARN_STRICT_OVERFLOW_CONDITIONAL);
+
 	      switch (code)
 		{
 		case EQ_EXPR:
@@ -8593,7 +8667,10 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	      else
 		offset1 = fold_convert (signed_size_type_node, offset1);
 
-	      if (code != EQ_EXPR && code != NE_EXPR)
+	      if (code != EQ_EXPR
+		  && code != NE_EXPR
+		  && (pointer_may_wrap_p (base0, offset0, bitpos0)
+		      || pointer_may_wrap_p (base1, offset1, bitpos1)))
 		fold_overflow_warning (("assuming pointer wraparound does not "
 					"occur when comparing P +- C1 with "
 					"P +- C2"),
