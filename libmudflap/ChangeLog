@@ -1,3 +1,9 @@
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2008-03-20  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* testsuite/libmudflap.c/pass63-frag.c: New test.

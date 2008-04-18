@@ -1,3 +1,12 @@
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+
+	* confsubdir.m4: Rename to...
+	* override.m4: ... this.  Make sure aclocal always picks it.
+	Add more lenient precious variable check, backported from
+	autoconf trunk.
+
 2008-04-04  Nick Clifton  <nickc@redhat.com>
 
 	PR binutils/4334

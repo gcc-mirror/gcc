@@ -159,14 +159,14 @@ stamp-h: $(srcdir)/config.h.in config.status
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
 	cd $(srcdir) && autoconf
 
 $(srcdir)/config.h.in: @MAINT@ $(srcdir)/configure.ac
 	cd $(srcdir) && autoheader
 
-$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../gcc/aclocal.m4
-	cp $(srcdir)/../gcc/aclocal.m4 .
+$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/configure.ac
+	cd $(srcdir) && aclocal -I ../gcc -I .. -I ../config
 
 check : all
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def

@@ -1,3 +1,9 @@
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+	* aclocal.m4: Add override.m4.
+	* configure: Regenerate.
+
 2008-03-31  Ian Lance Taylor  <iant@google.com>
 
 	* cp-demangle.c (d_substitution): Correct overflow check to avoid

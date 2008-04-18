@@ -1,3 +1,9 @@
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2008-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35611
