@@ -2296,9 +2296,9 @@ expand_call (tree exp, rtx target, int ignore)
   /* Ensure current function's preferred stack boundary is at least
      what we need.  We don't have to increase alignment for recursive
      functions.  */
-  if (cfun->preferred_stack_boundary < preferred_stack_boundary
+  if (crtl->preferred_stack_boundary < preferred_stack_boundary
       && fndecl != current_function_decl)
-    cfun->preferred_stack_boundary = preferred_stack_boundary;
+    crtl->preferred_stack_boundary = preferred_stack_boundary;
   if (fndecl == current_function_decl)
     cfun->recursive_call_emit = true;
 
@@ -2370,7 +2370,7 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & (ECF_LIBCALL_BLOCK | ECF_MALLOC)))
 	start_sequence ();
 
-      if (pass == 0 && cfun->stack_protect_guard)
+      if (pass == 0 && crtl->stack_protect_guard)
 	stack_protect_epilogue ();
 
       adjusted_args_size = args_size;
@@ -3346,8 +3346,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   /* Ensure current function's preferred stack boundary is at least
      what we need.  */
-  if (cfun->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
-    cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+  if (crtl->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */

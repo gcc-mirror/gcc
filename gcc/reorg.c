@@ -428,7 +428,7 @@ find_end_label (void)
 	     epilogue has filled delay-slots; we would have to try and
 	     move the delay-slot fillers to the delay-slots for the new
 	     return insn or in front of the new return insn.  */
-	  if (current_function_epilogue_delay_list == NULL
+	  if (crtl->epilogue_delay_list == NULL
 	      && HAVE_return)
 	    {
 	      /* The return we make may have delay slots too.  */
@@ -792,7 +792,7 @@ optimize_skip (rtx insn)
      In both of these cases, inverting the jump and annulling the delay
      slot give the same effect in fewer insns.  */
   if ((next_trial == next_active_insn (JUMP_LABEL (insn))
-       && ! (next_trial == 0 && current_function_epilogue_delay_list != 0))
+       && ! (next_trial == 0 && crtl->epilogue_delay_list != 0))
       || (next_trial != 0
 	  && JUMP_P (next_trial)
 	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)
@@ -2410,7 +2410,7 @@ fill_simple_delay_slots (int non_jumps_p)
      The only thing we can do is scan backwards from the end of the
      function.  If we did this in a previous pass, it is incorrect to do it
      again.  */
-  if (current_function_epilogue_delay_list)
+  if (crtl->epilogue_delay_list)
     return;
 
   slots_to_fill = DELAY_SLOTS_FOR_EPILOGUE;
@@ -2470,9 +2470,9 @@ fill_simple_delay_slots (int non_jumps_p)
 	      /* Here as well we are searching backward, so put the
 		 insns we find on the head of the list.  */
 
-	      current_function_epilogue_delay_list
+	      crtl->epilogue_delay_list
 		= gen_rtx_INSN_LIST (VOIDmode, trial,
-				     current_function_epilogue_delay_list);
+				     crtl->epilogue_delay_list);
 	      mark_end_of_function_resources (trial, 1);
 	      update_block (trial, trial);
 	      delete_related_insns (trial);
@@ -3695,7 +3695,7 @@ make_return_insns (rtx first)
      delay slot filler insns.  It is also unknown whether such a
      transformation would actually be profitable.  Note that the existing
      code only cares for branches with (some) filled delay slots.  */
-  if (current_function_epilogue_delay_list != NULL)
+  if (crtl->epilogue_delay_list != NULL)
     return;
 #endif
 
@@ -4036,7 +4036,7 @@ dbr_schedule (rtx first)
   {
     rtx link;
 
-    for (link = current_function_epilogue_delay_list;
+    for (link = crtl->epilogue_delay_list;
          link;
          link = XEXP (link, 1))
       INSN_LOCATOR (XEXP (link, 0)) = 0;

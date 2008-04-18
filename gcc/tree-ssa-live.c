@@ -616,8 +616,8 @@ remove_unused_locals (void)
         }
     }
 
-  /* Remove unmarked local vars from unexpanded_var_list.  */
-  for (cell = &cfun->unexpanded_var_list; *cell; )
+  /* Remove unmarked local vars from local_decls.  */
+  for (cell = &cfun->local_decls; *cell; )
     {
       tree var = TREE_VALUE (*cell);
 
@@ -640,10 +640,10 @@ remove_unused_locals (void)
       cell = &TREE_CHAIN (*cell);
     }
 
-  /* Remove unmarked global vars from unexpanded_var_list.  */
+  /* Remove unmarked global vars from local_decls.  */
   if (global_unused_vars != NULL)
     {
-      for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
+      for (t = cfun->local_decls; t; t = TREE_CHAIN (t))
 	{
 	  tree var = TREE_VALUE (t);
 
@@ -654,7 +654,7 @@ remove_unused_locals (void)
 	    mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 	}
 
-      for (cell = &cfun->unexpanded_var_list; *cell; )
+      for (cell = &cfun->local_decls; *cell; )
 	{
 	  tree var = TREE_VALUE (*cell);
 

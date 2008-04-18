@@ -275,6 +275,10 @@ struct rtl_data GTY(())
      has_hard_reg_initial_val (see integrate.[hc]).  */
   struct initial_value_struct *hard_reg_initial_vals;
 
+  /* A variable living at the top of the frame that holds a known value.
+     Used for detecting stack clobbers.  */
+  tree stack_protect_guard;
+
   /* List (chain of EXPR_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
   rtx x_nonlocal_goto_handler_labels;
@@ -290,7 +294,7 @@ struct rtl_data GTY(())
   rtx x_naked_return_label;
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
-     Made for the sake of unshare_all_crtl->  */
+     Made for the sake of unshare_all_rtl.  */
   rtx x_stack_slot_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
@@ -319,6 +323,17 @@ struct rtl_data GTY(())
   /* Current nesting level for temporaries.  */
   int x_temp_slot_level;
 
+  /* The largest alignment of slot allocated on the stack.  */
+  unsigned int stack_alignment_needed;
+
+  /* Preferred alignment of the end of stack frame.  */
+  unsigned int preferred_stack_boundary;
+
+  /* For reorg.  */
+
+  /* If some insns can be deferred to the delay slots of the epilogue, the
+     delay list for them is recorded here.  */
+  rtx epilogue_delay_list;
 };
 
 #define return_label (crtl->x_return_label)
@@ -378,16 +393,13 @@ struct function GTY(())
   /* Function sequence number for profiling, debugging, etc.  */
   int funcdef_no;
 
+  /* List of function local variables, functions, types and constants.  */
+  tree local_decls;
+
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
   struct machine_function * GTY ((maybe_undef)) machine;
-
-  /* The largest alignment of slot allocated on the stack.  */
-  unsigned int stack_alignment_needed;
-
-  /* Preferred alignment of the end of stack frame.  */
-  unsigned int preferred_stack_boundary;
 
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function * language;
@@ -395,28 +407,8 @@ struct function GTY(())
   /* Used types hash table.  */
   htab_t GTY ((param_is (union tree_node))) used_types_hash;
 
-  /* For reorg.  */
-
-  /* If some insns can be deferred to the delay slots of the epilogue, the
-     delay list for them is recorded here.  */
-  rtx epilogue_delay_list;
-
-  /* Maximal number of entities in the single jumptable.  Used to estimate
-     final flowgraph size.  */
-  int max_jumptable_ents;
-
-  /* UIDs for LABEL_DECLs.  */
-  int last_label_uid;
-
   /* Line number of the end of the function.  */
   location_t function_end_locus;
-
-  /* The variables unexpanded so far.  */
-  tree unexpanded_var_list;
-
-  /* A variable living at the top of the frame that holds a known value.
-     Used for detecting stack clobbers.  */
-  tree stack_protect_guard;
 
   /* Properties used by the pass manager.  */
   unsigned int curr_properties;
@@ -584,7 +576,6 @@ extern void instantiate_decl_rtl (rtx x);
 #define current_function_limit_stack (cfun->limit_stack)
 #define current_function_uses_pic_offset_table (cfun->uses_pic_offset_table)
 #define current_function_uses_const_pool (cfun->uses_const_pool)
-#define current_function_epilogue_delay_list (cfun->epilogue_delay_list)
 #define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
 #define current_function_saves_all_registers (cfun->saves_all_registers)
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)

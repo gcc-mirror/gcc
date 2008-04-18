@@ -3443,7 +3443,7 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
 		add_structure (type);
 
 	  /* Check function local variables.  */
-	  for (var_list = fn->unexpanded_var_list; var_list; 
+	  for (var_list = fn->local_decls; var_list; 
 	       var_list = TREE_CHAIN (var_list))
 	    {
 	      var = TREE_VALUE (var_list);

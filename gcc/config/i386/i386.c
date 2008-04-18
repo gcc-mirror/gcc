@@ -5060,7 +5060,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
      We also may end up assuming that only 64bit values are stored in SSE
      register let some floating point program work.  */
   if (ix86_preferred_stack_boundary >= BIGGEST_ALIGNMENT)
-    cfun->stack_alignment_needed = BIGGEST_ALIGNMENT;
+    crtl->stack_alignment_needed = BIGGEST_ALIGNMENT;
 
   save_area = frame_pointer_rtx;
   set = get_varargs_alias_set ();
@@ -6098,8 +6098,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
 
-  stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
-  preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
+  stack_alignment_needed = crtl->stack_alignment_needed / BITS_PER_UNIT;
+  preferred_alignment = crtl->preferred_stack_boundary / BITS_PER_UNIT;
 
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers
