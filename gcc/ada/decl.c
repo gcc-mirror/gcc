@@ -5683,11 +5683,12 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
-     variable that indicates our size, if variable. */
+     variable that indicates our size, if still variable. */
   if (TYPE_NAME (record)
       && AGGREGATE_TYPE_P (type)
-      && (TREE_CODE (TYPE_NAME (type)) != TYPE_DECL
-	  || !DECL_IGNORED_P (TYPE_NAME (type))))
+      && TREE_CODE (orig_size) != INTEGER_CST
+      && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	   && DECL_IGNORED_P (TYPE_NAME (type))))
     {
       tree marker = make_node (RECORD_TYPE);
       tree name = TYPE_NAME (record);
