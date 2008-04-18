@@ -1,3 +1,9 @@
+2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/varsize_return.ads: New test.
+	* gnat.dg/specs/varsize_return_pkg1.ad[sb]: New helper.
+	* gnat.dg/specs/varsize_return_pkg2.ad[sb]: Likewise.
+
 2008-04-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35773
