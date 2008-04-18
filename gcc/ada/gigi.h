@@ -564,36 +564,51 @@ extern tree create_type_decl (tree type_name, tree type,
                               bool artificial_p, bool debug_info_p,
 			      Node_Id gnat_node);
 
-/* Returns a GCC VAR_DECL or CONST_DECL node.
+/* Return a VAR_DECL or CONST_DECL node.
 
    VAR_NAME gives the name of the variable.  ASM_NAME is its assembler name
    (if provided).  TYPE is its data type (a GCC ..._TYPE node).  VAR_INIT is
    the GCC tree for an optional initial expression; NULL_TREE if none.
 
-   CONST_FLAG is true if this variable is constant.
+   CONST_FLAG is true if this variable is constant, in which case we might
+   return a CONST_DECL node unless CONST_DECL_ALLOWED_P is false.
 
    PUBLIC_FLAG is true if this definition is to be made visible outside of
    the current compilation unit. This flag should be set when processing the
-   variable definitions in a package specification.  EXTERN_FLAG is nonzero
-   when processing an external variable declaration (as opposed to a
-   definition: no storage is to be allocated for the variable here).
+   variable definitions in a package specification.
+
+   EXTERN_FLAG is nonzero when processing an external variable declaration (as
+   opposed to a definition: no storage is to be allocated for the variable).
 
    STATIC_FLAG is only relevant when not at top level.  In that case
    it indicates whether to always allocate storage to the variable.
 
    GNAT_NODE is used for the position of the decl.  */
-extern tree create_var_decl (tree var_name, tree asm_name, tree type,
-                             tree var_init, bool const_flag,
-                             bool public_flag, bool extern_flag,
-                             bool static_flag,
-			     struct attrib *attr_list, Node_Id gnat_node);
+tree
+create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
+		   bool const_flag, bool public_flag, bool extern_flag,
+		   bool static_flag, bool const_decl_allowed_p,
+		   struct attrib *attr_list, Node_Id gnat_node);
 
-/* Similar to create_var_decl, forcing the creation of a VAR_DECL node.  */
-extern tree create_true_var_decl (tree var_name, tree asm_name, tree type,
-				  tree var_init, bool const_flag,
-				  bool public_flag, bool extern_flag,
-				  bool static_flag,
-				  struct attrib *attr_list, Node_Id gnat_node);
+/* Wrapper around create_var_decl_1 for cases where we don't care whether
+   a VAR or a CONST decl node is created.  */
+#define create_var_decl(var_name, asm_name, type, var_init,	\
+			const_flag, public_flag, extern_flag,	\
+			static_flag, attr_list, gnat_node)	\
+  create_var_decl_1 (var_name, asm_name, type, var_init,	\
+		     const_flag, public_flag, extern_flag,	\
+		     static_flag, true, attr_list, gnat_node)
+
+/* Wrapper around create_var_decl_1 for cases where a VAR_DECL node is
+   required.  The primary intent is for DECL_CONST_CORRESPONDING_VARs, which
+   must be VAR_DECLs and on which we want TREE_READONLY set to have them
+   possibly assigned to a readonly data section.  */
+#define create_true_var_decl(var_name, asm_name, type, var_init,	\
+			     const_flag, public_flag, extern_flag,	\
+			     static_flag, attr_list, gnat_node)		\
+  create_var_decl_1 (var_name, asm_name, type, var_init,		\
+		     const_flag, public_flag, extern_flag,		\
+		     static_flag, false, attr_list, gnat_node)
 
 /* Given a DECL and ATTR_LIST, apply the listed attributes.  */
 extern void process_attributes (tree decl, struct attrib *attr_list);
