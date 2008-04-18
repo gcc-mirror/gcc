@@ -1,3 +1,9 @@
+2008-04-17  Tom Tromey  <tromey@redhat.com>
+
+	PR libcpp/34866:
+	* errors.c (cpp_error): Don't reference a token before the start
+	of the current run.
+
 2008-04-16  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (TAGS_SOURCES): New variable.

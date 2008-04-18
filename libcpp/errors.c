@@ -1,6 +1,6 @@
 /* Default error handlers for CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998, 1999, 2000,
-   2001, 2002, 2004 Free Software Foundation, Inc.
+   2001, 2002, 2004, 2008 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -150,6 +150,15 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 	    src_loc = pfile->directive_line;
 	  else
 	    src_loc = pfile->line_table->highest_line;
+	}
+      /* We don't want to refer to a token before the beginning of the
+	 current run -- that is invalid.  */
+      else if (pfile->cur_token == pfile->cur_run->base)
+	{
+	  if (pfile->cur_run->prev != NULL)
+	    src_loc = pfile->cur_run->prev->limit->src_loc;
+	  else
+	    src_loc = 0;
 	}
       else
 	{
