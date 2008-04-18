@@ -52690,10 +52690,10 @@ stage_current:
 	@if test -f stage_last; then $(unstage); else $(MAKE) stage1-start; fi
 
 .PHONY: restrap
-restrap:
+restrap::
 	@: $(MAKE); $(stage)
 	rm -rf stage1-$(TARGET_SUBDIR) stage2-* stageb2g0-* stage3-* stageb3g2-* stage4-* stageprofile-* stagefeedback-* 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
+restrap:: all
 @endif gcc-bootstrap
 
 # --------------------------------------
