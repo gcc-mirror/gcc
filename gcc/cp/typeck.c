@@ -1722,12 +1722,14 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
 
   t = TREE_TYPE (totype);
   if (!same_type_p (t, char_type_node)
+      && !same_type_p (t, char16_type_node)
+      && !same_type_p (t, char32_type_node)
       && !same_type_p (t, wchar_type_node))
     return 0;
 
   if (TREE_CODE (exp) == STRING_CST)
     {
-      /* Make sure that we don't try to convert between char and wchar_t.  */
+      /* Make sure that we don't try to convert between char and wide chars.  */
       if (!same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (exp))), t))
 	return 0;
     }

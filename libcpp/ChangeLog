@@ -1,3 +1,40 @@
+2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
+
+	* include/cpp-id-data.h (UC): Was U, conflicts with U"..." literal.
+	* include/cpplib.h (CHAR16, CHAR32, STRING16, STRING32): New tokens.
+	(struct cpp_options): Added uliterals.
+	(cpp_interpret_string): Update prototype.
+	(cpp_interpret_string_notranslate): Idem.
+	* charset.c (init_iconv_desc): New width member in cset_converter.
+	(cpp_init_iconv): Add support for char{16,32}_cset_desc.
+	(convert_ucn): Idem.
+	(emit_numeric_escape): Idem.
+	(convert_hex): Idem.
+	(convert_oct): Idem.
+	(convert_escape): Idem.
+	(converter_for_type): New function.
+	(cpp_interpret_string): Use converter_for_type, support u and U prefix.
+	(cpp_interpret_string_notranslate): Match changed prototype.
+	(wide_str_to_charconst): Use converter_for_type.
+	(cpp_interpret_charconst): Add support for CPP_CHAR{16,32}.
+	* directives.c (linemarker_dir): Macro U changed to UC.
+	(parse_include): Idem.
+	(register_pragma_1): Idem.
+	(restore_registered_pragmas): Idem.
+	(get__Pragma_string): Support CPP_STRING{16,32}.
+	* expr.c (eval_token): Support CPP_CHAR{16,32}.
+	* init.c (struct lang_flags): Added uliterals.
+	(lang_defaults): Idem.
+	* internal.h (struct cset_converter) <width>: New field.
+	(struct cpp_reader) <char16_cset_desc>: Idem.
+	(struct cpp_reader) <char32_cset_desc>: Idem.
+	* lex.c (digraph_spellings): Macro U changed to UC.
+	(OP, TK): Idem.
+	(lex_string): Add support for u'...', U'...', u"..." and U"...".
+	(_cpp_lex_direct): Idem.
+	* macro.c (_cpp_builtin_macro_text): Macro U changed to UC.
+	(stringify_arg): Support CPP_CHAR{16,32} and CPP_STRING{16,32}.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

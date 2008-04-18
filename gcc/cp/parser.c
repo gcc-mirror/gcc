@@ -556,6 +556,8 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
     case RID_TYPENAME:
       /* Simple type specifiers.  */
     case RID_CHAR:
+    case RID_CHAR16:
+    case RID_CHAR32:
     case RID_WCHAR:
     case RID_BOOL:
     case RID_SHORT:
@@ -789,6 +791,8 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
       break;
 
     case CPP_STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
     case CPP_WSTRING:
       fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->u.value));
       break;
@@ -2033,7 +2037,10 @@ cp_parser_parsing_tentatively (cp_parser* parser)
 static bool
 cp_parser_is_string_literal (cp_token* token)
 {
-  return (token->type == CPP_STRING || token->type == CPP_WSTRING);
+  return (token->type == CPP_STRING ||
+	  token->type == CPP_STRING16 ||
+	  token->type == CPP_STRING32 ||
+	  token->type == CPP_WSTRING);
 }
 
 /* Returns nonzero if TOKEN is the indicated KEYWORD.  */
@@ -2867,11 +2874,11 @@ static tree
 cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 {
   tree value;
-  bool wide = false;
   size_t count;
   struct obstack str_ob;
   cpp_string str, istr, *strs;
   cp_token *tok;
+  enum cpp_ttype type;
 
   tok = cp_lexer_peek_token (parser->lexer);
   if (!cp_parser_is_string_literal (tok))
@@ -2879,6 +2886,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
       cp_parser_error (parser, "expected string-literal");
       return error_mark_node;
     }
+
+  type = tok->type;
 
   /* Try to avoid the overhead of creating and destroying an obstack
      for the common case of just one string.  */
@@ -2890,8 +2899,6 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
       str.text = (const unsigned char *)TREE_STRING_POINTER (tok->u.value);
       str.len = TREE_STRING_LENGTH (tok->u.value);
       count = 1;
-      if (tok->type == CPP_WSTRING)
-	wide = true;
 
       strs = &str;
     }
@@ -2906,8 +2913,14 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	  count++;
 	  str.text = (const unsigned char *)TREE_STRING_POINTER (tok->u.value);
 	  str.len = TREE_STRING_LENGTH (tok->u.value);
-	  if (tok->type == CPP_WSTRING)
-	    wide = true;
+
+	  if (type != tok->type)
+	    {
+	      if (type == CPP_STRING)
+		type = tok->type;
+	      else if (tok->type != CPP_STRING)
+		error ("unsupported non-standard concatenation of string literals");
+	    }
 
 	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
 
@@ -2918,19 +2931,35 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
       strs = (cpp_string *) obstack_finish (&str_ob);
     }
 
-  if (wide && !wide_ok)
+  if (type != CPP_STRING && !wide_ok)
     {
       cp_parser_error (parser, "a wide string is invalid in this context");
-      wide = false;
+      type = CPP_STRING;
     }
 
   if ((translate ? cpp_interpret_string : cpp_interpret_string_notranslate)
-      (parse_in, strs, count, &istr, wide))
+      (parse_in, strs, count, &istr, type))
     {
       value = build_string (istr.len, (const char *)istr.text);
       free (CONST_CAST (unsigned char *, istr.text));
 
-      TREE_TYPE (value) = wide ? wchar_array_type_node : char_array_type_node;
+      switch (type)
+	{
+	default:
+	case CPP_STRING:
+	  TREE_TYPE (value) = char_array_type_node;
+	  break;
+	case CPP_STRING16:
+	  TREE_TYPE (value) = char16_array_type_node;
+	  break;
+	case CPP_STRING32:
+	  TREE_TYPE (value) = char32_array_type_node;
+	  break;
+	case CPP_WSTRING:
+	  TREE_TYPE (value) = wchar_array_type_node;
+	  break;
+	}
+
       value = fix_string_type (value);
     }
   else
@@ -3085,6 +3114,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	   string-literal
 	   boolean-literal  */
     case CPP_CHAR:
+    case CPP_CHAR16:
+    case CPP_CHAR32:
     case CPP_WCHAR:
     case CPP_NUMBER:
       token = cp_lexer_consume_token (parser->lexer);
@@ -3136,6 +3167,8 @@ cp_parser_primary_expression (cp_parser *parser,
       return token->u.value;
 
     case CPP_STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
     case CPP_WSTRING:
       /* ??? Should wide strings be allowed when parser->translate_strings_p
 	 is false (i.e. in attributes)?  If not, we can kill the third
@@ -10762,6 +10795,8 @@ cp_parser_type_specifier (cp_parser* parser,
    simple-type-specifier:
      auto
      decltype ( expression )   
+     char16_t
+     char32_t
 
    GNU Extension:
 
@@ -10790,6 +10825,12 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	decl_specs->explicit_char_p = true;
       type = char_type_node;
+      break;
+    case RID_CHAR16:
+      type = char16_type_node;
+      break;
+    case RID_CHAR32:
+      type = char32_type_node;
       break;
     case RID_WCHAR:
       type = wchar_type_node;
@@ -17754,13 +17795,16 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 {
   decl_specs->any_specifiers_p = true;
 
-  /* If the user tries to redeclare bool or wchar_t (with, for
-     example, in "typedef int wchar_t;") we remember that this is what
-     happened.  In system headers, we ignore these declarations so
-     that G++ can work with system headers that are not C++-safe.  */
+  /* If the user tries to redeclare bool, char16_t, char32_t, or wchar_t
+     (with, for example, in "typedef int wchar_t;") we remember that
+     this is what happened.  In system headers, we ignore these
+     declarations so that G++ can work with system headers that are not
+     C++-safe.  */
   if (decl_specs->specs[(int) ds_typedef]
       && !user_defined_p
       && (type_spec == boolean_type_node
+	  || type_spec == char16_type_node
+	  || type_spec == char32_type_node
 	  || type_spec == wchar_type_node)
       && (decl_specs->type
 	  || decl_specs->specs[(int) ds_long]

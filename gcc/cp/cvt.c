@@ -1219,6 +1219,8 @@ type_promotes_to (tree type)
   /* Normally convert enums to int, but convert wide enums to something
      wider.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
+	   || type == char16_type_node
+	   || type == char32_type_node
 	   || type == wchar_type_node)
     {
       int precision = MAX (TYPE_PRECISION (type),

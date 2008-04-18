@@ -5163,12 +5163,16 @@ c_parser_postfix_expression (c_parser *parser)
     {
     case CPP_NUMBER:
     case CPP_CHAR:
+    case CPP_CHAR16:
+    case CPP_CHAR32:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
       expr.original_code = ERROR_MARK;
       c_parser_consume_token (parser);
       break;
     case CPP_STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
     case CPP_WSTRING:
       expr.value = c_parser_peek_token (parser)->value;
       expr.original_code = STRING_CST;

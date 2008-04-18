@@ -158,7 +158,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 		  {
 		    cpp_errno (pfile, CPP_DL_WARNING,
 			"could not determine file timestamp");
-		    pbuffer->timestamp = U"\"??? ??? ?? ??:??:?? ????\"";
+		    pbuffer->timestamp = UC"\"??? ??? ?? ??:??:?? ????\"";
 		  }
 	      }
 	  }
@@ -256,8 +256,8 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	      cpp_errno (pfile, CPP_DL_WARNING,
 			 "could not determine date and time");
 		
-	      pfile->date = U"\"??? ?? ????\"";
-	      pfile->time = U"\"??:??:??\"";
+	      pfile->date = UC"\"??? ?? ????\"";
+	      pfile->time = UC"\"??:??:??\"";
 	    }
 	}
 
@@ -375,8 +375,10 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 	  continue;
 	}
 
-      escape_it = (token->type == CPP_STRING || token->type == CPP_WSTRING
-		   || token->type == CPP_CHAR || token->type == CPP_WCHAR);
+      escape_it = (token->type == CPP_STRING || token->type == CPP_CHAR
+		   || token->type == CPP_WSTRING || token->type == CPP_STRING
+		   || token->type == CPP_STRING32 || token->type == CPP_CHAR32
+		   || token->type == CPP_STRING16 || token->type == CPP_CHAR16);
 
       /* Room for each char being written in octal, initial space and
 	 final quote and NUL.  */

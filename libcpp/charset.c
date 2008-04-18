@@ -642,6 +642,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
     {
       ret.func = convert_no_conversion;
       ret.cd = (iconv_t) -1;
+      ret.width = -1;
       return ret;
     }
 
@@ -655,6 +656,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
       {
 	ret.func = conversion_tab[i].func;
 	ret.cd = conversion_tab[i].fake_cd;
+	ret.width = -1;
 	return ret;
       }
 
@@ -663,6 +665,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
     {
       ret.func = convert_using_iconv;
       ret.cd = iconv_open (to, from);
+      ret.width = -1;
 
       if (ret.cd == (iconv_t) -1)
 	{
@@ -683,6 +686,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
 		 from, to);
       ret.func = convert_no_conversion;
       ret.cd = (iconv_t) -1;
+      ret.width = -1;
     }
   return ret;
 }
@@ -716,7 +720,17 @@ cpp_init_iconv (cpp_reader *pfile)
     wcset = default_wcset;
 
   pfile->narrow_cset_desc = init_iconv_desc (pfile, ncset, SOURCE_CHARSET);
+  pfile->narrow_cset_desc.width = CPP_OPTION (pfile, char_precision);
+  pfile->char16_cset_desc = init_iconv_desc (pfile,
+					     be ? "UTF-16BE" : "UTF-16LE",
+					     SOURCE_CHARSET);
+  pfile->char16_cset_desc.width = 16;
+  pfile->char32_cset_desc = init_iconv_desc (pfile,
+					     be ? "UTF-32BE" : "UTF-32LE",
+					     SOURCE_CHARSET);
+  pfile->char32_cset_desc.width = 32;
   pfile->wide_cset_desc = init_iconv_desc (pfile, wcset, SOURCE_CHARSET);
+  pfile->wide_cset_desc.width = CPP_OPTION (pfile, wchar_precision);
 }
 
 /* Destroy iconv(3) descriptors set up by cpp_init_iconv, if necessary.  */
@@ -1051,15 +1065,13 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
    An advanced pointer is returned.  Issues all relevant diagnostics.  */
 static const uchar *
 convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct _cpp_strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, struct cset_converter cvt)
 {
   cppchar_t ucn;
   uchar buf[6];
   uchar *bufp = buf;
   size_t bytesleft = 6;
   int rval;
-  struct cset_converter cvt
-    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
   struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 
   from++;  /* Skip u/U.  */
@@ -1086,14 +1098,15 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
    function issues no diagnostics and never fails.  */
 static void
 emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
-		     struct _cpp_strbuf *tbuf, bool wide)
+		     struct _cpp_strbuf *tbuf, struct cset_converter cvt)
 {
-  if (wide)
+  size_t width = cvt.width;
+
+  if (width != CPP_OPTION (pfile, char_precision))
     {
       /* We have to render this into the target byte order, which may not
 	 be our byte order.  */
       bool bigend = CPP_OPTION (pfile, bytes_big_endian);
-      size_t width = CPP_OPTION (pfile, wchar_precision);
       size_t cwidth = CPP_OPTION (pfile, char_precision);
       size_t cmask = width_to_mask (cwidth);
       size_t nbwc = width / cwidth;
@@ -1136,12 +1149,11 @@ emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
    number.  You can, e.g. generate surrogate pairs this way.  */
 static const uchar *
 convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct _cpp_strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, struct cset_converter cvt)
 {
   cppchar_t c, n = 0, overflow = 0;
   int digits_found = 0;
-  size_t width = (wide ? CPP_OPTION (pfile, wchar_precision)
-		  : CPP_OPTION (pfile, char_precision));
+  size_t width = cvt.width;
   size_t mask = width_to_mask (width);
 
   if (CPP_WTRADITIONAL (pfile))
@@ -1174,7 +1186,7 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
       n &= mask;
     }
 
-  emit_numeric_escape (pfile, n, tbuf, wide);
+  emit_numeric_escape (pfile, n, tbuf, cvt);
 
   return from;
 }
@@ -1187,12 +1199,11 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
    number.  */
 static const uchar *
 convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct _cpp_strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, struct cset_converter cvt)
 {
   size_t count = 0;
   cppchar_t c, n = 0;
-  size_t width = (wide ? CPP_OPTION (pfile, wchar_precision)
-		  : CPP_OPTION (pfile, char_precision));
+  size_t width = cvt.width;
   size_t mask = width_to_mask (width);
   bool overflow = false;
 
@@ -1213,7 +1224,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       n &= mask;
     }
 
-  emit_numeric_escape (pfile, n, tbuf, wide);
+  emit_numeric_escape (pfile, n, tbuf, cvt);
 
   return from;
 }
@@ -1224,7 +1235,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
    pointer.  Handles all relevant diagnostics.  */
 static const uchar *
 convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
-		struct _cpp_strbuf *tbuf, bool wide)
+		struct _cpp_strbuf *tbuf, struct cset_converter cvt)
 {
   /* Values of \a \b \e \f \n \r \t \v respectively.  */
 #if HOST_CHARSET == HOST_CHARSET_ASCII
@@ -1236,23 +1247,21 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 #endif
 
   uchar c;
-  struct cset_converter cvt
-    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
   c = *from;
   switch (c)
     {
       /* UCNs, hex escapes, and octal escapes are processed separately.  */
     case 'u': case 'U':
-      return convert_ucn (pfile, from, limit, tbuf, wide);
+      return convert_ucn (pfile, from, limit, tbuf, cvt);
 
     case 'x':
-      return convert_hex (pfile, from, limit, tbuf, wide);
+      return convert_hex (pfile, from, limit, tbuf, cvt);
       break;
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':
-      return convert_oct (pfile, from, limit, tbuf, wide);
+      return convert_oct (pfile, from, limit, tbuf, cvt);
 
       /* Various letter escapes.  Get the appropriate host-charset
 	 value into C.  */
@@ -1312,6 +1321,27 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
   return from + 1;
 }
 
+/* TYPE is a token type.  The return value is the conversion needed to
+   convert from source to execution character set for the given type. */
+static struct cset_converter
+converter_for_type (cpp_reader *pfile, enum cpp_ttype type)
+{
+  switch (type)
+    {
+    default:
+	return pfile->narrow_cset_desc;
+    case CPP_CHAR16:
+    case CPP_STRING16:
+	return pfile->char16_cset_desc;
+    case CPP_CHAR32:
+    case CPP_STRING32:
+	return pfile->char32_cset_desc;
+    case CPP_WCHAR:
+    case CPP_WSTRING:
+	return pfile->wide_cset_desc;
+    }
+}
+
 /* FROM is an array of cpp_string structures of length COUNT.  These
    are to be converted from the source to the execution character set,
    escape sequences translated, and finally all are to be
@@ -1320,13 +1350,12 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
    false for failure.  */
 bool
 cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
-		      cpp_string *to, bool wide)
+		      cpp_string *to,  enum cpp_ttype type)
 {
   struct _cpp_strbuf tbuf;
   const uchar *p, *base, *limit;
   size_t i;
-  struct cset_converter cvt
-    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
+  struct cset_converter cvt = converter_for_type (pfile, type);
 
   tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, from->len);
   tbuf.text = XNEWVEC (uchar, tbuf.asize);
@@ -1335,7 +1364,7 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   for (i = 0; i < count; i++)
     {
       p = from[i].text;
-      if (*p == 'L') p++;
+      if (*p == 'L' || *p == 'u' || *p == 'U') p++;
       p++; /* Skip leading quote.  */
       limit = from[i].text + from[i].len - 1; /* Skip trailing quote.  */
 
@@ -1354,12 +1383,12 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 	  if (p == limit)
 	    break;
 
-	  p = convert_escape (pfile, p + 1, limit, &tbuf, wide);
+	  p = convert_escape (pfile, p + 1, limit, &tbuf, cvt);
 	}
     }
   /* NUL-terminate the 'to' buffer and translate it to a cpp_string
      structure.  */
-  emit_numeric_escape (pfile, 0, &tbuf, wide);
+  emit_numeric_escape (pfile, 0, &tbuf, cvt);
   tbuf.text = XRESIZEVEC (uchar, tbuf.text, tbuf.len);
   to->text = tbuf.text;
   to->len = tbuf.len;
@@ -1375,7 +1404,8 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
    in a string, but do not perform character set conversion.  */
 bool
 cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
-				  size_t count,	cpp_string *to, bool wide)
+				  size_t count,	cpp_string *to,
+				  enum cpp_ttype type ATTRIBUTE_UNUSED)
 {
   struct cset_converter save_narrow_cset_desc = pfile->narrow_cset_desc;
   bool retval;
@@ -1383,7 +1413,7 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
   pfile->narrow_cset_desc.func = convert_no_conversion;
   pfile->narrow_cset_desc.cd = (iconv_t) -1;
 
-  retval = cpp_interpret_string (pfile, from, count, to, wide);
+  retval = cpp_interpret_string (pfile, from, count, to, CPP_STRING);
 
   pfile->narrow_cset_desc = save_narrow_cset_desc;
   return retval;
@@ -1462,13 +1492,14 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for wide strings.  STR is the string structure returned
    by cpp_interpret_string.  PCHARS_SEEN and UNSIGNEDP are as for
-   cpp_interpret_charconst.  */
+   cpp_interpret_charconst.  TYPE is the token type.  */
 static cppchar_t
 wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
-		       unsigned int *pchars_seen, int *unsignedp)
+		       unsigned int *pchars_seen, int *unsignedp,
+		       enum cpp_ttype type)
 {
   bool bigend = CPP_OPTION (pfile, bytes_big_endian);
-  size_t width = CPP_OPTION (pfile, wchar_precision);
+  size_t width = converter_for_type (pfile, type).width;
   size_t cwidth = CPP_OPTION (pfile, char_precision);
   size_t mask = width_to_mask (width);
   size_t cmask = width_to_mask (cwidth);
@@ -1490,7 +1521,7 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
   /* Wide character constants have type wchar_t, and a single
      character exactly fills a wchar_t, so a multi-character wide
      character constant is guaranteed to overflow.  */
-  if (off > 0)
+  if (str.len > nbwc * 2)
     cpp_error (pfile, CPP_DL_WARNING,
 	       "character constant too long for its type");
 
@@ -1498,13 +1529,20 @@ wide_str_to_charconst (cpp_reader *pfile, cpp_string str,
      sign- or zero-extend to the full width of cppchar_t.  */
   if (width < BITS_PER_CPPCHAR_T)
     {
-      if (CPP_OPTION (pfile, unsigned_wchar) || !(result & (1 << (width - 1))))
+      if (type == CPP_CHAR16 || type == CPP_CHAR32
+	  || CPP_OPTION (pfile, unsigned_wchar)
+	  || !(result & (1 << (width - 1))))
 	result &= mask;
       else
 	result |= ~mask;
     }
 
-  *unsignedp = CPP_OPTION (pfile, unsigned_wchar);
+  if (type == CPP_CHAR16 || type == CPP_CHAR32
+      || CPP_OPTION (pfile, unsigned_wchar))
+    *unsignedp = 1;
+  else
+    *unsignedp = 0;
+
   *pchars_seen = 1;
   return result;
 }
@@ -1518,20 +1556,21 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
 			 unsigned int *pchars_seen, int *unsignedp)
 {
   cpp_string str = { 0, 0 };
-  bool wide = (token->type == CPP_WCHAR);
+  bool wide = (token->type != CPP_CHAR);
   cppchar_t result;
 
-  /* an empty constant will appear as L'' or '' */
+  /* an empty constant will appear as L'', u'', U'' or '' */
   if (token->val.str.len == (size_t) (2 + wide))
     {
       cpp_error (pfile, CPP_DL_ERROR, "empty character constant");
       return 0;
     }
-  else if (!cpp_interpret_string (pfile, &token->val.str, 1, &str, wide))
+  else if (!cpp_interpret_string (pfile, &token->val.str, 1, &str, token->type))
     return 0;
 
   if (wide)
-    result = wide_str_to_charconst (pfile, str, pchars_seen, unsignedp);
+    result = wide_str_to_charconst (pfile, str, pchars_seen, unsignedp,
+				    token->type);
   else
     result = narrow_str_to_charconst (pfile, str, pchars_seen, unsignedp);
 

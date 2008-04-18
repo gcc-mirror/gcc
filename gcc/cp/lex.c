@@ -241,6 +241,8 @@ static const struct resword reswords[] =
   { "case",		RID_CASE,	0 },
   { "catch",		RID_CATCH,	0 },
   { "char",		RID_CHAR,	0 },
+  { "char16_t",		RID_CHAR16,	D_CXX0X },
+  { "char32_t",		RID_CHAR32,	D_CXX0X },
   { "class",		RID_CLASS,	0 },
   { "const",		RID_CONST,	0 },
   { "const_cast",	RID_CONSTCAST,	0 },

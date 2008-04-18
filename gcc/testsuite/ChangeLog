@@ -1,3 +1,35 @@
+2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
+
+	Tests for char16_t and char32_t support.
+	* g++.dg/ext/utf-cvt.C: New
+	* g++.dg/ext/utf-cxx0x.C: New
+	* g++.dg/ext/utf-cxx98.C: New
+	* g++.dg/ext/utf-dflt.C: New
+	* g++.dg/ext/utf-gnuxx0x.C: New
+	* g++.dg/ext/utf-gnuxx98.C: New
+	* g++.dg/ext/utf-mangle.C: New
+	* g++.dg/ext/utf-typedef-cxx0x.C: New
+	* g++.dg/ext/utf-typedef-cxx98.C: New
+	* g++.dg/ext/utf-typespec.C: New
+	* g++.dg/ext/utf16-1.C: New
+	* g++.dg/ext/utf16-2.C: New
+	* g++.dg/ext/utf16-3.C: New
+	* g++.dg/ext/utf16-4.C: New
+	* g++.dg/ext/utf32-1.C: New
+	* g++.dg/ext/utf32-2.C: New
+	* g++.dg/ext/utf32-3.C: New
+	* g++.dg/ext/utf32-4.C: New
+	* gcc.dg/utf-cvt.c: New
+	* gcc.dg/utf-dflt.c: New
+	* gcc.dg/utf16-1.c: New
+	* gcc.dg/utf16-2.c: New
+	* gcc.dg/utf16-3.c: New
+	* gcc.dg/utf16-4.c: New
+	* gcc.dg/utf32-1.c: New
+	* gcc.dg/utf32-2.c: New
+	* gcc.dg/utf32-3.c: New
+	* gcc.dg/utf32-4.c: New
+
 2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/varsize_return.ads: New test.

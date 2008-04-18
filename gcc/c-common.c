@@ -66,6 +66,14 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 #define PID_TYPE "int"
 #endif
 
+#ifndef CHAR16_TYPE
+#define CHAR16_TYPE "short unsigned int"
+#endif
+
+#ifndef CHAR32_TYPE
+#define CHAR32_TYPE "unsigned int"
+#endif
+
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
@@ -123,6 +131,9 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 	tree signed_wchar_type_node;
 	tree unsigned_wchar_type_node;
 
+	tree char16_type_node;
+	tree char32_type_node;
+
 	tree float_type_node;
 	tree double_type_node;
 	tree long_double_type_node;
@@ -173,6 +184,16 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
    Used when a wide string literal is created.
 
 	tree wchar_array_type_node;
+
+   Type `char16_t[SOMENUMBER]' or something like it.
+   Used when a UTF-16 string literal is created.
+
+	tree char16_array_type_node;
+
+   Type `char32_t[SOMENUMBER]' or something like it.
+   Used when a UTF-32 string literal is created.
+
+	tree char32_array_type_node;
 
    Type `int ()' -- used for implicit declaration of functions.
 
@@ -777,7 +798,7 @@ fname_as_string (int pretty_p)
   strname.text = (unsigned char *) namep;
   strname.len = len - 1;
 
-  if (cpp_interpret_string (parse_in, &strname, 1, &cstr, false))
+  if (cpp_interpret_string (parse_in, &strname, 1, &cstr, CPP_STRING))
     {
       XDELETEVEC (namep);
       return (const char *) cstr.text;
@@ -857,14 +878,31 @@ fname_decl (unsigned int rid, tree id)
 tree
 fix_string_type (tree value)
 {
-  const int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
-  const int wide_flag = TREE_TYPE (value) == wchar_array_type_node;
   int length = TREE_STRING_LENGTH (value);
   int nchars;
   tree e_type, i_type, a_type;
 
   /* Compute the number of elements, for the array type.  */
-  nchars = wide_flag ? length / wchar_bytes : length;
+  if (TREE_TYPE (value) == char_array_type_node || !TREE_TYPE (value))
+    {
+      nchars = length;
+      e_type = char_type_node;
+    }
+  else if (TREE_TYPE (value) == char16_array_type_node)
+    {
+      nchars = length / (TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT);
+      e_type = char16_type_node;
+    }
+  else if (TREE_TYPE (value) == char32_array_type_node)
+    {
+      nchars = length / (TYPE_PRECISION (char32_type_node) / BITS_PER_UNIT);
+      e_type = char32_type_node;
+    }
+  else
+    {
+      nchars = length / (TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT);
+      e_type = wchar_type_node;
+    }
 
   /* C89 2.2.4.1, C99 5.2.4.1 (Translation limits).  The analogous
      limit in C++98 Annex B is very large (65536) and is not normative,
@@ -899,7 +937,6 @@ fix_string_type (tree value)
      construct the matching unqualified array type first.  The C front
      end does not require this, but it does no harm, so we do it
      unconditionally.  */
-  e_type = wide_flag ? wchar_type_node : char_type_node;
   i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
   a_type = build_array_type (e_type, i_type);
   if (c_dialect_cxx() || warn_write_strings)
@@ -3629,6 +3666,8 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 void
 c_common_nodes_and_builtins (void)
 {
+  int char16_type_size;
+  int char32_type_size;
   int wchar_type_size;
   tree array_domain_type;
   tree va_list_ref_type_node;
@@ -3877,6 +3916,38 @@ c_common_nodes_and_builtins (void)
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
+
+  /* Define 'char16_t'.  */
+  char16_type_node = get_identifier (CHAR16_TYPE);
+  char16_type_node = TREE_TYPE (identifier_global_value (char16_type_node));
+  char16_type_size = TYPE_PRECISION (char16_type_node);
+  if (c_dialect_cxx ())
+    {
+      char16_type_node = make_unsigned_type (char16_type_size);
+
+      if (cxx_dialect == cxx0x)
+	record_builtin_type (RID_CHAR16, "char16_t", char16_type_node);
+    }
+
+  /* This is for UTF-16 string constants.  */
+  char16_array_type_node
+    = build_array_type (char16_type_node, array_domain_type);
+
+  /* Define 'char32_t'.  */
+  char32_type_node = get_identifier (CHAR32_TYPE);
+  char32_type_node = TREE_TYPE (identifier_global_value (char32_type_node));
+  char32_type_size = TYPE_PRECISION (char32_type_node);
+  if (c_dialect_cxx ())
+    {
+      char32_type_node = make_unsigned_type (char32_type_size);
+
+      if (cxx_dialect == cxx0x)
+	record_builtin_type (RID_CHAR32, "char32_t", char32_type_node);
+    }
+
+  /* This is for UTF-32 string constants.  */
+  char32_array_type_node
+    = build_array_type (char32_type_node, array_domain_type);
 
   wint_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
@@ -6662,20 +6733,39 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
 
   if (token == CPP_EOF)
     message = catenate_messages (gmsgid, " at end of input");
-  else if (token == CPP_CHAR || token == CPP_WCHAR)
+  else if (token == CPP_CHAR || token == CPP_WCHAR || token == CPP_CHAR16
+	   || token == CPP_CHAR32)
     {
       unsigned int val = TREE_INT_CST_LOW (value);
-      const char *const ell = (token == CPP_CHAR) ? "" : "L";
+      const char *prefix;
+
+      switch (token)
+	{
+	default:
+	  prefix = "";
+	  break;
+	case CPP_WCHAR:
+	  prefix = "L";
+	  break;
+	case CPP_CHAR16:
+	  prefix = "u";
+	  break;
+	case CPP_CHAR32:
+	  prefix = "U";
+	  break;
+        }
+
       if (val <= UCHAR_MAX && ISGRAPH (val))
 	message = catenate_messages (gmsgid, " before %s'%c'");
       else
 	message = catenate_messages (gmsgid, " before %s'\\x%x'");
 
-      error (message, ell, val);
+      error (message, prefix, val);
       free (message);
       message = NULL;
     }
-  else if (token == CPP_STRING || token == CPP_WSTRING)
+  else if (token == CPP_STRING || token == CPP_WSTRING || token == CPP_STRING16
+	   || token == CPP_STRING32)
     message = catenate_messages (gmsgid, " before string constant");
   else if (token == CPP_NUMBER)
     message = catenate_messages (gmsgid, " before numeric constant");

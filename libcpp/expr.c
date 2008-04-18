@@ -705,6 +705,8 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 
     case CPP_WCHAR:
     case CPP_CHAR:
+    case CPP_CHAR16:
+    case CPP_CHAR32:
       {
 	cppchar_t cc = cpp_interpret_charconst (pfile, token,
 						&temp, &unsignedp);
@@ -863,6 +865,8 @@ _cpp_parse_expr (cpp_reader *pfile)
 	case CPP_NUMBER:
 	case CPP_CHAR:
 	case CPP_WCHAR:
+	case CPP_CHAR16:
+	case CPP_CHAR32:
 	case CPP_NAME:
 	case CPP_HASH:
 	  if (!want_value)
