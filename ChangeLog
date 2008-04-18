@@ -1,3 +1,9 @@
+2008-04-18  M R Swami Reddy <MR.Swami.Reddy@nsc.com>
+
+        * configure.ac (cr16-*-*): Add case for cr16 target and include gdb
+	as nonconfigurable directories list.
+        * configure: Regenerate.
+
 2008-04-14  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
