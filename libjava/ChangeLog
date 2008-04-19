@@ -1,3 +1,8 @@
+2008-04-19  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/35979:
+	* jni.cc (_Jv_JNI_NewStringUTF): Return NULL if bytes==NULL.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457
