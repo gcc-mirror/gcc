@@ -700,12 +700,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      align = ceil_alignment (tree_low_cst (TYPE_SIZE (gnu_type), 1));
 
 	    /* But make sure not to under-align the object.  */
-	    if (align < TYPE_ALIGN (gnu_type))
-	      align = TYPE_ALIGN (gnu_type);
+	    if (align <= TYPE_ALIGN (gnu_type))
+	      align = 0;
 
 	    /* And honor the minimum valid atomic alignment, if any.  */
 #ifdef MINIMUM_ATOMIC_ALIGNMENT
-	    if (align < MINIMUM_ATOMIC_ALIGNMENT)
+	    else if (align < MINIMUM_ATOMIC_ALIGNMENT)
 	      align = MINIMUM_ATOMIC_ALIGNMENT;
 #endif
 	  }

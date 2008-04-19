@@ -1,5 +1,11 @@
 2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <object>: When trying to promote the
+	alignment, reset it to zero if it would end up not being greater
+	than that of the type.
+
+2008-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (maybe_pad_type): Only generate the XVS parallel type if
 	the padded type has a variable size.
 
