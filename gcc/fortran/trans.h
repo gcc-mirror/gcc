@@ -405,6 +405,9 @@ tree gfc_get_symbol_decl (gfc_symbol *);
 /* Build a static initializer.  */
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
 
+/* Assign a default initializer to a derived type.  */
+tree gfc_init_default_dt (gfc_symbol *, tree);
+
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
 
