@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-forwprop1" } */
+/* { dg-options "-O2 -fdump-tree-forwprop1" } */
 
 struct bar {
   int a[2];
