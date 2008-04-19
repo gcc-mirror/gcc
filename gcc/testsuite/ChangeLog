@@ -1,3 +1,8 @@
+2008-04-18  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/35977
+	* gcc.dg/tree-ssa/forwprop-3.c: Use -O2 rather than -O.
+
 2008-04-18  Jakub Jelinek  <jakub@redhat.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
