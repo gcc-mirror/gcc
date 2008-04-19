@@ -1668,6 +1668,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   tree offsetvar;
   tree desc;
   tree type;
+  tree loopfrom;
   bool dynamic;
 
   if (flag_bounds_check && ss->expr->ts.type == BT_CHARACTER)
@@ -1746,8 +1747,33 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 	}
     }
 
+  /* Temporarily reset the loop variables, so that the returned temporary
+     has the right size and bounds.  This seems only to be necessary for
+     1D arrays.  */
+  if (!integer_zerop (loop->from[0]) && loop->dimen == 1)
+    {
+      loopfrom = loop->from[0];
+      loop->from[0] = gfc_index_zero_node;
+      loop->to[0] = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+				 loop->to[0], loopfrom);
+    }
+  else
+    loopfrom = NULL_TREE;
+
   gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
 			       type, dynamic, true, false);
+
+  if (loopfrom != NULL_TREE)
+    {
+      loop->from[0] = loopfrom;
+      loop->to[0] = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+				 loop->to[0], loopfrom);
+      /* In the case of a non-zero from, the temporary needs an offset
+	 so that subsequent indexing is correct.  */
+      ss->data.info.offset = fold_build1 (NEGATE_EXPR,
+					  gfc_array_index_type,
+					  loop->from[0]);
+    }
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -5547,6 +5573,11 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
 	  rank = sym->as ? sym->as->rank : 0;
 	  tmp = gfc_nullify_alloc_comp (sym->ts.derived, descriptor, rank);
 	  gfc_add_expr_to_block (&fnblock, tmp);
+	  if (sym->value)
+	    {
+	      tmp = gfc_init_default_dt (sym, NULL);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
 	}
     }
   else if (!GFC_DESCRIPTOR_TYPE_P (type))

@@ -1,3 +1,17 @@
+2008-04-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35944
+	PR fortran/35946
+	PR fortran/35947
+	* gfortran.dg/array_constructor_23.f: New test.
+
+	PR fortran/35959
+	* gfortran.dg/alloc_comp_default_init_2.f90: New test.
+	* gfortran.dg/alloc_comp_basics_1.f90: Change occurrences of
+	"builtin_free" to 27.
+	* gfortran.dg/alloc_comp_constructor_1.f90: Change occurrences
+	of "builtin_free" to 21.
+
 2008-04-18  Jakub Jelinek  <jakub@redhat.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
