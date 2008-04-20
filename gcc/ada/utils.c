@@ -1447,7 +1447,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 {
   bool init_const
     = (var_init != 0
-       && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (var_init))
+       && gnat_types_compatible_p (type, TREE_TYPE (var_init))
        && (global_bindings_p () || static_flag
 	   ? initializer_constant_valid_p (var_init, TREE_TYPE (var_init)) != 0
 	   : TREE_CONSTANT (var_init)));
