@@ -3159,6 +3159,7 @@ $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h : s-gtype ; @true
 
 gtyp-input.list: s-gtyp-input ; @true
 s-gtyp-input: Makefile
+	rm -f tmp-gi.list
 	$(foreach gtyp, $(GTFILES), $(echo_to_gi.list))
 	$(SHELL) $(srcdir)/../move-if-change tmp-gi.list gtyp-input.list
 	$(STAMP) s-gtyp-input

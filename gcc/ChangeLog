@@ -1,3 +1,8 @@
+2008-04-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (s-gtyp-input): Remove tmp-gi.list before writing
+	it.
+
 2008-04-18  Rafael Espindola  <espindola@google.com>
 	* tree-vrp.c (find_case_label_index): Fix the binary search.
 	(find_case_label_range): New.
