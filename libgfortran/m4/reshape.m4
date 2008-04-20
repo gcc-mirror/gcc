@@ -85,16 +85,32 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
   const 'rtype_name` *src;
   int n;
   int dim;
-  int sempty, pempty;
+  int sempty, pempty, shape_empty;
+  index_type shape_data[GFC_MAX_DIMENSIONS];
+
+  rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
+  if (rdim != GFC_DESCRIPTOR_RANK(ret))
+    runtime_error("rank of return array incorrect in RESHAPE intrinsic");
+
+  shape_empty = 0;
+
+  for (n = 0; n < rdim; n++)
+    {
+      shape_data[n] = shape->data[n * shape->dim[0].stride];
+      if (shape_data[n] <= 0)
+      {
+        shape_data[n] = 0;
+	shape_empty = 1;
+      }
+    }
 
   if (ret->data == NULL)
     {
-      rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
       rs = 1;
       for (n = 0; n < rdim; n++)
 	{
 	  ret->dim[n].lbound = 0;
-	  rex = shape->data[n * shape->dim[0].stride];
+	  rex = shape_data[n];
 	  ret->dim[n].ubound =  rex - 1;
 	  ret->dim[n].stride = rs;
 	  rs *= rex;
@@ -103,10 +119,9 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
       ret->data = internal_malloc_size ( rs * sizeof ('rtype_name`));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
-  else
-    {
-      rdim = GFC_DESCRIPTOR_RANK (ret);
-    }
+
+  if (shape_empty)
+    return;
 
   rsize = 1;
   for (n = 0; n < rdim; n++)
@@ -119,8 +134,10 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
       rcount[n] = 0;
       rstride[n] = ret->dim[dim].stride;
       rextent[n] = ret->dim[dim].ubound + 1 - ret->dim[dim].lbound;
+      if (rextent[n] < 0)
+        rextent[n] == 0;
 
-      if (rextent[n] != shape->data[dim * shape->dim[0].stride])
+      if (rextent[n] != shape_data[dim])
         runtime_error ("shape and target do not conform");
 
       if (rsize == rstride[n])
