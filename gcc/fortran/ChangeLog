@@ -1,3 +1,9 @@
+2008-04-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35882
+	* scanner.c (skip_fixed_comments): Update continue_line when comment is
+	detected. (gfc_next_char_literal): Likewise.
+
 2008-04-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35944
