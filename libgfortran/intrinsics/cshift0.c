@@ -202,7 +202,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = shift % (ssize_t)len;
+  shift = len == 0 ? 0 : shift % (ssize_t)len;
   if (shift < 0)
     shift += len;
 
