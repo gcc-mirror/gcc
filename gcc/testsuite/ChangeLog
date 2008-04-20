@@ -1,3 +1,7 @@
+2008-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment6.adb: New test.
+
 2008-04-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35944

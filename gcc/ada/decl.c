@@ -673,18 +673,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Present (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
 
-	/* If this is an object with no specified size and alignment, and if
-	   either it is atomic or we are not optimizing alignment for space
-	   and it is a non-scalar variable, and the size of its type is a
-	   constant, set the alignment to the smallest not less than the
-	   size, or to the biggest meaningful one, whichever is smaller.  */
+	/* If this is an object with no specified size and alignment, and
+	   if either it is atomic or we are not optimizing alignment for
+	   space and it is composite and not an exception, an Out parameter
+	   or a reference to another object, and the size of its type is a
+	   constant, set the alignment to the smallest one which is not
+	   smaller than the size, with an appropriate cap.  */
 	if (!gnu_size && align == 0
 	    && (Is_Atomic (gnat_entity)
 		|| (!Optimize_Alignment_Space (gnat_entity)
-		    && kind == E_Variable
-		    && AGGREGATE_TYPE_P (gnu_type)
-		    && !const_flag && No (Renamed_Object (gnat_entity))
-		    && !imported_p && No (Address_Clause (gnat_entity))))
+		    && kind != E_Exception
+		    && kind != E_Out_Parameter
+		    && Is_Composite_Type (Etype (gnat_entity))
+		    && !imported_p
+		    && No (Renamed_Object (gnat_entity))
+		    && No (Address_Clause (gnat_entity))))
 	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
 	  {
 	    /* No point in jumping through all the hoops needed in order

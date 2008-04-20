@@ -5098,7 +5098,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
      valid for the context.  Similar to init_const in create_var_decl_1.  */
   if (TREE_CODE (gnu_decl) == VAR_DECL
       && (gnu_init = DECL_INITIAL (gnu_decl)) != NULL_TREE
-      && (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (gnu_init))
+      && (!gnat_types_compatible_p (type, TREE_TYPE (gnu_init))
 	  || (TREE_STATIC (gnu_decl)
 	      && !initializer_constant_valid_p (gnu_init,
 						TREE_TYPE (gnu_init)))))
