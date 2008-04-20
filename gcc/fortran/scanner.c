@@ -615,6 +615,10 @@ skip_fixed_comments (void)
 		!$|c$|*$ should be treated as 2 spaces if the characters
 		in columns 3 to 6 are valid fixed form label columns
 		characters.  */
+	  if (gfc_current_locus.lb != NULL
+	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+
 	  if (gfc_option.flag_openmp)
 	    {
 	      if (next_char () == '$')
@@ -700,6 +704,9 @@ skip_fixed_comments (void)
 
       if (col != 6 && c == '!')
 	{
+	  if (gfc_current_locus.lb != NULL
+	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 	  skip_comment_line ();
 	  continue;
 	}
@@ -821,11 +828,13 @@ restart:
 			     "statement at %C", gfc_option.max_continue_free);
 	    }
 	}
-      if (continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
       /* Now find where it continues. First eat any comment lines.  */
       openmp_cond_flag = skip_free_comments ();
+
+      if (gfc_current_locus.lb != NULL
+	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
       if (prev_openmp_flag != openmp_flag)
 	{
@@ -945,7 +954,8 @@ restart:
 	    }
 	}
 
-      if (continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+      if (gfc_current_locus.lb != NULL
+	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
 	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
     }
 
