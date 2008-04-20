@@ -1,5 +1,10 @@
 2008-04-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	PR libstdc++/35954
+	* include/Makefile.am (pch*_output): Do not touch pch*_output_anchor.
+	Call 'mkdir -p' unconditionally, but ignore its return value.
+	* include/Makefile.in: Regenerate.
+
 	* include/Makefile.am: Fix most stamp rules to regenerate
 	the links for all sources newer than the stamp file.
 	* include/Makefile.in: Regenerate.
