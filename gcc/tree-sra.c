@@ -855,16 +855,26 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	    if (elt)
 	      elt->is_vector_lhs = true;
 	  }
+
 	/* A bit field reference (access to *multiple* fields simultaneously)
-	   is not currently scalarized.  Consider this an access to the
-	   complete outer element, to which walk_tree will bring us next.  */
-	  
+	   is not currently scalarized.  Consider this an access to the full
+	   outer element, to which walk_tree will bring us next.  */
+	goto use_all;
+
+      case NOP_EXPR:
+	/* Similarly, a nop explicitly wants to look at an object in a
+	   type other than the one we've scalarized.  */
 	goto use_all;
 
       case VIEW_CONVERT_EXPR:
-      case NOP_EXPR:
-	/* Similarly, a view/nop explicitly wants to look at an object in a
-	   type other than the one we've scalarized.  */
+	/* Likewise for a view conversion, but with an additional twist:
+	   it can be on the LHS and, in this case, an access to the full
+	   outer element would mean a killing def.  So we need to punt
+	   if we haven't already a full access to the current element,
+	   because we cannot pretend to have a killing def if we only
+	   have a partial access at some level.  */
+	if (is_output && !use_all_p && inner != expr)
+	  disable_scalarization = true;
 	goto use_all;
 
       case WITH_SIZE_EXPR:
