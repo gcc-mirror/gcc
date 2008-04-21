@@ -1,3 +1,8 @@
+2008-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35678
+	* g++.dg/template/ttp27.C: New.
+
 2008-04-21  Tom Tromey  <tromey@redhat.com>
 
 	PR libcpp/33415:
