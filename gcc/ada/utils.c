@@ -23,6 +23,10 @@
  *                                                                          *
  ****************************************************************************/
 
+/* We have attribute handlers using C specific format specifiers in warning
+   messages.  Make sure they are properly recognized.  */
+#define GCC_DIAG_STYLE __gcc_cdiag__
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -42,6 +46,7 @@
 #include "tree-gimple.h"
 #include "tree-dump.h"
 #include "pointer-set.h"
+#include "langhooks.h"
 
 #include "ada.h"
 #include "types.h"
@@ -77,16 +82,40 @@ tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 /* Forward declarations for handlers of attributes.  */
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
+static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
+
+/* Fake handler for attributes we don't properly support, typically because
+   they'd require dragging a lot of the common-c front-end circuitry.  */
+static tree fake_attribute_handler      (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
-   this minimal set of attributes to accommodate the Alpha back-end which
-   unconditionally puts them on its builtins.  */
+   this minimal set ot attributes to accomodate the needs of builtins.  */
 const struct attribute_spec gnat_internal_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "const",   0, 0, true,  false, false, handle_const_attribute   },
-  { "nothrow", 0, 0, true,  false, false, handle_nothrow_attribute },
-  { NULL,      0, 0, false, false, false, NULL }
+  { "const",        0, 0,  true,  false, false, handle_const_attribute   },
+  { "nothrow",      0, 0,  true,  false, false, handle_nothrow_attribute },
+  { "pure",         0, 0,  true,  false, false, handle_pure_attribute },
+  { "no vops",      0, 0,  true,  false, false, handle_novops_attribute },
+  { "nonnull",      0, -1, false, true,  true,  handle_nonnull_attribute },
+  { "sentinel",     0, 1,  false, true,  true,  handle_sentinel_attribute },
+  { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute },
+  { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute },
+  { "type generic", 0, 0, false, true, true, handle_type_generic_attribute },
+
+  /* ??? format and format_arg are heavy and not supported, which actually
+     prevents support for stdio builtins, which we however declare as part
+     of the common builtins.def contents.  */
+  { "format",     3, 3,  false, true,  true,  fake_attribute_handler },
+  { "format_arg", 1, 1,  false, true,  true,  fake_attribute_handler },
+
+  { NULL,         0, 0, false, false, false, NULL }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in
@@ -149,7 +178,7 @@ static GTY((deletable)) struct gnat_binding_level *free_binding_level;
 /* An array of global declarations.  */
 static GTY(()) VEC(tree,gc) *global_decls;
 
-/* An array of builtin declarations.  */
+/* An array of builtin function declarations.  */
 static GTY(()) VEC(tree,gc) *builtin_decls;
 
 /* An array of global renaming pointers.  */
@@ -494,20 +523,6 @@ gnat_init_decl_processing (void)
   build_common_tree_nodes_2 (0);
 
   ptr_void_type_node = build_pointer_type (void_type_node);
-
-  gnat_install_builtins ();
-}
-
-/* Install the builtin functions we might need.  */
-
-static void
-gnat_install_builtins ()
-{
-  /* Builtins used by generic middle-end optimizers.  */
-  build_common_builtin_nodes ();
-
-  /* Target specific builtins, such as the AltiVec family on ppc.  */
-  targetm.init_builtins ();
 }
 
 /* Create the predefined scalar types such as `integer_type_node' needed
@@ -761,6 +776,10 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
   main_identifier_node = get_identifier ("main");
+
+  /* Install the builtins we might need, either internally or as
+     user available facilities for Intrinsic imports.  */
+  gnat_install_builtins ();
 }
 
 /* Given a record type RECORD_TYPE and a chain of FIELD_DECL nodes FIELDLIST,
@@ -2223,38 +2242,6 @@ gnat_builtin_function (tree decl)
 {
   gnat_pushdecl (decl, Empty);
   return decl;
-}
-
-/* Handle a "const" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_const_attribute (tree *node, tree ARG_UNUSED (name),
-			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) == FUNCTION_DECL)
-    TREE_READONLY (*node) = 1;
-  else
-    *no_add_attrs = true;
-
-  return NULL_TREE;
-}
-
-/* Handle a "nothrow" attribute; arguments as in
-   struct attribute_spec.handler.  */
-
-static tree
-handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
-			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			  bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) == FUNCTION_DECL)
-    TREE_NOTHROW (*node) = 1;
-  else
-    *no_add_attrs = true;
-
-  return NULL_TREE;
 }
 
 /* Return an integer type with the number of bits of precision given by
@@ -4039,22 +4026,6 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   return expr;
 }
 
-/* Search the chain of currently available builtin declarations for a node
-   corresponding to function NAME (an IDENTIFIER_NODE).  Return the first node
-   found, if any, or NULL_TREE otherwise.  */
-tree
-builtin_decl_for (tree name)
-{
-  unsigned i;
-  tree decl;
-
-  for (i = 0; VEC_iterate(tree, builtin_decls, i, decl); i++)
-    if (DECL_NAME (decl) == name)
-      return decl;
-
-  return NULL_TREE;
-}
-
 /* Return the appropriate GCC tree code for the specified GNAT type,
    the latter being a record type as predicated by Is_Record_Type.  */
 
@@ -4127,6 +4098,676 @@ gnat_write_global_declarations (void)
   /* Emit debug info for all global declarations.  */
   emit_debug_global_declarations (VEC_address (tree, global_decls),
 				  VEC_length (tree, global_decls));
+}
+
+/* ************************************************************************
+ * *                           GCC builtins support                       *
+ * ************************************************************************ */
+
+/* The general scheme is fairly simple:
+   
+   For each builtin function/type to be declared, gnat_install_builtins calls
+   internal facilities which eventually get to gnat_push_decl, which in turn
+   tracks the so declared builtin function decls in the 'builtin_decls' global
+   datastructure. When an Intrinsic subprogram declaration is processed, we
+   search this global datastructure to retrieve the associated BUILT_IN DECL
+   node.  */
+
+/* Search the chain of currently available builtin declarations for a node
+   corresponding to function NAME (an IDENTIFIER_NODE).  Return the first node
+   found, if any, or NULL_TREE otherwise.  */
+tree
+builtin_decl_for (tree name)
+{
+  unsigned i;
+  tree decl;
+
+  for (i = 0; VEC_iterate(tree, builtin_decls, i, decl); i++)
+    if (DECL_NAME (decl) == name)
+      return decl;
+
+  return NULL_TREE;
+}
+
+/* The code below eventually exposes gnat_install_builtins, which declares
+   the builtin types and functions we might need, either internally or as
+   user accessible facilities.
+
+   ??? This is a first implementation shot, still in rough shape.  It is
+   heavily inspired from the "C" family implementation, with chunks copied
+   verbatim from there.
+   
+   Two obvious TODO candidates are
+   o Use a more efficient name/decl mapping scheme
+   o Devise a middle-end infrastructure to avoid having to copy
+     pieces between front-ends.  */
+
+/* ----------------------------------------------------------------------- *
+ *                         BUILTIN ELEMENTARY TYPES                        *
+ * ----------------------------------------------------------------------- */
+
+/* Standard data types to be used in builtin argument declarations.  */
+
+enum c_tree_index
+{
+    CTI_SIGNED_SIZE_TYPE, /* For format checking only.  */
+    CTI_STRING_TYPE,
+    CTI_CONST_STRING_TYPE,
+
+    CTI_MAX
+};
+
+static tree c_global_trees[CTI_MAX];
+
+#define signed_size_type_node	c_global_trees[CTI_SIGNED_SIZE_TYPE]
+#define string_type_node	c_global_trees[CTI_STRING_TYPE]
+#define const_string_type_node	c_global_trees[CTI_CONST_STRING_TYPE]
+
+/* ??? In addition some attribute handlers, we currently don't support a
+   (small) number of builtin-types, which in turns inhibits support for a
+   number of builtin functions.  */
+#define wint_type_node    void_type_node
+#define intmax_type_node  void_type_node
+#define uintmax_type_node void_type_node
+
+/* Build the void_list_node (void_type_node having been created).  */
+
+static tree
+build_void_list_node (void)
+{
+  tree t = build_tree_list (NULL_TREE, void_type_node);
+  return t;
+}
+
+/* Used to help initialize the builtin-types.def table.  When a type of
+   the correct size doesn't exist, use error_mark_node instead of NULL.
+   The later results in segfaults even when a decl using the type doesn't
+   get invoked.  */
+
+static tree
+builtin_type_for_size (int size, bool unsignedp)
+{
+  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  return type ? type : error_mark_node;
+}
+
+/* Build/push the elementary type decls that builtin functions/types
+   will need.  */
+
+static void
+install_builtin_elementary_types (void)
+{
+  signed_size_type_node = size_type_node;
+  pid_type_node = integer_type_node;
+  void_list_node = build_void_list_node ();
+
+  string_type_node = build_pointer_type (char_type_node);
+  const_string_type_node
+    = build_pointer_type (build_qualified_type
+			  (char_type_node, TYPE_QUAL_CONST));
+}
+
+/* ----------------------------------------------------------------------- *
+ *                          BUILTIN FUNCTION TYPES                         *
+ * ----------------------------------------------------------------------- */
+
+/* Now, builtin function types per se.  */
+
+enum c_builtin_type
+{
+#define DEF_PRIMITIVE_TYPE(NAME, VALUE) NAME,
+#define DEF_FUNCTION_TYPE_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_1(NAME, RETURN, ARG1) NAME,
+#define DEF_FUNCTION_TYPE_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
+#define DEF_FUNCTION_TYPE_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
+#define DEF_FUNCTION_TYPE_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) NAME,
+#define DEF_FUNCTION_TYPE_6(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) NAME,
+#define DEF_FUNCTION_TYPE_7(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) NAME,
+#define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
+#define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_VAR_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
+#define DEF_FUNCTION_TYPE_VAR_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
+#define DEF_FUNCTION_TYPE_VAR_5(NAME, RETURN, ARG1, ARG2, ARG3, ARG4, ARG6) \
+  NAME,
+#define DEF_POINTER_TYPE(NAME, TYPE) NAME,
+#include "builtin-types.def"
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_0
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_7
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_3
+#undef DEF_FUNCTION_TYPE_VAR_4
+#undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_POINTER_TYPE
+  BT_LAST
+};
+
+typedef enum c_builtin_type builtin_type;
+
+/* A temporary array used in communication with def_fn_type.  */
+static GTY(()) tree builtin_types[(int) BT_LAST + 1];
+
+/* A helper function for install_builtin_types.  Build function type
+   for DEF with return type RET and N arguments.  If VAR is true, then the
+   function should be variadic after those N arguments.
+
+   Takes special care not to ICE if any of the types involved are
+   error_mark_node, which indicates that said type is not in fact available
+   (see builtin_type_for_size).  In which case the function type as a whole
+   should be error_mark_node.  */
+
+static void
+def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
+{
+  tree args = NULL, t;
+  va_list list;
+  int i;
+
+  va_start (list, n);
+  for (i = 0; i < n; ++i)
+    {
+      builtin_type a = va_arg (list, builtin_type);
+      t = builtin_types[a];
+      if (t == error_mark_node)
+	goto egress;
+      args = tree_cons (NULL_TREE, t, args);
+    }
+  va_end (list);
+
+  args = nreverse (args);
+  if (!var)
+    args = chainon (args, void_list_node);
+
+  t = builtin_types[ret];
+  if (t == error_mark_node)
+    goto egress;
+  t = build_function_type (t, args);
+
+ egress:
+  builtin_types[def] = t;
+}
+
+/* Build the builtin function types and install them in the builtin_types
+   array for later use in builtin function decls.  */
+
+static void
+install_builtin_function_types (void)
+{
+  tree va_list_ref_type_node;
+  tree va_list_arg_type_node;
+
+  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
+    {
+      va_list_arg_type_node = va_list_ref_type_node =
+	build_pointer_type (TREE_TYPE (va_list_type_node));
+    }
+  else
+    {
+      va_list_arg_type_node = va_list_type_node;
+      va_list_ref_type_node = build_reference_type (va_list_type_node);
+    }
+
+#define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
+  builtin_types[ENUM] = VALUE;
+#define DEF_FUNCTION_TYPE_0(ENUM, RETURN) \
+  def_fn_type (ENUM, RETURN, 0, 0);
+#define DEF_FUNCTION_TYPE_1(ENUM, RETURN, ARG1) \
+  def_fn_type (ENUM, RETURN, 0, 1, ARG1);
+#define DEF_FUNCTION_TYPE_2(ENUM, RETURN, ARG1, ARG2) \
+  def_fn_type (ENUM, RETURN, 0, 2, ARG1, ARG2);
+#define DEF_FUNCTION_TYPE_3(ENUM, RETURN, ARG1, ARG2, ARG3) \
+  def_fn_type (ENUM, RETURN, 0, 3, ARG1, ARG2, ARG3);
+#define DEF_FUNCTION_TYPE_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4) \
+  def_fn_type (ENUM, RETURN, 0, 4, ARG1, ARG2, ARG3, ARG4);
+#define DEF_FUNCTION_TYPE_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5)	\
+  def_fn_type (ENUM, RETURN, 0, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
+#define DEF_FUNCTION_TYPE_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6)					\
+  def_fn_type (ENUM, RETURN, 0, 6, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
+#define DEF_FUNCTION_TYPE_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+			    ARG6, ARG7)					\
+  def_fn_type (ENUM, RETURN, 0, 7, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN) \
+  def_fn_type (ENUM, RETURN, 1, 0);
+#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1) \
+  def_fn_type (ENUM, RETURN, 1, 1, ARG1);
+#define DEF_FUNCTION_TYPE_VAR_2(ENUM, RETURN, ARG1, ARG2) \
+  def_fn_type (ENUM, RETURN, 1, 2, ARG1, ARG2);
+#define DEF_FUNCTION_TYPE_VAR_3(ENUM, RETURN, ARG1, ARG2, ARG3) \
+  def_fn_type (ENUM, RETURN, 1, 3, ARG1, ARG2, ARG3);
+#define DEF_FUNCTION_TYPE_VAR_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4) \
+  def_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, ARG4);
+#define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
+  def_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
+#define DEF_POINTER_TYPE(ENUM, TYPE) \
+  builtin_types[(int) ENUM] = build_pointer_type (builtin_types[(int) TYPE]);
+
+#include "builtin-types.def"
+
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_5
+#undef DEF_FUNCTION_TYPE_6
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_FUNCTION_TYPE_VAR_3
+#undef DEF_FUNCTION_TYPE_VAR_4
+#undef DEF_FUNCTION_TYPE_VAR_5
+#undef DEF_POINTER_TYPE
+  builtin_types[(int) BT_LAST] = NULL_TREE;
+}
+
+/* ----------------------------------------------------------------------- *
+ *                            BUILTIN ATTRIBUTES                           *
+ * ----------------------------------------------------------------------- */
+
+enum built_in_attribute
+{
+#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
+#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
+#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+  ATTR_LAST
+};
+
+static GTY(()) tree built_in_attributes[(int) ATTR_LAST];
+
+static void
+install_builtin_attributes (void)
+{
+  /* Fill in the built_in_attributes array.  */
+#define DEF_ATTR_NULL_TREE(ENUM)				\
+  built_in_attributes[(int) ENUM] = NULL_TREE;
+#define DEF_ATTR_INT(ENUM, VALUE)				\
+  built_in_attributes[(int) ENUM] = build_int_cst (NULL_TREE, VALUE);
+#define DEF_ATTR_IDENT(ENUM, STRING)				\
+  built_in_attributes[(int) ENUM] = get_identifier (STRING);
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)	\
+  built_in_attributes[(int) ENUM]			\
+    = tree_cons (built_in_attributes[(int) PURPOSE],	\
+		 built_in_attributes[(int) VALUE],	\
+		 built_in_attributes[(int) CHAIN]);
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+}
+
+/* Handle a "const" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_const_attribute (tree *node, tree ARG_UNUSED (name),
+			tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_READONLY (*node) = 1;
+  else
+    *no_add_attrs = true;
+
+  return NULL_TREE;
+}
+
+/* Handle a "nothrow" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nothrow_attribute (tree *node, tree ARG_UNUSED (name),
+			  tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			  bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_NOTHROW (*node) = 1;
+  else
+    *no_add_attrs = true;
+
+  return NULL_TREE;
+}
+
+/* Handle a "pure" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    DECL_IS_PURE (*node) = 1;
+  /* ??? TODO: Support types.  */
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no vops" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
+			 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			 bool *ARG_UNUSED (no_add_attrs))
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  DECL_IS_NOVOPS (*node) = 1;
+  return NULL_TREE;
+}
+
+/* Helper for nonnull attribute handling; fetch the operand number
+   from the attribute argument list.  */
+
+static bool
+get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
+{
+  /* Verify the arg number is a constant.  */
+  if (TREE_CODE (arg_num_expr) != INTEGER_CST
+      || TREE_INT_CST_HIGH (arg_num_expr) != 0)
+    return false;
+
+  *valp = TREE_INT_CST_LOW (arg_num_expr);
+  return true;
+}
+
+/* Handle the "nonnull" attribute.  */
+static tree
+handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
+			  tree args, int ARG_UNUSED (flags),
+			  bool *no_add_attrs)
+{
+  tree type = *node;
+  unsigned HOST_WIDE_INT attr_arg_num;
+
+  /* If no arguments are specified, all pointer arguments should be
+     non-null.  Verify a full prototype is given so that the arguments
+     will have the correct types when we actually check them later.  */
+  if (!args)
+    {
+      if (!TYPE_ARG_TYPES (type))
+	{
+	  error ("nonnull attribute without arguments on a non-prototype");
+	  *no_add_attrs = true;
+	}
+      return NULL_TREE;
+    }
+
+  /* Argument list specified.  Verify that each argument number references
+     a pointer argument.  */
+  for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
+    {
+      tree argument;
+      unsigned HOST_WIDE_INT arg_num = 0, ck_num;
+
+      if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
+	{
+	  error ("nonnull argument has invalid operand number (argument %lu)",
+		 (unsigned long) attr_arg_num);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      argument = TYPE_ARG_TYPES (type);
+      if (argument)
+	{
+	  for (ck_num = 1; ; ck_num++)
+	    {
+	      if (!argument || ck_num == arg_num)
+		break;
+	      argument = TREE_CHAIN (argument);
+	    }
+
+	  if (!argument
+	      || TREE_CODE (TREE_VALUE (argument)) == VOID_TYPE)
+	    {
+	      error ("nonnull argument with out-of-range operand number (argument %lu, operand %lu)",
+		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+	  if (TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE)
+	    {
+	      error ("nonnull argument references non-pointer operand (argument %lu, operand %lu)",
+		   (unsigned long) attr_arg_num, (unsigned long) arg_num);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "sentinel" attribute.  */
+
+static tree
+handle_sentinel_attribute (tree *node, tree name, tree args,
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree params = TYPE_ARG_TYPES (*node);
+
+  if (!params)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute requires prototypes with named arguments", name);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      while (TREE_CHAIN (params))
+	params = TREE_CHAIN (params);
+
+      if (VOID_TYPE_P (TREE_VALUE (params)))
+        {
+	  warning (OPT_Wattributes,
+		   "%qE attribute only applies to variadic functions", name);
+	  *no_add_attrs = true;
+	}
+    }
+  
+  if (args)
+    {
+      tree position = TREE_VALUE (args);
+
+      if (TREE_CODE (position) != INTEGER_CST)
+        {
+	  warning (0, "requested position is not an integer constant");
+	  *no_add_attrs = true;
+	}
+      else
+        {
+	  if (tree_int_cst_lt (position, integer_zero_node))
+	    {
+	      warning (0, "requested position is less than zero");
+	      *no_add_attrs = true;
+	    }
+	}
+    }
+  
+  return NULL_TREE;
+}
+
+/* Handle a "noreturn" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree type = TREE_TYPE (*node);
+
+  /* See FIXME comment in c_common_attribute_table.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    TREE_THIS_VOLATILE (*node) = 1;
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+    TREE_TYPE (*node)
+      = build_pointer_type
+	(build_type_variant (TREE_TYPE (type),
+			     TYPE_READONLY (TREE_TYPE (type)), 1));
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "malloc" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+    DECL_IS_MALLOC (*node) = 1;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Fake handler for attributes we don't properly support.  */
+   
+tree
+fake_attribute_handler (tree * ARG_UNUSED (node),
+			tree ARG_UNUSED (name),
+			tree ARG_UNUSED (args),
+			int  ARG_UNUSED (flags),
+			bool * ARG_UNUSED (no_add_attrs))
+{
+  return NULL_TREE;
+}
+
+/* Handle a "type_generic" attribute.  */
+
+static tree
+handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
+			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			       bool * ARG_UNUSED (no_add_attrs))
+{
+  /* Ensure we have a function type, with no arguments.  */
+  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE && ! TYPE_ARG_TYPES (*node));
+
+  return NULL_TREE;
+}
+
+/* ----------------------------------------------------------------------- *
+ *                              BUILTIN FUNCTIONS                          *
+ * ----------------------------------------------------------------------- */
+
+/* Worker for DEF_BUILTIN.  Possibly define a builtin function with one or two
+   names.  Does not declare a non-__builtin_ function if flag_no_builtin, or
+   if nonansi_p and flag_no_nonansi_builtin.  */
+
+static void
+def_builtin_1 (enum built_in_function fncode,
+	       const char *name,
+	       enum built_in_class fnclass,
+	       tree fntype, tree libtype,
+	       bool both_p, bool fallback_p,
+	       bool nonansi_p ATTRIBUTE_UNUSED,
+	       tree fnattrs, bool implicit_p)
+{
+  tree decl;
+  const char *libname;
+
+  /* Preserve an already installed decl.  It most likely was setup in advance
+     (e.g. as part of the internal builtins) for specific reasons.  */ 
+  if (built_in_decls[(int) fncode] != NULL_TREE)
+    return;
+  
+  gcc_assert ((!both_p && !fallback_p)
+	      || !strncmp (name, "__builtin_",
+			   strlen ("__builtin_")));
+
+  libname = name + strlen ("__builtin_");
+  decl = add_builtin_function (name, fntype, fncode, fnclass,
+			       (fallback_p ? libname : NULL),
+			       fnattrs);
+  if (both_p)
+    /* ??? This is normally further controlled by command-line options
+       like -fno-builtin, but we don't have them for Ada.  */
+      add_builtin_function (libname, libtype, fncode, fnclass,
+			    NULL, fnattrs);
+
+  built_in_decls[(int) fncode] = decl;
+  if (implicit_p)
+    implicit_built_in_decls[(int) fncode] = decl;
+}
+
+static int flag_isoc94 = 0;
+static int flag_isoc99 = 0;
+
+/* Install what the common builtins.def offers.  */
+
+static void
+install_builtin_functions (void)
+{
+#define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P, FALLBACK_P, \
+		    NONANSI_P, ATTRS, IMPLICIT, COND)			\
+  if (NAME && COND)							\
+    def_builtin_1 (ENUM, NAME, CLASS,                                   \
+                   builtin_types[(int) TYPE],                           \
+                   builtin_types[(int) LIBTYPE],                        \
+                   BOTH_P, FALLBACK_P, NONANSI_P,                       \
+                   built_in_attributes[(int) ATTRS], IMPLICIT);
+#include "builtins.def"
+#undef DEF_BUILTIN
+}
+
+/* ----------------------------------------------------------------------- *
+ *                              BUILTIN FUNCTIONS                          *
+ * ----------------------------------------------------------------------- */
+
+/* Install the builtin functions we might need.  */
+
+void
+gnat_install_builtins (void)
+{
+  install_builtin_elementary_types ();
+  install_builtin_function_types ();
+  install_builtin_attributes ();
+
+  /* Install builtins used by generic middle-end pieces first.  Some of these
+     know about internal specificities and control attributes accordingly, for
+     instance __builtin_alloca vs no-throw and -fstack-check.  We will ignore
+     the generic definition from builtins.def.  */
+  build_common_builtin_nodes ();
+
+  /* Now, install the target specific builtins, such as the AltiVec family on
+     ppc, and the common set as exposed by builtins.def.  */
+  targetm.init_builtins ();
+  install_builtin_functions ();
 }
 
 #include "gt-ada-utils.h"
