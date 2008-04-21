@@ -1,3 +1,7 @@
+2008-04-21  Steve Ellcey  <sje@cup.hp.com>
+
+	* f95-lang.c (gfc_init_decl_processing): use ptr_mode instead of Pmode.
+
 2008-04-21  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35019

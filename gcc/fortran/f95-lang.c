@@ -563,9 +563,9 @@ gfc_init_decl_processing (void)
   /* x86_64 minw32 has a sizetype of "unsigned long long", most other hosts
      have a sizetype of "unsigned long". Therefore choose the correct size
      in mostly target independent way.  */
-  if (TYPE_MODE (long_unsigned_type_node) == Pmode)
+  if (TYPE_MODE (long_unsigned_type_node) == ptr_mode)
     set_sizetype (long_unsigned_type_node);
-  else if (TYPE_MODE (long_long_unsigned_type_node) == Pmode)
+  else if (TYPE_MODE (long_long_unsigned_type_node) == ptr_mode)
     set_sizetype (long_long_unsigned_type_node);
   else
     set_sizetype (long_unsigned_type_node);
