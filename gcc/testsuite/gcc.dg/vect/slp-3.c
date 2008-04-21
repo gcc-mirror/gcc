@@ -141,7 +141,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect"  } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
   
