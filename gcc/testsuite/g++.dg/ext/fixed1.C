@@ -1,4 +1,5 @@
 // PR c++/35325
+// { dg-options "" }
 
 template<int> struct A {};
 
