@@ -1,3 +1,73 @@
+2008-04-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* dbgcnt.def (ra_byte_scan): Added.
+	* dbgcnt.c (dbg_cnt): Added code to print message to dump_file
+	when the last hit happens for a counter.  
+	* timevar.def (TV_DF_BYTE_LR): New variable.
+	* tree-pass.h (pass_fast_rtl_byte_dce): New pass.
+	* passes.c (pass_fast_rtl_byte_dce): New pass.
+	* fwprop.c (update_df): Added mode to call df_ref_create.
+	Renamed DF_REF_WIDTH and DF_REF_OFFSET to DF_REF_EXTRACT_WIDTH and
+	DF_REF_EXTRACT_OFFSET.
+	* df.h (DF_BYTE_LR, DF_BYTE_LR_BB_INFO, DF_BYTE_LR_IN, 
+	DF_BYTE_LR_OUT, df_byte_lr): New macro.
+	(df_mm): New enum.
+	(df_ref_extract): Added mode field.
+	(DF_REF_WIDTH, DF_REF_OFFSET) Renamed to DF_REF_EXTRACT_WIDTH and
+	DF_REF_EXTRACT_OFFSET.
+	(DF_REF_EXTRACT_MODE): New macro.
+	(df_byte_lr_bb_info): New structure.
+	(df_print_byte_regset, df_compute_accessed_bytes, 
+	df_byte_lr_add_problem, df_byte_lr_get_regno_start,
+	df_byte_lr_get_regno_len, df_byte_lr_simulate_defs,
+	df_byte_lr_simulate_uses,
+	df_byte_lr_simulate_artificial_refs_at_top,
+	df_byte_lr_simulate_artificial_refs_at_end,
+	df_compute_accessed_bytes): New function.
+	(df_ref_create): Add parameter.
+	(df_byte_lr_get_bb_info): New inline function.
+	* df-scan.c (df_ref_record, df_uses_record,
+	df_ref_create_structure): Added mode parameter.
+	(df_ref_create, df_notes_rescan, df_ref_record, df_def_record_1, 
+	df_defs_record, df_uses_record, df_get_conditional_uses,
+	df_get_call_refs, df_insn_refs_collect, df_bb_refs_collect, 
+	df_entry_block_defs_collect, df_exit_block_uses_collect):
+	Added mode parameter to calls to df_ref_record, df_uses_record,
+	df_ref_create_structure.
+       	(df_ref_equal_p, df_ref_compare): Added test for modes.
+	(df_ref_create_structure): Added code to set mode.  Renamed
+	DF_REF_WIDTH and DF_REF_OFFSET to DF_REF_EXTRACT_WIDTH and
+	DF_REF_EXTRACT_OFFSET.
+	* df-core.c (df_print_byte_regset): New function.
+	* df-byte-scan.c: New file.
+	* df-problems.c (df_rd_transfer_function): Removed unnecessary
+	calls to BITMAP_FREE.  
+	(df_byte_lr_problem_data, df_problem problem_BYTE_LR): New structure.
+	(df_byte_lr_get_regno_start, df_byte_lr_get_regno_len,
+	df_byte_lr_set_bb_info, df_byte_lr_free_bb_info, 
+	df_byte_lr_check_regs, df_byte_lr_expand_bitmap, 
+	df_byte_lr_alloc, df_byte_lr_reset, df_byte_lr_bb_local_compute,
+	df_byte_lr_local_compute, df_byte_lr_init,
+	df_byte_lr_confluence_0, df_byte_lr_confluence_n, 
+	df_byte_lr_transfer_function, df_byte_lr_free, 
+	df_byte_lr_top_dump, df_byte_lr_bottom_dump,
+	df_byte_lr_add_problem, df_byte_lr_simulate_defs, 
+	df_byte_lr_simulate_uses,
+	df_byte_lr_simulate_artificial_refs_at_top,
+	df_byte_lr_simulate_artificial_refs_at_end): New function.
+	* dce.c (byte_dce_process_block): New function.
+	(dce_process_block): au is now passed in rather than computed
+	locally.  Changed loops that look at artificial defs to not look
+	for conditional or partial ones, because there never are any.  
+	(fast_dce): Now is able to drive byte_dce_process_block or 
+	dce_process_block depending on the kind of dce being done.
+	(rest_of_handle_fast_dce): Add parameter to fast_dce.
+	(rest_of_handle_fast_byte_dce): New function.
+	(rtl_opt_pass pass_fast_rtl_byte_dce): New pass.
+	* Makefile.in (df-byte-scan.o, debugcnt.o): Added dependencies.
+
+
 2008-04-21  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35019

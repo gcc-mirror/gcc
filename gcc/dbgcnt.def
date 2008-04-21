@@ -61,6 +61,83 @@ along with GCC; see the file COPYING3.  If not see
    Use -fdbg-cnt=counter1:N,counter2:M,...
    which sets the limit for counter1 to N, and the limit for counter2 to M, etc.
    e.g. setting a limit to zero will make dbg_cnt () return false *always*.
+
+   The following shell file can then be used to binary search for
+   exact transformation that causes the bug.  A second shell script
+   should be written, say "tryTest", which exits with 1 if the
+   compiled program fails and exits with 0 if the program succeeds.
+   This shell script should take 1 parameter, the value to be passed
+   to set the counter of the compilation command in tryTest.  Then,
+   assuming that the following script is called binarySearch,
+   the command:
+
+	binarySearch tryTest 
+
+   will automatically find the highest value of the counter for which
+   the program fails.  If tryTest never fails, binarySearch will
+   produce unpredictable results as it will try to find an upper bound
+   that does not exist.
+
+   When dbgcnt does hits the limit, it writes a comment in the current
+   dump_file of the form:
+
+       ***dbgcnt: limit reached for %s.***
+	
+   Assuming that the dump file is logging the analysis/transformations
+   it is making, this pinpoints the exact position in the log file
+   where the problem transformation is being logged.
+
+=====================================
+#!/bin/bash
+
+while getopts "l:u:i:" opt
+do
+    case $opt in
+        l) lb="$OPTARG";;
+        u) ub="$OPTARG";;
+        i) init="$OPTARG";;
+        ?) usage; exit 3;;
+    esac
+done
+
+shift $(($OPTIND - 1))
+echo $@
+cmd=${1+"${@}"}
+
+lb=${lb:=0}
+init=${init:=100}
+
+$cmd $lb
+lb_val=$?
+if [ -z "$ub" ]; then
+    # find the upper bound
+    ub=$(($init + $lb))
+    true
+    while [ $? -eq $lb_val ]; do
+        ub=$(($ub * 10))
+        #ub=`expr $ub \* 10`
+        $cmd $ub
+    done
+fi
+
+echo command: $cmd
+
+true
+while [ `expr $ub - $lb` -gt 1 ]; do
+    try=$(($lb + ( $ub - $lb ) / 2))
+    $cmd $try
+    if [ $? -eq $lb_val ]; then
+        lb=$try
+    else
+        ub=$try
+    fi
+done
+
+echo lbound: $lb
+echo ubound: $ub
+
+=====================================
+
 */
 
 /* Debug counter definitions.  */
@@ -73,6 +150,7 @@ DEBUG_COUNTER (dce)
 DEBUG_COUNTER (dce_fast)
 DEBUG_COUNTER (dce_ud)
 DEBUG_COUNTER (delete_trivial_dead)
+DEBUG_COUNTER (df_byte_scan)
 DEBUG_COUNTER (dse)
 DEBUG_COUNTER (dse1)
 DEBUG_COUNTER (dse2)
