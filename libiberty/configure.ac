@@ -208,6 +208,7 @@ if [[ "${shared}" = "yes" ]]; then
     i[[34567]]86-*-* | x86_64-*-*)
 			PICFLAG=-fpic ;;
     m68k-*-*)		PICFLAG=-fpic ;;
+    mips*-*-linux)	PICFLAG=-fPIC ;;
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	PICFLAG=-fPIC ;;
     sparc*-*-*)		case "${CFLAGS}" in
