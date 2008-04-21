@@ -360,7 +360,7 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
     GLIBCXX_CHECK_SETRLIMIT_ancilliary(FSIZE)
 
     # Check for rlimit, setrlimit.
-    AC_CACHE_VAL(ac_setrlimit, [
+    AC_CACHE_VAL(glibcxx_cv_setrlimit, [
       AC_TRY_COMPILE(
         [#include <unistd.h>
          #include <sys/time.h>
@@ -368,12 +368,12 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
         ],
         [struct rlimit r;
          setrlimit(0, &r);],
-        [ac_setrlimit=yes], [ac_setrlimit=no])
+        [glibcxx_cv_setrlimit=yes], [glibcxx_cv_setrlimit=no])
     ])
   fi
 
   AC_MSG_CHECKING([for testsuite resource limits support])
-  if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
+  if test $setrlimit_have_headers = yes && test $glibcxx_cv_setrlimit = yes; then
     ac_res_limits=yes
     AC_DEFINE(_GLIBCXX_RES_LIMITS, 1,
               [Define if using setrlimit to set resource limits during
@@ -801,7 +801,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
   # Check for the existence of <math.h> functions used if C99 is enabled.
   AC_MSG_CHECKING([for ISO C99 support in <math.h>])
-  AC_CACHE_VAL(ac_c99_math, [
+  AC_CACHE_VAL(glibcxx_cv_c99_math, [
   GCC_TRY_COMPILE_OR_LINK(
      [#include <math.h>
       volatile double d1, d2;
@@ -819,10 +819,10 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
       i = islessgreater(d1, d2);
       i = islessgreater(d1, d2);
       i = isunordered(d1, d2);
-     ],[ac_c99_math=yes], [ac_c99_math=no])
+     ],[glibcxx_cv_c99_math=yes], [glibcxx_cv_c99_math=no])
   ])
-  AC_MSG_RESULT($ac_c99_math)
-  if test x"$ac_c99_math" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_c99_math)
+  if test x"$glibcxx_cv_c99_math" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_MATH, 1,
               [Define if C99 functions or macros in <math.h> should be imported
               in <cmath> in namespace std.])
@@ -834,7 +834,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   # to the library function is emitted.
   AC_CHECK_HEADERS(tgmath.h, ac_has_tgmath_h=yes, ac_has_tgmath_h=no)
   AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
-  ac_c99_complex=no;
+  glibcxx_cv_c99_complex=no;
   if test x"$ac_has_complex_h" = x"yes"; then
     AC_MSG_CHECKING([for ISO C99 support in <complex.h>])
     GCC_TRY_COMPILE_OR_LINK(
@@ -884,10 +884,10 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 	tmpld = ctanl(tmpld);
 	tmpld = ctanhl(tmpld);
 	tmpld = cpowl(tmpld, tmpld);
-       ],[ac_c99_complex=yes], [ac_c99_complex=no])
+       ],[glibcxx_cv_c99_complex=yes], [glibcxx_cv_c99_complex=no])
   fi
-  AC_MSG_RESULT($ac_c99_complex)
-  if test x"$ac_c99_complex" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_c99_complex)
+  if test x"$glibcxx_cv_c99_complex" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX, 1,
               [Define if C99 functions in <complex.h> should be used in
               <complex>. Using compiler builtins for these functions requires
@@ -896,7 +896,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
   # Check for the existence in <stdio.h> of vscanf, et. al.
   AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])
-  AC_CACHE_VAL(ac_c99_stdio, [
+  AC_CACHE_VAL(glibcxx_cv_c99_stdio, [
   GCC_TRY_COMPILE_OR_LINK(
      [#include <stdio.h>
       #include <stdarg.h>
@@ -909,13 +909,13 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 	vsscanf(fmt, "%i", args);
       }],
      [snprintf("12", 0, "%i");],
-     [ac_c99_stdio=yes], [ac_c99_stdio=no])
+     [glibcxx_cv_c99_stdio=yes], [glibcxx_cv_c99_stdio=no])
   ])
-  AC_MSG_RESULT($ac_c99_stdio)
+  AC_MSG_RESULT($glibcxx_cv_c99_stdio)
 
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
   AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
-  AC_CACHE_VAL(ac_c99_stdlib, [
+  AC_CACHE_VAL(glibcxx_cv_c99_stdlib, [
   GCC_TRY_COMPILE_OR_LINK(
      [#include <stdlib.h>
       volatile float f;
@@ -933,12 +933,12 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
       ll = mydivt.rem;
       ll = atoll("10");
       _Exit(0);
-      ],[ac_c99_stdlib=yes], [ac_c99_stdlib=no])
+      ],[glibcxx_cv_c99_stdlib=yes], [glibcxx_cv_c99_stdlib=no])
   ])
-  AC_MSG_RESULT($ac_c99_stdlib)
+  AC_MSG_RESULT($glibcxx_cv_c99_stdlib)
 
   # Check for the existence in <wchar.h> of wcstold, etc.
-  ac_c99_wchar=no;
+  glibcxx_cv_c99_wchar=no;
   if test x"$ac_has_wchar_h" = xyes &&
      test x"$ac_has_wctype_h" = xyes; then
     AC_MSG_CHECKING([for ISO C99 support in <wchar.h>])	
@@ -949,7 +949,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 		      using ::wcstoll;
 		      using ::wcstoull;
 		    }
-		   ],[],[ac_c99_wchar=yes], [ac_c99_wchar=no])
+		   ],[],[glibcxx_cv_c99_wchar=yes], [glibcxx_cv_c99_wchar=no])
 
     # Checks for wide character functions that may not be present.
     # Injection of these is wrapped with guard macros.
@@ -978,15 +978,15 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
  	    	   [AC_DEFINE(HAVE_ISWBLANK,1,
 			[Defined if iswblank exists.])],[])
 
-    AC_MSG_RESULT($ac_c99_wchar)
+    AC_MSG_RESULT($glibcxx_cv_c99_wchar)
   fi
 
   # Option parsed, now set things appropriately.
-  if test x"$ac_c99_math" = x"no" ||
-     test x"$ac_c99_complex" = x"no" ||
-     test x"$ac_c99_stdio" = x"no" ||
-     test x"$ac_c99_stdlib" = x"no" ||
-     test x"$ac_c99_wchar" = x"no"; then
+  if test x"$glibcxx_cv_c99_math" = x"no" ||
+     test x"$glibcxx_cv_c99_complex" = x"no" ||
+     test x"$glibcxx_cv_c99_stdio" = x"no" ||
+     test x"$glibcxx_cv_c99_stdlib" = x"no" ||
+     test x"$glibcxx_cv_c99_wchar" = x"no"; then
     enable_c99=no;
   else
     AC_DEFINE(_GLIBCXX_USE_C99, 1,
@@ -1059,15 +1059,15 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 
   # Check for the existence of <ctype.h> functions.
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <ctype.h>])
-  AC_CACHE_VAL(ac_c99_ctype_tr1, [
+  AC_CACHE_VAL(glibcxx_cv_c99_ctype_tr1, [
   AC_TRY_COMPILE([#include <ctype.h>],
 	         [int ch;
 	          int ret;
 	          ret = isblank(ch);
-		 ],[ac_c99_ctype_tr1=yes], [ac_c99_ctype_tr1=no])
+		 ],[glibcxx_cv_c99_ctype_tr1=yes], [glibcxx_cv_c99_ctype_tr1=no])
   ])
-  AC_MSG_RESULT($ac_c99_ctype_tr1)
-  if test x"$ac_c99_ctype_tr1" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_c99_ctype_tr1)
+  if test x"$glibcxx_cv_c99_ctype_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_CTYPE_TR1, 1,
               [Define if C99 functions in <ctype.h> should be imported in
 	      <tr1/cctype> in namespace std::tr1.])
@@ -1105,7 +1105,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 
   # Check for the existence of <stdint.h> types.
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <stdint.h>])
-  AC_CACHE_VAL(ac_c99_stdint_tr1, [
+  AC_CACHE_VAL(glibcxx_cv_c99_stdint_tr1, [
   AC_TRY_COMPILE([#include <stdint.h>],
 	         [typedef int8_t          my_int8_t;
 	          typedef int16_t         my_int16_t;
@@ -1135,10 +1135,10 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	          typedef uint_least64_t  my_uint_least64_t;
 		  typedef uintmax_t       my_uintmax_t;
 		  typedef uintptr_t       my_uintptr_t;
-		 ],[ac_c99_stdint_tr1=yes], [ac_c99_stdint_tr1=no])
+		 ],[glibcxx_cv_c99_stdint_tr1=yes], [glibcxx_cv_c99_stdint_tr1=no])
   ])
-  AC_MSG_RESULT($ac_c99_stdint_tr1)
-  if test x"$ac_c99_stdint_tr1" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_c99_stdint_tr1)
+  if test x"$glibcxx_cv_c99_stdint_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_STDINT_TR1, 1,
               [Define if C99 types in <stdint.h> should be imported in
 	      <tr1/cstdint> in namespace std::tr1.])
@@ -1146,7 +1146,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 
   # Check for the existence of <math.h> functions.
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <math.h>])
-  AC_CACHE_VAL(ac_c99_math_tr1, [
+  AC_CACHE_VAL(glibcxx_cv_c99_math_tr1, [
   AC_TRY_COMPILE([#include <math.h>],
 	         [typedef double_t  my_double_t;
 	          typedef float_t   my_float_t;
@@ -1255,10 +1255,10 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	          trunc(0.0);
 	          truncf(0.0f);
 	          truncl(0.0l);
-		 ],[ac_c99_math_tr1=yes], [ac_c99_math_tr1=no])
+		 ],[glibcxx_cv_c99_math_tr1=yes], [glibcxx_cv_c99_math_tr1=no])
   ])
-  AC_MSG_RESULT($ac_c99_math_tr1)
-  if test x"$ac_c99_math_tr1" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_c99_math_tr1)
+  if test x"$glibcxx_cv_c99_math_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
               [Define if C99 functions or macros in <math.h> should be imported
               in <tr1/cmath> in namespace std::tr1.])
@@ -1267,7 +1267,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
   # sense if the previous check fails, per C99, 7.8/1).
   ac_c99_inttypes_tr1=no;
-  if test x"$ac_c99_stdint_tr1" = x"yes"; then
+  if test x"$glibcxx_cv_c99_stdint_tr1" = x"yes"; then
     AC_MSG_CHECKING([for ISO C99 support to TR1 in <inttypes.h>])
     AC_TRY_COMPILE([#include <inttypes.h>],
 	           [intmax_t i, numer, denom, base;
@@ -1300,7 +1300,7 @@ dnl
 AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
 
   AC_MSG_CHECKING([for "dev/random" and "dev/urandom" for TR1 random_device])
-  AC_CACHE_VAL(ac_random_tr1, [
+  AC_CACHE_VAL(glibcxx_cv_random_tr1, [
   AC_TRY_RUN([#include <stdio.h>
 	      int main()
 	      {
@@ -1308,11 +1308,11 @@ AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
                          && fopen("/dev/urandom", "r"));
 	      }	      
 	     ],
-             [ac_random_tr1=yes], [ac_random_tr1=no],
-	     [ac_random_tr1=no])
+             [glibcxx_cv_random_tr1=yes], [glibcxx_cv_random_tr1=no],
+	     [glibcxx_cv_random_tr1=no])
   ])
-  AC_MSG_RESULT($ac_random_tr1)
-  if test x"$ac_random_tr1" = x"yes"; then
+  AC_MSG_RESULT($glibcxx_cv_random_tr1)
+  if test x"$glibcxx_cv_random_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1, 1,
               [Define if dev/random and dev/urandom are available for
 	       the random_device of TR1 (Chapter 5.1).])
@@ -1325,155 +1325,26 @@ dnl Check whether macros, etc are present for <system_error>
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
 
-  AC_MSG_CHECKING([for EOWNERDEAD])
-  AC_CACHE_VAL(ac_system_error1, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = EOWNERDEAD; ],
-             [ac_system_error1=yes], [ac_system_error1=no])
-  ])
-  AC_MSG_RESULT($ac_system_error1)
-  if test x"$ac_system_error1" = x"yes"; then
-    AC_DEFINE(HAVE_EOWNERDEAD, 1, [Define if EOWNERDEAD exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENOTRECOVERABLE])
-  AC_CACHE_VAL(ac_system_error2, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOTRECOVERABLE; ],
-             [ac_system_error2=yes], [ac_system_error2=no])
-  ])
-  AC_MSG_RESULT($ac_system_error2)
-  if test x"$ac_system_error2" = x"yes"; then
-    AC_DEFINE(HAVE_ENOTRECOVERABLE, 1, [Define if ENOTRECOVERABLE exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENOLINK])
-  AC_CACHE_VAL(ac_system_error3, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOLINK; ],
-             [ac_system_error3=yes], [ac_system_error3=no])
-  ])
-  AC_MSG_RESULT($ac_system_error3)
-  if test x"$ac_system_error3" = x"yes"; then
-    AC_DEFINE(HAVE_ENOLINK, 1, [Define if ENOLINK exists.])
-  fi
-
-  AC_MSG_CHECKING([for EPROTO])
-  AC_CACHE_VAL(ac_system_error_4, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = EPROTO; ],
-             [ac_system_error_4=yes], [ac_system_error_4=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_4)
-  if test x"$ac_system_error_4" = x"yes"; then
-    AC_DEFINE(HAVE_EPROTO, 1, [Define if EPROTO exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENODATA])
-  AC_CACHE_VAL(ac_system_error_5, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENODATA; ],
-             [ac_system_error_5=yes], [ac_system_error_5=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_5)
-  if test x"$ac_system_error_5" = x"yes"; then
-    AC_DEFINE(HAVE_ENODATA, 1, [Define if ENODATA exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENOSR])
-  AC_CACHE_VAL(ac_system_error_6, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOSR; ],
-             [ac_system_error_6=yes], [ac_system_error_6=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_6)
-  if test x"$ac_system_error_6" = x"yes"; then
-    AC_DEFINE(HAVE_ENOSR, 1, [Define if ENOSR exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENOSTR])
-  AC_CACHE_VAL(ac_system_error_7, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOSTR; ],
-             [ac_system_error_7=yes], [ac_system_error_7=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_7)
-  if test x"$ac_system_error_7" = x"yes"; then
-    AC_DEFINE(HAVE_ENOSTR, 1, [Define if ENOSTR exists.])
-  fi
-
-  AC_MSG_CHECKING([for ETIME])
-  AC_CACHE_VAL(ac_system_error_8, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ETIME; ],
-             [ac_system_error_8=yes], [ac_system_error_8=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_8)
-  if test x"$ac_system_error_8" = x"yes"; then
-    AC_DEFINE(HAVE_ETIME, 1, [Define if ETIME exists.])
-  fi
-
-  AC_MSG_CHECKING([for sys_nerr])
-  AC_CACHE_VAL(ac_system_error9, [
-  AC_TRY_COMPILE([#include <errno.h> ], [ int i = sys_nerr; ],
-             [ac_system_error9=yes], [ac_system_error9=no])
-  ])
-  AC_MSG_RESULT($ac_system_error9)
-  if test x"$ac_system_error9" = x"yes"; then
-    AC_DEFINE(HAVE_SYS_NERR, 1, [Define if sys_nerr exists.])
-  fi
-
-  AC_MSG_CHECKING([for EBADMSG])
-  AC_CACHE_VAL(ac_system_error_10, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = EBADMSG; ],
-             [ac_system_error_10=yes], [ac_system_error_10=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_10)
-  if test x"$ac_system_error_10" = x"yes"; then
-    AC_DEFINE(HAVE_EBADMSG, 1, [Define if EBADMSG exists.])
-  fi
-
-  AC_MSG_CHECKING([for ECANCELED])
-  AC_CACHE_VAL(ac_system_error_11, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ECANCELED; ],
-             [ac_system_error_11=yes], [ac_system_error_11=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_11)
-  if test x"$ac_system_error_11" = x"yes"; then
-    AC_DEFINE(HAVE_ECANCELED, 1, [Define if ECANCELED exists.])
-  fi
-
-  AC_MSG_CHECKING([for EOVERFLOW])
-  AC_CACHE_VAL(ac_system_error_12, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = EOVERFLOW; ],
-             [ac_system_error_12=yes], [ac_system_error_12=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_12)
-  if test x"$ac_system_error_12" = x"yes"; then
-    AC_DEFINE(HAVE_EOVERFLOW, 1, [Define if EOVERFLOW exists.])
-  fi
-
-  AC_MSG_CHECKING([for ENOTSUP])
-  AC_CACHE_VAL(ac_system_error_13, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOTSUP; ],
-             [ac_system_error_13=yes], [ac_system_error_13=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_13)
-  if test x"$ac_system_error_13" = x"yes"; then
-    AC_DEFINE(HAVE_ENOTSUP, 1, [Define if ENOTSUP exists.])
-  fi
-
-  AC_MSG_CHECKING([for EIDRM])
-  AC_CACHE_VAL(ac_system_error_14, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = EIDRM; ],
-             [ac_system_error_14=yes], [ac_system_error_14=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_14)
-  if test x"$ac_system_error_14" = x"yes"; then
-    AC_DEFINE(HAVE_EIDRM, 1, [Define if EIDRM exists.])
-  fi
-
-  AC_MSG_CHECKING([for ETXTBSY])
-  AC_CACHE_VAL(ac_system_error_15, [
-  AC_TRY_COMPILE([#include <errno.h>], [ int i = ETXTBSY; ],
-             [ac_system_error_15=yes], [ac_system_error_15=no])
-  ])
-  AC_MSG_RESULT($ac_system_error_15)
-  if test x"$ac_system_error_15" = x"yes"; then
-    AC_DEFINE(HAVE_ETXTBSY, 1, [Define if ETXTBSY exists.])
-  fi
+m4_pushdef([n_syserr], [1])dnl
+m4_foreach([syserr], [EOWNERDEAD, ENOTRECOVERABLE, ENOLINK, EPROTO, ENODATA,
+		      ENOSR, ENOSTR, ETIME, sys_nerr, EBADMSG, ECANCELED,
+		      EOVERFLOW, ENOTSUP, EIDRM, ETXTBSY],
+[m4_pushdef([SYSERR], m4_toupper(syserr))dnl
+AC_MSG_CHECKING([for syserr])
+AC_CACHE_VAL([glibcxx_cv_system_error[]n_syserr], [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <errno.h>]],
+				   [int i = syserr;])],
+		  [glibcxx_cv_system_error[]n_syserr=yes],
+		  [glibcxx_cv_system_error[]n_syserr=no])
+])
+AC_MSG_RESULT([$glibcxx_cv_system_error[]n_syserr])
+if test x"$glibcxx_cv_system_error[]n_syserr" = x"yes"; then
+  AC_DEFINE([HAVE_]SYSERR, 1, [Define if ]syserr[ exists.])
+fi
+m4_define([n_syserr], m4_incr(n_syserr))dnl
+m4_popdef([SYSERR])dnl
+])
+m4_popdef([n_syserr])dnl
 ])
 
 dnl
@@ -2401,14 +2272,14 @@ if test x$enable_visibility = xyes ; then
   dnl all hail libgfortran
   dnl Check whether the target supports hidden visibility.
   AC_CACHE_CHECK([whether the target supports hidden visibility],
-		 have_attribute_visibility, [
+		 glibcxx_cv_have_attribute_visibility, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_COMPILE([void __attribute__((visibility("hidden"))) foo(void) { }],
-		 [], have_attribute_visibility=yes,
-		 have_attribute_visibility=no)
+		 [], glibcxx_cv_have_attribute_visibility=yes,
+		 glibcxx_cv_have_attribute_visibility=no)
   CFLAGS="$save_CFLAGS"])
-  if test $have_attribute_visibility = no; then
+  if test $glibcxx_cv_have_attribute_visibility = no; then
     enable_visibility=no
   fi
 fi
