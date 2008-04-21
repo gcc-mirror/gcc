@@ -175,6 +175,8 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
     opt = OPTION_v, skip = 0;
   else if (text[1] == 'x')
     opt = OPTION_x, arg = text + 2;
+  else if (text[1] == 'J')
+    ;
   else
     {
       if ((skip = WORD_SWITCH_TAKES_ARG (text + 1)) != 0)  /* See gcc.c.  */

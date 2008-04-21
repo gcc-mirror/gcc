@@ -1,3 +1,10 @@
+2008-04-21  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35019
+	* gcc.h: Added fortran options that take arguments to
+	DEFAULT_SWITCH_TAKES_ARG and DEFAULT_WORD_SWITCH_TAKES_ARG
+	macros.
+
 2008-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (sra_walk_expr) <VIEW_CONVERT_EXPR>: Disable
