@@ -1,3 +1,8 @@
+2008-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/26445
+	* g++.dg/other/i386-4.C: New test.
+
 2008-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35325
@@ -18,7 +23,7 @@
 2008-04-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35991
-	gfortran.dg/zero-sized_4.f90: New test.
+	* gfortran.dg/zero-sized_4.f90: New test.
 
 2008-04-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
