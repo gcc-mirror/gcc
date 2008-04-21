@@ -1,10 +1,15 @@
-2008-04-24  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-04-21  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* coverage.c: Include tree-pass.h.
+	(coverage_counter_alloc): Print da_file_name to the dump file.
+
+2008-04-21  Kenneth Zadeck <zadeck@naturalbridge.com>
+
 	* sbitmap.c (sbitmap_range_empty_p): New function.
 	* sbitmap.h (sbitmap_range_empty_p): New function.
-	* bitmap.h: Now includes obstack.h.  
+	* bitmap.h: Now includes obstack.h.
 
-
-2008-04-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+2008-04-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* dbgcnt.def (ra_byte_scan): Added.
@@ -72,7 +77,6 @@
 	(rest_of_handle_fast_byte_dce): New function.
 	(rtl_opt_pass pass_fast_rtl_byte_dce): New pass.
 	* Makefile.in (df-byte-scan.o, debugcnt.o): Added dependencies.
-
 
 2008-04-21  Daniel Franke  <franke.daniel@gmail.com>
 

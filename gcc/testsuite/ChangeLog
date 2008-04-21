@@ -1,3 +1,10 @@
+2008-04-21  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/profile-dir-1.c, gcc.dg/profile-dir-2.c,
+	gcc.dg/profile-dir-3.c: Generate tree_profile dump.  Check gcda
+	file name there instead of the assembly.  Cleanup tree_profile
+	dump file.
+
 2008-04-21  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/vect/vect-vfa-slp.c: XFAIL if vect_no_align.

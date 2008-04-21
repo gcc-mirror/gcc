@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fprofile-generate=." } */
-/* { dg-final { scan-assembler "\"./profile-dir-1.gcda\"" } } */
+/* { dg-options "-O -fprofile-generate=. -fdump-tree-tree_profile" } */
+/* { dg-final { scan-tree-dump " ./profile-dir-1.gcda" "tree_profile" } } */
 
 int
 main(void)
@@ -9,3 +9,4 @@ main(void)
 }
 
 /* { dg-final { cleanup-coverage-files } } */
+/* { dg-final { cleanup-tree-dump "tree_profile" } } */
