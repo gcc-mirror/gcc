@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006, 2007
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -272,6 +272,57 @@ sbitmap_empty_p (const_sbitmap bmap)
 
   return true;
 }
+
+/* Return false if any of the N bits are set in MAP starting at
+   START.  */
+
+bool 
+sbitmap_range_empty_p (const_sbitmap bmap, unsigned int start, unsigned int n)
+{
+  unsigned int i = start / SBITMAP_ELT_BITS;
+  SBITMAP_ELT_TYPE elm;
+  unsigned int shift = start % SBITMAP_ELT_BITS;
+
+  gcc_assert (bmap->n_bits >= start + n);
+
+  elm = bmap->elms[i];
+  elm = elm >> shift;
+
+  if (shift + n <= SBITMAP_ELT_BITS)
+    {
+      /* The bits are totally contained in a single element.  */
+      if (shift + n < SBITMAP_ELT_BITS)
+        elm &= ((1 << n) - 1);
+      return (elm == 0);
+    }
+
+  if (elm) 
+    return false;
+
+  n -= SBITMAP_ELT_BITS - shift;
+  i++;
+
+  /* Deal with full elts.  */
+  while (n >= SBITMAP_ELT_BITS)
+    {
+      if (bmap->elms[i])
+	return false;
+      i++;
+      n -= SBITMAP_ELT_BITS;
+    }
+
+  /* The leftover bits.  */
+  if (n)
+    {
+      elm = bmap->elms[i];
+      elm &= ((1 << n) - 1);
+      return (elm == 0);
+    }  
+
+  return true;
+}
+
+
 
 /* Zero all elements in a bitmap.  */
 

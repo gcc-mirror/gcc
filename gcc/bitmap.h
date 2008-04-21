@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_BITMAP_H
 #include "hashtab.h"
 #include "statistics.h"
+#include "obstack.h"
 
 /* Fundamental storage type for bitmap.  */
 
