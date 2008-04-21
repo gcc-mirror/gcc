@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -593,17 +593,122 @@ struct rtl_opt_pass pass_ud_rtl_dce =
    Fast DCE functions
    ------------------------------------------------------------------------- */
 
-/* Process basic block BB.  Return true if the live_in set has changed.  */
+/* Process basic block BB.  Return true if the live_in set has
+   changed. REDO_OUT is true if the info at the bottom of the block
+   needs to be recalculated before starting.  AU is the proper set of
+   artificial uses. */
 
 static bool
-dce_process_block (basic_block bb, bool redo_out)
+byte_dce_process_block (basic_block bb, bool redo_out, bitmap au)
 {
   bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
-  bitmap au;
   rtx insn;
   bool block_changed;
-  struct df_ref **def_rec, **use_rec;
-  unsigned int bb_index = bb->index;
+  struct df_ref **def_rec;
+
+  if (redo_out)
+    {
+      /* Need to redo the live_out set of this block if when one of
+	 the succs of this block has had a change in it live in
+	 set.  */
+      edge e;
+      edge_iterator ei;
+      df_confluence_function_n con_fun_n = df_byte_lr->problem->con_fun_n;
+      bitmap_clear (DF_BYTE_LR_OUT (bb));
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	(*con_fun_n) (e);
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "processing block %d live out = ", bb->index);
+      df_print_byte_regset (dump_file, DF_BYTE_LR_OUT (bb));
+    }
+
+  bitmap_copy (local_live, DF_BYTE_LR_OUT (bb));
+
+  df_byte_lr_simulate_artificial_refs_at_end (bb, local_live);
+
+  FOR_BB_INSNS_REVERSE (bb, insn)
+    if (INSN_P (insn))
+      {
+	/* The insn is needed if there is someone who uses the output.  */
+	for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	  {
+	    struct df_ref *def = *def_rec;
+	    unsigned int last;
+	    unsigned int dregno = DF_REF_REGNO (def);
+	    unsigned int start = df_byte_lr_get_regno_start (dregno);
+	    unsigned int len = df_byte_lr_get_regno_len (dregno);
+
+	    unsigned int sb;
+	    unsigned int lb;
+	    /* This is one of the only places where DF_MM_MAY should
+	       be used for defs.  Need to make sure that we are
+	       checking for all of the bits that may be used.  */
+
+	    if (!df_compute_accessed_bytes (def, DF_MM_MAY, &sb, &lb))
+	      {
+		start += sb;
+		len = lb - sb;
+	      }
+
+	    if (bitmap_bit_p (au, dregno))
+	      {
+		mark_insn (insn, true);
+		goto quickexit;
+	      }
+	    
+	    last = start + len;
+	    while (start < last)
+	      if (bitmap_bit_p (local_live, start++))
+		{
+		  mark_insn (insn, true);
+		  goto quickexit;
+		}
+	  }
+	
+      quickexit: 
+	
+	/* No matter if the instruction is needed or not, we remove
+	   any regno in the defs from the live set.  */
+	df_byte_lr_simulate_defs (insn, local_live);
+
+	/* On the other hand, we do not allow the dead uses to set
+	   anything in local_live.  */
+	if (marked_insn_p (insn))
+	  df_byte_lr_simulate_uses (insn, local_live);
+
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "finished processing insn %d live out = ", 
+		     INSN_UID (insn));
+	    df_print_byte_regset (dump_file, local_live);
+	  }
+      }
+  
+  df_byte_lr_simulate_artificial_refs_at_top (bb, local_live);
+
+  block_changed = !bitmap_equal_p (local_live, DF_BYTE_LR_IN (bb));
+  if (block_changed)
+    bitmap_copy (DF_BYTE_LR_IN (bb), local_live);
+  BITMAP_FREE (local_live);
+  return block_changed;
+}
+
+
+/* Process basic block BB.  Return true if the live_in set has
+   changed. REDO_OUT is true if the info at the bottom of the block
+   needs to be recalculated before starting.  AU is the proper set of
+   artificial uses. */
+
+static bool
+dce_process_block (basic_block bb, bool redo_out, bitmap au)
+{
+  bitmap local_live = BITMAP_ALLOC (&dce_tmp_bitmap_obstack);
+  rtx insn;
+  bool block_changed;
+  struct df_ref **def_rec;
 
   if (redo_out)
     {
@@ -626,30 +731,7 @@ dce_process_block (basic_block bb, bool redo_out)
 
   bitmap_copy (local_live, DF_LR_OUT (bb));
 
-  /* Process the artificial defs and uses at the bottom of the block.  */
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      struct df_ref *def = *def_rec;
-      if (((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
-	  && (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL))))
-	bitmap_clear_bit (local_live, DF_REF_REGNO (def));
-    }
-
-  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
-    {
-      struct df_ref *use = *use_rec;
-      if ((DF_REF_FLAGS (use) & DF_REF_AT_TOP) == 0)
-	bitmap_set_bit (local_live, DF_REF_REGNO (use));
-    }
-
-  /* These regs are considered always live so if they end up dying
-     because of some def, we need to bring the back again.
-     Calling df_simulate_fixup_sets has the disadvantage of calling
-     bb_has_eh_pred once per insn, so we cache the information here.  */
-  if (bb_has_eh_pred (bb))
-    au = df->eh_block_artificial_uses;
-  else
-    au = df->regular_block_artificial_uses;
+  df_simulate_artificial_refs_at_end (bb, local_live);
 
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
@@ -678,24 +760,7 @@ dce_process_block (basic_block bb, bool redo_out)
 	  df_simulate_uses (insn, local_live);
       }
   
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      struct df_ref *def = *def_rec;
-      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	  && (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL))))
-	bitmap_clear_bit (local_live, DF_REF_REGNO (def));
-    }
-
-#ifdef EH_USES
-  /* Process the uses that are live into an exception handler.  */
-  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
-    {
-      /* Add use to set of uses in this BB.  */
-      struct df_ref *use = *use_rec;
-      if (DF_REF_FLAGS (use) & DF_REF_AT_TOP)
-	bitmap_set_bit (local_live, DF_REF_REGNO (use));
-    }
-#endif
+  df_simulate_artificial_refs_at_top (bb, local_live);
 
   block_changed = !bitmap_equal_p (local_live, DF_LR_IN (bb));
   if (block_changed)
@@ -706,10 +771,12 @@ dce_process_block (basic_block bb, bool redo_out)
 }
 
 
-/* Perform fast DCE once initialization is done.  */
+/* Perform fast DCE once initialization is done.  If BYTE_LEVEL is
+   true, use the byte level dce, otherwise do it at the pseudo
+   level.  */
 
 static void
-fast_dce (void)
+fast_dce (bool byte_level)
 {
   int *postorder = df_get_postorder (DF_BACKWARD);
   int n_blocks = df_get_n_blocks (DF_BACKWARD);
@@ -720,6 +787,14 @@ fast_dce (void)
   bitmap redo_out = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bitmap all_blocks = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bool global_changed = true;
+
+  /* These regs are considered always live so if they end up dying
+     because of some def, we need to bring the back again.  Calling
+     df_simulate_fixup_sets has the disadvantage of calling
+     bb_has_eh_pred once per insn, so we cache the information
+     here.  */
+  bitmap au = df->regular_block_artificial_uses;
+  bitmap au_eh = df->eh_block_artificial_uses;
   int i;
 
   prescan_insns_for_dce (true);
@@ -743,8 +818,14 @@ fast_dce (void)
 	      continue;
 	    }
 
-	  local_changed 
-	    = dce_process_block (bb, bitmap_bit_p (redo_out, index));
+	  if (byte_level)
+	    local_changed 
+	      = byte_dce_process_block (bb, bitmap_bit_p (redo_out, index),
+					  bb_has_eh_pred (bb) ? au_eh : au);
+	  else
+	    local_changed 
+	      = dce_process_block (bb, bitmap_bit_p (redo_out, index),
+				   bb_has_eh_pred (bb) ? au_eh : au);
 	  bitmap_set_bit (processed, index);
 	  
 	  if (local_changed)
@@ -780,7 +861,10 @@ fast_dce (void)
 	     to redo the dataflow equations for the blocks that had a
 	     change at the top of the block.  Then we need to redo the
 	     iteration.  */ 
-	  df_analyze_problem (df_lr, all_blocks, postorder, n_blocks);
+	  if (byte_level)
+	    df_analyze_problem (df_byte_lr, all_blocks, postorder, n_blocks);
+	  else
+	    df_analyze_problem (df_lr, all_blocks, postorder, n_blocks);
 
 	  if (old_flag & DF_LR_RUN_DCE)
 	    df_set_flags (DF_LR_RUN_DCE);
@@ -797,13 +881,26 @@ fast_dce (void)
 }
 
 
-/* Fast DCE.  */
+/* Fast register level DCE.  */
 
 static unsigned int
 rest_of_handle_fast_dce (void)
 {
   init_dce (true);
-  fast_dce ();
+  fast_dce (false);
+  fini_dce (true);
+  return 0;
+}
+
+
+/* Fast byte level DCE.  */
+
+static unsigned int
+rest_of_handle_fast_byte_dce (void)
+{
+  df_byte_lr_add_problem ();
+  init_dce (true);
+  fast_dce (true);
   fini_dce (true);
   return 0;
 }
@@ -862,6 +959,27 @@ struct rtl_opt_pass pass_fast_rtl_dce =
   "dce",                                /* name */
   gate_fast_dce,                        /* gate */
   rest_of_handle_fast_dce,              /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_DCE,                               /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
+};
+
+struct rtl_opt_pass pass_fast_rtl_byte_dce =
+{
+ {
+  RTL_PASS,
+  "byte-dce",                           /* name */
+  gate_fast_dce,                        /* gate */
+  rest_of_handle_fast_byte_dce,         /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

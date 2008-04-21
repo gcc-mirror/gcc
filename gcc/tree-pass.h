@@ -423,6 +423,7 @@ extern struct rtl_opt_pass pass_partition_blocks;
 extern struct rtl_opt_pass pass_match_asm_constraints;
 extern struct rtl_opt_pass pass_regmove;
 extern struct rtl_opt_pass pass_split_all_insns;
+extern struct rtl_opt_pass pass_fast_rtl_byte_dce;
 extern struct rtl_opt_pass pass_lower_subreg2;
 extern struct rtl_opt_pass pass_mode_switching;
 extern struct rtl_opt_pass pass_see;

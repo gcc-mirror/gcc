@@ -731,6 +731,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_partition_blocks);
       NEXT_PASS (pass_regmove);
       NEXT_PASS (pass_split_all_insns);
+      NEXT_PASS (pass_fast_rtl_byte_dce);
       NEXT_PASS (pass_lower_subreg2);
       NEXT_PASS (pass_df_initialize_no_opt);
       NEXT_PASS (pass_stack_ptr_mod);
