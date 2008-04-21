@@ -74,6 +74,10 @@ struct _cpp_file
   /* The contents of NAME after calling read_file().  */
   const uchar *buffer;
 
+  /* Pointer to the real start of BUFFER.  read_file() might increment
+     BUFFER; when freeing, this this pointer must be used instead.  */
+  const uchar *buffer_start;
+
   /* The macro, if any, preventing re-inclusion.  */
   const cpp_hashnode *cmacro;
 
@@ -635,8 +639,11 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
     cpp_error (pfile, CPP_DL_WARNING,
 	       "%s is shorter than expected", file->path);
 
-  file->buffer = _cpp_convert_input (pfile, CPP_OPTION (pfile, input_charset),
-				     buf, size, total, &file->st.st_size);
+  file->buffer = _cpp_convert_input (pfile,
+				     CPP_OPTION (pfile, input_charset),
+				     buf, size, total,
+				     &file->buffer_start,
+				     &file->st.st_size);
   file->buffer_valid = true;
 
   return true;
@@ -969,8 +976,8 @@ make_cpp_file (cpp_reader *pfile, cpp_dir *dir, const char *fname)
 static void
 destroy_cpp_file (_cpp_file *file)
 {
-  if (file->buffer)
-    free ((void *) file->buffer);
+  if (file->buffer_start)
+    free ((void *) file->buffer_start);
   free ((void *) file->name);
   free (file);
 }
@@ -1302,9 +1309,10 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file)
   /* Invalidate control macros in the #including file.  */
   pfile->mi_valid = false;
 
-  if (file->buffer)
+  if (file->buffer_start)
     {
-      free ((void *) file->buffer);
+      free ((void *) file->buffer_start);
+      file->buffer_start = NULL;
       file->buffer = NULL;
       file->buffer_valid = false;
     }

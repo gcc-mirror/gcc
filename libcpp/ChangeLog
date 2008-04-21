@@ -1,3 +1,14 @@
+2008-04-21  Tom Tromey  <tromey@redhat.com>
+
+	PR libcpp/33415:
+	* charset.c (_cpp_convert_input): Add buffer_start argument.
+	Ignore UTF-8 BOM if seen.
+	* internal.h (_cpp_convert_input): Add argument.
+	* files.c (struct _cpp_file) <buffer_start>: New field.
+	(destroy_cpp_file): Free buffer_start, not buffer.
+	(_cpp_pop_file_buffer): Likewise.
+	(read_file_guts): Update.
+
 2008-04-18  Kris Van Hees <kris.van.hees@oracle.com>
 
 	* include/cpp-id-data.h (UC): Was U, conflicts with U"..." literal.

@@ -1,5 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2008
    Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
@@ -1637,18 +1637,24 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
    source file) from INPUT_CHARSET to the source character set.  INPUT
    points to the input buffer, SIZE is its allocated size, and LEN is
    the length of the meaningful data within the buffer.  The
-   translated buffer is returned, and *ST_SIZE is set to the length of
-   the meaningful data within the translated buffer.
+   translated buffer is returned, *ST_SIZE is set to the length of
+   the meaningful data within the translated buffer, and *BUFFER_START
+   is set to the start of the returned buffer.  *BUFFER_START may
+   differ from the return value in the case of a BOM or other ignored
+   marker information.
 
-   INPUT is expected to have been allocated with xmalloc.  This function
-   will either return INPUT, or free it and return a pointer to another
-   xmalloc-allocated block of memory.  */
+   INPUT is expected to have been allocated with xmalloc.  This
+   function will either set *BUFFER_START to INPUT, or free it and set
+   *BUFFER_START to a pointer to another xmalloc-allocated block of
+   memory.  */
 uchar * 
 _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
-		    uchar *input, size_t size, size_t len, off_t *st_size)
+		    uchar *input, size_t size, size_t len,
+		    const unsigned char **buffer_start, off_t *st_size)
 {
   struct cset_converter input_cset;
   struct _cpp_strbuf to;
+  unsigned char *buffer;
 
   input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
   if (input_cset.func == convert_no_conversion)
@@ -1689,8 +1695,24 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   else
     to.text[to.len] = '\n';
 
+  buffer = to.text;
   *st_size = to.len;
-  return to.text;
+#if HOST_CHARSET == HOST_CHARSET_ASCII
+  /* The HOST_CHARSET test just above ensures that the source charset
+     is UTF-8.  So, ignore a UTF-8 BOM if we see one.  Note that
+     glib'c UTF-8 iconv() provider (as of glibc 2.7) does not ignore a
+     BOM -- however, even if it did, we would still need this code due
+     to the 'convert_no_conversion' case.  */
+  if (to.len >= 3 && to.text[0] == 0xef && to.text[1] == 0xbb
+      && to.text[2] == 0xbf)
+    {
+      *st_size -= 3;
+      buffer += 3;
+    }
+#endif
+
+  *buffer_start = to.text;
+  return buffer;
 }
 
 /* Decide on the default encoding to assume for input files.  */
