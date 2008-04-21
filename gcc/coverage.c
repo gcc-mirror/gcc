@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
+#include "tree-pass.h"
 
 #include "gcov-io.c"
 
@@ -421,6 +422,9 @@ coverage_counter_alloc (unsigned counter, unsigned num)
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       DECL_NAME (tree_ctr_tables[counter]) = get_identifier (buf);
       DECL_ALIGN (tree_ctr_tables[counter]) = TYPE_ALIGN (gcov_type_node);
+
+      if (dump_file)
+	fprintf (dump_file, "Using data file %s\n", da_file_name);
     }
   fn_b_ctrs[counter] = fn_n_ctrs[counter];
   fn_n_ctrs[counter] += num;
