@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006, 2007 
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -219,6 +219,7 @@ extern void sbitmap_copy (sbitmap, const_sbitmap);
 extern void sbitmap_copy_n (sbitmap, const_sbitmap, unsigned int);
 extern int sbitmap_equal (const_sbitmap, const_sbitmap);
 extern bool sbitmap_empty_p (const_sbitmap);
+extern bool sbitmap_range_empty_p (const_sbitmap, unsigned int, unsigned int);
 extern void sbitmap_zero (sbitmap);
 extern void sbitmap_ones (sbitmap);
 extern void sbitmap_vector_zero (sbitmap *, unsigned int);
