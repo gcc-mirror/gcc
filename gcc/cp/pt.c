@@ -4740,6 +4740,10 @@ bool
 template_template_parm_bindings_ok_p (tree tparms, tree targs)
 {
   int i, ntparms = TREE_VEC_LENGTH (tparms);
+  bool ret = true;
+
+  /* We're dealing with template parms in this process.  */
+  ++processing_template_decl;
 
   targs = INNERMOST_TEMPLATE_ARGS (targs);
 
@@ -4790,13 +4794,18 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
 			tf_none,
 			tparm,
 			targs))
-		return false;
+		{
+		  ret = false;
+		  goto out;
+		}
 	    }
 	}
     }
 
-  /* Everything is okay.  */
-  return true;
+ out:
+
+  --processing_template_decl;
+  return ret;
 }
 
 /* Convert the indicated template ARG as necessary to match the

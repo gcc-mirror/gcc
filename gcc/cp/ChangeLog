@@ -1,3 +1,12 @@
+2008-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35325
+	* tree.c (cp_tree_equal): Handle FIXED_CST.
+
+	PR c++/35678
+	* pt.c (template_template_parm_bindings_ok_p): Set 
+	processing_template_decl while in this function.
+
 2008-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33486
