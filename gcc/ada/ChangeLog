@@ -1,3 +1,27 @@
+2008-04-21  Olivier Hainque  <hainque@adacore.com>
+
+	Access to most C builtins from Ada
+	* utils.c: #include "langhooks.h" and define GCC_DIAG_STYLE.
+	(handle_pure_attribute, handle_novops_attribute,
+	handle_nonnull_attribute, handle_sentinel_attribute,
+	handle_noreturn_attribute, handle_malloc_attribute,
+	handle_type_generic_attribute): New attribute handlers, from C fe.
+	(gnat_internal_attribute_table): Map the new handlers.
+	(gnat_init_decl_processing): Move call to gnat_install_builtins to ...
+	(init_gigi_decls): ... here.
+	(handle_const_attribute, handle_nothrow_attribute, builtin_decl_for):
+	Move to a section dedicated to builtins processing.
+	(build_void_list_node, builtin_type_for_size): New functions.
+	(def_fn_type, get_nonnull_operand): Likewise.
+	(install_builtin_elementary_type, install_builtin_function_types,
+	install_builtin_attributes): Likewise.
+	(fake_attribute_handler): Fake handler for attributes we don't
+	support in Ada.
+	(def_builtin_1): New function, worker for DEF_BUILTIN.
+	(install_builtin_functions): New function.
+	(gnat_install_builtins): Move to the builtins processing section.
+	Now calling the newly introduced installers.
+
 2008-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <object>: Also promote the alignment of
