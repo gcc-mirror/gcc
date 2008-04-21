@@ -1,3 +1,9 @@
+2008-04-21  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35019
+	* gfortranspec.c (lookup_option): Properly handle separated arguments
+	in -J option, print missing argument message when necessary.
+
 2008-04-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35882
