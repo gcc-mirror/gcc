@@ -1,3 +1,11 @@
+2008-04-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT, GLIBCXX_ENABLE_C99)
+	(GLIBCXX_CHECK_C99_TR1, GLIBCXX_CHECK_RANDOM_TR1)
+	(GLIBCXX_ENABLE_VISIBILITY): Fix cache variable names.
+	(GLIBCXX_CHECK_SYSTEM_ERROR): Likewise.  Factorize.
+	* configure: Regenerate.
+
 2008-04-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libstdc++/35954

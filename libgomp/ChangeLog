@@ -1,3 +1,12 @@
+2008-04-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS)
+	(LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY)
+	(LIBGOMP_CHECK_ATTRIBUTE_DLLEXPORT)
+	(LIBGOMP_CHECK_ATTRIBUTE_ALIAS): Fix cache variable names.
+	* configure: Regenerate.
+	* Makefile.in, testsuite/Makefile.in: Likewise.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

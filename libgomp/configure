@@ -17364,7 +17364,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports hidden visibility" >&5
 echo $ECHO_N "checking whether the target supports hidden visibility... $ECHO_C" >&6
-if test "${have_attribute_visibility+set}" = set; then
+if test "${libgomp_cv_have_attribute_visibility+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -17407,19 +17407,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_visibility=yes
+  libgomp_cv_have_attribute_visibility=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_visibility=no
+libgomp_cv_have_attribute_visibility=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-echo "$as_me:$LINENO: result: $have_attribute_visibility" >&5
-echo "${ECHO_T}$have_attribute_visibility" >&6
-  if test $have_attribute_visibility = yes; then
+echo "$as_me:$LINENO: result: $libgomp_cv_have_attribute_visibility" >&5
+echo "${ECHO_T}$libgomp_cv_have_attribute_visibility" >&6
+  if test $libgomp_cv_have_attribute_visibility = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_VISIBILITY 1
@@ -17429,7 +17429,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports dllexport" >&5
 echo $ECHO_N "checking whether the target supports dllexport... $ECHO_C" >&6
-if test "${have_attribute_dllexport+set}" = set; then
+if test "${libgomp_cv_have_attribute_dllexport+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -17472,19 +17472,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_dllexport=yes
+  libgomp_cv_have_attribute_dllexport=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_dllexport=no
+libgomp_cv_have_attribute_dllexport=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-echo "$as_me:$LINENO: result: $have_attribute_dllexport" >&5
-echo "${ECHO_T}$have_attribute_dllexport" >&6
-  if test $have_attribute_dllexport = yes; then
+echo "$as_me:$LINENO: result: $libgomp_cv_have_attribute_dllexport" >&5
+echo "${ECHO_T}$libgomp_cv_have_attribute_dllexport" >&6
+  if test $libgomp_cv_have_attribute_dllexport = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_DLLEXPORT 1
@@ -17494,7 +17494,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports symbol aliases" >&5
 echo $ECHO_N "checking whether the target supports symbol aliases... $ECHO_C" >&6
-if test "${have_attribute_alias+set}" = set; then
+if test "${libgomp_cv_have_attribute_alias+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -17537,19 +17537,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_alias=yes
+  libgomp_cv_have_attribute_alias=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_alias=no
+libgomp_cv_have_attribute_alias=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 fi
-echo "$as_me:$LINENO: result: $have_attribute_alias" >&5
-echo "${ECHO_T}$have_attribute_alias" >&6
-  if test $have_attribute_alias = yes; then
+echo "$as_me:$LINENO: result: $libgomp_cv_have_attribute_alias" >&5
+echo "${ECHO_T}$libgomp_cv_have_attribute_alias" >&6
+  if test $libgomp_cv_have_attribute_alias = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_ALIAS 1
@@ -17997,7 +17997,7 @@ CFLAGS="$save_CFLAGS $XCFLAGS"
 
   echo "$as_me:$LINENO: checking whether the target supports __sync_*_compare_and_swap" >&5
 echo $ECHO_N "checking whether the target supports __sync_*_compare_and_swap... $ECHO_C" >&6
-if test "${have_sync_builtins+set}" = set; then
+if test "${libgomp_cv_have_sync_builtins+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -18038,19 +18038,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_sync_builtins=yes
+  libgomp_cv_have_sync_builtins=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_sync_builtins=no
+libgomp_cv_have_sync_builtins=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 fi
-echo "$as_me:$LINENO: result: $have_sync_builtins" >&5
-echo "${ECHO_T}$have_sync_builtins" >&6
-  if test $have_sync_builtins = yes; then
+echo "$as_me:$LINENO: result: $libgomp_cv_have_sync_builtins" >&5
+echo "${ECHO_T}$libgomp_cv_have_sync_builtins" >&6
+  if test $libgomp_cv_have_sync_builtins = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_SYNC_BUILTINS 1

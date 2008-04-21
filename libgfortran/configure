@@ -32069,7 +32069,7 @@ fi
 
   echo "$as_me:$LINENO: checking whether isfinite is broken" >&5
 echo $ECHO_N "checking whether isfinite is broken... $ECHO_C" >&6
-if test "${have_broken_isfinite+set}" = set; then
+if test "${libgfor_cv_have_broken_isfinite+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32078,8 +32078,8 @@ else
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  hppa*-*-hpux*) have_broken_isfinite=yes ;;
-  *) have_broken_isfinite=no ;;
+  hppa*-*-hpux*) libgfor_cv_have_broken_isfinite=yes ;;
+  *) libgfor_cv_have_broken_isfinite=no ;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -32115,22 +32115,22 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_broken_isfinite=no
+  libgfor_cv_have_broken_isfinite=no
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_broken_isfinite=yes
+libgfor_cv_have_broken_isfinite=yes
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
   LIBS=$libgfor_check_for_broken_isfinite_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $have_broken_isfinite" >&5
-echo "${ECHO_T}$have_broken_isfinite" >&6
-if test x"$have_broken_isfinite" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_broken_isfinite" >&5
+echo "${ECHO_T}$libgfor_cv_have_broken_isfinite" >&6
+if test x"$libgfor_cv_have_broken_isfinite" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_BROKEN_ISFINITE 1
@@ -32142,7 +32142,7 @@ fi
 
   echo "$as_me:$LINENO: checking whether isnan is broken" >&5
 echo $ECHO_N "checking whether isnan is broken... $ECHO_C" >&6
-if test "${have_broken_isnan+set}" = set; then
+if test "${libgfor_cv_have_broken_isnan+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32151,8 +32151,8 @@ else
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  hppa*-*-hpux*) have_broken_isnan=yes ;;
-  *) have_broken_isnan=no ;;
+  hppa*-*-hpux*) libgfor_cv_have_broken_isnan=yes ;;
+  *) libgfor_cv_have_broken_isnan=no ;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -32206,22 +32206,22 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_broken_isnan=no
+  libgfor_cv_have_broken_isnan=no
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_broken_isnan=yes
+libgfor_cv_have_broken_isnan=yes
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
   LIBS=$libgfor_check_for_broken_isnan_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $have_broken_isnan" >&5
-echo "${ECHO_T}$have_broken_isnan" >&6
-if test x"$have_broken_isnan" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_broken_isnan" >&5
+echo "${ECHO_T}$libgfor_cv_have_broken_isnan" >&6
+if test x"$libgfor_cv_have_broken_isnan" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_BROKEN_ISNAN 1
@@ -32233,7 +32233,7 @@ fi
 
   echo "$as_me:$LINENO: checking whether fpclassify is broken" >&5
 echo $ECHO_N "checking whether fpclassify is broken... $ECHO_C" >&6
-if test "${have_broken_fpclassify+set}" = set; then
+if test "${libgfor_cv_have_broken_fpclassify+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32242,8 +32242,8 @@ else
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  hppa*-*-hpux*) have_broken_fpclassify=yes ;;
-  *) have_broken_fpclassify=no ;;
+  hppa*-*-hpux*) libgfor_cv_have_broken_fpclassify=yes ;;
+  *) libgfor_cv_have_broken_fpclassify=no ;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -32281,22 +32281,22 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_broken_fpclassify=no
+  libgfor_cv_have_broken_fpclassify=no
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_broken_fpclassify=yes
+libgfor_cv_have_broken_fpclassify=yes
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
   LIBS=$libgfor_check_for_broken_fpclassify_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $have_broken_fpclassify" >&5
-echo "${ECHO_T}$have_broken_fpclassify" >&6
-if test x"$have_broken_fpclassify" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_broken_fpclassify" >&5
+echo "${ECHO_T}$libgfor_cv_have_broken_fpclassify" >&6
+if test x"$libgfor_cv_have_broken_fpclassify" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_BROKEN_FPCLASSIFY 1
@@ -32308,15 +32308,15 @@ fi
 
   echo "$as_me:$LINENO: checking whether the target stat is reliable" >&5
 echo $ECHO_N "checking whether the target stat is reliable... $ECHO_C" >&6
-if test "${have_working_stat+set}" = set; then
+if test "${libgfor_cv_have_working_stat+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  *mingw*) have_working_stat=no ;;
-  *) have_working_stat=yes;;
+  *mingw*) libgfor_cv_have_working_stat=no ;;
+  *) libgfor_cv_have_working_stat=yes;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -32358,21 +32358,21 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_working_stat=yes
+  libgfor_cv_have_working_stat=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_working_stat=no
+libgfor_cv_have_working_stat=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
-echo "$as_me:$LINENO: result: $have_working_stat" >&5
-echo "${ECHO_T}$have_working_stat" >&6
-if test x"$have_working_stat" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_working_stat" >&5
+echo "${ECHO_T}$libgfor_cv_have_working_stat" >&6
+if test x"$libgfor_cv_have_working_stat" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_WORKING_STAT 1
@@ -32384,7 +32384,7 @@ fi
 
   echo "$as_me:$LINENO: checking whether __mingw_snprintf is present" >&5
 echo $ECHO_N "checking whether __mingw_snprintf is present... $ECHO_C" >&6
-if test "${have_mingw_snprintf+set}" = set; then
+if test "${libgfor_cv_have_mingw_snprintf+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32435,20 +32435,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  eval "have_mingw_snprintf=yes"
+  eval "libgfor_cv_have_mingw_snprintf=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-eval "have_mingw_snprintf=no"
+eval "libgfor_cv_have_mingw_snprintf=no"
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 
 fi
-echo "$as_me:$LINENO: result: $have_mingw_snprintf" >&5
-echo "${ECHO_T}$have_mingw_snprintf" >&6
-  if test x"$have_mingw_snprintf" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_mingw_snprintf" >&5
+echo "${ECHO_T}$libgfor_cv_have_mingw_snprintf" >&6
+  if test x"$libgfor_cv_have_mingw_snprintf" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_MINGW_SNPRINTF 1
@@ -32540,7 +32540,7 @@ fi
 
   echo "$as_me:$LINENO: checking whether fpsetmask is present" >&5
 echo $ECHO_N "checking whether fpsetmask is present... $ECHO_C" >&6
-if test "${have_fpsetmask+set}" = set; then
+if test "${libgfor_cv_have_fpsetmask+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32592,20 +32592,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  eval "have_fpsetmask=yes"
+  eval "libgfor_cv_have_fpsetmask=yes"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-eval "have_fpsetmask=no"
+eval "libgfor_cv_have_fpsetmask=no"
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 
 fi
-echo "$as_me:$LINENO: result: $have_fpsetmask" >&5
-echo "${ECHO_T}$have_fpsetmask" >&6
-  if test x"$have_fpsetmask" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_fpsetmask" >&5
+echo "${ECHO_T}$libgfor_cv_have_fpsetmask" >&6
+  if test x"$libgfor_cv_have_fpsetmask" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_FPSETMASK 1
@@ -32835,7 +32835,7 @@ FPU_HOST_HEADER=config/${fpu_host}.h
 
   echo "$as_me:$LINENO: checking whether the target supports hidden visibility" >&5
 echo $ECHO_N "checking whether the target supports hidden visibility... $ECHO_C" >&6
-if test "${have_attribute_visibility+set}" = set; then
+if test "${libgfor_cv_have_attribute_visibility+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32878,19 +32878,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_visibility=yes
+  libgfor_cv_have_attribute_visibility=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_visibility=no
+libgfor_cv_have_attribute_visibility=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-echo "$as_me:$LINENO: result: $have_attribute_visibility" >&5
-echo "${ECHO_T}$have_attribute_visibility" >&6
-  if test $have_attribute_visibility = yes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_attribute_visibility" >&5
+echo "${ECHO_T}$libgfor_cv_have_attribute_visibility" >&6
+  if test $libgfor_cv_have_attribute_visibility = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_VISIBILITY 1
@@ -32900,7 +32900,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports dllexport" >&5
 echo $ECHO_N "checking whether the target supports dllexport... $ECHO_C" >&6
-if test "${have_attribute_dllexport+set}" = set; then
+if test "${libgfor_cv_have_attribute_dllexport+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -32943,19 +32943,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_dllexport=yes
+  libgfor_cv_have_attribute_dllexport=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_dllexport=no
+libgfor_cv_have_attribute_dllexport=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
-echo "$as_me:$LINENO: result: $have_attribute_dllexport" >&5
-echo "${ECHO_T}$have_attribute_dllexport" >&6
-  if test $have_attribute_dllexport = yes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_attribute_dllexport" >&5
+echo "${ECHO_T}$libgfor_cv_have_attribute_dllexport" >&6
+  if test $libgfor_cv_have_attribute_dllexport = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_DLLEXPORT 1
@@ -32965,7 +32965,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports symbol aliases" >&5
 echo $ECHO_N "checking whether the target supports symbol aliases... $ECHO_C" >&6
-if test "${have_attribute_alias+set}" = set; then
+if test "${libgfor_cv_have_attribute_alias+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -33013,19 +33013,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_attribute_alias=yes
+  libgfor_cv_have_attribute_alias=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_attribute_alias=no
+libgfor_cv_have_attribute_alias=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 fi
-echo "$as_me:$LINENO: result: $have_attribute_alias" >&5
-echo "${ECHO_T}$have_attribute_alias" >&6
-  if test $have_attribute_alias = yes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_attribute_alias" >&5
+echo "${ECHO_T}$libgfor_cv_have_attribute_alias" >&6
+  if test $libgfor_cv_have_attribute_alias = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ATTRIBUTE_ALIAS 1
@@ -33037,7 +33037,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target supports __sync_fetch_and_add" >&5
 echo $ECHO_N "checking whether the target supports __sync_fetch_and_add... $ECHO_C" >&6
-if test "${have_sync_fetch_and_add+set}" = set; then
+if test "${libgfor_cv_have_sync_fetch_and_add+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -33085,19 +33085,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_sync_fetch_and_add=yes
+  libgfor_cv_have_sync_fetch_and_add=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_sync_fetch_and_add=no
+libgfor_cv_have_sync_fetch_and_add=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 fi
-echo "$as_me:$LINENO: result: $have_sync_fetch_and_add" >&5
-echo "${ECHO_T}$have_sync_fetch_and_add" >&6
-  if test $have_sync_fetch_and_add = yes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_sync_fetch_and_add" >&5
+echo "${ECHO_T}$libgfor_cv_have_sync_fetch_and_add" >&6
+  if test $libgfor_cv_have_sync_fetch_and_add = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_SYNC_FETCH_AND_ADD 1
@@ -33130,7 +33130,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether pragma weak works" >&5
 echo $ECHO_N "checking whether pragma weak works... $ECHO_C" >&6
-if test "${have_pragma_weak+set}" = set; then
+if test "${libgfor_cv_have_pragma_weak+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -33174,18 +33174,18 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_pragma_weak=yes
+  libgfor_cv_have_pragma_weak=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_pragma_weak=no
+libgfor_cv_have_pragma_weak=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-echo "$as_me:$LINENO: result: $have_pragma_weak" >&5
-echo "${ECHO_T}$have_pragma_weak" >&6
-  if test $have_pragma_weak = yes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_pragma_weak" >&5
+echo "${ECHO_T}$libgfor_cv_have_pragma_weak" >&6
+  if test $libgfor_cv_have_pragma_weak = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define SUPPORTS_WEAK 1
@@ -33206,15 +33206,15 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking whether the target can unlink an open file" >&5
 echo $ECHO_N "checking whether the target can unlink an open file... $ECHO_C" >&6
-if test "${have_unlink_open_file+set}" = set; then
+if test "${libgfor_cv_have_unlink_open_file+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  *mingw*) have_unlink_open_file=no ;;
-  *) have_unlink_open_file=yes;;
+  *mingw*) libgfor_cv_have_unlink_open_file=no ;;
+  *) libgfor_cv_have_unlink_open_file=yes;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -33258,21 +33258,21 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_unlink_open_file=yes
+  libgfor_cv_have_unlink_open_file=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_unlink_open_file=no
+libgfor_cv_have_unlink_open_file=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
-echo "$as_me:$LINENO: result: $have_unlink_open_file" >&5
-echo "${ECHO_T}$have_unlink_open_file" >&6
-if test x"$have_unlink_open_file" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_unlink_open_file" >&5
+echo "${ECHO_T}$libgfor_cv_have_unlink_open_file" >&6
+if test x"$libgfor_cv_have_unlink_open_file" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_UNLINK_OPEN_FILE 1
@@ -33284,15 +33284,15 @@ fi
 
   echo "$as_me:$LINENO: checking whether the target has CRLF as line terminator" >&5
 echo $ECHO_N "checking whether the target has CRLF as line terminator... $ECHO_C" >&6
-if test "${have_crlf+set}" = set; then
+if test "${libgfor_cv_have_crlf+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
   if test "$cross_compiling" = yes; then
 
 case "${target}" in
-  *mingw*) have_crlf=yes ;;
-  *) have_crlf=no;;
+  *mingw*) libgfor_cv_have_crlf=yes ;;
+  *) libgfor_cv_have_crlf=no;;
 esac
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -33348,21 +33348,21 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_crlf=yes
+  libgfor_cv_have_crlf=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_crlf=no
+libgfor_cv_have_crlf=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
-echo "$as_me:$LINENO: result: $have_crlf" >&5
-echo "${ECHO_T}$have_crlf" >&6
-if test x"$have_crlf" = xyes; then
+echo "$as_me:$LINENO: result: $libgfor_cv_have_crlf" >&5
+echo "${ECHO_T}$libgfor_cv_have_crlf" >&6
+if test x"$libgfor_cv_have_crlf" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_CRLF 1
