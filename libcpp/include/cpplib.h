@@ -730,6 +730,8 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
+extern void cpp_define_formatted (cpp_reader *pfile, 
+				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
@@ -838,7 +840,7 @@ extern void cpp_errno (cpp_reader *, int, const char *msgid);
 extern void cpp_error_with_line (cpp_reader *, int, source_location, unsigned,
 				 const char *msgid, ...) ATTRIBUTE_PRINTF_5;
 
-/* In cpplex.c */
+/* In lex.c */
 extern int cpp_ideq (const cpp_token *, const char *);
 extern void cpp_output_line (cpp_reader *, FILE *);
 extern void cpp_output_token (const cpp_token *, FILE *);
@@ -851,7 +853,7 @@ extern const char *cpp_type2name (enum cpp_ttype);
 extern cppchar_t cpp_parse_escape (cpp_reader *, const unsigned char ** pstr,
 				   const unsigned char *limit, int wide);
 
-/* In cpphash.c */
+/* In hash.c */
 
 /* Lookup an identifier in the hashtable.  Puts the identifier in the
    table if it is not already there.  */
@@ -861,13 +863,13 @@ extern cpp_hashnode *cpp_lookup (cpp_reader *, const unsigned char *,
 typedef int (*cpp_cb) (cpp_reader *, cpp_hashnode *, void *);
 extern void cpp_forall_identifiers (cpp_reader *, cpp_cb, void *);
 
-/* In cppmacro.c */
+/* In macro.c */
 extern void cpp_scan_nooutput (cpp_reader *);
 extern int  cpp_sys_macro_p (cpp_reader *);
 extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 					unsigned int);
 
-/* In cppfiles.c */
+/* In files.c */
 extern bool cpp_included (cpp_reader *, const char *);
 extern bool cpp_included_before (cpp_reader *, const char *, source_location);
 extern void cpp_make_system_header (cpp_reader *, int, int);
@@ -880,7 +882,7 @@ extern struct _cpp_file *cpp_get_file (cpp_buffer *);
 extern cpp_buffer *cpp_get_prev (cpp_buffer *);
 extern void cpp_clear_file_cache (cpp_reader *);
 
-/* In cpppch.c */
+/* In pch.c */
 struct save_macro_data;
 extern int cpp_save_state (cpp_reader *, FILE *);
 extern int cpp_write_pch_deps (cpp_reader *, FILE *);
