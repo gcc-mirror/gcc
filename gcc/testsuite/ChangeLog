@@ -1,5 +1,8 @@
 2008-04-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35747
+	* g++.dg/ext/stmtexpr13.C: New test.
+
 	* g++.dg/ext/fixed1.C: Add dg-options.
 
 2008-04-21  Jason Merrill  <jason@redhat.com>

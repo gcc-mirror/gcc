@@ -1,3 +1,9 @@
+2008-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35747
+	* semantics.c (finish_stmt_expr): Call pop_stmt_list even if the stmt
+	expression is errorneous.
+
 2008-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35325

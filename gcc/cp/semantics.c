@@ -1736,7 +1736,10 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
   tree result;
 
   if (error_operand_p (stmt_expr))
-    return error_mark_node;
+    {
+      pop_stmt_list (stmt_expr);
+      return error_mark_node;
+    }
 
   gcc_assert (TREE_CODE (stmt_expr) == STATEMENT_LIST);
 
