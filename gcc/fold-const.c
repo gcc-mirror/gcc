@@ -8401,30 +8401,14 @@ maybe_canonicalize_comparison (enum tree_code code, tree type,
 static bool
 pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
 {
-  tree size;
   unsigned HOST_WIDE_INT offset_low, total_low;
-  HOST_WIDE_INT offset_high, total_high;
+  HOST_WIDE_INT size, offset_high, total_high;
 
   if (!POINTER_TYPE_P (TREE_TYPE (base)))
     return true;
 
   if (bitpos < 0)
     return true;
-
-  size = size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
-  if (size == NULL_TREE || TREE_CODE (size) != INTEGER_CST)
-    return true;
-
-  /* We can do slightly better for SIZE if we have an ADDR_EXPR of an
-     array.  */
-  if (TREE_CODE (base) == ADDR_EXPR)
-    {
-      tree base_size = size_in_bytes (TREE_TYPE (TREE_OPERAND (base, 0)));
-      if (base_size != NULL_TREE
-	  && TREE_CODE (base_size) == INTEGER_CST
-	  && INT_CST_LT_UNSIGNED (size, base_size))
-	size = base_size;
-    }
 
   if (offset == NULL_TREE)
     {
@@ -8445,13 +8429,25 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
 			    true))
     return true;
 
-  if ((unsigned HOST_WIDE_INT) total_high
-      < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (size))
-    return false;
-  if ((unsigned HOST_WIDE_INT) total_high
-      > (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (size))
+  if (total_high != 0)
     return true;
-  return total_low > TREE_INT_CST_LOW (size);
+
+  size = int_size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
+  if (size <= 0)
+    return true;
+
+  /* We can do slightly better for SIZE if we have an ADDR_EXPR of an
+     array.  */
+  if (TREE_CODE (base) == ADDR_EXPR)
+    {
+      HOST_WIDE_INT base_size;
+
+      base_size = int_size_in_bytes (TREE_TYPE (TREE_OPERAND (base, 0)));
+      if (base_size > 0 && size < base_size)
+	size = base_size;
+    }
+
+  return total_low > (unsigned HOST_WIDE_INT) size;
 }
 
 /* Subroutine of fold_binary.  This routine performs all of the
