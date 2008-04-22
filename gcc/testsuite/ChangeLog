@@ -1,3 +1,8 @@
+2008-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31486
+	* gcc.target/i386/pr31486.c: New test.
+
 2008-04-21  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/profile-dir-1.c, gcc.dg/profile-dir-2.c,
