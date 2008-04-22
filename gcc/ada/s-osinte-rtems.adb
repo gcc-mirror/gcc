@@ -135,4 +135,13 @@ package body System.OS_Interface is
       return 0;
    end Get_Page_Size;
 
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int is
+      pragma Unreferenced (ss);
+      pragma Unreferenced (oss);
+   begin
+      return 0;
+   end sigaltstack;
+
 end System.OS_Interface;
