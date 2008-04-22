@@ -1,5 +1,8 @@
 2008-04-22  Nick Clifton  <nickc@redhat.com>
 
+	* common.opt (ftree-loop-distribution): Add Optimization
+	attribute.
+
 	* config/frv/frv.c (frv_stack_info): Use crtl instead of cfun.
 	(frv_expand_builtin_va_start): Likewise.
 
