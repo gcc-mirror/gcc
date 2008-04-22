@@ -621,7 +621,7 @@ _mm_cvtpi16_ps (__m64 __A)
 {
   __v4hi __sign;
   __v2si __hisi, __losi;
-  __v4sf __r;
+  __v4sf __zero, __ra, __rb;
 
   /* This comparison against zero gives us a mask that can be used to
      fill in the missing sign bits in the unpack operations below, so
@@ -633,12 +633,11 @@ _mm_cvtpi16_ps (__m64 __A)
   __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, __sign);
 
   /* Convert the doublewords to floating point two at a time.  */
-  __r = (__v4sf) _mm_setzero_ps ();
-  __r = __builtin_ia32_cvtpi2ps (__r, __hisi);
-  __r = __builtin_ia32_movlhps (__r, __r);
-  __r = __builtin_ia32_cvtpi2ps (__r, __losi);
+  __zero = (__v4sf) _mm_setzero_ps ();
+  __ra = __builtin_ia32_cvtpi2ps (__zero, __hisi);
+  __rb = __builtin_ia32_cvtpi2ps (__ra, __losi);
 
-  return (__m128) __r;
+  return (__m128) __builtin_ia32_movlhps (__ra, __rb);
 }
 
 /* Convert the four unsigned 16-bit values in A to SPFP form.  */
@@ -646,19 +645,18 @@ extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artif
 _mm_cvtpu16_ps (__m64 __A)
 {
   __v2si __hisi, __losi;
-  __v4sf __r;
+  __v4sf __zero, __ra, __rb;
 
   /* Convert the four words to doublewords.  */
   __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, (__v4hi)0LL);
   __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, (__v4hi)0LL);
 
   /* Convert the doublewords to floating point two at a time.  */
-  __r = (__v4sf) _mm_setzero_ps ();
-  __r = __builtin_ia32_cvtpi2ps (__r, __hisi);
-  __r = __builtin_ia32_movlhps (__r, __r);
-  __r = __builtin_ia32_cvtpi2ps (__r, __losi);
+  __zero = (__v4sf) _mm_setzero_ps ();
+  __ra = __builtin_ia32_cvtpi2ps (__zero, __hisi);
+  __rb = __builtin_ia32_cvtpi2ps (__ra, __losi);
 
-  return (__m128) __r;
+  return (__m128) __builtin_ia32_movlhps (__ra, __rb);
 }
 
 /* Convert the low four signed 8-bit values in A to SPFP form.  */
@@ -692,7 +690,7 @@ _mm_cvtpi32x2_ps(__m64 __A, __m64 __B)
 {
   __v4sf __zero = (__v4sf) _mm_setzero_ps ();
   __v4sf __sfa = __builtin_ia32_cvtpi2ps (__zero, (__v2si)__A);
-  __v4sf __sfb = __builtin_ia32_cvtpi2ps (__zero, (__v2si)__B);
+  __v4sf __sfb = __builtin_ia32_cvtpi2ps (__sfa, (__v2si)__B);
   return (__m128) __builtin_ia32_movlhps (__sfa, __sfb);
 }
 
