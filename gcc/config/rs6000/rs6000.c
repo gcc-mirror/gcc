@@ -21331,6 +21331,12 @@ rs6000_register_move_cost (enum machine_mode mode,
       else if (from == CR_REGS)
 	return 4;
 
+      /* Power6 has slower LR/CTR moves so make them more expensive than
+	 memory in order to bias spills to memory .*/
+      else if (rs6000_cpu == PROCESSOR_POWER6
+	       && reg_classes_intersect_p (from, LINK_OR_CTR_REGS))
+        return 6 * hard_regno_nregs[0][mode];
+
       else
 	/* A move will cost one instruction per GPR moved.  */
 	return 2 * hard_regno_nregs[0][mode];
