@@ -1,3 +1,8 @@
+2008-04-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (thumb_find_work_register): Fix location of
+	argument register count.
+
 2008-04-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Support scheduling for ColdFire V1 and V3 microarchitecture.
@@ -1957,6 +1962,7 @@
 
 2008-03-28  Nick Clifton  <nickc@redhat.com>
 
+	PR target/31110
 	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
 	Return GENERAL_REGS for stack adjustment reloads.
 

@@ -3564,7 +3564,7 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
   if (! cfun->machine->uses_anonymous_args
       && crtl->args.size >= 0
       && crtl->args.size <= (LAST_ARG_REGNUM * UNITS_PER_WORD)
-      && cfun->args_info.nregs < 4)
+      && crtl->args.info.nregs < 4)
     return LAST_ARG_REGNUM;
 
   /* Otherwise look for a call-saved register that is going to be pushed.  */
