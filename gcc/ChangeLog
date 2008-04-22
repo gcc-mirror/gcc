@@ -1,5 +1,56 @@
 2008-04-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	Support scheduling for ColdFire V1 and V3 microarchitecture.
+	Improve scheduling of multiplication instructions.
+
+	* config/m68k/m68k.md (cpu): Add cfv1 and cfv3.  Rename cf_v2 to cfv1.
+	(mac): New instruction attribute.
+	* config/m68k/m68k.c (override_options): Handle cfv1, cfv3 and mac.
+	(m68k_sched_mac): New variable.
+	(m68k_sched_attr_type2, m68k_sched_md_init_global): Update.
+	Handle cfv1 and cfv3.
+	(max_insn_size): New static variable.
+	(struct _sched_ib): New type.
+	(sched_ib): New static variable.
+	(sched_ib_size, sched_ib_filled, sched_ib_insn): Convert variables
+	to fields of 'struct _sched_ib sched_ib'.  Update all uses.
+	(m68k_sched_variable_issue): Add modeling of cfv3 instruction buffer.
+	Update.
+	(m68k_sched_md_init_global, m68k_sched_md_finish_global,
+	m68k_sched_md_init, m68k_sched_md_finish): Handle cfv1 and cfv3.  Init
+	new variables.  Update.
+	(m68k_sched_dfa_pre_advance_cycle, m68k_sched_dfa_post_advance_cycle):
+	Add modeling of cfv3 instruction buffer.  Update.
+	* config/m68k/m68k-protos.h (m68k_sched_mac): Declare.
+	* config/m68k/m68k.h (TUNE_CFV3): New macro.
+	* config/m68k/cf.md: Change substrings 'cf_v2' to 'cfv12' or 'cfv123'.
+	(cf_* reservations): Rename to cfv12 or cfv123 to indicate cores
+	a particular reservation applies to.
+	(type2): Reorganize attribute values.  Rename alu to alu_reg,
+	alu_l to alu, move_l to omove.  Join move to alu.  Split mul
+	to mul_l and mul_w.
+	(cf_ib_*): Simplify description of instruction buffer.
+	(cf_ib_w0, cf_ib_w4, cf_ib_w5, cf_ib_w6): Remove.
+	(cf_mem): Split into cf_mem1 and cf_mem2.
+	(cf_v2_move_??): Rename to cfv12_alu_??.
+	(cf_v2_move_l_??): Rename to cfv12_omove_??.
+	(cf_v2_mul_??): Remove reservations.
+	(cfv12_mul_l_??, cfv12_mul_w_??, cfv12_mac_w_??, cfv12_mac_l_??,
+	cfv12_emac_??, cfv12_emac_w_i0): New reservations.
+	(cfv12_rts, cfv12_call, cfv12_bcc, cfv12_bra, cfv12_jmp): Move to
+	appropriate place.
+	(cfv3_alu_10, cfv3_omove_10, cfv3_alu_i0, cfv3_omove_i0, cfv3_alu_01,
+	cfv3_alu_0i, cfv3_alu_11, cfv3_omove_11, cfv3_alu_i1, cfv3_omove_i1,
+	cfv3_alu_1i, cfv3_omove_1i, cfv3_pea_11, cfv3_pea_i1, cfv3_mul_w_10,
+	cfv3_mul_l_10, cfv3_mul_w_i0, cfv3_mac_w_10, cfv3_mac_l_10,
+	cfv3_mac_w_i0, cfv3_emac_10, cfv3_emac_w_i0, cfv3_rts, cfv3_call,
+	cfv3_bcc, cfv3_bra, cfv3_jmp): New reservations.
+	(cfv3_*_1, cfv3_*_2, cfv3_*_3): New instruction reservations that are
+	expansions of the above reservations for instructions of sizes
+	1, 2 and 3 words.
+
+2008-04-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* rtl-factoring.c (collect_patterns_seqs): Handle CC0 targets.
 
 2008-04-21  Adam Nemet  <anemet@caviumnetworks.com>

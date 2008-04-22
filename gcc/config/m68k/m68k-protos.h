@@ -67,6 +67,7 @@ extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 
 #ifdef HAVE_ATTR_cpu
 extern enum attr_cpu m68k_sched_cpu;
+extern enum attr_mac m68k_sched_mac;
 
 extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
 extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);

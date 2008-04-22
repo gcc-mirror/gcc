@@ -266,6 +266,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TUNE_CPU32	(m68k_tune == ucpu32)
 #define TUNE_CFV1       (m68k_tune == ucfv1)
 #define TUNE_CFV2	(m68k_tune == ucfv2)
+#define TUNE_CFV3       (m68k_tune == ucfv3)
 
 #define OVERRIDE_OPTIONS   override_options()
 
