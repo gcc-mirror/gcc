@@ -1,3 +1,7 @@
+2008-04-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* rtl-factoring.c (collect_patterns_seqs): Handle CC0 targets.
+
 2008-04-21  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* coverage.c: Include tree-pass.h.
