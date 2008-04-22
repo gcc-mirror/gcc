@@ -1,3 +1,9 @@
+2008-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36017
+	* builtins.c (expand_errno_check): Clear CALL_EXPR_TAILCALL before
+	expanding the library call.
+
 2008-04-22  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (pointer_may_wrap_p): Call int_size_in_bytes rather

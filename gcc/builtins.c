@@ -1804,6 +1804,9 @@ expand_errno_check (tree exp, rtx target)
     }
 #endif
 
+  /* Make sure the library call isn't expanded as a tail call.  */
+  CALL_EXPR_TAILCALL (exp) = 0;
+
   /* We can't set errno=EDOM directly; let the library call do it.
      Pop the arguments right away in case the call gets deleted.  */
   NO_DEFER_POP;
