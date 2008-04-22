@@ -13,6 +13,10 @@ main ()
   int i, sum;
 
   str_t * p = malloc (N * sizeof (str_t));
+
+  for (i = 0; i < N; i++)
+    p[i].b = i;
+
   for (i = 0; i < N; i++)
     p[i].a = p[i].b + 1;
 
