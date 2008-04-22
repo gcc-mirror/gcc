@@ -1,3 +1,9 @@
+2008-04-22  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/36003
+	* passes.c (init_optimization_passes): Remove
+	pass_fast_rtl_byte_dce.
+	
 2008-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/29096
