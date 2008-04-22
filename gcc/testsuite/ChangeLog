@@ -1,3 +1,7 @@
+2008-04-22  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/Wconversion-real.c: Add missing end of comment marker.
+
 2008-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31486
