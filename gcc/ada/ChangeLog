@@ -1,3 +1,11 @@
+2008-04-22  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* s-osinte-rtems.adb: Add sigalstack function.
+	* s-osinte-rtems.ads: Add SO_ONSTACK and sigalstack
+	function. Add Alternate_Stack and Alternate_Stack_Size.
+	Add missing process_shared field to pthread_condattr_t
+	and change ss_low_priority to int from timespec.
+
 2008-04-22  Samuel Tardieu  <sam@rfc1149.net>
 
 	* i-forbla.adb: Link against -llapack and -lblas by default

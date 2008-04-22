@@ -35,17 +35,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the RTEMS version of this package
-
---  These are guesses based on what I think the GNARL team will want to
---  call the rtems configurations.  We use CPU-rtems for the rtems
---  configurations.
+--  This is the RTEMS version of this package.
+--
+--  RTEMS target names are of the form CPU-rtems.
+--  This implementation is designed to work on ALL RTEMS targets.
+--  The RTEMS implementation is primarily based upon the POSIX threads
+--  API but there are also bindings to GNAT/RTEMS support routines
+--  to insulate this code from C API specific details and, in some
+--  cases, obtain target architecture and BSP specific information
+--  that is unavailable at the time this package is built.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
 
 --  PLEASE DO NOT add any with-clauses to this package
---  or remove the pragma Elaborate_Body.
+--  or remove the pragma Preelaborate.
 --  It is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
@@ -140,6 +144,11 @@ package System.OS_Interface is
    type struct_sigaction_ptr is access all struct_sigaction;
 
    SA_SIGINFO  : constant := 16#02#;
+
+   SA_ONSTACK : constant := 16#00#;
+   --  SA_ONSTACK is not defined on RTEMS, but it is refered to in the POSIX
+   --  implementation of System.Interrupt_Management. Therefore we define a
+   --  dummy value of zero here so that setting this flag is a nop.
 
    SIG_BLOCK   : constant := 1;
    SIG_UNBLOCK : constant := 2;
@@ -248,6 +257,23 @@ package System.OS_Interface is
    -----------
    -- Stack --
    -----------
+
+   type stack_t is record
+      ss_sp    : System.Address;
+      ss_flags : int;
+      ss_size  : size_t;
+   end record;
+   pragma Convention (C, stack_t);
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int;
+
+   Alternate_Stack : aliased System.Address;
+   --  This is a dummy definition, never used (Alternate_Stack_Size is null)
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target.
@@ -386,7 +412,7 @@ package System.OS_Interface is
 
    type struct_sched_param is record
       sched_priority      : int;
-      ss_low_priority     : timespec;
+      ss_low_priority     : int;
       ss_replenish_period : timespec;
       ss_initial_budget   : timespec;
    end record;
@@ -512,7 +538,8 @@ private
    pragma Convention (C, pthread_attr_t);
 
    type pthread_condattr_t is record
-      flags        : int;
+      flags           : int;
+      process_shared  : int;
    end record;
    pragma Convention (C, pthread_condattr_t);
 
