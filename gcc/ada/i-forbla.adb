@@ -32,12 +32,13 @@
 ------------------------------------------------------------------------------
 
 --  This Interfaces.Fortran.Blas package body contains the required linker
---  pragmas for automatically linking with the gnalasup linear algebra support
+--  pragmas for automatically linking with the LAPACK linear algebra support
 --  library, and the systems math library. Alternative bodies can be supplied
 --  if different sets of libraries are needed.
 
 package body Interfaces.Fortran.BLAS is
    pragma Linker_Options ("-lgnala");
-   pragma Linker_Options ("-lgnalasup");
+   pragma Linker_Options ("-llapack");
+   pragma Linker_Options ("-lblas");
    pragma Linker_Options ("-lm");
 end Interfaces.Fortran.BLAS;
