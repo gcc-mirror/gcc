@@ -1,3 +1,8 @@
+2008-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35316
+	* g++.dg/cpp0x/decltype11.C: New.
+
 2008-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36017
