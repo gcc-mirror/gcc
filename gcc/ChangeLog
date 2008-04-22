@@ -1,3 +1,11 @@
+2008-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/29096
+	* config/i386/xmmintrin.h (_mm_cvtpi16_ps): Rearrange calls to
+	builtin functions to generate faster code.
+	(_mm_cvtpu16_ps): Ditto.
+	(_mm_cvtpi32x2_ps): Ditto.
+
 2008-04-22  Nick Clifton  <nickc@redhat.com>
 
 	* common.opt (ftree-loop-distribution): Add Optimization
