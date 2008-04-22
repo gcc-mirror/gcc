@@ -666,14 +666,28 @@ override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 
   /* Setup scheduling options.  */
-  if (TUNE_CFV2)
-    m68k_sched_cpu = CPU_CF_V2;
+  if (TUNE_CFV1)
+    m68k_sched_cpu = CPU_CFV1;
+  else if (TUNE_CFV2)
+    m68k_sched_cpu = CPU_CFV2;
+  else if (TUNE_CFV3)
+    m68k_sched_cpu = CPU_CFV3;
   else
     {
       m68k_sched_cpu = CPU_UNKNOWN;
       flag_schedule_insns = 0;
       flag_schedule_insns_after_reload = 0;
       flag_modulo_sched = 0;
+    }
+
+  if (m68k_sched_cpu != CPU_UNKNOWN)
+    {
+      if ((m68k_cpu_flags & (FL_CF_EMAC | FL_CF_EMAC_B)) != 0)
+	m68k_sched_mac = MAC_CF_EMAC;
+      else if ((m68k_cpu_flags & FL_CF_MAC) != 0)
+	m68k_sched_mac = MAC_CF_MAC;
+      else
+	m68k_sched_mac = MAC_NO;
     }
 }
 
@@ -4556,6 +4570,9 @@ m68k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 /* CPU to schedule the program for.  */
 enum attr_cpu m68k_sched_cpu;
 
+/* MAC to schedule the program for.  */
+enum attr_mac m68k_sched_mac;
+
 /* Operand type.  */
 enum attr_op_type
   {
@@ -5011,14 +5028,14 @@ m68k_sched_attr_type2 (rtx insn)
 {
   switch (get_attr_type1 (insn))
     {
-    case TYPE1_ALU_REG1:
-    case TYPE1_ALU_REGX:
-      return TYPE2_ALU;
-
     case TYPE1_ALU_L:
     case TYPE1_ALUQ_L:
     case TYPE1_CMP_L:
-      return TYPE2_ALU_L;
+      return TYPE2_ALU;
+
+    case TYPE1_ALU_REG1:
+    case TYPE1_ALU_REGX:
+      return TYPE2_ALU_REG;
 
     case TYPE1_BCC:
       return TYPE2_BCC;
@@ -5041,15 +5058,29 @@ m68k_sched_attr_type2 (rtx insn)
     case TYPE1_MOVE:
     case TYPE1_MOVEQ_L:
     case TYPE1_TST:
-      return TYPE2_MOVE;
+      switch (m68k_sched_cpu)
+	{
+	case CPU_CFV1:
+	  return TYPE2_OMOVE;
+
+	case CPU_CFV2:
+	case CPU_CFV3:
+	  return TYPE2_ALU;
+
+	default:
+	  gcc_assert (get_attr_guess (insn) == GUESS_YES);
+	  return TYPE2_UNKNOWN;
+	}
+
+    case TYPE1_MUL_L:
+      return TYPE2_MUL_L;
+
+    case TYPE1_MUL_W:
+      return TYPE2_MUL_W;
 
     case TYPE1_MOVE_L:
     case TYPE1_TST_L:
-      return TYPE2_MOVE_L;
-
-    case TYPE1_MUL_W:
-    case TYPE1_MUL_L:
-      return TYPE2_MUL;
+      return TYPE2_OMOVE;
 
     case TYPE1_PEA:
       return TYPE2_PEA;
@@ -5095,14 +5126,39 @@ m68k_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx def_insn,
   return cost;
 }
 
-/* Size of the instruction buffer in words.  */
-static int sched_ib_size;
+/* Maximal length of instruction for current CPU.
+   E.g. it is 3 for any ColdFire core.  */
+static int max_insn_size;
 
-/* Number of filled words in the instruction buffer.  */
-static int sched_ib_filled;
+/* Data to model instruction buffer of CPU.  */
+struct _sched_ib
+{
+  /* Size of the instruction buffer in words.  */
+  int size;
 
-/* An insn that reserves (marks empty) one word in the instruction buffer.  */
-static rtx sched_ib_insn;
+  /* Number of filled words in the instruction buffer.  */
+  int filled;
+
+  /* Additional information about instruction buffer for CPUs that have
+     a buffer of instruction records, rather then a plain buffer
+     of instruction words.  */
+  struct _sched_ib_records
+  {
+    /* Size of buffer in records.  */
+    int n_insns;
+
+    /* Array to hold data on adjustements made to the size of the buffer.  */
+    int *adjust;
+
+    /* Index of the above array.  */
+    int adjust_index;
+  } records;
+
+  /* An insn that reserves (marks empty) one word in the instruction buffer.  */
+  rtx insn;
+};
+
+static struct _sched_ib sched_ib;
 
 /* ID of memory unit.  */
 static int sched_mem_unit_code;
@@ -5121,19 +5177,58 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 
   if (recog_memoized (insn) >= 0)
     {
-      insn_size = get_attr_size (insn);
+      switch (m68k_sched_cpu)
+	{
+	case CPU_CFV1:
+	case CPU_CFV2:
+	  insn_size = get_attr_size (insn);
+	  break;
 
-      gcc_assert (insn_size <= sched_ib_filled);
+	case CPU_CFV3:
+	  insn_size = get_attr_size (insn);
+	  
+	  /* ColdFire V3 and V4 cores have instruction buffers that can
+	     accumulate up to 8 instructions regardless of instructions'
+	     sizes.  So we should take care not to "prefetch" 24 one-word
+	     or 12 two-words instructions.
+	     To model this behavior we temporarily decrease size of the
+	     buffer by (max_insn_size - insn_size) for next 7 instructions.  */
+	  {
+	    int adjust;
 
+	    adjust = max_insn_size - insn_size;
+	    sched_ib.size -= adjust;
+
+	    if (sched_ib.filled > sched_ib.size)
+	      sched_ib.filled = sched_ib.size;
+
+	    sched_ib.records.adjust[sched_ib.records.adjust_index] = adjust;
+	  }
+
+	  ++sched_ib.records.adjust_index;
+	  if (sched_ib.records.adjust_index == sched_ib.records.n_insns)
+	    sched_ib.records.adjust_index = 0;
+
+	  /* Undo adjustement we did 7 instructions ago.  */
+	  sched_ib.size
+	    += sched_ib.records.adjust[sched_ib.records.adjust_index];
+
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      gcc_assert (insn_size <= sched_ib.filled);
       --can_issue_more;
     }
   else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
 	   || asm_noperands (PATTERN (insn)) >= 0)
-    insn_size = sched_ib_filled;
+    insn_size = sched_ib.filled;
   else
     insn_size = 0;
 
-  sched_ib_filled -= insn_size;
+  sched_ib.filled -= insn_size;
 
   return can_issue_more;
 }
@@ -5357,7 +5452,7 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
       m68k_sched_dump (sched_dump_split_class, "m68k_sched_split",
 		       sched_dump);
 
-      sched_dump_dfa_guess_unit_code = get_cpu_unit_code ("cf_v2_guess");
+      sched_dump_dfa_guess_unit_code = get_cpu_unit_code ("cf_guess");
       sched_dump_dfa_state = alloca (state_size ());
 
       m68k_sched_dump (sched_dump_dfa_class, "m68k_sched_dfa",
@@ -5370,21 +5465,32 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
   /* Setup target cpu.  */
   switch (m68k_sched_cpu)
     {
-    case CPU_CF_V2:
-      sched_ib_size = 6;
-      sched_mem_unit_code = get_cpu_unit_code ("cf_v2_mem");
+    case CPU_CFV1:
+    case CPU_CFV2:
+      max_insn_size = 3;
+      sched_ib.records.n_insns = 0;
+      sched_ib.records.adjust = NULL;
+      break;
+
+    case CPU_CFV3:
+      max_insn_size = 3;
+      sched_ib.records.n_insns = 8;
+      sched_ib.records.adjust = xmalloc (sched_ib.records.n_insns
+					 * sizeof (*sched_ib.records.adjust));
       break;
 
     default:
       gcc_unreachable ();
     }
 
+  sched_mem_unit_code = get_cpu_unit_code ("cf_mem1");
+
   sched_adjust_cost_state = xmalloc (state_size ());
   state_reset (sched_adjust_cost_state);
 
   start_sequence ();
   emit_insn (gen_ib ());
-  sched_ib_insn = get_insns ();
+  sched_ib.insn = get_insns ();
   end_sequence ();
 }
 
@@ -5393,13 +5499,17 @@ static void
 m68k_sched_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
 			     int verbose ATTRIBUTE_UNUSED)
 {
-  sched_ib_insn = NULL;
+  sched_ib.insn = NULL;
 
   free (sched_adjust_cost_state);
   sched_adjust_cost_state = NULL;
 
   sched_mem_unit_code = 0;
-  sched_ib_size = 0;
+
+  free (sched_ib.records.adjust);
+  sched_ib.records.adjust = NULL;
+  sched_ib.records.n_insns = 0;
+  max_insn_size = 0;
 
   free (sched_branch_type);
   sched_branch_type = NULL;
@@ -5413,9 +5523,28 @@ m68k_sched_md_init (FILE *sched_dump ATTRIBUTE_UNUSED,
 		    int sched_verbose ATTRIBUTE_UNUSED,
 		    int n_insns ATTRIBUTE_UNUSED)
 {
+  switch (m68k_sched_cpu)
+    {
+    case CPU_CFV1:
+    case CPU_CFV2:
+      sched_ib.size = 6;
+      break;
+
+    case CPU_CFV3:
+      sched_ib.size = sched_ib.records.n_insns * max_insn_size;
+
+      memset (sched_ib.records.adjust, 0,
+	      sched_ib.records.n_insns * sizeof (*sched_ib.records.adjust));
+      sched_ib.records.adjust_index = 0;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   /* haifa-sched.c: schedule_block () calls advance_cycle () just before
      the first cycle.  Workaround that.  */
-  sched_ib_filled = -2;
+  sched_ib.filled = -2;
 }
 
 /* Implementation of targetm.sched.dfa_pre_advance_cycle () hook.
@@ -5426,10 +5555,10 @@ m68k_sched_dfa_pre_advance_cycle (void)
 {
   if (!cpu_unit_reservation_p (curr_state, sched_mem_unit_code))
     {
-      sched_ib_filled += 2;
+      sched_ib.filled += 2;
 
-      if (sched_ib_filled > sched_ib_size)
-	sched_ib_filled = sched_ib_size;
+      if (sched_ib.filled > sched_ib.size)
+	sched_ib.filled = sched_ib.size;
     }
 }
 
@@ -5442,13 +5571,14 @@ static void
 m68k_sched_dfa_post_advance_cycle (void)
 {
   int i;
-  int n;
 
   /* Setup number of prefetched instruction words in the instruction
      buffer.  */
-  for (i = sched_ib_filled, n = sched_ib_size; i < n; ++i)
+  i = max_insn_size - sched_ib.filled;
+
+  while (--i >= 0)
     {
-      if (state_transition (curr_state, sched_ib_insn) >= 0)
+      if (state_transition (curr_state, sched_ib.insn) >= 0)
 	gcc_unreachable ();
     }
 }
