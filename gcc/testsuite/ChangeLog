@@ -1,3 +1,11 @@
+2008-04-22  Kris Van Hees <kris.van.hees@oracle.com>
+
+	PR testsuite/35981
+	* g++.dg/ext/utf-cvt.C: Handle 64-bit platforms correctly.
+	Add tests for 'long long'.
+	* gcc.dg/utf-cvt.c: Handle 64-bit platforms correctly.
+	Add tests for 'long long'.
+
 2008-04-22  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/Wconversion-real.c: Add missing end of comment marker.
