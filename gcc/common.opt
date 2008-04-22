@@ -1116,7 +1116,7 @@ Common Report Var(flag_tree_fre) Optimization
 Enable Full Redundancy Elimination (FRE) on trees
 
 ftree-loop-distribution
-Common Report Var(flag_tree_loop_distribution)
+Common Report Var(flag_tree_loop_distribution) Optimization
 Enable loop distribution on trees
 
 ftree-loop-im
