@@ -1120,34 +1120,22 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 
 # Build two precompiled C++ includes, stdc++.h.gch/*.gch
 ${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
-	if [ ! -d "${pch1_output_builddir}" ]; then \
-	  mkdir -p ${pch1_output_builddir}; \
-	fi; \
+	-mkdir -p ${pch1_output_builddir}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O0 -g ${pch1_source} -o $@
-	touch ${pch1_output_anchor}
 
 ${pch1b_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
-	if [ ! -d "${pch1_output_builddir}" ]; then \
-	  mkdir -p ${pch1_output_builddir}; \
-	fi; \
+	-mkdir -p ${pch1_output_builddir}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch1_source} -o $@
-	touch ${pch1_output_anchor}
 
 # Build a precompiled TR1 include, stdtr1c++.h.gch/O2.gch
 ${pch2_output}: ${pch2_source} ${pch1_output}
-	if [ ! -d "${pch2_output_builddir}" ]; then \
-	  mkdir -p ${pch2_output_builddir}; \
-	fi; \
+	-mkdir -p ${pch2_output_builddir}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch2_source} -o $@
-	touch ${pch2_output_anchor}
 
 # Build a precompiled extension include, extc++.h.gch/O2.gch
 ${pch3_output}: ${pch3_source} ${pch2_output}
-	if [ ! -d "${pch3_output_builddir}" ]; then \
-	  mkdir -p ${pch3_output_builddir}; \
-	fi; \
+	-mkdir -p ${pch3_output_builddir}
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch3_source} -o $@
-	touch ${pch3_output_anchor}
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install

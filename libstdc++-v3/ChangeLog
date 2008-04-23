@@ -1,3 +1,10 @@
+2008-04-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libstdc++/35954
+	* include/Makefile.am (pch*_output): Do not touch pch*_output_anchor.
+	Call 'mkdir -p' unconditionally, but ignore its return value.
+	* include/Makefile.in: Regenerate.
+
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/multiway_merge.h
