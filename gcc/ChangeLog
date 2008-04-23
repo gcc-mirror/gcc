@@ -1,3 +1,9 @@
+2008-04-23  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35982
+	* tree-vect-analyze.c (vect_check_interleaving): Check that the
+	interleaved data-refs are of the same type.
+
 2008-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36017

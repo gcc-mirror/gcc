@@ -1,3 +1,8 @@
+2008-04-23  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/35982
+	* gcc.dg/vect/fast-math-pr35982.c: New.
+
 2008-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35316

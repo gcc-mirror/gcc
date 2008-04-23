@@ -1081,7 +1081,9 @@ vect_check_interleaving (struct data_reference *dra,
   type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
 
   if (type_size_a != type_size_b
-      || tree_int_cst_compare (DR_STEP (dra), DR_STEP (drb)))
+      || tree_int_cst_compare (DR_STEP (dra), DR_STEP (drb))
+      || !types_compatible_p (TREE_TYPE (DR_REF (dra)), 
+                              TREE_TYPE (DR_REF (drb))))
     return;
 
   init_a = TREE_INT_CST_LOW (DR_INIT (dra));
