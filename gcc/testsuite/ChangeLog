@@ -1,3 +1,8 @@
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36021
+	* gcc.dg/attr-alloc_size-2.c: New testcase.
+
 2008-04-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/20020919-1.c (loc_size_t): New type.
