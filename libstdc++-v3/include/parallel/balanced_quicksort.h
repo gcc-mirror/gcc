@@ -252,7 +252,8 @@ template<typename RandomAccessIterator, typename Comparator>
 
     QSBThreadLocal<RandomAccessIterator>& tl = *tls[iam];
 
-    difference_type base_case_n = _Settings::get().sort_qsb_base_case_maximal_n;
+    difference_type base_case_n =
+        _Settings::get().sort_qsb_base_case_maximal_n;
     if (base_case_n < 2)
       base_case_n = 2;
     thread_index_t num_threads = tl.num_threads;
@@ -415,7 +416,6 @@ template<typename RandomAccessIterator, typename Comparator>
   *  @param begin Begin iterator of sequence.
   *  @param end End iterator of sequence.
   *  @param comp Comparator.
-  *  @param n Length of the sequence to sort.
   *  @param num_threads Number of threads that are allowed to work on
   *  this part.
   */
@@ -423,8 +423,6 @@ template<typename RandomAccessIterator, typename Comparator>
   void
   parallel_sort_qsb(RandomAccessIterator begin, RandomAccessIterator end,
                     Comparator comp,
-                    typename std::iterator_traits<RandomAccessIterator>
-                        ::difference_type n,
                     thread_index_t num_threads)
   {
     _GLIBCXX_CALL(end - begin)
@@ -435,6 +433,8 @@ template<typename RandomAccessIterator, typename Comparator>
     typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
 
     typedef QSBThreadLocal<RandomAccessIterator> tls_type;
+
+    difference_type n = end - begin;
 
     if (n <= 1)
       return;

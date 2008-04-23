@@ -1,5 +1,21 @@
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
+        * include/parallel/quicksort.h: Reformat,
+        (parallel_sort_qs): Do not pass number of elements.
+        * include/parallel/balanced_quicksort.h: Reformat,
+        (parallel_sort_qsb): Do not pass number of elements.
+        * include/parallel/tags.h:
+        Introduce new tags for compile-time choice.
+        * include/parallel/merge.h:
+        (parallel_merge_advance):Beautified.
+        * include/parallel/algo.h: Reformatting (spaces for tabs)
+        New sort and stable_sort variants, corresponding to the tags.
+        * include/parallel/sort.h:
+        New sort and stable_sort variants, corresponding to the tags.
+        Changed determining the desired number of threads. 
+
+2008-04-23  Johannes Singler  <singler@ira.uka.de>
+
         * include/parallel/multiway_merge.h
         (multiway_merge_loser_tree):
         Leave checks to callers, add precondition instead.
