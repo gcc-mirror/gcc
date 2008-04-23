@@ -445,7 +445,6 @@ build_constant_data_ref (bool indirect)
       TREE_THIS_NOTRAP (klass) = 1;
       data = fold_convert (build_pointer_type (cpool_type), data);
       d = build1 (INDIRECT_REF, cpool_type, data);
-      TREE_INVARIANT (d) = 1;
 
       return d;
     }
@@ -485,7 +484,6 @@ build_ref_from_constant_pool (int index)
   i = build_int_cst (NULL_TREE, index);
   d = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (d)), d, i,
 		 NULL_TREE, NULL_TREE);
-  TREE_INVARIANT (d) = 1;
   return d;
 }
 

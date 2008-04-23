@@ -73,7 +73,6 @@ compile_resource_data (const char *name, const char *buffer, int length)
   PUSH_FIELD_VALUE (rinit, "data", data);
   FINISH_RECORD_CONSTRUCTOR (rinit);
   TREE_CONSTANT (rinit) = 1;
-  TREE_INVARIANT (rinit) = 1;
 
   decl = build_decl (VAR_DECL, java_mangle_resource_name (name), rtype);
   TREE_STATIC (decl) = 1;

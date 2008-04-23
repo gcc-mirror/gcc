@@ -387,7 +387,6 @@ struct tree_base GTY(())
   unsigned private_flag : 1;
   unsigned protected_flag : 1;
   unsigned deprecated_flag : 1;
-  unsigned invariant_flag : 1;
   unsigned saturating_flag : 1;
   unsigned default_def_flag : 1;
 
@@ -400,7 +399,7 @@ struct tree_base GTY(())
   unsigned lang_flag_6 : 1;
   unsigned visited : 1;
 
-  unsigned spare : 22;
+  unsigned spare : 23;
 
   /* FIXME tuples: Eventually, we need to move this somewhere external to
      the trees.  */
@@ -578,11 +577,6 @@ struct gimple_stmt GTY(())
    visited:
 
    	Used in tree traversals to mark visited nodes.
-
-   invariant_flag:
-
-	TREE_INVARIANT in
-	    all expressions.
 
    saturating_flag:
 
@@ -1371,12 +1365,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
 #define IDENTIFIER_TRANSPARENT_ALIAS(NODE) \
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
-
-/* Value of expression is function invariant.  A strict subset of
-   TREE_CONSTANT, such an expression is constant over any one function
-   invocation, though not across different invocations.  May appear in
-   any expression node.  */
-#define TREE_INVARIANT(NODE) ((NODE)->base.invariant_flag)
 
 /* In fixed-point types, means a saturating type.  */
 #define TYPE_SATURATING(NODE) ((NODE)->base.saturating_flag)
@@ -4886,6 +4874,7 @@ extern tree strip_float_extensions (tree);
 
 /* In tree.c */
 extern int really_constant_p (const_tree);
+extern bool decl_address_invariant_p (const_tree);
 extern int int_fits_type_p (const_tree, const_tree);
 #ifndef GENERATOR_FILE
 extern void get_type_static_bounds (const_tree, mpz_t, mpz_t);

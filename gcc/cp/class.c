@@ -385,7 +385,6 @@ build_base_path (enum tree_code code,
 			 v_offset);
       v_offset = cp_build_indirect_ref (v_offset, NULL, tf_warning_or_error);
       TREE_CONSTANT (v_offset) = 1;
-      TREE_INVARIANT (v_offset) = 1;
 
       offset = convert_to_integer (ptrdiff_type_node,
 				   size_diffop (offset,
@@ -630,7 +629,6 @@ build_vtbl_ref_1 (tree instance, tree idx)
 
   aref = build_array_ref (vtbl, idx);
   TREE_CONSTANT (aref) |= TREE_CONSTANT (vtbl) && TREE_CONSTANT (idx);
-  TREE_INVARIANT (aref) = TREE_CONSTANT (aref);
 
   return aref;
 }
@@ -7450,7 +7448,6 @@ build_vtbl_initializer (tree binfo,
 				     TREE_OPERAND (init, 0),
 				     build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
-		TREE_INVARIANT (fdesc) = 1;
 
 		vfun_inits = tree_cons (NULL_TREE, fdesc, vfun_inits);
 	      }

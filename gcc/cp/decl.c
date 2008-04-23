@@ -10967,7 +10967,6 @@ build_enumerator (tree name, tree value, tree enumtype)
 
   DECL_CONTEXT (decl) = FROB_CONTEXT (context);
   TREE_CONSTANT (decl) = 1;
-  TREE_INVARIANT (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_INITIAL (decl) = value;
 

@@ -261,10 +261,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 
   /* In all cases, the initializer is a constant.  */
   if (init)
-    {
-      TREE_CONSTANT (init) = 1;
-      TREE_INVARIANT (init) = 1;
-    }
+    TREE_CONSTANT (init) = 1;
 
   return init;
 }

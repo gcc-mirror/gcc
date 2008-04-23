@@ -62,6 +62,8 @@ extern bool is_gimple_addressable (tree);
 /* Returns true iff T is any valid GIMPLE lvalue.  */
 extern bool is_gimple_lvalue (tree);
 
+/* Returns true iff T is a GIMPLE address.  */
+bool is_gimple_address (const_tree);
 /* Returns true iff T is a GIMPLE invariant address.  */
 bool is_gimple_invariant_address (const_tree);
 /* Returns true iff T is a valid GIMPLE constant.  */

@@ -1,3 +1,7 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* objc-act.c (objc_build_string_object): Don't set TREE_INVARIANT.
+
 2008-04-03  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (objc_OBJS): New variable.

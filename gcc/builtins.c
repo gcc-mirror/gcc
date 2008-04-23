@@ -5236,7 +5236,6 @@ build_string_literal (int len, const char *str)
   type = build_array_type (elem, index);
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = 1;
-  TREE_INVARIANT (t) = 1;
   TREE_READONLY (t) = 1;
   TREE_STATIC (t) = 1;
 
@@ -7150,7 +7149,7 @@ fold_builtin_expect (tree arg0, tree arg1)
     }
 
   /* If the argument isn't invariant then there's nothing else we can do.  */
-  if (!TREE_INVARIANT (arg0))
+  if (!TREE_CONSTANT (arg0))
     return NULL_TREE;
 
   /* If we expect that a comparison against the argument will fold to

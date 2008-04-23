@@ -1,3 +1,23 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* typeck.c (get_member_function_from_ptrfunc): Don't set TREE_INVARIANT.
+	(build_ptrmemfunc1): Don't set TREE_INVARIANT.
+	* init.c (build_zero_init): Don't set TREE_INVARIANT.
+	* class.c (build_base_path): Don't set TREE_INVARIANT.
+	(build_vtbl_ref_1): Don't set TREE_INVARIANT.
+	(build_vtbl_initializer): Don't set TREE_INVARIANT.
+	* decl.c (build_enumerator): Don't set TREE_INVARIANT.
+	* rtti.c (tinfo_base_init): Don't set TREE_INVARIANT.
+	(generic_initializer): Don't set TREE_INVARIANT.
+	(ptr_initializer): Don't set TREE_INVARIANT.
+	(ptm_initializer): Don't set TREE_INVARIANT.
+	(class_initializer): Don't set TREE_INVARIANT.
+	* typeck2.c (process_init_constructor): Don't set TREE_INVARIANT.
+	* pt.c (push_inline_template_parms_recursive): Don't set TREE_INVARIANT.
+	(build_template_parm_index): Don't set TREE_INVARIANT.
+	(reduce_template_parm_level): Don't set TREE_INVARIANT.
+	(process_template_parm): Don't set TREE_INVARIANT.
+
 2008-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35316

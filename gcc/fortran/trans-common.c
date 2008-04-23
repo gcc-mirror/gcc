@@ -547,7 +547,6 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
 
   init = build_constructor (TREE_TYPE (field), v);
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
 
   *field_init = init;
 
@@ -657,7 +656,6 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       gcc_assert (!VEC_empty (constructor_elt, v));
       ctor = build_constructor (union_type, v);
       TREE_CONSTANT (ctor) = 1;
-      TREE_INVARIANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (decl) = ctor;
 

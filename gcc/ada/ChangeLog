@@ -1,3 +1,9 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* trans.c (Attribute_to_gnu): Don't set TREE_INVARIANT.
+	(call_to_gnu): Don't set TREE_INVARIANT.
+	* utils2.c (gnat_build_constructor): Don't set TREE_INVARIANT.
+
 2008-04-22  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-osinte-rtems.adb: Add sigalstack function.

@@ -1435,12 +1435,10 @@ gfc_trans_character_select (gfc_code *code)
 
   init = build_constructor_from_list (type, nreverse(init));
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   /* Create a static variable to hold the jump table.  */
   tmp = gfc_create_var (type, "jumptable");
   TREE_CONSTANT (tmp) = 1;
-  TREE_INVARIANT (tmp) = 1;
   TREE_STATIC (tmp) = 1;
   TREE_READONLY (tmp) = 1;
   DECL_INITIAL (tmp) = init;

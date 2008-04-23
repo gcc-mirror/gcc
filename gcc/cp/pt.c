@@ -384,7 +384,6 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 				    TREE_TYPE (parm));
 	    DECL_ARTIFICIAL (decl) = 1;
 	    TREE_CONSTANT (decl) = 1;
-	    TREE_INVARIANT (decl) = 1;
 	    TREE_READONLY (decl) = 1;
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
 	    SET_DECL_TEMPLATE_PARM_P (decl);
@@ -2870,7 +2869,6 @@ build_template_parm_index (int index,
   TEMPLATE_PARM_DECL (t) = decl;
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = TREE_CONSTANT (decl);
-  TREE_INVARIANT (t) = TREE_INVARIANT (decl);
   TREE_READONLY (t) = TREE_READONLY (decl);
 
   return t;
@@ -2923,7 +2921,6 @@ reduce_template_parm_level (tree index, tree type, int levels, tree args,
 
       decl = build_decl (TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
       TREE_CONSTANT (decl) = TREE_CONSTANT (orig_decl);
-      TREE_INVARIANT (decl) = TREE_INVARIANT (orig_decl);
       TREE_READONLY (decl) = TREE_READONLY (orig_decl);
       DECL_ARTIFICIAL (decl) = 1;
       SET_DECL_TEMPLATE_PARM_P (decl);
@@ -3020,11 +3017,9 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 
       /* A template parameter is not modifiable.  */
       TREE_CONSTANT (parm) = 1;
-      TREE_INVARIANT (parm) = 1;
       TREE_READONLY (parm) = 1;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       TREE_CONSTANT (decl) = 1;
-      TREE_INVARIANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       DECL_INITIAL (parm) = DECL_INITIAL (decl)
 	= build_template_parm_index (idx, processing_template_decl,

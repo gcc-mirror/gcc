@@ -1953,7 +1953,6 @@ objc_build_string_object (tree string)
  			    initlist);
       constructor = objc_build_constructor (internal_const_str_type,
 					    nreverse (initlist));
-      TREE_INVARIANT (constructor) = true;
 
       if (!flag_next_runtime)
 	constructor
