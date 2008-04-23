@@ -1,3 +1,7 @@
+2008-04-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/array-init-1.c: Add big-endian number to check.
+
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27799
