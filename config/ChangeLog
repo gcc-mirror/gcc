@@ -1,3 +1,8 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* override.m4: Apply _AC_ARG_VALIDATE fix to all versions
+	but 2.62.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457
