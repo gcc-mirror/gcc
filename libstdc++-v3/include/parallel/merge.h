@@ -248,7 +248,7 @@ namespace __gnu_parallel
       typedef typename std::pair<RandomAccessIterator1, RandomAccessIterator1>
         iterator_pair;
 
-      std::pair<RandomAccessIterator1, RandomAccessIterator1>
+      iterator_pair
 	seqs[2] = { std::make_pair(begin1, end1),
 		    std::make_pair(begin2, end2) };
       RandomAccessIterator3
