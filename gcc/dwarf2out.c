@@ -9583,7 +9583,6 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 
     case NOP_EXPR:
     case CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
     case GIMPLE_MODIFY_STMT:
@@ -11212,7 +11211,6 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 
     case CONVERT_EXPR:
     case NOP_EXPR:
-    case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
       add_bound_info (subrange_die, bound_attr, TREE_OPERAND (bound, 0));
       break;

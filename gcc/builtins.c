@@ -281,7 +281,6 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	{
 	case NOP_EXPR:
 	case CONVERT_EXPR:
-	case NON_LVALUE_EXPR:
 	  exp = TREE_OPERAND (exp, 0);
 	  if (! POINTER_TYPE_P (TREE_TYPE (exp)))
 	    return align;
@@ -1073,8 +1072,7 @@ get_memory_rtx (tree exp, tree len)
   /* Get an expression we can use to find the attributes to assign to MEM.
      If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
      we can.  First remove any nops.  */
-  while ((TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
-	  || TREE_CODE (exp) == NON_LVALUE_EXPR)
+  while ((TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR)
 	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
     exp = TREE_OPERAND (exp, 0);
 
@@ -1106,7 +1104,6 @@ get_memory_rtx (tree exp, tree len)
 	  while (TREE_CODE (inner) == ARRAY_REF
 		 || TREE_CODE (inner) == NOP_EXPR
 		 || TREE_CODE (inner) == CONVERT_EXPR
-		 || TREE_CODE (inner) == NON_LVALUE_EXPR
 		 || TREE_CODE (inner) == VIEW_CONVERT_EXPR
 		 || TREE_CODE (inner) == SAVE_EXPR)
 	    inner = TREE_OPERAND (inner, 0);
@@ -7265,7 +7262,6 @@ integer_valued_real_p (tree t)
 
     case ABS_EXPR:
     case SAVE_EXPR:
-    case NON_LVALUE_EXPR:
       return integer_valued_real_p (TREE_OPERAND (t, 0));
 
     case COMPOUND_EXPR:
@@ -11435,7 +11431,6 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	 parameters.  */
       while (TREE_CODE (arg) == NOP_EXPR
 	     || TREE_CODE (arg) == CONVERT_EXPR
-	     || TREE_CODE (arg) == NON_LVALUE_EXPR
 	     || TREE_CODE (arg) == INDIRECT_REF)
 	arg = TREE_OPERAND (arg, 0);
       if (arg != last_parm)

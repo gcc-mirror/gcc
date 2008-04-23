@@ -1541,7 +1541,6 @@ may_be_nonaddressable_p (tree expr)
       return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     case CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
     case NOP_EXPR:
       return true;
 

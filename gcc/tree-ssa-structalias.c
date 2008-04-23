@@ -2913,7 +2913,6 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	  {
 	  case NOP_EXPR:
 	  case CONVERT_EXPR:
-	  case NON_LVALUE_EXPR:
 	    {
 	      tree op = TREE_OPERAND (t, 0);
 

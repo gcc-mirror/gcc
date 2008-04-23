@@ -429,8 +429,7 @@ simplify_control_stmt_condition (edge e,
 
       cached_lhs = fold (COND_EXPR_COND (dummy_cond));
       while (TREE_CODE (cached_lhs) == NOP_EXPR
-	     || TREE_CODE (cached_lhs) == CONVERT_EXPR
-	     || TREE_CODE (cached_lhs) == NON_LVALUE_EXPR)
+	     || TREE_CODE (cached_lhs) == CONVERT_EXPR)
 	cached_lhs = TREE_OPERAND (cached_lhs, 0);
 
       fold_undefer_overflow_warnings (is_gimple_min_invariant (cached_lhs),

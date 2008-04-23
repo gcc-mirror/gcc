@@ -2292,7 +2292,6 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
   if (code == FIX_TRUNC_EXPR
       || code == FLOAT_EXPR
       || code == BIT_NOT_EXPR
-      || code == NON_LVALUE_EXPR
       || code == CONJ_EXPR)
     {
       set_value_range_to_varying (vr);
@@ -3957,8 +3956,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       retval |= register_edge_assert_for_1 (rhs, code, e, bsi);
     }
   else if (TREE_CODE (rhs) == NOP_EXPR
-	   || TREE_CODE (rhs) == CONVERT_EXPR
-	   || TREE_CODE (rhs) == NON_LVALUE_EXPR)
+	   || TREE_CODE (rhs) == CONVERT_EXPR)
     { 
       /* Recurse through the type conversion.  */
       retval |= register_edge_assert_for_1 (TREE_OPERAND (rhs, 0),
