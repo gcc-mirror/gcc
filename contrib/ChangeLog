@@ -1,3 +1,7 @@
+2008-04-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* patch_tester.sh (report): Do not print the time.
+
 2008-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* texi2pod.pl: Handle @samp and @url inside verbatim blocks.
