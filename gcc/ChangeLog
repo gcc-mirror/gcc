@@ -1,3 +1,8 @@
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36021
+	* c-common.c (handle_alloc_size_attribute): Use type_num_arguments.
+
 2008-04-22  Tomas Bily  <tbily@suse.cz>
 
         * tree-cfg.c (verify_expr): Check for NON_LVALUE_EXPR as unreachable
