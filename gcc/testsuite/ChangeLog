@@ -1,3 +1,9 @@
+2008-04-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/20020919-1.c (loc_size_t): New type.
+	(_dl_stat): Use loc_size_t to cast pointers.
+	* gcc.c-torture/compile/20010327-1.c: Skip for x86_64-*-mingw*.
+
 2008-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35988
