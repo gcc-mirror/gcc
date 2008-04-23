@@ -1,3 +1,8 @@
+2008-04-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/hpux/os_defines.h: Use _GLIBCXX_BEGIN_NAMESPACE,
+	_GLIBCXX_BEGIN_EXTERN_C, etc.
+
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/quicksort.h: Reformat,
@@ -89,11 +94,11 @@
 2008-04-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Guard _LDBL_ macros with __cplusplus.
-	
+
 2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html/*: Regenerate.
-	
+
 2008-04-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/xml/manual/bitmap_allocator.xml: Improve wording a bit.
@@ -125,7 +130,7 @@
 
 	* doc/xml/manual/parallel_mode.xml: Remove map/set bulk
 	insertors. Correct omp_set_num_threads example.
-	
+
 2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_global/cstdatomic: C++ types only, format, doxygen markup.
@@ -135,7 +140,7 @@
 	* include/Makefile.am (cstdatomic, stdatomic.h): Add.
 	* src/Makefile.am (atomic.c): Add.
 	* acinclude.m4 (GLIBCXX_CHECK_STANDARD_LAYOUT): New.
-	* configure.ac: Call it.	
+	* configure.ac: Call it.
 	* include/Makefile.in: Regenerate.
 	* src/Makefile.in: Same.
 	* Makefile.in: Same.
@@ -147,21 +152,21 @@
 	* libsupc++/Makefile.in: Same.
 	* config.h.in: Same.
 	* configure: Same.
-	
+
 	* config/abi/pre/gnu.ver: Add atomics exports.
 
 	* include/ext/typelist.h (apply_generator): New.
 	* include/bits/c++config (_GLIBCXX_BEGIN_EXTERN_C): New.
 	(_GLIBCXX_END_EXTERN_C): New.
 	Deal with _GLIBCXX_BEGIN_NAMESPACE, _GLIBCXX_END_NAMESPACE when
-	compiling as C.	
+	compiling as C.
 	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): Add -L
 	flag for libstdc++.
 	* testsuite/util/testsuite_common_types.h (integral_types): New
 	typelist.
 	(atomics, atomics_tl): Same.
 	(assignable, default_constructible, copy_constructible,
-	explicit_value_constructible): New.	
+	explicit_value_constructible): New.
 	* testsuite/17_intro/headers/c++200x/all.cc: Test new headers.
 	* testsuite/29_atomics: New.
 	* testsuite/29_atomics/atomic_address: Same.
@@ -178,7 +183,7 @@
 	* testsuite/29_atomics/atomic_flag/cons/default.cc: Same.
 	* testsuite/29_atomics/atomic_flag/cons/aggregate.cc: Same.
 	* testsuite/29_atomics/atomic_flag/requirements: Same.
-	* testsuite/29_atomics/atomic_flag/requirements/standard_layout.cc: 
+	* testsuite/29_atomics/atomic_flag/requirements/standard_layout.cc:
 	Same.
 	* testsuite/29_atomics/atomic_flag/
 	atomic_global_fence_compatibility.cc: Same.
@@ -207,7 +212,7 @@
 	* testsuite/29_atomics/atomic/requirements/explicit_instantiation: Same.
 	* testsuite/29_atomics/atomic/requirements/explicit_instantiation/
 	1.cc: Same.
-	
+
 2008-04-10  Lawrence Crowl  <crowl@google.com>
 
 	* include/c_global/cstdatomic: New.
@@ -217,13 +222,13 @@
 2008-04-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/tuple: Consistency check for include guard, doxygen
-	file markup.	
+	file markup.
 	* include/std/date_time: Same.
 	* include/std/type_traits: Same.
 	* include/std/regex: Same.
 	* include/std/array: Same.
-	* include/std/system_error: Same, add error_code ctor.	
-
+	* include/std/system_error: Same, add error_code ctor.
+	
 2008-04-07  Johannes Singler  <singler@ira.uka.de>
 
 	* include/parallel/multiway_merge.h: Moved decisions to
@@ -345,7 +350,7 @@
 	* config/abi/compatibility.h: Adjust file name.
 
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
-	line numbers.	
+	line numbers.
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
 
@@ -363,7 +368,7 @@
 	* testsuite/util/testsuite_abi.cc: Add support for not counting
 	GLIBCXX_LDBL_* compat symbols missing if no long double compat
 	symbols under test.
-	
+
 2008-03-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35637
