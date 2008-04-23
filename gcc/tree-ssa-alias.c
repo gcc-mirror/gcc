@@ -2390,9 +2390,7 @@ have_common_aliases_p (bitmap tag1aliases, bitmap tag2aliases)
   /* This is the old behavior of have_common_aliases_p, which is to
      return false if both sets are empty, or one set is and the other
      isn't.  */
-     if ((tag1aliases == NULL && tag2aliases != NULL)
-      || (tag2aliases == NULL && tag1aliases != NULL)
-      || (tag1aliases == NULL && tag2aliases == NULL))
+  if (tag1aliases == NULL || tag2aliases == NULL)
     return false;
 
   return bitmap_intersect_p (tag1aliases, tag2aliases);
@@ -2490,11 +2488,15 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       if (PTR_IS_REF_ALL (p_map1->var))
 	continue;
 
-      for (j = i + 1; j < ai->num_pointers; j++)
+      for (j = 0; j < ai->num_pointers; j++)
 	{
 	  struct alias_map_d *p_map2 = ai->pointers[j];
 	  tree tag2 = symbol_mem_tag (p_map2->var);
 	  bitmap may_aliases2 = may_aliases (tag2);
+
+	  /* By convention tags don't alias themselves.  */
+	  if (tag1 == tag2)
+	    continue;
 
 	  if (PTR_IS_REF_ALL (p_map2->var))
 	    continue;
@@ -2508,18 +2510,8 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	  if (have_common_aliases_p (may_aliases1, may_aliases2))
 	    continue;
 
-	  if (may_aliases2 && !bitmap_empty_p (may_aliases2))
-	    {
-	      union_alias_set_into (tag1, may_aliases2);
-	    }
-	  else
-	    {
-	      /* Since TAG2 does not have any aliases of its own, add
-		 TAG2 itself to the alias set of TAG1.  */
-	      add_may_alias (tag1, tag2);
-	    }
+	  add_may_alias (tag1, tag2);
 	}
-
     }
   timevar_pop (TV_FLOW_INSENSITIVE);
 }
