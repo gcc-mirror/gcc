@@ -17,14 +17,13 @@ dnl Redefine AC_CONFIG_SUBDIRS so aclocal pulls in this file
 dnl when needed.
 
 ifdef([m4_PACKAGE_VERSION],
-[ifelse(m4_PACKAGE_VERSION, [2.59], [
-
-dnl AC_DEFUN a commonly used macro so this file is picked up.
+[dnl AC_DEFUN a commonly used macro so this file is picked up.
 m4_copy([AC_PREREQ], [_AC_PREREQ])
 AC_DEFUN([AC_PREREQ], [frob])
 m4_copy([_AC_PREREQ], [AC_PREREQ])
 
-dnl Override the broken macro.
+ifelse(m4_PACKAGE_VERSION, [2.59], [
+
 # _AC_OUTPUT_SUBDIRS
 # ------------------
 # This is a subroutine of AC_OUTPUT, but it does not go into
@@ -127,6 +126,9 @@ if test "$no_recursion" != yes; then
   done
 fi
 ])# _AC_OUTPUT_SUBDIRS
+])
+
+ifelse(m4_PACKAGE_VERSION, [2.62],, [
 
 # _AC_ARG_VAR_VALIDATE
 # --------------------
