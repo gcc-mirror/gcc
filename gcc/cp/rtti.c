@@ -902,7 +902,6 @@ tinfo_base_init (tinfo_s *ti, tree target)
 
   init = build_constructor_from_list (NULL_TREE, nreverse (init));
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   init = tree_cons (NULL_TREE, init, NULL_TREE);
 
@@ -920,7 +919,6 @@ generic_initializer (tinfo_s *ti, tree target)
 
   init = build_constructor_from_list (NULL_TREE, init);
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
 }
@@ -946,7 +944,6 @@ ptr_initializer (tinfo_s *ti, tree target)
 
   init = build_constructor_from_list (NULL_TREE, nreverse (init));
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
 }
@@ -979,7 +976,6 @@ ptm_initializer (tinfo_s *ti, tree target)
 
   init = build_constructor_from_list (NULL_TREE, nreverse (init));
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
 }
@@ -996,7 +992,6 @@ class_initializer (tinfo_s *ti, tree target, tree trail)
   TREE_CHAIN (init) = trail;
   init = build_constructor_from_list (NULL_TREE, init);
   TREE_CONSTANT (init) = 1;
-  TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
 }

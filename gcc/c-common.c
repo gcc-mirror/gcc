@@ -944,7 +944,6 @@ fix_string_type (tree value)
 
   TREE_TYPE (value) = a_type;
   TREE_CONSTANT (value) = 1;
-  TREE_INVARIANT (value) = 1;
   TREE_READONLY (value) = 1;
   TREE_STATIC (value) = 1;
   return value;

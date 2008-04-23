@@ -1081,7 +1081,6 @@ process_init_constructor (tree type, tree init)
   if (!(flags & PICFLAG_NOT_ALL_CONSTANT))
     {
       TREE_CONSTANT (init) = 1;
-      TREE_INVARIANT (init) = 1;
       if (!(flags & PICFLAG_NOT_ALL_SIMPLE))
 	TREE_STATIC (init) = 1;
     }

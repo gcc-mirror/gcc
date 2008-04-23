@@ -955,7 +955,6 @@ build_utf8_ref (tree name)
   PUSH_FIELD_VALUE (cinit, "data", string);
   FINISH_RECORD_CONSTRUCTOR (cinit);
   TREE_CONSTANT (cinit) = 1;
-  TREE_INVARIANT (cinit) = 1;
 
   /* Generate a unique-enough identifier.  */
   sprintf(buf, "_Utf%d", ++utf8_count);
@@ -1063,7 +1062,6 @@ build_classdollar_field (tree type)
 					     /* const */ 1, 0)),
 			/* const */ 1, 0)));
       TREE_STATIC (decl) = 1;
-      TREE_INVARIANT (decl) = 1;
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       TREE_PUBLIC (decl) = 1;
@@ -1604,7 +1602,6 @@ get_dispatch_table (tree type, tree this_class_addr)
 		tree fdesc = build2 (FDESC_EXPR, nativecode_ptr_type_node, 
 				     method, build_int_cst (NULL_TREE, j));
 		TREE_CONSTANT (fdesc) = 1;
-		TREE_INVARIANT (fdesc) = 1;
 	        list = tree_cons (NULL_TREE, fdesc, list);
 	      }
 	  else
@@ -2076,7 +2073,6 @@ make_class_data (tree type)
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				TYPE_OTABLE_SYMS_DECL (type)));
       TREE_CONSTANT (TYPE_OTABLE_DECL (type)) = 1;
-      TREE_INVARIANT (TYPE_OTABLE_DECL (type)) = 1;
     }
   if (TYPE_ATABLE_METHODS(type) == NULL_TREE)
     {
@@ -2092,7 +2088,6 @@ make_class_data (tree type)
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				TYPE_ATABLE_SYMS_DECL (type)));
       TREE_CONSTANT (TYPE_ATABLE_DECL (type)) = 1;
-      TREE_INVARIANT (TYPE_ATABLE_DECL (type)) = 1;
     }
    if (TYPE_ITABLE_METHODS(type) == NULL_TREE)
     {
@@ -2108,7 +2103,6 @@ make_class_data (tree type)
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				TYPE_ITABLE_SYMS_DECL (type)));
       TREE_CONSTANT (TYPE_ITABLE_DECL (type)) = 1;
-      TREE_INVARIANT (TYPE_ITABLE_DECL (type)) = 1;
     }
  
   PUSH_FIELD_VALUE (cons, "catch_classes",
@@ -2848,7 +2842,6 @@ build_symbol_entry (tree decl, tree special)
   PUSH_FIELD_VALUE (sym, "signature", signature);
   FINISH_RECORD_CONSTRUCTOR (sym);
   TREE_CONSTANT (sym) = 1;
-  TREE_INVARIANT (sym) = 1;
 
   return sym;
 } 
@@ -2889,7 +2882,6 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
   PUSH_FIELD_VALUE (null_symbol, "signature", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (null_symbol);
   TREE_CONSTANT (null_symbol) = 1;  
-  TREE_INVARIANT (null_symbol) = 1;  
   list = tree_cons (NULL_TREE, null_symbol, list);
 
   /* Put the list in the right order and make it a constructor. */

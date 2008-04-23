@@ -1,3 +1,16 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* class.c (build_utf8_ref): Don't set TREE_INVARIANT.
+	(build_classdollar_field): Don't set TREE_INVARIANT.
+	(get_dispatch_table): Don't set TREE_INVARIANT.
+	(make_class_data): Don't set TREE_INVARIANT.
+	(build_symbol_entry): Don't set TREE_INVARIANT.
+	(emit_symbol_table): Don't set TREE_INVARIANT.
+	* constants.c (build_constant_data_ref): Don't set TREE_INVARIANT.
+	(build_ref_from_constant_pool): Don't set TREE_INVARIANT.
+	* resource.c (compile_resource_data): Don't set TREE_INVARIANT.
+	* expr.c (cache_cpool_data_ref): Don't set TREE_INVARIANT.
+
 2008-04-03  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (java_OBJS): New variable.

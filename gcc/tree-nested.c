@@ -1037,8 +1037,8 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	  {
 	    tree save_context;
 
-	    /* If we changed anything, then TREE_INVARIANT is be wrong,
-	       since we're no longer directly referencing a decl.  */
+	    /* If we changed anything, we might no longer be directly
+	       referencing a decl.  */
 	    save_context = current_function_decl;
 	    current_function_decl = info->context;
 	    recompute_tree_invariant_for_addr_expr (t);

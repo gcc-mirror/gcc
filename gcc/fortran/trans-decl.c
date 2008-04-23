@@ -3183,13 +3183,11 @@ gfc_generate_function_code (gfc_namespace * ns)
 								      6)));
       array = build_constructor_from_list (array_type, nreverse (array));
       TREE_CONSTANT (array) = 1;
-      TREE_INVARIANT (array) = 1;
       TREE_STATIC (array) = 1;
 
       /* Create a static variable to hold the jump table.  */
       var = gfc_create_var (array_type, "options");
       TREE_CONSTANT (var) = 1;
-      TREE_INVARIANT (var) = 1;
       TREE_STATIC (var) = 1;
       TREE_READONLY (var) = 1;
       DECL_INITIAL (var) = array;

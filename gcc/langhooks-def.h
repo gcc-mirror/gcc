@@ -64,7 +64,7 @@ extern const char *lhd_comdat_group (tree);
 extern tree lhd_expr_size (const_tree);
 extern size_t lhd_tree_size (enum tree_code);
 extern HOST_WIDE_INT lhd_to_target_charset (HOST_WIDE_INT);
-extern tree lhd_expr_to_decl (tree, bool *, bool *, bool *);
+extern tree lhd_expr_to_decl (tree, bool *, bool *);
 extern tree lhd_builtin_function (tree decl);
 
 /* Declarations of default tree inlining hooks.  */

@@ -194,6 +194,45 @@ is_gimple_constant (const_tree t)
     }
 }
 
+/* Return true if T is a gimple address.  */
+
+bool
+is_gimple_address (const_tree t)
+{
+  tree op;
+
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+
+  op = TREE_OPERAND (t, 0);
+  while (handled_component_p (op))
+    {
+      if ((TREE_CODE (op) == ARRAY_REF
+	   || TREE_CODE (op) == ARRAY_RANGE_REF)
+	  && !is_gimple_val (TREE_OPERAND (op, 1)))
+	    return false;
+
+      op = TREE_OPERAND (op, 0);
+    }
+
+  if (CONSTANT_CLASS_P (op) || INDIRECT_REF_P (op))
+    return true;
+
+  switch (TREE_CODE (op))
+    {
+    case PARM_DECL:
+    case RESULT_DECL:
+    case LABEL_DECL:
+    case FUNCTION_DECL:
+    case VAR_DECL:
+    case CONST_DECL:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Return true if T is a gimple invariant address.  */
 
 bool
@@ -227,40 +266,7 @@ is_gimple_invariant_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op))
-    return true;
-
-  if (INDIRECT_REF_P (op))
-    return false;
-
-  switch (TREE_CODE (op))
-    {
-    case PARM_DECL:
-    case RESULT_DECL:
-    case LABEL_DECL:
-    case FUNCTION_DECL:
-      return true;
-
-    case VAR_DECL:
-      if (((TREE_STATIC (op) || DECL_EXTERNAL (op))
-	   && ! DECL_DLLIMPORT_P (op))
-	  || DECL_THREAD_LOCAL_P (op)
-	  || DECL_CONTEXT (op) == current_function_decl
-	  || decl_function_context (op) == current_function_decl)
-	return true;
-      break;
-
-    case CONST_DECL:
-      if ((TREE_STATIC (op) || DECL_EXTERNAL (op))
-	  || decl_function_context (op) == current_function_decl)
-	return true;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return false;
+  return CONSTANT_CLASS_P (op) || decl_address_invariant_p (op);
 }
 
 /* Return true if T is a GIMPLE minimal invariant.  It's a restricted

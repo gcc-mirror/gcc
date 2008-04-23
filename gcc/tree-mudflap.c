@@ -83,7 +83,6 @@ mf_build_string (const char *string)
   TREE_TYPE (result) = build_array_type
     (char_type_node, build_index_type (build_int_cst (NULL_TREE, len)));
   TREE_CONSTANT (result) = 1;
-  TREE_INVARIANT (result) = 1;
   TREE_READONLY (result) = 1;
   TREE_STATIC (result) = 1;
 

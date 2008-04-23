@@ -1,3 +1,51 @@
+2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-cfg.c (verify_expr): Check with is_gimple_address.  Don't
+	check TREE_INVARIANT.
+	* tree-gimple.c (is_gimple_address): New.
+	(is_gimple_invariant_address): Simplify using decl_address_invariant_p.
+	* tree-gimple.h (is_gimple_address): New.
+	* tree.h (decl_address_invariant_p): New.
+	* tree.c (make_node_stat): Don't set TREE_INVARIANT.
+	(build_string): Likewise.
+	(decl_address_invariant_p): New, from is_gimple_invariant_address.
+	(tree_invariant_p_1): Likewise.
+	(save_expr): Use it.
+	(tree_invariant_p): New.
+	(skip_simple_arithmetic): Use it.
+	(stabilize_reference_1): Use it.
+	(recompute_tree_invariant_for_addr_expr): Don't update TREE_INVARIANT,
+	simplify.
+	(build1_stat): Drop code to compute TREE_INVARIANT.
+	(build2_stat): Drop code to compute TREE_INVARIANT.
+	(build3_stat): Drop code to compute TREE_INVARIANT.
+	(build4_stat): Drop code to compute TREE_INVARIANT.
+	(build5_stat): Drop code to compute TREE_INVARIANT.
+	(build7_stat): Drop code to compute TREE_INVARIANT.
+	(merge_dllimport_decl_attributes): Don't mention TREE_INVARIANT.
+	* tree.h (struct tree_base): Remove invariant_flag.
+	(TREE_INVARIANT): Remove.
+	* builtins.c (build_string_literal): Don't set TREE_INVARIANT.
+	(fold_builtin_expect): Check TREE_CONSTANT.
+	* tree-ssa-ccp.c (fold_stmt_r): Adjust comment.
+	* c-tree.h (c_expr_to_decl): Drop third parameter.
+	* c-typeck.c (build_external_ref): Don't set TREE_INVARIANT.
+	(build_c_cast): Don't set TREE_INVARIANT.
+	(pop_init_level): Don't set TREE_INVARIANT.
+	(c_objc_common_truthvalue_conversion): Don't set TREE_INVARIANT.
+	* gimplify.c (gimplify_init_ctor_preeval): Add assertion, test
+	TREE_CONSTANT.
+	(gimplify_init_constructor): Don't set TREE_INVARIANT.
+	(gimplify_addr_expr): Adjust comment.
+	* tree-mudflap.c (mf_build_string):
+	* print-tree.c (print_node): Don't print TREE_INVARIANT.
+	* tree-nested.c (convert_nonlocal_reference): Adjust comment.
+	* c-common.c (fix_string_type): Don't set TREE_INVARIANT.
+	* langhooks-def.h (lhd_expr_to_decl): Drop third parameter.
+	* langhooks.c (lhd_expr_to_decl): Drop third parameter.
+	* langhooks.h (struct lang_hooks): Drop third parameter from
+	expr_to_decl.
+
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27799

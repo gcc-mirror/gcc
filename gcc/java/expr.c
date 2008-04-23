@@ -3809,7 +3809,6 @@ cache_cpool_data_ref (void)
       tree cpool_ptr = build_decl (VAR_DECL, NULL_TREE, 
 				   build_pointer_type (TREE_TYPE (d)));
       java_add_local_var (cpool_ptr);
-      TREE_INVARIANT (cpool_ptr) = 1;
       TREE_CONSTANT (cpool_ptr) = 1;
 
       java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (cpool_ptr), 

@@ -1671,8 +1671,7 @@ gnat_build_constructor (tree type, tree list)
     }
 
   result = build_constructor_from_list (type, list);
-  TREE_CONSTANT (result) = TREE_INVARIANT (result)
-    = TREE_STATIC (result) = allconstant;
+  TREE_CONSTANT (result) = TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
   TREE_READONLY (result) = TYPE_READONLY (type) || allconstant;
   return result;

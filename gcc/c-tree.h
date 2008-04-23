@@ -593,7 +593,7 @@ extern tree c_finish_goto_label (tree);
 extern tree c_finish_goto_ptr (tree);
 extern void c_begin_vm_scope (unsigned int);
 extern void c_end_vm_scope (unsigned int);
-extern tree c_expr_to_decl (tree, bool *, bool *, bool *);
+extern tree c_expr_to_decl (tree, bool *, bool *);
 extern tree c_begin_omp_parallel (void);
 extern tree c_finish_omp_parallel (tree, tree);
 extern tree c_finish_omp_clauses (tree);

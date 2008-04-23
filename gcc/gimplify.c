@@ -2868,12 +2868,14 @@ gimplify_init_ctor_preeval (tree *expr_p, tree *pre_p, tree *post_p,
 {
   enum gimplify_status one;
 
-  /* If the value is invariant, then there's nothing to pre-evaluate.
-     But ensure it doesn't have any side-effects since a SAVE_EXPR is
-     invariant but has side effects and might contain a reference to
-     the object we're initializing.  */
-  if (TREE_INVARIANT (*expr_p) && !TREE_SIDE_EFFECTS (*expr_p))
-    return;
+  /* If the value is constant, then there's nothing to pre-evaluate.  */
+  if (TREE_CONSTANT (*expr_p))
+    {
+      /* Ensure it does not have side effects, it might contain a reference to
+	 the object we're initializing.  */
+      gcc_assert (!TREE_SIDE_EFFECTS (*expr_p));
+      return;
+    }
 
   /* If the type has non-trivial constructors, we can't pre-evaluate.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (*expr_p)))
@@ -3416,7 +3418,6 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	      break;
 
 	    TREE_CONSTANT (ctor) = 0;
-	    TREE_INVARIANT (ctor) = 0;
 	  }
 
 	/* Vector types use CONSTRUCTOR all the way through gimple
@@ -4254,8 +4255,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	  if (TREE_CODE (op0) == INDIRECT_REF)
 	    goto do_indirect_ref;
 
-	  /* Make sure TREE_INVARIANT, TREE_CONSTANT, and TREE_SIDE_EFFECTS
-	     is set properly.  */
+	  /* Make sure TREE_CONSTANT and TREE_SIDE_EFFECTS are set properly.  */
 	  recompute_tree_invariant_for_addr_expr (expr);
 
 	  mark_addressable (TREE_OPERAND (expr, 0));

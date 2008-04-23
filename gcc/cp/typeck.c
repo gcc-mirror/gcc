@@ -2766,7 +2766,6 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 			fold_convert (sizetype, idx));
       e2 = cp_build_indirect_ref (e2, NULL, tf_warning_or_error);
       TREE_CONSTANT (e2) = 1;
-      TREE_INVARIANT (e2) = 1;
 
       /* When using function descriptors, the address of the
 	 vtable entry is treated as a function pointer.  */
@@ -6396,7 +6395,6 @@ build_ptrmemfunc1 (tree type, tree delta, tree pfn)
   CONSTRUCTOR_APPEND_ELT(v, delta_field, delta);
   u = build_constructor (type, v);
   TREE_CONSTANT (u) = TREE_CONSTANT (pfn) & TREE_CONSTANT (delta);
-  TREE_INVARIANT (u) = TREE_INVARIANT (pfn) & TREE_INVARIANT (delta);
   TREE_STATIC (u) = (TREE_CONSTANT (u)
 		     && (initializer_constant_valid_p (pfn, TREE_TYPE (pfn))
 			 != NULL_TREE)
