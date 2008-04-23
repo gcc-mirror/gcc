@@ -1,3 +1,20 @@
+2008-04-23  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/multiway_merge.h
+        (multiway_merge_loser_tree):
+        Leave checks to callers, add precondition instead.
+        (multiway_merge_loser_tree_unguarded): Likewise.
+        (multiway_merge_loser_tree_sentinel): Likewise.
+        (sequential_multiway_merge): Added checks for total length 0.
+        (parallel_multiway_merge): Skip empty sequences.
+        (multiway_merge, all variants):
+        Remove temporary variable, return directly.
+        (stable_multiway_merge, all variants): Likewise.
+        (multiway_merge_sentinels, all variants):  Likewise.
+        (stable_multiway_merge_sentinels, all variants): Likewise.
+        * include/parallel/multiseq_selection.h
+        (multiseq_partition): More detailed assertions.
+
 2008-04-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/35816
