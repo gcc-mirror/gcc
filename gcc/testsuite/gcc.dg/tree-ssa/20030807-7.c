@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom3" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
   
 extern void abort (void);
 
@@ -32,7 +32,6 @@ simplify_condition (cond_p)
   c_simplify_stmt (&decl);
 }
 
-/* There should be exactly one IF conditional.  TBAA is not able to 
-   determine that 'decl' and 'cond' can't alias.  */
-/* { dg-final { scan-tree-dump-times "if " 1 "dom3" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "dom3" } } */
+/* There should be exactly one IF conditional.  */
+/* { dg-final { scan-tree-dump-times "if " 1 "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */

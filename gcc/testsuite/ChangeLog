@@ -1,5 +1,13 @@
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/27799
+	PR tree-optimization/32921
+	PR tree-optimization/32624
+	* gcc.dg/tree-ssa/pr27799.c: New testcase.
+	* gcc.dg/tree-ssa/20030807-7.c: Remove xfail, scan vrp dump.
+
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36021
 	* gcc.dg/attr-alloc_size-2.c: New testcase.
 
