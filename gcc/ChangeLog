@@ -1,5 +1,13 @@
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
+	* alias.c (alias_set_subset_of): Correctly handle asking
+	if zero is a subset of an alias set with zero child.
+	* tree-ssa-alias.c (have_common_aliases_p): Simplify logic.
+	(compute_flow_insensitive_aliasing): Correctly walk all
+	pointers.  Do not unnecessarily union sets.
+
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36021
 	* c-common.c (handle_alloc_size_attribute): Use type_num_arguments.
 
