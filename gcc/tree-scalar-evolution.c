@@ -2117,7 +2117,6 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case NOP_EXPR:
     case CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)

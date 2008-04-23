@@ -3254,6 +3254,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       break;
 
+    case NON_LVALUE_EXPR:
+	gcc_unreachable ();
+
     case NOP_EXPR:
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
@@ -3261,7 +3264,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
-    case NON_LVALUE_EXPR:
     case TRUTH_NOT_EXPR:
       CHECK_OP (0, "invalid operand to unary operator");
       break;
