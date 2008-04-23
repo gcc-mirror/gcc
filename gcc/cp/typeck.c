@@ -1472,7 +1472,7 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 	tree field;
 	
 	field = TREE_OPERAND (exp, 1);
-	if (TREE_CODE (field) != FIELD_DECL || !DECL_C_BIT_FIELD (field))
+	if (TREE_CODE (field) != FIELD_DECL || !DECL_BIT_FIELD_TYPE (field))
 	  return NULL_TREE;
 	if (same_type_ignoring_top_level_qualifiers_p
 	    (TREE_TYPE (exp), DECL_BIT_FIELD_TYPE (field)))

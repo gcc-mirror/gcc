@@ -1,3 +1,10 @@
+2008-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35316
+	* semantics.c (finish_decltype_type): Check DECL_BIT_FIELD_TYPE
+	to see if DECL_BIT_FIELD_TYPE should be used, not some other flag.
+	* typeck.c (is_bitfield_expr_with_lowered_type): Likewise.
+
 2008-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35747

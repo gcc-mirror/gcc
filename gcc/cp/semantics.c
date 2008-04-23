@@ -4161,7 +4161,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
       switch (TREE_CODE (expr))
         {
         case FIELD_DECL:
-          if (DECL_C_BIT_FIELD (expr))
+          if (DECL_BIT_FIELD_TYPE (expr))
             {
               type = DECL_BIT_FIELD_TYPE (expr);
               break;
