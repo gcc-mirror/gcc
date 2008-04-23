@@ -1,3 +1,8 @@
+2008-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35988
+	* gfortran.dg/matmul_7.f90:  New test.
+
 2008-04-22  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/struct/wo_prof_global_var.c: Initialize array.
