@@ -1,3 +1,8 @@
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36021
+	* gcc.dg/attr-alloc_size-2.c: New testcase.
+
 2008-04-23  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35982

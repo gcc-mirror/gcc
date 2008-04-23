@@ -1,3 +1,8 @@
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36021
+	* c-common.c (handle_alloc_size_attribute): Use type_num_arguments.
+
 2008-04-23  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35982

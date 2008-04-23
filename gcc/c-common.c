@@ -5838,12 +5838,7 @@ static tree
 handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 			     int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  tree params = TYPE_ARG_TYPES (*node);
-  unsigned arg_count = 0;
-
-  for (; TREE_CHAIN (params); params = TREE_CHAIN (params))
-    arg_count ++;
-
+  unsigned arg_count = type_num_arguments (*node);
   for (; args; args = TREE_CHAIN (args))
     {
       tree position = TREE_VALUE (args);
