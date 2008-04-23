@@ -237,12 +237,18 @@ bazllb (long long llp)
 
 /* Real-world example of bug.  */
 
+#ifdef _WIN64
+typedef unsigned int loc_size_t __attribute__ ((mode (DI)));
+#else
+typedef __SIZE_TYPE__ loc_size_t;
+#endif
+
 struct stat;
 int
 _dl_stat (const char *file_name, struct stat *buf)
 {
-  register long a asm (REG1) = (long) file_name;
-  register long b asm (REG2) = (long) buf;
+  register long a asm (REG1) = (long) (loc_size_t) file_name;
+  register long b asm (REG2) = (long) (loc_size_t) buf;
 
   asm volatile ("movu.w %1,$r9\n\tbreak 13" : "=r" (a) : "g" (106), "0" (a), "r" (b) : REG1, REG5); /* { dg-error "conflict" } */
   if (a >= 0)
