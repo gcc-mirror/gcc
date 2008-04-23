@@ -4861,8 +4861,6 @@ set_used_smts (void)
 static void
 merge_smts_into (tree p, bitmap solution)
 {
-  unsigned int i;
-  bitmap_iterator bi;
   tree smt;
   bitmap aliases;
   tree var = p;
@@ -4873,20 +4871,8 @@ merge_smts_into (tree p, bitmap solution)
   smt = var_ann (var)->symbol_mem_tag;
   if (smt)
     {
-      alias_set_type smtset = get_alias_set (TREE_TYPE (smt));
-
-      /* Need to set the SMT subsets first before this
-	 will work properly.  */
+      /* The smt itself isn't included in its aliases.  */
       bitmap_set_bit (solution, DECL_UID (smt));
-      EXECUTE_IF_SET_IN_BITMAP (used_smts, 0, i, bi)
-	{
-	  tree newsmt = referenced_var (i);
-	  tree newsmttype = TREE_TYPE (newsmt);
-
-	  if (alias_set_subset_of (get_alias_set (newsmttype),
-				   smtset))
-	    bitmap_set_bit (solution, i);
-	}
 
       aliases = MTAG_ALIASES (smt);
       if (aliases)

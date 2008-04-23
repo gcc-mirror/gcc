@@ -1,5 +1,18 @@
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/27799
+	PR tree-optimization/32921
+	PR tree-optimization/32624
+	* tree-ssa-structalias.c (merge_smts_into): Only merge the
+	SMTs aliases and the tag itself into the solution.
+	* tree-ssa-alias.c (compute_flow_sensitive_aliasing): Do not
+	merge the points-to solution back into the SMT aliases.
+	(may_alias_p): Use alias_set_subset_of instead of
+	aliases_conflict_p.  A pointer which points to
+	memory with alias set zero may access any variable.
+
+2008-04-23  Richard Guenther  <rguenther@suse.de>
+
 	* alias.c (alias_set_subset_of): Correctly handle asking
 	if zero is a subset of an alias set with zero child.
 	* tree-ssa-alias.c (have_common_aliases_p): Simplify logic.
