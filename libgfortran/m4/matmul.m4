@@ -172,7 +172,10 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
     }
 
   if (count != b->dim[0].ubound + 1 - b->dim[0].lbound)
-    runtime_error ("dimension of array B incorrect in MATMUL intrinsic");
+    {
+      if (count > 0 || b->dim[0].ubound + 1 - b->dim[0].lbound > 0)
+	runtime_error ("dimension of array B incorrect in MATMUL intrinsic");
+    }
 
   if (GFC_DESCRIPTOR_RANK (b) == 1)
     {
