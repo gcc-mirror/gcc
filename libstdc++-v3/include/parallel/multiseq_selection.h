@@ -124,22 +124,22 @@ namespace __gnu_parallel
    *  @param comp The ordering functor, defaults to std::less<T>. 
    */
   template<typename RanSeqs, typename RankType, typename RankIterator,
-	   typename Comparator>
+            typename Comparator>
     void
     multiseq_partition(RanSeqs begin_seqs, RanSeqs end_seqs,
-		       RankType rank,
-		       RankIterator begin_offsets,
-		       Comparator comp = std::less<
-		       typename std::iterator_traits<typename
-		       std::iterator_traits<RanSeqs>::value_type::
-		       first_type>::value_type>()) // std::less<T>
+                       RankType rank,
+                       RankIterator begin_offsets,
+                       Comparator comp = std::less<
+                       typename std::iterator_traits<typename
+                       std::iterator_traits<RanSeqs>::value_type::
+                       first_type>::value_type>()) // std::less<T>
     {
       _GLIBCXX_CALL(end_seqs - begin_seqs)
 
       typedef typename std::iterator_traits<RanSeqs>::value_type::first_type
-	It;
+        It;
       typedef typename std::iterator_traits<It>::difference_type
-	difference_type;
+	       difference_type;
       typedef typename std::iterator_traits<It>::value_type value_type;
 
       lexicographic<value_type, int, Comparator> lcomp(comp);
@@ -148,19 +148,27 @@ namespace __gnu_parallel
       // Number of sequences, number of elements in total (possibly
       // including padding).
       difference_type m = std::distance(begin_seqs, end_seqs), N = 0,
-	nmax, n, r;
+                      nmax, n, r;
 
       for (int i = 0; i < m; i++)
-	N += std::distance(begin_seqs[i].first, begin_seqs[i].second);
+        {
+          N += std::distance(begin_seqs[i].first, begin_seqs[i].second);
+          _GLIBCXX_PARALLEL_ASSERT(
+            std::distance(begin_seqs[i].first, begin_seqs[i].second) > 0);
+        }
 
       if (rank == N)
-	{
-	  for (int i = 0; i < m; i++)
-	    begin_offsets[i] = begin_seqs[i].second; // Very end.
-	  // Return m - 1;
-	}
+        {
+          for (int i = 0; i < m; i++)
+            begin_offsets[i] = begin_seqs[i].second; // Very end.
+          // Return m - 1;
+          return;
+        }
 
-      _GLIBCXX_PARALLEL_ASSERT(m != 0 && N != 0 && rank >= 0 && rank < N);
+      _GLIBCXX_PARALLEL_ASSERT(m != 0);
+      _GLIBCXX_PARALLEL_ASSERT(N != 0);
+      _GLIBCXX_PARALLEL_ASSERT(rank >= 0);
+      _GLIBCXX_PARALLEL_ASSERT(rank < N);
 
       difference_type* ns = new difference_type[m];
       difference_type* a = new difference_type[m];
