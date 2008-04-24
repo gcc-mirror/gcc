@@ -1,3 +1,8 @@
+2008-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36008
+	* gcc.c-torture/execute/20080424-1.c: New test.
+
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
 	Richard Guenther  <rguenther@suse.de>
 
