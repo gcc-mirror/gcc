@@ -190,7 +190,7 @@ Target RejectNegative Joined
 -mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead
 
 misel
-Target Var(rs6000_isel)
+Target
 Generate isel instructions
 
 misel=
@@ -198,7 +198,7 @@ Target RejectNegative Joined
 -misel=yes/no	Deprecated option.  Use -misel/-mno-isel instead
 
 mspe
-Target Var(rs6000_spe)
+Target
 Generate SPE SIMD instructions on E500
 
 mpaired
