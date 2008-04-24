@@ -3501,7 +3501,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     {
       /* If there are variable arguments, then we won't pass anything
          in registers in 32-bit mode. */
-      if (cum->maybe_vaarg)
+      if (stdarg_p (fntype))
 	{
 	  cum->nregs = 0;
 	  cum->sse_nregs = 0;

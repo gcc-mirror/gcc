@@ -1,3 +1,9 @@
+2008-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36015
+	* config/i386/i386.c (init_cumulative_args): Don't pass anything
+	in registers for -m32 only if stdarg_p (fntype).
+
 2008-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36021
