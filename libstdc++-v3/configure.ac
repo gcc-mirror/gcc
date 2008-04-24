@@ -107,30 +107,20 @@ GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
 GLIBCXX_ENABLE_DEBUG_FLAGS(["-g3 -O0"])
 GLIBCXX_ENABLE_DEBUG([no])
-GLIBCXX_ENABLE_PARALLEL
+GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 
 # Checks for operating systems support that don't require linking.
 GLIBCXX_CHECK_SYSTEM_ERROR
 GLIBCXX_CHECK_STANDARD_LAYOUT
-
-# No surprises, no surprises...
 GLIBCXX_ENABLE_THREADS
-GLIBCXX_ENABLE_ATOMIC_BUILTINS
-if test $atomicity_dir = cpu/generic/atomicity_mutex ; then
-  AC_MSG_WARN([No native atomic operations are provided for this platform.])
-  if test $target_thread_file = single; then
-    AC_MSG_WARN([They cannot be faked when thread support is disabled.])
-    AC_MSG_WARN([Thread-safety of certain classes is not guaranteed.])
-  else
-    AC_MSG_WARN([They will be faked using a mutex.])
-    AC_MSG_WARN([Performance of certain classes will degrade as a result.])
-  fi
-fi
 
+# Checks for compiler support that don't require linking.
+GLIBCXX_ENABLE_ATOMIC_BUILTINS
 GLIBCXX_CHECK_COMPILER_FEATURES
 
+# Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
 
   # We can do more elaborate tests that assume a working linker.

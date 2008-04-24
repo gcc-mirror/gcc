@@ -1746,22 +1746,17 @@ dnl  +  Usage:  GLIBCXX_ENABLE_PARALLEL
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
-  # NB: libstdc++ may be configured before libgomp: can't check for the actual
-  # dependencies (omp.h and libgomp). 
   enable_parallel=no;
-  if test -f $glibcxx_builddir/../libgomp/omp.h; then
-    enable_parallel=yes;
+
+  # Check to see if OpenMP is explicitly disabled.
+  AC_MSG_CHECKING([for libgomp support])
+  GLIBCXX_ENABLE(libgomp,$1,,[enable code depending on libgomp],[permit yes|no])
+  AC_MSG_RESULT([$enable_libgomp])
+  if test x$enable_libgomp = xno; then
+    enable_parallel=no
   else
-    AC_MSG_NOTICE([$glibcxx_builddir/../libgomp/omp.h not found])
+    enable_parallel=yes
   fi
-
-  # Check to see if it's explicitly disabled.
-#  GLIBCXX_ENABLE(libgomp,$1,,[enable code depending on libgomp],
-#	[permit yes|no])
-
-#  if test x$enable_libgomp = xno; then
-#    enable_parallel=no
-#  fi
 
   AC_MSG_CHECKING([for parallel mode support])
   AC_MSG_RESULT([$enable_parallel])
@@ -2224,6 +2219,14 @@ EOF
   # If still generic, set to mutex.
   if test $atomicity_dir = "cpu/generic" ; then
     atomicity_dir=cpu/generic/atomicity_mutex
+    AC_MSG_WARN([No native atomic operations are provided for this platform.])
+      if test $target_thread_file = single; then
+        AC_MSG_WARN([They cannot be faked when thread support is disabled.])
+        AC_MSG_WARN([Thread-safety of certain classes is not guaranteed.])
+      else
+        AC_MSG_WARN([They will be faked using a mutex.])
+        AC_MSG_WARN([Performance of certain classes will degrade as a result.])
+      fi
   fi
 
 ])
