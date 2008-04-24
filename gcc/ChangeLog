@@ -1,3 +1,14 @@
+2008-04-03  Nathan Froyd  <froydnj@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+        * config/rs6000/rs6000.opt (mspe): Remove Var property.
+	(misel): Likewise.
+        * config/rs6000/rs6000.h (rs6000_spe): Declare.
+	(rs6000_isel): Likewise.
+        * config/rs6000/rs6000.c (rs6000_spe): New variable.
+	(rs6000_isel): New variable.
+        (rs6000_handle_option): Handle OPT_mspe and OPT_misel.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35758

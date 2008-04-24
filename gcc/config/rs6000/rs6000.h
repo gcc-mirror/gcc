@@ -367,6 +367,8 @@ extern int rs6000_long_double_type_size;
 extern int rs6000_ieeequad;
 extern int rs6000_altivec_abi;
 extern int rs6000_spe_abi;
+extern int rs6000_spe;
+extern int rs6000_isel;
 extern int rs6000_float_gprs;
 extern int rs6000_alignment_flags;
 extern const char *rs6000_sched_insert_nops_str;

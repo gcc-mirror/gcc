@@ -174,8 +174,14 @@ int rs6000_ieeequad;
 /* Nonzero to use AltiVec ABI.  */
 int rs6000_altivec_abi;
 
+/* Nonzero if we want SPE SIMD instructions.  */
+int rs6000_spe;
+
 /* Nonzero if we want SPE ABI extensions.  */
 int rs6000_spe_abi;
+
+/* Nonzero to use isel instructions.  */
+int rs6000_isel;
 
 /* Nonzero if floating point operations are done in the GPRs.  */
 int rs6000_float_gprs = 0;
@@ -2177,9 +2183,19 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
       break;
 
+    case OPT_misel:
+      rs6000_explicit_options.isel = true;
+      rs6000_isel = value;
+      break;
+
     case OPT_misel_:
       rs6000_explicit_options.isel = true;
       rs6000_parse_yes_no_option ("isel", arg, &(rs6000_isel));
+      break;
+
+    case OPT_mspe:
+      rs6000_explicit_options.spe = true;
+      rs6000_spe = value;
       break;
 
     case OPT_mspe_:
