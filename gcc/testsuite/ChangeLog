@@ -1,3 +1,8 @@
+2008-04-24  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/36035
+	* gcc.dg/vect/vect-vfa-slp.c: Remove bad check.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/pr36017.c: Run on all targets, remove -lm from dg-options.
