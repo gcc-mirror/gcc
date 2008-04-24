@@ -1234,9 +1234,16 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	      }
 	    else
 	      {
-		tree gnu_compute_type
-		  = signed_or_unsigned_type_for
-		      (0, get_base_type (gnu_result_type));
+		/* We used to compute the length as max (hb - lb + 1, 0),
+		   which could overflow for some cases of empty arrays, e.g.
+		   when lb == index_type'first.  We now compute the length as
+		   (hb < lb) ? 0 : hb - lb + 1, which would only overflow in
+		   much rarer cases, for extremely large arrays we expect
+		   never to encounter in practice.  In addition, the former
+		   computation required the use of potentially constraining
+		   signed arithmetic while the latter doesn't.  */
+		
+		tree gnu_compute_type = get_base_type (gnu_result_type);
 
 		tree index_type
 		  = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type));
@@ -1245,14 +1252,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		tree hb
 		  = convert (gnu_compute_type, TYPE_MAX_VALUE (index_type));
 		
-		/* We used to compute the length as max (hb - lb + 1, 0),
-		   which could overflow for some cases of empty arrays, e.g.
-		   when lb == index_type'first.
-
-		   We now compute it as (hb < lb) ? 0 : hb - lb + 1, which
-		   could overflow as well, but only for extremely large arrays
-		   which we expect never to encounter in practice.  */
-
 		gnu_result
 		  = build3
 		    (COND_EXPR, gnu_compute_type,
