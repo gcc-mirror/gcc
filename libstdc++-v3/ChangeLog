@@ -1,3 +1,14 @@
+2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Check for set of
+	all used __sync builtins, in two sizes.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/atomic.cc: Use  _GLIBCXX_ATOMIC_BUILTINS_1.
+	* include/ext/atomicity.h: Use  _GLIBCXX_ATOMIC_BUILTINS_4.
+	* libsupc++/guard.cc: Use  _GLIBCXX_ATOMIC_BUILTINS_4.
+	* doc/xml/manual/concurrency.xm: Update docs.
+	
 2008-04-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/hpux/os_defines.h: Use _GLIBCXX_BEGIN_NAMESPACE,

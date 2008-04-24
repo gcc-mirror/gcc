@@ -214,8 +214,11 @@ usage vary depending on the target hardware and the flags used during
 compile.
 </para>
 
-<para> If builtins are possible, <code>_GLIBCXX_ATOMIC_BUILTINS</code>
-will be defined.
+<para> 
+If builtins are possible for bool-sized integral types,
+<code>_GLIBCXX_ATOMIC_BUILTINS_1</code> will be defined.
+If builtins are possible for int-sized integral types,
+<code>_GLIBCXX_ATOMIC_BUILTINS_4</code> will be defined.
 </para>
 
 
