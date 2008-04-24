@@ -1,3 +1,10 @@
+2008-04-24  Ira Rosen  <irar@il.ibm.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36034
+	* gcc.c-torture/execute/pr36034-1.c: New testcase.
+	* gcc.c-torture/execute/pr36034-2.c: Likewise.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36015

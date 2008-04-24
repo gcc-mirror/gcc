@@ -2249,11 +2249,16 @@ vect_analyze_group_access (struct data_reference *dr)
 
       /* Check that the size of the interleaving is equal to STEP for stores,
          i.e., that there are no gaps.  */
-      if (!DR_IS_READ (dr) && dr_step != count_in_bytes)
+      if (dr_step != count_in_bytes)
         {
-          if (vect_print_dump_info (REPORT_DETAILS))
-            fprintf (vect_dump, "interleaved store with gaps");
-          return false;
+          if (DR_IS_READ (dr))
+            slp_impossible = true;
+          else
+            {
+              if (vect_print_dump_info (REPORT_DETAILS))
+                fprintf (vect_dump, "interleaved store with gaps");
+              return false;
+            }
         }
 
       /* Check that STEP is a multiple of type size.  */

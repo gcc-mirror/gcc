@@ -1,3 +1,10 @@
+2008-04-24  Ira Rosen  <irar@il.ibm.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36034
+	* tree-vect-analyze.c (vect_analyze_group_access): SLP is
+	incapable of dealing with loads with gaps.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36015
