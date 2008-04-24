@@ -1,3 +1,8 @@
+2008-04-24  Olivier Hainque  <hainque@adacore.com>
+
+	* trans.c (Attribute_to_gnu) <case Attr_Length>: Length computation
+	doesn't require signed arithmetic anymore.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* trans.c (Attribute_to_gnu): Don't set TREE_INVARIANT.
