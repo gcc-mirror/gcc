@@ -1,3 +1,9 @@
+2008-04-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/36006
+	* expmed.c (store_fixed_bit_field): Copy op0 rtx before moving
+	temp to op0 in order to avoid invalid rtx sharing.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-cfg.c (verify_expr): Check with is_gimple_address.  Don't
@@ -74,37 +80,25 @@
 
 2008-04-22  Tomas Bily  <tbily@suse.cz>
 
-        * tree-cfg.c (verify_expr): Check for NON_LVALUE_EXPR as unreachable
-        case.
-
-        * tree-vrp.c (extract_range_from_unary_expr): Removed unused
-        NON_LVALUE_EXPR.
-
-        * tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
-
-        * tree-ssa-structalias.c (get_constraint_for): Likewise.
-
-        * tree-inline.c (estimate_num_insns_1): Likewise.
-
-        * varasm.c (const_hash_1, compare_constant, copy_constant)
-        (compute_reloc_for_constant, output_addressed_constants): Likewise.
-
-        * emit-rtl.c (component_ref_for_mem_expr)
-        (set_mem_attributes_minus_bitpos): Likewise.
-
-        * expr.c (highest_pow2_factor, expand_expr_real_1, )
-        (is_aligning_offset): Likewise.
-
-        * dwarf2out.c (loc_descriptor_from_tree_1, add_bound_info): Likewise.
-
-        * tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Likewise.
-
-        * dojump.c (do_jump): Likewise.
-
-        * builtins.c (get_pointer_alignment, get_memory_rtx)
-        (integer_valued_real_p, fold_builtin_next_arg): Likewise.
-
-        * tree-scalar-evolution.c (instantiate_parameters_1): Likewise.
+	* tree-cfg.c (verify_expr): Check for NON_LVALUE_EXPR as
+	unreachable case.
+	* tree-vrp.c (extract_range_from_unary_expr): Removed unused
+	NON_LVALUE_EXPR.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
+	* tree-ssa-structalias.c (get_constraint_for): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* varasm.c (const_hash_1, compare_constant, copy_constant)
+	(compute_reloc_for_constant, output_addressed_constants): Likewise.
+	* emit-rtl.c (component_ref_for_mem_expr)
+	(set_mem_attributes_minus_bitpos): Likewise.
+	* expr.c (highest_pow2_factor, expand_expr_real_1, )
+	(is_aligning_offset): Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree_1, add_bound_info): Likewise.
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* builtins.c (get_pointer_alignment, get_memory_rtx)
+	(integer_valued_real_p, fold_builtin_next_arg): Likewise.
+	* tree-scalar-evolution.c (instantiate_parameters_1): Likewise.
 
 2008-04-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -250,7 +244,7 @@
 	df_entry_block_defs_collect, df_exit_block_uses_collect):
 	Added mode parameter to calls to df_ref_record, df_uses_record,
 	df_ref_create_structure.
-       	(df_ref_equal_p, df_ref_compare): Added test for modes.
+	(df_ref_equal_p, df_ref_compare): Added test for modes.
 	(df_ref_create_structure): Added code to set mode.  Renamed
 	DF_REF_WIDTH and DF_REF_OFFSET to DF_REF_EXTRACT_WIDTH and
 	DF_REF_EXTRACT_OFFSET.
