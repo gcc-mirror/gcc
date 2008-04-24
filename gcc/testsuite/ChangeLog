@@ -1,5 +1,7 @@
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/pr36017.c: Run on all targets, remove -lm from dg-options.
+
 	PR tree-optimization/36008
 	* gcc.c-torture/execute/20080424-1.c: New test.
 
