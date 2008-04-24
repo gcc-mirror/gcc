@@ -1,3 +1,7 @@
+2008-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr36017.c: Run on all targets, remove -lm from dg-options.
+
 2008-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/builtin-constant_p-1.c: New testcase.
