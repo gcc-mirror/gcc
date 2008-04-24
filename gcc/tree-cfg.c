@@ -5505,7 +5505,7 @@ DEF_VEC_ALLOC_P(basic_block,heap);
    adding blocks when the dominator traversal reaches EXIT.  This
    function silently assumes that ENTRY strictly dominates EXIT.  */
 
-static void
+void
 gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 			      VEC(basic_block,heap) **bbs_p)
 {

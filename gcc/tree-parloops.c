@@ -455,18 +455,17 @@ loop_has_blocks_with_irreducible_flag (struct loop *loop)
 }
 
 /* Assigns the address of OBJ in TYPE to an ssa name, and returns this name.
-   The assignment statement is placed before LOOP.  DECL_ADDRESS maps decls
+   The assignment statement is placed on edge ENTRY.  DECL_ADDRESS maps decls
    to their addresses that can be reused.  The address of OBJ is known to
    be invariant in the whole function.  */
 
 static tree
-take_address_of (tree obj, tree type, struct loop *loop, htab_t decl_address)
+take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
 {
   int uid;
   void **dslot;
   struct int_tree_map ielt, *nielt;
   tree *var_p, name, bvar, stmt, addr;
-  edge entry = loop_preheader_edge (loop);
 
   /* Since the address of OBJ is invariant, the trees may be shared.
      Avoid rewriting unrelated parts of the code.  */
@@ -570,15 +569,16 @@ initialize_reductions (void **slot, void *data)
 
 struct elv_data
 {
-  struct loop *loop;
+  edge entry;
   htab_t decl_address;
   bool changed;
 };
 
-/* Eliminates references to local variables in *TP out of LOOP.  DECL_ADDRESS
-   contains addresses of the references that had their address taken already.
-   If the expression is changed, CHANGED is set to true.  Callback for
-   walk_tree.  */
+/* Eliminates references to local variables in *TP out of the single
+   entry single exit region starting at DTA->ENTRY.
+   DECL_ADDRESS contains addresses of the references that had their
+   address taken already.  If the expression is changed, CHANGED is
+   set to true.  Callback for walk_tree.  */
 
 static tree
 eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
@@ -595,7 +595,7 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 
       type = TREE_TYPE (t);
       addr_type = build_pointer_type (type);
-      addr = take_address_of (t, addr_type, dta->loop, dta->decl_address);
+      addr = take_address_of (t, addr_type, dta->entry, dta->decl_address);
       *tp = build1 (INDIRECT_REF, TREE_TYPE (*tp), addr);
 
       dta->changed = true;
@@ -625,7 +625,7 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 	return NULL_TREE;
 
       addr_type = TREE_TYPE (t);
-      addr = take_address_of (obj, addr_type, dta->loop, dta->decl_address);
+      addr = take_address_of (obj, addr_type, dta->entry, dta->decl_address);
       *tp = addr;
 
       dta->changed = true;
@@ -638,17 +638,18 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* Moves the references to local variables in STMT from LOOP.  DECL_ADDRESS
-   contains addresses for the references for that we have already taken
-   them.  */
+/* Moves the references to local variables in STMT out of the single
+   entry single exit region starting at ENTRY.  DECL_ADDRESS contains
+   addresses of the references that had their address taken
+   already.  */
 
 static void
-eliminate_local_variables_stmt (struct loop *loop, tree stmt,
+eliminate_local_variables_stmt (edge entry, tree stmt,
 				htab_t decl_address)
 {
   struct elv_data dta;
 
-  dta.loop = loop;
+  dta.entry = entry;
   dta.decl_address = decl_address;
   dta.changed = false;
 
@@ -658,33 +659,75 @@ eliminate_local_variables_stmt (struct loop *loop, tree stmt,
     update_stmt (stmt);
 }
 
-/* Eliminates the references to local variables from LOOP.  
+/* Eliminates the references to local variables from the single entry
+   single exit region between the ENTRY and EXIT edges.
+  
    This includes:
    1) Taking address of a local variable -- these are moved out of the 
-   loop (and temporary variable is created to hold the address if 
+   region (and temporary variable is created to hold the address if 
    necessary).
+
    2) Dereferencing a local variable -- these are replaced with indirect
    references.  */
 
 static void
-eliminate_local_variables (struct loop *loop)
+eliminate_local_variables (edge entry, edge exit)
 {
-  basic_block bb, *body = get_loop_body (loop);
+  basic_block bb;
+  VEC (basic_block, heap) *body = VEC_alloc (basic_block, heap, 3);
   unsigned i;
   block_stmt_iterator bsi;
   htab_t decl_address = htab_create (10, int_tree_map_hash, int_tree_map_eq,
 				     free);
+  basic_block entry_bb = entry->src;
+  basic_block exit_bb = exit->dest;
 
-  /* Find and rename the ssa names defined outside of loop.  */
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      bb = body[i];
+  gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
+  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+    if (bb != entry_bb && bb != exit_bb)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	eliminate_local_variables_stmt (loop, bsi_stmt (bsi), decl_address);
-    }
+	eliminate_local_variables_stmt (entry, bsi_stmt (bsi),
+					decl_address);
 
   htab_delete (decl_address);
+  VEC_free (basic_block, heap, body);
+}
+
+/* Returns true if expression EXPR is not defined between ENTRY and
+   EXIT, i.e. if all its operands are defined outside of the region.  */
+
+static bool
+expr_invariant_in_region_p (edge entry, edge exit, tree expr)
+{
+  basic_block entry_bb = entry->src;
+  basic_block exit_bb = exit->dest;
+  basic_block def_bb;
+  unsigned i, len;
+
+  if (is_gimple_min_invariant (expr))
+    return true;
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (expr));
+      if (def_bb
+	  && dominated_by_p (CDI_DOMINATORS, def_bb, entry_bb)
+	  && !dominated_by_p (CDI_DOMINATORS, def_bb, exit_bb))
+	return false;
+
+      return true;
+    }
+
+  if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
+    return false;
+
+  len = TREE_OPERAND_LENGTH (expr);
+  for (i = 0; i < len; i++)
+    if (!expr_invariant_in_region_p (entry, exit, TREE_OPERAND (expr, i)))
+      return false;
+
+  return true;
 }
 
 /* If COPY_NAME_P is true, creates and returns a duplicate of NAME.
@@ -695,9 +738,9 @@ eliminate_local_variables (struct loop *loop)
    duplicated, storing the copies in DECL_COPIES.  */
 
 static tree
-separate_decls_in_loop_name (tree name,
-			     htab_t name_copies, htab_t decl_copies,
-			     bool copy_name_p)
+separate_decls_in_region_name (tree name,
+			       htab_t name_copies, htab_t decl_copies,
+			       bool copy_name_p)
 {
   tree copy, var, var_copy;
   unsigned idx, uid, nuid;
@@ -762,15 +805,16 @@ separate_decls_in_loop_name (tree name,
   return copy;
 }
 
-/* Finds the ssa names used in STMT that are defined outside of LOOP and
-   replaces such ssa names with their duplicates.  The duplicates are stored to
-   NAME_COPIES.  Base decls of all ssa names used in STMT
-   (including those defined in LOOP) are replaced with the new temporary
-   variables; the replacement decls are stored in DECL_COPIES.  */
+/* Finds the ssa names used in STMT that are defined outside the
+   region between ENTRY and EXIT and replaces such ssa names with
+   their duplicates.  The duplicates are stored to NAME_COPIES.  Base
+   decls of all ssa names used in STMT (including those defined in
+   LOOP) are replaced with the new temporary variables; the
+   replacement decls are stored in DECL_COPIES.  */
 
 static void
-separate_decls_in_loop_stmt (struct loop *loop, tree stmt,
-			     htab_t name_copies, htab_t decl_copies)
+separate_decls_in_region_stmt (edge entry, edge exit, tree stmt,
+			       htab_t name_copies, htab_t decl_copies)
 {
   use_operand_p use;
   def_operand_p def;
@@ -784,8 +828,8 @@ separate_decls_in_loop_stmt (struct loop *loop, tree stmt,
   {
     name = DEF_FROM_PTR (def);
     gcc_assert (TREE_CODE (name) == SSA_NAME);
-    copy = separate_decls_in_loop_name (name, name_copies, decl_copies,
-					false);
+    copy = separate_decls_in_region_name (name, name_copies, decl_copies,
+					  false);
     gcc_assert (copy == name);
   }
 
@@ -795,9 +839,9 @@ separate_decls_in_loop_stmt (struct loop *loop, tree stmt,
     if (TREE_CODE (name) != SSA_NAME)
       continue;
 
-    copy_name_p = expr_invariant_in_loop_p (loop, name);
-    copy = separate_decls_in_loop_name (name, name_copies, decl_copies,
-					copy_name_p);
+    copy_name_p = expr_invariant_in_region_p (entry, exit, name);
+    copy = separate_decls_in_region_name (name, name_copies, decl_copies,
+					  copy_name_p);
     SET_USE (use, copy);
   }
 }
@@ -1118,36 +1162,44 @@ create_loads_and_stores_for_name (void **slot, void *data)
    in LOOP.  */
 
 static void
-separate_decls_in_loop (struct loop *loop, htab_t reduction_list, 
-			tree * arg_struct, tree * new_arg_struct, 
-			struct clsn_data *ld_st_data)
+separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
+			  tree *arg_struct, tree *new_arg_struct, 
+			  struct clsn_data *ld_st_data)
 
 {
-  basic_block bb1 = split_edge (loop_preheader_edge (loop));
+  basic_block bb1 = split_edge (entry);
   basic_block bb0 = single_pred (bb1);
   htab_t name_copies = htab_create (10, name_to_copy_elt_hash,
 				    name_to_copy_elt_eq, free);
   htab_t decl_copies = htab_create (10, int_tree_map_hash, int_tree_map_eq,
 				    free);
-  basic_block bb, *body = get_loop_body (loop);
   unsigned i;
   tree phi, type, type_name, nvar;
   block_stmt_iterator bsi;
   struct clsn_data clsn_data;
+  VEC (basic_block, heap) *body = VEC_alloc (basic_block, heap, 3);
+  basic_block bb;
+  basic_block entry_bb = bb1;
+  basic_block exit_bb = exit->dest;
 
-  /* Find and rename the ssa names defined outside of loop.  */
-  for (i = 0; i < loop->num_nodes; i++)
+  entry = single_succ_edge(entry_bb);
+  gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
+
+  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
     {
-      bb = body[i];
-
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	separate_decls_in_loop_stmt (loop, phi, name_copies, decl_copies);
-
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	separate_decls_in_loop_stmt (loop, bsi_stmt (bsi), name_copies,
-				     decl_copies);
+      if (bb != entry_bb && bb != exit_bb) 
+	{
+	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	    separate_decls_in_region_stmt (entry, exit, phi, name_copies,
+					   decl_copies);
+	  
+	  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	    separate_decls_in_region_stmt (entry, exit, bsi_stmt (bsi),
+					   name_copies, decl_copies);
+	}
     }
-  free (body);
+
+  VEC_free (basic_block, heap, body);
 
   if (htab_elements (name_copies) == 0)
     {
@@ -1165,7 +1217,7 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
       TYPE_NAME (type) = type_name;
 
       htab_traverse (name_copies, add_field_for_name, type);
-      if (htab_elements (reduction_list) > 0)
+      if (reduction_list && htab_elements (reduction_list) > 0)
 	{
 	  /* Create the fields for reductions.  */
 	  htab_traverse (reduction_list, add_field_for_reduction,
@@ -1190,12 +1242,12 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
 
       /* Load the calculation from memory (after the join of the threads).  */
 
-      if (htab_elements (reduction_list) > 0)
+      if (reduction_list && htab_elements (reduction_list) > 0)
 	{
 	  htab_traverse (reduction_list, create_stores_for_reduction,
                         ld_st_data); 
 	  clsn_data.load = make_ssa_name (nvar, NULL_TREE);
-	  clsn_data.load_bb = single_dom_exit (loop)->dest;
+	  clsn_data.load_bb = exit->dest;
 	  clsn_data.store = ld_st_data->store;
 	  create_final_loads_for_reduction (reduction_list, &clsn_data);
 	}
@@ -1605,6 +1657,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   tree many_iterations_cond, type, nit;
   tree stmts, arg_struct, new_arg_struct;
   basic_block parallel_head;
+  edge entry, exit;
   struct clsn_data clsn_data;
   unsigned prob;
 
@@ -1702,18 +1755,20 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   /* Ensure that the exit condition is the first statement in the loop.  */
   transform_to_exit_first_loop (loop, reduction_list, nit);
 
-
   /* Generate intializations for reductions.  */
-
   if (htab_elements (reduction_list) > 0)  
     htab_traverse (reduction_list, initialize_reductions, loop);
 
   /* Eliminate the references to local variables from the loop.  */
-  eliminate_local_variables (loop);
+  gcc_assert (single_exit (loop));
+  entry = loop_preheader_edge (loop);
+  exit = single_dom_exit (loop);
 
+  eliminate_local_variables (entry, exit);
   /* In the old loop, move all variables non-local to the loop to a structure
      and back, and create separate decls for the variables used in loop.  */
-  separate_decls_in_loop (loop, reduction_list, &arg_struct, &new_arg_struct, &clsn_data);
+  separate_decls_in_region (entry, exit, reduction_list, &arg_struct, 
+			    &new_arg_struct, &clsn_data);
 
   /* Create the parallel constructs.  */
   parallel_head = create_parallel_loop (loop, create_loop_fn (), arg_struct,
