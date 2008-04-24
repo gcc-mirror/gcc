@@ -38,8 +38,8 @@ static const format_length_info ms_printf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, NULL, 0, 0 },
   { "l", FMT_LEN_l, STD_C89, NULL, 0, 0 },
-  { "\0I32", FMT_LEN_l, STD_EXT, NULL, 0, 0 },
-  { "\0I64", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
+  { "I32", FMT_LEN_l, STD_EXT, NULL, 0, 0 },
+  { "I64", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
   { "I", FMT_LEN_L, STD_EXT, NULL, 0, 0 },
   { NULL, 0, 0, NULL, 0, 0 }
 };

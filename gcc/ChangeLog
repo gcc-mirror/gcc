@@ -1,3 +1,10 @@
+2008-04-24  Danny Smith  <dannysmith@users.net>
+
+	* c-format.c (check_format_info_main): Use strncmp rather than a magic prefix
+	to handle multichar length specs.
+	* config/i386/msformat-c.c (format_length_info ms_printf_length_specs):
+	Don't prefix "I64" and "I32" with '\0'.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36015
