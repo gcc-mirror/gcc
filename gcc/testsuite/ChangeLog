@@ -1,3 +1,8 @@
+2008-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/builtin-constant_p-1.c: New testcase.
+	* gcc.dg/builtin-errors.c: Adjust expected error.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36008
