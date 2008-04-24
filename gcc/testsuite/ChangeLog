@@ -2,6 +2,9 @@
 
 	* gcc.dg/pr36017.c: Run on all targets, remove -lm from dg-options.
 
+	PR c++/35758
+	* g++.dg/ext/vector14.C: New test.
+
 2008-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/builtin-constant_p-1.c: New testcase.
