@@ -1,6 +1,6 @@
 /* PR rtl-optimization/36017 */
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
-/* { dg-options "-O2 -lm" } */
+/* { dg-do run } */
+/* { dg-options "-O2" } */
 
 extern double sqrt (double);
 extern void abort (void);
