@@ -1,4 +1,4 @@
-2008-04-03  Nathan Froyd  <froydnj@codesourcery.com>
+2008-04-24  Nathan Froyd  <froydnj@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
         * config/rs6000/rs6000.opt (mspe): Remove Var property.
