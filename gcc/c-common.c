@@ -6631,6 +6631,85 @@ check_function_arguments_recurse (void (*callback)
   (*callback) (ctx, param, param_num);
 }
 
+/* Checks the number of arguments NARGS against the required number
+   REQUIRED and issues an error if there is a mismatch.  Returns true
+   if the number of arguments is correct, otherwise false.  */
+
+static bool
+validate_nargs (tree fndecl, int nargs, int required)
+{
+  if (nargs < required)
+    {
+      error ("not enough arguments to function %qE", fndecl);
+      return false;
+    }
+  else if (nargs > required)
+    {
+      error ("too many arguments to function %qE", fndecl);
+      return false;
+    }
+  return true;
+}
+
+/* Verifies the NARGS arguments ARGS to the builtin function FNDECL.
+   Returns false if there was an error, otherwise true.  */
+
+bool
+check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
+{
+  if (!DECL_BUILT_IN (fndecl)
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+    return true;
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case BUILT_IN_CONSTANT_P:
+      return validate_nargs (fndecl, nargs, 1);
+
+    case BUILT_IN_ISFINITE:
+    case BUILT_IN_ISINF:
+    case BUILT_IN_ISNAN:
+    case BUILT_IN_ISNORMAL:
+      if (validate_nargs (fndecl, nargs, 1))
+	{
+	  if (TREE_CODE (TREE_TYPE (args[0])) != REAL_TYPE)
+	    {
+	      error ("non-floating-point argument in call to "
+		     "function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    case BUILT_IN_ISGREATER:
+    case BUILT_IN_ISGREATEREQUAL:
+    case BUILT_IN_ISLESS:
+    case BUILT_IN_ISLESSEQUAL:
+    case BUILT_IN_ISLESSGREATER:
+    case BUILT_IN_ISUNORDERED:
+      if (validate_nargs (fndecl, nargs, 2))
+	{
+	  enum tree_code code0, code1;
+	  code0 = TREE_CODE (TREE_TYPE (args[0]));
+	  code1 = TREE_CODE (TREE_TYPE (args[1]));
+	  if (!((code0 == REAL_TYPE && code1 == REAL_TYPE)
+		|| (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+		|| (code0 == INTEGER_TYPE && code1 == REAL_TYPE)))
+	    {
+	      error ("non-floating-point arguments in call to "
+		     "function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    default:
+      return true;
+    }
+}
+
 /* Function to help qsort sort FIELD_DECLs by name order.  */
 
 int

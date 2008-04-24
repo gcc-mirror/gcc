@@ -1,3 +1,8 @@
+2008-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* typeck.c (cp_build_function_call): Call
+	check_builtin_function_arguments.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* typeck.c (get_member_function_from_ptrfunc): Don't set TREE_INVARIANT.

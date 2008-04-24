@@ -1,3 +1,15 @@
+2008-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.h (check_builtin_function_arguments): Declare.
+	* c-common.c (validate_nargs): New function.
+	(check_builtin_function_arguments): Likewise.
+	* c-typeck.c (build_function_call): Call
+	check_builtin_function_arguments.
+	* builtins.c (fold_builtin_classify): Remove error reporting code.
+	(fold_builtin_unordered_cmp): Likewise.
+	(fold_builtin_1): Likewise.
+	(fold_builtin_n): Likewise.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36008

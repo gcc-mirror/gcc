@@ -2443,8 +2443,14 @@ build_function_call (tree function, tree params)
   if (nargs < 0)
     return error_mark_node;
 
-  /* Check that the arguments to the function are valid.  */
+  /* Check that arguments to builtin functions match the expectations.  */
+  if (fundecl
+      && DECL_BUILT_IN (fundecl)
+      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL
+      && !check_builtin_function_arguments (fundecl, nargs, argarray))
+    return error_mark_node;
 
+  /* Check that the arguments to the function are valid.  */
   check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
 			    TYPE_ARG_TYPES (fntype));
 
