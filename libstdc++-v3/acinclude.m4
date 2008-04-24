@@ -1666,22 +1666,17 @@ dnl  +  Usage:  GLIBCXX_ENABLE_PARALLEL
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
-  # NB: libstdc++ may be configured before libgomp: can't check for the actual
-  # dependencies (omp.h and libgomp). 
   enable_parallel=no;
-  if test -f $glibcxx_builddir/../libgomp/omp.h; then
-    enable_parallel=yes;
+
+  # Check to see if OpenMP is explicitly disabled.
+  AC_MSG_CHECKING([for libgomp support])
+  GLIBCXX_ENABLE(libgomp,$1,,[enable code depending on libgomp],[permit yes|no])
+  AC_MSG_RESULT([$enable_libgomp])
+  if test x$enable_libgomp = xno; then
+    enable_parallel=no
   else
-    AC_MSG_NOTICE([$glibcxx_builddir/../libgomp/omp.h not found])
+    enable_parallel=yes
   fi
-
-  # Check to see if it's explicitly disabled.
-#  GLIBCXX_ENABLE(libgomp,$1,,[enable code depending on libgomp],
-#	[permit yes|no])
-
-#  if test x$enable_libgomp = xno; then
-#    enable_parallel=no
-#  fi
 
   AC_MSG_CHECKING([for parallel mode support])
   AC_MSG_RESULT([$enable_parallel])

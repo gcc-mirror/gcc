@@ -1,3 +1,13 @@
+2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/35887 
+        * configure.ac: Add default argument to GLIBCXX_ENABLE_PARALLEL.
+        * acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Check for --disable-libgomp.
+        * configure: Regenerate.
+        * include/Makefile.am (parallel_headers): Make conditional on
+        ENABLE_PARALLEL.
+        * include/Makefile.in: Regenerate.
+
 2008-04-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libstdc++/35954
