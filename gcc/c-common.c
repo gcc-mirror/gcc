@@ -6068,7 +6068,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   new_type = build_vector_type (type, nunits);
 
   /* Build back pointers if needed.  */
-  *node = reconstruct_complex_type (*node, new_type);
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
 
   return NULL_TREE;
 }

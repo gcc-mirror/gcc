@@ -19830,7 +19830,7 @@ rs6000_handle_altivec_attribute (tree *node,
   *no_add_attrs = true;  /* No need to hang on to the attribute.  */
 
   if (result)
-    *node = reconstruct_complex_type (*node, result);
+    *node = lang_hooks.types.reconstruct_complex_type (*node, result);
 
   return NULL_TREE;
 }

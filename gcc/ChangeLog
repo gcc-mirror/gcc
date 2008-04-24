@@ -1,5 +1,16 @@
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35758
+	* c-common.c (handle_vector_size_attribute): Call
+	lang_hooks.types.reconstruct_complex_type instead of
+	reconstruct_complex_type.
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): Likewise.
+	* config/spu/spu.c (spu_handle_vector_attribute): Likewise.
+	* langhooks.h (struct lang_hooks_for_types): Add
+	reconstruct_complex_type hook.
+	* langhooks-def.h (LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add it.
+
 	PR tree-optimization/36008
 	* fold-const.c (try_move_mult_to_index): If s == NULL, divide
 	the original op1, rather than delta by step.

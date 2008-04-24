@@ -1,3 +1,12 @@
+2008-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35758
+	* cp-tree.h (cp_reconstruct_complex_type): New prototype.
+	* cp-objcp-common.h (LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE): Define.
+	* decl2.c (is_late_template_attribute): Only make vector_size
+	late tmpl attribute if argument is type or value dependent.
+	(cp_reconstruct_complex_type): New function.
+
 2008-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35316

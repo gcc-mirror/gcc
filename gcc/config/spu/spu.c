@@ -3022,7 +3022,7 @@ spu_handle_vector_attribute (tree * node, tree name,
   if (!result)
     warning (0, "`%s' attribute ignored", IDENTIFIER_POINTER (name));
   else
-    *node = reconstruct_complex_type (*node, result);
+    *node = lang_hooks.types.reconstruct_complex_type (*node, result);
 
   return NULL_TREE;
 }
