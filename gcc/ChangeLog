@@ -1,3 +1,20 @@
+2008-04-22  Antoniu Pop  <antoniu.pop@gmail.com>
+            Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-parloops.c (take_address_of, eliminate_local_variables_1,
+	eliminate_local_variables_stmt, eliminate_local_variables,
+	separate_decls_in_loop_name, separate_decls_in_loop_stmt,
+	separate_decls_in_loop, gen_parallel_loop): Make them work on a region
+	of code delimited by two edges in the CFG.
+	(separate_decls_in_loop_name): Renamed separate_decls_in_region_name.
+	(separate_decls_in_loop_stmt): Renamed separate_decls_in_region_stmt.
+	(separate_decls_in_loop): Renamed separate_decls_in_region.  Isolate 
+	the case of parallelisation of reductions.
+	(expr_invariant_in_region_p): New.
+
+	* tree-flow.h (gather_blocks_in_sese_region): Declared.
+	* tree-cfg.c (gather_blocks_in_sese_region): Extern.
+
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
 	Richard Guenther  <rguenther@suse.de>
 
