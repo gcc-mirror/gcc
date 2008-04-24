@@ -2129,23 +2129,29 @@ dnl See:
 dnl http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html#Atomic-Builtins
 dnl
 dnl This checks to see if the host supports the compiler-generated
-dnl builtins for atomic operations. Note, this is intended to be an
-dnl all-or-nothing switch, so all the atomic operations that are used
-dnl should be checked.
+dnl builtins for atomic operations for various integral sizes. Note, this 
+dnl is intended to be an all-or-nothing switch, so all the atomic operations
+dnl that are used should be checked.
 dnl
 dnl Note:
 dnl libgomp and libgfortran do this with a link test, instead of an asm test.
 dnl see: CHECK_SYNC_FETCH_AND_ADD
 dnl
 dnl Defines:
-dnl  _GLIBCXX_ATOMIC_BUILTINS if the compiler on this target supports atomics.
+dnl  _GLIBCXX_ATOMIC_BUILTINS_1 
+dnl  _GLIBCXX_ATOMIC_BUILTINS_4
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
-  AC_MSG_CHECKING([for atomic builtins])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
+  old_CXXFLAGS="$CXXFLAGS"
+  
+  # Compile unoptimized.
+  CXXFLAGS='-O0 -S'
 
-  # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
+  # Fake what AC_TRY_COMPILE does, without linking as this is
+  # unnecessary for a builtins test.
+
     cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
 int main()
@@ -2155,34 +2161,71 @@ int main()
   atomic_type c1;
   atomic_type c2;
   const atomic_type c3(0);
-  if (__sync_fetch_and_add(&c1, c2) == c3)
-    {
-      // Do something.
-    }
-   return 0;
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
 }
 EOF
-    old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS='-O0 -S'
+
+    AC_MSG_CHECKING([for atomic builtins for int])
     if AC_TRY_EVAL(ac_compile); then
-      if grep __sync_fetch_and_add conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtins=no
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinsi=no
       else
-      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
-        [Define if builtin atomic operations are supported on this host.])
-        enable_atomic_builtins=yes
-	atomicity_dir=cpu/generic/atomicity_builtins
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_4, 1,
+        [Define if builtin atomic operations for int are supported on this host.])
+        enable_atomic_builtinsi=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtins)
-    CXXFLAGS="$old_CXXFLAGS"
+    AC_MSG_RESULT($enable_atomic_builtinsi)
     rm -f conftest*
 
-   # Now, if still generic, set to mutex.
-  if test $atomicity_dir = "cpu/generic" ; then
-	atomicity_dir=cpu/generic/atomicity_mutex
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+int main()
+{
+  typedef bool atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  __sync_fetch_and_add(&c1, c2);
+  __sync_val_compare_and_swap(&c1, c3, c2);
+  __sync_lock_test_and_set(&c1, c3);
+  __sync_lock_release(&c1);
+  __sync_synchronize();
+  return 0;
+}
+EOF
+
+    AC_MSG_CHECKING([for atomic builtins for bool])
+    if AC_TRY_EVAL(ac_compile); then
+      if grep __sync_ conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtinsb=no
+      else
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_1, 1,
+      [Define if builtin atomic operations for bool are supported on this host.])
+        enable_atomic_builtinsb=yes
+      fi
+    fi
+    AC_MSG_RESULT($enable_atomic_builtinsb)
+    rm -f conftest*
+
+  CXXFLAGS="$old_CXXFLAGS"
+  AC_LANG_RESTORE
+
+  # Set atomicity_dir to builtins if either of above tests pass.
+  if test $enable_atomic_builtinsi = yes || test $enable_atomic_builtinsb = yes ; then
+    atomicity_dir=cpu/generic/atomicity_builtins
   fi
- AC_LANG_RESTORE
+
+  # If still generic, set to mutex.
+  if test $atomicity_dir = "cpu/generic" ; then
+    atomicity_dir=cpu/generic/atomicity_mutex
+  fi
+
 ])
 
 

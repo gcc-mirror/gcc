@@ -1,4 +1,4 @@
-// Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2006, 2008 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -36,7 +36,7 @@
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #if defined(__GTHREADS) && defined(__GTHREAD_HAS_COND) \
-    && defined(_GLIBCXX_ATOMIC_BUILTINS) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+    && defined(_GLIBCXX_ATOMIC_BUILTINS_4) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
 # include <climits>
 # include <syscall.h>
 # define _GLIBCXX_USE_FUTEX

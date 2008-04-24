@@ -740,8 +740,11 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define if builtin atomic operations are supported on this host. */
-#undef _GLIBCXX_ATOMIC_BUILTINS
+/* Define if builtin atomic operations for bool are supported on this host. */
+#undef _GLIBCXX_ATOMIC_BUILTINS_1
+
+/* Define if builtin atomic operations for int are supported on this host. */
+#undef _GLIBCXX_ATOMIC_BUILTINS_4
 
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
