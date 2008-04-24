@@ -1779,26 +1779,12 @@ check_format_info_main (format_check_results *res,
       length_chars_std = STD_C89;
       if (fli)
 	{
-	  while (fli->name != 0 && fli->name[0] != *format_chars)
-	    {
-	      if (fli->name[0] == '\0')
-		{
-		  int si  = strlen (fli->name + 1) + 1;
-		  int i = 1;
-		  while (fli->name[i] != 0 && fli->name[i] == format_chars [i - 1])
-		    ++i;
-		 if (si == i)
-		   {
-		     if (si > 2)
-		       format_chars += si - 2;
-		     break;
-		   }
-	       }
+	  while (fli->name != 0 
+ 		 && strncmp (fli->name, format_chars, strlen (fli->name)))
 	      fli++;
-	    }
 	  if (fli->name != 0)
 	    {
-	      format_chars++;
+ 	      format_chars += strlen (fli->name);
 	      if (fli->double_name != 0 && fli->name[0] == *format_chars)
 		{
 		  format_chars++;
