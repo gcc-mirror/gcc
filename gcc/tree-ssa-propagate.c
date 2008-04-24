@@ -1148,7 +1148,17 @@ fold_predicate_in (tree stmt)
   else
     return false;
 
-  val = vrp_evaluate_conditional (*pred_p, stmt);
+  if (TREE_CODE (*pred_p) == SSA_NAME)
+    val = vrp_evaluate_conditional (EQ_EXPR,
+				    *pred_p,
+				    boolean_true_node,
+				    stmt);
+  else
+    val = vrp_evaluate_conditional (TREE_CODE (*pred_p),
+				    TREE_OPERAND (*pred_p, 0),
+				    TREE_OPERAND (*pred_p, 1),
+				    stmt);
+
   if (val)
     {
       if (modify_stmt_p)

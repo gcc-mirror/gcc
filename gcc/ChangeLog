@@ -1,3 +1,14 @@
+2008-04-24  Rafael Espindola  <espindola@google.com>
+
+	* tree-flow.h (vrp_evaluate_conditional): Change signature.
+	* tree-ssa-propagate.c (fold_predicate_in): Update call to
+	vrp_evaluate_conditional.
+	* tree-vrp.c (vrp_evaluate_conditional_warnv): Remove.
+        (vrp_evaluate_conditional): Split the cond argument.
+        (vrp_visit_cond_stmt): Use vrp_evaluate_conditional_warnv_with_ops.
+        (simplify_stmt_for_jump_threading): Update call to
+	vrp_evaluate_conditional.
+
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/35982

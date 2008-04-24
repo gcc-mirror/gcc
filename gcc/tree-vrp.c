@@ -46,7 +46,6 @@ static sbitmap found_in_subgraph;
 static int compare_values (tree val1, tree val2);
 static int compare_values_warnv (tree val1, tree val2, bool *);
 static void vrp_meet (value_range_t *, value_range_t *);
-static tree vrp_evaluate_conditional_warnv (tree, bool, bool *);
 static tree vrp_evaluate_conditional_warnv_with_ops (enum tree_code,
 						     tree, tree, bool, bool *);
 
@@ -5272,64 +5271,7 @@ vrp_evaluate_conditional_warnv_with_ops (enum tree_code code, tree op0,
   return NULL_TREE;
 }
 
-/* Given a conditional predicate COND, try to determine if COND yields
-   true or false based on the value ranges of its operands.  Return
-   BOOLEAN_TRUE_NODE if the conditional always evaluates to true,
-   BOOLEAN_FALSE_NODE if the conditional always evaluates to false, and,
-   NULL if the conditional cannot be evaluated at compile time.
-
-   If USE_EQUIV_P is true, the ranges of all the names equivalent with
-   the operands in COND are used when trying to compute its value.
-   This is only used during final substitution.  During propagation,
-   we only check the range of each variable and not its equivalents.
-
-   Set *STRICT_OVERFLOW_P to indicate whether we relied on an overflow
-   infinity to produce the result.  */
-
-static tree
-vrp_evaluate_conditional_warnv (tree cond, bool use_equiv_p,
-				bool *strict_overflow_p)
-{
-  gcc_assert (TREE_CODE (cond) == SSA_NAME
-              || TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison);
-
-  if (TREE_CODE (cond) == SSA_NAME)
-    {
-      value_range_t *vr;
-      tree retval;
-
-      if (use_equiv_p)
-	retval = compare_name_with_value (NE_EXPR, cond, boolean_false_node,
-					  strict_overflow_p);
-      else
-	{
-	  value_range_t *vr = get_value_range (cond);
-	  retval = compare_range_with_value (NE_EXPR, vr, boolean_false_node,
-					     strict_overflow_p);
-	}
-
-      /* If COND has a known boolean range, return it.  */
-      if (retval)
-	return retval;
-
-      /* Otherwise, if COND has a symbolic range of exactly one value,
-	 return it.  */
-      vr = get_value_range (cond);
-      if (vr->type == VR_RANGE && vr->min == vr->max)
-	return vr->min;
-    }
-  else
-    return vrp_evaluate_conditional_warnv_with_ops (TREE_CODE (cond),
-						    TREE_OPERAND (cond, 0),
-						    TREE_OPERAND (cond, 1),
-						    use_equiv_p,
-						    strict_overflow_p);
-
-  /* Anything else cannot be computed statically.  */
-  return NULL_TREE;
-}
-
-/* Given COND within STMT, try to simplify it based on value range
+/* Given (CODE OP0 OP1) within STMT, try to simplify it based on value range
    information.  Return NULL if the conditional can not be evaluated.
    The ranges of all the names equivalent with the operands in COND
    will be used when trying to compute the value.  If the result is
@@ -5337,13 +5279,17 @@ vrp_evaluate_conditional_warnv (tree cond, bool use_equiv_p,
    appropriate.  */
 
 tree
-vrp_evaluate_conditional (tree cond, tree stmt)
+vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, tree stmt)
 {
   bool sop;
   tree ret;
 
   sop = false;
-  ret = vrp_evaluate_conditional_warnv (cond, true, &sop);
+  ret = vrp_evaluate_conditional_warnv_with_ops (code,
+						 op0,
+						 op1,
+						 true,
+						 &sop);
 
   if (ret && sop)
     {
@@ -5377,8 +5323,8 @@ vrp_evaluate_conditional (tree cond, tree stmt)
 
   if (warn_type_limits
       && ret
-      && TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
-      && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME)
+      && TREE_CODE_CLASS (code) == tcc_comparison
+      && TREE_CODE (op0) == SSA_NAME)
     {
       /* If the comparison is being folded and the operand on the LHS
 	 is being compared against a constant value that is outside of
@@ -5386,8 +5332,6 @@ vrp_evaluate_conditional (tree cond, tree stmt)
 	 always fold regardless of the value of OP0.  If -Wtype-limits
 	 was specified, emit a warning.  */
       const char *warnmsg = NULL;
-      tree op0 = TREE_OPERAND (cond, 0);
-      tree op1 = TREE_OPERAND (cond, 1);
       tree type = TREE_TYPE (op0);
       value_range_t *vr0 = get_value_range (op0);
 
@@ -5499,7 +5443,19 @@ vrp_visit_cond_stmt (tree stmt, edge *taken_edge_p)
      MICO, TRAMP3D and SPEC2000) showed that doing this results in
      4 more predicates folded in SPEC.  */
   sop = false;
-  val = vrp_evaluate_conditional_warnv (cond, false, &sop);
+
+  if (TREE_CODE (cond) == SSA_NAME)
+    val = vrp_evaluate_conditional_warnv_with_ops (EQ_EXPR,
+						   cond,
+						   boolean_true_node,
+						   false,
+						   &sop);
+  else
+    val = vrp_evaluate_conditional_warnv_with_ops (TREE_CODE (cond),
+						   TREE_OPERAND (cond, 0),
+						   TREE_OPERAND (cond, 1),
+						   false,
+						   &sop);
   if (val)
     {
       if (!sop)
@@ -6470,13 +6426,24 @@ static VEC(tree,heap) *stack;
 static tree
 simplify_stmt_for_jump_threading (tree stmt, tree within_stmt)
 {
+  tree conditional;
   /* We only use VRP information to simplify conditionals.  This is
      overly conservative, but it's unclear if doing more would be
      worth the compile time cost.  */
   if (TREE_CODE (stmt) != COND_EXPR)
     return NULL;
 
-  return vrp_evaluate_conditional (COND_EXPR_COND (stmt), within_stmt);
+  conditional = COND_EXPR_COND (stmt);
+  if (TREE_CODE (conditional) == SSA_NAME)
+    return vrp_evaluate_conditional (EQ_EXPR,
+				     conditional,
+				     boolean_true_node,
+				     within_stmt);
+  else
+    return vrp_evaluate_conditional (TREE_CODE (conditional),
+				     TREE_OPERAND (conditional, 0),
+				     TREE_OPERAND (conditional, 1),
+				     within_stmt);
 }
 
 /* Blocks which have more than one predecessor and more than
