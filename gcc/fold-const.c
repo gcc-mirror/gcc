@@ -7246,7 +7246,7 @@ try_move_mult_to_index (tree addr, tree op1)
 	  else
 	    {
 	      /* Try if delta is a multiple of step.  */
-	      tree tmp = div_if_zero_remainder (EXACT_DIV_EXPR, delta, step);
+	      tree tmp = div_if_zero_remainder (EXACT_DIV_EXPR, op1, step);
 	      if (! tmp)
 		continue;
 	      delta = tmp;

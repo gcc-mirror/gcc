@@ -1,3 +1,9 @@
+2008-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36008
+	* fold-const.c (try_move_mult_to_index): If s == NULL, divide
+	the original op1, rather than delta by step.
+
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
 	Richard Guenther  <rguenther@suse.de>
 
