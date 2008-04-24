@@ -1,6 +1,6 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -527,14 +527,19 @@ namespace __debug
       merge(list& __x)
 #endif
       {
-	__glibcxx_check_sorted(_Base::begin(), _Base::end());
-	__glibcxx_check_sorted(__x.begin().base(), __x.end().base());
-	for (iterator __tmp = __x.begin(); __tmp != __x.end(); )
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 300. list::merge() specification incomplete
+	if (this != &__x)
 	  {
-	    iterator __victim = __tmp++;
-	    __victim._M_attach(&__x);
+	    __glibcxx_check_sorted(_Base::begin(), _Base::end());
+	    __glibcxx_check_sorted(__x.begin().base(), __x.end().base());
+	    for (iterator __tmp = __x.begin(); __tmp != __x.end();)
+	      {
+		iterator __victim = __tmp++;
+		this->_M_transfer_iter(__victim);
+	      }
+	    _Base::merge(_GLIBCXX_MOVE(__x._M_base()));
 	  }
-	_Base::merge(_GLIBCXX_MOVE(__x._M_base()));
       }
 
       template<class _Compare>
@@ -545,15 +550,21 @@ namespace __debug
         merge(list& __x, _Compare __comp)
 #endif
         {
-	  __glibcxx_check_sorted_pred(_Base::begin(), _Base::end(), __comp);
-	  __glibcxx_check_sorted_pred(__x.begin().base(), __x.end().base(),
-				      __comp);
-	  for (iterator __tmp = __x.begin(); __tmp != __x.end(); )
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 300. list::merge() specification incomplete
+	  if (this != &__x)
 	    {
-	      iterator __victim = __tmp++;
-	      __victim._M_attach(&__x);
+	      __glibcxx_check_sorted_pred(_Base::begin(), _Base::end(),
+					  __comp);
+	      __glibcxx_check_sorted_pred(__x.begin().base(), __x.end().base(),
+					  __comp);
+	      for (iterator __tmp = __x.begin(); __tmp != __x.end();)
+		{
+		  iterator __victim = __tmp++;
+		  this->_M_transfer_iter(__victim);
+		}
+	      _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
 	    }
-	  _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
 	}
 
       void
