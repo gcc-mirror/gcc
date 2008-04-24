@@ -1,3 +1,7 @@
+2008-04-24 Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/slp-15.c: Fix scan when vect_int_mult is false.
+
 2008-04-24  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/36035
