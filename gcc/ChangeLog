@@ -1,3 +1,12 @@
+2008-04-24  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	2008-04-09  David Edelsohn  <edelsohn@gnu.org>
+
+	PR libstdc++/35597
+	* toplev.c (process_options): Remove -ffunction-sections debugging
+	warning.
+
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35758
