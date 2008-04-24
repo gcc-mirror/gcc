@@ -1,3 +1,10 @@
+2008-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35994
+	* trans-instrinsic.c (gfc_conv_intrinsic_minmaxloc): Correctly adjust
+	loop counter offset.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* trans-expr.c (gfc_conv_structure): Don't set TREE_INVARIANT.
