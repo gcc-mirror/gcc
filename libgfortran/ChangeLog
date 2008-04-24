@@ -1,3 +1,7 @@
+2008-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/time_1.h (__time_1): Remove unused variable.
+
 2008-04-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35988
