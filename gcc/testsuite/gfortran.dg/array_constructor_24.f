@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-require-effective-target fortran_large_real }
 ! Tests the fix for PR35944/6/7, in which the variable array constructors below
 ! were incorrectly translated and wrong code was produced.
 !
@@ -35,7 +34,7 @@
       subroutine fa2083
       implicit none
       integer j1,k
-      parameter (k=selected_real_kind (precision (0.0_8) + 1)) ! failed
+      parameter (k=8)              !failed for k=10
       REAL(k) QDA1(10)
       REAL(k) QDA(10), qval
       qda = (/ 1,2,3,4,5,6,7,8,9,10 /)
