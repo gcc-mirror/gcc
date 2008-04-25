@@ -195,8 +195,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   crx-*		\
- | mt-*			\
+   mt-*			\
  | strongarm*-*		\
  | ep9312*-*		\
  | xscale*-*		\
