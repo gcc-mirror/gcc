@@ -5270,7 +5270,8 @@ expand_float (rtx to, rtx from, int unsignedp)
       end_sequence ();
 
       emit_libcall_block (insns, target, value,
-			  gen_rtx_FLOAT (GET_MODE (to), from));
+			  gen_rtx_fmt_e (unsignedp ? UNSIGNED_FLOAT : FLOAT,
+					 GET_MODE (to), from));
     }
 
  done:
