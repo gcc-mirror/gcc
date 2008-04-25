@@ -1,5 +1,6 @@
 /* PR c/25682 */
 /* { dg-do compile } */
+/* { dg-options "-ansi" } */
 /* Test whether we don't ICE on questionable constructs where offsetof
    should have been used instead.  */
 

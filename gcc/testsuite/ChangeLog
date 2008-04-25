@@ -1,3 +1,22 @@
+2008-04-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/array-quals-1.c: Add xfail for x86_64-*-mingw*.
+	* gcc.dg/builtins-12.c: Add dg-options "-ansi".
+	* gcc.dg/builtins-13.c: Likewise.
+	* gcc.dg/pr25682.c: Likewise.
+	* gcc.dg/pr33694.c: Likewise.
+	* gcc.dg/c90-const-expr-2.c: Add check for _WIN64 define.
+	* gcc.dg/c99-const-expr-2.c: Likewise.
+	* gcc.dg/ia64-sync-1.c: Add typedef of size_t, for prototype.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/ia64-sync-3.c: Likewise
+	* gcc.dg/large-size-array.c:  Add check for _WIN64 define.
+	* gcc.dg/large-size-array-3.c: Likewise.
+	* gcc.dg/large-size-array-2.c:  Add x86_64-*-mingw* for ignore error
+	check.
+	* gcc.dg/large-size-array-4.c: Likewise.
+	* gcc.dg/max-1.c: Replace use of long by ssize_t.
+
 2008-04-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/lower-subreg-1.c: Skip IA64 platform.

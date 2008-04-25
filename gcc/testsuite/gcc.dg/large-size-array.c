@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 #include <limits.h>
 
-#ifdef __LP64__
+#if defined(__LP64__) || defined(_WIN64)
 #define DIM UINT_MAX>>1
 #else
 #define DIM USHRT_MAX>>1

@@ -14,7 +14,7 @@ int *a;
 int b;
 long *c;
 
-#ifdef _LP64
+#if defined(_LP64) || defined(_WIN64)
 #define ZERO 0L
 #else
 #define ZERO 0

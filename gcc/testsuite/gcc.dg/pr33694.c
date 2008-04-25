@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-ansi" } */
 
 /* This used to ICE with type-checking enabled.  */
 
