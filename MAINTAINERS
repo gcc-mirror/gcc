@@ -43,7 +43,7 @@ avr port		Denis Chertykov		denisc@overta.ru
 avr port		Anatoly Sokolov		aesok@post.ru
 bfin port		Bernd Schmidt		bernd.schmidt@analog.com
 cris port		Hans-Peter Nilsson	hp@axis.com
-crx port		Paul Woegerer		paul.woegerer@nsc.com
+crx port		Pompapathi V Gadad 	Pompapathi.V.Gadad@nsc.com
 fr30 port		Nick Clifton		nickc@redhat.com
 frv port		Aldy Hernandez		aldyh@redhat.com
 frv port		Alexandre Oliva		aoliva@redhat.com
