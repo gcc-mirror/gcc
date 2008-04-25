@@ -1,3 +1,7 @@
+2008-04-25  Pompapathi V Gadad <Pompapathi.V.Gadad@nsc.com>
+
+	* config.gcc (crx-*-elf): Remove deprecation.
+	
 2008-04-24  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline:
