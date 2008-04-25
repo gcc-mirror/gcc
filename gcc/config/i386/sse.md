@@ -70,8 +70,8 @@
 ;; This is essential for maintaining stable calling conventions.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:SSEMODEI 0 "nonimmediate_operand" "")
-	(match_operand:SSEMODEI 1 "nonimmediate_operand" ""))]
+  [(set (match_operand:SSEMODE 0 "nonimmediate_operand" "")
+	(match_operand:SSEMODE 1 "nonimmediate_operand" ""))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -79,8 +79,8 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:SSEMODEI 0 "nonimmediate_operand" "=x,x ,m")
-	(match_operand:SSEMODEI 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
+  [(set (match_operand:SSEMODE 0 "nonimmediate_operand" "=x,x ,m")
+	(match_operand:SSEMODE 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -91,23 +91,32 @@
       return standard_sse_constant_opcode (insn, operands[1]);
     case 1:
     case 2:
-      if (get_attr_mode (insn) == MODE_V4SF)
-	return "movaps\t{%1, %0|%0, %1}";
-      else
-	return "movdqa\t{%1, %0|%0, %1}";
+      switch (get_attr_mode (insn))
+	{
+	case MODE_V4SF:
+	  return "movaps\t{%1, %0|%0, %1}";
+	case MODE_V2DF:
+	  return "movapd\t{%1, %0|%0, %1}";
+	default:
+	  return "movdqa\t{%1, %0|%0, %1}";
+	}
     default:
       gcc_unreachable ();
     }
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set (attr "mode")
-	(if_then_else
-	  (ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
-		    (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
-	       (and (eq_attr "alternative" "2")
-	  	    (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
-		        (const_int 0))))
-	  (const_string "V4SF")
+	(cond [(ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
+			 (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
+		    (and (eq_attr "alternative" "2")
+			 (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
+			     (const_int 0))))
+		 (const_string "V4SF")
+	       (eq (const_string "<MODE>mode") (const_string "V4SFmode"))
+		 (const_string "V4SF")
+	       (eq (const_string "<MODE>mode") (const_string "V2DFmode"))
+		 (const_string "V2DF")
+	      ]
 	  (const_string "TI")))])
 
 ;; Move a DI from a 32-bit register pair (e.g. %edx:%eax) to an xmm.
@@ -145,36 +154,6 @@
       gcc_unreachable ();
 })
 
-(define_expand "mov<mode>"
-  [(set (match_operand:SSEMODEF2P 0 "nonimmediate_operand" "")
-	(match_operand:SSEMODEF2P 1 "nonimmediate_operand" ""))]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_move (<MODE>mode, operands);
-  DONE;
-})
-
-(define_insn "*movv4sf_internal"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,m")
-	(match_operand:V4SF 1 "nonimmediate_or_sse_const_operand" "C,xm,x"))]
-  "TARGET_SSE
-   && (register_operand (operands[0], V4SFmode)
-       || register_operand (operands[1], V4SFmode))"
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return standard_sse_constant_opcode (insn, operands[1]);
-    case 1:
-    case 2:
-      return "movaps\t{%1, %0|%0, %1}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sselog1,ssemov,ssemov")
-   (set_attr "mode" "V4SF")])
-
 (define_split
   [(set (match_operand:V4SF 0 "register_operand" "")
 	(match_operand:V4SF 1 "zero_extended_scalar_load_operand" ""))]
@@ -188,38 +167,6 @@
   operands[1] = simplify_gen_subreg (SFmode, operands[1], V4SFmode, 0);
   operands[2] = CONST0_RTX (V4SFmode);
 })
-
-(define_insn "*movv2df_internal"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand" "=x,x,m")
-	(match_operand:V2DF 1 "nonimmediate_or_sse_const_operand" "C,xm,x"))]
-  "TARGET_SSE
-   && (register_operand (operands[0], V2DFmode)
-       || register_operand (operands[1], V2DFmode))"
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return standard_sse_constant_opcode (insn, operands[1]);
-    case 1:
-    case 2:
-      if (get_attr_mode (insn) == MODE_V4SF)
-	return "movaps\t{%1, %0|%0, %1}";
-      else
-	return "movapd\t{%1, %0|%0, %1}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sselog1,ssemov,ssemov")
-   (set (attr "mode")
-	(if_then_else
-	  (ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
-		    (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
-	       (and (eq_attr "alternative" "2")
-	  	    (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
-		        (const_int 0))))
-	  (const_string "V4SF")
-	  (const_string "V2DF")))])
 
 (define_split
   [(set (match_operand:V2DF 0 "register_operand" "")
