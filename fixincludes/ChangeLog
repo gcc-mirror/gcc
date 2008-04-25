@@ -1,3 +1,8 @@
+2008-04-25  Kai Tietz  <kai.tietz@onvision.com>
+
+	* fixincl.c (fix_with_system): Cast pointer difference to long.
+	* fixlib.c (make_raw_shell_str): Cast compare to avoid sign warning.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457
