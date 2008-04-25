@@ -1,3 +1,19 @@
+2008-04-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35960
+	* m4/reshape.m4:  Fix typo in last commit.
+	* generated/reshape_i4.c:  Regererated.
+	* generated/reshape_i8.c:  Regenerated.
+	* generated/reshape_i16.c:  Regenerated.
+	* generated/reshape_r4.c:  Regenerated.
+	* generated/reshape_r8.c:  Regenerated.
+	* generated/reshape_r10.c:  Regenerated.
+	* generated/reshape_r16.c:  Regenerated.
+	* generated/reshape_c4.c:  Regenerated.
+	* generated/reshape_c8.c:  Regenerated.
+	* generated/reshape_c10.c:  Regenerated.
+	* generated/reshape_c16.c:  Regenerated.
+
 2008-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/time_1.h (__time_1): Remove unused variable.

@@ -94,10 +94,10 @@ reshape_4 (gfc_array_i4 * const restrict ret,
     {
       shape_data[n] = shape->data[n * shape->dim[0].stride];
       if (shape_data[n] <= 0)
-	{
-          shape_data[n] = 0;
-	  shape_empty = 1;
-        }
+      {
+        shape_data[n] = 0;
+	shape_empty = 1;
+      }
     }
 
   if (ret->data == NULL)
@@ -131,7 +131,7 @@ reshape_4 (gfc_array_i4 * const restrict ret,
       rstride[n] = ret->dim[dim].stride;
       rextent[n] = ret->dim[dim].ubound + 1 - ret->dim[dim].lbound;
       if (rextent[n] < 0)
-        rextent[n] == 0;
+        rextent[n] = 0;
 
       if (rextent[n] != shape_data[dim])
         runtime_error ("shape and target do not conform");

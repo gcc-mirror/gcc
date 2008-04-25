@@ -135,7 +135,7 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
       rstride[n] = ret->dim[dim].stride;
       rextent[n] = ret->dim[dim].ubound + 1 - ret->dim[dim].lbound;
       if (rextent[n] < 0)
-        rextent[n] == 0;
+        rextent[n] = 0;
 
       if (rextent[n] != shape_data[dim])
         runtime_error ("shape and target do not conform");
