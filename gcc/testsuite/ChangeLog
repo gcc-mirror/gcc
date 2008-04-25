@@ -10,9 +10,9 @@
 	* gcc.dg/ia64-sync-1.c: Add typedef of size_t, for prototype.
 	* gcc.dg/ia64-sync-2.c: Likewise.
 	* gcc.dg/ia64-sync-3.c: Likewise
-	* gcc.dg/large-size-array.c:  Add check for _WIN64 define.
+	* gcc.dg/large-size-array.c: Add check for _WIN64 define.
 	* gcc.dg/large-size-array-3.c: Likewise.
-	* gcc.dg/large-size-array-2.c:  Add x86_64-*-mingw* for ignore error
+	* gcc.dg/large-size-array-2.c: Add x86_64-*-mingw* for ignore error
 	check.
 	* gcc.dg/large-size-array-4.c: Likewise.
 	* gcc.dg/max-1.c: Replace use of long by ssize_t.
@@ -21,7 +21,7 @@
 
 	* gcc.dg/lower-subreg-1.c: Skip IA64 platform.
 
-2008-04-24 Steve Ellcey  <sje@cup.hp.com>
+2008-04-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/vect/slp-15.c: Fix scan when vect_int_mult is false.
 
@@ -48,7 +48,7 @@
 	* gcc.c-torture/execute/20080424-1.c: New test.
 
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36034
 	* gcc.c-torture/execute/pr36034-1.c: New testcase.

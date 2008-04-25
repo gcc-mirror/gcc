@@ -11,13 +11,13 @@
 2008-04-24  Nathan Froyd  <froydnj@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-        * config/rs6000/rs6000.opt (mspe): Remove Var property.
+	* config/rs6000/rs6000.opt (mspe): Remove Var property.
 	(misel): Likewise.
-        * config/rs6000/rs6000.h (rs6000_spe): Declare.
+	* config/rs6000/rs6000.h (rs6000_spe): Declare.
 	(rs6000_isel): Likewise.
-        * config/rs6000/rs6000.c (rs6000_spe): New variable.
+	* config/rs6000/rs6000.c (rs6000_spe): New variable.
 	(rs6000_isel): New variable.
-        (rs6000_handle_option): Handle OPT_mspe and OPT_misel.
+	(rs6000_handle_option): Handle OPT_mspe and OPT_misel.
 
 2008-04-24  Jakub Jelinek  <jakub@redhat.com>
 
@@ -51,7 +51,7 @@
 	the original op1, rather than delta by step.
 
 2008-04-22  Antoniu Pop  <antoniu.pop@gmail.com>
-            Sebastian Pop  <sebastian.pop@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-parloops.c (take_address_of, eliminate_local_variables_1,
 	eliminate_local_variables_stmt, eliminate_local_variables,
@@ -68,7 +68,7 @@
 	* tree-cfg.c (gather_blocks_in_sese_region): Extern.
 
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36034
 	* tree-vect-analyze.c (vect_analyze_group_access): SLP is
@@ -80,9 +80,9 @@
 	* tree-ssa-propagate.c (fold_predicate_in): Update call to
 	vrp_evaluate_conditional.
 	* tree-vrp.c (vrp_evaluate_conditional_warnv): Remove.
-        (vrp_evaluate_conditional): Split the cond argument.
-        (vrp_visit_cond_stmt): Use vrp_evaluate_conditional_warnv_with_ops.
-        (simplify_stmt_for_jump_threading): Update call to
+	(vrp_evaluate_conditional): Split the cond argument.
+	(vrp_visit_cond_stmt): Use vrp_evaluate_conditional_warnv_with_ops.
+	(simplify_stmt_for_jump_threading): Update call to
 	vrp_evaluate_conditional.
 
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
@@ -93,8 +93,8 @@
 
 2008-04-24  Danny Smith  <dannysmith@users.net>
 
-	* c-format.c (check_format_info_main): Use strncmp rather than a magic prefix
-	to handle multichar length specs.
+	* c-format.c (check_format_info_main): Use strncmp rather than a
+	magic prefix to handle multichar length specs.
 	* config/i386/msformat-c.c (format_length_info ms_printf_length_specs):
 	Don't prefix "I64" and "I32" with '\0'.
 
