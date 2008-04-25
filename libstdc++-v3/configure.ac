@@ -95,6 +95,12 @@ GLIBCXX_ENABLE_HOSTED
 # Enable compiler support that doesn't require linking.
 GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
 GLIBCXX_ENABLE_PCH($is_hosted)
+GLIBCXX_ENABLE_ATOMIC_BUILTINS
+GLIBCXX_ENABLE_THREADS
+
+# Checks for compiler support that don't require linking.
+GLIBCXX_CHECK_COMPILER_FEATURES
+GLIBCXX_CHECK_STANDARD_LAYOUT
 
 # Enable all the variable C++ runtime options that doesn't require linking.
 GLIBCXX_ENABLE_CSTDIO
@@ -113,12 +119,7 @@ GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 
 # Checks for operating systems support that don't require linking.
 GLIBCXX_CHECK_SYSTEM_ERROR
-GLIBCXX_CHECK_STANDARD_LAYOUT
-GLIBCXX_ENABLE_THREADS
 
-# Checks for compiler support that don't require linking.
-GLIBCXX_ENABLE_ATOMIC_BUILTINS
-GLIBCXX_CHECK_COMPILER_FEATURES
 
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then

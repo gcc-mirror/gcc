@@ -1,6 +1,13 @@
+2008-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/35887
+	* acinclude.m4: (GLIBCXX_ENABLE_PARALLEL): Check for thread support.
+	* configure.ac: Re-order compiler macros.
+	* configure: Regenerated.
+
 2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/35887 
+	PR libstdc++/35887
 	* configure.ac: Add default argument to GLIBCXX_ENABLE_PARALLEL.
 	Move atomic warnings to GLIBCXX_ENABLE_ATOMIC_BUILTINS.
 	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Check for --disable-libgomp.
@@ -9,7 +16,7 @@
 	* include/Makefile.am (parallel_headers): Make conditional on
 	ENABLE_PARALLEL.
 	* include/Makefile.in: Regenerate.
-	
+
 2008-04-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35969
@@ -30,7 +37,7 @@
 	* include/ext/atomicity.h: Use  _GLIBCXX_ATOMIC_BUILTINS_4.
 	* libsupc++/guard.cc: Use  _GLIBCXX_ATOMIC_BUILTINS_4.
 	* doc/xml/manual/concurrency.xm: Update docs.
-	
+
 2008-04-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/hpux/os_defines.h: Use _GLIBCXX_BEGIN_NAMESPACE,
