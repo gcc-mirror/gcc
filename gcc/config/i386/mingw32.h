@@ -180,6 +180,22 @@ __enable_execute_stack (void *addr)					\
 #undef ENABLE_EXECUTE_STACK
 #define ENABLE_EXECUTE_STACK MINGW_ENABLE_EXECUTE_STACK
 
+#define SUBTARGET_INIT_BUILTINS					\
+do {								\
+  if (TARGET_64BIT_MS_ABI)					\
+    {								\
+	  /* These builtin functions have a different return	\
+	     type (intptr_t) on 64-bit MS Windows.  */		\
+	  disable_builtin_function ("execl");			\
+	  disable_builtin_function ("execlp");			\
+	  disable_builtin_function ("execle");			\
+	  disable_builtin_function ("execv");			\
+	  disable_builtin_function ("execvp");			\
+	  disable_builtin_function ("execve");			\
+    }								\
+  /* Second argument of MS scalb is long, not double. */	\
+  disable_builtin_function ("scalb");				\
+} while (0)                                                     \
 
 #ifdef IN_LIBGCC2
 #include <windows.h>
