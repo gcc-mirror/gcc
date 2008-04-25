@@ -6,6 +6,7 @@
    Written by Roger Sayle, 12th April 2003.  */
 
 /* { dg-do compile } */
+/* { dg-options "-ansi" } */
 /* { dg-final { scan-assembler-not "__builtin_" } } */
 
 typedef __SIZE_TYPE__ size_t;

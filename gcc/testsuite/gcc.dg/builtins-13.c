@@ -6,6 +6,7 @@
    Written by Roger Sayle, 12th April 2003.  */
 
 /* { dg-do link } */
+/* { dg-options "-ansi" } */
 
 typedef __SIZE_TYPE__ size_t;
 

@@ -6,8 +6,10 @@
 
 /* Test basic functionality of the intrinsics.  */
 
+__extension__ typedef __SIZE_TYPE__ size_t;
+
 extern void abort (void);
-extern void *memcpy (void *, const void *, __SIZE_TYPE__);
+extern void *memcpy (void *, const void *, size_t);
 
 static int AI[18];
 static int init_si[18] = { 0,0,0,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
