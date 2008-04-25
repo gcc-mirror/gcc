@@ -1,3 +1,14 @@
+2008-04-25  Tobias Burnus  <burnus@net-b.de>
+	    Daniel Franke <franke.daniel@gmail.com>
+
+	PR fortran/35156
+	* gfortranspec.c (lang_specific_driver): Deprecate
+	-M option; fix ICE when "-M" is last argument and
+	make "-M<dir>" work.
+	* options.c (gfc_handle_module_path_options): 
+	Use -J instead of -M in error messages.
+	* invoke.texi: Mark -M as depecated.
+
 2008-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
