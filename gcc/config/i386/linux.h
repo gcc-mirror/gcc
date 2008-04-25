@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
    frame, so we cannot allow profiling without a frame pointer.  */
 
 #undef SUBTARGET_FRAME_POINTER_REQUIRED
-#define SUBTARGET_FRAME_POINTER_REQUIRED current_function_profile
+#define SUBTARGET_FRAME_POINTER_REQUIRED crtl->profile
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

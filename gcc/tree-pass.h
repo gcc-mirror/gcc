@@ -335,7 +335,6 @@ extern struct gimple_opt_pass pass_simple_dse;
 extern struct gimple_opt_pass pass_nrv;
 extern struct gimple_opt_pass pass_mark_used_blocks;
 extern struct gimple_opt_pass pass_rename_ssa_copies;
-extern struct gimple_opt_pass pass_expand;
 extern struct gimple_opt_pass pass_rest_of_compilation;
 extern struct gimple_opt_pass pass_sink_code;
 extern struct gimple_opt_pass pass_fre;
@@ -373,6 +372,7 @@ extern struct gimple_opt_pass pass_free_datastructures;
 extern struct gimple_opt_pass pass_init_datastructures;
 extern struct gimple_opt_pass pass_fixup_cfg;
 
+extern struct rtl_opt_pass pass_expand;
 extern struct rtl_opt_pass pass_init_function;
 extern struct rtl_opt_pass pass_jump;
 extern struct rtl_opt_pass pass_rtl_eh;

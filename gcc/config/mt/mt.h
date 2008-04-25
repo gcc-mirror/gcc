@@ -422,7 +422,7 @@ enum save_direction
 	  handlers.  */						\
 	|| (interrupt_handler && call_used_regs[regno] 		\
 	   && !current_function_is_leaf)			\
-	||(current_function_calls_eh_return			\
+	||(crtl->calls_eh_return			\
 	   && (regno == GPR_R7 || regno == GPR_R8))		\
 	)							\
   )

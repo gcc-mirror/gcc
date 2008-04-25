@@ -1938,7 +1938,7 @@ mcore_expand_prolog (void)
       
       ASM_OUTPUT_CG_NODE (asm_out_file, mcore_current_function_name, space_allocated);
 
-      if (current_function_calls_alloca)
+      if (cfun->calls_alloca)
 	ASM_OUTPUT_CG_EDGE (asm_out_file, mcore_current_function_name, "alloca", 1);
 
       /* 970425: RBE:

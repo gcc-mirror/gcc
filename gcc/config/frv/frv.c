@@ -1172,7 +1172,7 @@ frv_stack_info (void)
 	  for (regno = first; regno <= last; regno++)
 	    {
 	      if ((df_regs_ever_live_p (regno) && !call_used_regs[regno])
-		  || (current_function_calls_eh_return
+		  || (crtl->calls_eh_return
 		      && (regno >= FIRST_EH_REGNUM && regno <= LAST_EH_REGNUM))
 		  || (!TARGET_FDPIC && flag_pic
 		      && cfun->uses_pic_offset_table && regno == PIC_REGNO))
@@ -1957,7 +1957,7 @@ frv_expand_epilogue (bool emit_return)
     }
 
   /* If this function uses eh_return, add the final stack adjustment now.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     emit_insn (gen_stack_adjust (sp, sp, EH_RETURN_STACKADJ_RTX));
 
   if (emit_return)

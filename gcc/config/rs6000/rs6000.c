@@ -11465,7 +11465,7 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
       && !df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
     df_set_regs_ever_live (RS6000_PIC_OFFSET_TABLE_REGNUM, true);
 
-  current_function_uses_pic_offset_table = 1;
+  crtl->uses_pic_offset_table = 1;
 
   return pic_offset_table_rtx;
 }
@@ -14144,7 +14144,7 @@ first_reg_to_save (void)
 
 #if TARGET_MACHO
   if (flag_pic
-      && current_function_uses_pic_offset_table
+      && crtl->uses_pic_offset_table
       && first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM)
     return RS6000_PIC_OFFSET_TABLE_REGNUM;
 #endif
@@ -14181,7 +14181,7 @@ first_altivec_reg_to_save (void)
   /* On Darwin, the unwind routines are compiled without
      TARGET_ALTIVEC, and use save_world to save/restore the
      altivec registers when necessary.  */
-  if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
+  if (DEFAULT_ABI == ABI_DARWIN && crtl->calls_eh_return
       && ! TARGET_ALTIVEC)
     return FIRST_ALTIVEC_REGNO + 20;
 
@@ -14205,7 +14205,7 @@ compute_vrsave_mask (void)
   /* On Darwin, the unwind routines are compiled without
      TARGET_ALTIVEC, and use save_world to save/restore the
      call-saved altivec registers when necessary.  */
-  if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
+  if (DEFAULT_ABI == ABI_DARWIN && crtl->calls_eh_return
       && ! TARGET_ALTIVEC)
     mask |= 0xFFF;
 
@@ -14247,7 +14247,7 @@ compute_save_world_info (rs6000_stack_t *info_ptr)
   info_ptr->world_save_p
     = (WORLD_SAVE_P (info_ptr)
        && DEFAULT_ABI == ABI_DARWIN
-       && ! (current_function_calls_setjmp && flag_exceptions)
+       && ! (cfun->calls_setjmp && flag_exceptions)
        && info_ptr->first_fp_reg_save == FIRST_SAVED_FP_REGNO
        && info_ptr->first_gp_reg_save == FIRST_SAVED_GP_REGNO
        && info_ptr->first_altivec_reg_save == FIRST_SAVED_ALTIVEC_REGNO
@@ -14432,7 +14432,7 @@ rs6000_stack_info (void)
   if (((TARGET_TOC && TARGET_MINIMAL_TOC)
        || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
        || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
-      && current_function_uses_const_pool
+      && crtl->uses_const_pool
       && info_ptr->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
     first_gp = RS6000_PIC_OFFSET_TABLE_REGNUM;
   else
@@ -14468,14 +14468,14 @@ rs6000_stack_info (void)
 
   /* Determine if we need to save the link register.  */
   if ((DEFAULT_ABI == ABI_AIX
-       && current_function_profile
+       && crtl->profile
        && !TARGET_PROFILE_KERNEL)
 #ifdef TARGET_RELOCATABLE
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
 #endif
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
-      || (DEFAULT_ABI == ABI_V4 && current_function_calls_alloca)
+      || (DEFAULT_ABI == ABI_V4 && cfun->calls_alloca)
       || info_ptr->calls_p
       || rs6000_ra_ever_killed ())
     {
@@ -14496,7 +14496,7 @@ rs6000_stack_info (void)
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
      the exception handler.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       unsigned int i;
       for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM; ++i)
@@ -14715,9 +14715,9 @@ spe_func_has_64bit_regs_p (void)
 
   /* Functions that save and restore all the call-saved registers will
      need to save/restore the registers in 64-bits.  */
-  if (current_function_calls_eh_return
-      || current_function_calls_setjmp
-      || current_function_has_nonlocal_goto)
+  if (crtl->calls_eh_return
+      || cfun->calls_setjmp
+      || crtl->has_nonlocal_goto)
     return true;
 
   insns = get_insns ();
@@ -14969,7 +14969,7 @@ rs6000_ra_ever_killed (void)
   rtx reg;
   rtx insn;
 
-  if (current_function_is_thunk)
+  if (crtl->is_thunk)
     return 0;
 
   /* regs_ever_live has LR marked as used if any sibcalls are present,
@@ -15125,7 +15125,7 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
       rtx tmp;
 
       if (frame_pointer_needed
-	  || current_function_calls_alloca
+	  || cfun->calls_alloca
 	  || info->total_size > 32767)
 	{
 	  tmp = gen_frame_mem (Pmode, frame_rtx);
@@ -15264,7 +15264,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
       return;
     }
 
-  if (current_function_limit_stack)
+  if (crtl->limit_stack)
     {
       if (REG_P (stack_limit_rtx)
 	  && REGNO (stack_limit_rtx) > 1
@@ -15620,14 +15620,14 @@ rs6000_emit_prologue (void)
 			  && no_global_regs_above (info->first_gp_reg_save));
   saving_FPRs_inline = (info->first_fp_reg_save == 64
 			|| FP_SAVE_INLINE (info->first_fp_reg_save)
-			|| current_function_calls_eh_return
+			|| crtl->calls_eh_return
 			|| cfun->machine->ra_need_lr);
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
   if (! WORLD_SAVE_P (info)
       && info->push_p
       && (DEFAULT_ABI == ABI_V4
-	  || current_function_calls_eh_return))
+	  || crtl->calls_eh_return))
     {
       if (info->total_size < 32767)
 	sp_offset = info->total_size;
@@ -15670,7 +15670,7 @@ rs6000_emit_prologue (void)
 		  && info->cr_save_offset == 4
 		  && info->push_p
 		  && info->lr_save_p
-		  && (!current_function_calls_eh_return
+		  && (!crtl->calls_eh_return
 		       || info->ehrd_offset == -432)
 		  && info->vrsave_save_offset == -224
 		  && info->altivec_save_offset == -416);
@@ -15967,7 +15967,7 @@ rs6000_emit_prologue (void)
 
   /* ??? There's no need to emit actual instructions here, but it's the
      easiest way to get the frame unwind information emitted.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       unsigned int i, regno;
 
@@ -16033,7 +16033,7 @@ rs6000_emit_prologue (void)
   /* Update stack and set back pointer unless this is V.4,
      for which it was done previously.  */
   if (!WORLD_SAVE_P (info) && info->push_p
-      && !(DEFAULT_ABI == ABI_V4 || current_function_calls_eh_return))
+      && !(DEFAULT_ABI == ABI_V4 || crtl->calls_eh_return))
     {
       if (info->total_size < 32767)
       sp_offset = info->total_size;
@@ -16161,7 +16161,7 @@ rs6000_emit_prologue (void)
 
 #if TARGET_MACHO
   if (DEFAULT_ABI == ABI_DARWIN
-      && flag_pic && current_function_uses_pic_offset_table)
+      && flag_pic && crtl->uses_pic_offset_table)
     {
       rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
       rtx src = machopic_function_base_sym ();
@@ -16280,11 +16280,11 @@ rs6000_emit_epilogue (int sibcall)
 			 && info->first_gp_reg_save < 31
 			 && no_global_regs_above (info->first_gp_reg_save));
   restoring_FPRs_inline = (sibcall
-			   || current_function_calls_eh_return
+			   || crtl->calls_eh_return
 			   || info->first_fp_reg_save == 64
 			   || FP_SAVE_INLINE (info->first_fp_reg_save));
   use_backchain_to_restore_sp = (frame_pointer_needed
-				 || current_function_calls_alloca
+				 || cfun->calls_alloca
 				 || info->total_size > 32767);
   using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
 			 || rs6000_cpu == PROCESSOR_PPC603
@@ -16311,7 +16311,7 @@ rs6000_emit_epilogue (int sibcall)
 		       + LAST_ALTIVEC_REGNO + 1 - info->first_altivec_reg_save
 		       + 63 + 1 - info->first_fp_reg_save);
 
-      strcpy (rname, ((current_function_calls_eh_return) ?
+      strcpy (rname, ((crtl->calls_eh_return) ?
 		      "*eh_rest_world_r10" : "*rest_world"));
       alloc_rname = ggc_strdup (rname);
 
@@ -16473,7 +16473,7 @@ rs6000_emit_epilogue (int sibcall)
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
-	   && !current_function_calls_eh_return)
+	   && !crtl->calls_eh_return)
     {
       emit_insn (TARGET_32BIT
 		 ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx,
@@ -16553,7 +16553,7 @@ rs6000_emit_epilogue (int sibcall)
 		    gen_rtx_REG (Pmode, 0));
 
   /* Load exception handler data registers, if needed.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       unsigned int i, regno;
 
@@ -16750,7 +16750,7 @@ rs6000_emit_epilogue (int sibcall)
 	       : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
 			     GEN_INT (sp_offset)));
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
       emit_insn (TARGET_32BIT
@@ -16880,7 +16880,7 @@ rs6000_output_function_epilogue (FILE *file,
      System V.4 Powerpc's (and the embedded ABI derived from it) use a
      different traceback table.  */
   if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive
-      && rs6000_traceback != traceback_none && !current_function_is_thunk)
+      && rs6000_traceback != traceback_none && !crtl->is_thunk)
     {
       const char *fname = NULL;
       const char *language_string = lang_hooks.name;
@@ -17864,13 +17864,13 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
       int caller_addr_regno = LR_REGNO;
 
       /* Be conservative and always set this, at least for now.  */
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
 
 #if TARGET_MACHO
       /* For PIC code, set up a stub and collect the caller's address
 	 from r0, which is where the prologue puts it.  */
       if (MACHOPIC_INDIRECT
-	  && current_function_uses_pic_offset_table)
+	  && crtl->uses_pic_offset_table)
 	caller_addr_regno = 0;
 #endif
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mcount_name),
@@ -20646,7 +20646,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 
   if (TARGET_RELOCATABLE
       && !TARGET_SECURE_PLT
-      && (get_pool_size () != 0 || current_function_profile)
+      && (get_pool_size () != 0 || crtl->profile)
       && uses_TOC ())
     {
       char buf[256];

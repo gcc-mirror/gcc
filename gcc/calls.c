@@ -399,7 +399,7 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
     {
       REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_SETJMP, const0_rtx,
 						 REG_NOTES (call_insn));
-      current_function_calls_setjmp = 1;
+      cfun->calls_setjmp = 1;
     }
 
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
@@ -2122,7 +2122,7 @@ expand_call (tree exp, rtx target, int ignore)
     type_arg_types = TYPE_ARG_TYPES (funtype);
 
   if (flags & ECF_MAY_BE_ALLOCA)
-    current_function_calls_alloca = 1;
+    cfun->calls_alloca = 1;
 
   /* If struct_value_rtx is 0, it means pass the address
      as if it were an extra parameter.  Put the argument expression
@@ -2299,8 +2299,6 @@ expand_call (tree exp, rtx target, int ignore)
   if (crtl->preferred_stack_boundary < preferred_stack_boundary
       && fndecl != current_function_decl)
     crtl->preferred_stack_boundary = preferred_stack_boundary;
-  if (fndecl == current_function_decl)
-    cfun->recursive_call_emit = true;
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
@@ -3160,7 +3158,7 @@ expand_call (tree exp, rtx target, int ignore)
   if (tail_call_insns)
     {
       emit_insn (tail_call_insns);
-      cfun->tail_call_emit = true;
+      crtl->tail_call_emit = true;
     }
   else
     emit_insn (normal_call_insns);

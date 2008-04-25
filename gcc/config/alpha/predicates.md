@@ -268,7 +268,7 @@
   tree op_decl, cfun_sec, op_sec;
 
   /* If profiling is implemented via linker tricks, we can't jump
-     to the nogp alternate entry point.  Note that current_function_profile
+     to the nogp alternate entry point.  Note that crtl->profile
      would not be correct, since that doesn't indicate if the target
      function uses profiling.  */
   /* ??? TARGET_PROFILING_NEEDS_GP isn't really the right test,

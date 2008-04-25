@@ -2735,7 +2735,7 @@ out_movhi_mr_r (rtx insn, rtx op[], int *l)
 int
 frame_pointer_required_p (void)
 {
-  return (current_function_calls_alloca
+  return (cfun->calls_alloca
 	  || crtl->args.info.nregs == 0
   	  || get_frame_size () > 0);
 }

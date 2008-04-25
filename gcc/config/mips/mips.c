@@ -7656,12 +7656,12 @@ mips_global_pointer (void)
 
   /* FUNCTION_PROFILER includes a jal macro, so we need to give it
      a valid gp.  */
-  if (current_function_profile)
+  if (crtl->profile)
     return GLOBAL_POINTER_REGNUM;
 
   /* If the function has a nonlocal goto, $gp must hold the correct
      global pointer for the target function.  */
-  if (current_function_has_nonlocal_goto)
+  if (crtl->has_nonlocal_goto)
     return GLOBAL_POINTER_REGNUM;
 
   /* If the gp is never referenced, there's no need to initialize it.
@@ -7678,7 +7678,7 @@ mips_global_pointer (void)
      In cases like these, reload will have added the constant to the pool
      but no instruction will yet refer to it.  */
   if (!df_regs_ever_live_p (GLOBAL_POINTER_REGNUM)
-      && !current_function_uses_const_pool
+      && !crtl->uses_const_pool
       && !mips_function_has_gp_insn ())
     return 0;
 
@@ -7719,7 +7719,7 @@ mips_save_reg_p (unsigned int regno)
     return TARGET_CALL_SAVED_GP && cfun->machine->global_pointer == regno;
 
   /* Check call-saved registers.  */
-  if ((current_function_saves_all_registers || df_regs_ever_live_p (regno))
+  if ((crtl->saves_all_registers || df_regs_ever_live_p (regno))
       && !call_really_used_regs[regno])
     return true;
 
@@ -7737,7 +7737,7 @@ mips_save_reg_p (unsigned int regno)
     return true;
 
   /* Check for registers that must be saved for FUNCTION_PROFILER.  */
-  if (current_function_profile && MIPS_SAVE_REG_FOR_PROFILING_P (regno))
+  if (crtl->profile && MIPS_SAVE_REG_FOR_PROFILING_P (regno))
     return true;
 
   /* We need to save the incoming return address if it is ever clobbered
@@ -7746,7 +7746,7 @@ mips_save_reg_p (unsigned int regno)
      value in FPRs.  */
   if (regno == GP_REG_FIRST + 31
       && (df_regs_ever_live_p (regno)
-	  || current_function_calls_eh_return
+	  || crtl->calls_eh_return
 	  || mips16_cfun_returns_in_fpr_p ()))
     return true;
 
@@ -7837,7 +7837,7 @@ mips_compute_frame_info (void)
 	 allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
 	 looks like we are trying to create a second frame pointer to the
 	 function, so allocate some stack space to make it happy.  */
-      if (current_function_calls_alloca)
+      if (cfun->calls_alloca)
 	frame->args_size = REG_PARM_STACK_SPACE (cfun->decl);
       else
 	frame->args_size = 0;
@@ -7864,7 +7864,7 @@ mips_compute_frame_info (void)
 
   /* If this function calls eh_return, we must also save and restore the
      EH data registers.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM; i++)
       {
 	frame->num_gp++;
@@ -7952,7 +7952,7 @@ mips_frame_pointer_required (void)
 {
   /* If the function contains dynamic stack allocations, we need to
      use the frame pointer to access the static parts of the frame.  */
-  if (current_function_calls_alloca)
+  if (cfun->calls_alloca)
     return true;
 
   /* In MIPS16 mode, we need a frame pointer for a large frame; otherwise,
@@ -8489,7 +8489,7 @@ mips_expand_prologue (void)
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */
-  if (current_function_profile)
+  if (crtl->profile)
     emit_insn (gen_blockage ());
 }
 
@@ -8627,7 +8627,7 @@ mips_expand_epilogue (bool sibcall_p)
 
   /* Add in the __builtin_eh_return stack adjustment.  We need to
      use a temporary in MIPS16 code.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       if (TARGET_MIPS16)
 	{
@@ -8669,7 +8669,7 @@ mips_can_use_return_insn (void)
   if (!reload_completed)
     return false;
 
-  if (current_function_profile)
+  if (crtl->profile)
     return false;
 
   /* In MIPS16 mode, a function that returns a floating-point value
@@ -11475,7 +11475,7 @@ mips_reorg_process_insns (void)
 
   /* Profiled functions can't be all noreorder because the profiler
      support uses assembler macros.  */
-  if (current_function_profile)
+  if (crtl->profile)
     cfun->machine->all_noreorder_p = false;
 
   /* Code compiled with -mfix-vr4120 can't be all noreorder because

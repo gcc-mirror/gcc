@@ -135,7 +135,7 @@ suitable_for_tail_opt_p (void)
   referenced_var_iterator rvi;
   tree var;
 
-  if (current_function_stdarg)
+  if (cfun->stdarg)
     return false;
 
   /* No local variable nor structure field should be call-clobbered.  We
@@ -164,7 +164,7 @@ suitable_for_tail_call_opt_p (void)
 
   /* alloca (until we have stack slot life analysis) inhibits
      sibling call optimizations, but not tail recursion.  */
-  if (current_function_calls_alloca)
+  if (cfun->calls_alloca)
     return false;
 
   /* If we are using sjlj exceptions, we may need to add a call to
@@ -176,7 +176,7 @@ suitable_for_tail_call_opt_p (void)
   /* Any function that calls setjmp might have longjmp called from
      any called function.  ??? We really should represent this
      properly in the CFG so that this needn't be special cased.  */
-  if (current_function_calls_setjmp)
+  if (cfun->calls_setjmp)
     return false;
 
   /* ??? It is OK if the argument of a function is taken in some cases,

@@ -1969,7 +1969,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
 
   /* If struct value address is treated as the first argument, make it so.  */
   if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
-      && ! current_function_returns_pcc_struct
+      && ! cfun->returns_pcc_struct
       && targetm.calls.struct_value_rtx (TREE_TYPE (fndecl), 1) == 0)
     {
       tree type = build_pointer_type (TREE_TYPE (fntype));
@@ -2008,7 +2008,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   memset (data, 0, sizeof (*data));
 
   /* NAMED_ARG is a mis-nomer.  We really mean 'non-varadic'. */
-  if (!current_function_stdarg)
+  if (!cfun->stdarg)
     data->named_arg = 1;  /* No varadic parms.  */
   else if (TREE_CHAIN (parm))
     data->named_arg = 1;  /* Not the last non-varadic parm. */
@@ -2967,7 +2967,7 @@ assign_parms (tree fndecl)
 	  continue;
 	}
 
-      if (current_function_stdarg && !TREE_CHAIN (parm))
+      if (cfun->stdarg && !TREE_CHAIN (parm))
 	assign_parms_setup_varargs (&all, &data, false);
 
       /* Find out where the parameter arrives in this function.  */
@@ -3859,12 +3859,12 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       if (!abstract_p && aggregate_value_p (result, fndecl))
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
-	  current_function_returns_pcc_struct = 1;
+	  cfun->returns_pcc_struct = 1;
 #endif
-	  current_function_returns_struct = 1;
+	  cfun->returns_struct = 1;
 	}
 
-      current_function_stdarg
+      cfun->stdarg
 	= (fntype
 	   && TYPE_ARG_TYPES (fntype) != 0
 	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -4103,11 +4103,11 @@ expand_function_start (tree subr)
      valid operands of arithmetic insns.  */
   init_recog_no_volatile ();
 
-  current_function_profile
+  crtl->profile
     = (profile_flag
        && ! DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (subr));
 
-  current_function_limit_stack
+  crtl->limit_stack
     = (stack_limit_rtx != NULL_RTX && ! DECL_NO_LIMIT_STACK (subr));
 
   /* Make the label for return statements to jump to.  Do not special
@@ -4126,7 +4126,7 @@ expand_function_start (tree subr)
       rtx value_address = 0;
 
 #ifdef PCC_STATIC_STRUCT_RETURN
-      if (current_function_returns_pcc_struct)
+      if (cfun->returns_pcc_struct)
 	{
 	  int size = int_size_in_bytes (TREE_TYPE (DECL_RESULT (subr)));
 	  value_address = assemble_static_space (size);
@@ -4244,7 +4244,7 @@ expand_function_start (tree subr)
 
   parm_birth_insn = get_last_insn ();
 
-  if (current_function_profile)
+  if (crtl->profile)
     {
 #ifdef PROFILE_HOOK
       PROFILE_HOOK (current_function_funcdef_no);
@@ -4366,7 +4366,7 @@ expand_function_end (void)
 
   /* If arg_pointer_save_area was referenced only from a nested
      function, we will not have initialized it yet.  Do that now.  */
-  if (arg_pointer_save_area && ! cfun->arg_pointer_save_area_init)
+  if (arg_pointer_save_area && ! crtl->arg_pointer_save_area_init)
     get_arg_pointer_save_area ();
 
   /* If we are doing stack checking and this function makes calls,
@@ -4523,9 +4523,9 @@ expand_function_end (void)
 
      If returning a structure PCC style,
      the caller also depends on this value.
-     And current_function_returns_pcc_struct is not necessarily set.  */
-  if (current_function_returns_struct
-      || current_function_returns_pcc_struct)
+     And cfun->returns_pcc_struct is not necessarily set.  */
+  if (cfun->returns_struct
+      || cfun->returns_pcc_struct)
     {
       rtx value_address = DECL_RTL (DECL_RESULT (current_function_decl));
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
@@ -4584,7 +4584,7 @@ expand_function_end (void)
      an accurate stack pointer to exit the function,
      insert some code to save and restore the stack pointer.  */
   if (! EXIT_IGNORE_STACK
-      && current_function_calls_alloca)
+      && cfun->calls_alloca)
     {
       rtx tem = 0;
 
@@ -4610,7 +4610,7 @@ get_arg_pointer_save_area (void)
       arg_pointer_save_area = ret;
     }
 
-  if (! cfun->arg_pointer_save_area_init)
+  if (! crtl->arg_pointer_save_area_init)
     {
       rtx seq;
 
@@ -4737,7 +4737,7 @@ thread_prologue_and_epilogue_insns (void)
 
       /* Insert an explicit USE for the frame pointer 
          if the profiling is on and the frame pointer is required.  */
-      if (current_function_profile && frame_pointer_needed)
+      if (crtl->profile && frame_pointer_needed)
         emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 
       /* Retain a map of the prologue insns.  */
@@ -4748,7 +4748,7 @@ thread_prologue_and_epilogue_insns (void)
       /* Ensure that instructions are not moved into the prologue when
 	 profiling is on.  The call to the profiling routine can be
 	 emitted within the live range of a call-clobbered register.  */
-      if (current_function_profile)
+      if (crtl->profile)
         emit_insn (gen_blockage ());
 #endif
 
@@ -5343,7 +5343,7 @@ rest_of_match_asm_constraints (void)
   rtx insn, pat, *p_sets;
   int noutputs;
 
-  if (!cfun->has_asm_statement)
+  if (!crtl->has_asm_statement)
     return 0;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);

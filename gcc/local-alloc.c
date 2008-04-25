@@ -2008,7 +2008,7 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
   if (reg_qty[sreg] >= -1
       /* If we are not going to let any regs live across calls,
 	 don't tie a call-crossing reg to a non-call-crossing reg.  */
-      || (current_function_has_nonlocal_label
+      || (cfun->has_nonlocal_label
 	  && ((REG_N_CALLS_CROSSED (ureg) > 0)
 	      != (REG_N_CALLS_CROSSED (sreg) > 0))))
     return 0;
@@ -2229,7 +2229,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 
   /* Don't let a pseudo live in a reg across a function call
      if we might get a nonlocal goto.  */
-  if (current_function_has_nonlocal_label
+  if (cfun->has_nonlocal_label
       && qty[qtyno].n_calls_crossed > 0)
     return -1;
 

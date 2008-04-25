@@ -188,7 +188,7 @@ score7_compute_frame_size (HOST_WIDE_INT size)
   if (f->var_size == 0 && current_function_is_leaf)
     f->args_size = f->cprestore_size = 0;
 
-  if (f->args_size == 0 && current_function_calls_alloca)
+  if (f->args_size == 0 && cfun->calls_alloca)
     f->args_size = UNITS_PER_WORD;
 
   f->total_size = f->var_size + f->args_size + f->cprestore_size;
@@ -201,7 +201,7 @@ score7_compute_frame_size (HOST_WIDE_INT size)
         }
     }
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       unsigned int i;
       for (i = 0;; ++i)
@@ -1428,7 +1428,7 @@ score7_prologue (void)
           rtx mem = gen_rtx_MEM (SImode,
                                  gen_rtx_PRE_DEC (SImode, stack_pointer_rtx));
           rtx reg = gen_rtx_REG (SImode, regno);
-          if (!current_function_calls_eh_return)
+          if (!crtl->calls_eh_return)
             MEM_READONLY_P (mem) = 1;
           EMIT_PL (emit_insn (gen_pushsi_score7 (mem, reg)));
         }
@@ -1508,7 +1508,7 @@ score7_epilogue (int sibcall_p)
   if (base != stack_pointer_rtx)
     emit_move_insn (stack_pointer_rtx, base);
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     emit_insn (gen_add3_insn (stack_pointer_rtx,
                               stack_pointer_rtx,
                               EH_RETURN_STACKADJ_RTX));
@@ -1521,7 +1521,7 @@ score7_epilogue (int sibcall_p)
                                  gen_rtx_POST_INC (SImode, stack_pointer_rtx));
           rtx reg = gen_rtx_REG (SImode, regno);
 
-          if (!current_function_calls_eh_return)
+          if (!crtl->calls_eh_return)
             MEM_READONLY_P (mem) = 1;
 
           emit_insn (gen_popsi_score7 (reg, mem));

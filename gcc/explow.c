@@ -1081,7 +1081,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
     return virtual_stack_dynamic_rtx;
 
   /* Otherwise, show we're calling alloca or equivalent.  */
-  current_function_calls_alloca = 1;
+  cfun->calls_alloca = 1;
 
   /* Ensure the size is in the proper mode.  */
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
@@ -1129,7 +1129,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
      would use reg notes to store the "optimized" size and fix things
      up later.  These days we know this information before we ever
      start building RTL so the reg notes are unnecessary.  */
-  if (!current_function_calls_setjmp)
+  if (!cfun->calls_setjmp)
     {
       int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
 
@@ -1236,7 +1236,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 #endif
 
       /* Check stack bounds if necessary.  */
-      if (current_function_limit_stack)
+      if (crtl->limit_stack)
 	{
 	  rtx available;
 	  rtx space_available = gen_label_rtx ();

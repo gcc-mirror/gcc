@@ -1592,7 +1592,7 @@ spu_split_immediate (rtx * ops)
 	    {
 	      rtx pic_reg = get_pic_reg ();
 	      emit_insn (gen_addsi3 (ops[0], ops[0], pic_reg));
-	      current_function_uses_pic_offset_table = 1;
+	      crtl->uses_pic_offset_table = 1;
 	    }
 	  return flag_pic || c == IC_IL2s;
 	}
@@ -1618,7 +1618,7 @@ need_to_save_reg (int regno, int saving)
     return 1;
   if (flag_pic
       && regno == PIC_OFFSET_TABLE_REGNUM
-      && (!saving || current_function_uses_pic_offset_table)
+      && (!saving || crtl->uses_pic_offset_table)
       && (!saving
 	  || !current_function_is_leaf || df_regs_ever_live_p (LAST_ARG_REGNUM)))
     return 1;
@@ -1739,7 +1739,7 @@ spu_expand_prologue (void)
   emit_note (NOTE_INSN_DELETED);
 
   if (flag_pic && optimize == 0)
-    current_function_uses_pic_offset_table = 1;
+    crtl->uses_pic_offset_table = 1;
 
   if (spu_naked_function_p (current_function_decl))
     return;
@@ -1753,7 +1753,7 @@ spu_expand_prologue (void)
     + crtl->args.pretend_args_size;
 
   if (!current_function_is_leaf
-      || current_function_calls_alloca || total_size > 0)
+      || cfun->calls_alloca || total_size > 0)
     total_size += STACK_POINTER_OFFSET;
 
   /* Save this first because code after this might use the link
@@ -1776,7 +1776,7 @@ spu_expand_prologue (void)
 	  }
     }
 
-  if (flag_pic && current_function_uses_pic_offset_table)
+  if (flag_pic && crtl->uses_pic_offset_table)
     {
       rtx pic_reg = get_pic_reg ();
       insn = emit_insn (gen_load_pic_offset (pic_reg, scratch_reg_0));
@@ -1878,12 +1878,12 @@ spu_expand_epilogue (bool sibcall_p)
     + crtl->args.pretend_args_size;
 
   if (!current_function_is_leaf
-      || current_function_calls_alloca || total_size > 0)
+      || cfun->calls_alloca || total_size > 0)
     total_size += STACK_POINTER_OFFSET;
 
   if (total_size > 0)
     {
-      if (current_function_calls_alloca)
+      if (cfun->calls_alloca)
 	frame_emit_load (STACK_POINTER_REGNUM, sp_reg, 0);
       else
 	frame_emit_add_imm (sp_reg, sp_reg, total_size, scratch_reg_0);

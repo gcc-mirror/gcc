@@ -1,3 +1,7 @@
+2008-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* trans-decl.c (trans_function_start): Update.
+
 2008-04-25  Tobias Burnus  <burnus@net-b.de>
 	    Daniel Franke <franke.daniel@gmail.com>
 

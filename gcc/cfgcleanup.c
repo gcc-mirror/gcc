@@ -2176,7 +2176,7 @@ rest_of_handle_jump (void)
 {
   delete_unreachable_blocks ();
 
-  if (cfun->tail_call_emit)
+  if (crtl->tail_call_emit)
     fixup_tail_calls ();
   return 0;
 }

@@ -2639,7 +2639,7 @@ eligible_for_return_delay (rtx trial)
 
   /* If the function uses __builtin_eh_return, the eh_return machinery
      occupies the delay slot.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     return 0;
 
   /* In the case of a true leaf function, anything can go into the slot.  */
@@ -3084,7 +3084,7 @@ sparc_tls_got (void)
   rtx temp;
   if (flag_pic)
     {
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
       return pic_offset_table_rtx;
     }
 
@@ -3300,7 +3300,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
       pic_ref = gen_const_mem (Pmode,
 			       gen_rtx_PLUS (Pmode,
 					     pic_offset_table_rtx, address));
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
       insn = emit_move_insn (reg, pic_ref);
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
@@ -3342,7 +3342,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     /* ??? Why do we do this?  */
     /* Now movsi_pic_label_ref uses it, but we ought to be checking that
        the register is live instead, in case it is eliminated.  */
-    current_function_uses_pic_offset_table = 1;
+    crtl->uses_pic_offset_table = 1;
 
   return orig;
 }
@@ -3479,7 +3479,7 @@ sparc_emit_call_insn (rtx pat, rtx addr)
 	  : !SYMBOL_REF_LOCAL_P (addr)))
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
     }
 }
 
@@ -4099,7 +4099,7 @@ sparc_expand_prologue (void)
     emit_save_or_restore_regs (SORR_SAVE);
 
   /* Load the PIC register if needed.  */
-  if (flag_pic && current_function_uses_pic_offset_table)
+  if (flag_pic && crtl->uses_pic_offset_table)
     load_pic_register (false);
 }
  
@@ -4235,7 +4235,7 @@ output_return (rtx insn)
 	 semantics of restore/return.  We simply output the jump to the
 	 return address and the insn in the delay slot (if any).  */
 
-      gcc_assert (! current_function_calls_eh_return);
+      gcc_assert (! crtl->calls_eh_return);
 
       return "jmp\t%%o7+%)%#";
     }
@@ -4246,7 +4246,7 @@ output_return (rtx insn)
 	 combined with the 'restore' instruction or put in the delay slot of
 	 the 'return' instruction.  */
 
-      if (current_function_calls_eh_return)
+      if (crtl->calls_eh_return)
 	{
 	  /* If the function uses __builtin_eh_return, the eh_return
 	     machinery occupies the delay slot.  */
@@ -6780,7 +6780,7 @@ print_operand (FILE *file, rtx x, int code)
 	 The call emitted is the same when sparc_std_struct_return is 
 	 present. */
      if (! TARGET_ARCH64
-	 && current_function_returns_struct
+	 && cfun->returns_struct
 	 && ! sparc_std_struct_return
 	 && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
 	     == INTEGER_CST)
@@ -7863,7 +7863,7 @@ sparc_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
   return (decl
 	  && flag_delayed_branch
-	  && (TARGET_ARCH64 || ! current_function_returns_struct)
+	  && (TARGET_ARCH64 || ! cfun->returns_struct)
 	  && !(TARGET_VXWORKS_RTP
 	       && flag_pic
 	       && !targetm.binds_local_p (decl)));

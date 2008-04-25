@@ -595,7 +595,7 @@ static bool
 gate_optimize_stdarg (void)
 {
   /* This optimization is only for stdarg functions.  */
-  return current_function_stdarg != 0;
+  return cfun->stdarg != 0;
 }
 
 

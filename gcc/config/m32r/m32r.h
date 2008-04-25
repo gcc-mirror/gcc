@@ -768,7 +768,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* A C expression which is nonzero if a function must have and use a
    frame pointer.  This expression is evaluated in the reload pass.
    If its value is nonzero the function will have a frame pointer.  */
-#define FRAME_POINTER_REQUIRED current_function_calls_alloca
+#define FRAME_POINTER_REQUIRED cfun->calls_alloca
 
 #if 0
 /* C statement to store the difference between the frame pointer

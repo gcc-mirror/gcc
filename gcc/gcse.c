@@ -658,7 +658,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
   /* We do not construct an accurate cfg in functions which call
      setjmp, so just punt to be safe.  */
-  if (current_function_calls_setjmp)
+  if (cfun->calls_setjmp)
     return 0;
 
   /* Assume that we do not need to run jump optimizations after gcse.  */
@@ -6575,7 +6575,7 @@ bypass_jumps (void)
 
   /* We do not construct an accurate cfg in functions which call
      setjmp, so just punt to be safe.  */
-  if (current_function_calls_setjmp)
+  if (cfun->calls_setjmp)
     return 0;
 
   /* Identify the basic block information for this function, including

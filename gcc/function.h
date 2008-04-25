@@ -334,6 +334,59 @@ struct rtl_data GTY(())
   /* If some insns can be deferred to the delay slots of the epilogue, the
      delay list for them is recorded here.  */
   rtx epilogue_delay_list;
+
+  /* Nonzero if function being compiled called builtin_return_addr or
+     builtin_frame_address with nonzero count.  */
+  bool accesses_prior_frames;
+
+  /* Nonzero if the function calls __builtin_eh_return.  */
+  bool calls_eh_return;
+
+  /* Nonzero if function saves all registers, e.g. if it has a nonlocal
+     label that can reach the exit block via non-exceptional paths. */
+  bool saves_all_registers;
+
+  /* Nonzero if function being compiled has nonlocal gotos to parent
+     function.  */
+  bool has_nonlocal_goto;
+  
+  /* Nonzero if function being compiled has an asm statement.  */
+  bool has_asm_statement;
+
+  /* Nonzero if the current function is a thunk, i.e., a lightweight
+     function implemented by the output_mi_thunk hook) that just
+     adjusts one of its arguments and forwards to another
+     function.  */
+  bool is_thunk;
+
+  /* This bit is used by the exception handling logic.  It is set if all
+     calls (if any) are sibling calls.  Such functions do not have to
+     have EH tables generated, as they cannot throw.  A call to such a
+     function, however, should be treated as throwing if any of its callees
+     can throw.  */
+  bool all_throwers_are_sibcalls;
+
+  /* Nonzero if stack limit checking should be enabled in the current
+     function.  */
+  bool limit_stack;
+
+  /* Nonzero if profiling code should be generated.  */
+  bool profile;
+
+  /* Nonzero if the current function uses the constant pool.  */
+  bool uses_const_pool;
+
+  /* Nonzero if the current function uses pic_offset_table_rtx.  */
+  bool uses_pic_offset_table;
+
+  /* Nonzero if the current function needs an lsda for exception handling.  */
+  bool uses_eh_lsda;
+
+  /* Set when the tail call has been produced.  */
+  bool tail_call_emit;
+
+  /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
+  bool arg_pointer_save_area_init;
 };
 
 #define return_label (crtl->x_return_label)
@@ -437,49 +490,9 @@ struct function GTY(())
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
-  /* Nonzero if function being compiled called builtin_return_addr or
-     builtin_frame_address with nonzero count.  */
-  unsigned int accesses_prior_frames : 1;
-
-  /* Nonzero if the function calls __builtin_eh_return.  */
-  unsigned int calls_eh_return : 1;
-
-
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
-
-  /* Nonzero if function saves all registers, e.g. if it has a nonlocal
-     label that can reach the exit block via non-exceptional paths. */
-  unsigned int saves_all_registers : 1;
-
-  /* Nonzero if function being compiled has nonlocal gotos to parent
-     function.  */
-  unsigned int has_nonlocal_goto : 1;
-  
-  /* Nonzero if function being compiled has an asm statement.  */
-  unsigned int has_asm_statement : 1;
-
-  /* Nonzero if the current function is a thunk, i.e., a lightweight
-     function implemented by the output_mi_thunk hook) that just
-     adjusts one of its arguments and forwards to another
-     function.  */
-  unsigned int is_thunk : 1;
-
-  /* This bit is used by the exception handling logic.  It is set if all
-     calls (if any) are sibling calls.  Such functions do not have to
-     have EH tables generated, as they cannot throw.  A call to such a
-     function, however, should be treated as throwing if any of its callees
-     can throw.  */
-  unsigned int all_throwers_are_sibcalls : 1;
-
-  /* Nonzero if profiling code should be generated.  */
-  unsigned int profile : 1;
-
-  /* Nonzero if stack limit checking should be enabled in the current
-     function.  */
-  unsigned int limit_stack : 1;
-
 
   /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
@@ -491,33 +504,9 @@ struct function GTY(())
      variable-sized type, then the size of the parameter is computed
      when the function body is entered.  However, some front-ends do
      not desire this behavior.  */
-  unsigned int x_dont_save_pending_sizes_p : 1;
-
-  /* Nonzero if the current function uses the constant pool.  */
-  unsigned int uses_const_pool : 1;
-
-  /* Nonzero if the current function uses pic_offset_table_rtx.  */
-  unsigned int uses_pic_offset_table : 1;
-
-  /* Nonzero if the current function needs an lsda for exception handling.  */
-  unsigned int uses_eh_lsda : 1;
-
-  /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
-  unsigned int arg_pointer_save_area_init : 1;
+  unsigned int dont_save_pending_sizes_p : 1;
 
   unsigned int after_inlining : 1;
-
-  /* Set when the call to function itself has been emit.  */
-  unsigned int recursive_call_emit : 1;
-
-
-  /* Set when the tail call has been produced.  */
-  unsigned int tail_call_emit : 1;
-
-  /* FIXME tuples: This bit is temporarily here to mark when a
-     function has been gimplified, so we can make sure we're not
-     creating non GIMPLE tuples after gimplification.  */
-  unsigned int gimplified : 1;
 
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */
@@ -563,23 +552,7 @@ extern void pop_cfun (void);
 extern void instantiate_decl_rtl (rtx x);
 
 /* For backward compatibility... eventually these should all go away.  */
-#define current_function_returns_struct (cfun->returns_struct)
-#define current_function_returns_pcc_struct (cfun->returns_pcc_struct)
-#define current_function_calls_setjmp (cfun->calls_setjmp)
-#define current_function_calls_alloca (cfun->calls_alloca)
-#define current_function_accesses_prior_frames (cfun->accesses_prior_frames)
-#define current_function_calls_eh_return (cfun->calls_eh_return)
-#define current_function_is_thunk (cfun->is_thunk)
-#define current_function_stdarg (cfun->stdarg)
-#define current_function_profile (cfun->profile)
 #define current_function_funcdef_no (cfun->funcdef_no)
-#define current_function_limit_stack (cfun->limit_stack)
-#define current_function_uses_pic_offset_table (cfun->uses_pic_offset_table)
-#define current_function_uses_const_pool (cfun->uses_const_pool)
-#define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
-#define current_function_saves_all_registers (cfun->saves_all_registers)
-#define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
-#define current_function_has_asm_statement (cfun->has_asm_statement)
 
 #define current_loops (cfun->x_current_loops)
 #define dom_computed (cfun->cfg->x_dom_computed)

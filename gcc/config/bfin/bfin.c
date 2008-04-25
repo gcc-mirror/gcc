@@ -307,7 +307,7 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 
       emit_move_insn (reg, new);
       if (picreg == pic_offset_table_rtx)
-	current_function_uses_pic_offset_table = 1;
+	crtl->uses_pic_offset_table = 1;
       return reg;
     }
 
@@ -364,7 +364,7 @@ must_save_p (bool is_inthandler, unsigned regno)
   if (D_REGNO_P (regno))
     {
       bool is_eh_return_reg = false;
-      if (current_function_calls_eh_return)
+      if (crtl->calls_eh_return)
 	{
 	  unsigned j;
 	  for (j = 0; ; j++)
@@ -389,7 +389,7 @@ must_save_p (bool is_inthandler, unsigned regno)
 	       && (is_inthandler || !call_used_regs[regno]))
 	      || (!TARGET_FDPIC
 		  && regno == PIC_OFFSET_TABLE_REGNUM
-		  && (current_function_uses_pic_offset_table
+		  && (crtl->uses_pic_offset_table
 		      || (TARGET_ID_SHARED_LIBRARY && !current_function_is_leaf))));
     }
   else
@@ -452,7 +452,7 @@ stack_frame_needed_p (void)
 {
   /* EH return puts a new return address into the frame using an
      address relative to the frame pointer.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     return true;
   return frame_pointer_needed;
 }
@@ -854,7 +854,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame, int epilogue_p)
 	    if ((df_regs_ever_live_p (i) && ! call_used_regs[i])
 		|| (!TARGET_FDPIC
 		    && i == PIC_OFFSET_TABLE_REGNUM
-		    && (current_function_uses_pic_offset_table
+		    && (crtl->uses_pic_offset_table
 			|| (TARGET_ID_SHARED_LIBRARY
 			    && ! current_function_is_leaf))))
 	      break;
@@ -1167,13 +1167,13 @@ bfin_expand_prologue (void)
       return;
     }
 
-  if (current_function_limit_stack
+  if (crtl->limit_stack
       || TARGET_STACK_CHECK_L1)
     {
       HOST_WIDE_INT offset
 	= bfin_initial_elimination_offset (ARG_POINTER_REGNUM,
 					   STACK_POINTER_REGNUM);
-      rtx lim = current_function_limit_stack ? stack_limit_rtx : NULL_RTX;
+      rtx lim = crtl->limit_stack ? stack_limit_rtx : NULL_RTX;
       rtx p2reg = gen_rtx_REG (Pmode, REG_P2);
 
       if (!lim)
@@ -1219,7 +1219,7 @@ bfin_expand_prologue (void)
 
   if (TARGET_ID_SHARED_LIBRARY
       && !TARGET_SEP_DATA
-      && (current_function_uses_pic_offset_table
+      && (crtl->uses_pic_offset_table
 	  || !current_function_is_leaf))
     bfin_load_pic_reg (pic_offset_table_rtx);
 }

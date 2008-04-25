@@ -278,7 +278,7 @@ machopic_function_base_name (void)
   if (function_base == NULL)
     function_base = ggc_alloc_string ("<pic base>", sizeof ("<pic base>"));
 
-  current_function_uses_pic_offset_table = 1;
+  crtl->uses_pic_offset_table = 1;
 
   return function_base;
 }

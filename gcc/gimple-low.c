@@ -122,7 +122,7 @@ lower_function_body (void)
       disp_label = create_artificial_label ();
       /* This mark will create forward edges from every call site.  */
       DECL_NONLOCAL (disp_label) = 1;
-      current_function_has_nonlocal_label = 1;
+      cfun->has_nonlocal_label = 1;
       x = build1 (LABEL_EXPR, void_type_node, disp_label);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 

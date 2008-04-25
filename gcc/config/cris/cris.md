@@ -995,7 +995,7 @@
 	    /* FIXME: add a REG_EQUAL (or is it REG_EQUIV) note to the
 	       destination register for the symbol.  It might not be
 	       worth it.  Measure.  */
-	    current_function_uses_pic_offset_table = 1;
+	    crtl->uses_pic_offset_table = 1;
 	    if (t == cris_rel_symbol)
 	      {
 		/* Change a "move.d sym(+offs),rN" into (allocate register rM)
@@ -1025,7 +1025,7 @@
 		  {
 		    /* We still uses GOT-relative addressing for
 		       pre-v32.	 */
-		    current_function_uses_pic_offset_table = 1;
+		    crtl->uses_pic_offset_table = 1;
 		    tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 					  CRIS_UNSPEC_GOTREL);
 		    if (offs != 0)

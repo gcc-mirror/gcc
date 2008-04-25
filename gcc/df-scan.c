@@ -3871,7 +3871,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
   
 #ifdef EH_RETURN_DATA_REGNO
   /* Mark the registers that will contain data for the handler.  */
-  if (reload_completed && current_function_calls_eh_return)
+  if (reload_completed && crtl->calls_eh_return)
     for (i = 0; ; ++i)
       {
 	unsigned regno = EH_RETURN_DATA_REGNO (i);
@@ -3883,7 +3883,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 
 #ifdef EH_RETURN_STACKADJ_RTX
   if ((!HAVE_epilogue || ! epilogue_completed)
-      && current_function_calls_eh_return)
+      && crtl->calls_eh_return)
     {
       rtx tmp = EH_RETURN_STACKADJ_RTX;
       if (tmp && REG_P (tmp))
@@ -3893,7 +3893,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 
 #ifdef EH_RETURN_HANDLER_RTX
   if ((!HAVE_epilogue || ! epilogue_completed)
-      && current_function_calls_eh_return)
+      && crtl->calls_eh_return)
     {
       rtx tmp = EH_RETURN_HANDLER_RTX;
       if (tmp && REG_P (tmp))

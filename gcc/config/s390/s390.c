@@ -6438,9 +6438,9 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
      may use the eh registers, but the code which sets these registers is not
      contained in that function.  Hence s390_regs_ever_clobbered is not able to
      deal with this automatically.  */
-  if (current_function_calls_eh_return || cfun->machine->has_landing_pad_p)
+  if (crtl->calls_eh_return || cfun->machine->has_landing_pad_p)
     for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM ; i++)
-      if (current_function_calls_eh_return 
+      if (crtl->calls_eh_return 
 	  || (cfun->machine->has_landing_pad_p 
 	      && df_regs_ever_live_p (EH_RETURN_DATA_REGNO (i))))
 	regs_ever_clobbered[EH_RETURN_DATA_REGNO (i)] = 1;
@@ -6449,7 +6449,7 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
      This flag is also set for the unwinding code in libgcc.
      See expand_builtin_unwind_init.  For regs_ever_live this is done by
      reload.  */
-  if (current_function_has_nonlocal_label)
+  if (cfun->has_nonlocal_label)
     for (i = 0; i < 16; i++)
       if (!call_really_used_regs[i])
 	regs_ever_clobbered[i] = 1;
@@ -6554,16 +6554,16 @@ s390_register_info (int clobbered_regs[])
 	|| TARGET_TPF_PROFILING
 	|| cfun->machine->split_branches_pending_p
 	|| cfun_frame_layout.save_return_addr_p
-	|| current_function_calls_eh_return
-	|| current_function_stdarg);
+	|| crtl->calls_eh_return
+	|| cfun->stdarg);
 
   clobbered_regs[STACK_POINTER_REGNUM]
     |= (!current_function_is_leaf
 	|| TARGET_TPF_PROFILING
 	|| cfun_save_high_fprs_p
 	|| get_frame_size () > 0
-	|| current_function_calls_alloca
-	|| current_function_stdarg);
+	|| cfun->calls_alloca
+	|| cfun->stdarg);
 
   for (i = 6; i < 16; i++)
     if (df_regs_ever_live_p (i) || clobbered_regs[i])
@@ -6616,7 +6616,7 @@ s390_register_info (int clobbered_regs[])
 	}
     }
 
-  if (current_function_stdarg)
+  if (cfun->stdarg)
     {
       /* Varargs functions need to save gprs 2 to 6.  */
       if (cfun->va_list_gpr_size
@@ -6738,8 +6738,8 @@ s390_frame_info (void)
       && !TARGET_TPF_PROFILING
       && cfun_frame_layout.frame_size == 0
       && !cfun_save_high_fprs_p
-      && !current_function_calls_alloca
-      && !current_function_stdarg)
+      && !cfun->calls_alloca
+      && !cfun->stdarg)
     return;
 
   if (!TARGET_PACKED_STACK)
@@ -6800,7 +6800,7 @@ s390_init_frame_layout (void)
 
       /* Try to predict whether we'll need the base register.  */
       base_used = cfun->machine->split_branches_pending_p
-		  || current_function_uses_const_pool
+		  || crtl->uses_const_pool
 		  || (!DISP_IN_RANGE (frame_size)
 		      && !CONST_OK_FOR_K (frame_size));
 
@@ -6961,8 +6961,8 @@ s390_can_eliminate (int from, int to)
 
   /* Make sure we actually saved the return address.  */
   if (from == RETURN_ADDRESS_POINTER_REGNUM)
-    if (!current_function_calls_eh_return
-	&& !current_function_stdarg
+    if (!crtl->calls_eh_return
+	&& !cfun->stdarg
 	&& !cfun_frame_layout.save_return_addr_p)
       return false;
 
@@ -7075,7 +7075,7 @@ save_gprs (rtx base, int offset, int first, int last)
 			     gen_rtx_REG (Pmode, first),
 			     GEN_INT (last - first + 1));
 
-  if (first <= 6 && current_function_stdarg)
+  if (first <= 6 && cfun->stdarg)
     for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
       {
 	rtx mem = XEXP (XVECEXP (PATTERN (insn), 0, i), 0);
