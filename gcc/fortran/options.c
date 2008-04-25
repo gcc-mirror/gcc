@@ -391,10 +391,7 @@ gfc_handle_module_path_options (const char *arg)
 {
 
   if (gfc_option.module_dir != NULL)
-    gfc_fatal_error ("gfortran: Only one -M option allowed");
-
-  if (arg == NULL)
-    gfc_fatal_error ("gfortran: Directory required after -M");
+    gfc_fatal_error ("gfortran: Only one -J option allowed");
 
   gfc_option.module_dir = (char *) gfc_getmem (strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
@@ -718,14 +715,13 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_J:
-    case OPT_M:
       gfc_handle_module_path_options (arg);
       break;
-    
+
     case OPT_fsign_zero:
       gfc_option.flag_sign_zero = value;
       break;
-    
+
     case OPT_ffpe_trap_:
       gfc_handle_fpe_trap_option (arg);
       break;

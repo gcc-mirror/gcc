@@ -633,10 +633,10 @@ compiled modules are required by a @code{USE} statement.
 gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @option{-I} option.
 
-@item -M@var{dir}
 @item -J@var{dir}
-@opindex @code{M}@var{dir}
+@item -M@var{dir}
 @opindex @code{J}@var{dir}
+@opindex @code{M}@var{dir}
 @cindex paths, search
 @cindex module search path
 This option specifies where to put @file{.mod} files for compiled modules.
@@ -645,8 +645,7 @@ statement.
 
 The default is the current directory.
 
-@option{-J} is an alias for @option{-M} to avoid conflicts with existing
-GCC options.
+@option{-M} is deprecated to avoid conflicts with existing GCC options.
 
 @item -fintrinsic-modules-path @var{dir}
 @opindex @code{fintrinsic-modules-path} @var{dir}
