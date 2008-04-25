@@ -259,14 +259,14 @@ make_raw_shell_str( char* pz_d, tCC* pz_s, size_t smax )
   *(pz_d++) = '\'';
 
   for (;;) {
-    if (pz_d - pz_d_start >= smax)
+    if (((size_t) (pz_d - pz_d_start) >= smax)
       return (char*)NULL;
     switch (*(pz_d++) = *(pz_s++)) {
     case NUL:
       goto loopDone;
 
     case '\'':
-      if (pz_d - pz_d_start >= smax - sizeof( zQ )-1)
+      if ((size_t) (pz_d - pz_d_start) >= smax - sizeof( zQ )-1)
 	return (char*)NULL;
       strcpy( pz_d-1, zQ );
       pz_d += sizeof( zQ )-2;
