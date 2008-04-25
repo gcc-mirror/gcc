@@ -1,3 +1,9 @@
+2008-04-25  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming-crtend.c (register_frame_ctor): Register
+	__gcc_deregister_frame with atexit.
+	(deregister_frame_dtor): Remove.
+
 2008-04-24  Nathan Froyd  <froydnj@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 

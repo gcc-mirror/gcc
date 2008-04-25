@@ -65,22 +65,15 @@ static void *__JCR_END__[1]
    = { 0 };
 #endif
 
-
 extern void __gcc_register_frame (void); 
 extern void __gcc_deregister_frame (void);
 
 static void register_frame_ctor (void) __attribute__ ((constructor (0)));
-static void deregister_frame_dtor (void) __attribute__ ((destructor (0)));
-
 
 static void
 register_frame_ctor (void)
 {
   __gcc_register_frame ();
+  atexit (__gcc_deregister_frame);
 }
 
-static void
-deregister_frame_dtor (void)
-{
-  __gcc_deregister_frame ();
-}
