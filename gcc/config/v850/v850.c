@@ -1386,7 +1386,7 @@ compute_register_save_size (long * p_reg_saved)
   long reg_saved = 0;
 
   /* Count the return pointer if we need to save it.  */
-  if (current_function_profile && !call_p)
+  if (crtl->profile && !call_p)
     {
       df_set_regs_ever_live (LINK_POINTER_REGNUM, true);
       call_p = 1;

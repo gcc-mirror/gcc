@@ -5646,7 +5646,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 		    }
 		  for (i = 0; i < nreg; i++)
 		    CLEAR_HARD_REG_BIT (temps, FIRST_RET_REG + i);
-		  if (current_function_calls_eh_return)
+		  if (crtl->calls_eh_return)
 		    {
 		      CLEAR_HARD_REG_BIT (temps, EH_RETURN_STACKADJ_REGNO);
 		      for (i = 0; i <= 3; i++)
@@ -5980,7 +5980,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
   if (TARGET_SHCOMPACT
       && ((crtl->args.info.call_cookie
 	   & ~ CALL_COOKIE_RET_TRAMP (1))
-	  || current_function_saves_all_registers))
+	  || crtl->saves_all_registers))
     pr_live = 1;
   has_call = TARGET_SHMEDIA ? ! leaf_function_p () : pr_live;
   for (count = 0, reg = FIRST_PSEUDO_REGISTER; reg-- != 0; )
@@ -6010,7 +6010,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	     || (df_regs_ever_live_p (reg)
 		 && (!call_really_used_regs[reg]
 		     || (trapa_handler && reg == FPSCR_REG && TARGET_FPU_ANY)))
-	     || (current_function_calls_eh_return
+	     || (crtl->calls_eh_return
 		 && (reg == EH_RETURN_DATA_REGNO (0)
 		     || reg == EH_RETURN_DATA_REGNO (1)
 		     || reg == EH_RETURN_DATA_REGNO (2)
@@ -6160,7 +6160,7 @@ sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
 	  && ! FUNCTION_ARG_REGNO_P (i)
 	  && i != FIRST_RET_REG
 	  && ! (cfun->static_chain_decl != NULL && i == STATIC_CHAIN_REGNUM)
-	  && ! (current_function_calls_eh_return
+	  && ! (crtl->calls_eh_return
 		&& (i == EH_RETURN_STACKADJ_REGNO
 		    || ((unsigned) i >= EH_RETURN_DATA_REGNO (0)
 			&& (unsigned) i <= EH_RETURN_DATA_REGNO (3)))))
@@ -6305,7 +6305,7 @@ sh_expand_prologue (void)
     }
 
   /* Emit the code for SETUP_VARARGS.  */
-  if (current_function_stdarg)
+  if (cfun->stdarg)
     {
       if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
 	{
@@ -6850,7 +6850,7 @@ sh_expand_epilogue (bool sibcall_p)
 		       + crtl->args.info.stack_regs * 8,
 		       stack_pointer_rtx, e, NULL);
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     emit_insn (GEN_ADD3 (stack_pointer_rtx, stack_pointer_rtx,
 			 EH_RETURN_STACKADJ_RTX));
 
@@ -7864,7 +7864,7 @@ sh_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
 			   int *pretend_arg_size,
 			   int second_time ATTRIBUTE_UNUSED)
 {
-  gcc_assert (current_function_stdarg);
+  gcc_assert (cfun->stdarg);
   if (TARGET_VARARGS_PRETEND_ARGS (current_function_decl))
     {
       int named_parm_regs, anon_parm_regs;
@@ -9216,7 +9216,7 @@ sh_allocate_initial_value (rtx hard_reg)
 	  && ! (TARGET_SHCOMPACT
 		&& ((crtl->args.info.call_cookie
 		     & ~ CALL_COOKIE_RET_TRAMP (1))
-		    || current_function_saves_all_registers)))
+		    || crtl->saves_all_registers)))
 	x = hard_reg;
       else
 	x = gen_frame_mem (Pmode, return_address_pointer_rtx);
@@ -10612,7 +10612,7 @@ sh_get_pr_initial_val (void)
   if (TARGET_SHCOMPACT
       && ((crtl->args.info.call_cookie
 	   & ~ CALL_COOKIE_RET_TRAMP (1))
-	  || current_function_saves_all_registers))
+	  || crtl->saves_all_registers))
     return gen_frame_mem (SImode, return_address_pointer_rtx);
 
   /* If we haven't finished rtl generation, there might be a nonlocal label

@@ -7072,7 +7072,7 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
   /* When outputting a thunk, we don't have valid register life info,
      but assemble_start_function wants to output .frame and .mask
      directives.  */
-  if (current_function_is_thunk)
+  if (crtl->is_thunk)
     {
       *imaskP = 0;
       *fmaskP = 0;
@@ -7095,7 +7095,7 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
       }
 
   /* We need to restore these for the handler.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       for (i = 0; ; ++i)
 	{
@@ -7149,7 +7149,7 @@ alpha_sa_size (void)
       alpha_procedure_type
 	= (sa_size || get_frame_size() != 0
 	   || crtl->outgoing_args_size
-	   || current_function_stdarg || current_function_calls_alloca
+	   || cfun->stdarg || cfun->calls_alloca
 	   || frame_pointer_needed)
 	  ? PT_STACK : PT_REGISTER;
 
@@ -7182,7 +7182,7 @@ alpha_sa_size (void)
 
       vms_base_regno
 	= (frame_pointer_needed
-	   || current_function_has_nonlocal_label
+	   || cfun->has_nonlocal_label
 	   || alpha_procedure_type == PT_STACK
 	   || crtl->outgoing_args_size)
 	  ? REG_PV : HARD_FRAME_POINTER_REGNUM;
@@ -7298,18 +7298,18 @@ alpha_does_function_need_gp (void)
     return 0;
 
   /* We need the gp to load the address of __mcount.  */
-  if (TARGET_PROFILING_NEEDS_GP && current_function_profile)
+  if (TARGET_PROFILING_NEEDS_GP && crtl->profile)
     return 1;
 
   /* The code emitted by alpha_output_mi_thunk_osf uses the gp.  */
-  if (current_function_is_thunk)
+  if (crtl->is_thunk)
     return 1;
 
   /* The nonlocal receiver pattern assumes that the gp is valid for
      the nested function.  Reasonable because it's almost always set
      correctly already.  For the cases where that's wrong, make sure
      the nested function loads its gp on entry.  */
-  if (current_function_has_nonlocal_goto)
+  if (crtl->has_nonlocal_goto)
     return 1;
 
   /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first.
@@ -7479,7 +7479,7 @@ alpha_expand_prologue (void)
      the call to mcount ourselves, rather than having the linker do it
      magically in response to -pg.  Since _mcount has special linkage,
      don't represent the call as a call.  */
-  if (TARGET_PROFILING_NEEDS_GP && current_function_profile)
+  if (TARGET_PROFILING_NEEDS_GP && crtl->profile)
     emit_insn (gen_prologue_mcount ());
 
   if (TARGET_ABI_UNICOSMK)
@@ -7825,7 +7825,7 @@ alpha_start_function (FILE *file, const char *fnname,
 	 Otherwise, do it here.  */
       if (TARGET_ABI_OSF
           && ! alpha_function_needs_gp
-	  && ! current_function_is_thunk)
+	  && ! crtl->is_thunk)
 	{
 	  putc ('$', file);
 	  assemble_name (file, fnname);
@@ -7936,7 +7936,7 @@ alpha_output_function_end_prologue (FILE *file)
     fputs ("\t.prologue 0\n", file);
   else if (!flag_inhibit_size_directive)
     fprintf (file, "\t.prologue %d\n",
-	     alpha_function_needs_gp || current_function_is_thunk);
+	     alpha_function_needs_gp || crtl->is_thunk);
 }
 
 /* Write function epilogue.  */
@@ -8002,7 +8002,7 @@ alpha_expand_epilogue (void)
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     eh_ofs = EH_RETURN_STACKADJ_RTX;
   else
     eh_ofs = NULL_RTX;
@@ -8113,7 +8113,7 @@ alpha_expand_epilogue (void)
 	 register so as not to interfere with a potential fp restore,
 	 which must be consecutive with an SP restore.  */
       if (frame_size < 32768
-	  && ! (TARGET_ABI_UNICOSMK && current_function_calls_alloca))
+	  && ! (TARGET_ABI_UNICOSMK && cfun->calls_alloca))
 	sp_adj2 = GEN_INT (frame_size);
       else if (TARGET_ABI_UNICOSMK)
 	{

@@ -2379,7 +2379,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
      Likewise for -a profiling for the bb_init_func argument.  For -ax
      profiling, we need two output registers for the two bb_init_trace_func
      arguments.  */
-  if (current_function_profile)
+  if (crtl->profile)
     i = MAX (i, 1);
 #endif
   current_frame_info.n_output_regs = i;
@@ -2460,7 +2460,7 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       /* Similarly for gp.  Note that if we're calling setjmp, the stacked
 	 registers are clobbered, so we fall back to the stack.  */
       current_frame_info.r[reg_save_gp]
-	= (current_function_calls_setjmp ? 0 : find_gr_spill (reg_save_gp, 1));
+	= (cfun->calls_setjmp ? 0 : find_gr_spill (reg_save_gp, 1));
       if (current_frame_info.r[reg_save_gp] == 0)
 	{
 	  SET_HARD_REG_BIT (mask, GR_REG (1));
@@ -5058,7 +5058,7 @@ ia64_secondary_reload_class (enum reg_class class,
       /* ??? This happens if we cse/gcse a BImode value across a call,
 	 and the function has a nonlocal goto.  This is because global
 	 does not allocate call crossing pseudos to hard registers when
-	 current_function_has_nonlocal_goto is true.  This is relatively
+	 crtl->has_nonlocal_goto is true.  This is relatively
 	 common for C++ programs that use exceptions.  To reproduce,
 	 return NO_REGS and compile libstdc++.  */
       if (GET_CODE (x) == MEM)

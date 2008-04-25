@@ -137,10 +137,10 @@
   (symbol_ref "flag_pic != 0"))
 
 (define_attr "calls_alloca" "false,true"
-  (symbol_ref "current_function_calls_alloca != 0"))
+  (symbol_ref "cfun->calls_alloca != 0"))
 
 (define_attr "calls_eh_return" "false,true"
-   (symbol_ref "current_function_calls_eh_return !=0 "))
+   (symbol_ref "crtl->calls_eh_return !=0 "))
    
 (define_attr "leaf_function" "false,true"
   (symbol_ref "current_function_uses_only_leaf_regs != 0"))
@@ -1844,7 +1844,7 @@
 	(minus:SI (match_dup 5) (match_dup 4)))]
   "flag_pic"
 {
-  current_function_uses_pic_offset_table = 1;
+  crtl->uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
   if (!can_create_pseudo_p ())
     {
@@ -1993,7 +1993,7 @@
         (minus:DI (match_dup 5) (match_dup 4)))]
   "TARGET_ARCH64 && flag_pic"
 {
-  current_function_uses_pic_offset_table = 1;
+  crtl->uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
   if (!can_create_pseudo_p ())
     {
@@ -7237,7 +7237,7 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_SETJMP)]
   ""
 {
-  if (! current_function_calls_alloca)
+  if (! cfun->calls_alloca)
     return "";
   if (! TARGET_V9)
     return "\tta\t3\n";

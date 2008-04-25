@@ -1552,7 +1552,7 @@ typedef struct rs6000_args
 #define	EPILOGUE_USES(REGNO)					\
   ((reload_completed && (REGNO) == LR_REGNO)			\
    || (TARGET_ALTIVEC && (REGNO) == VRSAVE_REGNO)		\
-   || (current_function_calls_eh_return				\
+   || (crtl->calls_eh_return				\
        && TARGET_AIX						\
        && (REGNO) == 2))
 

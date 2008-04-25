@@ -508,7 +508,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		  note_other_use_this_block (regno, info.users_this_bb);
 		}
 	      /* Check for the blockage emitted by expand_nl_goto_receiver.  */
-	      else if (current_function_has_nonlocal_label
+	      else if (cfun->has_nonlocal_label
 		       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE)
 		{
 		  btr_user user;

@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
       || !leaf_function_p ()))
 
 #define IS_MMIX_EH_RETURN_DATA_REG(REGNO)	\
- (current_function_calls_eh_return		\
+ (crtl->calls_eh_return		\
   && (EH_RETURN_DATA_REGNO (0) == REGNO		\
       || EH_RETURN_DATA_REGNO (1) == REGNO	\
       || EH_RETURN_DATA_REGNO (2) == REGNO	\
@@ -96,7 +96,7 @@ along with GCC; see the file COPYING3.  If not see
 #define MMIX_POP_ARGUMENT()						\
  ((! TARGET_ABI_GNU							\
    && crtl->return_rtx != NULL				\
-   && ! current_function_returns_struct)				\
+   && ! cfun->returns_struct)				\
   ? (GET_CODE (crtl->return_rtx) == PARALLEL			\
      ? GET_NUM_ELEM (XVEC (crtl->return_rtx, 0)) : 1)	\
   : 0)
@@ -2207,7 +2207,7 @@ mmix_expand_epilogue (void)
   if (stack_space_to_deallocate != 0)
     mmix_emit_sp_add (stack_space_to_deallocate);
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     /* Adjust the (normal) stack-pointer to that of the receiver.
        FIXME: It would be nice if we could also adjust the register stack
        here, but we need to express it through DWARF 2 too.  */

@@ -5783,7 +5783,7 @@ ix86_frame_pointer_required (void)
 	  || ix86_current_function_calls_tls_descriptor))
     return 1;
 
-  if (current_function_profile)
+  if (crtl->profile)
     return 1;
 
   return 0;
@@ -5993,7 +5993,7 @@ gen_push (rtx arg)
 static unsigned int
 ix86_select_alt_pic_regnum (void)
 {
-  if (current_function_is_leaf && !current_function_profile
+  if (current_function_is_leaf && !crtl->profile
       && !ix86_current_function_calls_tls_descriptor)
     {
       int i;
@@ -6012,16 +6012,16 @@ ix86_save_reg (unsigned int regno, int maybe_eh_return)
   if (pic_offset_table_rtx
       && regno == REAL_PIC_OFFSET_TABLE_REGNUM
       && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
-	  || current_function_profile
-	  || current_function_calls_eh_return
-	  || current_function_uses_const_pool))
+	  || crtl->profile
+	  || crtl->calls_eh_return
+	  || crtl->uses_const_pool))
     {
       if (ix86_select_alt_pic_regnum () != INVALID_REGNUM)
 	return 0;
       return 1;
     }
 
-  if (current_function_calls_eh_return && maybe_eh_return)
+  if (crtl->calls_eh_return && maybe_eh_return)
     {
       unsigned i;
       for (i = 0; ; i++)
@@ -6185,7 +6185,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      expander assumes that last crtl->outgoing_args_size
      of stack frame are unused.  */
   if (ACCUMULATE_OUTGOING_ARGS
-      && (!current_function_is_leaf || current_function_calls_alloca
+      && (!current_function_is_leaf || cfun->calls_alloca
 	  || ix86_current_function_calls_tls_descriptor))
     {
       offset += crtl->outgoing_args_size;
@@ -6196,7 +6196,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   /* Align stack boundary.  Only needed if we're calling another function
      or using alloca.  */
-  if (!current_function_is_leaf || current_function_calls_alloca
+  if (!current_function_is_leaf || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     frame->padding2 = ((offset + preferred_alignment - 1)
 		       & -preferred_alignment) - offset;
@@ -6246,7 +6246,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 	   (long)frame->hard_frame_pointer_offset);
   fprintf (stderr, "stack_pointer_offset: %ld\n", (long)frame->stack_pointer_offset);
   fprintf (stderr, "current_function_is_leaf: %ld\n", (long)current_function_is_leaf);
-  fprintf (stderr, "current_function_calls_alloca: %ld\n", (long)current_function_calls_alloca);
+  fprintf (stderr, "cfun->calls_alloca: %ld\n", (long)cfun->calls_alloca);
   fprintf (stderr, "x86_current_function_calls_tls_descriptor: %ld\n", (long)ix86_current_function_calls_tls_descriptor);
 #endif
 }
@@ -6531,7 +6531,7 @@ ix86_expand_prologue (void)
   pic_reg_used = false;
   if (pic_offset_table_rtx
       && (df_regs_ever_live_p (REAL_PIC_OFFSET_TABLE_REGNUM)
-	  || current_function_profile))
+	  || crtl->profile))
     {
       unsigned int alt_pic_reg_used = ix86_select_alt_pic_regnum ();
 
@@ -6566,7 +6566,7 @@ ix86_expand_prologue (void)
 
   /* Prevent function calls from being scheduled before the call to mcount.
      In the pic_reg_used case, make sure that the got load isn't deleted.  */
-  if (current_function_profile)
+  if (crtl->profile)
     {
       if (pic_reg_used)
 	emit_insn (gen_prologue_use (pic_offset_table_rtx));
@@ -6621,7 +6621,7 @@ ix86_expand_epilogue (int style)
      eh_return: the eax and edx registers are marked as saved, but not
      restored along this path.  */
   offset = frame.nregs;
-  if (current_function_calls_eh_return && style != 2)
+  if (crtl->calls_eh_return && style != 2)
     offset -= 2;
   offset *= -UNITS_PER_WORD;
 
@@ -6643,7 +6643,7 @@ ix86_expand_epilogue (int style)
       || (frame_pointer_needed && TARGET_USE_LEAVE
 	  && cfun->machine->use_fast_prologue_epilogue
 	  && frame.nregs == 1)
-      || current_function_calls_eh_return)
+      || crtl->calls_eh_return)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
 	 locations.  If both are available, default to ebp, since offsets

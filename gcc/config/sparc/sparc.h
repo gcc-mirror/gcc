@@ -1678,11 +1678,11 @@ do {									\
 
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
-  || current_function_calls_alloca || crtl->outgoing_args_size)
+  || cfun->calls_alloca || crtl->outgoing_args_size)
 
 /* Define registers used by the epilogue and return instruction.  */
 #define EPILOGUE_USES(REGNO) ((REGNO) == 31 \
-  || (current_function_calls_eh_return && (REGNO) == 1))
+  || (crtl->calls_eh_return && (REGNO) == 1))
 
 /* Length in units of the trampoline for entering a nested function.  */
 
@@ -1724,7 +1724,7 @@ do {									\
 /* This is the offset of the return address to the true next instruction to be
    executed for the current function.  */
 #define RETURN_ADDR_OFFSET \
-  (8 + 4 * (! TARGET_ARCH64 && current_function_returns_struct))
+  (8 + 4 * (! TARGET_ARCH64 && cfun->returns_struct))
 
 /* The current return address is in %i7.  The return address of anything
    farther back is in the register window save area at [%fp+60].  */

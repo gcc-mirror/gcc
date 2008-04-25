@@ -1619,7 +1619,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   /* If a function dynamically allocates the stack and
      has 0 for STACK_DYNAMIC_OFFSET then allocate some stack space.  */
-  if (args_size == 0 && current_function_calls_alloca)
+  if (args_size == 0 && cfun->calls_alloca)
     args_size = 4 * UNITS_PER_WORD;
 
   total_size = var_size + args_size + extra_size;
@@ -1635,7 +1635,7 @@ compute_frame_size (HOST_WIDE_INT size)
     }
 
   /* We need to restore these for the handler.  */
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       unsigned int i;
 
@@ -2064,7 +2064,7 @@ iq2000_expand_epilogue (void)
 
       save_restore_insns (0);
 
-      if (current_function_calls_eh_return)
+      if (crtl->calls_eh_return)
 	{
 	  rtx eh_ofs = EH_RETURN_STACKADJ_RTX;
 	  emit_insn (gen_addsi3 (eh_ofs, eh_ofs, tsize_rtx));
@@ -2073,14 +2073,14 @@ iq2000_expand_epilogue (void)
 
       emit_insn (gen_blockage ());
 
-      if (tsize != 0 || current_function_calls_eh_return)
+      if (tsize != 0 || crtl->calls_eh_return)
 	{
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				 tsize_rtx));
 	}
     }
 
-  if (current_function_calls_eh_return)
+  if (crtl->calls_eh_return)
     {
       /* Perform the additional bump for __throw.  */
       emit_move_insn (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM),

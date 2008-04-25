@@ -1599,7 +1599,7 @@ mn10300_function_value (const_tree valtype, const_tree func, int outgoing)
   if (! POINTER_TYPE_P (valtype))
     return gen_rtx_REG (mode, FIRST_DATA_REGNUM);
   else if (! TARGET_PTR_A0D0 || ! outgoing
-	   || current_function_returns_struct)
+	   || cfun->returns_struct)
     return gen_rtx_REG (mode, FIRST_ADDRESS_REGNUM);
 
   rv = gen_rtx_PARALLEL (mode, rtvec_alloc (2));

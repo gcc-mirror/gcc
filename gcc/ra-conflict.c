@@ -1220,7 +1220,7 @@ global_conflicts (void)
 	  /* No need to record conflicts for call clobbered regs if we have
 	     nonlocal labels around, as we don't ever try to allocate such
 	     regs in this case.  */
-	  if (! current_function_has_nonlocal_label)
+	  if (! cfun->has_nonlocal_label)
 	    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	      if (call_used_regs [i])
 		record_one_conflict (allocnos_live, &hard_regs_live, i);

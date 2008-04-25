@@ -366,13 +366,13 @@ typedef struct machine_function GTY(())
 
 /* Value should be nonzero if functions must have frame pointers.  */
 #define FRAME_POINTER_REQUIRED \
-  (current_function_calls_alloca)
+  (cfun->calls_alloca)
 
 /* Don't allow hard registers to be renamed into r2 unless r2
    is already live or already being saved (due to eh).  */
 
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
-  ((NEW_REG) != 2 || df_regs_ever_live_p (2) || current_function_calls_eh_return)
+  ((NEW_REG) != 2 || df_regs_ever_live_p (2) || crtl->calls_eh_return)
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
@@ -791,7 +791,7 @@ extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
-  || current_function_calls_alloca || crtl->outgoing_args_size)
+  || cfun->calls_alloca || crtl->outgoing_args_size)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.\

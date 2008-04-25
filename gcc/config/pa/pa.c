@@ -698,7 +698,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 						REG_NOTES (insn));
 	  LABEL_NUSES (orig)++;
 	}
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
       return reg;
     }
   if (GET_CODE (orig) == SYMBOL_REF)
@@ -745,7 +745,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 						         UNSPEC_DLTIND14R)));
 	}
 
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
       mark_reg_pointer (reg, BITS_PER_UNIT);
       insn = emit_move_insn (reg, pic_ref);
 
@@ -3531,7 +3531,7 @@ compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
      the exception handler.  */
-  if (DO_FRAME_NOTES && current_function_calls_eh_return)
+  if (DO_FRAME_NOTES && crtl->calls_eh_return)
     {
       unsigned int i;
 
@@ -3679,7 +3679,7 @@ hppa_expand_prologue (void)
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp - 20 or sp - 16
      depending on which ABI is in use.  */
-  if (df_regs_ever_live_p (2) || current_function_calls_eh_return)
+  if (df_regs_ever_live_p (2) || crtl->calls_eh_return)
     {
       store_reg (2, TARGET_64BIT ? -16 : -20, STACK_POINTER_REGNUM);
       rp_saved = true;
@@ -3779,7 +3779,7 @@ hppa_expand_prologue (void)
       /* Saving the EH return data registers in the frame is the simplest
 	 way to get the frame unwind information emitted.  We put them
 	 just before the general registers.  */
-      if (DO_FRAME_NOTES && current_function_calls_eh_return)
+      if (DO_FRAME_NOTES && crtl->calls_eh_return)
 	{
 	  unsigned int i, regno;
 
@@ -3811,7 +3811,7 @@ hppa_expand_prologue (void)
 
       /* Saving the EH return data registers in the frame is the simplest
          way to get the frame unwind information emitted.  */
-      if (DO_FRAME_NOTES && current_function_calls_eh_return)
+      if (DO_FRAME_NOTES && crtl->calls_eh_return)
 	{
 	  unsigned int i, regno;
 
@@ -4113,7 +4113,7 @@ hppa_expand_epilogue (void)
 
       /* If the current function calls __builtin_eh_return, then we need
          to restore the saved EH data registers.  */
-      if (DO_FRAME_NOTES && current_function_calls_eh_return)
+      if (DO_FRAME_NOTES && crtl->calls_eh_return)
 	{
 	  unsigned int i, regno;
 
@@ -4141,7 +4141,7 @@ hppa_expand_epilogue (void)
 
       /* If the current function calls __builtin_eh_return, then we need
          to restore the saved EH data registers.  */
-      if (DO_FRAME_NOTES && current_function_calls_eh_return)
+      if (DO_FRAME_NOTES && crtl->calls_eh_return)
 	{
 	  unsigned int i, regno;
 
@@ -4238,7 +4238,7 @@ hppa_expand_epilogue (void)
   if (ret_off != 0)
     load_reg (2, ret_off, STACK_POINTER_REGNUM);
 
-  if (DO_FRAME_NOTES && current_function_calls_eh_return)
+  if (DO_FRAME_NOTES && crtl->calls_eh_return)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
 
@@ -8496,7 +8496,7 @@ borx_reg_operand (rtx op, enum machine_mode mode)
      profitable to do so when the frame pointer is being eliminated.  */
   if (!reload_completed
       && flag_omit_frame_pointer
-      && !current_function_calls_alloca
+      && !cfun->calls_alloca
       && op == frame_pointer_rtx)
     return 0;
 

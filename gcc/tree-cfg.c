@@ -1808,9 +1808,9 @@ notice_special_calls (tree t)
   int flags = call_expr_flags (t);
 
   if (flags & ECF_MAY_BE_ALLOCA)
-    current_function_calls_alloca = true;
+    cfun->calls_alloca = true;
   if (flags & ECF_RETURNS_TWICE)
-    current_function_calls_setjmp = true;
+    cfun->calls_setjmp = true;
 }
 
 
@@ -1820,8 +1820,8 @@ notice_special_calls (tree t)
 void
 clear_special_calls (void)
 {
-  current_function_calls_alloca = false;
-  current_function_calls_setjmp = false;
+  cfun->calls_alloca = false;
+  cfun->calls_setjmp = false;
 }
 
 
@@ -2495,7 +2495,7 @@ is_ctrl_altering_stmt (const_tree t)
     {
       /* A non-pure/const CALL_EXPR alters flow control if the current
 	 function has nonlocal labels.  */
-      if (TREE_SIDE_EFFECTS (call) && current_function_has_nonlocal_label)
+      if (TREE_SIDE_EFFECTS (call) && cfun->has_nonlocal_label)
 	return true;
 
       /* A CALL_EXPR also alters control flow if it does not return.  */
@@ -2545,7 +2545,7 @@ tree_can_make_abnormal_goto (const_tree t)
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CALL_EXPR)
-    return TREE_SIDE_EFFECTS (t) && current_function_has_nonlocal_label;
+    return TREE_SIDE_EFFECTS (t) && cfun->has_nonlocal_label;
   return false;
 }
 
@@ -6580,7 +6580,7 @@ tree_purge_dead_abnormal_call_edges (basic_block bb)
 {
   bool changed = tree_purge_dead_eh_edges (bb);
 
-  if (current_function_has_nonlocal_label)
+  if (cfun->has_nonlocal_label)
     {
       tree stmt = last_stmt (bb);
       edge_iterator ei;

@@ -1253,7 +1253,7 @@ static struct m32r_frame_info zero_frame_info;
    && (df_regs_ever_live_p (regno) && (!call_really_used_regs[regno] || interrupt_p)))
 
 #define MUST_SAVE_FRAME_POINTER (df_regs_ever_live_p (FRAME_POINTER_REGNUM))
-#define MUST_SAVE_RETURN_ADDR   (df_regs_ever_live_p (RETURN_ADDR_REGNUM) || current_function_profile)
+#define MUST_SAVE_RETURN_ADDR   (df_regs_ever_live_p (RETURN_ADDR_REGNUM) || crtl->profile)
 
 #define SHORT_INSN_SIZE 2	/* Size of small instructions.  */
 #define LONG_INSN_SIZE 4	/* Size of long instructions.  */
@@ -1272,8 +1272,8 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-                                  | current_function_profile);
+  int pic_reg_used = flag_pic && (crtl->uses_pic_offset_table
+                                  | crtl->profile);
 
   var_size	= M32R_STACK_ALIGN (size);
   args_size	= M32R_STACK_ALIGN (crtl->outgoing_args_size);
@@ -1372,8 +1372,8 @@ m32r_expand_prologue (void)
   int regno;
   int frame_size;
   unsigned int gmask;
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-                                  | current_function_profile);
+  int pic_reg_used = flag_pic && (crtl->uses_pic_offset_table
+                                  | crtl->profile);
 
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
@@ -1434,7 +1434,7 @@ m32r_expand_prologue (void)
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 
-  if (current_function_profile)
+  if (crtl->profile)
     /* Push lr for mcount (form_pc, x).  */
     emit_insn (gen_movsi_push (stack_pointer_rtx,
                                gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
@@ -1443,10 +1443,10 @@ m32r_expand_prologue (void)
     {
       m32r_load_pic_register ();
       m32r_reload_lr (stack_pointer_rtx,
-                      (current_function_profile ? 0 : frame_size));
+                      (crtl->profile ? 0 : frame_size));
     }
 
-  if (current_function_profile && !pic_reg_used)
+  if (crtl->profile && !pic_reg_used)
     emit_insn (gen_blockage ());
 }
 
@@ -1519,7 +1519,7 @@ m32r_expand_epilogue (void)
       unsigned int var_size = current_frame_info.var_size;
       unsigned int args_size = current_frame_info.args_size;
       unsigned int gmask = current_frame_info.gmask;
-      int can_trust_sp_p = !current_function_calls_alloca;
+      int can_trust_sp_p = !cfun->calls_alloca;
 
       if (flag_exceptions)
         emit_insn (gen_blockage ());
@@ -1664,7 +1664,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
       else
         address = reg;
 
-      current_function_uses_pic_offset_table = 1;
+      crtl->uses_pic_offset_table = 1;
 
       if (GET_CODE (orig) == LABEL_REF
           || (GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (orig)))

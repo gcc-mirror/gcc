@@ -5067,7 +5067,7 @@ label:
   [(set (match_dup 0) (match_dup 1))]
   "
 {
-  if (TARGET_SHCOMPACT && current_function_saves_all_registers)
+  if (TARGET_SHCOMPACT && crtl->saves_all_registers)
     operands[1] = gen_frame_mem (SImode, return_address_pointer_rtx);
 }")
 

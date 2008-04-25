@@ -1077,7 +1077,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     if (real_output_rtx[i])
       emit_move_insn (real_output_rtx[i], output_rtx[i]);
 
-  cfun->has_asm_statement = 1;
+  crtl->has_asm_statement = 1;
   free_temp_slots ();
 }
 

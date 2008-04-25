@@ -587,7 +587,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
       tem = hard_frame_pointer_rtx;
 
       /* Tell reload not to eliminate the frame pointer.  */
-      current_function_accesses_prior_frames = 1;
+      crtl->accesses_prior_frames = 1;
     }
 #endif
 
@@ -690,10 +690,10 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 
   /* Tell optimize_save_area_alloca that extra work is going to
      need to go on during alloca.  */
-  current_function_calls_setjmp = 1;
+  cfun->calls_setjmp = 1;
 
   /* We have a nonlocal label.   */
-  current_function_has_nonlocal_label = 1;
+  cfun->has_nonlocal_label = 1;
 }
 
 /* Construct the trailing part of a __builtin_setjmp call.  This is
@@ -877,7 +877,7 @@ expand_builtin_nonlocal_goto (tree exp)
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
 		      plus_constant (r_save_area, GET_MODE_SIZE (Pmode)));
 
-  current_function_has_nonlocal_goto = 1;
+  crtl->has_nonlocal_goto = 1;
 
 #ifdef HAVE_nonlocal_goto
   /* ??? We no longer need to pass the static chain value, afaik.  */

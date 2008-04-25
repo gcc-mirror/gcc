@@ -999,7 +999,7 @@ extern int arm_structure_size_boundary;
 #endif
 
 #define FRAME_POINTER_REQUIRED					\
-  (current_function_has_nonlocal_label				\
+  (cfun->has_nonlocal_label				\
    || SUBTARGET_FRAME_POINTER_REQUIRED				\
    || (TARGET_ARM && TARGET_APCS_FRAME && ! leaf_function_p ()))
 
@@ -2402,7 +2402,7 @@ extern int making_const_table;
         {						\
           if (is_called_in_ARM_mode (DECL)		\
 	      || (TARGET_THUMB1 && !TARGET_THUMB1_ONLY	\
-		  && current_function_is_thunk))	\
+		  && crtl->is_thunk))	\
             fprintf (STREAM, "\t.code 32\n") ;		\
           else if (TARGET_THUMB1)			\
            fprintf (STREAM, "\t.code\t16\n\t.thumb_func\n") ;	\

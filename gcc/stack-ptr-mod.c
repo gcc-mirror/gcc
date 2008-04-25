@@ -57,7 +57,7 @@ notice_stack_pointer_modification (void)
 
   /* Assume that the stack pointer is unchanging if alloca hasn't
      been used.  */
-  current_function_sp_is_unchanging = !current_function_calls_alloca;
+  current_function_sp_is_unchanging = !cfun->calls_alloca;
   if (current_function_sp_is_unchanging)
     FOR_EACH_BB (bb)
       FOR_BB_INSNS (bb, insn)

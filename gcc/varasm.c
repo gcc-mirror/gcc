@@ -1633,7 +1633,7 @@ assemble_start_function (tree decl, const char *fnname)
       /* When the function starts with a cold section, we need to explicitly
 	 align the hot section and write out the hot section label.
 	 But if the current function is a thunk, we do not have a CFG.  */
-      if (!current_function_is_thunk
+      if (!crtl->is_thunk
 	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
 	{
 	  switch_to_section (text_section);
@@ -3486,7 +3486,7 @@ force_const_mem (enum machine_mode mode, rtx x)
     return NULL_RTX;
 
   /* Record that this function has used a constant pool entry.  */
-  current_function_uses_const_pool = 1;
+  crtl->uses_const_pool = 1;
 
   /* Decide which pool to use.  */
   pool = (targetm.use_blocks_for_constant_p (mode, x)
@@ -3800,7 +3800,7 @@ mark_constant_pool (void)
 {
   rtx insn, link;
 
-  if (!current_function_uses_const_pool && n_deferred_constants == 0)
+  if (!crtl->uses_const_pool && n_deferred_constants == 0)
     return;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

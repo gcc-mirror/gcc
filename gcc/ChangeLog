@@ -1,3 +1,252 @@
+2008-04-25  Jan Hubicka  <jh@suse.cz>
+
+	PR testsuite/35843
+	* cfgexpand.c (pass_expand): Turn into RTL pass.
+	* passes.c (execute_one_pass): Do pass typechecking after execution.
+	* tree-pass.h (pass_expand): Turn into RTL pass.
+
+	* function.h (struct rtl_data): Move here fields
+	accesses_prior_frames, calls_eh_return, saves_all_registers,
+	has_nonlocal_goto, has_asm_statement, is_thunk,
+	all_throwers_are_sibcalls, limit_stack, profile, uses_const_pool,
+	uses_pic_offset_table, uses_eh_lsda, tail_call_emit,
+	arg_pointer_save_area_init from struct function; turn into bool.
+	(struct function): Move
+	calls_eh_return, saves_all_registers, has_nonlocal_goto,
+	has_asm_statement, is_thunk, all_throwers_are_sibcalls, limit_stack,
+	profile, uses_const_pool, uses_pic_offset_table, uses_eh_lsda,
+	tail_call_emit, arg_pointer_save_area_init
+	into struct rtl_data.  Remove recursive_call_emit and gimplified flags.
+	(current_function_returns_struct, current_function_returns_pcc_struct,
+	current_function_calls_setjmp, current_function_calls_alloca,
+	current_function_accesses_prior_frames,
+	current_function_calls_eh_return, current_function_is_thunk,
+	current_function_stdarg, current_function_profile,
+	current_function_limit_stack, current_function_uses_pic_offset_table,
+	current_function_uses_const_pool, current_function_has_nonlocal_label,
+	current_function_saves_all_registers,
+	current_function_has_nonlocal_goto,
+	current_function_has_asm_statement): Remove accesor macros.
+	* ra-conflict.c (global_conflicts): Update.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Update.
+	(suitable_for_tail_call_opt_p): Update.
+	* builtins.c (expand_builtin_return_addr): Update.
+	(expand_builtin_setjmp_setup): Update.
+	(expand_builtin_nonlocal_goto): Update.
+	* final.c (final_start_function): Update.
+	(profile_function): Update.
+	(leaf_function_p): Update.
+	(only_leaf_regs_used): Update.
+	* df-scan.c (df_get_exit_block_use_set): Update.
+	* dojump.c (clear_pending_stack_adjust): Update.
+	* tree-stdarg.c (gate_optimize_stdarg): Update.
+	* gimple-low.c (lower_function_body): Update.
+	* global.c (compute_regsets): Update.
+	(global_alloc): Update.
+	* dwarf2out.c (dwarf2out_begin_prologue): Update.
+	* expr.c (expand_assignment): Update.
+	* dse.c (dse_step0): Update.
+	(dse_step1): Update.
+	* c-decl.c (store_parm_decls): Update.
+	* local-alloc.c (combine_regs): Update.
+	(find_free_reg): Update.
+	* function.c (assign_parms_augmented_arg_list): Update.
+	(assign_parm_find_data_types): Update.
+	(assign_parms): Update.
+	(allocate_struct_function): Update.
+	(expand_function_start): Update.
+	(expand_function_end): Update.
+	(get_arg_pointer_save_area): Update.
+	(thread_prologue_and_epilogue_insns): Update.
+	(rest_of_match_asm_constraints): Update.
+	* stor-layout.c (variable_size): Update.
+	* gcse.c (gcse_main): Update.
+	(bypass_jumps): Update.
+	* gimplify.c (gimplify_function_tree): Update.
+	* calls.c (emit_call_1): Update.
+	(expand_call): Update.
+	* bt-load.c (compute_defs_uses_and_gen): Update.
+	* except.c (sjlj_assign_call_site_values): Update.
+	(sjlj_emit_function_enter): Update.
+	(can_throw_external): Update.
+	(set_nothrow_function_flags): Update.
+	(expand_builtin_unwind_init): Update.
+	(expand_eh_return): Update.
+	(convert_to_eh_region_ranges): Update.
+	(output_function_exception_table): Update.
+	* emit-rtl.c (gen_tmp_stack_mem): Update.
+	* cfgexpand.c (expand_used_vars): Update.
+	(tree_expand_cfg): Update.
+	* cfgcleanup.c (rest_of_handle_jump): Update.
+	* explow.c (allocate_dynamic_stack_space): Update.
+	* varasm.c (assemble_start_function): Update.
+	(force_const_mem): Update.
+	(mark_constant_pool): Update.
+	* tree-optimize.c (tree_rest_of_compilation): Update.
+	* stack-ptr-mod.c (notice_stack_pointer_modification): Update.
+	* tree-cfg.c (notice_special_calls): Update.
+	(is_ctrl_altering_stmt): Update.
+	(tree_can_make_abnormal_goto): Update.
+	(tree_purge_dead_abnormal_call_edges): Update.
+	* config/alpha/predicates.md: Update.
+	* config/alpha/alpha.c (alpha_sa_mask): Update.
+	(alpha_sa_size): Update.
+	(alpha_does_function_need_gp): Update.
+	(alpha_expand_prologue): Update.
+	(alpha_start_function): Update.
+	(alpha_output_function_end_prologue): Update.
+	(alpha_expand_epilogue): Update.
+	* config/frv/frv.c (frv_stack_info): Update.
+	(frv_expand_epilogue): Update.
+	* config/s390/s390.c (s390_regs_ever_clobbered): Update.
+	(s390_register_info): Update.
+	(s390_frame_info): Update.
+	(s390_init_frame_layout): Update.
+	(s390_can_eliminate): Update.
+	(save_gprs): Update.
+	* config/spu/spu.c (spu_split_immediate): Update.
+	(need_to_save_reg): Update.
+	(spu_expand_prologue): Update.
+	(spu_expand_epilogue): Update.
+	* config/sparc/sparc.md: Update.
+	* config/sparc/sparc.c (eligible_for_return_delay): Update.
+	(sparc_tls_got): Update.
+	(legitimize_pic_address): Update.
+	(sparc_emit_call_insn): Update.
+	(sparc_expand_prologue): Update.
+	(output_return): Update.
+	(print_operand): Update.
+	(sparc_function_ok_for_sibcall): Update.
+	* config/sparc/sparc.h (EXIT_IGNORE_STACK): Update.
+	* config/m32r/m32r.md: Update.
+	* config/m32r/m32r.c (MUST_SAVE_RETURN_ADDR): Update.
+	(m32r_compute_frame_size): Update.
+	(m32r_expand_prologue): Update.
+	(m32r_expand_epilogue): Update.
+	(m32r_legitimize_pic_address): Update.
+	* config/m32r/m32r.h (FRAME_POINTER_REQUIRED): Update.
+	* config/i386/linux.h (SUBTARGET_FRAME_POINTER_REQUIRED): Update.
+	* config/i386/i386.c (ix86_frame_pointer_required): Update.
+	(gen_push): Update.
+	(ix86_save_reg): Update.
+	(ix86_compute_frame_layout): Update.
+	(ix86_expand_prologue): Update.
+	(ix86_expand_epilogue): Update.
+	* config/sh/sh.c (output_stack_adjust): Update.
+	(calc_live_regs): Update.
+	(sh5_schedule_saves): Update.
+	(sh_expand_prologue): Update.
+	(sh_expand_epilogue): Update.
+	(sh_setup_incoming_varargs): Update.
+	(sh_allocate_initial_value): Update.
+	(sh_get_pr_initial_val): Update.
+	* config/sh/sh.h (SHMEDIA_REGS_STACK_ADJUST): Update.
+	* config/sh/sh.md (label:): Update.
+	* config/avr/avr.c (out_movhi_mr_r): Update.
+	* config/crx/crx.h (enum): Update.
+	* config/xtensa/xtensa.h (along): Update.
+	* config/stormy16/stormy16.c Update.
+	(xstormy16_compute_stack_layout): Update.
+	* config/fr30/fr30.c (MUST_SAVE_RETURN_POINTER): Update.
+	(fr30_expand_prologue): Update.
+	* config/cris/cris.c (cris_conditional_register_usage): Update.
+	(cris_reg_saved_in_regsave_area): Update.
+	(cris_initial_frame_pointer_offset): Update.
+	(cris_simple_epilogue): Update.
+	(cris_expand_prologue): Update.
+	(cris_expand_epilogue): Update.
+	(cris_expand_pic_call_address): Update.
+	(cris_asm_output_symbol_ref): Update.
+	(cris_asm_output_label_ref): Update.
+	* config/cris/cris.md Update.
+	* config/iq2000/iq2000.c (compute_frame_size): Update.
+	(iq2000_expand_epilogue): Update.
+	* config/mt/mt.h (save_direction): Update.
+	* config/mn10300/mn10300.c (mn10300_function_value): Update.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Update.
+	(ia64_secondary_reload_class): Update.
+	* config/m68k/m68k.c (m68k_save_reg): Update.
+	(m68k_expand_prologue): Update.
+	(m68k_expand_epilogue): Update.
+	(legitimize_pic_address): Update.
+	* config/rs6000/rs6000.c (rs6000_got_register): Update.
+	(first_reg_to_save): Update.
+	(first_altivec_reg_to_save): Update.
+	(compute_vrsave_mask): Update.
+	(compute_save_world_info): Update.
+	(rs6000_stack_info): Update.
+	(spe_func_has_64bit_regs_p): Update.
+	(rs6000_ra_ever_killed): Update.
+	(rs6000_emit_eh_reg_restore): Update.
+	(rs6000_emit_allocate_stack): Update.
+	(rs6000_emit_prologue): Update.
+	(rs6000_emit_epilogue): Update.
+	(rs6000_output_function_epilogue): Update.
+	(output_profile_hook): Update.
+	(rs6000_elf_declare_function_name): Update.
+	* config/rs6000/rs6000.h (rs6000_args): Update.
+	* config/rs6000/rs6000.md: Update.
+	* config/mcore/mcore.c (mcore_expand_prolog): Update.
+	* config/arc/arc.c (arc_output_function_epilogue): Update.
+	* config/arc/arc.h (FRAME_POINTER_REQUIRED): Update.
+	* config/darwin.c (machopic_function_base_name): Update.
+	* config/score/score3.c (score3_compute_frame_size): Update.
+	(rpush): Update.
+	(rpop): Update.
+	(score3_epilogue): Update.
+	* config/score/score7.c (score7_compute_frame_size): Update.
+	(score7_prologue): Update.
+	(score7_epilogue): Update.
+	* config/score/score.h (FRAME_POINTER_REQUIRED): Update.
+	* config/arm/linux-elf.h (SUBTARGET_FRAME_POINTER_REQUIRED): Update.
+	* config/arm/arm.c (use_return_insn): Update.
+	(require_pic_register): Update.
+	(arm_load_pic_register): Update.
+	(arm_compute_save_reg0_reg12_mask): Update.
+	(arm_compute_save_reg_mask): Update.
+	(thumb1_compute_save_reg_mask): Update.
+	(output_return_instruction): Update.
+	(arm_output_function_prologue): Update.
+	(arm_output_epilogue): Update.
+	(arm_get_frame_offsets): Update.
+	(arm_expand_prologue): Update.
+	(thumb_pushpop): Update.
+	(thumb_exit): Update.
+	(thumb1_expand_prologue): Update.
+	(thumb1_expand_epilogue): Update.
+	(arm_unwind_emit): Update.
+	(arm_output_fn_unwind): Update.
+	* config/arm/arm.h (FRAME_POINTER_REQUIRED): Update.
+	* config/arm/arm.md: Update.
+	* config/pa/pa.md: Update.
+	* config/pa/pa.c (legitimize_pic_address): Update.
+	(compute_frame_size): Update.
+	(hppa_expand_prologue): Update.
+	(hppa_expand_epilogue): Update.
+	(borx_reg_operand): Update.
+	* config/pa/pa.h (FRAME_POINTER_REQUIRED): Update.
+	(HARD_REGNO_RENAME_OK): Update.
+	* config/mips/mips.c (mips_global_pointer): Update.
+	(mips_save_reg_p): Update.
+	(mips_compute_frame_info): Update.
+	(mips_frame_pointer_required): Update.
+	(mips_expand_prologue): Update.
+	(mips_expand_epilogue): Update.
+	(mips_can_use_return_insn): Update.
+	(mips_reorg_process_insns): Update.
+	* config/v850/v850.c (compute_register_save_size): Update.
+	* config/mmix/mmix.h (FRAME_POINTER_REQUIRED): Update.
+	* config/mmix/mmix.c (along): Update.
+	(mmix_expand_epilogue): Update.
+	* config/bfin/bfin.c (legitimize_pic_address): Update.
+	(must_save_p): Update.
+	(stack_frame_needed_p): Update.
+	(add_to_reg): Update.
+	(bfin_expand_prologue): Update.
+	* stmt.c (expand_asm_operands): Update.
+	* reload1.c (reload): Update.
+	(init_elim_table): Update.
+
 2008-04-25  Bob Wilson  <bob.wilson@acm.org>
 	
 	* optabs.c (expand_float): Fix REG_EQUAL for UNSIGNED_FLOAT libcall.

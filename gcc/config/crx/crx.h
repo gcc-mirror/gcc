@@ -277,7 +277,7 @@ enum reg_class
 
 #define FIRST_PARM_OFFSET(FNDECL)  0
 
-#define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
+#define FRAME_POINTER_REQUIRED (cfun->calls_alloca)
 
 #define ELIMINABLE_REGS \
   { \

@@ -1505,7 +1505,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
   /* The Sun386i and perhaps other machines don't work right
      if the profiling code comes after the prologue.  */
 #ifdef PROFILE_BEFORE_PROLOGUE
-  if (current_function_profile)
+  if (crtl->profile)
     profile_function (file);
 #endif /* PROFILE_BEFORE_PROLOGUE */
 
@@ -1550,7 +1550,7 @@ static void
 profile_after_prologue (FILE *file ATTRIBUTE_UNUSED)
 {
 #ifndef PROFILE_BEFORE_PROLOGUE
-  if (current_function_profile)
+  if (crtl->profile)
     profile_function (file);
 #endif /* not PROFILE_BEFORE_PROLOGUE */
 }
@@ -1562,7 +1562,7 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 # define NO_PROFILE_COUNTERS	0
 #endif
 #if defined(ASM_OUTPUT_REG_PUSH)
-  int sval = current_function_returns_struct;
+  int sval = cfun->returns_struct;
   rtx svrtx = targetm.calls.struct_value_rtx (TREE_TYPE (current_function_decl), 1);
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) || defined(STATIC_CHAIN_REGNUM)
   int cxt = cfun->static_chain_decl != NULL;
@@ -3813,7 +3813,7 @@ leaf_function_p (void)
   rtx insn;
   rtx link;
 
-  if (current_function_profile || profile_arc_flag)
+  if (crtl->profile || profile_arc_flag)
     return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -3888,7 +3888,7 @@ only_leaf_regs_used (void)
 	&& ! permitted_reg_in_leaf_functions[i])
       return 0;
 
-  if (current_function_uses_pic_offset_table
+  if (crtl->uses_pic_offset_table
       && pic_offset_table_rtx != 0
       && REG_P (pic_offset_table_rtx)
       && ! permitted_reg_in_leaf_functions[REGNO (pic_offset_table_rtx)])

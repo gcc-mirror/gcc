@@ -114,7 +114,7 @@
   emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)))
 
 /* The GNU/Linux profiler needs a frame pointer.  */
-#define SUBTARGET_FRAME_POINTER_REQUIRED current_function_profile
+#define SUBTARGET_FRAME_POINTER_REQUIRED crtl->profile
 
 /* Add .note.GNU-stack.  */
 #undef NEED_INDICATE_EXEC_STACK

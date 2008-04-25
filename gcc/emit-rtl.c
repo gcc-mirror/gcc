@@ -678,7 +678,7 @@ gen_tmp_stack_mem (enum machine_mode mode, rtx addr)
 {
   rtx mem = gen_rtx_MEM (mode, addr);
   MEM_NOTRAP_P (mem) = 1;
-  if (!current_function_calls_alloca)
+  if (!cfun->calls_alloca)
     set_mem_alias_set (mem, get_frame_alias_set ());
   return mem;
 }

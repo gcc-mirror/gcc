@@ -6603,7 +6603,6 @@ gimplify_function_tree (tree fndecl)
       DECL_SAVED_TREE (fndecl) = bind;
     }
 
-  cfun->gimplified = true;
   current_function_decl = oldfn;
   pop_cfun ();
 }
