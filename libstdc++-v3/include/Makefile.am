@@ -702,7 +702,6 @@ debug_headers = \
 # Parallel mode headers
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
-if ENABLE_PARALLEL
 parallel_headers = \
         ${parallel_srcdir}/algorithm \
         ${parallel_srcdir}/algobase.h \
@@ -748,9 +747,6 @@ parallel_headers = \
         ${parallel_srcdir}/types.h \
         ${parallel_srcdir}/unique_copy.h \
         ${parallel_srcdir}/workstealing.h 
-else
-parallel_headers =
-endif
 
 
 # Some of the different "C" header models need extra files.

@@ -1,3 +1,12 @@
+2008-05-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+        Revert PR libstdc++/35887 
+        * configure.ac: Revert.
+        * acinclude.m4: Same.
+        * configure: Regenerate.
+        * include/Makefile.am: Revert.
+        * include/Makefile.in: Regenerate.
+	
 2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
 
         PR libstdc++/35887 
