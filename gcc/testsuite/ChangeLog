@@ -1,3 +1,7 @@
+2008-04-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran/array_constructor_23.f: Change REAL(10) into kind > 8.
+
 2008-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35994
