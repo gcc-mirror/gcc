@@ -1,6 +1,6 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -2121,6 +2121,19 @@ mips_emit_binary (enum rtx_code code, rtx target, rtx op0, rtx op1)
 			  gen_rtx_fmt_ee (code, GET_MODE (target), op0, op1)));
 }
 
+/* Compute (CODE OP0 OP1) and store the result in a new register
+   of mode MODE.  Return that new register.  */
+
+static rtx
+mips_force_binary (enum machine_mode mode, enum rtx_code code, rtx op0, rtx op1)
+{
+  rtx reg;
+
+  reg = gen_reg_rtx (mode);
+  mips_emit_binary (code, reg, op0, op1);
+  return reg;
+}
+
 /* Copy VALUE to a register and return that register.  If new pseudos
    are allowed, copy it into a new register, otherwise use DEST.  */
 
@@ -3741,8 +3754,10 @@ mips_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
 	}
       else if (invert_ptr == 0)
 	{
-	  rtx inv_target = gen_reg_rtx (GET_MODE (target));
-	  mips_emit_binary (inv_code, inv_target, cmp0, cmp1);
+	  rtx inv_target;
+
+	  inv_target = mips_force_binary (GET_MODE (target),
+					  inv_code, cmp0, cmp1);
 	  mips_emit_binary (XOR, target, inv_target, const1_rtx);
 	}
       else
@@ -5850,8 +5865,7 @@ mips_expand_synci_loop (rtx begin, rtx end)
 
   emit_insn (gen_synci (begin));
 
-  cmp = gen_reg_rtx (Pmode);
-  mips_emit_binary (GTU, cmp, begin, end);
+  cmp = mips_force_binary (Pmode, GTU, begin, end);
 
   mips_emit_binary (PLUS, begin, begin, inc);
 
@@ -5859,6 +5873,68 @@ mips_expand_synci_loop (rtx begin, rtx end)
   emit_jump_insn (gen_condjump (cmp_result, label));
 }
 
+/* Expand a QI or HI mode compare_and_swap.  The operands are the same
+   as for the generator function.  */
+
+void
+mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
+{
+  rtx orig_addr, memsi_addr, memsi, shift, shiftsi, unshifted_mask;
+  rtx mask, inverted_mask, oldvalsi, old_shifted, newvalsi, new_shifted, res;
+
+  /* Compute the address of the containing SImode value.  */
+  orig_addr = force_reg (Pmode, XEXP (mem, 0));
+  memsi_addr = mips_force_binary (Pmode, AND, orig_addr,
+				  force_reg (Pmode, GEN_INT (-4)));
+
+  /* Create a memory reference for it.  */
+  memsi = gen_rtx_MEM (SImode, memsi_addr);
+  set_mem_alias_set (memsi, ALIAS_SET_MEMORY_BARRIER);
+  MEM_VOLATILE_P (memsi) = MEM_VOLATILE_P (mem);
+
+  /* Work out the byte offset of the QImode or HImode value,
+     counting from the least significant byte.  */
+  shift = mips_force_binary (Pmode, AND, orig_addr, GEN_INT (3));
+  if (TARGET_BIG_ENDIAN)
+    mips_emit_binary (XOR, shift, shift,
+		      GEN_INT (GET_MODE (mem) == QImode ? 3 : 2));
+
+  /* Multiply by eight to convert the shift value from bytes to bits.  */
+  mips_emit_binary (ASHIFT, shift, shift, GEN_INT (3));
+
+  /* Make the final shift an SImode value, so that it can be used in
+     SImode operations.  */
+  shiftsi = force_reg (SImode, gen_lowpart (SImode, shift));
+
+  /* Set MASK to an inclusive mask of the QImode or HImode value.  */
+  unshifted_mask = GEN_INT (GET_MODE_MASK (GET_MODE (mem)));
+  unshifted_mask = force_reg (SImode, unshifted_mask);
+  mask = mips_force_binary (SImode, ASHIFT, unshifted_mask, shiftsi);
+
+  /* Compute the equivalent exclusive mask.  */
+  inverted_mask = gen_reg_rtx (SImode);
+  emit_insn (gen_rtx_SET (VOIDmode, inverted_mask,
+			  gen_rtx_NOT (SImode, mask)));
+
+  /* Shift the old value into place.  */
+  oldvalsi = force_reg (SImode, gen_lowpart (SImode, oldval));
+  old_shifted = mips_force_binary (SImode, ASHIFT, oldvalsi, shiftsi);
+
+  /* Do the same for the new value.  */
+  newvalsi = force_reg (SImode, gen_lowpart (SImode, newval));
+  new_shifted = mips_force_binary (SImode, ASHIFT, newvalsi, shiftsi);
+
+  /* Do the SImode atomic access.  */
+  res = gen_reg_rtx (SImode);
+  emit_insn (gen_compare_and_swap_12 (res, memsi, mask, inverted_mask,
+				      old_shifted, new_shifted));
+
+  /* Shift and convert the result.  */
+  mips_emit_binary (AND, res, res, mask);
+  mips_emit_binary (LSHIFTRT, res, res, shiftsi);
+  mips_emit_move (result, gen_lowpart (GET_MODE (result), res));
+}
+
 /* Return true if it is possible to use left/right accesses for a
    bitfield of WIDTH bits starting BITPOS bits into *OP.  When
    returning true, update *OP, *LEFT and *RIGHT as follows:

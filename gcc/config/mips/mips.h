@@ -2906,6 +2906,30 @@ while (0)
 
 /* Return an asm string that atomically:
 
+     - Given that %2 contains a bit mask and %3 the inverted mask and
+       that %4 and %5 have already been ANDed with $2.
+
+     - Compares the bits in memory reference %1 selected by mask %2 to
+       register %4 and, if they are equal, changes the selected bits
+       in memory to %5.
+
+     - Sets register %0 to the old value of memory reference %1.
+ */
+#define MIPS_COMPARE_AND_SWAP_12		\
+  "%(%<%[%|sync\n"				\
+  "1:\tll\t%0,%1\n"				\
+  "\tand\t%@,%0,%2\n"				\
+  "\tbne\t%@,%4,2f\n"				\
+  "\tand\t%@,%0,%3\n"				\
+  "\tor\t%@,%@,%5\n"				\
+  "\tsc\t%@,%1\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)\n"				\
+  "2:\n"
+
+/* Return an asm string that atomically:
+
      - Sets memory reference %0 to %0 INSN %1.
 
    SUFFIX is the suffix that should be added to "ll" and "sc"

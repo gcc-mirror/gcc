@@ -1,3 +1,18 @@
+2008-04-26  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (UNSPEC_COMPARE_AND_SWAP_12): New
+	unspec_volitile.
+	(UNSPEC_SYNC_OLD_OP, UNSPEC_SYNC_NEW_OP, UNSPEC_SYNC_EXCHANGE,
+	UNSPEC_MEMORY_BARRIER, UNSPEC_SET_GOT_VERSION,
+	UNSPEC_UPDATE_GOT_VERSION): Renumber.
+	(sync_compare_and_swap<mode>): New expand for QI and HI modes.
+	(compare_and_swap_12): New insn.
+	* config/mips/mips-protos.h (mips_expand_compare_and_swap_12): Declare.
+	* config/mips/mips.c (mips_force_binary): New function.
+	(mips_emit_int_order_test, mips_expand_synci_loop): Use it.
+	(mips_expand_compare_and_swap_12): New function.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP_12): New macro.
+
 2008-04-25  Jan Hubicka  <jh@suse.cz>
 
 	PR testsuite/35843

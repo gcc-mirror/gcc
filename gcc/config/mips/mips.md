@@ -54,12 +54,13 @@
    (UNSPEC_SYNCI		35)
    (UNSPEC_SYNC			36)
    (UNSPEC_COMPARE_AND_SWAP	37)
-   (UNSPEC_SYNC_OLD_OP		38)
-   (UNSPEC_SYNC_NEW_OP		39)
-   (UNSPEC_SYNC_EXCHANGE	40)
-   (UNSPEC_MEMORY_BARRIER	41)
-   (UNSPEC_SET_GOT_VERSION	42)
-   (UNSPEC_UPDATE_GOT_VERSION	43)
+   (UNSPEC_COMPARE_AND_SWAP_12	38)
+   (UNSPEC_SYNC_OLD_OP		39)
+   (UNSPEC_SYNC_NEW_OP		40)
+   (UNSPEC_SYNC_EXCHANGE	41)
+   (UNSPEC_MEMORY_BARRIER	42)
+   (UNSPEC_SET_GOT_VERSION	43)
+   (UNSPEC_UPDATE_GOT_VERSION	44)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -4446,6 +4447,34 @@
     return MIPS_COMPARE_AND_SWAP ("<d>", "move");
 }
   [(set_attr "length" "32")])
+
+(define_expand "sync_compare_and_swap<mode>"
+  [(match_operand:SHORT 0 "register_operand")
+   (match_operand:SHORT 1 "memory_operand")
+   (match_operand:SHORT 2 "general_operand")
+   (match_operand:SHORT 3 "general_operand")]
+  "GENERATE_LL_SC"
+{
+  mips_expand_compare_and_swap_12 (operands[0], operands[1],
+				   operands[2], operands[3]);
+  DONE;
+})
+
+;; Helper insn for mips_expand_compare_and_swap_12.
+(define_insn "compare_and_swap_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d")
+	(match_operand:SI 1 "memory_operand" "+R"))
+   (set (match_dup 1)
+	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d")
+			     (match_operand:SI 3 "register_operand" "d")
+			     (match_operand:SI 4 "register_operand" "d")
+			     (match_operand:SI 5 "register_operand" "d")]
+			    UNSPEC_COMPARE_AND_SWAP_12))]
+  "GENERATE_LL_SC"
+{
+  return MIPS_COMPARE_AND_SWAP_12;
+}
+  [(set_attr "length" "40")])
 
 (define_insn "sync_add<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")

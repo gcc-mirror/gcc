@@ -1,3 +1,10 @@
+2008-04-26  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Expect
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 and
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 to be defined.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Likewise.
+
 2008-04-25  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran/array_constructor_23.f: Change REAL(10) into kind > 8.
