@@ -1,6 +1,6 @@
 // <unordered_map> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,6 +71,10 @@
 #  undef _GLIBCXX_END_NAMESPACE_TR1
 #  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/unordered_map>
 #endif
 
 #endif // _GLIBCXX_UNORDERED_MAP

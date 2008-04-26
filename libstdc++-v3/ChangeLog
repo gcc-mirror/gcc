@@ -1,5 +1,19 @@
 2008-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/35922
+	* include/std/unordered_map: Include debug/unordered_map if
+	_GLIBCXX_DEBUG.
+	* testsuite/23_containers/unordered_map/requirements/debug.cc: Move...
+	* testsuite/23_containers/unordered_map/requirements/
+	debug_container.cc: ...here.
+	* testsuite/23_containers/unordered_map/requirements/debug_mode.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/debug.cc: Move...
+	* testsuite/23_containers/unordered_set/requirements/
+	debug_container.cc: ...here.
+	* testsuite/23_containers/unordered_set/requirements/debug_mode.cc: New.
+	
+2008-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/35887
 	* acinclude.m4: (GLIBCXX_ENABLE_PARALLEL): Check for thread support.
 	* configure.ac: Re-order compiler macros.
