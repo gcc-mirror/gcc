@@ -1,3 +1,26 @@
+2008-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<mode>_i387_fisttp_with_temp): Use 'X'
+	constraint for operand 2 when operand 0 is memory operand.
+	(fix_truncdi_i387_with_temp): : Use 'X' constraint for operand 4 when
+	operand 0 is memory operand.
+	(fix_trunc<mode>_i387_with_temp): Ditto.
+	(*floatsi<mode>2_vector_mixed_with_temp): Use 'X' constraint for
+	operand 2 when operand 1 is memory operand.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_with_temp): Ditto.
+	(*floatsi<mode>2_vector_sse_with_temp): Ditto.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_with_temp): Ditto.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_i387_with_temp): Ditto.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm): Use 'X' constraint for
+	operands 2,3 and 4 when operand 1 is memory operand.
+	(fistdi2_with_temp): Use 'X' constraint for operand 2 when operand 0
+	is memory operand.
+	(fistdi2_floor_with_temp): Ditto.
+	(fist<mode>2_floor_with_temp): Ditto.
+	(fistdi2_ceil_with_temp): Ditto.
+	(fist<mode>2_ceil_with_temp): Ditto.
+	(*truncdfsf_fast_mixed): Merge alternatives 0 and 1.
+
 2008-04-26  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (UNSPEC_COMPARE_AND_SWAP_12): New
