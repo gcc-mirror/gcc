@@ -1,3 +1,10 @@
+2008-04-26  George Helffrich <george@gcc.gnu.org>
+
+	PR fortran/35892
+	PR fortran/35154
+	* trans-common.c (create_common):  Add decl to function
+	chain (if inside one) to preserve identifier scope in debug output.
+
 2008-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* trans-decl.c (trans_function_start): Update.

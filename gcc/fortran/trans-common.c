@@ -685,10 +685,14 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       /* This is a fake variable just for debugging purposes.  */
       TREE_ASM_WRITTEN (var_decl) = 1;
       
-      if (com)
+      /* To preserve identifier names in COMMON, chain to procedure
+         scope unless at top level in a module definition.  */
+      if (com
+          && s->sym->ns->proc_name
+          && s->sym->ns->proc_name->attr.flavor == FL_MODULE)
 	var_decl = pushdecl_top_level (var_decl);
       else
-	gfc_add_decl_to_function (var_decl);	
+	gfc_add_decl_to_function (var_decl);
 
       SET_DECL_VALUE_EXPR (var_decl,
 			   fold_build3 (COMPONENT_REF, TREE_TYPE (s->field),
