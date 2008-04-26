@@ -1,10 +1,3 @@
-2008-04-25  Kai Tietz  <kai.tietz@onevision.com>
-
-	* config/i386/mingw32.h (SUBTARGET_INIT_BUILTINS): New.
-	* config/i386/i386.c (ix86_init_builtins): Use of
-	SUBTARGET_INIT_BUILTINS.
-	Add include of c-common.h for builtin.
-
 2008-04-25  Jan Hubicka  <jh@suse.cz>
 
 	PR testsuite/35843
