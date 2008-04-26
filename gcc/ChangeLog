@@ -1,3 +1,9 @@
+2008-04-26  Simon Baldwin <simonb@google.com>
+
+	PR c/35652
+	* builtins.c (c_strlen): Suppressed multiple warnings that can occur
+	with propagated string constants.
+
 2008-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fix_trunc<mode>_i387_fisttp_with_temp): Use 'X'
