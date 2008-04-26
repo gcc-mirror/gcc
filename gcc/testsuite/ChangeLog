@@ -1,11 +1,17 @@
+2008-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/36053
+	* gcc.dg/large-size-array-2.c: Fix x86_64-*-mingw* check.
+	* gcc.dg/large-size-array-4.c: Likewise.
+
 2008-04-26  George Helffrich  <george@gcc.gnu.org>
 
 	PRs fortran/PR35154, fortran/PR23057
-        * gfortran.dg/debug/pr35154-stabs.f:  New test case for
-        .stabs functionality.
-        * gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
-        DWARF functionality.
-  
+	* gfortran.dg/debug/pr35154-stabs.f:  New test case for
+	.stabs functionality.
+	* gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
+	DWARF functionality.
+
 2008-04-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Expect
