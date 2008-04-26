@@ -1,3 +1,10 @@
+2008-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35994
+	* trans-instrinsic.c (gfc_conv_intrinsic_minmaxloc):
+	Correctly adjust loop counter offset.
+
 2008-04-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35944

@@ -2179,11 +2179,12 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   /* Remember where we are.  An offset must be added to the loop
      counter to obtain the required position.  */
-  if (loop.temp_dim)
-    tmp = build_int_cst (gfc_array_index_type, 1);
+  if (loop.from[0])
+    tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+		       gfc_index_one_node, loop.from[0]);
   else
-    tmp =fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			 gfc_index_one_node, loop.from[0]);
+    tmp = build_int_cst (gfc_array_index_type, 1);
+  
   gfc_add_modify_expr (&block, offset, tmp);
 
   tmp = build2 (PLUS_EXPR, TREE_TYPE (pos),
