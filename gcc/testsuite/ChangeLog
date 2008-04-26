@@ -1,3 +1,11 @@
+2008-04-26  George Helffrich  <george@gcc.gnu.org>
+
+	PRs fortran/PR35154, fortran/PR23057
+        * gfortran.dg/debug/pr35154-stabs.f:  New test case for
+        .stabs functionality.
+        * gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
+        DWARF functionality.
+  
 2008-04-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Expect
