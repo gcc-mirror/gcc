@@ -1018,7 +1018,7 @@ basic_block *blocks_in_phiopt_order (void);
 void tree_ssa_lim (void);
 unsigned int tree_ssa_unswitch_loops (void);
 unsigned int canonicalize_induction_variables (void);
-unsigned int tree_unroll_loops_completely (bool);
+unsigned int tree_unroll_loops_completely (bool, bool);
 unsigned int tree_ssa_prefetch_arrays (void);
 unsigned int remove_empty_loops (void);
 void tree_ssa_iv_optimize (void);

@@ -20,10 +20,10 @@ int main1 ()
 
   int i, j;
 
-  for (i = 0; i < 8; i++)
+  for (i = 0; i < N; i++)
     {
       s = 0;
-      for (j=0; j<8; j+=4)
+      for (j = 0; j < N; j += 4)
 	s += C[j];
       A[i] = s;
     }
@@ -49,10 +49,10 @@ int main ()
   main1();
 
   /* check results:  */
-  for (i = 0; i < 8; i++)
+  for (i = 0; i < N; i++)
     {
       s = 0;
-      for (j=0; j<8; j+=4)
+      for (j = 0; j < N; j += 4)
         s += C[j];
       if (A[i] != s)
         abort ();

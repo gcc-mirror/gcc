@@ -567,6 +567,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rename_ssa_copies);
 
       /* Initial scalar cleanups.  */
+      NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_ccp);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_fre);
