@@ -2854,6 +2854,9 @@ x86_64_elf_select_section (tree decl, int reloc,
 	  /* We don't split these for medium model.  Place them into
 	     default sections and hope for best.  */
 	  break;
+	case SECCAT_EMUTLS_VAR:
+	case SECCAT_EMUTLS_TMPL:
+	  gcc_unreachable ();
 	}
       if (sname)
 	{
@@ -2890,16 +2893,16 @@ x86_64_elf_unique_section (tree decl, int reloc)
 	case SECCAT_DATA_REL_LOCAL:
 	case SECCAT_DATA_REL_RO:
 	case SECCAT_DATA_REL_RO_LOCAL:
-          prefix = one_only ? ".gnu.linkonce.ld." : ".ldata.";
+          prefix = one_only ? ".ld" : ".ldata";
 	  break;
 	case SECCAT_BSS:
-          prefix = one_only ? ".gnu.linkonce.lb." : ".lbss.";
+          prefix = one_only ? ".lb" : ".lbss";
 	  break;
 	case SECCAT_RODATA:
 	case SECCAT_RODATA_MERGE_STR:
 	case SECCAT_RODATA_MERGE_STR_INIT:
 	case SECCAT_RODATA_MERGE_CONST:
-          prefix = one_only ? ".gnu.linkonce.lr." : ".lrodata.";
+          prefix = one_only ? ".lr" : ".lrodata";
 	  break;
 	case SECCAT_SRODATA:
 	case SECCAT_SDATA:
@@ -2911,23 +2914,28 @@ x86_64_elf_unique_section (tree decl, int reloc)
 	  /* We don't split these for medium model.  Place them into
 	     default sections and hope for best.  */
 	  break;
+	case SECCAT_EMUTLS_VAR:
+	  prefix = targetm.emutls.var_section;
+	  break;
+	case SECCAT_EMUTLS_TMPL:
+	  prefix = targetm.emutls.tmpl_section;
+	  break;
 	}
       if (prefix)
 	{
-	  const char *name;
-	  size_t nlen, plen;
+	  const char *name, *linkonce;
 	  char *string;
-	  plen = strlen (prefix);
 
 	  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 	  name = targetm.strip_name_encoding (name);
-	  nlen = strlen (name);
-
-	  string = (char *) alloca (nlen + plen + 1);
-	  memcpy (string, prefix, plen);
-	  memcpy (string + plen, name, nlen + 1);
-
-	  DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
+	  
+	  /* If we're using one_only, then there needs to be a .gnu.linkonce
+     	     prefix to the section name.  */
+	  linkonce = one_only ? ".gnu.linkonce" : "";
+  
+	  string = ACONCAT ((linkonce, prefix, ".", name, NULL));
+	  
+	  DECL_SECTION_NAME (decl) = build_string (strlen (string), string);
 	  return;
 	}
     }

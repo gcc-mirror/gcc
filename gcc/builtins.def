@@ -745,8 +745,16 @@ DEF_BUILTIN_STUB (BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter")
 DEF_BUILTIN_STUB (BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit")
 
 /* TLS emulation.  */
-DEF_EXT_LIB_BUILTIN (BUILT_IN_EMUTLS_GET_ADDRESS, "__emutls_get_address", BT_FN_PTR_PTR, ATTR_CONST_NOTHROW_NONNULL)
-DEF_EXT_LIB_BUILTIN (BUILT_IN_EMUTLS_REGISTER_COMMON, "__emutls_register_common", BT_FN_VOID_PTR_WORD_WORD_PTR, ATTR_NOTHROW_LIST)
+DEF_BUILTIN (BUILT_IN_EMUTLS_GET_ADDRESS, targetm.emutls.get_address,
+	     BUILT_IN_NORMAL,
+	     BT_FN_PTR_PTR,  BT_FN_PTR_PTR,
+	     true, true, true, ATTR_CONST_NOTHROW_NONNULL, false,
+	     !targetm.have_tls)
+DEF_BUILTIN (BUILT_IN_EMUTLS_REGISTER_COMMON,
+	     targetm.emutls.register_common, BUILT_IN_NORMAL,
+	     BT_FN_VOID_PTR_WORD_WORD_PTR, BT_FN_VOID_PTR_WORD_WORD_PTR,
+	     true, true, true, ATTR_NOTHROW_LIST, false,
+	     !targetm.have_tls)
 
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"

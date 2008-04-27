@@ -50,6 +50,7 @@ through the macros defined in the @file{.h} file.
 * Floating Point::      Handling floating point for cross-compilers.
 * Mode Switching::      Insertion of mode-switching instructions.
 * Target Attributes::   Defining target-specific uses of @code{__attribute__}.
+* Emulated TLS::        Emulated TLS support.
 * MIPS Coprocessors::   MIPS coprocessor support and how to customize it.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
@@ -9191,6 +9192,84 @@ into the current function, despite its having target-specific
 attributes, @code{false} otherwise.  By default, if a function has a
 target specific attribute attached to it, it will not be inlined.
 @end deftypefn
+
+@node Emulated TLS
+@section Emulating TLS
+@cindex Emulated TLS
+
+For targets whose psABI does not provide Thread Local Storage via
+specific relocations and instruction sequences, an emulation layer is
+used.  A set of target hooks allows this emulation layer to be
+configured for the requirements of a particular target.  For instance
+the psABI may infact specify TLS support in terms of an emulation
+layer.
+
+The emulation layer works by creating a control object for every TLS
+object.  To access the TLS object, a lookup function is provided
+which, when given the address of the control object, will return the
+address of the current thread's instance of the TLS object.
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_GET_ADDRESS
+Contains the name of the helper function that uses a TLS control
+object to locate a TLS instance.  The default causes libgcc's
+emulated TLS helper function to be used.
+@end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_REGISTER_COMMON
+Contains the name of the helper function that should be used at
+program startup to register TLS objects that are implicitly
+initialized to zero.  If this is @code{NULL}, all TLS objects will
+have explicit initializers.  The default causes libgcc's emulated TLS
+registration function to be used.
+@end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_VAR_SECTION
+Contains the name of the section in which TLS control variables should
+be placed.  The default of @code{NULL} allows these to be placed in
+any section.
+@end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_TMPL_SECTION
+Contains the name of the section in which TLS initializers should be
+placed.  The default of @code{NULL} allows these to be placed in any
+section.
+@end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_VAR_PREFIX
+Contains the prefix to be prepended to TLS control variable names.
+The default of @code{NULL} uses a target-specific prefix.
+@end deftypevr
+
+@deftypevr {Target Hook} {const char *} TARGET_EMUTLS_TMPL_PREFIX
+Contains the prefix to be prepended to TLS initializer objects.  The
+default of @code{NULL} uses a target-specific prefix.
+@end deftypevr
+
+@deftypefn {Target Hook} tree TARGET_EMUTLS_VAR_FIELDS (tree @var{type}, tree *@var{name})
+Specifies a function that generates the FIELD_DECLs for a TLS control
+object type.  @var{type} is the RECORD_TYPE the fields are for and
+@var{name} should be filled with the structure tag, if the default of
+@code{__emutls_object} is unsuitable.  The default creates a type suitable
+for libgcc's emulated TLS function.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_EMUTLS_VAR_INIT (tree @var{var}, tree @var{decl}, tree @var{tmpl_addr})
+Specifies a function that generates the CONSTRUCTOR to initialize a
+TLS control object.  @var{var} is the TLS control object, @var{decl}
+is the TLS object and @var{tmpl_addr} is the address of the
+initializer.  The default initializes libgcc's emulated TLS control object.
+@end deftypefn
+
+@deftypevr {Target Hook} {bool} TARGET_EMUTLS_VAR_ALIGN_FIXED
+Specifies whether the alignment of TLS control variable objects is
+fixed and should not be increased as some backends may do to optimize
+single objects.  The default is false.
+@end deftypevr
+
+@deftypevr {Target Hook} {bool} TARGET_EMUTLS_DEBUG_FORM_TLS_ADDRESS
+Specifies whether a DWARF @code{DW_OP_form_tls_address} location descriptor
+may be used to describe emulated TLS control objects.
+@end deftypevr
 
 @node MIPS Coprocessors
 @section Defining coprocessor specifics for MIPS targets.

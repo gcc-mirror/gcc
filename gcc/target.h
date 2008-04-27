@@ -917,6 +917,34 @@ struct gcc_target
     void (*adjust_class_at_definition) (tree type);
   } cxx;
 
+  /* Functions and data for emulated TLS support.  */
+  struct emutls {
+    /* Name of the address and common functions.  */
+    const char *get_address;
+    const char *register_common;
+
+    /* Prefixes for proxy variable and template.  */
+    const char *var_section;
+    const char *tmpl_section;
+
+    /* Prefixes for proxy variable and template.  */
+    const char *var_prefix;
+    const char *tmpl_prefix;
+    
+    /* Function to generate field definitions of the proxy variable.  */
+    tree (*var_fields) (tree, tree *);
+
+    /* Function to initialize a proxy variable.  */
+    tree (*var_init) (tree, tree, tree);
+
+    /* Whether we are allowed to alter the usual alignment of the
+       proxy variable.  */
+    bool var_align_fixed;
+
+    /* Whether we can emit debug information for TLS vars.  */
+    bool debug_form_tls_address;
+  } emutls;  
+
   /* For targets that need to mark extra registers as live on entry to
      the function, they should define this target hook and set their
      bits in the bitmap passed in. */  

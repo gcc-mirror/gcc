@@ -1,3 +1,46 @@
+2008-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* targhooks.h (default_emutls_var_fields,
+	default_emutls_var_init): Declare.
+	* tree.h (DECL_THREAD_LOCAL): Compare against TLS_MODEL_REAL.
+	* target.h (struct gcc_target): Add struct emutls member.
+	* target-def.h (TARGET_EMUTLS_GET_ADDRESS,
+	TARGET_EMUTLS_REGISTER_COMMON, TARGET_EMUTLS_VAR_SECTION,
+	TARGET_EMUTLS_TMPL_SECTION, TARGET_EMUTLS_VAR_PREFIX,
+	TARGET_EMUTLS_TMPL_PREFIX, TARGET_EMUTLS_VAR_FIELDS,
+	TARGET_EMUTLS_VAR_INIT, TARGET_EMUTLS_DEBUG_FORM_TLS_ADDRESS,
+	TARGET_EMUTLS_VAR_ALIGN_FIXED, TARGET_EMUTLS): New.
+	(TARGET_INITIALIZER): Add TARGET_EMUTLS.
+	* builtins.def (BUILT_IN_EMUTLS_GET_ADDRESS,
+	BUILT_IN_EMUTLS_REGISTER_COMMON): Get name from targetm structure.
+	* dwarf2out.c (loc_descriptor_from_tree_1): Check if emutls can
+	emit debug information.
+	* coretypes.h (tls_model): Add TLS_MODEL_EMULATED, TLS_MODEL_REAL.
+	* varasm.c: Include targhooks.h.
+	(emutls_object_section, emutls_tmpl_section): New.
+	(EMUTLS_VAR_PREFIX, EMUTLS_TMPL_PREFIX): Remove.
+	(EMUTLS_SEPARATOR): New.
+	(prefix_name): New.
+	(get_emutls_object_name): New.
+	(default_emutls_var_fields): New, broken out of ...
+	(get_emutls_object_type): ... here.  Adjust to use target hooks.
+	(get_emutls_init_templ_addr): Adjust to use target hooks.
+	(emutls_decl): Adjust to use target hooks.
+	(emutls_finish): Likewise.
+	(default_emutls_var_init): New, broken out of ...
+	(assemble_variable): ... here.  Adjust to use target hooks.
+	* output.h (enum section_category): Add SECCAT_EMUTLS_VAR,
+	SECCAT_EMUTLS_TMPL.
+	* c-common.c (handle_section_attribute): Prevent overriding
+	sections for emulated tls with special sections.
+	* config/i386/i386.c (x86_64_elf_select_section): Add
+	SECCAT_EMUTLS_VAR and SECCAT_EMUTLS_TMPL.
+	(x86_64_elf_unique_section): Likewise.
+	* config/vxworks.c: Include tree.h.
+	(vxworks_emutls_var_fields, vxworks_emutls_var_init): New.
+	(vxworks_override_options): Set TLS scheme.
+	* gcc/doc/tm.texi (Emulated TLS): New node.
+
 2008-04-26  Simon Baldwin <simonb@google.com>
 
 	PR c/35652
