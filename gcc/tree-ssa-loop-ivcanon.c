@@ -187,23 +187,20 @@ try_unroll_loop_completely (struct loop *loop,
 	  > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
 	return false;
 
-      if (ul == UL_NO_GROWTH)
+      unr_insns = estimated_unrolled_size (ninsns, n_unroll);
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  unr_insns = estimated_unrolled_size (ninsns, n_unroll);
-	  
+	  fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
+	  fprintf (dump_file, "  Estimated size after unrolling: %d\n",
+		   (int) unr_insns);
+	}
+
+      if (ul == UL_NO_GROWTH
+	  && unr_insns > ninsns)
+	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
-	      fprintf (dump_file, "  Estimated size after unrolling: %d\n",
-		       (int) unr_insns);
-	    }
-	  
-	  if (unr_insns > ninsns)
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "Not unrolling loop %d:\n", loop->num);
-	      return false;
-	    }
+	    fprintf (dump_file, "Not unrolling loop %d.\n", loop->num);
+	  return false;
 	}
     }
 
@@ -339,30 +336,45 @@ canonicalize_induction_variables (void)
    size of the code does not increase.  */
 
 unsigned int
-tree_unroll_loops_completely (bool may_increase_size)
+tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
   loop_iterator li;
   struct loop *loop;
-  bool changed = false;
+  bool changed;
   enum unroll_level ul;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  do
     {
-      if (may_increase_size && maybe_hot_bb_p (loop->header))
-	ul = UL_ALL;
-      else
-	ul = UL_NO_GROWTH;
-      changed |= canonicalize_loop_induction_variables (loop,
-							false, ul,
-							!flag_tree_loop_ivcanon);
+      changed = false;
+
+      FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+	{
+	  if (may_increase_size && maybe_hot_bb_p (loop->header)
+	      /* Unroll outermost loops only if asked to do so or they do
+		 not cause code growth.  */
+	      && (unroll_outer
+		  || loop_outer (loop_outer (loop))))
+	    ul = UL_ALL;
+	  else
+	    ul = UL_NO_GROWTH;
+	  changed |= canonicalize_loop_induction_variables
+		       (loop, false, ul, !flag_tree_loop_ivcanon);
+	}
+
+      if (changed)
+	{
+	  /* This will take care of removing completely unrolled loops
+	     from the loop structures so we can continue unrolling now
+	     innermost loops.  */
+	  cleanup_tree_cfg ();
+
+	  /* Clean up the information about numbers of iterations, since
+	     complete unrolling might have invalidated it.  */
+	  scev_reset ();
+	}
     }
+  while (changed);
 
-  /* Clean up the information about numbers of iterations, since complete
-     unrolling might have invalidated it.  */
-  scev_reset ();
-
-  if (changed)
-    return TODO_cleanup_cfg;
   return 0;
 }
 

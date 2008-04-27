@@ -248,8 +248,13 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
     return;
   def_loop = def_bb->loop_father;
 
-  /* If the definition is not inside loop, it is not interesting.  */
+  /* If the definition is not inside a loop, it is not interesting.  */
   if (!loop_outer (def_loop))
+    return;
+
+  /* If the use is not outside of the loop it is defined in, it is not
+     interesting.  */
+  if (flow_bb_inside_loop_p (def_loop, bb))
     return;
 
   if (!use_blocks[ver])
@@ -592,7 +597,8 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
     return false;
 
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
+  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+    verify_loop_closed_ssa ();
 #endif
 
   first_new_block = last_basic_block;

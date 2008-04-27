@@ -1,3 +1,22 @@
+2008-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/18754
+	PR tree-optimization/34223
+	* gcc.dg/tree-ssa/loop-36.c: New testcase.
+	* gcc.dg/tree-ssa/loop-37.c: Likewise.
+	* gcc.dg/vect/vect-118.c: Likewise.
+	* gcc.dg/Wunreachable-8.c: XFAIL bogus warning.
+	* gcc.dg/vect/vect-66.c: Increase loop trip count.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Likewise.
+	* gcc.dg/vect/vect-76.c: Likewise.
+	* gcc.dg/vect/vect-outer-6.c: Likewise.
+	* gcc.dg/vect/vect-outer-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a.c: Likewise.
+	* gcc.dg/vect/vect-11a.c: Likewise.
+	* gcc.dg/vect/vect-shift-1.c: Likewise.
+	* gcc.target/i386/vectorize1.c: Likewise.
+
 2008-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/tls/section-2.c: New.

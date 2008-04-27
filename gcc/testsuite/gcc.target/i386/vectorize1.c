@@ -4,14 +4,14 @@
 extern char lanip[3][40];
 typedef struct
 {
-  char *t[4];
+  char *t[8];
 }tx_typ;
 
 int set_names (void)
 {
   static tx_typ tt1;
   int ln;
-  for (ln = 0; ln < 4; ln++)
+  for (ln = 0; ln < 8; ln++)
       tt1.t[ln] = lanip[1];
 }
 

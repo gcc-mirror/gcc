@@ -1,3 +1,30 @@
+2008-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/18754
+	PR tree-optimization/34223
+	* tree-pass.h (pass_complete_unrolli): Declare.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Print
+	loop size before and after unconditionally of UL_NO_GROWTH in effect.
+	Rewrite loop into loop closed SSA form if it is not already.
+	(tree_unroll_loops_completely): Re-structure to iterate over
+	innermost loops with intermediate CFG cleanups.
+	Unroll outermost loops only if requested or the code does not grow
+	doing so.
+	* tree-ssa-loop.c (gate_tree_vectorize): Don't shortcut if no
+	loops are available.
+	(tree_vectorize): Instead do so here.
+	(tree_complete_unroll): Also unroll outermost loops.
+	(tree_complete_unroll_inner): New function.
+	(gate_tree_complete_unroll_inner): Likewise.
+	(pass_complete_unrolli): New pass.
+	* tree-ssa-loop-manip.c (find_uses_to_rename_use): Only record
+	uses outside of the loop.
+	(tree_duplicate_loop_to_header_edge): Only verify loop-closed SSA
+	form if it is available.  
+	* tree-flow.h (tree_unroll_loops_completely): Add extra parameter.
+	* passes.c (init_optimization_passes): Schedule complete inner
+	loop unrolling pass before the first CCP pass after final inlining.
+
 2008-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* targhooks.h (default_emutls_var_fields,
