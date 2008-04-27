@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "output.h"
 #include "tm.h"
+#include "tree.h"
 
 /* Like default_named_section_asm_out_constructor, except that even
    constructors with DEFAULT_INIT_PRIORITY must go in a numbered
@@ -56,11 +57,87 @@ vxworks_asm_out_destructor (rtx symbol, int priority)
   assemble_addr_to_section (symbol, sec);
 }
 
+/* Return the list of FIELD_DECLs that make up an emulated TLS
+   variable's control object.  TYPE is the structure these are fields
+   of and *NAME will be filled in with the structure tag that should
+   be used.  */
+
+static tree
+vxworks_emutls_var_fields (tree type, tree *name)
+{
+  tree field, next_field;
+  
+  *name = get_identifier ("__tls_var");
+  
+  field = build_decl (FIELD_DECL, get_identifier ("size"),
+		      unsigned_type_node);
+  DECL_CONTEXT (field) = type;
+  next_field = field;
+
+  field = build_decl (FIELD_DECL, get_identifier ("module_id"),
+		      unsigned_type_node);
+  DECL_CONTEXT (field) = type;
+  TREE_CHAIN (field) = next_field;
+  next_field = field;
+
+  field = build_decl (FIELD_DECL, get_identifier ("offset"),
+		      unsigned_type_node);
+  DECL_CONTEXT (field) = type;
+  TREE_CHAIN (field) = next_field;
+
+  return field;
+}
+
+/* Return the CONSTRUCTOR to initialize an emulated TLS control
+   object.  VAR is the control object.  DECL is the TLS object itself
+   and TMPL_ADDR is the address (an ADDR_EXPR) of the initializer for
+   that object.  */
+
+static tree
+vxworks_emutls_var_init (tree var, tree decl, tree tmpl_addr)
+{
+  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 3);
+  constructor_elt *elt;
+  
+  tree type = TREE_TYPE (var);
+  tree field = TYPE_FIELDS (type);
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  elt->index = field;
+  elt->value = fold_convert (TREE_TYPE (field), tmpl_addr);
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  field = TREE_CHAIN (field);
+  elt->index = field;
+  elt->value = build_int_cst (TREE_TYPE (field), 0);
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  field = TREE_CHAIN (field);
+  elt->index = field;
+  elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  
+  return build_constructor (type, v);
+}
+
 /* Do VxWorks-specific parts of OVERRIDE_OPTIONS.  */
 
 void
 vxworks_override_options (void)
 {
+  /* We don't support __thread via target hooks.  */
+  targetm.have_tls = false;
+
+  targetm.emutls.get_address = "__builtin___tls_lookup";
+  targetm.emutls.register_common = NULL;
+  targetm.emutls.var_section = ".tls_vars";
+  targetm.emutls.tmpl_section = ".tls_data";
+  targetm.emutls.var_prefix = "__tls__";
+  targetm.emutls.tmpl_prefix = "";
+  targetm.emutls.var_fields = vxworks_emutls_var_fields;
+  targetm.emutls.var_init = vxworks_emutls_var_init;
+  targetm.emutls.var_align_fixed = true;
+  targetm.emutls.debug_form_tls_address = true;
+  
   /* We can use .ctors/.dtors sections only in RTP mode.  */
   targetm.have_ctors_dtors = TARGET_VXWORKS_RTP;
 

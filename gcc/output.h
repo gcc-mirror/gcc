@@ -460,7 +460,10 @@ enum section_category
 
   SECCAT_BSS,
   SECCAT_SBSS,
-  SECCAT_TBSS
+  SECCAT_TBSS,
+
+  SECCAT_EMUTLS_VAR,
+  SECCAT_EMUTLS_TMPL
 };
 
 /* Information that is provided by all instances of the section type.  */

@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
+#include "targhooks.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "cfglayout.h"
@@ -194,17 +195,34 @@ static GTY(()) struct rtx_constant_pool *shared_constant_pool;
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
      htab_t emutls_htab;
 static GTY (()) tree emutls_object_type;
+/* Emulated TLS objects have the TLS model TLS_MODEL_EMULATED.  This
+   macro can be used on them to distinguish the control variable from
+   the initialization template.  */
+#define DECL_EMUTLS_VAR_P(D)  (TREE_TYPE (D) == emutls_object_type)
 
-#ifndef NO_DOT_IN_LABEL
-# define EMUTLS_VAR_PREFIX	"__emutls_v."
-# define EMUTLS_TMPL_PREFIX	"__emutls_t."
-#elif !defined NO_DOLLAR_IN_LABEL
-# define EMUTLS_VAR_PREFIX	"__emutls_v$"
-# define EMUTLS_TMPL_PREFIX	"__emutls_t$"
+#if !defined (NO_DOT_IN_LABEL)
+# define EMUTLS_SEPARATOR	"."
+#elif !defined (NO_DOLLAR_IN_LABEL)
+# define EMUTLS_SEPARATOR	"$"
 #else
-# define EMUTLS_VAR_PREFIX	"__emutls_v_"
-# define EMUTLS_TMPL_PREFIX	"__emutls_t_"
+# define EMUTLS_SEPARATOR	"_"
 #endif
+
+/* Create an IDENTIFIER_NODE by prefixing PREFIX to the
+   IDENTIFIER_NODE NAME's name.  */
+
+static tree
+prefix_name (const char *prefix, tree name)
+{
+  unsigned plen = strlen (prefix);
+  unsigned nlen = strlen (IDENTIFIER_POINTER (name));
+  char *toname = alloca (plen + nlen + 1);
+  
+  memcpy (toname, prefix, plen);
+  memcpy (toname + plen, IDENTIFIER_POINTER (name), nlen + 1);
+
+  return get_identifier (toname);
+}
 
 /* Create an identifier for the struct __emutls_object, given an identifier
    of the DECL_ASSEMBLY_NAME of the original object.  */
@@ -212,12 +230,39 @@ static GTY (()) tree emutls_object_type;
 static tree
 get_emutls_object_name (tree name)
 {
-  char *toname = alloca (strlen (IDENTIFIER_POINTER (name))
-			 + sizeof (EMUTLS_VAR_PREFIX));
-  strcpy (toname, EMUTLS_VAR_PREFIX);
-  strcpy (toname + sizeof (EMUTLS_VAR_PREFIX) - 1, IDENTIFIER_POINTER (name));
+  const char *prefix = (targetm.emutls.var_prefix
+			? targetm.emutls.var_prefix
+			: "__emutls_v" EMUTLS_SEPARATOR);
+  return prefix_name (prefix, name);
+}
 
-  return get_identifier (toname);
+tree
+default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
+{
+  tree word_type_node, field, next_field;
+  
+  field = build_decl (FIELD_DECL, get_identifier ("__templ"), ptr_type_node);
+  DECL_CONTEXT (field) = type;
+  next_field = field;
+    
+  field = build_decl (FIELD_DECL, get_identifier ("__offset"),
+		      ptr_type_node);
+  DECL_CONTEXT (field) = type;
+  TREE_CHAIN (field) = next_field;
+  next_field = field;
+  
+  word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
+  field = build_decl (FIELD_DECL, get_identifier ("__align"),
+		      word_type_node);
+  DECL_CONTEXT (field) = type;
+  TREE_CHAIN (field) = next_field;
+  next_field = field;
+  
+  field = build_decl (FIELD_DECL, get_identifier ("__size"), word_type_node);
+  DECL_CONTEXT (field) = type;
+  TREE_CHAIN (field) = next_field;
+
+  return field;
 }
 
 /* Create the structure for struct __emutls_object.  This should match the
@@ -226,36 +271,19 @@ get_emutls_object_name (tree name)
 static tree
 get_emutls_object_type (void)
 {
-  tree type, type_name, field, next_field, word_type_node;
+  tree type, type_name, field;
 
   type = emutls_object_type;
   if (type)
     return type;
 
   emutls_object_type = type = lang_hooks.types.make_type (RECORD_TYPE);
-  type_name = get_identifier ("__emutls_object");
+  type_name = NULL;
+  field = targetm.emutls.var_fields (type, &type_name);
+  if (!type_name)
+    type_name = get_identifier ("__emutls_object");
   type_name = build_decl (TYPE_DECL, type_name, type);
   TYPE_NAME (type) = type_name;
-
-  field = build_decl (FIELD_DECL, get_identifier ("__templ"), ptr_type_node);
-  DECL_CONTEXT (field) = type;
-  next_field = field;
-
-  field = build_decl (FIELD_DECL, get_identifier ("__offset"), ptr_type_node);
-  DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
-  next_field = field;
-
-  word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
-  field = build_decl (FIELD_DECL, get_identifier ("__align"), word_type_node);
-  DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
-  next_field = field;
-
-  field = build_decl (FIELD_DECL, get_identifier ("__size"), word_type_node);
-  DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
-
   TYPE_FIELDS (type) = field;
   layout_type (type);
 
@@ -269,26 +297,30 @@ static tree
 get_emutls_init_templ_addr (tree decl)
 {
   tree name, to;
-  char *toname;
-
-  if (!DECL_INITIAL (decl))
+  
+  if (targetm.emutls.register_common && !DECL_INITIAL (decl)
+      && !DECL_SECTION_NAME (decl))
     return null_pointer_node;
 
   name = DECL_ASSEMBLER_NAME (decl);
-  toname = alloca (strlen (IDENTIFIER_POINTER (name))
-		   + sizeof (EMUTLS_TMPL_PREFIX));
-  strcpy (toname, EMUTLS_TMPL_PREFIX);
-  strcpy (toname + sizeof (EMUTLS_TMPL_PREFIX) - 1, IDENTIFIER_POINTER (name));
-  name = get_identifier (toname);
+  if (!targetm.emutls.tmpl_prefix || targetm.emutls.tmpl_prefix[0])
+    {
+      const char *prefix = (targetm.emutls.tmpl_prefix
+			    ? targetm.emutls.tmpl_prefix
+			    : "__emutls_t" EMUTLS_SEPARATOR);
+      name = prefix_name (prefix, name);
+    }
 
   to = build_decl (VAR_DECL, name, TREE_TYPE (decl));
   SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
-
+  DECL_TLS_MODEL (to) = TLS_MODEL_EMULATED;
   DECL_ARTIFICIAL (to) = 1;
   TREE_USED (to) = TREE_USED (decl);
   TREE_READONLY (to) = 1;
   DECL_IGNORED_P (to) = 1;
   DECL_CONTEXT (to) = DECL_CONTEXT (decl);
+  DECL_SECTION_NAME (to) = DECL_SECTION_NAME (decl);
+  
   DECL_WEAK (to) = DECL_WEAK (decl);
   if (DECL_ONE_ONLY (decl))
     {
@@ -348,14 +380,18 @@ emutls_decl (tree decl)
       h->to = to;
       *(struct tree_map **) loc = h;
 
+      DECL_TLS_MODEL (to) = TLS_MODEL_EMULATED;
       DECL_ARTIFICIAL (to) = 1;
       DECL_IGNORED_P (to) = 1;
       TREE_READONLY (to) = 0;
-
       SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
       if (DECL_ONE_ONLY (decl))
 	make_decl_one_only (to);
       DECL_CONTEXT (to) = DECL_CONTEXT (decl);
+      if (targetm.emutls.var_align_fixed)
+	/* If we're not allowed to change the proxy object's
+	   alignment, pretend it's been set by the user.  */
+	DECL_USER_ALIGN (to) = 1;
     }
 
   /* Note that these fields may need to be updated from time to time from
@@ -413,16 +449,19 @@ emutls_common_1 (void **loc, void *xstmts)
 void
 emutls_finish (void)
 {
-  tree body = NULL_TREE;
+  if (!targetm.emutls.register_common)
+    {
+      tree body = NULL_TREE;
 
-  if (emutls_htab == NULL)
-    return;
+      if (emutls_htab == NULL)
+	return;
 
-  htab_traverse_noresize (emutls_htab, emutls_common_1, &body);
-  if (body == NULL_TREE)
-    return;
-
-  cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
+      htab_traverse_noresize (emutls_htab, emutls_common_1, &body);
+      if (body == NULL_TREE)
+	return;
+      
+      cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
+    }
 }
 
 /* Helper routines for maintaining section_htab.  */
@@ -1125,7 +1164,12 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
     {
       if (DECL_THREAD_LOCAL_P (decl))
 	return tls_comm_section;
-      if (TREE_PUBLIC (decl) && bss_initializer_p (decl))
+      /* This cannot be common bss for an emulated TLS object without
+	 a register_common hook.  */
+      else if (DECL_TLS_MODEL (decl) == TLS_MODEL_EMULATED
+	       && !targetm.emutls.register_common)
+	;
+      else if (TREE_PUBLIC (decl) && bss_initializer_p (decl))
 	return comm_section;
     }
 
@@ -1950,6 +1994,40 @@ assemble_variable_contents (tree decl, const char *name,
     }
 }
 
+/* Initialize emulated tls object TO, which refers to TLS variable
+   DECL and is initialized by PROXY.  */
+
+tree
+default_emutls_var_init (tree to, tree decl, tree proxy)
+{
+  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 4);
+  constructor_elt *elt;
+  tree type = TREE_TYPE (to);
+  tree field = TYPE_FIELDS (type);
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  elt->index = field;
+  elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  field = TREE_CHAIN (field);
+  elt->index = field;
+  elt->value = build_int_cst (TREE_TYPE (field),
+			      DECL_ALIGN_UNIT (decl));
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  field = TREE_CHAIN (field);
+  elt->index = field;
+  elt->value = null_pointer_node;
+  
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  field = TREE_CHAIN (field);
+  elt->index = field;
+  elt->value = proxy;
+  
+  return build_constructor (type, v);
+}
+
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
    Should not be called for variables of incomplete structure type.
@@ -1984,32 +2062,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	      || (DECL_INITIAL (decl)
 		  && DECL_INITIAL (decl) != error_mark_node)))
 	{
-	  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 4);
-	  constructor_elt *elt;
-	  tree type = TREE_TYPE (to);
-	  tree field = TYPE_FIELDS (type);
-
-	  elt = VEC_quick_push (constructor_elt, v, NULL);
-	  elt->index = field;
-	  elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
-
-	  elt = VEC_quick_push (constructor_elt, v, NULL);
-	  field = TREE_CHAIN (field);
-	  elt->index = field;
-	  elt->value = build_int_cst (TREE_TYPE (field),
-				      DECL_ALIGN_UNIT (decl));
-
-	  elt = VEC_quick_push (constructor_elt, v, NULL);
-	  field = TREE_CHAIN (field);
-	  elt->index = field;
-	  elt->value = null_pointer_node;
-
-	  elt = VEC_quick_push (constructor_elt, v, NULL);
-	  field = TREE_CHAIN (field);
-	  elt->index = field;
-	  elt->value = get_emutls_init_templ_addr (decl);
-
-	  DECL_INITIAL (to) = build_constructor (type, v);
+	  DECL_INITIAL (to) = targetm.emutls.var_init
+	    (to, decl, get_emutls_init_templ_addr (decl));
 
 	  /* Make sure the template is marked as needed early enough.
 	     Without this, if the variable is placed in a
@@ -5786,13 +5840,26 @@ categorize_decl_for_section (const_tree decl, int reloc)
     ret = SECCAT_RODATA;
 
   /* There are no read-only thread-local sections.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (TREE_CODE (decl) == VAR_DECL && DECL_TLS_MODEL (decl))
     {
+      if (DECL_TLS_MODEL (decl) == TLS_MODEL_EMULATED)
+	{
+	  if (DECL_EMUTLS_VAR_P (decl))
+	    {
+	      if (targetm.emutls.var_section)
+		ret = SECCAT_EMUTLS_VAR;
+	    }
+	  else
+	    {
+	      if (targetm.emutls.tmpl_prefix)
+		ret = SECCAT_EMUTLS_TMPL;
+	    }
+	}
       /* Note that this would be *just* SECCAT_BSS, except that there's
 	 no concept of a read-only thread-local-data section.  */
-      if (ret == SECCAT_BSS
-	  || (flag_zero_initialized_in_bss
-	      && initializer_zerop (DECL_INITIAL (decl))))
+      else if (ret == SECCAT_BSS
+	       || (flag_zero_initialized_in_bss
+		   && initializer_zerop (DECL_INITIAL (decl))))
 	ret = SECCAT_TBSS;
       else
 	ret = SECCAT_TDATA;
@@ -5884,6 +5951,12 @@ default_elf_select_section (tree decl, int reloc,
     case SECCAT_TBSS:
       sname = ".tbss";
       break;
+    case SECCAT_EMUTLS_VAR:
+      sname = targetm.emutls.var_section;
+      break;
+    case SECCAT_EMUTLS_TMPL:
+      sname = targetm.emutls.tmpl_section;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -5901,69 +5974,73 @@ default_unique_section (tree decl, int reloc)
 {
   /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
   bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
-  const char *prefix, *name;
-  size_t nlen, plen;
+  const char *prefix, *name, *linkonce;
   char *string;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
-      prefix = one_only ? ".gnu.linkonce.t." : ".text.";
+      prefix = one_only ? ".t" : ".text";
       break;
     case SECCAT_RODATA:
     case SECCAT_RODATA_MERGE_STR:
     case SECCAT_RODATA_MERGE_STR_INIT:
     case SECCAT_RODATA_MERGE_CONST:
-      prefix = one_only ? ".gnu.linkonce.r." : ".rodata.";
+      prefix = one_only ? ".r" : ".rodata";
       break;
     case SECCAT_SRODATA:
-      prefix = one_only ? ".gnu.linkonce.s2." : ".sdata2.";
+      prefix = one_only ? ".s2" : ".sdata2";
       break;
     case SECCAT_DATA:
-      prefix = one_only ? ".gnu.linkonce.d." : ".data.";
+      prefix = one_only ? ".d" : ".data";
       break;
     case SECCAT_DATA_REL:
-      prefix = one_only ? ".gnu.linkonce.d.rel." : ".data.rel.";
+      prefix = one_only ? ".d.rel" : ".data.rel";
       break;
     case SECCAT_DATA_REL_LOCAL:
-      prefix = one_only ? ".gnu.linkonce.d.rel.local." : ".data.rel.local.";
+      prefix = one_only ? ".d.rel.local" : ".data.rel.local";
       break;
     case SECCAT_DATA_REL_RO:
-      prefix = one_only ? ".gnu.linkonce.d.rel.ro." : ".data.rel.ro.";
+      prefix = one_only ? ".d.rel.ro" : ".data.rel.ro";
       break;
     case SECCAT_DATA_REL_RO_LOCAL:
-      prefix = one_only ? ".gnu.linkonce.d.rel.ro.local."
-	       : ".data.rel.ro.local.";
+      prefix = one_only ? ".d.rel.ro.local" : ".data.rel.ro.local";
       break;
     case SECCAT_SDATA:
-      prefix = one_only ? ".gnu.linkonce.s." : ".sdata.";
+      prefix = one_only ? ".s" : ".sdata";
       break;
     case SECCAT_BSS:
-      prefix = one_only ? ".gnu.linkonce.b." : ".bss.";
+      prefix = one_only ? ".b" : ".bss";
       break;
     case SECCAT_SBSS:
-      prefix = one_only ? ".gnu.linkonce.sb." : ".sbss.";
+      prefix = one_only ? ".sb" : ".sbss";
       break;
     case SECCAT_TDATA:
-      prefix = one_only ? ".gnu.linkonce.td." : ".tdata.";
+      prefix = one_only ? ".td" : ".tdata";
       break;
     case SECCAT_TBSS:
-      prefix = one_only ? ".gnu.linkonce.tb." : ".tbss.";
+      prefix = one_only ? ".tb" : ".tbss";
+      break;
+    case SECCAT_EMUTLS_VAR:
+      prefix = targetm.emutls.var_section;
+      break;
+    case SECCAT_EMUTLS_TMPL:
+      prefix = targetm.emutls.tmpl_section;
       break;
     default:
       gcc_unreachable ();
     }
-  plen = strlen (prefix);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = targetm.strip_name_encoding (name);
-  nlen = strlen (name);
 
-  string = alloca (nlen + plen + 1);
-  memcpy (string, prefix, plen);
-  memcpy (string + plen, name, nlen + 1);
+  /* If we're using one_only, then there needs to be a .gnu.linkonce
+     prefix to the section name.  */
+  linkonce = one_only ? ".gnu.linkonce" : "";
+  
+  string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
-  DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
+  DECL_SECTION_NAME (decl) = build_string (strlen (string), string);
 }
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value

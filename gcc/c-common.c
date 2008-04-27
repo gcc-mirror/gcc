@@ -5476,6 +5476,13 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 		     *node);
 	      *no_add_attrs = true;
 	    }
+	  else if (TREE_CODE (decl) == VAR_DECL
+		   && !targetm.have_tls && targetm.emutls.tmpl_section
+		   && DECL_THREAD_LOCAL_P (decl))
+	    {
+	      error ("section of %q+D cannot be overridden", *node);
+	      *no_add_attrs = true;
+	    }
 	  else
 	    DECL_SECTION_NAME (decl) = TREE_VALUE (args);
 	}

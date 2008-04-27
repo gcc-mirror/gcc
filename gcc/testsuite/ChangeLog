@@ -1,3 +1,10 @@
+2008-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/tls/section-2.c: New.
+	* gcc.dg/tls/emutls-1.c: New.
+	* lib/target-supports.exp (check_effective_target_tls_native):
+	Exclude vxworks.
+
 2008-04-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/36053

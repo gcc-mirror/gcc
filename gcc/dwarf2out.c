@@ -9494,16 +9494,33 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
       if (DECL_THREAD_LOCAL_P (loc))
 	{
 	  rtx rtl;
+	  unsigned first_op;
+	  unsigned second_op;
 
-	  /* If this is not defined, we have no way to emit the data.  */
-	  if (!targetm.have_tls || !targetm.asm_out.output_dwarf_dtprel)
-	    return 0;
+	  if (targetm.have_tls)
+	    {
+	      /* If this is not defined, we have no way to emit the
+	         data.  */
+	      if (!targetm.asm_out.output_dwarf_dtprel)
+		return 0;
 
-	  /* The way DW_OP_GNU_push_tls_address is specified, we can only
-	     look up addresses of objects in the current module.  */
-	  if (DECL_EXTERNAL (loc))
-	    return 0;
-
+	       /* The way DW_OP_GNU_push_tls_address is specified, we
+	     	  can only look up addresses of objects in the current
+	     	  module.  */
+	      if (DECL_EXTERNAL (loc))
+		return 0;
+	      first_op = INTERNAL_DW_OP_tls_addr;
+	      second_op = DW_OP_GNU_push_tls_address;
+	    }
+	  else
+	    {
+	      if (!targetm.emutls.debug_form_tls_address)
+		return 0;
+	      loc = emutls_decl (loc);
+	      first_op = DW_OP_addr;
+	      second_op = DW_OP_form_tls_address;
+	    }
+	  
 	  rtl = rtl_for_decl_location (loc);
 	  if (rtl == NULL_RTX)
 	    return 0;
@@ -9514,11 +9531,11 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  if (! CONSTANT_P (rtl))
 	    return 0;
 
-	  ret = new_loc_descr (INTERNAL_DW_OP_tls_addr, 0, 0);
+	  ret = new_loc_descr (first_op, 0, 0);
 	  ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
 	  ret->dw_loc_oprnd1.v.val_addr = rtl;
-
-	  ret1 = new_loc_descr (DW_OP_GNU_push_tls_address, 0, 0);
+	  
+	  ret1 = new_loc_descr (second_op, 0, 0);
 	  add_loc_descr (&ret, ret1);
 
 	  have_address = 1;
