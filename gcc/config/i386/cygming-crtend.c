@@ -74,6 +74,13 @@ static void
 register_frame_ctor (void)
 {
   __gcc_register_frame ();
-  atexit (__gcc_deregister_frame);
+}
+
+static void deregister_frame_ctor (void) __attribute__ ((destructor (0)));
+
+static void
+deregister_frame_ctor (void)
+{
+  __gcc_deregister_frame ();
 }
 

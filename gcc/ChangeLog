@@ -1,3 +1,8 @@
+2008-04-28  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming-crtend.c (register_frame_ctor): Revert my
+	2008-04-25 commit.
+
 2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36073
