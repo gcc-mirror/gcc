@@ -1,3 +1,11 @@
+2008-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Tristan Gingold  <gingold@adacore.com>
+
+	PR ada/36007
+	* decl.c (gnat_to_gnu_entity) <object>: Do not promote alignment
+	of aliased objects with an unconstrained nominal subtype.
+	Cap the promotion to the effective alignment of the word mode.
+
 2008-04-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Make-lang.in (ada.tags, check-acats, ada/treeprs.ads)

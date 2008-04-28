@@ -685,6 +685,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && kind != E_Exception
 		    && kind != E_Out_Parameter
 		    && Is_Composite_Type (Etype (gnat_entity))
+		    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
 		    && !imported_p
 		    && No (Renamed_Object (gnat_entity))
 		    && No (Address_Clause (gnat_entity))))
@@ -694,7 +695,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       to support BIGGEST_ALIGNMENT if we don't really have to.  */
 	    unsigned int align_cap = Is_Atomic (gnat_entity)
 				     ? BIGGEST_ALIGNMENT
-				     : MAX_FIXED_MODE_SIZE;
+				     : get_mode_alignment (word_mode);
 
 	    if (!host_integerp (TYPE_SIZE (gnu_type), 1)
 		|| compare_tree_int (TYPE_SIZE (gnu_type), align_cap) >= 0)
