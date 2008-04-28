@@ -3811,7 +3811,7 @@ DEF_VEC_ALLOC_O(dw_attr_node,gc);
    The children of each node form a circular list linked by
    die_sib.  die_child points to the node *before* the "first" child node.  */
 
-typedef struct die_struct GTY(())
+typedef struct die_struct GTY((chain_circular ("%h.die_sib")))
 {
   enum dwarf_tag die_tag;
   char *die_symbol;

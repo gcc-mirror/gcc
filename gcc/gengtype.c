@@ -1942,6 +1942,8 @@ walk_type (type_p t, struct walk_type_data *d)
       ;
     else if (strcmp (oo->name, "chain_prev") == 0)
       ;
+    else if (strcmp (oo->name, "chain_circular") == 0)
+      ;
     else if (strcmp (oo->name, "reorder") == 0)
       ;
     else
@@ -2419,6 +2421,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   int i;
   const char *chain_next = NULL;
   const char *chain_prev = NULL;
+  const char *chain_circular = NULL;
   const char *mark_hook_name = NULL;
   options_p opt;
   struct walk_type_data d;
@@ -2437,11 +2440,17 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
       chain_next = opt->info;
     else if (strcmp (opt->name, "chain_prev") == 0)
       chain_prev = opt->info;
+    else if (strcmp (opt->name, "chain_circular") == 0)
+      chain_circular = opt->info;
     else if (strcmp (opt->name, "mark_hook") == 0)
       mark_hook_name = opt->info;
 
   if (chain_prev != NULL && chain_next == NULL)
     error_at_line (&s->u.s.line, "chain_prev without chain_next");
+  if (chain_circular != NULL && chain_next != NULL)
+    error_at_line (&s->u.s.line, "chain_circular with chain_next");
+  if (chain_circular != NULL)
+    chain_next = chain_circular;
 
   d.process_field = write_types_process_field;
   d.cookie = wtd;
@@ -2486,7 +2495,10 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
     }
   else
     {
-      oprintf (d.of, "  while (%s (xlimit", wtd->marker_routine);
+      if (chain_circular != NULL)
+	oprintf (d.of, "  if (!%s (xlimit", wtd->marker_routine);
+      else
+	oprintf (d.of, "  while (%s (xlimit", wtd->marker_routine);
       if (wtd->param_prefix)
 	{
 	  oprintf (d.of, ", xlimit, gt_%s_", wtd->param_prefix);
@@ -2494,6 +2506,8 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	  output_type_enum (d.of, orig_s);
 	}
       oprintf (d.of, "))\n");
+      if (chain_circular != NULL)
+	oprintf (d.of, "    return;\n  do\n");
       if (mark_hook_name && !wtd->skip_hooks)
 	{
 	  oprintf (d.of, "    {\n");
@@ -2529,7 +2543,22 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 	  oprintf (d.of, ");\n");
 	  oprintf (d.of, "      }\n");
 	}
-      oprintf (d.of, "  while (x != xlimit)\n");
+      if (chain_circular != NULL)
+	{
+	  oprintf (d.of, "  while (%s (xlimit", wtd->marker_routine);
+	  if (wtd->param_prefix)
+	    {
+	      oprintf (d.of, ", xlimit, gt_%s_", wtd->param_prefix);
+	      output_mangled_typename (d.of, orig_s);
+	      output_type_enum (d.of, orig_s);
+	    }
+	  oprintf (d.of, "));\n");
+	  if (mark_hook_name && !wtd->skip_hooks)
+	    oprintf (d.of, "  %s (xlimit);\n", mark_hook_name);
+	  oprintf (d.of, "  do\n");
+	}
+      else
+	oprintf (d.of, "  while (x != xlimit)\n");
     }
   oprintf (d.of, "    {\n");
   if (mark_hook_name && chain_next == NULL && !wtd->skip_hooks)
@@ -2548,6 +2577,8 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
     }
 
   oprintf (d.of, "    }\n");
+  if (chain_circular != NULL)
+    oprintf (d.of, "  while (x != xlimit);\n");
   oprintf (d.of, "}\n");
 }
 
