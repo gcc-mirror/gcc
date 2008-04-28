@@ -1,3 +1,10 @@
+2008-04-28  Jason Merrill  <jason@redhat.com>
+	    Liu Guanwei <liu_gw@163.com>
+
+	PR c++/57
+	* parser.c (cp_parser_parameter_declaration): Handle < ambiguity
+	in default arguments.
+
 2008-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* typeck.c (check_return_expr): Update.
