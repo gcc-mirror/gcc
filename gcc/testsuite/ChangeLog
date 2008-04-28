@@ -1,3 +1,8 @@
+2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/36056
+	* g++.dg/ext/vector14.C: Add -msse for 32bit x86 targets.
+
 2008-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/18754
