@@ -1,3 +1,9 @@
+2008-04-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* include/Makefile.am: Fix most stamp rules to regenerate
+	the links for all sources newer than the stamp file.
+	* include/Makefile.in: Regenerate.
+
 2008-05-25  Benjamin Kosnik  <bkoz@redhat.com>
 
         Revert PR libstdc++/35887 
