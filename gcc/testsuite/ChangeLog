@@ -1,5 +1,10 @@
 2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/36064
+	* gcc.target/i386/pr36064.c: New test.
+
+2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR testsuite/36056
 	* g++.dg/ext/vector14.C: Add -msse for 32bit x86 targets.
 
