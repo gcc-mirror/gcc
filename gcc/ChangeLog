@@ -1,3 +1,9 @@
+2008-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36066
+	* tree-vrp.c (execute_vrp): Cleanup the CFG only after finalizing
+	SCEV and loop.
+
 2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36064
