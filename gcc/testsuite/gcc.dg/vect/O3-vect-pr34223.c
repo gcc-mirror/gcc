@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fdump-tree-vect-details" } */
 
 #include "tree-vect.h"
 
