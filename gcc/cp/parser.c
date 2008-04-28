@@ -13723,6 +13723,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  && TYPE_BEING_DEFINED (current_class_type))
 	{
 	  unsigned depth = 0;
+	  int maybe_template_id = 0;
 	  cp_token *first_token;
 	  cp_token *token;
 
@@ -13741,6 +13742,33 @@ cp_parser_parameter_declaration (cp_parser *parser,
 		  /* In valid code, a default argument must be
 		     immediately followed by a `,' `)', or `...'.  */
 		case CPP_COMMA:
+		  if (depth == 0 && maybe_template_id)
+		    {
+		      /* If we've seen a '<', we might be in a
+			 template-argument-list.  Until Core issue 325 is
+			 resolved, we don't know how this situation ought
+			 to be handled, so try to DTRT.  We check whether
+			 what comes after the comma is a valid parameter
+			 declaration list.  If it is, then the comma ends
+			 the default argument; otherwise the default
+			 argument continues.  */
+		      bool error = false;
+
+		      /* Set ITALP so cp_parser_parameter_declaration_list
+			 doesn't decide to commit to this parse.  */
+		      bool saved_italp = parser->in_template_argument_list_p;
+		      parser->in_template_argument_list_p = true;
+
+		      cp_parser_parse_tentatively (parser);
+		      cp_lexer_consume_token (parser->lexer);
+		      cp_parser_parameter_declaration_list (parser, &error);
+		      if (!cp_parser_error_occurred (parser) && !error)
+			done = true;
+		      cp_parser_abort_tentative_parse (parser);
+
+		      parser->in_template_argument_list_p = saved_italp;
+		      break;
+		    }
 		case CPP_CLOSE_PAREN:
 		case CPP_ELLIPSIS:
 		  /* If we run into a non-nested `;', `}', or `]',
@@ -13764,6 +13792,13 @@ cp_parser_parameter_declaration (cp_parser *parser,
 		  ++depth;
 		  break;
 
+		case CPP_LESS:
+		  if (depth == 0)
+		    /* This might be the comparison operator, or it might
+		       start a template argument list.  */
+		    ++maybe_template_id;
+		  break;
+
                 case CPP_RSHIFT:
                   if (cxx_dialect == cxx98)
                     break;
@@ -13772,11 +13807,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
                      cases.  */
 
 		case CPP_GREATER:
-		  /* If we see a non-nested `>', and `>' is not an
-		     operator, then it marks the end of the default
-		     argument.  */
-		  if (!depth && !greater_than_is_operator_p)
-		    done = true;
+		  if (depth == 0)
+		    {
+		      /* This might be an operator, or it might close a
+			 template argument list.  But if a previous '<'
+			 started a template argument list, this will have
+			 closed it, so we can't be in one anymore.  */
+		      maybe_template_id -= 1 + (token->type == CPP_RSHIFT);
+		      if (maybe_template_id < 0)
+			maybe_template_id = 0;
+		    }
 		  break;
 
 		  /* If we run out of tokens, issue an error message.  */
