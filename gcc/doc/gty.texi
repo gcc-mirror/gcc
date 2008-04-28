@@ -316,8 +316,10 @@ escape.
 
 @findex chain_next
 @findex chain_prev
+@findex chain_circular
 @item chain_next ("@var{expression}")
 @itemx chain_prev ("@var{expression}")
+@itemx chain_circular ("@var{expression}")
 
 It's helpful for the type machinery to know if objects are often
 chained together in long lists; this lets it generate code that uses
@@ -326,7 +328,8 @@ it.  @code{chain_next} is an expression for the next item in the list,
 @code{chain_prev} is an expression for the previous item.  For singly
 linked lists, use only @code{chain_next}; for doubly linked lists, use
 both.  The machinery requires that taking the next item of the
-previous item gives the original item.
+previous item gives the original item.  @code{chain_circular} is similar
+to @code{chain_next}, but can be used for circular single linked lists.
 
 @findex reorder
 @item reorder ("@var{function name}")
