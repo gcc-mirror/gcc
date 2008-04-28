@@ -1,5 +1,11 @@
 2008-04-28  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/34223
+	* gcc.dg/vect/vect-118.c: Rename to ...
+	* gcc.dg/vect/O3-vect-pr34223.c: ... this.
+
+2008-04-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/36066
 	* gcc.dg/torture/pr36066.c: New testcase.
 
