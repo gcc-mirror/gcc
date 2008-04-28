@@ -1,5 +1,6 @@
 // PR c++/35758
 // { dg-do compile }
+// { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #define vector __attribute__((vector_size(16)))
 
