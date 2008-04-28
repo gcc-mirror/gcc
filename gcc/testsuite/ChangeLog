@@ -1,3 +1,8 @@
+2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/36056
+	* g++.dg/ext/vector14.C: Add -msse for 32bit x86 targets.
+
 2008-04-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran/array_constructor_23.f: Change REAL(10) into kind > 8.
@@ -19,7 +24,7 @@
 	* gcc.c-torture/execute/20080424-1.c: New test.
 
 2008-04-24  Ira Rosen  <irar@il.ibm.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36034
 	* gcc.c-torture/execute/pr36034-1.c: New testcase.
@@ -249,7 +254,7 @@
 
 	2008-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
-        * gcc.dg/gomp/pr34692.c: Cleanup gimple dump file.
+	* gcc.dg/gomp/pr34692.c: Cleanup gimple dump file.
 
 2008-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -603,9 +608,9 @@
 	Revert:
 	2008-02-14  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/28743
+	PR c++/28743
 	* g++.dg/template/nontype17.C: New.
-        * g++.dg/template/nontype16.C: Add error.
+	* g++.dg/template/nontype16.C: Add error.
 
 2008-02-21  Michael Matz  <matz@suse.de>
 
