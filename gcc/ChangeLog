@@ -1,3 +1,12 @@
+2008-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36060
+	* dwarf2out.c (struct die_struct): Mark as chain_circular through
+	die_sub field.
+	* gengtype.c (walk_type, write_func_for_structure): Handle
+	chain_circular.
+	* doc/gty.texi: Document chain_circular.
+
 2008-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36066
@@ -78,7 +87,7 @@
 	* config/vxworks.c: Include tree.h.
 	(vxworks_emutls_var_fields, vxworks_emutls_var_init): New.
 	(vxworks_override_options): Set TLS scheme.
-	* gcc/doc/tm.texi (Emulated TLS): New node.
+	* doc/tm.texi (Emulated TLS): New node.
 
 2008-04-26  Simon Baldwin <simonb@google.com>
 
@@ -2190,10 +2199,7 @@
 
 2008-04-01  George Helffrich  <george@gcc.gnu.org>
 
-	PR fortran/PR35154, fortran/PR23057
-	* fortran/trans-common.c (create_common):  Add decl to function
-	chain to preserve identifier scope in debug output.
-
+	PR fortran/35154, fortran/23057
 	* dbxout.c: Emit .stabs debug info for Fortran COMMON block
 	variables as base symbol name + offset using N_BCOMM/N_ECOMM.
 	(is_fortran, dbxout_common_name, dbxout_common_check): New functions.
@@ -2210,18 +2216,6 @@
 	COMMON var.
 	(common_check): New function to check whether symbol in Fortran COMMON.
 	(gen_variable_die): If COMMON, use DW_TAG_common_block.
-
-	* testsuite/gcc.dg/debug/pr35154.c:  New test to check that non-Fortran
-	use of common is unchanged.
-
-	* testsuite/lib/gfortran-dg.exp:  New harness to compile Fortran progs
-	with all combinations of debug options available on target.
-	* testsuite/gfortran.dg/debug/debug.exp:  Ditto.
-	* testsuite/gfortran.dg/debug/trivial.f:  Ditto.
-	* testsuite/gfortran.dg/debug/pr35154-stabs.f:  New test case for
-	.stabs functionality.
-	* testsuite/gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
-	DWARF functionality.
 
 2008-04-01  Volker Reichelt  <v.reichelt@netcologne.de>
 
@@ -6040,7 +6034,6 @@
 
 	* config/spu/spu-builtins.def: Fixed wrong parameter type in spu 
 	intrinsics spu_convts, spu_convtu, spu_convtf.
-	* testsuite/gcc.target/spu/intrinsics-3.c: New. Test error messages.
 
 2008-02-08  Hans-Peter Nilsson  <hp@axis.com>
 
