@@ -1,3 +1,10 @@
+2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36073
+	* config/i386/i386.md
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit):
+	Change operand 1 predicate to nonimmediate_operand.
+
 2008-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36060
@@ -16,7 +23,8 @@
 2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36064
-	* config/i386/i386.md (floatdi<X87MODEF:mode>2_i387_with_xmm splitters):
+	* config/i386/i386.md
+	(floatdi<X87MODEF:mode>2_i387_with_xmm splitters):
 	Use match_scratch instead of match_operand for operands 3 and 4.
 
 2008-04-27  Richard Guenther  <rguenther@suse.de>
