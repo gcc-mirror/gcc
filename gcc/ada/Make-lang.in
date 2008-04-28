@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+#   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -390,7 +390,7 @@ ada.srcextra:
 ada.srcman:
 
 ada.tags: force
-	cd $(srcdir)/ada; etags -o TAGS.sub *.c *.h *.ads *.adb; \
+	cd $(srcdir)/ada && etags -o TAGS.sub *.c *.h *.ads *.adb && \
 	etags --include TAGS.sub --include ../TAGS.sub
 
 
@@ -852,8 +852,8 @@ ACATSDIR = $(TESTSUITEDIR)/ada/acats
 
 check-acats:
 	test -d $(ACATSDIR) || mkdir -p $(ACATSDIR)
-	testdir=`cd ${srcdir}/${ACATSDIR}; ${PWD_COMMAND}`; \
-	export testdir; cd $(ACATSDIR); $(SHELL) $${testdir}/run_acats $(CHAPTERS)
+	testdir=`cd ${srcdir}/${ACATSDIR} && ${PWD_COMMAND}`; \
+	export testdir; cd $(ACATSDIR) && $(SHELL) $${testdir}/run_acats $(CHAPTERS)
 
 .PHONY: check-acats
 
@@ -926,31 +926,31 @@ ada/treeprs.ads : ada/treeprs.adt ada/sinfo.ads ada/xtreeprs.adb
 	-$(MKDIR) ada/bldtools/treeprs
 	$(RM) $(addprefix ada/bldtools/treeprs/,$(notdir $^))
 	$(CP) $^ ada/bldtools/treeprs
-	(cd ada/bldtools/treeprs; $(GNATMAKE) -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
+	(cd ada/bldtools/treeprs && $(GNATMAKE) -q xtreeprs && ./xtreeprs ../../treeprs.ads )
 
 ada/einfo.h : ada/einfo.ads ada/einfo.adb ada/xeinfo.adb
 	-$(MKDIR) ada/bldtools/einfo
 	$(RM) $(addprefix ada/bldtools/einfo/,$(notdir $^))
 	$(CP) $^ ada/bldtools/einfo
-	(cd ada/bldtools/einfo; $(GNATMAKE) -q xeinfo ; ./xeinfo ../../einfo.h )
+	(cd ada/bldtools/einfo && $(GNATMAKE) -q xeinfo && ./xeinfo ../../einfo.h )
 
 ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	-$(MKDIR) ada/bldtools/sinfo
 	$(RM) $(addprefix ada/bldtools/sinfo/,$(notdir $^))
 	$(CP) $^ ada/bldtools/sinfo
-	(cd ada/bldtools/sinfo; $(GNATMAKE) -q xsinfo ; ./xsinfo ../../sinfo.h )
+	(cd ada/bldtools/sinfo && $(GNATMAKE) -q xsinfo && ./xsinfo ../../sinfo.h )
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb
 	-$(MKDIR) ada/bldtools/nmake_b
 	$(RM) $(addprefix ada/bldtools/nmake_b/,$(notdir $^))
 	$(CP) $^ ada/bldtools/nmake_b
-	(cd ada/bldtools/nmake_b; $(GNATMAKE) -q xnmake ; ./xnmake -b ../../nmake.adb )
+	(cd ada/bldtools/nmake_b && $(GNATMAKE) -q xnmake && ./xnmake -b ../../nmake.adb )
 
 ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb
 	-$(MKDIR) ada/bldtools/nmake_s
 	$(RM) $(addprefix ada/bldtools/nmake_s/,$(notdir $^))
 	$(CP) $^ ada/bldtools/nmake_s
-	(cd ada/bldtools/nmake_s; $(GNATMAKE) -q xnmake ; ./xnmake -s ../../nmake.ads )
+	(cd ada/bldtools/nmake_s && $(GNATMAKE) -q xnmake && ./xnmake -s ../../nmake.ads )
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads

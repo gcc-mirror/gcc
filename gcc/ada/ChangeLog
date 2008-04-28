@@ -1,3 +1,9 @@
+2008-04-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Make-lang.in (ada.tags, check-acats, ada/treeprs.ads)
+	(ada/einfo.h, ada/sinfo.h, ada/nmake.adb, ada/nmake.ads):
+	Use '&&' instead of ';'.
+
 2008-04-24  Olivier Hainque  <hainque@adacore.com>
 
 	* trans.c (Attribute_to_gnu) <case Attr_Length>: Length computation
