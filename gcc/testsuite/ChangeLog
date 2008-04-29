@@ -1,5 +1,10 @@
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36078
+	* gfortran.fortran-torture/compile/pr36078.f90: New testcase.
+
+2008-04-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/15255
 	* gcc.dg/fold-plusmult.c: New testcase.
 
