@@ -3171,7 +3171,7 @@ frame, or the frame pointer of the @var{count} @minus{} 1 frame if
 @code{RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.
 
 The value of the expression must always be the correct address when
-@var{count} is zero, but may be @code{NULL_RTX} if there is not way to
+@var{count} is zero, but may be @code{NULL_RTX} if there is no way to
 determine the return address of other frames.
 @end defmac
 
