@@ -1,3 +1,8 @@
+2008-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35987
+	* g++.dg/other/error28.C: New test.
+
 2008-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/36056
