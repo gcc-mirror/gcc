@@ -1,3 +1,33 @@
+2008-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtins): Replace Prescott New
+	Instructions in comments with SSE3.
+	(ix86_builtin_type): This.  Add FLOAT128_FTYPE_FLOAT128,
+	INT64_FTYPE_V4SF, INT64_FTYPE_V2DF, INT_FTYPE_V16QI,
+	INT_FTYPE_V8QI, INT_FTYPE_V4SF, INT_FTYPE_V2DF,
+	V16QI_FTYPE_V16QI, V8HI_FTYPE_V8HI, V8HI_FTYPE_V16QI,
+	V8QI_FTYPE_V8QI, V4SI_FTYPE_V4SI, V4SI_FTYPE_V16QI,
+	V4SI_FTYPE_V4SF, V4SI_FTYPE_V8HI, V4SI_FTYPE_V2DF,
+	V4HI_FTYPE_V4HI, V4SF_FTYPE_V4SF, V4SF_FTYPE_V4SI,
+	V4SF_FTYPE_V2DF, V2DI_FTYPE_V2DI, V2DI_FTYPE_V16QI,
+	V2DI_FTYPE_V8HI, V2DI_FTYPE_V4SI, V2DF_FTYPE_V2DF,
+	V2DF_FTYPE_V4SI, V2DF_FTYPE_V4SF, V2DF_FTYPE_V2SI,
+	V2SI_FTYPE_V2SI, V2SI_FTYPE_V4SF, V2SI_FTYPE_V2SF,
+	V2SI_FTYPE_V2DF, V2SF_FTYPE_V2SF and V2SF_FTYPE_V2SI.
+	(bdesc_sse_args): Renamed to ...
+	(bdesc_args): This.  Add IX86_BUILTIN_PF2ID, IX86_BUILTIN_PFRCP,
+	IX86_BUILTIN_PFRSQRT, IX86_BUILTIN_PI2FD, IX86_BUILTIN_PF2IW,
+	IX86_BUILTIN_PSWAPDSI, IX86_BUILTIN_PSWAPDSF and
+	IX86_BUILTIN_FABSQ.
+	(bdesc_1arg): Moved to ...
+	(bdesc_args): Here.
+	(ix86_init_mmx_sse_builtins): Updated.  Replace Prescott New
+	Instructions in comments with SSE3.
+	(ix86_expand_sse_operands_builtin): Renamed to ...
+	(ix86_expand_args_builtin): This.  Updated.
+	(ix86_expand_unop1_builtin): Update comments.
+	(ix86_expand_builtin): Updated.
+
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36078
