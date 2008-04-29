@@ -1,3 +1,8 @@
+2008-04-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36077
+	* gcc.c-torture/execute/pr36077.c: New testcase.
+
 2008-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35650
