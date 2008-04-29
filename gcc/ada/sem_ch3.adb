@@ -13046,13 +13046,26 @@ package body Sem_Ch3 is
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
                       or else Present (Class_Wide_Type (Prev)))
-           and then not Nkind_In (N, N_Task_Type_Declaration,
-                                     N_Protected_Type_Declaration)
          then
-            --  The full declaration is either a tagged record or an
-            --  extension otherwise this is an error
+            --  The full declaration is either a tagged type (including
+            --  a synchronized type that implements interfaces) or a
+            --  type extension, otherwise this is an error.
 
-            if Nkind (Type_Definition (N)) = N_Record_Definition then
+            if Nkind_In (N, N_Task_Type_Declaration,
+                         N_Protected_Type_Declaration)
+            then
+               if No (Interface_List (N))
+                 and then not Error_Posted (N)
+               then
+                  Error_Msg_NE
+                    ("full declaration of } must be a tagged type ", Id, Prev);
+               end if;
+
+            elsif Nkind (Type_Definition (N)) = N_Record_Definition then
+
+               --  Indicate that the previous declaration (tagged incomplete
+               --  or private declaration) requires the same on the full one.
+
                if not Tagged_Present (Type_Definition (N)) then
                   Error_Msg_NE
                     ("full declaration of } must be tagged", Prev, Id);

@@ -1,3 +1,9 @@
+2008-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/35792
+	* sem_ch3.adb (Find_Type_Name): Refuse completion of an incomplete
+	tagged type by an untagged protected or task type.
+
 2008-04-28  Eric Botcazou  <ebotcazou@adacore.com>
             Tristan Gingold  <gingold@adacore.com>
 
