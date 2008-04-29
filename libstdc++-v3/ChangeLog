@@ -1,3 +1,17 @@
+2008-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/35922
+	* include/std/unordered_map: Include debug/unordered_map if
+	_GLIBCXX_DEBUG.
+	* testsuite/23_containers/unordered_map/requirements/debug.cc: Move...
+	* testsuite/23_containers/unordered_map/requirements/
+	debug_container.cc: ...here.
+	* testsuite/23_containers/unordered_map/requirements/debug_mode.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/debug.cc: Move...
+	* testsuite/23_containers/unordered_set/requirements/
+	debug_container.cc: ...here.
+	* testsuite/23_containers/unordered_set/requirements/debug_mode.cc: New.
+
 2008-04-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.am (install-html, install-pdf): Add dummy targets.
