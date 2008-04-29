@@ -226,14 +226,7 @@ doc-pdf-prince: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 	$(PRINCE) $(PRINCE_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
 
-# No install-pdf, install-html support in automake yet
-install-pdf:
-install-html:
-
-# Installation of distribution html documentation not yet supported
-# TODO: Write custom install-html rule.
-.PHONY: install-html install-pdf \
-	doc-doxygen-html doc-doxygen-man doc-performance
+.PHONY: doc-doxygen-html doc-doxygen-man doc-performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.log
