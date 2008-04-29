@@ -1,3 +1,7 @@
+2008-04-29  Nick Clifton  <nickc@redhat.com>
+
+	* doc/tm.texi (RETURN_ADDR_RTX): Fix typo.
+
 2008-04-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35169
