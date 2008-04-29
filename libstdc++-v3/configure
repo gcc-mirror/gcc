@@ -1045,7 +1045,6 @@ Optional Features:
                           [default="-g3 -O0"]
   --enable-libstdcxx-debug
                           build extra debug library [default=no]
-  --enable-libgomp        enable code depending on libgomp [default=yes]
   --enable-cxx-flags=FLAGS
                           pass compiler FLAGS when building library
                           [default=]
@@ -4667,13 +4666,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4670: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4669: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4673: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4672: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4676: output\"" >&5)
+  (eval echo "\"\$as_me:4675: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5717,7 +5716,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5720 "configure"' > conftest.$ac_ext
+  echo '#line 5719 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7179,11 +7178,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7182: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7181: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7186: \$? = $ac_status" >&5
+   echo "$as_me:7185: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7501,11 +7500,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7504: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7503: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7508: \$? = $ac_status" >&5
+   echo "$as_me:7507: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7606,11 +7605,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7609: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7608: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7613: \$? = $ac_status" >&5
+   echo "$as_me:7612: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -7661,11 +7660,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7664: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7663: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7668: \$? = $ac_status" >&5
+   echo "$as_me:7667: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10513,7 +10512,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10516 "configure"
+#line 10515 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10613,7 +10612,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10616 "configure"
+#line 10615 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12651,11 +12650,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12654: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12653: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12658: \$? = $ac_status" >&5
+   echo "$as_me:12657: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12750,11 +12749,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12753: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12752: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12757: \$? = $ac_status" >&5
+   echo "$as_me:12756: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12802,11 +12801,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12805: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12804: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12809: \$? = $ac_status" >&5
+   echo "$as_me:12808: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -13851,7 +13850,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 13854 "configure"
+#line 13853 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -13997,7 +13996,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for a builtins test.
 
     cat > conftest.$ac_ext << EOF
-#line 14000 "configure"
+#line 13999 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -14037,7 +14036,7 @@ echo "${ECHO_T}$enable_atomic_builtinsi" >&6
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 14040 "configure"
+#line 14039 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -17257,34 +17256,13 @@ echo "${ECHO_T}$enable_libstdcxx_debug" >&6
 
   enable_parallel=no;
 
-  # Check to see if threads are disabled.
-  # Requires GLIBCXX_ENABLE_THREADS.
-  if test x$enable_thread = xyes; then
-
-    # Check to see if OpenMP is disabled.
-    echo "$as_me:$LINENO: checking for libgomp support" >&5
-echo $ECHO_N "checking for libgomp support... $ECHO_C" >&6
-     # Check whether --enable-libgomp or --disable-libgomp was given.
-if test "${enable_libgomp+set}" = set; then
-  enableval="$enable_libgomp"
-
-      case "$enableval" in
-       yes|no) ;;
-       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable libgomp" >&5
-echo "$as_me: error: Unknown argument to enable/disable libgomp" >&2;}
-   { (exit 1); exit 1; }; } ;;
-                          esac
-
-else
-  enable_libgomp=yes
-fi;
-
-    echo "$as_me:$LINENO: result: $enable_libgomp" >&5
-echo "${ECHO_T}$enable_libgomp" >&6
-    if test x$enable_libgomp = xyes; then
-      enable_parallel=yes
-    fi
-
+  # See if configured libgomp/omp.h exists. (libgomp may be in
+  # noconfigdirs but not explicitly disabled.)
+  if test -f $glibcxx_builddir/../libgomp/omp.h; then
+    enable_parallel=yes;
+  else
+    { echo "$as_me:$LINENO: $glibcxx_builddir/../libgomp/omp.h not found" >&5
+echo "$as_me: $glibcxx_builddir/../libgomp/omp.h not found" >&6;}
   fi
 
   echo "$as_me:$LINENO: checking for parallel mode support" >&5
