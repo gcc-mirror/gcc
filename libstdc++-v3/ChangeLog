@@ -1,3 +1,10 @@
+2008-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.am (install-html, install-pdf): Add dummy targets.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.am (install-html, install-pdf): Remove.
+	* doc/Makefile.in: Regenerate.
+
 2008-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Move os_defines and cpu_defines after
