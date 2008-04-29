@@ -1,5 +1,20 @@
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-alias.c (finalize_ref_all_pointers): Remove.
+	(compute_may_aliases): Do not call finalize_ref_all_pointers.
+	(compute_flow_insensitive_aliasing): Do not treat
+	PTR_IS_REF_ALL pointers special.
+	(get_smt_for): Likewise.
+	(may_alias_p): Re-structure.
+	(is_escape_site): A ref-all pointer conversion is not an escape site.
+	* tree-ssa-structalias.c (find_what_p_points_to): Do not treat
+	PTR_IS_REF_ALL pointers special.
+	* tree-ssa-structalias.h (struct alias_info): Remove
+	ref_all_symbol_mem_tag field.
+	(PTR_IS_REF_ALL): Remove.
+
+2008-04-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36077
 	* fold-const.c (extract_muldiv_1): In combining division constants
 	make sure to never overflow.

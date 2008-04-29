@@ -21,9 +21,6 @@
 #ifndef TREE_SSA_STRUCTALIAS_H
 #define TREE_SSA_STRUCTALIAS_H
 
-/* True if the data pointed to by PTR can alias anything.  */
-#define PTR_IS_REF_ALL(PTR) TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (PTR))
-
 struct constraint;
 typedef struct constraint *constraint_t;
 
@@ -57,9 +54,6 @@ struct alias_info
 
   /* Pointers that have been used in an indirect load operation.  */
   struct pointer_set_t *dereferenced_ptrs_load;
-
-  /* Memory tag for all the PTR_IS_REF_ALL pointers.  */
-  tree ref_all_symbol_mem_tag;
 };
 
 /* In tree-ssa-alias.c.  */
