@@ -1748,19 +1748,12 @@ AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
   enable_parallel=no;
 
-  # Check to see if threads are disabled.
-  # Requires GLIBCXX_ENABLE_THREADS.
-  if test x$enable_thread = xyes; then
-
-    # Check to see if OpenMP is disabled.
-    AC_MSG_CHECKING([for libgomp support])
-    GLIBCXX_ENABLE(libgomp,$1,,[enable code depending on libgomp],
-                   [permit yes|no])
-    AC_MSG_RESULT([$enable_libgomp])
-    if test x$enable_libgomp = xyes; then
-      enable_parallel=yes
-    fi
-
+  # See if configured libgomp/omp.h exists. (libgomp may be in
+  # noconfigdirs but not explicitly disabled.)
+  if test -f $glibcxx_builddir/../libgomp/omp.h; then
+    enable_parallel=yes;
+  else
+    AC_MSG_NOTICE([$glibcxx_builddir/../libgomp/omp.h not found])
   fi
 
   AC_MSG_CHECKING([for parallel mode support])
