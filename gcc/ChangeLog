@@ -1,3 +1,9 @@
+2008-04-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/avr/avr.md (*sbrx_branch, *sbix_branch, *sbix_branch_tmp):
+	Add mode to zero_extract.
+	(sign bit tests peepholes): (Ditto.).
+
 2008-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtins): Replace Prescott New
