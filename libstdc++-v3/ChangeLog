@@ -1,5 +1,10 @@
 2008-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/c++config: Move os_defines and cpu_defines after
+	namespace definitions and base macros.
+
+2008-04-28  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/35887
 	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Revert back to just
 	checking for omp.h.
