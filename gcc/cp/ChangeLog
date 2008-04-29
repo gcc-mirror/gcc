@@ -1,5 +1,9 @@
 2008-04-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35650
+	* parser.c (cp_parser_lookup_name): Look through single function
+	OVERLOAD.
+
 	PR c++/35987
 	* typeck.c (build_modify_expr) <case PREINCREMENT_EXPR>: Don't build
 	COMPOUND_EXPR if the second argument would be error_mark_node.
