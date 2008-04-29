@@ -1,3 +1,9 @@
+2008-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35987
+	* typeck.c (cp_build_modify_expr) <case PREINCREMENT_EXPR>: Don't build
+	COMPOUND_EXPR if the second argument would be error_mark_node.
+
 2008-04-28  Jason Merrill  <jason@redhat.com>
 	    Liu Guanwei <liu_gw@163.com>
 
