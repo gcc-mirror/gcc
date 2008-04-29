@@ -1,5 +1,10 @@
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/15255
+	* gcc.dg/fold-plusmult.c: New testcase.
+
+2008-04-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36077
 	* gcc.c-torture/execute/pr36077.c: New testcase.
 

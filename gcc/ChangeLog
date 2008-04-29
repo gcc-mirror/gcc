@@ -1,5 +1,10 @@
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/15255
+	* fold-const.c (fold_binary): Fold (A + A) * C to A * 2*C.
+
+2008-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.c (finalize_ref_all_pointers): Remove.
 	(compute_may_aliases): Do not call finalize_ref_all_pointers.
 	(compute_flow_insensitive_aliasing): Do not treat
