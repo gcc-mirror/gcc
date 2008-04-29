@@ -1,3 +1,7 @@
+2008-04-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* testsuite/gcc.dg/sync-2.c: Set dg-options "-ansi".
+
 2008-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35650
