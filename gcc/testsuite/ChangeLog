@@ -1,5 +1,8 @@
 2008-04-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35650
+	* g++.dg/init/ref17.C: New test.
+
 	PR c++/35987
 	* g++.dg/other/error28.C: New test.
 
