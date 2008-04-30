@@ -1,3 +1,10 @@
+2008-04-30  Rafael Espindola  <espindola@google.com>
+
+	* builtins.c (fold_call_expr): Return realret.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Ignore calls to
+	__builtin_object_size.
+
 2008-04-30  Seongbae Park  <seongbae.park@gmail.com>
 
 	* gcc.c (wrapper_string): New variable.
