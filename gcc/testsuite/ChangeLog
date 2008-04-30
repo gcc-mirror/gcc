@@ -1,3 +1,8 @@
+2008-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21636
+	* gcc.dg/tree-ssa/ssa-ccp-19.c: New testcase.
+
 2008-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35993

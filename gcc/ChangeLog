@@ -1,3 +1,11 @@
+2008-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21636
+	* tree-ssa-ccp.c (ccp_fold): Handle &p->x with p being a
+	constant address.
+	(evaluate_stmt): Print the likely value.
+	(ccp_visit_stmt): Avoid excessive vertical spacing.
+
 2008-04-30  Rafael Espindola  <espindola@google.com>
 
 	* builtins.c (fold_call_expr): Return realret.
