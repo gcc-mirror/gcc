@@ -31,197 +31,88 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "timevar.h"
 
-/* This file contains interfaces that can be used for various IPA 
-   optimizations:
-
-   - ipa_methodlist interface - It is used to create and handle a temporary 
-   worklist used in  the propagation stage of IPCP. (can be used for more 
-   IPA optimizations).  
-
-   - ipa_callsite interface - for each callsite this interface creates and 
-   handles ipa_edge structure associated with it.
-
-   - ipa_method interface - for each method this interface creates and 
-   handles ipa_node structure associated with it.  */
-
-/* ipa_methodlist interface.  */
-
-/* Create a new worklist node.  */
-static inline ipa_methodlist_p
-ipa_create_methodlist_node (void)
-{
-  return (ipa_methodlist_p) xcalloc (1, sizeof (struct ipa_methodlist));
-}
-
-/* Return true if worklist WL is empty.  */
-bool
-ipa_methodlist_not_empty (ipa_methodlist_p wl)
-{
-  return (wl != NULL);
-}
-
-/* Return the method in worklist element WL.  */
-static inline struct cgraph_node *
-ipa_methodlist_method (ipa_methodlist_p wl)
-{
-  return wl->method_p;
-}
-
-/* Make worklist element WL point to method MT in the callgraph.  */
-static inline void
-ipa_methodlist_method_set (ipa_methodlist_p wl, struct cgraph_node *mt)
-{
-  wl->method_p = mt;
-}
-
-/* Return the next element in the worklist following worklist 
-   element WL.  */
-static inline ipa_methodlist_p
-ipa_methodlist_next_method (ipa_methodlist_p wl)
-{
-  return wl->next_method;
-}
-
-/* Set worklist element WL1 to point to worklist element WL2.  */
-static inline void
-ipa_methodlist_next_method_set (ipa_methodlist_p wl1, ipa_methodlist_p wl2)
-{
-  wl1->next_method = wl2;
-}
-
-/* Initialize worklist to contain all methods.  */
-ipa_methodlist_p
-ipa_methodlist_init (void)
+/* Initialize worklist to contain all functions.  */
+struct ipa_func_list *
+ipa_init_func_list (void)
 {
   struct cgraph_node *node;
-  ipa_methodlist_p wl;
+  struct ipa_func_list * wl;
 
   wl = NULL;
   for (node = cgraph_nodes; node; node = node->next)
-    ipa_add_method (&wl, node);
+    ipa_push_func_to_list (&wl, node);
 
   return wl;
 }
 
-/* Add method MT to the worklist. Set worklist element WL  
+/* Add cgraph node MT to the worklist. Set worklist element WL
    to point to MT.  */
 void
-ipa_add_method (ipa_methodlist_p * wl, struct cgraph_node *mt)
+ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *mt)
 {
-  ipa_methodlist_p temp;
+  struct ipa_func_list *temp;
 
-  temp = ipa_create_methodlist_node ();
-  ipa_methodlist_method_set (temp, mt);
-  ipa_methodlist_next_method_set (temp, *wl);
+  temp = xcalloc (1, sizeof (struct ipa_func_list));
+  temp->node = mt;
+  temp->next = *wl;
   *wl = temp;
 }
 
-/* Remove a method from the worklist. WL points to the first 
+/* Remove a function from the worklist. WL points to the first
    element in the list, which is removed.  */
 struct cgraph_node *
-ipa_remove_method (ipa_methodlist_p * wl)
+ipa_pop_func_from_list (struct ipa_func_list ** wl)
 {
-  ipa_methodlist_p first;
-  struct cgraph_node *return_method;
+  struct ipa_func_list *first;
+  struct cgraph_node *return_func;
 
   first = *wl;
-  *wl = ipa_methodlist_next_method (*wl);
-  return_method = ipa_methodlist_method (first);
+  *wl = (*wl)->next;
+  return_func = first->node;
   free (first);
-  return return_method;
+  return return_func;
 }
 
-/* ipa_method interface.  */
-
-/* Return number of formals of method MT.  */
-int
-ipa_method_formal_count (struct cgraph_node *mt)
-{
-  return IPA_NODE_REF (mt)->ipa_arg_num;
-}
-
-/* Set number of formals of method MT to I.  */
-void
-ipa_method_formal_count_set (struct cgraph_node *mt, int i)
-{
-  IPA_NODE_REF (mt)->ipa_arg_num = i;
-}
-
-/* Return whether I-th formal of MT is modified in MT.  */
-static inline bool
-ipa_method_is_modified (struct cgraph_node *mt, int i)
-{
-  return IPA_NODE_REF (mt)->ipa_mod[i];
-}
-
-/* Return the tree of I-th formal of MT.  */
-tree
-ipa_method_get_tree (struct cgraph_node *mt, int i)
-{
-  return IPA_NODE_REF (mt)->ipa_param_tree[i];
-}
-
-/* Create tree map structure for MT.  */
-static inline void
-ipa_method_tree_map_create (struct cgraph_node *mt)
-{
-  IPA_NODE_REF (mt)->ipa_param_tree =
-    XCNEWVEC (tree, ipa_method_formal_count (mt));
-}
-
-/* Create modify structure for MT.  */
-static inline void
-ipa_method_modify_create (struct cgraph_node *mt)
-{
-  ((struct ipa_node *) mt->aux)->ipa_mod =
-    XCNEWVEC (bool, ipa_method_formal_count (mt));
-}
-
-/* Set modify of I-th formal of MT to VAL.  */
-static inline void
-ipa_method_modify_set (struct cgraph_node *mt, int i, bool val)
-{
-  IPA_NODE_REF (mt)->ipa_mod[i] = val;
-}
-
-/* Return index of the formal whose tree is PTREE in method MT.  */
+/* Return index of the formal whose tree is ptree in function which corresponds
+   to info.  */
 static int
-ipa_method_tree_map (struct cgraph_node *mt, tree ptree)
+ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 {
   int i, count;
 
-  count = ipa_method_formal_count (mt);
+  count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
-    if (IPA_NODE_REF (mt)->ipa_param_tree[i] == ptree)
+    if (ipa_get_ith_param(info, i) == ptree)
       return i;
 
   return -1;
 }
 
-/* Insert the formal trees to the ipa_param_tree array in method MT.  */
+/* Insert the formal trees to the param_decls array in function MT.  */
 void
-ipa_method_compute_tree_map (struct cgraph_node *mt)
+ipa_create_param_decls_array (struct cgraph_node *mt)
 {
   tree fndecl;
   tree fnargs;
   tree parm;
   int param_num;
+  struct ipa_node_params *info = IPA_NODE_REF (mt);
 
-  ipa_method_tree_map_create (mt);
+  info->param_decls = XCNEWVEC (tree, ipa_get_param_count (info));
   fndecl = mt->decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     {
-      IPA_NODE_REF (mt)->ipa_param_tree[param_num] = parm;
+      info->param_decls[param_num] = parm;
       param_num++;
     }
 }
 
 /* Count number of formals in MT. Insert the result to the 
-   ipa_node.  */
+   ipa_node_params.  */
 void
-ipa_method_formal_compute_count (struct cgraph_node *mt)
+ipa_count_formal_params (struct cgraph_node *mt)
 {
   tree fndecl;
   tree fnargs;
@@ -233,57 +124,48 @@ ipa_method_formal_compute_count (struct cgraph_node *mt)
   param_num = 0;
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     param_num++;
-  ipa_method_formal_count_set (mt, param_num);
+  ipa_set_param_count (IPA_NODE_REF (mt), param_num);
 }
 
-/* Check STMT to detect whether a formal is modified within MT,
-   the appropriate entry is updated in the ipa_mod array of ipa_node
-   (associated with MT).  */
+/* Check STMT to detect whether a formal is modified within MT, the appropriate
+   entry is updated in the modified_flags array of ipa_node_params (associated
+   with MT).  */
 static void
-ipa_method_modify_stmt (struct cgraph_node *mt, tree stmt)
+ipa_check_stmt_modifications (struct cgraph_node *mt, tree stmt)
 {
-  int i, j;
+  int index, j;
   tree parm_decl;
+  struct ipa_node_params *info;
 
   switch (TREE_CODE (stmt))
     {
     case GIMPLE_MODIFY_STMT:
 	  if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == PARM_DECL)
 	{
+	  info = IPA_NODE_REF (mt);
 	  parm_decl = GIMPLE_STMT_OPERAND (stmt, 0);
-	  i = ipa_method_tree_map (mt, parm_decl);
-	  if (i >= 0)
-	    ipa_method_modify_set (mt, i, true);
+	  index = ipa_get_param_decl_index (info, parm_decl);
+	  if (index >= 0)
+	    info->modified_flags[index] = true;
 	}
       break;
     case ASM_EXPR:
       /* Asm code could modify any of the parameters.  */
-      for (j = 0; j < ipa_method_formal_count (mt); j++)
-	ipa_method_modify_set (mt, j, true);
+      info = IPA_NODE_REF (mt);
+      for (j = 0; j < ipa_get_param_count (IPA_NODE_REF (mt)); j++)
+	info->modified_flags[j] = true;
       break;
     default:
       break;
     }
 }
 
-/* Initialize ipa_mod array of MT.  */
-static void
-ipa_method_modify_init (struct cgraph_node *mt)
-{
-  int i, count;
-
-  ipa_method_modify_create (mt);
-  count = ipa_method_formal_count (mt);
-  for (i = 0; i < count; i++)
-    ipa_method_modify_set (mt, i, false);
-}
-
 /* The modify computation driver for MT. Compute which formal arguments 
-   of method MT are locally modified.  Formals may be modified in MT 
+   of function MT are locally modified.  Formals may be modified in MT
    if their address is taken, or if
    they appear on the left hand side of an assignment.  */
 void
-ipa_method_compute_modify (struct cgraph_node *mt)
+ipa_detect_param_modifications (struct cgraph_node *mt)
 {
   tree decl;
   tree body;
@@ -292,29 +174,31 @@ ipa_method_compute_modify (struct cgraph_node *mt)
   struct function *func;
   block_stmt_iterator bsi;
   tree stmt, parm_tree;
+  struct ipa_node_params *info = IPA_NODE_REF (mt);
 
-  if (ipa_method_formal_count (mt) == 0)
+  if (ipa_get_param_count (info) == 0)
     return;
 
-  ipa_method_modify_init (mt);
+  count = ipa_get_param_count (info);
+  info->modified_flags = XCNEWVEC (bool, count);
   decl = mt->decl;
-  count = ipa_method_formal_count (mt);
   /* ??? Handle pending sizes case. Set all parameters 
-     of the method to be modified.  */
+     of the function to be modified.  */
 
   if (DECL_UNINLINABLE (decl))
     {
       for (j = 0; j < count; j++)
-	ipa_method_modify_set (mt, j, true);
+	info->modified_flags[j] = true;
+
       return;
     }
   /* Formals whose address is taken are considered modified.  */
   for (j = 0; j < count; j++)
     {
-      parm_tree = ipa_method_get_tree (mt, j);
+      parm_tree = ipa_get_ith_param (info, j);
       if (!is_gimple_reg (parm_tree) 
 	  && TREE_ADDRESSABLE (parm_tree))
-	ipa_method_modify_set (mt, j, true);
+	info->modified_flags[j] = true;
     }
   body = DECL_SAVED_TREE (decl);
   if (body != NULL)
@@ -325,171 +209,94 @@ ipa_method_compute_modify (struct cgraph_node *mt)
 	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	  {
 	    stmt = bsi_stmt (bsi);
-	    ipa_method_modify_stmt (mt, stmt);
+	    ipa_check_stmt_modifications (mt, stmt);
 	  }
       }
     }
 }
 
-
-/* ipa_callsite interface.  */
-
-/* Return number of arguments in callsite CS.  */
-int
-ipa_callsite_param_count (struct cgraph_edge *cs)
-{
-  return IPA_EDGE_REF (cs)->ipa_param_num;
-}
-
-/* Set number of arguments in callsite CS to I.  */
-void
-ipa_callsite_param_count_set (struct cgraph_edge *cs, int i)
-{
-  IPA_EDGE_REF (cs)->ipa_param_num = i;
-}
-
-/* Return the jump function (ipa_jump_func struct) for argument I of 
-   callsite CS.  */
-struct ipa_jump_func *
-ipa_callsite_param (struct cgraph_edge *cs, int i)
-{
-  return &(IPA_EDGE_REF (cs)->ipa_param_map[i]);
-}
-
-/* return the callee (cgraph_node) of callsite CS.  */
-struct cgraph_node *
-ipa_callsite_callee (struct cgraph_edge *cs)
-{
-  return cs->callee;
-}
-
-/* Set field 'type' of jump function (ipa_jump_func struct) of argument I 
-   in callsite CS.  */
-static inline void
-ipa_callsite_param_set_type (struct cgraph_edge *cs, int i,
-			     enum jump_func_type type1)
-{
-  IPA_EDGE_REF (cs)->ipa_param_map[i].type = type1;
-}
-
-/* Set FORMAL as 'info_type' field of jump function (ipa_jump_func struct)
-   of argument I of callsite CS.  */
-static inline void
-ipa_callsite_param_set_info_type_formal (struct cgraph_edge *cs, int i,
-					 unsigned int formal)
-{
-  ipa_callsite_param (cs, i)->info_type.formal_id = formal;
-}
-
-/* Set int-valued INFO_TYPE1 as 'info_type' field of 
-   jump function (ipa_jump_func struct) of argument I of callsite CS.  */
-static inline void
-ipa_callsite_param_set_info_type (struct cgraph_edge *cs, int i,
-				  tree info_type1)
-{
-  ipa_callsite_param (cs, i)->info_type.value = info_type1;
-}
-
-/* Allocate space for callsite CS.  */
-static inline void
-ipa_callsite_param_map_create (struct cgraph_edge *cs)
-{
-  IPA_EDGE_REF (cs)->ipa_param_map =
-    XCNEWVEC (struct ipa_jump_func, ipa_callsite_param_count (cs));
-}
-
-/* Return the call expr tree related to callsite CS.  */
-static inline tree
-ipa_callsite_tree (struct cgraph_edge *cs)
-{
-  return cs->call_stmt;
-}
-
-/* Return the caller (cgraph_node) of CS.  */
-static inline struct cgraph_node *
-ipa_callsite_caller (struct cgraph_edge *cs)
-{
-  return cs->caller;
-}
-
 /* Count number of arguments callsite CS has and store it in 
-   ipa_edge structure corresponding to this callsite.  */
+   ipa_edge_args structure corresponding to this callsite.  */
 void
-ipa_callsite_compute_count (struct cgraph_edge *cs)
+ipa_count_arguments (struct cgraph_edge *cs)
 {
   tree call_tree;
   int arg_num;
 
-  call_tree = get_call_expr_in (ipa_callsite_tree (cs));
+  call_tree = get_call_expr_in (cs->call_stmt);
   gcc_assert (TREE_CODE (call_tree) == CALL_EXPR);
   arg_num = call_expr_nargs (call_tree);
-  ipa_callsite_param_count_set (cs, arg_num);
+  ipa_set_cs_argument_count (IPA_EDGE_REF (cs), arg_num);
 }
 
 /* Compute jump function for all arguments of callsite CS 
-   and insert the information in the ipa_param_map array 
-   in the ipa_edge corresponding to this callsite. (Explanation 
-   on jump functions is in ipa-prop.h).  */
+   and insert the information in the jump_functions array
+   in the ipa_edge_args corresponding to this callsite.  */
 void
-ipa_callsite_compute_param (struct cgraph_edge *cs)
+ipa_compute_jump_functions (struct cgraph_edge *cs)
 {
   tree call_tree;
   tree arg, cst_decl;
   int arg_num;
-  int i;
   struct cgraph_node *mt;
   tree parm_decl;
   struct function *curr_cfun;
   call_expr_arg_iterator iter;
+  struct ipa_edge_args *args = IPA_EDGE_REF (cs);
 
-  if (ipa_callsite_param_count (cs) == 0)
+  if (ipa_get_cs_argument_count (args) == 0)
     return;
-  ipa_callsite_param_map_create (cs);
-  call_tree = get_call_expr_in (ipa_callsite_tree (cs));
+  args->jump_functions = XCNEWVEC (struct ipa_jump_func,
+				   ipa_get_cs_argument_count (args));
+  call_tree = get_call_expr_in (cs->call_stmt);
   gcc_assert (TREE_CODE (call_tree) == CALL_EXPR);
   arg_num = 0;
 
   FOR_EACH_CALL_EXPR_ARG (arg, iter, call_tree)
     {
       /* If the formal parameter was passed as argument, we store 
-         FORMAL_IPATYPE and its index in the caller as the jump function 
+         IPA_PASS_THROUGH and its index in the caller as the jump function
          of this argument.  */
       if ((TREE_CODE (arg) == SSA_NAME
 	   && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
 	  || TREE_CODE (arg) == PARM_DECL)
 	{
-	  mt = ipa_callsite_caller (cs);
+	  struct ipa_node_params *info;
+	  int index;
+
+	  mt = cs->caller;
+	  info = IPA_NODE_REF (mt);
 	  parm_decl = TREE_CODE (arg) == PARM_DECL ? arg : SSA_NAME_VAR (arg);
           
-	  i = ipa_method_tree_map (mt, parm_decl);
-	  if (TREE_CODE (arg) == SSA_NAME && IS_VALID_TREE_MAP_INDEX (i)) 
+	  index = ipa_get_param_decl_index (info, parm_decl);
+	  if (TREE_CODE (arg) == SSA_NAME && IS_VALID_JUMP_FUNC_INDEX (index))
 	    {
 	      curr_cfun = DECL_STRUCT_FUNCTION (mt->decl);
 	      if (!gimple_default_def (curr_cfun, parm_decl) 
 	          || gimple_default_def (curr_cfun, parm_decl) != arg)
-		    ipa_method_modify_set (mt, i, true); 
+		info->modified_flags[index] = true;
 	    }
-	  if (!IS_VALID_TREE_MAP_INDEX (i) || ipa_method_is_modified (mt, i))
-	    ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
+	  if (!IS_VALID_JUMP_FUNC_INDEX (index) || info->modified_flags[index])
+	    args->jump_functions[arg_num].type = IPA_UNKNOWN;
 	  else
 	    {
-	      ipa_callsite_param_set_type (cs, arg_num, FORMAL_IPATYPE);
-	      ipa_callsite_param_set_info_type_formal (cs, arg_num, i);
+	      args->jump_functions[arg_num].type = IPA_PASS_THROUGH;
+	      args->jump_functions[arg_num].value.formal_id = index;
 	    }
 	}
       /* If a constant value was passed as argument, 
-         we store CONST_IPATYPE and its value as the jump function 
+         we store IPA_CONST and its value as the jump function
          of this argument.  */
       else if (TREE_CODE (arg) == INTEGER_CST
 	       || TREE_CODE (arg) == REAL_CST
 	       || TREE_CODE (arg) == FIXED_CST)
 	{
-	  ipa_callsite_param_set_type (cs, arg_num, CONST_IPATYPE);
-	  ipa_callsite_param_set_info_type (cs, arg_num, arg);
+	  args->jump_functions[arg_num].type = IPA_CONST;
+	  args->jump_functions[arg_num].value.constant = arg;
 	}
       /* This is for the case of Fortran. If the address of a const_decl 
-         was passed as argument then we store 
-         CONST_IPATYPE_REF/CONST_IPATYPE_REF and the constant 
+         was passed as argument then we store
+         IPA_CONST_REF/IPA_CONST_REF and the constant
          value as the jump function corresponding to this argument.  */
       else if (TREE_CODE (arg) == ADDR_EXPR
 	       && TREE_CODE (TREE_OPERAND (arg, 0)) == CONST_DECL)
@@ -499,121 +306,90 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
 	      || TREE_CODE (DECL_INITIAL (cst_decl)) == REAL_CST
 	      || TREE_CODE (DECL_INITIAL (cst_decl)) == FIXED_CST)
 	    {
-	      ipa_callsite_param_set_type (cs, arg_num,
-					   CONST_IPATYPE_REF);
-	      ipa_callsite_param_set_info_type (cs, arg_num,
-						DECL_INITIAL (cst_decl));
+	      args->jump_functions[arg_num].type = IPA_CONST_REF;
+	      args->jump_functions[arg_num].value.constant = cst_decl;
 	    }
 	}
       else
-	ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
+	args->jump_functions[arg_num].type = IPA_UNKNOWN;
       arg_num++;
     }
 }
 
-/* Return type of jump function JF.  */
-enum jump_func_type
-get_type (struct ipa_jump_func *jf)
-{
-  return jf->type;
-}
-
-/* Return info type of jump function JF.  */
-union parameter_info *
-ipa_jf_get_info_type (struct ipa_jump_func *jf)
-{
-  return &(jf->info_type);
-}
-
-/* Allocate and initialize ipa_node structure.  
-   cgraph_node NODE points to the new allocated ipa_node.  */
+/* Allocate and initialize ipa_node_params structure for the given cgraph
+   node.  */
 void
-ipa_node_create (struct cgraph_node *node)
+ipa_create_node_params (struct cgraph_node *node)
 {
-  node->aux = xcalloc (1, sizeof (struct ipa_node));
+  node->aux = xcalloc (1, sizeof (struct ipa_node_params));
 }
 
-/* Allocate and initialize ipa_node structure for all
+/* Allocate and initialize ipa_node_params structure for all
    nodes in callgraph.  */
 void
-ipa_nodes_create (void)
+ipa_create_all_node_params (void)
 {
   struct cgraph_node *node;
 
   for (node = cgraph_nodes; node; node = node->next)
-    ipa_node_create (node);
+    ipa_create_node_params (node);
 }
 
 /* Allocate and initialize ipa_edge structure.  */
 void
-ipa_edges_create (void)
+ipa_create_all_edge_args (void)
 {
   struct cgraph_node *node;
   struct cgraph_edge *cs;
 
   for (node = cgraph_nodes; node; node = node->next)
     for (cs = node->callees; cs; cs = cs->next_callee)
-      cs->aux = xcalloc (1, sizeof (struct ipa_edge));
-}
-
-/* Free ipa_node structure.  */
-void
-ipa_nodes_free (void)
-{
-  struct cgraph_node *node;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      free (node->aux);
-      node->aux = NULL;
-    }
+      cs->aux = xcalloc (1, sizeof (struct ipa_edge_args));
 }
 
 /* Free ipa_edge structure.  */
 void
-ipa_edges_free (void)
+ipa_free_all_edge_args (void)
 {
   struct cgraph_node *node;
   struct cgraph_edge *cs;
 
   for (node = cgraph_nodes; node; node = node->next)
     for (cs = node->callees; cs; cs = cs->next_callee)
-      {
-	free (cs->aux);
-	cs->aux = NULL;
-      }
+      if (cs->aux)
+	{
+	  if (IPA_EDGE_REF (cs)->jump_functions)
+	    free (IPA_EDGE_REF (cs)->jump_functions);
+	  free (cs->aux);
+	  cs->aux = NULL;
+	}
 }
 
-/* Free ipa data structures of ipa_node and ipa_edge.  */
+/* Free ipa data structures of ipa_node_params and ipa_edge_args.  */
 void
-ipa_free (void)
+ipa_free_all_node_params (void)
 {
   struct cgraph_node *node;
-  struct cgraph_edge *cs;
 
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (node->aux == NULL)
 	continue;
-      if (IPA_NODE_REF (node)->ipcp_cval)
-	free (IPA_NODE_REF (node)->ipcp_cval);
-      if (IPA_NODE_REF (node)->ipa_param_tree)
-	free (IPA_NODE_REF (node)->ipa_param_tree);
-      if (IPA_NODE_REF (node)->ipa_mod)
-	free (IPA_NODE_REF (node)->ipa_mod);
-      for (cs = node->callees; cs; cs = cs->next_callee)
-	{
-	  if (cs->aux)
-	    if (IPA_EDGE_REF (cs)->ipa_param_map)
-	      free (IPA_EDGE_REF (cs)->ipa_param_map);
-	}
+      if (IPA_NODE_REF (node)->ipcp_lattices)
+	free (IPA_NODE_REF (node)->ipcp_lattices);
+      if (IPA_NODE_REF (node)->param_decls)
+	free (IPA_NODE_REF (node)->param_decls);
+      if (IPA_NODE_REF (node)->modified_flags)
+	free (IPA_NODE_REF (node)->modified_flags);
+      free (node->aux);
+      node->aux = NULL;
     }
 }
 
-/* Print ipa_tree_map data structures of all methods in the 
+/* Print ipa_tree_map data structures of all functions in the
    callgraph to F.  */
 void
-ipa_method_tree_print (FILE * f)
+ipa_print_all_tree_maps (FILE * f)
 {
   int i, count;
   tree temp;
@@ -622,11 +398,12 @@ ipa_method_tree_print (FILE * f)
   fprintf (f, "\nPARAM TREE MAP PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
-      fprintf (f, "method  %s Trees :: \n", cgraph_node_name (node));
-      count = ipa_method_formal_count (node);
+      struct ipa_node_params *info = IPA_NODE_REF (node);
+      fprintf (f, "function  %s Trees :: \n", cgraph_node_name (node));
+      count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
-	  temp = ipa_method_get_tree (node, i);
+	  temp = ipa_get_ith_param (info, i);
 	  if (TREE_CODE (temp) == PARM_DECL)
 	    fprintf (f, "  param [%d] : %s\n", i,
 		     (*lang_hooks.decl_printable_name) (temp, 2));
@@ -635,10 +412,10 @@ ipa_method_tree_print (FILE * f)
     }
 }
 
-/* Print ipa_modify data structures of all methods in the 
+/* Print modified_flags data structures of all functions in the
    callgraph to F.  */
 void
-ipa_method_modify_print (FILE * f)
+ipa_print_all_params_modified (FILE * f)
 {
   int i, count;
   bool temp;
@@ -647,11 +424,12 @@ ipa_method_modify_print (FILE * f)
   fprintf (f, "\nMODIFY PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
-      fprintf (f, "method  %s :: \n", cgraph_node_name (node));
-      count = ipa_method_formal_count (node);
+      struct ipa_node_params *info = IPA_NODE_REF (node);
+      fprintf (f, "function  %s :: \n", cgraph_node_name (node));
+      count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
-	  temp = ipa_method_is_modified (node, i);
+	  temp = info->modified_flags[i];
 	  if (temp)
 	    fprintf (f, " param [%d] true \n", i);
 	  else
@@ -659,3 +437,4 @@ ipa_method_modify_print (FILE * f)
 	}
     }
 }
+
