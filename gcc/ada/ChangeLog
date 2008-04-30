@@ -1,3 +1,7 @@
+2008-04-30  Samuel Tardieu  <sam@rfc1149.net>
+
+	* Makefile.in: Adapt sh4-linux target.
+
 2008-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/35792
