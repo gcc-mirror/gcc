@@ -1,3 +1,131 @@
+2008-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_init_stage): Calls ipa_set_called_with_variable_arg
+	instead of setting number of formal parameters to zero.
+	(ipcp_init_stage): Do not set the number of actual parameters to zero 
+	either.
+	(ipcp_propagate_stage): Explicitly skipping all calls to nodes
+	which are called with variable number of arguments.
+	(ipcp_insert_stage): Explicitely skipping all nodes which are
+	called with variable number of arguments.
+	(ipcp_callsite_param_print): Skipps callsites to nodes with varaible 
+	number of parameters.
+
+	* ipa-prop.h (struct ipa_node_params): Added flag
+	called_with_var_arguments
+	(ipa_set_param_count): Added.  Changed sole setter to use it.
+	(ipa_get_param_count): Added.  All readers of param_count
+	converted to use it instead.
+	(ipa_set_called_with_variable_arg): Added.
+	(ipa_is_called_with_var_arguments): Added.
+	(ipa_get_ith_param): Added.  All readers of param_decls converted
+	to use it instead.
+	(ipa_set_cs_argument_count): Added, sole writer to argument_count 
+	changed to use it. 
+	(ipa_get_cs_argument_count): Added, all readers of argument_count
+	changed to cal it.
+	(ipa_get_ith_jump_func): Added. Accessors of jump values changed 
+	to use it.
+	
+	* ipa-prop.h (struct ipcp_formal): Renamed to ipcp_lattice
+	(struct ipcp_lattice): Renamed cval_type to type
+	(struct ipa_node_params): ipcp_cval renamed to ipcp_lattices
+
+	* ipa-cp.c (ipcp_cval_get_cvalue): Changed return value to tree
+	(ipcp_cval_set_cvalue): Changed type of parameter value to tree
+	(ipcp_insert_stage): Changed the type of variable cvalue to tree
+	(ipcp_replace_map_create): Changed the type of parameter cvalue to tree
+	(build_const_val): Changed the type of parameter cvalue to tree
+	(ipcp_propagate_const): Changed the type of parameter cvalue to tree
+	(ipcp_method_cval_set_cvalue_type): Renamed parameter cval_type1 to type
+	
+	* ipa-prop.h (struct ipcp_formal): Replaced cvalue with tree called 
+	constant 
+
+	* ipa-prop.c (ipa_methodlist_init): Renamed to ipa_init_func_list
+	(ipa_methodlist_not_empty): Removed, the sole user now checks directly
+	(ipa_add_method): Renamed to ipa_push_func_to_list
+	(ipa_remove_method): Renamed to ipa_pop_func_from_list
+	(ipa_callsite_param_count): Removed.
+	(ipa_callsite_param_count_set): Removed.
+	(ipa_callsite_param): Removed.
+	(ipa_callsite_callee): Removed.
+	(ipa_callsite_compute_param): Renamed to ipa_compute_jump_functions
+	(ipa_callsite_compute_count): Renamed to ipa_count_arguments
+	(ipa_method_formal_count): Removed.
+	(ipa_method_formal_count_set): Removed.
+	(ipa_method_get_tree): Removed.
+	(ipa_method_tree_map_create): Removed.
+	(ipa_method_compute_tree_map): Renamed to ipa_create_param_decls_array
+	(ipa_create_param_decls_array): Creates the array itself
+	(ipa_create_param_decls_array): Temporary variable info instead of 
+	a few dereferences.
+	(ipa_method_formal_compute_count): Renamed to ipa_count_formal_params
+	(ipa_method_compute_modify): Renamed to ipa_detect_param_modifications
+	(get_type): Removed.
+	(ipa_jf_get_info_type): Removed.
+	(ipa_node_create): Renamed to ipa_create_node_params
+	(ipa_free): Renamed to ipa_free_all_node_params
+	(ipa_nodes_create): Renamed to ipa_create_all_node_params
+	(ipa_edges_create): Renamed to ipa_create_all_edge_args
+	(ipa_edges_free): Renamed to ipa_free_all_edge_args
+	(ipa_nodes_free): Integrated into ipa_free_all_node_params and removed
+	(ipa_free_all_node_params): Deallocation to jump_functions moved to 
+	ipa_free_all_edge_args
+	(ipa_method_tree_print): Renamed to ipa_print_all_tree_maps
+	(ipa_method_modify_print): Renamed to ipa_print_all_params_modified
+	(ipa_create_methodlist_node): Removed.
+	(ipa_methodlist_method): Removed.
+	(ipa_methodlist_method_set): Removed.
+	(ipa_methodlist_next_method): Removed.
+	(ipa_methodlist_next_method_set): Removed.
+	(ipa_method_is_modified): Removed.
+	(ipa_method_modify_create): Removed.
+	(ipa_method_modify_init): Temporary variable info instead of a few 
+	dereferences.
+	(ipa_detect_param_modifications): Temporary variable info instead of 
+	a few dereferences.
+	(ipa_compute_jump_functions): Temporary variable info instead of 
+	a few dereferences.
+	(ipa_method_modify_set): Removed.
+	(ipa_method_tree_map): Renamed to ipa_get_param_decl_index
+	(ipa_get_param_decl_index): Now accepts struct ipa_node_params rather 
+	than craph_node as the first parameter.
+	(ipa_method_modify_stmt): Renamed to ipa_check_stmt_modifications
+	(ipa_method_modify_init): Removed.
+	(ipa_compute_jump_functions): Added a temp variable instead of 
+	repeatadly dereferencing the cgraph_edge.aux pointer
+	(ipa_callsite_param_set_type): Removed.
+	(ipa_compute_jump_functions): i renamed to index and moved to 
+	an inner block
+	(ipa_callsite_param_set_info_type_formal): Removed.
+	(ipa_callsite_param_set_info_type): Removed.
+	(ipa_callsite_param_map_create): Removed.
+	(ipa_callsite_tree): Removed.
+	(ipa_callsite_caller): Removed.
+	(ipa_pop_func_from_list): return_method removed to return_func
+
+	* ipa-prop.h (enum cvalue_type): Renamed to ipa_lattice_type,
+	prefixed all values with IPA_. Changed all users.
+	(enum jump_func_type): Rnamed UNKNOWN_IPATYPE to IPA_UNKNOWN, 
+	CONST_IPATYPE to IPA_CONST, CONST_IPATYPE_REF to IPA_CONST_REF 
+	and FORMAL_IPATYPE IPA_PASS_THROUGH. 
+	(union parameter_info): Renamed to jump_func_value.
+	(union jump_func_value): Renamed value to constant
+	(struct ipa_jump_func): Renamed info_type to value
+	(struct ipa_node): Renamed to ipa_node_params
+	(struct ipa_node_params): Renamed ipa_arg_num to param_count
+	(struct ipa_node_params): Renamed ipa_param_tree to param_decls
+	(struct ipa_node_params): Renamed ipa_mod to modified_flags
+	(struct ipa_edge): Renamed to ipa_edge_args
+	(struct ipa_edge_args): Renamed ipa_param_num to argument_count
+	(struct ipa_edge_args): Renamed ipa_param_map to jump_functions
+	(struct ipa_methodlist): Renamed to ipa_func_list
+	(struct ipa_func_list): method_p renamed to node, next_method
+	renamed to next
+	(ipa_methodlist_p): Removed, switched all users to struct pointer
+	(IS_VALID_TREE_MAP_INDEX): Renamed to IS_VALID_JUMP_FUNC_INDEX
+
 2008-04-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP): Define.
