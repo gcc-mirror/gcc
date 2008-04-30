@@ -1530,13 +1530,14 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
+  s-linux.ads<s-linux.ads \
   s-osinte.adb<s-osinte-posix.adb \
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tasinf.ads<s-tasinf-linux.ads \
   s-tasinf.adb<s-tasinf-linux.adb \
-  s-taspri.ads<s-taspri-posix.ads \
+  s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-sh4.ads
 
@@ -1544,6 +1545,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
     mlib-tgt-specific.adb<mlib-tgt-linux.adb \
     indepsw.adb<indepsw-linux.adb
 
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
   MISCLIB=
   THREADSLIB = -lpthread
