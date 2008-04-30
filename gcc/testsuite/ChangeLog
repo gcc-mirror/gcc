@@ -1,3 +1,8 @@
+2008-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35986
+	* g++.dg/overload/template4.C: New test.
+
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36077
