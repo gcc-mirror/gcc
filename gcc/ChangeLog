@@ -1,3 +1,10 @@
+2008-04-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP): Define.
+	(rs6000_emit_epilogue): Use backchain to restore only when we
+	have a large frame.  Make use of frame pointer to restore if we
+	have one.  Handle ALWAYS_RESTORE_ALTIVEC_BEFORE_POP.
+
 2008-04-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/avr/avr.md (*sbrx_branch, *sbix_branch, *sbix_branch_tmp):

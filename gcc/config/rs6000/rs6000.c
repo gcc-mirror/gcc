@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -16244,6 +16244,10 @@ rs6000_output_function_prologue (FILE *file,
   rs6000_pic_labelno++;
 }
 
+/* Non-zero if vmx regs are restored before the frame pop, zero if
+   we restore after the pop when possible.  */
+#define ALWAYS_RESTORE_ALTIVEC_BEFORE_POP 0
+
 /* Emit function epilogue as insns.
 
    At present, dwarf2out_frame_debug_expr doesn't understand
@@ -16283,13 +16287,18 @@ rs6000_emit_epilogue (int sibcall)
 			   || crtl->calls_eh_return
 			   || info->first_fp_reg_save == 64
 			   || FP_SAVE_INLINE (info->first_fp_reg_save));
-  use_backchain_to_restore_sp = (frame_pointer_needed
-				 || cfun->calls_alloca
-				 || info->total_size > 32767);
   using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
 			 || rs6000_cpu == PROCESSOR_PPC603
 			 || rs6000_cpu == PROCESSOR_PPC750
 			 || optimize_size);
+  /* Restore via the backchain when we have a large frame, since this
+     is more efficient than an addis, addi pair.  The second condition
+     here will not trigger at the moment;  We don't actually need a
+     frame pointer for alloca, but the generic parts of the compiler
+     give us one anyway.  */
+  use_backchain_to_restore_sp = (info->total_size > 32767
+				 || (cfun->calls_alloca
+				     && !frame_pointer_needed));
 
   if (WORLD_SAVE_P (info))
     {
@@ -16390,8 +16399,9 @@ rs6000_emit_epilogue (int sibcall)
      stack.  */
   if (TARGET_ALTIVEC_ABI
       && info->altivec_size != 0
-      && DEFAULT_ABI != ABI_V4
-      && info->altivec_save_offset < (TARGET_32BIT ? -220 : -288))
+      && (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
+	  || (DEFAULT_ABI != ABI_V4
+	      && info->altivec_save_offset < (TARGET_32BIT ? -220 : -288))))
     {
       int i;
 
@@ -16402,6 +16412,8 @@ rs6000_emit_epilogue (int sibcall)
 			  gen_rtx_MEM (Pmode, sp_reg_rtx));
 	  sp_offset = 0;
 	}
+      else if (frame_pointer_needed)
+	frame_reg_rtx = hard_frame_pointer_rtx;
 
       for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
 	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
@@ -16426,18 +16438,23 @@ rs6000_emit_epilogue (int sibcall)
   if (TARGET_ALTIVEC
       && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0
-      && DEFAULT_ABI != ABI_V4
-      && info->vrsave_save_offset < (TARGET_32BIT ? -220 : -288))
+      && (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
+	  || (DEFAULT_ABI != ABI_V4
+	      && info->vrsave_save_offset < (TARGET_32BIT ? -220 : -288))))
     {
       rtx addr, mem, reg;
 
-      if (use_backchain_to_restore_sp
-	  && frame_reg_rtx == sp_reg_rtx)
+      if (frame_reg_rtx == sp_reg_rtx)
 	{
-	  frame_reg_rtx = gen_rtx_REG (Pmode, 11);
-	  emit_move_insn (frame_reg_rtx,
-			  gen_rtx_MEM (Pmode, sp_reg_rtx));
-	  sp_offset = 0;
+	  if (use_backchain_to_restore_sp)
+	    {
+	      frame_reg_rtx = gen_rtx_REG (Pmode, 11);
+	      emit_move_insn (frame_reg_rtx,
+			      gen_rtx_MEM (Pmode, sp_reg_rtx));
+	      sp_offset = 0;
+	    }
+	  else if (frame_pointer_needed)
+	    frame_reg_rtx = hard_frame_pointer_rtx;
 	}
 
       addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -16449,17 +16466,11 @@ rs6000_emit_epilogue (int sibcall)
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
-  /* If we have a frame pointer, a call to alloca,  or a large stack
-     frame, restore the old stack pointer using the backchain.  Otherwise,
-     we know what size to update it with.  */
+  /* If we have a large stack frame, restore the old stack pointer
+     using the backchain.  */
   if (use_backchain_to_restore_sp)
     {
-      if (frame_reg_rtx != sp_reg_rtx)
-	{
-	  emit_move_insn (sp_reg_rtx, frame_reg_rtx);
-	  frame_reg_rtx = sp_reg_rtx;
-	}
-      else
+      if (frame_reg_rtx == sp_reg_rtx)
 	{
 	  /* Under V.4, don't reset the stack pointer until after we're done
 	     loading the saved registers.  */
@@ -16470,6 +16481,30 @@ rs6000_emit_epilogue (int sibcall)
 			  gen_rtx_MEM (Pmode, sp_reg_rtx));
 	  sp_offset = 0;
 	}
+      else if (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
+	       && DEFAULT_ABI == ABI_V4)
+	/* frame_reg_rtx has been set up by the altivec restore.  */
+	;
+      else
+	{
+	  emit_move_insn (sp_reg_rtx, frame_reg_rtx);
+	  frame_reg_rtx = sp_reg_rtx;
+	}
+    }
+  /* If we have a frame pointer, we can restore the old stack pointer
+     from it.  */
+  else if (frame_pointer_needed)
+    {
+      frame_reg_rtx = sp_reg_rtx;
+      if (DEFAULT_ABI == ABI_V4)
+	frame_reg_rtx = gen_rtx_REG (Pmode, 11);
+
+      emit_insn (TARGET_32BIT
+		 ? gen_addsi3 (frame_reg_rtx, hard_frame_pointer_rtx,
+			       GEN_INT (info->total_size))
+		 : gen_adddi3 (frame_reg_rtx, hard_frame_pointer_rtx,
+			       GEN_INT (info->total_size)));
+      sp_offset = 0;
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
@@ -16484,7 +16519,8 @@ rs6000_emit_epilogue (int sibcall)
     }
 
   /* Restore AltiVec registers if we have not done so already.  */
-  if (TARGET_ALTIVEC_ABI
+  if (!ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
+      && TARGET_ALTIVEC_ABI
       && info->altivec_size != 0
       && (DEFAULT_ABI == ABI_V4
 	  || info->altivec_save_offset >= (TARGET_32BIT ? -220 : -288)))
@@ -16511,7 +16547,8 @@ rs6000_emit_epilogue (int sibcall)
     }
 
   /* Restore VRSAVE if we have not done so already.  */
-  if (TARGET_ALTIVEC
+  if (!ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
+      && TARGET_ALTIVEC
       && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0
       && (DEFAULT_ABI == ABI_V4
