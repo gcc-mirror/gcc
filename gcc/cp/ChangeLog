@@ -1,3 +1,9 @@
+2008-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35986
+	* pt.c (more_specialized_fn): Stop the loop even if there are no
+	arguments before ellipsis.
+
 2008-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35650

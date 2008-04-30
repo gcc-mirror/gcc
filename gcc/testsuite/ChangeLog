@@ -1,3 +1,8 @@
+2008-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35986
+	* g++.dg/overload/template4.C: New test.
+
 2008-04-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gfortran.dg/chmod_1.f90: Disable for x86_64-*-mingw*.

@@ -13652,7 +13652,9 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
   processing_template_decl++;
 
-  while (len--)
+  while (len--
+	 /* Stop when an ellipsis is seen.  */
+	 && args1 != NULL_TREE && args2 != NULL_TREE)
     {
       tree arg1 = TREE_VALUE (args1);
       tree arg2 = TREE_VALUE (args2);
@@ -13815,10 +13817,6 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
       args1 = TREE_CHAIN (args1);
       args2 = TREE_CHAIN (args2);
-
-      /* Stop when an ellipsis is seen.  */
-      if (args1 == NULL_TREE || args2 == NULL_TREE)
-	break;
     }
 
   processing_template_decl--;
