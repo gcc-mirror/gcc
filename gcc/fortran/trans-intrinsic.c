@@ -3736,6 +3736,19 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Generate code for SELECTED_CHAR_KIND (NAME) intrinsic function.  */
+
+static void
+gfc_conv_intrinsic_sc_kind (gfc_se *se, gfc_expr *expr)
+{
+  tree args[2];
+
+  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  se->expr = build_call_expr (gfor_fndecl_sc_kind, 2, args[0], args[1]);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+
 /* Generate code for SELECTED_INT_KIND (R) intrinsic function.  */
 
 static void
@@ -4047,6 +4060,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_TRIM:
       gfc_conv_intrinsic_trim (se, expr);
+      break;
+
+    case GFC_ISYM_SC_KIND:
+      gfc_conv_intrinsic_sc_kind (se, expr);
       break;
 
     case GFC_ISYM_SI_KIND:

@@ -1,7 +1,13 @@
+2008-04-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/selected_char_kind_1.f90: New test.
+	* gfortran.dg/selected_char_kind_2.f90: New test.
+	* gfortran.dg/selected_char_kind_3.f90: New test.
+
 2008-04-28  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/35997
-       * gfortran.dg/use_rename_3.f90
+	PR fortran/35997
+	* gfortran.dg/use_rename_3.f90
 
 2008-04-30  Richard Guenther  <rguenther@suse.de>
 

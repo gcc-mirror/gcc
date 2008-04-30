@@ -2350,6 +2350,22 @@ gfc_check_secnds (gfc_expr *r)
 
 
 try
+gfc_check_selected_char_kind (gfc_expr *name)
+{
+  if (type_check (name, 0, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check (name, 0, gfc_default_character_kind) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (name, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_selected_int_kind (gfc_expr *r)
 {
   if (type_check (r, 0, BT_INTEGER) == FAILURE)

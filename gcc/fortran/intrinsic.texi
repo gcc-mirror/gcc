@@ -225,6 +225,7 @@ Some basic guidelines for editing this document:
 * @code{SCAN}:          SCAN,      Scan a string for the presence of a set of characters
 * @code{SECNDS}:        SECNDS,    Time function
 * @code{SECOND}:        SECOND,    CPU time function
+* @code{SELECTED_CHAR_KIND}: SELECTED_CHAR_KIND,  Choose character kind
 * @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
@@ -9252,6 +9253,48 @@ seconds.
 @item @emph{See also}:
 @ref{CPU_TIME}
 
+@end table
+
+
+
+@node SELECTED_CHAR_KIND
+@section @code{SELECTED_CHAR_KIND} --- Choose character kind
+@fnindex SELECTED_CHAR_KIND
+@cindex character kind
+@cindex kind, character
+
+@table @asis
+@item @emph{Description}:
+
+@code{SELECTED_CHAR_KIND(NAME)} returns the kind value for the character
+set named @var{NAME}, if a character set with such a name is supported,
+or @math{-1} otherwise. Currently, supported character sets include
+``ASCII'' and ``DEFAULT'', which are equivalent.
+
+@item @emph{Standard}:
+Fortran 2003 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@code{RESULT = SELECTED_CHAR_KIND(NAME)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{NAME} @tab Shall be a scalar and of the default character type.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program ascii_kind
+  integer,parameter :: ascii = selected_char_kind("ascii")
+  character(kind=ascii, len=26) :: s
+
+  s = ascii_"abcdefghijklmnopqrstuvwxyz"
+  print *, s
+end program ascii_kind
+@end smallexample
 @end table
 
 

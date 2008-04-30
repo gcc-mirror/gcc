@@ -2141,6 +2141,13 @@ add_functions (void)
 
   make_generic ("secnds", GFC_ISYM_SECNDS, GFC_STD_GNU);
 
+  add_sym_1 ("selected_char_kind", GFC_ISYM_SC_KIND, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2003,
+	     gfc_check_selected_char_kind, gfc_simplify_selected_char_kind,
+	     NULL, nm, BT_CHARACTER, dc, REQUIRED);
+
+  make_generic ("selected_char_kind", GFC_ISYM_SC_KIND, GFC_STD_F2003);
+
   add_sym_1 ("selected_int_kind", GFC_ISYM_SI_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F95, gfc_check_selected_int_kind,
 	     gfc_simplify_selected_int_kind, NULL, r, BT_INTEGER, di, REQUIRED);

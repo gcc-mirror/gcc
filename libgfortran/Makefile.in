@@ -416,7 +416,8 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	intrinsics/kill.c intrinsics/link.c intrinsics/malloc.c \
 	intrinsics/mvbits.c intrinsics/move_alloc.c \
 	intrinsics/pack_generic.c intrinsics/perror.c \
-	intrinsics/signal.c intrinsics/size.c intrinsics/sleep.c \
+	intrinsics/selected_char_kind.c intrinsics/signal.c \
+	intrinsics/size.c intrinsics/sleep.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
 	intrinsics/system.c intrinsics/rand.c intrinsics/random.c \
 	intrinsics/rename.c intrinsics/reshape_generic.c \
@@ -698,12 +699,12 @@ am__objects_35 = associated.lo abort.lo access.lo args.lo \
 	fnum.lo gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo \
 	ierrno.lo ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo \
 	kill.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
-	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
-	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
-	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
-	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
-	system_clock.lo time.lo transpose_generic.lo umask.lo \
-	unlink.lo unpack_generic.lo in_pack_generic.lo \
+	pack_generic.lo perror.lo selected_char_kind.lo signal.lo \
+	size.lo sleep.lo spread_generic.lo string_intrinsics.lo \
+	system.lo rand.lo random.lo rename.lo reshape_generic.lo \
+	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
+	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
+	umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
 am__objects_36 =
 am__objects_37 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
@@ -986,6 +987,7 @@ intrinsics/mvbits.c \
 intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
+intrinsics/selected_char_kind.c \
 intrinsics/signal.c \
 intrinsics/size.c \
 intrinsics/sleep.c \
@@ -2073,6 +2075,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rrspacing_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rrspacing_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/selected_char_kind.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_exponent_r4.Plo@am__quote@
@@ -5371,6 +5374,13 @@ perror.lo: intrinsics/perror.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/perror.c' object='perror.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o perror.lo `test -f 'intrinsics/perror.c' || echo '$(srcdir)/'`intrinsics/perror.c
+
+selected_char_kind.lo: intrinsics/selected_char_kind.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT selected_char_kind.lo -MD -MP -MF "$(DEPDIR)/selected_char_kind.Tpo" -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/selected_char_kind.Tpo" "$(DEPDIR)/selected_char_kind.Plo"; else rm -f "$(DEPDIR)/selected_char_kind.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/selected_char_kind.c' object='selected_char_kind.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o selected_char_kind.lo `test -f 'intrinsics/selected_char_kind.c' || echo '$(srcdir)/'`intrinsics/selected_char_kind.c
 
 signal.lo: intrinsics/signal.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT signal.lo -MD -MP -MF "$(DEPDIR)/signal.Tpo" -c -o signal.lo `test -f 'intrinsics/signal.c' || echo '$(srcdir)/'`intrinsics/signal.c; \
