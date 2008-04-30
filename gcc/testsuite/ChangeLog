@@ -1,3 +1,10 @@
+2008-04-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gfortran.dg/chmod_1.f90: Disable for x86_64-*-mingw*.
+	* gfortran.dg/chmod_2.f90: Likewise.
+	* gfortran.dg/chmod_3.f90: Likewise.
+	* gfortran.dg/open_errors.f90: Likewise.
+
 2008-04-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/tls/section-2.c: Restrict to vxworks.
