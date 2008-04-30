@@ -18635,7 +18635,7 @@ arm_unwind_emit (FILE * asm_out_file, rtx insn)
 
   if (!(flag_unwind_tables || crtl->uses_eh_lsda)
       && (TREE_NOTHROW (current_function_decl)
-	  || cfun->all_throwers_are_sibcalls))
+	  || crtl->all_throwers_are_sibcalls))
     return;
 
   if (GET_CODE (insn) == NOTE || !RTX_FRAME_RELATED_P (insn))
@@ -18724,7 +18724,7 @@ arm_output_fn_unwind (FILE * f, bool prologue)
 	 the frame annotations.  */
       if (!(flag_unwind_tables || crtl->uses_eh_lsda)
 	  && (TREE_NOTHROW (current_function_decl)
-	      || cfun->all_throwers_are_sibcalls))
+	      || crtl->all_throwers_are_sibcalls))
 	fputs("\t.cantunwind\n", f);
 
       fputs ("\t.fnend\n", f);

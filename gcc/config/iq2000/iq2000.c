@@ -1872,7 +1872,7 @@ iq2000_expand_prologue (void)
 
   /* If struct value address is treated as the first argument.  */
   if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
-      && ! current_function_returns_pcc_struct
+      && !cfun->returns_pcc_struct
       && targetm.calls.struct_value_rtx (TREE_TYPE (fndecl), 1) == 0)
     {
       tree type = build_pointer_type (fntype);
