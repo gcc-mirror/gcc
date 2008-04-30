@@ -1,3 +1,10 @@
+2008-04-30  Seongbae Park  <seongbae.park@gmail.com>
+
+	* gcc.c (wrapper_string): New variable.
+	(insert_wrapper): New function.
+	(execute): New option -wrapper.
+	* doc/invoke.texi (Overall Options): New driver option -wrapper.
+
 2008-04-30  Nathan Froyd  <froydnj@codesourcery.com>
 
         * config/rs6000/crtresgpr.asm, config/rs6000/crtresxgpr.asm,
