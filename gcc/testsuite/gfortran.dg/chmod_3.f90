@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target { ! x86_64-*-mingw* } } }
 ! { dg-options "-std=gnu -fdefault-integer-8" }
   implicit none
   character(len=*), parameter :: n = "foobar_file"
