@@ -1037,6 +1037,7 @@ GFORTRAN_1.1 {
     _gfortran_erfc_scaled_r8;
     _gfortran_erfc_scaled_r10;
     _gfortran_erfc_scaled_r16;
+    _gfortran_selected_char_kind;
     _gfortran_st_wait;
 } GFORTRAN_1.0; 
 

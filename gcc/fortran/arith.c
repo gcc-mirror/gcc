@@ -1208,7 +1208,7 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
   alen = a->value.character.length;
   blen = b->value.character.length;
 
-  len = (alen > blen) ? alen : blen;
+  len = MAX(alen, blen);
 
   for (i = 0; i < len; i++)
     {
@@ -1224,7 +1224,40 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
     }
 
   /* Strings are equal */
+  return 0;
+}
 
+
+int
+gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
+{
+  int len, alen, blen, i, ac, bc;
+
+  alen = a->value.character.length;
+  blen = strlen (b);
+
+  len = MAX(alen, blen);
+
+  for (i = 0; i < len; i++)
+    {
+      /* We cast to unsigned char because default char, if it is signed,
+	 would lead to ac < 0 for string[i] > 127.  */
+      ac = (unsigned char) ((i < alen) ? a->value.character.string[i] : ' ');
+      bc = (unsigned char) ((i < blen) ? b[i] : ' ');
+
+      if (!case_sensitive)
+	{
+	  ac = TOLOWER (ac);
+	  bc = TOLOWER (bc);
+	}
+
+      if (ac < bc)
+	return -1;
+      if (ac > bc)
+	return 1;
+    }
+
+  /* Strings are equal */
   return 0;
 }
 

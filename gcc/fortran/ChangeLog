@@ -1,8 +1,26 @@
+2008-04-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsic.c (add_functions): Add SELECTED_CHAR_KIND intrinsic.
+	* intrinsic.h (gfc_check_selected_char_kind,
+	gfc_simplify_selected_char_kind): New prototypes.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_SC_KIND.
+	* trans.h (gfor_fndecl_sc_kind): New function decl.
+	* trans-decl.c (gfor_fndecl_sc_kind): Build new decl.
+	* arith.c (gfc_compare_with_Cstring): New function.
+	* arith.h (gfc_compare_with_Cstring): New prototype.
+	* check.c (gfc_check_selected_char_kind): New function.
+	* primary.c (match_string_constant, match_kind_param): Mark
+	symbols used as literal constant kind param as referenced.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sc_kind): New function.
+	(gfc_conv_intrinsic_function): Call gfc_conv_intrinsic_sc_kind.
+	* intrinsic.texi (SELECTED_CHAR_KIND): Document new intrinsic.
+	* simplify.c (gfc_simplify_selected_char_kind): New function.
+
 2008-04-28  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/35997
-       * module.c (find_symbol): Do not return a result for a symbol
-       that has been renamed in another module.
+	PR fortran/35997
+	* module.c (find_symbol): Do not return a result for a symbol
+	that has been renamed in another module.
 
 2008-04-26  George Helffrich <george@gcc.gnu.org>
 

@@ -87,6 +87,7 @@ intrinsics/mvbits.c \
 intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
+intrinsics/selected_char_kind.c \
 intrinsics/signal.c \
 intrinsics/size.c \
 intrinsics/sleep.c \

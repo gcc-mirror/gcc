@@ -1,3 +1,10 @@
+2008-04-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/selected_char_kind.c: New file.
+	* gfortran.map (GFORTRAN_1.1): Add _gfortran_selected_char_kind.
+	* Makefile.am: Add intrinsics/selected_char_kind.c.
+	* Makefile.in: Regenerate.
+
 2008-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35993

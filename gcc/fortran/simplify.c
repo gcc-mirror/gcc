@@ -3629,6 +3629,28 @@ gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b, gfc_expr *kind)
 
 
 gfc_expr *
+gfc_simplify_selected_char_kind (gfc_expr *e)
+{
+  int kind;
+  gfc_expr *result;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (gfc_compare_with_Cstring (e, "ascii", false) == 0
+      || gfc_compare_with_Cstring (e, "default", false) == 0)
+    kind = 1;
+  else
+    kind = -1;
+
+  result = gfc_int_expr (kind);
+  result->where = e->where;
+
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_selected_int_kind (gfc_expr *e)
 {
   int i, kind, range;

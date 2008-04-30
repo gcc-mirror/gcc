@@ -60,6 +60,8 @@ match_kind_param (int *kind)
   if (p != NULL)
     return MATCH_NO;
 
+  gfc_set_sym_referenced (sym);
+
   if (*kind < 0)
     return MATCH_NO;
 
@@ -907,6 +909,7 @@ match_string_constant (gfc_expr **result)
 	  gfc_error (q);
 	  return MATCH_ERROR;
 	}
+      gfc_set_sym_referenced (sym);
     }
 
   if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
