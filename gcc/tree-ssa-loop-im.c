@@ -1640,6 +1640,8 @@ mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
 	  && SSA_VAR_P (mem1)
 	  && !AGGREGATE_TYPE_P (TREE_TYPE (mem1)))
 	return false;
+      if (!alias_sets_conflict_p (get_alias_set (mem1), get_alias_set (mem2)))
+	return false;
     }
 
   /* The expansion of addresses may be a bit expensive, thus we only do

@@ -1,3 +1,8 @@
+2008-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32921
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Disambiguate with TBAA.
+
 2008-04-30  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/arm/arm.c (arm_unwind_emit): Use
