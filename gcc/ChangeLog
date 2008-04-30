@@ -1,3 +1,10 @@
+2008-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14847
+	* tree-ssa-ifcombine.c (get_name_for_bit_test): New helper function.
+	(recognize_bits_test): Use it.
+	(recognize_single_bit_test): Likewise.
+
 2008-04-30  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_init_stage): Calls ipa_set_called_with_variable_arg
