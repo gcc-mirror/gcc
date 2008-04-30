@@ -226,6 +226,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
   for (bsi = bsi_start (e->dest); ! bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree cached_lhs = NULL;
+      tree rhs;
 
       stmt = bsi_stmt (bsi);
 
@@ -252,6 +253,32 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) != SSA_NAME)
 	continue;
 
+      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+
+      /* The result of __builtin_object_size depends on all the arguments
+	 of a phi node. Temporarily using only one edge produces invalid
+	 results. For example
+
+	 if (x < 6)
+	   goto l;
+	 else
+	   goto l;
+
+	 l:
+	 r = PHI <&w[2].a[1](2), &a.a[6](3)>
+	 __builtin_object_size (r, 0)
+
+	 The result of __builtin_object_size is defined to be the maximum of
+	 remaining bytes. If we use only one edge on the phi, the result will
+	 change to be the remaining bytes for the corresponding phi argument. */
+
+      if (TREE_CODE (rhs) == CALL_EXPR)
+	{
+	  tree fndecl = get_callee_fndecl (rhs);
+	  if (fndecl && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE)
+	    continue;
+	}
+
       /* At this point we have a statement which assigns an RHS to an
 	 SSA_VAR on the LHS.  We want to try and simplify this statement
 	 to expose more context sensitive equivalences which in turn may
@@ -259,10 +286,10 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 
 	 Handle simple copy operations as well as implied copies from
 	 ASSERT_EXPRs.  */
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME)
-	cached_lhs = GIMPLE_STMT_OPERAND (stmt, 1);
-      else if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ASSERT_EXPR)
-	cached_lhs = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 0);
+      if (TREE_CODE (rhs) == SSA_NAME)
+	cached_lhs = rhs;
+      else if (TREE_CODE (rhs) == ASSERT_EXPR)
+	cached_lhs = TREE_OPERAND (rhs, 0);
       else
 	{
 	  /* A statement that is not a trivial copy or ASSERT_EXPR.
