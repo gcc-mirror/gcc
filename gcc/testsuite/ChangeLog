@@ -1,3 +1,8 @@
+2008-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14847
+	* gcc.dg/tree-ssa/ssa-ifcombine-6.c: New testcase.
+
 2008-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35986
