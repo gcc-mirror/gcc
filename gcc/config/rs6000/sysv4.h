@@ -777,19 +777,19 @@ extern int fixuplabelno;
 /* Override svr4.h definition.  */
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "\
-%{mads         : crtsavres.o%s        %(endfile_ads)         ; \
-  myellowknife : crtsavres.o%s        %(endfile_yellowknife) ; \
-  mmvme        : crtsavres.o%s        %(endfile_mvme)        ; \
-  msim         : crtsavres.o%s        %(endfile_sim)         ; \
+%{mads         : %(endfile_ads)         ; \
+  myellowknife : %(endfile_yellowknife) ; \
+  mmvme        : %(endfile_mvme)        ; \
+  msim         : %(endfile_sim)         ; \
   mwindiss     :                      %(endfile_windiss)     ; \
-  mcall-freebsd: crtsavres.o%s        %(endfile_freebsd)     ; \
-  mcall-linux  : crtsavres.o%s        %(endfile_linux)       ; \
-  mcall-gnu    : crtsavres.o%s        %(endfile_gnu)         ; \
-  mcall-netbsd : crtsavres.o%s        %(endfile_netbsd)      ; \
-  mcall-openbsd: crtsavres.o%s        %(endfile_openbsd)     ; \
+  mcall-freebsd: %(endfile_freebsd)     ; \
+  mcall-linux  : %(endfile_linux)       ; \
+  mcall-gnu    : %(endfile_gnu)         ; \
+  mcall-netbsd : %(endfile_netbsd)      ; \
+  mcall-openbsd: %(endfile_openbsd)     ; \
                : %(crtsavres_default) %(endfile_default)     }"
 
-#define CRTSAVRES_DEFAULT_SPEC "crtsavres.o%s"
+#define CRTSAVRES_DEFAULT_SPEC ""
 
 #define	ENDFILE_DEFAULT_SPEC "crtend.o%s ecrtn.o%s"
 

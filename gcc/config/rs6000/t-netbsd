@@ -2,13 +2,30 @@
 
 LIB2FUNCS_EXTRA = tramp.S
 
+LIB2FUNCS_STATIC_EXTRA = crtsavfpr.S crtresfpr.S \
+  crtsavgpr.S crtresgpr.S \
+  crtresxfpr.S crtresxgpr.S
+
 tramp.S: $(srcdir)/config/rs6000/tramp.asm
 	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
 
-crtsavres.S: $(srcdir)/config/rs6000/crtsavres.asm
-	cat $(srcdir)/config/rs6000/crtsavres.asm >crtsavres.S
+crtsavfpr.S: $(srcdir)/config/rs6000/crtsavfpr.asm
+	cat $(srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
 
-EXTRA_PARTS += crtsavres$(objext)
+crtresfpr.S: $(srcdir)/config/rs6000/crtresfpr.asm
+	cat $(srcdir)/config/rs6000/crtresfpr.asm >crtresfpr.S
+
+crtsavgpr.S: $(srcdir)/config/rs6000/crtsavgpr.asm
+	cat $(srcdir)/config/rs6000/crtsavgpr.asm >crtsavgpr.S
+
+crtresgpr.S: $(srcdir)/config/rs6000/crtresgpr.asm
+	cat $(srcdir)/config/rs6000/crtresgpr.asm >crtresgpr.S
+
+crtresxfpr.S: $(srcdir)/config/rs6000/crtresxfpr.asm
+	cat $(srcdir)/config/rs6000/crtresxfpr.asm >crtresxfpr.S
+
+crtresxgpr.S: $(srcdir)/config/rs6000/crtresxgpr.asm
+	cat $(srcdir)/config/rs6000/crtresxgpr.asm >crtresxgpr.S
 
 # It is important that crtbegin.o, etc., aren't surprised by stuff in .sdata.
 CRTSTUFF_T_CFLAGS += -msdata=none
@@ -34,9 +51,22 @@ MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
-  crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
-  crtsavres$(objext)
+  crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext)
 
-$(T)crtsavres$(objext): crtsavres.S
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	  -c crtsavres.S -o $(T)crtsavres$(objext)
+$(T)crtsavfpr$(objext): crtsavfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavfpr.S -o $(T)crtsavfpr$(objext)
+
+$(T)crtresfpr$(objext): crtresfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresfpr.S -o $(T)crtresfpr$(objext)
+
+$(T)crtsavgpr$(objext): crtsavgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavgpr.S -o $(T)crtsavgpr$(objext)
+
+$(T)crtresgpr$(objext): crtresgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresgpr.S -o $(T)crtresgpr$(objext)
+
+$(T)crtresxfpr$(objext): crtresxfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxfpr.S -o $(T)crtresxfpr$(objext)
+
+$(T)crtresxgpr$(objext): crtresxgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxgpr.S -o $(T)crtresxgpr$(objext)
