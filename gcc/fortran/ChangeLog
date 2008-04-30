@@ -1,3 +1,9 @@
+2008-04-28  Paul Thomas  <pault@gcc.gnu.org>
+
+       PR fortran/35997
+       * module.c (find_symbol): Do not return a result for a symbol
+       that has been renamed in another module.
+
 2008-04-26  George Helffrich <george@gcc.gnu.org>
 
 	PR fortran/35892
