@@ -416,51 +416,131 @@ ssum_r8 (gfc_array_r8 * const restrict retarray,
 	const index_type * const restrict pdim, 
 	GFC_LOGICAL_4 * mask)
 {
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type sstride[GFC_MAX_DIMENSIONS];
+  index_type dstride[GFC_MAX_DIMENSIONS];
+  GFC_REAL_8 * restrict dest;
   index_type rank;
   index_type n;
-  index_type dstride;
-  GFC_REAL_8 *dest;
+  index_type dim;
+
 
   if (*mask)
     {
       sum_r8 (retarray, array, pdim);
       return;
     }
-    rank = GFC_DESCRIPTOR_RANK (array);
-  if (rank <= 0)
-    runtime_error ("Rank of array needs to be > 0");
+  /* Make dim zero based to avoid confusion.  */
+  dim = (*pdim) - 1;
+  rank = GFC_DESCRIPTOR_RANK (array) - 1;
+
+  for (n = 0; n < dim; n++)
+    {
+      sstride[n] = array->dim[n].stride;
+      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+
+      if (extent[n] <= 0)
+	extent[n] = 0;
+    }
+
+  for (n = dim; n < rank; n++)
+    {
+      sstride[n] = array->dim[n + 1].stride;
+      extent[n] =
+        array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+
+      if (extent[n] <= 0)
+        extent[n] = 0;
+    }
 
   if (retarray->data == NULL)
     {
-      retarray->dim[0].lbound = 0;
-      retarray->dim[0].ubound = rank-1;
-      retarray->dim[0].stride = 1;
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      size_t alloc_size;
+
+      for (n = 0; n < rank; n++)
+        {
+          retarray->dim[n].lbound = 0;
+          retarray->dim[n].ubound = extent[n]-1;
+          if (n == 0)
+            retarray->dim[n].stride = 1;
+          else
+            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+        }
+
       retarray->offset = 0;
-      retarray->data = internal_malloc_size (sizeof (GFC_REAL_8) * rank);
+      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+
+      alloc_size = sizeof (GFC_REAL_8) * retarray->dim[rank-1].stride
+    		   * extent[rank-1];
+
+      if (alloc_size == 0)
+	{
+	  /* Make sure we have a zero-sized array.  */
+	  retarray->dim[0].lbound = 0;
+	  retarray->dim[0].ubound = -1;
+	  return;
+	}
+      else
+	retarray->data = internal_malloc_size (alloc_size);
     }
   else
     {
+      if (rank != GFC_DESCRIPTOR_RANK (retarray))
+	runtime_error ("rank of return array incorrect in"
+		       " SUM intrinsic: is %ld, should be %ld",
+		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
+		       (long int) rank);
+
       if (compile_options.bounds_check)
 	{
-	  int ret_rank;
-	  index_type ret_extent;
+	  for (n=0; n < rank; n++)
+	    {
+	      index_type ret_extent;
 
-	  ret_rank = GFC_DESCRIPTOR_RANK (retarray);
-	  if (ret_rank != 1)
-	    runtime_error ("rank of return array in SUM intrinsic"
-			   " should be 1, is %ld", (long int) ret_rank);
-
-	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
-	    if (ret_extent != rank)
-	      runtime_error ("dimension of return array incorrect");
+	      ret_extent = retarray->dim[n].ubound + 1
+		- retarray->dim[n].lbound;
+	      if (extent[n] != ret_extent)
+		runtime_error ("Incorrect extent in return value of"
+			       " SUM intrinsic in dimension %ld:"
+			       " is %ld, should be %ld", (long int) n + 1,
+			       (long int) ret_extent, (long int) extent[n]);
+	    }
 	}
     }
-    dstride = retarray->dim[0].stride;
-    dest = retarray->data;
 
-    for (n = 0; n < rank; n++)
-      dest[n * dstride] = 0 ;
+  for (n = 0; n < rank; n++)
+    {
+      count[n] = 0;
+      dstride[n] = retarray->dim[n].stride;
+    }
+
+  dest = retarray->data;
+
+  while(1)
+    {
+      *dest = 0;
+      count[0]++;
+      dest += dstride[0];
+      n = 0;
+      while (count[n] == extent[n])
+        {
+	  /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= dstride[n] * extent[n];
+          n++;
+          if (n == rank)
+	    return;
+          else
+            {
+              count[n]++;
+              dest += dstride[n];
+            }
+      	}
+    }
 }
 
 #endif
