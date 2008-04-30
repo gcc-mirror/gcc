@@ -1,3 +1,9 @@
+2008-04-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* include/Makefile.am (install-headers): Cope with empty
+	parallel_headers.
+	* include/Makefile.in: Regenerate.
+
 2008-04-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Remove space between '#' and 'undef' for
