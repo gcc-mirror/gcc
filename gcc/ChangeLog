@@ -1,3 +1,31 @@
+2008-04-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+        * config/rs6000/crtresgpr.asm, config/rs6000/crtresxgpr.asm,
+        config/rs6000/crtsavgpr.asm, config/rs6000/crtresfpr.asm,
+        config/rs6000/crtresxfpr.asm, config/rs6000/crtsavfpr.asm: Break out
+        from...
+        * config/rs6000/crtsavres.asm: ...here.  Remove unneeded file.
+        * config/rs6000/e500crtres32gpr.asm,
+	config/rs6000/e500crtres64gpr.asm
+        config/rs6000/e500crtres64gprctr.asm,
+	config/rs6000/e500crtrest32gpr.asm
+        config/rs6000/e500crtrest64gpr.asm,
+	config/rs6000/e500crtresx32gpr.asm
+        config/rs6000/e500crtresx64gpr.asm,
+	config/rs6000/e500crtsav32gpr.asm
+        config/rs6000/e500crtsav64gpr.asm,
+	config/rs6000/e500crtsav64gprctr.asm
+        config/rs6000/e500crtsavg32gpr.asm,
+	config/rs6000/e500crtsavg64gpr.asm
+        config/rs6000/e500crtsavg64gprctr.asm: New files.
+        * config/rs6000/t-ppccomm: Add build rules for new files.
+        (LIB2FUNCS_STATIC_EXTRA): Add new files.
+        * config/rs6000/t-netbsd: Add build rules for new files.
+        (LIB2FUNCS_STATIC_EXTRA): New variable.
+        * config/rs6000/sysv4.h (ENDFILE_SPEC): Don't include crtsavres.o
+        (CRTSAVRES_DEFAULT_SPEC): Likewise.
+        * config/rs6000/netbsd.h (ENDFILE_SPEC): Likewise.
+
 2008-04-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtin_type): Add

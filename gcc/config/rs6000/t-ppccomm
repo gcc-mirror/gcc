@@ -2,8 +2,24 @@
 
 LIB2FUNCS_EXTRA += tramp.S $(srcdir)/config/rs6000/darwin-ldouble.c
 
-# This one can't end up in shared libgcc
-LIB2FUNCS_STATIC_EXTRA = eabi.S
+# These can't end up in shared libgcc
+LIB2FUNCS_STATIC_EXTRA = eabi.S \
+  crtsavfpr.S crtresfpr.S \
+  crtsavgpr.S crtresgpr.S \
+  crtresxfpr.S crtresxgpr.S \
+  e500crtres32gpr.S \
+  e500crtres64gpr.S \
+  e500crtres64gprctr.S \
+  e500crtrest32gpr.S \
+  e500crtrest64gpr.S \
+  e500crtresx32gpr.S \
+  e500crtresx64gpr.S \
+  e500crtsav32gpr.S \
+  e500crtsav64gpr.S \
+  e500crtsav64gprctr.S \
+  e500crtsavg32gpr.S \
+  e500crtsavg64gpr.S \
+  e500crtsavg64gprctr.S
 
 eabi.S: $(srcdir)/config/rs6000/eabi.asm
 	cat $(srcdir)/config/rs6000/eabi.asm > eabi.S
@@ -18,8 +34,7 @@ MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi 
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
   crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
   ecrti$(objext) ecrtn$(objext) \
-  ncrti$(objext) ncrtn$(objext) \
-  crtsavres$(objext)
+  ncrti$(objext) ncrtn$(objext)
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
@@ -37,8 +52,62 @@ ncrti.S: $(srcdir)/config/rs6000/sol-ci.asm
 ncrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
 	cat $(srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
 
-crtsavres.S: $(srcdir)/config/rs6000/crtsavres.asm
-	cat $(srcdir)/config/rs6000/crtsavres.asm >crtsavres.S
+crtsavfpr.S: $(srcdir)/config/rs6000/crtsavfpr.asm
+	cat $(srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
+
+crtresfpr.S: $(srcdir)/config/rs6000/crtresfpr.asm
+	cat $(srcdir)/config/rs6000/crtresfpr.asm >crtresfpr.S
+
+crtsavgpr.S: $(srcdir)/config/rs6000/crtsavgpr.asm
+	cat $(srcdir)/config/rs6000/crtsavgpr.asm >crtsavgpr.S
+
+crtresgpr.S: $(srcdir)/config/rs6000/crtresgpr.asm
+	cat $(srcdir)/config/rs6000/crtresgpr.asm >crtresgpr.S
+
+crtresxfpr.S: $(srcdir)/config/rs6000/crtresxfpr.asm
+	cat $(srcdir)/config/rs6000/crtresxfpr.asm >crtresxfpr.S
+
+crtresxgpr.S: $(srcdir)/config/rs6000/crtresxgpr.asm
+	cat $(srcdir)/config/rs6000/crtresxgpr.asm >crtresxgpr.S
+
+e500crtres32gpr.S: $(srcdir)/config/rs6000/e500crtres32gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtres32gpr.asm >e500crtres32gpr.S
+
+e500crtres64gpr.S: $(srcdir)/config/rs6000/e500crtres64gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtres64gpr.asm >e500crtres64gpr.S
+
+e500crtres64gprctr.S: $(srcdir)/config/rs6000/e500crtres64gprctr.asm
+	cat $(srcdir)/config/rs6000/e500crtres64gprctr.asm >e500crtres64gprctr.S
+
+e500crtrest32gpr.S: $(srcdir)/config/rs6000/e500crtrest32gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtrest32gpr.asm >e500crtrest32gpr.S
+
+e500crtrest64gpr.S: $(srcdir)/config/rs6000/e500crtrest64gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtrest64gpr.asm >e500crtrest64gpr.S
+
+e500crtresx32gpr.S: $(srcdir)/config/rs6000/e500crtresx32gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtresx32gpr.asm >e500crtresx32gpr.S
+
+e500crtresx64gpr.S: $(srcdir)/config/rs6000/e500crtresx64gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtresx64gpr.asm >e500crtresx64gpr.S
+
+e500crtsav32gpr.S: $(srcdir)/config/rs6000/e500crtsav32gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtsav32gpr.asm >e500crtsav32gpr.S
+
+e500crtsav64gpr.S: $(srcdir)/config/rs6000/e500crtsav64gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtsav64gpr.asm >e500crtsav64gpr.S
+
+e500crtsav64gprctr.S: $(srcdir)/config/rs6000/e500crtsav64gprctr.asm
+	cat $(srcdir)/config/rs6000/e500crtsav64gprctr.asm >e500crtsav64gprctr.S
+
+e500crtsavg32gpr.S: $(srcdir)/config/rs6000/e500crtsavg32gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtsavg32gpr.asm >e500crtsavg32gpr.S
+
+e500crtsavg64gpr.S: $(srcdir)/config/rs6000/e500crtsavg64gpr.asm
+	cat $(srcdir)/config/rs6000/e500crtsavg64gpr.asm >e500crtsavg64gpr.S
+
+e500crtsavg64gprctr.S: $(srcdir)/config/rs6000/e500crtsavg64gprctr.asm
+	cat $(srcdir)/config/rs6000/e500crtsavg64gprctr.asm >e500crtsavg64gprctr.S
 
 # Build multiple copies of ?crt{i,n}.o, one for each target switch.
 $(T)ecrti$(objext): ecrti.S
@@ -53,8 +122,62 @@ $(T)ncrti$(objext): ncrti.S
 $(T)ncrtn$(objext): ncrtn.S
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ncrtn.S -o $(T)ncrtn$(objext)
 
-$(T)crtsavres$(objext): crtsavres.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavres.S -o $(T)crtsavres$(objext)
+$(T)crtsavfpr$(objext): crtsavfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavfpr.S -o $(T)crtsavfpr$(objext)
+
+$(T)crtresfpr$(objext): crtresfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresfpr.S -o $(T)crtresfpr$(objext)
+
+$(T)crtsavgpr$(objext): crtsavgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavgpr.S -o $(T)crtsavgpr$(objext)
+
+$(T)crtresgpr$(objext): crtresgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresgpr.S -o $(T)crtresgpr$(objext)
+
+$(T)crtresxfpr$(objext): crtresxfpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxfpr.S -o $(T)crtresxfpr$(objext)
+
+$(T)crtresxgpr$(objext): crtresxgpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtresxgpr.S -o $(T)crtresxgpr$(objext)
+
+$(T)e500crtres32gpr$(objext): e500crtres32gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtres32gpr.S -o $(T)e500crtres32gpr$(objext)
+
+$(T)e500crtres64gpr$(objext): e500crtres64gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtres64gpr.S -o $(T)e500crtres64gpr$(objext)
+
+$(T)e500crtres64gprctr$(objext): e500crtres64gprctr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtres64gprctr.S -o $(T)e500crtres64gprctr$(objext)
+
+$(T)e500crtrest32gpr$(objext): e500crtrest32gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtrest32gpr.S -o $(T)e500crtrest32gpr$(objext)
+
+$(T)e500crtrest64gpr$(objext): e500crtrest64gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtrest64gpr.S -o $(T)e500crtrest64gpr$(objext)
+
+$(T)e500crtresx32gpr$(objext): e500crtresx32gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtresx32gpr.S -o $(T)e500crtresx32gpr$(objext)
+
+$(T)e500crtresx64gpr$(objext): e500crtresx64gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtresx64gpr.S -o $(T)e500crtresx64gpr$(objext)
+
+$(T)e500crtsav32gpr$(objext): e500crtsav32gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsav32gpr.S -o $(T)e500crtsav32gpr$(objext)
+
+$(T)e500crtsav64gpr$(objext): e500crtsav64gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsav64gpr.S -o $(T)e500crtsav64gpr$(objext)
+
+$(T)e500crtsav64gprctr$(objext): e500crtsav64gprctr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsav64gprctr.S -o $(T)e500crtsav64gprctr$(objext)
+
+$(T)e500crtsavg32gpr$(objext): e500crtsavg32gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsavg32gpr.S -o $(T)e500crtsavg32gpr$(objext)
+
+$(T)e500crtsavg64gpr$(objext): e500crtsavg64gpr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsavg64gpr.S -o $(T)e500crtsavg64gpr$(objext)
+
+$(T)e500crtsavg64gprctr$(objext): e500crtsavg64gprctr.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c e500crtsavg64gprctr.S -o $(T)e500crtsavg64gprctr$(objext)
 
 # It is important that crtbegin.o, etc., aren't surprised by stuff in .sdata.
 CRTSTUFF_T_CFLAGS = -msdata=none

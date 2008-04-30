@@ -75,8 +75,7 @@
 #define STARTFILE_SPEC NETBSD_STARTFILE_SPEC
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "crtsavres%O%s %(netbsd_endfile_spec)"
+#define ENDFILE_SPEC "%(netbsd_endfile_spec)"
 
 #undef  LIB_SPEC
 #define LIB_SPEC NETBSD_LIB_SPEC

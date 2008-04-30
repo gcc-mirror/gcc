@@ -1,5 +1,21 @@
-EXTRA_PARTS += ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext) \
-  crtsavres$(objext)
+LIB2ADD_ST += crtsavfpr.S crtresfpr.S \
+  crtsavgpr.S crtresgpr.S \
+  crtresxfpr.S crtresxgpr.S \
+  e500crtres32gpr.S \
+  e500crtres64gpr.S \
+  e500crtres64gprctr.S \
+  e500crtrest32gpr.S \
+  e500crtrest64gpr.S \
+  e500crtresx32gpr.S \
+  e500crtresx64gpr.S \
+  e500crtsav32gpr.S \
+  e500crtsav64gpr.S \
+  e500crtsav64gprctr.S \
+  e500crtsavg32gpr.S \
+  e500crtsavg64gpr.S \
+  e500crtsavg64gprctr.S
+
+EXTRA_PARTS += ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext)
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
@@ -17,8 +33,62 @@ ncrti.S: $(gcc_srcdir)/config/rs6000/sol-ci.asm
 ncrtn.S: $(gcc_srcdir)/config/rs6000/sol-cn.asm
 	cat $(gcc_srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
 
-crtsavres.S: $(gcc_srcdir)/config/rs6000/crtsavres.asm
-	cat $(gcc_srcdir)/config/rs6000/crtsavres.asm >crtsavres.S
+crtsavfpr.S: $(gcc_srcdir)/config/rs6000/crtsavfpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtsavfpr.asm >crtsavfpr.S
+
+crtresfpr.S: $(gcc_srcdir)/config/rs6000/crtresfpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtresfpr.asm >crtresfpr.S
+
+crtsavgpr.S: $(gcc_srcdir)/config/rs6000/crtsavgpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtsavgpr.asm >crtsavgpr.S
+
+crtresgpr.S: $(gcc_srcdir)/config/rs6000/crtresgpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtresgpr.asm >crtresgpr.S
+
+crtresxfpr.S: $(gcc_srcdir)/config/rs6000/crtresxfpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtresxfpr.asm >crtresxfpr.S
+
+crtresxgpr.S: $(gcc_srcdir)/config/rs6000/crtresxgpr.asm
+	cat $(gcc_srcdir)/config/rs6000/crtresxgpr.asm >crtresxgpr.S
+
+e500crtres32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtres32gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtres32gpr.asm >e500crtres32gpr.S
+
+e500crtres64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtres64gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtres64gpr.asm >e500crtres64gpr.S
+
+e500crtres64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtres64gprctr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtres64gprctr.asm >e500crtres64gprctr.S
+
+e500crtrest32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtrest32gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtrest32gpr.asm >e500crtrest32gpr.S
+
+e500crtrest64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtrest64gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtrest64gpr.asm >e500crtrest64gpr.S
+
+e500crtresx32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtresx32gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtresx32gpr.asm >e500crtresx32gpr.S
+
+e500crtresx64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtresx64gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtresx64gpr.asm >e500crtresx64gpr.S
+
+e500crtsav32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsav32gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsav32gpr.asm >e500crtsav32gpr.S
+
+e500crtsav64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsav64gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsav64gpr.asm >e500crtsav64gpr.S
+
+e500crtsav64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtsav64gprctr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsav64gprctr.asm >e500crtsav64gprctr.S
+
+e500crtsavg32gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg32gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsavg32gpr.asm >e500crtsavg32gpr.S
+
+e500crtsavg64gpr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gpr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsavg64gpr.asm >e500crtsavg64gpr.S
+
+e500crtsavg64gprctr.S: $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm
+	cat $(gcc_srcdir)/config/rs6000/e500crtsavg64gprctr.asm >e500crtsavg64gprctr.S
 
 ecrti$(objext): ecrti.S
 	$(crt_compile) -c ecrti.S
@@ -34,3 +104,60 @@ ncrtn$(objext): ncrtn.S
 
 crtsavres$(objext): crtsavres.S
 	$(crt_compile) -c crtsavres.S
+
+crtsavfpr$(objext): crtsavfpr.S
+	$(crt_compile) -c crtsavfpr.S
+
+crtresfpr$(objext): crtresfpr.S
+	$(crt_compile) -c crtresfpr.S
+
+crtsavgpr$(objext): crtsavgpr.S
+	$(crt_compile) -c crtsavgpr.S
+
+crtresgpr$(objext): crtresgpr.S
+	$(crt_compile) -c crtresgpr.S
+
+crtresxfpr$(objext): crtresxfpr.S
+	$(crt_compile) -c crtresxfpr.S
+
+crtresxgpr$(objext): crtresxgpr.S
+	$(crt_compile) -c crtresxgpr.S
+
+e500crtres32gpr$(objext): e500crtres32gpr.S
+	$(crt_compile) -c e500crtres32gpr.S
+
+e500crtres64gpr$(objext): e500crtres64gpr.S
+	$(crt_compile) -c e500crtres64gpr.S
+
+e500crtres64gprctr$(objext): e500crtres64gprctr.S
+	$(crt_compile) -c e500crtres64gprctr.S
+
+e500crtrest32gpr$(objext): e500crtrest32gpr.S
+	$(crt_compile) -c e500crtrest32gpr.S
+
+e500crtrest64gpr$(objext): e500crtrest64gpr.S
+	$(crt_compile) -c e500crtrest64gpr.S
+
+e500crtresx32gpr$(objext): e500crtresx32gpr.S
+	$(crt_compile) -c e500crtresx32gpr.S
+
+e500crtresx64gpr$(objext): e500crtresx64gpr.S
+	$(crt_compile) -c e500crtresx64gpr.S
+
+e500crtsav32gpr$(objext): e500crtsav32gpr.S
+	$(crt_compile) -c e500crtsav32gpr.S
+
+e500crtsav64gpr$(objext): e500crtsav64gpr.S
+	$(crt_compile) -c e500crtsav64gpr.S
+
+e500crtsav64gprctr$(objext): e500crtsav64gprctr.S
+	$(crt_compile) -c e500crtsav64gprctr.S
+
+e500crtsavg32gpr$(objext): e500crtsavg32gpr.S
+	$(crt_compile) -c e500crtsavg32gpr.S
+
+e500crtsavg64gpr$(objext): e500crtsavg64gpr.S
+	$(crt_compile) -c e500crtsavg64gpr.S
+
+e500crtsavg64gprctr$(objext): e500crtsavg64gprctr.S
+	$(crt_compile) -c e500crtsavg64gprctr.S
