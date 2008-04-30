@@ -1,3 +1,47 @@
+2008-04-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtin_type): Add
+	FLOAT128_FTYPE_FLOAT128_FLOAT128, V16QI_FTYPE_V16QI_V16QI,
+	V16QI_FTYPE_V8HI_V8HI, V8QI_FTYPE_V8QI_V8QI,
+	V8QI_FTYPE_V4HI_V4HI, V8HI_FTYPE_V8HI_V8HI,
+	V8HI_FTYPE_V16QI_V16QI, V8HI_FTYPE_V4SI_V4SI,
+	V4SI_FTYPE_V4SI_V4SI, V4SI_FTYPE_V8HI_V8HI,
+	V4SI_FTYPE_V4SF_V4SF, V4SI_FTYPE_V2DF_V2DF,
+	V4HI_FTYPE_V4HI_V4HI, V4HI_FTYPE_V8QI_V8QI,
+	V4HI_FTYPE_V2SI_V2SI, V4SF_FTYPE_V4SF_V4SF,
+	V4SF_FTYPE_V4SF_V4SF_SWAP, V4SF_FTYPE_V4SF_V2SI,
+	V4SF_FTYPE_V4SF_V2DF, V4SF_FTYPE_V4SF_DI,
+	V4SF_FTYPE_V4SF_SI, V2DI_FTYPE_V2DI_V2DI,
+	V2DI_FTYPE_V16QI_V16QI, V2DI_FTYPE_V4SI_V4SI,
+	V2DI_FTYPE_V2DF_V2DF, V2SI_FTYPE_V2SI_V2SI,
+	V2SI_FTYPE_V4HI_V4HI, V2SI_FTYPE_V2SF_V2SF,
+	V2DF_FTYPE_V2DF_V2DF, V2DF_FTYPE_V2DF_V2DF_SWAP,
+	V2DF_FTYPE_V2DF_V4SF, V2DF_FTYPE_V2DF_DI,
+	V2DF_FTYPE_V2DF_SI, V2SF_FTYPE_V2SF_V2SF,
+	V1DI_FTYPE_V1DI_V1DI, V1DI_FTYPE_V8QI_V8QI and
+	V1DI_FTYPE_V2SI_V2SI.
+	(bdesc_2arg): Moved to ...
+	(bdesc_args): Here.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_args_builtin): Updated.  Take a pointer
+	to const struct builtin_description.  Handle comparison
+	builtin functions.
+	(ix86_expand_sse_compare): Take a new argument for swapping
+	operands.
+	(ix86_expand_builtin): Updated.
+
+	* config/i386/sse.md (ssse3_pmaddubswv8hi3): Renamed to ...
+	(ssse3_pmaddubsw128): This.
+	(ssse3_pmaddubswv4hi3): Renamed to ...
+	(ssse3_pmaddubsw): This.
+
+	* doc/extend.texi (__builtin_ia32_packsswb128): Correct
+	prototype.
+	(__builtin_ia32_packssdw128): Likewise.
+	)__builtin_ia32_packuswb128): Likewise.
+	(__builtin_ia32_pmaddubsw): Likewise.
+	(__builtin_ia32_pmaddubsw128): Likewise.
+
 2008-04-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14847
