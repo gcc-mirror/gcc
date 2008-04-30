@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "xtensa-config.h"
 
 /* Standard GCC variables that we reference.  */
-extern int cfun->calls_alloca;
 extern int optimize;
 
 /* External variables defined in xtensa.c.  */

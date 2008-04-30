@@ -1175,7 +1175,7 @@ frv_stack_info (void)
 		  || (crtl->calls_eh_return
 		      && (regno >= FIRST_EH_REGNUM && regno <= LAST_EH_REGNUM))
 		  || (!TARGET_FDPIC && flag_pic
-		      && cfun->uses_pic_offset_table && regno == PIC_REGNO))
+		      && crtl->uses_pic_offset_table && regno == PIC_REGNO))
 		{
 		  info_ptr->save_p[regno] = REG_SAVE_1WORD;
 		  size_1word += UNITS_PER_WORD;
@@ -1195,7 +1195,7 @@ frv_stack_info (void)
 	      || cfun->machine->frame_needed
               || (TARGET_LINKED_FP && frame_pointer_needed)
               || (!TARGET_FDPIC && flag_pic
-		  && cfun->uses_pic_offset_table))
+		  && crtl->uses_pic_offset_table))
 	    {
 	      info_ptr->save_p[LR_REGNO] = REG_SAVE_1WORD;
 	      size_1word += UNITS_PER_WORD;
@@ -1864,7 +1864,7 @@ frv_expand_prologue (void)
     emit_insn (gen_blockage ());
 
   /* Set up pic register/small data register for this function.  */
-  if (!TARGET_FDPIC && flag_pic && cfun->uses_pic_offset_table)
+  if (!TARGET_FDPIC && flag_pic && crtl->uses_pic_offset_table)
     emit_insn (gen_pic_prologue (gen_rtx_REG (Pmode, PIC_REGNO),
 				 gen_rtx_REG (Pmode, LR_REGNO),
 				 gen_rtx_REG (SImode, OFFSET_REGNO)));
@@ -2110,7 +2110,7 @@ frv_frame_pointer_required (void)
   if (!current_function_sp_is_unchanging)
     return TRUE;
 
-  if (!TARGET_FDPIC && flag_pic && cfun->uses_pic_offset_table)
+  if (!TARGET_FDPIC && flag_pic && crtl->uses_pic_offset_table)
     return TRUE;
 
   if (profile_flag)
@@ -3799,7 +3799,7 @@ frv_expand_fdpic_call (rtx *operands, bool ret_value, bool sibcall)
 	x = gen_symGOTOFF2reg (dest, addr, OUR_FDPIC_REG,
 			       GEN_INT (R_FRV_FUNCDESC_GOTOFF12));
       emit_insn (x);
-      cfun->uses_pic_offset_table = TRUE;
+      crtl->uses_pic_offset_table = TRUE;
       addr = dest;
     }
   else if (GET_CODE (addr) == SYMBOL_REF)
@@ -4160,7 +4160,7 @@ frv_emit_movsi (rtx dest, rtx src)
 					   gen_rtx_REG (Pmode, base_regno),
 					   GEN_INT (R_FRV_GPREL12)));
       if (base_regno == PIC_REGNO)
-	cfun->uses_pic_offset_table = TRUE;
+	crtl->uses_pic_offset_table = TRUE;
       return TRUE;
     }
 
@@ -4204,7 +4204,7 @@ frv_emit_movsi (rtx dest, rtx src)
 	  break;
 	}
       emit_insn (x);
-      cfun->uses_pic_offset_table = TRUE;
+      crtl->uses_pic_offset_table = TRUE;
       return TRUE;
     }
 

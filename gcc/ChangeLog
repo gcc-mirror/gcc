@@ -1,3 +1,24 @@
+2008-04-30  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/arm/arm.c (arm_unwind_emit): Use
+	crtl->all_throwers_are_sibcalls instead of
+	cfun->all_throwers_are_sibcalls.
+	(arm_output_fn_unwind): Likewise.
+	* config/frv/frv.c (frv_stack_info): Use crtl->uses_pic_offset_table
+	instead of cfun->uses_pic_offset_table.
+	(frv_expand_prologue): Likewise.
+	(frv_frame_pointer_required): Likewise.
+	(frv_expand_fdpic_call): Likewise.
+	(frv_emit_movsi): Likewise.
+	* config/iq2000/iq2000.c (iq2000_expand_prologue): Use
+	cfun->returns_pcc_struct instead of
+	current_function_returns_pcc_struct.
+	* config/m32c/m32c.c (need_to_save): Use crtl->calls_eh_return
+	instead of cfun->calls_eh_return.
+	(m32c_pushm_popm): Likewise.
+	* config/xtensa/xtensa.h (cfun->calls_alloca): Remove bogus
+	"extern" declaration.
+
 2008-04-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/21636
