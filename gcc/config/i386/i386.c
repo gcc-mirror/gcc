@@ -18062,6 +18062,7 @@ enum ix86_builtin_type
   V2DI_FTYPE_V2DI_V2DI_COUNT,
   V2DI_FTYPE_V16QI_V16QI,
   V2DI_FTYPE_V4SI_V4SI,
+  V2DI_FTYPE_V2DI_V16QI,
   V2DI_FTYPE_V2DF_V2DF,
   V2DI_FTYPE_V2DI_SI_COUNT,
   V2SI_FTYPE_V2SI_V2SI,
@@ -18097,6 +18098,8 @@ enum ix86_builtin_type
   V2DI_FTYPE_V2DI_V2DI_INT,
   V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT,
   V2DF_FTYPE_V2DF_V2DF_INT,
+  V2DI_FTYPE_V2DI_UINT_UINT,
+  V2DI_FTYPE_V2DI_V2DI_UINT_UINT,
   DI_FTYPE_DI_DI_INT
 };
 
@@ -18543,6 +18546,12 @@ static const struct builtin_description bdesc_args[] =
 
   /* SSE4.2 */
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_gtv2di3, "__builtin_ia32_pcmpgtq", IX86_BUILTIN_PCMPGTQ, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
+
+  /* SSE4A */
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_extrqi, "__builtin_ia32_extrqi", IX86_BUILTIN_EXTRQI, UNKNOWN, (int) V2DI_FTYPE_V2DI_UINT_UINT },
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_extrq, "__builtin_ia32_extrq", IX86_BUILTIN_EXTRQ, UNKNOWN, (int) V2DI_FTYPE_V2DI_V16QI },
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_insertqi, "__builtin_ia32_insertqi", IX86_BUILTIN_INSERTQI, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_UINT_UINT },
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_insertq, "__builtin_ia32_insertq", IX86_BUILTIN_INSERTQ, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
 
   /* AES */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_aeskeygenassist, 0, IX86_BUILTIN_AESKEYGENASSIST128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT },
@@ -19566,6 +19575,9 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DI_FTYPE_V4SI_V4SI:
 	  type = v2di_ftype_v4si_v4si;
 	  break;
+	case V2DI_FTYPE_V2DI_V16QI:
+	  type = v2di_ftype_v2di_v16qi;
+	  break;
 	case V2DI_FTYPE_V2DF_V2DF:
 	  type = v2di_ftype_v2df_v2df;
 	  break;
@@ -19660,6 +19672,12 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V2DF_FTYPE_V2DF_V2DF_INT:
 	  type = v2df_ftype_v2df_v2df_int;
+	  break;
+	case V2DI_FTYPE_V2DI_UINT_UINT:
+	  type = v2di_ftype_v2di_unsigned_unsigned;
+	  break;
+	case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
+	  type = v2di_ftype_v2di_v2di_unsigned_unsigned;
 	  break;
 	case DI_FTYPE_DI_DI_INT:
 	  type = di_ftype_di_di_int;
@@ -19812,10 +19830,6 @@ ix86_init_mmx_sse_builtins (void)
   /* AMDFAM10 SSE4A New built-ins  */
   def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntsd", void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
   def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntss", void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTSS);
-  def_builtin_const (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_extrqi", v2di_ftype_v2di_unsigned_unsigned, IX86_BUILTIN_EXTRQI);
-  def_builtin_const (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_extrq", v2di_ftype_v2di_v16qi,  IX86_BUILTIN_EXTRQ);
-  def_builtin_const (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_insertqi", v2di_ftype_v2di_v2di_unsigned_unsigned, IX86_BUILTIN_INSERTQI);
-  def_builtin_const (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_insertq", v2di_ftype_v2di_v2di, IX86_BUILTIN_INSERTQ);
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V2SI_type_node, integer_type_node,
@@ -20414,13 +20428,14 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 {
   rtx pat, real_target;
   unsigned int i, nargs;
+  unsigned int nargs_constant = 0;
   int num_memory = 0;
   struct
     {
       rtx op;
       enum machine_mode mode;
-    } args[3];
-  bool last_arg_constant = false, last_arg_count = false;
+    } args[4];
+  bool last_arg_count = false;
   enum insn_code icode = d->icode;
   const struct insn_data *insn_p = &insn_data[icode];
   enum machine_mode tmode = insn_p->operand[0].mode;
@@ -20492,6 +20507,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V2DI_V2DI:
     case V2DI_FTYPE_V16QI_V16QI:
     case V2DI_FTYPE_V4SI_V4SI:
+    case V2DI_FTYPE_V2DI_V16QI:
     case V2DI_FTYPE_V2DF_V2DF:
     case V2SI_FTYPE_V2SI_V2SI:
     case V2SI_FTYPE_V4HI_V4HI:
@@ -20532,7 +20548,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI2TI_FTYPE_V2DI2TI_INT:
       nargs = 2;
       convert = ti;
-      last_arg_constant = true;
+      nargs_constant = 1;
       break;
     case V8HI_FTYPE_V8HI_INT:
     case V4SI_FTYPE_V4SI_INT:
@@ -20541,7 +20557,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V2DI_INT:
     case V2DF_FTYPE_V2DF_INT:
       nargs = 2;
-      last_arg_constant = true;
+      nargs_constant = 1;
       break;
     case V16QI_FTYPE_V16QI_V16QI_V16QI:
     case V4SF_FTYPE_V4SF_V4SF_V4SF:
@@ -20555,16 +20571,24 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V2DI_V2DI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT:
       nargs = 3;
-      last_arg_constant = true;
+      nargs_constant = 1;
       break;
     case V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT:
       nargs = 3;
       convert = ti;
-      last_arg_constant = true;
+      nargs_constant = 1;
+      break;
+    case V2DI_FTYPE_V2DI_UINT_UINT:
+      nargs = 3;
+      nargs_constant = 2;
+      break;
+    case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
+      nargs = 4;
+      nargs_constant = 2;
       break;
     case DI_FTYPE_DI_DI_INT:
       nargs = 3;
-      last_arg_constant = true;
+      nargs_constant = 1;
       break;
     default:
       gcc_unreachable ();
@@ -20623,7 +20647,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 		op = copy_to_reg (op);
 	    }
 	}
-      else if (last_arg_constant && (i + 1) == nargs)
+      else if ((nargs - i) <= nargs_constant)
 	{
 	  if (!match)
 	    switch (icode)
@@ -20641,7 +20665,20 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 		return const0_rtx;
 
 	     default:
-		error ("the last argument must be an 8-bit immediate");
+		switch (nargs_constant)
+		  {
+		  case 2:
+		    if ((nargs - i) == nargs_constant)
+		      {
+			error ("the next to last argument must be an 8-bit immediate");
+			break;
+		      }
+		  case 1:
+		    error ("the last argument must be an 8-bit immediate");
+		    break;
+		  default:
+		    gcc_unreachable ();
+		  }
 		return const0_rtx;
 	      }
 	}
@@ -20688,6 +20725,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case 3:
       pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
 			     args[2].op);
+      break;
+    case 4:
+      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
+			     args[2].op, args[3].op);
       break;
     default:
       gcc_unreachable ();
@@ -21133,9 +21174,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree arg0, arg1, arg2, arg3;
-  rtx op0, op1, op2, op3, pat;
-  enum machine_mode tmode, mode0, mode1, mode2, mode3, mode4;
+  tree arg0, arg1, arg2;
+  rtx op0, op1, op2, pat;
+  enum machine_mode tmode, mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   switch (fcode)
@@ -21344,108 +21385,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_MOVNTSS:
       return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv4sf, exp);
-
-    case IX86_BUILTIN_INSERTQ:
-    case IX86_BUILTIN_EXTRQ:
-      icode = (fcode == IX86_BUILTIN_EXTRQ
-               ? CODE_FOR_sse4a_extrq
-               : CODE_FOR_sse4a_insertq);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode2 = insn_data[icode].operand[2].mode;
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-        op0 = copy_to_mode_reg (mode1, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
-        op1 = copy_to_mode_reg (mode2, op1);
-      if (optimize || target == 0
-          || GET_MODE (target) != tmode
-          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-        return NULL_RTX;
-      emit_insn (pat);
-      return target;
-
-    case IX86_BUILTIN_EXTRQI:
-      icode = CODE_FOR_sse4a_extrqi;
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode2 = insn_data[icode].operand[2].mode;
-      mode3 = insn_data[icode].operand[3].mode;
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-        op0 = copy_to_mode_reg (mode1, op0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
-        {
-          error ("index mask must be an immediate");
-          return gen_reg_rtx (tmode);
-        }
-      if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
-        {
-          error ("length mask must be an immediate");
-          return gen_reg_rtx (tmode);
-        }
-      if (optimize || target == 0
-          || GET_MODE (target) != tmode
-          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1, op2);
-      if (! pat)
-        return NULL_RTX;
-      emit_insn (pat);
-      return target;
-
-    case IX86_BUILTIN_INSERTQI:
-      icode = CODE_FOR_sse4a_insertqi;
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      arg3 = CALL_EXPR_ARG (exp, 3);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      op3 = expand_normal (arg3);
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode2 = insn_data[icode].operand[2].mode;
-      mode3 = insn_data[icode].operand[3].mode;
-      mode4 = insn_data[icode].operand[4].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-        op0 = copy_to_mode_reg (mode1, op0);
-
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
-        op1 = copy_to_mode_reg (mode2, op1);
-
-      if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
-        {
-          error ("index mask must be an immediate");
-          return gen_reg_rtx (tmode);
-        }
-      if (! (*insn_data[icode].operand[4].predicate) (op3, mode4))
-        {
-          error ("length mask must be an immediate");
-          return gen_reg_rtx (tmode);
-        }
-      if (optimize || target == 0
-          || GET_MODE (target) != tmode
-          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-        target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
-      if (! pat)
-        return NULL_RTX;
-      emit_insn (pat);
-      return target;
 
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:

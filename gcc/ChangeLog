@@ -1,6 +1,16 @@
 2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtin_type): Add
+	V2DI_FTYPE_V2DI_V16QI, V2DI_FTYPE_V2DI_UINT_UINT and
+	V2DI_FTYPE_V2DI_V2DI_UINT_UINT.
+	(bdesc_args): Add SSE4a builtins.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_args_builtin): Likewise.
+	(ix86_expand_builtin): Likewise.
+
+2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtin_type): Add
 	V8HI_FTYPE_V8HI_V8HI_COUNT, V8HI_FTYPE_V8HI_SI_COUNT,
 	V4SI_FTYPE_V4SI_V4SI_COUNT, V4SI_FTYPE_V4SI_SI_COUNT,
 	V4HI_FTYPE_V4HI_V4HI_COUNT, V4HI_FTYPE_V4HI_SI_COUNT,
