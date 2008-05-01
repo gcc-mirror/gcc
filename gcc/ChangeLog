@@ -1,3 +1,14 @@
+2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36095
+	* config/i386/i386.c (bdesc_crc32): Remove OPTION_MASK_ISA_64BIT
+	from IX86_BUILTIN_CRC32QI.  Add OPTION_MASK_ISA_64BIT to
+	IX86_BUILTIN_CRC32DI.
+	(ix86_init_mmx_sse_builtins): Add OPTION_MASK_ISA_64BIT to
+	IX86_BUILTIN_CRC32DI.
+
+	* doc/extend.texi: Correct __builtin_ia32_crc32di.
+
 2008-04-30  Ian Lance Taylor  <iant@google.com>
 
 	Backport from mainline:

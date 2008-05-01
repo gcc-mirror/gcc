@@ -7940,7 +7940,7 @@ Generates the @code{crc32b} machine instruction.
 Generates the @code{crc32w} machine instruction.
 @item unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)
 Generates the @code{crc32l} machine instruction.
-@item unsigned long long __builtin_ia32_crc32di (unsigned int, unsigned long long)
+@item unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)
 @end table
 
 The following built-in functions are changed to generate new SSE4.2

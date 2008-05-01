@@ -17866,10 +17866,10 @@ static const struct builtin_description bdesc_pcmpistr[] =
 static const struct builtin_description bdesc_crc32[] =
 {
   /* SSE4.2 */
-  { OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_64BIT, CODE_FOR_sse4_2_crc32qi, 0, IX86_BUILTIN_CRC32QI, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32qi, 0, IX86_BUILTIN_CRC32QI, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32hi, 0, IX86_BUILTIN_CRC32HI, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32si, 0, IX86_BUILTIN_CRC32SI, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32di, 0, IX86_BUILTIN_CRC32DI, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_64BIT, CODE_FOR_sse4_2_crc32di, 0, IX86_BUILTIN_CRC32DI, UNKNOWN, 0 },
 };
 
 /* SSE builtins with 3 arguments and the last argument must be an immediate or xmm0.  */
@@ -19504,7 +19504,7 @@ ix86_init_mmx_sse_builtins (void)
 				    long_long_unsigned_type_node,
 				    long_long_unsigned_type_node,
 				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32di", ftype, IX86_BUILTIN_CRC32DI);
+  def_builtin_const (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_64BIT, "__builtin_ia32_crc32di", ftype, IX86_BUILTIN_CRC32DI);
 
   /* AMDFAM10 SSE4A New built-ins  */
   def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntsd", void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
