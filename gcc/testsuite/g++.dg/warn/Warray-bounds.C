@@ -17,6 +17,7 @@ int* f(void) {
     struct {
        int c[10];
     } c;
+    int p[0], q[1], r[2], s[3], t[4];
 
     a[-1] = 0;             /* { dg-warning "array subscript" } */
     a[ 0] = 0;
@@ -57,12 +58,11 @@ int* f(void) {
     g(&a[9]);
     g(&a[10]);
     g(&a[11]);             /* { dg-warning "array subscript" } */
-    g(&a[-30]+10);             /* { dg-warning "array subscript" } */
-    g(&a[-30]+30);
+    g(&a[-30]+10);         /* { dg-warning "array subscript" } */
+    g(&a[-30]+30);         /* { dg-warning "array subscript" } */
 
     g(&b[10]);
     g(&c.c[10]);
-    g(&a[11]);             /* { dg-warning "array subscript" } */
     g(&b[11]);             /* { dg-warning "array subscript" } */
     g(&c.c[11]);           /* { dg-warning "array subscript" } */
 
@@ -79,13 +79,45 @@ int* f(void) {
     h(sizeof c.c[-1]);
     h(sizeof c.c[10]);
 
+    p[-1] = 0;             /* { dg-warning "array subscript" } */
+    p[0] = 0;
+    p[1] = 0;
+
+    q[-1] = 0;             /* { dg-warning "array subscript" } */
+    q[0] = 0;
+    q[1] = 0;
+    q[2] = 0;
+
+    r[-1] = 0;             /* { dg-warning "array subscript" } */
+    r[0] = 0;
+    r[1] = 0;
+    r[2] = 0;
+    r[3] = 0;              /* { dg-warning "array subscript" } */
+
+    s[-1] = 0;             /* { dg-warning "array subscript" } */
+    s[0] = 0;
+    s[1] = 0;
+    s[2] = 0;
+    s[3] = 0;
+    s[4] = 0;              /* { dg-warning "array subscript" } */
+
+    t[-1] = 0;             /* { dg-warning "array subscript" } */
+    t[0] = 0;
+    t[1] = 0;
+    t[2] = 0;
+    t[3] = 0;
+    t[4] = 0;
+    t[5] = 0;              /* { dg-warning "array subscript" } */
+
     if (10 < 10)
        a[10] = 0;
     if (10 < 10)
        b[10] = 0;
     if (-1 >= 0)
-       c.c[-1] = 0;
+       c.c[-1] = 0;        /* { dg-warning "array subscript" } */
+
+    for (i = 20; i < 30; ++i)
+             a[i] = 1;       /* { dg-warning "array subscript" } */
 
     return a;
 }
-

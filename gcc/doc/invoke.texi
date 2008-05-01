@@ -2679,7 +2679,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @option{-Wall} turns on the following warning flags:
 
 @gccoptlist{-Waddress   @gol
--Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-bounds @r{(some checks, but more complete with} @option{-O2}@r{)}  @gol
 -Wc++0x-compat  @gol
 -Wchar-subscripts  @gol
 -Wimplicit-int  @gol
@@ -3382,9 +3382,10 @@ false positives.
 @item -Warray-bounds
 @opindex Wno-array-bounds
 @opindex Warray-bounds
-This option is only active when @option{-ftree-vrp} is active
-(default for -O2 and above). It warns about subscripts to arrays
-that are always out of bounds. This warning is enabled by @option{-Wall}.
+This option detects some cases of out-of-bounds accesses in unoptimized
+compilations.  More cases are detected when @option{-ftree-vrp} is enabled.
+(The @option{-ftree-vrp} option is enabled automatically when compiling with
+@option{-O2} or higher optimization options.)
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero

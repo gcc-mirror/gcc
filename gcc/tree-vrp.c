@@ -4645,8 +4645,8 @@ check_array_ref (tree ref, location_t* locus, bool ignore_off_by_one)
           && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (ref))) == NULL_TREE)
       /* Accesses after the end of arrays of size 0 (gcc
          extension) and 1 are likely intentional ("struct
-         hack").  */
-      || compare_tree_int (up_bound, 1) <= 0)
+         hack").  Note that up_bound is array dimension - 1.  */
+      || compare_tree_int (up_bound, 1) < 0)
     return;
 
   low_bound = array_ref_low_bound (ref);

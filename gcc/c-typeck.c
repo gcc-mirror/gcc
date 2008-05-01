@@ -2086,7 +2086,12 @@ build_array_ref (tree array, tree index)
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
-      tree rval, type;
+      tree rval, type, ref;
+      bool has_warned_on_bounds_check = false;
+
+      /* Warn about any obvious array bounds errors for fixed size arrays that
+         are indexed by a constant.  */
+      has_warned_on_bounds_check = warn_array_subscript_range (array, index);
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
@@ -2139,7 +2144,12 @@ build_array_ref (tree array, tree index)
 	       in an inline function.
 	       Hope it doesn't break something else.  */
 	    | TREE_THIS_VOLATILE (array));
-      return require_complete_type (fold (rval));
+      ref = require_complete_type (fold (rval));
+
+      /* Suppress bounds warning in tree-vrp.c if already warned here.  */
+      if (has_warned_on_bounds_check)
+        TREE_NO_WARNING (ref) = 1;
+      return ref;
     }
   else
     {
