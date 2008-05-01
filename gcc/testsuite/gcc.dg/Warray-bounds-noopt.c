@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Warray-bounds" } */
+/* { dg-options "-O0 -Warray-bounds" } */
 
 int a[10];
 
@@ -25,34 +25,34 @@ int* f(void) {
 
 
     a[ 9] = 0;
-    a[10] = 0;             /* { dg-warning "array subscript" } */
+    a[10] = 0;
     a[11] = 0;             /* { dg-warning "array subscript" } */
-    a[2 * n() - 11] = 0;    /* { dg-warning "array subscript" } */
+    a[2 * n() - 11] = 0;
     a[2 * n() - 10] = 0;
     a[2 * n() -  1] = 0;
-    a[2 * n() -  0] = 0;    /* { dg-warning "array subscript" } */
+    a[2 * n() -  0] = 0;
 
     b[-1] = 0;             /* { dg-warning "array subscript" } */
     b[ 0] = 0;
     b[ 1] = 0;
     b[ 9] = 0;
-    b[10] = 0;             /* { dg-warning "array subscript" } */
+    b[10] = 0;
     b[11] = 0;             /* { dg-warning "array subscript" } */
-    b[2 * n() - 11] = 0;    /* { dg-warning "array subscript" } */
+    b[2 * n() - 11] = 0;
     b[2 * n() - 10] = 0;
     b[2 * n() -  1] = 0;
-    b[2 * n() -  0] = 0;    /* { dg-warning "array subscript" } */
+    b[2 * n() -  0] = 0;
 
     c.c[-1] = 0;           /* { dg-warning "array subscript" } */
     c.c[ 0] = 0;
     c.c[ 1] = 0;
     c.c[ 9] = 0;
-    c.c[10] = 0;           /* { dg-warning "array subscript" } */
+    c.c[10] = 0;
     c.c[11] = 0;           /* { dg-warning "array subscript" } */
-    c.c[2 * n() - 11] = 0;  /* { dg-warning "array subscript" } */
+    c.c[2 * n() - 11] = 0;
     c.c[2 * n() - 10] = 0;
     c.c[2 * n() -  1] = 0;
-    c.c[2 * n() -  0] = 0;  /* { dg-warning "array subscript" } */
+    c.c[2 * n() -  0] = 0;
 
     g(&a[8]);
     g(&a[9]);
@@ -117,7 +117,7 @@ int* f(void) {
        c.c[-1] = 0;        /* { dg-warning "array subscript" } */
 
     for (i = 20; i < 30; ++i)
-             a[i] = 1;       /* { dg-warning "array subscript" } */
+             a[i] = 1;
 
     return a;
 }

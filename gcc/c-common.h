@@ -893,6 +893,7 @@ extern int complete_array_type (tree *, tree, bool);
 extern tree builtin_type_for_size (int, bool);
 
 extern void warn_array_subscript_with_type_char (tree);
+extern bool warn_array_subscript_range (const_tree, const_tree);
 extern void warn_about_parentheses (enum tree_code, enum tree_code,
 				    enum tree_code);
 extern void warn_for_unused_label (tree label);

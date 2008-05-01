@@ -1,3 +1,11 @@
+2008-05-01  Simon Baldwin <simonb@google.com>
+
+	* c-common.h (warn_array_subscript_range): New function.
+	* c-common.c (warn_array_subscript_range): Ditto.
+	* tree-vrp.c (check_array_ref): Corrected code to agree with
+	comment, ignoring only arrays of size 0 or size 1.
+	* c-typeck.c (build_array_ref): Call warn_array_subscript_range.
+
 2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtin_type): Replace

@@ -1,3 +1,11 @@
+2008-05-01  Simon Baldwin <simonb@google.com>
+
+	* testsuite/gcc.dg/Warray-bounds.c: Updated for frontend warnings,
+	additional tests for arrays of size 0 and size 1.
+	* testsuite/g++.dg/warn/Warray-bounds.c: Ditto.
+	* testsuite/gcc.dg/Warray-bounds-noopt.c: New testcase.
+	* testsuite/g++.dg/warn/Warray-bounds-noopt.c: Ditto.
+
 2008-05-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36093

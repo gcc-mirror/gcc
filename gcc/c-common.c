@@ -7452,6 +7452,60 @@ warn_array_subscript_with_type_char (tree index)
     warning (OPT_Wchar_subscripts, "array subscript has type %<char%>");
 }
 
+/* Warn about obvious array bounds errors for fixed size arrays that
+   are indexed by a constant.  This is a subset of similar checks in
+   tree-vrp.c; by doing this here we can get some level of checking
+   from non-optimized, non-vrp compilation.  Returns true if a warning
+   is issued.  */
+
+bool
+warn_array_subscript_range (const_tree array, const_tree index)
+{
+  if (skip_evaluation == 0
+      && TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE
+      && TYPE_DOMAIN (TREE_TYPE (array)) && TREE_CODE (index) == INTEGER_CST)
+    {
+      const_tree max_index;
+
+      max_index = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (array)));
+      if (max_index && TREE_CODE (max_index) == INTEGER_CST
+          && tree_int_cst_lt (max_index, index)
+          && !tree_int_cst_equal (index, max_index)
+          /* Always allow off-by-one.  */
+          && !tree_int_cst_equal (int_const_binop (PLUS_EXPR,
+                                                   max_index,
+                                                   integer_one_node,
+                                                   0),
+                                  index)
+          /* Accesses after the end of arrays of size 0 (gcc
+             extension) and 1 are likely intentional ("struct
+             hack").  Note that max_index is array dimension - 1.  */
+          && compare_tree_int (max_index, 1) >= 0)
+        {
+          warning (OPT_Warray_bounds,
+                   "array subscript is above array bounds");
+          return true;
+        }
+      else
+        {
+          const_tree min_index;
+
+          min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (array)));
+          if (min_index && TREE_CODE (min_index) == INTEGER_CST
+              && tree_int_cst_lt (index, min_index))
+            {
+              warning (OPT_Warray_bounds,
+                       compare_tree_int (min_index, 0) == 0
+                           ? "array subscript is negative"
+                           : "array subscript is below array bounds");
+              return true;
+            }
+        }
+    }
+
+  return false;
+}
+
 /* Implement -Wparentheses for the unexpected C precedence rules, to
    cover cases like x + y << z which readers are likely to
    misinterpret.  We have seen an expression in which CODE is a binary
