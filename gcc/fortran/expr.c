@@ -1701,17 +1701,33 @@ scalarize_intrinsic_call (gfc_expr *e)
   gfc_actual_arglist *a, *b;
   gfc_constructor *args[5], *ctor, *new_ctor;
   gfc_expr *expr, *old;
-  int n, i, rank[5];
+  int n, i, rank[5], array_arg;
+
+  /* Find which, if any, arguments are arrays.  Assume that the old
+     expression carries the type information and that the first arg
+     that is an array expression carries all the shape information.*/
+  n = array_arg = 0;
+  a = e->value.function.actual;
+  for (; a; a = a->next)
+    {
+      n++;
+      if (a->expr->expr_type != EXPR_ARRAY)
+	continue;
+      array_arg = n;
+      expr = gfc_copy_expr (a->expr);
+      break;
+    }
+
+  if (!array_arg)
+    return FAILURE;
 
   old = gfc_copy_expr (e);
 
-/* Assume that the old expression carries the type information and
-   that the first arg carries all the shape information.  */
-  expr = gfc_copy_expr (old->value.function.actual->expr);
   gfc_free_constructor (expr->value.constructor);
   expr->value.constructor = NULL;
 
   expr->ts = old->ts;
+  expr->where = old->where;
   expr->expr_type = EXPR_ARRAY;
 
   /* Copy the array argument constructors into an array, with nulls
@@ -1744,14 +1760,11 @@ scalarize_intrinsic_call (gfc_expr *e)
       n++;
     }
 
-  for (i = 1; i < n; i++)
-    if (rank[i] && rank[i] != rank[0])
-      goto compliance;
 
-  /* Using the first argument as the master, step through the array
+  /* Using the array argument as the master, step through the array
      calling the function for each element and advancing the array
      constructors together.  */
-  ctor = args[0];
+  ctor = args[array_arg - 1];
   new_ctor = NULL;
   for (; ctor; ctor = ctor->next)
     {
@@ -1785,17 +1798,18 @@ scalarize_intrinsic_call (gfc_expr *e)
 	      b = b->next;
 	    }
 
-	  /* Simplify the function calls.  */
-	  if (gfc_simplify_expr (new_ctor->expr, 0) == FAILURE)
-	    goto cleanup;
+	  /* Simplify the function calls.  If the simplification fails, the
+	     error will be flagged up down-stream or the library will deal
+	     with it.  */
+	  gfc_simplify_expr (new_ctor->expr, 0);
 
 	  for (i = 0; i < n; i++)
 	    if (args[i])
 	      args[i] = args[i]->next;
 
 	  for (i = 1; i < n; i++)
-	    if (rank[i] && ((args[i] != NULL && args[0] == NULL)
-			 || (args[i] == NULL && args[0] != NULL)))
+	    if (rank[i] && ((args[i] != NULL && args[array_arg - 1] == NULL)
+			 || (args[i] == NULL && args[array_arg - 1] != NULL)))
 	      goto compliance;
     }
 
@@ -2186,11 +2200,8 @@ check_init_expr (gfc_expr *e)
 	     array argument.  */
 	  isym = gfc_find_function (e->symtree->n.sym->name);
 	  if (isym && isym->elemental
-	      && e->value.function.actual->expr->expr_type == EXPR_ARRAY)
-	    {
-		if ((t = scalarize_intrinsic_call (e)) == SUCCESS)
-		break;
-	    }
+		&& (t = scalarize_intrinsic_call (e)) == SUCCESS)
+	    break;
 	}
 
       if (m == MATCH_YES)

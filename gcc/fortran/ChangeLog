@@ -1,3 +1,16 @@
+2008-05-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35864
+	* expr.c (scalarize_intrinsic_call): Reorder identification of
+	array argument so that if one is not found a segfault does not
+	occur.  Return FAILURE if all scalar arguments.
+
+	PR fortran/35780
+	* expr.c (scalarize_intrinsic_call): Identify which argument is
+	an array and use that as the template.
+	(check_init_expr): Remove tests that first argument is an array
+	in the call to scalarize_intrinsic_call.
+
 2008-04-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
