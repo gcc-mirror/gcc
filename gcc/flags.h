@@ -322,6 +322,9 @@ extern bool flag_instrument_functions_exclude_p (tree fndecl);
 #define TYPE_OVERFLOW_TRAPS(TYPE) \
   (!TYPE_UNSIGNED (TYPE) && flag_trapv)
 
+/* True if pointer types have undefined overflow.  */
+#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
+
 /* Names for the different levels of -Wstrict-overflow=N.  The numeric
    values here correspond to N.  */
 

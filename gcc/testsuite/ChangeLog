@@ -1,3 +1,20 @@
+2008-04-30  Ian Lance Taylor  <iant@google.com>
+
+	Backport from mainline:
+	2008-04-22  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.c-torture/compile/20080419-1.c: New test.
+
+	2008-04-18  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/tree-ssa/forwprop-3.c: Use -O2 rather than -O.
+
+	2008-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/strict-overflow-6.c: New.
+	* gcc.dg/no-strict-overflow-7.c: New.
+	* gcc.dg/Wstrict-overflow-22.c: New.
+
 2008-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35986

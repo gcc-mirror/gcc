@@ -1,3 +1,31 @@
+2008-04-30  Ian Lance Taylor  <iant@google.com>
+
+	Backport from mainline:
+	2008-04-22  Ian Lance Taylor  <iant@google.com>
+
+	* fold-const.c (pointer_may_wrap_p): Call int_size_in_bytes rather
+	than size_in_bytes.
+
+	2008-04-18  Ian Lance Taylor  <iant@google.com>
+
+	* fold-const.c (pointer_may_wrap_p): New static function.
+	(fold_comparison): Add another test for pointer overflow.  Use
+	pointer_may_wrap_p to disable some false positives.
+
+	2008-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* fold-const.c (fold_overflow_warning): Remove assertion.
+
+	2008-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* flags.h (POINTER_TYPE_OVERFLOW_UNDEFINED): Define.
+	* fold-const.c (fold_comparison): If appropriate, test
+	POINTER_TYPE_OVERFLOW_UNDEFINED, and issue an overflow warning.
+	(fold_binary): Test POINTER_TYPE_OVERFLOW_UNDEFINED when
+	reassociating a pointer type.
+	* doc/invoke.texi (Optimize Options): Document that
+	-fstrict-overflow applies to pointer wraparound.
+
 2008-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36077

@@ -6173,13 +6173,22 @@ using twos complement arithmetic.  When this option is in effect any
 attempt to determine whether an operation on signed numbers will
 overflow must be written carefully to not actually involve overflow.
 
+This option also allows the compiler to assume strict pointer
+semantics: given a pointer to an object, if adding an offset to that
+pointer does not produce a pointer to the same object, the addition is
+undefined.  This permits the compiler to conclude that @code{p + u >
+p} is always true for a pointer @code{p} and unsigned integer
+@code{u}.  This assumption is only valid because pointer wraparound is
+undefined, as the expression is false if @code{p + u} overflows using
+twos complement arithmetic.
+
 See also the @option{-fwrapv} option.  Using @option{-fwrapv} means
-that signed overflow is fully defined: it wraps.  When
+that integer signed overflow is fully defined: it wraps.  When
 @option{-fwrapv} is used, there is no difference between
-@option{-fstrict-overflow} and @option{-fno-strict-overflow}.  With
-@option{-fwrapv} certain types of overflow are permitted.  For
-example, if the compiler gets an overflow when doing arithmetic on
-constants, the overflowed value can still be used with
+@option{-fstrict-overflow} and @option{-fno-strict-overflow} for
+integers.  With @option{-fwrapv} certain types of overflow are
+permitted.  For example, if the compiler gets an overflow when doing
+arithmetic on constants, the overflowed value can still be used with
 @option{-fwrapv}, but not otherwise.
 
 The @option{-fstrict-overflow} option is enabled at levels
