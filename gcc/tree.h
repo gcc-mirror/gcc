@@ -2264,8 +2264,9 @@ struct tree_block GTY(())
 #define TYPE_TRANSPARENT_UNION(NODE)  \
   (UNION_TYPE_CHECK (NODE)->type.transparent_union_flag)
 
-/* For an ARRAY_TYPE, indicates that it is not permitted to
-   take the address of a component of the type.  */
+/* For an ARRAY_TYPE, indicates that it is not permitted to take the
+   address of a component of the type.  This is the counterpart of
+   DECL_NONADDRESSABLE_P for arrays, see the definition of this flag.  */
 #define TYPE_NONALIASED_COMPONENT(NODE) \
   (ARRAY_TYPE_CHECK (NODE)->type.transparent_union_flag)
 
@@ -2896,7 +2897,20 @@ struct tree_decl_with_rtl GTY(())
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_2)
 
 /* Used in a FIELD_DECL to indicate that we cannot form the address of
-   this component.  */
+   this component.  This makes it possible for Type-Based Alias Analysis
+   to disambiguate accesses to this field with indirect accesses using
+   the field's type:
+
+     struct S { int i; } s;
+     int *p;
+
+   If the flag is set on 'i', TBAA computes that s.i and *p never conflict.
+
+   From the implementation's viewpoint, the alias set of the type of the
+   field 'i' (int) will not be recorded as a subset of that of the type of
+   's' (struct S) in record_component_aliases.  The counterpart is that
+   accesses to s.i must not be given the alias set of the type of 'i'
+   (int) but instead directly that of the type of 's' (struct S).  */
 #define DECL_NONADDRESSABLE_P(NODE) \
   (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_3)
 
