@@ -1,5 +1,18 @@
 2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_builtin_type): Replace
+	DI_FTYPE_DI_DI_INT with V1DI2DI_FTYPE_V1DI_V1DI_INT.
+	(bdesc_args): Updated.
+	(ix86_init_mmx_sse_builtins): Likewise.
+	(ix86_expand_args_builtin): Likewise.
+
+	* config/i386/tmmintrin.h (_mm_alignr_pi8): Replace long long
+	with __v1di.
+
+	* doc/extend.texi: Correct __builtin_ia32_palignr.
+
+2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/36095
 	* config/i386/i386.c (bdesc_crc32): Removed.
 	(ix86_expand_crc32): Likewise.

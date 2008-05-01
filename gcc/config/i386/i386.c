@@ -18092,10 +18092,10 @@ enum ix86_builtin_type
   V4SF_FTYPE_V4SF_V4SF_INT,
   V2DI_FTYPE_V2DI_V2DI_INT,
   V2DI2TI_FTYPE_V2DI_V2DI_INT,
+  V1DI2DI_FTYPE_V1DI_V1DI_INT,
   V2DF_FTYPE_V2DF_V2DF_INT,
   V2DI_FTYPE_V2DI_UINT_UINT,
-  V2DI_FTYPE_V2DI_V2DI_UINT_UINT,
-  DI_FTYPE_DI_DI_INT
+  V2DI_FTYPE_V2DI_V2DI_UINT_UINT
 };
 
 /* Builtins with variable number of arguments.  */
@@ -18492,7 +18492,7 @@ static const struct builtin_description bdesc_args[] =
 
   /* SSSE3.  */
   { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrti, "__builtin_ia32_palignr128", IX86_BUILTIN_PALIGNR128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI_V2DI_INT },
-  { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrdi, "__builtin_ia32_palignr", IX86_BUILTIN_PALIGNR, UNKNOWN, (int) DI_FTYPE_DI_DI_INT },
+  { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrdi, "__builtin_ia32_palignr", IX86_BUILTIN_PALIGNR, UNKNOWN, (int) V1DI2DI_FTYPE_V1DI_V1DI_INT },
 
   /* SSE4.1 */
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_blendpd, "__builtin_ia32_blendpd", IX86_BUILTIN_BLENDPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
@@ -19011,13 +19011,10 @@ ix86_init_mmx_sse_builtins (void)
   tree v1di_ftype_v1di_v1di
     = build_function_type_list (V1DI_type_node,
 				V1DI_type_node, V1DI_type_node, NULL_TREE);
-
-  tree di_ftype_di_di_int
-    = build_function_type_list (long_long_unsigned_type_node,
-				long_long_unsigned_type_node,
-				long_long_unsigned_type_node,
+  tree v1di_ftype_v1di_v1di_int
+    = build_function_type_list (V1DI_type_node,
+				V1DI_type_node, V1DI_type_node,
 				integer_type_node, NULL_TREE);
-
   tree v2si_ftype_v2sf
     = build_function_type_list (V2SI_type_node, V2SF_type_node, NULL_TREE);
   tree v2sf_ftype_v2si
@@ -19710,8 +19707,8 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
 	  type = v2di_ftype_v2di_v2di_unsigned_unsigned;
 	  break;
-	case DI_FTYPE_DI_DI_INT:
-	  type = di_ftype_di_di_int;
+	case V1DI2DI_FTYPE_V1DI_V1DI_INT:
+	  type = v1di_ftype_v1di_v1di_int;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -20555,6 +20552,11 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       rmode = V2DImode;
       nargs_constant = 1;
       break;
+    case V1DI2DI_FTYPE_V1DI_V1DI_INT:
+      nargs = 3;
+      rmode = DImode;
+      nargs_constant = 1;
+      break;
     case V2DI_FTYPE_V2DI_UINT_UINT:
       nargs = 3;
       nargs_constant = 2;
@@ -20562,10 +20564,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2DI_FTYPE_V2DI_V2DI_UINT_UINT:
       nargs = 4;
       nargs_constant = 2;
-      break;
-    case DI_FTYPE_DI_DI_INT:
-      nargs = 3;
-      nargs_constant = 1;
       break;
     default:
       gcc_unreachable ();
