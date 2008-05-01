@@ -2204,7 +2204,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	     of the object if they are distinct, because the expectations
 	     of the callee would otherwise not be met:
 	       - if it's a justified modular type,
-	       - if the actual type is a packed version of it.  */
+	       - if the actual type is a packable version of it.  */
 	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
 		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
 		       || larger_record_type_p (gnu_name_type,
@@ -4902,7 +4902,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  type wrong due to "instantiating" the unconstrained record with
 	  discriminant values.  Similarly, if the two types are record types
 	  with the same name don't convert.  This will be the case when we are
-	  converting from a packed version of a type to its original type and
+	  converting from a packable version of a type to its original type and
 	  we need those conversions to be NOPs in order for assignments into
 	  these types to work properly.
 
