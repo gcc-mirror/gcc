@@ -4060,8 +4060,8 @@ match_procedure_decl (void)
       /* Resolve interface if possible. That way, attr.procedure is only set
 	 if it is declared by a later procedure-declaration-stmt, which is
 	 invalid per C1212.  */
-      while (proc_if->interface)
-	proc_if = proc_if->interface;
+      while (proc_if->ts.interface)
+	proc_if = proc_if->ts.interface;
 
       if (proc_if->generic)
 	{
@@ -4147,16 +4147,16 @@ got_ts:
       /* Set interface.  */
       if (proc_if != NULL)
 	{
-	  sym->interface = proc_if;
+	  sym->ts.interface = proc_if;
 	  sym->attr.untyped = 1;
 	}
       else if (current_ts.type != BT_UNKNOWN)
 	{
-	  sym->interface = gfc_new_symbol ("", gfc_current_ns);
-	  sym->interface->ts = current_ts;
-	  sym->interface->attr.function = 1;
-	  sym->ts = sym->interface->ts;
-	  sym->attr.function = sym->interface->attr.function;
+	  sym->ts = current_ts;
+	  sym->ts.interface = gfc_new_symbol ("", gfc_current_ns);
+	  sym->ts.interface->ts = current_ts;
+	  sym->ts.interface->attr.function = 1;
+	  sym->attr.function = sym->ts.interface->attr.function;
 	}
 
       if (gfc_match_eos () == MATCH_YES)

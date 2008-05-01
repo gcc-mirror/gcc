@@ -1563,10 +1563,10 @@ resolve_specific_f0 (gfc_symbol *sym, gfc_expr *expr)
 
   /* See if we have an intrinsic interface.  */
 
-  if (sym->interface != NULL && sym->interface->attr.intrinsic)
+  if (sym->ts.interface != NULL && sym->ts.interface->attr.intrinsic)
     {
       gfc_intrinsic_sym *isym;
-      isym = gfc_find_function (sym->interface->name);
+      isym = gfc_find_function (sym->ts.interface->name);
 
       /* Existance of isym should be checked already.  */
       gcc_assert (isym);
@@ -2636,12 +2636,12 @@ resolve_specific_s0 (gfc_code *c, gfc_symbol *sym)
   match m;
 
   /* See if we have an intrinsic interface.  */
-  if (sym->interface != NULL && !sym->interface->attr.abstract
-      && !sym->interface->attr.subroutine)
+  if (sym->ts.interface != NULL && !sym->ts.interface->attr.abstract
+      && !sym->ts.interface->attr.subroutine)
     {
       gfc_intrinsic_sym *isym;
 
-      isym = gfc_find_function (sym->interface->name);
+      isym = gfc_find_function (sym->ts.interface->name);
 
       /* Existance of isym should be checked already.  */
       gcc_assert (isym);
@@ -7735,26 +7735,27 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
-  if (sym->attr.procedure && sym->interface
+  if (sym->attr.procedure && sym->ts.interface
       && sym->attr.if_source != IFSRC_DECL)
     {
-      if (sym->interface->attr.procedure)
+      if (sym->ts.interface->attr.procedure)
 	gfc_error ("Interface '%s', used by procedure '%s' at %L, is declared "
-		   "in a later PROCEDURE statement", sym->interface->name,
+		   "in a later PROCEDURE statement", sym->ts.interface->name,
 		   sym->name,&sym->declared_at);
 
       /* Get the attributes from the interface (now resolved).  */
-      if (sym->interface->attr.if_source || sym->interface->attr.intrinsic)
+      if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
 	{
-	  sym->ts = sym->interface->ts;
-	  sym->attr.function = sym->interface->attr.function;
-	  sym->attr.subroutine = sym->interface->attr.subroutine;
-	  copy_formal_args (sym, sym->interface);
+	  sym->ts.type = sym->ts.interface->ts.type;
+	  sym->ts.kind = sym->ts.interface->ts.kind;
+	  sym->attr.function = sym->ts.interface->attr.function;
+	  sym->attr.subroutine = sym->ts.interface->attr.subroutine;
+	  copy_formal_args (sym, sym->ts.interface);
 	}
-      else if (sym->interface->name[0] != '\0')
+      else if (sym->ts.interface->name[0] != '\0')
 	{
 	  gfc_error ("Interface '%s' of procedure '%s' at %L must be explicit",
-		    sym->interface->name, sym->name, &sym->declared_at);
+		    sym->ts.interface->name, sym->name, &sym->declared_at);
 	  return;
 	}
     }

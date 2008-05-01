@@ -1,3 +1,12 @@
+2008-05-01  Janus Weil  <jaydub66@gmail.com>
+
+	* gfortran.h (struct gfc_symbol): Moving "interface" member to
+	gfc_typespec (plus fixing a small docu error).
+	* interface.c (gfc_procedure_use): Ditto.
+	* decl.c (match_procedure_decl): Ditto.
+	* resolve.c (resolve_specific_f0,
+	resolve_specific_f0, resolve_symbol): Ditto.
+
 2008-04-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsic.c (add_functions): Add SELECTED_CHAR_KIND intrinsic.
