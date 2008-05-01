@@ -2405,13 +2405,13 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
     gfc_warning ("Procedure '%s' called with an implicit interface at %L",
 		 sym->name, where);
 
-  if (sym->interface && sym->interface->attr.intrinsic)
+  if (sym->ts.interface && sym->ts.interface->attr.intrinsic)
     {
       gfc_intrinsic_sym *isym;
-      isym = gfc_find_function (sym->interface->name);
+      isym = gfc_find_function (sym->ts.interface->name);
       if (isym != NULL)
 	{
-	  if (compare_actual_formal_intr (ap, sym->interface))
+	  if (compare_actual_formal_intr (ap, sym->ts.interface))
 	    return;
 	  gfc_error ("Type/rank mismatch in argument '%s' at %L",
 		     sym->name, where);
