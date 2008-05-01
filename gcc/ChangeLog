@@ -1,3 +1,27 @@
+2008-05-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (opt_pass): Add IPA_PASS.
+	(varpool_node, cgraph_node): Forward declare.
+	(ipa_opt_pass): Define.
+	(pass_ipa_inline): Turn into ipa_opt_pass.
+	(pass_apply_inline): Remove.
+	* ipa-inline.c (pass_ipa_inline): Turn into ipa_opt_pass.
+	(apply_inline): Turn into ....
+	(inline_transform): ... this one.
+	(inline_generate_summary): New function.
+	(pass_apply_inline): Remove.
+	* function.h (ipa_opt_pass): Forward declare structure; typedef;
+	vector.
+	(struct function): Add ipa_transforms_to_apply.
+	* passes.c (register_one_dump_file): Work on IPA_PASS.
+	(init_optimization_passes): Remove pass_inline_parameters and
+	pass_apply_inline.
+	(pass_init_dump_file, pass_fini_dump_file): Break out from ....
+	(execute_one_pass) ... here; apply transforms when possible.
+	(add_ipa_transform_pass, execute_ipa_summary_asses,
+	execute_one_ipa_transform_pass): New.
+	(execute_ipa_pass_list): Update for IPA_PASS type.
+
 2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtin_type): Add

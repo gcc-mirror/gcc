@@ -96,7 +96,8 @@ struct opt_pass
   enum opt_pass_type {
     GIMPLE_PASS,
     RTL_PASS,
-    SIMPLE_IPA_PASS
+    SIMPLE_IPA_PASS,
+    IPA_PASS
   } type;
   /* Terse name of the pass used as a fragment of the dump file name.  */
   const char *name;
@@ -133,7 +134,7 @@ struct opt_pass
   unsigned int todo_flags_finish;
 };
 
-/* Description or GIMPLE pass.  */
+/* Description of GIMPLE pass.  */
 struct gimple_opt_pass
 {
   struct opt_pass pass;
@@ -145,7 +146,36 @@ struct rtl_opt_pass
   struct opt_pass pass;
 };
 
-/* Description if simple IPA pass.  Simple IPA passes have just one execute
+struct varpool_node;
+struct cgraph_node;
+
+/* Description of IPA pass with generate summary, write, execute, read and
+   transform stages.  */
+struct ipa_opt_pass
+{
+  struct opt_pass pass;
+
+  /* IPA passes can analyze function body and variable initializers using this
+      hook and produce summary.  */
+  void (*function_generate_summary) (struct cgraph_node *);
+  void (*variable_generate_summary) (struct varpool_node *);
+
+  /* These hooks will be used to serialize IPA summaries on disk.  For a moment
+      they are just placeholders.  */
+  void (*function_write_summary) (struct cgraph_node *); 
+  void (*variable_write_summary) (struct varpool_node *);
+  void (*function_read_summary) (struct cgraph_node *);
+  void (*variable_read_summary) (struct varpool_node *);
+
+  /* Results of interprocedural propagation of an IPA pass is applied to
+     function body via this hook.  */
+  unsigned int function_transform_todo_flags_start;
+  unsigned int (*function_transform) (struct cgraph_node *);
+  void (*variable_transform) (struct varpool_node *);
+
+};
+
+/* Description of simple IPA pass.  Simple IPA passes have just one execute
    hook.  */
 struct simple_ipa_opt_pass
 {
@@ -353,9 +383,10 @@ extern struct gimple_opt_pass pass_build_cgraph_edges;
 extern struct gimple_opt_pass pass_reset_cc_flags;
 
 /* IPA Passes */
+extern struct ipa_opt_pass pass_ipa_inline;
+
 extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
 extern struct simple_ipa_opt_pass pass_ipa_cp;
-extern struct simple_ipa_opt_pass pass_ipa_inline;
 extern struct simple_ipa_opt_pass pass_ipa_early_inline;
 extern struct simple_ipa_opt_pass pass_ipa_reference;
 extern struct simple_ipa_opt_pass pass_ipa_pure_const;
@@ -471,7 +502,6 @@ extern struct rtl_opt_pass pass_rtl_seqabstr;
 extern struct gimple_opt_pass pass_release_ssa_names;
 extern struct gimple_opt_pass pass_early_inline;
 extern struct gimple_opt_pass pass_inline_parameters;
-extern struct gimple_opt_pass pass_apply_inline;
 extern struct gimple_opt_pass pass_all_early_optimizations;
 extern struct gimple_opt_pass pass_update_address_taken;
 
