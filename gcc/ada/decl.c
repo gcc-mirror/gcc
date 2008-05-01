@@ -5487,9 +5487,8 @@ make_packable_type (tree type, bool in_record)
 
   TYPE_USER_ALIGN (new_type) = 1;
 
-  /* Now copy the fields, keeping the position and size as we don't
-     want to propagate packedness downward.  But make an exception
-     for the last field in order to ditch the padding bits.  */
+  /* Now copy the fields, keeping the position and size as we don't want
+     to change the layout by propagating the packedness downwards.  */
   for (old_field = TYPE_FIELDS (type); old_field;
        old_field = TREE_CHAIN (old_field))
     {
@@ -5503,8 +5502,18 @@ make_packable_type (tree type, bool in_record)
 	  && host_integerp (TYPE_SIZE (new_field_type), 1))
 	new_field_type = make_packable_type (new_field_type, true);
 
-      if (!TREE_CHAIN (old_field) && !TYPE_PACKED (type))
-	new_size = rm_size (new_field_type);
+      /* However, for the last field in a not already packed record type
+	 that is of an aggregate type, we need to use the RM_Size in the
+	 packable version of the record type, see finish_record_type.  */
+      if (!TREE_CHAIN (old_field)
+	  && !TYPE_PACKED (type)
+	  && (TREE_CODE (new_field_type) == RECORD_TYPE
+	      || TREE_CODE (new_field_type) == UNION_TYPE
+	      || TREE_CODE (new_field_type) == QUAL_UNION_TYPE)
+	  && !TYPE_IS_FAT_POINTER_P (new_field_type)
+	  && !TYPE_CONTAINS_TEMPLATE_P (new_field_type)
+	  && TYPE_ADA_SIZE (new_field_type))
+	new_size = TYPE_ADA_SIZE (new_field_type);
       else
 	new_size = DECL_SIZE (old_field);
 

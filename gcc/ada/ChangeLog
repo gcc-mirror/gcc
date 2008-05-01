@@ -1,3 +1,10 @@
+2008-05-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (make_packable_type): Resize the last component to its RM size
+	only if it is of an aggregate type.
+	* trans.c (call_to_gnu): Fix nit in comment.
+	(gnat_to_gnu): Likewise.
+
 2008-04-30  Samuel Tardieu  <sam@rfc1149.net>
 
 	* Makefile.in: Adapt sh4-linux target.
