@@ -1,3 +1,15 @@
+2008-05-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36093
+	Backport from mainline
+	2007-04-12  Richard Guenther  <rguenther@suse.de>
+
+        * gimplify.c (canonicalize_addr_expr): To be consistent with
+        gimplify_compound_lval only set operands two and three of
+        ARRAY_REFs if they are not gimple_min_invariant.  This makes
+        it never at this place.
+        * tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Likewise.
+
 2008-04-17  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35744
