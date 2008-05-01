@@ -352,7 +352,7 @@ register_one_dump_file (struct opt_pass *pass)
 			 ? 1 : pass->static_pass_number));
 
   dot_name = concat (".", pass->name, num, NULL);
-  if (pass->type == SIMPLE_IPA_PASS)
+  if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
     prefix = "ipa-", flags = TDF_IPA;
   else if (pass->type == GIMPLE_PASS)
     prefix = "tree-", flags = TDF_TREE;
@@ -538,7 +538,6 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_release_ssa_names);
 	}
       NEXT_PASS (pass_rebuild_cgraph_edges);
-      NEXT_PASS (pass_inline_parameters);
     }
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_matrix_reorg);
@@ -554,7 +553,6 @@ init_optimization_passes (void)
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   p = &all_passes;
-  NEXT_PASS (pass_apply_inline);
   NEXT_PASS (pass_all_optimizations);
     {
       struct opt_pass **p = &pass_all_optimizations.pass.sub;
@@ -1054,14 +1052,138 @@ verify_curr_properties (void *data)
 }
 #endif
 
+/* Initialize pass dump file.  */
+
+static bool
+pass_init_dump_file (struct opt_pass *pass)
+{
+  /* If a dump file name is present, open it if enabled.  */
+  if (pass->static_pass_number != -1)
+    {
+      bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
+      dump_file_name = get_dump_file_name (pass->static_pass_number);
+      dump_file = dump_begin (pass->static_pass_number, &dump_flags);
+      if (dump_file && current_function_decl)
+	{
+	  const char *dname, *aname;
+	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
+	  aname = (IDENTIFIER_POINTER
+		   (DECL_ASSEMBLER_NAME (current_function_decl)));
+	  fprintf (dump_file, "\n;; Apply transform to function %s (%s)%s\n\n", dname, aname,
+	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     ? " (hot)"
+	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     ? " (unlikely executed)"
+	     : "");
+	}
+      return initializing_dump;
+    }
+  else
+    return false;
+}
+
+/* Flush PASS dump file.  */
+
+static void
+pass_fini_dump_file (struct opt_pass *pass)
+{
+  /* Flush and close dump file.  */
+  if (dump_file_name)
+    {
+      free (CONST_CAST (char *, dump_file_name));
+      dump_file_name = NULL;
+    }
+
+  if (dump_file)
+    {
+      dump_end (pass->static_pass_number, dump_file);
+      dump_file = NULL;
+    }
+}
+
 /* After executing the pass, apply expected changes to the function
    properties. */
+
 static void
 update_properties_after_pass (void *data)
 {
   struct opt_pass *pass = data;
   cfun->curr_properties = (cfun->curr_properties | pass->properties_provided)
 		           & ~pass->properties_destroyed;
+}
+
+/* Schedule IPA transform pass DATA for CFUN.  */
+
+static void
+add_ipa_transform_pass (void *data)
+{
+  struct ipa_opt_pass *ipa_pass = (struct ipa_opt_pass *) data;
+  VEC_safe_push (ipa_opt_pass, heap, cfun->ipa_transforms_to_apply, ipa_pass);
+}
+
+/* Execute IPA pass function summary generation. DATA is pointer to
+   pass list to execute.  */
+
+static void
+execute_ipa_summary_passes (void *data)
+{
+  struct ipa_opt_pass *ipa_pass = (struct ipa_opt_pass *)data;
+  struct cgraph_node *node = cgraph_node (cfun->decl);
+  while (ipa_pass && ipa_pass->pass.type == IPA_PASS)
+    {
+      struct opt_pass *pass = &ipa_pass->pass;
+      if (!pass->gate || pass->gate ())
+	{
+	  pass_init_dump_file (pass);
+	  ipa_pass->function_generate_summary (node);
+	  pass_fini_dump_file (pass);
+	}
+      ipa_pass = (struct ipa_opt_pass *)ipa_pass->pass.next;
+    }
+}
+
+/* Execute IPA_PASS function transform on NODE.  */
+
+static void
+execute_one_ipa_transform_pass (struct cgraph_node *node,
+				struct ipa_opt_pass *ipa_pass)
+{
+  struct opt_pass *pass = &ipa_pass->pass;
+  unsigned int todo_after = 0;
+
+  current_pass = pass;
+  if (!ipa_pass->function_transform)
+    return;
+
+  /* Note that the folders should only create gimple expressions.
+     This is a hack until the new folder is ready.  */
+  in_gimple_form = (cfun && (cfun->curr_properties & PROP_trees)) != 0;
+
+  pass_init_dump_file (pass);
+
+  /* Run pre-pass verification.  */
+  execute_todo (pass->todo_flags_start);
+
+  /* If a timevar is present, start it.  */
+  if (pass->tv_id)
+    timevar_push (pass->tv_id);
+
+  /* Do it!  */
+  todo_after = ipa_pass->function_transform (node);
+
+  /* Stop timevar.  */
+  if (pass->tv_id)
+    timevar_pop (pass->tv_id);
+
+  /* Run post-pass cleanup and verification.  */
+  execute_todo (todo_after);
+  verify_interpass_invariants ();
+
+  pass_fini_dump_file (pass);
+
+  current_pass = NULL;
+  /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
+  in_gimple_form = false;
 }
 
 static bool
@@ -1072,10 +1194,25 @@ execute_one_pass (struct opt_pass *pass)
 
   /* IPA passes are executed on whole program, so cfun should be NULL.
      Ohter passes needs function context set.  */
-  if (pass->type == SIMPLE_IPA_PASS)
+  if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
     gcc_assert (!cfun && !current_function_decl);
   else
     gcc_assert (cfun && current_function_decl);
+
+  if (cfun && cfun->ipa_transforms_to_apply)
+    {
+      unsigned int i;
+      struct cgraph_node *node = cgraph_node (current_function_decl);
+
+      for (i = 0; i < VEC_length (ipa_opt_pass, cfun->ipa_transforms_to_apply);
+	   i++)
+	execute_one_ipa_transform_pass (node,
+				        VEC_index (ipa_opt_pass,
+						   cfun->ipa_transforms_to_apply,
+						   i));
+      VEC_free (ipa_opt_pass, heap, cfun->ipa_transforms_to_apply);
+      cfun->ipa_transforms_to_apply = NULL;
+    }
 
   current_pass = pass;
   /* See if we're supposed to run this pass.  */
@@ -1100,28 +1237,7 @@ execute_one_pass (struct opt_pass *pass)
 		   (void *)(size_t)pass->properties_required);
 #endif
 
-  /* If a dump file name is present, open it if enabled.  */
-  if (pass->static_pass_number != -1)
-    {
-      initializing_dump = !dump_initialized_p (pass->static_pass_number);
-      dump_file_name = get_dump_file_name (pass->static_pass_number);
-      dump_file = dump_begin (pass->static_pass_number, &dump_flags);
-      if (dump_file && current_function_decl)
-	{
-	  const char *dname, *aname;
-	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
-	  aname = (IDENTIFIER_POINTER
-		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
-	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
-	     ? " (hot)"
-	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
-	     ? " (unlikely executed)"
-	     : "");
-	}
-    }
-  else
-    initializing_dump = false;
+  initializing_dump = pass_init_dump_file (pass);
 
   /* If a timevar is present, start it.  */
   if (pass->tv_id)
@@ -1154,24 +1270,15 @@ execute_one_pass (struct opt_pass *pass)
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish);
   verify_interpass_invariants ();
+  if (pass->type == IPA_PASS)
+    do_per_function (add_ipa_transform_pass, pass);
 
   if (!current_function_decl)
     cgraph_process_new_functions ();
 
-  /* Flush and close dump file.  */
-  if (dump_file_name)
-    {
-      free (CONST_CAST (char *, dump_file_name));
-      dump_file_name = NULL;
-    }
+  pass_fini_dump_file (pass);
 
-  if (dump_file)
-    {
-      dump_end (pass->static_pass_number, dump_file);
-      dump_file = NULL;
-    }
-
-  if (pass->type != SIMPLE_IPA_PASS)
+  if (pass->type != SIMPLE_IPA_PASS && pass->type != IPA_PASS)
     gcc_assert (!(cfun->curr_properties & PROP_trees)
 		|| pass->type != RTL_PASS);
 
@@ -1201,17 +1308,31 @@ execute_pass_list (struct opt_pass *pass)
 void
 execute_ipa_pass_list (struct opt_pass *pass)
 {
+  bool summaries_generated = false;
   do
     {
       gcc_assert (!current_function_decl);
       gcc_assert (!cfun);
-      gcc_assert (pass->type == SIMPLE_IPA_PASS);
+      gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
+      if (pass->type == IPA_PASS && (!pass->gate || pass->gate ()))
+	{
+	  if (!summaries_generated)
+	    {
+	      if (!quiet_flag && !cfun)
+		fprintf (stderr, " <summary generate>");
+	      do_per_function_toporder (execute_ipa_summary_passes, pass);
+	    }
+	  summaries_generated = true;
+	}
+      else
+	summaries_generated = false;
       if (execute_one_pass (pass) && pass->sub)
 	{
 	  if (pass->sub->type == GIMPLE_PASS)
 	    do_per_function_toporder ((void (*)(void *))execute_pass_list,
 				      pass->sub);
-	  else if (pass->sub->type == SIMPLE_IPA_PASS)
+	  else if (pass->sub->type == SIMPLE_IPA_PASS
+		   || pass->sub->type == IPA_PASS)
 	    execute_ipa_pass_list (pass->sub);
 	  else
 	    gcc_unreachable ();

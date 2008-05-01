@@ -179,6 +179,11 @@ struct call_site_record;
 
 DEF_VEC_P(temp_slot_p);
 DEF_VEC_ALLOC_P(temp_slot_p,gc);
+struct ipa_opt_pass;
+typedef struct ipa_opt_pass *ipa_opt_pass;
+
+DEF_VEC_P(ipa_opt_pass);
+DEF_VEC_ALLOC_P(ipa_opt_pass,heap);
 
 enum function_frequency {
   /* This function most likely won't be executed at all.
@@ -466,6 +471,10 @@ struct function GTY(())
   /* Properties used by the pass manager.  */
   unsigned int curr_properties;
   unsigned int last_verified;
+  /* Interprocedural passes scheduled to have their transform functions
+     applied next time we execute local pass on them.  We maintain it
+     per-function in order to allow IPA passes to introduce new functions.  */
+  VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
 
   /* Collected bit flags.  */
 

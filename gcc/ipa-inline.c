@@ -1426,26 +1426,6 @@ cgraph_gate_inlining (void)
   return flag_inline_trees;
 }
 
-struct simple_ipa_opt_pass pass_ipa_inline = 
-{
- {
-  SIMPLE_IPA_PASS,
-  "inline",				/* name */
-  cgraph_gate_inlining,			/* gate */
-  cgraph_decide_inlining,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
-  0,	                                /* properties_required */
-  PROP_cfg,				/* properties_provided */
-  0,					/* properties_destroyed */
-  TODO_remove_functions,		/* todo_flags_finish */
-  TODO_dump_cgraph | TODO_dump_func
-  | TODO_remove_functions		/* todo_flags_finish */
- }
-};
-
 /* Because inlining might remove no-longer reachable nodes, we need to
    keep the array visible to garbage collector to avoid reading collected
    out nodes.  */
@@ -1579,13 +1559,20 @@ struct gimple_opt_pass pass_inline_parameters =
  }
 };
 
-/* Apply inline plan to the function.  */
-static unsigned int
-apply_inline (void)
+/* Note function body size.  */
+void
+inline_generate_summary (struct cgraph_node *node ATTRIBUTE_UNUSED)
+{
+  compute_inline_parameters ();
+  return;
+}
+
+/* Apply inline plan to function.  */
+int
+inline_transform (struct cgraph_node *node)
 {
   unsigned int todo = 0;
   struct cgraph_edge *e;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
 
   /* Even when not optimizing, ensure that always_inline functions get inlined.
    */
@@ -1617,13 +1604,13 @@ apply_inline (void)
   return todo | execute_fixup_cfg ();
 }
 
-struct gimple_opt_pass pass_apply_inline = 
+struct ipa_opt_pass pass_ipa_inline = 
 {
  {
-  GIMPLE_PASS,
-  "apply_inline",			/* name */
-  NULL,					/* gate */
-  apply_inline,				/* execute */
+  IPA_PASS,
+  "inline",				/* name */
+  cgraph_gate_inlining,			/* gate */
+  cgraph_decide_inlining,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -1631,10 +1618,19 @@ struct gimple_opt_pass pass_apply_inline =
   0,	                                /* properties_required */
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow
-  | TODO_verify_stmts			/* todo_flags_finish */
- }
+  TODO_remove_functions,		/* todo_flags_finish */
+  TODO_dump_cgraph | TODO_dump_func
+  | TODO_remove_functions		/* todo_flags_finish */
+ },
+ inline_generate_summary,		/* function_generate_summary */
+ NULL,					/* variable_generate_summary */
+ NULL,					/* function_write_summary */
+ NULL,					/* variable_write_summary */
+ NULL,					/* function_read_summary */
+ NULL,					/* variable_read_summary */
+ 0,					/* TODOs */
+ inline_transform,			/* function_transform */
+ NULL,					/* variable_transform */
 };
 
 #include "gt-ipa-inline.h"
