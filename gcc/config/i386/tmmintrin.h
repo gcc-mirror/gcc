@@ -192,8 +192,8 @@ _mm_alignr_epi8(__m128i __X, __m128i __Y, const int __N)
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_alignr_pi8(__m64 __X, __m64 __Y, const int __N)
 {
-  return (__m64) __builtin_ia32_palignr ((long long)__X,
-					 (long long)__Y, __N * 8);
+  return (__m64) __builtin_ia32_palignr ((__v1di)__X,
+					 (__v1di)__Y, __N * 8);
 }
 #else
 #define _mm_alignr_epi8(X, Y, N)					\
@@ -201,8 +201,8 @@ _mm_alignr_pi8(__m64 __X, __m64 __Y, const int __N)
 					(__v2di)(__m128i)(Y),		\
 					(int)(N) * 8))
 #define _mm_alignr_pi8(X, Y, N)						\
-  ((__m64) __builtin_ia32_palignr ((long long)(__m64)(X),		\
-				   (long long)(__m64)(Y),		\
+  ((__m64) __builtin_ia32_palignr ((__v1di)(__m64)(X),			\
+				   (__v1di)(__m64)(Y),			\
 				   (int)(N) * 8))
 #endif
 
