@@ -17984,15 +17984,6 @@ static const struct builtin_description bdesc_pcmpistr[] =
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistriz128", IX86_BUILTIN_PCMPISTRZ128, UNKNOWN, (int) CCZmode },
 };
 
-static const struct builtin_description bdesc_crc32[] =
-{
-  /* SSE4.2 */
-  { OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_64BIT, CODE_FOR_sse4_2_crc32qi, 0, IX86_BUILTIN_CRC32QI, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32hi, 0, IX86_BUILTIN_CRC32HI, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32si, 0, IX86_BUILTIN_CRC32SI, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32di, 0, IX86_BUILTIN_CRC32DI, UNKNOWN, 0 },
-};
-
 /* Builtin types */
 enum ix86_builtin_type
 {
@@ -18081,12 +18072,16 @@ enum ix86_builtin_type
   V1DI_FTYPE_V8QI_V8QI,
   V1DI_FTYPE_V2SI_V2SI,
   V1DI_FTYPE_V1DI_SI_COUNT,
+  UINT64_FTYPE_UINT64_UINT64,
+  UINT_FTYPE_UINT_UINT,
+  UINT_FTYPE_UINT_USHORT,
+  UINT_FTYPE_UINT_UCHAR,
   V8HI_FTYPE_V8HI_INT,
   V4SI_FTYPE_V4SI_INT,
   V4HI_FTYPE_V4HI_INT,
   V4SF_FTYPE_V4SF_INT,
   V2DI_FTYPE_V2DI_INT,
-  V2DI2TI_FTYPE_V2DI2TI_INT,
+  V2DI2TI_FTYPE_V2DI_INT,
   V2DF_FTYPE_V2DF_INT,
   V16QI_FTYPE_V16QI_V16QI_V16QI,
   V4SF_FTYPE_V4SF_V4SF_V4SF,
@@ -18096,7 +18091,7 @@ enum ix86_builtin_type
   V4SI_FTYPE_V4SI_V4SI_INT,
   V4SF_FTYPE_V4SF_V4SF_INT,
   V2DI_FTYPE_V2DI_V2DI_INT,
-  V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT,
+  V2DI2TI_FTYPE_V2DI_V2DI_INT,
   V2DF_FTYPE_V2DF_V2DF_INT,
   V2DI_FTYPE_V2DI_UINT_UINT,
   V2DI_FTYPE_V2DI_V2DI_UINT_UINT,
@@ -18426,7 +18421,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtsd2ss, "__builtin_ia32_cvtsd2ss", IX86_BUILTIN_CVTSD2SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtss2sd, "__builtin_ia32_cvtss2sd", IX86_BUILTIN_CVTSS2SD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V4SF },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_ashlti3, "__builtin_ia32_pslldqi128", IX86_BUILTIN_PSLLDQI128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI2TI_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_ashlti3, "__builtin_ia32_pslldqi128", IX86_BUILTIN_PSLLDQI128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI_INT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv8hi3, "__builtin_ia32_psllwi128", IX86_BUILTIN_PSLLWI128, UNKNOWN, (int) V8HI_FTYPE_V8HI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv4si3, "__builtin_ia32_pslldi128", IX86_BUILTIN_PSLLDI128, UNKNOWN, (int) V4SI_FTYPE_V4SI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv2di3, "__builtin_ia32_psllqi128", IX86_BUILTIN_PSLLQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_SI_COUNT },
@@ -18434,7 +18429,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv4si3, "__builtin_ia32_pslld128", IX86_BUILTIN_PSLLD128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv2di3, "__builtin_ia32_psllq128", IX86_BUILTIN_PSLLQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_COUNT },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lshrti3, "__builtin_ia32_psrldqi128", IX86_BUILTIN_PSRLDQI128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI2TI_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lshrti3, "__builtin_ia32_psrldqi128", IX86_BUILTIN_PSRLDQI128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI_INT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv8hi3, "__builtin_ia32_psrlwi128", IX86_BUILTIN_PSRLWI128, UNKNOWN, (int) V8HI_FTYPE_V8HI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv4si3, "__builtin_ia32_psrldi128", IX86_BUILTIN_PSRLDI128, UNKNOWN, (int) V4SI_FTYPE_V4SI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv2di3, "__builtin_ia32_psrlqi128", IX86_BUILTIN_PSRLQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_SI_COUNT },
@@ -18496,7 +18491,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_psignv2si3, "__builtin_ia32_psignd", IX86_BUILTIN_PSIGND, UNKNOWN, (int) V2SI_FTYPE_V2SI_V2SI },
 
   /* SSSE3.  */
-  { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrti, "__builtin_ia32_palignr128", IX86_BUILTIN_PALIGNR128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT },
+  { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrti, "__builtin_ia32_palignr128", IX86_BUILTIN_PALIGNR128, UNKNOWN, (int) V2DI2TI_FTYPE_V2DI_V2DI_INT },
   { OPTION_MASK_ISA_SSSE3, CODE_FOR_ssse3_palignrdi, "__builtin_ia32_palignr", IX86_BUILTIN_PALIGNR, UNKNOWN, (int) DI_FTYPE_DI_DI_INT },
 
   /* SSE4.1 */
@@ -18546,6 +18541,10 @@ static const struct builtin_description bdesc_args[] =
 
   /* SSE4.2 */
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_gtv2di3, "__builtin_ia32_pcmpgtq", IX86_BUILTIN_PCMPGTQ, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32qi, "__builtin_ia32_crc32qi", IX86_BUILTIN_CRC32QI, UNKNOWN, (int) UINT_FTYPE_UINT_UCHAR },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32hi, "__builtin_ia32_crc32hi", IX86_BUILTIN_CRC32HI, UNKNOWN, (int) UINT_FTYPE_UINT_USHORT },
+  { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_crc32si, "__builtin_ia32_crc32si", IX86_BUILTIN_CRC32SI, UNKNOWN, (int) UINT_FTYPE_UINT_UINT },
+  { OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_64BIT, CODE_FOR_sse4_2_crc32di, "__builtin_ia32_crc32di", IX86_BUILTIN_CRC32DI, UNKNOWN, (int) UINT64_FTYPE_UINT64_UINT64 },
 
   /* SSE4A */
   { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_extrqi, "__builtin_ia32_extrqi", IX86_BUILTIN_EXTRQI, UNKNOWN, (int) V2DI_FTYPE_V2DI_UINT_UINT },
@@ -19340,6 +19339,26 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (V4HI_type_node,
 				V8QI_type_node, V8QI_type_node,
 				NULL_TREE);
+  tree unsigned_ftype_unsigned_uchar
+    = build_function_type_list (unsigned_type_node,
+				unsigned_type_node,
+				unsigned_char_type_node,
+				NULL_TREE);
+  tree unsigned_ftype_unsigned_ushort
+    = build_function_type_list (unsigned_type_node,
+				unsigned_type_node,
+				short_unsigned_type_node,
+				NULL_TREE);
+  tree unsigned_ftype_unsigned_unsigned
+    = build_function_type_list (unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL_TREE);
+  tree uint64_ftype_uint64_uint64
+    = build_function_type_list (long_long_unsigned_type_node,
+				long_long_unsigned_type_node,
+				long_long_unsigned_type_node,
+				NULL_TREE);
 
   tree ftype;
 
@@ -19626,6 +19645,18 @@ ix86_init_mmx_sse_builtins (void)
 	case V1DI_FTYPE_V1DI_SI_COUNT:
 	  type = v1di_ftype_v1di_int;
 	  break;
+	case UINT64_FTYPE_UINT64_UINT64:
+	  type = uint64_ftype_uint64_uint64;
+	  break;
+	case UINT_FTYPE_UINT_UINT:
+	  type = unsigned_ftype_unsigned_unsigned;
+	  break;
+	case UINT_FTYPE_UINT_USHORT:
+	  type = unsigned_ftype_unsigned_ushort;
+	  break;
+	case UINT_FTYPE_UINT_UCHAR:
+	  type = unsigned_ftype_unsigned_uchar;
+	  break;
 	case V8HI_FTYPE_V8HI_INT:
 	  type = v8hi_ftype_v8hi_int;
 	  break;
@@ -19639,7 +19670,7 @@ ix86_init_mmx_sse_builtins (void)
 	  type = v4sf_ftype_v4sf_int;
 	  break;
 	case V2DI_FTYPE_V2DI_INT:
-	case V2DI2TI_FTYPE_V2DI2TI_INT:
+	case V2DI2TI_FTYPE_V2DI_INT:
 	  type = v2di_ftype_v2di_int;
 	  break;
 	case V2DF_FTYPE_V2DF_INT:
@@ -19667,7 +19698,7 @@ ix86_init_mmx_sse_builtins (void)
 	  type = v4sf_ftype_v4sf_v4sf_int;
 	  break;
 	case V2DI_FTYPE_V2DI_V2DI_INT:
-	case V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT:
+	case V2DI2TI_FTYPE_V2DI_V2DI_INT:
 	  type = v2di_ftype_v2di_v2di_int;
 	  break;
 	case V2DF_FTYPE_V2DF_V2DF_INT:
@@ -19785,28 +19816,6 @@ ix86_init_mmx_sse_builtins (void)
 
   /* SSE4.1. */
   def_builtin (OPTION_MASK_ISA_SSE4_1, "__builtin_ia32_movntdqa", v2di_ftype_pv2di, IX86_BUILTIN_MOVNTDQA);
-
-  /* SSE4.2. */
-  ftype = build_function_type_list (unsigned_type_node,
-				    unsigned_type_node,
-				    unsigned_char_type_node,
-				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32qi", ftype, IX86_BUILTIN_CRC32QI);
-  ftype = build_function_type_list (unsigned_type_node,
-				    unsigned_type_node,
-				    short_unsigned_type_node,
-				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32hi", ftype, IX86_BUILTIN_CRC32HI);
-  ftype = build_function_type_list (unsigned_type_node,
-				    unsigned_type_node,
-				    unsigned_type_node,
-				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32si", ftype, IX86_BUILTIN_CRC32SI);
-  ftype = build_function_type_list (long_long_unsigned_type_node,
-				    long_long_unsigned_type_node,
-				    long_long_unsigned_type_node,
-				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32di", ftype, IX86_BUILTIN_CRC32DI);
 
   /* AES */
   if (TARGET_AES)
@@ -19996,41 +20005,6 @@ safe_vector_operand (rtx x, enum machine_mode mode)
   if (x == const0_rtx)
     x = CONST0_RTX (mode);
   return x;
-}
-
-/* Subroutine of ix86_expand_builtin to take care of crc32 insns.  */
-
-static rtx
-ix86_expand_crc32 (enum insn_code icode, tree exp, rtx target)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
-
-  if (optimize
-      || !target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    {
-      op1 = copy_to_reg (op1);
-      op1 = simplify_gen_subreg (mode1, op1, GET_MODE (op1), 0);
-    }
-
-  pat = GEN_FCN (icode) (target, op0, op1);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
 }
 
 /* Subroutine of ix86_expand_builtin to take care of binop insns.  */
@@ -20439,12 +20413,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   enum insn_code icode = d->icode;
   const struct insn_data *insn_p = &insn_data[icode];
   enum machine_mode tmode = insn_p->operand[0].mode;
-  enum machine_mode cmode;
+  enum machine_mode rmode = VOIDmode;
   bool swap = false;
   enum rtx_code comparison = d->comparison;
-  enum { none, ti } convert;
-
-  convert = none;
 
   switch ((enum ix86_builtin_type) d->flag)
     {
@@ -20545,9 +20516,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs = 2;
       last_arg_count = true;
       break;
-    case V2DI2TI_FTYPE_V2DI2TI_INT:
+    case UINT64_FTYPE_UINT64_UINT64:
+    case UINT_FTYPE_UINT_UINT:
+    case UINT_FTYPE_UINT_USHORT:
+    case UINT_FTYPE_UINT_UCHAR:
       nargs = 2;
-      convert = ti;
+      break;
+    case V2DI2TI_FTYPE_V2DI_INT:
+      nargs = 2;
+      rmode = V2DImode;
       nargs_constant = 1;
       break;
     case V8HI_FTYPE_V8HI_INT:
@@ -20573,9 +20550,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs = 3;
       nargs_constant = 1;
       break;
-    case V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT:
+    case V2DI2TI_FTYPE_V2DI_V2DI_INT:
       nargs = 3;
-      convert = ti;
+      rmode = V2DImode;
       nargs_constant = 1;
       break;
     case V2DI_FTYPE_V2DI_UINT_UINT:
@@ -20602,18 +20579,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       return ix86_expand_sse_compare (d, exp, target, swap);
     }
 
-  switch (convert)
-    {
-    case ti:
-      gcc_assert (tmode == TImode);
-      cmode = V2DImode;
-      break;
-    case none:
-      cmode = VOIDmode;
-      break;
-    }
-
-  if (cmode == VOIDmode)
+  if (rmode == VOIDmode || rmode == tmode)
     {
       if (optimize
 	  || target == 0
@@ -20624,8 +20590,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     }
   else
     {
-      target = gen_reg_rtx (cmode);
-      real_target = simplify_gen_subreg (tmode, target, cmode, 0);
+      target = gen_reg_rtx (rmode);
+      real_target = simplify_gen_subreg (tmode, target, rmode, 0);
     }
 
   for (i = 0; i < nargs; i++)
@@ -20692,19 +20658,13 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	  if (memory_operand (op, mode))
 	    num_memory++;
 
-	  if (cmode == VOIDmode)
+	  if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	    {
-	      gcc_assert (GET_MODE (op) == mode
-			  || GET_MODE (op) == VOIDmode);
-
 	      if (optimize || !match || num_memory > 1)
 		op = copy_to_mode_reg (mode, op);
 	    }
 	  else
 	    {
-	      gcc_assert (GET_MODE (op) == cmode
-			  && mode == tmode);
-
 	      op = copy_to_reg (op);
 	      op = simplify_gen_subreg (mode, op, GET_MODE (op), 0);
 	    }
@@ -21443,10 +21403,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   for (i = 0, d = bdesc_ptest; i < ARRAY_SIZE (bdesc_ptest); i++, d++)
     if (d->code == fcode)
       return ix86_expand_sse_ptest (d, exp, target);
-
-  for (i = 0, d = bdesc_crc32; i < ARRAY_SIZE (bdesc_crc32); i++, d++)
-    if (d->code == fcode)
-      return ix86_expand_crc32 (d->icode, exp, target);
 
   for (i = 0, d = bdesc_pcmpestr;
        i < ARRAY_SIZE (bdesc_pcmpestr);

@@ -1,3 +1,19 @@
+2008-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36095
+	* config/i386/i386.c (bdesc_crc32): Removed.
+	(ix86_expand_crc32): Likewise.
+	(ix86_builtin_type): Replace V2DI2TI_FTYPE_V2DI2TI_INT with
+	V2DI2TI_FTYPE_V2DI_INT, V2DI2TI_FTYPE_V2DI2TI_V2DI2TI_INT with
+	V2DI2TI_FTYPE_V2DI_V2DI_INT.  Add UINT64_FTYPE_UINT64_UINT64,
+	UINT_FTYPE_UINT_UINT, UINT_FTYPE_UINT_USHORT and
+	UINT_FTYPE_UINT_UCHAR.
+	(bdesc_args): Updated. Add crc32 builtins.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_args_builtin): Updated to support subreg.
+
+	* doc/extend.texi: Correct __builtin_ia32_crc32di.
+
 2008-05-01  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pass.h (opt_pass): Add IPA_PASS.
