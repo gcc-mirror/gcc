@@ -1,3 +1,9 @@
+2008-05-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (TYPE_NONALIASED_COMPONENT): Expand comment.
+	(DECL_NONADDRESSABLE_P): Likewise.
+	* alias.c (record_component_aliases): Fix comment.
+
 2008-05-01  Simon Baldwin <simonb@google.com>
 
 	* c-common.h (warn_array_subscript_range): New function.
