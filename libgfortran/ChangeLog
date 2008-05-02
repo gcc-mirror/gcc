@@ -1,3 +1,10 @@
+2008-05-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/36094
+	* runtime/error.c (show_locus): Provide modified error message when
+	filename has not yet been associated with a unit number.
+	* io/open.c (encoding_opt[]): Comment out "utf-8" option and add TODO.
+
 2008-04-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/selected_char_kind.c: New file.

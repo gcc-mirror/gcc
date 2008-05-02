@@ -107,7 +107,7 @@ static const st_option decimal_opt[] =
 
 static const st_option encoding_opt[] =
 {
-  { "utf-8", ENCODING_UTF8},
+  /* TODO { "utf-8", ENCODING_UTF8}, */
   { "default", ENCODING_DEFAULT},
   { NULL, 0}
 };
