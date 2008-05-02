@@ -1560,7 +1560,7 @@ struct gimple_opt_pass pass_inline_parameters =
 };
 
 /* Note function body size.  */
-void
+static void
 inline_generate_summary (struct cgraph_node *node ATTRIBUTE_UNUSED)
 {
   compute_inline_parameters ();
@@ -1568,16 +1568,11 @@ inline_generate_summary (struct cgraph_node *node ATTRIBUTE_UNUSED)
 }
 
 /* Apply inline plan to function.  */
-int
+static unsigned int
 inline_transform (struct cgraph_node *node)
 {
   unsigned int todo = 0;
   struct cgraph_edge *e;
-
-  /* Even when not optimizing, ensure that always_inline functions get inlined.
-   */
-  if (!optimize)
-   cgraph_decide_inlining_incrementally (node, INLINE_SPEED, 0);
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
