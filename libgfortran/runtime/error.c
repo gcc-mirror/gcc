@@ -202,6 +202,11 @@ show_locus (st_parameter_common *cmp)
 		   (int) cmp->line, cmp->filename, cmp->unit, filename);
 	  free_mem (filename);
 	}
+      else
+	{
+	  st_printf ("At line %d of file %s (unit = %d)\n",
+		   (int) cmp->line, cmp->filename, cmp->unit);
+	}
       return;
     }
 
