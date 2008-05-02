@@ -188,8 +188,11 @@ for (i = 0; i < n_opts; i++) {
 				idx = -1;
 		}
 	}
-	printf("  { %c-%s%c,\n    %s,\n    %s, %u, %d,\n",
-	       quote, opts[i], quote, hlp, back_chain[i], len, idx)
+	# Split the printf after %u to work around an ia64-hp-hpux11.23
+	# awk bug.
+	printf("  { %c-%s%c,\n    %s,\n    %s, %u,",
+	       quote, opts[i], quote, hlp, back_chain[i], len)
+	printf(" %d,\n", idx)
 	condition = opt_args("Condition", flags[i])
 	cl_flags = switch_flags(flags[i])
 	if (condition != "")
