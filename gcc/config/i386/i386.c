@@ -17984,11 +17984,32 @@ static const struct builtin_description bdesc_pcmpistr[] =
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_pcmpistr, "__builtin_ia32_pcmpistriz128", IX86_BUILTIN_PCMPISTRZ128, UNKNOWN, (int) CCZmode },
 };
 
+/* Special builtin types */
+enum ix86_special_builtin_type
+{
+  SPECIAL_FTYPE_UNKNOWN,
+  VOID_FTYPE_VOID,
+  V16QI_FTYPE_PCCHAR,
+  V4SF_FTYPE_PCFLOAT,
+  V2DF_FTYPE_PCDOUBLE,
+  V4SF_FTYPE_V4SF_PCV2SF,
+  V2DF_FTYPE_V2DF_PCDOUBLE,
+  V2DI_FTYPE_PV2DI,
+  VOID_FTYPE_PV2SF_V4SF,
+  VOID_FTYPE_PV2DI_V2DI,
+  VOID_FTYPE_PCHAR_V16QI,
+  VOID_FTYPE_PFLOAT_V4SF,
+  VOID_FTYPE_PDOUBLE_V2DF,
+  VOID_FTYPE_PDI_DI,
+  VOID_FTYPE_PINT_INT
+};
+
 /* Builtin types */
 enum ix86_builtin_type
 {
   FTYPE_UNKNOWN,
   FLOAT128_FTYPE_FLOAT128,
+  FLOAT_FTYPE_FLOAT,
   FLOAT128_FTYPE_FLOAT128_FLOAT128,
   INT64_FTYPE_V4SF,
   INT64_FTYPE_V2DF,
@@ -18007,6 +18028,7 @@ enum ix86_builtin_type
   V4SI_FTYPE_V2DF,
   V4HI_FTYPE_V4HI,
   V4SF_FTYPE_V4SF,
+  V4SF_FTYPE_V4SF_VEC_MERGE,
   V4SF_FTYPE_V4SI,
   V4SF_FTYPE_V2DF,
   V2DI_FTYPE_V2DI,
@@ -18014,6 +18036,7 @@ enum ix86_builtin_type
   V2DI_FTYPE_V8HI,
   V2DI_FTYPE_V4SI,
   V2DF_FTYPE_V2DF,
+  V2DF_FTYPE_V2DF_VEC_MERGE,
   V2DF_FTYPE_V4SI,
   V2DF_FTYPE_V4SF,
   V2DF_FTYPE_V2SI,
@@ -18096,6 +18119,54 @@ enum ix86_builtin_type
   V2DF_FTYPE_V2DF_V2DF_INT,
   V2DI_FTYPE_V2DI_UINT_UINT,
   V2DI_FTYPE_V2DI_V2DI_UINT_UINT
+};
+
+/* Special builtins with variable number of arguments.  */
+static const struct builtin_description bdesc_special_args[] =
+{
+  /* MMX */
+  { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  /* 3DNow! */
+  { OPTION_MASK_ISA_3DNOW, CODE_FOR_mmx_femms, "__builtin_ia32_femms", IX86_BUILTIN_FEMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  /* SSE */
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movups, "__builtin_ia32_storeups", IX86_BUILTIN_STOREUPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movntv4sf, "__builtin_ia32_movntps", IX86_BUILTIN_MOVNTPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movups, "__builtin_ia32_loadups", IX86_BUILTIN_LOADUPS, UNKNOWN, (int) V4SF_FTYPE_PCFLOAT },
+
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_loadhps, "__builtin_ia32_loadhps", IX86_BUILTIN_LOADHPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_PCV2SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_loadlps, "__builtin_ia32_loadlps", IX86_BUILTIN_LOADLPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_PCV2SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_storehps, "__builtin_ia32_storehps", IX86_BUILTIN_STOREHPS, UNKNOWN, (int) VOID_FTYPE_PV2SF_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_storelps, "__builtin_ia32_storelps", IX86_BUILTIN_STORELPS, UNKNOWN, (int) VOID_FTYPE_PV2SF_V4SF },
+
+  /* SSE or 3DNow!A  */
+  { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_sse_sfence, "__builtin_ia32_sfence", IX86_BUILTIN_SFENCE, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_sse_movntdi, "__builtin_ia32_movntq", IX86_BUILTIN_MOVNTQ, UNKNOWN, (int) VOID_FTYPE_PDI_DI },
+
+  /* SSE2 */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lfence, "__builtin_ia32_lfence", IX86_BUILTIN_LFENCE, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_mfence, 0, IX86_BUILTIN_MFENCE, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movupd, "__builtin_ia32_storeupd", IX86_BUILTIN_STOREUPD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movdqu, "__builtin_ia32_storedqu", IX86_BUILTIN_STOREDQU, UNKNOWN, (int) VOID_FTYPE_PCHAR_V16QI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntv2df, "__builtin_ia32_movntpd", IX86_BUILTIN_MOVNTPD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntv2di, "__builtin_ia32_movntdq", IX86_BUILTIN_MOVNTDQ, UNKNOWN, (int) VOID_FTYPE_PV2DI_V2DI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntsi, "__builtin_ia32_movnti", IX86_BUILTIN_MOVNTI, UNKNOWN, (int) VOID_FTYPE_PINT_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movupd, "__builtin_ia32_loadupd", IX86_BUILTIN_LOADUPD, UNKNOWN, (int) V2DF_FTYPE_PCDOUBLE },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movdqu, "__builtin_ia32_loaddqu", IX86_BUILTIN_LOADDQU, UNKNOWN, (int) V16QI_FTYPE_PCCHAR },
+
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loadhpd, "__builtin_ia32_loadhpd", IX86_BUILTIN_LOADHPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_PCDOUBLE },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loadlpd, "__builtin_ia32_loadlpd", IX86_BUILTIN_LOADLPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_PCDOUBLE },
+
+  /* SSE3 */
+  { OPTION_MASK_ISA_SSE3, CODE_FOR_sse3_lddqu, "__builtin_ia32_lddqu", IX86_BUILTIN_LDDQU, UNKNOWN, (int) V16QI_FTYPE_PCCHAR },
+
+  /* SSE4.1 */
+  { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_movntdqa, "__builtin_ia32_movntdqa", IX86_BUILTIN_MOVNTDQA, UNKNOWN, (int) V2DI_FTYPE_PV2DI },
+
+  /* SSE4A */
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_vmmovntv2df, "__builtin_ia32_movntsd", IX86_BUILTIN_MOVNTSD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
+  { OPTION_MASK_ISA_SSE4A, CODE_FOR_sse4a_vmmovntv4sf, "__builtin_ia32_movntss", IX86_BUILTIN_MOVNTSS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
 };
 
 /* Builtins with variable number of arguments.  */
@@ -18263,9 +18334,11 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_cvtsi2ss, "__builtin_ia32_cvtsi2ss", IX86_BUILTIN_CVTSI2SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_SI },
   { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_64BIT, CODE_FOR_sse_cvtsi2ssq, "__builtin_ia32_cvtsi642ss", IX86_BUILTIN_CVTSI642SS, UNKNOWN, V4SF_FTYPE_V4SF_DI },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshufd, "__builtin_ia32_pshufd", IX86_BUILTIN_PSHUFD, UNKNOWN, (int) V4SI_FTYPE_V4SI_INT },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshuflw, "__builtin_ia32_pshuflw", IX86_BUILTIN_PSHUFLW, UNKNOWN, (int) V8HI_FTYPE_V8HI_INT },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshufhw, "__builtin_ia32_pshufhw", IX86_BUILTIN_PSHUFHW, UNKNOWN, (int) V8HI_FTYPE_V8HI_INT },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_rsqrtsf2, "__builtin_ia32_rsqrtf", IX86_BUILTIN_RSQRTF, UNKNOWN, (int) FLOAT_FTYPE_FLOAT },
+
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmsqrtv4sf2, "__builtin_ia32_sqrtss", IX86_BUILTIN_SQRTSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_VEC_MERGE },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmrsqrtv4sf2, "__builtin_ia32_rsqrtss", IX86_BUILTIN_RSQRTSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_VEC_MERGE },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmrcpv4sf2, "__builtin_ia32_rcpss", IX86_BUILTIN_RCPSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_VEC_MERGE },
 
   /* SSE MMX or 3Dnow!A */
   { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_mmx_uavgv8qi3, "__builtin_ia32_pavgb", IX86_BUILTIN_PAVGB, UNKNOWN, (int) V8QI_FTYPE_V8QI_V8QI },
@@ -18441,6 +18514,12 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashrv4si3, "__builtin_ia32_psradi128", IX86_BUILTIN_PSRADI128, UNKNOWN, (int) V4SI_FTYPE_V4SI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashrv8hi3, "__builtin_ia32_psraw128", IX86_BUILTIN_PSRAW128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashrv4si3, "__builtin_ia32_psrad128", IX86_BUILTIN_PSRAD128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_COUNT },
+
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshufd, "__builtin_ia32_pshufd", IX86_BUILTIN_PSHUFD, UNKNOWN, (int) V4SI_FTYPE_V4SI_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshuflw, "__builtin_ia32_pshuflw", IX86_BUILTIN_PSHUFLW, UNKNOWN, (int) V8HI_FTYPE_V8HI_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pshufhw, "__builtin_ia32_pshufhw", IX86_BUILTIN_PSHUFHW, UNKNOWN, (int) V8HI_FTYPE_V8HI_INT },
+
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_vmsqrtv2df2, "__builtin_ia32_sqrtsd", IX86_BUILTIN_SQRTSD, UNKNOWN, (int) V2DF_FTYPE_V2DF_VEC_MERGE },
 
   /* SSE2 MMX */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_mmx_addv1di3, "__builtin_ia32_paddq", IX86_BUILTIN_PADDQ, UNKNOWN, (int) V1DI_FTYPE_V1DI_V1DI },
@@ -18882,12 +18961,14 @@ ix86_init_mmx_sse_builtins (void)
   tree V8HI_type_node = build_vector_type_for_mode (intHI_type_node, V8HImode);
 
   tree pchar_type_node = build_pointer_type (char_type_node);
-  tree pcchar_type_node = build_pointer_type (
-			     build_type_variant (char_type_node, 1, 0));
+  tree pcchar_type_node
+    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
   tree pfloat_type_node = build_pointer_type (float_type_node);
-  tree pcfloat_type_node = build_pointer_type (
-			     build_type_variant (float_type_node, 1, 0));
-  tree pv2si_type_node = build_pointer_type (V2SI_type_node);
+  tree pcfloat_type_node
+    = build_pointer_type (build_type_variant (float_type_node, 1, 0));
+  tree pv2sf_type_node = build_pointer_type (V2SF_type_node);
+  tree pcv2sf_type_node
+    = build_pointer_type (build_type_variant (V2SF_type_node, 1, 0));
   tree pv2di_type_node = build_pointer_type (V2DI_type_node);
   tree pdi_type_node = build_pointer_type (long_long_unsigned_type_node);
 
@@ -18964,13 +19045,12 @@ ix86_init_mmx_sse_builtins (void)
 				pchar_type_node, NULL_TREE);
   tree v4sf_ftype_pcfloat
     = build_function_type_list (V4SF_type_node, pcfloat_type_node, NULL_TREE);
-  /* @@@ the type is bogus */
-  tree v4sf_ftype_v4sf_pv2si
+  tree v4sf_ftype_v4sf_pcv2sf
     = build_function_type_list (V4SF_type_node,
-				V4SF_type_node, pv2si_type_node, NULL_TREE);
-  tree void_ftype_pv2si_v4sf
+				V4SF_type_node, pcv2sf_type_node, NULL_TREE);
+  tree void_ftype_pv2sf_v4sf
     = build_function_type_list (void_type_node,
-				pv2si_type_node, V4SF_type_node, NULL_TREE);
+				pv2sf_type_node, V4SF_type_node, NULL_TREE);
   tree void_ftype_pfloat_v4sf
     = build_function_type_list (void_type_node,
 				pfloat_type_node, V4SF_type_node, NULL_TREE);
@@ -19356,6 +19436,10 @@ ix86_init_mmx_sse_builtins (void)
 				long_long_unsigned_type_node,
 				long_long_unsigned_type_node,
 				NULL_TREE);
+  tree float_ftype_float
+    = build_function_type_list (float_type_node,
+				float_type_node,
+				NULL_TREE);
 
   tree ftype;
 
@@ -19400,6 +19484,67 @@ ix86_init_mmx_sse_builtins (void)
       def_builtin_const (OPTION_MASK_ISA_64BIT, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
     }
 
+  /* Add all special builtins with variable number of operands.  */
+  for (i = 0, d = bdesc_special_args;
+       i < ARRAY_SIZE (bdesc_special_args);
+       i++, d++)
+    {
+      tree type;
+
+      if (d->name == 0)
+	continue;
+
+      switch ((enum ix86_special_builtin_type) d->flag)
+	{
+	case VOID_FTYPE_VOID:
+	  type = void_ftype_void;
+	  break;
+	case V16QI_FTYPE_PCCHAR:
+	  type = v16qi_ftype_pcchar;
+	  break;
+	case V4SF_FTYPE_PCFLOAT:
+	  type = v4sf_ftype_pcfloat;
+	  break;
+	case V2DI_FTYPE_PV2DI:
+	  type = v2di_ftype_pv2di;
+	  break;
+	case V2DF_FTYPE_PCDOUBLE:
+	  type = v2df_ftype_pcdouble;
+	  break;
+	case V4SF_FTYPE_V4SF_PCV2SF:
+	  type = v4sf_ftype_v4sf_pcv2sf;
+	  break;
+	case V2DF_FTYPE_V2DF_PCDOUBLE:
+	  type = v2df_ftype_v2df_pcdouble;
+	  break;
+	case VOID_FTYPE_PV2SF_V4SF:
+	  type = void_ftype_pv2sf_v4sf;
+	  break;
+	case VOID_FTYPE_PV2DI_V2DI:
+	  type = void_ftype_pv2di_v2di;
+	  break;
+	case VOID_FTYPE_PCHAR_V16QI:
+	  type = void_ftype_pchar_v16qi;
+	  break;
+	case VOID_FTYPE_PFLOAT_V4SF:
+	  type = void_ftype_pfloat_v4sf;
+	  break;
+	case VOID_FTYPE_PDOUBLE_V2DF:
+	  type = void_ftype_pdouble_v2df;
+	  break;
+	case VOID_FTYPE_PDI_DI:
+	  type = void_ftype_pdi_di;
+	  break;
+	case VOID_FTYPE_PINT_INT:
+	  type = void_ftype_pint_int;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      def_builtin (d->mask, d->name, type, d->code);
+    }
+
   /* Add all builtins with variable number of operands.  */
   for (i = 0, d = bdesc_args;
        i < ARRAY_SIZE (bdesc_args);
@@ -19412,6 +19557,9 @@ ix86_init_mmx_sse_builtins (void)
 
       switch ((enum ix86_builtin_type) d->flag)
 	{
+	case FLOAT_FTYPE_FLOAT:
+	  type = float_ftype_float;
+	  break;
 	case INT64_FTYPE_V4SF:
 	  type = int64_ftype_v4sf;
 	  break;
@@ -19461,6 +19609,7 @@ ix86_init_mmx_sse_builtins (void)
 	  type = v4si_ftype_v2df;
 	  break;
 	case V4SF_FTYPE_V4SF:
+	case V4SF_FTYPE_V4SF_VEC_MERGE:
 	  type = v4sf_ftype_v4sf;
 	  break;
 	case V4SF_FTYPE_V4SI:
@@ -19497,6 +19646,7 @@ ix86_init_mmx_sse_builtins (void)
 	  type = v2df_ftype_v4sf;
 	  break;
 	case V2DF_FTYPE_V2DF:
+	case V2DF_FTYPE_V2DF_VEC_MERGE:
 	  type = v2df_ftype_v2df;
 	  break;
 	case V2DF_FTYPE_V2SI:
@@ -19741,9 +19891,6 @@ ix86_init_mmx_sse_builtins (void)
       def_builtin_const (d->mask, d->name, ftype, d->code);
     }
 
-  /* Add the remaining MMX insns with somewhat more complicated types.  */
-  def_builtin (OPTION_MASK_ISA_MMX, "__builtin_ia32_emms", void_ftype_void, IX86_BUILTIN_EMMS);
-
   /* comi/ucomi insns.  */
   for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     if (d->mask == OPTION_MASK_ISA_SSE2)
@@ -19755,64 +19902,22 @@ ix86_init_mmx_sse_builtins (void)
   for (i = 0, d = bdesc_ptest; i < ARRAY_SIZE (bdesc_ptest); i++, d++)
     def_builtin_const (d->mask, d->name, int_ftype_v2di_v2di, d->code);
 
+  /* SSE */
   def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_ldmxcsr", void_ftype_unsigned, IX86_BUILTIN_LDMXCSR);
   def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_stmxcsr", unsigned_ftype_void, IX86_BUILTIN_STMXCSR);
 
+  /* SSE or 3DNow!A */
   def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, "__builtin_ia32_maskmovq", void_ftype_v8qi_v8qi_pchar, IX86_BUILTIN_MASKMOVQ);
-
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_loadups", v4sf_ftype_pcfloat, IX86_BUILTIN_LOADUPS);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_storeups", void_ftype_pfloat_v4sf, IX86_BUILTIN_STOREUPS);
-
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_loadhps", v4sf_ftype_v4sf_pv2si, IX86_BUILTIN_LOADHPS);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_loadlps", v4sf_ftype_v4sf_pv2si, IX86_BUILTIN_LOADLPS);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_storehps", void_ftype_pv2si_v4sf, IX86_BUILTIN_STOREHPS);
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_storelps", void_ftype_pv2si_v4sf, IX86_BUILTIN_STORELPS);
-
-  def_builtin (OPTION_MASK_ISA_SSE, "__builtin_ia32_movntps", void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTPS);
-  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, "__builtin_ia32_movntq", void_ftype_pdi_di, IX86_BUILTIN_MOVNTQ);
-  def_builtin (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, "__builtin_ia32_sfence", void_ftype_void, IX86_BUILTIN_SFENCE);
-
-  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTSS);
-  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTSS);
-  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rcpss", v4sf_ftype_v4sf, IX86_BUILTIN_RCPSS);
-
-  ftype = build_function_type_list (float_type_node,
-				    float_type_node,
-				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtf", ftype, IX86_BUILTIN_RSQRTF);
-
-  /* Original 3DNow!  */
-  def_builtin (OPTION_MASK_ISA_3DNOW, "__builtin_ia32_femms", void_ftype_void, IX86_BUILTIN_FEMMS);
 
   /* SSE2 */
   def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_maskmovdqu", void_ftype_v16qi_v16qi_pchar, IX86_BUILTIN_MASKMOVDQU);
 
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_loadupd", v2df_ftype_pcdouble, IX86_BUILTIN_LOADUPD);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_storeupd", void_ftype_pdouble_v2df, IX86_BUILTIN_STOREUPD);
-
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_loadhpd", v2df_ftype_v2df_pcdouble, IX86_BUILTIN_LOADHPD);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_loadlpd", v2df_ftype_v2df_pcdouble, IX86_BUILTIN_LOADLPD);
-
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_movnti", void_ftype_pint_int, IX86_BUILTIN_MOVNTI);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_movntpd", void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTPD);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_movntdq", void_ftype_pv2di_v2di, IX86_BUILTIN_MOVNTDQ);
-
-  def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_sqrtsd", v2df_ftype_v2df, IX86_BUILTIN_SQRTSD);
-
   def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_clflush", void_ftype_pcvoid, IX86_BUILTIN_CLFLUSH);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_lfence", void_ftype_void, IX86_BUILTIN_LFENCE);
   x86_mfence = def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_mfence", void_ftype_void, IX86_BUILTIN_MFENCE);
-
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_loaddqu", v16qi_ftype_pcchar, IX86_BUILTIN_LOADDQU);
-  def_builtin (OPTION_MASK_ISA_SSE2, "__builtin_ia32_storedqu", void_ftype_pchar_v16qi, IX86_BUILTIN_STOREDQU);
 
   /* SSE3.  */
   def_builtin (OPTION_MASK_ISA_SSE3, "__builtin_ia32_monitor", void_ftype_pcvoid_unsigned_unsigned, IX86_BUILTIN_MONITOR);
   def_builtin (OPTION_MASK_ISA_SSE3, "__builtin_ia32_mwait", void_ftype_unsigned_unsigned, IX86_BUILTIN_MWAIT);
-  def_builtin (OPTION_MASK_ISA_SSE3, "__builtin_ia32_lddqu", v16qi_ftype_pcchar, IX86_BUILTIN_LDDQU);
-
-  /* SSE4.1. */
-  def_builtin (OPTION_MASK_ISA_SSE4_1, "__builtin_ia32_movntdqa", v2di_ftype_pv2di, IX86_BUILTIN_MOVNTDQA);
 
   /* AES */
   if (TARGET_AES)
@@ -19832,10 +19937,6 @@ ix86_init_mmx_sse_builtins (void)
       /* Define PCLMUL built-in function only if PCLMUL is enabled.  */
       def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_pclmulqdq128", v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PCLMULQDQ128);
     }
-
-  /* AMDFAM10 SSE4A New built-ins  */
-  def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntsd", void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
-  def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntss", void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTSS);
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V2SI_type_node, integer_type_node,
@@ -20243,71 +20344,12 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
   return target;
 }
 
-/* Subroutine of ix86_expand_builtin to take care of stores.  */
+/* Subroutine of ix86_expand_args_builtin to take care of scalar unop
+   insns with vec_merge.  */
 
 static rtx
-ix86_expand_store_builtin (enum insn_code icode, tree exp)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_normal (arg0);
-  rtx op1 = expand_normal (arg1);
-  enum machine_mode mode0 = insn_data[icode].operand[0].mode;
-  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
-
-  if (VECTOR_MODE_P (mode1))
-    op1 = safe_vector_operand (op1, mode1);
-
-  op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  op1 = copy_to_mode_reg (mode1, op1);
-
-  pat = GEN_FCN (icode) (op0, op1);
-  if (pat)
-    emit_insn (pat);
-  return 0;
-}
-
-/* Subroutine of ix86_expand_builtin to take care of unop insns.  */
-
-static rtx
-ix86_expand_unop_builtin (enum insn_code icode, tree exp,
-			  rtx target, int do_load)
-{
-  rtx pat;
-  tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx op0 = expand_normal (arg0);
-  enum machine_mode tmode = insn_data[icode].operand[0].mode;
-  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
-
-  if (optimize || !target
-      || GET_MODE (target) != tmode
-      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-  if (do_load)
-    op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-  else
-    {
-      if (VECTOR_MODE_P (mode0))
-	op0 = safe_vector_operand (op0, mode0);
-
-      if ((optimize && !register_operand (op0, mode0))
-	  || ! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-    }
-
-  pat = GEN_FCN (icode) (target, op0);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-  return target;
-}
-
-/* Subroutine of ix86_expand_builtin to take care of three special unop insns:
-   sqrtss, sqrtsd, rsqrtss, rsqrtsf, rcpss.  */
-
-static rtx
-ix86_expand_unop1_builtin (enum insn_code icode, tree exp, rtx target)
+ix86_expand_unop_vec_merge_builtin (enum insn_code icode, tree exp,
+				    rtx target)
 {
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
@@ -20417,6 +20459,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   switch ((enum ix86_builtin_type) d->flag)
     {
     case FLOAT128_FTYPE_FLOAT128:
+    case FLOAT_FTYPE_FLOAT:
     case INT64_FTYPE_V4SF:
     case INT64_FTYPE_V2DF:
     case INT_FTYPE_V16QI:
@@ -20452,6 +20495,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V2SF_FTYPE_V2SI:
       nargs = 1;
       break;
+    case V4SF_FTYPE_V4SF_VEC_MERGE:
+    case V2DF_FTYPE_V2DF_VEC_MERGE:
+      return ix86_expand_unop_vec_merge_builtin (icode, exp, target);
     case FLOAT128_FTYPE_FLOAT128_FLOAT128:
     case V16QI_FTYPE_V16QI_V16QI:
     case V16QI_FTYPE_V8HI_V8HI:
@@ -20697,6 +20743,148 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 
   emit_insn (pat);
   return target;
+}
+
+/* Subroutine of ix86_expand_builtin to take care of special insns
+   with variable number of operands.  */
+
+static rtx
+ix86_expand_special_args_builtin (const struct builtin_description *d,
+				    tree exp, rtx target)
+{
+  tree arg;
+  rtx pat, op;
+  unsigned int i, nargs, arg_adjust, memory;
+  struct
+    {
+      rtx op;
+      enum machine_mode mode;
+    } args[2];
+  enum insn_code icode = d->icode;
+  bool last_arg_constant = false;
+  const struct insn_data *insn_p = &insn_data[icode];
+  enum machine_mode tmode = insn_p->operand[0].mode;
+  enum { load, store } class;
+
+  switch ((enum ix86_special_builtin_type) d->flag)
+    {
+    case VOID_FTYPE_VOID:
+      emit_insn (GEN_FCN (icode) (target));
+      return 0;
+    case V2DI_FTYPE_PV2DI:
+    case V16QI_FTYPE_PCCHAR:
+    case V4SF_FTYPE_PCFLOAT:
+    case V2DF_FTYPE_PCDOUBLE:
+      nargs = 1;
+      class = load;
+      memory = 0;
+      break;
+    case VOID_FTYPE_PV2SF_V4SF:
+    case VOID_FTYPE_PV2DI_V2DI:
+    case VOID_FTYPE_PCHAR_V16QI:
+    case VOID_FTYPE_PFLOAT_V4SF:
+    case VOID_FTYPE_PDOUBLE_V2DF:
+    case VOID_FTYPE_PDI_DI:
+    case VOID_FTYPE_PINT_INT:
+      nargs = 1;
+      class = store;
+      /* Reserve memory operand for target.  */
+      memory = ARRAY_SIZE (args);
+      break;
+    case V4SF_FTYPE_V4SF_PCV2SF:
+    case V2DF_FTYPE_V2DF_PCDOUBLE:
+      nargs = 2;
+      class = load;
+      memory = 1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_assert (nargs <= ARRAY_SIZE (args));
+
+  if (class == store)
+    {
+      arg = CALL_EXPR_ARG (exp, 0);
+      op = expand_normal (arg);
+      gcc_assert (target == 0);
+      target = gen_rtx_MEM (tmode, copy_to_mode_reg (Pmode, op));
+      arg_adjust = 1;
+    }
+  else
+    {
+      arg_adjust = 0;
+      if (optimize
+	  || target == 0
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_p->operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+    }
+
+  for (i = 0; i < nargs; i++)
+    {
+      enum machine_mode mode = insn_p->operand[i + 1].mode;
+      bool match;
+
+      arg = CALL_EXPR_ARG (exp, i + arg_adjust);
+      op = expand_normal (arg);
+      match = (*insn_p->operand[i + 1].predicate) (op, mode);
+
+      if (last_arg_constant && (i + 1) == nargs)
+	{
+	  if (!match)
+	    switch (icode)
+	      {
+	     default:
+		error ("the last argument must be an 8-bit immediate");
+		return const0_rtx;
+	      }
+	}
+      else
+	{
+	  if (i == memory)
+	    {
+	      /* This must be the memory operand.  */
+	      op = gen_rtx_MEM (mode, copy_to_mode_reg (Pmode, op));
+	      gcc_assert (GET_MODE (op) == mode
+			  || GET_MODE (op) == VOIDmode);
+	    }
+	  else
+	    {
+	      /* This must be register.  */
+	      if (VECTOR_MODE_P (mode))
+		op = safe_vector_operand (op, mode);
+
+	      gcc_assert (GET_MODE (op) == mode
+			  || GET_MODE (op) == VOIDmode);
+	      op = copy_to_mode_reg (mode, op);
+	    }
+	}
+
+      args[i].op = op;
+      args[i].mode = mode;
+    }
+
+  switch (nargs)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (target, args[0].op);
+      break;
+    case 2:
+      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      break;
+    case 3:
+      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
+			     args[2].op);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return class == store ? 0 : target;
 }
 
 /* Subroutine of ix86_expand_builtin to take care of comi insns.  */
@@ -21134,19 +21322,11 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2;
   rtx op0, op1, op2, pat;
-  enum machine_mode tmode, mode0, mode1, mode2;
+  enum machine_mode mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {
-    case IX86_BUILTIN_EMMS:
-      emit_insn (gen_mmx_emms ());
-      return 0;
-
-    case IX86_BUILTIN_SFENCE:
-      emit_insn (gen_sse_sfence ());
-      return 0;
-
     case IX86_BUILTIN_MASKMOVQ:
     case IX86_BUILTIN_MASKMOVDQU:
       icode = (fcode == IX86_BUILTIN_MASKMOVQ
@@ -21178,75 +21358,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (pat);
       return 0;
 
-    case IX86_BUILTIN_RSQRTF:
-      return ix86_expand_unop1_builtin (CODE_FOR_rsqrtsf2, exp, target);
-
-    case IX86_BUILTIN_SQRTSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmsqrtv4sf2, exp, target);
-    case IX86_BUILTIN_RSQRTSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrsqrtv4sf2, exp, target);
-    case IX86_BUILTIN_RCPSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrcpv4sf2, exp, target);
-
-    case IX86_BUILTIN_LOADUPS:
-      return ix86_expand_unop_builtin (CODE_FOR_sse_movups, exp, target, 1);
-
-    case IX86_BUILTIN_STOREUPS:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movups, exp);
-
-    case IX86_BUILTIN_LOADHPS:
-    case IX86_BUILTIN_LOADLPS:
-    case IX86_BUILTIN_LOADHPD:
-    case IX86_BUILTIN_LOADLPD:
-      icode = (fcode == IX86_BUILTIN_LOADHPS ? CODE_FOR_sse_loadhps
-	       : fcode == IX86_BUILTIN_LOADLPS ? CODE_FOR_sse_loadlps
-	       : fcode == IX86_BUILTIN_LOADHPD ? CODE_FOR_sse2_loadhpd
-	       : CODE_FOR_sse2_loadlpd);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-
-      op0 = force_reg (mode0, op0);
-      op1 = gen_rtx_MEM (mode1, copy_to_mode_reg (Pmode, op1));
-      if (optimize || target == 0
-	  || GET_MODE (target) != tmode
-	  || !register_operand (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case IX86_BUILTIN_STOREHPS:
-    case IX86_BUILTIN_STORELPS:
-      icode = (fcode == IX86_BUILTIN_STOREHPS ? CODE_FOR_sse_storehps
-	       : CODE_FOR_sse_storelps);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-
-      op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      op1 = force_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return const0_rtx;
-
-    case IX86_BUILTIN_MOVNTPS:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movntv4sf, exp);
-    case IX86_BUILTIN_MOVNTQ:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movntdi, exp);
-
     case IX86_BUILTIN_LDMXCSR:
       op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
       target = assign_386_stack_local (SImode, SLOT_VIRTUAL);
@@ -21259,24 +21370,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (gen_sse_stmxcsr (target));
       return copy_to_mode_reg (SImode, target);
 
-    case IX86_BUILTIN_FEMMS:
-      emit_insn (gen_mmx_femms ());
-      return NULL_RTX;
-
-    case IX86_BUILTIN_SQRTSD:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse2_vmsqrtv2df2, exp, target);
-    case IX86_BUILTIN_LOADUPD:
-      return ix86_expand_unop_builtin (CODE_FOR_sse2_movupd, exp, target, 1);
-    case IX86_BUILTIN_STOREUPD:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movupd, exp);
-
-    case IX86_BUILTIN_MFENCE:
-	emit_insn (gen_sse2_mfence ());
-	return 0;
-    case IX86_BUILTIN_LFENCE:
-	emit_insn (gen_sse2_lfence ());
-	return 0;
-
     case IX86_BUILTIN_CLFLUSH:
 	arg0 = CALL_EXPR_ARG (exp, 0);
 	op0 = expand_normal (arg0);
@@ -21286,18 +21379,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
 	emit_insn (gen_sse2_clflush (op0));
 	return 0;
-
-    case IX86_BUILTIN_MOVNTPD:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2df, exp);
-    case IX86_BUILTIN_MOVNTDQ:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2di, exp);
-    case IX86_BUILTIN_MOVNTI:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntsi, exp);
-
-    case IX86_BUILTIN_LOADDQU:
-      return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqu, exp, target, 1);
-    case IX86_BUILTIN_STOREDQU:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, exp);
 
     case IX86_BUILTIN_MONITOR:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -21329,20 +21410,6 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op1 = copy_to_mode_reg (SImode, op1);
       emit_insn (gen_sse3_mwait (op0, op1));
       return 0;
-
-    case IX86_BUILTIN_LDDQU:
-      return ix86_expand_unop_builtin (CODE_FOR_sse3_lddqu, exp,
-				       target, 1);
-
-    case IX86_BUILTIN_MOVNTDQA:
-      return ix86_expand_unop_builtin (CODE_FOR_sse4_1_movntdqa, exp,
-				       target, 1);
-
-    case IX86_BUILTIN_MOVNTSD:
-      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv2df, exp);
-
-    case IX86_BUILTIN_MOVNTSS:
-      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv4sf, exp);
 
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
@@ -21387,6 +21454,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     default:
       break;
     }
+
+  for (i = 0, d = bdesc_special_args;
+       i < ARRAY_SIZE (bdesc_special_args);
+       i++, d++)
+    if (d->code == fcode)
+      return ix86_expand_special_args_builtin (d, exp, target);
 
   for (i = 0, d = bdesc_args;
        i < ARRAY_SIZE (bdesc_args);

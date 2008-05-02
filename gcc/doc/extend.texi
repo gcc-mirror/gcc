@@ -7647,13 +7647,13 @@ Generates the @code{movups} machine instruction as a store to memory.
 Generates the @code{movss} machine instruction as a load from memory.
 @item void __builtin_ia32_storess (float *, v4sf)
 Generates the @code{movss} machine instruction as a store to memory.
-@item v4sf __builtin_ia32_loadhps (v4sf, v2si *)
+@item v4sf __builtin_ia32_loadhps (v4sf, const v2sf *)
 Generates the @code{movhps} machine instruction as a load from memory.
-@item v4sf __builtin_ia32_loadlps (v4sf, v2si *)
+@item v4sf __builtin_ia32_loadlps (v4sf, const v2sf *)
 Generates the @code{movlps} machine instruction as a load from memory
-@item void __builtin_ia32_storehps (v4sf, v2si *)
+@item void __builtin_ia32_storehps (v2sf *, v4sf)
 Generates the @code{movhps} machine instruction as a store to memory.
-@item void __builtin_ia32_storelps (v4sf, v2si *)
+@item void __builtin_ia32_storelps (v2sf *, v4sf)
 Generates the @code{movlps} machine instruction as a store to memory.
 @end table
 
@@ -7755,8 +7755,8 @@ v8hi __builtin_ia32_pmulhuw128 (v8hi, v8hi)
 void __builtin_ia32_maskmovdqu (v16qi, v16qi)
 v2df __builtin_ia32_loadupd (double *)
 void __builtin_ia32_storeupd (double *, v2df)
-v2df __builtin_ia32_loadhpd (v2df, double *)
-v2df __builtin_ia32_loadlpd (v2df, double *)
+v2df __builtin_ia32_loadhpd (v2df, double const *)
+v2df __builtin_ia32_loadlpd (v2df, double const *)
 int __builtin_ia32_movmskpd (v2df)
 int __builtin_ia32_pmovmskb128 (v16qi)
 void __builtin_ia32_movnti (int *, int)
