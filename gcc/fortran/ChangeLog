@@ -1,3 +1,9 @@
+2008-05-01  Bud Davis  <bdavis9659@sbcglobal.net>
+
+	PR35940/Fortran
+	* simplify.c (gfc_simplify_index): Check for direction argument 
+	being a constant.
+
 2008-05-01  Janus Weil  <jaydub66@gmail.com>
 
 	* gfortran.h (struct gfc_symbol): Moving "interface" member to

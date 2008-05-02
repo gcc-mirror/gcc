@@ -1,3 +1,8 @@
+2008-05-01  Bud Davis  <bdavis9659@sbcglobal.net>
+
+	PR fortran/PR35940	
+	* gfortran.dg/index.f90: New test.
+
 2008-05-01  Simon Baldwin <simonb@google.com>
 
 	* testsuite/gcc.dg/Warray-bounds.c: Updated for frontend warnings,
