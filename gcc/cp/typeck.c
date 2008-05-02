@@ -2556,8 +2556,7 @@ build_array_ref (tree array, tree idx)
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
-      bool has_warned_on_bounds_check = false;
-      tree rval, type, ref;
+      tree rval, type;
 
       warn_array_subscript_with_type_char (idx);
 
@@ -2573,10 +2572,6 @@ build_array_ref (tree array, tree idx)
 	 seem to be to convert IDX to ptrdiff_t; we're performing
 	 pointer arithmetic.)  */
       idx = perform_integral_promotions (idx);
-
-      /* Warn about any obvious array bounds errors for fixed size arrays that
-         are indexed by a constant.  */
-      has_warned_on_bounds_check = warn_array_subscript_range (array, idx);
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
@@ -2628,12 +2623,7 @@ build_array_ref (tree array, tree idx)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
 	|= (CP_TYPE_VOLATILE_P (type) | TREE_THIS_VOLATILE (array));
-      ref = require_complete_type (fold_if_not_in_template (rval));
-
-      /* Suppress bounds warning in tree-vrp.c if already warned here.  */
-      if (has_warned_on_bounds_check)
-        TREE_NO_WARNING (ref) = 1;
-      return ref;
+      return require_complete_type (fold_if_not_in_template (rval));
     }
 
   {
