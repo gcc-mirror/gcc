@@ -1,3 +1,38 @@
+2008-05-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_special_builtin_type): New.
+	(bdesc_special_args): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_builtin): Updated.
+	(ix86_expand_store_builtin): Removed.
+	(ix86_expand_unop_builtin): Likewise.
+
+	* config/i386/mm3dnow.h (__v2sf): Moved to ...
+	* config/i386/mmintrin.h (__v2sf): Here.
+
+	* config/i386/xmmintrin.h (_mm_loadh_pi): Replace __v2si with
+	const __v2sf.
+	(_mm_loadl_pi): Likewise.
+	(_mm_storeh_pi): Replace __v2si with __v2sf.
+	(_mm_storel_pi): Likewise.
+
+	* doc/extend.texi: Correct __builtin_ia32_loadhps,
+	__builtin_ia32_loadlps, __builtin_ia32_storehps,
+	__builtin_ia32_storelps, __builtin_ia32_loadhpd and
+	__builtin_ia32_loadlpd.
+
+2008-05-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtin_type): Add FLOAT_FTYPE_FLOAT,
+	V4SF_FTYPE_V4SF_VEC_MERGE and V2DF_FTYPE_V2DF_VEC_MERGE.
+	(bdesc_args): Updated.  Add scalar SSE builtins with vec_merge.
+	(ix86_init_mmx_sse_builtins): Updated.
+	(ix86_expand_args_builtin): Likewise.
+	(ix86_expand_builtin): Likewise.
+	(ix86_expand_unop1_builtin): Renamed to ...
+	(ix86_expand_unop_vec_merge_builtin): This.
+
 2008-05-01  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/36100
