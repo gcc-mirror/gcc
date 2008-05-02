@@ -999,11 +999,15 @@ execute_todo (unsigned int flags)
      to analyze side effects.  The full removal is done just at the end
      of IPA pass queue.  */
   if (flags & TODO_remove_functions)
-    cgraph_remove_unreachable_nodes (true, dump_file);
+    {
+      gcc_assert (!cfun);
+      cgraph_remove_unreachable_nodes (true, dump_file);
+    }
 
   if ((flags & TODO_dump_cgraph)
       && dump_file && !current_function_decl)
     {
+      gcc_assert (!cfun);
       dump_cgraph (dump_file);
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
@@ -1162,7 +1166,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   pass_init_dump_file (pass);
 
   /* Run pre-pass verification.  */
-  execute_todo (pass->todo_flags_start);
+  execute_todo (ipa_pass->function_transform_todo_flags_start);
 
   /* If a timevar is present, start it.  */
   if (pass->tv_id)

@@ -1,3 +1,11 @@
+2008-05-01  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/36100
+	* ipa-inline.c (inline_generate_summary): Make static.
+	(inline_transform): Do not call inlining at -O0; make static.
+	* passes.c (execute_todo): Add sanity check.
+	(execute_one_ipa_transform_pass): Execute proper flags.
+
 2008-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (TYPE_NONALIASED_COMPONENT): Expand comment.
