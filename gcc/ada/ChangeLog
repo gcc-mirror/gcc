@@ -1,3 +1,15 @@
+2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (maybe_pad_type): Try to get a form of the type with integral
+	mode even if the alignment is not a factor of the original size.  But
+	make sure to create the inner field with the original size.  Reorder.
+	* trans.c (addressable_p) <COMPONENT_REF>: Treat the field of a padding
+	record as always addressable.
+	* utils.c (convert): Deal specially with conversions between original
+	and packable versions of a record type.
+	* utils2.c (build_binary_op) <MODIFY_EXPR>: Be more restrictive when
+	recognizing an assignment between padded objects.
+
 2008-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (make_packable_type): Resize the last component to its RM size

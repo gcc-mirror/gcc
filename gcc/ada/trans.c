@@ -202,7 +202,7 @@ static tree emit_range_check (tree, Node_Id);
 static tree emit_index_check (tree, tree, tree, tree);
 static tree emit_check (tree, tree, int);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool);
-static bool larger_record_type_p (tree, tree);
+static bool smaller_packable_type_p (tree, tree);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
@@ -2204,11 +2204,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	     of the object if they are distinct, because the expectations
 	     of the callee would otherwise not be met:
 	       - if it's a justified modular type,
-	       - if the actual type is a packable version of it.  */
+	       - if the actual type is a smaller packable version of it.  */
 	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
 		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
-		       || larger_record_type_p (gnu_name_type,
-						TREE_TYPE (gnu_name))))
+		       || smaller_packable_type_p (TREE_TYPE (gnu_name),
+						 gnu_name_type)))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
 	  /* Make a SAVE_EXPR to both properly account for potential side
@@ -6120,21 +6120,25 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   return convert (gnu_type, gnu_result);
 }
 
-/* Return true if RECORD_TYPE, a record type, is larger than TYPE.  */
+/* Return true if TYPE is a smaller packable version of RECORD_TYPE.  */
 
 static bool
-larger_record_type_p (tree record_type, tree type)
+smaller_packable_type_p (tree type, tree record_type)
 {
-  tree rsize, size;
+  tree size, rsize;
 
-  /* Padding types are not considered larger on their own.  */
-  if (TYPE_IS_PADDING_P (record_type))
+  /* We're not interested in variants here.  */
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (record_type))
     return false;
 
-  rsize = TYPE_SIZE (record_type);
-  size = TYPE_SIZE (type);
+  /* Like a variant, a packable version keeps the original TYPE_NAME.  */
+  if (TYPE_NAME (type) != TYPE_NAME (record_type))
+    return false;
 
-  if (!(TREE_CODE (rsize) == INTEGER_CST && TREE_CODE (size) == INTEGER_CST))
+  size = TYPE_SIZE (type);
+  rsize = TYPE_SIZE (record_type);
+
+  if (!(TREE_CODE (size) == INTEGER_CST && TREE_CODE (rsize) == INTEGER_CST))
     return false;
 
   return tree_int_cst_lt (size, rsize) != 0;
@@ -6208,7 +6212,7 @@ addressable_p (tree gnu_expr, tree gnu_type)
      to be considered in practice.  */
   if (gnu_type
       && TREE_CODE (gnu_type) == RECORD_TYPE
-      && larger_record_type_p (gnu_type, TREE_TYPE (gnu_expr)))
+      && smaller_packable_type_p (TREE_TYPE (gnu_expr), gnu_type))
     return false;
 
   switch (TREE_CODE (gnu_expr))
@@ -6238,16 +6242,18 @@ addressable_p (tree gnu_expr, tree gnu_type)
 	      && addressable_p (TREE_OPERAND (gnu_expr, 2), NULL_TREE));
 
     case COMPONENT_REF:
-      return (!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
-	      && (!STRICT_ALIGNMENT
-		  /* Even with DECL_BIT_FIELD cleared, we have to ensure that
-		     the field is sufficiently aligned, in case it is subject
-		     to a pragma Component_Alignment.  But we don't need to
-		     check the alignment of the containing record, as it is
-		     guaranteed to be not smaller than that of its most
-		     aligned field that is not a bit-field.  */
-		  || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
-		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr)))
+      return (((!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
+		/* Even with DECL_BIT_FIELD cleared, we have to ensure that
+		   the field is sufficiently aligned, in case it is subject
+		   to a pragma Component_Alignment.  But we don't need to
+		   check the alignment of the containing record, as it is
+		   guaranteed to be not smaller than that of its most
+		   aligned field that is not a bit-field.  */
+	        && (!STRICT_ALIGNMENT
+		    || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
+		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr))))
+	       /* The field of a padding record is always addressable.  */
+	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:

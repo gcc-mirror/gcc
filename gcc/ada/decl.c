@@ -5448,9 +5448,9 @@ make_packable_type (tree type, bool in_record)
 
   new_type = make_node (TREE_CODE (type));
 
-  /* Copy the name and flags from the old type to that of the new.  Note
-     that we rely on the pointer equality created here for TYPE_NAME at
-     the end of gnat_to_gnu.  */
+  /* Copy the name and flags from the old type to that of the new.
+     Note that we rely on the pointer equality created here for
+     TYPE_NAME to look through conversions in various places.  */
   TYPE_NAME (new_type) = TYPE_NAME (type);
   TYPE_JUSTIFIED_MODULAR_P (new_type) = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
@@ -5576,7 +5576,7 @@ make_packable_type (tree type, bool in_record)
    GNAT_ENTITY and NAME_TRAILER are used to name the resulting record and
    to issue a warning.
 
-   IS_USER_TYPE is true if we must be sure we complete the original type.
+   IS_USER_TYPE is true if we must complete the original type.
 
    DEFINITION is true if this type is being defined.
 
@@ -5634,16 +5634,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align == 0 && !size)
     return type;
 
-  /* We used to modify the record in place in some cases, but that could
-     generate incorrect debugging information.  So make a new record
-     type and name.  */
-  record = make_node (RECORD_TYPE);
-
-  if (Present (gnat_entity))
-    TYPE_NAME (record) = create_concat_name (gnat_entity, name_trailer);
-
-  /* If we were making a type, complete the original type and give it a
-     name.  */
+  /* If requested, complete the original type and give it a name.  */
   if (is_user_type)
     create_type_decl (get_entity_name (gnat_entity), type,
 		      NULL, !Comes_From_Source (gnat_entity),
@@ -5652,41 +5643,56 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 			&& DECL_IGNORED_P (TYPE_NAME (type))),
 		      gnat_entity);
 
-  /* If we are changing the alignment and the input type is a record with
-     BLKmode and a small constant size, try to make a form that has an
-     integral mode.  That might allow this record to have an integral mode,
-     which will be much more efficient.  There is no point in doing this if a
-     size is specified unless it is also smaller than the maximum mode size
-     and it is incorrect to do this if the size of the original type is not a
-     multiple of the alignment.  */
-  if (align != 0
-      && TREE_CODE (type) == RECORD_TYPE
-      && TYPE_MODE (type) == BLKmode
-      && TREE_CODE (orig_size) == INTEGER_CST
-      && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
-      && (!size
-	  || (TREE_CODE (size) == INTEGER_CST
-	      && compare_tree_int (size, MAX_FIXED_MODE_SIZE) <= 0))
-      && value_factor_p (orig_size, align))
-    type = make_packable_type (type, true);
+  /* We used to modify the record in place in some cases, but that could
+     generate incorrect debugging information.  So make a new record
+     type and name.  */
+  record = make_node (RECORD_TYPE);
+  TYPE_IS_PADDING_P (record) = 1;
 
-  field  = create_field_decl (get_identifier ("F"), type, record, 0,
-			      NULL_TREE, bitsize_zero_node, 1);
+  if (Present (gnat_entity))
+    TYPE_NAME (record) = create_concat_name (gnat_entity, name_trailer);
 
-  DECL_INTERNAL_P (field) = 1;
-  TYPE_SIZE (record) = size ? size : orig_size;
-  TYPE_SIZE_UNIT (record)
-    = (size ? convert (sizetype,
-		       size_binop (CEIL_DIV_EXPR, size, bitsize_unit_node))
-       : TYPE_SIZE_UNIT (type));
+  TYPE_VOLATILE (record)
+    = Present (gnat_entity) && Treat_As_Volatile (gnat_entity);
 
   TYPE_ALIGN (record) = align;
   if (orig_align)
     TYPE_USER_ALIGN (record) = align;
 
-  TYPE_IS_PADDING_P (record) = 1;
-  TYPE_VOLATILE (record)
-    = Present (gnat_entity) && Treat_As_Volatile (gnat_entity);
+  TYPE_SIZE (record) = size ? size : orig_size;
+  TYPE_SIZE_UNIT (record)
+    = convert (sizetype,
+	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
+			   bitsize_unit_node));
+
+  /* If we are changing the alignment and the input type is a record with
+     BLKmode and a small constant size, try to make a form that has an
+     integral mode.  This might allow the padding record to also have an
+     integral mode, which will be much more efficient.  There is no point
+     in doing so if a size is specified unless it is also a small constant
+     size and it is incorrect to do so if we cannot guarantee that the mode
+     will be naturally aligned since the field must always be addressable.  */
+  if (align != 0
+      && TREE_CODE (type) == RECORD_TYPE
+      && TYPE_MODE (type) == BLKmode
+      && TREE_CODE (orig_size) == INTEGER_CST
+      && !TREE_CONSTANT_OVERFLOW (orig_size)
+      && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
+      && (!size
+	  || (TREE_CODE (size) == INTEGER_CST
+	      && compare_tree_int (size, MAX_FIXED_MODE_SIZE) <= 0)))
+    {
+      tree packable_type = make_packable_type (type, true);
+      if (TYPE_MODE (packable_type) != BLKmode
+	  && align >= TYPE_ALIGN (packable_type))
+        type = packable_type;
+    }
+
+  /* Now create the field with the original size.  */
+  field  = create_field_decl (get_identifier ("F"), type, record, 0,
+			      orig_size, bitsize_zero_node, 1);
+  DECL_INTERNAL_P (field) = 1;
+
   /* Do not finalize it until after the auxiliary record is built.  */
   finish_record_type (record, field, 1, true);
 
