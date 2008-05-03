@@ -1,3 +1,7 @@
+2008-05-03  Andrew Pinski  <pinskia@gmail.com>
+
+	* Makefile.in (tree-ssa-phiprop.o): Fix dependencies.
+
 2008-05-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtin_type): Move V4SI_FTYPE_V4SF
