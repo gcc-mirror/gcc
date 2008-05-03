@@ -103,6 +103,12 @@ mstring;
 
 /*************************** Enums *****************************/
 
+/* Used when matching and resolving data I/O transfer statements.  */
+
+typedef enum
+{ M_READ, M_WRITE, M_PRINT, M_INQUIRE }
+io_kind;
+
 /* The author remains confused to this day about the convention of
    returning '0' for 'SUCCESS'... or was it the other way around?  The
    following enum makes things much more readable.  We also start
@@ -1444,6 +1450,8 @@ typedef struct gfc_expr
   {
     int logical;
 
+    io_kind iokind;
+
     mpz_t integer;
 
     mpfr_t real;
@@ -1684,7 +1692,7 @@ typedef struct
 {
   gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg,
 	   *id, *pos, *asynchronous, *blank, *decimal, *delim, *pad, *round,
-	   *sign;
+	   *sign, *extra_comma;
 
   gfc_symbol *namelist;
   /* A format_label of `format_asterisk' indicates the "*" format */
