@@ -1,3 +1,7 @@
+2008-05-02  David S. Miller  <davem@davemloft.net>
+
+	* config.gcc (need_64bit_hwint): Document libcpp dependency.
+
 2008-05-02  Simon Baldwin <simonb@google.com>
 
 	PR bootstrap/36108

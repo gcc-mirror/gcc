@@ -141,6 +141,8 @@
 #  need_64bit_hwint	Set to yes if HOST_WIDE_INT must be 64 bits wide
 #			for this target.  This is true iff this target
 #			supports "long" or "wchar_t" wider than 32 bits.
+#			The setting made here must match the one made in
+#			other locations such as libcpp/configure.ac
 #
 #  configure_default_options
 #			Set to an initializer for configure_default_options
