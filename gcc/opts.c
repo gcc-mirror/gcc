@@ -1865,6 +1865,8 @@ set_Wstrict_aliasing (int onoff)
   gcc_assert (onoff == 0 || onoff == 1);
   if (onoff != 0)
     warn_strict_aliasing = 3;
+  else
+    warn_strict_aliasing = 0;
 }
 
 /* The following routines are useful in setting all the flags that
