@@ -1,3 +1,8 @@
+2008-05-03  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/invoke.texi (max-flow-memory-locations): Removed.
+	* params.def (PARAM_MAX_FLOW_MEMORY_LOCATIONS): Removed.
+	
 2008-05-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34973
