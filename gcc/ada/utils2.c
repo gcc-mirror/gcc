@@ -693,21 +693,24 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  && TYPE_ALIGN_OK (right_type))
 	operation_type = right_type;
 
-      /* If we are copying between padded objects of the same underlying
-	 type with a non-zero size, use the padded view of the type, this
-	 is very likely more efficient; but gnat_to_gnu will have removed
-	 the padding on the RHS so we have to make sure that we can safely
-	 put it back.  */
+      /* If we are copying between padded objects with compatible types, use
+	 the padded view of the objects, this is very likely more efficient.
+	 Likewise for a padded that is assigned a constructor, in order to
+	 avoid putting a VIEW_CONVERT_EXPR on the LHS.  But don't do this if
+	 we wouldn't have actually copied anything.  */
       else if (TREE_CODE (left_type) == RECORD_TYPE
 	       && TYPE_IS_PADDING_P (left_type)
-	       && TREE_TYPE (TYPE_FIELDS (left_type)) == right_type
-	       && !integer_zerop (TYPE_SIZE (right_type))
+	       && TREE_CONSTANT (TYPE_SIZE (left_type))
 	       && ((TREE_CODE (right_operand) == COMPONENT_REF
 		    && TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
 		       == RECORD_TYPE
 		    && TYPE_IS_PADDING_P
-		       (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
-		   || TREE_CODE (right_operand) == CONSTRUCTOR))
+		       (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
+		    && gnat_types_compatible_p
+			(left_type,
+			 TREE_TYPE (TREE_OPERAND (right_operand, 0))))
+		   || TREE_CODE (right_operand) == CONSTRUCTOR)
+	       && !integer_zerop (TYPE_SIZE (right_type)))
 	operation_type = left_type;
 
       /* Find the best type to use for copying between aggregate types.  */

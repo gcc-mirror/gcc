@@ -27,5 +27,5 @@ begin
    A_REC := B_REC;
 end;
 
--- { dg-final { scan-tree-dump-not "VIEW_CONVERT_EXPR" "gimple" } }
+-- { dg-final { scan-tree-dump-not "\.F" "gimple" } }
 -- { dg-final { cleanup-tree-dump "gimple" } }

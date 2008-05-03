@@ -1,3 +1,9 @@
+2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment4.adb: Adjust.
+	* gnat.dg/alignment5.adb: Likewise.
+	* gnat.dg/alignment6.adb: XFAIL.
+
 2008-05-03  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/loop-36.c: Cleanup the dump file.
