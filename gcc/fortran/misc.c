@@ -77,6 +77,7 @@ gfc_clear_ts (gfc_typespec *ts)
   ts->derived = NULL;
   ts->kind = 0;
   ts->cl = NULL;
+  ts->interface = NULL;
   /* flag that says if the type is C interoperable */
   ts->is_c_interop = 0;
   /* says what f90 type the C kind interops with */
