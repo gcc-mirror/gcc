@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-03-24 15:08+0800\n"
+"PO-Revision-Date: 2008-05-03 22:26+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -4112,7 +4112,7 @@ msgstr "‘shape’内建函数的‘source’实参在%L处不能是假定大�
 #: fortran/check.c:2473
 #, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be less than rank %d"
-msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’秩必须小于 %d"
+msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’秩必须小于 %4$d"
 
 #: fortran/check.c:2725
 #, no-c-format
@@ -7052,7 +7052,7 @@ msgstr "扩展：%L处的 CONVERT 标记"
 #: fortran/io.c:1367 fortran/io.c:1375
 #, no-c-format
 msgid "Fortran 2003: %s specifier in %s statement at %C has value '%s'"
-msgstr "Fortran 2003：%3$ 处 %2$ 语句中的 %1$s 限定符值为‘%4$s’"
+msgstr "Fortran 2003：%3$C 处 %2$s 语句中的 %1$s 限定符值为‘%4$s’"
 
 #: fortran/io.c:1393 fortran/io.c:1401
 #, no-c-format
@@ -8988,7 +8988,7 @@ msgstr ""
 #: fortran/resolve.c:1640
 #, no-c-format
 msgid "Unable to resolve the specific function '%s' at %L"
-msgstr "不能解析 %$2L处的函数‘%1$s’"
+msgstr "不能解析 %2$L处的函数‘%1$s’"
 
 #: fortran/resolve.c:1696 fortran/resolve.c:8931
 #, no-c-format
@@ -9057,7 +9057,7 @@ msgstr "%3$L处‘%2$s’的形参‘%1$s’必须为 BIND(C)"
 #: fortran/resolve.c:2170
 #, no-c-format
 msgid "'%s' at %L is not a function"
-msgstr "%2L处的‘%1$s’不是一个函数"
+msgstr "%2$L处的‘%1$s’不是一个函数"
 
 #: fortran/resolve.c:2176
 #, no-c-format
@@ -10622,7 +10622,7 @@ msgstr "%L处指定了重复的 VOLATILE 属性"
 #: fortran/symbol.c:1296
 #, no-c-format
 msgid "%s attribute of '%s' conflicts with %s attribute at %L"
-msgstr "‘%2$s’的 %1$s 属性与%4$L处的 %2$s 属性冲突"
+msgstr "‘%2$s’的 %1$s 属性与%4$L处的 %3$s 属性冲突"
 
 #: fortran/symbol.c:1330
 #, no-c-format
@@ -15764,7 +15764,7 @@ msgstr "当下标类型为“char”时给出警告"
 
 #: c.opt:156
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\""
-msgstr "对能为%<longjmp%>或%<vfork%>所篡改的变量给出警告"
+msgstr "对能为\"longjmp\"或\"vfork\"所篡改的变量给出警告"
 
 #: c.opt:160
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
@@ -18647,7 +18647,7 @@ msgstr "ISO C90 不支持%<long long%>"
 #: c-decl.c:7230 c-decl.c:7259
 #, gcc-internal-format
 msgid "both %<long%> and %<short%> in declaration specifiers"
-msgstr "声明中同时使用了 <long%>和%<short%>"
+msgstr "声明中同时使用了 %<long%>和%<short%>"
 
 #: c-decl.c:7233 c-decl.c:7436
 #, gcc-internal-format
@@ -19963,7 +19963,7 @@ msgstr "%H%<num_threads%>值必须为正"
 #: c-parser.c:7141
 #, gcc-internal-format
 msgid "expected %<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, or %<||%>"
-msgstr "需要%<+%>、<*%>、%<-%>、%<&%>、%<^%>、%<|%>、%<&&%>或%<||%>"
+msgstr "需要%<+%>、%<*%>、%<-%>、%<&%>、%<^%>、%<|%>、%<&&%>或%<||%>"
 
 #: c-parser.c:7224
 #, gcc-internal-format
@@ -20532,7 +20532,7 @@ msgstr "单目减的操作数类型错误"
 #: c-typeck.c:2952
 #, gcc-internal-format
 msgid "ISO C does not support %<~%> for complex conjugation"
-msgstr "ISO C 不支持用 ~ 求共轭复数"
+msgstr "ISO C 不支持用 %<~%> 求共轭复数"
 
 #: c-typeck.c:2958
 #, gcc-internal-format
@@ -27695,7 +27695,7 @@ msgstr "只能为对象和函数指定类型限定"
 #: cp/decl.c:3853
 #, gcc-internal-format
 msgid "%<typedef%> was ignored in this declaration"
-msgstr "此声明中的 typedef 被忽略"
+msgstr "此声明中的 %<typedef%> 被忽略"
 
 #: cp/decl.c:3882
 #, gcc-internal-format
@@ -27731,7 +27731,7 @@ msgstr "%q#D声明有%<extern%>并被初始化"
 #: cp/decl.c:4034
 #, gcc-internal-format
 msgid "definition of %q#D is marked %<dllimport%>"
-msgstr "%q#D的定义被标记为 dllimport"
+msgstr "%q#D的定义被标记为 %<dllimport%>"
 
 #: cp/decl.c:4053
 #, gcc-internal-format
@@ -31909,7 +31909,7 @@ msgstr "ISO C++ 不允许在程序里调用%<::main%>"
 #: cp/typeck.c:2764
 #, gcc-internal-format
 msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (...)%>"
-msgstr "必须用%<.*%>or%<->*%>调用 <%E (...)%>中的成员函数指针"
+msgstr "必须用%<.*%>or%<->*%>调用 %<%E (...)%>中的成员函数指针"
 
 #: cp/typeck.c:2778
 #, gcc-internal-format
