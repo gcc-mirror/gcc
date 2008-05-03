@@ -2143,11 +2143,6 @@ gfc_match_flush (void)
 
 /******************** Data Transfer Statements *********************/
 
-typedef enum
-{ M_READ, M_WRITE, M_PRINT, M_INQUIRE }
-io_kind;
-
-
 /* Return a default unit number.  */
 
 static gfc_expr *
@@ -2421,6 +2416,7 @@ gfc_free_dt (gfc_dt *dt)
   gfc_free_expr (dt->round);
   gfc_free_expr (dt->blank);
   gfc_free_expr (dt->decimal);
+  gfc_free_expr (dt->extra_comma);
   gfc_free (dt);
 }
 
@@ -2451,9 +2447,40 @@ gfc_resolve_dt (gfc_dt *dt)
       && (e->ts.type != BT_INTEGER
 	  && (e->ts.type != BT_CHARACTER || e->expr_type != EXPR_VARIABLE)))
     {
-      gfc_error ("UNIT specification at %L must be an INTEGER expression "
-		 "or a CHARACTER variable", &e->where);
-      return FAILURE;
+      /* If there is no extra comma signifying the "format" form of the IO
+	 statement, then this must be an error.  */
+      if (!dt->extra_comma)
+	{
+	  gfc_error ("UNIT specification at %L must be an INTEGER expression "
+		     "or a CHARACTER variable", &e->where);
+	  return FAILURE;
+	}
+      else
+	{
+	  /* At this point, we have an extra comma.  If io_unit has arrived as
+	     type chracter, we assume its really the "format" form of the I/O
+	     statement.  We set the io_unit to the default unit and format to
+	     the chracter expression.  See F95 Standard section 9.4.  */
+	  io_kind k;
+	  k = dt->extra_comma->value.iokind;
+	  if (e->ts.type == BT_CHARACTER && (k == M_READ || k == M_PRINT))
+	    {
+	      dt->format_expr = dt->io_unit;
+	      dt->io_unit = default_unit (k);
+
+	      /* Free this pointer now so that a warning/error is not triggered
+		 below for the "Extension".  */
+	      gfc_free_expr (dt->extra_comma);
+	      dt->extra_comma = NULL;
+	    }
+
+	  if (k == M_WRITE)
+	    {
+	      gfc_error ("Invalid form of WRITE statement at %L, UNIT required",
+			 &dt->extra_comma->where);
+	      return FAILURE;
+	    }
+	}
     }
 
   if (e->ts.type == BT_CHARACTER)
@@ -2470,6 +2497,11 @@ gfc_resolve_dt (gfc_dt *dt)
       gfc_error ("External IO UNIT cannot be an array at %L", &e->where);
       return FAILURE;
     }
+
+  if (dt->extra_comma
+      && gfc_notify_std (GFC_STD_GNU, "Extension: Comma before i/o "
+			 "item list at %L", &dt->extra_comma->where) == FAILURE)
+    return FAILURE;
 
   if (dt->err)
     {
@@ -3306,12 +3338,23 @@ get_io_list:
   /* Used in check_io_constraints, where no locus is available.  */
   spec_end = gfc_current_locus;
 
-  /* Optional leading comma (non-standard).  */
-  if (!comma_flag
-      && gfc_match_char (',') == MATCH_YES
-      && gfc_notify_std (GFC_STD_GNU, "Extension: Comma before i/o "
-			 "item list at %C") == FAILURE)
-    return MATCH_ERROR;
+  /* Optional leading comma (non-standard).  We use a gfc_expr structure here
+     to save the locus.  This is used later when resolving transfer statements
+     that might have a format expression without unit number.  */
+  if (!comma_flag && gfc_match_char (',') == MATCH_YES)
+    {
+      dt->extra_comma = gfc_get_expr ();
+
+      /* Set the types to something compatible with iokind. This is needed to
+	 get through gfc_free_expr later since iokind really has no Basic Type,
+	 BT, of its own.  */
+      dt->extra_comma->expr_type = EXPR_CONSTANT;
+      dt->extra_comma->ts.type = BT_LOGICAL;
+
+      /* Save the iokind and locus for later use in resolution.  */
+      dt->extra_comma->value.iokind = k;
+      dt->extra_comma->where = gfc_current_locus;
+    }
 
   io_code = NULL;
   if (gfc_match_eos () != MATCH_YES)

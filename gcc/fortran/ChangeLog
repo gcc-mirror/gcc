@@ -1,3 +1,14 @@
+2008-05-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33268
+	* gfortran.h: Add extra_comma pointer to gfc_dt structure. Add iokind to
+	gfc_expr value union. Add io_kind enum to here from io.c.
+	* io.c (gfc_free_dt): Free extra_comma.
+	(gfc_resolve_dt): If an extra comma was encountered and io_unit is type
+	BT_CHARACTER, resolve to format_expr and set default unit.  Error if
+	io_kind is M_WRITE. (match_io):  Match the extra comma and set new
+	pointer, extra_comma.
+
 2008-05-01  Bud Davis  <bdavis9659@sbcglobal.net>
 
 	PR35940/Fortran
