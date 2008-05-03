@@ -1,5 +1,10 @@
 2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (components_to_record): Zero the alignment of the qualified
+	union built for the variant part upon creating it.
+
+2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (maybe_pad_type): Try to get a form of the type with integral
 	mode even if the alignment is not a factor of the original size.  But
 	make sure to create the inner field with the original size.  Reorder.
