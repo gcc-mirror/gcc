@@ -1,5 +1,10 @@
 2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr6_pkg.ads: New helper.
+	* gnat.dg/discr6.adb: New test.
+
+2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/alignment4.adb: Adjust.
 	* gnat.dg/alignment5.adb: Likewise.
 	* gnat.dg/alignment6.adb: XFAIL.
