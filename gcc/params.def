@@ -514,10 +514,6 @@ DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
 	 "max-cselib-memory-locations",
 	 "The maximum memory locations recorded by cselib",
 	 500, 0, 0)
-DEFPARAM(PARAM_MAX_FLOW_MEMORY_LOCATIONS,
-	 "max-flow-memory-locations",
-	 "The maximum memory locations recorded by flow",
-	 100, 0, 0)
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 # define GGC_MIN_EXPAND_DEFAULT 0
