@@ -18023,8 +18023,8 @@ enum ix86_builtin_type
   V8QI_FTYPE_V8QI,
   V4SI_FTYPE_V4SI,
   V4SI_FTYPE_V16QI,
-  V4SI_FTYPE_V4SF,
   V4SI_FTYPE_V8HI,
+  V4SI_FTYPE_V4SF,
   V4SI_FTYPE_V2DF,
   V4HI_FTYPE_V4HI,
   V4SF_FTYPE_V4SF,
@@ -19599,14 +19599,14 @@ ix86_init_mmx_sse_builtins (void)
 	case V4SI_FTYPE_V8HI:
 	  type = v4si_ftype_v8hi;
 	  break;
-	case V4HI_FTYPE_V4HI:
-	  type = v4hi_ftype_v4hi;
-	  break;
 	case V4SI_FTYPE_V4SF:
 	  type = v4si_ftype_v4sf;
 	  break;
 	case V4SI_FTYPE_V2DF:
 	  type = v4si_ftype_v2df;
+	  break;
+	case V4HI_FTYPE_V4HI:
+	  type = v4hi_ftype_v4hi;
 	  break;
 	case V4SF_FTYPE_V4SF:
 	case V4SF_FTYPE_V4SF_VEC_MERGE:
