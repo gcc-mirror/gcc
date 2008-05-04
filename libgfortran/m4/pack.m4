@@ -104,7 +104,6 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 
   dim = GFC_DESCRIPTOR_RANK (array);
 
-  sptr = array->data;
   mptr = mask->data;
 
   /* Use the same loop for all logical types, by using GFC_LOGICAL_1
@@ -140,6 +139,11 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
   if (mstride[0] == 0)
     mstride[0] = mask_kind;
 
+  if (zero_sized)
+    sptr = NULL;
+  else
+    sptr = array->data;
+
   if (ret->data == NULL || compile_options.bounds_check)
     {
       /* Count the elements, either for allocating memory or
@@ -150,6 +154,11 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 	  /* The return array will have as many
 	     elements as there are in VECTOR.  */
 	  total = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
+	  if (total < 0)
+	    {
+	      total = 0;
+	      vector = NULL;
+	    }
 	}
       else
 	{

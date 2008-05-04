@@ -1,3 +1,29 @@
+2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35990
+	* intrinsics/pack_generic.c:  If an extent of the source
+	array is less then zero, set it to zero.  Set the source
+	pointer to NULL if the source size is zero.  Set the total
+	number of elements to zero if the vector has an extent
+	less or equal to zero.
+	* m4/pack.m4:  Set the source pointer to NULL if the
+	source array is zero-sized.  Set the total number of
+	elemements to zero if the vector has an extent less or
+	equal to zero.
+	* generated/pack_i1.c:  Regenerated.
+	* generated/pack_i2.c:  Regenerated.
+	* generated/pack_i4.c:  Regenerated.
+	* generated/pack_i8.c:  Regenerated.
+	* generated/pack_i16.c:  Regenerated.
+	* generated/pack_r4.c:  Regenerated.
+	* generated/pack_r8.c:  Regenerated.
+	* generated/pack_r10.c:  Regenerated.
+	* generated/pack_r16.c:  Regenerated.
+	* generated/pack_c4.c:  Regenerated.
+	* generated/pack_c8.c:  Regenerated.
+	* generated/pack_c10.c:  Regenerated.
+	* generated/pack_c16.c:  Regenerated.
+
 2008-05-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36094
