@@ -20873,10 +20873,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case 2:
       pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
       break;
-    case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op);
-      break;
     default:
       gcc_unreachable ();
     }
