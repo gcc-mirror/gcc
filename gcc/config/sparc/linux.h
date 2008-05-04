@@ -22,38 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      builtin_define_std ("unix");		\
-      builtin_define_std ("linux");		\
-      builtin_define ("__gnu_linux__");		\
-      builtin_assert ("system=linux");		\
-      builtin_assert ("system=unix");		\
-      builtin_assert ("system=posix");		\
+      LINUX_TARGET_OS_CPP_BUILTINS();		\
       if (TARGET_LONG_DOUBLE_128)       	\
 	builtin_define ("__LONG_DOUBLE_128__");	\
     }						\
   while (0)
-
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-
-/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
-   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'.  */
-   
-#undef  STARTFILE_SPEC
-#if defined HAVE_LD_PIE
-#define STARTFILE_SPEC \
-  "%{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#else
-#define STARTFILE_SPEC \
-  "%{!shared: %{pg|p:gcrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
-#endif
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -63,8 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s\
+   %{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
 /* This is for -profile to use -lc_p instead of -lc.  */
 #undef	CC1_SPEC
@@ -74,10 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 "
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with ELF)");
@@ -98,12 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SUBTARGET_SPEC \
 "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
-#undef LIB_SPEC
-#define LIB_SPEC \
-  "%{pthread:-lpthread} \
-   %{shared:-lc} \
-   %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
-
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
@@ -121,15 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 /* If ELF is the default format, we should not use /lib/elf.  */
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
-#define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
-#if UCLIBC_DEFAULT
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
-#else
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
-#endif
-#define LINUX_DYNAMIC_LINKER \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
-
 
 #undef  LINK_SPEC
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
@@ -191,10 +145,6 @@ do {									\
 
 #undef DITF_CONVERSION_LIBFUNCS
 #define DITF_CONVERSION_LIBFUNCS 1
-
-#if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
-#endif
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_SUN_TLS
@@ -203,30 +153,9 @@ do {									\
 #define TARGET_GNU_TLS 1
 #endif
 
-/* Don't be different from other Linux platforms in this regard.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
-
 /* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
-
-/* Determine whether the entire c99 runtime is present in the
-   runtime library.  */
-#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
-
-/* Whether we have sincos that follows the GNU extension.  */
-#define TARGET_HAS_SINCOS (OPTION_GLIBC)
-
-#define TARGET_POSIX_IO
-
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
-
-/* Use --as-needed -lgcc_s for eh support.  */
-#ifdef HAVE_LD_AS_NEEDED
-#define USE_LD_AS_NEEDED 1
-#endif
 
 #define MD_UNWIND_SUPPORT "config/sparc/linux-unwind.h"
 
