@@ -1,3 +1,19 @@
+2008-05-04  David S. Miller  <davem@davemloft.net>
+
+	* config.gcc (sparc*-*-*): Always set need_64bit_hwint to yes.
+	(sparc*-*-linux*): Use linux.h in tm_file.
+	(sparc-*-linux*): If 'enabled_targets' is 'all', build a bi-arch
+	compiler defaulting to 32-bit.
+	(sparc*-*-*): Remove explicit target settings of need_64bit_hwint,
+	no longer needed.
+	* config/sparc/linux.h: Remove definitions now obtained
+	properly from linux.h
+	* config/sparc/linux64.h: Likewise.
+	(ASM_CPU_DEFAULT_SPEC): Change this to ASM_CPU64_DEFAULT_SPEC, we
+	don't want this setting for 32-bit builds in a biarch compiler.
+	* doc/install.texi: Add sparc-linux to list of targets
+	supporting --enable-targets=all.
+
 2008-05-03  Andrew Pinski  <pinskia@gmail.com>
 
 	* Makefile.in (tree-ssa-phiprop.o): Fix dependencies.

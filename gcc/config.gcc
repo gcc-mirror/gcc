@@ -358,12 +358,9 @@ rs6000*-*-*)
 score*-*-*)
 	cpu_type=score
 	;;
-sparc64*-*-*)
-	cpu_type=sparc
-	need_64bit_hwint=yes
-	;;
 sparc*-*-*)
 	cpu_type=sparc
+	need_64bit_hwint=yes
 	;;
 spu*-*-*)
 	cpu_type=spu
@@ -2357,9 +2354,15 @@ sparc-*-elf*)
 	use_fixproto=yes
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h linux.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	tmake_file="${tmake_file} sparc/t-linux sparc/t-crtfm"
+	if test x$enable_targets = xall; then
+		tm_file="sparc/biarch64.h ${tm_file} sparc/linux64.h"
+		tmake_file="${tmake_file} sparc/t-linux64 sparc/t-crtfm"
+	else
+		tm_file="${tm_file} sparc/linux.h"
+		tmake_file="${tmake_file} sparc/t-linux sparc/t-crtfm"
+	fi
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h"
@@ -2396,7 +2399,6 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	  "":yes:* | yes:yes:* ) thread_file=posix ;;
 	  "":*:yes | yes:*:yes ) thread_file=solaris ;;
 	esac
-	need_64bit_hwint=yes
 	;;
 sparc-*-solaris2*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h"
@@ -2437,7 +2439,6 @@ sparc-*-solaris2*)
 		fi
 		tm_file="${tm_file} tm-dwarf2.h"
 		tmake_file="$tmake_file sparc/t-sol2-64"
-		need_64bit_hwint=yes
 		test x$with_cpu != x || with_cpu=v9
 		;;
 	esac
@@ -2488,10 +2489,9 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 		x) with_cpu=ultrasparc ;;
 		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
 	esac
-	need_64bit_hwint=yes
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h linux.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-linux sparc/t-linux64 sparc/t-crtfm"
 	;;

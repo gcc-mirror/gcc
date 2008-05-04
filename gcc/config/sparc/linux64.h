@@ -19,26 +19,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define TARGET_OS_CPP_BUILTINS()			\
-  do							\
-    {							\
-      builtin_define_std ("unix");			\
-      builtin_define_std ("linux");			\
-      builtin_define ("_LONGLONG");			\
-      builtin_define ("__gnu_linux__");			\
-      builtin_assert ("system=linux");			\
-      builtin_assert ("system=unix");			\
-      builtin_assert ("system=posix");			\
-      if (TARGET_ARCH32 && TARGET_LONG_DOUBLE_128)	\
-	builtin_define ("__LONG_DOUBLE_128__");		\
-    }							\
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      LINUX_TARGET_OS_CPP_BUILTINS();		\
+      if (TARGET_ARCH64)			\
+        builtin_define ("_LONGLONG");		\
+      if (TARGET_ARCH32				\
+          && TARGET_LONG_DOUBLE_128)		\
+	builtin_define ("__LONG_DOUBLE_128__");	\
+    }						\
   while (0)
-
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
     || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
@@ -54,25 +45,10 @@ along with GCC; see the file COPYING3.  If not see
    + MASK_STACK_BIAS + MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
 #endif
 
-#undef ASM_CPU_DEFAULT_SPEC
-#define ASM_CPU_DEFAULT_SPEC "-Av9a"
-
-/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
-   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'.  */
-   
-#undef  STARTFILE_SPEC
-
-#ifdef HAVE_LD_PIE
-#define STARTFILE_SPEC \
-  "%{!shared:%{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbeginS.o%s}"
-#else
-#define STARTFILE_SPEC \
-  "%{!shared:%{pg|p:gcrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbeginS.o%s}"
-#endif
+/* This must be v9a not just v9 because by default we enable
+   -mvis.  */
+#undef ASM_CPU64_DEFAULT_SPEC
+#define ASM_CPU64_DEFAULT_SPEC "-Av9a"
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -80,15 +56,10 @@ along with GCC; see the file COPYING3.  If not see
    object constructed before entering `main', followed by a normal
    GNU/Linux "finalizer" file, `crtn.o'.  */
 
-#undef  ENDFILE_SPEC
-
+#undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s\
    %{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64 GNU/Linux with ELF)");
@@ -122,12 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 %{pthread:-D_REENTRANT} \
 "
 
-#undef LIB_SPEC
-#define LIB_SPEC \
-  "%{pthread:-lpthread} \
-   %{shared:-lc} \
-   %{!shared: %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
-
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
@@ -146,17 +111,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
 #define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux.so.2"
-#define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
-#define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
-#if UCLIBC_DEFAULT
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
-#else
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
-#endif
-#define LINUX_DYNAMIC_LINKER32 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
-#define LINUX_DYNAMIC_LINKER64 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
 
 #ifdef SPARC_BI_ARCH
 
@@ -203,7 +157,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
-#define CC1_SPEC "\
+#define CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
@@ -214,7 +168,7 @@ along with GCC; see the file COPYING3.  If not see
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
 "
 #else
-#define CC1_SPEC "\
+#define CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
@@ -324,10 +278,6 @@ do {									\
 
 #undef DITF_CONVERSION_LIBFUNCS
 #define DITF_CONVERSION_LIBFUNCS 1
-
-#if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
-#endif
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_SUN_TLS
@@ -336,30 +286,9 @@ do {									\
 #define TARGET_GNU_TLS 1
 #endif
 
-/* Don't be different from other Linux platforms in this regard.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
-
 /* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
-
-/* Determine whether the entire c99 runtime is present in the
-   runtime library.  */
-#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
-
-/* Whether we have sincos that follows the GNU extension.  */
-#define TARGET_HAS_SINCOS (OPTION_GLIBC)
-
-#define TARGET_POSIX_IO
-
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
-
-/* Use --as-needed -lgcc_s for eh support.  */
-#ifdef HAVE_LD_AS_NEEDED
-#define USE_LD_AS_NEEDED 1
-#endif
 
 #define MD_UNWIND_SUPPORT "config/sparc/linux-unwind.h"
 
