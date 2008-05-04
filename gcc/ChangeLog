@@ -1,3 +1,9 @@
+2008-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36121
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Remove
+	3 argument handling.
+
 2008-05-04  David S. Miller  <davem@davemloft.net>
 
 	* config.gcc (sparc*-*-*): Always set need_64bit_hwint to yes.
