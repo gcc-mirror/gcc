@@ -15,7 +15,7 @@ end module tst
 program main
   use tst
   implicit none
-  integer(kind=4) :: res(3)
+  integer :: res(3)
   call foo(res)
 end program main
 ! { dg-output "Fortran runtime error: Incorrect extent in return value of MAXLOC intrnisic: is 3, should be 2" }

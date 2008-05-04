@@ -4,7 +4,7 @@
 program main
   real, dimension(2,2) :: a
   logical(kind=4), dimension(2) :: b
-  integer, dimension(2) :: i
+  integer(kind=4), dimension(2) :: i
   equivalence (b,i)
   data a /1.0, 2.0, -0.1, -0.2 /
 
