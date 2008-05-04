@@ -1,3 +1,8 @@
+2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35995
+	* gfortran.dg/intrinsic_ifunction_1.f90:  New test case.
+
 2008-05-04   Andy Hutchinson   <hutchinsonandy@aim.com>
 
 	* gcc.dg/nested-func-5.c: Skip for target without trampolines.
