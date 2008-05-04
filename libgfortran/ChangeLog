@@ -1,6 +1,11 @@
 2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35990
+	* intrinsics/pack_generic.c:  Really commit.
+
+2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35990
 	* intrinsics/pack_generic.c:  If an extent of the source
 	array is less then zero, set it to zero.  Set the source
 	pointer to NULL if the source size is zero.  Set the total
