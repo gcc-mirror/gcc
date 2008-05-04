@@ -1,3 +1,8 @@
+2008-05-04  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac (sparc*-*-*): Always set need_64bit_hwint to yes.
+	* configure: Regenerate.
+
 2008-04-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	* include/cpplib.h (cpp_define_formatted): New.
