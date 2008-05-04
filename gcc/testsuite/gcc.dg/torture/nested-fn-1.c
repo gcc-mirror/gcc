@@ -2,6 +2,7 @@
 /* Test whether unused nested functions aren't emitted into the assembly.  */
 /* { dg-do compile } */
 /* { dg-options "-g0" } */
+/* { dg-require-effective-target trampolines } */
 
 int
 fn1 (int x)

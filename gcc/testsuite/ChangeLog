@@ -1,3 +1,8 @@
+2008-05-04   Andy Hutchinson   <hutchinsonandy@aim.com>
+
+	* gcc.dg/nested-func-5.c: Skip for target without trampolines.
+	* gcc.dg/torture/nested-fn-1.c: Ditto.
+
 2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35990
