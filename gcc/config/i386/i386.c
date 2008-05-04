@@ -23042,7 +23042,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       /* Put the this parameter into %eax.  */
       xops[0] = this_param;
       xops[1] = this_reg = gen_rtx_REG (Pmode, AX_REG);
-      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+      if (TARGET_64BIT)
+        output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
+      else
+        output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
     }
   else
     this_reg = NULL_RTX;
@@ -23111,7 +23114,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
     {
       xops[0] = this_reg;
       xops[1] = this_param;
-      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+      if (TARGET_64BIT)
+        output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
+      else
+        output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
     }
 
   xops[0] = XEXP (DECL_RTL (function), 0);
