@@ -1,8 +1,18 @@
+2008-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*strmovsi_1): Simplify asm alternatives.
+	(*strmovsi_rex_1): Ditto.
+	(*strsetsi_1): Ditto.
+	(*strsetsi_rex_1): Ditto.
+
+	(add<mode>cc): Macroize expander from addqicc, addhicc, addsicc and
+	adddicc expanders using SWI mode iterator.
+
 2008-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/36121
-	* config/i386/i386.c (ix86_expand_special_args_builtin): Remove
-	3 argument handling.
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Remove three
+	argument handling.
 
 2008-05-04  David S. Miller  <davem@davemloft.net>
 
@@ -243,31 +253,26 @@
 
 2008-04-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        * config/rs6000/crtresgpr.asm, config/rs6000/crtresxgpr.asm,
-        config/rs6000/crtsavgpr.asm, config/rs6000/crtresfpr.asm,
-        config/rs6000/crtresxfpr.asm, config/rs6000/crtsavfpr.asm: Break out
-        from...
-        * config/rs6000/crtsavres.asm: ...here.  Remove unneeded file.
-        * config/rs6000/e500crtres32gpr.asm,
-	config/rs6000/e500crtres64gpr.asm
-        config/rs6000/e500crtres64gprctr.asm,
-	config/rs6000/e500crtrest32gpr.asm
-        config/rs6000/e500crtrest64gpr.asm,
-	config/rs6000/e500crtresx32gpr.asm
-        config/rs6000/e500crtresx64gpr.asm,
-	config/rs6000/e500crtsav32gpr.asm
-        config/rs6000/e500crtsav64gpr.asm,
-	config/rs6000/e500crtsav64gprctr.asm
-        config/rs6000/e500crtsavg32gpr.asm,
-	config/rs6000/e500crtsavg64gpr.asm
-        config/rs6000/e500crtsavg64gprctr.asm: New files.
-        * config/rs6000/t-ppccomm: Add build rules for new files.
-        (LIB2FUNCS_STATIC_EXTRA): Add new files.
-        * config/rs6000/t-netbsd: Add build rules for new files.
-        (LIB2FUNCS_STATIC_EXTRA): New variable.
-        * config/rs6000/sysv4.h (ENDFILE_SPEC): Don't include crtsavres.o
-        (CRTSAVRES_DEFAULT_SPEC): Likewise.
-        * config/rs6000/netbsd.h (ENDFILE_SPEC): Likewise.
+	* config/rs6000/crtresgpr.asm, config/rs6000/crtresxgpr.asm,
+	config/rs6000/crtsavgpr.asm, config/rs6000/crtresfpr.asm,
+	config/rs6000/crtresxfpr.asm, config/rs6000/crtsavfpr.asm: Break out
+	from...
+	* config/rs6000/crtsavres.asm: ...here.  Remove unneeded file.
+	* config/rs6000/e500crtres32gpr.asm, config/rs6000/e500crtres64gpr.asm,
+	config/rs6000/e500crtres64gprctr.asm,
+	config/rs6000/e500crtrest32gpr.asm, config/rs6000/e500crtrest64gpr.asm,
+	config/rs6000/e500crtresx32gpr.asm, config/rs6000/e500crtresx64gpr.asm,
+	config/rs6000/e500crtsav32gpr.asm, config/rs6000/e500crtsav64gpr.asm,
+	config/rs6000/e500crtsav64gprctr.asm,
+	config/rs6000/e500crtsavg32gpr.asm, config/rs6000/e500crtsavg64gpr.asm,
+	config/rs6000/e500crtsavg64gprctr.asm: New files.
+	* config/rs6000/t-ppccomm: Add build rules for new files.
+	(LIB2FUNCS_STATIC_EXTRA): Add new files.
+	* config/rs6000/t-netbsd: Add build rules for new files.
+	(LIB2FUNCS_STATIC_EXTRA): New variable.
+	* config/rs6000/sysv4.h (ENDFILE_SPEC): Don't include crtsavres.o
+	(CRTSAVRES_DEFAULT_SPEC): Likewise.
+	* config/rs6000/netbsd.h (ENDFILE_SPEC): Likewise.
 
 2008-04-30  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -297,8 +302,7 @@
 	(ix86_expand_args_builtin): Updated.  Take a pointer
 	to const struct builtin_description.  Handle comparison
 	builtin functions.
-	(ix86_expand_sse_compare): Take a new argument for swapping
-	operands.
+	(ix86_expand_sse_compare): Take a new argument for swapping operands.
 	(ix86_expand_builtin): Updated.
 
 	* config/i386/sse.md (ssse3_pmaddubswv8hi3): Renamed to ...
@@ -306,10 +310,9 @@
 	(ssse3_pmaddubswv4hi3): Renamed to ...
 	(ssse3_pmaddubsw): This.
 
-	* doc/extend.texi (__builtin_ia32_packsswb128): Correct
-	prototype.
+	* doc/extend.texi (__builtin_ia32_packsswb128): Correct prototype.
 	(__builtin_ia32_packssdw128): Likewise.
-	)__builtin_ia32_packuswb128): Likewise.
+	(__builtin_ia32_packuswb128): Likewise.
 	(__builtin_ia32_pmaddubsw): Likewise.
 	(__builtin_ia32_pmaddubsw128): Likewise.
 
@@ -935,8 +938,7 @@
 	
 2008-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/sse.md (mov<mode>): Replace SSEMODEI with
-	SSEMODE.
+	* config/i386/sse.md (mov<mode>): Replace SSEMODEI with SSEMODE.
 	(*mov<mode>_internal): Likewise.  Support V4SF and V2DF.
 	(mov<mode>): Removed.
 	(*movv4sf_internal): Likewise.
