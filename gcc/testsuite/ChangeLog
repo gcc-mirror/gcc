@@ -1,3 +1,8 @@
+2008-05-05  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36119
+	* gfortran.dg/vect/pr36119.f: New test.
+
 2008-05-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35993

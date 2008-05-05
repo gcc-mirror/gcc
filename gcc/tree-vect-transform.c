@@ -3672,6 +3672,11 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   VEC(tree,heap) *vec_oprnds = NULL;
   tree vop;
 
+  /* FORNOW: SLP with multiple types is not supported. The SLP analysis verifies
+     this, so we can safely override NCOPIES with 1 here.  */ 
+  if (slp_node)
+    ncopies = 1;
+
   gcc_assert (ncopies >= 1);
   if (ncopies > 1)
     return false; /* FORNOW */
