@@ -1588,14 +1588,6 @@ inline_transform (struct cgraph_node *node)
       todo = optimize_inline_calls (current_function_decl);
       timevar_pop (TV_INTEGRATION);
     }
-  /* In non-unit-at-a-time we must mark all referenced functions as needed.  */
-  if (!flag_unit_at_a_time)
-    {
-      struct cgraph_edge *e;
-      for (e = node->callees; e; e = e->next_callee)
-	if (e->callee->analyzed)
-          cgraph_mark_needed_node (e->callee);
-    }
   return todo | execute_fixup_cfg ();
 }
 
@@ -1626,6 +1618,65 @@ struct ipa_opt_pass pass_ipa_inline =
  0,					/* TODOs */
  inline_transform,			/* function_transform */
  NULL,					/* variable_transform */
+};
+
+
+/* When inlining shall be performed.  */
+static bool
+cgraph_gate_O0_always_inline (void)
+{
+  return !flag_unit_at_a_time || !flag_inline_trees;
+}
+
+static unsigned int
+cgraph_O0_always_inline (void)
+{
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+  unsigned int todo = 0;
+  bool inlined;
+
+  if (sorrycount || errorcount)
+    return 0;
+  inlined = cgraph_decide_inlining_incrementally (node, INLINE_SPEED, 0);
+  /* We might need the body of this function so that we can expand
+     it inline somewhere else.  */
+  if (cgraph_preserve_function_body_p (current_function_decl))
+    save_inline_function_body (node);
+  if (inlined || warn_inline)
+    {
+      timevar_push (TV_INTEGRATION);
+      todo = optimize_inline_calls (current_function_decl);
+      timevar_pop (TV_INTEGRATION);
+    }
+  /* In non-unit-at-a-time we must mark all referenced functions as needed.  */
+  if (!flag_unit_at_a_time)
+    {
+      struct cgraph_edge *e;
+      for (e = node->callees; e; e = e->next_callee)
+	if (e->callee->analyzed)
+          cgraph_mark_needed_node (e->callee);
+    }
+  return todo | execute_fixup_cfg ();
+}
+
+struct gimple_opt_pass pass_O0_always_inline = 
+{
+ {
+  GIMPLE_PASS,
+  "always_inline",			/* name */
+  cgraph_gate_O0_always_inline,		/* gate */
+  cgraph_O0_always_inline,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_INLINE_HEURISTICS,			/* tv_id */
+  0,	                                /* properties_required */
+  PROP_cfg,				/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_verify_flow
+  | TODO_verify_stmts			/* todo_flags_finish */
+ }
 };
 
 #include "gt-ipa-inline.h"

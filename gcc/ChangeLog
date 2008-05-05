@@ -1,3 +1,12 @@
+2008-06-04  Jan Hubicka  <jh@suse.cz>
+
+	tree-optimization/36100
+	* tree-pass.h (pass_O0_always_inline): Declare.
+	* ipa-inline.c (inline_transform): Remove dead code.
+	(cgraph_gate_O0_always_inline, cgraph_O0_always_inline,
+	pass_O0_always_inline): New.
+	* passes.c (init_optimization_passes): Add pass_O0_always_inline.
+
 2008-05-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Use movq alternative
