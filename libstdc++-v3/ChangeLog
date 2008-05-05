@@ -1,3 +1,8 @@
+2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
+	* 20_util/make_unsigned/requirements/typedefs-1.cc: Same.
+	
 2008-04-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/35922
