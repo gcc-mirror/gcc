@@ -5671,7 +5671,13 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      integral mode, which will be much more efficient.  There is no point
      in doing so if a size is specified unless it is also a small constant
      size and it is incorrect to do so if we cannot guarantee that the mode
-     will be naturally aligned since the field must always be addressable.  */
+     will be naturally aligned since the field must always be addressable.
+
+     ??? This might not always be a win when done for a stand-alone object:
+     since the nominal and the effective type of the object will now have
+     different modes, a VIEW_CONVERT_EXPR will be required for converting
+     between them and it might be hard to overcome afterwards, including
+     at the RTL level when the stand-alone object is accessed as a whole.  */
   if (align != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_MODE (type) == BLKmode
