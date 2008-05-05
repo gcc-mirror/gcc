@@ -1,5 +1,31 @@
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/util/testsuite_visualization.h: Move contents into...
+	* testsuite/util/testsuite_performance.h: ...here.
+	* testsuite/util/testsuite_common_types.h: Move
+	performance-related test infrastructure into
+	testsuite_performance.
+	* testsuite/performance/25_algorithms/search_n.cc: Fix includes.
+	* testsuite/performance/23_containers/find/map.cc: Same.
+	* testsuite/performance/23_containers/create/map.cc: Same.
+	* testsuite/performance/23_containers/insert_erase/associative.cc: Same.
+	* testsuite/performance/23_containers/insert/sequence.cc: Same.
+	* testsuite/performance/23_containers/insert/associative.cc: Same.
+	* testsuite/performance/23_containers/create_from_sorted/set.cc: Same.
+	* testsuite/performance/23_containers/index/map.cc: Same.
+	* testsuite/performance/23_containers/insert_from_sorted/set.cc: Same.
+	* testsuite/performance/23_containers/create_sort/list.cc: Same.
+	* testsuite/performance/23_containers/sort_search/list.cc: Same.
+	* testsuite/performance/23_containers/producer_consumer/sequence.cc:
+	Same.
+	* testsuite/performance/23_containers/producer_consumer/associative.cc:
+	Same.
+
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	
+2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
 	* 20_util/make_unsigned/requirements/typedefs-1.cc: Same.
 

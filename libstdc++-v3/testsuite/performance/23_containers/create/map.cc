@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <testsuite_common_types.h>
+#include <testsuite_performance.h>
 
 template<typename Container, int Iter>
   void

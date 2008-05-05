@@ -53,7 +53,7 @@ main(void)
       array[i] = (match != 0) ? 1 : 0;
       if(--match < 0) match = rand() % (match_length - 1);
     }
-  test_container<int, forward_iterator_wrapper> fcon(array, array + length);
+  __gnu_test::test_container<int, forward_iterator_wrapper> fcon(array, array + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
     search_n(fcon.begin(), fcon.end(), 10, 1);
@@ -61,7 +61,7 @@ main(void)
   report_performance(__FILE__, "forward iterator", time, resource);
   clear_counters(time, resource);
 
-  test_container<int, random_access_iterator_wrapper> rcon(array, array + length);
+  __gnu_test::test_container<int, random_access_iterator_wrapper> rcon(array, array + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
     search_n(rcon.begin(), rcon.end(), 10, 1);

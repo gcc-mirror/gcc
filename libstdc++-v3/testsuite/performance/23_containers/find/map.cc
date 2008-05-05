@@ -27,7 +27,7 @@
 
 // 2004-03-11  Dhruv Matani  <dhruvbird@HotPOP.com>
 
-#include <testsuite_common_types.h>
+#include <testsuite_performance.h>
 
 template<typename Container, int Iter>
   void
