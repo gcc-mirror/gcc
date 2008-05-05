@@ -1,3 +1,8 @@
+2008-05-05  Andrew Pinski  <Andrew.Pinski@playstation.sony.com>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): If we have the
+	same size types for the indirect reference on the rhs, then create a VCE.
+
 2008-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md

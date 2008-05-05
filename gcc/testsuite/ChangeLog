@@ -1,3 +1,11 @@
+2008-05-05  Andrew Pinski  <andrew.pinski@playstation.sony.com>
+
+	* gcc.dg/tree-ssa/forwprop-5.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-6.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-7.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-8.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-9.c: New testcase.
+
 2008-05-05  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36119
