@@ -1,7 +1,20 @@
+2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * gthr-single.h: Add in required interface elements as per gthr.h.
+        Add stub types for __gthread_key_t, __gthread_once_t. Add defines
+        for __GTHREAD_ONCE_INIT, __GTHREAD_RECURSIVE_MUTEX_INIT.
+        Generalize UNUSED macro. 
+        (__gthread_once): Add.
+        (__gthread_key_create): Add.
+        (__gthread_key_delete): Add.    
+        (__gthread_getspecific): Add.
+        (__gthread_setspecific): Add.      
+	
 2008-05-05  Andrew Pinski  <Andrew.Pinski@playstation.sony.com>
 
-	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): If we have the
-	same size types for the indirect reference on the rhs, then create a VCE.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): If we have
+	the same size types for the indirect reference on the rhs, then
+	create a VCE.
 
 2008-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
