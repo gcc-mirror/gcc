@@ -1,14 +1,48 @@
+2008-05-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (sat_plusminus): New.
+	(plusminus_insn): Likewise.
+	(plusminus_mnemonic): Likewise.
+	(addsub): Removed.
+	(comm): Add ss_plus, us_plus, ss_minus and us_minus.
+	(*<addsub><mode>3_cc_overflow): Renamed to ...
+	(*<plusminus_insn><mode>3_cc_overflow): This.
+	(*<addsub>si3_zext_cc_overflow): Renamed to ...
+	(*<plusminus_insn>si3_zext_cc_overflow): This.
+
+	* gcc/config/i386/sse.md (<addsub><mode>3): Renamed to ...
+	(<plusminus_insn><mode>3): This.
+	(*<addsub><mode>3): Renamed to ...
+	(*<plusminus_insn><mode>3): This.
+	(<sse>_vm<addsub><mode>3): Renamed to ...
+	(<sse>_vm<plusminus_insn><mode>3): This.
+	(sse3_h<addsub>v4sf3): Renamed to ...
+	(sse3_h<plusminus_insn>v4sf3): This.
+	(sse3_h<addsub>v2df3): Renamed to ...
+	(sse3_h<plusminus_insn>v2df3): This.
+	(<plusminus_insn><mode>3): New.
+	(*<plusminus_insn><mode>3): Likewise.
+	(sse2_<plusminus_insn><mode>3): Likewise.
+	(add<mode>): Removed.
+	(*add<mode>3): Likewise.
+	(sse2_ssadd<mode>3): Likewise.
+	(sse2_usadd<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(*sub<mode>3): Likewise.
+	(sse2_sssub<mode>3): Likewise.
+	(sse2_ussub<mode>3): Likewise.
+
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * gthr-single.h: Add in required interface elements as per gthr.h.
-        Add stub types for __gthread_key_t, __gthread_once_t. Add defines
-        for __GTHREAD_ONCE_INIT, __GTHREAD_RECURSIVE_MUTEX_INIT.
-        Generalize UNUSED macro. 
-        (__gthread_once): Add.
-        (__gthread_key_create): Add.
-        (__gthread_key_delete): Add.    
-        (__gthread_getspecific): Add.
-        (__gthread_setspecific): Add.      
+	* gthr-single.h: Add in required interface elements as per gthr.h.
+	Add stub types for __gthread_key_t, __gthread_once_t. Add defines
+	for __GTHREAD_ONCE_INIT, __GTHREAD_RECURSIVE_MUTEX_INIT.
+	Generalize UNUSED macro. 
+	(__gthread_once): Add.
+	(__gthread_key_create): Add.
+	(__gthread_key_delete): Add.    
+	(__gthread_getspecific): Add.
+	(__gthread_setspecific): Add.      
 	
 2008-05-05  Andrew Pinski  <Andrew.Pinski@playstation.sony.com>
 
