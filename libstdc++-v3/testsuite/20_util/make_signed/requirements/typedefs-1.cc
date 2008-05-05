@@ -2,7 +2,7 @@
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   using std::make_signed;
   using std::is_same;
+  using std::is_signed;
 
   // Positive tests.
   typedef make_signed<const int>::type  	test2_type;
@@ -52,8 +53,10 @@ void test01()
   VERIFY( (is_same<test23_type, volatile signed wchar_t>::value) );
 #endif
 
+  // Chapter 48, chapter 20. Smallest rank such that new signed type same size.
   typedef make_signed<test_enum>::type  	test25_type;
-  VERIFY( (is_same<test25_type, int>::value) );
+  VERIFY( is_signed<test25_type>::value );
+  VERIFY( sizeof(test25_type) == sizeof(test_enum) );
 }
 
 int main()
