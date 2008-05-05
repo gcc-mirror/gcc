@@ -124,6 +124,14 @@ along with GCC; see the file COPYING3.  If not see
      res = x->y->z;
 
    Or
+     ptr = (type1*)&type2var;
+     res = *ptr
+
+   Will get turned into (if type1 and type2 are the same size
+   and neither have volatile on them):
+     res = VIEW_CONVERT_EXPR<type1>(type2var)
+
+   Or
 
      ptr = &x[0];
      ptr2 = ptr + <constant>;
@@ -641,6 +649,37 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       tidy_after_forward_propagate_addr (use_stmt);
       return true;
     }
+
+  /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so, 
+     propagate the ADDR_EXPR into the use of NAME and try to
+     create a VCE and fold the result.  */
+  if (TREE_CODE (rhs) == INDIRECT_REF
+      && TREE_OPERAND (rhs, 0) == name
+      && TYPE_SIZE (TREE_TYPE (rhs))
+      && TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0)))
+      /* We should not convert volatile loads to non volatile loads. */
+      && !TYPE_VOLATILE (TREE_TYPE (rhs))
+      && !TYPE_VOLATILE (TREE_TYPE (TREE_OPERAND (def_rhs, 0)))
+      && operand_equal_p (TYPE_SIZE (TREE_TYPE (rhs)),
+			  TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0))), 0)) 
+   {
+      bool res = true;
+      tree new_rhs = unshare_expr (TREE_OPERAND (def_rhs, 0));
+      new_rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), new_rhs);
+      /* If we have folded the VCE, then we have to create a new statement.  */
+      if (TREE_CODE (new_rhs) != VIEW_CONVERT_EXPR)
+	{
+	  block_stmt_iterator bsi = bsi_for_stmt (use_stmt);
+	  new_rhs = force_gimple_operand_bsi (&bsi, new_rhs, true, NULL, true, BSI_SAME_STMT);
+	  /* As we change the deference to a SSA_NAME, we need to return false to make sure that
+	     the statement does not get removed.  */
+	  res = false;
+	}
+      *rhsp = new_rhs;
+      fold_stmt_inplace (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
+      return res;
+   }
 
   /* If the use of the ADDR_EXPR is not a POINTER_PLUS_EXPR, there
      is nothing to do. */
