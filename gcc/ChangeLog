@@ -1,3 +1,9 @@
+2008-05-05  Ira Rosen  <irar@il.ibm.com>
+
+        PR tree-optimization/36119
+	* tree-vect-transform.c (vectorizable_assignment): Set NCOPIES to 1
+	in case of SLP.
+
 2008-06-04  Jan Hubicka  <jh@suse.cz>
 
 	tree-optimization/36100
