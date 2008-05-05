@@ -1,3 +1,9 @@
+2008-05-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gfortran.dg/dev_null.f90. Remove and replace with...
+	* gfortran.dg/dev_null.F90: Use preprocessor define to
+	generalize the DEV_NULL name.
+
 2008-05-05  Andrew Pinski  <andrew.pinski@playstation.sony.com>
 
 	* gcc.dg/tree-ssa/forwprop-5.c: New testcase.
