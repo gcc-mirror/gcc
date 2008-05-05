@@ -1,6 +1,14 @@
+2008-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(*float<SSEMODEI24:mode><MODEF:mode>2_sse_interunit): Use only
+	one insn template instead of template series.
+	(*xordi_1_rex64): Ditto.
+	(*xordi_2_rex64): Ditto.
+
 2008-05-05  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-optimization/36119
+	PR tree-optimization/36119
 	* tree-vect-transform.c (vectorizable_assignment): Set NCOPIES to 1
 	in case of SLP.
 
