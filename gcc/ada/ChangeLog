@@ -1,3 +1,7 @@
+2008-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (maybe_pad_type): Add ??? comment.
+
 2008-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (components_to_record): Zero the alignment of the qualified
