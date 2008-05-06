@@ -2474,7 +2474,7 @@ gfc_check_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
 
 try
-gfc_check_sizeof (gfc_expr *arg __attribute__((unused)))
+gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
 {
   return SUCCESS;
 }

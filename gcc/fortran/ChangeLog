@@ -1,4 +1,9 @@
-2008-05-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* check.c (gfc_check_sizeof): Switch to ATTRIBUTE_UNUSED.
+	* simplify.c (gfc_simplify_lgamma): Likewise.
+
+2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* openmp.c (gfc_match_omp_eos): Use gfc_next_ascii_char and
 	gfc_peek_ascii_char.
@@ -729,7 +734,7 @@
 	gfc_conv_allocated, gfc_conv_associated, gfc_conv_intrinsic_trim,
 	gfc_conv_intrinsic_repeat): Likewise.
 
-2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2008-02-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/25477
 	* trans-expr.c (gfc_conv_power_op): Use BUILT_IN_CPOW{F,,L}.
