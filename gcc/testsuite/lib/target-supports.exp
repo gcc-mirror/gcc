@@ -2357,6 +2357,6 @@ proc check_effective_target_c99_runtime { } {
 
 proc check_effective_target_4byte_wchar_t { } {
     return [check_no_compiler_messages 4byte_wchar_t object {
-	int dummy[sizeof (wchar_t) >= 4 ? 1 : -1];
+	int dummy[sizeof (__WCHAR_TYPE__) >= 4 ? 1 : -1];
     }]
 }

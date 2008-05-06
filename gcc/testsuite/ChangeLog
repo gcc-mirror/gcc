@@ -1,3 +1,11 @@
+2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/36155
+	* gcc.dg/utf32-4.c: Fix a typo.
+
+	* lib/target-supports.exp (check_effective_target_4byte_wchar_t):
+	Use __WCHAR_TYPE__ instead of wchar_t.
+
 2008-05-06  Mark Shinwell  <shinwell@codesourcery.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 	    Andrew Jenner  <andrew@codesourcery.com>
