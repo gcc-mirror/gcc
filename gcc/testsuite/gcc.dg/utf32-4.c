@@ -15,6 +15,6 @@ char32_t	c5 = u'\u2029';
 char32_t	c6 = u'\U00064321';	/* { dg-warning "constant too long" } */
 char32_t	c7 = L'a';
 char32_t	c8 = L'\u2029';
-char32_t	c9 = L'\U00064321';     /* { dg-warning "constant too long" { target { ! 4byte_wchar_t } } } */  
+char32_t	c9 = L'\U00064321';     /* { dg-warning "constant too long" "" { target { ! 4byte_wchar_t } } } */
 
 int main () {}
