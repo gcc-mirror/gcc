@@ -102,6 +102,7 @@ static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
 static void tree_cfg2vcg (FILE *);
 static inline void change_bb_for_stmt (tree t, basic_block bb);
+static bool computed_goto_p (const_tree);
 
 /* Flowgraph optimization and cleanup.  */
 static void tree_merge_blocks (basic_block, basic_block);
@@ -2514,7 +2515,7 @@ is_ctrl_altering_stmt (const_tree t)
 
 /* Return true if T is a computed goto.  */
 
-bool
+static bool
 computed_goto_p (const_tree t)
 {
   return (TREE_CODE (t) == GOTO_EXPR

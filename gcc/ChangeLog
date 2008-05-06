@@ -1,3 +1,8 @@
+2008-05-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-flow.h: Remove prototype for computed_goto_p.
+	* tree-cfg.c (computed_goto_p): Make static.
+
 2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35657
