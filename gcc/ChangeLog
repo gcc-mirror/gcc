@@ -1,3 +1,8 @@
+2008-05-05  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/36118
+	* passes.c (pass_init_dump_file): Fix dump header.
+
 2008-05-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36141
