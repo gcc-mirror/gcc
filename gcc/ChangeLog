@@ -1,3 +1,71 @@
+2008-05-06  Martin Jambor  <mjambor@suse.cz>
+
+        * ipa-cp.c (ipcp_method_orig_node): Renamed to ipcp_get_orig_node.
+        (ipcp_method_is_cloned): Renamed to ipcp_node_is_clone
+        (ipcp_method_set_orig_node): Removed.
+        (ipcp_cval_get_cvalue_type): Removed.
+        (ipcp_method_get_scale): Renamed to ipcp_get_node_scale.
+        (ipcp_method_set_scale): Renamed to ipcp_set_node_scale.
+        (ipcp_cval_set_cvalue_type): Removed.
+        (ipcp_cval_get_cvalue): Removed.
+        (ipcp_cval_set_cvalue): Removed.
+        (ipcp_type_is_const): Renamed to ipcp_lat_is_const.
+        (ipcp_cval_equal_cvalues): Renamed to ipcp_lats_are_equal
+        (ipcp_lats_are_equal): Changed parameters to two ipcp_lattice's
+        (ipcp_cval_meet): Renamed to ipa_lattice_meet
+        (ipcp_cval_changed): Changed to use ipcp_lat_is_const
+        (ipcp_method_cval): Renamed to ipcp_get_ith_lattice
+        (ipcp_get_ith_lattice): Changed parameters.
+        (ipcp_cval_compute): Renamed to ipcp_lattice_from_jfunc
+        (ipcp_lattice_from_jfunc): Changed parameters.
+	(ipcp_redirect): Local lattice pointer instead of lattice type variable.
+	(ipcp_method_cval_print): Added temporary variable info.
+	(ipcp_redirect): Removed already unused local variable caller.
+	(ipcp_redirect): New temporary variable orig_callee_info
+	(ipcp_redirect): Removed newly unused local variable callee.
+	(ipcp_redirect): Removed (a bit confusing) local variable type.
+	(ipcp_insert_stage): Added local variable info.
+	(ipcp_cval_changed): Renamed to ipcp_lattice_changed, parameters 
+	renamed too
+	(ipcp_formal_create): Removed.
+	(ipcp_method_cval_set): Removed.
+	(ipcp_propagate_stage): Renamed lattice variables.
+	(ipcp_method_cval_set_cvalue_type): Removed.
+	(ipcp_method_cval_print): Renamed to ipcp_print_all_lattices
+	(ipcp_print_all_lattices): Changed printed strings to refer to 
+	lattices rather than cvals.
+	(ipcp_method_cval_init): Renamed to ipcp_initialize_node_lattices
+	(ipcp_propagate_const): Changed formal parameters.
+	(build_const_val): Changed formal parameters.
+	(ipcp_insert_stage): Removed useless variable cvalue
+	(build_const_val): Changed formal parameters.
+	(ipcp_method_compute_scale): Renamed to ipcp_compute_node_scale
+	(ipcp_after_propagate): Renamed to ipcp_change_tops_to_bottom
+	(ipcp_callsite_param_print): Renamed to ipcp_print_all_jump_functions
+	(ipcp_profile_mt_count_print): Renamed to ipcp_print_func_profile_counts
+	(ipcp_print_func_profile_counts): Changed string from "method" to 
+	"function"
+	(ipcp_profile_cs_count_print): Renamed to ipcp_print_call_profile_counts
+	(ipcp_profile_edge_print): Renamed to ipcp_print_edge_profiles
+	(ipcp_profile_bb_print): Renamed to ipcp_print_bb_profiles
+	(ipcp_structures_print): Renamed to ipcp_print_all_structures
+	(ipcp_profile_print): Renamed to ipcp_print_profile_data
+	(ipcp_lat_is_const): Changed parameters and made inline.
+	(ipcp_replace_map_create): Renamed to ipcp_create_replace_map
+	(ipcp_redirect): Renamed to ipcp_need_redirect_p
+	(ipcp_need_redirect_p): Calls ipcp_lat_is_const instead of using 
+	the predicate condition directly
+	(ipcp_propagate_stage): Added local variable args. Removed local
+	variable callee.  (Both are mere code simplifications.)
+	(ipcp_method_dont_insert_const): Renamed to
+	ipcp_node_not_modifiable_p.
+	(ipcp_node_not_modifiable_p): Made inline.
+	(ipcp_cloned_create): Renamed to ipcp_init_cloned_node
+	(ipcp_propagate_const): Renamed to ipcp_propagate_one_const
+	(ipcp_print_all_lattices): Removed variable cvalue
+	(ipcp_method_scale_print): Renamed to ipcp_function_scale_print
+	Updated comments.
+
 2008-05-06  Olivier Hainque  <hainque@adacore.com>
 
 	* tree-sra.c (try_instantiate_multiple_fields): Early return
