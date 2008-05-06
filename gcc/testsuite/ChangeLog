@@ -1,3 +1,7 @@
+2008-05-06  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/fatp_sra.adb: New test.
+	
 2008-05-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/36141

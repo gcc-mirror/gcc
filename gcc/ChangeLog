@@ -1,3 +1,8 @@
+2008-05-06  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-sra.c (try_instantiate_multiple_fields): Early return
+	if field has POINTER_TYPE.
+
 2008-05-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (output_set_got): Fix for x86_64 output_emit_asm

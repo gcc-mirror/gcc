@@ -1472,6 +1472,10 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
   tree type, var;
   struct sra_elt *block;
 
+  /* Point fields are typically best handled as standalone entities.  */
+  if (POINTER_TYPE_P (TREE_TYPE (f)))
+    return f;
+    
   if (!is_sra_scalar_type (TREE_TYPE (f))
       || !host_integerp (DECL_FIELD_OFFSET (f), 1)
       || !host_integerp (DECL_FIELD_BIT_OFFSET (f), 1)
