@@ -1,3 +1,9 @@
+2008-05-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/36141
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Don't create VCE
+	for function decls.
+
 2008-05-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (sse2_<plusminus_insn><mode>3): Fix a typo.

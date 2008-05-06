@@ -657,6 +657,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       && TREE_OPERAND (rhs, 0) == name
       && TYPE_SIZE (TREE_TYPE (rhs))
       && TYPE_SIZE (TREE_TYPE (TREE_OPERAND (def_rhs, 0)))
+      /* Function decls should not be used for VCE either as it could be
+         a function descriptor that we want and not the actual function code.  */
+      && TREE_CODE (TREE_OPERAND (def_rhs, 0)) != FUNCTION_DECL
       /* We should not convert volatile loads to non volatile loads. */
       && !TYPE_VOLATILE (TREE_TYPE (rhs))
       && !TYPE_VOLATILE (TREE_TYPE (TREE_OPERAND (def_rhs, 0)))
