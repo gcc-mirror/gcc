@@ -1102,14 +1102,15 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   len = op1->value.character.length + op2->value.character.length;
 
-  result->value.character.string = gfc_getmem (len + 1);
+  result->value.character.string = gfc_get_wide_string (len + 1);
   result->value.character.length = len;
 
   memcpy (result->value.character.string, op1->value.character.string,
-	  op1->value.character.length);
+	  op1->value.character.length * sizeof (gfc_char_t));
 
-  memcpy (result->value.character.string + op1->value.character.length,
-	  op2->value.character.string, op2->value.character.length);
+  memcpy (&result->value.character.string[op1->value.character.length],
+	  op2->value.character.string,
+	  op2->value.character.length * sizeof (gfc_char_t));
 
   result->value.character.string[len] = '\0';
 
@@ -1203,7 +1204,8 @@ compare_complex (gfc_expr *op1, gfc_expr *op2)
 int
 gfc_compare_string (gfc_expr *a, gfc_expr *b)
 {
-  int len, alen, blen, i, ac, bc;
+  int len, alen, blen, i;
+  gfc_char_t ac, bc;
 
   alen = a->value.character.length;
   blen = b->value.character.length;
@@ -1212,10 +1214,8 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
 
   for (i = 0; i < len; i++)
     {
-      /* We cast to unsigned char because default char, if it is signed,
-	 would lead to ac < 0 for string[i] > 127.  */
-      ac = (unsigned char) ((i < alen) ? a->value.character.string[i] : ' ');
-      bc = (unsigned char) ((i < blen) ? b->value.character.string[i] : ' ');
+      ac = ((i < alen) ? a->value.character.string[i] : ' ');
+      bc = ((i < blen) ? b->value.character.string[i] : ' ');
 
       if (ac < bc)
 	return -1;
@@ -1231,7 +1231,8 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
 int
 gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
 {
-  int len, alen, blen, i, ac, bc;
+  int len, alen, blen, i;
+  gfc_char_t ac, bc;
 
   alen = a->value.character.length;
   blen = strlen (b);
@@ -1240,10 +1241,8 @@ gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
 
   for (i = 0; i < len; i++)
     {
-      /* We cast to unsigned char because default char, if it is signed,
-	 would lead to ac < 0 for string[i] > 127.  */
-      ac = (unsigned char) ((i < alen) ? a->value.character.string[i] : ' ');
-      bc = (unsigned char) ((i < blen) ? b[i] : ' ');
+      ac = ((i < alen) ? a->value.character.string[i] : ' ');
+      bc = ((i < blen) ? b[i] : ' ');
 
       if (!case_sensitive)
 	{
@@ -2438,7 +2437,7 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 
   result->representation.string = gfc_getmem (result_len + 1);
   memcpy (result->representation.string, src->representation.string,
-	MIN (result_len, src_len));
+	  MIN (result_len, src_len));
 
   if (src_len < result_len)
     memset (&result->representation.string[src_len], ' ', result_len - src_len);
@@ -2462,8 +2461,8 @@ gfc_hollerith2int (gfc_expr *src, int kind)
   result->where = src->where;
 
   hollerith2representation (result, src);
-  gfc_interpret_integer(kind, (unsigned char *) result->representation.string,
-			result->representation.length, result->value.integer);
+  gfc_interpret_integer (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.integer);
 
   return result;
 }
@@ -2486,8 +2485,8 @@ gfc_hollerith2real (gfc_expr *src, int kind)
   result->where = src->where;
 
   hollerith2representation (result, src);
-  gfc_interpret_float(kind, (unsigned char *) result->representation.string,
-		      result->representation.length, result->value.real);
+  gfc_interpret_float (kind, (unsigned char *) result->representation.string,
+		       result->representation.length, result->value.real);
 
   return result;
 }
@@ -2510,9 +2509,9 @@ gfc_hollerith2complex (gfc_expr *src, int kind)
   result->where = src->where;
 
   hollerith2representation (result, src);
-  gfc_interpret_complex(kind, (unsigned char *) result->representation.string,
-			result->representation.length, result->value.complex.r,
-			result->value.complex.i);
+  gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, result->value.complex.r,
+			 result->value.complex.i);
 
   return result;
 }
@@ -2529,8 +2528,9 @@ gfc_hollerith2character (gfc_expr *src, int kind)
   result->ts.type = BT_CHARACTER;
   result->ts.kind = kind;
 
-  result->value.character.string = result->representation.string;
   result->value.character.length = result->representation.length;
+  result->value.character.string
+    = gfc_char_to_widechar (result->representation.string);
 
   return result;
 }
@@ -2553,8 +2553,8 @@ gfc_hollerith2logical (gfc_expr *src, int kind)
   result->where = src->where;
 
   hollerith2representation (result, src);
-  gfc_interpret_logical(kind, (unsigned char *) result->representation.string,
-			result->representation.length, &result->value.logical);
+  gfc_interpret_logical (kind, (unsigned char *) result->representation.string,
+			 result->representation.length, &result->value.logical);
 
   return result;
 }

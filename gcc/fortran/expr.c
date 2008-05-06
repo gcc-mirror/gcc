@@ -164,9 +164,8 @@ free_expr0 (gfc_expr *e)
 	  break;
 	}
 
-      /* Free the representation, except in character constants where it
-	 is the same as value.character.string and thus already freed.  */
-      if (e->representation.string && e->ts.type != BT_CHARACTER)
+      /* Free the representation.  */
+      if (e->representation.string)
 	gfc_free (e->representation.string);
 
       break;
@@ -393,7 +392,8 @@ gfc_expr *
 gfc_copy_expr (gfc_expr *p)
 {
   gfc_expr *q;
-  char *s;
+  gfc_char_t *s;
+  char *c;
 
   if (p == NULL)
     return NULL;
@@ -404,20 +404,19 @@ gfc_copy_expr (gfc_expr *p)
   switch (q->expr_type)
     {
     case EXPR_SUBSTRING:
-      s = gfc_getmem (p->value.character.length + 1);
+      s = gfc_get_wide_string (p->value.character.length + 1);
       q->value.character.string = s;
-
-      memcpy (s, p->value.character.string, p->value.character.length + 1);
+      memcpy (s, p->value.character.string,
+	      (p->value.character.length + 1) * sizeof (gfc_char_t));
       break;
 
     case EXPR_CONSTANT:
       /* Copy target representation, if it exists.  */
       if (p->representation.string)
 	{
-	  s = gfc_getmem (p->representation.length + 1);
-	  q->representation.string = s;
-
-	  memcpy (s, p->representation.string, p->representation.length + 1);
+	  c = gfc_getmem (p->representation.length + 1);
+	  q->representation.string = c;
+	  memcpy (c, p->representation.string, (p->representation.length + 1));
 	}
 
       /* Copy the values of any pointer components of p->value.  */
@@ -443,10 +442,11 @@ gfc_copy_expr (gfc_expr *p)
 
 	case BT_CHARACTER:
 	  if (p->representation.string)
-	    q->value.character.string = q->representation.string;
+	    q->value.character.string
+	      = gfc_char_to_widechar (q->representation.string);
 	  else
 	    {
-	      s = gfc_getmem (p->value.character.length + 1);
+	      s = gfc_get_wide_string (p->value.character.length + 1);
 	      q->value.character.string = s;
 
 	      /* This is the case for the C_NULL_CHAR named constant.  */
@@ -460,7 +460,7 @@ gfc_copy_expr (gfc_expr *p)
 		}
 	      else
 		memcpy (s, p->value.character.string,
-			p->value.character.length + 1);
+			(p->value.character.length + 1) * sizeof (gfc_char_t));
 	    }
 	  break;
 
@@ -1379,7 +1379,7 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
   int end;
   int start;
   int length;
-  char *chr;
+  gfc_char_t *chr;
 
   if (p->ref->u.ss.start->expr_type != EXPR_CONSTANT
       || p->ref->u.ss.end->expr_type != EXPR_CONSTANT)
@@ -1392,9 +1392,10 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
   start = (int) mpz_get_ui (p->ref->u.ss.start->value.integer);
   length = end - start + 1;
 
-  chr = (*newp)->value.character.string = gfc_getmem (length + 1);
+  chr = (*newp)->value.character.string = gfc_get_wide_string (length + 1);
   (*newp)->value.character.length = length;
-  memcpy (chr, &p->value.character.string[start - 1], length);
+  memcpy (chr, &p->value.character.string[start - 1],
+	  length * sizeof (gfc_char_t));
   chr[length] = '\0';
   return SUCCESS;
 }
@@ -1592,7 +1593,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 
       if (gfc_is_constant_expr (p))
 	{
-	  char *s;
+	  gfc_char_t *s;
 	  int start, end;
 
 	  if (p->ref && p->ref->u.ss.start)
@@ -1608,8 +1609,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  else
 	    end = p->value.character.length;
 
-	  s = gfc_getmem (end - start + 2);
-	  memcpy (s, p->value.character.string + start, end - start);
+	  s = gfc_get_wide_string (end - start + 2);
+	  memcpy (s, p->value.character.string + start,
+		  (end - start) * sizeof (gfc_char_t));
 	  s[end - start + 1] = '\0';  /* TODO: C-style string.  */
 	  gfc_free (p->value.character.string);
 	  p->value.character.string = s;

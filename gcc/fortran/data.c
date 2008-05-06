@@ -151,10 +151,8 @@ static gfc_expr *
 create_character_intializer (gfc_expr *init, gfc_typespec *ts,
 			     gfc_ref *ref, gfc_expr *rvalue)
 {
-  int len;
-  int start;
-  int end;
-  char *dest, *rvalue_string;
+  int len, start, end;
+  gfc_char_t *dest;
 	    
   gfc_extract_int (ts->cl->length, &len);
 
@@ -165,13 +163,13 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
       init->expr_type = EXPR_CONSTANT;
       init->ts = *ts;
       
-      dest = gfc_getmem (len + 1);
+      dest = gfc_get_wide_string (len + 1);
       dest[len] = '\0';
       init->value.character.length = len;
       init->value.character.string = dest;
       /* Blank the string if we're only setting a substring.  */
       if (ref != NULL)
-	memset (dest, ' ', len);
+	gfc_wide_memset (dest, ' ', len);
     }
   else
     dest = init->value.character.string;
@@ -208,15 +206,9 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
 
   /* Copy the initial value.  */
   if (rvalue->ts.type == BT_HOLLERITH)
-    {
-      len = rvalue->representation.length;
-      rvalue_string = rvalue->representation.string;
-    }
+    len = rvalue->representation.length;
   else
-    {
-      len = rvalue->value.character.length;
-      rvalue_string = rvalue->value.character.string;
-    }
+    len = rvalue->value.character.length;
 
   if (len > end - start)
     {
@@ -225,16 +217,26 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
 		       "at %L", &rvalue->where);
     }
 
-  memcpy (&dest[start], rvalue_string, len);
+  if (rvalue->ts.type == BT_HOLLERITH)
+    {
+      int i;
+      for (i = 0; i < len; i++)
+	dest[start+i] = rvalue->representation.string[i];
+    }
+  else
+    memcpy (&dest[start], rvalue->value.character.string,
+	    len * sizeof (gfc_char_t));
 
   /* Pad with spaces.  Substrings will already be blanked.  */
   if (len < end - start && ref == NULL)
-    memset (&dest[start + len], ' ', end - (start + len));
+    gfc_wide_memset (&dest[start + len], ' ', end - (start + len));
 
   if (rvalue->ts.type == BT_HOLLERITH)
     {
       init->representation.length = init->value.character.length;
-      init->representation.string = init->value.character.string;
+      init->representation.string
+	= gfc_widechar_to_char (init->value.character.string,
+				init->value.character.length);
     }
 
   return init;

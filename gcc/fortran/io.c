@@ -117,7 +117,7 @@ format_token;
 /* Local variables for checking format strings.  The saved_token is
    used to back up by a single format token during the parsing
    process.  */
-static char *format_string;
+static gfc_char_t *format_string;
 static int format_length, use_last_char;
 
 static format_token saved_token;
@@ -165,7 +165,7 @@ next_char (int in_string)
   if (mode == MODE_COPY)
     *format_string++ = c;
 
-  c = TOUPPER ((unsigned char) c);
+  c = gfc_wide_toupper (c);
   return c;
 }
 
@@ -782,7 +782,7 @@ data_desc:
 	gfc_warning ("The H format specifier at %C is"
 		     " a Fortran 95 deleted feature");
 
-      if(mode == MODE_STRING)
+      if (mode == MODE_STRING)
 	{
 	  format_string += value;
 	  format_length -= value;
@@ -1010,7 +1010,8 @@ gfc_match_format (void)
   e->ts.type = BT_CHARACTER;
   e->ts.kind = gfc_default_character_kind;
   e->where = start;
-  e->value.character.string = format_string = gfc_getmem (format_length + 1);
+  e->value.character.string = format_string
+			    = gfc_get_wide_string (format_length + 1);
   e->value.character.length = format_length;
   gfc_statement_label->format = e;
 
@@ -1412,13 +1413,13 @@ gfc_resolve_open (gfc_open *open)
 static int
 compare_to_allowed_values (const char *specifier, const char *allowed[],
 			   const char *allowed_f2003[], 
-			   const char *allowed_gnu[], char *value,
+			   const char *allowed_gnu[], gfc_char_t *value,
 			   const char *statement, bool warn)
 {
   int i;
   unsigned int len;
 
-  len = strlen (value);
+  len = gfc_wide_strlen (value);
   if (len > 0)
   {
     for (len--; len > 0; len--)
@@ -1429,13 +1430,13 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
   for (i = 0; allowed[i]; i++)
     if (len == strlen (allowed[i])
-	&& strncasecmp (value, allowed[i], strlen (allowed[i])) == 0)
+	&& gfc_wide_strncasecmp (value, allowed[i], strlen (allowed[i])) == 0)
       return 1;
 
   for (i = 0; allowed_f2003 && allowed_f2003[i]; i++)
     if (len == strlen (allowed_f2003[i])
-	&& strncasecmp (value, allowed_f2003[i], strlen (allowed_f2003[i]))
-	   == 0)
+	&& gfc_wide_strncasecmp (value, allowed_f2003[i],
+				 strlen (allowed_f2003[i])) == 0)
       {
 	notification n = gfc_notification_std (GFC_STD_F2003);
 
@@ -1461,7 +1462,8 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
   for (i = 0; allowed_gnu && allowed_gnu[i]; i++)
     if (len == strlen (allowed_gnu[i])
-	&& strncasecmp (value, allowed_gnu[i], strlen (allowed_gnu[i])) == 0)
+	&& gfc_wide_strncasecmp (value, allowed_gnu[i],
+				 strlen (allowed_gnu[i])) == 0)
       {
 	notification n = gfc_notification_std (GFC_STD_GNU);
 
@@ -1487,14 +1489,18 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
   if (warn)
     {
+      char *s = gfc_widechar_to_char (value, -1);
       gfc_warning ("%s specifier in %s statement at %C has invalid value '%s'",
-		   specifier, statement, value);
+		   specifier, statement, s);
+      gfc_free (s);
       return 1;
     }
   else
     {
+      char *s = gfc_widechar_to_char (value, -1);
       gfc_error ("%s specifier in %s statement at %C has invalid value '%s'",
-		 specifier, statement, value);
+		 specifier, statement, s);
+      gfc_free (s);
       return 0;
     }
 }
@@ -1773,20 +1779,22 @@ gfc_match_open (void)
       /* F2003, 9.4.5: If the STATUS= specifier has the value NEW or REPLACE,
 	 the FILE= specifier shall appear.  */
       if (open->file == NULL
-	  && (strncasecmp (open->status->value.character.string, "replace", 7)
-	      == 0
-	     || strncasecmp (open->status->value.character.string, "new", 3)
-		== 0))
+	  && (gfc_wide_strncasecmp (open->status->value.character.string,
+				    "replace", 7) == 0
+	      || gfc_wide_strncasecmp (open->status->value.character.string,
+				       "new", 3) == 0))
 	{
+	  char *s = gfc_widechar_to_char (open->status->value.character.string,
+					  -1);
 	  warn_or_error ("The STATUS specified in OPEN statement at %C is "
-			 "'%s' and no FILE specifier is present",
-			 open->status->value.character.string);
+			 "'%s' and no FILE specifier is present", s);
+	  gfc_free (s);
 	}
 
       /* F2003, 9.4.5: If the STATUS= specifier has the value SCRATCH,
 	 the FILE= specifier shall not appear.  */
-      if (strncasecmp (open->status->value.character.string, "scratch", 7)
-	  == 0 && open->file)
+      if (gfc_wide_strncasecmp (open->status->value.character.string,
+				"scratch", 7) == 0 && open->file)
 	{
 	  warn_or_error ("The STATUS specified in OPEN statement at %C "
 			 "cannot have the value SCRATCH if a FILE specifier "
@@ -1798,8 +1806,8 @@ gfc_match_open (void)
   if (open->form && open->form->expr_type == EXPR_CONSTANT
       && (open->delim || open->decimal || open->encoding || open->round
 	  || open->sign || open->pad || open->blank)
-      && strncasecmp (open->form->value.character.string,
-		      "unformatted", 11) == 0)
+      && gfc_wide_strncasecmp (open->form->value.character.string,
+			       "unformatted", 11) == 0)
     {
       const char *spec = (open->delim ? "DELIM "
 				      : (open->pad ? "PAD " : open->blank
@@ -1810,7 +1818,8 @@ gfc_match_open (void)
     }
 
   if (open->recl && open->access && open->access->expr_type == EXPR_CONSTANT
-      && strncasecmp (open->access->value.character.string, "stream", 6) == 0)
+      && gfc_wide_strncasecmp (open->access->value.character.string,
+			       "stream", 6) == 0)
     {
       warn_or_error ("RECL specifier not allowed in OPEN statement at %C for "
 		     "stream I/O");
@@ -1818,12 +1827,12 @@ gfc_match_open (void)
 
   if (open->position
       && open->access && open->access->expr_type == EXPR_CONSTANT
-      && !(strncasecmp (open->access->value.character.string,
-			"sequential", 10) == 0
-	   || strncasecmp (open->access->value.character.string,
-			   "stream", 6) == 0
-	   || strncasecmp (open->access->value.character.string,
-			   "append", 6) == 0))
+      && !(gfc_wide_strncasecmp (open->access->value.character.string,
+				 "sequential", 10) == 0
+	   || gfc_wide_strncasecmp (open->access->value.character.string,
+				    "stream", 6) == 0
+	   || gfc_wide_strncasecmp (open->access->value.character.string,
+				    "append", 6) == 0))
     {
       warn_or_error ("POSITION specifier in OPEN statement at %C only allowed "
 		     "for stream or sequential ACCESS");
@@ -2939,9 +2948,12 @@ if (condition) \
 
   if (dt->id)
     {
-      io_constraint (!dt->asynchronous
-		     || strcmp (dt->asynchronous->value.character.string,
-				 "yes"),
+      bool not_yes
+	= !dt->asynchronous
+	  || gfc_wide_strlen (dt->asynchronous->value.character.string) != 3
+	  || gfc_wide_strncasecmp (dt->asynchronous->value.character.string,
+				   "yes", 3) != 0;
+      io_constraint (not_yes,
 		     "ID= specifier at %L must be with ASYNCHRONOUS='yes' "
 		     "specifier", &dt->id->where);
     }
@@ -3137,9 +3149,11 @@ if (condition) \
 
       if (expr->expr_type == EXPR_CONSTANT && expr->ts.type == BT_CHARACTER)
 	{
-	  const char * advance = expr->value.character.string;
-	  not_no = strcasecmp (advance, "no") != 0;
-	  not_yes = strcasecmp (advance, "yes") != 0;
+	  const gfc_char_t *advance = expr->value.character.string;
+	  not_no = gfc_wide_strlen (advance) != 2
+		   || gfc_wide_strncasecmp (advance, "no", 2) != 0;
+	  not_yes = gfc_wide_strlen (advance) != 3
+		    || gfc_wide_strncasecmp (advance, "yes", 3) != 0;
 	}
       else
 	{

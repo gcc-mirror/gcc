@@ -1497,7 +1497,7 @@ typedef struct gfc_expr
     struct
     {
       int length;
-      char *string;
+      gfc_char_t *string;
     }
     character;
 
@@ -1959,7 +1959,14 @@ int gfc_wide_is_printable (gfc_char_t);
 int gfc_wide_is_digit (gfc_char_t);
 int gfc_wide_fits_in_byte (gfc_char_t);
 gfc_char_t gfc_wide_tolower (gfc_char_t);
+gfc_char_t gfc_wide_toupper (gfc_char_t);
 size_t gfc_wide_strlen (const gfc_char_t *);
+int gfc_wide_strncasecmp (const gfc_char_t *, const char *, size_t);
+gfc_char_t *gfc_wide_memset (gfc_char_t *, gfc_char_t, size_t);
+char *gfc_widechar_to_char (const gfc_char_t *, int);
+gfc_char_t *gfc_char_to_widechar (const char *);
+
+#define gfc_get_wide_string(n) gfc_getmem((n) * sizeof(gfc_char_t))
 
 void gfc_skip_comments (void);
 gfc_char_t gfc_next_char_literal (int);
@@ -2018,6 +2025,8 @@ typedef struct gfc_error_buf
 
 void gfc_error_init_1 (void);
 void gfc_buffer_error (int);
+
+const char *gfc_print_wide_char (gfc_char_t);
 
 void gfc_warning (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_warning_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);

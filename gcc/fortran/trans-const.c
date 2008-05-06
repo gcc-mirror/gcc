@@ -105,7 +105,8 @@ gfc_build_localized_cstring_const (const char *msgid)
 tree
 gfc_conv_string_init (tree length, gfc_expr * expr)
 {
-  char *s;
+  gfc_char_t *s;
+  char *c;
   HOST_WIDE_INT len;
   int slen;
   tree str;
@@ -120,14 +121,21 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
 
   if (len > slen)
     {
-      s = gfc_getmem (len);
-      memcpy (s, expr->value.character.string, slen);
-      memset (&s[slen], ' ', len - slen);
-      str = gfc_build_string_const (len, s);
+      s = gfc_get_wide_string (len);
+      memcpy (s, expr->value.character.string, slen * sizeof (gfc_char_t));
+      gfc_wide_memset (&s[slen], ' ', len - slen);
+
+      /* FIXME -- currently ignore wide character strings; see assert
+	 above.  */
+      c = gfc_widechar_to_char (s, len);
       gfc_free (s);
     }
   else
-    str = gfc_build_string_const (len, expr->value.character.string);
+    c = gfc_widechar_to_char (expr->value.character.string,
+			      expr->value.character.length);
+
+  str = gfc_build_string_const (len, c);
+  gfc_free (c);
 
   return str;
 }
@@ -214,6 +222,9 @@ gfc_conv_tree_to_mpfr (mpfr_ptr f, tree source)
 tree
 gfc_conv_constant_to_tree (gfc_expr * expr)
 {
+  tree res;
+  char *s;
+
   gcc_assert (expr->expr_type == EXPR_CONSTANT);
 
   /* If it is has a prescribed memory representation, we build a string
@@ -267,8 +278,12 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 	}
 
     case BT_CHARACTER:
-      return gfc_build_string_const (expr->value.character.length,
-				     expr->value.character.string);
+      gcc_assert (expr->ts.kind == 1);
+      s = gfc_widechar_to_char (expr->value.character.string,
+				expr->value.character.length);
+      res = gfc_build_string_const (expr->value.character.length, s);
+      gfc_free (s);
+      return res;
 
     case BT_HOLLERITH:
       return gfc_build_string_const (expr->representation.length,

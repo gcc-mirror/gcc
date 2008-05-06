@@ -113,6 +113,12 @@ gfc_wide_tolower (gfc_char_t c)
   return (wide_is_ascii (c) ? (gfc_char_t) TOLOWER((unsigned char) c) : c);
 }
 
+gfc_char_t
+gfc_wide_toupper (gfc_char_t c)
+{
+  return (wide_is_ascii (c) ? (gfc_char_t) TOUPPER((unsigned char) c) : c);
+}
+
 int
 gfc_wide_is_digit (gfc_char_t c)
 {
@@ -143,6 +149,17 @@ gfc_wide_strlen (const gfc_char_t *str)
   return i;
 }
 
+gfc_char_t *
+gfc_wide_memset (gfc_char_t *b, gfc_char_t c, size_t len)
+{
+  size_t i;
+
+  for (i = 0; i < len; i++)
+    b[i] = c;
+
+  return b;
+}
+
 static gfc_char_t *
 wide_strcpy (gfc_char_t *dest, const gfc_char_t *src)
 {
@@ -155,25 +172,55 @@ wide_strcpy (gfc_char_t *dest, const gfc_char_t *src)
 }
 
 static gfc_char_t *
-wide_strchr (gfc_char_t *s, gfc_char_t c)
+wide_strchr (const gfc_char_t *s, gfc_char_t c)
 {
   do {
     if (*s == c)
       {
-        return (gfc_char_t *) s;
+        return CONST_CAST(gfc_char_t *, s);
       }
   } while (*s++);
   return 0;
 }
 
-static char *
-widechar_to_char (gfc_char_t *s)
+char *
+gfc_widechar_to_char (const gfc_char_t *s, int length)
 {
-  size_t len = gfc_wide_strlen (s), i;
-  char *res = gfc_getmem (len + 1);
+  size_t len, i;
+  char *res;
+
+  if (s == NULL)
+    return NULL;
+
+  /* Passing a negative length is used to indicate that length should be
+     calculated using gfc_wide_strlen().  */
+  len = (length >= 0 ? (size_t) length : gfc_wide_strlen (s));
+  res = gfc_getmem (len + 1);
 
   for (i = 0; i < len; i++)
-    res[i] = gfc_wide_fits_in_byte (s[i]) ? (unsigned char) s[i] : '?';
+    {
+      gcc_assert (gfc_wide_fits_in_byte (s[i]));
+      res[i] = (unsigned char) s[i];
+    }
+
+  res[len] = '\0';
+  return res;
+}
+
+gfc_char_t *
+gfc_char_to_widechar (const char *s)
+{
+  size_t len, i;
+  gfc_char_t *res;
+
+  if (s == NULL)
+    return NULL;
+
+  len = strlen (s);
+  res = gfc_get_wide_string (len + 1);
+
+  for (i = 0; i < len; i++)
+    res[i] = (unsigned char) s[i];
 
   res[len] = '\0';
   return res;
@@ -196,8 +243,8 @@ wide_strncmp (const gfc_char_t *s1, const char *s2, size_t n)
   return 0;
 }
 
-static int
-wide_strncasecmp (const gfc_char_t *s1, const char *s2, size_t n)
+int
+gfc_wide_strncasecmp (const gfc_char_t *s1, const char *s2, size_t n)
 {
   gfc_char_t c1, c2;
 
@@ -585,7 +632,7 @@ gfc_define_undef_line (void)
 
   if (wide_strncmp (gfc_current_locus.nextc, "#define ", 8) == 0)
     {
-      tmp = widechar_to_char (&gfc_current_locus.nextc[8]);
+      tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[8], -1);
       (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.lb),
 			      tmp);
       gfc_free (tmp);
@@ -593,7 +640,7 @@ gfc_define_undef_line (void)
 
   if (wide_strncmp (gfc_current_locus.nextc, "#undef ", 7) == 0)
     {
-      tmp = widechar_to_char (&gfc_current_locus.nextc[7]);
+      tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[7], -1);
       (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.lb),
 			     tmp);
       gfc_free (tmp);
@@ -1294,7 +1341,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
       else
 	buflen = 132;
 
-      *pbuf = gfc_getmem ((buflen + 1) * sizeof (gfc_char_t));
+      *pbuf = gfc_get_wide_string (buflen + 1);
     }
 
   i = 0;
@@ -1556,7 +1603,7 @@ preprocessor_line (gfc_char_t *c)
 
   /* Convert the filename in wide characters into a filename in narrow
      characters.  */
-  filename = widechar_to_char (wide_filename);
+  filename = gfc_widechar_to_char (wide_filename, -1);
 
   /* Interpret flags.  */
 
@@ -1647,7 +1694,7 @@ include_line (gfc_char_t *line)
   while (*c == ' ' || *c == '\t')
     c++;
 
-  if (wide_strncasecmp (c, "include", 7))
+  if (gfc_wide_strncasecmp (c, "include", 7))
     return false;
 
   c += 7;
@@ -1681,7 +1728,7 @@ include_line (gfc_char_t *line)
   *stop = '\0'; /* It's ok to trash the buffer, as this line won't be
 		   read by anything else.  */
 
-  filename = widechar_to_char (begin);
+  filename = gfc_widechar_to_char (begin, -1);
   load_file (filename, false);
   gfc_free (filename);
   return true;
@@ -1779,7 +1826,7 @@ load_file (const char *filename, bool initial)
 				&& line[2] == (unsigned char) '\xBF')))
 	{
 	  int n = line[1] == (unsigned char) '\xBB' ? 3 : 2;
-	  gfc_char_t *new = gfc_getmem (line_len * sizeof (gfc_char_t));
+	  gfc_char_t *new = gfc_get_wide_string (line_len);
 
 	  wide_strcpy (new, &line[n]);
 	  gfc_free (line);
@@ -1944,7 +1991,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   if (wide_strncmp (gfc_src_preprocessor_lines[0], "# 1 \"", 5) != 0)
     return NULL;
 
-  tmp = widechar_to_char (&gfc_src_preprocessor_lines[0][5]);
+  tmp = gfc_widechar_to_char (&gfc_src_preprocessor_lines[0][5], -1);
   filename = unescape_filename (tmp);
   gfc_free (tmp);
   if (filename == NULL)
@@ -1962,7 +2009,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   if (wide_strncmp (gfc_src_preprocessor_lines[1], "# 1 \"", 5) != 0)
     return filename;
 
-  tmp = widechar_to_char (&gfc_src_preprocessor_lines[1][5]);
+  tmp = gfc_widechar_to_char (&gfc_src_preprocessor_lines[1][5], -1);
   dirname = unescape_filename (tmp);
   gfc_free (tmp);
   if (dirname == NULL)

@@ -2708,6 +2708,7 @@ mio_expr (gfc_expr **ep)
 {
   gfc_expr *e;
   atom_type t;
+  char *s;
   int flag;
 
   mio_lparen ();
@@ -2832,8 +2833,10 @@ mio_expr (gfc_expr **ep)
       break;
 
     case EXPR_SUBSTRING:
-      e->value.character.string
-	= CONST_CAST (char *, mio_allocated_string (e->value.character.string));
+      s = gfc_widechar_to_char (e->value.character.string, -1);
+      s = CONST_CAST (char *, mio_allocated_string (s));
+      e->value.character.string = gfc_char_to_widechar (s);
+      gfc_free (s);
       mio_ref_list (&e->ref);
       break;
 
@@ -2867,8 +2870,10 @@ mio_expr (gfc_expr **ep)
 
 	case BT_CHARACTER:
 	  mio_integer (&e->value.character.length);
-	  e->value.character.string
-	    = CONST_CAST (char *, mio_allocated_string (e->value.character.string));
+	  s = gfc_widechar_to_char (e->value.character.string, -1);
+	  s = CONST_CAST (char *, mio_allocated_string (s));
+	  e->value.character.string = gfc_char_to_widechar (s);
+	  gfc_free (s);
 	  break;
 
 	default:
