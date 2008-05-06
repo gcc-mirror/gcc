@@ -1,5 +1,9 @@
 2008-05-05  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/sse.md (sse2_<plusminus_insn><mode>3): Fix a typo.
+
+2008-05-05  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.md (sat_plusminus): New.
 	(plusminus_insn): Likewise.
 	(plusminus_mnemonic): Likewise.
@@ -10,7 +14,7 @@
 	(*<addsub>si3_zext_cc_overflow): Renamed to ...
 	(*<plusminus_insn>si3_zext_cc_overflow): This.
 
-	* gcc/config/i386/sse.md (<addsub><mode>3): Renamed to ...
+	* config/i386/sse.md (<addsub><mode>3): Renamed to ...
 	(<plusminus_insn><mode>3): This.
 	(*<addsub><mode>3): Renamed to ...
 	(*<plusminus_insn><mode>3): This.
