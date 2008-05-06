@@ -301,7 +301,7 @@ show_constructor (gfc_constructor *c)
 
 
 static void
-show_char_const (const char *c, int length)
+show_char_const (const gfc_char_t *c, int length)
 {
   int i;
 
@@ -310,10 +310,8 @@ show_char_const (const char *c, int length)
     {
       if (c[i] == '\'')
 	fputs ("''", dumpfile);
-      else if (ISPRINT (c[i]))
-	fputc (c[i], dumpfile);
       else
-	fprintf (dumpfile, "' // ACHAR(%d) // '", c[i]);
+	fputs (gfc_print_wide_char (c[i]), dumpfile);
     }
   fputc ('\'', dumpfile);
 }

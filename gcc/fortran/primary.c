@@ -278,11 +278,18 @@ match_hollerith_constant (gfc_expr **result)
 
 	  e->representation.string = gfc_getmem (num + 1);
 
-	  /* FIXME -- determine what should be done for wide character
-	     strings, and do it!  */
 	  for (i = 0; i < num; i++)
-	    e->representation.string[i]
-	      = (unsigned char) gfc_next_char_literal (1);
+	    {
+	      gfc_char_t c = gfc_next_char_literal (1);
+	      if (! gfc_wide_fits_in_byte (c))
+		{
+		  gfc_error ("Invalid Hollerith constant at %L contains a "
+			     "wide character", &old_loc);
+		  goto cleanup;
+		}
+
+	      e->representation.string[i] = (unsigned char) c;
+	    }
 
 	  e->representation.string[num] = '\0';
 	  e->representation.length = num;
@@ -844,14 +851,14 @@ match_charkind_name (char *name)
 static match
 match_string_constant (gfc_expr **result)
 {
-  char *p, name[GFC_MAX_SYMBOL_LEN + 1], peek;
+  char name[GFC_MAX_SYMBOL_LEN + 1], peek;
   int i, kind, length, warn_ampersand, ret;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
   const char *q;
   match m;
-  gfc_char_t c, delimiter;
+  gfc_char_t c, delimiter, *p;
 
   old_locus = gfc_current_locus;
 
@@ -970,7 +977,7 @@ got_delim:
   e->ts.is_iso_c = 0;
   e->where = start_locus;
 
-  e->value.character.string = p = gfc_getmem (length + 1);
+  e->value.character.string = p = gfc_get_wide_string (length + 1);
   e->value.character.length = length;
 
   gfc_current_locus = start_locus;
@@ -992,7 +999,7 @@ got_delim:
 	  return MATCH_ERROR;
 	}
 
-      *p++ = (unsigned char) c;
+      *p++ = c;
     }
 
   *p = '\0';	/* TODO: C-style string is for development/debug purposes.  */

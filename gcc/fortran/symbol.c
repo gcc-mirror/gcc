@@ -3833,9 +3833,9 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->ts.is_c_interop = 1;
 	tmp_sym->value->ts.is_iso_c = 1;
 	tmp_sym->value->value.character.length = 1;
-	tmp_sym->value->value.character.string = gfc_getmem (2);
+	tmp_sym->value->value.character.string = gfc_get_wide_string (2);
 	tmp_sym->value->value.character.string[0]
-	  = (char) c_interop_kinds_table[s].value;
+	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->value->value.character.string[1] = '\0';
 	tmp_sym->ts.cl = gfc_get_charlen ();
 	tmp_sym->ts.cl->length = gfc_int_expr (1);

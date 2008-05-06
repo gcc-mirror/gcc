@@ -152,48 +152,51 @@ error_integer (long int i)
 }
 
 
-/* Show the file, where it was included, and the source line, give a
-   locus.  Calls error_printf() recursively, but the recursion is at
-   most one level deep.  */
+static char wide_char_print_buffer[11];
 
-static void
-print_wide_char (gfc_char_t c)
+const char *
+gfc_print_wide_char (gfc_char_t c)
 {
   static const char xdigit[16] = { '0', '1', '2', '3', '4', '5', '6',
     '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-  char buf[9];
+  char *buf = wide_char_print_buffer;
 
   if (gfc_wide_is_printable (c))
-    error_char (c);
-  else if (c < ((gfc_char_t) 1 << 8))
     {
-      buf[2] = '\0';
-      buf[1] = xdigit[c & 0x0F];
-      c = c >> 4;
-      buf[0] = xdigit[c & 0x0F];
-
-      error_char ('\\');
-      error_char ('x');
-      error_string (buf);
+      buf[1] = '\0';
+      buf[0] = (unsigned char) c;
     }
-  else if (c < ((gfc_char_t) 1 << 16))
+  else if (c < ((gfc_char_t) 1 << 8))
     {
       buf[4] = '\0';
       buf[3] = xdigit[c & 0x0F];
       c = c >> 4;
       buf[2] = xdigit[c & 0x0F];
-      c = c >> 4;
-      buf[1] = xdigit[c & 0x0F];
-      c = c >> 4;
-      buf[0] = xdigit[c & 0x0F];
 
-      error_char ('\\');
-      error_char ('u');
-      error_string (buf);
+      buf[1] = '\\';
+      buf[0] = 'x';
+    }
+  else if (c < ((gfc_char_t) 1 << 16))
+    {
+      buf[6] = '\0';
+      buf[5] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[4] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[3] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[2] = xdigit[c & 0x0F];
+
+      buf[1] = '\\';
+      buf[0] = 'u';
     }
   else
     {
-      buf[8] = '\0';
+      buf[10] = '\0';
+      buf[9] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[8] = xdigit[c & 0x0F];
+      c = c >> 4;
       buf[7] = xdigit[c & 0x0F];
       c = c >> 4;
       buf[6] = xdigit[c & 0x0F];
@@ -205,16 +208,17 @@ print_wide_char (gfc_char_t c)
       buf[3] = xdigit[c & 0x0F];
       c = c >> 4;
       buf[2] = xdigit[c & 0x0F];
-      c = c >> 4;
-      buf[1] = xdigit[c & 0x0F];
-      c = c >> 4;
-      buf[0] = xdigit[c & 0x0F];
 
-      error_char ('\\');
-      error_char ('U');
-      error_string (buf);
+      buf[1] = '\\';
+      buf[0] = 'U';
     }
+
+  return buf;
 }
+
+/* Show the file, where it was included, and the source line, give a
+   locus.  Calls error_printf() recursively, but the recursion is at
+   most one level deep.  */
 
 static void error_printf (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 
@@ -317,7 +321,7 @@ show_locus (locus *loc, int c1, int c2)
       if (c == '\t')
 	c = ' ';
 
-      print_wide_char (c);
+      error_string (gfc_print_wide_char (c));
     }
 
   error_char ('\n');

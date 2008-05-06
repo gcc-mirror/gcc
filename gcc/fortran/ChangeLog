@@ -1,5 +1,59 @@
 2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* arith.c: (gfc_arith_concat, gfc_compare_string,
+	gfc_compare_with_Cstring, hollerith2representation,
+	gfc_hollerith2int, gfc_hollerith2real, gfc_hollerith2complex,
+	gfc_hollerith2character, gfc_hollerith2logical): Use wide
+	characters for character constants.
+	* data.c (create_character_intializer): Likewise.
+	* decl.c (gfc_set_constant_character_len): Likewise.
+	* dump-parse-tree.c (show_char_const): Correctly dump wide
+	character strings.
+	error.c (print_wide_char): Rename into gfc_print_wide_char.
+	(show_locus): Adapt to new prototype of gfc_print_wide_char.
+	expr.c (free_expr0): Representation is now disjunct from
+	character string value, so we always free it.
+	(gfc_copy_expr, find_substring_ref, gfc_simplify_expr): Adapt
+	to wide character strings.
+	* gfortran.h (gfc_expr): Make value.character.string a wide string.
+	(gfc_wide_toupper, gfc_wide_strncasecmp, gfc_wide_memset,
+	gfc_widechar_to_char, gfc_char_to_widechar): New prototypes.
+	(gfc_get_wide_string): New macro.
+	(gfc_print_wide_char): New prototype.
+	* io.c (format_string): Make a wide string.
+	(next_char, gfc_match_format, compare_to_allowed_values, 
+	gfc_match_open): Deal with wide strings.
+	* module.c (mio_expr): Convert between wide strings and ASCII ones.
+	* primary.c (match_hollerith_constant, match_charkind_name): 
+	Handle wide strings.
+	* resolve.c (build_default_init_expr): Likewise.
+	* scanner.c (gfc_wide_toupper, gfc_wide_memset,
+	gfc_char_to_widechar): New functions.
+	(wide_strchr, gfc_widechar_to_char, gfc_wide_strncasecmp):
+	Changes in prototypes.
+	(gfc_define_undef_line, load_line, preprocessor_line,
+	include_line, load_file, gfc_read_orig_filename): Handle wide
+	strings.
+	* simplify.c (gfc_simplify_achar, gfc_simplify_adjustl,
+	gfc_simplify_adjustr, gfc_simplify_char, gfc_simplify_iachar,
+	gfc_simplify_ichar, simplify_min_max, gfc_simplify_new_line,
+	gfc_simplify_repeat): Handle wide strings.
+	(wide_strspn, wide_strcspn): New helper functions.
+	(gfc_simplify_scan, gfc_simplify_trim, gfc_simplify_verify):
+	Handle wide strings.
+	* symbol.c (generate_isocbinding_symbol): Likewise.
+	* target-memory.c (size_character, gfc_target_expr_size,
+	encode_character, gfc_target_encode_expr, gfc_interpret_character,
+	gfc_target_interpret_expr): Handle wide strings.
+	* trans-const.c (gfc_conv_string_init): Lower wide strings to
+	narrow ones.
+	(gfc_conv_constant_to_tree): Likewise.
+	* trans-expr.c (gfc_conv_substring_expr): Handle wide strings.
+	* trans-io.c (gfc_new_nml_name_expr): Likewise.
+	* trans-stmt.c (gfc_trans_label_assign): Likewise.
+
+2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* simplify.c (gfc_simplify_bessel_j0,gfc_simplify_bessel_j1,
 	gfc_simplify_bessel_jn,gfc_simplify_bessel_y0,
 	gfc_simplify_bessel_y1,gfc_simplify_bessel_yn): Mark arguments
