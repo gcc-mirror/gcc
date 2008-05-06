@@ -57,12 +57,15 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   index_type len;
   index_type delta;
   index_type dim;
+  int continue_loop;
 
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  if (len < 0)
+    len = 0;
   delta = array->dim[dim].stride;
 
   for (n = 0; n < dim; n++)
@@ -149,7 +152,8 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   base = array->data;
   dest = retarray->data;
 
-  while (base)
+  continue_loop = 1;
+  while (continue_loop)
     {
       const GFC_REAL_4 * restrict src;
       GFC_INTEGER_16 result;
@@ -193,8 +197,8 @@ maxloc1_16_r4 (gfc_array_i16 * const restrict retarray,
           if (n == rank)
             {
               /* Break out of the look.  */
-              base = NULL;
-              break;
+	      continue_loop = 0;
+	      break;
             }
           else
             {

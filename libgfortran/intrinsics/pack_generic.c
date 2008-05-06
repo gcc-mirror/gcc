@@ -350,6 +350,7 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   index_type dim;
   index_type ssize;
   index_type nelem;
+  index_type total;
 
   dim = GFC_DESCRIPTOR_RANK (array);
   ssize = 1;
@@ -357,6 +358,9 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
     {
       count[n] = 0;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      if (extent[n] < 0)
+	extent[n] = 0;
+
       sstride[n] = array->dim[n].stride * size;
       ssize *= extent[n];
     }
@@ -364,18 +368,26 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
     sstride[0] = size;
 
   sstride0 = sstride[0];
-  sptr = array->data;
+
+  if (ssize != 0)
+    sptr = array->data;
+  else
+    sptr = NULL;
 
   if (ret->data == NULL)
     {
       /* Allocate the memory for the result.  */
-      int total;
 
       if (vector != NULL)
 	{
 	  /* The return array will have as many elements as there are
 	     in vector.  */
 	  total = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
+	  if (total <= 0)
+	    {
+	      total = 0;
+	      vector = NULL;
+	    }
 	}
       else
 	{

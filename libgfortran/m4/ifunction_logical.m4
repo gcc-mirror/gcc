@@ -40,6 +40,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   index_type delta;
   index_type dim;
   int src_kind;
+  int continue_loop;
 
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
@@ -48,6 +49,9 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   src_kind = GFC_DESCRIPTOR_SIZE (array);
 
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
+  if (len < 0)
+    len = 0;
+
   delta = array->dim[dim].stride * src_kind;
 
   for (n = 0; n < dim; n++)
@@ -146,7 +150,8 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 
   dest = retarray->data;
 
-  while (base)
+  continue_loop = 1;
+  while (continue_loop)
     {
       const GFC_LOGICAL_1 * restrict src;
       rtype_name result;
@@ -184,7 +189,7 @@ define(FINISH_ARRAY_FUNCTION,
           if (n == rank)
             {
               /* Break out of the look.  */
-              base = NULL;
+              continue_loop = 0;
               break;
             }
           else
