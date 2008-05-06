@@ -1,3 +1,9 @@
+2008-05-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (output_set_got): Fix for x86_64 output_emit_asm
+	by using 'q' specifier for instruction.
+	(ix86_file_end): Replaced case TARGET_64BIT_MS_ABI by TARGET_64BIT.
+
 2008-05-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.md (*sbrx_branch, *sbix_branch, *sbix_branch_tmp):
