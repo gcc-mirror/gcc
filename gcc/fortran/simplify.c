@@ -637,6 +637,130 @@ gfc_simplify_atan2 (gfc_expr *y, gfc_expr *x)
 
 
 gfc_expr *
+gfc_simplify_bessel_j0 (gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_j0 (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_J0");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_j1 (gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_j1 (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_J1");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_jn (gfc_expr *order, gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+  long n;
+
+  if (x->expr_type != EXPR_CONSTANT || order->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  n = mpz_get_si (order->value.integer);
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_jn (result->value.real, n, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_JN");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_y0 (gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_y0 (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_Y0");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_y1 (gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_y1 (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_Y1");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_yn (gfc_expr *order, gfc_expr *x)
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+  long n;
+
+  if (x->expr_type != EXPR_CONSTANT || order->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  n = mpz_get_si (order->value.integer);
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_yn (result->value.real, n, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "BESSEL_YN");
+#else
+  return NULL;
+#endif
+}
+
+
+gfc_expr *
 gfc_simplify_bit_size (gfc_expr *e)
 {
   gfc_expr *result;

@@ -1095,73 +1095,73 @@ add_functions (void)
   
   /* Bessel and Neumann functions for G77 compatibility.  */
   add_sym_1 ("besj0", GFC_ISYM_J0, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, gfc_simplify_bessel_j0, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_j0", GFC_STD_F2008);
 
   add_sym_1 ("dbesj0", GFC_ISYM_J0, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_fn_d, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_d, gfc_simplify_bessel_j0, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_j0", GFC_ISYM_J0, GFC_STD_F2008);
 
   add_sym_1 ("besj1", GFC_ISYM_J1, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, gfc_simplify_bessel_j1, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_j1", GFC_STD_F2008);
 
   add_sym_1 ("dbesj1", GFC_ISYM_J1, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_fn_d, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_d, gfc_simplify_bessel_j1, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_j1", GFC_ISYM_J1, GFC_STD_F2008);
 
   add_sym_2 ("besjn", GFC_ISYM_JN, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_besn, NULL, gfc_resolve_besn,
+	     gfc_check_besn, gfc_simplify_bessel_jn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_jn", GFC_STD_F2008);
 
   add_sym_2 ("dbesjn", GFC_ISYM_JN, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_besn, NULL, gfc_resolve_besn,
+	     gfc_check_besn, gfc_simplify_bessel_jn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_jn", GFC_ISYM_JN, GFC_STD_F2008);
 
   add_sym_1 ("besy0", GFC_ISYM_Y0, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, gfc_simplify_bessel_y0, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_y0", GFC_STD_F2008);
 
   add_sym_1 ("dbesy0", GFC_ISYM_Y0, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_fn_d, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_d, gfc_simplify_bessel_y0, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_y0", GFC_ISYM_Y0, GFC_STD_F2008);
 
   add_sym_1 ("besy1", GFC_ISYM_Y1, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_fn_r, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_r, gfc_simplify_bessel_y1, gfc_resolve_g77_math1,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_y1", GFC_STD_F2008);
 
   add_sym_1 ("dbesy1", GFC_ISYM_Y1, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_fn_d, NULL, gfc_resolve_g77_math1,
+	     gfc_check_fn_d, gfc_simplify_bessel_y1, gfc_resolve_g77_math1,
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_y1", GFC_ISYM_Y1, GFC_STD_F2008);
 
   add_sym_2 ("besyn", GFC_ISYM_YN, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
-	     gfc_check_besn, NULL, gfc_resolve_besn,
+	     gfc_check_besn, gfc_simplify_bessel_yn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dr, REQUIRED);
 
   make_alias ("bessel_yn", GFC_STD_F2008);
 
   add_sym_2 ("dbesyn", GFC_ISYM_YN, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
-	     gfc_check_besn, NULL, gfc_resolve_besn,
+	     gfc_check_besn, gfc_simplify_bessel_yn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
   make_generic ("bessel_yn", GFC_ISYM_YN, GFC_STD_F2008);
