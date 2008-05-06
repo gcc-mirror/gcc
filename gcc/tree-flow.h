@@ -731,7 +731,6 @@ extern void delete_tree_cfg_annotations (void);
 extern bool stmt_ends_bb_p (const_tree);
 extern bool is_ctrl_stmt (const_tree);
 extern bool is_ctrl_altering_stmt (const_tree);
-extern bool computed_goto_p (const_tree);
 extern bool simple_goto_p (const_tree);
 extern bool tree_can_make_abnormal_goto (const_tree);
 extern basic_block single_noncomplex_succ (basic_block bb);
