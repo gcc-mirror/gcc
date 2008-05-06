@@ -2056,7 +2056,7 @@
   [(set (pc)
         (if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:QI
+			 [(zero_extract:HI
 			   (match_operand:QI 1 "register_operand" "r")
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
@@ -2123,7 +2123,7 @@
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))]
   ""
-  [(set (pc) (if_then_else (eq (zero_extract:QI (match_dup 0)
+  [(set (pc) (if_then_else (eq (zero_extract:HI (match_dup 0)
 						(const_int 1)
 						(const_int 7))
 			       (const_int 0))
@@ -2137,7 +2137,7 @@
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))]
   ""
-  [(set (pc) (if_then_else (ne (zero_extract:QI (match_dup 0)
+  [(set (pc) (if_then_else (ne (zero_extract:HI (match_dup 0)
 						(const_int 1)
 						(const_int 7))
 			       (const_int 0))
@@ -2518,7 +2518,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:QI
+			 [(zero_extract:HI
 			   (mem:QI (match_operand 1 "low_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
@@ -2565,7 +2565,7 @@
   [(set (pc)
 	(if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:QI
+			 [(zero_extract:HI
 			   (mem:QI (match_operand 1 "high_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
