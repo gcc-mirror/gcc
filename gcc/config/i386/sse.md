@@ -2747,7 +2747,7 @@
 	  (match_operand:SSEMODE12 1 "nonimmediate_operand" "<comm>0")
 	  (match_operand:SSEMODE12 2 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<sat_plusminus_mnemonic><ssevecsize>\t{%2, %0|%0, %2}"
+  "p<plusminus_mnemonic><ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
