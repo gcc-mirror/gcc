@@ -1,3 +1,11 @@
+2008-05-06  Mark Shinwell  <shinwell@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+	    Andrew Jenner  <andrew@codesourcery.com>
+
+	* g++.old-deja/g++.jason/enum6.C, g++.old-deja/g++.law/enum9.C,
+	g++.old-deja/g++.other/enum4.C, gfortran/enum_9.f90,
+	gfortran.dg/enum_10.f90: Broaden dg-options pattern.
+
 2008-05-06  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/35313, PR preprocessor/36088:
