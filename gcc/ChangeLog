@@ -1,8 +1,7 @@
 2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35657
-	* config/i386/i386.c (contains_128bit_aligned_vector_p): Renamed
-	to ...
+	* config/i386/i386.c (contains_128bit_aligned_vector_p): Renamed to ...
 	(contains_aligned_value_p): This.  Handle _Decimal128.
 	(ix86_function_arg_boundary): Only align _Decimal128 to its
 	natural boundary and handle it properly.
@@ -95,43 +94,43 @@
 2008-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md: Remove double backslashes from asm templates.
-	(*addv2sf3): Rename from mmx_addv2sf3 insn pattern.
+	(*mmx_addv2sf3): Rename from mmx_addv2sf3 insn pattern.
 	(mmx_addv2sf3): New expander.  Use ix86_fixup_binary_operands_no_copy
 	to handle nonimmediate operands.
-	(*mulv2sf3): Rename from mmx_mulv2sf3 insn pattern.
+	(*mmx_mulv2sf3): Rename from mmx_mulv2sf3 insn pattern.
 	(mmx_mulv2sf3): New expander.  Use ix86_fixup_binary_operands_no_copy
 	to handle nonimmediate operands.
-	(*<code>v2sf3_finite): New insn pattern.
-	(*<code>v2sf3): Rename from mmx_<code>v2sf3 insn pattern.
+	(*mmx_<code>v2sf3_finite): New insn pattern.
+	(*mmx_<code>v2sf3): Rename from mmx_<code>v2sf3 insn pattern.
 	(mmx_<code>v2sf3): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
 	(mmx_<plusminus_insn><mode>3): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*<plusminus_insn><mode>3): New insn pattern.
+	(*mmx_<plusminus_insn><mode>3): New insn pattern.
 	(mmx_add<mode>3): Removed.
 	(mmx_ssadd<mode>3): Ditto.
 	(mmx_usadd<mode>3): Ditto.
 	(mmx_sub<mode>3): Ditto.
 	(mmx_sssub<mode>3): Ditto.
 	(mmx_ussub<mode>3): Ditto.
-	(*mulv4hi3): Rename from mmx_mulv4hi3 insn pattern.
+	(*mmx_mulv4hi3): Rename from mmx_mulv4hi3 insn pattern.
 	(mmx_mulv4hi3): New expander.  Use ix86_fixup_binary_operands_no_copy
 	to handle nonimmediate operands.
-	(*smulv4hi3_highpart): Rename from mmx_smulv4hi3_highpart
+	(*mmx_smulv4hi3_highpart): Rename from mmx_smulv4hi3_highpart
 	insn pattern.
 	(mmx_smulv4hi3_highpart): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*umulv4hi3_highpart): Rename from mmx_umulv4hi3_highpart
+	(*mmx_umulv4hi3_highpart): Rename from mmx_umulv4hi3_highpart
 	insn pattern.
 	(mmx_umulv4hi3_highpart): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*<code>v4hi3): Rename from mmx_<code>v4hi3 insn pattern.
+	(*mmx_<code>v4hi3): Rename from mmx_<code>v4hi3 insn pattern.
 	(mmx_<code>v4hi3): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*<code>v8qi3): Rename from mmx_<code>v8qi3 insn pattern.
+	(*mmx_<code>v8qi3): Rename from mmx_<code>v8qi3 insn pattern.
 	(mmx_<code>v8qi3): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*<code><mode>3): Rename from mmx_<code><mode>3 insn pattern.
+	(*mmx_<code><mode>3): Rename from mmx_<code><mode>3 insn pattern.
 	(mmx_<code><mode>3): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
 
