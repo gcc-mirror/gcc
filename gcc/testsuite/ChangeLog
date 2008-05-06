@@ -14,7 +14,7 @@
 	* gcc.dg/utf16-4.c: Use it.
 	* gcc.dg/utf32-4.c: Use it.
 	* g++.dg/ext/utf16-4.C: Use it.
-	* gcc.dg/ext/utf32-4.C: Use it.
+	* g++.dg/ext/utf32-4.C: Use it.
 
 2008-05-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
