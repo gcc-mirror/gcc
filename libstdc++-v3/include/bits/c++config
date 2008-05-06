@@ -80,6 +80,7 @@
     namespace tr1 { }
   }
 */
+#if __cplusplus
 
 #ifdef _GLIBCXX_DEBUG
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
@@ -103,15 +104,12 @@
 // _GLIBCXX_STD
 // _GLIBCXX_STD_D
 // _GLIBCXX_STD_P
-
 //
 // Macros for enclosing namespaces and possibly nested namespaces.
 // _GLIBCXX_BEGIN_NAMESPACE
 // _GLIBCXX_END_NAMESPACE
 // _GLIBCXX_BEGIN_NESTED_NAMESPACE
 // _GLIBCXX_END_NESTED_NAMESPACE
-// _GLIBCXX_BEGIN_POTENTIAL_NESTED_NAMESPACE
-// _GLIBCXX_END_POTENTIAL_NESTED_NAMESPACE
 #ifndef _GLIBCXX_USE_NAMESPACE_ASSOCIATION
 # define _GLIBCXX_STD_D _GLIBCXX_STD
 # define _GLIBCXX_STD_P _GLIBCXX_STD
@@ -215,8 +213,7 @@ namespace std
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
 
 // Namespace associations for long double 128 mode.
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ \
-  && defined __cplusplus
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__ 
 namespace std
 {
   inline namespace __gnu_cxx_ldbl128 { }
@@ -232,17 +229,17 @@ namespace std
 
 
 // Defines for C compatibility. In particular, define extern "C"
-// linkage only when using  C++, same with namespaces.
-#if __cplusplus
+// linkage only when using C++.
 # define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
 # define _GLIBCXX_END_EXTERN_C }
-#else
-# define _GLIBCXX_BEGIN_EXTERN_C
-# define _GLIBCXX_END_EXTERN_C
+
+#else // !__cplusplus
 # undef _GLIBCXX_BEGIN_NAMESPACE
 # undef _GLIBCXX_END_NAMESPACE
 # define _GLIBCXX_BEGIN_NAMESPACE(X) 
 # define _GLIBCXX_END_NAMESPACE 
+# define _GLIBCXX_BEGIN_EXTERN_C
+# define _GLIBCXX_END_EXTERN_C 
 #endif
 
 // First includes.
