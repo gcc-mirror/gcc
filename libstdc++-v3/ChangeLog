@@ -1,3 +1,16 @@
+2008-05-06  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/multiway_merge.h:
+          (multiway_merge_*_unguarded):
+          Pass sentinel directly, to allow correct determination.
+          (multiway_merge_loser_tree_unguarded):
+          Remove over-cautious assertion.
+          (calls to multiway_merge_*_splitting):
+          Parametrize with type that is correct in all cases.
+        * include/parallel/losertree.h:
+          (delete_min_insert (in many classes)):
+          Correct and standardize assertions.
+
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
