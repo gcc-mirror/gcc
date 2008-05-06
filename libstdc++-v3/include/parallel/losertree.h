@@ -220,6 +220,11 @@ public:
   // Do not pass a const reference since key will be used as local variable.
   void delete_min_insert(T key, bool sup)
   {
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
       {
@@ -313,8 +318,8 @@ public:
   delete_min_insert(T key, bool sup)
   {
 #if _GLIBCXX_ASSERTIONS
-    // loser trees are only used for at least 2 sequences
-    _GLIBCXX_PARALLEL_ASSERT(_M_log_k > 1);
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
 
     int source = losers[0].source;
@@ -436,6 +441,11 @@ public:
 
   void delete_min_insert(const T& key, bool sup)
   {
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     const T* keyp = &key;
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
@@ -511,6 +521,11 @@ public:
 
   void delete_min_insert(const T& key, bool sup)
   {
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     const T* keyp = &key;
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
@@ -569,7 +584,7 @@ public:
     // Avoid default-constructing losers[].key
     losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
 
-    for (unsigned int i = /*k + ik - 1*/0; i < (2 * k); ++i)
+    for (unsigned int i = k + ik - 1; i < (2 * k); ++i)
       {
         losers[i].key = _sentinel;
         losers[i].source = -1;
@@ -582,8 +597,8 @@ public:
   inline int
   get_min_source()
   {
-    // no dummy sequence can ever be at the top!
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
     return losers[0].source;
@@ -648,8 +663,8 @@ public:
   {
     losers[0] = losers[init_winner(1)];
 
-    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
   }
@@ -658,13 +673,12 @@ public:
   inline void
   delete_min_insert(T key, bool)
   {
-    // No dummy sequence can ever be at the top and be retrieved!
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
 
     int source = losers[0].source;
-    printf("%d\n", source);
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
       {
         // The smaller one gets promoted, ties are broken by source.
@@ -739,8 +753,8 @@ public:
   {
     losers[0] = losers[init_winner(1)];
 
-    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
   }
@@ -749,7 +763,11 @@ public:
   inline void
   delete_min_insert(T key, bool)
   {
-    printf("wrong\n");
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
       {
@@ -785,15 +803,14 @@ protected:
 
   unsigned int ik, k, offset;
   Loser* losers;
-  const T sentinel;
   Comparator comp;
 
 public:
 
   inline
-  LoserTreePointerUnguardedBase(unsigned int _k, const T _sentinel,
+  LoserTreePointerUnguardedBase(unsigned int _k, const T& _sentinel,
       Comparator _comp = std::less<T>())
-    : sentinel(_sentinel), comp(_comp)
+    : comp(_comp)
   {
     ik = _k;
 
@@ -803,9 +820,9 @@ public:
     // Avoid default-constructing losers[].key
     losers = new Loser[2 * k];
 
-    for (unsigned int i = /*k + ik - 1*/0; i < (2 * k); ++i)
+    for (unsigned int i = k + ik - 1; i < (2 * k); ++i)
       {
-        losers[i].keyp = &sentinel;
+        losers[i].keyp = &_sentinel;
         losers[i].source = -1;
       }
   }
@@ -816,8 +833,8 @@ public:
   inline int
   get_min_source()
   {
-    // no dummy sequence can ever be at the top!
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
     return losers[0].source;
@@ -847,7 +864,7 @@ class LoserTreePointerUnguarded :
   using Base::losers;
 
 public:
-  LoserTreePointerUnguarded(unsigned int _k, const T _sentinel,
+  LoserTreePointerUnguarded(unsigned int _k, const T& _sentinel,
       Comparator _comp = std::less<T>())
     : Base::LoserTreePointerUnguardedBase(_k, _sentinel, _comp)
   {}
@@ -883,8 +900,8 @@ public:
   {
     losers[0] = losers[init_winner(1)];
 
-    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
   }
@@ -892,6 +909,11 @@ public:
   inline void
   delete_min_insert(const T& key, bool sup)
   {
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     const T* keyp = &key;
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
@@ -908,11 +930,6 @@ public:
 
     losers[0].source = source;
     losers[0].keyp = keyp;
-
-    // no dummy sequence can ever be at the top!
-#if _GLIBCXX_ASSERTIONS
-    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
-#endif
   }
 };
 
@@ -930,7 +947,7 @@ class LoserTreePointerUnguarded</* stable == */false, T, Comparator> :
   using Base::losers;
 
 public:
-  LoserTreePointerUnguarded(unsigned int _k, const T _sentinel,
+  LoserTreePointerUnguarded(unsigned int _k, const T& _sentinel,
       Comparator _comp = std::less<T>())
     : Base::LoserTreePointerUnguardedBase(_k, _sentinel, _comp)
   {}
@@ -973,8 +990,8 @@ public:
   {
     losers[0] = losers[init_winner(1)];
 
-    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
 #if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
     _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
   }
@@ -982,6 +999,11 @@ public:
   inline void
   delete_min_insert(const T& key, bool sup)
   {
+#if _GLIBCXX_ASSERTIONS
+    // no dummy sequence can ever be at the top!
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+
     const T* keyp = &key;
     int source = losers[0].source;
     for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
