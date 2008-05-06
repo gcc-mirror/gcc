@@ -1,3 +1,9 @@
+2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36130
+	* include/bits/c++config: Namespace macros and setup only in C++.
+	* testsuite/29_atomics/headers/stdatomic.h/debug_mode.c: New.
+	
 2008-05-06  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/multiway_merge.h:
