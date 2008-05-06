@@ -1,6 +1,11 @@
 2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/36155
+	* g++.dg/ext/utf32-4.C: Fix a typo.
+
+2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/36155
 	* gcc.dg/utf32-4.c: Fix a typo.
 
 	* lib/target-supports.exp (check_effective_target_4byte_wchar_t):
