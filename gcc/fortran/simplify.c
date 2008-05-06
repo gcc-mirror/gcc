@@ -637,7 +637,7 @@ gfc_simplify_atan2 (gfc_expr *y, gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_j0 (gfc_expr *x)
+gfc_simplify_bessel_j0 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
@@ -657,7 +657,7 @@ gfc_simplify_bessel_j0 (gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_j1 (gfc_expr *x)
+gfc_simplify_bessel_j1 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
@@ -677,7 +677,8 @@ gfc_simplify_bessel_j1 (gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_jn (gfc_expr *order, gfc_expr *x)
+gfc_simplify_bessel_jn (gfc_expr *order ATTRIBUTE_UNUSED,
+			gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
@@ -699,7 +700,7 @@ gfc_simplify_bessel_jn (gfc_expr *order, gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_y0 (gfc_expr *x)
+gfc_simplify_bessel_y0 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
@@ -719,7 +720,7 @@ gfc_simplify_bessel_y0 (gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_y1 (gfc_expr *x)
+gfc_simplify_bessel_y1 (gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
@@ -739,7 +740,8 @@ gfc_simplify_bessel_y1 (gfc_expr *x)
 
 
 gfc_expr *
-gfc_simplify_bessel_yn (gfc_expr *order, gfc_expr *x)
+gfc_simplify_bessel_yn (gfc_expr *order ATTRIBUTE_UNUSED,
+			gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;

@@ -1,5 +1,12 @@
 2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* simplify.c (gfc_simplify_bessel_j0,gfc_simplify_bessel_j1,
+	gfc_simplify_bessel_jn,gfc_simplify_bessel_y0,
+	gfc_simplify_bessel_y1,gfc_simplify_bessel_yn): Mark arguments
+	with ATTRIBUTE_UNUSED.
+
+2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* check.c (gfc_check_sizeof): Switch to ATTRIBUTE_UNUSED.
 	* simplify.c (gfc_simplify_lgamma): Likewise.
 
