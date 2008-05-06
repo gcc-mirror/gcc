@@ -62,7 +62,10 @@ GLIBCXX_3.4 {
       std::c[a-g]*;
 #     std::char_traits;
 #     std::c[i-z]*;
-      std::c[i-s]*;
+      std::c[i-n]*;
+#     std::condition_variable;
+      std::co[^n]*;
+      std::c[p-s]*;
       std::c[u-z]*;
 #     std::[d-g]*;
       std::d[a-d]*;
@@ -831,6 +834,24 @@ GLIBCXX_3.4.11 {
     atomic_flag_test_and_set;
     atomic_flag_test_and_set_explicit;
     atomic_global_fence_compatibility;
+    
+    # mutex
+    _ZSt10adopt_lock;
+    _ZSt10defer_lock;
+    _ZSt11try_to_lock;
+
+    _ZTISt10lock_error;
+    _ZTVSt10lock_error;
+    _ZTSSt10lock_error;
+    _ZNKSt10lock_error4whatEv;
+
+    # condition_variable
+    _ZNSt18condition_variable10notify_allEv;
+    _ZNSt18condition_variable10notify_oneEv;
+    _ZNSt18condition_variableC1Ev;
+    _ZNSt18condition_variableC2Ev;
+    _ZNSt18condition_variableD1Ev;
+    _ZNSt18condition_variableD2Ev;
 
     # system_error
     _ZSt15system_category;
@@ -846,6 +867,9 @@ GLIBCXX_3.4.11 {
     _ZNSt12system_errorC*;
 
     _ZNKSt4hashISt10error_codeEclES0_;
+
+    _ZSt20__throw_system_errorPKc;
+    _ZSt20__throw_system_errori;
 
     # date_time
     _ZSt15get_system_timev;

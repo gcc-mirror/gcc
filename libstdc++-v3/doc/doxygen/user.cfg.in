@@ -468,6 +468,7 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/algorithm \
                          include/array \
                          include/bitset \
+                         include/condition_variable \
                          include/date_time \
                          include/deque \
                          include/fstream \
@@ -483,6 +484,7 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/locale \
                          include/map \
                          include/memory \
+                         include/mutex \
                          include/numeric \
                          include/ostream \
                          include/queue \
@@ -495,6 +497,7 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/streambuf \
                          include/string \
                          include/system_error \
+                         include/thread \
                          include/tuple \
                          include/type_traits \
                          include/unordered_map \
@@ -516,6 +519,7 @@ INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          include/csetjmp \
                          include/csignal \
                          include/cstdarg \
+                         include/cstdatomic \
                          include/cstdbool \
                          include/cstddef \
                          include/cstdint \
@@ -1162,7 +1166,8 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = __GTHREADS \
+PREDEFINED             = __cplusplus \
+		         __GTHREADS \
                          "_GLIBCXX_STD_P= " \
                          "_GLIBCXX_STD_D= " \
                          _GLIBCXX_STD=std \

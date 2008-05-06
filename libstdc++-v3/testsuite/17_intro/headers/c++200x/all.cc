@@ -95,6 +95,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <condition_variable>
 #include <complex>
 #include <date_time>
 #include <deque>
@@ -112,6 +113,7 @@
 #include <locale>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <new>
 #include <numeric>
 #include <ostream>

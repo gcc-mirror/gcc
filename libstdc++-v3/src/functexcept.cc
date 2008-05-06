@@ -29,6 +29,7 @@
 #include <cstdlib>
 #include <exception>
 #include <stdexcept>
+#include <system_error>
 #include <new>
 #include <typeinfo>
 #include <ios>
@@ -96,6 +97,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { throw underflow_error(_(__s)); }
 
   void
+  __throw_system_error(const char* __s)
+  { throw system_error(_(__s)); }
+
+  void
+  __throw_system_error(int __i)
+  { throw system_error(error_code(__i, system_category)); }
+
+  void
   __throw_ios_failure(const char* __s)
   { throw ios_base::failure(_(__s)); }
 #else
@@ -149,6 +158,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   void
   __throw_underflow_error(const char*)
+  { std::abort(); }
+
+  void
+  __throw_system_error(const char* __s)
+  { std::abort(); }
+
+  void
+  __throw_system_error(int __i)
   { std::abort(); }
 
   void

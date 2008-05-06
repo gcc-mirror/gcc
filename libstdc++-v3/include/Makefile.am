@@ -33,6 +33,7 @@ std_headers = \
 	${std_srcdir}/bitset \
 	${std_srcdir}/c++0x_warning.h \
 	${std_srcdir}/complex \
+	${std_srcdir}/condition_variable \
 	${std_srcdir}/date_time \
 	${std_srcdir}/deque \
 	${std_srcdir}/fstream \
@@ -48,6 +49,7 @@ std_headers = \
 	${std_srcdir}/locale \
 	${std_srcdir}/map \
 	${std_srcdir}/memory \
+	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \

@@ -183,6 +183,8 @@ sources = \
 	valarray-inst.cc \
 	wlocale-inst.cc \
 	wstring-inst.cc \
+	mutex.cc \
+	condition_variable.cc \
 	${host_sources} \
 	${host_sources_extra} 
 
@@ -229,9 +231,24 @@ parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.
+functexcept.lo: functexcept.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+functexcept.o: functexcept.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 system_error.lo: system_error.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 system_error.o: system_error.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+mutex.lo: mutex.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+mutex.o: mutex.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+condition_variable.lo: condition_variable.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+condition_variable.o: condition_variable.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hash_c++0x.lo: hash_c++0x.cc
