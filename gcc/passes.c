@@ -1074,7 +1074,7 @@ pass_init_dump_file (struct opt_pass *pass)
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-	  fprintf (dump_file, "\n;; Apply transform to function %s (%s)%s\n\n", dname, aname,
+	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
 	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
 	     ? " (hot)"
 	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
