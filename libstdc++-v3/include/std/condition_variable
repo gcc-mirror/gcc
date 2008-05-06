@@ -1,0 +1,162 @@
+// <condition_variable> -*- C++ -*-
+
+// Copyright (C) 2008 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/** @file condition_variable
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_CONDITION_VARIABLE
+#define _GLIBCXX_CONDITION_VARIABLE 1
+
+#pragma GCC system_header
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <c++0x_warning.h>
+#endif
+
+#include <mutex> // unique_lock
+
+namespace std 
+{
+  // XXX
+  class system_time;
+
+  /// condition_variable
+  class condition_variable
+  {
+  public:
+
+#if __GTHREAD_HAS_COND
+    typedef __gthread_cond_t native_handle_type;
+#else
+    typedef int native_handle_type;
+#endif
+
+    condition_variable();
+    ~condition_variable();
+
+    void 
+    notify_one();
+
+    void 
+    notify_all();
+
+    void 
+    wait(unique_lock<mutex>& __lock);
+
+    template<typename _Predicate>
+      void 
+      wait(unique_lock<mutex>& __lock, _Predicate __p)
+      {
+	while (!__p())
+	  wait(__lock);
+      }
+  
+    template<typename _Duration>
+      bool 
+      timed_wait(unique_lock<mutex>& __lock, const _Duration& __rtime);
+
+    bool 
+    timed_wait(unique_lock<mutex>& __lock, const system_time& __atime);
+
+    template<typename _Predicate>
+      bool 
+      timed_wait(unique_lock<mutex>& __lock, const system_time& __atime,
+		 _Predicate pred);
+
+    template<typename _Duration, typename _Predicate>
+      bool 
+      timed_wait(unique_lock<mutex>& __lock, const _Duration& __rtime, 
+		 _Predicate pred);
+
+    native_handle_type 
+    native_handle() { return _M_cond; }
+
+  private:
+    native_handle_type	_M_cond;
+    condition_variable(const condition_variable&);
+    condition_variable& operator=(const condition_variable&);
+  };
+
+  /// condition_variable_any
+  // Like above, only mutex may not have try_lock.
+  class condition_variable_any
+  {
+  public:
+#if __GTHREAD_HAS_COND
+    typedef __gthread_cond_t native_handle_type;
+#else
+    typedef int native_handle_type;
+#endif
+
+    condition_variable_any();
+    ~condition_variable_any();
+
+    void 
+    notify_one();
+
+    void 
+    notify_all();
+
+    template<typename _Lock>
+      void 
+      wait(_Lock& __lock);
+
+    template<typename _Lock, typename _Predicate>
+      void 
+      wait(_Lock& __lock, _Predicate __p);
+
+    template<typename _Lock>
+      bool 
+      timed_wait(_Lock& __lock, const system_time& __atime);
+
+    template<typename _Lock, typename _Duration>
+      bool 
+      timed_wait(_Lock& __lock, const _Duration& __rtime);
+
+    template<typename _Lock, typename _Predicate>
+      bool 
+      timed_wait(_Lock& __lock, const system_time& __atime, _Predicate __p);
+
+    template<typename _Lock, typename _Duration, typename _Predicate>
+      bool 
+      timed_wait(_Lock& __lock, const _Duration& __rtime, _Predicate __p);
+
+    native_handle_type 
+    native_handle() { return _M_cond; }
+
+  private:
+    native_handle_type	_M_cond;
+    condition_variable_any(const condition_variable_any&);
+    condition_variable_any& operator=(const condition_variable_any&);
+  };
+
+}
+
+#endif

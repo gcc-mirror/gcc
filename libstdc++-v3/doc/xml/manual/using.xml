@@ -169,6 +169,7 @@
 <row><entry><filename class="headerfile">exception</filename></entry><entry><filename class="headerfile">iterator</filename></entry><entry><filename class="headerfile">ostream</filename></entry><entry><filename class="headerfile">streambuf</filename></entry><entry><filename class="headerfile">utility</filename></entry></row>
 <row><entry><filename class="headerfile">fstream</filename></entry><entry><filename class="headerfile">limits</filename></entry><entry><filename class="headerfile">queue</filename></entry><entry><filename class="headerfile">string</filename></entry><entry><filename class="headerfile">valarray</filename></entry></row>
 <row><entry><filename class="headerfile">functional</filename></entry><entry><filename class="headerfile">list</filename></entry><entry><filename class="headerfile">random</filename></entry><entry><filename class="headerfile">system_error</filename></entry><entry><filename class="headerfile">vector</filename></entry></row>
+<row><entry><filename class="headerfile">condition_variable</filename></entry><entry><filename class="headerfile">mutex</filename></entry><entry><filename class="headerfile">thread</filename></entry><entry></entry><entry></entry></row>
 </tbody>
 </tgroup>
 </table>
@@ -189,6 +190,7 @@
 <row><entry><filename class="headerfile">cctype</filename></entry><entry><filename class="headerfile">ciso646</filename></entry><entry><filename class="headerfile">csignal</filename></entry><entry><filename class="headerfile">cstdio</filename></entry><entry><filename class="headerfile">cuchar</filename></entry></row>
 <row><entry><filename class="headerfile">cerrno</filename></entry><entry><filename class="headerfile">climits</filename></entry><entry><filename class="headerfile">cstdarg</filename></entry><entry><filename class="headerfile">cstdlib</filename></entry><entry><filename class="headerfile">cwchar</filename></entry></row>
 <row><entry><filename class="headerfile">cfenv</filename></entry><entry><filename class="headerfile">clocale</filename></entry><entry><filename class="headerfile">cstdbool</filename></entry><entry><filename class="headerfile">cstring</filename></entry><entry><filename class="headerfile">cwctype</filename></entry></row>
+<row><entry><filename class="headerfile">cstdatomic</filename></entry><entry></entry><entry></entry><entry></entry><entry></entry></row>
 </tbody>
 </tgroup>
 </table>

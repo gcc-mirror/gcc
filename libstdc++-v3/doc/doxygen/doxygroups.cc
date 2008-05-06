@@ -34,6 +34,9 @@
 /** @namespace std::placeholders
  *  @brief ISO C++ 0x entities sub namespace for functional.
 */
+/** @namespace std::this_thread
+ *  @brief ISO C++ 0x entities sub namespace for thread.
+*/
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
 */

@@ -1,21 +1,92 @@
 2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/condition_variable: New.
+	* include/std/mutex: New.
+	* src/condition_variable.cc: New.
+	* src/mutex.cc: New.
+	* include/bits/functexcept.h: Add __throw_system_error varients.
+	* src/functexcept.cc: Same.
+	* config/abi/pre/gnu.ver: Add exports.
+
+	* doc/xml/manual/using.xml: Add new includes.
+	* doc/doxygen/user.cfg.in: Doxygen support.
+	* doc/doxygen/doxygroups.cc: Same.
+
+	* include/Makefile.am: Add mutex, condition_variable.
+	* include/Makefile.in: Regenerated.
+	* src/Makefile.am: Add mutex.cc, condition_variable.cc.
+	* src/Makefile.in: Regenerated.
+
+	* testsuite/30_threads: New.
+	* testsuite/30_threads/lock_error: New.
+	* testsuite/30_threads/mutex: New.
+	* testsuite/30_threads/mutex/dest: New.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: New.
+	* testsuite/30_threads/mutex/native_handle: New.
+	* testsuite/30_threads/mutex/native_handle/1.cc: New.
+	* testsuite/30_threads/mutex/cons: New.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: New.
+	* testsuite/30_threads/mutex/cons/1.cc: New.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: New.
+	* testsuite/30_threads/mutex/requirements: New.
+	* testsuite/30_threads/mutex/requirements/typedefs.cc: New.
+	* testsuite/30_threads/mutex/try_lock: New.
+	* testsuite/30_threads/mutex/try_lock/1.cc: New.
+	* testsuite/30_threads/mutex/try_lock/2.cc: New.
+	* testsuite/30_threads/mutex/lock: New.
+	* testsuite/30_threads/mutex/lock/1.cc: New.
+	* testsuite/30_threads/mutex/unlock: New.
+	* testsuite/30_threads/mutex/unlock/1.cc: New.
+	* testsuite/30_threads/recursive_mutex: New.
+	* testsuite/30_threads/recursive_mutex/dest: New.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc: New.
+	* testsuite/30_threads/recursive_mutex/native_handle: New.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc: New.
+	* testsuite/30_threads/recursive_mutex/cons: New.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: New.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: New.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: New.
+	* testsuite/30_threads/recursive_mutex/requirements: New.
+	* testsuite/30_threads/recursive_mutex/requirements/typedefs.cc: New.
+	* testsuite/30_threads/lock_guard: New.
+	* testsuite/30_threads/lock_guard/requirements: New.
+	* testsuite/30_threads/lock_guard/requirements/typedefs.cc: New.
+	* testsuite/30_threads/lock_guard/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/headers: New.
+	* testsuite/30_threads/headers/mutex: New.
+	* testsuite/30_threads/headers/mutex/types_std_c++0x.cc: New.
+	* testsuite/30_threads/headers/mutex/std_c++0x_neg.cc: New.
+	* testsuite/30_threads/headers/condition_variable: New.
+	* testsuite/30_threads/headers/condition_variable/
+	types_std_c++0x.cc: New.
+	* testsuite/30_threads/headers/condition_variable/std_c++0x_neg.cc: New.
+	* testsuite/30_threads/once_flag: New.
+	* testsuite/30_threads/unique_lock: New.
+	* testsuite/30_threads/unique_lock/requirements: New.
+	* testsuite/30_threads/unique_lock/requirements/typedefs.cc: New.
+	* testsuite/30_threads/unique_lock/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/17_intro/headers/c++200x/all.cc: Add new includes.
+
+2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/36130
 	* include/bits/c++config: Namespace macros and setup only in C++.
 	* testsuite/29_atomics/headers/stdatomic.h/debug_mode.c: New.
-	
+
 2008-05-06  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/multiway_merge.h:
-          (multiway_merge_*_unguarded):
-          Pass sentinel directly, to allow correct determination.
-          (multiway_merge_loser_tree_unguarded):
-          Remove over-cautious assertion.
-          (calls to multiway_merge_*_splitting):
-          Parametrize with type that is correct in all cases.
-        * include/parallel/losertree.h:
-          (delete_min_insert (in many classes)):
-          Correct and standardize assertions. 
+	* include/parallel/multiway_merge.h:
+	  (multiway_merge_*_unguarded):
+	  Pass sentinel directly, to allow correct determination.
+	  (multiway_merge_loser_tree_unguarded):
+	  Remove over-cautious assertion.
+	  (calls to multiway_merge_*_splitting):
+	  Parametrize with type that is correct in all cases.
+	* include/parallel/losertree.h:
+	  (delete_min_insert (in many classes)):
+	  Correct and standardize assertions.
 
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -42,7 +113,7 @@
 
 	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust line numbers.
 	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
-	
+
 2008-05-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
@@ -143,36 +214,36 @@
 
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/quicksort.h: Reformat,
-        (parallel_sort_qs): Do not pass number of elements.
-        * include/parallel/balanced_quicksort.h: Reformat,
-        (parallel_sort_qsb): Do not pass number of elements.
-        * include/parallel/tags.h:
-        Introduce new tags for compile-time choice.
-        * include/parallel/merge.h:
-        (parallel_merge_advance):Beautified.
-        * include/parallel/algo.h: Reformatting (spaces for tabs)
-        New sort and stable_sort variants, corresponding to the tags.
-        * include/parallel/sort.h:
-        New sort and stable_sort variants, corresponding to the tags.
-        Changed determining the desired number of threads. 
+	* include/parallel/quicksort.h: Reformat,
+	(parallel_sort_qs): Do not pass number of elements.
+	* include/parallel/balanced_quicksort.h: Reformat,
+	(parallel_sort_qsb): Do not pass number of elements.
+	* include/parallel/tags.h:
+	Introduce new tags for compile-time choice.
+	* include/parallel/merge.h:
+	(parallel_merge_advance):Beautified.
+	* include/parallel/algo.h: Reformatting (spaces for tabs)
+	New sort and stable_sort variants, corresponding to the tags.
+	* include/parallel/sort.h:
+	New sort and stable_sort variants, corresponding to the tags.
+	Changed determining the desired number of threads.
 
 2008-04-23  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/multiway_merge.h
-        (multiway_merge_loser_tree):
-        Leave checks to callers, add precondition instead.
-        (multiway_merge_loser_tree_unguarded): Likewise.
-        (multiway_merge_loser_tree_sentinel): Likewise.
-        (sequential_multiway_merge): Added checks for total length 0.
-        (parallel_multiway_merge): Skip empty sequences.
-        (multiway_merge, all variants):
-        Remove temporary variable, return directly.
-        (stable_multiway_merge, all variants): Likewise.
-        (multiway_merge_sentinels, all variants):  Likewise.
-        (stable_multiway_merge_sentinels, all variants): Likewise.
-        * include/parallel/multiseq_selection.h
-        (multiseq_partition): More detailed assertions.
+	* include/parallel/multiway_merge.h
+	(multiway_merge_loser_tree):
+	Leave checks to callers, add precondition instead.
+	(multiway_merge_loser_tree_unguarded): Likewise.
+	(multiway_merge_loser_tree_sentinel): Likewise.
+	(sequential_multiway_merge): Added checks for total length 0.
+	(parallel_multiway_merge): Skip empty sequences.
+	(multiway_merge, all variants):
+	Remove temporary variable, return directly.
+	(stable_multiway_merge, all variants): Likewise.
+	(multiway_merge_sentinels, all variants):  Likewise.
+	(stable_multiway_merge_sentinels, all variants): Likewise.
+	* include/parallel/multiseq_selection.h
+	(multiseq_partition): More detailed assertions.
 
 2008-04-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -366,7 +437,7 @@
 	* include/std/regex: Same.
 	* include/std/array: Same.
 	* include/std/system_error: Same, add error_code ctor.
-	
+
 2008-04-07  Johannes Singler  <singler@ira.uka.de>
 
 	* include/parallel/multiway_merge.h: Moved decisions to
@@ -413,7 +484,7 @@
 2008-03-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_abi.h: Remove symbol_objects,
-	symbol_names typedefs.	
+	symbol_names typedefs.
 	* testsuite/util/testsuite_abi.cc (compare_symbols): Correct check
 	for long double compatiblity symbols, simplify data structures used.
 
@@ -433,13 +504,13 @@
 	* doc/doxygen/Intro.3: Correct typo.
 
 	* doc/xml/api.xml: Add gcc-4.3 links.
-	* doc/html/api.html: Regenerate.	
-	
+	* doc/html/api.html: Regenerate.
+
 	* include/debug/debug.h: Document namepaces here.
 	* include/parallel/base.h: Same.
 	* include/ext/typelist.h: Same.
 	* include/ext/pb_ds/tag_and_trait.hpp: Same.
-	
+
 	* include/tr1_impl/random: Adjust line break.
 	* include/tr1_impl/unordered_map: Correct and or add markup.
 	* include/tr1_impl/boost_shared_ptr.h: Correct and or add markup.
@@ -516,7 +587,7 @@
 
 2008-03-20  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/set_operations.h (set_intersection): Remove.
+	* include/parallel/set_operations.h (set_intersection): Remove.
 
 2008-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -541,8 +612,8 @@
 
 	* include/std/date_time: New file.
 	* src/date_time.cc: New file.
- 	* config/abi/pre/gnu.ver: Added <date_time> symbols in version
- 	GLIBCXX_3.4.11 and changed two patterns in version GLIBCXX_3.4
+	* config/abi/pre/gnu.ver: Added <date_time> symbols in version
+	GLIBCXX_3.4.11 and changed two patterns in version GLIBCXX_3.4
 	that matched new symbols.
 	* include/Makefile.am: Add date_time in std headers.
 	* src/Makefile.am: Add date_time.cc to source files.
@@ -558,7 +629,7 @@
       * testsuite/31_date_time/nanoseconds/requirements/traits.cc: Likewise.
       * testsuite/31_date_time/nanoseconds/requirements/duration.cc: Likewise.
       * testsuite/31_date_time/system_time/requirements: Likewise.
-      * testsuite/31_date_time/system_time/requirements/traits.cc: Likewise. 	
+      * testsuite/31_date_time/system_time/requirements/traits.cc: Likewise.
 
 2008-03-16  Paolo Carlini  <pcarlini@suse.de>
 
@@ -643,7 +714,7 @@
 	(_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL): Define.
 	(_ZNKSt4hashIeEclEe): New alias.
 	* testsuite/util/testsuite_abi.cc (check_version): Support
-	GLIBCXX_LDBL_3.4.10. 
+	GLIBCXX_LDBL_3.4.10.
 
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
@@ -656,7 +727,7 @@
 
 2008-02-20  Jason Merrill  <jason@redhat.com>
 
-	* include/bits/c++config: Use 'inline namespace' instead of 
+	* include/bits/c++config: Use 'inline namespace' instead of
 	strong using.
 
 2008-02-18  Pedro Lamarao <pedro.lamarao@mndfck.org>
@@ -674,16 +745,16 @@
 	* include/tr1/exp_integral.tcc: Same.
 	* include/tr1/gamma.tcc: Same.
 	* include/tr1/hypergeometric.tcc: Same.
-	
+
 2008-02-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/34797
 	* include/parallel/settings.h (_Settings): Reconstruct Settings class
 	here, uglify, remove anonymous namespace and static
-	members. Convert to datum.	
+	members. Convert to datum.
 	* include/parallel/types.h: Move Settings:: enumerations here, uglify.
 	* src/parallel_settings.cc: New, definition for _Settings member
-	functions.	
+	functions.
 	* include/parallel/multiway_merge.h: Same.
 	* include/parallel/for_each.h: Same.
 	* include/parallel/workstealing.h: Same.
@@ -708,7 +779,7 @@
 
 	* src/Makefile.am (parallel_sources): Add parallel_settings.cc.
 	* src/Makefile.in: Regenerate.
-	
+
 	* config/abi/pre/gnu.ver: Export _Settings::get and _Settings::set.
 
 2008-02-17  Paolo Carlini  <pcarlini@suse.de>
@@ -727,22 +798,22 @@
 	* config/abi/pre/gnu.ver: Export stdio_sync_filebuf symbols.
 	* testsuite/ext/stdio_sync_filebuf/char/35209.cc: New.
 	* testsuite/ext/stdio_sync_filebuf/wchar_t/35209.cc: Likewise.
-	
+
 2008-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/random_number.h: Use TR1's mersenne_twister.
 	(random_number::genrand_bits()): Remove.
 	(random_number::set_seed): Remove.
-	
+
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/parallel/types.h: Remove enum parallelism.
-	
+
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/types.h: Move enum parallelism here.  Use
 	tr1/cstdint's int16_t, uint16_t, int32_t, uint32_t, int64_t,
-	uint64_t. 
+	uint64_t.
 	* include/parallel/multiseq_selection.h: Adjust for cstdint.
 	* include/parallel/compatibility.h: Same.
 	* include/parallel/tags.h: Just compile-time tags.
@@ -981,7 +1052,7 @@
 	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
 	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
 	Likewise.
-	* testsuite/tr1/6_containers/array/requirements/contiguous.cc: 
+	* testsuite/tr1/6_containers/array/requirements/contiguous.cc:
 	Likewise.
 	* testsuite/tr1/6_containers/array/requirements/member_swap.cc:
 	Likewise.
@@ -1182,7 +1253,7 @@
 	__glibcxx_requires_sorted_set_pred): Add.
 	* include/bits/stl_algo.h (merge, includes, set_union,
 	set_intersection, set_difference, set_symmetric_difference):
-	Adjust, use __glibcxx_requires_sorted_set* instead. 
+	Adjust, use __glibcxx_requires_sorted_set* instead.
 	* testsuite/25_algorithms/set_intersection/34730.cc: New.
 
 2008-01-09  Paolo Carlini  <pcarlini@suse.de>
@@ -1240,7 +1311,7 @@
 	* include/parallel/algobase.h: Likewise.
 	* include/parallel/find.h: Likewise.
 	* include/parallel/algo.h: Likewise.
-	* include/parallel/checkers.h: Likewise.	
+	* include/parallel/checkers.h: Likewise.
 
 2008-01-09  Francesco Biscani  <bluescarni@gmail.com>
 
@@ -1304,7 +1375,7 @@
 	* include/parallel/multiway_mergesort.h (parallel_sort_mwms_pu,
 	parallel_sort_mwms): Likewise.
 	* include/parallel/partial_sum.h (parallel_partial_sum_linear):
-	Likewise. 
+	Likewise.
 	* testsuite/25_algorithms/sort/34095.cc: New.
 
 2008-01-01  Paolo Carlini  <pcarlini@suse.de>

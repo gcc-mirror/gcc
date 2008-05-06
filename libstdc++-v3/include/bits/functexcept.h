@@ -1,6 +1,6 @@
 // Function-Based Exception Support -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,6 +85,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   void
   __throw_underflow_error(const char*) __attribute__((__noreturn__));
+
+  void
+  __throw_system_error(const char*) __attribute__((__noreturn__));
+
+  void
+  __throw_system_error(int) __attribute__((__noreturn__));
 
   // Helpers for exception objects in basic_ios
   void

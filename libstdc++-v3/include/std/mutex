@@ -1,0 +1,385 @@
+// <mutex> -*- C++ -*-
+
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 
+// Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+/** @file mutex
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_MUTEX
+#define _GLIBCXX_MUTEX 1
+
+#pragma GCC system_header
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <c++0x_warning.h>
+#endif
+
+#include <exception>
+#include <cstddef>
+#include <bits/functexcept.h>
+#include <bits/gthr.h> 
+
+namespace std 
+{
+  // XXX
+  class system_time;
+
+  /// mutex
+  class mutex
+  {
+  public:
+    typedef __gthread_mutex_t native_handle_type;
+
+    mutex()
+    {
+#if defined __GTHREAD_MUTEX_INIT
+      native_handle_type __tmp = __GTHREAD_MUTEX_INIT;
+      _M_mutex = __tmp;
+#else
+      int __e = __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex); 
+
+      // EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
+      if ( __e)
+       __throw_system_error(__e);      
+#endif
+    }
+
+    void 
+    lock()
+    {
+      int __e = __gthread_mutex_lock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EBUSY, EINVAL, EDEADLK(may)
+     if ( __e)
+       __throw_system_error(__e);
+    }
+ 
+    bool 
+    try_lock()
+    {
+      int __e = __gthread_mutex_trylock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EBUSY
+     if ( __e)
+       __throw_system_error(__e);
+     else
+       return true;
+    }
+
+    void 
+    unlock()
+    {
+      int __e = __gthread_mutex_unlock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EPERM
+     if ( __e)
+       __throw_system_error(__e);
+    }
+
+    native_handle_type 
+    native_handle()
+    { return _M_mutex; }
+
+  private:
+    native_handle_type _M_mutex;
+    mutex(const mutex&);
+    mutex& operator=(const mutex&);
+  };
+
+
+  /// recursive_mutex
+  class recursive_mutex
+  {
+  public:
+    typedef __gthread_recursive_mutex_t native_handle_type;
+
+    recursive_mutex()
+    { 
+#if defined __GTHREAD_RECURSIVE_MUTEX_INIT
+      native_handle_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
+      _M_mutex = __tmp;
+#else
+      int __e = __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
+
+      // EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
+      if ( __e)
+       __throw_system_error(__e);      
+#endif
+    }
+
+
+    void 
+    lock()
+    { 
+      int __e = __gthread_recursive_mutex_lock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EBUSY, EINVAL, EDEADLK(may)
+     if ( __e)
+       __throw_system_error(__e);
+    }
+  
+    bool 
+    try_lock()
+    {
+      int __e = __gthread_recursive_mutex_trylock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EBUSY
+     if ( __e)
+       __throw_system_error(__e);
+     else
+       return true;
+    }
+
+    void 
+    unlock()
+    { 
+      int __e = __gthread_recursive_mutex_unlock(&_M_mutex);
+
+      // EINVAL, EAGAIN, EBUSY
+     if ( __e)
+       __throw_system_error(__e);
+    }
+
+    native_handle_type 
+    native_handle() { return _M_mutex; }
+
+  private:
+    native_handle_type _M_mutex;
+
+    recursive_mutex(const recursive_mutex&);
+    recursive_mutex& operator=(const recursive_mutex&);
+  };
+
+
+  // class timed_mutex;
+  // class recursive_timed_mutex;
+
+  /// Do not acquire ownership of the mutex.
+  struct defer_lock_t { };
+
+  /// Try to acquire ownership of the mutex without blocking.
+  struct try_to_lock_t { };
+
+  /// Assume the calling thread has already obtained mutex ownership
+  /// and manage it.
+  struct adopt_lock_t { };
+
+  extern const defer_lock_t 	defer_lock;
+  extern const try_to_lock_t 	try_to_lock;
+  extern const adopt_lock_t 	adopt_lock;
+
+  /// Thrown to indicate errors with lock operations.
+  class lock_error : public exception
+  {
+  public:
+    virtual const char* 
+    what() const throw();
+  };
+  
+  /// @brief  Scoped lock idiom.
+  // Acquire the mutex here with a constructor call, then release with
+  // the destructor call in accordance with RAII style.
+  template<typename _Mutex> 
+    class lock_guard
+    {
+    public:
+      typedef _Mutex mutex_type;
+
+      explicit lock_guard(mutex_type& __m) : _M_device(__m)
+      { _M_device.lock(); }
+
+      lock_guard(mutex_type& __m, adopt_lock_t __a) : _M_device(__m)
+      { _M_device.lock(); }
+
+      ~lock_guard()
+      { _M_device.unlock(); }
+
+    private:
+      mutex_type&  _M_device;
+      lock_guard(lock_guard const&);
+      lock_guard& operator=(lock_guard const&);
+    };
+
+  /// unique_lock
+  template<typename _Mutex> 
+    class unique_lock
+    {
+    public:
+      typedef _Mutex mutex_type;
+
+      unique_lock() : _M_device(NULL), _M_owns(false) { }
+
+      explicit unique_lock(mutex_type& __m) : _M_device(&__m)
+      { 
+	lock(); 
+	_M_owns = true;
+      }
+      
+      unique_lock(mutex_type& __m, defer_lock_t) 
+      : _M_device(&__m), _M_owns(false) { }
+
+      unique_lock(mutex_type& __m, try_to_lock_t) 
+      : _M_device(&__m), _M_owns(_M_device->try_lock()) { }
+
+      unique_lock(mutex_type& __m, adopt_lock_t) 
+      : _M_device(&__m), _M_owns(true)
+      {
+	// XXX calling thread owns mutex
+      }
+
+      unique_lock(mutex_type& __m, const system_time& abs_time);
+
+      template<typename _Duration>
+        unique_lock(mutex_type& __m, const _Duration& rel_time);
+
+      ~unique_lock()
+      {
+	if (_M_owns)
+	  unlock();
+      }
+
+      unique_lock(unique_lock&&);
+
+      unique_lock& operator=(unique_lock&&);
+
+
+      void 
+      lock()
+      { 
+	if (_M_device && !_M_owns)
+	  _M_device->lock(); 
+	else
+	  throw lock_error();
+      }
+
+      bool 
+      try_lock()
+      { 
+	bool __ret = false;
+	if (_M_device && !_M_owns)
+	  __ret = _M_device->try_lock(); 
+	else
+	  throw lock_error();
+	return __ret;
+      }
+
+      void 
+      unlock()
+      { 
+	if (_M_device && _M_owns)
+	  _M_device->unlock(); 
+	else
+	  throw lock_error();
+      }
+
+
+      template<typename _Duration>
+        bool timed_lock(const _Duration& rel_time);
+
+      bool 
+      timed_lock(const system_time& abs_time);
+
+      void 
+      swap(unique_lock&& __u);
+
+      mutex_type* 
+      release() 
+      { 
+	mutex_type* __ret = _M_device; 
+	_M_device = NULL;
+	_M_owns = false;
+	return __ret;
+      }
+
+      bool 
+      owns_lock() const { return _M_owns; }
+
+      operator bool () const { return owns_lock(); }
+
+      mutex_type* 
+      mutex() const
+      { return _M_device; }
+
+    private:
+      unique_lock(unique_lock const&);
+      unique_lock& operator=(unique_lock const&);
+
+      mutex_type* 	_M_device;
+      bool 		_M_owns; // XXX use atomic_bool
+    };
+
+  template<typename _Mutex>
+    void 
+    swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y);
+
+  template<typename _Mutex>
+    void 
+    swap(unique_lock<_Mutex>&& __x, unique_lock<_Mutex>& __y);
+
+  template<typename _Mutex>
+    void 
+    swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>&& __y);
+
+  template<typename _L1, typename _L2, typename ..._L3> 
+    int 
+    try_lock(_L1&, _L2&, _L3&...);
+
+  template<typename _L1, typename _L2, typename ..._L3> 
+    void 
+    lock(_L1&, _L2&, _L3&...);
+
+  /// once_flag
+  struct once_flag 
+  {
+    typedef __gthread_once_t __native_type;
+
+    once_flag() : _M_once(__GTHREAD_ONCE_INIT) { }
+
+    __native_type&
+    _M_get() { return _M_once; }
+
+  private:
+    __native_type  _M_once;
+    once_flag(const once_flag&);
+    once_flag& operator=(const once_flag&);
+  };
+
+  template<typename _Callable, typename... _Args>
+    void 
+    call_once(once_flag& __once, _Callable __f, _Args&&... __args)
+    {
+      int __e = __gthread_once(&(__once._M_get()), __f(__args...)); 
+      if ( __e)
+	__throw_system_error(__e);
+    }
+}
+
+
+#endif
