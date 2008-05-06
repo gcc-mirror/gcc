@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2008 Free Software Foundation, Inc.  */
 
 /* Test the full range of preprocessor operator precedence.  Each
    operator is tested with one of immediately higher precedence to
@@ -17,11 +17,6 @@
 #if 0
 #error #if block evaluated for false conditional
 #else
-#endif
-
-/* , not higher than ?.  This is not a syntax error if it is.  */
-#if 1 ? 0, 1: 1	/* { dg-error "without" "? higher precedence than ," } */
-#error
 #endif
 
 /* : strictly higher than ?.  This would give a syntax error otherwise.  */
