@@ -2461,7 +2461,7 @@ gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 }
 
 gfc_expr *
-gfc_simplify_lgamma (gfc_expr *x __attribute__((unused)))
+gfc_simplify_lgamma (gfc_expr *x ATTRIBUTE_UNUSED)
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
