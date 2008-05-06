@@ -13,6 +13,6 @@ const static char32_t	c5 = u'\u2029';
 const static char32_t	c6 = u'\U00064321';	/* { dg-warning "constant too long" } */
 const static char32_t	c7 = L'a';
 const static char32_t	c8 = L'\u2029';
-const static char32_t	c9 = L'\U00064321';
+const static char32_t	c9 = L'\U00064321';     /* { dg-warning "constant too long" { target { ! 4byte_wchar_t } } } */  
 
 int main () {}
