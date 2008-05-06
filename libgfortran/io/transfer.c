@@ -1303,11 +1303,6 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	      else
 		read_x (dtp, dtp->u.p.skips);
 	    }
-	  else
-	    {
-	      if (dtp->u.p.skips < 0)
-		flush (dtp->u.p.current_unit->s);
-	    }
 
 	  break;
 
@@ -2682,8 +2677,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 	  if (max_pos > m)
 	    {
 	      length = (int) (max_pos - m);
-	      sseek (dtp->u.p.current_unit->s,
-		     file_position (dtp->u.p.current_unit->s) + length);
+	      p = salloc_w (dtp->u.p.current_unit->s, &length);
 	    }
 #ifdef HAVE_CRLF
 	  len = 2;

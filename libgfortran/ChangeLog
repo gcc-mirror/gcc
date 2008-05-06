@@ -1,3 +1,9 @@
+2008-05-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/36131
+	* io/transfer.c (formatted_transfer_scalar): Revert patch for PR34974.
+	(next_record_w): Likewise.
+
 2008-05-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35995
