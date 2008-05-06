@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 #include "parse.h"
+#include "toplev.h"
 
 /* Matches a kind-parameter expression, which is either a named
    symbolic constant or a nonnegative integer constant.  If
@@ -95,8 +96,8 @@ get_kind (void)
 /* Given a character and a radix, see if the character is a valid
    digit in that radix.  */
 
-static int
-check_digit (int c, int radix)
+int
+gfc_check_digit (char c, int radix)
 {
   int r;
 
@@ -119,7 +120,7 @@ check_digit (int c, int radix)
       break;
 
     default:
-      gfc_internal_error ("check_digit(): bad radix");
+      gfc_internal_error ("gfc_check_digit(): bad radix");
     }
 
   return r;
@@ -135,21 +136,22 @@ static int
 match_digits (int signflag, int radix, char *buffer)
 {
   locus old_loc;
-  int length, c;
+  int length;
+  char c;
 
   length = 0;
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
 
   if (signflag && (c == '+' || c == '-'))
     {
       if (buffer != NULL)
 	*buffer++ = c;
       gfc_gobble_whitespace ();
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
       length++;
     }
 
-  if (!check_digit (c, radix))
+  if (!gfc_check_digit (c, radix))
     return -1;
 
   length++;
@@ -159,9 +161,9 @@ match_digits (int signflag, int radix, char *buffer)
   for (;;)
     {
       old_loc = gfc_current_locus;
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
 
-      if (!check_digit (c, radix))
+      if (!gfc_check_digit (c, radix))
 	break;
 
       if (buffer != NULL)
@@ -275,10 +277,13 @@ match_hollerith_constant (gfc_expr **result)
 				   &gfc_current_locus);
 
 	  e->representation.string = gfc_getmem (num + 1);
+
+	  /* FIXME -- determine what should be done for wide character
+	     strings, and do it!  */
 	  for (i = 0; i < num; i++)
-	    {
-	      e->representation.string[i] = gfc_next_char_literal (1);
-	    }
+	    e->representation.string[i]
+	      = (unsigned char) gfc_next_char_literal (1);
+
 	  e->representation.string[num] = '\0';
 	  e->representation.length = num;
 
@@ -306,16 +311,16 @@ cleanup:
 static match
 match_boz_constant (gfc_expr **result)
 {
-  int post, radix, delim, length, x_hex, kind;
+  int radix, length, x_hex, kind;
   locus old_loc, start_loc;
-  char *buffer;
+  char *buffer, post, delim;
   gfc_expr *e;
 
   start_loc = old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   x_hex = 0;
-  switch (post = gfc_next_char ())
+  switch (post = gfc_next_ascii_char ())
     {
     case 'b':
       radix = 2;
@@ -346,7 +351,7 @@ match_boz_constant (gfc_expr **result)
   /* No whitespace allowed here.  */
 
   if (post == 0)
-    delim = gfc_next_char ();
+    delim = gfc_next_ascii_char ();
 
   if (delim != '\'' && delim != '\"')
     goto backup;
@@ -366,7 +371,7 @@ match_boz_constant (gfc_expr **result)
       return MATCH_ERROR;
     }
 
-  if (gfc_next_char () != delim)
+  if (gfc_next_ascii_char () != delim)
     {
       gfc_error ("Illegal character in BOZ constant at %C");
       return MATCH_ERROR;
@@ -374,7 +379,7 @@ match_boz_constant (gfc_expr **result)
 
   if (post == 1)
     {
-      switch (gfc_next_char ())
+      switch (gfc_next_ascii_char ())
 	{
 	case 'b':
 	  radix = 2;
@@ -403,9 +408,9 @@ match_boz_constant (gfc_expr **result)
   memset (buffer, '\0', length + 1);
 
   match_digits (0, radix, buffer);
-  gfc_next_char ();    /* Eat delimiter.  */
+  gfc_next_ascii_char ();    /* Eat delimiter.  */
   if (post == 1)
-    gfc_next_char ();  /* Eat postfixed b, o, z, or x.  */
+    gfc_next_ascii_char ();  /* Eat postfixed b, o, z, or x.  */
 
   /* In section 5.2.5 and following C567 in the Fortran 2003 standard, we find
      "If a data-stmt-constant is a boz-literal-constant, the corresponding
@@ -448,9 +453,9 @@ backup:
 static match
 match_real_constant (gfc_expr **result, int signflag)
 {
-  int kind, c, count, seen_dp, seen_digits, exp_char;
+  int kind, count, seen_dp, seen_digits;
   locus old_loc, temp_loc;
-  char *p, *buffer;
+  char *p, *buffer, c, exp_char;
   gfc_expr *e;
   bool negate;
 
@@ -465,18 +470,18 @@ match_real_constant (gfc_expr **result, int signflag)
   exp_char = ' ';
   negate = FALSE;
 
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
   if (signflag && (c == '+' || c == '-'))
     {
       if (c == '-')
 	negate = TRUE;
 
       gfc_gobble_whitespace ();
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
     }
 
   /* Scan significand.  */
-  for (;; c = gfc_next_char (), count++)
+  for (;; c = gfc_next_ascii_char (), count++)
     {
       if (c == '.')
 	{
@@ -486,11 +491,11 @@ match_real_constant (gfc_expr **result, int signflag)
 	  /* Check to see if "." goes with a following operator like 
 	     ".eq.".  */
 	  temp_loc = gfc_current_locus;
-	  c = gfc_next_char ();
+	  c = gfc_next_ascii_char ();
 
 	  if (c == 'e' || c == 'd' || c == 'q')
 	    {
-	      c = gfc_next_char ();
+	      c = gfc_next_ascii_char ();
 	      if (c == '.')
 		goto done;	/* Operator named .e. or .d.  */
 	    }
@@ -517,12 +522,12 @@ match_real_constant (gfc_expr **result, int signflag)
   exp_char = c;
 
   /* Scan exponent.  */
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
   count++;
 
   if (c == '+' || c == '-')
     {				/* optional sign */
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
       count++;
     }
 
@@ -534,7 +539,7 @@ match_real_constant (gfc_expr **result, int signflag)
 
   while (ISDIGIT (c))
     {
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
       count++;
     }
 
@@ -554,11 +559,11 @@ done:
   memset (buffer, '\0', count + 1);
 
   p = buffer;
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
   if (c == '+' || c == '-')
     {
       gfc_gobble_whitespace ();
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
     }
 
   /* Hack for mpfr_set_str().  */
@@ -572,7 +577,7 @@ done:
       if (--count == 0)
 	break;
 
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
     }
 
   kind = get_kind ();
@@ -724,22 +729,26 @@ cleanup:
    return doubled delimiters on the input as a single instance of
    the delimiter.
 
-   Special return values are:
+   Special return values for "ret" argument are:
      -1   End of the string, as determined by the delimiter
      -2   Unterminated string detected
 
    Backslash codes are also expanded at this time.  */
 
-static int
-next_string_char (char delimiter)
+static gfc_char_t
+next_string_char (gfc_char_t delimiter, int *ret)
 {
   locus old_locus;
-  int c;
+  gfc_char_t c;
 
   c = gfc_next_char_literal (1);
+  *ret = 0;
 
   if (c == '\n')
-    return -2;
+    {
+      *ret = -2;
+      return 0;
+    }
 
   if (gfc_option.flag_backslash && c == '\\')
     {
@@ -762,7 +771,8 @@ next_string_char (char delimiter)
     return c;
   gfc_current_locus = old_locus;
 
-  return -1;
+  *ret = -1;
+  return 0;
 }
 
 
@@ -786,7 +796,7 @@ match_charkind_name (char *name)
   int len;
 
   gfc_gobble_whitespace ();
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
   if (!ISALPHA (c))
     return MATCH_NO;
 
@@ -796,11 +806,11 @@ match_charkind_name (char *name)
   for (;;)
     {
       old_loc = gfc_current_locus;
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
 
       if (c == '_')
 	{
-	  peek = gfc_peek_char ();
+	  peek = gfc_peek_ascii_char ();
 
 	  if (peek == '\'' || peek == '\"')
 	    {
@@ -834,13 +844,14 @@ match_charkind_name (char *name)
 static match
 match_string_constant (gfc_expr **result)
 {
-  char *p, name[GFC_MAX_SYMBOL_LEN + 1];
-  int i, c, kind, length, delimiter, warn_ampersand;
+  char *p, name[GFC_MAX_SYMBOL_LEN + 1], peek;
+  int i, kind, length, warn_ampersand, ret;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
   const char *q;
   match m;
+  gfc_char_t c, delimiter;
 
   old_locus = gfc_current_locus;
 
@@ -855,11 +866,11 @@ match_string_constant (gfc_expr **result)
       goto got_delim;
     }
 
-  if (ISDIGIT (c))
+  if (gfc_wide_is_digit (c))
     {
       kind = 0;
 
-      while (ISDIGIT (c))
+      while (gfc_wide_is_digit (c))
 	{
 	  kind = kind * 10 + c - '0';
 	  if (kind > 9999999)
@@ -929,10 +940,10 @@ got_delim:
 
   for (;;)
     {
-      c = next_string_char (delimiter);
-      if (c == -1)
+      c = next_string_char (delimiter, &ret);
+      if (ret == -1)
 	break;
-      if (c == -2)
+      if (ret == -2)
 	{
 	  gfc_current_locus = start_locus;
 	  gfc_error ("Unterminated character constant beginning at %C");
@@ -944,8 +955,8 @@ got_delim:
 
   /* Peek at the next character to see if it is a b, o, z, or x for the
      postfixed BOZ literal constants.  */
-  c = gfc_peek_char ();
-  if (c == 'b' || c == 'o' || c =='z' || c == 'x')
+  peek = gfc_peek_ascii_char ();
+  if (peek == 'b' || peek == 'o' || peek =='z' || peek == 'x')
     goto no_match;
 
 
@@ -971,12 +982,24 @@ got_delim:
   gfc_option.warn_ampersand = 0;
 
   for (i = 0; i < length; i++)
-    *p++ = next_string_char (delimiter);
+    {
+      c = next_string_char (delimiter, &ret);
+
+      if (!gfc_wide_fits_in_byte (c))
+	{
+	  gfc_error ("Unimplemented feature at %C: gfortran currently only "
+		     "supports character strings with one-byte characters");
+	  return MATCH_ERROR;
+	}
+
+      *p++ = (unsigned char) c;
+    }
 
   *p = '\0';	/* TODO: C-style string is for development/debug purposes.  */
   gfc_option.warn_ampersand = warn_ampersand;
 
-  if (next_string_char (delimiter) != -1)
+  next_string_char (delimiter, &ret);
+  if (ret != -1)
     gfc_internal_error ("match_string_constant(): Delimiter not found");
 
   if (match_substring (NULL, 0, &e->ref) != MATCH_NO)
@@ -1000,25 +1023,25 @@ match_logical_constant_string (void)
   locus orig_loc = gfc_current_locus;
 
   gfc_gobble_whitespace ();
-  if (gfc_next_char () == '.')
+  if (gfc_next_ascii_char () == '.')
     {
-      int ch = gfc_next_char();
+      char ch = gfc_next_ascii_char ();
       if (ch == 'f')
 	{
-	  if (gfc_next_char () == 'a'
-	      && gfc_next_char () == 'l'
-	      && gfc_next_char () == 's'
-	      && gfc_next_char () == 'e'
-	      && gfc_next_char () == '.')
+	  if (gfc_next_ascii_char () == 'a'
+	      && gfc_next_ascii_char () == 'l'
+	      && gfc_next_ascii_char () == 's'
+	      && gfc_next_ascii_char () == 'e'
+	      && gfc_next_ascii_char () == '.')
 	    /* Matched ".false.".  */
 	    return 0;
 	}
       else if (ch == 't')
 	{
-	  if (gfc_next_char () == 'r'
-	      && gfc_next_char () == 'u'
-	      && gfc_next_char () == 'e'
-	      && gfc_next_char () == '.')
+	  if (gfc_next_ascii_char () == 'r'
+	      && gfc_next_ascii_char () == 'u'
+	      && gfc_next_ascii_char () == 'e'
+	      && gfc_next_ascii_char () == '.')
 	    /* Matched ".true.".  */
 	    return 1;
 	}
@@ -1214,7 +1237,7 @@ match_complex_constant (gfc_expr **result)
     {
       /* Give the matcher for implied do-loops a chance to run.  This
 	 yields a much saner error message for (/ (i, 4=i, 6) /).  */
-      if (gfc_peek_char () == '=')
+      if (gfc_peek_ascii_char () == '=')
 	{
 	  m = MATCH_ERROR;
 	  goto cleanup;
@@ -1328,7 +1351,7 @@ match_actual_arg (gfc_expr **result)
   gfc_symtree *symtree;
   locus where, w;
   gfc_expr *e;
-  int c;
+  char c;
 
   where = gfc_current_locus;
 
@@ -1343,7 +1366,7 @@ match_actual_arg (gfc_expr **result)
     case MATCH_YES:
       w = gfc_current_locus;
       gfc_gobble_whitespace ();
-      c = gfc_next_char ();
+      c = gfc_next_ascii_char ();
       gfc_current_locus = w;
 
       if (c != ',' && c != ')')
@@ -1684,7 +1707,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
   tail = NULL;
 
   gfc_gobble_whitespace ();
-  if ((equiv_flag && gfc_peek_char () == '(') || sym->attr.dimension)
+  if ((equiv_flag && gfc_peek_ascii_char () == '(') || sym->attr.dimension)
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character
@@ -1698,7 +1721,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
 	return m;
 
       gfc_gobble_whitespace ();
-      if (equiv_flag && gfc_peek_char () == '(')
+      if (equiv_flag && gfc_peek_ascii_char () == '(')
 	{
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;
@@ -2101,7 +2124,7 @@ gfc_match_rvalue (gfc_expr **result)
       /* See if this is a directly recursive function call.  */
       gfc_gobble_whitespace ();
       if (sym->attr.recursive
-	  && gfc_peek_char () == '('
+	  && gfc_peek_ascii_char () == '('
 	  && gfc_current_ns->proc_name == sym
 	  && !sym->attr.dimension)
 	{
@@ -2139,7 +2162,7 @@ gfc_match_rvalue (gfc_expr **result)
     {
     case FL_VARIABLE:
     variable:
-      if (sym->ts.type == BT_UNKNOWN && gfc_peek_char () == '%'
+      if (sym->ts.type == BT_UNKNOWN && gfc_peek_ascii_char () == '%'
 	  && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
 
@@ -2304,7 +2327,7 @@ gfc_match_rvalue (gfc_expr **result)
 	 via an IMPLICIT statement.  This can't wait for the
 	 resolution phase.  */
 
-      if (gfc_peek_char () == '%'
+      if (gfc_peek_ascii_char () == '%'
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
@@ -2333,7 +2356,7 @@ gfc_match_rvalue (gfc_expr **result)
 	 variable is just a scalar.  */
 
       gfc_gobble_whitespace ();
-      if (gfc_peek_char () != '(')
+      if (gfc_peek_ascii_char () != '(')
 	{
 	  /* Assume a scalar variable */
 	  e = gfc_get_expr ();
@@ -2545,7 +2568,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	  break;
 
 	/* These are definitive indicators that this is a variable.  */
-	else if (gfc_peek_char () != '(' || sym->ts.type != BT_UNKNOWN
+	else if (gfc_peek_ascii_char () != '(' || sym->ts.type != BT_UNKNOWN
 		 || sym->attr.pointer || sym->as != NULL)
 	  flavor = FL_VARIABLE;
 
@@ -2605,7 +2628,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       else
 	implicit_ns = sym->ns;
 	
-      if (gfc_peek_char () == '%'
+      if (gfc_peek_ascii_char () == '%'
 	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym, implicit_ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, implicit_ns);

@@ -237,13 +237,17 @@ Allow @samp{$} as a valid character in a symbol name.
 @opindex @code{backslash}
 @cindex backslash
 @cindex escape characters
-Change the interpretation of backslashes in string literals
-from a single backslash character to ``C-style'' escape characters.
-The following combinations are expanded \a, \b, \f, \n, \r, \t,
-\v, \\, and \0 to the ASCII characters alert, backspace, form feed,
-newline, carriage return, horizontal tab, vertical tab, backslash,
-and NUL, respectively.  All other combinations of a character preceded
-by \ are unexpanded.
+Change the interpretation of backslashes in string literals from a single
+backslash character to ``C-style'' escape characters. The following
+combinations are expanded @code{\a}, @code{\b}, @code{\f}, @code{\n},
+@code{\r}, @code{\t}, @code{\v}, @code{\\}, and @code{\0} to the ASCII
+characters alert, backspace, form feed, newline, carriage return,
+horizontal tab, vertical tab, backslash, and NUL, respectively.
+Additionally, @code{\x}@var{nn}, @code{\u}@var{nnnn} and
+@code{\U}@var{nnnnnnnn} (where each @var{n} is a hexadecimal digit) are
+translated into the Unicode characters corresponding to the specified code
+points. All other combinations of a character preceded by \ are
+unexpanded.
 
 @item -fmodule-private
 @opindex @code{fmodule-private}
