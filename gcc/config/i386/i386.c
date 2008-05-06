@@ -5884,20 +5884,14 @@ ix86_file_end (void)
 	  switch_to_section (text_section);
 	  ASM_OUTPUT_LABEL (asm_out_file, name);
 	}
-      if (TARGET_64BIT_MS_ABI)
-        {
-	  xops[0] = gen_rtx_REG (Pmode, regno);
-	  xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
-	  output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
-	  output_asm_insn ("ret", xops);
-        }
+
+      xops[0] = gen_rtx_REG (Pmode, regno);
+      xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+      if (TARGET_64BIT)
+	output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
       else
-        {
-	  xops[0] = gen_rtx_REG (SImode, regno);
-	  xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
-	  output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
-	  output_asm_insn ("ret", xops);
-	}
+	output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
+      output_asm_insn ("ret", xops);
     }
 
   if (NEED_INDICATE_EXEC_STACK)
@@ -5936,7 +5930,12 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
       xops[2] = gen_rtx_LABEL_REF (Pmode, label ? label : gen_label_rtx ());
 
       if (!flag_pic)
-	output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
+        {
+          if (TARGET_64BIT)
+	    output_asm_insn ("mov{q}\t{%2, %0|%0, %2}", xops);
+	  else
+	    output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
+	}
       else
 	output_asm_insn ("call\t%a2", xops);
 
@@ -5951,7 +5950,12 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
 				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
 
       if (flag_pic)
-	output_asm_insn ("pop{l}\t%0", xops);
+        {
+          if (TARGET_64BIT)
+	    output_asm_insn ("pop{q}\t%0", xops);
+	  else
+	    output_asm_insn ("pop{l}\t%0", xops);
+	}
     }
   else
     {
@@ -5977,9 +5981,19 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
     return "";
 
   if (!flag_pic || TARGET_DEEP_BRANCH_PREDICTION)
-    output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
+    {
+      if (TARGET_64BIT)
+        output_asm_insn ("add{q}\t{%1, %0|%0, %1}", xops);
+      else
+        output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
+    }
   else
-    output_asm_insn ("add{l}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
+    {
+      if (TARGET_64BIT)
+        output_asm_insn ("add{q}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
+      else
+        output_asm_insn ("add{l}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
+    }
 
   return "";
 }
