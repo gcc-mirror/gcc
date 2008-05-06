@@ -1,3 +1,11 @@
+2008-05-06  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/35313, PR preprocessor/36088:
+	* gcc.dg/cpp/pr35313.c: New file.
+	* gcc.dg/cpp/if-oppr.c: Remove test for ',' in a conditional
+	expression.
+	* gcc.dg/cpp/if-oppr2.c: New file.
+
 2008-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36117

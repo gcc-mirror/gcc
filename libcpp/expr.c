@@ -1,6 +1,6 @@
 /* Parse C expressions for cpplib.
    Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2004 Free Software Foundation.
+   2002, 2004, 2008 Free Software Foundation.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -809,9 +809,11 @@ static const struct cpp_operator
   /* COMPL */		{16, NO_L_OPERAND},
   /* AND_AND */		{6, LEFT_ASSOC},
   /* OR_OR */		{5, LEFT_ASSOC},
-  /* QUERY */		{3, 0},
+  /* Note that QUERY, COLON, and COMMA must have the same precedence.
+     However, there are some special cases for these in reduce().  */
+  /* QUERY */		{4, 0},
   /* COLON */		{4, LEFT_ASSOC | CHECK_PROMOTION},
-  /* COMMA */		{2, LEFT_ASSOC},
+  /* COMMA */		{4, LEFT_ASSOC},
   /* OPEN_PAREN */	{1, NO_L_OPERAND},
   /* CLOSE_PAREN */	{0, 0},
   /* EOF */		{0, 0},
@@ -1101,6 +1103,9 @@ reduce (cpp_reader *pfile, struct op *top, enum cpp_ttype op)
 	  continue;
 
 	case CPP_QUERY:
+	  /* COMMA and COLON should not reduce a QUERY operator.  */
+	  if (op == CPP_COMMA || op == CPP_COLON)
+	    return top;
 	  cpp_error (pfile, CPP_DL_ERROR, "'?' without following ':'");
 	  return 0;
 
