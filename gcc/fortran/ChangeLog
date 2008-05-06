@@ -1,3 +1,50 @@
+2008-05-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* openmp.c (gfc_match_omp_eos): Use gfc_next_ascii_char and
+	gfc_peek_ascii_char.
+	* decl.c (gfc_match_kind_spec, gfc_match_type_spec,
+	gfc_match_implicit_none, match_implicit_range, gfc_match_implicit,
+	match_string_p, match_attr_spec, gfc_match_suffix,
+	match_procedure_decl, gfc_match_entry, gfc_match_subroutine):
+	Likewise.
+	* gfortran.h (gfc_char_t): New type.
+	(gfc_linebuf): Make line member a gfc_char_t.
+	(locus): Make nextc member a gfc_char_t.
+	(gfc_wide_is_printable, gfc_wide_is_digit, gfc_wide_fits_in_byte,
+	gfc_wide_tolower, gfc_wide_strlen, gfc_next_ascii_char,
+	gfc_peek_ascii_char, gfc_check_digit): New prototypes.
+	* error.c (print_wide_char): New function.
+	(show_locus): Use print_wide_char and gfc_wide_strlen.
+	* io.c (next_char): Use gfc_char_t type.
+	(match_io): Use gfc_peek_ascii_char and gfc_next_ascii_char.
+	* match.c (gfc_match_parens, gfc_match_eos,
+	gfc_match_small_literal_int, gfc_match_name, gfc_match_name_C,
+	gfc_match_intrinsic_op, gfc_match_char,  gfc_match_return,
+	gfc_match_common): Likewise.
+	* match.h (gfc_match_special_char): Change prototype.
+	* parse.c (decode_specification_statement, decode_statement,
+	decode_omp_directive, next_free, next_fixed): Use
+	gfc_peek_ascii_char and gfc_next_ascii_char.
+	* primary.c (gfc_check_digit): Change name.
+	(match_digits, match_hollerith_constant, match_boz_constant,
+	match_real_constant, next_string_char, match_charkind_name,
+	match_string_constant, match_logical_constant_string,
+	match_complex_constant, match_actual_arg, match_varspec,
+	gfc_match_rvalue, match_variable): Use gfc_peek_ascii_char and
+	gfc_next_ascii_char.
+	* scanner.c (gfc_wide_fits_in_byte, wide_is_ascii,
+	gfc_wide_is_printable, gfc_wide_tolower, gfc_wide_is_digit,
+	gfc_wide_is_digit, wide_atoi, gfc_wide_strlen, wide_strcpy,
+	wide_strchr, widechar_to_char, wide_strncmp, wide_strncasecmp,
+	gfc_next_ascii_char, gfc_peek_ascii_char):
+	New functions.
+	(next_char, gfc_define_undef_line, skip_free_comments,
+	gfc_next_char_literal, gfc_next_char, gfc_peek_char,
+	gfc_error_recovery, load_line, preprocessor_line, include_line,
+	load_file, gfc_read_orig_filename): Use gfc_char_t for source
+	characters and the {gfc_,}wide_* functions to manipulate wide
+	strings.
+
 2008-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36117

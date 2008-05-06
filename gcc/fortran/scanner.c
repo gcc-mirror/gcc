@@ -72,7 +72,7 @@ static gfc_linebuf *line_head, *line_tail;
 locus gfc_current_locus;
 const char *gfc_source_file;
 static FILE *gfc_src_file;
-static char *gfc_src_preprocessor_lines[2];
+static gfc_char_t *gfc_src_preprocessor_lines[2];
 
 extern int pedantic;
 
@@ -84,6 +84,135 @@ static struct gfc_file_change
 } *file_changes;
 size_t file_changes_cur, file_changes_count;
 size_t file_changes_allocated;
+
+
+/* Functions dealing with our wide characters (gfc_char_t) and
+   sequences of such characters.  */
+
+int
+gfc_wide_fits_in_byte (gfc_char_t c)
+{
+  return (c <= UCHAR_MAX);
+}
+
+static inline int
+wide_is_ascii (gfc_char_t c)
+{
+  return (gfc_wide_fits_in_byte (c) && ((unsigned char) c & ~0x7f) == 0);
+}
+
+int
+gfc_wide_is_printable (gfc_char_t c)
+{
+  return (gfc_wide_fits_in_byte (c) && ISPRINT ((unsigned char) c));
+}
+
+gfc_char_t
+gfc_wide_tolower (gfc_char_t c)
+{
+  return (wide_is_ascii (c) ? (gfc_char_t) TOLOWER((unsigned char) c) : c);
+}
+
+int
+gfc_wide_is_digit (gfc_char_t c)
+{
+  return (c >= '0' && c <= '9');
+}
+
+static inline int
+wide_atoi (gfc_char_t *c)
+{
+#define MAX_DIGITS 20
+  char buf[MAX_DIGITS+1];
+  int i = 0;
+
+  while (gfc_wide_is_digit(*c) && i < MAX_DIGITS)
+    buf[i++] = *c++;
+  buf[i] = '\0';
+  return atoi (buf);
+}
+
+size_t
+gfc_wide_strlen (const gfc_char_t *str)
+{
+  size_t i;
+
+  for (i = 0; str[i]; i++)
+    ;
+
+  return i;
+}
+
+static gfc_char_t *
+wide_strcpy (gfc_char_t *dest, const gfc_char_t *src)
+{
+  gfc_char_t *d;
+
+  for (d = dest; (*d = *src) != '\0'; ++src, ++d)
+    ;
+
+  return dest;
+}
+
+static gfc_char_t *
+wide_strchr (gfc_char_t *s, gfc_char_t c)
+{
+  do {
+    if (*s == c)
+      {
+        return (gfc_char_t *) s;
+      }
+  } while (*s++);
+  return 0;
+}
+
+static char *
+widechar_to_char (gfc_char_t *s)
+{
+  size_t len = gfc_wide_strlen (s), i;
+  char *res = gfc_getmem (len + 1);
+
+  for (i = 0; i < len; i++)
+    res[i] = gfc_wide_fits_in_byte (s[i]) ? (unsigned char) s[i] : '?';
+
+  res[len] = '\0';
+  return res;
+}
+
+static int
+wide_strncmp (const gfc_char_t *s1, const char *s2, size_t n)
+{
+  gfc_char_t c1, c2;
+
+  while (n-- > 0)
+    {
+      c1 = *s1++;
+      c2 = *s2++;
+      if (c1 != c2)
+	return (c1 > c2 ? 1 : -1);
+      if (c1 == '\0')
+	return 0;
+    }
+  return 0;
+}
+
+static int
+wide_strncasecmp (const gfc_char_t *s1, const char *s2, size_t n)
+{
+  gfc_char_t c1, c2;
+
+  while (n-- > 0)
+    {
+      c1 = gfc_wide_tolower (*s1++);
+      c2 = TOLOWER (*s2++);
+      if (c1 != c2)
+	return (c1 > c2 ? 1 : -1);
+      if (c1 == '\0')
+	return 0;
+    }
+  return 0;
+}
+
 
 /* Main scanner initialization.  */
 
@@ -406,15 +535,15 @@ gfc_advance_line (void)
    pointer from being on the wrong line if the current statement ends
    prematurely.  */
 
-static int
+static gfc_char_t
 next_char (void)
 {
-  int c;
+  gfc_char_t c;
   
   if (gfc_current_locus.nextc == NULL)
     return '\n';
 
-  c = (unsigned char) *gfc_current_locus.nextc++;
+  c = *gfc_current_locus.nextc++;
   if (c == '\0')
     {
       gfc_current_locus.nextc--; /* Remain on this line.  */
@@ -433,7 +562,7 @@ next_char (void)
 static void
 skip_comment_line (void)
 {
-  char c;
+  gfc_char_t c;
 
   do
     {
@@ -448,17 +577,27 @@ skip_comment_line (void)
 int
 gfc_define_undef_line (void)
 {
+  char *tmp;
+
   /* All lines beginning with '#' are either #define or #undef.  */
-  if (debug_info_level != DINFO_LEVEL_VERBOSE || gfc_peek_char () != '#')
+  if (debug_info_level != DINFO_LEVEL_VERBOSE || gfc_peek_ascii_char () != '#')
     return 0;
 
-  if (strncmp (gfc_current_locus.nextc, "#define ", 8) == 0)
-    (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.lb),
-			    &(gfc_current_locus.nextc[8]));
+  if (wide_strncmp (gfc_current_locus.nextc, "#define ", 8) == 0)
+    {
+      tmp = widechar_to_char (&gfc_current_locus.nextc[8]);
+      (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.lb),
+			      tmp);
+      gfc_free (tmp);
+    }
 
-  if (strncmp (gfc_current_locus.nextc, "#undef ", 7) == 0)
-    (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.lb),
-			   &(gfc_current_locus.nextc[7]));
+  if (wide_strncmp (gfc_current_locus.nextc, "#undef ", 7) == 0)
+    {
+      tmp = widechar_to_char (&gfc_current_locus.nextc[7]);
+      (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.lb),
+			     tmp);
+      gfc_free (tmp);
+    }
 
   /* Skip the rest of the line.  */
   skip_comment_line ();
@@ -476,7 +615,7 @@ static bool
 skip_free_comments (void)
 {
   locus start;
-  char c;
+  gfc_char_t c;
   int at_bol;
 
   for (;;)
@@ -570,7 +709,7 @@ skip_fixed_comments (void)
 {
   locus start;
   int col;
-  char c;
+  gfc_char_t c;
 
   if (! gfc_at_bol ())
     {
@@ -738,11 +877,12 @@ gfc_skip_comments (void)
    line.  The in_string flag denotes whether we're inside a character
    context or not.  */
 
-int
+gfc_char_t
 gfc_next_char_literal (int in_string)
 {
   locus old_loc;
-  int i, c, prev_openmp_flag;
+  int i, prev_openmp_flag;
+  gfc_char_t c;
 
   continue_flag = 0;
 
@@ -859,7 +999,7 @@ restart:
 	{
 	  for (i = 0; i < 5; i++, c = next_char ())
 	    {
-	      gcc_assert (TOLOWER (c) == "!$omp"[i]);
+	      gcc_assert (gfc_wide_tolower (c) == (unsigned char) "!$omp"[i]);
 	      if (i == 4)
 		old_loc = gfc_current_locus;
 	    }
@@ -932,7 +1072,7 @@ restart:
 	for (i = 0; i < 5; i++)
 	  {
 	    c = next_char ();
-	    if (TOLOWER (c) != "*$omp"[i])
+	    if (gfc_wide_tolower (c) != (unsigned char) "*$omp"[i])
 	      goto not_continuation;
 	  }
 
@@ -980,10 +1120,10 @@ done:
    parsing character literals, they have to call
    gfc_next_char_literal().  */
 
-int
+gfc_char_t
 gfc_next_char (void)
 {
-  int c;
+  gfc_char_t c;
 
   do
     {
@@ -991,21 +1131,40 @@ gfc_next_char (void)
     }
   while (gfc_current_form == FORM_FIXED && gfc_is_whitespace (c));
 
-  return TOLOWER (c);
+  return gfc_wide_tolower (c);
+}
+
+char
+gfc_next_ascii_char (void)
+{
+  gfc_char_t c = gfc_next_char ();
+
+  return (gfc_wide_fits_in_byte (c) ? (unsigned char) c
+				    : (unsigned char) UCHAR_MAX);
 }
 
 
-int
+gfc_char_t
 gfc_peek_char (void)
 {
   locus old_loc;
-  int c;
+  gfc_char_t c;
 
   old_loc = gfc_current_locus;
   c = gfc_next_char ();
   gfc_current_locus = old_loc;
 
   return c;
+}
+
+
+char
+gfc_peek_ascii_char (void)
+{
+  gfc_char_t c = gfc_peek_char ();
+
+  return (gfc_wide_fits_in_byte (c) ? (unsigned char) c
+				    : (unsigned char) UCHAR_MAX);
 }
 
 
@@ -1017,7 +1176,7 @@ gfc_peek_char (void)
 void
 gfc_error_recovery (void)
 {
-  char c, delim;
+  gfc_char_t c, delim;
 
   if (gfc_at_eof ())
     return;
@@ -1064,7 +1223,7 @@ gfc_gobble_whitespace (void)
 {
   static int linenum = 0;
   locus old_loc;
-  int c;
+  gfc_char_t c;
 
   do
     {
@@ -1106,13 +1265,13 @@ gfc_gobble_whitespace (void)
 	 parts of gfortran.  */
 
 static int
-load_line (FILE *input, char **pbuf, int *pbuflen)
+load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
 {
   static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int trunc_flag = 0, seen_comment = 0;
   int seen_printable = 0, seen_ampersand = 0;
-  char *buffer;
+  gfc_char_t *buffer;
   bool found_tab = false;
 
   /* Determine the maximum allowed line length.  */
@@ -1135,7 +1294,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
       else
 	buflen = 132;
 
-      *pbuf = gfc_getmem (buflen + 1);
+      *pbuf = gfc_getmem ((buflen + 1) * sizeof (gfc_char_t));
     }
 
   i = 0;
@@ -1234,7 +1393,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 	      /* Reallocate line buffer to double size to hold the
 		overlong line.  */
 	      buflen = buflen * 2;
-	      *pbuf = xrealloc (*pbuf, buflen + 1);
+	      *pbuf = xrealloc (*pbuf, (buflen + 1) * sizeof (gfc_char_t));
 	      buffer = (*pbuf) + i;
 	    }
 	}
@@ -1297,17 +1456,19 @@ get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
   return f;
 }
 
+
 /* Deal with a line from the C preprocessor. The
    initial octothorp has already been seen.  */
 
 static void
-preprocessor_line (char *c)
+preprocessor_line (gfc_char_t *c)
 {
   bool flag[5];
   int i, line;
-  char *filename;
+  gfc_char_t *wide_filename;
   gfc_file *f;
   int escaped, unescape;
+  char *filename;
 
   c++;
   while (*c == ' ' || *c == '\t')
@@ -1316,9 +1477,9 @@ preprocessor_line (char *c)
   if (*c < '0' || *c > '9')
     goto bad_cpp_line;
 
-  line = atoi (c);
+  line = wide_atoi (c);
 
-  c = strchr (c, ' ');
+  c = wide_strchr (c, ' ');
   if (c == NULL)
     {
       /* No file name given.  Set new line number.  */
@@ -1335,7 +1496,7 @@ preprocessor_line (char *c)
     goto bad_cpp_line;
   ++c;
 
-  filename = c;
+  wide_filename = c;
 
   /* Make filename end at quote.  */
   unescape = 0;
@@ -1361,10 +1522,10 @@ preprocessor_line (char *c)
   /* Undo effects of cpp_quote_string.  */
   if (unescape)
     {
-      char *s = filename;
-      char *d = gfc_getmem (c - filename - unescape);
+      gfc_char_t *s = wide_filename;
+      gfc_char_t *d = gfc_getmem (c - wide_filename - unescape);
 
-      filename = d;
+      wide_filename = d;
       while (*s)
 	{
 	  if (*s == '\\')
@@ -1382,16 +1543,20 @@ preprocessor_line (char *c)
 
   for (;;)
     {
-      c = strchr (c, ' ');
+      c = wide_strchr (c, ' ');
       if (c == NULL)
 	break;
 
       c++;
-      i = atoi (c);
+      i = wide_atoi (c);
 
       if (1 <= i && i <= 4)
 	flag[i] = true;
     }
+
+  /* Convert the filename in wide characters into a filename in narrow
+     characters.  */
+  filename = widechar_to_char (wide_filename);
 
   /* Interpret flags.  */
 
@@ -1411,7 +1576,8 @@ preprocessor_line (char *c)
 			   current_file->filename, current_file->line,
 			   filename);
 	  if (unescape)
-	    gfc_free (filename);
+	    gfc_free (wide_filename);
+	  gfc_free (filename);
 	  return;
 	}
 
@@ -1434,7 +1600,8 @@ preprocessor_line (char *c)
   /* Set new line number.  */
   current_file->line = line;
   if (unescape)
-    gfc_free (filename);
+    gfc_free (wide_filename);
+  gfc_free (filename);
   return;
 
  bad_cpp_line:
@@ -1453,9 +1620,10 @@ static try load_file (const char *, bool);
    processed or true if we matched an include.  */
 
 static bool
-include_line (char *line)
+include_line (gfc_char_t *line)
 {
-  char quote, *c, *begin, *stop;
+  gfc_char_t quote, *c, *begin, *stop;
+  char *filename;
 
   c = line;
 
@@ -1479,8 +1647,8 @@ include_line (char *line)
   while (*c == ' ' || *c == '\t')
     c++;
 
-  if (strncasecmp (c, "include", 7))
-      return false;
+  if (wide_strncasecmp (c, "include", 7))
+    return false;
 
   c += 7;
   while (*c == ' ' || *c == '\t')
@@ -1513,7 +1681,9 @@ include_line (char *line)
   *stop = '\0'; /* It's ok to trash the buffer, as this line won't be
 		   read by anything else.  */
 
-  load_file (begin, false);
+  filename = widechar_to_char (begin);
+  load_file (filename, false);
+  gfc_free (filename);
   return true;
 }
 
@@ -1523,7 +1693,7 @@ include_line (char *line)
 static try
 load_file (const char *filename, bool initial)
 {
-  char *line;
+  gfc_char_t *line;
   gfc_linebuf *b;
   gfc_file *f;
   FILE *input;
@@ -1590,7 +1760,7 @@ load_file (const char *filename, bool initial)
     {
       int trunc = load_line (input, &line, &line_len);
 
-      len = strlen (line);
+      len = gfc_wide_strlen (line);
       if (feof (input) && len == 0)
 	break;
 
@@ -1600,15 +1770,18 @@ load_file (const char *filename, bool initial)
 	   FE FF is UTF-16 big endian,
 	   EF BB BF is UTF-8.  */
       if (first_line
-	  && ((line_len >= 2 && line[0] == '\xFF' && line[1] == '\xFE')
-	      || (line_len >= 2 && line[0] == '\xFE' && line[1] == '\xFF')
-	      || (line_len >= 3 && line[0] == '\xEF' && line[1] == '\xBB'
-		  && line[2] == '\xBF')))
+	  && ((line_len >= 2 && line[0] == (unsigned char) '\xFF'
+			     && line[1] == (unsigned char) '\xFE')
+	      || (line_len >= 2 && line[0] == (unsigned char) '\xFE'
+			        && line[1] == (unsigned char) '\xFF')
+	      || (line_len >= 3 && line[0] == (unsigned char) '\xEF'
+				&& line[1] == (unsigned char) '\xBB'
+				&& line[2] == (unsigned char) '\xBF')))
 	{
-	  int n = line[1] == '\xBB' ? 3 : 2;
-	  char * new = gfc_getmem (line_len);
+	  int n = line[1] == (unsigned char) '\xBB' ? 3 : 2;
+	  gfc_char_t *new = gfc_getmem (line_len * sizeof (gfc_char_t));
 
-	  strcpy (new, line + n);
+	  wide_strcpy (new, &line[n]);
 	  gfc_free (line);
 	  line = new;
 	  len -= n;
@@ -1623,8 +1796,8 @@ load_file (const char *filename, bool initial)
 	     and #undef lines, which we need to pass to the middle-end
 	     so that it can emit correct debug info.  */
 	  if (debug_info_level == DINFO_LEVEL_VERBOSE
-	      && (strncmp (line, "#define ", 8) == 0
-		  || strncmp (line, "#undef ", 7) == 0))
+	      && (wide_strncmp (line, "#define ", 8) == 0
+		  || wide_strncmp (line, "#undef ", 7) == 0))
 	    ;
 	  else
 	    {
@@ -1646,13 +1819,14 @@ load_file (const char *filename, bool initial)
 
       /* Add line.  */
 
-      b = gfc_getmem (gfc_linebuf_header_size + len + 1);
+      b = gfc_getmem (gfc_linebuf_header_size
+		      + (len + 1) * sizeof (gfc_char_t));
 
       b->location
 	= linemap_line_start (line_table, current_file->line++, 120);
       b->file = current_file;
       b->truncated = trunc;
-      strcpy (b->line, line);
+      wide_strcpy (b->line, line);
 
       if (line_head == NULL)
 	line_head = b;
@@ -1752,7 +1926,7 @@ const char *
 gfc_read_orig_filename (const char *filename, const char **canon_source_file)
 {
   int c, len;
-  char *dirname;
+  char *dirname, *tmp;
 
   gfc_src_file = gfc_open_file (filename);
   if (gfc_src_file == NULL)
@@ -1767,10 +1941,12 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   len = 0;
   load_line (gfc_src_file, &gfc_src_preprocessor_lines[0], &len);
 
-  if (strncmp (gfc_src_preprocessor_lines[0], "# 1 \"", 5) != 0)
+  if (wide_strncmp (gfc_src_preprocessor_lines[0], "# 1 \"", 5) != 0)
     return NULL;
 
-  filename = unescape_filename (gfc_src_preprocessor_lines[0] + 5);
+  tmp = widechar_to_char (&gfc_src_preprocessor_lines[0][5]);
+  filename = unescape_filename (tmp);
+  gfc_free (tmp);
   if (filename == NULL)
     return NULL;
 
@@ -1783,10 +1959,12 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
   len = 0;
   load_line (gfc_src_file, &gfc_src_preprocessor_lines[1], &len);
 
-  if (strncmp (gfc_src_preprocessor_lines[1], "# 1 \"", 5) != 0)
+  if (wide_strncmp (gfc_src_preprocessor_lines[1], "# 1 \"", 5) != 0)
     return filename;
 
-  dirname = unescape_filename (gfc_src_preprocessor_lines[1] + 5);
+  tmp = widechar_to_char (&gfc_src_preprocessor_lines[1][5]);
+  dirname = unescape_filename (tmp);
+  gfc_free (tmp);
   if (dirname == NULL)
     return filename;
 

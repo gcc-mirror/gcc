@@ -36,17 +36,17 @@ match
 gfc_match_omp_eos (void)
 {
   locus old_loc;
-  int c;
+  char c;
 
   old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
-  c = gfc_next_char ();
+  c = gfc_next_ascii_char ();
   switch (c)
     {
     case '!':
       do
-	c = gfc_next_char ();
+	c = gfc_next_ascii_char ();
       while (c != '\n');
       /* Fall through */
 

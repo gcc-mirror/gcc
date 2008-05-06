@@ -700,6 +700,21 @@ typedef struct
 symbol_attribute;
 
 
+/* We need to store source lines as sequences of multibyte source
+   characters. We define here a type wide enough to hold any multibyte
+   source character, just like libcpp does.  A 32-bit type is enough.  */
+
+#if HOST_BITS_PER_INT >= 32
+typedef unsigned int gfc_char_t;
+#elif HOST_BITS_PER_LONG >= 32
+typedef unsigned long gfc_char_t;
+#elif defined(HAVE_LONG_LONG) && (HOST_BITS_PER_LONGLONG >= 32)
+typedef unsigned long long gfc_char_t;
+#else
+# error "Cannot find an integer type with at least 32 bits"
+#endif
+
+
 /* The following three structures are used to identify a location in
    the sources.
 
@@ -729,7 +744,7 @@ typedef struct gfc_linebuf
   int truncated;
   bool dbg_emitted;
 
-  char line[1];
+  gfc_char_t line[1];
 } gfc_linebuf;
 
 #define gfc_linebuf_header_size (offsetof (gfc_linebuf, line))
@@ -738,7 +753,7 @@ typedef struct gfc_linebuf
 
 typedef struct
 {
-  char *nextc;
+  gfc_char_t *nextc;
   gfc_linebuf *lb;
 } locus;
 
@@ -1940,10 +1955,18 @@ void gfc_advance_line (void);
 int gfc_check_include (void);
 int gfc_define_undef_line (void);
 
+int gfc_wide_is_printable (gfc_char_t);
+int gfc_wide_is_digit (gfc_char_t);
+int gfc_wide_fits_in_byte (gfc_char_t);
+gfc_char_t gfc_wide_tolower (gfc_char_t);
+size_t gfc_wide_strlen (const gfc_char_t *);
+
 void gfc_skip_comments (void);
-int gfc_next_char_literal (int);
-int gfc_next_char (void);
-int gfc_peek_char (void);
+gfc_char_t gfc_next_char_literal (int);
+gfc_char_t gfc_next_char (void);
+char gfc_next_ascii_char (void);
+gfc_char_t gfc_peek_char (void);
+char gfc_peek_ascii_char (void);
 void gfc_error_recovery (void);
 void gfc_gobble_whitespace (void);
 try gfc_new_file (void);
@@ -2354,6 +2377,7 @@ bool gfc_check_access (gfc_access, gfc_access);
 symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
 match gfc_match_rvalue (gfc_expr **);
+int gfc_check_digit (char, int);
 
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);

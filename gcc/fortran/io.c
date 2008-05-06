@@ -132,7 +132,7 @@ mode;
 static char
 next_char (int in_string)
 {
-  static char c;
+  static gfc_char_t c;
 
   if (use_last_char)
     {
@@ -153,17 +153,10 @@ next_char (int in_string)
 
   if (gfc_option.flag_backslash && c == '\\')
     {
-      int tmp;
       locus old_locus = gfc_current_locus;
 
-      /* Use a temp variable to avoid side effects from gfc_match_special_char
-	 since it uses an int * for its argument.  */
-      tmp = (int)c;
-
-      if (gfc_match_special_char (&tmp) == MATCH_NO)
+      if (gfc_match_special_char (&c) == MATCH_NO)
 	gfc_current_locus = old_locus;
-
-      c = (char)tmp;
 
       if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
 	gfc_warning ("Extension: backslash character at %C");
@@ -172,7 +165,7 @@ next_char (int in_string)
   if (mode == MODE_COPY)
     *format_string++ = c;
 
-  c = TOUPPER (c);
+  c = TOUPPER ((unsigned char) c);
   return c;
 }
 
@@ -3185,7 +3178,7 @@ match_io (io_kind k)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_code *io_code;
   gfc_symbol *sym;
-  int comma_flag, c;
+  int comma_flag;
   locus where;
   locus spec_end;
   gfc_dt *dt;
@@ -3203,7 +3196,7 @@ match_io (io_kind k)
       else if (k == M_PRINT)
 	{
 	  /* Treat the non-standard case of PRINT namelist.  */
-	  if ((gfc_current_form == FORM_FIXED || gfc_peek_char () == ' ')
+	  if ((gfc_current_form == FORM_FIXED || gfc_peek_ascii_char () == ' ')
 	      && gfc_match_name (name) == MATCH_YES)
 	    {
 	      gfc_find_symbol (name, NULL, 1, &sym);
@@ -3227,7 +3220,7 @@ match_io (io_kind k)
 
       if (gfc_current_form == FORM_FREE)
 	{
-	  c = gfc_peek_char();
+	  char c = gfc_peek_ascii_char ();
 	  if (c != ' ' && c != '*' && c != '\'' && c != '"')
 	    {
 	      m = MATCH_NO;

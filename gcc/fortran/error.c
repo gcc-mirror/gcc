@@ -156,6 +156,66 @@ error_integer (long int i)
    locus.  Calls error_printf() recursively, but the recursion is at
    most one level deep.  */
 
+static void
+print_wide_char (gfc_char_t c)
+{
+  static const char xdigit[16] = { '0', '1', '2', '3', '4', '5', '6',
+    '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+  char buf[9];
+
+  if (gfc_wide_is_printable (c))
+    error_char (c);
+  else if (c < ((gfc_char_t) 1 << 8))
+    {
+      buf[2] = '\0';
+      buf[1] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[0] = xdigit[c & 0x0F];
+
+      error_char ('\\');
+      error_char ('x');
+      error_string (buf);
+    }
+  else if (c < ((gfc_char_t) 1 << 16))
+    {
+      buf[4] = '\0';
+      buf[3] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[2] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[1] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[0] = xdigit[c & 0x0F];
+
+      error_char ('\\');
+      error_char ('u');
+      error_string (buf);
+    }
+  else
+    {
+      buf[8] = '\0';
+      buf[7] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[6] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[5] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[4] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[3] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[2] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[1] = xdigit[c & 0x0F];
+      c = c >> 4;
+      buf[0] = xdigit[c & 0x0F];
+
+      error_char ('\\');
+      error_char ('U');
+      error_string (buf);
+    }
+}
+
 static void error_printf (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 
 static void
@@ -163,8 +223,8 @@ show_locus (locus *loc, int c1, int c2)
 {
   gfc_linebuf *lb;
   gfc_file *f;
-  char c, *p;
-  int i, m, offset, cmax;
+  gfc_char_t c, *p;
+  int i, offset, cmax;
 
   /* TODO: Either limit the total length and number of included files
      displayed or add buffering of arbitrary number of characters in
@@ -246,8 +306,8 @@ show_locus (locus *loc, int c1, int c2)
      to work correctly when nonprintable characters exist.  A better 
      solution should be found.  */
 
-  p = lb->line + offset;
-  i = strlen (p);
+  p = &(lb->line[offset]);
+  i = gfc_wide_strlen (p);
   if (i > terminal_width)
     i = terminal_width - 1;
 
@@ -257,23 +317,7 @@ show_locus (locus *loc, int c1, int c2)
       if (c == '\t')
 	c = ' ';
 
-      if (ISPRINT (c))
-	error_char (c);
-      else
-	{
-	  error_char ('\\');
-	  error_char ('x');
-
-	  m = ((c >> 4) & 0x0F) + '0';
-	  if (m > '9')
-	    m += 'A' - '9' - 1;
-	  error_char (m);
-
-	  m = (c & 0x0F) + '0';
-	  if (m > '9')
-	    m += 'A' - '9' - 1;
-	  error_char (m);
-	}
+      print_wide_char (c);
     }
 
   error_char ('\n');
