@@ -9,7 +9,7 @@
 
 2008-05-06  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* lib/target_supports.exp (check_effective_target_4byte_wchar_t):
+	* lib/target-supports.exp (check_effective_target_4byte_wchar_t):
 	New proc.
 	* gcc.dg/utf16-4.c: Use it.
 	* gcc.dg/utf32-4.c: Use it.
