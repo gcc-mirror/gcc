@@ -505,7 +505,7 @@ validate_equiv_mem (rtx start, rtx reg, rtx memref)
 	return 1;
 
       if (CALL_P (insn) && ! MEM_READONLY_P (memref)
-	  && ! CONST_OR_PURE_CALL_P (insn))
+	  && ! RTL_CONST_OR_PURE_CALL_P (insn))
 	return 0;
 
       note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
@@ -781,9 +781,7 @@ memref_used_between_p (rtx memref, rtx start, rtx end)
 	return 1;
 
       /* Nonconst functions may access memory.  */
-      if (CALL_P (insn)
-	  && (! CONST_OR_PURE_CALL_P (insn)
-	      || pure_call_p (insn)))
+      if (CALL_P (insn) && (! RTL_CONST_CALL_P (insn)))
 	return 1;
     }
 

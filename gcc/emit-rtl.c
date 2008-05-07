@@ -5464,7 +5464,10 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 	CALL_INSN_FUNCTION_USAGE (new)
 	  = copy_insn (CALL_INSN_FUNCTION_USAGE (insn));
       SIBLING_CALL_P (new) = SIBLING_CALL_P (insn);
-      CONST_OR_PURE_CALL_P (new) = CONST_OR_PURE_CALL_P (insn);
+      RTL_CONST_CALL_P (new) = RTL_CONST_CALL_P (insn);
+      RTL_PURE_CALL_P (new) = RTL_PURE_CALL_P (insn);
+      RTL_LOOPING_CONST_OR_PURE_CALL_P (new) 
+	= RTL_LOOPING_CONST_OR_PURE_CALL_P (insn);
       break;
 
     default:

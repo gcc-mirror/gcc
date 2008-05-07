@@ -2077,7 +2077,7 @@ can_value_number_call (tree stmt)
 {
   tree call = get_call_expr_in (stmt);
 
-  if (call_expr_flags (call)  & (ECF_PURE | ECF_CONST))
+  if (call_expr_flags (call) & (ECF_PURE | ECF_CONST))
     return true;
   return false;
 }

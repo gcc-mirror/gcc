@@ -707,7 +707,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		   (NULL_TREE, ptrdiff_type_node, void_list_node))));
 	      tmp = build_function_type (ptr_type_node, tmp);
 	      dcast_fn = build_library_fn_ptr (name, tmp);
-	      DECL_IS_PURE (dcast_fn) = 1;
+	      DECL_PURE_P (dcast_fn) = 1;
 	      pop_abi_namespace ();
 	      dynamic_cast_node = dcast_fn;
 	    }

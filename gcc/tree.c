@@ -7373,7 +7373,9 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
   if (ecf_flags & ECF_CONST)
     TREE_READONLY (decl) = 1;
   if (ecf_flags & ECF_PURE)
-    DECL_IS_PURE (decl) = 1;
+    DECL_PURE_P (decl) = 1;
+  if (ecf_flags & ECF_LOOPING_CONST_OR_PURE)
+    DECL_LOOPING_CONST_OR_PURE_P (decl) = 1;
   if (ecf_flags & ECF_NORETURN)
     TREE_THIS_VOLATILE (decl) = 1;
   if (ecf_flags & ECF_NOTHROW)
@@ -7766,7 +7768,7 @@ process_call_operands (tree t)
       /* Calls have side-effects, except those to const or
 	 pure functions.  */
       i = call_expr_flags (t);
-      if (!(i & (ECF_CONST | ECF_PURE)))
+      if ((i & ECF_LOOPING_CONST_OR_PURE) || !(i & (ECF_CONST | ECF_PURE)))
 	side_effects = 1;
     }
   TREE_SIDE_EFFECTS (t) = side_effects;

@@ -1792,9 +1792,11 @@ static void
 update_call_expr_flags (tree call)
 {
   tree decl = get_callee_fndecl (call);
+  int flags;
   if (!decl)
     return;
-  if (call_expr_flags (call) & (ECF_CONST | ECF_PURE))
+  flags = call_expr_flags (call);
+  if (flags & (ECF_CONST | ECF_PURE) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     TREE_SIDE_EFFECTS (call) = 0;
   if (TREE_NOTHROW (decl))
     TREE_NOTHROW (call) = 1;
@@ -3906,7 +3908,19 @@ verify_gimple_expr (tree expr)
     case CALL_EXPR:
       /* FIXME.  The C frontend passes unpromoted arguments in case it
 	 didn't see a function declaration before the call.  */
-      return false;
+      {
+	tree decl = CALL_EXPR_FN (expr);
+
+	if (TREE_CODE (decl) == FUNCTION_DECL 
+	    && DECL_LOOPING_CONST_OR_PURE_P (decl)
+	    && (!DECL_PURE_P (decl))
+	    && (!TREE_READONLY (decl)))
+	  {
+	    error ("invalid pure const state for function");
+	    return true;
+	  }
+	return false;
+      }
 
     case OBJ_TYPE_REF:
       /* FIXME.  */

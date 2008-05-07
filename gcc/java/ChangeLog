@@ -1,3 +1,8 @@
+2008-05-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* decl.c (java_init_decl_processing): Change DECL_IS_PURE to
+	DECL_PURE_P.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* class.c (build_utf8_ref): Don't set TREE_INVARIANT.

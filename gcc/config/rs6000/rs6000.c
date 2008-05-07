@@ -3902,7 +3902,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  tga = gen_rtx_MEM (Pmode, rs6000_tls_get_addr ());
 	  insn = gen_call_value (r3, tga, const0_rtx, const0_rtx);
 	  insn = emit_call_insn (insn);
-	  CONST_OR_PURE_CALL_P (insn) = 1;
+	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r3);
 	  insn = get_insns ();
 	  end_sequence ();
@@ -3920,7 +3920,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  tga = gen_rtx_MEM (Pmode, rs6000_tls_get_addr ());
 	  insn = gen_call_value (r3, tga, const0_rtx, const0_rtx);
 	  insn = emit_call_insn (insn);
-	  CONST_OR_PURE_CALL_P (insn) = 1;
+	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r3);
 	  insn = get_insns ();
 	  end_sequence ();

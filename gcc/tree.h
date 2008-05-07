@@ -788,7 +788,7 @@ enum tree_node_structure_enum {
     &__t->phi.a[__i]; }))
 
 #define OMP_CLAUSE_ELT_CHECK(T, I) __extension__			\
-(*({__typeof (T) const __t = (T);						\
+(*({__typeof (T) const __t = (T);					\
     const int __i = (I);						\
     if (TREE_CODE (__t) != OMP_CLAUSE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
@@ -1281,12 +1281,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_THIS_NOTRAP(NODE) ((NODE)->base.nothrow_flag)
 
 /* In a VAR_DECL, PARM_DECL or FIELD_DECL, or any kind of ..._REF node,
-   nonzero means it may not be the lhs of an assignment.  */
+   nonzero means it may not be the lhs of an assignment.  
+   Nonzero in a FUNCTION_DECL means this function should be treated
+   as "const" function (can only read its arguments).  */
 #define TREE_READONLY(NODE) (NON_TYPE_CHECK (NODE)->base.readonly_flag)
-
-/* Nonzero if NODE is a _DECL with TREE_READONLY set.  */
-#define TREE_READONLY_DECL_P(NODE)\
-	(DECL_P (NODE) && TREE_READONLY (NODE))
 
 /* Value of expression is constant.  Always on in all ..._CST nodes.  May
    also appear in an expression or decl where the value is constant.  */
@@ -3256,7 +3254,16 @@ struct tree_decl_non_common GTY(())
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as "pure" function (like const function, but may read global memory).  */
-#define DECL_IS_PURE(NODE) (FUNCTION_DECL_CHECK (NODE)->function_decl.pure_flag)
+#define DECL_PURE_P(NODE) (FUNCTION_DECL_CHECK (NODE)->function_decl.pure_flag)
+
+/* Nonzero only if one of TREE_READONLY or DECL_PURE_P is nonzero AND
+   the const or pure function may not terminate.  When this is nonzero
+   for a const or pure function, it can be dealt with by cse passes
+   but cannot be removed by dce passes since you are not allowed to
+   change an infinite looping program into one that terminates without
+   error.  */
+#define DECL_LOOPING_CONST_OR_PURE_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.looping_const_or_pure_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as "novops" function (function that does not read global memory,
@@ -3354,7 +3361,6 @@ struct tree_function_decl GTY(())
   unsigned returns_twice_flag : 1;
   unsigned malloc_flag : 1;
   unsigned operator_new_flag : 1;
-  unsigned pure_flag : 1;
   unsigned declared_inline_flag : 1;
   unsigned regdecl_flag : 1;
 
@@ -3362,8 +3368,11 @@ struct tree_function_decl GTY(())
   unsigned no_instrument_function_entry_exit : 1;
   unsigned no_limit_stack : 1;
   unsigned disregard_inline_limits : 1;
+  unsigned pure_flag : 1;
+  unsigned looping_const_or_pure_flag : 1;
 
-  /* 4 bits left */
+
+  /* 3 bits left */
 };
 
 /* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */
@@ -4987,28 +4996,34 @@ extern tree build_duplicate_type (tree);
 
 /* Nonzero if this is a call to a function whose return value depends
    solely on its arguments, has no side effects, and does not read
-   global memory.  */
-#define ECF_CONST		1
-/* Nonzero if this call will never return.  */
-#define ECF_NORETURN		2
-/* Nonzero if this is a call to malloc or a related function.  */
-#define ECF_MALLOC		4
-/* Nonzero if it is plausible that this is a call to alloca.  */
-#define ECF_MAY_BE_ALLOCA	8
-/* Nonzero if this is a call to a function that won't throw an exception.  */
-#define ECF_NOTHROW		16
-/* Nonzero if this is a call to setjmp or a related function.  */
-#define ECF_RETURNS_TWICE	32
-/* Nonzero if this call replaces the current stack frame.  */
-#define ECF_SIBCALL		64
+   global memory.  This corresponds to TREE_READONLY for function
+   decls.  */
+#define ECF_CONST		  (1 << 0)
 /* Nonzero if this is a call to "pure" function (like const function,
-   but may read memory.  */
-#define ECF_PURE		128
+   but may read memory.  This corresponds to DECL_PURE_P for function
+   decls.  */
+#define ECF_PURE		  (1 << 1)
+/* Nonzero if this is ECF_CONST or ECF_PURE but cannot be proven to no
+   infinite loop.  This corresponds to DECL_LOOPING_CONST_OR_PURE_P
+   for function decls.*/
+#define ECF_LOOPING_CONST_OR_PURE (1 << 2)
+/* Nonzero if this call will never return.  */
+#define ECF_NORETURN		  (1 << 3)
+/* Nonzero if this is a call to malloc or a related function.  */
+#define ECF_MALLOC		  (1 << 4)
+/* Nonzero if it is plausible that this is a call to alloca.  */
+#define ECF_MAY_BE_ALLOCA	  (1 << 5)
+/* Nonzero if this is a call to a function that won't throw an exception.  */
+#define ECF_NOTHROW		  (1 << 6)
+/* Nonzero if this is a call to setjmp or a related function.  */
+#define ECF_RETURNS_TWICE	  (1 << 7)
+/* Nonzero if this call replaces the current stack frame.  */
+#define ECF_SIBCALL		  (1 << 8)
 /* Create libcall block around the call.  */
-#define ECF_LIBCALL_BLOCK	256
+#define ECF_LIBCALL_BLOCK	  (1 << 9)
 /* Function does not read or write memory (but may have side effects, so
    it does not necessarily fit ECF_CONST).  */
-#define ECF_NOVOPS		512
+#define ECF_NOVOPS		  (1 << 10)
 
 extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (const_tree);

@@ -1,3 +1,89 @@
+2008-05-07 Kenneth Zadeck <zadeck@naturalbridge.com>
+
+        PATCH rtl/7335
+        PATCH rtl/33826
+        * see.c (see_copy_insn): Copy new pure const attributes for new
+        call.
+        * c-decl.c (merge_decls): Ditto.
+        * postreload.c (record_opr_changes): Change CONST_OR_PURE_CALL_P
+        to RTL_CONST_OR_PURE_CALL_P.
+        * tree.c (define_local_buitin): Rename DECL_IS_PURE to
+        DECL_PURE_P.  Initialized DECL_LOOPING_CONST_PURE.
+        (process_call_operands): Set tree_side_effects properly.
+        * tree.h (TREE_READONLY_DECL_P): Removed.
+        (DECL_IS_PURE): Renamed to DECL_PURE_P.
+        (DECL_LOOPING_OR_CONST_P): New macro.
+        (struct tree_function_decl): Added looping_const_or_pure_p.
+        (ECF_*) Renumbered.
+        (ECF_LOOPING_OR_CONST_P): New macro,
+        * rtlanal.c (pure_const_p): Removed.
+        * builtins.c (expand_builtin): Rename DECL_IS_PURE to DECL_PURE_P.
+        * reorg.c (delete_prior_computation) Changed CONST_OR_PURE_CALL_P
+        to RTL_CONST_CALL_P.
+        * ipa-pure-const.c (pure_const_state_e): Added looping field.
+        (check_decl, check_tree, check_call, scan_function): Initialize
+        looping.
+        (analyze_function): Rename DECL_IS_PURE to DECL_PURE_P.
+        (static_execute): Set looping true for recursive functions.
+        Undo setting state to IPA_NEITHER for recursive functions.
+        * cse.c (cse_insn): 
+        * ifcvt.c (noce_can_store_speculate_p): Changed
+        CONST_OR_PURE_CALL_P and pure_call_p to RTL_CONST_CALL_P or 
+        RTL_CONST_OR_PURE_CALL_P.
+        * dse.c (scan_insn): Ditto.
+        * local-alloc.c (validate_equiv_mem, memref_used_between_p): Ditto.
+        * gcse.c (oprs_not_seen_p) Changed CONST_OR_PURE_CALL_P to
+        RTL_CONST_OR_PURE_CALL_P.
+        (store_killed_in_insn): Changed CONST_OR_PURE_CALL_P and
+        pure_call_p to RTL_CONST_CALL_P.
+        * gimplify.c (gimplify_call_expr): Clear side effects for
+        non-looping pure and constant calls.
+        * calls.c (emit_call_1): Set rtl flags from ecf flags.
+        (flags_from_decl_or_type): Set ecf flags from decl flags.
+        (initialize_argument_information): Turn off
+        ECF_LOOPING_CONST_OR_PURE when turning off ECF_CONST.
+        Change const to pure if callee_copies is true rather than just
+        turning off const.
+        (expand_call): Turn off ECF_LOOPING_PURE_CONST_CALL and remove old
+        way of marking pure calls.
+        (emit_library_call_value_1): Turn off ECF_LOOPING_PURE_CONST_CALL.
+        Remove hack that was supposed to fix pr7335 and remove old
+        way of marking pure calls.
+        * emit-rtl.c (emit_copy_of_insn_after): Copy RTL_CONST_CALL_P,
+        RTL_PURE_CALL_P, RTL_LOOPING_CONST_OR_PURE_CALL_P.
+        * cselib.c (cselib_process_insn): Changed CONST_OR_PURE_CALL_P to
+        RTL_CONST_OR_PURE_CALL_P.
+        * tree-ssa-pre.c (can_value_number_call): Fixed spacing.
+        * loop-invariant.c (find_exits, find_invariant_bb): Changed
+        CONST_OR_PURE_CALL_P to RTL_CONST_OR_PURE_CALL_P.
+        * sched-deps.c (schedule_analyze): Ditto.
+        * rtl.h (struct rtx_def): Use call field, unchanging field, and
+        return_val field of calls to represent pure and const function
+        info.
+        (CONST_OR_PURE_CALL_P): Deleted macro.
+        (RTL_CONST_CALL_P, RTL_PURE_CALL_P,
+        RTL_LOOPING_CONST_OR_PURE_CALL_P, RTL_CONST_OR_PURE_P): New macros.
+        * tree-inline.c (copy_body_r): Changed TREE_READONLY_DECL_P to
+        TREE_READONLY.
+        * tree-optimize.c (execute_fixup_cfg): Added test for
+        ECF_LOOPING_CONST_OR_PURE.
+        * c-common.c (handle_pure_attribute): Changed DECL_IS_PURE to
+        DECL_PURE_P.
+        * tree-cfg.c (update_call_expr_flags): Do not clear tree side
+        effects for looping pure or const calls.
+        (verify_gimple_expr): Added verification code. 
+        * config/alpha/alpha.c (alpha_legitimize_address,
+        alpha_emit_xfloating_libcall): Changed CONST_OR_PURE_CALL_P to
+        RTL_CONST_CALL_P.
+        * config/s390/s390.c (s390_emit_tls_call_insn): Ditto.
+        * config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Ditto.
+        * config/mips/mips.c (mips_call_tls_get_addr): Ditto.
+        * cfgrtl.c (need_fake_edge_p): Changed CONST_OR_PURE_CALL_P to
+        RTL_CONST_OR_PURE_CALL_P.
+        * dce.c (deletable_insn_p): Allow non looping, non sibling, pure
+        and const calls to be deleted.
+
+
 2008-05-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35714

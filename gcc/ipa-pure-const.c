@@ -19,7 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This file mark functions as being either const (TREE_READONLY) or
-   pure (DECL_IS_PURE).
+   pure (DECL_PURE_P).  It can also set the a variant of these that
+   are allowed to infinite loop (DECL_LOOPING_CONST_PURE_P).
 
    This must be run after inlining decisions have been made since
    otherwise, the local sets will not contain information that is
@@ -69,6 +70,7 @@ enum pure_const_state_e
 struct funct_state_d 
 {
   enum pure_const_state_e pure_const_state;
+  bool looping;
   bool state_set_in_source;
 };
 
@@ -95,6 +97,7 @@ check_decl (funct_state local,
   if (lookup_attribute ("used", DECL_ATTRIBUTES (t)))
     {
       local->pure_const_state = IPA_NEITHER;
+      local->looping = false;
       return;
     }
 
@@ -103,6 +106,7 @@ check_decl (funct_state local,
   if (TREE_THIS_VOLATILE (t)) 
     { 
       local->pure_const_state = IPA_NEITHER;
+      local->looping = false;
       return;
     }
 
@@ -116,6 +120,7 @@ check_decl (funct_state local,
   if (checking_write) 
     {
       local->pure_const_state = IPA_NEITHER;
+      local->looping = false;
       return;
     }
 
@@ -174,6 +179,7 @@ check_tree (funct_state local, tree t, bool checking_write)
   if (TREE_THIS_VOLATILE (t))
     {
       local->pure_const_state = IPA_NEITHER;
+      local->looping = false;
       return;
     }
 
@@ -199,6 +205,7 @@ check_tree (funct_state local, tree t, bool checking_write)
       if (checking_write) 
 	{
 	  local->pure_const_state = IPA_NEITHER;
+	  local->looping = false;
 	  return;
 	}
       else if (local->pure_const_state == IPA_CONST)
@@ -346,7 +353,10 @@ check_call (funct_state local, tree call_expr)
       /* When bad things happen to bad functions, they cannot be const
 	 or pure.  */
       if (setjmp_call_p (callee_t))
-	local->pure_const_state = IPA_NEITHER;
+	{
+	  local->pure_const_state = IPA_NEITHER;
+	  local->looping = false;
+	}
 
       if (DECL_BUILT_IN_CLASS (callee_t) == BUILT_IN_NORMAL)
 	switch (DECL_FUNCTION_CODE (callee_t))
@@ -354,6 +364,7 @@ check_call (funct_state local, tree call_expr)
 	  case BUILT_IN_LONGJMP:
 	  case BUILT_IN_NONLOCAL_GOTO:
 	    local->pure_const_state = IPA_NEITHER;
+	    local->looping = false;
 	    break;
 	  default:
 	    break;
@@ -480,7 +491,10 @@ scan_function (tree *tp,
     case LABEL_EXPR:
       if (DECL_NONLOCAL (TREE_OPERAND (t, 0)))
 	/* Target of long jump. */
-	local->pure_const_state = IPA_NEITHER;
+	{
+	  local->pure_const_state = IPA_NEITHER;
+	  local->looping = false;
+	}
       break;
 
     case CALL_EXPR: 
@@ -513,6 +527,10 @@ analyze_function (struct cgraph_node *fn)
 
   l->pure_const_state = IPA_CONST;
   l->state_set_in_source = false;
+  if (DECL_LOOPING_CONST_OR_PURE_P (decl))
+    l->looping = true;
+  else
+    l->looping = false;
 
   /* If this function does not return normally or does not bind local,
      do not touch this unless it has been marked as const or pure by the
@@ -529,7 +547,7 @@ analyze_function (struct cgraph_node *fn)
       l->pure_const_state = IPA_CONST;
       l->state_set_in_source = true;
     }
-  if (DECL_IS_PURE (decl))
+  if (DECL_PURE_P (decl))
     {
       l->pure_const_state = IPA_PURE;
       l->state_set_in_source = true;
@@ -644,6 +662,7 @@ static_execute (void)
   for (i = 0; i < order_pos; i++ )
     {
       enum pure_const_state_e pure_const_state = IPA_CONST;
+      bool looping = false;
       int count = 0;
       node = order[i];
 
@@ -655,6 +674,9 @@ static_execute (void)
 	  if (pure_const_state < w_l->pure_const_state)
 	    pure_const_state = w_l->pure_const_state;
 
+	  if (w_l->looping)
+	    looping = true;
+
 	  if (pure_const_state == IPA_NEITHER) 
 	    break;
 
@@ -663,24 +685,8 @@ static_execute (void)
 	      struct cgraph_edge *e;
 	      count++;
 
-	      /* FIXME!!!  Because of pr33826, we cannot have either
-		 immediate or transitive recursive functions marked as
-		 pure or const because dce can delete a function that
-		 is in reality an infinite loop.  A better solution
-		 than just outlawing them is to add another bit the
-		 functions to distinguish recursive from non recursive
-		 pure and const function.  This would allow the
-		 recursive ones to be cse'd but not dce'd.  In this
-		 same vein, we could allow functions with loops to
-		 also be cse'd but not dce'd.
-
-		 Unfortunately we are late in stage 3, and the fix
-		 described above is is not appropriate.  */
 	      if (count > 1)
-		{
-		  pure_const_state = IPA_NEITHER;
-		  break;
-		}
+		looping = true;
 		    
 	      for (e = w->callees; e; e = e->next_callee) 
 		{
@@ -688,13 +694,8 @@ static_execute (void)
 		  /* Only look at the master nodes and skip external nodes.  */
 		  y = cgraph_master_clone (y);
 
-		  /* Check for immediate recursive functions.  See the
-		     FIXME above.  */
 		  if (w == y)
-		    {
-		      pure_const_state = IPA_NEITHER;
-		      break;
-		    }
+		    looping = true;
 		  if (y)
 		    {
 		      funct_state y_l = get_function_state (y);
@@ -702,6 +703,8 @@ static_execute (void)
 			pure_const_state = y_l->pure_const_state;
 		      if (pure_const_state == IPA_NEITHER) 
 			break;
+		      if (y_l->looping)
+			looping = true;
 		    }
 		}
 	    }
@@ -724,15 +727,19 @@ static_execute (void)
 		{
 		case IPA_CONST:
 		  TREE_READONLY (w->decl) = 1;
+		  DECL_LOOPING_CONST_OR_PURE_P (w->decl) = looping;
 		  if (dump_file)
-		    fprintf (dump_file, "Function found to be const: %s\n",  
+		    fprintf (dump_file, "Function found to be %sconst: %s\n",  
+			     looping ? "looping " : "",
 			     lang_hooks.decl_printable_name(w->decl, 2)); 
 		  break;
 		  
 		case IPA_PURE:
-		  DECL_IS_PURE (w->decl) = 1;
+		  DECL_PURE_P (w->decl) = 1;
+		  DECL_LOOPING_CONST_OR_PURE_P (w->decl) = looping;
 		  if (dump_file)
-		    fprintf (dump_file, "Function found to be pure: %s\n",  
+		    fprintf (dump_file, "Function found to be %spure: %s\n",  
+			     looping ? "looping " : "",
 			     lang_hooks.decl_printable_name(w->decl, 2)); 
 		  break;
 		  

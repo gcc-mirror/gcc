@@ -758,7 +758,7 @@ record_opr_changes (rtx insn)
 	      }
 	  }
 
-      if (! CONST_OR_PURE_CALL_P (insn))
+      if (! RTL_CONST_OR_PURE_CALL_P (insn))
 	record_last_mem_set_info (insn);
     }
 }

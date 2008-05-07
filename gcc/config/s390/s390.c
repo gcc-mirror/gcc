@@ -3178,7 +3178,7 @@ s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 			 gen_rtx_REG (Pmode, RETURN_REGNUM));
 
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), result_reg);
-  CONST_OR_PURE_CALL_P (insn) = 1;
+  RTL_CONST_CALL_P (insn) = 1;
 }
 
 /* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute

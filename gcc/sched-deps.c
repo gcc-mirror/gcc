@@ -2304,7 +2304,8 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	     all pending reads and writes, and start new dependencies starting
 	     from here.  But only flush writes for constant calls (which may
 	     be passed a pointer to something we haven't written yet).  */
-	  flush_pending_lists (deps, insn, true, !CONST_OR_PURE_CALL_P (insn));
+	  flush_pending_lists (deps, insn, true, 
+			       ! RTL_CONST_OR_PURE_CALL_P (insn));
 
 	  /* Remember the last function call for limiting lifetimes.  */
 	  free_INSN_LIST_list (&deps->last_function_call);

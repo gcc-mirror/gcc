@@ -253,14 +253,17 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      In a CODE_LABEL, part of the two-bit alternate entry field.  */
   unsigned int jump : 1;
   /* In a CODE_LABEL, part of the two-bit alternate entry field.
-     1 in a MEM if it cannot trap.  */
+     1 in a MEM if it cannot trap.  
+     1 in a CALL_INSN logically equivalent to
+       ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P. */
   unsigned int call : 1;
   /* 1 in a REG, MEM, or CONCAT if the value is set at most once, anywhere.
      1 in a SUBREG if it references an unsigned object whose mode has been
      from a promoted to a wider mode.
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.
-     1 in a CALL_INSN, NOTE, or EXPR_LIST for a const or pure call.
+     1 in a CALL_INSN logically equivalent to ECF_CONST and TREE_READONLY. 
+     1 in a NOTE, or EXPR_LIST for a const call.
      1 in a JUMP_INSN, CALL_INSN, or INSN of an annulling branch.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
@@ -303,7 +306,8 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
   unsigned frame_related : 1;
   /* 1 in a REG or PARALLEL that is the current function's return value.
      1 in a MEM if it refers to a scalar.
-     1 in a SYMBOL_REF for a weak symbol.  */
+     1 in a SYMBOL_REF for a weak symbol. 
+     1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P. */ 
   unsigned return_val : 1;
 
   /* The first element of the operands of this rtx.
@@ -765,10 +769,24 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
   (RTL_FLAG_CHECK6("INSN_DELETED_P", (RTX), INSN, CALL_INSN, JUMP_INSN,	\
 		   CODE_LABEL, BARRIER, NOTE)->volatil)
 
+/* 1 if RTX is a call to a const function.  Built from ECF_CONST and
+   TREE_READONLY.  */
+#define RTL_CONST_CALL_P(RTX)					\
+  (RTL_FLAG_CHECK1("RTL_CONST_CALL_P", (RTX), CALL_INSN)->unchanging)
+
+/* 1 if RTX is a call to a pure function.  Built from ECF_PURE and
+   DECL_PURE_P.  */
+#define RTL_PURE_CALL_P(RTX)					\
+  (RTL_FLAG_CHECK1("RTL_PURE_CALL_P", (RTX), CALL_INSN)->return_val)
+
 /* 1 if RTX is a call to a const or pure function.  */
-#define CONST_OR_PURE_CALL_P(RTX)					\
-  (RTL_FLAG_CHECK3("CONST_OR_PURE_CALL_P", (RTX), CALL_INSN, NOTE,	\
-		   EXPR_LIST)->unchanging)
+#define RTL_CONST_OR_PURE_CALL_P(RTX) \
+  (RTL_CONST_CALL_P(RTX) || RTL_PURE_CALL_P(RTX))
+
+/* 1 if RTX is a call to a looping const or pure function.  Built from
+   ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P.  */
+#define RTL_LOOPING_CONST_OR_PURE_CALL_P(RTX)					\
+  (RTL_FLAG_CHECK1("CONST_OR_PURE_CALL_P", (RTX), CALL_INSN)->call)
 
 /* 1 if RTX is a call_insn for a sibling call.  */
 #define SIBLING_CALL_P(RTX)						\
@@ -1733,7 +1751,6 @@ extern rtx find_reg_equal_equiv_note (const_rtx);
 extern rtx find_constant_src (const_rtx);
 extern int find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
-extern int pure_call_p (const_rtx);
 extern void remove_note (rtx, const_rtx);
 extern void remove_reg_equal_equiv_notes (rtx);
 extern int side_effects_p (const_rtx);
