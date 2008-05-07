@@ -267,6 +267,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TUNE_CFV1       (m68k_tune == ucfv1)
 #define TUNE_CFV2	(m68k_tune == ucfv2)
 #define TUNE_CFV3       (m68k_tune == ucfv3)
+#define TUNE_CFV4       (m68k_tune == ucfv4 || m68k_tune == ucfv4e)
 
 #define OVERRIDE_OPTIONS   override_options()
 
@@ -1148,5 +1149,8 @@ extern M68K_CONST_METHOD m68k_const_method (HOST_WIDE_INT);
 #endif
 
 extern void m68k_emit_move_double (rtx [2]);
+
+extern int m68k_sched_address_bypass_p (rtx, rtx);
+extern int m68k_sched_indexed_address_bypass_p (rtx, rtx);
 
 #define CPU_UNITS_QUERY 1
