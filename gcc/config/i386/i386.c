@@ -11245,7 +11245,7 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
 void
 ix86_expand_copysign (rtx operands[])
 {
-  enum machine_mode mode, vmode;
+  enum machine_mode mode;
   rtx dest, op0, op1, mask, nmask;
 
   dest = operands[0];
@@ -11253,7 +11253,6 @@ ix86_expand_copysign (rtx operands[])
   op1 = operands[2];
 
   mode = GET_MODE (dest);
-  vmode = mode == SFmode ? V4SFmode : V2DFmode;
 
   if (GET_CODE (op0) == CONST_DOUBLE)
     {
@@ -11264,6 +11263,10 @@ ix86_expand_copysign (rtx operands[])
 
       if (mode == SFmode || mode == DFmode)
 	{
+	  enum machine_mode vmode;
+
+	  vmode = mode == SFmode ? V4SFmode : V2DFmode;
+
 	  if (op0 == CONST0_RTX (mode))
 	    op0 = CONST0_RTX (vmode);
 	  else
@@ -11275,9 +11278,12 @@ ix86_expand_copysign (rtx operands[])
 			       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
 	      else
 		v = gen_rtvec (2, op0, CONST0_RTX (DFmode));
+
 	      op0 = force_reg (vmode, gen_rtx_CONST_VECTOR (vmode, v));
 	    }
 	}
+      else if (op0 != CONST0_RTX (mode))
+	op0 = force_reg (mode, op0);
 
       mask = ix86_build_signbit_mask (mode, 0, 0);
 
