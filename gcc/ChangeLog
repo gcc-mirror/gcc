@@ -1,3 +1,10 @@
+2008-05-07  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/36013
+	* gimplify.c (find_single_pointer_decl_1): Don't look through
+	indirections.
+	(find_single_pointer_decl): Adjust comments.
+
 2008-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36137
