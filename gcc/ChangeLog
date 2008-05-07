@@ -1,3 +1,103 @@
+2008-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35714
+	* config/i386/mmx.md (mmx_subv2sf3): New expander.
+	(*mmx_subv2sf3): Rename from mmx_subv2sf3 insn pattern.
+	(*mmx_eqv2sf3): Rename from mmx_eqv2sf3 insn pattern.
+	(mmx_eqv2sf3): New expander.  Use ix86_fixup_binary_operands_no_copy
+	to handle nonimmediate operands.
+	(*mmx_paddwd): Rename from mmx_paddwd insn pattern.
+	(mmx_paddwd): New expander.  Use ix86_fixup_binary_operands_no_copy
+	to handle nonimmediate operands.
+	(*mmx_pmulhrwv4hi3): Rename from mmx_pmulhrwv4hi3 insn pattern.
+	(mmx_pmulhrwv4hi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_umulv1siv1di3): Rename from sse2_umulv1siv1di3 insn pattern.
+	(sse2_umulv1siv1di3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*mmx_eq<mode>3): Rename from mmx_eq<mode>3 insn pattern.
+	(mmx_eq<mode>3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*mmx_uavgv8qi3): Rename from mmx_uavgv8qi3 insn pattern.
+	(mmx_uavgv8qi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*mmx_uavgv4hi3): Rename from mmx_uavgv4hi3 insn pattern.
+	(mmx_uavgv4hi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+
+	* config/i386/sse.md
+	(*sse_movhlps): Rename from sse_movhlps insn pattern.
+	(sse_movhlps): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse_movlhps): Rename from sse_movlhps insn pattern.
+	(sse_movlhps): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse_loadhps): Rename from sse_loadhps insn pattern.
+	(sse_loadhps): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse_loadlps): Rename from sse_loadlps insn pattern.
+	(sse_loadlps): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse2_unpckhpd): Rename from sse2_unpckhpd insn pattern.
+	(sse2_unpckhpd): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_unpcklpd): Rename from sse2_unpcklpd insn pattern.
+	(sse2_unpcklpd): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse_loadhpd): Rename from sse_loadhpd insn pattern.
+	(sse_loadhpd): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse_loadlpd): Rename from sse_loadlpd insn pattern.
+	(sse_loadlpd): New expander.  Use ix86_fixup_binary_operands
+	to handle nonimmediate operands.
+	(*sse2_<plusminus_insn><mode>3): Rename from
+	sse2_<plusminus_insn><mode>3 insn pattern.
+	(sse2_<plusminus_insn><mode>3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_umulv2siv2di3): Rename from sse2_umulv2siv2di3 insn pattern.
+	(sse2_umulv2siv2di3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse4_1_mulv2siv2di3): Rename from sse4_1_mulv2siv2di3 insn pattern.
+	(sse4_1_mulv2siv2di3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_pmaddwd): Rename from sse2_pmaddwd insn pattern.
+	(sse2_pmaddwd): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_eq<mode>3): Rename from sse2_eq<mode>3 insn pattern.
+	(sse2_eq<mode>3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse4_1_eqv2di3): Rename from sse4_1_eqv2di3 insn pattern.
+	(sse4_1_eqv2di3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_uavgv16qi3): Rename from sse2_uavgv16qi3 insn pattern.
+	(sse2_uavgv16qi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_uavgv16qi3): Rename from sse2_uavgv16qi3 insn pattern.
+	(sse2_uavgv16qi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*sse2_uavgv8hi3): Rename from sse2_uavgv8hi3 insn pattern.
+	(sse2_uavgv8hi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*ssse3_pmulhrswv8hi3): Rename from ssse3_pmulhrswv8hi3 insn pattern.
+	(ssse3_pmulhrswv8hi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+	(*ssse3_pmulhrswv4hi3): Rename from ssse3_pmulhrswv4hi3 insn pattern.
+	(ssse3_pmulhrswv4hi3): New expander.  Use
+	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
+
+	(<sse>_vm<plusminus_insn><mode>3): Do not use ix86_binary_operator_ok.
+	(<sse>_vmmul<mode>3): Ditto.
+	(divv4sf3): Do not use ix86_fixup_binary_operands_no_copy.
+	(divv2df3): Ditto.
+	(ssse3_pmaddubsw128): Use register_operand for operand 1.
+	(ssse3_pmaddubsw): Ditto.
+
+	* config/i386/sse.md (ix86_fixup_binary_operands): Assert that src1
+	and src2 must have the same mode when swapped.
+	(ix86_expand_binop_builtin): Do not use ix86_fixup_binary_operands
+	and ix86_binary_operator_ok.  Do not force operands in registers
+	when optimizing.
+
 2008-05-07  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Update.

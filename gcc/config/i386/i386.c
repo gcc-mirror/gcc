@@ -10689,7 +10689,12 @@ ix86_fixup_binary_operands (enum rtx_code code, enum machine_mode mode,
   /* Canonicalize operand order.  */
   if (ix86_swap_binary_operands_p (code, mode, operands))
     {
-      rtx temp = src1;
+      rtx temp;
+
+      /* It is invalid to swap operands of different modes.  */
+      gcc_assert (GET_MODE (src1) == GET_MODE (src2));
+
+      temp = src1;
       src1 = src2;
       src2 = temp;
     }
@@ -20128,7 +20133,7 @@ safe_vector_operand (rtx x, enum machine_mode mode)
 static rtx
 ix86_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 {
-  rtx pat, xops[3];
+  rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
@@ -20159,30 +20164,12 @@ ix86_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
-  /* ??? Using ix86_fixup_binary_operands is problematic when
-     we've got mismatched modes.  Fake it.  */
-
-  xops[0] = target;
-  xops[1] = op0;
-  xops[2] = op1;
-
-  if (tmode == mode0 && tmode == mode1)
-    {
-      target = ix86_fixup_binary_operands (UNKNOWN, tmode, xops);
-      op0 = xops[1];
-      op1 = xops[2];
-    }
-  else if (optimize || !ix86_binary_operator_ok (UNKNOWN, tmode, xops))
-    {
-      op0 = force_reg (mode0, op0);
-      op1 = force_reg (mode1, op1);
-      target = gen_reg_rtx (tmode);
-    }
-
   pat = GEN_FCN (icode) (target, op0, op1);
   if (! pat)
     return 0;
+
   emit_insn (pat);
+
   return target;
 }
 
