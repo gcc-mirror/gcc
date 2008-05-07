@@ -1,3 +1,7 @@
+2008-05-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* c-decl.c (grokdeclarator): Comment typo.
+
 2008-05-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-flow.h: Remove prototype for computed_goto_p.
