@@ -1,3 +1,106 @@
+2008-05-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Cleanup ColdFire scheduling support and add V4 pipeline model.
+
+	* config/m68k/m68k.md (UNSPEC_TIE): New constant.
+	(define_attr cpu): Add cfv4 value.
+	(define_attr type, define_attr type1): Merge into a single 'type'
+	attribute.  Update all uses.
+	(define_attr opx_type, define_attr opy_type, define_attr opx_access):
+	Rearrange and update.  Rename value 'reg' to 'Rn', add value 'FPn'.
+	Update all uses.
+	(define_attr opx_mem, define_attr opy_mem): Remove.
+	(define_attr op_mem): Clean up, update comment.
+	(define_attr size): Use specific values instead of general int.
+	(define_attr guess, define_attr split): Remove.  Update all uses.
+	(movdf_internal, tstsi_internal, tsthi_internal, tstqi_internal,
+	tst<mode>_68881, pushexthisi_const, movsi_const0_68000_10,
+	movsi_const0_68040_60, movsi_const0, movsi_cf, movstrictqi_cf,
+	zero_extendhisi2_cf, zero_extendqisi2_cfv4, cfv4_extendhisi2,
+	68k_extendhisi2, extendqihi2, cfv4_extendqisi2, 68k_extendqisi2,
+	floatsi<mode>2_68881, ftrunc<mode>2_68881, ftrunc<mode>2_cf,
+	fix<mode>qi2_68881, fix<mode>hi2_68881, fix<mode>si2_68881,
+	adddi_dishl32, addsi3_5200, add<mode>3_floatsi_68881,
+	add<mode>3_floathi_68881, add<mode>3_floatqi_68881,
+	add<mode>3_68881, add<mode>3_cf, subdi_dishl32, subsi3,
+	sub<mode>3_floatsi_68881, sub<mode>3_floathi_68881,
+	sub<mode>3_floatqi_68881, sub<mode>3_68881, sub<mode>3_cf,
+	mulhi3, mulhisi3, mulhisisi3_s, mulsi3_68020, mulsi3_cf,
+	umulhisi3, mulhisisi3_z, mul<mode>3_floatsi_68881,
+	mul<mode>3_floathi_68881, mul<mode>3_floatqi_68881, fmul<mode>3_cf,
+	div<mode>3_cf, sqrt<mode>2_cf, abs<mode>2_cf, clzsi2,
+	one_cmplsi2_5200, subreghi1ashrdi_const32, ashrsi3, lshrsi3,
+	bsetmemqi, bsetmemqi_ext, bclrmemqi, bclrmemqi_ext,
+	beq, bne, bgt, blt, bordered, bunordered, buneq, bunge, bungt, bunle,
+	bunlt, bltgt, tablejump_internal, call, non_symbolic_call_value,
+	symbolic_call_value_jsr, symbolic_call_value_bsr, link):
+	Update or set attributes.
+	(stack_tie): New fake instruction.
+
+	* config/m68k/m68k.h (TUNE_CFV4): New macro.
+	(m68k_sched_attr_size): Update declaration.
+	(m68k_sched_attr_type2): Remove.
+	(m68k_sched_address_bypass_p, m68k_sched_indexed_address_bypass_p):
+	Declare new bypass predicates.
+
+	* config/m68k/m68k.c (m68k_sched_issue_rate,
+	m68k_sched_first_cycle_multipass_dfa_lookahead): Declare hook
+	implementations.
+	(TARGET_SCHED_ISSUE_RATE,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Override hooks.
+	(override_options): Handle scheduling for ColdFire V4 core.
+	(m68k_expand_prologue): Emit stack_tie.
+	(enum attr_op_type): Split value 'OP_TYPE_REG' to 'OP_TYPE_RN' and
+	'OP_TYPE_FPN'.  Update all uses.
+	(sched_guess_p): Remove.
+	(sched_address_type): Handle symbolic addresses.
+	(sched_get_operand): New static function.
+	(sched_operand_type): Merge into sched_attr_op_type.
+	(sched_attr_op_type): Handle FP registers, handle quick constants,
+	update.
+	(m68k_sched_attr_opx_type, m68k_sched_attr_opy_type): Update.
+	(m68k_sched_attr_size): Update.  Move logic to ...
+	(sched_get_attr_size_int): New static function.
+	(sched_get_opxy_mem_type): New static function.
+	(m68k_sched_attr_op_mem): Update.
+	(m68k_sched_attr_type2): Remove.
+	(sched_cfv4_bypass_data): New static variable.
+	(m68k_sched_adjust_cost): Handle ColdFire V4 bypass.
+	(m68k_sched_issue_rate): Implement scheduler hook.
+	(struct _sched_ib: enabled_p): New field.
+	(m68k_sched_variable_issue): Update.  Handle V4.
+	(SCHED_DUMP_TODO, SCHED_DUMP_DONE, SCHED_DUMP_NOTHING,
+	sched_dump_class_func_t, sched_dump_split_class,
+	sched_dump_dfa_guess_unit_code, sched_dump_dfa_state,
+	sched_dump_dfa_class, m68k_sched_dump): Remove.
+	(m68k_sched_first_cycle_multipass_dfa_lookahead): Implement scheduler
+	hook.
+	(m68k_sched_init_global): Remove statisctics dumping, introduce
+	sanity check that all instructions have pipeline reservations.  Handle
+	ColdFire V4 core.
+	(m68k_sched_dfa_pre_advance_cycle, m68k_sched_dfa_post_advance_cycle):
+	Handle ColdFire V4 core.
+	(sched_mem_operand_p, sched_get_reg_operand, sched_get_mem_operand):
+	New static functions.
+	(m68k_sched_address_bypass_p): New bypass predicate.
+	(sched_get_indexed_address_scale): New static function.
+	(m68k_sched_indexed_address_bypass_p): New bypass predicate.
+
+	* cf.md: Update comments.
+	(define_attr type2): Remove.  Use 'type' attribute instead.
+	Update all uses.
+	(cf_ib): Rename to cfv123_ib.  Update all uses.
+	(cf_oep): Rename to cfv123_oep.  Update all uses.
+	(cf_chr): Rename to cfv123_chr.  Update all uses.
+	(cf_mem): Rename to cfv123_mem.  Update all uses.
+	(cf_mac): Move to more appropriate place.
+	(cfv123_guess): New automaton and cpu_unit.
+	(cfv123_*, cfv12_*, cfv1_*, cfv2_*, cfv3_*): Use type attribute.
+	Update uses of 'size' attribute.  Handle before reload scheduling.
+	(cfv123_guess): New dummy reservation for unhandled instructions.
+	(cfv4_*): Pipeline description of ColdFire V4 core.
+	(ignore): New reservation to handle 'ignore' type.
+
 2008-05-07  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/36013

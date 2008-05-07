@@ -1,6 +1,6 @@
-;; ColdFire V1, V2 and V3 DFA description.
+;; ColdFire V1, V2, V3 and V4/V4e DFA description.
 ;; Copyright (C) 2007 Free Software Foundation, Inc.
-;; Contributed by CodeSourcery Inc.
+;; Contributed by CodeSourcery Inc., www.codesourcery.com
 ;;
 ;; This file is part of GCC.
 ;;
@@ -19,24 +19,12 @@
 ;; the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
-;; Intruction types recognized by DFA.
-;; This attribute correspond to type1 attribute with the exceptions below.
-;; omove - optimized move.  All explicit loads on cfv1 and long explicit
-;;         loads on cfv2 execute one cycle faster then they should.
-;;         Supposedly, that is due to combined instruction decoding
-;;         and address generation phases.
-;; ??? To let genattrtab live, implement this attribute in C.
-(define_attr "type2"
-  "alu, alu_reg, bcc, bra, call, jmp, lea, mul_l, mul_w, omove, pea,
-   rts, unlk, unknown"
-  (symbol_ref "m68k_sched_attr_type2 (insn)"))
-
 ;; Instruction Buffer
-(define_automaton "cf_ib")
+(define_automaton "cfv123_ib")
 
 ;; These pseudo units are used to model instruction buffer of ColdFire cores.
 ;; Instruction of size N can be issued only when cf_ib_wN is available.
-(define_cpu_unit "cf_ib_w1, cf_ib_w2, cf_ib_w3" "cf_ib")
+(define_cpu_unit "cf_ib_w1, cf_ib_w2, cf_ib_w3" "cfv123_ib")
 
 ;; Instruction occupies 1 word in the instruction buffer.
 (define_reservation "cf_ib1" "cf_ib_w1")
@@ -61,28 +49,37 @@
   "cf_ib_w3|cf_ib_w2|cf_ib_w1")
 
 ;; Operand Execution Pipeline
-(define_automaton "cf_oep")
+(define_automaton "cfv123_oep")
 
-(define_cpu_unit "cf_dsoc, cf_agex" "cf_oep")
+(define_cpu_unit "cf_dsoc,cf_agex" "cfv123_oep")
 
 ;; A memory unit that is reffered to as 'certain hardware resources' in
 ;; ColdFire reference manuals.  This unit remains occupied for two cycles
 ;; after last dsoc cycle of a store - hence there is a 2 cycle delay between
 ;; two consecutive stores.
-(define_automaton "cf_chr")
+(define_automaton "cfv123_chr")
 
-(define_cpu_unit "cf_chr" "cf_chr")
+(define_cpu_unit "cf_chr" "cfv123_chr")
 
 ;; Memory bus
-(define_automaton "cf_mem")
+(define_automaton "cfv123_mem")
 
 ;; When memory bus is subscribed, that implies that instruction buffer won't
 ;; get its portion this cycle.  To model that we query if cf_mem unit is
 ;; subscribed and adjust number of prefetched instruction words accordingly.
 ;; 
-(define_query_cpu_unit "cf_mem1, cf_mem2" "cf_mem")
+(define_query_cpu_unit "cf_mem1, cf_mem2" "cfv123_mem")
 
 (define_reservation "cf_mem" "cf_mem1+cf_mem2")
+
+(define_automaton "cf_mac")
+
+(define_cpu_unit "cf_mac1,cf_mac2,cf_mac3,cf_mac4"
+  "cf_mac")
+
+(define_automaton "cfv123_guess")
+
+(define_query_cpu_unit "cfv123_guess" "cfv123_guess")
 
 ;; Register to register move.
 ;; Takes 1 cycle.
@@ -235,11 +232,6 @@
 (define_reservation "cfv3_mul_w_i0"
   "cf_dsoc,cf_agex,cf_agex,cf_dsoc+cf_mem1,cf_dsoc+cf_mem2,(cf_agex+cf_dsoc)*8,cf_agex")
 
-(define_automaton "cf_mac")
-
-(define_cpu_unit "cf_mac1,cf_mac2,cf_mac3,cf_mac4"
-  "cf_mac")
-
 ;; Long multiplication with mac.
 ;; Takes 5 cycles.
 (define_reservation "cfv123_mac_l_00"
@@ -345,1184 +337,1918 @@
 
 (define_insn_reservation "cfv123_alu_00_1" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "alu,alu_reg,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "00"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_alu_00")
 
 (define_insn_reservation "cfv123_alu_00_2" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "alu,alu_reg,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "00"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_alu_00")
 
 (define_insn_reservation "cfv123_alu_00_3" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "alu,alu_reg,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "00"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_alu_00")
 
-(define_insn_reservation "cfv12_alu_10_1" 3
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_alu_10_1" 3
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_alu_10")
 
-(define_insn_reservation "cfv12_alu_10_2" 3
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_alu_10_2" 3
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_alu_10")
 
-(define_insn_reservation "cfv12_alu_10_3" 3
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_alu_10_3" 3
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_10")
 
-(define_insn_reservation "cfv12_omove_10_1" 2
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_omove_10_1" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_omove_10")
 
-(define_insn_reservation "cfv12_omove_10_2" 2
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_omove_10_2" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_omove_10")
 
-(define_insn_reservation "cfv12_omove_10_3" 2
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+(define_insn_reservation "cfv1_omove_10_3" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_omove_10")
+
+(define_insn_reservation "cfv2_alu_10_1" 3
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv12_alu_10")
+
+(define_insn_reservation "cfv2_alu_10_2" 3
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv12_alu_10")
+
+(define_insn_reservation "cfv2_alu_10_3" 3
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_alu_10")
+
+(define_insn_reservation "cfv2_omove_10_1" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv12_omove_10")
+
+(define_insn_reservation "cfv2_omove_10_2" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv12_omove_10")
+
+(define_insn_reservation "cfv2_omove_10_3" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_omove_10")
 
 (define_insn_reservation "cfv3_alu_10_1" 4
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_alu_10")
 
 (define_insn_reservation "cfv3_alu_10_2" 4
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_alu_10")
 
 (define_insn_reservation "cfv3_alu_10_3" 4
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_10")
 
 (define_insn_reservation "cfv3_omove_10_1" 3
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_omove_10")
 
 (define_insn_reservation "cfv3_omove_10_2" 3
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_omove_10")
 
 (define_insn_reservation "cfv3_omove_10_3" 3
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "10"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_omove_10")
 
-(define_insn_reservation "cfv12_alu_i0_2" 4
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+(define_insn_reservation "cfv1_alu_i0_2" 4
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_alu_i0")
 
-(define_insn_reservation "cfv12_alu_i0_3" 4
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+(define_insn_reservation "cfv1_alu_i0_3" 4
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_i0")
 
-(define_insn_reservation "cfv12_omove_i0_2" 3
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+(define_insn_reservation "cfv1_omove_i0_2" 3
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_omove_i0")
 
-(define_insn_reservation "cfv12_omove_i0_3" 3
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+(define_insn_reservation "cfv1_omove_i0_3" 3
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_omove_i0")
+
+(define_insn_reservation "cfv2_alu_i0_2" 4
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_alu_i0")
+
+(define_insn_reservation "cfv2_alu_i0_3" 4
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_alu_i0")
+
+(define_insn_reservation "cfv2_omove_i0_2" 3
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_omove_i0")
+
+(define_insn_reservation "cfv2_omove_i0_3" 3
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_omove_i0")
 
 (define_insn_reservation "cfv3_alu_i0_2" 5
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_alu_i0")
 
 (define_insn_reservation "cfv3_alu_i0_3" 5
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_i0")
 
 (define_insn_reservation "cfv3_omove_i0_2" 4
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_omove_i0")
 
 (define_insn_reservation "cfv3_omove_i0_3" 4
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i0"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_omove_i0")
 
-(define_insn_reservation "cfv12_alu_01_1" 0
+(define_insn_reservation "cfv12_alu_01_1" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_alu_01")
 
-(define_insn_reservation "cfv12_alu_01_2" 0
+(define_insn_reservation "cfv12_alu_01_2" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_alu_01")
 
-(define_insn_reservation "cfv12_alu_01_3" 0
+(define_insn_reservation "cfv12_alu_01_3" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_01")
 
-(define_insn_reservation "cfv3_alu_01_1" 0
+(define_insn_reservation "cfv3_alu_01_1" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_alu_01")
 
-(define_insn_reservation "cfv3_alu_01_2" 0
+(define_insn_reservation "cfv3_alu_01_2" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_alu_01")
 
-(define_insn_reservation "cfv3_alu_01_3" 0
+(define_insn_reservation "cfv3_alu_01_3" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "01"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "01"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_01")
 
-(define_insn_reservation "cfv12_alu_0i_2" 0
+(define_insn_reservation "cfv12_alu_0i_2" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "0i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "0i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_alu_0i")
 
-(define_insn_reservation "cfv12_alu_0i_3" 0
+(define_insn_reservation "cfv12_alu_0i_3" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "0i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_0i")
 
-(define_insn_reservation "cfv3_alu_0i_2" 0
+(define_insn_reservation "cfv3_alu_0i_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "0i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "0i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_alu_0i")
 
-(define_insn_reservation "cfv3_alu_0i_3" 0
+(define_insn_reservation "cfv3_alu_0i_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu,omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "0i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_0i")
 
-(define_insn_reservation "cfv12_alu_11_1" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_alu_11_1" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_alu_11")
 
-(define_insn_reservation "cfv12_alu_11_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_alu_11_2" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_alu_11")
 
-(define_insn_reservation "cfv12_alu_11_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_alu_11_3" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_11")
 
-(define_insn_reservation "cfv12_omove_11_1" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_omove_11_1" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_omove_11")
 
-(define_insn_reservation "cfv12_omove_11_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_omove_11_2" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_omove_11")
 
-(define_insn_reservation "cfv12_omove_11_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+(define_insn_reservation "cfv1_omove_11_3" 1
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_omove_11")
 
-(define_insn_reservation "cfv3_alu_11_1" 0
+(define_insn_reservation "cfv2_alu_11_1" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv12_alu_11")
+
+(define_insn_reservation "cfv2_alu_11_2" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv12_alu_11")
+
+(define_insn_reservation "cfv2_alu_11_3" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_alu_11")
+
+(define_insn_reservation "cfv2_omove_11_1" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv12_omove_11")
+
+(define_insn_reservation "cfv2_omove_11_2" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv12_omove_11")
+
+(define_insn_reservation "cfv2_omove_11_3" 1
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_omove_11")
+
+(define_insn_reservation "cfv3_alu_11_1" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_alu_11")
 
-(define_insn_reservation "cfv3_alu_11_2" 0
+(define_insn_reservation "cfv3_alu_11_2" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "size" "2"))
        (eq_attr "op_mem" "11"))
   "cf_ib2+cfv3_alu_11")
 
-(define_insn_reservation "cfv3_alu_11_3" 0
+(define_insn_reservation "cfv3_alu_11_3" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_11")
 
-(define_insn_reservation "cfv3_omove_11_1" 0
+(define_insn_reservation "cfv3_omove_11_1" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_omove_11")
 
-(define_insn_reservation "cfv3_omove_11_2" 0
+(define_insn_reservation "cfv3_omove_11_2" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "size" "2"))
        (eq_attr "op_mem" "11"))
   "cf_ib2+cfv3_omove_11")
 
-(define_insn_reservation "cfv3_omove_11_3" 0
+(define_insn_reservation "cfv3_omove_11_3" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_omove_11")
 
-(define_insn_reservation "cfv12_alu_i1_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+(define_insn_reservation "cfv1_alu_i1_2" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_alu_i1")
 
-(define_insn_reservation "cfv12_alu_i1_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+(define_insn_reservation "cfv1_alu_i1_3" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_i1")
 
-(define_insn_reservation "cfv12_omove_i1_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+(define_insn_reservation "cfv1_omove_i1_2" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_omove_i1")
 
-(define_insn_reservation "cfv12_omove_i1_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+(define_insn_reservation "cfv1_omove_i1_3" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_omove_i1")
 
-(define_insn_reservation "cfv3_alu_i1_2" 0
+(define_insn_reservation "cfv2_alu_i1_2" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_alu_i1")
+
+(define_insn_reservation "cfv2_alu_i1_3" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_alu_i1")
+
+(define_insn_reservation "cfv2_omove_i1_2" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_omove_i1")
+
+(define_insn_reservation "cfv2_omove_i1_3" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_omove_i1")
+
+(define_insn_reservation "cfv3_alu_i1_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_alu_i1")
 
-(define_insn_reservation "cfv3_alu_i1_3" 0
+(define_insn_reservation "cfv3_alu_i1_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_i1")
 
-(define_insn_reservation "cfv3_omove_i1_2" 0
+(define_insn_reservation "cfv3_omove_i1_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_omove_i1")
 
-(define_insn_reservation "cfv3_omove_i1_3" 0
+(define_insn_reservation "cfv3_omove_i1_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_omove_i1")
 
-(define_insn_reservation "cfv12_alu_1i_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "1i"))
+(define_insn_reservation "cfv1_alu_1i_2" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_alu_1i")
 
-(define_insn_reservation "cfv12_alu_1i_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "1i"))
+(define_insn_reservation "cfv1_alu_1i_3" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_alu_1i")
 
-(define_insn_reservation "cfv12_omove_1i_2" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "1i"))
+(define_insn_reservation "cfv1_omove_1i_2" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_omove_1i")
 
-(define_insn_reservation "cfv12_omove_1i_3" 0
-  (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "1i"))
+(define_insn_reservation "cfv1_omove_1i_3" 2
+  (and (and (and (eq_attr "cpu" "cfv1")
+		 (eq_attr "type" "
+clr,clr_l,mov3q_l,move,moveq_l,tst,
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_omove_1i")
 
-(define_insn_reservation "cfv3_alu_1i_2" 0
+(define_insn_reservation "cfv2_alu_1i_2" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_alu_1i")
+
+(define_insn_reservation "cfv2_alu_1i_3" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_alu_1i")
+
+(define_insn_reservation "cfv2_omove_1i_2" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
+  "cf_ib2+cfv12_omove_1i")
+
+(define_insn_reservation "cfv2_omove_1i_3" 2
+  (and (and (and (eq_attr "cpu" "cfv2")
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_omove_1i")
+
+(define_insn_reservation "cfv3_alu_1i_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "1i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_alu_1i")
 
-(define_insn_reservation "cfv3_alu_1i_3" 0
+(define_insn_reservation "cfv3_alu_1i_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "alu"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "1i"))
+		 (eq_attr "type" "
+alu_l,aluq_l,bitr,bitrw,cmp,cmp_l,alux_l,ext,neg_l,scc,shift,
+clr,clr_l,mov3q_l,move,moveq_l,tst"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_alu_1i")
 
-(define_insn_reservation "cfv3_omove_1i_2" 0
+(define_insn_reservation "cfv3_omove_1i_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "1i"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_omove_1i")
 
-(define_insn_reservation "cfv3_omove_1i_3" 0
+(define_insn_reservation "cfv3_omove_1i_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "omove"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "1i"))
+		 (eq_attr "type" "
+move_l,tst_l"))
+	    (eq_attr "op_mem" "1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_omove_1i")
 
 (define_insn_reservation "cfv123_lea_10_1" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "lea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "lea"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_lea_10")
 
 (define_insn_reservation "cfv123_lea_10_2" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "lea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "lea"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_lea_10")
 
 (define_insn_reservation "cfv123_lea_10_3" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "lea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "lea"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_lea_10")
 
 (define_insn_reservation "cfv123_lea_i0_2" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "lea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "lea"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv123_lea_i0")
 
 (define_insn_reservation "cfv123_lea_i0_3" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-		 (eq_attr "type2" "lea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "lea"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_lea_i0")
 
-(define_insn_reservation "cfv12_pea_11_1" 0
+(define_insn_reservation "cfv12_pea_11_1" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_pea_11")
 
-(define_insn_reservation "cfv12_pea_11_2" 0
+(define_insn_reservation "cfv12_pea_11_2" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_pea_11")
 
-(define_insn_reservation "cfv12_pea_11_3" 0
+(define_insn_reservation "cfv12_pea_11_3" 1
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_pea_11")
 
-(define_insn_reservation "cfv3_pea_11_1" 0
+(define_insn_reservation "cfv3_pea_11_1" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_pea_11")
 
-(define_insn_reservation "cfv3_pea_11_2" 0
+(define_insn_reservation "cfv3_pea_11_2" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_pea_11")
 
-(define_insn_reservation "cfv3_pea_11_3" 0
+(define_insn_reservation "cfv3_pea_11_3" 1
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "11"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "11"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_pea_11")
 
-(define_insn_reservation "cfv12_pea_i1_2" 0
+(define_insn_reservation "cfv12_pea_i1_2" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_pea_i1")
 
-(define_insn_reservation "cfv12_pea_i1_3" 0
+(define_insn_reservation "cfv12_pea_i1_3" 2
   (and (and (and (eq_attr "cpu" "cfv1,cfv2")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_pea_i1")
 
-(define_insn_reservation "cfv3_pea_i1_2" 0
+(define_insn_reservation "cfv3_pea_i1_2" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_pea_i1")
 
-(define_insn_reservation "cfv3_pea_i1_3" 0
+(define_insn_reservation "cfv3_pea_i1_3" 2
   (and (and (and (eq_attr "cpu" "cfv3")
-		 (eq_attr "type2" "pea"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i1"))
+		 (eq_attr "type" "pea"))
+	    (eq_attr "op_mem" "i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_pea_i1")
 
 (define_insn_reservation "cfv123_mul_l_00_1" 18
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_mul_l_00")
 
 (define_insn_reservation "cfv123_mul_l_00_2" 18
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_mul_l_00")
 
 (define_insn_reservation "cfv123_mul_l_00_3" 18
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_mul_l_00")
 
 (define_insn_reservation "cfv123_mul_w_00_1" 9
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_mul_w_00")
 
 (define_insn_reservation "cfv123_mul_w_00_2" 9
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_mul_w_00")
 
 (define_insn_reservation "cfv123_mul_w_00_3" 9
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_mul_w_00")
 
 (define_insn_reservation "cfv12_mul_l_10_1" 20
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_mul_l_10")
 
 (define_insn_reservation "cfv12_mul_l_10_2" 20
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_mul_l_10")
 
 (define_insn_reservation "cfv12_mul_l_10_3" 20
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mul_l_10")
 
 (define_insn_reservation "cfv3_mul_l_10_1" 21
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_mul_l_10")
 
 (define_insn_reservation "cfv3_mul_l_10_2" 21
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_mul_l_10")
 
 (define_insn_reservation "cfv3_mul_l_10_3" 21
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mul_l_10")
 
 (define_insn_reservation "cfv12_mul_w_10_1" 11
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_mul_w_10")
 
 (define_insn_reservation "cfv12_mul_w_10_2" 11
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_mul_w_10")
 
 (define_insn_reservation "cfv12_mul_w_10_3" 11
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mul_w_10")
 
 (define_insn_reservation "cfv3_mul_w_10_1" 12
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_mul_w_10")
 
 (define_insn_reservation "cfv3_mul_w_10_2" 12
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_mul_w_10")
 
 (define_insn_reservation "cfv3_mul_w_10_3" 12
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mul_w_10")
 
 (define_insn_reservation "cfv12_mul_w_i0_2" 12
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_mul_w_i0")
 
 (define_insn_reservation "cfv12_mul_w_i0_3" 12
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mul_w_i0")
-
 
 (define_insn_reservation "cfv3_mul_w_i0_2" 13
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_mul_w_i0")
 
 (define_insn_reservation "cfv3_mul_w_i0_3" 13
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "no"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mul_w_i0")
 
 (define_insn_reservation "cfv123_mac_l_00_1" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_mac_l_00")
 
 (define_insn_reservation "cfv123_mac_l_00_2" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_mac_l_00")
 
 (define_insn_reservation "cfv123_mac_l_00_3" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_mac_l_00")
 
 (define_insn_reservation "cfv123_mac_w_00_1" 3
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_mac_w_00")
 
 (define_insn_reservation "cfv123_mac_w_00_2" 3
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_mac_w_00")
 
 (define_insn_reservation "cfv123_mac_w_00_3" 3
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_mac_w_00")
 
 (define_insn_reservation "cfv12_mac_l_10_1" 7
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_mac_l_10")
 
 (define_insn_reservation "cfv12_mac_l_10_2" 7
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_mac_l_10")
 
 (define_insn_reservation "cfv12_mac_l_10_3" 7
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mac_l_10")
 
 (define_insn_reservation "cfv3_mac_l_10_1" 8
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_mac_l_10")
 
 (define_insn_reservation "cfv3_mac_l_10_2" 8
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_mac_l_10")
 
 (define_insn_reservation "cfv3_mac_l_10_3" 8
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_l"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mac_l_10")
 
 (define_insn_reservation "cfv12_mac_w_10_1" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_mac_w_10")
 
 (define_insn_reservation "cfv12_mac_w_10_2" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_mac_w_10")
 
 (define_insn_reservation "cfv12_mac_w_10_3" 5
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mac_w_10")
 
 (define_insn_reservation "cfv3_mac_w_10_1" 6
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_mac_w_10")
 
 (define_insn_reservation "cfv3_mac_w_10_2" 6
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_mac_w_10")
 
 (define_insn_reservation "cfv3_mac_w_10_3" 6
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mac_w_10")
 
 (define_insn_reservation "cfv12_mac_w_i0_2" 6
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_mac_w_i0")
 
 (define_insn_reservation "cfv12_mac_w_i0_3" 6
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_mac_w_i0")
 
 (define_insn_reservation "cfv3_mac_w_i0_2" 7
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_mac_w_i0")
 
 (define_insn_reservation "cfv3_mac_w_i0_3" 7
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_mac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_mac_w_i0")
 
 (define_insn_reservation "cfv123_emac_00_1" 4
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l,mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv123_emac_00")
 
 (define_insn_reservation "cfv123_emac_00_2" 4
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l,mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv123_emac_00")
 
 (define_insn_reservation "cfv123_emac_00_3" 4
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "00"))
+		 (eq_attr "type" "mul_l,mul_w"))
+	    (eq_attr "op_mem" "00,01,0i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv123_emac_00")
 
-(define_insn_reservation "cfv12_emac_10_1" 6
+(define_insn_reservation "cfv12_emac_l_10_1" 6
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_emac_10")
 
-(define_insn_reservation "cfv12_emac_10_2" 6
+(define_insn_reservation "cfv12_emac_l_10_2" 6
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_emac_10")
 
-(define_insn_reservation "cfv12_emac_10_3" 6
+(define_insn_reservation "cfv12_emac_l_10_3" 6
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_emac_10")
 
-(define_insn_reservation "cfv3_emac_10_1" 7
+(define_insn_reservation "cfv3_emac_l_10_1" 7
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_emac_10")
 
-(define_insn_reservation "cfv3_emac_10_2" 7
+(define_insn_reservation "cfv3_emac_l_10_2" 7
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_emac_10")
 
-(define_insn_reservation "cfv3_emac_10_3" 7
+(define_insn_reservation "cfv3_emac_l_10_3" 7
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_l,mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "10"))
+		 (eq_attr "type" "mul_l"))
+	    (eq_attr "op_mem" "10,i0,i1,11,1i"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv3_emac_10")
+
+(define_insn_reservation "cfv12_emac_w_10_1" 6
+  (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv12_emac_10")
+
+(define_insn_reservation "cfv12_emac_w_10_2" 6
+  (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv12_emac_10")
+
+(define_insn_reservation "cfv12_emac_w_10_3" 6
+  (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
+  "cf_ib3+cfv12_emac_10")
+
+(define_insn_reservation "cfv3_emac_w_10_1" 7
+  (and (and (and (and (eq_attr "cpu" "cfv3")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "1"))
+  "cf_ib1+cfv3_emac_10")
+
+(define_insn_reservation "cfv3_emac_w_10_2" 7
+  (and (and (and (and (eq_attr "cpu" "cfv3")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "2"))
+  "cf_ib2+cfv3_emac_10")
+
+(define_insn_reservation "cfv3_emac_w_10_3" 7
+  (and (and (and (and (eq_attr "cpu" "cfv3")
+		      (eq_attr "mac" "cf_emac"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "10,11,1i"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_emac_10")
 
 (define_insn_reservation "cfv12_emac_w_i0_2" 7
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv12_emac_w_i0")
 
 (define_insn_reservation "cfv12_emac_w_i0_3" 7
   (and (and (and (and (eq_attr "cpu" "cfv1,cfv2")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_emac_w_i0")
 
 (define_insn_reservation "cfv3_emac_w_i0_2" 8
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "1,2"))
   "cf_ib2+cfv3_emac_w_i0")
 
 (define_insn_reservation "cfv3_emac_w_i0_3" 8
   (and (and (and (and (eq_attr "cpu" "cfv3")
 		      (eq_attr "mac" "cf_emac"))
-		 (eq_attr "type2" "mul_w"))
-	    (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-       (eq_attr "op_mem" "i0"))
+		 (eq_attr "type" "mul_w"))
+	    (eq_attr "op_mem" "i0,i1"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_emac_w_i0")
 
-(define_insn_reservation "cfv12_rts_1" 5
-  (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "rts"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+(define_insn_reservation "cfv12_rts" 5
+  (and (eq_attr "cpu" "cfv1,cfv2")
+       (eq_attr "type" "rts"))
   "cf_ib1+cfv12_rts")
 
-(define_insn_reservation "cfv3_rts_1" 8
-  (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "rts"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+(define_insn_reservation "cfv3_rts" 8
+  (and (eq_attr "cpu" "cfv3")
+       (eq_attr "type" "rts"))
   "cf_ib1+cfv3_rts")
 
 (define_insn_reservation "cfv12_call_1" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_call")
 
 (define_insn_reservation "cfv12_call_2" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_call")
 
 (define_insn_reservation "cfv12_call_3" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_call")
 
 (define_insn_reservation "cfv3_call_1" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_call")
 
 (define_insn_reservation "cfv3_call_2" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_call")
 
 (define_insn_reservation "cfv3_call_3" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "call"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bsr,jsr"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_call")
 
 (define_insn_reservation "cfv12_bcc_1" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_bcc")
 
 (define_insn_reservation "cfv12_bcc_2" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_bcc")
 
 (define_insn_reservation "cfv12_bcc_3" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_bcc")
 
 (define_insn_reservation "cfv3_bcc_1" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_bcc")
 
 (define_insn_reservation "cfv3_bcc_2" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_bcc")
 
 (define_insn_reservation "cfv3_bcc_3" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bcc"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bcc"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_bcc")
 
 (define_insn_reservation "cfv12_bra_1" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_bra")
 
 (define_insn_reservation "cfv12_bra_2" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_bra")
 
 (define_insn_reservation "cfv12_bra_3" 2
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_bra")
 
 (define_insn_reservation "cfv3_bra_1" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_bra")
 
 (define_insn_reservation "cfv3_bra_2" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_bra")
 
 (define_insn_reservation "cfv3_bra_3" 1
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "bra"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "bra"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_bra")
 
 (define_insn_reservation "cfv12_jmp_1" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv12_jmp")
 
 (define_insn_reservation "cfv12_jmp_2" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv12_jmp")
 
 (define_insn_reservation "cfv12_jmp_3" 3
   (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv12_jmp")
 
 (define_insn_reservation "cfv3_jmp_1" 5
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "1"))
   "cf_ib1+cfv3_jmp")
 
 (define_insn_reservation "cfv3_jmp_2" 5
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "2"))
   "cf_ib2+cfv3_jmp")
 
 (define_insn_reservation "cfv3_jmp_3" 5
   (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "jmp"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
+	    (eq_attr "type" "jmp"))
+       (eq_attr "size" "3"))
   "cf_ib3+cfv3_jmp")
 
-;; Misc reservations.
-
-(define_insn_reservation "cfv12_unlk_1" 2
-  (and (and (eq_attr "cpu" "cfv1,cfv2")
-	    (eq_attr "type2" "unlk"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+(define_insn_reservation "cfv12_unlk" 2
+  (and (eq_attr "cpu" "cfv1,cfv2")
+       (eq_attr "type" "unlk"))
   "cf_ib1+cfv12_alu_10")
 
-(define_insn_reservation "cfv3_unlk_1" 3
-  (and (and (eq_attr "cpu" "cfv3")
-	    (eq_attr "type2" "unlk"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
+(define_insn_reservation "cfv3_unlk" 3
+  (and (eq_attr "cpu" "cfv3")
+       (eq_attr "type" "unlk"))
   "cf_ib1+cfv3_alu_10")
 
-;; This automaton is used to gather statistics on insns that need reservations.
-(define_automaton "cf_guess")
+;; Dummy reservation for instructions that are not handled.
+(define_insn_reservation "cfv123_guess" 3
+  (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
+       (eq_attr "type" "falu,fbcc,fcmp,fdiv,fmove,fmul,fneg,fsqrt,ftst,
+                        div_w,div_l,link,mvsz,nop,trap,unknown"))
+  "cf_ib3+cfv123_guess+cf_dsoc+cf_agex+cf_mem")
 
-(define_query_cpu_unit "cf_guess" "cf_guess")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Dummy reservation for instructions that are not handled yet.
+;; Below is pipeline description of ColdFire V4 core.
+;; It is substantially different from the description of V1, V2 or V3 cores,
+;; primarily due to no need to model the instruction buffer.
+;;
+;; V4 pipeline model uses a completely separate set of cpu units.
 
-(define_insn_reservation "cf_guess_1" 1
-  (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-	    (eq_attr "guess" "yes"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 1)))
-  "cf_ib1+cf_guess+cf_dsoc+cf_agex")
+;; Operand Execution Pipeline.
+(define_automaton "cfv4_oep")
 
-(define_insn_reservation "cf_guess_2" 1
-  (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-	    (eq_attr "guess" "yes"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 2)))
-  "cf_ib2+cf_guess+cf_dsoc+cf_agex")
+(define_cpu_unit "cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da"
+  "cfv4_oep")
 
-(define_insn_reservation "cf_guess_3" 1
-  (and (and (eq_attr "cpu" "cfv1,cfv2,cfv3")
-	    (eq_attr "guess" "yes"))
-       (eq (symbol_ref "get_attr_size (insn)") (const_int 3)))
-  "cf_ib3+cf_guess+cf_dsoc+cf_agex")
+;; This automaton is used to support CFv4 dual-issue.
+(define_automaton "cfv4_ds")
+
+;; V4 has 3 cases of dual-issue.
+;; After issuing a cfv4_pOEPx instruction, it'll be possible to issue
+;; a cfv4_sOEPx instruction on the same cycle (see final_presence_sets below).
+(define_cpu_unit "cfv4_pOEP1,cfv4_sOEP1,
+                  cfv4_pOEP2,cfv4_sOEP2,
+                  cfv4_pOEP3,cfv4_sOEP3" "cfv4_ds")
+
+(final_presence_set "cfv4_sOEP1" "cfv4_pOEP1")
+(final_presence_set "cfv4_sOEP2" "cfv4_pOEP2")
+(final_presence_set "cfv4_sOEP3" "cfv4_pOEP3")
+
+;; Reservation for instructions that don't allow dual-issue.
+(define_reservation "cfv4_ds" "cfv4_pOEP1+cfv4_sOEP1+
+                               cfv4_pOEP2+cfv4_sOEP2+
+                               cfv4_pOEP3+cfv4_sOEP3")
+
+;; Memory access resource.
+(define_automaton "cfv4_mem")
+
+(define_cpu_unit "cfv4_mem" "cfv4_mem")
+
+;; EMAC.
+(define_automaton "cfv4_emac")
+
+(define_cpu_unit "cfv4_emac" "cfv4_emac")
+
+;; FPU.
+(define_automaton "cfv4_fp")
+
+(define_cpu_unit "cfv4_fp" "cfv4_fp")
+
+;; Automaton for unknown instruction.
+(define_automaton "cfv4_guess")
+
+(define_query_cpu_unit "cfv4_guess" "cfv4_guess")
+
+;; This bypass allows 1st case of dual-issue.
+(define_bypass 0 "cfv4_00_oag_pOEP1,cfv4_10_pOEP1,cfv4_i0_pOEP1"
+  "cfv4_00_oag,cfv4_00_oag_pOEP3_sOEP12,cfv4_00_oag_pOEP1,
+   cfv4_00_oag_moveql,cfv4_00_ex_sOEP13")
+
+;; The following bypasses decrease the latency of producers if it modifies
+;; a target register in the EX stage and the consumer also uses
+;; that register in the EX stage.
+(define_bypass 1 "cfv4_00_ex" "cfv4_00_ex,cfv4_00_ex_sOEP13")
+(define_bypass 1 "cfv4_00_ex" "cfv4_10,cfv4_10_pOEP1,cfv4_i0,cfv4_i0_pOEP1"
+  "!m68k_sched_address_bypass_p")
+
+;; Indexed loads with scale factors 2 and 4 require an update of the index
+;; register in the register file.  Considering that the index register is
+;; only needed at the second cycle of address generation, we get
+;; a latency of 4.
+;; Producers for indexed loads with scale factor 1 should have
+;; a latency of 3.  Since we're only allowed one bypass, we handle it
+;; in the adjust_cost hook.
+(define_bypass 4
+  "cfv4_00_oag,cfv4_00_oag_pOEP3_sOEP12,cfv4_00_oag_lea,cfv4_00_oag_pOEP1,
+   cfv4_00_oag_moveql"
+  "cfv4_i0,cfv4_i0_pOEP1"
+  "m68k_sched_indexed_address_bypass_p")
+
+;; First part of cfv4_00.
+;; If issued in pairs with cfv4_movel_?0, the cost should be increased.
+;; ??? Is it possible that combined cfv4_movel_00 and cfv4_oag_00 instructions
+;; have longer latency than the two instructions emitted sequentially?
+;; Due to register renaming, the result of the sequence would be available
+;; after 3 cycles, instead of 4 for combined instruction?
+(define_insn_reservation "cfv4_00_oag" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,clr_l,cmp_l,mov3q_l,neg_l"))
+       (eq_attr "op_mem" "00"))
+  "cfv4_sOEP1|cfv4_sOEP3|(cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex)")
+
+(define_insn_reservation "cfv4_00_oag_pOEP3_sOEP12" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "move_l,mov3q_l,clr_l"))
+       (and (eq_attr "op_mem" "00")
+	    (and (eq_attr "opx_type" "Rn")
+		 (eq_attr "opy_type" "none,imm_q,imm_w,imm_l"))))
+  "cfv4_sOEP1|cfv4_sOEP2|(cfv4_pOEP3,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex)")
+
+(define_insn_reservation "cfv4_00_oag_lea" 1
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "lea"))
+  "cfv4_pOEP3,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_00_oag_pOEP1" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "move_l,mov3q_l,clr_l"))
+       (and (eq_attr "op_mem" "00")
+	    (ior (eq_attr "opx_type" "!Rn")
+		 (eq_attr "opy_type" "!none,imm_q,imm_w,imm_l"))))
+  "cfv4_sOEP1|(cfv4_pOEP1,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex)")
+
+(define_insn_reservation "cfv4_00_oag_moveql" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "moveq_l"))
+       (eq_attr "op_mem" "00"))
+  "cfv4_sOEP1|cfv4_sOEP2|cfv4_sOEP3|(cfv4_pOEP3,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex)")
+
+;; Second part of cfv4_00.
+;; Latency is either 1 or 4 depending on which stage the consumer
+;; will need the data.
+
+(define_insn_reservation "cfv4_00_ex" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "bitr,bitrw,clr,cmp,move,mvsz,scc,tst"))
+       (eq_attr "op_mem" "00"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_00_ex_sOEP13" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alux_l,ext,shift,tst_l"))
+       (eq_attr "op_mem" "00"))
+  "cfv4_sOEP1|cfv4_sOEP3|(cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex)")
+
+;; Several types mentioned in this reservation (e.g., ext and shift) don't
+;; support implicit load.  But we handle them anyway due to first scheduling
+;; pass, which handles non-strict rtl.
+;;
+;; Latency is either 1 or 4 depending in which stage the consumer
+;; will need the data.
+(define_insn_reservation "cfv4_10" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,moveq_l,mvsz,neg_l,
+                             shift,tst,tst_l"))
+       (eq_attr "op_mem" "10"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+;; Specialization of cfv4_10.
+;; move.l has OC2-to-DS forwarding path, that saves one cycle of latency.
+(define_insn_reservation "cfv4_10_pOEP1" 3
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "move_l"))
+       (eq_attr "op_mem" "10"))
+  "cfv4_pOEP1,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+;; Same here.  But +1 to latency due to longer OAG.
+(define_insn_reservation "cfv4_i0" 5
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,moveq_l,mvsz,neg_l,
+                             shift,tst,tst_l"))
+       (eq_attr "op_mem" "i0"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+;; ??? Does indexed load trigger dual-issue?
+;; ??? Does OC2-to-DS forwarding path saves a cycle?
+(define_insn_reservation "cfv4_i0_pOEP1" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "move_l"))
+       (eq_attr "op_mem" "i0"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+;; This reservation is for moves and clr.  Arithmetic instructions
+;; don't write to memory unless they also read from it.
+;; But, before reload we can have all sorts of things.
+;; With cfv4_pOEP2 allow dual-issue for type 2 cases.
+(define_insn_reservation "cfv4_01" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,move_l,moveq_l,mvsz,neg_l,
+                             shift"))
+       (eq_attr "op_mem" "01"))
+  "cfv4_pOEP2,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+;; ??? Does indexed store trigger dual-issue?
+(define_insn_reservation "cfv4_0i" 2
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,move_l,moveq_l,mvsz,neg_l,
+                             shift"))
+       (eq_attr "op_mem" "0i"))
+  "cfv4_pOEP2,cfv4_oag,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+(define_insn_reservation "cfv4_11" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,move_l,moveq_l,mvsz,neg_l,
+                             shift"))
+       (eq_attr "op_mem" "11"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+;; Latency is 2 due to long OAG stage.
+(define_insn_reservation "cfv4_i1" 2
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,move_l,moveq_l,mvsz,neg_l,
+                             shift"))
+       (eq_attr "op_mem" "i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+;; This one is the same as cfv4_i1.
+;; ??? Should it be different?
+(define_insn_reservation "cfv4_1i" 2
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "alu_l,aluq_l,alux_l,bitr,bitrw,
+                             clr,clr_l,cmp,cmp_l,ext,
+                             mov3q_l,move,move_l,moveq_l,mvsz,neg_l,
+                             shift"))
+       (eq_attr "op_mem" "1i"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+;; ??? Does pea indeed support case 2 of dual-issue?
+(define_insn_reservation "cfv4_11_pea" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "pea"))
+       (eq_attr "op_mem" "11,00,01,0i,10"))
+  "cfv4_pOEP2,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+;; ??? Does pea indeed support case 2 of dual-issue?
+;; ??? Does indexed store trigger dual-issue?
+(define_insn_reservation "cfv4_i1_pea" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "pea"))
+       (eq_attr "op_mem" "i1,1i"))
+  "cfv4_pOEP2,cfv4_oag,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da,cfv4_mem")
+
+(define_insn_reservation "cfv4_link" 2
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "link"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_ex,cfv4_da,cfv4_mem")
+
+(define_insn_reservation "cfv4_unlink" 2
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "unlk"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_divw_00" 20
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "div_w"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex*15")
+
+(define_insn_reservation "cfv4_divw_10" 20
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "div_w"))
+       (eq_attr "op_mem" "10,11,1i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex*15")
+
+(define_insn_reservation "cfv4_divw_i0" 21
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "div_w"))
+       (eq_attr "op_mem" "i0,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex*15")
+
+(define_insn_reservation "cfv4_divl_00" 35
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "div_l"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex*30")
+
+(define_insn_reservation "cfv4_divl_10" 35
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "div_l"))
+       (eq_attr "op_mem" "10,11,1i,i0,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex*30")
+
+(define_insn_reservation "cfv4_emac_mul_00" 7
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "mul_w,mul_l"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_emac")
+
+(define_insn_reservation "cfv4_emac_mul_10" 7
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "mul_w,mul_l"))
+       (eq_attr "op_mem" "10,11,1i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_emac")
+
+(define_insn_reservation "cfv4_emac_mul_i0" 8
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "mul_w,mul_l"))
+       (eq_attr "op_mem" "i0,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_emac")
+
+(define_insn_reservation "cfv4_falu_00" 7
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "falu,fcmp,fmul"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp")
+
+(define_insn_reservation "cfv4_falu_10" 7
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "falu,fcmp,fmul"))
+       (eq_attr "op_mem" "10,i0,11,1i,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_fp")
+
+(define_insn_reservation "cfv4_fneg_00" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fmove,fneg,ftst"))
+       (eq_attr "op_mem" "00"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp")
+
+(define_insn_reservation "cfv4_fmove_fneg_10" 4
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fmove,fneg,ftst"))
+       (eq_attr "op_mem" "10,i0,11,1i,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_fp")
+
+(define_insn_reservation "cfv4_fmove_01" 1
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fmove,fneg,ftst"))
+       (eq_attr "op_mem" "01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp,cfv4_da,cfv4_mem")
+
+(define_insn_reservation "cfv4_fdiv_00" 23
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fdiv"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp*17")
+
+(define_insn_reservation "cfv4_fdiv_10" 23
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fdiv"))
+       (eq_attr "op_mem" "10,i0,11,1i,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_fp*17")
+
+(define_insn_reservation "cfv4_fsqrt_00" 56
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fsqrt"))
+       (eq_attr "op_mem" "00,01,0i"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp*50")
+
+(define_insn_reservation "cfv4_fsqrt_10" 56
+  (and (and (eq_attr "cpu" "cfv4")
+	    (eq_attr "type" "fsqrt"))
+       (eq_attr "op_mem" "10,i0,11,1i,i1"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_fp*50")
+
+(define_insn_reservation "cfv4_bcc" 0
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "bcc"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_fbcc" 2
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "fbcc"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_fp")
+
+;; ??? Why is bra said to write to memory: 1(0/1) ?
+(define_insn_reservation "cfv4_bra_bsr" 1
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "bra,bsr"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_jmp_jsr" 5
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "jmp,jsr"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_rts" 2
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "rts"))
+  "cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex")
+
+(define_insn_reservation "cfv4_nop" 1
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "nop"))
+  "cfv4_ds+cfv4_oag+cfv4_oc1+cfv4_mem+cfv4_oc2+cfv4_ex")
+
+(define_insn_reservation "cfv4_guess" 10
+  (and (eq_attr "cpu" "cfv4")
+       (eq_attr "type" "trap,unknown"))
+  "cfv4_guess+cfv4_ds,cfv4_oag,cfv4_oc1+cfv4_mem,cfv4_oc2,cfv4_ex,cfv4_emac+cfv4_fp")
+
+(define_insn_reservation "ignore" 0
+  (eq_attr "type" "ignore")
+  "nothing")
