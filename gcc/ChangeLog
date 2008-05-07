@@ -3,6 +3,12 @@
 	* tree-parloops.c (create_parallel_loop): Set OMP_RETURN_NOWAIT
 	on OMP_RETURN for OMP_FOR.
 
+	PR debug/35896
+	* dwarf2out.c (dw_expand_expr, common_check): Removed.
+	(fortran_common): New function.
+	(gen_variable_die): Call fortran_common instead of common_check,
+	adjust for it returning tree instead of rtx.  Formatting.
+
 2008-05-07  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
         PATCH rtl/7335
