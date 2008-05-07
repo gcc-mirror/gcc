@@ -1,3 +1,8 @@
+2008-05-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_copysign): Force non-zero constant
+	TFmode op0 to register.
+
 2008-05-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* c-decl.c (grokdeclarator): Comment typo.
