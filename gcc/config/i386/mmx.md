@@ -229,7 +229,21 @@
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "V2SF")])
 
-(define_insn "mmx_subv2sf3"
+(define_expand "mmx_subv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "")
+        (minus:V2SF (match_operand:V2SF 1 "register_operand" "")
+		    (match_operand:V2SF 2 "nonimmediate_operand" "")))]
+  "TARGET_3DNOW"
+  "")
+
+(define_expand "mmx_subrv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "")
+        (minus:V2SF (match_operand:V2SF 2 "register_operand" "")
+		    (match_operand:V2SF 1 "nonimmediate_operand" "")))]
+  "TARGET_3DNOW"
+  "")
+
+(define_insn "*mmx_subv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y,y")
         (minus:V2SF (match_operand:V2SF 1 "nonimmediate_operand" "0,ym")
 		    (match_operand:V2SF 2 "nonimmediate_operand" "ym,0")))]
@@ -239,13 +253,6 @@
    pfsubr\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "V2SF")])
-
-(define_expand "mmx_subrv2sf3"
-  [(set (match_operand:V2SF 0 "register_operand" "")
-        (minus:V2SF (match_operand:V2SF 2 "nonimmediate_operand" "")
-		    (match_operand:V2SF 1 "nonimmediate_operand" "")))]
-  "TARGET_3DNOW && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  "")
 
 (define_expand "mmx_mulv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "")
@@ -403,6 +410,22 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define_expand "mmx_eqv2sf3"
+  [(set (match_operand:V2SI 0 "register_operand" "")
+	(eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "")
+		 (match_operand:V2SF 2 "nonimmediate_operand" "")))]
+  "TARGET_3DNOW"
+  "ix86_fixup_binary_operands_no_copy (EQ, V2SFmode, operands);")
+
+(define_insn "*mmx_eqv2sf3"
+  [(set (match_operand:V2SI 0 "register_operand" "=y")
+	(eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "%0")
+		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
+  "TARGET_3DNOW && ix86_binary_operator_ok (EQ, V2SFmode, operands)"
+  "pfcmpeq\t{%2, %0|%0, %2}"
+  [(set_attr "type" "mmxcmp")
+   (set_attr "mode" "V2SF")])
+
 (define_insn "mmx_gtv2sf3"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
 	(gt:V2SI (match_operand:V2SF 1 "register_operand" "0")
@@ -418,15 +441,6 @@
 		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
   "TARGET_3DNOW"
   "pfcmpge\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxcmp")
-   (set_attr "mode" "V2SF")])
-
-(define_insn "mmx_eqv2sf3"
-  [(set (match_operand:V2SI 0 "register_operand" "=y")
-	(eq:V2SI (match_operand:V2SF 1 "nonimmediate_operand" "%0")
-		 (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
-  "TARGET_3DNOW && ix86_binary_operator_ok (EQ, V2SFmode, operands)"
-  "pfcmpeq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxcmp")
    (set_attr "mode" "V2SF")])
 
@@ -702,7 +716,29 @@
   [(set_attr "type" "mmxmul")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_pmaddwd"
+(define_expand "mmx_pmaddwd"
+  [(set (match_operand:V2SI 0 "register_operand" "")
+        (plus:V2SI
+	  (mult:V2SI
+	    (sign_extend:V2SI
+	      (vec_select:V2HI
+		(match_operand:V4HI 1 "nonimmediate_operand" "")
+		(parallel [(const_int 0) (const_int 2)])))
+	    (sign_extend:V2SI
+	      (vec_select:V2HI
+		(match_operand:V4HI 2 "nonimmediate_operand" "")
+		(parallel [(const_int 0) (const_int 2)]))))
+	  (mult:V2SI
+	    (sign_extend:V2SI
+	      (vec_select:V2HI (match_dup 1)
+		(parallel [(const_int 1) (const_int 3)])))
+	    (sign_extend:V2SI
+	      (vec_select:V2HI (match_dup 2)
+		(parallel [(const_int 1) (const_int 3)]))))))]
+  "TARGET_MMX"
+  "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
+
+(define_insn "*mmx_pmaddwd"
   [(set (match_operand:V2SI 0 "register_operand" "=y")
         (plus:V2SI
 	  (mult:V2SI
@@ -726,7 +762,23 @@
   [(set_attr "type" "mmxmul")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_pmulhrwv4hi3"
+(define_expand "mmx_pmulhrwv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "")
+	(truncate:V4HI
+	  (lshiftrt:V4SI
+	    (plus:V4SI
+	      (mult:V4SI
+	        (sign_extend:V4SI
+		  (match_operand:V4HI 1 "nonimmediate_operand" ""))
+	        (sign_extend:V4SI
+		  (match_operand:V4HI 2 "nonimmediate_operand" "")))
+	      (const_vector:V4SI [(const_int 32768) (const_int 32768)
+				  (const_int 32768) (const_int 32768)]))
+	    (const_int 16))))]
+  "TARGET_3DNOW"
+  "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
+
+(define_insn "*mmx_pmulhrwv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
@@ -744,7 +796,21 @@
   [(set_attr "type" "mmxmul")
    (set_attr "mode" "DI")])
 
-(define_insn "sse2_umulv1siv1di3"
+(define_expand "sse2_umulv1siv1di3"
+  [(set (match_operand:V1DI 0 "register_operand" "")
+        (mult:V1DI
+	  (zero_extend:V1DI
+	    (vec_select:V1SI
+	      (match_operand:V2SI 1 "nonimmediate_operand" "")
+	      (parallel [(const_int 0)])))
+	  (zero_extend:V1DI
+	    (vec_select:V1SI
+	      (match_operand:V2SI 2 "nonimmediate_operand" "")
+	      (parallel [(const_int 0)])))))]
+  "TARGET_SSE2"
+  "ix86_fixup_binary_operands_no_copy (MULT, V2SImode, operands);")
+
+(define_insn "*sse2_umulv1siv1di3"
   [(set (match_operand:V1DI 0 "register_operand" "=y")
         (mult:V1DI
 	  (zero_extend:V1DI
@@ -834,7 +900,15 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_eq<mode>3"
+(define_expand "mmx_eq<mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "")
+        (eq:MMXMODEI
+	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "")
+	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "")))]
+  "TARGET_MMX"
+  "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
+
+(define_insn "*mmx_eq<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
         (eq:MMXMODEI
 	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
@@ -1275,7 +1349,25 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_uavgv8qi3"
+(define_expand "mmx_uavgv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "")
+	(truncate:V8QI
+	  (lshiftrt:V8HI
+	    (plus:V8HI
+	      (plus:V8HI
+		(zero_extend:V8HI
+		  (match_operand:V8QI 1 "nonimmediate_operand" ""))
+		(zero_extend:V8HI
+		  (match_operand:V8QI 2 "nonimmediate_operand" "")))
+	      (const_vector:V8HI [(const_int 1) (const_int 1)
+				  (const_int 1) (const_int 1)
+				  (const_int 1) (const_int 1)
+				  (const_int 1) (const_int 1)]))
+	    (const_int 1))))]
+  "TARGET_SSE || TARGET_3DNOW"
+  "ix86_fixup_binary_operands_no_copy (PLUS, V8QImode, operands);")
+
+(define_insn "*mmx_uavgv8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=y")
 	(truncate:V8QI
 	  (lshiftrt:V8HI
@@ -1303,7 +1395,23 @@
   [(set_attr "type" "mmxshft")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_uavgv4hi3"
+(define_expand "mmx_uavgv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "")
+	(truncate:V4HI
+	  (lshiftrt:V4SI
+	    (plus:V4SI
+	      (plus:V4SI
+		(zero_extend:V4SI
+		  (match_operand:V4HI 1 "nonimmediate_operand" ""))
+		(zero_extend:V4SI
+		  (match_operand:V4HI 2 "nonimmediate_operand" "")))
+	      (const_vector:V4SI [(const_int 1) (const_int 1)
+				  (const_int 1) (const_int 1)]))
+	    (const_int 1))))]
+  "TARGET_SSE || TARGET_3DNOW_A"
+  "ix86_fixup_binary_operands_no_copy (PLUS, V4HImode, operands);")
+
+(define_insn "*mmx_uavgv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
