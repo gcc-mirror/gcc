@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> and
    Zdenek Dvorak <dvorakz@suse.cz>.
 
@@ -1639,7 +1639,9 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 
   /* Emit OMP_RETURN for OMP_FOR.  */
   bsi = bsi_last (ex_bb);
-  bsi_insert_after (&bsi, make_node (OMP_RETURN), BSI_NEW_STMT);
+  t = make_node (OMP_RETURN);
+  OMP_RETURN_NOWAIT (t) = 1;
+  bsi_insert_after (&bsi, t, BSI_NEW_STMT);
 
   return paral_bb;
 }

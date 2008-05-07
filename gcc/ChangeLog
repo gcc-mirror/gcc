@@ -1,4 +1,9 @@
-2008-05-07 Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-parloops.c (create_parallel_loop): Set OMP_RETURN_NOWAIT
+	on OMP_RETURN for OMP_FOR.
+
+2008-05-07  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
         PATCH rtl/7335
         PATCH rtl/33826
@@ -605,7 +610,7 @@
 	(ix86_init_mmx_sse_builtins): Move case V4HI_FTYPE_V4HI after
 	case V4SI_FTYPE_V2DF.
 
-2008-05-03  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-05-03  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/invoke.texi (max-flow-memory-locations): Removed.
 	* params.def (PARAM_MAX_FLOW_MEMORY_LOCATIONS): Removed.
@@ -1732,7 +1737,7 @@
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Increase cost
 	of LR/CTR moves for Power6.
 
-2008-04-22  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-04-22  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/36003
 	* passes.c (init_optimization_passes): Remove
@@ -1817,14 +1822,14 @@
 	* coverage.c: Include tree-pass.h.
 	(coverage_counter_alloc): Print da_file_name to the dump file.
 
-2008-04-21  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-04-21  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* sbitmap.c (sbitmap_range_empty_p): New function.
 	* sbitmap.h (sbitmap_range_empty_p): New function.
 	* bitmap.h: Now includes obstack.h.
 
 2008-04-21  Richard Sandiford  <rsandifo@nildram.co.uk>
-	    Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* dbgcnt.def (ra_byte_scan): Added.
 	* dbgcnt.c (dbg_cnt): Added code to print message to dump_file
@@ -2703,7 +2708,7 @@
 	* config/i386/i386.md ("*sse_prologue_save_insn"): Use braced output
 	control string instead of quoted.
 
-2008-04-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-04-07  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi: Rewrite of subreg section.
 
@@ -5304,7 +5309,7 @@
 
 	* alias.h (alias_set_type): Change from HOST_WIDE_INT to int.
 
-2008-03-05  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-03-05  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* fwprop.c (update_df): Support width and offset parameters of
 	df_ref_create.
@@ -7968,7 +7973,7 @@
 	* common.opt (Wstrict-aliasing): Specify Var and Init.
 	(Wstrict-overflow): Likewise.
 
-2008-01-22  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-01-22  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26854
 	PR rtl-optimization/34400
@@ -8065,7 +8070,7 @@
 	* ipa-struct-reorg.c (gen_size): Fix the malloc parameter calculation
 	when the structure size is not a power of 2.
 
-2008-01-20  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-01-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* doc/install.texi: Add doc for --enable-checking=df.
 	
@@ -8079,7 +8084,7 @@
 	* global.c (find_reg): Only compute EH_RETURN_DATA_REGNO once per
 	input.
 
-2008-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+2008-01-19  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26854
 	PR rtl-optimization/34400
