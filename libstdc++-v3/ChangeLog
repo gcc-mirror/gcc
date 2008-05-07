@@ -1,5 +1,15 @@
 2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/mutex (mutex::mutex): Fix usage of initializing macro.
+	(recursive_mutex::recursive_mutex): Same.
+	(once_flag::once_flag): Same.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Fix line numbers.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Same.
+	
+2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/std/condition_variable: New.
 	* include/std/mutex: New.
 	* src/condition_variable.cc: New.
