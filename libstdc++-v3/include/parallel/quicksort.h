@@ -138,7 +138,7 @@ namespace __gnu_parallel
 				_Settings::get().sort_qs_num_samples_preset,
 				num_threads);
 
-#pragma omp parallel sections
+#pragma omp parallel sections num_threads(2)
       {
 #pragma omp section
 	parallel_sort_qs_conquer(begin, begin + split,
@@ -176,9 +176,6 @@ namespace __gnu_parallel
       // At least one element per processor.
       if (num_threads > n)
         num_threads = static_cast<thread_index_t>(n);
-
-      // Hard to avoid.
-      omp_set_num_threads(num_threads);
 
       parallel_sort_qs_conquer(begin, begin + n, comp, num_threads);
     }
