@@ -53,11 +53,13 @@ extern const char * const cgraph_availability_names[];
 
 struct cgraph_local_info GTY(())
 {
-  /* Estimated stack frame consumption by the function.  */
-  HOST_WIDE_INT estimated_self_stack_size;
+  struct inline_summary {
+    /* Estimated stack frame consumption by the function.  */
+    HOST_WIDE_INT estimated_self_stack_size;
 
-  /* Size of the function before inlining.  */
-  int self_insns;
+    /* Size of the function before inlining.  */
+    int self_insns;
+  } inline_summary;
 
   /* Set when function function is visible in current compilation unit only
      and its address is never taken.  */

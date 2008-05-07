@@ -172,6 +172,12 @@ static int nfunctions_inlined;
 static int overall_insns;
 static gcov_type max_count;
 
+static inline struct inline_summary *
+inline_summary (struct cgraph_node *node)
+{
+  return &node->local.inline_summary;
+}
+
 /* Estimate size of the function after inlining WHAT into TO.  */
 
 static int
@@ -226,8 +232,10 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_o
   else
     e->callee->global.inlined_to = e->caller;
   e->callee->global.stack_frame_offset
-    = e->caller->global.stack_frame_offset + e->caller->local.estimated_self_stack_size;
-  peak = e->callee->global.stack_frame_offset + e->callee->local.estimated_self_stack_size;
+    = e->caller->global.stack_frame_offset
+      + inline_summary (e->caller)->estimated_self_stack_size;
+  peak = e->callee->global.stack_frame_offset
+      + inline_summary (e->callee)->estimated_self_stack_size;
   if (e->callee->global.inlined_to->global.estimated_stack_size < peak)
     e->callee->global.inlined_to->global.estimated_stack_size = peak;
 
@@ -359,10 +367,10 @@ cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
 
   /* When inlining large function body called once into small function,
      take the inlined function as base for limiting the growth.  */
-  if (to->local.self_insns > what->local.self_insns)
-    limit = to->local.self_insns;
+  if (inline_summary (to)->self_insns > inline_summary(what)->self_insns)
+    limit = inline_summary (to)->self_insns;
   else
-    limit = what->local.self_insns;
+    limit = inline_summary (what)->self_insns;
 
   limit += limit * PARAM_VALUE (PARAM_LARGE_FUNCTION_GROWTH) / 100;
 
@@ -378,12 +386,12 @@ cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
       return false;
     }
 
-  stack_size_limit = to->local.estimated_self_stack_size;
+  stack_size_limit = inline_summary (to)->estimated_self_stack_size;
 
   stack_size_limit += stack_size_limit * PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) / 100;
 
   inlined_stack = (to->global.stack_frame_offset
-		   + to->local.estimated_self_stack_size
+		   + inline_summary (to)->estimated_self_stack_size
 		   + what->global.estimated_stack_size);
   if (inlined_stack  > stack_size_limit
       && inlined_stack > PARAM_VALUE (PARAM_LARGE_STACK_FRAME))
@@ -1036,8 +1044,8 @@ cgraph_decide_inlining (void)
       {
 	struct cgraph_edge *e;
 
-	initial_insns += node->local.self_insns;
-	gcc_assert (node->local.self_insns == node->global.insns);
+	initial_insns += inline_summary (node)->self_insns;
+	gcc_assert (inline_summary (node)->self_insns == node->global.insns);
 	for (e = node->callees; e; e = e->next_callee)
 	  if (max_count < e->count)
 	    max_count = e->count;
@@ -1517,19 +1525,21 @@ compute_inline_parameters (void)
   struct cgraph_node *node = cgraph_node (current_function_decl);
 
   gcc_assert (!node->global.inlined_to);
-  node->local.estimated_self_stack_size = estimated_stack_frame_size ();
-  node->global.estimated_stack_size = node->local.estimated_self_stack_size;
+  inline_summary (node)->estimated_self_stack_size
+    = estimated_stack_frame_size ();
+  node->global.estimated_stack_size
+    = inline_summary (node)->estimated_self_stack_size;
   node->global.stack_frame_offset = 0;
   node->local.inlinable = tree_inlinable_function_p (current_function_decl);
-  node->local.self_insns = estimate_num_insns (current_function_decl,
-					       &eni_inlining_weights);
+  inline_summary (node)->self_insns = estimate_num_insns (current_function_decl,
+					                  &eni_inlining_weights);
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
       = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
   if (flag_really_no_inline && !node->local.disregard_inline_limits)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
-  node->global.insns = node->local.self_insns;
+  node->global.insns = inline_summary (node)->self_insns;
   return 0;
 }
 
