@@ -100,7 +100,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   struct cgraph_node *first = (struct cgraph_node *) (void *) 1;
   struct cgraph_node *node, *next;
   bool changed = false;
-  int insns = 0;
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
@@ -157,14 +156,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       next = node->next;
       if (!node->aux)
 	{
-	  int local_insns;
-	  tree decl = node->decl;
-
           node->global.inlined_to = NULL;
-	  if (DECL_STRUCT_FUNCTION (decl))
-	    local_insns = node->local.self_insns;
-	  else
-	    local_insns = 0;
 	  if (file)
 	    fprintf (file, " %s", cgraph_node_name (node));
 	  if (!node->analyzed || !DECL_EXTERNAL (node->decl)
@@ -197,15 +189,11 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      else
 		cgraph_remove_node (node);
 	    }
-	  if (!DECL_SAVED_TREE (decl))
-	    insns += local_insns;
 	  changed = true;
 	}
     }
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
-  if (file)
-    fprintf (file, "\nReclaimed %i insns", insns);
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif

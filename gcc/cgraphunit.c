@@ -460,16 +460,7 @@ cgraph_process_new_functions (void)
 	    cgraph_analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  current_function_decl = fndecl;
-	  node->local.inlinable = tree_inlinable_function_p (fndecl);
-	  node->local.self_insns = estimate_num_insns (fndecl,
-						       &eni_inlining_weights);
-	  node->local.disregard_inline_limits
-	    |= DECL_DISREGARD_INLINE_LIMITS (fndecl);
-	  /* Inlining characteristics are maintained by the
-	     cgraph_mark_inline.  */
-	  node->global.insns = node->local.self_insns;
-	  if (flag_really_no_inline && !node->local.disregard_inline_limits)
-	     node->local.inlinable = 0;
+	  pass_ipa_inline.function_generate_summary (node);
 	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	      /* When not optimizing, be sure we run early local passes anyway

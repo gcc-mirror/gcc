@@ -1,3 +1,14 @@
+2008-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Update.
+	* cgraph.h (cgraph_local_info): Break out inline summary.
+	* cgraphunit.c (cgraph_process_new_functions): Use inliner analysis
+	hook.
+	* ipa-inline (inline_summary): New accestor function.
+	(cgraph_clone_inlined_nodes, cgraph_check_inline_limits,
+	cgraph_decide_inlining, compute_inline_parameters): Update.
+	* ipa.c (cgraph_remove_unreachable_nodes): Remove statistics.
+
 2008-05-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Cleanup ColdFire scheduling support and add V4 pipeline model.
