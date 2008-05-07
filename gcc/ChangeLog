@@ -1,5 +1,9 @@
 2008-05-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/36137
+	* fold-const.c (fold_binary): Use STRIP_SIGN_NOPS instead of
+	STRIP_NOPS on arguments even for MIN_EXPR and MAX_EXPR.
+
 	PR middle-end/36106
 	* omp-low.c (expand_omp_atomic_pipeline): Load value using the
 	integral type rather than floating point, then VIEW_CONVERT_EXPR
