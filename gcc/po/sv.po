@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-03-19 22:15+0100\n"
+"PO-Revision-Date: 2008-05-06 21:51+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -4448,7 +4448,7 @@ msgstr "Sorten %d stöds inte för typen %s vid %C"
 #: fortran/decl.c:1946
 #, no-c-format
 msgid "Missing right parenthesis or comma at %C"
-msgstr "PROGRAM"
+msgstr "Högerparentes eller komma saknas vid %C"
 
 #: fortran/decl.c:2019
 #, no-c-format
@@ -7114,7 +7114,7 @@ msgstr "Dubblerad formatspecifikation vid %C"
 #: fortran/io.c:2149
 #, no-c-format
 msgid "Symbol '%s' in namelist '%s' is INTENT(IN) at %C"
-msgstr "Symbolen \"%s\" i namnlistan \"Ts\" är INTENT(IN) vid %C"
+msgstr "Symbolen \"%s\" i namnlistan \"%s\" är INTENT(IN) vid %C"
 
 #: fortran/io.c:2185
 #, no-c-format
@@ -7846,7 +7846,7 @@ msgstr "Det finns ingen inbyggd modul med namnet \"%s\" vid %C"
 #: fortran/module.c:4779
 #, no-c-format
 msgid "Can't open module file '%s' for reading at %C: %s"
-msgstr "Kan inte öppna modulfilen \"%s\" för läsning: %s"
+msgstr "Kan inte öppna modulfilen \"%s\" för läsning vid %C: %s"
 
 #: fortran/module.c:4787
 #, no-c-format
@@ -8011,7 +8011,7 @@ msgstr "%s REDUCTION-variabel \"%s\" måste vara INTEGER eller REAL vid %L"
 #: fortran/openmp.c:883
 #, no-c-format
 msgid "%s REDUCTION variable '%s' must be INTEGER at %L"
-msgstr "%s REDUCTION-variabel måste vara INTEGER vid %L"
+msgstr "%s REDUCTION-variabel \"%s\" måste vara INTEGER vid %L"
 
 #: fortran/openmp.c:995
 #, no-c-format
@@ -8297,7 +8297,7 @@ msgstr "Fortran 2003: Härledd typdefinition vid %C utan komponenter"
 #: fortran/parse.c:1725
 #, no-c-format
 msgid "PRIVATE statement in TYPE at %C must be inside a MODULE"
-msgstr "PRIVATE-sats i TYPE vid TC måste vara inuti en MODULE"
+msgstr "PRIVATE-sats i TYPE vid %C måste vara inuti en MODULE"
 
 #: fortran/parse.c:1733
 #, no-c-format
@@ -9249,7 +9249,7 @@ msgstr "Vektorreferens vid %L är utanför gränsen (%ld > %ld) i dimension %d"
 #: fortran/resolve.c:3366
 #, no-c-format
 msgid "Illegal stride of zero at %L"
-msgstr "Otillåtet steg på noll vid %C"
+msgstr "Otillåtet steg på noll vid %L"
 
 #: fortran/resolve.c:3383
 #, no-c-format
@@ -16688,7 +16688,7 @@ msgstr "%<__builtin_next_arg%> anropad utan argument"
 #: builtins.c:11403
 #, gcc-internal-format
 msgid "wrong number of arguments to function %<__builtin_next_arg%>"
-msgstr "fel antal argument till funktionen %<__builtin_next_arg>"
+msgstr "fel antal argument till funktionen %<__builtin_next_arg%>"
 
 #. FIXME: Sometimes with the tree optimizers we can get the
 #. not the last argument even though the user used the last
@@ -30637,7 +30637,7 @@ msgstr "%qs är inte giltigt för %qs"
 #: cp/parser.c:20479
 #, gcc-internal-format
 msgid "junk at end of %<#pragma GCC pch_preprocess%>"
-msgstr "skräp vid slutet av %<#pragma GCC pch_preprocess>"
+msgstr "skräp vid slutet av %<#pragma GCC pch_preprocess%>"
 
 #: cp/parser.c:20566
 #, gcc-internal-format
