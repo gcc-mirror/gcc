@@ -26,28 +26,20 @@
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
 
 	* config/i386/sse.md
-	(*sse_movhlps): Rename from sse_movhlps insn pattern.
-	(sse_movhlps): New expander.  Use ix86_fixup_binary_operands
+	(sse_movhlps_exp): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
-	(*sse_movlhps): Rename from sse_movlhps insn pattern.
-	(sse_movlhps): New expander.  Use ix86_fixup_binary_operands
+	(sse_movlhps_exp): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
-	(*sse_loadhps): Rename from sse_loadhps insn pattern.
-	(sse_loadhps): New expander.  Use ix86_fixup_binary_operands
+	(sse_loadhps_exp): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
-	(*sse_loadlps): Rename from sse_loadlps insn pattern.
-	(sse_loadlps): New expander.  Use ix86_fixup_binary_operands
+	(sse_loadlps_exp): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
-	(*sse2_unpckhpd): Rename from sse2_unpckhpd insn pattern.
-	(sse2_unpckhpd): New expander.  Use
+	(sse2_unpckhpd_exp): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*sse2_unpcklpd): Rename from sse2_unpcklpd insn pattern.
-	(sse2_unpcklpd): New expander.  Use
+	(sse2_unpcklpd_exp): New expander.  Use
 	ix86_fixup_binary_operands_no_copy to handle nonimmediate operands.
-	(*sse_loadhpd): Rename from sse_loadhpd insn pattern.
-	(sse_loadhpd): New expander.  Use ix86_fixup_binary_operands
+	(sse_loadhpd_exp): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
-	(*sse_loadlpd): Rename from sse_loadlpd insn pattern.
 	(sse_loadlpd): New expander.  Use ix86_fixup_binary_operands
 	to handle nonimmediate operands.
 	(*sse2_<plusminus_insn><mode>3): Rename from
@@ -92,7 +84,16 @@
 	(ssse3_pmaddubsw128): Use register_operand for operand 1.
 	(ssse3_pmaddubsw): Ditto.
 
-	* config/i386/sse.md (ix86_fixup_binary_operands): Assert that src1
+	* config/i386/i386.c (struct_builtin_description)
+	[IX86_BUILTIN_LOADHPS]: Use CODE_FOR_sse_loadhps_exp.
+	[IX86_BUILTIN_STOREHPS]: Use CODE_FOR_sse_loadlps_exp.
+	[IX86_BUILTIN_LOADHPD]: Use CODE_FOR_sse2_loadhpd_exp.
+	[IX86_BUILTIN_LOADLPD]: Use CODE_FOR_sse2_loadlpd_exp.
+	[IX86_BUILTIN_MOVHLPS]: Use CODE_FOR_sse_movhlps_exp.
+	[IX86_BUILTIN_MOVLHPS]: Use CODE_FOR_sse_movlhps_exp.
+	[IX86_BUILTIN_UNPCKHPD]: Use FOR_sse2_unpckhpd_exp.
+	[IX86_BUILTIN_UNPCKLPD]: Use FOR_sse2_unpcklpd_exp.
+	(ix86_fixup_binary_operands): Assert that src1
 	and src2 must have the same mode when swapped.
 	(ix86_expand_binop_builtin): Do not use ix86_fixup_binary_operands
 	and ix86_binary_operator_ok.  Do not force operands in registers

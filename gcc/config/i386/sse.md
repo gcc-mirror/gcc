@@ -1992,7 +1992,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "sse_movhlps"
+(define_expand "sse_movhlps_exp"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -2005,7 +2005,7 @@
   "TARGET_SSE"
   "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
 
-(define_insn "*sse_movhlps"
+(define_insn "sse_movhlps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,m")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -2023,7 +2023,7 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V4SF,V2SF,V2SF")])
 
-(define_expand "sse_movlhps"
+(define_expand "sse_movlhps_exp"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -2036,7 +2036,7 @@
   "TARGET_SSE"
   "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
 
-(define_insn "*sse_movlhps"
+(define_insn "sse_movlhps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,o")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -2167,7 +2167,7 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
 
-(define_expand "sse_loadhps"
+(define_expand "sse_loadhps_exp"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
 	(vec_concat:V4SF
 	  (vec_select:V2SF
@@ -2177,7 +2177,7 @@
   "TARGET_SSE"
   "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
 
-(define_insn "*sse_loadhps"
+(define_insn "sse_loadhps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,o")
 	(vec_concat:V4SF
 	  (vec_select:V2SF
@@ -2205,7 +2205,7 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V2SF,V4SF,V2SF")])
 
-(define_expand "sse_loadlps"
+(define_expand "sse_loadlps_exp"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
 	(vec_concat:V4SF
 	  (match_operand:V2SF 2 "nonimmediate_operand" "")
@@ -2215,7 +2215,7 @@
   "TARGET_SSE"
   "ix86_fixup_binary_operands (UNKNOWN, V4SFmode, operands);")
 
-(define_insn "*sse_loadlps"
+(define_insn "sse_loadlps"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,m")
 	(vec_concat:V4SF
 	  (match_operand:V2SF 2 "nonimmediate_operand" "0,m,x")
@@ -2421,7 +2421,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "sse2_unpckhpd"
+(define_expand "sse2_unpckhpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -2432,7 +2432,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*sse2_unpckhpd"
+(define_insn "sse2_unpckhpd"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,m")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -2480,7 +2480,7 @@
   DONE;
 })
 
-(define_expand "sse2_unpcklpd"
+(define_expand "sse2_unpcklpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -2491,7 +2491,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*sse2_unpcklpd"
+(define_insn "sse2_unpcklpd"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,o")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -2595,7 +2595,7 @@
   DONE;
 })
 
-(define_expand "sse2_loadhpd"
+(define_expand "sse2_loadhpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_concat:V2DF
 	  (vec_select:DF
@@ -2605,7 +2605,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*sse2_loadhpd"
+(define_insn "sse2_loadhpd"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,x,o")
 	(vec_concat:V2DF
 	  (vec_select:DF
@@ -2632,17 +2632,17 @@
   operands[0] = adjust_address (operands[0], DFmode, 8);
 })
 
-(define_expand "sse2_loadlpd"
+(define_expand "sse2_loadlpd_exp"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_concat:V2DF
 	  (match_operand:DF 2 "nonimmediate_operand" "")
 	  (vec_select:DF
-	    (match_operand:V2DF 1 "vector_move_operand" "")
+	    (match_operand:V2DF 1 "nonimmediate_operand" "")
 	    (parallel [(const_int 1)]))))]
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*sse2_loadlpd"
+(define_insn "sse2_loadlpd"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"    "=x,x,x,x,x,m")
 	(vec_concat:V2DF
 	  (match_operand:DF 2 "nonimmediate_operand"    " m,m,x,0,0,x*fr")
