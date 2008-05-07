@@ -299,7 +299,8 @@ execute_fixup_cfg (void)
 	    tree call = get_call_expr_in (stmt);
 	    tree decl = call ? get_callee_fndecl (call) : NULL;
 
-	    if (decl && call_expr_flags (call) & (ECF_CONST | ECF_PURE)
+	    if (decl && call_expr_flags (call) & (ECF_CONST | ECF_PURE 
+						  | ECF_LOOPING_CONST_OR_PURE)
 		&& TREE_SIDE_EFFECTS (call))
 	      {
 		if (gimple_in_ssa_p (cfun))

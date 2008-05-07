@@ -2274,10 +2274,14 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   /* If the function is "const" or "pure", then clear TREE_SIDE_EFFECTS on its
      decl.  This allows us to eliminate redundant or useless
      calls to "const" functions.  */
-  if (TREE_CODE (*expr_p) == CALL_EXPR
-      && (call_expr_flags (*expr_p) & (ECF_CONST | ECF_PURE)))
-    TREE_SIDE_EFFECTS (*expr_p) = 0;
-
+  if (TREE_CODE (*expr_p) == CALL_EXPR)
+    {
+      int flags = call_expr_flags (*expr_p);
+      if (flags & (ECF_CONST | ECF_PURE)
+	  /* An infinite loop is considered a side effect.  */
+	  && !(flags & (ECF_LOOPING_CONST_OR_PURE)))
+	TREE_SIDE_EFFECTS (*expr_p) = 0;
+    }
   return ret;
 }
 

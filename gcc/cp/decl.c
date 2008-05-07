@@ -1802,11 +1802,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
 	  DECL_NO_LIMIT_STACK (newdecl) |= DECL_NO_LIMIT_STACK (olddecl);
 	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
-	  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
 	  TREE_NOTHROW (newdecl) |= TREE_NOTHROW (olddecl);
 	  DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
 	  DECL_IS_OPERATOR_NEW (newdecl) |= DECL_IS_OPERATOR_NEW (olddecl);
-	  DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
+	  DECL_PURE_P (newdecl) |= DECL_PURE_P (olddecl);
+	  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
+	  DECL_LOOPING_CONST_OR_PURE_P (newdecl) 
+	    |= DECL_LOOPING_CONST_OR_PURE_P (olddecl);
 	  /* Keep the old RTL.  */
 	  COPY_DECL_RTL (olddecl, newdecl);
 	}

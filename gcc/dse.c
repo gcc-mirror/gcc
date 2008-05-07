@@ -1967,7 +1967,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
       /* Const functions cannot do anything bad i.e. read memory,
 	 however, they can read their parameters which may have
 	 been pushed onto the stack.  */
-      if (CONST_OR_PURE_CALL_P (insn) && !pure_call_p (insn))
+      if (RTL_CONST_CALL_P (insn))
 	{
 	  insn_info_t i_ptr = active_local_stores;
 	  insn_info_t last = NULL;

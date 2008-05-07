@@ -2430,7 +2430,10 @@ see_copy_insn (rtx insn)
 	CALL_INSN_FUNCTION_USAGE (ret)
 	  = copy_rtx (CALL_INSN_FUNCTION_USAGE (insn));
       SIBLING_CALL_P (ret) = SIBLING_CALL_P (insn);
-      CONST_OR_PURE_CALL_P (ret) = CONST_OR_PURE_CALL_P (insn);
+      RTL_CONST_CALL_P (ret) = RTL_CONST_CALL_P (insn);
+      RTL_PURE_CALL_P (ret) = RTL_PURE_CALL_P (insn);
+      RTL_LOOPING_CONST_OR_PURE_CALL_P (ret) 
+	= RTL_LOOPING_CONST_OR_PURE_CALL_P (insn);
     }
   else
     gcc_unreachable ();

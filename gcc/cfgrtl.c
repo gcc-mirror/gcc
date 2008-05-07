@@ -2745,7 +2745,7 @@ need_fake_edge_p (const_rtx insn)
   if ((CALL_P (insn)
        && !SIBLING_CALL_P (insn)
        && !find_reg_note (insn, REG_NORETURN, NULL)
-       && !CONST_OR_PURE_CALL_P (insn)))
+       && !(RTL_CONST_OR_PURE_CALL_P (insn))))
     return true;
 
   return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS

@@ -986,7 +986,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
 	  emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
 	  insn = gen_call_value_osf_tlsgd (r0, tga, seq);
 	  insn = emit_call_insn (insn);
-	  CONST_OR_PURE_CALL_P (insn) = 1;
+	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
           insn = get_insns ();
@@ -1007,7 +1007,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
 	  emit_insn (gen_movdi_er_tlsldm (r16, pic_offset_table_rtx, seq));
 	  insn = gen_call_value_osf_tlsldm (r0, tga, seq);
 	  insn = emit_call_insn (insn);
-	  CONST_OR_PURE_CALL_P (insn) = 1;
+	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
           insn = get_insns ();
@@ -3013,7 +3013,7 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
   tmp = emit_call_insn (GEN_CALL_VALUE (reg, tmp, const0_rtx,
 					const0_rtx, const0_rtx));
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
-  CONST_OR_PURE_CALL_P (tmp) = 1;
+  RTL_CONST_CALL_P (tmp) = 1;
 
   tmp = get_insns ();
   end_sequence ();

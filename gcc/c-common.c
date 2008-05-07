@@ -6019,7 +6019,7 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    DECL_IS_PURE (*node) = 1;
+    DECL_PURE_P (*node) = 1;
   /* ??? TODO: Support types.  */
   else
     {

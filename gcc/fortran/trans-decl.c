@@ -1197,7 +1197,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   if (sym->attr.pure || sym->attr.elemental)
     {
       if (sym->attr.function && !gfc_return_by_reference (sym))
-	DECL_IS_PURE (fndecl) = 1;
+	DECL_PURE_P (fndecl) = 1;
       /* TODO: check if pure SUBROUTINEs don't have INTENT(OUT)
 	 parameters and don't use alternate returns (is this
 	 allowed?). In that case, calls to them are meaningless, and
@@ -1324,7 +1324,7 @@ build_function_decl (gfc_symbol * sym)
 	 including an alternate return. In that case it can also be
 	 marked as PURE. See also in gfc_get_extern_function_decl().  */
       if (attr.function && !gfc_return_by_reference (sym))
-	DECL_IS_PURE (fndecl) = 1;
+	DECL_PURE_P (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 

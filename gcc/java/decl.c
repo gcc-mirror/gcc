@@ -906,7 +906,7 @@ java_init_decl_processing (void)
     = add_builtin_function ("_Jv_ResolvePoolEntry",
 			    build_function_type (ptr_type_node, t),
 			    0,NOT_BUILT_IN, NULL, NULL_TREE);
-  DECL_IS_PURE (soft_resolvepoolentry_node) = 1;
+  DECL_PURE_P (soft_resolvepoolentry_node) = 1;
   throw_node = add_builtin_function ("_Jv_Throw",
 				     build_function_type (void_type_node, t),
 				     0, NOT_BUILT_IN, NULL, NULL_TREE);
@@ -1000,7 +1000,7 @@ java_init_decl_processing (void)
     = add_builtin_function ("_Jv_IsInstanceOf",
 			    build_function_type (boolean_type_node, t),
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  DECL_IS_PURE (soft_instanceof_node) = 1;
+  DECL_PURE_P (soft_instanceof_node) = 1;
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
   soft_checkarraystore_node
@@ -1014,7 +1014,7 @@ java_init_decl_processing (void)
     = add_builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			    build_function_type (ptr_type_node, t),
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
-  DECL_IS_PURE (soft_lookupinterfacemethod_node) = 1;
+  DECL_PURE_P (soft_lookupinterfacemethod_node) = 1;
   t = tree_cons (NULL_TREE, ptr_type_node,
 		 tree_cons (NULL_TREE, ptr_type_node,
 			    tree_cons (NULL_TREE, ptr_type_node, endlink)));

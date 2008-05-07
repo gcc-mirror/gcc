@@ -2309,7 +2309,7 @@ oprs_not_set_p (const_rtx x, const_rtx insn)
 static void
 mark_call (rtx insn)
 {
-  if (! CONST_OR_PURE_CALL_P (insn))
+  if (! RTL_CONST_OR_PURE_CALL_P (insn))
     record_last_mem_set_info (insn);
 }
 
@@ -5987,7 +5987,7 @@ store_killed_in_insn (const_rtx x, const_rtx x_regs, const_rtx insn, int after)
     {
       /* A normal or pure call might read from pattern,
 	 but a const call will not.  */
-      if (! CONST_OR_PURE_CALL_P (insn) || pure_call_p (insn))
+      if (RTL_CONST_CALL_P (insn))
 	return true;
 
       /* But even a const call reads its parameters.  Check whether the

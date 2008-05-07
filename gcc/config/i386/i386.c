@@ -7859,7 +7859,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	  insns = get_insns ();
 	  end_sequence ();
 
-	  CONST_OR_PURE_CALL_P (insns) = 1;
+	  RTL_CONST_CALL_P (insns) = 1;
 	  emit_libcall_block (insns, dest, rax, x);
 	}
       else if (TARGET_64BIT && TARGET_GNU2_TLS)
@@ -7890,7 +7890,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
 	  note = gen_rtx_EXPR_LIST (VOIDmode, const0_rtx, NULL);
 	  note = gen_rtx_EXPR_LIST (VOIDmode, ix86_tls_get_addr (), note);
-	  CONST_OR_PURE_CALL_P (insns) = 1;
+	  RTL_CONST_CALL_P (insns) = 1;
 	  emit_libcall_block (insns, base, rax, note);
 	}
       else if (TARGET_64BIT && TARGET_GNU2_TLS)

@@ -99,6 +99,15 @@ deletable_insn_p (rtx insn, bool fast)
   rtx body, x;
   int i;
 
+  /* We can delete dead const or pure calls as long as they do not
+     infinite loop and are not sibling calls.  The problem with
+     sibling calls is that it is hard to see the result.  */
+  if (CALL_P (insn) 
+      && (!SIBLING_CALL_P (insn))
+      && (RTL_CONST_OR_PURE_CALL_P (insn)
+	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
+    return true;
+
   if (!NONJUMP_INSN_P (insn))
     return false;
 

@@ -1,3 +1,8 @@
+2008-05-07 Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	 * trans-decl.c (gfc_get_extern_function_decl, build_function_decl):
+	 Rename DECL_IS_PURE to DECL_PURE_P.
+
 2008-05-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* arith.c: (gfc_arith_concat, gfc_compare_string,
