@@ -1,3 +1,10 @@
+2008-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36106
+	* testsuite/libgomp.c/atomic-5.c: New test.
+	* testsuite/libgomp.c/atomic-6.c: New test.
+	* testsuite/libgomp.c/autopar-1.c: New test.
+
 2008-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35611
