@@ -787,6 +787,9 @@ join_c_conditions (const char *cond1, const char *cond2)
   if (cond2 == 0 || cond2[0] == 0)
     return cond1;
 
+  if (strcmp (cond1, cond2) == 0)
+    return cond1;
+
   result = concat ("(", cond1, ") && (", cond2, ")", NULL);
   obstack_ptr_grow (&joined_conditions_obstack, result);
   obstack_ptr_grow (&joined_conditions_obstack, cond1);
