@@ -272,42 +272,6 @@ debug_referenced_vars (void)
 }
 
 
-/* Dump sub-variables for VAR to FILE.  */
-
-void
-dump_subvars_for (FILE *file, tree var)
-{
-  subvar_t sv = get_subvars_for_var (var);
-  tree subvar;
-  unsigned int i;
-
-  if (!sv)
-    return;
-
-  fprintf (file, "{ ");
-
-  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
-    {
-      print_generic_expr (file, subvar, dump_flags);
-      fprintf (file, "@" HOST_WIDE_INT_PRINT_UNSIGNED, SFT_OFFSET (subvar));
-      if (SFT_BASE_FOR_COMPONENTS_P (subvar))
-        fprintf (file, "[B]");
-      fprintf (file, " ");
-    }
-
-  fprintf (file, "}");
-}
-
-
-/* Dumb sub-variables for VAR to stderr.  */
-
-void
-debug_subvars_for (tree var)
-{
-  dump_subvars_for (stderr, var);
-}
-
-
 /* Dump variable VAR and its may-aliases to FILE.  */
 
 void
@@ -403,12 +367,6 @@ dump_variable (FILE *file, tree var)
       dump_may_aliases_for (file, var);
     }
 
-  if (get_subvars_for_var (var))
-    {
-      fprintf (file, ", sub-vars: ");
-      dump_subvars_for (file, var);
-    }
-
   if (!is_gimple_reg (var))
     {
       if (memory_partition (var))
@@ -421,16 +379,6 @@ dump_variable (FILE *file, tree var)
 	{
 	  fprintf (file, ", partition symbols: ");
 	  dump_decl_set (file, MPT_SYMBOLS (var));
-	}
-
-      if (TREE_CODE (var) == STRUCT_FIELD_TAG)
-	{
-	  fprintf (file, ", offset: " HOST_WIDE_INT_PRINT_UNSIGNED,
-		   SFT_OFFSET (var));
-	  fprintf (file, ", base for components: %s",
-		   SFT_BASE_FOR_COMPONENTS_P (var) ? "NO" : "YES");
-	  fprintf (file, ", partitionable: %s",
-		   SFT_UNPARTITIONABLE_P (var) ? "NO" : "YES");
 	}
     }
 
@@ -766,18 +714,6 @@ remove_referenced_var (tree var)
   struct tree_decl_minimal in;
   void **loc;
   unsigned int uid = DECL_UID (var);
-  subvar_t sv;
-
-  /* If we remove a var, we should also remove its subvars, as we kill
-     their parent var and its annotation.  */
-  if (var_can_have_subvars (var)
-      && (sv = get_subvars_for_var (var)))
-    {
-      unsigned int i;
-      tree subvar;
-      for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
-        remove_referenced_var (subvar);
-    }
 
   clear_call_clobbered (var);
   if ((v_ann = var_ann (var)))

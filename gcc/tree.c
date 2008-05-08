@@ -263,17 +263,14 @@ init_ttree (void)
   tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[LABEL_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[FIELD_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[STRUCT_FIELD_TAG][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[NAME_MEMORY_TAG][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[SYMBOL_MEMORY_TAG][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[MEMORY_PARTITION_TAG][TS_DECL_MINIMAL] = 1;
 
-  tree_contains_struct[STRUCT_FIELD_TAG][TS_MEMORY_TAG] = 1;
   tree_contains_struct[NAME_MEMORY_TAG][TS_MEMORY_TAG] = 1;
   tree_contains_struct[SYMBOL_MEMORY_TAG][TS_MEMORY_TAG] = 1;
   tree_contains_struct[MEMORY_PARTITION_TAG][TS_MEMORY_TAG] = 1;
 
-  tree_contains_struct[STRUCT_FIELD_TAG][TS_STRUCT_FIELD_TAG] = 1;
   tree_contains_struct[MEMORY_PARTITION_TAG][TS_MEMORY_PARTITION_TAG] = 1;
 
   tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS] = 1;
@@ -370,8 +367,6 @@ tree_code_size (enum tree_code code)
 	  case NAME_MEMORY_TAG:
 	  case SYMBOL_MEMORY_TAG:
 	    return sizeof (struct tree_memory_tag);
-	  case STRUCT_FIELD_TAG:
-	    return sizeof (struct tree_struct_field_tag);
 	  case MEMORY_PARTITION_TAG:
 	    return sizeof (struct tree_memory_partition_tag);
 	  default:
@@ -2289,7 +2284,6 @@ tree_node_structure (const_tree t)
 	    return TS_FUNCTION_DECL;
 	  case SYMBOL_MEMORY_TAG:
 	  case NAME_MEMORY_TAG:
-	  case STRUCT_FIELD_TAG:
 	  case MEMORY_PARTITION_TAG:
 	    return TS_MEMORY_TAG;
 	  default:

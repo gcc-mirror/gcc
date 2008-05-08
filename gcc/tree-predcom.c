@@ -2389,8 +2389,6 @@ set_alias_info (tree ref, struct data_reference *dr)
     new_type_alias (var, tag, ref);
   else
     var_ann (var)->symbol_mem_tag = tag;
-
-  var_ann (var)->subvars = DR_SUBVARS (dr);
 }
 
 /* Prepare initializers for CHAIN in LOOP.  Returns false if this is

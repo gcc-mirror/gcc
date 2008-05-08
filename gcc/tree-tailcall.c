@@ -144,7 +144,7 @@ suitable_for_tail_opt_p (void)
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       if (!is_global_var (var)
-	  && (!MTAG_P (var) || TREE_CODE (var) == STRUCT_FIELD_TAG)
+	  && !MTAG_P (var)
 	  && (gimple_aliases_computed_p (cfun) ? is_call_clobbered (var)
 	      : TREE_ADDRESSABLE (var)))
 	return false;

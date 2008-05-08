@@ -907,7 +907,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case SYMBOL_MEMORY_TAG:
     case NAME_MEMORY_TAG:
-    case STRUCT_FIELD_TAG:
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:

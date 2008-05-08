@@ -1,3 +1,84 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (dr_analyze_alias): Do not set DR_SUBVARS.
+	* tree-data-ref.h (struct dr_alias): Remove subvars field.
+	(DR_SUBVARS): Remove.
+	* tree-dfa.c (dump_subvars_for): Remove.
+	(debug_subvars_for): Likewise.
+	(dump_variable): Do not dump subvars.
+	(remove_referenced_var): Do not remove subvars.
+	* tree-flow-inline.h (clear_call_clobbered): SFTs no longer exist.
+	(lookup_subvars_for_var): Remove.
+	(get_subvars_for_var): Likewise.
+	(get_subvars_at): Likewise.
+	(get_first_overlapping_subvar): Likewise.
+	(overlap_subvar): Likewise.
+	* tree-flow.h (subvar_t): Remove.
+	(struct var_ann_d): Remove subvars field.
+	* tree-ssa-alias.c (mark_aliases_call_clobbered): Remove queued
+	argument.  Remove special handling of SFTs.
+	(compute_tag_properties): Likewise.
+	(set_initial_properties): Likewise.
+	(compute_call_clobbered): Likewise.
+	(count_mem_refs): Likewise.
+	(compute_memory_partitions): Likewise.
+	(compute_flow_insensitive_aliasing): Likewise.
+	(setup_pointers_and_addressables): Likewise.
+	(new_type_alias): Likewise.
+	(struct used_part): Remove.
+	(used_portions): Likewise.
+	(struct used_part_map): Likewise.
+	(used_part_map_eq): Likewise.
+	(used_part_map_hash): Likewise.
+	(free_used_part_map): Likewise.
+	(up_lookup): Likewise.
+	(up_insert): Likewise.
+	(get_or_create_used_part_for): Likewise.
+	(create_sft): Likewise.
+	(create_overlap_variables_for): Likewise.
+	(find_used_portions): Likewise.
+	(create_structure_vars): Likewise.
+	* tree.def (STRUCT_FIELD_TAG): Remove.
+	* tree.h (MTAG_P): Adjust.
+	(struct tree_memory_tag): Remove base_for_components and
+	unpartitionable flags.
+	(struct tree_struct_field_tag): Remove.
+	(SFT_PARENT_VAR): Likewise.
+	(SFT_OFFSET): Likewise.
+	(SFT_SIZE): Likewise.
+	(SFT_NONADDRESSABLE_P): Likewise.
+	(SFT_ALIAS_SET): Likewise.
+	(SFT_UNPARTITIONABLE_P): Likewise.
+	(SFT_BASE_FOR_COMPONENTS_P): Likewise.
+	(union tree_node): Remove sft field.
+	* alias.c (get_alias_set): Remove special handling of SFTs.
+	* print-tree.c (print_node): Remove handling of SFTs.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-into-ssa.c (mark_sym_for_renaming): Likewise.
+	* tree-nrv.c (dest_safe_for_nrv_p): Remove special handling of SFTs.
+	* tree-predcom.c (set_alias_info): Do not set subvars.
+	* tree-pretty-print.c (dump_generic_node): Do not handle SFTs.
+	* tree-ssa-loop-ivopts.c (get_ref_tag): Likewise.
+	* tree-ssa-operands.c (access_can_touch_variable): Likewise.
+	(add_vars_for_offset): Remove.
+	(add_virtual_operand): Remove special handling of SFTs.
+	(add_call_clobber_ops): Likewise.
+	(add_call_read_ops): Likewise.
+	(get_asm_expr_operands): Likewise.
+	(get_modify_stmt_operands): Likewise.
+	(get_expr_operands): Likewise.
+	(add_to_addressable_set): Likewise.
+	* tree-ssa.c (verify_ssa_name): Do not handle SFTs.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Likewise.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Do not
+	set subvars.
+	* tree.c (init_ttree): Remove STRUCT_FIELD_TAG initialization.
+	(tree_code_size): Remove STRUCT_FIELD_TAG handling.
+	(tree_node_structure): Likewise.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Remove special
+	handling of SFTs.
+	(find_what_p_points_to): Likewise.
+
 2008-05-08  Sa Liu  <saliu@de.ibm.com>
 
 	* config/spu/spu.md: Fixed subti3 pattern.

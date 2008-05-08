@@ -584,13 +584,6 @@ get_alias_set (tree t)
 	    return 0;
 	}
 
-      /* For non-addressable fields we return the alias set of the
-	 outermost object that could have its address taken.  If this
-	 is an SFT use the precomputed value.  */
-      if (TREE_CODE (t) == STRUCT_FIELD_TAG
-	  && SFT_NONADDRESSABLE_P (t))
-	return SFT_ALIAS_SET (t);
-
       /* Otherwise, pick up the outermost object that we could have a pointer
 	 to, processing conversions as above.  */
       while (component_uses_parent_alias_set (t))

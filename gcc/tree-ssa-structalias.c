@@ -4713,88 +4713,35 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 {
   unsigned int i;
   bitmap_iterator bi;
-  alias_set_type ptr_alias_set;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
-  ptr_alias_set = get_alias_set (TREE_TYPE (TREE_TYPE (ptr)));
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
       varinfo_t vi = get_varinfo (i);
-      alias_set_type var_alias_set;
 
       /* The only artificial variables that are allowed in a may-alias
 	 set are heap variables.  */
       if (vi->is_artificial_var && !vi->is_heap_var)
 	continue;
 
-      if (vi->has_union && get_subvars_for_var (vi->decl) != NULL)
+      if (TREE_CODE (vi->decl) == VAR_DECL
+	  || TREE_CODE (vi->decl) == PARM_DECL
+	  || TREE_CODE (vi->decl) == RESULT_DECL)
 	{
-	  unsigned int i;
-	  tree subvar;
-	  subvar_t sv = get_subvars_for_var (vi->decl);
-
-	  /* Variables containing unions may need to be converted to
-	     their SFT's, because SFT's can have unions and we cannot.  */
-	  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
-	    bitmap_set_bit (into, DECL_UID (subvar));
-	}
-      else if (TREE_CODE (vi->decl) == VAR_DECL
-	       || TREE_CODE (vi->decl) == PARM_DECL
-	       || TREE_CODE (vi->decl) == RESULT_DECL)
-	{
-	  subvar_t sv;
-	  if (var_can_have_subvars (vi->decl)
-	      && (sv = get_subvars_for_var (vi->decl)))
-	    {
-	      /* If VI->DECL is an aggregate for which we created
-		 SFTs, add the SFT corresponding to VI->OFFSET.
-		 If we didn't do field-sensitive PTA we need to to
-		 add all overlapping SFTs.  */
-	      unsigned int j;
-	      tree sft = get_first_overlapping_subvar (sv, vi->offset,
-						       vi->size, &j);
-	      gcc_assert (sft);
-	      for (; VEC_iterate (tree, sv, j, sft); ++j)
-		{
-		  if (SFT_OFFSET (sft) > vi->offset
-		      && vi->size <= SFT_OFFSET (sft) - vi->offset)
-		    break;
-
-		  var_alias_set = get_alias_set (sft);
-		  if (no_tbaa_pruning
-		      || (!is_derefed && !vi->directly_dereferenced)
-		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
-		    {
-		      bitmap_set_bit (into, DECL_UID (sft));
-		      
-		      /* Pointed-to SFTs are needed by the operand scanner
-			 to adjust offsets when adding operands to memory
-			 expressions that dereference PTR.  This means
-			 that memory partitioning may not partition
-			 this SFT because the operand scanner will not
-			 be able to find the other SFTs next to this
-			 one.  But we only need to do this if the pointed
-			 to type is aggregate.  */
-		      if (SFT_BASE_FOR_COMPONENTS_P (sft))
-			SFT_UNPARTITIONABLE_P (sft) = true;
-		    }
-		}
-	    }
+	  /* Just add VI->DECL to the alias set.
+	     Don't type prune artificial vars.  */
+	  if (vi->is_artificial_var)
+	    bitmap_set_bit (into, DECL_UID (vi->decl));
 	  else
 	    {
-	      /* Otherwise, just add VI->DECL to the alias set.
-		 Don't type prune artificial vars.  */
-	      if (vi->is_artificial_var)
-		bitmap_set_bit (into, DECL_UID (vi->decl));
-	      else
-		{
-		  var_alias_set = get_alias_set (vi->decl);
-		  if (no_tbaa_pruning
-		      || (!is_derefed && !vi->directly_dereferenced)
-		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
-		    bitmap_set_bit (into, DECL_UID (vi->decl));
-		}
+	      alias_set_type var_alias_set, ptr_alias_set;
+	      var_alias_set = get_alias_set (vi->decl);
+	      ptr_alias_set = get_alias_set (TREE_TYPE (TREE_TYPE (ptr)));
+	      if (no_tbaa_pruning
+		  || (!is_derefed && !vi->directly_dereferenced)
+		  || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
+	        bitmap_set_bit (into, DECL_UID (vi->decl));
 	    }
 	}
     }
@@ -4923,9 +4870,7 @@ find_what_p_points_to (tree p)
 	  /* Nothing currently asks about structure fields directly,
 	     but when they do, we need code here to hand back the
 	     points-to set.  */
-	  if (!var_can_have_subvars (vi->decl)
-	      || get_subvars_for_var (vi->decl) == NULL)
-	    return false;
+	  return false;
 	}
       else
 	{

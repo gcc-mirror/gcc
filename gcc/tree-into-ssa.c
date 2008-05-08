@@ -2790,19 +2790,6 @@ mark_sym_for_renaming (tree sym)
   if (need_to_initialize_update_ssa_p)
     init_update_ssa ();
 
-  /* FIXME.  Why do we need this?  */
-  {
-    subvar_t svars;
-    if (var_can_have_subvars (sym) && (svars = get_subvars_for_var (sym)))
-      {
-        unsigned int i;
-	tree subvar;
-
-	for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
-	  mark_sym_for_renaming (subvar);
-      }
-  }
-
   bitmap_set_bit (syms_to_rename, DECL_UID (sym));
 
   if (!is_gimple_reg (sym))

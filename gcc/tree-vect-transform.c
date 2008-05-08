@@ -1061,8 +1061,6 @@ vect_create_data_ref_ptr (tree stmt, struct loop *at_loop,
   else
     set_symbol_mem_tag (vect_ptr, tag);
 
-  var_ann (vect_ptr)->subvars = DR_SUBVARS (dr);
-
   /** Note: If the dataref is in an inner-loop nested in LOOP, and we are
       vectorizing LOOP (i.e. outer-loop vectorization), we need to create two
       def-use update cycles for the pointer: One relative to the outer-loop
