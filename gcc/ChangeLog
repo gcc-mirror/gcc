@@ -1,5 +1,10 @@
 2008-05-08  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* read-rtl.c (join_c_conditions): Return the first string if the
+	two strings are equal.
+
+2008-05-08  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* gensupport.h (pred_data): Add a "num_codes" field.
 	(add_predicate_code): Declare.
 	* gensupport.c (add_predicate_code): New function.
