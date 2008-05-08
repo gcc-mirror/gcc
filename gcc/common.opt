@@ -112,14 +112,7 @@ Exit on the first error occurred
 
 Wframe-larger-than=
 Common RejectNegative Joined UInteger
--Wframe-larger-than=@var{len} Warn whenever a function's stack frame requires
-more than @var{len} bytes.  The computation done to determine
-the stack frame size is approximate and not conservative.
-The actual requirements may be somewhat greater than @var{len}
-even if you do not get a warning.  In addition, any space allocated
-via @code{alloca}, variable-length arrays, or related constructs
-is not included by the compiler when determining
-whether or not to issue a warning.
+-Wframe-larger-than=<number> Warn if a function's stack frame requires more than <number> bytes
 
 Winline
 Common Var(warn_inline) Warning

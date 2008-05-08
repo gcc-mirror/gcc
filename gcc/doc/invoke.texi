@@ -3552,7 +3552,14 @@ Warn whenever an object of larger than @var{len} bytes is defined.
 
 @item -Wframe-larger-than=@var{len}
 @opindex Wframe-larger-than
-Warn whenever the size of a function frame is larger than @var{len} bytes.
+Warn if the size of a function frame is larger than @var{len} bytes.
+The computation done to determine the stack frame size is approximate
+and not conservative.
+The actual requirements may be somewhat greater than @var{len}
+even if you do not get a warning.  In addition, any space allocated
+via @code{alloca}, variable-length arrays, or related constructs
+is not included by the compiler when determining
+whether or not to issue a warning.
 
 @item -Wunsafe-loop-optimizations
 @opindex Wunsafe-loop-optimizations
