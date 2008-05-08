@@ -1,3 +1,9 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36172
+	* fold-const.c (operand_equal_p): Two objects which types
+	differ in pointerness are not equal.
+
 2008-05-08  Kai Tietz  <kai,tietz@onevision.com>
 
 	* calls.c (compute_argument_block_size): Add argument tree fndecl.
