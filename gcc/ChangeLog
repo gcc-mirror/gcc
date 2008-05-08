@@ -1,3 +1,7 @@
+2008-05-08  Steve Ellcey  <sje@cup.hp.com>
+
+	* stmt.c (expand_stack_restore): Change sa mode if needed.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386-protos.h (ix86_return_in_memory): Adjust

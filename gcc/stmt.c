@@ -1996,6 +1996,7 @@ expand_stack_restore (tree var)
 {
   rtx sa = expand_normal (var);
 
+  sa = convert_memory_address (Pmode, sa);
   emit_stack_restore (SAVE_BLOCK, sa, NULL_RTX);
 }
 
