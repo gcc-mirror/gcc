@@ -1047,19 +1047,25 @@
 		  (match_operand:TI 2 "spu_reg_operand" "r")))
    (clobber (match_scratch:TI 3 "=&r"))
    (clobber (match_scratch:TI 4 "=&r"))
-   (clobber (match_scratch:TI 5 "=&r"))]
+   (clobber (match_scratch:TI 5 "=&r"))
+   (clobber (match_scratch:TI 6 "=&r"))]
   ""
-  "bg\t%3,%1,%2\n\\
+  "il\t%6,1\n\\
+   bg\t%3,%2,%1\n\\
+   xor\t%3,%3,%6\n\\
    sf\t%4,%2,%1\n\\
    shlqbyi\t%5,%3,4\n\\
-   bg\t%3,%4,%5\n\\
+   bg\t%3,%5,%4\n\\
+   xor\t%3,%3,%6\n\\
    sf\t%4,%5,%4\n\\
    shlqbyi\t%5,%3,4\n\\
-   bg\t%3,%4,%5\n\\
-   shlqbyi\t%0,%3,4\n\\
-   sfx\t%0,%5,%4"
+   bg\t%3,%5,%4\n\\
+   xor\t%3,%3,%6\n\\
+   sf\t%4,%5,%4\n\\
+   shlqbyi\t%5,%3,4\n\\
+   sf\t%0,%5,%4"
   [(set_attr "type" "multi0")
-   (set_attr "length" "36")])
+   (set_attr "length" "56")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
