@@ -545,7 +545,9 @@
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_false
 
 #define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#ifndef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY default_return_in_memory
+#endif
 #define TARGET_RETURN_IN_MSB hook_bool_const_tree_false
 
 #define TARGET_EXPAND_BUILTIN_SAVEREGS default_expand_builtin_saveregs

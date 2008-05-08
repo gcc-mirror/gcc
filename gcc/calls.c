@@ -1189,7 +1189,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 static int
 compute_argument_block_size (int reg_parm_stack_space,
 			     struct args_size *args_size,
-			     tree fndecl,
+			     tree fndecl ATTRIBUTE_UNUSED,
 			     int preferred_stack_boundary ATTRIBUTE_UNUSED)
 {
   int unadjusted_args_size = args_size->constant;
@@ -3281,7 +3281,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   rtx fun;
   /* Todo, choose the correct decl type of orgfun. Sadly this information
      isn't present here, so we default to native calling abi here.  */
-  tree fndecl = NULL_TREE; /* library calls default to host calling abi ? */
+  tree fndecl ATTRIBUTE_UNUSED = NULL_TREE; /* library calls default to host calling abi ? */
   int inc;
   int count;
   rtx argblock = 0;
