@@ -5880,7 +5880,10 @@ void
 mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 {
   rtx orig_addr, memsi_addr, memsi, shift, shiftsi, unshifted_mask;
-  rtx mask, inverted_mask, oldvalsi, old_shifted, newvalsi, new_shifted, res;
+  rtx unshifted_mask_reg, mask, inverted_mask, res;
+  enum machine_mode mode;
+
+  mode = GET_MODE (mem);
 
   /* Compute the address of the containing SImode value.  */
   orig_addr = force_reg (Pmode, XEXP (mem, 0));
@@ -5896,8 +5899,7 @@ mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
      counting from the least significant byte.  */
   shift = mips_force_binary (Pmode, AND, orig_addr, GEN_INT (3));
   if (TARGET_BIG_ENDIAN)
-    mips_emit_binary (XOR, shift, shift,
-		      GEN_INT (GET_MODE (mem) == QImode ? 3 : 2));
+    mips_emit_binary (XOR, shift, shift, GEN_INT (mode == QImode ? 3 : 2));
 
   /* Multiply by eight to convert the shift value from bytes to bits.  */
   mips_emit_binary (ASHIFT, shift, shift, GEN_INT (3));
@@ -5907,9 +5909,9 @@ mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
   shiftsi = force_reg (SImode, gen_lowpart (SImode, shift));
 
   /* Set MASK to an inclusive mask of the QImode or HImode value.  */
-  unshifted_mask = GEN_INT (GET_MODE_MASK (GET_MODE (mem)));
-  unshifted_mask = force_reg (SImode, unshifted_mask);
-  mask = mips_force_binary (SImode, ASHIFT, unshifted_mask, shiftsi);
+  unshifted_mask = GEN_INT (GET_MODE_MASK (mode));
+  unshifted_mask_reg = force_reg (SImode, unshifted_mask);
+  mask = mips_force_binary (SImode, ASHIFT, unshifted_mask_reg, shiftsi);
 
   /* Compute the equivalent exclusive mask.  */
   inverted_mask = gen_reg_rtx (SImode);
@@ -5917,17 +5919,25 @@ mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 			  gen_rtx_NOT (SImode, mask)));
 
   /* Shift the old value into place.  */
-  oldvalsi = force_reg (SImode, gen_lowpart (SImode, oldval));
-  old_shifted = mips_force_binary (SImode, ASHIFT, oldvalsi, shiftsi);
+  if (oldval != const0_rtx)
+    {
+      oldval = convert_modes (SImode, mode, oldval, true);
+      oldval = force_reg (SImode, oldval);
+      oldval = mips_force_binary (SImode, ASHIFT, oldval, shiftsi);
+    }
 
   /* Do the same for the new value.  */
-  newvalsi = force_reg (SImode, gen_lowpart (SImode, newval));
-  new_shifted = mips_force_binary (SImode, ASHIFT, newvalsi, shiftsi);
+  if (newval != const0_rtx)
+    {
+      newval = convert_modes (SImode, mode, newval, true);
+      newval = force_reg (SImode, newval);
+      newval = mips_force_binary (SImode, ASHIFT, newval, shiftsi);
+    }
 
   /* Do the SImode atomic access.  */
   res = gen_reg_rtx (SImode);
   emit_insn (gen_compare_and_swap_12 (res, memsi, mask, inverted_mask,
-				      old_shifted, new_shifted));
+				      oldval, newval));
 
   /* Shift and convert the result.  */
   mips_emit_binary (AND, res, res, mask);

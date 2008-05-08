@@ -1,3 +1,9 @@
+2008-05-08  David Daney  <ddaney@avtrex.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long): Add
+	mips*-*-*.
+	(check_effective_target_sync_char_short): Same.
+
 2008-05-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.c-torture/compile/pr36172.c: Replace unsigned long by

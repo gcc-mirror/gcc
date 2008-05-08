@@ -4462,19 +4462,22 @@
 
 ;; Helper insn for mips_expand_compare_and_swap_12.
 (define_insn "compare_and_swap_12"
-  [(set (match_operand:SI 0 "register_operand" "=&d")
-	(match_operand:SI 1 "memory_operand" "+R"))
+  [(set (match_operand:SI 0 "register_operand" "=&d,&d")
+	(match_operand:SI 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
-	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d")
-			     (match_operand:SI 3 "register_operand" "d")
-			     (match_operand:SI 4 "register_operand" "d")
-			     (match_operand:SI 5 "register_operand" "d")]
+	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d,d")
+			     (match_operand:SI 3 "register_operand" "d,d")
+			     (match_operand:SI 4 "reg_or_0_operand" "dJ,dJ")
+			     (match_operand:SI 5 "reg_or_0_operand" "d,J")]
 			    UNSPEC_COMPARE_AND_SWAP_12))]
   "GENERATE_LL_SC"
 {
-  return MIPS_COMPARE_AND_SWAP_12;
+  if (which_alternative == 0)
+    return MIPS_COMPARE_AND_SWAP_12;
+  else
+    return MIPS_COMPARE_AND_SWAP_12_0;
 }
-  [(set_attr "length" "40")])
+  [(set_attr "length" "40,36")])
 
 (define_insn "sync_add<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
