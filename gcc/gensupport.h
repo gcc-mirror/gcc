@@ -76,6 +76,7 @@ struct pred_data
 
   /* data used primarily by genrecog.c */
   enum rtx_code singleton;	/* if pred takes only one code, that code */
+  int num_codes;		/* number of codes accepted */
   bool allows_non_lvalue;	/* if pred allows non-lvalue expressions */
   bool allows_non_const;	/* if pred allows non-const expressions */
   bool codes[NUM_RTX_CODE];	/* set of codes accepted */
@@ -83,6 +84,7 @@ struct pred_data
 
 extern struct pred_data *first_predicate;
 extern struct pred_data *lookup_predicate (const char *);
+extern void add_predicate_code (struct pred_data *, enum rtx_code);
 extern void add_predicate (struct pred_data *);
 
 #define FOR_ALL_PREDICATES(p) for (p = first_predicate; p; p = p->next)

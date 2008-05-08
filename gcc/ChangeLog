@@ -1,3 +1,15 @@
+2008-05-08  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gensupport.h (pred_data): Add a "num_codes" field.
+	(add_predicate_code): Declare.
+	* gensupport.c (add_predicate_code): New function.
+	(std_pred_table): Add an "allows_const_p" field.
+	(std_preds): Set this field for predicates that allow RTX_CONST_OBJs.
+	Remove the (incomplete) list of such codes from the codes field.
+	(init_predicate_table): Use add_predicate_code.  Add all
+	RTX_CONST_OBJs if allows_const_p is true.
+	* genrecog.c (process_define_predicate): Use add_predicate_code.
+
 2008-05-08  David Daney  <ddaney@avtrex.com>
 	    Richard Sandiford  <rsandifo@nildram.co.uk>
 	
