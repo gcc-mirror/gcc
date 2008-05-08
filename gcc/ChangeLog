@@ -1,3 +1,15 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36154
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Make
+	sure to create a representative for trailing arrays for PTA.
+
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36172
+	* fold-const.c (operand_equal_p): Two objects which types
+	differ in pointerness are not equal.
+
 2008-05-07  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/36013

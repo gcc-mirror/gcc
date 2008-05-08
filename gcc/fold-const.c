@@ -3024,8 +3024,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
   /* If both types don't have the same signedness, then we can't consider
      them equal.  We must check this before the STRIP_NOPS calls
-     because they may change the signedness of the arguments.  */
-  if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1)))
+     because they may change the signedness of the arguments.  As pointers
+     strictly don't have a signedness, require either two pointers or
+     two non-pointers as well.  */
+  if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
+      || POINTER_TYPE_P (TREE_TYPE (arg0)) != POINTER_TYPE_P (TREE_TYPE (arg1)))
     return 0;
 
   /* If both types don't have the same precision, then it is not safe

@@ -4180,11 +4180,15 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 		        (DECL_NONADDRESSABLE_P (field)
 		         ? addressable_type
 		         : TREE_TYPE (field))))
-		     && DECL_SIZE (field)
-		     && !integer_zerop (DECL_SIZE (field)))
-	      /* Empty structures may have actual size, like in C++. So
+		     && ((DECL_SIZE (field)
+			  && !integer_zerop (DECL_SIZE (field)))
+			 || (!DECL_SIZE (field)
+			     && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)))
+	      /* Empty structures may have actual size, like in C++.  So
 	         see if we didn't push any subfields and the size is
-	         nonzero, push the field onto the stack */
+	         nonzero, push the field onto the stack.  Trailing flexible
+		 array members also need a representative to be able to
+		 treat taking their address in PTA.  */
 	      push = true;
 
 	    if (push)
