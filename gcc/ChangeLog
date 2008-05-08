@@ -1,3 +1,8 @@
+2008-05-08  Sa Liu  <saliu@de.ibm.com>
+
+	* config/spu/spu.md: Fixed subti3 pattern.
+	* testsuite/gcc.target/spu/subti3.c: New.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36154
