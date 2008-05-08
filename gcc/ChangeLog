@@ -1,3 +1,13 @@
+2008-05-08  Rafael Espindola  <espindola@google.com>
+
+	* tree-complex.c (expand_complex_div_wide): Don't create CONDs that
+	trap.
+	* tree-gimple.c (is_gimple_condexpr): Check that the expression doesn't
+	trap and that both operands are gimple values.
+	(canonicalize_cond_expr_cond): Use is_gimple_condexpr.
+	* gcc/tree-eh.c (tree_could_trap_p): Correctly detect if a comparison
+	is a fp operation.
+
 2008-05-08  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* read-rtl.c (join_c_conditions): Return the first string if the

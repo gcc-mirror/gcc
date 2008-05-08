@@ -1,3 +1,12 @@
+2008-05-08  Rafael Espindola  <espindola@google.com>
+
+	* gcc.dg/vect/vect-111.c: Rename to no-trapping-math-vect-111.c
+	* gcc.dg/vect/vect-ifcvt-11.c: Rename to no-trapping-math-vect-ifcvt-11.c
+	* gcc.dg/vect/vect-ifcvt-12.c: Rename to no-trapping-math-vect-ifcvt-12.c
+	* gcc.dg/vect/vect-ifcvt-13.c: Rename to no-trapping-math-vect-ifcvt-13.c
+	* gcc.dg/vect/vect-ifcvt-14.c: Rename to no-trapping-math-vect-ifcvt-14.c
+	* gcc.dg/vect/vect-ifcvt-15.c: Rename to no-trapping-math-vect-ifcvt-15.c
+
 2008-05-08  David Daney  <ddaney@avtrex.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long): Add
