@@ -1481,7 +1481,7 @@ do {									      \
 /* How large values are returned */
 /* A C expression which can inhibit the returning of certain function values
    in registers, based on the type of value.  */
-#define RETURN_IN_MEMORY(TYPE) arm_return_in_memory (TYPE)
+#define TARGET_RETURN_IN_MEMORY arm_return_in_memory
 
 /* Define DEFAULT_PCC_STRUCT_RETURN to 1 if all structure and union return
    values must be in memory.  On the ARM, they need only do so if larger

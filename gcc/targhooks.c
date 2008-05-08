@@ -107,11 +107,7 @@ bool
 default_return_in_memory (const_tree type,
 			  const_tree fntype ATTRIBUTE_UNUSED)
 {
-#ifndef RETURN_IN_MEMORY
   return (TYPE_MODE (type) == BLKmode);
-#else
-  return RETURN_IN_MEMORY (type);
-#endif
 }
 
 rtx

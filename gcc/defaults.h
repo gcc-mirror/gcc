@@ -937,7 +937,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-#define OUTGOING_REG_PARM_STACK_SPACE 0
+#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 0
 #endif
 
 #endif  /* ! GCC_DEFAULTS_H */

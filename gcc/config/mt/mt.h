@@ -532,7 +532,7 @@ extern struct mt_frame_info current_frame_info;
 
 /* Define this if it is the responsibility of the caller to
    allocate the area reserved for arguments passed in registers.  */
-#define OUTGOING_REG_PARM_STACK_SPACE 1
+#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
 /* The number of register assigned to holding function arguments.  */
 #define MT_NUM_ARG_REGS        4
@@ -580,7 +580,7 @@ extern struct mt_frame_info current_frame_info;
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  */
-#define RETURN_IN_MEMORY(TYPE) (int_size_in_bytes (TYPE) > UNITS_PER_WORD)
+#define TARGET_RETURN_IN_MEMORY mt_return_in_memory
 
 /* Define this macro to be 1 if all structure and union return values must be
    in memory.  */

@@ -29,10 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 /* The ELF ABI for the i386 says that records and unions are returned
    in memory.  */
 
-#undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode \
-   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8))
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY ix86_i386elf_return_in_memory
 
 #undef CPP_SPEC
 #define CPP_SPEC ""

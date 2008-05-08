@@ -101,7 +101,7 @@
 /* Although not normally relevant (since by default, all aggregates
    are returned in memory) compiling some parts of libc requires
    non-APCS style struct returns.  */
-#undef RETURN_IN_MEMORY
+#undef TARGET_RETURN_IN_MEMORY
 
 /* VERY BIG NOTE : Change of structure alignment for RiscBSD.
    There are consequences you should be aware of...

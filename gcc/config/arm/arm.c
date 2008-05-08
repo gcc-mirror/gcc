@@ -2736,9 +2736,9 @@ arm_apply_result_size (void)
 
 /* Decide whether a type should be returned in memory (true)
    or in a register (false).  This is called by the macro
-   RETURN_IN_MEMORY.  */
+   TARGET_RETURN_IN_MEMORY.  */
 int
-arm_return_in_memory (const_tree type)
+arm_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size;
 
@@ -2801,7 +2801,7 @@ arm_return_in_memory (const_tree type)
 
       /* ... Aggregates that are not themselves valid for returning in
 	 a register are not allowed.  */
-      if (RETURN_IN_MEMORY (TREE_TYPE (field)))
+      if (arm_return_in_memory (TREE_TYPE (field), NULL_TREE))
 	return 1;
 
       /* Now check the remaining fields, if any.  Only bitfields are allowed,
@@ -2836,7 +2836,7 @@ arm_return_in_memory (const_tree type)
 	  if (FLOAT_TYPE_P (TREE_TYPE (field)))
 	    return 1;
 
-	  if (RETURN_IN_MEMORY (TREE_TYPE (field)))
+	  if (arm_return_in_memory (TREE_TYPE (field), NULL_TREE))
 	    return 1;
 	}
 

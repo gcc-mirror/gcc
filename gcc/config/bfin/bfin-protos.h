@@ -120,7 +120,7 @@ extern void asm_conditional_branch (rtx, rtx *, int, int);
 extern rtx bfin_gen_compare (rtx, Mmode);
 
 extern int bfin_local_alignment (tree, int);
-extern int bfin_return_in_memory (const_tree);
+extern int bfin_return_in_memory (const_tree, const_tree);
 extern void initialize_trampoline (rtx, rtx, rtx);
 extern bool bfin_legitimate_address_p (Mmode, rtx, int);
 extern rtx bfin_va_arg (tree, tree);
