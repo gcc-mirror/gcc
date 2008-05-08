@@ -1,3 +1,15 @@
+2008-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35657
+	* config/i386/i386.c (contains_128bit_aligned_vector_p): Renamed
+	to ...
+	(contains_aligned_value_p): This.  Handle _Decimal128.
+	(ix86_function_arg_boundary): Only align _Decimal128 to its
+	natural boundary and handle it properly.
+
 2008-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/36090

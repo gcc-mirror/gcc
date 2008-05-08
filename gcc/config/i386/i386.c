@@ -4504,12 +4504,12 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 }
 
 /* Return true when TYPE should be 128bit aligned for 32bit argument passing
-   ABI.  Only called if TARGET_SSE.  */
+   ABI.  */
 static bool
-contains_128bit_aligned_vector_p (tree type)
+contains_aligned_value_p (tree type)
 {
   enum machine_mode mode = TYPE_MODE (type);
-  if (SSE_REG_MODE_P (mode)
+  if (((TARGET_SSE && SSE_REG_MODE_P (mode)) || mode == TDmode)
       && (!TYPE_USER_ALIGN (type) || TYPE_ALIGN (type) > 128))
     return true;
   if (TYPE_ALIGN (type) < 128)
@@ -4530,7 +4530,7 @@ contains_128bit_aligned_vector_p (tree type)
 	    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	      {
 		if (TREE_CODE (field) == FIELD_DECL
-		    && contains_128bit_aligned_vector_p (TREE_TYPE (field)))
+		    && contains_aligned_value_p (TREE_TYPE (field)))
 		  return true;
 	      }
 	    break;
@@ -4538,7 +4538,7 @@ contains_128bit_aligned_vector_p (tree type)
 
 	case ARRAY_TYPE:
 	  /* Just for use if some languages passes arrays by value.  */
-	  if (contains_128bit_aligned_vector_p (TREE_TYPE (type)))
+	  if (contains_aligned_value_p (TREE_TYPE (type)))
 	    return true;
 	  break;
 
@@ -4562,8 +4562,8 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
     align = GET_MODE_ALIGNMENT (mode);
   if (align < PARM_BOUNDARY)
     align = PARM_BOUNDARY;
-  /* Decimal floating point is aligned to its natural boundary.  */
-  if (!TARGET_64BIT && !VALID_DFP_MODE_P (mode))
+  /* In 32bit, only _Decimal128 is aligned to its natural boundary.  */
+  if (!TARGET_64BIT && mode != TDmode)
     {
       /* i386 ABI defines all arguments to be 4 byte aligned.  We have to
 	 make an exception for SSE modes since these require 128bit
@@ -4572,16 +4572,14 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 	 The handling here differs from field_alignment.  ICC aligns MMX
 	 arguments to 4 byte boundaries, while structure fields are aligned
 	 to 8 byte boundaries.  */
-      if (!TARGET_SSE)
-	align = PARM_BOUNDARY;
-      else if (!type)
+      if (!type)
 	{
-	  if (!SSE_REG_MODE_P (mode))
+	  if (!(TARGET_SSE && SSE_REG_MODE_P (mode)) && mode != TDmode)
 	    align = PARM_BOUNDARY;
 	}
       else
 	{
-	  if (!contains_128bit_aligned_vector_p (type))
+	  if (!contains_aligned_value_p (type))
 	    align = PARM_BOUNDARY;
 	}
     }
