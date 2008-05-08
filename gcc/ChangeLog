@@ -1,3 +1,9 @@
+2008-05-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/36090
+	* simplify-rtx.c (simplify_plus_minus): Create CONST of
+	similar RTX_CONST_OBJ before CONST_INT.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36154
