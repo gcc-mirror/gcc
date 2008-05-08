@@ -1,7 +1,11 @@
 2008-05-08  Kai Tietz  <kai.tietz@onevision.com>
 
-        * gcc.c-torture/compile/pr36172.c: Replace unsigned long by
-        __SIZE_TYPE__.
+	* gcc.c-torture/compile/pr36172.c: Replace unsigned long by
+	__SIZE_TYPE__.
+
+2008-05-08  Sa Liu  <saliu@de.ibm.com>
+
+	* testsuite/gcc.target/spu/subti3.c: New.
 
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
@@ -29,7 +33,7 @@
 2008-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/34974
-	gfortran.dg/fmt_t_7.f: XFAIL this until we get issue resolved.
+	* gfortran.dg/fmt_t_7.f: XFAIL this until we get issue resolved.
 
 2008-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
