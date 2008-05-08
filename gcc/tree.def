@@ -363,7 +363,6 @@ DEFTREECODE (RESULT_DECL, "result_decl", tcc_declaration, 0)
 
 /* Memory tags used in tree-ssa to represent memory locations in
    virtual SSA.  */
-DEFTREECODE (STRUCT_FIELD_TAG, "struct_field_tag", tcc_declaration, 0)
 DEFTREECODE (NAME_MEMORY_TAG, "name_memory_tag", tcc_declaration, 0)
 DEFTREECODE (SYMBOL_MEMORY_TAG, "symbol_memory_tag", tcc_declaration, 0)
 DEFTREECODE (MEMORY_PARTITION_TAG, "memory_partition_tag", tcc_declaration, 0)

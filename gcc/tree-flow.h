@@ -327,8 +327,6 @@ enum noalias_state {
 };
 
 
-typedef VEC(tree,gc) *subvar_t;
-
 struct var_ann_d GTY(())
 {
   struct tree_ann_common_d common;
@@ -395,10 +393,6 @@ struct var_ann_d GTY(())
   /* During into-ssa and the dominator optimizer, this field holds the
      current version of this variable (an SSA_NAME).  */
   tree current_def;
-
-  /* If this variable is a structure, this fields holds an array
-     of symbols representing each of the fields of the structure.  */
-  VEC(tree,gc) *subvars;
 };
 
 /* Container for variable annotation used by hashtable for annotations for
@@ -814,8 +808,6 @@ extern void debug_referenced_vars (void);
 extern void dump_referenced_vars (FILE *);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
-extern void dump_subvars_for (FILE *, tree);
-extern void debug_subvars_for (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_var (tree);
 extern void remove_referenced_var (tree);
@@ -858,16 +850,11 @@ extern struct ptr_info_def *get_ptr_info (tree);
 extern void new_type_alias (tree, tree, tree);
 extern void count_uses_and_derefs (tree, tree, unsigned *, unsigned *,
 				   unsigned *);
-static inline subvar_t get_subvars_for_var (tree);
-static inline tree get_subvar_at (tree, unsigned HOST_WIDE_INT);
 static inline bool ref_contains_array_ref (const_tree);
 static inline bool array_ref_contains_indirect_ref (const_tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 static inline bool var_can_have_subvars (const_tree);
-static inline bool overlap_subvar (unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
-				   const_tree, bool *);
 extern tree create_tag_raw (enum tree_code, tree, const char *);
 extern void delete_mem_ref_stats (struct function *);
 extern void dump_mem_ref_stats (FILE *);

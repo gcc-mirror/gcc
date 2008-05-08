@@ -513,7 +513,6 @@ dequeue_and_dump (dump_info_p di)
       
     case SYMBOL_MEMORY_TAG:
     case NAME_MEMORY_TAG:
-    case STRUCT_FIELD_TAG:
       break;
 
     case VAR_DECL:

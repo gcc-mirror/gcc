@@ -254,13 +254,6 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
-  if (is_virtual && var_ann (SSA_NAME_VAR (ssa_name)) 
-      && get_subvars_for_var (SSA_NAME_VAR (ssa_name)) != NULL)
-    {
-      error ("found real variable when subvariables should have appeared");
-      return true;
-    }
-
   if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
       && !IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name)))
     {

@@ -249,17 +249,13 @@ struct gimple_opt_pass pass_nrv =
    optimization, where DEST is expected to be the LHS of a modify
    expression where the RHS is a function returning an aggregate.
 
-   We search for a base VAR_DECL and look to see if it, or any of its
-   subvars are clobbered.  Note that we could do better, for example, by
+   We search for a base VAR_DECL and look to see if it is call clobbered.
+   Note that we could do better, for example, by
    attempting to doing points-to analysis on INDIRECT_REFs.  */
 
 static bool
 dest_safe_for_nrv_p (tree dest)
 {
-  subvar_t sv;
-  unsigned int i;
-  tree subvar;
-
   while (handled_component_p (dest))
     dest = TREE_OPERAND (dest, 0);
 
@@ -271,11 +267,6 @@ dest_safe_for_nrv_p (tree dest)
 
   if (is_call_clobbered (dest))
     return false;
-
-  sv = get_subvars_for_var (dest);
-  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
-    if (is_call_clobbered (subvar))
-      return false;
 
   return true;
 }

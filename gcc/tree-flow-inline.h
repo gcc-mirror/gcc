@@ -883,7 +883,7 @@ clear_call_clobbered (tree var)
 {
   var_ann_t ann = var_ann (var);
   ann->escape_mask = 0;
-  if (MTAG_P (var) && TREE_CODE (var) != STRUCT_FIELD_TAG)
+  if (MTAG_P (var))
     MTAG_GLOBAL (var) = 0;
   if (!MTAG_P (var))
     var_ann (var)->call_clobbered = false;
@@ -1581,121 +1581,6 @@ ref_contains_array_ref (const_tree ref)
   return false;
 }
 
-/* Given a variable VAR, lookup and return a pointer to the list of
-   subvariables for it.  */
-
-static inline subvar_t *
-lookup_subvars_for_var (const_tree var)
-{
-  var_ann_t ann = var_ann (var);
-  gcc_assert (ann);
-  return &ann->subvars;
-}
-
-/* Given a variable VAR, return a linked list of subvariables for VAR, or
-   NULL, if there are no subvariables.  */
-
-static inline subvar_t
-get_subvars_for_var (tree var)
-{
-  subvar_t subvars;
-
-  gcc_assert (SSA_VAR_P (var));  
-  
-  if (TREE_CODE (var) == SSA_NAME)
-    subvars = *(lookup_subvars_for_var (SSA_NAME_VAR (var)));
-  else
-    subvars = *(lookup_subvars_for_var (var));
-  return subvars;
-}
-
-/* Return the subvariable of VAR at offset OFFSET.  */
-
-static inline tree
-get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
-{
-  subvar_t sv = get_subvars_for_var (var);
-  int low, high;
-
-  low = 0;
-  high = VEC_length (tree, sv) - 1;
-  while (low <= high)
-    {
-      int mid = (low + high) / 2;
-      tree subvar = VEC_index (tree, sv, mid);
-      if (SFT_OFFSET (subvar) == offset)
-	return subvar;
-      else if (SFT_OFFSET (subvar) < offset)
-	low = mid + 1;
-      else
-	high = mid - 1;
-    }
-
-  return NULL_TREE;
-}
-
-
-/* Return the first subvariable in SV that overlaps [offset, offset + size[.
-   NULL_TREE is returned, if there is no overlapping subvariable, else *I
-   is set to the index in the SV vector of the first overlap.  */
-
-static inline tree
-get_first_overlapping_subvar (subvar_t sv, unsigned HOST_WIDE_INT offset,
-			      unsigned HOST_WIDE_INT size, unsigned int *i)
-{
-  int low = 0;
-  int high = VEC_length (tree, sv) - 1;
-  int mid;
-  tree subvar;
-
-  if (low > high)
-    return NULL_TREE;
-
-  /* Binary search for offset.  */
-  do
-    {
-      mid = (low + high) / 2;
-      subvar = VEC_index (tree, sv, mid);
-      if (SFT_OFFSET (subvar) == offset)
-	{
-	  *i = mid;
-	  return subvar;
-	}
-      else if (SFT_OFFSET (subvar) < offset)
-	low = mid + 1;
-      else
-	high = mid - 1;
-    }
-  while (low <= high);
-
-  /* As we didn't find a subvar with offset, adjust to return the
-     first overlapping one.  */
-  if (SFT_OFFSET (subvar) < offset
-      && SFT_OFFSET (subvar) + SFT_SIZE (subvar) <= offset)
-    {
-      mid += 1;
-      if ((unsigned)mid >= VEC_length (tree, sv))
-	return NULL_TREE;
-      subvar = VEC_index (tree, sv, mid);
-    }
-  else if (SFT_OFFSET (subvar) > offset
-	   && size <= SFT_OFFSET (subvar) - offset)
-    {
-      mid -= 1;
-      if (mid < 0)
-	return NULL_TREE;
-      subvar = VEC_index (tree, sv, mid);
-    }
-
-  if (overlap_subvar (offset, size, subvar, NULL))
-    {
-      *i = mid;
-      return subvar;
-    }
-
-  return NULL_TREE;
-}
-
 
 /* Return true if V is a tree that we can have subvars for.
    Normally, this is any aggregate type.  Also complex
@@ -1746,53 +1631,6 @@ ranges_overlap_p (unsigned HOST_WIDE_INT pos1,
     return true;
 
   return false;
-}
-
-
-/* Return true if OFFSET and SIZE define a range that overlaps with some
-   portion of the range of SV, a subvar.  If there was an exact overlap,
-   *EXACT will be set to true upon return. */
-
-static inline bool
-overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
-		const_tree sv,  bool *exact)
-{
-  /* There are three possible cases of overlap.
-     1. We can have an exact overlap, like so:   
-     |offset, offset + size             |
-     |sv->offset, sv->offset + sv->size |
-     
-     2. We can have offset starting after sv->offset, like so:
-     
-           |offset, offset + size              |
-     |sv->offset, sv->offset + sv->size  |
-
-     3. We can have offset starting before sv->offset, like so:
-     
-     |offset, offset + size    |
-       |sv->offset, sv->offset + sv->size|
-  */
-
-  if (exact)
-    *exact = false;
-  if (offset == SFT_OFFSET (sv) && size == SFT_SIZE (sv))
-    {
-      if (exact)
-	*exact = true;
-      return true;
-    }
-  else if (offset >= SFT_OFFSET (sv) 
-	   && offset < (SFT_OFFSET (sv) + SFT_SIZE (sv)))
-    {
-      return true;
-    }
-  else if (offset < SFT_OFFSET (sv) 
-	   && (size > SFT_OFFSET (sv) - offset))
-    {
-      return true;
-    }
-  return false;
-
 }
 
 /* Return the memory tag associated with symbol SYM.  */
