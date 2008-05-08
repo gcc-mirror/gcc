@@ -1,3 +1,8 @@
+2008-05-08  Kai Tietz  <kai.tietz@onevision.com>
+
+        * gcc.c-torture/compile/pr36172.c: Replace unsigned long by
+        __SIZE_TYPE__.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36154

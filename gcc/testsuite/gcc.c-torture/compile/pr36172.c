@@ -1,5 +1,5 @@
 int f(float * );
-unsigned long FcCharSetFreeze (int *fcs, int b)
+__SIZE_TYPE__ FcCharSetFreeze (int *fcs, int b)
 {
   int i;
   int a = 0;
@@ -12,6 +12,6 @@ unsigned long FcCharSetFreeze (int *fcs, int b)
     if (!a)
       return;
   }
-  return (unsigned long) fcs;
+  return (__SIZE_TYPE__) fcs;
 }
 
