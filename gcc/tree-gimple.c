@@ -155,7 +155,10 @@ is_gimple_lvalue (tree t)
 bool
 is_gimple_condexpr (tree t)
 {
-  return (is_gimple_val (t) || COMPARISON_CLASS_P (t));
+  return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
+				&& !tree_could_trap_p (t)
+				&& is_gimple_val (TREE_OPERAND (t, 0))
+				&& is_gimple_val (TREE_OPERAND (t, 1))));
 }
 
 /*  Return true if T is something whose address can be taken.  */
@@ -648,12 +651,7 @@ canonicalize_cond_expr_cond (tree t)
 		  TREE_OPERAND (top0, 0), TREE_OPERAND (top0, 1));
     }
 
-  /* A valid conditional for a COND_EXPR is either a gimple value
-     or a comparison with two gimple value operands.  */
-  if (is_gimple_val (t)
-      || (COMPARISON_CLASS_P (t)
-	  && is_gimple_val (TREE_OPERAND (t, 0))
-	  && is_gimple_val (TREE_OPERAND (t, 1))))
+  if (is_gimple_condexpr (t))
     return t;
 
   return NULL_TREE;

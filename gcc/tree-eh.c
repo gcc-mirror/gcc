@@ -1896,7 +1896,10 @@ tree_could_trap_p (tree expr)
       || TREE_CODE_CLASS (code) == tcc_binary)
     {
       t = TREE_TYPE (expr);
-      fp_operation = FLOAT_TYPE_P (t);
+      if (COMPARISON_CLASS_P (expr))
+	fp_operation = FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
+      else
+	fp_operation = FLOAT_TYPE_P (t);
       if (fp_operation)
 	{
 	  honor_nans = flag_trapping_math && !flag_finite_math_only;
