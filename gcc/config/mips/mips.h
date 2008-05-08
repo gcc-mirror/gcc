@@ -1936,7 +1936,7 @@ enum reg_class
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
    `crtl->outgoing_args_size'.  */
-#define OUTGOING_REG_PARM_STACK_SPACE 1
+#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
 #define STACK_BOUNDARY (TARGET_NEWABI ? 128 : 64)
 

@@ -31,6 +31,7 @@ extern void	    mt_add_loop 	 (void);
 extern const char * mt_cannot_inline_p	 (tree);
 extern int          mt_function_arg_boundary (enum machine_mode, tree);
 extern void         mt_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree,  int);
+extern int mt_return_in_memory (const_tree,const_tree);
 #endif
 
 #ifdef RTX_CODE

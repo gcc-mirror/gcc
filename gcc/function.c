@@ -1147,7 +1147,8 @@ static int cfa_offset;
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
 ((ACCUMULATE_OUTGOING_ARGS						      \
   ? (crtl->outgoing_args_size				      \
-     + (OUTGOING_REG_PARM_STACK_SPACE ? 0 : REG_PARM_STACK_SPACE (FNDECL)))   \
+     + (OUTGOING_REG_PARM_STACK_SPACE ((!(FNDECL) ? NULL_TREE : TREE_TYPE (FNDECL))) ? 0 \
+					       : REG_PARM_STACK_SPACE (FNDECL))) \
   : 0) + (STACK_POINTER_OFFSET))
 #else
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
@@ -3850,7 +3851,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
   if (init_machine_status)
     cfun->machine = (*init_machine_status) ();
 
-  if (fndecl != NULL)
+  if (fndecl != NULL_TREE)
     {
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
       cfun->decl = fndecl;

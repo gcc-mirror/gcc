@@ -579,7 +579,7 @@ extern enum reg_class score_char_to_class[256];
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
    `crtl->outgoing_args_size'.  */
-#define OUTGOING_REG_PARM_STACK_SPACE   1
+#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 

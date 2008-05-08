@@ -726,7 +726,7 @@ enum reg_class
    in memory.  Since this results in slower code, this should be defined only
    if needed for compatibility with other compilers or with an ABI.  If you
    define this macro to be 0, then the conventions used for structure and union
-   return values are decided by the `RETURN_IN_MEMORY' macro.
+   return values are decided by the `TARGET_RETURN_IN_MEMORY' macro.
 
    If not defined, this defaults to the value 1.  */
 #define DEFAULT_PCC_STRUCT_RETURN 1

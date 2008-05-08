@@ -2460,6 +2460,13 @@ mt_machine_reorg (void)
       mt_reorg_hazard ();
     }
 }
+
+int
+mt_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
+{
+  return (int_size_in_bytes (type) > UNITS_PER_WORD);
+}
+
 
 /* Initialize the GCC target structure.  */
 const struct attribute_spec mt_attribute_table[];

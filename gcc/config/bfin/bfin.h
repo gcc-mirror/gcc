@@ -283,7 +283,7 @@ extern const char *bfin_library_id_string;
 
 /* Define this if the above stack space is to be considered part of the
  * space allocated by the caller.  */
-#define OUTGOING_REG_PARM_STACK_SPACE 1
+#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 	  
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
@@ -841,7 +841,7 @@ typedef struct {
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == REG_R0)
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
-#define RETURN_IN_MEMORY(TYPE) bfin_return_in_memory(TYPE)
+#define TARGET_RETURN_IN_MEMORY bfin_return_in_memory
 
 /* Before the prologue, the return address is in the RETS register.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, REG_RETS)

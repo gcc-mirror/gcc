@@ -1278,8 +1278,7 @@ do {									\
    should always be returned in memory.  You should instead use
    `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
 
-#define RETURN_IN_MEMORY(TYPE) \
-  ix86_return_in_memory (TYPE)
+#define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
 
 /* This is overridden by <cygwin.h>.  */
 #define MS_AGGREGATE_RETURN 0

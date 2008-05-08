@@ -22,5 +22,5 @@ along with GCC; see the file COPYING3.  If not see
 
 /* VxWorks uses the same ABI as Solaris 10.  */
 
-#undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY ix86_sol10_return_in_memory
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY ix86_sol10_return_in_memory

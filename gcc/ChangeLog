@@ -1,3 +1,53 @@
+2008-05-08  Kai Tietz  <kai,tietz@onevision.com>
+
+	* calls.c (compute_argument_block_size): Add argument tree fndecl.
+	(OUTGOING_REG_PARM_STACK_SPACE): Add function type argument.
+	(emit_library_call_value_1): Add new variable fndecl initialized by
+	NULL_TREE. It should be the decl type of orgfun, but this information
+	seems not to be available here, so it uses the default calling abi.
+	* config/arm/arm.c (arm_return_in_memory): Add fntype argumen.
+	* config/arm/arm.h (RETURN_IN_MEMORY): Replace RETURN_IN_MEMORY
+	by TARGET_RETURN_IN_MEMORY.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/i386elf.h: Likewise.
+	* config/i386/ptx4-i.h: Likewise.
+	* config/i386/sol2-10.h: Likewise.
+	* config/i386/sysv4.h: Likewise.
+	* config/i386/vx-common.h: Likewise.
+	* config/cris/cris.h: Removed #if 0 clause.
+	* config/arm/arm-protos.h (arm_return_in_memory): Add fntype
+	argument.
+	* config/i386/i386-protos.h (ix86_return_in_memory): Add fntype
+	argument.
+	(ix86_sol10_return_in_memory): Likewise.
+	(ix86_i386elf_return_in_memory): New.
+	(ix86_i386interix_return_in_memory): New.
+	* config/mt/mt-protos.h (mt_return_in_memory): New.
+	* config/mt/mt.c: Likewise.
+	* config/mt/mt.h (OUTGOING_REG_PARM_STACK_SPACE): Add FNTYPE argument.
+	(RETURN_IN_MEMORY):  Replace by TARGET_RETURN_IN_MEMORY.
+	* config/bfin/bfin.h: Likewise.
+	* config/bfin/bfin-protos.h (bfin_return_in_memory): Add fntype
+	argument.
+	* config/bfin/bfin.c: Likewise.
+	* config/pa/pa.h (OUTGOING_REG_PARM_STACK_SPACE): Add FNTYPE argument.
+	* config/alpha/unicosmk.h: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/iq2000/iq2000.h: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mn10300/mn10300.h: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/score/score.h: Likewise.
+	* config/spu/spu.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* defaults.h: Likewise.
+	* doc/tm.texi (OUTGOING_REG_PARM_STACK_SPACE): Adjust documentation.
+	* expr.c (emit_block_move): Adjust use of OUTGOING_REG_PARM_STACK_SPACE.
+	* function.c (STACK_DYNAMIC_OFFSET): Adjust use of
+	OUTGOING_REG_PARM_STACK_SPACE.
+	* targhooks.c (default_return_in_memory): Remove RETURN_IN_MEMORY.
+
 2008-05-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-parloops.c (create_parallel_loop): Set OMP_RETURN_NOWAIT
