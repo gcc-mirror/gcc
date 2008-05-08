@@ -2902,7 +2902,8 @@ while (0)
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
-  "2:\tsync%-%]%>%)"
+  "\tsync%-%]%>%)\n"				\
+  "2:\n"
 
 /* Return an asm string that atomically:
 
@@ -2919,9 +2920,23 @@ while (0)
   "%(%<%[%|sync\n"				\
   "1:\tll\t%0,%1\n"				\
   "\tand\t%@,%0,%2\n"				\
-  "\tbne\t%@,%4,2f\n"				\
+  "\tbne\t%@,%z4,2f\n"				\
   "\tand\t%@,%0,%3\n"				\
   "\tor\t%@,%@,%5\n"				\
+  "\tsc\t%@,%1\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)\n"				\
+  "2:\n"
+
+/* Like MIPS_COMPARE_AND_SWAP_12, except %5 is a constant zero,
+   so the OR can be omitted.  */
+#define MIPS_COMPARE_AND_SWAP_12_0		\
+  "%(%<%[%|sync\n"				\
+  "1:\tll\t%0,%1\n"				\
+  "\tand\t%@,%0,%2\n"				\
+  "\tbne\t%@,%z4,2f\n"				\
+  "\tand\t%@,%0,%3\n"				\
   "\tsc\t%@,%1\n"				\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\

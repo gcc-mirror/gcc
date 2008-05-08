@@ -1,3 +1,15 @@
+2008-05-08  David Daney  <ddaney@avtrex.com>
+	    Richard Sandiford  <rsandifo@nildram.co.uk>
+	
+	* config/mips/mips.md (mips_expand_compare_and_swap_12): Handle
+	special case of constant zero operands.
+	* config/mips/mips.c (mips_expand_compare_and_swap_12): Zero extend
+	old and	new values.  Special case constant zero values.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP): Skip 'sync' if compare
+	fails.
+	(MIPS_COMPARE_AND_SWAP_12): Handle constant zero operands.
+	(MIPS_COMPARE_AND_SWAP_12_0): New macro.
+
 2008-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/36090
