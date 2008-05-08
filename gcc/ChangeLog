@@ -1,3 +1,12 @@
+2008-05-08  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/36180
+	* calls.c (compute_argument_block_size ): Add ATTRIBUTE_UNUSED to
+	fndecl argument.
+	(emit_library_call_value_1): Add ATTRIBUTE_UNUSED to variable
+	fndecl.
+	* target-def.h: Check that TARGET_RETURN_IN_MEMORY isn't declared in front.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-data-ref.c (dr_analyze_alias): Do not set DR_SUBVARS.
