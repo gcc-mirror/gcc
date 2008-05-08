@@ -1,3 +1,15 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386-protos.h (ix86_return_in_memory): Adjust
+	return type to bool.
+	(ix86_sol10_return_in_memory): Likewise.
+	(ix86_i386elf_return_in_memory): Likewise.
+	(ix86_i386interix_return_in_memory): Likewise.
+	* config/i386/i386.c (ix86_return_in_memory): Likewise.
+	(ix86_sol10_return_in_memory): Likewise.
+	(ix86_i386elf_return_in_memory): Likewise.
+	(ix86_i386interix_return_in_memory): Likewise.
+
 2008-05-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/36180

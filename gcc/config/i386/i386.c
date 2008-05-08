@@ -4901,7 +4901,7 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
   return (size != 1 && size != 2 && size != 4 && size != 8);
 }
 
-int
+bool
 ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   const enum machine_mode mode = type_natural_mode (type);
@@ -4919,7 +4919,7 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    but differs notably in that when MMX is available, 8-byte vectors
    are returned in memory, rather than in MMX registers.  */
 
-int
+bool
 ix86_sol10_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   int size;
@@ -4951,14 +4951,14 @@ ix86_sol10_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED
   return size > 12;
 }
 
-int
+bool
 ix86_i386elf_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return (TYPE_MODE (type) == BLKmode
 	  || (VECTOR_MODE_P (TYPE_MODE (type)) && int_size_in_bytes (type) == 8));
 }
 
-int
+bool
 ix86_i386interix_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return (TYPE_MODE (type) == BLKmode
