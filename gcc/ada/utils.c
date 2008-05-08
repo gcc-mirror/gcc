@@ -635,7 +635,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
      NULL_TREE, build_function_type (jmpbuf_ptr_type, NULL_TREE),
      NULL_TREE, false, true, true, NULL, Empty);
   /* Avoid creating superfluous edges to __builtin_setjmp receivers.  */
-  DECL_IS_PURE (get_jmpbuf_decl) = 1;
+  DECL_PURE_P (get_jmpbuf_decl) = 1;
 
   set_jmpbuf_decl
     = create_subprog_decl
@@ -653,7 +653,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
      build_function_type (build_pointer_type (except_type_node), NULL_TREE),
      NULL_TREE, false, true, true, NULL, Empty);
   /* Avoid creating superfluous edges to __builtin_setjmp receivers.  */
-  DECL_IS_PURE (get_excptr_decl) = 1;
+  DECL_PURE_P (get_excptr_decl) = 1;
 
   /* Functions that raise exceptions. */
   raise_nodefer_decl
@@ -4467,7 +4467,7 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    DECL_IS_PURE (*node) = 1;
+    DECL_PURE_P (*node) = 1;
   /* ??? TODO: Support types.  */
   else
     {
