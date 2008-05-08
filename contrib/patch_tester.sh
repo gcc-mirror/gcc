@@ -197,7 +197,7 @@ now () {
 }
 
 report () {
-    echo "Checker: $@" >> $REPORT
+    echo "$@" >> $REPORT
 }
 
 freport () {
