@@ -559,13 +559,36 @@ In either case GCC assumes these addresses can be addressed directly,
 perhaps with the help of base registers.
 Stored in the @code{unchanging} field and printed as @samp{/u}.
 
-@findex CONST_OR_PURE_CALL_P
+@findex RTL_CONST_CALL_P
 @cindex @code{call_insn} and @samp{/u}
 @cindex @code{unchanging}, in @code{call_insn}
-@item CONST_OR_PURE_CALL_P (@var{x})
-In a @code{call_insn}, @code{note}, or an @code{expr_list} for notes,
-indicates that the insn represents a call to a const or pure function.
-Stored in the @code{unchanging} field and printed as @samp{/u}.
+@item RTLCONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+const function.  Stored in the @code{unchanging} field and printed as
+@samp{/u}.
+
+@findex RTL_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/i}
+@cindex @code{return_val}, in @code{call_insn}
+@item RTLCONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a call to a
+pure function.  Stored in the @code{return_val} field and printed as
+@samp{/i}.
+
+@findex RTL_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/u} or @samp{/i}
+@item RTL_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn}, true if @code{RTL_CONST_CALL_P} or
+@code{RTL_PURE_CALL_P} is true.
+
+@findex RTL_LOOPING_CONST_OR_PURE_CALL_P
+@cindex @code{call_insn} and @samp{/c}
+@cindex @code{call}, in @code{call_insn}
+@item RTL_LOOPING_CONST_OR_PURE_CALL_P (@var{x})
+In a @code{call_insn} indicates that the insn represents a possibly
+infinite looping call to a const or pure function.  Stored in the
+@code{call} field and printed as @samp{/c}.  Only true if one of
+@code{RTL_CONST_CALL_P} or @code{RTL_PURE_CALL_P} is true.
 
 @findex INSN_ANNULLED_BRANCH_P
 @cindex @code{jump_insn} and @samp{/u}
@@ -869,6 +892,9 @@ These are the fields to which the above macros refer:
 @item call
 In a @code{mem}, 1 means that the memory reference will not trap.
 
+In a @code{call}, 1 means that this pure or const call may possibly
+infinite loop.
+
 In an RTL dump, this flag is represented as @samp{/c}.
 
 @findex frame_related
@@ -938,6 +964,8 @@ known not to be a member of a structure, union, or array.
 
 In @code{symbol_ref} expressions, 1 means the referenced symbol is weak.
 
+In @code{call} expressions, 1 means the call is pure.
+
 In an RTL dump, this flag is represented as @samp{/i}.
 
 @findex jump
@@ -967,8 +995,8 @@ instruction, 1 means an annulling branch should be used.
 In a @code{symbol_ref} expression, 1 means that this symbol addresses
 something in the per-function constant pool.
 
-In a @code{call_insn}, @code{note}, or an @code{expr_list} of notes,
-1 means that this instruction is a call to a const or pure function.
+In a @code{call_insn} 1 means that this instruction is a call to a const
+function.
 
 In an RTL dump, this flag is represented as @samp{/u}.
 

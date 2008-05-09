@@ -99,11 +99,16 @@ deletable_insn_p (rtx insn, bool fast)
   rtx body, x;
   int i;
 
-  /* We can delete dead const or pure calls as long as they do not
-     infinite loop and are not sibling calls.  The problem with
-     sibling calls is that it is hard to see the result.  */
-  if (CALL_P (insn) 
+  if (CALL_P (insn)
+      /* We cannot delete calls inside of the recursive dce because
+	 this may cause basic blocks to be deleted and this messes up
+	 the rest of the stack of optimization passes.  */
+      && (!df_in_progress)
+      /* We cannot delete pure or const sibling calls because it is
+	 hard to see the result.  */
       && (!SIBLING_CALL_P (insn))
+      /* We can delete dead const or pure calls as long as they do not
+         infinite loop.  */
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
     return true;
@@ -305,6 +310,7 @@ delete_unmarked_insns (void)
 {
   basic_block bb;
   rtx insn, next;
+  bool must_clean = false;
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS_SAFE (bb, insn, next)
@@ -382,9 +388,19 @@ delete_unmarked_insns (void)
 	      remove_note (XEXP (note, 0), libcall_note);
 	    }
 
+	  /* If a pure or const call is deleted, this may make the cfg
+	     have unreachable blocks.  We rememeber this and call
+	     delete_unreachable_blocks at the end.  */
+	  if (CALL_P (insn))
+	    must_clean = true;
+
 	  /* Now delete the insn.  */
 	  delete_insn_and_edges (insn);
 	}
+
+  /* Deleted a pure or const call.  */
+  if (must_clean)
+    delete_unreachable_blocks ();
 }
 
 
