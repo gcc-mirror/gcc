@@ -1,3 +1,7 @@
+2008-05-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* rtl-factoring.c (collect_pattern_seqs): Fix typo.
+
 2008-05-09  Tomas Bily  <tbily@suse.cz>
 
 	* config/pa/pa.c (reloc_needed): Use CASE_CONVERT.
