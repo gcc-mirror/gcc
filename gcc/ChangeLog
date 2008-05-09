@@ -1,3 +1,14 @@
+2008-05-08  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	PR middle-end/36117
+	* dce.c (deletable_insn_p): Do not delete calls if 
+	df_in_progress.
+	(delete_unmarked_insns): When deleting a call, call 
+	delete_unreachable_blocks.
+	* rtl.texi (RTL_CONST_CALL_P, RTL_PURE_CALL_P,
+	RTL_CONST_OR_PURE_CALL_P, RTL_LOOPING_CONST_OR_PURE_CALL_P): Fixed
+	doc.
+	
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi (-fdump-tree-salias): Remove documentation.
