@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-salias-vops" } */
+/* { dg-options "-O2 -fdump-tree-alias-vops" } */
 
 typedef struct {
   int i;
@@ -18,5 +18,5 @@ int foo(void)
 
 /* Verify the call clobbers all of a.  */
 
-/* { dg-final { scan-tree-dump-times "VDEF <a_" 2 "salias" } } */
-/* { dg-final { cleanup-tree-dump "salias" } } */
+/* { dg-final { scan-tree-dump-times "VDEF <a_" 2 "alias" } } */
+/* { dg-final { cleanup-tree-dump "alias" } } */

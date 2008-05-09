@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-early-inlining -fdump-tree-salias-vops-details" } */
+/* { dg-options "-O -fno-early-inlining -fdump-tree-alias-vops-details" } */
 
 struct foo {
   int a;
@@ -15,5 +15,5 @@ int test2(void)
   return p->b[3] - m.b.b[3];
 }
 
-/* { dg-final { scan-tree-dump-times "VUSE <m_.\\\(D\\\)>" 2 "salias" } } */
-/* { dg-final { cleanup-tree-dump "salias" } } */
+/* { dg-final { scan-tree-dump-times "VUSE <m_.\\\(D\\\)>" 2 "alias" } } */
+/* { dg-final { cleanup-tree-dump "alias" } } */

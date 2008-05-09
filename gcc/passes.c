@@ -557,10 +557,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_all_optimizations);
     {
       struct opt_pass **p = &pass_all_optimizations.pass.sub;
-      NEXT_PASS (pass_create_structure_vars);
-      /* ??? pass_build_alias is a dummy pass that ensures that we
-	 execute TODO_rebuild_alias at this point even if
-	 pass_create_structure_vars was disabled.  */
+      /* pass_build_alias is a dummy pass that ensures that we
+	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_rename_ssa_copies);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-salias" } */
+/* { dg-options "-O2 -fdump-tree-alias" } */
 extern double cos (double);
 extern double sin (double);
 double f(double a)
@@ -22,5 +22,5 @@ double f(double a)
 }
 /* The points-to set of the final function pointer should be "sin cos" */
 
-/* { dg-final { scan-tree-dump-times "{ sin cos }" 1 "salias"} } */
-/* { dg-final { cleanup-tree-dump "salias" } } */
+/* { dg-final { scan-tree-dump-times "{ sin cos }" 1 "alias"} } */
+/* { dg-final { cleanup-tree-dump "alias" } } */

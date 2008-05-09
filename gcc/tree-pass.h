@@ -374,7 +374,6 @@ extern struct gimple_opt_pass pass_check_data_deps;
 extern struct gimple_opt_pass pass_copy_prop;
 extern struct gimple_opt_pass pass_store_ccp;
 extern struct gimple_opt_pass pass_vrp;
-extern struct gimple_opt_pass pass_create_structure_vars;
 extern struct gimple_opt_pass pass_uncprop;
 extern struct gimple_opt_pass pass_return_slot;
 extern struct gimple_opt_pass pass_reassoc;
