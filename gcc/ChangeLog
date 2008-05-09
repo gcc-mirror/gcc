@@ -1,3 +1,11 @@
+2008-05-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36187
+	* tree-dfa.c (dump_variable): Correct dumping of
+	SFT_BASE_FOR_COMPONENTS_P.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Set
+	SFT_UNPARTITIONABLE_P correctly for the union case.
+
 2008-05-09  Steve Ellcey  <sje@cup.hp.com>
 
 	Backport from mainline:

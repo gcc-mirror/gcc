@@ -426,7 +426,7 @@ dump_variable (FILE *file, tree var)
 	  fprintf (file, ", offset: " HOST_WIDE_INT_PRINT_UNSIGNED,
 		   SFT_OFFSET (var));
 	  fprintf (file, ", base for components: %s",
-		   SFT_BASE_FOR_COMPONENTS_P (var) ? "NO" : "YES");
+		   SFT_BASE_FOR_COMPONENTS_P (var) ? "YES" : "NO");
 	  fprintf (file, ", partitionable: %s",
 		   SFT_UNPARTITIONABLE_P (var) ? "NO" : "YES");
 	}
