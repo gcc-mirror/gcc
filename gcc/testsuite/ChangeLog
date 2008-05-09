@@ -1,3 +1,8 @@
+2008-05-09  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/22231:
+	* gcc.dg/pr22231.c: New file.
+
 2008-05-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36187
