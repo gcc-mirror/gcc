@@ -274,15 +274,19 @@ doc: info dvi pdf html
 install-html:
 install-pdf:
 
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+
 libobjc$(libsuffix).la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
 		-rpath $(toolexeclibdir) \
-		-version-info $(LIBOBJC_VERSION) $(extra_ldflags_libobjc)
+		-version-info $(LIBOBJC_VERSION) $(extra_ldflags_libobjc) \
+		$(LTLDFLAGS)
 
 libobjc_gc$(libsuffix).la: $(OBJS_GC)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS_GC) \
 		-rpath $(toolexeclibdir) \
-		-version-info $(LIBOBJC_GC_VERSION) $(extra_ldflags_libobjc)
+		-version-info $(LIBOBJC_GC_VERSION) $(extra_ldflags_libobjc) \
+		$(LTLDFLAGS)
 
 #
 # FIXME -- The following part does not fit in the libtool context. 
