@@ -1,4 +1,5 @@
 2008-05-08  Seongbae Park  <seongbae.park@gmail.com>
+
 	* common.opt (Wframe-larger-than=): Shorten the help message
 	to one line.
 	* doc/invoke.texi (Wframe-larger-than=): Add more description.
