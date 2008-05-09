@@ -854,7 +854,6 @@ static inline bool ref_contains_array_ref (const_tree);
 static inline bool array_ref_contains_indirect_ref (const_tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
-static inline bool var_can_have_subvars (const_tree);
 extern tree create_tag_raw (enum tree_code, tree, const char *);
 extern void delete_mem_ref_stats (struct function *);
 extern void dump_mem_ref_stats (FILE *);
@@ -1168,39 +1167,6 @@ tree create_mem_ref (block_stmt_iterator *, tree,
 rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
-
-/* This structure is used during pushing fields onto the fieldstack
-   to track the offset of the field, since bitpos_of_field gives it
-   relative to its immediate containing type, and we want it relative
-   to the ultimate containing object.  */
-
-struct fieldoff
-{
-  /* Type of the field.  */
-  tree type;
-
-  /* Size, in bits, of the field.  */
-  tree size;
-
-  /* Field.  */
-  tree decl;
-
-  /* Offset from the base of the base containing object to this field.  */
-  HOST_WIDE_INT offset;  
-
-  /* Alias set for the field.  */
-  alias_set_type alias_set;
-
-  /* True, if this offset can be a base for further component accesses.  */
-  unsigned base_for_components : 1;
-};
-typedef struct fieldoff fieldoff_s;
-
-DEF_VEC_O(fieldoff_s);
-DEF_VEC_ALLOC_O(fieldoff_s,heap);
-int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
-				 HOST_WIDE_INT, bool *, tree);
-void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
 void init_alias_heapvars (void);
 void delete_alias_heapvars (void);
