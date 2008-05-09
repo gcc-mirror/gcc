@@ -1193,7 +1193,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	 need to create a temporary register.  */
       set = single_set (inv->insn);
       dest = SET_DEST (set);
-      reg = gen_reg_rtx (GET_MODE (dest));
+      reg = gen_reg_rtx_and_attrs (dest);
 
       /* Try replacing the destination by a new pseudoregister.  */
       if (!validate_change (inv->insn, &SET_DEST (set), reg, false))

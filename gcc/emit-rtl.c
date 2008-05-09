@@ -961,11 +961,32 @@ set_reg_attrs_from_value (rtx reg, rtx x)
   int offset;
 
   offset = byte_lowpart_offset (GET_MODE (reg), GET_MODE (x));
-  if (MEM_P (x) && MEM_OFFSET (x) && GET_CODE (MEM_OFFSET (x)) == CONST_INT)
-    REG_ATTRS (reg)
-      = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
-  if (REG_P (x) && REG_ATTRS (x))
-    update_reg_offset (reg, x, offset);
+  if (MEM_P (x))
+    {
+      if (MEM_OFFSET (x) && GET_CODE (MEM_OFFSET (x)) == CONST_INT)
+	REG_ATTRS (reg)
+	  = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
+      if (MEM_POINTER (x))
+	mark_reg_pointer (reg, MEM_ALIGN (x));
+    }
+  else if (REG_P (x))
+    {
+      if (REG_ATTRS (x))
+	update_reg_offset (reg, x, offset);
+      if (REG_POINTER (x))
+	mark_reg_pointer (reg, REGNO_POINTER_ALIGN (REGNO (x)));
+    }
+}
+
+/* Generate a REG rtx for a new pseudo register, copying the mode
+   and attributes from X.  */
+
+rtx
+gen_reg_rtx_and_attrs (rtx x)
+{
+  rtx reg = gen_reg_rtx (GET_MODE (x));
+  set_reg_attrs_from_value (reg, x);
+  return reg;
 }
 
 /* Set the register attributes for registers contained in PARM_RTX.
