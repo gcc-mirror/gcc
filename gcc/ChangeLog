@@ -1,3 +1,10 @@
+2008-05-09  Steve Ellcey  <sje@cup.hp.com>
+
+	Backport from mainline:
+	2008-05-08  Steve Ellcey  <sje@cup.hp.com>
+
+	* stmt.c (expand_stack_restore): Change sa mode if needed.
+
 2008-05-08  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/36090
