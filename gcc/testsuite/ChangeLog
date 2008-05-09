@@ -1,4 +1,9 @@
-2008-01-08  Jan Sjodin  <jan.sjodin@amd.com>
+2008-05-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36187
+	* g++.dg/opt/pr36187.C: New testcase.
+
+2008-05-08  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/tree-ssa/data-dep-1.c: New.
