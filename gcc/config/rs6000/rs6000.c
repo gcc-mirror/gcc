@@ -12291,6 +12291,10 @@ print_operand_address (FILE *file, rtx x)
 	      XSTR (symref, 0) = newname;
 	    }
 	  output_addr_const (file, XEXP (x, 1));
+	  if (GET_CODE (XEXP (minus, 1)) == CONST
+	      && (GET_CODE (XEXP (XEXP (minus, 1), 0)) == PLUS))
+	    fprintf (file, "+"HOST_WIDE_INT_PRINT_DEC,
+		     -INTVAL (XEXP (XEXP (XEXP (minus, 1), 0), 1)));
 	  if (TARGET_ELF)
 	    XSTR (symref, 0) = name;
 	  XEXP (contains_minus, 0) = minus;

@@ -1,3 +1,16 @@
+2008-05-08  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/36090
+	* config/rs6000/rs6000.c (print_operand_address): If the TOC
+	address RHS contains an offset, output it as well.
+
+	PR target/36182
+	Revert:
+	2008-05-08  Paolo Bonzini  <bonzini@gnu.org>
+	PR target/36090
+	* simplify-rtx.c (simplify_plus_minus): Create CONST of
+	similar RTX_CONST_OBJ before CONST_INT.
+
 2008-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
