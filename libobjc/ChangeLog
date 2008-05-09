@@ -1,3 +1,8 @@
+2008-05-09  Julian Brown  <julian@codesourcery.com>
+
+	* Makefile.in (LTLDFLAGS): New.
+	(libobjc$(libsuffix).la, libobjc_gc$(libsuffix).la): Use above.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

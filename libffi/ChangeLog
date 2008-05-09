@@ -1,3 +1,9 @@
+2008-05-09  Julian Brown  <julian@codesourcery.com>
+
+	* Makefile.am (LTLDFLAGS): New.
+	(libffi_la_LDFLAGS): Use above.
+	* Makefile.in: Regenerate.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457
