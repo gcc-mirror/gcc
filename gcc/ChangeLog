@@ -1,3 +1,18 @@
+2008-05-09  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c: Document instantiate_scev.
+	(instantiate_parameters_1): Renamed instantiate_scev_1.
+	Don't use the same loop for instantiation_loop and evolution_loop.
+	(instantiate_scev): New.
+	(instantiate_parameters): Moved...
+	(resolve_mixers): Update call to instantiate_scev_1 to pass the
+	same loop twice.  Maintains the semantics for this function.
+	* tree-scalar-evolution.h (instantiate_scev): Declare.
+	(instantiate_parameters): ...here.  Now static inline.
+	* tree-data-ref.c (dr_analyze_indices): Call instantiate_scev
+	instead of resolve_mixers.
+
 2008-05-09  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* rtl-factoring.c (collect_pattern_seqs): Fix typo.

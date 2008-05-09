@@ -1,3 +1,8 @@
+2008-01-08  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/tree-ssa/data-dep-1.c: New.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/20040911-1.c: Adjust.
