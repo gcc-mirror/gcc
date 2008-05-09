@@ -1141,8 +1141,8 @@ Common Report Var(flag_tree_reassoc) Init(1) Optimization
 Enable reassociation on tree level
 
 ftree-salias
-Common Report Var(flag_tree_salias) Optimization
-Perform structural alias analysis
+Common
+Does nothing.  Preserved for backward compatibility.
 
 ftree-sink
 Common Report Var(flag_tree_sink) Optimization

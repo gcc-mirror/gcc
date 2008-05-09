@@ -292,7 +292,6 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sink @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
--fdump-tree-salias @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
@@ -357,7 +356,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-dominator-opts -ftree-dse -ftree-fre -ftree-loop-im @gol
 -ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
--ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc -ftree-salias @gol
+-ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc @gol
 -ftree-sink -ftree-sra -ftree-store-ccp -ftree-ter @gol
 -ftree-vect-loop-version -ftree-vectorize -ftree-vrp -funit-at-a-time @gol
 -funroll-all-loops -funroll-loops -funsafe-loop-optimizations @gol
@@ -4803,11 +4802,6 @@ appending @file{.ch} to the source file name.
 Dump SSA related information to a file.  The file name is made by appending
 @file{.ssa} to the source file name.
 
-@item salias
-@opindex fdump-tree-salias
-Dump structure aliasing variable information to a file.  This file name
-is made by appending @file{.salias} to the source file name.
-
 @item alias
 @opindex fdump-tree-alias
 Dump aliasing information for each function.  The file name is made by
@@ -5790,11 +5784,6 @@ This flag is enabled by default at @option{-O} and higher.
 Perform copy propagation on trees.  This pass eliminates unnecessary
 copy operations.  This flag is enabled by default at @option{-O} and
 higher.
-
-@item -ftree-salias
-@opindex ftree-salias
-Perform structural alias analysis on trees.  This flag
-is enabled by default at @option{-O} and higher.
 
 @item -fipa-pure-const
 @opindex fipa-pure-const
@@ -6799,15 +6788,6 @@ In each case, the @var{value} is an integer.  The allowable choices for
 @var{name} are given in the following table:
 
 @table @gcctabopt
-@item salias-max-implicit-fields
-The maximum number of fields in a variable without direct
-structure accesses for which structure aliasing will consider trying
-to track each field.  The default is 5
-
-@item salias-max-array-elements
-The maximum number of elements an array can have and its elements
-still be tracked individually by structure aliasing. The default is 4
-
 @item sra-max-structure-size
 The maximum structure size, in bytes, at which the scalar replacement
 of aggregates (SRA) optimization will perform block copies.  The

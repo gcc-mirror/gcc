@@ -1,3 +1,16 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/20040911-1.c: Adjust.
+	* gcc.dg/tree-ssa/20040517-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr26421.c: Likewise.
+	* gcc.dg/tree-ssa/pr23382.c: Likewise.
+	* gcc.dg/tree-ssa/alias-15.c: Likewise.
+	* gcc.dg/tree-ssa/inline_asm-1.c: Likewise.
+	* gcc.dg/tree-ssa/inline_asm-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-fp.c: Likewise.
+	* gcc.dg/tree-ssa/20031015-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-12.c: Likewise.
+
 2008-05-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36162

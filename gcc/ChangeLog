@@ -1,5 +1,28 @@
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
+	* doc/invoke.texi (-fdump-tree-salias): Remove documentation.
+	(-ftree-salias): Likewise.
+	(salias-max-implicit-fields): Remove param documentation.
+	(salias-max-array-elements): Likewise.
+	* tree-pass.h (pass_create_structure_vars): Remove.
+	* params.h (SALIAS_MAX_IMPLICIT_FIELDS): Remove.
+	(SALIAS_MAX_ARRAY_ELEMENTS): Likewise.
+	* tree-ssa-alias.c (create_structure_vars): Remove.
+	(gate_structure_vars): Likewise.
+	(pass_create_structure_vars): Likewise.
+	(gate_build_alias): Likewise.
+	(pass_build_alias): Adjust to run always and dump the function.
+	* common.opt (ftree-salias): Hide.
+	* passes.c (init_optimization_passes): Remove
+	pass_create_structure_vars, adjust comment.
+	* params.def (PARAM_SALIAS_MAX_IMPLICIT_FIELDS): Remove.
+	(PARAM_SALIAS_MAX_ARRAY_ELEMENTS): Likewise.
+	* opts.c (decode_options): Do not set flag_tree_salias.
+	(common_handle_option): Add OPT_ftree_salias to the backward
+	compatibility section.
+
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow-inline.h (var_can_have_subvars): Move ...
 	* tree-ssa-structalias.c (var_can_have_subvars): ... here.
 	* tree-flow.h (var_can_have_subvars): Remove.
