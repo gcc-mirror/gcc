@@ -1,3 +1,11 @@
+2008-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/36129
+	* tree-ssa-cpp.c: Include value-prof.h.
+	(execute_fold_all_builtins): Call gimple_remove_stmt_histograms if
+	built-in function was folded to a constant.
+	* Makefile.in (tree-ssa-cpp.c): Depend on value-prof.h
+
 2008-05-09  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
