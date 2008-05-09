@@ -101,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
    that the scev for "b" is known, it is possible to compute the
    scev for "c", that is "c -> {a + 1, +, 1}_1".  In order to
    determine the number of iterations in the loop_1, we have to
-   instantiate_parameters ({a + 1, +, 1}_1), that gives after some
+   instantiate_parameters (loop_1, {a + 1, +, 1}_1), that gives after some
    more analysis the scev {4, +, 1}_1, or in other words, this is
    the function "f (x) = x + 4", where x is the iteration count of
    the loop_1.  Now we have to solve the inequality "x + 4 > 10",
@@ -125,7 +125,7 @@ along with GCC; see the file COPYING3.  If not see
    |     c = x + 4
    |   }
      
-   Example 2: Illustration of the algorithm on nested loops.
+   Example 2a: Illustration of the algorithm on nested loops.
      
    | loop_1
    |   a = phi (1, b)
@@ -153,7 +153,30 @@ along with GCC; see the file COPYING3.  If not see
      
    a -> {1, +, 32}_1
    c -> {3, +, 32}_1
-     
+
+   Example 2b: Multivariate chains of recurrences.
+
+   | loop_1
+   |   k = phi (0, k + 1)
+   |   loop_2  4 times
+   |     j = phi (0, j + 1)
+   |     loop_3 4 times
+   |       i = phi (0, i + 1)
+   |       A[j + k] = ...
+   |     endloop
+   |   endloop
+   | endloop
+
+   Analyzing the access function of array A with
+   instantiate_parameters (loop_1, "j + k"), we obtain the
+   instantiation and the analysis of the scalar variables "j" and "k"
+   in loop_1.  This leads to the scalar evolution {4, +, 1}_1: the end
+   value of loop_2 for "j" is 4, and the evolution of "k" in loop_1 is
+   {0, +, 1}_1.  To obtain the evolution function in loop_3 and
+   instantiate the scalar variables up to loop_1, one has to use:
+   instantiate_scev (loop_1, loop_3, "j + k").  The result of this
+   call is {{0, +, 1}_1, +, 1}_2.
+
    Example 3: Higher degree polynomials.
      
    | loop_1
@@ -168,8 +191,8 @@ along with GCC; see the file COPYING3.  If not see
    c -> {5, +, a}_1
    d -> {5 + a, +, a}_1
      
-   instantiate_parameters ({5, +, a}_1) -> {5, +, 2, +, 1}_1
-   instantiate_parameters ({5 + a, +, a}_1) -> {7, +, 3, +, 1}_1
+   instantiate_parameters (loop_1, {5, +, a}_1) -> {5, +, 2, +, 1}_1
+   instantiate_parameters (loop_1, {5 + a, +, a}_1) -> {7, +, 3, +, 1}_1
      
    Example 4: Lucas, Fibonacci, or mixers in general.
      
@@ -1802,8 +1825,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
    
    unsigned loop_nb = loop_containing_stmt (stmt)->num;
    tree chrec_with_symbols = analyze_scalar_evolution (loop_nb, var);
-   tree chrec_instantiated = instantiate_parameters 
-   (loop_nb, chrec_with_symbols);
+   tree chrec_instantiated = instantiate_parameters (loop, chrec_with_symbols);
 */
 
 tree 
@@ -1929,11 +1951,12 @@ loop_closed_phi_def (tree var)
   return NULL_TREE;
 }
 
-/* Analyze all the parameters of the chrec that were left under a symbolic form,
-   with respect to LOOP.  CHREC is the chrec to instantiate.  CACHE is the cache
-   of already instantiated values.  FLAGS modify the way chrecs are
-   instantiated.  SIZE_EXPR is used for computing the size of the expression to
-   be instantiated, and to stop if it exceeds some limit.  */
+/* Analyze all the parameters of the chrec, between INSTANTIATION_LOOP
+   and EVOLUTION_LOOP, that were left under a symbolic form.  CHREC is
+   the scalar evolution to instantiate.  CACHE is the cache of already
+   instantiated values.  FLAGS modify the way chrecs are instantiated.
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
 
 /* Values for FLAGS.  */
 enum
@@ -1946,8 +1969,9 @@ enum
 };
   
 static tree
-instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache,
-			  int size_expr)
+instantiate_scev_1 (struct loop *instantiation_loop,
+		    struct loop *evolution_loop, tree chrec,
+		    int flags, htab_t cache, int size_expr)
 {
   tree res, op0, op1, op2;
   basic_block def_bb;
@@ -1972,7 +1996,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       if (!def_bb
 	  || loop_depth (def_bb->loop_father) == 0
 	  || (!(flags & INSERT_SUPERLOOP_CHRECS)
-	      && !flow_bb_inside_loop_p (loop, def_bb)))
+	      && !flow_bb_inside_loop_p (instantiation_loop, def_bb)))
 	return chrec;
 
       /* We cache the value of instantiated variable to avoid exponential
@@ -1992,18 +2016,19 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	 is defined outside of the loop, we may just leave it in symbolic
 	 form, otherwise we need to admit that we do not know its behavior
 	 inside the loop.  */
-      res = !flow_bb_inside_loop_p (loop, def_bb) ? chrec : chrec_dont_know;
+      res = !flow_bb_inside_loop_p (instantiation_loop, def_bb) 
+	? chrec : chrec_dont_know;
       set_instantiated_value (cache, chrec, res);
 
-      /* To make things even more complicated, instantiate_parameters_1
+      /* To make things even more complicated, instantiate_scev_1
 	 calls analyze_scalar_evolution that may call # of iterations
-	 analysis that may in turn call instantiate_parameters_1 again.
+	 analysis that may in turn call instantiate_scev_1 again.
 	 To prevent the infinite recursion, keep also the bitmap of
 	 ssa names that are being instantiated globally.  */
       if (bitmap_bit_p (already_instantiated, SSA_NAME_VERSION (chrec)))
 	return res;
 
-      def_loop = find_common_loop (loop, def_bb->loop_father);
+      def_loop = find_common_loop (evolution_loop, def_bb->loop_father);
 
       /* If the analysis yields a parametric chrec, instantiate the
 	 result again.  */
@@ -2026,7 +2051,8 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	}
 
       else if (res != chrec_dont_know)
-	res = instantiate_parameters_1 (loop, res, flags, cache, size_expr);
+	res = instantiate_scev_1 (instantiation_loop, evolution_loop, res,
+				  flags, cache, size_expr);
 
       bitmap_clear_bit (already_instantiated, SSA_NAME_VERSION (chrec));
 
@@ -2035,13 +2061,13 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       return res;
 
     case POLYNOMIAL_CHREC:
-      op0 = instantiate_parameters_1 (loop, CHREC_LEFT (chrec),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				CHREC_LEFT (chrec), flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, CHREC_RIGHT (chrec),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				CHREC_RIGHT (chrec), flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2055,13 +2081,15 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0), flags, cache,
+				size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 1), flags, cache,
+				size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2075,13 +2103,15 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       return chrec;
 
     case MINUS_EXPR:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0), flags, cache,
+				size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 1),
+				flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2095,13 +2125,15 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       return chrec;
 
     case MULT_EXPR:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 1),
+				flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2115,8 +2147,9 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       return chrec;
 
     CASE_CONVERT:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				flags, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2152,18 +2185,21 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
   switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
     {
     case 3:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 1),
+				flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op2 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 2),
-				      flags, cache, size_expr);
+      op2 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 2),
+				flags, cache, size_expr);
       if (op2 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2176,13 +2212,15 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 			  TREE_TYPE (chrec), op0, op1, op2);
 
     case 2:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
-      op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache, size_expr);
+      op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 1),
+				flags, cache, size_expr);
       if (op1 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2192,8 +2230,9 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       return fold_build2 (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1);
 	    
     case 1:
-      op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache, size_expr);
+      op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
+				TREE_OPERAND (chrec, 0),
+				flags, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
       if (op0 == TREE_OPERAND (chrec, 0))
@@ -2212,27 +2251,29 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 }
 
 /* Analyze all the parameters of the chrec that were left under a
-   symbolic form.  LOOP is the loop in which symbolic names have to
-   be analyzed and instantiated.  */
+   symbolic form.  INSTANTIATION_LOOP is the loop in which symbolic
+   names have to be instantiated, and EVOLUTION_LOOP is the loop in
+   which the evolution of scalars have to be analyzed.  */
 
 tree
-instantiate_parameters (struct loop *loop,
-			tree chrec)
+instantiate_scev (struct loop *instantiation_loop, struct loop *evolution_loop,
+		  tree chrec)
 {
   tree res;
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "(instantiate_parameters \n");
-      fprintf (dump_file, "  (loop_nb = %d)\n", loop->num);
+      fprintf (dump_file, "(instantiate_scev \n");
+      fprintf (dump_file, "  (instantiation_loop = %d)\n", instantiation_loop->num);
+      fprintf (dump_file, "  (evolution_loop = %d)\n", evolution_loop->num);
       fprintf (dump_file, "  (chrec = ");
       print_generic_expr (dump_file, chrec, 0);
       fprintf (dump_file, ")\n");
     }
  
-  res = instantiate_parameters_1 (loop, chrec, INSERT_SUPERLOOP_CHRECS, cache,
-				  0);
+  res = instantiate_scev_1 (instantiation_loop, evolution_loop, chrec, 
+			    INSERT_SUPERLOOP_CHRECS, cache, 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2255,7 +2296,7 @@ tree
 resolve_mixers (struct loop *loop, tree chrec)
 {
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
-  tree ret = instantiate_parameters_1 (loop, chrec, FOLD_CONVERSIONS, cache, 0);
+  tree ret = instantiate_scev_1 (loop, loop, chrec, FOLD_CONVERSIONS, cache, 0);
   htab_delete (cache);
   return ret;
 }
@@ -2520,7 +2561,7 @@ analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(tree,heap) **exit_condition
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	if (is_gimple_reg (PHI_RESULT (phi)))
 	  {
-	    chrec = instantiate_parameters 
+	    chrec = instantiate_parameters
 	      (loop, 
 	       analyze_scalar_evolution (loop, PHI_RESULT (phi)));
 	    
