@@ -1569,8 +1569,7 @@ simplify_unary_expression (tree rhs)
 
   if (VN_INFO (op0)->has_constants)
     op0 = valueize_expr (VN_INFO (op0)->expr);
-  else if (TREE_CODE (rhs) == NOP_EXPR
-	   || TREE_CODE (rhs) == CONVERT_EXPR
+  else if (CONVERT_EXPR_P (rhs)
 	   || TREE_CODE (rhs) == REALPART_EXPR
 	   || TREE_CODE (rhs) == IMAGPART_EXPR
 	   || TREE_CODE (rhs) == VIEW_CONVERT_EXPR)

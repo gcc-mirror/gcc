@@ -5825,8 +5825,7 @@ va_list_skip_additions (tree lhs)
       if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
 	rhs = TREE_OPERAND (rhs, 0);
 
-      if ((TREE_CODE (rhs) != NOP_EXPR
-	   && TREE_CODE (rhs) != CONVERT_EXPR
+      if (((!CONVERT_EXPR_P (rhs))
 	   && ((TREE_CODE (rhs) != PLUS_EXPR
 		&& TREE_CODE (rhs) != POINTER_PLUS_EXPR)
 	       || TREE_CODE (TREE_OPERAND (rhs, 1)) != INTEGER_CST

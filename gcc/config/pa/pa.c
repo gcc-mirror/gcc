@@ -2103,8 +2103,7 @@ reloc_needed (tree exp)
       reloc |= reloc_needed (TREE_OPERAND (exp, 1));
       break;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case NON_LVALUE_EXPR:
       reloc = reloc_needed (TREE_OPERAND (exp, 0));
       break;

@@ -772,8 +772,7 @@ determine_base_object (tree expr)
   /* If this is a pointer casted to any type, we need to determine
      the base object for the pointer; so handle conversions before
      throwing away non-pointer expressions.  */
-  if (TREE_CODE (expr) == NOP_EXPR
-      || TREE_CODE (expr) == CONVERT_EXPR)
+  if (CONVERT_EXPR_P (expr))
     return determine_base_object (TREE_OPERAND (expr, 0));
 
   if (!POINTER_TYPE_P (TREE_TYPE (expr)))
@@ -1540,8 +1539,7 @@ may_be_nonaddressable_p (tree expr)
     case ARRAY_RANGE_REF:
       return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
-    case CONVERT_EXPR:
-    case NOP_EXPR:
+    CASE_CONVERT:
       return true;
 
     default:
@@ -2684,8 +2682,7 @@ determine_common_wider_type (tree *a, tree *b)
   tree suba, subb;
   tree atype = TREE_TYPE (*a);
 
-  if ((TREE_CODE (*a) == NOP_EXPR
-       || TREE_CODE (*a) == CONVERT_EXPR))
+  if (CONVERT_EXPR_P (*a))
     {
       suba = TREE_OPERAND (*a, 0);
       wider_type = TREE_TYPE (suba);
@@ -2695,8 +2692,7 @@ determine_common_wider_type (tree *a, tree *b)
   else
     return atype;
 
-  if ((TREE_CODE (*b) == NOP_EXPR
-       || TREE_CODE (*b) == CONVERT_EXPR))
+  if (CONVERT_EXPR_P (*b))
     {
       subb = TREE_OPERAND (*b, 0);
       if (TYPE_PRECISION (wider_type) != TYPE_PRECISION (TREE_TYPE (subb)))

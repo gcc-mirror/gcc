@@ -98,8 +98,7 @@ strip_float_extensions (tree exp)
 	return build_real (type, real_value_truncate (TYPE_MODE (type), orig));
     }
 
-  if (TREE_CODE (exp) != NOP_EXPR
-      && TREE_CODE (exp) != CONVERT_EXPR)
+  if (!CONVERT_EXPR_P (exp))
     return exp;
 
   sub = TREE_OPERAND (exp, 0);

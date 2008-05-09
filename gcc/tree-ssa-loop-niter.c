@@ -1437,8 +1437,7 @@ expand_simple_operations (tree expr)
 
   e = GIMPLE_STMT_OPERAND (stmt, 1);
   if (/* Casts are simple.  */
-      TREE_CODE (e) != NOP_EXPR
-      && TREE_CODE (e) != CONVERT_EXPR
+      !CONVERT_EXPR_P (e)
       /* Copies are simple.  */
       && TREE_CODE (e) != SSA_NAME
       /* Assignments of invariants are simple.  */
@@ -2190,8 +2189,7 @@ derive_constant_upper_bound (const_tree val)
     case INTEGER_CST:
       return tree_to_double_int (val);
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       op0 = TREE_OPERAND (val, 0);
       subtype = TREE_TYPE (op0);
       if (!TYPE_UNSIGNED (subtype)

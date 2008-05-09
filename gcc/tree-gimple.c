@@ -515,8 +515,7 @@ is_gimple_min_lval (tree t)
 bool
 is_gimple_cast (tree t)
 {
-  return (TREE_CODE (t) == NOP_EXPR
-	  || TREE_CODE (t) == CONVERT_EXPR
+  return (CONVERT_EXPR_P (t)
           || TREE_CODE (t) == FIX_TRUNC_EXPR);
 }
 

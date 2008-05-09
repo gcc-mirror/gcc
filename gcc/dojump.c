@@ -218,8 +218,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	  rtx set_label, clr_label;
 
 	  /* Strip narrowing integral type conversions.  */
-	  while ((TREE_CODE (exp0) == NOP_EXPR
-		  || TREE_CODE (exp0) == CONVERT_EXPR)
+	  while (CONVERT_EXPR_P (exp0)
 		 && TREE_OPERAND (exp0, 0) != error_mark_node
 		 && TYPE_PRECISION (TREE_TYPE (exp0))
 		    <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp0, 0))))

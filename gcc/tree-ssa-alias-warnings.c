@@ -258,8 +258,7 @@ find_alias_site_helper (tree var ATTRIBUTE_UNUSED, tree stmt, void *data)
   tree rhs_pointer = get_rhs (stmt);
   tree to_match = NULL_TREE;
 
-  while (TREE_CODE (rhs_pointer) == NOP_EXPR
-         || TREE_CODE (rhs_pointer) == CONVERT_EXPR
+  while (CONVERT_EXPR_P (rhs_pointer)
          || TREE_CODE (rhs_pointer) == VIEW_CONVERT_EXPR)
     rhs_pointer = TREE_OPERAND (rhs_pointer, 0);
 
@@ -720,8 +719,7 @@ already_warned_in_frontend_p (tree stmt)
 
   rhs_pointer = get_rhs (stmt);
 
-  if ((TREE_CODE (rhs_pointer) == NOP_EXPR
-       || TREE_CODE (rhs_pointer) == CONVERT_EXPR
+  if ((CONVERT_EXPR_P (rhs_pointer)
        || TREE_CODE (rhs_pointer) == VIEW_CONVERT_EXPR)
       && TREE_NO_WARNING (rhs_pointer))
     return true;
