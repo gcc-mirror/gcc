@@ -444,7 +444,7 @@ collect_pattern_seqs (void)
   htab_iterator hti0, hti1, hti2;
   p_hash_bucket hash_bucket;
   p_hash_elem e0, e1;
-#if defined STACK_REGS || defined HAVE_CC0
+#if defined STACK_REGS || defined HAVE_cc0
   basic_block bb;
   bitmap_head dont_collect;
 
@@ -495,7 +495,7 @@ collect_pattern_seqs (void)
   }
 #endif
 
-#ifdef HAVE_CC0
+#ifdef HAVE_cc0
   /* Mark CC0 setters and users as ineligible for collection into sequences.
      This is an over-conservative fix, since it is OK to include
      a cc0_setter, but only if we also include the corresponding cc0_user,
@@ -515,7 +515,7 @@ collect_pattern_seqs (void)
   }
 #endif
 
-#endif /* defined STACK_REGS || defined HAVE_CC0 */
+#endif /* defined STACK_REGS || defined HAVE_cc0 */
 
   /* Initialize PATTERN_SEQS to empty.  */
   pattern_seqs = 0;
@@ -529,13 +529,13 @@ collect_pattern_seqs (void)
         FOR_EACH_HTAB_ELEMENT (hash_bucket->seq_candidates, e1, p_hash_elem,
                                hti2)
           if (e0 != e1
-#if defined STACK_REGS || defined HAVE_CC0
+#if defined STACK_REGS || defined HAVE_cc0
               && !bitmap_bit_p (&dont_collect, INSN_UID (e0->insn))
               && !bitmap_bit_p (&dont_collect, INSN_UID (e1->insn))
 #endif
              )
             match_seqs (e0, e1);
-#if defined STACK_REGS || defined HAVE_CC0
+#if defined STACK_REGS || defined HAVE_cc0
   /* Free unused data.  */
   bitmap_clear (&dont_collect);
 #endif
