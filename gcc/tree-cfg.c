@@ -3252,8 +3252,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case NON_LVALUE_EXPR:
 	gcc_unreachable ();
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
     case NEGATE_EXPR:
@@ -3613,8 +3612,7 @@ verify_gimple_expr (tree expr)
   /* Special codes we cannot handle via their class.  */
   switch (TREE_CODE (expr))
     {
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       {
 	tree op = TREE_OPERAND (expr, 0);
 	if (!is_gimple_val (op))

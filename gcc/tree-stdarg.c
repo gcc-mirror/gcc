@@ -158,8 +158,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  continue;
 	}
 
-      if ((TREE_CODE (rhs) == NOP_EXPR
-	   || TREE_CODE (rhs) == CONVERT_EXPR)
+      if (CONVERT_EXPR_P (rhs)
 	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 	{
 	  lhs = TREE_OPERAND (rhs, 0);
@@ -217,8 +216,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
 	  continue;
 	}
 
-      if ((TREE_CODE (rhs) == NOP_EXPR
-	   || TREE_CODE (rhs) == CONVERT_EXPR)
+      if (CONVERT_EXPR_P (rhs)
 	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 	{
 	  lhs = TREE_OPERAND (rhs, 0);
@@ -447,8 +445,7 @@ check_va_list_escapes (struct stdarg_info *si, tree lhs, tree rhs)
  if (((TREE_CODE (rhs) == POINTER_PLUS_EXPR
        || TREE_CODE (rhs) == PLUS_EXPR)
       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
-     || TREE_CODE (rhs) == NOP_EXPR
-     || TREE_CODE (rhs) == CONVERT_EXPR)
+     || CONVERT_EXPR_P (rhs))
     rhs = TREE_OPERAND (rhs, 0);
 
   if (TREE_CODE (rhs) != SSA_NAME
@@ -555,8 +552,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		     statements.  */
 		  if ((TREE_CODE (rhs) == POINTER_PLUS_EXPR
 		       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
-		      || TREE_CODE (rhs) == NOP_EXPR
-		      || TREE_CODE (rhs) == CONVERT_EXPR)
+		      || CONVERT_EXPR_P (rhs))
 		    rhs = TREE_OPERAND (rhs, 0);
 
 		  if (rhs == use)

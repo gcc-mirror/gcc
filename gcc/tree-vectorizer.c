@@ -2172,8 +2172,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
         }
       break;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       if (BYTES_BIG_ENDIAN)
         {
           c1 = VEC_UNPACK_HI_EXPR;
@@ -2267,8 +2266,7 @@ supportable_narrowing_operation (enum tree_code code,
 
   switch (code)
     {
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       c1 = VEC_PACK_TRUNC_EXPR;
       break;
 

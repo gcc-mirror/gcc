@@ -1792,8 +1792,7 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 	     || TREE_CODE (t) == REALPART_EXPR
 	     || TREE_CODE (t) == IMAGPART_EXPR
 	     || TREE_CODE (t) == VIEW_CONVERT_EXPR
-	     || TREE_CODE (t) == NOP_EXPR
-	     || TREE_CODE (t) == CONVERT_EXPR)
+	     || CONVERT_EXPR_P (t))
 	t = TREE_OPERAND (t, 0);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)

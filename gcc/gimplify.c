@@ -1649,8 +1649,7 @@ static enum gimplify_status
 gimplify_conversion (tree *expr_p)
 {
   tree tem;
-  gcc_assert (TREE_CODE (*expr_p) == NOP_EXPR
-	      || TREE_CODE (*expr_p) == CONVERT_EXPR);
+  gcc_assert (CONVERT_EXPR_P (*expr_p));
   
   /* Then strip away all but the outermost conversion.  */
   STRIP_SIGN_NOPS (TREE_OPERAND (*expr_p, 0));
@@ -1676,7 +1675,7 @@ gimplify_conversion (tree *expr_p)
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
-  if (TREE_CODE (*expr_p) == NOP_EXPR || TREE_CODE (*expr_p) == CONVERT_EXPR)
+  if (CONVERT_EXPR_P (*expr_p))
     {
       tree sub = TREE_OPERAND (*expr_p, 0);
 
@@ -5467,8 +5466,7 @@ goa_lhs_expr_p (tree expr, tree addr)
   /* Also include casts to other type variants.  The C front end is fond
      of adding these for e.g. volatile variables.  This is like 
      STRIP_TYPE_NOPS but includes the main variant lookup.  */
-  while ((TREE_CODE (expr) == NOP_EXPR
-          || TREE_CODE (expr) == CONVERT_EXPR
+  while ((CONVERT_EXPR_P (expr)
           || TREE_CODE (expr) == NON_LVALUE_EXPR)
          && TREE_OPERAND (expr, 0) != error_mark_node
          && (TYPE_MAIN_VARIANT (TREE_TYPE (expr))
@@ -5479,8 +5477,7 @@ goa_lhs_expr_p (tree expr, tree addr)
     {
       expr = TREE_OPERAND (expr, 0);
       while (expr != addr
-	     && (TREE_CODE (expr) == NOP_EXPR
-		 || TREE_CODE (expr) == CONVERT_EXPR
+	     && (CONVERT_EXPR_P (expr)
 		 || TREE_CODE (expr) == NON_LVALUE_EXPR)
 	     && TREE_CODE (expr) == TREE_CODE (addr)
 	     && TYPE_MAIN_VARIANT (TREE_TYPE (expr))
@@ -5765,8 +5762,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = gimplify_va_arg_expr (expr_p, pre_p, post_p);
 	  break;
 
-	case CONVERT_EXPR:
-	case NOP_EXPR:
+	CASE_CONVERT:
 	  if (IS_EMPTY_STMT (*expr_p))
 	    {
 	      ret = GS_ALL_DONE;

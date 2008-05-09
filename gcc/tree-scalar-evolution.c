@@ -1675,8 +1675,7 @@ interpret_rhs_modify_stmt (struct loop *loop, tree at_stmt,
 			   at_stmt);
       break;
       
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       res = chrec_convert (type, chrec10, at_stmt);
@@ -2115,8 +2114,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	}
       return chrec;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)

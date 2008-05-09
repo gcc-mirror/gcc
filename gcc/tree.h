@@ -995,12 +995,23 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CODE (NODE) == PHI_NODE ? PHI_CHAIN (NODE) :		\
      GIMPLE_STMT_P (NODE) ? NULL_TREE : TREE_CHAIN (NODE))
 
+/* Tests if expression is conversion expr (NOP_EXPRs or CONVERT_EXPRs).  */
+
+#define CONVERT_EXPR_P(EXP)					\
+  (TREE_CODE (EXP) == NOP_EXPR					\
+   || TREE_CODE (EXP) == CONVERT_EXPR)
+
+/* Generate case for NOP_EXPR, CONVERT_EXPR.  */
+
+#define CASE_CONVERT						\
+  case NOP_EXPR:						\
+  case CONVERT_EXPR
+
 /* Given an expression as a tree, strip any NON_LVALUE_EXPRs and NOP_EXPRs
    that don't change the machine mode.  */
 
 #define STRIP_NOPS(EXP)						\
-  while ((TREE_CODE (EXP) == NOP_EXPR				\
-	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+  while ((CONVERT_EXPR_P (EXP)					\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
@@ -1010,8 +1021,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Like STRIP_NOPS, but don't let the signedness change either.  */
 
 #define STRIP_SIGN_NOPS(EXP) \
-  while ((TREE_CODE (EXP) == NOP_EXPR				\
-	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+  while ((CONVERT_EXPR_P (EXP)					\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
@@ -1025,8 +1035,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
 #define STRIP_TYPE_NOPS(EXP) \
-  while ((TREE_CODE (EXP) == NOP_EXPR				\
-	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+  while ((CONVERT_EXPR_P (EXP)					\
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TREE_TYPE (EXP)					\

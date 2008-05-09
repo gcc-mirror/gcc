@@ -202,8 +202,7 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
 	if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
 	  break;
 	t = GIMPLE_STMT_OPERAND (t, 1);
-	if (TREE_CODE (t) == NOP_EXPR
-	    || TREE_CODE (t) == CONVERT_EXPR)
+	if (CONVERT_EXPR_P (t))
 	  t = TREE_OPERAND (t, 0);
       } while (TREE_CODE (t) == SSA_NAME);
 

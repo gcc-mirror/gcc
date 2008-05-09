@@ -812,8 +812,7 @@ rewrite_bittest (block_stmt_iterator *bsi)
 
   /* There is a conversion in between possibly inserted by fold.  */
   t = GIMPLE_STMT_OPERAND (stmt1, 1);
-  if (TREE_CODE (t) == NOP_EXPR
-      || TREE_CODE (t) == CONVERT_EXPR)
+  if (CONVERT_EXPR_P (t))
     {
       t = TREE_OPERAND (t, 0);
       if (TREE_CODE (t) != SSA_NAME

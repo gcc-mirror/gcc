@@ -110,8 +110,7 @@ compute_object_offset (const_tree expr, const_tree var)
       break;
 
     case REALPART_EXPR:
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return compute_object_offset (TREE_OPERAND (expr, 0), var);

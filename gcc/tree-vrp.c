@@ -3797,12 +3797,10 @@ register_edge_assert_for_2 (tree name, edge e, block_stmt_iterator bsi,
 
       /* Extract NAME2 from the (optional) sign-changing cast.  */
       if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
-          && (TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == NOP_EXPR
-	      || TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == CONVERT_EXPR))
+          && CONVERT_EXPR_P (GIMPLE_STMT_OPERAND (def_stmt, 1)))
 	{
 	  tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
-	  if ((TREE_CODE (rhs) == NOP_EXPR
-	       || TREE_CODE (rhs) == CONVERT_EXPR)
+	  if (CONVERT_EXPR_P (rhs)
 	      && ! TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (rhs, 0)))
 	      && (TYPE_PRECISION (TREE_TYPE (rhs))
 		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (rhs, 0)))))
@@ -3954,8 +3952,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       /* Recurse through the copy.  */
       retval |= register_edge_assert_for_1 (rhs, code, e, bsi);
     }
-  else if (TREE_CODE (rhs) == NOP_EXPR
-	   || TREE_CODE (rhs) == CONVERT_EXPR)
+  else if (CONVERT_EXPR_P (rhs))
     { 
       /* Recurse through the type conversion.  */
       retval |= register_edge_assert_for_1 (TREE_OPERAND (rhs, 0),

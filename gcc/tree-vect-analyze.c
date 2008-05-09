@@ -218,8 +218,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
 
 	      operation = GIMPLE_STMT_OPERAND (stmt, 1);
-	      if (TREE_CODE (operation) == NOP_EXPR
-		  || TREE_CODE (operation) == CONVERT_EXPR
+	      if (CONVERT_EXPR_P (operation)
 		  || TREE_CODE (operation) == WIDEN_MULT_EXPR
 		  || TREE_CODE (operation) == FLOAT_EXPR)
 		{
