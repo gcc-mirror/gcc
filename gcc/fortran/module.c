@@ -1474,6 +1474,130 @@ mio_allocated_string (const char *s)
 }
 
 
+/* Functions for quoting and unquoting strings.  */
+
+static char *
+quote_string (const gfc_char_t *s, const size_t slength)
+{
+  const gfc_char_t *p;
+  char *res, *q;
+  size_t len = 0, i;
+
+  /* Calculate the length we'll need: a backslash takes two ("\\"),
+     non-printable characters take 10 ("\Uxxxxxxxx") and others take 1.  */
+  for (p = s, i = 0; i < slength; p++, i++)
+    {
+      if (*p == '\\')
+	len += 2;
+      else if (!gfc_wide_is_printable (*p))
+	len += 10;
+      else
+	len++;
+    }
+
+  q = res = gfc_getmem (len + 1);
+  for (p = s, i = 0; i < slength; p++, i++)
+    {
+      if (*p == '\\')
+	*q++ = '\\', *q++ = '\\';
+      else if (!gfc_wide_is_printable (*p))
+	{
+	  sprintf (q, "\\U%08" HOST_WIDE_INT_PRINT "ux",
+		   (unsigned HOST_WIDE_INT) *p);
+	  q += 10;
+	}
+      else
+	*q++ = (unsigned char) *p;
+    }
+
+  res[len] = '\0';
+  return res;
+}
+
+static gfc_char_t *
+unquote_string (const char *s)
+{
+  size_t len, i;
+  const char *p;
+  gfc_char_t *res;
+
+  for (p = s, len = 0; *p; p++, len++)
+    {
+      if (*p != '\\')
+	continue;
+	
+      if (p[1] == '\\')
+	p++;
+      else if (p[1] == 'U')
+	p += 9; /* That is a "\U????????". */
+      else
+	gfc_internal_error ("unquote_string(): got bad string");
+    }
+
+  res = gfc_get_wide_string (len + 1);
+  for (i = 0, p = s; i < len; i++, p++)
+    {
+      gcc_assert (*p);
+
+      if (*p != '\\')
+	res[i] = (unsigned char) *p;
+      else if (p[1] == '\\')
+	{
+	  res[i] = (unsigned char) '\\';
+	  p++;
+	}
+      else
+	{
+	  /* We read the 8-digits hexadecimal constant that follows.  */
+	  int j;
+	  unsigned n;
+	  gfc_char_t c = 0;
+
+	  gcc_assert (p[1] == 'U');
+	  for (j = 0; j < 8; j++)
+	    {
+	      c = c << 4;
+	      gcc_assert (sscanf (&p[j+2], "%01x", &n) == 1);
+	      c += n;
+	    }
+
+	  res[i] = c;
+	  p += 9;
+	}
+    }
+
+  res[len] = '\0';
+  return res;
+}
+
+
+/* Read or write a character pointer that points to a wide string on the
+   heap, performing quoting/unquoting of nonprintable characters using the
+   form \U???????? (where each ? is a hexadecimal digit).
+   Length is the length of the string, only known and used in output mode.  */
+
+static const gfc_char_t *
+mio_allocated_wide_string (const gfc_char_t *s, const size_t length)
+{
+  if (iomode == IO_OUTPUT)
+    {
+      char *quoted = quote_string (s, length);
+      write_atom (ATOM_STRING, quoted);
+      gfc_free (quoted);
+      return s;
+    }
+  else
+    {
+      gfc_char_t *unquoted;
+
+      require_atom (ATOM_STRING);
+      unquoted = unquote_string (atom_string);
+      gfc_free (atom_string);
+      return unquoted;
+    }
+}
+
+
 /* Read or write a string that is in static memory.  */
 
 static void
@@ -2708,7 +2832,6 @@ mio_expr (gfc_expr **ep)
 {
   gfc_expr *e;
   atom_type t;
-  char *s;
   int flag;
 
   mio_lparen ();
@@ -2833,10 +2956,10 @@ mio_expr (gfc_expr **ep)
       break;
 
     case EXPR_SUBSTRING:
-      s = gfc_widechar_to_char (e->value.character.string, -1);
-      s = CONST_CAST (char *, mio_allocated_string (s));
-      e->value.character.string = gfc_char_to_widechar (s);
-      gfc_free (s);
+      e->value.character.string
+	= CONST_CAST (gfc_char_t *,
+		      mio_allocated_wide_string (e->value.character.string,
+						 e->value.character.length));
       mio_ref_list (&e->ref);
       break;
 
@@ -2870,10 +2993,10 @@ mio_expr (gfc_expr **ep)
 
 	case BT_CHARACTER:
 	  mio_integer (&e->value.character.length);
-	  s = gfc_widechar_to_char (e->value.character.string, -1);
-	  s = CONST_CAST (char *, mio_allocated_string (s));
-	  e->value.character.string = gfc_char_to_widechar (s);
-	  gfc_free (s);
+	  e->value.character.string
+	    = CONST_CAST (gfc_char_t *,
+			  mio_allocated_wide_string (e->value.character.string,
+						     e->value.character.length));
 	  break;
 
 	default:
