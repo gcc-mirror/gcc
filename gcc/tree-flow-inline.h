@@ -1581,36 +1581,6 @@ ref_contains_array_ref (const_tree ref)
   return false;
 }
 
-
-/* Return true if V is a tree that we can have subvars for.
-   Normally, this is any aggregate type.  Also complex
-   types which are not gimple registers can have subvars.  */
-
-static inline bool
-var_can_have_subvars (const_tree v)
-{
-  /* Volatile variables should never have subvars.  */
-  if (TREE_THIS_VOLATILE (v))
-    return false;
-
-  /* Non decls or memory tags can never have subvars.  */
-  if (!DECL_P (v) || MTAG_P (v))
-    return false;
-
-  /* Aggregates can have subvars.  */
-  if (AGGREGATE_TYPE_P (TREE_TYPE (v)))
-    return true;
-
-  /* Complex types variables which are not also a gimple register can
-    have subvars. */
-  if (TREE_CODE (TREE_TYPE (v)) == COMPLEX_TYPE
-      && !DECL_GIMPLE_REG_P (v))
-    return true;
-
-  return false;
-}
-
-
 /* Return true, if the two ranges [POS1, SIZE1] and [POS2, SIZE2]
    overlap.  SIZE1 and/or SIZE2 can be (unsigned)-1 in which case the
    range is open-ended.  Otherwise return false.  */

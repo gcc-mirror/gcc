@@ -1,3 +1,19 @@
+2008-05-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (var_can_have_subvars): Move ...
+	* tree-ssa-structalias.c (var_can_have_subvars): ... here.
+	* tree-flow.h (var_can_have_subvars): Remove.
+	(push_fields_onto_fieldstack): Remove.
+	(sort_fieldstack): Likewise.
+	(struct fieldoff): Move ...
+	* tree-ssa-structalias.c (struct fieldoff): ... here.  Remove
+	alias_set and base_for_components fields.
+	(sort_fieldstack): Make static.
+	(push_fields_onto_fieldstack): Likewise.  Remove code that
+	handles anything but RECORD_TYPEs.  Remove alias_set and
+	base_for_components handling.
+	(create_variable_info_for): Adjust.
+
 2008-05-08  Seongbae Park  <seongbae.park@gmail.com>
 
 	* common.opt (Wframe-larger-than=): Shorten the help message
