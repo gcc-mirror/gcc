@@ -1,3 +1,8 @@
+2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36197
+	* module.c (quote_string): Fix sprintf format.
+
 2008-05-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36162
