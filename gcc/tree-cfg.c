@@ -3598,6 +3598,18 @@ one_pointer_to_useless_type_conversion_p (tree dest, tree src_obj)
   return false;
 }
 
+/* Return true if TYPE1 is a fixed-point type and if conversions to and
+   from TYPE2 can be handled by FIXED_CONVERT_EXPR.  */
+
+static bool
+valid_fixed_convert_types_p (tree type1, tree type2)
+{
+  return (FIXED_POINT_TYPE_P (type1)
+	  && (INTEGRAL_TYPE_P (type2)
+	      || SCALAR_FLOAT_TYPE_P (type2)
+	      || FIXED_POINT_TYPE_P (type2)));
+}
+
 /* Verify the GIMPLE expression EXPR.  Returns true if there is an
    error, otherwise false.  */
 
@@ -3646,6 +3658,27 @@ verify_gimple_expr (tree expr)
 	if (TREE_CODE (type) != TREE_CODE (TREE_TYPE (op)))
 	  {
 	    error ("invalid types in nop conversion");
+	    debug_generic_expr (type);
+	    debug_generic_expr (TREE_TYPE (op));
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case FIXED_CONVERT_EXPR:
+      {
+	tree op = TREE_OPERAND (expr, 0);
+	if (!is_gimple_val (op))
+	  {
+	    error ("invalid operand in conversion");
+	    return true;
+	  }
+
+	if (!valid_fixed_convert_types_p (type, TREE_TYPE (op))
+	    && !valid_fixed_convert_types_p (TREE_TYPE (op), type))
+	  {
+	    error ("invalid types in fixed-point conversion");
 	    debug_generic_expr (type);
 	    debug_generic_expr (TREE_TYPE (op));
 	    return true;

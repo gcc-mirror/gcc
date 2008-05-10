@@ -1,3 +1,8 @@
+2008-05-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree-cfg.c (valid_fixed_convert_types_p): New function.
+	(verify_gimple_expr): Handle FIXED_CONVERT_EXPR.
+
 2008-05-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* value-prof.c (interesting_stringop_to_profile): Do not
