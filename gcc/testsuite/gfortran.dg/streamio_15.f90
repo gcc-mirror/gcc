@@ -4,7 +4,15 @@
 program main
   implicit none
   character(len=6) :: c
-  integer :: i
+  integer :: i, newline_length
+
+  open(20,status="scratch",access="stream",form="formatted")
+  write(20,"()")
+  inquire(20,pos=newline_length)
+  newline_length = newline_length - 1
+  if (newline_length < 1 .or. newline_length > 2) call abort
+  close(20)
+
   open(20,file="foo.txt",form="formatted",access="stream")
   write(20,'(A)') '123456'
   write(20,'(A)') 'abcdef'
@@ -15,7 +23,7 @@ program main
   if (c.ne.'123456') call abort
   ! Save the position
   inquire(20,pos=i)
-  if (i.ne.8) call abort
+  if (i.ne.7+newline_length) call abort
   ! Read in the complete line...
   read(20,'(A)') c
   if (c.ne.'abcdef') call abort
