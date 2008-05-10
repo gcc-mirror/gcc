@@ -1,5 +1,10 @@
 2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/fseek.f90: Take care of Windows CRLF line
+	terminator.
+
+2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/fmt_t_5.f90: Take care of Windows CRLF line
 	terminator.
 
