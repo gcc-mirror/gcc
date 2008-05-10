@@ -1,3 +1,8 @@
+2008-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* value-prof.c (interesting_stringop_to_profile): Do not
+	return early for BUILT_IN_MEMPCPY.
+
 2008-05-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* calls.c (expand_call): Don't use callgraph to increase
