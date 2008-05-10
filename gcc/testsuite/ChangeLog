@@ -1,5 +1,9 @@
 2008-05-09  Tom Tromey  <tromey@redhat.com>
 
+	* gcc.dg/pr22231.c: Fix dg-error call.
+
+2008-05-09  Tom Tromey  <tromey@redhat.com>
+
 	PR preprocessor/22231:
 	* gcc.dg/pr22231.c: New file.
 
