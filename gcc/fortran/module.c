@@ -1502,7 +1502,7 @@ quote_string (const gfc_char_t *s, const size_t slength)
 	*q++ = '\\', *q++ = '\\';
       else if (!gfc_wide_is_printable (*p))
 	{
-	  sprintf (q, "\\U%08" HOST_WIDE_INT_PRINT "ux",
+	  sprintf (q, "\\U%08" HOST_WIDE_INT_PRINT "x",
 		   (unsigned HOST_WIDE_INT) *p);
 	  q += 10;
 	}
