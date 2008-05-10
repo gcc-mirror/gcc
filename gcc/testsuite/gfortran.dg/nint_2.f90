@@ -3,7 +3,7 @@
 ! PR 31202
 ! http://gcc.gnu.org/ml/fortran/2005-04/msg00139.html
 !
-! { dg-do run { xfail powerpc-ibm-aix* powerpc*-*-linux* } }
+! { dg-do run { xfail powerpc-ibm-aix* powerpc*-*-linux* *-*-mingw* } }
   real(kind=8) :: a
   integer(kind=8) :: i1, i2
   real :: b

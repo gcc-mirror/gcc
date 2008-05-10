@@ -1,5 +1,9 @@
 2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/nint_2.f90: XFAIL on mingw.
+
+2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/streamio_15.f90: Take care of Windows CRLF line
 	terminator.
 
