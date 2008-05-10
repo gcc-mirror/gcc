@@ -2109,7 +2109,14 @@ expand_call (tree exp, rtx target, int ignore)
   if (fndecl)
     {
       struct cgraph_rtl_info *i = cgraph_rtl_info (fndecl);
-      if (i && i->preferred_incoming_stack_boundary)
+      /* Without automatic stack alignment, we can't increase preferred
+	 stack boundary.  With automatic stack alignment, it is
+	 unnecessary since unless we can guarantee that all callers will
+	 align the outgoing stack properly, callee has to align its
+	 stack anyway.  */
+      if (i
+	  && i->preferred_incoming_stack_boundary
+	  && i->preferred_incoming_stack_boundary < preferred_stack_boundary)
 	preferred_stack_boundary = i->preferred_incoming_stack_boundary;
     }
 
