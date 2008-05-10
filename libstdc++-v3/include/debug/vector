@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -443,7 +443,7 @@ namespace __debug
       bool
       _M_requires_reallocation(size_type __elements)
       {
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
+#ifndef _GLIBCXX_DEBUG_PEDANTIC
 	return __elements > this->capacity();
 #else
 	return __elements > _M_guaranteed_capacity;
