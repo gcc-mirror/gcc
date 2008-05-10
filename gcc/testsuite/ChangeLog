@@ -1,9 +1,17 @@
+<<<<<<< .mine
+2008-05-10  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/36185
+	* g++.dg/opt/pr36185.C
+
+=======
 2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* write_to_null.f90: Rename to write_to_null.F90.
 	* write_to_null.F90: On Windows, "nul" is the equivalent of the
 	Unix /dev/null.
 
+>>>>>>> .r135158
 2008-05-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/33642
