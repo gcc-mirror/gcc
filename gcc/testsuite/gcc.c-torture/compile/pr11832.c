@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* Currently ICEs for MIPS; see PR33642.  */
+/* { dg-skip-if "PR33642" { mips*-*-* } { "*" } { "" } } */
 /* { dg-options "-frtl-abstract-sequences" } */
 
 int a, b, e;
