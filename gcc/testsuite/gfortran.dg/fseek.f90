@@ -3,10 +3,18 @@
 PROGRAM test_fseek
   INTEGER, PARAMETER :: SEEK_SET = 0, SEEK_CUR = 1, SEEK_END = 2, fd=10
   INTEGER :: ierr = 0
+  INTEGER :: newline_length
 
-  ! expected position: 12, one leading blank + 10 + newline
+  ! We first need to determine if a newline is one or two characters
+  open (911,status="scratch")
+  write(911,"()")
+  newline_length = ftell(911)
+  close (911)
+  if (newline_length < 1 .or. newline_length > 2) call abort()
+
+  ! expected position: one leading blank + 10 + newline
   WRITE(fd, *) "1234567890"
-  IF (FTELL(fd) /= 12) CALL abort()
+  IF (FTELL(fd) /= 11 + newline_length) CALL abort()
 
   ! move backward from current position
   CALL FSEEK(fd, -12, SEEK_CUR, ierr)
