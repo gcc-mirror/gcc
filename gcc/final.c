@@ -4239,7 +4239,7 @@ rest_of_clean_state (void)
 
   if (targetm.binds_local_p (current_function_decl))
     {
-      int pref = crtl->preferred_stack_boundary;
+      unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)
         pref = crtl->stack_alignment_needed;
       cgraph_rtl_info (current_function_decl)->preferred_incoming_stack_boundary

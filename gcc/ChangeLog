@@ -1,3 +1,14 @@
+2008-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* calls.c (expand_call): Don't use callgraph to increase
+	preferred_stack_boundary.
+
+	* cgraph.h (cgraph_rtl_info): Use unsigned on
+	preferred_incoming_stack_boundary.
+
+	* final.c (rest_of_clean_state): Use unsigned on
+	preferred_stack_boundary.
+
 2008-05-09  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/22231:
