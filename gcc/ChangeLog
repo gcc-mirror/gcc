@@ -1,3 +1,8 @@
+2008-05-11  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* pretty-print.c (pp_integer_with_precision): Use
+	HOST_LONG_LONG_FORMAT.
+
 2008-05-10  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* gcse.c (store_killed_in_insn): Negated call to RTL_CONST_CALL_P.

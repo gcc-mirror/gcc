@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
         break;                                               \
                                                              \
       case 2:                                                \
-        pp_scalar (PP, "%ll" F, va_arg (ARG, long long T));  \
+        pp_scalar (PP, "%" HOST_LONG_LONG_FORMAT F, va_arg (ARG, long long T));  \
         break;                                               \
                                                              \
       default:                                               \
