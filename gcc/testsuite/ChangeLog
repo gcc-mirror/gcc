@@ -1,3 +1,8 @@
+2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/35578
+	* g++.dg/parse/friend8.C: New test.
+
 2008-05-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36093

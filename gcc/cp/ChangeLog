@@ -1,3 +1,9 @@
+2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/35578
+	* parser.c (cp_parser_decl_specifier_seq): Add location to error
+	message.
+
 2008-04-17  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_asm_specification_opt): Print CPP_CLOSE_PAREN
