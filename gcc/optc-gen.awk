@@ -17,7 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # This Awk script reads in the option records generated from 
-# opt-gather.awk, combines the flags of duplicat options and generates a
+# opt-gather.awk, combines the flags of duplicate options and generates a
 # C file.
 #
 # This program uses functions from opt-functions.awk
