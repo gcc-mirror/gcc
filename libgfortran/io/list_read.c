@@ -347,20 +347,12 @@ eat_separator (st_parameter_dt *dtp)
     case '\r':
       dtp->u.p.at_eol = 1;
       n = next_char(dtp);
-      if (n == '\n')
+      if (n != '\n')
 	{
-	  if (dtp->u.p.namelist_mode)
-	    {
-	      do
-		c = next_char (dtp);
-	      while (c == '\n' || c == '\r' || c == ' ');
-	      unget_char (dtp, c);
-	    }
+	  unget_char (dtp, n);
+	  break;
 	}
-      else
-	unget_char (dtp, n);
-      break;
-
+    /* Fall through.  */
     case '\n':
       dtp->u.p.at_eol = 1;
       if (dtp->u.p.namelist_mode)
