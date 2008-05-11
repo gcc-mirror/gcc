@@ -440,12 +440,12 @@ gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
 
 /* Call malloc to allocate size bytes of memory, with special conditions:
       + if size < 0, generate a runtime error,
-      + if size == 0, return a NULL pointer,
+      + if size == 0, return a malloced area of size 1,
       + if malloc returns NULL, issue a runtime error.  */
 tree
 gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 {
-  tree tmp, msg, negative, zero, malloc_result, null_result, res;
+  tree tmp, msg, negative, malloc_result, null_result, res;
   stmtblock_t block2;
 
   size = gfc_evaluate_now (size, block);
@@ -468,6 +468,10 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 
   /* Call malloc and check the result.  */
   gfc_start_block (&block2);
+
+  size = fold_build2 (MAX_EXPR, size_type_node, size,
+		      build_int_cst (size_type_node, 1));
+
   gfc_add_modify_expr (&block2, res,
 		       build_call_expr (built_in_decls[BUILT_IN_MALLOC], 1,
 		       size));
@@ -481,13 +485,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   gfc_add_expr_to_block (&block2, tmp);
   malloc_result = gfc_finish_block (&block2);
 
-  /* size == 0  */
-  zero = fold_build2 (EQ_EXPR, boolean_type_node, size,
-		      build_int_cst (size_type_node, 0));
-  tmp = fold_build2 (MODIFY_EXPR, pvoid_type_node, res,
-		     build_int_cst (pvoid_type_node, 0));
-  tmp = fold_build3 (COND_EXPR, void_type_node, zero, tmp, malloc_result);
-  gfc_add_expr_to_block (block, tmp);
+  gfc_add_expr_to_block (block, malloc_result);
 
   if (type != NULL)
     res = fold_convert (type, res);
