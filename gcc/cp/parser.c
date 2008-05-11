@@ -18432,7 +18432,8 @@ cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
       code = TRUTH_ORIF_EXPR;
       break;
     default:
-      cp_parser_error (parser, "`+', `*', `-', `&', `^', `|', `&&', or `||'");
+      cp_parser_error (parser, "expected `+', `*', `-', `&', `^', `|', "
+			       "`&&', or `||'");
     resync_fail:
       cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					     /*or_comma=*/false,
@@ -18463,7 +18464,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list)
 {
   tree c, t;
 
-  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "%<(%>"))
     return list;
 
   c = build_omp_clause (OMP_CLAUSE_SCHEDULE);
