@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-05-03 22:26+0800\n"
+"PO-Revision-Date: 2008-05-05 10:37+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2704,7 +2704,7 @@ msgstr "考虑预防堆栈溢出的缓冲区的下限值"
 
 #: params.def:645
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps"
-msgstr ""
+msgstr "线索化跳转时一个以被复制的块中所能包含的最大语句数"
 
 #: params.def:654
 #, fuzzy
@@ -3739,7 +3739,7 @@ msgstr "%3$L处从 %1$s 到 %2$s 的转换不适合数组操作数"
 #: fortran/arith.c:2069
 #, no-c-format
 msgid "Integer outside symmetric range implied by Standard Fortran converting %s to %s at %L"
-msgstr ""
+msgstr "%3$L处将%1$s转换为%2$s时整数超过了标准 Fortran 所规定的对称范围"
 
 #: fortran/arith.c:2402
 #, no-c-format
@@ -3985,9 +3985,9 @@ msgstr "当‘x’是 COMPLEX 时%3$L处内建函数‘%2$s’的实参‘%1$s�
 #: fortran/check.c:841 fortran/check.c:1199 fortran/check.c:1302
 #: fortran/check.c:1461 fortran/check.c:1478 fortran/check.c:2312
 #: fortran/check.c:2438 fortran/check.c:2773 fortran/check.c:2815
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: '%s' intrinsic with KIND argument at %L"
-msgstr "Fortran 2003：%C处的 FLUSH 语句"
+msgstr "Fortran 2003：%2$L处的‘%1$s’内建函数有 KIND 实参"
 
 #: fortran/check.c:959 fortran/check.c:1706 fortran/check.c:1714
 #, no-c-format
@@ -3997,7 +3997,7 @@ msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’必须为数字或 LOGIC
 #: fortran/check.c:973
 #, no-c-format
 msgid "Different shape for arguments '%s' and '%s' at %L for intrinsic 'dot_product'"
-msgstr ""
+msgstr "%3$L处点乘内建函数的参数‘%1$s’和‘%2$s’外形不相同"
 
 #: fortran/check.c:992 fortran/check.c:1000
 #, no-c-format
@@ -4032,7 +4032,7 @@ msgstr "%3$L处内建函数‘%2$s’的实参‘a%1$d’必须是 %4$s(%5$d)"
 #: fortran/check.c:1649
 #, no-c-format
 msgid "Fortran 2003: '%s' intrinsic with CHARACTER argument at %L"
-msgstr ""
+msgstr "Fortran 2003：%2$L处的‘%1$s’内建函数有 CHARACTER 实参"
 
 #: fortran/check.c:1656
 #, no-c-format
@@ -4042,12 +4042,12 @@ msgstr "%2$L处‘%1$s’内建函数的‘a1’实参必须是 INTEGER、REAL �
 #: fortran/check.c:1728
 #, no-c-format
 msgid "Different shape on dimension 1 for arguments '%s' and '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "%3$L处矩阵乘法的两个参数‘%1$s’和‘%2$s’第一维的外形不相同"
 
 #: fortran/check.c:1747
 #, no-c-format
 msgid "Different shape on dimension 2 for argument '%s' and dimension 1 for argument '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "用作%3$L处矩阵乘法参数的‘%1$s’的第二维和‘%2$s’的第一维的外形不相同"
 
 #: fortran/check.c:1756
 #, no-c-format
@@ -4813,19 +4813,19 @@ msgid "Syntax error in NAME= specifier for binding label at %C"
 msgstr "%C CASE 指定语法错误"
 
 #: fortran/decl.c:4832
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing quote '\"' for binding label at %C"
-msgstr "%C处缺少格式标号"
+msgstr "%C处绑定标号缺少右引号‘\"’"
 
 #: fortran/decl.c:4841
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing quote ''' for binding label at %C"
-msgstr "%C处缺少格式标号"
+msgstr "%C处绑定标号缺少右引号‘'’"
 
 #: fortran/decl.c:4851
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing paren for binding label at %C"
-msgstr "%C处缺少格式标号"
+msgstr "%C处绑定标号缺少右括号"
 
 #: fortran/decl.c:4857
 #, fuzzy, no-c-format
@@ -4979,9 +4979,9 @@ msgid "Expected expression at %C in PARAMETER statement"
 msgstr "%C 在 PARAMETER 语句中需要表达式"
 
 #: fortran/decl.c:5799
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initializing already initialized variable at %C"
-msgstr "COMMON 变量‘%s’在%C处不允许有初始值设定"
+msgstr "%C处初始化已经初始化的变量"
 
 #: fortran/decl.c:5844
 #, no-c-format
@@ -6468,9 +6468,9 @@ msgid "Pointer assignment with vector subscript on rhs at %L"
 msgstr "%L处指针赋值的右手边带有矢量下标"
 
 #: fortran/expr.c:2972
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pointer assigment target has PROTECTED attribute at %L"
-msgstr "%L处指针赋给非指针"
+msgstr "%L处指针赋值对象有 PROTECTED 属性"
 
 #: fortran/gfortranspec.c:248
 #, c-format
@@ -6642,14 +6642,14 @@ msgid "Type/rank mismatch in argument '%s' at %L"
 msgstr "%2$L处实参‘%1$s’类型/秩不匹配"
 
 #: fortran/interface.c:1474
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type mismatch in argument '%s' at %L; passed %s to %s"
-msgstr "实参‘%s’类型/秩不匹配，于%L处"
+msgstr "%2$L处实参‘%1$s’类型不匹配；将 %3$s 传递给 %4$s"
 
 #: fortran/interface.c:1492 fortran/interface.c:1532
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Rank mismatch in argument '%s' at %L (%d and %d)"
-msgstr "实参‘%s’类型/秩不匹配，于%L处"
+msgstr "%2$L处实参‘%1$s’秩不匹配(%3$d 和 %4$d)"
 
 #: fortran/interface.c:1519
 #, fuzzy, no-c-format
@@ -6975,9 +6975,9 @@ msgid "Duplicate %s specification at %C"
 msgstr "重复 %s 指定，于 %C"
 
 #: fortran/io.c:1041
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable tag cannot be INTENT(IN) at %C"
-msgstr "循环变量‘%s’在%C处不能是 INTENT(IN)"
+msgstr "%C处的变量标记不能是 INTENT(IN)"
 
 #: fortran/io.c:1048
 #, no-c-format
@@ -7040,9 +7040,9 @@ msgid "Fortran 2003: IOMSG tag at %L"
 msgstr "Fortran 2003：%L处的 IOMSG 标记"
 
 #: fortran/io.c:1203
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 95 requires default INTEGER in %s tag at %L"
-msgstr "Fortran 95 在%L处的 SIZE 标记中需要默认的 INTEGER"
+msgstr "Fortran 95 在%2$L处的 %1$s 标记中需要默认的 INTEGER"
 
 #: fortran/io.c:1211
 #, no-c-format
@@ -7276,9 +7276,9 @@ msgid "Name at %C is too long"
 msgstr "%C 的名字太长"
 
 #: fortran/match.c:568 fortran/match.c:614
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid C name in NAME= specifier at %C"
-msgstr "%C处的格式限定符需要句点"
+msgstr "%C处 NAME= 限定符中 C 名字无效"
 
 #: fortran/match.c:605
 #, fuzzy, no-c-format
@@ -7391,9 +7391,9 @@ msgid "%s statement at %C leaving OpenMP structured block"
 msgstr "%s 语句在%C处离开 OpenMP 结构块"
 
 #: fortran/match.c:1837
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "EXIT statement at %C terminating !$OMP DO loop"
-msgstr "%C处的 ENTRY 语句不能出现在 DO 中"
+msgstr "%C处的 EXIT 语句终结了 !$OMP DO 循环"
 
 #: fortran/match.c:1889
 #, no-c-format
@@ -8522,9 +8522,9 @@ msgid "Illegal character in BOZ constant at %C"
 msgstr "%C处的 BOZ 常量中有非法字符"
 
 #: fortran/primary.c:392
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BOZ constant at %C uses non-standard postfix syntax"
-msgstr "扩展：%C处的 BOZ 常量使用了非标准的中序语法。"
+msgstr "扩展：%C处的 BOZ 常量使用了非标准的后序语法。"
 
 #: fortran/primary.c:423
 #, no-c-format
@@ -8532,9 +8532,9 @@ msgid "Integer too big for integer kind %i at %C"
 msgstr "%2$C处的整数对其种别 %1$i 来说太大"
 
 #: fortran/primary.c:429
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: BOZ used outside a DATA statement at %C"
-msgstr "Fortran 2003：%C处的 VOLATILE 语句"
+msgstr "Fortran 2003：%C处的 BOZ 用在了 DATA 语句之外"
 
 #: fortran/primary.c:529
 #, no-c-format
@@ -8852,9 +8852,9 @@ msgid "Derived type variable '%s' in COMMON at %L may not have default initializ
 msgstr "外部对象‘%s’在%L处不能有初始值设定"
 
 #: fortran/resolve.c:711
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COMMON block '%s' at %L is used as PARAMETER at %L"
-msgstr "没有在%C处发现 COMMON 块 /%s/"
+msgstr "%2$L处的 COMMON 块‘%1$s’在%3$L处被用作 PARAMETER"
 
 #: fortran/resolve.c:715
 #, no-c-format
@@ -8996,9 +8996,9 @@ msgid "Function '%s' at %L has no IMPLICIT type"
 msgstr "%2$L处的函数‘%1$s’没有隐式类型"
 
 #: fortran/resolve.c:1907
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument to '%s' at %L is not a variable"
-msgstr "%s 的实参在%L处类型无效"
+msgstr "%2$L处‘%1$s’的实参不是一个变量"
 
 #: fortran/resolve.c:1979
 #, no-c-format
@@ -9156,9 +9156,9 @@ msgid "Shapes for operands at %L and %L are not conformable"
 msgstr "%L 和%L处的操作数外形不相容"
 
 #: fortran/resolve.c:2916
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid context for NULL() pointer at %%L"
-msgstr "%s 种别无效，于%L处"
+msgstr "%%L处 NULL() 指针上下文无效"
 
 #: fortran/resolve.c:2932
 #, c-format
@@ -9410,9 +9410,9 @@ msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER
 msgstr ""
 
 #: fortran/resolve.c:4636
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot deallocate INTENT(IN) variable '%s' at %L"
-msgstr "循环变量‘%s’在%C处不能是 INTENT(IN)"
+msgstr "不能在%2$L处释放 INTENT(IN)变量‘%1$s’"
 
 #: fortran/resolve.c:4740
 #, no-c-format
@@ -9425,9 +9425,9 @@ msgid "Expression in ALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr ""
 
 #: fortran/resolve.c:4784
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot allocate INTENT(IN) variable '%s' at %L"
-msgstr "循环变量‘%s’在%C处不能是 INTENT(IN)"
+msgstr "不能在%2$L处分配 INTENT(IN)变量‘%1$s’"
 
 #: fortran/resolve.c:4808
 #, no-c-format
@@ -9567,9 +9567,9 @@ msgid "Label at %L is not in the same block as the GOTO statement at %L"
 msgstr ""
 
 #: fortran/resolve.c:5620 fortran/resolve.c:5634
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: GOTO at %L jumps to END of construct at %L"
-msgstr "已过时：%L处的 GOTO 跳转到%L处结构的 END"
+msgstr "已删除的特性：%L处的 GOTO 跳转到%L处结构的 END"
 
 #: fortran/resolve.c:5711
 #, no-c-format
@@ -9737,9 +9737,9 @@ msgstr "%L 指定了重复的 SAVE 属性"
 #. The shape of a main program or module array needs to be
 #. constant.
 #: fortran/resolve.c:7121
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The module or main program array '%s' at %L must have constant shape"
-msgstr "可分配的数组‘%s’在%L处必须有延迟的外形"
+msgstr "%2$L处的模块或主程序数组‘%1$s’必须有常量外形"
 
 #: fortran/resolve.c:7134
 #, no-c-format
@@ -10112,9 +10112,9 @@ msgid "Substring at %L has length zero"
 msgstr "%L 的子字符串长度为零"
 
 #: fortran/resolve.c:8941
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'"
-msgstr "函数‘%s’在%L处没有 IMPLICIT 类型"
+msgstr "%2$L处的 PUBLIC 函数‘%1$s’不能具有 PRIVATE 类型‘%3$s’"
 
 #: fortran/resolve.c:8953
 #, no-c-format
@@ -10860,9 +10860,9 @@ msgid "Unknown argument list function at %L"
 msgstr "%L处参数列表函数未知"
 
 #: fortran/trans-intrinsic.c:829
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'dim' argument of %s intrinsic at %L is not a valid dimension index"
-msgstr "‘%s’内建函数的‘dim’实参(于%L处)不是一个有效的维数索引"
+msgstr "%2$L处‘%1$s’内建函数的‘dim’实参不是一个有效的维数索引"
 
 #: fortran/trans-io.c:1851
 #, no-c-format
@@ -18647,7 +18647,7 @@ msgstr "ISO C90 不支持%<long long%>"
 #: c-decl.c:7230 c-decl.c:7259
 #, gcc-internal-format
 msgid "both %<long%> and %<short%> in declaration specifiers"
-msgstr "声明中同时使用了 %<long%>和%<short%>"
+msgstr "声明中同时使用了%<long%>和%<short%>"
 
 #: c-decl.c:7233 c-decl.c:7436
 #, gcc-internal-format
@@ -23844,12 +23844,12 @@ msgstr "%H数组下标越界"
 #: tree-vrp.c:4398
 #, gcc-internal-format
 msgid "%Harray subscript is above array bounds"
-msgstr "%H数组下标小于下限"
+msgstr "%H数组下标超过上限"
 
 #: tree-vrp.c:4405
 #, gcc-internal-format
 msgid "%Harray subscript is below array bounds"
-msgstr "%H数组下标大于上限"
+msgstr "%H数组下标低于下限"
 
 #: tree-vrp.c:5058
 #, gcc-internal-format
