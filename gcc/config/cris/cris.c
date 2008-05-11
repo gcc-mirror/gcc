@@ -1883,7 +1883,12 @@ cris_address_cost (rtx x)
       rtx tem1 = XEXP (x, 0);
       rtx tem2 = XEXP (x, 1);
 
-      /* We'll "assume" canonical RTX.  */
+      /* Local extended canonicalization rule: the first operand must
+	 be REG, unless it's an operation (MULT).  */
+      if (!REG_P (tem1) && GET_CODE (tem1) != MULT)
+	tem1 = tem2, tem2 = XEXP (x, 0);
+
+      /* We'll "assume" we have canonical RTX now.  */
       gcc_assert (REG_P (tem1) || GET_CODE (tem1) == MULT);
 
       /* A BIAP is 2 extra bytes for the prefix insn, nothing more.  We
