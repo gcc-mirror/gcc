@@ -204,6 +204,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "value-prof.h"
 #include "langhooks.h"
 #include "target.h"
 #include "toplev.h"
@@ -2892,6 +2893,10 @@ execute_fold_all_builtins (void)
 	  fcode = DECL_FUNCTION_CODE (callee);
 
 	  result = ccp_fold_builtin (*stmtp, call);
+
+	  if (result)
+	    gimple_remove_stmt_histograms (cfun, *stmtp);
+
 	  if (!result)
 	    switch (DECL_FUNCTION_CODE (callee))
 	      {
