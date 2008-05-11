@@ -1,3 +1,9 @@
+2008-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/35719
+	* trans.c (gfc_call_malloc): If size equals zero, allocate one
+	byte; don't return a null pointer.
+
 2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36197
