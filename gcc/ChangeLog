@@ -1,3 +1,12 @@
+2008-05-11 Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Backport from mainline:
+	2008-04-15  Zuxy Meng  <zuxy.meng@gmail.com>
+
+	PR target/35661
+	* config/i386/winnt.c (i386_pe_section_type_flags): Mark
+	".text.unlikely" section as executable.
+
 2008-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
