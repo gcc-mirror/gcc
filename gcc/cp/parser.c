@@ -8093,7 +8093,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	case RID_FRIEND:
 	  if (!at_class_scope_p ())
 	    {
-	      error ("%<friend%> used outside of class");
+	      error ("%H%<friend%> used outside of class", &token->location);
 	      cp_lexer_purge_token (parser->lexer);
 	    }
 	  else
