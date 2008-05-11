@@ -1,4 +1,4 @@
-! { dg-do run { xfail *-apple-darwin* *-*-freebsd* } }
+! { dg-do run { xfail *-apple-darwin* *-*-freebsd* *-*-mingw* } }
 ! Test XFAILed on these platforms because the system's printf() lacks
 ! proper support for denormals.
 !
@@ -13,9 +13,12 @@ program main
 
   if (test (tiny(0.0_4), -1) /= 0) call abort
   if (test (-tiny(0.0_4), 1) /= 0) call abort
+  if (test (0.0_4, 0) /= 0) call abort
 
   if (test (tiny(0.0_8), -1) /= 0) call abort
   if (test (-tiny(0.0_8), 1) /= 0) call abort
+  if (test (0.0_8, 0) /= 0) call abort
+
 end program main
 !
 ! { dg-final { cleanup-modules "test_default_format" } }

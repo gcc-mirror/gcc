@@ -1,3 +1,9 @@
+2008-05-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/default_format_1.f90: Move denormals tests to
+	gfortran.dg/default_format_denormal_1.f90.
+	* gfortran.dg/default_format_denormal_1.f90: Added denormal tests.
+
 2008-05-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/nint_2.f90: XFAIL on mingw.
