@@ -1,3 +1,9 @@
+2008-05-12  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/36001
+	* Makefile.in: Substitute GNATMAKE and GNATBIND.
+	* configure.ac: Add call to ACX_PROG_GNAT.
+
 2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* optc-gen.awk: Fix comment typo.

@@ -1,3 +1,9 @@
+2008-05-12  Samuel Tardieu  <sam@rfc1149.net>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	PR ada/36001
+	* acx.m4: Add optional parameter to ACX_PROG_GNAT.
+
 2008-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* override.m4: Apply _AC_ARG_VALIDATE fix to all versions
