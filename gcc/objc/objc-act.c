@@ -3164,8 +3164,7 @@ objc_generate_write_barrier (tree lhs, enum tree_code modifycode, tree rhs)
       outer = TREE_OPERAND (lhs, 0);
 
       while (!strong_cast_p
-	     && (TREE_CODE (outer) == CONVERT_EXPR
-		 || TREE_CODE (outer) == NOP_EXPR
+	     && (CONVERT_EXPR_P (outer)
 		 || TREE_CODE (outer) == NON_LVALUE_EXPR))
 	{
 	  tree lhstype = TREE_TYPE (outer);
@@ -6267,8 +6266,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
   rtype = receiver;
   while (TREE_CODE (rtype) == COMPOUND_EXPR
 	      || TREE_CODE (rtype) == MODIFY_EXPR
-	      || TREE_CODE (rtype) == NOP_EXPR
-	      || TREE_CODE (rtype) == CONVERT_EXPR
+	      || CONVERT_EXPR_P (rtype)
 	      || TREE_CODE (rtype) == COMPONENT_REF)
     rtype = TREE_OPERAND (rtype, 0);
   self = (rtype == self_decl);
