@@ -1,3 +1,8 @@
+2008-05-13  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/31808
+	* Makefile.in (gnattools-cross): Do not build vxaddr2line
+
 2008-04-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.in: Remove handling of gnatbl.
