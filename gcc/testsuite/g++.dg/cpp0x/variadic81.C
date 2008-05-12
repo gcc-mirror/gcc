@@ -4,7 +4,7 @@
 template<typename> struct A;
 
 template<typename... T> struct A<T*>  // { dg-error "not expanded|T|not used|T" }
-{                                     // { dg-error "not expanded|T|not used|T" }
+{
   struct B;
 };
 
