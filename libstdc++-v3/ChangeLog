@@ -1,3 +1,15 @@
+2008-05-12  Stefano Soffia  <soffia@cs.unipr.it>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/vector (vector<>::_M_requires_reallocation): Just
+	use this->capacity().
+	(vector<>::capacity): Move non-pedantic / pedantic logic here.
+	* testsuite/23_containers/vector/
+	debug_mode_requires_reallocation-2.cc: New.
+
+	* testsuite/23_containers/vector/debug_mode_requires_reallocation.cc:
+	Rename to debug_mode_requires_reallocation-1.cc
+
 2008-05-10  Roberto Bagnara  <bagnara@cs.unipr.it>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

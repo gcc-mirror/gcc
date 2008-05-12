@@ -216,7 +216,16 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      using _Base::capacity;
+      size_type
+      capacity() const
+      {
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
+	return _M_guaranteed_capacity;
+#else
+	return _Base::capacity();
+#endif
+      }
+
       using _Base::empty;
 
       void
@@ -442,13 +451,7 @@ namespace __debug
 
       bool
       _M_requires_reallocation(size_type __elements)
-      {
-#ifndef _GLIBCXX_DEBUG_PEDANTIC
-	return __elements > this->capacity();
-#else
-	return __elements > _M_guaranteed_capacity;
-#endif
-      }
+      { return __elements > this->capacity(); }
 
       void
       _M_update_guaranteed_capacity()
