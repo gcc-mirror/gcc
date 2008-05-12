@@ -589,11 +589,11 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
   if (SWAPPABLE_OPERANDS_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
     {
-      validate_change (object, loc,
-		       gen_rtx_fmt_ee (COMMUTATIVE_ARITH_P (x) ? code
-				       : swap_condition (code),
-				       GET_MODE (x), XEXP (x, 1),
-				       XEXP (x, 0)), 1);
+      validate_unshare_change (object, loc,
+			       gen_rtx_fmt_ee (COMMUTATIVE_ARITH_P (x) ? code
+					       : swap_condition (code),
+					       GET_MODE (x), XEXP (x, 1),
+					       XEXP (x, 0)), 1);
       x = *loc;
       code = GET_CODE (x);
     }

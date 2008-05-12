@@ -1,3 +1,9 @@
+2008-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/36111
+	* recog.c (validate_replace_rtx_1): Unshare new RTL expression
+	that was created for swappable operands.
+
 2008-05-12  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/36001
@@ -57,10 +63,10 @@
 2008-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/36129
-	* tree-ssa-cpp.c: Include value-prof.h.
+	* tree-ssa-ccp.c: Include value-prof.h.
 	(execute_fold_all_builtins): Call gimple_remove_stmt_histograms if
 	built-in function was folded to a constant.
-	* Makefile.in (tree-ssa-cpp.c): Depend on value-prof.h
+	* Makefile.in (tree-ssa-ccp.c): Depend on value-prof.h
 
 2008-05-09  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
@@ -114,7 +120,8 @@
 	* convert.c (strip_float_extensions): Use CONVERT_EXPR_P.
 	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
 	* config/alpha/alpha.c (va_list_skip_additions): Likewise.
-	* c-common.c (c_alignof_expr, check_function_arguments_recurse): Likewise.
+	* c-common.c (c_alignof_expr, check_function_arguments_recurse):
+	Likewise.
 	* tree-ssa.c (tree_ssa_useless_type_conversion): Likewise.
 	* varasm.c (initializer_constant_valid_p, output_constant): Likewise.
 	* tree-ssa-forwprop.c (get_prop_source_stmt, can_propagate_from)
@@ -125,12 +132,14 @@
 	* emit-rtl.c (component_ref_for_mem_expr)
 	(set_mem_attributes_minus_bitpos): Likewise.
 	* tree-ssa-phiopt.c (conditional_replacement): Likewise.
-	* gimplify.c (gimplify_conversion, goa_lhs_expr_p, gimplify_expr): Likewise.
+	* gimplify.c (gimplify_conversion, goa_lhs_expr_p, gimplify_expr):
+	Likewise.
 	* c-typeck.c (default_function_array_conversion, build_indirect_ref)
 	(build_function_call, pointer_diff, build_compound_expr)
 	(c_finish_return): Likewise.
 	* tree-vect-analyze.c (vect_determine_vectorization_factor): Likewise.
-	* matrix-reorg.c (get_inner_of_cast_expr, may_flatten_matrices_1): Likewise.
+	* matrix-reorg.c (get_inner_of_cast_expr, may_flatten_matrices_1):
+	Likewise.
 	* tree-ssa-ifcombine.c (recognize_single_bit_test): Likewise.
 	* expr.c (is_aligning_offset): Likewise.
 	* tree-ssa-alias.c (is_escape_site): Likewise.
@@ -150,22 +159,22 @@
 	* tree.c (really_constant_p, get_unwidened): Likewise.
 	* tree-ssa-loop-niter.c (expand_simple_operations): Likewise.
 	* tree-ssa-loop-im.c (rewrite_bittest): Likewise.
-	* tree-vrp.c (register_edge_assert_for_2, register_edge_assert_for_1): Likewise.
-	* tree.h (STRIP_NOPS, STRIP_SIGN_NOPS, STRIP_TYPE_NOPS): Use CONVERT_EXPR_P.
+	* tree-vrp.c (register_edge_assert_for_2, register_edge_assert_for_1):
+	Likewise.
+	* tree.h (STRIP_NOPS, STRIP_SIGN_NOPS, STRIP_TYPE_NOPS): Use
+	CONVERT_EXPR_P.
 	(CONVERT_EXPR_P): Define.
 	(CASE_CONVERT): Define.
 	
 2008-05-08  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/36117
-	* dce.c (deletable_insn_p): Do not delete calls if 
-	df_in_progress.
-	(delete_unmarked_insns): When deleting a call, call 
+	* dce.c (deletable_insn_p): Do not delete calls if df_in_progress.
+	(delete_unmarked_insns): When deleting a call, call
 	delete_unreachable_blocks.
 	* rtl.texi (RTL_CONST_CALL_P, RTL_PURE_CALL_P,
-	RTL_CONST_OR_PURE_CALL_P, RTL_LOOPING_CONST_OR_PURE_CALL_P): Fixed
-	doc.
-	
+	RTL_CONST_OR_PURE_CALL_P, RTL_LOOPING_CONST_OR_PURE_CALL_P): Fixed doc.
+
 2008-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi (-fdump-tree-salias): Remove documentation.
@@ -353,8 +362,7 @@
 	(add_to_addressable_set): Likewise.
 	* tree-ssa.c (verify_ssa_name): Do not handle SFTs.
 	* tree-tailcall.c (suitable_for_tail_opt_p): Likewise.
-	* tree-vect-transform.c (vect_create_data_ref_ptr): Do not
-	set subvars.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Do not set subvars.
 	* tree.c (init_ttree): Remove STRUCT_FIELD_TAG initialization.
 	(tree_code_size): Remove STRUCT_FIELD_TAG handling.
 	(tree_node_structure): Likewise.
