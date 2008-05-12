@@ -1,4 +1,4 @@
-2008-05-05  Ira Rosen  <irar@il.ibm.com>
+2008-05-12  Ira Rosen  <irar@il.ibm.com>
 
 	* gfortran.dg/vect/pr36119.f: Rename to ...
 	* gfortran.dg/vect/O3-pr36119.f90: ... this. Compile for all targets
