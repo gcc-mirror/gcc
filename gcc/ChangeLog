@@ -1,3 +1,16 @@
+2008-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*sse_concatv4sf): Renamed to ...
+	(*vec_concatv4sf_sse): This.
+	(*sse2_concatv2si): Renamed to ...
+	(*vec_concatv2si_sse2): This.
+	(*sse1_concatv2si): Renamed to ...
+	(*vec_concatv2si_sse): This.
+	(*vec_concatv2di_rex): Renamed to ...
+	(*vec_concatv2di_rex64): This.
+	(*vec_concatv2si_sse4_1): New.
+	(*vec_concatv2di_rex64_sse4_1): Likewise.
+
 2008-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/36111
