@@ -1,3 +1,10 @@
+2008-05-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.c-torture/compile/pr11832.c: XFAIL for mips and powerpc-linux,
+	then ignore ICE message to avoid a second failure.
+	* gcc.c-torture/compile/pr33009.c: Ditto.
+	* lib/gcc-dg.exp: Explain in comment how to XFAIL an ICE.
+
 2008-05-12  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.dg/pr34457-1.c: Skip for target without trampolines.

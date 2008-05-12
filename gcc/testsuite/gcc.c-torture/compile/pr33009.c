@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* Currently ICEs for MIPS; see PR33642.  */
-/* { dg-skip-if "PR33642" { mips*-*-* } { "*" } { "" } } */
+/* Currently ICEs for MIPS and PowerPC; see PR33642.  */
+/* { dg-xfail-if "PR33642" { mips*-*-* powerpc*-*-linux* } { "*" } { "" } } */
+/* { dg-prune-output ".*internal compiler error.*" }
 /* { dg-options "-frtl-abstract-sequences" } */
 
 char *progName;

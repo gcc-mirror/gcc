@@ -140,8 +140,9 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     set comp_output [$target_compile "$prog" "$output_file" "$compile_type" $options]
 
     # Look for an internal compiler error, which sometimes masks the fact
-    # that we didn't get an expected error message.  An ICE always fails,
-    # there's no way to XFAIL it.
+    # that we didn't get an expected error message.  XFAIL an ICE via
+    # dg-xfail-if and use { dg-prune-output ".*internal compiler error.*" }
+    # to avoid a second failure for excess errors.
     if [string match "*internal compiler error*" $comp_output] {
 	upvar 2 name name
 	fail "$name (internal compiler error)"
