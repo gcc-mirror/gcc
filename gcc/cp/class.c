@@ -5411,8 +5411,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 
       return NULL_TREE;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       return RECUR (TREE_OPERAND (instance, 0));
 
     case ADDR_EXPR:

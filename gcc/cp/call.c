@@ -5119,9 +5119,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* Pull out the real argument, disregarding const-correctness.  */
       targ = arg;
-      while (TREE_CODE (targ) == NOP_EXPR
-	     || TREE_CODE (targ) == NON_LVALUE_EXPR
-	     || TREE_CODE (targ) == CONVERT_EXPR)
+      while (CONVERT_EXPR_P (targ)
+	     || TREE_CODE (targ) == NON_LVALUE_EXPR)
 	targ = TREE_OPERAND (targ, 0);
       if (TREE_CODE (targ) == ADDR_EXPR)
 	{
