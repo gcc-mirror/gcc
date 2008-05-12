@@ -137,6 +137,12 @@ lappend DEFAULT_VECTCFLAGS "--param" "vect-max-version-for-alias-checks=0"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-vfa-*.\[fF\]{,90,95,03} ]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# With -O3
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-O3"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[fF\]{,90,95,03,08} ]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}
 

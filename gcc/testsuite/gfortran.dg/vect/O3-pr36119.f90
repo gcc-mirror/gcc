@@ -1,5 +1,4 @@
-! { dg-do compile { target { i?86-*-* x86_64-*-* } } }
-! { dg-options "-O3 -mfpmath=sse -msse2 -ffree-form" }
+! { dg-do compile } 
 
 SUBROUTINE check_dnucint_ana (dcore)
   IMPLICIT NONE
@@ -26,5 +25,4 @@ SUBROUTINE check_dnucint_ana (dcore)
   END IF
 END SUBROUTINE check_dnucint_ana
 
-! { dg-final { cleanup-tree-dump "vect" } }
-
+! { dg-final { cleanup-tree-dump "vect" } } 
