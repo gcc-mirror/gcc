@@ -1,3 +1,7 @@
+2008-05-12  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gnat.dg/specs/statically_matching.ads: New.
+
 2008-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse2-set-epi32-1.c: New.

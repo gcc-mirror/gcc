@@ -6268,8 +6268,8 @@ package body Sem_Ch3 is
               and then Has_Private_Declaration (Derived_Type)
               and then Present (Discriminant_Constraint (Derived_Type))
             then
-               --  Verify that constraints of the full view conform to those
-               --  given in partial view.
+               --  Verify that constraints of the full view statically match
+               --  those given in the partial view.
 
                declare
                   C1, C2 : Elmt_Id;
@@ -6278,9 +6278,18 @@ package body Sem_Ch3 is
                   C1 := First_Elmt (New_Discrs);
                   C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
                   while Present (C1) and then Present (C2) loop
-                     if not
-                       Fully_Conformant_Expressions (Node (C1), Node (C2))
+
+                     if Fully_Conformant_Expressions (Node (C1), Node (C2))
+                       or else
+                     (Is_OK_Static_Expression (Node (C1))
+                        and then
+                      Is_OK_Static_Expression (Node (C2))
+                        and then
+                      Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
                      then
+                        null;
+
+                     else
                         Error_Msg_N (
                           "constraint not conformant to previous declaration",
                              Node (C1));
