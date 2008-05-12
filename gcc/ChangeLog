@@ -1,3 +1,9 @@
+2008-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/24713
+	* config/sh/sh.c (sh_expand_prologue): Don't clear
+	RTX_FRAME_RELATED_P for push insns.
+
 2008-05-12  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* config/avr/avr.h (MAX_OFILE_ALIGNMENT): Define.

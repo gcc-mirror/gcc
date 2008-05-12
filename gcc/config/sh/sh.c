@@ -6320,7 +6320,6 @@ sh_expand_prologue (void)
 			))
 		break;
 	      insn = push (rn);
-	      RTX_FRAME_RELATED_P (insn) = 0;
 	    }
 	}
     }
