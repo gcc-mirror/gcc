@@ -1,3 +1,9 @@
+2008-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/35331
+        * semantics.c (begin_class_definition): Extend checks on the first
+	argument.
+
 2008-05-12  Tomas Bily  <tbily@suse.cz>
 
         * typeck2.c (digest_init): Use CONVERT_EXPR_P.

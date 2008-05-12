@@ -2223,7 +2223,7 @@ check_template_template_default_arg (tree argument)
 tree
 begin_class_definition (tree t, tree attributes)
 {
-  if (t == error_mark_node)
+  if (error_operand_p (t) || error_operand_p (TYPE_MAIN_DECL (t)))
     return error_mark_node;
 
   if (processing_template_parmlist)
