@@ -650,7 +650,7 @@ proc check_effective_target_nomips16 { } {
 # we don't support MIPS16 PIC.
 
 proc add_options_for_mips16_attribute { flags } {
-    return "$flags -mno-abicalls -fno-pic"
+    return "$flags -mno-abicalls -fno-pic -DMIPS16=__attribute__((mips16))"
 }
 
 # Return true if we can force a mode that allows MIPS16 code generation.

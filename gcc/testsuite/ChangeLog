@@ -1,3 +1,9 @@
+2008-05-11  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp: Move passing -DMIPS16=... from here ...
+	* lib/target-supports.exp (add_options_for_mips16_attribute):
+	... to here.
+
 2008-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/35719

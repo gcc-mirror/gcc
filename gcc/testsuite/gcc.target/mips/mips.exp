@@ -373,6 +373,7 @@ proc dg-mips-options {args} {
 setup_mips_tests
 
 dg-init
+# MIPS16 is defined in add_options_for_mips16_attribute.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" \
-    "-DMIPS16=__attribute__((mips16)) -DNOMIPS16=__attribute__((nomips16))"
+    "-DNOMIPS16=__attribute__((nomips16))"
 dg-finish
