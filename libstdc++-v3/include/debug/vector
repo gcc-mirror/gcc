@@ -443,7 +443,7 @@ namespace __debug
       bool
       _M_requires_reallocation(size_type __elements)
       {
-#ifndef _GLIBCXX_DEBUG_PEDANTIC
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
 	return __elements > this->capacity();
 #else
 	return __elements > _M_guaranteed_capacity;

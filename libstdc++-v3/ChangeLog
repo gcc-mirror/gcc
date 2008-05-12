@@ -1,3 +1,13 @@
+2008-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2008-05-10  Roberto Bagnara  <bagnara@cs.unipr.it>
+	    	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/vector (vector<>::_M_requires_reallocation): Fix macro.
+	* testsuite/23_containers/vector/debug_mode_requires_reallocation.cc:
+	New.
+
 2008-05-10  Roberto Bagnara  <bagnara@cs.unipr.it>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
