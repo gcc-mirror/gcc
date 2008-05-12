@@ -357,7 +357,8 @@ ac_c_preproc_warn_flag=yes])# AC_PROG_CPP_WERROR
 
 # Test for GNAT.
 # We require the gnatbind program, and a compiler driver that
-# understands Ada.  We use the user's CC setting, already found.
+# understands Ada.  We use the user's CC setting, already found,
+# and possibly add $1 to the command-line parameters.
 #
 # Sets the shell variable have_gnat to yes or no as appropriate, and
 # substitutes GNATBIND and GNATMAKE.
@@ -380,7 +381,7 @@ acx_cv_cc_gcc_supports_ada=no
 # Other compilers, like HP Tru64 UNIX cc, exit successfully when
 # given a .adb file, but produce no object file.  So we must check
 # if an object file was really produced to guard against this.
-errors=`(${CC} -c conftest.adb) 2>&1 || echo failure`
+errors=`(${CC} $1[]m4_ifval([$1], [ ])-c conftest.adb) 2>&1 || echo failure`
 if test x"$errors" = x && test -f conftest.$ac_objext; then
   acx_cv_cc_gcc_supports_ada=yes
 fi
