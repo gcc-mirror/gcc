@@ -1,6 +1,6 @@
 /* Compilation switch flag definitions for GCC.
    Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2006, 2007
+   2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -302,6 +302,9 @@ extern const char *flag_random_seed;
    trap.  */
 #define TYPE_OVERFLOW_TRAPS(TYPE) \
   (!TYPE_UNSIGNED (TYPE) && flag_trapv)
+
+/* True if pointer types have undefined overflow.  */
+#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
 
 /* Names for the different levels of -Wstrict-overflow=N.  The numeric
    values here correspond to N.  */

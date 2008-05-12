@@ -1,3 +1,11 @@
+2008-05-12  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/strict-overflow-6.c: New.
+	* gcc.dg/no-strict-overflow-7.c: New.
+	* gcc.dg/Wstrict-overflow-22.c: New.
+	* gcc.c-torture/compile/20080419-1.c: New.
+	* gcc.dg/tree-ssa/loop-17.c: Use -O2.
+
 2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/35578

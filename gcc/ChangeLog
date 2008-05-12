@@ -1,3 +1,15 @@
+2008-05-12  Ian Lance Taylor  <iant@google.com>
+
+	* flags.h (POINTER_TYPE_OVERFLOW_UNDEFINED): Define.
+	* fold-const.c (fold_overflow_warning): Remove assertion.
+	(pointer_may_wrap_p): New static function.
+	(fold_comparison): If appropriate, test
+	POINTER_TYPE_OVERFLOW_UNDEFINED, and issue an overflow warning.
+	(fold_binary): Test POINTER_TYPE_OVERFLOW_UNDEFINED when
+	reassociating a pointer type.
+	* doc/invoke.texi (Optimize Options): Document that
+	-fstrict-overflow applies to pointer wraparound.
+
 2008-05-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35169

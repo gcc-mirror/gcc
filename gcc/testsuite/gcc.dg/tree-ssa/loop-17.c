@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-sccp-details" } */
+/* { dg-options "-O2 -fdump-tree-sccp-details" } */
 
 /* To determine the number of iterations in this loop we need to fold
    p_4 + 4B > p_4 + 8B to false.  This transformation has caused
