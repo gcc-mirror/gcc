@@ -1,3 +1,10 @@
+2008-05-12  Tomas Bily  <tbily@suse.cz>
+
+        * typeck2.c (digest_init): Use CONVERT_EXPR_P.
+        * call.c (build_over_call): Likewise.
+        * error.c (dump_expr): Use CASE_CONVERT.
+        * class.c (fixed_type_or_null): Likewise.
+
 2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_omp_clause_reduction): Add missing "expected"

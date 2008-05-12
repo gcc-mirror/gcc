@@ -713,7 +713,7 @@ digest_init (tree type, tree init)
 
       /* Skip any conversions since we'll be outputting the underlying
 	 constant.  */
-      while (TREE_CODE (*exp) == NOP_EXPR || TREE_CODE (*exp) == CONVERT_EXPR
+      while (CONVERT_EXPR_P (*exp)
 	     || TREE_CODE (*exp) == NON_LVALUE_EXPR)
 	exp = &TREE_OPERAND (*exp, 0);
 
