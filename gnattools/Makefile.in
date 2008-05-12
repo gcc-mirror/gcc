@@ -232,11 +232,6 @@ gnattools-cross: $(GCC_DIR)/stamp-tools
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_CROSS) \
 	  $(GNATTOOLS2_FILES)
-	# gnattools4 (cross only)
-	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_CROSS) \
-	  top_buildir=../../.. \
-           ../../vxaddr2line$(exeext)
 	# Rename cross tools to where the GCC makefile wants them when
 	# installing.  FIXME: installation should be done elsewhere.
 	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \
