@@ -1096,8 +1096,7 @@ rest_of_record_type_compilation (tree record_type)
 
 	      /* Strip off any conversions.  */
 	      while (TREE_CODE (offset) == NON_LVALUE_EXPR
-		     || TREE_CODE (offset) == NOP_EXPR
-		     || TREE_CODE (offset) == CONVERT_EXPR)
+		     || CONVERT_EXPR_P (offset))
 		offset = TREE_OPERAND (offset, 0);
 
 	      /* An offset which is a bitwise AND with a negative power of 2
@@ -3788,7 +3787,7 @@ remove_conversions (tree exp, bool true_address)
       break;
 
     case VIEW_CONVERT_EXPR:  case NON_LVALUE_EXPR:
-    case NOP_EXPR:  case CONVERT_EXPR:
+    CASE_CONVERT:
       return remove_conversions (TREE_OPERAND (exp, 0), true_address);
 
     default:
