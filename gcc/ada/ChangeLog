@@ -1,3 +1,14 @@
+2008-05-12  Tomas Bily  <tbily@suse.cz>
+
+        * utils2.c (known_alignment, contains_save_expr_p)
+        (gnat_mark_addressable): Use CASE_CONVERT.
+        * decl.c (annotate_value): Likewise.
+        * trans.c (maybe_stabilize_reference): Likewise.
+        * utils2.c (build_binary_op): Use CONVERT_EXPR_P.
+        * utils.c (rest_of_record_type_compilation): Likewise.
+        * trans.c (protect_multiple_eval, Attribute_to_gnu)
+        (protect_multiple_eval): Likewise.
+
 2008-05-08  Andreas Schwab  <schwab@suse.de>
 
 	* utils.c (handle_pure_attribute, init_gigi_decls): Rename

@@ -156,9 +156,8 @@ known_alignment (tree exp)
 
   switch (TREE_CODE (exp))
     {
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
-    case NOP_EXPR:
     case NON_LVALUE_EXPR:
       /* Conversions between pointers and integers don't change the alignment
 	 of the underlying object.  */
@@ -293,7 +292,7 @@ contains_save_expr_p (tree exp)
 
     case ADDR_EXPR:  case INDIRECT_REF:
     case COMPONENT_REF:
-    case NOP_EXPR:  case CONVERT_EXPR: case VIEW_CONVERT_EXPR:
+    CASE_CONVERT: case VIEW_CONVERT_EXPR:
       return contains_save_expr_p (TREE_OPERAND (exp, 0));
 
     case CONSTRUCTOR:
@@ -659,8 +658,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 conversions between array and record types, except for justified
 	 modular types.  But don't do this if the right operand is not
 	 BLKmode (for packed arrays) unless we are not changing the mode.  */
-      while ((TREE_CODE (left_operand) == CONVERT_EXPR
-	      || TREE_CODE (left_operand) == NOP_EXPR
+      while ((CONVERT_EXPR_P (left_operand)
 	      || TREE_CODE (left_operand) == VIEW_CONVERT_EXPR)
 	     && (((INTEGRAL_TYPE_P (left_type)
 		   || POINTER_TYPE_P (left_type))
@@ -742,8 +740,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      result = TREE_OPERAND (result, 0);
 	  else if (TREE_CODE (result) == REALPART_EXPR
 		   || TREE_CODE (result) == IMAGPART_EXPR
-		   || ((TREE_CODE (result) == NOP_EXPR
-			|| TREE_CODE (result) == CONVERT_EXPR)
+		   || (CONVERT_EXPR_P (result)
 		       && (((TREE_CODE (restype)
 			     == TREE_CODE (TREE_TYPE
 					   (TREE_OPERAND (result, 0))))
@@ -2190,9 +2187,8 @@ gnat_mark_addressable (tree expr_node)
       case REALPART_EXPR:
       case IMAGPART_EXPR:
       case VIEW_CONVERT_EXPR:
-      case CONVERT_EXPR:
       case NON_LVALUE_EXPR:
-      case NOP_EXPR:
+      CASE_CONVERT:
 	expr_node = TREE_OPERAND (expr_node, 0);
 	break;
 

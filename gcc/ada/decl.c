@@ -6622,7 +6622,7 @@ annotate_value (tree gnu_size)
       else
 	return No_Uint;
 
-    case NOP_EXPR:  case CONVERT_EXPR:   case NON_LVALUE_EXPR:
+    CASE_CONVERT:   case NON_LVALUE_EXPR:
       return annotate_value (TREE_OPERAND (gnu_size, 0));
 
       /* Now just list the operations we handle.  */

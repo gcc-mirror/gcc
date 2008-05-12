@@ -916,8 +916,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       if (attribute == Attr_Code_Address)
 	{
 	  for (gnu_expr = gnu_result;
-	       TREE_CODE (gnu_expr) == NOP_EXPR
-	       || TREE_CODE (gnu_expr) == CONVERT_EXPR;
+	       CONVERT_EXPR_P (gnu_expr);
 	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
 	    TREE_CONSTANT (gnu_expr) = 1;
 
@@ -931,8 +930,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
 	{
 	  for (gnu_expr = gnu_result;
-	       TREE_CODE (gnu_expr) == NOP_EXPR
-	       || TREE_CODE (gnu_expr) == CONVERT_EXPR;
+	       CONVERT_EXPR_P (gnu_expr);
 	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
 	    ;
 
@@ -6567,7 +6565,7 @@ protect_multiple_eval (tree exp)
      actually need to protect the address since the data itself can't
      change in these situations.  */
   else if (TREE_CODE (exp) == NON_LVALUE_EXPR
-	   || TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
+	   || CONVERT_EXPR_P (exp)
 	   || TREE_CODE (exp) == VIEW_CONVERT_EXPR
 	   || TREE_CODE (exp) == INDIRECT_REF
 	   || TREE_CODE (exp) == UNCONSTRAINED_ARRAY_REF)
@@ -6613,8 +6611,7 @@ maybe_stabilize_reference (tree ref, bool force, bool *success)
       return ref;
 
     case ADDR_EXPR:
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
     case VIEW_CONVERT_EXPR:
