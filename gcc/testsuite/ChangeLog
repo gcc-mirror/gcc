@@ -1,3 +1,11 @@
+2008-05-12  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/pr34457-1.c: Skip for target without trampolines.
+	* gcc.dg/20050607-1.c: Ditto.
+	* gcc.dg/trampoline-1.c: Ditto.
+	* gcc.dg/debug/debug-3.c: Ditto.
+	* gcc.dg/debug/debug-5.c: Ditto.
+
 2008-05-12  Samuel Tardieu  <sam@rfc1149.net>
 
 	* gnat.dg/specs/statically_matching.ads: New.

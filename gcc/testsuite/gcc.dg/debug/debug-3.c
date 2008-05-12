@@ -1,6 +1,7 @@
 /* This testcase failed, because scope containing baz was deleted
    (spanned 0 basic blocks) and DWARF-2 couldn't find baz origin.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target trampolines } */
 
 struct A { char *a, *b, *c, *d; };
 

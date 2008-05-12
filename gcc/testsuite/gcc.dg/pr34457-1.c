@@ -1,5 +1,6 @@
 /* PR c/34457 */
 /* { dg-do compile } */
+/* { dg-require-effective-target trampolines } */
 /* { dg-options "--combine -O2" } */
 /* { dg-additional-sources "pr34457-2.c" } */
    
