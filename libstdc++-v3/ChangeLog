@@ -1,3 +1,9 @@
+2008-05-13  David Daney  <ddaney@avtrex.com>
+
+	* config/cpu/mips/atomicity.h: Remove file.
+	* config/cpu/mips: Remove directory.
+	* configure.host: Remove host specific handling for mips*-*-*.
+
 2008-05-12  Stefano Soffia  <soffia@cs.unipr.it>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
