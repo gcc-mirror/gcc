@@ -1,3 +1,8 @@
+2008-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36222
+	* gcc.target/i386/pr36222-1.c: New test.
+
 2008-05-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse-init-v4hi-1.c: New.

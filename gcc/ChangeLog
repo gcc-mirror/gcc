@@ -1,3 +1,9 @@
+2008-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36222
+	* config/i386/i386.c (ix86_expand_vector_init_general): Rearrange op0
+	and op1 expansion before vector concat to have less live pseudos.
+
 2008-05-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Use
@@ -10,23 +16,19 @@
 
 	* tree.h (init_phinodes, fini_phinodes, release_phi_node,
 	phinodes_print_statistics, init_ssanames, fini_ssanames,
-	make_ssa_name, duplicate_ssa_name,
-	duplicate_ssa_name_ptr_info, release_ssa_name,
-	release_defs, replace_ssa_name_symbol,
+	make_ssa_name, duplicate_ssa_name, duplicate_ssa_name_ptr_info,
+	release_ssa_name, release_defs, replace_ssa_name_symbol,
 	ssanames_print_statistics): Move ...
 	* tree-flow.h: ... here.
-	* tree-ssanames.c (init_ssanames): Add arguments FN and
-	SIZE.  Use FN instead of cfun.
+	* tree-ssanames.c (init_ssanames): Add arguments FN and SIZE.
+	Use FN instead of cfun.
 	(make_ssa_name_fn): Rename from make_ssa_name.
-	(pass_release_ssa_names): Add TODO_dump_func to finish
-	flags.
+	(pass_release_ssa_names): Add TODO_dump_func to finish flags.
 	* tree-flow-inline.h (make_ssa_name): Move from
-	tree-ssanames.c.  Convert to static inline.  Call
-	make_ssa_name_fn.
+	tree-ssanames.c.  Convert to static inline.  Call make_ssa_name_fn.
 	* omp-low.c (expand_omp_parallel):
 	* tree-flow-inline.h (redirect_edge_var_map_result):
-	* tree-ssa.c (init_tree_ssa): Add argument FN.  Use it
-	instead of cfun.
+	* tree-ssa.c (init_tree_ssa): Add argument FN.  Use it instead of cfun.
 	Update all users.
 
 2008-05-13  Tom Tromey  <tromey@redhat.com>
