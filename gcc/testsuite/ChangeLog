@@ -1,3 +1,8 @@
+2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr7.adb: New test
+	* gnat.dg/conv_integer.adb: Likewise.
+
 2008-05-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.c-torture/compile/pr11832.c: XFAIL for mips and powerpc-linux,
