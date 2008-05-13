@@ -1,3 +1,13 @@
+2008-05-13  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/22168:
+	* include/cpplib.h (struct cpp_options) <objc>: Update
+	documentation.
+	* expr.c (eval_token): Warn for use of assertions.
+	* directives.c (directive_diagnostics): Warn about extensions.
+	(DEPRECATED): New define.
+	(DIRECTIVE_TABLE): Use it.
+
 2008-05-06  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/35313, PR preprocessor/36088:

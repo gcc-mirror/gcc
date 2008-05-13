@@ -1,4 +1,4 @@
-/* { dg-options "-I. -I $srcdir/gcc.dg/pch" } */
+/* { dg-options "-I. -I $srcdir/gcc.dg/pch -Wno-deprecated" } */
 #include "import-1.h"
 #include "import-1a.h"
 #import "import-1b.h"

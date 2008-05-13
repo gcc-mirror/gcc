@@ -111,6 +111,7 @@ Header Files
 * Include Operation::
 * Search Path::
 * Once-Only Headers::
+* Alternatives to Wrapper #ifndef::
 * Computed Includes::
 * Wrapper Headers::
 * System Headers::
@@ -168,8 +169,7 @@ Implementation Details
 
 Obsolete Features
 
-* Assertions::
-* Obsolete once-only headers::
+* Obsolete Features::
 
 @end detailmenu
 @end menu
@@ -734,6 +734,7 @@ underscores in header file names, and at most one dot.
 * Include Operation::
 * Search Path::
 * Once-Only Headers::
+* Alternatives to Wrapper #ifndef::
 * Computed Includes::
 * Wrapper Headers::
 * System Headers::
@@ -958,6 +959,42 @@ begin with @samp{_}.  In a system header file, it should begin with
 @samp{__} to avoid conflicts with user programs.  In any kind of header
 file, the macro name should contain the name of the file and some
 additional text, to avoid conflicts with other header files.
+
+@node Alternatives to Wrapper #ifndef
+@section Alternatives to Wrapper #ifndef
+
+CPP supports two more ways of indicating that a header file should be
+read only once.  Neither one is as portable as a wrapper @samp{#ifndef}
+and we recommend you do not use them in new programs, with the caveat
+that @samp{#import} is standard practice in Objective-C.
+
+@findex #import
+CPP supports a variant of @samp{#include} called @samp{#import} which
+includes a file, but does so at most once.  If you use @samp{#import}
+instead of @samp{#include}, then you don't need the conditionals
+inside the header file to prevent multiple inclusion of the contents.
+@samp{#import} is standard in Objective-C, but is considered a
+deprecated extension in C and C++.
+
+@samp{#import} is not a well designed feature.  It requires the users of
+a header file to know that it should only be included once.  It is much
+better for the header file's implementor to write the file so that users
+don't need to know this.  Using a wrapper @samp{#ifndef} accomplishes
+this goal.
+
+In the present implementation, a single use of @samp{#import} will
+prevent the file from ever being read again, by either @samp{#import} or
+@samp{#include}.  You should not rely on this; do not use both
+@samp{#import} and @samp{#include} to refer to the same header file.
+
+Another way to prevent a header file from being included more than once
+is with the @samp{#pragma once} directive.  If @samp{#pragma once} is
+seen when scanning a header file, that file will never be read again, no
+matter what.
+
+@samp{#pragma once} does not have the problems that @samp{#import} does,
+but it is not recognized by all preprocessors, so you cannot rely on it
+in a portable program.
 
 @node Computed Includes
 @section Computed Includes
@@ -3467,6 +3504,8 @@ These directives are not part of the C standard, but they are not
 official GNU extensions either.  What historical information we have
 been able to find, suggests they originated with System V@.
 
+Both @samp{#ident} and @samp{#sccs} are deprecated extensions.
+
 @cindex null directive
 The @dfn{null directive} consists of a @samp{#} followed by a newline,
 with only whitespace (including comments) in between.  A null directive
@@ -4004,16 +4043,10 @@ may not be a limitation.
 @node Obsolete Features
 @section Obsolete Features
 
-CPP has a number of features which are present mainly for
-compatibility with older programs.  We discourage their use in new code.
-In some cases, we plan to remove the feature in a future version of GCC@.
+CPP has some features which are present mainly for compatibility with
+older programs.  We discourage their use in new code.  In some cases,
+we plan to remove the feature in a future version of GCC@.
 
-@menu
-* Assertions::
-* Obsolete once-only headers::
-@end menu
-
-@node Assertions
 @subsection Assertions
 @cindex assertions
 
@@ -4096,42 +4129,6 @@ no effect.
 
 You can also make or cancel assertions using command line options.
 @xref{Invocation}.
-
-@node Obsolete once-only headers
-@subsection Obsolete once-only headers
-
-CPP supports two more ways of indicating that a header file should be
-read only once.  Neither one is as portable as a wrapper @samp{#ifndef},
-and we recommend you do not use them in new programs.
-
-@findex #import
-In the Objective-C language, there is a variant of @samp{#include}
-called @samp{#import} which includes a file, but does so at most once.
-If you use @samp{#import} instead of @samp{#include}, then you don't
-need the conditionals inside the header file to prevent multiple
-inclusion of the contents.  GCC permits the use of @samp{#import} in C
-and C++ as well as Objective-C@.  However, it is not in standard C or C++
-and should therefore not be used by portable programs.
-
-@samp{#import} is not a well designed feature.  It requires the users of
-a header file to know that it should only be included once.  It is much
-better for the header file's implementor to write the file so that users
-don't need to know this.  Using a wrapper @samp{#ifndef} accomplishes
-this goal.
-
-In the present implementation, a single use of @samp{#import} will
-prevent the file from ever being read again, by either @samp{#import} or
-@samp{#include}.  You should not rely on this; do not use both
-@samp{#import} and @samp{#include} to refer to the same header file.
-
-Another way to prevent a header file from being included more than once
-is with the @samp{#pragma once} directive.  If @samp{#pragma once} is
-seen when scanning a header file, that file will never be read again, no
-matter what.
-
-@samp{#pragma once} does not have the problems that @samp{#import} does,
-but it is not recognized by all preprocessors, so you cannot rely on it
-in a portable program.
 
 @node Differences from previous versions
 @section Differences from previous versions

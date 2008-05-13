@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -633,7 +633,7 @@ Make an assertion with the predicate @var{predicate} and answer
 @var{predicate}(@var{answer})}, which is still supported, because
 it does not use shell special characters.
 @ifset cppmanual
-@xref{Assertions}.
+@xref{Obsolete Features}.
 @end ifset
 
 @item -A -@var{predicate}=@var{answer}

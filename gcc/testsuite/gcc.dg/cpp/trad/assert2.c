@@ -1,5 +1,6 @@
 /* Malformed assertion tests.  */
 /* { dg-do preprocess } */
+/* { dg-options "-Wno-deprecated" } */
 
 #assert		/* { dg-error "without predicate" "assert w/o predicate" } */
 #assert %	/* { dg-error "an identifier" "assert punctuation" } */

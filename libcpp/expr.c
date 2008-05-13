@@ -745,10 +745,25 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	}
       break;
 
-    default: /* CPP_HASH */
+    case CPP_HASH:
+      if (!pfile->state.skipping)
+	{
+	  /* A pedantic warning takes precedence over a deprecated
+	     warning here.  */
+	  if (CPP_PEDANTIC (pfile))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "assertions are a GCC extension");
+	  else if (CPP_OPTION (pfile, warn_deprecated))
+	    cpp_error (pfile, CPP_DL_WARNING,
+		       "assertions are a deprecated extension");
+	}
       _cpp_test_assertion (pfile, &temp);
       result.high = 0;
       result.low = temp;
+      break;
+
+    default:
+      abort ();
     }
 
   result.unsignedp = !!unsignedp;

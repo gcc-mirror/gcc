@@ -1,3 +1,26 @@
+2008-05-13  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/22168:
+	* gcc.dg/pch/import-2.hs: Add -Wno-deprecated.
+	* gcc.dg/pch/import-1.hs: Add -Wno-deprecated.
+	* gcc.dg/pch/import-2.c: Add -Wno-deprecated.
+	* gcc.dg/pch/import-1.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/import2.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/import1.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/trad/assert3.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/trad/assert2.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/trad/assert1.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/ident.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/ident-1.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/extratokens.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/assert3.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/assert2.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/assert1.c: Add -Wno-deprecated.
+	* gcc.dg/cpp/assert4.c: Compile with -ansi and not -pedantic.  Add
+	-Wno-deprecated.
+	* gcc.dg/cpp/pr22168.c: New file.
+	* gcc.dg/cpp/pr22168-2.c: New file.
+
 2008-05-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36227

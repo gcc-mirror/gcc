@@ -1,3 +1,19 @@
+2008-05-13  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/22168:
+	* doc/cpp.texi (Top): Update menu.
+	(Alternatives to Wrapper #ifndef): New node.
+	(Other Directives): Document deprecation.
+	(Obsolete Features): Remove menu.
+	(Assertions): Merge node into Obsolete Features.
+	(Obsolete once-only headers): Move earlier; rename to Alternatives
+	to Wrapper #ifndef.
+	* doc/cppopts.texi: Update.
+	* c.opt (Wdeprecated): Enable for C and ObjC.
+	* doc/invoke.texi (Option Summary): Move -Wno-deprecated.
+	(C++ Dialect Options): Move -Wno-deprecated from here to...
+	(Warning Options): ... here.
+
 2008-05-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36227

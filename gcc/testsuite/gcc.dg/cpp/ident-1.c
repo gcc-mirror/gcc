@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "" } */ /* shut off -pedantic */
+/* { dg-options "-Wno-deprecated" } */ /* shut off -pedantic */
 
 /* Based on PR 16999 */
 

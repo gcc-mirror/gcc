@@ -1,7 +1,7 @@
-/* Copyright (C) 2003 Free Software Foundation, Inc.  */
+/* Copyright (C) 2003, 2008 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-deprecated" } */
 
 /* This tests that the file is only included once
    Neil Booth, 2 August 2003.  */
