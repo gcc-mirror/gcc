@@ -1,3 +1,16 @@
+2008-05-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse-init-v4hi-1.c: New.
+	* gcc.target/i386/sse-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v4si-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v8hi-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2di-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4si-1.c: Likewise.
+
 2008-05-13  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/35127

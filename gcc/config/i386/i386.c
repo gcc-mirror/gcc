@@ -23643,6 +23643,34 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, enum machine_mode mode,
   enum machine_mode vsimode;
   rtx new_target;
   rtx x, tmp;
+  bool use_vector_set = false;
+
+  switch (mode)
+    {
+    case V2DImode:
+      use_vector_set = TARGET_64BIT && TARGET_SSE4_1;
+      break;
+    case V16QImode:
+    case V4SImode:
+    case V4SFmode:
+      use_vector_set = TARGET_SSE4_1;
+      break;
+    case V8HImode:
+      use_vector_set = TARGET_SSE2;
+      break;
+    case V4HImode:
+      use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
+    default:
+      break;
+    }
+
+  if (use_vector_set)
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, target, CONST0_RTX (mode)));
+      var = force_reg (GET_MODE_INNER (mode), var);
+      ix86_expand_vector_set (mmx_ok, target, var, one_var);
+      return true; 
+    }
 
   switch (mode)
     {
