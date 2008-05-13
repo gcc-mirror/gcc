@@ -2659,7 +2659,7 @@ expand_omp_parallel (struct omp_region *region)
       if (gimple_in_ssa_p (cfun))
 	{
 	  push_cfun (child_cfun);
-	  init_tree_ssa ();
+	  init_tree_ssa (child_cfun);
 	  init_ssa_operands ();
 	  cfun->gimple_df->in_ssa_p = true;
 	  pop_cfun ();

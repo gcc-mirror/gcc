@@ -1689,4 +1689,15 @@ redirect_edge_var_map_result (edge_var_map *v)
 {
   return v->result;
 }
+
+
+/* Return an SSA_NAME node for variable VAR defined in statement STMT
+   in function cfun.  */
+
+static inline tree
+make_ssa_name (tree var, tree stmt)
+{
+  return make_ssa_name_fn (cfun, var, stmt);
+}
+
 #endif /* _TREE_FLOW_INLINE_H  */

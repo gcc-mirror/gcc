@@ -1301,7 +1301,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
 
   if (src_cfun->gimple_df)
     {
-      init_tree_ssa ();
+      init_tree_ssa (cfun);
       cfun->gimple_df->in_ssa_p = true;
       init_ssa_operands ();
     }

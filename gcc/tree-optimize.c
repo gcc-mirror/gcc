@@ -333,7 +333,7 @@ static unsigned int
 execute_init_datastructures (void)
 {
   /* Allocate hash tables, arrays and other structures.  */
-  init_tree_ssa ();
+  init_tree_ssa (cfun);
   return 0;
 }
 

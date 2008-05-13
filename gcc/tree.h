@@ -3880,28 +3880,6 @@ extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 extern tree make_tree_vec_stat (int MEM_STAT_DECL);
 #define make_tree_vec(t) make_tree_vec_stat (t MEM_STAT_INFO)
 
-/* Tree nodes for SSA analysis.  */
-
-extern void init_phinodes (void);
-extern void fini_phinodes (void);
-extern void release_phi_node (tree);
-#ifdef GATHER_STATISTICS
-extern void phinodes_print_statistics (void);
-#endif
-
-extern void init_ssanames (void);
-extern void fini_ssanames (void);
-extern tree make_ssa_name (tree, tree);
-extern tree duplicate_ssa_name (tree, tree);
-extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
-extern void release_ssa_name (tree);
-extern void release_defs (tree);
-extern void replace_ssa_name_symbol (tree, tree);
-
-#ifdef GATHER_STATISTICS
-extern void ssanames_print_statistics (void);
-#endif
-
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
 
