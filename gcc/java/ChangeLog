@@ -1,3 +1,8 @@
+2008-05-12  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* jcf-dump.c (print_constant): Use
+	HOST_LONG_LONG_FORMAT.
+
 2008-05-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* decl.c (java_init_decl_processing): Change DECL_IS_PURE to
