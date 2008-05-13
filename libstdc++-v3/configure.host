@@ -321,15 +321,6 @@ case "${host}" in
         fi
     esac
     ;;
-  mips*-*-*)
-    case "${host_os}" in
-      gnu* | linux* | irix*)
-        ;;
-      *)
-        atomicity_dir="cpu/generic"
-        ;;
-    esac
-    ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
