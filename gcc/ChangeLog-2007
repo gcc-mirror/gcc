@@ -2331,8 +2331,9 @@
 2007-11-06  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/30961
-	* reload1.c (find_reloads): Also check in_reg when handling a
-	simple move with an input reload and a destination of a hard register.
+	* reload.c (find_reloads): Also check in_reg when handling a
+	simple move with an input reload and a destination of a hard
+	register.
 
 2007-11-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
