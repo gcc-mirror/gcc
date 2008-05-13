@@ -3146,13 +3146,14 @@ find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
 /* A recursive function to look for a speficic symbol by name and by
    module.  Whilst several symtrees might point to one symbol, its
    is sufficient for the purposes here than one exist.  Note that
-   generic interfaces are distinguished.  */
+   generic interfaces are distinguished as are symbols that have been
+   renamed in another module.  */
 static gfc_symtree *
 find_symbol (gfc_symtree *st, const char *name,
 	     const char *module, int generic)
 {
   int c;
-  gfc_symtree *retval;
+  gfc_symtree *retval, *s;
 
   if (st == NULL || st->n.sym == NULL)
     return NULL;
@@ -3162,8 +3163,14 @@ find_symbol (gfc_symtree *st, const char *name,
 	     && strcmp (module, st->n.sym->module) == 0
 	     && !check_unique_name (st->name))
     {
-      if ((!generic && !st->n.sym->attr.generic)
-	     || (generic && st->n.sym->attr.generic))
+      s = gfc_find_symtree (gfc_current_ns->sym_root, name);
+
+      /* Detect symbols that are renamed by use association in another
+	 module by the absence of a symtree and null attr.use_rename,
+	 since the latter is not transmitted in the module file.  */
+      if (((!generic && !st->n.sym->attr.generic)
+		|| (generic && st->n.sym->attr.generic))
+	    && !(s == NULL && !st->n.sym->attr.use_rename))
 	return st;
     }
 

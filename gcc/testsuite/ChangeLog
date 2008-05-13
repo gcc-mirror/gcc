@@ -1,3 +1,8 @@
+2008-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+       PR fortran/35997
+       * gfortran.dg/use_rename_3.f90
+
 2008-05-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36227
