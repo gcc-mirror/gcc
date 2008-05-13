@@ -1,7 +1,7 @@
-/* Copyright (C) 2003 Free Software Foundation, Inc.  */
+/* Copyright (C) 2003, 2008 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-deprecated" } */
 
 /* This tests that our eagerness to apply the multiple include guard
    optimization to the #import doesn't stop us marking the file

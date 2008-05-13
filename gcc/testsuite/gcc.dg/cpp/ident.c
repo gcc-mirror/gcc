@@ -1,6 +1,6 @@
 /* Test #ident.  */
 /* { dg-do compile } */
-/* { dg-options "" } */ /* shut off -pedantic */
+/* { dg-options "-Wno-deprecated" } */ /* shut off -pedantic */
 
 #ident "this is an ident"
 

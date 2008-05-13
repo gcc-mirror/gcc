@@ -176,7 +176,7 @@ C ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
 Wdeprecated
-C++ ObjC++ Var(warn_deprecated) Init(1) Warning
+C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn about deprecated compiler features
 
 Wdiv-by-zero

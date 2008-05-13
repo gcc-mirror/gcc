@@ -195,7 +195,7 @@ in the following sections.
 -fvisibility-ms-compat @gol
 -Wabi  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
--Weffc++  -Wno-deprecated  -Wstrict-null-sentinel @gol
+-Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
 -Wsign-promo}
@@ -230,8 +230,8 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Warray-bounds @gol
 -Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
--Wconversion  -Wcoverage-mismatch  -Wno-deprecated-declarations @gol
--Wdisabled-optimization  -Wno-div-by-zero  @gol
+-Wconversion  -Wcoverage-mismatch  -Wno-deprecated  @gol
+-Wno-deprecated-declarations -Wdisabled-optimization  -Wno-div-by-zero  @gol
 -Wempty-body  -Wno-endif-labels @gol
 -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -2119,11 +2119,6 @@ When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
 to filter out those warnings.
 
-@item -Wno-deprecated @r{(C++ and Objective-C++ only)}
-@opindex Wno-deprecated
-@opindex Wdeprecated
-Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
-
 @item -Wstrict-null-sentinel @r{(C++ and Objective-C++ only)}
 @opindex Wstrict-null-sentinel
 @opindex Wno-strict-null-sentinel
@@ -3884,6 +3879,11 @@ about every identifier that contains the letter O because it might be
 confused with the digit 0, and so is not the default, but may be
 useful as a local coding convention if the programming environment is
 unable to be fixed to display these characters distinctly.
+
+@item -Wno-deprecated
+@opindex Wno-deprecated
+@opindex Wdeprecated
+Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
 
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
