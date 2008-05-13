@@ -1,3 +1,9 @@
+2008-05-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36227
+	* fold-const.c (fold_sign_changed_comparison): Do not allow
+	changes in pointer-ness.
+
 2008-05-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	Backport from mainline:

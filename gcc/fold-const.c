@@ -7161,7 +7161,8 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
 	   && TREE_TYPE (TREE_OPERAND (arg1, 0)) == inner_type))
     return NULL_TREE;
 
-  if (TYPE_UNSIGNED (inner_type) != TYPE_UNSIGNED (outer_type)
+  if ((TYPE_UNSIGNED (inner_type) != TYPE_UNSIGNED (outer_type)
+       || POINTER_TYPE_P (inner_type) != POINTER_TYPE_P (outer_type))
       && code != NE_EXPR
       && code != EQ_EXPR)
     return NULL_TREE;

@@ -1,3 +1,8 @@
+2008-05-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36227
+	* gcc.dg/pr36227.c: New testcase.
+
 2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr7.adb: New test
