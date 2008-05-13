@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -ffast-math" } */
+/* { dg-options "-ffast-math" } */
 
 /* Fast maths allows tail recursion to be turned into iteration.  */
 

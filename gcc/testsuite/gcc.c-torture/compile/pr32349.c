@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fmodulo-sched" } */
+/* { dg-options "-fmodulo-sched" } */
 
 
 extern long *x1, *x2, *x3;

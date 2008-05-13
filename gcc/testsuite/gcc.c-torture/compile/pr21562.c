@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fno-inline" } */
+/* { dg-options "-fno-inline" } */
 struct foo { int a, b, c; };
 void abort(void);
 void exit(int);

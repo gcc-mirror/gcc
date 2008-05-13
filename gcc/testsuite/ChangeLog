@@ -1,3 +1,18 @@
+2008-05-13  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/35127
+	* gcc.c-torture/compile/20031125-1.c: Remove dg-do, dg-options.
+	* gcc.c-torture/compile/20031125-2.c: Ditto.
+	* gcc.c-torture/compile/20031203-1.c: Ditto.
+	* gcc.c-torture/compile/acc1.c: Remove -O2 from dg-options.
+	* gcc.c-torture/compile/builtin_constant_p.c: Remove dg-options.
+	* gcc.c-torture/compile/pr21562.c: Remove -O3 from dg-options.
+	* gcc.c-torture/compile/pr25483.c: Remove -O from dg-options.
+	* gcc.c-torture/compile/pr32349.c: Remove -O2 from dg-options.
+	* gcc.c-torture/compile/pr32355.c: Remove dg-options.
+	* gcc.c-torture/compile/pr34448.c: Ditto.
+	* gcc.c-torture/compile/pr34648.c: Remove -O2 from dg-options.
+
 2008-05-13  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/22168:
