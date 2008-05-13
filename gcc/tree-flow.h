@@ -829,6 +829,12 @@ extern void add_phi_arg (tree, tree, edge);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (tree, tree, bool);
 extern tree phi_reverse (tree);
+extern void init_phinodes (void);
+extern void fini_phinodes (void);
+extern void release_phi_node (tree);
+#ifdef GATHER_STATISTICS
+extern void phinodes_print_statistics (void);
+#endif
 
 /* In gimple-low.c  */
 extern void record_vars_into (tree, tree);
@@ -893,8 +899,7 @@ extern void redirect_edge_var_map_dup (edge, edge);
 extern edge_var_map_vector redirect_edge_var_map_vector (edge);
 extern void redirect_edge_var_map_destroy (void);
 
-
-extern void init_tree_ssa (void);
+extern void init_tree_ssa (struct function *);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);
@@ -923,6 +928,20 @@ void mark_sym_for_renaming (tree);
 void mark_set_for_renaming (bitmap);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
+
+/* In tree-ssanames.c  */
+extern void init_ssanames (struct function *, int);
+extern void fini_ssanames (void);
+extern tree make_ssa_name_fn (struct function *, tree, tree);
+extern tree duplicate_ssa_name (tree, tree);
+extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
+extern void release_ssa_name (tree);
+extern void release_defs (tree);
+extern void replace_ssa_name_symbol (tree, tree);
+
+#ifdef GATHER_STATISTICS
+extern void ssanames_print_statistics (void);
+#endif
 
 /* In tree-ssa-ccp.c  */
 bool fold_stmt (tree *);

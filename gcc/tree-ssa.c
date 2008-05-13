@@ -944,18 +944,18 @@ uid_ssaname_map_hash (const void *item)
 /* Initialize global DFA and SSA structures.  */
 
 void
-init_tree_ssa (void)
+init_tree_ssa (struct function *fn)
 {
-  cfun->gimple_df = GGC_CNEW (struct gimple_df);
-  cfun->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash, 
-				     		      uid_decl_map_eq, NULL);
-  cfun->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
-				                   uid_ssaname_map_eq, NULL);
-  cfun->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 
-					       var_ann_eq, NULL);
-  cfun->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
-  cfun->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
-  init_ssanames ();
+  fn->gimple_df = GGC_CNEW (struct gimple_df);
+  fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash, 
+				     		    uid_decl_map_eq, NULL);
+  fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
+				                 uid_ssaname_map_eq, NULL);
+  fn->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 
+					     var_ann_eq, NULL);
+  fn->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
+  fn->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
+  init_ssanames (fn, 0);
   init_phinodes ();
 }
 
