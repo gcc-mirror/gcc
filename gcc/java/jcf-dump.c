@@ -850,9 +850,11 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
 	    if (dnum.mantissa0 == 0 && dnum.mantissa1 == 0)
 	      fputs ("Inf", out);
 	    else if (dnum.mantissa0 & JDOUBLE_QNAN_MASK)
-	      fprintf (out, "QNaN(%llu)", (unsigned long long)mantissa);
+	      fprintf (out, "QNaN(%" HOST_LONG_LONG_FORMAT "u)",
+                (unsigned long long)mantissa);
 	    else
-	      fprintf (out, "SNaN(%llu)", (unsigned long long)mantissa);
+	      fprintf (out, "SNaN(%" HOST_LONG_LONG_FORMAT "u)",
+                (unsigned long long)mantissa);
 	  }
 	if (verbosity > 1)
 	  {
