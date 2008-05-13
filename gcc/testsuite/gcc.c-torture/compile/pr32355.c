@@ -1,5 +1,3 @@
-/* { dg-options "-O3" } */
-
 typedef struct
 {
 }

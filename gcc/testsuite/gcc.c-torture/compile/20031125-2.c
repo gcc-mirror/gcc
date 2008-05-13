@@ -1,5 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O2" } */
 struct BlobSpan {
 	int right;
 };

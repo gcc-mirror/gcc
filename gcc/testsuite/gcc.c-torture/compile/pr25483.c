@@ -1,4 +1,4 @@
-/* { dg-options "-O -fmove-loop-invariants" } */
+/* { dg-options "-fmove-loop-invariants" } */
 
 static int mdct_win[8];
 int x;

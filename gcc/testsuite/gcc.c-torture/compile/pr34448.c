@@ -1,6 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O" } */
-
 typedef struct chunk_t chunk_t;
 struct chunk_t
 {
