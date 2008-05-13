@@ -1,3 +1,11 @@
+2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/24880
+	PR ada/26635
+	* utils.c (convert) <INTEGER_TYPE>: When converting an additive
+	expression to an integral type with lower precision, use NOP_EXPR
+	directly in a couple of special cases.
+
 2008-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (is_variable_size): Do not unconditionally return false

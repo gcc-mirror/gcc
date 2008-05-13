@@ -1,3 +1,8 @@
+2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr7.adb: New test
+	* gnat.dg/conv_integer.adb: Likewise.
+
 2008-05-12  Ira Rosen  <irar@il.ibm.com>
 
 	* gfortran.dg/vect/pr36119.f: Rename to ...
