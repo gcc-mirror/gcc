@@ -928,18 +928,48 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 }
 
 
+/* Function called when we won't simplify an expression like CMPLX (or
+   COMPLEX or DCMPLX) but still want to convert BOZ arguments.  */
+
+static gfc_expr *
+only_convert_cmplx_boz (gfc_expr *x, gfc_expr *y, int kind)
+{
+  if (x->is_boz)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_REAL;
+      ts.kind = kind;
+      if (!gfc_convert_boz (x, &ts))
+	return &gfc_bad_expr;
+    }
+
+  if (y && y->is_boz)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_REAL;
+      ts.kind = kind;
+      if (!gfc_convert_boz (y, &ts))
+	return &gfc_bad_expr;
+    }
+
+  return NULL;
+}
+
+
 gfc_expr *
 gfc_simplify_cmplx (gfc_expr *x, gfc_expr *y, gfc_expr *k)
 {
   int kind;
 
-  if (x->expr_type != EXPR_CONSTANT
-      || (y != NULL && y->expr_type != EXPR_CONSTANT))
-    return NULL;
-
   kind = get_kind (BT_REAL, k, "CMPLX", gfc_default_real_kind);
   if (kind == -1)
     return &gfc_bad_expr;
+
+  if (x->expr_type != EXPR_CONSTANT
+      || (y != NULL && y->expr_type != EXPR_CONSTANT))
+    return only_convert_cmplx_boz (x, y, kind);
 
   return simplify_cmplx ("CMPLX", x, y, kind);
 }
@@ -949,10 +979,6 @@ gfc_expr *
 gfc_simplify_complex (gfc_expr *x, gfc_expr *y)
 {
   int kind;
-
-  if (x->expr_type != EXPR_CONSTANT
-      || (y != NULL && y->expr_type != EXPR_CONSTANT))
-    return NULL;
 
   if (x->ts.type == BT_INTEGER)
     {
@@ -968,6 +994,10 @@ gfc_simplify_complex (gfc_expr *x, gfc_expr *y)
       else
 	kind = x->ts.kind;
     }
+
+  if (x->expr_type != EXPR_CONSTANT
+      || (y != NULL && y->expr_type != EXPR_CONSTANT))
+    return only_convert_cmplx_boz (x, y, kind);
 
   return simplify_cmplx ("COMPLEX", x, y, kind);
 }
@@ -1052,7 +1082,7 @@ gfc_simplify_dcmplx (gfc_expr *x, gfc_expr *y)
 
   if (x->expr_type != EXPR_CONSTANT
       || (y != NULL && y->expr_type != EXPR_CONSTANT))
-    return NULL;
+    return only_convert_cmplx_boz (x, y, gfc_default_double_kind);
 
   return simplify_cmplx ("DCMPLX", x, y, gfc_default_double_kind);
 }

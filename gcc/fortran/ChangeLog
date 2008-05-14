@@ -1,8 +1,15 @@
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36186
+	* simplify.c (only_convert_cmplx_boz): New function.
+	(gfc_simplify_cmplx, gfc_simplify_complex, gfc_simplify_dcmplx):
+	Call only_convert_cmplx_boz.
+
 2008-05-14  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/36233
-       * interface.c (compare_actual_formal): Do not check sizes if the
-       actual is BT_PROCEDURE.
+	PR fortran/36233
+	* interface.c (compare_actual_formal): Do not check sizes if the
+	actual is BT_PROCEDURE.
 
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
