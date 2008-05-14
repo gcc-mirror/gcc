@@ -3480,6 +3480,68 @@ package body Sem_Attr is
             Error_Attr ("attribute % cannot apply to limited objects", P);
          end if;
 
+         --  Check that the expression does not refer to local entities
+
+         Check_Local : declare
+            Subp : Entity_Id := Current_Subprogram;
+
+            function Process (N : Node_Id) return Traverse_Result;
+            --  Check that N does not contain references to local variables
+            --  or other local entities of Subp.
+
+            -------------
+            -- Process --
+            -------------
+
+            function Process (N : Node_Id) return Traverse_Result is
+            begin
+               if Is_Entity_Name (N)
+                 and then not Is_Formal (Entity (N))
+                 and then Enclosing_Subprogram (Entity (N)) = Subp
+               then
+                  Error_Msg_Node_1 := Entity (N);
+                  Error_Attr
+                    ("attribute % cannot refer to local variable&", N);
+               end if;
+
+               return OK;
+            end Process;
+
+            procedure Check_No_Local is new Traverse_Proc;
+
+         --  Start of processing for Check_Local
+
+         begin
+            Check_No_Local (P);
+
+            if In_Parameter_Specification (P) then
+
+               --  We have additional restrictions on using 'Old in parameter
+               --  specifications.
+
+               if Present (Enclosing_Subprogram (Current_Subprogram)) then
+
+                  --  Check that there is no reference to the enclosing
+                  --  subprogram local variables. Otherwise, we might end
+                  --  up being called from the enclosing subprogram and thus
+                  --  using 'Old on a local variable which is not defined
+                  --  at entry time.
+
+                  Subp := Enclosing_Subprogram (Current_Subprogram);
+                  Check_No_Local (P);
+
+               else
+                  --  We must prevent default expression of library-level
+                  --  subprogram from using 'Old, as the subprogram may be
+                  --  used in elaboration code for which there is no enclosing
+                  --  subprogram.
+
+                  Error_Attr
+                    ("attribute % can only appear within subprogram", N);
+               end if;
+            end if;
+         end Check_Local;
+
       ------------
       -- Output --
       ------------
