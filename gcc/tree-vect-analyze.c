@@ -2706,29 +2706,44 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 
 	  /* Shift arguments should be equal in all the packed stmts for a 
 	     vector shift with scalar shift operand.  */
-	  if (TREE_CODE (rhs) == LSHIFT_EXPR || TREE_CODE (rhs) == RSHIFT_EXPR)
+	  if (TREE_CODE (rhs) == LSHIFT_EXPR || TREE_CODE (rhs) == RSHIFT_EXPR
+	      || TREE_CODE (rhs) == LROTATE_EXPR
+	      || TREE_CODE (rhs) == RROTATE_EXPR)
 	    {
 	      vec_mode = TYPE_MODE (vectype);
-	      optab = optab_for_tree_code (TREE_CODE (rhs), vectype);
-	      if (!optab)
+
+	      /* First see if we have a vector/vector shift.  */
+	      optab = optab_for_tree_code (TREE_CODE (rhs), vectype,
+					   optab_vector);
+
+	      if (!optab
+		  || (optab->handlers[(int) vec_mode].insn_code
+		      == CODE_FOR_nothing))
 		{
-		  if (vect_print_dump_info (REPORT_SLP))
-		    fprintf (vect_dump, "Build SLP failed: no optab.");
-		  return false;
-		}
-	      icode = (int) optab->handlers[(int) vec_mode].insn_code;
-	      if (icode == CODE_FOR_nothing)
-		{
-		  if (vect_print_dump_info (REPORT_SLP))
-		    fprintf (vect_dump,
-			     "Build SLP failed: op not supported by target.");
-		  return false;
-		}
-	      optab_op2_mode = insn_data[icode].operand[2].mode;
-	      if (!VECTOR_MODE_P (optab_op2_mode))
-		{
-		  need_same_oprnds = true;
-		  first_op1 = TREE_OPERAND (rhs, 1);
+		  /* No vector/vector shift, try for a vector/scalar shift.  */
+		  optab = optab_for_tree_code (TREE_CODE (rhs), vectype,
+					       optab_scalar);
+
+		  if (!optab)
+		    {
+		      if (vect_print_dump_info (REPORT_SLP))
+			fprintf (vect_dump, "Build SLP failed: no optab.");
+		      return false;
+		    }
+		  icode = (int) optab->handlers[(int) vec_mode].insn_code;
+		  if (icode == CODE_FOR_nothing)
+		    {
+		      if (vect_print_dump_info (REPORT_SLP))
+			fprintf (vect_dump,
+				 "Build SLP failed: op not supported by target.");
+		      return false;
+		    }
+		  optab_op2_mode = insn_data[icode].operand[2].mode;
+		  if (!VECTOR_MODE_P (optab_op2_mode))
+		    {
+		      need_same_oprnds = true;
+		      first_op1 = TREE_OPERAND (rhs, 1);
+		    }
 		}
 	    }
 	}

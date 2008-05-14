@@ -3848,7 +3848,7 @@ operand 0 and operand 1; operand 2's mode is specified by the
 instruction pattern, and the compiler will convert the operand to that
 mode before generating the instruction.  The meaning of out-of-range shift
 counts can optionally be specified by @code{TARGET_SHIFT_TRUNCATION_MASK}.
-@xref{TARGET_SHIFT_TRUNCATION_MASK}.
+@xref{TARGET_SHIFT_TRUNCATION_MASK}.  Operand 2 is always a scalar type.
 
 @cindex @code{ashr@var{m}3} instruction pattern
 @cindex @code{lshr@var{m}3} instruction pattern
@@ -3856,7 +3856,16 @@ counts can optionally be specified by @code{TARGET_SHIFT_TRUNCATION_MASK}.
 @cindex @code{rotr@var{m}3} instruction pattern
 @item @samp{ashr@var{m}3}, @samp{lshr@var{m}3}, @samp{rotl@var{m}3}, @samp{rotr@var{m}3}
 Other shift and rotate instructions, analogous to the
-@code{ashl@var{m}3} instructions.
+@code{ashl@var{m}3} instructions.  Operand 2 is always a scalar type.
+
+@cindex @code{vashl@var{m}3} instruction pattern
+@cindex @code{vashr@var{m}3} instruction pattern
+@cindex @code{vlshr@var{m}3} instruction pattern
+@cindex @code{vrotl@var{m}3} instruction pattern
+@cindex @code{vrotr@var{m}3} instruction pattern
+@item @samp{vashl@var{m}3}, @samp{vashr@var{m}3}, @samp{vlshr@var{m}3}, @samp{vrotl@var{m}3}, @samp{vrotr@var{m}3}
+Vector shift and rotate instructions that take vectors as operand 2
+instead of a scalar type.
 
 @cindex @code{neg@var{m}2} instruction pattern
 @cindex @code{ssneg@var{m}2} instruction pattern

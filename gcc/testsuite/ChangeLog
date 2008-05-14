@@ -1,4 +1,17 @@
 2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+
+	* gcc.target/i386/sse5-imul32widen-vector.c: New file to test x86
+	SSE5 optimizations.
+	* gcc.target/i386/sse5-imul64-vector.c: Ditto.
+	* gcc.target/i386/sse5-rotate1-vector.c: Ditto.
+	* gcc.target/i386/sse5-rotate2-vector.c: Ditto.
+	* gcc.target/i386/sse5-rotate3-vector.c: Ditto.
+	* gcc.target/i386/sse5-shift1-vector.c: Ditto.
+	* gcc.target/i386/sse5-shift2-vector.c: Ditto.
+	* gcc.target/i386/sse5-shift3-vector.c: Ditto.
+
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/36224
 	* gcc.dg/pr36224.c: New file.

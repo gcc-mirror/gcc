@@ -575,7 +575,7 @@
   /* Generate [-0.0, -0.0, -0.0, -0.0].  */
   neg0 = gen_reg_rtx (V4SImode);
   emit_insn (gen_altivec_vspltisw (neg0, constm1_rtx));
-  emit_insn (gen_ashlv4si3 (neg0, neg0, neg0));
+  emit_insn (gen_vashlv4si3 (neg0, neg0, neg0));
 
   /* Use the multiply-add.  */
   emit_insn (gen_altivec_vmaddfp (operands[0], operands[1], operands[2],
@@ -634,7 +634,7 @@
    high_product = gen_reg_rtx (V4SImode);
    emit_insn (gen_altivec_vmsumuhm (high_product, one, small_swap, zero));
  
-   emit_insn (gen_ashlv4si3 (high_product, high_product, sixteen));
+   emit_insn (gen_vashlv4si3 (high_product, high_product, sixteen));
  
    emit_insn (gen_addv4si3 (operands[0], high_product, low_product));
    
@@ -1238,7 +1238,7 @@
   "vslo %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
-(define_insn "ashl<mode>3"
+(define_insn "vashl<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (ashift:VI (match_operand:VI 1 "register_operand" "v")
                    (match_operand:VI 2 "register_operand" "v") ))]
@@ -1246,7 +1246,7 @@
   "vsl<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "lshr<mode>3"
+(define_insn "vlshr<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (lshiftrt:VI (match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v") ))]
@@ -1254,7 +1254,7 @@
   "vsr<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "ashr<mode>3"
+(define_insn "vashr<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (ashiftrt:VI (match_operand:VI 1 "register_operand" "v")
                     (match_operand:VI 2 "register_operand" "v") ))]
@@ -2640,7 +2640,7 @@
   /* Generate [-0.0, -0.0, -0.0, -0.0].  */
   neg0 = gen_reg_rtx (V4SImode);
   emit_insn (gen_altivec_vspltisw (neg0, constm1_rtx));
-  emit_insn (gen_ashlv4si3 (neg0, neg0, neg0));
+  emit_insn (gen_vashlv4si3 (neg0, neg0, neg0));
 
   /* XOR */
   emit_insn (gen_xorv4sf3 (operands[0],

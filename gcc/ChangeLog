@@ -1,4 +1,155 @@
 2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+
+	* optabs.h (optab_index): Add OTI_vashl, OTI_vlshr, OTI_vashr,
+	OTI_vrotl, OTI_vrotr to support vector/vector shifts.
+	(vashl_optab): New optab for vector/vector shifts.
+	(vashr_optab): Ditto.
+	(vlshr_optab): Ditto.
+	(vrotl_optab): Ditto.
+	(vrotr_optab): Ditto.
+	(optab_subtype): New enum for optab_for_tree_code call.
+	(optab_for_tree_code): Add enum optab_subtype argument.
+
+	* optabs.c (optab_for_tree_code): Take an additional argument to
+	distinguish between a vector shift by a scalar and vector shift by
+	a vector.  Make lshr/ashr/ashl/rotl/rotr optabs just vector
+	shifted by a scalar.  Use vlshr/vashr/vashl/vrotl/vrotr for the
+	vector shift by a vector.
+	(expand_widen_pattern_expr): Pass additional argument to
+	optab_for_tree_code.
+
+	* genopinit.c (optabs): Add vashr_optab, vashl_optab, vlshr_optab,
+	vrotl_optab, vrotr_optab.
+
+	* expr.c (expand_expr_real_1): Update calls to
+	optab_for_tree_code to distinguish between vector shifted by a
+	scalar and vector shifted by a vector.
+	* tree-vectorizer.c (supportable_widening_operation): Ditto.
+	(supportable_narrowing_operation): Ditto.
+	* tree-vect-analyze.c (vect_build_slp_tree): Ditto.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Ditto.
+	* tree-vect-transform.c (vect_model_reduction_cost): Ditto.
+	(vect_create_epilog_for_reduction): Ditto.
+	(vectorizable_reduction): Ditto.
+	(vectorizable_operation): Ditto.
+	(vect_strided_store_supported): Ditto.
+	(vect_strided_load_supported): Ditto.
+	* tree-vect-generic.c (expand_vector_operations_1): Ditto.
+	* expmed.c (expand_shift): Ditto.
+
+	* doc/md.texi (ashl@var{m}3): Document that operand 2 is always a
+	scalar type.
+	(ashr@var{m}3): Ditto.
+	(vashl@var{m}3): Document new vector/vector shift standard name.
+	(vashr@var{m}3): Ditto.
+	(vlshr@var{m}3): Ditto.
+	(vrotl@var{m}3): Ditto.
+	(vrotr@var{m}3): Ditto.
+
+	* config/i386/i386.md (PPERM_SRC): Move PPERM masks here from
+	i386.c.
+	(PPERM_INVERT): Ditto.
+	(PPERM_REVERSE): Ditto.
+	(PPERM_REV_INV): Ditto.
+	(PPERM_ZERO): Ditto.
+	(PPERM_ONES): Ditto.
+	(PPERM_SIGN): Ditto.
+	(PPERM_INV_SIGN): Ditto.
+	(PPERM_SRC1): Ditto.
+	(PPERM_SRC2): Ditto.
+
+	* config/i386/sse.md (mulv2di3): Add SSE5 support.
+	(sse5_pmacsdql_mem): New SSE5 define_and_split that temporarily
+	allows a memory operand to be the value being added, and split it
+	to improve vectorization.
+	(sse5_pmacsdqh_mem): Ditto.
+	(sse5_mulv2div2di3_low): SSE5 32-bit multiply and extend function.
+	(sse5_mulv2div2di3_high): Ditto.
+	(vec_pack_trunc_v8hi): Add SSE5 pperm support.
+	(vec_pack_trunc_v4si): Ditto.
+	(vec_pack_trunc_v2di): Ditto.
+	(sse5_pcmov_<mode>): Remove code that tried to use use
+	andps/andnps instead of pcmov.
+	(vec_widen_smult_hi_v4si): If we have SSE5, use the pmacsdql and
+	pmacsdqh instructions.
+	(vec_widen_smult_lo_v4si): Ditto.
+
+	* config/i386/i386.c (PPERM_SRC): Move PPERM masks to i386.md.
+	(PPERM_INVERT): Ditto.
+	(PPERM_REVERSE): Ditto.
+	(PPERM_REV_INV): Ditto.
+	(PPERM_ZERO): Ditto.
+	(PPERM_ONES): Ditto.
+	(PPERM_SIGN): Ditto.
+	(PPERM_INV_SIGN): Ditto.
+	(PPERM_SRC1): Ditto.
+	(PPERM_SRC2): Ditto.
+	(ix86_expand_sse_movcc): Move the SSE5 test after the if
+	true/false tests.
+	(ix86_expand_int_vcond): If SSE5 generate all possible integer
+	comparisons.
+	(ix86_sse5_valid_op_p): Allow num_memory to be negative, which
+	says ignore whether the last reference is a memory operand.
+
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+	    Paolo Bonzini <bonzini at gnu dot org>
+
+	* config/rs6000/rs6000.c (bdesc_2arg): Change the names of vector
+	shift patterns.
+
+	* config/rs6000/altivec.md (vashl<mode>3): Rename from
+	ashl<mode>3.
+	(vlshr<mode>3): Rename from vlshr<mode>3.
+	(vashr<mode>3): Rename from vashr<mode>3.
+	(mulv4sf3): Change the names of vector shift patterns.
+	(mulv4si3): Ditto.
+	(negv4sf2): Ditt.
+
+	* config/spu/spu.c (spu_initialize_trampoline): Rename vector
+	shift insns.
+
+	* config/spu/spu-builtins.def (SI_SHLH): Rename vector shift
+	insns.
+	(SI_SHLHI): Ditto.
+	(SI_SHL): Ditto.
+	(SI_SHLI): Ditto.
+	(SI_ROTH): Ditto.
+	(SI_ROTHI): Ditto.
+	(SI_ROT): Ditto.
+	(SI_ROTI): Ditto.
+	(SPU_RL_0): Ditto.
+	(SPU_RL_1): Ditto.
+	(SPU_RL_2): Ditto.
+	(SPU_RL_3): Ditto.
+	(SPU_RL_4): Ditto.
+	(SPU_RL_5): Ditto.
+	(SPU_RL_6): Ditto.
+	(SPU_RL_7): Ditto.
+	(SPU_SL_0): Ditto.
+	(SPU_SL_1): Ditto.
+	(SPU_SL_2): Ditto.
+	(SPU_SL_3): Ditto.
+	(SPU_SL_4): Ditto.
+	(SPU_SL_5): Ditto.
+	(SPU_SL_6): Ditto.
+	(SPU_SL_7): Ditto.
+
+	* config/spu/spu.md (v): New iterator macro to add v for vector types.
+	(floatunssidf2_internal): Change vector/vector shift names.
+	(floatunsdidf2_internal): Ditto.
+	(mulv8hi3): Ditto.
+	(ashrdi3): Ditto.
+	(ashrti3): Ditto.
+	(cgt_df): Ditto.
+	(cgt_v2df): Ditto.
+	(dftsv): Ditto.
+	(vashl<mode>3): Rename from ashl<mode>3.
+	(vashr<mode>3): Rename from ashr<mode>3.
+	(vlshr<mode>3): Rename from lshr<mode>3.
+	(vrotl<mode>3): Rename from rotl<mode>3.
+
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/36224
 	* config/i386/sse.md (vec_widen_smult_hi_v4si): Delete, using

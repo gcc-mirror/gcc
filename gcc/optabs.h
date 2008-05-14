@@ -167,6 +167,18 @@ enum optab_index
   OTI_rotl,
   /* Rotate right */
   OTI_rotr,
+
+  /* Arithmetic shift left of vector by vector */
+  OTI_vashl,
+  /* Logical shift right of vector by vector */
+  OTI_vlshr,
+  /* Arithmetic shift right of vector by vector */
+  OTI_vashr,
+  /* Rotate left of vector by vector */
+  OTI_vrotl,
+  /* Rotate right of vector by vector */
+  OTI_vrotr,
+
   /* Signed and floating-point minimum value */
   OTI_smin,
   /* Signed and floating-point maximum value */
@@ -412,6 +424,11 @@ extern struct optab optab_table[OTI_MAX];
 #define ashr_optab (&optab_table[OTI_ashr])
 #define rotl_optab (&optab_table[OTI_rotl])
 #define rotr_optab (&optab_table[OTI_rotr])
+#define vashl_optab (&optab_table[OTI_vashl])
+#define vlshr_optab (&optab_table[OTI_vlshr])
+#define vashr_optab (&optab_table[OTI_vashr])
+#define vrotl_optab (&optab_table[OTI_vrotl])
+#define vrotr_optab (&optab_table[OTI_vrotr])
 #define smin_optab (&optab_table[OTI_smin])
 #define smax_optab (&optab_table[OTI_smax])
 #define umin_optab (&optab_table[OTI_umin])
@@ -714,6 +731,21 @@ extern void maybe_encapsulate_block (rtx, rtx, rtx);
 extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
 			   int);
 
+/* An extra flag to control optab_for_tree_code's behavior.  This is needed to
+   distinguish between machines with a vector shift that takes a scalar for the
+   shift amount vs. machines that take a vector for the shift amount.  */
+enum optab_subtype
+{
+  optab_default,
+  optab_scalar,
+  optab_vector
+};
+
+/* Return the optab used for computing the given operation on the type given by
+   the second argument.  The third argument distinguishes between the types of
+   vector shifts and rotates */
+extern optab optab_for_tree_code (enum tree_code, const_tree, enum optab_subtype);
+
 /* The various uses that a comparison can have; used by can_compare_p:
    jumps, conditional moves, store flag operations.  */
 enum can_compare_purpose
@@ -722,10 +754,6 @@ enum can_compare_purpose
   ccp_cmov,
   ccp_store_flag
 };
-
-/* Return the optab used for computing the given operation on the type
-   given by the second argument.  */
-extern optab optab_for_tree_code (enum tree_code, const_tree);
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */

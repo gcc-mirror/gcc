@@ -685,7 +685,8 @@ vect_pattern_recog_1 (
       if (!pattern_vectype)
         return;
 
-      optab = optab_for_tree_code (TREE_CODE (pattern_expr), pattern_vectype);
+      optab = optab_for_tree_code (TREE_CODE (pattern_expr), pattern_vectype,
+				   optab_default);
       vec_mode = TYPE_MODE (pattern_vectype);
       if (!optab
           || (icode = optab_handler (optab, vec_mode)->insn_code) ==

@@ -4799,7 +4799,7 @@ spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       insnc = force_reg (V4SImode, array_to_constant (V4SImode, insna));
 
       emit_insn (gen_shufb (shuf, fnaddr, cxt, shufc));
-      emit_insn (gen_rotlv4si3 (rotl, shuf, spu_const (V4SImode, 7)));
+      emit_insn (gen_vrotlv4si3 (rotl, shuf, spu_const (V4SImode, 7)));
       emit_insn (gen_movv4si (mask, spu_const (V4SImode, 0xffff << 7)));
       emit_insn (gen_selb (insn, insnc, rotl, mask));
 

@@ -334,13 +334,13 @@ widen_operand (rtx op, enum machine_mode mode, enum machine_mode oldmode,
   return result;
 }
 
-/* Return the optab used for computing the operation given by
-   the tree code, CODE.  This function is not always usable (for
-   example, it cannot give complete results for multiplication
-   or division) but probably ought to be relied on more widely
-   throughout the expander.  */
+/* Return the optab used for computing the operation given by the tree code,
+   CODE and the tree EXP.  This function is not always usable (for example, it
+   cannot give complete results for multiplication or division) but probably
+   ought to be relied on more widely throughout the expander.  */
 optab
-optab_for_tree_code (enum tree_code code, const_tree type)
+optab_for_tree_code (enum tree_code code, const_tree type,
+		     enum optab_subtype subtype)
 {
   bool trapv;
   switch (code)
@@ -374,17 +374,45 @@ optab_for_tree_code (enum tree_code code, const_tree type)
       return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
 
     case LSHIFT_EXPR:
+      if (VECTOR_MODE_P (TYPE_MODE (type)))
+	{
+	  if (subtype == optab_vector)
+	    return TYPE_SATURATING (type) ? NULL : vashl_optab;
+
+	  gcc_assert (subtype == optab_scalar);
+	}
       if (TYPE_SATURATING(type))
 	return TYPE_UNSIGNED(type) ? usashl_optab : ssashl_optab;
       return ashl_optab;
 
     case RSHIFT_EXPR:
+      if (VECTOR_MODE_P (TYPE_MODE (type)))
+	{
+	  if (subtype == optab_vector)
+	    return TYPE_UNSIGNED (type) ? vlshr_optab : vashr_optab;
+
+	  gcc_assert (subtype == optab_scalar);
+	}
       return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
 
     case LROTATE_EXPR:
+      if (VECTOR_MODE_P (TYPE_MODE (type)))
+	{
+	  if (subtype == optab_vector)
+	    return vrotl_optab;
+
+	  gcc_assert (subtype == optab_scalar);
+	}
       return rotl_optab;
 
     case RROTATE_EXPR:
+      if (VECTOR_MODE_P (TYPE_MODE (type)))
+	{
+	  if (subtype == optab_vector)
+	    return vrotr_optab;
+
+	  gcc_assert (subtype == optab_scalar);
+	}
       return rotr_optab;
 
     case MAX_EXPR:
@@ -540,7 +568,7 @@ expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
   oprnd0 = TREE_OPERAND (exp, 0);
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   widen_pattern_optab =
-        optab_for_tree_code (TREE_CODE (exp), TREE_TYPE (oprnd0));
+    optab_for_tree_code (TREE_CODE (exp), TREE_TYPE (oprnd0), optab_default);
   icode = (int) optab_handler (widen_pattern_optab, tmode0)->insn_code;
   gcc_assert (icode != CODE_FOR_nothing);
   xmode0 = insn_data[icode].operand[1].mode;
