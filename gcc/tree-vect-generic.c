@@ -437,7 +437,28 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
       || code == VEC_UNPACK_FLOAT_LO_EXPR)
     type = TREE_TYPE (TREE_OPERAND (rhs, 0));
 
-  op = optab_for_tree_code (code, type);
+  /* Choose between vector shift/rotate by vector and vector shift/rotate by
+     scalar */
+  if (code == LSHIFT_EXPR || code == RSHIFT_EXPR || code == LROTATE_EXPR
+      || code == RROTATE_EXPR)
+    {
+      /* If the 2nd argument is vector, we need a vector/vector shift */
+      if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (TREE_OPERAND (rhs, 1)))))
+	op = optab_for_tree_code (code, type, optab_vector);
+
+      else
+	{
+	  /* Try for a vector/scalar shift, and if we don't have one, see if we
+	     have a vector/vector shift */
+	  op = optab_for_tree_code (code, type, optab_scalar);
+	  if (!op
+	      || (op->handlers[(int) TYPE_MODE (type)].insn_code
+		  == CODE_FOR_nothing))
+	    op = optab_for_tree_code (code, type, optab_vector);
+	}
+    }
+  else
+    op = optab_for_tree_code (code, type, optab_default);
 
   /* For widening/narrowing vector operations, the relevant type is of the 
      arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
@@ -458,7 +479,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   if (op == NULL
       && code == NEGATE_EXPR
       && INTEGRAL_TYPE_P (TREE_TYPE (type)))
-    op = optab_for_tree_code (MINUS_EXPR, type);
+    op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
 
   /* For very wide vectors, try using a smaller vector mode.  */
   compute_type = type;

@@ -2211,13 +2211,13 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
   if (code == FIX_TRUNC_EXPR)
     {
       /* The signedness is determined from output operand.  */
-      optab1 = optab_for_tree_code (c1, type);
-      optab2 = optab_for_tree_code (c2, type);
+      optab1 = optab_for_tree_code (c1, type, optab_default);
+      optab2 = optab_for_tree_code (c2, type, optab_default);
     }
   else
     {
-      optab1 = optab_for_tree_code (c1, vectype);
-      optab2 = optab_for_tree_code (c2, vectype);
+      optab1 = optab_for_tree_code (c1, vectype, optab_default);
+      optab2 = optab_for_tree_code (c2, vectype, optab_default);
     }
 
   if (!optab1 || !optab2)
@@ -2285,9 +2285,9 @@ supportable_narrowing_operation (enum tree_code code,
 
   if (code == FIX_TRUNC_EXPR)
     /* The signedness is determined from output operand.  */
-    optab1 = optab_for_tree_code (c1, type);
+    optab1 = optab_for_tree_code (c1, type, optab_default);
   else
-    optab1 = optab_for_tree_code (c1, vectype);
+    optab1 = optab_for_tree_code (c1, vectype, optab_default);
 
   if (!optab1)
     return false;
