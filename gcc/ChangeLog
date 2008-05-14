@@ -1,3 +1,10 @@
+2008-05-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36098
+	* tree-vect-analyze.c (vect_analyze_group_access): Set the gap
+	value for the first load in the group in case of a gap.
+	(vect_build_slp_tree): Check that there are no gaps in loads.
+
 2008-05-13  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (machine_function): Add 'is_leaf' field.

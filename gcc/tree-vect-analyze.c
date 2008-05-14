@@ -2252,7 +2252,13 @@ vect_analyze_group_access (struct data_reference *dr)
       if (dr_step != count_in_bytes)
         {
           if (DR_IS_READ (dr))
-            slp_impossible = true;
+            {
+              slp_impossible = true;
+              /* There is a gap after the last load in the group. This gap is a
+                 difference between the stride and the number of elements. When 
+                 there is no gap, this difference should be 0.  */ 
+              DR_GROUP_GAP (vinfo_for_stmt (stmt)) = stride - count; 
+            }
           else
             {
               if (vect_print_dump_info (REPORT_DETAILS))
@@ -2666,7 +2672,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
   enum machine_mode vec_mode;
   tree first_stmt_const_oprnd = NULL_TREE;
   struct data_reference *first_dr;
- 
+
   /* For every stmt in NODE find its def stmt/s.  */
   for (i = 0; VEC_iterate (tree, stmts, i, stmt); i++)
     {
@@ -2798,15 +2804,17 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 		if (i == 0)
 		  {
 		    /* First stmt of the SLP group should be the first load of 
-		       the interleaving loop if data permutation is not 
-		       allowed.  */
-		    if  (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) != stmt) 
+		       the interleaving loop if data permutation is not allowed.
+		       Check that there is no gap between the loads.  */
+		    if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) != stmt
+                        || DR_GROUP_GAP (vinfo_for_stmt (stmt)) != 0) 
 		      {
-			/* FORNOW: data permutations are not supported.  */
+			/* FORNOW: data permutations and gaps in loads are not 
+                           supported.  */
 			if (vect_print_dump_info (REPORT_SLP)) 
 			  {
 			    fprintf (vect_dump, "Build SLP failed: strided "
-				     " loads need permutation ");
+				     " loads need permutation or have gaps ");
 			    print_generic_expr (vect_dump, stmt, TDF_SLIM);
 			  }
 
@@ -2833,13 +2841,17 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 		  }
 		else
 		  {
-		    if (DR_GROUP_NEXT_DR (vinfo_for_stmt (prev_stmt)) != stmt)
+                    /* Check that we have consecutive loads from interleaving
+                       chain and that there is no gap between the loads.  */
+		    if (DR_GROUP_NEXT_DR (vinfo_for_stmt (prev_stmt)) != stmt
+                        || DR_GROUP_GAP (vinfo_for_stmt (stmt)) != 1)
 		      {
-			/* FORNOW: data permutations are not supported.  */
+			/* FORNOW: data permutations and gaps in loads are not
+                           supported.  */
 			if (vect_print_dump_info (REPORT_SLP)) 
 			  {
 			    fprintf (vect_dump, "Build SLP failed: strided "
-				     " loads need permutation ");
+				     " loads need permutation or have gaps ");
 			    print_generic_expr (vect_dump, stmt, TDF_SLIM);
 			  }
 			return false;

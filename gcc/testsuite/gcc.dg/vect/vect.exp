@@ -245,7 +245,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
 # With -O3
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-O3"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-vect-*.\[cS\]]]  \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 
 # With -O1

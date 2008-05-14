@@ -1,3 +1,9 @@
+2008-05-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36098
+	* gcc.dg/vect/vect.exp: Compile with -O3 all the tests named "O3-*".
+	* gcc.dg/vect/O3-pr36098.c: New test.
+
 2008-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
        PR fortran/35997
