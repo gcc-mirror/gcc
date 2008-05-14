@@ -2218,11 +2218,9 @@ enum libcall_type
   LCT_NORMAL = 0,
   LCT_CONST = 1,
   LCT_PURE = 2,
-  LCT_CONST_MAKE_BLOCK = 3,
-  LCT_PURE_MAKE_BLOCK = 4,
-  LCT_NORETURN = 5,
-  LCT_THROW = 6,
-  LCT_RETURNS_TWICE = 7
+  LCT_NORETURN = 3,
+  LCT_THROW = 4,
+  LCT_RETURNS_TWICE = 5
 };
 
 extern void emit_library_call (rtx, enum libcall_type, enum machine_mode, int,

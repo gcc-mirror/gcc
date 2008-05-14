@@ -1,3 +1,15 @@
+2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* optabs.c (prepare_cmp_insn): Changed LCT_PURE_MAKE_BLOCK to
+	LCT_PURE and LCT_CONST_MAKE_BLOCK to LCT_CONST in calls to
+	emit_library_call_value. 
+	* builtins.c (expand_builtin_powi, expand_builtin_memcmp): Ditto.
+	* tree.h (ECF_LIBCALL_BLOCK): Removed.
+	* calls.c (initialize_argument_information, precompute_arguments, 
+	expand_call, emit_library_call_value_1): Remove ECF_LIBCALL_BLOCK.
+	(precompute_arguments): Removed flags parameter.
+	* rtl.h (LCT_CONST_MAKE_BLOCK, LCT_PURE_MAKE_BLOCK): Removed.
+	
 2008-05-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dse.c (dse_possible_dead_store_p): Remove dead code.

@@ -3082,7 +3082,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
     op1 = convert_to_mode (mode2, op1, 0);
 
   target = emit_library_call_value (optab_libfunc (powi_optab, mode),
-				    target, LCT_CONST_MAKE_BLOCK, mode, 2,
+				    target, LCT_CONST, mode, 2,
 				    op0, mode, op1, mode2);
 
   return target;
@@ -4147,7 +4147,7 @@ expand_builtin_memcmp (tree exp, rtx target, enum machine_mode mode)
     if (insn)
       emit_insn (insn);
     else
-      emit_library_call_value (memcmp_libfunc, result, LCT_PURE_MAKE_BLOCK,
+      emit_library_call_value (memcmp_libfunc, result, LCT_PURE,
 			       TYPE_MODE (integer_type_node), 3,
 			       XEXP (arg1_rtx, 0), Pmode,
 			       XEXP (arg2_rtx, 0), Pmode,
