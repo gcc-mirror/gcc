@@ -135,7 +135,12 @@ do
 	*)	optarg=yes ;;
 	esac
 	enableopt=`echo ${option} | sed 's:^--::;s:=.*$::;s:-:_:g'`
-	eval $enableopt="$optarg"
+	# enable_shared and enable_static are handled by configure.
+	# Don't undo its work.
+	case $enableopt in
+	enable_shared | enable_static) ;;
+	*) eval $enableopt="$optarg" ;;
+	esac
 	;;
   --norecursion | --no-recursion)
 	ml_norecursion=yes

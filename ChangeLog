@@ -1,3 +1,10 @@
+2008-05-14  Rafael Espindola  <espindola@google.com>
+
+	Backport from mainline:
+	2008-05-14  Rafael Espindola  <espindola@google.com>
+
+	* config-ml.in: don't handle --enable-shared and --enable-static.
+
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.
