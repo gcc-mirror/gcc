@@ -1,3 +1,8 @@
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36215
+	* gfortran.dg/include_3.f95: New test.
+
 2008-05-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36098	

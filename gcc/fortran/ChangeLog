@@ -1,3 +1,9 @@
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36215
+	* scanner.c (preprocessor_line): Allocate enough memory for a
+	wide string.
+
 2008-05-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36176

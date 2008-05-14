@@ -1570,7 +1570,7 @@ preprocessor_line (gfc_char_t *c)
   if (unescape)
     {
       gfc_char_t *s = wide_filename;
-      gfc_char_t *d = gfc_getmem (c - wide_filename - unescape);
+      gfc_char_t *d = gfc_get_wide_string (c - wide_filename - unescape);
 
       wide_filename = d;
       while (*s)
