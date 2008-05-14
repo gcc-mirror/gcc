@@ -1,3 +1,12 @@
+2008-05-14  Samuel Tardieu  <sam@rfc1149.net>
+            Robert Dewar <dewar@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, Attribute_Old case): Add
+	restrictions to the prefix of 'Old.
+	* sem_util.ads, sem_util.adb (In_Parameter_Specification): New.
+	* gnat_rm.texi ('Old): Note that 'Old cannot be applied to local
+	variables.
+
 2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/24880

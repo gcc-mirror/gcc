@@ -5774,7 +5774,8 @@ you can refer to Arg1.Field'Old which yields the value of
 Arg1.Field on entry. The implementation simply involves generating
 an object declaration which captures the value on entry. Any
 prefix is allowed except one of a limited type (since limited
-types cannot be copied to capture their values).
+types cannot be copied to capture their values) or a local variable
+(since it does not exist at subprogram entry time).
 
 The following example shows the use of 'Old to implement
 a test of a postcondition:

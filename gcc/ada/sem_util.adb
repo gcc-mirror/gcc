@@ -5374,6 +5374,26 @@ package body Sem_Util is
       return False;
    end In_Package_Body;
 
+   --------------------------------
+   -- In_Parameter_Specification --
+   --------------------------------
+
+   function In_Parameter_Specification (N : Node_Id) return Boolean is
+      PN : Node_Id;
+
+   begin
+      PN := Parent (N);
+      while Present (PN) loop
+         if Nkind (PN) = N_Parameter_Specification then
+            return True;
+         end if;
+
+         PN := Parent (PN);
+      end loop;
+
+      return False;
+   end In_Parameter_Specification;
+
    --------------------------------------
    -- In_Subprogram_Or_Concurrent_Unit --
    --------------------------------------

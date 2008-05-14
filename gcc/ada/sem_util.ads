@@ -590,6 +590,9 @@ package Sem_Util is
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
 
+   function In_Parameter_Specification (N : Node_Id) return Boolean;
+   --  Returns True if node N belongs to a parameter specification
+
    function In_Subprogram_Or_Concurrent_Unit return Boolean;
    --  Determines if the current scope is within a subprogram compilation
    --  unit (inside a subprogram declaration, subprogram body, or generic
