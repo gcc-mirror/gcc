@@ -938,6 +938,8 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 	  size = fold_build2 (MINUS_EXPR, gfc_array_index_type, ubound, lbound);
 	  se->expr = fold_build2 (PLUS_EXPR, gfc_array_index_type, size,
 				  gfc_index_one_node);
+	  se->expr = fold_build2 (MAX_EXPR, gfc_array_index_type, se->expr,
+				  gfc_index_zero_node);
 	}
       else
 	se->expr = gfc_index_one_node;
