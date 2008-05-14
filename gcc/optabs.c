@@ -4127,7 +4127,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
       size = convert_to_mode (TYPE_MODE (length_type), size,
 			      TYPE_UNSIGNED (length_type));
 
-      result = emit_library_call_value (libfunc, 0, LCT_PURE_MAKE_BLOCK,
+      result = emit_library_call_value (libfunc, 0, LCT_PURE,
 					result_mode, 3,
 					XEXP (x, 0), Pmode,
 					XEXP (y, 0), Pmode,
@@ -4169,7 +4169,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	    libfunc = ulibfunc;
 	}
 
-      result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
+      result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 					targetm.libgcc_cmp_return_mode (),
 					2, x, mode, y, mode);
 

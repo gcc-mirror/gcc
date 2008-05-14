@@ -4970,11 +4970,9 @@ extern tree build_duplicate_type (tree);
 #define ECF_RETURNS_TWICE	  (1 << 7)
 /* Nonzero if this call replaces the current stack frame.  */
 #define ECF_SIBCALL		  (1 << 8)
-/* Create libcall block around the call.  */
-#define ECF_LIBCALL_BLOCK	  (1 << 9)
 /* Function does not read or write memory (but may have side effects, so
    it does not necessarily fit ECF_CONST).  */
-#define ECF_NOVOPS		  (1 << 10)
+#define ECF_NOVOPS		  (1 << 9)
 
 extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (const_tree);
