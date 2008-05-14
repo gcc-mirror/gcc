@@ -305,7 +305,7 @@ static int qty_sugg_compare (int, int);
 static int qty_sugg_compare_1 (const void *, const void *);
 static int qty_compare (int, int);
 static int qty_compare_1 (const void *, const void *);
-static int combine_regs (rtx, rtx, int, int, rtx, int);
+static int combine_regs (rtx, rtx, int, int, rtx);
 static int reg_meets_class_p (int, enum reg_class);
 static void update_qty_class (int, int);
 static void reg_is_set (rtx, const_rtx, void *);
@@ -315,7 +315,6 @@ static int find_free_reg (enum reg_class, enum machine_mode, int, int, int,
 			  int, int);
 static void mark_life (int, enum machine_mode, int);
 static void post_mark_life (int, enum machine_mode, int, int, int);
-static int no_conflict_p (rtx, rtx, rtx);
 static int requires_inout (const char *);
 
 /* Allocate a new quantity (new within current basic block)
@@ -1271,12 +1270,11 @@ block_alloc (int b)
 {
   int i, q;
   rtx insn;
-  rtx note, hard_reg;
+  rtx hard_reg;
   int insn_number = 0;
   int insn_count = 0;
   int max_uid = get_max_uid ();
   int *qty_order;
-  int no_conflict_combined_regno = -1;
   struct df_ref ** def_rec;
 
   /* Count the instructions in the basic block.  */
@@ -1326,7 +1324,7 @@ block_alloc (int b)
 
       if (INSN_P (insn))
 	{
-	  rtx link, set;
+	  rtx link;
 	  int win = 0;
 	  rtx r0, r1 = NULL_RTX;
 	  int combined_regno = -1;
@@ -1433,61 +1431,11 @@ block_alloc (int b)
 
 		      if (REG_P (r1) || GET_CODE (r1) == SUBREG)
 			win = combine_regs (r1, r0, may_save_copy,
-					    insn_number, insn, 0);
+					    insn_number, insn);
 		    }
 		  if (win)
 		    break;
 		}
-	    }
-
-	  /* Recognize an insn sequence with an ultimate result
-	     which can safely overlap one of the inputs.
-	     The sequence begins with a CLOBBER of its result,
-	     and ends with an insn that copies the result to itself
-	     and has a REG_EQUAL note for an equivalent formula.
-	     That note indicates what the inputs are.
-	     The result and the input can overlap if each insn in
-	     the sequence either doesn't mention the input
-	     or has a REG_NO_CONFLICT note to inhibit the conflict.
-
-	     We do the combining test at the CLOBBER so that the
-	     destination register won't have had a quantity number
-	     assigned, since that would prevent combining.  */
-
-	  if (optimize
-	      && GET_CODE (PATTERN (insn)) == CLOBBER
-	      && (r0 = XEXP (PATTERN (insn), 0),
-		  REG_P (r0))
-	      && (link = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0
-	      && XEXP (link, 0) != 0
-	      && NONJUMP_INSN_P (XEXP (link, 0))
-	      && (set = single_set (XEXP (link, 0))) != 0
-	      && SET_DEST (set) == r0 && SET_SRC (set) == r0
-	      && (note = find_reg_note (XEXP (link, 0), REG_EQUAL,
-					NULL_RTX)) != 0)
-	    {
-	      if (r1 = XEXP (note, 0), REG_P (r1)
-		  /* Check that we have such a sequence.  */
-		  && no_conflict_p (insn, r0, r1))
-		win = combine_regs (r1, r0, 1, insn_number, insn, 1);
-	      else if (GET_RTX_FORMAT (GET_CODE (XEXP (note, 0)))[0] == 'e'
-		       && (r1 = XEXP (XEXP (note, 0), 0),
-			   REG_P (r1) || GET_CODE (r1) == SUBREG)
-		       && no_conflict_p (insn, r0, r1))
-		win = combine_regs (r1, r0, 0, insn_number, insn, 1);
-
-	      /* Here we care if the operation to be computed is
-		 commutative.  */
-	      else if (COMMUTATIVE_P (XEXP (note, 0))
-		       && (r1 = XEXP (XEXP (note, 0), 1),
-			   (REG_P (r1) || GET_CODE (r1) == SUBREG))
-		       && no_conflict_p (insn, r0, r1))
-		win = combine_regs (r1, r0, 0, insn_number, insn, 1);
-
-	      /* If we did combine something, show the register number
-		 in question so that we know to ignore its death.  */
-	      if (win)
-		no_conflict_combined_regno = REGNO (r1);
 	    }
 
 	  /* If registers were just tied, set COMBINED_REGNO
@@ -1502,16 +1450,12 @@ block_alloc (int b)
 	      combined_regno = REGNO (r1);
 	    }
 
-	  /* Mark the death of everything that dies in this instruction,
-	     except for anything that was just combined.  */
+	  /* Mark the death of everything that dies in this instruction.  */
 
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) == REG_DEAD
 		&& REG_P (XEXP (link, 0))
-		&& combined_regno != (int) REGNO (XEXP (link, 0))
-		&& (no_conflict_combined_regno != (int) REGNO (XEXP (link, 0))
-		    || ! find_reg_note (insn, REG_NO_CONFLICT,
-					XEXP (link, 0))))
+		&& combined_regno != (int) REGNO (XEXP (link, 0)))
 	      wipe_dead_reg (XEXP (link, 0), 0);
 
 	  /* Allocate qty numbers for all registers local to this block
@@ -1530,14 +1474,6 @@ block_alloc (int b)
 	    if (REG_NOTE_KIND (link) == REG_UNUSED
 		&& REG_P (XEXP (link, 0)))
 	      wipe_dead_reg (XEXP (link, 0), 1);
-
-	  /* If this is an insn that has a REG_RETVAL note pointing at a
-	     CLOBBER insn, we have reached the end of a REG_NO_CONFLICT
-	     block, so clear any register number that combined within it.  */
-	  if ((note = find_reg_note (insn, REG_RETVAL, NULL_RTX)) != 0
-	      && NONJUMP_INSN_P (XEXP (note, 0))
-	      && GET_CODE (PATTERN (XEXP (note, 0))) == CLOBBER)
-	    no_conflict_combined_regno = -1;
 	}
 
       /* Set the registers live after INSN_NUMBER.  Note that we never
@@ -1833,10 +1769,6 @@ qty_sugg_compare_1 (const void *q1p, const void *q2p)
    If we really combined them, we could lose if the pseudo lives
    across an insn that clobbers the hard reg (eg, movmem).
 
-   ALREADY_DEAD is nonzero if USEDREG is known to be dead even though
-   there is no REG_DEAD note on INSN.  This occurs during the processing
-   of REG_NO_CONFLICT blocks.
-
    MAY_SAVE_COPY is nonzero if this insn is simply copying USEDREG to
    SETREG or if the input and output must share a register.
    In that case, we record a hard reg suggestion in QTY_PHYS_COPY_SUGG.
@@ -1845,7 +1777,7 @@ qty_sugg_compare_1 (const void *q1p, const void *q2p)
 
 static int
 combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
-	      rtx insn, int already_dead)
+	      rtx insn)
 {
   int ureg, sreg;
   int offset = 0;
@@ -1935,11 +1867,6 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
 	  && usize < qty[reg_qty[ureg]].size)
       /* Can't combine if SREG is not a register we can allocate.  */
       || (sreg >= FIRST_PSEUDO_REGISTER && reg_qty[sreg] == -1)
-      /* Don't combine with a pseudo mentioned in a REG_NO_CONFLICT note.
-	 These have already been taken care of.  This probably wouldn't
-	 combine anyway, but don't take any chances.  */
-      || (ureg >= FIRST_PSEUDO_REGISTER
-	  && find_reg_note (insn, REG_NO_CONFLICT, usedreg))
       /* Don't tie something to itself.  In most cases it would make no
 	 difference, but it would screw up if the reg being tied to itself
 	 also dies in this insn.  */
@@ -2015,7 +1942,7 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
      if this is the last use of UREG, provided the classes they want
      are compatible.  */
 
-  if ((already_dead || find_regno_note (insn, REG_DEAD, ureg))
+  if (find_regno_note (insn, REG_DEAD, ureg)
       && reg_meets_class_p (sreg, qty[reg_qty[ureg]].min_class))
     {
       /* Add SREG to UREG's quantity.  */
@@ -2393,51 +2320,6 @@ post_mark_life (int regno, enum machine_mode mode, int life, int birth,
 	AND_COMPL_HARD_REG_SET (regs_live_at[birth], this_reg);
 	birth++;
       }
-}
-
-/* INSN is the CLOBBER insn that starts a REG_NO_NOCONFLICT block, R0
-   is the register being clobbered, and R1 is a register being used in
-   the equivalent expression.
-
-   If R1 dies in the block and has a REG_NO_CONFLICT note on every insn
-   in which it is used, return 1.
-
-   Otherwise, return 0.  */
-
-static int
-no_conflict_p (rtx insn, rtx r0 ATTRIBUTE_UNUSED, rtx r1)
-{
-  int ok = 0;
-  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-  rtx p, last;
-
-  /* If R1 is a hard register, return 0 since we handle this case
-     when we scan the insns that actually use it.  */
-
-  if (note == 0
-      || (REG_P (r1) && REGNO (r1) < FIRST_PSEUDO_REGISTER)
-      || (GET_CODE (r1) == SUBREG && REG_P (SUBREG_REG (r1))
-	  && REGNO (SUBREG_REG (r1)) < FIRST_PSEUDO_REGISTER))
-    return 0;
-
-  last = XEXP (note, 0);
-
-  for (p = NEXT_INSN (insn); p && p != last; p = NEXT_INSN (p))
-    if (INSN_P (p))
-      {
-	if (find_reg_note (p, REG_DEAD, r1))
-	  ok = 1;
-
-	/* There must be a REG_NO_CONFLICT note on every insn, otherwise
-	   some earlier optimization pass has inserted instructions into
-	   the sequence, and it is not safe to perform this optimization.
-	   Note that emit_no_conflict_block always ensures that this is
-	   true when these sequences are created.  */
-	if (! find_reg_note (p, REG_NO_CONFLICT, r1))
-	  return 0;
-      }
-
-  return ok;
 }
 
 /* Return the number of alternatives for which the constraint string P

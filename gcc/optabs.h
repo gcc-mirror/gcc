@@ -710,10 +710,6 @@ extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
    REG_LIBCALL_ID notes to all insns in block.  */
 extern void maybe_encapsulate_block (rtx, rtx, rtx);
 
-/* Emit code to perform a series of operations on a multi-word quantity, one
-   word at a time.  */
-extern rtx emit_no_conflict_block (rtx, rtx, rtx, rtx, rtx);
-
 /* Emit one rtl insn to compare two rtx's.  */
 extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
 			   int);

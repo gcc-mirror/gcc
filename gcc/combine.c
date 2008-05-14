@@ -1653,7 +1653,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
   /* Don't eliminate a store in the stack pointer.  */
   if (dest == stack_pointer_rtx
       /* Don't combine with an insn that sets a register to itself if it has
-	 a REG_EQUAL note.  This may be part of a REG_NO_CONFLICT sequence.  */
+	 a REG_EQUAL note.  This may be part of a LIBCALL sequence.  */
       || (rtx_equal_p (src, dest) && find_reg_note (insn, REG_EQUAL, NULL_RTX))
       /* Can't merge an ASM_OPERANDS.  */
       || GET_CODE (src) == ASM_OPERANDS
@@ -1696,10 +1696,6 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	       && use_crosses_set_p (src, DF_INSN_LUID (insn)))
 	      || (GET_CODE (src) == ASM_OPERANDS && MEM_VOLATILE_P (src))
 	      || GET_CODE (src) == UNSPEC_VOLATILE))
-      /* If there is a REG_NO_CONFLICT note for DEST in I3 or SUCC, we get
-	 better register allocation by not doing the combine.  */
-      || find_reg_note (i3, REG_NO_CONFLICT, dest)
-      || (succ && find_reg_note (succ, REG_NO_CONFLICT, dest))
       /* Don't combine across a CALL_INSN, because that would possibly
 	 change whether the life span of some REGs crosses calls or not,
 	 and it is a pain to update that information.
@@ -12460,7 +12456,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  break;
 
 	case REG_INC:
-	case REG_NO_CONFLICT:
 	  /* These notes say something about how a register is used.  They must
 	     be present on any use of the register in I2 or I3.  */
 	  if (reg_mentioned_p (XEXP (note, 0), PATTERN (i3)))

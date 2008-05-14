@@ -547,9 +547,7 @@
      gcc.c-torture/execute/961213-1.c shows that CSE2 gets confused by the
      resulting subreg sets when using the construct from mcore (as of FSF
      CVS, version -r 1.5), and it believes that the high part (the last one
-     emitted) is the final value.  This construct from romp seems more
-     robust, especially considering the head comments from
-     emit_no_conflict_block.  */
+     emitted) is the final value.  */
   if ((CONST_INT_P (operands[1]) || GET_CODE (operands[1]) == CONST_DOUBLE)
       && ! reload_completed
       && ! reload_in_progress)
@@ -566,7 +564,7 @@
       insns = get_insns ();
       end_sequence ();
 
-      emit_no_conflict_block (insns, op0, op1, 0, op1);
+      emit_insn (insns);
       DONE;
     }
 })

@@ -625,8 +625,7 @@ convert_move (rtx to, rtx from, int unsignedp)
       insns = get_insns ();
       end_sequence ();
 
-      emit_no_conflict_block (insns, to, from, NULL_RTX,
-			      gen_rtx_fmt_e (equiv_code, to_mode, copy_rtx (from)));
+      emit_insn (insns);
       return;
     }
 

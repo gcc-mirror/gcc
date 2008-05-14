@@ -76,10 +76,6 @@ REG_NOTE (LIBCALL)
    will never be added to any instructions.  */
 REG_NOTE (NONNEG)
 
-/* There is no conflict *after this insn* between the register in the
-   note and the destination of this insn.  */
-REG_NOTE (NO_CONFLICT)
-
 /* Identifies a register set in this insn and never used.  */
 REG_NOTE (UNUSED)
 
