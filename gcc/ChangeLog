@@ -1,3 +1,11 @@
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+
+	PR target/36224
+	* config/i386/sse.md (vec_widen_smult_hi_v4si): Delete, using
+	unsigned multiply gives the wrong value when doing widening
+	multiplies.
+	(vec_widen_smult_lo_v4si): Ditto.
+
 2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* optabs.c (prepare_cmp_insn): Changed LCT_PURE_MAKE_BLOCK to

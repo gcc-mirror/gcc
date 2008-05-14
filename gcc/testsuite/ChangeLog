@@ -1,3 +1,8 @@
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+
+	PR target/36224
+	* gcc.dg/pr36224.c: New file.
+
 2008-05-14  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/blkextract_from_reg.adb: New test.
