@@ -7800,11 +7800,17 @@ sparc_profile_hook (int labelno)
   char buf[32];
   rtx lab, fun;
 
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-  lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
   fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_FUNCTION);
-
-  emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
+  if (NO_PROFILE_COUNTERS)
+    {
+      emit_library_call (fun, LCT_NORMAL, VOIDmode, 0);
+    }
+  else
+    {
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+      lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
+    }
 }
 
 #ifdef OBJECT_FORMAT_ELF

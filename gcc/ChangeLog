@@ -1,3 +1,11 @@
+2008-05-14  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.c (sparc_profile_hook): If
+	NO_PROFILE_COUNTERS, don't generate and pass a label
+	into mcount.
+	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Define as 1.
+	* config/sparc/linux64.h (NO_PROFILE_COUNTERS): Likewise.
+
 2008-05-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* cse.c (cse_cc_succs): Invoke delete_insn_and_edges.

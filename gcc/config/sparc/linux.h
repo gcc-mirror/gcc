@@ -175,3 +175,6 @@ do {									\
 
 /* Define if long doubles should be mangled as 'g'.  */
 #define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
+
+/* We use glibc _mcount for profiling.  */
+#define NO_PROFILE_COUNTERS	1
