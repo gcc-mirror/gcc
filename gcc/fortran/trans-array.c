@@ -3083,6 +3083,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 				 info->start[n]);
 	      tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type, tmp,
 				 info->stride[n]);
+	      tmp = fold_build2 (MAX_EXPR, gfc_array_index_type, tmp,
+				 build_int_cst (gfc_array_index_type, 0));
 	      /* We remember the size of the first section, and check all the
 	         others against this.  */
 	      if (size[n])
@@ -3435,8 +3437,10 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	     for (i = 0; i<=last; i++){...};  */
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			     loop->to[n], loop->from[n]);
-	  tmp = fold_build2 (TRUNC_DIV_EXPR, gfc_array_index_type, 
+	  tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type, 
 			     tmp, info->stride[n]);
+	  tmp = fold_build2 (MAX_EXPR, gfc_array_index_type, tmp,
+			     build_int_cst (gfc_array_index_type, -1));
 	  loop->to[n] = gfc_evaluate_now (tmp, &loop->pre);
 	  /* Make the loop variable start at 0.  */
 	  loop->from[n] = gfc_index_zero_node;

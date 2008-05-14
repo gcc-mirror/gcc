@@ -1,5 +1,12 @@
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/35682
+	* trans-array.c (gfc_conv_ss_startstride): Any negative size is
+	the same as zero size.
+	(gfc_conv_loop_setup): Fix size calculation.
+
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/35685
 	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Correctly
 	handle zero-size sections.
