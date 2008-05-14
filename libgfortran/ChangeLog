@@ -1,3 +1,20 @@
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (gfc_char4_t): New type.
+	(GFC_SIZE_OF_CHAR_KIND): New macro.
+	(compare_string): Adjust prototype.
+	(compare_string_char4): New prototype.
+	* gfortran.map (GFORTRAN_1.1): Add _gfortran_adjustl_char4,
+	_gfortran_adjustr_char4, _gfortran_compare_string_char4,
+	_gfortran_concat_string_char4, _gfortran_string_index_char4,
+	_gfortran_string_len_trim_char4, _gfortran_string_minmax_char4,
+	_gfortran_string_scan_char4, _gfortran_string_trim_char4 and
+	_gfortran_string_verify_char4.
+	* intrinsics/string_intrinsics_inc.c: New file from content of
+	string_intrinsics.c with types replaced by macros.
+	* intrinsics/string_intrinsics.c: Move content to
+	string_intrinsics_inc.c.
+
 2008-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36202
