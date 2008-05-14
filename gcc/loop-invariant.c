@@ -797,8 +797,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 
   /* Until we get rid of LIBCALLS.  */
   if (find_reg_note (insn, REG_RETVAL, NULL_RTX)
-      || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
-      || find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
+      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
     return;
 
 #ifdef HAVE_cc0

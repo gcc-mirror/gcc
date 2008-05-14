@@ -6059,8 +6059,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		      else
 			no_conflict = -1;
 		    }
-		  else if (find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
-		    no_conflict = 1;
 		}
 
 	      cse_insn (insn, libcall_insn);

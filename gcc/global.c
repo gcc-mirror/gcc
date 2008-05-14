@@ -131,31 +131,6 @@ static int local_reg_live_length[FIRST_PSEUDO_REGISTER];
 
 #define SET_REGBIT(TABLE, I, J)  SET_HARD_REG_BIT (allocno[I].TABLE, J)
 
-/* This is turned off because it doesn't work right for DImode.
-   (And it is only used for DImode, so the other cases are worthless.)
-   The problem is that it isn't true that there is NO possibility of conflict;
-   only that there is no conflict if the two pseudos get the exact same regs.
-   If they were allocated with a partial overlap, there would be a conflict.
-   We can't safely turn off the conflict unless we have another way to
-   prevent the partial overlap.
-
-   Idea: change hard_reg_conflicts so that instead of recording which
-   hard regs the allocno may not overlap, it records where the allocno
-   may not start.  Change both where it is used and where it is updated.
-   Then there is a way to record that (reg:DI 108) may start at 10
-   but not at 9 or 11.  There is still the question of how to record
-   this semi-conflict between two pseudos.  */
-#if 0
-/* Reg pairs for which conflict after the current insn
-   is inhibited by a REG_NO_CONFLICT note.
-   If the table gets full, we ignore any other notes--that is conservative.  */
-#define NUM_NO_CONFLICT_PAIRS 4
-/* Number of pairs in use in this insn.  */
-int n_no_conflict_pairs;
-static struct { int allocno1, allocno2;}
-  no_conflict_pairs[NUM_NO_CONFLICT_PAIRS];
-#endif /* 0 */
-
 /* Return true if *LOC contains an asm.  */
 
 static int

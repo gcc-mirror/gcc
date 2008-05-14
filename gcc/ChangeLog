@@ -1,3 +1,40 @@
+2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/rtl.texi: Removed reference to REG_NO_CONFLICT notes.
+	* optabs.c (expand_binop, expand_absneg_bit, expand_unop,
+	expand_copysign_bit, ): Change call to emit_no_conflict_block to
+	emit_insn and remove unneeded code to construct extra args.
+	(emit_no_conflict_block): Removed.
+	* optabls.h: (emit_no_conflict_block): Removed.
+	* cse.c (cse_extended_basic_block): Remove search for
+	REG_NO_CONFLICT note.  
+	* global.c: Removed incorrect comment added in revision 117.
+	* expr.c (convert_move): Change call to emit_no_conflict_block to
+	emit_insn.
+	* recog.c: Change comments so that they do not mention
+	REG_NO_CONFLICT.
+	* local_alloc.c (combine_regs): Removed last parameter.
+	(no_conflict_p): Removed.
+	(block_alloc): Removed note, no_conflict_combined_regno and set
+	local vars. Removed all code to process REG_NO_CONFLICT blocks.
+	(combine_regs): Removed already_dead and code to look for
+	REG_NO_CONFLICT notes.
+	* lower_subreg (remove_retval_note): Removed code to look for
+	REG_NO_CONFLICT block.
+	(resolve_reg_notes): Removed REG_NO_CONFLICT case.
+	(resolve_clobber): Remove code to process libcalls that have
+	REG_NO_CONFLICT notes.
+	* loop_invariant.c (find_invariant_insn): Removed REG_NO_CONFLICT
+	case.
+	* combine.c (can_combine_p, distribute_notes):  Removed REG_NO_CONFLICT
+	case.
+	* config/cris/cris.md (movdi pattern): Changed
+	emit_no_conflict_block to emit_insns.
+	* config/mn10300/mn10300.md (absdf2, negdf2 patterns): Ditto.
+	* config/m68k/m68k.md (negdf2, negxf2, absdf2, absxf2 patterns):
+	Ditto. 
+	* reg-notes.def (NO_CONFLICT): Removed.
+	
 2008-05-14  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_profile_hook): If

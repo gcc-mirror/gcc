@@ -3641,23 +3641,6 @@ instructions, such as the m68k dbra, can be matched.
 The @code{REG_NONNEG} note is added to insns only if the machine
 description has a @samp{decrement_and_branch_until_zero} pattern.
 
-@findex REG_NO_CONFLICT
-@item REG_NO_CONFLICT
-This insn does not cause a conflict between @var{op} and the item
-being set by this insn even though it might appear that it does.
-In other words, if the destination register and @var{op} could
-otherwise be assigned the same register, this insn does not
-prevent that assignment.
-
-Insns with this note are usually part of a block that begins with a
-@code{clobber} insn specifying a multi-word pseudo register (which will
-be the output of the block), a group of insns that each set one word of
-the value and have the @code{REG_NO_CONFLICT} note attached, and a final
-insn that copies the output to itself with an attached @code{REG_EQUAL}
-note giving the expression being computed.  This block is encapsulated
-with @code{REG_LIBCALL} and @code{REG_RETVAL} notes on the first and
-last insns, respectively.
-
 @findex REG_LABEL_OPERAND
 @item REG_LABEL_OPERAND
 This insn uses @var{op}, a @code{code_label} or a @code{note} of type
