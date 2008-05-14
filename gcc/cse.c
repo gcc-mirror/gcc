@@ -6861,7 +6861,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 				    newreg);
 	}
 
-      delete_insn (insns[i]);
+      delete_insn_and_edges (insns[i]);
     }
 
   return mode;

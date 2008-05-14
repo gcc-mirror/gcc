@@ -1,3 +1,7 @@
+2008-05-14  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* cse.c (cse_cc_succs): Invoke delete_insn_and_edges.
+
 2008-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36222
