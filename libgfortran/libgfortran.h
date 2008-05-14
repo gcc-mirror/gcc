@@ -259,8 +259,19 @@ typedef GFC_INTEGER_4 GFC_IO_INT;
    by the compiler.  */
 /* The type used of array indices, amongst other things.  */
 typedef ssize_t index_type;
+
 /* The type used for the lengths of character variables.  */
 typedef GFC_INTEGER_4 gfc_charlen_type;
+
+/* Definitions of CHARACTER data types:
+     - CHARACTER(KIND=1) corresponds to the C char type,
+     - CHARACTER(KIND=4) corresponds to an unsigned 32-bit integer.  */
+typedef GFC_UINTEGER_4 gfc_char4_t;
+
+/* Byte size of character kinds.  For the kinds currently supported, it's
+   simply equal to the kind parameter itself.  */
+#define GFC_SIZE_OF_CHAR_KIND(kind) (kind)
+
 
 /* This will be 0 on little-endian machines and one on big-endian machines.  */
 extern int l8_to_l4_offset;
@@ -1172,9 +1183,13 @@ internal_proto(spread_scalar_c16);
 
 /* string_intrinsics.c */
 
-extern int compare_string (GFC_INTEGER_4, const char *,
-			   GFC_INTEGER_4, const char *);
+extern int compare_string (gfc_charlen_type, const char *,
+			   gfc_charlen_type, const char *);
 iexport_proto(compare_string);
+
+extern int compare_string_char4 (gfc_charlen_type, const gfc_char4_t *,
+				 gfc_charlen_type, const gfc_char4_t *);
+iexport_proto(compare_string_char4);
 
 /* random.c */
 
