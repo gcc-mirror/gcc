@@ -1,3 +1,11 @@
+2008-05-14  Olivier Hainque  <hainque@adacore.com>
+	    Nicolas Roche  <roche@adacore.com>
+
+	* configure.ac: Add support for a "gcc_subdir" variable in
+	config-lang.in, to denote a subdirectory where the language/GCC
+	integration files are to be found.
+	* configure: Regenerate.
+
 2008-05-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36098
