@@ -733,7 +733,10 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
       /* Create a descriptorless array pointer.  */
       as = sym->as;
       packed = PACKED_NO;
-      if (!gfc_option.flag_repack_arrays)
+
+      /* Even when -frepack-arrays is used, symbols with TARGET attribute
+	 are not repacked.  */
+      if (!gfc_option.flag_repack_arrays || sym->attr.target)
 	{
 	  if (as->type == AS_ASSUMED_SIZE)
 	    packed = PACKED_FULL;
