@@ -313,6 +313,14 @@ dse_possible_dead_store_p (tree stmt,
       gcc_assert (*use_p != NULL_USE_OPERAND_P);
       *first_use_p = *use_p;
 
+      /* ???  If we hit a PHI_NODE we could skip to the PHI_RESULT uses.
+	 Don't bother to do that for now.  */
+      if (TREE_CODE (temp) == PHI_NODE)
+	{
+	  fail = true;
+	  break;
+	}
+
       /* In the case of memory partitions, we may get:
 
 	   # MPT.764_162 = VDEF <MPT.764_161(D)>
@@ -358,29 +366,6 @@ dse_possible_dead_store_p (tree stmt,
     {
       record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
       return false;
-    }
-
-  /* Skip through any PHI nodes we have already seen if the PHI
-     represents the only use of this store.
-
-     Note this does not handle the case where the store has
-     multiple VDEFs which all reach a set of PHI nodes in the same block.  */
-  while (*use_p != NULL_USE_OPERAND_P
-	 && TREE_CODE (*use_stmt) == PHI_NODE
-	 && bitmap_bit_p (dse_gd->stores, get_stmt_uid (*use_stmt)))
-    {
-      /* A PHI node can both define and use the same SSA_NAME if
-	 the PHI is at the top of a loop and the PHI_RESULT is
-	 a loop invariant and copies have not been fully propagated.
-
-	 The safe thing to do is exit assuming no optimization is
-	 possible.  */
-      if (SSA_NAME_DEF_STMT (PHI_RESULT (*use_stmt)) == *use_stmt)
-	return false;
-
-      /* Skip past this PHI and loop again in case we had a PHI
-	 chain.  */
-      single_imm_use (PHI_RESULT (*use_stmt), use_p, use_stmt);
     }
 
   return true;
