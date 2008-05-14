@@ -1,4 +1,4 @@
-// { dg-options "-x c -lstdc++" }
+// { dg-options "-x c -shared-libgcc -lstdc++" }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
