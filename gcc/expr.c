@@ -7739,13 +7739,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	/* If this is a constant, put it into a register if it is a legitimate
 	   constant, OFFSET is 0, and we won't try to extract outside the
 	   register (in case we were passed a partially uninitialized object
-	   or a view_conversion to a larger size).  Force the constant to
-	   memory otherwise.  */
+	   or a view_conversion to a larger size) or a BLKmode piece of it
+	   (e.g. if it is unchecked-converted to a record type in Ada).  Force
+	   the constant to memory otherwise.  */
 	if (CONSTANT_P (op0))
 	  {
 	    enum machine_mode mode = TYPE_MODE (TREE_TYPE (tem));
 	    if (mode != BLKmode && LEGITIMATE_CONSTANT_P (op0)
 		&& offset == 0
+		&& mode1 != BLKmode
 		&& bitpos + bitsize <= GET_MODE_BITSIZE (mode))
 	      op0 = force_reg (mode, op0);
 	    else
@@ -7759,8 +7761,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   for an ARRAY_RANGE_REF whose type is BLKmode.  */
 	else if (!MEM_P (op0)
 		 && (offset != 0
-		     || (bitpos + bitsize > GET_MODE_BITSIZE (GET_MODE (op0)))
-		     || (code == ARRAY_RANGE_REF && mode == BLKmode)))
+		     || mode1 == BLKmode
+		     || (bitpos + bitsize
+			 > GET_MODE_BITSIZE (GET_MODE (op0)))))
 	  {
 	    tree nt = build_qualified_type (TREE_TYPE (tem),
 					    (TYPE_QUALS (TREE_TYPE (tem))
