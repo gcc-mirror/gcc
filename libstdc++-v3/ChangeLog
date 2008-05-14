@@ -1,3 +1,13 @@
+2008-05-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/sstream: Adjust braces.
+	* include/bits/fstream.tcc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.c: Add
+	-shared-libgcc.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.c: Same.
+
+	* doc/doxygen/user.cfg.in: Remove thread include.
+	
 2008-05-13  David Daney  <ddaney@avtrex.com>
 
 	* config/cpu/mips/atomicity.h: Remove file.

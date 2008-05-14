@@ -662,21 +662,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     setbuf(char_type* __s, streamsize __n)
     {
       if (!this->is_open())
-	if (__s == 0 && __n == 0)
-	  _M_buf_size = 1;
-	else if (__s && __n > 0)
-	  {
-	    // This is implementation-defined behavior, and assumes that
-	    // an external char_type array of length __n exists and has
-	    // been pre-allocated. If this is not the case, things will
-	    // quickly blow up. When __n > 1, __n - 1 positions will be
-	    // used for the get area, __n - 1 for the put area and 1
-	    // position to host the overflow char of a full put area.
-	    // When __n == 1, 1 position will be used for the get area
-	    // and 0 for the put area, as in the unbuffered case above.
-	    _M_buf = __s;
-	    _M_buf_size = __n;
-	  }
+	{
+	  if (__s == 0 && __n == 0)
+	    _M_buf_size = 1;
+	  else if (__s && __n > 0)
+	    {
+	      // This is implementation-defined behavior, and assumes that
+	      // an external char_type array of length __n exists and has
+	      // been pre-allocated. If this is not the case, things will
+	      // quickly blow up. When __n > 1, __n - 1 positions will be
+	      // used for the get area, __n - 1 for the put area and 1
+	      // position to host the overflow char of a full put area.
+	      // When __n == 1, 1 position will be used for the get area
+	      // and 0 for the put area, as in the unbuffered case above.
+	      _M_buf = __s;
+	      _M_buf_size = __n;
+	    }
+	}
       return this;
     }
 

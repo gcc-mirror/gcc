@@ -236,10 +236,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	const bool __testin = _M_mode & ios_base::in;
 	if (this->pptr() && this->pptr() > this->egptr())
-	  if (__testin)
-	    this->setg(this->eback(), this->gptr(), this->pptr());
-	  else
-	    this->setg(this->pptr(), this->pptr(), this->pptr());
+	  {
+	    if (__testin)
+	      this->setg(this->eback(), this->gptr(), this->pptr());
+	    else
+	      this->setg(this->pptr(), this->pptr(), this->pptr());
+	  }
       }
     };
 
