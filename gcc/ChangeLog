@@ -1,3 +1,8 @@
+2008-05-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Remove dead code.
+	Make sure to register the store if the use is a PHI_NODE.
+
 2008-05-14  Olivier Hainque  <hainque@adacore.com>
 
 	* expr.c (expand_expr_real_1) <normal_inner_ref>: Force op0 to
