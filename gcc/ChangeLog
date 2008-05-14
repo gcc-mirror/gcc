@@ -1,3 +1,7 @@
+2008-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*sse4_1_pinsrq): Make it 64bit only.
+
 2008-05-14  Michael Meissner  <michael.meissner@amd.com>
 	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
