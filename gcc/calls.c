@@ -3495,6 +3495,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      end_sequence ();
 	      emit_insn (insns);
 	    }
+	  flags &= ~ECF_LIBCALL_BLOCK;
 
 	  /* If this was a CONST function, it is now PURE since it now
 	     reads memory.  */
