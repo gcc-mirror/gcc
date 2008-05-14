@@ -2483,3 +2483,6 @@ extern int sparc_indent_opcode;
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 12
+
+/* We use gcc _mcount for profiling.  */
+#define NO_PROFILE_COUNTERS 0

@@ -1,3 +1,7 @@
+2008-05-14  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/sparc/sparc.h (NO_PROFILE_COUNTERS): Define as 0.
+
 2008-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (*sse4_1_pinsrq): Make it 64bit only.
@@ -241,7 +245,7 @@
 	* config/m68k/m68k.md (negdf2, negxf2, absdf2, absxf2 patterns):
 	Ditto. 
 	* reg-notes.def (NO_CONFLICT): Removed.
-	
+
 2008-05-14  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_profile_hook): If
