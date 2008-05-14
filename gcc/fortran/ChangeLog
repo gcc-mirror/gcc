@@ -1,5 +1,11 @@
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/36059
+	* trans-decl.c (gfc_build_dummy_array_decl): Don't repack
+	arrays that have the TARGET attribute.
+
+2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/36186
 	* simplify.c (only_convert_cmplx_boz): New function.
 	(gfc_simplify_cmplx, gfc_simplify_complex, gfc_simplify_dcmplx):
