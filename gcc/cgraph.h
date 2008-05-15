@@ -418,6 +418,7 @@ varpool_next_static_initializer (struct varpool_node *node)
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
 void cgraph_mark_inline_edge (struct cgraph_edge *, bool);
 bool cgraph_default_inline_p (struct cgraph_node *, const char **);
+unsigned int compute_inline_parameters (struct cgraph_node *);
 
 
 /* Create a new static variable of type TYPE.  */

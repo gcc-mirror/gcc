@@ -1,3 +1,24 @@
+2008-05-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* cgraph.h (compute_inline_parameters): Made public.
+	* tree-pass.h (ipa_opt_pass): Removed function_generate_summary,
+	variable_generate_summary, function_write_summary,
+	variable_write_summary, variable_read_summary.  Added 
+	generate_summary, write_summary, read_summary.
+	* cgraphunit.c (cgraph_process_new_functions): Changed call from
+	pass_ipa_inline.function_generate_summary, to
+	compute_inline_parameters. 
+	* ipa-inline.c (compute_inline_parameters): Made public and added
+	node parameter.
+	(compute_inline_parameters_for_current): New function.
+	(pass_inline_param): Now calls
+	compute_inline_parameters_for_current.
+	(inline_generate_summary): Removed parameter and made to loop over
+	all cgraph nodes.
+	(pass_ipa_inline): Updated for new IPA_PASS structure.
+	* passes.c (execute_ipa_summary_passes): Now is called once per
+	pass rather than once per node*pass.
+	
 2008-05-15  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_base_arch_macro, avr_have_movw_lpmx_p, 
