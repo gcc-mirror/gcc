@@ -4723,31 +4723,31 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Validate_Unchecked_Conversion:
       /* If the result is a pointer type, see if we are either converting
-         from a non-pointer or from a pointer to a type with a different
- 	 alias set and warn if so.  If the result defined in the same unit as
- 	 this unchecked conversion, we can allow this because we can know to
- 	 make that type have alias set 0.  */
+	 from a non-pointer or from a pointer to a type with a different
+	 alias set and warn if so.  If the result defined in the same unit as
+	 this unchecked conversion, we can allow this because we can know to
+	 make that type have alias set 0.  */
       {
- 	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
- 	tree gnu_target_type = gnat_to_gnu_type (Target_Type (gnat_node));
+	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
+	tree gnu_target_type = gnat_to_gnu_type (Target_Type (gnat_node));
 
- 	if (POINTER_TYPE_P (gnu_target_type)
- 	    && !In_Same_Source_Unit (Target_Type (gnat_node), gnat_node)
-            && get_alias_set (TREE_TYPE (gnu_target_type)) != 0
-            && !No_Strict_Aliasing (Underlying_Type (Target_Type (gnat_node)))
- 	    && (!POINTER_TYPE_P (gnu_source_type)
- 		|| (get_alias_set (TREE_TYPE (gnu_source_type))
- 		    != get_alias_set (TREE_TYPE (gnu_target_type)))))
- 	  {
-            post_error_ne
-              ("?possible aliasing problem for type&",
-               gnat_node, Target_Type (gnat_node));
-	    post_error
-              ("\\?use -fno-strict-aliasing switch for references",
-               gnat_node);
+	if (POINTER_TYPE_P (gnu_target_type)
+	    && !In_Same_Source_Unit (Target_Type (gnat_node), gnat_node)
+	    && get_alias_set (TREE_TYPE (gnu_target_type)) != 0
+	    && !No_Strict_Aliasing (Underlying_Type (Target_Type (gnat_node)))
+	    && (!POINTER_TYPE_P (gnu_source_type)
+		|| (get_alias_set (TREE_TYPE (gnu_source_type))
+		    != get_alias_set (TREE_TYPE (gnu_target_type)))))
+	  {
 	    post_error_ne
-              ("\\?or use `pragma No_Strict_Aliasing (&);`",
-               gnat_node, Target_Type (gnat_node));
+	      ("?possible aliasing problem for type&",
+	       gnat_node, Target_Type (gnat_node));
+	    post_error
+	      ("\\?use -fno-strict-aliasing switch for references",
+	       gnat_node);
+	    post_error_ne
+	      ("\\?or use `pragma No_Strict_Aliasing (&);`",
+	       gnat_node, Target_Type (gnat_node));
 	  }
 
 	/* The No_Strict_Aliasing flag is not propagated to the back-end for
@@ -5000,7 +5000,7 @@ void
 add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
   tree type = TREE_TYPE (gnu_decl);
-  tree gnu_stmt, gnu_init, gnu_lhs;
+  tree gnu_stmt, gnu_init, t;
 
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
@@ -5019,7 +5019,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
   if (global_bindings_p ())
     {
       /* Mark everything as used to prevent node sharing with subprograms.
-	 Note that walk_tree knows how to handle TYPE_DECL, but neither
+	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
 	 VAR_DECL nor CONST_DECL.  This appears to be somewhat arbitrary.  */
       walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
       if (TREE_CODE (gnu_decl) == VAR_DECL
@@ -5029,6 +5029,13 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  walk_tree (&DECL_SIZE_UNIT (gnu_decl), mark_visited, NULL, NULL);
 	  walk_tree (&DECL_INITIAL (gnu_decl), mark_visited, NULL, NULL);
 	}
+      /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
+      if (TREE_CODE (gnu_decl) == TYPE_DECL
+	  && (TREE_CODE (type) == RECORD_TYPE
+	      || TREE_CODE (type) == UNION_TYPE
+	      || TREE_CODE (type) == QUAL_UNION_TYPE)
+	  && (t = TYPE_ADA_SIZE (type)))
+	walk_tree (&t, mark_visited, NULL, NULL);
     }
   else
     add_stmt_with_node (gnu_stmt, gnat_entity);
@@ -5045,11 +5052,11 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
       /* If GNU_DECL has a padded type, convert it to the unpadded
 	 type so the assignment is done properly.  */
       if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
-	gnu_lhs = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
+	t = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
       else
-	gnu_lhs = gnu_decl;
+	t = gnu_decl;
 
-      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_init);
+      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, t, gnu_init);
 
       DECL_INITIAL (gnu_decl) = NULL_TREE;
       if (TREE_READONLY (gnu_decl))

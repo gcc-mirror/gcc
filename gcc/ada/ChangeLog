@@ -1,3 +1,9 @@
+2008-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (add_decl_expr): At toplevel, mark the TYPE_ADA_SIZE field
+	of records and unions.
+	(gnat_to_gnu) <N_Validate_Unchecked_Conversion>: Fix formatting.
+
 2008-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/24880
