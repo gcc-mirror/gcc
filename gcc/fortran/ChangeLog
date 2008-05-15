@@ -1,3 +1,23 @@
+2008-05-15  Sa Liu  <saliu@de.ibm.com>
+
+	* iso-c-binding.def: Add standard parameter to macro NAMED_INTCST.
+	All existing NAMED_INTCST definitions has standard GFC_STD_F2003,
+	c_int128_t, c_int_least128_t and c_int_fast128_t are added as
+	GNU extensions.
+	* iso-fortran-evn.def: Add standard parameter GFC_STD_F2003
+	to macro NAMED_INTCST.
+	* symbol.c (std_for_isocbinding_symbol): New helper function to 
+	return the standard that supports this isocbinding symbol.
+	(generate_isocbinding_symbol): Do not generate GNU extension symbols
+	if std=f2003. Add new parameter to NAMED_INTCST.
+	* module.c (use_iso_fortran_env_module): Add new parameter to
+	NAMED_INTCST and new field standard to struct intmod_sym.
+	* gfortran.h: Add new parameter to NAMED_INTCST.
+	* trans-types.c (init_c_interop_kinds): Add new parameter to 
+	NAMED_INTCST.
+	* intrinsic.texi: Documented new types C_INT128_T, C_INT_LEASE128_T
+	and C_INT_FAST128_T.
+
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36059
