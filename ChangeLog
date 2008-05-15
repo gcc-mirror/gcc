@@ -1,3 +1,7 @@
+2008-05-15  Janus Weil  <janus@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-05-14  Rafael Espindola  <espindola@google.com>
 
 	* config-ml.in: don't handle --enable-shared and --enable-static.
