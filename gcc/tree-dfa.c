@@ -996,10 +996,12 @@ refs_may_alias_p (tree ref1, tree ref2)
 
   gcc_assert ((SSA_VAR_P (ref1)
 	       || handled_component_p (ref1)
-	       || TREE_CODE (ref1) == INDIRECT_REF)
+	       || INDIRECT_REF_P (ref1)
+	       || TREE_CODE (ref1) == TARGET_MEM_REF)
 	      && (SSA_VAR_P (ref2)
 		  || handled_component_p (ref2)
-		  || TREE_CODE (ref2) == INDIRECT_REF));
+		  || INDIRECT_REF_P (ref2)
+		  || TREE_CODE (ref2) == TARGET_MEM_REF));
 
   /* Defer to TBAA if possible.  */
   if (flag_strict_aliasing

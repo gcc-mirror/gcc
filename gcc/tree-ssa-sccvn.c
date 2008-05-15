@@ -504,6 +504,27 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       return;
     }
 
+  if (TREE_CODE (ref) == TARGET_MEM_REF)
+    {
+      vn_reference_op_s temp;
+
+      memset (&temp, 0, sizeof (temp));
+      /* We do not care for spurious type qualifications.  */
+      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
+      temp.opcode = TREE_CODE (ref);
+      temp.op0 = TMR_SYMBOL (ref) ? TMR_SYMBOL (ref) : TMR_BASE (ref);
+      temp.op1 = TMR_INDEX (ref);
+      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+
+      memset (&temp, 0, sizeof (temp));
+      temp.type = NULL_TREE;
+      temp.opcode = TREE_CODE (ref);
+      temp.op0 = TMR_STEP (ref);
+      temp.op1 = TMR_OFFSET (ref);
+      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      return;
+    }
+
   /* For non-calls, store the information that makes up the address.  */
 
   while (ref)
