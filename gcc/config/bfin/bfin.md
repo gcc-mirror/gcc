@@ -4253,3 +4253,13 @@
    %0 = %1 >> %N2 (V)%!"
   [(set_attr "type" "dsp32")])
 
+;; Load without alignment exception (masking off low bits)
+
+(define_insn "loadbytes"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(mem:SI (and:SI (match_operand:SI 1 "register_operand" "b")
+			(const_int -4))))]
+  ""
+  "DISALGNEXCPT || %0 = [%1];"
+  [(set_attr "type" "mcld")
+   (set_attr "length" "8")])
