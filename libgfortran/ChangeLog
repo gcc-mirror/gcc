@@ -1,3 +1,70 @@
+2008-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/25561
+	* Makefile.am: Add fbuf.c to gfor_io_src.
+	* Makefile.in: Regenerate.
+	* io/io.h (read_block): Remove.
+	(struct stream): Remove alloc_r_at function pointer.
+	(salloc_r): Remove.
+	(salloc_r_at): Remove.
+	(salloc_w_at): Remove.
+	(salloc_w): Remove offset argument.
+	(struct fbuf): New struct for format buffer.
+	(struct gfc_unit): Add fbuf.
+	(read_block_form): New prototype.
+	(fbuf_init): Likewise.
+	(fbuf_destroy): Likewise.
+	(fbuf_reset): Likewise.
+	(fbuf_alloc): Likewise.
+	(fbuf_flush): Likewise.
+	(fbuf_seek): Likewise.
+	* io/file_pos.c (formatted_backspace): Change to use sread.
+	(unformatted_backspace): Likewise.
+	(st_backspace): Flush format buffer.
+	(st_rewind): Likewise.
+	* io/list_read.c (next_char): Likewise.
+	(nml_query): Tidying, flush format buffer.
+	* io/open.c (new_unit): Init format buffer.
+	* io/read.c (read_l): Change to use read_block_form.
+	(read_a): Likewise.
+	(read_decimal): Likewise.
+	(read_radix): Likewise.
+	(read_f): Likewise.
+	(read_x): Empty reads also for stream I/O.
+	* io/transfer.c (read_sf): Change to use sread.
+	(read_block): Rename to read_block_form, change prototype, use sread.
+	(read_block_direct): Don't seek stream files.
+	(write_block): Change to use fbuf if external file, don't seek stream
+	files.
+	(write_buf): Don't seek stream files.
+	(formatted_transfer_scalar): Use fbuf for external files.
+	(us_read): Change to use sread.
+	(pre_position): Do nothing for stream I/O.
+	(data_transfer_init): Flush fbuf when switching from write to read, if
+	POS is specified, seek stream file to correct offset.
+	(skip_record): Change to use sread.
+	(min_off): New function.
+	(next_record_r): Change to use sread.
+	(next_record_w): Change to use sset/sseek, flush fbuf.
+	(finalize_transfer): Flush fbuf.
+	* io/unit.c (init_units): Init fbuf for stdout, stderr.
+	(close_unit_1): Destroy fbuf.
+	(finish_last_advance_record): Flush fbuf, no need to seek.
+	* io/unix.c (fd_alloc_r_at): Remove unused where argument.
+	(fd_alloc_w_at): Likewise.
+	(fd_read): Remove third argument to fd_alloc_r_at.
+	(fd_write): Remove third argument to fd_alloc_w_at.
+	(fd_sset): Likewise.
+	(fd_open): Don't set alloc_r_at.
+	(mem_alloc_r_at): Remove unused where argument.
+	(mem_alloc_w_at): Likewise.
+	(mem_read): Don't incorrectly return previous errno, remove unused
+	third argument to alloc function.
+	(mem_write): Likewise.
+	(mem_set): Likewise.
+	(open_internal): Don't set alloc_r_at pointer.
+	* io/fbuf.c: New file.
+
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libgfortran.h (gfc_char4_t): New type.
