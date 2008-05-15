@@ -2737,7 +2737,7 @@ arm_apply_result_size (void)
 /* Decide whether a type should be returned in memory (true)
    or in a register (false).  This is called by the macro
    TARGET_RETURN_IN_MEMORY.  */
-int
+bool
 arm_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size;

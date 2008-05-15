@@ -1,13 +1,19 @@
+2008-05-15  Diego Novillo  <dnovillo@google.com>
+
+	* config/arm/arm.c (arm_return_in_memory): Fix return
+	type.
+	* config/arm/arm-protos.h (arm_return_in_memory): Likewise.
+
 2008-05-15  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194
-        * combine.c (check_conversion): Rename back to check_promoted_subreg. 
-        Don't call record_truncated_value from here. 
-        (record_truncated_value): Turn it into a for_each_rtx callback. 
-        (record_truncated_values): New function. 
-        (combine_instructions): Call note_uses with 
-        record_truncated_values.  Change name of check_conversion to 
-        check_promoted_subreg. 
+	* combine.c (check_conversion): Rename back to check_promoted_subreg. 
+	Don't call record_truncated_value from here. 
+	(record_truncated_value): Turn it into a for_each_rtx callback. 
+	(record_truncated_values): New function. 
+	(combine_instructions): Call note_uses with 
+	record_truncated_values.  Change name of check_conversion to 
+	check_promoted_subreg. 
 
 2008-05-15  Janis Johnson  <janis187@us.ibm.com>
 
