@@ -1,3 +1,17 @@
+2008-05-15  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_base_arch_macro, avr_have_movw_lpmx_p, 
+	avr_have_mul_p, avr_asm_only_p): Remove variables.
+	(avr_override_options): Remove initialization of removed variables.
+	(avr_file_start):  Convert removed variables to fields of 
+	'struct base_arch_s *avr_current_arch'. 
+	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): (Ditto.).
+	(AVR_HAVE_MUL): (Ditto.).
+	(AVR_HAVE_MOVW): (Ditto.).
+	(AVR_HAVE_LPMX): (Ditto.). 
+	(avr_base_arch_macro, avr_have_movw_lpmx_p, avr_have_mul_p, 
+	avr_asm_only_p): Remove declaration.
+
 2008-05-15  Diego Novillo  <dnovillo@google.com>
 
 	* config/arm/arm.c (arm_return_in_memory): Fix return

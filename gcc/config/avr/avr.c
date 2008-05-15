@@ -97,22 +97,12 @@ static const char *const avr_regnames[] = REGISTER_NAMES;
 static int last_insn_address = 0;
 
 /* Preprocessor macros to define depending on MCU type.  */
-const char *avr_base_arch_macro;
 const char *avr_extra_arch_macro;
 
 /* Current architecture.  */
 const struct base_arch_s *avr_current_arch;
 
 section *progmem_section;
-
-/* Core have 'MUL*' instructions.  */
-int avr_have_mul_p = 0;
-
-/* Assembler only.  */
-int avr_asm_only_p = 0;
-
-/* Core have 'MOVW' and 'LPM Rx,Z' instructions.  */
-int avr_have_movw_lpmx_p = 0;
 
 static const struct base_arch_s avr_arch_types[] = {
   { 1, 0, 0, 0, 0, 0, 0, 0, NULL },  /* unknown device specified */
@@ -337,7 +327,6 @@ void
 avr_override_options (void)
 {
   const struct mcu_type_s *t;
-  const struct base_arch_s *base;
 
   flag_delete_null_pointer_checks = 0;
 
@@ -354,11 +343,6 @@ avr_override_options (void)
     }
 
   avr_current_arch = &avr_arch_types[t->arch];
-  base = &avr_arch_types[t->arch];
-  avr_asm_only_p = base->asm_only;
-  avr_have_mul_p = base->have_mul;
-  avr_have_movw_lpmx_p = base->have_movw_lpmx;
-  avr_base_arch_macro = base->macro;
   avr_extra_arch_macro = t->macro;
 
   if (optimize && !TARGET_NO_TABLEJUMP)
@@ -4812,7 +4796,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 static void
 avr_file_start (void)
 {
-  if (avr_asm_only_p)
+  if (avr_current_arch->asm_only)
     error ("MCU %qs supported for assembler only", avr_mcu_name);
 
   default_file_start ();
