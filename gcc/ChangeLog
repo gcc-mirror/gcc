@@ -1,3 +1,15 @@
+2008-05-15  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*vec_concatv2sf_sse4_1): New insn pattern.
+	(*vec_concatv2si_sse4_1): Use vector_move_operand predicate
+	for operand 2.  Remove pinsr{q,d} with 0x0 immediate operand from
+	insn alternatives.  Add missing alternatives.
+	(*vec_concatv2di_rex64_sse4_1): Likewise.
+	(*vec_concatv2si_sse2): Use "x" register constraint instead of "Y2".
+	(*vec_concatv2di_rex64_sse): Rename from *vec_concatv2di_rex64.
+	Require TARGET_SSE.
+
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36009
@@ -71,8 +83,7 @@
 	(vrotl@var{m}3): Ditto.
 	(vrotr@var{m}3): Ditto.
 
-	* config/i386/i386.md (PPERM_SRC): Move PPERM masks here from
-	i386.c.
+	* config/i386/i386.md (PPERM_SRC): Move PPERM masks here from i386.c.
 	(PPERM_INVERT): Ditto.
 	(PPERM_REVERSE): Ditto.
 	(PPERM_REV_INV): Ditto.
@@ -122,8 +133,7 @@
 	* config/rs6000/rs6000.c (bdesc_2arg): Change the names of vector
 	shift patterns.
 
-	* config/rs6000/altivec.md (vashl<mode>3): Rename from
-	ashl<mode>3.
+	* config/rs6000/altivec.md (vashl<mode>3): Rename from ashl<mode>3.
 	(vlshr<mode>3): Rename from vlshr<mode>3.
 	(vashr<mode>3): Rename from vashr<mode>3.
 	(mulv4sf3): Change the names of vector shift patterns.
@@ -133,8 +143,7 @@
 	* config/spu/spu.c (spu_initialize_trampoline): Rename vector
 	shift insns.
 
-	* config/spu/spu-builtins.def (SI_SHLH): Rename vector shift
-	insns.
+	* config/spu/spu-builtins.def (SI_SHLH): Rename vector shift insns.
 	(SI_SHLHI): Ditto.
 	(SI_SHL): Ditto.
 	(SI_SHLI): Ditto.
@@ -176,9 +185,8 @@
 2008-05-14  Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/36224
-	* config/i386/sse.md (vec_widen_smult_hi_v4si): Delete, using
-	unsigned multiply gives the wrong value when doing widening
-	multiplies.
+	* config/i386/sse.md (vec_widen_smult_hi_v4si): Delete, using unsigned
+	multiply gives the wrong value when doing widening multiplies.
 	(vec_widen_smult_lo_v4si): Ditto.
 
 2008-05-14  Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -207,8 +215,7 @@
 2008-05-14  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* calls.c (emit_library_call_value_1): Restore code clearing
-	ECF_LIBCALL_BLOCK to ensure that we only call end_sequence
-	once.
+	ECF_LIBCALL_BLOCK to ensure that we only call end_sequence once.
 
 2008-05-14  Olivier Hainque  <hainque@adacore.com>
 	    Nicolas Roche  <roche@adacore.com>
@@ -234,7 +241,7 @@
 	(emit_no_conflict_block): Removed.
 	* optabls.h: (emit_no_conflict_block): Removed.
 	* cse.c (cse_extended_basic_block): Remove search for
-	REG_NO_CONFLICT note.  
+	REG_NO_CONFLICT note.
 	* global.c: Removed incorrect comment added in revision 117.
 	* expr.c (convert_move): Change call to emit_no_conflict_block to
 	emit_insn.
@@ -253,20 +260,19 @@
 	REG_NO_CONFLICT notes.
 	* loop_invariant.c (find_invariant_insn): Removed REG_NO_CONFLICT
 	case.
-	* combine.c (can_combine_p, distribute_notes):  Removed REG_NO_CONFLICT
-	case.
-	* config/cris/cris.md (movdi pattern): Changed
-	emit_no_conflict_block to emit_insns.
+	* combine.c (can_combine_p, distribute_notes):  Removed
+	REG_NO_CONFLICT case.
+	* config/cris/cris.md (movdi pattern): Changed emit_no_conflict_block
+	to emit_insns.
 	* config/mn10300/mn10300.md (absdf2, negdf2 patterns): Ditto.
 	* config/m68k/m68k.md (negdf2, negxf2, absdf2, absxf2 patterns):
-	Ditto. 
+	Ditto.
 	* reg-notes.def (NO_CONFLICT): Removed.
 
 2008-05-14  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.c (sparc_profile_hook): If
-	NO_PROFILE_COUNTERS, don't generate and pass a label
-	into mcount.
+	NO_PROFILE_COUNTERS, don't generate and pass a label into mcount.
 	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Define as 1.
 	* config/sparc/linux64.h (NO_PROFILE_COUNTERS): Likewise.
 
@@ -304,8 +310,8 @@
 	tree-ssanames.c.  Convert to static inline.  Call make_ssa_name_fn.
 	* omp-low.c (expand_omp_parallel):
 	* tree-flow-inline.h (redirect_edge_var_map_result):
-	* tree-ssa.c (init_tree_ssa): Add argument FN.  Use it instead of cfun.
-	Update all users.
+	* tree-ssa.c (init_tree_ssa): Add argument FN.
+	Use it instead of cfun.  Update all users.
 
 2008-05-13  Tom Tromey  <tromey@redhat.com>
 
