@@ -82,7 +82,9 @@ AH_TEMPLATE(VERSION, [Version number of package])
 # up critical shell variables.
 GLIBCXX_CONFIGURE
 
-AC_LIBTOOL_DLOPEN
+if test "x${with_newlib}" != "xyes"; then
+  AC_LIBTOOL_DLOPEN
+fi
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
