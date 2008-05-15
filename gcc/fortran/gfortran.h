@@ -556,7 +556,7 @@ init_local_integer;
 /* Used for keeping things in balanced binary trees.  */
 #define BBT_HEADER(self) int priority; struct self *left, *right
 
-#define NAMED_INTCST(a,b,c) a,
+#define NAMED_INTCST(a,b,c,d) a,
 typedef enum
 {
   ISOFORTRANENV_INVALID = -1,
@@ -566,7 +566,7 @@ typedef enum
 iso_fortran_env_symbol;
 #undef NAMED_INTCST
 
-#define NAMED_INTCST(a,b,c) a,
+#define NAMED_INTCST(a,b,c,d) a,
 #define NAMED_REALCST(a,b,c) a,
 #define NAMED_CMPXCST(a,b,c) a,
 #define NAMED_LOGCST(a,b,c) a,
