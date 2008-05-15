@@ -841,7 +841,6 @@ typedef struct {
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == REG_R0)
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
-#define TARGET_RETURN_IN_MEMORY bfin_return_in_memory
 
 /* Before the prologue, the return address is in the RETS register.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, REG_RETS)

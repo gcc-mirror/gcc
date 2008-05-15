@@ -1842,7 +1842,7 @@ bfin_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    or in a register (false).  This is called by the macro
    TARGET_RETURN_IN_MEMORY.  */
 
-int
+static bool
 bfin_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   int size = int_size_in_bytes (type);
@@ -5912,5 +5912,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM bfin_cannot_force_const_mem
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY bfin_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;
