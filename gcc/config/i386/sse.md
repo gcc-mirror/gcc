@@ -2272,7 +2272,7 @@
    punpckldq\t{%2, %0|%0, %2}
    movd\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog,sselog,ssemov,mmxcvt,mmxmov")
-   (set_attr "prefix_extra" "1,*,*,*,*")
+   (set_attr "prefix_extra" "*,1,*,*,*")
    (set_attr "mode" "V4SF,V4SF,SF,DI,DI")])
 
 ;; ??? In theory we can match memory for the MMX alternative, but allowing
