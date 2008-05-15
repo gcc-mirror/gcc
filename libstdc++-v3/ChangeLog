@@ -1,3 +1,8 @@
+2008-05-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* configure.ac: Don't check AC_LIBTOOL_DLOPEN if using newlib.
+	* configure: Regenerate.
+
 2008-05-15  Johannes Singler  <singler@ira.uka.de>
 
         * xml/manual/parallel_mode.xml:
