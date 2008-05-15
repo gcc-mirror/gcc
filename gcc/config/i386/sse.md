@@ -5044,7 +5044,7 @@
 	    (match_operand:DI 2 "nonimmediate_operand" "rm"))
 	  (match_operand:V2DI 1 "register_operand" "0")
 	  (match_operand:SI 3 "const_pow2_1_to_2_operand" "n")))]
-  "TARGET_SSE4_1"
+  "TARGET_SSE4_1 && TARGET_64BIT"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
   return "pinsrq\t{%3, %2, %0|%0, %2, %3}";
