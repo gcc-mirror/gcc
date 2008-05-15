@@ -56,8 +56,8 @@ extern const struct base_arch_s *avr_current_arch;
   do						\
     {						\
       builtin_define_std ("AVR");		\
-      if (avr_base_arch_macro)			\
-	builtin_define (avr_base_arch_macro);	\
+      if (avr_current_arch->macro)		\
+	builtin_define (avr_current_arch->macro);	\
       if (avr_extra_arch_macro)			\
 	builtin_define (avr_extra_arch_macro);	\
       if (avr_current_arch->have_elpm)		\
@@ -66,20 +66,23 @@ extern const struct base_arch_s *avr_current_arch;
 	builtin_define ("__AVR_HAVE_ELPM__");	\
       if (avr_current_arch->have_elpmx)		\
 	builtin_define ("__AVR_HAVE_ELPMX__");	\
-      if (avr_have_movw_lpmx_p)			\
-	builtin_define ("__AVR_HAVE_MOVW__");	\
-      if (avr_have_movw_lpmx_p)			\
-	builtin_define ("__AVR_HAVE_LPMX__");	\
-      if (avr_asm_only_p)			\
+      if (avr_current_arch->have_movw_lpmx)	\
+	{					\
+	  builtin_define ("__AVR_HAVE_MOVW__");	\
+	  builtin_define ("__AVR_HAVE_LPMX__");	\
+	}					\
+      if (avr_current_arch->asm_only)		\
 	builtin_define ("__AVR_ASM_ONLY__");	\
-      if (avr_have_mul_p)			\
-	builtin_define ("__AVR_ENHANCED__");	\
-      if (avr_have_mul_p)			\
-	builtin_define ("__AVR_HAVE_MUL__");	\
+      if (avr_current_arch->have_mul)		\
+	{					\
+	  builtin_define ("__AVR_ENHANCED__");	\
+	  builtin_define ("__AVR_HAVE_MUL__");	\
+ 	}					\
       if (avr_current_arch->have_jmp_call)	\
-	builtin_define ("__AVR_MEGA__");	\
-      if (avr_current_arch->have_jmp_call)	\
-	builtin_define ("__AVR_HAVE_JMP_CALL__"); \
+	{					\
+	  builtin_define ("__AVR_MEGA__");	\
+	  builtin_define ("__AVR_HAVE_JMP_CALL__");	\
+ 	}					\
       if (avr_current_arch->have_eijmp_eicall)	\
         {					\
 	  builtin_define ("__AVR_HAVE_EIJMP_EICALL__");	\
@@ -94,19 +97,16 @@ extern const struct base_arch_s *avr_current_arch;
     }						\
   while (0)
 
-extern const char *avr_base_arch_macro;
 extern const char *avr_extra_arch_macro;
-extern int avr_have_mul_p;
-extern int avr_asm_only_p;
-extern int avr_have_movw_lpmx_p;
+
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)
 extern GTY(()) section *progmem_section;
 #endif
 
 #define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call && !TARGET_SHORT_CALLS)
-#define AVR_HAVE_MUL (avr_have_mul_p)
-#define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
-#define AVR_HAVE_LPMX (avr_have_movw_lpmx_p)
+#define AVR_HAVE_MUL (avr_current_arch->have_mul)
+#define AVR_HAVE_MOVW (avr_current_arch->have_movw_lpmx)
+#define AVR_HAVE_LPMX (avr_current_arch->have_movw_lpmx)
 #define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm)
 #define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
 
