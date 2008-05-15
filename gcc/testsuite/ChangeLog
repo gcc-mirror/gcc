@@ -1,3 +1,8 @@
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34330
+	* gcc.dg/torture/pr34330.c: New testcase.
+
 2008-05-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36059
