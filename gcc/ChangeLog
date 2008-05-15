@@ -1,5 +1,15 @@
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36009
+	PR tree-optimization/36204
+	* tree-ssa-loop-im.c (tree-ssa-propagate.h): Include.
+	(determine_invariantness_stmt): Record the loop a store is
+	always executed in.
+	* Makefile.in (tree-ssa-loop-im.o): Add tree-ssa-propagate.h
+	dependency.
+
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/34330
 	* tree-ssa-alias.c (get_smt_for): Only assert that accesses
 	through the pointer will alias the SMT.

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-affine.h"
 #include "pointer-set.h"
+#include "tree-ssa-propagate.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -899,6 +900,14 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	    {
 	      maybe_never = true;
 	      outermost = NULL;
+	    }
+	  /* Make sure to note always_executed_in for stores to make
+	     store-motion work.  */
+	  else if (stmt_makes_single_store (stmt))
+	    {
+	      stmt_ann (stmt)->common.aux
+		= xcalloc (1, sizeof (struct lim_aux_data));
+	      LIM_DATA (stmt)->always_executed_in = outermost;
 	    }
 	  continue;
 	}
