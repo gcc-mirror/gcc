@@ -1,3 +1,8 @@
+2008-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Set prefix_extra
+	attribute to 1 only for insertps alternative.
+
 2008-05-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (loadbytes): New pattern.
