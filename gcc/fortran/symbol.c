@@ -3740,6 +3740,20 @@ build_formal_args (gfc_symbol *new_proc_sym,
   gfc_current_ns = parent_ns;
 }
 
+static int
+std_for_isocbinding_symbol (int id)
+{
+  switch (id)
+    {
+#define NAMED_INTCST(a,b,c,d) \
+      case a:\
+        return d;
+#include "iso-c-binding.def"
+#undef NAMED_INTCST
+       default:
+         return GFC_STD_F2003;
+    }
+}
 
 /* Generate the given set of C interoperable kind objects, or all
    interoperable kinds.  This function will only be given kind objects
@@ -3765,6 +3779,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
   char comp_name[(GFC_MAX_SYMBOL_LEN * 2) + 1];
   int index;
 
+  if (gfc_notification_std (std_for_isocbinding_symbol (s)) == FAILURE)
+    return;
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
 
   /* Already exists in this scope so don't re-add it.
@@ -3788,7 +3804,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
   switch (s)
     {
 
-#define NAMED_INTCST(a,b,c) case a :
+#define NAMED_INTCST(a,b,c,d) case a : 
 #define NAMED_REALCST(a,b,c) case a :
 #define NAMED_CMPXCST(a,b,c) case a :
 #define NAMED_LOGCST(a,b,c) case a :
