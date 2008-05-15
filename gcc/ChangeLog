@@ -1,3 +1,14 @@
+2008-05-15  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR middle-end/36194
+        * combine.c (check_conversion): Rename back to check_promoted_subreg. 
+        Don't call record_truncated_value from here. 
+        (record_truncated_value): Turn it into a for_each_rtx callback. 
+        (record_truncated_values): New function. 
+        (combine_instructions): Call note_uses with 
+        record_truncated_values.  Change name of check_conversion to 
+        check_promoted_subreg. 
+
 2008-05-15  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi: Document support for torture tests.
