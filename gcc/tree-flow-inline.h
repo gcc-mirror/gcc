@@ -1545,7 +1545,7 @@ unmodifiable_var_p (const_tree var)
     var = SSA_NAME_VAR (var);
 
   if (MTAG_P (var))
-    return TREE_READONLY (var) && (TREE_STATIC (var) || MTAG_GLOBAL (var));
+    return false;
 
   return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }

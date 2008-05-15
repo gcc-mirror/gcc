@@ -1,5 +1,12 @@
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36244
+	* tree-ssa-alias.c (new_type_alias): Do not set TREE_READONLY.
+	* tree-flow-inline.h (unmodifiable_var_p): Memory tags never
+	represent unmodifiable vars.
+
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
 	* tree-dfa.c (refs_may_alias_p): Allow all kinds of
 	INDIRECT_REF and TARGET_MEM_REF.
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
