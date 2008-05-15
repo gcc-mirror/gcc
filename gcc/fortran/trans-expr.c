@@ -1003,15 +1003,11 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
 static void
 gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
 {
-  gfc_se lse;
-  gfc_se rse;
-  tree len;
-  tree type;
-  tree var;
-  tree tmp;
+  gfc_se lse, rse;
+  tree len, type, var, tmp, fndecl;
 
   gcc_assert (expr->value.op.op1->ts.type == BT_CHARACTER
-	  && expr->value.op.op2->ts.type == BT_CHARACTER);
+	      && expr->value.op.op2->ts.type == BT_CHARACTER);
 
   gfc_init_se (&lse, se);
   gfc_conv_expr (&lse, expr->value.op.op1);
@@ -1036,9 +1032,14 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   var = gfc_conv_string_tmp (se, type, len);
 
   /* Do the actual concatenation.  */
-  tmp = build_call_expr (gfor_fndecl_concat_string, 6,
-			 len, var,
-			 lse.string_length, lse.expr,
+  if (expr->ts.kind == 1)
+    fndecl = gfor_fndecl_concat_string;
+  else if (expr->ts.kind == 4)
+    fndecl = gfor_fndecl_concat_string_char4;
+  else
+    gcc_unreachable ();
+
+  tmp = build_call_expr (fndecl, 6, len, var, lse.string_length, lse.expr,
 			 rse.string_length, rse.expr);
   gfc_add_expr_to_block (&se->pre, tmp);
 
@@ -1212,7 +1213,8 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       gfc_conv_string_parameter (&rse);
 
       lse.expr = gfc_build_compare_string (lse.string_length, lse.expr,
-					   rse.string_length, rse.expr);
+					   rse.string_length, rse.expr,
+					   expr->value.op.op1->ts.kind);
       rse.expr = build_int_cst (TREE_TYPE (lse.expr), 0);
       gfc_add_block_to_block (&lse.post, &rse.post);
     }
@@ -1313,7 +1315,7 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
    subtraction of them. Otherwise, we build a library call.  */
 
 tree
-gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
+gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind)
 {
   tree sc1;
   tree sc2;
@@ -1325,17 +1327,28 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
   sc1 = gfc_to_single_character (len1, str1);
   sc2 = gfc_to_single_character (len2, str2);
 
-  /* Deal with single character specially.  */
   if (sc1 != NULL_TREE && sc2 != NULL_TREE)
     {
+      /* Deal with single character specially.  */
       sc1 = fold_convert (integer_type_node, sc1);
       sc2 = fold_convert (integer_type_node, sc2);
       tmp = fold_build2 (MINUS_EXPR, integer_type_node, sc1, sc2);
     }
-   else
-     /* Build a call for the comparison.  */
-     tmp = build_call_expr (gfor_fndecl_compare_string, 4,
-			    len1, str1, len2, str2);
+  else
+    {
+      /* Build a call for the comparison.  */
+      tree fndecl;
+
+      if (kind == 1)
+	fndecl = gfor_fndecl_compare_string;
+      else if (kind == 4)
+	fndecl = gfor_fndecl_compare_string_char4;
+      else
+	gcc_unreachable ();
+
+      tmp = build_call_expr (fndecl, 4, len1, str1, len2, str2);
+    }
+
   return tmp;
 }
 
@@ -2981,7 +2994,7 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
           tree arglen;
 
           gcc_assert (fsym->ts.cl && fsym->ts.cl->length
-                  && fsym->ts.cl->length->expr_type == EXPR_CONSTANT);
+                     && fsym->ts.cl->length->expr_type == EXPR_CONSTANT);
 
           arglen = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
           tmp = gfc_build_addr_expr (build_pointer_type (type),

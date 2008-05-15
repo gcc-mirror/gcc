@@ -1509,7 +1509,7 @@ static void
 gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
 {
   tree *args;
-  tree var, len, fndecl, tmp, cond;
+  tree var, len, fndecl, tmp, cond, function;
   unsigned int nargs;
 
   nargs = gfc_intrinsic_argument_list_length (expr);
@@ -1524,10 +1524,17 @@ gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
   args[2] = build_int_cst (NULL_TREE, op);
   args[3] = build_int_cst (NULL_TREE, nargs / 2);
 
+  if (expr->ts.kind == 1)
+    function = gfor_fndecl_string_minmax;
+  else if (expr->ts.kind == 4)
+    function = gfor_fndecl_string_minmax_char4;
+  else
+    gcc_unreachable ();
+
   /* Make the function call.  */
-  fndecl = build_addr (gfor_fndecl_string_minmax, current_function_decl);
-  tmp = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_minmax)),
-			  fndecl, nargs + 4, args);
+  fndecl = build_addr (function, current_function_decl);
+  tmp = build_call_array (TREE_TYPE (TREE_TYPE (function)), fndecl,
+			  nargs + 4, args);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   /* Free the temporary afterwards, if necessary.  */
@@ -2691,12 +2698,20 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_len_trim (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2];
-  tree type;
+  int kind = expr->value.function.actual->expr->ts.kind;
+  tree args[2], type, fndecl;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = build_call_expr (gfor_fndecl_string_len_trim, 2, args[0], args[1]);
+
+  if (kind == 1)
+    fndecl = gfor_fndecl_string_len_trim;
+  else if (kind == 4)
+    fndecl = gfor_fndecl_string_len_trim_char4;
+  else
+    gcc_unreachable ();
+
+  se->expr = build_call_expr (fndecl, 2, args[0], args[1]);
   se->expr = convert (type, se->expr);
 }
 
@@ -2736,12 +2751,12 @@ gfc_conv_intrinsic_index_scan_verify (gfc_se * se, gfc_expr * expr,
 static void
 gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2];
-  tree type;
+  tree args[2], type, pchartype;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (args[1])));
-  args[1] = fold_build1 (NOP_EXPR, pchar_type_node, args[1]);
+  pchartype = gfc_get_pchar_type (expr->value.function.actual->expr->ts.kind);
+  args[1] = fold_build1 (NOP_EXPR, pchartype, args[1]);
   type = gfc_typenode_for_spec (&expr->ts);
 
   se->expr = build_fold_indirect_ref (args[1]);
@@ -3273,7 +3288,9 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
 
   gfc_conv_intrinsic_function_args (se, expr, args, 4);
 
-  se->expr = gfc_build_compare_string (args[0], args[1], args[2], args[3]);
+  se->expr
+    = gfc_build_compare_string (args[0], args[1], args[2], args[3],
+                               expr->value.function.actual->expr->ts.kind);
   se->expr = fold_build2 (op, gfc_typenode_for_spec (&expr->ts), se->expr,
 			  build_int_cst (TREE_TYPE (se->expr), 0));
 }
@@ -3828,6 +3845,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   tree type;
   tree cond;
   tree fndecl;
+  tree function;
   tree *args;
   unsigned int num_args;
 
@@ -3843,9 +3861,16 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   args[0] = build_fold_addr_expr (len);
   args[1] = addr;
 
-  fndecl = build_addr (gfor_fndecl_string_trim, current_function_decl);
-  tmp = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_trim)),
-			  fndecl, num_args, args);
+  if (expr->ts.kind == 1)
+    function = gfor_fndecl_string_trim;
+  else if (expr->ts.kind == 4)
+    function = gfor_fndecl_string_trim_char4;
+  else
+    gcc_unreachable ();
+
+  fndecl = build_addr (function, current_function_decl);
+  tmp = build_call_array (TREE_TYPE (TREE_TYPE (function)), fndecl,
+			  num_args, args);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   /* Free the temporary afterwards, if necessary.  */
@@ -4033,7 +4058,8 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 {
   gfc_intrinsic_sym *isym;
   const char *name;
-  int lib;
+  int lib, kind;
+  tree fndecl;
 
   isym = expr->value.function.isym;
 
@@ -4081,11 +4107,27 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_SCAN:
-      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_scan);
+      kind = expr->value.function.actual->expr->ts.kind;
+      if (kind == 1)
+       fndecl = gfor_fndecl_string_scan;
+      else if (kind == 4)
+       fndecl = gfor_fndecl_string_scan_char4;
+      else
+       gcc_unreachable ();
+
+      gfc_conv_intrinsic_index_scan_verify (se, expr, fndecl);
       break;
 
     case GFC_ISYM_VERIFY:
-      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_verify);
+      kind = expr->value.function.actual->expr->ts.kind;
+      if (kind == 1)
+       fndecl = gfor_fndecl_string_verify;
+      else if (kind == 4)
+       fndecl = gfor_fndecl_string_verify_char4;
+      else
+       gcc_unreachable ();
+
+      gfc_conv_intrinsic_index_scan_verify (se, expr, fndecl);
       break;
 
     case GFC_ISYM_ALLOCATED:
@@ -4101,11 +4143,25 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_ADJUSTL:
-      gfc_conv_intrinsic_adjust (se, expr, gfor_fndecl_adjustl);
+      if (expr->ts.kind == 1)
+       fndecl = gfor_fndecl_adjustl;
+      else if (expr->ts.kind == 4)
+       fndecl = gfor_fndecl_adjustl_char4;
+      else
+       gcc_unreachable ();
+
+      gfc_conv_intrinsic_adjust (se, expr, fndecl);
       break;
 
     case GFC_ISYM_ADJUSTR:
-      gfc_conv_intrinsic_adjust (se, expr, gfor_fndecl_adjustr);
+      if (expr->ts.kind == 1)
+       fndecl = gfor_fndecl_adjustr;
+      else if (expr->ts.kind == 4)
+       fndecl = gfor_fndecl_adjustr_char4;
+      else
+       gcc_unreachable ();
+
+      gfc_conv_intrinsic_adjust (se, expr, fndecl);
       break;
 
     case GFC_ISYM_AIMAG:
@@ -4252,7 +4308,15 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_INDEX:
-      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_index);
+      kind = expr->value.function.actual->expr->ts.kind;
+      if (kind == 1)
+       fndecl = gfor_fndecl_string_index;
+      else if (kind == 4)
+       fndecl = gfor_fndecl_string_index_char4;
+      else
+       gcc_unreachable ();
+
+      gfc_conv_intrinsic_index_scan_verify (se, expr, fndecl);
       break;
 
     case GFC_ISYM_IOR:

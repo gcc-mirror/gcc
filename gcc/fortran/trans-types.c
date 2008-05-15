@@ -83,6 +83,11 @@ gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_real_types[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_complex_types[MAX_REAL_KINDS + 1];
 
+#define MAX_CHARACTER_KINDS 2
+gfc_character_info gfc_character_kinds[MAX_CHARACTER_KINDS + 1];
+static GTY(()) tree gfc_character_types[MAX_CHARACTER_KINDS + 1];
+static GTY(()) tree gfc_pcharacter_types[MAX_CHARACTER_KINDS + 1];
+
 
 /* The integer kind to use for array indices.  This will be set to the
    proper value based on target information from the backend.  */
@@ -262,7 +267,7 @@ void
 gfc_init_kinds (void)
 {
   enum machine_mode mode;
-  int i_index, r_index;
+  int i_index, r_index, kind;
   bool saw_i4 = false, saw_i8 = false;
   bool saw_r4 = false, saw_r8 = false, saw_r16 = false;
 
@@ -450,8 +455,27 @@ gfc_init_kinds (void)
   gfc_default_logical_kind = gfc_default_integer_kind;
   gfc_default_complex_kind = gfc_default_real_kind;
 
+  /* We only have two character kinds: ASCII and UCS-4.
+     ASCII corresponds to a 8-bit integer type, if one is available.
+     UCS-4 corresponds to a 32-bit integer type, if one is available. */
+  i_index = 0;
+  if ((kind = get_int_kind_from_width (8)) > 0)
+    {
+      gfc_character_kinds[i_index].kind = kind;
+      gfc_character_kinds[i_index].bit_size = 8;
+      gfc_character_kinds[i_index].name = "ascii";
+      i_index++;
+    }
+  if ((kind = get_int_kind_from_width (32)) > 0)
+    {
+      gfc_character_kinds[i_index].kind = kind;
+      gfc_character_kinds[i_index].bit_size = 32;
+      gfc_character_kinds[i_index].name = "iso_10646";
+      i_index++;
+    }
+
   /* Choose the smallest integer kind for our default character.  */
-  gfc_default_character_kind = gfc_integer_kinds[0].kind;
+  gfc_default_character_kind = gfc_character_kinds[0].kind;
   gfc_character_storage_size = gfc_default_character_kind * 8;
 
   /* Choose the integer kind the same size as "void*" for our index kind.  */
@@ -505,7 +529,13 @@ validate_logical (int kind)
 static int
 validate_character (int kind)
 {
-  return kind == gfc_default_character_kind ? 0 : -1;
+  int i;
+
+  for (i = 0; gfc_character_kinds[i].kind; i++)
+    if (gfc_character_kinds[i].kind == kind)
+      return i;
+
+  return -1;
 }
 
 /* Validate a kind given a basic type.  The return value is the same
@@ -578,6 +608,24 @@ gfc_build_int_type (gfc_integer_info *info)
 
   return make_signed_type (mode_precision);
 }
+
+static tree
+gfc_build_uint_type (int size)
+{
+  if (size == CHAR_TYPE_SIZE)
+    return unsigned_char_type_node;
+  if (size == SHORT_TYPE_SIZE)
+    return short_unsigned_type_node;
+  if (size == INT_TYPE_SIZE)
+    return unsigned_type_node;
+  if (size == LONG_TYPE_SIZE)
+    return long_unsigned_type_node;
+  if (size == LONG_LONG_TYPE_SIZE)
+    return long_long_unsigned_type_node;
+
+  return make_unsigned_type (size);
+}
+
 
 static tree
 gfc_build_real_type (gfc_real_info *info)
@@ -717,9 +765,17 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
     }
 
-  gfc_character1_type_node = build_qualified_type (unsigned_char_type_node, 
-						   TYPE_UNQUALIFIED);
-  PUSH_TYPE ("character(kind=1)", gfc_character1_type_node);
+  for (index = 0; gfc_character_kinds[index].kind != 0; ++index)
+    {
+      type = gfc_build_uint_type (gfc_character_kinds[index].bit_size);
+      type = build_qualified_type (type, TYPE_UNQUALIFIED);
+      snprintf (name_buf, sizeof(name_buf), "character(kind=%d)",
+		gfc_character_kinds[index].kind);
+      PUSH_TYPE (name_buf, type);
+      gfc_character_types[index] = type;
+      gfc_pcharacter_types[index] = build_pointer_type (type);
+    }
+  gfc_character1_type_node = gfc_character_types[0];
 
   PUSH_TYPE ("byte", unsigned_char_type_node);
   PUSH_TYPE ("void", void_type_node);
@@ -799,6 +855,21 @@ gfc_get_logical_type (int kind)
   int index = gfc_validate_kind (BT_LOGICAL, kind, true);
   return index < 0 ? 0 : gfc_logical_types[index];
 }
+
+tree
+gfc_get_char_type (int kind)
+{
+  int index = gfc_validate_kind (BT_CHARACTER, kind, true);
+  return index < 0 ? 0 : gfc_character_types[index];
+}
+
+tree
+gfc_get_pchar_type (int kind)
+{
+  int index = gfc_validate_kind (BT_CHARACTER, kind, true);
+  return index < 0 ? 0 : gfc_pcharacter_types[index];
+}
+
 
 /* Create a character type with the given kind and length.  */
 
@@ -810,7 +881,7 @@ gfc_get_character_type_len (int kind, tree len)
   gfc_validate_kind (BT_CHARACTER, kind, false);
 
   bounds = build_range_type (gfc_charlen_type_node, gfc_index_one_node, len);
-  type = build_array_type (gfc_character1_type_node, bounds);
+  type = build_array_type (gfc_get_char_type (kind), bounds);
   TYPE_STRING_FLAG (type) = 1;
 
   return type;

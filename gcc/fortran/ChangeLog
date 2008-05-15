@@ -1,3 +1,41 @@
+2008-05-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_concat_op): Take care of nondefault
+	character kinds.
+	(gfc_build_compare_string): Add kind argument and use it.
+	(gfc_conv_statement_function): Fix indentation.
+	* gfortran.h (gfc_character_info): New structure.
+	(gfc_character_kinds): New array.
+	* trans-types.c (gfc_character_kinds, gfc_character_types,
+	gfc_pcharacter_types): New array.
+	(gfc_init_kinds): Fill character kinds array.
+	(validate_character): Take care of nondefault character kinds.
+	(gfc_build_uint_type): New function.
+	(gfc_init_types): Take care of nondefault character kinds.
+	(gfc_get_char_type, gfc_get_pchar_type): New functions.
+	(gfc_get_character_type_len): Use gfc_get_char_type.
+	* trans.h (gfc_build_compare_string): Adjust prototype.
+	(gfor_fndecl_compare_string_char4, gfor_fndecl_concat_string_char4,
+	gfor_fndecl_string_len_trim_char4, gfor_fndecl_string_index_char4,
+	gfor_fndecl_string_scan_char4, gfor_fndecl_string_verify_char4,
+	gfor_fndecl_string_trim_char4, gfor_fndecl_string_minmax_char4,
+	gfor_fndecl_adjustl_char4, gfor_fndecl_adjustr_char4): New
+	prototypes.
+	* trans-types.h (gfc_get_char_type, gfc_get_pchar_type): New
+	prototypes.
+	* trans-decl.c (gfor_fndecl_compare_string_char4,
+	gfor_fndecl_string_len_trim_char4, gfor_fndecl_string_index_char4,
+	gfor_fndecl_string_scan_char4, gfor_fndecl_string_verify_char4,
+	gfor_fndecl_string_trim_char4, gfor_fndecl_string_minmax_char4,
+	gfor_fndecl_adjustl_char4, gfor_fndecl_adjustr_char4,
+	gfor_fndecl_concat_string_char4): New function decls.
+	(gfc_build_intrinsic_function_decls): Define new *_char4 function
+	decls.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax_char,
+	gfc_conv_intrinsic_len_trim, gfc_conv_intrinsic_ichar,
+	gfc_conv_intrinsic_strcmp, gfc_conv_intrinsic_trim,
+	gfc_conv_intrinsic_function): Deal with nondefault character kinds.
+
 2008-05-15  Sa Liu  <saliu@de.ibm.com>
 
 	* iso-c-binding.def: Add standard parameter to macro NAMED_INTCST.
