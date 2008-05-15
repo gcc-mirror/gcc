@@ -2551,9 +2551,7 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
 /* Add the base address of REF to the set *ADDRESSES_TAKEN.  If
    *ADDRESSES_TAKEN is NULL, a new set is created.  REF may be
    a single variable whose address has been taken or any other valid
-   GIMPLE memory reference (structure reference, array, etc).  If the
-   base address of REF is a decl that has sub-variables, also add all
-   of its sub-variables.  */
+   GIMPLE memory reference (structure reference, array, etc).  */
 
 void
 add_to_addressable_set (tree ref, bitmap *addresses_taken)

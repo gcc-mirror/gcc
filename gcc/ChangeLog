@@ -1,3 +1,12 @@
+2008-05-15  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-05/msg00893.html
+
+	* treestruct.def (TS_STRUCT_FIELD_TAG): Remove.
+	* tree-ssa-alias.c (new_type_alias): Remove references to
+	sub-variables from comment.
+	* tree-ssa-operands.c (swap_tree_operands): Likewise.
+
 2008-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Set prefix_extra
