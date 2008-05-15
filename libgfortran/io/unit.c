@@ -567,6 +567,8 @@ init_units (void)
       u->file_len = strlen (stdout_name);
       u->file = get_mem (u->file_len);
       memmove (u->file, stdout_name, u->file_len);
+      
+      fbuf_init (u, 0);
 
       __gthread_mutex_unlock (&u->lock);
     }
@@ -594,6 +596,9 @@ init_units (void)
       u->file_len = strlen (stderr_name);
       u->file = get_mem (u->file_len);
       memmove (u->file, stderr_name, u->file_len);
+      
+      fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
+                              any kind of exotic formatting to stderr.  */
 
       __gthread_mutex_unlock (&u->lock);
     }
@@ -613,7 +618,7 @@ static int
 close_unit_1 (gfc_unit *u, int locked)
 {
   int i, rc;
-
+  
   /* If there are previously written bytes from a write with ADVANCE="no"
      Reposition the buffer before closing.  */
   if (u->previous_nonadvancing_write)
@@ -635,6 +640,8 @@ close_unit_1 (gfc_unit *u, int locked)
     free_mem (u->file);
   u->file = NULL;
   u->file_len = 0;
+  
+  fbuf_destroy (u);
 
   if (!locked)
     __gthread_mutex_unlock (&u->lock);
@@ -737,10 +744,11 @@ filename_from_unit (int n)
 void
 finish_last_advance_record (gfc_unit *u)
 {
-  char *p;
-
+  
   if (u->saved_pos > 0)
-    p = salloc_w (u->s, &u->saved_pos);
+    fbuf_seek (u, u->saved_pos);
+    
+  fbuf_flush (u, 1);
 
   if (!(u->unit_number == options.stdout_unit
 	|| u->unit_number == options.stderr_unit))

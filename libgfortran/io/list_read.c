@@ -140,9 +140,9 @@ free_line (st_parameter_dt *dtp)
 static char
 next_char (st_parameter_dt *dtp)
 {
-  int length;
+  size_t length;
   gfc_offset record;
-  char c, *p;
+  char c;
 
   if (dtp->u.p.last_char != '\0')
     {
@@ -206,43 +206,40 @@ next_char (st_parameter_dt *dtp)
 
   length = 1;
 
-  p = salloc_r (dtp->u.p.current_unit->s, &length);
+  if (sread (dtp->u.p.current_unit->s, &c, &length) != 0)
+    {
+	generate_error (&dtp->common, LIBERROR_OS, NULL);
+	return '\0';
+    }
   
-  if (is_stream_io (dtp))
+  if (is_stream_io (dtp) && length == 1)
     dtp->u.p.current_unit->strm_pos++;
 
   if (is_internal_unit (dtp))
     {
       if (is_array_io (dtp))
 	{
-	  /* End of record is handled in the next pass through, above.  The
-	     check for NULL here is cautionary.  */
-	  if (p == NULL)
+	  /* Check whether we hit EOF.  */ 
+	  if (length == 0)
 	    {
 	      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	      return '\0';
-	    }
-
+	    } 
 	  dtp->u.p.current_unit->bytes_left--;
-	  c = *p;
 	}
       else
 	{
-	  if (p == NULL)
+	  if (dtp->u.p.at_eof) 
 	    longjmp (*dtp->u.p.eof_jump, 1);
 	  if (length == 0)
-	    c = '\n';
-	  else
-	    c = *p;
+	    {
+	      c = '\n';
+	      dtp->u.p.at_eof = 1;
+	    }
 	}
     }
   else
     {
-      if (p == NULL)
-	{
-	  generate_error (&dtp->common, LIBERROR_OS, NULL);
-	  return '\0';
-	}
       if (length == 0)
 	{
 	  if (dtp->u.p.advance_status == ADVANCE_NO)
@@ -255,8 +252,6 @@ next_char (st_parameter_dt *dtp)
 	  else
 	    longjmp (*dtp->u.p.eof_jump, 1);
 	}
-      else
-	c = *p;
     }
 done:
   dtp->u.p.at_eol = (c == '\n' || c == '\r');
@@ -2226,6 +2221,15 @@ nml_query (st_parameter_dt *dtp, char c)
   namelist_info * nl;
   index_type len;
   char * p;
+#ifdef HAVE_CRLF
+  static const index_type endlen = 3;
+  static const char endl[] = "\r\n";
+  static const char nmlend[] = "&end\r\n";
+#else
+  static const index_type endlen = 2;
+  static const char endl[] = "\n";
+  static const char nmlend[] = "&end\n";
+#endif
 
   if (dtp->u.p.current_unit->unit_number != options.stdin_unit)
     return;
@@ -2252,59 +2256,35 @@ nml_query (st_parameter_dt *dtp, char c)
 	  /* "&namelist_name\n"  */
 
 	  len = dtp->namelist_name_len;
-#ifdef HAVE_CRLF
-	  p = write_block (dtp, len + 3);
-#else
-	  p = write_block (dtp, len + 2);
-#endif
-	  if (!p)
-	    goto query_return;
+	  p = write_block (dtp, len + endlen);
+          if (!p)
+            goto query_return;
 	  memcpy (p, "&", 1);
 	  memcpy ((char*)(p + 1), dtp->namelist_name, len);
-#ifdef HAVE_CRLF
-	  memcpy ((char*)(p + len + 1), "\r\n", 2);
-#else
-	  memcpy ((char*)(p + len + 1), "\n", 1);
-#endif
+	  memcpy ((char*)(p + len + 1), &endl, endlen - 1);
 	  for (nl = dtp->u.p.ionml; nl; nl = nl->next)
 	    {
 	      /* " var_name\n"  */
 
 	      len = strlen (nl->var_name);
-#ifdef HAVE_CRLF
-	      p = write_block (dtp, len + 3);
-#else
-	      p = write_block (dtp, len + 2);
-#endif
+              p = write_block (dtp, len + endlen);
 	      if (!p)
 		goto query_return;
 	      memcpy (p, " ", 1);
 	      memcpy ((char*)(p + 1), nl->var_name, len);
-#ifdef HAVE_CRLF
-	      memcpy ((char*)(p + len + 1), "\r\n", 2);
-#else
-	      memcpy ((char*)(p + len + 1), "\n", 1);
-#endif
+	      memcpy ((char*)(p + len + 1), &endl, endlen - 1);
 	    }
 
 	  /* "&end\n"  */
 
-#ifdef HAVE_CRLF
-	  p = write_block (dtp, 6);
-#else
-	  p = write_block (dtp, 5);
-#endif
-	  if (!p)
+          p = write_block (dtp, endlen + 3);
 	    goto query_return;
-#ifdef HAVE_CRLF
-	  memcpy (p, "&end\r\n", 6);
-#else
-	  memcpy (p, "&end\n", 5);
-#endif
+          memcpy (p, &nmlend, endlen + 3);
 	}
 
       /* Flush the stream to force immediate output.  */
 
+      fbuf_flush (dtp->u.p.current_unit, 1);
       flush (dtp->u.p.current_unit->s);
       unlock_unit (dtp->u.p.current_unit);
     }

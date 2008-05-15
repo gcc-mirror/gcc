@@ -47,7 +47,8 @@ io/size_from_kind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
-io/write.c
+io/write.c \
+io/fbuf.c
 
 gfor_io_headers= \
 io/io.h
