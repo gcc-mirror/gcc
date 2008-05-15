@@ -1,5 +1,11 @@
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/loadpre7.c: Adjust scan for not performed
+	transformation.
+	* gcc.dg/tree-ssa/ssa-fre-10.c: Likewise.
+
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36244
 	* gcc.dg/torture/pr36244.c: New testcase.
 

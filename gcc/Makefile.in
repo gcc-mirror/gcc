@@ -1131,6 +1131,7 @@ OBJS-common = \
 	sparseset.o \
 	sreal.o \
 	stack-ptr-mod.o \
+	statistics.o \
 	stmt.o \
 	stor-layout.o \
 	stringpool.o \
@@ -2396,6 +2397,8 @@ function.o : function.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    output.h toplev.h except.h $(HASHTAB_H) $(GGC_H) $(TM_P_H) langhooks.h \
    gt-function.h $(TARGET_H) $(BASIC_BLOCK_H) $(INTEGRATE_H) $(PREDICT_H) \
    tree-pass.h $(DF_H) timevar.h vecprim.h
+statistics.o : statistics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(FLAGS_H) $(FUNCTION_H) $(HASHTAB_H) $(TREE_DUMP_H) tree-pass.h
 stmt.o : stmt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) insn-config.h hard-reg-set.h $(EXPR_H) \
    libfuncs.h except.h $(RECOG_H) toplev.h output.h $(GGC_H) $(TM_P_H) \

@@ -1,3 +1,32 @@
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pass.h (current_pass): Declare.
+	(get_pass_for_id): Likewise.
+	* passes.c (passes_by_id, passes_by_id_size): New globals.
+	(set_pass_for_id): New function.
+	(get_pass_for_id): Likewise.
+	(register_one_dump_file): Use set_pass_for_id to populate passes_by_id.
+	(execute_function_todo): Flush per function statistics.
+	* toplev.c (compile_file): Init statistics.
+	(general_init): Do early statistics initialization.
+	(finalize): Finish statistics.
+	* statistics.h (statistics_early_init): Declare.
+	(statistics_init): Likewise.
+	(statistics_fini): Likewise.
+	(statistics_fini_pass): Likewise.
+	(statistics_counter_event): Likewise.
+	(statistics_histogram_event): Likewise.
+	* statistics.c: New file.
+	* Makefile.in (OBJS-common): Add statistics.o.
+	(statistics.o): Add dependencies.
+	* doc/invoke.texi (-fdump-statistics): Document.
+
+	* tree-ssa-pre.c (compute_antic): Use statistics_histogram_event.
+	(insert): Likewise.
+	(execute_pre): Use statistics_counter_event.
+	* tree-ssa-propagate.c (struct prop_stats_d): Add num_dce field.
+	(substitute_and_fold): Increment it.  Use statistics_counter_event.
+
 2008-05-15  Diego Novillo  <dnovillo@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-05/msg00893.html
