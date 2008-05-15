@@ -751,6 +751,18 @@ proc check_effective_target_fortran_large_int { } {
     }]
 }
 
+# Return 1 if the target supports Fortran integer(16), 0 otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_integer_16 { } {
+    return [check_no_compiler_messages fortran_integer_16 executable {
+        ! Fortran
+        integer(16) :: i
+        end
+    }]
+}
+
 # Return 1 if we can statically link libgfortran, 0 otherwise.
 #
 # When the target name changes, replace the cached result.
