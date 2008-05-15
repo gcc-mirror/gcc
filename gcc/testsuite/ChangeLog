@@ -1,5 +1,10 @@
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36245
+	* gcc.c-torture/compile/pr36245.c: New testcase.
+
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/loadpre7.c: Adjust scan for not performed
 	transformation.
 	* gcc.dg/tree-ssa/ssa-fre-10.c: Likewise.
