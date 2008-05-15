@@ -13,5 +13,5 @@ enormlz (x)
       eshup8 (x);
     }
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 0" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-not "Eliminated:" "pre"} } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

@@ -16,5 +16,5 @@ void __frame_state_for (volatile char *state_in, int x)
     }
 }
 
-/* { dg-final { scan-tree-dump "Insertions: 0" "pre" } } */
+/* { dg-final { scan-tree-dump-not "Insertions:" "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

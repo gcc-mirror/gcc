@@ -333,6 +333,37 @@ struct rtl_opt_pass pass_postreload =
 /* The root of the compilation pass tree, once constructed.  */
 struct opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
 
+/* A map from static pass id to optimization pass.  */
+struct opt_pass **passes_by_id;
+int passes_by_id_size;
+
+/* Set the static pass number of pass PASS to ID and record that
+   in the mapping from static pass number to pass.  */
+
+static void
+set_pass_for_id (int id, struct opt_pass *pass)
+{
+  pass->static_pass_number = id;
+  if (passes_by_id_size <= id)
+    {
+      passes_by_id = xrealloc (passes_by_id, (id + 1) * sizeof (void *));
+      memset (passes_by_id + passes_by_id_size, 0,
+	      (id + 1 - passes_by_id_size) * sizeof (void *));
+      passes_by_id_size = id + 1;
+    }
+  passes_by_id[id] = pass;
+}
+
+/* Return the pass with the static pass number ID.  */
+
+struct opt_pass *
+get_pass_for_id (int id)
+{
+  if (id >= passes_by_id_size)
+    return NULL;
+  return passes_by_id[id];
+}
+
 /* Iterate over the pass tree allocating dump file numbers.  We want
    to do this depth first, and independent of whether the pass is
    enabled or not.  */
@@ -343,7 +374,7 @@ register_one_dump_file (struct opt_pass *pass)
   char *dot_name, *flag_name, *glob_name;
   const char *prefix;
   char num[10];
-  int flags;
+  int flags, id;
 
   /* See below in next_pass_1.  */
   num[0] = '\0';
@@ -361,8 +392,8 @@ register_one_dump_file (struct opt_pass *pass)
 
   flag_name = concat (prefix, pass->name, num, NULL);
   glob_name = concat (prefix, pass->name, NULL);
-  pass->static_pass_number = dump_register (dot_name, flag_name, glob_name,
-                                            flags);
+  id = dump_register (dot_name, flag_name, glob_name, flags);
+  set_pass_for_id (id, pass);
 }
 
 /* Recursive worker function for register_dump_files.  */
@@ -883,7 +914,9 @@ execute_function_todo (void *data)
   flags &= ~cfun->last_verified;
   if (!flags)
     return;
-  
+
+  statistics_fini_pass ();
+
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
@@ -1346,4 +1379,5 @@ execute_ipa_pass_list (struct opt_pass *pass)
     }
   while (pass);
 }
+
 #include "gt-passes.h"
