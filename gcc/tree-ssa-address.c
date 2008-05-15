@@ -422,9 +422,13 @@ add_to_parts (struct mem_address *parts, tree elt)
 
   /* Add ELT to base.  */
   type = TREE_TYPE (parts->base);
-  parts->base = fold_build2 (POINTER_PLUS_EXPR, type,
-			     parts->base,
-			     fold_convert (sizetype, elt));
+  if (POINTER_TYPE_P (type))
+    parts->base = fold_build2 (POINTER_PLUS_EXPR, type,
+			       parts->base,
+			       fold_convert (sizetype, elt));
+  else
+    parts->base = fold_build2 (PLUS_EXPR, type,
+			       parts->base, elt);
 }
 
 /* Finds the most expensive multiplication in ADDR that can be
