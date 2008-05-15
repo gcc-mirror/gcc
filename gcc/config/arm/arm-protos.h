@@ -43,7 +43,7 @@ extern void arm_output_fn_unwind (FILE *, bool);
   
 
 #ifdef TREE_CODE
-extern int arm_return_in_memory (const_tree, const_tree);
+extern bool arm_return_in_memory (const_tree, const_tree);
 #endif
 #ifdef RTX_CODE
 extern bool arm_vector_mode_supported_p (enum machine_mode);
