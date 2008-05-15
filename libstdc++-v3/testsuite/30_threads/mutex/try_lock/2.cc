@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
+// { dg-options "-pthread -std=gnu++0x" }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
@@ -45,7 +46,7 @@ int main()
       try
 	{
 	  b = m.try_lock();
-	  VERIFY( b );
+	  VERIFY( !b );
 	}
       catch (const std::system_error& e)
 	{

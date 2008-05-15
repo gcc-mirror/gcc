@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
+// { dg-options "-pthread -std=gnu++0x" }
 
 // Copyright (C) 2008 Free Software Foundation, Inc.
 //
@@ -41,11 +42,11 @@ int main()
       mutex_type m;
       m.lock();
 
-      // Lock already locked mutex, should be ok.
-      // XXX
+      // Lock already locked mutex.
       try
 	{
-	  m.lock();
+	  // XXX Will block.
+	  // m.lock();
 	}
       catch (const std::system_error& e)
 	{
