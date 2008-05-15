@@ -11064,7 +11064,7 @@ Identifies the preconnected unit identified by the asterisk
 @section @code{ISO_C_BINDING}
 @table @asis
 @item @emph{Standard}:
-Fortran 2003 and later
+Fortran 2003 and later, GNU extensions
 @end table
 
 The following intrinsic procedures are provided by the module; their
@@ -11086,8 +11086,13 @@ parameters (marked by an asterisk (@code{*}) in the list below).
 The @code{C_INT_FAST...} parameters have therefore the value @math{-2}
 and cannot be used as KIND type parameter of the @code{INTEGER} type.
 
-@multitable @columnfractions .15 .35 .35
-@item Fortran Type  @tab Named constant         @tab C type
+In addition to the integer named constants required by the Fortran 2003 
+standard, GNU Fortran provides as an extension named constants for the 
+128-bit integer types supported by the C compiler: @code{C_INT128_T, 
+C_INT_LEAST128_T, C_INT_FAST128_T}.
+
+@multitable @columnfractions .15 .35 .35 .35
+@item Fortran Type  @tab Named constant         @tab C type                                @tab Extension
 @item @code{INTEGER}@tab @code{C_INT}           @tab @code{int}
 @item @code{INTEGER}@tab @code{C_SHORT}         @tab @code{short int}
 @item @code{INTEGER}@tab @code{C_LONG}          @tab @code{long int}
@@ -11098,14 +11103,17 @@ and cannot be used as KIND type parameter of the @code{INTEGER} type.
 @item @code{INTEGER}@tab @code{C_INT16_T}       @tab @code{int16_t}
 @item @code{INTEGER}@tab @code{C_INT32_T}       @tab @code{int32_t}
 @item @code{INTEGER}@tab @code{C_INT64_T}       @tab @code{int64_t}
+@item @code{INTEGER}@tab @code{C_INT128_T}       @tab @code{int128_t}                      @tab Ext.
 @item @code{INTEGER}@tab @code{C_INT_LEAST8_T}  @tab @code{int_least8_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST16_T} @tab @code{int_least16_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST32_T} @tab @code{int_least32_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST64_T} @tab @code{int_least64_t}
+@item @code{INTEGER}@tab @code{C_INT_LEAST128_T} @tab @code{int_least128_t}                @tab Ext.
 @item @code{INTEGER}@tab @code{C_INT_FAST8_T}*  @tab @code{int_fast8_t}
 @item @code{INTEGER}@tab @code{C_INT_FAST16_T}* @tab @code{int_fast16_t}
 @item @code{INTEGER}@tab @code{C_INT_FAST32_T}* @tab @code{int_fast32_t}
 @item @code{INTEGER}@tab @code{C_INT_FAST64_T}* @tab @code{int_fast64_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST128_T}* @tab @code{int_fast128_t}                 @tab Ext.
 @item @code{INTEGER}@tab @code{C_INTMAX_T}      @tab @code{intmax_t}
 @item @code{INTEGER}@tab @code{C_INTPTR_T}      @tab @code{intptr_t}
 @item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
