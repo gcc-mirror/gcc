@@ -1,3 +1,9 @@
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34330
+	* tree-ssa-alias.c (get_smt_for): Only assert that accesses
+	through the pointer will alias the SMT.
+
 2008-05-14  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/sparc/sparc.h (NO_PROFILE_COUNTERS): Define as 0.
