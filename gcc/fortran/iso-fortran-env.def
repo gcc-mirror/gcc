@@ -22,15 +22,22 @@ along with GCC; see the file COPYING3.  If not see
 /* The arguments to NAMED_INTCST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
-     -- the value it has  */
+     -- the value it has
+     -- the standard that supports this type  */ 
 
 NAMED_INTCST (ISOFORTRANENV_CHARACTER_STORAGE_SIZE, "character_storage_size", \
-              gfc_character_storage_size)
-NAMED_INTCST (ISOFORTRANENV_ERROR_UNIT, "error_unit", GFC_STDERR_UNIT_NUMBER)
-NAMED_INTCST (ISOFORTRANENV_FILE_STORAGE_SIZE, "file_storage_size", 8)
-NAMED_INTCST (ISOFORTRANENV_INPUT_UNIT, "input_unit", GFC_STDIN_UNIT_NUMBER)
-NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", LIBERROR_END)
-NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR)
+              gfc_character_storage_size, GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_ERROR_UNIT, "error_unit", GFC_STDERR_UNIT_NUMBER, \
+              GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_FILE_STORAGE_SIZE, "file_storage_size", 8, \
+              GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_INPUT_UNIT, "input_unit", GFC_STDIN_UNIT_NUMBER, \
+              GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", LIBERROR_END, \
+              GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR, \
+              GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
-              gfc_numeric_storage_size)
-NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", GFC_STDOUT_UNIT_NUMBER)
+              gfc_numeric_storage_size, GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", GFC_STDOUT_UNIT_NUMBER, \
+              GFC_STD_F2003)
