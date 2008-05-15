@@ -90,6 +90,8 @@ specific compiler flag.
 
 <para> The parallel mode STL algorithms are currently not exception-safe,
 i.e. user-defined functors must not throw exceptions.
+Also, the order of execution is not guaranteed for some functions, of course.
+Therefore, user-defined functors should not have any concurrent side effects.
 </para>
 
 <para> Since the current GCC OpenMP implementation does not support
@@ -459,34 +461,16 @@ function, if no parallel functions are deemed worthy), based on either
 compile-time or run-time conditions.
 </para>
 
-<para> Compile-time conditions are referred to as "embarrassingly
-parallel," and are denoted with the appropriate dispatch object, i.e.,
-one of <code>__gnu_parallel::sequential_tag</code>,
-<code>__gnu_parallel::parallel_tag</code>,
-<code>__gnu_parallel::balanced_tag</code>,
-<code>__gnu_parallel::unbalanced_tag</code>,
-<code>__gnu_parallel::omp_loop_tag</code>, or
-<code>__gnu_parallel::omp_loop_static_tag</code>.
-</para>
+<para> The available signature options are specific for the different
+algorithms/algorithm classes.</para>
 
-<para> Run-time conditions depend on the hardware being used, the number
-of threads available, etc., and are denoted by the use of the enum
-<code>__gnu_parallel::parallelism</code>. Values of this enum include
-<code>__gnu_parallel::sequential</code>,
-<code>__gnu_parallel::parallel_unbalanced</code>,
-<code>__gnu_parallel::parallel_balanced</code>,
-<code>__gnu_parallel::parallel_omp_loop</code>,
-<code>__gnu_parallel::parallel_omp_loop_static</code>, or
-<code>__gnu_parallel::parallel_taskqueue</code>.
-</para>
-
-<para> Putting all this together, the general view of overloads for the
-parallel algorithms look like this:
+<para> The general view of overloads for the parallel algorithms look like this:
 </para>
 <itemizedlist>
    <listitem><para>ISO C++ signature</para></listitem>
    <listitem><para>ISO C++ signature + sequential_tag argument</para></listitem>
-   <listitem><para>ISO C++ signature + parallelism argument</para></listitem>
+   <listitem><para>ISO C++ signature + algorithm-specific tag type
+    (several signatures)</para></listitem>
 </itemizedlist>
 
 <para> Please note that the implementation may use additional functions
@@ -512,8 +496,8 @@ by standard OpenMP function calls.
 </para>
 
 <para>
-To specify the number of threads to be used for an algorithm, use the
-function <function>omp_set_num_threads</function>. An example:
+To specify the number of threads to be used for the algorithms globally,
+use the function <function>omp_set_num_threads</function>. An example:
 </para>
 
 <programlisting>
@@ -527,11 +511,17 @@ int main()
   omp_set_dynamic(false);
   omp_set_num_threads(threads_wanted);
 
-  // Do work.
+  // Call parallel mode algorithms.
 
   return 0;
 }
 </programlisting>
+
+<para>
+ Some algorithms allow the number of threads being set for a particular call,
+ by augmenting the algorithm variant.
+ See the next section for further information.
+</para>
 
 <para>
 Other parts of the runtime environment able to be manipulated include
@@ -549,8 +539,7 @@ documentation for more information.
 To force an algorithm to execute sequentially, even though parallelism
 is switched on in general via the macro <constant>_GLIBCXX_PARALLEL</constant>,
 add <classname>__gnu_parallel::sequential_tag()</classname> to the end
-of the algorithm's argument list, or explicitly qualify the algorithm
-with the <code>__gnu_parallel::</code> namespace.
+of the algorithm's argument list.
 </para>
 
 <para>
@@ -562,22 +551,30 @@ std::sort(v.begin(), v.end(), __gnu_parallel::sequential_tag());
 </programlisting>
 
 <para>
-or
-</para>
-
-<programlisting>
-__gnu_serial::sort(v.begin(), v.end());
-</programlisting>
-
-<para> 
-In addition, some parallel algorithm variants can be enabled/disabled/selected 
-at compile-time.
+Some parallel algorithm variants can be excluded from compilation by
+preprocessor defines. See the doxygen documentation on
+<code>compiletime_settings.h</code> and <code>features.h</code> for details.
 </para>
 
 <para>
-See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00446.html"><filename class="headerfile">compiletime_settings.h</filename></ulink> and
-See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00505.html"><filename class="headerfile">features.h</filename></ulink> for details.
+For some algorithms, the desired variant can be chosen at compile-time by
+appending a tag object. The available options are specific to the particular
+algorithm (class).
 </para>
+
+<para>
+For the "embarrassingly parallel" algorithms, there is only one "tag object
+type", the enum _Parallelism.
+It takes one of the following values,
+<code>__gnu_parallel::parallel_tag</code>,
+<code>__gnu_parallel::balanced_tag</code>,
+<code>__gnu_parallel::unbalanced_tag</code>,
+<code>__gnu_parallel::omp_loop_tag</code>,
+<code>__gnu_parallel::omp_loop_static_tag</code>.
+This means that the actual parallelization strategy is chosen at run-time.
+(Choosing the variants at compile-time will come soon.)
+</para>
+
 </sect3>
 
 <sect3 id="parallel_mode.design.tuning.settings" xreflabel="_Settings">
@@ -593,19 +590,18 @@ of <classname>__gnu_parallel::_Settings</classname> member data.
 
 <para>
 First off, the choice of parallelization strategy: serial, parallel,
-or implementation-deduced. This corresponds
+or heuristically deduced. This corresponds
 to <code>__gnu_parallel::_Settings::algorithm_strategy</code> and is a
 value of enum <type>__gnu_parallel::_AlgorithmStrategy</type>
 type. Choices
 include: <type>heuristic</type>, <type>force_sequential</type>,
-and <type>force_parallel</type>. The default is
-implementation-deduced, i.e. <type>heuristic</type>.
+and <type>force_parallel</type>. The default is <type>heuristic</type>.
 </para>
 
 
 <para>
-Next, the sub-choices for algorithm implementation. Specific
-algorithms like <function>find</function> or <function>sort</function>
+Next, the sub-choices for algorithm variant, if not fixed at compile-time.
+Specific algorithms like <function>find</function> or <function>sort</function>
 can be implemented in multiple ways: when this is the case,
 a <classname>__gnu_parallel::_Settings</classname> member exists to
 pick the default strategy. For
@@ -626,7 +622,7 @@ active <classname>__gnu_parallel::_Settings</classname> object.  This
 threshold variable follows the following naming scheme:
 <code>__gnu_parallel::_Settings::[algorithm]_minimal_n</code>.  So,
 for <function>fill</function>, the threshold variable
-is <code>__gnu_parallel::_Settings::fill_minimal_n</code>
+is <code>__gnu_parallel::_Settings::fill_minimal_n</code>,
 </para>
 
 <para>
@@ -635,9 +631,19 @@ via <code>__gnu_parallel::_Settings::L1_cache_size</code> and friends.
 </para>
 
 <para>
+</para>
+
+<para>
 All these configuration variables can be changed by the user, if
-desired.  Please
-see <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html"><filename class="headerfile">settings.h</filename></ulink>
+desired.
+There exists one global instance of the class <classname>_Settings</classname>,
+i. e. it is a singleton. It can be read and written by calling
+<code>__gnu_parallel::_Settings::get</code> and
+<code>__gnu_parallel::_Settings::set</code>, respectively.
+Please note that the first call return a const object, so direct manipulation
+is forbidden.
+See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html">
+  <filename class="headerfile">settings.h</filename></ulink>
 for complete details.
 </para>
 
