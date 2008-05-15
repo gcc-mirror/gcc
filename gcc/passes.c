@@ -1157,21 +1157,21 @@ add_ipa_transform_pass (void *data)
   VEC_safe_push (ipa_opt_pass, heap, cfun->ipa_transforms_to_apply, ipa_pass);
 }
 
-/* Execute IPA pass function summary generation. DATA is pointer to
-   pass list to execute.  */
+/* Execute summary generation for all of the passes in IPA_PASS.  */
 
 static void
-execute_ipa_summary_passes (void *data)
+execute_ipa_summary_passes (struct ipa_opt_pass *ipa_pass)
 {
-  struct ipa_opt_pass *ipa_pass = (struct ipa_opt_pass *)data;
-  struct cgraph_node *node = cgraph_node (cfun->decl);
-  while (ipa_pass && ipa_pass->pass.type == IPA_PASS)
+  while (ipa_pass)
     {
       struct opt_pass *pass = &ipa_pass->pass;
-      if (!pass->gate || pass->gate ())
+
+      /* Execute all of the IPA_PASSes in the list.  */
+      if (ipa_pass->pass.type == IPA_PASS 
+	  && (!pass->gate || pass->gate ()))
 	{
 	  pass_init_dump_file (pass);
-	  ipa_pass->function_generate_summary (node);
+	  ipa_pass->generate_summary ();
 	  pass_fini_dump_file (pass);
 	}
       ipa_pass = (struct ipa_opt_pass *)ipa_pass->pass.next;
@@ -1356,7 +1356,7 @@ execute_ipa_pass_list (struct opt_pass *pass)
 	    {
 	      if (!quiet_flag && !cfun)
 		fprintf (stderr, " <summary generate>");
-	      do_per_function_toporder (execute_ipa_summary_passes, pass);
+	      execute_ipa_summary_passes ((struct ipa_opt_pass *) pass);
 	    }
 	  summaries_generated = true;
 	}

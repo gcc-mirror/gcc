@@ -1519,11 +1519,9 @@ struct simple_ipa_opt_pass pass_ipa_early_inline =
 };
 
 /* Compute parameters of functions used by inliner.  */
-static unsigned int
-compute_inline_parameters (void)
+unsigned int
+compute_inline_parameters (struct cgraph_node *node)
 {
-  struct cgraph_node *node = cgraph_node (current_function_decl);
-
   gcc_assert (!node->global.inlined_to);
   inline_summary (node)->estimated_self_stack_size
     = estimated_stack_frame_size ();
@@ -1543,6 +1541,16 @@ compute_inline_parameters (void)
   return 0;
 }
 
+
+/* Compute parameters of functions used by inliner using
+   current_function_decl.  */
+static unsigned int
+compute_inline_parameters_for_current (void)
+{
+  compute_inline_parameters (cgraph_node (current_function_decl));
+  return 0;
+}
+
 /* When inlining shall be performed.  */
 static bool
 gate_inline_passes (void)
@@ -1556,7 +1564,7 @@ struct gimple_opt_pass pass_inline_parameters =
   GIMPLE_PASS,
   NULL,	 				/* name */
   gate_inline_passes,			/* gate */
-  compute_inline_parameters,		/* execute */
+  compute_inline_parameters_for_current,/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -1571,9 +1579,30 @@ struct gimple_opt_pass pass_inline_parameters =
 
 /* Note function body size.  */
 static void
-inline_generate_summary (struct cgraph_node *node ATTRIBUTE_UNUSED)
+inline_generate_summary (void)
 {
-  compute_inline_parameters ();
+  struct cgraph_node **order =
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  int nnodes = cgraph_postorder (order);
+  int i;
+
+  for (i = nnodes - 1; i >= 0; i--)
+    {
+      struct cgraph_node *node = order[i];
+      
+      /* Allow possibly removed nodes to be garbage collected.  */
+      order[i] = NULL;
+      if (node->analyzed && (node->needed || node->reachable))
+	{
+	  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	  current_function_decl = node->decl;
+	  compute_inline_parameters (node);
+	  pop_cfun ();
+	}
+    }
+  
+  current_function_decl = NULL;
+  free (order);
   return;
 }
 
@@ -1619,12 +1648,10 @@ struct ipa_opt_pass pass_ipa_inline =
   TODO_dump_cgraph | TODO_dump_func
   | TODO_remove_functions		/* todo_flags_finish */
  },
- inline_generate_summary,		/* function_generate_summary */
- NULL,					/* variable_generate_summary */
- NULL,					/* function_write_summary */
- NULL,					/* variable_write_summary */
+ inline_generate_summary,		/* generate_summary */
+ NULL,					/* write_summary */
+ NULL,					/* read_summary */
  NULL,					/* function_read_summary */
- NULL,					/* variable_read_summary */
  0,					/* TODOs */
  inline_transform,			/* function_transform */
  NULL,					/* variable_transform */
