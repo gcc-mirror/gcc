@@ -3408,12 +3408,12 @@ add_may_alias_for_new_tag (tree tag, tree var)
   return tag;
 }
 
-/* Create a new symbol tag for PTR.  Construct the may-alias list of this type
-   tag so that it has the aliasing of VAR, or of the relevant subvars of VAR
-   according to the location accessed by EXPR.
+/* Create a new symbol tag for PTR.  Construct the may-alias list of
+   this type tag so that it has the aliasing of VAR according to the
+   location accessed by EXPR.
 
-   Note, the set of aliases represented by the new symbol tag are not marked
-   for renaming.  */
+   Note, the set of aliases represented by the new symbol tag are not
+   marked for renaming.  */
 
 void
 new_type_alias (tree ptr, tree var, tree expr)
