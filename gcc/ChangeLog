@@ -1,3 +1,8 @@
+2008-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Add "m" constraint
+	to alternative 4 of operand 2.
+
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pass.h (current_pass): Declare.

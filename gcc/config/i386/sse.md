@@ -2260,10 +2260,10 @@
 ;; Although insertps takes register source, we prefer
 ;; unpcklps with register source since it is shorter.
 (define_insn "*vec_concatv2sf_sse4_1"
-  [(set (match_operand:V2SF 0 "register_operand"     "=x,x,x,*y,*y")
+  [(set (match_operand:V2SF 0 "register_operand"     "=x,x,x,*y ,*y")
 	(vec_concat:V2SF
-	  (match_operand:SF 1 "nonimmediate_operand" " 0,0,m, 0, m")
-	  (match_operand:SF 2 "vector_move_operand"  " x,m,C,*y, C")))]
+	  (match_operand:SF 1 "nonimmediate_operand" " 0,0,m, 0 , m")
+	  (match_operand:SF 2 "vector_move_operand"  " x,m,C,*ym, C")))]
   "TARGET_SSE4_1"
   "@
    unpcklps\t{%2, %0|%0, %2}
