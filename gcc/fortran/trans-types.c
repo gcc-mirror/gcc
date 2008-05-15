@@ -219,7 +219,7 @@ void init_c_interop_kinds (void)
       c_interop_kinds_table[i].f90_type = BT_UNKNOWN;
     }
 
-#define NAMED_INTCST(a,b,c) \
+#define NAMED_INTCST(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_INTEGER; \
   c_interop_kinds_table[a].value = c;
