@@ -59,14 +59,13 @@ namespace std
 
     mutex()
     {
+      // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
 #if defined __GTHREAD_MUTEX_INIT
       native_handle_type __tmp = __GTHREAD_MUTEX_INIT;
       _M_mutex = __tmp;
 #else
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
 #endif
-
-      // EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
     }
 
     void
@@ -82,23 +81,15 @@ namespace std
     bool
     try_lock()
     {
-      int __e = __gthread_mutex_trylock(&_M_mutex);
-
-      // EINVAL, EAGAIN, EBUSY
-     if (__e)
-       __throw_system_error(__e);
-     else
-       return true;
+     // XXX EINVAL, EAGAIN, EBUSY
+     return !__gthread_mutex_trylock(&_M_mutex);
     }
 
     void
     unlock()
     {
-      int __e = __gthread_mutex_unlock(&_M_mutex);
-
-      // EINVAL, EAGAIN, EPERM
-     if (__e)
-       __throw_system_error(__e);
+      // XXX EINVAL, EAGAIN, EPERM
+     __gthread_mutex_unlock(&_M_mutex);
     }
 
     native_handle_type
@@ -120,14 +111,13 @@ namespace std
 
     recursive_mutex()
     {
+      // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
 #if defined __GTHREAD_RECURSIVE_MUTEX_INIT
       native_handle_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
       _M_mutex = __tmp;
 #else
       __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
 #endif
-
-      // EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
     }
 
 
@@ -144,23 +134,15 @@ namespace std
     bool
     try_lock()
     {
-      int __e = __gthread_recursive_mutex_trylock(&_M_mutex);
-
-      // EINVAL, EAGAIN, EBUSY
-     if (__e)
-       __throw_system_error(__e);
-     else
-       return true;
+      // XXX EINVAL, EAGAIN, EBUSY
+     return !__gthread_recursive_mutex_trylock(&_M_mutex);
     }
 
     void
     unlock()
     {
-      int __e = __gthread_recursive_mutex_unlock(&_M_mutex);
-
-      // EINVAL, EAGAIN, EBUSY
-     if (__e)
-       __throw_system_error(__e);
+      // XXX EINVAL, EAGAIN, EBUSY
+     __gthread_recursive_mutex_unlock(&_M_mutex);
     }
 
     native_handle_type
