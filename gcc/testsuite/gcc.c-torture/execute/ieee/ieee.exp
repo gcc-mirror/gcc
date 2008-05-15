@@ -21,6 +21,7 @@
 
 # Load support procs.
 load_lib gcc-dg.exp
+load_lib torture-options.exp
 
 # These tests come from Torbjorn Granlund's (tege@cygnus.com)
 # C torture test suite, and other contributors.
@@ -31,6 +32,9 @@ if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] } { return }
 if $tracelevel then {
     strace $tracelevel
 }
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
 
 set additional_flags ""
 
@@ -70,4 +74,5 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 }
 
 # All done.
+torture-finish
 gcc_finish

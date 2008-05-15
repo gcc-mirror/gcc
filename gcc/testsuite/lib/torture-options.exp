@@ -1,0 +1,112 @@
+# Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Prepare to use a new set of torture options. 
+#
+# Letting options leak from one set of tests to another can be confusing.
+# Make sure variables are not set at the time we're called, because that
+# would mean they were set without being cleared.
+proc torture-init { args } {
+    global torture_without_loops global_with_loops
+
+    if [info exists torture_without_loops] {
+	error "torture-init: torture_without_loops is not empty as expected"
+    }
+    if [info exists torture_with_loops] {
+	error "torture-init: torture_with_loops is not empty as expected"
+    }
+}
+
+# Return 1 if torture options have already been set, 0 otherwise.
+proc torture-options-exist { args } {
+    global torture_with_loops
+    return [info exists torture_with_loops]
+}
+
+# Return 1 if compiler option ARG only affects loops, 0 otherwise.
+proc contains-loop-option-p { arg } {
+    switch -glob -- $arg {
+      "*loop*"		{ return 1 }
+      default		{ return 0 }
+    }
+}
+
+# Set torture options variables for tests with and without loops.
+#
+# Argument 0 is the list to use as torture options
+# Argument 1 is the list to combine with the torture options.
+proc set-torture-options { args } {
+    global torture_with_loops torture_without_loops
+
+    set torture_list [lindex $args 0]
+
+    if { [llength $args] != 1 } {
+	set other_list [lindex $args 1]
+    } else {
+	set other_list [list {}]
+    }
+
+    set torture_with_loops ""
+    set torture_without_loops ""
+    foreach torture_opts $torture_list {
+	foreach other_opts $other_list {
+	    # Remove trailing space[s] to match previous output.
+	    set torture_opts [string trimright $torture_opts]
+	    if ![contains-loop-option-p $torture_opts] {
+		lappend torture_without_loops "$torture_opts $other_opts"
+	    }
+	    lappend torture_with_loops "$torture_opts $other_opts"
+	}
+    }
+}
+
+# Finish up after using a set of torture options.
+#
+# Letting options leak from one set of tests to another can be confusing.
+# Make sure variables are set at the time we're called, and then unset
+# them to prevent interference with other sets of tests.
+proc torture-finish { args } {
+    global torture_without_loops torture_with_loops
+
+    if [info exists torture_without_loops] {
+	unset torture_without_loops
+    } else {
+	error "torture-finish: torture_without_loops is not defined"
+    }
+
+    if [info exists torture_with_loops] {
+	unset torture_with_loops
+    } else {
+	error "torture-finish: torture_with_loops is not defined"
+    }
+}
+
+# Useful for debugging .exp files.
+proc dump-torture-options { args } {
+    global torture_without_loops torture_with_loops
+
+    if [info exists torture_without_loops] {
+	verbose "torture_without_loops = \"${torture_without_loops}\"" 1
+    } else {
+	verbose "torture_without_loops is not defined" 1
+    }
+
+    if [info exists torture_with_loops] {
+	verbose "torture_with_loops = \"${torture_with_loops}\"" 1
+    } else {
+	verbose "torture_with_loops is not defined" 1
+    }
+}

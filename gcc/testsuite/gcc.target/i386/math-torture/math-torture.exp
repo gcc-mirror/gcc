@@ -5,7 +5,7 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
   return
 }
 
-set TORTURE_OPTIONS [list \
+set MATH_TORTURE_OPTIONS [list \
         { -O0 } \
         { -O0 -mfpmath=387 } \
         { -O0 -msse -mno-sse2 -mfpmath=sse } \
@@ -29,8 +29,14 @@ set TORTURE_OPTIONS [list \
         { -O2 -msse -mno-sse2 -mfpmath=sse,387 -ffast-math } \
         { -O2 -msse -msse2 -mfpmath=sse,387 -ffast-math } \
 ]
+
 load_lib gcc-dg.exp
+load_lib torture-options.exp
+
+torture-init
+set-torture-options $MATH_TORTURE_OPTIONS
 
 dg-init
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
+torture-finish
 dg-finish

@@ -22,7 +22,9 @@ load_lib target-libpath.exp
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
-if ![info exists TORTURE_OPTIONS] {
+if [info exists TORTURE_OPTIONS] {
+    set C_TORTURE_OPTIONS $TORTURE_OPTIONS
+} else {
     # It is theoretically beneficial to group all of the O2/O3 options together,
     # as in many cases the compiler will generate identical executables for
     # all of them--and the c-torture testsuite will skip testing identical
@@ -30,7 +32,7 @@ if ![info exists TORTURE_OPTIONS] {
     # Also note that -finline-functions is explicitly included in one of the
     # items below, even though -O3 is also specified, because some ports may
     # choose to disable inlining functions by default, even when optimizing.
-    set TORTURE_OPTIONS [list \
+    set C_TORTURE_OPTIONS [list \
 	{ -O0 } \
 	{ -O1 } \
 	{ -O2 } \
@@ -53,17 +55,6 @@ global orig_environment_saved
 if { $orig_environment_saved == 0 } {
     append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
     set_ld_library_path_env_vars
-}
-
-# Split TORTURE_OPTIONS into two choices: one for testcases with loops and
-# one for testcases without loops.
-
-set torture_with_loops $TORTURE_OPTIONS
-set torture_without_loops ""
-foreach option $TORTURE_OPTIONS {
-    if ![string match "*loop*" $option] {
-	lappend torture_without_loops $option
-    }
 }
 
 #

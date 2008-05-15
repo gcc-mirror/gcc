@@ -1,3 +1,7 @@
+2008-05-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi: Document support for torture tests.
+
 2008-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Add "m" constraint

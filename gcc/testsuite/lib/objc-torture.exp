@@ -18,9 +18,6 @@
 
 load_lib file-format.exp
 
-# The default option list can be overridden by
-# TORTURE_OPTIONS="{ { list1 } ... { listN } }"
-
 if ![info exists OBJC_RUNTIME_OPTIONS] {
   set OBJC_RUNTIME_OPTIONS ""
   foreach type {-fgnu-runtime -fnext-runtime} {
@@ -39,7 +36,12 @@ if ![info exists OBJC_RUNTIME_OPTIONS] {
 verbose -log "Using the following runtimes: $OBJC_RUNTIME_OPTIONS"
 
 
-if ![info exists TORTURE_OPTIONS] {
+# The default option list can be overridden by
+# TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+
+if [info exists TORTURE_OPTIONS] {
+    set OBJC_TORTURE_OPTIONS $TORTURE_OPTIONS
+} else {
     # It is theoretically beneficial to group all of the O2/O3 options together,
     # as in many cases the compiler will generate identical executables for
     # all of them--and the objc-torture testsuite will skip testing identical
@@ -47,7 +49,7 @@ if ![info exists TORTURE_OPTIONS] {
     # Also note that -finline-functions is explicitly included in one of the
     # items below, even though -O3 is also specified, because some ports may
     # choose to disable inlining functions by default, even when optimizing.
-    set TORTURE_OPTIONS [list \
+    set OBJC_TORTURE_OPTIONS [list \
 	" -O0 " \
 	" -O1 " \
 	" -O2 " \
@@ -57,23 +59,6 @@ if ![info exists TORTURE_OPTIONS] {
 	" -O3 -g " \
 	" -Os " ]
 }
-
-
-# Split TORTURE_OPTIONS into two choices: one for testcases with loops and
-# one for testcases without loops. Add in the objc runtime options also.
-
-set torture_with_loops ""
-set torture_without_loops ""
-foreach objc_option $OBJC_RUNTIME_OPTIONS {
-  foreach option $TORTURE_OPTIONS {
-  
-    if ![string match "*loop*" $option] {
-	lappend torture_without_loops "$option $objc_option"
-    }
-    lappend torture_with_loops "$option $objc_option"
-  }
-}
-
 
 #
 # objc-torture-compile -- runs the Tege OBJC-torture test

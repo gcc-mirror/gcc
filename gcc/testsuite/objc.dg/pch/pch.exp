@@ -20,9 +20,13 @@
 # Load support procs.
 load_lib objc-dg.exp
 load_lib dg-pch.exp
+load_lib torture-options.exp
 
 # Initialize `dg'.
 dg-init
+
+torture-init
+set-torture-options $DG_TORTURE_OPTIONS
 
 set old_dg_do_what_default "${dg-do-what-default}"
 
@@ -40,4 +44,5 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.m]] {
 set dg-do-what-default "$old_dg_do_what_default"
 
 # All done.
+torture-finish
 dg-finish
