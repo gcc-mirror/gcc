@@ -49,8 +49,7 @@ struct st_parameter_dt;
 
 typedef struct stream
 {
-  char *(*alloc_w_at) (struct stream *, int *, gfc_offset);
-  char *(*alloc_r_at) (struct stream *, int *, gfc_offset);
+  char *(*alloc_w_at) (struct stream *, int *);
   try (*sfree) (struct stream *);
   try (*close) (struct stream *);
   try (*seek) (struct stream *, gfc_offset);
@@ -70,11 +69,7 @@ io_mode;
 #define sfree(s) ((s)->sfree)(s)
 #define sclose(s) ((s)->close)(s)
 
-#define salloc_r(s, len) ((s)->alloc_r_at)(s, len, -1)
-#define salloc_w(s, len) ((s)->alloc_w_at)(s, len, -1)
-
-#define salloc_r_at(s, len, where) ((s)->alloc_r_at)(s, len, where)
-#define salloc_w_at(s, len, where) ((s)->alloc_w_at)(s, len, where)
+#define salloc_w(s, len) ((s)->alloc_w_at)(s, len)
 
 #define sseek(s, pos) ((s)->seek)(s, pos)
 #define struncate(s) ((s)->trunc)(s)
@@ -528,6 +523,25 @@ typedef struct
 unit_flags;
 
 
+/* Formatting buffer. This is a temporary scratch buffer. Currently used only
+   by formatted writes. After every
+   formatted write statement, this buffer is flushed. This buffer is needed since
+   not all devices are seekable, and T or TL edit descriptors require 
+   moving backwards in the record.  However, advance='no' complicates the
+   situation, so the buffer must only be partially flushed from the end of the
+   last flush until the current position in the record. */
+
+typedef struct fbuf
+{
+  char *buf;			/* Start of buffer.  */
+  size_t len;			/* Length of buffer.  */
+  size_t act;			/* Active bytes in buffer.  */
+  size_t flushed;		/* Flushed bytes from beginning of buffer.  */
+  char *ptr;			/* Current position in buffer.  */
+}
+fbuf;
+
+
 typedef struct gfc_unit
 {
   int unit_number;
@@ -578,6 +592,9 @@ typedef struct gfc_unit
 
   int file_len;
   char *file;
+  
+  /* Formatting buffer.  */
+  struct fbuf *fbuf;
 }
 gfc_unit;
 
@@ -812,8 +829,8 @@ internal_proto(free_format_data);
 extern const char *type_name (bt);
 internal_proto(type_name);
 
-extern void *read_block (st_parameter_dt *, int *);
-internal_proto(read_block);
+extern try read_block_form (st_parameter_dt *, void *, size_t *);
+internal_proto(read_block_form);
 
 extern char *read_sf (st_parameter_dt *, int *, int);
 internal_proto(read_sf);
@@ -930,6 +947,25 @@ internal_proto(size_from_real_kind);
 
 extern size_t size_from_complex_kind (int);
 internal_proto(size_from_complex_kind);
+
+/* fbuf.c */
+extern void fbuf_init (gfc_unit *, size_t);
+internal_proto(fbuf_init);
+
+extern void fbuf_destroy (gfc_unit *);
+internal_proto(fbuf_destroy);
+
+extern void fbuf_reset (gfc_unit *);
+internal_proto(fbuf_reset);
+
+extern char * fbuf_alloc (gfc_unit *, size_t);
+internal_proto(fbuf_alloc);
+
+extern int fbuf_flush (gfc_unit *, int);
+internal_proto(fbuf_flush);
+
+extern int fbuf_seek (gfc_unit *, gfc_offset);
+internal_proto(fbuf_seek);
 
 /* lock.c */
 extern void free_ionml (st_parameter_dt *);

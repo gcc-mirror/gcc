@@ -530,12 +530,10 @@ fd_alloc (unix_stream * s, gfc_offset where,
  * NULL on I/O error. */
 
 static char *
-fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
+fd_alloc_r_at (unix_stream * s, int *len)
 {
   gfc_offset m;
-
-  if (where == -1)
-    where = s->logical_offset;
+  gfc_offset where = s->logical_offset;
 
   if (s->buffer != NULL && s->buffer_offset <= where &&
       where + *len <= s->buffer_offset + s->active)
@@ -593,12 +591,10 @@ fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
  * we've already buffered the data or we need to load it. */
 
 static char *
-fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
+fd_alloc_w_at (unix_stream * s, int *len)
 {
   gfc_offset n;
-
-  if (where == -1)
-    where = s->logical_offset;
+  gfc_offset where = s->logical_offset;
 
   if (s->buffer == NULL || s->buffer_offset > where ||
       where + *len > s->buffer_offset + s->len)
@@ -752,7 +748,7 @@ fd_sset (unix_stream * s, int c, size_t n)
       /* memset() in chunks of BUFFER_SIZE.  */
       trans = (bytes_left < BUFFER_SIZE) ? bytes_left : BUFFER_SIZE;
 
-      p = fd_alloc_w_at (s, &trans, -1);
+      p = fd_alloc_w_at (s, &trans);
       if (p)
 	  memset (p, c, trans);
       else
@@ -779,7 +775,7 @@ fd_read (unix_stream * s, void * buf, size_t * nbytes)
   if (*nbytes < BUFFER_SIZE && s->method == SYNC_BUFFERED)
     {
       tmp = *nbytes;
-      p = fd_alloc_r_at (s, &tmp, -1);
+      p = fd_alloc_r_at (s, &tmp);
       if (p)
 	{
 	  *nbytes = tmp;
@@ -827,7 +823,7 @@ fd_write (unix_stream * s, const void * buf, size_t * nbytes)
   if (*nbytes < BUFFER_SIZE && s->method == SYNC_BUFFERED)
     {
       tmp = *nbytes;
-      p = fd_alloc_w_at (s, &tmp, -1);
+      p = fd_alloc_w_at (s, &tmp);
       if (p)
 	{
 	  *nbytes = tmp;
@@ -890,7 +886,6 @@ fd_open (unix_stream * s)
   else
     s->method = SYNC_BUFFERED;
 
-  s->st.alloc_r_at = (void *) fd_alloc_r_at;
   s->st.alloc_w_at = (void *) fd_alloc_w_at;
   s->st.sfree = (void *) fd_sfree;
   s->st.close = (void *) fd_close;
@@ -918,12 +913,10 @@ fd_open (unix_stream * s)
 
 
 static char *
-mem_alloc_r_at (int_stream * s, int *len, gfc_offset where)
+mem_alloc_r_at (int_stream * s, int *len)
 {
   gfc_offset n;
-
-  if (where == -1)
-    where = s->logical_offset;
+  gfc_offset where = s->logical_offset;
 
   if (where < s->buffer_offset || where > s->buffer_offset + s->active)
     return NULL;
@@ -939,15 +932,13 @@ mem_alloc_r_at (int_stream * s, int *len, gfc_offset where)
 
 
 static char *
-mem_alloc_w_at (int_stream * s, int *len, gfc_offset where)
+mem_alloc_w_at (int_stream * s, int *len)
 {
   gfc_offset m;
+  gfc_offset where = s->logical_offset;
 
   assert (*len >= 0);  /* Negative values not allowed. */
   
-  if (where == -1)
-    where = s->logical_offset;
-
   m = where + *len;
 
   if (where < s->buffer_offset)
@@ -962,9 +953,7 @@ mem_alloc_w_at (int_stream * s, int *len, gfc_offset where)
 }
 
 
-/* Stream read function for internal units. This is not actually used
-   at the moment, as all internal IO is formatted and the formatted IO
-   routines use mem_alloc_r_at.  */
+/* Stream read function for internal units.  */
 
 static int
 mem_read (int_stream * s, void * buf, size_t * nbytes)
@@ -973,7 +962,7 @@ mem_read (int_stream * s, void * buf, size_t * nbytes)
   int tmp;
 
   tmp = *nbytes;
-  p = mem_alloc_r_at (s, &tmp, -1);
+  p = mem_alloc_r_at (s, &tmp);
   if (p)
     {
       *nbytes = tmp;
@@ -983,7 +972,7 @@ mem_read (int_stream * s, void * buf, size_t * nbytes)
   else
     {
       *nbytes = 0;
-      return errno;
+      return 0;
     }
 }
 
@@ -998,10 +987,8 @@ mem_write (int_stream * s, const void * buf, size_t * nbytes)
   void *p;
   int tmp;
 
-  errno = 0;
-
   tmp = *nbytes;
-  p = mem_alloc_w_at (s, &tmp, -1);
+  p = mem_alloc_w_at (s, &tmp);
   if (p)
     {
       *nbytes = tmp;
@@ -1011,7 +998,7 @@ mem_write (int_stream * s, const void * buf, size_t * nbytes)
   else
     {
       *nbytes = 0;
-      return errno;
+      return 0;
     }
 }
 
@@ -1038,7 +1025,7 @@ mem_set (int_stream * s, int c, size_t n)
 
   len = n;
   
-  p = mem_alloc_w_at (s, &len, -1);
+  p = mem_alloc_w_at (s, &len);
   if (p)
     {
       memset (p, c, len);
@@ -1104,7 +1091,6 @@ open_internal (char *base, int length, gfc_offset offset)
   s->logical_offset = 0;
   s->active = s->file_length = length;
 
-  s->st.alloc_r_at = (void *) mem_alloc_r_at;
   s->st.alloc_w_at = (void *) mem_alloc_w_at;
   s->st.sfree = (void *) mem_sfree;
   s->st.close = (void *) mem_close;

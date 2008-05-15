@@ -626,6 +626,13 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
     free_mem (opp->file);
+    
+  if (flags->form == FORM_FORMATTED && (flags->action != ACTION_READ))
+    fbuf_init (u, 0);
+  else
+    u->fbuf = NULL;
+    
+    
   return u;
 
  cleanup:

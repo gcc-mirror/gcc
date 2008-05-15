@@ -401,8 +401,8 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	fpu-target.h io/close.c io/file_pos.c io/format.c io/inquire.c \
 	io/intrinsics.c io/list_read.c io/lock.c io/open.c io/read.c \
 	io/size_from_kind.c io/transfer.c io/unit.c io/unix.c \
-	io/write.c intrinsics/associated.c intrinsics/abort.c \
-	intrinsics/access.c intrinsics/args.c \
+	io/write.c io/fbuf.c intrinsics/associated.c \
+	intrinsics/abort.c intrinsics/access.c intrinsics/args.c \
 	intrinsics/c99_functions.c intrinsics/chdir.c \
 	intrinsics/chmod.c intrinsics/clock.c intrinsics/cpu_time.c \
 	intrinsics/cshift0.c intrinsics/ctime.c \
@@ -691,7 +691,7 @@ am__objects_33 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_32)
 am__objects_34 = close.lo file_pos.lo format.lo inquire.lo \
 	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
-	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo
+	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo fbuf.lo
 am__objects_35 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo dtime.lo env.lo \
@@ -946,7 +946,8 @@ io/size_from_kind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
-io/write.c
+io/write.c \
+io/fbuf.c
 
 gfor_io_headers = \
 io/io.h
@@ -1791,6 +1792,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fbuf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_pos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fmain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnum.Plo@am__quote@
@@ -5123,6 +5125,13 @@ write.lo: io/write.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/write.c' object='write.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o write.lo `test -f 'io/write.c' || echo '$(srcdir)/'`io/write.c
+
+fbuf.lo: io/fbuf.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fbuf.lo -MD -MP -MF "$(DEPDIR)/fbuf.Tpo" -c -o fbuf.lo `test -f 'io/fbuf.c' || echo '$(srcdir)/'`io/fbuf.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/fbuf.Tpo" "$(DEPDIR)/fbuf.Plo"; else rm -f "$(DEPDIR)/fbuf.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='io/fbuf.c' object='fbuf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fbuf.lo `test -f 'io/fbuf.c' || echo '$(srcdir)/'`io/fbuf.c
 
 associated.lo: intrinsics/associated.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT associated.lo -MD -MP -MF "$(DEPDIR)/associated.Tpo" -c -o associated.lo `test -f 'intrinsics/associated.c' || echo '$(srcdir)/'`intrinsics/associated.c; \
