@@ -2290,7 +2290,7 @@ skip_record (st_parameter_dt *dtp, size_t bytes)
 	{
 	  rlength = 
 	    (MAX_READ > (size_t) dtp->u.p.current_unit->bytes_left_subrecord) ?
-	    MAX_READ : dtp->u.p.current_unit->bytes_left_subrecord;
+	    MAX_READ : (size_t) dtp->u.p.current_unit->bytes_left_subrecord;
 
 	  if (sread (dtp->u.p.current_unit->s, p, &rlength) != 0)
 	    {

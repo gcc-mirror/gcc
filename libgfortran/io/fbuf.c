@@ -126,7 +126,7 @@ fbuf_seek (gfc_unit * u, gfc_offset off)
   if (pos < 0)
     return -1;
   u->fbuf->ptr = u->fbuf->buf + pos;
-  if (pos > u->fbuf->act)
+  if (pos > (gfc_offset) u->fbuf->act)
     u->fbuf->act = pos;
   return 0;
 }
