@@ -1,3 +1,10 @@
+2008-05-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (TARGET_RETURN_IN_MEMORY): Don't define here.
+	* config/bfin/bfin-protos.h (bfin_return_in_memory): Don't declare.
+	* config/bfin/bfin.c (bfin_return_in_memory): Now static.  Return bool.
+	(TARGET_RETURN_IN_MEMORY): Define.
+
 2008-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36244
