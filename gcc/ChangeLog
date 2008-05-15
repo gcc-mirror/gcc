@@ -1,3 +1,10 @@
+2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (refs_may_alias_p): Allow all kinds of
+	INDIRECT_REF and TARGET_MEM_REF.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
+	TARGET_MEM_REF.
+
 2008-05-15  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
