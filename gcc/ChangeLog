@@ -1,3 +1,10 @@
+2008-05-15  Sa Liu  <saliu@de.ibm.com>
+
+	* testsuite/gfortran.dg/c_kind_int128_test1.f03: New.
+	* testsuite/gfortran.dg/c_kind_int128_test2.f03: New.
+	* testsuite/lib/target-supports.exp: Add
+	check_effective_target_fortran_integer_16.
+
 2008-05-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (TARGET_RETURN_IN_MEMORY): Don't define here.
