@@ -1567,6 +1567,15 @@ gfc_real_info;
 
 extern gfc_real_info gfc_real_kinds[];
 
+typedef struct
+{
+  int kind, bit_size;
+  const char *name;
+}
+gfc_character_info;
+
+extern gfc_character_info gfc_character_kinds[];
+
 
 /* Equivalence structures.  Equivalent lvalues are linked along the
    *eq pointer, equivalence sets are strung along the *next node.  */

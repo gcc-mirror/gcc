@@ -277,7 +277,7 @@ void gfc_make_safe_expr (gfc_se * se);
 void gfc_conv_string_parameter (gfc_se * se);
 
 /* Compare two strings.  */
-tree gfc_build_compare_string (tree, tree, tree, tree);
+tree gfc_build_compare_string (tree, tree, tree, tree, int);
 
 /* Add an item to the end of TREE_LIST.  */
 tree gfc_chainon_list (tree, tree);
@@ -550,6 +550,16 @@ extern GTY(()) tree gfor_fndecl_string_trim;
 extern GTY(()) tree gfor_fndecl_string_minmax;
 extern GTY(()) tree gfor_fndecl_adjustl;
 extern GTY(()) tree gfor_fndecl_adjustr;
+extern GTY(()) tree gfor_fndecl_compare_string_char4;
+extern GTY(()) tree gfor_fndecl_concat_string_char4;
+extern GTY(()) tree gfor_fndecl_string_len_trim_char4;
+extern GTY(()) tree gfor_fndecl_string_index_char4;
+extern GTY(()) tree gfor_fndecl_string_scan_char4;
+extern GTY(()) tree gfor_fndecl_string_verify_char4;
+extern GTY(()) tree gfor_fndecl_string_trim_char4;
+extern GTY(()) tree gfor_fndecl_string_minmax_char4;
+extern GTY(()) tree gfor_fndecl_adjustl_char4;
+extern GTY(()) tree gfor_fndecl_adjustr_char4;
 
 /* Other misc. runtime library functions.  */
 extern GTY(()) tree gfor_fndecl_size0;

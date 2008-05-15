@@ -55,6 +55,8 @@ tree gfc_get_int_type (int);
 tree gfc_get_real_type (int);
 tree gfc_get_complex_type (int);
 tree gfc_get_logical_type (int);
+tree gfc_get_char_type (int);
+tree gfc_get_pchar_type (int);
 tree gfc_get_character_type (int, gfc_charlen *);
 tree gfc_get_character_type_len (int, tree);
 
