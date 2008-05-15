@@ -3436,7 +3436,6 @@ new_type_alias (tree ptr, tree var, tree expr)
   ali = add_may_alias_for_new_tag (tag, var);
 
   set_symbol_mem_tag (ptr, ali);
-  TREE_READONLY (tag) = TREE_READONLY (var);
   MTAG_GLOBAL (tag) = is_global_var (var);
 }
 
