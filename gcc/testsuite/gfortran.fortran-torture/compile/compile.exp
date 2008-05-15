@@ -23,6 +23,10 @@ if $tracelevel then {
 
 # load support procs
 load_lib fortran-torture.exp
+load_lib torture-options.exp
+
+torture-init
+set-torture-options $FORTRAN_TORTURE_OPTIONS
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -94,3 +98,5 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F08]] {
     }
     fortran-torture $testcase
 }
+
+torture-finish

@@ -30,6 +30,10 @@ if $tracelevel then {
 
 # load support procs
 load_lib c-torture.exp
+load_lib torture-options.exp
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
 
 #
 # This loop will run c-torture on any *.c file found in this directory.
@@ -52,3 +56,5 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 
     c-torture $testcase
 }
+
+torture-finish

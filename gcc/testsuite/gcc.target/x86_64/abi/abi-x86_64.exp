@@ -19,6 +19,7 @@
 
 load_lib c-torture.exp
 load_lib target-supports.exp
+load_lib torture-options.exp
 
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
      || ![is-effective-target lp64] } then {
@@ -26,6 +27,8 @@ if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
 }
 
 
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
 set additional_flags "-W -Wall"
 
 foreach src [lsort [find $srcdir/$subdir test_*.c]] {
@@ -41,3 +44,5 @@ foreach src [lsort [find $srcdir/$subdir test_*.c]] {
 	}
     }
 }
+
+torture-finish

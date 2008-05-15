@@ -28,7 +28,11 @@ if $tracelevel then {
 }
 
 # load support procs
+load_lib torture-options.exp
 load_lib c-torture.exp
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
 
 #
 # main test loop
@@ -42,3 +46,5 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 
     c-torture-execute $src
 }
+
+torture-finish
