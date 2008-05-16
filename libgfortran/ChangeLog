@@ -1,3 +1,8 @@
+2008-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/35632
+	* io/open.c (new_unit): Set stream position to correct value.
+
 2008-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/25561
