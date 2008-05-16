@@ -537,7 +537,7 @@ typedef struct fbuf
   size_t len;			/* Length of buffer.  */
   size_t act;			/* Active bytes in buffer.  */
   size_t flushed;		/* Flushed bytes from beginning of buffer.  */
-  char *ptr;			/* Current position in buffer.  */
+  size_t pos;			/* Current position in buffer.  */
 }
 fbuf;
 
