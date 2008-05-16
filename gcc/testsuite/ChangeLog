@@ -1,3 +1,8 @@
+2008-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36246
+	* gcc.target/i386/pr36246.c: New test.
+
 2008-05-16  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
 
@@ -58,16 +63,14 @@
 2008-05-15  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/torture-options.exp: New support for torture options.
-	* lib/gfortran-dg.exp (gfortran-dg-runtest): Use new torture
-	procs.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Use new torture procs.
 	* lib/c-torture.exp: Define C_TORTURE_OPTIONS instead of
 	TORTURE_OPTIONS; don't define torture_with_loops and
 	torture_without_loops.
 	* lib/gcc-dg.exp: Define DG_TORTURE_OPTIONS instead of
 	TORTURE_OPTIONS; don't define torture_with_loops and
 	torture_without_loops.
-	(gcc-dg-runtest): Use new torture procs if no torture options
-	defined.
+	(gcc-dg-runtest): Use new torture procs if no torture options defined.
 	* lib/fortran-torture.exp: Define FORTRAN_TORTURE_OPTIONS instead of
 	TORTURE_OPTIONS.
 	(fortran-torture-execute): Use torture_with_loops instead of

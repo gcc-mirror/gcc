@@ -1516,6 +1516,14 @@ enum reg_class
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
   ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
 
+/* Get_secondary_mem widens integral modes to BITS_PER_WORD.
+   There is no need to emit full 64 bit move on 64 bit targets
+   for integral modes that can be moved using 32 bit move.  */
+#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
+  (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
+   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
+   : MODE)
+
 /* QImode spills from non-QI registers need a scratch.  This does not
    happen often -- the only example so far requires an uninitialized
    pseudo.  */

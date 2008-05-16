@@ -1,3 +1,8 @@
+2008-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36246
+	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED_MODE): New define.
+
 2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* ifcvt.c (dead_or_predicable): Rename
@@ -58,8 +63,8 @@
 
 2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* cfg.c (init_flow): Add argument THE_FUN.  Use it
-	instead of cfun.  Update all users.
+	* cfg.c (init_flow): Add argument THE_FUN.  Use it instead of cfun.
+	Update all users.
 
 2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
 
@@ -68,10 +73,9 @@
 	* tree-pretty-print.c (dump_phi_nodes, dump_generic_bb_buff):
 	Add verbose dump.
 	* tree-pass.h (TDF_VERBOSE): New dump flag.
-	* print-tree.c (print_node): Added code to be able to print
-	PHI_NODES.
+	* print-tree.c (print_node): Added code to be able to print PHI_NODES.
 	(tree-flow.h): Added include.
-	Makefile.in (print-tree.o):  Added TREE_FLOW_H.
+	* Makefile.in (print-tree.o):  Added TREE_FLOW_H.
 
 2008-05-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -87,8 +91,7 @@
 	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Likewise.
 	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add
 	BFIN_CPU_UNKNOWN.
-	* config/bfin/elf.h (STARTFILE_SPEC): Use specific CRT for
-	BF561.
+	* config/bfin/elf.h (STARTFILE_SPEC): Use specific CRT for BF561.
 	(LIB_SPEC): Use proper linker script for bf561.  Error if no mcpu
 	option.
 	* config/bfin/bfin.c (bfin_cpu_type): Set to BFIN_CPU_UNKNOWN.
@@ -123,8 +126,7 @@
 	* ipa-inline.c (compute_inline_parameters): Made public and added
 	node parameter.
 	(compute_inline_parameters_for_current): New function.
-	(pass_inline_param): Now calls
-	compute_inline_parameters_for_current.
+	(pass_inline_param): Now calls compute_inline_parameters_for_current.
 	(inline_generate_summary): Removed parameter and made to loop over
 	all cgraph nodes.
 	(pass_ipa_inline): Updated for new IPA_PASS structure.
@@ -147,20 +149,18 @@
 
 2008-05-15  Diego Novillo  <dnovillo@google.com>
 
-	* config/arm/arm.c (arm_return_in_memory): Fix return
-	type.
+	* config/arm/arm.c (arm_return_in_memory): Fix return type.
 	* config/arm/arm-protos.h (arm_return_in_memory): Likewise.
 
 2008-05-15  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194
-	* combine.c (check_conversion): Rename back to check_promoted_subreg. 
-	Don't call record_truncated_value from here. 
-	(record_truncated_value): Turn it into a for_each_rtx callback. 
-	(record_truncated_values): New function. 
-	(combine_instructions): Call note_uses with 
-	record_truncated_values.  Change name of check_conversion to 
-	check_promoted_subreg. 
+	* combine.c (check_conversion): Rename back to check_promoted_subreg.
+	Don't call record_truncated_value from here.
+	(record_truncated_value): Turn it into a for_each_rtx callback.
+	(record_truncated_values): New function.
+	(combine_instructions): Call note_uses with record_truncated_values.
+	Change name of check_conversion to check_promoted_subreg. 
 
 2008-05-15  Janis Johnson  <janis187@us.ibm.com>
 
