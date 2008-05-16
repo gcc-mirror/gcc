@@ -1,3 +1,25 @@
+2008-05-15  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_dble, gfc_simplify_float,
+	simplify_bound, gfc_simplify_nearest, gfc_simplify_real): Plug
+	possible memory leaks.
+	(gfc_simplify_reshape): Plug possible memory leaks and dereferencing
+	of NULL pointers.
+
+2008-05-15  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/36239
+	* simplify.c (gfc_simplify_int, gfc_simplify_intconv): Replaced hand
+	rolled integer conversion with gfc_int2int, gfc_real2int, and
+	gfc_complex2int.
+	(gfc_simplify_intconv): Renamed to simplify_intconv.
+	
+2008-05-15  Steven G. Kargl,   <kargl@comcast.net>
+	* gfortran.dg/and_or_xor.f90: New test
+
+	* fortran/simplify.c (gfc_simplify_and, gfc_simplify_or,
+	gfc_simplify_xor): Don't range check logical results.
+
 2008-05-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-expr.c (gfc_conv_concat_op): Take care of nondefault
