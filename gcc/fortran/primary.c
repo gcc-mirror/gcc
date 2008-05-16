@@ -1966,17 +1966,39 @@ gfc_expr_attr (gfc_expr *e)
 /* Match a structure constructor.  The initial symbol has already been
    seen.  */
 
+typedef struct gfc_structure_ctor_component
+{
+  char* name;
+  gfc_expr* val;
+  locus where;
+  struct gfc_structure_ctor_component* next;
+}
+gfc_structure_ctor_component;
+
+#define gfc_get_structure_ctor_component() \
+  gfc_getmem(sizeof(gfc_structure_ctor_component))
+
+static void
+gfc_free_structure_ctor_component (gfc_structure_ctor_component *comp)
+{
+  gfc_free (comp->name);
+  gfc_free_expr (comp->val);
+}
+
 match
 gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
 {
-  gfc_constructor *head, *tail;
-  gfc_component *comp;
+  gfc_structure_ctor_component *comp_head, *comp_tail;
+  gfc_structure_ctor_component *comp_iter;
+  gfc_constructor *ctor_head, *ctor_tail;
+  gfc_component *comp; /* Is set NULL when named component is first seen */
   gfc_expr *e;
   locus where;
   match m;
-  bool private_comp = false;
+  const char* last_name = NULL;
 
-  head = tail = NULL;
+  comp_head = comp_tail = NULL;
+  ctor_head = ctor_tail = NULL;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -1985,57 +2007,194 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
 
   gfc_find_component (sym, NULL);
 
-  for (comp = sym->components; comp; comp = comp->next)
+  /* Match the component list and store it in a list together with the
+     corresponding component names.  Check for empty argument list first.  */
+  if (gfc_match_char (')') != MATCH_YES)
     {
-      if (comp->access == ACCESS_PRIVATE)
+      comp = sym->components;
+      do
 	{
-	  private_comp = true;
-	  break;
-	}
-      if (head == NULL)
-	tail = head = gfc_get_constructor ();
-      else
-	{
-	  tail->next = gfc_get_constructor ();
-	  tail = tail->next;
-	}
+	  gfc_component *this_comp = NULL;
 
-      m = gfc_match_expr (&tail->expr);
-      if (m == MATCH_NO)
-	goto syntax;
-      if (m == MATCH_ERROR)
-	goto cleanup;
-
-      if (gfc_match_char (',') == MATCH_YES)
-	{
-	  if (comp->next == NULL)
+	  if (!comp_head)
+	    comp_tail = comp_head = gfc_get_structure_ctor_component ();
+	  else
 	    {
-	      gfc_error ("Too many components in structure constructor at %C");
+	      comp_tail->next = gfc_get_structure_ctor_component ();
+	      comp_tail = comp_tail->next;
+	    }
+	  comp_tail->name = gfc_getmem(GFC_MAX_SYMBOL_LEN + 1);
+	  comp_tail->val = NULL;
+	  comp_tail->where = gfc_current_locus;
+
+	  /* Try matching a component name.  */
+	  if (gfc_match_name (comp_tail->name) == MATCH_YES 
+	      && gfc_match_char ('=') == MATCH_YES)
+	    {
+	      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Structure"
+				  " constructor with named arguments at %C")
+		  == FAILURE)
+		goto cleanup;
+
+	      last_name = comp_tail->name;
+	      comp = NULL;
+	    }
+	  else
+	    {
+	      /* Components without name are not allowed after the first named
+		 component initializer!  */
+	      if (!comp)
+		{
+		  if (last_name)
+		    gfc_error ("Component initializer without name after"
+			       " component named %s at %C!", last_name);
+		  else
+		    gfc_error ("Too many components in structure constructor at"
+			       " %C!");
+		  goto cleanup;
+		}
+
+	      gfc_current_locus = comp_tail->where;
+	      strncpy (comp_tail->name, comp->name, GFC_MAX_SYMBOL_LEN + 1);
+	    }
+
+	  /* Find the current component in the structure definition; this is
+	     needed to get its access attribute in the private check below.  */
+	  if (comp)
+	    this_comp = comp;
+	  else
+	    {
+	      for (comp = sym->components; comp; comp = comp->next)
+		if (!strcmp (comp->name, comp_tail->name))
+		  {
+		    this_comp = comp;
+		    break;
+		  }
+	      comp = NULL; /* Reset needed!  */
+
+	      /* Here we can check if a component name is given which does not
+		 correspond to any component of the defined structure.  */
+	      if (!this_comp)
+		{
+		  gfc_error ("Component '%s' in structure constructor at %C"
+			     " does not correspond to any component in the"
+			     " constructed structure!", comp_tail->name);
+		  goto cleanup;
+		}
+	    }
+	  gcc_assert (this_comp);
+
+	  /* Check the current component's access status.  */
+	  if (sym->attr.use_assoc && this_comp->access == ACCESS_PRIVATE)
+	    {
+	      gfc_error ("Component '%s' is PRIVATE in structure constructor"
+			 " at %C!", comp_tail->name);
 	      goto cleanup;
 	    }
 
-	  continue;
+	  /* Check if this component is already given a value.  */
+	  for (comp_iter = comp_head; comp_iter != comp_tail; 
+	       comp_iter = comp_iter->next)
+	    {
+	      gcc_assert (comp_iter);
+	      if (!strcmp (comp_iter->name, comp_tail->name))
+		{
+		  gfc_error ("Component '%s' is initialized twice in the"
+			     " structure constructor at %C!", comp_tail->name);
+		  goto cleanup;
+		}
+	    }
+
+	  /* Match the current initializer expression.  */
+	  m = gfc_match_expr (&comp_tail->val);
+	  if (m == MATCH_NO)
+	    goto syntax;
+	  if (m == MATCH_ERROR)
+	    goto cleanup;
+
+	  if (comp)
+	    comp = comp->next;
+	}
+      while (gfc_match_char (',') == MATCH_YES);
+
+      if (gfc_match_char (')') != MATCH_YES)
+	goto syntax;
+	
+      /* If there were components given and all components are private, error
+	 out at this place.  */
+      if (sym->attr.use_assoc && sym->component_access == ACCESS_PRIVATE)
+	{
+	  gfc_error ("All components of '%s' are PRIVATE in structure"
+		     " constructor at %C", sym->name);
+	  goto cleanup;
+	}
+    }
+
+  /* Translate the component list into the actual constructor by sorting it in
+     the order required; this also checks along the way that each and every
+     component actually has an initializer and handles default initializers
+     for components without explicit value given.  */
+  for (comp = sym->components; comp; comp = comp->next)
+    {
+      gfc_structure_ctor_component **next_ptr;
+      gfc_expr *value = NULL;
+
+      /* Try to find the initializer for the current component by name.  */
+      next_ptr = &comp_head;
+      for (comp_iter = comp_head; comp_iter; comp_iter = comp_iter->next)
+	{
+	  if (!strcmp (comp_iter->name, comp->name))
+	    break;
+	  next_ptr = &comp_iter->next;
 	}
 
-      break;
+      /* If it was not found, try the default initializer if there's any;
+	 otherwise, it's an error.  */
+      if (!comp_iter)
+	{
+	  if (comp->initializer)
+	    {
+	      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Structure"
+				  " constructor with missing optional arguments"
+				  " at %C") == FAILURE)
+		goto cleanup;
+	      value = gfc_copy_expr (comp->initializer);
+	    }
+	  else
+	    {
+	      gfc_error ("No initializer for component '%s' given in the"
+			 " structure constructor at %C!", comp->name);
+	      goto cleanup;
+	    }
+	}
+      else
+	value = comp_iter->val;
+
+      /* Add the value to the constructor chain built.  */
+      if (ctor_tail)
+	{
+	  ctor_tail->next = gfc_get_constructor ();
+	  ctor_tail = ctor_tail->next;
+	}
+      else
+	ctor_head = ctor_tail = gfc_get_constructor ();
+      gcc_assert (value);
+      ctor_tail->expr = value;
+
+      /* Remove the entry from the component list.  We don't want the expression
+	 value to be free'd, so set it to NULL.  */
+      if (comp_iter)
+	{
+	  *next_ptr = comp_iter->next;
+	  comp_iter->val = NULL;
+	  gfc_free_structure_ctor_component (comp_iter);
+	}
     }
 
-  if (sym->attr.use_assoc
-      && (sym->component_access == ACCESS_PRIVATE || private_comp))
-    {
-      gfc_error ("Structure constructor for '%s' at %C has PRIVATE "
-		 "components", sym->name);
-      goto cleanup;
-    }
-
-  if (gfc_match_char (')') != MATCH_YES)
-    goto syntax;
-
-  if (comp && comp->next != NULL)
-    {
-      gfc_error ("Too few components in structure constructor at %C");
-      goto cleanup;
-    }
+  /* No component should be left, as this should have caused an error in the
+     loop constructing the component-list (name that does not correspond to any
+     component in the structure definition).  */
+  gcc_assert (!comp_head);
 
   e = gfc_get_expr ();
 
@@ -2045,7 +2204,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   e->ts.derived = sym;
   e->where = where;
 
-  e->value.constructor = head;
+  e->value.constructor = ctor_head;
 
   *result = e;
   return MATCH_YES;
@@ -2054,7 +2213,13 @@ syntax:
   gfc_error ("Syntax error in structure constructor at %C");
 
 cleanup:
-  gfc_free_constructor (head);
+  for (comp_iter = comp_head; comp_iter; )
+    {
+      gfc_structure_ctor_component *next = comp_iter->next;
+      gfc_free_structure_ctor_component (comp_iter);
+      comp_iter = next;
+    }
+  gfc_free_constructor (ctor_head);
   return MATCH_ERROR;
 }
 

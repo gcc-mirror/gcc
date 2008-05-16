@@ -1,3 +1,10 @@
+2008-05-16  Daniel Kraft  <d@domob.eu>
+
+	* primary.c:  New private structure "gfc_structure_ctor_component".
+	(gfc_free_structure_ctor_component):  New helper function.
+	(gfc_match_structure_constructor):  Extended largely to support named
+	arguments and default initialization for structure constructors.
+
 2008-05-15  Steven G. Kargl  <kargls@comcast.net>
 
 	* simplify.c (gfc_simplify_dble, gfc_simplify_float,
