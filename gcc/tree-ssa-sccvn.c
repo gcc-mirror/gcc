@@ -1890,7 +1890,7 @@ compare_ops (const void *pa, const void *pb)
 	return -1;
       else if (TREE_CODE (opstmtb) == PHI_NODE)
 	return 1;
-      return stmt_ann (opstmta)->uid - stmt_ann (opstmtb)->uid;
+      return gimple_stmt_uid (opstmta) - gimple_stmt_uid (opstmtb);
     }
   return rpo_numbers[bba->index] - rpo_numbers[bbb->index];
 }
@@ -2089,8 +2089,6 @@ init_scc_vn (void)
   size_t i;
   int j;
   int *rpo_numbers_temp;
-  basic_block bb;
-  size_t id = 0;
 
   calculate_dominance_info (CDI_DOMINATORS);
   sccstack = NULL;
@@ -2131,15 +2129,7 @@ init_scc_vn (void)
 	}
     }
 
-  FOR_ALL_BB (bb)
-    {
-      block_stmt_iterator bsi;
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	{
-	  tree stmt = bsi_stmt (bsi);
-	  stmt_ann (stmt)->uid = id++;
-	}
-    }
+  renumber_gimple_stmt_uids ();
 
   /* Create the valid and optimistic value numbering tables.  */
   valid_info = XCNEW (struct vn_tables_s);

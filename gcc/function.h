@@ -465,6 +465,9 @@ struct function GTY(())
   /* Used types hash table.  */
   htab_t GTY ((param_is (union tree_node))) used_types_hash;
 
+  /* Last statement uid.  */
+  int last_stmt_uid;
+
   /* Line number of the end of the function.  */
   location_t function_end_locus;
 

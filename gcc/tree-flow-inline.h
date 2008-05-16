@@ -278,6 +278,41 @@ get_stmt_ann (tree stmt)
   return (ann) ? ann : create_stmt_ann (stmt);
 }
 
+/* Set the uid of all non phi function statements.  */
+static inline void
+set_gimple_stmt_uid (tree stmt, unsigned int uid)
+{
+  get_stmt_ann (stmt)->uid = uid;
+}
+
+/* Get the uid of all non phi function statements.  */
+static inline unsigned int
+gimple_stmt_uid (tree stmt)
+{
+  return get_stmt_ann (stmt)->uid;
+}
+
+/* Get the number of the next statement uid to be allocated.  */
+static inline unsigned int
+gimple_stmt_max_uid (struct function *fn)
+{
+  return fn->last_stmt_uid;
+}
+
+/* Set the number of the next statement uid to be allocated.  */
+static inline void
+set_gimple_stmt_max_uid (struct function *fn, unsigned int maxid)
+{
+  fn->last_stmt_uid = maxid;
+}
+
+/* Set the number of the next statement uid to be allocated.  */
+static inline unsigned int
+inc_gimple_stmt_max_uid (struct function *fn)
+{
+  return fn->last_stmt_uid++;
+}
+
 /* Return the annotation type for annotation ANN.  */
 static inline enum tree_ann_type
 ann_type (tree_ann_t ann)
