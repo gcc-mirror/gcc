@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007
+// Copyright (C) 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -26,29 +26,31 @@
 #include <cstring>
 #include <testsuite_hooks.h>
 
+using namespace std;
+
 // libstdc++/1972
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::string s("lack of sunlight, no water error");
+  string s("lack of sunlight, no water error");
 
   // 1
-  std::system_error obj1 = std::system_error(s);
+  system_error obj1 = system_error(error_code(), s);
 
   // 2
-  std::system_error obj2(s);
+  system_error obj2(error_code(), s);
 
-  VERIFY( std::strcmp(obj1.what(), s.data()) == 0 );
-  VERIFY( std::strcmp(obj2.what(), s.data()) == 0 );
+  VERIFY( strcmp(obj1.what(), s.data()) == 0 );
+  VERIFY( strcmp(obj2.what(), s.data()) == 0 );
 }
 
 void test02()
 {
   bool test __attribute__((unused)) = true;
-  std::string s("lack of sunlight error");
-  std::system_error x(s);
+  string s("lack of sunlight error");
+  system_error x(error_code(), s);
   
-  VERIFY( std::strcmp(x.what(), s.data()) == 0 );
+  VERIFY( strcmp(x.what(), s.data()) == 0 );
 }
 
 int main(void)

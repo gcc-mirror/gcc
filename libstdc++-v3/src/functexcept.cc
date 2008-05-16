@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   void
   __throw_system_error(const char* __s)
-  { throw system_error(_(__s)); }
+  { throw system_error(error_code(), _(__s)); }
 
   void
   __throw_system_error(int __i)

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007
+// Copyright (C) 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,7 +32,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   std::string s("after nine thirty, this request cannot be met");
 
-  std::system_error obj = std::system_error(s, std::posix_error::invalid_argument);
+  std::system_error obj = std::system_error(std::posix_error::invalid_argument, s);
   std::string s1(obj.what());
   std::string s2(obj.what());
   VERIFY( s1 == s2 );

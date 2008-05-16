@@ -26,6 +26,6 @@
 int main()
 {
   typedef std::system_error test_type;
-  __gnu_test::diamond_derivation<test_type, false>::test();
+  __gnu_test::diamond_derivation<test_type, true>::test();
   return 0;
 }

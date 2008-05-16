@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007
+// Copyright (C) 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -30,7 +30,7 @@
 class fuzzy_logic : public std::system_error
 {
 public:
-  fuzzy_logic() : std::system_error("whoa") { }
+  fuzzy_logic() : std::system_error(std::error_code(), "whoa") { }
 };
 
 void test03()

@@ -1,3 +1,31 @@
+2008-05-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/system_error: Align to current draft specifications.
+	* src/system_error.cc: Same.
+	* src/functexcept.cc: Adjust for corrected system_error construction.
+	* include/std/ostream: Adjust error_code inserter.
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Remove sys_nerr test.
+	* config/abi/pre/gnu.ver: Add new exports.
+	
+	* testsuite/util/testsuite_error.h: Consolidate error testing
+	utilities here.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Use
+	testsuite_error, adjust line numbers and constructor calls.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Same.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Same.
+	* testsuite/19_diagnostics/error_category/cons/default.cc: Same.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc: Same.
+	* testsuite/19_diagnostics/error_category/operators/not_equal.cc: Same.
+	* testsuite/19_diagnostics/system_error/cons_virtual_derivation.cc: 
+	Same.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-1.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-2.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-big.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-4.cc: Same.
+
 2008-05-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* configure.ac: Don't check AC_LIBTOOL_DLOPEN if using newlib.
