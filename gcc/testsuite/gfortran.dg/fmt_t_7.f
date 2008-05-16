@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR34974 null bytes when reverse-tabbing long records
 ! Test case prpared by Jerry DeLisle <jvdelisle@gcc.gnu.org>
        program test
