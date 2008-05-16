@@ -3682,7 +3682,6 @@ df_note_add_problem (void)
    DF_LR_IN.  If you start at the bottom of the block use one of
    DF_LIVE_OUT or DF_LR_OUT.  BE SURE TO PASS A COPY OF THESE SETS,
    THEY WILL BE DESTROYED.
-
 ----------------------------------------------------------------------------*/
 
 
@@ -3757,49 +3756,22 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
 }
 
 
-/* Apply the artificial uses and defs at the top of BB in a forwards
-   direction.  */
+/*----------------------------------------------------------------------------
+   The following three functions are used only for BACKWARDS scanning:
+   i.e. they process the defs before the uses.
 
-void 
-df_simulate_artificial_refs_at_top (basic_block bb, bitmap live)
-{
-  struct df_ref **def_rec;
-#ifdef EH_USES
-  struct df_ref **use_rec;
-#endif
-  int bb_index = bb->index;
-  
-#ifdef EH_USES
-  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
-    {
-      struct df_ref *use = *use_rec;
-      if (DF_REF_FLAGS (use) & DF_REF_AT_TOP)
-	bitmap_set_bit (live, DF_REF_REGNO (use));
-    }
-#endif
+   df_simulate_artificial_refs_at_end should be called first with a
+   bitvector copyied from the DF_LIVE_OUT or DF_LR_OUT.  Then
+   df_simulate_one_insn should be called for each insn in the block,
+   starting with the last on.  Finally,
+   df_simulate_artificial_refs_at_top can be called to get a new value
+   of the sets at the top of the block (this is rarely used).
 
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      struct df_ref *def = *def_rec;
-      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	bitmap_clear_bit (live, DF_REF_REGNO (def));
-    }
-}
-
-
-/* Simulate the forwards effects of INSN on the bitmap LIVE.  */
-
-void 
-df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
-{
-  if (! INSN_P (insn))
-    return;	
-  
-  df_simulate_uses (insn, live);
-  df_simulate_defs (insn, live);
-  df_simulate_fixup_sets (bb, live);
-}
-
+   It would be trivial to define a similar set of functions that work
+   in the forwards direction.  The only changes would be to process
+   the uses before the defs and properly rename the functions.  This
+   has so far not been necessary.
+----------------------------------------------------------------------------*/
 
 /* Apply the artificial uses and defs at the end of BB in a backwards
    direction.  */
@@ -3830,7 +3802,7 @@ df_simulate_artificial_refs_at_end (basic_block bb, bitmap live)
 /* Simulate the backwards effects of INSN on the bitmap LIVE.  */
 
 void 
-df_simulate_one_insn_backwards (basic_block bb, rtx insn, bitmap live)
+df_simulate_one_insn (basic_block bb, rtx insn, bitmap live)
 {
   if (! INSN_P (insn))
     return;	
@@ -3841,3 +3813,31 @@ df_simulate_one_insn_backwards (basic_block bb, rtx insn, bitmap live)
 }
 
 
+/* Apply the artificial uses and defs at the top of BB in a backwards
+   direction.  */
+
+void 
+df_simulate_artificial_refs_at_top (basic_block bb, bitmap live)
+{
+  struct df_ref **def_rec;
+#ifdef EH_USES
+  struct df_ref **use_rec;
+#endif
+  int bb_index = bb->index;
+  
+  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
+    {
+      struct df_ref *def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	bitmap_clear_bit (live, DF_REF_REGNO (def));
+    }
+
+#ifdef EH_USES
+  for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
+    {
+      struct df_ref *use = *use_rec;
+      if (DF_REF_FLAGS (use) & DF_REF_AT_TOP)
+	bitmap_set_bit (live, DF_REF_REGNO (use));
+    }
+#endif
+}

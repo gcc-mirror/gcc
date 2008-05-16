@@ -486,7 +486,7 @@ collect_pattern_seqs (void)
 	  }
 	if (insn == BB_HEAD (bb))
 	  break;
-	df_simulate_one_insn_backwards (bb, insn, &live);
+	df_simulate_one_insn (bb, insn, &live);
 	insn = prev;
       }
 
@@ -576,7 +576,7 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
 
   /* Propagate until INSN if found.  */
   for (x = BB_END (bb); x != insn; x = PREV_INSN (x))
-    df_simulate_one_insn_backwards (bb, x, &live);
+    df_simulate_one_insn (bb, x, &live);
 
   /* Clear registers live after INSN.  */
   renumbered_reg_set_to_hard_reg_set (&hlive, &live);
@@ -586,7 +586,7 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
   for (i = 0; i < length;)
     {
       rtx prev = PREV_INSN (x);
-      df_simulate_one_insn_backwards (bb, x, &live);
+      df_simulate_one_insn (bb, x, &live);
 
       if (INSN_P (x))
         {
