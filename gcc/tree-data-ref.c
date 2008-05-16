@@ -1265,6 +1265,8 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
   return true;
 }
 
+static void compute_self_dependence (struct data_dependence_relation *);
+
 /* Initialize a data dependence relation between data accesses A and
    B.  NB_LOOPS is the number of loops surrounding the references: the
    size of the classic distance/direction vectors.  */
@@ -1299,6 +1301,20 @@ initialize_data_dependence_relation (struct data_reference *a,
       return res;
     }
 
+  /* When the references are exactly the same, don't spend time doing
+     the data dependence tests, just initialize the ddr and return.  */
+  if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
+    {
+      DDR_AFFINE_P (res) = true;
+      DDR_ARE_DEPENDENT (res) = NULL_TREE;
+      DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
+      DDR_LOOP_NEST (res) = loop_nest;
+      DDR_INNER_LOOP (res) = 0;
+      DDR_SELF_REFERENCE (res) = true;
+      compute_self_dependence (res);
+      return res;
+    }
+
   /* If the references do not access the same object, we do not know
      whether they alias or not.  */
   if (!operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), 0))
@@ -1324,6 +1340,7 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
   DDR_LOOP_NEST (res) = loop_nest;
   DDR_INNER_LOOP (res) = 0;
+  DDR_SELF_REFERENCE (res) = false;
 
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     {
@@ -3798,7 +3815,8 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
     }
 
   /* Analyze only when the dependence relation is not yet known.  */
-  if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
+  if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
+      && !DDR_SELF_REFERENCE (ddr))
     {
       dependence_stats.num_dependence_tests++;
 

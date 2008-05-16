@@ -1,3 +1,9 @@
+2008-05-16  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/36228
+	* gcc.dg/vect/pr36228.c: New.
+
 2008-05-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/f2003_io_4.f03, gfortran.dg/f2003_io_5.f03,

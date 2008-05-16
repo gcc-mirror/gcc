@@ -221,6 +221,10 @@ struct data_dependence_relation
      a distance vector.  */
   bool affine_p;
 
+  /* Set to true when the dependence relation is on the same data
+     access.  */
+  bool self_reference_p;
+
   /* A "yes/no/maybe" field for the dependence relation:
      
      - when "ARE_DEPENDENT == NULL_TREE", there exist a dependence
@@ -273,6 +277,7 @@ DEF_VEC_ALLOC_P(ddr_p,heap);
    the loop nest.  */
 #define DDR_NB_LOOPS(DDR) (VEC_length (loop_p, DDR_LOOP_NEST (DDR)))
 #define DDR_INNER_LOOP(DDR) DDR->inner_loop
+#define DDR_SELF_REFERENCE(DDR) DDR->self_reference_p
 
 #define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
 #define DDR_DIR_VECTS(DDR) ((DDR)->dir_vects)
