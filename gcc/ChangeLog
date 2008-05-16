@@ -1,3 +1,9 @@
+2008-05-16  Doug Kwan  <dougkwan@google.com>
+
+	* real.c (real_to_decimal, real_to_hexadecimal): Distinguish
+	QNaN & SNaN.
+	(real_from_string): Handle NaNs and Inf as approriate.
+
 2008-05-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* doc/gty.texi (Source Files Containing Type Information): Note
