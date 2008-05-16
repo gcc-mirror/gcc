@@ -4218,7 +4218,22 @@ bfin_discover_loops (bitmap_obstack *stack, FILE *dump_file)
 
       if (INSN_P (tail) && recog_memoized (tail) == CODE_FOR_loop_end)
 	{
+	  rtx insn;
 	  /* A possible loop end */
+
+	  /* There's a degenerate case we can handle - an empty loop consisting
+	     of only a back branch.  Handle that by deleting the branch.  */
+	  insn = BB_HEAD (BRANCH_EDGE (bb)->dest);
+	  if (next_real_insn (insn) == tail)
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, ";; degenerate loop ending at\n");
+		  print_rtl_single (dump_file, tail);
+		}
+	      delete_insn_and_edges (tail);
+	      continue;
+	    }
 
 	  loop = XNEW (struct loop_info);
 	  loop->next = loops;

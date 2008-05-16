@@ -1,5 +1,7 @@
 2008-05-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin.c (bfin_discover_loops): Delete empty loops.
+
 	From Jie Zhang  <jie.zhang@analog.com>
         * config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
 	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Remove mcpu=bf532-0.3,
