@@ -47,9 +47,6 @@ namespace __gnu_parallel
   /** @brief Forces sequential execution at compile time. */
   struct sequential_tag { };
 
-  /** @brief Forces exact splitting in multiway merge at compile time. */
-  struct exact_tag { };
-
   /** @brief Recommends parallel execution at compile time,
    *  optionally using a user-specified number of threads. */
   struct parallel_tag
@@ -117,6 +114,25 @@ namespace __gnu_parallel
 
   /** @brief Base class for for std::find() variants. */
   struct find_tag { };
+
+
+  /** @brief Forces parallel merging
+   *  with exact splitting, at compile time. */
+  struct exact_tag : public parallel_tag
+  {
+      exact_tag() { }
+      exact_tag(thread_index_t num_threads)
+          : parallel_tag(num_threads) { }
+  };
+
+  /** @brief Forces parallel merging
+   *  with exact splitting, at compile time. */
+  struct sampling_tag : public parallel_tag
+  {
+      sampling_tag() { }
+      sampling_tag(thread_index_t num_threads)
+          : parallel_tag(num_threads) { }
+  };
 
 
   /** @brief Forces parallel sorting using multiway mergesort

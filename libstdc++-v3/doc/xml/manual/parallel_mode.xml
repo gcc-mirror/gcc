@@ -576,23 +576,35 @@ This means that the actual parallelization strategy is chosen at run-time.
 </para>
 
 <para>
+For the following algorithms in general, we have
+<code>__gnu_parallel::parallel_tag</code> and
+<code>__gnu_parallel::default_parallel_tag</code>, in addition to
+<code>__gnu_parallel::sequential_tag</code>.
+<code>__gnu_parallel::default_parallel_tag</code> chooses the default 
+algorithm at compiletime, as does omitting the tag.
+<code>__gnu_parallel::parallel_tag</code> postpones the decision to runtime
+(see next section).
+For all tags, the number of threads desired for this call can optionally be
+passed to the respective tag's constructor.
+</para>
+
+<para>
+The <code>multiway_merge</code> algorithm comes with the additional choices,
+<code>__gnu_parallel::exact_tag</code> and
+<code>__gnu_parallel::sampling_tag</code>.
+Exact and sampling are the two available splitting strategies.
+</para>
+
+<para>
 For the <code>sort</code> and <code>stable_sort</code> algorithms, there are
-several possible choices, 
-<code>__gnu_parallel::parallel_tag</code>,
-<code>__gnu_parallel::default_parallel_tag</code>,
+several additional choices, namely
 <code>__gnu_parallel::multiway_mergesort_tag</code>,
 <code>__gnu_parallel::multiway_mergesort_exact_tag</code>, 
 <code>__gnu_parallel::multiway_mergesort_sampling_tag</code>,
-<code>__gnu_parallel::quicksort_tag</code>,
+<code>__gnu_parallel::quicksort_tag</code>, and
 <code>__gnu_parallel::balanced_quicksort_tag</code>.
-Multiway mergesort comes with two splitting strategies for merging, therefore
-the extra choice. If non is chosen, the default splitting strategy is selected.
-<code>__gnu_parallel::default_parallel_tag</code> chooses the default parallel
-sorting algorithm at runtime. <code>__gnu_parallel::parallel_tag</code>
-postpones the decision to runtime (see next section).
-The quicksort options cannot be used for <code>stable_sort</code>.
-For all tags, the number of threads desired for this call can optionally be
-passed to the tag's constructor.
+Multiway mergesort comes with the two splitting strategies for multi-way
+merging. The quicksort options cannot be used for <code>stable_sort</code>.
 </para>
 
 </sect3>
