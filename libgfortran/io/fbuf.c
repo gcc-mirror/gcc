@@ -37,20 +37,19 @@ void
 fbuf_init (gfc_unit * u, size_t len)
 {
   if (len == 0)
-    len = 4096;			/* Default size one page.  */
+    len = 512;			/* Default size.  */
 
   u->fbuf = get_mem (sizeof (fbuf));
-  u->fbuf->buf = u->fbuf->ptr = get_mem (len);
+  u->fbuf->buf = get_mem (len);
   u->fbuf->len = len;
-  u->fbuf->act = u->fbuf->flushed = 0;
+  u->fbuf->act = u->fbuf->flushed = u->fbuf->pos = 0;
 }
 
 
 void
 fbuf_reset (gfc_unit * u)
 {
-  u->fbuf->act = u->fbuf->flushed = 0;
-  u->fbuf->ptr = u->fbuf->buf;
+  u->fbuf->act = u->fbuf->flushed = u->fbuf->pos = 0;
 }
 
 
@@ -67,31 +66,63 @@ fbuf_destroy (gfc_unit * u)
 
 /* Return a pointer to the current position in the buffer, and increase
    the pointer by len. Makes sure that the buffer is big enough, 
-   reallocating if necessary.  */
+   reallocating if necessary. If the buffer is not big enough, there are
+   three cases to consider:
+   1. If we haven't flushed anything, realloc
+   2. If we have flushed enough that by discarding the flushed bytes
+      the request fits into the buffer, do that.
+   3. Else allocate a new buffer, memcpy unflushed active bytes from old
+      buffer. */
 
 char *
 fbuf_alloc (gfc_unit * u, size_t len)
 {
-  size_t newlen, ptrpos;
+  size_t newlen;
   char *dest;
-  if (u->fbuf->ptr + len > u->fbuf->buf + u->fbuf->len)
+  if (u->fbuf->pos + len > u->fbuf->len)
     {
-      /* Round up to nearest multiple of the current buffer length.  */
-      ptrpos = u->fbuf->ptr - u->fbuf->buf;
-      newlen = ((ptrpos + len) / u->fbuf->len + 1) * u->fbuf->len;
-      dest = realloc (u->fbuf->buf, newlen);
-      if (dest == NULL)
-	return NULL;
-      u->fbuf->buf = dest;
-      u->fbuf->ptr = dest + ptrpos;
-      u->fbuf->len = newlen;
+      if (u->fbuf->flushed == 0)
+	{
+	  /* Round up to nearest multiple of the current buffer length.  */
+	  newlen = ((u->fbuf->pos + len) / u->fbuf->len + 1) * u->fbuf->len;
+	  dest = realloc (u->fbuf->buf, newlen);
+	  if (dest == NULL)
+	    return NULL;
+	  u->fbuf->buf = dest;
+	  u->fbuf->len = newlen;
+	}
+      else if (u->fbuf->act - u->fbuf->flushed + len < u->fbuf->len)
+	{
+	  memmove (u->fbuf->buf, u->fbuf->buf + u->fbuf->flushed,
+		   u->fbuf->act - u->fbuf->flushed);
+	  u->fbuf->act -= u->fbuf->flushed;
+	  u->fbuf->pos -= u->fbuf->flushed;
+	  u->fbuf->flushed = 0;
+	}
+      else
+	{
+	  /* Most general case, flushed != 0, request doesn't fit.  */
+	  newlen = ((u->fbuf->pos - u->fbuf->flushed + len)
+		    / u->fbuf->len + 1) * u->fbuf->len;
+	  dest = get_mem (newlen);
+	  memcpy (dest, u->fbuf->buf + u->fbuf->flushed,
+		  u->fbuf->act - u->fbuf->flushed);
+	  u->fbuf->act -= u->fbuf->flushed;
+	  u->fbuf->pos -= u->fbuf->flushed;
+	  u->fbuf->flushed = 0;
+	  u->fbuf->buf = dest;
+	  u->fbuf->len = newlen;
+	}
     }
-  dest = u->fbuf->ptr;
-  u->fbuf->ptr += len;
-  if ((size_t) (u->fbuf->ptr - u->fbuf->buf) > u->fbuf->act)
-    u->fbuf->act = u->fbuf->ptr - u->fbuf->buf;
+
+  dest = u->fbuf->buf + u->fbuf->pos;
+  u->fbuf->pos += len;
+  if (u->fbuf->pos > u->fbuf->act)
+    u->fbuf->act = u->fbuf->pos;
   return dest;
 }
+
+
 
 
 int
@@ -107,7 +138,7 @@ fbuf_flush (gfc_unit * u, int record_done)
       if (record_done)
         nbytes = u->fbuf->act - u->fbuf->flushed;
       else	
-        nbytes = u->fbuf->ptr - u->fbuf->buf - u->fbuf->flushed;	
+        nbytes = u->fbuf->pos - u->fbuf->flushed;	
       status = swrite (u->s, u->fbuf->buf + u->fbuf->flushed, &nbytes);
       u->fbuf->flushed += nbytes;
     }
@@ -122,11 +153,12 @@ fbuf_flush (gfc_unit * u, int record_done)
 int
 fbuf_seek (gfc_unit * u, gfc_offset off)
 {
-  gfc_offset pos = u->fbuf->ptr - u->fbuf->buf + off;
-  if (pos < 0)
+  gfc_offset pos = u->fbuf->pos + off;
+  /* Moving to the left past the flushed marked would imply moving past
+     the left tab limit, which is never allowed. So return error if
+     that is attempted.  */
+  if (pos < u->fbuf->flushed)
     return -1;
-  u->fbuf->ptr = u->fbuf->buf + pos;
-  if (pos > (gfc_offset) u->fbuf->act)
-    u->fbuf->act = pos;
+  u->fbuf->pos = pos;
   return 0;
 }

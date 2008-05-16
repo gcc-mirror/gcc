@@ -628,9 +628,15 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
     free_mem (opp->file);
     
   if (flags->form == FORM_FORMATTED && (flags->action != ACTION_READ))
-    fbuf_init (u, 0);
+    {
+      if ((opp->common.flags & IOPARM_OPEN_HAS_RECL_IN))
+        fbuf_init (u, u->recl);
+      else
+        fbuf_init (u, 0);
+    }
   else
     u->fbuf = NULL;
+
     
     
   return u;

@@ -1,5 +1,20 @@
 2008-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/25561
+	* io/io.h (struct fbuf): Change pointer to position offset.
+	* io/fbuf.c (fbuf_init): Reduce default size of buffer, ptr=>pos
+	changes.
+	(fbuf_reset): ptr=>pos changes.
+	(fbuf_alloc): If the request doesn't fit, don't waste memory by
+	keeping flushed bytes. ptr=>pos changes.
+	(fbuf_flush): ptr=>pos changes.
+	(fbuf_seek): Don't seek past the left tab limit, don't update active
+	byte count.
+	* io/open.c (new_unit): If RECL has been specified, used that as
+	initial buffer size.
+
+2008-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/35632
 	* io/open.c (new_unit): Set stream position to correct value.
 
