@@ -153,12 +153,12 @@ gfc_match_parens (void)
 
   if (count > 0)
     {
-      gfc_error ("Missing ')' in statement before %L", &where);
+      gfc_error ("Missing ')' in statement at or before %L", &where);
       return MATCH_ERROR;
     }
   if (count < 0)
     {
-      gfc_error ("Missing '(' in statement before %L", &where);
+      gfc_error ("Missing '(' in statement at or before %L", &where);
       return MATCH_ERROR;
     }
 
@@ -552,7 +552,6 @@ gfc_match_name (char *buffer)
 		 "as an extension");
       return MATCH_ERROR;
     }
-
 
   buffer[i] = '\0';
   gfc_current_locus = old_loc;
@@ -1748,6 +1747,11 @@ gfc_match_do (void)
   /* Match an optional comma, if no comma is found, a space is obligatory.  */
   if (gfc_match_char (',') != MATCH_YES && gfc_match ("% ") != MATCH_YES)
     return MATCH_NO;
+
+  /* Check for balanced parens.  */
+  
+  if (gfc_match_parens () == MATCH_ERROR)
+    return MATCH_ERROR;
 
   /* See if we have a DO WHILE.  */
   if (gfc_match (" while ( %e )%t", &iter.end) == MATCH_YES)
