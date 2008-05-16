@@ -1986,7 +1986,7 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    debug.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
    ipa-prop.h value-prof.h $(TARGET_H) $(INTEGRATE_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(GGC_H) langhooks.h $(REAL_H) tree-iterator.h fixed-value.h
+   $(GGC_H) langhooks.h $(REAL_H) tree-iterator.h fixed-value.h $(TREE_FLOW_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(RTL_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
