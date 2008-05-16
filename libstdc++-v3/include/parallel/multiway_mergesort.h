@@ -289,8 +289,8 @@ template<typename SeqRandomAccessIterator, typename RandomAccessIterator,
                       Comparator& comp,
                       DiffType length_am) const
     {
-      stable_multiway_merge(seqs_begin, seqs_end, target, comp,
-                       length_am, sequential_tag());
+      stable_multiway_merge(seqs_begin, seqs_end, target, length_am, comp,
+                       sequential_tag());
     }
   };
 
@@ -306,8 +306,8 @@ template<typename SeqRandomAccessIterator, typename RandomAccessIterator,
                       Comparator& comp,
                       DiffType length_am) const
     {
-      multiway_merge(seqs_begin, seqs_end, target, comp,
-                       length_am, sequential_tag());
+      multiway_merge(seqs_begin, seqs_end, target, length_am, comp,
+                       sequential_tag());
     }
   };
 

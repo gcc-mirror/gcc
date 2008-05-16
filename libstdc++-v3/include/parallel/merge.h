@@ -254,11 +254,11 @@ namespace __gnu_parallel
       RandomAccessIterator3
         target_end = parallel_multiway_merge
           < /* stable = */ true, /* sentinels = */ false>(
-            seqs, seqs + 2, target, comp,
+            seqs, seqs + 2, target,
             multiway_merge_exact_splitting
               < /* stable = */ true, iterator_pair*,
                 Comparator, difference_type1>,
-            max_length);
+            max_length, comp, omp_get_max_threads());
 
       return target_end;
     }
