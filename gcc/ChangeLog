@@ -1,3 +1,8 @@
+2008-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_vector_init_general): Optimize
+	V8HImode for SSE2 and V16QImode for SSE4.1.
+
 2008-05-15  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* cgraph.h (compute_inline_parameters): Made public.

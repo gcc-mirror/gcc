@@ -1,3 +1,21 @@
+2008-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/m128-check.h: New.
+	* gcc.target/i386/set-v16qi-1.h: Likewise.
+	* gcc.target/i386/set-v16qi-2.h: Likewise.
+	* gcc.target/i386/set-v8hi-1.h: Likewise.
+	* gcc.target/i386/set-v8hi-2.h: Likewise.
+	* gcc.target/i386/sse2-set-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse2-set-v16qi-2.c: Likewise.
+	* gcc.target/i386/sse2-set-v8hi-1.c: Likewise.
+	* gcc.target/i386/sse2-set-v8hi-2.c: Likewise.
+	* gcc.target/i386/sse4_1-set-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse4_1-set-v16qi-2.c: Likewise.
+
+	* gcc.target/i386/sse2-check.h: Include m128-check.h. Don't
+	include <stdio.h>.
+	* gcc.target/i386/sse4_1-check.h: Likewise.
+
 2008-05-15  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194
