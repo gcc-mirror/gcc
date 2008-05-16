@@ -1,3 +1,13 @@
+2008-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35756
+	PR fortran/35759
+	* gfortran.dg/where_1.f90: New test.
+
+	PR fortran/35743
+	PR fortran/35745
+	* gfortran.dg/where_2.f90: New test.
+
 2008-05-16  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/rank_1.f90
