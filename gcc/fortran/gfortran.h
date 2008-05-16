@@ -784,6 +784,7 @@ typedef struct gfc_charlen
 {
   struct gfc_expr *length;
   struct gfc_charlen *next;
+  bool length_from_typespec; /* Length from explicit array ctor typespec?  */
   tree backend_decl;
 
   int resolved;

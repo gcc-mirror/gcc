@@ -1,12 +1,25 @@
+2008-04-16  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/27997
+	* gfortran.h:  Added field "length_from_typespec" to gfc_charlength.
+	* aray.c (gfc_match_array_constructor):  Added code to parse typespec.
+	(check_element_type, check_constructor_type, gfc_check_constructor_type):
+	Extended to support explicit typespec on constructor.
+	(gfc_resolve_character_array_constructor):  Pad strings correctly for
+	explicit, constant character length.
+	* trans-array.c:  New static global variable "typespec_chararray_ctor"
+	(gfc_trans_array_constructor):  New code to support explicit but dynamic
+	character lengths.
+
 2008-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-    PR fortran/34325
-    * decl.c (match_attr_spec): Check for matching pairs of parenthesis.
-    * expr.c (gfc_specification_expr): Supplement the error message with the
-    type that was found.
-    * resolve.c (gfc_resolve_index): Likewise.
-    * match.c (gfc_match_parens): Clarify error message with "at or before".
-    (gfc_match_do): Check for matching pairs of parenthesis.
+	PR fortran/34325
+	* decl.c (match_attr_spec): Check for matching pairs of parenthesis.
+	* expr.c (gfc_specification_expr): Supplement the error message with the
+	type that was found.
+	* resolve.c (gfc_resolve_index): Likewise.
+	* match.c (gfc_match_parens): Clarify error message with "at or before".
+	(gfc_match_do): Check for matching pairs of parenthesis.
 
 2008-05-16  Tobias Burnus  <burnus@net-b.de
 
