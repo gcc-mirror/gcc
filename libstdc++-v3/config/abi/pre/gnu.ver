@@ -70,7 +70,9 @@ GLIBCXX_3.4 {
 #     std::[d-g]*;
       std::d[a-d]*;
       std::d[f-z]*;
-      std::e*;
+      std::e[a-q]*;
+      std::error[^_]*;
+      std::e[s-z]*;
       std::gslice*;
       std::h[^a]*;
       std::i[a-n]*;
@@ -854,7 +856,14 @@ GLIBCXX_3.4.11 {
     _ZNSt18condition_variableD2Ev;
 
     # system_error
-    _ZSt15system_category;
+    _ZSt18get_posix_categoryv;
+    _ZSt19get_system_categoryv;
+
+    _ZNKSt10error_code23default_error_conditionEv;
+    _ZNKSt14error_category23default_error_conditionEi;
+
+    _ZNKSt14error_category10equivalentERKSt10error_codei;
+    _ZNKSt14error_category10equivalentEiRKSt15error_condition;
 
     _ZTISt14error_category;
     _ZTSSt14error_category;

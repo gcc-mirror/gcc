@@ -1,24 +1,24 @@
-// <system_error> implementation file
-
-// Copyright (C) 2007, 2008
-// Free Software Foundation, Inc.
+// -*- C++ -*-
+// Error handling utils for the C++ library testsuite. 
+//
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 2, or (at your option)
 // any later version.
-
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING.  If not, write to the Free
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
-
+//
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
 // templates or use macros or inline functions from this file, or you compile
@@ -28,60 +28,39 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cstring>
-#include <system_error>
-#include <bits/functexcept.h>
-#include <limits>
+#include <testsuite_hooks.h>
 
-namespace
+#ifndef _TESTSUITE_ERROR_H
+#define _TESTSUITE_ERROR_H 1
+
+namespace __gnu_test
 {
-  using std::string; 
+  using std::string;
 
-  struct gnu_error_category : public std::error_category
-  {
+  struct test_category : public std::error_category
+  { 
     virtual const char*
     name() const 
     { 
-      const char* s = "GNU";
+      const char* s = "__gnu_test::test_category";
       return s;
     }
 
     virtual string 
-    message(int i) const
-    {
-      // XXX locale issues: how does one get or set loc.
-      // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
-      return string(strerror(i));
+    message(int) const
+    { return string("message to be determined"); }
+
+  };
+
+  struct test_derived_category : public test_category
+  { 
+    virtual const char*
+    name() const 
+    { 
+      const char* s = "__gnu_test::test_derived_category";
+      return s;
     }
   };
 
-  const gnu_error_category gnu_category;
 }
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
-  const error_category& 
-  get_posix_category() { return gnu_category; }
-
-  const error_category& 
-  get_system_category() { return gnu_category; }
-
-  system_error::~system_error() throw() { }
-
-  error_condition 
-  error_category::default_error_condition(int __i) const
-  { return error_condition(__i, *this); }
-
-  bool 
-  error_category::equivalent(int __i, const error_condition& __cond) const
-  { return default_error_condition(__i) == __cond; }
-
-  bool 
-  error_category::equivalent(const error_code& __code, int __i) const
-  { return *this == __code.category() && __code.value() == __i; }
-
-  error_condition 
-  error_code::default_error_condition() const
-  { return category().default_error_condition(value()); }
-
-_GLIBCXX_END_NAMESPACE
+#endif

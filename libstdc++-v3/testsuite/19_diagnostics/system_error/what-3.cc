@@ -41,12 +41,12 @@ void test04()
   const std::string s("CA ISO emergency once again:immediate power down");
   const char* strlit1 = "wish I lived in Palo Alto";
   const char* strlit2 = "...or Santa Barbara";
-  std::system_error obj1(s);
+  std::system_error obj1(std::error_code(), s);
   
   // block 01
   {
     const std::string s2(strlit1);
-    std::system_error obj2(s2);
+    std::system_error obj2(std::error_code(), s2);
     obj1 = obj2;
   }
   allocate_on_stack();
@@ -55,7 +55,7 @@ void test04()
   // block 02
   {
     const std::string s3(strlit2);
-    std::system_error obj3 = std::system_error(s3);
+    std::system_error obj3 = std::system_error(std::error_code(), s3);
     obj1 = obj3;
   }
   allocate_on_stack();     
