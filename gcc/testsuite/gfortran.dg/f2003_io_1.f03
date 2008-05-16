@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-std=gnu" }
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 real :: a(4), b(4)

@@ -1,3 +1,12 @@
+2008-05-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/f2003_io_4.f03, gfortran.dg/f2003_io_5.f03,
+	gfortran.dg/f2003_io_7.f03, gfortran.dg/namelist_45.f90,
+	gfortran.dg/namelist_46.f90, gfortran.dg/namelist_47.f90,
+	gfortran.dg/f2003_io_1.f03: Gate test on effective_target
+	fd_truncate.
+	* gfortran.dg/fmt_t_7.f: Ditto.  Apply dos2unix.
+
 2008-05-16  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/private_type_6.f90:  Adapted expected error messages.

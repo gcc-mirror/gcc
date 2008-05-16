@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR35617 read namelist error with '!'
 program test
   character(len=128) :: mhdpath
