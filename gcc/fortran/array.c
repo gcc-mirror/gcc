@@ -437,6 +437,12 @@ gfc_match_array_spec (gfc_array_spec **asp)
 	  goto cleanup;
 	}
 
+      if (as->rank > 7
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Array "
+			     "specification at %C with more than 7 dimensions")
+	     == FAILURE)
+	goto cleanup;
+
       as->rank++;
     }
 

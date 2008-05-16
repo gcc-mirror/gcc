@@ -1,3 +1,8 @@
+2008-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/rank_1.f90
+	* gfortran.dg/rank_2.f90
+
 2008-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/missing_parens_1.f90: Update test.

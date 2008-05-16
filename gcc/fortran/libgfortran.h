@@ -88,7 +88,7 @@ libgfortran_error_codes;
 #define GFC_STDERR_UNIT_NUMBER 0
 
 
-#define GFC_MAX_DIMENSIONS 7
+#define GFC_MAX_DIMENSIONS 15
 
 #define GFC_DTYPE_RANK_MASK 0x07
 #define GFC_DTYPE_TYPE_SHIFT 3
