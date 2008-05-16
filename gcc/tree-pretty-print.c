@@ -436,10 +436,10 @@ dump_symbols (pretty_printer *buffer, bitmap syms, int flags)
 }
 
 
-/* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of indent.
-   FLAGS specifies details to show in the dump (see TDF_* in tree-pass.h).
-   If IS_STMT is true, the object printed is considered to be a statement
-   and it is terminated by ';' if appropriate.  */
+/* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of
+   indent.  FLAGS specifies details to show in the dump (see TDF_* in
+   tree-pass.h).  If IS_STMT is true, the object printed is considered
+   to be a statement and it is terminated by ';' if appropriate.  */
 
 int
 dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
@@ -3052,6 +3052,8 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
           pp_string (buffer, "# ");
           dump_generic_node (buffer, phi, indent, flags, false);
           pp_newline (buffer);
+	  if (flags & TDF_VERBOSE)
+	    print_node (buffer->buffer->stream, "", phi, indent);
         }
     }
 }
@@ -3170,6 +3172,8 @@ dump_generic_bb_buff (pretty_printer *buffer, basic_block bb,
       dump_generic_node (buffer, stmt, curr_indent, flags, true);
       pp_newline (buffer);
       dump_histograms_for_stmt (cfun, buffer->buffer->stream, stmt);
+      if (flags & TDF_VERBOSE)
+	print_node (buffer->buffer->stream, "", stmt, curr_indent);
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);

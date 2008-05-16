@@ -1,3 +1,15 @@
+2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/invoke.text (-fdump-tree-*-verbose): New option.
+	* tree-dump.c (dump_options): New verbose option.
+	* tree-pretty-print.c (dump_phi_nodes, dump_generic_bb_buff):
+	Add verbose dump.
+	* tree-pass.h (TDF_VERBOSE): New dump flag.
+	* print-tree.c (print_node): Added code to be able to print
+	PHI_NODES.
+	(tree-flow.h): Added include.
+	Makefile.in (print-tree.o):  Added TREE_FLOW_H.
+
 2008-05-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_discover_loops): Delete empty loops.
