@@ -1,3 +1,18 @@
+2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* ifcvt.c (dead_or_predicable): Rename
+	df_simulate_one_insn_backwards to df_simulate_one_insn.
+	* recog.c (peephole2_optimize): Ditto.
+	* rtl-factoring.c (collect_pattern_seqs, clear_regs_live_in_seq): 
+	Ditto.
+	* df.h: Rename df_simulate_one_insn_backwards to
+	df_simulate_one_insn.  and delete df_simulate_one_insn_forwards.
+	* df-problems.c (df_simulate_artificial_refs_at_top) Reversed
+	scanning of defs and uses.
+	(df_simulate_one_insn_backwards): Renamed to df_simulate_one_insn.
+	(df_simulate_one_insn_forwards): Removed.
+
+	
 2008-05-16  Doug Kwan  <dougkwan@google.com>
 
 	* real.c (real_to_decimal, real_to_hexadecimal): Distinguish
