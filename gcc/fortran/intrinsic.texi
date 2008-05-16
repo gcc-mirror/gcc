@@ -361,7 +361,7 @@ end program test_abort
 @code{ABS(X)} computes the absolute value of @code{X}.
 
 @item @emph{Standard}:
-F77 and later, has overloads that are GNU extensions
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -395,9 +395,9 @@ end program test_abs
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab F77 and later
-@item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab F77 and later
-@item @code{IABS(I)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab F77 and later
+@item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab Fortran 77 and later
+@item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item @code{IABS(I)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab Fortran 77 and later
 @item @code{ZABS(Z)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
 @item @code{CDABS(Z)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
@@ -475,17 +475,20 @@ end program access_test
 in the @acronym{ASCII} collating sequence.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ACHAR(I)}
+@code{RESULT = ACHAR(I [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I}    @tab The type shall be @code{INTEGER(*)}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+                      the result.
 @end multitable
 
 @item @emph{Return value}:
@@ -523,7 +526,7 @@ and formatted string representations.
 @code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}).
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -553,7 +556,7 @@ end program test_acos
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
+@item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -626,7 +629,7 @@ Inverse function: @ref{COSH}
 Spaces are inserted at the end of the string as needed.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -671,7 +674,7 @@ end program test_adjustl
 Spaces are inserted at the start of the string as needed.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -720,7 +723,7 @@ for compatibility with @command{g77}, and their use in new code is
 strongly discouraged.
 
 @item @emph{Standard}:
-F77 and later, has overloads that are GNU extensions
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -771,7 +774,7 @@ end program test_aimag
 @code{AINT(X [, KIND])} truncates its argument to a whole number.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -811,7 +814,7 @@ end program test_aint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name           @tab Argument         @tab Return type      @tab Standard
-@item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
+@item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -880,7 +883,7 @@ after 3 seconds.
 in the array along dimension @var{DIM}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -945,7 +948,7 @@ end program test_all
 @code{ALLOCATED(X)} checks the status of whether @var{X} is allocated.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1024,7 +1027,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-F95 elemental function: @ref{IAND}
+Fortran 95 elemental function: @ref{IAND}
 @end table
 
 
@@ -1041,7 +1044,7 @@ F95 elemental function: @ref{IAND}
 @code{ANINT(X [, KIND])} rounds its argument to the nearest whole number.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1079,7 +1082,7 @@ end program test_anint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument         @tab Return type      @tab Standard
-@item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
+@item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -1097,7 +1100,7 @@ end program test_anint
 @var{MASK} along dimension @var{DIM} are @code{.TRUE.}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -1164,7 +1167,7 @@ end program test_any
 @code{ASIN(X)} computes the arcsine of its @var{X} (inverse of @code{SIN(X)}).
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1194,7 +1197,7 @@ end program test_asin
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
+@item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -1266,7 +1269,7 @@ Inverse function: @ref{SINH}
 or if @var{PTR} is associated with the target @var{TGT}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1342,7 +1345,7 @@ end program test_associated
 @code{ATAN(X)} computes the arctangent of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1370,7 +1373,7 @@ end program test_atan
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
+@item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -1393,7 +1396,7 @@ Inverse function: @ref{TAN}
 @math{X + i Y}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1428,7 +1431,7 @@ end program test_atan2
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type    @tab Standard
-@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab F77 and later
+@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -1789,7 +1792,7 @@ end program test_besyn
 represented by the type of @var{I}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1829,7 +1832,7 @@ end program test_bit_size
 in @var{I} is set.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2138,7 +2141,7 @@ end subroutine association_test
 @code{CEILING(X)} returns the least integer greater than or equal to @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2184,7 +2187,7 @@ end program test_ceiling
 @code{CHAR(I [, KIND])} returns the character represented by the integer @var{I}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2357,7 +2360,7 @@ component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2507,7 +2510,7 @@ end program test_complex
 then the result is @code{(x, -y)}
 
 @item @emph{Standard}:
-F77 and later, has overloads that are GNU extensions
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -2559,7 +2562,7 @@ end program test_conjg
 @code{COS(X)} computes the cosine of @var{X}.
 
 @item @emph{Standard}:
-F77 and later, has overloads that are GNU extensions
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -2589,8 +2592,8 @@ end program test_cos
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{DCOS(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab F77 and later
-@item @code{CCOS(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab F77 and later
+@item @code{DCOS(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item @code{CCOS(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab Fortran 77 and later
 @item @code{ZCOS(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
 @item @code{CDCOS(X)} @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
@@ -2615,7 +2618,7 @@ Inverse function: @ref{ACOS}
 @code{COSH(X)} computes the hyperbolic cosine of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2643,7 +2646,7 @@ end program test_cosh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
+@item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -2670,7 +2673,7 @@ omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
 is the rank of @var{MASK}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Transformational function
@@ -2742,7 +2745,7 @@ this subroutine, as shown in the example below, should be used.
 
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
@@ -2794,7 +2797,7 @@ sections of @var{ARRAY} along the given dimension are shifted.  Elements
 shifted out one end of each rank one section are shifted back in the other end.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -2917,7 +2920,7 @@ Unavailable time and date parameters return blanks.
 @end multitable	    
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
@@ -2969,7 +2972,7 @@ end program test_time_and_date
 @code{DBLE(X)} Converts @var{X} to double precision real type.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3104,7 +3107,7 @@ representation of @var{X}.  For example, on a system using a 32-bit
 floating point representation, a default real number would likely return 24.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3148,7 +3151,7 @@ end program test_digits
 otherwise returns zero.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3180,8 +3183,8 @@ end program test_dim
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument              @tab Return type       @tab Standard
-@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab F77 and later
-@item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}    @tab @code{REAL(8)}    @tab F77 and later
+@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -3204,7 +3207,7 @@ vectors are @code{COMPLEX(*)}, the result is @code{SUM(CONJG(X)*Y)}. If the
 vectors are @code{LOGICAL}, the result is @code{ANY(X.AND.Y)}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -3250,7 +3253,7 @@ end program test_dot_prod
 @code{DPROD(X,Y)} returns the product @code{X*Y}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3438,7 +3441,7 @@ following are copied in depending on the type of @var{ARRAY}.
 @end multitable
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -3486,7 +3489,7 @@ end program test_eoshift
 @code{EPSILON(X)} returns a nearly negligible number relative to @code{1}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3777,7 +3780,7 @@ end program test_exit
 @code{EXP(X)} computes the base @math{e} exponential of @var{X}.
 
 @item @emph{Standard}:
-F77 and later, has overloads that are GNU extensions
+Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -3805,8 +3808,8 @@ end program test_exp
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument             @tab Return type         @tab Standard
-@item @code{DEXP(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}      @tab F77 and later
-@item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}   @tab F77 and later
+@item @code{DEXP(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}      @tab Fortran 77 and later
+@item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}   @tab Fortran 77 and later
 @item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
 @item @code{CDEXP(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
 @end multitable
@@ -3826,7 +3829,7 @@ end program test_exp
 is zero the value returned is zero. 
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3923,7 +3926,7 @@ end program test_fdate
 @code{FLOAT(I)} converts the integer @var{I} to a default real value.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -4085,7 +4088,7 @@ END PROGRAM
 @code{FLOOR(X)} returns the greatest integer less than or equal to @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -4318,7 +4321,7 @@ END PROGRAM
 representation of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5209,7 +5212,7 @@ be obtained, or to a blank string otherwise.
 the model of the type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -5289,7 +5292,7 @@ end program test_hypot
 in the first character position of @code{C}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5339,7 +5342,7 @@ and formatted string representations.
 Bitwise logical @code{AND}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5432,7 +5435,7 @@ Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
 @var{POS} set to zero.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5472,7 +5475,7 @@ zeroed.  The value of @code{POS+LEN} must be less than or equal to the
 value @code{BIT_SIZE(I)}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5508,7 +5511,7 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 @var{POS} set to one.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5546,7 +5549,7 @@ The correspondence between characters and their codes is not necessarily
 the same across different GNU Fortran implementations.
 
 @item @emph{Standard}:
-F95 and later
+Fortan 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5661,7 +5664,7 @@ end program test_idate
 @var{J}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5735,7 +5738,7 @@ the @var{BACK} argument is present and true, the return value is the
 start of the last occurrence rather than the first.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5778,7 +5781,7 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 Convert to integer type
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5823,8 +5826,8 @@ end program
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type       @tab Standard
-@item @code{IFIX(A)}   @tab @code{REAL(4) A}    @tab @code{INTEGER}    @tab F77 and later
-@item @code{IDINT(A)}  @tab @code{REAL(8) A}    @tab @code{INTEGER}    @tab F77 and later
+@item @code{IFIX(A)}   @tab @code{REAL(4) A}    @tab @code{INTEGER}    @tab Fortran 77 and later
+@item @code{IDINT(A)}  @tab @code{REAL(8) A}    @tab @code{INTEGER}    @tab Fortran 77 and later
 @end multitable
 
 @end table
@@ -5846,7 +5849,7 @@ standard @code{INT} intrinsic with an optional argument of
 The @code{SHORT} intrinsic is equivalent to @code{INT2}.
 
 @item @emph{Standard}:
-GNU extension.
+GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -5881,7 +5884,7 @@ standard @code{INT} intrinsic with an optional argument of
 @code{KIND=8}, and is only included for backwards compatibility.
 
 @item @emph{Standard}:
-GNU extension.
+GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -5916,7 +5919,7 @@ The return value is a @code{INTEGER(8)} variable.
 @var{J}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6094,7 +6097,7 @@ END PROGRAM
 Determine whether a unit is connected to a terminal device.
 
 @item @emph{Standard}:
-GNU extension.
+GNU extension
 
 @item @emph{Class}:
 Function
@@ -6142,7 +6145,7 @@ value is undefined.  Bits shifted out from the left end or right end are
 lost; zeros are shifted in from the opposite end.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6183,7 +6186,7 @@ a right shift.  The absolute value of @var{SHIFT} must be less than
 equivalent to @code{BIT_SIZE(I)}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6344,7 +6347,7 @@ Subroutine, function
 @code{KIND(X)} returns the kind value of the entity @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -6387,7 +6390,7 @@ end program test_kind
 Returns the lower bounds of an array, or a single lower bound
 along the @var{DIM} dimension.
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -6433,7 +6436,7 @@ the length of an element of @var{STRING} is returned.  Note that
 only the length, not the content, of @var{STRING} is needed.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -6470,7 +6473,7 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 Returns the length of a character string, ignoring any trailing blanks.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6573,7 +6576,7 @@ ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6619,7 +6622,7 @@ ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6708,7 +6711,7 @@ ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6754,7 +6757,7 @@ ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6870,7 +6873,7 @@ end program test_loc
 @code{LOG(X)} computes the logarithm of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6924,7 +6927,7 @@ end program test_log
 @code{LOG10(X)} computes the base 10 logarithm of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6952,8 +6955,8 @@ end program test_log10
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab F95 and later
-@item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
+@item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 95 and later
+@item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 @end table
 
@@ -6969,7 +6972,7 @@ end program test_log10
 Converts one kind of @code{LOGICAL} variable to another.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7009,7 +7012,7 @@ intrinsic with an optional argument of @code{KIND=4}, and is only
 included for backwards compatibility.
 
 @item @emph{Standard}:
-GNU extension.
+GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -7245,7 +7248,7 @@ end program test_malloc
 Performs a matrix multiplication on numeric or logical arguments.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -7294,7 +7297,7 @@ for the @code{*} or @code{.AND.} operators.
 Returns the argument with the largest (most positive) value.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7319,11 +7322,11 @@ and has the same type and kind as the first argument.
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type         @tab Standard
-@item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
-@item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab F77 and later
-@item @code{MAX1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MAX(X))}  @tab F77 and later
-@item @code{AMAX1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab F77 and later
-@item @code{DMAX1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab F77 and later
+@item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
+@item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab Fortran 77 and later
+@item @code{MAX1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MAX(X))}  @tab Fortran 77 and later
+@item @code{AMAX1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
+@item @code{DMAX1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -7344,7 +7347,7 @@ and has the same type and kind as the first argument.
 type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -7395,7 +7398,7 @@ and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -7452,7 +7455,7 @@ number of the type and kind of @var{ARRAY} if @var{ARRAY} is numeric, or
 a string of nulls if @var{ARRAY} is of character type.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -7579,7 +7582,7 @@ is equal to @var{TSOURCE} if @var{MASK} is @code{.TRUE.}, or equal to
 @var{FSOURCE} if it is @code{.FALSE.}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7617,7 +7620,7 @@ The result is of the same type and type parameters as @var{TSOURCE}.
 Returns the argument with the smallest (most negative) value.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7642,11 +7645,11 @@ and has the same type and kind as the first argument.
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type         @tab Standard
-@item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
-@item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab F77 and later
-@item @code{MIN1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MIN(X))}  @tab F77 and later
-@item @code{AMIN1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab F77 and later
-@item @code{DMIN1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab F77 and later
+@item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
+@item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab Fortran 77 and later
+@item @code{MIN1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MIN(X))}  @tab Fortran 77 and later
+@item @code{AMIN1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
+@item @code{DMIN1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -7666,7 +7669,7 @@ and has the same type and kind as the first argument.
 type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -7709,7 +7712,7 @@ and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -7766,7 +7769,7 @@ considered.  If the array has zero size, or all of the elements of
 @var{ARRAY} is of character type.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -7817,7 +7820,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 calculated as @code{A - (INT(A/P) * P)}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7859,8 +7862,8 @@ end program test_mod
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Arguments      @tab Return type    @tab Standard
-@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab F95 and later
-@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab F95 and later
+@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab Fortran 95 and later
+@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab Fortran 95 and later
 @end multitable
 @end table
 
@@ -7877,7 +7880,7 @@ end program test_mod
 @code{MODULO(A,P)} computes the @var{A} modulo @var{P}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7983,7 +7986,7 @@ affected by the movement of bits is unchanged. The values of
 @code{BIT_SIZE(FROM)}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental subroutine
@@ -8019,7 +8022,7 @@ Elemental subroutine
 to @code{X} in the direction indicated by the sign of @code{S}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8105,17 +8108,20 @@ end program newline
 @code{NINT(X)} rounds its argument to the nearest whole number.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = NINT(X)}
+@code{RESULT = NINT(X [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X}    @tab The type of the argument shall be @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
@@ -8137,7 +8143,7 @@ end program test_nint
 @item @emph{Specific names}:
 @multitable @columnfractions .25 .25 .25
 @item Name             @tab Argument         @tab Standard
-@item @code{IDNINT(X)} @tab @code{REAL(8)}   @tab F95 and later
+@item @code{IDNINT(X)} @tab @code{REAL(8)}   @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -8159,7 +8165,7 @@ end program test_nint
 @code{NOT} returns the bitwise boolean inverse of @var{I}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8200,7 +8206,7 @@ In Fortran 95, @var{MOLD} is optional. Please note that Fortran 2003
 includes cases where it is required.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -8277,7 +8283,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-F95 elemental function: @ref{IOR}
+Fortran 95 elemental function: @ref{IOR}
 @end table
 
 
@@ -8298,7 +8304,7 @@ equals @code{TRUE}. Afterwards, positions are filled with elements taken from
 @var{VECTOR}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -8392,7 +8398,7 @@ Subroutine
 type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8432,7 +8438,7 @@ end program prec_and_range
 Determines whether an optional dummy argument is present.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8480,7 +8486,7 @@ Multiplies the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -8535,7 +8541,7 @@ END PROGRAM
 @code{RADIX(X)} returns the base of the model representing the entity @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8669,7 +8675,7 @@ OpenMP-enabled application heavily relies on random numbers, one should
 consider employing a dedicated parallel random number generator instead.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
@@ -8713,7 +8719,7 @@ a default state. The example below shows how to initialize the random
 seed based on the system's time.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
@@ -8771,7 +8777,7 @@ END SUBROUTINE
 type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8808,7 +8814,7 @@ See @code{PRECISION} for an example.
 and its use is strongly discouraged.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8914,7 +8920,7 @@ Subroutine, function
 Concatenates @var{NCOPIES} copies of a string.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -8955,7 +8961,7 @@ the new array may be padded with elements from @var{PAD} or permuted
 as defined by @var{ORDER}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -9009,7 +9015,7 @@ END PROGRAM
 model numbers near @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9086,7 +9092,7 @@ The return value is of type @code{INTEGER(*)} and of the same kind as
 @code{SCALE(X,I)} returns @code{X * RADIX(X)**I}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9134,7 +9140,7 @@ is returned. If no character of @var{SET} is found in @var{STRING}, the
 result is zero.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9319,7 +9325,7 @@ to @math{10^I} (exclusive). If there is no integer kind that accommodates
 this range, @code{SELECTED_INT_KIND} returns @math{-1}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -9364,7 +9370,7 @@ with decimal precision greater of at least @code{P} digits and exponent
 range greater at least @code{R}. 
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -9426,7 +9432,7 @@ end program real_kinds
 is that that of @var{X} and whose exponent part is @var{I}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9469,7 +9475,7 @@ END PROGRAM
 Determines the shape of an array.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -9517,7 +9523,7 @@ END PROGRAM
 @code{SIGN(A,B)} returns the value of @var{A} with the sign of @var{B}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9631,7 +9637,7 @@ end program test_signal
 @code{SIN(X)} computes the sine of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9684,7 +9690,7 @@ end program test_sin
 @code{SINH(X)} computes the hyperbolic sine of @var{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9711,7 +9717,7 @@ end program test_sinh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
+@item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -9733,7 +9739,7 @@ Determine the extent of @var{ARRAY} along a specified dimension @var{DIM},
 or the total number of elements in @var{ARRAY} if @var{DIM} is absent.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -9859,7 +9865,7 @@ to a default real value. This is an archaic form of @code{REAL}
 that is specific to one type for @var{A}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9893,7 +9899,7 @@ Determines the distance between the argument @var{X} and the nearest
 adjacent number of the same type.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9939,7 +9945,7 @@ Replicates a @var{SOURCE} array @var{NCOPIES} times along a specified
 dimension @var{DIM}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -9990,7 +9996,7 @@ END PROGRAM
 @code{SQRT(X)} computes the square root of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -10021,8 +10027,8 @@ end program test_sqrt
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument             @tab Return type          @tab Standard
-@item @code{DSQRT(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}       @tab F95 and later
-@item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab F95 and later
+@item @code{DSQRT(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}       @tab Fortran 95 and later
+@item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab Fortran 95 and later
 @item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
@@ -10175,7 +10181,7 @@ Adds the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -10320,7 +10326,7 @@ If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
 @var{COUNT_RATE} and @var{COUNT_MAX} are set to zero 
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
@@ -10366,7 +10372,7 @@ END PROGRAM
 @code{TAN(X)} computes the tangent of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -10394,7 +10400,7 @@ end program test_tan
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
+@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -10416,7 +10422,7 @@ end program test_tan
 @code{TANH(X)} computes the hyperbolic tangent of @var{X}.
 
 @item @emph{Standard}:
-F77 and later
+Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -10444,7 +10450,7 @@ end program test_tanh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
+@item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -10545,7 +10551,7 @@ The return value is a scalar of type @code{INTEGER(8)}.
 in the model of the type of @code{X}.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -10583,7 +10589,7 @@ This is approximately equivalent to the C concept of @emph{casting} one
 type to another.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -10643,7 +10649,7 @@ Transpose an array of rank two. Element (i, j) of the result has the value
 @code{MATRIX(j, i)}, for all i, j.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -10673,7 +10679,7 @@ The result has the same type as @var{MATRIX}, and has shape
 Removes trailing blank characters of a string.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -10761,7 +10767,7 @@ END PROGRAM
 Returns the upper bounds of an array, or a single upper bound
 along the @var{DIM} dimension.
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -10877,7 +10883,7 @@ Subroutine, function
 Store the elements of @var{VECTOR} in an array of higher rank.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
@@ -10932,7 +10938,7 @@ is returned. If all characters of @var{SET} are found in @var{STRING}, the
 result is zero.
 
 @item @emph{Standard}:
-F95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -11020,7 +11026,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-F95 elemental function: @ref{IEOR}
+Fortran 95 elemental function: @ref{IEOR}
 @end table
 
 

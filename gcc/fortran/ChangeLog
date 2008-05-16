@@ -1,3 +1,10 @@
+2008-05-16  Tobias Burnus  <burnus@net-b.de
+
+	* intrinsic.texi: Write Fortran 77/90/95 instead of F77/90/95;
+	add missing KIND argument to ACHAR and NINT; and state that
+	the KIND argument is a F2003 extension for ACHAR, COUNT, IACHAR,
+	ICHAR, INDEX, LBOUND, LEN, LEN_TRIM, SCAN, SIZE, UBOUND, VERIFY.
+
 2008-05-16  Daniel Kraft  <d@domob.eu>
 
 	* primary.c:  New private structure "gfc_structure_ctor_component".
