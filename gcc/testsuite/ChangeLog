@@ -1,4 +1,14 @@
-2008-04-16  Daniel Kraft  <d@domob.eu>
+2008-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/missing_parens_1.f90: Update test.
+	* gfortran.dg/fmt_t_7.f: Update test.
+
+2008-05-16  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/int_3.f90: New test.
+	* gfortran.dg/and_or_xor.f90: New test.
+
+2008-05-16  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/27997
 	* gfortran.dg/array_constructor_type_1.f03:  New test
