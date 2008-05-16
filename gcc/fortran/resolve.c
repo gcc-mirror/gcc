@@ -3510,8 +3510,8 @@ gfc_resolve_index (gfc_expr *index, int check_scalar)
 
   if (index->ts.type != BT_INTEGER && index->ts.type != BT_REAL)
     {
-      gfc_error ("Array index at %L must be of INTEGER type",
-		 &index->where);
+      gfc_error ("Array index at %L must be of INTEGER type, found %s",
+		 &index->where, gfc_basic_typename (index->ts.type));
       return FAILURE;
     }
 

@@ -2573,7 +2573,8 @@ gfc_specification_expr (gfc_expr *e)
 
   if (e->ts.type != BT_INTEGER)
     {
-      gfc_error ("Expression at %L must be of INTEGER type", &e->where);
+      gfc_error ("Expression at %L must be of INTEGER type, found %s",
+		 &e->where, gfc_basic_typename (e->ts.type));
       return FAILURE;
     }
 

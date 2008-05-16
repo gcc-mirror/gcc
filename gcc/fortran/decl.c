@@ -2934,6 +2934,13 @@ match_attr_spec (void)
 	  goto cleanup;
 	}
 
+      /* Check to make sure any parens are paired up correctly.  */
+      if (gfc_match_parens () == MATCH_ERROR)
+	{
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+
       seen[d]++;
       seen_at[d] = gfc_current_locus;
 
