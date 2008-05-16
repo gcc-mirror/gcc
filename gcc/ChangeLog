@@ -1,3 +1,8 @@
+2008-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-propagate.c (substitute_and_fold): Fix stmt walking
+	on deletion of the last stmt.
+
 2008-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_general): Optimize
