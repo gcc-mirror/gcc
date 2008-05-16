@@ -33,10 +33,6 @@
 
 extern int target_flags;
 
-#ifndef DEFAULT_CPU_TYPE
-#define DEFAULT_CPU_TYPE BFIN_CPU_BF532
-#endif
-
 /* Predefinition in the preprocessor for this target machine */
 #ifndef TARGET_CPU_CPP_BUILTINS
 #define TARGET_CPU_CPP_BUILTINS()		\
@@ -148,12 +144,19 @@ extern int target_flags;
 	builtin_define ("__ID_SHARED_LIB__");	\
       if (flag_no_builtin)			\
 	builtin_define ("__NO_BUILTIN");	\
+      if (TARGET_MULTICORE)			\
+	builtin_define ("__BFIN_MULTICORE");	\
+      if (TARGET_COREA)				\
+	builtin_define ("__BFIN_COREA");	\
+      if (TARGET_COREB)				\
+	builtin_define ("__BFIN_COREB");	\
+      if (TARGET_SDRAM)				\
+	builtin_define ("__BFIN_SDRAM");	\
     }						\
   while (0)
 #endif
 
 #define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS	"\
- %{!mcpu=*:-mcpu=bf532} \
  %{mleaf-id-shared-library:%{!mid-shared-library:-mid-shared-library}} \
  %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
    	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fpie}}}}}}}}} \

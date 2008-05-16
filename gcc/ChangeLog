@@ -1,3 +1,28 @@
+2008-05-16  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Jie Zhang  <jie.zhang@analog.com>
+        * config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Remove mcpu=bf532-0.3,
+	mcpu=bf561-none and mcpu=bf561-0.2.
+	* config/bfin/t-bfin-uclinux (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Likewise.
+	* config/bfin/t-bfin-linux (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Likewise.
+	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add
+	BFIN_CPU_UNKNOWN.
+	* config/bfin/elf.h (STARTFILE_SPEC): Use specific CRT for
+	BF561.
+	(LIB_SPEC): Use proper linker script for bf561.  Error if no mcpu
+	option.
+	* config/bfin/bfin.c (bfin_cpu_type): Set to BFIN_CPU_UNKNOWN.
+	(cputype_selected): Remove.
+	(bfin_handle_option): Don't use cputype_selected.
+	(override_options): When no mcpu option, enable all workarounds.
+	Don't use bfin_workarounds.
+	* config/bfin/bfin.h (DRIVER_SELF_SPECS): Don't set default
+	processor type.
+	(DEFAULT_CPU_TYPE): Don't define.
+
 2008-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-propagate.c (substitute_and_fold): Fix stmt walking

@@ -17,14 +17,22 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 CRTSTUFF_T_CFLAGS = -fpic
 TARGET_LIBGCC2_CFLAGS = -fpic
 
-MULTILIB_OPTIONS=mcpu=bf532-none/mcpu=bf532-0.3
+MULTILIB_OPTIONS=mcpu=bf532-none
 MULTILIB_OPTIONS+=mid-shared-library/msep-data/mfdpic mleaf-id-shared-library
-MULTILIB_DIRNAMES=bf532-none bf532-0.3 mid-shared-library msep-data mfdpic mleaf-id-shared-library
-MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf561
-MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-none mcpu?bf532-none=mcpu?bf534-none mcpu?bf532-none=mcpu?bf536-none mcpu?bf532-none=mcpu?bf537-none mcpu?bf532-none=mcpu?bf561-none mcpu?bf532-none=mcpu?bf561-0.5
-MULTILIB_MATCHES+=mcpu?bf532-0.3=mcpu?bf531-0.4 mcpu?bf532-0.3=mcpu?bf531-0.3 mcpu?bf532-0.3=mcpu?bf532-0.4 mcpu?bf532-0.3=mcpu?bf534-0.4 mcpu?bf532-0.3=mcpu?bf534-0.3 mcpu?bf532-0.3=mcpu?bf534-0.2 mcpu?bf532-0.3=mcpu?bf534-0.1 mcpu?bf532-0.3=mcpu?bf536-0.2 mcpu?bf532-0.3=mcpu?bf536-0.1 mcpu?bf532-0.3=mcpu?bf537-0.2 mcpu?bf532-0.3=mcpu?bf537-0.1 mcpu?bf532-0.3=mcpu?bf561-0.3 mcpu?bf532-0.3=mcpu?bf561-0.2 mcpu?bf532-0.3=mcpu?bf531-any mcpu?bf532-0.3=mcpu?bf532-any mcpu?bf532-0.3=mcpu?bf533-any mcpu?bf532-0.3=mcpu?bf534-any mcpu?bf532-0.3=mcpu?bf536-any mcpu?bf532-0.3=mcpu?bf537-any mcpu?bf532-0.3=mcpu?bf561-any
+MULTILIB_DIRNAMES=bf532-none mid-shared-library msep-data mfdpic mleaf-id-shared-library
+
+MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf522-none mcpu?bf532-none=mcpu?bf523-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf524-none mcpu?bf532-none=mcpu?bf525-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf526-none mcpu?bf532-none=mcpu?bf527-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf534-none mcpu?bf532-none=mcpu?bf536-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf537-none mcpu?bf532-none=mcpu?bf538-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf539-none mcpu?bf532-none=mcpu?bf542-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf544-none mcpu?bf532-none=mcpu?bf547-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf548-none mcpu?bf532-none=mcpu?bf549-none
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf561-none
+
 MULTILIB_EXCEPTIONS=mleaf-id-shared-library*
-MULTILIB_EXCEPTIONS+=mcpu=bf532-0.3/mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=mcpu=bf532-none/mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=*mfdpic/mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=*msep-data/mleaf-id-shared-library*

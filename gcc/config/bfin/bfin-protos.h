@@ -25,6 +25,7 @@
 /* CPU type.  */
 typedef enum bfin_cpu_type
 {
+  BFIN_CPU_UNKNOWN,
   BFIN_CPU_BF522,
   BFIN_CPU_BF523,
   BFIN_CPU_BF524,

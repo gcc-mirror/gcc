@@ -452,7 +452,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-id-shared-library  -mshared-library-id=@var{n} @gol
 -mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
 -msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls @gol
--mfast-fp -minline-plt}
+-mfast-fp -minline-plt -mmulticore  -mcorea  -mcoreb  -msdram}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -8981,8 +8981,45 @@ Not-a-Number (NAN), in the interest of performance.
 @opindex minline-plt
 Enable inlining of PLT entries in function calls to functions that are
 not known to bind locally.  It has no effect without @option{-mfdpic}.
-@end table
 
+@item -mmulticore
+@opindex mmulticore
+Build standalone application for multicore Blackfin processor. Proper
+start files and link scripts will be used to support multicore.
+This option defines @code{__BFIN_MULTICORE}. It can only be used with
+@option{-mcpu=bf561@r{[}-@var{sirevision}@r{]}}. It can be used with
+@option{-mcorea} or @option{-mcoreb}. If it's used without
+@option{-mcorea} or @option{-mcoreb}, single application/dual core
+programming model is used. In this model, the main function of Core B
+should be named as coreb_main. If it's used with @option{-mcorea} or
+@option{-mcoreb}, one application per core programming model is used.
+If this option is not used, single core application programming
+model is used.
+
+@item -mcorea
+@opindex mcorea
+Build standalone application for Core A of BF561 when using
+one application per core programming model. Proper start files
+and link scripts will be used to support Core A. This option
+defines @code{__BFIN_COREA}. It must be used with @option{-mmulticore}.
+
+@item -mcoreb
+@opindex mcoreb
+Build standalone application for Core B of BF561 when using
+one application per core programming model. Proper start files
+and link scripts will be used to support Core B. This option
+defines @code{__BFIN_COREB}. When this option is used, coreb_main
+should be used instead of main. It must be used with
+@option{-mmulticore}. 
+
+@item -msdram
+@opindex msdram
+Build standalone application for SDRAM. Proper start files and
+link scripts will be used to put the application into SDRAM.
+Loader should initialize SDRAM before loading the application
+into SDRAM. This option defines @code{__BFIN_SDRAM}.
+@end table
+  
 @node CRIS Options
 @subsection CRIS Options
 @cindex CRIS Options
