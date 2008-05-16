@@ -1000,13 +1000,16 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
-@item @var{J} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{J} @tab The type shall be the same as the type of @var{I}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either @code{INTEGER(*)} or @code{LOGICAL} after
-cross-promotion of the arguments. 
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
 
 @item @emph{Example}:
 @smallexample
@@ -8250,13 +8253,16 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
-@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{X} @tab The type shall be either a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{Y} @tab The type shall be the same as the type of @var{X}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either @code{INTEGER(*)} or @code{LOGICAL} 
-after cross-promotion of the arguments.
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
 
 @item @emph{Example}:
 @smallexample
@@ -10990,13 +10996,16 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
-@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{X} @tab The type shall be either  a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{Y} @tab The type shall be the same as the type of @var{I}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either @code{INTEGER(*)} or @code{LOGICAL}
-after cross-promotion of the arguments.
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
 
 @item @emph{Example}:
 @smallexample
