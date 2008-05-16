@@ -433,6 +433,7 @@ get_trampoline_type (void)
   TYPE_NAME (trampoline_type) = get_identifier ("__builtin_trampoline");
   TYPE_FIELDS (trampoline_type) = t;
   layout_type (trampoline_type);
+  DECL_CONTEXT (t) = trampoline_type;
 
   return trampoline_type;
 }
