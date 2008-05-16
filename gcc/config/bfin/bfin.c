@@ -94,7 +94,7 @@ static int bfin_flag_schedule_insns2;
 static int bfin_flag_var_tracking;
 
 /* -mcpu support */
-bfin_cpu_t bfin_cpu_type = DEFAULT_CPU_TYPE;
+bfin_cpu_t bfin_cpu_type = BFIN_CPU_UNKNOWN;
 
 /* -msi-revision support. There are three special values:
    -1      -msi-revision=none.
@@ -103,8 +103,6 @@ int bfin_si_revision;
 
 /* The workarounds enabled */
 unsigned int bfin_workarounds = 0;
-
-static bool cputype_selected = false;
 
 struct bfin_cpu
 {
@@ -2378,8 +2376,6 @@ bfin_handle_option (size_t code, const char *arg, int value)
 
 	q = arg + strlen (p);
 
-	cputype_selected = true;
-
 	if (*q == '\0')
 	  {
 	    bfin_si_revision = bfin_cpus[i].si_revision;
@@ -2450,6 +2446,17 @@ bfin_init_machine_status (void)
 void
 override_options (void)
 {
+  /* If processor type is not specified, enable all workarounds.  */
+  if (bfin_cpu_type == BFIN_CPU_UNKNOWN)
+    {
+      int i;
+
+      for (i = 0; bfin_cpus[i].name != NULL; i++)
+	bfin_workarounds |= bfin_cpus[i].workarounds;
+
+      bfin_si_revision = 0xffff;
+    }
+
   if (bfin_csync_anomaly == 1)
     bfin_workarounds |= WA_SPECULATIVE_SYNCS;
   else if (bfin_csync_anomaly == 0)
@@ -2459,9 +2466,6 @@ override_options (void)
     bfin_workarounds |= WA_SPECULATIVE_LOADS;
   else if (bfin_specld_anomaly == 0)
     bfin_workarounds &= ~WA_SPECULATIVE_LOADS;
-
-  if (!cputype_selected)
-    bfin_workarounds |= WA_RETS;
 
   if (TARGET_OMIT_LEAF_FRAME_POINTER)
     flag_omit_frame_pointer = 1;
@@ -2497,6 +2501,18 @@ override_options (void)
      since we don't support it and it'll just break.  */
   if (flag_pic && !TARGET_FDPIC && !TARGET_ID_SHARED_LIBRARY)
     flag_pic = 0;
+
+  if (TARGET_MULTICORE && bfin_cpu_type != BFIN_CPU_BF561)
+    error ("-mmulticore can only be used with BF561");
+
+  if (TARGET_COREA && !TARGET_MULTICORE)
+    error ("-mcorea should be used with -mmulticore");
+
+  if (TARGET_COREB && !TARGET_MULTICORE)
+    error ("-mcoreb should be used with -mmulticore");
+
+  if (TARGET_COREA && TARGET_COREB)
+    error ("-mcorea and -mcoreb can't be used together");
 
   flag_schedule_insns = 0;
 
