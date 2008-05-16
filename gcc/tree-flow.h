@@ -485,9 +485,11 @@ struct stmt_ann_d GTY(())
   /* Set of variables that have had their address taken in the statement.  */
   bitmap addresses_taken;
 
-  /* Unique identifier for this statement.  These ID's are to be created
-     by each pass on an as-needed basis in any order convenient for the
-     pass which needs statement UIDs.  */
+  /* Unique identifier for this statement.  These ID's are to be
+     created by each pass on an as-needed basis in any order
+     convenient for the pass which needs statement UIDs.  This field
+     should only be accessed thru set_gimple_stmt_uid and
+     gimple_stmt_uid functions.  */
   unsigned int uid;
 
   /* Nonzero if the statement references memory (at least one of its
@@ -779,6 +781,7 @@ extern tree gimplify_build2 (block_stmt_iterator *, enum tree_code,
 extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
 			     tree, tree, tree, tree);
 extern void init_empty_tree_cfg (void);
+extern void init_empty_tree_cfg_for_function (struct function *);
 extern void fold_cond_expr_cond (void);
 extern void make_abnormal_goto_edges (basic_block, bool);
 extern void replace_uses_by (tree, tree);
@@ -801,6 +804,7 @@ extern const char *op_symbol_code (enum tree_code);
 extern var_ann_t create_var_ann (tree);
 extern function_ann_t create_function_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
+extern void renumber_gimple_stmt_uids (void);
 extern tree_ann_common_t create_tree_common_ann (tree);
 extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
@@ -893,13 +897,13 @@ DEF_VEC_ALLOC_O(edge_var_map, heap);
 /* A vector of var maps.  */
 typedef VEC(edge_var_map, heap) *edge_var_map_vector;
 
+extern void init_tree_ssa (struct function *);
 extern void redirect_edge_var_map_add (edge, tree, tree);
 extern void redirect_edge_var_map_clear (edge);
 extern void redirect_edge_var_map_dup (edge, edge);
 extern edge_var_map_vector redirect_edge_var_map_vector (edge);
 extern void redirect_edge_var_map_destroy (void);
 
-extern void init_tree_ssa (struct function *);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern bool tree_ssa_useless_type_conversion (tree);

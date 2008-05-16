@@ -1,3 +1,19 @@
+2008-05-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* tree-ssa-dse (max_stmt_uid): Removed.
+	(get_stmt_uid, dse_possible_dead_store_p, dse_optimize_stmt, 
+	tree_ssa_dse): Encapsulate all uses of stmt_ann->uid.
+	* tree-ssa-sccvn.c (compare_ops, init_scc_vn): Ditto.
+	* function.h (cfun.last_stmt_uid): New field.
+	* tree-flow-inline.h (set_gimple_stmt_uid, gimple_stmt_uid,
+	gimple_stmt_max_uid, set_gimple_stmt_max_uid, 
+	inc_gimple_stmt_max_uid): New functions.
+	* tree-dfa.c (renumber_gimple_stmt_uids): New function.
+	(create_stmt_ann): Initialize the ann->uid field.
+	* tree-ssa-pre.c (compute_avail): Encapsulate the stmt_ann->uid
+	with new calls.
+	* tree-flow.h (renumber_gimple_stmt_uids): New function.
+
 2008-05-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-flow.h (init_empty_tree_cfg_for_function): Declare.
@@ -26,7 +42,7 @@
 	* config/bfin/bfin.c (bfin_discover_loops): Delete empty loops.
 
 	From Jie Zhang  <jie.zhang@analog.com>
-        * config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	* config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
 	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Remove mcpu=bf532-0.3,
 	mcpu=bf561-none and mcpu=bf561-0.2.
 	* config/bfin/t-bfin-uclinux (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,

@@ -85,13 +85,30 @@ find_referenced_vars (void)
 {
   basic_block bb;
   block_stmt_iterator si;
+  tree phi;
 
   FOR_EACH_BB (bb)
-    for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
-      {
-	tree *stmt_p = bsi_stmt_ptr (si);
-	walk_tree (stmt_p, find_vars_r, NULL, NULL);
-      }
+    {
+      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+	{
+	  tree *stmt_p = bsi_stmt_ptr (si);
+	  walk_tree (stmt_p, find_vars_r, NULL, NULL);
+	}
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  int len = PHI_NUM_ARGS (phi);
+	  int i;
+
+	  walk_tree (&phi, find_vars_r, NULL, NULL);
+
+	  for (i = 0; i < len; i++)
+	    {
+	      tree arg = PHI_ARG_DEF (phi, i);
+	      walk_tree (&arg, find_vars_r, NULL, NULL);
+	    }
+	}
+    }
 
   return 0;
 }
@@ -110,8 +127,8 @@ struct gimple_opt_pass pass_referenced_vars =
   PROP_gimple_leh | PROP_cfg,		/* properties_required */
   PROP_referenced_vars,			/* properties_provided */
   0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_start */
+  TODO_dump_func                        /* todo_flags_finish */
  }
 };
 
@@ -194,9 +211,35 @@ create_stmt_ann (tree t)
   /* Since we just created the annotation, mark the statement modified.  */
   ann->modified = true;
 
+  ann->uid = inc_gimple_stmt_max_uid (cfun);
   t->base.ann = (tree_ann_t) ann;
 
   return ann;
+}
+
+/* Renumber all of the gimple stmt uids.  */
+
+void 
+renumber_gimple_stmt_uids (void)
+{
+  basic_block bb;
+
+  set_gimple_stmt_max_uid (cfun, 0);
+  FOR_ALL_BB (bb)
+    {
+      block_stmt_iterator bsi;
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  /* If the stmt has an annotation, then overwrite it, if not,
+	     the process of getting it will set the number
+	     properly.  */
+	  if (has_stmt_ann (stmt))
+	    set_gimple_stmt_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	  else
+	    get_stmt_ann (stmt);
+	}
+    }
 }
 
 /* Create a new annotation for a tree T.  */
@@ -572,9 +615,14 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 static tree
 find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
+  /* If we are reading the lto info back in, we need to rescan the
+     referenced vars.  */
+  if (TREE_CODE (*tp) == SSA_NAME)
+    add_referenced_var (SSA_NAME_VAR (*tp));
+
   /* If T is a regular variable that the optimizers are interested
      in, add it to the list of variables.  */
-  if (SSA_VAR_P (*tp))
+  else if (SSA_VAR_P (*tp))
     add_referenced_var (*tp);
 
   /* Type, _DECL and constant nodes have no interesting children.

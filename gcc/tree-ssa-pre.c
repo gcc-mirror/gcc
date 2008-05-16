@@ -3171,7 +3171,6 @@ insert_fake_stores (void)
 	      new_tree = build_gimple_modify_stmt (NULL_TREE, lhs);
 	      new_lhs = make_ssa_name (storetemp, new_tree);
 	      GIMPLE_STMT_OPERAND (new_tree, 0) = new_lhs;
-
 	      create_ssa_artificial_load_stmt (new_tree, stmt, false);
 
 	      NECESSARY (new_tree) = 0;
@@ -3494,7 +3493,7 @@ compute_avail (void)
 	  stmt = bsi_stmt (bsi);
 	  ann = stmt_ann (stmt);
 
-	  ann->uid = stmt_uid++;
+	  set_gimple_stmt_uid (stmt, stmt_uid++);
 
 	  /* For regular value numbering, we are only interested in
 	     assignments of the form X_i = EXPR, where EXPR represents
