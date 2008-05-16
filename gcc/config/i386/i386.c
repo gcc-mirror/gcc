@@ -23892,7 +23892,142 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
       break;
 
     case V8HImode:
+      if (TARGET_SSE2)
+	{
+	  rtx ops[4];
+	  unsigned int i, j;
+
+	  for (i = 0; i < ARRAY_SIZE (ops); i++)
+	    {
+	      /* Extend the odd elment from HImode to SImode using
+		 a paradoxical SUBREG.  */
+	      op0 = gen_reg_rtx (SImode);
+	      emit_move_insn (op0, gen_lowpart (SImode,
+						XVECEXP (vals, 0,
+							 i + i)));
+
+	      /* Insert the SImode value as low element of V4SImode
+		 vector. */
+	      op1 = gen_reg_rtx (V4SImode);
+	      op0 = gen_rtx_VEC_MERGE (V4SImode,
+				       gen_rtx_VEC_DUPLICATE (V4SImode,
+							      op0),
+				       CONST0_RTX (V4SImode),
+				       const1_rtx);
+	      emit_insn (gen_rtx_SET (VOIDmode, op1, op0));
+
+	      /* Cast the V4SImode vector back to a V8HImode vector.  */
+	      op0 = gen_reg_rtx (mode);
+	      emit_move_insn (op0, gen_lowpart (mode, op1));
+
+	      /* Load even HI elements into the second positon.  */
+	      emit_insn (gen_vec_setv8hi (op0, XVECEXP (vals, 0,
+							i + i + 1),
+					  const1_rtx));
+
+	      /* Cast V8HImode vector to V4SImode vector.  */
+	      ops[i] = gen_reg_rtx (V4SImode);
+	      emit_move_insn (ops[i], gen_lowpart (V4SImode, op0));
+	    }
+
+	  /* Interleave low V4SIs.  */
+	  for (i = j = 0; i < ARRAY_SIZE (ops); i += 2, j++)
+	    {
+	      op0 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_vec_interleave_lowv4si (op0, ops[i],
+						     ops[i + 1]));
+
+	      /* Cast V4SImode vectors to V2DImode vectors.  */
+	      op1 = gen_reg_rtx (V2DImode);
+	      emit_move_insn (op1, gen_lowpart (V2DImode, op0));
+	      ops[j] = op1;
+	    }
+
+	  /* Interleave low V2DIs.  */
+	  op0 = gen_reg_rtx (V2DImode);
+	  emit_insn (gen_vec_interleave_lowv2di (op0, ops[0], ops[1]));
+
+	  /* Cast the V2DImode vector back to a V8HImode vector.  */
+	  emit_insn (gen_rtx_SET (VOIDmode, target,
+				  gen_lowpart (mode, op0)));
+	  return;
+	}
+
     case V16QImode:
+      if (TARGET_SSE4_1)
+	{
+	  rtx ops[8];
+	  unsigned int i, j;
+
+	  for (i = 0; i < ARRAY_SIZE (ops); i++)
+	    {
+	      /* Extend the odd elment from QImode to SImode using
+		 a paradoxical SUBREG.  */
+	      op0 = gen_reg_rtx (SImode);
+	      emit_move_insn (op0, gen_lowpart (SImode,
+						XVECEXP (vals, 0,
+							 i + i)));
+
+	      /* Insert the SImode value as low element of V4SImode
+		 vector. */
+	      op1 = gen_reg_rtx (V4SImode);
+	      op0 = gen_rtx_VEC_MERGE (V4SImode,
+				       gen_rtx_VEC_DUPLICATE (V4SImode,
+							      op0),
+				       CONST0_RTX (V4SImode),
+				       const1_rtx);
+	      emit_insn (gen_rtx_SET (VOIDmode, op1, op0));
+
+	      /* Cast the V4SImode vector back to a V16QImode vector.  */
+	      op0 = gen_reg_rtx (mode);
+	      emit_move_insn (op0, gen_lowpart (mode, op1));
+
+	      /* Load even QI elements into the second positon.  */
+	      emit_insn (gen_vec_setv16qi (op0, XVECEXP (vals, 0,
+							 i + i + 1),
+					   const1_rtx));
+
+	      /* Cast V16QImode vector to V8HImode vector.  */
+	      ops[i] = gen_reg_rtx (V8HImode);
+	      emit_move_insn (ops[i], gen_lowpart (V8HImode, op0));
+	    }
+
+	  /* Interleave low V8HIs.  */
+	  for (i = j = 0; i < ARRAY_SIZE (ops); i += 2, j++)
+	    {
+	      op0 = gen_reg_rtx (V8HImode);
+	      emit_insn (gen_vec_interleave_lowv8hi (op0, ops[i],
+						     ops[i + 1]));
+
+	      /* Cast V8HImode vector to V4SImode vector.  */
+	      op1 = gen_reg_rtx (V4SImode);
+	      emit_move_insn (op1, gen_lowpart (V4SImode, op0));
+	      ops[j] = op1;
+	    }
+
+	  /* Interleave low V4SIs.  */
+	  for (i = j = 0; i < ARRAY_SIZE (ops) / 2; i += 2, j++)
+	    {
+	      op0 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_vec_interleave_lowv4si (op0, ops[i],
+						     ops[i + 1]));
+
+	      /* Cast V4SImode vectors to V2DImode vectors.  */
+	      op1 = gen_reg_rtx (V2DImode);
+	      emit_move_insn (op1, gen_lowpart (V2DImode, op0));
+	      ops[j] = op1;
+	    }
+
+	  /* Interleave low V2DIs.  */
+	  op0 = gen_reg_rtx (V2DImode);
+	  emit_insn (gen_vec_interleave_lowv2di (op0, ops[0], ops[1]));
+
+	  /* Cast the V2DImode vector back to a V8HImode vector.  */
+	  emit_insn (gen_rtx_SET (VOIDmode, target,
+				  gen_lowpart (mode, op0)));
+	  return;
+	}
+
     case V4HImode:
     case V8QImode:
       break;

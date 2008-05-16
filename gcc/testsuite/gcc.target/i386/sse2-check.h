@@ -1,7 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
-
 #include "cpuid.h"
+#include "m128-check.h"
 
 static void sse2_test (void);
 
