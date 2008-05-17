@@ -2578,7 +2578,7 @@ add_subroutines (void)
 
   add_sym_1s ("flush", GFC_ISYM_FLUSH, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_flush, NULL, gfc_resolve_flush,
-	      c, BT_INTEGER, di, OPTIONAL);
+	      ut, BT_INTEGER, di, OPTIONAL);
 
   add_sym_3s ("fputc", GFC_ISYM_FPUTC, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetputc_sub, NULL, gfc_resolve_fputc_sub,

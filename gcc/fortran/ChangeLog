@@ -1,3 +1,10 @@
+2008-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): Change FLUSH(C) to FLUSH(UNIT).
+	* intrinsic.texi: Change INTEGER(*) to INTEGER; fix keyword= name for
+	ABS, ADJUSTL, AINT, ALLOCATED, ANINT, ASSOCIATED, C_ASSOCIATED,
+	CEILING, DBLE, DFLOAT, DOT_PRODUCT, DREAL, FLOAT, FLOOR, GET_COMMAND.
+
 2008-05-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35756
@@ -15,6 +22,10 @@
 	* trans-array.c (gfc_add_loop_ss_code): If ss->where is set do
 	not evaluate scalars outside the loop.  Clean up whitespace.
 	* trans.h : Add a bitfield 'where' to gfc_ss.
+
+2008-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): Change FLUSH(C) to FLUSH(UNIT)
 
 2008-05-16  Tobias Burnus  <burnus@net-b.de>
 
