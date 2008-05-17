@@ -562,7 +562,7 @@ Stored in the @code{unchanging} field and printed as @samp{/u}.
 @findex RTL_CONST_CALL_P
 @cindex @code{call_insn} and @samp{/u}
 @cindex @code{unchanging}, in @code{call_insn}
-@item RTLCONST_OR_PURE_CALL_P (@var{x})
+@item RTL_CONST_CALL_P (@var{x})
 In a @code{call_insn} indicates that the insn represents a call to a
 const function.  Stored in the @code{unchanging} field and printed as
 @samp{/u}.
@@ -570,7 +570,7 @@ const function.  Stored in the @code{unchanging} field and printed as
 @findex RTL_PURE_CALL_P
 @cindex @code{call_insn} and @samp{/i}
 @cindex @code{return_val}, in @code{call_insn}
-@item RTLCONST_OR_PURE_CALL_P (@var{x})
+@item RTL_PURE_CALL_P (@var{x})
 In a @code{call_insn} indicates that the insn represents a call to a
 pure function.  Stored in the @code{return_val} field and printed as
 @samp{/i}.
