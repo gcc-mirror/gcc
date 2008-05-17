@@ -1937,7 +1937,9 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
-      if (actual_size != 0 && actual_size < formal_size)
+      if (actual_size != 0
+	    && actual_size < formal_size
+	    && a->expr->ts.type != BT_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "

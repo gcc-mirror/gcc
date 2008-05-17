@@ -3148,6 +3148,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
    {
      /* The rhs is scalar.  Add a ss for the expression.  */
      rss = gfc_get_ss ();
+     rss->where = 1;
      rss->next = gfc_ss_terminator;
      rss->type = GFC_SS_SCALAR;
      rss->expr = expr2;
@@ -3310,6 +3311,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
   gfc_code *cblock;
   gfc_code *cnext;
   tree tmp;
+  tree cond;
   tree count1, count2;
   bool need_cmask;
   bool need_pmask;
@@ -3374,6 +3376,13 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
       /* Calculate the total size of temporary needed.  */
       size = compute_overall_iter_number (nested_forall_info, inner_size,
 					  &inner_size_body, block);
+
+      /* Check whether the size is negative.  */
+      cond = fold_build2 (LE_EXPR, boolean_type_node, size,
+			  gfc_index_zero_node);
+      size = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
+			  gfc_index_zero_node, size);
+      size = gfc_evaluate_now (size, block);
 
       /* Allocate temporary for WHERE mask if needed.  */
       if (need_cmask)
@@ -3576,6 +3585,7 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   if (tsss == gfc_ss_terminator)
     {
       tsss = gfc_get_ss ();
+      tsss->where = 1;
       tsss->next = gfc_ss_terminator;
       tsss->type = GFC_SS_SCALAR;
       tsss->expr = tsrc;
@@ -3593,6 +3603,7 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
       if (esss == gfc_ss_terminator)
 	{
 	  esss = gfc_get_ss ();
+	  esss->where = 1;
 	  esss->next = gfc_ss_terminator;
 	  esss->type = GFC_SS_SCALAR;
 	  esss->expr = esrc;
@@ -3707,19 +3718,28 @@ gfc_trans_where (gfc_code * code)
 	     block is dependence free if cond is not dependent on writes
 	     to x1 and x2, y1 is not dependent on writes to x2, and y2
 	     is not dependent on writes to x1, and both y's are not
-	     dependent upon their own x's.  */
+	     dependent upon their own x's.  In addition to this, the
+	     final two dependency checks below exclude all but the same
+	     array reference if the where and elswhere destinations
+	     are the same.  In short, this is VERY conservative and this
+	     is needed because the two loops, required by the standard
+	     are coalesced in gfc_trans_where_3.  */
 	  if (!gfc_check_dependency(cblock->next->expr,
 				    cblock->expr, 0)
 	      && !gfc_check_dependency(eblock->next->expr,
 				       cblock->expr, 0)
 	      && !gfc_check_dependency(cblock->next->expr,
-				       eblock->next->expr2, 0)
+				       eblock->next->expr2, 1)
 	      && !gfc_check_dependency(eblock->next->expr,
-				       cblock->next->expr2, 0)
+				       cblock->next->expr2, 1)
 	      && !gfc_check_dependency(cblock->next->expr,
-				       cblock->next->expr2, 0)
+				       cblock->next->expr2, 1)
 	      && !gfc_check_dependency(eblock->next->expr,
-				       eblock->next->expr2, 0))
+				       eblock->next->expr2, 1)
+	      && !gfc_check_dependency(cblock->next->expr,
+				       eblock->next->expr, 0)
+	      && !gfc_check_dependency(eblock->next->expr,
+				       cblock->next->expr, 0))
 	    return gfc_trans_where_3 (cblock, eblock);
 	}
     }

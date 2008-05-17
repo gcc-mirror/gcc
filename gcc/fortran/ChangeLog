@@ -1,8 +1,31 @@
+2008-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline:
+	PR fortran/35756
+	PR fortran/35759
+	* trans-stmt.c (gfc_trans_where): Tighten up the dependency
+	check for calling gfc_trans_where_3.
+
+	PR fortran/35743
+	* trans-stmt.c (gfc_trans_where_2): Set the mask size to zero
+	if it is calculated to be negative.
+
+	PR fortran/35745
+	* trans-stmt.c (gfc_trans_where_3, gfc_trans_where_assign): Set
+	ss->where for scalar right hand sides.
+	* trans-array.c (gfc_add_loop_ss_code): If ss->where is set do
+	not evaluate scalars outside the loop.  Clean up whitespace.
+	* trans.h : Add a bitfield 'where' to gfc_ss.
+
+	PR fortran/36233
+	* interface.c (compare_actual_formal): Do not check sizes if the
+	actual is BT_PROCEDURE.
+
 2008-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
-       PR fortran/35997
-       * module.c (find_symbol): Do not return a result for a symbol
-       that has been renamed in another module.
+	PR fortran/35997
+	* module.c (find_symbol): Do not return a result for a symbol
+	that has been renamed in another module.
 
 2008-05-01  Paul Thomas  <pault@gcc.gnu.org>
 

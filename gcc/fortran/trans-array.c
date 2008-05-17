@@ -1867,20 +1867,21 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  /* Scalar expression.  Evaluate this now.  This includes elemental
 	     dimension indices, but not array section bounds.  */
 	  gfc_init_se (&se, NULL);
-          gfc_conv_expr (&se, ss->expr);
-          gfc_add_block_to_block (&loop->pre, &se.pre);
+	  gfc_conv_expr (&se, ss->expr);
+	  gfc_add_block_to_block (&loop->pre, &se.pre);
 
-          if (ss->expr->ts.type != BT_CHARACTER)
-            {
-              /* Move the evaluation of scalar expressions outside the
-                 scalarization loop.  */
-              if (subscript)
-                se.expr = convert(gfc_array_index_type, se.expr);
-              se.expr = gfc_evaluate_now (se.expr, &loop->pre);
-              gfc_add_block_to_block (&loop->pre, &se.post);
-            }
-          else
-            gfc_add_block_to_block (&loop->post, &se.post);
+	  if (ss->expr->ts.type != BT_CHARACTER)
+	    {
+	      /* Move the evaluation of scalar expressions outside the
+		 scalarization loop, except for WHERE assignments.  */
+	      if (subscript)
+		se.expr = convert(gfc_array_index_type, se.expr);
+	      if (!ss->where)
+		se.expr = gfc_evaluate_now (se.expr, &loop->pre);
+	      gfc_add_block_to_block (&loop->pre, &se.post);
+	    }
+	  else
+	    gfc_add_block_to_block (&loop->post, &se.post);
 
 	  ss->data.scalar.expr = se.expr;
 	  ss->string_length = se.string_length;
