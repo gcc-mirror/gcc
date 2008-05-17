@@ -1,3 +1,14 @@
+
+2008-05-17 Xinliang David Li   <davidxl@google.com>
+
+        * gcc/tree-ssa-dce.c : conditional dead call elimination
+        * gcc/opts.c         : enable the optimization at >=O2
+        * gcc/common.opt      : new flag for control the optimization
+        * gcc/doc/invoke.texi : documentation change
+        * gcc/testsuite/gcc.dg/cdce1.c : new test case
+        * gcc/testsuite/gcc.dg/cdce2.c : new test case
+        *MAINTAINERS  : Add myself (write after approval) 
+
 2008-05-15  Janus Weil  <janus@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
