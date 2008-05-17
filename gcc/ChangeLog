@@ -1,3 +1,8 @@
+2008-05-17  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_output_mi_thunk): Update the use of
+	init_flow.
+
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (setup_one_parameter): Remove dead code.
