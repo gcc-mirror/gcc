@@ -3767,10 +3767,10 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
    df_simulate_artificial_refs_at_top can be called to get a new value
    of the sets at the top of the block (this is rarely used).
 
-   It would be trivial to define a similar set of functions that work
-   in the forwards direction.  The only changes would be to process
-   the uses before the defs and properly rename the functions.  This
-   has so far not been necessary.
+   It would be not be difficult to define a similar set of functions
+   that work in the forwards direction.  In that case the functions
+   would ignore the use sets and look for the REG_DEAD and REG_UNUSED
+   notes.
 ----------------------------------------------------------------------------*/
 
 /* Apply the artificial uses and defs at the end of BB in a backwards
