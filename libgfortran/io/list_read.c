@@ -1724,8 +1724,8 @@ check_type (st_parameter_dt *dtp, bt type, int len)
    greater than one, we copy the data item multiple times.  */
 
 static void
-list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
-			    size_t size)
+list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
+			    int kind, size_t size)
 {
   char c;
   int m;

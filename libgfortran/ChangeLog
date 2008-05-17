@@ -1,3 +1,8 @@
+2008-05-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io/list_read.c (list_formatted_read_scalar):  Declare
+	type as volatile to shut up compiler warning.
+
 2008-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/25561
