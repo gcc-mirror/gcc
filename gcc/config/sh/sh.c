@@ -10522,7 +10522,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (optimize > 0)
     {
       if (! cfun->cfg)
-	init_flow ();
+	init_flow (cfun);
       split_all_insns_noflow ();
     }
 #endif
