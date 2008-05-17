@@ -1,3 +1,8 @@
+2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_unary) <CASE_CONVERT>: Fold the cast into
+	a BIT_AND_EXPR only for an INTEGER_TYPE.
+
 2008-05-16  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Undef before
@@ -23,7 +28,6 @@
 	(df_simulate_one_insn_backwards): Renamed to df_simulate_one_insn.
 	(df_simulate_one_insn_forwards): Removed.
 
-	
 2008-05-16  Doug Kwan  <dougkwan@google.com>
 
 	* real.c (real_to_decimal, real_to_hexadecimal): Distinguish
