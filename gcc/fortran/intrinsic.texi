@@ -4788,7 +4788,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Retrieve the @var{N}th argument that was passed on the
+Retrieve the @var{NUMBER}-th argument that was passed on the
 command line when the containing program was invoked.
 
 @item @emph{Standard}:
@@ -4798,21 +4798,26 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_COMMAND_ARGUMENT(N, ARG)}
+@code{CALL GET_COMMAND_ARGUMENT(NUMBER [, VALUE, LENGTH, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N}   @tab Shall be of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
-@item @var{ARG} @tab Shall be of type @code{CHARACTER}. 
+@item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER(4)}, @math{@var{N} \geq 0}.
+@item @var{VALUE}  @tab (Option) Shall be a scalar of type @code{CHARACTER(1)}. 
+@item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
+@item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
 @end multitable
 
 @item @emph{Return value}:
-After @code{GET_COMMAND_ARGUMENT} returns, the @var{ARG} argument holds the 
-@var{N}th command line argument. If @var{ARG} can not hold the argument, it is 
-truncated to fit the length of @var{ARG}. If there are less than @var{N}
-arguments specified at the command line, @var{ARG} will be filled with blanks. 
-If @math{@var{N} = 0}, @var{ARG} is set to the name of the program (on systems
-that support this feature).
+After @code{GET_COMMAND_ARGUMENT} returns, the @var{VALUE} argument holds the 
+@var{NUMBER}-th command line argument. If @var{VALUE} can not hold the argument, it is 
+truncated to fit the length of @var{VALUE}. If there are less than @var{NUMBER}
+arguments specified at the command line, @var{VALUE} will be filled with blanks. 
+If @math{@var{NUMBER} = 0}, @var{VALUE} is set to the name of the program (on systems
+that support this feature). The @var{LENGTH} argument contains the length of the
+@var{NUMBER}-th command line argument. If the argument retrival fails, @var{STATUS}
+is a positiv number; if @var{VALUE} contains a truncated command line argument,
+@var{STATUS} is -1; and otherwise the @var{STATUS} is zero.
 
 @item @emph{Example}:
 @smallexample
@@ -4856,11 +4861,11 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL GETCWD(CWD [, STATUS])}
+@code{CALL GETCWD(C [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{CWD}    @tab The type shall be @code{CHARACTER}.
+@item @var{C}      @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
                         a system specific and nonzero error code otherwise.
 @end multitable
@@ -4887,7 +4892,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Get the @var{VALUE} of the environmental variable @var{ENVVAR}.
+Get the @var{VALUE} of the environmental variable @var{NAME}.
 
 This intrinsic routine is provided for backwards compatibility with 
 GNU Fortran 77.  In new code, programmers should consider the use of 
@@ -4901,17 +4906,17 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GETENV(ENVVAR, VALUE)}
+@code{CALL GETENV(NAME, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER}. 
+@item @var{NAME}   @tab Shall be of type @code{CHARACTER}. 
 @item @var{VALUE}  @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
-Stores the value of @var{ENVVAR} in @var{VALUE}. If @var{VALUE} is 
-not large enough to hold the data, it is truncated. If @var{ENVVAR}
+Stores the value of @var{NAME} in @var{VALUE}. If @var{VALUE} is 
+not large enough to hold the data, it is truncated. If @var{NAME}
 is not set, @var{VALUE} will be filled with blanks.
 
 @item @emph{Example}:
@@ -4936,7 +4941,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Get the @var{VALUE} of the environmental variable @var{ENVVAR}.
+Get the @var{VALUE} of the environmental variable @var{NAME}.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -4945,18 +4950,29 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_ENVIRONMENT_VARIABLE(ENVVAR, VALUE)}
+@code{CALL GET_ENVIRONMENT_VARIABLE(NAME[, VALUE, LENGTH, STATUS, TRIM_NAME)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER}. 
-@item @var{VALUE}  @tab Shall be of type @code{CHARACTER}. 
+@item @var{NAME}      @tab Shall be a scalar of type @code{CHARACTER(1)}. 
+@item @var{VALUE}     @tab Shall be a scalar of type @code{CHARACTER(1)}. 
+@item @var{LENGTH}    @tab Shall be a scalar of type @code{INTEGER(4)}. 
+@item @var{STATUS}    @tab Shall be a scalar of type @code{INTEGER(4)}. 
+@item @var{TRIM_NAME} @tab Shall be a scalar of type @code{LOGICAL(4)}. 
 @end multitable
 
 @item @emph{Return value}:
-Stores the value of @var{ENVVAR} in @var{VALUE}. If @var{VALUE} is 
-not large enough to hold the data, it is truncated. If @var{ENVVAR}
-is not set, @var{VALUE} will be filled with blanks.
+Stores the value of @var{NAME} in @var{VALUE}. If @var{VALUE} is 
+not large enough to hold the data, it is truncated. If @var{NAME}
+is not set, @var{VALUE} will be filled with blanks. Argument @var{LENGTH}
+contains the length needed for storing the environment variable @var{NAME}
+or zero if it is not present. @var{STATUS} is -1 if @var{VALUE} is present
+but too short for the environment variable; it is 1 if the environment
+variable does not exist and 2 if the processor does not support environment
+variables; in all other cases @var{STATUS} is zero. If @var{TRIM_NAME} is
+present with the value @code{.FALSE.}, the trailing blanks in @var{NAME}
+are significant; otherwise they are not part of the environment variable
+name.
 
 @item @emph{Example}:
 @smallexample
@@ -5019,11 +5035,11 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GETLOG(LOGIN)}
+@code{CALL GETLOG(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{LOGIN} @tab Shall be of type @code{CHARACTER}.
+@item @var{C} @tab Shall be of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -5126,8 +5142,8 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{STIME} (as provided by the @code{TIME8()}
-intrinsic), fills @var{TARRAY} with values extracted from it appropriate
+Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the UTC time zone (Universal Coordinated Time, also known in some
 countries as GMT, Greenwich Mean Time), using @code{gmtime(3)}.
 
@@ -5138,19 +5154,19 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GMTIME(STIME, TARRAY)}
+@code{CALL GMTIME(TIME, VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STIME}  @tab An @code{INTEGER} scalar expression
+@item @var{TIME}   @tab An @code{INTEGER} scalar expression
                         corresponding to a system time, with 
 			@code{INTENT(IN)}.
-@item @var{TARRAY} @tab A default @code{INTEGER} array with 9 elements,
+@item @var{VALUES} @tab A default @code{INTEGER} array with 9 elements,
                         with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
-The elements of @var{TARRAY} are assigned as follows:
+The elements of @var{VALUES} are assigned as follows:
 @enumerate
 @item Seconds after the minute, range 0--59 or 0--61 to allow for leap
       seconds
@@ -5193,13 +5209,13 @@ Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL HOSTNM(NAME[, STATUS])}
+@item @code{CALL HOSTNM(C [, STATUS])}
 @item @code{STATUS = HOSTNM(NAME)}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}    @tab Shall of type @code{CHARACTER}.
+@item @var{C }      @tab Shall of type @code{CHARACTER}.
 @item @var{STATUS}  @tab (Optional) status flag of type @code{INTEGER}.
                          Returns 0 on success, or a system specific error
                          code otherwise.
@@ -5269,7 +5285,7 @@ Fortran 2008 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = HYPOT(X,Y)}
+@code{RESULT = HYPOT(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5498,7 +5514,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{I}   @tab The type shall be @code{INTEGER}.
 @item @var{POS} @tab The type shall be @code{INTEGER}.
 @item @var{LEN} @tab The type shall be @code{INTEGER}.
 @end multitable
@@ -5640,11 +5656,11 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL IDATE(TARRAY)}
+@code{CALL IDATE(VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)} and
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(3)} and
 the kind shall be the default integer kind.
 @end multitable
 
@@ -5985,11 +6001,11 @@ GNU extension
 Function
 
 @item @emph{Syntax}:
-@code{RESULT = IRAND(FLAG)}
+@code{RESULT = IRAND(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FLAG} @tab Shall be a scalar @code{INTEGER} of kind 4.
+@item @var{I} @tab Shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
 @item @emph{Return value}:
@@ -6276,9 +6292,9 @@ end program test_nan
 
 @table @asis
 @item @emph{Description}:
-@code{IDATE(TARRAY)} Fills @var{TARRAY} with the numerical values at the  
+@code{IDATE(VALUES)} Fills @var{VALUES} with the numerical values at the  
 current local time. The hour (in the range 1-24), minute (in the range 1-60), 
-and seconds (in the range 1-60) appear in elements 1, 2, and 3 of @var{TARRAY}, 
+and seconds (in the range 1-60) appear in elements 1, 2, and 3 of @var{VALUES}, 
 respectively.
 
 @item @emph{Standard}:
@@ -6288,11 +6304,11 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL ITIME(TARRAY)}
+@code{CALL ITIME(VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)}
+@item @var{VALUES} @tab The type shall be @code{INTEGER, DIMENSION(3)}
 and the kind shall be the default integer kind.
 @end multitable
 
@@ -6331,13 +6347,13 @@ only one form can be used in any given program unit.
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL KILL(PID, SIGNAL [, STATUS])}
+@code{CALL KILL(C, VALUE [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{PID} @tab Shall be a scalar @code{INTEGER}, with
+@item @var{C} @tab Shall be a scalar @code{INTEGER}, with
 @code{INTENT(IN)}
-@item @var{SIGNAL} @tab Shall be a scalar @code{INTEGER}, with
+@item @var{VALUE} @tab Shall be a scalar @code{INTEGER}, with
 @code{INTENT(IN)}
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)} or
                         @code{INTEGER(8)}. Returns 0 on success, or a
@@ -6509,60 +6525,6 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 @item @emph{See also}:
 @ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}
-@end table
-
-
-
-@node LOG_GAMMA
-@section @code{LOG_GAMMA} --- Logarithm of the Gamma function
-@fnindex LOG_GAMMA
-@fnindex LGAMMA
-@fnindex ALGAMA
-@fnindex DLGAMA
-@cindex Gamma function, logarithm of
-
-@table @asis
-@item @emph{Description}:
-@code{LOG_GAMMA(X)} computes the natural logarithm of the absolute value
-of the Gamma (@math{\Gamma}) function.
-
-@item @emph{Standard}:
-Fortran 2008 and later
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Syntax}:
-@code{X = LOG_GAMMA(X)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{X} @tab Shall be of type @code{REAL} and neither zero
-nor a negative integer.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of type @code{REAL} of the same kind as @var{X}.
-
-@item @emph{Example}:
-@smallexample
-program test_log_gamma
-  real :: x = 1.0
-  x = lgamma(x) ! returns 0.0
-end program test_log_gamma
-@end smallexample
-
-@item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument         @tab Return type       @tab Standard
-@item @code{LGAMMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
-@item @code{ALGAMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
-@item @code{DLGAMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU Extension
-@end multitable
-
-@item @emph{See also}:
-Gamma function: @ref{GAMMA}
-
 @end table
 
 
@@ -6971,6 +6933,60 @@ end program test_log10
 @item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 95 and later
 @item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
+@end table
+
+
+
+@node LOG_GAMMA
+@section @code{LOG_GAMMA} --- Logarithm of the Gamma function
+@fnindex LOG_GAMMA
+@fnindex LGAMMA
+@fnindex ALGAMA
+@fnindex DLGAMA
+@cindex Gamma function, logarithm of
+
+@table @asis
+@item @emph{Description}:
+@code{LOG_GAMMA(X)} computes the natural logarithm of the absolute value
+of the Gamma (@math{\Gamma}) function.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{X = LOG_GAMMA(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab Shall be of type @code{REAL} and neither zero
+nor a negative integer.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL} of the same kind as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_log_gamma
+  real :: x = 1.0
+  x = lgamma(x) ! returns 0.0
+end program test_log_gamma
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument         @tab Return type       @tab Standard
+@item @code{LGAMMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{ALGAMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DLGAMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Gamma function: @ref{GAMMA}
+
 @end table
 
 
