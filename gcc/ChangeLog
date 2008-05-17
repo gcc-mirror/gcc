@@ -1,5 +1,9 @@
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-inline.c (setup_one_parameter): Remove dead code.
+
+2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* fold-const.c (fold_unary) <CASE_CONVERT>: Fold the cast into
 	a BIT_AND_EXPR only for an INTEGER_TYPE.
 
