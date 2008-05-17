@@ -1,3 +1,9 @@
+2008-05-16  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Undef before
+	overriding.
+	* config/sparc/linux64.h (NO_PROFILE_COUNTERS): Likewise.
+
 2008-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36246

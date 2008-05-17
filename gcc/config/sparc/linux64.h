@@ -311,4 +311,5 @@ do {									\
 #define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 
 /* We use glibc _mcount for profiling.  */
+#undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS	1
