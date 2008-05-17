@@ -1,3 +1,8 @@
+2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (gnat_to_gnu) <N_Validate_Unchecked_Conversion>: Account
+	for dummy types pointed to by the converted pointer types.
+
 2008-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (add_decl_expr): At toplevel, mark the TYPE_ADA_SIZE field

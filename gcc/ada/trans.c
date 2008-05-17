@@ -4722,45 +4722,71 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Validate_Unchecked_Conversion:
-      /* If the result is a pointer type, see if we are either converting
-	 from a non-pointer or from a pointer to a type with a different
-	 alias set and warn if so.  If the result defined in the same unit as
-	 this unchecked conversion, we can allow this because we can know to
-	 make that type have alias set 0.  */
       {
+	Entity_Id gnat_target_type = Target_Type (gnat_node);
 	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
-	tree gnu_target_type = gnat_to_gnu_type (Target_Type (gnat_node));
+	tree gnu_target_type = gnat_to_gnu_type (gnat_target_type);
 
-	if (POINTER_TYPE_P (gnu_target_type)
-	    && !In_Same_Source_Unit (Target_Type (gnat_node), gnat_node)
-	    && get_alias_set (TREE_TYPE (gnu_target_type)) != 0
-	    && !No_Strict_Aliasing (Underlying_Type (Target_Type (gnat_node)))
-	    && (!POINTER_TYPE_P (gnu_source_type)
-		|| (get_alias_set (TREE_TYPE (gnu_source_type))
-		    != get_alias_set (TREE_TYPE (gnu_target_type)))))
+	/* No need for any warning in this case.  */
+	if (!flag_strict_aliasing)
+	  ;
+
+	/* If the result is a pointer type, see if we are either converting
+	   from a non-pointer or from a pointer to a type with a different
+	   alias set and warn if so.  If the result is defined in the same
+	   unit as this unchecked conversion, we can allow this because we
+	   can know to make the pointer type behave properly.  */
+	else if (POINTER_TYPE_P (gnu_target_type)
+		 && !In_Same_Source_Unit (gnat_target_type, gnat_node)
+		 && !No_Strict_Aliasing (Underlying_Type (gnat_target_type)))
 	  {
-	    post_error_ne
-	      ("?possible aliasing problem for type&",
-	       gnat_node, Target_Type (gnat_node));
-	    post_error
-	      ("\\?use -fno-strict-aliasing switch for references",
-	       gnat_node);
-	    post_error_ne
-	      ("\\?or use `pragma No_Strict_Aliasing (&);`",
-	       gnat_node, Target_Type (gnat_node));
+	    tree gnu_source_desig_type = POINTER_TYPE_P (gnu_source_type)
+					 ? TREE_TYPE (gnu_source_type)
+					 : NULL_TREE;
+	    tree gnu_target_desig_type = TREE_TYPE (gnu_target_type);
+
+	    if ((TYPE_DUMMY_P (gnu_target_desig_type)
+		 || get_alias_set (gnu_target_desig_type) != 0)
+	        && (!POINTER_TYPE_P (gnu_source_type)
+		    || (TYPE_DUMMY_P (gnu_source_desig_type)
+			!= TYPE_DUMMY_P (gnu_target_desig_type))
+		    || (TYPE_DUMMY_P (gnu_source_desig_type)
+			&& gnu_source_desig_type != gnu_target_desig_type)
+		    || (get_alias_set (gnu_source_desig_type)
+			!= get_alias_set (gnu_target_desig_type))))
+	      {
+		post_error_ne
+		  ("?possible aliasing problem for type&",
+		   gnat_node, Target_Type (gnat_node));
+		post_error
+		  ("\\?use -fno-strict-aliasing switch for references",
+		   gnat_node);
+		post_error_ne
+		  ("\\?or use `pragma No_Strict_Aliasing (&);`",
+		   gnat_node, Target_Type (gnat_node));
+	      }
 	  }
 
-	/* The No_Strict_Aliasing flag is not propagated to the back-end for
-	   fat pointers so unconditionally warn in problematic cases.  */
+	/* But if the result is a fat pointer type, we have no mechanism to
+	   do that, so we unconditionally warn in problematic cases.  */
 	else if (TYPE_FAT_POINTER_P (gnu_target_type))
 	  {
-	    tree array_type
+	    tree gnu_source_array_type
+	      = TYPE_FAT_POINTER_P (gnu_source_type)
+		? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_source_type)))
+		: NULL_TREE;
+	    tree gnu_target_array_type
 	      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_target_type)));
 
-	    if (get_alias_set (array_type) != 0
+	    if ((TYPE_DUMMY_P (gnu_target_array_type)
+		 || get_alias_set (gnu_target_array_type) != 0)
 		&& (!TYPE_FAT_POINTER_P (gnu_source_type)
-		    || (get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_source_type))))
-			!= get_alias_set (array_type))))
+		    || (TYPE_DUMMY_P (gnu_source_array_type)
+			!= TYPE_DUMMY_P (gnu_target_array_type))
+		    || (TYPE_DUMMY_P (gnu_source_array_type)
+			&& gnu_source_array_type != gnu_target_array_type)
+		    || (get_alias_set (gnu_source_array_type)
+			!= get_alias_set (gnu_target_array_type))))
 	      {
 		post_error_ne
 		  ("?possible aliasing problem for type&",

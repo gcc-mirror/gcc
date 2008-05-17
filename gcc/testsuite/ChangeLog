@@ -1,3 +1,7 @@
+2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn4.adb: New test.
+
 2008-05-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline:
