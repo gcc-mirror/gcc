@@ -358,7 +358,7 @@ end program test_abort
 
 @table @asis
 @item @emph{Description}:
-@code{ABS(X)} computes the absolute value of @code{X}.
+@code{ABS(A)} computes the absolute value of @code{A}.
 
 @item @emph{Standard}:
 Fortran 77 and later, has overloads that are GNU extensions
@@ -367,18 +367,18 @@ Fortran 77 and later, has overloads that are GNU extensions
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ABS(X)}
+@code{RESULT = ABS(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type of the argument shall be an @code{INTEGER(*)},
-@code{REAL(*)}, or @code{COMPLEX(*)}.
+@item @var{A} @tab The type of the argument shall be an @code{INTEGER},
+@code{REAL}, or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of the same type and
-kind as the argument except the return value is @code{REAL(*)} for a
-@code{COMPLEX(*)} argument.
+kind as the argument except the return value is @code{REAL} for a
+@code{COMPLEX} argument.
 
 @item @emph{Example}:
 @smallexample
@@ -395,11 +395,11 @@ end program test_abs
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab Fortran 77 and later
-@item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab Fortran 77 and later
-@item @code{IABS(I)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab Fortran 77 and later
-@item @code{ZABS(Z)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
-@item @code{CDABS(Z)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CABS(A)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab Fortran 77 and later
+@item @code{DABS(A)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item @code{IABS(A)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@item @code{ZABS(A)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CDABS(A)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 @end table
 
@@ -485,15 +485,16 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I}    @tab The type shall be @code{INTEGER(*)}.
+@item @var{I}    @tab The type shall be @code{INTEGER}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
                       the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{CHARACTER} with a length of one.  The
-kind type parameter is the same as  @code{KIND('A')}.
+The return value is of type @code{CHARACTER} with a length of one.
+If the @var{KIND} argument is present, the return value is of the
+specified kind and of the default kind otherwise.
 
 @item @emph{Example}:
 @smallexample
@@ -536,14 +537,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
+@item @var{X} @tab The type shall be @code{REAL} with a magnitude that is
 less than one.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{ 0 \leq \acos(x) \leq \pi}. The kind type parameter 
-is the same as @var{X}.
+The return value is of type @code{REAL} and it lies in the
+range @math{ 0 \leq \acos(x) \leq \pi}. The return value if of the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -625,7 +626,7 @@ Inverse function: @ref{COSH}
 
 @table @asis
 @item @emph{Description}:
-@code{ADJUSTL(STR)} will left adjust a string by removing leading spaces.
+@code{ADJUSTL(STRING)} will left adjust a string by removing leading spaces.
 Spaces are inserted at the end of the string as needed.
 
 @item @emph{Standard}:
@@ -635,17 +636,17 @@ Fortran 95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ADJUSTL(STR)}
+@code{RESULT = ADJUSTL(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STR} @tab The type shall be @code{CHARACTER}.
+@item @var{STRING} @tab The type shall be @code{CHARACTER}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of type @code{CHARACTER} where leading spaces 
 are removed and the same number of spaces are inserted on the end
-of @var{STR}.
+of @var{STR}. The return value has the same kind as @var{STRING}.
 
 @item @emph{Example}:
 @smallexample
@@ -670,7 +671,7 @@ end program test_adjustl
 
 @table @asis
 @item @emph{Description}:
-@code{ADJUSTR(STR)} will right adjust a string by removing trailing spaces.
+@code{ADJUSTR(STRING)} will right adjust a string by removing trailing spaces.
 Spaces are inserted at the start of the string as needed.
 
 @item @emph{Standard}:
@@ -680,7 +681,7 @@ Fortran 95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ADJUSTR(STR)}
+@code{RESULT = ADJUSTR(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -690,7 +691,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{CHARACTER} where trailing spaces 
 are removed and the same number of spaces are inserted at the start
-of @var{STR}.
+of @var{STR}. The return value has the same kind as @var{STRING}.
 
 @item @emph{Example}:
 @smallexample
@@ -733,11 +734,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{Z} @tab The type of the argument shall be @code{COMPLEX(*)}.
+@item @var{Z} @tab The type of the argument shall be @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type real with the
+The return value is of type @code{REAL} with the
 kind type parameter of the argument.
 
 @item @emph{Example}:
@@ -755,8 +756,8 @@ end program test_aimag
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
 @item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab GNU extension
-@item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab GNU extension
-@item @code{IMAGPART(Z)} @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)} @tab GNU extension
+@item @code{IMAG(Z)}  @tab @code{COMPLEX Z} @tab @code{REAL}    @tab GNU extension
+@item @code{IMAGPART(Z)} @tab @code{COMPLEX Z} @tab @code{REAL} @tab GNU extension
 @end multitable
 @end table
 
@@ -771,7 +772,7 @@ end program test_aimag
 
 @table @asis
 @item @emph{Description}:
-@code{AINT(X [, KIND])} truncates its argument to a whole number.
+@code{AINT(A [, KIND])} truncates its argument to a whole number.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -780,22 +781,22 @@ Fortran 77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = AINT(X [, KIND])} 
+@code{RESULT = AINT(A [, KIND])} 
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab The type of the argument shall be @code{REAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{A}    @tab The type of the argument shall be @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type real with the kind type parameter of the
+The return value is of type @code{REAL} with the kind type parameter of the
 argument if the optional @var{KIND} is absent; otherwise, the kind
 type parameter will be given by @var{KIND}.  If the magnitude of 
-@var{X} is less than one, then @code{AINT(X)} returns zero.  If the
-magnitude is equal to or greater than one, then it returns the largest
+@var{X} is less than one, @code{AINT(X)} returns zero.  If the
+magnitude is equal to or greater than one then it returns the largest
 whole number that does not exceed its magnitude.  The sign is the same
 as the sign of @var{X}. 
 
@@ -893,14 +894,14 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{MASK} @tab The type of the argument shall be @code{LOGICAL(*)} and
+@item @var{MASK} @tab The type of the argument shall be @code{LOGICAL} and
 it shall not be scalar.
 @item @var{DIM}  @tab (Optional) @var{DIM} shall be a scalar integer
 with a value that lies between one and the rank of @var{MASK}.
 @end multitable
 
 @item @emph{Return value}:
-@code{ALL(MASK)} returns a scalar value of type @code{LOGICAL(*)} where
+@code{ALL(MASK)} returns a scalar value of type @code{LOGICAL} where
 the kind type parameter is the same as the kind type parameter of
 @var{MASK}.  If @var{DIM} is present, then @code{ALL(MASK, DIM)} returns
 an array with the rank of @var{MASK} minus 1.  The shape is determined from
@@ -945,7 +946,7 @@ end program test_all
 
 @table @asis
 @item @emph{Description}:
-@code{ALLOCATED(X)} checks the status of whether @var{X} is allocated.
+@code{ALLOCATED(ARRAY)} checks the status of whether @var{X} is allocated.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -954,16 +955,16 @@ Fortran 95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = ALLOCATED(X)}
+@code{RESULT = ALLOCATED(ARRAY)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab The argument shall be an @code{ALLOCATABLE} array.
+@item @var{ARRAY}    @tab The argument shall be an @code{ALLOCATABLE} array.
 @end multitable
 
 @item @emph{Return value}:
 The return value is a scalar @code{LOGICAL} with the default logical
-kind type parameter.  If @var{X} is allocated, @code{ALLOCATED(X)}
+kind type parameter.  If @var{ARRAY} is allocated, @code{ALLOCATED(ARRAY)}
 is @code{.TRUE.}; otherwise, it returns @code{.FALSE.} 
 
 @item @emph{Example}:
@@ -1003,13 +1004,13 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be either a scalar @code{INTEGER(*)}
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{J} @tab The type shall be the same as the type of @var{I}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either a scalar @code{INTEGER(*)} or a scalar
+The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
@@ -1041,7 +1042,7 @@ Fortran 95 elemental function: @ref{IAND}
 
 @table @asis
 @item @emph{Description}:
-@code{ANINT(X [, KIND])} rounds its argument to the nearest whole number.
+@code{ANINT(A [, KIND])} rounds its argument to the nearest whole number.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -1050,12 +1051,12 @@ Fortran 77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ANINT(X [, KIND])}
+@code{RESULT = ANINT(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab The type of the argument shall be @code{REAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{A}    @tab The type of the argument shall be @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
@@ -1063,9 +1064,9 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type real with the kind type parameter of the
 argument if the optional @var{KIND} is absent; otherwise, the kind
-type parameter will be given by @var{KIND}.  If @var{X} is greater than
-zero, then @code{ANINT(X)} returns @code{AINT(X+0.5)}.  If @var{X} is
-less than or equal to zero, then it returns @code{AINT(X-0.5)}.
+type parameter will be given by @var{KIND}.  If @var{A} is greater than
+zero, @code{ANINT(A)} returns @code{AINT(X+0.5)}.  If @var{A} is
+less than or equal to zero then it returns @code{AINT(X-0.5)}.
 
 @item @emph{Example}:
 @smallexample
@@ -1082,7 +1083,7 @@ end program test_anint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument         @tab Return type      @tab Standard
-@item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab Fortran 77 and later
+@item @code{DNINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -1110,14 +1111,14 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{MASK} @tab The type of the argument shall be @code{LOGICAL(*)} and
+@item @var{MASK} @tab The type of the argument shall be @code{LOGICAL} and
 it shall not be scalar.
 @item @var{DIM}  @tab (Optional) @var{DIM} shall be a scalar integer
 with a value that lies between one and the rank of @var{MASK}.
 @end multitable
 
 @item @emph{Return value}:
-@code{ANY(MASK)} returns a scalar value of type @code{LOGICAL(*)} where
+@code{ANY(MASK)} returns a scalar value of type @code{LOGICAL} where
 the kind type parameter is the same as the kind type parameter of
 @var{MASK}.  If @var{DIM} is present, then @code{ANY(MASK, DIM)} returns
 an array with the rank of @var{MASK} minus 1.  The shape is determined from
@@ -1177,12 +1178,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and a magnitude that is
+@item @var{X} @tab The type shall be @code{REAL}, and a magnitude that is
 less than one.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
+The return value is of type @code{REAL} and it lies in the
 range @math{-\pi / 2 \leq \asin (x) \leq \pi / 2}.  The kind type
 parameter is the same as @var{X}.
 
@@ -1265,8 +1266,8 @@ Inverse function: @ref{SINH}
 
 @table @asis
 @item @emph{Description}:
-@code{ASSOCIATED(PTR [, TGT])} determines the status of the pointer @var{PTR}
-or if @var{PTR} is associated with the target @var{TGT}.
+@code{ASSOCIATED(POINTER [, TARGET])} determines the status of the pointer
+@var{POINTER} or if @var{POINTER} is associated with the target @var{TARGET}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -1275,44 +1276,45 @@ Fortran 95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = ASSOCIATED(PTR [, TGT])}
+@code{RESULT = ASSOCIATED(POINTER [, TARGET])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{PTR} @tab @var{PTR} shall have the @code{POINTER} attribute and
-it can be of any type.
-@item @var{TGT} @tab (Optional) @var{TGT} shall be a @code{POINTER} or
-a @code{TARGET}.  It must have the same type, kind type parameter, and
-array rank as @var{PTR}.
+@item @var{POINTER} @tab @var{POINTER} shall have the @code{POINTER} attribute
+and it can be of any type.
+@item @var{TARGET} @tab (Optional) @var{TARGET} shall be a pointer or
+a target.  It must have the same type, kind type parameter, and
+array rank as @var{POINTER}.
 @end multitable
-The status of neither @var{PTR} nor @var{TGT} can be undefined.
+The association status of neither @var{POINTER} nor @var{TARGET} shall be
+undefined.
 
 @item @emph{Return value}:
-@code{ASSOCIATED(PTR)} returns a scalar value of type @code{LOGICAL(4)}.
+@code{ASSOCIATED(POINTER)} returns a scalar value of type @code{LOGICAL(4)}.
 There are several cases:
 @table @asis
-@item (A) If the optional @var{TGT} is not present, then @code{ASSOCIATED(PTR)}
-is true if @var{PTR} is associated with a target; otherwise, it returns false.
-@item (B) If @var{TGT} is present and a scalar target, the result is true if
-@var{TGT}
-is not a 0 sized storage sequence and the target associated with @var{PTR}
-occupies the same storage units.  If @var{PTR} is disassociated, then the 
-result is false.
-@item (C) If @var{TGT} is present and an array target, the result is true if
-@var{TGT} and @var{PTR} have the same shape, are not 0 sized arrays, are
-arrays whose elements are not 0 sized storage sequences, and @var{TGT} and
-@var{PTR} occupy the same storage units in array element order.
-As in case(B), the result is false, if @var{PTR} is disassociated.
-@item (D) If @var{TGT} is present and an scalar pointer, the result is true if
-target associated with @var{PTR} and the target associated with @var{TGT}
-are not 0 sized storage sequences and occupy the same storage units.
-The result is false, if either @var{TGT} or @var{PTR} is disassociated.
-@item (E) If @var{TGT} is present and an array pointer, the result is true if
-target associated with @var{PTR} and the target associated with @var{TGT}
-have the same shape, are not 0 sized arrays, are arrays whose elements are
-not 0 sized storage sequences, and @var{TGT} and @var{PTR} occupy the same
-storage units in array element order.
-The result is false, if either @var{TGT} or @var{PTR} is disassociated.
+@item (A) When the optional @var{TARGET} is not present then
+@code{ASSOCIATED(POINTER)} is true if @var{POINTER} is associated with a target; otherwise, it returns false.
+@item (B) If @var{TARGET} is present and a scalar target, the result is true if
+@var{TARGET} is not a zero-sized storage sequence and the target associated with @var{POINTER} occupies the same storage units.  If @var{POINTER} is
+disassociated, the result is false.
+@item (C) If @var{TARGET} is present and an array target, the result is true if
+@var{TARGET} and @var{POINTER} have the same shape, are not zero-sized arrays,
+are arrays whose elements are not zero-sized storage sequences, and
+@var{TARGET} and @var{POINTER} occupy the same storage units in array element
+order.
+As in case(B), the result is false, if @var{POINTER} is disassociated.
+@item (D) If @var{TARGET} is present and an scalar pointer, the result is true
+if @var{TARGET} is associated with @var{POINTER}, the target associated with
+@var{TARGET} are not zero-sized storage sequences and occupy the same storage
+units.
+The result is false, if either @var{TARGET} or @var{POINTER} is disassociated.
+@item (E) If @var{TARGET} is present and an array pointer, the result is true if
+target associated with @var{POINTER} and the target associated with @var{TARGET}
+have the same shape, are not zero-sized arrays, are arrays whose elements are
+not zero-sized storage sequences, and @var{TARGET} and @var{POINTER} occupy
+the same storage units in array element order.
+The result is false, if either @var{TARGET} or @var{POINTER} is disassociated.
 @end table
 
 @item @emph{Example}:
@@ -1355,11 +1357,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
+The return value is of type @code{REAL} and it lies in the
 range @math{ - \pi / 2 \leq \atan (x) \leq \pi / 2}.
 
 @item @emph{Example}:
@@ -1392,7 +1394,7 @@ Inverse function: @ref{TAN}
 
 @table @asis
 @item @emph{Description}:
-@code{ATAN2(Y,X)} computes the arctangent of the complex number
+@code{ATAN2(Y, X)} computes the arctangent of the complex number
 @math{X + i Y}.
 
 @item @emph{Standard}:
@@ -1402,11 +1404,11 @@ Fortran 77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ATAN2(Y,X)}
+@code{RESULT = ATAN2(Y, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{Y} @tab The type shall be @code{REAL(*)}.
+@item @var{Y} @tab The type shall be @code{REAL}.
 @item @var{X} @tab The type and kind type parameter shall be the same as @var{Y}.
 If @var{Y} is zero, then @var{X} must be nonzero.
 @end multitable
@@ -1512,12 +1514,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{ - 0.4027... \leq Bessel (0,x) \leq 1}.
+The return value is of type @code{REAL} and lies in the
+range @math{ - 0.4027... \leq Bessel (0,x) \leq 1}. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1560,12 +1563,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{ - 0.5818... \leq Bessel (0,x) \leq 0.5818 }.
+The return value is of type @code{REAL} and it lies in the
+range @math{ - 0.5818... \leq Bessel (0,x) \leq 0.5818 }. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1610,12 +1614,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER(*)}.
-@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL(*)}.
+@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL}. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1628,7 +1633,7 @@ end program test_besjn
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type       @tab Standard
-@item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab GNU extension
+@item @code{DBESJN(X)} @tab @code{INTEGER N} @tab @code{REAL(8)}    @tab GNU extension
 @item                  @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
 @end table
@@ -1659,11 +1664,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL}. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1706,11 +1712,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}, and it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL}. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1755,12 +1762,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER(*)}.
-@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL(*)}.
+@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)}.
+The return value is a scalar of type @code{REAL}. It has the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1773,7 +1781,7 @@ end program test_besyn
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name               @tab Argument            @tab Return type     @tab Standard
-@item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab GNU extension
+@item @code{DBESYN(N,X)} @tab @code{INTEGER N} @tab @code{REAL(8)}  @tab GNU extension
 @item                    @tab @code{REAL(8)    X} @tab                 @tab 
 @end multitable
 @end table
@@ -1802,11 +1810,11 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)}
+The return value is of type @code{INTEGER}
 
 @item @emph{Example}:
 @smallexample
@@ -1842,8 +1850,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{POS} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -1872,8 +1880,8 @@ end program test_btest
 
 @table @asis
 @item @emph{Description}:
-@code{C_ASSOCIATED(c_prt1[, c_ptr2])} determines the status of the C pointer @var{c_ptr1}
-or if @var{c_ptr1} is associated with the target @var{c_ptr2}.
+@code{C_ASSOCIATED(c_prt_1[, c_ptr_2])} determines the status of the C pointer
+@var{c_ptr_1} or if @var{c_ptr_1} is associated with the target @var{c_ptr_2}.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -1882,17 +1890,17 @@ Fortran 2003 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = C_ASSOCIATED(c_prt1[, c_ptr2])}
+@code{RESULT = C_ASSOCIATED(c_prt_1[, c_ptr_2])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{c_ptr1} @tab Scalar of the type @code{C_PTR} or @code{C_FUNPTR}.
-@item @var{c_ptr2} @tab (Optional) Scalar of the same type as @var{c_ptr1}.
+@item @var{c_ptr_1} @tab Scalar of the type @code{C_PTR} or @code{C_FUNPTR}.
+@item @var{c_ptr_2} @tab (Optional) Scalar of the same type as @var{c_ptr_1}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL}; it is @code{.false.} if either
-@var{c_ptr1} is a C NULL pointer or if @var{c_ptr1} and @var{c_ptr2}
+@var{c_ptr_1} is a C NULL pointer or if @var{c_ptr1} and @var{c_ptr_2}
 point to different addresses.
 
 @item @emph{Example}:
@@ -1976,8 +1984,8 @@ end program main
 
 @table @asis
 @item @emph{Description}:
-@code{C_F_PROCPOINTER(cptr, fptr)} Assign the target of the C function pointer
-@var{cptr} to the Fortran procedure pointer @var{fptr}.
+@code{C_F_PROCPOINTER(CPTR, FPTR)} Assign the target of the C function pointer
+@var{CPTR} to the Fortran procedure pointer @var{FPTR}.
 
 Note: Due to the currently lacking support of procedure pointers in GNU Fortran
 this function is not fully operable.
@@ -1993,9 +2001,9 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{cptr}  @tab scalar of the type @code{C_FUNPTR}. It is
+@item @var{CPTR}  @tab scalar of the type @code{C_FUNPTR}. It is
 		       @code{INTENT(IN)}.
-@item @var{fptr}  @tab procedure pointer interoperable with @var{cptr}. It is
+@item @var{FPTR}  @tab procedure pointer interoperable with @var{cptr}. It is
 		       @code{INTENT(OUT)}.
 @end multitable
 
@@ -2036,8 +2044,8 @@ end program main
 
 @table @asis
 @item @emph{Description}:
-@code{C_F_POINTER(cptr, fptr[, shape])} Assign the target the C pointer
-@var{cptr} to the Fortran pointer @var{fptr} and specify its
+@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} Assign the target the C pointer
+@var{CPTR} to the Fortran pointer @var{FPTR} and specify its
 shape.
 
 @item @emph{Standard}:
@@ -2047,15 +2055,15 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL C_F_POINTER(cptr, fptr[, shape])}
+@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{cptr}  @tab scalar of the type @code{C_PTR}. It is
+@item @var{CPTR}  @tab scalar of the type @code{C_PTR}. It is
 		       @code{INTENT(IN)}.
-@item @var{fptr}  @tab pointer interoperable with @var{cptr}. It is
+@item @var{FPTR}  @tab pointer interoperable with @var{cptr}. It is
 		       @code{INTENT(OUT)}.
-@item @var{shape} @tab (Optional) Rank-one array of type @code{INTEGER}
+@item @var{SHAPE} @tab (Optional) Rank-one array of type @code{INTEGER}
                        with @code{INTENT(IN)}. It shall be present
 		       if and only if @var{fptr} is an array. The size
 		       must be equal to the rank of @var{fptr}.
@@ -2091,7 +2099,7 @@ end program main
 
 @table @asis
 @item @emph{Description}:
-@code{C_LOC(x)} determines the C address of the argument.
+@code{C_LOC(X)} determines the C address of the argument.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -2100,11 +2108,11 @@ Fortran 2003 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = C_LOC(x)}
+@code{RESULT = C_LOC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{x} @tab Associated scalar pointer or interoperable scalar
+@item @var{X} @tab Associated scalar pointer or interoperable scalar
 		   or allocated allocatable variable with @code{TARGET}
 		   attribute.
 @end multitable
@@ -2138,7 +2146,7 @@ end subroutine association_test
 
 @table @asis
 @item @emph{Description}:
-@code{CEILING(X)} returns the least integer greater than or equal to @var{X}.
+@code{CEILING(A)} returns the least integer greater than or equal to @var{A}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -2147,18 +2155,19 @@ Fortran 95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = CEILING(X [, KIND])}
+@code{RESULT = CEILING(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{A} @tab The type shall be @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(KIND)}
+The return value is of type @code{INTEGER(KIND)} if @var{KIND} is present
+and a default-kind @code{INTEGER} otherwise.
 
 @item @emph{Example}:
 @smallexample
@@ -2197,8 +2206,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
@@ -2253,7 +2262,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}   @tab The type shall be @code{CHARACTER(*)} and shall
+@item @var{NAME}   @tab The type shall be @code{CHARACTER} and shall
                         specify a valid path within the file system.
 @item @var{STATUS} @tab (Optional) @code{INTEGER} status flag of the default
                         kind.  Returns 0 on success, and a system specific
@@ -2370,12 +2379,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
-                   or @code{COMPLEX(*)}.
+@item @var{X} @tab The type may be @code{INTEGER}, @code{REAL},
+                   or @code{COMPLEX}.
 @item @var{Y} @tab (Optional; only allowed if @var{X} is not
-                   @code{COMPLEX(*)}.)  May be @code{INTEGER(*)}
-		   or @code{REAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+                   @code{COMPLEX}.)  May be @code{INTEGER}
+		   or @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
@@ -2470,8 +2479,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
-@item @var{Y} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
+@item @var{X} @tab The type may be @code{INTEGER} or @code{REAL}.
+@item @var{Y} @tab The type may be @code{INTEGER} or @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2520,11 +2529,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{Z} @tab The type shall be @code{COMPLEX(*)}.
+@item @var{Z} @tab The type shall be @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{COMPLEX(*)}.
+The return value is of type @code{COMPLEX}.
 
 @item @emph{Example}:
 @smallexample
@@ -2572,12 +2581,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
+The return value is of type @code{REAL} and it lies in the
 range @math{ -1 \leq \cos (x) \leq 1}.  The kind type
 parameter is the same as @var{X}.
 
@@ -2628,12 +2637,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it is positive
-(@math{ \cosh (x) \geq 0 }.
+The return value is of type @code{REAL} and it is positive
+(@math{ \cosh (x) \geq 0 }. The return value is of the same
+kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -2730,7 +2740,7 @@ end program test_count
 
 @table @asis
 @item @emph{Description}:
-Returns a @code{REAL(*)} value representing the elapsed CPU time in
+Returns a @code{REAL} value representing the elapsed CPU time in
 seconds.  This is useful for testing segments of code to determine
 execution time.
 
@@ -2755,7 +2765,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TIME} @tab The type shall be @code{REAL(*)} with @code{INTENT(OUT)}.
+@item @var{TIME} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2969,7 +2979,7 @@ end program test_time_and_date
 
 @table @asis
 @item @emph{Description}:
-@code{DBLE(X)} Converts @var{X} to double precision real type.
+@code{DBLE(A)} Converts @var{A} to double precision real type.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -2978,12 +2988,12 @@ Fortran 77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = DBLE(X)}
+@code{RESULT = DBLE(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{INTEGER(*)}, @code{REAL(*)},
-                   or @code{COMPLEX(*)}.
+@item @var{A} @tab The type shall be @code{INTEGER}, @code{REAL},
+                   or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3029,10 +3039,10 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
-                   or @code{COMPLEX(*)}.
-@item @var{Y} @tab (Optional if @var{X} is not @code{COMPLEX(*)}.) May be
-                   @code{INTEGER(*)} or @code{REAL(*)}. 
+@item @var{X} @tab The type may be @code{INTEGER}, @code{REAL},
+                   or @code{COMPLEX}.
+@item @var{Y} @tab (Optional if @var{X} is not @code{COMPLEX}.) May be
+                   @code{INTEGER} or @code{REAL}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -3062,7 +3072,7 @@ end program test_dcmplx
 
 @table @asis
 @item @emph{Description}:
-@code{DFLOAT(X)} Converts @var{X} to double precision real type.
+@code{DFLOAT(A)} Converts @var{A} to double precision real type.
 
 @item @emph{Standard}:
 GNU extension
@@ -3071,11 +3081,11 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = DFLOAT(X)}
+@code{RESULT = DFLOAT(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{INTEGER(*)}.
+@item @var{A} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3117,7 +3127,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
+@item @var{X} @tab The type may be @code{INTEGER} or @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3161,12 +3171,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{INTEGER(*)} or @code{REAL(*)}
+@item @var{X} @tab The type shall be @code{INTEGER} or @code{REAL}
 @item @var{Y} @tab The type shall be the same type and kind as @var{X}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} or @code{REAL(*)}.
+The return value is of type @code{INTEGER} or @code{REAL}.
 
 @item @emph{Example}:
 @smallexample
@@ -3199,12 +3209,13 @@ end program test_dim
 
 @table @asis
 @item @emph{Description}:
-@code{DOT_PRODUCT(X,Y)} computes the dot product multiplication of two vectors
-@var{X} and @var{Y}.  The two vectors may be either numeric or logical
-and must be arrays of rank one and of equal size. If the vectors are
-@code{INTEGER(*)} or @code{REAL(*)}, the result is @code{SUM(X*Y)}. If the
-vectors are @code{COMPLEX(*)}, the result is @code{SUM(CONJG(X)*Y)}. If the 
-vectors are @code{LOGICAL}, the result is @code{ANY(X.AND.Y)}.
+@code{DOT_PRODUCT(VECTOR_A, VECTOR_B)} computes the dot product multiplication
+of two vectors @var{VECTOR_A} and @var{VECTOR_B}.  The two vectors may be
+either numeric or logical and must be arrays of rank one and of equal size. If
+the vectors are @code{INTEGER} or @code{REAL}, the result is
+@code{SUM(VECTOR_A*VECTOR_B)}. If the vectors are @code{COMPLEX}, the result
+is @code{SUM(CONJG(VECTOR_A)*VECTOR_B)}. If the vectors are @code{LOGICAL},
+the result is @code{ANY(VECTOR_A .AND. VECTOR_B)}.  
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -3213,17 +3224,17 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = DOT_PRODUCT(X, Y)}
+@code{RESULT = DOT_PRODUCT(VECTOR_A, VECTOR_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be numeric or @code{LOGICAL}, rank 1.
-@item @var{Y} @tab The type shall be numeric or @code{LOGICAL}, rank 1.
+@item @var{VECTOR_A} @tab The type shall be numeric or @code{LOGICAL}, rank 1.
+@item @var{VECTOR_B} @tab The type shall be numeric if @var{VECTOR_A} is of numeric type or @code{LOGICAL} if @var{VECTOR_A} is of type @code{LOGICAL}. @var{VECTOR_B} shall be a rank-one array.
 @end multitable
 
 @item @emph{Return value}:
 If the arguments are numeric, the return value is a scaler of numeric type,
-@code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.  If the arguments are
+@code{INTEGER}, @code{REAL}, or @code{COMPLEX}.  If the arguments are
 @code{LOGICAL}, the return value is @code{.TRUE.} or @code{.FALSE.}.
 
 @item @emph{Example}:
@@ -3300,11 +3311,11 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = DREAL(Z)}
+@code{RESULT = DREAL(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{Z} @tab The type shall be @code{COMPLEX(8)}.
+@item @var{A} @tab The type shall be @code{COMPLEX(8)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3421,7 +3432,7 @@ end program test_dtime
 
 @table @asis
 @item @emph{Description}:
-@code{EOSHIFT(ARRAY, SHIFT[,BOUNDARY, DIM])} performs an end-off shift on
+@code{EOSHIFT(ARRAY, SHIFT[, BOUNDARY, DIM])} performs an end-off shift on
 elements of @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is
 omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
 @code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n} is the
@@ -3499,7 +3510,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3790,8 +3801,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3839,7 +3850,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3923,7 +3934,7 @@ end program test_fdate
 
 @table @asis
 @item @emph{Description}:
-@code{FLOAT(I)} converts the integer @var{I} to a default real value.
+@code{FLOAT(A)} converts the integer @var{A} to a default real value.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -3932,11 +3943,11 @@ Fortran 77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = FLOAT(I)}
+@code{RESULT = FLOAT(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{A} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -4085,7 +4096,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-@code{FLOOR(X)} returns the greatest integer less than or equal to @var{X}.
+@code{FLOOR(A)} returns the greatest integer less than or equal to @var{X}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -4094,18 +4105,19 @@ Fortran 95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = FLOOR(X [, KIND])}
+@code{RESULT = FLOOR(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{A} @tab The type shall be @code{REAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(KIND)}
+The return value is of type @code{INTEGER(KIND)} if @var{KIND} is present
+and of default-kind @code{INTEGER} otherwise.
 
 @item @emph{Example}:
 @smallexample
@@ -4644,7 +4656,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{RESULT}  @tab Shall of type @code{CHARACTER(*)}.
+@item @var{RESULT}  @tab Shall of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Example}:
@@ -4670,7 +4682,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Retrieve the @var{N}th argument that was passed on the
+Retrieve the @var{POS}-th argument that was passed on the
 command line when the containing program was invoked.
 
 This intrinsic routine is provided for backwards compatibility with 
@@ -4691,7 +4703,7 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{POS}   @tab Shall be of type @code{INTEGER} and not wider than
 the default integer kind; @math{@var{POS} \geq 0}
-@item @var{VALUE} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{VALUE} @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -4741,16 +4753,17 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_COMMAND(CMD)}
+@code{CALL GET_COMMAND(COMMAND)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{CMD} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{COMMAND} @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
-Stores the entire command line that was used to invoke the program in @var{ARG}. 
-If @var{ARG} is not large enough, the command will be truncated. 
+Stores the entire command line that was used to invoke the program in
+@var{COMMAND}. If @var{COMMAND} is not large enough, the command will be
+truncated. 
 
 @item @emph{Example}:
 @smallexample
@@ -4790,7 +4803,7 @@ Subroutine
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{N}   @tab Shall be of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
-@item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{ARG} @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -4847,7 +4860,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{CWD}    @tab The type shall be @code{CHARACTER(*)}.
+@item @var{CWD}    @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
                         a system specific and nonzero error code otherwise.
 @end multitable
@@ -4892,8 +4905,8 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
-@item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER}. 
+@item @var{VALUE}  @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -4936,8 +4949,8 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
-@item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER}. 
+@item @var{VALUE}  @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -5010,7 +5023,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{LOGIN} @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{LOGIN} @tab Shall be of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -5129,7 +5142,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STIME}  @tab An @code{INTEGER(*)} scalar expression
+@item @var{STIME}  @tab An @code{INTEGER} scalar expression
                         corresponding to a system time, with 
 			@code{INTENT(IN)}.
 @item @var{TARRAY} @tab A default @code{INTEGER} array with 9 elements,
@@ -5186,7 +5199,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}    @tab Shall of type @code{CHARACTER(*)}.
+@item @var{NAME}    @tab Shall of type @code{CHARACTER}.
 @item @var{STATUS}  @tab (Optional) status flag of type @code{INTEGER}.
                          Returns 0 on success, or a system specific error
                          code otherwise.
@@ -5352,14 +5365,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{J} @tab The type shall be @code{INTEGER}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
 permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER(*)}, of the same kind as the
+The return type is @code{INTEGER}, of the same kind as the
 arguments.  (If the argument kinds differ, it is of the same kind as
 the larger argument.)
 
@@ -5445,12 +5458,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{POS} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -5485,13 +5498,13 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
-@item @var{LEN} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{POS} @tab The type shall be @code{INTEGER}.
+@item @var{LEN} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -5521,12 +5534,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{POS} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -5674,14 +5687,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{J} @tab The type shall be @code{INTEGER}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
 permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER(*)}, of the same kind as the
+The return type is @code{INTEGER}, of the same kind as the
 arguments.  (If the argument kinds differ, it is of the same kind as
 the larger argument.)
 
@@ -5748,11 +5761,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
+@item @var{STRING} @tab Shall be a scalar @code{CHARACTER}, with
 @code{INTENT(IN)}
-@item @var{SUBSTRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
+@item @var{SUBSTRING} @tab Shall be a scalar @code{CHARACTER}, with
 @code{INTENT(IN)}
-@item @var{BACK} @tab (Optional) Shall be a scalar @code{LOGICAL(*)}, with
+@item @var{BACK} @tab (Optional) Shall be a scalar @code{LOGICAL}, with
 @code{INTENT(IN)}
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
@@ -5791,26 +5804,26 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
-                      @code{REAL(*)}, or @code{COMPLEX(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{A}    @tab Shall be of type @code{INTEGER},
+                      @code{REAL}, or @code{COMPLEX}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
 
 @item @emph{Return value}:
-These functions return a @code{INTEGER(*)} variable or array under 
+These functions return a @code{INTEGER} variable or array under 
 the following rules: 
 
 @table @asis
 @item (A)
-If @var{A} is of type @code{INTEGER(*)}, @code{INT(A) = A} 
+If @var{A} is of type @code{INTEGER}, @code{INT(A) = A} 
 @item (B)
-If @var{A} is of type @code{REAL(*)} and @math{|A| < 1}, @code{INT(A)} equals @code{0}. 
+If @var{A} is of type @code{REAL} and @math{|A| < 1}, @code{INT(A)} equals @code{0}. 
 If @math{|A| \geq 1}, then @code{INT(A)} equals the largest integer that does not exceed 
 the range of @var{A} and whose sign is the same as the sign of @var{A}.
 @item (C)
-If @var{A} is of type @code{COMPLEX(*)}, rule B is applied to the real part of @var{A}.
+If @var{A} is of type @code{COMPLEX}, rule B is applied to the real part of @var{A}.
 @end table
 
 @item @emph{Example}:
@@ -5859,8 +5872,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
-                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@item @var{A}    @tab Shall be of type @code{INTEGER},
+                      @code{REAL}, or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -5894,8 +5907,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
-                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@item @var{A}    @tab Shall be of type @code{INTEGER},
+                      @code{REAL}, or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -5929,14 +5942,14 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{J} @tab The type shall be @code{INTEGER}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
 permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER(*)}, of the same kind as the
+The return type is @code{INTEGER}, of the same kind as the
 arguments.  (If the argument kinds differ, it is of the same kind as
 the larger argument.)
 
@@ -6107,7 +6120,7 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{UNIT} @tab Shall be a scalar @code{INTEGER(*)}.
+@item @var{UNIT} @tab Shall be a scalar @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -6155,12 +6168,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -6196,15 +6209,15 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
-@item @var{SIZE} @tab (Optional) The type shall be @code{INTEGER(*)};
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
+@item @var{SIZE} @tab (Optional) The type shall be @code{INTEGER};
 the value must be greater than zero and less than or equal to
 @code{BIT_SIZE(I)}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -6401,7 +6414,7 @@ Inquiry function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
-@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
@@ -6447,7 +6460,7 @@ Inquiry function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar or array of type
-@code{CHARACTER(*)}, with @code{INTENT(IN)}
+@code{CHARACTER}, with @code{INTENT(IN)}
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
@@ -6483,7 +6496,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER},
 with @code{INTENT(IN)}
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
@@ -6803,7 +6816,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER},
 with @code{INTENT(IN)}
 @end multitable
 
@@ -6883,12 +6896,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -6937,11 +6950,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -6982,8 +6995,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{L}    @tab The type shall be @code{LOGICAL(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{L}    @tab The type shall be @code{LOGICAL}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
@@ -7022,8 +7035,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be of type @code{INTEGER(*)},
-                      @code{REAL(*)}, or @code{COMPLEX(*)}.
+@item @var{A}    @tab Shall be of type @code{INTEGER},
+                      @code{REAL}, or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7062,12 +7075,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -7103,7 +7116,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
+@item @var{FILE}   @tab The type shall be @code{CHARACTER}, a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
                         on success and a system specific error code otherwise.
@@ -7140,7 +7153,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STIME}  @tab An @code{INTEGER(*)} scalar expression
+@item @var{STIME}  @tab An @code{INTEGER} scalar expression
                         corresponding to a system time, with 
 			@code{INTENT(IN)}.
 @item @var{TARRAY} @tab A default @code{INTEGER} array with 9 elements,
@@ -7196,7 +7209,7 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{SIZE} @tab The type shall be @code{INTEGER(*)}.
+@item @var{SIZE} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7258,14 +7271,14 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{MATRIX_A} @tab An array of @code{INTEGER(*)},
-                          @code{REAL(*)}, @code{COMPLEX(*)}, or
-			  @code{LOGICAL(*)} type, with a rank of
+@item @var{MATRIX_A} @tab An array of @code{INTEGER},
+                          @code{REAL}, @code{COMPLEX}, or
+			  @code{LOGICAL} type, with a rank of
 			  one or two.
-@item @var{MATRIX_B} @tab An array of @code{INTEGER(*)},
-                          @code{REAL(*)}, or @code{COMPLEX(*)} type if
+@item @var{MATRIX_B} @tab An array of @code{INTEGER},
+                          @code{REAL}, or @code{COMPLEX} type if
 			  @var{MATRIX_A} is of a numeric type;
-			  otherwise, an array of @code{LOGICAL(*)}
+			  otherwise, an array of @code{LOGICAL}
 			  type. The rank shall be one or two, and the
 			  first (or only) dimension of @var{MATRIX_B}
 			  shall be equal to the last (or only)
@@ -7307,8 +7320,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
-                             @code{REAL(*)}.
+@item @var{A1}          @tab The type shall be @code{INTEGER} or
+                             @code{REAL}.
 @item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
                              as @var{A1}.  (As a GNU extension, 
 			     arguments of different kinds are
@@ -7324,7 +7337,7 @@ and has the same type and kind as the first argument.
 @item Name             @tab Argument            @tab Return type         @tab Standard
 @item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
 @item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab Fortran 77 and later
-@item @code{MAX1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MAX(X))}  @tab Fortran 77 and later
+@item @code{MAX1(X)}   @tab @code{REAL X}    @tab @code{INT(MAX(X))}  @tab Fortran 77 and later
 @item @code{AMAX1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
 @item @code{DMAX1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
@@ -7411,13 +7424,13 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
-                       @code{REAL(*)}, or @code{CHARACTER(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+                       @code{REAL}, or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
-                       @code{INTEGER(*)}, with a value between one
+                       @code{INTEGER}, with a value between one
 		       and the rank of @var{ARRAY}, inclusive.  It
 		       may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL(*)},
+@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
                        and conformable with @var{ARRAY}.
 @end multitable
 
@@ -7468,13 +7481,13 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
-                       @code{REAL(*)}, or @code{CHARACTER(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+                       @code{REAL}, or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
-                       @code{INTEGER(*)}, with a value between one
+                       @code{INTEGER}, with a value between one
 		       and the rank of @var{ARRAY}, inclusive.  It
 		       may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL(*)},
+@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
                        and conformable with @var{ARRAY}.
 @end multitable
 
@@ -7595,7 +7608,7 @@ Elemental function
 @item @var{TSOURCE} @tab May be of any type.
 @item @var{FSOURCE} @tab Shall be of the same type and type parameters
                          as @var{TSOURCE}.
-@item @var{MASK}    @tab Shall be of type @code{LOGICAL(*)}.
+@item @var{MASK}    @tab Shall be of type @code{LOGICAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7630,8 +7643,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
-                             @code{REAL(*)}.
+@item @var{A1}          @tab The type shall be @code{INTEGER} or
+                             @code{REAL}.
 @item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
                              as @var{A1}.  (As a GNU extension, 
 			     arguments of different kinds are
@@ -7647,7 +7660,7 @@ and has the same type and kind as the first argument.
 @item Name             @tab Argument            @tab Return type         @tab Standard
 @item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
 @item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab Fortran 77 and later
-@item @code{MIN1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MIN(X))}  @tab Fortran 77 and later
+@item @code{MIN1(X)}   @tab @code{REAL X}    @tab @code{INT(MIN(X))}  @tab Fortran 77 and later
 @item @code{AMIN1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
 @item @code{DMIN1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
@@ -7725,13 +7738,13 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
-                       @code{REAL(*)}, or @code{CHARACTER(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+                       @code{REAL}, or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
-                       @code{INTEGER(*)}, with a value between one
+                       @code{INTEGER}, with a value between one
 		       and the rank of @var{ARRAY}, inclusive.  It
 		       may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL(*)},
+@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
                        and conformable with @var{ARRAY}.
 @end multitable
 
@@ -7782,13 +7795,13 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
-                       @code{REAL(*)}, or @code{CHARACTER(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
+                       @code{REAL}, or @code{CHARACTER}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
-                       @code{INTEGER(*)}, with a value between one
+                       @code{INTEGER}, with a value between one
 		       and the rank of @var{ARRAY}, inclusive.  It
 		       may not be an optional dummy argument.
-@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL(*)},
+@item @var{MASK}  @tab Shall be an array of type @code{LOGICAL},
                        and conformable with @var{ARRAY}.
 @end multitable
 
@@ -7996,12 +8009,12 @@ Elemental subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FROM}    @tab The type shall be @code{INTEGER(*)}.
-@item @var{FROMPOS} @tab The type shall be @code{INTEGER(*)}.
-@item @var{LEN}     @tab The type shall be @code{INTEGER(*)}.
-@item @var{TO}      @tab The type shall be @code{INTEGER(*)}, of the
+@item @var{FROM}    @tab The type shall be @code{INTEGER}.
+@item @var{FROMPOS} @tab The type shall be @code{INTEGER}.
+@item @var{LEN}     @tab The type shall be @code{INTEGER}.
+@item @var{TO}      @tab The type shall be @code{INTEGER}, of the
                          same kind as @var{FROM}.
-@item @var{TOPOS}   @tab The type shall be @code{INTEGER(*)}.
+@item @var{TOPOS}   @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{See also}:
@@ -8175,11 +8188,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER(*)}, of the same kind as the
+The return type is @code{INTEGER}, of the same kind as the
 argument.
 
 @item @emph{See also}:
@@ -8259,13 +8272,13 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either a scalar @code{INTEGER(*)}
+@item @var{X} @tab The type shall be either a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{Y} @tab The type shall be the same as the type of @var{X}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either a scalar @code{INTEGER(*)} or a scalar
+The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
@@ -8497,8 +8510,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)}, 
-@code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER}, 
+@code{REAL} or @code{COMPLEX}.
 @item @var{DIM}   @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with a value in the range from 1 to n, where n 
 equals the rank of @var{ARRAY}.
@@ -8685,7 +8698,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{HARVEST} @tab Shall be a scalar or an array of type @code{REAL(*)}.
+@item @var{HARVEST} @tab Shall be a scalar or an array of type @code{REAL}.
 @end multitable
 
 @item @emph{Example}:
@@ -8827,15 +8840,15 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab Shall be @code{INTEGER(*)}, @code{REAL(*)}, or
-                      @code{COMPLEX(*)}.
-@item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
+@item @var{X}    @tab Shall be @code{INTEGER}, @code{REAL}, or
+                      @code{COMPLEX}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
                       expression indicating the kind parameter of
 		      the result.
 @end multitable
 
 @item @emph{Return value}:
-These functions return a @code{REAL(*)} variable or array under
+These functions return a @code{REAL} variable or array under
 the following rules: 
 
 @table @asis
@@ -8930,8 +8943,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING}  @tab Shall be scalar and of type @code{CHARACTER(*)}.
-@item @var{NCOPIES} @tab Shall be scalar and of type @code{INTEGER(*)}.
+@item @var{STRING}  @tab Shall be scalar and of type @code{CHARACTER}.
+@item @var{NCOPIES} @tab Shall be scalar and of type @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -9066,12 +9079,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab The type shall be @code{INTEGER(*)}.
-@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(*)} and of the same kind as
+The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
@@ -9150,8 +9163,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
-@item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{STRING} @tab Shall be of type @code{CHARACTER}.
+@item @var{SET}    @tab Shall be of type @code{CHARACTER}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
 @item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
                         expression indicating the kind parameter of
@@ -9647,8 +9660,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -9700,11 +9713,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.
+The return value is of type @code{REAL}.
 
 @item @emph{Example}:
 @smallexample
@@ -9909,7 +9922,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab Shall be of type @code{REAL(*)}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -10006,12 +10019,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} or
-@code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{REAL} or
+@code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} or @code{COMPLEX(*)}.
+The return value is of type @code{REAL} or @code{COMPLEX}.
 The kind type parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -10129,7 +10142,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
+@item @var{FILE}   @tab The type shall be @code{CHARACTER}, a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
                         on success and a system specific error code otherwise.
@@ -10192,8 +10205,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)}, 
-@code{REAL(*)} or @code{COMPLEX(*)}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER}, 
+@code{REAL} or @code{COMPLEX}.
 @item @var{DIM}   @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with a value in the range from 1 to n, where n 
 equals the rank of @var{ARRAY}.
@@ -10382,11 +10395,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)}.  The kind type parameter is
+The return value is of type @code{REAL}.  The kind type parameter is
 the same as @var{X}.
 
 @item @emph{Example}:
@@ -10432,11 +10445,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and lies in the range
+The return value is of type @code{REAL} and lies in the range
 @math{ - 1 \leq tanh(x) \leq 1 }.
 
 @item @emph{Example}:
@@ -10689,11 +10702,11 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)}.
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Return value}:
-A scalar of type @code{CHARACTER(*)} which length is that of @var{STRING}
+A scalar of type @code{CHARACTER} which length is that of @var{STRING}
 less the number of trailing blanks.
 
 @item @emph{Example}:
@@ -10737,8 +10750,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{UNIT} @tab Shall be a scalar @code{INTEGER(*)}.
-@item @var{NAME} @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{UNIT} @tab Shall be a scalar @code{INTEGER}.
+@item @var{NAME} @tab Shall be of type @code{CHARACTER}.
 @end multitable
 
 @item @emph{Example}:
@@ -10778,7 +10791,7 @@ Inquiry function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
-@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
 @item @var{KIND}@tab (Optional) An @code{INTEGER} initialization
                      expression indicating the kind parameter of
 		     the result.
@@ -10822,9 +10835,9 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{MASK} @tab Shall be a scalar of type @code{INTEGER(*)}.
+@item @var{MASK} @tab Shall be a scalar of type @code{INTEGER}.
 @item @var{MASK} @tab (Optional) Shall be a scalar of type
-                      @code{INTEGER(*)}.
+                      @code{INTEGER}.
 @end multitable
 
 @end table
@@ -10948,8 +10961,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
-@item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
+@item @var{STRING} @tab Shall be of type @code{CHARACTER}.
+@item @var{SET}    @tab Shall be of type @code{CHARACTER}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
 @item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
                         expression indicating the kind parameter of
@@ -11002,13 +11015,13 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either  a scalar @code{INTEGER(*)}
+@item @var{X} @tab The type shall be either  a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{Y} @tab The type shall be the same as the type of @var{I}.
 @end multitable
 
 @item @emph{Return value}:
-The return type is either a scalar @code{INTEGER(*)} or a scalar
+The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
