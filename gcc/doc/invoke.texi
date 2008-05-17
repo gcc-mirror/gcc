@@ -353,7 +353,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
 -fsplit-wide-types -fstack-protector -fstack-protector-all @gol
 -fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer -ftree-ccp @gol
--ftree-ch -ftree-copy-prop -ftree-copyrename -ftree-dce @gol
+-ftree-ch -ftree-copy-prop -ftree-copyrename -ftree-dce -ftree-builtin-dce@gol
 -ftree-dominator-opts -ftree-dse -ftree-fre -ftree-loop-im @gol
 -ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
@@ -5157,6 +5157,7 @@ compilation time.
 -ftree-ch @gol
 -ftree-copyrename @gol
 -ftree-dce @gol
+-ftree-builtin-dce @gol
 -ftree-dominator-opts @gol
 -ftree-dse @gol
 -ftree-fre @gol
@@ -5871,6 +5872,12 @@ enabled by default at @option{-O2} and higher.
 @item -ftree-dce
 @opindex ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
+default at @option{-O} and higher.
+
+@item -ftree-builtin-dce
+@opindex ftree-builtin-dce
+Perform conditional dead code elimination (DCE) on builtin calls that
+may set errno but are otherwise side-effect free.  This flag is enabled by
 default at @option{-O} and higher.
 
 @item -ftree-dominator-opts
