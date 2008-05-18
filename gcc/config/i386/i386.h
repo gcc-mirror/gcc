@@ -1524,6 +1524,15 @@ enum reg_class
    ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
    : MODE)
 
+/* QImode spills from non-QI registers need a scratch.  This does not
+   happen often -- the only example so far requires an uninitialized
+   pseudo.  */
+
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, OUT)			\
+  (((CLASS) == GENERAL_REGS || (CLASS) == LEGACY_REGS			\
+    || (CLASS) == INDEX_REGS) && !TARGET_64BIT && (MODE) == QImode	\
+   ? Q_REGS : NO_REGS)
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 80386, this is the size of MODE in words,

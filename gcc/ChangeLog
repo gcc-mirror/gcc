@@ -3,13 +3,6 @@
 	* tree-cfg.c (verify_gimple_expr): Allow conversions from
 	pointers to sizetype and vice versa.
 
-2008-05-18  Uros Bizjak  <ubizjak@gmail.com>
-
-	* config/i386/i386.c (ix86_secondary_reload): New static function.
-	(TARGET_SECONDARY_RELOAD): New define.
-	* config/i386/i386.h (SECONDARY_OUTPUT_RELOAD_CLASS): Remove.
-	* config/i386/i386.md (reload_outqi): Remove.
-
 2008-05-18 Xinliang David Li   <davidxl@google.com>
 
 	* gcc/tree-ssa-dce.c: Coding style fix.
