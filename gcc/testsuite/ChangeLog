@@ -1,3 +1,8 @@
+2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/stat_1.f90: Skip on mingw.
+	* gfortran.dg/stat_2.f90: Skip on mingw.
+
 2008-05-18  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/36251
