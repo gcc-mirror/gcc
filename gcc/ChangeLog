@@ -1,3 +1,17 @@
+2008-05-18 Xinliang David Li   <davidxl@google.com>
+
+	* gcc/tree-ssa-dce.c: Coding style fix.
+	(check_pow): Documentation comment. 
+	(check_log): Documenation comment. Coding style fix.
+	(is_unnecessary_except_errno_call): Ditto.
+	(gen_conditions_for_pow): Ditto.
+	(gen_conditions_for_log): Ditto.
+	(gen_shrink_wrap_conditions): Ditto.
+	(shrink_wrap_one_built_in_calls): Ditto.
+	* gcc/doc/invoke.texi: Better documentation string.
+	* ChangeLog: Fix wrong change log entries from 
+	May 17 checkin on function call DCE.
+
 2008-05-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_output_mi_thunk): Update the use of
@@ -11,6 +25,25 @@
 
 	* fold-const.c (fold_unary) <CASE_CONVERT>: Fold the cast into
 	a BIT_AND_EXPR only for an INTEGER_TYPE.
+
+2008-05-17 Xinliang David Li   <davidxl@google.com>
+
+	* gcc/tree-ssa-dce.c (cond_dead_built_in_calls): New static variable.
+	(check_pow, check_log, is_unnecessary_except_errno_call): New 
+	functions to check for eliminating math functions that are pure 
+	except for setting errno.
+	(gen_conditions_for_pow, gen_conditionas_for_log): New functions to
+	general condition expressions for shrink-wrapping pow/log calls.
+	(gen_shrink_wrap_conditions): Ditto.
+	(shrink_wrap_one_built_in_call): Ditto.
+	(shrink_wrap_conditional_dead_built_in_calls): Ditto.
+	(mark_operand_necessary): If debugging, output if OP is necessary.
+	(eliminate_unnecessary_stmts): Eliminate pow, log calls that are
+	unnecessary.
+	* gcc/opts.c (decode_options): set flag_tree_builtin_dce to 1 when
+	opt level >= 2.
+	* gcc/common.opt: New user flag -ftree-builtin-dce.
+	* gcc/doc/invoke.texi (-ftree-builtin-dce): New option.
 
 2008-05-16  David S. Miller  <davem@davemloft.net>
 
