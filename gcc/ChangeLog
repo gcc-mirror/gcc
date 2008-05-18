@@ -1,3 +1,8 @@
+2008-05-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_expr): Allow conversions from
+	pointers to sizetype and vice versa.
+
 2008-05-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_secondary_reload): New static function.
