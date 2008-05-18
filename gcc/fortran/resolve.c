@@ -6612,10 +6612,10 @@ gfc_verify_binding_labels (gfc_symbol *sym)
               has_error = 1;
             }
           else if (sym->attr.contained == 0 
-                   && (sym->attr.if_source == IFSRC_UNKNOWN))
-            if ((sym->attr.use_assoc 
-                 && (strcmp (bind_c_sym->mod_name, sym->module) != 0)) 
-                || sym->attr.use_assoc == 0)
+                   && sym->attr.if_source == IFSRC_UNKNOWN)
+	    if ((sym->attr.use_assoc && bind_c_sym->mod_name
+		 && strcmp (bind_c_sym->mod_name, sym->module) != 0) 
+		|| sym->attr.use_assoc == 0)
               {
                 gfc_error ("Binding label '%s' at %L collides with global "
                            "entity '%s' at %L", sym->binding_label,

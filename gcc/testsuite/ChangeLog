@@ -1,3 +1,9 @@
+2008-05-18  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/36251
+	gfortran.dg/public_private_module.f90: new test.
+	gfortran.dg/bind_c_module.f90: new test.
+
 2008-05-17  Xinliang David Li <davidxl@google.com>
 
 	* gcc.dg/cdce1.c: New test

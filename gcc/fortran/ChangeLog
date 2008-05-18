@@ -1,11 +1,18 @@
-2008-05-16  Tobias Burnus  <burnus@net-b.de>
+2008-05-18  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/36251
+	* symbol.c (check_conflict): Issue errors for abuse of PUBLIC, PRIVATE,
+	and BIND(C).
+	* resolve.c (gfc_verify_binding_labels): Fix NULL pointer dereference.
+
+2008-05-17  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.texi: Correct description of GET_COMMAND_ARGUMENT
 	and GET_ENVIRONMENT_VARIABLE; fix keyword= name for GETENV,
 	GETLOG, GMTIME, HOSTNM, IRAND, ITIME, KILL.
 	Move LOG_GAMMA after LOG10.
 
-2008-05-16  Tobias Burnus  <burnus@net-b.de>
+2008-05-17  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.c (add_functions): Change FLUSH(C) to FLUSH(UNIT).
 	* intrinsic.texi: Change INTEGER(*) to INTEGER; fix keyword= name for
