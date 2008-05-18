@@ -1,3 +1,10 @@
+2008-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_secondary_reload): New static function.
+	(TARGET_SECONDARY_RELOAD): New define.
+	* config/i386/i386.h (SECONDARY_OUTPUT_RELOAD_CLASS): Remove.
+	* config/i386/i386.md (reload_outqi): Remove.
+
 2008-05-18 Xinliang David Li   <davidxl@google.com>
 
 	* gcc/tree-ssa-dce.c: Coding style fix.
@@ -14,8 +21,7 @@
 
 2008-05-17  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-	* config/sh/sh.c (sh_output_mi_thunk): Update the use of
-	init_flow.
+	* config/sh/sh.c (sh_output_mi_thunk): Update the use of init_flow.
 
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -47,8 +53,7 @@
 
 2008-05-16  David S. Miller  <davem@davemloft.net>
 
-	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Undef before
-	overriding.
+	* config/sparc/linux.h (NO_PROFILE_COUNTERS): Undef before overriding.
 	* config/sparc/linux64.h (NO_PROFILE_COUNTERS): Likewise.
 
 2008-05-16  Uros Bizjak  <ubizjak@gmail.com>
@@ -61,8 +66,7 @@
 	* ifcvt.c (dead_or_predicable): Rename
 	df_simulate_one_insn_backwards to df_simulate_one_insn.
 	* recog.c (peephole2_optimize): Ditto.
-	* rtl-factoring.c (collect_pattern_seqs, clear_regs_live_in_seq): 
-	Ditto.
+	* rtl-factoring.c (collect_pattern_seqs, clear_regs_live_in_seq): Ditto.
 	* df.h: Rename df_simulate_one_insn_backwards to
 	df_simulate_one_insn.  and delete df_simulate_one_insn_forwards.
 	* df-problems.c (df_simulate_artificial_refs_at_top) Reversed
@@ -99,8 +103,8 @@
 	* tree-ssa-sccvn.c (compare_ops, init_scc_vn): Ditto.
 	* function.h (cfun.last_stmt_uid): New field.
 	* tree-flow-inline.h (set_gimple_stmt_uid, gimple_stmt_uid,
-	gimple_stmt_max_uid, set_gimple_stmt_max_uid, 
-	inc_gimple_stmt_max_uid): New functions.
+	gimple_stmt_max_uid, set_gimple_stmt_max_uid, inc_gimple_stmt_max_uid):
+	New functions.
 	* tree-dfa.c (renumber_gimple_stmt_uids): New function.
 	(create_stmt_ann): Initialize the ann->uid field.
 	* tree-ssa-pre.c (compute_avail): Encapsulate the stmt_ann->uid
@@ -141,8 +145,7 @@
 	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Likewise.
 	* config/bfin/t-bfin-linux (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
 	MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Likewise.
-	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add
-	BFIN_CPU_UNKNOWN.
+	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add BFIN_CPU_UNKNOWN.
 	* config/bfin/elf.h (STARTFILE_SPEC): Use specific CRT for BF561.
 	(LIB_SPEC): Use proper linker script for bf561.  Error if no mcpu
 	option.
@@ -170,8 +173,8 @@
 	* cgraph.h (compute_inline_parameters): Made public.
 	* tree-pass.h (ipa_opt_pass): Removed function_generate_summary,
 	variable_generate_summary, function_write_summary,
-	variable_write_summary, variable_read_summary.  Added 
-	generate_summary, write_summary, read_summary.
+	variable_write_summary, variable_read_summary.  Added generate_summary,
+	write_summary, read_summary.
 	* cgraphunit.c (cgraph_process_new_functions): Changed call from
 	pass_ipa_inline.function_generate_summary, to
 	compute_inline_parameters. 
