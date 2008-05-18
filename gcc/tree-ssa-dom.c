@@ -319,6 +319,23 @@ tree_ssa_dominator_optimize (void)
      such edges from the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
+      unsigned i;
+      bitmap_iterator bi;
+
+      /* Jump threading may have created forwarder blocks from blocks
+	 needing EH cleanup; the new successor of these blocks, which
+	 has inherited from the original block, needs the cleanup.  */
+      EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
+	{
+	  basic_block bb = BASIC_BLOCK (i);
+	  if (single_succ_p (bb) == 1
+	      && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
+	    {
+	      bitmap_clear_bit (need_eh_cleanup, i);
+	      bitmap_set_bit (need_eh_cleanup, single_succ (bb)->index);
+	    }
+	}
+
       tree_purge_all_dead_eh_edges (need_eh_cleanup);
       bitmap_zero (need_eh_cleanup);
     }
