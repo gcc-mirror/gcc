@@ -79,15 +79,15 @@ toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
 am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
-	runtime/compile_options.c runtime/environ.c runtime/error.c \
-	runtime/fpu.c runtime/main.c runtime/memory.c runtime/pause.c \
-	runtime/stop.c runtime/string.c runtime/select.c \
-	$(srcdir)/generated/all_l1.c $(srcdir)/generated/all_l2.c \
-	$(srcdir)/generated/all_l4.c $(srcdir)/generated/all_l8.c \
-	$(srcdir)/generated/all_l16.c $(srcdir)/generated/any_l1.c \
-	$(srcdir)/generated/any_l2.c $(srcdir)/generated/any_l4.c \
-	$(srcdir)/generated/any_l8.c $(srcdir)/generated/any_l16.c \
-	$(srcdir)/generated/count_1_l.c \
+	runtime/compile_options.c runtime/convert_char.c \
+	runtime/environ.c runtime/error.c runtime/fpu.c runtime/main.c \
+	runtime/memory.c runtime/pause.c runtime/stop.c \
+	runtime/string.c runtime/select.c $(srcdir)/generated/all_l1.c \
+	$(srcdir)/generated/all_l2.c $(srcdir)/generated/all_l4.c \
+	$(srcdir)/generated/all_l8.c $(srcdir)/generated/all_l16.c \
+	$(srcdir)/generated/any_l1.c $(srcdir)/generated/any_l2.c \
+	$(srcdir)/generated/any_l4.c $(srcdir)/generated/any_l8.c \
+	$(srcdir)/generated/any_l16.c $(srcdir)/generated/count_1_l.c \
 	$(srcdir)/generated/count_2_l.c \
 	$(srcdir)/generated/count_4_l.c \
 	$(srcdir)/generated/count_8_l.c \
@@ -567,8 +567,9 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	$(srcdir)/generated/misc_specifics.F90 intrinsics/dprod_r8.f90 \
 	intrinsics/f2c_specifics.F90 libgfortran_c.c $(filter-out \
 	%.c,$(prereq_SRC))
-am__objects_1 = backtrace.lo compile_options.lo environ.lo error.lo \
-	fpu.lo main.lo memory.lo pause.lo stop.lo string.lo select.lo
+am__objects_1 = backtrace.lo compile_options.lo convert_char.lo \
+	environ.lo error.lo fpu.lo main.lo memory.lo pause.lo stop.lo \
+	string.lo select.lo
 am__objects_2 = all_l1.lo all_l2.lo all_l4.lo all_l8.lo all_l16.lo
 am__objects_3 = any_l1.lo any_l2.lo any_l4.lo any_l8.lo any_l16.lo
 am__objects_4 = count_1_l.lo count_2_l.lo count_4_l.lo count_8_l.lo \
@@ -1017,6 +1018,7 @@ runtime/in_unpack_generic.c
 gfor_src = \
 runtime/backtrace.c \
 runtime/compile_options.c \
+runtime/convert_char.c \
 runtime/environ.c \
 runtime/error.c \
 runtime/fpu.c \
@@ -1761,6 +1763,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/close.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_options.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/convert_char.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_1_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_2_l.Plo@am__quote@
@@ -2619,6 +2622,13 @@ compile_options.lo: runtime/compile_options.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/compile_options.c' object='compile_options.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o compile_options.lo `test -f 'runtime/compile_options.c' || echo '$(srcdir)/'`runtime/compile_options.c
+
+convert_char.lo: runtime/convert_char.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT convert_char.lo -MD -MP -MF "$(DEPDIR)/convert_char.Tpo" -c -o convert_char.lo `test -f 'runtime/convert_char.c' || echo '$(srcdir)/'`runtime/convert_char.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/convert_char.Tpo" "$(DEPDIR)/convert_char.Plo"; else rm -f "$(DEPDIR)/convert_char.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/convert_char.c' object='convert_char.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o convert_char.lo `test -f 'runtime/convert_char.c' || echo '$(srcdir)/'`runtime/convert_char.c
 
 environ.lo: runtime/environ.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT environ.lo -MD -MP -MF "$(DEPDIR)/environ.Tpo" -c -o environ.lo `test -f 'runtime/environ.c' || echo '$(srcdir)/'`runtime/environ.c; \

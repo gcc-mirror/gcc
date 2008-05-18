@@ -118,6 +118,7 @@ runtime/in_unpack_generic.c
 gfor_src= \
 runtime/backtrace.c \
 runtime/compile_options.c \
+runtime/convert_char.c \
 runtime/environ.c \
 runtime/error.c \
 runtime/fpu.c \

@@ -335,6 +335,7 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 		   GFC_DESCRIPTOR_SIZE (field));
 }
 
+
 extern void unpack1_char (gfc_array_char *, GFC_INTEGER_4,
 			  const gfc_array_char *, const gfc_array_l1 *,
 			  const gfc_array_char *, GFC_INTEGER_4,
@@ -350,6 +351,26 @@ unpack1_char (gfc_array_char *ret,
 {
   unpack_internal (ret, vector, mask, field, vector_length, field_length);
 }
+
+
+extern void unpack1_char4 (gfc_array_char *, GFC_INTEGER_4,
+			   const gfc_array_char *, const gfc_array_l1 *,
+			   const gfc_array_char *, GFC_INTEGER_4,
+			   GFC_INTEGER_4);
+export_proto(unpack1_char4);
+
+void
+unpack1_char4 (gfc_array_char *ret,
+	       GFC_INTEGER_4 ret_length __attribute__((unused)),
+	       const gfc_array_char *vector, const gfc_array_l1 *mask,
+	       const gfc_array_char *field, GFC_INTEGER_4 vector_length,
+	       GFC_INTEGER_4 field_length)
+{
+  unpack_internal (ret, vector, mask, field,
+		   vector_length * sizeof (gfc_char4_t),
+		   field_length * sizeof (gfc_char4_t));
+}
+
 
 extern void unpack0 (gfc_array_char *, const gfc_array_char *,
 		     const gfc_array_l1 *, char *);
@@ -500,6 +521,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
   unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector), 0);
 }
 
+
 extern void unpack0_char (gfc_array_char *, GFC_INTEGER_4,
 			  const gfc_array_char *, const gfc_array_l1 *,
 			  char *, GFC_INTEGER_4, GFC_INTEGER_4);
@@ -518,4 +540,26 @@ unpack0_char (gfc_array_char *ret,
   tmp.dtype = 0;
   tmp.data = field;
   unpack_internal (ret, vector, mask, &tmp, vector_length, 0);
+}
+
+
+extern void unpack0_char4 (gfc_array_char *, GFC_INTEGER_4,
+			   const gfc_array_char *, const gfc_array_l1 *,
+			   char *, GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(unpack0_char4);
+
+void
+unpack0_char4 (gfc_array_char *ret,
+	       GFC_INTEGER_4 ret_length __attribute__((unused)),
+	       const gfc_array_char *vector, const gfc_array_l1 *mask,
+	       char *field, GFC_INTEGER_4 vector_length,
+	       GFC_INTEGER_4 field_length __attribute__((unused)))
+{
+  gfc_array_char tmp;
+
+  memset (&tmp, 0, sizeof (tmp));
+  tmp.dtype = 0;
+  tmp.data = field;
+  unpack_internal (ret, vector, mask, &tmp,
+		   vector_length * sizeof (gfc_char4_t), 0);
 }

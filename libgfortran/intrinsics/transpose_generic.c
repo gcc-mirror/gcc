@@ -94,6 +94,7 @@ transpose_internal (gfc_array_char *ret, gfc_array_char *source,
     }
 }
 
+
 extern void transpose (gfc_array_char *, gfc_array_char *);
 export_proto(transpose);
 
@@ -102,6 +103,7 @@ transpose (gfc_array_char *ret, gfc_array_char *source)
 {
   transpose_internal (ret, source, GFC_DESCRIPTOR_SIZE (source));
 }
+
 
 extern void transpose_char (gfc_array_char *, GFC_INTEGER_4,
 			    gfc_array_char *, GFC_INTEGER_4);
@@ -113,4 +115,17 @@ transpose_char (gfc_array_char *ret,
 		gfc_array_char *source, GFC_INTEGER_4 source_length)
 {
   transpose_internal (ret, source, source_length);
+}
+
+
+extern void transpose_char4 (gfc_array_char *, GFC_INTEGER_4,
+			     gfc_array_char *, GFC_INTEGER_4);
+export_proto(transpose_char4);
+
+void
+transpose_char4 (gfc_array_char *ret,
+		 GFC_INTEGER_4 ret_length __attribute__((unused)),
+		 gfc_array_char *source, GFC_INTEGER_4 source_length)
+{
+  transpose_internal (ret, source, source_length * sizeof (gfc_char4_t));
 }

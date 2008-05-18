@@ -298,16 +298,33 @@ reshape (parray *ret, parray *source, shape_type *shape, parray *pad,
 		    GFC_DESCRIPTOR_SIZE (source));
 }
 
-extern void reshape_char (parray *, GFC_INTEGER_4, parray *, shape_type *,
-			  parray *, shape_type *, GFC_INTEGER_4,
-			  GFC_INTEGER_4);
+
+extern void reshape_char (parray *, gfc_charlen_type, parray *, shape_type *,
+			  parray *, shape_type *, gfc_charlen_type,
+			  gfc_charlen_type);
 export_proto(reshape_char);
 
 void
-reshape_char (parray *ret, GFC_INTEGER_4 ret_length __attribute__((unused)),
+reshape_char (parray *ret, gfc_charlen_type ret_length __attribute__((unused)),
 	      parray *source, shape_type *shape, parray *pad,
-	      shape_type *order, GFC_INTEGER_4 source_length,
-	      GFC_INTEGER_4 pad_length __attribute__((unused)))
+	      shape_type *order, gfc_charlen_type source_length,
+	      gfc_charlen_type pad_length __attribute__((unused)))
 {
   reshape_internal (ret, source, shape, pad, order, source_length);
+}
+
+
+extern void reshape_char4 (parray *, gfc_charlen_type, parray *, shape_type *,
+			   parray *, shape_type *, gfc_charlen_type,
+			   gfc_charlen_type);
+export_proto(reshape_char4);
+
+void
+reshape_char4 (parray *ret, gfc_charlen_type ret_length __attribute__((unused)),
+	       parray *source, shape_type *shape, parray *pad,
+	       shape_type *order, gfc_charlen_type source_length,
+	       gfc_charlen_type pad_length __attribute__((unused)))
+{
+  reshape_internal (ret, source, shape, pad, order,
+		    source_length * sizeof (gfc_char4_t));
 }
