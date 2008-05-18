@@ -100,7 +100,16 @@ gfc_target_expr_size (gfc_expr *e)
     case BT_LOGICAL:
       return size_logical (e->ts.kind);
     case BT_CHARACTER:
-      return size_character (e->value.character.length);
+      if (e->expr_type == EXPR_SUBSTRING && e->ref)
+	{
+	  int start, end;
+ 
+	  gfc_extract_int (e->ref->u.ss.start, &start);
+	  gfc_extract_int (e->ref->u.ss.end, &end);
+	  return size_character (MAX(end - start + 1, 0));
+	}
+      else
+	return size_character (e->value.character.length);
     case BT_HOLLERITH:
       return e->representation.length;
     case BT_DERIVED:
@@ -222,7 +231,8 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
     return encode_array (source, buffer, buffer_size);
 
   gcc_assert (source->expr_type == EXPR_CONSTANT
-	      || source->expr_type == EXPR_STRUCTURE);
+	      || source->expr_type == EXPR_STRUCTURE
+	      || source->expr_type == EXPR_SUBSTRING);
 
   /* If we already have a target-memory representation, we use that rather 
      than recreating one.  */
@@ -248,9 +258,21 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
       return encode_logical (source->ts.kind, source->value.logical, buffer,
 			     buffer_size);
     case BT_CHARACTER:
-      return encode_character (source->value.character.length, 
-			       source->value.character.string, buffer,
-			       buffer_size);
+      if (source->expr_type == EXPR_CONSTANT || source->ref == NULL)
+	return encode_character (source->value.character.length,
+			         source->value.character.string, buffer,
+			         buffer_size);
+      else
+	{
+	  int start, end;
+
+	  gcc_assert (source->expr_type == EXPR_SUBSTRING);
+	  gfc_extract_int (source->ref->u.ss.start, &start);
+	  gfc_extract_int (source->ref->u.ss.end, &end);
+	  return encode_character (MAX(end - start + 1, 0),
+				   &source->value.character.string[start-1],
+				   buffer, buffer_size);
+	}
     case BT_DERIVED:
       return encode_derived (source, buffer, buffer_size);
     default:
@@ -333,7 +355,8 @@ gfc_interpret_complex (int kind, unsigned char *buffer, size_t buffer_size,
 {
   int size;
   size = gfc_interpret_float (kind, &buffer[0], buffer_size, real);
-  size += gfc_interpret_float (kind, &buffer[size], buffer_size - size, imaginary);
+  size += gfc_interpret_float (kind, &buffer[size], buffer_size - size,
+			       imaginary);
   return size;
 }
 

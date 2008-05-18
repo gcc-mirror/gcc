@@ -1,3 +1,11 @@
+2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36176
+	* target-memory.c (gfc_target_expr_size): Correctly treat
+	substrings.
+	(gfc_target_encode_expr): Likewise.
+	(gfc_interpret_complex): Whitespace change.
+
 2008-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline:
