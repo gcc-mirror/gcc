@@ -250,6 +250,41 @@ gfc_conv_intrinsic_conversion (gfc_se * se, gfc_expr * expr)
   gcc_assert (expr->value.function.actual->expr);
   gfc_conv_intrinsic_function_args (se, expr, args, nargs);
 
+  /* Conversion between character kinds involves a call to a library
+     function.  */
+  if (expr->ts.type == BT_CHARACTER)
+    {
+      tree fndecl, var, addr, tmp;
+
+      if (expr->ts.kind == 1
+	  && expr->value.function.actual->expr->ts.kind == 4)
+	fndecl = gfor_fndecl_convert_char4_to_char1;
+      else if (expr->ts.kind == 4
+	       && expr->value.function.actual->expr->ts.kind == 1)
+	fndecl = gfor_fndecl_convert_char1_to_char4;
+      else
+	gcc_unreachable ();
+
+      /* Create the variable storing the converted value.  */
+      type = gfc_get_pchar_type (expr->ts.kind);
+      var = gfc_create_var (type, "str");
+      addr = gfc_build_addr_expr (build_pointer_type (type), var);
+
+      /* Call the library function that will perform the conversion.  */
+      gcc_assert (nargs >= 2);
+      tmp = build_call_expr (fndecl, 3, addr, args[0], args[1]);
+      gfc_add_expr_to_block (&se->pre, tmp);
+
+      /* Free the temporary afterwards.  */
+      tmp = gfc_call_free (var);
+      gfc_add_expr_to_block (&se->post, tmp);
+
+      se->expr = var;
+      se->string_length = args[0];
+
+      return;
+    }
+
   /* Conversion from complex to non-complex involves taking the real
      component of the value.  */
   if (TREE_CODE (TREE_TYPE (args[0])) == COMPLEX_TYPE
@@ -1273,16 +1308,13 @@ gfc_conv_intrinsic_char (gfc_se * se, gfc_expr * expr)
   tree type;
   unsigned int num_args;
 
-  /* We must allow for the KIND argument, even though.... */
   num_args = gfc_intrinsic_argument_list_length (expr);
   gfc_conv_intrinsic_function_args (se, expr, arg, num_args);
 
-  /* .... we currently don't support character types != 1.  */
-  gcc_assert (expr->ts.kind == 1);
-  type = gfc_character1_type_node;
+  type = gfc_get_char_type (expr->ts.kind);
   var = gfc_create_var (type, "char");
 
-  arg[0] = convert (type, arg[0]);
+  arg[0] = fold_build1 (NOP_EXPR, type, arg[0]);
   gfc_add_modify_expr (&se->pre, var, arg[0]);
   se->expr = gfc_build_addr_expr (build_pointer_type (type), var);
   se->string_length = integer_one_node;
@@ -3290,7 +3322,7 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
 
   se->expr
     = gfc_build_compare_string (args[0], args[1], args[2], args[3],
-                               expr->value.function.actual->expr->ts.kind);
+				expr->value.function.actual->expr->ts.kind);
   se->expr = fold_build2 (op, gfc_typenode_for_spec (&expr->ts), se->expr,
 			  build_int_cst (TREE_TYPE (se->expr), 0));
 }
@@ -3892,8 +3924,13 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 {
   tree args[3], ncopies, dest, dlen, src, slen, ncopies_type;
   tree type, cond, tmp, count, exit_label, n, max, largest;
+  tree size;
   stmtblock_t block, body;
   int i;
+
+  /* We store in charsize the size of an character.  */
+  i = gfc_validate_kind (BT_CHARACTER, expr->ts.kind, false);
+  size = build_int_cst (size_type_node, gfc_character_kinds[i].bit_size / 8);
 
   /* Get the arguments.  */
   gfc_conv_intrinsic_function_args (se, expr, args, 3);
@@ -3939,7 +3976,6 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 		      cond);
   gfc_trans_runtime_check (cond, &se->pre, &expr->where,
 			   "Argument NCOPIES of REPEAT intrinsic is too large");
-			   
 
   /* Compute the destination length.  */
   dlen = fold_build2 (MULT_EXPR, gfc_charlen_type_node,
@@ -3950,7 +3986,7 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 
   /* Generate the code to do the repeat operation:
        for (i = 0; i < ncopies; i++)
-         memmove (dest + (i * slen), src, slen);  */
+         memmove (dest + (i * slen * size), src, slen*size);  */
   gfc_start_block (&block);
   count = gfc_create_var (ncopies_type, "count");
   gfc_add_modify_expr (&block, count, build_int_cst (ncopies_type, 0));
@@ -3967,15 +4003,18 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 		     build_empty_stmt ());
   gfc_add_expr_to_block (&body, tmp);
 
-  /* Call memmove (dest + (i*slen), src, slen).  */
+  /* Call memmove (dest + (i*slen*size), src, slen*size).  */
   tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node,
 		     fold_convert (gfc_charlen_type_node, slen),
 		     fold_convert (gfc_charlen_type_node, count));
-  tmp = fold_build2 (POINTER_PLUS_EXPR, pchar_type_node,
-		     fold_convert (pchar_type_node, dest),
+  tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node,
+		     tmp, fold_convert (gfc_charlen_type_node, size));
+  tmp = fold_build2 (POINTER_PLUS_EXPR, pvoid_type_node,
+		     fold_convert (pvoid_type_node, dest),
 		     fold_convert (sizetype, tmp));
-  tmp = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE], 3,
-			 tmp, src, slen);
+  tmp = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE], 3, tmp, src,
+			 fold_build2 (MULT_EXPR, size_type_node, slen,
+				      fold_convert (size_type_node, size)));
   gfc_add_expr_to_block (&body, tmp);
 
   /* Increment count.  */

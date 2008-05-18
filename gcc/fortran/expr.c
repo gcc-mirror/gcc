@@ -2847,6 +2847,16 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
       return FAILURE;
     }
 
+  /* Assignment is the only case where character variables of different
+     kind values can be converted into one another.  */
+  if (lvalue->ts.type == BT_CHARACTER && rvalue->ts.type == BT_CHARACTER)
+    {
+      if (lvalue->ts.kind != rvalue->ts.kind)
+	gfc_convert_chartype (rvalue, &lvalue->ts);
+
+      return SUCCESS;
+    }
+
   return gfc_convert_type (rvalue, &lvalue->ts, 1);
 }
 

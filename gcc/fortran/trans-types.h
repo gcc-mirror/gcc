@@ -59,6 +59,7 @@ tree gfc_get_char_type (int);
 tree gfc_get_pchar_type (int);
 tree gfc_get_character_type (int, gfc_charlen *);
 tree gfc_get_character_type_len (int, tree);
+tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
 tree gfc_typenode_for_spec (gfc_typespec *);

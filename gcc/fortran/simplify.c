@@ -256,40 +256,70 @@ gfc_simplify_abs (gfc_expr *e)
   return result;
 }
 
+
+static gfc_expr *
+simplify_achar_char (gfc_expr *e, gfc_expr *k, const char *name, bool ascii)
+{
+  gfc_expr *result;
+  int kind;
+  bool too_large = false;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = get_kind (BT_CHARACTER, k, name, gfc_default_character_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+
+  if (mpz_cmp_si (e->value.integer, 0) < 0)
+    {
+      gfc_error ("Argument of %s function at %L is negative", name,
+		 &e->where);
+      return &gfc_bad_expr;
+    }
+
+  if (ascii && gfc_option.warn_surprising
+      && mpz_cmp_si (e->value.integer, 127) > 0)
+    gfc_warning ("Argument of %s function at %L outside of range [0,127]",
+		 name, &e->where);
+
+  if (kind == 1 && mpz_cmp_si (e->value.integer, 255) > 0)
+    too_large = true;
+  else if (kind == 4)
+    {
+      mpz_t t;
+      mpz_init_set_ui (t, 2);
+      mpz_pow_ui (t, t, 32);
+      mpz_sub_ui (t, t, 1);
+      if (mpz_cmp (e->value.integer, t) > 0)
+	too_large = true;
+      mpz_clear (t);
+    }
+
+  if (too_large)
+    {
+      gfc_error ("Argument of %s function at %L is too large for the "
+		 "collating sequence of kind %d", name, &e->where, kind);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
+  result->value.character.string = gfc_get_wide_string (2);
+  result->value.character.length = 1;
+  result->value.character.string[0] = mpz_get_ui (e->value.integer);
+  result->value.character.string[1] = '\0';	/* For debugger */
+  return result;
+}
+
+
+
 /* We use the processor's collating sequence, because all
    systems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_achar (gfc_expr *e, gfc_expr *k)
 {
-  gfc_expr *result;
-  int c, kind;
-  const char *ch;
-
-  if (e->expr_type != EXPR_CONSTANT)
-    return NULL;
-
-  kind = get_kind (BT_CHARACTER, k, "ACHAR", gfc_default_character_kind);
-  if (kind == -1)
-    return &gfc_bad_expr;
-
-  ch = gfc_extract_int (e, &c);
-
-  if (ch != NULL)
-    gfc_internal_error ("gfc_simplify_achar: %s", ch);
-
-  if (gfc_option.warn_surprising && (c < 0 || c > 127))
-    gfc_warning ("Argument of ACHAR function at %L outside of range [0,127]",
-		 &e->where);
-
-  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
-
-  result->value.character.string = gfc_get_wide_string (2);
-
-  result->value.character.length = 1;
-  result->value.character.string[0] = c;
-  result->value.character.string[1] = '\0';	/* For debugger */
-  return result;
+  return simplify_achar_char (e, k, "ACHAR", true);
 }
 
 
@@ -821,35 +851,7 @@ gfc_simplify_ceiling (gfc_expr *e, gfc_expr *k)
 gfc_expr *
 gfc_simplify_char (gfc_expr *e, gfc_expr *k)
 {
-  gfc_expr *result;
-  int c, kind;
-  const char *ch;
-
-  kind = get_kind (BT_CHARACTER, k, "CHAR", gfc_default_character_kind);
-  if (kind == -1)
-    return &gfc_bad_expr;
-
-  if (e->expr_type != EXPR_CONSTANT)
-    return NULL;
-
-  ch = gfc_extract_int (e, &c);
-
-  if (ch != NULL)
-    gfc_internal_error ("gfc_simplify_char: %s", ch);
-
-  if (c < 0 || c > UCHAR_MAX)
-    gfc_error ("Argument of CHAR function at %L outside of range [0,255]",
-	       &e->where);
-
-  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
-
-  result->value.character.length = 1;
-  result->value.character.string = gfc_get_wide_string (2);
-
-  result->value.character.string[0] = c;
-  result->value.character.string[1] = '\0';	/* For debugger */
-
-  return result;
+  return simplify_achar_char (e, k, "CHAR", false);
 }
 
 
@@ -1698,8 +1700,6 @@ gfc_simplify_ichar (gfc_expr *e, gfc_expr *kind)
     }
 
   index = e->value.character.string[0];
-  if (index > UCHAR_MAX)
-    gfc_internal_error("Argument of ICHAR at %L out of range", &e->where);
 
   if ((result = int_expr_with_kind (index, kind, "ICHAR")) == NULL)
     return &gfc_bad_expr;
@@ -4796,6 +4796,41 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
     default:
       break;
     }
+
+  return result;
+}
+
+
+/* Function for converting character constants.  */
+gfc_expr *
+gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
+{
+  gfc_expr *result;
+  int i;
+
+  if (!gfc_is_constant_expr (e))
+    return NULL;
+
+  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
+  if (result == NULL)
+    return &gfc_bad_expr;
+
+  result->value.character.length = e->value.character.length;
+  result->value.character.string
+    = gfc_get_wide_string (e->value.character.length + 1);
+  memcpy (result->value.character.string, e->value.character.string,
+	  (e->value.character.length + 1) * sizeof (gfc_char_t));
+
+  /* Check we only have values representable in the destination kind.  */
+  for (i = 0; i < result->value.character.length; i++)
+    if (!gfc_check_character_range (result->value.character.string[i], kind))
+      {
+	gfc_error ("Character '%s' in string at %L cannot be converted into "
+		   "character kind %d",
+		   gfc_print_wide_char (result->value.character.string[i]),
+		   &e->where, kind);
+	return &gfc_bad_expr;
+      }
 
   return result;
 }

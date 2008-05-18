@@ -2069,6 +2069,7 @@ void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 gfc_expr *gfc_enum_initializer (gfc_expr *, locus);
 arith gfc_check_integer_range (mpz_t p, int kind);
+bool gfc_check_character_range (gfc_char_t, int);
 
 /* trans-types.c */
 try gfc_validate_c_kind (gfc_typespec *);
@@ -2225,6 +2226,7 @@ char gfc_type_letter (bt);
 gfc_symbol * gfc_get_intrinsic_sub_symbol (const char *);
 try gfc_convert_type (gfc_expr *, gfc_typespec *, int);
 try gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int);
+try gfc_convert_chartype (gfc_expr *, gfc_typespec *);
 int gfc_generic_intrinsic (const char *);
 int gfc_specific_intrinsic (const char *);
 int gfc_intrinsic_name (const char *, int);

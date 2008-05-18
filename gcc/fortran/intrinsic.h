@@ -91,6 +91,7 @@ try gfc_check_kind (gfc_expr *);
 try gfc_check_lbound (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_len_lentrim (gfc_expr *, gfc_expr *);
 try gfc_check_link (gfc_expr *, gfc_expr *);
+try gfc_check_lge_lgt_lle_llt (gfc_expr *, gfc_expr *);
 try gfc_check_loc (gfc_expr *);
 try gfc_check_logical (gfc_expr *, gfc_expr *);
 try gfc_check_min_max (gfc_actual_arglist *);
@@ -317,11 +318,14 @@ gfc_expr *gfc_simplify_xor (gfc_expr *, gfc_expr *);
 
 /* Constant conversion simplification.  */
 gfc_expr *gfc_convert_constant (gfc_expr *, bt, int);
+gfc_expr *gfc_convert_char_constant (gfc_expr *, bt, int);
 
 
 /* Resolution functions.  */
 void gfc_resolve_abs (gfc_expr *, gfc_expr *);
 void gfc_resolve_access (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_adjustl (gfc_expr *, gfc_expr *);
+void gfc_resolve_adjustr (gfc_expr *, gfc_expr *);
 void gfc_resolve_achar (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_acos (gfc_expr *, gfc_expr *);
 void gfc_resolve_acosh (gfc_expr *, gfc_expr *);

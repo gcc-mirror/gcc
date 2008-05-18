@@ -152,14 +152,11 @@ error_integer (long int i)
 }
 
 
-static char wide_char_print_buffer[11];
-
-const char *
-gfc_print_wide_char (gfc_char_t c)
+static void
+print_wide_char_into_buffer (gfc_char_t c, char *buf)
 {
   static const char xdigit[16] = { '0', '1', '2', '3', '4', '5', '6',
     '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-  char *buf = wide_char_print_buffer;
 
   if (gfc_wide_is_printable (c))
     {
@@ -173,8 +170,8 @@ gfc_print_wide_char (gfc_char_t c)
       c = c >> 4;
       buf[2] = xdigit[c & 0x0F];
 
-      buf[1] = '\\';
-      buf[0] = 'x';
+      buf[1] = 'x';
+      buf[0] = '\\';
     }
   else if (c < ((gfc_char_t) 1 << 16))
     {
@@ -187,8 +184,8 @@ gfc_print_wide_char (gfc_char_t c)
       c = c >> 4;
       buf[2] = xdigit[c & 0x0F];
 
-      buf[1] = '\\';
-      buf[0] = 'u';
+      buf[1] = 'u';
+      buf[0] = '\\';
     }
   else
     {
@@ -209,12 +206,20 @@ gfc_print_wide_char (gfc_char_t c)
       c = c >> 4;
       buf[2] = xdigit[c & 0x0F];
 
-      buf[1] = '\\';
-      buf[0] = 'U';
+      buf[1] = 'U';
+      buf[0] = '\\';
     }
-
-  return buf;
 }
+
+static char wide_char_print_buffer[11];
+
+const char *
+gfc_print_wide_char (gfc_char_t c)
+{
+  print_wide_char_into_buffer (c, wide_char_print_buffer);
+  return wide_char_print_buffer;
+}
+
 
 /* Show the file, where it was included, and the source line, give a
    locus.  Calls error_printf() recursively, but the recursion is at
@@ -317,11 +322,14 @@ show_locus (locus *loc, int c1, int c2)
 
   for (; i > 0; i--)
     {
+      static char buffer[11];
+
       c = *p++;
       if (c == '\t')
 	c = ' ';
 
-      error_string (gfc_print_wide_char (c));
+      print_wide_char_into_buffer (c, buffer);
+      error_string (buffer);
     }
 
   error_char ('\n');

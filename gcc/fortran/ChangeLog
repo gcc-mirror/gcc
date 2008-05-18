@@ -1,3 +1,145 @@
+2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsic.c (char_conversions, ncharconv): New static variables.
+	(find_char_conv): New function.
+	(add_functions): Add simplification functions for ADJUSTL and
+	ADJUSTR. Don't check the kind of their argument. Add checking for
+	LGE, LLE, LGT and LLT.
+	(add_subroutines): Fix argument type for SLEEP. Fix argument name
+	for SYSTEM.
+	(add_char_conversions): New function.
+	(gfc_intrinsic_init_1): Call add_char_conversions.
+	(gfc_intrinsic_done_1): Free char_conversions.
+	(check_arglist): Use kind == 0 as a signal that we don't want
+	the kind value to be checked.
+	(do_simplify): Also simplify character functions.
+	(gfc_convert_chartype): New function
+	* trans-array.c (gfc_trans_array_ctor_element): Don't force the
+	use of default character type.
+	(gfc_trans_array_constructor_value): Likewise.
+	(get_array_ctor_var_strlen): Use integer kind to build an integer
+	instead of a character kind!
+	(gfc_build_constant_array_constructor): Don't force the use of
+	default character type.
+	(gfc_conv_loop_setup): Likewise.
+	* trans-expr.c (gfc_conv_string_tmp): Don't force the use of
+	default character type. Allocate enough memory for wide strings.
+	(gfc_conv_concat_op): Make sure operand kind are the same.
+	(string_to_single_character): Remove gfc_ prefix. Reindent.
+	Don't force the use of default character type.
+	(gfc_conv_scalar_char_value): Likewise.
+	(gfc_build_compare_string): Call string_to_single_character.
+	(fill_with_spaces): New function
+	(gfc_trans_string_copy): Add kind arguments. Use them to deal
+	with wide character kinds.
+	(gfc_conv_statement_function): Whitespace fix. Call
+	gfc_trans_string_copy with new kind arguments.
+	(gfc_conv_substring_expr): Call gfc_build_wide_string_const
+	instead of using gfc_widechar_to_char.
+	(gfc_conv_string_parameter): Don't force the use of default
+	character type.
+	(gfc_trans_scalar_assign): Pass kind args to gfc_trans_string_copy.
+	* intrinsic.h (gfc_check_lge_lgt_lle_llt, gfc_convert_char_constant,
+	gfc_resolve_adjustl, gfc_resolve_adjustr): New prototypes.
+	* decl.c (gfc_set_constant_character_len): Don't assert the
+	existence of a single character kind.
+	* trans-array.h (gfc_trans_string_copy): New prototype.
+	* gfortran.h (gfc_check_character_range, gfc_convert_chartype):
+	New prototypes.
+	* error.c (print_wide_char_into_buffer): New function lifting
+	code from gfc_print_wide_char. Fix order to output '\x??' instead
+	of 'x\??'.
+	(gfc_print_wide_char): Call print_wide_char_into_buffer.
+	(show_locus): Call print_wide_char_into_buffer with buffer local
+	to this function.
+	* trans-const.c (gfc_build_wide_string_const): New function.
+	(gfc_conv_string_init): Deal with wide characters strings
+	constructors.
+	(gfc_conv_constant_to_tree): Call gfc_build_wide_string_const.
+	* trans-stmt.c (gfc_trans_label_assign): Likewise.
+	(gfc_trans_character_select): Deal with wide strings.
+	* expr.c (gfc_check_assign): Allow conversion between character
+	kinds on assignment.
+	* trans-const.h (gfc_build_wide_string_const): New prototype.
+	* trans-types.c (gfc_get_character_type_len_for_eltype,
+	gfc_get_character_type_len): Create too variants of the old
+	gfc_get_character_type_len, one getting kind argument and the
+	other one directly taking a type tree.
+	* trans.h (gfor_fndecl_select_string_char4,
+	gfor_fndecl_convert_char1_to_char4,
+	gfor_fndecl_convert_char4_to_char1): New prototypes.
+	* trans-types.h (gfc_get_character_type_len_for_eltype): New
+	prototype.
+	* resolve.c (resolve_operator): Exit early when kind mismatches
+	are detected, because that makes us issue an error message later.
+	(validate_case_label_expr): Fix wording of error message.
+	* iresolve.c (gfc_resolve_adjustl, gfc_resolve_adjustr): New
+	functions.
+	(gfc_resolve_pack): Call _char4 variants of library function
+	when dealing with wide characters.
+	(gfc_resolve_reshape): Likewise.
+	(gfc_resolve_spread): Likewise.
+	(gfc_resolve_transpose): Likewise.
+	(gfc_resolve_unpack): Likewise.
+	* target-memory.c (size_character): Take character kind bit size
+	correctly into account (not that it changes anything for now, but
+	it's more generic).
+	(gfc_encode_character): Added gfc_ prefix. Encoding each
+	character of a string by calling native_encode_expr for the
+	corresponding unsigned integer.
+	(gfc_target_encode_expr): Add gfc_ prefix to encode_character.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Build
+	gfor_fndecl_select_string_char4, gfor_fndecl_convert_char1_to_char4
+	and gfor_fndecl_convert_char4_to_char1.
+	* target-memory.h (gfc_encode_character): New prototype.
+	* arith.c (gfc_check_character_range): New function.
+	(eval_intrinsic): Allow non-default character kinds.
+	* check.c (gfc_check_access_func): Only allow default
+	character kind arguments.
+	(gfc_check_chdir): Likewise.
+	(gfc_check_chdir_sub): Likewise.
+	(gfc_check_chmod): Likewise.
+	(gfc_check_chmod_sub): Likewise.
+	(gfc_check_lge_lgt_lle_llt): New function.
+	(gfc_check_link): Likewise.
+	(gfc_check_link_sub): Likewise.
+	(gfc_check_symlnk): Likewise.
+	(gfc_check_symlnk_sub): Likewise.
+	(gfc_check_rename): Likewise.
+	(gfc_check_rename_sub): Likewise.
+	(gfc_check_fgetputc_sub): Likewise.
+	(gfc_check_fgetput_sub): Likewise.
+	(gfc_check_stat): Likewise.
+	(gfc_check_stat_sub): Likewise.
+	(gfc_check_date_and_time): Likewise.
+	(gfc_check_ctime_sub): Likewise.
+	(gfc_check_fdate_sub): Likewise.
+	(gfc_check_gerror): Likewise.
+	(gfc_check_getcwd_sub): Likewise.
+	(gfc_check_getarg): Likewise.
+	(gfc_check_getlog): Likewise.
+	(gfc_check_hostnm): Likewise.
+	(gfc_check_hostnm_sub): Likewise.
+	(gfc_check_ttynam_sub): Likewise.
+	(gfc_check_perror): Likewise.
+	(gfc_check_unlink): Likewise.
+	(gfc_check_unlink_sub): Likewise.
+	(gfc_check_system_sub): Likewise.
+	* primary.c (got_delim): Perform correct character range checking
+	for all kinds.
+	* trans-intrinsic.c (gfc_conv_intrinsic_conversion): Generate
+	calls to library functions convert_char4_to_char1 and
+	convert_char1_to_char4 for character conversions.
+	(gfc_conv_intrinsic_char): Allow all character kings.
+	(gfc_conv_intrinsic_strcmp): Fix whitespace.
+	(gfc_conv_intrinsic_repeat): Take care of all character kinds.
+	* intrinsic.texi: For all GNU intrinsics accepting character
+	arguments, mention that they're restricted to the default kind.
+	* simplify.c (simplify_achar_char): New function.
+	(gfc_simplify_achar, gfc_simplify_char): Call simplify_achar_char.
+	gfc_simplify_ichar): Don't error out for wide characters.
+	(gfc_convert_char_constant): New function.
+
 2008-05-18  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/36251

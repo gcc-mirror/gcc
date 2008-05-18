@@ -992,12 +992,11 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
       else
 	{
 	  /* The temporary is an array of string values.  */
-	  tmp = gfc_build_addr_expr (pchar_type_node, tmp);
+	  tmp = gfc_build_addr_expr (gfc_get_pchar_type (expr->ts.kind), tmp);
 	  /* We know the temporary and the value will be the same length,
 	     so can use memcpy.  */
-	  gfc_trans_string_copy (&se->pre, esize, tmp,
-				 se->string_length,
-				 se->expr);
+	  gfc_trans_string_copy (&se->pre, esize, tmp, expr->ts.kind,
+				 se->string_length, se->expr, expr->ts.kind);
 	}
       if (flag_bounds_check && !typespec_chararray_ctor)
 	{
@@ -1185,15 +1184,15 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		{
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_constant (&se, p->expr);
+
+		  /* For constant character array constructors we build
+		     an array of pointers.  */
 		  if (p->expr->ts.type == BT_CHARACTER
 		      && POINTER_TYPE_P (type))
-		    {
-		      /* For constant character array constructors we build
-			 an array of pointers.  */
-		      se.expr = gfc_build_addr_expr (pchar_type_node,
-						     se.expr);
-		    }
-		    
+		    se.expr = gfc_build_addr_expr
+				(gfc_get_pchar_type (p->expr->ts.kind),
+				 se.expr);
+
 		  list = tree_cons (NULL_TREE, se.expr, list);
 		  c = p;
 		  p = p->next;
@@ -1394,8 +1393,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 	  mpz_init_set_ui (char_len, 1);
 	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
 	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
-	  *len = gfc_conv_mpz_to_tree (char_len,
-				       gfc_default_character_kind);
+	  *len = gfc_conv_mpz_to_tree (char_len, gfc_default_integer_kind);
 	  *len = convert (gfc_charlen_type_node, *len);
 	  mpz_clear (char_len);
 	  return;
@@ -1546,9 +1544,9 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
     {
       gfc_init_se (&se, NULL);
       gfc_conv_constant (&se, c->expr);
-      if (c->expr->ts.type == BT_CHARACTER
-	  && POINTER_TYPE_P (type))
-	se.expr = gfc_build_addr_expr (pchar_type_node, se.expr);
+      if (c->expr->ts.type == BT_CHARACTER && POINTER_TYPE_P (type))
+	se.expr = gfc_build_addr_expr (gfc_get_pchar_type (c->expr->ts.kind),
+				       se.expr);
       list = tree_cons (NULL_TREE, se.expr, list);
       c = c->next;
       nelem++;
@@ -3488,8 +3486,9 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       /* Make absolutely sure that this is a complete type.  */
       if (loop->temp_ss->string_length)
 	loop->temp_ss->data.temp.type
-		= gfc_get_character_type_len (gfc_default_character_kind,
-					      loop->temp_ss->string_length);
+		= gfc_get_character_type_len_for_eltype
+			(TREE_TYPE (loop->temp_ss->data.temp.type),
+			 loop->temp_ss->string_length);
 
       tmp = loop->temp_ss->data.temp.type;
       len = loop->temp_ss->string_length;

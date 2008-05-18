@@ -39,9 +39,10 @@ const char *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
 locus *gfc_current_intrinsic_where;
 
 static gfc_intrinsic_sym *functions, *subroutines, *conversion, *next_sym;
+static gfc_intrinsic_sym *char_conversions;
 static gfc_intrinsic_arg *next_arg;
 
-static int nfunc, nsub, nargs, nconv;
+static int nfunc, nsub, nargs, nconv, ncharconv;
 
 static enum
 { SZ_NOTHING = 0, SZ_SUBS, SZ_FUNCS, SZ_CONVS }
@@ -141,6 +142,28 @@ find_conv (gfc_typespec *from, gfc_typespec *to)
   sym = conversion;
 
   for (i = 0; i < nconv; i++, sym++)
+    if (target == sym->name)
+      return sym;
+
+  return NULL;
+}
+
+
+/* Given a pair of CHARACTER typespecs, find the gfc_intrinsic_sym node
+   that corresponds to the conversion.  Returns NULL if the conversion
+   isn't found.  */
+
+static gfc_intrinsic_sym *
+find_char_conv (gfc_typespec *from, gfc_typespec *to)
+{
+  gfc_intrinsic_sym *sym;
+  const char *target;
+  int i;
+
+  target = conv_name (from, to);
+  sym = char_conversions;
+
+  for (i = 0; i < ncharconv; i++, sym++)
     if (target == sym->name)
       return sym;
 
@@ -974,15 +997,15 @@ add_functions (void)
 
   make_generic ("acosh", GFC_ISYM_ACOSH, GFC_STD_F2008);
 
-  add_sym_1 ("adjustl", GFC_ISYM_ADJUSTL, CLASS_ELEMENTAL, ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F95,
-	     NULL, gfc_simplify_adjustl, NULL,
-	     stg, BT_CHARACTER, dc, REQUIRED);
+  add_sym_1 ("adjustl", GFC_ISYM_ADJUSTL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_CHARACTER, dc, GFC_STD_F95, NULL, gfc_simplify_adjustl,
+	     gfc_resolve_adjustl, stg, BT_CHARACTER, 0, REQUIRED);
 
   make_generic ("adjustl", GFC_ISYM_ADJUSTL, GFC_STD_F95);
 
-  add_sym_1 ("adjustr", GFC_ISYM_ADJUSTR, CLASS_ELEMENTAL, ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F95,
-	     NULL, gfc_simplify_adjustr, NULL,
-	     stg, BT_CHARACTER, dc, REQUIRED);
+  add_sym_1 ("adjustr", GFC_ISYM_ADJUSTR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_CHARACTER, dc, GFC_STD_F95, NULL, gfc_simplify_adjustr,
+	     gfc_resolve_adjustr, stg, BT_CHARACTER, 0, REQUIRED);
 
   make_generic ("adjustr", GFC_ISYM_ADJUSTR, GFC_STD_F95);
 
@@ -1760,26 +1783,26 @@ add_functions (void)
   make_generic ("log_gamma", GFC_ISYM_LGAMMA, GFC_STD_F2008);
 
 
-  add_sym_2 ("lge", GFC_ISYM_LGE, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F77,
-	     NULL, gfc_simplify_lge, NULL,
+  add_sym_2 ("lge", GFC_ISYM_LGE, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl,
+	     GFC_STD_F77, gfc_check_lge_lgt_lle_llt, gfc_simplify_lge, NULL,
 	     sta, BT_CHARACTER, dc, REQUIRED, stb, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("lge", GFC_ISYM_LGE, GFC_STD_F77);
 
-  add_sym_2 ("lgt", GFC_ISYM_LGT, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F77,
-	     NULL, gfc_simplify_lgt, NULL,
+  add_sym_2 ("lgt", GFC_ISYM_LGT, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl,
+	     GFC_STD_F77, gfc_check_lge_lgt_lle_llt, gfc_simplify_lgt, NULL,
 	     sta, BT_CHARACTER, dc, REQUIRED, stb, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("lgt", GFC_ISYM_LGT, GFC_STD_F77);
 
-  add_sym_2 ("lle",GFC_ISYM_LLE,  CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F77,
-	     NULL, gfc_simplify_lle, NULL,
+  add_sym_2 ("lle",GFC_ISYM_LLE,  CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl,
+	     GFC_STD_F77, gfc_check_lge_lgt_lle_llt, gfc_simplify_lle, NULL,
 	     sta, BT_CHARACTER, dc, REQUIRED, stb, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("lle", GFC_ISYM_LLE, GFC_STD_F77);
 
-  add_sym_2 ("llt", GFC_ISYM_LLT, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F77,
-	     NULL, gfc_simplify_llt, NULL,
+  add_sym_2 ("llt", GFC_ISYM_LLT, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl,
+	     GFC_STD_F77, gfc_check_lge_lgt_lle_llt, gfc_simplify_llt, NULL,
 	     sta, BT_CHARACTER, dc, REQUIRED, stb, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("llt", GFC_ISYM_LLT, GFC_STD_F77);
@@ -2625,7 +2648,7 @@ add_subroutines (void)
 
   add_sym_1s ("sleep", GFC_ISYM_SLEEP, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_sleep_sub, NULL, gfc_resolve_sleep_sub,
-	      val, BT_CHARACTER, dc, REQUIRED);
+	      val, BT_INTEGER, di, REQUIRED);
 
   add_sym_3s ("fstat", GFC_ISYM_FSTAT, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fstat_sub, NULL, gfc_resolve_fstat_sub,
@@ -2654,7 +2677,7 @@ add_subroutines (void)
 
   add_sym_2s ("system", GFC_ISYM_SYSTEM, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      NULL, NULL, gfc_resolve_system_sub,
-	      c, BT_CHARACTER, dc, REQUIRED, st, BT_INTEGER, di, OPTIONAL);
+	      com, BT_CHARACTER, dc, REQUIRED, st, BT_INTEGER, di, OPTIONAL);
 
   add_sym_3s ("system_clock", GFC_ISYM_SYSTEM_CLOCK, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_system_clock, NULL, gfc_resolve_system_clock,
@@ -2817,6 +2840,52 @@ add_conversions (void)
 }
 
 
+static void
+add_char_conversions (void)
+{
+  int n, i, j;
+
+  /* Count possible conversions.  */
+  for (i = 0; gfc_character_kinds[i].kind != 0; i++)
+    for (j = 0; gfc_character_kinds[j].kind != 0; j++)
+      if (i != j)
+	ncharconv++;
+
+  /* Allocate memory.  */
+  char_conversions = gfc_getmem (sizeof (gfc_intrinsic_sym) * ncharconv);
+
+  /* Add the conversions themselves.  */
+  n = 0;
+  for (i = 0; gfc_character_kinds[i].kind != 0; i++)
+    for (j = 0; gfc_character_kinds[j].kind != 0; j++)
+      {
+	gfc_typespec from, to;
+
+	if (i == j)
+	  continue;
+
+	gfc_clear_ts (&from);
+	from.type = BT_CHARACTER;
+	from.kind = gfc_character_kinds[i].kind;
+
+	gfc_clear_ts (&to);
+	to.type = BT_CHARACTER;
+	to.kind = gfc_character_kinds[j].kind;
+
+	char_conversions[n].name = conv_name (&from, &to);
+	char_conversions[n].lib_name = char_conversions[n].name;
+	char_conversions[n].simplify.cc = gfc_convert_char_constant;
+	char_conversions[n].standard = GFC_STD_F2003;
+	char_conversions[n].elemental = 1;
+	char_conversions[n].conversion = 0;
+	char_conversions[n].ts = to;
+	char_conversions[n].id = GFC_ISYM_CONVERSION;
+
+	n++;
+      }
+}
+
+
 /* Initialize the table of intrinsics.  */
 void
 gfc_intrinsic_init_1 (void)
@@ -2852,6 +2921,9 @@ gfc_intrinsic_init_1 (void)
   add_subroutines ();
   add_conversions ();
 
+  /* Character conversion intrinsics need to be treated separately.  */
+  add_char_conversions ();
+
   /* Set the pure flag.  All intrinsic functions are pure, and
      intrinsic subroutines are pure if they are elemental.  */
 
@@ -2868,6 +2940,7 @@ gfc_intrinsic_done_1 (void)
 {
   gfc_free (functions);
   gfc_free (conversion);
+  gfc_free (char_conversions);
   gfc_free_namespace (gfc_intrinsic_namespace);
 }
 
@@ -3052,10 +3125,18 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
   i = 0;
   for (; formal; formal = formal->next, actual = actual->next, i++)
     {
+      gfc_typespec ts;
+
       if (actual->expr == NULL)
 	continue;
 
-      if (!gfc_compare_types (&formal->ts, &actual->expr->ts))
+      ts = formal->ts;
+
+      /* A kind of 0 means we don't check for kind.  */
+      if (ts.kind == 0)
+	ts.kind = actual->expr->ts.kind;
+
+      if (!gfc_compare_types (&ts, &actual->expr->ts))
 	{
 	  if (error_flag)
 	    gfc_error ("Type of argument '%s' in call to '%s' at %L should "
@@ -3199,9 +3280,10 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
   a1 = arg->expr;
   arg = arg->next;
 
-  if (specific->simplify.cc == gfc_convert_constant)
+  if (specific->simplify.cc == gfc_convert_constant
+      || specific->simplify.cc == gfc_convert_char_constant)
     {
-      result = gfc_convert_constant (a1, specific->ts.type, specific->ts.kind);
+      result = specific->simplify.cc (a1, specific->ts.type, specific->ts.kind);
       goto finish;
     }
 
@@ -3686,4 +3768,61 @@ bad:
 		      gfc_typename (&from_ts), gfc_typename (ts),
 		      &expr->where);
   /* Not reached */
+}
+
+
+try
+gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
+{
+  gfc_intrinsic_sym *sym;
+  gfc_typespec from_ts;
+  locus old_where;
+  gfc_expr *new;
+  int rank;
+  mpz_t *shape;
+
+  gcc_assert (expr->ts.type == BT_CHARACTER && ts->type == BT_CHARACTER);
+  from_ts = expr->ts;		/* expr->ts gets clobbered */
+
+  sym = find_char_conv (&expr->ts, ts);
+  gcc_assert (sym);
+
+  /* Insert a pre-resolved function call to the right function.  */
+  old_where = expr->where;
+  rank = expr->rank;
+  shape = expr->shape;
+
+  new = gfc_get_expr ();
+  *new = *expr;
+
+  new = gfc_build_conversion (new);
+  new->value.function.name = sym->lib_name;
+  new->value.function.isym = sym;
+  new->where = old_where;
+  new->rank = rank;
+  new->shape = gfc_copy_shape (shape, rank);
+
+  gfc_get_ha_sym_tree (sym->name, &new->symtree);
+  new->symtree->n.sym->ts = *ts;
+  new->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+  new->symtree->n.sym->attr.function = 1;
+  new->symtree->n.sym->attr.elemental = 1;
+  new->symtree->n.sym->attr.pure = 1;
+  new->symtree->n.sym->attr.referenced = 1;
+  gfc_intrinsic_symbol(new->symtree->n.sym);
+  gfc_commit_symbol (new->symtree->n.sym);
+
+  *expr = *new;
+
+  gfc_free (new);
+  expr->ts = *ts;
+
+  if (gfc_is_constant_expr (expr->value.function.actual->expr)
+      && do_simplify (sym, expr) == FAILURE)
+    {
+      /* Error already generated in do_simplify() */
+      return FAILURE;
+    }
+
+  return SUCCESS;
 }

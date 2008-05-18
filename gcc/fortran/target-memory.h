@@ -31,6 +31,8 @@ bool gfc_convert_boz (gfc_expr *, gfc_typespec *);
 size_t gfc_target_expr_size (gfc_expr *);
 
 /* Write a constant expression in binary form to a target buffer.  */
+int gfc_encode_character (int, int, const gfc_char_t *, unsigned char *,
+			  size_t);
 int gfc_target_encode_expr (gfc_expr *, unsigned char *, size_t);
 
 /* Read a target buffer into a constant expression.  */
