@@ -5768,6 +5768,7 @@ should be called and the @var{flag} argument passed to it.
 @findex __builtin_isnormal
 @findex __builtin_isgreater
 @findex __builtin_isgreaterequal
+@findex __builtin_isinf_sign
 @findex __builtin_isless
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
@@ -6294,8 +6295,10 @@ the same names as the standard macros ( @code{isgreater},
 @code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
-In the same fashion, GCC provides @code{isfinite} and @code{isnormal}
-built-ins used with @code{__builtin_} prefixed.
+In the same fashion, GCC provides @code{isfinite}, @code{isinf_sign}
+and @code{isnormal} built-ins used with @code{__builtin_} prefixed.
+The @code{isinf} and @code{isnan} builtins appear both with and
+without the @code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
 
@@ -6577,6 +6580,14 @@ This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 @deftypefn {Built-in Function} {long double} __builtin_infl (void)
 Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_isinf_sign (...)
+Similar to @code{isinf}, except the return value will be negative for
+an argument of @code{-Inf}.  Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_nan (const char *str)

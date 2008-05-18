@@ -16,3 +16,8 @@ int test3(double x)
 {
   return __builtin_isinf(x, x); /* { dg-error "too many arguments" } */
 }
+
+int test4(double x)
+{
+  return __builtin_isinf_sign(x, x); /* { dg-error "too many arguments" } */
+}

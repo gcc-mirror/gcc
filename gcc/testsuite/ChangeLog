@@ -1,3 +1,9 @@
+2008-05-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-error.c: Test __builtin_isinf_sign.
+	* gcc.dg/tg-tests.h: Likewise.  Mark variables volatile.
+	* gcc.dg/torture/builtin-isinf_sign-1.c: New test.
+
 2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/achar_3.f90: Adjust error messages.
