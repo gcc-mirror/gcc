@@ -50,7 +50,7 @@ maxloc0_8_i2 (gfc_array_i8 * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   const GFC_INTEGER_2 *base;
-  GFC_INTEGER_8 *dest;
+  GFC_INTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
 

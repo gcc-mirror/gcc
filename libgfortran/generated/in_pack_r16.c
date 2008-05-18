@@ -48,7 +48,7 @@ internal_pack_r16 (gfc_array_r16 * source)
   index_type dim;
   index_type ssize;
   const GFC_REAL_16 *src;
-  GFC_REAL_16 *dest;
+  GFC_REAL_16 * restrict dest;
   GFC_REAL_16 *destptr;
   int n;
   int packed;

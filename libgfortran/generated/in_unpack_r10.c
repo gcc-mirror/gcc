@@ -45,7 +45,7 @@ internal_unpack_r10 (gfc_array_r10 * d, const GFC_REAL_10 * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  GFC_REAL_10 *dest;
+  GFC_REAL_10 * restrict dest;
   int n;
 
   dest = d->data;

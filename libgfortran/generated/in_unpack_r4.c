@@ -45,7 +45,7 @@ internal_unpack_r4 (gfc_array_r4 * d, const GFC_REAL_4 * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  GFC_REAL_4 *dest;
+  GFC_REAL_4 * restrict dest;
   int n;
 
   dest = d->data;

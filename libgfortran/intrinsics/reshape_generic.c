@@ -49,7 +49,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
   index_type rsize;
   index_type rs;
   index_type rex;
-  char *rptr;
+  char * restrict rptr;
   /* s.* indicates the source array.  */
   index_type scount[GFC_MAX_DIMENSIONS];
   index_type sextent[GFC_MAX_DIMENSIONS];

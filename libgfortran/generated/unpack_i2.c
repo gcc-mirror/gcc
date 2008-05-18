@@ -45,7 +45,7 @@ unpack0_i2 (gfc_array_i2 *ret, const gfc_array_i2 *vector,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rs;
-  GFC_INTEGER_2 *rptr;
+  GFC_INTEGER_2 * restrict rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
   GFC_INTEGER_2 *vptr;
@@ -188,7 +188,7 @@ unpack1_i2 (gfc_array_i2 *ret, const gfc_array_i2 *vector,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rs;
-  GFC_INTEGER_2 *rptr;
+  GFC_INTEGER_2 * restrict rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
   GFC_INTEGER_2 *vptr;

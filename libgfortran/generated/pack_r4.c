@@ -82,7 +82,7 @@ pack_r4 (gfc_array_r4 *ret, const gfc_array_r4 *array,
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
-  GFC_REAL_4 *rptr;
+  GFC_REAL_4 * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;

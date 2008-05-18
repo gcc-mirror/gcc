@@ -46,7 +46,7 @@ unpack0_'rtype_code` ('rtype` *ret, const 'rtype` *vector,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rs;
-  'rtype_name` *rptr;
+  'rtype_name` * restrict rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
   'rtype_name` *vptr;
@@ -189,7 +189,7 @@ unpack1_'rtype_code` ('rtype` *ret, const 'rtype` *vector,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rs;
-  'rtype_name` *rptr;
+  'rtype_name` * restrict rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
   'rtype_name` *vptr;

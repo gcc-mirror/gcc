@@ -51,7 +51,7 @@ internal_pack_'rtype_ccode` ('rtype` * source)
   index_type dim;
   index_type ssize;
   const 'rtype_name` *src;
-  'rtype_name` *dest;
+  'rtype_name` * restrict dest;
   'rtype_name` *destptr;
   int n;
   int packed;

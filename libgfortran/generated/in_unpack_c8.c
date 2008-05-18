@@ -45,7 +45,7 @@ internal_unpack_c8 (gfc_array_c8 * d, const GFC_COMPLEX_8 * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  GFC_COMPLEX_8 *dest;
+  GFC_COMPLEX_8 * restrict dest;
   int n;
 
   dest = d->data;

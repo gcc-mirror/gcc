@@ -82,7 +82,7 @@ pack_c10 (gfc_array_c10 *ret, const gfc_array_c10 *array,
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
-  GFC_COMPLEX_10 *rptr;
+  GFC_COMPLEX_10 * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;

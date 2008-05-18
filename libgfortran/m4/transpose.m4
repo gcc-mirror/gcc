@@ -45,7 +45,7 @@ transpose_'rtype_code` ('rtype` * const restrict ret,
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
-  'rtype_name` *rptr;
+  'rtype_name` * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sxstride, systride;
   const 'rtype_name` *sptr;

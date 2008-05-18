@@ -45,7 +45,7 @@ internal_unpack_c4 (gfc_array_c4 * d, const GFC_COMPLEX_4 * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  GFC_COMPLEX_4 *dest;
+  GFC_COMPLEX_4 * restrict dest;
   int n;
 
   dest = d->data;
