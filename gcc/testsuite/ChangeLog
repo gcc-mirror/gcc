@@ -1,3 +1,7 @@
+2008-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization2.ad[sb]: New test.
+
 2008-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36090

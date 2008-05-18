@@ -1,3 +1,9 @@
+2008-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): If some blocks need
+	EH cleanup at the end of the pass, search for those that have been
+	turned into forwarder blocks and do the cleanup on their successor.
+
 2008-05-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_expr): Allow conversions from
