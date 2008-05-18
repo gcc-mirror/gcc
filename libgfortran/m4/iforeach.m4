@@ -17,7 +17,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   const atype_name *base;
-  rtype_name *dest;
+  rtype_name * restrict dest;
   index_type rank;
   index_type n;
 

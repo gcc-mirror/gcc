@@ -48,7 +48,7 @@ internal_unpack_'rtype_ccode` ('rtype` * d, const 'rtype_name` * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  'rtype_name` *dest;
+  'rtype_name` * restrict dest;
   int n;
 
   dest = d->data;

@@ -35,7 +35,7 @@ Boston, MA 02110-1301, USA.  */
 /* Reshape function where all arrays are packed.  Basically just memcpy.  */
 
 void
-reshape_packed (char * ret, index_type rsize, const char * source,
+reshape_packed (char * restrict ret, index_type rsize, const char * source,
 		index_type ssize, const char * pad, index_type psize)
 {
   index_type size;

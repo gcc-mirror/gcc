@@ -48,7 +48,7 @@ internal_pack_r4 (gfc_array_r4 * source)
   index_type dim;
   index_type ssize;
   const GFC_REAL_4 *src;
-  GFC_REAL_4 *dest;
+  GFC_REAL_4 * restrict dest;
   GFC_REAL_4 *destptr;
   int n;
   int packed;

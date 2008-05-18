@@ -48,7 +48,7 @@ spread_c8 (gfc_array_c8 *ret, const gfc_array_c8 *source,
   index_type rrank;
   index_type rs;
   GFC_COMPLEX_8 *rptr;
-  GFC_COMPLEX_8 *dest;
+  GFC_COMPLEX_8 * restrict dest;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
@@ -240,7 +240,7 @@ spread_scalar_c8 (gfc_array_c8 *ret, const GFC_COMPLEX_8 *source,
 {
   int n;
   int ncopies = pncopies;
-  GFC_COMPLEX_8 * dest;
+  GFC_COMPLEX_8 * restrict dest;
   index_type stride;
 
   if (GFC_DESCRIPTOR_RANK (ret) != 1)
@@ -275,3 +275,4 @@ spread_scalar_c8 (gfc_array_c8 *ret, const GFC_COMPLEX_8 *source,
 }
 
 #endif
+

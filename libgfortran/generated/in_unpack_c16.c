@@ -45,7 +45,7 @@ internal_unpack_c16 (gfc_array_c16 * d, const GFC_COMPLEX_16 * src)
   index_type stride0;
   index_type dim;
   index_type dsize;
-  GFC_COMPLEX_16 *dest;
+  GFC_COMPLEX_16 * restrict dest;
   int n;
 
   dest = d->data;

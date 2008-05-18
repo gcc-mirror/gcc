@@ -44,7 +44,7 @@ transpose_c4 (gfc_array_c4 * const restrict ret,
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
-  GFC_COMPLEX_4 *rptr;
+  GFC_COMPLEX_4 * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sxstride, systride;
   const GFC_COMPLEX_4 *sptr;

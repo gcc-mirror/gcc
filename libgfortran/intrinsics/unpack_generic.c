@@ -42,7 +42,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type rs;
-  char *rptr;
+  char * restrict rptr;
   /* v.* indicates the vector array.  */
   index_type vstride0;
   char *vptr;

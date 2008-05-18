@@ -45,7 +45,7 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type rstride[GFC_MAX_DIMENSIONS];
   index_type rstride0;
   index_type roffset;
-  char *rptr;
+  char * restrict rptr;
   char *dest;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];

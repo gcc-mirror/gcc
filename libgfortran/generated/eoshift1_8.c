@@ -49,7 +49,7 @@ eoshift1 (gfc_array_char * const restrict ret,
   index_type rstride0;
   index_type roffset;
   char *rptr;
-  char *dest;
+  char * restrict dest;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;

@@ -48,7 +48,7 @@ internal_pack_2 (gfc_array_i2 * source)
   index_type dim;
   index_type ssize;
   const GFC_INTEGER_2 *src;
-  GFC_INTEGER_2 *dest;
+  GFC_INTEGER_2 * restrict dest;
   GFC_INTEGER_2 *destptr;
   int n;
   int packed;

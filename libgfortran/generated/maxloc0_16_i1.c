@@ -50,7 +50,7 @@ maxloc0_16_i1 (gfc_array_i16 * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   const GFC_INTEGER_1 *base;
-  GFC_INTEGER_16 *dest;
+  GFC_INTEGER_16 * restrict dest;
   index_type rank;
   index_type n;
 

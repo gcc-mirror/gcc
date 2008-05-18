@@ -44,7 +44,7 @@ transpose_c10 (gfc_array_c10 * const restrict ret,
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
-  GFC_COMPLEX_10 *rptr;
+  GFC_COMPLEX_10 * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sxstride, systride;
   const GFC_COMPLEX_10 *sptr;

@@ -49,7 +49,7 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
   index_type rrank;
   index_type rs;
   'rtype_name` *rptr;
-  'rtype_name` *dest;
+  'rtype_name` * restrict dest;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
@@ -241,7 +241,7 @@ spread_scalar_'rtype_code` ('rtype` *ret, const 'rtype_name` *source,
 {
   int n;
   int ncopies = pncopies;
-  'rtype_name` * dest;
+  'rtype_name` * restrict dest;
   index_type stride;
 
   if (GFC_DESCRIPTOR_RANK (ret) != 1)

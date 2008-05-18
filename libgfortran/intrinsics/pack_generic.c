@@ -80,7 +80,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
-  char *rptr;
+  char * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;

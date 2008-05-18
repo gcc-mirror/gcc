@@ -83,7 +83,7 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
-  'rtype_name` *rptr;
+  'rtype_name` * restrict rptr;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
