@@ -217,7 +217,7 @@ find_all_control_dependences (struct edge_list *el)
         if (error_cond(args))
              built_in_call(args)
 
-   ( An actual simple exampl is :
+    An actual simple exampl is :
          log (x);   // Mostly dead call
      ==>
          if (x < 0)
@@ -226,7 +226,7 @@ find_all_control_dependences (struct edge_list *el)
      in majority of the cases, log won't be called with x out of 
      range. The branch is totally predicatible, so the branch cost
      is low.  Such optimization improves the performance of  
-     an important application in a big search company by 20% )
+     an important application in a big search company. 
    
    Note that library functions are not supposed to clear errno to zero without
    error.
@@ -244,6 +244,10 @@ find_all_control_dependences (struct edge_list *el)
    dead are usually part of the C++ abstraction penalty exposed after 
    inlining).  */
 
+
+/* A helper method to help select calls to pow that are suitable for
+   conditional DCE transformation. Returns true if the pow call is 
+   a candidate.*/
 
 static bool
 check_pow (tree pow_call)
@@ -325,6 +329,10 @@ check_pow (tree pow_call)
     return false;
 }
 
+/* A helper function to help select candidate calls to log that are 
+   suitable for conditional DCE. Returns true if the log call is a
+    candidate. */
+
 static bool
 check_log (tree log_call)
 {
@@ -340,8 +348,9 @@ check_log (tree log_call)
 }
 
 
-/*  A helper function to determine if a builtin function
-    call is a candidate for conditional DCE.  */
+/* A helper function to determine if a builtin function call is a 
+   candidate for conditional DCE. Returns true if the builtin call
+   is a candidate. */
 
 static bool
 is_unnecessary_except_errno_call (tree call)
@@ -353,9 +362,7 @@ is_unnecessary_except_errno_call (tree call)
   if (!flag_tree_builtin_dce) 
     return false;
 
-  gcc_assert (call);
-  gcc_assert (!DECL_P (call));
-  gcc_assert (TREE_CODE (call) == CALL_EXPR);
+  gcc_assert (call && TREE_CODE (call) == CALL_EXPR);
 
   fn = get_callee_fndecl (call);
   if (!fn || !DECL_BUILT_IN (fn)) 
@@ -363,23 +370,20 @@ is_unnecessary_except_errno_call (tree call)
 
   fnc = DECL_FUNCTION_CODE (fn);
   switch (fnc)
-   {
-     CASE_FLT_FN (BUILT_IN_POW): 
-         if (check_pow (call))
-           is_unnecessary_except_errno = true;
-     break;
+    {
+    CASE_FLT_FN (BUILT_IN_POW): 
+      if (check_pow (call))
+        is_unnecessary_except_errno = true;
+      break;
 
-     CASE_FLT_FN (BUILT_IN_LOG):
-         if (check_log (call))
-           is_unnecessary_except_errno = true;
-     break;
-     default : 
-       is_unnecessary_except_errno = false;
-     break;
+    CASE_FLT_FN (BUILT_IN_LOG):
+      if (check_log (call))
+        is_unnecessary_except_errno = true;
+      break;
+    default : 
+      is_unnecessary_except_errno = false;
+      break;
    }
-
-  if (!is_unnecessary_except_errno) 
-    return false;
 
   return is_unnecessary_except_errno;
 }
@@ -717,10 +721,11 @@ propagate_necessity (struct edge_list *el)
     }
 }
 
-/*  Method to generate conditional statements for guarding condionally
-    dead calls to pow. One or more statements can be generated for 
-    each logical condition. Statement groups of different conditions
-    are separated by a NULL tree.  */
+/* Method to generate conditional statements for guarding condionally
+   dead calls to pow. One or more statements can be generated for 
+   each logical condition. Statement groups of different conditions
+   are separated by a NULL tree and they are stored in the VEC 
+   conds. The number of logical conditions are stored in *nconds. */
 static void
 gen_conditions_for_pow (tree pow_call, enum built_in_function fnc, 
                         VEC (tree, heap)* conds, unsigned * nconds)
@@ -872,7 +877,7 @@ gen_conditions_for_pow (tree pow_call, enum built_in_function fnc,
      VEC_safe_push (tree, heap, conds, stmt3);
      (*nconds)++;
 
-     /* now a seperator*/
+     /* Now a seperator*/
      VEC_safe_push (tree, heap, conds, NULL);
 
      temp1 = create_tmp_var (int_typ, "DCE_COND1");
@@ -893,8 +898,8 @@ gen_conditions_for_pow (tree pow_call, enum built_in_function fnc,
     gcc_unreachable ();
 }
 
-/*  The method to generate error condition guard code for log(x)
-    calls.  */
+/* The method to generate error condition guard code for log(x)
+   calls. */
 static void
 gen_conditions_for_log (tree call, enum built_in_function fnc, 
                         VEC (tree, heap)* conds, unsigned * nconds)
@@ -956,8 +961,8 @@ gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap)* conds, unsigned int 
   enum built_in_function fnc; 
   gcc_assert (nconds && conds);
   gcc_assert (VEC_length(tree, conds) == 0);
-  gcc_assert (TREE_CODE (bi_call) == GIMPLE_MODIFY_STMT ||
-             TREE_CODE (bi_call) == CALL_EXPR);
+  gcc_assert (TREE_CODE (bi_call) == GIMPLE_MODIFY_STMT 
+              || TREE_CODE (bi_call) == CALL_EXPR);
 
   call = bi_call;
   if (TREE_CODE (call) == GIMPLE_MODIFY_STMT)
@@ -969,19 +974,17 @@ gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap)* conds, unsigned int 
   *nconds = 0;
 
   switch (fnc)
-   {
-     /*CASE_FLT_FN(BUILT_IN_POW)*/
+    {
      case BUILT_IN_POW:
        gen_conditions_for_pow (call, fnc, conds, nconds);
-     break;
-     /*CASE_FLT_FN(BUILT_IN_LOG):*/
+       break;
      case BUILT_IN_LOG:
      case BUILT_IN_LOGF:
      case BUILT_IN_LOGL:
        gen_conditions_for_log (call, fnc, conds, nconds);
-     break;
+       break;
      default : 
-       gcc_assert (0);
+       gcc_unreachable();
      break;
    }
 
@@ -990,6 +993,7 @@ gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap)* conds, unsigned int 
 }
 
 
+/* Propability of the branch (to the call) is taken. */
 #define ERR_PROB 0.01
 
 /*  The method to shrink wrap a partially  dead builtin call 
@@ -1044,7 +1048,8 @@ shrink_wrap_one_built_in_call (tree bi_call)
    {
      tree c = VEC_index (tree, conds, ci);
      gcc_assert ( c || ci != 0 );
-     if (!c) break;
+     if (!c) 
+       break;
      bsi_insert_before (&bi_call_bsi, c, BSI_SAME_STMT);
      cond_expr = c;
    }
@@ -1052,7 +1057,7 @@ shrink_wrap_one_built_in_call (tree bi_call)
   ci ++;
   gcc_assert (cond_expr && TREE_CODE (cond_expr) == COND_EXPR);
 
-  /* now the label*/
+  /* Now the label*/
   bi_call_label_decl = create_artificial_label ();
   bi_call_label = build1 (LABEL_EXPR, void_type_node, bi_call_label_decl);
   bsi_insert_before (&bi_call_bsi, bi_call_label, BSI_SAME_STMT);
@@ -1068,7 +1073,7 @@ shrink_wrap_one_built_in_call (tree bi_call)
   join_tgt_in_edge_fall_thru->probability = 
       REG_BR_PROB_BASE - bi_call_in_edge0->probability;
 
-  /* code generation for the rest of the conditions */
+  /* Code generation for the rest of the conditions */
   guard_bb = guard_bb0;
   for (; nconds > 0; )
    {
@@ -1095,7 +1100,7 @@ shrink_wrap_one_built_in_call (tree bi_call)
 
      bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_TRUE_VALUE);
 
-     bi_call_in_edge->probability = REG_BR_PROB_BASE*ERR_PROB;
+     bi_call_in_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
      guard_bb_in_edge->probability = 
          REG_BR_PROB_BASE - bi_call_in_edge->probability;
 

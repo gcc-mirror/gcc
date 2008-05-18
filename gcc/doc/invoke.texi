@@ -5876,9 +5876,9 @@ default at @option{-O} and higher.
 
 @item -ftree-builtin-dce
 @opindex ftree-builtin-dce
-Perform conditional dead code elimination (DCE) on builtin calls that
-may set errno but are otherwise side-effect free.  This flag is enabled by
-default at @option{-O} and higher.
+Perform conditional dead code elimination (DCE) for calls to builtin functions 
+that may set errno but are otherwise side-effect free.  This flag is enabled by
+default at @option{-O2} and higher.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
