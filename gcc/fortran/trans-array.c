@@ -2225,7 +2225,6 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
       switch (ar->dimen_type[dim])
 	{
 	case DIMEN_ELEMENT:
-	  gcc_assert (i == -1);
 	  /* Elemental dimension.  */
 	  gcc_assert (info->subscript[dim]
 		      && info->subscript[dim]->type == GFC_SS_SCALAR);

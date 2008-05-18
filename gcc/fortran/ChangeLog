@@ -1,3 +1,10 @@
+2008-05-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR fortran/35184
+	* trans-array.c (gfc_conv_array_index_offset): Remove
+	unnecessary assert.
+
 2008-05-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline:
