@@ -3,7 +3,7 @@
 void __attribute__ ((__noinline__))
 foo_1 (float f, double d, long double ld,
        int res_unord, int res_isnan, int res_isinf,
-       int res_isfin, int res_isnorm)
+       int res_isinf_sign, int res_isfin, int res_isnorm)
 {
   if (__builtin_isunordered (f, 0) != res_unord)
     __builtin_abort ();
@@ -40,6 +40,13 @@ foo_1 (float f, double d, long double ld,
   if (__builtin_isinfl (ld) != res_isinf)
     __builtin_abort ();
 
+  if (__builtin_isinf_sign (f) != res_isinf_sign)
+    __builtin_abort ();
+  if (__builtin_isinf_sign (d) != res_isinf_sign)
+    __builtin_abort ();
+  if (__builtin_isinf_sign (ld) != res_isinf_sign)
+    __builtin_abort ();
+
   if (__builtin_isnormal (f) != res_isnorm)
     __builtin_abort ();
   if (__builtin_isnormal (d) != res_isnorm)
@@ -71,17 +78,17 @@ foo (float f, double d, long double ld,
      int res_unord, int res_isnan, int res_isinf,
      int res_isfin, int res_isnorm)
 {
-  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isfin, res_isnorm);
+  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isinf, res_isfin, res_isnorm);
   /* Try all the values negated as well.  */
-  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, res_isfin, res_isnorm);
+  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, -res_isinf, res_isfin, res_isnorm);
 }
 
 int __attribute__ ((__noinline__))
 main_tests (void)
 {
-  float f;
-  double d;
-  long double ld;
+  volatile float f;
+  volatile double d;
+  volatile long double ld;
   
   /* Test NaN.  */
   f = __builtin_nanf(""); d = __builtin_nan(""); ld = __builtin_nanl("");

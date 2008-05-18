@@ -6674,6 +6674,7 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 
     case BUILT_IN_ISFINITE:
     case BUILT_IN_ISINF:
+    case BUILT_IN_ISINF_SIGN:
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
       if (validate_nargs (fndecl, nargs, 1))
