@@ -992,10 +992,10 @@ got_delim:
     {
       c = next_string_char (delimiter, &ret);
 
-      if (!gfc_wide_fits_in_byte (c))
+      if (!gfc_check_character_range (c, kind))
 	{
-	  gfc_error ("Unimplemented feature at %C: gfortran currently only "
-		     "supports character strings with one-byte characters");
+	  gfc_error ("Character '%s' in string at %C is not representable "
+		     "in character kind %d", gfc_print_wide_char (c), kind);
 	  return MATCH_ERROR;
 	}
 

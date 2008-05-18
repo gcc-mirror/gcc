@@ -280,6 +280,23 @@ gfc_arith_done_1 (void)
 }
 
 
+/* Given a wide character value and a character kind, determine whether
+   the character is representable for that kind.  */
+bool
+gfc_check_character_range (gfc_char_t c, int kind)
+{
+  /* As wide characters are stored as 32-bit values, they're all
+     representable in UCS=4.  */
+  if (kind == 4)
+    return true;
+
+  if (kind == 1)
+    return c <= 255 ? true : false;
+
+  gcc_unreachable ();
+}
+
+
 /* Given an integer and a kind, make sure that the integer lies within
    the range of the kind.  Returns ARITH_OK, ARITH_ASYMMETRIC or
    ARITH_OVERFLOW.  */
@@ -1655,6 +1672,11 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	  unary = 0;
 	  temp.ts.type = BT_LOGICAL;
 	  temp.ts.kind = gfc_default_logical_kind;
+
+	  /* If kind mismatch, exit and we'll error out later.  */
+	  if (op1->ts.kind != op2->ts.kind)
+	    goto runtime;
+
 	  break;
 	}
 
@@ -1696,11 +1718,12 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
     /* Character binary  */
     case INTRINSIC_CONCAT:
-      if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER)
+      if (op1->ts.type != BT_CHARACTER || op2->ts.type != BT_CHARACTER
+	  || op1->ts.kind != op2->ts.kind)
 	goto runtime;
 
       temp.ts.type = BT_CHARACTER;
-      temp.ts.kind = gfc_default_character_kind;
+      temp.ts.kind = op1->ts.kind;
       unary = 0;
       break;
 

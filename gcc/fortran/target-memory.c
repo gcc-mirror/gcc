@@ -75,7 +75,8 @@ size_logical (int kind)
 static size_t
 size_character (int length, int kind)
 {
-  return length * kind;
+  int i = gfc_validate_kind (BT_CHARACTER, kind, false);
+  return length * gfc_character_kinds[i].bit_size / 8;
 }
 
 
@@ -182,20 +183,19 @@ encode_logical (int kind, int logical, unsigned char *buffer, size_t buffer_size
 }
 
 
-static int
-encode_character (int kind, int length, gfc_char_t *string,
-		  unsigned char *buffer, size_t buffer_size)
+int
+gfc_encode_character (int kind, int length, const gfc_char_t *string,
+		      unsigned char *buffer, size_t buffer_size)
 {
-  char *s;
+  size_t elsize = size_character (1, kind);
+  tree type = gfc_get_char_type (kind);
+  int i;
 
   gcc_assert (buffer_size >= size_character (length, kind));
-  /* FIXME -- when we support wide character types, we'll need to go
-     via integers for them.  For now, we keep the simple memcpy().  */
-  gcc_assert (kind == gfc_default_character_kind);
 
-  s = gfc_widechar_to_char (string, length);
-  memcpy (buffer, s, length);
-  gfc_free (s);
+  for (i = 0; i < length; i++)
+    native_encode_expr (build_int_cst (type, string[i]), &buffer[i*elsize],
+			elsize);
 
   return length;
 }
@@ -268,10 +268,10 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 			     buffer_size);
     case BT_CHARACTER:
       if (source->expr_type == EXPR_CONSTANT || source->ref == NULL)
-	return encode_character (source->ts.kind,
-				 source->value.character.length,
-			         source->value.character.string, buffer,
-			         buffer_size);
+	return gfc_encode_character (source->ts.kind,
+				     source->value.character.length,
+				     source->value.character.string,
+				     buffer, buffer_size);
       else
 	{
 	  int start, end;
@@ -279,10 +279,9 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 	  gcc_assert (source->expr_type == EXPR_SUBSTRING);
 	  gfc_extract_int (source->ref->u.ss.start, &start);
 	  gfc_extract_int (source->ref->u.ss.end, &end);
-	  return encode_character (source->ts.kind,
-				   MAX(end - start + 1, 0),
-				   &source->value.character.string[start-1],
-				   buffer, buffer_size);
+	  return gfc_encode_character (source->ts.kind, MAX(end - start + 1, 0),
+				       &source->value.character.string[start-1],
+				       buffer, buffer_size);
 	}
 
     case BT_DERIVED:

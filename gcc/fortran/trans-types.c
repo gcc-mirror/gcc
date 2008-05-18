@@ -874,17 +874,22 @@ gfc_get_pchar_type (int kind)
 /* Create a character type with the given kind and length.  */
 
 tree
-gfc_get_character_type_len (int kind, tree len)
+gfc_get_character_type_len_for_eltype (tree eltype, tree len)
 {
   tree bounds, type;
 
-  gfc_validate_kind (BT_CHARACTER, kind, false);
-
   bounds = build_range_type (gfc_charlen_type_node, gfc_index_one_node, len);
-  type = build_array_type (gfc_get_char_type (kind), bounds);
+  type = build_array_type (eltype, bounds);
   TYPE_STRING_FLAG (type) = 1;
 
   return type;
+}
+
+tree
+gfc_get_character_type_len (int kind, tree len)
+{
+  gfc_validate_kind (BT_CHARACTER, kind, false);
+  return gfc_get_character_type_len_for_eltype (gfc_get_char_type (kind), len);
 }
 
 

@@ -504,7 +504,6 @@ extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;
 extern GTY(()) tree gfor_fndecl_stop_numeric;
 extern GTY(()) tree gfor_fndecl_stop_string;
-extern GTY(()) tree gfor_fndecl_select_string;
 extern GTY(()) tree gfor_fndecl_runtime_error;
 extern GTY(()) tree gfor_fndecl_runtime_error_at;
 extern GTY(()) tree gfor_fndecl_os_error;
@@ -551,6 +550,7 @@ extern GTY(()) tree gfor_fndecl_string_trim;
 extern GTY(()) tree gfor_fndecl_string_minmax;
 extern GTY(()) tree gfor_fndecl_adjustl;
 extern GTY(()) tree gfor_fndecl_adjustr;
+extern GTY(()) tree gfor_fndecl_select_string;
 extern GTY(()) tree gfor_fndecl_compare_string_char4;
 extern GTY(()) tree gfor_fndecl_concat_string_char4;
 extern GTY(()) tree gfor_fndecl_string_len_trim_char4;
@@ -561,6 +561,11 @@ extern GTY(()) tree gfor_fndecl_string_trim_char4;
 extern GTY(()) tree gfor_fndecl_string_minmax_char4;
 extern GTY(()) tree gfor_fndecl_adjustl_char4;
 extern GTY(()) tree gfor_fndecl_adjustr_char4;
+extern GTY(()) tree gfor_fndecl_select_string_char4;
+
+/* Conversion between character kinds.  */
+extern GTY(()) tree gfor_fndecl_convert_char1_to_char4;
+extern GTY(()) tree gfor_fndecl_convert_char4_to_char1;
 
 /* Other misc. runtime library functions.  */
 extern GTY(()) tree gfor_fndecl_size0;

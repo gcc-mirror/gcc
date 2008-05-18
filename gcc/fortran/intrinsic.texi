@@ -428,13 +428,14 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
-Tailing blank are ignored unless the character @code{achar(0)} is
-present, then all characters up to and excluding @code{achar(0)} are
+@item @var{NAME} @tab Scalar @code{CHARACTER} of default kind with the
+file name. Tailing blank are ignored unless the character @code{achar(0)}
+is present, then all characters up to and excluding @code{achar(0)} are
 used as file name.
-@item @var{MODE} @tab Scalar @code{CHARACTER} with the file access mode,
-may be any concatenation of @code{"r"} (readable), @code{"w"} (writable)
-and @code{"x"} (executable), or @code{" "} to check for existence.
+@item @var{MODE} @tab Scalar @code{CHARACTER} of default kind with the
+file access mode, may be any concatenation of @code{"r"} (readable),
+@code{"w"} (writable) and @code{"x"} (executable), or @code{" "} to check
+for existence.
 @end multitable
 
 @item @emph{Return value}:
@@ -644,9 +645,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{CHARACTER} where leading spaces 
-are removed and the same number of spaces are inserted on the end
-of @var{STR}. The return value has the same kind as @var{STRING}.
+The return value is of type @code{CHARACTER} and of the same kind as
+@var{STRING} where leading spaces are removed and the same number of
+spaces are inserted on the end of @var{STRING}.
 
 @item @emph{Example}:
 @smallexample
@@ -689,9 +690,9 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{CHARACTER} where trailing spaces 
-are removed and the same number of spaces are inserted at the start
-of @var{STR}. The return value has the same kind as @var{STRING}.
+The return value is of type @code{CHARACTER} and of the same kind as
+@var{STRING} where trailing spaces are removed and the same number of
+spaces are inserted at the start of @var{STRING}.
 
 @item @emph{Example}:
 @smallexample
@@ -2262,8 +2263,9 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}   @tab The type shall be @code{CHARACTER} and shall
-                        specify a valid path within the file system.
+@item @var{NAME}   @tab The type shall be @code{CHARACTER} of default
+                        kind and shall specify a valid path within the
+			file system.
 @item @var{STATUS} @tab (Optional) @code{INTEGER} status flag of the default
                         kind.  Returns 0 on success, and a system specific
                         and nonzero error code otherwise.
@@ -2314,14 +2316,15 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
-Trailing blanks are ignored unless the character @code{achar(0)} is
-present, then all characters up to and excluding @code{achar(0)} are
-used as the file name.
 
-@item @var{MODE} @tab Scalar @code{CHARACTER} giving the file permission.
-@var{MODE} uses the same syntax as the @var{MODE} argument of
-@code{/bin/chmod}.
+@item @var{NAME} @tab Scalar @code{CHARACTER} of default kind with the
+file name. Trailing blanks are ignored unless the character
+@code{achar(0)} is present, then all characters up to and excluding
+@code{achar(0)} are used as the file name.
+
+@item @var{MODE} @tab Scalar @code{CHARACTER} of default kind giving the
+file permission. @var{MODE} uses the same syntax as the @var{MODE}
+argument of @code{/bin/chmod}.
 
 @item @var{STATUS} @tab (optional) scalar @code{INTEGER}, which is
 @code{0} on success and nonzero otherwise.
@@ -2873,7 +2876,8 @@ Subroutine, function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{TIME}    @tab The type shall be of type @code{INTEGER(KIND=8)}.
-@item @var{RESULT}  @tab The type shall be of type @code{CHARACTER}.
+@item @var{RESULT}  @tab The type shall be of type @code{CHARACTER} and
+                         of default kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -2940,9 +2944,12 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(8)} or larger.
-@item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(10)} or larger.
-@item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(5)} or larger.
+@item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=8)}
+                                  or larger, and of default kind.
+@item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(LEN=10)}
+                                  or larger, and of default kind.
+@item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(LEN=5)}
+                                  or larger, and of default kind.
 @item @var{VALUES}@tab (Optional) The type shall be @code{INTEGER(8)}.
 @end multitable
 
@@ -3887,7 +3894,8 @@ TIME())}.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
+@var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable of the
+default kind.
 
 @item @emph{Standard}:
 GNU extension
@@ -3903,7 +3911,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DATE}@tab The type shall be of type @code{CHARACTER}.
+@item @var{DATE}@tab The type shall be of type @code{CHARACTER} of the
+default kind
 @end multitable
 
 @item @emph{Return value}:
@@ -3999,7 +4008,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{C}      @tab The type shall be @code{CHARACTER} and of default
+                        kind.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}.
                         Returns 0 on success, -1 on end-of-file, and a
                         system specific positive error code otherwise.
@@ -4061,9 +4071,11 @@ Subroutine, function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab The type shall be @code{INTEGER}.
-@item @var{C}      @tab The type shall be @code{CHARACTER}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
-                        -1 on end-of-file and a system specific positive error code otherwise.
+@item @var{C}      @tab The type shall be @code{CHARACTER} and of default
+                        kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}.
+                        Returns 0 on success, -1 on end-of-file and a
+                        system specific positive error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -4241,9 +4253,11 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C}      @tab The type shall be @code{CHARACTER}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
-                        -1 on end-of-file and a system specific positive error code otherwise.
+@item @var{C}      @tab The type shall be @code{CHARACTER} and of default
+                        kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}.
+                        Returns 0 on success, -1 on end-of-file and a
+                        system specific positive error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -4296,9 +4310,11 @@ Subroutine, function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab The type shall be @code{INTEGER}.
-@item @var{C}      @tab The type shall be @code{CHARACTER}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
-                        -1 on end-of-file and a system specific positive error code otherwise.
+@item @var{C}      @tab The type shall be @code{CHARACTER} and of default
+                        kind.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}.
+                        Returns 0 on success, -1 on end-of-file and a
+                        system specific positive error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -4656,7 +4672,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{RESULT}  @tab Shall of type @code{CHARACTER}.
+@item @var{RESULT}  @tab Shall of type @code{CHARACTER} and of default
 @end multitable
 
 @item @emph{Example}:
@@ -4703,6 +4719,8 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{POS}   @tab Shall be of type @code{INTEGER} and not wider than
 the default integer kind; @math{@var{POS} \geq 0}
+@item @var{VALUE} @tab Shall be of type @code{CHARACTER} and of default
+kind.
 @item @var{VALUE} @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
@@ -4757,7 +4775,8 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{COMMAND} @tab Shall be of type @code{CHARACTER}. 
+@item @var{COMMAND} @tab Shall be of type @code{CHARACTER} and of default
+kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -4802,8 +4821,10 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER(4)}, @math{@var{N} \geq 0}.
-@item @var{VALUE}  @tab (Option) Shall be a scalar of type @code{CHARACTER(1)}. 
+@item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER(4)},
+                        @math{@var{NUMBER} \geq 0}
+@item @var{VALUE}  @tab Shall be a scalar of type @code{CHARACTER}
+                        and of default kind.
 @item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
 @item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
 @end multitable
@@ -4865,7 +4886,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{C} @tab The type shall be @code{CHARACTER} and of default kind.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
                         a system specific and nonzero error code otherwise.
 @end multitable
@@ -4910,8 +4931,8 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}   @tab Shall be of type @code{CHARACTER}. 
-@item @var{VALUE}  @tab Shall be of type @code{CHARACTER}. 
+@item @var{NAME}  @tab Shall be of type @code{CHARACTER} and of default kind.
+@item @var{VALUE} @tab Shall be of type @code{CHARACTER} and of default kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -5039,7 +5060,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C} @tab Shall be of type @code{CHARACTER}.
+@item @var{C} @tab Shall be of type @code{CHARACTER} and of default kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -5215,7 +5236,7 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C }      @tab Shall of type @code{CHARACTER}.
+@item @var{C}    @tab Shall of type @code{CHARACTER} and of default kind.
 @item @var{STATUS}  @tab (Optional) status flag of type @code{INTEGER}.
                          Returns 0 on success, or a system specific error
                          code otherwise.
@@ -7132,10 +7153,11 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER}, a valid path within the file system.
+@item @var{FILE}   @tab The type shall be @code{CHARACTER} of the default
+kind, a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
-@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
-                        on success and a system specific error code otherwise.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}.
+Returns 0 on success and a system specific error code otherwise.
 @end multitable
 
 @item @emph{Example}:
@@ -8407,7 +8429,8 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab A scalar of default @code{CHARACTER} type.
+@item @var{STRING} @tab A scalar of type @code{CHARACTER} and of the
+default kind.
 @end multitable
 
 @item @emph{See also}:
@@ -10158,7 +10181,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER}, a valid path within the file system.
+@item @var{FILE}   @tab The type shall be @code{CHARACTER}, of the
+default kind and a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
                         on success and a system specific error code otherwise.

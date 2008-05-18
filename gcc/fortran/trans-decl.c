@@ -77,7 +77,6 @@ tree gfor_fndecl_pause_numeric;
 tree gfor_fndecl_pause_string;
 tree gfor_fndecl_stop_numeric;
 tree gfor_fndecl_stop_string;
-tree gfor_fndecl_select_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_runtime_error_at;
 tree gfor_fndecl_os_error;
@@ -116,6 +115,7 @@ tree gfor_fndecl_string_trim;
 tree gfor_fndecl_string_minmax;
 tree gfor_fndecl_adjustl;
 tree gfor_fndecl_adjustr;
+tree gfor_fndecl_select_string;
 tree gfor_fndecl_compare_string_char4;
 tree gfor_fndecl_concat_string_char4;
 tree gfor_fndecl_string_len_trim_char4;
@@ -126,6 +126,12 @@ tree gfor_fndecl_string_trim_char4;
 tree gfor_fndecl_string_minmax_char4;
 tree gfor_fndecl_adjustl_char4;
 tree gfor_fndecl_adjustr_char4;
+tree gfor_fndecl_select_string_char4;
+
+
+/* Conversion between character kinds.  */
+tree gfor_fndecl_convert_char1_to_char4;
+tree gfor_fndecl_convert_char4_to_char1;
 
 
 /* Other misc. runtime library functions.  */
@@ -2084,6 +2090,12 @@ gfc_build_intrinsic_function_decls (void)
 				     void_type_node, 3, pchar1_type_node,
 				     gfc_charlen_type_node, pchar1_type_node);
 
+  gfor_fndecl_select_string =
+    gfc_build_library_function_decl (get_identifier (PREFIX("select_string")),
+				     integer_type_node, 4, pvoid_type_node,
+				     integer_type_node, pchar1_type_node,
+				     gfc_charlen_type_node);
+
   gfor_fndecl_compare_string_char4 =
     gfc_build_library_function_decl (get_identifier
 					(PREFIX("compare_string_char4")),
@@ -2153,6 +2165,30 @@ gfc_build_intrinsic_function_decls (void)
   gfor_fndecl_adjustr_char4 =
     gfc_build_library_function_decl (get_identifier (PREFIX("adjustr_char4")),
 				     void_type_node, 3, pchar4_type_node,
+				     gfc_charlen_type_node, pchar4_type_node);
+
+  gfor_fndecl_select_string_char4 =
+    gfc_build_library_function_decl (get_identifier
+					(PREFIX("select_string_char4")),
+				     integer_type_node, 4, pvoid_type_node,
+				     integer_type_node, pvoid_type_node,
+				     gfc_charlen_type_node);
+
+
+  /* Conversion between character kinds.  */
+
+  gfor_fndecl_convert_char1_to_char4 =
+    gfc_build_library_function_decl (get_identifier
+					(PREFIX("convert_char1_to_char4")),
+				     void_type_node, 3,
+				     build_pointer_type (pchar4_type_node),
+				     gfc_charlen_type_node, pchar1_type_node);
+
+  gfor_fndecl_convert_char4_to_char1 =
+    gfc_build_library_function_decl (get_identifier
+					(PREFIX("convert_char4_to_char1")),
+				     void_type_node, 3,
+				     build_pointer_type (pchar1_type_node),
 				     gfc_charlen_type_node, pchar4_type_node);
 
   /* Misc. functions.  */
@@ -2361,12 +2397,6 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("pause_string")),
 				     void_type_node, 2, pchar_type_node,
                                      gfc_int4_type_node);
-
-  gfor_fndecl_select_string =
-    gfc_build_library_function_decl (get_identifier (PREFIX("select_string")),
-				     integer_type_node, 4, pvoid_type_node,
-				     integer_type_node, pchar_type_node,
-				     integer_type_node);
 
   gfor_fndecl_runtime_error =
     gfc_build_library_function_decl (get_identifier (PREFIX("runtime_error")),

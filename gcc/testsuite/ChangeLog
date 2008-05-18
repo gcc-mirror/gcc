@@ -1,3 +1,20 @@
+2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/achar_3.f90: Adjust error messages.
+	* gfortran.dg/achar_5.f90: New test.
+	* gfortran.dg/achar_6.F90: New test.
+	* gfortran.dg/widechar_1.f90: New test.
+	* gfortran.dg/widechar_2.f90: New test.
+	* gfortran.dg/widechar_3.f90: New test.
+	* gfortran.dg/widechar_4.f90: New test.
+	* gfortran.dg/widechar_intrinsics_1.f90: New test.
+	* gfortran.dg/widechar_intrinsics_2.f90: New test.
+	* gfortran.dg/widechar_intrinsics_3.f90: New test.
+	* gfortran.dg/widechar_intrinsics_4.f90: New test.
+	* gfortran.dg/widechar_intrinsics_5.f90: New test.
+	* gfortran.dg/widechar_select_1.f90: New test.
+	* gfortran.dg/widechar_select_2.f90: New test.
+
 2008-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization2.ad[sb]: New test.
