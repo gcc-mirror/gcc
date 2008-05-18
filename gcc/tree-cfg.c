@@ -3658,7 +3658,10 @@ verify_gimple_expr (tree expr)
 	   there is no sign or zero extension involved.  */
 	if (((POINTER_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (op)))
 	     || (POINTER_TYPE_P (TREE_TYPE (op)) && INTEGRAL_TYPE_P (type)))
-	    && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (op)))
+	    && (TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (op))
+		/* For targets were the precision of sizetype doesn't
+		   match that of pointers we need the following.  */
+		|| type == sizetype || TREE_TYPE (op) == sizetype))
 	  return false;
 
 	/* Allow conversion from integer to offset type and vice versa.  */
