@@ -1,3 +1,28 @@
+2008-05-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/select.c: Moved content to select_inc.c. Include it. 
+	Add macros for different character types.
+	* runtime/select_inc.c: New file.
+	* runtime/convert_char.c: New file.
+	* intrinsics/pack_generic.c (pack_char4, pack_s_char4): New
+	functions.
+	* intrinsics/transpose_generic.c (transpose_char4): New function.
+	* intrinsics/spread_generic.c (spread_char4, spread_char4_scalar):
+	New functions.
+	* intrinsics/unpack_generic.c (unpack1_char4, unpack0_char4): 
+	New functions.
+	* intrinsics/reshape_generic.c (reshape_char): Use
+	gfc_charlen_type as type for length variables.
+	(reshape_char4): New function.
+	* gfortran.map (GFORTRAN_1.1): Add _gfortran_select_string_char4,
+	_gfortran_convert_char1_to_char4, _gfortran_convert_char4_to_char1,
+	_gfortran_transpose_char4, _gfortran_spread_char4,
+	_gfortran_spread_char4_scalar, _gfortran_reshape_char4,
+	_gfortran_pack_char4, _gfortran_pack_s_char4,
+	_gfortran_unpack0_char4 and _gfortran_unpack1_char4.
+	* Makefile.am: Add runtime/convert_char.c.
+	* Makefile.in: Regenerate.
+
 2008-05-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* io/list_read.c (list_formatted_read_scalar):  Declare

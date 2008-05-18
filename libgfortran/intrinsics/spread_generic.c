@@ -408,6 +408,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
   spread_internal (ret, source, along, pncopies, GFC_DESCRIPTOR_SIZE (source));
 }
 
+
 extern void spread_char (gfc_array_char *, GFC_INTEGER_4,
 			 const gfc_array_char *, const index_type *,
 			 const index_type *, GFC_INTEGER_4);
@@ -421,6 +422,23 @@ spread_char (gfc_array_char *ret,
 {
   spread_internal (ret, source, along, pncopies, source_length);
 }
+
+
+extern void spread_char4 (gfc_array_char *, GFC_INTEGER_4,
+			  const gfc_array_char *, const index_type *,
+			  const index_type *, GFC_INTEGER_4);
+export_proto(spread_char4);
+
+void
+spread_char4 (gfc_array_char *ret,
+	      GFC_INTEGER_4 ret_length __attribute__((unused)),
+	      const gfc_array_char *source, const index_type *along,
+	      const index_type *pncopies, GFC_INTEGER_4 source_length)
+{
+  spread_internal (ret, source, along, pncopies,
+		   source_length * sizeof (gfc_char4_t));
+}
+
 
 /* The following are the prototypes for the versions of spread with a
    scalar source.  */
@@ -582,5 +600,23 @@ spread_char_scalar (gfc_array_char *ret,
   if (!ret->dtype)
     runtime_error ("return array missing descriptor in spread()");
   spread_internal_scalar (ret, source, along, pncopies, source_length);
+}
+
+
+extern void spread_char4_scalar (gfc_array_char *, GFC_INTEGER_4,
+				 const char *, const index_type *,
+				 const index_type *, GFC_INTEGER_4);
+export_proto(spread_char4_scalar);
+
+void
+spread_char4_scalar (gfc_array_char *ret,
+		     GFC_INTEGER_4 ret_length __attribute__((unused)),
+		     const char *source, const index_type *along,
+		     const index_type *pncopies, GFC_INTEGER_4 source_length)
+{
+  if (!ret->dtype)
+    runtime_error ("return array missing descriptor in spread()");
+  spread_internal_scalar (ret, source, along, pncopies,
+			  source_length * sizeof (gfc_char4_t));
 }
 

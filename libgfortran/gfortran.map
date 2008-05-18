@@ -1049,6 +1049,17 @@ GFORTRAN_1.1 {
     _gfortran_string_scan_char4;
     _gfortran_string_trim_char4;
     _gfortran_string_verify_char4;
+    _gfortran_select_string_char4;
+    _gfortran_convert_char1_to_char4;
+    _gfortran_convert_char4_to_char1;
+    _gfortran_transpose_char4;
+    _gfortran_spread_char4;
+    _gfortran_spread_char4_scalar;
+    _gfortran_reshape_char4;
+    _gfortran_pack_char4;
+    _gfortran_pack_s_char4;
+    _gfortran_unpack0_char4;
+    _gfortran_unpack1_char4;
 } GFORTRAN_1.0; 
 
 F2C_1.0 {
