@@ -27,6 +27,5 @@
 end
 ! The sign that all is well is that [S.5][1] appears twice.
 ! Platform dependent variations are [S$5][1], [__S_5][1], [S___5][1]
-! With this regular expression we also find [S.15][1], so count is 3.
-! { dg-final { scan-tree-dump-times "5\\\]\\\[1\\\]" 3 "original" } }
+! { dg-final { scan-tree-dump-times "5\\\]\\\[1\\\]" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
