@@ -1,3 +1,8 @@
+2008-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* BASE-VER: Bump.
+	* DEV-PHASE: Mark as prerelease.
+
 2008-05-19  Release Manager
 
 	* GCC 4.2.4 released.
