@@ -1,3 +1,7 @@
+2008-05-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2008-03-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* ca.po, rw.po: Remove.
