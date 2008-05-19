@@ -425,7 +425,7 @@ static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
 static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
 static void record_value_for_reg (rtx, rtx, rtx);
-static void check_conversions (rtx, rtx);
+static void check_promoted_subreg (rtx, rtx);
 static void record_dead_and_set_regs_1 (rtx, const_rtx, void *);
 static void record_dead_and_set_regs (rtx);
 static int get_last_value_validate (rtx *, rtx, int, int);
@@ -441,7 +441,8 @@ static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx, rtx);
 static int unmentioned_reg_p_1 (rtx *, void *);
 static bool unmentioned_reg_p (rtx, rtx);
-static void record_truncated_value (rtx);
+static int record_truncated_value (rtx *, void *);
+static void record_truncated_values (rtx *, void *);
 static bool reg_truncated_to_mode (enum machine_mode, const_rtx);
 static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
 
@@ -1137,7 +1138,12 @@ combine_instructions (rtx f, unsigned int nregs)
 	    {
 	      /* See if we know about function return values before this
 		 insn based upon SUBREG flags.  */
-	      check_conversions (insn, PATTERN (insn));
+	      check_promoted_subreg (insn, PATTERN (insn));
+
+	      /* See if we can find hardregs and subreg of pseudos in
+		 narrower modes.  This could help turning TRUNCATEs
+		 into SUBREGs.  */
+	      note_uses (&PATTERN (insn), record_truncated_values, NULL);
 
 	      /* Try this insn with each insn it links back to.  */
 
@@ -11614,13 +11620,15 @@ reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
   return false;
 }
 
-/* X is a REG or a SUBREG.  If X is some sort of a truncation record
-   it.  For non-TRULY_NOOP_TRUNCATION targets we might be able to turn
-   a truncate into a subreg using this information.  */
+/* Callback for for_each_rtx.  If *P is a hard reg or a subreg record the mode
+   that the register is accessed in.  For non-TRULY_NOOP_TRUNCATION targets we
+   might be able to turn a truncate into a subreg using this information.
+   Return -1 if traversing *P is complete or 0 otherwise.  */
 
-static void
-record_truncated_value (rtx x)
+static int
+record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
 {
+  rtx x = *p;
   enum machine_mode truncated_mode;
   reg_stat_type *rsp;
 
@@ -11630,11 +11638,11 @@ record_truncated_value (rtx x)
       truncated_mode = GET_MODE (x);
 
       if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))
-	return;
+	return -1;
 
       if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (truncated_mode),
 				 GET_MODE_BITSIZE (original_mode)))
-	return;
+	return -1;
 
       x = SUBREG_REG (x);
     }
@@ -11643,7 +11651,7 @@ record_truncated_value (rtx x)
   else if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
     truncated_mode = GET_MODE (x);
   else
-    return;
+    return 0;
 
   rsp = VEC_index (reg_stat_type, reg_stat, REGNO (x));
   if (rsp->truncated_to_mode == 0
@@ -11654,23 +11662,30 @@ record_truncated_value (rtx x)
       rsp->truncated_to_mode = truncated_mode;
       rsp->truncation_label = label_tick;
     }
+
+  return -1;
 }
 
-/* Scan X for promoted SUBREGs and truncated REGs.  For each one
-   found, note what it implies to the registers used in it.  */
+/* Callback for note_uses.  Find hardregs and subregs of pseudos and
+   the modes they are used in.  This can help truning TRUNCATEs into
+   SUBREGs.  */
 
 static void
-check_conversions (rtx insn, rtx x)
+record_truncated_values (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
-  if (GET_CODE (x) == SUBREG || REG_P (x))
-    {
-      if (GET_CODE (x) == SUBREG
-	  && SUBREG_PROMOTED_VAR_P (x)
-	  && REG_P (SUBREG_REG (x)))
-	record_promoted_value (insn, x);
+  for_each_rtx (x, record_truncated_value, NULL);
+}
 
-      record_truncated_value (x);
-    }
+/* Scan X for promoted SUBREGs.  For each one found,
+   note what it implies to the registers used in it.  */
+
+static void
+check_promoted_subreg (rtx insn, rtx x)
+{
+  if (GET_CODE (x) == SUBREG
+      && SUBREG_PROMOTED_VAR_P (x)
+      && REG_P (SUBREG_REG (x)))
+    record_promoted_value (insn, x);
   else
     {
       const char *format = GET_RTX_FORMAT (GET_CODE (x));
@@ -11680,13 +11695,13 @@ check_conversions (rtx insn, rtx x)
 	switch (format[i])
 	  {
 	  case 'e':
-	    check_conversions (insn, XEXP (x, i));
+	    check_promoted_subreg (insn, XEXP (x, i));
 	    break;
 	  case 'V':
 	  case 'E':
 	    if (XVEC (x, i) != 0)
 	      for (j = 0; j < XVECLEN (x, i); j++)
-		check_conversions (insn, XVECEXP (x, i, j));
+		check_promoted_subreg (insn, XVECEXP (x, i, j));
 	    break;
 	  }
     }
