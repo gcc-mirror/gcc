@@ -1,3 +1,12 @@
+2008-05-14  Michael Meissner  <michael.meissner@amd.com>
+
+	Backport from mainline:
+	PR target/36224
+	* config/i386/sse.md (vec_widen_smult_hi_v4si): Delete, using
+	unsigned multiply gives the wrong value when doing widening
+	multiplies.
+	(vec_widen_smult_lo_v4si): Ditto.
+
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_unary) <CASE_CONVERT>: Fold the cast into
