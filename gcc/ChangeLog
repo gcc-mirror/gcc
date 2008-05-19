@@ -1,3 +1,7 @@
+2008-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (substitute_in_expr) <tcc_vl_exp>: Fix thinko.
+
 2008-05-14  Michael Meissner  <michael.meissner@amd.com>
 
 	Backport from mainline:
