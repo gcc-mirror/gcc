@@ -23878,7 +23878,7 @@ ix86_expand_vector_init_concat (enum machine_mode mode,
 				rtx target, rtx *ops, int n)
 {
   enum machine_mode cmode, hmode = VOIDmode;
-  rtx first[8], second[4];
+  rtx first[4], second[2];
   rtvec v;
   int i, j;
 
@@ -24084,8 +24084,7 @@ static void
 ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 				 rtx target, rtx vals)
 {
-  rtx ops[32], op0, op1;
-  enum machine_mode half_mode = VOIDmode;
+  rtx ops[16];
   int n, i;
 
   switch (mode)
