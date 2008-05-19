@@ -1094,7 +1094,7 @@ gfc_simplify_dcmplx (gfc_expr *x, gfc_expr *y)
 gfc_expr *
 gfc_simplify_dble (gfc_expr *e)
 {
-  gfc_expr *result;
+  gfc_expr *result = NULL;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3186,7 +3186,7 @@ gfc_simplify_range (gfc_expr *e)
 gfc_expr *
 gfc_simplify_real (gfc_expr *e, gfc_expr *k)
 {
-  gfc_expr *result;
+  gfc_expr *result = NULL;
   int kind;
 
   if (e->ts.type == BT_COMPLEX)
