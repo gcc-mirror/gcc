@@ -48,6 +48,12 @@
 
 	* config/sh/sh.c (sh_output_mi_thunk): Update the use of init_flow.
 
+2008-05-17  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/rtl.texi (RTL_CONST_CALL_P, RTL_PURE_CALL_P): Fixed typos.
+	* df-problems.c (simulation routines): Fixed block comment to
+	properly say how to add forwards scanning functions.
+	
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (setup_one_parameter): Remove dead code.
