@@ -22023,6 +22023,36 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class regclass)
   return regclass;
 }
 
+static enum reg_class
+ix86_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		       enum machine_mode mode,
+		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
+{
+  /* QImode spills from non-QI registers require
+     intermediate register on 32bit targets.  */
+  if (!in_p && mode == QImode && !TARGET_64BIT
+      && (class == GENERAL_REGS
+	  || class == LEGACY_REGS
+	  || class == INDEX_REGS))
+    {
+      int regno;
+
+      if (REG_P (x))
+	regno = REGNO (x);
+      else
+	regno = -1;
+
+      if (regno >= FIRST_PSEUDO_REGISTER || GET_CODE (x) == SUBREG)
+	regno = true_regnum (x);
+
+      /* Return Q_REGS if the operand is in memory.  */
+      if (regno == -1)
+	return Q_REGS;
+    }
+
+  return NO_REGS;
+}
+
 /* If we are copying between general and FP registers, we need a memory
    location. The same is true for SSE and MMX registers.
 
@@ -25877,6 +25907,9 @@ x86_builtin_vectorization_cost (bool runtime_test)
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE ix86_function_value
+
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD ix86_secondary_reload
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST x86_builtin_vectorization_cost

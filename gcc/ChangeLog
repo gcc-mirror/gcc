@@ -1,7 +1,13 @@
+2008-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_secondary_reload): New static function.
+	(TARGET_SECONDARY_RELOAD): New define.
+	* config/i386/i386.h (SECONDARY_OUTPUT_RELOAD_CLASS): Remove.
+	* config/i386/i386.md (reload_outqi): Remove.
+
 2008-05-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/35509
-
 	* builtins.c (mathfn_built_in_1): Renamed from mathfn_built_in.
 	Add `implicit' parameter.  Handle BUILT_IN_SIGNBIT.
 	(mathfn_built_in): Rewrite in terms of mathfn_built_in_1.
@@ -12,7 +18,6 @@
 	BUILT_IN_ISINF_SIGN.
 	* doc/extend.texi: Document __builtin_isinf_sign.
 	* fold-const.c (operand_equal_p): Handle COND_EXPR.
-
 
 2008-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -86,7 +91,8 @@
 	* ifcvt.c (dead_or_predicable): Rename
 	df_simulate_one_insn_backwards to df_simulate_one_insn.
 	* recog.c (peephole2_optimize): Ditto.
-	* rtl-factoring.c (collect_pattern_seqs, clear_regs_live_in_seq): Ditto.
+	* rtl-factoring.c (collect_pattern_seqs, clear_regs_live_in_seq):
+	Ditto.
 	* df.h: Rename df_simulate_one_insn_backwards to
 	df_simulate_one_insn.  and delete df_simulate_one_insn_forwards.
 	* df-problems.c (df_simulate_artificial_refs_at_top) Reversed
