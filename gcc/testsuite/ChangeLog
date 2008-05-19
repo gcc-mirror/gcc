@@ -1,5 +1,9 @@
 2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/bind_c_module.f90: Adjust expected error messages.
+
+2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/char_cast_1.f90: Adjust count in scanning the tree
 	dump file.
 
