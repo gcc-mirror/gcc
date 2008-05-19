@@ -1,3 +1,10 @@
+2008-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_vector_init_concat): New.
+	(ix86_expand_vector_init_interleave): Likewise.
+	(ix86_expand_vector_init_general): Use them.  Assert word_mode
+	== SImode when n_words == 4.
+
 2008-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_secondary_reload): New static function.

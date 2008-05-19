@@ -23869,6 +23869,214 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
   return true;
 }
 
+/* A subroutine of ix86_expand_vector_init_general.  Use vector
+   concatenate to handle the most general case: all values variable,
+   and none identical.  */
+
+static void
+ix86_expand_vector_init_concat (enum machine_mode mode,
+				rtx target, rtx *ops, int n)
+{
+  enum machine_mode cmode, hmode = VOIDmode;
+  rtx first[8], second[4];
+  rtvec v;
+  int i, j;
+
+  switch (n)
+    {
+    case 2:
+      switch (mode)
+	{
+	case V4SImode:
+	  cmode = V2SImode;
+	  break;
+	case V4SFmode:
+	  cmode = V2SFmode;
+	  break;
+	case V2DImode:
+	  cmode = DImode;
+	  break;
+	case V2SImode:
+	  cmode = SImode;
+	  break;
+	case V2DFmode:
+	  cmode = DFmode;
+	  break;
+	case V2SFmode:
+	  cmode = SFmode;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (!register_operand (ops[1], cmode))
+	ops[1] = force_reg (cmode, ops[1]);
+      if (!register_operand (ops[0], cmode))
+	ops[0] = force_reg (cmode, ops[0]);
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_VEC_CONCAT (mode, ops[0],
+						  ops[1])));
+      break;
+
+    case 4:
+      switch (mode)
+	{
+	case V4SImode:
+	  cmode = V2SImode;
+	  break;
+	case V4SFmode:
+	  cmode = V2SFmode;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      goto half;
+
+half:
+      /* FIXME: We process inputs backward to help RA.  PR 36222.  */
+      i = n - 1;
+      j = (n >> 1) - 1;
+      for (; i > 0; i -= 2, j--)
+	{
+	  first[j] = gen_reg_rtx (cmode);
+	  v = gen_rtvec (2, ops[i - 1], ops[i]);
+	  ix86_expand_vector_init (false, first[j],
+				   gen_rtx_PARALLEL (cmode, v));
+	}
+
+      n >>= 1;
+      if (n > 2)
+	{
+	  gcc_assert (hmode != VOIDmode);
+	  for (i = j = 0; i < n; i += 2, j++)
+	    {
+	      second[j] = gen_reg_rtx (hmode);
+	      ix86_expand_vector_init_concat (hmode, second [j],
+					      &first [i], 2);
+	    }
+	  n >>= 1;
+	  ix86_expand_vector_init_concat (mode, target, second, n);
+	}
+      else
+	ix86_expand_vector_init_concat (mode, target, first, n);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* A subroutine of ix86_expand_vector_init_general.  Use vector
+   interleave to handle the most general case: all values variable,
+   and none identical.  */
+
+static void
+ix86_expand_vector_init_interleave (enum machine_mode mode,
+				    rtx target, rtx *ops, int n)
+{
+  enum machine_mode first_imode, second_imode, third_imode;
+  int i, j;
+  rtx op0, op1;
+  rtx (*gen_load_even) (rtx, rtx, rtx);
+  rtx (*gen_interleave_first_low) (rtx, rtx, rtx);
+  rtx (*gen_interleave_second_low) (rtx, rtx, rtx);
+  
+  switch (mode)
+    {
+    case V8HImode:
+      gen_load_even = gen_vec_setv8hi;
+      gen_interleave_first_low = gen_vec_interleave_lowv4si;
+      gen_interleave_second_low = gen_vec_interleave_lowv2di;
+      first_imode = V4SImode;
+      second_imode = V2DImode;
+      third_imode = VOIDmode;
+      break;
+    case V16QImode:
+      gen_load_even = gen_vec_setv16qi;
+      gen_interleave_first_low = gen_vec_interleave_lowv8hi;
+      gen_interleave_second_low = gen_vec_interleave_lowv4si;
+      first_imode = V8HImode;
+      second_imode = V4SImode;
+      third_imode = V2DImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+     
+  for (i = 0; i < n; i++)
+    {
+      /* Extend the odd elment to SImode using a paradoxical SUBREG.  */
+      op0 = gen_reg_rtx (SImode);
+      emit_move_insn (op0, gen_lowpart (SImode, ops [i + i]));
+
+      /* Insert the SImode value as low element of V4SImode vector. */
+      op1 = gen_reg_rtx (V4SImode);
+      op0 = gen_rtx_VEC_MERGE (V4SImode,
+			       gen_rtx_VEC_DUPLICATE (V4SImode,
+						      op0),
+			       CONST0_RTX (V4SImode),
+			       const1_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, op1, op0));
+
+      /* Cast the V4SImode vector back to a vector in orignal mode.  */
+      op0 = gen_reg_rtx (mode);
+      emit_move_insn (op0, gen_lowpart (mode, op1));
+      
+      /* Load even elements into the second positon.  */
+      emit_insn ((*gen_load_even) (op0, ops [i + i + 1],
+				   const1_rtx));
+
+      /* Cast vector to FIRST_IMODE vector.  */
+      ops[i] = gen_reg_rtx (first_imode);
+      emit_move_insn (ops[i], gen_lowpart (first_imode, op0));
+    }
+
+  /* Interleave low FIRST_IMODE vectors.  */
+  for (i = j = 0; i < n; i += 2, j++)
+    {
+      op0 = gen_reg_rtx (first_imode);
+      emit_insn ((*gen_interleave_first_low) (op0, ops[i], ops[i + 1]));
+
+      /* Cast FIRST_IMODE vector to SECOND_IMODE vector.  */
+      ops[j] = gen_reg_rtx (second_imode);
+      emit_move_insn (ops[j], gen_lowpart (second_imode, op0));
+    }
+
+  /* Interleave low SECOND_IMODE vectors.  */
+  switch (second_imode)
+    {
+    case V4SImode:
+      for (i = j = 0; i < n / 2; i += 2, j++)
+	{
+	  op0 = gen_reg_rtx (second_imode);
+	  emit_insn ((*gen_interleave_second_low) (op0, ops[i],
+						   ops[i + 1]));
+
+	  /* Cast the SECOND_IMODE vector to the THIRD_IMODE
+	     vector.  */
+	  ops[j] = gen_reg_rtx (third_imode);
+	  emit_move_insn (ops[j], gen_lowpart (third_imode, op0));
+	}
+      second_imode = V2DImode;
+      gen_interleave_second_low = gen_vec_interleave_lowv2di;
+      /* FALLTHRU */
+
+    case V2DImode:
+      op0 = gen_reg_rtx (second_imode);
+      emit_insn ((*gen_interleave_second_low) (op0, ops[0],
+					       ops[1]));
+
+      /* Cast the SECOND_IMODE vector back to a vector on original
+	 mode.  */
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_lowpart (mode, op0)));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* A subroutine of ix86_expand_vector_init.  Handle the most general case:
    all values variable, and none identical.  */
 
@@ -23876,9 +24084,9 @@ static void
 ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
 				 rtx target, rtx vals)
 {
-  enum machine_mode half_mode = GET_MODE_INNER (mode);
-  rtx op0 = NULL, op1 = NULL;
-  bool use_vec_concat = false;
+  rtx ops[32], op0, op1;
+  enum machine_mode half_mode = VOIDmode;
+  int n, i;
 
   switch (mode)
     {
@@ -23886,177 +24094,45 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
     case V2SImode:
       if (!mmx_ok && !TARGET_SSE)
 	break;
-      /* FALLTHRU */
+
+      n = 2;
+      goto vec_concat;
+
+    case V4SFmode:
+    case V4SImode:
+      n = 4;
+      goto vec_concat;
 
     case V2DFmode:
     case V2DImode:
-      /* For the two element vectors, we always implement VEC_CONCAT.  */
-      op0 = XVECEXP (vals, 0, 0);
-      op1 = XVECEXP (vals, 0, 1);
-      use_vec_concat = true;
-      break;
+      n = 2;
+      goto vec_concat;
 
-    case V4SFmode:
-      half_mode = V2SFmode;
-      goto half;
-    case V4SImode:
-      half_mode = V2SImode;
-      goto half;
-    half:
-      {
-	rtvec v;
-
-	/* For V4SF and V4SI, we implement a concat of two V2 vectors.
-	   Recurse to load the two halves.  */
-
-	op1 = gen_reg_rtx (half_mode);
-	v = gen_rtvec (2, XVECEXP (vals, 0, 2), XVECEXP (vals, 0, 3));
-	ix86_expand_vector_init (false, op1, gen_rtx_PARALLEL (half_mode, v));
-
-	op0 = gen_reg_rtx (half_mode);
-	v = gen_rtvec (2, XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1));
-	ix86_expand_vector_init (false, op0, gen_rtx_PARALLEL (half_mode, v));
-
-	use_vec_concat = true;
-      }
-      break;
-
-    case V8HImode:
-      if (TARGET_SSE2)
-	{
-	  rtx ops[4];
-	  unsigned int i, j;
-
-	  for (i = 0; i < ARRAY_SIZE (ops); i++)
-	    {
-	      /* Extend the odd elment from HImode to SImode using
-		 a paradoxical SUBREG.  */
-	      op0 = gen_reg_rtx (SImode);
-	      emit_move_insn (op0, gen_lowpart (SImode,
-						XVECEXP (vals, 0,
-							 i + i)));
-
-	      /* Insert the SImode value as low element of V4SImode
-		 vector. */
-	      op1 = gen_reg_rtx (V4SImode);
-	      op0 = gen_rtx_VEC_MERGE (V4SImode,
-				       gen_rtx_VEC_DUPLICATE (V4SImode,
-							      op0),
-				       CONST0_RTX (V4SImode),
-				       const1_rtx);
-	      emit_insn (gen_rtx_SET (VOIDmode, op1, op0));
-
-	      /* Cast the V4SImode vector back to a V8HImode vector.  */
-	      op0 = gen_reg_rtx (mode);
-	      emit_move_insn (op0, gen_lowpart (mode, op1));
-
-	      /* Load even HI elements into the second positon.  */
-	      emit_insn (gen_vec_setv8hi (op0, XVECEXP (vals, 0,
-							i + i + 1),
-					  const1_rtx));
-
-	      /* Cast V8HImode vector to V4SImode vector.  */
-	      ops[i] = gen_reg_rtx (V4SImode);
-	      emit_move_insn (ops[i], gen_lowpart (V4SImode, op0));
-	    }
-
-	  /* Interleave low V4SIs.  */
-	  for (i = j = 0; i < ARRAY_SIZE (ops); i += 2, j++)
-	    {
-	      op0 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_vec_interleave_lowv4si (op0, ops[i],
-						     ops[i + 1]));
-
-	      /* Cast V4SImode vectors to V2DImode vectors.  */
-	      op1 = gen_reg_rtx (V2DImode);
-	      emit_move_insn (op1, gen_lowpart (V2DImode, op0));
-	      ops[j] = op1;
-	    }
-
-	  /* Interleave low V2DIs.  */
-	  op0 = gen_reg_rtx (V2DImode);
-	  emit_insn (gen_vec_interleave_lowv2di (op0, ops[0], ops[1]));
-
-	  /* Cast the V2DImode vector back to a V8HImode vector.  */
-	  emit_insn (gen_rtx_SET (VOIDmode, target,
-				  gen_lowpart (mode, op0)));
-	  return;
-	}
+vec_concat:
+      for (i = 0; i < n; i++)
+	ops[i] = XVECEXP (vals, 0, i);
+      ix86_expand_vector_init_concat (mode, target, ops, n);
+      return;
 
     case V16QImode:
-      if (TARGET_SSE4_1)
-	{
-	  rtx ops[8];
-	  unsigned int i, j;
+      if (!TARGET_SSE4_1)
+	break;
 
-	  for (i = 0; i < ARRAY_SIZE (ops); i++)
-	    {
-	      /* Extend the odd elment from QImode to SImode using
-		 a paradoxical SUBREG.  */
-	      op0 = gen_reg_rtx (SImode);
-	      emit_move_insn (op0, gen_lowpart (SImode,
-						XVECEXP (vals, 0,
-							 i + i)));
+      n = 16;
+      goto vec_interleave;
 
-	      /* Insert the SImode value as low element of V4SImode
-		 vector. */
-	      op1 = gen_reg_rtx (V4SImode);
-	      op0 = gen_rtx_VEC_MERGE (V4SImode,
-				       gen_rtx_VEC_DUPLICATE (V4SImode,
-							      op0),
-				       CONST0_RTX (V4SImode),
-				       const1_rtx);
-	      emit_insn (gen_rtx_SET (VOIDmode, op1, op0));
+    case V8HImode:
+      if (!TARGET_SSE2)
+	break;
 
-	      /* Cast the V4SImode vector back to a V16QImode vector.  */
-	      op0 = gen_reg_rtx (mode);
-	      emit_move_insn (op0, gen_lowpart (mode, op1));
+      n = 8;
+      goto vec_interleave;
 
-	      /* Load even QI elements into the second positon.  */
-	      emit_insn (gen_vec_setv16qi (op0, XVECEXP (vals, 0,
-							 i + i + 1),
-					   const1_rtx));
-
-	      /* Cast V16QImode vector to V8HImode vector.  */
-	      ops[i] = gen_reg_rtx (V8HImode);
-	      emit_move_insn (ops[i], gen_lowpart (V8HImode, op0));
-	    }
-
-	  /* Interleave low V8HIs.  */
-	  for (i = j = 0; i < ARRAY_SIZE (ops); i += 2, j++)
-	    {
-	      op0 = gen_reg_rtx (V8HImode);
-	      emit_insn (gen_vec_interleave_lowv8hi (op0, ops[i],
-						     ops[i + 1]));
-
-	      /* Cast V8HImode vector to V4SImode vector.  */
-	      op1 = gen_reg_rtx (V4SImode);
-	      emit_move_insn (op1, gen_lowpart (V4SImode, op0));
-	      ops[j] = op1;
-	    }
-
-	  /* Interleave low V4SIs.  */
-	  for (i = j = 0; i < ARRAY_SIZE (ops) / 2; i += 2, j++)
-	    {
-	      op0 = gen_reg_rtx (V4SImode);
-	      emit_insn (gen_vec_interleave_lowv4si (op0, ops[i],
-						     ops[i + 1]));
-
-	      /* Cast V4SImode vectors to V2DImode vectors.  */
-	      op1 = gen_reg_rtx (V2DImode);
-	      emit_move_insn (op1, gen_lowpart (V2DImode, op0));
-	      ops[j] = op1;
-	    }
-
-	  /* Interleave low V2DIs.  */
-	  op0 = gen_reg_rtx (V2DImode);
-	  emit_insn (gen_vec_interleave_lowv2di (op0, ops[0], ops[1]));
-
-	  /* Cast the V2DImode vector back to a V8HImode vector.  */
-	  emit_insn (gen_rtx_SET (VOIDmode, target,
-				  gen_lowpart (mode, op0)));
-	  return;
-	}
+vec_interleave:
+      for (i = 0; i < n; i++)
+	ops[i] = XVECEXP (vals, 0, i);
+      ix86_expand_vector_init_interleave (mode, target, ops, n >> 1);
+      return;
 
     case V4HImode:
     case V8QImode:
@@ -24066,17 +24142,6 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
       gcc_unreachable ();
     }
 
-  if (use_vec_concat)
-    {
-      if (!register_operand (op1, half_mode))
-	op1 = force_reg (half_mode, op1);
-      if (!register_operand (op0, half_mode))
-	op0 = force_reg (half_mode, op0);
-
-      emit_insn (gen_rtx_SET (VOIDmode, target,
-			      gen_rtx_VEC_CONCAT (mode, op0, op1)));
-    }
-  else
     {
       int i, j, n_elts, n_words, n_elt_per_word;
       enum machine_mode inner_mode;
@@ -24124,6 +24189,7 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
       else if (n_words == 4)
 	{
 	  rtx tmp = gen_reg_rtx (V4SImode);
+	  gcc_assert (word_mode == SImode);
 	  vals = gen_rtx_PARALLEL (V4SImode, gen_rtvec_v (4, words));
 	  ix86_expand_vector_init_general (false, V4SImode, tmp, vals);
 	  emit_move_insn (target, gen_lowpart (mode, tmp));
