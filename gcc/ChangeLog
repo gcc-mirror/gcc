@@ -4,7 +4,7 @@
 
 2008-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* gcc/config/i386/i386.c (ix86_expand_vector_init_concat): Change
+	* config/i386/i386.c (ix86_expand_vector_init_concat): Change
 	sizes of operand array from 8/4 to 4/2.
 	(ix86_expand_vector_init_general): Change size of operand array
 	from 32 to 16.  Remove op0, op1 and half_mode.
