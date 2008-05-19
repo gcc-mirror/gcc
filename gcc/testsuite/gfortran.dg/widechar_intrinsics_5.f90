@@ -1,9 +1,12 @@
+! { dg-do run }
+! { dg-options "-fbackslash" }
+
   implicit none
   integer :: i, j
   character(kind=4,len=5), dimension(3,3), parameter :: &
     p = reshape([4_" \xFF   ", 4_"\0    ", 4_" foo ", &
-                 4_"\u1230\uD67Bde\U31DC8B30", 4_"", 4_"fa fe", &
-                 4_"", 4_"foo  ", 4_"nul\0l"], [3,3])
+                 4_"\u1230\uD67Bde\U31DC8B30", 4_"     ", 4_"fa fe", &
+                 4_"     ", 4_"foo  ", 4_"nul\0l"], [3,3])
        
   character(kind=4,len=5), dimension(3,3) :: m1
   character(kind=4,len=5), allocatable, dimension(:,:) :: m2

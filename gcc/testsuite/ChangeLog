@@ -1,5 +1,10 @@
 2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/widechar_intrinsics_5.f90: Add dg-do directive and
+	use -fbackslash option.
+
+2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/char_cast_2.f90: Adjust count in scanning the tree
 	dump file.
 
