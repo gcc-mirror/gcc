@@ -977,7 +977,12 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
       tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
 			 build_int_cst (gfc_charlen_type_node, 1));
       tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
-      tmp = build_array_type (TREE_TYPE (TREE_TYPE (type)), tmp);
+
+      if (TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+	tmp = build_array_type (TREE_TYPE (TREE_TYPE (type)), tmp);
+      else
+	tmp = build_array_type (TREE_TYPE (type), tmp);
+
       var = gfc_create_var (tmp, "str");
       var = gfc_build_addr_expr (type, var);
     }

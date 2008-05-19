@@ -1,5 +1,11 @@
 2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/36265
+	* trans-expr.c (gfc_conv_string_tmp): Pick the correct type for
+	the temporary variable.
+
+2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* simplify.c (gfc_simplify_dble, gfc_simplify_real): Initialize
 	result variable to avoid warnings.
 
