@@ -1,3 +1,7 @@
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20080519-1.c: New testcase.
+
 2008-05-19  Xinliang David Li  <davidxl@google.com>
 
 	* gcc.dg/cdce1.c: Remove test.
