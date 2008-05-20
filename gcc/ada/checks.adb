@@ -765,148 +765,256 @@ package body Checks is
    -- Apply_Arithmetic_Overflow_Check --
    -------------------------------------
 
-   --  This routine is called only if the type is an integer type, and
-   --  a software arithmetic overflow check must be performed for op
-   --  (add, subtract, multiply). The check is performed only if
-   --  Software_Overflow_Checking is enabled and Do_Overflow_Check
-   --  is set. In this case we expand the operation into a more complex
-   --  sequence of tests that ensures that overflow is properly caught.
+   --  This routine is called only if the type is an integer type, and a
+   --  software arithmetic overflow check may be needed for op (add, subtract,
+   --  or multiply). This check is performed only if Software_Overflow_Checking
+   --  is enabled and Do_Overflow_Check is set. In this case we expand the
+   --  operation into a more complex sequence of tests that ensures that
+   --  overflow is properly caught.
 
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : constant Entity_Id  := Etype (N);
-      Rtyp  : constant Entity_Id  := Root_Type (Typ);
-      Siz   : constant Int        := UI_To_Int (Esize (Rtyp));
-      Dsiz  : constant Int        := Siz * 2;
-      Opnod : Node_Id;
-      Ctyp  : Entity_Id;
-      Opnd  : Node_Id;
-      Cent  : RE_Id;
+      Typ   : Entity_Id           := Etype (N);
+      Rtyp  : Entity_Id           := Root_Type (Typ);
 
    begin
-      --  Skip this if overflow checks are done in back end, or the overflow
-      --  flag is not set anyway, or we are not doing code expansion.
-      --  Special case CLI target, where arithmetic overflow checks can be
-      --  performed for integer and long_integer
+      --  An interesting special case. If the arithmetic operation appears as
+      --  the operand of a type conversion:
 
-      if Backend_Overflow_Checks_On_Target
-        or else (VM_Target = CLI_Target and then Siz >= Standard_Integer_Size)
-        or else not Do_Overflow_Check (N)
-        or else not Expander_Active
+      --    type1 (x op y)
+
+      --  and all the following conditions apply:
+
+      --    arithmetic operation is for a signed integer type
+      --    target type type1 is a static integer subtype
+      --    range of x and y are both included in the range of type1
+      --    range of x op y is included in the range of type1
+      --    size of type1 is at least twice the result size of op
+
+      --  then we don't do an overflow check in any case, instead we transform
+      --  the operation so that we end up with:
+
+      --    type1 (type1 (x) op type1 (y))
+
+      --  This avoids intermediate overflow before the conversion. It is
+      --  explicitly permitted by RM 3.5.4(24):
+
+      --    For the execution of a predefined operation of a signed integer
+      --    type, the implementation need not raise Constraint_Error if the
+      --    result is outside the base range of the type, so long as the
+      --    correct result is produced.
+
+      --  It's hard to imagine that any programmer counts on the exception
+      --  being raised in this case, and in any case it's wrong coding to
+      --  have this expectation, given the RM permission. Furthermore, other
+      --  Ada compilers do allow such out of range results.
+
+      --  Note that we do this transformation even if overflow checking is
+      --  off, since this is precisely about giving the "right" result and
+      --  avoiding the need for an overflow check.
+
+      if Is_Signed_Integer_Type (Typ)
+        and then Nkind (Parent (N)) = N_Type_Conversion
       then
-         return;
+         declare
+            Target_Type : constant Entity_Id :=
+                            Base_Type (Entity (Subtype_Mark (Parent (N))));
+
+            Llo, Lhi : Uint;
+            Rlo, Rhi : Uint;
+            LOK, ROK : Boolean;
+
+            Vlo : Uint;
+            Vhi : Uint;
+            VOK : Boolean;
+
+            Tlo : Uint;
+            Thi : Uint;
+
+         begin
+            if Is_Integer_Type (Target_Type)
+              and then RM_Size (Root_Type (Target_Type)) >= 2 * RM_Size (Rtyp)
+            then
+               Tlo := Expr_Value (Type_Low_Bound  (Target_Type));
+               Thi := Expr_Value (Type_High_Bound (Target_Type));
+
+               Determine_Range (Left_Opnd  (N), LOK, Llo, Lhi);
+               Determine_Range (Right_Opnd (N), ROK, Rlo, Rhi);
+
+               if (LOK and ROK)
+                 and then Tlo <= Llo and then Lhi <= Thi
+                 and then Tlo <= Rlo and then Rhi <= Thi
+               then
+                  Determine_Range (N, VOK, Vlo, Vhi);
+
+                  if VOK and then Tlo <= Vlo and then Vhi <= Thi then
+                     Rewrite (Left_Opnd (N),
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                         Expression   => Relocate_Node (Left_Opnd (N))));
+
+                     Rewrite (Right_Opnd (N),
+                       Make_Type_Conversion (Loc,
+                        Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                        Expression   => Relocate_Node (Right_Opnd (N))));
+
+                     Set_Etype (N, Target_Type);
+                     Typ := Target_Type;
+                     Rtyp := Root_Type (Typ);
+                     Analyze_And_Resolve (Left_Opnd  (N), Target_Type);
+                     Analyze_And_Resolve (Right_Opnd (N), Target_Type);
+
+                     --  Given that the target type is twice the size of the
+                     --  source type, overflow is now impossible, so we can
+                     --  safely kill the overflow check and return.
+
+                     Set_Do_Overflow_Check (N, False);
+                     return;
+                  end if;
+               end if;
+            end if;
+         end;
       end if;
 
-      --  Otherwise, we generate the full general code for front end overflow
-      --  detection, which works by doing arithmetic in a larger type:
+      --  Now see if an overflow check is required
 
-      --    x op y
+      declare
+         Siz   : constant Int := UI_To_Int (Esize (Rtyp));
+         Dsiz  : constant Int := Siz * 2;
+         Opnod : Node_Id;
+         Ctyp  : Entity_Id;
+         Opnd  : Node_Id;
+         Cent  : RE_Id;
 
-      --  is expanded into
+      begin
+         --  Skip check if back end does overflow checks, or the overflow flag
+         --  is not set anyway, or we are not doing code expansion.
 
-      --    Typ (Checktyp (x) op Checktyp (y));
+         --  Special case CLI target, where arithmetic overflow checks can be
+         --  performed for integer and long_integer
 
-      --  where Typ is the type of the original expression, and Checktyp is
-      --  an integer type of sufficient length to hold the largest possible
-      --  result.
-
-      --  In the case where check type exceeds the size of Long_Long_Integer,
-      --  we use a different approach, expanding to:
-
-      --    typ (xxx_With_Ovflo_Check (Integer_64 (x), Integer (y)))
-
-      --  where xxx is Add, Multiply or Subtract as appropriate
-
-      --  Find check type if one exists
-
-      if Dsiz <= Standard_Integer_Size then
-         Ctyp := Standard_Integer;
-
-      elsif Dsiz <= Standard_Long_Long_Integer_Size then
-         Ctyp := Standard_Long_Long_Integer;
-
-      --  No check type exists, use runtime call
-
-      else
-         if Nkind (N) = N_Op_Add then
-            Cent := RE_Add_With_Ovflo_Check;
-
-         elsif Nkind (N) = N_Op_Multiply then
-            Cent := RE_Multiply_With_Ovflo_Check;
-
-         else
-            pragma Assert (Nkind (N) = N_Op_Subtract);
-            Cent := RE_Subtract_With_Ovflo_Check;
+         if Backend_Overflow_Checks_On_Target
+           or else not Do_Overflow_Check (N)
+           or else not Expander_Active
+           or else
+             (VM_Target = CLI_Target and then Siz >= Standard_Integer_Size)
+         then
+            return;
          end if;
 
-         Rewrite (N,
-           OK_Convert_To (Typ,
-             Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (Cent), Loc),
-               Parameter_Associations => New_List (
-                 OK_Convert_To (RTE (RE_Integer_64), Left_Opnd  (N)),
-                 OK_Convert_To (RTE (RE_Integer_64), Right_Opnd (N))))));
+         --  Otherwise, generate the full general code for front end overflow
+         --  detection, which works by doing arithmetic in a larger type:
 
-         Analyze_And_Resolve (N, Typ);
-         return;
-      end if;
+         --    x op y
 
-      --  If we fall through, we have the case where we do the arithmetic in
-      --  the next higher type and get the check by conversion. In these cases
-      --  Ctyp is set to the type to be used as the check type.
+         --  is expanded into
 
-      Opnod := Relocate_Node (N);
+         --    Typ (Checktyp (x) op Checktyp (y));
 
-      Opnd := OK_Convert_To (Ctyp, Left_Opnd (Opnod));
+         --  where Typ is the type of the original expression, and Checktyp is
+         --  an integer type of sufficient length to hold the largest possible
+         --  result.
 
-      Analyze (Opnd);
-      Set_Etype (Opnd, Ctyp);
-      Set_Analyzed (Opnd, True);
-      Set_Left_Opnd (Opnod, Opnd);
+         --  If the size of check type exceeds the size of Long_Long_Integer,
+         --  we use a different approach, expanding to:
 
-      Opnd := OK_Convert_To (Ctyp, Right_Opnd (Opnod));
+         --    typ (xxx_With_Ovflo_Check (Integer_64 (x), Integer (y)))
 
-      Analyze (Opnd);
-      Set_Etype (Opnd, Ctyp);
-      Set_Analyzed (Opnd, True);
-      Set_Right_Opnd (Opnod, Opnd);
+         --  where xxx is Add, Multiply or Subtract as appropriate
 
-      --  The type of the operation changes to the base type of the check type,
-      --  and we reset the overflow check indication, since clearly no overflow
-      --  is possible now that we are using a double length type. We also set
-      --  the Analyzed flag to avoid a recursive attempt to expand the node.
+         --  Find check type if one exists
 
-      Set_Etype             (Opnod, Base_Type (Ctyp));
-      Set_Do_Overflow_Check (Opnod, False);
-      Set_Analyzed          (Opnod, True);
+         if Dsiz <= Standard_Integer_Size then
+            Ctyp := Standard_Integer;
 
-      --  Now build the outer conversion
+         elsif Dsiz <= Standard_Long_Long_Integer_Size then
+            Ctyp := Standard_Long_Long_Integer;
 
-      Opnd := OK_Convert_To (Typ, Opnod);
-      Analyze (Opnd);
-      Set_Etype (Opnd, Typ);
+            --  No check type exists, use runtime call
 
-      --  In the discrete type case, we directly generate the range check for
-      --  the outer operand. This range check will implement the required
-      --  overflow check.
+         else
+            if Nkind (N) = N_Op_Add then
+               Cent := RE_Add_With_Ovflo_Check;
 
-      if Is_Discrete_Type (Typ) then
-         Rewrite (N, Opnd);
-         Generate_Range_Check (Expression (N), Typ, CE_Overflow_Check_Failed);
+            elsif Nkind (N) = N_Op_Multiply then
+               Cent := RE_Multiply_With_Ovflo_Check;
 
-      --  For other types, we enable overflow checking on the conversion,
-      --  after setting the node as analyzed to prevent recursive attempts
-      --  to expand the conversion node.
+            else
+               pragma Assert (Nkind (N) = N_Op_Subtract);
+               Cent := RE_Subtract_With_Ovflo_Check;
+            end if;
 
-      else
+            Rewrite (N,
+              OK_Convert_To (Typ,
+                Make_Function_Call (Loc,
+                  Name => New_Reference_To (RTE (Cent), Loc),
+                  Parameter_Associations => New_List (
+                    OK_Convert_To (RTE (RE_Integer_64), Left_Opnd  (N)),
+                    OK_Convert_To (RTE (RE_Integer_64), Right_Opnd (N))))));
+
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end if;
+
+         --  If we fall through, we have the case where we do the arithmetic
+         --  in the next higher type and get the check by conversion. In these
+         --  cases Ctyp is set to the type to be used as the check type.
+
+         Opnod := Relocate_Node (N);
+
+         Opnd := OK_Convert_To (Ctyp, Left_Opnd (Opnod));
+
+         Analyze (Opnd);
+         Set_Etype (Opnd, Ctyp);
          Set_Analyzed (Opnd, True);
-         Enable_Overflow_Check (Opnd);
-         Rewrite (N, Opnd);
-      end if;
+         Set_Left_Opnd (Opnod, Opnd);
 
-   exception
-      when RE_Not_Available =>
-         return;
+         Opnd := OK_Convert_To (Ctyp, Right_Opnd (Opnod));
+
+         Analyze (Opnd);
+         Set_Etype (Opnd, Ctyp);
+         Set_Analyzed (Opnd, True);
+         Set_Right_Opnd (Opnod, Opnd);
+
+         --  The type of the operation changes to the base type of the check
+         --  type, and we reset the overflow check indication, since clearly no
+         --  overflow is possible now that we are using a double length type.
+         --  We also set the Analyzed flag to avoid a recursive attempt to
+         --  expand the node.
+
+         Set_Etype             (Opnod, Base_Type (Ctyp));
+         Set_Do_Overflow_Check (Opnod, False);
+         Set_Analyzed          (Opnod, True);
+
+         --  Now build the outer conversion
+
+         Opnd := OK_Convert_To (Typ, Opnod);
+         Analyze (Opnd);
+         Set_Etype (Opnd, Typ);
+
+         --  In the discrete type case, we directly generate the range check
+         --  for the outer operand. This range check will implement the
+         --  required overflow check.
+
+         if Is_Discrete_Type (Typ) then
+            Rewrite (N, Opnd);
+            Generate_Range_Check
+              (Expression (N), Typ, CE_Overflow_Check_Failed);
+
+         --  For other types, we enable overflow checking on the conversion,
+         --  after setting the node as analyzed to prevent recursive attempts
+         --  to expand the conversion node.
+
+         else
+            Set_Analyzed (Opnd, True);
+            Enable_Overflow_Check (Opnd);
+            Rewrite (N, Opnd);
+         end if;
+
+      exception
+         when RE_Not_Available =>
+            return;
+      end;
    end Apply_Arithmetic_Overflow_Check;
 
    ----------------------------
@@ -2231,6 +2339,7 @@ package body Checks is
          end;
 
       elsif Comes_From_Source (N)
+        and then not Discriminant_Checks_Suppressed (Target_Type)
         and then Is_Record_Type (Target_Type)
         and then Is_Derived_Type (Target_Type)
         and then not Is_Tagged_Type (Target_Type)
