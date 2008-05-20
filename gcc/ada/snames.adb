@@ -771,6 +771,8 @@ package body Snames is
      "mapping_body_suffix#" &
      "metrics#" &
      "naming#" &
+     "object_generated#" &
+     "objects_linked#" &
      "objects_path#" &
      "objects_path_file#" &
      "object_dir#" &

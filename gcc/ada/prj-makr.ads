@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,44 +25,58 @@
 
 --  Support for procedure Gnatname
 
---  For arbitrary naming schemes, create or update a project file,
---  or create a configuration pragmas file.
+--  For arbitrary naming schemes, create or update a project file, or create a
+--  configuration pragmas file.
+
+with System.Regexp; use System.Regexp;
 
 package Prj.Makr is
 
-   procedure Make
+   procedure Initialize
      (File_Path         : String;
       Project_File      : Boolean;
-      Directories       : Argument_List;
-      Name_Patterns     : Argument_List;
-      Excluded_Patterns : Argument_List;
-      Foreign_Patterns  : Argument_List;
       Preproc_Switches  : Argument_List;
       Very_Verbose      : Boolean);
-   --  Create a project file or a configuration pragmas file
+   --  Start the creation of a configuration pragmas file or the creation or
+   --  modification of a project file, for gnatname.
    --
-   --  Project_File is the path name of the project file. If the project
-   --  file already exists parse it and keep all the elements that are not
-   --  automatically generated.
+   --  When Project_File is False, File_Path is the name of a configuration
+   --  pragmas file to create. When Project_File is True, File_Path is the name
+   --  of a project file to create if it does not exist or to modify if it
+   --  already exists.
    --
-   --  Directory_List_File is the path name of a text file that
-   --  contains on each non empty line the path names of the source
-   --  directories for the project file. The source directories
-   --  are relative to the directory of the project file.
+   --  Preproc_Switches is a list of switches to be used when invoking the
+   --  compiler to get the name and kind of unit of a source file.
    --
-   --  File_Name_Patterns is a GNAT.Regexp string pattern such as
-   --  ".*\.ads|.*\.adb" or any other pattern.
-   --
-   --  A project file (without any sources) is automatically generated
-   --  with the name <project>_naming. It contains a package Naming with
-   --  all the specs and bodies for the project.
-   --  A file containing the source file names is automatically
-   --  generated and used as the Source_File_List for the project file.
-   --  It includes all sources that follow the Foreign_Patterns (except those
-   --  that follow Excluded_Patterns).
+   --  Very_Verbose controls the verbosity of the output, in conjunction with
+   --  Opt.Verbose_Mode.
 
-   --  Preproc_switches is a list of optional preprocessor switches -gnatep=
-   --  and -gnateD that are used when invoking the compiler to find the
-   --  unit name and kind.
+   type Regexp_List is array (Positive range <>) of Regexp;
+
+   procedure Process
+     (Directories       : Argument_List;
+      Name_Patterns     : Regexp_List;
+      Excluded_Patterns : Regexp_List;
+      Foreign_Patterns  : Regexp_List);
+   --  Look for source files in the specified directories, with the specified
+   --  patterns.
+   --
+   --  Directories is the list of source directories where to look for sources.
+   --
+   --  Name_Patterns is a potentially empty list of file name patterns to check
+   --  for Ada Sources.
+   --
+   --  Excluded_Patterns is a potentially empty list of file name patterns that
+   --  should not be checked for Ada or non Ada sources.
+   --
+   --  Foreign_Patterns is a potentially empty list of file name patterns to
+   --  check for non Ada sources.
+   --
+   --  At least one of Name_Patterns and Foreign_Patterns is not empty
+
+   procedure Finalize;
+   --  Write the configuration pragmas file or the project file indicated in a
+   --  call to procedure Initialize, after one or several calls to procedure
+   --  Process.
 
 end Prj.Makr;

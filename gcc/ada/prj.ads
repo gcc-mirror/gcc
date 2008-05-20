@@ -307,7 +307,8 @@ package Prj is
       Language : Language_Index);
    --  Output the name of a language
 
-   type Header_Num is range 0 .. 6150;
+   Max_Header_Num : constant := 6150;
+   type Header_Num is range 0 .. Max_Header_Num;
    --  Size for hash table below. The upper bound is an arbitrary value, the
    --  value here was chosen after testing to determine a good compromise
    --  between speed of access and memory usage.
@@ -316,6 +317,9 @@ package Prj is
    function Hash (Name : File_Name_Type) return Header_Num;
    function Hash (Name : Path_Name_Type) return Header_Num;
    --  Used for computing hash values for names put into above hash table
+
+   function Hash (Project : Project_Id) return Header_Num;
+   --  Used for hash tables where Project_Id is the Key
 
    type Language_Kind is (File_Based, Unit_Based);
    --  Type for the kind of language. All languages are file based, except Ada
@@ -419,6 +423,13 @@ package Prj is
       --  The option(s) to compile a source in Position Independent Code for
       --  shared libraries. Specified in the configuration. When not specified,
       --  there is no need for such switch.
+
+      Object_Generated             : Boolean := True;
+      --  False in no object file is generated
+
+      Objects_Linked               : Boolean := True;
+      --  False if object files are not use to link executables and build
+      --  libraries.
 
       Runtime_Library_Dir        : Name_Id := No_Name;
       --  Path name of the runtime library directory, if any
@@ -527,6 +538,8 @@ package Prj is
                            Compiler_Driver_Path         => null,
                            Compiler_Required_Switches   => No_Name_List,
                            Compilation_PIC_Option       => No_Name_List,
+                           Object_Generated             => True,
+                           Objects_Linked               => True,
                            Runtime_Library_Dir          => No_Name,
                            Mapping_File_Switches        => No_Name_List,
                            Mapping_Spec_Suffix          => No_File,
@@ -616,6 +629,13 @@ package Prj is
       Compiled            : Boolean               := True;
       --  False when there is no compiler for the language
 
+      In_Interfaces       : Boolean               := True;
+      --  False when the source is not included in interfaces, when attribute
+      --  Interfaces is declared.
+
+      Declared_In_Interfaces : Boolean            := False;
+      --  True when source is declared in attribute Interfaces
+
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
       --  List of languages a header file may also be, in addition of
       --  language Language_Name.
@@ -667,6 +687,10 @@ package Prj is
       Object_Exists       : Boolean               := True;
       --  True if an object file exists
 
+      Object_Linked          : Boolean               := True;
+      --  False if the object file is not use to link executables or included
+      --  in libraries.
+
       Object              : File_Name_Type        := No_File;
       --  File name of the object file
 
@@ -714,42 +738,45 @@ package Prj is
    end record;
 
    No_Source_Data : constant Source_Data :=
-                      (Project             => No_Project,
-                       Language_Name       => No_Name,
-                       Language            => No_Language_Index,
-                       Lang_Kind           => File_Based,
-                       Compiled            => True,
-                       Alternate_Languages => No_Alternate_Language,
-                       Kind                => Spec,
-                       Dependency          => None,
-                       Other_Part          => No_Source,
-                       Unit                => No_Name,
-                       Index               => 0,
-                       Locally_Removed     => False,
-                       Get_Object          => False,
-                       Replaced_By         => No_Source,
-                       File                => No_File,
-                       Display_File        => No_File,
-                       Path                => No_Path,
-                       Display_Path        => No_Path,
-                       Source_TS           => Empty_Time_Stamp,
-                       Object_Project      => No_Project,
-                       Object_Exists       => True,
-                       Object              => No_File,
-                       Current_Object_Path => No_Path,
-                       Object_Path         => No_Path,
-                       Object_TS           => Empty_Time_Stamp,
-                       Dep_Name            => No_File,
-                       Current_Dep_Path    => No_Path,
-                       Dep_Path            => No_Path,
-                       Dep_TS              => Empty_Time_Stamp,
-                       Switches            => No_File,
-                       Switches_Path       => No_Path,
-                       Switches_TS         => Empty_Time_Stamp,
-                       Naming_Exception    => False,
-                       Next_In_Sources     => No_Source,
-                       Next_In_Project     => No_Source,
-                       Next_In_Lang        => No_Source);
+                      (Project                => No_Project,
+                       Language_Name          => No_Name,
+                       Language               => No_Language_Index,
+                       Lang_Kind              => File_Based,
+                       Compiled               => True,
+                       In_Interfaces          => True,
+                       Declared_In_Interfaces => False,
+                       Alternate_Languages    => No_Alternate_Language,
+                       Kind                   => Spec,
+                       Dependency             => None,
+                       Other_Part             => No_Source,
+                       Unit                   => No_Name,
+                       Index                  => 0,
+                       Locally_Removed        => False,
+                       Get_Object             => False,
+                       Replaced_By            => No_Source,
+                       File                   => No_File,
+                       Display_File           => No_File,
+                       Path                   => No_Path,
+                       Display_Path           => No_Path,
+                       Source_TS              => Empty_Time_Stamp,
+                       Object_Project         => No_Project,
+                       Object_Exists          => True,
+                       Object_Linked          => True,
+                       Object                 => No_File,
+                       Current_Object_Path    => No_Path,
+                       Object_Path            => No_Path,
+                       Object_TS              => Empty_Time_Stamp,
+                       Dep_Name               => No_File,
+                       Current_Dep_Path       => No_Path,
+                       Dep_Path               => No_Path,
+                       Dep_TS                 => Empty_Time_Stamp,
+                       Switches               => No_File,
+                       Switches_Path          => No_Path,
+                       Switches_TS            => Empty_Time_Stamp,
+                       Naming_Exception       => False,
+                       Next_In_Sources        => No_Source,
+                       Next_In_Project        => No_Source,
+                       Next_In_Lang           => No_Source);
 
    package Source_Data_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Source_Data,
@@ -1267,9 +1294,6 @@ package Prj is
       Dir_Path : String_Access;
       --  Same as Directory, but as an access to String
 
-      Library : Boolean := False;
-      --  True if this is a library project
-
       Library_Dir : Path_Name_Type := No_Path;
       --  If a library project, path name of the directory where the library
       --  resides.
@@ -1302,6 +1326,9 @@ package Prj is
       --  The path name of the library ALI directory, for display purposes. May
       --  be different from Library_ALI_Dir for platforms where the file names
       --  are case-insensitive.
+
+      Library : Boolean := False;
+      --  True if this is a library project
 
       Library_Name : Name_Id := No_Name;
       --  If a library project, name of the library
@@ -1338,6 +1365,10 @@ package Prj is
       First_Source : Source_Id := No_Source;
       Last_Source  : Source_Id := No_Source;
       --  Head and tail of the list of sources
+
+      Interfaces_Defined      : Boolean := False;
+      --  True if attribute Interfaces is declared for the project or any
+      --  project it extends.
 
       Unit_Based_Language_Name  : Name_Id := No_Name;
       Unit_Based_Language_Index : Language_Index := No_Language_Index;

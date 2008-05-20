@@ -86,6 +86,7 @@ package body Prj.Attr is
    "LVlocally_removed_files#" &
    "LVexcluded_source_files#" &
    "SVsource_list_file#" &
+   "LVinterfaces#" &
 
    --  Libraries
 
@@ -109,6 +110,8 @@ package body Prj.Attr is
    "LVrun_path_option#" &
    "Satoolchain_version#" &
    "Satoolchain_description#" &
+   "Saobject_generated#" &
+   "Saobjects_linked#" &
 
    --  Configuration - Libraries
 

@@ -122,6 +122,7 @@ package body Prj is
                       Sources                        => Nil_String,
                       First_Source                   => No_Source,
                       Last_Source                    => No_Source,
+                      Interfaces_Defined             => False,
                       Unit_Based_Language_Name       => No_Name,
                       Unit_Based_Language_Index      => No_Language_Index,
                       Imported_Directories_Switches  => null,
@@ -597,6 +598,11 @@ package body Prj is
    function Hash (Name : Path_Name_Type) return Header_Num is
    begin
       return Hash (Get_Name_String (Name));
+   end Hash;
+
+   function Hash (Project : Project_Id) return Header_Num is
+   begin
+      return Header_Num (Project mod Max_Header_Num);
    end Hash;
 
    -----------

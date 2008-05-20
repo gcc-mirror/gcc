@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,7 +244,7 @@ package body Prj.Strt is
 
          --  Change name of obsolete attributes
 
-         if Reference /= Empty_Node then
+         if Present (Reference) then
             case Name_Of (Reference, In_Tree) is
                when Snames.Name_Specification =>
                   Set_Name_Of (Reference, In_Tree, To => Snames.Name_Spec);
@@ -716,7 +716,7 @@ package body Prj.Strt is
                          (Current_Project, In_Tree, Names.Table (1).Name);
                   end if;
 
-                  if The_Project = Empty_Node then
+                  if No (The_Project) then
 
                      --  If it is neither a project name nor a package name,
                      --  report an error.
@@ -734,7 +734,7 @@ package body Prj.Strt is
                         The_Package :=
                           First_Package_Of (Current_Project, In_Tree);
 
-                        while The_Package /= Empty_Node
+                        while Present (The_Package)
                           and then Name_Of (The_Package, In_Tree) /=
                                                       Names.Table (1).Name
                         loop
@@ -745,7 +745,7 @@ package body Prj.Strt is
                         --  If it has not been already declared, report an
                         --  error.
 
-                        if The_Package = Empty_Node then
+                        if No (The_Package) then
                            Error_Msg_Name_1 := Names.Table (1).Name;
                            Error_Msg ("package % not yet defined",
                                       Names.Table (1).Location);
@@ -820,7 +820,7 @@ package body Prj.Strt is
                      --  If the long project exists, then this is the prefix
                      --  of the attribute.
 
-                     if The_Project /= Empty_Node then
+                     if Present (The_Project) then
                         First_Attribute := Attribute_First;
                         The_Package     := Empty_Node;
 
@@ -841,7 +841,7 @@ package body Prj.Strt is
 
                         --  If short project does not exist, report an error
 
-                        if The_Project = Empty_Node then
+                        if No (The_Project) then
                            Error_Msg_Name_1 := Long_Project;
                            Error_Msg_Name_2 := Short_Project;
                            Error_Msg ("unknown projects % or %",
@@ -855,7 +855,7 @@ package body Prj.Strt is
 
                            The_Package :=
                              First_Package_Of (The_Project, In_Tree);
-                           while The_Package /= Empty_Node
+                           while Present (The_Package)
                              and then Name_Of (The_Package, In_Tree) /=
                              Names.Table (Names.Last).Name
                            loop
@@ -865,7 +865,7 @@ package body Prj.Strt is
 
                            --  If it has not, then we report an error
 
-                           if The_Package = Empty_Node then
+                           if No (The_Package) then
                               Error_Msg_Name_1 :=
                                 Names.Table (Names.Last).Name;
                               Error_Msg_Name_2 := Short_Project;
@@ -926,7 +926,7 @@ package body Prj.Strt is
 
                The_Package := First_Package_Of (Current_Project, In_Tree);
 
-               while The_Package /= Empty_Node
+               while Present (The_Package)
                  and then Name_Of (The_Package, In_Tree) /=
                             Names.Table (1).Name
                loop
@@ -939,10 +939,10 @@ package body Prj.Strt is
                The_Project := Imported_Or_Extended_Project_Of
                               (Current_Project, In_Tree, Names.Table (1).Name);
 
-               if The_Project /= Empty_Node then
+               if Present (The_Project) then
                   Specified_Project := The_Project;
 
-               elsif The_Package = Empty_Node then
+               elsif No (The_Package) then
                   Error_Msg_Name_1 := Names.Table (1).Name;
                   Error_Msg ("unknown package or project %",
                              Names.Table (1).Location);
@@ -1004,7 +1004,7 @@ package body Prj.Strt is
                   The_Project := Imported_Or_Extended_Project_Of
                                    (Current_Project, In_Tree, Long_Project);
 
-                  if The_Project /= Empty_Node then
+                  if Present (The_Project) then
                      Specified_Project := The_Project;
 
                   else
@@ -1017,7 +1017,7 @@ package body Prj.Strt is
                        Imported_Or_Extended_Project_Of
                          (Current_Project, In_Tree, Short_Project);
 
-                     if The_Project = Empty_Node then
+                     if No (The_Project) then
                         --  Unknown prefix, report an error
 
                         Error_Msg_Name_1 := Long_Project;
@@ -1034,7 +1034,7 @@ package body Prj.Strt is
 
                         The_Package := First_Package_Of (The_Project, In_Tree);
 
-                        while The_Package /= Empty_Node
+                        while Present (The_Package)
                           and then Name_Of (The_Package, In_Tree) /=
                                               Names.Table (Names.Last - 1).Name
                         loop
@@ -1042,7 +1042,7 @@ package body Prj.Strt is
                              Next_Package_In_Project (The_Package, In_Tree);
                         end loop;
 
-                        if The_Package = Empty_Node then
+                        if No (The_Package) then
 
                            --  The package does not exist, report an error
 
@@ -1065,7 +1065,7 @@ package body Prj.Strt is
          Set_Project_Node_Of (Variable, In_Tree, To => Specified_Project);
          Set_Package_Node_Of (Variable, In_Tree, To => Specified_Package);
 
-         if Specified_Project /= Empty_Node then
+         if Present (Specified_Project) then
             The_Project := Specified_Project;
          else
             The_Project := Current_Project;
@@ -1078,10 +1078,10 @@ package body Prj.Strt is
          --  If a package was specified, check if the variable has been
          --  declared in this package.
 
-         if Specified_Package /= Empty_Node then
+         if Present (Specified_Package) then
             Current_Variable :=
               First_Variable_Of (Specified_Package, In_Tree);
-            while Current_Variable /= Empty_Node
+            while Present (Current_Variable)
               and then
               Name_Of (Current_Variable, In_Tree) /= Variable_Name
             loop
@@ -1093,12 +1093,12 @@ package body Prj.Strt is
             --  a package, first check if the variable has been declared in
             --  the package.
 
-            if Specified_Project = Empty_Node
-              and then Current_Package /= Empty_Node
+            if No (Specified_Project)
+              and then Present (Current_Package)
             then
                Current_Variable :=
                  First_Variable_Of (Current_Package, In_Tree);
-               while Current_Variable /= Empty_Node
+               while Present (Current_Variable)
                  and then Name_Of (Current_Variable, In_Tree) /= Variable_Name
                loop
                   Current_Variable :=
@@ -1107,29 +1107,47 @@ package body Prj.Strt is
             end if;
 
             --  If we have not found the variable in the package, check if the
-            --  variable has been declared in the project.
+            --  variable has been declared in the project, or in any of its
+            --  ancestors.
 
-            if Current_Variable = Empty_Node then
-               Current_Variable := First_Variable_Of (The_Project, In_Tree);
-               while Current_Variable /= Empty_Node
-                 and then Name_Of (Current_Variable, In_Tree) /= Variable_Name
-               loop
-                  Current_Variable :=
-                    Next_Variable (Current_Variable, In_Tree);
-               end loop;
+            if No (Current_Variable) then
+               declare
+                  Proj : Project_Node_Id := The_Project;
+
+               begin
+                  loop
+                     Current_Variable := First_Variable_Of (Proj, In_Tree);
+                     while
+                       Present (Current_Variable)
+                       and then
+                       Name_Of (Current_Variable, In_Tree) /= Variable_Name
+                     loop
+                        Current_Variable :=
+                          Next_Variable (Current_Variable, In_Tree);
+                     end loop;
+
+                     exit when Present (Current_Variable);
+
+                     Proj := Parent_Project_Of (Proj, In_Tree);
+
+                     Set_Project_Node_Of (Variable, In_Tree, To => Proj);
+
+                     exit when No (Proj);
+                  end loop;
+               end;
             end if;
          end if;
 
          --  If the variable was not found, report an error
 
-         if Current_Variable = Empty_Node then
+         if No (Current_Variable) then
             Error_Msg_Name_1 := Variable_Name;
             Error_Msg
               ("unknown variable %", Names.Table (Names.Last).Location);
          end if;
       end if;
 
-      if Current_Variable /= Empty_Node then
+      if Present (Current_Variable) then
          Set_Expression_Kind_Of
            (Variable, In_Tree,
             To => Expression_Kind_Of (Current_Variable, In_Tree));
@@ -1185,9 +1203,9 @@ package body Prj.Strt is
 
       --  Add the literal of the string type to the Choices table
 
-      if String_Type /= Empty_Node then
+      if Present (String_Type) then
          Current_String := First_Literal_String (String_Type, In_Tree);
-         while Current_String /= Empty_Node loop
+         while Present (Current_String) loop
             Add (This_String => String_Value_Of (Current_String, In_Tree));
             Current_String := Next_Literal_String (Current_String, In_Tree);
          end loop;
@@ -1290,7 +1308,7 @@ package body Prj.Strt is
                   --  If Current_Expression is empty, it means that the
                   --  expression is the first in the string list.
 
-                  if Current_Expression = Empty_Node then
+                  if No (Current_Expression) then
                      Set_First_Expression_In_List
                        (Term_Id, In_Tree, To => Next_Expression);
                   else
@@ -1382,7 +1400,7 @@ package body Prj.Strt is
                Current_Package => Current_Package);
             Set_Current_Term (Term, In_Tree, To => Reference);
 
-            if Reference /= Empty_Node then
+            if Present (Reference) then
 
                --  If we don't know the expression kind (first term), then it
                --  has the kind of the variable or attribute reference.
@@ -1425,7 +1443,7 @@ package body Prj.Strt is
 
             --  Same checks as above for the expression kind
 
-            if Reference /= Empty_Node then
+            if Present (Reference) then
                if Expr_Kind = Undefined then
                   Expr_Kind := Expression_Kind_Of (Reference, In_Tree);
 
