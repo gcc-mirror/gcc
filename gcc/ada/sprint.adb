@@ -3732,7 +3732,14 @@ package body Sprint is
                      end loop;
 
                      Write_Str (") of ");
-                     Sprint_Node (Component_Type (Typ));
+                     X := Component_Type (Typ);
+
+                     --  Preserve sloc of component type, which is defined
+                     --  elsewhere than the itype (see comment above).
+
+                     Old_Sloc := Sloc (X);
+                     Sprint_Node (X);
+                     Set_Sloc (X, Old_Sloc);
 
                      --  Array subtypes and string subtypes
 
