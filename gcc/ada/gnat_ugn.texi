@@ -4021,6 +4021,10 @@ Don't quit; try semantics, even if parse errors.
 @cindex @option{-gnatQ} (@command{gcc})
 Don't quit; generate @file{ALI} and tree files even if illegalities.
 
+@item -gnatr
+@cindex @option{-gnatr} (@command{gcc})
+Treat pragma Restrictions as Restriction_Warnings.
+
 @item ^-gnatR[0/1/2/3[s]]^/REPRESENTATION_INFO^
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
@@ -5723,7 +5727,7 @@ turns on all validity checking options except for
 checking of @code{@b{in out}} procedure arguments.
 
 The specification of additional validity checking generates extra code (and
-in the case of @option{-gnatVa} the code expansion can be substantial.
+in the case of @option{-gnatVa} the code expansion can be substantial).
 However, these additional checks can be very useful in detecting
 uninitialized variables, incorrect use of unchecked conversion, and other
 errors leading to invalid values. The use of pragma @code{Initialize_Scalars}
@@ -6023,7 +6027,7 @@ with declarations.
 @item ^S^STATEMENTS_AFTER_THEN_ELSE^
 @emph{Check no statements after THEN/ELSE.}
 No statements are allowed
-on the same line as a THEN OR ELSE keyword following the
+on the same line as a THEN or ELSE keyword following the
 keyword in an IF statement. OR ELSE and AND THEN are not affected,
 and a special exception allows a pragma to appear after ELSE.
 
@@ -6099,19 +6103,25 @@ around conditions in @code{if} statements, @code{while} statements and
 @item ^y^ALL_BUILTIN^
 @emph{Set all standard style check options}
 This is equivalent to @code{gnaty3aAbcefhiklmnprst}, that is all checking
-options enabled with the exception of @option{-gnatyo},
+options enabled with the exception of @option{-gnatyo}, @option{-gnatyI},
+@option{-gnatyS}, @option{-gnatyLnnn},
 @option{-gnatyd}, @option{-gnatyu}, and @option{-gnatyx}.
 
 @ifclear vms
 @item -
 @emph{Remove style check options}
 This causes any subsequent options in the string to act as canceling the
-corresponding style check option.
+corresponding style check option. To cancel maximum nesting level control,
+use @option{L} parameter witout any integer value after that, because any
+digit following @option{-} in the parameter string of the @option{-gnaty}
+option will be threated as canceling indentation check. The same is true
+for @option{M} parameter. @option{y} and @option{N} parameters are not
+alloved after @option{-}.
 
 @item +
 This causes any subsequent options in the string to enable the corresponding
-style check option. It only has an effect if a previous ^-^REMOVE^ has been
-encountered.
+style check option. That is, it cancels the effect of a previous ^-^REMOVE^,
+if any.
 @end ifclear
 
 @ifset vms
@@ -6153,8 +6163,8 @@ built-in standard style check options are enabled.
 the exception of ORDERED_SUBPROGRAMS, UNNECESSARY_BLANK_LINES,
 XTRA_PARENS, and DOS_LINE_ENDINGS. In addition
 @end ifset
-an indentation level of 3 is set. This is similar to the standard
-checking option that is used for the GNAT sources.
+
+
 
 The switch
 @ifclear vms
@@ -6821,6 +6831,16 @@ If the switch @option{-gnatL} is used in conjunction with
 @cindex @option{-gnatL} (@command{gcc})
 @option{-gnatDG}, then the original source lines are interspersed
 in the expanded source (as comment lines with the original line number).
+
+@item -gnatr
+@cindex @option{-gnatr} (@command{gcc})
+@cindex pragma Restrictions
+This switch causes pragma Restrictions to be treated as Restriction_Warnings
+so that violation of restrictions causes warnings rather than illegalities.
+This is useful during the development process when new restrictions are added
+or investigated. The switch also causes pragma Profile to be treated as
+Profile_Warnings, and pragma Restricted_Run_Time and pragma Ravenscar set
+restriction warnings rather than restrictions.
 
 @ifclear vms
 @item -gnatR[0|1|2|3[s]]
@@ -8847,6 +8867,15 @@ ineffective. The specified mapping file will be communicated to the compiler.
 This switch is not compatible with a project file
 (^-P^/PROJECT_FILE=^@var{file}) or with multiple compiling processes
 (^-j^/PROCESSES=^nnn, when nnn is greater than 1).
+
+@item ^-d^/DISPLAY_PROGRESS^
+@cindex @option{^-d^/DISPLAY_PROGRESS^} (@command{gnatmake})
+Display progress for each source, up to date or not, as a single line
+
+   completed x out of y (zz%)
+
+If the file needs to be compiled this is displayed after the invocation of
+the compiler. These lines are displayed even in quiet output mode.
 
 @item ^-D ^/DIRECTORY_OBJECTS=^@var{dir}
 @cindex @option{^-D^/DIRECTORY_OBJECTS^} (@command{gnatmake})
@@ -11036,7 +11065,8 @@ set of files.
 The usual form of the @code{gnatname} command is
 
 @smallexample
-$ gnatname [@var{switches}] @var{naming_pattern} [@var{naming_patterns}]
+$ gnatname [@var{switches}] @var{naming_pattern} [@var{naming_patterns}] \
+      [--and @var{switches}] @var{naming_pattern} [@var{naming_patterns}]]
 @end smallexample
 
 @noindent
@@ -11057,6 +11087,14 @@ A Naming Pattern is a regular expression similar to the wildcard patterns
 used in file names by the Unix shells or the DOS prompt.
 
 @noindent
+@code{gnatname} may be called with several sections of directories/patterns.
+Sections are separated by switch @code{--and}. In each section, there must be
+at least one pattern. If no directory is specified in a section, the current
+directory (or the project directory is @code{-P} is used) is implied.
+The options other that the directory switches and the patterns apply globally
+even if they are in different sections.
+
+@noindent
 Examples of Naming Patterns are
 
 @smallexample
@@ -11071,9 +11109,10 @@ see the second kind of regular expressions described in @file{g-regexp.ads}
 (the ``Glob'' regular expressions).
 
 @noindent
-When invoked with no switches, @code{gnatname} will create a configuration
-pragmas file @file{gnat.adc} in the current working directory, with pragmas
-@code{Source_File_Name} for each file that contains a valid Ada unit.
+When invoked with no switch @code{-P}, @code{gnatname} will create a
+configuration pragmas file @file{gnat.adc} in the current working directory,
+with pragmas @code{Source_File_Name} for each file that contains a valid Ada
+unit.
 
 @node Switches for gnatname
 @section Switches for @code{gnatname}
@@ -11095,6 +11134,9 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatname}
 If @option{--version} was not used, display usage, then exit disregarding
 all other options.
+
+@item --and
+Start another section of directories/patterns.
 
 @item ^-c^/CONFIG_FILE=^@file{file}
 @cindex @option{^-c^/CONFIG_FILE^} (@code{gnatname})
@@ -12033,6 +12075,7 @@ project P.
 
 @menu
 * Basic Syntax::
+* Qualified Projects::
 * Packages::
 * Expressions::
 * String Types::
@@ -12090,11 +12133,15 @@ word @code{end} at the end of the project file, followed by a semi-colon.
 Any name in a project file, such as the project name or a variable name,
 has the same syntax as an Ada identifier.
 
-The reserved words of project files are the Ada reserved words plus
+The reserved words of project files are the Ada 95 reserved words plus
 @code{extends}, @code{external}, and @code{project}.  Note that the only Ada
 reserved words currently used in project file syntax are:
 
 @itemize @bullet
+@item
+@code{all}
+@item
+@code{at}
 @item
 @code{case}
 @item
@@ -12103,6 +12150,10 @@ reserved words currently used in project file syntax are:
 @code{for}
 @item
 @code{is}
+@item
+@code{limited}
+@item
+@code{null}
 @item
 @code{others}
 @item
@@ -12122,6 +12173,39 @@ reserved words currently used in project file syntax are:
 @noindent
 Comments in project files have the same syntax as in Ada, two consecutive
 hyphens through the end of the line.
+
+@node Qualified Projects
+@subsection Qualified Projects
+
+@noindent
+Before the reserved @code{project}, there may be one or two "qualifiers", that
+is identifiers or other reserved words, to qualify the project.
+
+The current list of qualifiers is:
+
+@itemize @bullet
+@item
+@code{abstract}: qualify a project with no sources. An abstract project must
+have a declaration specifying that there are no sources in the project, and,
+if it extends another project, the project it extends must also be a qualified
+abstract project.
+
+@item
+@code{standard}: a standard project is a non library project with sources.
+
+@item
+@code{aggregate}: for future extension
+
+@item
+@code{aggregate library}: for future extension
+
+@item
+@code{library}: a library project must declare both attributes
+@code{Library_Name} and @code{Library_Dir}.
+
+@item
+@code{configuration}: a configuration project cannot be in a project tree.
+@end itemize
 
 @node Packages
 @subsection Packages
@@ -13015,8 +13099,8 @@ The original body of @code{Util_IO} will not be considered in program builds.
 However, the package spec will still be found in the project
 @code{Utilities}.
 
-A child project can have only one parent but it may import any number of other
-projects.
+A child project can have only one parent, except when it is qualified as
+abstract. But it may import any number of other projects.
 
 A project is not allowed to import directly or indirectly at the same time a
 child project and any of its ancestors.
@@ -20259,9 +20343,10 @@ use the rule named
 @code{Restrictions} or @code{Restriction_Warnings}.
 
 @item Style_Checks
-To record compiler style checks, use the rule named
+To record compiler style checks(@pxref{Style Checking}), use the rule named
 @code{Style_Checks}. A parameter of this rule can be either @code{All_Checks},
-which enables all the style checks, or a string that has exactly the same
+which enables all the standard style checks that corresponds to @option{-gnatyy}
+GNAT style check option, or a string that has exactly the same
 structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
 @code{Style_Checks} (for further information about this pragma,
 @pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}).
@@ -20271,9 +20356,18 @@ To record compiler warnings (@pxref{Warning Message Control}), use the rule
 named @code{Warnings} with a parameter that is a valid
 @i{static_string_expression} argument of GNAT pragma @code{Warnings}
 (for further information about this pragma, @pxref{Pragma Warnings,,,
-gnat_rm, GNAT Reference Manual}).
+gnat_rm, GNAT Reference Manual}). Note, that in case of gnatcheck
+'s' parameter, that corresponds to the GNAT @option{-gnatws} option, disables
+all the specific warnings, but not suppresses the warning mode,
+and 'e' parameter, corresponding to @option{-gnatwe} that means
+"therat warnings as errors", does not have any effect.
 
 @end table
+
+To disable a specific restriction check, use @code{-RStyle_Checks} gnatcheck
+option with the corresponding restriction name as a parameter. @code{-R} is
+not available for @code{Style_Checks} and @code{Warnings} options, to disable
+warnings and style checks, use the corresponding warning and style options.
 
 @node Project-Wide Checks
 @section Project-Wide Checks
