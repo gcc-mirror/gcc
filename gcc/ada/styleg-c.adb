@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,8 +175,10 @@ package body Styleg.C is
 
       --  Case of definition in package Standard
 
-      elsif Sdef = Standard_Location then
-
+      elsif Sdef = Standard_Location
+              or else
+            Sdef = Standard_ASCII_Location
+      then
          --  Check case of identifiers in Standard
 
          if Style_Check_Standard then
@@ -190,19 +192,14 @@ package body Styleg.C is
             --  Otherwise determine required casing of Standard entity
 
             else
-               --  ASCII entities are in all upper case
+               --  ASCII is all upper case
 
                if Entity (Ref) = Standard_ASCII then
                   Cas := All_Upper_Case;
 
                --  Special names in ASCII are also all upper case
 
-               elsif Entity (Ref) in SE (S_LC_A) .. SE (S_LC_Z)
-                       or else
-                     Entity (Ref) in SE (S_NUL) .. SE (S_US)
-                       or else
-                     Entity (Ref) = SE (S_DEL)
-               then
+               elsif Sdef = Standard_ASCII_Location then
                   Cas := All_Upper_Case;
 
                --  All other entities are in mixed case
