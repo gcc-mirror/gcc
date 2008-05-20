@@ -1947,9 +1947,7 @@ process_scc (VEC (tree, heap) *scc)
 	    changed |= visit_use (var);
 	}
 
-      if (dump_file && (dump_flags & TDF_STATS))
-	fprintf (dump_file, "Processing SCC required %d iterations\n",
-		 iterations);
+      statistics_histogram_event (cfun, "SCC iterations", iterations);
 
       /* Finally, visit the SCC once using the valid table.  */
       current_info = valid_info;

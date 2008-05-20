@@ -1069,9 +1069,8 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       retval |= thread_through_loop_header (loop, may_peel_loop_headers);
     }
 
-  if (dump_file && (dump_flags & TDF_STATS))
-    fprintf (dump_file, "\nJumps threaded: %lu\n",
-	     thread_stats.num_threaded_edges);
+  statistics_counter_event (cfun, "Jumps threaded",
+			    thread_stats.num_threaded_edges);
 
   free_original_copy_tables ();
 

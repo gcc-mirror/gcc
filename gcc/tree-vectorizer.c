@@ -2691,6 +2691,7 @@ vectorize_loops (void)
     }
   vect_loop_location = UNKNOWN_LOC;
 
+  statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
   if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS)
       || (vect_print_dump_info (REPORT_VECTORIZED_LOOPS)
 	  && num_vectorized_loops > 0))

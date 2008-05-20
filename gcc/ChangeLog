@@ -1,5 +1,19 @@
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-reassoc.c (fini_reassoc): Use the statistics
+	infrastructure.
+	* tree-ssa-sccvn.c (process_scc): Likewise.
+	* tree-ssa-sink.c (execute_sink_code): Likewise.
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Likewise.
+	* tree-vrp.c (process_assert_insertions): Likewise.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Likewise.
+	(perform_tree_ssa_dce): Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Likewise.
+	(dump_dominator_optimization_stats): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vn.c (vn_lookup_with_vuses): Do not use the alias oracle.
 
 2008-05-20  Kai Tietz  <kai.tietz@onevision.com>

@@ -1,3 +1,10 @@
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-sink-1.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-sink-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sink-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sink-4.c: Likewise.
+
 2008-05-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.c-torture/compile/20061214-1.c: New test.

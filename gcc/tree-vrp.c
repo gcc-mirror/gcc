@@ -4540,9 +4540,8 @@ process_assert_insertions (void)
   if (update_edges_p)
     bsi_commit_edge_inserts ();
 
-  if (dump_file && (dump_flags & TDF_STATS))
-    fprintf (dump_file, "\nNumber of ASSERT_EXPR expressions inserted: %d\n\n",
-	     num_asserts);
+  statistics_counter_event (cfun, "Number of ASSERT_EXPR expressions inserted",
+			    num_asserts);
 }
 
 

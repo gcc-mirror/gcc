@@ -1487,18 +1487,14 @@ init_reassoc (void)
 static void
 fini_reassoc (void)
 {
-  if (dump_file && (dump_flags & TDF_STATS))
-    {
-      fprintf (dump_file, "Reassociation stats:\n");
-      fprintf (dump_file, "Linearized: %d\n", 
-	       reassociate_stats.linearized);
-      fprintf (dump_file, "Constants eliminated: %d\n",
-	       reassociate_stats.constants_eliminated);
-      fprintf (dump_file, "Ops eliminated: %d\n",
-	       reassociate_stats.ops_eliminated);
-      fprintf (dump_file, "Statements rewritten: %d\n",
-	       reassociate_stats.rewritten);
-    }
+  statistics_counter_event (cfun, "Linearized",
+			    reassociate_stats.linearized);
+  statistics_counter_event (cfun, "Constants eliminated",
+			    reassociate_stats.constants_eliminated);
+  statistics_counter_event (cfun, "Ops eliminated",
+			    reassociate_stats.ops_eliminated);
+  statistics_counter_event (cfun, "Statements rewritten",
+			    reassociate_stats.rewritten);
 
   pointer_map_destroy (operand_rank);
   free_alloc_pool (operand_entry_pool);
