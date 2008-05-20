@@ -1471,6 +1471,17 @@ package body Exp_Ch7 is
 
       --    Attach_To_Final_List (_Lx, Resx (Resx'last)._controller, 3);
 
+      --  If the context is an aggregate, the call will be expanded into an
+      --  assignment, and the attachment will be done when the aggregate
+      --  expansion is complete. See body of Exp_Aggr for the treatment of
+      --  other controlled components.
+
+      if Nkind (Parent (N)) = N_Aggregate then
+         return;
+      end if;
+
+      --  Case where type has controlled components
+
       if Has_Controlled_Component (Rtype) then
          declare
             T1 : Entity_Id := Rtype;
@@ -1536,15 +1547,14 @@ package body Exp_Ch7 is
                 With_Attach  => Make_Integer_Literal (Loc, Attach_Level));
          end if;
 
-      else
-         --  Here, we have a controlled type that does not seem to have
-         --  controlled components but it could be a class wide type whose
-         --  further derivations have controlled components. So we don't know
-         --  if the object itself needs to be attached or if it
-         --  has a record controller. We need to call a runtime function
-         --  (Deep_Tag_Attach) which knows what to do thanks to the
-         --  RC_Offset in the dispatch table.
+      --  Here, we have a controlled type that does not seem to have
+      --  controlled components but it could be a class wide type whose
+      --  further derivations have controlled components. So we don't know
+      --  if the object itself needs to be attached or if it has a record
+      --  controller. We need to call a runtime function (Deep_Tag_Attach)
+      --  which knows what to do thanks to the RC_Offset in the dispatch table.
 
+      else
          Action :=
            Make_Procedure_Call_Statement (Loc,
              Name => New_Reference_To (RTE (RE_Deep_Tag_Attach), Loc),
