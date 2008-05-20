@@ -1,3 +1,23 @@
+2008-05-20  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386-protos.h (ix86_return_in_memory): Removed.
+	(ix86_i386elf_return_in_memory): Likewise.
+	(ix86_i386interix_return_in_memory): Likewise.
+	* config/i386/i386-interix.h (TARGET_RETURN_IN_MEMORY): Removed.
+	(SUBTARGET_RETURN_IN_MEMORY): New.
+	* config/i386/i386elf.h: Likewise.
+	* config/i386/ptx4-i.h: Likewise.
+	* config/i386/sol2-10.h: Likewise.
+	* config/i386/sysv4.h: Likewise.
+	* config/i386/vx-common.h: Likewise.
+	* config/i386/i386.h (TARGET_RETURN_IN_MEMORY): Removed.
+	* config/i386/i386.c (ix86_return_in_memory): Made static and
+	make use of optional SUBTARGET_RETURN_IN_MEMORY macro.
+	(ix86_i386elf_return_in_memory): Removed.
+	(ix86_i386interix_return_in_memory): Removed.
+	(TARGET_RETURN_IN_MEMORY): Declared within i386.c only.
+	* target-def.h (TARGET_RETURN_IN_MEMORY): Remove protection #ifdef.
+
 2008-05-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cselib.c (cselib_record_sets): Use correct mode for IF_THEN_ELSE.

@@ -357,5 +357,6 @@ extern void i386_pe_unique_section (tree, int);
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY ix86_i386interix_return_in_memory
+#define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
+	(TYPE_MODE (TYPE) == BLKmode \
+	 || (AGGREGATE_TYPE_P (TYPE) && int_size_in_bytes (TYPE) > 8 ))
