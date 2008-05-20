@@ -5797,9 +5797,9 @@ package Sinfo is
 
       --  Note: overriding indicator is an Ada 2005 feature
 
-      ------------------------------
-      -- 12.3 Generic Actual Part --
-      ------------------------------
+      -------------------------------
+      -- 12.3  Generic Actual Part --
+      -------------------------------
 
       --  GENERIC_ACTUAL_PART ::=
       --    (GENERIC_ASSOCIATION {, GENERIC_ASSOCIATION})
@@ -5812,9 +5812,10 @@ package Sinfo is
       --    [generic_formal_parameter_SELECTOR_NAME =>]
 
       --  Note: unlike the procedure call case, a generic association node
-      --  is generated for every association, even if no formal is present.
-      --  In this case the parser will leave the Selector_Name field set
-      --  to Empty, to be filled in later by the semantic pass.
+      --  is generated for every association, even if no formal parameter
+      --  selector name is present. In this case the parser will leave the
+      --  Selector_Name field set to Empty, to be filled in later by the
+      --  semantic pass.
 
       --  In Ada 2005, a formal may be associated with a box, if the
       --  association is part of the list of actuals for a formal package.

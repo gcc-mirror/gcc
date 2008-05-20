@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2006-2007, AdaCore                     --
+--                     Copyright (C) 2006-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,6 +87,7 @@ package body GNAT.Byte_Order_Mark is
       then
          Len := 2;
          BOM := UTF16_LE;
+
       --  UTF-8 (endian-independent)
 
       elsif Str'Length >= 3
@@ -178,7 +179,7 @@ package body GNAT.Byte_Order_Mark is
         and then Str (Str'First + 2) = Character'Val (16#78#)
         and then Str (Str'First + 3) = Character'Val (16#6D#)
       then
-         --  Utf8, ASCII, some part of ISO8859, Shift-JIS, EUC,...
+         --  UTF-8, ASCII, some part of ISO8859, Shift-JIS, EUC,...
 
          Len := 0;
          BOM := Unknown;

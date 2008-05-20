@@ -2729,7 +2729,7 @@ package body Sem_Ch12 is
       Save_Parent : Node_Id;
 
    begin
-      --  Create copy of generic unit,and save for instantiation. If the unit
+      --  Create copy of generic unit, and save for instantiation. If the unit
       --  is a child unit, do not copy the specifications for the parent, which
       --  are not part of the generic tree.
 
@@ -4040,14 +4040,15 @@ package body Sem_Ch12 is
          Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
 
          --  Copy original generic tree, to produce text for instantiation
-         --  Inherit overriding indicator from instance node.
 
          Act_Tree :=
            Copy_Generic_Node
              (Original_Node (Gen_Decl), Empty, Instantiating => True);
 
+         --  Inherit overriding indicator from instance node
+
          Act_Spec := Specification (Act_Tree);
-         Set_Must_Override (Act_Spec, Must_Override (N));
+         Set_Must_Override     (Act_Spec, Must_Override (N));
          Set_Must_Not_Override (Act_Spec, Must_Not_Override (N));
 
          Renaming_List :=
@@ -4634,7 +4635,7 @@ package body Sem_Ch12 is
             --  Verify that the actual subprograms match. Note that actuals
             --  that are attributes are rewritten as subprograms. If the
             --  subprogram in the formal package is defaulted, no check is
-            --  needed. Note that this can only happen in Ada2005 when the
+            --  needed. Note that this can only happen in Ada 2005 when the
             --  formal package can be partially parametrized.
 
             if Nkind (Unit_Declaration_Node (E1)) =
@@ -9982,7 +9983,9 @@ package body Sem_Ch12 is
             Check_Restriction (No_Fixed_Point, Actual);
          end if;
 
-         --  Deal with error of using incomplete type as generic actual
+         --  Deal with error of using incomplete type as generic actual.
+         --  This includes limited views of a type, even if the non-limited
+         --  view may be available.
 
          if Ekind (Act_T) = E_Incomplete_Type
            or else (Is_Class_Wide_Type (Act_T)

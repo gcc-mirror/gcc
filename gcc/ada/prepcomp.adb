@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,8 +245,7 @@ package body Prepcomp is
                """ not found");
       end if;
 
-      --  Initialize the scanner and set its behavior for a processing data
-      --  file
+      --  Initialize scanner and set its behavior for processing a data file
 
       Scn.Scanner.Initialize_Scanner (Source_Index_Of_Preproc_Data_File);
       Scn.Scanner.Set_End_Of_Line_As_Token (True);
