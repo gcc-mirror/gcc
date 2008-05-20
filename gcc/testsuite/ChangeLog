@@ -1,3 +1,8 @@
+2008-05-19  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.dg/cdce1.c: Remove test.
+	* gcc.dg/cdce2.c: Remove test.
+
 2008-05-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36265
