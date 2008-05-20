@@ -13,6 +13,8 @@
 /* PA HP-UX doesn't have the entire C99 runtime.  */
 #elif defined(__sgi)
 /* Irix6 doesn't have the entire C99 runtime.  */
+#elif defined(AVR)
+/* AVR doesn't have the entire C99 runtime.  */
 #elif defined(__FreeBSD__) && (__FreeBSD__ < 5)
 /* FreeBSD before version 5 doesn't have the entire C99 runtime. */
 #elif defined(__netware__)
