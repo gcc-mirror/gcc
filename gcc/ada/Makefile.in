@@ -56,10 +56,6 @@
 #      FLEX:    Gnu flex works.
 #      Other miscellaneous tools for obscure targets.
 
-# Tell GNU make 3.79 not to run this directory in parallel.
-# Not all of the required dependencies are present.
-.NOTPARALLEL:
-
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
@@ -1780,55 +1776,29 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.h   ../
 endif
 
-../../gnatchop$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatchop --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatchop 
-	$(GNATLINK) -v gnatchop -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnat$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatcmd --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatcmd 
-	$(GNATLINK) -v gnatcmd -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatkr$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatkr --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatkr 
-	$(GNATLINK) -v gnatkr -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatls$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatls --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatls 
-	$(GNATLINK) -v gnatls -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatname$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatname --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatname 
-	$(GNATLINK) -v gnatname -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gprmake$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gprmake --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gprmake
-	$(GNATLINK) -v gprmake -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatprep$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatprep --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatprep 
-	$(GNATLINK) -v gnatprep -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatxref$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatxref --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatxref 
-	$(GNATLINK) -v gnatxref -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatfind$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatfind --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatfind 
-	$(GNATLINK) -v gnatfind -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnatclean$(exeext): 
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatclean --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatclean
-	$(GNATLINK) -v gnatclean -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+common-tools:
+	$(GNATMAKE) -c -b $(ADA_INCLUDES) \
+	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
+	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
+	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
+	$(GNATLINK) -v gnatcmd -o ../../gnat$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatls -o ../../gnatls$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatxref -o ../../gnatxref$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatfind -o ../../gnatfind$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatname -o ../../gnatname$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exext) \
+		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../gnatsym$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatsym --GCC="$(CC) $(ALL_ADAFLAGS)"
@@ -1837,7 +1807,7 @@ endif
 
 ../../gnatdll$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) $(GNATBIND_FLAGS) gnatdll
+	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../vxaddr2line$(exeext): targext.o
