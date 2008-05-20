@@ -870,6 +870,7 @@ package body Sem_Ch5 is
          if Present (Decls) then
             Analyze_Declarations (Decls);
             Check_Completion;
+            Inspect_Deferred_Constant_Completion (Decls);
          end if;
 
          Analyze (HSS);

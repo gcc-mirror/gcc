@@ -795,6 +795,7 @@ package body Sem_Ch9 is
 
       if Present (Decls) then
          Analyze_Declarations (Decls);
+         Inspect_Deferred_Constant_Completion (Decls);
       end if;
 
       if Present (Stats) then
@@ -1908,6 +1909,7 @@ package body Sem_Ch9 is
       Last_E := Last_Entity (Spec_Id);
 
       Analyze_Declarations (Decls);
+      Inspect_Deferred_Constant_Completion (Decls);
 
       --  For visibility purposes, all entities in the body are private. Set
       --  First_Private_Entity accordingly, if there was no private part in the
