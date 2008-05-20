@@ -1,3 +1,27 @@
+2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-loop-linear.c (gather_interchange_stats): Look in the access matrix,
+	and never look at the tree representation of the memory accesses.
+	(linear_transform_loops): Computes parameters and access matrices.
+	* tree-data-ref.c (compute_data_dependences_for_loop): Returns false when fails.
+	(access_matrix_get_index_for_parameter): New.
+	* tree-data-ref.h (struct access_matrix): New.
+	(AM_LOOP_NEST_NUM, AM_NB_INDUCTION_VARS, AM_PARAMETERS, AM_MATRIX,
+	AM_NB_PARAMETERS, AM_CONST_COLUMN_INDEX, AM_NB_COLUMNS,
+	AM_GET_SUBSCRIPT_ACCESS_VECTOR, AM_GET_ACCESS_MATRIX_ELEMENT,
+	am_vector_index_for_loop): New.
+	(struct data_reference): Add field access_matrix.
+	(DR_ACCESS_MATRIX): New.
+	(compute_data_dependences_for_loop): Update declaration.
+	(lambda_collect_parameters, lambda_compute_access_matrices): Declared.
+	* lambda.h (lambda_vector_vec_p): Declared.
+	* lambda-code.c: Depend on pointer-set.h.
+	(lambda_collect_parameters_from_af, lambda_collect_parameters,
+	av_for_af_base, av_for_af, build_access_matrix,
+	lambda_compute_access_matrices): New.
+	* Makefile.in (lambda-code.o): Depend on pointer-set.h.
+
 2008-05-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/install.texi2html: Generate gcc-vers.texi in $DESTDIR not

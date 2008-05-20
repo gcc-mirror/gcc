@@ -201,8 +201,10 @@ evolution_function_is_affine_p (const_tree chrec)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec), CHREC_VARIABLE (chrec))
-	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec), CHREC_VARIABLE (chrec)))
+      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec),
+					     CHREC_VARIABLE (chrec))
+	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
+						CHREC_VARIABLE (chrec)))
 	return true;
       else
 	return false;

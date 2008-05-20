@@ -146,19 +146,17 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
       for (it = 0; it < DR_NUM_DIMENSIONS (dr); 
 	   it++, ref = TREE_OPERAND (ref, 0))
 	{
-	  tree chrec = DR_ACCESS_FN (dr, it);
-	  tree tstride = evolution_part_in_loop_num (chrec, loop->num);
+	  int num = am_vector_index_for_loop (DR_ACCESS_MATRIX (dr), loop->num);
+	  int istride = AM_GET_ACCESS_MATRIX_ELEMENT (DR_ACCESS_MATRIX (dr), it, num);
 	  tree array_size = TYPE_SIZE (TREE_TYPE (ref));
 	  double_int dstride;
 
-	  if (tstride == NULL_TREE
-	      || array_size == NULL_TREE 
-	      || TREE_CODE (tstride) != INTEGER_CST
+	  if (array_size == NULL_TREE 
 	      || TREE_CODE (array_size) != INTEGER_CST)
 	    continue;
 
 	  dstride = double_int_mul (tree_to_double_int (array_size), 
-				    tree_to_double_int (tstride));
+				    shwi_to_double_int (istride));
 	  (*access_strides) = double_int_add (*access_strides, dstride);
 	}
     }
@@ -320,6 +318,7 @@ linear_transform_loops (void)
   loop_iterator li;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
+  VEC(tree,heap) *lambda_parameters = NULL;
   VEC(tree,heap) *remove_ivs = VEC_alloc (tree, heap, 3);
   struct loop *loop_nest;
   tree oldiv_stmt;
@@ -330,6 +329,7 @@ linear_transform_loops (void)
       unsigned int depth = 0;
       VEC (ddr_p, heap) *dependence_relations;
       VEC (data_reference_p, heap) *datarefs;
+      
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       struct obstack lambda_obstack;
@@ -341,11 +341,18 @@ linear_transform_loops (void)
 
       VEC_truncate (tree, oldivs, 0);
       VEC_truncate (tree, invariants, 0);
+      VEC_truncate (tree, lambda_parameters, 0);
 
       datarefs = VEC_alloc (data_reference_p, heap, 10);
       dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
-      compute_data_dependences_for_loop (loop_nest, true, &datarefs,
-					 &dependence_relations);
+      if (!compute_data_dependences_for_loop (loop_nest, true, &datarefs,
+					      &dependence_relations))
+	continue;
+      
+      lambda_collect_parameters (datarefs, &lambda_parameters);
+      if (!lambda_compute_access_matrices (datarefs, lambda_parameters,
+					   loop_nest->num))
+	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_ddrs (dump_file, dependence_relations);
