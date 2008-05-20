@@ -5873,14 +5873,29 @@ mips_expand_synci_loop (rtx begin, rtx end)
   emit_jump_insn (gen_condjump (cmp_result, label));
 }
 
-/* Expand a QI or HI mode compare_and_swap.  The operands are the same
-   as for the generator function.  */
+/* Expand a QI or HI mode atomic memory operation.
+
+   GENERATOR contains a pointer to the gen_* function that generates
+   the SI mode underlying atomic operation using masks that we
+   calculate.
+
+   RESULT is the return register for the operation.  Its value is NULL
+   if unused.
+
+   MEM is the location of the atomic access.
+
+   OLDVAL is the first operand for the operation.
+
+   NEWVAL is the optional second operand for the operation.  Its value
+   is NULL if unused.  */
 
 void
-mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
+mips_expand_atomic_qihi (union mips_gen_fn_ptrs generator,
+                         rtx result, rtx mem, rtx oldval, rtx newval)
 {
   rtx orig_addr, memsi_addr, memsi, shift, shiftsi, unshifted_mask;
-  rtx unshifted_mask_reg, mask, inverted_mask, res;
+  rtx unshifted_mask_reg, mask, inverted_mask, si_op;
+  rtx res = NULL;
   enum machine_mode mode;
 
   mode = GET_MODE (mem);
@@ -5927,7 +5942,7 @@ mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
     }
 
   /* Do the same for the new value.  */
-  if (newval != const0_rtx)
+  if (newval && newval != const0_rtx)
     {
       newval = convert_modes (SImode, mode, newval, true);
       newval = force_reg (SImode, newval);
@@ -5935,14 +5950,24 @@ mips_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
     }
 
   /* Do the SImode atomic access.  */
-  res = gen_reg_rtx (SImode);
-  emit_insn (gen_compare_and_swap_12 (res, memsi, mask, inverted_mask,
-				      oldval, newval));
+  if (result)
+    res = gen_reg_rtx (SImode);
+  if (newval)
+    si_op = generator.fn_6 (res, memsi, mask, inverted_mask, oldval, newval);
+  else if (result)
+    si_op = generator.fn_5 (res, memsi, mask, inverted_mask, oldval);
+  else
+    si_op = generator.fn_4 (memsi, mask, inverted_mask, oldval);
 
-  /* Shift and convert the result.  */
-  mips_emit_binary (AND, res, res, mask);
-  mips_emit_binary (LSHIFTRT, res, res, shiftsi);
-  mips_emit_move (result, gen_lowpart (GET_MODE (result), res));
+  emit_insn (si_op);
+
+  if (result)
+    {
+      /* Shift and convert the result.  */
+      mips_emit_binary (AND, res, res, mask);
+      mips_emit_binary (LSHIFTRT, res, res, shiftsi);
+      mips_emit_move (result, gen_lowpart (GET_MODE (result), res));
+    }
 }
 
 /* Return true if it is possible to use left/right accesses for a
