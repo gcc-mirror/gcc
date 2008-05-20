@@ -1,3 +1,7 @@
+2008-05-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cselib.c (cselib_record_sets): Use correct mode for IF_THEN_ELSE.
+
 2008-05-19  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-dce.c: Revert patches of 2008-05-17 and 2008-05-18. 
