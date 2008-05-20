@@ -1,3 +1,7 @@
+2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/builtins-config.h: AVR does not have C99 runtime. 
+  
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/22523
