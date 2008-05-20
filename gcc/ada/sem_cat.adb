@@ -76,7 +76,7 @@ package body Sem_Cat is
    --  at any place.
 
    function In_RCI_Declaration (N : Node_Id) return Boolean;
-   --  Determines if a declaration is  within the visible part of  a Remote
+   --  Determines if a declaration is  within the visible part of a Remote
    --  Call Interface compilation unit, for semantic checking purposes only,
    --  (returns false within an instance and within the package body).
 
@@ -98,15 +98,10 @@ package body Sem_Cat is
 
    procedure Validate_Remote_Access_Object_Type_Declaration (T : Entity_Id);
    --  Check validity of declaration if RCI or RT unit. It should not contain
-   --  the declaration of an access-to-object type unless it is a
-   --  general access type that designates a class-wide limited
-   --  private type. There are also constraints about the primitive
-   --  subprograms of the class-wide type. RM E.2 (9, 13, 14)
-
-   function Is_Recursively_Limited_Private (E : Entity_Id) return Boolean;
-   --  Return True if E is a limited private type, or if E is a private
-   --  extension of a type whose parent verifies this property (hence the
-   --  recursive keyword).
+   --  the declaration of an access-to-object type unless it is a general
+   --  access type that designates a class-wide limited private type. There are
+   --  also constraints about the primitive subprograms of the class-wide type.
+   --  RM E.2 (9, 13, 14)
 
    ---------------------------------------
    -- Check_Categorization_Dependencies --
@@ -446,6 +441,9 @@ package body Sem_Cat is
                     (Specification (Unit_Declaration_Node (Unit_Entity)))
         and then not In_Package_Body (Unit_Entity)
         and then not In_Instance;
+
+      --  What about the case of a nested package in the visible part???
+      --  This case is missed by the List_Containing check above???
    end In_RCI_Declaration;
 
    -----------------------
@@ -530,47 +528,6 @@ package body Sem_Cat is
         and then not Is_Remote_Access_To_Class_Wide_Type (U_E)
         and then not Is_Remote_Access_To_Subprogram_Type (U_E);
    end Is_Non_Remote_Access_Type;
-
-   ------------------------------------
-   -- Is_Recursively_Limited_Private --
-   ------------------------------------
-
-   function Is_Recursively_Limited_Private (E : Entity_Id) return Boolean is
-      P : constant Node_Id := Parent (E);
-
-   begin
-      if Nkind (P) = N_Private_Type_Declaration
-        and then Is_Limited_Record (E)
-      then
-         return True;
-
-      --  A limited interface is not currently a legal ancestor for the
-      --  designated type of an RACW type, because a type that implements
-      --  such an interface need not be limited. However, the ARG seems to
-      --  incline towards allowing an access to classwide limited interface
-      --  type as a remote access type. This may be revised when the ARG
-      --  rules on this question, but it seems safe to allow it for now,
-      --  in order to see whether it is a useful extension for distributed
-      --  programming, in particular for Brad Moore's buffer taxonomy.
-
-      elsif Is_Limited_Record (E)
-        and then Is_Limited_Interface (E)
-      then
-         return True;
-
-      elsif Nkind (P) = N_Private_Extension_Declaration then
-         return Is_Recursively_Limited_Private (Etype (E));
-
-      elsif Nkind (P) = N_Formal_Type_Declaration
-        and then Ekind (E) = E_Record_Type_With_Private
-        and then Is_Generic_Type (E)
-        and then Is_Limited_Record (E)
-      then
-         return True;
-      else
-         return False;
-      end if;
-   end Is_Recursively_Limited_Private;
 
    ----------------------------------
    -- Missing_Read_Write_Attribute --
@@ -755,7 +712,10 @@ package body Sem_Cat is
          end if;
       end if;
 
-      Set_Is_Remote_Types (E, Is_Remote_Types (Scop));
+      Set_Is_Remote_Types
+        (E, Is_Remote_Types (Scop)
+              and then not (In_Private_Part (Scop)
+                              or else In_Package_Body (Scop)));
    end Set_Categorization_From_Scope;
 
    ------------------------------
@@ -1399,6 +1359,18 @@ package body Sem_Cat is
                     ("limited return type must have Read and Write attributes",
                      Parent (Subprogram));
                   Explain_Limited_Type (Rtyp, Parent (Subprogram));
+
+               --  Check that the return type supports external streaming.
+               --  Note that the language of the standard (E.2.2(14)) does not
+               --  explicitly mention that case, but it really does not make
+               --  sense to return a value containing a local access type.
+
+               elsif Missing_Read_Write_Attributes (Rtyp)
+                       and then not Error_Posted (Rtyp)
+               then
+                  Illegal_RACW ("return type containing non-remote access "
+                    & "must have Read and Write attributes",
+                    Parent (Subprogram));
                end if;
 
             end if;
@@ -1422,8 +1394,9 @@ package body Sem_Cat is
             elsif Ekind (Param_Type) = E_Anonymous_Access_Type
               or else Ekind (Param_Type) = E_Anonymous_Access_Subprogram_Type
             then
-               --  From RM E.2.2(14), no access parameter other than
-               --  controlling ones may be used.
+               --  From RM E.2.2(14), no anonumous access parameter other than
+               --  controlling ones may be used (because an anonymous access
+               --  type never supports external streaming).
 
                Illegal_RACW ("non-controlling access parameter", Param_Spec);
 
@@ -1441,6 +1414,12 @@ package body Sem_Cat is
                      Param_Spec);
                   Explain_Limited_Type (Param_Type, Param_Spec);
                end if;
+
+            elsif Missing_Read_Write_Attributes (Param_Type)
+               and then not Error_Posted (Param_Type)
+            then
+               Illegal_RACW ("parameter containing non-remote access "
+                 & "must have Read and Write attributes", Param_Spec);
             end if;
 
             --  Check next parameter in this subprogram
@@ -1522,12 +1501,14 @@ package body Sem_Cat is
       Error_Node      : Node_Id := N;
 
    begin
-      --  There are two possible cases in which this procedure is called:
+      --  This procedure enforces rules on subprogram and access to subprogram
+      --  declarations in RCI units. These rules do not apply to expander
+      --  generated routines, which are not remote subprograms. It is called:
 
-      --    1. called from Analyze_Subprogram_Declaration.
-      --    2. called from Validate_Object_Declaration (access to subprogram).
+      --    1. from Analyze_Subprogram_Declaration.
+      --    2. from Validate_Object_Declaration (access to subprogram).
 
-      if not In_RCI_Declaration (N) then
+      if not (Comes_From_Source (N) and then In_RCI_Declaration (N)) then
          return;
       end if;
 
@@ -1535,6 +1516,10 @@ package body Sem_Cat is
          Profile := Parameter_Specifications (Specification (N));
 
       else pragma Assert (K = N_Object_Declaration);
+         --  The above assertion is dubious, the visible declarations of an
+         --  RCI unit never contain an object declaration, this should be an
+         --  ACCESS-to-object declaration???
+
          Id := Defining_Identifier (N);
 
          if Nkind (Id) = N_Defining_Identifier
@@ -1550,7 +1535,7 @@ package body Sem_Cat is
 
       --  Iterate through the parameter specification list, checking that
       --  no access parameter and no limited type parameter in the list.
-      --  RM E.2.3 (14)
+      --  RM E.2.3(14).
 
       if Present (Profile) then
          Param_Spec := First (Profile);
@@ -1570,7 +1555,7 @@ package body Sem_Cat is
                  (Defining_Entity (Specification (N)))
                then
                   Error_Msg_N
-                    ("subprogram in rci unit cannot have access parameter",
+                    ("subprogram in 'R'C'I unit cannot have access parameter",
                       Error_Node);
                end if;
 
@@ -1649,21 +1634,48 @@ package body Sem_Cat is
 
                   if Ada_Version >= Ada_05 then
                      Error_Msg_N
-                       ("limited parameter in rci unit "
+                       ("limited parameter in 'R'C'I unit "
                           & "must have visible read/write attributes ",
                         Error_Node);
                   else
                      Error_Msg_N
-                       ("limited parameter in rci unit "
+                       ("limited parameter in 'R'C'I unit "
                           & "must have read/write attributes ",
                         Error_Node);
                   end if;
                   Explain_Limited_Type (Param_Type, Error_Node);
                end if;
-            end if;
 
+            --  In Ada 95, any non-remote access type (or any type with a
+            --  component of a non-remote access type) that is visible in an
+            --  RCI unit comes from a Remote_Types or Remote_Call_Interface
+            --  unit, and thus is already guaranteed to support external
+            --  streaming. However in Ada 2005 we have to account for the case
+            --  of named access types from declared pure units as well, which
+            --  may or may not support external streaming, and so we need to
+            --  perform a specific check for E.2.3(14/2) here.
+
+            --  Note that if the declaration of the type itself is illegal, we
+            --  do not perform this check since it might be a cascaded error.
+
+            else
+               if K = N_Subprogram_Declaration then
+                  Error_Node := Param_Spec;
+               end if;
+
+               if Missing_Read_Write_Attributes (Param_Type)
+                    and then not Error_Posted (Param_Type)
+               then
+                  Error_Msg_N
+                    ("parameter containing non-remote access in 'R'C'I "
+                     & "subprogram must have visible "
+                     & "Read and Write attributes", Error_Node);
+               end if;
+            end if;
             Next (Param_Spec);
          end loop;
+
+         --  No check on return type???
       end if;
    end Validate_RCI_Subprogram_Declaration;
 
@@ -1672,6 +1684,61 @@ package body Sem_Cat is
    ----------------------------------------------------
 
    procedure Validate_Remote_Access_Object_Type_Declaration (T : Entity_Id) is
+
+      function Is_Valid_Remote_Object_Type (E : Entity_Id) return Boolean;
+      --  True if tagged type E is a valid candidate as the root type of the
+      --  designated type for a RACW, i.e. a tagged limited private type, or a
+      --  limited interface type, or a private extension of such a type.
+
+      ---------------------------------
+      -- Is_Valid_Remote_Object_Type --
+      ---------------------------------
+
+      function Is_Valid_Remote_Object_Type (E : Entity_Id) return Boolean is
+         P : constant Node_Id := Parent (E);
+
+      begin
+         pragma Assert (Is_Tagged_Type (E));
+
+         --  Simple case: a limited private type
+
+         if Nkind (P) = N_Private_Type_Declaration
+           and then Is_Limited_Record (E)
+         then
+            return True;
+
+         --  A limited interface is not currently a legal ancestor for the
+         --  designated type of an RACW type, because a type that implements
+         --  such an interface need not be limited. However, the ARG seems to
+         --  incline towards allowing an access to classwide limited interface
+         --  type as a remote access type, as resolved in AI05-060. But note
+         --  that the expansion circuitry for RACWs that designate classwide
+         --  interfaces is not complete yet.
+
+         elsif Is_Limited_Record (E) and then Is_Limited_Interface (E) then
+            return True;
+
+         --  A generic tagged limited type is a valid candidate. Limitedness
+         --  will be checked again on the actual at instantiation point.
+
+         elsif Nkind (P) = N_Formal_Type_Declaration
+           and then Ekind (E) = E_Record_Type_With_Private
+           and then Is_Generic_Type (E)
+           and then Is_Limited_Record (E)
+         then
+            return True;
+
+         --  A private extension declaration is a valid candidate if its parent
+         --  type is.
+
+         elsif Nkind (P) = N_Private_Extension_Declaration then
+            return Is_Valid_Remote_Object_Type (Etype (E));
+
+         else
+            return False;
+         end if;
+      end Is_Valid_Remote_Object_Type;
+
       Direct_Designated_Type : Entity_Id;
       Desig_Type             : Entity_Id;
 
@@ -1718,20 +1785,16 @@ package body Sem_Cat is
       Direct_Designated_Type := Designated_Type (T);
       Desig_Type := Etype (Direct_Designated_Type);
 
-      if not Is_Recursively_Limited_Private (Desig_Type) then
+      --  Why is the check below not in
+      --  Validate_Remote_Access_To_Class_Wide_Type???
+
+      if not Is_Valid_Remote_Object_Type (Desig_Type) then
          Error_Msg_N
            ("error in designated type of remote access to class-wide type", T);
          Error_Msg_N
            ("\must be tagged limited private or private extension", T);
          return;
       end if;
-
-      --  Now this is an RCI unit access-to-class-wide-limited-private type
-      --  declaration. Set the type entity to be Is_Remote_Call_Interface to
-      --  optimize later checks by avoiding tree traversal to find out if this
-      --  entity is inside an RCI unit.
-
-      Set_Is_Remote_Call_Interface (T);
    end Validate_Remote_Access_Object_Type_Declaration;
 
    -----------------------------------------------
@@ -1749,7 +1812,7 @@ package body Sem_Cat is
 
       --    Storage_Pool and Storage_Size are not defined for such types
       --
-      --    The expected type of allocator must not not be such a type.
+      --    The expected type of allocator must not be such a type.
 
       --    The actual parameter of generic instantiation must not be such a
       --    type if the formal parameter is of an access type.
