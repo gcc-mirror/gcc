@@ -7,6 +7,9 @@
 
 	* a-caldel-vms.adb: Resync with a-caldel spec.
 
+	* exp_ch9.ads, sem_ch8.ads, inline.adb: Minor reformatting.
+	Update comments.
+
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (gnat_to_gnu) <N_Validate_Unchecked_Conversion>: Account

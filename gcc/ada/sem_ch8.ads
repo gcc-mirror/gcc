@@ -77,8 +77,8 @@ package Sem_Ch8 is
    procedure Find_Direct_Name (N : Node_Id);
    --  Given a direct name (Identifier or Operator_Symbol), this routine scans
    --  the homonym chain for the name searching for corresponding visible
-   --  entities to find the referenced entity (or in the case of overloading),
-   --  entities. On return, the Entity and Etype fields are set. In the
+   --  entities to find the referenced entity (or in the case of overloading,
+   --  entities). On return, the Entity and Etype fields are set. In the
    --  non-overloaded case, these are the correct final entries. In the
    --  overloaded case, Is_Overloaded is set, Etype and Entity refer to an
    --  arbitrary element of the overloads set, and an appropriate list of
