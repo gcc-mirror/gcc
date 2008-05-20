@@ -234,7 +234,8 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          elsif Id = Name_No_Dependence then
             Set_Restriction_No_Dependence
               (Unit => Expr,
-               Warn => Prag_Id = Pragma_Restriction_Warnings);
+               Warn => Prag_Id = Pragma_Restriction_Warnings
+                         or else Treat_Restrictions_As_Warnings);
          end if;
 
          Next (Arg);
