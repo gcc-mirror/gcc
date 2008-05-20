@@ -1,3 +1,9 @@
+2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36181
+	* gcc.dg/tree-ssa/pr36181.c: New.
+
 2008-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/36057
