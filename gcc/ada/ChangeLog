@@ -1,3 +1,518 @@
+2008-05-20  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.rtl (GNAT.Sockets.Thin_Common): New unit.
+
+	* g-sttsne-vxworks.adb: Add missing dependency on Sockets.Constants.
+	Add missing "with" of Ada.Unchecked_Conversion
+
+	* g-soccon-linux-ppc.ads, g-soccon-linux-64.ads, g-soccon-lynxos.ads, 
+	g-soccon-linux-x86.ads, g-soccon-hpux-ia64.ads, 
+	g-soccon-solaris-64.ads, g-soccon-tru64.ads, g-soccon-aix.ads, 
+	g-soccon-irix.ads, g-soccon-hpux.ads, g-soccon-solaris.ads, 
+	g-soccon-vms.ads, g-soccon-mingw.ads, g-soccon-vxworks.ads, 
+	g-socthi-vxworks.adb, g-soccon-freebsd.ads, g-soccon.ads: 
+	Move common code out of GNAT.Sockets.Thin implementations and into
+	Thin_Common.
+	New constant SIZEOF_fd_set
+	New flag Has_Sockaddr_Len
+	New constants SIZEOF_sockaddr_in, SIZEOF_sockaddr_in6
+
+	* g-stsifd-sockets.adb
+	(Create): Remove call to Set_Length; use Set_Family to set the family
+	and (on appropriate platforms) length fields in struct sockaddr.
+
+	* g-socthi.adb, g-socthi.ads, g-socthi-vms.ads, g-socthi-vms.adb, 
+	g-socthi-mingw.adb, g-socthi-mingw.ads, g-socthi-vxworks.adb, 
+	g-soccon-darwin.ads, g-soccon-darwin.ads: New constant SIZEOF_fd_set
+	Move common code out of GNAT.Sockets.Thin implementations and into
+	Thin_Common.
+
+	* g-socket.ads, g-socket.adb: 
+	Move common code out of GNAT.Sockets.Thin implementations and into
+	Thin_Common.
+	(Connect_Socket, Accept_Socket): Provide new versions of these two
+	routines that operate with a user specified timeout.
+	(Bind_Socket, Connect_Socket, Send_Socket): Remove calls to Set_Length,
+	this is now handled automatically by Set_Family on platforms that
+	require it.
+
+	* gen-soccon.c: 
+	Move common code out of GNAT.Sockets.Thin implementations and into
+	Thin_Common.
+	(SIZEOF_sockaddr_in6): On platforms where IPv6 is not supported, define
+	this constant to 0 (not -1) because we use it to initialize an
+	unsigned_char value.
+	Align values for numeric constants only.
+	Handle the case of systems that do not support AF_INET6.
+	New constant SIZEOF_fd_set
+	New flag Has_Sockaddr_Len
+	New constants SIZEOF_sockaddr_in, SIZEOF_sockaddr_in6
+
+	* gsocket.h: New flag Has_Sockaddr_Len
+	New constants SIZEOF_sockaddr_in, SIZEOF_sockaddr_in6
+
+2008-05-20  Santiago Uruena  <uruena@adacore.com>
+
+	* i-cobol.ads: Interfaces.COBOL should be preelaborate.
+
+2008-05-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-linux-hppa.ads (atomic_lock_t): Put back proper alignment now that
+	the underlying issue with malloc/free has been fixed. Remove associated
+	comments.
+	Minor reformatting.
+	Related to PR ada/24533
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb: Correct casing of ASCII.NUL
+
+	* styleg-c.adb (Check_Identifier): Handle case of names in ASCII
+	properly.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+	    Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Check): Avoid intermediate
+	overflow if result converted to wider integer type.
+	(Apply_Type_Conversion_Checks): Don't emit checks on conversions to
+	discriminated types when discriminant checks are suppressed.
+
+2008-05-20  Vincent Celier  <celier@adacore.com>
+
+	* cstand.adb (Print_Standard): Issue the correct Size clause for type
+	Wide_Wide_Character.
+
+2008-05-20  Tristan Gingold  <gingold@adacore.com>
+
+	* decl.c: Do not emit a variable for a object that has an address
+	representation clause whose value is known at compile time.
+	When a variable has an address clause whose value is known at compile
+	time, refer to this variable by using directly the address instead of
+	dereferencing a pointer.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+
+	PR ada/30740
+	* einfo.ads, einfo.adb (Non_Binary_Modulus): Applies to all types and
+	subtypes, always False for non-modular types.
+	Shared_Var_Assign_Proc (node22) and Shared_Var_Read_Proc (node 15)
+	entry nodes have been replaced by Shared_Var_Procs_Instance (node22)
+	for Shared_Storage package.
+	(Is_RACW_Stub_Type): New entity flag.
+
+	* exp_ch4.adb
+	(Expand_N_Op_Expon): Avoid incorrect optimization of a*(2**b) in the
+	case where we have a modular type with a non-binary modules.
+	Comments reformattings.
+
+	* sem_intr.adb: Simplify code not that Non_Binary_Modulus applies to
+	all types.
+
+2008-05-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb
+	(Build_Record_Aggr_Code): Fix wrong tests checking progenitors. Previous
+	tests did not covered the case in which the type of the aggregate has
+	no progenitors but some its parents has progenitors.
+
+2008-05-20  Gary Dismukes  <dismukes@adacore.com>
+	    Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb
+	(Expand_N_Object_Declaration): Correct the condition which triggers the
+	generation of a call to Displace when initializing a class-wide object.
+	(Build_Dcheck_Functions): Build discriminant-checking for null variants
+	when Frontend_Layout_On_Target is true to ensure that they're available
+	for calling when a record variant size function is built in Layout.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Record): Within an initialization
+	procedure for a derived type retrieve the discriminant values from the
+	parent using the corresponding discriminant.
+	(Expand_N_Assignment_Statement): Skip generation of implicit
+	if-statement associated with controlled types if we are
+	compiling with restriction No_Finalization.
+
+2008-05-20  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Hash (Project_Id)): New function
+	(Project_Empty): Add new component Interfaces_Defined
+
+	* prj.ads (Source_Data): New component Object_Linked
+	(Language_Config): New components Object_Generated and Objects_Linked
+	(Hash (Project_Id)): New function
+	(Source_Data): New Boolean components In_Interfaces and
+	Declared_In_Interfaces.
+	(Project_Data): New Boolean component Interfaces_Defined
+
+	* prj-attr.adb: 
+	New project level attribute Object_Generated and Objects_Linked
+	Add new project level attribute Interfaces
+
+	* prj-dect.adb: Use functions Present and No throughout
+	(Parse_Variable_Declaration): If a string type is specified as a simple
+	name and is not found in the current project, look for it also in the
+	ancestors of the project.
+
+	* prj-makr.adb: 
+	Replace procedure Make with procedures Initialize, Process and Finalize
+	to implement H414-023: process different directories with different
+	patterns.
+	Use functions Present and No throughout
+
+	* prj-makr.ads: 
+	Replace procedure Make with procedures Initialize, Process and Finalize
+
+	* prj-nmsc.adb
+	(Add_Source): Set component Object_Exists and Object_Linked accordnig to
+	the language configuration.
+	(Process_Project_Level_Array_Attributes): Process new attributes
+	Object_Generated and Object_Linked.
+	(Report_No_Sources): New Boolean parameter Continuation, defaulted to
+	False, to indicate that the erreor/warning is a continuation.
+	(Check): Call Report_No_Sources with Contnuation = True after the first
+	call.
+	(Error_Msg): Process successively contnuation character and warning
+	character.
+	(Find_Explicit_Sources): Check that all declared sources have been found
+	(Check_File): Indicate in hash table Source_Names when a declared source
+	is found.
+	(Check_File): Set Other_Part when found
+	(Find_Explicit_Sources): In multi language mode, check if all exceptions
+	to the naming scheme have been found. For Ada, report an error if an
+	exception has not been found. Otherwise, disregard the exception.
+	(Check_Interfaces): New procedure
+	(Add_Source): When Other_Part is defined, set mutual pointers in spec
+	and body.
+	(Check): In multi-language mode, call Check_Interfaces
+	(Process_Sources_In_Multi_Language_Mode): Set In_Interfaces to False
+	for an excluded source.
+	(Remove_Source): A source replacing a source in the interfaces is also
+	in the interfaces.
+
+	* prj-pars.adb: Use function Present
+
+	* prj-part.adb: Use functions Present and No throughout
+	(Parse_Single_Project): Set the parent project for child projects
+	(Create_Virtual_Extending_Project): Register project with no qualifier
+	(Parse_Single_Project): Allow an abstract project to be extend several
+	times. Do not allow an abstract project to extend a non abstract
+	project.
+
+	* prj-pp.adb: Use functions Present and No throughout
+	(Print): Take into account the full associative array attribute
+	declarations.
+
+	* prj-proc.adb: Use functions Present and No throughout
+	(Expression): Call itself with the same From_Project_Node for the
+	default value of an external reference.
+
+	* prj-strt.adb: Use functions Present and No throughout
+	(Parse_Variable_Reference): If a variable is specified as a simple name
+	and is not found in the current project, look for it also in the
+	ancestors of the project.
+
+	* prj-tree.ads, prj-tree.adb (Present): New function
+	(No): New function
+	Use functions Present and No throughout
+	(Parent_Project_Of): New function
+	(Set_Parent_Project_Of): New procedure
+
+	* snames.ads, snames.adb: 
+	Add new standard names Object_Generated and Objects_Linked
+
+2008-05-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Add guard to ensure that both the parent
+	and the derived type are of the same kind.
+	(Expand_Call): Generate type conversions for actuals of
+	record or array types when the parent and the derived types differ in
+	size and/or packed status.
+
+2008-05-20  Javier Miranda  <miranda@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Make_DT, Make_Secondary_DT, Make_Tags): Avoid
+	generating dispatch tables of locally defined tagged types statically.
+	Remove implicit if-statement that is no longer required.
+	(Expand_Dispatching_Call): If this is a call to an instance of the
+	generic dispatching constructor, the type of the first argument may be
+	a subtype of Tag, so always use the base type to recognize this case.
+
+2008-05-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb
+	(GARLIC_Support.Add_RACW_Read_Attribute): When a zero value is received,
+	and the RACW is null-excluding, raise CONSTRAINT_ERROR instead of
+	assigning NULL into the result, to avoid a spurious warning.
+	(Add_RACW_Features, case Same_Scope): Add assertion that designated type
+	is not frozen.
+	(Add_Stub_Type): Set entity flag Is_RACW_Stub_Type on generated stub
+	type.
+	(Build_From_Any_Function, Build_To_Any_Function,
+	Build_TypeCode_Function): For a type that has user-specified stream
+	attributes, use an opaque sequence of octets as the representation.
+
+2008-05-20  Kevin Pouget  <pouget@adacore.com>
+
+	* exp_smem.ads, exp_smem.adb: Construction of access and assign
+	routines has been replaced by an instantiation of
+	System.Shared_Storage.Shared_Var_Procs generic package, while expanding
+	shared variable declaration.
+	Calls to access and assign routines have been replaced by calls to
+	Read/Write routines of System.Shared_Storage.Shared_Var_Procs
+	instantiated package.
+	
+	* rtsfind.ads: RE_Shared_Var_Procs entry has been added in RE_Unit_Table
+	It identifies the new generic package added in s-shasto.
+
+	* s-shasto.adb, s-shasto.ads: A new generic package has been added, it
+	is instantiated for each shared passive variable. It provides
+	supporting procedures called upon each read or write access by the
+	expanded code.
+
+	* sem_attr.adb:
+	For this runtime unit (always compiled in GNAT mode), we allow
+	stream attributes references for limited types for the case where
+	shared passive objects are implemented using stream attributes,
+	which is the default in GNAT's persistent storage implementation.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb
+	(Freeze_Enumeration_Type): For a subtype that inherits a foreign
+	convention from its base type, do not set the type to that of integer,
+	because it may inherit a size clause.
+	Warn on a size clause with a size different
+	from that of Integer, if the type has convention C.
+
+2008-05-20  Vincent Celier  <celier@adacore.com>
+
+	* gnatname.adb
+	(Scan_Args): Rewrite to take into account new switch --and to separate
+	arguments into sections.
+	(Gnatname): Call Prj.Makr.Initialize, then Prj.Makr.Process for each
+	section, then Finalize.
+
+2008-05-20  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Enable stack probing on ppc-linux.
+
+	* tracebak.c: Add symbolic traceback for ppc-linux.
+
+	* system-linux-ppc.ads: Enable stack probing on ppc-linux.
+
+2008-05-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.in
+	(common-tools): New rule, to avoid parallel build failure on gnat tools.
+	Reenable parallel builds on this Makefile.
+
+	* Make-lang.in: Update dependencies.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Treat_Restrictions_As_Warnings): New switch
+
+	* sem_prag.adb, par-prag.adb, restrict.ads: Implement flag
+	Treat_Restrictions_As_Warnings.
+
+	* switch-c.adb: Recognize new switch -gnatr
+
+	* usage.adb: Add line for -gnatr
+
+2008-05-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch3.adb
+	(P_Access_Definition): Change the error message when parsing "access
+	all" in Ada 95 mode. The message no longer forces the user to recompile
+	in 05 mode only to discover that anonymous access types are not allowed
+	to have "all".
+
+2008-05-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch9.adb
+	(P_Protected): Update the error message on missing "-gnat05" switch when
+	using interfaces in conjunction with protected types. Remove the
+	incorrect error message associated with the presence of "private" after
+	a "with".
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb: Update comments.
+	Improve previous change for PR ada/17985
+
+2008-05-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb
+	(Set_Categorization_From_Scope): Do not set In_Remote_Types unless in
+	the visible part of the spec of a remote types unit.
+	(Validate_Remote_Access_Object_Type_Declaration):
+	New local subprogram Is_Valid_Remote_Object_Type, replaces
+	Is_Recursively_Limited_Private.
+	(Validate_RACW_Primitives): Enforce E.2.2(14) rules: the types of all
+	non-controlling formals (and the return type, even though this is not
+	explicit in the standard) must support external streaming.
+	(Validate_RCI_Subprogram_Declaration): Enforce E.2.3(14) rules: same
+	as above for of RAS types and RCI subprograms. (The return type is not
+	checked yet).
+	Update comments related to RACWs designating limited interfaces per
+	ARG ruling on AI05-060.
+
+	* sem_util.ads, sem_util.adb
+	(Is_Remote_Access_To_Class_Wide_Type): Only rely on Is_Remote_Types and
+	Is_Remote_Call_Interface to identify RACW types in a stable and
+	consistent way. We used to rely in this predicate on the privateness of
+	the designated type and its ancestors, but depending on the currently
+	visible private parts, this caused false negatives. We now uniformly
+	rely on checks made at the point where the RACW type is declared.
+	(Inspect_Deferred_Constant_Completion): Moved from Sem_Ch7.
+
+2008-05-20  Javier Miranda  <miranda@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+	    Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb
+	(Analyze_Object_Declaration): Fix over-conservative condition
+	restricting use of predefined assignment with tagged types that have
+	convention CPP.
+	(Analyze_Object_Declaration): Relax the check regarding deferred
+	constants declared in scopes other than packages since they can be
+	completed with pragma Import.
+	Add missing escaping of all-caps word 'CPP' in error messages.
+	(Build_Discriminated_Subtype): Do not inherit representation clauses
+	from parent type if subtype already carries them, because they are
+	inherited earlier during derivation and already include those that may
+	come from a partial view.
+
+	* sem_ch9.adb, sem_ch5.adb, sem_ch6.adb (Analyze_Subprogram_Body):
+	Check the declarations of a subprogram body for proper deferred
+	constant completion.
+
+	* sem_ch7.ads, sem_ch7.adb
+	(Inspect_Deferred_Constant_Completion): Moved to sem_util.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb
+	(Try_Indexed_Call): Handle properly a construct of the form F(S) where
+	F is a parameterless function that returns an array, and S is a subtype
+	mark.
+	(Analyze_Call): Insert dereference when the prefix is a parameterless
+	function that returns an access to subprogram and the call has
+	parameters.
+	Reject a non-overloaded call whose name resolves to denote
+	a primitive operation of the stub type generated to support a remote
+	access-to-class-wide type.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb
+	(Note_Redundant_Use): Diagnose a redundant use within a subprogram body
+	when there is a use clause for the same entity in the context.
+	(Analyze_Subprogram_Renaming): A renaming_as_body is legal if it is
+	created for a stream attribute of an abstract type or interface type.
+
+2008-05-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_dist.ads, sem_dist.adb (Is_RACW_Stub_Type_Operation): New
+	subprogram.
+
+	* sem_type.adb
+	(Add_One_Interp): Ignore any interpretation that is a primitive
+	operation of an RACW stub type (these primitives are only executed
+	through dispatching, never through static calls).
+	(Collect_Interps): When only one interpretation has been found, set N's
+	Entity and Etype to that interpretation, otherwise Entity and Etype may
+	still refer to an interpretation that was ignored by Add_One_Interp,
+	in which case would end up with being marked as not overloaded but with
+	an Entity attribute not pointing to its (unique) correct interpretation.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb
+	(Eval_Slice): Warn when a slice whose discrete range is a subtype name
+	denotes the whole array of its prefix.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Op_Not): Warn on double negation
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb
+	(Print_Itype): Do not modify the sloc of the component type of a
+	(packed) array itype, because it is an unrelated type whose source
+	location is independent of the point of creation of the itype itself.
+
+2008-05-20  Thomas Quinot  <quinot@adacore.com>
+
+	* uintp.adb, urealp.adb: Replace calls to Increment_Last + Set with
+	Append.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+	    Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add entry for -gnatr
+	Put GNAT SYNC section in proper alpha order
+	Add VMS qualifier /DISPLAY_PROGRESS equivalent to gnatmake switch -d
+
+	* gnat_ugn.texi: Add documentation for new gnatname switch --and
+	Update the style checks section
+	Add documentation of -gnatr
+	Add to the "Adding the Results of Compiler Checks to gnatcheck Output"
+	subsection the explanation how compiler checks should be disabled for
+	gnatcheck.
+	Update the list of Ada 95 reserved words used by in the project language
+	Add documentation for project qualifiers.
+	Document that abstract projects may be extended by different projects in
+	the same project tree.
+	Add documentation for gnatmake switch -d
+
+	* ug_words: Add -gnatyy VMS equivalence string.
+	Add entry for -gnatr
+
+2008-05-20  Bob Duff  <duff@adacore.com>
+
+	* a-rttiev.adb
+	(Set_Handler): Remove code from both of these that implements
+	RM-D.15(15/2), because it causes a race condition and potential
+	deadlock.
+	(Process_Queued_Events): Add comment explaining "exception when others
+	=> null". Add clarifying ".all", even though implicit .all is legal
+	here.
+
+2008-05-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-winext.ads: Replace representation clause by pragma Pack. Gives
+	equivalent representation, but has the advantage of allowing
+	compilation of this file under 64 bits platforms.
+
+	* s-os_lib.adb (Normalize_Pathname): Mark Cur_Dir constant.
+
+	* s-osinte-irix.ads: (Alternate_Stack_Size): Add dummy declaration.
+
+	* adaint.c: 
+	Don't define dummy implementation of convert_addresses on ppc-linux.
+
+2008-05-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb
+	(Expand_Ctrl_Function_Call): Do not attach result to finalization list
+	if expression is aggregate component.
+
+2008-05-20  Robert Dewar  <dewar@adacore.com>
+
+	* g-byorma.adb, gnatlink.adb, prepcomp.adb, sinfo.ads,
+	sem_ch12.adb: Update comments. Minor reformatting.
+
+	* exp_ch2.adb: Typo
+
+	* s-unstyp.ads: Fixed some typos in comments.
+
 2008-05-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taspri-vxworks.ads (Task_Address, Task_Address_Size): New
