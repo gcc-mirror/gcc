@@ -1,3 +1,14 @@
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36244
+	* gcc.dg/torture/pr36244.c: New testcase.
+
+	PR tree-optimization/34330
+	* gcc.dg/torture/pr34330.c: New testcase.
+
 2008-05-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194

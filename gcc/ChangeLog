@@ -1,5 +1,19 @@
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline:
+	2008-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36244
+	* tree-ssa-alias.c (new_type_alias): Do not set TREE_READONLY.
+	* tree-flow-inline.h (unmodifiable_var_p): Memory tags never
+	represent unmodifiable vars.
+
+	PR tree-optimization/34330
+	* tree-ssa-alias.c (get_smt_for): Only assert that accesses
+	through the pointer will alias the SMT.
+
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/35204
 	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): New
 	helper, split out from ...

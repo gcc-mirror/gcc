@@ -3199,8 +3199,11 @@ get_smt_for (tree ptr, struct alias_info *ai)
   TREE_THIS_VOLATILE (tag) |= TREE_THIS_VOLATILE (tag_type);
 
   /* Make sure that the symbol tag has the same alias set as the
-     pointed-to type.  */
-  gcc_assert (tag_set == get_alias_set (tag));
+     pointed-to type or at least accesses through the pointer will
+     alias that set.  The latter can happen after the vectorizer
+     created pointers of vector type.  */
+  gcc_assert (tag_set == get_alias_set (tag)
+	      || alias_set_subset_of (tag_set, get_alias_set (tag)));
 
   return tag;
 }
@@ -3672,7 +3675,6 @@ new_type_alias (tree ptr, tree var, tree expr)
     }
 
   set_symbol_mem_tag (ptr, ali);
-  TREE_READONLY (tag) = TREE_READONLY (var);
   MTAG_GLOBAL (tag) = is_global_var (var);
 }
 
