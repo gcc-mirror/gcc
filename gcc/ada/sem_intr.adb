@@ -418,9 +418,7 @@ package body Sem_Intr is
              Ptyp1, N);
          return;
 
-      elsif Is_Modular_Integer_Type (Typ1)
-        and then Non_Binary_Modulus (Typ1)
-      then
+      elsif Non_Binary_Modulus (Typ1) then
          Errint
            ("shifts not allowed for non-binary modular types",
             Ptyp1, N);
