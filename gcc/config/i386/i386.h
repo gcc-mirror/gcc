@@ -446,17 +446,7 @@ extern tree x86_mfence;
 #define TARGET_MACHO 0
 
 /* Likewise, for the Windows 64-bit ABI.  */
-#define TARGET_64BIT_MS_ABI (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
-
-/* Available call abi.  */
-enum
-{
-  SYSV_ABI = 0,
-  MS_ABI = 1
-};
-
-/* The default abi form used by target.  */
-#define DEFAULT_ABI SYSV_ABI
+#define TARGET_64BIT_MS_ABI 0
 
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */
@@ -814,8 +804,7 @@ enum target_cpu_default
 #define PARM_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY	(TARGET_64BIT && DEFAULT_ABI == MS_ABI ? 128 \
-							       : BITS_PER_WORD)
+#define STACK_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
@@ -1040,35 +1029,6 @@ enum target_cpu_default
 #define ORDER_REGS_FOR_LOCAL_ALLOC x86_order_regs_for_local_alloc ()
 
 
-/* regclass.c  */
-extern void init_regs (void);
-
-#define OVERRIDE_ABI_FORMAT(FNDECL) \
-do {									\
-    if (FNDECL == NULL)							\
-      cfun->machine->call_abi = DEFAULT_ABI;			\
-    else								\
-      cfun->machine->call_abi = ix86_function_type_abi (TREE_TYPE (FNDECL));	\
-    if (cfun->machine->call_abi == MS_ABI && call_used_regs)			\
-      {										\
-        if (call_used_regs[4 /*RSI*/] != 0 || call_used_regs[5 /*RDI*/] != 0) \
-          {								\
-	    call_used_regs[4 /*RSI*/] = 0;                              \
-	    call_used_regs[5 /*RDI*/] = 0;                              \
-            init_regs ();						\
-	  }								\
-      }									\
-    else if (TARGET_64BIT && call_used_regs)					\
-      {									\
-        if (call_used_regs[4 /*RSI*/] != 1 || call_used_regs[5 /*RDI*/] != 1)	\
-          {								\
-	    call_used_regs[4 /*RSI*/] = 1;                              \
-	    call_used_regs[5 /*RDI*/] = 1;                              \
-            init_regs ();						\
-	  }								\
-      }									\
-   } while (0)
-
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define CONDITIONAL_REGISTER_USAGE					\
 do {									\
@@ -1118,6 +1078,11 @@ do {									\
 	  reg_names[i] = "";						\
 	for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)		\
 	  reg_names[i] = "";						\
+      }									\
+    if (TARGET_64BIT_MS_ABI)						\
+      {									\
+        call_used_regs[4 /*RSI*/] = 0;                                  \
+        call_used_regs[5 /*RDI*/] = 0;                                  \
       }									\
   } while (0)
 
@@ -1295,6 +1260,25 @@ do {									\
    : REAL_PIC_OFFSET_TABLE_REGNUM)
 
 #define GOT_SYMBOL_NAME "_GLOBAL_OFFSET_TABLE_"
+
+/* A C expression which can inhibit the returning of certain function
+   values in registers, based on the type of value.  A nonzero value
+   says to return the function value in memory, just as large
+   structures are always returned.  Here TYPE will be a C expression
+   of type `tree', representing the data type of the value.
+
+   Note that values of mode `BLKmode' must be explicitly handled by
+   this macro.  Also, the option `-fpcc-struct-return' takes effect
+   regardless of this macro.  On most systems, it is possible to
+   leave the macro undefined; this causes a default definition to be
+   used, whose value is the constant 1 for `BLKmode' values, and 0
+   otherwise.
+
+   Do not use this macro to indicate that structures and unions
+   should always be returned in memory.  You should instead use
+   `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
+
+#define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
 
 /* This is overridden by <cygwin.h>.  */
 #define MS_AGGREGATE_RETURN 0
@@ -1644,11 +1628,7 @@ enum reg_class
    This space can be allocated by the caller, or be a part of the
    machine-dependent stack frame: `OUTGOING_REG_PARM_STACK_SPACE' says
    which.  */
-#define REG_PARM_STACK_SPACE(FNDECL) ix86_reg_parm_stack_space (FNDECL)
-
-#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) (ix86_function_type_abi (FNTYPE) == MS_ABI ? 1 : 0)
-
-extern unsigned int ix86_reg_parm_stack_space (const_tree);
+#define REG_PARM_STACK_SPACE(FNDECL) 0
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
@@ -1710,8 +1690,6 @@ typedef struct ix86_args {
   int maybe_vaarg;		/* true for calls to possibly vardic fncts.  */
   int float_in_sse;		/* 1 if in 32-bit mode SFmode (2 for DFmode) should
 				   be passed in SSE registers.  Otherwise 0.  */
-  int call_abi;			/* Set to SYSV_ABI for sysv abi. Otherwise
- 				   MS_ABI for ms abi.  */
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -2489,9 +2467,6 @@ struct machine_function GTY(())
      ix86_current_function_calls_tls_descriptor macro for a better
      approximation.  */
   int tls_descriptor_call_expanded_p;
-  /* This value is used for amd64 targets and specifies the current abi
-     to be used. MS_ABI means ms abi. Otherwise SYSV_ABI means sysv abi.  */
-  int call_abi;
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
