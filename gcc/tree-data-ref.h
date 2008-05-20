@@ -96,6 +96,63 @@ struct dr_alias
   bitmap vops;
 };
 
+/* Each vector of the access matrix represents a linear access
+   function for a subscript.  First elements correspond to the
+   leftmost indices, ie. for a[i][j] the first vector corresponds to
+   the subscript in "i".  The elements of a vector are relative to
+   the loop nests in which the data reference is considered,
+   i.e. the vector is relative to the SCoP that provides the context
+   in which this data reference occurs.
+
+   For example, in
+
+   | loop_1
+   |    loop_2
+   |      a[i+3][2*j+n-1]
+
+   if "i" varies in loop_1 and "j" varies in loop_2, the access 
+   matrix with respect to the loop nest {loop_1, loop_2} is:
+
+   | loop_1  loop_2  param_n  cst
+   |   1       0        0      3
+   |   0       2        1     -1
+
+   whereas the access matrix with respect to loop_2 considers "i" as
+   a parameter:
+
+   | loop_2  param_i  param_n  cst
+   |   0       1         0      3
+   |   2       0         1     -1
+*/
+struct access_matrix
+{
+  int loop_nest_num;
+  int nb_induction_vars;
+  VEC (tree, heap) *parameters;
+  VEC (lambda_vector, heap) *matrix;
+};
+
+#define AM_LOOP_NEST_NUM(M) (M)->loop_nest_num
+#define AM_NB_INDUCTION_VARS(M) (M)->nb_induction_vars
+#define AM_PARAMETERS(M) (M)->parameters
+#define AM_MATRIX(M) (M)->matrix
+#define AM_NB_PARAMETERS(M) (VEC_length (tree, AM_PARAMETERS(M)))
+#define AM_CONST_COLUMN_INDEX(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M))
+#define AM_NB_COLUMNS(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M) + 1)
+#define AM_GET_SUBSCRIPT_ACCESS_VECTOR(M, I) VEC_index (lambda_vector, AM_MATRIX (M), I)
+#define AM_GET_ACCESS_MATRIX_ELEMENT(M, I, J) AM_GET_SUBSCRIPT_ACCESS_VECTOR (M, I)[J]
+
+/* Return the column in the access matrix of LOOP_NUM.  */
+
+static inline int
+am_vector_index_for_loop (struct access_matrix *access_matrix, int loop_num)
+{
+  gcc_assert (loop_num >= AM_LOOP_NEST_NUM (access_matrix));
+  return loop_num - AM_LOOP_NEST_NUM (access_matrix);
+}
+
+int access_matrix_get_index_for_parameter (tree, struct access_matrix *);
+
 struct data_reference
 {
   /* A pointer to the statement that contains this DR.  */
@@ -118,11 +175,10 @@ struct data_reference
 
   /* Alias information for the data reference.  */
   struct dr_alias alias;
-};
 
-typedef struct data_reference *data_reference_p;
-DEF_VEC_P(data_reference_p);
-DEF_VEC_ALLOC_P (data_reference_p, heap);
+  /* Matrix representation for the data access functions.  */
+  struct access_matrix *access_matrix;
+};
 
 #define DR_STMT(DR)                (DR)->stmt
 #define DR_REF(DR)                 (DR)->ref
@@ -139,6 +195,11 @@ DEF_VEC_ALLOC_P (data_reference_p, heap);
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
 #define DR_VOPS(DR)		   (DR)->alias.vops
 #define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
+#define DR_ACCESS_MATRIX(DR)       (DR)->access_matrix
+
+typedef struct data_reference *data_reference_p;
+DEF_VEC_P(data_reference_p);
+DEF_VEC_ALLOC_P (data_reference_p, heap);
 
 enum data_dependence_direction {
   dir_positive, 
@@ -309,7 +370,7 @@ DEF_VEC_ALLOC_O (data_ref_loc, heap);
 
 bool get_references_in_stmt (tree, VEC (data_ref_loc, heap) **);
 void dr_analyze_innermost (struct data_reference *);
-extern void compute_data_dependences_for_loop (struct loop *, bool,
+extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
 extern void print_direction_vector (FILE *, lambda_vector, int);
@@ -493,7 +554,12 @@ rdg_has_similar_memory_accesses (struct graph *rdg, int v1, int v2)
 }
 
 /* In lambda-code.c  */
-bool lambda_transform_legal_p (lambda_trans_matrix, int, VEC (ddr_p, heap) *);
+bool lambda_transform_legal_p (lambda_trans_matrix, int,
+			       VEC (ddr_p, heap) *);
+void lambda_collect_parameters (VEC (data_reference_p, heap) *,
+				VEC (tree, heap) **);
+bool lambda_compute_access_matrices (VEC (data_reference_p, heap) *,
+				     VEC (tree, heap) *, int);
 
 /* In tree-data-refs.c  */
 void split_constant_offset (tree , tree *, tree *);

@@ -28,9 +28,12 @@ along with GCC; see the file COPYING3.  If not see
    and scalar multiplication.  In this vector space, an element is a list of
    integers.  */
 typedef int *lambda_vector;
-
 DEF_VEC_P(lambda_vector);
 DEF_VEC_ALLOC_P(lambda_vector,heap);
+
+typedef VEC(lambda_vector, heap) *lambda_vector_vec_p;
+DEF_VEC_P (lambda_vector_vec_p);
+DEF_VEC_ALLOC_P (lambda_vector_vec_p, heap);
 
 /* An integer matrix.  A matrix consists of m vectors of length n (IE
    all vectors are the same length).  */
@@ -487,4 +490,3 @@ dependence_level (lambda_vector dist_vect, int length)
 }
 
 #endif /* LAMBDA_H  */
-

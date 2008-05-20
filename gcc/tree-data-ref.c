@@ -4180,18 +4180,20 @@ find_loop_nest (struct loop *loop, VEC (loop_p, heap) **loop_nest)
   return true;
 }
 
-/* Given a loop nest LOOP, the following vectors are returned:
+/* Returns true when the data dependences have been computed, false otherwise.
+   Given a loop nest LOOP, the following vectors are returned:
    DATAREFS is initialized to all the array elements contained in this loop, 
    DEPENDENCE_RELATIONS contains the relations between the data references.  
    Compute read-read and self relations if 
    COMPUTE_SELF_AND_READ_READ_DEPENDENCES is TRUE.  */
 
-void
+bool
 compute_data_dependences_for_loop (struct loop *loop, 
 				   bool compute_self_and_read_read_dependences,
 				   VEC (data_reference_p, heap) **datarefs,
 				   VEC (ddr_p, heap) **dependence_relations)
 {
+  bool res = true;
   VEC (loop_p, heap) *vloops = VEC_alloc (loop_p, heap, 3);
 
   memset (&dependence_stats, 0, sizeof (dependence_stats));
@@ -4209,6 +4211,7 @@ compute_data_dependences_for_loop (struct loop *loop,
 	 chrec_dont_know.  */
       ddr = initialize_data_dependence_relation (NULL, NULL, vloops);
       VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
+      res = false;
     }
   else
     compute_all_dependences (*datarefs, dependence_relations, vloops,
@@ -4260,7 +4263,9 @@ compute_data_dependences_for_loop (struct loop *loop,
 	       dependence_stats.num_miv_independent);
       fprintf (dump_file, "Number of miv tests unimplemented: %d\n",
 	       dependence_stats.num_miv_unimplemented);
-    }    
+    }
+
+  return res;
 }
 
 /* Entry point (for testing only).  Analyze all the data references
@@ -5032,3 +5037,20 @@ remove_similar_memory_refs (VEC (tree, heap) **stmts)
   htab_delete (seen);
 }
 
+/* Returns the index of PARAMETER in the parameters vector of the
+   ACCESS_MATRIX.  If PARAMETER does not exist return -1.  */
+
+int 
+access_matrix_get_index_for_parameter (tree parameter, 
+				       struct access_matrix *access_matrix)
+{
+  int i;
+  VEC (tree,heap) *lambda_parameters = AM_PARAMETERS (access_matrix);
+  tree lambda_parameter;
+
+  for (i = 0; VEC_iterate (tree, lambda_parameters, i, lambda_parameter); i++)
+    if (lambda_parameter == parameter)
+      return i + AM_NB_INDUCTION_VARS (access_matrix);
+
+  return -1;
+}

@@ -42,6 +42,7 @@
 #include "vec.h"
 #include "lambda.h"
 #include "vecprim.h"
+#include "pointer-set.h"
 
 /* This loop nest code generation is based on non-singular matrix
    math.
@@ -2639,5 +2640,200 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 	    return false;
 	}
     }
+  return true;
+}
+
+
+/* Collects parameters from affine function ACCESS_FUNCTION, and push
+   them in PARAMETERS.  */
+
+static void
+lambda_collect_parameters_from_af (tree access_function,
+				   struct pointer_set_t *param_set,
+				   VEC (tree, heap) **parameters)
+{
+  if (access_function == NULL)
+    return;
+
+  if (TREE_CODE (access_function) == SSA_NAME
+      && pointer_set_contains (param_set, access_function) == 0)
+    {
+      pointer_set_insert (param_set, access_function);
+      VEC_safe_push (tree, heap, *parameters, access_function);
+    }
+  else
+    {
+      int i, num_operands = tree_operand_length (access_function);
+
+      for (i = 0; i < num_operands; i++)
+	lambda_collect_parameters_from_af (TREE_OPERAND (access_function, i),
+					   param_set, parameters);
+    }
+}
+
+/* Collects parameters from DATAREFS, and push them in PARAMETERS.  */
+
+void
+lambda_collect_parameters (VEC (data_reference_p, heap) *datarefs,
+			   VEC (tree, heap) **parameters)
+{
+  unsigned i, j;
+  struct pointer_set_t *parameter_set = pointer_set_create ();
+  data_reference_p data_reference;
+
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, data_reference); i++)
+    for (j = 0; j < DR_NUM_DIMENSIONS (data_reference); j++)
+      lambda_collect_parameters_from_af (DR_ACCESS_FN (data_reference, j),
+					 parameter_set, parameters);
+}
+
+/* Translates BASE_EXPR to vector CY.  AM is needed for inferring
+   indexing positions in the data access vector.  CST is the analyzed
+   integer constant.  */
+
+static bool
+av_for_af_base (tree base_expr, lambda_vector cy, struct access_matrix *am,
+		int cst)
+{
+  bool result = true;
+
+  switch (TREE_CODE (base_expr))
+    {
+    case INTEGER_CST:
+      /* Constant part.  */
+      cy[AM_CONST_COLUMN_INDEX (am)] += int_cst_value (base_expr) * cst;
+      return true;
+
+    case SSA_NAME:
+      {
+	int param_index =
+	  access_matrix_get_index_for_parameter (base_expr, am);
+
+	if (param_index >= 0)
+	  {
+	    cy[param_index] = cst + cy[param_index];
+	    return true;
+	  }
+
+	return false;
+      }
+
+    case PLUS_EXPR:
+      return av_for_af_base (TREE_OPERAND (base_expr, 0), cy, am, cst)
+	&& av_for_af_base (TREE_OPERAND (base_expr, 1), cy, am, cst);
+
+    case MINUS_EXPR:
+      return av_for_af_base (TREE_OPERAND (base_expr, 0), cy, am, cst)
+	&& av_for_af_base (TREE_OPERAND (base_expr, 1), cy, am, -1 * cst);
+
+    case MULT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (base_expr, 0)) == INTEGER_CST)
+	result = av_for_af_base (TREE_OPERAND (base_expr, 1), 
+				 cy, am, cst *
+				 int_cst_value (TREE_OPERAND (base_expr, 0)));
+      else if (TREE_CODE (TREE_OPERAND (base_expr, 1)) == INTEGER_CST)
+	result = av_for_af_base (TREE_OPERAND (base_expr, 0),
+				 cy, am, cst *
+				 int_cst_value (TREE_OPERAND (base_expr, 1)));
+      else
+	result = false;
+
+      return result;
+
+    case NEGATE_EXPR:
+      return av_for_af_base (TREE_OPERAND (base_expr, 0), cy, am, -1 * cst);
+
+    default:
+      return false;
+    }
+
+  return result;
+}
+
+/* Translates ACCESS_FUN to vector CY.  AM is needed for inferring
+   indexing positions in the data access vector.  */
+
+static bool
+av_for_af (tree access_fun, lambda_vector cy, struct access_matrix *am)
+{
+  switch (TREE_CODE (access_fun))
+    {
+    case POLYNOMIAL_CHREC:
+      {
+	tree left = CHREC_LEFT (access_fun);
+	tree right = CHREC_RIGHT (access_fun);
+	unsigned var;
+
+	if (TREE_CODE (right) != INTEGER_CST)
+	  return false;
+
+	var = am_vector_index_for_loop (am, CHREC_VARIABLE (access_fun));
+	cy[var] = int_cst_value (right);
+
+	if (TREE_CODE (left) == POLYNOMIAL_CHREC)
+	  return av_for_af (left, cy, am);
+	else
+	  return av_for_af_base (left, cy, am, 1);
+      }
+
+    case INTEGER_CST:
+      /* Constant part.  */
+      return av_for_af_base (access_fun, cy, am, 1);
+
+    default:
+      return false;
+    }
+}
+
+/* Initializes the access matrix for DATA_REFERENCE.  */
+
+static bool
+build_access_matrix (data_reference_p data_reference,
+		     VEC (tree, heap) *parameters, int loop_nest_num)
+{
+  struct access_matrix *am = GGC_NEW (struct access_matrix);
+  unsigned i, ndim = DR_NUM_DIMENSIONS (data_reference);
+  struct loop *loop = bb_for_stmt (DR_STMT (data_reference))->loop_father;
+  unsigned nb_induction_vars = loop_depth (loop) - loop_nest_num + 1;
+  unsigned lambda_nb_columns;
+  lambda_vector_vec_p matrix;
+
+  AM_LOOP_NEST_NUM (am) = loop_nest_num;
+  AM_NB_INDUCTION_VARS (am) = nb_induction_vars;
+  AM_PARAMETERS (am) = parameters;
+
+  lambda_nb_columns = AM_NB_COLUMNS (am);
+  matrix = VEC_alloc (lambda_vector, heap, lambda_nb_columns);
+  AM_MATRIX (am) = matrix;
+
+  for (i = 0; i < ndim; i++)
+    {
+      lambda_vector access_vector = lambda_vector_new (lambda_nb_columns);
+      tree access_function = DR_ACCESS_FN (data_reference, i);
+
+      if (!av_for_af (access_function, access_vector, am))
+	return false;
+
+      VEC_safe_push (lambda_vector, heap, matrix, access_vector);
+    }
+
+  DR_ACCESS_MATRIX (data_reference) = am;
+  return true;
+}
+
+/* Returns false when one of the access matrices cannot be built.  */
+
+bool
+lambda_compute_access_matrices (VEC (data_reference_p, heap) *datarefs,
+				VEC (tree, heap) *parameters,
+				int loop_nest_num)
+{
+  data_reference_p dataref;
+  unsigned ix;
+
+  for (ix = 0; VEC_iterate (data_reference_p, datarefs, ix, dataref); ix++)
+    if (!build_access_matrix (dataref, parameters, loop_nest_num))
+      return false;
+
   return true;
 }
