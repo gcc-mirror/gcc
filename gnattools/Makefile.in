@@ -146,18 +146,6 @@ TOOLS_FLAGS_TO_PASS_CROSS= \
 EXTRA_GNATTOOLS = @EXTRA_GNATTOOLS@
 TOOLS_TARGET_PAIRS = @TOOLS_TARGET_PAIRS@
 
-# These are built by gnatmake, and in both native and cross configurations.
-GNATTOOLS2_FILES = \
-	../../gnatchop$(exeext) \
-	../../gnat$(exeext) \
-	../../gnatkr$(exeext) \
-	../../gnatls$(exeext) \
-	../../gnatprep$(exeext) \
-	../../gnatxref$(exeext) \
-	../../gnatfind$(exeext) \
-	../../gnatname$(exeext) \
-	../../gnatclean$(exeext)
-
 # Makefile targets
 # ----------------
 
@@ -202,8 +190,7 @@ gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib
 	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_NATIVE) \
-	  $(GNATTOOLS2_FILES)
+	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools
 
 # gnatmake/link can be built with recent gnatmake/link if they are available.
 # This is especially convenient for building cross tools or for rebuilding
@@ -215,8 +202,7 @@ regnattools: $(GCC_DIR)/stamp-gnatlib
 	  gnatmake-re gnatlink-re
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_NATIVE) \
-	  $(GNATTOOLS2_FILES)
+	  $(TOOLS_FLAGS_TO_PASS_NATIVE) common-tools
 
 # For cross builds of gnattools,
 # put the host RTS dir first in the PATH to hide the default runtime
@@ -230,8 +216,7 @@ gnattools-cross: $(GCC_DIR)/stamp-tools
 	  gnatmake-re gnatlink-re
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
-	  $(TOOLS_FLAGS_TO_PASS_CROSS) \
-	  $(GNATTOOLS2_FILES)
+	  $(TOOLS_FLAGS_TO_PASS_CROSS) common-tools
 	# Rename cross tools to where the GCC makefile wants them when
 	# installing.  FIXME: installation should be done elsewhere.
 	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \

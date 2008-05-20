@@ -1,3 +1,8 @@
+2008-05-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.in (GNATTOOLS2_FILES): Replaced by common-tools target
+	in gcc/ada/Makefile.in
+
 2008-05-13  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/31808
