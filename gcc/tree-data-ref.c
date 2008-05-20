@@ -754,7 +754,7 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
-      access_fn = resolve_mixers (nest, access_fn);
+      access_fn = instantiate_scev (nest, loop, access_fn);
       base = initial_condition (access_fn);
       split_constant_offset (base, &base, &off);
       access_fn = chrec_replace_initial_condition (access_fn,
@@ -1849,16 +1849,42 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 /* Helper recursive function for initializing the matrix A.  Returns
    the initial value of CHREC.  */
 
-static HOST_WIDE_INT
+static tree
 initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
 {
   gcc_assert (chrec);
 
-  if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return int_cst_value (chrec);
+  switch (TREE_CODE (chrec))
+    {
+    case POLYNOMIAL_CHREC:
+      gcc_assert (TREE_CODE (CHREC_RIGHT (chrec)) == INTEGER_CST);
 
-  A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
-  return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
+      A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
+      return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
+
+    case PLUS_EXPR:
+    case MULT_EXPR:
+    case MINUS_EXPR:
+      {
+	tree op0 = initialize_matrix_A (A, TREE_OPERAND (chrec, 0), index, mult);
+	tree op1 = initialize_matrix_A (A, TREE_OPERAND (chrec, 1), index, mult);
+
+	return chrec_fold_op (TREE_CODE (chrec), chrec_type (chrec), op0, op1);
+      }
+
+    case NOP_EXPR:
+      {
+	tree op = initialize_matrix_A (A, TREE_OPERAND (chrec, 0), index, mult);
+	return chrec_convert (chrec_type (chrec), op, NULL_TREE);
+      }
+
+    case INTEGER_CST:
+      return chrec;
+
+    default:
+      gcc_unreachable ();
+      return NULL_TREE;
+    }
 }
 
 #define FLOOR_DIV(x,y) ((x) / (y))
@@ -2090,8 +2116,8 @@ analyze_subscript_affine_affine (tree chrec_a,
   A = lambda_matrix_new (dim, 1);
   S = lambda_matrix_new (dim, 1);
 
-  init_a = initialize_matrix_A (A, chrec_a, 0, 1);
-  init_b = initialize_matrix_A (A, chrec_b, nb_vars_a, -1);
+  init_a = int_cst_value (initialize_matrix_A (A, chrec_a, 0, 1));
+  init_b = int_cst_value (initialize_matrix_A (A, chrec_b, nb_vars_a, -1));
   gamma = init_b - init_a;
 
   /* Don't do all the hard work of solving the Diophantine equation
@@ -2369,7 +2395,8 @@ analyze_siv_subscript (tree chrec_a,
 		       tree chrec_b,
 		       conflict_function **overlaps_a, 
 		       conflict_function **overlaps_b, 
-		       tree *last_conflicts)
+		       tree *last_conflicts,
+		       int loop_nest_num)
 {
   dependence_stats.num_siv++;
   
@@ -2377,17 +2404,17 @@ analyze_siv_subscript (tree chrec_a,
     fprintf (dump_file, "(analyze_siv_subscript \n");
   
   if (evolution_function_is_constant_p (chrec_a)
-      && evolution_function_is_affine_p (chrec_b))
+      && evolution_function_is_affine_in_loop (chrec_b, loop_nest_num))
     analyze_siv_subscript_cst_affine (chrec_a, chrec_b, 
 				      overlaps_a, overlaps_b, last_conflicts);
   
-  else if (evolution_function_is_affine_p (chrec_a)
+  else if (evolution_function_is_affine_in_loop (chrec_a, loop_nest_num)
 	   && evolution_function_is_constant_p (chrec_b))
     analyze_siv_subscript_cst_affine (chrec_b, chrec_a, 
 				      overlaps_b, overlaps_a, last_conflicts);
   
-  else if (evolution_function_is_affine_p (chrec_a)
-	   && evolution_function_is_affine_p (chrec_b))
+  else if (evolution_function_is_affine_in_loop (chrec_a, loop_nest_num)
+	   && evolution_function_is_affine_in_loop (chrec_b, loop_nest_num))
     {
       if (!chrec_contains_symbols (chrec_a)
 	  && !chrec_contains_symbols (chrec_b))
@@ -2649,7 +2676,7 @@ analyze_overlapping_iterations (tree chrec_a,
   else if (siv_subscript_p (chrec_a, chrec_b))
     analyze_siv_subscript (chrec_a, chrec_b, 
 			   overlap_iterations_a, overlap_iterations_b, 
-			   last_conflicts);
+			   last_conflicts, lnn);
   
   else
     analyze_miv_subscript (chrec_a, chrec_b, 

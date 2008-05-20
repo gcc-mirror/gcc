@@ -1,3 +1,9 @@
+2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36206
+	* testsuite/gfortran.dg/pr36206.f: New.
+
 2008-05-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/testint.adb: New test.

@@ -1952,26 +1952,23 @@ loop_closed_phi_def (tree var)
 }
 
 /* Analyze all the parameters of the chrec, between INSTANTIATION_LOOP
-   and EVOLUTION_LOOP, that were left under a symbolic form.  CHREC is
-   the scalar evolution to instantiate.  CACHE is the cache of already
-   instantiated values.  FLAGS modify the way chrecs are instantiated.
+   and EVOLUTION_LOOP, that were left under a symbolic form.  
+
+   CHREC is the scalar evolution to instantiate.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
    SIZE_EXPR is used for computing the size of the expression to be
    instantiated, and to stop if it exceeds some limit.  */
-
-/* Values for FLAGS.  */
-enum
-{
-  INSERT_SUPERLOOP_CHRECS = 1,  /* Loop invariants are replaced with chrecs
-				   in outer loops.  */
-  FOLD_CONVERSIONS = 2		/* The conversions that may wrap in
-				   signed/pointer type are folded, as long as the
-				   value of the chrec is preserved.  */
-};
   
 static tree
 instantiate_scev_1 (struct loop *instantiation_loop,
 		    struct loop *evolution_loop, tree chrec,
-		    int flags, htab_t cache, int size_expr)
+		    bool fold_conversions, htab_t cache, int size_expr)
 {
   tree res, op0, op1, op2;
   basic_block def_bb;
@@ -1995,8 +1992,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
 	 evolutions in outer loops), nothing to do.  */
       if (!def_bb
 	  || loop_depth (def_bb->loop_father) == 0
-	  || (!(flags & INSERT_SUPERLOOP_CHRECS)
-	      && !flow_bb_inside_loop_p (instantiation_loop, def_bb)))
+	  || !flow_bb_inside_loop_p (instantiation_loop, def_bb))
 	return chrec;
 
       /* We cache the value of instantiated variable to avoid exponential
@@ -2052,7 +2048,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
 
       else if (res != chrec_dont_know)
 	res = instantiate_scev_1 (instantiation_loop, evolution_loop, res,
-				  flags, cache, size_expr);
+				  fold_conversions, cache, size_expr);
 
       bitmap_clear_bit (already_instantiated, SSA_NAME_VERSION (chrec));
 
@@ -2062,12 +2058,14 @@ instantiate_scev_1 (struct loop *instantiation_loop,
 
     case POLYNOMIAL_CHREC:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
-				CHREC_LEFT (chrec), flags, cache, size_expr);
+				CHREC_LEFT (chrec), fold_conversions, cache,
+				size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
-				CHREC_RIGHT (chrec), flags, cache, size_expr);
+				CHREC_RIGHT (chrec), fold_conversions, cache,
+				size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2082,13 +2080,13 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
-				TREE_OPERAND (chrec, 0), flags, cache,
+				TREE_OPERAND (chrec, 0), fold_conversions, cache,
 				size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
-				TREE_OPERAND (chrec, 1), flags, cache,
+				TREE_OPERAND (chrec, 1), fold_conversions, cache,
 				size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
@@ -2104,14 +2102,14 @@ instantiate_scev_1 (struct loop *instantiation_loop,
 
     case MINUS_EXPR:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
-				TREE_OPERAND (chrec, 0), flags, cache,
+				TREE_OPERAND (chrec, 0), fold_conversions, cache,
 				size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 1),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2127,13 +2125,13 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     case MULT_EXPR:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 0),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 1),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2149,11 +2147,11 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     CASE_CONVERT:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 0),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
 
-      if (flags & FOLD_CONVERSIONS)
+      if (fold_conversions)
 	{
 	  tree tmp = chrec_convert_aggressive (TREE_TYPE (chrec), op0);
 	  if (tmp)
@@ -2166,7 +2164,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       /* If we used chrec_convert_aggressive, we can no longer assume that
 	 signed chrecs do not overflow, as chrec_convert does, so avoid
          calling it in that case.  */
-      if (flags & FOLD_CONVERSIONS)
+      if (fold_conversions)
 	return fold_convert (TREE_TYPE (chrec), op0);
 
       return chrec_convert (TREE_TYPE (chrec), op0, NULL_TREE);
@@ -2187,19 +2185,19 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     case 3:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 0),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 1),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
       op2 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 2),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op2 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2214,13 +2212,13 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     case 2:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 0),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 1),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op1 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2232,7 +2230,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
     case 1:
       op0 = instantiate_scev_1 (instantiation_loop, evolution_loop,
 				TREE_OPERAND (chrec, 0),
-				flags, cache, size_expr);
+				fold_conversions, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
       if (op0 == TREE_OPERAND (chrec, 0))
@@ -2272,8 +2270,8 @@ instantiate_scev (struct loop *instantiation_loop, struct loop *evolution_loop,
       fprintf (dump_file, ")\n");
     }
  
-  res = instantiate_scev_1 (instantiation_loop, evolution_loop, chrec, 
-			    INSERT_SUPERLOOP_CHRECS, cache, 0);
+  res = instantiate_scev_1 (instantiation_loop, evolution_loop, chrec, false,
+			    cache, 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2296,7 +2294,7 @@ tree
 resolve_mixers (struct loop *loop, tree chrec)
 {
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
-  tree ret = instantiate_scev_1 (loop, loop, chrec, FOLD_CONVERSIONS, cache, 0);
+  tree ret = instantiate_scev_1 (loop, loop, chrec, true, cache, 0);
   htab_delete (cache);
   return ret;
 }
