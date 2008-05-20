@@ -2678,6 +2678,35 @@ package body Sem_Eval is
          Check_Non_Static_Context (Low_Bound (Drange));
          Check_Non_Static_Context (High_Bound (Drange));
       end if;
+
+      --  A slice of the form  A (subtype), when the subtype is the index of
+      --  the type of A, is redundant, the slice can be replaced with A, and
+      --  this is worth a warning.
+
+      if Is_Entity_Name (Prefix (N)) then
+         declare
+            E : constant Entity_Id := Entity (Prefix (N));
+            T : constant Entity_Id := Etype (E);
+         begin
+            if Ekind (E) = E_Constant
+              and then Is_Array_Type (T)
+              and then Is_Entity_Name (Drange)
+            then
+               if Is_Entity_Name (Original_Node (First_Index (T)))
+                 and then Entity (Original_Node (First_Index (T)))
+                    = Entity (Drange)
+               then
+                  if Warn_On_Redundant_Constructs then
+                     Error_Msg_N ("redundant slice denotes whole array?", N);
+                  end if;
+
+                  --  The following might be a useful optimization ????
+
+                  --  Rewrite (N, New_Occurrence_Of (E, Sloc (N)));
+               end if;
+            end if;
+         end;
+      end if;
    end Eval_Slice;
 
    -------------------------
@@ -3309,9 +3338,12 @@ package body Sem_Eval is
 
       --  For a result of type integer, substitute an N_Integer_Literal node
       --  for the result of the compile time evaluation of the expression.
+      --  For ASIS use, set a link to the original named number when not in
+      --  a generic context.
 
       if Is_Integer_Type (Typ) then
          Rewrite (N, Make_Integer_Literal (Loc, Val));
+
          Set_Original_Entity (N, Ent);
 
       --  Otherwise we have an enumeration type, and we substitute either
@@ -3355,6 +3387,9 @@ package body Sem_Eval is
       end if;
 
       Rewrite (N, Make_Real_Literal (Loc, Realval => Val));
+
+      --  Set link to original named number, for ASIS use.
+
       Set_Original_Entity (N, Ent);
 
       --  Both the actual and expected type comes from the original expression
