@@ -6,8 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2000-2007, AdaCore                     *
- *             Copyright (C) 2008, Free Software Foundation, Inc.           *
+ *                     Copyright (C) 2000-2008, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -230,9 +229,10 @@ struct layout
 
 #define BASE_SKIP 1
 
-/*---------------------------- PPC VxWorks------------------------------*/
+/*-------------------- PPC ELF (GNU/Linux & VxWorks) ---------------------*/
 
-#elif defined (_ARCH_PPC) && defined (__vxworks)
+#elif (defined (_ARCH_PPC) && defined (__vxworks)) ||  \
+  (defined (linux) && defined (__powerpc__))
 
 #define USE_GENERIC_UNWINDER
 

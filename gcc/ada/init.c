@@ -568,7 +568,7 @@ __gnat_install_handler (void)
 /*********************/
 
 #elif defined (linux) && (defined (i386) || defined (__x86_64__) \
-                          || defined (__ia64__))
+                          || defined (__ia64__) || defined (__powerpc__))
 
 #include <signal.h>
 
@@ -624,7 +624,9 @@ static void __gnat_error_handler (int, siginfo_t *siginfo, void *ucontext);
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
+#ifndef __powerpc__
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+#endif
 
   /* On the i386 and x86-64 architectures, stack checking is performed by
      means of probes with moving stack pointer, that is to say the probed
@@ -657,6 +659,8 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   mcontext->gregs[REG_RIP]++;
 #elif defined (__ia64__)
   mcontext->sc_ip++;
+#elif defined (__powerpc__)
+  ((ucontext_t *) ucontext)->uc_mcontext.regs->nip++;
 #endif
 }
 
