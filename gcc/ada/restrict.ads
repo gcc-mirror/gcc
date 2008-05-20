@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -277,11 +277,12 @@ package Restrict is
      (P    : Profile_Name;
       N    : Node_Id;
       Warn : Boolean);
-   --  Sets the set of restrictions associated with the given profile
-   --  name. N is the node of the construct to which error messages
-   --  are to be attached as required. Warn is set True for the case
-   --  of Profile_Warnings where the restrictions are set as warnings
-   --  rather than legality requirements.
+   --  Sets the set of restrictions associated with the given profile name. N
+   --  is the node of the construct to which error messages are to be attached
+   --  as required. Warn is set True for the case of Profile_Warnings where the
+   --  restrictions are set as warnings rather than legality requirements, and
+   --  is also True for Profile if the Treat_Restrictions_As_Warnings flag is
+   --  set. It is false for Profile if this flag is not set.
 
    procedure Set_Restriction
      (R : All_Boolean_Restrictions;
@@ -301,7 +302,9 @@ package Restrict is
      (Unit : Node_Id;
       Warn : Boolean);
    --  Sets given No_Dependence restriction in table if not there already.
-   --  Warn is True if from Restriction_Warnings, False if from Restrictions.
+   --  Warn is True if from Restriction_Warnings, or for Restrictions if flag
+   --  Treat_Restrictions_As_Warnings is set. False if from Restrictions and
+   --  this flag is not set.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

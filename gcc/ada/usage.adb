@@ -289,6 +289,11 @@ begin
    Write_Switch_Char ("Q");
    Write_Line ("Don't quit, write ali/tree file even if compile errors");
 
+   --  Line for -gnatr switch
+
+   Write_Switch_Char ("r");
+   Write_Line ("Treat pragma Restrictions as Restriction_Warnings");
+
    --  Lines for -gnatR switch
 
    Write_Switch_Char ("R?");

@@ -1108,6 +1108,11 @@ package Opt is
    --  Tolerate time stamp and other consistency errors. If this flag is set to
    --  True (-t), then inconsistencies result in warnings rather than errors.
 
+   Treat_Restrictions_As_Warnings : Boolean := False;
+   --  GNAT
+   --  Set True to treat pragma Restrictions as Restriction_Warnings. Set by
+   --  -gnatr switch.
+
    Tree_Output : Boolean := False;
    --  GNAT
    --  Set to True (-gnatt) to generate output tree file

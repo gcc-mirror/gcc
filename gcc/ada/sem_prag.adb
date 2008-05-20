@@ -671,7 +671,9 @@ package body Sem_Prag is
 
       procedure Process_Restrictions_Or_Restriction_Warnings (Warn : Boolean);
       --  Common processing for Restrictions and Restriction_Warnings pragmas.
-      --  Warn is False for Restrictions, True for Restriction_Warnings.
+      --  Warn is True for Restriction_Warnings, or for Restrictions if the
+      --  flag Treat_Restrictions_As_Warnings is set, and False if this flag
+      --  is not set in the Restrictions case.
 
       procedure Process_Suppress_Unsuppress (Suppress_Case : Boolean);
       --  Common processing for Suppress and Unsuppress. The boolean parameter
@@ -4770,7 +4772,8 @@ package body Sem_Prag is
 
          --  Set the corresponding restrictions
 
-         Set_Profile_Restrictions (Ravenscar, N, Warn => False);
+         Set_Profile_Restrictions
+           (Ravenscar, N, Warn => Treat_Restrictions_As_Warnings);
       end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma
@@ -9790,7 +9793,8 @@ package body Sem_Prag is
                if Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (N);
                elsif Chars (Argx) = Name_Restricted then
-                  Set_Profile_Restrictions (Restricted, N, Warn => False);
+                  Set_Profile_Restrictions
+                    (Restricted, N, Warn => Treat_Restrictions_As_Warnings);
                else
                   Error_Pragma_Arg ("& is not a valid profile", Argx);
                end if;
@@ -10285,7 +10289,8 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
-            Set_Profile_Restrictions (Restricted, N, Warn => False);
+            Set_Profile_Restrictions
+              (Restricted, N, Warn => Treat_Restrictions_As_Warnings);
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
@@ -10305,7 +10310,8 @@ package body Sem_Prag is
          --  | restriction_parameter_IDENTIFIER => EXPRESSION
 
          when Pragma_Restrictions =>
-            Process_Restrictions_Or_Restriction_Warnings (Warn => False);
+            Process_Restrictions_Or_Restriction_Warnings
+              (Warn => Treat_Restrictions_As_Warnings);
 
          --------------------------
          -- Restriction_Warnings --
