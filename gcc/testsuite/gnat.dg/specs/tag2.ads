@@ -10,7 +10,7 @@ package tag2 is
    type T6 is tagged;
    protected type T1 is end T1; -- { dg-error "must be a tagged type" }
    task type T2;                -- { dg-error "must be a tagged type" }
-   type T3 is null record;      -- { dg-error "must be tagged" }
+   type T3 is null record;      -- { dg-error "must be a tagged type" }
    task type T4 is new I with end;
    protected type T5 is new I with end;
    type T6 is tagged null record;
