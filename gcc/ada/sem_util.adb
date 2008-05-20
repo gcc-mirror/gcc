@@ -1992,7 +1992,6 @@ package body Sem_Util is
 
    function Current_Subprogram return Entity_Id is
       Scop : constant Entity_Id := Current_Scope;
-
    begin
       if Is_Subprogram (Scop) or else Is_Generic_Subprogram (Scop) then
          return Scop;
@@ -5510,6 +5509,41 @@ package body Sem_Util is
       end if;
    end Insert_Explicit_Dereference;
 
+   ------------------------------------------
+   -- Inspect_Deferred_Constant_Completion --
+   ------------------------------------------
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
+      Decl   : Node_Id;
+
+   begin
+      Decl := First (Decls);
+      while Present (Decl) loop
+
+         --  Deferred constant signature
+
+         if Nkind (Decl) = N_Object_Declaration
+           and then Constant_Present (Decl)
+           and then No (Expression (Decl))
+
+            --  No need to check internally generated constants
+
+           and then Comes_From_Source (Decl)
+
+            --  The constant is not completed. A full object declaration
+            --  or a pragma Import complete a deferred constant.
+
+           and then not Has_Completion (Defining_Identifier (Decl))
+         then
+            Error_Msg_N
+              ("constant declaration requires initialization expression",
+              Defining_Identifier (Decl));
+         end if;
+
+         Decl := Next (Decl);
+      end loop;
+   end Inspect_Deferred_Constant_Completion;
+
    -------------------
    -- Is_AAMP_Float --
    -------------------
@@ -6740,60 +6774,13 @@ package body Sem_Util is
    function Is_Remote_Access_To_Class_Wide_Type
      (E : Entity_Id) return Boolean
    is
-      D : Entity_Id;
-
-      function Comes_From_Limited_Private_Type_Declaration
-        (E : Entity_Id) return Boolean;
-      --  Check that the type is declared by a limited type declaration,
-      --  or else is derived from a Remote_Type ancestor through private
-      --  extensions.
-
-      -------------------------------------------------
-      -- Comes_From_Limited_Private_Type_Declaration --
-      -------------------------------------------------
-
-      function Comes_From_Limited_Private_Type_Declaration
-        (E : Entity_Id) return Boolean
-      is
-         N : constant Node_Id := Declaration_Node (E);
-
-      begin
-         if Nkind (N) = N_Private_Type_Declaration
-           and then Limited_Present (N)
-         then
-            return True;
-         end if;
-
-         if Nkind (N) = N_Private_Extension_Declaration then
-            return
-              Comes_From_Limited_Private_Type_Declaration (Etype (E))
-                or else
-                 (Is_Remote_Types (Etype (E))
-                    and then Is_Limited_Record (Etype (E))
-                    and then Has_Private_Declaration (Etype (E)));
-         end if;
-
-         return False;
-      end Comes_From_Limited_Private_Type_Declaration;
-
-   --  Start of processing for Is_Remote_Access_To_Class_Wide_Type
-
    begin
-      if not (Is_Remote_Call_Interface (E)
-               or else Is_Remote_Types (E))
-        or else Ekind (E) /= E_General_Access_Type
-      then
-         return False;
-      end if;
+      --  A remote access to class-wide type is a general access to object type
+      --  declared in the visible part of a Remote_Types or Remote_Call_
+      --  Interface unit.
 
-      D := Designated_Type (E);
-
-      if Ekind (D) /= E_Class_Wide_Type then
-         return False;
-      end if;
-
-      return Comes_From_Limited_Private_Type_Declaration
-               (Defining_Identifier (Parent (D)));
+      return Ekind (E) = E_General_Access_Type
+        and then (Is_Remote_Call_Interface (E) or else Is_Remote_Types (E));
    end Is_Remote_Access_To_Class_Wide_Type;
 
    -----------------------------------------
@@ -6807,8 +6794,7 @@ package body Sem_Util is
       return (Ekind (E) = E_Access_Subprogram_Type
                 or else (Ekind (E) = E_Record_Type
                            and then Present (Corresponding_Remote_Type (E))))
-        and then (Is_Remote_Call_Interface (E)
-                   or else Is_Remote_Types (E));
+        and then (Is_Remote_Call_Interface (E) or else Is_Remote_Types (E));
    end Is_Remote_Access_To_Subprogram_Type;
 
    --------------------
@@ -6863,8 +6849,8 @@ package body Sem_Util is
       Subp_Decl : Node_Id := Parent (Parent (Proc_Nam));
 
       function Is_Entry (Nam : Node_Id) return Boolean;
-      --  Determine whether Nam is an entry. Traverse selectors
-      --  if there are nested selected components.
+      --  Determine whether Nam is an entry. Traverse selectors if there are
+      --  nested selected components.
 
       --------------
       -- Is_Entry --

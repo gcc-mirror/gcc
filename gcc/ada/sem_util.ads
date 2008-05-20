@@ -547,10 +547,10 @@ package Sem_Util is
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
-   --  initialize procedure, which makes the type not preelaborable.
+   --  Initialize primitive, which makes the type not preelaborable.
 
    function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
-   --  Return True iff type E has preelaborable initialisation as defined in
+   --  Return True iff type E has preelaborable initialization as defined in
    --  Ada 2005 (see AI-161 for details of the definition of this attribute).
 
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
@@ -610,6 +610,11 @@ package Sem_Util is
    --  where a prefix is an access type, rewrite the access type node
    --  N (which is the prefix, e.g. of an indexed component) as an
    --  explicit dereference.
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id);
+   --  Examine all deferred constants in the declaration list Decls and check
+   --  whether they have been completed by a full constant declaration or an
+   --  Import pragma. Emit the error message if that is not the case.
 
    function Is_AAMP_Float (E : Entity_Id) return Boolean;
    --  Defined for all type entities. Returns True only for the base type
