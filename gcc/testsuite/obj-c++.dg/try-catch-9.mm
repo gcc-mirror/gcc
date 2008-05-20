@@ -2,9 +2,10 @@
    block survive until the @catch block is reached.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-/* { dg-options "-fobjc-exceptions -O2" } */
-/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "" } } */
 /* { dg-do run } */
+/* { dg-xfail-if "PR23616" { *-*-* } { "*" } { "" } } */
+/* { dg-prune-output ".*internal compiler error.*" } */
+/* { dg-options "-fobjc-exceptions -O2" } */
 
 #include <objc/Object.h>
 #include <stdlib.h>

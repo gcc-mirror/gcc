@@ -1,5 +1,7 @@
 /* Yet another mysterious gimplifier crasher.  */
 /* { dg-do compile } */
+/* { dg-xfail-if "PR23716" { *-*-* } { "*" } { "" } } */
+/* { dg-prune-output ".*internal compiler error.*" } */
 /* { dg-options "-O3" } */
 
 @class NSString;
