@@ -1838,7 +1838,7 @@ package body ALI is
                   end if;
                end loop;
 
-               Add_Char_To_Name_Buffer (nul);
+               Add_Char_To_Name_Buffer (NUL);
                Skip_Eol;
             end if;
 
