@@ -1085,8 +1085,8 @@ package body Exp_Dist is
       Existing : Boolean;
       --  True when appropriate stubs have already been generated (this is the
       --  case when another RACW with the same designated type has already been
-      --  encountered, in which case we reuse the previous stubs rather than
-      --  generating new ones).
+      --  encountered), in which case we reuse the previous stubs rather than
+      --  generating new ones.
 
    begin
       if not Expander_Active then
@@ -1164,12 +1164,13 @@ package body Exp_Dist is
          RPC_Receiver_Decl   => RPC_Receiver_Decl,
          Body_Decls          => Body_Decls);
 
-      if not Same_Scope and then not Existing then
+      --  If we already have stubs for this designated type, nothing to do
 
-         --  The RACW has been declared in another scope than the designated
-         --  type and has not been handled by another RACW in the same package
-         --  as the first one, so add primitives for the stub type here.
+      if Existing then
+         return;
+      end if;
 
+      if Is_Frozen (Desig) then
          Validate_RACW_Primitives (RACW_Type);
          Add_RACW_Primitive_Declarations_And_Bodies
            (Designated_Type  => Desig,
@@ -1177,10 +1178,9 @@ package body Exp_Dist is
             Body_Decls       => Body_Decls);
 
       else
-         --  Validate_RACW_Primitives will be called when the designated type
-         --  is frozen, see Exp_Ch3.Freeze_Type.
-
-         --  ??? Shouldn't we have a pragma Assert (not Is_Frozen (Desig))?
+         --  Validate_RACW_Primitives requires the list of all primitives of
+         --  the designated type, so defer processing until Desig is frozen.
+         --  See Exp_Ch3.Freeze_Type.
 
          Add_Access_Type_To_Process (E => Desig, A => RACW_Type);
       end if;
@@ -1870,6 +1870,8 @@ package body Exp_Dist is
       Stub_Type :=
         Make_Defining_Identifier (Loc,
           Chars => New_Internal_Name ('S'));
+      Set_Ekind (Stub_Type, E_Record_Type);
+      Set_Is_RACW_Stub_Type (Stub_Type);
       Stub_Type_Access :=
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name
@@ -3085,19 +3087,34 @@ package body Exp_Dist is
 
          Set_Etype (Stubbed_Result, Stub_Type_Access);
 
-         --  If the Address is Null_Address, then return a null object
+         --  If the Address is Null_Address, then return a null object, unless
+         --  RACW_Type is null-excluding, in which case inconditionally raise
+         --  CONSTRAINT_ERROR instead.
 
-         Append_To (Statements,
-           Make_Implicit_If_Statement (RACW_Type,
-             Condition       =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Occurrence_Of (Source_Address, Loc),
-                 Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => Result,
-                 Expression => Make_Null (Loc)),
-               Make_Simple_Return_Statement (Loc))));
+         declare
+            Zero_Statements : List_Id;
+            --  Statements executed when a zero value is received
+         begin
+            if Can_Never_Be_Null (RACW_Type) then
+               Zero_Statements := New_List (
+                 Make_Raise_Constraint_Error (Loc,
+                   Reason => CE_Null_Not_Allowed));
+            else
+               Zero_Statements := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name       => Result,
+                   Expression => Make_Null (Loc)),
+                 Make_Simple_Return_Statement (Loc));
+            end if;
+
+            Append_To (Statements,
+              Make_Implicit_If_Statement (RACW_Type,
+                Condition       =>
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Source_Address, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+                Then_Statements => Zero_Statements));
+         end;
 
          --  If the RACW denotes an object created on the current partition,
          --  Local_Statements will be executed. The real object will be used.
@@ -8470,7 +8487,7 @@ package body Exp_Dist is
 
          function Find_Numeric_Representation
            (Typ : Entity_Id) return Entity_Id;
-         --  Given a numeric type Typ, return the smallest integer or floarting
+         --  Given a numeric type Typ, return the smallest integer or floating
          --  point type from Standard, or the smallest unsigned (modular) type
          --  from System.Unsigned_Types, whose range encompasses that of Typ.
 
@@ -8729,11 +8746,16 @@ package body Exp_Dist is
             Decl : out Node_Id;
             Fnam : out Entity_Id)
          is
-            Spec : Node_Id;
+            Spec  : Node_Id;
             Decls : constant List_Id := New_List;
-            Stms : constant List_Id := New_List;
-            Any_Parameter : constant Entity_Id
-              := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            Stms  : constant List_Id := New_List;
+
+            Any_Parameter : constant Entity_Id :=
+                              Make_Defining_Identifier (Loc,
+                                New_Internal_Name ('A'));
+
+            Use_Opaque_Representation : Boolean;
+
          begin
             if Is_Itype (Typ) then
                Build_From_Any_Function
@@ -8763,9 +8785,21 @@ package body Exp_Dist is
             pragma Assert
               (not (Is_Remote_Access_To_Class_Wide_Type (Typ)));
 
-            if Is_Derived_Type (Typ)
-              and then not Is_Tagged_Type (Typ)
+            Use_Opaque_Representation := False;
+
+            if Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+                 or else
+               Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Write, At_Any_Place => True)
             then
+               --  If user-defined stream attributes are specified for this
+               --  type, use them and transmit data as an opaque sequence of
+               --  stream elements.
+
+               Use_Opaque_Representation := True;
+
+            elsif Is_Derived_Type (Typ) and then not Is_Tagged_Type (Typ) then
                Append_To (Stms,
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
@@ -9292,6 +9326,11 @@ package body Exp_Dist is
                          Decls))));
 
             else
+               Use_Opaque_Representation := True;
+            end if;
+
+            if Use_Opaque_Representation then
+
                --  Default: type is represented as an opaque sequence of bytes
 
                declare
@@ -9588,6 +9627,10 @@ package body Exp_Dist is
             Any_Decl  : Node_Id;
             Result_TC : Node_Id := Build_TypeCode_Call (Loc, Typ, Decls);
 
+            Use_Opaque_Representation : Boolean;
+            --  When True, use stream attributes and represent type as an
+            --  opaque sequence of bytes.
+
          begin
             if Is_Itype (Typ) then
                Build_To_Any_Function
@@ -9598,8 +9641,8 @@ package body Exp_Dist is
                return;
             end if;
 
-            Fnam := Make_Stream_Procedure_Function_Name (Loc,
-                      Typ, Name_uTo_Any);
+            Fnam :=
+              Make_Stream_Procedure_Function_Name (Loc, Typ, Name_uTo_Any);
 
             Spec :=
               Make_Function_Specification (Loc,
@@ -9620,39 +9663,58 @@ package body Exp_Dist is
                 Object_Definition   =>
                   New_Occurrence_Of (RTE (RE_Any), Loc));
 
-            if Is_Derived_Type (Typ) and then not Is_Tagged_Type (Typ) then
+            Use_Opaque_Representation := False;
+
+            if Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+              or else
+               Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Write,  At_Any_Place => True)
+            then
+               --  If user-defined stream attributes are specified for this
+               --  type, use them and transmit data as an opaque sequence of
+               --  stream elements.
+
+               Use_Opaque_Representation := True;
+
+            elsif Is_Derived_Type (Typ) and then not Is_Tagged_Type (Typ) then
+
+               --  Non-tagged derived type: convert to root type
+
                declare
-                  Rt_Type : constant Entity_Id
-                    := Root_Type (Typ);
-                  Expr : constant Node_Id
-                    := OK_Convert_To (
-                         Rt_Type,
-                         New_Occurrence_Of (Expr_Parameter, Loc));
+                  Rt_Type : constant Entity_Id := Root_Type (Typ);
+                  Expr    : constant Node_Id :=
+                              OK_Convert_To
+                                (Rt_Type,
+                                 New_Occurrence_Of (Expr_Parameter, Loc));
                begin
                   Set_Expression (Any_Decl, Build_To_Any_Call (Expr, Decls));
                end;
 
             elsif Is_Record_Type (Typ) and then not Is_Tagged_Type (Typ) then
+
+               --  Non-tagged record type
+
                if Nkind (Declaration_Node (Typ)) = N_Subtype_Declaration then
                   declare
-                     Rt_Type : constant Entity_Id
-                       := Etype (Typ);
-                     Expr : constant Node_Id
-                       := OK_Convert_To (
-                            Rt_Type,
-                            New_Occurrence_Of (Expr_Parameter, Loc));
+                     Rt_Type : constant Entity_Id := Etype (Typ);
+                     Expr    : constant Node_Id :=
+                                 OK_Convert_To (Rt_Type,
+                                   New_Occurrence_Of (Expr_Parameter, Loc));
 
                   begin
                      Set_Expression (Any_Decl,
                        Build_To_Any_Call (Expr, Decls));
                   end;
 
+               --  Comment needed here (and label on declare block ???)
+
                else
                   declare
-                     Disc : Entity_Id := Empty;
-                     Rdef : constant Node_Id :=
-                              Type_Definition (Declaration_Node (Typ));
-                     Counter : Int := 0;
+                     Disc     : Entity_Id := Empty;
+                     Rdef     : constant Node_Id :=
+                                  Type_Definition (Declaration_Node (Typ));
+                     Counter  : Int := 0;
                      Elements : constant List_Id := New_List;
 
                      procedure TA_Rec_Add_Process_Element
@@ -9661,6 +9723,7 @@ package body Exp_Dist is
                         Counter   : in out Int;
                         Rec       : Entity_Id;
                         Field     : Node_Id);
+                     --  Processing routine for traversal below
 
                      procedure TA_Append_Record_Traversal is
                         new Append_Record_Traversal
@@ -9702,15 +9765,15 @@ package body Exp_Dist is
                         else
                            --  A variant part
 
-                           declare
-                              Variant : Node_Id;
+                           Variant_Part : declare
+                              Variant        : Node_Id;
                               Struct_Counter : Int := 0;
 
                               Block_Decls : constant List_Id := New_List;
                               Block_Stmts : constant List_Id := New_List;
                               VP_Stmts    : List_Id;
 
-                              Alt_List : constant List_Id := New_List;
+                              Alt_List    : constant List_Id := New_List;
                               Choice_List : List_Id;
 
                               Union_Any : constant Entity_Id :=
@@ -9723,8 +9786,8 @@ package body Exp_Dist is
 
                               function Make_Discriminant_Reference
                                 return Node_Id;
-                              --  Build a selected component for the
-                              --  discriminant of this variant part.
+                              --  Build reference to the discriminant for this
+                              --  variant part.
 
                               ---------------------------------
                               -- Make_Discriminant_Reference --
@@ -9743,6 +9806,8 @@ package body Exp_Dist is
                                  return Nod;
                               end Make_Discriminant_Reference;
 
+                           --  Start processing for Variant_Part
+
                            begin
                               Append_To (Stmts,
                                 Make_Block_Statement (Loc,
@@ -9752,11 +9817,10 @@ package body Exp_Dist is
                                     Make_Handled_Sequence_Of_Statements (Loc,
                                       Statements => Block_Stmts)));
 
-                              --  Declare the Variant Part aggregate
-                              --  (Union_Any).
-                              --  Knowing the position of this VP in
-                              --  the variant record, we can fetch the
-                              --  VP typecode from Container.
+                              --  Declare variant part aggregate (Union_Any).
+                              --  Knowing the position of this VP in the
+                              --  variant record, we can fetch the VP typecode
+                              --  from Container.
 
                               Append_To (Block_Decls,
                                 Make_Object_Declaration (Loc,
@@ -9777,9 +9841,8 @@ package body Exp_Dist is
                                             Make_Integer_Literal (Loc,
                                               Counter)))))));
 
-                              --  Declare the inner struct aggregate
-                              --  (that will contain the components
-                              --   of this VP)
+                              --  Declare inner struct aggregate (which
+                              --  contains the components of this VP).
 
                               Append_To (Block_Decls,
                                 Make_Object_Declaration (Loc,
@@ -9800,9 +9863,7 @@ package body Exp_Dist is
                                             Make_Integer_Literal (Loc,
                                               Uint_1)))))));
 
-                              --  Construct a case statement that will choose
-                              --  the appropriate code at runtime depending on
-                              --  the discriminant.
+                              --  Build case statement
 
                               Append_To (Block_Stmts,
                                 Make_Case_Statement (Loc,
@@ -9818,8 +9879,7 @@ package body Exp_Dist is
 
                                  VP_Stmts := New_List;
 
-                                 --  Append discriminant value to union
-                                 --  aggregate.
+                                 --  Append discriminant val to union aggregate
 
                                  Append_To (VP_Stmts,
                                     Make_Procedure_Call_Statement (Loc,
@@ -9878,8 +9938,9 @@ package body Exp_Dist is
 
                                  Next_Non_Pragma (Variant);
                               end loop;
-                           end;
+                           end Variant_Part;
                         end if;
+
                         Counter := Counter + 1;
                      end TA_Rec_Add_Process_Element;
 
@@ -9989,6 +10050,9 @@ package body Exp_Dist is
                end if;
 
             elsif Is_Array_Type (Typ) then
+
+               --  Constrained and unconstrained array types
+
                declare
                   Constrained : constant Boolean := Is_Constrained (Typ);
 
@@ -10074,6 +10138,9 @@ package body Exp_Dist is
                end;
 
             elsif Is_Integer_Type (Typ) or else Is_Unsigned_Type (Typ) then
+
+               --  Integer types
+
                Set_Expression (Any_Decl,
                  Build_To_Any_Call (
                    OK_Convert_To (
@@ -10082,14 +10149,22 @@ package body Exp_Dist is
                    Decls));
 
             else
-               --  Default: type is represented as an opaque sequence of bytes
+               --  Default case, including tagged types: opaque representation
 
+               Use_Opaque_Representation := True;
+            end if;
+
+            if Use_Opaque_Representation then
                declare
-                  Strm : constant Entity_Id := Make_Defining_Identifier (Loc,
-                           New_Internal_Name ('S'));
+                  Strm : constant Entity_Id :=
+                           Make_Defining_Identifier (Loc,
+                             Chars => New_Internal_Name ('S'));
+                  --  Stream used to store data representation produced by
+                  --  stream attribute.
 
                begin
-                  --  Strm : aliased Buffer_Stream_Type;
+                  --  Generate:
+                  --    Strm : aliased Buffer_Stream_Type;
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
@@ -10100,7 +10175,8 @@ package body Exp_Dist is
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
 
-                  --  Allocate_Buffer (Strm);
+                  --  Generate:
+                  --    Allocate_Buffer (Strm);
 
                   Append_To (Stms,
                     Make_Procedure_Call_Statement (Loc,
@@ -10109,19 +10185,21 @@ package body Exp_Dist is
                       Parameter_Associations => New_List (
                         New_Occurrence_Of (Strm, Loc))));
 
-                  --  T'Output (Strm'Access, E);
+                  --  Generate:
+                  --    T'Output (Strm'Access, E);
 
                   Append_To (Stms,
                       Make_Attribute_Reference (Loc,
                         Prefix         => New_Occurrence_Of (Typ, Loc),
                         Attribute_Name => Name_Output,
-                        Expressions => New_List (
+                        Expressions    => New_List (
                           Make_Attribute_Reference (Loc,
-                            Prefix => New_Occurrence_Of (Strm, Loc),
+                            Prefix         => New_Occurrence_Of (Strm, Loc),
                             Attribute_Name => Name_Access),
                           New_Occurrence_Of (Expr_Parameter, Loc))));
 
-                  --  BS_To_Any (Strm, A);
+                  --  Generate:
+                  --    BS_To_Any (Strm, A);
 
                   Append_To (Stms,
                     Make_Procedure_Call_Statement (Loc,
@@ -10131,7 +10209,8 @@ package body Exp_Dist is
                         New_Occurrence_Of (Strm, Loc),
                         New_Occurrence_Of (Any, Loc))));
 
-                  --  Release_Buffer (Strm);
+                  --  Generate:
+                  --    Release_Buffer (Strm);
 
                   Append_To (Stms,
                     Make_Procedure_Call_Statement (Loc,
@@ -10175,14 +10254,13 @@ package body Exp_Dist is
             Typ   : Entity_Id;
             Decls : List_Id) return Node_Id
          is
-            U_Type : Entity_Id  := Underlying_Type (Typ);
+            U_Type : Entity_Id := Underlying_Type (Typ);
             --  The full view, if Typ is private; the completion,
             --  if Typ is incomplete.
 
-            Fnam    : Entity_Id := Empty;
-            Lib_RE  : RE_Id := RE_Null;
-
-            Expr : Node_Id;
+            Fnam   : Entity_Id := Empty;
+            Lib_RE : RE_Id := RE_Null;
+            Expr   : Node_Id;
 
          begin
             --  Special case System.PolyORB.Interface.Any: its primitives have
@@ -10729,22 +10807,29 @@ package body Exp_Dist is
             Initialize_Parameter_List
               (Type_Name_Str, Type_Repo_Id_Str, Parameters);
 
-            if Is_Derived_Type (Typ)
-              and then not Is_Tagged_Type (Typ)
+            if Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Output, At_Any_Place => True)
+                 or else
+               Has_Stream_Attribute_Definition
+                 (Typ, TSS_Stream_Write, At_Any_Place => True)
             then
+               --  If user-defined stream attributes are specified for this
+               --  type, use them and transmit data as an opaque sequence of
+               --  stream elements.
+
+               Return_Alias_TypeCode
+                 (New_Occurrence_Of (RTE (RE_TC_Opaque), Loc));
+
+            elsif Is_Derived_Type (Typ) and then not Is_Tagged_Type (Typ) then
                Return_Alias_TypeCode (
                  Build_TypeCode_Call (Loc, Etype (Typ), Decls));
 
-            elsif Is_Integer_Type (Typ)
-              or else Is_Unsigned_Type (Typ)
-            then
+            elsif Is_Integer_Type (Typ) or else Is_Unsigned_Type (Typ) then
                Return_Alias_TypeCode (
                  Build_TypeCode_Call (Loc,
                    Find_Numeric_Representation (Typ), Decls));
 
-            elsif Is_Record_Type (Typ)
-              and then not Is_Tagged_Type (Typ)
-            then
+            elsif Is_Record_Type (Typ) and then not Is_Tagged_Type (Typ) then
 
                --  Record typecodes are encoded as follows:
                --  -- TC_STRUCT
@@ -11280,11 +11365,33 @@ package body Exp_Dist is
       Stub_Elements : constant Stub_Structure :=
                         Stubs_Table.Get (Full_View);
    begin
+      --  For an RACW encountered before the freeze point of its designated
+      --  type, the stub type is generated at the point of the RACW declaration
+      --  but the primitives are generated only once the designated type is
+      --  frozen. That freeze can occur in another scope, for example when the
+      --  RACW is declared in a nested package. In that case we need to
+      --  reestablish the stub type's scope prior to generating its primitive
+      --  operations.
+
       if Stub_Elements /= Empty_Stub_Structure then
-         Add_RACW_Primitive_Declarations_And_Bodies
-           (Full_View,
-            Stub_Elements.RPC_Receiver_Decl,
-            Stub_Elements.Body_Decls);
+         declare
+            Saved_Scope : constant Entity_Id := Current_Scope;
+            Stubs_Scope : constant Entity_Id :=
+                            Scope (Stub_Elements.Stub_Type);
+         begin
+            if Current_Scope /= Stubs_Scope then
+               Push_Scope (Stubs_Scope);
+            end if;
+
+            Add_RACW_Primitive_Declarations_And_Bodies
+              (Full_View,
+               Stub_Elements.RPC_Receiver_Decl,
+               Stub_Elements.Body_Decls);
+
+            if Current_Scope /= Saved_Scope then
+               Pop_Scope;
+            end if;
+         end;
       end if;
    end Remote_Types_Tagged_Full_View_Encountered;
 
