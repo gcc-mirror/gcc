@@ -546,8 +546,7 @@ execute_sink_code (void)
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   sink_code_in_bb (EXIT_BLOCK_PTR); 
-  if (dump_file && (dump_flags & TDF_STATS))
-    fprintf (dump_file, "Sunk statements:%d\n", sink_stats.sunk);
+  statistics_counter_event (cfun, "Sunk statements", sink_stats.sunk);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
   loop_optimizer_finalize ();

@@ -735,22 +735,19 @@ eliminate_unnecessary_stmts (void)
 static void
 print_stats (void)
 {
-  if (dump_file && (dump_flags & (TDF_STATS|TDF_DETAILS)))
-    {
-      float percg;
+  float percg;
 
-      percg = ((float) stats.removed / (float) stats.total) * 100;
-      fprintf (dump_file, "Removed %d of %d statements (%d%%)\n",
-	       stats.removed, stats.total, (int) percg);
+  percg = ((float) stats.removed / (float) stats.total) * 100;
+  fprintf (dump_file, "Removed %d of %d statements (%d%%)\n",
+	   stats.removed, stats.total, (int) percg);
 
-      if (stats.total_phis == 0)
-	percg = 0;
-      else
-	percg = ((float) stats.removed_phis / (float) stats.total_phis) * 100;
+  if (stats.total_phis == 0)
+    percg = 0;
+  else
+    percg = ((float) stats.removed_phis / (float) stats.total_phis) * 100;
 
-      fprintf (dump_file, "Removed %d of %d PHI nodes (%d%%)\n",
-	       stats.removed_phis, stats.total_phis, (int) percg);
-    }
+  fprintf (dump_file, "Removed %d of %d PHI nodes (%d%%)\n",
+	   stats.removed_phis, stats.total_phis, (int) percg);
 }
 
 /* Initialization for this pass.  Set up the used data structures.  */
@@ -854,8 +851,11 @@ perform_tree_ssa_dce (bool aggressive)
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);
 
+  statistics_counter_event (cfun, "Statements deleted", stats.removed);
+  statistics_counter_event (cfun, "PHI nodes deleted", stats.removed_phis);
+
   /* Debugging dumps.  */
-  if (dump_file)
+  if (dump_file && (dump_flags & (TDF_STATS|TDF_DETAILS)))
     print_stats ();
 
   tree_dce_done (aggressive);
