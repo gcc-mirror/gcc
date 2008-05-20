@@ -1,3 +1,7 @@
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vn.c (vn_lookup_with_vuses): Do not use the alias oracle.
+
 2008-05-20  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386-protos.h (ix86_return_in_memory): Removed.

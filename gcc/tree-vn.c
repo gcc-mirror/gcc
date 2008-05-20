@@ -306,7 +306,9 @@ vn_lookup_with_vuses (tree expr, VEC (tree, gc) *vuses)
   if (is_gimple_min_invariant (expr) || TREE_CODE (expr) == FIELD_DECL)
     return expr;
 
-  return vn_reference_lookup (expr, vuses, true);
+  /* We may not walk the use-def chains here as the alias oracle cannot
+     properly deal with VALUE_HANDLE tree nodes we feed it here.  */
+  return vn_reference_lookup (expr, vuses, false);
 }
 
 static tree
