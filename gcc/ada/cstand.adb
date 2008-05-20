@@ -1829,7 +1829,7 @@ package body CStand is
       Write_Eol;
 
       P ("   type Wide_Wide_Character is (...)");
-      Write_Str ("   for Wide_Character'Size use ");
+      Write_Str ("   for Wide_Wide_Character'Size use ");
       Write_Int (Standard_Wide_Wide_Character_Size);
       P (";");
       P ("   --  See RM A.1(36) for details of this type");
