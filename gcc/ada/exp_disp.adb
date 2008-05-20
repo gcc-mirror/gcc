@@ -335,8 +335,9 @@ package body Exp_Disp is
       Loc      : constant Source_Ptr := Sloc (Call_Node);
       Call_Typ : constant Entity_Id  := Etype (Call_Node);
 
-      Ctrl_Arg   : constant Node_Id := Controlling_Argument (Call_Node);
-      Param_List : constant List_Id := Parameter_Associations (Call_Node);
+      Ctrl_Arg   : constant Node_Id   := Controlling_Argument (Call_Node);
+      Ctrl_Typ   : constant Entity_Id := Base_Type (Etype (Ctrl_Arg));
+      Param_List : constant List_Id   := Parameter_Associations (Call_Node);
 
       Subp            : Entity_Id;
       CW_Typ          : Entity_Id;
@@ -416,9 +417,9 @@ package body Exp_Disp is
       --  This capability of dispatching directly by tag is also needed by the
       --  implementation of AI-260 (for the generic dispatching constructors).
 
-      if Etype (Ctrl_Arg) = RTE (RE_Tag)
+      if Ctrl_Typ = RTE (RE_Tag)
         or else (RTE_Available (RE_Interface_Tag)
-                  and then Etype (Ctrl_Arg) = RTE (RE_Interface_Tag))
+                  and then Ctrl_Typ = RTE (RE_Interface_Tag))
       then
          CW_Typ := Class_Wide_Type (Find_Dispatching_Type (Subp));
 
@@ -427,11 +428,11 @@ package body Exp_Disp is
       --  there are cases where the controlling type is resolved to a specific
       --  type (such as for designated types of arguments such as CW'Access).
 
-      elsif Is_Access_Type (Etype (Ctrl_Arg)) then
-         CW_Typ := Class_Wide_Type (Designated_Type (Etype (Ctrl_Arg)));
+      elsif Is_Access_Type (Ctrl_Typ) then
+         CW_Typ := Class_Wide_Type (Designated_Type (Ctrl_Typ));
 
       else
-         CW_Typ := Class_Wide_Type (Etype (Ctrl_Arg));
+         CW_Typ := Class_Wide_Type (Ctrl_Typ);
       end if;
 
       Typ := Root_Type (CW_Typ);
@@ -619,9 +620,9 @@ package body Exp_Disp is
       --  interface class-wide type then use it directly. Otherwise, the tag
       --  must be extracted from the controlling object.
 
-      if Etype (Ctrl_Arg) = RTE (RE_Tag)
+      if Ctrl_Typ = RTE (RE_Tag)
         or else (RTE_Available (RE_Interface_Tag)
-                  and then Etype (Ctrl_Arg) = RTE (RE_Interface_Tag))
+                  and then Ctrl_Typ = RTE (RE_Interface_Tag))
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
 
@@ -643,8 +644,8 @@ package body Exp_Disp is
 
       --  Ada 2005 (AI-251): Abstract interface class-wide type
 
-      elsif Is_Interface (Etype (Ctrl_Arg))
-         and then Is_Class_Wide_Type (Etype (Ctrl_Arg))
+      elsif Is_Interface (Ctrl_Typ)
+        and then Is_Class_Wide_Type (Ctrl_Typ)
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
 
@@ -3175,10 +3176,7 @@ package body Exp_Disp is
 
          if not Building_Static_DT (Typ) then
             Set_Ekind (Predef_Prims, E_Variable);
-            Set_Is_Statically_Allocated (Predef_Prims);
-
             Set_Ekind (Iface_DT, E_Variable);
-            Set_Is_Statically_Allocated (Iface_DT);
 
          --  Statically allocated dispatch tables and related entities are
          --  constants.
@@ -3676,9 +3674,9 @@ package body Exp_Disp is
 
       --  Local variables
 
-      Elab_Code          : constant List_Id   := New_List;
-      Result             : constant List_Id   := New_List;
-      Tname              : constant Name_Id   := Chars (Typ);
+      Elab_Code          : constant List_Id := New_List;
+      Result             : constant List_Id := New_List;
+      Tname              : constant Name_Id := Chars (Typ);
       AI                 : Elmt_Id;
       AI_Tag_Elmt        : Elmt_Id;
       AI_Tag_Comp        : Elmt_Id;
@@ -3689,11 +3687,9 @@ package body Exp_Disp is
       I_Depth            : Nat := 0;
       Iface_Table_Node   : Node_Id;
       Name_ITable        : Name_Id;
-      Name_No_Reg        : Name_Id;
       Nb_Predef_Prims    : Nat := 0;
       Nb_Prim            : Nat := 0;
       New_Node           : Node_Id;
-      No_Reg             : Node_Id;
       Num_Ifaces         : Nat := 0;
       Parent_Typ         : Entity_Id;
       Prim               : Entity_Id;
@@ -3903,26 +3899,11 @@ package body Exp_Disp is
       DT_Ptr  := Node (First_Elmt (Access_Disp_Table (Typ)));
       Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
 
-      Set_Is_Statically_Allocated (DT);
-      Set_Is_Statically_Allocated (SSD);
-      Set_Is_Statically_Allocated (TSD);
-      Set_Is_Statically_Allocated (Predef_Prims);
-
-      --  Generate code to define the boolean that controls registration, in
-      --  order to avoid multiple registrations for tagged types defined in
-      --  multiple-called scopes.
-
-      Name_No_Reg := New_External_Name (Tname, 'F', Suffix_Index => -1);
-      No_Reg      := Make_Defining_Identifier (Loc, Name_No_Reg);
-
-      Set_Ekind (No_Reg, E_Variable);
-      Set_Is_Statically_Allocated (No_Reg);
-
-      Append_To (Result,
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => No_Reg,
-           Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
-           Expression          => New_Reference_To (Standard_True, Loc)));
+      Set_Is_Statically_Allocated (DT,  Is_Library_Level_Tagged_Type (Typ));
+      Set_Is_Statically_Allocated (SSD, Is_Library_Level_Tagged_Type (Typ));
+      Set_Is_Statically_Allocated (TSD, Is_Library_Level_Tagged_Type (Typ));
+      Set_Is_Statically_Allocated (Predef_Prims,
+        Is_Library_Level_Tagged_Type (Typ));
 
       --  In case of locally defined tagged type we declare the object
       --  containing the dispatch table by means of a variable. Its
@@ -4544,7 +4525,8 @@ package body Exp_Disp is
 
                Name_ITable := New_External_Name (Tname, 'I');
                ITable      := Make_Defining_Identifier (Loc, Name_ITable);
-               Set_Is_Statically_Allocated (ITable);
+               Set_Is_Statically_Allocated (ITable,
+                 Is_Library_Level_Tagged_Type (Typ));
 
                --  The table of interfaces is not constant; its slots are
                --  filled at run-time by the IP routine using attribute
@@ -5385,18 +5367,9 @@ package body Exp_Disp is
       --  Skip this action in the following cases:
       --    1) if Register_Tag is not available.
       --    2) in No_Run_Time mode.
-      --    3) if Typ is an abstract interface type (the secondary tags will
-      --       be registered later in types implementing this interface type).
-      --    4) if Typ is not defined at the library level (this is required
+      --    3) if Typ is not defined at the library level (this is required
       --       to avoid adding concurrency control to the hash table used
       --       by the run-time to register the tags).
-
-      --  Generate:
-      --     if No_Reg then
-      --        [ Elab_Code ]
-      --        [ Register_Tag (Dt_Ptr); ]
-      --        No_Reg := False;
-      --     end if;
 
       if not No_Run_Time_Mode
         and then Is_Library_Level_Entity (Typ)
@@ -5409,15 +5382,9 @@ package body Exp_Disp is
                New_List (New_Reference_To (DT_Ptr, Loc))));
       end if;
 
-      Append_To (Elab_Code,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Reference_To (No_Reg, Loc),
-          Expression => New_Reference_To (Standard_False, Loc)));
-
-      Append_To (Result,
-        Make_Implicit_If_Statement (Typ,
-          Condition       => New_Reference_To (No_Reg, Loc),
-          Then_Statements => Elab_Code));
+      if not Is_Empty_List (Elab_Code) then
+         Append_List_To (Result, Elab_Code);
+      end if;
 
       --  Populate the two auxiliary tables used for dispatching
       --  asynchronous, conditional and timed selects for synchronized
@@ -5838,7 +5805,8 @@ package body Exp_Disp is
             Set_Ekind (Iface_DT_Ptr, E_Constant);
             Set_Is_Tag (Iface_DT_Ptr);
             Set_Has_Thunks (Iface_DT_Ptr);
-            Set_Is_Statically_Allocated (Iface_DT_Ptr);
+            Set_Is_Statically_Allocated (Iface_DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
             Set_Is_True_Constant (Iface_DT_Ptr);
             Set_Related_Type
               (Iface_DT_Ptr, Related_Type (Node (AI_Tag_Comp)));
@@ -5854,7 +5822,8 @@ package body Exp_Disp is
             Set_Ekind (Iface_DT_Ptr, E_Constant);
             Set_Is_Tag (Iface_DT_Ptr);
             Set_Has_Thunks (Iface_DT_Ptr);
-            Set_Is_Statically_Allocated (Iface_DT_Ptr);
+            Set_Is_Statically_Allocated (Iface_DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
             Set_Is_True_Constant (Iface_DT_Ptr);
             Set_Related_Type
               (Iface_DT_Ptr, Related_Type (Node (AI_Tag_Comp)));
@@ -5869,7 +5838,8 @@ package body Exp_Disp is
             Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
             Set_Ekind (Iface_DT_Ptr, E_Constant);
             Set_Is_Tag (Iface_DT_Ptr);
-            Set_Is_Statically_Allocated (Iface_DT_Ptr);
+            Set_Is_Statically_Allocated (Iface_DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
             Set_Is_True_Constant (Iface_DT_Ptr);
             Set_Related_Type
               (Iface_DT_Ptr, Related_Type (Node (AI_Tag_Comp)));
@@ -5883,7 +5853,8 @@ package body Exp_Disp is
             Set_Etype (Iface_DT_Ptr, RTE (RE_Address));
             Set_Ekind (Iface_DT_Ptr, E_Constant);
             Set_Is_Tag (Iface_DT_Ptr);
-            Set_Is_Statically_Allocated (Iface_DT_Ptr);
+            Set_Is_Statically_Allocated (Iface_DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
             Set_Is_True_Constant (Iface_DT_Ptr);
             Set_Related_Type
               (Iface_DT_Ptr, Related_Type (Node (AI_Tag_Comp)));
