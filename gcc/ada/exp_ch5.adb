@@ -1886,8 +1886,11 @@ package body Exp_Ch5 is
                --       <code for controlled and/or tagged assignment>
                --    end if;
 
+               --  Skip this if Restriction (No_Finalization) is active
+
                if not Statically_Different (Lhs, Rhs)
                  and then Expand_Ctrl_Actions
+                 and then not Restriction_Active (No_Finalization)
                then
                   L := New_List (
                     Make_Implicit_If_Statement (N,
