@@ -48,8 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "ggc.h"
-#include "diagnostic.h"
-#include "toplev.h"
+
 /* These RTL headers are needed for basic-block.h.  */
 #include "rtl.h"
 #include "tm_p.h"
@@ -76,9 +75,7 @@ static struct stmt_stats
   int removed_phis;
 } stats;
 
-
-static VEC (tree, heap) *worklist;
-static VEC (tree, heap) *cond_dead_built_in_calls;
+static VEC(tree,heap) *worklist;
 
 /* Vector indicating an SSA name has already been processed and marked
    as necessary.  */
@@ -202,193 +199,6 @@ find_all_control_dependences (struct edge_list *el)
 
 #define NECESSARY(stmt)		stmt->base.asm_written_flag
 
-/*  Conditional dead call elimination 
-
-   Some builtin functions can set errno on error conditions, but they
-   are otherwise pure. If the result of a call to such a function is 
-   not used, the compiler can still not eliminate the call without 
-   powerful interprocedural analysis to prove that the errno is not
-   checked. However, if the conditions under which the error occurs
-   are known, compiler can conditionally dead code eliminate the calls
-   by shrink-wrapping the semi-dead calls into the error condition:
-      
-        built_in_call(args) 
-          ==>
-        if (error_cond(args))
-             built_in_call(args)
-
-    An actual simple exampl is :
-         log (x);   // Mostly dead call
-     ==>
-         if (x < 0)
-             log(x);
-     With this change, call to log(x) is effectively eliminated, as
-     in majority of the cases, log won't be called with x out of 
-     range. The branch is totally predicatible, so the branch cost
-     is low.  Such optimization improves the performance of  
-     an important application in a big search company. 
-   
-   Note that library functions are not supposed to clear errno to zero without
-   error.
-   
-   In this implementation, only 'pow' and 'log' are handled. ('sin' and 'cos' 
-   seem to be wrongly handled by gcc -- they are treated as not touching errno
-   which is not correct.)
-   
-   The condition wrapping the builtin call is conservatively set to avoid too
-   aggressive (wrong) shrink wrapping. The optimization is called conditional
-   dead call elimination because the call is eliminated under the condition 
-   that the input arguments would not lead to domain or range error (for 
-   instance when x <= 0 for a log(x) call), however the chances that the error
-   condition is hit is very low (those builtin calls which are conditionally 
-   dead are usually part of the C++ abstraction penalty exposed after 
-   inlining).  */
-
-
-/* A helper method to help select calls to pow that are suitable for
-   conditional DCE transformation. Returns true if the pow call is 
-   a candidate.*/
-
-static bool
-check_pow (tree pow_call)
-{
-  tree base, expn;
-  enum tree_code bc, ec;
-
-  gcc_assert (TREE_CODE (pow_call) == CALL_EXPR);
-  if (call_expr_nargs (pow_call) != 2)
-    return false;
-
-  base = CALL_EXPR_ARG (pow_call, 0);
-  expn = CALL_EXPR_ARG (pow_call, 1);
-
-  bc = TREE_CODE (base);
-  ec = TREE_CODE (expn);
- 
-  gcc_assert (TREE_CODE_CLASS (bc) != tcc_constant 
-             || bc == REAL_CST);
-  gcc_assert (TREE_CODE_CLASS (ec) != tcc_constant 
-             || ec == REAL_CST);
-
-  /* Folding candidates are not interesting.  */
-  if (ec == REAL_CST && bc == REAL_CST)
-    return false;
-
-  if (bc == REAL_CST)
-   {
-     /* Only handle a fixed range of constant.  */
-     REAL_VALUE_TYPE mv;
-     REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
-     if (REAL_VALUES_EQUAL (bcv, dconst1))
-       return false;
-     if (REAL_VALUES_LESS (bcv, dconst1))
-       return false;
-     real_from_integer (&mv, VOIDmode,256,0,1);
-     if (REAL_VALUES_LESS (mv, bcv))
-       return false;
-     return true;
-   }
-  else if (bc == SSA_NAME)
-   {
-     tree def, nm, rhs, rhs0, var, typ;
-     int sz;
-
-     def = SSA_NAME_DEF_STMT (base);
-     if (TREE_CODE (def) != GIMPLE_MODIFY_STMT)
-       return false;
-
-     nm = GIMPLE_STMT_OPERAND (def,0);
-     gcc_assert (TREE_CODE (nm) == SSA_NAME);
-     if (nm != base) 
-       return false;
-
-     rhs = GIMPLE_STMT_OPERAND (def,1);
-     
-     if (TREE_CODE (rhs) != FLOAT_EXPR)
-       return false;
-     rhs0 = TREE_OPERAND (rhs,0);
-
-     if (TREE_CODE (rhs0) != SSA_NAME)
-       return false;
-
-     var = SSA_NAME_VAR (rhs0);
-     if (TREE_CODE (var) != VAR_DECL &&
-         TREE_CODE (var) != PARM_DECL)
-       return false;
-
-     typ = TREE_TYPE (var);
-     if (TREE_CODE (typ) != INTEGER_TYPE)
-       return false;
-     sz = int_size_in_bytes (typ);
-     if (sz == -1 || sz > INT_TYPE_SIZE) 
-       return false;
-
-     return true;
-   }
-  else
-    return false;
-}
-
-/* A helper function to help select candidate calls to log that are 
-   suitable for conditional DCE. Returns true if the log call is a
-    candidate. */
-
-static bool
-check_log (tree log_call)
-{
-  tree arg_typ;
-  gcc_assert (TREE_CODE (log_call) == CALL_EXPR);
-  if (call_expr_nargs (log_call) != 1)
-    return false;
-
-  arg_typ = TREE_TYPE (CALL_EXPR_ARG (log_call, 0));
-  if (!is_gimple_reg_type (arg_typ))
-    return false;
-  return true;
-}
-
-
-/* A helper function to determine if a builtin function call is a 
-   candidate for conditional DCE. Returns true if the builtin call
-   is a candidate. */
-
-static bool
-is_unnecessary_except_errno_call (tree call)
-{
-  tree fn;
-  bool is_unnecessary_except_errno = false;
-  enum built_in_function fnc;
-
-  if (!flag_tree_builtin_dce) 
-    return false;
-
-  gcc_assert (call && TREE_CODE (call) == CALL_EXPR);
-
-  fn = get_callee_fndecl (call);
-  if (!fn || !DECL_BUILT_IN (fn)) 
-    return false;
-
-  fnc = DECL_FUNCTION_CODE (fn);
-  switch (fnc)
-    {
-    CASE_FLT_FN (BUILT_IN_POW): 
-      if (check_pow (call))
-        is_unnecessary_except_errno = true;
-      break;
-
-    CASE_FLT_FN (BUILT_IN_LOG):
-      if (check_log (call))
-        is_unnecessary_except_errno = true;
-      break;
-    default : 
-      is_unnecessary_except_errno = false;
-      break;
-   }
-
-  return is_unnecessary_except_errno;
-}
-
-
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
 static inline void
@@ -433,13 +243,6 @@ mark_operand_necessary (tree op)
 
   if (NECESSARY (stmt) || IS_EMPTY_STMT (stmt))
     return;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-   {
-     fprintf (dump_file, " Marked as necessary: ");
-     print_generic_stmt (dump_file, stmt, TDF_SLIM);
-     fprintf (dump_file, "\n");
-   }
 
   NECESSARY (stmt) = 1;
   VEC_safe_push (tree, heap, worklist, stmt);
@@ -491,16 +294,15 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       /* Most, but not all function calls are required.  Function calls that
 	 produce no result and have no side effects (i.e. const pure
 	 functions) are unnecessary.  */
-      if (TREE_SIDE_EFFECTS (stmt)) 
-        mark_stmt_necessary (stmt, true);
-      
+      if (TREE_SIDE_EFFECTS (stmt))
+	mark_stmt_necessary (stmt, true);
       return;
 
     case GIMPLE_MODIFY_STMT:
       op = get_call_expr_in (stmt);
       if (op && TREE_SIDE_EFFECTS (op))
 	{
-          mark_stmt_necessary (stmt, true);
+	  mark_stmt_necessary (stmt, true);
 	  return;
 	}
 
@@ -721,422 +523,6 @@ propagate_necessity (struct edge_list *el)
     }
 }
 
-/* Method to generate conditional statements for guarding condionally
-   dead calls to pow. One or more statements can be generated for 
-   each logical condition. Statement groups of different conditions
-   are separated by a NULL tree and they are stored in the VEC 
-   conds. The number of logical conditions are stored in *nconds. */
-static void
-gen_conditions_for_pow (tree pow_call, enum built_in_function fnc, 
-                        VEC (tree, heap)* conds, unsigned * nconds)
-{
-  tree base, expn;
-  enum tree_code bc, ec;
-  gcc_assert (TREE_CODE (pow_call) == CALL_EXPR);
-  gcc_assert (call_expr_nargs (pow_call) == 2);
-  gcc_assert (fnc == BUILT_IN_POW);
-
-  *nconds = 0;
-
-  base = CALL_EXPR_ARG (pow_call, 0);
-  expn = CALL_EXPR_ARG (pow_call, 1);
-
-  bc = TREE_CODE (base);
-  ec = TREE_CODE (expn);
-  
-  gcc_assert (TREE_CODE_CLASS (bc) != tcc_constant ||
-             bc == REAL_CST);
-  gcc_assert (TREE_CODE_CLASS (ec) != tcc_constant ||
-             ec == REAL_CST);
-
-  if (bc == REAL_CST)
-   {
-     tree float_typ, max_exp_real_cst;
-     tree temp, tempn, tempc, tempcn, stmt1, stmt2, stmt3;
-     REAL_VALUE_TYPE mv;
-
-     /* See candidate selection in check_pow. 
-        Since the candidates have a given range
-        of base values, the guard code generated
-        for such calls: pow(const,y) are simple:
-           if ( y > max_y )
-               pow(const, y);
-        max_y can be computed separately for each
-        const base, but in this implemetation, we
-        choose to compute it using the max base
-        in the allowed range.  */
-
-     REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
-     gcc_assert (!REAL_VALUES_EQUAL (bcv, dconst1));
-     gcc_assert (!REAL_VALUES_LESS (bcv, dconst1));
-     real_from_integer (&mv, VOIDmode,256,0,1),
-     gcc_assert (!REAL_VALUES_LESS (mv, bcv));
-     float_typ = TREE_TYPE (expn); 
-
-     max_exp_real_cst = build_real (float_typ, mv);
-     temp = create_tmp_var (float_typ, "DCE_COND");
-     stmt1 = build_gimple_modify_stmt (temp, expn);
-     tempn = make_ssa_name (temp, stmt1);
-     GIMPLE_STMT_OPERAND (stmt1, 0) = tempn;
-
-     tempc = create_tmp_var (boolean_type_node, "DCE_COND_TEST");
-     stmt2 = build_gimple_modify_stmt (tempc, 
-                                       build2 (GT_EXPR, 
-                                               boolean_type_node, 
-                                               tempn, max_exp_real_cst));
-     tempcn = make_ssa_name (tempc, stmt2);
-     GIMPLE_STMT_OPERAND (stmt2, 0) = tempcn;
-
-     stmt3 = build3 (COND_EXPR, void_type_node,
-                     tempcn, NULL_TREE, NULL_TREE);
-     VEC_safe_push (tree, heap, conds, stmt1);
-     VEC_safe_push (tree, heap, conds, stmt2);
-     VEC_safe_push (tree, heap, conds, stmt3);
-     (*nconds)++;
-
-   }
-  else if (bc == SSA_NAME)
-   {
-     tree def, nm, rhs, rhs0, var, int_typ, float_typ;
-     tree max_exp_cst, max_exp_real_cst;
-     tree temp1, temp1n, temp2, temp2n, temp2c, temp2cn; 
-     tree cst0, stmt1, stmt2, stmt3;
-     int sz, max_exp;
-
-     /* Generate error condition code for pow calls with
-        non constant base value. The candidates selected
-        have their base argument value converted from
-        integer (see check_pow) value (1,2,4 bytes), and
-        the max exp value is computed based on the size
-        of the integer type.  The code below first does
-        sanity check and then does code generation.  */
-
-     def = SSA_NAME_DEF_STMT (base);
-     gcc_assert (TREE_CODE (def) == GIMPLE_MODIFY_STMT);
-
-     nm = GIMPLE_STMT_OPERAND (def,0);
-     gcc_assert (TREE_CODE (nm) == SSA_NAME);
-     gcc_assert (nm == base); 
-
-     rhs = GIMPLE_STMT_OPERAND (def,1);
-     
-     gcc_assert (TREE_CODE (rhs) == FLOAT_EXPR);
-     rhs0 = TREE_OPERAND (rhs,0);
-     gcc_assert (TREE_CODE (rhs0) == SSA_NAME);
-
-     var = SSA_NAME_VAR (rhs0);
-     gcc_assert (TREE_CODE (var) == VAR_DECL 
-                 || TREE_CODE (var) == PARM_DECL);
-     
-     int_typ = TREE_TYPE (var);
-     gcc_assert (TREE_CODE (int_typ) == INTEGER_TYPE);
-
-     sz = int_size_in_bytes (int_typ);
-     gcc_assert (sz > 0 && sz <= INT_TYPE_SIZE) ;
-
-
-     float_typ = TREE_TYPE (SSA_NAME_VAR (expn)); 
-     if (sz == 1)
-       max_exp = 128;
-     else if (sz == 2)
-       max_exp = 64;
-     else 
-      {
-        gcc_assert (sz == 4);
-        max_exp = 32;
-      }
-     max_exp_cst = build_int_cst (integer_type_node, max_exp);
-     max_exp_real_cst = build_real_from_int_cst (float_typ, max_exp_cst);
-     
-     /* For pow ((dobule)x,y), generate the following conditions:
-      cond 1:
-        temp1 = x;
-        if (temp1 <= 0)
-
-      cond 2:
-        temp2 = y;
-        if (temp2 > max_exp_real_cst)  */
-
-     temp2 = create_tmp_var (float_typ, "DCE_COND2");
-     stmt1 = build_gimple_modify_stmt (temp2, expn);
-     temp2n = make_ssa_name (temp2, stmt1);
-     GIMPLE_STMT_OPERAND (stmt1,0) = temp2n;
-
-     temp2c = create_tmp_var (boolean_type_node, "DCE_COND2_TEST");
-     stmt2 = build_gimple_modify_stmt (temp2c, 
-                                       build2 (GT_EXPR, 
-                                               boolean_type_node, 
-                                               temp2n, max_exp_real_cst));
-     temp2cn = make_ssa_name (temp2c, stmt2);
-     GIMPLE_STMT_OPERAND (stmt2, 0) = temp2cn;
-
-     stmt3 = build3 (COND_EXPR, void_type_node,
-                     temp2cn, NULL_TREE, NULL_TREE);
-     VEC_safe_push (tree, heap, conds, stmt1);
-     VEC_safe_push (tree, heap, conds, stmt2);
-     VEC_safe_push (tree, heap, conds, stmt3);
-     (*nconds)++;
-
-     /* Now a seperator*/
-     VEC_safe_push (tree, heap, conds, NULL);
-
-     temp1 = create_tmp_var (int_typ, "DCE_COND1");
-     cst0 = build_int_cst (int_typ, 0);
-     stmt1 = build_gimple_modify_stmt (temp1, rhs0);
-     temp1n = make_ssa_name (temp1, stmt1);
-     GIMPLE_STMT_OPERAND (stmt1,0) = temp1n;
-     stmt2 = build3 (COND_EXPR, void_type_node,
-                     build2 (LE_EXPR, boolean_type_node, temp1n, cst0),
-                     NULL_TREE, NULL_TREE);
-
-     VEC_safe_push (tree, heap, conds, stmt1);
-     VEC_safe_push (tree, heap, conds, stmt2);
-     (*nconds)++;
-
-   }
-  else
-    gcc_unreachable ();
-}
-
-/* The method to generate error condition guard code for log(x)
-   calls. */
-static void
-gen_conditions_for_log (tree call, enum built_in_function fnc, 
-                        VEC (tree, heap)* conds, unsigned * nconds)
-{
-  tree arg, cst0, temp, tempn, tempc, tempcn, stmt1, stmt2, stmt3;
-  gcc_assert (TREE_CODE (call) == CALL_EXPR);
-  gcc_assert (fnc == BUILT_IN_LOG || fnc == BUILT_IN_LOGF || fnc == BUILT_IN_LOGL);
-
-  *nconds = 0;
-
-  /* for log(x), 
-   Generate condition
-
-   temp = x
-   if (x <= 0)
-  */
-  arg = CALL_EXPR_ARG (call, 0);
-  cst0 = build_real (TREE_TYPE (arg), dconst0);
-  temp = create_tmp_var (TREE_TYPE (arg), "DCE_COND");
-  stmt1 = build_gimple_modify_stmt (temp, arg);
-  tempn = make_ssa_name (temp, stmt1);
-  GIMPLE_STMT_OPERAND (stmt1,0) = tempn;
-
-  tempc = create_tmp_var (boolean_type_node, "DCE_COND_TEST");
-  stmt2 = build_gimple_modify_stmt (tempc, 
-                                    build2 (LE_EXPR, 
-                                            boolean_type_node, 
-                                            tempn, cst0));
-  tempcn = make_ssa_name (tempc, stmt2);
-  GIMPLE_STMT_OPERAND (stmt2, 0) = tempcn;
-
-  stmt3 = build3 (COND_EXPR, void_type_node, tempcn,
-                       NULL_TREE, NULL_TREE);
-
-  VEC_safe_push (tree, heap, conds, stmt1);
-  VEC_safe_push (tree, heap, conds, stmt2);
-  VEC_safe_push (tree, heap, conds, stmt3);
-  (*nconds)++;
-
-}
-
-
-/*  The method to generate shrink wrap conditions for partially 
-    a dead builtin call whose return value is not used anywhere,
-    but has to be kept live due to potential error condition.  
-
-    BI_CALL:  the builtin call
-    CONDS  :  the vector of statements for condition code
-    NCODES :  the pointer to the number of logical conditions, 
-              which may be different from the length of CONDS
-              vector. Statements belonging to different logical
-              condition are separated by NULL tree in the vector
-*/
-
-static void
-gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap)* conds, unsigned int * nconds)
-{
-  tree call, fn;
-  enum built_in_function fnc; 
-  gcc_assert (nconds && conds);
-  gcc_assert (VEC_length(tree, conds) == 0);
-  gcc_assert (TREE_CODE (bi_call) == GIMPLE_MODIFY_STMT 
-              || TREE_CODE (bi_call) == CALL_EXPR);
-
-  call = bi_call;
-  if (TREE_CODE (call) == GIMPLE_MODIFY_STMT)
-    call = get_call_expr_in (bi_call);
-
-  fn = get_callee_fndecl (call);
-  gcc_assert (fn && DECL_BUILT_IN (fn)); 
-  fnc = DECL_FUNCTION_CODE (fn);
-  *nconds = 0;
-
-  switch (fnc)
-    {
-     case BUILT_IN_POW:
-       gen_conditions_for_pow (call, fnc, conds, nconds);
-       break;
-     case BUILT_IN_LOG:
-     case BUILT_IN_LOGF:
-     case BUILT_IN_LOGL:
-       gen_conditions_for_log (call, fnc, conds, nconds);
-       break;
-     default : 
-       gcc_unreachable();
-     break;
-   }
-
-  gcc_assert (*nconds);
-  return;
-}
-
-
-/* Propability of the branch (to the call) is taken. */
-#define ERR_PROB 0.01
-
-/*  The method to shrink wrap a partially  dead builtin call 
-    whose return value is not used anywhere, but has to be kept 
-    live due to potential error condition.  */
-static void
-shrink_wrap_one_built_in_call (tree bi_call)
-{
-  block_stmt_iterator bi_call_bsi, join_tgt_bsi;
-  basic_block bi_call_bb, join_tgt_bb, guard_bb, guard_bb0;
-  edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
-  tree join_tgt_label_decl, join_tgt_label;
-  edge bi_call_in_edge0, guard_bb_in_edge;
-  VEC (tree, heap) *conds;
-  unsigned tn_cond_stmts, nconds;
-  unsigned ci;
-  tree cond_expr = NULL;
-  tree cond_expr_start;
-  tree bi_call_label_decl;
-  tree bi_call_label;
-
-  conds = VEC_alloc (tree, heap, 10);
-  gen_shrink_wrap_conditions (bi_call, conds, &nconds);
-
-  gcc_assert (nconds > 0);
-  /* Make sure no reallocation happens. */
-  gcc_assert (VEC_length (tree, conds) <= 10);
-  gcc_assert (VEC_length (tree, conds) >= nconds);
-  bi_call_bb = bb_for_stmt (bi_call);
-
-  /* Now find the join target bb -- split 
-     bi_call_bb if needed */
-  bi_call_bsi = bsi_for_stmt (bi_call);
-
-  gcc_assert (!bsi_end_p (bi_call_bsi));
-  join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
-  bi_call_bsi = bsi_for_stmt (bi_call);
-
-  join_tgt_bb = join_tgt_in_edge_from_call->dest;
-  join_tgt_label_decl = create_artificial_label ();
-  join_tgt_label = build1 (LABEL_EXPR, void_type_node, join_tgt_label_decl);
-  join_tgt_bsi = bsi_start (join_tgt_bb);
-  bsi_insert_before (&join_tgt_bsi, join_tgt_label, BSI_SAME_STMT);
-
-  /* Now it is time to insert the first condtional expression 
-     into bi_call_bb and split this bb so that bi_call is 
-     shrink-wrapped*/
-  tn_cond_stmts = VEC_length (tree, conds);
-  cond_expr = NULL;
-  cond_expr_start = VEC_index (tree, conds,0);
-  for (ci = 0; ci < tn_cond_stmts; ci++)
-   {
-     tree c = VEC_index (tree, conds, ci);
-     gcc_assert ( c || ci != 0 );
-     if (!c) 
-       break;
-     bsi_insert_before (&bi_call_bsi, c, BSI_SAME_STMT);
-     cond_expr = c;
-   }
-  nconds --;
-  ci ++;
-  gcc_assert (cond_expr && TREE_CODE (cond_expr) == COND_EXPR);
-
-  /* Now the label*/
-  bi_call_label_decl = create_artificial_label ();
-  bi_call_label = build1 (LABEL_EXPR, void_type_node, bi_call_label_decl);
-  bsi_insert_before (&bi_call_bsi, bi_call_label, BSI_SAME_STMT);
-
-  bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
-  bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
-  bi_call_in_edge0->flags |= EDGE_TRUE_VALUE;
-  guard_bb0 = bi_call_bb;
-  bi_call_bb = bi_call_in_edge0->dest;
-  join_tgt_in_edge_fall_thru = make_edge (guard_bb0, join_tgt_bb, EDGE_FALSE_VALUE);
-
-  bi_call_in_edge0->probability = REG_BR_PROB_BASE*ERR_PROB;
-  join_tgt_in_edge_fall_thru->probability = 
-      REG_BR_PROB_BASE - bi_call_in_edge0->probability;
-
-  /* Code generation for the rest of the conditions */
-  guard_bb = guard_bb0;
-  for (; nconds > 0; )
-   {
-     unsigned ci0;
-     edge bi_call_in_edge; 
-     block_stmt_iterator guard_bsi = bsi_for_stmt (cond_expr_start);
-     ci0 = ci;
-     cond_expr_start = VEC_index (tree, conds, ci0);
-     for (; ci < tn_cond_stmts; ci++)
-      {
-        tree c = VEC_index (tree, conds, ci);
-        gcc_assert ( c || ci != ci0 );
-        if (!c) 
-          break;
-        bsi_insert_before (&guard_bsi, c, BSI_SAME_STMT);
-        cond_expr = c;
-      }
-     nconds --;
-     ci ++;
-     gcc_assert (cond_expr && TREE_CODE (cond_expr) == COND_EXPR);
-     guard_bb_in_edge = split_block (guard_bb, cond_expr);
-     guard_bb_in_edge->flags &= ~EDGE_FALLTHRU;
-     guard_bb_in_edge->flags |= EDGE_FALSE_VALUE;
-
-     bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_TRUE_VALUE);
-
-     bi_call_in_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
-     guard_bb_in_edge->probability = 
-         REG_BR_PROB_BASE - bi_call_in_edge->probability;
-
-   }
-
-  VEC_free (tree, heap, conds);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-   {
-     location_t loc;
-     loc = EXPR_LOCATION (bi_call);
-     inform (
-         "%Hfunction call is shrink-wrapped into error conditions.",
-         &loc);
-   }
-}
-
-/*  The top level method for conditional dead code shrink 
-    wrapping transformation.  */
-
-static bool
-shrink_wrap_conditional_dead_built_in_calls (void)
-{
-  unsigned i = 0;
-  unsigned n = VEC_length (tree, cond_dead_built_in_calls);
-  if (n == 0) return false;
-
-  for (; i < n ; i++)
-   {
-     tree bi_call = VEC_index (tree,  cond_dead_built_in_calls, i);
-     shrink_wrap_one_built_in_call (bi_call);
-   }
-
-  cfg_altered = true;
-
-  return true;
-}
 
 /* Remove dead PHI nodes from block BB.  */
 
@@ -1325,18 +711,6 @@ eliminate_unnecessary_stmts (void)
 			  print_generic_stmt (dump_file, t, TDF_SLIM);
 			  fprintf (dump_file, "\n");
 			}
-
-                      if (is_unnecessary_except_errno_call (call))
-                       {
-                         if (dump_file && (dump_flags & TDF_DETAILS))
-			  {
-                            fprintf (dump_file, "Found conditional dead call: ");
-                            print_generic_stmt (dump_file, t, TDF_SLIM);
-                            fprintf (dump_file, "\n");
-                          }
-                         VEC_safe_push (tree, heap, cond_dead_built_in_calls, call);
-                       }
-
 		      push_stmt_changes (bsi_stmt_ptr (i));
 		      TREE_BLOCK (call) = TREE_BLOCK (t);
 		      bsi_replace (&i, call, false);
@@ -1344,8 +718,6 @@ eliminate_unnecessary_stmts (void)
 		      mark_symbols_for_renaming (call);
 		      pop_stmt_changes (bsi_stmt_ptr (i));
 		      release_ssa_name (oldlhs);
-
-
 		    }
 		  notice_special_calls (call);
 		}
@@ -1353,9 +725,6 @@ eliminate_unnecessary_stmts (void)
 	    }
 	}
     }
-
-  something_changed |= 
-      shrink_wrap_conditional_dead_built_in_calls ();
 
   return something_changed;
 }
@@ -1407,9 +776,7 @@ tree_dce_init (bool aggressive)
   sbitmap_zero (processed);
 
   worklist = VEC_alloc (tree, heap, 64);
-  cond_dead_built_in_calls = VEC_alloc (tree, heap,64);
   cfg_altered = false;
-  
 }
 
 /* Cleanup after this pass.  */
@@ -1432,9 +799,7 @@ tree_dce_done (bool aggressive)
   sbitmap_free (processed);
 
   VEC_free (tree, heap, worklist);
-  VEC_free (tree, heap, cond_dead_built_in_calls);
 }
-
 
 /* Main routine to eliminate dead code.
 
@@ -1476,7 +841,7 @@ perform_tree_ssa_dce (bool aggressive)
   find_obviously_necessary_stmts (el);
 
   propagate_necessity (el);
-  
+
   something_changed |= eliminate_unnecessary_stmts ();
   something_changed |= cfg_altered;
 
