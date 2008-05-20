@@ -1,3 +1,12 @@
+2008-05-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taspri-vxworks.ads (Task_Address, Task_Address_Size): New
+	type/constant.
+
+	* g-socthi-vxworks.ads: Update to latest socket changes.
+
+	* a-caldel-vms.adb: Resync with a-caldel spec.
+
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (gnat_to_gnu) <N_Validate_Unchecked_Conversion>: Account
