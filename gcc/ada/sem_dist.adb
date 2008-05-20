@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -268,12 +269,33 @@ package body Sem_Dist is
       end if;
    end Is_All_Remote_Call;
 
+   ---------------------------------
+   -- Is_RACW_Stub_Type_Operation --
+   ---------------------------------
+
+   function Is_RACW_Stub_Type_Operation (Op : Entity_Id) return Boolean is
+      Dispatching_Type : Entity_Id;
+
+   begin
+      case Ekind (Op) is
+         when E_Function | E_Procedure =>
+            Dispatching_Type := Find_Dispatching_Type (Op);
+            return Present (Dispatching_Type)
+                     and then Is_RACW_Stub_Type (Dispatching_Type)
+                     and then not Is_Internal (Op);
+
+         when others =>
+            return False;
+      end case;
+   end Is_RACW_Stub_Type_Operation;
+
    ------------------------------------
    -- Package_Specification_Of_Scope --
    ------------------------------------
 
    function Package_Specification_Of_Scope (E : Entity_Id) return Node_Id is
       N : Node_Id := Parent (E);
+
    begin
       while Nkind (N) /= N_Package_Specification loop
          N := Parent (N);

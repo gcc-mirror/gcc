@@ -39,6 +39,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Disp; use Sem_Disp;
+with Sem_Dist; use Sem_Dist;
 with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
@@ -403,10 +404,9 @@ package body Sem_Type is
             return;
          end if;
 
-      --  In an instance, an abstract non-dispatching operation cannot
-      --  be a candidate interpretation, because it could not have been
-      --  one in the generic (it may be a spurious overloading in the
-      --  instance).
+      --  In an instance, an abstract non-dispatching operation cannot be a
+      --  candidate interpretation, because it could not have been one in the
+      --  generic (it may be a spurious overloading in the instance).
 
       elsif In_Instance
         and then Is_Overloadable (E)
@@ -415,9 +415,9 @@ package body Sem_Type is
       then
          return;
 
-      --  An inherited interface operation that is implemented by some
-      --  derived type does not participate in overload resolution, only
-      --  the implementation operation does.
+      --  An inherited interface operation that is implemented by some derived
+      --  type does not participate in overload resolution, only the
+      --  implementation operation does.
 
       elsif Is_Hidden (E)
         and then Is_Subprogram (E)
@@ -437,6 +437,12 @@ package body Sem_Type is
             Add_One_Interp (N, Abstract_Interface_Alias (E), T);
          end if;
 
+         return;
+
+      --  Calling stubs for an RACW operation never participate in resolution,
+      --  they are executed only through dispatching calls.
+
+      elsif Is_RACW_Stub_Type_Operation (E) then
          return;
       end if;
 
@@ -681,9 +687,15 @@ package body Sem_Type is
 
       if All_Interp.Last = First_Interp + 1 then
 
-         --  The original interpretation is in fact not overloaded
+         --  The final interpretation is in fact not overloaded. Note that the
+         --  unique legal interpretation may or may not be the original one,
+         --  so we need to update N's entity and etype now, because once N
+         --  is marked as not overloaded it is also expected to carry the
+         --  proper interpretation.
 
          Set_Is_Overloaded (N, False);
+         Set_Entity (N, All_Interp.Table (First_Interp).Nam);
+         Set_Etype  (N, All_Interp.Table (First_Interp).Typ);
       end if;
    end Collect_Interps;
 
