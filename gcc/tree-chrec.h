@@ -168,7 +168,29 @@ evolution_function_is_constant_p (const_tree chrec)
     }
 }
 
-/* Determine whether the given tree is an affine evolution function or not.  */
+/* Determine whether CHREC is an affine evolution function in LOOPNUM.  */
+
+static inline bool 
+evolution_function_is_affine_in_loop (const_tree chrec, int loopnum)
+{
+  if (chrec == NULL_TREE)
+    return false;
+  
+  switch (TREE_CODE (chrec))
+    {
+    case POLYNOMIAL_CHREC:
+      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec), loopnum)
+	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec), loopnum))
+	return true;
+      else
+	return false;
+      
+    default:
+      return false;
+    }
+}
+
+/* Determine whether CHREC is an affine evolution function or not.  */
 
 static inline bool 
 evolution_function_is_affine_p (const_tree chrec)
@@ -179,10 +201,8 @@ evolution_function_is_affine_p (const_tree chrec)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec), 
-					     CHREC_VARIABLE (chrec))
-	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
-						CHREC_VARIABLE (chrec)))
+      if (evolution_function_is_invariant_p (CHREC_LEFT (chrec), CHREC_VARIABLE (chrec))
+	  && evolution_function_is_invariant_p (CHREC_RIGHT (chrec), CHREC_VARIABLE (chrec)))
 	return true;
       else
 	return false;
@@ -190,16 +210,6 @@ evolution_function_is_affine_p (const_tree chrec)
     default:
       return false;
     }
-}
-
-/* Determine whether the given tree is an affine or constant evolution
-   function.  */
-
-static inline bool 
-evolution_function_is_affine_or_constant_p (const_tree chrec)
-{
-  return evolution_function_is_affine_p (chrec) 
-    || evolution_function_is_constant_p (chrec);
 }
 
 /* Determines whether EXPR does not contains chrec expressions.  */
@@ -221,5 +231,24 @@ chrec_type (const_tree chrec)
   return TREE_TYPE (chrec);
 }
 
+static inline tree
+chrec_fold_op (enum tree_code code, tree type, tree op0, tree op1)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+      return chrec_fold_plus (type, op0, op1);
+
+    case MINUS_EXPR:
+      return chrec_fold_minus (type, op0, op1);
+
+    case MULT_EXPR:
+      return chrec_fold_multiply (type, op0, op1);
+
+    default:
+      gcc_unreachable ();
+    }
+
+}
 
 #endif  /* GCC_TREE_CHREC_H  */

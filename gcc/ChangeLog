@@ -1,3 +1,29 @@
+2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36206
+	* tree-scalar-evolution.c: Remove enum INSERT_SUPERLOOP_CHRECS,
+	FOLD_CONVERSIONS.
+	(instantiate_scev_1): Rename flags to fold_conversions.
+	Do not check for INSERT_SUPERLOOP_CHRECS, keep SSA_NAMEs defined
+	outeside instantiation_loop.
+	* tree-chrec.h (evolution_function_is_affine_in_loop): New.
+	(evolution_function_is_affine_or_constant_p): Removed.
+	* tree-data-ref.c (dr_analyze_indices): Replace resolve_mixers with
+	instantiate_scev.
+	(analyze_siv_subscript): Pass in the loop nest number.
+	Call evolution_function_is_affine_in_loop instead of 
+	evolution_function_is_affine_p.
+	(analyze_overlapping_iterations): Pass in the loop nest number.
+
+2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36206
+	* tree-chrec.h (chrec_fold_op): New.
+	* tree-data-ref.c (initialize_matrix_A): Traverse NOP_EXPR, PLUS_EXPR, and
+	other trees.
+
 2008-05-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-incpath.c (INO_T_EQ): Do not define on non-inode systems.
