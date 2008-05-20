@@ -379,9 +379,6 @@
 /* Define to 1 if you have the <sys/machine.h> header file. */
 #undef HAVE_SYS_MACHINE_H
 
-/* Define if sys_nerr exists. */
-#undef HAVE_SYS_NERR
-
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
 

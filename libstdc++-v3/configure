@@ -17842,8 +17842,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking for sys_nerr" >&5
-echo $ECHO_N "checking for sys_nerr... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for EBADMSG" >&5
+echo $ECHO_N "checking for EBADMSG... $ECHO_C" >&6
 if test "${glibcxx_cv_system_error9+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -17858,7 +17858,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int i = sys_nerr;
+int i = EBADMSG;
   ;
   return 0;
 }
@@ -17901,12 +17901,12 @@ echo "${ECHO_T}$glibcxx_cv_system_error9" >&6
 if test x"$glibcxx_cv_system_error9" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_SYS_NERR 1
+#define HAVE_EBADMSG 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking for EBADMSG" >&5
-echo $ECHO_N "checking for EBADMSG... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for ECANCELED" >&5
+echo $ECHO_N "checking for ECANCELED... $ECHO_C" >&6
 if test "${glibcxx_cv_system_error10+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -17921,7 +17921,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int i = EBADMSG;
+int i = ECANCELED;
   ;
   return 0;
 }
@@ -17964,12 +17964,12 @@ echo "${ECHO_T}$glibcxx_cv_system_error10" >&6
 if test x"$glibcxx_cv_system_error10" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_EBADMSG 1
+#define HAVE_ECANCELED 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking for ECANCELED" >&5
-echo $ECHO_N "checking for ECANCELED... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for EOVERFLOW" >&5
+echo $ECHO_N "checking for EOVERFLOW... $ECHO_C" >&6
 if test "${glibcxx_cv_system_error11+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -17984,7 +17984,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int i = ECANCELED;
+int i = EOVERFLOW;
   ;
   return 0;
 }
@@ -18027,12 +18027,12 @@ echo "${ECHO_T}$glibcxx_cv_system_error11" >&6
 if test x"$glibcxx_cv_system_error11" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_ECANCELED 1
+#define HAVE_EOVERFLOW 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking for EOVERFLOW" >&5
-echo $ECHO_N "checking for EOVERFLOW... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for ENOTSUP" >&5
+echo $ECHO_N "checking for ENOTSUP... $ECHO_C" >&6
 if test "${glibcxx_cv_system_error12+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -18047,7 +18047,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int i = EOVERFLOW;
+int i = ENOTSUP;
   ;
   return 0;
 }
@@ -18090,12 +18090,12 @@ echo "${ECHO_T}$glibcxx_cv_system_error12" >&6
 if test x"$glibcxx_cv_system_error12" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_EOVERFLOW 1
+#define HAVE_ENOTSUP 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking for ENOTSUP" >&5
-echo $ECHO_N "checking for ENOTSUP... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking for EIDRM" >&5
+echo $ECHO_N "checking for EIDRM... $ECHO_C" >&6
 if test "${glibcxx_cv_system_error13+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -18110,7 +18110,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int i = ENOTSUP;
+int i = EIDRM;
   ;
   return 0;
 }
@@ -18153,76 +18153,13 @@ echo "${ECHO_T}$glibcxx_cv_system_error13" >&6
 if test x"$glibcxx_cv_system_error13" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_ENOTSUP 1
-_ACEOF
-
-fi
-echo "$as_me:$LINENO: checking for EIDRM" >&5
-echo $ECHO_N "checking for EIDRM... $ECHO_C" >&6
-if test "${glibcxx_cv_system_error14+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <errno.h>
-int
-main ()
-{
-int i = EIDRM;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  glibcxx_cv_system_error14=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-glibcxx_cv_system_error14=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-
-echo "$as_me:$LINENO: result: $glibcxx_cv_system_error14" >&5
-echo "${ECHO_T}$glibcxx_cv_system_error14" >&6
-if test x"$glibcxx_cv_system_error14" = x"yes"; then
-
-cat >>confdefs.h <<\_ACEOF
 #define HAVE_EIDRM 1
 _ACEOF
 
 fi
 echo "$as_me:$LINENO: checking for ETXTBSY" >&5
 echo $ECHO_N "checking for ETXTBSY... $ECHO_C" >&6
-if test "${glibcxx_cv_system_error15+set}" = set; then
+if test "${glibcxx_cv_system_error14+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -18263,20 +18200,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  glibcxx_cv_system_error15=yes
+  glibcxx_cv_system_error14=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-glibcxx_cv_system_error15=no
+glibcxx_cv_system_error14=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 
-echo "$as_me:$LINENO: result: $glibcxx_cv_system_error15" >&5
-echo "${ECHO_T}$glibcxx_cv_system_error15" >&6
-if test x"$glibcxx_cv_system_error15" = x"yes"; then
+echo "$as_me:$LINENO: result: $glibcxx_cv_system_error14" >&5
+echo "${ECHO_T}$glibcxx_cv_system_error14" >&6
+if test x"$glibcxx_cv_system_error14" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ETXTBSY 1

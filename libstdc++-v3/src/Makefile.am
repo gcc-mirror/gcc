@@ -1,6 +1,7 @@
 ## Makefile for the src subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+## 2006, 2007, 2008
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -155,6 +156,7 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	limits.cc \
+	limits_c++0x.cc \
 	list.cc \
 	debug_list.cc \
 	locale.cc \
@@ -259,6 +261,11 @@ hash_c++0x.o: hash_c++0x.cc
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+limits_c++0x.lo: limits_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+limits_c++0x.o: limits_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 date_time.lo: date_time.cc

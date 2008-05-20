@@ -383,7 +383,8 @@ GLIBCXX_3.4 {
     _ZNKSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
 
     # std::numeric_limits
-    _ZNSt14numeric_limitsI[^g]*;
+    # _ZNSt14numeric_limitsI[^g]*;
+    _ZNSt14numeric_limitsI[a-z]E*;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -890,6 +891,9 @@ GLIBCXX_3.4.11 {
     _ZNSt11system_time16seconds_per_tickE;
     _ZNSt11system_time16ticks_per_secondE;
     _ZNSt11system_time12is_subsecondE;
+
+    # char16_t and char32_t
+    _ZNSt14numeric_limitsIu8char*;
 
 } GLIBCXX_3.4.10;
 
