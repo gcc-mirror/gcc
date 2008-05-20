@@ -1,3 +1,7 @@
+2008-05-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.c-torture/compile/20061214-1.c: New test.
+
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/20080519-1.c: New testcase.
