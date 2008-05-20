@@ -97,21 +97,18 @@ package System.Linux is
 
    --  struct_sigaction offsets
 
-   sa_flags_pos  : constant := Standard'Address_Size / 8;
-   sa_mask_pos   : constant := sa_flags_pos * 2;
+   sa_flags_pos : constant := Standard'Address_Size / 8;
+   sa_mask_pos  : constant := sa_flags_pos * 2;
 
-   SA_SIGINFO  : constant := 16#10#;
-   SA_ONSTACK  : constant := 16#01#;
+   SA_SIGINFO : constant := 16#10#;
+   SA_ONSTACK : constant := 16#01#;
 
    type lock_array is array (1 .. 4) of Integer;
    type atomic_lock_t is record
       lock : lock_array;
    end record;
    pragma Convention (C, atomic_lock_t);
-   --  ??? Alignment should be 16 but this is larger than BIGGEST_ALIGNMENT.
-   --  This causes an erroneous pointer value to sometimes be passed to free
-   --  during deallocation.  See PR ada/24533 for more details.
-   for atomic_lock_t'Alignment use 8;
+   for atomic_lock_t'Alignment use 16;
 
    type struct_pthread_fast_lock is record
       spinlock : atomic_lock_t;
