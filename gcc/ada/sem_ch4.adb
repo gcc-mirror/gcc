@@ -691,11 +691,14 @@ package body Sem_Ch4 is
       Success : Boolean := False;
 
       function Name_Denotes_Function return Boolean;
-      --  If the type of the name is an access to subprogram, this may be
-      --  the type of a name, or the return type of the function being called.
-      --  If the name is not an entity then it can denote a protected function.
-      --  Until we distinguish Etype from Return_Type, we must use this
-      --  routine to resolve the meaning of the name in the call.
+      --  If the type of the name is an access to subprogram, this may be the
+      --  type of a name, or the return type of the function being called. If
+      --  the name is not an entity then it can denote a protected function.
+      --  Until we distinguish Etype from Return_Type, we must use this routine
+      --  to resolve the meaning of the name in the call.
+
+      procedure No_Interpretation;
+      --  Output error message when no valid interpretation exists
 
       ---------------------------
       -- Name_Denotes_Function --
@@ -713,6 +716,43 @@ package body Sem_Ch4 is
             return False;
          end if;
       end Name_Denotes_Function;
+
+      -----------------------
+      -- No_Interpretation --
+      -----------------------
+
+      procedure No_Interpretation is
+         L : constant Boolean   := Is_List_Member (N);
+         K : constant Node_Kind := Nkind (Parent (N));
+
+      begin
+         --  If the node is in a list whose parent is not an expression then it
+         --  must be an attempted procedure call.
+
+         if L and then K not in N_Subexpr then
+            if Ekind (Entity (Nam)) = E_Generic_Procedure then
+               Error_Msg_NE
+                 ("must instantiate generic procedure& before call",
+                  Nam, Entity (Nam));
+            else
+               Error_Msg_N
+                 ("procedure or entry name expected", Nam);
+            end if;
+
+         --  Check for tasking cases where only an entry call will do
+
+         elsif not L
+           and then Nkind_In (K, N_Entry_Call_Alternative,
+                                 N_Triggering_Alternative)
+         then
+            Error_Msg_N ("entry name expected", Nam);
+
+         --  Otherwise give general error message
+
+         else
+            Error_Msg_N ("invalid prefix in call", Nam);
+         end if;
+      end No_Interpretation;
 
    --  Start of processing for Analyze_Call
 
@@ -734,13 +774,19 @@ package body Sem_Ch4 is
          --  name, or if it is a function name in the context of a procedure
          --  call. In this latter case, we have a call to a parameterless
          --  function that returns a pointer_to_procedure which is the entity
-         --  being called.
+         --  being called. Finally, F (X) may be a call to a parameterless
+         --  function that returns a pointer to a function with parameters.
 
          elsif Is_Access_Type (Etype (Nam))
            and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
            and then
              (not Name_Denotes_Function
-                or else Nkind (N) = N_Procedure_Call_Statement)
+                or else Nkind (N) = N_Procedure_Call_Statement
+                or else
+                  (Nkind (Parent (N)) /= N_Explicit_Dereference
+                     and then Is_Entity_Name (Nam)
+                     and then No (First_Formal (Entity (Nam)))
+                     and then Present (Actuals)))
          then
             Nam_Ent := Designated_Type (Etype (Nam));
             Insert_Explicit_Dereference (Nam);
@@ -786,41 +832,17 @@ package body Sem_Ch4 is
             --  If no interpretations, give error message
 
             if not Is_Overloadable (Nam_Ent) then
-               declare
-                  L : constant Boolean   := Is_List_Member (N);
-                  K : constant Node_Kind := Nkind (Parent (N));
-
-               begin
-                  --  If the node is in a list whose parent is not an
-                  --  expression then it must be an attempted procedure call.
-
-                  if L and then K not in N_Subexpr then
-                     if Ekind (Entity (Nam)) = E_Generic_Procedure then
-                        Error_Msg_NE
-                          ("must instantiate generic procedure& before call",
-                           Nam, Entity (Nam));
-                     else
-                        Error_Msg_N
-                          ("procedure or entry name expected", Nam);
-                     end if;
-
-                  --  Check for tasking cases where only an entry call will do
-
-                  elsif not L
-                    and then Nkind_In (K, N_Entry_Call_Alternative,
-                                          N_Triggering_Alternative)
-                  then
-                     Error_Msg_N ("entry name expected", Nam);
-
-                  --  Otherwise give general error message
-
-                  else
-                     Error_Msg_N ("invalid prefix in call", Nam);
-                  end if;
-
-                  return;
-               end;
+               No_Interpretation;
+               return;
             end if;
+         end if;
+
+         --  Operations generated for RACW stub types are called only through
+         --  dispatching, and can never be the static interpretation of a call.
+
+         if Is_RACW_Stub_Type_Operation (Nam_Ent) then
+            No_Interpretation;
+            return;
          end if;
 
          Analyze_One_Call (N, Nam_Ent, True, Success);
@@ -840,9 +862,9 @@ package body Sem_Ch4 is
          end if;
 
       else
-         --  An overloaded selected component must denote overloaded
-         --  operations of a concurrent type. The interpretations are
-         --  attached to the simple name of those operations.
+         --  An overloaded selected component must denote overloaded operations
+         --  of a concurrent type. The interpretations are attached to the
+         --  simple name of those operations.
 
          if Nkind (Nam) = N_Selected_Component then
             Nam := Selector_Name (Nam);
@@ -2221,6 +2243,16 @@ package body Sem_Ch4 is
             Is_Indexed := Try_Indirect_Call (N, Nam, Subp_Type);
          end if;
 
+      end if;
+
+      --  If the call has been transformed into a slice, it is of the form
+      --  F (Subtype) where F is paramterless. The node has ben rewritten in
+      --  Try_Indexed_Call and there is nothing else to do.
+
+      if Is_Indexed
+        and then  Nkind (N) = N_Slice
+      then
+         return;
       end if;
 
       Normalize_Actuals (N, Nam, (Report and not Is_Indexed), Norm_OK);
@@ -5535,9 +5567,10 @@ package body Sem_Ch4 is
       Typ        : Entity_Id;
       Skip_First : Boolean) return Boolean
    is
-      Actuals : constant List_Id   := Parameter_Associations (N);
-      Actual : Node_Id;
-      Index  : Entity_Id;
+      Loc     : constant Source_Ptr := Sloc (N);
+      Actuals : constant List_Id    := Parameter_Associations (N);
+      Actual  : Node_Id;
+      Index   : Entity_Id;
 
    begin
       Actual := First (Actuals);
@@ -5559,7 +5592,21 @@ package body Sem_Ch4 is
             return False;
          end if;
 
-         if not Has_Compatible_Type (Actual, Etype (Index)) then
+         if Is_Entity_Name (Actual)
+           and then Is_Type (Entity (Actual))
+           and then No (Next (Actual))
+         then
+            Rewrite (N,
+              Make_Slice (Loc,
+                Prefix => Make_Function_Call (Loc,
+                  Name => Relocate_Node (Name (N))),
+                Discrete_Range =>
+                  New_Occurrence_Of (Entity (Actual), Sloc (Actual))));
+
+            Analyze (N);
+            return True;
+
+         elsif not Has_Compatible_Type (Actual, Etype (Index)) then
             return False;
          end if;
 
