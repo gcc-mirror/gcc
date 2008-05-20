@@ -98,37 +98,7 @@ package System.Win32.Ext is
       wReserved1        : WORD;
    end record;
    pragma Convention (C, DCB);
-
-   for DCB use record
-      DCBLENGTH         at  0 range 0 .. 31;
-      BaudRate          at  4 range 0 .. 31;
-      fBinary           at  8 range 0 .. 0;
-      fParity           at  8 range 1 .. 1;
-      fOutxCtsFlow      at  8 range 2 .. 2;
-      fOutxDsrFlow      at  8 range 3 .. 3;
-      fDtrControl       at  8 range 4 .. 5;
-      fDsrSensitivity   at  8 range 6 .. 6;
-      fTXContinueOnXoff at  8 range 7 .. 7;
-      fOutX             at  9 range 0 .. 0;
-      fInX              at  9 range 1 .. 1;
-      fErrorChar        at  9 range 2 .. 2;
-      fNull             at  9 range 3 .. 3;
-      fRtsControl       at  9 range 4 .. 5;
-      fAbortOnError     at  9 range 6 .. 6;
-      fDummy2           at  9 range 7 .. 23;
-      wReserved         at 12 range 0 .. 15;
-      XonLim            at 14 range 0 .. 15;
-      XoffLim           at 16 range 0 .. 15;
-      ByteSize          at 18 range 0 .. 7;
-      Parity            at 19 range 0 .. 7;
-      StopBits          at 20 range 0 .. 7;
-      XonChar           at 21 range 0 .. 7;
-      XoffChar          at 22 range 0 .. 7;
-      ErrorChar         at 23 range 0 .. 7;
-      EofChar           at 24 range 0 .. 7;
-      EvtChar           at 25 range 0 .. 7;
-      wReserved1        at 26 range 0 .. 15;
-   end record;
+   pragma Pack (DCB);
 
    type COMMTIMEOUTS is record
       ReadIntervalTimeout         : DWORD;

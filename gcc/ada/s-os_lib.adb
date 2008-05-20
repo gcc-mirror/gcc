@@ -1896,7 +1896,7 @@ package body System.OS_Lib is
         and then Path_Buffer (2) /= Directory_Separator
       then
          declare
-            Cur_Dir : String := Get_Directory ("");
+            Cur_Dir : constant String := Get_Directory ("");
             --  Get the current directory to get the drive letter
 
          begin
