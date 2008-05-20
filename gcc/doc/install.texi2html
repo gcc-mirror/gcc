@@ -32,7 +32,7 @@ fi
       echo "@clear DEVELOPMENT"
    fi
    echo "@set srcdir $SOURCEDIR/.."
-) > $SOURCEDIR/include/gcc-vers.texi
+) > $DESTDIR/gcc-vers.texi
 
 for x in index.html specific.html prerequisites.html download.html configure.html \
          build.html test.html finalinstall.html binaries.html old.html \
@@ -40,7 +40,7 @@ for x in index.html specific.html prerequisites.html download.html configure.htm
 do
     define=`echo $x | sed -e 's/\.//g'`
     echo "define = $define"
-    $MAKEINFO -I $SOURCEDIR -I $SOURCEDIR/include $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
+    $MAKEINFO -I $SOURCEDIR -I $SOURCEDIR/include $SOURCEDIR/install.texi -I $DESTDIR --html --no-split -D$define -o$DESTDIR/$x
 done
 
-rm $SOURCEDIR/include/gcc-vers.texi
+rm $DESTDIR/gcc-vers.texi
