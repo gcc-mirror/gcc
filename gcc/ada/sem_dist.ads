@@ -100,4 +100,7 @@ package Sem_Dist is
    function Package_Specification_Of_Scope (E : Entity_Id) return Node_Id;
    --  Return the N_Package_Specification corresponding to a scope E
 
+   function Is_RACW_Stub_Type_Operation (Op : Entity_Id) return Boolean;
+   --  True when Op is a primitive operation of an RACW stub type
+
 end Sem_Dist;
