@@ -368,6 +368,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-socket$(objext) \
   g-socthi$(objext) \
   g-soliop$(objext) \
+  g-sothco$(objext) \
   g-souinf$(objext) \
   g-speche$(objext) \
   g-spchge$(objext) \

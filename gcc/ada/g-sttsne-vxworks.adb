@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007, AdaCore                          --
+--                  Copyright (C) 2007-2008, AdaCore                        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,9 @@
 --  This version is used on VxWorks. Note that the corresponding spec is in
 --  g-sttsne-locking.ads.
 
+with Ada.Unchecked_Conversion;
 with Interfaces.C; use Interfaces.C;
+with GNAT.Sockets.Constants;
 
 package body GNAT.Sockets.Thin.Task_Safe_NetDB is
 

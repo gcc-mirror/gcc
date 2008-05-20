@@ -184,3 +184,9 @@
 #else
 # define Need_Netdb_Buffer 0
 #endif
+
+#if defined (__FreeBSD__) || defined (__vxworks)
+# define Has_Sockaddr_Len 1
+#else
+# define Has_Sockaddr_Len 0
+#endif

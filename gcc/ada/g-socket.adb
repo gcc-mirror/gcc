@@ -36,7 +36,9 @@ with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C.Strings;
+
 with GNAT.Sockets.Constants;
+with GNAT.Sockets.Thin_Common;          use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;                 use GNAT.Sockets.Thin;
 with GNAT.Sockets.Thin.Task_Safe_NetDB; use GNAT.Sockets.Thin.Task_Safe_NetDB;
 
@@ -47,6 +49,8 @@ pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 with System; use System;
 
 package body GNAT.Sockets is
+
+   package C renames Interfaces.C;
 
    use type C.int;
 
@@ -62,10 +66,6 @@ package body GNAT.Sockets is
    --  to ensure concurrent uses do not interfere.
 
    --  Correspondence tables
-
-   Families : constant array (Family_Type) of C.int :=
-                (Family_Inet  => Constants.AF_INET,
-                 Family_Inet6 => Constants.AF_INET6);
 
    Levels : constant array (Level_Type) of C.int :=
               (Socket_Level              => Constants.SOL_SOCKET,
@@ -118,9 +118,6 @@ package body GNAT.Sockets is
    Hex_To_Char : constant String (1 .. 16) := "0123456789ABCDEF";
    --  Use to print in hexadecimal format
 
-   function To_In_Addr is new Ada.Unchecked_Conversion (C.int, In_Addr);
-   function To_Int     is new Ada.Unchecked_Conversion (In_Addr, C.int);
-
    function Err_Code_Image (E : Integer) return String;
    --  Return the value of E surrounded with brackets
 
@@ -162,7 +159,7 @@ package body GNAT.Sockets is
    function Is_IP_Address (Name : String) return Boolean;
    --  Return true when Name is an IP address in standard dot notation
 
-   function To_In_Addr (Addr : Inet_Addr_Type) return Thin.In_Addr;
+   function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr;
    procedure To_Inet_Addr
      (Addr   : In_Addr;
       Result : out Inet_Addr_Type);
@@ -230,6 +227,18 @@ package body GNAT.Sockets is
      (Stream : in out Stream_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array);
 
+   procedure Wait_On_Socket
+     (Socket    : Socket_Type;
+      For_Read  : Boolean;
+      Timeout   : Selector_Duration;
+      Selector  : access Selector_Type := null;
+      Status    : out Selector_Status);
+   --  Common code for variants of socket operations supporting a timeout:
+   --  block in Check_Selector on Socket for at most the indicated timeout.
+   --  If For_Read is True, Socket is added to the read set for this call, else
+   --  it is added to the write set. If no selector is provided, a local one is
+   --  created for this call and destroyed prior to returning.
+
    ---------
    -- "+" --
    ---------
@@ -280,6 +289,37 @@ package body GNAT.Sockets is
 
       To_Inet_Addr (Sin.Sin_Addr, Address.Addr);
       Address.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
+   end Accept_Socket;
+
+   -------------------
+   -- Accept_Socket --
+   -------------------
+
+   procedure Accept_Socket
+     (Server   : Socket_Type;
+      Socket   : out Socket_Type;
+      Address  : out Sock_Addr_Type;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status)
+   is
+   begin
+      --  Wait for socket to become available for reading
+
+      Wait_On_Socket
+        (Socket    => Server,
+         For_Read  => True,
+         Timeout   => Timeout,
+         Selector  => Selector,
+         Status    => Status);
+
+      --  Accept connection if available
+
+      if Status = Completed then
+         Accept_Socket (Server, Socket, Address);
+      else
+         Socket := No_Socket;
+      end if;
    end Accept_Socket;
 
    ---------------
@@ -356,14 +396,14 @@ package body GNAT.Sockets is
       Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;
+      --  This assumes that Address.Family = Family_Inet???
 
    begin
       if Address.Family = Family_Inet6 then
          raise Socket_Error with "IPv6 not supported";
       end if;
 
-      Set_Length  (Sin'Unchecked_Access, Len);
-      Set_Family  (Sin'Unchecked_Access, Families (Address.Family));
+      Set_Family  (Sin.Sin_Family, Address.Family);
       Set_Address (Sin'Unchecked_Access, To_In_Addr (Address.Addr));
       Set_Port
         (Sin'Unchecked_Access,
@@ -387,11 +427,15 @@ package body GNAT.Sockets is
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever)
    is
-      E_Socket_Set : Socket_Set_Type; --  (No_Socket, No_Socket_Set)
+      E_Socket_Set : Socket_Set_Type; --  (No_Socket, No_Fd_Set_Access)
    begin
       Check_Selector
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
    end Check_Selector;
+
+   --------------------
+   -- Check_Selector --
+   --------------------
 
    procedure Check_Selector
      (Selector     : in out Selector_Type;
@@ -585,8 +629,7 @@ package body GNAT.Sockets is
          raise Socket_Error with "IPv6 not supported";
       end if;
 
-      Set_Length (Sin'Unchecked_Access, Len);
-      Set_Family (Sin'Unchecked_Access, Families (Server.Family));
+      Set_Family  (Sin.Sin_Family, Server.Family);
       Set_Address (Sin'Unchecked_Access, To_In_Addr (Server.Addr));
       Set_Port
         (Sin'Unchecked_Access,
@@ -597,6 +640,55 @@ package body GNAT.Sockets is
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
+   end Connect_Socket;
+
+   --------------------
+   -- Connect_Socket --
+   --------------------
+
+   procedure Connect_Socket
+     (Socket   : Socket_Type;
+      Server   : Sock_Addr_Type;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status)
+   is
+      Req : Request_Type;
+      --  Used to set Socket to non-blocking I/O
+
+   begin
+      --  Set the socket to non-blocking I/O
+
+      Req := (Name => Non_Blocking_IO, Enabled => True);
+      Control_Socket (Socket, Request => Req);
+
+      --  Start operation (non-blocking), will raise Socket_Error with
+      --  EINPROGRESS.
+
+      begin
+         Connect_Socket (Socket, Server);
+      exception
+         when E : Socket_Error =>
+            if Resolve_Exception (E) = Operation_Now_In_Progress then
+               null;
+            else
+               raise;
+            end if;
+      end;
+
+      --  Wait for socket to become available for writing
+
+      Wait_On_Socket
+        (Socket    => Socket,
+         For_Read  => False,
+         Timeout   => Timeout,
+         Selector  => Selector,
+         Status    => Status);
+
+      --  Reset the socket to blocking I/O
+
+      Req := (Name => Non_Blocking_IO, Enabled => False);
+      Control_Socket (Socket, Request => Req);
    end Connect_Socket;
 
    --------------------
@@ -704,9 +796,9 @@ package body GNAT.Sockets is
 
    procedure Empty  (Item : in out Socket_Set_Type) is
    begin
-      if Item.Set /= No_Socket_Set then
+      if Item.Set /= No_Fd_Set_Access then
          Free_Socket_Set (Item.Set);
-         Item.Set := No_Socket_Set;
+         Item.Set := No_Fd_Set_Access;
       end if;
 
       Item.Last := No_Socket;
@@ -1257,7 +1349,7 @@ package body GNAT.Sockets is
 
    procedure Listen_Socket
      (Socket : Socket_Type;
-      Length : Positive := 15)
+      Length : Natural := 15)
    is
       Res : constant C.int := C_Listen (C.int (Socket), C.int (Length));
    begin
@@ -1273,7 +1365,7 @@ package body GNAT.Sockets is
    procedure Narrow (Item : in out Socket_Set_Type) is
       Last : aliased C.int := C.int (Item.Last);
    begin
-      if Item.Set /= No_Socket_Set then
+      if Item.Set /= No_Fd_Set_Access then
          Last_Socket_In_Set (Item.Set, Last'Unchecked_Access);
          Item.Last := Socket_Type (Last);
       end if;
@@ -1296,6 +1388,63 @@ package body GNAT.Sockets is
    begin
       return To_String (S.Official);
    end Official_Name;
+
+   --------------------
+   -- Wait_On_Socket --
+   --------------------
+
+   procedure Wait_On_Socket
+     (Socket    : Socket_Type;
+      For_Read  : Boolean;
+      Timeout   : Selector_Duration;
+      Selector  : access Selector_Type := null;
+      Status    : out Selector_Status)
+   is
+      type Local_Selector_Access is access Selector_Type;
+      for Local_Selector_Access'Storage_Size use Selector_Type'Size;
+
+      S : Selector_Access;
+      --  Selector to use for waiting
+
+      R_Fd_Set : Socket_Set_Type;
+      W_Fd_Set : Socket_Set_Type;
+      --  Socket sets, empty at elaboration
+
+   begin
+      --  Create selector if not provided by the user
+
+      if Selector = null then
+         declare
+            Local_S : constant Local_Selector_Access := new Selector_Type;
+         begin
+            S := Local_S.all'Unchecked_Access;
+            Create_Selector (S.all);
+         end;
+
+      else
+         S := Selector.all'Access;
+      end if;
+
+      if For_Read then
+         Set (R_Fd_Set, Socket);
+      else
+         Set (W_Fd_Set, Socket);
+      end if;
+
+      Check_Selector (S.all, R_Fd_Set, W_Fd_Set, Status, Timeout);
+
+      --  Cleanup actions (required in all cases to avoid memory leaks)
+
+      if For_Read then
+         Empty (R_Fd_Set);
+      else
+         Empty (W_Fd_Set);
+      end if;
+
+      if Selector = null then
+         Close_Selector (S.all);
+      end if;
+   end Wait_On_Socket;
 
    -----------------
    -- Port_Number --
@@ -1638,8 +1787,7 @@ package body GNAT.Sockets is
       Len : constant C.int := Sin'Size / 8;
 
    begin
-      Set_Length (Sin'Unchecked_Access, Len);
-      Set_Family (Sin'Unchecked_Access, Families (To.Family));
+      Set_Family  (Sin.Sin_Family, To.Family);
       Set_Address (Sin'Unchecked_Access, To_In_Addr (To.Addr));
       Set_Port
         (Sin'Unchecked_Access,
@@ -1710,8 +1858,8 @@ package body GNAT.Sockets is
 
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type) is
    begin
-      if Item.Set = No_Socket_Set then
-         Item.Set  := New_Socket_Set (No_Socket_Set);
+      if Item.Set = No_Fd_Set_Access then
+         Item.Set  := New_Socket_Set (No_Fd_Set_Access);
          Item.Last := Socket;
 
       elsif Item.Last < Socket then
@@ -1972,7 +2120,7 @@ package body GNAT.Sockets is
    -- To_In_Addr --
    ----------------
 
-   function To_In_Addr (Addr : Inet_Addr_Type) return Thin.In_Addr is
+   function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr is
    begin
       if Addr.Family = Family_Inet then
          return (S_B1 => C.unsigned_char (Addr.Sin_V4 (1)),
