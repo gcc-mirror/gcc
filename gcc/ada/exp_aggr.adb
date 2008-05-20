@@ -2573,11 +2573,7 @@ package body Exp_Aggr is
                   --  Ada 2005 (AI-251): If tagged type has progenitors we must
                   --  also initialize tags of the secondary dispatch tables.
 
-                  if Present (Abstract_Interfaces (Base_Type (Typ)))
-                    and then not
-                      Is_Empty_Elmt_List
-                        (Abstract_Interfaces (Base_Type (Typ)))
-                  then
+                  if Has_Abstract_Interfaces (Base_Type (Typ)) then
                      Init_Secondary_Tags
                        (Typ        => Base_Type (Typ),
                         Target     => Target,
@@ -3084,10 +3080,7 @@ package body Exp_Aggr is
          --  abstract interfaces we must also initialize the tags of the
          --  secondary dispatch tables.
 
-         if Present (Abstract_Interfaces (Base_Type (Typ)))
-           and then not
-             Is_Empty_Elmt_List (Abstract_Interfaces (Base_Type (Typ)))
-         then
+         if Has_Abstract_Interfaces (Base_Type (Typ)) then
             Init_Secondary_Tags
               (Typ        => Base_Type (Typ),
                Target     => Target,
@@ -3317,8 +3310,10 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope (Aggr, Sec_Stack =>
-           Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
+         Establish_Transient_Scope
+           (Aggr,
+            Sec_Stack =>
+              Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
       end if;
 
       Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ, Obj => Obj));
