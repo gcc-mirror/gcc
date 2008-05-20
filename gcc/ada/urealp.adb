@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,8 +441,7 @@ package body Urealp is
 
    function Store_Ureal (Val : Ureal_Entry) return Ureal is
    begin
-      Ureals.Increment_Last;
-      Ureals.Table (Ureals.Last) := Val;
+      Ureals.Append (Val);
 
       --  Normalize representation of signed values
 
