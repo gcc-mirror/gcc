@@ -3,7 +3,9 @@
 	* gnat.dg/testint.adb: New test.
 	* gnat.dg/modular1.adb: New test.
 	* gnat.dg/test_iface_aggr.adb: New test.
+	* gnat.dg/gen_disp.ad[sb]: New test.
 	* gnat.dg/specs/tag2.ads: Adjust.
+	* gnat.dg/specs/empty_variants.ads: Adjust.
 
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
