@@ -1,5 +1,8 @@
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
+	PR testsuite/22523
+	* g++.dg/template/inline1.C: Handle syntax for more assemblers.
+
 	* lib/scandump.exp (scan-dump): Handle non-existent dump file.
 	(scan-dump-times): Ditto.
 	(scan-dump-not): Ditto.
