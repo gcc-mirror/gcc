@@ -1,3 +1,8 @@
+2008-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/install.texi2html: Generate gcc-vers.texi in $DESTDIR not
+	$SOURCEDIR/include.
+
 2008-05-19  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194
