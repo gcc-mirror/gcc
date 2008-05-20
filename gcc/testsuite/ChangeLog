@@ -1,3 +1,7 @@
+2008-05-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/ext/vector14.C: Ignore a possible warning.
+
 2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
 
 	* gnat.dg/modular.adb: Remove test, gnat.dg/modular1.adb already
