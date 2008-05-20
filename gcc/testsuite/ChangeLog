@@ -1,5 +1,10 @@
 2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
 
+	* gnat.dg/modular.adb: Remove test, gnat.dg/modular1.adb already
+	checks that the bug is fixed and is more concise.
+
+2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/35791
 	* gnat.dg/check_displace_generation.adb: New.
 
