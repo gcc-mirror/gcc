@@ -1,3 +1,27 @@
+2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/33979 (partial)
+	* include/tr1_impl/functional_hash.h (hash<char16_t>,
+	hash<char32_t>): Add specializations.
+	* include/tr1_impl/type_traits (is_integral<char16_t>,
+	is_integral<char32_t>): Likewise.
+	* include/std/limits (numeric_limits<char16_t>,
+	numeric_limits<char32_t>): Likewise.
+	* src/limits_c++0x.cc: Add.
+	* src/Makefile.am: Update.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc:
+	Update.
+	* testsuite/20_util/is_integral/value.cc: New.
+	* testsuite/20_util/is_integral/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_integral/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/18_support/numeric_limits/char16_32_t.cc: Likewise.	
+	* config/abi/pre/gnu.ver: Export new numeric_limits symbols at
+	GLIBCXX_3.4.11.
+	* configure: Regenerate.
+	* src/Makefile.in: Likewise.
+	* config.h.in: Likewise.
+
 2008-05-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/system_error: Align to current draft specifications.

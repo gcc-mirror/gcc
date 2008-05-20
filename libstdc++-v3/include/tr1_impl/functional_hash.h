@@ -67,6 +67,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   _TR1_hashtable_define_trivial_hash(signed char);
   _TR1_hashtable_define_trivial_hash(unsigned char);
   _TR1_hashtable_define_trivial_hash(wchar_t);
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  _TR1_hashtable_define_trivial_hash(char16_t);
+  _TR1_hashtable_define_trivial_hash(char32_t);
+#endif
   _TR1_hashtable_define_trivial_hash(short);
   _TR1_hashtable_define_trivial_hash(int);
   _TR1_hashtable_define_trivial_hash(long);

@@ -102,6 +102,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #ifdef _GLIBCXX_USE_WCHAR_T
   _DEFINE_SPEC(0, is_integral, wchar_t, true)
 #endif
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  _DEFINE_SPEC(0, is_integral, char16_t, true)
+  _DEFINE_SPEC(0, is_integral, char32_t, true)
+#endif
   _DEFINE_SPEC(0, is_integral, short, true)
   _DEFINE_SPEC(0, is_integral, unsigned short, true)
   _DEFINE_SPEC(0, is_integral, int, true)
