@@ -44,6 +44,13 @@ package body Ada.Calendar.Delays is
 
    use type TSL.Timed_Delay_Call;
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Timed_Delay_NT (Time : Duration; Mode : Integer);
+   --  Timed delay procedure used when no tasking is active
+
    ---------------
    -- Delay_For --
    ---------------
@@ -76,8 +83,6 @@ package body Ada.Calendar.Delays is
    -- Timed_Delay_NT --
    --------------------
 
-   procedure Timed_Delay_NT (Time : Duration; Mode : Integer);
-
    procedure Timed_Delay_NT (Time : Duration; Mode : Integer) is
    begin
       OSP.Timed_Delay (Time, Mode);
@@ -85,9 +90,8 @@ package body Ada.Calendar.Delays is
 
 begin
    --  Set up the Timed_Delay soft link to the non tasking version if it has
-   --  not been already set.
-   --  If tasking is present, Timed_Delay has already set this soft link, or
-   --  this will be overridden during the elaboration of
+   --  not been already set. If tasking is present, Timed_Delay has already set
+   --  this soft link, or this will be overridden during the elaboration of
    --  System.Tasking.Initialization
 
    if TSL.Timed_Delay = null then
