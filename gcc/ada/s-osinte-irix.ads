@@ -261,6 +261,13 @@ package System.OS_Interface is
 
    PTHREAD_CREATE_DETACHED : constant := 1;
 
+   -----------
+   -- Stack --
+   -----------
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
    ---------------------------------------
    -- Nonstandard Thread Initialization --
    ---------------------------------------

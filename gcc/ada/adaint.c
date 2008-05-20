@@ -2882,6 +2882,7 @@ _flush_cache()
       && defined (__SVR4)) \
       && ! (defined (linux) && (defined (i386) || defined (__x86_64__))) \
       && ! (defined (linux) && defined (__ia64__)) \
+      && ! (defined (linux) && defined (powerpc)) \
       && ! defined (__FreeBSD__) \
       && ! defined (__hpux__) \
       && ! defined (__APPLE__) \
