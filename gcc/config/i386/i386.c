@@ -4901,17 +4901,21 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
   return (size != 1 && size != 2 && size != 4 && size != 8);
 }
 
-bool
+static bool
 ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  const enum machine_mode mode = type_natural_mode (type);
-
+#ifdef SUBTARGET_RETURN_IN_MEMORY
+  return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
+#else
+   const enum machine_mode mode = type_natural_mode (type);
+ 
   if (TARGET_64BIT_MS_ABI)
-    return return_in_memory_ms_64 (type, mode);
-  else if (TARGET_64BIT)
-    return return_in_memory_64 (type, mode);
-  else
-    return return_in_memory_32 (type, mode);
+     return return_in_memory_ms_64 (type, mode);
+   else if (TARGET_64BIT)
+     return return_in_memory_64 (type, mode);
+   else
+     return return_in_memory_32 (type, mode);
+#endif
 }
 
 /* Return false iff TYPE is returned in memory.  This version is used
@@ -4949,20 +4953,6 @@ ix86_sol10_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED
     return 0;
 
   return size > 12;
-}
-
-bool
-ix86_i386elf_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
-{
-  return (TYPE_MODE (type) == BLKmode
-	  || (VECTOR_MODE_P (TYPE_MODE (type)) && int_size_in_bytes (type) == 8));
-}
-
-bool
-ix86_i386interix_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
-{
-  return (TYPE_MODE (type) == BLKmode
-          || (AGGREGATE_TYPE_P (type) && int_size_in_bytes(type) > 8 ));
 }
 
 /* When returning SSE vector types, we have a choice of either
@@ -25795,6 +25785,9 @@ x86_builtin_vectorization_cost (bool runtime_test)
 }
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
