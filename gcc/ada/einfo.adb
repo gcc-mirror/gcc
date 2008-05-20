@@ -126,7 +126,6 @@ package body Einfo is
    --    Scale_Value                     Uint15
    --    Storage_Size_Variable           Node15
    --    String_Literal_Low_Bound        Node15
-   --    Shared_Var_Read_Proc            Node15
 
    --    Access_Disp_Table               Elist16
    --    Cloned_Subtype                  Node16
@@ -193,7 +192,7 @@ package body Einfo is
    --    Private_View                    Node22
    --    Protected_Formal                Node22
    --    Scope_Depth_Value               Uint22
-   --    Shared_Var_Assign_Proc          Node22
+   --    Shared_Var_Procs_Instance       Node22
 
    --    Associated_Final_Chain          Node23
    --    CR_Discriminant                 Node23
@@ -505,8 +504,8 @@ package body Einfo is
    --    Optimize_Alignment_Space        Flag241
    --    Optimize_Alignment_Time         Flag242
    --    Overlays_Constant               Flag243
+   --    Is_RACW_Stub_Type               Flag244
 
-   --    (unused)                        Flag244
    --    (unused)                        Flag245
    --    (unused)                        Flag246
    --    (unused)                        Flag247
@@ -1975,6 +1974,12 @@ package body Einfo is
       return Flag189 (Id);
    end Is_Pure_Unit_Access_Type;
 
+   function Is_RACW_Stub_Type (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag244 (Id);
+   end Is_RACW_Stub_Type;
+
    function Is_Raised (Id : E) return B is
    begin
       pragma Assert (Ekind (Id) = E_Exception);
@@ -2239,7 +2244,7 @@ package body Einfo is
 
    function Non_Binary_Modulus (Id : E) return B is
    begin
-      pragma Assert (Is_Modular_Integer_Type (Id));
+      pragma Assert (Is_Type (Id));
       return Flag58 (Base_Type (Id));
    end Non_Binary_Modulus;
 
@@ -2537,17 +2542,11 @@ package body Einfo is
       return List14 (Id);
    end Shadow_Entities;
 
-   function Shared_Var_Assign_Proc (Id : E) return E is
+   function Shared_Var_Procs_Instance (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Variable);
       return Node22 (Id);
-   end Shared_Var_Assign_Proc;
-
-   function Shared_Var_Read_Proc (Id : E) return E is
-   begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      return Node15 (Id);
-   end Shared_Var_Read_Proc;
+   end Shared_Var_Procs_Instance;
 
    function Size_Check_Code (Id : E) return N is
    begin
@@ -4424,6 +4423,12 @@ package body Einfo is
       Set_Flag189 (Id, V);
    end Set_Is_Pure_Unit_Access_Type;
 
+   procedure Set_Is_RACW_Stub_Type (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag244 (Id, V);
+   end Set_Is_RACW_Stub_Type;
+
    procedure Set_Is_Raised (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind (Id) = E_Exception);
@@ -4697,7 +4702,7 @@ package body Einfo is
 
    procedure Set_Non_Binary_Modulus (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Modular_Integer_Type);
+      pragma Assert (Is_Type (Id) and then Id = Base_Type (Id));
       Set_Flag58 (Id, V);
    end Set_Non_Binary_Modulus;
 
@@ -5000,17 +5005,11 @@ package body Einfo is
       Set_List14 (Id, V);
    end Set_Shadow_Entities;
 
-   procedure Set_Shared_Var_Assign_Proc (Id : E; V : E) is
+   procedure Set_Shared_Var_Procs_Instance (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Variable);
       Set_Node22 (Id, V);
-   end Set_Shared_Var_Assign_Proc;
-
-   procedure Set_Shared_Var_Read_Proc (Id : E; V : E) is
-   begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      Set_Node15 (Id, V);
-   end Set_Shared_Var_Read_Proc;
+   end Set_Shared_Var_Procs_Instance;
 
    procedure Set_Size_Check_Code (Id : E; V : N) is
    begin
@@ -7621,6 +7620,7 @@ package body Einfo is
       W ("Is_Public",                       Flag10  (Id));
       W ("Is_Pure",                         Flag44  (Id));
       W ("Is_Pure_Unit_Access_Type",        Flag189 (Id));
+      W ("Is_RACW_Stub_Type",               Flag244 (Id));
       W ("Is_Raised",                       Flag224 (Id));
       W ("Is_Remote_Call_Interface",        Flag62  (Id));
       W ("Is_Remote_Types",                 Flag61  (Id));
@@ -8131,9 +8131,6 @@ package body Einfo is
          when E_String_Literal_Subtype                     =>
             Write_Str ("String_Literal_Low_Bound");
 
-         when E_Variable                                   =>
-            Write_Str ("Shared_Var_Read_Proc");
-
          when others                                       =>
             Write_Str ("Field15??");
       end case;
@@ -8506,7 +8503,7 @@ package body Einfo is
             Write_Str ("Private_View");
 
          when E_Variable                                   =>
-            Write_Str ("Shared_Var_Assign_Proc");
+            Write_Str ("Shared_Var_Procs_Instance");
 
          when others                                       =>
             Write_Str ("Field22??");

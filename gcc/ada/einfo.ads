@@ -2581,6 +2581,10 @@ package Einfo is
 --       subtype appears in a pure unit. Used to give an error message at
 --       freeze time if the access type has a storage pool.
 
+--    Is_RACW_Stub_Type (Flag244)
+--       Present in all types, true for the stub types generated for remote
+--       access-to-class-wide types.
+
 --    Is_Raised (Flag224)
 --       Present in exception entities. Set if the entity is referenced by a
 --       a raise statement.
@@ -2595,12 +2599,12 @@ package Einfo is
 --    Is_Remote_Call_Interface (Flag62)
 --       Present in all entities. Set in E_Package and E_Generic_Package
 --       entities to which a pragma Remote_Call_Interace is applied, and
---       also in all entities within such packages.
+--       also on entities declared in the visible part of such a package.
 
 --    Is_Remote_Types (Flag61)
 --       Present in all entities. Set in E_Package and E_Generic_Package
---       entities to which a pragma Remote_Types is applied, and also in
---       all entities within such packages.
+--       entities to which a pragma Remote_Types is applied, and also on
+--       entities declared in the visible part of the spec of such a package.
 
 --    Is_Renaming_Of_Object (Flag112)
 --       Present in all entities, set only for a variable or constant for
@@ -3044,8 +3048,8 @@ package Einfo is
 --       of a record, returns the next _Tag field in this record.
 
 --    Non_Binary_Modulus (Flag58) [base type only]
---       Present in modular integer types. Set if the modulus for the type
---       is other than a power of 2.
+--       Present in all subtype and type entities. Set for modular integer
+--       types if the modulus value is other than a power of 2.
 
 --    Non_Limited_View (Node17)
 --       Present in incomplete types that are the shadow entities created
@@ -3479,15 +3483,10 @@ package Einfo is
 --       standard format list (i.e. First (Shadow_Entities) is the first
 --       entry and subsequent entries are obtained using Next.
 
---    Shared_Var_Assign_Proc (Node22)
+--    Shared_Var_Procs_Instance (Node22)
 --       Present in variables. Set non-Empty only if Is_Shared_Passive is
---       set, in which case this is the entity for the shared memory assign
---       routine. See Exp_Smem for full details.
-
---    Shared_Var_Read_Proc (Node15)
---       Present in variables. Set non-Empty only if Is_Shared_Passive is
---       set, in which case this is the entity for the shared memory read
---       routine. See Exp_Smem for full details.
+--       set, in which case this is the entity for the associated instance of
+--       System.Shared_Storage.Shared_Var_Procs. See Exp_Smem for full details.
 
 --    Size_Check_Code (Node19)
 --       Present in constants and variables. Normally Empty. Set if code is
@@ -4698,6 +4697,7 @@ package Einfo is
    --    Is_Generic_Actual_Type              (Flag94)
    --    Is_Generic_Type                     (Flag13)
    --    Is_Protected_Interface              (Flag198)
+   --    Is_RACW_Stub_Type                   (Flag244)
    --    Is_Synchronized_Interface           (Flag199)
    --    Is_Task_Interface                   (Flag200)
    --    Is_Non_Static_Subtype               (Flag109)
@@ -5490,14 +5490,13 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
-   --    Shared_Var_Read_Proc                (Node15)
    --    Unset_Reference                     (Node16)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)
    --    Prival_Link                         (Node20)
    --    Interface_Name                      (Node21)
-   --    Shared_Var_Assign_Proc              (Node22)
+   --    Shared_Var_Procs_Instance           (Node22)
    --    Extra_Constrained                   (Node23)
    --    Debug_Renaming_Link                 (Node25)
    --    Last_Assignment                     (Node26)
@@ -5990,6 +5989,7 @@ package Einfo is
    function Is_Public                           (Id : E) return B;
    function Is_Pure                             (Id : E) return B;
    function Is_Pure_Unit_Access_Type            (Id : E) return B;
+   function Is_RACW_Stub_Type                   (Id : E) return B;
    function Is_Raised                           (Id : E) return B;
    function Is_Remote_Call_Interface            (Id : E) return B;
    function Is_Remote_Types                     (Id : E) return B;
@@ -6085,8 +6085,7 @@ package Einfo is
    function Scope_Depth_Value                   (Id : E) return U;
    function Sec_Stack_Needed_For_Return         (Id : E) return B;
    function Shadow_Entities                     (Id : E) return S;
-   function Shared_Var_Assign_Proc              (Id : E) return E;
-   function Shared_Var_Read_Proc                (Id : E) return E;
+   function Shared_Var_Procs_Instance           (Id : E) return E;
    function Size_Check_Code                     (Id : E) return N;
    function Size_Known_At_Compile_Time          (Id : E) return B;
    function Size_Depends_On_Discriminant        (Id : E) return B;
@@ -6555,6 +6554,7 @@ package Einfo is
    procedure Set_Is_Public                       (Id : E; V : B := True);
    procedure Set_Is_Pure                         (Id : E; V : B := True);
    procedure Set_Is_Pure_Unit_Access_Type        (Id : E; V : B := True);
+   procedure Set_Is_RACW_Stub_Type               (Id : E; V : B := True);
    procedure Set_Is_Raised                       (Id : E; V : B := True);
    procedure Set_Is_Remote_Call_Interface        (Id : E; V : B := True);
    procedure Set_Is_Remote_Types                 (Id : E; V : B := True);
@@ -6650,8 +6650,7 @@ package Einfo is
    procedure Set_Scope_Depth_Value               (Id : E; V : U);
    procedure Set_Sec_Stack_Needed_For_Return     (Id : E; V : B := True);
    procedure Set_Shadow_Entities                 (Id : E; V : S);
-   procedure Set_Shared_Var_Assign_Proc          (Id : E; V : E);
-   procedure Set_Shared_Var_Read_Proc            (Id : E; V : E);
+   procedure Set_Shared_Var_Procs_Instance       (Id : E; V : E);
    procedure Set_Size_Check_Code                 (Id : E; V : N);
    procedure Set_Size_Depends_On_Discriminant    (Id : E; V : B := True);
    procedure Set_Size_Known_At_Compile_Time      (Id : E; V : B := True);
@@ -7236,6 +7235,7 @@ package Einfo is
    pragma Inline (Is_Public);
    pragma Inline (Is_Pure);
    pragma Inline (Is_Pure_Unit_Access_Type);
+   pragma Inline (Is_RACW_Stub_Type);
    pragma Inline (Is_Raised);
    pragma Inline (Is_Real_Type);
    pragma Inline (Is_Record_Type);
@@ -7340,8 +7340,7 @@ package Einfo is
    pragma Inline (Scope_Depth_Value);
    pragma Inline (Sec_Stack_Needed_For_Return);
    pragma Inline (Shadow_Entities);
-   pragma Inline (Shared_Var_Assign_Proc);
-   pragma Inline (Shared_Var_Read_Proc);
+   pragma Inline (Shared_Var_Procs_Instance);
    pragma Inline (Size_Check_Code);
    pragma Inline (Size_Depends_On_Discriminant);
    pragma Inline (Size_Known_At_Compile_Time);
@@ -7628,6 +7627,7 @@ package Einfo is
    pragma Inline (Set_Is_Public);
    pragma Inline (Set_Is_Pure);
    pragma Inline (Set_Is_Pure_Unit_Access_Type);
+   pragma Inline (Set_Is_RACW_Stub_Type);
    pragma Inline (Set_Is_Raised);
    pragma Inline (Set_Is_Remote_Call_Interface);
    pragma Inline (Set_Is_Remote_Types);
@@ -7722,8 +7722,7 @@ package Einfo is
    pragma Inline (Set_Scope_Depth_Value);
    pragma Inline (Set_Sec_Stack_Needed_For_Return);
    pragma Inline (Set_Shadow_Entities);
-   pragma Inline (Set_Shared_Var_Assign_Proc);
-   pragma Inline (Set_Shared_Var_Read_Proc);
+   pragma Inline (Set_Shared_Var_Procs_Instance);
    pragma Inline (Set_Size_Check_Code);
    pragma Inline (Set_Size_Depends_On_Discriminant);
    pragma Inline (Set_Size_Known_At_Compile_Time);
