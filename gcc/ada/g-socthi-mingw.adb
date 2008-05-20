@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2007, AdaCore                     --
+--                     Copyright (C) 2001-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,10 +39,12 @@
 
 with Interfaces.C.Strings; use Interfaces.C.Strings;
 with System;               use System;
+with GNAT.Sockets.Constants;
 
 package body GNAT.Sockets.Thin is
 
    use type C.unsigned;
+   use type C.int;
 
    WSAData_Dummy : array (1 .. 512) of C.int;
 
@@ -294,7 +296,7 @@ package body GNAT.Sockets.Thin is
 
       RFS  : constant Fd_Set_Access := Readfds;
       WFS  : constant Fd_Set_Access := Writefds;
-      WFSC : Fd_Set_Access := No_Fd_Set;
+      WFSC : Fd_Set_Access := No_Fd_Set_Access;
       EFS  : Fd_Set_Access := Exceptfds;
       Res  : C.int;
       S    : aliased C.int;
@@ -310,10 +312,10 @@ package body GNAT.Sockets.Thin is
       --  the initial write fd set, then move the socket from the
       --  exception fd set to the write fd set.
 
-      if WFS /= No_Fd_Set then
+      if WFS /= No_Fd_Set_Access then
          --  Add any socket present in write fd set into exception fd set
 
-         if EFS = No_Fd_Set then
+         if EFS = No_Fd_Set_Access then
             EFS := New_Socket_Set (WFS);
 
          else
@@ -337,7 +339,7 @@ package body GNAT.Sockets.Thin is
 
       Res := Standard_Select (Nfds, RFS, WFS, EFS, Timeout);
 
-      if EFS /= No_Fd_Set then
+      if EFS /= No_Fd_Set_Access then
          declare
             EFSC    : constant Fd_Set_Access := New_Socket_Set (EFS);
             Flag    : constant C.int := Constants.MSG_PEEK + Constants.MSG_OOB;
@@ -372,7 +374,7 @@ package body GNAT.Sockets.Thin is
                   --  set. Otherwise, ignore this event since the user
                   --  is not watching for it.
 
-                  if WFSC /= No_Fd_Set
+                  if WFSC /= No_Fd_Set_Access
                     and then (Is_Socket_In_Set (WFSC, S) /= 0)
                   then
                      Insert_Socket_In_Set (WFS, S);
@@ -383,14 +385,14 @@ package body GNAT.Sockets.Thin is
             Free_Socket_Set (EFSC);
          end;
 
-         if Exceptfds = No_Fd_Set then
+         if Exceptfds = No_Fd_Set_Access then
             Free_Socket_Set (EFS);
          end if;
       end if;
 
       --  Free any copy of write fd set
 
-      if WFSC /= No_Fd_Set then
+      if WFSC /= No_Fd_Set_Access then
          Free_Socket_Set (WFSC);
       end if;
 
@@ -472,57 +474,6 @@ package body GNAT.Sockets.Thin is
          Initialized := True;
       end if;
    end Initialize;
-
-   -----------------
-   -- Set_Address --
-   -----------------
-
-   procedure Set_Address
-     (Sin     : Sockaddr_In_Access;
-      Address : In_Addr)
-   is
-   begin
-      Sin.Sin_Addr := Address;
-   end Set_Address;
-
-   ----------------
-   -- Set_Family --
-   ----------------
-
-   procedure Set_Family
-     (Sin    : Sockaddr_In_Access;
-      Family : C.int)
-   is
-   begin
-      Sin.Sin_Family := C.unsigned_short (Family);
-   end Set_Family;
-
-   ----------------
-   -- Set_Length --
-   ----------------
-
-   procedure Set_Length
-     (Sin : Sockaddr_In_Access;
-      Len : C.int)
-   is
-      pragma Unreferenced (Sin);
-      pragma Unreferenced (Len);
-
-   begin
-      null;
-   end Set_Length;
-
-   --------------
-   -- Set_Port --
-   --------------
-
-   procedure Set_Port
-     (Sin  : Sockaddr_In_Access;
-      Port : C.unsigned_short)
-   is
-   begin
-      Sin.Sin_Port := Port;
-   end Set_Port;
 
    --------------------
    -- Signalling_Fds --

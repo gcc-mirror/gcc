@@ -52,8 +52,6 @@ with Ada.Exceptions;
 with Ada.Streams;
 with Ada.Unchecked_Deallocation;
 
-with System;
-
 package GNAT.Sockets is
 
    --  Sockets are designed to provide a consistent communication facility
@@ -397,6 +395,31 @@ package GNAT.Sockets is
 
    No_Socket : constant Socket_Type;
 
+   type Selector_Type is limited private;
+   type Selector_Access is access all Selector_Type;
+   --  Selector objects are used to wait for i/o events to occur on sockets
+
+   --  Timeval_Duration is a subtype of Standard.Duration because the full
+   --  range of Standard.Duration cannot be represented in the equivalent C
+   --  structure. Moreover, negative values are not allowed to avoid system
+   --  incompatibilities.
+
+   Immediate : constant := 0.0;
+   Forever   : constant := Duration (Integer'Last) * 1.0;
+   --  Should be Duration 2 ** (Constants.SIZEOF_tv_sec * 8 - 1) - 1 ???
+
+   subtype Timeval_Duration is Duration range Immediate .. Forever;
+
+   subtype Selector_Duration is Timeval_Duration;
+   --  Timeout value for selector operations
+
+   type Selector_Status is (Completed, Expired, Aborted);
+   --  Completion status of a selector operation, indicated as follows:
+   --    Complete: one of the expected events occurred
+   --    Expired:  no event occurred before the expiration of the timeout
+   --    Aborted:  an external action cancelled the wait operation before
+   --              any event occurred.
+
    Socket_Error : exception;
    --  There is only one exception in this package to deal with an error during
    --  a socket routine. Once raised, its message contains a string describing
@@ -435,10 +458,10 @@ package GNAT.Sockets is
    No_Port  : constant Port_Type;
 
    type Inet_Addr_Type (Family : Family_Type := Family_Inet) is private;
-   --  An Internet address depends on an address family (IPv4 contains 4
-   --  octets and IPv6 contains 16 octets). Any_Inet_Addr is a special value
-   --  treated like a wildcard enabling all addresses. No_Inet_Addr provides a
-   --  special value to denote uninitialized inet addresses.
+   --  An Internet address depends on an address family (IPv4 contains 4 octets
+   --  and IPv6 contains 16 octets). Any_Inet_Addr is a special value treated
+   --  like a wildcard enabling all addresses. No_Inet_Addr provides a special
+   --  value to denote uninitialized inet addresses.
 
    Any_Inet_Addr       : constant Inet_Addr_Type;
    No_Inet_Addr        : constant Inet_Addr_Type;
@@ -508,8 +531,8 @@ package GNAT.Sockets is
    function Get_Host_By_Name
      (Name : String) return Host_Entry_Type;
    --  Return host entry structure for the given host name. Here name is
-   --  either a host name, or an IP address. If Name is an IP address, this is
-   --  equivalent to Get_Host_By_Address (Inet_Addr (Name)).
+   --  either a host name, or an IP address. If Name is an IP address, this
+   --  is equivalent to Get_Host_By_Address (Inet_Addr (Name)).
 
    function Host_Name return String;
    --  Return the name of the current host
@@ -549,10 +572,10 @@ package GNAT.Sockets is
    Service_Error : exception;
    --  Comment required ???
 
-   --  Errors are described by an enumeration type. There is only one
-   --  exception Socket_Error in this package to deal with an error during a
-   --  socket routine. Once raised, its message contains the error code
-   --  between brackets and a string describing the error code.
+   --  Errors are described by an enumeration type. There is only one exception
+   --  Socket_Error in this package to deal with an error during a socket
+   --  routine. Once raised, its message contains the error code between
+   --  brackets and a string describing the error code.
 
    --  The name of the enumeration constant documents the error condition
 
@@ -601,16 +624,6 @@ package GNAT.Sockets is
       Non_Recoverable_Error,
       Unknown_Server_Error,
       Cannot_Resolve_Error);
-
-   --  Timeval_Duration is a subtype of Standard.Duration because the full
-   --  range of Standard.Duration cannot be represented in the equivalent C
-   --  structure. Moreover, negative values are not allowed to avoid system
-   --  incompatibilities.
-
-   Immediate : constant := 0.0;
-   Forever   : constant := Duration (Integer'Last) * 1.0;
-
-   subtype Timeval_Duration is Duration range Immediate .. Forever;
 
    --  Get_Socket_Options and Set_Socket_Options manipulate options associated
    --  with a socket. Options may exist at multiple protocol levels in the
@@ -722,9 +735,9 @@ package GNAT.Sockets is
    --  Socket_Stream).
 
    Peek_At_Incoming_Data : constant Request_Flag_Type;
-   --  This flag causes the receive operation to return data from the
-   --  beginning of the receive queue without removing that data from the
-   --  queue. A subsequent receive call will return the same data.
+   --  This flag causes the receive operation to return data from the beginning
+   --  of the receive queue without removing that data from the queue. A
+   --  subsequent receive call will return the same data.
 
    Wait_For_A_Full_Reception : constant Request_Flag_Type;
    --  This flag requests that the operation block until the full request is
@@ -766,6 +779,20 @@ package GNAT.Sockets is
    --  is filled in with the address of the connection. Raises Socket_Error on
    --  error.
 
+   procedure Accept_Socket
+     (Server   : Socket_Type;
+      Socket   : out Socket_Type;
+      Address  : out Sock_Addr_Type;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status);
+   --  Accept a new connection on Server using Accept_Socket, waiting no longer
+   --  than the given timeout duration. Status is set to indicate whether the
+   --  operation completed successully, timed out, or was aborted. If Selector
+   --  is not null, the designated selector is used to wait for the socket to
+   --  become available, else a private selector object is created by this
+   --  procedure and destroyed before it returns.
+
    procedure Bind_Socket
      (Socket  : Socket_Type;
       Address : Sock_Addr_Type);
@@ -781,12 +808,25 @@ package GNAT.Sockets is
    --  Make a connection to another socket which has the address of Server.
    --  Raises Socket_Error on error.
 
+   procedure Connect_Socket
+     (Socket   : Socket_Type;
+      Server   : Sock_Addr_Type;
+      Timeout  : Selector_Duration;
+      Selector : access Selector_Type := null;
+      Status   : out Selector_Status);
+   --  Connect Socket to the given Server address using Connect_Socket, waiting
+   --  no longer than the given timeout duration. Status is set to indicate
+   --  whether the operation completed successully, timed out, or was aborted.
+   --  If Selector is not null, the designated selector is used to wait for the
+   --  socket to become available, else a private selector object is created
+   --  by this procedure and destroyed before it returns.
+
    procedure Control_Socket
      (Socket  : Socket_Type;
       Request : in out Request_Type);
    --  Obtain or set parameter values that control the socket. This control
-   --  differs from the socket options in that they are not specific to
-   --  sockets but are available for any device.
+   --  differs from the socket options in that they are not specific to sockets
+   --  but are available for any device.
 
    function Get_Peer_Name (Socket : Socket_Type) return Sock_Addr_Type;
    --  Return the peer or remote socket address of a socket. Raise
@@ -794,22 +834,23 @@ package GNAT.Sockets is
 
    function Get_Socket_Name (Socket : Socket_Type) return Sock_Addr_Type;
    --  Return the local or current socket address of a socket. Return
-   --  No_Sock_Addr on error (for instance, socket closed or not locally
-   --  bound).
+   --  No_Sock_Addr on error (e.g. socket closed or not locally bound).
 
    function Get_Socket_Option
      (Socket : Socket_Type;
       Level  : Level_Type := Socket_Level;
       Name   : Option_Name) return Option_Type;
-   --  Get the options associated with a socket. Raises Socket_Error
-   --  on error.
+   --  Get the options associated with a socket. Raises Socket_Error on error
 
    procedure Listen_Socket
      (Socket : Socket_Type;
-      Length : Positive := 15);
+      Length : Natural := 15);
    --  To accept connections, a socket is first created with Create_Socket,
    --  a willingness to accept incoming connections and a queue Length for
    --  incoming connections are specified. Raise Socket_Error on error.
+   --  The queue length of 15 is an example value that should be appropriate
+   --  in usual cases. It can be adjusted according to each application's
+   --  particular requirements.
 
    procedure Receive_Socket
      (Socket : Socket_Type;
@@ -959,11 +1000,6 @@ package GNAT.Sockets is
    --  operation is typically to add a socket in one of the socket sets when
    --  the timeout is set to forever.
 
-   type Selector_Type is limited private;
-   type Selector_Access is access all Selector_Type;
-
-   subtype Selector_Duration is Timeval_Duration;
-
    procedure Create_Selector (Selector : out Selector_Type);
    --  Create a new selector
 
@@ -972,8 +1008,6 @@ package GNAT.Sockets is
    --  associated resources. This subprogram may be called only when there is
    --  no other task still using Selector (i.e. still executing Check_Selector
    --  or Abort_Selector on this Selector).
-
-   type Selector_Status is (Completed, Expired, Aborted);
 
    procedure Check_Selector
      (Selector     : in out Selector_Type;
@@ -1009,6 +1043,16 @@ package GNAT.Sockets is
    procedure Abort_Selector (Selector : Selector_Type);
    --  Send an abort signal to the selector
 
+   type Fd_Set_Access is private;
+   No_Fd_Set_Access : constant Fd_Set_Access;
+   --  ??? This type must not be used directly, it needs to be visible because
+   --  it is used in the visible part of GNAT.Sockets.Thin_Common. This is
+   --  really an inversion of abstraction. The private part of GNAT.Sockets
+   --  needs to have visibility on this type, but since Thin_Common is a child
+   --  of Sokcets, the type can't be declared there. The correct fix would
+   --  be to move the thin sockets binding outside of GNAT.Sockets altogether,
+   --  e.g. by renaming it to GNAT.Sockets_Thin.
+
 private
 
    type Socket_Type is new Integer;
@@ -1017,18 +1061,19 @@ private
    type Selector_Type is limited record
       R_Sig_Socket : Socket_Type := No_Socket;
       W_Sig_Socket : Socket_Type := No_Socket;
+      --  Signalling sockets used to abort a select operation
    end record;
 
    pragma Volatile (Selector_Type);
 
-   --  The two signalling sockets are used to abort a select operation
-
-   subtype Socket_Set_Access is System.Address;
-   No_Socket_Set : constant Socket_Set_Access := System.Null_Address;
+   type Fd_Set is null record;
+   type Fd_Set_Access is access all Fd_Set;
+   pragma Convention (C, Fd_Set_Access);
+   No_Fd_Set_Access : constant Fd_Set_Access := null;
 
    type Socket_Set_Type is record
       Last : Socket_Type       := No_Socket;
-      Set  : Socket_Set_Access := No_Socket_Set;
+      Set  : Fd_Set_Access;
    end record;
 
    subtype Inet_Addr_Comp_Type is Natural range 0 .. 255;

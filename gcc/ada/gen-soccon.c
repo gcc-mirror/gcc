@@ -51,16 +51,19 @@
 
 #include "gsocket.h"
 
+typedef enum { NUM, TXT } kind_t;
+
 struct line {
   char *text;
   char *value;
   char *comment;
+  kind_t kind;
   struct line *next;
 };
 
 struct line *first = NULL, *last = NULL;
 
-#define TXT(_text) add_line(_text, NULL, NULL);
+#define TXT(_text) add_line(_text, NULL, NULL, TXT);
 /* Plain text */
 
 #define _NL TXT("")
@@ -69,13 +72,13 @@ struct line *first = NULL, *last = NULL;
 #define itoad(n) f_itoa ("%d", (n))
 #define itoax(n) f_itoa ("16#%08x#", (n))
 
-#define CND(name,comment) add_line(#name, itoad (name), comment);
+#define CND(name,comment) add_line(#name, itoad (name), comment, NUM);
 /* Constant (decimal) */
 
-#define CNX(name,comment) add_line(#name, itoax (name), comment);
+#define CNX(name,comment) add_line(#name, itoax (name), comment, NUM);
 /* Constant (hexadecimal) */
 
-#define CN_(name,comment) add_line(#name, name, comment);
+#define CN_(name,comment) add_line(#name, name, comment, TXT);
 /* Constant (generic) */
 
 #define STR(p) STR1(p)
@@ -87,7 +90,7 @@ void output (void);
 char *f_itoa (char *, int);
 /* int to string */
 
-void add_line (char *, char*, char*);
+void add_line (char *, char*, char*, kind_t);
 
 #ifdef __MINGW32__
 unsigned int _CRT_fmode = _O_BINARY;
@@ -137,6 +140,7 @@ TXT("--  This is the version for " TARGET)
 TXT("--  This file is generated automatically, do not modify it by hand! Instead,")
 TXT("--  make changes to gen-soccon.c and re-run it on each target.")
 _NL
+TXT("with Interfaces.C;")
 TXT("package GNAT.Sockets.Constants is")
 _NL
 TXT("   --------------")
@@ -145,12 +149,14 @@ TXT("   --------------")
 _NL
 
 #ifndef AF_INET
-#define AF_INET -1
+# define AF_INET -1
 #endif
 CND(AF_INET, "IPv4 address family")
 
 #ifndef AF_INET6
-#define AF_INET6 -1
+# define AF_INET6 -1
+#else
+# define HAVE_AF_INET6 1
 #endif
 CND(AF_INET6, "IPv6 address family")
 _NL
@@ -604,7 +610,34 @@ CND(SIZEOF_tv_sec, "tv_sec")
 #define SIZEOF_tv_usec (sizeof tv.tv_usec)
 CND(SIZEOF_tv_usec, "tv_usec")
 }
-
+_NL
+TXT("   --  Sizes of protocol specific address types (for sockaddr.sa_len)")
+_NL
+#define SIZEOF_sockaddr_in (sizeof (struct sockaddr_in))
+CND(SIZEOF_sockaddr_in, "struct sockaddr_in")
+#ifdef HAVE_AF_INET6
+# define SIZEOF_sockaddr_in6 (sizeof (struct sockaddr_in6))
+#else
+# define SIZEOF_sockaddr_in6 0
+#endif
+CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
+_NL
+TXT("   --  Size of file descriptor sets")
+_NL
+#define SIZEOF_fd_set (sizeof (fd_set))
+CND(SIZEOF_fd_set, "fd_set");
+_NL
+TXT("   --  Fields of struct hostent")
+_NL
+#ifdef __MINGW32__
+# define h_addrtype_t "short"
+# define h_length_t   "short"
+#else
+# define h_addrtype_t "int"
+# define h_length_t   "int"
+#endif
+TXT("   subtype H_Addrtype_T is Interfaces.C." h_addrtype_t ";")
+TXT("   subtype H_Length_T   is Interfaces.C." h_length_t ";")
 _NL
 TXT("   ----------------------------------------")
 TXT("   -- Properties of supported interfaces --")
@@ -612,6 +645,10 @@ TXT("   ----------------------------------------")
 _NL
 
 CND(Need_Netdb_Buffer, "Need buffer for Netdb ops")
+CND(Has_Sockaddr_Len,  "Sockaddr has sa_len field")
+_NL
+TXT("   Thread_Blocking_IO : constant Boolean := True;")
+TXT("   --  Set False for contexts where socket i/o are process blocking")
 
 #ifdef __vxworks
 _NL
@@ -641,16 +678,7 @@ CND(WSASYSNOTREADY,     "System not ready")
 CND(WSAVERNOTSUPPORTED, "Version not supported")
 CND(WSANOTINITIALISED,  "Winsock not initialized")
 CND(WSAEDISCON,         "Disconnected")
-
 #endif
-
-_NL
-TXT("   ----------------------")
-TXT("   -- Additional flags --")
-TXT("   ----------------------")
-_NL
-TXT("   Thread_Blocking_IO : constant Boolean := True;")
-TXT("   --  Set False for contexts where socket i/o are process blocking")
 
 _NL
 TXT("end GNAT.Sockets.Constants;")
@@ -672,7 +700,8 @@ output (void) {
   for (p = first; p != NULL; p = p->next) {
     if (p->value != NULL) {
       UPD_MAX(text);
-      UPD_MAX(value);
+      if (p->kind == NUM)
+        UPD_MAX(value);
     }
   }
   sprintf (fmt, "   %%-%ds : constant := %%%ds;%%s%%s\n",
@@ -700,13 +729,15 @@ f_itoa (char *fmt, int n) {
 }
 
 void
-add_line (char *_text, char *_value, char *_comment) {
+add_line (char *_text, char *_value, char *_comment, kind_t _kind) {
   struct line *l = (struct line *) malloc (sizeof (struct line));
 
-  l->text = _text;
-  l->value = _value;
+  l->text    = _text;
+  l->value   = _value;
   l->comment = _comment;
-  l->next = NULL;
+  l->kind    = _kind;
+  l->next    = NULL;
+
   if (last == NULL)
     first = last = l;
   else {
