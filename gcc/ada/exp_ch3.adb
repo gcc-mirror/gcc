@@ -1027,10 +1027,14 @@ package body Exp_Ch3 is
          Saved_Enclosing_Func_Id : Entity_Id;
 
       begin
-         --  Build the discriminant checking function for each variant, label
-         --  all components of that variant with the function's name.
-         --  We only Generate a discriminant-checking function only if the
+         --  Build the discriminant-checking function for each variant, and
+         --  label all components of that variant with the function's name.
+         --  We only Generate a discriminant-checking function when the
          --  variant is not empty, to prevent the creation of dead code.
+         --  The exception to that is when Frontend_Layout_On_Target is set,
+         --  because the variant record size function generated in package
+         --  Layout needs to generate calls to all discriminant-checking
+         --  functions, including those for empty variants.
 
          Discr_Name := Entity (Name (Variant_Part_Node));
          Variant := First_Non_Pragma (Variants (Variant_Part_Node));
@@ -1038,7 +1042,9 @@ package body Exp_Ch3 is
          while Present (Variant) loop
             Component_List_Node := Component_List (Variant);
 
-            if not Null_Present (Component_List_Node) then
+            if not Null_Present (Component_List_Node)
+              or else Frontend_Layout_On_Target
+            then
                Func_Id := Build_Dcheck_Function (Discr_Name, Variant);
                Decl :=
                  First_Non_Pragma (Component_Items (Component_List_Node));
@@ -4377,17 +4383,23 @@ package body Exp_Ch3 is
 
             --  Ada 2005 (AI-251): Rewrite the expression that initializes a
             --  class-wide object to ensure that we copy the full object,
-            --  unless we're targetting a VM where interfaces are handled by
-            --  VM itself.
+            --  unless we are targetting a VM where interfaces are handled by
+            --  VM itself. Note that if the root type of Typ is an ancestor
+            --  of Expr's type, both types share the same dispatch table and
+            --  there is no need to displace the pointer.
 
             --  Replace
-            --      CW : I'Class := Obj;
+            --     CW : I'Class := Obj;
             --  by
-            --      CW__1 : I'Class := I'Class (Base_Address (Obj'Address));
-            --      CW    : I'Class renames Displace (CW__1, I'Tag);
+            --     Temp : I'Class := I'Class (Base_Address (Obj'Address));
+            --     CW   : I'Class renames Displace (Temp, I'Tag);
 
             if Is_Interface (Typ)
-              and then Is_Class_Wide_Type (Etype (Expr))
+              and then Is_Class_Wide_Type (Typ)
+              and then
+                (Is_Class_Wide_Type (Etype (Expr))
+                   or else
+                     not Is_Parent (Root_Type (Typ), Etype (Expr)))
               and then Comes_From_Source (Def_Id)
               and then VM_Target = No_VM
             then
@@ -5344,7 +5356,7 @@ package body Exp_Ch3 is
                  and then Chars (Comp) = Chars (Old_Comp)
                then
                   Set_Discriminant_Checking_Func (Comp,
-                     Discriminant_Checking_Func (Old_Comp));
+                    Discriminant_Checking_Func (Old_Comp));
                end if;
 
                Next_Component (Old_Comp);
@@ -5658,8 +5670,8 @@ package body Exp_Ch3 is
             null;
 
          --  Do not add the body of the predefined primitives if we are
-         --  compiling under restriction No_Dispatching_Calls of if we
-         --  are compiling a CPP tagged type.
+         --  compiling under restriction No_Dispatching_Calls or if we are
+         --  compiling a CPP tagged type.
 
          elsif not Restriction_Active (No_Dispatching_Calls) then
             Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
@@ -6739,20 +6751,19 @@ package body Exp_Ch3 is
 
          else
             --  Don't need to set any value if this interface shares
-            --  the primary dispatch table
+            --  the primary dispatch table.
 
             if not Is_Parent (Iface, Typ) then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
-                   Iface_Tag =>
-                     New_Reference_To (Iface_Tag, Loc),
+                   Iface_Tag    => New_Reference_To (Iface_Tag, Loc),
                    Offset_Value =>
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
                        Make_Attribute_Reference (Loc,
                          Prefix =>
                            Make_Selected_Component (Loc,
-                             Prefix => New_Copy_Tree (Target),
-                             Selector_Name  =>
+                             Prefix        => New_Copy_Tree (Target),
+                             Selector_Name =>
                                New_Reference_To (Tag_Comp, Loc)),
                          Attribute_Name => Name_Position))));
             end if;
@@ -6772,14 +6783,12 @@ package body Exp_Ch3 is
                              (RTE (RE_Register_Interface_Offset), Loc),
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
-                       Prefix => New_Copy_Tree (Target),
+                       Prefix         => New_Copy_Tree (Target),
                        Attribute_Name => Name_Address),
 
                      Unchecked_Convert_To (RTE (RE_Tag),
                        New_Reference_To
-                         (Node (First_Elmt
-                                (Access_Disp_Table (Iface))),
-                          Loc)),
+                         (Node (First_Elmt (Access_Disp_Table (Iface))), Loc)),
 
                      New_Occurrence_Of (Standard_True, Loc),
 
@@ -6788,7 +6797,7 @@ package body Exp_Ch3 is
                         Make_Attribute_Reference (Loc,
                           Prefix =>
                             Make_Selected_Component (Loc,
-                              Prefix => New_Copy_Tree (Target),
+                              Prefix         => New_Copy_Tree (Target),
                               Selector_Name  =>
                                 New_Reference_To (Tag_Comp, Loc)),
                          Attribute_Name => Name_Position)),
@@ -6841,7 +6850,7 @@ package body Exp_Ch3 is
               Tag_Comp  => Tag_Comp,
               Iface_Tag => Node (Iface_Tag_Elmt));
 
-         --  Otherwise we generate code to initialize the tag
+         --  Otherwise generate code to initialize the tag
 
          else
             --  Check if the parent of the record type has variable size
@@ -7125,7 +7134,7 @@ package body Exp_Ch3 is
    -- Make_Eq_Case --
    ------------------
 
-   --  <Make_Eq_if shared components>
+   --  <Make_Eq_If shared components>
    --  case X.D1 is
    --     when V1 => <Make_Eq_Case> on subcomponents
    --     ...
@@ -7203,7 +7212,7 @@ package body Exp_Ch3 is
    --       return False;
    --    end if;
 
-   --  or a null statement if the list L is empty
+   --  or a null statement if the list L is empty.
 
    function Make_Eq_If
      (E : Entity_Id;
