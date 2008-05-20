@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,10 +49,11 @@ package Exp_Smem is
    --  read/write calls for the protected object within the lock region.
 
    function Make_Shared_Var_Procs (N : Node_Id) return Node_Id;
-   --  N is the node for the declaration of a shared passive variable. This
-   --  procedure constructs and inserts the read and assignment procedures
-   --  for the shared memory variable. See System.Shared_Storage for a full
-   --  description of these procedures and how they are used. The last inserted
-   --  node is returned.
+   --  N is the node for the declaration of a shared passive variable.
+   --  This procedure constructs an instantiation of
+   --  System.Shared_Storage.Shared_Var_Procs that contains the read and
+   --  assignment procedures for the shared memory variable.
+   --  See System.Shared_Storage for a full description of these procedures
+   --  and how they are used. The last inserted node is returned.
 
 end Exp_Smem;

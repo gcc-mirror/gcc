@@ -79,47 +79,17 @@
 
 --  The approach is as follows:
 
---    For each shared variable, var, an access routine varR is created whose
---    body has the following form (this example is for Pkg.Var):
-
---      procedure varR is
---         S : Ada.Streams.Stream_IO.Stream_Access;
---      begin
---         S := Shared_Var_ROpen ("pkg.var");
---         if S /= null then
---            typ'Read (S);
---            Shared_Var_Close (S);
---         end if;
---      end varR;
+--    For each shared variable, var, an instanciation of the below generic
+--    package is created which provides Read and Write supporting procedures.
 
 --    The routine Shared_Var_ROpen in package System.Shared_Storage
 --    either returns null if the storage does not exist, or otherwise a
 --    Stream_Access value that references the corresponding shared
 --    storage, ready to read the current value.
 
---    Each reference to the shared variable, var, is preceded by a
---    call to the corresponding varR procedure, which either leaves the
---    initial value unchanged if the storage does not exist, or reads
---    the current value from the shared storage.
-
---    In addition, for each shared variable, var, an assignment routine
---    is created whose body has the following form (again for Pkg.Var)
-
---      procedure VarA is
---         S : Ada.Streams.Stream_IO.Stream_Access;
---      begin
---         S := Shared_Var_WOpen ("pkg.var");
---         typ'Write (S, var);
---         Shared_Var_Close (S);
---      end VarA;
-
 --    The routine Shared_Var_WOpen in package System.Shared_Storage
 --    returns a Stream_Access value that references the corresponding
 --    shared storage, ready to write the new value.
-
---    Each assignment to the shared variable, var, is followed by a call
---    to the corresponding varA procedure, which writes the new value to
---    the shared storage.
 
 --    Note that there is no general synchronization for these storage
 --    read and write operations, since it is assumed that a correctly
@@ -218,5 +188,36 @@ package System.Shared_Storage is
    --  prior call to the Shared_Mem_Lock procedure, and is to be
    --  generated as the last operation in the body of a protected
    --  subprogram.
+
+   --  This generic package is instantiated for each shared passive
+   --  variable. It provides supporting procedures called upon each
+   --  read or write access by the expanded code.
+
+   generic
+
+      type Typ is limited private;
+      --  Shared passive variable type
+
+      V : in out Typ;
+      --  Shared passive variable
+
+      Full_Name : String;
+      --  Shared passive variable storage name
+
+   package Shared_Var_Procs is
+
+      procedure Read;
+      --  Shared passive variable access routine. Each reference to the
+      --  shared variable, V, is preceded by a call to the corresponding
+      --  Read procedure, which either leaves the initial value unchanged
+      --  if the storage does not exist, or reads the current value from
+      --  the shared storage.
+
+      procedure Write;
+      --  Shared passive variable assignement routine. Each assignment to
+      --  the shared variable, V, is followed by a call to the corresponding
+      --  Write procedure, which writes the new value to the shared storage.
+
+   end Shared_Var_Procs;
 
 end System.Shared_Storage;

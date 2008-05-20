@@ -83,7 +83,7 @@ package Rtsfind is
 
    --    Names of the form System_Tasking_xxx are second level children of the
    --    package System.Tasking. For example, System_Tasking_Stages refers to
-   --    refers to the package System.Tasking.Stages.
+   --    the package System.Tasking.Stages.
 
    --    Other names stand for themselves (e.g. System for package System)
 
@@ -1255,6 +1255,7 @@ package Rtsfind is
      RE_Shared_Var_ROpen,                -- System.Shared_Storage
      RE_Shared_Var_Unlock,               -- System.Shared_Storage
      RE_Shared_Var_WOpen,                -- System.Shared_Storage
+     RE_Shared_Var_Procs,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
      RE_Exception_Code,                  -- System.Standard_Library
@@ -2382,6 +2383,7 @@ package Rtsfind is
      RE_Shared_Var_ROpen                 => System_Shared_Storage,
      RE_Shared_Var_Unlock                => System_Shared_Storage,
      RE_Shared_Var_WOpen                 => System_Shared_Storage,
+     RE_Shared_Var_Procs                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,
      RE_Exception_Code                   => System_Standard_Library,
