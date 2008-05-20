@@ -6975,6 +6975,19 @@ package body Sem_Res is
             Error_Msg_N ("?not expression should be parenthesized here!", N);
          end if;
 
+         --  Warn on double negation if checking redundant constructs
+
+         if Warn_On_Redundant_Constructs
+           and then Comes_From_Source (N)
+           and then Comes_From_Source (Right_Opnd (N))
+           and then Root_Type (Typ) = Standard_Boolean
+           and then Nkind (Right_Opnd (N)) = N_Op_Not
+         then
+            Error_Msg_N ("redundant double negation?", N);
+         end if;
+
+         --  Complete resolution and evaluation of NOT
+
          Resolve (Right_Opnd (N), B_Typ);
          Check_Unset_Reference (Right_Opnd (N));
          Set_Etype (N, B_Typ);
