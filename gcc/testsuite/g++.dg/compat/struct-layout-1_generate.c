@@ -42,12 +42,13 @@ along with GCC; see the file COPYING3.  If not see
 #define COMPAT_PRLL "ll"
 #endif
 
-#define DG_OPTIONS "\
-/* { dg-options \"%1$s-I%2$s\" } */\n\
-/* { dg-options \"%1$s-I%2$s -mno-mmx\" { target i?86-*-* x86_64-*-* } } */\n\
-/* { dg-options \"%1$s-I%2$s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"%1$s-I%2$s -mno-base-addresses\" { target mmix-*-* } } */\n\
-\n"
+const char *dg_options[] = {
+"/* { dg-options \"%s-I%s\" } */\n",
+"/* { dg-options \"%s-I%s -mno-mmx\" { target i?86-*-* x86_64-*-* } } */\n",
+"/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* } } */\n",
+"/* { dg-options \"%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n"
+#define NDG_OPTIONS (sizeof (dg_options) / sizeof (dg_options[0]))
+};
 
 typedef unsigned int hashval_t;
 
@@ -501,6 +502,8 @@ switchfiles (int fields)
 {
   static int filecnt;
   static char *destbuf, *destptr;
+  int i;
+
   ++filecnt;
   if (outfile)
     fclose (outfile);
@@ -528,17 +531,19 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
-  fprintf (outfile, DG_OPTIONS "\
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "", srcdir);
+  fprintf (outfile, "\n\
 #include \"struct-layout-1.h\"\n\
 \n\
 #define TX(n, type, attrs, fields, ops) extern void test##n (void);\n\
-#include \"t%3$03d_test.h\"\n\
+#include \"t%03d_test.h\"\n\
 #undef TX\n\
 \n\
 int main (void)\n\
 {\n\
 #define TX(n, type, attrs, fields, ops)   test##n ();\n\
-#include \"t%3$03d_test.h\"\n\
+#include \"t%03d_test.h\"\n\
 #undef TX\n\
   if (fails)\n\
     {\n\
@@ -546,27 +551,31 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", "", srcdir, filecnt);
+}\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.C", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
-  fprintf (outfile, DG_OPTIONS "\
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "-w ", srcdir);
+  fprintf (outfile, "\n\
 #include \"struct-layout-1_x1.h\"\n\
-#include \"t%3$03d_test.h\"\n\
+#include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
-#include \"t%3$03d_test.h\"\n", "-w ", srcdir, filecnt);
+#include \"t%03d_test.h\"\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_y.C", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
-  fprintf (outfile, DG_OPTIONS "\
+  for (i = 0; i < NDG_OPTIONS; i++)
+    fprintf (outfile, dg_options[i], "-w ", srcdir);
+  fprintf (outfile, "\n\
 #include \"struct-layout-1_y1.h\"\n\
-#include \"t%3$03d_test.h\"\n\
+#include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
-#include \"t%3$03d_test.h\"\n", "-w ", srcdir, filecnt);
+#include \"t%03d_test.h\"\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");
