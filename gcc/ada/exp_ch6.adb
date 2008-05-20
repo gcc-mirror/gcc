@@ -2641,77 +2641,110 @@ package body Exp_Ch6 is
               ("cannot call abstract subprogram &!", Name (N), Parent_Subp);
          end if;
 
-         --  Add an explicit conversion for parameter of the derived type.
-         --  This is only done for scalar and access in-parameters. Others
-         --  have been expanded in expand_actuals.
+         --  Inspect all formals of derived subprogram Subp. Compare parameter
+         --  types with the parent subprogram and check whether an actual may
+         --  need a type conversion to the corresponding formal of the parent
+         --  subprogram.
 
-         Formal := First_Formal (Subp);
-         Parent_Formal := First_Formal (Parent_Subp);
-         Actual := First_Actual (N);
-
-         --  It is not clear that conversion is needed for intrinsic
-         --  subprograms, but it certainly is for those that are user-
-         --  defined, and that can be inherited on derivation, namely
-         --  unchecked conversion and deallocation.
-         --  General case needs study ???
+         --  Not clear whether intrinsic subprograms need such conversions. ???
 
          if not Is_Intrinsic_Subprogram (Parent_Subp)
            or else Is_Generic_Instance (Parent_Subp)
          then
-            while Present (Formal) loop
-               if Etype (Formal) /= Etype (Parent_Formal)
-                 and then Is_Scalar_Type (Etype (Formal))
-                 and then Ekind (Formal) = E_In_Parameter
-                 and then
-                   not Subtypes_Statically_Match
-                         (Etype (Parent_Formal), Etype (Actual))
-                 and then not Raises_Constraint_Error (Actual)
-               then
-                  Rewrite (Actual,
-                    OK_Convert_To (Etype (Parent_Formal),
-                      Relocate_Node (Actual)));
+            declare
+               procedure Convert (Act : Node_Id; Typ : Entity_Id);
+               --  Rewrite node Act as a type conversion of Act to Typ. Analyze
+               --  and resolve the newly generated construct.
 
-                  Analyze (Actual);
-                  Resolve (Actual, Etype (Parent_Formal));
-                  Enable_Range_Check (Actual);
+               -------------
+               -- Convert --
+               -------------
 
-               elsif Is_Access_Type (Etype (Formal))
-                 and then Base_Type (Etype (Parent_Formal)) /=
-                          Base_Type (Etype (Actual))
-               then
-                  if Ekind (Formal) /= E_In_Parameter then
-                     Rewrite (Actual,
-                       Convert_To (Etype (Parent_Formal),
-                         Relocate_Node (Actual)));
+               procedure Convert (Act : Node_Id; Typ : Entity_Id) is
+               begin
+                  Rewrite (Act, OK_Convert_To (Typ, Relocate_Node (Act)));
+                  Analyze (Act);
+                  Resolve (Act, Typ);
+               end Convert;
 
-                     Analyze (Actual);
-                     Resolve (Actual, Etype (Parent_Formal));
+               --  Local variables
 
-                  elsif
-                    Ekind (Etype (Parent_Formal)) = E_Anonymous_Access_Type
-                      and then Designated_Type (Etype (Parent_Formal))
-                                 /=
-                               Designated_Type (Etype (Actual))
-                      and then not Is_Controlling_Formal (Formal)
+               Actual_Typ : Entity_Id;
+               Formal_Typ : Entity_Id;
+               Parent_Typ : Entity_Id;
+
+            begin
+               Actual := First_Actual (N);
+               Formal := First_Formal (Subp);
+               Parent_Formal := First_Formal (Parent_Subp);
+               while Present (Formal) loop
+                  Actual_Typ := Etype (Actual);
+                  Formal_Typ := Etype (Formal);
+                  Parent_Typ := Etype (Parent_Formal);
+
+                  --  For an IN parameter of a scalar type, the parent formal
+                  --  type and derived formal type differ or the parent formal
+                  --  type and actual type do not match statically.
+
+                  if Is_Scalar_Type (Formal_Typ)
+                    and then Ekind (Formal) = E_In_Parameter
+                    and then Formal_Typ /= Parent_Typ
+                    and then
+                      not Subtypes_Statically_Match (Parent_Typ, Actual_Typ)
+                    and then not Raises_Constraint_Error (Actual)
                   then
-                     --  This unchecked conversion is not necessary unless
-                     --  inlining is enabled, because in that case the type
-                     --  mismatch may become visible in the body about to be
-                     --  inlined.
+                     Convert (Actual, Parent_Typ);
+                     Enable_Range_Check (Actual);
 
-                     Rewrite (Actual,
-                       Unchecked_Convert_To (Etype (Parent_Formal),
-                         Relocate_Node (Actual)));
+                  --  For access types, the parent formal type and actual type
+                  --  differ.
 
-                     Analyze (Actual);
-                     Resolve (Actual, Etype (Parent_Formal));
+                  elsif Is_Access_Type (Formal_Typ)
+                    and then Base_Type (Parent_Typ) /= Base_Type (Actual_Typ)
+                  then
+                     if Ekind (Formal) /= E_In_Parameter then
+                        Convert (Actual, Parent_Typ);
+
+                     elsif Ekind (Parent_Typ) = E_Anonymous_Access_Type
+                       and then Designated_Type (Parent_Typ) /=
+                                Designated_Type (Actual_Typ)
+                       and then not Is_Controlling_Formal (Formal)
+                     then
+                        --  This unchecked conversion is not necessary unless
+                        --  inlining is enabled, because in that case the type
+                        --  mismatch may become visible in the body about to be
+                        --  inlined.
+
+                        Rewrite (Actual,
+                          Unchecked_Convert_To (Parent_Typ,
+                            Relocate_Node (Actual)));
+
+                        Analyze (Actual);
+                        Resolve (Actual, Parent_Typ);
+                     end if;
+
+                  --  For array and record types, the parent formal type and
+                  --  derived formal type have different sizes or pragma Pack
+                  --  status.
+
+                  elsif ((Is_Array_Type (Formal_Typ)
+                            and then Is_Array_Type (Parent_Typ))
+                       or else
+                         (Is_Record_Type (Formal_Typ)
+                            and then Is_Record_Type (Parent_Typ)))
+                    and then
+                      (Esize (Formal_Typ) /= Esize (Parent_Typ)
+                         or else Has_Pragma_Pack (Formal_Typ) /=
+                                 Has_Pragma_Pack (Parent_Typ))
+                  then
+                     Convert (Actual, Parent_Typ);
                   end if;
-               end if;
 
-               Next_Formal (Formal);
-               Next_Formal (Parent_Formal);
-               Next_Actual (Actual);
-            end loop;
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+                  Next_Formal (Parent_Formal);
+               end loop;
+            end;
          end if;
 
          Orig_Subp := Subp;
@@ -2744,7 +2777,7 @@ package body Exp_Ch6 is
       --  Handle case of access to protected subprogram type
 
          if Is_Access_Protected_Subprogram_Type
-            (Base_Type (Etype (Prefix (Name (N)))))
+              (Base_Type (Etype (Prefix (Name (N)))))
          then
             --  If this is a call through an access to protected operation,
             --  the prefix has the form (object'address, operation'access).
