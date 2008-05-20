@@ -1,5 +1,10 @@
 2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/35791
+	* gnat.dg/check_displace_generation.adb: New.
+
+2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/30740
 	* gnat.dg/modular.adb: New test.
 
