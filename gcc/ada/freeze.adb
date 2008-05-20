@@ -3828,12 +3828,36 @@ package body Freeze is
 
    procedure Freeze_Enumeration_Type (Typ : Entity_Id) is
    begin
+      --  By default, if no size clause is present, an enumeration type with
+      --  Convention C is assumed to interface to a C enum, and has integer
+      --  size. This applies to types. For subtypes, verify that its base
+      --  type has no size clause either.
+
       if Has_Foreign_Convention (Typ)
         and then not Has_Size_Clause (Typ)
+        and then not Has_Size_Clause (Base_Type (Typ))
         and then Esize (Typ) < Standard_Integer_Size
       then
          Init_Esize (Typ, Standard_Integer_Size);
+
       else
+         --  If the enumeration type interfaces to C, and it has a size clause
+         --  that specifies less than int size, it warrants a warning. The
+         --  user may intend the C type to be an enum or a char, so this is
+         --  not by itself an error that the Ada compiler can detect, but it
+         --  it is a worth a heads-up. For Boolean and Character types we
+         --  assume that the programmer has the proper C type in mind.
+
+         if Convention (Typ) = Convention_C
+           and then Has_Size_Clause (Typ)
+           and then Esize (Typ) /= Esize (Standard_Integer)
+           and then not Is_Boolean_Type (Typ)
+           and then not Is_Character_Type (Typ)
+         then
+            Error_Msg_N
+              ("C enum types have the size of a C int?", Size_Clause (Typ));
+         end if;
+
          Adjust_Esize_For_Alignment (Typ);
       end if;
    end Freeze_Enumeration_Type;
