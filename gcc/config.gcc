@@ -70,6 +70,10 @@
 #			This helps to keep OS specific stuff out of the CPU
 #			defining header ${cpu_type}/${cpu_type.h}.
 #
+#			It is possible to include automatically-generated
+#			build-directory files by prefixing them with "./".
+#			All other files should relative to $srcdir/config.
+#
 #  tm_p_file		Location of file with declarations for functions
 #			in $out_file.
 #

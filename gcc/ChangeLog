@@ -1,3 +1,7 @@
+2008-05-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config.gcc (tm_file): Update comments about relative pathnames.
+
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-reassoc.c (fini_reassoc): Use the statistics
