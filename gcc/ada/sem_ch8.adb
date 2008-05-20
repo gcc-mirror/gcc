@@ -1721,24 +1721,28 @@ package body Sem_Ch8 is
 
          Set_Corresponding_Spec (N, Rename_Spec);
 
-         --  Deal with special case of Input and Output stream functions
+         --  Deal with special case of stream functions of abstract types
+         --  and interfaces.
 
          if Nkind (Unit_Declaration_Node (Rename_Spec)) =
                                      N_Abstract_Subprogram_Declaration
          then
-            --  Input and Output stream functions are abstract if the object
-            --  type is abstract. However, these functions may receive explicit
-            --  declarations in representation clauses, making the attribute
-            --  subprograms usable  as defaults in subsequent type extensions.
+            --  Input stream functions are abstract if the object type is
+            --  abstract. Similarly, all default stream functions for an
+            --  interface type are abstract. However, these suprograms may
+            --  receive explicit declarations in representation clauses, making
+            --  the attribute subprograms usable as defaults in subsequent
+            --  type extensions.
             --  In this case we rewrite the declaration to make the subprogram
             --  non-abstract. We remove the previous declaration, and insert
             --  the new one at the point of the renaming, to prevent premature
             --  access to unfrozen types. The new declaration reuses the
             --  specification of the previous one, and must not be analyzed.
 
-            pragma Assert (Is_TSS (Rename_Spec, TSS_Stream_Output)
-                           or else Is_TSS (Rename_Spec, TSS_Stream_Input));
-
+            pragma Assert
+              (Is_Primitive (Entity (Nam))
+                 and then
+                   Is_Abstract_Type (Find_Dispatching_Type (Entity (Nam))));
             declare
                Old_Decl : constant Node_Id :=
                             Unit_Declaration_Node (Rename_Spec);
@@ -3777,8 +3781,8 @@ package body Sem_Ch8 is
       E := Homonyms;
       while Present (E) loop
 
-         --  If entity is immediately visible or potentially use
-         --  visible, then process the entity and we are done.
+         --  If entity is immediately visible or potentially use visible, then
+         --  process the entity and we are done.
 
          if Is_Immediately_Visible (E) then
             goto Immediately_Visible_Entity;
@@ -3958,15 +3962,15 @@ package body Sem_Ch8 is
 
       --  Come here with E set to the first immediately visible entity on
       --  the homonym chain. This is the one we want unless there is another
-      --  immediately visible entity further on in the chain for a more
-      --  inner scope (RM 8.3(8)).
+      --  immediately visible entity further on in the chain for an inner
+      --  scope (RM 8.3(8)).
 
       <<Immediately_Visible_Entity>> declare
          Level : Int;
          Scop  : Entity_Id;
 
       begin
-         --  Find scope level of initial entity. When compiling  through
+         --  Find scope level of initial entity. When compiling through
          --  Rtsfind, the previous context is not completely invisible, and
          --  an outer entity may appear on the chain, whose scope is below
          --  the entry for Standard that delimits the current scope stack.
@@ -4243,8 +4247,8 @@ package body Sem_Ch8 is
       P_Name := Entity (Prefix (N));
       O_Name := P_Name;
 
-      --  If the prefix is a renamed package, look for the entity
-      --  in the original package.
+      --  If the prefix is a renamed package, look for the entity in the
+      --  original package.
 
       if Ekind (P_Name) = E_Package
         and then Present (Renamed_Object (P_Name))
@@ -4335,10 +4339,10 @@ package body Sem_Ch8 is
       if No (Id) or else Chars (Id) /= Chars (Selector) then
          Set_Etype (N, Any_Type);
 
-         --  If we are looking for an entity defined in System, try to
-         --  find it in the child package that may have been provided as
-         --  an extension to System. The Extend_System pragma will have
-         --  supplied the name of the extension, which may have to be loaded.
+         --  If we are looking for an entity defined in System, try to find it
+         --  in the child package that may have been provided as an extension
+         --  to System. The Extend_System pragma will have supplied the name of
+         --  the extension, which may have to be loaded.
 
          if Chars (P_Name) = Name_System
            and then Scope (P_Name) = Standard_Standard
@@ -4368,9 +4372,8 @@ package body Sem_Ch8 is
             return;
 
          else
-            --  If the prefix is a single concurrent object, use its
-            --  name in  the error message, rather than that of the
-            --  anonymous type.
+            --  If the prefix is a single concurrent object, use its name in
+            --  the error message, rather than that of the anonymous type.
 
             if Is_Concurrent_Type (P_Name)
               and then Is_Internal_Name (Chars (P_Name))
@@ -4917,7 +4920,6 @@ package body Sem_Ch8 is
       --  in the expansion of record equality).
 
       elsif Present (Entity (Selector_Name (N))) then
-
          if No (Etype (N))
            or else Etype (N) = Any_Type
          then
@@ -6144,6 +6146,16 @@ package body Sem_Ch8 is
                end if;
             end;
          end if;
+
+      --  Finally, if the current use clause is in the context then
+      --  the clause is redundant when it is nested within the unit.
+
+      elsif Nkind (Parent (Cur_Use)) = N_Compilation_Unit
+        and then Nkind (Parent (Parent (Clause))) /= N_Compilation_Unit
+        and then Get_Source_Unit (Cur_Use) = Get_Source_Unit (Clause)
+      then
+         Redundant := Clause;
+         Prev_Use  := Cur_Use;
 
       else
          null;
