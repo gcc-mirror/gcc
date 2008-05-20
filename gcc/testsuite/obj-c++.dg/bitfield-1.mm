@@ -4,8 +4,10 @@
    were defined at once (i.e., any padding introduced for
    superclasses should be removed).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-Wpadded -Wabi" } */
 /* { dg-do run } */
+/* { dg-xfail-if "PR31032" { *-*-* } { "*" }  { "" } } */
+/* { dg-prune-output ".*internal compiler error.*" } */
+/* { dg-options "-Wpadded -Wabi" } */
 
 #include <objc/objc.h>
 #include <objc/Object.h>
@@ -112,12 +114,11 @@ int main(void)
   return 0;
 }
 
-/* { dg-excess-errors "In file included from" { target lp64 } } */
+/* { dg-prune-output "In file included from" }  Ignore this message.  */
 /* { dg-bogus "padding struct to align" "PR23610" { xfail lp64 } 1 } */
-
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 40 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 43 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 57 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 60 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 75 } */
-/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 76 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 42 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 45 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 59 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 62 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 77 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 78 } */

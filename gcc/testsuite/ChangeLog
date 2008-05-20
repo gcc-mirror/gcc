@@ -1,5 +1,9 @@
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
+	* obj-c++.dg/bitfield-1.mm: XFAIL for ICE; move dg-options after other
+	test directives; use dg-prune-output instead of dg-excess-errors for
+	possible message to ignore; adjust line numbers for messages.
+
 	* obj-c++.dg/comp-types-10.mm: XFAIL for ICE.
 	* obj-c++.dg/try-catch-9.mm: XFAILfor ICE, move dg-options after
 	other test directives.
