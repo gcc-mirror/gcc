@@ -1,3 +1,53 @@
+2008-05-20  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (UNSPEC_SYNC_NEW_OP_12,
+	UNSPEC_SYNC_OLD_OP_12,
+	UNSPEC_SYNC_EXCHANGE_12): New define_constants.
+	(UNSPEC_SYNC_EXCHANGE, UNSPEC_MEMORY_BARRIER,
+	UNSPEC_SET_GOT_VERSION,
+	UNSPEC_UPDATE_GOT_VERSION): Renumber.
+	(optab, insn): Add 'plus' and 'minus' to define_code_attr.
+	(atomic_hiqi_op): New define_code_iterator.
+	(sync_compare_and_swap<mode>): Call
+	mips_expand_atomic_qihi instead of
+	mips_expand_compare_and_swap_12.
+	(compare_and_swap_12): Use MIPS_COMPARE_AND_SWAP_12 instead of
+	MIPS_COMPARE_AND_SWAP_12_0.  Pass argument to
+	MIPS_COMPARE_AND_SWAP_12.
+	(sync_<optab><mode>, sync_old_<optab><mode>,
+	sync_new_<optab><mode>, sync_nand<mode>, sync_old_nand<mode>,
+	sync_new_nand<mode>): New define_expands for HI and QI mode
+	operands.
+	(sync_<optab>_12, sync_old_<optab>_12, sync_new_<optab>_12,
+	sync_nand_12, sync_old_nand_12, sync_new_nand_12): New insns.
+	(sync_lock_test_and_set<mode>): New define_expand for HI and QI
+	modes.
+	(test_and_set_12): New insn.
+	(sync_old_add<mode>, sync_new_add<mode>, sync_old_<optab><mode>,
+	sync_new_<optab><mode>, sync_old_nand<mode>,
+	sync_new_nand<mode>, sync_lock_test_and_set<mode>):  Add early
+	clobber to operand 0 for SI and DI mode insns.
+	* config/mips/mips-protos.h (mips_gen_fn_6, mips_gen_fn_5,
+	mips_gen_fn_4): New typedefs.
+	(mips_gen_fn_ptrs): Define new union type.
+	(mips_expand_compare_and_swap_12): Remove declaration.
+	(mips_expand_atomic_qihi): Declare function.
+	* config/mips/mips.c (mips_expand_compare_and_swap_12): Rename to...
+	(mips_expand_atomic_qihi): ... this.  Use new generator function
+	parameter.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP_12): Add OPS parameter.
+	(MIPS_COMPARE_AND_SWAP_12_0): Delete macro.
+	(MIPS_COMPARE_AND_SWAP_12_ZERO_OP,
+	MIPS_COMPARE_AND_SWAP_12_NONZERO_OP,
+	MIPS_SYNC_OP_12, MIPS_SYNC_OP_12_NOT_NOP,
+	MIPS_SYNC_OP_12_NOT_NOT, MIPS_SYNC_OLD_OP_12,
+	MIPS_SYNC_OLD_OP_12_NOT_NOP, MIPS_SYNC_OLD_OP_12_NOT_NOP_REG,
+	MIPS_SYNC_OLD_OP_12_NOT_NOT, MIPS_SYNC_OLD_OP_12_NOT_NOT_REG,
+	MIPS_SYNC_NEW_OP_12, MIPS_SYNC_NEW_OP_12_NOT_NOP,
+	MIPS_SYNC_NEW_OP_12_NOT_NOT, MIPS_SYNC_EXCHANGE_12,
+	MIPS_SYNC_EXCHANGE_12_ZERO_OP,
+	MIPS_SYNC_EXCHANGE_12_NONZERO_OP): New macros.
+
 2008-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): Add

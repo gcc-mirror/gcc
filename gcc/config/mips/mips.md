@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
@@ -57,10 +57,13 @@
    (UNSPEC_COMPARE_AND_SWAP_12	38)
    (UNSPEC_SYNC_OLD_OP		39)
    (UNSPEC_SYNC_NEW_OP		40)
-   (UNSPEC_SYNC_EXCHANGE	41)
-   (UNSPEC_MEMORY_BARRIER	42)
-   (UNSPEC_SET_GOT_VERSION	43)
-   (UNSPEC_UPDATE_GOT_VERSION	44)
+   (UNSPEC_SYNC_NEW_OP_12	41)
+   (UNSPEC_SYNC_OLD_OP_12	42)
+   (UNSPEC_SYNC_EXCHANGE	43)
+   (UNSPEC_SYNC_EXCHANGE_12	44)
+   (UNSPEC_MEMORY_BARRIER	45)
+   (UNSPEC_SET_GOT_VERSION	46)
+   (UNSPEC_UPDATE_GOT_VERSION	47)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -639,7 +642,9 @@
 			 (lshiftrt "lshr")
 			 (ior "ior")
 			 (xor "xor")
-			 (and "and")])
+			 (and "and")
+			 (plus "add")
+			 (minus "sub")])
 
 ;; <insn> expands to the name of the insn that implements a particular code.
 (define_code_attr insn [(ashift "sll")
@@ -647,7 +652,9 @@
 			(lshiftrt "srl")
 			(ior "or")
 			(xor "xor")
-			(and "and")])
+			(and "and")
+			(plus "addu")
+			(minus "subu")])
 
 ;; <fcond> is the c.cond.fmt condition associated with a particular code.
 (define_code_attr fcond [(unordered "un")
@@ -671,6 +678,8 @@
 ;; a particular code to operate in immediate values.
 (define_code_attr immediate_insn [(ior "ori") (xor "xori") (and "andi")])
 
+;; Atomic HI and QI operations
+(define_code_iterator atomic_hiqi_op [plus minus ior xor and])
 
 ;; .........................
 ;;
@@ -4455,12 +4464,14 @@
    (match_operand:SHORT 3 "general_operand")]
   "GENERATE_LL_SC"
 {
-  mips_expand_compare_and_swap_12 (operands[0], operands[1],
-				   operands[2], operands[3]);
+  union mips_gen_fn_ptrs generator;
+  generator.fn_6 = gen_compare_and_swap_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], operands[3]);
   DONE;
 })
 
-;; Helper insn for mips_expand_compare_and_swap_12.
+;; Helper insn for mips_expand_atomic_qihi.
 (define_insn "compare_and_swap_12"
   [(set (match_operand:SI 0 "register_operand" "=&d,&d")
 	(match_operand:SI 1 "memory_operand" "+R,R"))
@@ -4473,9 +4484,9 @@
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
-    return MIPS_COMPARE_AND_SWAP_12;
+    return MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_NONZERO_OP);
   else
-    return MIPS_COMPARE_AND_SWAP_12_0;
+    return MIPS_COMPARE_AND_SWAP_12 (MIPS_COMPARE_AND_SWAP_12_ZERO_OP);
 }
   [(set_attr "length" "40,36")])
 
@@ -4483,8 +4494,8 @@
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
 	(unspec_volatile:GPR
           [(plus:GPR (match_dup 0)
-			      (match_operand:GPR 1 "arith_operand" "I,d"))]
-	 UNSPEC_SYNC_OLD_OP))]
+		     (match_operand:GPR 1 "arith_operand" "I,d"))]
+	  UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
@@ -4493,6 +4504,220 @@
     return MIPS_SYNC_OP ("<d>", "<d>addu");	
 }
   [(set_attr "length" "28")])
+
+(define_expand "sync_<optab><mode>"
+  [(set (match_operand:SHORT 0 "memory_operand")
+	(unspec_volatile:SHORT
+	  [(atomic_hiqi_op:SHORT (match_dup 0)
+				 (match_operand:SHORT 1 "general_operand"))]
+	  UNSPEC_SYNC_OLD_OP))]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_4 = gen_sync_<optab>_12;
+  mips_expand_atomic_qihi (generator,
+			   NULL, operands[0], operands[1], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_<optab><mode>
+(define_insn "sync_<optab>_12"
+  [(set (match_operand:SI 0 "memory_operand" "+R")
+	(unspec_volatile:SI
+          [(match_operand:SI 1 "register_operand" "d")
+	   (match_operand:SI 2 "register_operand" "d")
+	   (atomic_hiqi_op:SI (match_dup 0)
+			      (match_operand:SI 3 "register_operand" "dJ"))]
+	  UNSPEC_SYNC_OLD_OP_12))
+   (clobber (match_scratch:SI 4 "=&d"))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_OP_12 ("<insn>", MIPS_SYNC_OP_12_NOT_NOP);	
+}
+  [(set_attr "length" "40")])
+
+(define_expand "sync_old_<optab><mode>"
+  [(parallel [
+     (set (match_operand:SHORT 0 "register_operand")
+	  (match_operand:SHORT 1 "memory_operand"))
+     (set (match_dup 1)
+	  (unspec_volatile:SHORT [(atomic_hiqi_op:SHORT
+				    (match_dup 1)
+				    (match_operand:SHORT 2 "general_operand"))]
+	    UNSPEC_SYNC_OLD_OP))])]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_5 = gen_sync_old_<optab>_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_old_<optab><mode>
+(define_insn "sync_old_<optab>_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d")
+	(match_operand:SI 1 "memory_operand" "+R"))
+   (set (match_dup 1)
+	(unspec_volatile:SI
+          [(match_operand:SI 2 "register_operand" "d")
+	   (match_operand:SI 3 "register_operand" "d")
+	   (atomic_hiqi_op:SI (match_dup 0)
+			      (match_operand:SI 4 "register_operand" "dJ"))]
+	  UNSPEC_SYNC_OLD_OP_12))
+   (clobber (match_scratch:SI 5 "=&d"))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_OLD_OP_12 ("<insn>", MIPS_SYNC_OLD_OP_12_NOT_NOP,
+				MIPS_SYNC_OLD_OP_12_NOT_NOP_REG);	
+}
+  [(set_attr "length" "40")])
+
+(define_expand "sync_new_<optab><mode>"
+  [(parallel [
+     (set (match_operand:SHORT 0 "register_operand")
+	  (unspec_volatile:SHORT [(atomic_hiqi_op:SHORT
+				    (match_operand:SHORT 1 "memory_operand")
+				    (match_operand:SHORT 2 "general_operand"))]
+	    UNSPEC_SYNC_NEW_OP))
+     (set (match_dup 1)
+	  (unspec_volatile:SHORT [(match_dup 1) (match_dup 2)]
+	    UNSPEC_SYNC_NEW_OP))])]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_5 = gen_sync_new_<optab>_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_new_<optab><mode>
+(define_insn "sync_new_<optab>_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d")
+	(unspec_volatile:SI
+          [(match_operand:SI 1 "memory_operand" "+R")
+	   (match_operand:SI 2 "register_operand" "d")
+	   (match_operand:SI 3 "register_operand" "d")
+	   (atomic_hiqi_op:SI (match_dup 0)
+			      (match_operand:SI 4 "register_operand" "dJ"))]
+	  UNSPEC_SYNC_NEW_OP_12))
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_NEW_OP_12 ("<insn>", MIPS_SYNC_NEW_OP_12_NOT_NOP);
+}
+  [(set_attr "length" "40")])
+
+(define_expand "sync_nand<mode>"
+  [(set (match_operand:SHORT 0 "memory_operand")
+	(unspec_volatile:SHORT
+	  [(match_dup 0)
+	   (match_operand:SHORT 1 "general_operand")]
+	  UNSPEC_SYNC_OLD_OP))]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_4 = gen_sync_nand_12;
+  mips_expand_atomic_qihi (generator,
+			   NULL, operands[0], operands[1], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_nand<mode>
+(define_insn "sync_nand_12"
+  [(set (match_operand:SI 0 "memory_operand" "+R")
+	(unspec_volatile:SI
+          [(match_operand:SI 1 "register_operand" "d")
+	   (match_operand:SI 2 "register_operand" "d")
+	   (match_dup 0)
+	   (match_operand:SI 3 "register_operand" "dJ")]
+	  UNSPEC_SYNC_OLD_OP_12))
+   (clobber (match_scratch:SI 4 "=&d"))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_OP_12 ("and", MIPS_SYNC_OP_12_NOT_NOT);	
+}
+  [(set_attr "length" "44")])
+
+(define_expand "sync_old_nand<mode>"
+  [(parallel [
+     (set (match_operand:SHORT 0 "register_operand")
+	  (match_operand:SHORT 1 "memory_operand"))
+     (set (match_dup 1)
+	  (unspec_volatile:SHORT [(match_dup 1)
+				  (match_operand:SHORT 2 "general_operand")]
+	    UNSPEC_SYNC_OLD_OP))])]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_5 = gen_sync_old_nand_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_old_nand<mode>
+(define_insn "sync_old_nand_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d")
+	(match_operand:SI 1 "memory_operand" "+R"))
+   (set (match_dup 1)
+	(unspec_volatile:SI
+          [(match_operand:SI 2 "register_operand" "d")
+	   (match_operand:SI 3 "register_operand" "d")
+	   (match_operand:SI 4 "register_operand" "dJ")]
+	  UNSPEC_SYNC_OLD_OP_12))
+   (clobber (match_scratch:SI 5 "=&d"))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_OLD_OP_12 ("and", MIPS_SYNC_OLD_OP_12_NOT_NOT,
+				MIPS_SYNC_OLD_OP_12_NOT_NOT_REG);	
+}
+  [(set_attr "length" "44")])
+
+(define_expand "sync_new_nand<mode>"
+  [(parallel [
+     (set (match_operand:SHORT 0 "register_operand")
+	  (unspec_volatile:SHORT [(match_operand:SHORT 1 "memory_operand")
+				  (match_operand:SHORT 2 "general_operand")]
+	    UNSPEC_SYNC_NEW_OP))
+     (set (match_dup 1)
+	  (unspec_volatile:SHORT [(match_dup 1) (match_dup 2)]
+	    UNSPEC_SYNC_NEW_OP))])]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_5 = gen_sync_new_nand_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], NULL);
+  DONE;
+})
+
+;; Helper insn for sync_new_nand<mode>
+(define_insn "sync_new_nand_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d")
+	(unspec_volatile:SI
+          [(match_operand:SI 1 "memory_operand" "+R")
+	   (match_operand:SI 2 "register_operand" "d")
+	   (match_operand:SI 3 "register_operand" "d")
+	   (match_operand:SI 4 "register_operand" "dJ")]
+	  UNSPEC_SYNC_NEW_OP_12))
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (match_dup 3)
+	   (match_dup 4)] UNSPEC_SYNC_NEW_OP_12))]
+  "GENERATE_LL_SC"
+{
+    return MIPS_SYNC_NEW_OP_12 ("and", MIPS_SYNC_NEW_OP_12_NOT_NOT);
+}
+  [(set_attr "length" "40")])
 
 (define_insn "sync_sub<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R")
@@ -4507,7 +4732,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_old_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4538,7 +4763,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_new_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
         (plus:GPR (match_operand:GPR 1 "memory_operand" "+R,R")
 		  (match_operand:GPR 2 "arith_operand" "I,d")))
    (set (match_dup 1)
@@ -4584,7 +4809,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_old_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4601,7 +4826,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_new_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4631,7 +4856,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_old_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
         (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4646,7 +4871,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_new_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4661,7 +4886,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
@@ -4674,6 +4899,36 @@
     return MIPS_SYNC_EXCHANGE ("<d>", "move");
 }
   [(set_attr "length" "24")])
+
+(define_expand "sync_lock_test_and_set<mode>"
+  [(match_operand:SHORT 0 "register_operand")
+   (match_operand:SHORT 1 "memory_operand")
+   (match_operand:SHORT 2 "general_operand")]
+  "GENERATE_LL_SC"
+{
+  union mips_gen_fn_ptrs generator;
+  generator.fn_5 = gen_test_and_set_12;
+  mips_expand_atomic_qihi (generator,
+			   operands[0], operands[1], operands[2], NULL);
+  DONE;
+})
+
+(define_insn "test_and_set_12"
+  [(set (match_operand:SI 0 "register_operand" "=&d,&d")
+	(match_operand:SI 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:SI [(match_operand:SI 2 "register_operand" "d,d")
+			     (match_operand:SI 3 "register_operand" "d,d")
+			     (match_operand:SI 4 "arith_operand" "d,J")]
+	  UNSPEC_SYNC_EXCHANGE_12))]
+  "GENERATE_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_NONZERO_OP);
+  else
+    return MIPS_SYNC_EXCHANGE_12 (MIPS_SYNC_EXCHANGE_12_ZERO_OP);
+}
+  [(set_attr "length" "28,24")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination

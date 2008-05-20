@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
@@ -2908,40 +2908,31 @@ while (0)
 /* Return an asm string that atomically:
 
      - Given that %2 contains a bit mask and %3 the inverted mask and
-       that %4 and %5 have already been ANDed with $2.
+       that %4 and %5 have already been ANDed with %2.
 
      - Compares the bits in memory reference %1 selected by mask %2 to
        register %4 and, if they are equal, changes the selected bits
        in memory to %5.
 
      - Sets register %0 to the old value of memory reference %1.
- */
-#define MIPS_COMPARE_AND_SWAP_12		\
+
+    OPS are the instructions needed to OR %5 with %@.  */
+#define MIPS_COMPARE_AND_SWAP_12(OPS)		\
   "%(%<%[%|sync\n"				\
   "1:\tll\t%0,%1\n"				\
   "\tand\t%@,%0,%2\n"				\
   "\tbne\t%@,%z4,2f\n"				\
   "\tand\t%@,%0,%3\n"				\
-  "\tor\t%@,%@,%5\n"				\
+  OPS						\
   "\tsc\t%@,%1\n"				\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
   "\tsync%-%]%>%)\n"				\
   "2:\n"
 
-/* Like MIPS_COMPARE_AND_SWAP_12, except %5 is a constant zero,
-   so the OR can be omitted.  */
-#define MIPS_COMPARE_AND_SWAP_12_0		\
-  "%(%<%[%|sync\n"				\
-  "1:\tll\t%0,%1\n"				\
-  "\tand\t%@,%0,%2\n"				\
-  "\tbne\t%@,%z4,2f\n"				\
-  "\tand\t%@,%0,%3\n"				\
-  "\tsc\t%@,%1\n"				\
-  "\tbeq\t%@,%.,1b\n"				\
-  "\tnop\n"					\
-  "\tsync%-%]%>%)\n"				\
-  "2:\n"
+#define MIPS_COMPARE_AND_SWAP_12_ZERO_OP ""
+#define MIPS_COMPARE_AND_SWAP_12_NONZERO_OP "\tor\t%@,%@,%5\n"
+
 
 /* Return an asm string that atomically:
 
@@ -2957,6 +2948,97 @@ while (0)
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
   "\tsync%-%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Given that %1 contains a bit mask and %2 the inverted mask and
+       that %3 has already been ANDed with %1.
+
+     - Sets the selected bits of memory reference %0 to %0 INSN %3.
+
+     - Uses scratch register %4.
+
+    NOT_OP are the optional instructions to do a bit-wise not
+    operation in conjunction with an AND INSN to generate a sync_nand
+    operation.  */
+#define MIPS_SYNC_OP_12(INSN, NOT_OP)		\
+  "%(%<%[%|sync\n"				\
+  "1:\tll\t%4,%0\n"				\
+  "\tand\t%@,%4,%2\n"				\
+  NOT_OP					\
+  "\t" INSN "\t%4,%4,%z3\n"			\
+  "\tand\t%4,%4,%1\n"				\
+  "\tor\t%@,%@,%4\n"				\
+  "\tsc\t%@,%0\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
+
+#define MIPS_SYNC_OP_12_NOT_NOP ""
+#define MIPS_SYNC_OP_12_NOT_NOT "\tnor\t%4,%4,%.\n"
+
+/* Return an asm string that atomically:
+
+     - Given that %2 contains a bit mask and %3 the inverted mask and
+       that %4 has already been ANDed with %2.
+
+     - Sets the selected bits of memory reference %1 to %1 INSN %4.
+
+     - Sets %0 to the original value of %1.
+
+     - Uses scratch register %5.
+
+    NOT_OP are the optional instructions to do a bit-wise not
+    operation in conjunction with an AND INSN to generate a sync_nand
+    operation.
+
+    REG is used in conjunction with NOT_OP and is used to select the
+    register operated on by the INSN.  */
+#define MIPS_SYNC_OLD_OP_12(INSN, NOT_OP, REG)	\
+  "%(%<%[%|sync\n"				\
+  "1:\tll\t%0,%1\n"				\
+  "\tand\t%@,%0,%3\n"				\
+  NOT_OP					\
+  "\t" INSN "\t%5," REG ",%z4\n"		\
+  "\tand\t%5,%5,%2\n"				\
+  "\tor\t%@,%@,%5\n"				\
+  "\tsc\t%@,%1\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
+
+#define MIPS_SYNC_OLD_OP_12_NOT_NOP ""
+#define MIPS_SYNC_OLD_OP_12_NOT_NOP_REG "%0"
+#define MIPS_SYNC_OLD_OP_12_NOT_NOT "\tnor\t%5,%0,%.\n"
+#define MIPS_SYNC_OLD_OP_12_NOT_NOT_REG "%5"
+
+/* Return an asm string that atomically:
+
+     - Given that %2 contains a bit mask and %3 the inverted mask and
+       that %4 has already been ANDed with %2.
+
+     - Sets the selected bits of memory reference %1 to %1 INSN %4.
+
+     - Sets %0 to the new value of %1.
+
+    NOT_OP are the optional instructions to do a bit-wise not
+    operation in conjunction with an AND INSN to generate a sync_nand
+    operation.  */
+#define MIPS_SYNC_NEW_OP_12(INSN, NOT_OP)	\
+  "%(%<%[%|sync\n"				\
+  "1:\tll\t%0,%1\n"				\
+  "\tand\t%@,%0,%3\n"				\
+  NOT_OP					\
+  "\t" INSN "\t%0,%0,%z4\n"			\
+  "\tand\t%0,%0,%2\n"				\
+  "\tor\t%@,%@,%0\n"				\
+  "\tsc\t%@,%1\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
+
+#define MIPS_SYNC_NEW_OP_12_NOT_NOP ""
+#define MIPS_SYNC_NEW_OP_12_NOT_NOT "\tnor\t%0,%0,%.\n"
 
 /* Return an asm string that atomically:
 
@@ -3064,6 +3146,33 @@ while (0)
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
   "\tsync%-%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Given that %2 contains an inclusive mask, %3 and exclusive mask
+       and %4 has already been ANDed with the inclusive mask.
+
+     - Sets bits selected by the inclusive mask of memory reference %1
+       to %4.
+
+     - Sets register %0 to the old value of memory reference %1.
+
+    OPS are the instructions needed to OR %4 with %@.
+
+    Operand %2 is unused, but needed as to give the test_and_set_12
+    insn the five operands expected by the expander.  */
+#define MIPS_SYNC_EXCHANGE_12(OPS)              \
+  "%(%<%[%|\n"					\
+  "1:\tll\t%0,%1\n"				\
+  "\tand\t%@,%0,%3\n"				\
+  OPS						\
+  "\tsc\t%@,%1\n"				\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
+
+#define MIPS_SYNC_EXCHANGE_12_ZERO_OP ""
+#define MIPS_SYNC_EXCHANGE_12_NONZERO_OP "\tor\t%@,%@,%4\n"
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class mips_regno_to_class[];
