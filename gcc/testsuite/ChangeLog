@@ -1,3 +1,8 @@
+2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/30740
+	* gnat.dg/modular.adb: New test.
+
 2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
