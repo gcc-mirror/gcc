@@ -683,14 +683,11 @@ package body Uintp is
          begin
             Release (M);
 
-            Uints.Increment_Last;
+            Uints.Append ((Length => UE_Len, Loc => Udigits.Last + 1));
             UI := Uints.Last;
 
-            Uints.Table (UI) := (UE_Len, Udigits.Last + 1);
-
             for J in 1 .. UE_Len loop
-               Udigits.Increment_Last;
-               Udigits.Table (Udigits.Last) := UD (J);
+               Udigits.Append (UD (J));
             end loop;
          end;
       end if;
@@ -721,24 +718,18 @@ package body Uintp is
          begin
             Release (M);
 
-            Uints.Increment_Last;
+            Uints.Append ((Length => UE1_Len, Loc => Udigits.Last + 1));
             UI1 := Uints.Last;
 
-            Uints.Table (UI1) := (UE1_Len, Udigits.Last + 1);
-
             for J in 1 .. UE1_Len loop
-               Udigits.Increment_Last;
-               Udigits.Table (Udigits.Last) := UD1 (J);
+               Udigits.Append (UD1 (J));
             end loop;
 
-            Uints.Increment_Last;
+            Uints.Append ((Length => UE2_Len, Loc => Udigits.Last + 1));
             UI2 := Uints.Last;
 
-            Uints.Table (UI2) := (UE2_Len, Udigits.Last + 1);
-
             for J in 1 .. UE2_Len loop
-               Udigits.Increment_Last;
-               Udigits.Table (Udigits.Last) := UD2 (J);
+               Udigits.Append (UD2 (J));
             end loop;
          end;
       end if;
@@ -2745,21 +2736,18 @@ package body Uintp is
             --  the count and digits. The index of the new table entry will be
             --  returned as the result.
 
-            Uints.Increment_Last;
-            Uints.Table (Uints.Last).Length := Size;
-            Uints.Table (Uints.Last).Loc    := Udigits.Last + 1;
-
-            Udigits.Increment_Last;
+            Uints.Append ((Length => Size, Loc => Udigits.Last + 1));
 
             if Negative then
-               Udigits.Table (Udigits.Last) := -In_Vec (J);
+               Val := -In_Vec (J);
             else
-               Udigits.Table (Udigits.Last) := +In_Vec (J);
+               Val := +In_Vec (J);
             end if;
 
+            Udigits.Append (Val);
+
             for K in 2 .. Size loop
-               Udigits.Increment_Last;
-               Udigits.Table (Udigits.Last) := In_Vec (J + K - 1);
+               Udigits.Append (In_Vec (J + K - 1));
             end loop;
 
             return Uints.Last;
