@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -477,7 +477,7 @@ package body Ch9 is
             Scan; --  past NEW
 
             if Ada_Version < Ada_05 then
-               Error_Msg_SP ("task interface is an Ada 2005 extension");
+               Error_Msg_SP ("protected interface is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
             end if;
 
@@ -496,11 +496,6 @@ package body Ch9 is
             end if;
 
             Scan; -- past WITH
-
-            if Token = Tok_Private then
-               Error_Msg_SP
-                 ("PRIVATE not allowed in protected type declaration");
-            end if;
          end if;
 
          Set_Protected_Definition (Protected_Node, P_Protected_Definition);
@@ -561,8 +556,8 @@ package body Ch9 is
          Append (Item_Node, Visible_Declarations (Def_Node));
       end loop;
 
-      --  Deal with PRIVATE part (including graceful handling
-      --  of multiple PRIVATE parts).
+      --  Deal with PRIVATE part (including graceful handling of multiple
+      --  PRIVATE parts).
 
       Private_Loop : while Token = Tok_Private loop
          if No (Private_Declarations (Def_Node)) then
