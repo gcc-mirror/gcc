@@ -1,5 +1,11 @@
 2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	PR testsuite/34889
+	* gcc.c-torture/execute/builtins/pr23484-chk.c : Correct test for 
+	16bit int target. 
+
+2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/tree-ssa/ifc-20040816-1.c : signal.h not required.
 	* gcc.c-torture/execute/ieee/fp-cmp-1.c : Do not include signal.h if
 	SIGNAL_SUPPRESS.
