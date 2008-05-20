@@ -1,3 +1,10 @@
+2008-05-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-incpath.c (INO_T_EQ): Do not define on non-inode systems.
+	(DIRS_EQ): New.
+	(remove_duplicates): Do not set inode on non-inode systems.  Use
+	DIRS_EQ.
+
 2008-05-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config.gcc (tm_file): Update comments about relative pathnames.
