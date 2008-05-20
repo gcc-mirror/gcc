@@ -3931,8 +3931,7 @@ package body Ch3 is
          if Token = Tok_All then
             if Ada_Version < Ada_05 then
                Error_Msg_SP
-                 ("access-all in this context is an Ada 2005 extension");
-               Error_Msg_SP ("\unit should be compiled with -gnat05 switch");
+                 ("ALL is not permitted for anonymous access types");
             end if;
 
             Scan; -- past ALL
