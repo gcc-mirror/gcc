@@ -2,7 +2,6 @@
 /* { dg-options "-c -O2 -ftree-vectorize -fdump-tree-ifcvt-stats" { target *-*-* } } */
 
 #include <stdarg.h>
-#include <signal.h>
 
 #define N 16
 #define MAX 42

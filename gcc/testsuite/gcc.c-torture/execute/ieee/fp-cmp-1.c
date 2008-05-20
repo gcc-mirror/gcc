@@ -1,4 +1,6 @@
+#ifndef SIGNAL_SUPPRESS
 #include <signal.h>
+#endif
 
 double dnan = 1.0/0.0 - 1.0/0.0;
 double x = 1.0;

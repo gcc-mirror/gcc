@@ -1,5 +1,13 @@
 2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/tree-ssa/ifc-20040816-1.c : signal.h not required.
+	* gcc.c-torture/execute/ieee/fp-cmp-1.c : Do not include signal.h if
+	SIGNAL_SUPPRESS.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.c : Ditto.
+	* gcc.c-torture/execute/ieee/fp-cmp-3.c : Ditto.
+
+2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/builtins-config.h: AVR does not have C99 runtime. 
   
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
