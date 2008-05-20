@@ -1,5 +1,9 @@
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
+	* obj-c++.dg/comp-types-10.mm: XFAIL for ICE.
+	* obj-c++.dg/try-catch-9.mm: XFAILfor ICE, move dg-options after
+	other test directives.
+
 	* obj-c++.dg/try-catch-2.mm: Move dg-options after dg-xfail-if.
 	* obj-c++.dg/encode-8.mm: Move dg-options after dg-do.
 	* obj-c++.dg/bitfield-4.mm: Ditto; use dg-prune-output instead of
