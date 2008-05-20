@@ -89,6 +89,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatR3         ^ /REPRESENTATION_INFO=SYMBOLIC
 -gnatq          ^ /TRY_SEMANTICS
 -gnatQ          ^ /FORCE_ALI
+-gnatr          ^ /TREAT_RESTRICTIONS_AS_WARNINGS
 -gnats          ^ /SYNTAX_ONLY
 -gnatS          ^ /PRINT_STANDARD
 -gnatt          ^ /TREE_OUTPUT
@@ -177,6 +178,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatW8         ^ /WIDE_CHARACTER_ENCODING=UTF8
 -gnatW?         ^ /WIDE_CHARACTER_ENCODING=?
 -gnaty          ^ /STYLE_CHECKS
+-gnatyy         ^ /STYLE_CHECKS=ALL_BUILTIN
 -gnatZ          ^ /ZERO_COST_EXCEPTIONS
 -gnatzc         ^ /DISTRIBUTION_STUBS=CALLER
 -gnatzr         ^ /DISTRIBUTION_STUBS=RECEIVER

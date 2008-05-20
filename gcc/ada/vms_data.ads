@@ -881,154 +881,6 @@ package VMS_Data is
                        S_Check_Verb     'Access);
 
    ----------------------------
-   -- Switches for GNAT SYNC --
-   ----------------------------
-
-   S_Sync_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
-                                            "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
-   --
-   --   Add directories to the project search path.
-
-   S_Sync_All    : aliased constant S := "/ALL "                           &
-                                            "-a";
-   --        /NOALL (D)
-   --        /ALL
-   --
-   --   Also check the components of the GNAT run time and process the needed
-   --  components of the GNAT RTL when building and analyzing the global
-   --  structure for checking the global rules.
-
-   S_Sync_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'     &
-                                             "-X" & '"';
-   --       /EXTERNAL_REFERENCE="name=val"
-   --
-   --   Specifies an external reference to the project manager. Useful only if
-   --   /PROJECT_FILE is used.
-   --
-   --   Example:
-   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
-
-   S_Sync_Files  : aliased constant S := "/FILES=@"                        &
-                                             "-files=@";
-   --      /FILES=filename
-   --
-   --   Take as arguments the files that are listed in the specified
-   --   text file.
-
-   S_Sync_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
-                                            "-eL";
-   --        /NOFOLLOW_LINKS_FOR_FILES (D)
-   --        /FOLLOW_LINKS_FOR_FILES
-   --
-   --    Follow links when parsing project files
-
-   S_Sync_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
-                                             "DEFAULT "                    &
-                                                "-vP0 "                    &
-                                             "MEDIUM "                     &
-                                                "-vP1 "                    &
-                                             "HIGH "                       &
-                                                "-vP2";
-   --        /MESSAGES_PROJECT_FILE[=messages-option]
-   --
-   --   Specifies the "verbosity" of the parsing of project files.
-   --   messages-option may be one of the following:
-   --
-   --      DEFAULT (D)  No messages are output if there is no error or warning.
-   --
-   --      MEDIUM       A small number of messages are output.
-   --
-   --      HIGH         A great number of messages are output, most of them not
-   --                   being useful for the user.
-
-   S_Sync_Project : aliased constant S := "/PROJECT_FILE=<"                &
-                                             "-P>";
-   --        /PROJECT_FILE=filename
-   --
-   --   Specifies the main project file to be used. The project files rooted
-   --   at the main project file will be parsed before the invocation of the
-   --   gnatcheck. The source directories to be searched will be communicated
-   --   to gnatcheck through logical name ADA_PRJ_INCLUDE_FILE.
-
-   S_Sync_Quiet  : aliased constant S := "/QUIET "                         &
-                                            "-q";
-   --        /NOQUIET (D)
-   --        /QUIET
-   --
-   --   Work quietly, only output warnings and errors.
-
-   S_Sync_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
-                                             "--subdirs=>";
-   --        /SUBDIRS=dir
-   --
-   --   The actual directories (object, exec, library, ...) are subdirectories
-   --   of the directory specified in the project file. If the subdirectory
-   --   does not exist, it is created automatically.
-
-   S_Sync_Verb   : aliased constant S := "/VERBOSE "                       &
-                                            "-v";
-   --        /NOVERBOSE (D)
-   --        /VERBOSE
-   --
-   --   The version number and copyright notice are output, as well as exact
-   --   copies of the gnat1 commands spawned to obtain the chop control
-   --   information.
-
-   S_Sync_Exec   : aliased constant S := "/EXECUTION_TIME "                &
-                                            "-t";
-   --        /NOEXECUTION_TIME (D)
-   --        /EXECUTION_TIME
-   --
-   --   Output the execution time
-
-   S_Sync_Details : aliased constant S := "/DETAILs="                      &
-                                             "MEDIUM "                     &
-                                               "-om "                      &
-                                             "SHORT "                      &
-                                               "-os "                      &
-                                             "FULL "                       &
-                                               "-of";
-   --         /DETAILS[=options]
-   --
-   --   Specifies the details of the output.
-   --   Options may be one of the following:
-   --
-   --       MEDIUM (D)
-   --       SHORT
-   --       FULL
-
-   S_Sync_Warnoff : aliased constant S := "/WARNINGS_OFF "                 &
-                                             "-wq";
-   --
-   --         /WARNINGS_OFF
-   --
-   --   Turn warnings off
-
-   S_Sync_Output  : aliased constant S := "/OUTPUT_FILE=<"                 &
-                                             "-out_file=>";
-   --
-   --        /OUTPUT_FILE=filename
-   --
-   --   Redirect output to a text file
-
-   Sync_Switches : aliased constant Switches :=
-                      (S_Sync_Add      'Access,
-                       S_Sync_All      'Access,
-                       S_Sync_Ext      'Access,
-                       S_Sync_Follow   'Access,
-                       S_Sync_Files    'Access,
-                       S_Sync_Mess     'Access,
-                       S_Sync_Project  'Access,
-                       S_Sync_Quiet    'Access,
-                       S_Sync_Subdirs  'Access,
-                       S_Sync_Verb     'Access,
-                       S_Sync_Exec     'Access,
-                       S_Sync_Details  'Access,
-                       S_Sync_Warnoff  'Access,
-                       S_Sync_Output   'Access);
-
-   ----------------------------
    -- Switches for GNAT CHOP --
    ----------------------------
 
@@ -2108,6 +1960,16 @@ package VMS_Data is
    --   cannot be created in standard Ada), but the output is easily
    --   readable to any Ada programmer, and is useful to determine the
    --   characteristics of target dependent types in package Standard.
+
+   S_GCC_Reswarn : aliased constant S := "/TREAT_RESTRICTIONS_AS_WARNINGS " &
+                                             "-gnatr";
+
+   --        /NO_TREAT_RESTRICTIONS_AS_WARNINGS (D)
+   --        /TREAT_RESTRICTIONS_AS_WARNINGS
+   --
+   --   Causes all restrictions to be treated as warnings (pragma Restriction
+   --   treated as Restriction_Warnings, pragma Profile as Profile_Warnings,
+   --   and pragma Ravenscar sets restriction warnings instead of restrictions)
 
    S_GCC_Report  : aliased constant S := "/REPORT_ERRORS="                 &
                                             "VERBOSE "                     &
@@ -4440,6 +4302,17 @@ package VMS_Data is
    --   Put all object files and .ALI files in <file>.
    --   This qualifier is not compatible with /PROJECT_FILE.
 
+   S_Make_Disprog : aliased constant S := "/DISPLAY_PROGRESS "             &
+                                            "-d";
+   --        /NOPLAY_PROGRESS (D)
+   --        /DISPLAY_PROGRESS
+   --
+   --   Display progress for each source, up to date or not, as a single line
+   --      completed x out of y (zz%)
+   --   If the file needs to be compiled this is displayed after the
+   --   invocation of the compiler. These lines are displayed even in quiet
+   --   output mode (/QUIET).
+
    S_Make_Doobj   : aliased constant S := "/DO_OBJECT_CHECK "              &
                                             "-n";
    --        /NODO_OBJECT_CHECK (D)
@@ -4801,6 +4674,7 @@ package VMS_Data is
                       S_Make_Current 'Access,
                       S_Make_Dep     'Access,
                       S_Make_Dirobj  'Access,
+                      S_Make_Disprog 'Access,
                       S_Make_Doobj   'Access,
                       S_Make_Execut  'Access,
                       S_Make_Ext     'Access,
@@ -6624,6 +6498,154 @@ package VMS_Data is
                       S_Stub_Subdirs    'Access,
                       S_Stub_Tree       'Access,
                       S_Stub_Verbose    'Access);
+
+   ----------------------------
+   -- Switches for GNAT SYNC --
+   ----------------------------
+
+   S_Sync_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
+                                            "-aP*";
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
+   --
+   --   Add directories to the project search path.
+
+   S_Sync_All    : aliased constant S := "/ALL "                           &
+                                            "-a";
+   --        /NOALL (D)
+   --        /ALL
+   --
+   --   Also check the components of the GNAT run time and process the needed
+   --  components of the GNAT RTL when building and analyzing the global
+   --  structure for checking the global rules.
+
+   S_Sync_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'     &
+                                             "-X" & '"';
+   --       /EXTERNAL_REFERENCE="name=val"
+   --
+   --   Specifies an external reference to the project manager. Useful only if
+   --   /PROJECT_FILE is used.
+   --
+   --   Example:
+   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Sync_Files  : aliased constant S := "/FILES=@"                        &
+                                             "-files=@";
+   --      /FILES=filename
+   --
+   --   Take as arguments the files that are listed in the specified
+   --   text file.
+
+   S_Sync_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
+
+   S_Sync_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
+                                             "DEFAULT "                    &
+                                                "-vP0 "                    &
+                                             "MEDIUM "                     &
+                                                "-vP1 "                    &
+                                             "HIGH "                       &
+                                                "-vP2";
+   --        /MESSAGES_PROJECT_FILE[=messages-option]
+   --
+   --   Specifies the "verbosity" of the parsing of project files.
+   --   messages-option may be one of the following:
+   --
+   --      DEFAULT (D)  No messages are output if there is no error or warning.
+   --
+   --      MEDIUM       A small number of messages are output.
+   --
+   --      HIGH         A great number of messages are output, most of them not
+   --                   being useful for the user.
+
+   S_Sync_Project : aliased constant S := "/PROJECT_FILE=<"                &
+                                             "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file will be parsed before the invocation of the
+   --   gnatcheck. The source directories to be searched will be communicated
+   --   to gnatcheck through logical name ADA_PRJ_INCLUDE_FILE.
+
+   S_Sync_Quiet  : aliased constant S := "/QUIET "                         &
+                                            "-q";
+   --        /NOQUIET (D)
+   --        /QUIET
+   --
+   --   Work quietly, only output warnings and errors.
+
+   S_Sync_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
+   S_Sync_Verb   : aliased constant S := "/VERBOSE "                       &
+                                            "-v";
+   --        /NOVERBOSE (D)
+   --        /VERBOSE
+   --
+   --   The version number and copyright notice are output, as well as exact
+   --   copies of the gnat1 commands spawned to obtain the chop control
+   --   information.
+
+   S_Sync_Exec   : aliased constant S := "/EXECUTION_TIME "                &
+                                            "-t";
+   --        /NOEXECUTION_TIME (D)
+   --        /EXECUTION_TIME
+   --
+   --   Output the execution time
+
+   S_Sync_Details : aliased constant S := "/DETAILs="                      &
+                                             "MEDIUM "                     &
+                                               "-om "                      &
+                                             "SHORT "                      &
+                                               "-os "                      &
+                                             "FULL "                       &
+                                               "-of";
+   --         /DETAILS[=options]
+   --
+   --   Specifies the details of the output.
+   --   Options may be one of the following:
+   --
+   --       MEDIUM (D)
+   --       SHORT
+   --       FULL
+
+   S_Sync_Warnoff : aliased constant S := "/WARNINGS_OFF "                 &
+                                             "-wq";
+   --
+   --         /WARNINGS_OFF
+   --
+   --   Turn warnings off
+
+   S_Sync_Output  : aliased constant S := "/OUTPUT_FILE=<"                 &
+                                             "-out_file=>";
+   --
+   --        /OUTPUT_FILE=filename
+   --
+   --   Redirect output to a text file
+
+   Sync_Switches : aliased constant Switches :=
+                      (S_Sync_Add      'Access,
+                       S_Sync_All      'Access,
+                       S_Sync_Ext      'Access,
+                       S_Sync_Follow   'Access,
+                       S_Sync_Files    'Access,
+                       S_Sync_Mess     'Access,
+                       S_Sync_Project  'Access,
+                       S_Sync_Quiet    'Access,
+                       S_Sync_Subdirs  'Access,
+                       S_Sync_Verb     'Access,
+                       S_Sync_Exec     'Access,
+                       S_Sync_Details  'Access,
+                       S_Sync_Warnoff  'Access,
+                       S_Sync_Output   'Access);
 
    ----------------------------
    -- Switches for GNAT XREF --
