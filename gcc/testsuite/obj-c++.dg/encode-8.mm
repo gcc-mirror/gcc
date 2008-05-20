@@ -2,8 +2,8 @@
    'BOOL *' (which should be encoded as '^c') and 'char *' (which
    should be encoded as '*').  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-lobjc" } */
 /* { dg-do run { xfail { "*-*-*" } } } PR27249 */
+/* { dg-options "-lobjc" } */
 
 #include <string.h>           
 #include <stdlib.h>

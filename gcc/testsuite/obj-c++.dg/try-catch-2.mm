@@ -2,9 +2,9 @@
    all uncaught exceptions.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-/* { dg-options "-fobjc-exceptions" } */
-/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "" } } */
 /* { dg-do run } */
+/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "" } } */
+/* { dg-options "-fobjc-exceptions" } */
 
 #include <objc/Object.h>
 #include <stdio.h>

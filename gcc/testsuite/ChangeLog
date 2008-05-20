@@ -1,5 +1,12 @@
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
+	* obj-c++.dg/try-catch-2.mm: Move dg-options after dg-xfail-if.
+	* obj-c++.dg/encode-8.mm: Move dg-options after dg-do.
+	* obj-c++.dg/bitfield-4.mm: Ditto; use dg-prune-output instead of
+	dg-excess-errors for possible additional message.
+	* obj-c++.dg/layout-1.mm: Use dg-prune-output instead of
+	dg-excess-errors for possible additional message.
+
 	* g++.dg/ext/vector14.C: Ignore a possible warning.
 
 2008-05-20  Samuel Tardieu  <sam@rfc1149.net>
