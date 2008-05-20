@@ -1,3 +1,11 @@
+2008-05-20  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (machine_function): Add 'is_OS_main' field.
+	* config/avr/avr.c (avr_OS_main_function_p): Add new function.
+	(avr_attribute_table): Add 'OS_main' function attribute.
+	(avr_regs_to_save, expand_prologue, expand_epilogue): Handle
+	functions with 'OS_main' attribute.
+
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35204

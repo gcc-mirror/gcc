@@ -1042,7 +1042,11 @@ struct machine_function GTY(())
      as specified by the "signal" attribute.  */
   int is_signal;
   
-  /* 'true' - if current function is a signal function 
+  /* 'true' - if current function is a 'task' function 
      as specified by the "OS_task" attribute.  */
   int is_OS_task;
+
+  /* 'true' - if current function is a 'main' function 
+     as specified by the "OS_main" attribute.  */
+  int is_OS_main;
 };
