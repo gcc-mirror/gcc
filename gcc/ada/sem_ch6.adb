@@ -1257,10 +1257,10 @@ package body Sem_Ch6 is
 
    procedure Analyze_Subprogram_Body (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
+      Body_Deleted : constant Boolean    := False;
       Body_Spec    : constant Node_Id    := Specification (N);
       Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
       Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
-      Body_Deleted : constant Boolean    := False;
       Conformant   : Boolean;
       HSS          : Node_Id;
       Missing_Ret  : Boolean;
@@ -1369,7 +1369,8 @@ package body Sem_Ch6 is
          Plist : List_Id;
 
          function Is_Inline_Pragma (N : Node_Id) return Boolean;
-         --  Simple predicate, used twice.
+         --  True when N is a pragma Inline or Inline_Awlays that applies
+         --  to this subprogram.
 
          -----------------------
          --  Is_Inline_Pragma --
@@ -2045,6 +2046,7 @@ package body Sem_Ch6 is
       --  Check completion, and analyze the statements
 
       Check_Completion;
+      Inspect_Deferred_Constant_Completion (Declarations (N));
       Analyze (HSS);
 
       --  Deal with end of scope processing for the body

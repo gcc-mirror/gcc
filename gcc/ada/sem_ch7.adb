@@ -100,12 +100,6 @@ package body Sem_Ch7 is
    --  created at the beginning of the corresponding package body and inserted
    --  before other body declarations.
 
-   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id);
-   --  Examines the deferred constants in the private part of the package
-   --  specification, or in a package body. Emits the error message
-   --  "constant declaration requires initialization expression" if not
-   --  completed by an Import pragma.
-
    procedure Install_Package_Entity (Id : Entity_Id);
    --  Supporting procedure for Install_{Visible,Private}_Declarations.
    --  Places one entity on its visibility chain, and recurses on the visible
@@ -1603,41 +1597,6 @@ package body Sem_Ch7 is
       Set_Next_Entity (Full_Id, Next2);
       Set_Homonym     (Full_Id, H2);
    end Exchange_Declarations;
-
-   ------------------------------------------
-   -- Inspect_Deferred_Constant_Completion --
-   ------------------------------------------
-
-   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
-      Decl   : Node_Id;
-
-   begin
-      Decl := First (Decls);
-      while Present (Decl) loop
-
-         --  Deferred constant signature
-
-         if Nkind (Decl) = N_Object_Declaration
-           and then Constant_Present (Decl)
-           and then No (Expression (Decl))
-
-            --  No need to check internally generated constants
-
-           and then Comes_From_Source (Decl)
-
-            --  The constant is not completed. A full object declaration
-            --  or a pragma Import complete a deferred constant.
-
-           and then not Has_Completion (Defining_Identifier (Decl))
-         then
-            Error_Msg_N
-              ("constant declaration requires initialization expression",
-              Defining_Identifier (Decl));
-         end if;
-
-         Decl := Next (Decl);
-      end loop;
-   end Inspect_Deferred_Constant_Completion;
 
    ----------------------------
    -- Install_Package_Entity --

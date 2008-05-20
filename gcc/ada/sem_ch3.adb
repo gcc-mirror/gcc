@@ -2404,16 +2404,34 @@ package body Sem_Ch3 is
 
          if Is_Imported (Defining_Identifier (N))
            and then
-            (T = RTE (RE_Tag)
-              or else (Present (Full_View (T))
-                        and then Full_View (T) = RTE (RE_Tag)))
+             (T = RTE (RE_Tag)
+               or else
+                 (Present (Full_View (T))
+                   and then Full_View (T) = RTE (RE_Tag)))
          then
             null;
 
-         elsif not Is_Package_Or_Generic_Package (Current_Scope) then
+         --  A deferred constant may appear in the declarative part of the
+         --  following constructs:
+
+         --     blocks
+         --     entry bodies
+         --     extended return statements
+         --     package specs
+         --     package bodies
+         --     subprogram bodies
+         --     task bodies
+
+         --  When declared inside a package spec, a deferred constant must be
+         --  completed by a full constant declaration or pragma Import. In all
+         --  other cases, the only proper completion is pragma Import. Extended
+         --  return statements are flagged as invalid contexts because they do
+         --  not have a declarative part and so cannot accommodate the pragma.
+
+         elsif Ekind (Current_Scope) = E_Return_Statement then
             Error_Msg_N
               ("invalid context for deferred constant declaration (RM 7.4)",
-                N);
+               N);
             Error_Msg_N
               ("\declaration requires an initialization expression",
                 N);
@@ -2482,10 +2500,16 @@ package body Sem_Ch3 is
          --  (primitive that is not available in CPP tagged types).
 
          if Is_Class_Wide_Type (Act_T)
-           and then Convention (Act_T) = Convention_CPP
+           and then
+             (Is_CPP_Class (Root_Type (Etype (Act_T)))
+               or else
+                 (Present (Full_View (Root_Type (Etype (Act_T))))
+                    and then
+                      Is_CPP_Class (Full_View (Root_Type (Etype (Act_T))))))
          then
             Error_Msg_N
-              ("predefined assignment not available in CPP tagged types", E);
+              ("predefined assignment not available for 'C'P'P tagged types",
+               E);
          end if;
 
          Mark_Coextensions (N, E);
@@ -3844,8 +3868,9 @@ package body Sem_Ch3 is
 
                Validate_Access_Type_Declaration (T, N);
 
-               --  If we are in a Remote_Call_Interface package and define
-               --  a RACW, Read and Write attribute must be added.
+               --  If we are in a Remote_Call_Interface package and define a
+               --  RACW, then calling stubs and specific stream attributes
+               --  must be added.
 
                if Is_Remote
                  and then Is_Remote_Access_To_Class_Wide_Type (Def_Id)
@@ -3908,10 +3933,10 @@ package body Sem_Ch3 is
          B : constant Entity_Id := Base_Type (T);
 
       begin
-         --  In the case where the base type is different from the first
-         --  subtype, we pre-allocate a freeze node, and set the proper link
-         --  to the first subtype. Freeze_Entity will use this preallocated
-         --  freeze node when it freezes the entity.
+         --  In the case where the base type differs from the first subtype, we
+         --  pre-allocate a freeze node, and set the proper link to the first
+         --  subtype. Freeze_Entity will use this preallocated freeze node when
+         --  it freezes the entity.
 
          if B /= T then
             Ensure_Freeze_Node (B);
@@ -3929,11 +3954,11 @@ package body Sem_Ch3 is
       if T /= Def_Id and then Is_Private_Type (Def_Id) then
          Process_Full_View (N, T, Def_Id);
 
-         --  Record the reference. The form of this is a little strange,
-         --  since the full declaration has been swapped in. So the first
-         --  parameter here represents the entity to which a reference is
-         --  made which is the "real" entity, i.e. the one swapped in,
-         --  and the second parameter provides the reference location.
+         --  Record the reference. The form of this is a little strange, since
+         --  the full declaration has been swapped in. So the first parameter
+         --  here represents the entity to which a reference is made which is
+         --  the "real" entity, i.e. the one swapped in, and the second
+         --  parameter provides the reference location.
 
          --  Also, we want to kill Has_Pragma_Unreferenced temporarily here
          --  since we don't want a complaint about the full type being an
@@ -3985,12 +4010,12 @@ package body Sem_Ch3 is
    procedure Analyze_Variant_Part (N : Node_Id) is
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
-      --  Error routine invoked by the generic instantiation below when
-      --  the variant part has a non static choice.
+      --  Error routine invoked by the generic instantiation below when the
+      --  variant part has a non static choice.
 
       procedure Process_Declarations (Variant : Node_Id);
-      --  Analyzes all the declarations associated with a Variant.
-      --  Needed by the generic instantiation below.
+      --  Analyzes all the declarations associated with a Variant. Needed by
+      --  the generic instantiation below.
 
       package Variant_Choices_Processing is new
         Generic_Choices_Processing
@@ -4097,9 +4122,9 @@ package body Sem_Ch3 is
          Index := First (Subtype_Marks (Def));
       end if;
 
-      --  Find proper names for the implicit types which may be public.
-      --  in case of anonymous arrays we use the name of the first object
-      --  of that type as prefix.
+      --  Find proper names for the implicit types which may be public. In case
+      --  of anonymous arrays we use the name of the first object of that type
+      --  as prefix.
 
       if No (T) then
          Related_Id :=  Defining_Identifier (P);
@@ -4120,9 +4145,9 @@ package body Sem_Ch3 is
          --        type Table is array (Index) of ...
          --     end;
 
-         --  This is currently required by the expander to generate the
-         --  internally generated equality subprogram of records with variant
-         --  parts in which the etype of some component is such private type.
+         --  This is currently required by the expander for the internally
+         --  generated equality subprogram of records with variant parts in
+         --  which the etype of some component is such private type.
 
          if Ekind (Current_Scope) = E_Package
            and then In_Private_Part (Current_Scope)
@@ -4195,9 +4220,9 @@ package body Sem_Ch3 is
 
          Set_Parent (Element_Type, Parent (T));
 
-         --  Ada 2005 (AI-230): In case of components that are anonymous
-         --  access types the level of accessibility depends on the enclosing
-         --  type declaration
+         --  Ada 2005 (AI-230): In case of components that are anonymous access
+         --  types the level of accessibility depends on the enclosing type
+         --  declaration
 
          Set_Scope (Element_Type, Current_Scope); -- Ada 2005 (AI-230)
 
@@ -4296,8 +4321,8 @@ package body Sem_Ch3 is
 
          if Null_Exclusion_Present (Component_Definition (Def))
 
-            --  No need to check itypes because in their case this check
-            --  was done at their point of creation
+            --  No need to check itypes because in their case this check was
+            --  done at their point of creation
 
            and then not Is_Itype (Element_Type)
          then
@@ -4331,8 +4356,8 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  A syntax error in the declaration itself may lead to an empty
-      --  index list, in which case do a minimal patch.
+      --  A syntax error in the declaration itself may lead to an empty index
+      --  list, in which case do a minimal patch.
 
       if No (First_Index (T)) then
          Error_Msg_N ("missing index definition in array type declaration", T);
@@ -7631,7 +7656,16 @@ package body Sem_Ch3 is
 
       Set_First_Entity      (Def_Id, First_Entity   (T));
       Set_Last_Entity       (Def_Id, Last_Entity    (T));
-      Set_First_Rep_Item    (Def_Id, First_Rep_Item (T));
+
+      --  If the subtype is the completion of a private declaration, there may
+      --  have been representation clauses for the partial view, and they must
+      --  be preserved. Build_Derived_Type chains the inherited clauses with
+      --  the ones appearing on the extension. If this comes from a subtype
+      --  declaration, all clauses are inherited.
+
+      if No (First_Rep_Item (Def_Id)) then
+         Set_First_Rep_Item    (Def_Id, First_Rep_Item (T));
+      end if;
 
       if Is_Tagged_Type (T) then
          Set_Is_Tagged_Type  (Def_Id);
@@ -9922,7 +9956,7 @@ package body Sem_Ch3 is
                --  discriminant is declared in the private entity.
 
                or else (Is_Private_Type (Typ)
-                        and then Chars (Discrim_Scope) = Chars (Typ))
+                         and then Chars (Discrim_Scope) = Chars (Typ))
 
                --  Or we are constrained the corresponding record of a
                --  synchronized type that completes a private declaration.
@@ -9935,7 +9969,7 @@ package body Sem_Ch3 is
                --  discriminant found belongs to the root type.
 
                or else (Is_Class_Wide_Type (Typ)
-                        and then Etype (Typ) = Discrim_Scope));
+                         and then Etype (Typ) = Discrim_Scope));
 
             return True;
          end if;
@@ -12892,6 +12926,31 @@ package body Sem_Ch3 is
       New_Id   : Entity_Id;
       Prev_Par : Node_Id;
 
+      procedure Tag_Mismatch;
+      --  Diagnose a tagged partial view whose full view is untagged;
+      --  We post the message on the full view, with a reference to
+      --  the previous partial view. The partial view can be private
+      --  or incomplete, and these are handled in a different manner,
+      --  so we determine the position of the error message from the
+      --  respective slocs of both.
+
+      ------------------
+      -- Tag_Mismatch --
+      ------------------
+
+      procedure Tag_Mismatch is
+      begin
+         if Sloc (Prev) < Sloc (Id) then
+            Error_Msg_NE
+              ("full declaration of } must be a tagged type ", Id, Prev);
+         else
+            Error_Msg_NE
+              ("full declaration of } must be a tagged type ", Prev, Id);
+         end if;
+      end Tag_Mismatch;
+
+   --  Start processing for Find_Type_Name
+
    begin
       --  Find incomplete declaration, if one was given
 
@@ -13024,7 +13083,7 @@ package body Sem_Ch3 is
             New_Id := Prev;
          end if;
 
-         --  Verify that full declaration conforms to incomplete one
+         --  Verify that full declaration conforms to partial one
 
          if Is_Incomplete_Or_Private_Type (Prev)
            and then Present (Discriminant_Specifications (Prev_Par))
@@ -13048,9 +13107,10 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  A prior untagged private type can have an associated class-wide
+         --  A prior untagged partial view can have an associated class-wide
          --  type due to use of the class attribute, and in this case also the
-         --  full type is required to be tagged.
+         --  full type is required to be tagged. This Ada95 usage is deprecated
+         --  in favor of incomplete tagged declarations but we check for it.
 
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
@@ -13066,8 +13126,7 @@ package body Sem_Ch3 is
                if No (Interface_List (N))
                  and then not Error_Posted (N)
                then
-                  Error_Msg_NE
-                    ("full declaration of } must be a tagged type ", Id, Prev);
+                  Tag_Mismatch;
                end if;
 
             elsif Nkind (Type_Definition (N)) = N_Record_Definition then
@@ -13076,8 +13135,7 @@ package body Sem_Ch3 is
                --  or private declaration) requires the same on the full one.
 
                if not Tagged_Present (Type_Definition (N)) then
-                  Error_Msg_NE
-                    ("full declaration of } must be tagged", Prev, Id);
+                  Tag_Mismatch;
                   Set_Is_Tagged_Type (Id);
                   Set_Primitive_Operations (Id, New_Elmt_List);
                end if;
@@ -13092,9 +13150,7 @@ package body Sem_Ch3 is
                end if;
 
             else
-               Error_Msg_NE
-                 ("full declaration of } must be a tagged type", Prev, Id);
-
+               Tag_Mismatch;
             end if;
          end if;
 
@@ -17074,11 +17130,12 @@ package body Sem_Ch3 is
 
          elsif Has_Controlled_Component (Etype (Component))
            or else (Chars (Component) /= Name_uParent
-                    and then Is_Controlled (Etype (Component)))
+                     and then Is_Controlled (Etype (Component)))
          then
             Set_Has_Controlled_Component (T, True);
-            Final_Storage_Only := Final_Storage_Only
-              and then Finalize_Storage_Only (Etype (Component));
+            Final_Storage_Only :=
+              Final_Storage_Only
+                and then Finalize_Storage_Only (Etype (Component));
             Ctrl_Components := True;
          end if;
 
