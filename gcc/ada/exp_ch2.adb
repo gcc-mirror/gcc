@@ -469,7 +469,7 @@ package body Exp_Ch2 is
          --  we also generate an extra parameter to hold the Constrained
          --  attribute of the actual. No renaming is generated for this flag.
 
-         --  Calling Node_Possible_Modifications in the expander is dubious,
+         --  Calling Note_Possible_Modification in the expander is dubious,
          --  because this generates a cross-reference entry, and should be
          --  done during semantic processing so it is called in -gnatc mode???
 

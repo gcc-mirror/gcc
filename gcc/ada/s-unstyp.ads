@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains definitions of standard unsigned types that
---  correspond in size to the standard signed types declared in Standard.
+--  correspond in size to the standard signed types declared in Standard,
 --  and (unlike the types in Interfaces) have corresponding names. It
 --  also contains some related definitions for other specialized types
 --  used by the compiler in connection with packed array types.

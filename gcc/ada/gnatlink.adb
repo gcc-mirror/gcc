@@ -935,14 +935,13 @@ procedure Gnatlink is
 
       Objs_End := Linker_Objects.Last;
 
-      --  Let's continue to compute the Link_Bytes, the linker options are
-      --  part of command line length.
+      --  Continue to compute the Link_Bytes, the linker options are part of
+      --  command line length.
 
       Store_File_Context;
 
       while Next_Line (Nfirst .. Nlast) /= End_Info loop
          Link_Bytes := Link_Bytes + Nlast - Nfirst + 2;
-         --  See comment above
          Get_Next_Line;
       end loop;
 
