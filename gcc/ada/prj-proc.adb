@@ -463,7 +463,7 @@ package body Prj.Proc is
 
       --  Process each term of the expression, starting with First_Term
 
-      while The_Term /= Empty_Node loop
+      while Present (The_Term) loop
          The_Current_Term := Current_Term (The_Term, From_Project_Node_Tree);
 
          case Kind_Of (The_Current_Term, From_Project_Node_Tree) is
@@ -535,7 +535,7 @@ package body Prj.Proc is
                   Value : Variable_Value;
 
                begin
-                  if String_Node /= Empty_Node then
+                  if Present (String_Node) then
 
                      --  If String_Node is nil, it is an empty list,
                      --  there is nothing to do
@@ -586,7 +586,7 @@ package body Prj.Proc is
                           Next_Expression_In_List
                             (String_Node, From_Project_Node_Tree);
 
-                        exit when String_Node = Empty_Node;
+                        exit when No (String_Node);
 
                         Value :=
                           Expression
@@ -637,7 +637,7 @@ package body Prj.Proc is
                   Index           : Name_Id := No_Name;
 
                begin
-                  if Term_Project /= Empty_Node and then
+                  if Present (Term_Project) and then
                      Term_Project /= From_Project_Node
                   then
                      --  This variable or attribute comes from another project
@@ -650,7 +650,7 @@ package body Prj.Proc is
                                        With_Name => The_Name);
                   end if;
 
-                  if Term_Package /= Empty_Node then
+                  if Present (Term_Package) then
 
                      --  This is an attribute of a package
 
@@ -1003,11 +1003,11 @@ package body Prj.Proc is
                   --  If there is a default value for the external reference,
                   --  get its value.
 
-                  if Default_Node /= Empty_Node then
+                  if Present (Default_Node) then
                      Def_Var := Expression
                        (Project                => Project,
                         In_Tree                => In_Tree,
-                        From_Project_Node      => Default_Node,
+                        From_Project_Node      => From_Project_Node,
                         From_Project_Node_Tree => From_Project_Node_Tree,
                         Pkg                    => Pkg,
                         First_Term             =>
@@ -1252,7 +1252,7 @@ package body Prj.Proc is
       Current_Item := Empty_Node;
 
       Current_Declarative_Item := Item;
-      while Current_Declarative_Item /= Empty_Node loop
+      while Present (Current_Declarative_Item) loop
 
          --  Get its data
 
@@ -1314,7 +1314,7 @@ package body Prj.Proc is
                      In_Tree.Packages.Table (New_Pkg) :=
                        The_New_Package;
 
-                     if Project_Of_Renamed_Package /= Empty_Node then
+                     if Present (Project_Of_Renamed_Package) then
 
                         --  Renamed package
 
@@ -1472,9 +1472,9 @@ package body Prj.Proc is
 
                         if Pkg /= No_Package then
                            In_Tree.Arrays.Table (New_Array) :=
-                             (Name  => Current_Item_Name,
-                              Value => No_Array_Element,
-                              Next  =>
+                             (Name   => Current_Item_Name,
+                              Value  => No_Array_Element,
+                              Next   =>
                                 In_Tree.Packages.Table (Pkg).Decl.Arrays);
 
                            In_Tree.Packages.Table (Pkg).Decl.Arrays :=
@@ -1482,9 +1482,9 @@ package body Prj.Proc is
 
                         else
                            In_Tree.Arrays.Table (New_Array) :=
-                             (Name  => Current_Item_Name,
-                              Value => No_Array_Element,
-                              Next  =>
+                             (Name   => Current_Item_Name,
+                              Value  => No_Array_Element,
+                              Next   =>
                                 In_Tree.Projects.Table (Project).Decl.Arrays);
 
                            In_Tree.Projects.Table (Project).Decl.Arrays :=
@@ -1515,8 +1515,8 @@ package body Prj.Proc is
                      pragma Assert (Orig_Project /= No_Project,
                                     "original project not found");
 
-                     if Associative_Package_Of
-                          (Current_Item, From_Project_Node_Tree) = Empty_Node
+                     if No (Associative_Package_Of
+                              (Current_Item, From_Project_Node_Tree))
                      then
                         Orig_Array :=
                           In_Tree.Projects.Table
@@ -1732,7 +1732,7 @@ package body Prj.Proc is
                                   (String_Type_Of (Current_Item,
                                                    From_Project_Node_Tree),
                                                    From_Project_Node_Tree);
-                              while Current_String /= Empty_Node
+                              while Present (Current_String)
                                 and then
                                   String_Value_Of
                                     (Current_String, From_Project_Node_Tree) /=
@@ -1746,7 +1746,7 @@ package body Prj.Proc is
                               --  Report an error if the string value is not
                               --  one for the string type.
 
-                              if Current_String = Empty_Node then
+                              if No (Current_String) then
                                  Error_Msg_Name_1 := New_Value.Value;
                                  Error_Msg_Name_2 :=
                                    Name_Of
@@ -1849,21 +1849,21 @@ package body Prj.Proc is
 
                            if Pkg /= No_Package then
                               In_Tree.Variable_Elements.Table (The_Variable) :=
-                                (Next    =>
+                                (Next   =>
                                    In_Tree.Packages.Table
                                      (Pkg).Decl.Variables,
-                                 Name    => Current_Item_Name,
-                                 Value   => New_Value);
+                                 Name   => Current_Item_Name,
+                                 Value  => New_Value);
                               In_Tree.Packages.Table
                                 (Pkg).Decl.Variables := The_Variable;
 
                            else
                               In_Tree.Variable_Elements.Table (The_Variable) :=
-                                (Next    =>
+                                (Next   =>
                                    In_Tree.Projects.Table
                                      (Project).Decl.Variables,
-                                 Name    => Current_Item_Name,
-                                 Value   => New_Value);
+                                 Name   => Current_Item_Name,
+                                 Value  => New_Value);
                               In_Tree.Projects.Table
                                 (Project).Decl.Variables :=
                                   The_Variable;
@@ -1957,9 +1957,9 @@ package body Prj.Proc is
 
                               if Pkg /= No_Package then
                                  In_Tree.Arrays.Table (The_Array) :=
-                                   (Name  => Current_Item_Name,
-                                    Value => No_Array_Element,
-                                    Next  =>
+                                   (Name   => Current_Item_Name,
+                                    Value  => No_Array_Element,
+                                    Next   =>
                                       In_Tree.Packages.Table
                                         (Pkg).Decl.Arrays);
 
@@ -1968,9 +1968,9 @@ package body Prj.Proc is
 
                               else
                                  In_Tree.Arrays.Table (The_Array) :=
-                                   (Name  => Current_Item_Name,
-                                    Value => No_Array_Element,
-                                    Next  =>
+                                   (Name   => Current_Item_Name,
+                                    Value  => No_Array_Element,
+                                    Next   =>
                                       In_Tree.Projects.Table
                                         (Project).Decl.Arrays);
 
@@ -2019,7 +2019,7 @@ package body Prj.Proc is
                                      not Case_Insensitive
                                        (Current_Item, From_Project_Node_Tree),
                                    Value  => New_Value,
-                                   Next => In_Tree.Arrays.Table
+                                   Next   => In_Tree.Arrays.Table
                                              (The_Array).Value);
                               In_Tree.Arrays.Table
                                 (The_Array).Value := The_Array_Element;
@@ -2068,8 +2068,8 @@ package body Prj.Proc is
                      --  If a project was specified for the case variable,
                      --  get its id.
 
-                     if Project_Node_Of
-                       (Variable_Node, From_Project_Node_Tree) /= Empty_Node
+                     if Present (Project_Node_Of
+                                   (Variable_Node, From_Project_Node_Tree))
                      then
                         Name :=
                           Name_Of
@@ -2084,8 +2084,8 @@ package body Prj.Proc is
                      --  If a package were specified for the case variable,
                      --  get its id.
 
-                     if Package_Node_Of
-                       (Variable_Node, From_Project_Node_Tree) /= Empty_Node
+                     if Present (Package_Node_Of
+                                   (Variable_Node, From_Project_Node_Tree))
                      then
                         Name :=
                           Name_Of
@@ -2121,8 +2121,8 @@ package body Prj.Proc is
 
                      if Var_Id = No_Variable
                         and then
-                        Package_Node_Of
-                          (Variable_Node, From_Project_Node_Tree) = Empty_Node
+                        No (Package_Node_Of
+                              (Variable_Node, From_Project_Node_Tree))
                      then
                         Var_Id := In_Tree.Projects.Table
                                     (The_Project).Decl.Variables;
@@ -2172,14 +2172,14 @@ package body Prj.Proc is
                   Case_Item :=
                     First_Case_Item_Of (Current_Item, From_Project_Node_Tree);
                   Case_Item_Loop :
-                     while Case_Item /= Empty_Node loop
+                     while Present (Case_Item) loop
                         Choice_String :=
                           First_Choice_Of (Case_Item, From_Project_Node_Tree);
 
                         --  When Choice_String is nil, it means that it is
                         --  the "when others =>" alternative.
 
-                        if Choice_String = Empty_Node then
+                        if No (Choice_String) then
                            Decl_Item :=
                              First_Declarative_Item_Of
                                (Case_Item, From_Project_Node_Tree);
@@ -2189,7 +2189,7 @@ package body Prj.Proc is
                         --  Look into all the alternative of this case item
 
                         Choice_Loop :
-                           while Choice_String /= Empty_Node loop
+                           while Present (Choice_String) loop
                               if Case_Value =
                                 String_Value_Of
                                   (Choice_String, From_Project_Node_Tree)
@@ -2211,7 +2211,7 @@ package body Prj.Proc is
 
                   --  If there is an alternative, then we process it
 
-                  if Decl_Item /= Empty_Node then
+                  if Present (Decl_Item) then
                      Process_Declarative_Items
                        (Project                => Project,
                         In_Tree                => In_Tree,
@@ -2486,7 +2486,7 @@ package body Prj.Proc is
       With_Clause : Project_Node_Id;
 
    begin
-      if From_Project_Node = Empty_Node then
+      if No (From_Project_Node) then
          Project := No_Project;
 
       else
@@ -2591,7 +2591,7 @@ package body Prj.Proc is
 
             With_Clause :=
               First_With_Clause_Of (From_Project_Node, From_Project_Node_Tree);
-            while With_Clause /= Empty_Node loop
+            while Present (With_Clause) loop
                declare
                   New_Project : Project_Id;
                   New_Data    : Project_Data;
@@ -2602,7 +2602,7 @@ package body Prj.Proc is
                     Non_Limited_Project_Node_Of
                       (With_Clause, From_Project_Node_Tree);
 
-                  if Proj_Node /= Empty_Node then
+                  if Present (Proj_Node) then
                      Recursive_Process
                        (In_Tree                => In_Tree,
                         Project                => New_Project,
@@ -2799,7 +2799,7 @@ package body Prj.Proc is
             With_Clause :=
               First_With_Clause_Of
                 (From_Project_Node, From_Project_Node_Tree);
-            while With_Clause /= Empty_Node loop
+            while Present (With_Clause) loop
                declare
                   New_Project : Project_Id;
                   New_Data    : Project_Data;
@@ -2810,7 +2810,7 @@ package body Prj.Proc is
                     Non_Limited_Project_Node_Of
                       (With_Clause, From_Project_Node_Tree);
 
-                  if Proj_Node = Empty_Node then
+                  if No (Proj_Node) then
                      Recursive_Process
                        (In_Tree                => In_Tree,
                         Project                => New_Project,

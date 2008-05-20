@@ -1092,56 +1092,58 @@ package Snames is
    Name_Mapping_Body_Suffix            : constant Name_Id := N + 710;
    Name_Metrics                        : constant Name_Id := N + 711;
    Name_Naming                         : constant Name_Id := N + 712;
-   Name_Objects_Path                   : constant Name_Id := N + 713;
-   Name_Objects_Path_File              : constant Name_Id := N + 714;
-   Name_Object_Dir                     : constant Name_Id := N + 715;
-   Name_Pic_Option                     : constant Name_Id := N + 716;
-   Name_Pretty_Printer                 : constant Name_Id := N + 717;
-   Name_Prefix                         : constant Name_Id := N + 718;
-   Name_Project                        : constant Name_Id := N + 719;
-   Name_Roots                          : constant Name_Id := N + 720;
-   Name_Required_Switches              : constant Name_Id := N + 721;
-   Name_Run_Path_Option                : constant Name_Id := N + 722;
-   Name_Runtime_Project                : constant Name_Id := N + 723;
-   Name_Shared_Library_Minimum_Switches : constant Name_Id := N + 724;
-   Name_Shared_Library_Prefix          : constant Name_Id := N + 725;
-   Name_Shared_Library_Suffix          : constant Name_Id := N + 726;
-   Name_Separate_Suffix                : constant Name_Id := N + 727;
-   Name_Source_Dirs                    : constant Name_Id := N + 728;
-   Name_Source_Files                   : constant Name_Id := N + 729;
-   Name_Source_List_File               : constant Name_Id := N + 730;
-   Name_Spec                           : constant Name_Id := N + 731;
-   Name_Spec_Suffix                    : constant Name_Id := N + 732;
-   Name_Specification                  : constant Name_Id := N + 733;
-   Name_Specification_Exceptions       : constant Name_Id := N + 734;
-   Name_Specification_Suffix           : constant Name_Id := N + 735;
-   Name_Stack                          : constant Name_Id := N + 736;
-   Name_Switches                       : constant Name_Id := N + 737;
-   Name_Symbolic_Link_Supported        : constant Name_Id := N + 738;
-   Name_Sync                           : constant Name_Id := N + 739;
-   Name_Synchronize                    : constant Name_Id := N + 740;
-   Name_Toolchain_Description          : constant Name_Id := N + 741;
-   Name_Toolchain_Version              : constant Name_Id := N + 742;
-   Name_Runtime_Library_Dir            : constant Name_Id := N + 743;
+   Name_Object_Generated               : constant Name_Id := N + 713;
+   Name_Objects_Linked                 : constant Name_Id := N + 714;
+   Name_Objects_Path                   : constant Name_Id := N + 715;
+   Name_Objects_Path_File              : constant Name_Id := N + 716;
+   Name_Object_Dir                     : constant Name_Id := N + 717;
+   Name_Pic_Option                     : constant Name_Id := N + 718;
+   Name_Pretty_Printer                 : constant Name_Id := N + 719;
+   Name_Prefix                         : constant Name_Id := N + 720;
+   Name_Project                        : constant Name_Id := N + 721;
+   Name_Roots                          : constant Name_Id := N + 722;
+   Name_Required_Switches              : constant Name_Id := N + 723;
+   Name_Run_Path_Option                : constant Name_Id := N + 724;
+   Name_Runtime_Project                : constant Name_Id := N + 725;
+   Name_Shared_Library_Minimum_Switches : constant Name_Id := N + 726;
+   Name_Shared_Library_Prefix          : constant Name_Id := N + 727;
+   Name_Shared_Library_Suffix          : constant Name_Id := N + 728;
+   Name_Separate_Suffix                : constant Name_Id := N + 729;
+   Name_Source_Dirs                    : constant Name_Id := N + 730;
+   Name_Source_Files                   : constant Name_Id := N + 731;
+   Name_Source_List_File               : constant Name_Id := N + 732;
+   Name_Spec                           : constant Name_Id := N + 733;
+   Name_Spec_Suffix                    : constant Name_Id := N + 734;
+   Name_Specification                  : constant Name_Id := N + 735;
+   Name_Specification_Exceptions       : constant Name_Id := N + 736;
+   Name_Specification_Suffix           : constant Name_Id := N + 737;
+   Name_Stack                          : constant Name_Id := N + 738;
+   Name_Switches                       : constant Name_Id := N + 739;
+   Name_Symbolic_Link_Supported        : constant Name_Id := N + 740;
+   Name_Sync                           : constant Name_Id := N + 741;
+   Name_Synchronize                    : constant Name_Id := N + 742;
+   Name_Toolchain_Description          : constant Name_Id := N + 743;
+   Name_Toolchain_Version              : constant Name_Id := N + 744;
+   Name_Runtime_Library_Dir            : constant Name_Id := N + 745;
 
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 744;
+   Name_Unaligned_Valid                : constant Name_Id := N + 746;
 
    --  Ada 2005 reserved words
 
-   First_2005_Reserved_Word            : constant Name_Id := N + 745;
-   Name_Interface                      : constant Name_Id := N + 745;
-   Name_Overriding                     : constant Name_Id := N + 746;
-   Name_Synchronized                   : constant Name_Id := N + 747;
-   Last_2005_Reserved_Word             : constant Name_Id := N + 747;
+   First_2005_Reserved_Word            : constant Name_Id := N + 747;
+   Name_Interface                      : constant Name_Id := N + 747;
+   Name_Overriding                     : constant Name_Id := N + 748;
+   Name_Synchronized                   : constant Name_Id := N + 749;
+   Last_2005_Reserved_Word             : constant Name_Id := N + 749;
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 747;
+   Last_Predefined_Name                : constant Name_Id := N + 749;
 
    ---------------------------------------
    -- Subtypes Defining Name Categories --

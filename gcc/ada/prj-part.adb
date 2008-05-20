@@ -333,7 +333,8 @@ package body Prj.Part is
          E => (Name           => Virtual_Name_Id,
                Node           => Virtual_Project,
                Canonical_Path => No_Path,
-               Extended       => False));
+               Extended       => False,
+               Proj_Qualifier => Unspecified));
    end Create_Virtual_Extending_Project;
 
    ----------------------------
@@ -396,21 +397,21 @@ package body Prj.Part is
       --  Nothing to do if Proj is not defined or if it has already been
       --  processed.
 
-      if Proj /= Empty_Node and then not Processed_Hash.Get (Proj) then
+      if Present (Proj) and then not Processed_Hash.Get (Proj) then
          --  Make sure the project will not be processed again
 
          Processed_Hash.Set (Proj, True);
 
          Declaration := Project_Declaration_Of (Proj, In_Tree);
 
-         if Declaration /= Empty_Node then
+         if Present (Declaration) then
             Extended := Extended_Project_Of (Declaration, In_Tree);
          end if;
 
          --  If this is a project that may need a virtual extending project
          --  and it is not itself an extending project, put it in the list.
 
-         if Potentially_Virtual and then Extended = Empty_Node then
+         if Potentially_Virtual and then No (Extended) then
             Virtual_Hash.Set (Proj, Proj);
          end if;
 
@@ -418,10 +419,10 @@ package body Prj.Part is
 
          With_Clause := First_With_Clause_Of (Proj, In_Tree);
 
-         while With_Clause /= Empty_Node loop
+         while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
-            if Imported /= Empty_Node then
+            if Present (Imported) then
                Look_For_Virtual_Projects_For
                  (Imported, In_Tree, Potentially_Virtual => True);
             end if;
@@ -512,7 +513,7 @@ package body Prj.Part is
          --  virtual extending projects and check that there are no illegally
          --  imported projects.
 
-         if Project /= Empty_Node
+         if Present (Project)
            and then Is_Extending_All (Project, In_Tree)
          then
             --  First look for projects that potentially need a virtual
@@ -549,10 +550,10 @@ package body Prj.Part is
 
             begin
                With_Clause := First_With_Clause_Of (Project, In_Tree);
-               while With_Clause /= Empty_Node loop
+               while Present (With_Clause) loop
                   Imported := Project_Node_Of (With_Clause, In_Tree);
 
-                  if Imported /= Empty_Node then
+                  if Present (Imported) then
                      Declaration := Project_Declaration_Of (Imported, In_Tree);
 
                      if Extended_Project_Of (Declaration, In_Tree) /=
@@ -561,7 +562,7 @@ package body Prj.Part is
                         loop
                            Imported :=
                              Extended_Project_Of (Declaration, In_Tree);
-                           exit when Imported = Empty_Node;
+                           exit when No (Imported);
                            Virtual_Hash.Remove (Imported);
                            Declaration :=
                              Project_Declaration_Of (Imported, In_Tree);
@@ -578,7 +579,7 @@ package body Prj.Part is
             declare
                Proj : Project_Node_Id := Virtual_Hash.Get_First;
             begin
-               while Proj /= Empty_Node loop
+               while Present (Proj) loop
                   Create_Virtual_Extending_Project (Proj, Project, In_Tree);
                   Proj := Virtual_Hash.Get_Next;
                end loop;
@@ -592,7 +593,7 @@ package body Prj.Part is
             Project := Empty_Node;
          end if;
 
-         if Project = Empty_Node or else Always_Errout_Finalize then
+         if No (Project) or else Always_Errout_Finalize then
             Prj.Err.Finalize;
          end if;
       end;
@@ -738,9 +739,9 @@ package body Prj.Part is
       --  Set Current_Project to the last project in the current list, if the
       --  list is not empty.
 
-      if Current_Project /= Empty_Node then
+      if Present (Current_Project) then
          while
-           Next_With_Clause_Of (Current_Project, In_Tree) /= Empty_Node
+           Present (Next_With_Clause_Of (Current_Project, In_Tree))
          loop
             Current_Project := Next_With_Clause_Of (Current_Project, In_Tree);
          end loop;
@@ -797,7 +798,7 @@ package body Prj.Part is
 
                   Previous_Project := Current_Project;
 
-                  if Current_Project = Empty_Node then
+                  if No (Current_Project) then
 
                      --  First with clause of the context clause
 
@@ -848,7 +849,7 @@ package body Prj.Part is
 
                   --  Parse the imported project, if its project id is unknown
 
-                  if Withed_Project = Empty_Node then
+                  if No (Withed_Project) then
                      Parse_Single_Project
                        (In_Tree           => In_Tree,
                         Project           => Withed_Project,
@@ -865,13 +866,13 @@ package body Prj.Part is
                      Extends_All := Is_Extending_All (Withed_Project, In_Tree);
                   end if;
 
-                  if Withed_Project = Empty_Node then
+                  if No (Withed_Project) then
 
                      --  If parsing unsuccessful, remove the context clause
 
                      Current_Project := Previous_Project;
 
-                     if Current_Project = Empty_Node then
+                     if No (Current_Project) then
                         Imported_Projects := Empty_Node;
 
                      else
@@ -936,8 +937,11 @@ package body Prj.Part is
                                   Tree_Private_Part.Projects_Htable.Get_First
                                     (In_Tree.Projects_HT);
 
-      Name_From_Path    : constant Name_Id := Project_Name_From (Path_Name);
-      Name_Of_Project   : Name_Id := No_Name;
+      Name_From_Path  : constant Name_Id := Project_Name_From (Path_Name);
+      Name_Of_Project : Name_Id := No_Name;
+
+      Duplicated : Boolean := False;
+
       First_With        : With_Id;
       Imported_Projects : Project_Node_Id := Empty_Node;
 
@@ -1021,9 +1025,11 @@ package body Prj.Part is
             if Extended then
 
                if A_Project_Name_And_Node.Extended then
-                  Error_Msg
-                    ("cannot extend the same project file several times",
-                     Token_Ptr);
+                  if A_Project_Name_And_Node.Proj_Qualifier /= Dry then
+                     Error_Msg
+                       ("cannot extend the same project file several times",
+                        Token_Ptr);
+                  end if;
                else
                   Error_Msg
                     ("cannot extend an already imported project file",
@@ -1092,7 +1098,7 @@ package body Prj.Part is
       Tree.Reset_State;
       Scan (In_Tree);
 
-      if (not In_Configuration) and then (Name_From_Path = No_Name) then
+      if not In_Configuration and then Name_From_Path = No_Name then
 
          --  The project file name is not correct (no or bad extension, or not
          --  following Ada identifier's syntax).
@@ -1122,7 +1128,6 @@ package body Prj.Part is
       Project_Stack.Table (Project_Stack.Last).Id := Project;
       Set_Directory_Of (Project, In_Tree, Project_Directory);
       Set_Path_Name_Of (Project, In_Tree,  Normed_Path_Name);
-      Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
 
       --  Check if there is a qualifier before the reserved word "project"
 
@@ -1279,7 +1284,7 @@ package body Prj.Part is
          begin
             --  Output a warning if the actual name is not the expected name
 
-            if (not In_Configuration)
+            if not In_Configuration
               and then (Name_From_Path /= No_Name)
               and then Expected_Name /= Name_From_Path
             then
@@ -1350,6 +1355,7 @@ package body Prj.Part is
                --  Report an error if we already have a project with this name
 
                if Project_Name /= No_Name then
+                  Duplicated := True;
                   Error_Msg_Name_1 := Project_Name;
                   Error_Msg
                     ("duplicate project name %%",
@@ -1358,19 +1364,6 @@ package body Prj.Part is
                     Name_Id (Path_Name_Of (Name_And_Node.Node, In_Tree));
                   Error_Msg
                     ("\already in %%", Location_Of (Project, In_Tree));
-
-               else
-                  --  Otherwise, add the name of the project to the hash table,
-                  --  so that we can check that no other subsequent project
-                  --  will have the same name.
-
-                  Tree_Private_Part.Projects_Htable.Set
-                    (T => In_Tree.Projects_HT,
-                     K => Name_Of_Project,
-                     E => (Name           => Name_Of_Project,
-                           Node           => Project,
-                           Canonical_Path => Canonical_Path_Name,
-                           Extended       => Extended));
                end if;
             end;
          end if;
@@ -1444,13 +1437,28 @@ package body Prj.Part is
                         Current_Dir       => Current_Dir);
                   end;
 
-                  --  A project that extends an extending-all project is also
-                  --  an extending-all project.
+                  if Present (Extended_Project) then
 
-                  if Extended_Project /= Empty_Node
-                    and then Is_Extending_All (Extended_Project, In_Tree)
-                  then
-                     Set_Is_Extending_All (Project, In_Tree);
+                     --  A project that extends an extending-all project is
+                     --  also an extending-all project.
+
+                     if Is_Extending_All (Extended_Project, In_Tree) then
+                        Set_Is_Extending_All (Project, In_Tree);
+                     end if;
+
+                     --  An abstract project can only extend an abstract
+                     --  project, otherwise we may have an abstract project
+                     --  with sources, if it inherits sources from the project
+                     --  it extends.
+
+                     if Proj_Qualifier = Dry and then
+                       Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
+                     then
+                        Error_Msg
+                          ("an abstract project can only extend " &
+                           "another abstract project",
+                           Qualifier_Location);
+                     end if;
                   end if;
                end if;
             end;
@@ -1470,7 +1478,7 @@ package body Prj.Part is
 
          begin
             With_Clause_Loop :
-            while With_Clause /= Empty_Node loop
+            while Present (With_Clause) loop
                Imported := Project_Node_Of (With_Clause, In_Tree);
 
                if Is_Extending_All (With_Clause, In_Tree) then
@@ -1510,13 +1518,15 @@ package body Prj.Part is
          declare
             Parent_Name  : constant Name_Id := Name_Find;
             Parent_Found : Boolean := False;
+            Parent_Node  : Project_Node_Id := Empty_Node;
             With_Clause  : Project_Node_Id :=
                              First_With_Clause_Of (Project, In_Tree);
 
          begin
             --  If there is an extended project, check its name
 
-            if Extended_Project /= Empty_Node then
+            if Present (Extended_Project) then
+               Parent_Node := Extended_Project;
                Parent_Found :=
                  Name_Of (Extended_Project, In_Tree) = Parent_Name;
             end if;
@@ -1524,16 +1534,18 @@ package body Prj.Part is
             --  If the parent project is not the extended project,
             --  check each imported project until we find the parent project.
 
-            while not Parent_Found and then With_Clause /= Empty_Node loop
-               Parent_Found :=
-                 Name_Of (Project_Node_Of (With_Clause, In_Tree), In_Tree) =
-                    Parent_Name;
+            while not Parent_Found and then Present (With_Clause) loop
+               Parent_Node := Project_Node_Of (With_Clause, In_Tree);
+               Parent_Found := Name_Of (Parent_Node, In_Tree) = Parent_Name;
                With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
             end loop;
 
-            --  If the parent project was not found, report an error
+            if Parent_Found then
+               Set_Parent_Project_Of (Project, In_Tree, To => Parent_Node);
 
-            if not Parent_Found then
+            else
+               --  If the parent project was not found, report an error
+
                Error_Msg_Name_1 := Name_Of_Project;
                Error_Msg_Name_2 := Parent_Name;
                Error_Msg ("project %% does not import or extend project %%",
@@ -1561,7 +1573,9 @@ package body Prj.Part is
             Packages_To_Check => Packages_To_Check);
          Set_Project_Declaration_Of (Project, In_Tree, Project_Declaration);
 
-         if Extended_Project /= Empty_Node then
+         if Present (Extended_Project)
+           and then Project_Qualifier_Of (Extended_Project, In_Tree) /= Dry
+         then
             Set_Extending_Project_Of
               (Project_Declaration_Of (Extended_Project, In_Tree), In_Tree,
                To => Project);
@@ -1634,6 +1648,21 @@ package body Prj.Part is
             Error_Msg
               ("unexpected text following end of project", Token_Ptr);
          end if;
+      end if;
+
+      if not Duplicated and then Name_Of_Project /= No_Name then
+
+         --  Add the name of the project to the hash table, so that we can
+         --  check that no other subsequent project will have the same name.
+
+         Tree_Private_Part.Projects_Htable.Set
+           (T => In_Tree.Projects_HT,
+            K => Name_Of_Project,
+            E => (Name           => Name_Of_Project,
+                  Node           => Project,
+                  Canonical_Path => Canonical_Path_Name,
+                  Extended       => Extended,
+                  Proj_Qualifier => Proj_Qualifier));
       end if;
 
       declare
@@ -1723,19 +1752,19 @@ package body Prj.Part is
       --  If we have a dot, check that it is followed by the correct extension
 
       if First > 0 and then Canonical (First) = '.' then
-         if ((not In_Configuration) and then
-             Canonical (First .. Last) = Project_File_Extension and then
-             First /= 1)
-            or else
-            (In_Configuration and then
-             Canonical (First .. Last) = Config_Project_File_Extension and then
-             First /= 1)
+         if (not In_Configuration
+              and then Canonical (First .. Last) = Project_File_Extension
+              and then First /= 1)
+           or else
+             (In_Configuration
+               and then
+                 Canonical (First .. Last) = Config_Project_File_Extension
+               and then First /= 1)
          then
             --  Look for the last directory separator, if any
 
             First := First - 1;
             Last := First;
-
             while First > 0
               and then Canonical (First) /= '/'
               and then Canonical (First) /= Dir_Sep
