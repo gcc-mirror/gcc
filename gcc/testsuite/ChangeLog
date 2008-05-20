@@ -1,5 +1,11 @@
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/scandump.exp (scan-dump): Handle non-existent dump file.
+	(scan-dump-times): Ditto.
+	(scan-dump-not): Ditto.
+	(scan-dump-dem): Ditto.
+	(scan-dump-dem-not): Ditto.
+
 	* obj-c++.dg/bitfield-1.mm: XFAIL for ICE; move dg-options after other
 	test directives; use dg-prune-output instead of dg-excess-errors for
 	possible message to ignore; adjust line numbers for messages.

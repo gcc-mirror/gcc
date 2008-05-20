@@ -49,18 +49,23 @@ proc scan-dump { args } {
     # A cleaner solution would require a new DejaGnu release.
     upvar 3 name testcase
 
+    set suf [dump-suffix [lindex $args 2]]
+    set testname "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
-    set output_file "[glob $src.[lindex $args 2]]"
+    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    if { $output_file == "" } {
+	fail "$testname: dump file does not exist"
+	return
+    }
 
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
-    set suf [dump-suffix [lindex $args 2]]
     if [regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
+	pass "$testname"
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
+	fail "$testname"
     }
 }
 
@@ -86,18 +91,23 @@ proc scan-dump-times { args } {
     # A cleaner solution would require a new DejaGnu release.
     upvar 3 name testcase
 
+    set suf [dump-suffix [lindex $args 3]]
+    set testname "$testcase scan-[lindex $args 0]-dump-times $suf \"[lindex $args 1]\" [lindex $args 2]"
     set src [file tail [lindex $testcase 0]]
-    set output_file "[glob $src.[lindex $args 3]]"
+    set output_file "[glob -nocomplain $src.[lindex $args 3]]"
+    if { $output_file == "" } {
+	fail "$testname: dump file does not exist"
+	return
+    }
 
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
-    set suf [dump-suffix [lindex $args 3]]
     if { [llength [regexp -inline -all -- [lindex $args 1] $text]] == [lindex $args 2]} {
-        pass "$testcase scan-[lindex $args 0]-dump-times $suf \"[lindex $args 1]\" [lindex $args 2]"
+        pass "$testname"
     } else {
-        fail "$testcase scan-[lindex $args 0]-dump-times $suf \"[lindex $args 1]\" [lindex $args 2]"
+        fail "$testname"
     }
 }
 
@@ -122,18 +132,24 @@ proc scan-dump-not { args } {
     # it still stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 3 name testcase
+
+    set suf [dump-suffix [lindex $args 2]]
+    set testname "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
-    set output_file "[glob $src.[lindex $args 2]]"
+    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    if { $output_file == "" } {
+	fail "$testname: dump file does not exist"
+	return
+    }
 
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
-    set suf [dump-suffix [lindex $args 2]]
     if ![regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
+	pass "$testname"
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
+	fail "$testname"
     }
 }
 
@@ -168,18 +184,23 @@ proc scan-dump-dem { args } {
     }
 
     upvar 3 name testcase
+    set suf [dump-suffix [lindex $args 2]]
+    set testname "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
-    set output_file "[glob $src.[lindex $args 2]]"
+    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    if { $output_file == "" } {
+	fail "$testname: dump file does not exist"
+	return
+    }
 
     set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
     close $fd
 
-    set suf [dump-suffix [lindex $args 2]]
     if [regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
+	pass "$testname"
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
+	fail "$testname"
     }
 }
 
@@ -213,17 +234,23 @@ proc scan-dump-dem-not { args } {
     }
 
     upvar 3 name testcase
+
+    set suf [dump-suffix [lindex $args 2]]
+    set testname "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
     set src [file tail [lindex $testcase 0]]
-    set output_file "[glob $src.[lindex $args 2]]"
+    set output_file "[glob -nocomplain $src.[lindex $args 2]]"
+    if { $output_file == "" } {
+	fail "$testname: dump file does not exist"
+	return
+    }
 
     set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
     close $fd
 
-    set suf [dump-suffix [lindex $args 2]]
     if ![regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
+	pass "$testname"
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
+	fail "$testname"
     }
 }
