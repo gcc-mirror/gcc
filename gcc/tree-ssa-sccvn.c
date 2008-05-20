@@ -1857,6 +1857,53 @@ process_scc (VEC (tree, heap) *scc)
     }
 }
 
+DEF_VEC_O(ssa_op_iter);
+DEF_VEC_ALLOC_O(ssa_op_iter,heap);
+
+/* Pop the components of the found SCC for NAME off the SCC stack
+   and process them.  Returns true if all went well, false if
+   we run into resource limits.  */
+
+static bool
+extract_and_process_scc_for_name (tree name)
+{
+  VEC (tree, heap) *scc = NULL;
+  tree x;
+
+  /* Found an SCC, pop the components off the SCC stack and
+     process them.  */
+  do
+    {
+      x = VEC_pop (tree, sccstack);
+
+      VN_INFO (x)->on_sccstack = false;
+      VEC_safe_push (tree, heap, scc, x);
+    } while (x != name);
+
+  /* Bail out of SCCVN in case a SCC turns out to be incredibly large.  */
+  if (VEC_length (tree, scc)
+      > (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE))
+    {
+      if (dump_file)
+	fprintf (dump_file, "WARNING: Giving up with SCCVN due to "
+		 "SCC size %u exceeding %u\n", VEC_length (tree, scc),
+		 (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
+      return false;
+    }
+
+  if (VEC_length (tree, scc) > 1)
+    sort_scc (scc);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_scc (dump_file, scc);
+
+  process_scc (scc);
+
+  VEC_free (tree, heap, scc);
+
+  return true;
+}
+
 /* Depth first search on NAME to discover and process SCC's in the SSA
    graph.
    Execution of this algorithm relies on the fact that the SCC's are
@@ -1867,10 +1914,13 @@ process_scc (VEC (tree, heap) *scc)
 static bool
 DFS (tree name)
 {
+  VEC(ssa_op_iter, heap) *itervec = NULL;
+  VEC(tree, heap) *namevec = NULL;
+  use_operand_p usep = NULL;
+  tree defstmt, use;
   ssa_op_iter iter;
-  use_operand_p usep;
-  tree defstmt;
 
+start_over:
   /* SCC info */
   VN_INFO (name)->dfsnum = next_dfs_num++;
   VN_INFO (name)->visited = true;
@@ -1883,20 +1933,63 @@ DFS (tree name)
   /* Recursively DFS on our operands, looking for SCC's.  */
   if (!IS_EMPTY_STMT (defstmt))
     {
-      FOR_EACH_PHI_OR_STMT_USE (usep, SSA_NAME_DEF_STMT (name), iter,
-				SSA_OP_ALL_USES)
+      /* Push a new iterator.  */
+      if (TREE_CODE (defstmt) == PHI_NODE)
+	usep = op_iter_init_phiuse (&iter, defstmt, SSA_OP_ALL_USES);
+      else
+	usep = op_iter_init_use (&iter, defstmt, SSA_OP_ALL_USES);
+    }
+  else
+    iter.done = true;
+
+  while (1)
+    {
+      /* If we are done processing uses of a name, go up the stack
+	 of iterators and process SCCs as we found them.  */
+      if (op_iter_done (&iter))
 	{
-	  tree use = USE_FROM_PTR (usep);
+	  /* See if we found an SCC.  */
+	  if (VN_INFO (name)->low == VN_INFO (name)->dfsnum)
+	    if (!extract_and_process_scc_for_name (name))
+	      {
+		VEC_free (tree, heap, namevec);
+		VEC_free (ssa_op_iter, heap, itervec);
+		return false;
+	      }
 
-	  /* Since we handle phi nodes, we will sometimes get
-	     invariants in the use expression.  */
-	  if (TREE_CODE (use) != SSA_NAME)
-	    continue;
+	  /* Check if we are done.  */
+	  if (VEC_empty (tree, namevec))
+	    {
+	      VEC_free (tree, heap, namevec);
+	      VEC_free (ssa_op_iter, heap, itervec);
+	      return true;
+	    }
 
+	  /* Restore the last use walker and continue walking there.  */
+	  use = name;
+	  name = VEC_pop (tree, namevec);
+	  memcpy (&iter, VEC_last (ssa_op_iter, itervec),
+		  sizeof (ssa_op_iter));
+	  VEC_pop (ssa_op_iter, itervec);
+	  goto continue_walking;
+	}
+
+      use = USE_FROM_PTR (usep);
+
+      /* Since we handle phi nodes, we will sometimes get
+	 invariants in the use expression.  */
+      if (TREE_CODE (use) == SSA_NAME)
+	{
 	  if (! (VN_INFO (use)->visited))
 	    {
-	      if (!DFS (use))
-		return false;
+	      /* Recurse by pushing the current use walking state on
+		 the stack and starting over.  */
+	      VEC_safe_push(ssa_op_iter, heap, itervec, &iter);
+	      VEC_safe_push(tree, heap, namevec, name);
+	      name = use;
+	      goto start_over;
+
+continue_walking:
 	      VN_INFO (name)->low = MIN (VN_INFO (name)->low,
 					 VN_INFO (use)->low);
 	    }
@@ -1907,47 +2000,9 @@ DFS (tree name)
 					 VN_INFO (name)->low);
 	    }
 	}
+
+      usep = op_iter_next_use (&iter);
     }
-
-  /* See if we found an SCC.  */
-  if (VN_INFO (name)->low == VN_INFO (name)->dfsnum)
-    {
-      VEC (tree, heap) *scc = NULL;
-      tree x;
-
-      /* Found an SCC, pop the components off the SCC stack and
-	 process them.  */
-      do
-	{
-	  x = VEC_pop (tree, sccstack);
-
-	  VN_INFO (x)->on_sccstack = false;
-	  VEC_safe_push (tree, heap, scc, x);
-	} while (x != name);
-
-      /* Bail out of SCCVN in case a SCC turns out to be incredibly large.  */
-      if (VEC_length (tree, scc)
-	    > (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "WARNING: Giving up with SCCVN due to "
-		     "SCC size %u exceeding %u\n", VEC_length (tree, scc),
-		     (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
-	  return false;
-	}
-
-      if (VEC_length (tree, scc) > 1)
-	sort_scc (scc);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	print_scc (dump_file, scc);
-
-      process_scc (scc);
-
-      VEC_free (tree, heap, scc);
-    }
-
-  return true;
 }
 
 /* Allocate a value number table.  */

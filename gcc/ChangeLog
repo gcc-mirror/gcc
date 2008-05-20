@@ -1,3 +1,10 @@
+2008-05-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35204
+	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): New
+	helper, split out from ...
+	(DFS): ... here.  Make the DFS walk non-recursive.
+
 2008-05-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/install.texi2html: Generate gcc-vers.texi in $DESTDIR not
