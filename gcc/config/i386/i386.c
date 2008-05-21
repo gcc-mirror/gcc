@@ -24084,21 +24084,13 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
     case V2SImode:
       if (!mmx_ok && !TARGET_SSE)
 	break;
-
-      n = 2;
-      goto vec_concat;
+      /* FALLTHRU */
 
     case V4SFmode:
     case V4SImode:
-      n = 4;
-      goto vec_concat;
-
     case V2DFmode:
     case V2DImode:
-      n = 2;
-      goto vec_concat;
-
-vec_concat:
+      n = GET_MODE_SIZE (mode) / GET_MODE_SIZE (GET_MODE_INNER (mode));
       for (i = 0; i < n; i++)
 	ops[i] = XVECEXP (vals, 0, i);
       ix86_expand_vector_init_concat (mode, target, ops, n);
@@ -24107,18 +24099,13 @@ vec_concat:
     case V16QImode:
       if (!TARGET_SSE4_1)
 	break;
-
-      n = 16;
-      goto vec_interleave;
+      /* FALLTHRU */
 
     case V8HImode:
       if (!TARGET_SSE2)
 	break;
 
-      n = 8;
-      goto vec_interleave;
-
-vec_interleave:
+      n = GET_MODE_SIZE (mode) / GET_MODE_SIZE (GET_MODE_INNER (mode));
       for (i = 0; i < n; i++)
 	ops[i] = XVECEXP (vals, 0, i);
       ix86_expand_vector_init_interleave (mode, target, ops, n >> 1);

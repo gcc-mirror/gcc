@@ -1,5 +1,10 @@
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_vector_init_general): Remove
+	goto for vec_concat and vec_interleave.
+
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/sse.md (vec_initv4sf): Removed.
 	(vec_initv2df): Likewise.
 	(vec_initv2di): Likewise.
