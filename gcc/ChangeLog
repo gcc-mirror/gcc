@@ -1,5 +1,15 @@
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/sse.md (vec_extractv4sf): Removed.
+	(vec_extractv2df): Likewise.
+	(vec_extractv2di): Likewise.
+	(vec_extractv4si): Likewise.
+	(vec_extractv8hi): Likewise.
+	(vec_extractv16qi): Likewise.
+	(vec_extract<mode>): New.
+
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/sse.md (vec_setv4sf): Removed.
 	(vec_setv2df): Likewise.
 	(vec_setv2di): Likewise.
