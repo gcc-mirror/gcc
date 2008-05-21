@@ -2,7 +2,7 @@
 // in their dejagnu baseboard description) require that the status is
 // final when exit is entered (or main returns), and not "overruled" by a
 // destructor calling _exit.  It's not really worth it to handle that.
-// { dg-do run { xfail mmix-knuth-mmixware arm*-*-elf arm*-*-eabi m68k-*-elf } }
+// { dg-do run { target unwrapped } }
 
 // Bug: g++ was failing to destroy C<int>::a because it was using two
 // different sentry variables for construction and destruction.
