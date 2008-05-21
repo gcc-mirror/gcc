@@ -2794,12 +2794,13 @@ build_access_matrix (data_reference_p data_reference,
   struct access_matrix *am = GGC_NEW (struct access_matrix);
   unsigned i, ndim = DR_NUM_DIMENSIONS (data_reference);
   struct loop *loop = bb_for_stmt (DR_STMT (data_reference))->loop_father;
-  unsigned nb_induction_vars = loop_depth (loop) - loop_nest_num + 1;
+  struct loop *loop_nest = get_loop (loop_nest_num);
+  unsigned nivs = loop_depth (loop) - loop_depth (loop_nest) + 1;
   unsigned lambda_nb_columns;
   lambda_vector_vec_p matrix;
 
   AM_LOOP_NEST_NUM (am) = loop_nest_num;
-  AM_NB_INDUCTION_VARS (am) = nb_induction_vars;
+  AM_NB_INDUCTION_VARS (am) = nivs;
   AM_PARAMETERS (am) = parameters;
 
   lambda_nb_columns = AM_NB_COLUMNS (am);

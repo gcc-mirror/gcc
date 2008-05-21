@@ -1,3 +1,11 @@
+2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36287
+	PR tree-optimization/36286
+	* lambda-code.c (build_access_matrix): Do not use the loop->num
+	for computing the number of induction variables: use the loop depth
+	instead.
+
 2008-05-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/36280
