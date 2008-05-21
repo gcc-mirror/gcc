@@ -199,12 +199,12 @@ do {							\
 
 /* Output a reference to a label. Fastcall function symbols
    keep their '@' prefix, while other symbols are prefixed
-   with USER_LABEL_PREFIX.  */
+   with user_label_prefix.  */
 #undef ASM_OUTPUT_LABELREF
 #define  ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
   if ((NAME)[0] != FASTCALL_PREFIX)		\
-    fputs (USER_LABEL_PREFIX, (STREAM));	\
+    fputs (user_label_prefix, (STREAM));	\
   fputs ((NAME), (STREAM));			\
 } while (0)
 

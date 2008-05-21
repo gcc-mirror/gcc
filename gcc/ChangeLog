@@ -1,3 +1,9 @@
+2008-05-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/36280
+	* config/i386/cygming.h (ASM_OUTPUT_LABELREF): Honor
+	option -f(no-)leading-underscore.
+
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_general): Use
