@@ -1,3 +1,15 @@
+2008-05-20  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/20771
+	* lib/dg-pch.exp: Move a flag in arguments to dg-test to differentiate
+	compile results for pch test lines in gcc.sum.
+	* gcc.dg/pch/counter-2.c: Add comments to dg-error directives to
+	make them unique in gcc.sum.
+	* gcc.dg/pch/valid-1.c: Ditto.
+	* gcc.dg/pch/valid-2.c: Ditto.
+	* gcc.dg/pch/valid-3.c: Ditto.
+	* gcc.dg/pch/warn-1.c: Same for dg-warning.
+
 2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.dg/array-quals-1.c: xfail read only section
