@@ -786,7 +786,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 				     "not valid"));
 	  _M_copy_from_string(__s, __position, __n);
 	}
-      
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 778. std::bitset does not have any constructor taking a string literal
+      explicit
+      bitset(const char* __s)
+      : _Base()
+      { _M_copy_from_ptr(__s, char_traits<char>::length(__s), 0, size_t(-1)); }
+
       // 23.3.5.2 bitset operations:
       //@{
       /**
@@ -1049,11 +1056,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       }
 
       // Helper functions for string operations.
+      template<class _CharT>
+        void
+        _M_copy_from_ptr(const _CharT*, size_t, size_t, size_t);
+
       template<class _CharT, class _Traits, class _Alloc>
 	void
 	_M_copy_from_string(const std::basic_string<_CharT,
-			    _Traits, _Alloc>& __s,
-			    size_t, size_t);
+			    _Traits, _Alloc>& __s, size_t __pos, size_t __n)
+	{ _M_copy_from_ptr(__s.data(), __s.size(), __pos, __n); }
 
       template<class _CharT, class _Traits, class _Alloc>
 	void
@@ -1155,14 +1166,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   // Definitions of non-inline member functions.
   template<size_t _Nb>
-    template<class _CharT, class _Traits, class _Alloc>
+    template<class _CharT>
       void
       bitset<_Nb>::
-      _M_copy_from_string(const std::basic_string<_CharT, _Traits,
-			  _Alloc>& __s, size_t __pos, size_t __n)
+      _M_copy_from_ptr(const _CharT* __s, size_t __len,
+		       size_t __pos, size_t __n)
       {
 	reset();
-	const size_t __nbits = std::min(_Nb, std::min(__n, __s.size() - __pos));
+	const size_t __nbits = std::min(_Nb, std::min(__n, __len - __pos));
 	for (size_t __i = __nbits; __i > 0; --__i)
 	  {
 	    switch(__s[__pos + __nbits - __i])
@@ -1173,7 +1184,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		_Unchecked_set(__i - 1);
 		break;
 	      default:
-		__throw_invalid_argument(__N("bitset::_M_copy_from_string"));
+		__throw_invalid_argument(__N("bitset::_M_copy_from_ptr"));
 	      }
 	  }
       }
