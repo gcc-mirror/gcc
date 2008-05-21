@@ -48,7 +48,7 @@ proc dg-pch { subdir test options suffix } {
 	    # Ensure that the PCH file is used, not the original header.
 	    file_on_host delete "$bname$suffix"
 
-	    dg-test -keep-output $test $flags "-I."
+	    dg-test -keep-output $test "$flags -I." ""
 	    file_on_host delete "$bname$suffix.gch"
 	    if { [ file_on_host exists "$bname.s" ] } {
 		remote_upload host "$bname.s" "$bname.s-gch"
