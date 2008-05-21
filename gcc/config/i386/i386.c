@@ -24090,7 +24090,7 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
     case V4SImode:
     case V2DFmode:
     case V2DImode:
-      n = GET_MODE_SIZE (mode) / GET_MODE_SIZE (GET_MODE_INNER (mode));
+      n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
 	ops[i] = XVECEXP (vals, 0, i);
       ix86_expand_vector_init_concat (mode, target, ops, n);
@@ -24105,7 +24105,7 @@ ix86_expand_vector_init_general (bool mmx_ok, enum machine_mode mode,
       if (!TARGET_SSE2)
 	break;
 
-      n = GET_MODE_SIZE (mode) / GET_MODE_SIZE (GET_MODE_INNER (mode));
+      n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
 	ops[i] = XVECEXP (vals, 0, i);
       ix86_expand_vector_init_interleave (mode, target, ops, n >> 1);

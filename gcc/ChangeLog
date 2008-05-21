@@ -1,3 +1,8 @@
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_vector_init_general): Use
+	GET_MODE_NUNITS (mode).
+
 2008-05-21  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/invoke.texi: Add cpu_type's 464 and 464fp.
