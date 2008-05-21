@@ -2304,8 +2304,8 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V4SF,V2SF")])
 
-(define_expand "vec_initv4sf"
-  [(match_operand:V4SF 0 "register_operand" "")
+(define_expand "vec_init<mode>"
+  [(match_operand:SSEMODE 0 "register_operand" "")
    (match_operand 1 "" "")]
   "TARGET_SSE"
 {
@@ -2805,15 +2805,6 @@
 {
   ix86_expand_vector_extract (false, operands[0], operands[1],
 			      INTVAL (operands[2]));
-  DONE;
-})
-
-(define_expand "vec_initv2df"
-  [(match_operand:V2DF 0 "register_operand" "")
-   (match_operand 1 "" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
   DONE;
 })
 
@@ -4952,15 +4943,6 @@
   DONE;
 })
 
-(define_expand "vec_initv2di"
-  [(match_operand:V2DI 0 "register_operand" "")
-   (match_operand 1 "" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
-  DONE;
-})
-
 (define_expand "vec_setv4si"
   [(match_operand:V4SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
@@ -4980,15 +4962,6 @@
 {
   ix86_expand_vector_extract (false, operands[0], operands[1],
 			      INTVAL (operands[2]));
-  DONE;
-})
-
-(define_expand "vec_initv4si"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand 1 "" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
   DONE;
 })
 
@@ -5014,15 +4987,6 @@
   DONE;
 })
 
-(define_expand "vec_initv8hi"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand 1 "" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
-  DONE;
-})
-
 (define_expand "vec_setv16qi"
   [(match_operand:V16QI 0 "register_operand" "")
    (match_operand:QI 1 "register_operand" "")
@@ -5042,15 +5006,6 @@
 {
   ix86_expand_vector_extract (false, operands[0], operands[1],
 			      INTVAL (operands[2]));
-  DONE;
-})
-
-(define_expand "vec_initv16qi"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand 1 "" "")]
-  "TARGET_SSE"
-{
-  ix86_expand_vector_init (false, operands[0], operands[1]);
   DONE;
 })
 

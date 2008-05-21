@@ -1,3 +1,13 @@
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (vec_initv4sf): Removed.
+	(vec_initv2df): Likewise.
+	(vec_initv2di): Likewise.
+	(vec_initv4si): Likewise.
+	(vec_initv8hi): Likewise.
+	(vec_initv16qi): Likewise.
+	(vec_init<mode>): New.
+
 2008-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* collect2.c (find_a_file): Use IS_ABSOLUTE_PATH.
