@@ -1,3 +1,8 @@
+2008-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (tree_expand_cfg): Zap the EH throw statement table
+	once finished.
+
 2008-05-20  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (UNSPEC_SYNC_NEW_OP_12,
