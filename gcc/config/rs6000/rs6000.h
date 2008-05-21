@@ -105,6 +105,8 @@
 %{mcpu=405fp: -m405} \
 %{mcpu=440: -m440} \
 %{mcpu=440fp: -m440} \
+%{mcpu=464: -m440} \
+%{mcpu=464fp: -m440} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \

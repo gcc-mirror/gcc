@@ -1,3 +1,15 @@
+2008-05-21  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi: Add cpu_type's 464 and 464fp.
+	(-mmulhw): Add 464 to description.
+	(-mdlmzb): Likewise.
+	* config.gcc: Handle --with-cpu=464 and --with-cpu=464fp.
+	* config/rs6000/rs6000.c (processor_target_table): Add 464 and
+	464fp entries.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add 464 and 464fp support.
+	* config/rs6000/t-fprules (MULTILIB_MATCHES_FLOAT): Include -mcpu=464.
+	* config/rs6000/rs6000.md: Update comments for 464.
+
 2008-05-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives): Add dg-xfail-run-if.
