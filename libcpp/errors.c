@@ -76,7 +76,7 @@ print_location (cpp_reader *pfile, source_location line, unsigned int col)
    big enough max_column_hint.)
 
    Returns 0 if the error has been suppressed.  */
-int
+static int
 _cpp_begin_message (cpp_reader *pfile, int code,
 		    source_location src_loc, unsigned int column)
 {

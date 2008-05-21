@@ -518,10 +518,6 @@ cpp_in_primary_file (cpp_reader *pfile)
   return pfile->line_table->depth == 1;
 }
 
-/* In errors.c  */
-extern int _cpp_begin_message (cpp_reader *, int,
-			       source_location, unsigned int);
-
 /* In macro.c */
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);

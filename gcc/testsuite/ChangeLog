@@ -1,3 +1,8 @@
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/27777:
+	* gcc.dg/cpp/pr27777.c: New file.
+
 2008-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36023
