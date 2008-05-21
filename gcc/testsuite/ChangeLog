@@ -1,3 +1,8 @@
+2008-05-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36257
+	* gfortran.dg/char_length_12.f90: New test.
+
 2008-05-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c-torture/execute/builtins/memops-asm.c: Set inside_main.
