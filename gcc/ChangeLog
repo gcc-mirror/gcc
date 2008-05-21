@@ -1,5 +1,15 @@
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/sse.md (vec_setv4sf): Removed.
+	(vec_setv2df): Likewise.
+	(vec_setv2di): Likewise.
+	(vec_setv4si): Likewise.
+	(vec_setv8hi): Likewise.
+	(vec_setv16qi): Likewise.
+	(vec_set<mode>): New.
+
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_expand_vector_init_general): Remove
 	goto for vec_concat and vec_interleave.
 
