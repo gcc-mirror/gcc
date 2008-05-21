@@ -1737,6 +1737,27 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   omp_expand_local (parallel_head);
 }
 
+/* Returns true when LOOP contains vector phi nodes.  */
+
+static bool
+loop_has_vector_phi_nodes (struct loop *loop)
+{
+  unsigned i;
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+  bool res = true;
+  tree phi;
+
+  for (i = 0; i < loop->num_nodes; i++)
+    for (phi = phi_nodes (bbs[i]); phi; phi = PHI_CHAIN (phi))
+      if (TREE_CODE (TREE_TYPE (PHI_RESULT (phi))) == VECTOR_TYPE)
+	goto end;
+
+  res = false;
+ end:
+  free (bbs);
+  return res;
+}
+
 /* Detect parallel loops and generate parallel code using libgomp
    primitives.  Returns true if some loop was parallelized, false
    otherwise.  */
@@ -1768,6 +1789,8 @@ parallelize_loops (void)
 	  /* And of course, the loop must be parallelizable.  */
 	  || !can_duplicate_loop_p (loop)
 	  || loop_has_blocks_with_irreducible_flag (loop)
+	  /* FIXME: the check for vector phi nodes could be removed.  */
+	  || loop_has_vector_phi_nodes (loop)
 	  || !loop_parallel_p (loop, reduction_list, &niter_desc))
 	continue;
 

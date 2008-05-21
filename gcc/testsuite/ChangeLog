@@ -1,3 +1,10 @@
+2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jan Sjodin  <jan.sjodin@amd.com>
+
+	PR tree-optimization/36181
+	Backport from mainline:
+	* gcc.dg/tree-ssa/pr36181.c: New.
+
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
