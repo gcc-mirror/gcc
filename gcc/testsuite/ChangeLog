@@ -1,5 +1,7 @@
 2008-05-21  Janis Johnson  <janis187@us.ibm.com>
 
+	* gfortran.dg/nint_2.f90: XFAIL only when using -O0.
+
 	* lib/target-supports-dg.exp (dg-xfail-run-if): New.
 	* gcc.test-framework/dg-do-run-xrif-exp-F.c: New test.
 	* gcc.test-framework/dg-do-run-xrif-exp-P.c: New test.
