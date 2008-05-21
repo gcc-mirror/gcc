@@ -1,3 +1,10 @@
+2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/36287
+	PR tree-optimization/36286
+	* gcc.dg/tree-ssa/pr36287.c: New.
+	* gfortran.dg/pr36286.f90: New.
+
 2008-05-21  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/27777:
