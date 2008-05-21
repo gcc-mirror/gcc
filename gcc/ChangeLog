@@ -1,3 +1,8 @@
+2008-05-21  David S. Miller  <davem@davemloft.net>
+
+	* config.gcc (sparc-*-linux*): Always include sparc/t-linux in
+	tmake_file.
+
 2008-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (tree_expand_cfg): Zap the EH throw statement table
