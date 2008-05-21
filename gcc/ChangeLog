@@ -1,3 +1,7 @@
+2008-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* collect2.c (find_a_file): Use IS_ABSOLUTE_PATH.
+
 2008-05-21  Tom Tromey  <tromey@redhat.com>
 
 	* ggc-zone.c (lookup_page_table_if_allocated): New function.

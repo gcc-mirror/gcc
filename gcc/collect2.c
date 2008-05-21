@@ -605,11 +605,7 @@ find_a_file (struct path_prefix *pprefix, const char *name)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (*name == '/'
-#ifdef HAVE_DOS_BASED_FILE_SYSTEM
-      || (*name && name[1] == ':')
-#endif
-      )
+  if (IS_ABSOLUTE_PATH (name))
     {
       if (access (name, X_OK) == 0)
 	{
