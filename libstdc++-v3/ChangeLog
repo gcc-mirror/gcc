@@ -1,3 +1,9 @@
+2008-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/html/ext/lwg-active.html: Update to Revision R56.
+	* doc/html/ext/lwg-closed.html: Likewise.
+	* doc/html/ext/lwg-defects.html: Likewise.
+
 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/33979 (partial)
