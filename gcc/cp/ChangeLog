@@ -1,3 +1,11 @@
+2008-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36023
+	* cp-tree.h (check_array_initializer): New prototype.
+	* decl.c (check_array_initializer): New function.
+	(check_initializer): Call it.
+	* semantics.c (finish_compound_literal): Call it for ARRAY_TYPEs.
+
 2008-05-11  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_omp_clause_reduction): Add missing "expected"

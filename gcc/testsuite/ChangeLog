@@ -1,3 +1,8 @@
+2008-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36023
+	* g++.dg/ext/complit10.C: New test.
+
 2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
 

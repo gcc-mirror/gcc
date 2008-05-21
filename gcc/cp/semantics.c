@@ -2118,6 +2118,9 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
     }
 
   type = complete_type (type);
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && check_array_initializer (NULL_TREE, type, compound_literal))
+    return error_mark_node;
   compound_literal = reshape_init (type, compound_literal);
   if (TREE_CODE (type) == ARRAY_TYPE)
     cp_complete_array_type (&type, compound_literal, false);
