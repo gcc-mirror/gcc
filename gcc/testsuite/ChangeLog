@@ -1,5 +1,10 @@
 2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/array-quals-1.c: xfail read only section
+	check for avr target. 
+   
+2008-05-20  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	PR testsuite/34889
 	* gcc.c-torture/execute/builtins/pr23484-chk.c : Correct test for 
 	16bit int target. 
