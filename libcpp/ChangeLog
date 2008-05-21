@@ -1,3 +1,16 @@
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
+	* include/symtab.h (HT_ALLOCED): Remove.
+	(ht_purge): Declare.
+	* symtab.c (DELETED): New define.
+	(ht_lookup): Update comment.
+	(ht_lookup_with_hash): Handle deleted entries.  Remove HT_ALLOCED
+	code.  Use subobject allocator for strings, if it exists.
+	(ht_expand): Handle deleted entries.
+	(ht_forall): Likewise.
+	(ht_purge): New function.
+	(ht_dump_statistics): Print deletion statistics.
+
 2008-05-13  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/22168:

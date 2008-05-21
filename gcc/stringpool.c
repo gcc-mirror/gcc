@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -47,7 +47,6 @@ const char digit_vector[] = {
 };
 
 struct ht *ident_hash;
-static struct obstack string_stack;
 
 static hashnode alloc_node (hash_table *);
 static int mark_ident (struct cpp_reader *, hashnode, const void *);
@@ -66,7 +65,6 @@ init_stringpool (void)
   ident_hash = ht_create (14);
   ident_hash->alloc_node = alloc_node;
   ident_hash->alloc_subobject = stringpool_ggc_alloc;
-  gcc_obstack_init (&string_stack);
 }
 
 /* Allocate a hash node.  */
@@ -85,6 +83,8 @@ alloc_node (hash_table *table ATTRIBUTE_UNUSED)
 const char *
 ggc_alloc_string (const char *contents, int length)
 {
+  char *result;
+
   if (length == -1)
     length = strlen (contents);
 
@@ -93,8 +93,9 @@ ggc_alloc_string (const char *contents, int length)
   if (length == 1 && ISDIGIT (contents[0]))
     return digit_string (contents[0] - '0');
 
-  obstack_grow0 (&string_stack, contents, length);
-  return XOBFINISH (&string_stack, const char *);
+  result = ggc_alloc (length + 1);
+  memcpy (result, contents, length + 1);
+  return (const char *) result;
 }
 
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
@@ -163,9 +164,18 @@ mark_ident (struct cpp_reader *pfile ATTRIBUTE_UNUSED, hashnode h,
   return 1;
 }
 
+/* Return true if an identifier should be removed from the table.  */
+
+static int
+maybe_delete_ident (struct cpp_reader *pfile ATTRIBUTE_UNUSED, hashnode h,
+		    const void *v ATTRIBUTE_UNUSED)
+{
+  return !ggc_marked_p (HT_IDENT_TO_GCC_IDENT (h));
+}
+
 /* Mark the trees hanging off the identifier node for GGC.  These are
-   handled specially (not using gengtype) because of the special
-   treatment for strings.  */
+   handled specially (not using gengtype) because identifiers are only
+   roots during one part of compilation.  */
 
 void
 ggc_mark_stringpool (void)
@@ -173,13 +183,13 @@ ggc_mark_stringpool (void)
   ht_forall (ident_hash, mark_ident, NULL);
 }
 
-/* Strings are _not_ GCed, but this routine exists so that a separate
-   roots table isn't needed for the few global variables that refer
-   to strings.  */
+/* Purge the identifier hash of identifiers which are no longer
+   referenced.  */
 
 void
-gt_ggc_m_S (void *x ATTRIBUTE_UNUSED)
+ggc_purge_stringpool (void)
 {
+  ht_purge (ident_hash, maybe_delete_ident, NULL);
 }
 
 /* Pointer-walking routine for strings (not very interesting, since

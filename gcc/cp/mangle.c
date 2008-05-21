@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 C++ ABI.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
@@ -117,13 +117,6 @@ static struct obstack name_obstack;
    allocated on the name_obstack.  */
 static void *name_base;
 
-/* An incomplete mangled name.  There will be no NUL terminator.  If
-   there is no incomplete mangled name, this variable is NULL.  */
-static char *partially_mangled_name;
-
-/* The number of characters in the PARTIALLY_MANGLED_NAME.  */
-static size_t partially_mangled_name_len;
-
 /* Indices into subst_identifiers.  These are identifiers used in
    special substitution rules.  */
 typedef enum
@@ -217,11 +210,11 @@ static int discriminator_for_string_literal (tree, tree);
 static void write_discriminator (const int);
 static void write_local_name (const tree, const tree, const tree);
 static void dump_substitution_candidates (void);
-static const char *mangle_decl_string (const tree);
+static tree mangle_decl_string (const tree);
 
 /* Control functions.  */
 
-static inline void start_mangling (const tree, bool);
+static inline void start_mangling (const tree);
 static inline const char *finish_mangling (const bool);
 static tree mangle_special_for_type (const tree, const char *);
 
@@ -258,42 +251,6 @@ static void write_java_integer_type_codes (const tree);
 /* Write out an unsigned quantity in base 10.  */
 #define write_unsigned_number(NUMBER)					\
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
-
-/* Save the current (incomplete) mangled name and release the obstack
-   storage holding it.  This function should be used during mangling
-   when making a call that could result in a call to get_identifier,
-   as such a call will clobber the same obstack being used for
-   mangling.  This function may not be called twice without an
-   intervening call to restore_partially_mangled_name.  */
-
-static void
-save_partially_mangled_name (void)
-{
-  if (mangle_obstack == &ident_hash->stack)
-    {
-      gcc_assert (!partially_mangled_name);
-      partially_mangled_name_len = obstack_object_size (mangle_obstack);
-      partially_mangled_name = XNEWVEC (char, partially_mangled_name_len);
-      memcpy (partially_mangled_name, obstack_base (mangle_obstack),
-	      partially_mangled_name_len);
-      obstack_free (mangle_obstack, obstack_finish (mangle_obstack));
-    }
-}
-
-/* Restore the incomplete mangled name saved with
-   save_partially_mangled_name.  */
-
-static void
-restore_partially_mangled_name (void)
-{
-  if (partially_mangled_name)
-    {
-      obstack_grow (mangle_obstack, partially_mangled_name,
-		    partially_mangled_name_len);
-      free (partially_mangled_name);
-      partially_mangled_name = NULL;
-    }
-}
 
 /* If DECL is a template instance, return nonzero and, if
    TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
@@ -743,9 +700,7 @@ write_encoding (const tree decl)
 
       if (decl_is_template_id (decl, NULL))
 	{
-	  save_partially_mangled_name ();
 	  fn_type = get_mostly_instantiated_function_type (decl);
-	  restore_partially_mangled_name ();
 	  /* FN_TYPE will not have parameter types for in-charge or
 	     VTT parameters.  Therefore, we pass NULL_TREE to
 	     write_bare_function_type -- otherwise, it will get
@@ -1110,9 +1065,7 @@ write_unqualified_name (const tree decl)
       if (decl_is_template_id (decl, NULL))
 	{
 	  tree fn_type;
-	  save_partially_mangled_name ();
 	  fn_type = get_mostly_instantiated_function_type (decl);
-	  restore_partially_mangled_name ();
 	  type = TREE_TYPE (fn_type);
 	}
       else
@@ -2566,26 +2519,21 @@ write_substitution (const int seq_id)
 /* Start mangling ENTITY.  */
 
 static inline void
-start_mangling (const tree entity, const bool ident_p)
+start_mangling (const tree entity)
 {
   G.entity = entity;
   G.need_abi_warning = false;
-  if (!ident_p)
-    {
-      obstack_free (&name_obstack, name_base);
-      mangle_obstack = &name_obstack;
-      name_base = obstack_alloc (&name_obstack, 0);
-    }
-  else
-    mangle_obstack = &ident_hash->stack;
+  obstack_free (&name_obstack, name_base);
+  mangle_obstack = &name_obstack;
+  name_base = obstack_alloc (&name_obstack, 0);
 }
 
-/* Done with mangling.  Return the generated mangled name.  If WARN is
-   true, and the name of G.entity will be mangled differently in a
-   future version of the ABI, issue a warning.  */
+/* Done with mangling. If WARN is true, and the name of G.entity will
+   be mangled differently in a future version of the ABI, issue a
+   warning.  */
 
-static inline const char *
-finish_mangling (const bool warn)
+static void
+finish_mangling_internal (const bool warn)
 {
   if (warn_abi && warn && G.need_abi_warning)
     warning (OPT_Wabi, "the mangled name of %qD will change in a future "
@@ -2597,8 +2545,27 @@ finish_mangling (const bool warn)
 
   /* Null-terminate the string.  */
   write_char ('\0');
+}
 
+
+/* Like finish_mangling_internal, but return the mangled string.  */
+
+static inline const char *
+finish_mangling (const bool warn)
+{
+  finish_mangling_internal (warn);
   return (const char *) obstack_finish (mangle_obstack);
+}
+
+/* Like finish_mangling_internal, but return an identifier.  */
+
+static tree
+finish_mangling_get_identifier (const bool warn)
+{
+  finish_mangling_internal (warn);
+  /* Don't obstack_finish here, and the next start_mangling will
+     remove the identifier.  */
+  return get_identifier ((const char *) name_base);
 }
 
 /* Initialize data structures for mangling.  */
@@ -2622,33 +2589,23 @@ init_mangle (void)
 
 /* Generate the mangled name of DECL.  */
 
-static const char *
+static tree
 mangle_decl_string (const tree decl)
 {
-  const char *result;
+  tree result;
 
-  start_mangling (decl, /*ident_p=*/true);
+  start_mangling (decl);
 
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
   else
     write_mangled_name (decl, true);
 
-  result = finish_mangling (/*warn=*/true);
+  result = finish_mangling_get_identifier (/*warn=*/true);
   if (DEBUG_MANGLE)
-    fprintf (stderr, "mangle_decl_string = '%s'\n\n", result);
+    fprintf (stderr, "mangle_decl_string = '%s'\n\n",
+	     IDENTIFIER_POINTER (result));
   return result;
-}
-
-/* Like get_identifier, except that NAME is assumed to have been
-   allocated on the obstack used by the identifier hash table.  */
-
-static inline tree
-get_identifier_nocopy (const char *name)
-{
-  hashnode ht_node = ht_lookup (ident_hash, (const unsigned char *) name,
-				strlen (name), HT_ALLOCED);
-  return HT_IDENT_TO_GCC_IDENT (ht_node);
 }
 
 /* Create an identifier for the external mangled name of DECL.  */
@@ -2656,7 +2613,7 @@ get_identifier_nocopy (const char *name)
 void
 mangle_decl (const tree decl)
 {
-  tree id = get_identifier_nocopy (mangle_decl_string (decl));
+  tree id = mangle_decl_string (decl);
   id = targetm.mangle_decl_assembler_name (decl, id);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 }
@@ -2668,7 +2625,7 @@ mangle_type_string (const tree type)
 {
   const char *result;
 
-  start_mangling (type, /*ident_p=*/false);
+  start_mangling (type);
   write_type (type);
   result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
@@ -2683,11 +2640,11 @@ mangle_type_string (const tree type)
 static tree
 mangle_special_for_type (const tree type, const char *code)
 {
-  const char *result;
+  tree result;
 
   /* We don't have an actual decl here for the special component, so
      we can't just process the <encoded-name>.  Instead, fake it.  */
-  start_mangling (type, /*ident_p=*/true);
+  start_mangling (type);
 
   /* Start the mangling.  */
   write_string ("_Z");
@@ -2695,12 +2652,13 @@ mangle_special_for_type (const tree type, const char *code)
 
   /* Add the type.  */
   write_type (type);
-  result = finish_mangling (/*warn=*/false);
+  result = finish_mangling_get_identifier (/*warn=*/false);
 
   if (DEBUG_MANGLE)
-    fprintf (stderr, "mangle_special_for_type = %s\n\n", result);
+    fprintf (stderr, "mangle_special_for_type = %s\n\n",
+	     IDENTIFIER_POINTER (result));
 
-  return get_identifier_nocopy (result);
+  return result;
 }
 
 /* Create an identifier for the mangled representation of the typeinfo
@@ -2754,9 +2712,9 @@ mangle_vtt_for_type (const tree type)
 tree
 mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
 {
-  const char *result;
+  tree result;
 
-  start_mangling (type, /*ident_p=*/true);
+  start_mangling (type);
 
   write_string ("_Z");
   write_string ("TC");
@@ -2765,10 +2723,11 @@ mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
   write_char ('_');
   write_type (BINFO_TYPE (binfo));
 
-  result = finish_mangling (/*warn=*/false);
+  result = finish_mangling_get_identifier (/*warn=*/false);
   if (DEBUG_MANGLE)
-    fprintf (stderr, "mangle_ctor_vtbl_for_type = %s\n\n", result);
-  return get_identifier_nocopy (result);
+    fprintf (stderr, "mangle_ctor_vtbl_for_type = %s\n\n",
+	     IDENTIFIER_POINTER (result));
+  return result;
 }
 
 /* Mangle a this pointer or result pointer adjustment.
@@ -2810,9 +2769,9 @@ tree
 mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
 	      tree virtual_offset)
 {
-  const char *result;
+  tree result;
 
-  start_mangling (fn_decl, /*ident_p=*/true);
+  start_mangling (fn_decl);
 
   write_string ("_Z");
   write_char ('T');
@@ -2843,10 +2802,10 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
   /* Scoped name.  */
   write_encoding (fn_decl);
 
-  result = finish_mangling (/*warn=*/false);
+  result = finish_mangling_get_identifier (/*warn=*/false);
   if (DEBUG_MANGLE)
-    fprintf (stderr, "mangle_thunk = %s\n\n", result);
-  return get_identifier_nocopy (result);
+    fprintf (stderr, "mangle_thunk = %s\n\n", IDENTIFIER_POINTER (result));
+  return result;
 }
 
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
@@ -2918,7 +2877,7 @@ mangle_conv_op_name_for_type (const tree type)
 tree
 mangle_guard_variable (const tree variable)
 {
-  start_mangling (variable, /*ident_p=*/true);
+  start_mangling (variable);
   write_string ("_ZGV");
   if (strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
     /* The name of a guard variable for a reference temporary should refer
@@ -2926,7 +2885,7 @@ mangle_guard_variable (const tree variable)
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
   else
     write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier_nocopy (finish_mangling (/*warn=*/false));
+  return finish_mangling_get_identifier (/*warn=*/false);
 }
 
 /* Return an identifier for the name of a temporary variable used to
@@ -2936,10 +2895,10 @@ mangle_guard_variable (const tree variable)
 tree
 mangle_ref_init_variable (const tree variable)
 {
-  start_mangling (variable, /*ident_p=*/true);
+  start_mangling (variable);
   write_string ("_ZGR");
   write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier_nocopy (finish_mangling (/*warn=*/false));
+  return finish_mangling_get_identifier (/*warn=*/false);
 }
 
 

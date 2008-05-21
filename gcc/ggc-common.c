@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -49,6 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
+
+/* When true, protect the contents of the identifier hash table.  */
+bool ggc_protect_identifiers = true;
 
 /* Statistics about the allocation.  */
 static ggc_statistics *ggc_stats;
@@ -103,7 +106,8 @@ ggc_mark_roots (void)
       for (i = 0; i < rti->nelt; i++)
 	(*rti->cb)(*(void **)((char *)rti->base + rti->stride * i));
 
-  ggc_mark_stringpool ();
+  if (ggc_protect_identifiers)
+    ggc_mark_stringpool ();
 
   /* Now scan all hash tables that have objects which are to be deleted if
      they are not already marked.  */
@@ -115,6 +119,9 @@ ggc_mark_roots (void)
 	  htab_traverse_noresize (*cti->base, ggc_htab_delete, (void *) cti);
 	  ggc_set_mark ((*cti->base)->entries);
 	}
+
+  if (! ggc_protect_identifiers)
+    ggc_purge_stringpool ();
 }
 
 /* Allocate a block of memory, then clear it.  */

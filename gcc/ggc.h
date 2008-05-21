@@ -1,5 +1,5 @@
 /* Garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -120,6 +120,9 @@ extern int ggc_marked_p	(const void *);
 /* Mark the entries in the string pool.  */
 extern void ggc_mark_stringpool	(void);
 
+/* Purge the entries in the string pool.  */
+extern void ggc_purge_stringpool (void);
+
 /* Call ggc_set_mark on all the roots.  */
 
 extern void ggc_mark_roots (void);
@@ -134,7 +137,7 @@ extern void gt_pch_restore_stringpool (void);
 
 extern void gt_pch_p_S (void *, void *, gt_pointer_operator, void *);
 extern void gt_pch_n_S (const void *);
-extern void gt_ggc_m_S (void *);
+extern void gt_ggc_m_S (const void *);
 
 /* Initialize the string pool.  */
 extern void init_stringpool (void);
@@ -199,6 +202,12 @@ extern void ggc_pch_read (FILE *, void *);
 
 /* When set, ggc_collect will do collection.  */
 extern bool ggc_force_collect;
+
+/* When true, identifier nodes are considered as GC roots.  When
+   false, identifier nodes are treated like any other GC-allocated
+   object, and the identifier hash table is treated as a weak
+   hash.  */
+extern bool ggc_protect_identifiers;
 
 /* The internal primitive.  */
 extern void *ggc_alloc_stat (size_t MEM_STAT_DECL);

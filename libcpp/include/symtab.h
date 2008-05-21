@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -39,7 +39,7 @@ struct ht_identifier GTY(())
 typedef struct ht hash_table;
 typedef struct ht_identifier *hashnode;
 
-enum ht_lookup_option {HT_NO_INSERT = 0, HT_ALLOC, HT_ALLOCED};
+enum ht_lookup_option {HT_NO_INSERT = 0, HT_ALLOC};
 
 /* An identifier hash table for cpplib and the front ends.  */
 struct ht
@@ -87,6 +87,10 @@ extern hashnode ht_lookup_with_hash (hash_table *, const unsigned char *,
    if the callback returns zero.  */
 typedef int (*ht_cb) (struct cpp_reader *, hashnode, const void *);
 extern void ht_forall (hash_table *, ht_cb, const void *);
+
+/* For all nodes in TABLE, call the callback.  If the callback returns
+   a nonzero value, the node is removed from the table.  */
+extern void ht_purge (hash_table *, ht_cb, const void *);
 
 /* Restore the hash table.  */
 extern void ht_load (hash_table *ht, hashnode *entries,
