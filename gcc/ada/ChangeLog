@@ -1,3 +1,7 @@
+2008-05-21  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sothco.ads, g-sothco.adb: New files.
+
 2008-05-20  Thomas Quinot  <quinot@adacore.com>
 
 	* Makefile.rtl (GNAT.Sockets.Thin_Common): New unit.
