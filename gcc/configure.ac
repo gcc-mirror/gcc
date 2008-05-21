@@ -1548,6 +1548,10 @@ AC_ARG_ENABLE(secureplt,
 [  --enable-secureplt      enable -msecure-plt by default for PowerPC],
 [], [])
 
+AC_ARG_ENABLE(cld,
+[  --enable-cld            enable -mcld by default for 32bit x86], [],
+[enable_cld=no])
+
 # Windows32 Registry support for specifying GCC installation paths.
 AC_ARG_ENABLE(win32-registry,
 [  --disable-win32-registry

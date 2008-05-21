@@ -1,3 +1,22 @@
+2008-05-21  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36079
+	* configure.ac: Handle --enable-cld.
+	* configure: Regenerated.
+	* config.gcc: Add USE_IX86_CLD to tm_defines for x86 targets.
+	* config/i386/i386.h (struct machine_function): Add needs_cld field.
+	(ix86_current_function_needs_cld): New define.
+	* config/i386/i386.md (UNSPEC_CLD): New unspec volatile constant.
+	(cld): New isns pattern.
+	(strmov_singleop, rep_mov, strset_singleop, rep_stos, cmpstrnqi_nz_1,
+	cmpstrnqi_1, strlenqi_1): Set ix86_current_function_needs_cld flag.
+	* config/i386/i386.opt (mcld): New option.
+	* config/i386/i386.c (ix86_expand_prologue): Emit cld insn if
+	TARGET_CLD and ix86_current_function_needs_cld.
+	(override_options): Use -mcld by default for 32-bit code if
+	USE_IX86_CLD.
+
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:

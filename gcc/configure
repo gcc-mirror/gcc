@@ -898,6 +898,7 @@ Optional Features:
   --enable-sjlj-exceptions
                           arrange to use setjmp/longjmp exception handling
   --enable-secureplt      enable -msecure-plt by default for PowerPC
+  --enable-cld            enable -mcld by default for 32bit x86
   --disable-win32-registry
                           disable lookup of installation paths in the
                           Registry on Windows hosts
@@ -12949,6 +12950,14 @@ esac
 if test "${enable_secureplt+set}" = set; then
   enableval="$enable_secureplt"
 
+fi;
+
+# Check whether --enable-cld or --disable-cld was given.
+if test "${enable_cld+set}" = set; then
+  enableval="$enable_cld"
+
+else
+  enable_cld=no
 fi;
 
 # Windows32 Registry support for specifying GCC installation paths.
