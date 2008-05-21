@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1537,6 +1537,51 @@ cpp_output_line (cpp_reader *pfile, FILE *fp)
     }
 
   putc ('\n', fp);
+}
+
+/* Return a string representation of all the remaining tokens on the
+   current line.  The result is allocated using xmalloc and must be
+   freed by the caller.  */
+unsigned char *
+cpp_output_line_to_string (cpp_reader *pfile, const unsigned char *dir_name)
+{
+  const cpp_token *token;
+  unsigned int out = dir_name ? ustrlen (dir_name) : 0;
+  unsigned int alloced = 120 + out;
+  unsigned char *result = (unsigned char *) xmalloc (alloced);
+
+  /* If DIR_NAME is empty, there are no initial contents.  */
+  if (dir_name)
+    {
+      sprintf ((char *) result, "#%s ", dir_name);
+      out += 2;
+    }
+
+  token = cpp_get_token (pfile);
+  while (token->type != CPP_EOF)
+    {
+      unsigned char *last;
+      /* Include room for a possible space and the terminating nul.  */
+      unsigned int len = cpp_token_len (token) + 2;
+
+      if (out + len > alloced)
+	{
+	  alloced *= 2;
+	  if (out + len > alloced)
+	    alloced = out + len;
+	  result = (unsigned char *) xrealloc (result, alloced);
+	}
+
+      last = cpp_spell_token (pfile, token, &result[out], 0);
+      out = last - result;
+
+      token = cpp_get_token (pfile);
+      if (token->flags & PREV_WHITE)
+	result[out++] = ' ';
+    }
+
+  result[out] = '\0';
+  return result;
 }
 
 /* Memory buffers.  Changing these three constants can have a dramatic

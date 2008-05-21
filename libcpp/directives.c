@@ -1016,14 +1016,20 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 static void
 do_diagnostic (cpp_reader *pfile, int code, int print_dir)
 {
-  if (_cpp_begin_message (pfile, code, pfile->cur_token[-1].src_loc, 0))
-    {
-      if (print_dir)
-	fprintf (stderr, "#%s ", pfile->directive->name);
-      pfile->state.prevent_expansion++;
-      cpp_output_line (pfile, stderr);
-      pfile->state.prevent_expansion--;
-    }
+  const unsigned char *dir_name;
+  unsigned char *line;
+  source_location src_loc = pfile->cur_token[-1].src_loc;
+
+  if (print_dir)
+    dir_name = pfile->directive->name;
+  else
+    dir_name = NULL;
+  pfile->state.prevent_expansion++;
+  line = cpp_output_line_to_string (pfile, dir_name);
+  pfile->state.prevent_expansion--;
+
+  cpp_error_with_line (pfile, code, src_loc, 0, "%s", line);
+  free (line);
 }
 
 static void

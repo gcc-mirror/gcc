@@ -1,5 +1,15 @@
 2008-05-21  Tom Tromey  <tromey@redhat.com>
 
+	PR preprocessor/27777:
+	* lex.c (cpp_output_line_to_string): New function.
+	* internal.h (_cpp_begin_message): Don't declare.
+	* errors.c (_cpp_begin_message): Now static.
+	* include/cpplib.h (cpp_output_line_to_string): Declare.
+	* directives.c (do_diagnostic): Rewrote.  Use
+	cpp_output_line_to_string.  Don't use _cpp_begin_message.
+
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
 	* include/symtab.h (HT_ALLOCED): Remove.
 	(ht_purge): Declare.
 	* symtab.c (DELETED): New define.
