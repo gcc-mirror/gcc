@@ -75,11 +75,8 @@ check_charlen_present (gfc_expr *source)
       source->rank = 0;
     }
   else if (source->expr_type == EXPR_ARRAY)
-    {
-      source->ts.cl->length =
+    source->ts.cl->length =
 	gfc_int_expr (source->value.constructor->expr->value.character.length);
-      source->rank = 1;
-    }
 }
 
 /* Helper function for resolving the "mask" argument.  */
