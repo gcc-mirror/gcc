@@ -1,3 +1,16 @@
+2008-05-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports-dg.exp (dg-xfail-run-if): New.
+	* gcc.test-framework/dg-do-run-xrif-exp-F.c: New test.
+	* gcc.test-framework/dg-do-run-xrif-exp-P.c: New test.
+	* gcc.test-framework/dg-do-run-xrif-exp-XF.c: New test.
+	* gcc.test-framework/dg-do-run-xrif-exp-XP.c: New test.
+	* gcc.test-framework/dg-dot-run-xrif-exp-F.c: New test.
+	* gcc.test-framework/dg-dot-run-xrif-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-xrif-exp-XF.c: New test.
+	* gcc.test-framework/dg-dot-run-xrif-exp-XP.c: New test.
+	* gcc.test-framework/test-framework.awk: Handle new tests.
+
 2008-05-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36257
