@@ -628,6 +628,12 @@
     </term>
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
+
+    <varlistentry><term><ulink url="lwg-active.html#778">778</ulink>:
+        <emphasis>std::bitset does not have any constructor taking a string literal</emphasis>
+    </term>
+    <listitem><para>Add it.
+    </para></listitem></varlistentry>
   </variablelist>
 
  </sect2>
