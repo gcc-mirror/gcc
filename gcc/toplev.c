@@ -951,6 +951,8 @@ compile_file (void)
 {
   /* Initialize yet another pass.  */
 
+  ggc_protect_identifiers = true;
+
   init_cgraph ();
   init_final (main_input_filename);
   coverage_init (aux_base_name);
@@ -968,6 +970,8 @@ compile_file (void)
 
   if (flag_syntax_only)
     return;
+
+  ggc_protect_identifiers = false;
 
   lang_hooks.decls.final_write_globals ();
 

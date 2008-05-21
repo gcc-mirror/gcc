@@ -1,3 +1,21 @@
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
+	* mangle.c (save_partially_mangled_name): Remove.
+	(restore_partially_mangled_name): Likewise.
+	(write_encoding): Update.
+	(write_unqualified_name): Likewise.
+	(start_mangling): Always use name_obstack.  Remove 'ident_p'
+	argument.
+	(get_identifier_nocopy): Remove.
+	(finish_mangling_internal): Rename from finish_mangling.
+	(finish_mangling): New function.
+	(finish_mangling_get_identifier): Likewise.
+	(partially_mangled_name, partially_mangled_name_len): Remove.
+	(mangle_decl_string): Change return type.  Update.
+	(mangle_decl, mangle_type_string, mangle_special_for_type,
+	mangle_ctor_vtbl_for_type, mangle_thunk, mangle_guard_variable,
+	mangle_ref_init_variable): Update.
+
 2008-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/35331

@@ -1,3 +1,27 @@
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
+	* ggc-zone.c (lookup_page_table_if_allocated): New function.
+	(zone_find_object_offset): Likewise.
+	(gt_ggc_m_S): Likewise.
+	(highest_bit): Likewise.
+	* ggc-page.c (gt_ggc_m_S): New function.
+	* stringpool.c (string_stack): Remove.
+	(init_stringpool): Update.
+	(ggc_alloc_string): Use ggc_alloc.
+	(maybe_delete_ident): New function.
+	(ggc_purge_stringpool): Likewise.
+	(gt_ggc_m_S): Remove.
+	* ggc-common.c (ggc_protect_identifiers): New global.
+	(ggc_mark_roots): Call ggc_purge_stringpool.  Use
+	ggc_protect_identifiers.
+	* ggc.h (ggc_protect_identifiers): Declare.
+	(gt_ggc_m_S): Update.
+	(ggc_purge_stringpool): Declare.
+	* toplev.c (compile_file): Set and reset ggc_protect_identifiers.
+	* gengtype.c (write_types_process_field) <TYPE_STRING>: Remove
+	special case.
+	(write_root): Cast gt_ggc_m_S to gt_pointer_walker.
+
 2008-05-21  David S. Miller  <davem@davemloft.net>
 
 	* config.gcc (sparc-*-linux*): Always include sparc/t-linux in
