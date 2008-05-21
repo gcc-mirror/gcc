@@ -441,21 +441,32 @@ proc cleanup-dump { suffix } {
 #
 # Currently this is only .i, .ii and .s files, but more can be added
 # if there are tests generating them.
-proc cleanup-saved-temps { } {
+# ARGS is a list of suffixes to NOT delete.
+proc cleanup-saved-temps { args } {
     global additional_sources
+    set suffixes {}
+
+    # add the to-be-kept suffixes
+    foreach suffix {".ii" ".i" ".s"} {
+	if {[lsearch $args $suffix] < 0} {
+	    lappend suffixes $suffix
+	}
+    }
 
     # This assumes that we are two frames down from dg-test or some other proc
     # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
-    remove-build-file "[file rootname [file tail $testcase]].ii"
-    remove-build-file "[file rootname [file tail $testcase]].i"
+    foreach suffix $suffixes {
+	remove-build-file "[file rootname [file tail $testcase]]$suffix"
+    }
 
     # Clean up saved temp files for additional source files.
     if [info exists additional_sources] {
 	foreach srcfile $additional_sources {
-            remove-build-file "[file rootname [file tail $srcfile]].ii"
-            remove-build-file "[file rootname [file tail $srcfile]].i"
+	    foreach suffix $suffixes {
+		remove-build-file "[file rootname [file tail $srcfile]]$suffix"
+	    }
 	}
     }
 }

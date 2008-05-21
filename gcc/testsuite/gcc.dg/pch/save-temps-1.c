@@ -6,4 +6,4 @@
 #include <stddef.h>
 int x;
 
-/* { dg-final { cleanup-saved-temps } } */
+/* { dg-final { cleanup-saved-temps ".s" } } */

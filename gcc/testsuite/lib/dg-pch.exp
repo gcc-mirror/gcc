@@ -44,36 +44,45 @@ proc dg-pch { subdir test options suffix } {
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile
 
+	set have_errs [llength [grep $test "{\[ \t\]\+dg-error\[ \t\]\+.*\[ \t\]\+}"]]
+
 	if { [ file_on_host exists "$bname$suffix.gch" ] } {
 	    # Ensure that the PCH file is used, not the original header.
 	    file_on_host delete "$bname$suffix"
 
 	    dg-test -keep-output $test "$flags -I." ""
 	    file_on_host delete "$bname$suffix.gch"
-	    if { [ file_on_host exists "$bname.s" ] } {
-		remote_upload host "$bname.s" "$bname.s-gch"
-		remote_download host "$bname.s-gch"
-		gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-		dg-test -keep-output $test $flags "-I."
-		remote_upload host "$bname.s"
-		set tmp [ diff "$bname.s" "$bname.s-gch" ]
-		if { $tmp == 0 } {
-		    untested "$nshort $flags assembly comparison"
-		} elseif { $tmp == 1 } {
-		    pass "$nshort $flags assembly comparison"
+	    if { !$have_errs } {
+		if { [ file_on_host exists "$bname.s" ] } {
+		    remote_upload host "$bname.s" "$bname.s-gch"
+		    remote_download host "$bname.s-gch"
+		    gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
+		    dg-test -keep-output $test $flags "-I."
+		    remote_upload host "$bname.s"
+		    set tmp [ diff "$bname.s" "$bname.s-gch" ]
+		    if { $tmp == 0 } {
+			verbose -log "assembly file '$bname.s', '$bname.s-gch' comparison error"
+			fail "$nshort $flags assembly comparison"
+		    } elseif { $tmp == 1 } {
+			pass "$nshort $flags assembly comparison"
+		    } else {
+			fail "$nshort $flags assembly comparison"
+		    }
+		    file_on_host delete "$bname$suffix"
+		    file_on_host delete "$bname.s"
+		    file_on_host delete "$bname.s-gch"
 		} else {
+		    verbose -log "assembly file '$bname.s' missing"
+ 		    fail "$nshort $flags assembly comparison"
+		}
+	    } else {
+		verbose -log "assembly file '$bname$suffix.gch' missing"
+		fail "$nshort $flags"
+		if { !$have_errs } {
+		    verbose -log "assembly file '$bname.s' missing" 1
 		    fail "$nshort $flags assembly comparison"
 		}
-		file_on_host delete "$bname$suffix"
-		file_on_host delete "$bname.s"
-		file_on_host delete "$bname.s-gch"
-	    } else {
-		untested "$nshort $flags assembly comparison"
 	    }
-
-	} else {
-	    untested "$nshort $flags"
-	    untested "$nshort $flags assembly comparison"
 	}
     }
 }

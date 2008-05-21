@@ -22,12 +22,16 @@ struct A { char c[32]; } a = { "foobar" };
 char x[64] = "foobar", y[64];
 int i = 39, j = 6, k = 4;
 
+extern int inside_main;
+
 void
 main_test (void)
 {
   struct A b = a;
   struct A c = { { 'x' } };
 
+  inside_main = 1;
+  
   if (memcmp (b.c, x, 32) || c.c[0] != 'x' || memcmp (c.c + 1, x + 32, 31))
     abort ();
   if (__builtin_memcpy (y, x, i) != y || memcmp (x, y, 64))

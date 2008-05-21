@@ -1,3 +1,17 @@
+2008-05-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c-torture/execute/builtins/memops-asm.c: Set inside_main.
+
+	* lib/gcc-dg.exp (cleanup-saved-temps): Add optional list of
+	suffixes not to delete.
+	* gcc.dg/pch/save-temps-1.c: Don't delete ".s" temp.
+	* g++.dg/pch/pch.C: Likewise.
+
+	* g++.old-deja/g++.pt/static11.C: Replace xfail by target requirement.
+
+	* lib/dg-pch.exp (dg-pch): Don't expect .s files if there are
+	dg-errors expected.
+
 2008-05-20  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/20771
