@@ -1,3 +1,14 @@
+2008-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libgfortran/36302
+	* gfortran.map (GFORTRAN_1.1): Add _gfortran_eoshift0_16,
+	_gfortran_eoshift0_16_char, _gfortran_eoshift2_16,
+	_gfortran_eoshift2_16_char,_gfortran_cshift0_16,
+	_gfortran_cshift0_16_char.  Sort alphabetically.
+	* intrinsics/eoshift0.c:  Add function for kind=16 integer.
+	* intrinsics/eoshift2.c:  Likewise.
+	* intrinsics/cshift0.c:  Likewise.
+
 2008-05-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* m4/in_pack.m4 (internal_pack_'rtype_code`):  Destination
