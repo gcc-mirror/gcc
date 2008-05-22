@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
@@ -4460,7 +4460,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_old_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4491,7 +4491,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_new_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
         (plus:GPR (match_operand:GPR 1 "memory_operand" "+R,R")
 		  (match_operand:GPR 2 "arith_operand" "I,d")))
    (set (match_dup 1)
@@ -4537,7 +4537,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_old_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4554,7 +4554,7 @@
   [(set_attr "length" "28")])
 
 (define_insn "sync_new_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4584,7 +4584,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_old_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
         (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4599,7 +4599,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_new_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4614,7 +4614,7 @@
   [(set_attr "length" "32")])
 
 (define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]

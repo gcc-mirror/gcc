@@ -1,3 +1,10 @@
+2008-05-22  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (sync_old_add<mode>, sync_new_add<mode>,
+	sync_old_<optab><mode>, sync_new_<optab><mode>, sync_old_nand<mode>,
+	sync_new_nand<mode>, sync_lock_test_and_set<mode>): Add early
+	clobber to operand 0.
+
 2008-05-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36293
