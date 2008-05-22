@@ -1,3 +1,11 @@
+2008-05-21  Tom Tromey  <tromey@redhat.com>
+
+	* c.opt (Wimport): Mark as undocumented.
+	* doc/invoke.texi (Option Summary): Don't mention -Wimport or
+	-Wno-import.
+	(Warning Options): Likewise.
+	* doc/cppopts.texi: Don't mention -Wimport.
+
 2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/36287

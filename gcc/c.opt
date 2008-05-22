@@ -258,8 +258,7 @@ C ObjC Var(warn_implicit_int) Warning
 Warn when a declaration does not specify a type
 
 Wimport
-C ObjC C++ ObjC++
-Deprecated.  This switch has no effect
+C ObjC C++ ObjC++ Undocumented
 
 Wint-to-pointer-cast
 C ObjC Var(warn_int_to_pointer_cast) Init(1) Warning
