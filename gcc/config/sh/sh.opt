@@ -248,6 +248,10 @@ mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
 Specify name for 32 bit signed division function
 
+mfixed-range=
+Target RejectNegative Joined Var(sh_fixed_range_str)
+Specify range of registers to make fixed
+
 mfmovd
 Target RejectNegative Mask(FMOVD) Undocumented
 

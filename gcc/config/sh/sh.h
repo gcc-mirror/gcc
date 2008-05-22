@@ -533,6 +533,8 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 
 #define SUBTARGET_OVERRIDE_OPTIONS (void) 0
 
+extern const char *sh_fixed_range_str;
+
 #define OVERRIDE_OPTIONS 						\
 do {									\
   int regno;								\
@@ -754,6 +756,9 @@ do {									\
       if (align_functions < min_align)					\
 	align_functions = min_align;					\
     }									\
+									\
+  if (sh_fixed_range_str)						\
+    sh_fix_range (sh_fixed_range_str);					\
 } while (0)
 
 /* Target machine storage layout.  */
