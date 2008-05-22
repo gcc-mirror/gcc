@@ -634,6 +634,12 @@
     </term>
     <listitem><para>Add it.
     </para></listitem></varlistentry>
+
+    <varlistentry><term><ulink url="lwg-active.html#781">781</ulink>:
+        <emphasis>std::complex should add missing C99 functions</emphasis>
+    </term>
+    <listitem><para>In C++0x mode, add std::proj.
+    </para></listitem></varlistentry>
   </variablelist>
 
  </sect2>

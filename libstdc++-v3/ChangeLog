@@ -1,3 +1,14 @@
+2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (proj(const std::complex<>&), proj(_Tp)):
+	Add per DR 781.
+	* include/tr1_impl/complex(polar(const _Tp&, const _Up&)): Move to...
+	* include/tr1/complex: ... here.
+	* doc/xml/manual/intro.xml: Add an entry for DR 781.
+	* testsuite/26_numerics/complex/dr781.cc: Add.
+	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): Update.
+	* configure: Regenerate.
+
 2008-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (bitset<>::bitset(const char*)): Add per DR 778.
