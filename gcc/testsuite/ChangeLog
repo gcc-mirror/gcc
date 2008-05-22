@@ -1,3 +1,7 @@
+2008-05-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/dg-pch.exp (dg-pch): Fix if bracing.
+
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/m128-check.h (ARRAY_SIZE): New.
