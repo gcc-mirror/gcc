@@ -1686,7 +1686,7 @@ see_pre_insert_extensions (struct see_pre_extension_expr **index_map)
 		edge eg = INDEX_EDGE (edge_list, e);
 
 		start_sequence ();
-		emit_insn (PATTERN (expr->se_insn));
+		emit_insn (copy_insn (PATTERN (expr->se_insn)));
 		se_insn = get_insns ();
 		end_sequence ();
 

@@ -1,3 +1,8 @@
+2008-05-22  Rafael Espindola  <espindola@google.com>
+
+	* see.c (see_pre_insert_extensions): Use copy_rtx to avoid invalid rtx
+	sharing.
+
 2008-05-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* defaults.h (UNITS_PER_SIMD_WORD): Add scalar mode as argument.
