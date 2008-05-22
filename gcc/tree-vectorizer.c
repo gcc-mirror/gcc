@@ -1806,12 +1806,12 @@ get_vectype_for_scalar_type (tree scalar_type)
   int nunits;
   tree vectype;
 
-  if (nbytes == 0 || nbytes >= UNITS_PER_SIMD_WORD)
+  if (nbytes == 0 || nbytes >= UNITS_PER_SIMD_WORD (inner_mode))
     return NULL_TREE;
 
-  /* FORNOW: Only a single vector size per target (UNITS_PER_SIMD_WORD)
+  /* FORNOW: Only a single vector size per mode (UNITS_PER_SIMD_WORD)
      is expected.  */
-  nunits = UNITS_PER_SIMD_WORD / nbytes;
+  nunits = UNITS_PER_SIMD_WORD (inner_mode) / nbytes;
 
   vectype = build_vector_type (scalar_type, nunits);
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -1937,11 +1937,13 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 	  && (!targetm.vectorize.builtin_mask_for_load
 	      || targetm.vectorize.builtin_mask_for_load ()))
 	{
-	    if (nested_in_vect_loop
-		&& TREE_INT_CST_LOW (DR_STEP (dr)) != UNITS_PER_SIMD_WORD)
-	      return dr_explicit_realign;
-	    else
-	      return dr_explicit_realign_optimized;
+	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  if (nested_in_vect_loop
+	      && (TREE_INT_CST_LOW (DR_STEP (dr))
+		  != GET_MODE_SIZE (TYPE_MODE (vectype))))
+	    return dr_explicit_realign;
+	  else
+	    return dr_explicit_realign_optimized;
 	}
 
       if (optab_handler (movmisalign_optab, mode)->insn_code != 

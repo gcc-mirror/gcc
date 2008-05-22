@@ -5780,7 +5780,8 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
      nested within an outer-loop that is being vectorized.  */
 
   if (nested_in_vect_loop_p (loop, stmt)
-      && (TREE_INT_CST_LOW (DR_STEP (dr)) % UNITS_PER_SIMD_WORD != 0))
+      && (TREE_INT_CST_LOW (DR_STEP (dr))
+	  % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);
       compute_in_loop = true;

@@ -899,7 +899,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
 
-#define UNITS_PER_SIMD_WORD					     \
+#define UNITS_PER_SIMD_WORD(MODE)				     \
 	(TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD		     \
 	 : (TARGET_SPE ? UNITS_PER_SPE_WORD : (TARGET_PAIRED_FLOAT ? \
 	 UNITS_PER_PAIRED_WORD : UNITS_PER_WORD)))

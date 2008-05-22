@@ -739,7 +739,7 @@ along with GCC; see the file COPYING3.  If not see
 /* By default, only attempt to parallelize bitwise operations, and
    possibly adds/subtracts using bit-twiddling.  */
 #ifndef UNITS_PER_SIMD_WORD
-#define UNITS_PER_SIMD_WORD UNITS_PER_WORD
+#define UNITS_PER_SIMD_WORD(MODE) UNITS_PER_WORD
 #endif
 
 /* Determine whether __cxa_atexit, rather than atexit, is used to
