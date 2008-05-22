@@ -239,7 +239,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Wimport  -Wno-import  -Winit-self  -Winline @gol
+-Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlong-long @gol
@@ -2764,11 +2764,6 @@ appears in a class without constructors.
 constructor.
 
 @end itemize
-
-@item -Wno-import
-@opindex Wno-import
-@opindex Wimport
-Inhibit warning messages about the use of @samp{#import}.
 
 @item -Wchar-subscripts
 @opindex Wchar-subscripts

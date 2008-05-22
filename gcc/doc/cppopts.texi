@@ -115,10 +115,6 @@ equivalent, and problematic constructs which should be avoided.
 @xref{Traditional Mode}.
 @end ifset
 
-@item -Wimport
-@opindex Wimport
-Warn the first time @samp{#import} is used.
-
 @item -Wundef
 @opindex Wundef
 Warn whenever an identifier which is not a macro is encountered in an
