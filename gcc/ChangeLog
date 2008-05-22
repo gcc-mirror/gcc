@@ -1,3 +1,8 @@
+2008-05-22  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/sol2-10.h (SUBTARGET_RETURN_IN_MEMORY): Undefine
+	it before the redeclaration.
+
 2008-05-22  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (get_sequence_length): Add new function.
