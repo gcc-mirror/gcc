@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,8 +65,17 @@ namespace tr1
   using std::imag;
   using std::norm;
   using std::polar;
-  using std::pow;
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
+    polar(const _Tp& __rho, const _Up& __theta)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return std::polar(__type(__rho), __type(__theta));
+    }
+
   using std::real;
+  using std::pow;
 }
 }
 

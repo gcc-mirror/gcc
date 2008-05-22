@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -333,14 +333,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return __type(__x) * __type(__x);
     }
 
-  template<typename _Tp, typename _Up>
-    inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
-    polar(const _Tp& __rho, const _Up& __theta)
-    {
-      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
-      return std::polar(__type(__rho), __type(__theta));
-    }
-  
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    real(_Tp __x)
+    { return __x; }
+
   template<typename _Tp, typename _Up>
     inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
     pow(const std::complex<_Tp>& __x, const _Up& __y)
@@ -365,11 +362,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return std::pow(std::complex<__type>(__x),
 		      std::complex<__type>(__y));
     }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__promote<_Tp>::__type
-    real(_Tp __x)
-    { return __x; }
 
 #endif
 
