@@ -23818,6 +23818,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
       break;
 
     case V16QImode:
+      if (TARGET_SSE4_1)
+	break;
       wmode = V8HImode;
       goto widen;
     case V8QImode:

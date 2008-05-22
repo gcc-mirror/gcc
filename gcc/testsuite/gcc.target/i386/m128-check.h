@@ -37,6 +37,10 @@ typedef union
   double a[2];
 } union128d;
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
+#endif
+
 #ifdef DEBUG
 #define PRINTF printf
 #else
@@ -51,7 +55,7 @@ check_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
   int i;						\
   int err = 0;						\
 							\
-  for (i = 0; i < sizeof (u.a) / sizeof (u.a[0]); i++)	\
+  for (i = 0; i < ARRAY_SIZE (u.a); i++)		\
     if (u.a[i] != v[i])					\
       {							\
 	err++;						\
