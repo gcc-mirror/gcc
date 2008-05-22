@@ -1,3 +1,9 @@
+2008-05-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36293
+	* tree-vect-transform.c (vect_transform_strided_load): Don't check
+	if the first load must be skipped because of a gap.
+
 2008-05-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (refs_may_alias_p): Exit early if possible.  Handle
