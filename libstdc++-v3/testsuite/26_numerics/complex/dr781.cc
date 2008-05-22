@@ -26,6 +26,7 @@
 // DR 781. std::complex should add missing C99 functions.
 void test01()
 {
+  bool test __attribute__((unused)) = true;
   using __gnu_test::check_ret_type;
 
   typedef std::complex<float>       cmplx_f_type;
