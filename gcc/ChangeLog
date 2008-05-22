@@ -1,3 +1,9 @@
+2008-05-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36293
+	* tree-vect-transform.c (vect_transform_strided_load): Don't check
+	if the first load must be skipped because of a gap.
+
 2008-05-21  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jan Sjodin  <jan.sjodin@amd.com>
 

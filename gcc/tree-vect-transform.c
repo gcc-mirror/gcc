@@ -5450,12 +5450,14 @@ vect_transform_strided_load (tree stmt, VEC(tree,heap) *dr_chain, int size,
 	break;
 
       /* Skip the gaps. Loads created for the gaps will be removed by dead
-       code elimination pass later.
+       code elimination pass later. No need to check for the first stmt in
+       the group, since it always exists.
        DR_GROUP_GAP is the number of steps in elements from the previous
        access (if there is no gap DR_GROUP_GAP is 1). We skip loads that
        correspond to the gaps.
       */
-      if (gap_count < DR_GROUP_GAP (vinfo_for_stmt (next_stmt)))
+      if (next_stmt != first_stmt
+          && gap_count < DR_GROUP_GAP (vinfo_for_stmt (next_stmt)))
       {
         gap_count++;
         continue;
