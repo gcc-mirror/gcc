@@ -173,6 +173,7 @@ extern enum reg_class sh_secondary_reload (bool, rtx, enum reg_class,
 					   struct secondary_reload_info *);
 extern int sh2a_get_function_vector_number (rtx);
 extern int sh2a_is_function_vector_call (rtx);
+extern void sh_fix_range (const char *);
 
 #endif /* ! GCC_SH_PROTOS_H */
 

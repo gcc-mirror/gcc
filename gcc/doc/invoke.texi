@@ -748,7 +748,7 @@ See RS/6000 and PowerPC Options.
 -mbigtable  -mfmovd  -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
 -mieee  -mbitops  -misize  -minline-ic_invalidate -mpadstruct  -mspace @gol
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
--mdivsi3_libfunc=@var{name}  @gol
+-mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
  -minvalid-symbols}
 
@@ -14089,6 +14089,14 @@ Set the name of the library function used for 32 bit signed division to
 @var{name}.  This only affect the name used in the call and inv:call
 division strategies, and the compiler will still expect the same
 sets of input/output/clobbered registers as if this option was not present.
+
+@item -mfixed-range=@var{register-range}
+@opindex mfixed-range
+Generate code treating the given register range as fixed registers.
+A fixed register is one that the register allocator can not use.  This is
+useful when compiling kernel code.  A register range is specified as
+two registers separated by a dash.  Multiple register ranges can be
+specified separated by a comma.
 
 @item -madjust-unroll
 @opindex madjust-unroll

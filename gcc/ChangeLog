@@ -1,3 +1,13 @@
+2008-05-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.opt (mfixed-range): New option.
+	* config/sh/sh-protos.h (sh_fix_range): Declare.
+	* config/sh/sh.c (sh_fix_range): New function.
+	* config/sh/sh.h (sh_fixed_range_str): Declare.
+	(OVERRIDE_OPTIONS): Call sh_fix_range if sh_fixed_range_str
+	is not empty.
+	* doc/invoke.texi (SH Options): Document -mfixed-range.
+
 2008-05-22  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/sol2-10.h (SUBTARGET_RETURN_IN_MEMORY): Undefine
