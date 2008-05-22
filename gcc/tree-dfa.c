@@ -1041,6 +1041,7 @@ refs_may_alias_p (tree ref1, tree ref2)
   HOST_WIDE_INT offset1 = 0, offset2 = 0;
   HOST_WIDE_INT size1 = -1, size2 = -1;
   HOST_WIDE_INT max_size1 = -1, max_size2 = -1;
+  bool strict_aliasing_applies;
 
   gcc_assert ((SSA_VAR_P (ref1)
 	       || handled_component_p (ref1)
@@ -1068,19 +1069,78 @@ refs_may_alias_p (tree ref1, tree ref2)
      If both references are based on the same variable, they cannot alias if
      if the accesses do not overlap.  */
   if (SSA_VAR_P (base1)
-      && SSA_VAR_P (base2)
-      && (!operand_equal_p (base1, base2, 0)
-	  || !ranges_overlap_p (offset1, max_size1, offset2, max_size2)))
-    return false;
+      && SSA_VAR_P (base2))
+    {
+      if (!operand_equal_p (base1, base2, 0))
+	return false;
+      return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+    }
 
-  /* If both references are through pointers and both pointers are equal
-     then they do not alias if the accesses do not overlap.  */
-  if (TREE_CODE (base1) == INDIRECT_REF
-      && TREE_CODE (base2) == INDIRECT_REF
-      && operand_equal_p (TREE_OPERAND (base1, 0),
-			  TREE_OPERAND (base2, 0), 0)
-      && !ranges_overlap_p (offset1, max_size1, offset2, max_size2))
-    return false;
+  /* If one base is a ref-all pointer weird things are allowed.  */
+  strict_aliasing_applies = (flag_strict_aliasing
+			     && get_alias_set (base1) != 0
+			     && get_alias_set (base2) != 0);
+
+  /* If both references are through the same type, or if strict aliasing
+     doesn't apply they are through two same pointers, they do not alias
+     if the accesses do not overlap.  */
+  if ((strict_aliasing_applies
+       && (TYPE_MAIN_VARIANT (TREE_TYPE (base1))
+	   == TYPE_MAIN_VARIANT (TREE_TYPE (base2))))
+      || (TREE_CODE (base1) == INDIRECT_REF
+	  && TREE_CODE (base2) == INDIRECT_REF
+	  && operand_equal_p (TREE_OPERAND (base1, 0),
+			      TREE_OPERAND (base2, 0), 0)))
+    return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+
+  /* If both are component references through pointers try to find a
+     common base and apply offset based disambiguation.  This handles
+     for example
+       struct A { int i; int j; } *q;
+       struct B { struct A a; int k; } *p;
+     disambiguating q->i and p->a.j.  */
+  if (strict_aliasing_applies
+      && (TREE_CODE (base1) == INDIRECT_REF
+	  || TREE_CODE (base2) == INDIRECT_REF)
+      && handled_component_p (ref1)
+      && handled_component_p (ref2))
+    {
+      tree *refp;
+      /* Now search for the type of base1 in the access path of ref2.  This
+	 would be a common base for doing offset based disambiguation on.  */
+      refp = &ref2;
+      while (handled_component_p (*refp)
+	     /* Note that the following is only conservative if there are
+		never copies of types appearing as sub-structures.  */
+	     && (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (base1))))
+	refp = &TREE_OPERAND (*refp, 0);
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (base1)))
+	{
+	  HOST_WIDE_INT offadj, sztmp, msztmp;
+	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
+	  offset2 -= offadj;
+	  return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+	}
+      /* The other way around.  */
+      refp = &ref1;
+      while (handled_component_p (*refp)
+	     && (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (base2))))
+	refp = &TREE_OPERAND (*refp, 0);
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (base2)))
+	{
+	  HOST_WIDE_INT offadj, sztmp, msztmp;
+	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
+	  offset1 -= offadj;
+	  return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+	}
+      /* If we can be sure to catch all equivalent types in the search
+	 for the common base then we could return false here.  In that
+	 case we would be able to disambiguate q->i and p->k.  */
+    }
 
   return true;
 }

@@ -1,3 +1,7 @@
+2008-05-22  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-18.c: New testcase.
+
 2008-05-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/slice5.adb: New test.

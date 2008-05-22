@@ -1,3 +1,11 @@
+2008-05-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (refs_may_alias_p): Exit early if possible.  Handle
+	more cases of offset disambiguation that is possible if
+	strict-aliasing rules apply.
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Use refs_may_alias_p
+	for basic offset and type-based disambiguation.
+
 2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_vector_init_one_var): Use
