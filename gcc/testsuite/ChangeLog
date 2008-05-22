@@ -1,3 +1,13 @@
+2008-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/slice5.adb: New test.
+	* gnat.dg/notnot.adb: New test.
+	* gnat.dg/tf_interface_1.ad[sb]: New test.
+	* gnat.dg/const1.adb: New test.
+	* gnat.dg/parameterlessfunc.adb: New test.
+	* gnat.dg/specs/interface5.ads: New test.
+	* gnat.dg/specs/cpp_assignment.ads: New test.
+
 2008-05-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lib/dg-pch.exp (dg-pch): Fix if bracing.
