@@ -1,3 +1,8 @@
+2008-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_vector_init_one_var): Use
+	ix86_expand_vector_set on V16QImode for SSE4.1.
+
 2008-05-21  Tom Tromey  <tromey@redhat.com>
 
 	* c.opt (Wimport): Mark as undocumented.
