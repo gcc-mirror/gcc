@@ -75,13 +75,13 @@ proc dg-pch { subdir test options suffix } {
 		    verbose -log "assembly file '$bname.s' missing"
  		    fail "$nshort $flags assembly comparison"
 		}
-	    } else {
-		verbose -log "assembly file '$bname$suffix.gch' missing"
-		fail "$nshort $flags"
-		if { !$have_errs } {
-		    verbose -log "assembly file '$bname.s' missing" 1
-		    fail "$nshort $flags assembly comparison"
-		}
+	    }
+	} else {
+	    verbose -log "pch file '$bname$suffix.gch' missing"
+	    fail "$nshort $flags"
+	    if { !$have_errs } {
+		verbose -log "assembly file '$bname.s' missing" 1
+		fail "$nshort $flags assembly comparison"
 	    }
 	}
     }
