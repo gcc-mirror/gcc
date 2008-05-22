@@ -990,11 +990,11 @@ Minimum number of units in a word.  If this is undefined, the default is
 smallest value that @code{UNITS_PER_WORD} can have at run-time.
 @end defmac
 
-@defmac UNITS_PER_SIMD_WORD
-Number of units in the vectors that the vectorizer can produce.
-The default is equal to @code{UNITS_PER_WORD}, because the vectorizer
-can do some transformations even in absence of specialized @acronym{SIMD}
-hardware.
+@defmac UNITS_PER_SIMD_WORD (@var{mode})
+Number of units in the vectors that the vectorizer can produce for
+scalar mode @var{mode}.  The default is equal to @code{UNITS_PER_WORD},
+because the vectorizer can do some transformations even in absence of
+specialized @acronym{SIMD} hardware.
 @end defmac
 
 @defmac POINTER_SIZE

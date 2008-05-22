@@ -1370,6 +1370,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   misalign = DR_INIT (dr);
   aligned_to = DR_ALIGNED_TO (dr);
   base_addr = DR_BASE_ADDRESS (dr);
+  vectype = STMT_VINFO_VECTYPE (stmt_info);
 
   /* In case the dataref is in an inner-loop of the loop that is being
      vectorized (LOOP), we use the base and misalignment information
@@ -1382,7 +1383,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       tree step = DR_STEP (dr);
       HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
     
-      if (dr_step % UNITS_PER_SIMD_WORD == 0)
+      if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0)
         {
           if (vect_print_dump_info (REPORT_ALIGNMENT))
             fprintf (vect_dump, "inner step divides the vector-size.");
@@ -1399,7 +1400,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
     }
 
   base = build_fold_indirect_ref (base_addr);
-  vectype = STMT_VINFO_VECTYPE (stmt_info);
   alignment = ssize_int (TYPE_ALIGN (vectype)/BITS_PER_UNIT);
 
   if ((aligned_to && tree_int_cst_compare (aligned_to, alignment) < 0)
@@ -1541,8 +1541,9 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
       && known_alignment_for_access_p (dr_peel))
     {
       int misal = DR_MISALIGNMENT (dr);
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       misal += npeel * dr_size;
-      misal %= UNITS_PER_SIMD_WORD;
+      misal %= GET_MODE_SIZE (TYPE_MODE (vectype));
       SET_DR_MISALIGNMENT (dr, misal);
       return;
     }
@@ -1622,7 +1623,7 @@ vector_alignment_reachable_p (struct data_reference *dr)
       if (!known_alignment_for_access_p (dr))
 	return false;
 
-      elem_size = UNITS_PER_SIMD_WORD / nelements;
+      elem_size = GET_MODE_SIZE (TYPE_MODE (vectype)) / nelements;
       mis_in_elements = DR_MISALIGNMENT (dr) / elem_size;
 
       if ((nelements - mis_in_elements) % DR_GROUP_SIZE (stmt_info))
