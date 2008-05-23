@@ -10465,3 +10465,14 @@ to the functions in @file{libgcc} that provide low-level support for
 call stack unwinding.  It is used in declarations in @file{unwind-generic.h}
 and the associated definitions of those functions.
 @end defmac
+
+@deftypefn {Target Hook} {bool} TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS (void)
+When optimization is disabled, this hook indicates whether or not
+arguments should be allocated to stack slots.  Normally, GCC allocates
+stacks slots for arguments when not optimizing in order to make
+debugging easier.  However, when a function is declared with
+@code{__attribute__((naked))}, there is no stack frame, and the compiler
+cannot safely move arguments from the registers in which they are passed
+to the stack.  Therefore, this hook should return true in general, but
+false for naked functions.  The default implementation always returns true.
+@end deftypefn
