@@ -86,6 +86,7 @@ package body Prj.Attr is
    "LVlocally_removed_files#" &
    "LVexcluded_source_files#" &
    "SVsource_list_file#" &
+   "SVexcluded_source_list_file#" &
    "LVinterfaces#" &
 
    --  Libraries

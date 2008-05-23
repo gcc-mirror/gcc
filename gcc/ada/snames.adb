@@ -719,6 +719,7 @@ package body Snames is
      "driver#" &
      "excluded_source_dirs#" &
      "excluded_source_files#" &
+     "excluded_source_list_file#" &
      "exec_dir#" &
      "executable#" &
      "executable_suffix#" &

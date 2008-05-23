@@ -181,7 +181,8 @@ package body Prj.Nmsc is
    --  Find_Excluded_Sources below.
 
    procedure Find_Excluded_Sources
-     (In_Tree : Project_Tree_Ref;
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref;
       Data    : Project_Data);
    --  Find the list of files that should not be considered as source files
    --  for this project. Sets the list in the Excluded_Sources_Htable.
@@ -7430,23 +7431,41 @@ package body Prj.Nmsc is
    ---------------------------
 
    procedure Find_Excluded_Sources
-     (In_Tree : Project_Tree_Ref;
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref;
       Data    : Project_Data)
    is
       Excluded_Sources : Variable_Value;
-      Current  : String_List_Id;
-      Element  : String_Element;
+
+      Excluded_Source_List_File : Variable_Value;
+
+      Current          : String_List_Id;
+
+      Element : String_Element;
+
       Location : Source_Ptr;
-      Name     : File_Name_Type;
+
+      Name : File_Name_Type;
+
+      File : Prj.Util.Text_File;
+      Line : String (1 .. 300);
+      Last : Natural;
+
+      Locally_Removed : Boolean := False;
    begin
-      --  If Excluded_Source_Files is not declared, check
-      --  Locally_Removed_Files.
+      Excluded_Source_List_File :=
+        Util.Value_Of
+          (Name_Excluded_Source_List_File, Data.Decl.Attributes, In_Tree);
 
       Excluded_Sources :=
         Util.Value_Of
           (Name_Excluded_Source_Files, Data.Decl.Attributes, In_Tree);
 
+      --  If Excluded_Source_Files is not declared, check
+      --  Locally_Removed_Files.
+
       if Excluded_Sources.Default then
+         Locally_Removed := True;
          Excluded_Sources :=
            Util.Value_Of
              (Name_Locally_Removed_Files, Data.Decl.Attributes, In_Tree);
@@ -7457,6 +7476,22 @@ package body Prj.Nmsc is
       --  If there are excluded sources, put them in the table
 
       if not Excluded_Sources.Default then
+         if not Excluded_Source_List_File.Default then
+            if Locally_Removed then
+               Error_Msg
+                 (Project, In_Tree,
+                  "?both attributes Locally_Removed_Files and " &
+                  "Excluded_Source_List_File are present",
+                  Excluded_Source_List_File.Location);
+            else
+               Error_Msg
+                 (Project, In_Tree,
+                  "?both attributes Excluded_Source_Files and " &
+                  "Excluded_Source_List_File are present",
+                  Excluded_Source_List_File.Location);
+            end if;
+         end if;
+
          Current := Excluded_Sources.Values;
          while Current /= Nil_String loop
             Element := In_Tree.String_Elements.Table (Current);
@@ -7481,6 +7516,78 @@ package body Prj.Nmsc is
             Excluded_Sources_Htable.Set (Name, (Name, False, Location));
             Current := Element.Next;
          end loop;
+
+      elsif not Excluded_Source_List_File.Default then
+         Location := Excluded_Source_List_File.Location;
+
+         declare
+            Source_File_Path_Name : constant String :=
+                                      Path_Name_Of
+                                        (File_Name_Type
+                                           (Excluded_Source_List_File.Value),
+                                         Data.Directory);
+
+         begin
+            if Source_File_Path_Name'Length = 0 then
+               Err_Vars.Error_Msg_File_1 :=
+                 File_Name_Type (Excluded_Source_List_File.Value);
+               Error_Msg
+                 (Project, In_Tree,
+                  "file with excluded sources { does not exist",
+                  Excluded_Source_List_File.Location);
+
+            else
+               --  Open the file
+
+               Prj.Util.Open (File, Source_File_Path_Name);
+
+               if not Prj.Util.Is_Valid (File) then
+                  Error_Msg
+                    (Project, In_Tree, "file does not exist", Location);
+               else
+                  --  Read the lines one by one
+
+                  while not Prj.Util.End_Of_File (File) loop
+                     Prj.Util.Get_Line (File, Line, Last);
+
+                     --  A non empty, non comment line should contain a file
+                     --  name
+
+                     if Last /= 0
+                       and then (Last = 1 or else Line (1 .. 2) /= "--")
+                     then
+                        Name_Len := Last;
+                        Name_Buffer (1 .. Name_Len) := Line (1 .. Last);
+                        Canonical_Case_File_Name
+                          (Name_Buffer (1 .. Name_Len));
+                        Name := Name_Find;
+
+                        --  Check that there is no directory information
+
+                        for J in 1 .. Last loop
+                           if Line (J) = '/'
+                             or else Line (J) = Directory_Separator
+                           then
+                              Error_Msg_File_1 := Name;
+                              Error_Msg
+                                (Project,
+                                 In_Tree,
+                                 "file name cannot include " &
+                                 "directory information ({)",
+                                 Location);
+                              exit;
+                           end if;
+                        end loop;
+
+                        Excluded_Sources_Htable.Set
+                          (Name, (Name, False, Location));
+                     end if;
+                  end loop;
+
+                  Prj.Util.Close (File);
+               end if;
+            end if;
+         end;
       end if;
    end Find_Excluded_Sources;
 
@@ -7519,7 +7626,7 @@ package body Prj.Nmsc is
          if not Source_List_File.Default then
             Error_Msg
               (Project, In_Tree,
-               "?both variables source_files and " &
+               "?both attributes source_files and " &
                "source_list_file are present",
                Source_List_File.Location);
          end if;
@@ -8998,7 +9105,7 @@ package body Prj.Nmsc is
 
    begin
       Source_Names.Reset;
-      Find_Excluded_Sources (In_Tree, Data);
+      Find_Excluded_Sources (Project, In_Tree, Data);
 
       case Get_Mode is
          when Ada_Only =>
