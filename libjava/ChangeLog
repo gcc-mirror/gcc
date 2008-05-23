@@ -1,6 +1,14 @@
 2008-05-22  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/35020
+	* java/lang/Class.java (getSimpleName): Replace incorrect use of
+	String.lastIndexOf(String, int) with String.substring.
+	* testsuite/libjava.lang/PR35020.java: New file.
+	* testsuite/libjava.lang/PR35020.out: New file.
+
+2008-05-22  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/35020
 	* java/lang/Class.java (getSimpleName): Import from GNU Classpath.
 
 2008-05-20  David Daney  <ddaney@avtrex.com>
