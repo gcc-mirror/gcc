@@ -1,3 +1,8 @@
+2008-05-23  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (give_name_to_class): Call find_sourcefile to find full
+	pathname of source file.
+
 2008-05-12  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* jcf-dump.c (print_constant): Use
