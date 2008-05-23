@@ -3094,6 +3094,7 @@ package body Exp_Dist is
          declare
             Zero_Statements : List_Id;
             --  Statements executed when a zero value is received
+
          begin
             if Can_Never_Be_Null (RACW_Type) then
                Zero_Statements := New_List (
@@ -11364,6 +11365,7 @@ package body Exp_Dist is
    is
       Stub_Elements : constant Stub_Structure :=
                         Stubs_Table.Get (Full_View);
+
    begin
       --  For an RACW encountered before the freeze point of its designated
       --  type, the stub type is generated at the point of the RACW declaration
@@ -11378,6 +11380,7 @@ package body Exp_Dist is
             Saved_Scope : constant Entity_Id := Current_Scope;
             Stubs_Scope : constant Entity_Id :=
                             Scope (Stub_Elements.Stub_Type);
+
          begin
             if Current_Scope /= Stubs_Scope then
                Push_Scope (Stubs_Scope);
