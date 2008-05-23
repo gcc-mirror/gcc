@@ -1090,10 +1090,12 @@ public final class Class<T>
 	++pos;
 	while (Character.isDigit(fullName.charAt(pos)))
 	  ++pos;
+	fullName = fullName.substring(pos);
       }
-    int packagePos = fullName.lastIndexOf(".", pos);
+
+    int packagePos = fullName.lastIndexOf(".");
     if (packagePos == -1)
-      return fullName.substring(pos);
+      return fullName;
     else
       return fullName.substring(packagePos + 1);
   }
