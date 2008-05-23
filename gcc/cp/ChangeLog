@@ -1,5 +1,9 @@
 2008-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/36237
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Call
+	fold_build_cleanup_point_expr on build_call_a results.
+
 	PR c++/36308
 	* semantics.c (omp_clause_info_fndecl): New function.
 	(finish_omp_clauses): Use it.
