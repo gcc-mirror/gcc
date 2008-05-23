@@ -1,3 +1,11 @@
+2008-05-23  Uros Bizjak  <ubizjak@gmail.com>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Options specification): Document --enable-cld.
+	* doc/invoke.texi (Machine Dependent Options)
+	[i386 and x86-64 Options]: Add -mcld option.
+	(Intel 386 and AMD x86-64 Options): Document -mcld option.
+
 2008-05-22  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (sync_old_add<mode>, sync_new_add<mode>,
@@ -545,7 +553,7 @@
 
 	PR target/31110
 	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
-        Return GENERAL_REGS for stack adjustment reloads.
+	Return GENERAL_REGS for stack adjustment reloads.
 
 2008-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -641,9 +649,9 @@
 	Backport from mainline:
 	2008-02-19  Richard Guenther  <rguenther@suse.de>
 
-        PR tree-optimization/34989
-        * tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Re-structure.
-        Allow propagation to INDIRECT_REF if we can simplify only.
+	PR tree-optimization/34989
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Re-structure.
+	Allow propagation to INDIRECT_REF if we can simplify only.
 
 2008-03-14  Uros Bizjak  <ubizjak@gmail.com>
 

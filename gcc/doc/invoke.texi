@@ -549,7 +549,7 @@ Objective-C and Objective-C++ Dialects}.
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} -mcx16 -msahf -mrecip @gol
+-mpreferred-stack-boundary=@var{num} -mcld -mcx16 -msahf -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 @gol
 -msse4a -m3dnow -mpopcnt -mabm -msse5 @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
@@ -10750,6 +10750,20 @@ perform runtime CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
+
+@item -mcld
+@opindex mcld
+This option instructs GCC to emit a @code{cld} instruction in the prologue
+of functions that use string instructions.  String instructions depend on
+the DF flag to select between autoincrement or autodecrement mode.  While the
+ABI specifies the DF flag to be cleared on function entry, some operating
+systems violate this specification by not clearing the DF flag in their
+exception dispatchers.  The exception handler can be invoked with the DF flag
+set which leads to wrong direction mode, when string instructions are used.
+This option can be enabled by default on 32-bit x86 targets by configuring
+GCC with the @option{--enable-cld} configure option.  Generation of @code{cld}
+instructions can be suppressed with the @option{-mno-cld} compiler option
+in this case.
 
 @item -mcx16
 @opindex mcx16

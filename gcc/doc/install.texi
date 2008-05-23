@@ -1223,6 +1223,16 @@ Using the GNU Compiler Collection (GCC)},
 See ``RS/6000 and PowerPC Options'' in the main manual
 @end ifhtml
 
+@item --enable-cld
+This option enables @option{-mcld} by default for 32-bit x86 targets.
+@ifnothtml
+@xref{i386 and x86-64 Options,, i386 and x86-64 Options, gcc,
+Using the GNU Compiler Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``i386 and x86-64 Options'' in the main manual
+@end ifhtml
+
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry
