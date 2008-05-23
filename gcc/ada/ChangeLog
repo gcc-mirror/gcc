@@ -1,3 +1,24 @@
+2008-05-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Naming_Schemes): Check a file for spec, body and
+	sep. If there are several possibilities, choose the one with the
+	longer prefix.
+
+2008-05-23  Vincent Celier  <celier@adacore.com>
+
+	* gnatlink.adb (Process_Args): Do not disable scanning of ALI file for
+	back end switches when executable specified with --GCC= is same as
+	default, even if there are additional options.
+
+	* gnat_ugn.texi:
+	Document when the back end switches from the ALI file are taken into
+	account when gnatlink is invoked with --GCC=
+
+2008-05-23  Thomas Quinot  <quinot@adacore.com>
+
+	* s-os_lib.adb:
+	(copy_File): Do not open destination file if source file is unreadable.
+
 2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (handle_type_generic_attribute): Adjust to accept
