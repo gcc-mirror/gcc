@@ -1,3 +1,8 @@
+2008-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_std/cmath (fpclassify): Use __builtin_fpclassify.
+	* include/c_global/cmath (fpclassify): Likewise.
+
 2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable_policy.h (_Map_base<,,

@@ -1,7 +1,7 @@
 // -*- C++ -*- C forwarding header.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -462,14 +462,6 @@ _GLIBCXX_END_NAMESPACE
 // conformance, remove possible C99-injected names from the global
 // namespace, and sequester them in the __gnu_cxx extension namespace.
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
-  template<typename _Tp>
-    inline int
-    __capture_fpclassify(_Tp __f) { return fpclassify(__f); }
-
-_GLIBCXX_END_NAMESPACE
-
 // Only undefine the C99 FP macros, if actually captured for namespace movement
 #undef fpclassify
 #undef isfinite
@@ -492,7 +484,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     fpclassify(_Tp __f)
     {
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return ::__gnu_cxx::__capture_fpclassify(__type(__f));
+      return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				  FP_SUBNORMAL, FP_ZERO, __type(__f));
     }
 
   template<typename _Tp>
