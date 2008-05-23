@@ -1,5 +1,38 @@
 2008-05-23  Vincent Celier  <celier@adacore.com>
 
+	* snames.adb:
+	New standard name Excluded_Source_List_File
+
+	* snames.ads:
+	New standard name Excluded_Source_List_File
+
+	* prj-attr.adb:
+	New project level attribute Excluded_Source_List_File
+
+	* prj-nmsc.adb:
+	(Find_Excluded_Sources): New parameter Project.
+	Get excluded sources from
+	file indicated by attribute Excluded_Source_List_File, when present and
+	neither Excluded_Source_Files nor Locally_Removed_Files are declared.
+
+2008-05-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_dist.adb: Minor reformatting
+
+2008-05-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'address): If the prefix is a
+	slice, convert it to an indexed component, which is equivalent, more
+	efficient, and usable even if the slice itself is not addressable.
+
+2008-05-23  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat_ugn.texi (Calling Conventions): Document that the Intrinsic
+	convention also allows access to named compiler built-in subprograms
+	such as the GCC __builtin family.
+
+2008-05-23  Vincent Celier  <celier@adacore.com>
+
 	* prj-nmsc.adb (Check_Naming_Schemes): Check a file for spec, body and
 	sep. If there are several possibilities, choose the one with the
 	longer prefix.
