@@ -8083,6 +8083,36 @@ package body Sem_Attr is
             if Is_Entity_Name (P) then
                Set_Address_Taken (Entity (P));
             end if;
+
+            if Nkind (P) = N_Slice then
+
+               --  Arr (X .. Y)'address is identical to Arr (X)'address,
+               --  even if the array is packed and the slice itself is not
+               --  addressable. Transform the prefix into an indexed component.
+
+               declare
+                  Loc : constant Source_Ptr := Sloc (P);
+                  D   : constant Node_Id := Discrete_Range (P);
+                  Lo  : Node_Id;
+
+               begin
+                  if Is_Entity_Name (D) then
+                     Lo :=
+                       Make_Attribute_Reference (Loc,
+                          Prefix => (New_Occurrence_Of (Entity (D), Loc)),
+                          Attribute_Name => Name_First);
+                  else
+                     Lo := Low_Bound (D);
+                  end if;
+
+                  Rewrite (P,
+                     Make_Indexed_Component (Loc,
+                        Prefix =>  Relocate_Node (Prefix (P)),
+                        Expressions => New_List (Lo)));
+
+                  Analyze_And_Resolve (P);
+               end;
+            end if;
          end Address_Attribute;
 
          ---------------
