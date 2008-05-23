@@ -1,5 +1,9 @@
 2008-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* doc/xml/manual/intro.xml: Adjust links to ISO documents.
+
+2008-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/c_std/cmath (fpclassify): Use __builtin_fpclassify.
 	* include/c_global/cmath (fpclassify): Likewise.
 
