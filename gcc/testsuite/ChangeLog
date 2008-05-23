@@ -1,3 +1,8 @@
+2008-05-23  Rafael Espindola  <espindola@google.com>
+
+	* gcc/testsuite/gcc.c-torture/compile/20080522-1.c: Move to gcc.dg.
+	* gcc/testsuite/gcc.dg/20080522-1.c: Moved from gcc.c-torture.
+
 2008-05-23  Paul Brook  <paul@codesourcery.com>
 	    Carlos O'Donell  <carlos@codesourcery.com>
 

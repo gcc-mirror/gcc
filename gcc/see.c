@@ -732,7 +732,7 @@ see_get_extension_data (rtx extension, enum machine_mode *source_mode)
 
   /* Don't handle extensions to something other then register or
      subregister.  */
-  if (!REG_P (lhs) && !SUBREG_REG (lhs))
+  if (!REG_P (lhs) && GET_CODE (lhs) != SUBREG)
     return UNKNOWN;
 
   if (GET_CODE (rhs) != SIGN_EXTEND && GET_CODE (rhs) != ZERO_EXTEND)
@@ -3523,7 +3523,7 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
 
       /* Don't handle extensions to something other then register or
 	 subregister.  */
-      if (!REG_P (lhs) && !SUBREG_REG (lhs))
+      if (!REG_P (lhs) && GET_CODE (lhs) != SUBREG)
 	return NOT_RELEVANT;
 
       switch (GET_CODE (rhs))
