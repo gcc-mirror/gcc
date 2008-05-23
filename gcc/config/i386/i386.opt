@@ -250,6 +250,10 @@ Support SSE5 built-in functions and code generation
 
 ;; Instruction support
 
+mcld
+Target Report Mask(CLD)
+Generate cld instruction in the function prologue.
+
 mabm
 Target Report RejectNegative Var(x86_abm)
 Support code generation of Advanced Bit Manipulation (ABM) instructions.
