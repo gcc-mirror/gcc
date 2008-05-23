@@ -2855,9 +2855,8 @@ This applies to an intrinsic operation, as defined in the Ada
 Reference Manual. If a pragma Import (Intrinsic) applies to a subprogram,
 this means that the body of the subprogram is provided by the compiler itself,
 usually by means of an efficient code sequence, and that the user does not
-supply an explicit body for it. In an application program, the pragma can
-only be applied to the following two sets of names, which the GNAT compiler
-recognizes.
+supply an explicit body for it. In an application program, the pragma may
+be applied to the following sets of names:
 
 @itemize @bullet
 @item
@@ -2868,7 +2867,9 @@ first one must be a signed integer type or a modular type with a binary
 modulus, and the second parameter must be of type Natural.
 The return type must be the same as the type of the first argument. The size
 of this type can only be 8, 16, 32, or 64.
-@item binary arithmetic operators: ``+'', ``-'', ``*'', ``/''
+
+@item
+Binary arithmetic operators: ``+'', ``-'', ``*'', ``/''
 The corresponding operator declaration must have parameters and result type
 that have the same root numeric type (for example, all three are long_float
 types). This simplifies the definition of operations that use type checking
@@ -2888,7 +2889,24 @@ This common idiom is often programmed with a generic definition and an
 explicit body. The pragma makes it simpler to introduce such declarations.
 It incurs no overhead in compilation time or code size, because it is
 implemented as a single machine instruction.
+
+@item
+General subprogram entities, to bind an Ada subprogram declaration to
+a compiler builtin by name with back-ends where such interfaces are
+available. A typical example is the set of ``__builtin'' functions
+exposed by the GCC back-end, as in the following example:
+
+@smallexample @c ada
+   function builtin_sqrt (F : Float) return Float;
+   pragma Import (Intrinsic, builtin_sqrt, "__builtin_sqrtf");
+@end smallexample
+
+Most of the GCC builtins are accessible this way, and as for other
+import conventions (e.g. C), it is the user's responsibility to ensure
+that the Ada subprogram profile matches the underlying builtin
+expectations.
 @end itemize
+
 @noindent
 
 @ifset unw
