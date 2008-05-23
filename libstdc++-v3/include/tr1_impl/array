@@ -1,6 +1,6 @@
 // class template array -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -222,26 +222,51 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     class tuple_size;
 
   /// tuple_element
-  template<int _Int, typename _Tp> 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  template<std::size_t _Int, typename _Tp>
+#else
+  template<int _Int, typename _Tp>
+#endif
     class tuple_element;
 
   template<typename _Tp, std::size_t _Nm>
     struct tuple_size<array<_Tp, _Nm> >
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+    { static const std::size_t value = _Nm; };
+#else
     { static const int value = _Nm; };
+#endif
 
   template<typename _Tp, std::size_t _Nm>
-    const int tuple_size<array<_Tp, _Nm> >::value;
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+    const std::size_t
+#else
+    const int
+#endif
+    tuple_size<array<_Tp, _Nm> >::value;  
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+#else
   template<int _Int, typename _Tp, std::size_t _Nm>
+#endif
     struct tuple_element<_Int, array<_Tp, _Nm> >
     { typedef _Tp type; };
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+#else
   template<int _Int, typename _Tp, std::size_t _Nm>
+#endif
     inline _Tp&
     get(array<_Tp, _Nm>& __arr)
     { return __arr[_Int]; }
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+#else
   template<int _Int, typename _Tp, std::size_t _Nm>
+#endif
     inline const _Tp&
     get(const array<_Tp, _Nm>& __arr)
     { return __arr[_Int]; }
