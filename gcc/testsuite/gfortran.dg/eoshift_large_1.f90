@@ -52,12 +52,12 @@ program intrinsic_eoshift
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, 9999_k, (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/99_k, 99_k, 99_k, -1_k, -1_k, -1_k, 42_k, 42_k, 42_k/), &
-	(/3_k, 3_k/)))) call abort
+       (/3_k, 3_k/)))) call abort
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -9999_k, (/99_k, -1_k, 42_k/), 1_k)
    if (any (a .ne. reshape ((/99_k, 99_k, 99_k, -1_k, -1_k, -1_k, 42_k, 42_k, 42_k/), &
-	(/3_k, 3_k/)))) call abort
+       (/3_k, 3_k/)))) call abort
 
    a = reshape ((/1_k, 2_k, 3_k, 4_k, 5_k, 6_k, 7_k, 8_k, 9_k/), (/3_k, 3_k/))
    a = eoshift (a, -2_k, (/99_k, -1_k, 42_k/), 2_k)
