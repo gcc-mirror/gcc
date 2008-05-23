@@ -9744,6 +9744,70 @@ fold_builtin_classify (tree fndecl, tree arg, int builtin_index)
     }
 }
 
+/* Fold a call to __builtin_fpclassify(int, int, int, int, int, ...).
+   This builtin will generate code to return the appropriate floating
+   point classification depending on the value of the floating point
+   number passed in.  The possible return values must be supplied as
+   int arguments to the call in the following order: FP_NAN, FP_INF,
+   FP_NORMAL, FP_SUBNORMAL and FP_ZERO.  The ellipses is for exactly
+   one floating point argument which is "type generic".  */
+
+static tree
+fold_builtin_fpclassify (tree exp)
+{
+  tree fp_nan, fp_inf, fp_normal, fp_subnormal, fp_zero, arg, type, res, tmp;
+  enum machine_mode mode;
+  REAL_VALUE_TYPE r;
+  char buf[128];
+  
+  /* Verify the required arguments in the original call.  */
+  if (!validate_arglist (exp, INTEGER_TYPE, INTEGER_TYPE,
+			 INTEGER_TYPE, INTEGER_TYPE,
+			 INTEGER_TYPE, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+  
+  fp_nan = CALL_EXPR_ARG (exp, 0);
+  fp_inf = CALL_EXPR_ARG (exp, 1);
+  fp_normal = CALL_EXPR_ARG (exp, 2);
+  fp_subnormal = CALL_EXPR_ARG (exp, 3);
+  fp_zero = CALL_EXPR_ARG (exp, 4);
+  arg = CALL_EXPR_ARG (exp, 5);
+  type = TREE_TYPE (arg);
+  mode = TYPE_MODE (type);
+  arg = builtin_save_expr (fold_build1 (ABS_EXPR, type, arg));
+
+  /* fpclassify(x) -> 
+       isnan(x) ? FP_NAN :
+         (fabs(x) == Inf ? FP_INF :
+	   (fabs(x) >= DBL_MIN ? FP_NORMAL :
+	     (x == 0 ? FP_ZERO : FP_SUBNORMAL))).  */
+  
+  tmp = fold_build2 (EQ_EXPR, integer_type_node, arg,
+		     build_real (type, dconst0));
+  res = fold_build3 (COND_EXPR, integer_type_node, tmp, fp_zero, fp_subnormal);
+
+  sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (mode)->emin - 1);
+  real_from_string (&r, buf);
+  tmp = fold_build2 (GE_EXPR, integer_type_node, arg, build_real (type, r));
+  res = fold_build3 (COND_EXPR, integer_type_node, tmp, fp_normal, res);
+  
+  if (HONOR_INFINITIES (mode))
+    {
+      real_inf (&r);
+      tmp = fold_build2 (EQ_EXPR, integer_type_node, arg,
+			 build_real (type, r));
+      res = fold_build3 (COND_EXPR, integer_type_node, tmp, fp_inf, res);
+    }
+
+  if (HONOR_NANS (mode))
+    {
+      tmp = fold_build2 (ORDERED_EXPR, integer_type_node, arg, arg);
+      res = fold_build3 (COND_EXPR, integer_type_node, tmp, res, fp_nan);
+    }
+  
+  return res;
+}
+
 /* Fold a call to an unordered comparison function such as
    __builtin_isgreater().  FNDECL is the FUNCTION_DECL for the function
    being called and ARG0 and ARG1 are the arguments for the call.
@@ -10528,6 +10592,11 @@ fold_builtin_varargs (tree fndecl, tree exp, bool ignore ATTRIBUTE_UNUSED)
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
       ret = fold_builtin_snprintf_chk (exp, NULL_TREE, fcode);
+      break;
+
+    case BUILT_IN_FPCLASSIFY:
+      ret = fold_builtin_fpclassify (exp);
+      break;
 
     default:
       break;

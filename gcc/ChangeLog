@@ -1,3 +1,14 @@
+2008-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-types.def (BT_FN_INT_INT_INT_INT_INT_INT_VAR): New.
+	* builtins.c (fold_builtin_fpclassify): New.
+	(fold_builtin_varargs): Handle BUILT_IN_FPCLASSIFY.
+	* builtins.def (BUILT_IN_FPCLASSIFY): New.
+	* c-common.c (handle_type_generic_attribute): Adjust to accept
+	fixed arguments before an elipsis.
+	(check_builtin_function_arguments): Handle BUILT_IN_FPCLASSIFY.
+	* doc/extend.texi: Document __builtin_fpclassify.
+
 2008-05-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* omp-low.c (gate_expand_omp_ssa): Remove.

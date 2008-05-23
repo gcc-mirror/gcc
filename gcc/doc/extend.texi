@@ -5764,6 +5764,7 @@ should be called and the @var{flag} argument passed to it.
 @node Other Builtins
 @section Other built-in functions provided by GCC
 @cindex built-in functions
+@findex __builtin_fpclassify
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
@@ -6295,10 +6296,10 @@ the same names as the standard macros ( @code{isgreater},
 @code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
-In the same fashion, GCC provides @code{isfinite}, @code{isinf_sign}
-and @code{isnormal} built-ins used with @code{__builtin_} prefixed.
-The @code{isinf} and @code{isnan} builtins appear both with and
-without the @code{__builtin_} prefix.
+In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
+@code{isinf_sign} and @code{isnormal} built-ins used with
+@code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
+builtins appear both with and without the @code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
 
@@ -6553,6 +6554,17 @@ Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
 @deftypefn {Built-in Function} {long double} __builtin_huge_vall (void)
 Similar to @code{__builtin_huge_val}, except the return
 type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_fpclassify (int, int, int, int, int, ...)
+This built-in implements the C99 fpclassify functionality.  The first
+five int arguments should be the target library's notion of the
+possible FP classes and are used for return values.  They must be
+constant values and they must appear in this order: @code{FP_NAN},
+@code{FP_INF}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
+@code{FP_ZERO}.  The ellipsis is for exactly one floating point value
+to classify.  GCC treats the last argument as type-generic, which
+means it does not do default promotion from float to double.
 @end deftypefn
 
 @deftypefn {Built-in Function} double __builtin_inf (void)

@@ -1,3 +1,10 @@
+2008-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-error.c: Test __builtin_fpclassify.  Also
+	add tests for all previous type-generic builtins.
+	* gcc.dg/pr28796-2.c: Add -DUNSAFE flag.
+	* gcc.dg/tg-tests.h: Test __builtin_fpclassify.
+
 2008-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libgfortran/36302

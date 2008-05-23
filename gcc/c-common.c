@@ -6528,8 +6528,17 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			       bool * ARG_UNUSED (no_add_attrs))
 {
-  /* Ensure we have a function type, with no arguments.  */
-  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE && ! TYPE_ARG_TYPES (*node));
+  tree params;
+  
+  /* Ensure we have a function type.  */
+  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
+  
+  params = TYPE_ARG_TYPES (*node);
+  while (params && ! VOID_TYPE_P (TREE_VALUE (params)))
+    params = TREE_CHAIN (params);
+
+  /* Ensure we have a variadic function.  */
+  gcc_assert (!params);
 
   return NULL_TREE;
 }
@@ -6706,6 +6715,29 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	    {
 	      error ("non-floating-point arguments in call to "
 		     "function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
+    case BUILT_IN_FPCLASSIFY:
+      if (validate_nargs (fndecl, nargs, 6))
+	{
+	  unsigned i;
+	  
+	  for (i=0; i<5; i++)
+	    if (TREE_CODE (args[i]) != INTEGER_CST)
+	      {
+		error ("non-const integer argument %u in call to function %qE",
+		       i+1, fndecl);
+		return false;
+	      }
+
+	  if (TREE_CODE (TREE_TYPE (args[5])) != REAL_TYPE)
+	    {
+	      error ("non-floating-point argument in call to function %qE",
+		     fndecl);
 	      return false;
 	    }
 	  return true;
