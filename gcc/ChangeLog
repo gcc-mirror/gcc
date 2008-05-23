@@ -1,3 +1,8 @@
+2008-05-23  Kai Tietz  <kai.tietz@onevison.com>
+	* config/i386/i386.c (return_in_memory_32): Add ATTRIBUTE_UNUSED.
+	(return_in_memory_64): Likewise.
+	(return_in_memory_ms_64): Likewise.
+
 2008-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def (BT_FN_INT_INT_INT_INT_INT_INT_VAR): New.
