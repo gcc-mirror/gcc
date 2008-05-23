@@ -732,10 +732,6 @@ fomit-frame-pointer
 Common Report Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames
 
-fopenmp-ssa
-Common Report Var(flag_openmp_ssa)
-Expand OpenMP operations on SSA form
-
 foptimize-register-move
 Common Report Var(flag_regmove) Optimization
 Do the full register move optimization pass
