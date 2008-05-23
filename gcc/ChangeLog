@@ -1,3 +1,7 @@
+2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (highest_pow2_factor) <BIT_AND_EXPR>: New case.
+
 2008-05-23  Steven Munroe  <sjmunroe@us.ibm.com>
 
 	* config/rs6000/darwin-ldouble.c (fmsub): Eliminate the full

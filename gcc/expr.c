@@ -6599,6 +6599,13 @@ highest_pow2_factor (const_tree exp)
 	}
       break;
 
+    case BIT_AND_EXPR:
+      /* The highest power of two of a bit-and expression is the maximum of
+	 that of its operands.  We typically get here for a complex LHS and
+	 a constant negative power of two on the RHS to force an explicit
+	 alignment, so don't bother looking at the LHS.  */
+      return highest_pow2_factor (TREE_OPERAND (exp, 1));
+
     CASE_CONVERT:
     case SAVE_EXPR:
       return highest_pow2_factor (TREE_OPERAND (exp, 0));
