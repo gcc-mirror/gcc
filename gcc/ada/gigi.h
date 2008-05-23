@@ -102,6 +102,11 @@ extern void set_block_for_group (tree);
    Get SLOC from GNAT_ENTITY.  */
 extern void add_decl_expr (tree gnu_decl, Entity_Id gnat_entity);
 
+/* Mark nodes rooted at *TP with TREE_VISITED and types as having their
+   sized gimplified.  We use this to indicate all variable sizes and
+   positions in global types may not be shared by any subprograms.  */
+extern void mark_visited (tree *);
+
 /* Finalize any From_With_Type incomplete types.  We do this after processing
    our compilation unit and after processing its spec, if this is a body.  */
 extern void finalize_from_with_types (void);
