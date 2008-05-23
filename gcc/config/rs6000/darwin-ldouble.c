@@ -422,15 +422,13 @@ fmsub (double a, double b, double c)
     FP_UNPACK_SEMIRAW_Q(U,u);
     FP_UNPACK_SEMIRAW_Q(Z,z);
     FP_SUB_Q(V,U,Z);
-    FP_PACK_SEMIRAW_Q(v,V);
-    FP_HANDLE_EXCEPTIONS;
 
     /* Truncate quad to double.  */
-    FP_INIT_ROUNDMODE;
-    FP_UNPACK_SEMIRAW_Q(V,v);
 #if (2 * _FP_W_TYPE_SIZE) < _FP_FRACBITS_Q
+    V_f[3] &= 0x0007ffff;
     FP_TRUNC(D,Q,2,4,R,V);
 #else
+    V_f1 &= 0x0007ffffffffffffL;
     FP_TRUNC(D,Q,1,2,R,V);
 #endif
     FP_PACK_SEMIRAW_D(r,R);

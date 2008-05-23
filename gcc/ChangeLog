@@ -1,3 +1,9 @@
+2008-05-23  Steven Munroe  <sjmunroe@us.ibm.com>
+
+	* config/rs6000/darwin-ldouble.c (fmsub): Eliminate the full
+	PACK/UNPACK between FP_SUB_Q and FD_TRUNC so that the result
+	is only rounded once.
+
 2008-05-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (mark_difference_for_renaming): Use
