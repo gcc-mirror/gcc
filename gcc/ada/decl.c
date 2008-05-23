@@ -876,7 +876,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			/* ??? No DECL_EXPR is created so we need to mark
 			   the expression manually lest it is shared.  */
 			if (global_bindings_p ())
-			  TREE_VISITED (gnu_decl) = 1;
+			  mark_visited (&gnu_decl);
 			save_gnu_tree (gnat_entity, gnu_decl, true);
 			saved = true;
 			break;
@@ -2343,7 +2343,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		  /* ??? create_type_decl is not invoked on the inner types so
 		     the MULT_EXPR node built above will never be marked.  */
-		  TREE_VISITED (TYPE_SIZE_UNIT (gnu_arr_type)) = 1;
+		  mark_visited (&TYPE_SIZE_UNIT (gnu_arr_type));
 		}
 	    }
 
@@ -4379,9 +4379,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		/* ??? The context of gnu_field is not necessarily gnu_type so
 		   the MULT_EXPR node built above may not be marked by the call
-		   to create_type_decl below.  Mark it manually for now.  */
+		   to create_type_decl below.  */
 		if (global_bindings_p ())
-		  TREE_VISITED (DECL_FIELD_OFFSET (gnu_field)) = 1;
+		  mark_visited (&DECL_FIELD_OFFSET (gnu_field));
 		}
 	    }
 
@@ -5295,10 +5295,12 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
 			bool need_debug)
 {
   tree gnu_decl = NULL_TREE;
-  /* Strip any conversions to see if the expression is a readonly variable.
-     ??? This really should remain readonly, but we have to think about
+  /* Skip any conversions and simple arithmetics to see if the expression
+     is a read-only variable.
+     ??? This really should remain read-only, but we have to think about
      the typing of the tree here.  */
-  tree gnu_inner_expr = remove_conversions (gnu_expr, true);
+  tree gnu_inner_expr
+    = skip_simple_arithmetic (remove_conversions (gnu_expr, true));
   bool expr_global = Is_Public (gnat_entity) || global_bindings_p ();
   bool expr_variable;
 
@@ -5314,7 +5316,7 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
 		       gnu_expr, NULL_TREE);
 
   /* If GNU_EXPR is neither a placeholder nor a constant, nor a variable
-     that is a constant, make a variable that is initialized to contain the
+     that is read-only, make a variable that is initialized to contain the
      bound when the package containing the definition is elaborated.  If
      this entity is defined at top level and a bound or discriminant value
      isn't a constant or a reference to a discriminant, replace the bound

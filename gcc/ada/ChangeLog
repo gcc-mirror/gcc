@@ -1,3 +1,13 @@
+2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gigi.h (mark_visited): Declare.
+	* decl.c (gnat_to_gnu_entity): Use mark_visited instead of marking
+	only the topmost node of expressions.
+	(elaborate_expression_1): Look deeper for read-only variable.
+	* trans.c (add_decl_expr): Use mark_visited instead of marking by hand.
+	(mark_visited): Move logic to mark_visited_r.  Invoke walk_tree.
+	(mark_visited_r): New function.
+
 2008-05-23  Vincent Celier  <celier@adacore.com>
 
 	* snames.adb:

@@ -186,7 +186,6 @@ static void Compilation_Unit_to_gnu (Node_Id);
 static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void add_cleanup (tree, Node_Id);
-static tree mark_visited (tree *, int *, void *);
 static tree unshare_save_expr (tree *, int *, void *);
 static void add_stmt_list (List_Id);
 static void push_exception_label_stack (tree *, Entity_Id);
@@ -5102,13 +5101,13 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
       /* Mark everything as used to prevent node sharing with subprograms.
 	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
 	 VAR_DECL nor CONST_DECL.  This appears to be somewhat arbitrary.  */
-      walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
+      mark_visited (&gnu_stmt);
       if (TREE_CODE (gnu_decl) == VAR_DECL
 	  || TREE_CODE (gnu_decl) == CONST_DECL)
 	{
-	  walk_tree (&DECL_SIZE (gnu_decl), mark_visited, NULL, NULL);
-	  walk_tree (&DECL_SIZE_UNIT (gnu_decl), mark_visited, NULL, NULL);
-	  walk_tree (&DECL_INITIAL (gnu_decl), mark_visited, NULL, NULL);
+	  mark_visited (&DECL_SIZE (gnu_decl));
+	  mark_visited (&DECL_SIZE_UNIT (gnu_decl));
+	  mark_visited (&DECL_INITIAL (gnu_decl));
 	}
       /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
       if (TREE_CODE (gnu_decl) == TYPE_DECL
@@ -5116,7 +5115,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	      || TREE_CODE (type) == UNION_TYPE
 	      || TREE_CODE (type) == QUAL_UNION_TYPE)
 	  && (t = TYPE_ADA_SIZE (type)))
-	walk_tree (&t, mark_visited, NULL, NULL);
+	mark_visited (&t);
     }
   else
     add_stmt_with_node (gnu_stmt, gnat_entity);
@@ -5150,13 +5149,10 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
     }
 }
 
-/* Utility function to mark nodes with TREE_VISITED and types as having their
-   sized gimplified.  Called from walk_tree.  We use this to indicate all
-   variable sizes and positions in global types may not be shared by any
-   subprogram.  */
+/* Callback for walk_tree to mark the visited trees rooted at *TP.  */
 
 static tree
-mark_visited (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+mark_visited_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   if (TREE_VISITED (*tp))
     *walk_subtrees = 0;
@@ -5184,6 +5180,16 @@ unshare_save_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     TREE_OPERAND (t, 0) = unshare_expr (TREE_OPERAND (t, 0));
 
   return NULL_TREE;
+}
+
+/* Mark nodes rooted at *TP with TREE_VISITED and types as having their
+   sized gimplified.  We use this to indicate all variable sizes and
+   positions in global types may not be shared by any subprogram.  */
+
+void
+mark_visited (tree *tp)
+{
+  walk_tree (tp, mark_visited_r, NULL, NULL);
 }
 
 /* Add GNU_CLEANUP, a cleanup action, to the current code group and
