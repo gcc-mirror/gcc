@@ -1,3 +1,8 @@
+2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (handle_type_generic_attribute): Adjust to accept
+	fixed arguments before an elipsis.
+
 2008-05-21  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sothco.ads, g-sothco.adb: New files.

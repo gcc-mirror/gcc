@@ -4712,8 +4712,17 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
 			       bool * ARG_UNUSED (no_add_attrs))
 {
-  /* Ensure we have a function type, with no arguments.  */
-  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE && ! TYPE_ARG_TYPES (*node));
+  tree params;
+  
+  /* Ensure we have a function type.  */
+  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
+  
+  params = TYPE_ARG_TYPES (*node);
+  while (params && ! VOID_TYPE_P (TREE_VALUE (params)))
+    params = TREE_CHAIN (params);
+
+  /* Ensure we have a variadic function.  */
+  gcc_assert (!params);
 
   return NULL_TREE;
 }
