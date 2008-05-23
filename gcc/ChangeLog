@@ -1,3 +1,10 @@
+2008-05-23  Rafael Espindola  <espindola@google.com>
+
+	* see.c (see_get_extension_data): Don't use SUBREG_REG to test
+	if a node is a SUBREG.
+	(see_analyze_one_def): Don't use SUBREG_REG to test if a node
+	is a SUBREG.
+
 2008-05-23  Paul Brook  <paul@codesourcery.com>
 	    Carlos O'Donell  <carlos@codesourcery.com>
 
