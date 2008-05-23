@@ -2785,15 +2785,9 @@ mark_difference_for_renaming (bitmap s1, bitmap s2)
   else if (!bitmap_equal_p (s1, s2))
     {
       bitmap t1 = BITMAP_ALLOC (NULL);
-      bitmap t2 = BITMAP_ALLOC (NULL);
-
-      bitmap_and_compl (t1, s1, s2);
-      bitmap_and_compl (t2, s2, s1);
-      bitmap_ior_into (t1, t2);
+      bitmap_xor (t1, s1, s2);
       mark_set_for_renaming (t1);
-
       BITMAP_FREE (t1);
-      BITMAP_FREE (t2);
     }
 }
 
