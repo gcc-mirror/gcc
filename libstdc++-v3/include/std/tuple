@@ -62,10 +62,10 @@ namespace std
     struct __add_ref<_Tp&>
     { typedef _Tp& type; };
 
-  template<int _Idx, typename _Head, bool _IsEmpty>
+  template<std::size_t _Idx, typename _Head, bool _IsEmpty>
     struct _Head_base;
 
-  template<int _Idx, typename _Head>
+  template<std::size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, true>
     : public _Head
     {
@@ -83,7 +83,7 @@ namespace std
       const _Head& _M_head() const { return *this; }
     };
 
-  template<int _Idx, typename _Head>
+  template<std::size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, false>
     {
       _Head_base()
@@ -110,14 +110,14 @@ namespace std
    * point in the hierarchy; we use it to implement a constant-time
    * get() operation.
    */
-  template<int _Idx, typename... _Elements>
+  template<std::size_t _Idx, typename... _Elements>
     struct _Tuple_impl; 
 
   /**
    * Zero-element tuple implementation. This is the basis case for the 
    * inheritance recursion.
    */
-  template<int _Idx>
+  template<std::size_t _Idx>
     struct _Tuple_impl<_Idx> { };
 
   /**
@@ -125,7 +125,7 @@ namespace std
    * and derive from a @c Tuple_impl containing the remaining elements
    * (which contains the @c Tail).
    */
-  template<int _Idx, typename _Head, typename... _Tail>
+  template<std::size_t _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
       private _Head_base<_Idx, _Head, std::is_empty<_Head>::value>
@@ -372,14 +372,14 @@ namespace std
 
 
   /// Gives the type of the ith element of a given tuple type.
-  template<int __i, typename _Tp>
+  template<std::size_t __i, typename _Tp>
     struct tuple_element;
 
   /**
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
    */
-  template<int __i, typename _Head, typename... _Tail>
+  template<std::size_t __i, typename _Head, typename... _Tail>
     struct tuple_element<__i, tuple<_Head, _Tail...> >
     : tuple_element<__i - 1, tuple<_Tail...> > { };
 
@@ -400,32 +400,32 @@ namespace std
   template<typename... _Elements>
     struct tuple_size<tuple<_Elements...> >
     {
-      static const int value = sizeof...(_Elements);
+      static const std::size_t value = sizeof...(_Elements);
     };
 
   template<typename... _Elements>
-    const int tuple_size<tuple<_Elements...> >::value;
+    const std::size_t tuple_size<tuple<_Elements...> >::value;
 
-  template<int __i, typename _Head, typename... _Tail>
+  template<std::size_t __i, typename _Head, typename... _Tail>
     inline typename __add_ref<_Head>::type
     __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t)
     { return __t._M_head(); }
 
-  template<int __i, typename _Head, typename... _Tail>
+  template<std::size_t __i, typename _Head, typename... _Tail>
     inline typename __add_c_ref<_Head>::type
     __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t)
     { return __t._M_head(); }
 
   // Return a reference (const reference) to the ith element of a tuple.
   // Any const or non-const ref elements are returned with their original type.
-  template<int __i, typename... _Elements>
+  template<std::size_t __i, typename... _Elements>
     inline typename __add_ref<
                       typename tuple_element<__i, tuple<_Elements...> >::type
                     >::type
     get(tuple<_Elements...>& __t)
     { return __get_helper<__i>(__t); }
 
-  template<int __i, typename... _Elements>
+  template<std::size_t __i, typename... _Elements>
     inline typename __add_c_ref<
                       typename tuple_element<__i, tuple<_Elements...> >::type
                     >::type
@@ -433,28 +433,28 @@ namespace std
     { return __get_helper<__i>(__t); }
 
   // This class helps construct the various comparison operations on tuples
-  template<int __check_equal_size, int __i, int __j,
+  template<std::size_t __check_equal_size, std::size_t __i, std::size_t __j,
 	   typename _Tp, typename _Up>
     struct __tuple_compare;
 
-  template<int __i, int __j, typename _Tp, typename _Up>
+  template<std::size_t __i, std::size_t __j, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __j, _Tp, _Up>
     {
       static bool __eq(const _Tp& __t, const _Up& __u)
       {
 	return (get<__i>(__t) == get<__i>(__u) &&
-		__tuple_compare<0, __i+1, __j, _Tp, _Up>::__eq(__t, __u));
+		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u));
       }
      
       static bool __less(const _Tp& __t, const _Up& __u)
       {
 	return ((get<__i>(__t) < get<__i>(__u))
 		|| !(get<__i>(__u) < get<__i>(__t)) &&
-		__tuple_compare<0, __i+1, __j, _Tp, _Up>::__less(__t, __u));
+		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__less(__t, __u));
       }
     };
 
-  template<int __i, typename _Tp, typename _Up>
+  template<std::size_t __i, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __i, _Tp, _Up>
     {
       static bool __eq(const _Tp&, const _Up&)
@@ -520,12 +520,13 @@ namespace std
       return __result_type(std::forward<_Elements>(__args)...);
     }
 
-  template<int...> struct __index_holder { };    
+  template<std::size_t...> struct __index_holder { };    
 
-  template<int __i, typename _IdxHolder, typename... _Elements>
+  template<std::size_t __i, typename _IdxHolder, typename... _Elements>
     struct __index_holder_impl;
 
-  template<int __i, int... _Indexes, typename _IdxHolder, typename... _Elements>
+  template<std::size_t __i, std::size_t... _Indexes, typename _IdxHolder,
+	   typename... _Elements>
     struct __index_holder_impl<__i, __index_holder<_Indexes...>,
 			       _IdxHolder, _Elements...> 
     {
@@ -534,7 +535,7 @@ namespace std
 					   _Elements...>::type type;
     };
  
-  template<int __i, int... _Indexes>
+  template<std::size_t __i, std::size_t... _Indexes>
     struct __index_holder_impl<__i, __index_holder<_Indexes...> >
     { typedef __index_holder<_Indexes...> type; };
 
@@ -542,8 +543,8 @@ namespace std
     struct __make_index_holder 
     : __index_holder_impl<0, __index_holder<>, _Elements...> { };
     
-  template<typename... _TElements, int... _TIdx,
-	   typename... _UElements, int... _UIdx> 
+  template<typename... _TElements, std::size_t... _TIdx,
+	   typename... _UElements, std::size_t... _UIdx> 
     inline tuple<_TElements..., _UElements...> 
     __tuple_cat_helper(const tuple<_TElements...>& __t,
 		       const __index_holder<_TIdx...>&,
@@ -552,8 +553,8 @@ namespace std
     { return tuple<_TElements..., _UElements...>(get<_TIdx>(__t)...,
 						 get<_UIdx>(__u)...); }
 
-  template<typename... _TElements, int... _TIdx,
-	   typename... _UElements, int... _UIdx> 
+  template<typename... _TElements, std::size_t... _TIdx,
+	   typename... _UElements, std::size_t... _UIdx> 
     inline tuple<_TElements..., _UElements...> 
     __tuple_cat_helper(tuple<_TElements...>&& __t,
 		       const __index_holder<_TIdx...>&, 
@@ -562,8 +563,8 @@ namespace std
     { return tuple<_TElements..., _UElements...>
 	(std::move(get<_TIdx>(__t))..., get<_UIdx>(__u)...); }
 
-  template<typename... _TElements, int... _TIdx,
-	   typename... _UElements, int... _UIdx>
+  template<typename... _TElements, std::size_t... _TIdx,
+	   typename... _UElements, std::size_t... _UIdx>
     inline tuple<_TElements..., _UElements...> 
     __tuple_cat_helper(const tuple<_TElements...>& __t,
 		       const __index_holder<_TIdx...>&, 
@@ -572,8 +573,8 @@ namespace std
     { return tuple<_TElements..., _UElements...>
 	(get<_TIdx>(__t)..., std::move(get<_UIdx>(__u))...); }
 
-  template<typename... _TElements, int... _TIdx,
-	   typename... _UElements, int... _UIdx> 
+  template<typename... _TElements, std::size_t... _TIdx,
+	   typename... _UElements, std::size_t... _UIdx> 
     inline tuple<_TElements..., _UElements...> 
     __tuple_cat_helper(tuple<_TElements...>&& __t,
 		       const __index_holder<_TIdx...>&, 
@@ -585,7 +586,7 @@ namespace std
   template<typename... _TElements, typename... _UElements>
     inline tuple<_TElements..., _UElements...> 
     tuple_cat(const tuple<_TElements...>& __t, const tuple<_UElements...>& __u)
-    { 
+    {
       return __tuple_cat_helper(__t, typename
 				__make_index_holder<_TElements...>::type(),
 				__u, typename
