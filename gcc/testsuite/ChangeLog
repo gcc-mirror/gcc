@@ -1,3 +1,9 @@
+2008-05-23  Paul Brook  <paul@codesourcery.com>
+	    Carlos O'Donell  <carlos@codesourcery.com>
+
+	* gcc.target/arm/naked-1.c: New test.
+	* gcc.target/arm/naked-2.c: New test.
+
 2008-05-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36314

@@ -1,3 +1,17 @@
+2008-05-23  Paul Brook  <paul@codesourcery.com>
+	    Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/extend.texi: Clarify use of __attribute__((naked)).
+	* doc/tm.texi: Document TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.
+	* target.h (gcc_target): Add allocate_stack_slots_for_args.
+	* function.c (use_register_for_decl): Use
+	targetm.calls.allocate_stack_slots_for_args.
+	* target-def.h (TARGET_CALLS): Add 
+	TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.
+	* config/arm/arm.c (arm_allocate_stack_slots_for_args): 
+	New function.
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Define.
+
 2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (highest_pow2_factor) <BIT_AND_EXPR>: New case.

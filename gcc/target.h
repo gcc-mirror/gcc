@@ -830,6 +830,11 @@ struct gcc_target
     /* Return an rtx for the argument pointer incoming to the
        current function.  */
     rtx (*internal_arg_pointer) (void);
+
+    /* Return true if all function parameters should be spilled to the
+       stack.  */
+    bool (*allocate_stack_slots_for_args) (void);
+    
   } calls;
 
   /* Return the diagnostic message string if conversion from FROMTYPE

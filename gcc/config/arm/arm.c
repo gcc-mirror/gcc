@@ -189,6 +189,7 @@ static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
 static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
+static bool arm_allocate_stack_slots_for_args (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -288,6 +289,9 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arm_setup_incoming_varargs
+
+#undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS arm_allocate_stack_slots_for_args
 
 #undef TARGET_DEFAULT_SHORT_ENUMS
 #define TARGET_DEFAULT_SHORT_ENUMS arm_default_short_enums
@@ -1619,6 +1623,14 @@ arm_current_func_type (void)
 
   return cfun->machine->func_type;
 }
+
+bool
+arm_allocate_stack_slots_for_args (void)
+{
+  /* Naked functions should not allocate stack slots for arguments.  */
+  return !IS_NAKED (arm_current_func_type ());
+}
+
 
 /* Return 1 if it is possible to return using a single instruction.
    If SIBLING is non-null, this is a test for a return before a sibling
