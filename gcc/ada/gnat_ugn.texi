@@ -8597,7 +8597,11 @@ use @code{foo -x -y} as your compiler. Note that switch @option{-c} is always
 inserted after your command name. Thus in the above example the compiler
 command that will be used by @command{gnatlink} will be @code{foo -c -x -y}.
 A limitation of this syntax is that the name and path name of the executable
-itself must not include any embedded spaces. If several
+itself must not include any embedded spaces. If the compiler executable is
+different from the default one (gcc or <prefix>-gcc), then the back-end
+switches in the ALI file are not used to compile the binder generated source.
+For example, this is the case with @option{--GCC="foo -x -y"}. But the back end
+switches will be used for @option{--GCC="gcc -gnatv"}. If several
 @option{--GCC=compiler_name} are used, only the last @var{compiler_name}
 is taken into account. However, all the additional switches are also taken
 into account. Thus,

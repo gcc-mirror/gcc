@@ -521,8 +521,10 @@ procedure Gnatlink is
                                                  (Arg (7 .. Arg'Last));
 
                   begin
-                     Gcc := new String'(Program_Args.all (1).all);
-                     Standard_Gcc := False;
+                     if Program_Args.all (1).all /= Gcc.all then
+                        Gcc := new String'(Program_Args.all (1).all);
+                        Standard_Gcc := False;
+                     end if;
 
                      --  Set appropriate flags for switches passed
 
