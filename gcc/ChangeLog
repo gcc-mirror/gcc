@@ -1,3 +1,27 @@
+2008-05-23  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36079
+	* configure.ac: Handle --enable-cld.
+	* configure: Regenerated.
+	* config.gcc: Add USE_IX86_CLD to tm_defines for x86 targets.
+	* config/i386/i386.h (struct machine_function): Add needs_cld field.
+	(ix86_current_function_needs_cld): New define.
+	* config/i386/i386.md (UNSPEC_CLD): New unspec volatile constant.
+	(cld): New isns pattern.
+	(strmov_singleop, rep_mov, strset_singleop, rep_stos, cmpstrnqi_nz_1,
+	cmpstrnqi_1, strlenqi_1): Set ix86_current_function_needs_cld flag.
+	* config/i386/i386.opt (mcld): New option.
+	* config/i386/i386.c (ix86_expand_prologue): Emit cld insn if
+	TARGET_CLD and ix86_current_function_needs_cld.
+	(override_options): Use -mcld by default for 32-bit code if
+	USE_IX86_CLD.
+
+	* doc/install.texi (Options specification): Document --enable-cld.
+	* doc/invoke.texi (Machine Dependent Options)
+        [i386 and x86-64 Options]: Add -mcld option.
+        (Intel 386 and AMD x86-64 Options): Document -mcld option.
+
 2008-05-23  Kai Tietz  <kai.tietz@onevison.com>
 	* config/i386/i386.c (return_in_memory_32): Add ATTRIBUTE_UNUSED.
 	(return_in_memory_64): Likewise.
@@ -58,9 +82,8 @@
 	(vector_alignment_reachable_p): Likewise.
 	* tree-vect-transform.c (vectorizable_load): Likewise.
 	* tree-vectorizer.c (vect_supportable_dr_alignment): Likewise.
-
-	* tree-vectorizer.c (get_vectype_for_scalar_type): Pass mode of
-	scalar_type to UNITS_PER_SIMD_WORD.
+	(get_vectype_for_scalar_type): Pass mode of scalar_type
+	to UNITS_PER_SIMD_WORD.
 
 	* config/arm/arm.h (UNITS_PER_SIMD_WORD): Updated.
 	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Likewise.
@@ -206,27 +229,21 @@
 2008-05-20  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (UNSPEC_SYNC_NEW_OP_12,
-	UNSPEC_SYNC_OLD_OP_12,
-	UNSPEC_SYNC_EXCHANGE_12): New define_constants.
-	(UNSPEC_SYNC_EXCHANGE, UNSPEC_MEMORY_BARRIER,
-	UNSPEC_SET_GOT_VERSION,
+	UNSPEC_SYNC_OLD_OP_12, UNSPEC_SYNC_EXCHANGE_12): New define_constants.
+	(UNSPEC_SYNC_EXCHANGE, UNSPEC_MEMORY_BARRIER, UNSPEC_SET_GOT_VERSION,
 	UNSPEC_UPDATE_GOT_VERSION): Renumber.
 	(optab, insn): Add 'plus' and 'minus' to define_code_attr.
 	(atomic_hiqi_op): New define_code_iterator.
-	(sync_compare_and_swap<mode>): Call
-	mips_expand_atomic_qihi instead of
+	(sync_compare_and_swap<mode>): Call mips_expand_atomic_qihi instead of
 	mips_expand_compare_and_swap_12.
 	(compare_and_swap_12): Use MIPS_COMPARE_AND_SWAP_12 instead of
-	MIPS_COMPARE_AND_SWAP_12_0.  Pass argument to
-	MIPS_COMPARE_AND_SWAP_12.
+	MIPS_COMPARE_AND_SWAP_12_0.  Pass argument to MIPS_COMPARE_AND_SWAP_12.
 	(sync_<optab><mode>, sync_old_<optab><mode>,
 	sync_new_<optab><mode>, sync_nand<mode>, sync_old_nand<mode>,
-	sync_new_nand<mode>): New define_expands for HI and QI mode
-	operands.
+	sync_new_nand<mode>): New define_expands for HI and QI mode operands.
 	(sync_<optab>_12, sync_old_<optab>_12, sync_new_<optab>_12,
 	sync_nand_12, sync_old_nand_12, sync_new_nand_12): New insns.
-	(sync_lock_test_and_set<mode>): New define_expand for HI and QI
-	modes.
+	(sync_lock_test_and_set<mode>): New define_expand for HI and QI modes.
 	(test_and_set_12): New insn.
 	(sync_old_add<mode>, sync_new_add<mode>, sync_old_<optab><mode>,
 	sync_new_<optab><mode>, sync_old_nand<mode>,
@@ -284,10 +301,12 @@
 2008-05-20  Jan Sjodin  <jan.sjodin@amd.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
-	* tree-loop-linear.c (gather_interchange_stats): Look in the access matrix,
-	and never look at the tree representation of the memory accesses.
+	* tree-loop-linear.c (gather_interchange_stats): Look in the access
+	matrix, and never look at the tree representation of the memory
+	accesses.
 	(linear_transform_loops): Computes parameters and access matrices.
-	* tree-data-ref.c (compute_data_dependences_for_loop): Returns false when fails.
+	* tree-data-ref.c (compute_data_dependences_for_loop): Returns false
+	when fails.
 	(access_matrix_get_index_for_parameter): New.
 	* tree-data-ref.h (struct access_matrix): New.
 	(AM_LOOP_NEST_NUM, AM_NB_INDUCTION_VARS, AM_PARAMETERS, AM_MATRIX,
@@ -333,15 +352,15 @@
 
 	PR tree-optimization/36206
 	* tree-chrec.h (chrec_fold_op): New.
-	* tree-data-ref.c (initialize_matrix_A): Traverse NOP_EXPR, PLUS_EXPR, and
-	other trees.
+	* tree-data-ref.c (initialize_matrix_A): Traverse NOP_EXPR, PLUS_EXPR,
+	and other trees.
 
 2008-05-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-incpath.c (INO_T_EQ): Do not define on non-inode systems.
 	(DIRS_EQ): New.
-	(remove_duplicates): Do not set inode on non-inode systems.  Use
-	DIRS_EQ.
+	(remove_duplicates): Do not set inode on non-inode systems.
+	Use DIRS_EQ.
 
 2008-05-20  Sandra Loosemore  <sandra@codesourcery.com>
 
@@ -349,8 +368,7 @@
 
 2008-05-20  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-reassoc.c (fini_reassoc): Use the statistics
-	infrastructure.
+	* tree-ssa-reassoc.c (fini_reassoc): Use the statistics infrastructure.
 	* tree-ssa-sccvn.c (process_scc): Likewise.
 	* tree-ssa-sink.c (execute_sink_code): Likewise.
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Likewise.
