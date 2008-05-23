@@ -3,7 +3,7 @@
 
 extern "C" void abort ();
 
-static int ctors, dtors, copyctors, n, m;
+static int n;
 
 struct A
 {

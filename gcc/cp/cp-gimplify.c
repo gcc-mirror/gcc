@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
@@ -784,7 +784,7 @@ cp_genericize (tree fndecl)
 static tree
 cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 {
-  tree defparm, parm;
+  tree defparm, parm, t;
   int i = 0;
   int nargs;
   tree *argarray;
@@ -804,7 +804,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       tree inner_type = TREE_TYPE (arg1);
       tree start1, end1, p1;
       tree start2 = NULL, p2 = NULL;
-      tree ret = NULL, lab, t;
+      tree ret = NULL, lab;
 
       start1 = arg1;
       start2 = arg2;
@@ -849,6 +849,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
 					   TREE_PURPOSE (parm), fn, i);
       t = build_call_a (fn, i, argarray);
+      t = fold_convert (void_type_node, t);
+      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
       append_to_statement_list (t, &ret);
 
       t = TYPE_SIZE_UNIT (inner_type);
@@ -881,7 +883,9 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
 					   TREE_PURPOSE (parm),
 					   fn, i);
-      return build_call_a (fn, i, argarray);
+      t = build_call_a (fn, i, argarray);
+      t = fold_convert (void_type_node, t);
+      return fold_build_cleanup_point_expr (TREE_TYPE (t), t);
     }
 }
 
