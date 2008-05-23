@@ -629,6 +629,12 @@
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="lwg-active.html#761">761</ulink>:
+        <emphasis>unordered_map needs an at() member function</emphasis>
+    </term>
+    <listitem><para>In C++0x mode, add at() and at() const.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="lwg-active.html#778">778</ulink>:
         <emphasis>std::bitset does not have any constructor taking a string literal</emphasis>
     </term>
