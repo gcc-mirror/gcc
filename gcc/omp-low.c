@@ -4217,40 +4217,12 @@ execute_expand_omp (void)
   return 0;
 }
 
-/* OMP expansion in SSA form.  For testing purposes only.  */
-
-static bool
-gate_expand_omp_ssa (void)
-{
-  return flag_openmp_ssa && flag_openmp != 0 && errorcount == 0;
-}
-
-struct gimple_opt_pass pass_expand_omp_ssa = 
-{
- {
-  GIMPLE_PASS,
-  "ompexpssa",				/* name */
-  gate_expand_omp_ssa,			/* gate */
-  execute_expand_omp,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  0,					/* tv_id */
-  PROP_gimple_any,			/* properties_required */
-  PROP_gimple_lomp,			/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
- }
-};
-
 /* OMP expansion -- the default pass, run before creation of SSA form.  */
 
 static bool
 gate_expand_omp (void)
 {
-  return ((!flag_openmp_ssa || !optimize)
-	  && flag_openmp != 0 && errorcount == 0);
+  return (flag_openmp != 0 && errorcount == 0);
 }
 
 struct gimple_opt_pass pass_expand_omp = 

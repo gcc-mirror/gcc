@@ -1,3 +1,11 @@
+2008-05-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* omp-low.c (gate_expand_omp_ssa): Remove.
+	(pass_expand_omp_ssa): Remove.
+	(gate_expand_omp): Do not check for flag_openmp_ssa.
+	* common.opt (-fopenmp-ssa): Remove.
+	* passes.c (init_optimization_passes): Remove pass_expand_omp_ssa.
+
 2008-05-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.opt (mfixed-range): New option.
