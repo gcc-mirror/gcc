@@ -6222,12 +6222,12 @@ package body Prj.Nmsc is
                String_Element_Table.Increment_Last
                  (In_Tree.String_Elements);
                Element :=
-                 (Value    => Canonical_Path,
+                 (Value         => Canonical_Path,
                   Display_Value => Non_Canonical_Path,
-                  Location => No_Location,
-                  Flag     => False,
-                  Next     => Nil_String,
-                  Index    => 0);
+                  Location      => No_Location,
+                  Flag          => False,
+                  Next          => Nil_String,
+                  Index         => 0);
 
                --  Case of first source directory
 
@@ -7943,6 +7943,10 @@ package body Prj.Nmsc is
       First_Language : Language_Index;
       OK             : Boolean;
 
+      Last_Spec : Natural;
+      Last_Body : Natural;
+      Last_Sep  : Natural;
+
    begin
       Unit := No_Name;
       Alternate_Languages := No_Alternate_Language;
@@ -8081,7 +8085,9 @@ package body Prj.Nmsc is
                   end if;
 
                   if OK then
-                     OK := False;
+                     Last_Spec := Natural'Last;
+                     Last_Body := Natural'Last;
+                     Last_Sep  := Natural'Last;
 
                      if Config.Naming_Data.Separate_Suffix /= No_File
                        and then
@@ -8099,16 +8105,12 @@ package body Prj.Nmsc is
                                  (Last - Suffix'Length + 1 .. Last) =
                                  Suffix
                            then
-                              Kind := Sep;
-                              Last := Last - Suffix'Length;
-                              OK := True;
+                              Last_Sep := Last - Suffix'Length;
                            end if;
                         end;
                      end if;
 
-                     if not OK
-                       and then Config.Naming_Data.Body_Suffix /= No_File
-                     then
+                     if Config.Naming_Data.Body_Suffix /= No_File then
                         declare
                            Suffix : constant String :=
                              Get_Name_String
@@ -8120,16 +8122,12 @@ package body Prj.Nmsc is
                                  (Last - Suffix'Length + 1 .. Last) =
                                  Suffix
                            then
-                              Kind := Impl;
-                              Last := Last - Suffix'Length;
-                              OK := True;
+                              Last_Body := Last - Suffix'Length;
                            end if;
                         end;
                      end if;
 
-                     if not OK
-                       and then Config.Naming_Data.Spec_Suffix /= No_File
-                     then
+                     if Config.Naming_Data.Spec_Suffix /= No_File then
                         declare
                            Suffix : constant String :=
                              Get_Name_String
@@ -8141,12 +8139,34 @@ package body Prj.Nmsc is
                                  (Last - Suffix'Length + 1 .. Last) =
                                  Suffix
                            then
-                              Kind := Spec;
-                              Last := Last - Suffix'Length;
-                              OK := True;
+                              Last_Spec := Last - Suffix'Length;
                            end if;
                         end;
                      end if;
+
+                     declare
+                        Last_Min : constant Natural :=
+                                     Natural'Min (Natural'Min (Last_Spec,
+                                                               Last_Body),
+                                                               Last_Sep);
+
+                     begin
+                        OK := Last_Min < Last;
+
+                        if OK then
+                           Last := Last_Min;
+
+                           if Last_Min = Last_Spec then
+                              Kind := Spec;
+
+                           elsif Last_Min = Last_Body then
+                              Kind := Impl;
+
+                           else
+                              Kind := Sep;
+                           end if;
+                        end if;
+                     end;
                   end if;
 
                   if OK then
