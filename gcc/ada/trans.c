@@ -6685,7 +6685,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
   if (Sloc <= Standard_Location)
 #ifdef USE_MAPPED_LOCATION
     {
-      *locus = BUILTINS_LOCATION;
+      if (*locus == UNKNOWN_LOCATION)
+	*locus = BUILTINS_LOCATION;
       return false;
     }
   else

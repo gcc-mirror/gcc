@@ -1,3 +1,8 @@
+2008-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (Sloc_to_locus): Do not overwrite known GCC locations when
+	translating GNAT standard locations.
+
 2008-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (gnat_to_gnu) <N_Validate_Unchecked_Conversion>: Account
