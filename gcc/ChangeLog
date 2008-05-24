@@ -1,3 +1,8 @@
+2008-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*sse_prologue_save_insn): Set length
+	attribute to 34.
+
 2008-05-24  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* function.c: Include target hook for nonlocal_goto frame value.
