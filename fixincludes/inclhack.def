@@ -3205,16 +3205,7 @@ fix = {
     files = iso/math_c99.h;
     c_fix = format;
     c_fix_arg = "#define\tfpclassify(x) \\\n"
-                "  __extension__ ({ const __typeof(x) __x_fp = (x); \\\n"
-                "\t\t   isnan(__x_fp) \\\n"
-                "\t\t     ? FP_NAN \\\n"
-                "\t\t     : isinf(__x_fp) \\\n"
-                "\t\t       ? FP_INFINITE \\\n"
-                "\t\t       : isnormal(__x_fp) \\\n"
-                "\t\t\t ? FP_NORMAL \\\n"
-                "\t\t\t : __x_fp == 0.0 \\\n"
-                "\t\t\t   ? FP_ZERO \\\n"
-                "\t\t\t   : FP_SUBNORMAL; })";
+                "  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, (x))";
     c_fix_arg = "^#define[ \t]+fpclassify\\(x\\)[ \t]+__builtin_fpclassify\\(x\\)";
     test_text =
     '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
