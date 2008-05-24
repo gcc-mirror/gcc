@@ -1,5 +1,7 @@
 2008-05-23  DJ Delorie  <dj@redhat.com>
 
+	* config/m32c/jump.md (untyped_call): Add.
+
 	* config/m32c/m32c.c (m32c_return_addr_rtx): Change pointer type
 	for A24 to PSImode.
 	(m32c_address_cost): Detail costs for indirect offsets.
