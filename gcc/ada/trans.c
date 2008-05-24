@@ -4880,7 +4880,10 @@ gnat_to_gnu (Node_Id gnat_node)
      the location information of their last use.  Note that we may have
      no result if we tried to build a CALL_EXPR node to a procedure with
      no side-effects and optimization is enabled.  */
-  if (gnu_result && EXPR_P (gnu_result) && !REFERENCE_CLASS_P (gnu_result))
+  if (gnu_result
+      && EXPR_P (gnu_result)
+      && TREE_CODE (gnu_result) != NOP_EXPR
+      && !REFERENCE_CLASS_P (gnu_result))
     set_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
@@ -6853,7 +6856,8 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
 
   if (Sloc <= Standard_Location)
     {
-      *locus = BUILTINS_LOCATION;
+      if (*locus == UNKNOWN_LOCATION)
+	*locus = BUILTINS_LOCATION;
       return false;
     }
   else
