@@ -1,3 +1,8 @@
+2008-05-23  Sandra Loosemore  <sandra@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* g++.dg/other/profile1.C: Use dg-require-profiling.
+
 2008-05-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR testsuite/22523
