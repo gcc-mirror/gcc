@@ -1,3 +1,8 @@
+2008-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_fpclassify): Fix spelling of FP_INFINITE.
+	* doc/extend.texi: Likewise.
+
 2008-05-23  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/jump.md (untyped_call): Add.
