@@ -9748,14 +9748,15 @@ fold_builtin_classify (tree fndecl, tree arg, int builtin_index)
    This builtin will generate code to return the appropriate floating
    point classification depending on the value of the floating point
    number passed in.  The possible return values must be supplied as
-   int arguments to the call in the following order: FP_NAN, FP_INF,
+   int arguments to the call in the following order: FP_NAN, FP_INFINITE,
    FP_NORMAL, FP_SUBNORMAL and FP_ZERO.  The ellipses is for exactly
    one floating point argument which is "type generic".  */
 
 static tree
 fold_builtin_fpclassify (tree exp)
 {
-  tree fp_nan, fp_inf, fp_normal, fp_subnormal, fp_zero, arg, type, res, tmp;
+  tree fp_nan, fp_infinite, fp_normal, fp_subnormal, fp_zero,
+    arg, type, res, tmp;
   enum machine_mode mode;
   REAL_VALUE_TYPE r;
   char buf[128];
@@ -9767,7 +9768,7 @@ fold_builtin_fpclassify (tree exp)
     return NULL_TREE;
   
   fp_nan = CALL_EXPR_ARG (exp, 0);
-  fp_inf = CALL_EXPR_ARG (exp, 1);
+  fp_infinite = CALL_EXPR_ARG (exp, 1);
   fp_normal = CALL_EXPR_ARG (exp, 2);
   fp_subnormal = CALL_EXPR_ARG (exp, 3);
   fp_zero = CALL_EXPR_ARG (exp, 4);
@@ -9778,7 +9779,7 @@ fold_builtin_fpclassify (tree exp)
 
   /* fpclassify(x) -> 
        isnan(x) ? FP_NAN :
-         (fabs(x) == Inf ? FP_INF :
+         (fabs(x) == Inf ? FP_INFINITE :
 	   (fabs(x) >= DBL_MIN ? FP_NORMAL :
 	     (x == 0 ? FP_ZERO : FP_SUBNORMAL))).  */
   
@@ -9796,7 +9797,7 @@ fold_builtin_fpclassify (tree exp)
       real_inf (&r);
       tmp = fold_build2 (EQ_EXPR, integer_type_node, arg,
 			 build_real (type, r));
-      res = fold_build3 (COND_EXPR, integer_type_node, tmp, fp_inf, res);
+      res = fold_build3 (COND_EXPR, integer_type_node, tmp, fp_infinite, res);
     }
 
   if (HONOR_NANS (mode))

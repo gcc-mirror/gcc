@@ -6567,7 +6567,7 @@ This built-in implements the C99 fpclassify functionality.  The first
 five int arguments should be the target library's notion of the
 possible FP classes and are used for return values.  They must be
 constant values and they must appear in this order: @code{FP_NAN},
-@code{FP_INF}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
+@code{FP_INFINITE}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
 @code{FP_ZERO}.  The ellipsis is for exactly one floating point value
 to classify.  GCC treats the last argument as type-generic, which
 means it does not do default promotion from float to double.

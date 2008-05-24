@@ -1,11 +1,11 @@
 /* Test various type-generic builtins by calling "main_tests()".  */
 
 #define FP_NAN 1
-#define FP_INF 2
+#define FP_INFINITE 2
 #define FP_NORMAL 3
 #define FP_SUBNORMAL 4
 #define FP_ZERO 5
-#define fpclassify(X) __builtin_fpclassify(FP_NAN, FP_INF, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, (X))
+#define fpclassify(X) __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, (X))
 
 void __attribute__ ((__noinline__))
 foo_1 (float f, double d, long double ld,
@@ -118,7 +118,7 @@ main_tests (void)
 
   /* Test infinity.  */
   f = __builtin_inff(); d = __builtin_inf(); ld = __builtin_infl();
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INF);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INFINITE);
 
   /* Test zero.  */
   f = 0; d = 0; ld = 0;
@@ -142,7 +142,7 @@ main_tests (void)
 
   /* Test overflow values.  */
   f = __FLT_MAX__*2; d = __DBL_MAX__*2; ld = __LDBL_MAX__*2;
-  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INF);
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0, /*isnorm=*/ 0, FP_INFINITE);
 
   return 0;
 }

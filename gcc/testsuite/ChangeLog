@@ -1,3 +1,7 @@
+2008-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/tg-tests.h: Fix spelling of FP_INFINITE.
+
 2008-05-23  Sandra Loosemore  <sandra@codesourcery.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
