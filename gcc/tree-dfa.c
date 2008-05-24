@@ -1078,8 +1078,23 @@ refs_may_alias_p (tree ref1, tree ref2)
 
   /* If one base is a ref-all pointer weird things are allowed.  */
   strict_aliasing_applies = (flag_strict_aliasing
-			     && get_alias_set (base1) != 0
-			     && get_alias_set (base2) != 0);
+			     && (!INDIRECT_REF_P (base1)
+				 || get_alias_set (base1) != 0)
+			     && (!INDIRECT_REF_P (base2)
+				 || get_alias_set (base2) != 0));
+
+  /* If strict aliasing applies the only way to access a scalar variable
+     is through a pointer dereference or through a union (gcc extension).  */
+  if (strict_aliasing_applies
+      && ((SSA_VAR_P (ref2)
+	   && !AGGREGATE_TYPE_P (TREE_TYPE (ref2))
+	   && !INDIRECT_REF_P (ref1)
+	   && TREE_CODE (TREE_TYPE (base1)) != UNION_TYPE)
+	  || (SSA_VAR_P (ref1)
+	      && !AGGREGATE_TYPE_P (TREE_TYPE (ref1))
+	      && !INDIRECT_REF_P (ref2)
+	      && TREE_CODE (TREE_TYPE (base2)) != UNION_TYPE)))
+    return false;
 
   /* If both references are through the same type, or if strict aliasing
      doesn't apply they are through two same pointers, they do not alias
