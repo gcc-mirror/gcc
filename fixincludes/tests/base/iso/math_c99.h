@@ -38,16 +38,7 @@
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	fpclassify
 #define	fpclassify(x) \
-  __extension__ ({ const __typeof(x) __x_fp = (x); \
-		   isnan(__x_fp) \
-		     ? FP_NAN \
-		     : isinf(__x_fp) \
-		       ? FP_INFINITE \
-		       : isnormal(__x_fp) \
-			 ? FP_NORMAL \
-			 : __x_fp == 0.0 \
-			   ? FP_ZERO \
-			   : FP_SUBNORMAL; })
+  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, (x))
 #endif  /* SOLARIS_MATH_4_CHECK */
 
 
