@@ -1,3 +1,7 @@
+2008-05-24  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* function.c: Include target hook for nonlocal_goto frame value.
+
 2008-05-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (refs_may_alias_p): Re-instantiate case that
