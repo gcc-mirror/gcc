@@ -52,7 +52,8 @@ namespace std
 
   bool 
   atomic_flag_test_and_set_explicit(volatile atomic_flag* __a, 
-				    memory_order __x)
+				    memory_order __x
+				    __attribute__ ((__unused__)))
   {
 #ifdef _GLIBCXX_ATOMIC_BUILTINS_1
     if (__x >= memory_order_acq_rel)
@@ -70,7 +71,8 @@ namespace std
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
   
   void 
-  atomic_flag_clear_explicit(volatile atomic_flag* __a, memory_order __x)
+  atomic_flag_clear_explicit(volatile atomic_flag* __a,
+			     memory_order __x __attribute__ ((__unused__)))
   {
 #ifdef _GLIBCXX_ATOMIC_BUILTINS_1
     __sync_lock_release(&(__a->_M_base._M_b));
