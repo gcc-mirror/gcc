@@ -117,13 +117,13 @@
 static ssa_prop_visit_stmt_fn ssa_prop_visit_stmt;
 static ssa_prop_visit_phi_fn ssa_prop_visit_phi;
 
-/* Use the TREE_DEPRECATED bitflag to mark statements that have been
+/* Use the deprecated flag to mark statements that have been
    added to one of the SSA edges worklists.  This flag is used to
    avoid visiting statements unnecessarily when draining an SSA edge
    worklist.  If while simulating a basic block, we find a statement with
    STMT_IN_SSA_EDGE_WORKLIST set, we clear it to prevent SSA edge
    processing from visiting it again.  */
-#define STMT_IN_SSA_EDGE_WORKLIST(T)	TREE_DEPRECATED (T)
+#define STMT_IN_SSA_EDGE_WORKLIST(T) ((T)->base.deprecated_flag)
 
 /* A bitmap to keep track of executable blocks in the CFG.  */
 static sbitmap executable_blocks;

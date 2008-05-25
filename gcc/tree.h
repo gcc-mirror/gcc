@@ -423,83 +423,114 @@ struct gimple_stmt GTY(())
 };
 
 /* The following table lists the uses of each of the above flags and
-   for which types of nodes they are defined.  Note that expressions
-   include decls.
+   for which types of nodes they are defined.
 
    addressable_flag:
 
        TREE_ADDRESSABLE in
-	   VAR_DECL, FUNCTION_DECL, FIELD_DECL, CONSTRUCTOR, LABEL_DECL,
-	   ..._TYPE, IDENTIFIER_NODE.
-	   In a STMT_EXPR, it means we want the result of the enclosed
-	   expression.
-       CALL_EXPR_TAILCALL in CALL_EXPR
-       CASE_LOW_SEEN in CASE_LABEL_EXPR
-       RETURN_EXPR_OUTCOME in RETURN_EXPR
+           VAR_DECL, FUNCTION_DECL, FIELD_DECL, LABEL_DECL
+           all types
+           CONSTRUCTOR, IDENTIFIER_NODE
+           STMT_EXPR, it means we want the result of the enclosed expression
+
+       CALL_EXPR_TAILCALL in
+           CALL_EXPR
+
+       CASE_LOW_SEEN in
+           CASE_LABEL_EXPR
 
    static_flag:
 
        TREE_STATIC in
-           VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, ADDR_EXPR
+           VAR_DECL, FUNCTION_DECL
+           CONSTRUCTOR
+
+       TREE_NO_TRAMPOLINE in
+           ADDR_EXPR
+
        BINFO_VIRTUAL_P in
            TREE_BINFO
+
        TREE_SYMBOL_REFERENCED in
            IDENTIFIER_NODE
+
        CLEANUP_EH_ONLY in
            TARGET_EXPR, WITH_CLEANUP_EXPR
+
        TRY_CATCH_IS_CLEANUP in
            TRY_CATCH_EXPR
+
        ASM_INPUT_P in
            ASM_EXPR
-       EH_FILTER_MUST_NOT_THROW in EH_FILTER_EXPR
+
+       EH_FILTER_MUST_NOT_THROW in
+           EH_FILTER_EXPR
+
        TYPE_REF_CAN_ALIAS_ALL in
            POINTER_TYPE, REFERENCE_TYPE
+
        MOVE_NONTEMPORAL in
-	   GIMPLE_MODIFY_STMT
+           GIMPLE_MODIFY_STMT
+
        CASE_HIGH_SEEN in
-	   CASE_LABEL_EXPR
+           CASE_LABEL_EXPR
+
        CALL_CANNOT_INLINE_P in
-	   CALL_EXPR
+           CALL_EXPR
 
    public_flag:
 
        TREE_OVERFLOW in
            INTEGER_CST, REAL_CST, COMPLEX_CST, VECTOR_CST
+
        TREE_PUBLIC in
-           VAR_DECL or FUNCTION_DECL or IDENTIFIER_NODE
+           VAR_DECL, FUNCTION_DECL
+           IDENTIFIER_NODE
+
        ASM_VOLATILE_P in
            ASM_EXPR
+
        CALL_EXPR_VA_ARG_PACK in
-	  CALL_EXPR
+           CALL_EXPR
+
        TYPE_CACHED_VALUES_P in
-          ..._TYPE
+           all types
+
        SAVE_EXPR_RESOLVED_P in
-	  SAVE_EXPR
+           SAVE_EXPR
+
        OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE in
-	  OMP_CLAUSE_LASTPRIVATE
+           OMP_CLAUSE_LASTPRIVATE
+
        OMP_CLAUSE_PRIVATE_DEBUG in
-	  OMP_CLAUSE_PRIVATE
+           OMP_CLAUSE_PRIVATE
 
    private_flag:
 
        TREE_PRIVATE in
-           ..._DECL
+           all decls
+
        CALL_EXPR_RETURN_SLOT_OPT in
            CALL_EXPR
+
        DECL_BY_REFERENCE in
            PARM_DECL, RESULT_DECL
+
        OMP_RETURN_NOWAIT in
-	   OMP_RETURN
+           OMP_RETURN
+
        OMP_SECTION_LAST in
-	   OMP_SECTION
+           OMP_SECTION
+
        OMP_PARALLEL_COMBINED in
-	   OMP_PARALLEL
+           OMP_PARALLEL
 
    protected_flag:
 
        TREE_PROTECTED in
            BLOCK
-	   ..._DECL
+           all decls
+
        CALL_FROM_THUNK_P in
            CALL_EXPR
 
@@ -507,75 +538,95 @@ struct gimple_stmt GTY(())
 
        TREE_SIDE_EFFECTS in
            all expressions
-	   all decls
-	   all constants
+           all decls
+           all constants
 
        FORCED_LABEL in
-	   LABEL_DECL
+           LABEL_DECL
 
    volatile_flag:
 
        TREE_THIS_VOLATILE in
            all expressions
+           all decls
+
        TYPE_VOLATILE in
-           ..._TYPE
+           all types
 
    readonly_flag:
 
        TREE_READONLY in
            all expressions
+           all decls
+
        TYPE_READONLY in
-           ..._TYPE
+           all types
 
    constant_flag:
 
        TREE_CONSTANT in
            all expressions
-	   all decls
-	   all constants
-       TYPE_SIZES_GIMPLIFIED
-           ..._TYPE
+           all decls
+           all constants
+
+       TYPE_SIZES_GIMPLIFIED in
+           all types
 
    unsigned_flag:
 
        TYPE_UNSIGNED in
            all types
+
        DECL_UNSIGNED in
            all decls
+
+       REGISTER_DEFS_IN_THIS_STMT in
+           all expressions (tree-into-ssa.c)
 
    asm_written_flag:
 
        TREE_ASM_WRITTEN in
-           VAR_DECL, FUNCTION_DECL, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
-	   BLOCK, SSA_NAME, STRING_CST
+           VAR_DECL, FUNCTION_DECL
+           RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
+           BLOCK, SSA_NAME, STRING_CST
+
+       NECESSARY in
+           all expressions (tree-ssa-dce.c, tree-ssa-pre.c)
 
    used_flag:
 
        TREE_USED in
-           expressions, IDENTIFIER_NODE
+           all expressions
+           all decls
+           IDENTIFIER_NODE
 
    nothrow_flag:
 
        TREE_NOTHROW in
-           CALL_EXPR, FUNCTION_DECL
+           CALL_EXPR
+           FUNCTION_DECL
 
        TYPE_ALIGN_OK in
-	   ..._TYPE
+           all types
 
        TREE_THIS_NOTRAP in
           (ALIGN/MISALIGNED_)INDIRECT_REF, ARRAY_REF, ARRAY_RANGE_REF
 
    deprecated_flag:
 
-	TREE_DEPRECATED in
-	   ..._DECL
+       TREE_DEPRECATED in
+           all decls
 
-	IDENTIFIER_TRANSPARENT_ALIAS in
-	   IDENTIFIER_NODE
+       IDENTIFIER_TRANSPARENT_ALIAS in
+           IDENTIFIER_NODE
+
+       STMT_IN_SSA_EDGE_WORKLIST in
+           all expressions (tree-ssa-propagate.c)
 
    visited:
 
-   	Used in tree traversals to mark visited nodes.
+       TREE_VISITED in
+           all trees (used liberally by many passes)
 
    saturating_flag:
 
@@ -585,8 +636,15 @@ struct gimple_stmt GTY(())
    nowarning_flag:
 
        TREE_NO_WARNING in
-           ... any expr or decl node
+           all expressions
+           all decls
+
+   default_def_flag:
+
+       SSA_NAME_IS_DEFAULT_DEF in
+           SSA_NAME
 */
+
 #undef DEFTREESTRUCT
 #define DEFTREESTRUCT(ENUM, NAME) ENUM,
 enum tree_node_structure_enum {
@@ -1169,11 +1227,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a VAR_DECL, nonzero means allocate static storage.
    In a FUNCTION_DECL, nonzero if function has been defined.
-   In a CONSTRUCTOR, nonzero means allocate static storage.
-
-   ??? This is also used in lots of other nodes in unclear ways which
-   should be cleaned up some day.  */
+   In a CONSTRUCTOR, nonzero means allocate static storage.  */
 #define TREE_STATIC(NODE) ((NODE)->base.static_flag)
+
+/* In an ADDR_EXPR, nonzero means do not use a trampoline.  */
+#define TREE_NO_TRAMPOLINE(NODE) (ADDR_EXPR_CHECK (NODE)->base.static_flag)
 
 /* In a TARGET_EXPR or WITH_CLEANUP_EXPR, means that the pertinent cleanup
    should only be executed if an exception is thrown, not on normal exit
@@ -1241,7 +1299,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* In a SAVE_EXPR, indicates that the original expression has already
    been substituted with a VAR_DECL that contains the value.  */
 #define SAVE_EXPR_RESOLVED_P(NODE) \
-  (TREE_CHECK (NODE, SAVE_EXPR)->base.public_flag)
+  (SAVE_EXPR_CHECK (NODE)->base.public_flag)
 
 /* Set on a CALL_EXPR if this stdarg call should be passed the argument
    pack.  */
@@ -1259,7 +1317,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* In a LABEL_DECL, nonzero means this label had its address taken
    and therefore can never be deleted and is a jump target for
    computed gotos.  */
-#define FORCED_LABEL(NODE) ((NODE)->base.side_effects_flag)
+#define FORCED_LABEL(NODE) (LABEL_DECL_CHECK (NODE)->base.side_effects_flag)
 
 /* Nonzero means this expression is volatile in the C sense:
    its address should be of type `volatile WHATEVER *'.
@@ -1333,17 +1391,16 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a CALL_EXPR, means that it's safe to use the target of the call
    expansion as the return slot for a call that returns in memory.  */
-#define CALL_EXPR_RETURN_SLOT_OPT(NODE) ((NODE)->base.private_flag)
+#define CALL_EXPR_RETURN_SLOT_OPT(NODE) \
+  (CALL_EXPR_CHECK (NODE)->base.private_flag)
 
 /* In a RESULT_DECL or PARM_DECL, means that it is passed by invisible
    reference (and the TREE_TYPE is a pointer to the true type).  */
-#define DECL_BY_REFERENCE(NODE) \
-  (DECL_COMMON_CHECK (NODE)->base.private_flag)
+#define DECL_BY_REFERENCE(NODE) (DECL_COMMON_CHECK (NODE)->base.private_flag)
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
-#define CALL_FROM_THUNK_P(NODE) \
-  (CALL_EXPR_CHECK (NODE)->base.protected_flag)
+#define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM
@@ -1664,8 +1721,8 @@ struct tree_constructor GTY(())
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_EXPR_CHECK (NODE), 3)
 /* Nonzero if we want to create an ASM_INPUT instead of an
    ASM_OPERAND with no operands.  */
-#define ASM_INPUT_P(NODE) (TREE_STATIC (NODE))
-#define ASM_VOLATILE_P(NODE) (TREE_PUBLIC (NODE))
+#define ASM_INPUT_P(NODE) (ASM_EXPR_CHECK (NODE)->base.static_flag)
+#define ASM_VOLATILE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.public_flag)
 
 /* COND_EXPR accessors.  */
 #define COND_EXPR_COND(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 0))
@@ -1692,7 +1749,8 @@ struct tree_constructor GTY(())
 /* EH_FILTER_EXPR accessors.  */
 #define EH_FILTER_TYPES(NODE)	TREE_OPERAND (EH_FILTER_EXPR_CHECK (NODE), 0)
 #define EH_FILTER_FAILURE(NODE)	TREE_OPERAND (EH_FILTER_EXPR_CHECK (NODE), 1)
-#define EH_FILTER_MUST_NOT_THROW(NODE) TREE_STATIC (EH_FILTER_EXPR_CHECK (NODE))
+#define EH_FILTER_MUST_NOT_THROW(NODE) \
+  (EH_FILTER_EXPR_CHECK (NODE)->base.static_flag)
 
 /* CHANGE_DYNAMIC_TYPE_EXPR accessors.  */
 #define CHANGE_DYNAMIC_TYPE_NEW_TYPE(NODE) \
@@ -1770,30 +1828,30 @@ struct tree_constructor GTY(())
 /* True on an OMP_SECTION statement that was the last lexical member.
    This status is meaningful in the implementation of lastprivate.  */
 #define OMP_SECTION_LAST(NODE) \
-  TREE_PRIVATE (OMP_SECTION_CHECK (NODE))
+  (OMP_SECTION_CHECK (NODE)->base.private_flag)
 
 /* True on an OMP_RETURN statement if the return does not require a
    thread synchronization via some sort of barrier.  The exact barrier
    that would otherwise be emitted is dependent on the OMP statement
    with which this return is associated.  */
 #define OMP_RETURN_NOWAIT(NODE) \
-  TREE_PRIVATE (OMP_RETURN_CHECK (NODE))
+  (OMP_RETURN_CHECK (NODE)->base.private_flag)
 
 /* True on an OMP_PARALLEL statement if it represents an explicit
    combined parallel work-sharing constructs.  */
 #define OMP_PARALLEL_COMBINED(NODE) \
-  TREE_PRIVATE (OMP_PARALLEL_CHECK (NODE))
+  (OMP_PARALLEL_CHECK (NODE)->base.private_flag)
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point
    to what it has been remapped to.  */
 #define OMP_CLAUSE_PRIVATE_DEBUG(NODE) \
-  TREE_PUBLIC (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE))
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE)->base.public_flag)
 
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \
-  TREE_PUBLIC (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE)->base.public_flag)
 
 #define OMP_CLAUSE_IF_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_IF), 0)
