@@ -4011,7 +4011,7 @@ extern int tree_int_cst_sign_bit (const_tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (const_tree);
-extern tree get_inner_array_type (const_tree);
+extern tree strip_array_types (tree);
 
 /* Construct various nodes representing fract or accum data types.  */
 

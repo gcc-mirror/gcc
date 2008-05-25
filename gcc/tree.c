@@ -5682,14 +5682,12 @@ build_array_type (tree elt_type, tree index_type)
   return t;
 }
 
-/* Return the TYPE of the elements comprising
-   the innermost dimension of ARRAY.  */
+/* Recursively examines the array elements of TYPE, until a non-array
+   element type is found.  */
 
 tree
-get_inner_array_type (const_tree array)
+strip_array_types (tree type)
 {
-  tree type = TREE_TYPE (array);
-
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 

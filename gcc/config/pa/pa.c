@@ -1712,8 +1712,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		    decl = TREE_OPERAND (decl, 1);
 
 		  type = TREE_TYPE (decl);
-		  if (TREE_CODE (type) == ARRAY_TYPE)
-		    type = get_inner_array_type (type);
+		  type = strip_array_types (type);
 
 		  if (POINTER_TYPE_P (type))
 		    {
