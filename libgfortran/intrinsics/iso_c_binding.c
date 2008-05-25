@@ -180,16 +180,3 @@ ISO_C_BINDING_PREFIX (c_f_pointer_d0) (void *c_ptr_in,
 			 | (GFC_DTYPE_DERIVED << GFC_DTYPE_TYPE_SHIFT);
     }
 }
-
-
-/* This function will change, once there is an actual f90 type for the
-   procedure pointer.  */
-
-void
-ISO_C_BINDING_PREFIX (c_f_procpointer) (void *c_ptr_in,
-                                        gfc_array_void *f_ptr_out)
-{
-  GFC_DESCRIPTOR_DATA(f_ptr_out) = c_ptr_in;
-}
-
-

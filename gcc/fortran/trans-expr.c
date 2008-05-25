@@ -2319,6 +2319,34 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       
 	  return 0;
 	}
+      else if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER
+	         && arg->next->expr->rank == 0)
+	       || sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER)
+	{
+	  /* Convert c_f_pointer if fptr is a scalar
+	     and convert c_f_procpointer.  */
+	  gfc_se cptrse;
+	  gfc_se fptrse;
+
+	  gfc_init_se (&cptrse, NULL);
+	  gfc_conv_expr (&cptrse, arg->expr);
+	  gfc_add_block_to_block (&se->pre, &cptrse.pre);
+	  gfc_add_block_to_block (&se->post, &cptrse.post);
+
+	  gfc_init_se (&fptrse, NULL);
+	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
+	      fptrse.want_pointer = 1;
+
+	  gfc_conv_expr (&fptrse, arg->next->expr);
+	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
+	  gfc_add_block_to_block (&se->post, &fptrse.post);
+
+	  tmp = arg->next->expr->symtree->n.sym->backend_decl;
+	  se->expr = fold_build2 (MODIFY_EXPR, TREE_TYPE (tmp), fptrse.expr,
+				  fold_convert (TREE_TYPE (tmp), cptrse.expr));
+
+	  return 0;
+	}
       else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
         {
 	  gfc_se arg1se;
