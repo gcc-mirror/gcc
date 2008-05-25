@@ -1,3 +1,7 @@
+2008-05-25  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	* config.host (sh2[lbe]*-*-linux*): Allow target.
+
 2008-04-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/t-ppccomm: Add build rules for new files.

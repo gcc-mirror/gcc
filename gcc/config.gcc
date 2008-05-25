@@ -2171,7 +2171,7 @@ score-*-elf)
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
-  sh-*-linux* | sh[346lbe]*-*-linux* | \
+  sh-*-linux* | sh[2346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
    sh64-*-netbsd* | sh64l*-*-netbsd*)
 	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
