@@ -4173,18 +4173,6 @@ self_promoting_args_p (const_tree parms)
   return 1;
 }
 
-/* Recursively examines the array elements of TYPE, until a non-array
-   element type is found.  */
-
-tree
-strip_array_types (tree type)
-{
-  while (TREE_CODE (type) == ARRAY_TYPE)
-    type = TREE_TYPE (type);
-
-  return type;
-}
-
 /* Recursively remove any '*' or '&' operator from TYPE.  */
 tree
 strip_pointer_operator (tree t)

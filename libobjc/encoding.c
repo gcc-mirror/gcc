@@ -78,7 +78,7 @@ Boston, MA 02110-1301, USA.  */
 
 #define DFmode          _C_DBL
 
-#define get_inner_array_type(TYPE)      ({const char *_field = (TYPE); \
+#define strip_array_types(TYPE)      ({const char *_field = (TYPE); \
   while (*_field == _C_ARY_B)\
     {\
       while (isdigit ((unsigned char)*++_field))\
@@ -115,9 +115,7 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
 #define rs6000_special_round_type_align(STRUCT, COMPUTED, SPECIFIED)	\
   ({ const char *_fields = TYPE_FIELDS (STRUCT);				\
   ((_fields != 0							\
-    && TYPE_MODE (TREE_CODE (TREE_TYPE (_fields)) == ARRAY_TYPE		\
-		    ? get_inner_array_type (_fields)			\
-		    : TREE_TYPE (_fields)) == DFmode)			\
+    && TYPE_MODE (strip_array_types (TREE_TYPE (_fields))) == DFmode)	\
    ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\
    : MAX (COMPUTED, SPECIFIED));})
 /* FIXME: The word 'fixme' is insufficient to explain the wrong-ness

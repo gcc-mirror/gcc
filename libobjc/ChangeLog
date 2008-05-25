@@ -1,3 +1,8 @@
+2008-05-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* encoding.c (strip_array_types): Rename from get_inner_array_type.
+	(rs6000_special_round_type_align): Update.
+
 2008-05-09  Julian Brown  <julian@codesourcery.com>
 
 	* Makefile.in (LTLDFLAGS): New.
