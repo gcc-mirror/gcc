@@ -1,3 +1,7 @@
+2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	* Makefile.in: Adjusted dependencies on c-incpath.o.
+
 2008-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36237

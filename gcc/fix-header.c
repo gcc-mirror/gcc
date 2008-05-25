@@ -78,7 +78,7 @@
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"
-#include "c-incpath.h"
+#include "incpath.h"
 #include "errors.h"
 
 #ifdef TARGET_EXTRA_INCLUDES

@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "debug.h"
 #include "flags.h"
+#include "cpp.h"
 
 /* Structure for holding module and include file search path.  */
 typedef struct gfc_directorylist
@@ -340,6 +341,7 @@ void
 gfc_add_include_path (const char *path, bool use_for_modules)
 {
   add_path_to_list (&include_dirs, path, use_for_modules);
+  gfc_cpp_add_include_path (xstrdup(path), true);
 }
 
 
@@ -1909,7 +1911,14 @@ gfc_new_file (void)
 {
   try result;
 
-  result = load_file (gfc_source_file, true);
+  if (gfc_cpp_enabled ())
+    {
+      result = gfc_cpp_preprocess (gfc_source_file);
+      if (!gfc_cpp_preprocess_only ())
+        result = load_file (gfc_cpp_temporary_file (), true);
+    }
+  else
+    result = load_file (gfc_source_file, true);
 
   gfc_current_locus.lb = line_head;
   gfc_current_locus.nextc = (line_head == NULL) ? NULL : line_head->line;

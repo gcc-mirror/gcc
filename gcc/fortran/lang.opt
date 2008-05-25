@@ -25,6 +25,29 @@
 Language
 Fortran
 
+A
+Fortran Joined Separate
+; Documented in C
+
+C
+Fortran
+; Documented in C
+
+CC
+Fortran
+; Documented in C
+
+D
+Fortran Joined Separate
+; Documented in C
+
+E
+Fortran Undocumented
+
+H
+Fortran
+; Documented in C
+
 I
 Fortran Joined Separate
 -I<directory>	Add a directory for INCLUDE and MODULE searching
@@ -32,6 +55,14 @@ Fortran Joined Separate
 J
 Fortran Joined Separate
 -J<directory>	Put MODULE files in 'directory'
+
+P
+Fortran
+; Documented in C
+
+U
+Fortran Joined Separate
+; Documented in C
 
 Wall
 Fortran
@@ -80,6 +111,18 @@ Permit nonconforming uses of the tab character
 Wunderflow
 Fortran Warning
 Warn about underflow of numerical constant expressions
+
+cpp
+Fortran Joined Separate Negative(nocpp)
+Enable preprocessing
+
+nocpp
+Fortran Negative(cpp)
+Disable preprocessing
+
+d
+Fortran Joined
+-d[DIMNU]	Dump details about macro names and definitions during preprocessing
 
 fall-intrinsics
 Fortran RejectNegative
@@ -289,6 +332,38 @@ funderscoring
 Fortran
 Append underscores to externally visible names
 
+fworking-directory
+Fortran
+; Documented in C
+
+imultilib
+Fortran Joined Separate
+; Documented in C
+
+iprefix
+Fortran Joined Separate
+; Documented in C
+
+iquote
+Fortran Joined Separate
+; Documented in C
+
+isysroot
+Fortran Joined Separate
+; Documented in C
+
+isystem
+Fortran Joined Separate
+; Documented in C
+
+nostdinc
+Fortran
+; Documented in C
+
+o
+Fortran Joined Separate
+; Documented in common.opt
+
 static-libgfortran
 Fortran
 Statically link the GNU Fortran helper library (libgfortran)
@@ -312,5 +387,13 @@ Conform to nothing in particular
 std=legacy
 Fortran
 Accept extensions to support legacy code
+
+undef
+Fortran
+; Documented in C
+
+v
+Fortran
+; Documented in C
 
 ; This comment is to ensure we retain the blank line above.

@@ -976,7 +976,7 @@ GCC_OBJS = gcc.o opts-common.o gcc-options.o
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
-  c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
+  c-ppoutput.o c-cppbuiltin.o \
   c-objc-common.o c-dump.o c-pch.o c-parser.o $(C_TARGET_OBJS) \
   c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o
 
@@ -1234,6 +1234,8 @@ OBJS-archive = \
 	cgraph.o \
 	cgraphbuild.o \
 	cgraphunit.o \
+	cppdefault.o \
+	incpath.o \
 	ipa-cp.o \
 	ipa-inline.o \
 	ipa-prop.o \
@@ -1244,6 +1246,7 @@ OBJS-archive = \
 	ipa-utils.o \
 	ipa.o \
 	matrix-reorg.o \
+	prefix.o \
 	tree-inline.o \
 	tree-nomudflap.o \
 	varpool.o
@@ -1733,7 +1736,7 @@ srcextra: gcc.srcextra lang.srcextra
 gcc.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
 
-c-incpath.o: c-incpath.c c-incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
+incpath.o: incpath.c incpath.h $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) \
 		intl.h prefix.h coretypes.h $(TM_H) cppdefault.h $(TARGET_H) \
 		$(MACHMODE_H)
 
@@ -1816,13 +1819,15 @@ c-pretty-print.o : c-pretty-print.c $(C_PRETTY_PRINT_H) \
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
         $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h		\
         $(TREE_INLINE_H) $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
-        opts.h options.h $(MKDEPS_H) c-incpath.h cppdefault.h $(TM_P_H)
+        opts.h options.h $(MKDEPS_H) incpath.h cppdefault.h $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h \
-	output.h except.h $(REAL_H) $(TARGET_H) $(TM_P_H)
+	output.h except.h $(REAL_H) $(TARGET_H) $(TM_P_H) $(BASEVER)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) -DBASEVER=$(BASEVER_s) \
+		$< $(OUTPUT_OPTION)
 
 # A file used by all variants of C and some other languages.
 
@@ -3590,10 +3595,10 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h \
 # This is nominally a 'build' program, but it's run only when host==build,
 # so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
 build/fix-header$(build_exeext): build/fix-header.o build/scan-decls.o \
-  build/scan.o xsys-protos.h c-incpath.o cppdefault.o prefix.o \
+  build/scan.o xsys-protos.h \
   $(BUILD_ERRORS) $(LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/fix-header.o c-incpath.o cppdefault.o build/scan-decls.o prefix.o \
+	 build/fix-header.o incpath.o cppdefault.o build/scan-decls.o prefix.o \
 	 build/scan.o $(BUILD_ERRORS) $(LIBS)
 
 build/fix-header.o: fix-header.c $(OBSTACK_H) scan.h errors.h \

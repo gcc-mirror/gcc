@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "gfortran.h"
 #include "target.h"
+#include "cpp.h"
 
 gfc_option_t gfc_option;
 
@@ -50,8 +51,7 @@ set_default_std_flags (void)
 /* Get ready for options handling.  */
 
 unsigned int
-gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
-		  const char **argv ATTRIBUTE_UNUSED)
+gfc_init_options (unsigned int argc, const char **argv)
 {
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
@@ -127,6 +127,9 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   /* -fshort-enums can be default on some targets.  */
   gfc_option.fshort_enums = targetm.default_short_enums ();
+
+  /* Initialize cpp-related options.  */
+  gfc_cpp_init_options(argc, argv);
 
   return CL_Fortran;
 }
@@ -354,6 +357,15 @@ gfc_post_options (const char **pfilename)
   if (gfc_option.flag_all_intrinsics)
     gfc_option.warn_nonstd_intrinsics = 0;
 
+  gfc_cpp_post_options ();
+
+/* FIXME: return gfc_cpp_preprocess_only ();
+
+   The return value of this function indicates whether the
+   backend needs to be initialized. On -E, we don't need
+   the backend. However, if we return 'true' here, an
+   ICE occurs. Initializing the backend doesn't hurt much,
+   hence, for now we can live with it as is.  */
   return false;
 }
 
@@ -450,6 +462,9 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
   /* Ignore file names.  */
   if (code == N_OPTS)
+    return 1;
+
+  if (gfc_cpp_handle_option (scode, arg, value) == 1)
     return 1;
 
   switch (code)
@@ -692,7 +707,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       else
 	gfc_fatal_error ("Unrecognized option to -finit-real: %s",
 			 arg);
-      break;      
+      break;
 
     case OPT_finit_integer_:
       gfc_option.flag_init_integer = GFC_INIT_INTEGER_ON;

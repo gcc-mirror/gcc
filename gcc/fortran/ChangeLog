@@ -1,3 +1,29 @@
+2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/18428
+	* lang.opt (A, C, CC, D, E, H, P, U, cpp, d, fworking-directory,
+	imultilib, iprefix, iquote, isysroot, isystem, nocpp, nostdinc,
+	o, undef, v): New options.
+	* options.c (gfc_init_options): Also initialize preprocessor
+	options.
+	(gfc_post_options): Also handle post-initialization of preprocessor
+	options.
+	(gfc_handle_option): Check if option is a preprocessor option.
+	If yes, let gfc_cpp_handle_option() handle the option.
+	* lang-specs.h: Reorganized to handle new options.
+	* scanner.c (gfc_new_file): Read temporary file instead of
+	input source if preprocessing is enabled.
+	* f95-lang.c (gfc_init): Initialize preprocessor.
+	(gfc_finish): Clean up preprocessor.
+	* cpp.c: New.
+	* cpp.h: New.
+	* Make-lang.in: Added new objects and dependencies.
+	* gfortran.texi: Updated section "Preprocessing and
+	conditional compilation".
+	* invoke.texi: Added new section "Preprocessing Options",
+	listed and documented the preprocessing options handled
+	by gfortran.
+
 2008-05-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32600
