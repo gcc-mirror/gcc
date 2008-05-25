@@ -392,6 +392,11 @@ struct rtl_data GTY(())
 
   /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
   bool arg_pointer_save_area_init;
+
+  /* Nonzero means current function must be given a frame pointer.
+     Set in stmt.c if anything is allocated on the stack there.
+     Set in reload1.c if anything is allocated on the stack there.  */
+  bool frame_pointer_needed;
 };
 
 #define return_label (crtl->x_return_label)
@@ -405,6 +410,7 @@ struct rtl_data GTY(())
 #define avail_temp_slots (crtl->x_avail_temp_slots)
 #define temp_slot_level (crtl->x_temp_slot_level)
 #define nonlocal_goto_handler_labels (crtl->x_nonlocal_goto_handler_labels)
+#define frame_pointer_needed (crtl->frame_pointer_needed)
 
 extern GTY(()) struct rtl_data x_rtl;
 
