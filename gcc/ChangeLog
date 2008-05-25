@@ -1,3 +1,8 @@
+2008-05-25  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* gcse.c (hash_scan_set): Do not pick up a REG_EQUAL value if
+	SRC is a REG.
+
 2008-05-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* c-common.c (strip_array_types): Move function to..
