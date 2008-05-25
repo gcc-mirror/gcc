@@ -1,3 +1,9 @@
+2008-05-23  Marius Strobl <marius@FreeBSD.org>
+
+	* gthr-posix.h (__gthread_active_p): Use the Solaris implementation
+	for FreeBSD as well.
+	* gthr-posix95.h: Likewise.
+
 2008-05-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/36194
