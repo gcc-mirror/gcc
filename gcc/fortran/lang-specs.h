@@ -20,35 +20,45 @@
 /* This is the contribution to the `default_compilers' array in gcc.c
    for the f95 language.  */
 
+
+#define F951_CPP_OPTIONS "%{!nocpp: -cpp %g.f90 %(cpp_options)\
+                          %{E|M|MM:%(cpp_debug_options) -fsyntax-only} %{E}}"
+#define F951_OPTIONS     "%(cc1_options) %{J*} %{I*}\
+                          %{!nostdinc:-fintrinsic-modules-path finclude%s}\
+                          %{!fsyntax-only:%(invoke_as)}"
+#define F951_SOURCE_FORM  "%{!ffree-form:-ffixed-form}"
+
+
 {".F",   "@f77-cpp-input", 0, 0, 0},
 {".FOR", "@f77-cpp-input", 0, 0, 0},
 {".FTN", "@f77-cpp-input", 0, 0, 0},
 {".fpp", "@f77-cpp-input", 0, 0, 0},
 {".FPP", "@f77-cpp-input", 0, 0, 0},
 {"@f77-cpp-input",
-  "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
-      %{E|M|MM:%(cpp_debug_options)}\
-      %{!M:%{!MM:%{!E: -o %|.f |\n\
-    f951 %|.f %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
-      -fpreprocessed %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+    "f951 %i " F951_SOURCE_FORM " " \
+               F951_CPP_OPTIONS " %{!E:" F951_OPTIONS "}", 0, 0, 0},
+{".f",   "@f77", 0, 0, 0},
+{".for", "@f77", 0, 0, 0},
+{".ftn", "@f77", 0, 0, 0},
+{"@f77",
+    "f951 %i " F951_SOURCE_FORM " \
+          %{E:%{!cpp:%egfortran does not support -E without -cpp}} \
+          %{cpp:" F951_CPP_OPTIONS "} %{!E:" F951_OPTIONS "}", 0, 0, 0},
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
 {".F03", "@f95-cpp-input", 0, 0, 0},
 {".F08", "@f95-cpp-input", 0, 0, 0},
 {"@f95-cpp-input",
-  "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
-      %{E|M|MM:%(cpp_debug_options)}\
-      %{!M:%{!MM:%{!E: -o %|.f95 |\n\
-    f951 %|.f95 %{!ffixed-form:-ffree-form} %(cc1_options) %{J*} %{I*}\
-      -fpreprocessed %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+    "f951 %i " F951_CPP_OPTIONS " %{!E:" F951_OPTIONS "}", 0, 0, 0},
 {".f90", "@f95", 0, 0, 0},
 {".f95", "@f95", 0, 0, 0},
 {".f03", "@f95", 0, 0, 0},
 {".f08", "@f95", 0, 0, 0},
-{"@f95", "%{!E:f951 %i %(cc1_options) %{J*} %{I*}\
-         %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
-{".f",   "@f77", 0, 0, 0},
-{".for", "@f77", 0, 0, 0},
-{".ftn", "@f77", 0, 0, 0},
-{"@f77", "%{!E:f951 %i %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
-         %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
+{"@f95", 
+    "f951 %i %{E:%{!cpp:%egfortran does not support -E without -cpp}}\
+          %{cpp:" F951_CPP_OPTIONS "} %{!E:" F951_OPTIONS "}", 0, 0, 0},
+
+
+#undef F951_SOURCE_FORM
+#undef F951_CPP_OPTIONS
+#undef F951_OPTIONS

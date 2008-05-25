@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 #include "gfortran.h"
+#include "cpp.h"
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
@@ -275,18 +276,25 @@ gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 static bool
 gfc_init (void)
 {
-  linemap_add (line_table, LC_ENTER, false, gfc_source_file, 1);
-  linemap_add (line_table, LC_RENAME, false, "<built-in>", 0);
+  if (!gfc_cpp_enabled ())
+    {
+      linemap_add (line_table, LC_ENTER, false, gfc_source_file, 1);
+      linemap_add (line_table, LC_RENAME, false, "<built-in>", 0);
+    }
+  else
+    gfc_cpp_init_0 ();
 
-  /* First initialize the backend.  */
   gfc_init_decl_processing ();
   gfc_static_ctors = NULL_TREE;
 
-  /* Then the frontend.  */
+  if (gfc_cpp_enabled ())
+    gfc_cpp_init ();
+
   gfc_init_1 ();
 
   if (gfc_new_file () != SUCCESS)
     fatal_error ("can't open input file: %s", gfc_source_file);
+
   return true;
 }
 
@@ -294,6 +302,7 @@ gfc_init (void)
 static void
 gfc_finish (void)
 {
+  gfc_cpp_done ();
   gfc_done_1 ();
   gfc_release_include_path ();
   return;

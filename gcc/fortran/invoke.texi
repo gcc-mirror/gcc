@@ -94,6 +94,7 @@ one is not the default.
                         without explanations.
 * Fortran Dialect Options::  Controlling the variant of Fortran language
                              compiled.
+* Preprocessing Options::  Enable and customize preprocessing.
 * Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
@@ -122,6 +123,14 @@ by type.  Explanations are in the following sections.
 -ffree-line-length-@var{n}  -ffree-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
 -fcray-pointer  -fopenmp  -fno-range-check -fbackslash -fmodule-private}
+
+@item Preprocessing Options
+@xref{Preprocessing Options,,Enable and customize preprocessing}.
+@gccoptlist{-cpp -dD -dI -dM -dN -dU -fworking-directory @gol
+-imultilib @var{dir} -iprefix @var{file} -isysroot @var{dir} @gol
+-iquote -isystem @var{dir} -nocpp -nostdinc -undef @gol
+-A@var{question}=@var{answer} -A-@var{question}@r{[}=@var{answer}@r{]} @gol
+-C -CC -D@var{macro}@r{[}=@var{defn}@r{]} -U@var{macro} -H -P}
 
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
@@ -164,6 +173,7 @@ and warnings}.
 @menu
 * Fortran Dialect Options::  Controlling the variant of Fortran language
                              compiled.
+* Preprocessing Options::  Enable and customize preprocessing.
 * Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
@@ -340,6 +350,238 @@ language standard, and warnings are given for the Fortran 77 features
 that are permitted but obsolescent in later standards.
 
 @end table
+
+@node Preprocessing Options
+@section Enable and customize preprocessing
+@cindex preprocessor
+@cindex options, preprocessor
+@cindex CPP
+
+Preprocessor related options. See section 
+@ref{Preprocessing and conditional compilation} for more detailed
+information on preprocessing in @command{gfortran}.
+
+@table @gcctabopt
+@item -cpp
+@item -nocpp
+@opindex @code{cpp}
+@opindex @code{fpp}
+@cindex preprocessor, enable
+@cindex preprocessor, disable
+Enable preprocessing. The preprocessor is automatically invoked if
+the file extension is @file{.fpp}, @file{.FPP},  @file{.F}, @file{.FOR},
+@file{.FTN}, @file{.F90}, @file{.F95}, @file{.F03} or @file{.F08}. Use
+this option to manually enable preprocessing of any kind of Fortran file.
+
+To disable preprocessing of files with any of the above listed extensions,
+use the negative form: @option{-nocpp}.
+
+The preprocessor is run in traditional mode, be aware that any
+restrictions of the file-format, e.g. fixed-form line width,
+apply for preprocessed output as well.
+
+@item -dM
+@opindex @code{dM}
+@cindex preprocessor, debugging
+@cindex debugging, preprocessor
+Instead of the normal output, generate a list of @code{'#define'}
+directives for all the macros defined during the execution of the
+preprocessor, including predefined macros. This gives you a way
+of finding out what is predefined in your version of the preprocessor.
+Assuming you have no file @file{foo.f90}, the command
+@smallexample
+  touch foo.f90; gfortran -cpp -dM foo.f90
+@end smallexample
+will show all the predefined macros.
+
+@item -dD
+@opindex @code{dD}
+@cindex preprocessor, debugging
+@cindex debugging, preprocessor
+Like @option{-dM} except in two respects: it does not include the
+predefined macros, and it outputs both the @code{#define} directives
+and the result of preprocessing. Both kinds of output go to the
+standard output file.
+
+@item -dN
+@opindex @code{dN}
+@cindex preprocessor, debugging
+@cindex debugging, preprocessor
+Like @option{-dD}, but emit only the macro names, not their expansions.
+
+@item -dU
+@opindex @code{dU}
+@cindex preprocessor, debugging
+@cindex debugging, preprocessor
+Like @option{dD} except that only macros that are expanded, or whose
+definedness is tested in preprocessor directives, are output; the 
+output is delayed until the use or test of the macro; and @code{'#undef'}
+directives are also output for macros tested but undefined at the time.
+
+@item -dI
+@opindex @code{dI}
+@cindex preprocessor, debugging
+@cindex debugging, preprocessor
+Output @code{'#include'} directives in addition to the result
+of preprocessing.
+
+@item -fworking-directory
+@opindex @code{fworking-directory}
+@cindex preprocessor, working directory
+Enable generation of linemarkers in the preprocessor output that will
+let the compiler know the current working directory at the time of
+preprocessing. When this option is enabled, the preprocessor will emit,
+after the initial linemarker, a second linemarker with the current
+working directory followed by two slashes. GCC will use this directory,
+when it's present in the preprocessed input, as the directory emitted
+as the current working directory in some debugging information formats.
+This option is implicitly enabled if debugging information is enabled,
+but this can be inhibited with the negated form
+@option{-fno-working-directory}. If the @option{-P} flag is present
+in the command line, this option has no effect, since no @code{#line}
+directives are emitted whatsoever.
+
+@item -imultilib @var{dir}
+@opindex @code{imultilib @var{dir}}
+@cindex preprocessing, include path
+Use @var{dir} as a subdirectory of the directory containing target-specific
+C++ headers.
+
+@item -iprefix @var{prefix}
+@opindex @code{iprefix @var{prefix}}
+@cindex preprocessing, include path
+Specify @var{prefix} as the prefix for subsequent @option{-iwithprefix}
+options. If the @var{prefix} represents a directory, you should include
+the final @code{'/'}.
+
+@item -isysroot @var{dir}
+@opindex @code{isysroot @var{dir}}
+@cindex preprocessing, include path
+This option is like the @option{--sysroot} option, but applies only to
+header files. See the @option{--sysroot} option for more information.
+
+@item -iquote @var{dir}
+@opindex @code{iquote @var{dir}}
+@cindex preprocessing, include path
+Search @var{dir} only for header files requested with @code{#include "file"};
+they are not searched for @code{#include <file>}, before all directories
+specified by @option{-I} and before the standard system directories. If
+@var{dir} begins with @code{=}, then the @code{=} will be replaced by the
+sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
+
+@item -isystem @var{dir}
+@opindex @code{isystem @var{dir}}
+@cindex preprocessing, include path
+Search @var{dir} for header files, after all directories specified by
+@option{-I} but before the standard system directories. Mark it as a
+system directory, so that it gets the same special treatment as is
+applied to the standard system directories. If @var{dir} begins with
+@code{=}, then the @code{=} will be replaced by the sysroot prefix;
+see @option{--sysroot} and @option{-isysroot}.
+
+@item -nostdinc
+@opindex @code{nostdinc}
+Do not search the standard system directories for header files. Only
+the directories you have specified with @option{-I} options (and the
+directory of the current file, if appropriate) are searched.
+
+@item -undef
+@opindex @code{undef}
+Do not predefine any system-specific or GCC-specific macros.
+The standard predefined macros remain defined.
+
+@item -A@var{predicate}=@var{answer}
+@opindex @code{A@var{predicate}=@var{answer}}
+@cindex preprocessing, assertation
+Make an assertion with the predicate @var{predicate} and answer @var{answer}.
+This form is preferred to the older form -A predicate(answer), which is still
+supported, because it does not use shell special characters.
+
+@item -A-@var{predicate}=@var{answer}
+@opindex @code{A-@var{predicate}=@var{answer}}
+@cindex preprocessing, assertation
+Cancel an assertion with the predicate @var{predicate} and answer @var{answer}.
+
+@item -C
+@opindex @code{C}
+@cindex preprocessing, keep comments
+Do not discard comments. All comments are passed through to the output
+file, except for comments in processed directives, which are deleted
+along with the directive.
+
+You should be prepared for side effects when using @option{-C}; it causes
+the preprocessor to treat comments as tokens in their own right. For example,
+comments appearing at the start of what would be a directive line have the
+effect of turning that line into an ordinary source line, since the first
+token on the line is no longer a @code{'#'}.
+
+Warning: this currently handles C-Style comments only. The preprocessor
+does not yet recognize Fortran-style comments.
+
+@item -CC
+@opindex @code{CC}
+@cindex preprocessing, keep comments
+Do not discard comments, including during macro expansion. This is like
+@option{-C}, except that comments contained within macros are also passed
+through to the output file where the macro is expanded.
+
+In addition to the side-effects of the @option{-C} option, the @option{-CC}
+option causes all C++-style comments inside a macro to be converted to C-style
+comments. This is to prevent later use of that macro from inadvertently
+commenting out the remainder of the source line. The @option{-CC} option
+is generally used to support lint comments.
+
+Warning: this currently handles C- and C++-Style comments only. The
+preprocessor does not yet recognize Fortran-style comments.
+
+@item -D@var{name}
+@opindex @code{D@var{name}}
+@cindex preprocessing, define macros
+Predefine name as a macro, with definition @code{1}.
+
+@item -D@var{name}=@var{definition}
+@opindex @code{D@var{name}=@var{definition}}
+@cindex preprocessing, define macros
+The contents of @var{definition} are tokenized and processed as if they
+appeared during translation phase three in a @code{'#define'} directive.
+In particular, the definition will be truncated by embedded newline
+characters.
+
+If you are invoking the preprocessor from a shell or shell-like program
+you may need to use the shell's quoting syntax to protect characters such
+as spaces that have a meaning in the shell syntax.
+
+If you wish to define a function-like macro on the command line, write
+its argument list with surrounding parentheses before the equals sign
+(if any). Parentheses are meaningful to most shells, so you will need
+to quote the option. With sh and csh, @code{-D'name(args...)=definition'}
+works.
+
+@option{-D} and @option{-U} options are processed in the order they are
+given on the command line. All -imacros file and -include file options
+are processed after all -D and -U options.
+
+@item -H
+@opindex @code{H}
+Print the name of each header file used, in addition to other normal
+activities. Each name is indented to show how deep in the @code{'#include'}
+stack it is.
+
+@item -P
+@opindex @code{P}
+@cindex preprocessing, no linemarkers
+Inhibit generation of linemarkers in the output from the preprocessor.
+This might be useful when running the preprocessor on something that
+is not C code, and will be sent to a program which might be confused
+by the linemarkers.
+
+@item -U@var{name}
+@opindex @code{U@var{name}}
+@cindex preprocessing, undefine macros
+Cancel any previous definition of @var{name}, either built in or provided
+with a @option{-D} option.
+@end table
+
 
 @node Error and Warning Options
 @section Options to request or suppress errors and warnings

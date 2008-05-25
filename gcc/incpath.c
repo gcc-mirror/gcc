@@ -28,7 +28,7 @@
 #include "cpplib.h"
 #include "prefix.h"
 #include "intl.h"
-#include "c-incpath.h"
+#include "incpath.h"
 #include "cppdefault.h"
 
 /* Windows does not natively support inodes, and neither does MSDOS.

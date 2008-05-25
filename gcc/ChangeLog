@@ -1,3 +1,24 @@
+2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/18428
+	* c.opt: Removed undocumented option '-lang-fortran'.
+	* c-common.h: Removed global variable 'lang_fortran'.
+	* c-opts.c (c_common_handle_option): Removed code to handle
+	option '-lang-fortran'. Updated includes.
+	* c-cppbuiltin.c (c_cpp_builtins): Removed conditional
+	definition of '__GFORTRAN__'.
+	(define__GNUC__): Reimplemented to use BASEVER and
+	cpp_define_formatted.
+	(builtin_define_with_value_n): Removed.
+	* c-incpath.h: Renamed to ...
+	* incpath.h: ... this.
+	* c-incpath.c: Renamed to ...
+	* incpath.c: ... this. Updated includes.
+	* fix-header.c: Updated includes.
+	* Makefile.in: Replaced c-incpath.[ch] by incpath.[ch].
+	(c-cppbuiltin.o): Added dependency on and definition of BASEVER.
+	(OBJ-archive): Added cppdefault.o, incpath.o and prefix.o.
+
 2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h: Update the table of flags used on tree nodes.
