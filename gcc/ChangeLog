@@ -1,3 +1,21 @@
+2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h: Update the table of flags used on tree nodes.
+	(TREE_NO_TRAMPOLINE): New accessor for static_flag.
+	(SAVE_EXPR_RESOLVED_P): Use automatically-built access check.
+	(FORCED_LABEL): Add access check.
+	(CALL_EXPR_RETURN_SLOT_OPT): Likewise.
+	(ASM_INPUT_P): Likewise.
+	(ASM_VOLATILE_P): Likewise.
+	(EH_FILTER_MUST_NOT_THROW): Access static_flag directly.
+	(OMP_SECTION_LAST): Access private_flag directly.
+	(OMP_RETURN_NOWAIT): Likewise.
+	(OMP_PARALLEL_COMBINED): Likewise.
+	(OMP_CLAUSE_PRIVATE_DEBUG): Access public_flag directly.
+	(OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE): Likewise.
+	* tree-ssa-propagate.c (STMT_IN_SSA_EDGE_WORKLIST): Access
+	deprecated_flag directly.
+
 2008-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* final.c (frame_pointer_needed): Removed.
