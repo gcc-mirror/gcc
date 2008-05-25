@@ -4099,25 +4099,29 @@ initializer_constant_valid_p (tree value, tree endtype)
 
     case ADDR_EXPR:
     case FDESC_EXPR:
-      value = staticp (TREE_OPERAND (value, 0));
-      if (value)
-	{
-	  /* "&(*a).f" is like unto pointer arithmetic.  If "a" turns out to
-	     be a constant, this is old-skool offsetof-like nonsense.  */
-	  if (TREE_CODE (value) == INDIRECT_REF
-	      && TREE_CONSTANT (TREE_OPERAND (value, 0)))
-	    return null_pointer_node;
-	  /* Taking the address of a nested function involves a trampoline.  */
-	  if (TREE_CODE (value) == FUNCTION_DECL
-	      && decl_function_context (value)
-	      && !DECL_NO_STATIC_CHAIN (value))
-	    return NULL_TREE;
-	  /* "&{...}" requires a temporary to hold the constructed
-	     object.  */
-	  if (TREE_CODE (value) == CONSTRUCTOR)
-	    return NULL_TREE;
-	}
-      return value;
+      {
+	tree op0 = staticp (TREE_OPERAND (value, 0));
+	if (op0)
+	  {
+	    /* "&(*a).f" is like unto pointer arithmetic.  If "a" turns out
+	       to be a constant, this is old-skool offsetof-like nonsense.  */
+	    if (TREE_CODE (op0) == INDIRECT_REF
+		&& TREE_CONSTANT (TREE_OPERAND (op0, 0)))
+	      return null_pointer_node;
+	    /* Taking the address of a nested function involves a trampoline,
+	       unless we don't need or want one.  */
+	    if (TREE_CODE (op0) == FUNCTION_DECL
+		&& decl_function_context (op0)
+		&& !DECL_NO_STATIC_CHAIN (op0)
+		&& !TREE_NO_TRAMPOLINE (value))
+	      return NULL_TREE;
+	    /* "&{...}" requires a temporary to hold the constructed
+	       object.  */
+	    if (TREE_CODE (op0) == CONSTRUCTOR)
+	      return NULL_TREE;
+	  }
+	return op0;
+      }
 
     case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:

@@ -1,3 +1,10 @@
+2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	 * tree-nested.c (convert_tramp_reference) <ADDR_EXPR>: Do not
+	build a trampoline if we don't want one.
+	* varasm.c (initializer_constant_valid_p) <ADDR_EXPR>: Do not
+	return zero for nested functions if we don't want a trampoline.
+
 2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
 
 	* doc/invoke.texi: Added f77, f77-cpp-input to list of file types.

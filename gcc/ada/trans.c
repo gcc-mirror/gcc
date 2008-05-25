@@ -920,7 +920,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    TREE_CONSTANT (gnu_expr) = 1;
 
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR)
-	    TREE_STATIC (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
+	    TREE_NO_TRAMPOLINE (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
 	}
 
       /* For other address attributes applied to a nested function,

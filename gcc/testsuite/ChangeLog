@@ -1,3 +1,8 @@
+2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/trampoline1.adb: New test.
+	* gnat.dg/trampoline2.adb: Likewise.
+
 2008-05-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32600

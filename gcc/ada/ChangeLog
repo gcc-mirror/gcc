@@ -1,3 +1,8 @@
+2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (Attribute_to_gnu) <Code_Address>: Set TREE_NO_TRAMPOLINE
+	instead of TREE_STATIC on the ADDR_EXPR.
+
 2008-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (gnat_to_gnu): Do not set source location info on NOP_EXPRs.
