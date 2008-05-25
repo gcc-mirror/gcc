@@ -1692,12 +1692,25 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
       unsigned int regno = REGNO (dest);
       rtx tmp;
 
-      /* See if a REG_NOTE shows this equivalent to a simpler expression.
+      /* See if a REG_EQUAL note shows this equivalent to a simpler expression.
+
 	 This allows us to do a single GCSE pass and still eliminate
 	 redundant constants, addresses or other expressions that are
-	 constructed with multiple instructions.  */
+	 constructed with multiple instructions.
+
+	 However, keep the original SRC if INSN is a simple reg-reg move.  In
+	 In this case, there will almost always be a REG_EQUAL note on the
+	 insn that sets SRC.  By recording the REG_EQUAL value here as SRC
+	 for INSN, we miss copy propagation opportunities and we perform the
+	 same PRE GCSE operation repeatedly on the same REG_EQUAL value if we
+	 do more than one PRE GCSE pass.
+
+	 Note that this does not impede profitale constant propagations.  We
+	 "look through" reg-reg sets in lookup_avail_set.  */
       note = find_reg_equal_equiv_note (insn);
       if (note != 0
+	  && REG_NOTE_KIND (note) == REG_EQUAL
+	  && !REG_P (src)
 	  && (table->set_p
 	      ? gcse_constant_p (XEXP (note, 0))
 	      : want_to_gcse_p (XEXP (note, 0))))
