@@ -1,3 +1,9 @@
+2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex: Trivial stylistic changes, define inline
+	members inline, consistently with the rest of the library.
+	(pow(const _Tp&, const complex<>&)): Minor tweak.
+
 2008-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/atomic.cc (atomic_flag_test_and_set_explicit,
