@@ -52,10 +52,6 @@ c_funptr_t;
 void ISO_C_BINDING_PREFIX(c_f_pointer)(void *, gfc_array_void *,
 				       const array_t *, int, int);
 
-/* The second param here may change, once procedure pointers are
-   implemented.  */
-void ISO_C_BINDING_PREFIX(c_f_procpointer) (void *, gfc_array_void *);
-
 void ISO_C_BINDING_PREFIX(c_f_pointer_u0) (void *, gfc_array_void *,
 					   const array_t *);
 void ISO_C_BINDING_PREFIX(c_f_pointer_d0) (void *, gfc_array_void *,

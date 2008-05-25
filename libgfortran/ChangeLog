@@ -1,3 +1,10 @@
+2008-05-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32600
+	* intrinsics/iso_c_binding.c (c_f_procpointer): Remove.
+	* intrinsics/iso_c_binding.h (c_f_procpointer): Remove.
+	* gfortran.map (c_f_procpointer): Remove.
+
 2008-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libgfortran/36302
