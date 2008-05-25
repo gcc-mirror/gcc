@@ -1,3 +1,8 @@
+2008-05-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/17526
+	* gcc.dg/torture/pr17526.c: New testcase.
+
 2008-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/tg-tests.h: Fix spelling of FP_INFINITE.
