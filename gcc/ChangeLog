@@ -1,3 +1,7 @@
+2008-05-25  Arthur Loiret  <arthur.loiret@u-psud.fr>
+
+	* config.gcc (sh2[lbe]*-*-linux*): Allow target.
+
 2008-05-25  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* gcse.c (hash_scan_set): Do not pick up a REG_EQUAL value if
