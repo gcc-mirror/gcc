@@ -475,19 +475,21 @@
     <varlistentry><term><ulink url="../ext/lwg-defects.html#303">303</ulink>:
         <emphasis>Bitset input operator underspecified</emphasis>
     </term>
-    <listitem><para>Basically, compare the input character to <code>is.widen(0)</code>
-        and <code>is.widen(1)</code>.
+    <listitem><para>Basically, compare the input character to 
+                    <code>is.widen(0)</code> and <code>is.widen(1)</code>.
     </para></listitem></varlistentry>
 
     <varlistentry><term><ulink url="../ext/lwg-defects.html#305">305</ulink>:
-        <emphasis>Default behavior of codecvt&lt;wchar_t, char, mbstate_t&gt;::length()</emphasis>
+        <emphasis>Default behavior of codecvt&lt;wchar_t, char, 
+                  mbstate_t&gt;::length()</emphasis>
     </term>
-    <listitem><para>Do not specify what <code>codecvt&lt;wchar_t, char, mbstate_t&gt;::do_length</code>
-        must return.
+    <listitem><para>Do not specify what <code>codecvt&lt;wchar_t, char, 
+                    mbstate_t&gt;::do_length</code> must return.
     </para></listitem></varlistentry>
 
     <varlistentry><term><ulink url="../ext/lwg-defects.html#328">328</ulink>:
-        <emphasis>Bad sprintf format modifier in money_put&lt;&gt;::do_put()</emphasis>
+        <emphasis>Bad sprintf format modifier in 
+                  money_put&lt;&gt;::do_put()</emphasis>
     </term>
     <listitem><para>Change the format string to &quot;%.0Lf&quot;.
     </para></listitem></varlistentry>
@@ -498,8 +500,18 @@
     <listitem><para>Add const overloads of <code>is_open</code>.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#387">387</ulink>:
+        <emphasis>std::complex over-encapsulated</emphasis>
+    </term>
+    <listitem><para>Add the <code>real(T)</code> and <code>imag(T)</code>
+                    members;  in C++0x mode, also adjust the existing 
+                    <code>real()</code> and <code>imag()</code> members and 
+                    free functions.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#389">389</ulink>:
-        <emphasis>Const overload of valarray::operator[] returns by value</emphasis>
+        <emphasis>Const overload of valarray::operator[] returns 
+                  by value</emphasis>
     </term>
     <listitem><para>Change it to return a <code>const T&amp;</code>.
     </para></listitem></varlistentry>

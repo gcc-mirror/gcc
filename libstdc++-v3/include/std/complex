@@ -131,6 +131,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         complex(const complex<_Up>& __z)
 	: _M_real(__z.real()), _M_imag(__z.imag()) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      _Tp real() const
+      { return _M_real; }
+
+      _Tp imag() const
+      { return _M_imag; }
+#else
       ///  Return real part of complex number.
       _Tp& real()
       { return _M_real; }
@@ -146,6 +155,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ///  Return imaginary part of complex number.
       const _Tp& imag() const
       { return _M_imag; }
+#endif
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      void real(_Tp __val)
+      { _M_real = __val; }
+
+      void imag(_Tp __val)
+      { _M_imag = __val; }
 
       /// Assign this complex number to scalar @a t.
       complex<_Tp>& operator=(const _Tp&);
@@ -504,6 +522,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   // Values
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    inline _Tp
+    real(const complex<_Tp>& __z)
+    { return __z.real(); }
+    
+  template<typename _Tp>
+    inline _Tp
+    imag(const complex<_Tp>& __z)
+    { return __z.imag(); }
+#else
   template<typename _Tp>
     inline _Tp&
     real(complex<_Tp>& __z)
@@ -523,6 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline const _Tp&
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
+#endif
 
   // 26.2.7/3 abs(__z):  Returns the magnitude of __z.
   template<typename _Tp>
@@ -993,6 +1023,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       explicit complex(const complex<double>&);
       explicit complex(const complex<long double>&);	
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      float real() const
+      { return __real__ _M_value; }
+
+      float imag() const
+      { return __imag__ _M_value; }
+#else
       float& real()
       { return __real__ _M_value; }
 
@@ -1004,6 +1043,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       const float& imag() const
       { return __imag__ _M_value; }
+#endif
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      void real(float __val)
+      { __real__ _M_value = __val; }
+
+      void imag(float __val)
+      { __imag__ _M_value = __val; }
 
       complex<float>&
       operator=(float __f)
@@ -1121,6 +1169,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       explicit complex(const complex<long double>&);	
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      double real() const
+      { return __real__ _M_value; }
+
+      double imag() const
+      { return __imag__ _M_value; }
+#else
       double& real()
       { return __real__ _M_value; }
 
@@ -1132,6 +1189,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       const double& imag() const
       { return __imag__ _M_value; }
+#endif
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      void real(double __val)
+      { __real__ _M_value = __val; }
+
+      void imag(double __val)
+      { __imag__ _M_value = __val; }
 
       complex<double>&
       operator=(double __d)
@@ -1249,6 +1315,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       complex(const complex<double>& __z)
       : _M_value(__z.__rep()) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      long double real() const
+      { return __real__ _M_value; }
+
+      long double imag() const
+      { return __imag__ _M_value; }
+#else
       long double& real()
       { return __real__ _M_value; }
 
@@ -1260,6 +1335,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       const long double& imag() const
       { return __imag__ _M_value; }
+#endif
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 387. std::complex over-encapsulated.
+      void real(long double __val)
+      { __real__ _M_value = __val; }
+
+      void imag(long double __val)
+      { __imag__ _M_value = __val; }
 
       complex<long double>&
       operator=(long double __r)
