@@ -1,5 +1,9 @@
 2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
 
+	* doc/invoke.texi: Added f77, f77-cpp-input to list of file types.
+
+2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/18428
 	* c.opt: Removed undocumented option '-lang-fortran'.
 	* c-common.h: Removed global variable 'lang_fortran'.
