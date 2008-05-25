@@ -1,5 +1,21 @@
 2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/complex (complex<>::real(_Tp), complex<>::imag(_Tp),
+	complex<float>::real(float), complex<float>::imag(float),
+	complex<double>::real(double), complex<double>::imag(double),
+	complex<long double>::real(long double),
+	complex<long double>::imag(long double)): Add per DR 387.
+	(complex<>::real(), complex<>::imag(), complex<float>::real(),
+	complex<float>::imag(), complex<double>::real(),
+	complex<double>::imag(), complex<long double>::real(),
+	complex<long double>::imag(long double)): Adjust in C++0x mode.
+	(real(complex<>&), imag(complex<>&), real(const complex<>&),
+	imag(const complex<>&)): Likewise.
+	* testsuite/26_numerics/complex/dr387.cc: New.
+	* doc/xml/manual/intro.xml: Add an entry for DR 387.
+
+2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/complex: Trivial stylistic changes, define inline
 	members inline, consistently with the rest of the library.
 	(pow(const _Tp&, const complex<>&)): Minor tweak.
