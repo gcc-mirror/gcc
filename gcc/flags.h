@@ -223,12 +223,6 @@ extern int flag_dump_rtl_in_asm;
 
 /* Other basic status info about current function.  */
 
-/* Nonzero means current function must be given a frame pointer.
-   Set in stmt.c if anything is allocated on the stack there.
-   Set in reload1.c if anything is allocated on the stack there.  */
-
-extern int frame_pointer_needed;
-
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 extern int flag_evaluation_order;
 

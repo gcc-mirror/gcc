@@ -1,3 +1,11 @@
+2008-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* final.c (frame_pointer_needed): Removed.
+	* flags.h (frame_pointer_needed): Likewise.
+
+	* function.h (rtl_data): Add frame_pointer_needed.
+	(frame_pointer_needed): New.
+
 2008-05-25  Arthur Loiret  <arthur.loiret@u-psud.fr>
 
 	* config.gcc (sh2[lbe]*-*-linux*): Allow target.

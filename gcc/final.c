@@ -178,12 +178,6 @@ CC_STATUS cc_status;
 CC_STATUS cc_prev_status;
 #endif
 
-/* Nonzero means current function must be given a frame pointer.
-   Initialized in function.c to 0.  Set only in reload1.c as per
-   the needs of the function.  */
-
-int frame_pointer_needed;
-
 /* Number of unmatched NOTE_INSN_BLOCK_BEG notes we have seen.  */
 
 static int block_depth;
