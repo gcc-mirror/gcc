@@ -1516,6 +1516,7 @@ package body Sem_Cat is
          Profile := Parameter_Specifications (Specification (N));
 
       else pragma Assert (K = N_Object_Declaration);
+
          --  The above assertion is dubious, the visible declarations of an
          --  RCI unit never contain an object declaration, this should be an
          --  ACCESS-to-object declaration???
@@ -1739,8 +1740,12 @@ package body Sem_Cat is
          end if;
       end Is_Valid_Remote_Object_Type;
 
+      --  Local variables
+
       Direct_Designated_Type : Entity_Id;
       Desig_Type             : Entity_Id;
+
+   --  Start of processing for Validate_Remote_Access_Object_Type_Declaration
 
    begin
       --  We are called from Analyze_Type_Declaration, and the Nkind of the
