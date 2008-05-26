@@ -13121,7 +13121,7 @@ package body Sem_Ch3 is
             --  type extension, otherwise this is an error.
 
             if Nkind_In (N, N_Task_Type_Declaration,
-                         N_Protected_Type_Declaration)
+                            N_Protected_Type_Declaration)
             then
                if No (Interface_List (N))
                  and then not Error_Posted (N)
