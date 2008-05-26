@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Disp; use Exp_Disp;
 with Exp_Pakd; use Exp_Pakd;
@@ -2651,9 +2652,30 @@ package body Freeze is
 
                Validate_Object_Declaration (Declaration_Node (E));
 
-               --  If there is an address clause, check it is valid
+               --  If there is an address clause, check that it is valid
 
                Check_Address_Clause (E);
+
+               --  If the object needs any kind of default initialization, an
+               --  error must be issued if No_Default_Initialization applies.
+               --  The check doesn't apply to imported objects, which are not
+               --  ever default initialized, and is why the check is deferred
+               --  until freezing, at which point we know if Import applies.
+
+               if not Is_Imported (E)
+                 and then not Has_Init_Expression (Declaration_Node (E))
+                 and then
+                   ((Has_Non_Null_Base_Init_Proc (Etype (E))
+                      and then not No_Initialization (Declaration_Node (E))
+                      and then not Is_Value_Type (Etype (E))
+                      and then not Suppress_Init_Proc (Etype (E)))
+                    or else
+                      (Needs_Simple_Initialization (Etype (E))
+                        and then not Is_Internal (E)))
+               then
+                  Check_Restriction
+                    (No_Default_Initialization, Declaration_Node (E));
+               end if;
 
                --  For imported objects, set Is_Public unless there is also an
                --  address clause, which means that there is no external symbol
