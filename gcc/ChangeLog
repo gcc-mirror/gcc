@@ -1,3 +1,8 @@
+2008-05-26  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/34932
+	* config/avr/avr.md (*addhi3_zero_extend2): Remove.
+
 2008-05-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (expr_has_constants): Declare.
