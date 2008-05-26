@@ -1,3 +1,8 @@
+2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR bootstrap/36331
+	* c-cppbuiltin.c (define__GNUC__): Re-add definition of __GNUG__.
+
 2008-05-26  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	* config/darwin-c.c: Include "incpath.h" instead of "c-incpath.h".

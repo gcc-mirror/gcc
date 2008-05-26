@@ -384,6 +384,8 @@ define__GNUC__ (void)
   cpp_define_formatted (parse_in, "__GNUC_MINOR__=%d", minor);
   cpp_define_formatted (parse_in, "__GNUC_PATCHLEVEL__=%d", patchlevel);
 
+  if (c_dialect_cxx ())
+    cpp_define_formatted (parse_in, "__GNUG__=%d", major);
 }
 
 /* Define macros used by <stdint.h>.  Currently only defines limits
