@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,10 +44,7 @@ package body System.Compare_Array_Unsigned_16 is
    for Half'Size use 16;
    --  Used to process operands by half words
 
-   type Uhalf is record
-      H : Half;
-   end record;
-   pragma Pack (Uhalf);
+   type Uhalf is new Half;
    for Uhalf'Alignment use 1;
    --  Used to process operands when unaligned
 
@@ -110,8 +107,8 @@ package body System.Compare_Array_Unsigned_16 is
 
       else
          while Clen /= 0 loop
-            if U (L).H /= U (R).H then
-               if U (L).H > U (R).H then
+            if U (L).all /= U (R).all then
+               if U (L).all > U (R).all then
                   return +1;
                else
                   return -1;

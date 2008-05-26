@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,10 +41,7 @@ package body System.Compare_Array_Unsigned_32 is
    for Word'Size use 32;
    --  Used to process operands by words
 
-   type Uword is record
-      W : Word;
-   end record;
-   pragma Pack (Uword);
+   type Uword is new Word;
    for Uword'Alignment use 1;
    --  Used to process operands when unaligned
 
@@ -93,8 +90,8 @@ package body System.Compare_Array_Unsigned_32 is
 
       else
          while Clen /= 0 loop
-            if U (L).W /= U (R).W then
-               if U (L).W > U (R).W then
+            if U (L).all /= U (R).all then
+               if U (L).all > U (R).all then
                   return +1;
                else
                   return -1;
