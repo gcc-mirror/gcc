@@ -1,3 +1,22 @@
+2008-05-26  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads, rtsfind.adb:
+	(RE_Get_RACW): New runtime library entity provided by PolyORB s-parint.
+	(Check_RPC): Support per-PCS-kind API versioning.
+	
+	exp_dist.ads, exp_dist.adb:
+	(Build_Stub_Tag, Get_Stub_Elements): New utility subprograms.
+	(PolyORB_Support.Add_RACW_From_Any): Offload common code to new runtime
+	 library function Get_RACW.
+	(PolyORB_Support.Add_RACW_To_Any): Offload common code to new runtime
+	library function Get_Reference.
+	(PolyORB_Support.Add_RACW_Read_Attribute): Use Get_RACW instead of going
+	through an intermediate Any.
+	(PolyORB_Support.Add_RACW_Write_Attribute): Use Get_Reference instead of
+	going through an intermediate Any.
+	
+	* sem_dist.adb: Minor reformatting.
+
 2008-05-26  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads (Abstract_Interface_Alias): Renamed as Interface_Alias.

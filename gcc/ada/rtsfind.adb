@@ -959,7 +959,9 @@ package body Rtsfind is
             if Get_PCS_Name = Name_No_DSA then
                Check_RPC_Failure ("distribution feature not supported");
 
-            elsif Get_PCS_Version /= Exp_Dist.PCS_Version_Number then
+            elsif Get_PCS_Version /=
+                    Exp_Dist.PCS_Version_Number (Get_PCS_Name)
+            then
                Check_RPC_Failure ("PCS version mismatch");
 
             end if;

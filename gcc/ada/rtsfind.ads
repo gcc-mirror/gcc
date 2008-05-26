@@ -1078,6 +1078,7 @@ package Rtsfind is
 
      RE_DSA_Implementation,              -- System.Partition_Interface
      RE_PCS_Version,                     -- System.Partition_Interface
+     RE_Get_RACW,                        -- System.Partition_Interface
      RE_Get_RCI_Package_Receiver,        -- System.Partition_Interface
      RE_Get_Unique_Remote_Pointer,       -- System.Partition_Interface
      RE_RACW_Stub_Type_Access,           -- System.Partition_Interface
@@ -2209,6 +2210,7 @@ package Rtsfind is
 
      RE_DSA_Implementation               => System_Partition_Interface,
      RE_PCS_Version                      => System_Partition_Interface,
+     RE_Get_RACW                         => System_Partition_Interface,
      RE_Get_RCI_Package_Receiver         => System_Partition_Interface,
      RE_Get_Unique_Remote_Pointer        => System_Partition_Interface,
      RE_RACW_Stub_Type_Access            => System_Partition_Interface,
