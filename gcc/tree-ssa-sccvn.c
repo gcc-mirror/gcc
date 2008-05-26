@@ -1139,8 +1139,8 @@ defs_to_varying (tree stmt)
   return changed;
 }
 
-static tree
-try_to_simplify (tree stmt, tree rhs);
+static bool expr_has_constants (tree expr);
+static tree try_to_simplify (tree stmt, tree rhs);
 
 /* Visit a copy between LHS and RHS, return true if the value number
    changed.  */
@@ -1245,6 +1245,7 @@ visit_reference_op_load (tree lhs, tree op, tree stmt)
 	  /* Initialize value-number information properly.  */
 	  VN_INFO_GET (result)->valnum = result;
 	  VN_INFO (result)->expr = val;
+	  VN_INFO (result)->has_constants = expr_has_constants (val);
 	  VN_INFO (result)->needs_insertion = true;
 	  /* As all "inserted" statements are singleton SCCs, insert
 	     to the valid table.  This is strictly needed to
