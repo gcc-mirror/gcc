@@ -1,3 +1,7 @@
+2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* mingw32.h (STD_MINGW): Set to true for target w64.
+
 2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (Attribute_to_gnu) <Code_Address>: Set TREE_NO_TRAMPOLINE
