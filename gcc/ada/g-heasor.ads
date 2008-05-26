@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,9 +43,7 @@
 
 --  See also GNAT.Heap_Sort_G which is a generic version that will be faster
 --  since the overhead of the indirect calls is avoided, at the expense of
---  generic code duplication and less convenient interface. The generic version
---  also has the advantage of being Pure, while this unit can only be
---  Preelaborate, because of the access types.
+--  generic code duplication and less convenient interface.
 
 --  Note: GNAT.Heap_Sort replaces and obsoletes GNAT.Heap_Sort_A, which is
 --  retained in the GNAT library for backwards compatibility.
