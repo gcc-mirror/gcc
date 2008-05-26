@@ -2230,6 +2230,7 @@ package body Exp_Ch4 is
       Declare_Stmts : List_Id;
 
       H_Decl   : Node_Id;
+      I_Decl   : Node_Id;
       H_Init   : Node_Id;
       P_Decl   : Node_Id;
       R_Decl   : Node_Id;
@@ -2427,6 +2428,7 @@ package body Exp_Ch4 is
            or else Root_Type (Ind_Typ) = Standard_Integer
            or else Root_Type (Ind_Typ) = Standard_Short_Integer
            or else Root_Type (Ind_Typ) = Standard_Short_Short_Integer
+           or else Is_Modular_Integer_Type (Ind_Typ)
          then
             Target_Type := Standard_Integer;
          else
@@ -2609,7 +2611,37 @@ package body Exp_Ch4 is
       for I in 2 .. Nb_Opnds loop
          H_Init := Make_Op_Add (Loc, H_Init, S_Length (I));
       end loop;
-      H_Init := Ind_Val (Make_Op_Add (Loc, H_Init, L_Pos));
+
+      --  If the index type is small modular type, we need to perform an
+      --  additional check that the upper bound fits in the index type.
+      --  Otherwise the computation of the upper bound can wrap around
+      --  and yield meaningless results. The constraint check has to be
+      --  explicit in the code, because the generated function is compiled
+      --  with checks disabled, for efficiency.
+
+      if Is_Modular_Integer_Type (Ind_Typ)
+        and then Esize (Ind_Typ) < Esize (Standard_Integer)
+      then
+         I_Decl :=
+            Make_Object_Declaration (Loc,
+             Defining_Identifier => Make_Defining_Identifier (Loc, Name_uI),
+             Object_Definition   => New_Reference_To (Standard_Integer, Loc),
+             Expression          =>
+               Make_Type_Conversion (Loc,
+                  New_Reference_To (Standard_Integer, Loc),
+                  Make_Op_Add (Loc, H_Init, L_Pos)));
+
+         H_Init :=
+           Ind_Val (
+             Make_Type_Conversion (Loc,
+               New_Reference_To (Ind_Typ, Loc),
+               New_Reference_To (Defining_Identifier (I_Decl), Loc)));
+
+      --  For other index types, computation is safe.
+
+      else
+         H_Init := Ind_Val (Make_Op_Add (Loc, H_Init, L_Pos));
+      end if;
 
       H_Decl :=
         Make_Object_Declaration (Loc,
@@ -2635,6 +2667,28 @@ package body Exp_Ch4 is
       --  Construct the declarations for the declare block
 
       Declare_Decls := New_List (P_Decl, H_Decl, R_Decl);
+
+      --  Add constraint check for the modular index case.
+
+      if Is_Modular_Integer_Type (Ind_Typ)
+        and then Esize (Ind_Typ) < Esize (Standard_Integer)
+      then
+         Insert_After (P_Decl, I_Decl);
+
+         Insert_After (I_Decl,
+            Make_Raise_Constraint_Error (Loc,
+               Condition =>
+                  Make_Op_Gt (Loc,
+                     Left_Opnd =>
+                       New_Reference_To (Defining_Identifier (I_Decl), Loc),
+                     Right_Opnd =>
+                       Make_Type_Conversion (Loc,
+                          New_Reference_To (Standard_Integer, Loc),
+                          Make_Attribute_Reference (Loc,
+                             Prefix => New_Reference_To (Ind_Typ, Loc),
+                             Attribute_Name => Name_Last))),
+                Reason => CE_Range_Check_Failed));
+      end if;
 
       --  Construct list of statements for the declare block
 
@@ -7679,13 +7733,13 @@ package body Exp_Ch4 is
 
                if Nkind (Parent (N)) = Sinfo.N_Return_Statement then
                   declare
-                     Func     : Entity_Id := Current_Scope;
+                     Func     : Entity_Id;
                      Func_Typ : Entity_Id;
 
                   begin
-                     --  Climb the scope stack looking for the enclosing
-                     --  function.
+                     --  Climb scope stack looking for the enclosing function
 
+                     Func := Current_Scope;
                      while Present (Func)
                        and then Ekind (Func) /= E_Function
                      loop
