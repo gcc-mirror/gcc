@@ -41,6 +41,7 @@ with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Exp_VFpt; use Exp_VFpt;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
@@ -3963,6 +3964,19 @@ package body Exp_Ch6 is
    procedure Expand_N_Function_Call (N : Node_Id) is
    begin
       Expand_Call (N);
+
+      --  Handle VAX Float return values from foreign compiled
+      --  functions.
+      if Vax_Float (Etype (N))
+        and then Nkind (N) = N_Function_Call
+        and then not (Nkind (Parent (N)) = N_Type_Conversion
+                      and then not Comes_From_Source (Parent (N)))
+        and then Present (Name (N))
+        and then Present (Entity (Name (N)))
+        and then Has_Foreign_Convention (Entity (Name (N)))
+      then
+         Expand_Vax_Foreign_Return (N);
+      end if;
    end Expand_N_Function_Call;
 
    ---------------------------------------
