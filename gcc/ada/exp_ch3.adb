@@ -4278,7 +4278,11 @@ package body Exp_Ch3 is
 
             and then not Suppress_Init_Proc (Typ)
          then
-            Check_Restriction (No_Default_Initialization, N);
+            --  Return without initializing when No_Default_Initialization
+            --  applies. Note that the actual restriction check occurs later,
+            --  when the object is frozen, because we don't know yet whether
+            --  the object is imported, which is a case where the check does
+            --  not apply.
 
             if Restriction_Active (No_Default_Initialization) then
                return;
@@ -4324,7 +4328,6 @@ package body Exp_Ch3 is
            and then not Is_Internal (Def_Id)
            and then not Has_Init_Expression (N)
          then
-            Check_Restriction (No_Default_Initialization, N);
             Set_No_Initialization (N, False);
             Set_Expression (N, Get_Simple_Init_Val (Typ, N, Esize (Def_Id)));
             Analyze_And_Resolve (Expression (N), Typ);
