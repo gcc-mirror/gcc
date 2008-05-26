@@ -1,3 +1,22 @@
+2008-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Remove_Parent): Use specification of instance
+	to retrieve generic parent,
+	to handle properly the case where the instance is a child unit.
+	Add guard to handle properly wrapper packages.
+	Minor reformatting
+
+2008-05-26  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads: Minor reformatting
+
+2008-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Minor code reformatting.
+	Generate a tag check when the result subtype of a function, defined by
+	an access definition, designates a specific tagged type.
+	(Make_Tag_Check): New routine.
+
 2008-05-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* ceinfo.adb, csinfo.adb: Remove warnings. Update headers.
