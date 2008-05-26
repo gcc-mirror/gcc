@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,13 +65,18 @@ package body System.OS_Interface is
       Dispatching_Policy : Character;
       pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
+      Time_Slice_Val : Integer;
+      pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
+
    begin
       --  For the case SCHED_OTHER the only valid priority across all supported
-      --  versions of AIX is 1. Otherwise, for SCHED_RR and SCHED_FIFO, the
-      --  system defines priorities in the range 1 .. 127. This means that we
-      --  must map System.Any_Priority in the range 0 .. 126 to 1 .. 127.
+      --  versions of AIX is 1 (note that the scheduling policy can be set
+      --  with the pragma Task_Dispatching_Policy or setting the time slice
+      --  value). Otherwise, for SCHED_RR and SCHED_FIFO, the system defines
+      --  priorities in the range 1 .. 127. This means that we must map
+      --  System.Any_Priority in the range 0 .. 126 to 1 .. 127.
 
-      if Dispatching_Policy = ' ' then
+      if Dispatching_Policy = ' ' and then Time_Slice_Val < 0 then
          return 1;
       else
          return Interfaces.C.int (Prio) + 1;
