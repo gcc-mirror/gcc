@@ -682,7 +682,9 @@ expand_prologue (void)
       /* Prevent any attempt to delete the setting of ZERO_REG!  */
       emit_insn (gen_rtx_USE (VOIDmode, zero_reg_rtx));
     }
-  if (minimize && (frame_pointer_needed || live_seq > 6)) 
+  if (minimize && (frame_pointer_needed 
+		   || (AVR_2_BYTE_PC && live_seq > 6)
+		   || live_seq > 7)) 
     {
       insn = emit_move_insn (gen_rtx_REG (HImode, REG_X), 
                              gen_int_mode (size, HImode));
