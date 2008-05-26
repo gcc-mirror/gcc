@@ -10806,7 +10806,7 @@ package body Sem_Ch12 is
    -------------------
 
    procedure Remove_Parent (In_Body : Boolean := False) is
-      S      : Entity_Id := Current_Scope;
+      S : Entity_Id := Current_Scope;
       --  S is the scope containing the instantiation just completed. The
       --  scope stack contains the parent instances of the instantiation,
       --  followed by the original S.
@@ -10828,7 +10828,6 @@ package body Sem_Ch12 is
 
             if In_Open_Scopes (P) then
                E := First_Entity (P);
-
                while Present (E) loop
                   Set_Is_Immediately_Visible (E, True);
                   Next_Entity (E);
@@ -10866,20 +10865,29 @@ package body Sem_Ch12 is
             --  of a child unit of its generic parent unit.
 
             elsif S = Current_Scope
-               and then Is_Generic_Instance (S)
-               and then P = Scope (Generic_Parent (Parent (S)))
-               and then (In_Package_Body (S) or else In_Private_Part (S))
+              and then Is_Generic_Instance (S)
             then
-               Set_In_Private_Part (P);
-               Install_Private_Declarations (P);
+               declare
+                  Par : constant Entity_Id :=
+                          Generic_Parent
+                            (Specification (Unit_Declaration_Node (S)));
+               begin
+                  if Present (Par)
+                    and then P = Scope (Par)
+                    and then (In_Package_Body (S) or else In_Private_Part (S))
+                  then
+                     Set_In_Private_Part (P);
+                     Install_Private_Declarations (P);
+                  end if;
+               end;
             end if;
          end loop;
 
          --  Reset visibility of entities in the enclosing scope
 
          Set_Is_Hidden_Open_Scope (Current_Scope, False);
-         Hidden := First_Elmt (Hidden_Entities);
 
+         Hidden := First_Elmt (Hidden_Entities);
          while Present (Hidden) loop
             Set_Is_Immediately_Visible (Node (Hidden), True);
             Next_Elmt (Hidden);
