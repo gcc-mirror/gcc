@@ -1,3 +1,50 @@
+2008-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Remove checks for
+	No_Default_Initialization, which is now delayed until the freeze point
+	of the object. Add a comment about deferral of the check.
+	
+	* freeze.adb (Freeze_Entity): The check for No_Default_Initialization
+	on objects is moved here.
+
+2008-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-casi16.adb (Uhalf): Rewrite it as integer with small alignment.
+	(Compare_Array_S16): Adjust for above change.
+	* s-casi32.adb (Uword): Likewise.
+	(Compare_Array_S32): Likewise.
+	* s-casi64.adb (Uword): Likewise.
+	(Compare_Array_S64): Likewise.
+	* s-caun16.adb (Uhalf): Likewise.
+	(Compare_Array_U16): Likewise.
+	* s-caun32.adb (Uword): Likewise.
+	(Compare_Array_U32): Likewise.
+	* s-caun64.adb (Uword): Likewise.
+	(Compare_Array_U64): Likewise.
+	
+2008-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Add ??? comment for previous change
+
+	* exp_vfpt.adb: Minor reformatting
+
+	* exp_vfpt.ads: Add ??? comment for last change
+
+	* sem_attr.adb: Add some ??? comments for previous change
+
+	* s-vaflop.ads: Add comments for previous change
+
+2008-05-26  Doug Rupp  <rupp@adacore.com>
+
+	* s-vaflop-vms-alpha.adb:
+	Remove System.IO use clause, to prevent spurious ambiguities when
+	package is access through rtsfind.
+
+2008-05-26  Sergey Rybin  <rybin@adacore.com>
+
+	* tree_io.ads (ASIS_Version_Number): Update because of the changes
+	made in front-end
+
 2008-05-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb:
