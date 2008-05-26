@@ -111,9 +111,10 @@ package Sem_Ch6 is
    --  Is_Primitive indicates whether the subprogram is primitive.
 
    procedure Check_Subtype_Conformant
-     (New_Id  : Entity_Id;
-      Old_Id  : Entity_Id;
-      Err_Loc : Node_Id := Empty);
+     (New_Id                   : Entity_Id;
+      Old_Id                   : Entity_Id;
+      Err_Loc                  : Node_Id := Empty;
+      Skip_Controlling_Formals : Boolean := False);
    --  Check that two callable entities (subprograms, entries, literals)
    --  are subtype conformant, post error message if not (RM 6.3.1(16))
    --  the flag being placed on the Err_Loc node if it is specified, and
@@ -173,6 +174,14 @@ package Sem_Ch6 is
    --  procedure is also used to get visibility to the formals when analyzing
    --  preconditions and postconditions appearing in the spec.
 
+   function Is_Interface_Conformant
+     (Tagged_Type : Entity_Id;
+      Iface_Prim  : Entity_Id;
+      Prim        : Entity_Id) return Boolean;
+   --  Returns true if both primitives have a matching name and they are also
+   --  type conformant. Special management is done for functions returning
+   --  interfaces.
+
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
    --  literals) are mode conformant (RM 6.3.1(15))
@@ -212,7 +221,10 @@ package Sem_Ch6 is
    procedure Set_Formal_Mode (Formal_Id : Entity_Id);
    --  Set proper Ekind to reflect formal mode (in, out, in out)
 
-   function Subtype_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
+   function Subtype_Conformant
+     (New_Id                   : Entity_Id;
+      Old_Id                   : Entity_Id;
+      Skip_Controlling_Formals : Boolean := False) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
    --  literals) are subtype conformant (RM6.3.1(16)).
 

@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Errout;   use Errout;
 with Elists;   use Elists;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -1235,47 +1236,19 @@ package body Sem_Util is
       end if;
    end Check_VMS;
 
-   ---------------------------------
-   -- Collect_Abstract_Interfaces --
-   ---------------------------------
+   ------------------------
+   -- Collect_Interfaces --
+   ------------------------
 
-   procedure Collect_Abstract_Interfaces
-     (T                         : Entity_Id;
-      Ifaces_List               : out Elist_Id;
-      Exclude_Parent_Interfaces : Boolean := False;
-      Use_Full_View             : Boolean := True)
+   procedure Collect_Interfaces
+     (T               : Entity_Id;
+      Ifaces_List     : out Elist_Id;
+      Exclude_Parents : Boolean := False;
+      Use_Full_View   : Boolean := True)
    is
-      procedure Add_Interface (Iface : Entity_Id);
-      --  Add the interface it if is not already in the list
-
       procedure Collect (Typ : Entity_Id);
       --  Subsidiary subprogram used to traverse the whole list
       --  of directly and indirectly implemented interfaces
-
-      function Interface_Present_In_Parent
-         (Typ   : Entity_Id;
-          Iface : Entity_Id) return Boolean;
-      --  Typ must be a tagged record type/subtype and Iface must be an
-      --  abstract interface type. This function is used to check if Typ
-      --  or some parent of Typ implements Iface.
-
-      -------------------
-      -- Add_Interface --
-      -------------------
-
-      procedure Add_Interface (Iface : Entity_Id) is
-         Elmt : Elmt_Id;
-
-      begin
-         Elmt := First_Elmt (Ifaces_List);
-         while Present (Elmt) and then Node (Elmt) /= Iface loop
-            Next_Elmt (Elmt);
-         end loop;
-
-         if No (Elmt) then
-            Append_Elmt (Iface, Ifaces_List);
-         end if;
-      end Add_Interface;
 
       -------------
       -- Collect --
@@ -1284,7 +1257,6 @@ package body Sem_Util is
       procedure Collect (Typ : Entity_Id) is
          Ancestor   : Entity_Id;
          Full_T     : Entity_Id;
-         Iface_List : List_Id;
          Id         : Node_Id;
          Iface      : Entity_Id;
 
@@ -1300,27 +1272,10 @@ package body Sem_Util is
             Full_T := Full_View (Typ);
          end if;
 
-         Iface_List := Abstract_Interface_List (Full_T);
-
          --  Include the ancestor if we are generating the whole list of
          --  abstract interfaces.
 
-         --  In concurrent types the ancestor interface (if any) is the
-         --  first element of the list of interface types.
-
-         if Is_Concurrent_Type (Full_T)
-           or else Is_Concurrent_Record_Type (Full_T)
-         then
-            if Is_Non_Empty_List (Iface_List) then
-               Ancestor := Etype (First (Iface_List));
-               Collect (Ancestor);
-
-               if not Exclude_Parent_Interfaces then
-                  Add_Interface (Ancestor);
-               end if;
-            end if;
-
-         elsif Etype (Full_T) /= Typ
+         if Etype (Full_T) /= Typ
 
             --  Protect the frontend against wrong sources. For example:
 
@@ -1339,27 +1294,16 @@ package body Sem_Util is
             Collect (Ancestor);
 
             if Is_Interface (Ancestor)
-              and then not Exclude_Parent_Interfaces
+              and then not Exclude_Parents
             then
-               Add_Interface (Ancestor);
+               Append_Unique_Elmt (Ancestor, Ifaces_List);
             end if;
          end if;
 
          --  Traverse the graph of ancestor interfaces
 
-         if Is_Non_Empty_List (Iface_List) then
-            Id := First (Iface_List);
-
-            --  In concurrent types the ancestor interface (if any) is the
-            --  first element of the list of interface types and we have
-            --  already processed them while climbing to the root type.
-
-            if Is_Concurrent_Type (Full_T)
-              or else Is_Concurrent_Record_Type (Full_T)
-            then
-               Next (Id);
-            end if;
-
+         if Is_Non_Empty_List (Abstract_Interface_List (Full_T)) then
+            Id := First (Abstract_Interface_List (Full_T));
             while Present (Id) loop
                Iface := Etype (Id);
 
@@ -1369,13 +1313,14 @@ package body Sem_Util is
                --    type Wrong is new I and O with null record; -- ERROR
 
                if Is_Interface (Iface) then
-                  if Exclude_Parent_Interfaces
-                    and then Interface_Present_In_Parent (T, Iface)
+                  if Exclude_Parents
+                    and then Etype (T) /= T
+                    and then Interface_Present_In_Ancestor (Etype (T), Iface)
                   then
                      null;
                   else
-                     Collect       (Iface);
-                     Add_Interface (Iface);
+                     Collect (Iface);
+                     Append_Unique_Elmt (Iface, Ifaces_List);
                   end if;
                end if;
 
@@ -1384,40 +1329,13 @@ package body Sem_Util is
          end if;
       end Collect;
 
-      ---------------------------------
-      -- Interface_Present_In_Parent --
-      ---------------------------------
-
-      function Interface_Present_In_Parent
-         (Typ   : Entity_Id;
-          Iface : Entity_Id) return Boolean
-      is
-         Aux        : Entity_Id := Typ;
-         Iface_List : List_Id;
-
-      begin
-         if Is_Concurrent_Type (Typ)
-           or else Is_Concurrent_Record_Type (Typ)
-         then
-            Iface_List := Abstract_Interface_List (Typ);
-
-            if Is_Non_Empty_List (Iface_List) then
-               Aux := Etype (First (Iface_List));
-            else
-               return False;
-            end if;
-         end if;
-
-         return Interface_Present_In_Ancestor (Aux, Iface);
-      end Interface_Present_In_Parent;
-
-   --  Start of processing for Collect_Abstract_Interfaces
+   --  Start of processing for Collect_Interfaces
 
    begin
       pragma Assert (Is_Tagged_Type (T) or else Is_Concurrent_Type (T));
       Ifaces_List := New_Elmt_List;
       Collect (T);
-   end Collect_Abstract_Interfaces;
+   end Collect_Interfaces;
 
    ----------------------------------
    -- Collect_Interface_Components --
@@ -1526,7 +1444,7 @@ package body Sem_Util is
    --  Start of processing for Collect_Interfaces_Info
 
    begin
-      Collect_Abstract_Interfaces  (T, Ifaces_List);
+      Collect_Interfaces  (T, Ifaces_List);
       Collect_Interface_Components (T, Comps_List);
 
       --  Search for the record component and tag associated with each
@@ -1542,7 +1460,7 @@ package body Sem_Util is
          --  Associate the primary tag component and the primary dispatch table
          --  with all the interfaces that are parents of T
 
-         if Is_Parent (Iface, T) then
+         if Is_Ancestor (Iface, T) then
             Append_Elmt (First_Tag_Component (T), Components_List);
             Append_Elmt (Node (First_Elmt (Access_Disp_Table (T))), Tags_List);
 
@@ -1555,7 +1473,7 @@ package body Sem_Util is
                Comp_Iface := Related_Type (Node (Comp_Elmt));
 
                if Comp_Iface = Iface
-                 or else Is_Parent (Iface, Comp_Iface)
+                 or else Is_Ancestor (Iface, Comp_Iface)
                then
                   Append_Elmt (Node (Comp_Elmt), Components_List);
                   Append_Elmt (Search_Tag (Comp_Iface), Tags_List);
@@ -4085,83 +4003,6 @@ package body Sem_Util is
       return Task_Body_Procedure (Underlying_Type (Root_Type (E)));
    end Get_Task_Body_Procedure;
 
-   -----------------------------
-   -- Has_Abstract_Interfaces --
-   -----------------------------
-
-   function Has_Abstract_Interfaces
-     (T             : Entity_Id;
-      Use_Full_View : Boolean := True) return Boolean
-   is
-      Typ : Entity_Id;
-
-   begin
-      --  Handle concurrent types
-
-      if Is_Concurrent_Type (T) then
-         Typ := Corresponding_Record_Type (T);
-      else
-         Typ := T;
-      end if;
-
-      if not Present (Typ)
-        or else not Is_Tagged_Type (Typ)
-      then
-         return False;
-      end if;
-
-      pragma Assert (Is_Record_Type (Typ));
-
-      --  Handle private types
-
-      if Use_Full_View
-        and then Present (Full_View (Typ))
-      then
-         Typ := Full_View (Typ);
-      end if;
-
-      --  Handle concurrent record types
-
-      if Is_Concurrent_Record_Type (Typ)
-        and then Is_Non_Empty_List (Abstract_Interface_List (Typ))
-      then
-         return True;
-      end if;
-
-      loop
-         if Is_Interface (Typ)
-           or else
-             (Is_Record_Type (Typ)
-               and then Present (Abstract_Interfaces (Typ))
-               and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
-         then
-            return True;
-         end if;
-
-         exit when Etype (Typ) = Typ
-
-            --  Handle private types
-
-            or else (Present (Full_View (Etype (Typ)))
-                       and then Full_View (Etype (Typ)) = Typ)
-
-            --  Protect the frontend against wrong source with cyclic
-            --  derivations
-
-            or else Etype (Typ) = T;
-
-         --  Climb to the ancestor type handling private types
-
-         if Present (Full_View (Etype (Typ))) then
-            Typ := Full_View (Etype (Typ));
-         else
-            Typ := Etype (Typ);
-         end if;
-      end loop;
-
-      return False;
-   end Has_Abstract_Interfaces;
-
    -----------------------
    -- Has_Access_Values --
    -----------------------
@@ -4615,6 +4456,82 @@ package body Sem_Util is
           and then Nkind (Scalar_Range (E)) = N_Range
           and then Includes_Infinities (Scalar_Range (E));
    end Has_Infinities;
+
+   --------------------
+   -- Has_Interfaces --
+   --------------------
+
+   function Has_Interfaces
+     (T             : Entity_Id;
+      Use_Full_View : Boolean := True) return Boolean
+   is
+      Typ : Entity_Id;
+
+   begin
+      --  Handle concurrent types
+
+      if Is_Concurrent_Type (T) then
+         Typ := Corresponding_Record_Type (T);
+      else
+         Typ := T;
+      end if;
+
+      if not Present (Typ)
+        or else not Is_Record_Type (Typ)
+        or else not Is_Tagged_Type (Typ)
+      then
+         return False;
+      end if;
+
+      --  Handle private types
+
+      if Use_Full_View
+        and then Present (Full_View (Typ))
+      then
+         Typ := Full_View (Typ);
+      end if;
+
+      --  Handle concurrent record types
+
+      if Is_Concurrent_Record_Type (Typ)
+        and then Is_Non_Empty_List (Abstract_Interface_List (Typ))
+      then
+         return True;
+      end if;
+
+      loop
+         if Is_Interface (Typ)
+           or else
+             (Is_Record_Type (Typ)
+               and then Present (Interfaces (Typ))
+               and then not Is_Empty_Elmt_List (Interfaces (Typ)))
+         then
+            return True;
+         end if;
+
+         exit when Etype (Typ) = Typ
+
+            --  Handle private types
+
+            or else (Present (Full_View (Etype (Typ)))
+                       and then Full_View (Etype (Typ)) = Typ)
+
+            --  Protect the frontend against wrong source with cyclic
+            --  derivations
+
+            or else Etype (Typ) = T;
+
+         --  Climb to the ancestor type handling private types
+
+         if Present (Full_View (Etype (Typ))) then
+            Typ := Full_View (Etype (Typ));
+         else
+            Typ := Etype (Typ);
+         end if;
+      end loop;
+
+      return False;
+   end Has_Interfaces;
 
    ------------------------
    -- Has_Null_Exclusion --
@@ -5218,6 +5135,56 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Tagged_Component;
+
+   --------------------------
+   -- Implements_Interface --
+   --------------------------
+
+   function Implements_Interface
+     (Typ_Ent         : Entity_Id;
+      Iface_Ent       : Entity_Id;
+      Exclude_Parents : Boolean := False) return Boolean
+   is
+      Ifaces_List : Elist_Id;
+      Elmt        : Elmt_Id;
+      Iface       : Entity_Id;
+      Typ         : Entity_Id;
+
+   begin
+      if Is_Class_Wide_Type (Typ_Ent) then
+         Typ := Etype (Typ_Ent);
+      else
+         Typ := Typ_Ent;
+      end if;
+
+      if Is_Class_Wide_Type (Iface_Ent) then
+         Iface := Etype (Iface_Ent);
+      else
+         Iface := Iface_Ent;
+      end if;
+
+      if not Has_Interfaces (Typ) then
+         return False;
+      end if;
+
+      Collect_Interfaces (Typ, Ifaces_List);
+
+      Elmt := First_Elmt (Ifaces_List);
+      while Present (Elmt) loop
+         if Is_Ancestor (Node (Elmt), Typ)
+           and then Exclude_Parents
+         then
+            null;
+
+         elsif Node (Elmt) = Iface then
+            return True;
+         end if;
+
+         Next_Elmt (Elmt);
+      end loop;
+
+      return False;
+   end Implements_Interface;
 
    -----------------
    -- In_Instance --
@@ -6523,33 +6490,6 @@ package body Sem_Util is
          return False;
       end if;
    end Is_OK_Variable_For_Out_Formal;
-
-   ---------------
-   -- Is_Parent --
-   ---------------
-
-   function Is_Parent
-     (E1 : Entity_Id;
-      E2 : Entity_Id) return Boolean
-   is
-      Iface_List : List_Id;
-      T          : Entity_Id := E2;
-
-   begin
-      if Is_Concurrent_Type (T)
-        or else Is_Concurrent_Record_Type (T)
-      then
-         Iface_List := Abstract_Interface_List (E2);
-
-         if Is_Empty_List (Iface_List) then
-            return False;
-         end if;
-
-         T := Etype (First (Iface_List));
-      end if;
-
-      return Is_Ancestor (E1, T);
-   end Is_Parent;
 
    -----------------------------------
    -- Is_Partially_Initialized_Type --
@@ -8494,6 +8434,48 @@ package body Sem_Util is
       return Trace_Components (Type_Id, False);
    end Private_Component;
 
+   ---------------------------
+   -- Primitive_Names_Match --
+   ---------------------------
+
+   function Primitive_Names_Match (E1, E2 : Entity_Id) return Boolean is
+
+      function Non_Internal_Name (E : Entity_Id) return Name_Id;
+      --  Given an internal name, returns the corresponding non-internal name
+
+      ------------------------
+      --  Non_Internal_Name --
+      ------------------------
+
+      function Non_Internal_Name (E : Entity_Id) return Name_Id is
+      begin
+         Get_Name_String (Chars (E));
+         Name_Len := Name_Len - 1;
+         return Name_Find;
+      end Non_Internal_Name;
+
+   --  Start of processing for Primitive_Names_Match
+
+   begin
+      pragma Assert (Present (E1) and then Present (E2));
+
+      return Chars (E1) = Chars (E2)
+        or else
+           (not Is_Internal_Name (Chars (E1))
+              and then Is_Internal_Name (Chars (E2))
+              and then Non_Internal_Name (E2) = Chars (E1))
+        or else
+           (not Is_Internal_Name (Chars (E2))
+              and then Is_Internal_Name (Chars (E1))
+              and then Non_Internal_Name (E1) = Chars (E2))
+        or else
+           (Is_Predefined_Dispatching_Operation (E1)
+              and then Is_Predefined_Dispatching_Operation (E2)
+              and then Same_TSS (E1, E2))
+        or else
+           (Is_Init_Proc (E1) and then Is_Init_Proc (E2));
+   end Primitive_Names_Match;
+
    -----------------------
    -- Process_End_Label --
    -----------------------
@@ -8702,6 +8684,32 @@ package body Sem_Util is
       Source := Save_Src;
       return Token_Node;
    end Real_Convert;
+
+   --------------------
+   -- Remove_Homonym --
+   --------------------
+
+   procedure Remove_Homonym (E : Entity_Id) is
+      Prev  : Entity_Id := Empty;
+      H     : Entity_Id;
+
+   begin
+      if E = Current_Entity (E) then
+         if Present (Homonym (E)) then
+            Set_Current_Entity (Homonym (E));
+         else
+            Set_Name_Entity_Id (Chars (E), Empty);
+         end if;
+      else
+         H := Current_Entity (E);
+         while Present (H) and then H /= E loop
+            Prev := H;
+            H    := Homonym (H);
+         end loop;
+
+         Set_Homonym (Prev, Homonym (E));
+      end if;
+   end Remove_Homonym;
 
    ---------------------
    -- Rep_To_Pos_Flag --
@@ -9744,6 +9752,22 @@ package body Sem_Util is
 
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
    end Type_Access_Level;
+
+   --------------------
+   -- Ultimate_Alias --
+   --------------------
+   --  To do: add occurrences calling this new subprogram
+
+   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id is
+      E : Entity_Id := Prim;
+
+   begin
+      while Present (Alias (E)) loop
+         E := Alias (E);
+      end loop;
+
+      return E;
+   end Ultimate_Alias;
 
    --------------------------
    -- Unit_Declaration_Node --

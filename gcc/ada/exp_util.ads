@@ -342,13 +342,6 @@ package Exp_Util is
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide).
 
-   function Find_Interface
-     (T    : Entity_Id;
-      Comp : Entity_Id) return Entity_Id;
-   --  Ada 2005 (AI-251): Given a tagged type and one of its components
-   --  associated with the secondary dispatch table of an abstract interface
-   --  type, return the associated abstract interface type.
-
    function Find_Interface_ADT
      (T     : Entity_Id;
       Iface : Entity_Id) return Elmt_Id;
@@ -461,9 +454,6 @@ package Exp_Util is
    function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean;
    --  Return True if Typ is a library level tagged type. Currently we use
    --  this information to build statically allocated dispatch tables.
-
-   function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
 
    function Is_Ref_To_Bit_Packed_Array (N : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed array, i.e.

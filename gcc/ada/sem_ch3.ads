@@ -26,7 +26,7 @@
 with Nlists; use Nlists;
 with Types;  use Types;
 
-package Sem_Ch3  is
+package Sem_Ch3 is
    procedure Analyze_Component_Declaration         (N : Node_Id);
    procedure Analyze_Incomplete_Type_Decl          (N : Node_Id);
    procedure Analyze_Itype_Reference               (N : Node_Id);

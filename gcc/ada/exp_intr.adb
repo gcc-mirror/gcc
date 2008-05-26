@@ -45,6 +45,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
+with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -165,7 +166,7 @@ package body Exp_Intr is
          --  If the result type is not parent of Tag_Arg then we need to
          --  locate the tag of the secondary dispatch table.
 
-         if not Is_Parent (Etype (Result_Typ), Etype (Tag_Arg)) then
+         if not Is_Ancestor (Etype (Result_Typ), Etype (Tag_Arg)) then
             pragma Assert (not Is_Interface (Etype (Tag_Arg)));
 
             Iface_Tag :=

@@ -32,6 +32,7 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
+with Exp_Disp; use Exp_Disp;
 with Exp_Sel;  use Exp_Sel;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
@@ -1880,11 +1881,11 @@ package body Exp_Ch9 is
          Iface := Etype (Iface);
       end loop Examine_Parents;
 
-      if Present (Abstract_Interfaces
+      if Present (Interfaces
                    (Corresponding_Record_Type (Scope (Proc_Nam))))
       then
          Iface_Elmt := First_Elmt
-                         (Abstract_Interfaces
+                         (Interfaces
                            (Corresponding_Record_Type (Scope (Proc_Nam))));
          Examine_Interfaces : while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
@@ -7091,7 +7092,7 @@ package body Exp_Ch9 is
                         --  an interface.
 
                         if Ada_Version >= Ada_05
-                          and then Present (Abstract_Interfaces (
+                          and then Present (Interfaces (
                                      Corresponding_Record_Type (Pid)))
                         then
                            Disp_Op_Body :=
@@ -7178,8 +7179,7 @@ package body Exp_Ch9 is
 
       if Ada_Version >= Ada_05
         and then Present (Protected_Definition (Parent (Pid)))
-        and then Present (Abstract_Interfaces
-                           (Corresponding_Record_Type (Pid)))
+        and then Present (Interfaces (Corresponding_Record_Type (Pid)))
       then
          declare
             Vis_Decl  : Node_Id :=
@@ -7630,10 +7630,10 @@ package body Exp_Ch9 is
       if Ada_Version >= Ada_05
         and then Present (Visible_Declarations (Pdef))
         and then Present (Corresponding_Record_Type
-                          (Defining_Identifier (Parent (Pdef))))
-        and then Present (Abstract_Interfaces
-                          (Corresponding_Record_Type
-                           (Defining_Identifier (Parent (Pdef)))))
+                           (Defining_Identifier (Parent (Pdef))))
+        and then Present (Interfaces
+                           (Corresponding_Record_Type
+                             (Defining_Identifier (Parent (Pdef)))))
       then
          declare
             Current_Node : Node_Id := Rec_Decl;
@@ -7750,8 +7750,7 @@ package body Exp_Ch9 is
 
             if Ada_Version >= Ada_05
               and then
-                Present (Abstract_Interfaces
-                          (Corresponding_Record_Type (Prot_Typ)))
+                Present (Interfaces (Corresponding_Record_Type (Prot_Typ)))
             then
                Sub :=
                  Make_Subprogram_Declaration (Loc,
@@ -9535,8 +9534,7 @@ package body Exp_Ch9 is
 
       if Ada_Version >= Ada_05
         and then Present (Task_Definition (Parent (Ttyp)))
-        and then Present (Abstract_Interfaces
-                          (Corresponding_Record_Type (Ttyp)))
+        and then Present (Interfaces (Corresponding_Record_Type (Ttyp)))
       then
          declare
             Current_Node : Node_Id;
@@ -10030,10 +10028,10 @@ package body Exp_Ch9 is
       if Ada_Version >= Ada_05
         and then Present (Taskdef)
         and then Present (Corresponding_Record_Type
-                          (Defining_Identifier (Parent (Taskdef))))
-        and then Present (Abstract_Interfaces
-                          (Corresponding_Record_Type
-                           (Defining_Identifier (Parent (Taskdef)))))
+                           (Defining_Identifier (Parent (Taskdef))))
+        and then Present (Interfaces
+                           (Corresponding_Record_Type
+                             (Defining_Identifier (Parent (Taskdef)))))
       then
          declare
             Current_Node : Node_Id := Rec_Decl;
@@ -10087,7 +10085,6 @@ package body Exp_Ch9 is
 
          declare
             L : constant List_Id := Freeze_Entity (Rec_Ent, Loc);
-
          begin
             if Is_Non_Empty_List (L) then
                Insert_List_After (Body_Decl, L);
@@ -11576,7 +11573,7 @@ package body Exp_Ch9 is
       if Has_Entry
         or else Has_Interrupt_Handler (Ptyp)
         or else Has_Attach_Handler (Ptyp)
-        or else Has_Abstract_Interfaces (Protect_Rec)
+        or else Has_Interfaces (Protect_Rec)
       then
          declare
             Pkg_Id      : constant RTU_Id  :=

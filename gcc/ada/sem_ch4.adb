@@ -3525,7 +3525,6 @@ package body Sem_Ch4 is
             Error_Msg_NE ("no selector& for}", N, Sel);
 
             Check_Misspelled_Selector (Type_To_Use, Sel);
-
          end if;
 
          Set_Entity (Sel, Any_Id);
@@ -6443,14 +6442,14 @@ package body Sem_Ch4 is
                --  primitive is also in this list of primitive operations and
                --  will be used instead.
 
-               if (Present (Abstract_Interface_Alias (Prim_Op))
-                     and then Is_Ancestor (Find_Dispatching_Type
-                                             (Alias (Prim_Op)), Corr_Type))
+               if (Present (Interface_Alias (Prim_Op))
+                    and then Is_Ancestor (Find_Dispatching_Type
+                                            (Alias (Prim_Op)), Corr_Type))
                  or else
 
-               --  Do not consider hidden primitives unless the type is in an
-               --  open scope or we are within an instance, where visibility
-               --  is known to be correct.
+                  --  Do not consider hidden primitives unless the type is
+                  --  in an open scope or we are within an instance, where
+                  --  visibility is known to be correct.
 
                   (Is_Hidden (Prim_Op)
                      and then not Is_Immediately_Visible (Obj_Type)

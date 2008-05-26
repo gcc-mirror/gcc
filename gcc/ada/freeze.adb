@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Disp; use Exp_Disp;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
 with Exp_Tss;  use Exp_Tss;

@@ -1577,6 +1577,11 @@ package body Sprint is
             Write_Str_With_Col_Check_Sloc ("new ");
             Sprint_Node (Subtype_Mark (Node));
 
+            if Present (Interface_List (Node)) then
+               Write_Str_With_Col_Check (" and ");
+               Sprint_And_List (Interface_List (Node));
+            end if;
+
             if Private_Present (Node) then
                Write_Str_With_Col_Check (" with private");
             end if;
@@ -2442,6 +2447,12 @@ package body Sprint is
 
             Write_Str_With_Col_Check (" is new ");
             Sprint_Node (Subtype_Indication (Node));
+
+            if Present (Interface_List (Node)) then
+               Write_Str_With_Col_Check (" and ");
+               Sprint_And_List (Interface_List (Node));
+            end if;
+
             Write_Str_With_Col_Check (" with private;");
 
          when N_Procedure_Call_Statement =>

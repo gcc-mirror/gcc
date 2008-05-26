@@ -1150,16 +1150,14 @@ package body Lib.Xref is
                New_Entry (Tref);
 
                if Is_Record_Type (Ent)
-                 and then Present (Abstract_Interfaces (Ent))
+                 and then Present (Interfaces (Ent))
                then
                   --  Add an entry for each one of the given interfaces
                   --  implemented by type Ent.
 
                   declare
-                     Elmt : Elmt_Id;
-
+                     Elmt : Elmt_Id := First_Elmt (Interfaces (Ent));
                   begin
-                     Elmt := First_Elmt (Abstract_Interfaces (Ent));
                      while Present (Elmt) loop
                         New_Entry (Node (Elmt));
                         Next_Elmt (Elmt);
@@ -2032,13 +2030,11 @@ package body Lib.Xref is
                      --  Additional information for types with progenitors
 
                      if Is_Record_Type (XE.Ent)
-                       and then Present (Abstract_Interfaces (XE.Ent))
+                       and then Present (Interfaces (XE.Ent))
                      then
                         declare
-                           Elmt : Elmt_Id;
-
+                           Elmt : Elmt_Id := First_Elmt (Interfaces (XE.Ent));
                         begin
-                           Elmt := First_Elmt (Abstract_Interfaces (XE.Ent));
                            while Present (Elmt) loop
                               Check_Type_Reference (Node (Elmt), True);
                               Next_Elmt (Elmt);

@@ -9268,7 +9268,7 @@ package body Sem_Ch12 is
          --  Now verify that the actual includes all other ancestors of
          --  the formal.
 
-         Elmt := First_Elmt (Abstract_Interfaces (A_Gen_T));
+         Elmt := First_Elmt (Interfaces (A_Gen_T));
          while Present (Elmt) loop
             if not Interface_Present_In_Ancestor
                      (Act_T, Get_Instance_Of (Node (Elmt)))
@@ -9575,7 +9575,6 @@ package body Sem_Ch12 is
 
                function Is_Tagged_Ancestor (T1, T2 : Entity_Id) return Boolean
                is
-                  Interfaces : Elist_Id;
                   Intfc_Elmt : Elmt_Id;
 
                begin
@@ -9599,9 +9598,7 @@ package body Sem_Ch12 is
                   --  progenitors.
 
                   else
-                     Interfaces := Abstract_Interfaces (T2);
-
-                     Intfc_Elmt := First_Elmt (Interfaces);
+                     Intfc_Elmt := First_Elmt (Interfaces (T2));
                      while Present (Intfc_Elmt) loop
                         if Is_Ancestor (T1, Node (Intfc_Elmt)) then
                            return True;
