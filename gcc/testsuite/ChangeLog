@@ -1,3 +1,8 @@
+2008-05-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/set_in_pproc.adb: New test.
+	* gnat.dg/modular2.adb: New test.
+
 2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/trampoline1.adb: New test.
