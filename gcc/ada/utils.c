@@ -4763,8 +4763,8 @@ def_builtin_1 (enum built_in_function fncode,
   if (both_p)
     /* ??? This is normally further controlled by command-line options
        like -fno-builtin, but we don't have them for Ada.  */
-      add_builtin_function (libname, libtype, fncode, fnclass,
-			    NULL, fnattrs);
+    add_builtin_function (libname, libtype, fncode, fnclass,
+			  NULL, fnattrs);
 
   built_in_decls[(int) fncode] = decl;
   if (implicit_p)
