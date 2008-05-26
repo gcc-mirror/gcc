@@ -1,3 +1,115 @@
+2008-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Alphabetize local variables.
+	Create the statements which map a string name to protected or task
+	entry indix.
+
+	* exp_ch9.adb: Add with and use clause for Stringt.
+	Minor code reformatting.
+	(Build_Entry_Names): New routine.
+	(Make_Initialize_Protection, Make_Task_Create_Call): Generate a value
+	for flag Build_Entry_Names which controls the allocation of the data
+	structure for the string names of entries.
+
+	* exp_ch9.ads (Build_Entry_Names): New subprogram.
+
+	* exp_util.adb (Entry_Names_OK): New function.
+
+	* exp_util.ads (Entry_Names_OK): New function.
+
+	* rtsfind.ads: Add RO_PE_Set_Entry_Name and RO_TS_Set_Entry_Name to
+	enumerations RE_Id and RE_Unit_Table.
+
+	* s-taskin.adb Add with and use clause for Ada.Unchecked_Deallocation.
+	(Free_Entry_Names_Array): New routine.
+
+	* s-taskin.ads: Comment reformatting.
+	Add types String_Access, Entry_Names_Array, Entry_Names_Array_Access.
+	Add component Entry_Names to record Ada_Task_Control_Block.
+	(Free_Entry_Names_Array): New routine.
+
+	* s-tassta.adb (Create_Task): If flag Build_Entry_Names is set,
+	dynamically allocate an array
+	of string pointers. This structure holds string entry names.
+	(Free_Entry_Names): New routine.
+	(Free_Task, Vulnerable_Free_Task): Deallocate the entry names array.
+	(Set_Entry_Names): New routine.
+
+	* s-tassta.ads:
+	(Create_Task): Add formal Build_Entry_Names. The flag is used to
+	control the allocation of the data structure which stores entry names.
+	(Set_Entry_Name): New routine.
+
+	* s-tpoben.adb:
+	Add with and use clause for Ada.Unchecked_Conversion.
+	(Finalize): Deallocate the entry names array.
+	(Free_Entry_Names): New routine.
+	(Initialize_Protection_Entries): When flag Build_Entry_Names is set,
+	create an array of string pointers to hold the entry names.
+	(Set_Entry_Name): New routine.
+
+	* s-tpoben.ads:
+	Add field Entry_Names to record Protection_Entries.
+	(Initialize_Protection_Entries): Add formal Build_Entry_Names.
+	(Set_Entry_Name): New routine.
+
+2008-05-26  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb:
+	(Process_Project_Level_Simple_Attributes): process attribute Library_GCC
+
+	* prj.ads:
+	(Project_Configuration): New component Shared_Lib_Driver
+
+2008-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb:
+	(Cleanup_Scopes): For a protected operation, transfer finalization list
+	to protected body subprogram, to force cleanup actions when needed.
+
+2008-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_cat.adb: Minor reformatting
+
+	* gnatname.adb: Minor reformatting
+
+	* osint.ads: Minor reformatting
+
+	* s-carun8.ads: Minor reformatting
+
+	* g-heasor.ads: Minor comment fix (unit is now pure)
+
+2008-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch2.adb:
+	(Expand_Current_Value): Properly type generated integer literal
+
+2008-05-26  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add description for the new gnatcheck rule -
+	Separate_Numeric_Error_Handlers.
+
+2008-05-26  Pascal Obry  <obry@adacore.com>
+
+	* sem_aggr.adb: Minor reformatting.
+
+2008-05-26  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-osinte-aix.adb:
+	(To_Target_Priority): Setting the time slice value to 0 or greater sets
+	the scheduling policy to FIFO within priorities or round-robin
+	respectively.
+	Hence, the priority must be set in this case to the one selected by the
+	user.
+	
+2008-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb:
+	(Remove_Parent): If the enclosing scope is an instance whose generic
+	parent is declared within some parent scope of the just completed
+	instance, make full views of the entities in that parent visible, when
+	applicable.
+	
 2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* mingw32.h (STD_MINGW): Set to true for target w64.
