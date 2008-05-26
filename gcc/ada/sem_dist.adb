@@ -64,7 +64,9 @@ package body Sem_Dist is
    procedure Add_Stub_Constructs (N : Node_Id) is
       U    : constant Node_Id := Unit (N);
       Spec : Entity_Id        := Empty;
-      Exp  : Node_Id          := U;         --  Unit that will be expanded
+
+      Exp : Node_Id := U;
+      --  Unit that will be expanded
 
    begin
       pragma Assert (Distribution_Stub_Mode /= No_Stubs);
@@ -84,7 +86,6 @@ package body Sem_Dist is
         or else Is_Remote_Call_Interface (Spec));
 
       if Distribution_Stub_Mode = Generate_Caller_Stub_Body then
-
          if Is_Shared_Passive (Spec) then
             null;
          elsif Nkind (U) = N_Package_Body then
@@ -95,7 +96,6 @@ package body Sem_Dist is
          end if;
 
       else
-
          if Is_Shared_Passive (Spec) then
             Build_Passive_Partition_Stub (Exp);
          else
@@ -186,7 +186,6 @@ package body Sem_Dist is
       if Parent_Name /= No_String then
          Start_String (Parent_Name);
          Store_String_Char (Get_Char_Code ('.'));
-
       else
          Start_String;
       end if;
@@ -242,15 +241,13 @@ package body Sem_Dist is
       Par : Node_Id;
 
    begin
-      if (Nkind (N) = N_Function_Call
-              or else Nkind (N) = N_Procedure_Call_Statement)
+      if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
         and then Nkind (Name (N)) in N_Has_Entity
         and then Is_Remote_Call_Interface (Entity (Name (N)))
         and then Has_All_Calls_Remote (Scope (Entity (Name (N))))
         and then Comes_From_Source (N)
       then
          Par := Parent (Entity (Name (N)));
-
          while Present (Par)
            and then (Nkind (Par) /= N_Package_Specification
                        or else Is_Wrapper_Package (Defining_Entity (Par)))
@@ -294,9 +291,10 @@ package body Sem_Dist is
    ------------------------------------
 
    function Package_Specification_Of_Scope (E : Entity_Id) return Node_Id is
-      N : Node_Id := Parent (E);
+      N : Node_Id;
 
    begin
+      N := Parent (E);
       while Nkind (N) /= N_Package_Specification loop
          N := Parent (N);
       end loop;
@@ -317,11 +315,10 @@ package body Sem_Dist is
       Typ            : constant Entity_Id := Etype (N);
 
    begin
-      Ety := Entity (Prefix (N));
-
       --  In case prefix is not a library unit entity, get the entity
       --  of library unit.
 
+      Ety := Entity (Prefix (N));
       while (Present (Scope (Ety))
         and then Scope (Ety) /= Standard_Standard)
         and not Is_Child_Unit (Ety)
@@ -363,7 +360,6 @@ package body Sem_Dist is
 
       else
          Get_Pt_Id_Call := Make_Function_Call (Loc, Get_Pt_Id);
-
       end if;
 
       --  Replace the attribute node by a conversion of the function call
@@ -426,10 +422,11 @@ package body Sem_Dist is
 
       Tick_Access_Conv_Call :=
         Make_Function_Call (Loc,
-          Name => New_Occurrence_Of (Attribute_Subp, Loc),
+          Name                   => New_Occurrence_Of (Attribute_Subp, Loc),
           Parameter_Associations =>
             New_List (
-              Make_String_Literal (Loc, Full_Qualified_Name (RS_Pkg_E)),
+              Make_String_Literal (Loc,
+                Strval => Full_Qualified_Name (RS_Pkg_E)),
               Build_Subprogram_Id (Loc, Remote_Subp),
               New_Occurrence_Of (Async_E, Loc),
               New_Occurrence_Of (All_Calls_Remote_E, Loc)));
@@ -527,8 +524,7 @@ package body Sem_Dist is
 
       Append_To (Priv_Decls,
         Make_Full_Type_Declaration (Loc,
-          Defining_Identifier =>
-            Full_Obj_Type,
+          Defining_Identifier => Full_Obj_Type,
           Type_Definition     =>
             Make_Record_Definition (Loc,
               Abstract_Present => True,
@@ -558,39 +554,33 @@ package body Sem_Dist is
               All_Present => True,
               Subtype_Indication =>
                 Make_Attribute_Reference (Loc,
-                  Prefix =>
-                    New_Occurrence_Of (Obj_Type, Loc),
-                  Attribute_Name =>
-                    Name_Class))));
+                  Prefix         => New_Occurrence_Of (Obj_Type, Loc),
+                  Attribute_Name => Name_Class))));
+
       Set_Is_Remote_Call_Interface (RACW_Type, Is_RCI);
       Set_Is_Remote_Types (RACW_Type, Is_RT);
 
       Subpkg_Decl :=
         Make_Package_Declaration (Loc,
           Make_Package_Specification (Loc,
-            Defining_Unit_Name =>
-              Subpkg,
-            Visible_Declarations =>
-              Vis_Decls,
-            Private_Declarations =>
-              Priv_Decls,
-            End_Label =>
-              New_Occurrence_Of (Subpkg, Loc)));
+            Defining_Unit_Name   => Subpkg,
+            Visible_Declarations => Vis_Decls,
+            Private_Declarations => Priv_Decls,
+            End_Label            => New_Occurrence_Of (Subpkg, Loc)));
+
       Set_Is_Remote_Call_Interface (Subpkg, Is_RCI);
       Set_Is_Remote_Types (Subpkg, Is_RT);
       Insert_After_And_Analyze (N, Subpkg_Decl);
 
       --  Generate package body to receive RACW calling stubs
-      --  Note: Analyze_Declarations has an absolute requirement that
-      --  the declaration list be non-empty, so we provide a dummy null
-      --  statement here.
+
+      --  Note: Analyze_Declarations has an absolute requirement that the
+      --  declaration list be non-empty, so provide dummy null statement here.
 
       Subpkg_Body :=
         Make_Package_Body (Loc,
-          Defining_Unit_Name =>
-            Make_Defining_Identifier (Loc, Chars (Subpkg)),
-          Declarations => New_List (
-            Make_Null_Statement (Loc)));
+          Defining_Unit_Name => Make_Defining_Identifier (Loc, Chars (Subpkg)),
+          Declarations       => New_List (Make_Null_Statement (Loc)));
       Insert_After_And_Analyze (Subpkg_Decl, Subpkg_Body);
 
       --  Many parts of the analyzer and expander expect
@@ -612,10 +602,10 @@ package body Sem_Dist is
                       Make_Defining_Identifier (Loc, Name_Ras),
                     Component_Definition =>
                       Make_Component_Definition (Loc,
-                        Aliased_Present     =>
-                          False,
+                        Aliased_Present     => False,
                         Subtype_Indication  =>
                           New_Occurrence_Of (RACW_Type, Loc)))))));
+
       Set_Equivalent_Type (User_Type, Fat_Type);
       Set_Corresponding_Remote_Type (Fat_Type, User_Type);
       Insert_After_And_Analyze (Subpkg_Body, Fat_Type_Decl);
@@ -656,7 +646,6 @@ package body Sem_Dist is
          end if;
 
       elsif Nkind (Deref_Subp_Call) = N_Indexed_Component then
-
          Params := Expressions (Deref_Subp_Call);
 
          if Present (Params) then
@@ -681,13 +670,12 @@ package body Sem_Dist is
       if Ekind (Deref_Proc) = E_Function then
          Call_Node :=
            Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (Deref_Proc, Loc),
+              Name                   => New_Occurrence_Of (Deref_Proc, Loc),
               Parameter_Associations => Params);
-
       else
          Call_Node :=
            Make_Procedure_Call_Statement (Loc,
-              Name => New_Occurrence_Of (Deref_Proc, Loc),
+              Name                   => New_Occurrence_Of (Deref_Proc, Loc),
               Parameter_Associations => Params);
       end if;
 
@@ -711,8 +699,8 @@ package body Sem_Dist is
         and then (Is_Remote_Call_Interface (ET)
                    or else Is_Remote_Types (ET))
         and then Present (Corresponding_Remote_Type (ET))
-        and then (Nkind (Parent (Parent (P))) = N_Procedure_Call_Statement
-                   or else Nkind (Parent (Parent (P))) = N_Indexed_Component)
+        and then Nkind_In (Parent (Parent (P)), N_Procedure_Call_Statement,
+                                                N_Indexed_Component)
         and then Expander_Active
       then
          RAS_E_Dereference (P);
@@ -788,17 +776,14 @@ package body Sem_Dist is
          --  We do not have to handle this case
 
          return False;
-
       end if;
 
       Rewrite (N,
         Make_Aggregate (Loc,
           Component_Associations => New_List (
             Make_Component_Association (Loc,
-              Choices => New_List (
-                Make_Identifier (Loc, Name_Ras)),
-              Expression =>
-                Make_Null (Loc)))));
+              Choices => New_List (Make_Identifier (Loc, Name_Ras)),
+              Expression => Make_Null (Loc)))));
       Analyze_And_Resolve (N, Target_Type);
       return True;
    end Remote_AST_Null_Value;
