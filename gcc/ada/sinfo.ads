@@ -1414,12 +1414,12 @@ package Sinfo is
    --    full details)
 
    --  No_Initialization (Flag13-Sem)
-   --    Present in N_Object_Declaration & N_Allocator to indicate that the
+   --    Present in N_Object_Declaration and N_Allocator to indicate that the
    --    object must not be initialized (by Initialize or call to an init
    --    proc). This is needed for controlled aggregates. When the Object
    --    declaration has an expression, this flag means that this expression
    --    should not be taken into account (needed for in place initialization
-   --    with aggregates)
+   --    with aggregates).
 
    --  No_Truncation (Flag17-Sem)
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
