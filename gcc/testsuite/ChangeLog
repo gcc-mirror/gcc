@@ -1,3 +1,8 @@
+2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/36321
+	* gcc-c.torture/execute/pr36321.c: New.
+
 2008-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36237

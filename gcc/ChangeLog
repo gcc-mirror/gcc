@@ -1,3 +1,9 @@
+2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/36321
+	* config/i386/i386.md (allocate_stack_worker_64): Make sure 
+	argument operand in rax isn't removed.
+
 2008-05-23  Uros Bizjak  <ubizjak@gmail.com>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 
