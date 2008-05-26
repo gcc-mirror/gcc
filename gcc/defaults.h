@@ -940,4 +940,13 @@ along with GCC; see the file COPYING3.  If not see
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 0
 #endif
 
+#ifndef LOCAL_ALIGNMENT
+#define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
+#endif
+
+#ifndef STACK_SLOT_ALIGNMENT
+#define STACK_SLOT_ALIGNMENT(TYPE,MODE,ALIGN) \
+  ((TYPE) ? LOCAL_ALIGNMENT ((TYPE), (ALIGN)) : (ALIGN))
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

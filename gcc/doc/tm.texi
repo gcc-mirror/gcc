@@ -1172,6 +1172,21 @@ One use of this macro is to increase alignment of medium-size data to
 make it all fit in fewer cache lines.
 @end defmac
 
+@defmac STACK_SLOT_ALIGNMENT (@var{type}, @var{mode}, @var{basic-align})
+If defined, a C expression to compute the alignment for stack slot.
+@var{type} is the data type, @var{mode} is the widest mode available,
+and @var{basic-align} is the alignment that the slot would ordinarily
+have.  The value of this macro is used instead of that alignment to
+align the slot.
+
+If this macro is not defined, then @var{basic-align} is used when
+@var{type} is @code{NULL}.  Otherwise, @code{LOCAL_ALIGNMENT} will
+be used.
+
+This macro is to set alignment of stack slot to the maximum alignment
+of all possible modes which the slot may have.
+@end defmac
+
 @defmac EMPTY_FIELD_BOUNDARY
 Alignment in bits to be given to a structure bit-field that follows an
 empty field such as @code{int : 0;}.

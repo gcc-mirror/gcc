@@ -1,3 +1,28 @@
+2008-05-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/36253
+	* caller-save.c (insert_restore): Verify alignment of spill
+	space.
+	(insert_save): Likewise.
+
+	* cfgexpand.c (LOCAL_ALIGNMENT): Removed.
+
+	* defaults.h (LOCAL_ALIGNMENT): New. Provide default.
+	(STACK_SLOT_ALIGNMENT): Likewise.
+
+	* function.c (LOCAL_ALIGNMENT): Removed.
+	(get_stack_local_alignment): New.
+	(assign_stack_local): Use it.  Set alignment on stack slot.
+	(assign_stack_temp_for_type): Use get_stack_local_alignment.
+
+	* config/i386/i386.h (LOCAL_ALIGNMENT): Updated.
+	(STACK_SLOT_ALIGNMENT): New.
+
+	* config/i386/i386.c (ix86_local_alignment): Handle caller-save
+	stack slot in XFmode.
+
+	* doc/tm.texi (STACK_SLOT_ALIGNMENT): New.
+
 2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/36321

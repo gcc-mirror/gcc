@@ -16996,14 +16996,25 @@ ix86_data_alignment (tree type, int align)
   return align;
 }
 
-/* Compute the alignment for a local variable.
-   TYPE is the data type, and ALIGN is the alignment that
-   the object would ordinarily have.  The value of this macro is used
-   instead of that alignment to align the object.  */
+/* Compute the alignment for a local variable or a stack slot.  TYPE is
+   the data type, MODE is the widest mode available and ALIGN is the
+   alignment that the object would ordinarily have.  The value of this
+   macro is used instead of that alignment to align the object.  */
 
-int
-ix86_local_alignment (tree type, int align)
+unsigned int
+ix86_local_alignment (tree type, enum machine_mode mode,
+		      unsigned int align)
 {
+  /* If TYPE is NULL, we are allocating a stack slot for caller-save
+     register in MODE.  We will return the largest alignment of XF
+     and DF.  */
+  if (!type)
+    {
+      if (mode == XFmode && align < GET_MODE_ALIGNMENT (DFmode))
+	align = GET_MODE_ALIGNMENT (DFmode);
+      return align;
+    }
+
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
      to 16byte boundary.  */
   if (TARGET_64BIT)

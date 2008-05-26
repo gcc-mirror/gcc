@@ -902,7 +902,22 @@ enum target_cpu_default
    One use of this macro is to increase alignment of medium-size
    data to make it all fit in fewer cache lines.  */
 
-#define LOCAL_ALIGNMENT(TYPE, ALIGN) ix86_local_alignment ((TYPE), (ALIGN))
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) \
+  ix86_local_alignment ((TYPE), VOIDmode, (ALIGN))
+
+/* If defined, a C expression to compute the alignment for stack slot.
+   TYPE is the data type, MODE is the widest mode available, and ALIGN
+   is the alignment that the slot would ordinarily have.  The value of
+   this macro is used instead of that alignment to align the slot.
+
+   If this macro is not defined, then ALIGN is used when TYPE is NULL,
+   Otherwise, LOCAL_ALIGNMENT will be used.
+
+   One use of this macro is to set alignment of stack slot to the
+   maximum alignment of all possible modes which the slot may have.  */
+
+#define STACK_SLOT_ALIGNMENT(TYPE, MODE, ALIGN) \
+  ix86_local_alignment ((TYPE), (MODE), (ALIGN))
 
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is

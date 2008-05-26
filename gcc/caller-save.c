@@ -704,6 +704,11 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
     mem = adjust_address (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
+
+  /* Verify that the alignment of spill space is equal to or greater
+     than required.  */
+  gcc_assert (GET_MODE_ALIGNMENT (GET_MODE (mem)) <= MEM_ALIGN (mem));
+
   pat = gen_rtx_SET (VOIDmode,
 		     gen_rtx_REG (GET_MODE (mem),
 				  regno), mem);
@@ -776,6 +781,11 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
     mem = adjust_address (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
+
+  /* Verify that the alignment of spill space is equal to or greater
+     than required.  */
+  gcc_assert (GET_MODE_ALIGNMENT (GET_MODE (mem)) <= MEM_ALIGN (mem));
+
   pat = gen_rtx_SET (VOIDmode, mem,
 		     gen_rtx_REG (GET_MODE (mem),
 				  regno));
