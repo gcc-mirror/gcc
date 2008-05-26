@@ -10807,6 +10807,10 @@ package body Sem_Ch12 is
 
    procedure Remove_Parent (In_Body : Boolean := False) is
       S      : Entity_Id := Current_Scope;
+      --  S is the scope containing the instantiation just completed. The
+      --  scope stack contains the parent instances of the instantiation,
+      --  followed by the original S.
+
       E      : Entity_Id;
       P      : Entity_Id;
       Hidden : Elmt_Id;
@@ -10853,6 +10857,21 @@ package body Sem_Ch12 is
                         and then not Parent_Unit_Visible)
             then
                Set_Is_Immediately_Visible (P, False);
+
+            --  If the current scope is itself an instantiation of a generic
+            --  nested within P, and we are in the private part of body of
+            --  this instantiation, restore the full views of P, that were
+            --  removed in End_Package_Scope above. This obscure case can
+            --  occur when a subunit of a generic contains an instance of
+            --  of a child unit of its generic parent unit.
+
+            elsif S = Current_Scope
+               and then Is_Generic_Instance (S)
+               and then P = Scope (Generic_Parent (Parent (S)))
+               and then (In_Package_Body (S) or else In_Private_Part (S))
+            then
+               Set_In_Private_Part (P);
+               Install_Private_Declarations (P);
             end if;
          end loop;
 
