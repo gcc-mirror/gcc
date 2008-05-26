@@ -57,6 +57,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
+with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
@@ -2166,7 +2167,7 @@ package body Exp_Ch3 is
             --  If the interface is a parent of Rec_Type it shares the primary
             --  dispatch table and hence there is no need to build the function
 
-            if not Is_Parent (Node (Iface_Elmt), Rec_Type) then
+            if not Is_Ancestor (Node (Iface_Elmt), Rec_Type) then
                Build_Offset_To_Top_Function (Iface_Comp => Node (Comp_Elmt));
             end if;
 
@@ -2304,7 +2305,7 @@ package body Exp_Ch3 is
 
             if Ada_Version >= Ada_05
               and then not Is_Interface (Rec_Type)
-              and then Has_Abstract_Interfaces (Rec_Type)
+              and then Has_Interfaces (Rec_Type)
             then
                Init_Secondary_Tags
                  (Typ            => Rec_Type,
@@ -2398,8 +2399,7 @@ package body Exp_Ch3 is
 
                         if not Is_Imported (Prim)
                           and then Convention (Prim) = Convention_CPP
-                          and then not Present (Abstract_Interface_Alias
-                                                 (Prim))
+                          and then not Present (Interface_Alias (Prim))
                         then
                            Register_Primitive (Loc,
                              Prim    => Prim,
@@ -2421,7 +2421,7 @@ package body Exp_Ch3 is
 
             if Ada_Version >= Ada_05
               and then not Is_Interface (Rec_Type)
-              and then Has_Abstract_Interfaces (Rec_Type)
+              and then Has_Interfaces (Rec_Type)
               and then Has_Discriminants (Etype (Rec_Type))
               and then Is_Variable_Size_Record (Etype (Rec_Type))
             then
@@ -4421,7 +4421,7 @@ package body Exp_Ch3 is
               and then
                 (Is_Class_Wide_Type (Etype (Expr))
                    or else
-                     not Is_Parent (Root_Type (Typ), Etype (Expr)))
+                     not Is_Ancestor (Root_Type (Typ), Etype (Expr)))
               and then Comes_From_Source (Def_Id)
               and then VM_Target = No_VM
             then
@@ -5321,6 +5321,105 @@ package body Exp_Ch3 is
    ------------------------
 
    procedure Freeze_Record_Type (N : Node_Id) is
+
+      procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id);
+      --  Add to the list of primitives of Tagged_Types the internal entities
+      --  associated with interface primitives that are located in secondary
+      --  dispatch tables.
+
+      -------------------------------------
+      -- Add_Internal_Interface_Entities --
+      -------------------------------------
+
+      procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id) is
+         Elmt        : Elmt_Id;
+         Iface       : Entity_Id;
+         Iface_Elmt  : Elmt_Id;
+         Iface_Prim  : Entity_Id;
+         Ifaces_List : Elist_Id;
+         New_Subp    : Entity_Id := Empty;
+         Prim        : Entity_Id;
+
+      begin
+         pragma Assert (Ada_Version >= Ada_05
+           and then Is_Record_Type (Tagged_Type)
+           and then Is_Tagged_Type (Tagged_Type)
+           and then Has_Interfaces (Tagged_Type)
+           and then not Is_Interface (Tagged_Type));
+
+         Collect_Interfaces (Tagged_Type, Ifaces_List);
+
+         Iface_Elmt := First_Elmt (Ifaces_List);
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+
+            --  Exclude from this processing interfaces that are parents
+            --  of Tagged_Type because their primitives are located in the
+            --  primary dispatch table (and hence no auxiliary internal
+            --  entities are required to handle secondary dispatch tables
+            --  in such case).
+
+            if not Is_Ancestor (Iface, Tagged_Type) then
+               Elmt := First_Elmt (Primitive_Operations (Iface));
+               while Present (Elmt) loop
+                  Iface_Prim := Node (Elmt);
+
+                  if not Is_Predefined_Dispatching_Operation (Iface_Prim) then
+                     Prim :=
+                       Find_Primitive_Covering_Interface
+                         (Tagged_Type => Tagged_Type,
+                          Iface_Prim  => Iface_Prim);
+
+                     pragma Assert (Present (Prim));
+
+                     Derive_Subprogram
+                       (New_Subp     => New_Subp,
+                        Parent_Subp  => Iface_Prim,
+                        Derived_Type => Tagged_Type,
+                        Parent_Type  => Iface);
+
+                     --  Ada 2005 (AI-251): Decorate internal entity Iface_Subp
+                     --  associated with interface types. These entities are
+                     --  only registered in the list of primitives of its
+                     --  corresponding tagged type because they are only used
+                     --  to fill the contents of the secondary dispatch tables.
+                     --  Therefore they are removed from the homonym chains.
+
+                     Set_Is_Hidden (New_Subp);
+                     Set_Is_Internal (New_Subp);
+                     Set_Alias (New_Subp, Prim);
+                     Set_Is_Abstract_Subprogram (New_Subp,
+                       Is_Abstract_Subprogram (Prim));
+                     Set_Interface_Alias (New_Subp, Iface_Prim);
+
+                     --  Internal entities associated with interface types are
+                     --  only registered in the list of primitives of the
+                     --  tagged type. They are only used to fill the contents
+                     --  of the secondary dispatch tables. Therefore they are
+                     --  not needed in the homonym chains.
+
+                     Remove_Homonym (New_Subp);
+
+                     --  Hidden entities associated with interfaces must have
+                     --  set the Has_Delay_Freeze attribute to ensure that, in
+                     --  case of locally defined tagged types (or compiling
+                     --  with static dispatch tables generation disabled) the
+                     --  corresponding entry of the secondary dispatch table is
+                     --  filled when such entity is frozen.
+
+                     Set_Has_Delayed_Freeze (New_Subp);
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+      end Add_Internal_Interface_Entities;
+
+      --  Local variables
+
       Def_Id        : constant Node_Id := Entity (N);
       Type_Decl     : constant Node_Id := Parent (Def_Id);
       Comp          : Entity_Id;
@@ -5342,6 +5441,8 @@ package body Exp_Ch3 is
       Wrapper_Decl_List   : List_Id := No_List;
       Wrapper_Body_List   : List_Id := No_List;
       Null_Proc_Decl_List : List_Id := No_List;
+
+   --  Start of processing for Freeze_Record_Type
 
    begin
       --  Build discriminant checking functions if not a derived type (for
@@ -5543,6 +5644,17 @@ package body Exp_Ch3 is
             then
                Make_Null_Procedure_Specs (Def_Id, Null_Proc_Decl_List);
                Insert_Actions (N, Null_Proc_Decl_List);
+            end if;
+
+            --  Ada 2005 (AI-251): Add internal entities associated with
+            --  secondary dispatch tables to the list of primitives of tagged
+            --  types that are not interfaces
+
+            if Ada_Version >= Ada_05
+              and then not Is_Interface (Def_Id)
+              and then Has_Interfaces (Def_Id)
+            then
+               Add_Internal_Interface_Entities (Def_Id);
             end if;
 
             Set_Is_Frozen (Def_Id);
@@ -6678,7 +6790,7 @@ package body Exp_Ch3 is
          --  Initialize the pointer to the secondary DT associated with the
          --  interface.
 
-         if not Is_Parent (Iface, Typ) then
+         if not Is_Ancestor (Iface, Typ) then
             Append_To (Stmts_List,
               Make_Assignment_Statement (Loc,
                 Name =>
@@ -6776,7 +6888,7 @@ package body Exp_Ch3 is
             --  Don't need to set any value if this interface shares
             --  the primary dispatch table.
 
-            if not Is_Parent (Iface, Typ) then
+            if not Is_Ancestor (Iface, Typ) then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
                    Iface_Tag    => New_Reference_To (Iface_Tag, Loc),
@@ -7499,27 +7611,42 @@ package body Exp_Ch3 is
             --  User-defined equality
 
             elsif Chars (Node (Prim)) = Name_Op_Eq
-              and then (No (Alias (Node (Prim)))
-                         or else Nkind (Unit_Declaration_Node (Node (Prim))) =
-                                            N_Subprogram_Renaming_Declaration)
               and then Etype (First_Formal (Node (Prim))) =
                          Etype (Next_Formal (First_Formal (Node (Prim))))
               and then Base_Type (Etype (Node (Prim))) = Standard_Boolean
             then
-               Eq_Needed := False;
-               exit;
+               if No (Alias (Node (Prim)))
+                 or else Nkind (Unit_Declaration_Node (Node (Prim))) =
+                           N_Subprogram_Renaming_Declaration
+               then
+                  Eq_Needed := False;
+                  exit;
 
-            --  If the parent is not an interface type and has an abstract
-            --  equality function, the inherited equality is abstract as well,
-            --  and no body can be created for it.
+               --  If the parent is not an interface type and has an abstract
+               --  equality function, the inherited equality is abstract as
+               --  well, and no body can be created for it.
 
-            elsif Chars (Node (Prim)) = Name_Op_Eq
-              and then not Is_Interface (Etype (Tag_Typ))
-              and then Present (Alias (Node (Prim)))
-              and then Is_Abstract_Subprogram (Alias (Node (Prim)))
-            then
-               Eq_Needed := False;
-               exit;
+               elsif not Is_Interface (Etype (Tag_Typ))
+                 and then Present (Alias (Node (Prim)))
+                 and then Is_Abstract_Subprogram (Alias (Node (Prim)))
+               then
+                  Eq_Needed := False;
+                  exit;
+
+               --  If the type has an equality function corresponding with
+               --  a primitive defined in an interface type, the inherited
+               --  equality is abstract as well, and no body can be created
+               --  for it.
+
+               elsif Present (Alias (Node (Prim)))
+                 and then Comes_From_Source (Ultimate_Alias (Node (Prim)))
+                 and then
+                   Is_Interface
+                     (Find_Dispatching_Type (Ultimate_Alias (Node (Prim))))
+               then
+                  Eq_Needed := False;
+                  exit;
+               end if;
             end if;
 
             Next_Elmt (Prim);
@@ -7663,7 +7790,7 @@ package body Exp_Ch3 is
                   and then Is_Limited_Record (Etype (Tag_Typ)))
              or else
                (Is_Concurrent_Record_Type (Tag_Typ)
-                  and then Has_Abstract_Interfaces (Tag_Typ))
+                  and then Has_Interfaces (Tag_Typ))
          then
             Append_To (Res,
               Make_Subprogram_Declaration (Loc,
@@ -8116,7 +8243,7 @@ package body Exp_Ch3 is
           ((Is_Interface (Etype (Tag_Typ))
               and then Is_Limited_Record (Etype (Tag_Typ)))
            or else (Is_Concurrent_Record_Type (Tag_Typ)
-                     and then Has_Abstract_Interfaces (Tag_Typ)))
+                     and then Has_Interfaces (Tag_Typ)))
         and then RTE_Available (RE_Select_Specific_Data)
       then
          Append_To (Res, Make_Disp_Asynchronous_Select_Body (Tag_Typ));

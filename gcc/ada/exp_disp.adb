@@ -1080,7 +1080,7 @@ package body Exp_Disp is
             --  a parent of the type of the actual because in this case the
             --  interface primitives are located in the primary dispatch table.
 
-            elsif Is_Parent (Formal_Typ, Actual_Typ) then
+            elsif Is_Ancestor (Formal_Typ, Actual_Typ) then
                null;
 
             --  Implicit conversion to the class-wide formal type to force
@@ -1126,7 +1126,7 @@ package body Exp_Disp is
             --  a parent of the type of the actual because in this case the
             --  interface primitives are located in the primary dispatch table.
 
-            elsif Is_Parent (Formal_DDT, Actual_DDT) then
+            elsif Is_Ancestor (Formal_DDT, Actual_DDT) then
                null;
 
             else
@@ -1450,6 +1450,50 @@ package body Exp_Disp is
                and then not Restriction_Active (No_Dispatching_Calls);
    end Has_DT;
 
+   -----------------------------------------
+   -- Is_Predefined_Dispatching_Operation --
+   -----------------------------------------
+
+   function Is_Predefined_Dispatching_Operation
+     (E : Entity_Id) return Boolean
+   is
+      TSS_Name : TSS_Name_Type;
+
+   begin
+      if not Is_Dispatching_Operation (E) then
+         return False;
+      end if;
+
+      Get_Name_String (Chars (E));
+
+      --  Most predefined primitives have internally generated names. Equality
+      --  must be treated differently; the predefined operation is recognized
+      --  as a homogeneous binary operator that returns Boolean.
+
+      if Name_Len > TSS_Name_Type'Last then
+         TSS_Name := TSS_Name_Type (Name_Buffer (Name_Len - TSS_Name'Length + 1
+                                     .. Name_Len));
+         if        Chars (E) = Name_uSize
+           or else Chars (E) = Name_uAlignment
+           or else TSS_Name  = TSS_Stream_Read
+           or else TSS_Name  = TSS_Stream_Write
+           or else TSS_Name  = TSS_Stream_Input
+           or else TSS_Name  = TSS_Stream_Output
+           or else
+             (Chars (E) = Name_Op_Eq
+                and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
+           or else Chars (E) = Name_uAssign
+           or else TSS_Name  = TSS_Deep_Adjust
+           or else TSS_Name  = TSS_Deep_Finalize
+           or else Is_Predefined_Interface_Primitive (E)
+         then
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Is_Predefined_Dispatching_Operation;
+
    -------------------------------------
    -- Is_Predefined_Dispatching_Alias --
    -------------------------------------
@@ -1474,6 +1518,21 @@ package body Exp_Disp is
 
       return False;
    end Is_Predefined_Dispatching_Alias;
+
+   ---------------------------------------
+   -- Is_Predefined_Interface_Primitive --
+   ---------------------------------------
+
+   function Is_Predefined_Interface_Primitive (E : Entity_Id) return Boolean is
+   begin
+      return Ada_Version >= Ada_05
+        and then (Chars (E) = Name_uDisp_Asynchronous_Select or else
+                  Chars (E) = Name_uDisp_Conditional_Select  or else
+                  Chars (E) = Name_uDisp_Get_Prim_Op_Kind    or else
+                  Chars (E) = Name_uDisp_Get_Task_Id         or else
+                  Chars (E) = Name_uDisp_Requeue             or else
+                  Chars (E) = Name_uDisp_Timed_Select);
+   end Is_Predefined_Interface_Primitive;
 
    ----------------------------------------
    -- Make_Disp_Asynchronous_Select_Body --
@@ -3401,7 +3460,7 @@ package body Exp_Disp is
            or else Is_Controlled (Typ)
            or else Restriction_Active (No_Dispatching_Calls)
            or else not Is_Limited_Type (Typ)
-           or else not Has_Abstract_Interfaces (Typ)
+           or else not Has_Interfaces (Typ)
            or else not Build_Thunks
          then
             --  No OSD table required
@@ -3429,11 +3488,11 @@ package body Exp_Disp is
                while Present (Prim_Elmt) loop
                   Prim := Node (Prim_Elmt);
 
-                  if Present (Abstract_Interface_Alias (Prim))
+                  if Present (Interface_Alias (Prim))
                     and then Find_Dispatching_Type
-                               (Abstract_Interface_Alias (Prim)) = Iface
+                               (Interface_Alias (Prim)) = Iface
                   then
-                     Prim_Alias := Abstract_Interface_Alias (Prim);
+                     Prim_Alias := Interface_Alias (Prim);
 
                      E := Prim;
                      while Present (Alias (E)) loop
@@ -3544,31 +3603,29 @@ package body Exp_Disp is
                   Prim := Node (Prim_Elmt);
 
                   if not Is_Predefined_Dispatching_Operation (Prim)
-                    and then Present (Abstract_Interface_Alias (Prim))
+                    and then Present (Interface_Alias (Prim))
                     and then not Is_Abstract_Subprogram (Alias (Prim))
                     and then not Is_Imported (Alias (Prim))
                     and then Find_Dispatching_Type
-                               (Abstract_Interface_Alias (Prim)) = Iface
+                               (Interface_Alias (Prim)) = Iface
 
                      --  Generate the code of the thunk only if the abstract
                      --  interface type is not an immediate ancestor of
                      --  Tagged_Type; otherwise the DT associated with the
                      --  interface is the primary DT.
 
-                    and then not Is_Parent (Iface, Typ)
+                    and then not Is_Ancestor (Iface, Typ)
                   then
                      if not Build_Thunks then
                         Pos :=
-                          UI_To_Int
-                            (DT_Position (Abstract_Interface_Alias (Prim)));
+                          UI_To_Int (DT_Position (Interface_Alias (Prim)));
                         Prim_Table (Pos) := Alias (Prim);
                      else
                         Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 
                         if Present (Thunk_Id) then
                            Pos :=
-                             UI_To_Int
-                               (DT_Position (Abstract_Interface_Alias (Prim)));
+                             UI_To_Int (DT_Position (Interface_Alias (Prim)));
 
                            Prim_Table (Pos) := Thunk_Id;
                            Append_To (Result, Thunk_Code);
@@ -3843,7 +3900,7 @@ package body Exp_Disp is
 
       --  Ada 2005 (AI-251): Build the secondary dispatch tables
 
-      if Has_Abstract_Interfaces (Typ) then
+      if Has_Interfaces (Typ) then
          Collect_Interface_Components (Typ, Typ_Comps);
 
          Suffix_Index := 0;
@@ -4438,7 +4495,7 @@ package body Exp_Disp is
 
          --  Count the number of interface types implemented by Typ
 
-         Collect_Abstract_Interfaces (Typ, Typ_Ifaces);
+         Collect_Interfaces (Typ, Typ_Ifaces);
 
          AI := First_Elmt (Typ_Ifaces);
          while Present (AI) loop
@@ -4460,7 +4517,7 @@ package body Exp_Disp is
             begin
                AI := First_Elmt (Typ_Ifaces);
                while Present (AI) loop
-                  if Is_Parent (Node (AI), Typ) then
+                  if Is_Ancestor (Node (AI), Typ) then
                      Sec_DT_Tag :=
                        New_Reference_To (DT_Ptr, Loc);
                   else
@@ -4471,7 +4528,7 @@ package body Exp_Disp is
 
                      while Ekind (Node (Elmt)) = E_Constant
                         and then not
-                          Is_Parent (Node (AI), Related_Type (Node (Elmt)))
+                          Is_Ancestor (Node (AI), Related_Type (Node (Elmt)))
                      loop
                         pragma Assert (Has_Thunks (Node (Elmt)));
                         Next_Elmt (Elmt);
@@ -4582,7 +4639,7 @@ package body Exp_Disp is
          if Ada_Version >= Ada_05
            and then Has_DT (Typ)
            and then Is_Concurrent_Record_Type (Typ)
-           and then Has_Abstract_Interfaces (Typ)
+           and then Has_Interfaces (Typ)
            and then Nb_Prim > 0
            and then not Is_Abstract_Type (Typ)
            and then not Is_Controlled (Typ)
@@ -4999,7 +5056,7 @@ package body Exp_Disp is
                   Prim := Node (Prim_Elmt);
 
                   if Is_Imported (Prim)
-                    or else Present (Abstract_Interface_Alias (Prim))
+                    or else Present (Interface_Alias (Prim))
                     or else Is_Predefined_Dispatching_Operation (Prim)
                   then
                      null;
@@ -5015,7 +5072,7 @@ package body Exp_Disp is
 
                      if not Is_Predefined_Dispatching_Operation (E)
                        and then not Is_Abstract_Subprogram (E)
-                       and then not Present (Abstract_Interface_Alias (E))
+                       and then not Present (Interface_Alias (E))
                      then
                         pragma Assert
                           (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);
@@ -5225,11 +5282,10 @@ package body Exp_Disp is
                         Copy_Secondary_DTs (Etype (Typ));
                      end if;
 
-                     if Present (Abstract_Interfaces (Typ))
-                       and then not Is_Empty_Elmt_List
-                                      (Abstract_Interfaces (Typ))
+                     if Present (Interfaces (Typ))
+                       and then not Is_Empty_Elmt_List (Interfaces (Typ))
                      then
-                        Iface := First_Elmt (Abstract_Interfaces (Typ));
+                        Iface := First_Elmt (Interfaces (Typ));
                         E     := First_Entity (Typ);
                         while Present (E)
                           and then Present (Node (Sec_DT_Ancestor))
@@ -5392,7 +5448,7 @@ package body Exp_Disp is
 
       if Ada_Version >= Ada_05
         and then Is_Concurrent_Record_Type (Typ)
-        and then Has_Abstract_Interfaces (Typ)
+        and then Has_Interfaces (Typ)
       then
          Append_List_To (Result,
            Make_Select_Specific_Data_Table (Typ));
@@ -5547,7 +5603,7 @@ package body Exp_Disp is
 
             --  Look for primitive overriding an abstract interface subprogram
 
-            if Present (Abstract_Interface_Alias (Prim))
+            if Present (Interface_Alias (Prim))
               and then not Examined (UI_To_Int (DT_Position (Alias (Prim))))
             then
                Prim_Pos := DT_Position (Alias (Prim));
@@ -5626,7 +5682,7 @@ package body Exp_Disp is
 
       --  Collect the components associated with secondary dispatch tables
 
-      if Has_Abstract_Interfaces (Typ) then
+      if Has_Interfaces (Typ) then
          Collect_Interface_Components (Typ, Typ_Comps);
       end if;
 
@@ -5777,7 +5833,7 @@ package body Exp_Disp is
 
       --  2) Generate the secondary tag entities
 
-      if Has_Abstract_Interfaces (Typ) then
+      if Has_Interfaces (Typ) then
          Suffix_Index := 0;
 
          --  For each interface type we build an unique external name
@@ -6071,7 +6127,7 @@ package body Exp_Disp is
          return;
       end if;
 
-      if not Present (Abstract_Interface_Alias (Prim)) then
+      if not Present (Interface_Alias (Prim)) then
          Tag_Typ := Scope (DTC_Entity (Prim));
          Pos := DT_Position (Prim);
          Tag := First_Tag_Component (Tag_Typ);
@@ -6128,13 +6184,13 @@ package body Exp_Disp is
 
       else
          Tag_Typ   := Find_Dispatching_Type (Alias (Prim));
-         Iface_Typ := Find_Dispatching_Type (Abstract_Interface_Alias (Prim));
+         Iface_Typ := Find_Dispatching_Type (Interface_Alias (Prim));
 
          pragma Assert (Is_Interface (Iface_Typ));
 
          Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 
-         if not Is_Parent (Iface_Typ, Tag_Typ)
+         if not Is_Ancestor (Iface_Typ, Tag_Typ)
            and then Present (Thunk_Code)
          then
             --  Comment needed on why checks are suppressed. This is not just
@@ -6151,7 +6207,7 @@ package body Exp_Disp is
             Iface_DT_Ptr  := Node (Iface_DT_Elmt);
             pragma Assert (Has_Thunks (Iface_DT_Ptr));
 
-            Iface_Prim := Abstract_Interface_Alias (Prim);
+            Iface_Prim := Interface_Alias (Prim);
             Pos        := DT_Position (Iface_Prim);
             Tag        := First_Tag_Component (Iface_Typ);
             L          := New_List;
@@ -6263,7 +6319,7 @@ package body Exp_Disp is
             --  Primitive operations covering abstract interfaces are
             --  allocated later
 
-            elsif Present (Abstract_Interface_Alias (Op)) then
+            elsif Present (Interface_Alias (Op)) then
                null;
 
             --  Predefined dispatching operations are completely safe. They
@@ -6343,6 +6399,8 @@ package body Exp_Disp is
    --  Start of processing for Set_All_DT_Position
 
    begin
+      pragma Assert (Present (First_Tag_Component (Typ)));
+
       --  Set the DT_Position for each primitive operation. Perform some
       --  sanity checks to avoid to build completely inconsistent dispatch
       --  tables.
@@ -6498,17 +6556,14 @@ package body Exp_Disp is
 
             --  Overriding primitives of ancestor abstract interfaces
 
-            elsif Present (Abstract_Interface_Alias (Prim))
-              and then Is_Parent
-                         (Find_Dispatching_Type
-                           (Abstract_Interface_Alias (Prim)),
-                          Typ)
+            elsif Present (Interface_Alias (Prim))
+              and then Is_Ancestor
+                         (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
             then
                pragma Assert (DT_Position (Prim) = No_Uint
-                 and then Present (DTC_Entity
-                                    (Abstract_Interface_Alias (Prim))));
+                 and then Present (DTC_Entity (Interface_Alias (Prim))));
 
-               E := Abstract_Interface_Alias (Prim);
+               E := Interface_Alias (Prim);
                Set_DT_Position (Prim, DT_Position (E));
 
                pragma Assert
@@ -6520,11 +6575,11 @@ package body Exp_Disp is
             --  Overriding primitives must use the same entry as the
             --  overridden primitive.
 
-            elsif not Present (Abstract_Interface_Alias (Prim))
+            elsif not Present (Interface_Alias (Prim))
               and then Present (Alias (Prim))
               and then Chars (Prim) = Chars (Alias (Prim))
               and then Find_Dispatching_Type (Alias (Prim)) /= Typ
-              and then Is_Parent
+              and then Is_Ancestor
                          (Find_Dispatching_Type (Alias (Prim)), Typ)
               and then Present (DTC_Entity (Alias (Prim)))
             then
@@ -6554,7 +6609,7 @@ package body Exp_Disp is
 
             --  Primitives covering interface primitives are handled later
 
-            elsif Present (Abstract_Interface_Alias (Prim)) then
+            elsif Present (Interface_Alias (Prim)) then
                null;
 
             else
@@ -6583,16 +6638,15 @@ package body Exp_Disp is
          Prim := Node (Prim_Elmt);
 
          if DT_Position (Prim) = No_Uint
-           and then Present (Abstract_Interface_Alias (Prim))
+           and then Present (Interface_Alias (Prim))
          then
             pragma Assert (Present (Alias (Prim))
               and then Find_Dispatching_Type (Alias (Prim)) = Typ);
 
             --  Check if this entry will be placed in the primary DT
 
-            if Is_Parent (Find_Dispatching_Type
-                           (Abstract_Interface_Alias (Prim)),
-                          Typ)
+            if Is_Ancestor
+                (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
             then
                pragma Assert (DT_Position (Alias (Prim)) /= No_Uint);
                Set_DT_Position (Prim, DT_Position (Alias (Prim)));
@@ -6601,9 +6655,9 @@ package body Exp_Disp is
 
             else
                pragma Assert
-                 (DT_Position (Abstract_Interface_Alias (Prim)) /= No_Uint);
+                 (DT_Position (Interface_Alias (Prim)) /= No_Uint);
                Set_DT_Position (Prim,
-                 DT_Position (Abstract_Interface_Alias (Prim)));
+                 DT_Position (Interface_Alias (Prim)));
             end if;
          end if;
 
@@ -6666,14 +6720,16 @@ package body Exp_Disp is
          --  point of declaration, but for inherited operations it must
          --  be done when building the dispatch table.
 
-         --  Ada 2005 (AI-251): Hidden entities associated with abstract
-         --  interface primitives are not taken into account because the
-         --  check is done with the aliased primitive.
+         --  Ada 2005 (AI-251): Primitives associated with interfaces are
+         --  excluded from this check because interfaces must be visible in
+         --  the public and private part (RM 7.3 (7.3/2))
 
          if Is_Abstract_Type (Typ)
            and then Is_Abstract_Subprogram (Prim)
            and then Present (Alias (Prim))
-           and then not Present (Abstract_Interface_Alias (Prim))
+           and then not Is_Interface
+                          (Find_Dispatching_Type (Ultimate_Alias (Prim)))
+           and then not Present (Interface_Alias (Prim))
            and then Is_Derived_Type (Typ)
            and then In_Private_Part (Current_Scope)
            and then
@@ -6789,16 +6845,14 @@ package body Exp_Disp is
       Prim        : Entity_Id)
    is
    begin
-      if Present (Abstract_Interface_Alias (Prim))
+      if Present (Interface_Alias (Prim))
         and then Is_Interface
-                   (Find_Dispatching_Type
-                     (Abstract_Interface_Alias (Prim)))
+                   (Find_Dispatching_Type (Interface_Alias (Prim)))
       then
          Set_DTC_Entity (Prim,
            Find_Interface_Tag
              (T     => Tagged_Type,
-              Iface => Find_Dispatching_Type
-                        (Abstract_Interface_Alias (Prim))));
+              Iface => Find_Dispatching_Type (Interface_Alias (Prim))));
       else
          Set_DTC_Entity (Prim,
            First_Tag_Component (Tagged_Type));
@@ -6927,12 +6981,12 @@ package body Exp_Disp is
                Write_Name (Chars (Scope (DTC_Entity (Alias (Prim)))));
             end if;
 
-            if Present (Abstract_Interface_Alias (Prim)) then
+            if Present (Interface_Alias (Prim)) then
                Write_Str  (", AI_Alias of ");
-               Write_Name (Chars (Scope (DTC_Entity
-                                          (Abstract_Interface_Alias (Prim)))));
+               Write_Name
+                 (Chars (Find_Dispatching_Type (Interface_Alias (Prim))));
                Write_Char (':');
-               Write_Int  (Int (Abstract_Interface_Alias (Prim)));
+               Write_Int  (Int (Interface_Alias (Prim)));
             end if;
 
             Write_Str (")");

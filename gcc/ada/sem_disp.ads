@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,14 @@ package Sem_Disp is
    function Find_Dispatching_Type (Subp : Entity_Id) return Entity_Id;
    --  Check whether a subprogram is dispatching, and find the tagged
    --  type of the controlling argument or arguments.
+
+   function Find_Primitive_Covering_Interface
+     (Tagged_Type : Entity_Id;
+      Iface_Prim  : Entity_Id) return Entity_Id;
+   --  Search in the homonym chain for the primitive of Tagged_Type that
+   --  covers Iface_Prim. The homonym chain traversal is required to catch
+   --  primitives associated with the partial view of private types when
+   --  processing the corresponding full view.
 
    function Is_Dynamically_Tagged (N : Node_Id) return Boolean;
    --  Used to determine whether a call is dispatching, i.e. if is an

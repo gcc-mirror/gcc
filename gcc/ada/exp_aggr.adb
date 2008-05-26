@@ -2573,7 +2573,7 @@ package body Exp_Aggr is
                   --  Ada 2005 (AI-251): If tagged type has progenitors we must
                   --  also initialize tags of the secondary dispatch tables.
 
-                  if Has_Abstract_Interfaces (Base_Type (Typ)) then
+                  if Has_Interfaces (Base_Type (Typ)) then
                      Init_Secondary_Tags
                        (Typ        => Base_Type (Typ),
                         Target     => Target,
@@ -3080,7 +3080,7 @@ package body Exp_Aggr is
          --  abstract interfaces we must also initialize the tags of the
          --  secondary dispatch tables.
 
-         if Has_Abstract_Interfaces (Base_Type (Typ)) then
+         if Has_Interfaces (Base_Type (Typ)) then
             Init_Secondary_Tags
               (Typ        => Base_Type (Typ),
                Target     => Target,
@@ -5369,7 +5369,7 @@ package body Exp_Aggr is
       --  If the tagged types covers interface types we need to initialize all
       --  hidden components containing pointers to secondary dispatch tables.
 
-      elsif Is_Tagged_Type (Typ) and then Has_Abstract_Interfaces (Typ) then
+      elsif Is_Tagged_Type (Typ) and then Has_Interfaces (Typ) then
          Convert_To_Assignments (N, Typ);
 
       --  If some components are mutable, the size of the aggregate component

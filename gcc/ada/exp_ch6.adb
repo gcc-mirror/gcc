@@ -4728,7 +4728,7 @@ package body Exp_Ch6 is
          Tagged_Typ := Find_Dispatching_Type (Prim);
 
          if No (Access_Disp_Table (Tagged_Typ))
-           or else not Has_Abstract_Interfaces (Tagged_Typ)
+           or else not Has_Interfaces (Tagged_Typ)
            or else not RTE_Available (RE_Interface_Tag)
            or else Restriction_Active (No_Dispatching_Calls)
          then
@@ -4856,7 +4856,7 @@ package body Exp_Ch6 is
                --  table slot.
 
                if not Is_Interface (Typ)
-                 or else Present (Abstract_Interface_Alias (Subp))
+                 or else Present (Interface_Alias (Subp))
                then
                   if Is_Predefined_Dispatching_Operation (Subp) then
                      Register_Predefined_DT_Entry (Subp);

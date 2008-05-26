@@ -2417,16 +2417,16 @@ package body Sem_Ch9 is
 
             if Present (Interface_List (N))
               or else (Is_Tagged_Type (Priv_T)
-                         and then Has_Abstract_Interfaces
-                                    (Priv_T, Use_Full_View => False))
+                         and then Has_Interfaces
+                                   (Priv_T, Use_Full_View => False))
             then
                if Is_Tagged_Type (Priv_T) then
-                  Collect_Abstract_Interfaces
+                  Collect_Interfaces
                     (Priv_T, Priv_T_Ifaces, Use_Full_View => False);
                end if;
 
                if Is_Tagged_Type (T) then
-                  Collect_Abstract_Interfaces (T, Full_T_Ifaces);
+                  Collect_Interfaces (T, Full_T_Ifaces);
                end if;
 
                Iface := Find_Hidden_Interface (Priv_T_Ifaces, Full_T_Ifaces);

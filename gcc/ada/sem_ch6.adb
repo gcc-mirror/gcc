@@ -33,6 +33,7 @@ with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -1827,7 +1828,7 @@ package body Sem_Ch6 is
               and then Ekind (Etype (First_Entity (Spec_Id))) = E_Record_Type
               and then Is_Tagged_Type (Etype (First_Entity (Spec_Id)))
               and then
-                Present (Abstract_Interfaces (Etype (First_Entity (Spec_Id))))
+                Present (Interfaces (Etype (First_Entity (Spec_Id))))
               and then
                 Present
                   (Corresponding_Concurrent_Type
@@ -2471,8 +2472,8 @@ package body Sem_Ch6 is
                if (Ekind (Formal_Typ) = E_Protected_Type
                      or else Ekind (Formal_Typ) = E_Task_Type)
                  and then Present (Corresponding_Record_Type (Formal_Typ))
-                 and then Present (Abstract_Interfaces
-                                  (Corresponding_Record_Type (Formal_Typ)))
+                 and then Present (Interfaces
+                                    (Corresponding_Record_Type (Formal_Typ)))
                then
                   Set_Etype (Formal,
                     Corresponding_Record_Type (Formal_Typ));
@@ -3506,18 +3507,9 @@ package body Sem_Ch6 is
    -----------------------
 
    procedure Check_Conventions (Typ : Entity_Id) is
+      Ifaces_List : Elist_Id;
 
-      function Skip_Check (Op : Entity_Id) return Boolean;
-      pragma Inline (Skip_Check);
-      --  A small optimization: skip the predefined dispatching operations,
-      --  since they always have the same convention. Also do not consider
-      --  abstract primitives since those are left by an erroneous overriding.
-      --  This function returns True for any operation that is thus exempted
-      --  exempted from checking.
-
-      procedure Check_Convention
-        (Op          : Entity_Id;
-         Search_From : Elmt_Id);
+      procedure Check_Convention (Op : Entity_Id);
       --  Verify that the convention of inherited dispatching operation Op is
       --  consistent among all subprograms it overrides. In order to minimize
       --  the search, Search_From is utilized to designate a specific point in
@@ -3527,88 +3519,61 @@ package body Sem_Ch6 is
       -- Check_Convention --
       ----------------------
 
-      procedure Check_Convention
-        (Op          : Entity_Id;
-         Search_From : Elmt_Id)
-      is
-         procedure Error_Msg_Operation (Op : Entity_Id);
-         --  Emit a continuation to an error message depicting the kind, name,
-         --  convention and source location of subprogram Op.
+      procedure Check_Convention (Op : Entity_Id) is
+         Iface_Elmt      : Elmt_Id;
+         Iface_Prim_Elmt : Elmt_Id;
+         Iface_Prim      : Entity_Id;
 
-         -------------------------
-         -- Error_Msg_Operation --
-         -------------------------
+      begin
+         Iface_Elmt := First_Elmt (Ifaces_List);
+         while Present (Iface_Elmt) loop
+            Iface_Prim_Elmt :=
+               First_Elmt (Primitive_Operations (Node (Iface_Elmt)));
+            while Present (Iface_Prim_Elmt) loop
+               Iface_Prim := Node (Iface_Prim_Elmt);
 
-         procedure Error_Msg_Operation (Op : Entity_Id) is
-         begin
-            Error_Msg_Name_1 := Chars (Op);
+               if Is_Interface_Conformant (Typ, Iface_Prim, Op)
+                 and then Convention (Iface_Prim) /= Convention (Op)
+               then
+                  Error_Msg_N
+                    ("inconsistent conventions in primitive operations", Typ);
 
-            --  Error messages of primitive subprograms do not contain a
-            --  convention attribute since the convention may have been first
-            --  inherited from a parent subprogram, then changed by a pragma.
+                  Error_Msg_Name_1 := Chars (Op);
+                  Error_Msg_Name_2 := Get_Convention_Name (Convention (Op));
+                  Error_Msg_Sloc   := Sloc (Op);
 
-            if Comes_From_Source (Op) then
-               Error_Msg_Sloc := Sloc (Op);
-               Error_Msg_N
-                ("\ primitive % defined #", Typ);
+                  if Comes_From_Source (Op) then
+                     if not Is_Overriding_Operation (Op) then
+                        Error_Msg_N ("\\primitive % defined #", Typ);
+                     else
+                        Error_Msg_N ("\\overridding operation % with " &
+                                     "convention % defined #", Typ);
+                     end if;
 
-            else
-               Error_Msg_Name_2 := Get_Convention_Name (Convention (Op));
+                  else pragma Assert (Present (Alias (Op)));
+                     Error_Msg_Sloc := Sloc (Alias (Op));
+                     Error_Msg_N ("\\inherited operation % with " &
+                                  "convention % defined #", Typ);
+                  end if;
 
-               if Present (Abstract_Interface_Alias (Op)) then
-                  Error_Msg_Sloc := Sloc (Abstract_Interface_Alias (Op));
+                  Error_Msg_Name_1 := Chars (Op);
+                  Error_Msg_Name_2 :=
+                    Get_Convention_Name (Convention (Iface_Prim));
+                  Error_Msg_Sloc := Sloc (Iface_Prim);
                   Error_Msg_N ("\\overridden operation % with " &
                                "convention % defined #", Typ);
 
-               else pragma Assert (Present (Alias (Op)));
-                  Error_Msg_Sloc := Sloc (Alias (Op));
-                  Error_Msg_N ("\\inherited operation % with " &
-                               "convention % defined #", Typ);
+                  --  Avoid cascading errors
+
+                  return;
                end if;
-            end if;
-         end Error_Msg_Operation;
 
-         --  Local variables
+               Next_Elmt (Iface_Prim_Elmt);
+            end loop;
 
-         Second_Prim_Op      : Entity_Id;
-         Second_Prim_Op_Elmt : Elmt_Id;
-
-      --  Start of processing for Check_Convention
-
-      begin
-         Second_Prim_Op_Elmt := Next_Elmt (Search_From);
-         while Present (Second_Prim_Op_Elmt) loop
-            Second_Prim_Op := Node (Second_Prim_Op_Elmt);
-
-            if not Skip_Check (Second_Prim_Op)
-              and then Chars (Second_Prim_Op) = Chars (Op)
-              and then Type_Conformant (Second_Prim_Op, Op)
-              and then Convention (Second_Prim_Op) /= Convention (Op)
-            then
-               Error_Msg_N
-                 ("inconsistent conventions in primitive operations", Typ);
-
-               Error_Msg_Operation (Op);
-               Error_Msg_Operation (Second_Prim_Op);
-
-               --  Avoid cascading errors
-
-               return;
-            end if;
-
-            Next_Elmt (Second_Prim_Op_Elmt);
+            Next_Elmt (Iface_Elmt);
          end loop;
       end Check_Convention;
-
-      ----------------
-      -- Skip_Check --
-      ----------------
-
-      function Skip_Check (Op : Entity_Id) return Boolean is
-      begin
-         return Is_Predefined_Dispatching_Operation (Op)
-           or else Is_Abstract_Subprogram (Op);
-      end Skip_Check;
 
       --  Local variables
 
@@ -3618,6 +3583,12 @@ package body Sem_Ch6 is
    --  Start of processing for Check_Conventions
 
    begin
+      if not Has_Interfaces (Typ) then
+         return;
+      end if;
+
+      Collect_Interfaces (Typ, Ifaces_List);
+
       --  The algorithm checks every overriding dispatching operation against
       --  all the corresponding overridden dispatching operations, detecting
       --  differences in conventions.
@@ -3627,13 +3598,10 @@ package body Sem_Ch6 is
          Prim_Op := Node (Prim_Op_Elmt);
 
          --  A small optimization: skip the predefined dispatching operations
-         --  since they always have the same convention. Also avoid processing
-         --  of abstract primitives left from an erroneous overriding.
+         --  since they always have the same convention.
 
-         if not Skip_Check (Prim_Op) then
-            Check_Convention
-              (Op          => Prim_Op,
-               Search_From => Prim_Op_Elmt);
+         if not Is_Predefined_Dispatching_Operation (Prim_Op) then
+            Check_Convention (Prim_Op);
          end if;
 
          Next_Elmt (Prim_Op_Elmt);
@@ -4497,15 +4465,17 @@ package body Sem_Ch6 is
    ------------------------------
 
    procedure Check_Subtype_Conformant
-     (New_Id  : Entity_Id;
-      Old_Id  : Entity_Id;
-      Err_Loc : Node_Id := Empty)
+     (New_Id                   : Entity_Id;
+      Old_Id                   : Entity_Id;
+      Err_Loc                  : Node_Id := Empty;
+      Skip_Controlling_Formals : Boolean := False)
    is
       Result : Boolean;
       pragma Warnings (Off, Result);
    begin
       Check_Conformance
-        (New_Id, Old_Id, Subtype_Conformant, True, Result, Err_Loc);
+        (New_Id, Old_Id, Subtype_Conformant, True, Result, Err_Loc,
+         Skip_Controlling_Formals => Skip_Controlling_Formals);
    end Check_Subtype_Conformant;
 
    ---------------------------
@@ -5795,6 +5765,76 @@ package body Sem_Ch6 is
       end loop;
    end Install_Formals;
 
+   -----------------------------
+   -- Is_Interface_Conformant --
+   -----------------------------
+
+   function Is_Interface_Conformant
+     (Tagged_Type : Entity_Id;
+      Iface_Prim  : Entity_Id;
+      Prim        : Entity_Id) return Boolean
+   is
+   begin
+      pragma Assert (Is_Subprogram (Iface_Prim)
+        and then Is_Subprogram (Prim)
+        and then Is_Dispatching_Operation (Iface_Prim)
+        and then Is_Dispatching_Operation (Prim));
+
+      pragma Assert (Is_Interface (Find_Dispatching_Type (Iface_Prim))
+        or else (Present (Alias (Iface_Prim))
+                   and then
+                     Is_Interface
+                       (Find_Dispatching_Type (Ultimate_Alias (Iface_Prim)))));
+
+      if Prim = Iface_Prim
+        or else not Is_Subprogram (Prim)
+        or else Ekind (Prim) /= Ekind (Iface_Prim)
+        or else not Is_Dispatching_Operation (Prim)
+        or else Scope (Prim) /= Scope (Tagged_Type)
+        or else No (Find_Dispatching_Type (Prim))
+        or else Base_Type (Find_Dispatching_Type (Prim)) /= Tagged_Type
+        or else not Primitive_Names_Match (Iface_Prim, Prim)
+      then
+         return False;
+
+      --  Case of a procedure, or a function not returning an interface
+
+      elsif Ekind (Iface_Prim) = E_Procedure
+        or else Etype (Prim) = Etype (Iface_Prim)
+        or else not Is_Interface (Etype (Iface_Prim))
+      then
+         return Type_Conformant (Prim, Iface_Prim,
+                  Skip_Controlling_Formals => True);
+
+      --  Case of a function returning an interface
+
+      elsif Implements_Interface (Etype (Prim), Etype (Iface_Prim)) then
+         declare
+            Ret_Typ       : constant Entity_Id := Etype (Prim);
+            Is_Conformant : Boolean;
+
+         begin
+            --  Temporarly set both entities returning exactly the same type to
+            --  be able to call Type_Conformant (because that routine has no
+            --  machinery to handle interfaces).
+
+            Set_Etype (Prim, Etype (Iface_Prim));
+
+            Is_Conformant :=
+              Type_Conformant (Prim, Iface_Prim,
+                Skip_Controlling_Formals => True);
+
+            --  Restore proper decoration of returned type
+
+            Set_Etype (Prim, Ret_Typ);
+
+            return Is_Conformant;
+         end;
+      end if;
+
+      return False;
+   end Is_Interface_Conformant;
+
    ---------------------------------
    -- Is_Non_Overriding_Operation --
    ---------------------------------
@@ -6422,7 +6462,7 @@ package body Sem_Ch6 is
                                             N_Task_Type_Declaration,
                                             N_Protected_Type_Declaration)
          then
-            Collect_Abstract_Interfaces (Typ, Ifaces_List);
+            Collect_Interfaces (Typ, Ifaces_List);
 
             if not Is_Empty_Elmt_List (Ifaces_List) then
                Overridden_Subp :=
@@ -6555,7 +6595,6 @@ package body Sem_Ch6 is
            and then Is_Dispatching_Operation (Alias (S))
            and then Present (Find_Dispatching_Type (Alias (S)))
            and then Is_Interface (Find_Dispatching_Type (Alias (S)))
-           and then not Is_Predefined_Dispatching_Operation (Alias (S))
          then
             goto Add_New_Entity;
          end if;
@@ -7669,10 +7708,15 @@ package body Sem_Ch6 is
    -- Subtype_Conformant --
    ------------------------
 
-   function Subtype_Conformant (New_Id, Old_Id : Entity_Id) return Boolean is
+   function Subtype_Conformant
+     (New_Id                   : Entity_Id;
+      Old_Id                   : Entity_Id;
+      Skip_Controlling_Formals : Boolean := False) return Boolean
+   is
       Result : Boolean;
    begin
-      Check_Conformance (New_Id, Old_Id, Subtype_Conformant, False, Result);
+      Check_Conformance (New_Id, Old_Id, Subtype_Conformant, False, Result,
+        Skip_Controlling_Formals => Skip_Controlling_Formals);
       return Result;
    end Subtype_Conformant;
 

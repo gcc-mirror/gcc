@@ -152,14 +152,14 @@ package Sem_Util is
    --  with OpenVMS ports. The argument is the construct in question
    --  and is used to post the error message.
 
-   procedure Collect_Abstract_Interfaces
-     (T                         : Entity_Id;
-      Ifaces_List               : out Elist_Id;
-      Exclude_Parent_Interfaces : Boolean := False;
-      Use_Full_View             : Boolean := True);
+   procedure Collect_Interfaces
+     (T               : Entity_Id;
+      Ifaces_List     : out Elist_Id;
+      Exclude_Parents : Boolean := False;
+      Use_Full_View   : Boolean := True);
    --  Ada 2005 (AI-251): Collect whole list of abstract interfaces that are
-   --  directly or indirectly implemented by T. Exclude_Parent_Interfaces is
-   --  used to avoid addition of inherited interfaces to the generated list.
+   --  directly or indirectly implemented by T. Exclude_Parents is used to
+   --  avoid the addition of inherited interfaces to the generated list.
    --  Use_Full_View is used to collect the interfaces using the full-view
    --  (if available).
 
@@ -498,14 +498,6 @@ package Sem_Util is
    --  as an access type internally, this function tests only for access types
    --  known to the programmer. See also Has_Tagged_Component.
 
-   function Has_Abstract_Interfaces
-     (T             : Entity_Id;
-      Use_Full_View : Boolean := True) return Boolean;
-   --  Where T is a concurrent type or a record type, returns true if T covers
-   --  any abstract interface types. In case of private types the argument
-   --  Use_Full_View controls if the check is done using its full view (if
-   --  available).
-
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
@@ -542,6 +534,14 @@ package Sem_Util is
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.
 
+   function Has_Interfaces
+     (T             : Entity_Id;
+      Use_Full_View : Boolean := True) return Boolean;
+   --  Where T is a concurrent type or a record type, returns true if T covers
+   --  any abstract interface types. In case of private types the argument
+   --  Use_Full_View controls if the check is done using its full view (if
+   --  available).
+
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
 
@@ -571,6 +571,12 @@ package Sem_Util is
    --  a tagged type. Returns False for non-composite type, or if no tagged
    --  component is present. This function is used to check if '=' has to be
    --  expanded into a bunch component comparisons.
+
+   function Implements_Interface
+     (Typ_Ent         : Entity_Id;
+      Iface_Ent       : Entity_Id;
+      Exclude_Parents : Boolean := False) return Boolean;
+   --  Returns true if the Typ implements interface Iface
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
@@ -715,13 +721,6 @@ package Sem_Util is
    --  test because this is a case in which conversions whose expression
    --  is a variable (in the Is_Variable sense) with a non-tagged type
    --  target are considered view conversions and hence variables.
-
-   function Is_Parent
-     (E1 : Entity_Id;
-      E2 : Entity_Id) return Boolean;
-   --  Determine whether E1 is a parent of E2. For a concurrent type, the
-   --  parent is the first element of its list of interface types; for other
-   --  types, this function provides the same result as Is_Ancestor.
 
    function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is
@@ -951,6 +950,13 @@ package Sem_Util is
    --  For convenience, qualified expressions applied to object names
    --  are also allowed as actuals for this function.
 
+   function Primitive_Names_Match (E1, E2 : Entity_Id) return Boolean;
+   --  Returns True if the names of both entities correspond with matching
+   --  primitives. This routine includes support for the case in which one
+   --  or both entities correspond with entities built by Derive_Subprogram
+   --  with a special name to avoid being overriden (ie. return true in case
+   --  of entities with names "nameP" and "name" or viceversa).
+
    function Private_Component (Type_Id : Entity_Id) return Entity_Id;
    --  Returns some private component (if any) of the given Type_Id.
    --  Used to enforce the rules on visibility of operations on composite
@@ -973,6 +979,9 @@ package Sem_Util is
    function Real_Convert (S : String) return Node_Id;
    --  S is a possibly signed syntactically valid real literal. The result
    --  returned is an N_Real_Literal node representing the literal value.
+
+   procedure Remove_Homonym (E : Entity_Id);
+   --  Removes E from the homonym chain
 
    function Rep_To_Pos_Flag (E : Entity_Id; Loc : Source_Ptr) return Node_Id;
    --  This is used to construct the second argument in a call to Rep_To_Pos
@@ -1146,6 +1155,10 @@ package Sem_Util is
 
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
+
+   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
+   --  Return the last entity in the chain of aliased entities of Prim.
+   --  If Prim has no alias return Prim.
 
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the

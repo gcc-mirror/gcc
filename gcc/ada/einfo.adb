@@ -208,8 +208,8 @@ package body Einfo is
 
    --    Spec_PPC_List                   Node24
 
-   --    Abstract_Interface_Alias        Node25
-   --    Abstract_Interfaces             Elist25
+   --    Interface_Alias                 Node25
+   --    Interfaces                      Elist25
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    Task_Body_Procedure             Node25
@@ -543,18 +543,6 @@ package body Einfo is
    --------------------------------
    -- Attribute Access Functions --
    --------------------------------
-
-   function Abstract_Interfaces (Id : E) return L is
-   begin
-      pragma Assert (Is_Record_Type (Id));
-      return Elist25 (Id);
-   end Abstract_Interfaces;
-
-   function Abstract_Interface_Alias (Id : E) return E is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return Node25 (Id);
-   end Abstract_Interface_Alias;
 
    function Accept_Address (Id : E) return L is
    begin
@@ -1537,6 +1525,18 @@ package body Einfo is
            or else Ekind (Id) = E_Procedure);
       return Flag232 (Id);
    end Implemented_By_Entry;
+
+   function Interfaces (Id : E) return L is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      return Elist25 (Id);
+   end Interfaces;
+
+   function Interface_Alias (Id : E) return E is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Node25 (Id);
+   end Interface_Alias;
 
    function In_Package_Body (Id : E) return B is
    begin
@@ -2941,21 +2941,6 @@ package body Einfo is
    -- Attribute Set Procedures --
    ------------------------------
 
-   procedure Set_Abstract_Interfaces (Id : E; V : L) is
-   begin
-      pragma Assert (Is_Record_Type (Id));
-      Set_Elist25 (Id, V);
-   end Set_Abstract_Interfaces;
-
-   procedure Set_Abstract_Interface_Alias (Id : E; V : E) is
-   begin
-      pragma Assert
-        (Is_Hidden (Id)
-          and then
-           (Ekind (Id) = E_Procedure or else Ekind (Id) = E_Function));
-      Set_Node25 (Id, V);
-   end Set_Abstract_Interface_Alias;
-
    procedure Set_Accept_Address (Id : E; V : L) is
    begin
       Set_Elist21 (Id, V);
@@ -3960,6 +3945,22 @@ package body Einfo is
            or else Ekind (Id) = E_Procedure);
       Set_Flag232 (Id, V);
    end Set_Implemented_By_Entry;
+
+   procedure Set_Interfaces (Id : E; V : L) is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      Set_Elist25 (Id, V);
+   end Set_Interfaces;
+
+   procedure Set_Interface_Alias (Id : E; V : E) is
+   begin
+      pragma Assert
+        (Is_Internal (Id)
+          and then Is_Hidden (Id)
+          and then (Ekind (Id) = E_Procedure
+                      or else Ekind (Id) = E_Function));
+      Set_Node25 (Id, V);
+   end Set_Interface_Alias;
 
    procedure Set_In_Package_Body (Id : E; V : B := True) is
    begin
@@ -7296,11 +7297,9 @@ package body Einfo is
 
    function Next_Tag_Component (Id : E) return E is
       Comp : Entity_Id;
-      Typ  : constant Entity_Id := Scope (Id);
 
    begin
-      pragma Assert (Ekind (Id) = E_Component
-                       and then Is_Tagged_Type (Typ));
+      pragma Assert (Is_Tag (Id));
 
       Comp := Next_Entity (Id);
       while Present (Comp) loop
@@ -8600,13 +8599,13 @@ package body Einfo is
 
          when E_Procedure                                  |
               E_Function                                   =>
-            Write_Str ("Abstract_Interface_Alias");
+            Write_Str ("Interface_Alias");
 
          when E_Record_Type                                |
               E_Record_Subtype                             |
               E_Record_Type_With_Private                   |
               E_Record_Subtype_With_Private                =>
-            Write_Str ("Abstract_Interfaces");
+            Write_Str ("Interfaces");
 
          when Task_Kind                                    =>
             Write_Str ("Task_Body_Procedure");

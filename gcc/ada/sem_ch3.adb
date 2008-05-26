@@ -31,6 +31,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
 with Exp_Ch3;  use Exp_Ch3;
+with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -253,9 +254,6 @@ package body Sem_Ch3 is
    --  view cannot itself have a full view (it would get clobbered during
    --  view exchanges).
 
-   procedure Check_Abstract_Interfaces (N : Node_Id; Def : Node_Id);
-   --  Check ARM rules 3.9.4 (15/2), 9.1 (9.d/2) and 9.4 (11.d/2)
-
    procedure Check_Access_Discriminant_Requires_Limited
      (D   : Node_Id;
       Loc : Node_Id);
@@ -288,6 +286,9 @@ package body Sem_Ch3 is
    procedure Check_Initialization (T : Entity_Id; Exp : Node_Id);
    --  Validate the initialization of an object declaration. T is the required
    --  type, and Exp is the initialization expression.
+
+   procedure Check_Interfaces (N : Node_Id; Def : Node_Id);
+   --  Check ARM rules 3.9.4 (15/2), 9.1 (9.d/2) and 9.4 (11.d/2)
 
    procedure Check_Or_Process_Discriminants
      (N    : Node_Id;
@@ -486,14 +487,16 @@ package body Sem_Ch3 is
    --  appropriate semantic fields. If the full view of the parent is a record
    --  type, build constrained components of subtype.
 
-   procedure Derive_Interface_Subprograms
+   procedure Derive_Progenitor_Subprograms
      (Parent_Type : Entity_Id;
-      Tagged_Type : Entity_Id;
-      Ifaces_List : Elist_Id);
-   --  Ada 2005 (AI-251): Derive primitives of abstract interface types that
-   --  are not immediate ancestors of Tagged type and associate them their
-   --  aliased primitive. Ifaces_List contains the abstract interface
-   --  primitives that have been derived from Parent_Type.
+      Tagged_Type : Entity_Id);
+   --  Ada 2005 (AI-251): To complete type derivation, collect the primitive
+   --  operations of progenitors of Tagged_Type, and replace the subsidiary
+   --  subtypes with Tagged_Type, to build the specs of the inherited interface
+   --  primitives. The derived primitives are aliased to those of the
+   --  interface. This routine takes care also of transferring to the full-view
+   --  subprograms associated with the partial-view of Tagged_Type that cover
+   --  interface primitives.
 
    procedure Derived_Standard_Character
      (N             : Node_Id;
@@ -1273,35 +1276,11 @@ package body Sem_Ch3 is
 
    procedure Add_Interface_Tag_Components (N : Node_Id; Typ : Entity_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
-      Elmt     : Elmt_Id;
-      Ext      : Node_Id;
       L        : List_Id;
       Last_Tag : Node_Id;
-      Comp     : Node_Id;
-
-      procedure Add_Sync_Iface_Tags (T : Entity_Id);
-      --  Local subprogram used to recursively climb through the parents
-      --  of T to add the tags of all the progenitor interfaces.
 
       procedure Add_Tag (Iface : Entity_Id);
       --  Add tag for one of the progenitor interfaces
-
-      -------------------------
-      -- Add_Sync_Iface_Tags --
-      -------------------------
-
-      procedure Add_Sync_Iface_Tags (T : Entity_Id) is
-      begin
-         if Etype (T) /= T then
-            Add_Sync_Iface_Tags (Etype (T));
-         end if;
-
-         Elmt := First_Elmt (Abstract_Interfaces (T));
-         while Present (Elmt) loop
-            Add_Tag (Node (Elmt));
-            Next_Elmt (Elmt);
-         end loop;
-      end Add_Sync_Iface_Tags;
 
       -------------
       -- Add_Tag --
@@ -1387,7 +1366,9 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Iface_List : List_Id;
+      Elmt : Elmt_Id;
+      Ext  : Node_Id;
+      Comp : Node_Id;
 
    --  Start of processing for Add_Interface_Tag_Components
 
@@ -1403,8 +1384,8 @@ package body Sem_Ch3 is
         or else (Is_Concurrent_Record_Type (Typ)
                   and then Is_Empty_List (Abstract_Interface_List (Typ)))
         or else (not Is_Concurrent_Record_Type (Typ)
-                  and then No (Abstract_Interfaces (Typ))
-                  and then Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
+                  and then No (Interfaces (Typ))
+                  and then Is_Empty_Elmt_List (Interfaces (Typ)))
       then
          return;
       end if;
@@ -1458,16 +1439,8 @@ package body Sem_Ch3 is
       --  corresponding with all the interfaces that are not implemented
       --  by the parent.
 
-      if Is_Concurrent_Record_Type (Typ) then
-         Iface_List := Abstract_Interface_List (Typ);
-
-         if Is_Non_Empty_List (Iface_List) then
-            Add_Sync_Iface_Tags (Etype (First (Iface_List)));
-         end if;
-      end if;
-
-      if Present (Abstract_Interfaces (Typ)) then
-         Elmt := First_Elmt (Abstract_Interfaces (Typ));
+      if Present (Interfaces (Typ)) then
+         Elmt := First_Elmt (Interfaces (Typ));
          while Present (Elmt) loop
             Add_Tag (Node (Elmt));
             Next_Elmt (Elmt);
@@ -1993,18 +1966,18 @@ package body Sem_Ch3 is
       CW : constant Entity_Id := Class_Wide_Type (T);
 
    begin
-      Set_Is_Tagged_Type      (T);
+      Set_Is_Tagged_Type (T);
 
-      Set_Is_Limited_Record   (T, Limited_Present (Def)
-                                   or else Task_Present (Def)
-                                   or else Protected_Present (Def)
-                                   or else Synchronized_Present (Def));
+      Set_Is_Limited_Record (T, Limited_Present (Def)
+                                  or else Task_Present (Def)
+                                  or else Protected_Present (Def)
+                                  or else Synchronized_Present (Def));
 
       --  Type is abstract if full declaration carries keyword, or if previous
       --  partial view did.
 
       Set_Is_Abstract_Type (T);
-      Set_Is_Interface     (T);
+      Set_Is_Interface (T);
 
       --  Type is a limited interface if it includes the keyword limited, task,
       --  protected, or synchronized.
@@ -2015,8 +1988,8 @@ package body Sem_Ch3 is
               or else Synchronized_Present (Def)
               or else Task_Present (Def));
 
-      Set_Is_Protected_Interface    (T, Protected_Present (Def));
-      Set_Is_Task_Interface         (T, Task_Present (Def));
+      Set_Is_Protected_Interface (T, Protected_Present (Def));
+      Set_Is_Task_Interface (T, Task_Present (Def));
 
       --  Type is a synchronized interface if it includes the keyword task,
       --  protected, or synchronized.
@@ -2026,8 +1999,8 @@ package body Sem_Ch3 is
               or else Protected_Present (Def)
               or else Task_Present (Def));
 
-      Set_Abstract_Interfaces       (T, New_Elmt_List);
-      Set_Primitive_Operations      (T, New_Elmt_List);
+      Set_Interfaces (T, New_Elmt_List);
+      Set_Primitive_Operations (T, New_Elmt_List);
 
       --  Complete the decoration of the class-wide entity if it was already
       --  built (i.e. during the creation of the limited view)
@@ -3236,13 +3209,13 @@ package body Sem_Ch3 is
             --  The progenitors (if any) must be limited or synchronized
             --  interfaces.
 
-            if Present (Abstract_Interfaces (T)) then
+            if Present (Interfaces (T)) then
                declare
                   Iface      : Entity_Id;
                   Iface_Elmt : Elmt_Id;
 
                begin
-                  Iface_Elmt := First_Elmt (Abstract_Interfaces (T));
+                  Iface_Elmt := First_Elmt (Interfaces (T));
                   while Present (Iface_Elmt) loop
                      Iface := Node (Iface_Elmt);
 
@@ -6770,7 +6743,7 @@ package body Sem_Ch3 is
             Analyze_Interface_Declaration (Derived_Type, Type_Def);
          end if;
 
-         Set_Abstract_Interfaces (Derived_Type, No_Elist);
+         Set_Interfaces (Derived_Type, No_Elist);
       end if;
 
       --  Fields inherited from the Parent_Type
@@ -6804,9 +6777,9 @@ package body Sem_Ch3 is
 
       if Is_Record_Type (Derived_Type) then
          Set_OK_To_Reorder_Components
-           (Derived_Type, OK_To_Reorder_Components   (Parent_Base));
+           (Derived_Type, OK_To_Reorder_Components (Parent_Base));
          Set_Reverse_Bit_Order
-           (Derived_Type, Reverse_Bit_Order          (Parent_Base));
+           (Derived_Type, Reverse_Bit_Order (Parent_Base));
       end if;
 
       --  Direct controlled types do not inherit Finalize_Storage_Only flag
@@ -6896,16 +6869,17 @@ package body Sem_Ch3 is
 
                --  Check ARM rules 3.9.4 (15/2), 9.1 (9.d/2) and 9.4 (11.d/2)
 
-               Check_Abstract_Interfaces (N, Type_Def);
+               Check_Interfaces (N, Type_Def);
 
                --  Ada 2005 (AI-251): Collect the list of progenitors that are
                --  not already in the parents.
 
-               Collect_Abstract_Interfaces
-                 (T                         => Derived_Type,
-                  Ifaces_List               => Ifaces_List,
-                  Exclude_Parent_Interfaces => True);
-               Set_Abstract_Interfaces (Derived_Type, Ifaces_List);
+               Collect_Interfaces
+                 (T               => Derived_Type,
+                  Ifaces_List     => Ifaces_List,
+                  Exclude_Parents => True);
+
+               Set_Interfaces (Derived_Type, Ifaces_List);
             end;
          end if;
 
@@ -7003,7 +6977,7 @@ package body Sem_Ch3 is
          --  implemented interfaces if we are in expansion mode
 
          if Expander_Active
-           and then Has_Abstract_Interfaces (Derived_Type)
+           and then Has_Interfaces (Derived_Type)
          then
             Add_Interface_Tag_Components (N, Derived_Type);
          end if;
@@ -7888,236 +7862,6 @@ package body Sem_Ch3 is
    end Build_Underlying_Full_View;
 
    -------------------------------
-   -- Check_Abstract_Interfaces --
-   -------------------------------
-
-   procedure Check_Abstract_Interfaces (N : Node_Id; Def : Node_Id) is
-      Parent_Type : constant Entity_Id := Etype (Defining_Identifier (N));
-
-      Iface       : Node_Id;
-      Iface_Def   : Node_Id;
-      Iface_Typ   : Entity_Id;
-      Parent_Node : Node_Id;
-
-      Is_Task : Boolean := False;
-      --  Set True if parent type or any progenitor is a task interface
-
-      Is_Protected : Boolean := False;
-      --  Set True if parent type or any progenitor is a protected interface
-
-      procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id);
-      --  Check that a progenitor is compatible with declaration.
-      --  Error is posted on Error_Node.
-
-      ------------------
-      -- Check_Ifaces --
-      ------------------
-
-      procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id) is
-         Iface_Id : constant Entity_Id :=
-                      Defining_Identifier (Parent (Iface_Def));
-         Type_Def : Node_Id;
-
-      begin
-         if Nkind (N) = N_Private_Extension_Declaration then
-            Type_Def := N;
-         else
-            Type_Def := Type_Definition (N);
-         end if;
-
-         if Is_Task_Interface (Iface_Id) then
-            Is_Task := True;
-
-         elsif Is_Protected_Interface (Iface_Id) then
-            Is_Protected := True;
-         end if;
-
-         --  Check that the characteristics of the progenitor are compatible
-         --  with the explicit qualifier in the declaration.
-         --  The check only applies to qualifiers that come from source.
-         --  Limited_Present also appears in the declaration of corresponding
-         --  records, and the check does not apply to them.
-
-         if Limited_Present (Type_Def)
-           and then not
-             Is_Concurrent_Record_Type (Defining_Identifier (N))
-         then
-            if Is_Limited_Interface (Parent_Type)
-              and then not Is_Limited_Interface (Iface_Id)
-            then
-               Error_Msg_NE
-                 ("progenitor& must be limited interface",
-                   Error_Node, Iface_Id);
-
-            elsif
-              (Task_Present (Iface_Def)
-                or else Protected_Present (Iface_Def)
-                or else Synchronized_Present (Iface_Def))
-              and then Nkind (N) /= N_Private_Extension_Declaration
-            then
-               Error_Msg_NE
-                 ("progenitor& must be limited interface",
-                   Error_Node, Iface_Id);
-            end if;
-
-         --  Protected interfaces can only inherit from limited, synchronized
-         --  or protected interfaces.
-
-         elsif Nkind (N) = N_Full_Type_Declaration
-           and then  Protected_Present (Type_Def)
-         then
-            if Limited_Present (Iface_Def)
-              or else Synchronized_Present (Iface_Def)
-              or else Protected_Present (Iface_Def)
-            then
-               null;
-
-            elsif Task_Present (Iface_Def) then
-               Error_Msg_N ("(Ada 2005) protected interface cannot inherit"
-                            & " from task interface", Error_Node);
-
-            else
-               Error_Msg_N ("(Ada 2005) protected interface cannot inherit"
-                            & " from non-limited interface", Error_Node);
-            end if;
-
-         --  Ada 2005 (AI-345): Synchronized interfaces can only inherit from
-         --  limited and synchronized.
-
-         elsif Synchronized_Present (Type_Def) then
-            if Limited_Present (Iface_Def)
-              or else Synchronized_Present (Iface_Def)
-            then
-               null;
-
-            elsif Protected_Present (Iface_Def)
-              and then Nkind (N) /= N_Private_Extension_Declaration
-            then
-               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
-                            & " from protected interface", Error_Node);
-
-            elsif Task_Present (Iface_Def)
-              and then Nkind (N) /= N_Private_Extension_Declaration
-            then
-               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
-                            & " from task interface", Error_Node);
-
-            elsif not Is_Limited_Interface (Iface_Id) then
-               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
-                            & " from non-limited interface", Error_Node);
-            end if;
-
-         --  Ada 2005 (AI-345): Task interfaces can only inherit from limited,
-         --  synchronized or task interfaces.
-
-         elsif Nkind (N) = N_Full_Type_Declaration
-           and then Task_Present (Type_Def)
-         then
-            if Limited_Present (Iface_Def)
-              or else Synchronized_Present (Iface_Def)
-              or else Task_Present (Iface_Def)
-            then
-               null;
-
-            elsif Protected_Present (Iface_Def) then
-               Error_Msg_N ("(Ada 2005) task interface cannot inherit from"
-                            & " protected interface", Error_Node);
-
-            else
-               Error_Msg_N ("(Ada 2005) task interface cannot inherit from"
-                            & " non-limited interface", Error_Node);
-            end if;
-         end if;
-      end Check_Ifaces;
-
-   --  Start of processing for Check_Abstract_Interfaces
-
-   begin
-      if Is_Interface (Parent_Type) then
-         if Is_Task_Interface (Parent_Type) then
-            Is_Task := True;
-
-         elsif Is_Protected_Interface (Parent_Type) then
-            Is_Protected := True;
-         end if;
-      end if;
-
-      if Nkind (N) = N_Private_Extension_Declaration then
-
-         --  Check that progenitors are compatible with declaration
-
-         Iface := First (Interface_List (Def));
-         while Present (Iface) loop
-            Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
-
-            Parent_Node := Parent (Base_Type (Iface_Typ));
-            Iface_Def   := Type_Definition (Parent_Node);
-
-            if not Is_Interface (Iface_Typ) then
-               Error_Msg_NE ("(Ada 2005) & must be an interface",
-                          Iface, Iface_Typ);
-
-            else
-               Check_Ifaces (Iface_Def, Iface);
-            end if;
-
-            Next (Iface);
-         end loop;
-
-         if Is_Task and Is_Protected then
-            Error_Msg_N
-              ("type cannot derive from task and protected interface", N);
-         end if;
-
-         return;
-      end if;
-
-      --  Full type declaration of derived type.
-      --  Check compatibility with parent if it is interface type
-
-      if Nkind (Type_Definition (N)) = N_Derived_Type_Definition
-        and then Is_Interface (Parent_Type)
-      then
-         Parent_Node := Parent (Parent_Type);
-
-         --  More detailed checks for interface varieties
-
-         Check_Ifaces
-           (Iface_Def  => Type_Definition (Parent_Node),
-            Error_Node => Subtype_Indication (Type_Definition (N)));
-      end if;
-
-      Iface := First (Interface_List (Def));
-
-      while Present (Iface) loop
-         Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
-
-         Parent_Node := Parent (Base_Type (Iface_Typ));
-         Iface_Def   := Type_Definition (Parent_Node);
-
-         if not Is_Interface (Iface_Typ) then
-            Error_Msg_NE ("(Ada 2005) & must be an interface",
-                          Iface, Iface_Typ);
-
-         else
-            --  "The declaration of a specific descendant of an interface
-            --   type freezes the interface type" RM 13.14
-
-            Freeze_Before (N, Iface_Typ);
-            Check_Ifaces (Iface_Def, Error_Node => Iface);
-         end if;
-
-         Next (Iface);
-      end loop;
-
-      if Is_Task and Is_Protected then
-         Error_Msg_N
-           ("type cannot derive from task and protected interface", N);
-      end if;
-
-   end Check_Abstract_Interfaces;
-
-   -------------------------------
    -- Check_Abstract_Overriding --
    -------------------------------
 
@@ -8162,11 +7906,18 @@ package body Sem_Ch3 is
          if Is_Null_Extension (T)
            and then Has_Controlling_Result (Subp)
            and then Ada_Version >= Ada_05
-           and then Present (Alias (Subp))
+           and then Present (Alias_Subp)
            and then not Comes_From_Source (Subp)
-           and then not Is_Abstract_Subprogram (Alias (Subp))
+           and then not Is_Abstract_Subprogram (Alias_Subp)
            and then not Is_Access_Type (Etype (Subp))
          then
+            null;
+
+         --  Ada 2005 (AI-251): Internal entities of interfaces need no
+         --  processing because this check is done with the aliased
+         --  entity
+
+         elsif Present (Interface_Alias (Subp)) then
             null;
 
          elsif (Is_Abstract_Subprogram (Subp)
@@ -8180,18 +7931,14 @@ package body Sem_Ch3 is
            and then not Is_TSS (Subp, TSS_Stream_Output)
            and then not Is_Abstract_Type (T)
            and then Convention (T) /= Convention_CIL
-           and then Chars (Subp) /= Name_uDisp_Asynchronous_Select
-           and then Chars (Subp) /= Name_uDisp_Conditional_Select
-           and then Chars (Subp) /= Name_uDisp_Get_Prim_Op_Kind
-           and then Chars (Subp) /= Name_uDisp_Requeue
-           and then Chars (Subp) /= Name_uDisp_Timed_Select
+           and then not Is_Predefined_Interface_Primitive (Subp)
 
             --  Ada 2005 (AI-251): Do not consider hidden entities associated
             --  with abstract interface types because the check will be done
             --  with the aliased entity (otherwise we generate a duplicated
             --  error message).
 
-           and then not Present (Abstract_Interface_Alias (Subp))
+           and then not Present (Interface_Alias (Subp))
          then
             if Present (Alias_Subp) then
 
@@ -8222,13 +7969,15 @@ package body Sem_Ch3 is
                       or else Requires_Overriding (Subp)
                       or else Is_Access_Type (Etype (Subp)))
                then
-                  --  The body of predefined primitives of tagged types derived
-                  --  from interface types are generated later by Freeze_Type.
+                  --  Avoid reporting error in case of abstract predefined
+                  --  primitive inherited from interface type because the
+                  --  body of internally generated predefined primitives
+                  --  of tagged types are generated later by Freeze_Type
 
-                  if Is_Predefined_Dispatching_Operation (Subp)
-                    and then Is_Abstract_Subprogram (Alias_Subp)
-                    and then Is_Interface
-                               (Root_Type (Find_Dispatching_Type (Subp)))
+                  if Is_Interface (Root_Type (T))
+                    and then Is_Abstract_Subprogram (Subp)
+                    and then Is_Predefined_Dispatching_Operation (Subp)
+                    and then not Comes_From_Source (Ultimate_Alias (Subp))
                   then
                      null;
 
@@ -8268,7 +8017,7 @@ package body Sem_Ch3 is
                --  abstract interfaces.
 
                elsif Is_Concurrent_Record_Type (T)
-                 and then Present (Abstract_Interfaces (T))
+                 and then Present (Interfaces (T))
                then
                   --  The controlling formal of Subp must be of mode "out",
                   --  "in out" or an access-to-variable to be overridden.
@@ -8277,12 +8026,14 @@ package body Sem_Ch3 is
                   --  in -gnatj mode) ???
 
                   if Ekind (First_Formal (Subp)) = E_In_Parameter then
-                     Error_Msg_NE
-                       ("first formal of & must be of mode `OUT`, `IN OUT` " &
-                        "or access-to-variable", T, Subp);
-                     Error_Msg_N
-                       ("\to be overridden by protected procedure or " &
-                        "entry (RM 9.4(11.9/2))", T);
+                     if not Is_Predefined_Dispatching_Operation (Subp) then
+                        Error_Msg_NE
+                          ("first formal of & must be of mode `OUT`, " &
+                           "`IN OUT` or access-to-variable", T, Subp);
+                        Error_Msg_N
+                          ("\to be overridden by protected procedure or " &
+                           "entry (RM 9.4(11.9/2))", T);
+                     end if;
 
                   --  Some other kind of overriding failure
 
@@ -8315,8 +8066,8 @@ package body Sem_Ch3 is
 
          if Ada_Version >= Ada_05
            and then Is_Hidden (Subp)
-           and then Present (Abstract_Interface_Alias (Subp))
-           and then Implemented_By_Entry (Abstract_Interface_Alias (Subp))
+           and then Present (Interface_Alias (Subp))
+           and then Implemented_By_Entry (Interface_Alias (Subp))
            and then Present (Alias_Subp)
            and then
              (not Is_Primitive_Wrapper (Alias_Subp)
@@ -8330,7 +8081,7 @@ package body Sem_Ch3 is
                   Error_Ent := Corresponding_Concurrent_Type (Error_Ent);
                end if;
 
-               Error_Msg_Node_2 := Abstract_Interface_Alias (Subp);
+               Error_Msg_Node_2 := Interface_Alias (Subp);
                Error_Msg_NE
                  ("type & must implement abstract subprogram & with an entry",
                   Error_Ent, Error_Ent);
@@ -8741,6 +8492,234 @@ package body Sem_Ch3 is
          end if;
       end if;
    end Check_Initialization;
+
+   ----------------------
+   -- Check_Interfaces --
+   ----------------------
+
+   procedure Check_Interfaces (N : Node_Id; Def : Node_Id) is
+      Parent_Type : constant Entity_Id := Etype (Defining_Identifier (N));
+
+      Iface       : Node_Id;
+      Iface_Def   : Node_Id;
+      Iface_Typ   : Entity_Id;
+      Parent_Node : Node_Id;
+
+      Is_Task : Boolean := False;
+      --  Set True if parent type or any progenitor is a task interface
+
+      Is_Protected : Boolean := False;
+      --  Set True if parent type or any progenitor is a protected interface
+
+      procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id);
+      --  Check that a progenitor is compatible with declaration.
+      --  Error is posted on Error_Node.
+
+      ------------------
+      -- Check_Ifaces --
+      ------------------
+
+      procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id) is
+         Iface_Id : constant Entity_Id :=
+                      Defining_Identifier (Parent (Iface_Def));
+         Type_Def : Node_Id;
+
+      begin
+         if Nkind (N) = N_Private_Extension_Declaration then
+            Type_Def := N;
+         else
+            Type_Def := Type_Definition (N);
+         end if;
+
+         if Is_Task_Interface (Iface_Id) then
+            Is_Task := True;
+
+         elsif Is_Protected_Interface (Iface_Id) then
+            Is_Protected := True;
+         end if;
+
+         --  Check that the characteristics of the progenitor are compatible
+         --  with the explicit qualifier in the declaration.
+         --  The check only applies to qualifiers that come from source.
+         --  Limited_Present also appears in the declaration of corresponding
+         --  records, and the check does not apply to them.
+
+         if Limited_Present (Type_Def)
+           and then not
+             Is_Concurrent_Record_Type (Defining_Identifier (N))
+         then
+            if Is_Limited_Interface (Parent_Type)
+              and then not Is_Limited_Interface (Iface_Id)
+            then
+               Error_Msg_NE
+                 ("progenitor& must be limited interface",
+                   Error_Node, Iface_Id);
+
+            elsif
+              (Task_Present (Iface_Def)
+                or else Protected_Present (Iface_Def)
+                or else Synchronized_Present (Iface_Def))
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
+               Error_Msg_NE
+                 ("progenitor& must be limited interface",
+                   Error_Node, Iface_Id);
+            end if;
+
+         --  Protected interfaces can only inherit from limited, synchronized
+         --  or protected interfaces.
+
+         elsif Nkind (N) = N_Full_Type_Declaration
+           and then  Protected_Present (Type_Def)
+         then
+            if Limited_Present (Iface_Def)
+              or else Synchronized_Present (Iface_Def)
+              or else Protected_Present (Iface_Def)
+            then
+               null;
+
+            elsif Task_Present (Iface_Def) then
+               Error_Msg_N ("(Ada 2005) protected interface cannot inherit"
+                            & " from task interface", Error_Node);
+
+            else
+               Error_Msg_N ("(Ada 2005) protected interface cannot inherit"
+                            & " from non-limited interface", Error_Node);
+            end if;
+
+         --  Ada 2005 (AI-345): Synchronized interfaces can only inherit from
+         --  limited and synchronized.
+
+         elsif Synchronized_Present (Type_Def) then
+            if Limited_Present (Iface_Def)
+              or else Synchronized_Present (Iface_Def)
+            then
+               null;
+
+            elsif Protected_Present (Iface_Def)
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
+               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
+                            & " from protected interface", Error_Node);
+
+            elsif Task_Present (Iface_Def)
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
+               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
+                            & " from task interface", Error_Node);
+
+            elsif not Is_Limited_Interface (Iface_Id) then
+               Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
+                            & " from non-limited interface", Error_Node);
+            end if;
+
+         --  Ada 2005 (AI-345): Task interfaces can only inherit from limited,
+         --  synchronized or task interfaces.
+
+         elsif Nkind (N) = N_Full_Type_Declaration
+           and then Task_Present (Type_Def)
+         then
+            if Limited_Present (Iface_Def)
+              or else Synchronized_Present (Iface_Def)
+              or else Task_Present (Iface_Def)
+            then
+               null;
+
+            elsif Protected_Present (Iface_Def) then
+               Error_Msg_N ("(Ada 2005) task interface cannot inherit from"
+                            & " protected interface", Error_Node);
+
+            else
+               Error_Msg_N ("(Ada 2005) task interface cannot inherit from"
+                            & " non-limited interface", Error_Node);
+            end if;
+         end if;
+      end Check_Ifaces;
+
+   --  Start of processing for Check_Interfaces
+
+   begin
+      if Is_Interface (Parent_Type) then
+         if Is_Task_Interface (Parent_Type) then
+            Is_Task := True;
+
+         elsif Is_Protected_Interface (Parent_Type) then
+            Is_Protected := True;
+         end if;
+      end if;
+
+      if Nkind (N) = N_Private_Extension_Declaration then
+
+         --  Check that progenitors are compatible with declaration
+
+         Iface := First (Interface_List (Def));
+         while Present (Iface) loop
+            Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+
+            Parent_Node := Parent (Base_Type (Iface_Typ));
+            Iface_Def   := Type_Definition (Parent_Node);
+
+            if not Is_Interface (Iface_Typ) then
+               Error_Msg_NE ("(Ada 2005) & must be an interface",
+                          Iface, Iface_Typ);
+
+            else
+               Check_Ifaces (Iface_Def, Iface);
+            end if;
+
+            Next (Iface);
+         end loop;
+
+         if Is_Task and Is_Protected then
+            Error_Msg_N
+              ("type cannot derive from task and protected interface", N);
+         end if;
+
+         return;
+      end if;
+
+      --  Full type declaration of derived type.
+      --  Check compatibility with parent if it is interface type
+
+      if Nkind (Type_Definition (N)) = N_Derived_Type_Definition
+        and then Is_Interface (Parent_Type)
+      then
+         Parent_Node := Parent (Parent_Type);
+
+         --  More detailed checks for interface varieties
+
+         Check_Ifaces
+           (Iface_Def  => Type_Definition (Parent_Node),
+            Error_Node => Subtype_Indication (Type_Definition (N)));
+      end if;
+
+      Iface := First (Interface_List (Def));
+      while Present (Iface) loop
+         Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+
+         Parent_Node := Parent (Base_Type (Iface_Typ));
+         Iface_Def   := Type_Definition (Parent_Node);
+
+         if not Is_Interface (Iface_Typ) then
+            Error_Msg_NE ("(Ada 2005) & must be an interface",
+                          Iface, Iface_Typ);
+
+         else
+            --  "The declaration of a specific descendant of an interface
+            --   type freezes the interface type" RM 13.14
+
+            Freeze_Before (N, Iface_Typ);
+            Check_Ifaces (Iface_Def, Error_Node => Iface);
+         end if;
+
+         Next (Iface);
+      end loop;
+
+      if Is_Task and Is_Protected then
+         Error_Msg_N
+           ("type cannot derive from task and protected interface", N);
+      end if;
+   end Check_Interfaces;
 
    ------------------------------------
    -- Check_Or_Process_Discriminants --
@@ -11188,8 +11167,6 @@ package body Sem_Ch3 is
       Scale_Val     : Uint;
       Bound_Val     : Ureal;
 
-   --  Start of processing for Decimal_Fixed_Point_Type_Declaration
-
    begin
       Check_Restriction (No_Fixed_Point, Def);
 
@@ -11331,222 +11308,123 @@ package body Sem_Ch3 is
       Set_Is_Constrained (T);
    end Decimal_Fixed_Point_Type_Declaration;
 
-   ----------------------------------
-   -- Derive_Interface_Subprograms --
-   ----------------------------------
+   -----------------------------------
+   -- Derive_Progenitor_Subprograms --
+   -----------------------------------
 
-   procedure Derive_Interface_Subprograms
+   procedure Derive_Progenitor_Subprograms
      (Parent_Type : Entity_Id;
-      Tagged_Type : Entity_Id;
-      Ifaces_List : Elist_Id)
+      Tagged_Type : Entity_Id)
    is
-      function Collect_Interface_Primitives
-        (Tagged_Type : Entity_Id) return Elist_Id;
-      --  Ada 2005 (AI-251): Collect the primitives of all the implemented
-      --  interfaces.
+      E          : Entity_Id;
+      Elmt       : Elmt_Id;
+      Iface      : Entity_Id;
+      Iface_Elmt : Elmt_Id;
+      Iface_Subp : Entity_Id;
+      New_Subp   : Entity_Id := Empty;
+      Prim_Elmt  : Elmt_Id;
+      Subp       : Entity_Id;
+      Typ        : Entity_Id;
 
-      function In_List (L : Elist_Id; Subp : Entity_Id) return Boolean;
-      --  Determine if Subp already in the list L
+   begin
+      pragma Assert (Ada_Version >= Ada_05
+        and then Is_Record_Type (Tagged_Type)
+        and then Is_Tagged_Type (Tagged_Type)
+        and then Has_Interfaces (Tagged_Type));
 
-      procedure Remove_Homonym (E : Entity_Id);
-      --  Removes E from the homonym chain
+      --  Step 1: Transfer to the full-view primitives asociated with the
+      --  partial-view that cover interface primitives. Conceptually this
+      --  work should be done later by Process_Full_View; done here to
+      --  simplify its implementation at later stages. It can be safely
+      --  done here because interfaces must be visible in the partial and
+      --  private view (RM 7.3(7.3/2)).
 
-      ----------------------------------
-      -- Collect_Interface_Primitives --
-      ----------------------------------
+      --  Small optimization: This work is only required if the parent is
+      --  abstract. If the tagged type is not abstract, it cannot have
+      --  abstract primitives (the only entities in the list of primitives of
+      --  non-abstract tagged types that can reference abstract primitives
+      --  through its Alias attribute are the internal entities that have
+      --  attribute Interface_Alias, and these entities are generated later
+      --  by Freeze_Record_Type).
 
-      function Collect_Interface_Primitives
-         (Tagged_Type : Entity_Id) return Elist_Id
-      is
-         Op_List     : constant Elist_Id := New_Elmt_List;
-         Elmt        : Elmt_Id;
-         Ifaces_List : Elist_Id;
-         Iface_Elmt  : Elmt_Id;
-         Prim        : Entity_Id;
+      if In_Private_Part (Current_Scope)
+        and then Is_Abstract_Type (Parent_Type)
+      then
+         Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
+         while Present (Elmt) loop
+            Subp := Node (Elmt);
 
-      begin
-         pragma Assert (Is_Tagged_Type (Tagged_Type)
-           and then Has_Abstract_Interfaces (Tagged_Type));
+            --  At this stage it is not possible to have entities in the list
+            --  of primitives that have attribute Interface_Alias
 
-         Collect_Abstract_Interfaces (Tagged_Type, Ifaces_List);
+            pragma Assert (No (Interface_Alias (Subp)));
 
-         Iface_Elmt := First_Elmt (Ifaces_List);
+            Typ := Find_Dispatching_Type (Ultimate_Alias (Subp));
+
+            if Is_Interface (Typ) then
+               E := Find_Primitive_Covering_Interface
+                      (Tagged_Type => Tagged_Type,
+                       Iface_Prim  => Subp);
+
+               if Present (E)
+                 and then Find_Dispatching_Type (Ultimate_Alias (E)) /= Typ
+               then
+                  Replace_Elmt (Elmt, E);
+                  Remove_Homonym (Subp);
+               end if;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      --  Step 2: Add primitives of progenitors that are not implemented by
+      --  parents of Tagged_Type
+
+      if Present (Interfaces (Tagged_Type)) then
+         Iface_Elmt := First_Elmt (Interfaces (Tagged_Type));
          while Present (Iface_Elmt) loop
-            Elmt := First_Elmt (Primitive_Operations (Node (Iface_Elmt)));
-            while Present (Elmt) loop
-               Prim := Node (Elmt);
+            Iface := Node (Iface_Elmt);
 
-               if not Is_Predefined_Dispatching_Operation (Prim) then
-                  Append_Elmt (Prim, Op_List);
+            Prim_Elmt := First_Elmt (Primitive_Operations (Iface));
+            while Present (Prim_Elmt) loop
+               Iface_Subp := Node (Prim_Elmt);
+
+               if not Is_Predefined_Dispatching_Operation (Iface_Subp) then
+                  E := Find_Primitive_Covering_Interface
+                         (Tagged_Type => Tagged_Type,
+                          Iface_Prim  => Iface_Subp);
+
+                  --  If not found we derive a new primitive leaving its alias
+                  --  attribute referencing the interface primitive
+
+                  if No (E) then
+                     Derive_Subprogram
+                       (New_Subp, Iface_Subp, Tagged_Type, Iface);
+
+                  --  Propagate to the full view interface entities associated
+                  --  with the partial view
+
+                  elsif In_Private_Part (Current_Scope)
+                    and then Present (Alias (E))
+                    and then Alias (E) = Iface_Subp
+                    and then
+                      List_Containing (Parent (E)) /=
+                        Private_Declarations
+                          (Specification
+                            (Unit_Declaration_Node (Current_Scope)))
+                  then
+                     Append_Elmt (E, Primitive_Operations (Tagged_Type));
+                  end if;
                end if;
 
-               Next_Elmt (Elmt);
+               Next_Elmt (Prim_Elmt);
             end loop;
 
             Next_Elmt (Iface_Elmt);
          end loop;
-
-         return Op_List;
-      end Collect_Interface_Primitives;
-
-      -------------
-      -- In_List --
-      -------------
-
-      function In_List (L : Elist_Id; Subp : Entity_Id) return Boolean is
-         Elmt : Elmt_Id;
-
-      begin
-         Elmt := First_Elmt (L);
-         while Present (Elmt) loop
-            if Node (Elmt) = Subp then
-               return True;
-            end if;
-
-            Next_Elmt (Elmt);
-         end loop;
-
-         return False;
-      end In_List;
-
-      --------------------
-      -- Remove_Homonym --
-      --------------------
-
-      procedure Remove_Homonym (E : Entity_Id) is
-         Prev  : Entity_Id := Empty;
-         H     : Entity_Id;
-
-      begin
-         if E = Current_Entity (E) then
-            Set_Current_Entity (Homonym (E));
-         else
-            H := Current_Entity (E);
-            while Present (H) and then H /= E loop
-               Prev := H;
-               H    := Homonym (H);
-            end loop;
-
-            Set_Homonym (Prev, Homonym (E));
-         end if;
-      end Remove_Homonym;
-
-      --  Local Variables
-
-      E           : Entity_Id;
-      Elmt        : Elmt_Id;
-      Iface       : Entity_Id;
-      Iface_Subp  : Entity_Id;
-      New_Subp    : Entity_Id := Empty;
-      Op_List     : Elist_Id;
-      Parent_Base : Entity_Id;
-      Subp        : Entity_Id;
-
-   --  Start of processing for Derive_Interface_Subprograms
-
-   begin
-      if Ada_Version < Ada_05
-        or else not Is_Record_Type (Tagged_Type)
-        or else not Is_Tagged_Type (Tagged_Type)
-        or else not Has_Abstract_Interfaces (Tagged_Type)
-      then
-         return;
       end if;
-
-      --  Add to the list of interface subprograms all the primitives inherited
-      --  from abstract interfaces that are not immediate ancestors and also
-      --  add their derivation to the list of interface primitives.
-
-      Op_List := Collect_Interface_Primitives (Tagged_Type);
-
-      Elmt := First_Elmt (Op_List);
-      while Present (Elmt) loop
-         Subp  := Node (Elmt);
-         Iface := Find_Dispatching_Type (Subp);
-
-         if Is_Concurrent_Record_Type (Tagged_Type) then
-            if not Present (Abstract_Interface_Alias (Subp)) then
-               Derive_Subprogram (New_Subp, Subp, Tagged_Type, Iface);
-               Append_Elmt (New_Subp, Ifaces_List);
-            end if;
-
-         elsif not Is_Parent (Iface, Tagged_Type) then
-            Derive_Subprogram (New_Subp, Subp, Tagged_Type, Iface);
-            Append_Elmt (New_Subp, Ifaces_List);
-         end if;
-
-         Next_Elmt (Elmt);
-      end loop;
-
-      --  Complete the derivation of the interface subprograms. Assign to each
-      --  entity associated with abstract interfaces their aliased entity and
-      --  complete their decoration as hidden interface entities that will be
-      --  used later to build the secondary dispatch tables.
-
-      if not Is_Empty_Elmt_List (Ifaces_List) then
-         if Ekind (Parent_Type) = E_Record_Type_With_Private
-           and then Has_Discriminants (Parent_Type)
-           and then Present (Full_View (Parent_Type))
-         then
-            Parent_Base := Full_View (Parent_Type);
-         else
-            Parent_Base := Parent_Type;
-         end if;
-
-         Elmt := First_Elmt (Ifaces_List);
-         while Present (Elmt) loop
-            Iface_Subp := Node (Elmt);
-
-            --  Look for the first overriding entity in the homonym chain.
-            --  In this way if we are in the private part of a package spec
-            --  we get the last overriding subprogram.
-
-            E  := Current_Entity_In_Scope (Iface_Subp);
-            while Present (E) loop
-               if Is_Dispatching_Operation (E)
-                 and then Scope (E) = Scope (Iface_Subp)
-                 and then Type_Conformant (E, Iface_Subp)
-                 and then not In_List (Ifaces_List, E)
-               then
-                  exit;
-               end if;
-
-               E := Homonym (E);
-            end loop;
-
-            --  Create an overriding entity if not found in the homonym chain
-
-            if not Present (E) then
-               Derive_Subprogram
-                 (E, Alias (Iface_Subp), Tagged_Type, Parent_Base);
-
-            elsif not In_List (Primitive_Operations (Tagged_Type), E) then
-
-               --  Inherit the operation from the private view
-
-               Append_Elmt (E, Primitive_Operations (Tagged_Type));
-            end if;
-
-            --  Complete the decoration of the hidden interface entity
-
-            Set_Is_Hidden                (Iface_Subp);
-            Set_Abstract_Interface_Alias (Iface_Subp, Alias (Iface_Subp));
-            Set_Alias                    (Iface_Subp, E);
-            Set_Is_Abstract_Subprogram   (Iface_Subp,
-                                          Is_Abstract_Subprogram (E));
-            Remove_Homonym               (Iface_Subp);
-
-            --  Hidden entities associated with interfaces must have set the
-            --  Has_Delay_Freeze attribute to ensure that the corresponding
-            --  entry of the secondary dispatch table is filled when such
-            --  entity is frozen.
-
-            Set_Has_Delayed_Freeze (Iface_Subp);
-
-            Next_Elmt (Elmt);
-         end loop;
-      end if;
-   end Derive_Interface_Subprograms;
+   end Derive_Progenitor_Subprograms;
 
    -----------------------
    -- Derive_Subprogram --
@@ -11764,12 +11642,33 @@ package body Sem_Ch3 is
          end if;
       end Set_Derived_Name;
 
+      --  Local variables
+
+      Parent_Overrides_Interface_Primitive : Boolean := False;
+
    --  Start of processing for Derive_Subprogram
 
    begin
       New_Subp :=
          New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
       Set_Ekind (New_Subp, Ekind (Parent_Subp));
+
+      --  Check whether the parent overrides an interface primitive
+
+      if Is_Overriding_Operation (Parent_Subp) then
+         declare
+            E : Entity_Id := Parent_Subp;
+         begin
+            while Present (Overridden_Operation (E)) loop
+               E := Ultimate_Alias (Overridden_Operation (E));
+            end loop;
+
+            Parent_Overrides_Interface_Primitive :=
+              Is_Dispatching_Operation (E)
+                and then Present (Find_Dispatching_Type (E))
+                and then Is_Interface (Find_Dispatching_Type (E));
+         end;
+      end if;
 
       --  Check whether the inherited subprogram is a private operation that
       --  should be inherited but not yet made visible. Such subprograms can
@@ -11816,10 +11715,11 @@ package body Sem_Ch3 is
       then
          Set_Derived_Name;
 
-      --  Ada 2005 (AI-251): Hidden entity associated with abstract interface
-      --  primitive
+      --  Ada 2005 (AI-251): Regular derivation if the parent subprogram
+      --  overrides an interface primitive because interface primitives
+      --  must be visible in the partial view of the parent (RM 7.3 (7.3/2))
 
-      elsif Present (Abstract_Interface_Alias (Parent_Subp)) then
+      elsif Parent_Overrides_Interface_Primitive then
          Set_Derived_Name;
 
       --  The type is inheriting a private operation, so enter
@@ -12035,16 +11935,101 @@ package body Sem_Ch3 is
       Derived_Type   : Entity_Id;
       Generic_Actual : Entity_Id := Empty)
    is
-      Op_List      : constant Elist_Id :=
-                       Collect_Primitive_Operations (Parent_Type);
-      Ifaces_List  : constant Elist_Id := New_Elmt_List;
-      Predef_Prims : constant Elist_Id := New_Elmt_List;
+      Op_List : constant Elist_Id :=
+                  Collect_Primitive_Operations (Parent_Type);
+
+      function Check_Derived_Type return Boolean;
+      --  Check that all primitive inherited from Parent_Type are found in
+      --  the list of primitives of Derived_Type exactly in the same order.
+
+      function Check_Derived_Type return Boolean is
+         E        : Entity_Id;
+         Elmt     : Elmt_Id;
+         List     : Elist_Id;
+         New_Subp : Entity_Id;
+         Op_Elmt  : Elmt_Id;
+         Subp     : Entity_Id;
+
+      begin
+         --  Traverse list of entities in the current scope searching for
+         --  an incomplete type whose full-view is derived type
+
+         E := First_Entity (Scope (Derived_Type));
+         while Present (E)
+           and then E /= Derived_Type
+         loop
+            if Ekind (E) = E_Incomplete_Type
+              and then Present (Full_View (E))
+              and then Full_View (E) = Derived_Type
+            then
+               --  Disable this test if Derived_Type completes an incomplete
+               --  type because in such case more primitives can be added
+               --  later to the list of primitives of Derived_Type by routine
+               --  Process_Incomplete_Dependents
+
+               return True;
+            end if;
+
+            E := Next_Entity (E);
+         end loop;
+
+         List := Collect_Primitive_Operations (Derived_Type);
+         Elmt := First_Elmt (List);
+
+         Op_Elmt := First_Elmt (Op_List);
+         while Present (Op_Elmt) loop
+            Subp     := Node (Op_Elmt);
+            New_Subp := Node (Elmt);
+
+            --  At this early stage Derived_Type has no entities with attribute
+            --  Interface_Alias. In addition, such primitives are always
+            --  located at the end of the list of primitives of Parent_Type.
+            --  Therefore, if found we can safely stop processing pending
+            --  entities.
+
+            exit when Present (Interface_Alias (Subp));
+
+            --  Handle hidden entities
+
+            if not Is_Predefined_Dispatching_Operation (Subp)
+              and then Is_Hidden (Subp)
+            then
+               if Present (New_Subp)
+                 and then Primitive_Names_Match (Subp, New_Subp)
+               then
+                  Next_Elmt (Elmt);
+               end if;
+
+            else
+               if not Present (New_Subp)
+                 or else Ekind (Subp) /= Ekind (New_Subp)
+                 or else not Primitive_Names_Match (Subp, New_Subp)
+               then
+                  return False;
+               end if;
+
+               Next_Elmt (Elmt);
+            end if;
+
+            Next_Elmt (Op_Elmt);
+         end loop;
+
+         return True;
+      end Check_Derived_Type;
+
+      --  Local variables
+
+      Alias_Subp   : Entity_Id;
       Act_List     : Elist_Id;
-      Act_Elmt     : Elmt_Id;
+      Act_Elmt     : Elmt_Id   := No_Elmt;
+      Act_Subp     : Entity_Id := Empty;
       Elmt         : Elmt_Id;
+      Need_Search  : Boolean   := False;
       New_Subp     : Entity_Id := Empty;
       Parent_Base  : Entity_Id;
       Subp         : Entity_Id;
+
+   --  Start of processing for Derive_Subprograms
 
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
@@ -12056,90 +12041,43 @@ package body Sem_Ch3 is
          Parent_Base := Parent_Type;
       end if;
 
+      if Present (Generic_Actual) then
+         Act_List := Collect_Primitive_Operations (Generic_Actual);
+         Act_Elmt := First_Elmt (Act_List);
+      end if;
+
       --  Derive primitives inherited from the parent. Note that if the generic
       --  actual is present, this is not really a type derivation, it is a
       --  completion within an instance.
 
-      if Present (Generic_Actual) then
-         Act_List := Collect_Primitive_Operations (Generic_Actual);
-         Act_Elmt := First_Elmt (Act_List);
-      else
-         Act_Elmt := No_Elmt;
-      end if;
+      --  Case 1: Derived_Type does not implement interfaces
 
-      --  Literals are derived earlier in the process of building the derived
-      --  type, and are skipped here.
+      if not Is_Tagged_Type (Derived_Type)
+        or else (not Has_Interfaces (Derived_Type)
+                  and then not (Present (Generic_Actual)
+                                  and then
+                                Has_Interfaces (Generic_Actual)))
+      then
+         Elmt := First_Elmt (Op_List);
+         while Present (Elmt) loop
+            Subp := Node (Elmt);
 
-      Elmt := First_Elmt (Op_List);
-      while Present (Elmt) loop
-         Subp := Node (Elmt);
+            --  Literals are derived earlier in the process of building the
+            --  derived type, and are skipped here.
 
-         if Ekind (Subp) /= E_Enumeration_Literal then
-
-            if Ada_Version >= Ada_05
-              and then Present (Abstract_Interface_Alias (Subp))
-            then
+            if Ekind (Subp) = E_Enumeration_Literal then
                null;
 
-            --  We derive predefined primitives in a later round to ensure that
-            --  they are always added to the list of primitives after user
-            --  defined primitives (because predefined primitives have to be
-            --  skipped when matching the operations of a parent interface to
-            --  those of a concrete type). However it is unclear why those
-            --  primitives would be needed in an instantiation???
+            --  The actual is a direct descendant and the common primitive
+            --  operations appear in the same order.
 
-            elsif Is_Predefined_Dispatching_Operation (Subp) then
-               Append_Elmt (Subp, Predef_Prims);
-
-            elsif No (Generic_Actual) then
-               Derive_Subprogram (New_Subp, Subp, Derived_Type, Parent_Base);
-
-               --  Ada 2005 (AI-251): Add derivation of an abstract interface
-               --  primitive to the list of entities to which we have to
-               --  associate an aliased entity.
-
-               if Ada_Version >= Ada_05
-                 and then Is_Dispatching_Operation (Subp)
-                 and then Present (Find_Dispatching_Type (Subp))
-                 and then Is_Interface (Find_Dispatching_Type (Subp))
-               then
-                  Append_Elmt (New_Subp, Ifaces_List);
-               end if;
+            --  If the generic parent type is present, the derived type is an
+            --  instance of a formal derived type, and within the instance its
+            --  operations are those of the actual. We derive from the formal
+            --  type but make the inherited operations aliases of the
+            --  corresponding operations of the actual.
 
             else
-               --  If the generic parent type is present, the derived type
-               --  is an instance of a formal derived type, and within the
-               --  instance its operations are those of the actual. We derive
-               --  from the formal type but make the inherited operations
-               --  aliases of the corresponding operations of the actual.
-
-               if Is_Interface (Parent_Type)
-                 and then Root_Type (Derived_Type) /= Parent_Type
-               then
-                  --  Find the corresponding operation in the generic actual.
-                  --  Given that the actual is not a direct descendant of the
-                  --  parent, as in Ada 95, the primitives are not necessarily
-                  --  in the same order, so we have to traverse the list of
-                  --  primitive operations of the actual to find the one that
-                  --  implements the interface operation.
-
-                  --  Note that if the parent type is the direct ancestor of
-                  --  the derived type, then even if it is an interface the
-                  --  operations are inherited from the primary dispatch table
-                  --  and are in the proper order.
-
-                  Act_Elmt := First_Elmt (Act_List);
-                  while Present (Act_Elmt) loop
-                     exit when
-                       Abstract_Interface_Alias (Node (Act_Elmt)) = Subp;
-                     Next_Elmt (Act_Elmt);
-                  end loop;
-               end if;
-
-               --  If the formal is not an interface, the actual is a direct
-               --  descendant and the common  primitive operations appear in
-               --  the same order.
-
                Derive_Subprogram
                  (New_Subp, Subp, Derived_Type, Parent_Base, Node (Act_Elmt));
 
@@ -12147,35 +12085,222 @@ package body Sem_Ch3 is
                   Next_Elmt (Act_Elmt);
                end if;
             end if;
-         end if;
 
-         Next_Elmt (Elmt);
-      end loop;
-
-      --  Inherit additional operations from progenitor interfaces. However,
-      --  if the derived type is a generic actual, there are not new primitive
-      --  operations for the type, because it has those of the actual, so
-      --  nothing needs to be done. The renamings generated above are not
-      --  primitive operations, and their purpose is simply to make the proper
-      --  operations visible within an instantiation.
-
-      if Ada_Version >= Ada_05
-        and then Is_Tagged_Type (Derived_Type)
-        and then No (Generic_Actual)
-      then
-         Derive_Interface_Subprograms (Parent_Type, Derived_Type, Ifaces_List);
-      end if;
-
-      --  Derive predefined primitives
-
-      if not Is_Empty_Elmt_List (Predef_Prims) then
-         Elmt := First_Elmt (Predef_Prims);
-         while Present (Elmt) loop
-            Derive_Subprogram
-              (New_Subp, Node (Elmt), Derived_Type, Parent_Base);
             Next_Elmt (Elmt);
          end loop;
+
+      --  Case 2: Derived_Type implements interfaces
+
+      else
+         --  If the parent type has no predefined primitives we remove
+         --  predefined primitives from the list of primitives of generic
+         --  actual to simplify the complexity of this algorithm.
+
+         if Present (Generic_Actual) then
+            declare
+               Has_Predefined_Primitives : Boolean := False;
+
+            begin
+               --  Check if the parent type has predefined primitives
+
+               Elmt := First_Elmt (Op_List);
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+
+                  if Is_Predefined_Dispatching_Operation (Subp)
+                    and then not Comes_From_Source (Ultimate_Alias (Subp))
+                  then
+                     Has_Predefined_Primitives := True;
+                     exit;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+
+               --  Remove predefined primitives of Generic_Actual. We must use
+               --  an auxiliary list because in case of tagged types the value
+               --  returned by Collect_Primitive_Operations is the value stored
+               --  in its Primitive_Operations attribute (and we don't want to
+               --  modify its current contents).
+
+               if not Has_Predefined_Primitives then
+                  declare
+                     Aux_List : constant Elist_Id := New_Elmt_List;
+
+                  begin
+                     Elmt := First_Elmt (Act_List);
+                     while Present (Elmt) loop
+                        Subp := Node (Elmt);
+
+                        if not Is_Predefined_Dispatching_Operation (Subp)
+                          or else Comes_From_Source (Subp)
+                        then
+                           Append_Elmt (Subp, Aux_List);
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+
+                     Act_List := Aux_List;
+                  end;
+               end if;
+
+               Act_Elmt := First_Elmt (Act_List);
+               Act_Subp := Node (Act_Elmt);
+            end;
+         end if;
+
+         --  Stage 1: If the generic actual is not present we derive the
+         --  primitives inherited from the parent type. If the generic parent
+         --  type is present, the derived type is an instance of a formal
+         --  derived type, and within the instance its operations are those of
+         --  the actual. We derive from the formal type but make the inherited
+         --  operations aliases of the corresponding operations of the actual.
+
+         Elmt := First_Elmt (Op_List);
+         while Present (Elmt) loop
+            Subp       := Node (Elmt);
+            Alias_Subp := Ultimate_Alias (Subp);
+
+            --  At this early stage Derived_Type has no entities with attribute
+            --  Interface_Alias. In addition, such primitives are always
+            --  located at the end of the list of primitives of Parent_Type.
+            --  Therefore, if found we can safely stop processing pending
+            --  entities.
+
+            exit when Present (Interface_Alias (Subp));
+
+            --  If the generic actual is present find the corresponding
+            --  operation in the generic actual. If the parent type is a
+            --  direct ancestor of the derived type then, even if it is an
+            --  interface, the operations are inherited from the primary
+            --  dispatch table and are in the proper order. If we detect here
+            --  that primitives are not in the same order we traverse the list
+            --  of primitive operations of the actual to find the one that
+            --  implements the interface primitive.
+
+            if Need_Search
+              or else
+                (Present (Generic_Actual)
+                   and then Present (Act_Subp)
+                   and then not Primitive_Names_Match (Subp, Act_Subp))
+            then
+               pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual));
+               pragma Assert (Is_Interface (Parent_Base));
+
+               --  Remember that we need searching for all the pending
+               --  primitives
+
+               Need_Search := True;
+
+               --  Handle entities associated with interface primitives
+
+               if Present (Alias (Subp))
+                 and then Is_Interface (Find_Dispatching_Type (Alias (Subp)))
+                 and then not Is_Predefined_Dispatching_Operation (Subp)
+               then
+                  Act_Subp :=
+                    Find_Primitive_Covering_Interface
+                      (Tagged_Type => Generic_Actual,
+                       Iface_Prim  => Subp);
+
+               --  Handle predefined primitives plus the rest of user-defined
+               --  primitives
+
+               else
+                  Act_Elmt := First_Elmt (Act_List);
+                  while Present (Act_Elmt) loop
+                     Act_Subp := Node (Act_Elmt);
+
+                     exit when Primitive_Names_Match (Subp, Act_Subp)
+                       and then Type_Conformant (Subp, Act_Subp,
+                                  Skip_Controlling_Formals => True)
+                       and then No (Interface_Alias (Act_Subp));
+
+                     Next_Elmt (Act_Elmt);
+                  end loop;
+               end if;
+            end if;
+
+            --   Case 1: If the parent is a limited interface then it has the
+            --   predefined primitives of synchronized interfaces. However, the
+            --   actual type may be a non-limited type and hence it does not
+            --   have such primitives.
+
+            if Present (Generic_Actual)
+              and then not Present (Act_Subp)
+              and then Is_Limited_Interface (Parent_Base)
+              and then Is_Predefined_Interface_Primitive (Subp)
+            then
+               null;
+
+            --  Case 2: Inherit entities associated with interfaces that
+            --  were not covered by the parent type. We exclude here null
+            --  interface primitives because they do not need special
+            --  management.
+
+            elsif Present (Alias (Subp))
+              and then Is_Interface (Find_Dispatching_Type (Alias_Subp))
+              and then not
+                (Nkind (Parent (Alias_Subp)) = N_Procedure_Specification
+                   and then Null_Present (Parent (Alias_Subp)))
+            then
+               Derive_Subprogram
+                 (New_Subp     => New_Subp,
+                  Parent_Subp  => Alias_Subp,
+                  Derived_Type => Derived_Type,
+                  Parent_Type  => Find_Dispatching_Type (Alias_Subp),
+                  Actual_Subp  => Act_Subp);
+
+               if No (Generic_Actual) then
+                  Set_Alias (New_Subp, Subp);
+               end if;
+
+            --  Case 3: Common derivation
+
+            else
+               Derive_Subprogram
+                 (New_Subp     => New_Subp,
+                  Parent_Subp  => Subp,
+                  Derived_Type => Derived_Type,
+                  Parent_Type  => Parent_Base,
+                  Actual_Subp  => Act_Subp);
+            end if;
+
+            --  No need to update Act_Elm if we must search for the
+            --  corresponding operation in the generic actual
+
+            if not Need_Search
+              and then Present (Act_Elmt)
+            then
+               Next_Elmt (Act_Elmt);
+               Act_Subp := Node (Act_Elmt);
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+
+         --  Inherit additional operations from progenitors. If the derived
+         --  type is a generic actual, there are not new primitive operations
+         --  for the type because it has those of the actual, and therefore
+         --  nothing needs to be done. The renamings generated above are not
+         --  primitive operations, and their purpose is simply to make the
+         --  proper operations visible within an instantiation.
+
+         if No (Generic_Actual) then
+            Derive_Progenitor_Subprograms (Parent_Base, Derived_Type);
+         end if;
       end if;
+
+      --  Final check: Direct descendants must have their primitives in the
+      --  same order. We exclude from this test non-tagged types and instances
+      --  of formal derived types. We skip this test if we have already
+      --  reported serious errors in the sources.
+
+      pragma Assert (not Is_Tagged_Type (Derived_Type)
+        or else Present (Generic_Actual)
+        or else Serious_Errors_Detected > 0
+        or else Check_Derived_Type);
    end Derive_Subprograms;
 
    --------------------------------
@@ -14046,48 +14171,9 @@ package body Sem_Ch3 is
      (Iface : Entity_Id;
       Typ   : Entity_Id) return Boolean
    is
-      Iface_Elmt  : Elmt_Id;
-      I_Name      : Entity_Id;
-
    begin
-      if No (Abstract_Interfaces (Typ)) then
-         return False;
-
-      else
-         Iface_Elmt := First_Elmt (Abstract_Interfaces (Typ));
-         while Present (Iface_Elmt) loop
-            I_Name := Node (Iface_Elmt);
-            if Base_Type (I_Name) = Base_Type (Iface) then
-               return True;
-
-            elsif Is_Derived_Type (I_Name)
-              and then Is_Ancestor (Iface, I_Name)
-            then
-               return True;
-
-            else
-               Next_Elmt (Iface_Elmt);
-            end if;
-         end loop;
-
-         --  For concurrent record types, they have the interfaces of the
-         --  parent synchronized type. However these have no ancestors that
-         --  implement anything, so assume it is a progenitor.
-         --  Should be cleaned up in Collect_Abstract_Interfaces???
-
-         if Is_Concurrent_Record_Type (Typ) then
-            return Present (Abstract_Interfaces (Typ));
-         end if;
-
-         --  If type is a derived type, check recursively its ancestors
-
-         if Is_Derived_Type (Typ) then
-            return Etype (Typ) = Iface
-              or else  Is_Progenitor (Iface, Etype (Typ));
-         else
-            return False;
-         end if;
-      end if;
+      return Implements_Interface (Typ, Iface,
+               Exclude_Parents => True);
    end Is_Progenitor;
 
    ------------------------------
@@ -15366,8 +15452,8 @@ package body Sem_Ch3 is
 
          --  Handle entities in the list of abstract interfaces
 
-         if Present (Abstract_Interfaces (Typ)) then
-            Iface_Elmt := First_Elmt (Abstract_Interfaces (Typ));
+         if Present (Interfaces (Typ)) then
+            Iface_Elmt := First_Elmt (Interfaces (Typ));
             while Present (Iface_Elmt) loop
                Iface := Node (Iface_Elmt);
 
@@ -15696,6 +15782,9 @@ package body Sem_Ch3 is
 
       --  If the private view was tagged, copy the new primitive operations
       --  from the private view to the full view.
+
+      --  Note: Subprograms covering interface primitives were previously
+      --  propagated to the full view by Derive_Progenitor_Primitives
 
       if Is_Tagged_Type (Full_T)
         and then not Is_Concurrent_Type (Full_T)
@@ -16902,11 +16991,11 @@ package body Sem_Ch3 is
       --  These flags must be initialized before calling Process_Discriminants
       --  because this routine makes use of them.
 
-      Set_Ekind               (T, E_Record_Type);
-      Set_Etype               (T, T);
-      Init_Size_Align         (T);
-      Set_Abstract_Interfaces (T, No_Elist);
-      Set_Stored_Constraint   (T, No_Elist);
+      Set_Ekind             (T, E_Record_Type);
+      Set_Etype             (T, T);
+      Init_Size_Align       (T);
+      Set_Interfaces        (T, No_Elist);
+      Set_Stored_Constraint (T, No_Elist);
 
       --  Normal case
 
@@ -16952,7 +17041,7 @@ package body Sem_Ch3 is
       if Ada_Version >= Ada_05
         and then Present (Interface_List (Def))
       then
-         Check_Abstract_Interfaces (N, Def);
+         Check_Interfaces (N, Def);
 
          declare
             Ifaces_List : Elist_Id;
@@ -16961,12 +17050,12 @@ package body Sem_Ch3 is
             --  Ada 2005 (AI-251): Collect the list of progenitors that are not
             --  already in the parents.
 
-            Collect_Abstract_Interfaces
-              (T                         => T,
-               Ifaces_List               => Ifaces_List,
-               Exclude_Parent_Interfaces => True);
+            Collect_Interfaces
+              (T               => T,
+               Ifaces_List     => Ifaces_List,
+               Exclude_Parents => True);
 
-            Set_Abstract_Interfaces (T, Ifaces_List);
+            Set_Interfaces (T, Ifaces_List);
          end;
       end if;
 
@@ -17013,7 +17102,7 @@ package body Sem_Ch3 is
             --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
             --  implemented interfaces.
 
-            if Has_Abstract_Interfaces (T) then
+            if Has_Interfaces (T) then
                Add_Interface_Tag_Components (N, T);
             end if;
          end if;
@@ -17050,11 +17139,7 @@ package body Sem_Ch3 is
       if Is_Tagged
         and then not Is_Empty_List (Interface_List (Def))
       then
-         declare
-            Ifaces_List : constant Elist_Id := New_Elmt_List;
-         begin
-            Derive_Interface_Subprograms (T, T, Ifaces_List);
-         end;
+         Derive_Progenitor_Subprograms (T, T);
       end if;
    end Record_Type_Declaration;
 

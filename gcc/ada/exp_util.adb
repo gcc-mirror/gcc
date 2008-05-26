@@ -1386,73 +1386,8 @@ package body Exp_Util is
      (T     : Entity_Id;
       Iface : Entity_Id) return Elmt_Id
    is
-      ADT   : Elmt_Id;
-      Found : Boolean   := False;
-      Typ   : Entity_Id := T;
-
-      procedure Find_Secondary_Table (Typ : Entity_Id);
-      --  Internal subprogram used to recursively climb to the ancestors
-
-      --------------------------
-      -- Find_Secondary_Table --
-      --------------------------
-
-      procedure Find_Secondary_Table (Typ : Entity_Id) is
-         AI_Elmt : Elmt_Id;
-         AI      : Node_Id;
-
-      begin
-         pragma Assert (Typ /= Iface);
-
-         --  Climb to the ancestor (if any) handling synchronized interface
-         --  derivations and private types
-
-         if Is_Concurrent_Record_Type (Typ) then
-            declare
-               Iface_List : constant List_Id := Abstract_Interface_List (Typ);
-
-            begin
-               if Is_Non_Empty_List (Iface_List) then
-                  Find_Secondary_Table (Etype (First (Iface_List)));
-               end if;
-            end;
-
-         elsif Present (Full_View (Etype (Typ))) then
-            if Full_View (Etype (Typ)) /= Typ then
-               Find_Secondary_Table (Full_View (Etype (Typ)));
-            end if;
-
-         elsif Etype (Typ) /= Typ then
-            Find_Secondary_Table (Etype (Typ));
-         end if;
-
-         --  Traverse the list of interfaces implemented by the type
-
-         if not Found
-           and then Present (Abstract_Interfaces (Typ))
-           and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ))
-         then
-            AI_Elmt := First_Elmt (Abstract_Interfaces (Typ));
-            while Present (AI_Elmt) loop
-               AI := Node (AI_Elmt);
-
-               if AI = Iface or else Is_Ancestor (Iface, AI) then
-                  Found := True;
-                  return;
-               end if;
-
-               --  Document what is going on here, why four Next's???
-
-               Next_Elmt (ADT);
-               Next_Elmt (ADT);
-               Next_Elmt (ADT);
-               Next_Elmt (ADT);
-               Next_Elmt (AI_Elmt);
-            end loop;
-         end if;
-      end Find_Secondary_Table;
-
-   --  Start of processing for Find_Interface_ADT
+      ADT : Elmt_Id;
+      Typ : Entity_Id := T;
 
    begin
       pragma Assert (Is_Interface (Iface));
@@ -1481,11 +1416,23 @@ package body Exp_Util is
         (not Is_Class_Wide_Type (Typ)
           and then Ekind (Typ) /= E_Incomplete_Type);
 
-      ADT := Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Typ))));
-      pragma Assert (Present (Node (ADT)));
-      Find_Secondary_Table (Typ);
-      pragma Assert (Found);
-      return ADT;
+      if Is_Ancestor (Iface, Typ) then
+         return First_Elmt (Access_Disp_Table (Typ));
+
+      else
+         ADT :=
+           Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Typ))));
+         while Present (ADT)
+           and then Present (Related_Type (Node (ADT)))
+           and then Related_Type (Node (ADT)) /= Iface
+           and then not Is_Ancestor (Iface, Related_Type (Node (ADT)))
+         loop
+            Next_Elmt (ADT);
+         end loop;
+
+         pragma Assert (Present (Related_Type (Node (ADT))));
+         return ADT;
+      end if;
    end Find_Interface_ADT;
 
    ------------------------
@@ -1499,14 +1446,6 @@ package body Exp_Util is
       AI_Tag : Entity_Id;
       Found  : Boolean   := False;
       Typ    : Entity_Id := T;
-
-      Is_Primary_Tag : Boolean := False;
-
-      Is_Sync_Typ : Boolean := False;
-      --  In case of non concurrent-record-types each parent-type has the
-      --  tags associated with the interface types that are not implemented
-      --  by the ancestors; concurrent-record-types have their whole list of
-      --  interface tags (and this case requires some special management).
 
       procedure Find_Tag (Typ : Entity_Id);
       --  Internal subprogram used to recursively climb to the ancestors
@@ -1524,32 +1463,15 @@ package body Exp_Util is
          --  therefore shares the main tag.
 
          if Typ = Iface then
-            if Is_Sync_Typ then
-               Is_Primary_Tag := True;
-            else
-               pragma Assert
-                 (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
-               AI_Tag := First_Tag_Component (Typ);
-            end if;
-
+            pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
+            AI_Tag := First_Tag_Component (Typ);
             Found  := True;
             return;
          end if;
 
-         --  Handle synchronized interface derivations
-
-         if Is_Concurrent_Record_Type (Typ) then
-            declare
-               Iface_List : constant List_Id := Abstract_Interface_List (Typ);
-            begin
-               if Is_Non_Empty_List (Iface_List) then
-                  Find_Tag (Etype (First (Iface_List)));
-               end if;
-            end;
-
          --  Climb to the root type handling private types
 
-         elsif Present (Full_View (Etype (Typ))) then
+         if Present (Full_View (Etype (Typ))) then
             if Full_View (Etype (Typ)) /= Typ then
                Find_Tag (Full_View (Etype (Typ)));
             end if;
@@ -1561,19 +1483,16 @@ package body Exp_Util is
          --  Traverse the list of interfaces implemented by the type
 
          if not Found
-           and then Present (Abstract_Interfaces (Typ))
-           and then not (Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
+           and then Present (Interfaces (Typ))
+           and then not (Is_Empty_Elmt_List (Interfaces (Typ)))
          then
             --  Skip the tag associated with the primary table
 
-            if not Is_Sync_Typ then
-               pragma Assert
-                 (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
-               AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
-               pragma Assert (Present (AI_Tag));
-            end if;
+            pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
+            AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
+            pragma Assert (Present (AI_Tag));
 
-            AI_Elmt := First_Elmt (Abstract_Interfaces (Typ));
+            AI_Elmt := First_Elmt (Interfaces (Typ));
             while Present (AI_Elmt) loop
                AI := Node (AI_Elmt);
 
@@ -1624,149 +1543,10 @@ package body Exp_Util is
          Typ := Non_Limited_View (Typ);
       end if;
 
-      if not Is_Concurrent_Record_Type (Typ) then
-         Find_Tag (Typ);
-         pragma Assert (Found);
-         return AI_Tag;
-
-      --  Concurrent record types
-
-      else
-         Is_Sync_Typ := True;
-         AI_Tag      := Next_Tag_Component (First_Tag_Component (Typ));
-         Find_Tag (Typ);
-         pragma Assert (Found);
-
-         if Is_Primary_Tag then
-            return First_Tag_Component (Typ);
-         else
-            return AI_Tag;
-         end if;
-      end if;
-   end Find_Interface_Tag;
-
-   --------------------
-   -- Find_Interface --
-   --------------------
-
-   function Find_Interface
-     (T      : Entity_Id;
-      Comp   : Entity_Id) return Entity_Id
-   is
-      AI_Tag : Entity_Id;
-      Found  : Boolean := False;
-      Iface  : Entity_Id;
-      Typ    : Entity_Id := T;
-
-      Is_Sync_Typ : Boolean := False;
-      --  In case of non concurrent-record-types each parent-type has the
-      --  tags associated with the interface types that are not implemented
-      --  by the ancestors; concurrent-record-types have their whole list of
-      --  interface tags (and this case requires some special management).
-
-      procedure Find_Iface (Typ : Entity_Id);
-      --  Internal subprogram used to recursively climb to the ancestors
-
-      ----------------
-      -- Find_Iface --
-      ----------------
-
-      procedure Find_Iface (Typ : Entity_Id) is
-         AI_Elmt : Elmt_Id;
-
-      begin
-         --  Climb to the root type
-
-         --  Handle synchronized interface derivations
-
-         if Is_Concurrent_Record_Type (Typ) then
-            declare
-               Iface_List : constant List_Id := Abstract_Interface_List (Typ);
-            begin
-               if Is_Non_Empty_List (Iface_List) then
-                  Find_Iface (Etype (First (Iface_List)));
-               end if;
-            end;
-
-         --  Handle the common case
-
-         elsif Etype (Typ) /= Typ then
-            pragma Assert (not Present (Full_View (Etype (Typ))));
-            Find_Iface (Etype (Typ));
-         end if;
-
-         --  Traverse the list of interfaces implemented by the type
-
-         if not Found
-           and then Present (Abstract_Interfaces (Typ))
-           and then not (Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
-         then
-            --  Skip the tag associated with the primary table
-
-            if not Is_Sync_Typ then
-               pragma Assert
-                 (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
-               AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
-               pragma Assert (Present (AI_Tag));
-            end if;
-
-            AI_Elmt := First_Elmt (Abstract_Interfaces (Typ));
-            while Present (AI_Elmt) loop
-               if AI_Tag = Comp then
-                  Iface := Node (AI_Elmt);
-                  Found := True;
-                  return;
-               end if;
-
-               AI_Tag := Next_Tag_Component (AI_Tag);
-               Next_Elmt (AI_Elmt);
-            end loop;
-         end if;
-      end Find_Iface;
-
-   --  Start of processing for Find_Interface
-
-   begin
-      --  Handle private types
-
-      if Has_Private_Declaration (Typ)
-        and then Present (Full_View (Typ))
-      then
-         Typ := Full_View (Typ);
-      end if;
-
-      --  Handle access types
-
-      if Is_Access_Type (Typ) then
-         Typ := Directly_Designated_Type (Typ);
-      end if;
-
-      --  Handle task and protected types implementing interfaces
-
-      if Is_Concurrent_Type (Typ) then
-         Typ := Corresponding_Record_Type (Typ);
-      end if;
-
-      if Is_Class_Wide_Type (Typ) then
-         Typ := Etype (Typ);
-      end if;
-
-      --  Handle entities from the limited view
-
-      if Ekind (Typ) = E_Incomplete_Type then
-         pragma Assert (Present (Non_Limited_View (Typ)));
-         Typ := Non_Limited_View (Typ);
-      end if;
-
-      if Is_Concurrent_Record_Type (Typ) then
-         Is_Sync_Typ := True;
-         AI_Tag      := Next_Tag_Component (First_Tag_Component (Typ));
-      end if;
-
-      Find_Iface (Typ);
+      Find_Tag (Typ);
       pragma Assert (Found);
-      return Iface;
-   end Find_Interface;
+      return AI_Tag;
+   end Find_Interface_Tag;
 
    ------------------
    -- Find_Prim_Op --
@@ -3061,55 +2841,6 @@ package body Exp_Util is
       return Is_Tagged_Type (Typ)
         and then Is_Library_Level_Entity (Typ);
    end Is_Library_Level_Tagged_Type;
-
-   -----------------------------------------
-   -- Is_Predefined_Dispatching_Operation --
-   -----------------------------------------
-
-   function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean
-   is
-      TSS_Name : TSS_Name_Type;
-
-   begin
-      if not Is_Dispatching_Operation (E) then
-         return False;
-      end if;
-
-      Get_Name_String (Chars (E));
-
-      --  Most predefined primitives have internally generated names. Equality
-      --  must be treated differently; the predefined operation is recognized
-      --  as a homogeneous binary operator that returns Boolean.
-
-      if Name_Len > TSS_Name_Type'Last then
-         TSS_Name := TSS_Name_Type (Name_Buffer (Name_Len - TSS_Name'Length + 1
-                                     .. Name_Len));
-         if Chars (E)        = Name_uSize
-           or else Chars (E) = Name_uAlignment
-           or else TSS_Name  = TSS_Stream_Read
-           or else TSS_Name  = TSS_Stream_Write
-           or else TSS_Name  = TSS_Stream_Input
-           or else TSS_Name  = TSS_Stream_Output
-           or else
-             (Chars (E) = Name_Op_Eq
-                and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
-           or else Chars (E) = Name_uAssign
-           or else TSS_Name  = TSS_Deep_Adjust
-           or else TSS_Name  = TSS_Deep_Finalize
-           or else (Ada_Version >= Ada_05
-                      and then (Chars (E) = Name_uDisp_Asynchronous_Select
-                        or else Chars (E) = Name_uDisp_Conditional_Select
-                        or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
-                        or else Chars (E) = Name_uDisp_Get_Task_Id
-                        or else Chars (E) = Name_uDisp_Requeue
-                        or else Chars (E) = Name_uDisp_Timed_Select))
-         then
-            return True;
-         end if;
-      end if;
-
-      return False;
-   end Is_Predefined_Dispatching_Operation;
 
    ----------------------------------
    -- Is_Possibly_Unaligned_Object --
