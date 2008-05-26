@@ -1,3 +1,11 @@
+2008-05-26  Tristan Gingold  <gingold@adacore.com>
+            Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.md ("call_prologue_saves"): Use hi8(gs())/lo8(gs())
+	instead of pm_lo8/pm_hi8 to makes this call working on avr6.
+	* config/avr/avr.c (expand_prologue): Tune "call_prologue" 
+	optimization for 'avr6' architecture.
+
 2008-05-26  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/34932

@@ -2765,8 +2765,8 @@
    (use (reg:HI REG_X))
    (clobber (reg:HI REG_Z))]
   ""
-  "ldi r30,pm_lo8(1f)
-	ldi r31,pm_hi8(1f)
+  "ldi r30,lo8(gs(1f))
+	ldi r31,hi8(gs(1f))
 	%~jmp __prologue_saves__+((18 - %0) * 2)
 1:"
   [(set_attr_alternative "length"
