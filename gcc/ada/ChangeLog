@@ -1,3 +1,43 @@
+2008-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb:
+	(Resolve_Attribute, case 'address):  S (A .. B)' address can be safely
+	converted to S (A)'address only if A .. B is known to be a non-null
+	range.
+
+2008-05-26  Doug Rupp  <rupp@adacore.com>
+
+	* s-vaflop.adb:
+	(Return_D, Return_F, Return_G): New functions.
+
+	* s-vaflop.ads:
+	(Return_D, Return_F, Return_G): New functions.
+
+	* exp_vfpt.adb:
+	(Expand_Vax_Foreign_Return): New procedure
+
+	* exp_vfpt.ads:
+	(Expand_Vax_Foreign_Return): New procedure
+
+	* rtsfind.ads:
+	(RE_Return_D, RE_Return_F, RE_Return_G): New RE_Ids
+	(RE_Return_D, RE_Return_F, RE_Return_G): New RE_Unit_Table elements
+
+	* exp_ch6.adb:
+	Import Exp_Vfpt
+	(Expand_N_Function_Call): Call Expand_Vax_Foreign_Return.
+
+	* s-vaflop-vms-alpha.adb:
+	(Return_D, Return_F, Return_G): New functions.
+
+2008-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): Only set Init_Proc to a dummy
+	init proc entity when there is actual default initialization associated
+	with the component type, to avoid spurious errors on objects of scalar
+	array types that are marked Is_Public when No_Default_Initialization
+	applies.
+
 2008-05-26  Thomas Quinot  <quinot@adacore.com>
 
 	* rtsfind.ads, rtsfind.adb:
