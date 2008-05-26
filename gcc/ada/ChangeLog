@@ -1,5 +1,16 @@
 2008-05-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb (Expand_Concatenate_Other): Add explicit constraint
+	checks on the upper bound if the index type is a modular type, to
+	prevent wrap-around computations when size is close to upper bound of
+	type.
+
+2008-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+2008-05-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch12.adb (Remove_Parent): Use specification of instance
 	to retrieve generic parent,
 	to handle properly the case where the instance is a child unit.
