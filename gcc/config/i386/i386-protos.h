@@ -187,7 +187,8 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 extern int ix86_return_pops_args (tree, tree, int);
 
 extern int ix86_data_alignment (tree, int);
-extern int ix86_local_alignment (tree, int);
+extern unsigned int ix86_local_alignment (tree, enum machine_mode,
+					  unsigned int);
 extern int ix86_constant_alignment (tree, int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
 extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
