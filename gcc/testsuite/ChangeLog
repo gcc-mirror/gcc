@@ -1,3 +1,7 @@
+2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc-c.torture/execute/pr36321.c: New.
+
 2008-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36300
