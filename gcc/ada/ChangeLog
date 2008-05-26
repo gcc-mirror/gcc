@@ -1,3 +1,7 @@
+2008-05-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* ceinfo.adb, csinfo.adb: Remove warnings. Update headers.
+
 2008-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gigi.h (gigi): Remove bogus ATTRIBUTE_UNUSED marker.

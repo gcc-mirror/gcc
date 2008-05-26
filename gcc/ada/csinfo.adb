@@ -6,18 +6,17 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -55,7 +54,7 @@ procedure CSinfo is
    Done : exception;
    --  Raised after error is found to terminate run
 
-   WSP : Pattern := Span (' ' & ASCII.HT);
+   WSP : constant Pattern := Span (' ' & ASCII.HT);
 
    Fields   : TV.Table (300);
    Fields1  : TV.Table (300);
@@ -87,50 +86,56 @@ procedure CSinfo is
    Flags : TV.Table (20);
    --  Maps flag numbers to letters
 
-   N_Fields : Pattern := BreakX ("JL");
-   E_Fields : Pattern := BreakX ("5EFGHIJLOP");
-   U_Fields : Pattern := BreakX ("1345EFGHIJKLOPQ");
-   B_Fields : Pattern := BreakX ("12345EFGHIJKLOPQ");
+   N_Fields : constant Pattern := BreakX ("JL");
+   E_Fields : constant Pattern := BreakX ("5EFGHIJLOP");
+   U_Fields : constant Pattern := BreakX ("1345EFGHIJKLOPQ");
+   B_Fields : constant Pattern := BreakX ("12345EFGHIJKLOPQ");
 
    Line : VString;
    Bad  : Boolean;
 
-   Field       : VString := Nul;
+   Field       : constant VString := Nul;
    Fields_Used : VString := Nul;
-   Name        : VString := Nul;
-   Next        : VString := Nul;
+   Name        : constant VString := Nul;
+   Next        : constant VString := Nul;
    Node        : VString := Nul;
    Ref         : VString := Nul;
-   Synonym     : VString := Nul;
-   Nxtref      : VString := Nul;
+   Synonym     : constant VString := Nul;
+   Nxtref      : constant VString := Nul;
 
    Which_Field : aliased VString := Nul;
 
-   Node_Search : Pattern := WSP & "--  N_" & Rest * Node;
-   Break_Punc  : Pattern := Break (" .,");
-   Plus_Binary : Pattern := WSP & "--  plus fields for binary operator";
-   Plus_Unary  : Pattern := WSP & "--  plus fields for unary operator";
-   Plus_Expr   : Pattern := WSP & "--  plus fields for expression";
-   Break_Syn   : Pattern := WSP &  "--  " & Break (' ') * Synonym &
-                              " (" & Break (')') * Field;
-   Break_Field : Pattern := BreakX ('-') * Field;
-   Get_Field   : Pattern := BreakX (Decimal_Digit_Set) &
-                              Span (Decimal_Digit_Set) * Which_Field;
-   Break_WFld  : Pattern := Break (Which_Field'Access);
-   Get_Funcsyn : Pattern := WSP & "function " & Rest * Synonym;
-   Extr_Field  : Pattern := BreakX ('-') & "-- " & Rest * Field;
-   Get_Procsyn : Pattern := WSP & "procedure Set_" & Rest * Synonym;
-   Get_Inline  : Pattern := WSP & "pragma Inline (" & Break (')') * Name;
-   Set_Name    : Pattern := "Set_" & Rest * Name;
-   Func_Rest   : Pattern := "   function " & Rest * Synonym;
-   Get_Nxtref  : Pattern := Break (',') * Nxtref & ',';
-   Test_Syn    : Pattern := Break ('=') & "= N_" &
-                              (Break (" ,)") or Rest) * Next;
-   Chop_Comma  : Pattern := BreakX (',') * Next;
-   Return_Fld  : Pattern := WSP & "return " & Break (' ') * Field;
-   Set_Syn     : Pattern := "   procedure Set_" & Rest * Synonym;
-   Set_Fld     : Pattern := WSP & "Set_" & Break (' ') * Field & " (N, Val)";
-   Break_With  : Pattern := Break ('_') ** Field & "_With_Parent";
+   Node_Search : constant Pattern := WSP & "--  N_" & Rest * Node;
+   Break_Punc  : constant Pattern := Break (" .,");
+   Plus_Binary : constant Pattern := WSP
+                                     & "--  plus fields for binary operator";
+   Plus_Unary  : constant Pattern := WSP
+                                     & "--  plus fields for unary operator";
+   Plus_Expr   : constant Pattern := WSP
+                                     & "--  plus fields for expression";
+   Break_Syn   : constant Pattern := WSP &  "--  "
+                                     & Break (' ') * Synonym
+                                     & " (" & Break (')') * Field;
+   Break_Field : constant Pattern := BreakX ('-') * Field;
+   Get_Field   : constant Pattern := BreakX (Decimal_Digit_Set)
+                                     & Span (Decimal_Digit_Set) * Which_Field;
+   Break_WFld  : constant Pattern := Break (Which_Field'Access);
+   Get_Funcsyn : constant Pattern := WSP & "function " & Rest * Synonym;
+   Extr_Field  : constant Pattern := BreakX ('-') & "-- " & Rest * Field;
+   Get_Procsyn : constant Pattern := WSP & "procedure Set_" & Rest * Synonym;
+   Get_Inline  : constant Pattern := WSP & "pragma Inline ("
+                                     & Break (')') * Name;
+   Set_Name    : constant Pattern := "Set_" & Rest * Name;
+   Func_Rest   : constant Pattern := "   function " & Rest * Synonym;
+   Get_Nxtref  : constant Pattern := Break (',') * Nxtref & ',';
+   Test_Syn    : constant Pattern := Break ('=') & "= N_"
+                                     & (Break (" ,)") or Rest) * Next;
+   Chop_Comma  : constant Pattern := BreakX (',') * Next;
+   Return_Fld  : constant Pattern := WSP & "return " & Break (' ') * Field;
+   Set_Syn     : constant Pattern := "   procedure Set_" & Rest * Synonym;
+   Set_Fld     : constant Pattern := WSP & "Set_" & Break (' ') * Field
+                                     & " (N, Val)";
+   Break_With  : constant Pattern := Break ('_') ** Field & "_With_Parent";
 
    type VStringA is array (Natural range <>) of VString;
 
@@ -187,9 +192,9 @@ begin
    Set (Flags, "17", V ("Q"));
    Set (Flags, "18", V ("R"));
 
-   --  Special fields table. The following fields are not recorded or checked
-   --  by Csinfo, since they are specially handled. This means that both the
-   --  field definitions, and the corresponding subprograms are ignored.
+   --  Special fields table. The following names are not recorded or checked
+   --  by Csinfo, since they are specially handled. This means that any field
+   --  definition or subprogram with a matching name is ignored.
 
    Set (Special, "Analyzed",                  True);
    Set (Special, "Assignment_OK",             True);
@@ -214,7 +219,9 @@ begin
    Set (Special, "Is_Static_Expression",      True);
    Set (Special, "Left_Opnd",                 True);
    Set (Special, "Must_Not_Freeze",           True);
+   Set (Special, "Nkind_In",                  True);
    Set (Special, "Parens",                    True);
+   Set (Special, "Pragma_Name",               True);
    Set (Special, "Raises_Constraint_Error",   True);
    Set (Special, "Right_Opnd",                True);
 
@@ -334,7 +341,7 @@ begin
    Put_Line ("Check for missing functions");
 
    declare
-      List : TV.Table_Array := Convert_To_Array (Fields1);
+      List : constant TV.Table_Array := Convert_To_Array (Fields1);
 
    begin
       if List'Length > 0 then
@@ -385,7 +392,7 @@ begin
    Put_Line ("Check for missing set procedures");
 
    declare
-      List : TV.Table_Array := Convert_To_Array (Fields1);
+      List : constant TV.Table_Array := Convert_To_Array (Fields1);
 
    begin
       if List'Length > 0 then
@@ -424,7 +431,7 @@ begin
    Put_Line ("Check no pragma Inlines were omitted");
 
    declare
-      List : TV.Table_Array := Convert_To_Array (Fields);
+      List : constant TV.Table_Array := Convert_To_Array (Fields);
       Nxt  : VString := Nul;
 
    begin
@@ -523,7 +530,7 @@ begin
    Put_Line ("Check for missing functions in body");
 
    declare
-      List : TV.Table_Array := Convert_To_Array (Refs);
+      List : constant TV.Table_Array := Convert_To_Array (Refs);
 
    begin
       if List'Length /= 0 then
@@ -613,7 +620,7 @@ begin
    Put_Line ("Check for missing set procedures in body");
 
    declare
-      List : TV.Table_Array := Convert_To_Array (Fields1);
+      List : constant TV.Table_Array := Convert_To_Array (Fields1);
 
    begin
       if List'Length /= 0 then
