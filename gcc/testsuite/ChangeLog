@@ -1,3 +1,9 @@
+2008-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36300
+	* gcc.dg/pr36300-1.c: New testcase.
+	* gcc.dg/pr36300-2.c: Likewise.
+
 2008-05-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/set_in_pproc.adb: New test.
