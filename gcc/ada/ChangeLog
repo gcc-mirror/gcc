@@ -1,3 +1,127 @@
+2008-05-26  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Abstract_Interface_Alias): Renamed as Interface_Alias.
+	(Set_Abstract_Interface_Alias): Renamed as Set_Interface_Alias.
+	(Is_Internal): Adding documentation on internal entities that have
+ 	attribute Interface_Alias (old attribute Abstract_Interface_Alias)
+
+	* einfo.adb (Abstract_Interface_Alias): Renamed as Interface_Alias.
+	(Set_Abstract_Interface_Alias): Renamed as Set_Interface_Alias.
+ 	Added assertion to force entities with this attribute to have
+ 	attribute Is_Internal set to True.
+	(Next_Tag_Component): Simplify assertion using attribute Is_Tag.
+
+	* sem_ch3.adb (Derive_Interface_Subprograms): This subprogram has been
+ 	renamed as Derive_Progenitor_Subprograms. In addition, its code is
+ 	a new implementation.
+	(Add_Interface_Tag_Components): Remove special management of
+	synchronized interfaces.
+	(Analyze_Interface_Declaration): Minor reformating
+	(Build_Derived_Record_Type): Minor reformating
+	(Check_Abstract_Overriding): Avoid reporting error in case of abstract
+ 	predefined primitive inherited from interface type because the body of
+ 	internally generated predefined primitives of tagged types are generated
+ 	later by Freeze_Type
+	(Derive_Subprogram): Avoid generating an internal name if the parent
+ 	subprogram overrides an interface primitive.
+	(Derive_Subprograms): New implementation that keeps separate the
+ 	management of tagged types not implementing interfaces, from tagged
+ 	types that implement interfaces.
+	(Is_Progenitor): New implementation.
+	(Process_Full_View): Add documentation
+	(Record_Type_Declaration): Replace call to Derive_Interface_Subprograms
+ 	by call to Derive_Progenitor_Subprograms.
+
+	* sem_ch6.ads (Is_Interface_Conformant): New subprogram.
+	(Check_Subtype_Conformant, Subtype_Conformant): Adding new argument
+ 	Skip_Controlling_Formals.
+
+	* sem_ch6.adb (Is_Interface_Conformant): New subprogram.
+	(Check_Conventions): New implementation. Remove local subprogram
+ 	Skip_Check. Remove formal Search_From of routine Check_Convention.
+	(Check_Subtype_Conformant, Subtype_Conformant): Adding new argument
+ 	Skip_Controlling_Formals.
+	(New_Overloaded_Entity): Enable addition of predefined dispatching
+ 	operations.
+
+	* sem_disp.ads
+	(Find_Primitive_Covering_Interface): New subprogram.
+
+	* sem_disp.adb (Check_Dispatching_Operation): Disable registering
+ 	the task body procedure as a primitive of the corresponding tagged
+ 	type.
+	(Check_Operation_From_Private_Type): Avoid adding twice an entity
+ 	to the list of primitives.
+	(Find_Primitive_Covering_Interface): New subprogram.
+	(Override_Dispatching_Operation): Add documentation.
+
+	* sem_type.adb (Covers): Minor reformatings
+
+	* sem_util.ads (Collect_Abstract_Interfaces): Renamed as
+	Collect_Interfaces.
+ 	Rename formal.
+	(Has_Abstract_Interfaces): Renamed as Has_Interfaces.
+	(Implements_Interface): New subprogram.
+	(Is_Parent): Removed.
+	(Primitive_Names_Match): New subprogram.
+	(Remove_Homonym): Moved here from Derive_Interface_Subprograms.
+	(Ultimate_Alias): New subprogram.
+
+	* sem_util.adb (Collect_Abstract_Interfaces): Renamed as
+	Collect_Interfaces.
+ 	Remove special management for synchronized types. Rename formal. Remove
+ 	internal subprograms Interface_Present_In_Parent and Add_Interface.
+	(Has_Abstract_Interfaces): Renamed as Has_Interfaces. Replace assertion
+ 	on non-record types by code to return false in such case.
+	(Implements_Interface): New subprogram.
+	(Is_Parent): Removed. No special management is now required for
+ 	synchronized types covering interfaces.
+	(Primitive_Names_Match): New subprogram.
+	(Remove_Homonym): Moved here from Derive_Interface_Subprograms.
+	(Ultimate_Alias): New subprogram.
+
+	* exp_ch3.adb (Add_Internal_Interface_Entities): New subprogram.
+ 	Add internal entities associated with secondary dispatch tables to
+ 	the list of tagged type primitives that are not interfaces.
+	(Freeze_Record_Type): Add new call to Add_Internal_Interface_Entities
+	(Make_Predefined_Primitive_Specs): Code reorganization to improve
+ 	the management of predefined equality operator. In addition, if
+ 	the type has an equality function corresponding with a primitive
+ 	defined in an interface type, the inherited equality is abstract
+ 	as well, and no body can be created for it.
+
+	* exp_disp.ads (Is_Predefined_Dispatching_Operation): Moved from
+ 	exp_util to exp_disp.
+	(Is_Predefined_Interface_Primitive): New subprogram. Returns True if
+ 	an entity corresponds with one of the predefined primitives required
+ 	to implement interfaces.
+	Update copyright notice.
+
+	* exp_disp.adb (Set_All_DT_Position): Add assertion. Exclude from the
+ 	final check on abstract subprograms all the primitives associated with
+ 	interface primitives because they must be visible in the public and
+ 	private part.
+	(Write_DT): Use Find_Dispatching_Type to locate the name of the
+	interface type. This allows the use of this routine, for debugging
+	purposes, when the tagged type is not fully decorated.
+	(Is_Predefined_Dispatching_Operation): Moved from exp_util to exp_disp.
+ 	Factorize code calling new subprogram Is_Predefined_Interface_Primitive.
+	(Is_Predefined_Interface_Primitive): New subprogram. Returns True if an
+ 	entity corresponds with one of the predefined primitives required to
+ 	implement interfaces.
+
+	* exp_util.adb (Find_Interface_ADT): New implementation
+	(Find_Interface): Removed.
+
+	* sprint.adb (Sprint_Node_Actual): Generate missing output for the
+ 	list of interfaces associated with nodes
+	N_Formal_Derived_Type_Definition and N_Private_Extension_Declaration.
+
+2008-05-26  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb (Make_Tag_Ctrl_Assignment): Add missing guard on
+	condition for assignment to temporary.
+
 2008-05-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate_Other): Add explicit constraint
