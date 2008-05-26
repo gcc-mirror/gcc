@@ -35,12 +35,27 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
+with Ada.Unchecked_Deallocation;
+
 with System.Task_Primitives.Operations;
 with System.Storage_Elements;
 
 package body System.Tasking is
 
    package STPO renames System.Task_Primitives.Operations;
+
+   ----------------------------
+   -- Free_Entry_Names_Array --
+   ----------------------------
+
+   procedure Free_Entry_Names_Array (Obj : in out Entry_Names_Array) is
+      procedure Free_String is new
+        Ada.Unchecked_Deallocation (String, String_Access);
+   begin
+      for Index in Obj'Range loop
+         Free_String (Obj (Index));
+      end loop;
+   end Free_Entry_Names_Array;
 
    ---------------------
    -- Detect_Blocking --

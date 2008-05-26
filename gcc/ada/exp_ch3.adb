@@ -2477,16 +2477,15 @@ package body Exp_Ch3 is
       function Build_Init_Statements (Comp_List : Node_Id) return List_Id is
          Check_List     : constant List_Id := New_List;
          Alt_List       : List_Id;
+         Decl           : Node_Id;
+         Id             : Entity_Id;
+         Names          : Node_Id;
          Statement_List : List_Id;
          Stmts          : List_Id;
+         Typ            : Entity_Id;
+         Variant        : Node_Id;
 
          Per_Object_Constraint_Components : Boolean;
-
-         Decl     : Node_Id;
-         Variant  : Node_Id;
-
-         Id  : Entity_Id;
-         Typ : Entity_Id;
 
          function Has_Access_Constraint (E : Entity_Id) return Boolean;
          --  Components with access discriminants that depend on the current
@@ -2711,6 +2710,17 @@ package body Exp_Ch3 is
 
             Append_To (Statement_List, Make_Task_Create_Call (Rec_Type));
 
+            --  Generate the statements which map a string entry name to a
+            --  task entry index. Note that the task may not have entries.
+
+            if Entry_Names_OK then
+               Names := Build_Entry_Names (Rec_Type);
+
+               if Present (Names) then
+                  Append_To (Statement_List, Names);
+               end if;
+            end if;
+
             declare
                Task_Type : constant Entity_Id :=
                              Corresponding_Concurrent_Type (Rec_Type);
@@ -2761,6 +2771,18 @@ package body Exp_Ch3 is
          if Is_Protected_Record_Type (Rec_Type) then
             Append_List_To (Statement_List,
               Make_Initialize_Protection (Rec_Type));
+
+            --  Generate the statements which map a string entry name to a
+            --  protected entry index. Note that the protected type may not
+            --  have entries.
+
+            if Entry_Names_OK then
+               Names := Build_Entry_Names (Rec_Type);
+
+               if Present (Names) then
+                  Append_To (Statement_List, Names);
+               end if;
+            end if;
          end if;
 
          --  If no initializations when generated for component declarations
@@ -4494,15 +4516,16 @@ package body Exp_Ch3 is
                end;
             end if;
 
-            --  If the type is controlled and not limited then the target is
-            --  adjusted after the copy and attached to the finalization list.
-            --  However, no adjustment is done in the case where the object was
-            --  initialized by a call to a function whose result is built in
-            --  place, since no copy occurred. (We eventually plan to support
-            --  in-place function results for some nonlimited types. ???)
+            --  If the type is controlled and not inherently limited, then
+            --  the target is adjusted after the copy and attached to the
+            --  finalization list. However, no adjustment is done in the case
+            --  where the object was initialized by a call to a function whose
+            --  result is built in place, since no copy occurred. (Eventually
+            --  we plan to support in-place function results for some cases
+            --  of nonlimited types. ???)
 
             if Controlled_Type (Typ)
-              and then not Is_Limited_Type (Typ)
+              and then not Is_Inherently_Limited_Type (Typ)
               and then not BIP_Call
             then
                Insert_Actions_After (Init_After,

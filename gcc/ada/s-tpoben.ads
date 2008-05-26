@@ -113,7 +113,7 @@ package System.Tasking.Protected_Objects.Entries is
       Old_Base_Priority : System.Any_Priority;
       --  Task's base priority when the protected operation was called
 
-      Pending_Action  : Boolean;
+      Pending_Action : Boolean;
       --  Flag indicating that priority has been dipped temporarily in order
       --  to avoid violating the priority ceiling of the lock associated with
       --  this protected object, in Lock_Server. The flag tells Unlock_Server
@@ -132,11 +132,16 @@ package System.Tasking.Protected_Objects.Entries is
       --  Pointer to an array containing the executable code for all entry
       --  bodies of a protected type.
 
-      --  The following function maps the entry index in a call (which denotes
-      --  the queue to the proper entry) into the body of the entry.
-
       Find_Body_Index : Find_Body_Index_Access;
-      Entry_Queues      : Protected_Entry_Queue_Array (1 .. Num_Entries);
+      --  A function which maps the entry index in a call (which denotes the
+      --  queue of the proper entry) into the body of the entry.
+
+      Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
+
+      Entry_Names : Entry_Names_Array_Access := null;
+      --  An array of string names which denotes entry [family member] names.
+      --  The structure is indexed by protected entry index and contains Num_
+      --  Entries components.
    end record;
 
    --  No default initial values for this type, since call records
@@ -164,11 +169,12 @@ package System.Tasking.Protected_Objects.Entries is
    --  System.Tasking.Protected_Objects.Initialize_Protection.
 
    procedure Initialize_Protection_Entries
-     (Object           : Protection_Entries_Access;
-      Ceiling_Priority : Integer;
-      Compiler_Info    : System.Address;
-      Entry_Bodies     : Protected_Entry_Body_Access;
-      Find_Body_Index  : Find_Body_Index_Access);
+     (Object            : Protection_Entries_Access;
+      Ceiling_Priority  : Integer;
+      Compiler_Info     : System.Address;
+      Entry_Bodies      : Protected_Entry_Body_Access;
+      Find_Body_Index   : Find_Body_Index_Access;
+      Build_Entry_Names : Boolean);
    --  Initialize the Object parameter so that it can be used by the runtime
    --  to keep track of the runtime state of a protected object.
 
@@ -201,6 +207,13 @@ package System.Tasking.Protected_Objects.Entries is
      (Object : Protection_Entries_Access;
       Prio   : System.Any_Priority);
    --  Sets the new ceiling priority of the protected object
+
+   procedure Set_Entry_Name
+     (Object : Protection_Entries'Class;
+      Pos    : Protected_Entry_Index;
+      Val    : String_Access);
+   --  This is called by the compiler to map a string which denotes an entry
+   --  name to a protected entry index.
 
    procedure Unlock_Entries (Object : Protection_Entries_Access);
    --  Relinquish ownership of the lock for the object represented by the

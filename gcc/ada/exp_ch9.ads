@@ -58,6 +58,11 @@ package Exp_Ch9 is
    --  build record declaration. N is the type declaration, Ctyp is the
    --  concurrent entity (task type or protected type).
 
+   function Build_Entry_Names (Conc_Typ : Entity_Id) return Node_Id;
+   --  Create the statements which populate the entry names array of a task or
+   --  protected type. The statements are wrapped inside a block due to a local
+   --  declaration.
+
    procedure Build_Master_Entity (E : Entity_Id);
    --  Given an entity E for the declaration of an object containing tasks
    --  or of a type declaration for an allocator whose designated type is a

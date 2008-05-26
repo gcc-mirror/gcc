@@ -56,6 +56,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -1105,6 +1106,334 @@ package body Exp_Ch9 is
 
       return Ecount;
    end Build_Entry_Count_Expression;
+
+   -----------------------
+   -- Build_Entry_Names --
+   -----------------------
+
+   function Build_Entry_Names (Conc_Typ : Entity_Id) return Node_Id is
+      Loc       : constant Source_Ptr := Sloc (Conc_Typ);
+      B_Decls   : List_Id;
+      B_Stmts   : List_Id;
+      Comp      : Node_Id;
+      Index     : Entity_Id;
+      Index_Typ : RE_Id;
+      Typ       : Entity_Id := Conc_Typ;
+
+      procedure Build_Entry_Family_Name (Id : Entity_Id);
+      --  Generate:
+      --    for Lnn in Family_Low .. Family_High loop
+      --       Inn := Inn + 1;
+      --       Set_Entry_Name
+      --         (_init._object, Inn, new String ("<Entry name> " & Lnn'Img));
+      --          _init._task_id
+      --    end loop;
+      --  Note that the bounds of the range may reference discriminants. The
+      --  above construct is added directly to the statements of the block.
+
+      procedure Build_Entry_Name (Id : Entity_Id);
+      --  Generate:
+      --    Inn := Inn + 1;
+      --    Set_Entry_Name (_init._task_id, Inn, new String ("<Entry name>");
+      --                    _init._object
+      --  The above construct is added directly to the statements of the block.
+
+      function Build_Set_Entry_Name_Call (Arg3 : Node_Id) return Node_Id;
+      --  Generate the call to the runtime routine Set_Entry_Name with actuals
+      --  _init._task_id or _init._object, Inn and Arg3.
+
+      function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
+      --  Given a protected type or its corresponding record, find the type of
+      --  field _object.
+
+      procedure Increment_Index (Stmts : List_Id);
+      --  Generate the following and add it to Stmts
+      --    Inn := Inn + 1;
+
+      -----------------------------
+      -- Build_Entry_Family_Name --
+      -----------------------------
+
+      procedure Build_Entry_Family_Name (Id : Entity_Id) is
+         Def     : constant Node_Id :=
+                     Discrete_Subtype_Definition (Parent (Id));
+         L_Id    : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
+         L_Stmts : constant List_Id := New_List;
+         Val     : Node_Id;
+
+         function Build_Range (Def : Node_Id) return Node_Id;
+         --  Given a discrete subtype definition of an entry family, generate a
+         --  range node which covers the range of Def's type.
+
+         -----------------
+         -- Build_Range --
+         -----------------
+
+         function Build_Range (Def : Node_Id) return Node_Id is
+            High : Node_Id := Type_High_Bound (Etype (Def));
+            Low  : Node_Id := Type_Low_Bound  (Etype (Def));
+
+         begin
+            --  If a bound references a discriminant, generate an identifier
+            --  with the same name. Resolution will map it to the formals of
+            --  the init proc.
+
+            if Is_Entity_Name (Low)
+              and then Ekind (Entity (Low)) = E_Discriminant
+            then
+               Low := Make_Identifier (Loc, Chars (Low));
+            else
+               Low := New_Copy_Tree (Low);
+            end if;
+
+            if Is_Entity_Name (High)
+              and then Ekind (Entity (High)) = E_Discriminant
+            then
+               High := Make_Identifier (Loc, Chars (High));
+            else
+               High := New_Copy_Tree (High);
+            end if;
+
+            return
+              Make_Range (Loc,
+                Low_Bound  => Low,
+                High_Bound => High);
+         end Build_Range;
+
+      --  Start of processing for Build_Entry_Family_Name
+
+      begin
+         Get_Name_String (Chars (Id));
+
+         if Is_Enumeration_Type (Etype (Def)) then
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := ' ';
+         end if;
+
+         --  Generate:
+         --    new String'("<Entry name>" & Lnn'Img);
+
+         Val :=
+           Make_Allocator (Loc,
+             Make_Qualified_Expression (Loc,
+               Subtype_Mark =>
+                 New_Reference_To (Standard_String, Loc),
+               Expression =>
+                 Make_Op_Concat (Loc,
+                   Left_Opnd =>
+                     Make_String_Literal (Loc,
+                       String_From_Name_Buffer),
+                   Right_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         New_Reference_To (L_Id, Loc),
+                           Attribute_Name => Name_Img))));
+
+         Increment_Index (L_Stmts);
+         Append_To (L_Stmts, Build_Set_Entry_Name_Call (Val));
+
+         --  Generate:
+         --    for Lnn in Family_Low .. Family_High loop
+         --       Inn := Inn + 1;
+         --       Set_Entry_Name (_init._task_id, Inn, <Val>);
+         --    end loop;
+
+         Append_To (B_Stmts,
+           Make_Loop_Statement (Loc,
+             Iteration_Scheme =>
+               Make_Iteration_Scheme (Loc,
+                 Loop_Parameter_Specification =>
+                   Make_Loop_Parameter_Specification (Loc,
+                    Defining_Identifier => L_Id,
+                    Discrete_Subtype_Definition =>
+                      Build_Range (Def))),
+             Statements => L_Stmts,
+             End_Label => Empty));
+      end Build_Entry_Family_Name;
+
+      ----------------------
+      -- Build_Entry_Name --
+      ----------------------
+
+      procedure Build_Entry_Name (Id : Entity_Id) is
+         Val : Node_Id;
+
+      begin
+         Get_Name_String (Chars (Id));
+         Val :=
+           Make_Allocator (Loc,
+             Make_Qualified_Expression (Loc,
+               Subtype_Mark =>
+                 New_Reference_To (Standard_String, Loc),
+               Expression =>
+                 Make_String_Literal (Loc,
+                   String_From_Name_Buffer)));
+
+         Increment_Index (B_Stmts);
+         Append_To (B_Stmts, Build_Set_Entry_Name_Call (Val));
+      end Build_Entry_Name;
+
+      -------------------------------
+      -- Build_Set_Entry_Name_Call --
+      -------------------------------
+
+      function Build_Set_Entry_Name_Call (Arg3 : Node_Id) return Node_Id is
+         Arg1 : Name_Id;
+         Proc : RE_Id;
+
+      begin
+         --  Determine the proper name for the first argument and the RTS
+         --  routine to call.
+
+         if Is_Protected_Type (Typ) then
+            Arg1 := Name_uObject;
+            Proc := RO_PE_Set_Entry_Name;
+
+         else pragma Assert (Is_Task_Type (Typ));
+            Arg1 := Name_uTask_Id;
+            Proc := RO_TS_Set_Entry_Name;
+         end if;
+
+         --  Generate:
+         --    Set_Entry_Name (_init.Arg1, Inn, Arg3);
+
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Reference_To (RTE (Proc), Loc),
+             Parameter_Associations => New_List (
+               Make_Selected_Component (Loc,              --  _init._object
+                 Prefix =>                                --  _init._task_id
+                   Make_Identifier (Loc, Name_uInit),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Arg1)),
+               New_Reference_To (Index, Loc),             --  Inn
+               Arg3));                                    --  Val
+      end Build_Set_Entry_Name_Call;
+
+      --------------------------
+      -- Find_Protection_Type --
+      --------------------------
+
+      function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id is
+         Comp : Entity_Id;
+         Typ  : Entity_Id := Conc_Typ;
+
+      begin
+         if Is_Concurrent_Type (Typ) then
+            Typ := Corresponding_Record_Type (Typ);
+         end if;
+
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            if Chars (Comp) = Name_uObject then
+               return Base_Type (Etype (Comp));
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+
+         --  The corresponding record of a protected type should always have an
+         --  _object field.
+
+         raise Program_Error;
+      end Find_Protection_Type;
+
+      ---------------------
+      -- Increment_Index --
+      ---------------------
+
+      procedure Increment_Index (Stmts : List_Id) is
+      begin
+         --  Generate:
+         --    Inn := Inn + 1;
+
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               New_Reference_To (Index, Loc),
+             Expression =>
+               Make_Op_Add (Loc,
+                 Left_Opnd =>
+                   New_Reference_To (Index, Loc),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc, 1))));
+      end Increment_Index;
+
+   --  Start of processing for Build_Entry_Names
+
+   begin
+      --  Retrieve the original concurrent type
+
+      if Is_Concurrent_Record_Type (Typ) then
+         Typ := Corresponding_Concurrent_Type (Typ);
+      end if;
+
+      pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
+
+      --  Nothing to do if the type has no entries
+
+      if not Has_Entries (Typ) then
+         return Empty;
+      end if;
+
+      --  Avoid generating entry names for a protected type with only one entry
+
+      if Is_Protected_Type (Typ)
+        and then Find_Protection_Type (Typ) /= RTE (RE_Protection_Entries)
+      then
+         return Empty;
+      end if;
+
+      Index := Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
+
+      --  Step 1: Generate the declaration of the index variable:
+      --    Inn : Protected_Entry_Index := 0;
+      --      or
+      --    Inn : Task_Entry_Index := 0;
+
+      if Is_Protected_Type (Typ) then
+         Index_Typ := RE_Protected_Entry_Index;
+      else
+         Index_Typ := RE_Task_Entry_Index;
+      end if;
+
+      B_Decls := New_List;
+      Append_To (B_Decls,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Index,
+          Object_Definition =>
+            New_Reference_To (RTE (Index_Typ), Loc),
+          Expression =>
+            Make_Integer_Literal (Loc, 0)));
+
+      B_Stmts := New_List;
+
+      --  Step 2: Generate a call to Set_Entry_Name for each entry and entry
+      --  family member.
+
+      Comp := First_Entity (Typ);
+      while Present (Comp) loop
+         if Ekind (Comp) = E_Entry then
+            Build_Entry_Name (Comp);
+
+         elsif Ekind (Comp) = E_Entry_Family then
+            Build_Entry_Family_Name (Comp);
+         end if;
+
+         Next_Entity (Comp);
+      end loop;
+
+      --  Step 3: Wrap the statements in a block
+
+      return
+        Make_Block_Statement (Loc,
+          Declarations => B_Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => B_Stmts));
+   end Build_Entry_Names;
 
    ---------------------------
    -- Build_Parameter_Block --
@@ -11250,8 +11579,8 @@ package body Exp_Ch9 is
         or else Has_Abstract_Interfaces (Protect_Rec)
       then
          declare
-            Pkg_Id : constant RTU_Id := Corresponding_Runtime_Package (Ptyp);
-
+            Pkg_Id      : constant RTU_Id  :=
+                            Corresponding_Runtime_Package (Ptyp);
             Called_Subp : RE_Id;
 
          begin
@@ -11302,6 +11631,20 @@ package body Exp_Ch9 is
                       Prefix =>
                         New_Reference_To (P_Arr, Loc),
                       Attribute_Name => Name_Unrestricted_Access));
+
+                  --  Build_Entry_Names generation flag. When set to true, the
+                  --  runtime will allocate an array to hold the string names
+                  --  of protected entries.
+
+                  if not Restricted_Profile then
+                     if Entry_Names_OK then
+                        Append_To (Args,
+                          New_Reference_To (Standard_True, Loc));
+                     else
+                        Append_To (Args,
+                          New_Reference_To (Standard_False, Loc));
+                     end if;
+                  end if;
                end if;
 
             elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry then
@@ -11310,6 +11653,7 @@ package body Exp_Ch9 is
             elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
                Append_To (Args, Make_Null (Loc));
                Append_To (Args, Make_Null (Loc));
+               Append_To (Args, New_Reference_To (Standard_False, Loc));
             end if;
 
             Append_To (L,
@@ -11422,13 +11766,13 @@ package body Exp_Ch9 is
 
    function Make_Task_Create_Call (Task_Rec : Entity_Id) return Node_Id is
       Loc    : constant Source_Ptr := Sloc (Task_Rec);
-      Name   : Node_Id;
-      Tdef   : Node_Id;
-      Tdec   : Node_Id;
-      Ttyp   : Node_Id;
-      Tnam   : Name_Id;
       Args   : List_Id;
       Ecount : Node_Id;
+      Name   : Node_Id;
+      Tdec   : Node_Id;
+      Tdef   : Node_Id;
+      Tnam   : Name_Id;
+      Ttyp   : Node_Id;
 
    begin
       Ttyp := Corresponding_Concurrent_Type (Task_Rec);
@@ -11682,14 +12026,29 @@ package body Exp_Ch9 is
           Prefix => Make_Identifier (Loc, Name_uInit),
           Selector_Name => Make_Identifier (Loc, Name_uTask_Id)));
 
+      --  Build_Entry_Names generation flag. When set to true, the runtime
+      --  will allocate an array to hold the string names of task entries.
+
+      if not Restricted_Profile then
+         if Has_Entries (Ttyp)
+           and then Entry_Names_OK
+         then
+            Append_To (Args, New_Reference_To (Standard_True, Loc));
+         else
+            Append_To (Args, New_Reference_To (Standard_False, Loc));
+         end if;
+      end if;
+
       if Restricted_Profile then
          Name := New_Reference_To (RTE (RE_Create_Restricted_Task), Loc);
       else
          Name := New_Reference_To (RTE (RE_Create_Task), Loc);
       end if;
 
-      return Make_Procedure_Call_Statement (Loc,
-        Name => Name, Parameter_Associations => Args);
+      return
+        Make_Procedure_Call_Statement (Loc,
+          Name => Name,
+          Parameter_Associations => Args);
    end Make_Task_Create_Call;
 
    ------------------------------

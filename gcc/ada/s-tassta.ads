@@ -180,7 +180,8 @@ package System.Tasking.Stages is
       Elaborated        : Access_Boolean;
       Chain             : in out Activation_Chain;
       Task_Image        : String;
-      Created_Task      : out Task_Id);
+      Created_Task      : out Task_Id;
+      Build_Entry_Names : Boolean);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --
@@ -190,7 +191,7 @@ package System.Tasking.Stages is
    --  Task_Info is the task info associated with the created task, or
    --   Unspecified_Task_Info if none.
    --  Relative_Deadline is the relative deadline associated with the created
-   --  task by means of a pragma Relative_Deadline, or 0.0 if none.
+   --   task by means of a pragma Relative_Deadline, or 0.0 if none.
    --  State is the compiler generated task's procedure body
    --  Discriminants is a pointer to a limited record whose discriminants
    --   are those of the task to create. This parameter should be passed as
@@ -205,6 +206,8 @@ package System.Tasking.Stages is
    --   run time can store to ease the debugging and the
    --   Ada.Task_Identification facility.
    --  Created_Task is the resulting task.
+   --  Build_Entry_Names is a flag which controls the allocation of the data
+   --   structure which stores all entry names.
    --
    --  This procedure can raise Storage_Error if the task creation failed.
 
@@ -275,6 +278,13 @@ package System.Tasking.Stages is
    --  chain, and change their master to the one passed in by the caller. If
    --  that doesn't happen, they will never be activated, and will become
    --  terminated on leaving the return statement.
+
+   procedure Set_Entry_Name
+     (T   : Task_Id;
+      Pos : Task_Entry_Index;
+      Val : String_Access);
+   --  This is called by the compiler to map a string which denotes an entry
+   --  name to a task entry index.
 
    function Terminated (T : Task_Id) return Boolean;
    --  This is called by the compiler to implement the 'Terminated attribute.
