@@ -1996,6 +1996,10 @@ package body Prj.Nmsc is
                        From_List => List,
                        In_Tree   => In_Tree);
 
+               elsif Attribute.Name = Name_Library_GCC then
+                  Data.Config.Shared_Lib_Driver :=
+                    File_Name_Type (Attribute.Value.Value);
+
                elsif Attribute.Name = Name_Archive_Suffix then
                   Data.Config.Archive_Suffix :=
                     File_Name_Type (Attribute.Value.Value);

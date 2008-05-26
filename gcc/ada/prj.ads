@@ -1189,6 +1189,10 @@ package Prj is
 
          --  Shared libraries
 
+         Shared_Lib_Driver             : File_Name_Type  := No_File;
+         --  The driver to link shared libraries. Set with attribute
+         --  Library_GCC. Default to gcc.
+
          Shared_Lib_Prefix        : File_Name_Type  := No_File;
          --  Part of a shared library file name that precedes the name of the
          --  library. Specified in the configuration. When not specified,
@@ -1230,6 +1234,7 @@ package Prj is
                                Archive_Indexer               => No_Name_List,
                                Archive_Suffix                => No_File,
                                Lib_Partial_Linker            => No_Name_List,
+                               Shared_Lib_Driver             => No_File,
                                Shared_Lib_Prefix             => No_File,
                                Shared_Lib_Suffix             => No_File,
                                Shared_Lib_Min_Options        => No_Name_List,
