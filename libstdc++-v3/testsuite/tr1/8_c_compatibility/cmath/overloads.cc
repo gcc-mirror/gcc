@@ -206,9 +206,7 @@ void test01()
   check_ret_type<long double>(std::tr1::pow(ld0, d0));
   check_ret_type<double>(std::tr1::pow(i0, i0));
   check_ret_type<double>(std::tr1::pow(d0, i0));
-  // DR 550.
-  // check_ret_type<double>(std::tr1::pow(f0, i0));
-  check_ret_type<float>(std::tr1::pow(f0, i0));
+  check_ret_type<double>(std::tr1::pow(f0, i0));
 
   check_ret_type<double>(std::tr1::remainder(d0, d0));
   check_ret_type<double>(std::tr1::remainder(d0, f0));

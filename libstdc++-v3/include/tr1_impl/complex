@@ -301,12 +301,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     fabs(const std::complex<_Tp>& __z)
     { return std::abs(__z); }
 
-
+  /// Additional overloads [8.1.9].
 #if (defined(_GLIBCXX_INCLUDE_AS_CXX0X) \
      || (defined(_GLIBCXX_INCLUDE_AS_TR1) \
 	 && !defined(__GXX_EXPERIMENTAL_CXX0X__)))
 
-  /// Additional overloads [8.1.9].
   template<typename _Tp>
     inline typename __gnu_cxx::__promote<_Tp>::__type
     arg(_Tp __x)
@@ -338,6 +337,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     real(_Tp __x)
     { return __x; }
 
+#endif
+
   template<typename _Tp, typename _Up>
     inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
     pow(const std::complex<_Tp>& __x, const _Up& __y)
@@ -362,8 +363,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return std::pow(std::complex<__type>(__x),
 		      std::complex<__type>(__y));
     }
-
-#endif
 
 _GLIBCXX_END_NAMESPACE_TR1
 }

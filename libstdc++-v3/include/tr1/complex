@@ -75,9 +75,27 @@ namespace tr1
     }
 
   using std::real;
-  using std::pow;
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    pow(const std::complex<_Tp>& __x, int __n)
+    { return std::pow(__x, __n); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    pow(const std::complex<_Tp>& __x, const _Tp& __y)
+    { return std::pow(__x, __y); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    pow(const _Tp& __x, const std::complex<_Tp>& __y)
+    { return std::pow(__x, __y); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    pow(const std::complex<_Tp>& __x, const std::complex<_Tp>& __y)
+    { return std::pow(__x, __y); }
 }
 }
 
 #endif // _GLIBCXX_TR1_COMPLEX
-
