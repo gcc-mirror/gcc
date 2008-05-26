@@ -8089,8 +8089,26 @@ package body Sem_Attr is
                --  Arr (X .. Y)'address is identical to Arr (X)'address,
                --  even if the array is packed and the slice itself is not
                --  addressable. Transform the prefix into an indexed component.
+
                --  Note that the transformation is safe only if we know that
-               --  the slice is non-null.
+               --  the slice is non-null. That is because a null slice can have
+               --  an out of bounds index value.
+
+               --  Right now, gigi blows up if given 'Address on a slice, and
+               --  this covers up that bug in one case, but the bug is likely
+               --  still there in the cases not transformed by this code ???
+
+               --  It's not clear what 'Address *should* return for a null
+               --  slice with out of bounds indexes, this might be worth an ARG
+               --  discussion ???
+
+               --  One approach would be to do a length check unconditionally,
+               --  and then do the transformation below unconditionally, but
+               --  analyze with checks off, avoiding the problem of the out of
+               --  bounds index. This approach would interpret the address of
+               --  an out of bounds null slice as being the address where the
+               --  array element would be if there was one, which is probably
+               --  as reasonable an interpretation as any ???
 
                declare
                   Loc : constant Source_Ptr := Sloc (P);
