@@ -533,11 +533,12 @@ package body Exp_Ch3 is
    ---------------------------
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (Nod);
-      Comp_Type  : constant Entity_Id  := Component_Type (A_Type);
-      Index_List : List_Id;
-      Proc_Id    : Entity_Id;
-      Body_Stmts : List_Id;
+      Loc              : constant Source_Ptr := Sloc (Nod);
+      Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
+      Index_List       : List_Id;
+      Proc_Id          : Entity_Id;
+      Body_Stmts       : List_Id;
+      Has_Default_Init : Boolean;
 
       function Init_Component return List_Id;
       --  Create one statement to initialize one array component, designated
@@ -671,14 +672,16 @@ package body Exp_Ch3 is
       --  the issue arises) in a special manner anyway which does not need an
       --  init_proc.
 
-      if Has_Non_Null_Base_Init_Proc (Comp_Type)
-        or else Needs_Simple_Initialization (Comp_Type)
-        or else Has_Task (Comp_Type)
+      Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
+                            or else Needs_Simple_Initialization (Comp_Type)
+                            or else Has_Task (Comp_Type);
+
+      if Has_Default_Init
         or else (not Restriction_Active (No_Initialize_Scalars)
-                   and then Is_Public (A_Type)
-                   and then Root_Type (A_Type) /= Standard_String
-                   and then Root_Type (A_Type) /= Standard_Wide_String
-                   and then Root_Type (A_Type) /= Standard_Wide_Wide_String)
+                  and then Is_Public (A_Type)
+                  and then Root_Type (A_Type) /= Standard_String
+                  and then Root_Type (A_Type) /= Standard_Wide_String
+                  and then Root_Type (A_Type) /= Standard_Wide_Wide_String)
       then
          Proc_Id :=
            Make_Defining_Identifier (Loc,
@@ -688,9 +691,16 @@ package body Exp_Ch3 is
          --  want to build an init_proc, but we need to mark that an init_proc
          --  would be needed if this restriction was not active (so that we can
          --  detect attempts to call it), so set a dummy init_proc in place.
+         --  This is only done though when actual default initialization is
+         --  needed, so we exclude the setting in the Is_Public case, such
+         --  as for arrays of scalars, since otherwise such objects would be
+         --  wrongly flagged as violating the restriction.
 
          if Restriction_Active (No_Default_Initialization) then
-            Set_Init_Proc (A_Type, Proc_Id);
+            if Has_Default_Init then
+               Set_Init_Proc (A_Type, Proc_Id);
+            end if;
+
             return;
          end if;
 
