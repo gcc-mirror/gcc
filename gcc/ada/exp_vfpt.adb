@@ -454,6 +454,7 @@ package body Exp_VFpt is
       Args : List_Id;
       Atyp : Entity_Id;
       Rtyp : constant Entity_Id  := Etype (N);
+
    begin
       if Digits_Value (Typ) = VAXFF_Digits then
          Func := RE_Return_F;
@@ -471,11 +472,10 @@ package body Exp_VFpt is
       Rewrite (N,
         Convert_To (Rtyp,
           Make_Function_Call (Loc,
-            Name => New_Occurrence_Of (RTE (Func), Loc),
+            Name                   => New_Occurrence_Of (RTE (Func), Loc),
             Parameter_Associations => Args)));
 
       Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
-
    end Expand_Vax_Foreign_Return;
 
    -----------------------------
