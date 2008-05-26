@@ -1,5 +1,22 @@
 2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/tuple: Ifndef __GXX_EXPERIMENTAL_CXX0X__ just error out.
+	* include/std/date_time: Likewise.
+	* include/std/system_error: Likewise.
+	* include/std/type_traits: Likewise; fix typo in macro name.
+	* include/std/regex: Likewise.
+	* include/std/random: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/array: Likewise.
+
+	* include/c_std/cmath: Fix obsolete comment.
+	* include/c_global/cmath: Likewise.
+
+2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/complex (complex<>::real(_Tp), complex<>::imag(_Tp),
 	complex<float>::real(float), complex<float>::imag(float),
 	complex<double>::real(double), complex<double>::imag(double),

@@ -38,7 +38,7 @@
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #include <ctime>
 
@@ -206,8 +206,8 @@ namespace std
     operator!=(const _LhsDuration& __lhs, const _RhsDuration& __rhs);
   
   template<class _LhsDuration, class _RhsDuration>
-     bool
-     operator<(const _LhsDuration& __lhs, const _RhsDuration& __rhs);
+    bool
+    operator<(const _LhsDuration& __lhs, const _RhsDuration& __rhs);
   template<class _LhsDuration, class _RhsDuration>
     bool
     operator<=(const _LhsDuration& __lhs, const _RhsDuration& __rhs);
@@ -240,4 +240,6 @@ namespace std
     operator/(_Duration __lhs, long __rhs);
 }
 
-#endif /* _GLIBCXX_DATE_TIME */
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _GLIBCXX_DATE_TIME

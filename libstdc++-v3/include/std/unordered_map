@@ -38,7 +38,7 @@
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  error C++0x header cannot be included from TR1 header
@@ -76,5 +76,7 @@
 #ifdef _GLIBCXX_DEBUG
 # include <debug/unordered_map>
 #endif
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_UNORDERED_MAP

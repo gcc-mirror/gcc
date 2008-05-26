@@ -36,9 +36,9 @@
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL__
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  error C++0x header cannot be included from TR1 header
@@ -552,6 +552,8 @@ namespace std
   template<>
     struct make_signed<bool>;
 }
+
+#endif  // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif  // _GLIBCXX_TYPE_TRAITS 
 

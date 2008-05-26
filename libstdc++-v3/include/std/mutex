@@ -39,7 +39,7 @@
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #include <exception>
 #include <cstddef>
@@ -363,5 +363,6 @@ namespace std
     }
 }
 
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
-#endif
+#endif // _GLIBCXX_MUTEX

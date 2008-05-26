@@ -38,7 +38,7 @@
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #include <bits/c++config.h>
 #include <bits/error_constants.h>
@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename charT, typename traits>
     basic_ostream<charT,traits>&
-    operator<<(basic_ostream<charT,traits>& os, const error_code& __code);
+    operator<<(basic_ostream<charT, traits>& os, const error_code& __code);
 
 
   /// error_condition
@@ -198,14 +198,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : _M_value(__v), _M_cat(__cat) { }
 
     template<typename _ErrorEnum>
-      error_condition(typename enable_if<is_error_condition_enum<_ErrorEnum>::value, _ErrorEnum>::type __v) : _M_value(__v), _M_cat(system_category) { }
+      error_condition(typename enable_if<
+		      is_error_condition_enum<_ErrorEnum>::value,
+		      _ErrorEnum>::type __v)
+      : _M_value(__v), _M_cat(system_category) { }
 
     void 
     assign(int val, const error_category& cat);
 
     template<typename _ErrorEnum>
       error_condition&
-      operator=(typename enable_if<is_error_condition_enum<_ErrorEnum>::value, _ErrorEnum>::type __v)
+      operator=(typename enable_if<is_error_condition_enum<_ErrorEnum>::value,
+		                   _ErrorEnum>::type __v)
       { _M_value = __v; }
 
     void 
@@ -317,5 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif 
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _GLIBCXX_SYSTEM_ERROR
 
