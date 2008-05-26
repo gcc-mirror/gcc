@@ -198,8 +198,8 @@ package body Sem_Aggr is
    --  quadratic in the size of the association list.
 
    procedure Check_Misspelled_Component
-     (Elements      : Elist_Id;
-      Component     : Node_Id);
+     (Elements  : Elist_Id;
+      Component : Node_Id);
    --  Give possible misspelling diagnostic if Component is likely to be
    --  a misspelling of one of the components of the Assoc_List.
    --  This is called by Resolve_Aggr_Expr after producing
@@ -716,8 +716,8 @@ package body Sem_Aggr is
    --------------------------------
 
    procedure Check_Misspelled_Component
-     (Elements      : Elist_Id;
-      Component     : Node_Id)
+     (Elements  : Elist_Id;
+      Component : Node_Id)
    is
       Max_Suggestions   : constant := 2;
 
