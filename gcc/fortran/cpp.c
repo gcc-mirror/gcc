@@ -226,11 +226,7 @@ cpp_define_builtins (cpp_reader *pfile)
        flags only valid/defined in C (same as noted above).
        [config/i386/mingw32.h, config/i386/cygming.h]
      - other platforms (not as popular) break similarly
-       [grep for 'builtin_define_with_int_value' in config/*]
-     - darwin will compile but not link
-       (Makefile.in needs to link f951 with some target library or
-       object files. Adding $(C_TARGET_OBJS) to $(F951_OBJS) does
-       seemingly not fix the problem.)
+       [grep for 'builtin_define_with_int_value' in gcc/config/]
 
   TARGET_CPU_CPP_BUILTINS ();
   TARGET_OS_CPP_BUILTINS ();
