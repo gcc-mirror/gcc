@@ -88,6 +88,9 @@ package body System.Tasking.Stages is
    procedure Free is new
      Ada.Unchecked_Deallocation (Ada_Task_Control_Block, Task_Id);
 
+   procedure Free_Entry_Names (T : Task_Id);
+   --  Deallocate all string names associated with task entries
+
    procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_Id);
    --  This procedure outputs the task specific message for exception
    --  tracing purposes.
@@ -465,7 +468,8 @@ package body System.Tasking.Stages is
       Elaborated        : Access_Boolean;
       Chain             : in out Activation_Chain;
       Task_Image        : String;
-      Created_Task      : out Task_Id)
+      Created_Task      : out Task_Id;
+      Build_Entry_Names : Boolean)
    is
       T, P          : Task_Id;
       Self_ID       : constant Task_Id := STPO.Self;
@@ -603,6 +607,11 @@ package body System.Tasking.Stages is
          end loop;
 
          T.Common.Task_Image_Len := Len;
+      end if;
+
+      if Build_Entry_Names then
+         T.Entry_Names :=
+           new Entry_Names_Array (1 .. Entry_Index (Num_Entries));
       end if;
 
       Unlock (Self_ID);
@@ -816,6 +825,26 @@ package body System.Tasking.Stages is
 
    end Finalize_Global_Tasks;
 
+   ----------------------
+   -- Free_Entry_Names --
+   ----------------------
+
+   procedure Free_Entry_Names (T : Task_Id) is
+      Names : Entry_Names_Array_Access := T.Entry_Names;
+
+      procedure Free_Entry_Names_Array_Access is new
+        Ada.Unchecked_Deallocation
+          (Entry_Names_Array, Entry_Names_Array_Access);
+
+   begin
+      if Names = null then
+         return;
+      end if;
+
+      Free_Entry_Names_Array (Names.all);
+      Free_Entry_Names_Array_Access (Names);
+   end Free_Entry_Names;
+
    ---------------
    -- Free_Task --
    ---------------
@@ -837,6 +866,7 @@ package body System.Tasking.Stages is
 
          Initialization.Task_Unlock (Self_Id);
 
+         Free_Entry_Names (T);
          System.Task_Primitives.Operations.Finalize_TCB (T);
 
       --  If the task is not terminated, then we simply ignore the call. This
@@ -894,6 +924,23 @@ package body System.Tasking.Stages is
 
       Initialization.Undefer_Abort (Self_ID);
    end Move_Activation_Chain;
+
+   --  Compiler interface only. Do not call from within the RTS.
+
+   --------------------
+   -- Set_Entry_Name --
+   --------------------
+
+   procedure Set_Entry_Name
+     (T   : Task_Id;
+      Pos : Task_Entry_Index;
+      Val : String_Access)
+   is
+   begin
+      pragma Assert (T.Entry_Names /= null);
+
+      T.Entry_Names (Entry_Index (Pos)) := Val;
+   end Set_Entry_Name;
 
    ------------------
    -- Task_Wrapper --
@@ -1419,15 +1466,15 @@ package body System.Tasking.Stages is
    --------------------------------
 
    procedure Vulnerable_Complete_Master (Self_ID : Task_Id) is
-      C      : Task_Id;
-      P      : Task_Id;
-      CM     : constant Master_Level := Self_ID.Master_Within;
-      T      : aliased Task_Id;
+      C  : Task_Id;
+      P  : Task_Id;
+      CM : constant Master_Level := Self_ID.Master_Within;
+      T  : aliased Task_Id;
 
       To_Be_Freed : Task_Id;
-      --  This is a list of ATCBs to be freed, after we have released
-      --  all RTS locks. This is necessary because of the locking order
-      --  rules, since the storage manager uses Global_Task_Lock.
+      --  This is a list of ATCBs to be freed, after we have released all RTS
+      --  locks. This is necessary because of the locking order rules, since
+      --  the storage manager uses Global_Task_Lock.
 
       pragma Warnings (Off);
       function Check_Unactivated_Tasks return Boolean;
@@ -1877,6 +1924,7 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
+      Free_Entry_Names (T);
       System.Task_Primitives.Operations.Finalize_TCB (T);
    end Vulnerable_Free_Task;
 

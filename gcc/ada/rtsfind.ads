@@ -1516,7 +1516,9 @@ package Rtsfind is
      RE_Lock_Entries,                    -- Tasking.Protected_Objects.Entries
      RO_PE_Get_Ceiling,                  -- Tasking.Protected_Objects.Entries
      RO_PE_Set_Ceiling,                  -- Tasking.Protected_Objects.Entries
+     RO_PE_Set_Entry_Name,               -- Tasking.Protected_Objects.Entries
      RE_Unlock_Entries,                  -- Tasking.Protected_Objects.Entries
+
      RE_Communication_Block,             -- Protected_Objects.Operations
      RE_Protected_Entry_Call,            -- Protected_Objects.Operations
      RE_Service_Entries,                 -- Protected_Objects.Operations
@@ -1590,6 +1592,7 @@ package Rtsfind is
      RE_Free_Task,                       -- System.Tasking.Stages
      RE_Expunge_Unactivated_Tasks,       -- System.Tasking.Stages
      RE_Move_Activation_Chain,           -- System_Tasking_Stages
+     RO_TS_Set_Entry_Name,               -- System.Tasking.Stages
      RE_Terminated);                     -- System.Tasking.Stages
 
    --  The following declarations build a table that is indexed by the
@@ -2652,8 +2655,11 @@ package Rtsfind is
        System_Tasking_Protected_Objects_Entries,
      RO_PE_Set_Ceiling                   =>
        System_Tasking_Protected_Objects_Entries,
+     RO_PE_Set_Entry_Name                =>
+       System_Tasking_Protected_Objects_Entries,
      RE_Unlock_Entries                   =>
        System_Tasking_Protected_Objects_Entries,
+
      RE_Communication_Block              =>
        System_Tasking_Protected_Objects_Operations,
      RE_Protected_Entry_Call             =>
@@ -2754,6 +2760,7 @@ package Rtsfind is
      RE_Free_Task                        => System_Tasking_Stages,
      RE_Expunge_Unactivated_Tasks        => System_Tasking_Stages,
      RE_Move_Activation_Chain            => System_Tasking_Stages,
+     RO_TS_Set_Entry_Name                => System_Tasking_Stages,
      RE_Terminated                       => System_Tasking_Stages);
 
    --------------------------------

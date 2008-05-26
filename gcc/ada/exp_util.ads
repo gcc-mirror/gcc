@@ -314,6 +314,11 @@ package Exp_Util is
    --  used to ensure that an Itype is properly defined outside a conditional
    --  construct when it is referenced in more than one branch.
 
+   function Entry_Names_OK return Boolean;
+   --  Determine whether it is appropriate to dynamically allocate strings
+   --  which represent entry [family member] names. These strings are created
+   --  by the compiler and used by GDB.
+
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is
    --  Empty, then simply returns Cond1 (this allows the use of Empty to
