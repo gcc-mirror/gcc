@@ -1,3 +1,16 @@
+2008-05-26  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Generate
+	new tls_gd_* and tls_ld_* insns instead of an insn sequence.
+	* config/rs6000/rs6000.md (TLSmode, tls_abi_suffix, tls_insn_suffix,
+	tls_sysv_suffix): New mode and mode attribute iterators.
+	(tls_gd_32, tls_gd_64, tls_ld_32, tls_ld_64): Remove.
+	(lts_gd_aix*, tls_gd_sysv*, tls_ld_aix*, tls_ld_sysv*): New patterns.
+	(tls_dtprel_*, tls_dtprel_ha_*, tls_dtprel_lo_*, tls_got_dtprel_*,
+	tls_tprel_*, tls_tprel_ha_*, tls_tprel_lo_*, tls_got_tprel_*,
+	tls_tls_*): Merge 32 bit and 64 bit variants using aforementioned
+	iterators.
+
 2008-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/36329
