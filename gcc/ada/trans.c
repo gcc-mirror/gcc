@@ -221,14 +221,14 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
       struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
       struct List_Header *list_headers_ptr, Nat number_file,
-      struct File_Info_Type *file_info_ptr ATTRIBUTE_UNUSED,
+      struct File_Info_Type *file_info_ptr,
       Entity_Id standard_integer, Entity_Id standard_long_long_float,
       Entity_Id standard_exception_type, Int gigi_operating_mode)
 {
   tree gnu_standard_long_long_float;
   tree gnu_standard_exception_type;
   struct elab_info *info;
-  int i ATTRIBUTE_UNUSED;
+  int i;
 
   max_gnat_nodes = max_gnat_node;
   number_names = number_name;
