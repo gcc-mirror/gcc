@@ -12,6 +12,7 @@
 
 	* gnat.dg/set_in_pproc.adb: New test.
 	* gnat.dg/modular2.adb: New test.
+	* gnat.dg/pak.ad[sb]: New test.
 
 2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
