@@ -1452,6 +1452,9 @@ package Rtsfind is
      RE_Mul_G,                           -- System.Vax_Float_Operations
      RE_Neg_F,                           -- System.Vax_Float_Operations
      RE_Neg_G,                           -- System.Vax_Float_Operations
+     RE_Return_D,                        -- System.Vax_Float_Operations
+     RE_Return_F,                        -- System.Vax_Float_Operations
+     RE_Return_G,                        -- System.Vax_Float_Operations
      RE_Sub_F,                           -- System.Vax_Float_Operations
      RE_Sub_G,                           -- System.Vax_Float_Operations
 
@@ -2584,6 +2587,9 @@ package Rtsfind is
      RE_Mul_G                            => System_Vax_Float_Operations,
      RE_Neg_F                            => System_Vax_Float_Operations,
      RE_Neg_G                            => System_Vax_Float_Operations,
+     RE_Return_D                         => System_Vax_Float_Operations,
+     RE_Return_F                         => System_Vax_Float_Operations,
+     RE_Return_G                         => System_Vax_Float_Operations,
      RE_Sub_F                            => System_Vax_Float_Operations,
      RE_Sub_G                            => System_Vax_Float_Operations,
 

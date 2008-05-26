@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,10 @@ package Exp_VFpt is
    procedure Expand_Vax_Conversion (N : Node_Id);
    --  The node N is a type conversion node where either the source or the
    --  target type, or both, are Vax floating-point type.
+
+   procedure Expand_Vax_Foreign_Return (N : Node_Id);
+   --  The node N is a call to a foreign function that returns a Vax
+   --  float value in a floating point register.
 
    procedure Expand_Vax_Real_Literal (N : Node_Id);
    --  The node N is a real literal node where the type is a Vax floating-point

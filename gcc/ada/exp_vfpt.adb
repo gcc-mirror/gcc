@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -442,6 +442,41 @@ package body Exp_VFpt is
 
       Analyze_And_Resolve (N, T_Typ, Suppress => All_Checks);
    end Expand_Vax_Conversion;
+
+   -------------------------------
+   -- Expand_Vax_Foreign_Return --
+   -------------------------------
+
+   procedure Expand_Vax_Foreign_Return (N : Node_Id) is
+      Loc  : constant Source_Ptr := Sloc (N);
+      Typ  : constant Entity_Id  := Base_Type (Etype (N));
+      Func : RE_Id;
+      Args : List_Id;
+      Atyp : Entity_Id;
+      Rtyp : constant Entity_Id  := Etype (N);
+   begin
+      if Digits_Value (Typ) = VAXFF_Digits then
+         Func := RE_Return_F;
+         Atyp := RTE (RE_F);
+      elsif Digits_Value (Typ) = VAXDF_Digits then
+         Func := RE_Return_D;
+         Atyp := RTE (RE_D);
+      else pragma Assert (Digits_Value (Typ) = VAXGF_Digits);
+         Func := RE_Return_G;
+         Atyp := RTE (RE_G);
+      end if;
+
+      Args := New_List (Convert_To (Atyp, N));
+
+      Rewrite (N,
+        Convert_To (Rtyp,
+          Make_Function_Call (Loc,
+            Name => New_Occurrence_Of (RTE (Func), Loc),
+            Parameter_Associations => Args)));
+
+      Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
+
+   end Expand_Vax_Foreign_Return;
 
    -----------------------------
    -- Expand_Vax_Real_Literal --
