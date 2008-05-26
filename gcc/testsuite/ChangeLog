@@ -1,3 +1,7 @@
+2008-05-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/specs/array_no_def_init.ads: New test.
+
 2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc-c.torture/execute/pr36321.c: New.
