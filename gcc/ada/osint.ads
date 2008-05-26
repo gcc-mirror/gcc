@@ -173,9 +173,8 @@ package Osint is
      (Wildcard_Host_File : String;
       Only_Dirs          : Boolean) return String_Access_List_Access;
    --  Expand a wildcard host syntax file or directory specification (e.g. on
-   --  a VMS host, any file or directory spec that contains:
-   --  "*", or "%", or "...")
-   --  and return a list of valid Unix syntax file or directory specs.
+   --  a VMS host, any file or directory spec that contains: "*", or "%", or
+   --  "...") and return a list of valid Unix syntax file or directory specs.
    --  If Only_Dirs is True, then only return directories.
 
    function To_Canonical_Dir_Spec
@@ -369,10 +368,10 @@ package Osint is
    --  without any directory information. The implementation is responsible
    --  for searching for the file in the appropriate directories.
    --
-   --  Note the special case that if the file name is gnat.adc, then the
-   --  search for the file is done ONLY in the directory corresponding to
-   --  the current compilation environment, i.e. in the same directory
-   --  where the ali and object files will be written.
+   --  Note the special case that if the file name is gnat.adc, then the search
+   --  for the file is done ONLY in the directory corresponding to the current
+   --  compilation environment, i.e. in the same directory where the ali and
+   --  object files will be written.
 
    function Full_Source_Name return File_Name_Type;
    function Current_Source_File_Stamp return Time_Stamp_Type;
@@ -508,14 +507,15 @@ package Osint is
      (Source_File : File_Name_Type;
       Munit_Index : Nat := 0) return File_Name_Type;
    --  Given the name of a source file, returns the name of the corresponding
-   --  library information file. This may be the name of the object file, or
-   --  of a separate file used to store the library information. In either case
-   --  the returned result is suitable for use in a call to Read_Library_Info.
-   --  The Munit_Index is the unit index in multiple unit per file mode, or
-   --  zero in normal single unit per file mode (used to add ~nnn suffix).
-   --  Note: this subprogram is in this section because it is used by the
-   --  compiler to determine the proper library information names to be placed
-   --  in the generated library information file.
+   --  library information file. This may be the name of the object file or of
+   --  a separate file used to store the library information. In the current
+   --  implementation, a separate file (the ALI file) is always used. In either
+   --  case the returned result is suitable for calling Read_Library_Info. The
+   --  Munit_Index is the unit index in multiple unit per file mode, or zero in
+   --  normal single unit per file mode (used to add ~nnn suffix). Note: this
+   --  subprogram is in this section because it is used by the compiler to
+   --  determine the proper library information names to be placed in the
+   --  generated library information file.
 
    -----------------
    -- Termination --
