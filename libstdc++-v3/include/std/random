@@ -1,6 +1,6 @@
 // <random> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <c++0x_warning.h>
-#endif
+#else
 
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  error C++0x header cannot be included from TR1 header
@@ -69,5 +69,7 @@
 #  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_RANDOM

@@ -458,11 +458,8 @@ _GLIBCXX_END_NAMESPACE
 
 #if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
-// These are possible macros imported from C99-land. For strict
-// conformance, remove possible C99-injected names from the global
-// namespace, and sequester them in the __gnu_cxx extension namespace.
 
-// Only undefine the C99 FP macros, if actually captured for namespace movement
+// These are possible macros imported from C99-land.
 #undef fpclassify
 #undef isfinite
 #undef isinf
