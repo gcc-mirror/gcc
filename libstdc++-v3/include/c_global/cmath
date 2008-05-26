@@ -367,7 +367,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   pow(long double __x, long double __y)
   { return __builtin_powl(__x, __y); }
 
-  // DR 550.
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 550. What should the return type of pow(float,int) be?
   inline double
   pow(double __x, int __i)
   { return __builtin_powi(__x, __i); }
@@ -379,6 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   inline long double
   pow(long double __x, int __n)
   { return __builtin_powil(__x, __n); }
+#endif
 
   template<typename _Tp, typename _Up>
     inline

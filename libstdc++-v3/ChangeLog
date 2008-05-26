@@ -1,3 +1,23 @@
+2008-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath (pow(float, int), pow(double, int),
+	pow(long double, int)): Do not define in C++0x mode, per DR 550.
+	* include/tr1_impl/cmath (pow): Do not bring in unconditionally
+	from namespace std.
+	* include/tr1/cmath (pow(double, double), pow(float, float),
+	pow(long double, long double), pow(_Tp, _Up)): Define.
+	* include/tr1/complex (pow): Do not bring in from namespace std.
+	(pow(const std::complex<_Tp>&, int), pow(const std::complex<_Tp>&,
+	const _Tp&), pow(const _Tp&, const std::complex<_Tp>&),
+	pow(const std::complex<_Tp>&, const std::complex<_Tp>&)): Define.
+	* include/tr1_impl/complex (pow(const std::complex<_Tp>&,
+	const _Up&), pow(const _Tp&, const std::complex<_Up>&),
+	pow(const std::complex<_Tp>&, const std::complex<_Up>&)): Always
+	define.
+	* doc/xml/manual/intro.xml: Add an entry for DR 550.
+	* testsuite/26_numerics/headers/cmath/dr550.cc: New.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads.cc: Adjust.
+
 2008-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple: Ifndef __GXX_EXPERIMENTAL_CXX0X__ just error out.

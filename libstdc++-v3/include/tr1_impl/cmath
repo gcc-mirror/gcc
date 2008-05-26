@@ -763,7 +763,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return nexttoward(__type(__x), __y);
     }
 
-  using std::pow;
+  // DR 550. What should the return type of pow(float,int) be?
+  // NB: C++0x and TR1 != C++03.
+  //   using std::pow;
 
   inline float
   remainder(float __x, float __y)

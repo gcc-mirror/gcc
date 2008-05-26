@@ -56,6 +56,34 @@
 #  undef _GLIBCXX_INCLUDE_AS_TR1
 #endif
 
+namespace std
+{
+namespace tr1
+{
+  // DR 550. What should the return type of pow(float,int) be?
+  // NB: C++0x and TR1 != C++03.
+  inline double
+  pow(double __x, double __y)
+  { return std::pow(__x, __y); }
+
+  inline float
+  pow(float __x, float __y)
+  { return std::pow(__x, __y); }
+
+  inline long double
+  pow(long double __x, long double __y)
+  { return std::pow(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
+    pow(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return std::pow(__type(__x), __type(__y));
+    }
+}
+}
+
 #include <bits/stl_algobase.h>
 #include <limits>
 #include <tr1/type_traits>
