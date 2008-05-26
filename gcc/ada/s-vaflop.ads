@@ -150,7 +150,12 @@ package System.Vax_Float_Operations is
    function Return_D (X : D) return D;
    function Return_F (X : F) return F;
    function Return_G (X : G) return G;
-   --  Adjust the return register of an imported function
+   --  Deal with returned value for an imported function where the function
+   --  result is of VAX Float type. Usually nothing needs to be done, and these
+   --  functions return their argument unchanged. But for the case of VMS Alpha
+   --  the return value is already in $f0, so we need to trick the compiler
+   --  into thinking that we are moving X to $f0. See bodies for this case
+   --  for the Asm sequence generated to achieve this.
 
    ----------------------------------
    -- Routines for Valid Attribute --
