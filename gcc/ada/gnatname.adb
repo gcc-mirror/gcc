@@ -201,6 +201,9 @@ procedure Gnatname is
          when Error_In_Regexp =>
             Fail ("invalid regular expression """, S, """");
       end Check_Regular_Expression;
+
+   --  Start of processing for Scan_Args
+
    begin
       --  First check for --version or --help
 
@@ -214,6 +217,7 @@ procedure Gnatname is
       Dir_File_Name_Expected     := False;
       Foreign_Pattern_Expected   := False;
       Excluded_Pattern_Expected  := False;
+
       for Next_Arg in 1 .. Argument_Count loop
          declare
             Next_Argv : constant String := Argument (Next_Arg);
@@ -221,9 +225,10 @@ procedure Gnatname is
 
          begin
             if Arg'Length > 0 then
-               if Project_File_Name_Expected then
-                  --  -P xxx
 
+               --  -P xxx
+
+               if Project_File_Name_Expected then
                   if Arg (1) = '-' then
                      Fail ("project file name missing");
 
@@ -233,48 +238,50 @@ procedure Gnatname is
                      Project_File_Name_Expected := False;
                   end if;
 
-               elsif Pragmas_File_Expected then
-                  --  -c file
+               --  -c file
 
+               elsif Pragmas_File_Expected then
                   File_Set := True;
                   File_Path := new String'(Arg);
                   Create_Project := False;
                   Pragmas_File_Expected := False;
 
-               elsif Directory_Expected then
-                  --  -d xxx
+               --  -d xxx
 
+               elsif Directory_Expected then
                   Add_Source_Directory (Arg);
                   Directory_Expected := False;
 
-               elsif Dir_File_Name_Expected then
-                  --  -D xxx
+               --  -D xxx
 
+               elsif Dir_File_Name_Expected then
                   Get_Directories (Arg);
                   Dir_File_Name_Expected := False;
 
-               elsif Foreign_Pattern_Expected then
-                  --  -f xxx
+               --  -f xxx
 
+               elsif Foreign_Pattern_Expected then
                   Patterns.Append
                     (Arguments.Table (Arguments.Last).Foreign_Patterns,
                      new String'(Arg));
                   Check_Regular_Expression (Arg);
                   Foreign_Pattern_Expected := False;
 
-               elsif Excluded_Pattern_Expected then
-                  --  -x xxx
+               --  -x xxx
 
+               elsif Excluded_Pattern_Expected then
                   Patterns.Append
                     (Arguments.Table (Arguments.Last).Excluded_Patterns,
                      new String'(Arg));
                   Check_Regular_Expression (Arg);
                   Excluded_Pattern_Expected := False;
 
-               elsif Arg = "--and" then
+               --  There must be at least one Ada pattern or one foreign
+               --  pattern for the previous section.
 
-                  --  There must be at least one Ada pattern or one foreign
-                  --  pattern for the previous section.
+               --  --and
+
+               elsif Arg = "--and" then
 
                   if Patterns.Last
                     (Arguments.Table (Arguments.Last).Name_Patterns) = 0
@@ -297,8 +304,7 @@ procedure Gnatname is
                         new String'("."));
                   end if;
 
-                  --  Add another component in table Arguments and initialize
-                  --  it.
+                  --  Add and initialize another component to Arguments table
 
                   Arguments.Increment_Last;
 
@@ -319,11 +325,15 @@ procedure Gnatname is
                   Patterns.Set_Last
                     (Arguments.Table (Arguments.Last).Foreign_Patterns, 0);
 
+               --  Subdirectory switch
+
                elsif Arg'Length > Subdirs_Switch'Length
                  and then Arg (1 .. Subdirs_Switch'Length) = Subdirs_Switch
                then
                   Subdirs :=
                     new String'(Arg (Subdirs_Switch'Length + 1 .. Arg'Last));
+
+               --  -c
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-c" then
                   if File_Set then
@@ -343,6 +353,8 @@ procedure Gnatname is
                      Create_Project := False;
                   end if;
 
+               --  -d
+
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-d" then
                   if Arg'Length = 2 then
                      Directory_Expected := True;
@@ -354,6 +366,8 @@ procedure Gnatname is
                   else
                      Add_Source_Directory (Arg (3 .. Arg'Last));
                   end if;
+
+               --  -D
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-D" then
                   if Arg'Length = 2 then
@@ -367,8 +381,12 @@ procedure Gnatname is
                      Get_Directories (Arg (3 .. Arg'Last));
                   end if;
 
+               --  -eL
+
                elsif Arg = "-eL" then
                   Opt.Follow_Links_For_Files := True;
+
+               --  -f
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-f" then
                   if Arg'Length = 2 then
@@ -385,14 +403,19 @@ procedure Gnatname is
                      Check_Regular_Expression (Arg (3 .. Arg'Last));
                   end if;
 
+               --  -gnatep or -gnateD
+
                elsif Arg'Length > 7 and then
                  (Arg  (1 .. 7) = "-gnatep" or else Arg (1 .. 7) = "-gnateD")
                then
-
                   Preprocessor_Switches.Append (new String'(Arg));
+
+               --  -h
 
                elsif Arg = "-h" then
                   Usage_Needed := True;
+
+               --  -p
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-P" then
                   if File_Set then
@@ -414,12 +437,16 @@ procedure Gnatname is
 
                   Create_Project := True;
 
+               --  -v
+
                elsif Arg = "-v" then
                   if Opt.Verbose_Mode then
                      Very_Verbose := True;
                   else
                      Opt.Verbose_Mode := True;
                   end if;
+
+               --  -x
 
                elsif Arg'Length >= 2 and then Arg (1 .. 2) = "-x" then
                   if Arg'Length = 2 then
@@ -436,8 +463,12 @@ procedure Gnatname is
                      Check_Regular_Expression (Arg (3 .. Arg'Last));
                   end if;
 
+               --  Junk switch starting with minus
+
                elsif Arg (1) = '-' then
                   Fail ("wrong switch: " & Arg);
+
+               --  Not a recognized switch, assume file name
 
                else
                   Canonical_Case_File_Name (Arg);
