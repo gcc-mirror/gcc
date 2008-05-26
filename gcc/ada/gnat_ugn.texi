@@ -20513,6 +20513,7 @@ used as a parameter of the @option{+R} or @option{-R} options.
 * Predefined_Numeric_Types::
 * Raising_External_Exceptions::
 * Raising_Predefined_Exceptions::
+* Separate_Numeric_Error_Handlers::
 @ignore
 * Recursion::
 * Side_Effect_Functions::
@@ -21707,6 +21708,18 @@ Flag each @code{raise} statement that raises a predefined exception
 
 This rule has no parameters.
 
+@node Separate_Numeric_Error_Handlers
+@subsection @code{Separate_Numeric_Error_Handlers}
+@cindex @code{Separate_Numeric_Error_Handlers} rule (for @command{gnatcheck})
+
+@noindent
+Flags each exception handler that contains a choice for
+the predefined @code{Constraint_Error} exception, but does not contain
+the choice for the predefined @code{Numeric_Error} exception, or
+that contains the choice for @code{Numeric_Error}, but does not contain the
+choice for @code{Constraint_Error}.
+
+This rule has no parameters.
 
 @ignore
 @node Recursion
