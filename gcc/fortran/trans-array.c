@@ -472,14 +472,14 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
 	    gfc_apply_interface_mapping (mapping, &tmpse, as->lower[dim]);
 	    gfc_add_block_to_block (&se->pre, &tmpse.pre);
 	    gfc_add_block_to_block (&se->post, &tmpse.post);
-	    lower = tmpse.expr;
+	    lower = fold_convert (gfc_array_index_type, tmpse.expr);
 
 	    /* ...and the upper bound.  */
 	    gfc_init_se (&tmpse, NULL);
 	    gfc_apply_interface_mapping (mapping, &tmpse, as->upper[dim]);
 	    gfc_add_block_to_block (&se->pre, &tmpse.pre);
 	    gfc_add_block_to_block (&se->post, &tmpse.post);
-	    upper = tmpse.expr;
+	    upper = fold_convert (gfc_array_index_type, tmpse.expr);
 
 	    /* Set the upper bound of the loop to UPPER - LOWER.  */
 	    tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, upper, lower);
