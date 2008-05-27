@@ -147,11 +147,8 @@ package body Ada.Text_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AFCB'Access);
+      FIO.Close (AP (File)'Unrestricted_Access);
    end Close;
 
    ---------
@@ -249,11 +246,8 @@ package body Ada.Text_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AFCB'Access);
+      FIO.Delete (AP (File)'Unrestricted_Access);
    end Delete;
 
    -----------------
@@ -1579,9 +1573,6 @@ package body Ada.Text_IO is
      (File : in out File_Type;
       Mode : File_Mode)
    is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
       --  Don't allow change of mode for current file (RM A.10.2(5))
 
@@ -1594,7 +1585,7 @@ package body Ada.Text_IO is
       end if;
 
       Terminate_Line (File);
-      FIO.Reset (AFCB'Access, To_FCB (Mode));
+      FIO.Reset (AP (File)'Unrestricted_Access, To_FCB (Mode));
       File.Page := 1;
       File.Line := 1;
       File.Col  := 1;
@@ -1605,12 +1596,9 @@ package body Ada.Text_IO is
    end Reset;
 
    procedure Reset (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
       Terminate_Line (File);
-      FIO.Reset (AFCB'Access);
+      FIO.Reset (AP (File)'Unrestricted_Access);
       File.Page := 1;
       File.Line := 1;
       File.Col  := 1;
