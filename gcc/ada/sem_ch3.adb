@@ -13054,7 +13054,7 @@ package body Sem_Ch3 is
       Prev_Par : Node_Id;
 
       procedure Tag_Mismatch;
-      --  Diagnose a tagged partial view whose full view is untagged;
+      --  Diagnose a tagged partial view whose full view is untagged.
       --  We post the message on the full view, with a reference to
       --  the previous partial view. The partial view can be private
       --  or incomplete, and these are handled in a different manner,
@@ -13235,9 +13235,9 @@ package body Sem_Ch3 is
          end if;
 
          --  A prior untagged partial view can have an associated class-wide
-         --  type due to use of the class attribute, and in this case also the
-         --  full type is required to be tagged. This Ada95 usage is deprecated
-         --  in favor of incomplete tagged declarations but we check for it.
+         --  type due to use of the class attribute, and in this case the full
+         --  type must also be tagged. This Ada 95 usage is deprecated in favor
+         --  of incomplete tagged declarations, but we check for it.
 
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
