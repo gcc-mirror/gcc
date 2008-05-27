@@ -1,3 +1,12 @@
+2008-05-27  Xuepeng Guo  <xuepeng.guo@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* dwarf2out.c (current_fde): New.
+	(add_cfi): Use it.
+	(lookup_cfa:): Likewise.
+	(dwarf2out_end_epilogue): Likewise.
+	(dwarf2out_note_section_used): Likewise.
+
 2008-05-27  Michael Matz  <matz@suse.de>
 
 	PR c++/27975
