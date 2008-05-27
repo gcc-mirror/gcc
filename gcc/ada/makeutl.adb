@@ -526,11 +526,11 @@ package body Makeutl is
 
       function Get_Location return Source_Ptr is
       begin
-         if Current < Names.First or else Current > Names.Last then
-            return No_Location;
+         if Current in Names.First .. Names.Last then
+            return Names.Table (Current).Location;
 
          else
-            return Names.Table (Current).Location;
+            return No_Location;
          end if;
       end Get_Location;
 
@@ -584,7 +584,7 @@ package body Makeutl is
 
       procedure Update_Main (Name : String) is
       begin
-         if Current >= Names.First and then Current <= Names.Last then
+         if Current in Names.First .. Names.Last then
             Name_Len := 0;
             Add_Str_To_Name_Buffer (Name);
             Names.Table (Current).File_Name := Name_Find;
