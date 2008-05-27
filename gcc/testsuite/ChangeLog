@@ -1,5 +1,9 @@
 2008-05-27  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/assignment_3.f90: Add missing cleanup-modules.
+
+2008-05-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/36316
 	* gfortran.dg/assignment_3.f90: New.
 
