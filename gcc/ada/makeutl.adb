@@ -528,7 +528,6 @@ package body Makeutl is
       begin
          if Current in Names.First .. Names.Last then
             return Names.Table (Current).Location;
-
          else
             return No_Location;
          end if;
@@ -542,7 +541,6 @@ package body Makeutl is
       begin
          if Current >= Names.Last then
             return "";
-
          else
             Current := Current + 1;
             return Get_Name_String (Names.Table (Current).File_Name);

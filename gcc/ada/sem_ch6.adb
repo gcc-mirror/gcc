@@ -5826,10 +5826,10 @@ package body Sem_Ch6 is
 
       elsif Implements_Interface (Typ, Iface) then
          if (Ekind (Etype (Prim)) = E_Anonymous_Access_Type)
-            /= (Ekind (Etype (Iface_Prim)) = E_Anonymous_Access_Type)
+              /=
+            (Ekind (Etype (Iface_Prim)) = E_Anonymous_Access_Type)
          then
             return False;
-
          else
             return
               Type_Conformant (Prim, Iface_Prim,
