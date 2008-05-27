@@ -481,8 +481,13 @@ package body Makeutl is
 
    package body Mains is
 
+      type File_And_Loc is record
+         File_Name : File_Name_Type;
+         Location  : Source_Ptr := No_Location;
+      end record;
+
       package Names is new Table.Table
-        (Table_Component_Type => File_Name_Type,
+        (Table_Component_Type => File_And_Loc,
          Table_Index_Type     => Integer,
          Table_Low_Bound      => 1,
          Table_Initial        => 10,
@@ -502,7 +507,7 @@ package body Makeutl is
          Name_Len := 0;
          Add_Str_To_Name_Buffer (Name);
          Names.Increment_Last;
-         Names.Table (Names.Last) := Name_Find;
+         Names.Table (Names.Last) := (Name_Find, No_Location);
       end Add_Main;
 
       ------------
@@ -515,6 +520,20 @@ package body Makeutl is
          Mains.Reset;
       end Delete;
 
+      ------------------
+      -- Get_Location --
+      ------------------
+
+      function Get_Location return Source_Ptr is
+      begin
+         if Current < Names.First or else Current > Names.Last then
+            return No_Location;
+
+         else
+            return Names.Table (Current).Location;
+         end if;
+      end Get_Location;
+
       ---------------
       -- Next_Main --
       ---------------
@@ -526,7 +545,7 @@ package body Makeutl is
 
          else
             Current := Current + 1;
-            return Get_Name_String (Names.Table (Current));
+            return Get_Name_String (Names.Table (Current).File_Name);
          end if;
       end Next_Main;
 
@@ -548,6 +567,29 @@ package body Makeutl is
          Current := 0;
       end Reset;
 
+      ------------------
+      -- Set_Location --
+      ------------------
+
+      procedure Set_Location (Location : Source_Ptr) is
+      begin
+         if Names.Last > 0 then
+            Names.Table (Names.Last).Location := Location;
+         end if;
+      end Set_Location;
+
+      -----------------
+      -- Update_Main --
+      -----------------
+
+      procedure Update_Main (Name : String) is
+      begin
+         if Current >= Names.First and then Current <= Names.Last then
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer (Name);
+            Names.Table (Current).File_Name := Name_Find;
+         end if;
+      end Update_Main;
    end Mains;
 
    ----------
