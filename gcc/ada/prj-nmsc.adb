@@ -1831,9 +1831,7 @@ package body Prj.Nmsc is
                      Data.Config.Linker :=
                        Path_Name_Type (Attribute.Value.Value);
 
-                  elsif
-                    Attribute.Name = Name_Required_Switches
-                  then
+                  elsif Attribute.Name = Name_Required_Switches then
 
                      --  Attribute Required_Switches: the minimum
                      --  options to use when invoking the linker
@@ -1843,6 +1841,8 @@ package body Prj.Nmsc is
                           From_List => Attribute.Value.Values,
                           In_Tree   => In_Tree);
 
+                  elsif Attribute.Name = Name_Map_File_Option then
+                     Data.Config.Map_File_Option := Attribute.Value.Value;
                   end if;
                end if;
 
@@ -3854,8 +3854,8 @@ package body Prj.Nmsc is
                      Error_Msg
                        (Project, In_Tree,
                         Continuation.all &
-                        "library project %% cannot extend project %% " &
-                        "that is not a library project",
+                        "shared library project %% cannot extend " &
+                        "project %% that is not a library project",
                         Data.Location);
                      Continuation := Continuation_String'Access;
 

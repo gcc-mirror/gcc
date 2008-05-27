@@ -767,6 +767,7 @@ package body Snames is
      "local_config_file#" &
      "local_configuration_pragmas#" &
      "locally_removed_files#" &
+     "map_file_option#" &
      "mapping_file_switches#" &
      "mapping_spec_suffix#" &
      "mapping_body_suffix#" &
