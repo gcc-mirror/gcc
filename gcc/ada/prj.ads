@@ -1275,7 +1275,7 @@ package Prj is
 
       Config : Project_Configuration;
 
-      Path              : Path_Information := No_Path_Information;
+      Path : Path_Information := No_Path_Information;
       --  The path name of the project file
 
       Virtual : Boolean := False;

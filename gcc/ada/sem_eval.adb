@@ -3388,7 +3388,7 @@ package body Sem_Eval is
 
       Rewrite (N, Make_Real_Literal (Loc, Realval => Val));
 
-      --  Set link to original named number, for ASIS use.
+      --  Set link to original named number, for ASIS use
 
       Set_Original_Entity (N, Ent);
 
