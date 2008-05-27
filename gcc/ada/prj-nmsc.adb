@@ -162,6 +162,16 @@ package body Prj.Nmsc is
    --  A hash table to store naming exceptions for Ada. For each file name
    --  there is one or several unit in table Ada_Naming_Exception_Table.
 
+   package Object_File_Names is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => File_Name_Type,
+      No_Element => No_File,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+   --  A hash table to store the object file names for a project, to check that
+   --  two different sources have different object file names.
+
    type File_Found is record
       File     : File_Name_Type  := No_File;
       Found    : Boolean         := False;
@@ -678,7 +688,7 @@ package body Prj.Nmsc is
                                         (Lang_Id).Config.Dependency_Kind;
       Src_Data.Naming_Exception    := Naming_Exception;
 
-      if Src_Data.Compiled then
+      if Src_Data.Compiled and then Src_Data.Object_Exists then
          Src_Data.Object   := Object_Name (File_Name);
          Src_Data.Dep_Name :=
            Dependency_Name (File_Name, Src_Data.Dependency);
@@ -7830,7 +7840,7 @@ package body Prj.Nmsc is
 
          --  Check if all exceptions have been found.
          --  For Ada, it is an error if an exception is not found.
-         --  For other language, the source is removed.
+         --  For other language, the source is simply removed.
 
          declare
             Source   : Source_Id;
@@ -7851,11 +7861,9 @@ package body Prj.Nmsc is
                        (Project, In_Tree,
                         "source file %% for unit %% not found",
                         No_Location);
-
-                  else
-                     Remove_Source
-                       (Source, No_Source, Project, Data, In_Tree);
                   end if;
+
+                  Remove_Source (Source, No_Source, Project, Data, In_Tree);
                end if;
 
                Source := Src_Data.Next_In_Project;
@@ -9070,6 +9078,8 @@ package body Prj.Nmsc is
          Find_Explicit_Sources
            (Ada_Language_Index, Current_Dir, Project, In_Tree, Data);
 
+         --  Mark as such the sources that are declared as excluded
+
          FF := Excluded_Sources_Htable.Get_First;
          while FF /= No_File_Found loop
             OK     := False;
@@ -9105,6 +9115,98 @@ package body Prj.Nmsc is
 
             FF := Excluded_Sources_Htable.Get_Next;
          end loop;
+
+         --  Check that two sources of this project do not have the same object
+         --  file name.
+
+         Check_Object_File_Names : declare
+            Src_Id      : Source_Id;
+            Src_Data    : Source_Data;
+            Source_Name : File_Name_Type;
+
+            procedure Check_Object;
+            --  Check if object file name of the current source is already in
+            --  hash table Object_File_Names. If it is, report an error. If it
+            --  is not, put it there with the file name of the current source.
+
+            ------------------
+            -- Check_Object --
+            ------------------
+
+            procedure Check_Object is
+            begin
+               Source_Name := Object_File_Names.Get (Src_Data.Object);
+
+               if Source_Name /= No_File then
+                  Error_Msg_File_1 := Src_Data.File;
+                  Error_Msg_File_2 := Source_Name;
+                  Error_Msg
+                    (Project,
+                     In_Tree,
+                     "{ and { have the same object file name",
+                     No_Location);
+
+               else
+                  Object_File_Names.Set (Src_Data.Object, Src_Data.File);
+               end if;
+            end Check_Object;
+
+         --  Start of processing for Check_Object_File_Names
+
+         begin
+            Object_File_Names.Reset;
+            Src_Id := In_Tree.First_Source;
+            while Src_Id /= No_Source loop
+               Src_Data := In_Tree.Sources.Table (Src_Id);
+
+               if Src_Data.Compiled and then Src_Data.Object_Exists
+                 and then Project_Extends (Project, Src_Data.Project, In_Tree)
+               then
+                  if Src_Data.Unit = No_Name then
+                     if Src_Data.Kind = Impl then
+                        Check_Object;
+                     end if;
+
+                  else
+                     case Src_Data.Kind is
+                        when Spec =>
+                           if Src_Data.Other_Part = No_Source then
+                              Check_Object;
+                           end if;
+
+                        when Sep =>
+                           null;
+
+                        when Impl =>
+                           if Src_Data.Other_Part /= No_Source then
+                              Check_Object;
+
+                           else
+                              --  Check if it is a subunit
+
+                              declare
+                                 Src_Ind : constant Source_File_Index :=
+                                             Sinput.P.Load_Project_File
+                                               (Get_Name_String
+                                                  (Src_Data.Path));
+
+                              begin
+                                 if Sinput.P.Source_File_Is_Subunit
+                                     (Src_Ind)
+                                 then
+                                    In_Tree.Sources.Table (Src_Id).Kind := Sep;
+                                 else
+                                    Check_Object;
+                                 end if;
+                              end;
+                           end if;
+                     end case;
+                  end if;
+               end if;
+
+               Src_Id := Src_Data.Next_In_Sources;
+            end loop;
+         end Check_Object_File_Names;
       end Process_Sources_In_Multi_Language_Mode;
 
    --  Start of processing for Look_For_Sources
@@ -9140,15 +9242,15 @@ package body Prj.Nmsc is
      (File_Name : File_Name_Type;
       Directory : Path_Name_Type) return String
    is
-      Result : String_Access;
-
+      Result        : String_Access;
       The_Directory : constant String := Get_Name_String (Directory);
 
    begin
       Get_Name_String (File_Name);
-      Result := Locate_Regular_File
-        (File_Name => Name_Buffer (1 .. Name_Len),
-         Path      => The_Directory);
+      Result :=
+        Locate_Regular_File
+          (File_Name => Name_Buffer (1 .. Name_Len),
+           Path      => The_Directory);
 
       if Result = null then
          return "";
