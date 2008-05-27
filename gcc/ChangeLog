@@ -1,5 +1,15 @@
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md ("cpu_facility", "enabled"): Attribute
+	definitions added.
+	("*movdi_64dfp", "*movdi_64extimm", "*movdi_64"): Merged into
+	"*movdi_64".
+	("*anddi3_extimm", "*anddi3"): Merged into "*anddi3".
+	("*iordi3_extimm", "*iordi3"): Merged into "*iordi3".
+	("*xordi3_extimm", "*xordi3"): Merged into "*xordi3".
+
+2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* reload.c: (find_reloads): Skip alternatives according to the
 	"enabled" attribute. Constify the constraint variable.
 	* recog.c (get_attr_enabled): Add default implementation.
