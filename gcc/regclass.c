@@ -1143,8 +1143,9 @@ record_operand_costs (rtx insn, struct costs *op_costs,
 	record_address_regs (GET_MODE (recog_data.operand[i]),
 			     XEXP (recog_data.operand[i], 0),
 			     0, MEM, SCRATCH, frequency * 2);
-      else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0], constraints[i]))
+      else if (recog_data.alternative_enabled_p[0]
+	       && (constraints[i][0] == 'p'
+		   || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0], constraints[i])))
 	record_address_regs (VOIDmode, recog_data.operand[i], 0, ADDRESS,
 			     SCRATCH, frequency * 2);
     }
@@ -1930,6 +1931,9 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	}
 
       if (alt_fail)
+	continue;
+
+      if (!recog_data.alternative_enabled_p[alt])
 	continue;
 
       /* Finally, update the costs with the information we've calculated

@@ -143,6 +143,19 @@ recog_memoized (rtx insn)
 }
 #endif
 
+/* Skip chars until the next ',' or the end of the string.  This is
+   useful to skip alternatives in a constraint string.  */
+static inline const char *
+skip_alternative (const char *p)
+{
+  const char *r = p;
+  while (*r != '\0' && *r != ',')
+    r++;
+  if (*r == ',')
+    r++;
+  return r;
+}
+
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
 
@@ -201,6 +214,12 @@ struct recog_data
 
   /* The number of alternatives in the constraints for the insn.  */
   char n_alternatives;
+
+  /* Specifies whether an insn alternative is enabled using the
+     `enabled' attribute in the insn pattern definition.  For back
+     ends not using the `enabled' attribute the array fields are
+     always set to `true' in expand_insn.  */
+  bool alternative_enabled_p [MAX_RECOG_ALTERNATIVES];
 
   /* In case we are caching, hold insn data was generated for.  */
   rtx insn;
