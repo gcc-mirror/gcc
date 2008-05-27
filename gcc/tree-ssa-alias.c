@@ -571,6 +571,9 @@ set_initial_properties (struct alias_info *ai)
       
       if (pi->value_escapes_p)
 	{
+	  bitmap_iterator bi;
+	  unsigned int j;
+
 	  /* If PTR escapes then its associated memory tags and
 	     pointed-to variables are call-clobbered.  */
 	  if (pi->name_mem_tag)
@@ -581,8 +584,6 @@ set_initial_properties (struct alias_info *ai)
 
 	  if (pi->pt_vars)
 	    {
-	      bitmap_iterator bi;
-	      unsigned int j;	      
 	      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
 		{
 		  tree alias = referenced_var (j);
@@ -597,21 +598,36 @@ set_initial_properties (struct alias_info *ai)
 		  else if (!unmodifiable_var_p (alias))
 		    mark_call_clobbered (alias, pi->escape_mask);
 		}
-	      /* Process variables we need to clobber all parts of.  */
-	      if (!bitmap_empty_p (queued))
+	    }
+	  else if (pi->pt_anything)
+	    {
+	      /* If we do not have the points-to set filled out we
+	         still need to honor that this escaped pointer points
+		 to anything.  */
+	      EXECUTE_IF_SET_IN_BITMAP (gimple_addressable_vars (cfun),
+					0, j, bi)
 		{
-		  EXECUTE_IF_SET_IN_BITMAP (queued, 0, j, bi)
-		    {
-		      subvar_t svars = get_subvars_for_var (referenced_var (j));
-		      unsigned int i;
-		      tree subvar;
-
-		      for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
-			if (!unmodifiable_var_p (subvar))
-			  mark_call_clobbered (subvar, pi->escape_mask);
-		    }
-		  bitmap_clear (queued);
+		  tree var = referenced_var (j);
+		  if (TREE_CODE (var) == STRUCT_FIELD_TAG)
+		    bitmap_set_bit (queued, DECL_UID (SFT_PARENT_VAR (var)));
+		  else if (!unmodifiable_var_p (var))
+		    mark_call_clobbered (var, pi->escape_mask);
 		}
+	    }
+	  /* Process variables we need to clobber all parts of.  */
+	  if (!bitmap_empty_p (queued))
+	    {
+	      EXECUTE_IF_SET_IN_BITMAP (queued, 0, j, bi)
+		{
+		  subvar_t svars = get_subvars_for_var (referenced_var (j));
+		  unsigned int i;
+		  tree subvar;
+
+		  for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+		    if (!unmodifiable_var_p (subvar))
+		      mark_call_clobbered (subvar, pi->escape_mask);
+		}
+	      bitmap_clear (queued);
 	    }
 	}
 

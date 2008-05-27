@@ -1,3 +1,9 @@
+2008-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36339
+	* tree-ssa-alias.c (set_initial_properties): Escaped pt_anything
+	pointers cause all addressable variables to be call clobbered.
+
 2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/36321
