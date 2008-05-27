@@ -12072,7 +12072,9 @@ the inherited body is not part of the sources of the project, otherwise there
 will be a compilation error when compiling the spec.
 
 For that purpose, the attribute @code{Excluded_Source_Files} is used.
-Its value is a string list: a list of file names.
+Its value is a string list: a list of file names. It is also possible to use
+attribute @code{Excluded_Source_List_File}. Its value is a single string:
+the file name of a text file containing a list of file names, one per line.
 
 @smallexample @c @projectfile
 project B extends "a" is
@@ -12495,6 +12497,8 @@ The following attributes are defined on projects (all are simple attributes):
 @tab string list
 @item @code{Excluded_Source_Files}
 @tab string list
+@item @code{Excluded_Source_List_File}
+@tab string
 @item @code{Languages}
 @tab string list
 @item @code{Main}
