@@ -1,6 +1,34 @@
 2008-05-27  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb:
+	(Process_Sources_In_Multi_Language_Mode): Check that there are not two
+	sources of the same project that have the same object file name.
+	(Find_Explicit_Sources): Always remove a source exception that was not
+	found.
+
+2008-05-27  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb:
+	(Is_Interface_Conformant): Handle properly a primitive operation that
+	overrides an interface function with a controlling access result.
+	(Type_Conformance): If Skip_Controlling_Formals is true, when matching
+	inherited and overriding operations, omit as well the conformance check
+	on result types, to prevent spurious errors.
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads, makeutl.adb:
+	(Set_Location): New procedure
+	(Get_Location): New function
+	(Update_Main): New procedure
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb:
 	(Check_Library): Allow standard project to be extended as a static
 	library project.
 	(Get_Mains): Do not inherit attribute Main in an extending library
