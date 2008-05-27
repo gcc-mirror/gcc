@@ -6561,7 +6561,7 @@ package body Sem_Res is
    procedure Resolve_Null (N : Node_Id; Typ : Entity_Id) is
    begin
       --  Handle restriction against anonymous null access values This
-      --  restriction can be turned off using -gnatdh.
+      --  restriction can be turned off using -gnatdj.
 
       --  Ada 2005 (AI-231): Remove restriction
 
@@ -6571,7 +6571,7 @@ package body Sem_Res is
         and then Comes_From_Source (N)
       then
          --  In the common case of a call which uses an explicitly null
-         --  value for an access parameter, give specialized error msg
+         --  value for an access parameter, give specialized error message.
 
          if Nkind_In (Parent (N), N_Procedure_Call_Statement,
                                   N_Function_Call)
