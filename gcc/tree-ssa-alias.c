@@ -571,6 +571,22 @@ set_initial_properties (struct alias_info *ai)
 		    mark_call_clobbered (alias, pi->escape_mask);
 		}
 	    }
+	  else if (pi->pt_anything)
+	    {
+	      bitmap_iterator bi;
+	      unsigned int j;
+
+	      /* If we do not have the points-to set filled out we
+	         still need to honor that this escaped pointer points
+		 to anything.  */
+	      EXECUTE_IF_SET_IN_BITMAP (gimple_addressable_vars (cfun),
+					0, j, bi)
+		{
+		  tree var = referenced_var (j);
+		  if (!unmodifiable_var_p (var))
+		    mark_call_clobbered (var, pi->escape_mask);
+		}
+	    }
 	}
 
       /* If the name tag is call clobbered, so is the symbol tag
