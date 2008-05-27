@@ -1050,6 +1050,7 @@ have.  Constraints can also require two operands to match.
 * Multi-Alternative::   When an insn has two alternative constraint-patterns.
 * Class Preferences::   Constraints guide which hard register to put things in.
 * Modifiers::           More precise control over effects of constraints.
+* Disable Insn Alternatives:: Disable insn alternatives using the @code{enabled} attribute.
 * Machine Constraints:: Existing constraints for some particular machines.
 * Define Constraints::  How to define machine-specific constraints.
 * C Constraint Interface:: How to test constraints from C code.
@@ -3087,6 +3088,99 @@ Unsigned constant valid for BccUI instructions
 @end table
 
 @end table
+
+@ifset INTERNALS
+@node Disable Insn Alternatives
+@subsection Disable insn alternatives using the @code{enabled} attribute
+@cindex enabled
+
+The @code{enabled} insn attribute may be used to disable certain insn
+alternatives for machine-specific reasons.  This is useful when adding
+new instructions to an existing pattern which are only available for
+certain cpu architecture levels as specified with the @code{-march=}
+option.
+
+If an insn alternative is disabled, then it will never be used.  The
+compiler treats the constraints for the disabled alternative as
+unsatisfiable.
+
+In order to make use of the @code{enabled} attribute a back end has to add
+in the machine description files:
+
+@enumerate
+@item
+A definition of the @code{enabled} insn attribute.  The attribute is
+defined as usual using the @code{define_attr} command.  This
+definition should be based on other insn attributes and/or target flags.
+The @code{enabled} attribute is a numeric attribute and should evaluate to
+@code{(const_int 1)} for an enabled alternative and to
+@code{(const_int 0)} otherwise.
+@item
+A definition of another insn attribute used to describe for what
+reason an insn alternative might be available or
+not.  E.g. @code{cpu_facility} as in the example below.
+@item
+An assignement for the second attribute to each insn definition
+combining instructions which are not all available under the same
+circumstances.  (Note: It obviously only makes sense for definitions
+with more than one alternative.  Otherwise the insn pattern should be
+disabled or enabled using the insn condition.)
+@end enumerate
+
+E.g. the following two patterns could easily be merged using the @code{enabled}
+attribute:
+
+@smallexample
+
+(define_insn "*movdi_old"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+        (match_operand:DI 1 "register_operand" " d"))]
+  "!TARGET_NEW"
+  "lgr %0,%1")
+
+(define_insn "*movdi_new"
+  [(set (match_operand:DI 0 "register_operand" "=d,f,d")
+        (match_operand:DI 1 "register_operand" " d,d,f"))]
+  "TARGET_NEW"
+  "@@
+   lgr  %0,%1
+   ldgr %0,%1
+   lgdr %0,%1")
+
+@end smallexample
+
+to:
+
+@smallexample
+
+(define_insn "*movdi_combined"
+  [(set (match_operand:DI 0 "register_operand" "=d,f,d")
+        (match_operand:DI 1 "register_operand" " d,d,f"))]
+  ""
+  "@@
+   lgr  %0,%1
+   ldgr %0,%1
+   lgdr %0,%1"
+  [(set_attr "cpu_facility" "*,new,new")])
+
+@end smallexample
+
+with the @code{enabled} attribute defined like this:
+
+@smallexample
+
+(define_attr "cpu_facility" "standard,new" (const_string "standard"))
+
+(define_attr "enabled" ""
+  (cond [(eq_attr "cpu_facility" "standard") (const_int 1)
+         (and (eq_attr "cpu_facility" "new")
+              (ne (symbol_ref "TARGET_NEW") (const_int 0)))
+         (const_int 1)]
+        (const_int 0)))
+
+@end smallexample
+
+@end ifset
 
 @ifset INTERNALS
 @node Define Constraints
@@ -6520,6 +6614,22 @@ extern enum attr_type get_attr_type ();
 If the attribute takes numeric values, no @code{enum} type will be
 defined and the function to obtain the attribute's value will return
 @code{int}.
+
+There are attributes which are tied to a specific meaning.  These
+attributes are not free to use for other purposes:
+
+@table @code
+@item length
+The @code{length} attribute is used to calculate the length of emitted
+code chunks.  This is especially important when verifying branch
+distances. @xref{Insn Lengths}.
+
+@item enabled
+The @code{enabled} attribute can be defined to prevent certain
+alternatives of an insn definition from being used during code
+generation. @xref{Disable Insn Alternatives}.
+
+@end table
 
 @end ifset
 @ifset INTERNALS

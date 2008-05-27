@@ -2523,7 +2523,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   int noperands;
   /* These start out as the constraints for the insn
      and they are chewed up as we consider alternatives.  */
-  char *constraints[MAX_RECOG_OPERANDS];
+  const char *constraints[MAX_RECOG_OPERANDS];
   /* These are the preferred classes for an operand, or NO_REGS if it isn't
      a register.  */
   enum reg_class preferred_class[MAX_RECOG_OPERANDS];
@@ -2630,7 +2630,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
   memcpy (operand_mode, recog_data.operand_mode,
 	  noperands * sizeof (enum machine_mode));
-  memcpy (constraints, recog_data.constraints, noperands * sizeof (char *));
+  memcpy (constraints, recog_data.constraints,
+	  noperands * sizeof (const char *));
 
   commutative = -1;
 
@@ -2641,8 +2642,9 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
   for (i = 0; i < noperands; i++)
     {
-      char *p;
+      const char *p;
       int c;
+      char *end;
 
       substed_operand[i] = recog_data.operand[i];
       p = constraints[i];
@@ -2686,7 +2688,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
 	      {
-		c = strtoul (p - 1, &p, 10);
+		c = strtoul (p - 1, &end, 10);
+		p = end;
 
 		operands_match[c][i]
 		  = operands_match_p (recog_data.operand[c],
@@ -2914,11 +2917,21 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	 a bad register class to only count 1/3 as much.  */
       int reject = 0;
 
+      if (!recog_data.alternative_enabled_p[this_alternative_number])
+	{
+	  int i;
+
+	  for (i = 0; i < recog_data.n_operands; i++)
+	    constraints[i] = skip_alternative (constraints[i]);
+
+	  continue;
+	}
+
       this_earlyclobber = 0;
 
       for (i = 0; i < noperands; i++)
 	{
-	  char *p = constraints[i];
+	  const char *p = constraints[i];
 	  char *end;
 	  int len;
 	  int win = 0;
@@ -3717,7 +3730,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  address_reloaded[commutative + 1] = t;
 
 	  memcpy (constraints, recog_data.constraints,
-		  noperands * sizeof (char *));
+		  noperands * sizeof (const char *));
 	  goto try_swapped;
 	}
       else

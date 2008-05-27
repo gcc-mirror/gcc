@@ -60,6 +60,14 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+#ifndef HAVE_ATTR_enabled
+static inline bool
+get_attr_enabled (rtx insn ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+#endif
+
 static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx);
 static void validate_replace_src_1 (rtx *, void *);
 static rtx split_insn (rtx);
@@ -1920,11 +1928,9 @@ extract_insn (rtx insn)
   int noperands;
   rtx body = PATTERN (insn);
 
-  recog_data.insn = NULL;
   recog_data.n_operands = 0;
   recog_data.n_alternatives = 0;
   recog_data.n_dups = 0;
-  which_alternative = -1;
 
   switch (GET_CODE (body))
     {
@@ -2004,6 +2010,22 @@ extract_insn (rtx insn)
 	 : OP_IN);
 
   gcc_assert (recog_data.n_alternatives <= MAX_RECOG_ALTERNATIVES);
+
+  if (INSN_CODE (insn) < 0)
+    for (i = 0; i < recog_data.n_alternatives; i++)
+      recog_data.alternative_enabled_p[i] = true;
+  else
+    {
+      recog_data.insn = insn;
+      for (i = 0; i < recog_data.n_alternatives; i++)
+	{
+	  which_alternative = i;
+	  recog_data.alternative_enabled_p[i] = get_attr_enabled (insn);
+	}
+    }
+
+  recog_data.insn = NULL;
+  which_alternative = -1;
 }
 
 /* After calling extract_insn, you can use this function to extract some
@@ -2032,6 +2054,12 @@ preprocess_constraints (void)
 	  op_alt[j].constraint = p;
 	  op_alt[j].matches = -1;
 	  op_alt[j].matched = -1;
+
+	  if (!recog_data.alternative_enabled_p[j])
+	    {
+	      p = skip_alternative (p);
+	      continue;
+	    }
 
 	  if (*p == '\0' || *p == ',')
 	    {
@@ -2201,6 +2229,17 @@ constrain_operands (int strict)
       int opno;
       int lose = 0;
       funny_match_index = 0;
+
+      if (!recog_data.alternative_enabled_p[which_alternative])
+	{
+	  int i;
+
+	  for (i = 0; i < recog_data.n_operands; i++)
+	    constraints[i] = skip_alternative (constraints[i]);
+
+	  which_alternative++;
+	  continue;
+	}
 
       for (opno = 0; opno < recog_data.n_operands; opno++)
 	{

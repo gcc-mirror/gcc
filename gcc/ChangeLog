@@ -1,5 +1,23 @@
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* reload.c: (find_reloads): Skip alternatives according to the
+	"enabled" attribute. Constify the constraint variable.
+	* recog.c (get_attr_enabled): Add default implementation.
+	(extract_insn): Set the alternative_enabled_p array
+	in the recog_data struct.
+	(preprocess_constraints, constrain_operands): Skip
+	alternatives according to the "enabled" attribute
+	* recog.h (struct recog_data): New field alternative_enabled_p.
+	(skip_alternative): New inline function.
+	* regclass.c: (record_operand_costs): Check the "enabled"
+	attribute.
+	(record_reg_classes): Skip alternative according to the
+	"enabled" attribute.
+
+	* doc/md.texi: Add documention for the "enabled" attribute.
+
+2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* defaults.h (TARGET_MEM_CONSTRAINT): New target macro added.
 	* postreload.c (reload_cse_simplify_operands): Replace 'm'
 	constraint with TARGET_MEM_CONSTRAINT.
