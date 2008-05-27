@@ -1,4 +1,5 @@
 /* { dg-do compile } */ 
+/* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all" } */
 
 int foo (int n, int m)

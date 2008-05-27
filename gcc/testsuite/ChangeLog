@@ -1,3 +1,14 @@
+2008-05-27  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/tree-ssa/data-dep-1.c: Skip test for avr-*-* too much code.
+	* gcc.dg/tree-ssa/ldist-3.c: Ditto.
+	* gcc.dg/tree-ssa/ldist-5.c: Ditto.
+	* gcc.dg/tree-ssa/ifc-20040816-2 .c: Adjust for int size < 4 bytes.
+	* gcc.dg/tree-ssa/pr32540-1.c: Ditto.
+	* gcc.dg/tree-ssa/pr32540-2.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-lim-5.c: Ditto.
+	* gcc.dg/tree-ssa/pr23115.c: Adjust test for double size < 8 bytes. 
+
 2008-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35767

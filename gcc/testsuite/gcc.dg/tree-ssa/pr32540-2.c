@@ -19,6 +19,7 @@ void acceptloop_th(int *t, int options) {
     if (f()) options |= 0x1 << 13;
     if (f()) options |= 0x1 << 14;
     if (f()) options |= 0x1 << 15;
+#if(__SIZEOF_INT__ >= 4)    
     if (f()) options |= 0x1 << 16;
     if (f()) options |= 0x1 << 17;
     if (f()) options |= 0x1 << 18;
@@ -30,6 +31,8 @@ void acceptloop_th(int *t, int options) {
     if (f()) options |= 0x1 << 24;
     if (f()) options |= 0x1 << 25;
     if (f()) options |= 0x1 << 26;
+#endif
     if (f()) *t = options;
 }
+
 

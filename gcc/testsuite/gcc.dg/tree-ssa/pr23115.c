@@ -12,9 +12,13 @@ int main()
 {
   long j;
   double R, n, x;
-
+#if __SIZEOF_DOUBLE__ >= 8
   n = 1.e300;
   x = -1.e300;
+#else
+  n = 1.e30;
+  x = -1.e30;
+#endif
   for( j=0; j < 2; j++ )
     {
       x = MAX2(x,p[j]);
