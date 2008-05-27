@@ -1,3 +1,9 @@
+2008-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36339
+	* gcc.c-torture/execute/pr36339.c: New testcase.
+	* gcc.dg/tree-ssa/loadpre8.c: XFAIL.
+
 2008-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack9.ad[sb]: New test.

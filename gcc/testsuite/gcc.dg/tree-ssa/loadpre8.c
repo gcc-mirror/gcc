@@ -93,5 +93,5 @@ rewrite_add_phi_arguments (basic_block bb)
 	  get_reaching_def ((get_def_from_ptr (get_phi_result_ptr (phi)))->ssa_name.var);
     }
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
