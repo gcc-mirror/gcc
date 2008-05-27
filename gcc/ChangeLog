@@ -1,5 +1,11 @@
 2008-05-27  Michael Matz  <matz@suse.de>
 
+	PR c++/27975
+	* c.opt (Wenum-compare): New warning option.
+	* doc/invoke.texi  (Warning Options): Document -Wenum-compare.
+
+2008-05-27  Michael Matz  <matz@suse.de>
+
 	PR middle-end/36326
 	* tree-gimple.c (is_gimple_mem_rhs): Remove work-around for
 	non-BLKmode types.

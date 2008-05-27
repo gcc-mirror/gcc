@@ -1,3 +1,9 @@
+2008-05-27  Michael Matz  <matz@suse.de>
+
+	PR c++/27975
+	* g++.dg/warn/Wenum-compare.C: New testcase.
+	* g++.dg/warn/Wenum-compare-no.C: Ditto.
+
 2008-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36339

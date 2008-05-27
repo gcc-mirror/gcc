@@ -1,3 +1,9 @@
+2008-05-27  Michael Matz  <matz@suse.de>
+
+	PR c++/27975
+	* call.c (build_new_op): Make warning conditional on
+	OPT_Wenum_compare.
+
 2008-05-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/35909

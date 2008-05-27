@@ -195,6 +195,10 @@ Wendif-labels
 C ObjC C++ ObjC++ Warning
 Warn about stray tokens after #elif and #endif
 
+Wenum-compare
+C++ ObjC++ Var(warn_enum_compare) Init(1) Warning
+Warn about comparison of different enum types
+
 Werror
 C ObjC C++ ObjC++
 ; Documented in common.opt
