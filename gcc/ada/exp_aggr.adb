@@ -544,6 +544,13 @@ package body Exp_Aggr is
          return False;
       end if;
 
+      --  If component is limited, aggregate must be expanded because each
+      --  component assignment must be built in place.
+
+      if Is_Inherently_Limited_Type (Component_Type (Typ)) then
+         return False;
+      end if;
+
       --  Checks 4 (array must not be multi-dimensional Fortran case)
 
       if Convention (Typ) = Convention_Fortran
@@ -4953,6 +4960,13 @@ package body Exp_Aggr is
           or else
             (Nkind (Parent (Parent (N))) = N_Allocator
               and then In_Place_Assign_OK);
+      end if;
+
+      --  If  this is an array of tasks, it will be expanded into build-in-
+      --  -place assignments. Build an activation chain for the tasks now
+
+      if Has_Task (Etype (N)) then
+         Build_Activation_Chain_Entity (N);
       end if;
 
       if not Has_Default_Init_Comps (N)
