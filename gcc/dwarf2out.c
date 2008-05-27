@@ -315,6 +315,14 @@ static GTY(()) unsigned fde_table_in_use;
    fde_table.  */
 #define FDE_TABLE_INCREMENT 256
 
+/* Get the current fde_table entry we should use.  */
+
+static inline dw_fde_ref
+current_fde (void)
+{
+  return fde_table_in_use ? &fde_table[fde_table_in_use - 1] : NULL;
+}
+
 /* A list of call frame insns for the CIE.  */
 static GTY(()) dw_cfi_ref cie_cfi_head;
 
@@ -631,14 +639,6 @@ dwarf2out_cfi_label (void)
   ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", dwarf2out_cfi_label_num++);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   return label;
-}
-
-/* Get the current fde_table entry we should use.  */
-
-static inline struct dw_fde_struct * 
-current_fde (void)
-{
-  return fde_table_in_use ? &fde_table[fde_table_in_use - 1] : NULL;
 }
 
 /* Add CFI to the current fde at the PC value indicated by LABEL if specified,
