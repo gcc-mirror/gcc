@@ -3965,17 +3965,17 @@ package body Exp_Ch6 is
    begin
       Expand_Call (N);
 
-      --  Handle VAX Float return values from foreign compiled functions
-
-      --  More commments required here, what are the tests below for ???
+      --  If the return value of a foreign compiled function is
+      --  VAX Float then expand the return (adjusts the location
+      --  of the return value on Alpha/VMS, noop everywere else).
+      --  Comes_From_Source intercepts recursive expansion.
 
       if Vax_Float (Etype (N))
         and then Nkind (N) = N_Function_Call
-        and then not (Nkind (Parent (N)) = N_Type_Conversion
-                       and then not Comes_From_Source (Parent (N)))
         and then Present (Name (N))
         and then Present (Entity (Name (N)))
         and then Has_Foreign_Convention (Entity (Name (N)))
+        and then Comes_From_Source (Parent (N))
       then
          Expand_Vax_Foreign_Return (N);
       end if;
