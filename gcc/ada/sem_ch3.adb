@@ -10186,7 +10186,9 @@ package body Sem_Ch3 is
             Set_Ekind (Def_Id, Subtype_Kind (Ekind (T)));
          end if;
 
-         Set_Etype (Def_Id, Any_Type);
+         --  Set Etype to the known type, to reduce chances of cascaded errors
+
+         Set_Etype (Def_Id, E);
          Set_Error_Posted (Def_Id);
       end Fixup_Bad_Constraint;
 
