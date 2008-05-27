@@ -1,3 +1,11 @@
+2008-05-27  Michael Matz  <matz@suse.de>
+
+	PR middle-end/36326
+	* tree-gimple.c (is_gimple_mem_rhs): Remove work-around for
+	non-BLKmode types.
+	* tree-tailcall.c (find_tail_calls): Don't mark calls storing
+	into memory as tail calls.
+
 2008-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36339

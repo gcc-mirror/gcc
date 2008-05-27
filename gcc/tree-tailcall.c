@@ -429,6 +429,20 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       return;
     }
 
+  /* If the LHS of our call is not just a simple register, we can't 
+     transform this into a tail or sibling call.  This situation happens,
+     in (e.g.) "*p = foo()" where foo returns a struct.  In this case
+     we won't have a temporary here, but we need to carry out the side
+     effect anyway, so tailcall is impossible.
+
+     ??? In some situations (when the struct is returned in memory via
+     invisible argument) we could deal with this, e.g. by passing 'p'
+     itself as that argument to foo, but it's too early to do this here,
+     and expand_call() will not handle it anyway.  If it ever can, then
+     we need to revisit this here, to allow that situation.  */
+  if (ass_var && !is_gimple_reg (ass_var))
+    return;
+
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
   func = get_callee_fndecl (call);
