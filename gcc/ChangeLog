@@ -1,3 +1,15 @@
+2008-05-27  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+	    Sa Liu  <saliu@de.ibm.com> 
+
+	* config/spu/spu.c (spu_init_libfuncs): Add __multi3, __divti3, 
+	__modti3, __udivti3, __umodti3 and __udivmodti4.
+	* config/spu/t-spu-elf (LIB2FUNCS_STATIC_EXTRA): Add files
+	that implement TImode mul and div functions.
+	* config/spu/multi3.c: New. Implement __multi3.
+	* config/spu/divmodti4.c: New. Implement _udivmodti4 and others.
+	* testsuite/gcc.target/spu/muldivti3.c: New. Test TImode mul and div
+	functions on SPU.
+
 2008-05-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Generate
