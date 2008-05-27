@@ -16619,7 +16619,8 @@ package body Sem_Ch3 is
       --  view of the type.
 
       function Designates_T (Subt : Node_Id) return Boolean;
-      --  Check whether a node designates the enclosing record type
+      --  Check whether a node designates the enclosing record type, or 'Class
+      --  of that type
 
       function Mentions_T (Acc_Def : Node_Id) return Boolean;
       --  Check whether an access definition includes a reference to
@@ -16637,13 +16638,25 @@ package body Sem_Ch3 is
          Inc_T : Entity_Id;
          H     : Entity_Id;
 
+         --  Is_Tagged indicates whether the type is tagged. It is tagged if
+         --  it's "is new ... with record" or else "is tagged record ...".
+
+         Is_Tagged : constant Boolean :=
+             (Nkind (Type_Definition (Typ_Decl)) = N_Derived_Type_Definition
+                 and then
+                   Present
+                     (Record_Extension_Part (Type_Definition (Typ_Decl))))
+           or else
+             (Nkind (Type_Definition (Typ_Decl)) = N_Record_Definition
+                 and then Tagged_Present (Type_Definition (Typ_Decl)));
+
       begin
          --  If there is a previous partial view, no need to create a new one
          --  If the partial view, given by Prev, is incomplete,  If Prev is
          --  a private declaration, full declaration is flagged accordingly.
 
          if Prev /= Typ then
-            if Tagged_Present (Type_Definition (Typ_Decl)) then
+            if Is_Tagged then
                Make_Class_Wide_Type (Prev);
                Set_Class_Wide_Type (Typ, Class_Wide_Type (Prev));
                Set_Etype (Class_Wide_Type (Typ), Typ);
@@ -16652,6 +16665,15 @@ package body Sem_Ch3 is
             return;
 
          elsif Has_Private_Declaration (Typ) then
+
+            --  If we refer to T'Class inside T, and T is the completion of a
+            --  private type, then we need to make sure the class-wide type
+            --  exists.
+
+            if Is_Tagged then
+               Make_Class_Wide_Type (Typ);
+            end if;
+
             return;
 
          --  If there was a previous anonymous access type, the incomplete
@@ -16693,14 +16715,9 @@ package body Sem_Ch3 is
             Analyze (Decl);
             Set_Full_View (Inc_T, Typ);
 
-            if (Nkind (Type_Definition (Typ_Decl)) = N_Derived_Type_Definition
-                 and then
-                   Present
-                     (Record_Extension_Part (Type_Definition (Typ_Decl))))
-              or else Tagged_Present (Type_Definition (Typ_Decl))
-            then
+            if Is_Tagged then
                --  Create a common class-wide type for both views, and set
-               --  the etype of the class-wide type to the full view.
+               --  the Etype of the class-wide type to the full view.
 
                Make_Class_Wide_Type (Inc_T);
                Set_Class_Wide_Type (Typ, Class_Wide_Type (Inc_T));
