@@ -1867,7 +1867,7 @@ package body Prj.Part is
 
       function Try_Path_Name (Path : String) return String_Access is
          Prj_Path : constant String := Project_Path;
-         First    : Natural := Prj_Path'First;
+         First    : Natural;
          Last     : Natural;
          Result   : String_Access := null;
 
@@ -1887,6 +1887,7 @@ package body Prj.Part is
             --  Locate_Regular_File. So, we try each possible path
             --  successively.
 
+            First := Prj_Path'First;
             while First <= Prj_Path'Last loop
                while First <= Prj_Path'Last
                  and then Prj_Path (First) = Path_Separator

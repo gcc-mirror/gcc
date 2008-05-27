@@ -322,7 +322,8 @@ package body MLib.Prj is
       --  g-trasym.obj.
 
       Object_Directory_Path : constant String :=
-                          Get_Name_String (Data.Object_Directory.Display_Name);
+                                Get_Name_String
+                                  (Data.Object_Directory.Display_Name);
 
       Standalone   : constant Boolean := Data.Standalone_Library;
 
@@ -1397,8 +1398,8 @@ package body MLib.Prj is
 
                            if In_Main_Object_Directory
                              or else Last < 5
-                             or else C_Filename (1 .. B_Start'Length) /=
-                             B_Start.all
+                             or else
+                               C_Filename (1 .. B_Start'Length) /= B_Start.all
                            then
                               Name_Len := Last;
                               Name_Buffer (1 .. Name_Len) :=
@@ -1439,8 +1440,8 @@ package body MLib.Prj is
                                                    (In_Tree.Units)
                                           loop
                                              if In_Tree.Units.Table
-                                               (Index).File_Names
-                                               (Body_Part).Name /= No_File
+                                                 (Index).File_Names
+                                                   (Body_Part).Name /= No_File
                                              then
                                                 Proj :=
                                                   In_Tree.Units.Table (Index).
@@ -1448,7 +1449,7 @@ package body MLib.Prj is
                                                     (Body_Part).Project;
                                                 Fname :=
                                                   In_Tree.Units.Table (Index).
-                                                  File_Names (Body_Part).Name;
+                                                   File_Names (Body_Part).Name;
 
                                              elsif
                                                In_Tree.Units.Table
@@ -1459,11 +1460,11 @@ package body MLib.Prj is
                                                 Proj :=
                                                   In_Tree.Units.Table
                                                     (Index).File_Names
-                                                    (Specification).Project;
+                                                     (Specification).Project;
                                                 Fname :=
                                                   In_Tree.Units.Table
                                                     (Index).File_Names
-                                                    (Specification).Name;
+                                                     (Specification).Name;
 
                                              else
                                                 Proj := No_Project;
@@ -1473,8 +1474,8 @@ package body MLib.Prj is
 
                                              --  If the source is in the
                                              --  project or a project it
-                                             --  extends, we may put it in the
-                                             --  library.
+                                             --  extends, we may put it in
+                                             --  the library.
 
                                              if Add_It then
                                                 Add_It := Check_Project (Proj);

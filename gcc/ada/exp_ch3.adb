@@ -7360,7 +7360,7 @@ package body Exp_Ch3 is
    --       return False;
    --    end if;
 
-   --  or a null statement if the list L is empty.
+   --  or a null statement if the list L is empty
 
    function Make_Eq_If
      (E : Entity_Id;
