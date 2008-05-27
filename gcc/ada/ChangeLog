@@ -1,3 +1,19 @@
+2008-05-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb: Update comments.
+	
+	* s-tasinf-mingw.adb: Add "with" of System.OS_Interface
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, make.adb, mlib-prj.adb, prj.adb,
+	prj.ads, makegpr.adb, makeutl.adb, clean.adb, prj-nmsc.adb,
+	mlib-tgt.adb, prj-env.adb, prj-env.ads:
+	(Path_Information): New record type
+	Use component of type Path_Information when there are two paths, one in
+	canonical format and one in display format.
+	Update the project manager to these new components.
+
 2008-05-27  Robert Dewar  <dewar@adacore.com>
 
 	* makeutl.adb: Minor reformatting
