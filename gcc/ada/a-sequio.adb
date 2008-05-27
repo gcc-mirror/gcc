@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,8 +66,11 @@ package body Ada.Sequential_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AP (File));
+      FIO.Close (AFCB'Access);
    end Close;
 
    ------------
@@ -89,8 +92,11 @@ package body Ada.Sequential_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AP (File));
+      FIO.Delete (AFCB'Access);
    end Delete;
 
    -----------------
@@ -239,13 +245,19 @@ package body Ada.Sequential_IO is
    -----------
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AP (File), To_FCB (Mode));
+      FIO.Reset (AFCB'Access, To_FCB (Mode));
    end Reset;
 
    procedure Reset (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AP (File));
+      FIO.Reset (AFCB'Access);
    end Reset;
 
    -----------

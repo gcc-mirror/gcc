@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -251,15 +251,21 @@ package body System.Direct_IO is
    -----------
 
    procedure Reset (File : in out File_Type; Mode : FCB.File_Mode) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AP (File), Mode);
+      FIO.Reset (AFCB'Access, Mode);
       File.Index := 1;
       File.Last_Op := Op_Read;
    end Reset;
 
    procedure Reset (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AP (File));
+      FIO.Reset (AFCB'Access);
       File.Index := 1;
       File.Last_Op := Op_Read;
    end Reset;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,20 +100,23 @@ package System.File_IO is
    --  this allocated file control block. If the open/create fails, then the
    --  fields of File are undefined, and File_Ptr is unchanged.
 
-   procedure Close (File : in out FCB.AFCB_Ptr);
+   procedure Close (File_Ptr : access FCB.AFCB_Ptr);
    --  The file is closed, all storage associated with it is released, and
    --  File is set to null. Note that this routine calls AFCB_Close to perform
    --  any specialized close actions, then closes the file at the system level,
    --  then frees the mode and form strings, and finally calls AFCB_Free to
-   --  free the file control block itself, setting File to null.
+   --  free the file control block itself, setting File.all to null. Note that
+   --  for this assignment to be done in all cases, including those where
+   --  an exception is raised, we can't use an IN OUT parameter (which would
+   --  not be copied back in case of abnormal return).
 
-   procedure Delete (File : in out FCB.AFCB_Ptr);
+   procedure Delete (File_Ptr : access FCB.AFCB_Ptr);
    --  The indicated file is unlinked
 
-   procedure Reset (File : in out FCB.AFCB_Ptr; Mode : FCB.File_Mode);
+   procedure Reset (File_Ptr : access FCB.AFCB_Ptr; Mode : FCB.File_Mode);
    --  The file is reset, and the mode changed as indicated
 
-   procedure Reset (File : in out FCB.AFCB_Ptr);
+   procedure Reset (File_Ptr : access FCB.AFCB_Ptr);
    --  The files is reset, and the mode is unchanged
 
    function Mode (File : FCB.AFCB_Ptr) return FCB.File_Mode;
