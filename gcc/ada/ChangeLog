@@ -1,3 +1,24 @@
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb:
+	(Check_Library): Allow standard project to be extended as a static
+	library project.
+	(Get_Mains): Do not inherit attribute Main in an extending library
+	project.
+
+2008-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-darwin-ppc.ads (Always_Compatible_Rep): Set to False.
+	* system-darwin-x86.ads (Always_Compatible_Rep): Likewise.
+	* system-freebsd-x86.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-ppc.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-x86_64.ads (Always_Compatible_Rep): Likewise.
+	* system-linux-x86.ads (Always_Compatible_Rep): Likewise.
+	* system-mingw.ads (Always_Compatible_Rep): Likewise.
+	* system-solaris-sparc.ads (Always_Compatible_Rep): Likewise.
+	* system-solaris-sparcv9.ads (Always_Compatible_Rep): Likewise.
+	* system-solaris-x86.ads (Always_Compatible_Rep): Likewise.
+	
 2008-05-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb: add guard to previous patch.
