@@ -1,5 +1,10 @@
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md: Replace all occurences of the 'm'
+	constraint with 'RT'.
+
+2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.md ("cpu_facility", "enabled"): Attribute
 	definitions added.
 	("*movdi_64dfp", "*movdi_64extimm", "*movdi_64"): Merged into
