@@ -66,11 +66,8 @@ package body Ada.Sequential_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AFCB'Access);
+      FIO.Close (AP (File)'Unrestricted_Access);
    end Close;
 
    ------------
@@ -92,11 +89,8 @@ package body Ada.Sequential_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AFCB'Access);
+      FIO.Delete (AP (File)'Unrestricted_Access);
    end Delete;
 
    -----------------
@@ -245,19 +239,13 @@ package body Ada.Sequential_IO is
    -----------
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AFCB'Access, To_FCB (Mode));
+      FIO.Reset (AP (File)'Unrestricted_Access, To_FCB (Mode));
    end Reset;
 
    procedure Reset (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Reset (AFCB'Access);
+      FIO.Reset (AP (File)'Unrestricted_Access);
    end Reset;
 
    -----------
