@@ -1602,6 +1602,7 @@ package body Sem_Ch6 is
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
                Freeze_Before (N, Spec_Id);
             end if;
+
          else
             Spec_Id := Corresponding_Spec (N);
          end if;
@@ -2459,18 +2460,17 @@ package body Sem_Ch6 is
          Push_Scope (Designator);
          Process_Formals (Formals, N);
 
-         --  Ada 2005 (AI-345): Allow the overriding of interface primitives
-         --  by subprograms which belong to a concurrent type implementing an
-         --  interface. Set the parameter type of each controlling formal to
-         --  the corresponding record type.
+         --  Ada 2005 (AI-345): If this is an overriding operation of an
+         --  inherited interface operation, and the controlling type is
+         --  a synchronized type, replace the type with its corresponding
+         --  record, to match the proper signature of an overriding operation.
 
          if Ada_Version >= Ada_05 then
             Formal := First_Formal (Designator);
             while Present (Formal) loop
                Formal_Typ := Etype (Formal);
 
-               if (Ekind (Formal_Typ) = E_Protected_Type
-                     or else Ekind (Formal_Typ) = E_Task_Type)
+               if Is_Concurrent_Type (Formal_Typ)
                  and then Present (Corresponding_Record_Type (Formal_Typ))
                  and then Present (Interfaces
                                     (Corresponding_Record_Type (Formal_Typ)))
@@ -5001,7 +5001,7 @@ package body Sem_Ch6 is
             --  can be called in a dispatching context and such calls must be
             --  handled like calls to a class-wide function.
 
-            if not Is_Constrained (Result_Subt)
+            if not Is_Constrained (Underlying_Type (Result_Subt))
               or else Is_Tagged_Type (Underlying_Type (Result_Subt))
             then
                Discard :=
