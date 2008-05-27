@@ -173,25 +173,28 @@ package body Exp_Disp is
 
             --  Handle private types of library level tagged types. We must
             --  exchange the private and full-view to ensure the correct
-            --  expansion.
+            --  expansion. If the full view is a synchronized type ignore
+            --  the type because the table will be built for the corresponding
+            --  record type, that has its own declaration.
 
             elsif (Nkind (D) = N_Private_Type_Declaration
                      or else Nkind (D) = N_Private_Extension_Declaration)
                and then Present (Full_View (Defining_Entity (D)))
-               and then Is_Library_Level_Tagged_Type
-                          (Full_View (Defining_Entity (D)))
-               and then Ekind (Full_View (Defining_Entity (D)))
-                          /= E_Record_Subtype
             then
                declare
                   E1 : constant Entity_Id := Defining_Entity (D);
-                  E2 : constant Entity_Id := Full_View (Defining_Entity (D));
+                  E2 : constant Entity_Id := Full_View (E1);
 
                begin
-                  Exchange_Declarations (E1);
-                  Insert_List_After_And_Analyze (Last (Target_List),
-                    Make_DT (E1));
-                  Exchange_Declarations (E2);
+                  if Is_Library_Level_Tagged_Type (E2)
+                    and then Ekind (E2) /= E_Record_Subtype
+                    and then not Is_Concurrent_Type (E2)
+                  then
+                     Exchange_Declarations (E1);
+                     Insert_List_After_And_Analyze (Last (Target_List),
+                       Make_DT (E1));
+                     Exchange_Declarations (E2);
+                  end if;
                end;
             end if;
 
