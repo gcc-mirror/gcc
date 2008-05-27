@@ -1,3 +1,46 @@
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb:
+	<prefix>-gnat stack spawns gnatstack, not <prefix>-gnatstack
+
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): If the aggregate contains
+	tasks, create an activation chain now, before the expansion into
+	assignments and build-in-place calls that require the presence of an
+	activation chain.
+	(Backend_Processing_Possible): If the component type is inherently
+	limited, the aggregate must be expanded into individual built-in-place
+	assignments.
+
+	* sem_ch6.adb (Build_Extra_Formals): Use underlying type of result to
+	determine whether an allocation extra parameter must be built, to
+	handle case of a private type whose full type is a discriminated type
+	with defaults.
+
+2008-05-27  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi:
+	Document the new behavior regarding trampolines.
+
+2008-05-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-direio.adb, a-sequio.adb: Replace address clause by
+	unrestricted_access, simpler and compatible with .NET.
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb:
+	(Project_Path_Name_Of.Try_Path): Do not use Locate_Regular_File to find
+	a project file, so that symbolic links are not resolved.
+
+2008-05-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-ztexio.adb, a-textio.adb, a-witeio.adb, s-direio.adb:
+	Replace heavy address clause by 'Unrestricted_Access, cleaner and more
+	portable across GNAT targets, since this kind of address clause is not
+	supported by VM back-ends (.NET/JGNAT).
+
 2008-05-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* bindgen.adb: Update comments.
