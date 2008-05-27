@@ -259,21 +259,24 @@ package body System.Stack_Usage is
       --  likely to happen.
 
       Current_Stack_Level : aliased Integer;
+
    begin
       --  Reajust the pattern size. When we arrive in this function, there is
       --  already a given amount of stack used, that we won't analyze.
 
-      Analyzer.Stack_Used_When_Filling := Stack_Size
-        (Analyzer.Bottom_Of_Stack,
-         To_Stack_Address (Current_Stack_Level'Address))
-        + Natural (Current_Stack_Level'Size);
+      Analyzer.Stack_Used_When_Filling :=
+        Stack_Size
+         (Analyzer.Bottom_Of_Stack,
+          To_Stack_Address (Current_Stack_Level'Address))
+          + Natural (Current_Stack_Level'Size);
 
-      Analyzer.Pattern_Size := Analyzer.Pattern_Size
-        - Analyzer.Stack_Used_When_Filling;
+      Analyzer.Pattern_Size :=
+        Analyzer.Pattern_Size - Analyzer.Stack_Used_When_Filling;
 
       declare
          Stack : aliased Stack_Slots
-           (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+                           (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+
       begin
          Stack := (others => Analyzer.Pattern);
 
@@ -318,8 +321,7 @@ package body System.Stack_Usage is
 
       Analyzer.Task_Name := (others => ' ');
 
-      --  Compute the task name, and truncate it if it's bigger than
-      --  Task_Name_Length
+      --  Compute the task name, and truncate if bigger than Task_Name_Length
 
       if Task_Name'Length <= Task_Name_Length then
          Analyzer.Task_Name (1 .. Task_Name'Length) := Task_Name;
@@ -538,16 +540,18 @@ package body System.Stack_Usage is
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
       Measure : constant Natural :=
-        Stack_Size
-          (Analyzer.Topmost_Touched_Mark,
-           Analyzer.Bottom_Of_Stack)
-        + Analyzer.Stack_Used_When_Filling;
-      Result : constant Task_Result :=
-        (Task_Name      => Analyzer.Task_Name,
-         Max_Size       => Analyzer.Stack_Size,
-         Min_Measure    => Measure,
-         Max_Measure    => Measure + Analyzer.Stack_Size
-         - Analyzer.Pattern_Size);
+                  Stack_Size
+                    (Analyzer.Topmost_Touched_Mark,
+                     Analyzer.Bottom_Of_Stack)
+                  + Analyzer.Stack_Used_When_Filling;
+
+      Result  : constant Task_Result :=
+                  (Task_Name      => Analyzer.Task_Name,
+                   Max_Size       => Analyzer.Stack_Size,
+                   Min_Measure    => Measure,
+                   Max_Measure    => Measure + Analyzer.Stack_Size
+                                             - Analyzer.Pattern_Size);
+
    begin
       if Analyzer.Result_Id in Result_Array'Range then
 
