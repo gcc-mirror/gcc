@@ -1454,11 +1454,11 @@ maybe_fix_stack_asms (void)
 	      switch (c)
 		{
 		case '=': case '+': case '*': case '%': case '?': case '!':
-		case '0': case '1': case '2': case '3': case '4': case 'm':
-		case '<': case '>': case 'V': case 'o': case '&': case 'E':
-		case 'F': case 's': case 'i': case 'n': case 'X': case 'I':
-		case 'J': case 'K': case 'L': case 'M': case 'N': case 'O':
-		case 'P':
+		case '0': case '1': case '2': case '3': case '4': case '<':
+		case '>': case 'V': case 'o': case '&': case 'E': case 'F':
+		case 's': case 'i': case 'n': case 'X': case 'I': case 'J':
+		case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
+		case TARGET_MEM_CONSTRAINT:
 		  break;
 
 		case 'p':

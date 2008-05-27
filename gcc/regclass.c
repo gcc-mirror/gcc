@@ -1701,7 +1701,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    [(int) base_reg_class (VOIDmode, ADDRESS, SCRATCH)];
 		  break;
 
-		case 'm':  case 'o':  case 'V':
+		case TARGET_MEM_CONSTRAINT:  case 'o':  case 'V':
 		  /* It doesn't seem worth distinguishing between offsettable
 		     and non-offsettable addresses here.  */
 		  allows_mem[i] = 1;

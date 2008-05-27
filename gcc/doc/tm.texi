@@ -5315,6 +5315,17 @@ into the @code{symbol_ref}, and then check for it here.  When you see a
 Format}.
 @end defmac
 
+@defmac TARGET_MEM_CONSTRAINT
+A single character to be used instead of the default @code{'m'}
+character for general memory addresses.  This defines the constraint
+letter which matches the memory addresses accepted by
+@code{GO_IF_LEGITIMATE_ADDRESS_P}.  Define this macro if you want to
+support new address formats in your back end without changing the
+semantics of the @code{'m'} constraint.  This is necessary in order to
+preserve functionality of inline assembly constructs using the
+@code{'m'} constraint.
+@end defmac
+
 @defmac FIND_BASE_TERM (@var{x})
 A C expression to determine the base term of address @var{x}.
 This macro is used in only one place: `find_base_term' in alias.c.

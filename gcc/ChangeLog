@@ -1,3 +1,23 @@
+2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* defaults.h (TARGET_MEM_CONSTRAINT): New target macro added.
+	* postreload.c (reload_cse_simplify_operands): Replace 'm'
+	constraint with TARGET_MEM_CONSTRAINT.
+	* recog.c (asm_operand_ok, preprocess_constraints,
+	constrain_operands): Likewise.
+	* regclass.c (record_reg_classes): Likewise.
+	* reload.c (find_reloads, alternative_allows_const_pool_ref):
+	Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	* stmt.c (parse_output_constraint, parse_input_constraint):
+	Likewise.
+	* recog.h: Adjust comment.
+	* genpreds.c (generic_constraint_letters): Remove 'm' constraint.
+	* genoutput.c (note_constraint): Don't emit error for 'm'
+	constraint.
+	* doc/md.texi: Add a note to description of 'm' constraint.
+	* doc/tm.texi: Document the new TARGET_MEM_CONSTRAINT macro.
+
 2008-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (sra_type_can_be_decomposed_p) <RECORD_TYPE>: Make sure

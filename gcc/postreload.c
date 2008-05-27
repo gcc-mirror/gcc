@@ -542,12 +542,12 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		case '*':  case '%':
 		case '0':  case '1':  case '2':  case '3':  case '4':
 		case '5':  case '6':  case '7':  case '8':  case '9':
-		case 'm':  case '<':  case '>':  case 'V':  case 'o':
+		case '<':  case '>':  case 'V':  case 'o':
 		case 'E':  case 'F':  case 'G':  case 'H':
 		case 's':  case 'i':  case 'n':
 		case 'I':  case 'J':  case 'K':  case 'L':
 		case 'M':  case 'N':  case 'O':  case 'P':
-		case 'p': case 'X':
+		case 'p':  case 'X':  case TARGET_MEM_CONSTRAINT:
 		  /* These don't say anything we care about.  */
 		  break;
 

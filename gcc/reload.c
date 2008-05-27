@@ -3182,7 +3182,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		badop = 0;
 		break;
 
-	      case 'm':
+	      case TARGET_MEM_CONSTRAINT:
 		if (force_reload)
 		  break;
 		if (MEM_P (operand)
@@ -4522,7 +4522,7 @@ alternative_allows_const_pool_ref (rtx mem, const char *constraint, int altnum)
       while (*constraint++ != ',');
       altnum--;
     }
-  /* Scan the requested alternative for 'm' or 'o'.
+  /* Scan the requested alternative for TARGET_MEM_CONSTRAINT or 'o'.
      If one of them is present, this alternative accepts the result of
      passing a constant-pool reference through find_reloads_toplev.
 
@@ -4533,7 +4533,7 @@ alternative_allows_const_pool_ref (rtx mem, const char *constraint, int altnum)
   for (; (c = *constraint) && c != ',' && c != '#';
        constraint += CONSTRAINT_LEN (c, constraint))
     {
-      if (c == 'm' || c == 'o')
+      if (c == TARGET_MEM_CONSTRAINT || c == 'o')
 	return true;
 #ifdef EXTRA_CONSTRAINT_STR
       if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
