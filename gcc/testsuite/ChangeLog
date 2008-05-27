@@ -1,3 +1,8 @@
+2008-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/compile/pr11832.c: XFAIL on (x86 && ilp32 && pic).
+	* gcc.c-torture/compile/pr33009.c: Likewise.
+
 2008-05-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/35909
