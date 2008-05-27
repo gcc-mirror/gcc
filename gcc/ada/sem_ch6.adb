@@ -3142,7 +3142,18 @@ package body Sem_Ch6 is
       if Old_Type /= Standard_Void_Type
         and then New_Type /= Standard_Void_Type
       then
-         if not Conforming_Types (Old_Type, New_Type, Ctype, Get_Inst) then
+
+         --  If we are checking interface conformance we omit controlling
+         --  arguments and result, because we are only checking the conformance
+         --  of the remaining parameters.
+
+         if Has_Controlling_Result (Old_Id)
+           and then Has_Controlling_Result (New_Id)
+           and then Skip_Controlling_Formals
+         then
+            null;
+
+         elsif not Conforming_Types (Old_Type, New_Type, Ctype, Get_Inst) then
             Conformance_Error ("\return type does not match!", New_Id);
             return;
          end if;
@@ -5774,13 +5785,16 @@ package body Sem_Ch6 is
       Iface_Prim  : Entity_Id;
       Prim        : Entity_Id) return Boolean
    is
+      Iface : constant Entity_Id := Find_Dispatching_Type (Iface_Prim);
+      Typ   : constant Entity_Id := Find_Dispatching_Type (Prim);
+
    begin
       pragma Assert (Is_Subprogram (Iface_Prim)
         and then Is_Subprogram (Prim)
         and then Is_Dispatching_Operation (Iface_Prim)
         and then Is_Dispatching_Operation (Prim));
 
-      pragma Assert (Is_Interface (Find_Dispatching_Type (Iface_Prim))
+      pragma Assert (Is_Interface (Iface)
         or else (Present (Alias (Iface_Prim))
                    and then
                      Is_Interface
@@ -5791,48 +5805,40 @@ package body Sem_Ch6 is
         or else Ekind (Prim) /= Ekind (Iface_Prim)
         or else not Is_Dispatching_Operation (Prim)
         or else Scope (Prim) /= Scope (Tagged_Type)
-        or else No (Find_Dispatching_Type (Prim))
-        or else Base_Type (Find_Dispatching_Type (Prim)) /= Tagged_Type
+        or else No (Typ)
+        or else Base_Type (Typ) /= Tagged_Type
         or else not Primitive_Names_Match (Iface_Prim, Prim)
       then
          return False;
 
-      --  Case of a procedure, or a function not returning an interface
+      --  Case of a procedure, or a function that does not have a controlling
+      --  result (I or access I).
 
       elsif Ekind (Iface_Prim) = E_Procedure
         or else Etype (Prim) = Etype (Iface_Prim)
-        or else not Is_Interface (Etype (Iface_Prim))
+        or else not Has_Controlling_Result (Prim)
       then
          return Type_Conformant (Prim, Iface_Prim,
                   Skip_Controlling_Formals => True);
 
-      --  Case of a function returning an interface
+      --  Case of a function returning an interface, or an access to one.
+      --  Check that the return types correspond.
 
-      elsif Implements_Interface (Etype (Prim), Etype (Iface_Prim)) then
-         declare
-            Ret_Typ       : constant Entity_Id := Etype (Prim);
-            Is_Conformant : Boolean;
+      elsif Implements_Interface (Typ, Iface) then
+         if (Ekind (Etype (Prim)) = E_Anonymous_Access_Type)
+            /= (Ekind (Etype (Iface_Prim)) = E_Anonymous_Access_Type)
+         then
+            return False;
 
-         begin
-            --  Temporarly set both entities returning exactly the same type to
-            --  be able to call Type_Conformant (because that routine has no
-            --  machinery to handle interfaces).
-
-            Set_Etype (Prim, Etype (Iface_Prim));
-
-            Is_Conformant :=
+         else
+            return
               Type_Conformant (Prim, Iface_Prim,
                 Skip_Controlling_Formals => True);
+         end if;
 
-            --  Restore proper decoration of returned type
-
-            Set_Etype (Prim, Ret_Typ);
-
-            return Is_Conformant;
-         end;
+      else
+         return False;
       end if;
-
-      return False;
    end Is_Interface_Conformant;
 
    ---------------------------------
