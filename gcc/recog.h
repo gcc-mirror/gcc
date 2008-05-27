@@ -50,7 +50,8 @@ struct operand_alternative
 
   /* Nonzero if '&' was found in the constraint string.  */
   unsigned int earlyclobber:1;
-  /* Nonzero if 'm' was found in the constraint string.  */
+  /* Nonzero if TARGET_MEM_CONSTRAINT was found in the constraint
+     string.  */
   unsigned int memory_ok:1;
   /* Nonzero if 'o' was found in the constraint string.  */
   unsigned int offmem_ok:1;

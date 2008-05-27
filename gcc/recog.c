@@ -1543,7 +1543,7 @@ asm_operand_ok (rtx op, const char *constraint)
 	    result = 1;
 	  break;
 
-	case 'm':
+	case TARGET_MEM_CONSTRAINT:
 	case 'V': /* non-offsettable */
 	  if (memory_operand (op, VOIDmode))
 	    result = 1;
@@ -2082,7 +2082,7 @@ preprocess_constraints (void)
 		  }
 		  continue;
 
-		case 'm':
+		case TARGET_MEM_CONSTRAINT:
 		  op_alt[j].memory_ok = 1;
 		  break;
 		case '<':
@@ -2355,7 +2355,7 @@ constrain_operands (int strict)
 		win = 1;
 		break;
 
-	      case 'm':
+	      case TARGET_MEM_CONSTRAINT:
 		/* Memory operands must be valid, to the extent
 		   required by STRICT.  */
 		if (MEM_P (op))

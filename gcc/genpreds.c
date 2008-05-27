@@ -690,8 +690,11 @@ static struct constraint_data **last_constraint_ptr = &first_constraint;
   for (iter_ = first_constraint; iter_; iter_ = iter_->next_textual)
 
 /* These letters, and all names beginning with them, are reserved for
-   generic constraints.  */
-static const char generic_constraint_letters[] = "EFVXgimnoprs";
+   generic constraints.
+   The 'm' constraint is not mentioned here since that constraint
+   letter can be overridden by the back end by defining the
+   TARGET_MEM_CONSTRAINT macro.  */
+static const char generic_constraint_letters[] = "EFVXginoprs";
 
 /* Machine-independent code expects that constraints with these
    (initial) letters will allow only (a subset of all) CONST_INTs.  */

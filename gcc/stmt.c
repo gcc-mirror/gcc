@@ -363,7 +363,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	  }
 	break;
 
-      case 'V':  case 'm':  case 'o':
+      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
 	*allows_mem = true;
 	break;
 
@@ -462,7 +462,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	  }
 	break;
 
-      case 'V':  case 'm':  case 'o':
+      case 'V':  case TARGET_MEM_CONSTRAINT:  case 'o':
 	*allows_mem = true;
 	break;
 

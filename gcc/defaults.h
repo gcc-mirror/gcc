@@ -902,6 +902,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LEGITIMATE_PIC_OPERAND_P(X) 1
 #endif
 
+#ifndef TARGET_MEM_CONSTRAINT
+#define TARGET_MEM_CONSTRAINT 'm'
+#endif
+
 #ifndef REVERSIBLE_CC_MODE
 #define REVERSIBLE_CC_MODE(MODE) 0
 #endif
