@@ -551,7 +551,7 @@ package body Makegpr is
                if not For_Gnatmake then
                   if Data.Library_Kind = Static then
                      Add_Argument
-                       (Get_Name_String (Data.Display_Library_Dir) &
+                       (Get_Name_String (Data.Library_Dir.Display_Name) &
                         Directory_Separator &
                         "lib" & Get_Name_String (Data.Library_Name) &
                         '.' & Archive_Ext,
@@ -565,7 +565,7 @@ package body Makegpr is
                        ("-l" & Get_Name_String (Data.Library_Name),
                         Verbose_Mode);
 
-                     Get_Name_String (Data.Display_Library_Dir);
+                     Get_Name_String (Data.Library_Dir.Display_Name);
 
                      Add_Argument
                        ("-L" & Name_Buffer (1 .. Name_Len),
@@ -617,7 +617,7 @@ package body Makegpr is
 
             elsif Project = Main_Project and then Global_Archive_Exists then
                Add_Argument
-                 (Get_Name_String (Data.Display_Object_Dir) &
+                 (Get_Name_String (Data.Object_Directory.Display_Name) &
                   Directory_Separator &
                   "lib" & Get_Name_String (Data.Display_Name)
                   & '.' & Archive_Ext,
@@ -1069,13 +1069,13 @@ package body Makegpr is
 
       if Project_Of_Current_Object_Directory /= Main_Project then
          Project_Of_Current_Object_Directory := Main_Project;
-         Change_Dir (Get_Name_String (Data.Object_Directory));
+         Change_Dir (Get_Name_String (Data.Object_Directory.Name));
 
          if Verbose_Mode then
             Write_Str  ("Changing to object directory of """);
             Write_Name (Data.Display_Name);
             Write_Str  (""": """);
-            Write_Name (Data.Display_Object_Dir);
+            Write_Name (Data.Object_Directory.Display_Name);
             Write_Line ("""");
          end if;
       end if;
@@ -1647,7 +1647,8 @@ package body Makegpr is
                MLib.Build_Library
                  (Ofiles      => Arguments (1 .. Last_Argument),
                   Output_File => Get_Name_String (Data.Library_Name),
-                  Output_Dir  => Get_Name_String (Data.Display_Library_Dir));
+                  Output_Dir  => Get_Name_String
+                                   (Data.Library_Dir.Display_Name));
 
             else
                --  Link with g++ if C++ is one of the languages, otherwise
@@ -1709,7 +1710,7 @@ package body Makegpr is
                   Options      => Lib_Opts.all,
                   Interfaces   => No_Argument,
                   Lib_Filename => Get_Name_String (Data.Library_Name),
-                  Lib_Dir      => Get_Name_String (Data.Library_Dir),
+                  Lib_Dir      => Get_Name_String (Data.Library_Dir.Name),
                   Symbol_Data  => No_Symbols,
                   Driver_Name  => Driver_Name,
                   Lib_Version  => "",
@@ -2460,13 +2461,13 @@ package body Makegpr is
 
       if Project_Of_Current_Object_Directory /= Main_Project then
          Project_Of_Current_Object_Directory := Main_Project;
-         Change_Dir (Get_Name_String (Data.Object_Directory));
+         Change_Dir (Get_Name_String (Data.Object_Directory.Name));
 
          if Verbose_Mode then
             Write_Str  ("Changing to object directory of """);
             Write_Name (Data.Name);
             Write_Str  (""": """);
-            Write_Name (Data.Display_Object_Dir);
+            Write_Name (Data.Object_Directory.Display_Name);
             Write_Line ("""");
          end if;
       end if;
@@ -2567,7 +2568,7 @@ package body Makegpr is
       --  Specify the project file
 
       Add_Argument (Dash_P, True);
-      Add_Argument (Get_Name_String (Data.Display_Path_Name), True);
+      Add_Argument (Get_Name_String (Data.Path.Display_Name), True);
 
       --  Add the saved switches, if any
 
@@ -2774,13 +2775,13 @@ package body Makegpr is
 
             if Project_Of_Current_Object_Directory /= Project then
                Project_Of_Current_Object_Directory := Project;
-               Change_Dir (Get_Name_String (Data.Object_Directory));
+               Change_Dir (Get_Name_String (Data.Object_Directory.Name));
 
                if Verbose_Mode then
                   Write_Str  ("Changing to object directory of """);
                   Write_Name (Data.Display_Name);
                   Write_Str  (""": """);
-                  Write_Name (Data.Display_Object_Dir);
+                  Write_Name (Data.Object_Directory.Display_Name);
                   Write_Line ("""");
                end if;
             end if;
@@ -3351,7 +3352,7 @@ package body Makegpr is
 
             if not Compile_Only
               and then not Data.Library
-              and then Data.Object_Directory /= No_Path
+              and then Data.Object_Directory /= No_Path_Information
             then
                Build_Global_Archive;
                Link_Executables;
@@ -3513,7 +3514,7 @@ package body Makegpr is
       --  True if main sources were specified on the command line
 
       Object_Dir : constant String :=
-                     Get_Name_String (Data.Display_Object_Dir);
+                     Get_Name_String (Data.Object_Directory.Display_Name);
       --  Path of the object directory of the main project
 
       Source_Id : Other_Source_Id;
@@ -3576,7 +3577,8 @@ package body Makegpr is
             if Data.Other_Sources_Present then
                declare
                   Archive_Path : constant String := Get_Name_String
-                    (Prj_Data.Display_Object_Dir) & Directory_Separator
+                    (Prj_Data.Object_Directory.Display_Name)
+                    & Directory_Separator
                     & "lib" & Get_Name_String (Prj_Data.Display_Name)
                     & '.' & Archive_Ext;
                   Archive_TS   : Time_Stamp_Type;
@@ -3641,7 +3643,7 @@ package body Makegpr is
 
          Executable_Path : constant String :=
                              Get_Name_String
-                               (Data.Display_Exec_Dir) &
+                               (Data.Exec_Directory.Display_Name) &
                                 Directory_Separator & Executable_Name;
          --  Path name of the executable
 
@@ -3699,7 +3701,7 @@ package body Makegpr is
 
             Add_Argument (Dash_o, True);
             Add_Argument
-              (Get_Name_String (Data.Display_Exec_Dir) &
+              (Get_Name_String (Data.Exec_Directory.Display_Name) &
                Directory_Separator &
                Get_Name_String
                  (Executable_Of

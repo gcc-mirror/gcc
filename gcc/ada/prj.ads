@@ -150,6 +150,13 @@ package Prj is
    function Empty_String return Name_Id;
    --  Return the id for an empty string ""
 
+   type Path_Information is record
+      Name         : Path_Name_Type := No_Path;
+      Display_Name : Path_Name_Type := No_Path;
+   end record;
+
+   No_Path_Information : constant Path_Information := (No_Path, No_Path);
+
    type Project_Id is new Nat;
    No_Project : constant Project_Id := 0;
    --  Id of a Project File
@@ -672,11 +679,8 @@ package Prj is
       Display_File        : File_Name_Type        := No_File;
       --  File name of the source, for display purposes
 
-      Path                : Path_Name_Type        := No_Path;
-      --  Canonical path name of the source
-
-      Display_Path        : Path_Name_Type        := No_Path;
-      --  Path name of the source, for display purposes
+      Path                : Path_Information      := No_Path_Information;
+      --  Path name of the source
 
       Source_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
       --  Time stamp of the source file
@@ -756,8 +760,7 @@ package Prj is
                        Replaced_By            => No_Source,
                        File                   => No_File,
                        Display_File           => No_File,
-                       Path                   => No_Path,
-                       Display_Path           => No_Path,
+                       Path                   => No_Path_Information,
                        Source_TS              => Empty_Time_Stamp,
                        Object_Project         => No_Project,
                        Object_Exists          => True,
@@ -1252,21 +1255,10 @@ package Prj is
    --  separator.
 
    type Project_Data is record
-      Qualifier : Project_Qualifier := Unspecified;
-      --  The eventual qualifier for this project
 
-      Externally_Built : Boolean := False;
-      --  True if the project is externally built. In such case, the Project
-      --  Manager will not modify anything in this project.
-
-      Languages : Name_List_Index := No_Name_List;
-      --  The list of languages of the sources of this project
-
-      Config : Project_Configuration;
-
-      First_Referred_By : Project_Id := No_Project;
-      --  The project, if any, that was the first to be known as importing or
-      --  extending this project
+      -------------
+      -- General --
+      -------------
 
       Name : Name_Id := No_Name;
       --  The name of the project
@@ -1274,12 +1266,17 @@ package Prj is
       Display_Name : Name_Id := No_Name;
       --  The name of the project with the spelling of its declaration
 
-      Path_Name : Path_Name_Type := No_Path;
-      --  The path name of the project file
+      Qualifier : Project_Qualifier := Unspecified;
+      --  The eventual qualifier for this project
 
-      Display_Path_Name : Path_Name_Type := No_Path;
-      --  The path name used for display purposes. May be different from
-      --  Path_Name for platforms where the file names are case-insensitive.
+      Externally_Built : Boolean := False;
+      --  True if the project is externally built. In such case, the Project
+      --  Manager will not modify anything in this project.
+
+      Config : Project_Configuration;
+
+      Path              : Path_Information := No_Path_Information;
+      --  The path name of the project file
 
       Virtual : Boolean := False;
       --  True for virtual extending projects
@@ -1287,52 +1284,76 @@ package Prj is
       Location : Source_Ptr := No_Location;
       --  The location in the project file source of the reserved word project
 
+      Naming : Naming_Data := Standard_Naming_Data;
+      --  The naming scheme of this project file
+
+      ---------------
+      -- Languages --
+      ---------------
+
+      Languages : Name_List_Index := No_Name_List;
+      --  The list of languages of the sources of this project
+
+      Include_Language : Language_Index := No_Language_Index;
+
+      First_Language_Processing : Language_Index := No_Language_Index;
+      --  First index of the language data in the project
+
+      Unit_Based_Language_Name  : Name_Id := No_Name;
+      Unit_Based_Language_Index : Language_Index := No_Language_Index;
+      --  The name and index, if any, of the unit-based language of some
+      --  sources of the project. There may be only one unit-based language
+      --  in one project.
+
+      --------------
+      -- Projects --
+      --------------
+
+      First_Referred_By : Project_Id := No_Project;
+      --  The project, if any, that was the first to be known as importing or
+      --  extending this project
+
       Mains : String_List_Id := Nil_String;
       --  List of mains specified by attribute Main
 
-      Directory : Path_Name_Type := No_Path;
+      Extends : Project_Id := No_Project;
+      --  The reference of the project file, if any, that this project file
+      --  extends.
+
+      Extended_By : Project_Id := No_Project;
+      --  The reference of the project file, if any, that extends this project
+      --  file.
+
+      Decl : Declarations := No_Declarations;
+      --  The declarations (variables, attributes and packages) of this project
+      --  file.
+
+      Imported_Projects : Project_List := Empty_Project_List;
+      --  The list of all directly imported projects, if any
+
+      All_Imported_Projects : Project_List := Empty_Project_List;
+      --  The list of all projects imported directly or indirectly, if any
+
+      -----------------
+      -- Directories --
+      -----------------
+
+      Directory : Path_Information := No_Path_Information;
       --  Path name of the directory where the project file resides
 
-      Display_Directory : Path_Name_Type := No_Path;
-      --  The path name of the project directory, for display purposes. May be
-      --  different from Directory for platforms where the file names are
-      --  case-insensitive.
-
       Dir_Path : String_Access;
-      --  Same as Directory, but as an access to String
+      --  Same as Directory.Name, but as an access to String
 
-      Library_Dir : Path_Name_Type := No_Path;
-      --  If a library project, path name of the directory where the library
-      --  resides.
+      Object_Directory : Path_Information := No_Path_Information;
+      --  The path name of the object directory of this project file
 
-      Display_Library_Dir : Path_Name_Type := No_Path;
-      --  The path name of the library directory, for display purposes. May be
-      --  different from Library_Dir for platforms where the file names are
-      --  case-insensitive.
+      Exec_Directory : Path_Information := No_Path_Information;
+      --  The path name of the exec directory of this project file. Default is
+      --  equal to Object_Directory.
 
-      Library_TS : Time_Stamp_Type := Empty_Time_Stamp;
-      --  The timestamp of a library file in a library project
-
-      Library_Src_Dir : Path_Name_Type := No_Path;
-      --  If a Stand-Alone Library project, path name of the directory where
-      --  the sources of the interfaces of the library are copied. By default,
-      --  if attribute Library_Src_Dir is not specified, sources of the
-      --  interfaces are not copied anywhere.
-
-      Display_Library_Src_Dir : Path_Name_Type := No_Path;
-      --  The path name of the library source directory, for display purposes.
-      --  May be different from Library_Src_Dir for platforms where the file
-      --  names are case-insensitive.
-
-      Library_ALI_Dir : Path_Name_Type := No_Path;
-      --  In a library project, path name of the directory where the ALI files
-      --  are copied. If attribute Library_ALI_Dir is not specified, ALI files
-      --  are copied in the Library_Dir.
-
-      Display_Library_ALI_Dir : Path_Name_Type := No_Path;
-      --  The path name of the library ALI directory, for display purposes. May
-      --  be different from Library_ALI_Dir for platforms where the file names
-      --  are case-insensitive.
+      -------------
+      -- Library --
+      -------------
 
       Library : Boolean := False;
       --  True if this is a library project
@@ -1342,6 +1363,24 @@ package Prj is
 
       Library_Kind : Lib_Kind := Static;
       --  If a library project, kind of library
+
+      Library_Dir : Path_Information := No_Path_Information;
+      --  If a library project, path name of the directory where the library
+      --  resides.
+
+      Library_TS : Time_Stamp_Type := Empty_Time_Stamp;
+      --  The timestamp of a library file in a library project
+
+      Library_Src_Dir : Path_Information := No_Path_Information;
+      --  If a Stand-Alone Library project, path name of the directory where
+      --  the sources of the interfaces of the library are copied. By default,
+      --  if attribute Library_Src_Dir is not specified, sources of the
+      --  interfaces are not copied anywhere.
+
+      Library_ALI_Dir : Path_Information := No_Path_Information;
+      --  In a library project, path name of the directory where the ALI files
+      --  are copied. If attribute Library_ALI_Dir is not specified, ALI files
+      --  are copied in the Library_Dir.
 
       Lib_Internal_Name : Name_Id := No_Name;
       --  If a library project, internal name store inside the library
@@ -1357,11 +1396,16 @@ package Prj is
       --  For non static Stand-Alone Library Project Files, indicate if
       --  the library initialisation should be automatic.
 
-      Libgnarl_Needed : Yes_No_Unknown := Unknown;
-      --  Set to True when libgnarl is needed to link
-
       Symbol_Data : Symbol_Record := No_Symbols;
       --  Symbol file name, reference symbol file name, symbol policy
+
+      Need_To_Build_Lib : Boolean := False;
+      --  Indicates that the library of a Library Project needs to be built or
+      --  rebuilt.
+
+      -------------
+      -- Sources --
+      -------------
 
       Ada_Sources : String_List_Id := Nil_String;
       --  The list of all the Ada source file names (gnatmake only)
@@ -1377,27 +1421,21 @@ package Prj is
       --  True if attribute Interfaces is declared for the project or any
       --  project it extends.
 
-      Unit_Based_Language_Name  : Name_Id := No_Name;
-      Unit_Based_Language_Index : Language_Index := No_Language_Index;
-      --  The name and index, if any, of the unit-based language of some
-      --  sources of the project. There may be only one unit-based language
-      --  in one project.
-
       Imported_Directories_Switches : Argument_List_Access := null;
       --  List of the source search switches (-I<source dir>) to be used when
       --  compiling.
 
       Include_Path : String_Access := null;
-      --  Value of the environment variable to indicate the source search path,
-      --  instead of a list of switches (Imported_Directories_Switches).
+      --  The search source path for the project. Used as the value for an
+      --  environment variable, specified by attribute Include_Path
+      --  (<language>). The names of the environment variables are in component
+      --  Include_Path of the records Language_Config.
 
       Include_Path_File : Path_Name_Type := No_Path;
       --  The path name of the of the source search directory file
 
       Include_Data_Set : Boolean := False;
       --  Set True when Imported_Directories_Switches or Include_Path are set
-
-      Include_Language : Language_Index := No_Language_Index;
 
       Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories
@@ -1407,56 +1445,37 @@ package Prj is
       --  the ordering of the source subdirs depend on the OS. If True,
       --  duplicate file names in the same project file are allowed.
 
-      Object_Directory : Path_Name_Type := No_Path;
-      --  The path name of the object directory of this project file
-
-      Display_Object_Dir : Path_Name_Type := No_Path;
-      --  The path name of the object directory, for display purposes. May be
-      --  different from Object_Directory for platforms where the file names
-      --  are case-insensitive.
-
-      Exec_Directory : Path_Name_Type := No_Path;
-      --  The path name of the exec directory of this project file. Default is
-      --  equal to Object_Directory.
-
-      Display_Exec_Dir : Path_Name_Type := No_Path;
-      --  The path name of the exec directory, for display purposes. May be
-      --  different from Exec_Directory for platforms where the file names are
-      --  case-insensitive.
-
-      Extends : Project_Id := No_Project;
-      --  The reference of the project file, if any, that this project file
-      --  extends.
-
-      Extended_By : Project_Id := No_Project;
-      --  The reference of the project file, if any, that extends this project
-      --  file.
-
-      Naming : Naming_Data := Standard_Naming_Data;
-      --  The naming scheme of this project file
-
-      First_Language_Processing : Language_Index := No_Language_Index;
-      --  First index of the language data in the project
-
-      Decl : Declarations := No_Declarations;
-      --  The declarations (variables, attributes and packages) of this project
-      --  file.
-
-      Imported_Projects : Project_List := Empty_Project_List;
-      --  The list of all directly imported projects, if any
-
-      All_Imported_Projects : Project_List := Empty_Project_List;
-      --  The list of all projects imported directly or indirectly, if any
-
       Ada_Include_Path : String_Access := null;
-      --  The cached value of ADA_INCLUDE_PATH for this project file. Do not
-      --  use this field directly outside of the compiler, use
+      --  The cached value of source search path for this project file. Set by
+      --  the first call to Prj.Env.Ada_Include_Path for the project. Do not
+      --  use this field directly outside of the project manager, use
       --  Prj.Env.Ada_Include_Path instead.
+
+      -------------
+      -- Linking --
+      -------------
+
+      Linker_Name : File_Name_Type  := No_File;
+      --  Value of attribute Language_Processing'Linker in the project file
+
+      Linker_Path : Path_Name_Type  := No_Path;
+      --  Path of linker when attribute Language_Processing'Linker is specified
+
+      Minimum_Linker_Options : Name_List_Index := No_Name_List;
+      --  List of options specified in attribute
+      --  Language_Processing'Minimum_Linker_Options.
+
+      -------------------
+      -- Miscellaneous --
+      -------------------
 
       Ada_Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file. Do not
       --  use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Objects_Path instead.
+
+      Libgnarl_Needed : Yes_No_Unknown := Unknown;
+      --  Set to True when libgnarl is needed to link
 
       Objects_Path : String_Access := null;
       --  The cached value of the object dir path, used during the binding
@@ -1477,16 +1496,6 @@ package Prj is
       --  An indication that the configuration pragmas file is a temporary file
       --  that must be deleted at the end.
 
-      Linker_Name : File_Name_Type  := No_File;
-      --  Value of attribute Language_Processing'Linker in the project file
-
-      Linker_Path : Path_Name_Type  := No_Path;
-      --  Path of linker when attribute Language_Processing'Linker is specified
-
-      Minimum_Linker_Options : Name_List_Index := No_Name_List;
-      --  List of options specified in attribute
-      --  Language_Processing'Minimum_Linker_Options.
-
       Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file
 
@@ -1497,10 +1506,6 @@ package Prj is
       Seen : Boolean := False;
       --  A flag to mark a project as "visited" to avoid processing the same
       --  project several time.
-
-      Need_To_Build_Lib : Boolean := False;
-      --  Indicates that the library of a Library Project needs to be built or
-      --  rebuilt.
 
       Depth : Natural := 0;
       --  The maximum depth of a project in the project graph. Depth of main
@@ -1575,13 +1580,12 @@ package Prj is
    type Spec_Or_Body is (Specification, Body_Part);
 
    type File_Name_Data is record
-      Name         : File_Name_Type := No_File;
-      Index        : Int            := 0;
-      Display_Name : File_Name_Type := No_File;
-      Path         : Path_Name_Type := No_Path;
-      Display_Path : Path_Name_Type := No_Path;
-      Project      : Project_Id     := No_Project;
-      Needs_Pragma : Boolean        := False;
+      Name         : File_Name_Type   := No_File;
+      Index        : Int              := 0;
+      Display_Name : File_Name_Type   := No_File;
+      Path         : Path_Information := No_Path_Information;
+      Project      : Project_Id       := No_Project;
+      Needs_Pragma : Boolean          := False;
    end record;
    --  File and Path name of a spec or body
 

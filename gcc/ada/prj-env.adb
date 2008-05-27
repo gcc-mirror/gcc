@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -251,7 +251,7 @@ package body Prj.Env is
 
                if (Data.Library and then Including_Libraries)
                  or else
-                 (Data.Object_Directory /= No_Path
+                 (Data.Object_Directory /= No_Path_Information
                    and then
                    (not Including_Libraries or else not Data.Library))
                then
@@ -260,19 +260,22 @@ package body Prj.Env is
                   --  files; otherwise add the object directory.
 
                   if Data.Library then
-                     if Data.Object_Directory = No_Path
+                     if Data.Object_Directory = No_Path_Information
                        or else
-                         Contains_ALI_Files (Data.Library_ALI_Dir)
+                         Contains_ALI_Files (Data.Library_ALI_Dir.Name)
                      then
-                        Add_To_Path (Get_Name_String (Data.Library_ALI_Dir));
+                        Add_To_Path
+                          (Get_Name_String (Data.Library_ALI_Dir.Name));
                      else
-                        Add_To_Path (Get_Name_String (Data.Object_Directory));
+                        Add_To_Path
+                          (Get_Name_String (Data.Object_Directory.Name));
                      end if;
 
                   else
                      --  For a non library project, add the object directory
 
-                     Add_To_Path (Get_Name_String (Data.Object_Directory));
+                     Add_To_Path
+                       (Get_Name_String (Data.Object_Directory.Name));
                   end if;
                end if;
 
@@ -520,7 +523,7 @@ package body Prj.Env is
       --  If we don't know the path name of the body of this unit,
       --  we compute it, and we store it.
 
-      if Data.File_Names (Body_Part).Path = No_Path then
+      if Data.File_Names (Body_Part).Path = No_Path_Information then
          declare
             Current_Source : String_List_Id :=
               In_Tree.Projects.Table
@@ -530,7 +533,7 @@ package body Prj.Env is
          begin
             --  By default, put the file name
 
-            Data.File_Names (Body_Part).Path :=
+            Data.File_Names (Body_Part).Path.Name :=
               Path_Name_Type (Data.File_Names (Body_Part).Name);
 
             --  For each source directory
@@ -550,7 +553,7 @@ package body Prj.Env is
                if Path /= null then
                   Name_Len := Path'Length;
                   Name_Buffer (1 .. Name_Len) := Path.all;
-                  Data.File_Names (Body_Part).Path := Name_Enter;
+                  Data.File_Names (Body_Part).Path.Name := Name_Enter;
                   exit;
 
                else
@@ -566,7 +569,7 @@ package body Prj.Env is
 
       --  Returned the stored value
 
-      return Namet.Get_Name_String (Data.File_Names (Body_Part).Path);
+      return Namet.Get_Name_String (Data.File_Names (Body_Part).Path.Name);
    end Body_Path_Name_Of;
 
    ------------------------
@@ -1005,13 +1008,13 @@ package body Prj.Env is
             --  If there is a spec, put it in the mapping
 
             if Data.Name /= No_File then
-               if Data.Path = Slash then
+               if Data.Path.Name = Slash then
                   Fmap.Add_Forbidden_File_Name (Data.Name);
                else
                   Fmap.Add_To_File_Map
                     (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
                      File_Name => Data.Name,
-                     Path_Name => File_Name_Type (Data.Path));
+                     Path_Name => File_Name_Type (Data.Path.Name));
                end if;
             end if;
 
@@ -1020,13 +1023,13 @@ package body Prj.Env is
             --  If there is a body (or subunit) put it in the mapping
 
             if Data.Name /= No_File then
-               if Data.Path = Slash then
+               if Data.Path.Name = Slash then
                   Fmap.Add_Forbidden_File_Name (Data.Name);
                else
                   Fmap.Add_To_File_Map
                     (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
                      File_Name => Data.Name,
-                     Path_Name => File_Name_Type (Data.Path));
+                     Path_Name => File_Name_Type (Data.Path.Name));
                end if;
             end if;
          end if;
@@ -1111,7 +1114,7 @@ package body Prj.Env is
 
          --  Line with the path name
 
-         Get_Name_String (Data.Path);
+         Get_Name_String (Data.Path.Name);
          Put_Name_Buffer;
 
       end Put_Data;
@@ -1334,7 +1337,7 @@ package body Prj.Env is
                if Src_Data.Language_Name = Language
                  and then not Src_Data.Locally_Removed
                  and then Src_Data.Replaced_By = No_Source
-                 and then Src_Data.Path /= No_Path
+                 and then Src_Data.Path.Name /= No_Path
                then
                   if Src_Data.Unit /= No_Name then
                      Get_Name_String (Src_Data.Unit);
@@ -1359,7 +1362,7 @@ package body Prj.Env is
                   Get_Name_String (Src_Data.File);
                   Put_Name_Buffer;
 
-                  Get_Name_String (Src_Data.Path);
+                  Get_Name_String (Src_Data.Path.Name);
                   Put_Name_Buffer;
                end if;
 
@@ -1542,7 +1545,7 @@ package body Prj.Env is
 
                         if Full_Path then
                            return Get_Name_String
-                             (Unit.File_Names (Body_Part).Path);
+                             (Unit.File_Names (Body_Part).Path.Name);
 
                         else
                            return Get_Name_String (Current_Name);
@@ -1558,7 +1561,7 @@ package body Prj.Env is
 
                         if Full_Path then
                            return Get_Name_String
-                             (Unit.File_Names (Body_Part).Path);
+                             (Unit.File_Names (Body_Part).Path.Name);
 
                         else
                            return Extended_Body_Name;
@@ -1605,7 +1608,7 @@ package body Prj.Env is
 
                         if Full_Path then
                            return Get_Name_String
-                             (Unit.File_Names (Specification).Path);
+                             (Unit.File_Names (Specification).Path.Name);
                         else
                            return Get_Name_String (Current_Name);
                         end if;
@@ -1620,7 +1623,7 @@ package body Prj.Env is
 
                         if Full_Path then
                            return Get_Name_String
-                             (Unit.File_Names (Specification).Path);
+                             (Unit.File_Names (Specification).Path.Name);
                         else
                            return Extended_Spec_Name;
                         end if;
@@ -1723,8 +1726,8 @@ package body Prj.Env is
 
          --  If there is an object directory, call Action with its name
 
-         if Data.Object_Directory /= No_Path then
-            Get_Name_String (Data.Display_Object_Dir);
+         if Data.Object_Directory /= No_Path_Information then
+            Get_Name_String (Data.Object_Directory.Display_Name);
             Action (Name_Buffer (1 .. Name_Len));
          end if;
 
@@ -1899,16 +1902,17 @@ package body Prj.Env is
                  and then
                    Namet.Get_Name_String
                      (Unit.File_Names (Specification).Name) = Original_Name)
-              or else (Unit.File_Names (Specification).Path /= No_Path
+              or else (Unit.File_Names (Specification).Path /=
+                                                         No_Path_Information
                          and then
                            Namet.Get_Name_String
-                           (Unit.File_Names (Specification).Path) =
+                           (Unit.File_Names (Specification).Path.Name) =
                                                               Original_Name)
             then
                Project := Ultimate_Extension_Of
                            (Project => Unit.File_Names (Specification).Project,
                             In_Tree => In_Tree);
-               Path := Unit.File_Names (Specification).Display_Path;
+               Path := Unit.File_Names (Specification).Path.Display_Name;
 
                if Current_Verbosity > Default then
                   Write_Str ("Done: Specification.");
@@ -1921,15 +1925,15 @@ package body Prj.Env is
                     and then
                       Namet.Get_Name_String
                         (Unit.File_Names (Body_Part).Name) = Original_Name)
-              or else (Unit.File_Names (Body_Part).Path /= No_Path
+              or else (Unit.File_Names (Body_Part).Path /= No_Path_Information
                          and then Namet.Get_Name_String
-                                    (Unit.File_Names (Body_Part).Path) =
+                                    (Unit.File_Names (Body_Part).Path.Name) =
                                                              Original_Name)
             then
                Project := Ultimate_Extension_Of
                             (Project => Unit.File_Names (Body_Part).Project,
                              In_Tree => In_Tree);
-               Path := Unit.File_Names (Body_Part).Display_Path;
+               Path := Unit.File_Names (Body_Part).Path.Display_Name;
 
                if Current_Verbosity > Default then
                   Write_Str ("Done: Body.");
@@ -2121,7 +2125,7 @@ package body Prj.Env is
                Write_Str  ("   Project: ");
                Get_Name_String
                  (In_Tree.Projects.Table
-                   (Unit.File_Names (Specification).Project).Path_Name);
+                   (Unit.File_Names (Specification).Project).Path.Name);
                Write_Line (Name_Buffer (1 .. Name_Len));
             end if;
 
@@ -2139,7 +2143,7 @@ package body Prj.Env is
                Write_Str  ("   Project: ");
                Get_Name_String
                  (In_Tree.Projects.Table
-                   (Unit.File_Names (Body_Part).Project).Path_Name);
+                   (Unit.File_Names (Body_Part).Project).Path.Name);
                Write_Line (Name_Buffer (1 .. Name_Len));
             end if;
 
@@ -2328,7 +2332,7 @@ package body Prj.Env is
 
                      if (Data.Library and Including_Libraries)
                        or else
-                         (Data.Object_Directory /= No_Path
+                         (Data.Object_Directory /= No_Path_Information
                            and then
                             (not Including_Libraries or else not Data.Library))
                      then
@@ -2338,14 +2342,15 @@ package body Prj.Env is
                         --  otherwise add the object directory.
 
                         if Data.Library then
-                           if Data.Object_Directory = No_Path
-                             or else Contains_ALI_Files (Data.Library_ALI_Dir)
+                           if Data.Object_Directory = No_Path_Information
+                             or else Contains_ALI_Files
+                               (Data.Library_ALI_Dir.Name)
                            then
                               Add_To_Object_Path
-                                (Data.Library_ALI_Dir, In_Tree);
+                                (Data.Library_ALI_Dir.Name, In_Tree);
                            else
                               Add_To_Object_Path
-                                (Data.Object_Directory, In_Tree);
+                                (Data.Object_Directory.Name, In_Tree);
                            end if;
 
                         --  For a non-library project, add the object
@@ -2359,7 +2364,7 @@ package body Prj.Env is
                           and then There_Are_Ada_Sources (In_Tree, Project)
                         then
                            Add_To_Object_Path
-                             (Data.Object_Directory, In_Tree);
+                             (Data.Object_Directory.Name, In_Tree);
                         end if;
                      end if;
                   end if;
@@ -2566,7 +2571,7 @@ package body Prj.Env is
       Data : Unit_Data := In_Tree.Units.Table (Unit);
 
    begin
-      if Data.File_Names (Specification).Path = No_Path then
+      if Data.File_Names (Specification).Path.Name = No_Path then
          declare
             Current_Source : String_List_Id :=
               In_Tree.Projects.Table
@@ -2574,7 +2579,7 @@ package body Prj.Env is
             Path : GNAT.OS_Lib.String_Access;
 
          begin
-            Data.File_Names (Specification).Path :=
+            Data.File_Names (Specification).Path.Name :=
               Path_Name_Type (Data.File_Names (Specification).Name);
 
             while Current_Source /= Nil_String loop
@@ -2588,7 +2593,7 @@ package body Prj.Env is
                if Path /= null then
                   Name_Len := Path'Length;
                   Name_Buffer (1 .. Name_Len) := Path.all;
-                  Data.File_Names (Specification).Path := Name_Enter;
+                  Data.File_Names (Specification).Path.Name := Name_Enter;
                   exit;
                else
                   Current_Source :=
@@ -2601,7 +2606,7 @@ package body Prj.Env is
          end;
       end if;
 
-      return Namet.Get_Name_String (Data.File_Names (Specification).Path);
+      return Namet.Get_Name_String (Data.File_Names (Specification).Path.Name);
    end Spec_Path_Name_Of;
 
    ---------------------------

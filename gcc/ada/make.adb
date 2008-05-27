@@ -1068,7 +1068,7 @@ package body Make is
 
       else
          Get_Name_String
-           (Project_Tree.Projects.Table (Main_Project).Display_Directory);
+           (Project_Tree.Projects.Table (Main_Project).Directory.Display_Name);
          Add_Lib_Search_Dir
            (Normalize_Pathname (Path, Name_Buffer (1 .. Name_Len)));
       end if;
@@ -1120,7 +1120,7 @@ package body Make is
 
       else
          Get_Name_String
-           (Project_Tree.Projects.Table (Main_Project).Display_Directory);
+           (Project_Tree.Projects.Table (Main_Project).Directory.Display_Name);
          Add_Src_Search_Dir
            (Normalize_Pathname (Path, Name_Buffer (1 .. Name_Len)));
       end if;
@@ -1391,7 +1391,7 @@ package body Make is
       if Project_Of_Current_Object_Directory /= Actual_Project then
          Project_Of_Current_Object_Directory := Actual_Project;
          Object_Directory :=
-           Project_Tree.Projects.Table (Actual_Project).Object_Directory;
+           Project_Tree.Projects.Table (Actual_Project).Object_Directory.Name;
 
          --  Set the working directory to the object directory of the actual
          --  project.
@@ -1415,7 +1415,7 @@ package body Make is
          Make_Failed ("unable to change to object directory """ &
                       Path_Or_File_Name
                         (Project_Tree.Projects.Table
-                           (Actual_Project).Object_Directory) &
+                           (Actual_Project).Object_Directory.Name) &
                       """ of project " &
                       Get_Name_String (Project_Tree.Projects.Table
                                          (Actual_Project).Display_Name));
@@ -1938,7 +1938,7 @@ package body Make is
                   while ALI_Project /= No_Project and then
                     Obj_Dir /=
                       Project_Tree.Projects.Table
-                        (ALI_Project).Object_Directory
+                        (ALI_Project).Object_Directory.Name
                   loop
                      ALI_Project :=
                        Project_Tree.Projects.Table (ALI_Project).Extended_By;
@@ -2330,7 +2330,7 @@ package body Make is
 
                if Data.Dir_Path = null then
                   Data.Dir_Path :=
-                    new String'(Get_Name_String (Data.Display_Directory));
+                    new String'(Get_Name_String (Data.Directory.Display_Name));
                   Project_Tree.Projects.Table (Arguments_Project) :=
                     Data;
                end if;
@@ -3580,7 +3580,8 @@ package body Make is
                                     Udata.File_Names (Body_Part).Name /=
                                                                        No_File
                                    and then
-                                     Udata.File_Names (Body_Part).Path /= Slash
+                                     Udata.File_Names (Body_Part).Path.Name /=
+                                       Slash
                                  then
                                     Sfile := Udata.File_Names (Body_Part).Name;
                                     Source_Index :=
@@ -3590,8 +3591,8 @@ package body Make is
                                     Udata.File_Names (Specification).Name /=
                                                                         No_File
                                    and then
-                                    Udata.File_Names (Specification).Path /=
-                                                                          Slash
+                                     Udata.File_Names
+                                       (Specification).Path.Name /= Slash
                                  then
                                     Sfile :=
                                       Udata.File_Names (Specification).Name;
@@ -3796,7 +3797,7 @@ package body Make is
                   Parent_Directory : constant String :=
                     Get_Name_String
                       (Project_Tree.Projects.Table
-                           (Project).Display_Directory);
+                           (Project).Directory.Display_Name);
 
                begin
                   if Parent_Directory (Parent_Directory'Last) =
@@ -4538,9 +4539,9 @@ package body Make is
                            --  for other projects, use the object directory.
 
                            if PD.Library then
-                              Get_Name_String (PD.Library_Dir);
+                              Get_Name_String (PD.Library_Dir.Name);
                            else
-                              Get_Name_String (PD.Object_Directory);
+                              Get_Name_String (PD.Object_Directory.Name);
                            end if;
 
                            if Name_Buffer (Name_Len) /=
@@ -4987,7 +4988,7 @@ package body Make is
       if Main_Project /= No_Project then
 
          if Project_Tree.Projects.Table
-              (Main_Project).Object_Directory /= No_Path
+              (Main_Project).Object_Directory /= No_Path_Information
          then
             --  Change current directory to object directory of main project
 
@@ -5264,7 +5265,7 @@ package body Make is
                      --  impossible to build the library. So fail immediately.
 
                      if Project_Tree.Projects.Table (Proj).Object_Directory =
-                                                                 No_Path
+                                                        No_Path_Information
                      then
                         Make_Failed
                           ("no object files to build library for project """,
@@ -5308,7 +5309,7 @@ package body Make is
                   if not Is_Absolute_Path (Exec_File_Name) then
                      Get_Name_String
                        (Project_Tree.Projects.Table
-                          (Main_Project).Exec_Directory);
+                          (Main_Project).Exec_Directory.Name);
 
                      if Name_Buffer (Name_Len) /= Directory_Separator then
                         Name_Len := Name_Len + 1;
@@ -5337,7 +5338,7 @@ package body Make is
             Dir_Path : constant String_Access :=
                          new String'(Get_Name_String
                            (Project_Tree.Projects.Table
-                              (Main_Project).Directory));
+                              (Main_Project).Directory.Name));
          begin
             for J in 1 .. Binder_Switches.Last loop
                Test_If_Relative_Path
@@ -5554,8 +5555,9 @@ package body Make is
 
             begin
                if not Is_Absolute_Path (Exec_File_Name) then
-                  Get_Name_String (Project_Tree.Projects.Table
-                                     (Main_Project).Display_Exec_Dir);
+                  Get_Name_String
+                    (Project_Tree.Projects.Table
+                       (Main_Project).Exec_Directory.Display_Name);
 
                   if Name_Buffer (Name_Len) /= Directory_Separator then
                      Name_Len := Name_Len + 1;
@@ -6141,7 +6143,7 @@ package body Make is
                                 new String'
                                   (Get_Name_String
                                        (Project_Tree.Projects.Table
-                                            (Proj1).Display_Library_Dir));
+                                            (Proj1).Library_Dir.Display_Name));
                            end if;
                         end if;
                      end loop;
@@ -6156,7 +6158,7 @@ package body Make is
                                       Get_Name_String
                                         (Project_Tree.Projects.Table
                                            (Library_Projs.Table (Index)).
-                                              Display_Library_Dir));
+                                              Library_Dir.Display_Name));
 
                         --  Add the -l switch
 
@@ -6462,7 +6464,7 @@ package body Make is
                      Dir_Path : constant String_Access :=
                        new String'(Get_Name_String
                                      (Project_Tree.Projects.Table
-                                        (Main_Project).Directory));
+                                        (Main_Project).Directory.Name));
                   begin
                      for
                        J in Last_Binder_Switch + 1 .. Binder_Switches.Last
@@ -6961,7 +6963,7 @@ package body Make is
          --  locally removed,
 
          if Unit.File_Names (Body_Part).Name /= No_File
-           and then Unit.File_Names (Body_Part).Path /= Slash
+           and then Unit.File_Names (Body_Part).Path.Name /= Slash
          then
             --  And it is a source for the specified project
 
@@ -6988,7 +6990,7 @@ package body Make is
                   begin
                      Src_Ind := Sinput.P.Load_Project_File
                                   (Get_Name_String
-                                     (Unit.File_Names (Body_Part).Path));
+                                     (Unit.File_Names (Body_Part).Path.Name));
 
                      --  If it is a subunit, discard it
 
@@ -7008,7 +7010,7 @@ package body Make is
             end if;
 
          elsif Unit.File_Names (Specification).Name /= No_File
-           and then Unit.File_Names (Specification).Path /= Slash
+           and then Unit.File_Names (Specification).Path.Name /= Slash
            and then Check_Project (Unit.File_Names (Specification).Project)
          then
             --  If there is no source for the body, but there is a source
@@ -7184,8 +7186,8 @@ package body Make is
                declare
                   Object_Directory : constant String :=
                                        Normalize_Pathname
-                                         (Get_Name_String
-                                           (Data.Display_Object_Dir));
+                                        (Get_Name_String
+                                         (Data.Object_Directory.Display_Name));
 
                   Olast : Natural := Object_Directory'Last;
 
@@ -7380,7 +7382,7 @@ package body Make is
                 (Dir,
                  Get_Name_String
                    (Project_Tree.Projects.Table
-                                   (Main_Project).Display_Directory));
+                                   (Main_Project).Directory.Display_Name));
 
          begin
             if Real_Path'Length = 0 then
