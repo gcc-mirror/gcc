@@ -1125,104 +1125,106 @@ package Prj is
    --  The table that contains the lists of project files
 
    type Project_Configuration is record
-         Run_Path_Option          : Name_List_Index := No_Name_List;
-         --  The option to use when linking to specify the path where to look
-         --  for libraries.
+      Run_Path_Option               : Name_List_Index := No_Name_List;
+      --  The option to use when linking to specify the path where to look for
+      --  libraries.
 
-         Executable_Suffix        : Name_Id         := No_Name;
-         --  The suffix of executables, when specified in the configuration
-         --  or in package Builder of the main project. When this is not
-         --  specified, the executable suffix is the default for the platform.
+      Executable_Suffix             : Name_Id         := No_Name;
+      --  The suffix of executables, when specified in the configuration or in
+      --  package Builder of the main project. When this is not specified, the
+      --  executable suffix is the default for the platform.
 
-         --  Linking
+      --  Linking
 
-         Linker                   : Path_Name_Type  := No_Path;
-         --  Path name of the linker driver. Specified in the configuration
-         --  or in the package Builder of the main project.
+      Linker                        : Path_Name_Type  := No_Path;
+      --  Path name of the linker driver. Specified in the configuration or in
+      --  the package Builder of the main project.
 
-         Minimum_Linker_Options   : Name_List_Index := No_Name_List;
-         --  The minimum options for the linker driver. Specified in the
-         --  configuration.
+      Map_File_Option               : Name_Id := No_Name;
+      --  Option to use when invoking the linker to build a map file
 
-         Linker_Executable_Option : Name_List_Index := No_Name_List;
-         --  The option(s) to indicate the name of the executable in the
-         --  linker command. Specified in the configuration. When not
-         --  specified, default to -o <executable name>.
+      Minimum_Linker_Options        : Name_List_Index := No_Name_List;
+      --  The minimum options for the linker driver. Specified in the
+      --  configuration.
 
-         Linker_Lib_Dir_Option    : Name_Id         := No_Name;
-         --  The option to specify where to find a library for linking.
-         --  Specified in the configuration. When not specified, defaults to
-         --  "-L".
+      Linker_Executable_Option      : Name_List_Index := No_Name_List;
+      --  The option(s) to indicate the name of the executable in the linker
+      --  command. Specified in the configuration. When not specified, default
+      --  to -o <executable name>.
 
-         Linker_Lib_Name_Option   : Name_Id         := No_Name;
-         --  The option to specify the name of a library for linking. Specified
-         --  in the configuration. When not specified, defaults to "-l".
+      Linker_Lib_Dir_Option         : Name_Id         := No_Name;
+      --  The option to specify where to find a library for linking. Specified
+      --  in the configuration. When not specified, defaults to "-L".
 
-         --  Libraries
+      Linker_Lib_Name_Option        : Name_Id         := No_Name;
+      --  The option to specify the name of a library for linking. Specified in
+      --  the configuration. When not specified, defaults to "-l".
 
-         Library_Builder          : Path_Name_Type  := No_Path;
-         --  The executable to build library (specified in the configuration)
+      --  Libraries
 
-         Lib_Support              : Library_Support := None;
-         --  The level of library support. Specified in the configuration.
-         --  Support is none, static libraries only or both static and shared
-         --  libraries.
+      Library_Builder               : Path_Name_Type  := No_Path;
+      --  The executable to build library (specified in the configuration)
 
-         --  Archives
+      Lib_Support                   : Library_Support := None;
+      --  The level of library support. Specified in the configuration. Support
+      --  is none, static libraries only or both static and shared libraries.
 
-         Archive_Builder          : Name_List_Index := No_Name_List;
-         --  The name of the executable to build archives, with the minimum
-         --  switches. Specified in the configuration.
+      Archive_Builder               : Name_List_Index := No_Name_List;
+      --  The name of the executable to build archives, with the minimum
+      --  switches. Specified in the configuration.
 
-         Archive_Builder_Append_Option : Name_List_Index := No_Name_List;
-         --  The options to append object files to an archive
+      Archive_Builder_Append_Option : Name_List_Index := No_Name_List;
+      --  The options to append object files to an archive
 
-         Archive_Indexer          : Name_List_Index := No_Name_List;
-         --  The name of the executable to index archives, with the minimum
-         --  switches. Specified in the configuration.
+      Archive_Indexer               : Name_List_Index := No_Name_List;
+      --  The name of the executable to index archives, with the minimum
+      --  switches. Specified in the configuration.
 
-         Archive_Suffix           : File_Name_Type  := No_File;
-         --  The suffix of archives. Specified in the configuration. When not
-         --  specified, defaults to ".a".
+      Archive_Suffix                : File_Name_Type  := No_File;
+      --  The suffix of archives. Specified in the configuration. When not
+      --  specified, defaults to ".a".
 
-         Lib_Partial_Linker       : Name_List_Index := No_Name_List;
+      Lib_Partial_Linker            : Name_List_Index := No_Name_List;
 
-         --  Shared libraries
+      --  Shared libraries
 
-         Shared_Lib_Driver             : File_Name_Type  := No_File;
-         --  The driver to link shared libraries. Set with attribute
-         --  Library_GCC. Default to gcc.
+      Shared_Lib_Driver             : File_Name_Type  := No_File;
+      --  The driver to link shared libraries. Set with attribute Library_GCC.
+      --  Default to gcc.
 
-         Shared_Lib_Prefix        : File_Name_Type  := No_File;
-         --  Part of a shared library file name that precedes the name of the
-         --  library. Specified in the configuration. When not specified,
-         --  defaults to "lib".
+      Shared_Lib_Prefix             : File_Name_Type  := No_File;
+      --  Part of a shared library file name that precedes the name of the
+      --  library. Specified in the configuration. When not specified, defaults
+      --  to "lib".
 
-         Shared_Lib_Suffix        : File_Name_Type  := No_File;
-         --  Suffix of shared libraries, after the library name in the shared
-         --  library name. Specified in the configuration. When not specified,
-         --  default to ".so".
+      Shared_Lib_Suffix             : File_Name_Type  := No_File;
+      --  Suffix of shared libraries, after the library name in the shared
+      --  library name. Specified in the configuration. When not specified,
+      --  default to ".so".
 
-         Shared_Lib_Min_Options   : Name_List_Index := No_Name_List;
-         --  Comment ???
+      Shared_Lib_Min_Options        : Name_List_Index := No_Name_List;
+      --  The minimum options to use when building a shared library
 
-         Lib_Version_Options      : Name_List_Index := No_Name_List;
-         --  Comment ???
+      Lib_Version_Options           : Name_List_Index := No_Name_List;
+      --  The options to use to specify a library version
 
-         Symbolic_Link_Supported  : Boolean         := False;
-         --  Comment ???
+      Symbolic_Link_Supported       : Boolean         := False;
+      --  True if the platform supports symbolic link files
 
-         Lib_Maj_Min_Id_Supported : Boolean         := False;
-         --  Comment ???
+      Lib_Maj_Min_Id_Supported      : Boolean         := False;
+      --  True if platform supports library major and minor options, such as
+      --  libname.so -> libname.so.2 -> libname.so.2.4
 
-         Auto_Init_Supported      : Boolean         := False;
-         --  Comment ???
+      Auto_Init_Supported           : Boolean         := False;
+      --  True if automatic initialisation is supported for shared stand-alone
+      --  libraries.
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
                               (Run_Path_Option               => No_Name_List,
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,
+                               Map_File_Option               => No_Name,
                                Minimum_Linker_Options        => No_Name_List,
                                Linker_Executable_Option      => No_Name_List,
                                Linker_Lib_Dir_Option         => No_Name,

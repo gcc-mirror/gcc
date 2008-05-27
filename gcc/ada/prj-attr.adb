@@ -231,6 +231,7 @@ package body Prj.Attr is
    "Ladefault_switches#" &
    "Lcswitches#" &
    "LVlinker_options#" &
+   "SVmap_file_option#" &
 
    --  Configuration - Linking
 
