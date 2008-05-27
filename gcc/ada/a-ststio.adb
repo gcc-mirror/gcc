@@ -101,11 +101,8 @@ package body Ada.Streams.Stream_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AFCB'Access);
+      FIO.Close (AP (File)'Unrestricted_Access);
    end Close;
 
    ------------
@@ -140,11 +137,8 @@ package body Ada.Streams.Stream_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AFCB'Access);
+      FIO.Delete (AP (File)'Unrestricted_Access);
    end Delete;
 
    -----------------
@@ -357,9 +351,6 @@ package body Ada.Streams.Stream_IO is
    --------------
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
       FIO.Check_File_Open (AP (File));
 
@@ -371,7 +362,7 @@ package body Ada.Streams.Stream_IO is
       if ((File.Mode = FCB.In_File) /= (Mode = In_File))
         and then not File.Update_Mode
       then
-         FIO.Reset (AFCB'Access, FCB.Inout_File);
+         FIO.Reset (AP (File)'Unrestricted_Access, FCB.Inout_File);
          File.Update_Mode := True;
       end if;
 
