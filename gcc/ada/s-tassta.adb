@@ -1065,8 +1065,6 @@ package body System.Tasking.Stages is
          Overflow_Guard := Big_Overflow_Guard;
       end if;
 
-      Size := Size - Overflow_Guard;
-
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
@@ -1078,14 +1076,18 @@ package body System.Tasking.Stages is
          Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
       end if;
 
+      Size := Size - Overflow_Guard;
+
       if System.Stack_Usage.Is_Enabled then
          STPO.Lock_RTS;
-         Initialize_Analyzer (Self_ID.Common.Analyzer,
-                              Self_ID.Common.Task_Image
-                                (1 .. Self_ID.Common.Task_Image_Len),
-                              Size,
-                              Overflow_Guard,
-                              SSE.To_Integer (Bottom_Of_Stack'Address));
+         Initialize_Analyzer
+           (Self_ID.Common.Analyzer,
+            Self_ID.Common.Task_Image
+              (1 .. Self_ID.Common.Task_Image_Len),
+            Natural
+              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
+            Size,
+            SSE.To_Integer (Bottom_Of_Stack'Address));
          STPO.Unlock_RTS;
          Fill_Stack (Self_ID.Common.Analyzer);
       end if;
