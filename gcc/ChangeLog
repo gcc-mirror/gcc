@@ -1,3 +1,9 @@
+2008-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36245
+	* tree-ssa-address.c (add_to_parts): Deal with non-pointer
+	bases.
+
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md: Replace all occurences of the 'm'
