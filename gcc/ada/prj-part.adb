@@ -39,6 +39,8 @@ with Table;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Exceptions;             use Ada.Exceptions;
 
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+
 with System.HTable;              use System.HTable;
 
 package body Prj.Part is
@@ -1864,15 +1866,64 @@ package body Prj.Part is
       -------------------
 
       function Try_Path_Name (Path : String) return String_Access is
+         Prj_Path : constant String := Project_Path;
+         First    : Natural := Prj_Path'First;
+         Last     : Natural;
+         Result   : String_Access := null;
+
       begin
          if Current_Verbosity = High then
             Write_Str  ("   Trying ");
             Write_Line (Path);
          end if;
 
-         return Locate_Regular_File
-           (File_Name => Path,
-            Path      => Project_Path);
+         if Is_Absolute_Path (Path) then
+            if Is_Regular_File (Path) then
+               Result := new String'(Path);
+            end if;
+
+         else
+            --  Because we don't want to resolve symbolic links, we cannot use
+            --  Locate_Regular_File. So, we try each possible path
+            --  successively.
+
+            while First <= Prj_Path'Last loop
+               while First <= Prj_Path'Last
+                 and then Prj_Path (First) = Path_Separator
+               loop
+                  First := First + 1;
+               end loop;
+
+               exit when First > Prj_Path'Last;
+
+               Last := First;
+               while Last < Prj_Path'Last
+                 and then Prj_Path (Last + 1) /= Path_Separator
+               loop
+                  Last := Last + 1;
+               end loop;
+
+               Name_Len := 0;
+
+               if not Is_Absolute_Path (Prj_Path (First .. Last)) then
+                  Add_Str_To_Name_Buffer (Get_Current_Dir);
+                  Add_Char_To_Name_Buffer (Directory_Separator);
+               end if;
+
+               Add_Str_To_Name_Buffer (Prj_Path (First .. Last));
+               Add_Char_To_Name_Buffer (Directory_Separator);
+               Add_Str_To_Name_Buffer (Path);
+
+               if Is_Regular_File (Name_Buffer (1 .. Name_Len)) then
+                  Result := new String'(Name_Buffer (1 .. Name_Len));
+                  exit;
+               end if;
+
+               First := Last + 1;
+            end loop;
+         end if;
+
+         return Result;
       end Try_Path_Name;
 
       --  Local Declarations
