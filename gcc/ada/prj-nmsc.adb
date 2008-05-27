@@ -3851,13 +3851,15 @@ package body Prj.Nmsc is
                   Error_Msg_Name_2 := Proj_Data.Name;
 
                   if Extends then
-                     Error_Msg
-                       (Project, In_Tree,
-                        Continuation.all &
-                        "shared library project %% cannot extend " &
-                        "project %% that is not a library project",
-                        Data.Location);
-                     Continuation := Continuation_String'Access;
+                     if Data.Library_Kind /= Static then
+                        Error_Msg
+                          (Project, In_Tree,
+                           Continuation.all &
+                           "shared library project %% cannot extend " &
+                           "project %% that is not a library project",
+                           Data.Location);
+                        Continuation := Continuation_String'Access;
+                     end if;
 
                   elsif Data.Library_Kind /= Static then
                      Error_Msg
@@ -6846,7 +6848,7 @@ package body Prj.Nmsc is
       --  inherit the Mains from the project we are extending.
 
       if Mains.Default then
-         if Data.Extends /= No_Project then
+         if not Data.Library and then Data.Extends /= No_Project then
             Data.Mains :=
               In_Tree.Projects.Table (Data.Extends).Mains;
          end if;
