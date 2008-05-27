@@ -1,3 +1,8 @@
+2008-05-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/35909
+	* g++.dg/conversion/bitfield9.C: New.
+
 2008-05-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/specs/array_no_def_init.ads: New test.
