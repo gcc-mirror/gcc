@@ -11,7 +11,11 @@ void foo(const int * __restrict__ zr_in,
 {
   unsigned int pi;
   int tmp_r, tmp_i, tmp_k;
+#if __SIZEOF_INT__ >= 4
   for (pi = 0; pi < (512)*(512); pi++) {
+#else
+  for (pi = 0; pi < (32)*(32); pi++) {
+#endif
     int zr = zr_in[pi];
     int zi = zi_in[pi];
     int zk = zk_in[pi];

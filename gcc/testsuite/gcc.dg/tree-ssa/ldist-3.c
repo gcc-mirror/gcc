@@ -1,4 +1,5 @@
 /* { dg-do compile } */ 
+/* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-O2 -ftree-loop-distribution -fdump-tree-ldist-all" } */
 
 int loop1 (int k)
