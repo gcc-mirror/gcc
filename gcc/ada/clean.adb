@@ -346,7 +346,7 @@ package body Clean is
       --  The name of the archive dependency file for this project
 
       Obj_Dir : constant String :=
-                  Get_Name_String (Data.Display_Object_Dir);
+                  Get_Name_String (Data.Object_Directory.Display_Name);
 
    begin
       Change_Dir (Obj_Dir);
@@ -551,10 +551,10 @@ package body Clean is
       Unit        : Unit_Data;
 
    begin
-      if Data.Library and then Data.Library_Src_Dir /= No_Path then
+      if Data.Library and then Data.Library_Src_Dir /= No_Path_Information then
          declare
             Directory : constant String :=
-                          Get_Name_String (Data.Display_Library_Src_Dir);
+                          Get_Name_String (Data.Library_Src_Dir.Display_Name);
 
          begin
             Change_Dir (Directory);
@@ -663,10 +663,11 @@ package body Clean is
 
          declare
             Lib_Directory     : constant String :=
-                                  Get_Name_String (Data.Display_Library_Dir);
+                                  Get_Name_String
+                                    (Data.Library_Dir.Display_Name);
             Lib_ALI_Directory : constant String :=
                                   Get_Name_String
-                                    (Data.Display_Library_ALI_Dir);
+                                    (Data.Library_ALI_Dir.Display_Name);
 
          begin
             Canonical_Case_File_Name (Archive_Name);
@@ -863,10 +864,11 @@ package body Clean is
          Processed_Projects.Increment_Last;
          Processed_Projects.Table (Processed_Projects.Last) := Project;
 
-         if Data.Object_Directory /= No_Path then
+         if Data.Object_Directory /= No_Path_Information then
             declare
                Obj_Dir : constant String :=
-                           Get_Name_String (Data.Display_Object_Dir);
+                           Get_Name_String
+                             (Data.Object_Directory.Display_Name);
 
             begin
                Change_Dir (Obj_Dir);
@@ -1089,16 +1091,16 @@ package body Clean is
             if not Compile_Only then
                Clean_Library_Directory (Project);
 
-               if Data.Library_Src_Dir /= No_Path then
+               if Data.Library_Src_Dir /= No_Path_Information then
                   Clean_Interface_Copy_Directory (Project);
                end if;
             end if;
 
             if Data.Standalone_Library and then
-              Data.Object_Directory /= No_Path
+              Data.Object_Directory /= No_Path_Information
             then
                Delete_Binder_Generated_Files
-                 (Get_Name_String (Data.Display_Object_Dir),
+                 (Get_Name_String (Data.Object_Directory.Display_Name),
                   File_Name_Type (Data.Library_Name));
             end if;
          end if;
@@ -1156,10 +1158,12 @@ package body Clean is
 
          --  The executables are deleted only if switch -c is not specified
 
-      if Project = Main_Project and then Data.Exec_Directory /= No_Path then
+      if Project = Main_Project
+        and then Data.Exec_Directory /= No_Path_Information
+      then
          declare
             Exec_Dir : constant String :=
-                         Get_Name_String (Data.Display_Exec_Dir);
+                         Get_Name_String (Data.Exec_Directory.Display_Name);
 
          begin
             Change_Dir (Exec_Dir);
@@ -1193,9 +1197,9 @@ package body Clean is
                   end;
                end if;
 
-               if Data.Object_Directory /= No_Path then
+               if Data.Object_Directory /= No_Path_Information then
                   Delete_Binder_Generated_Files
-                    (Get_Name_String (Data.Display_Object_Dir),
+                    (Get_Name_String (Data.Object_Directory.Display_Name),
                      Strip_Suffix (Main_Source_File));
                end if;
             end loop;

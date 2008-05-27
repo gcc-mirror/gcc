@@ -442,7 +442,7 @@ package body Makeutl is
                  new String'
                    (Get_Name_String
                         (In_Tree.Projects.Table
-                             (Proj). Directory));
+                             (Proj).Directory.Name));
             end if;
 
             while Options /= Nil_String loop

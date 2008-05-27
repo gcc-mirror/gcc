@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2007, AdaCore                     --
+--                     Copyright (C) 2001-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -340,7 +340,7 @@ package body MLib.Tgt is
          declare
             Lib_Dir  : constant String :=
                          Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Dir);
+                           (In_Tree.Projects.Table (Project).Library_Dir.Name);
             Lib_Name : constant String :=
                          Get_Name_String
                            (In_Tree.Projects.Table (Project).Library_Name);

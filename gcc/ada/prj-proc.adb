@@ -2315,13 +2315,13 @@ package body Prj.Proc is
          declare
             Object_Dir : constant Path_Name_Type :=
                            In_Tree.Projects.Table
-                             (Project).Object_Directory;
+                             (Project).Object_Directory.Name;
          begin
             for Index in
               Project_Table.First .. Project_Table.Last (In_Tree.Projects)
             loop
                if In_Tree.Projects.Table (Index).Virtual then
-                  In_Tree.Projects.Table (Index).Object_Directory :=
+                  In_Tree.Projects.Table (Index).Object_Directory.Name :=
                     Object_Dir;
                end if;
             end loop;
@@ -2338,7 +2338,7 @@ package body Prj.Proc is
             Extending := In_Tree.Projects.Table (Proj).Extended_By;
 
             if Extending /= No_Project then
-               Obj_Dir := In_Tree.Projects.Table (Proj).Object_Directory;
+               Obj_Dir := In_Tree.Projects.Table (Proj).Object_Directory.Name;
 
                --  Check that a project being extended does not share its
                --  object directory with any project that extends it, directly
@@ -2351,8 +2351,8 @@ package body Prj.Proc is
                   if In_Tree.Projects.Table (Extending2).Ada_Sources /=
                     Nil_String
                     and then
-                      In_Tree.Projects.Table (Extending2).Object_Directory =
-                      Obj_Dir
+                      In_Tree.Projects.Table
+                        (Extending2).Object_Directory.Name = Obj_Dir
                   then
                      if In_Tree.Projects.Table (Extending2).Virtual then
                         Error_Msg_Name_1 :=
@@ -2562,20 +2562,20 @@ package body Prj.Proc is
                Processed_Data.Display_Name := Name_Find;
             end if;
 
-            Processed_Data.Display_Path_Name :=
+            Processed_Data.Path.Display_Name :=
               Path_Name_Of (From_Project_Node, From_Project_Node_Tree);
-            Get_Name_String (Processed_Data.Display_Path_Name);
+            Get_Name_String (Processed_Data.Path.Display_Name);
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-            Processed_Data.Path_Name := Name_Find;
+            Processed_Data.Path.Name := Name_Find;
 
             Processed_Data.Location :=
               Location_Of (From_Project_Node, From_Project_Node_Tree);
 
-            Processed_Data.Display_Directory :=
+            Processed_Data.Directory.Display_Name :=
               Directory_Of (From_Project_Node, From_Project_Node_Tree);
-            Get_Name_String (Processed_Data.Display_Directory);
+            Get_Name_String (Processed_Data.Directory.Display_Name);
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-            Processed_Data.Directory := Name_Find;
+            Processed_Data.Directory.Name := Name_Find;
 
             Processed_Data.Extended_By := Extended_By;
 
