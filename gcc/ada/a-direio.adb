@@ -73,11 +73,8 @@ package body Ada.Direct_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AFCB'Access);
+      FIO.Close (AP (File)'Unrestricted_Access);
    end Close;
 
    ------------
@@ -100,11 +97,8 @@ package body Ada.Direct_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
-      AFCB : aliased AP;
-      for AFCB'Address use File'Address;
-      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AFCB'Access);
+      FIO.Delete (AP (File)'Unrestricted_Access);
    end Delete;
 
    -----------------
