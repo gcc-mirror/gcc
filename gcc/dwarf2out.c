@@ -633,6 +633,14 @@ dwarf2out_cfi_label (void)
   return label;
 }
 
+/* Get the current fde_table entry we should use.  */
+
+static inline struct dw_fde_struct * 
+current_fde (void)
+{
+  return fde_table_in_use ? &fde_table[fde_table_in_use - 1] : NULL;
+}
+
 /* Add CFI to the current fde at the PC value indicated by LABEL if specified,
    or to the CIE if LABEL is NULL.  */
 
@@ -641,7 +649,9 @@ add_fde_cfi (const char *label, dw_cfi_ref cfi)
 {
   if (label)
     {
-      dw_fde_ref fde = &fde_table[fde_table_in_use - 1];
+      dw_fde_ref fde = current_fde ();
+
+      gcc_assert (fde != NULL);
 
       if (*label == 0)
 	label = dwarf2out_cfi_label ();
@@ -713,6 +723,7 @@ static void
 lookup_cfa (dw_cfa_location *loc)
 {
   dw_cfi_ref cfi;
+  dw_fde_ref fde;
 
   loc->reg = INVALID_REGNUM;
   loc->offset = 0;
@@ -722,12 +733,10 @@ lookup_cfa (dw_cfa_location *loc)
   for (cfi = cie_cfi_head; cfi; cfi = cfi->dw_cfi_next)
     lookup_cfa_1 (cfi, loc);
 
-  if (fde_table_in_use)
-    {
-      dw_fde_ref fde = &fde_table[fde_table_in_use - 1];
-      for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
-	lookup_cfa_1 (cfi, loc);
-    }
+  fde = current_fde ();
+  if (fde)
+    for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
+      lookup_cfa_1 (cfi, loc);
 }
 
 /* The current rule for calculating the DWARF2 canonical frame address.  */
@@ -2686,7 +2695,8 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
 			       current_function_funcdef_no);
   ASM_OUTPUT_LABEL (asm_out_file, label);
-  fde = &fde_table[fde_table_in_use - 1];
+  fde = current_fde ();
+  gcc_assert (fde != NULL);
   fde->dw_fde_end = xstrdup (label);
 }
 
@@ -2739,11 +2749,10 @@ dwarf2out_note_section_used (void)
 void
 dwarf2out_switch_text_section (void)
 {
-  dw_fde_ref fde;
+  dw_fde_ref fde = current_fde ();
 
-  gcc_assert (cfun);
+  gcc_assert (cfun && fde);
 
-  fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_switched_sections = true;
   fde->dw_fde_hot_section_label = crtl->subsections.hot_section_label;
   fde->dw_fde_hot_section_end_label = crtl->subsections.hot_section_end_label;
@@ -10985,7 +10994,8 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   dw_cfa_location last_cfa, next_cfa;
   const char *start_label, *last_label, *section;
 
-  fde = &fde_table[fde_table_in_use - 1];
+  fde = current_fde ();
+  gcc_assert (fde != NULL);
 
   section = secname_for_decl (current_function_decl);
   list_tail = &list;
