@@ -3260,13 +3260,16 @@ package body Bindgen is
       for E in Elab_Order.First .. Elab_Order.Last loop
          Get_Name_String (Units.Table (Elab_Order.Table (E)).Uname);
 
-         --  The procedure of looking for specific packages and setting
-         --  flags is somewhat dubious, but there isn't a good alternative
-         --  at the current time ???
+         --  This is not a perfect approach, but is the current protocol
+         --  between the run-time and the binder to indicate that tasking
+         --  is used: system.os_interface should always be used by any
+         --  tasking application.
 
          if Name_Buffer (1 .. 19) = "system.os_interface" then
             With_GNARL := True;
          end if;
+
+         --  Ditto for declib and the "dec" package
 
          if OpenVMS_On_Target and then Name_Buffer (1 .. 5) = "dec%s" then
             With_DECGNAT := True;
