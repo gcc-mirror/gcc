@@ -1,3 +1,53 @@
+2008-05-27  Thomas Quinot  <quinot@adacore.com>
+
+	* makeutl.adb: Minor code reorganization
+
+	* exp_aggr.adb: Add ??? comment
+	Fix typo
+
+	* exp_ch6.adb: Minor reformatting
+
+2008-05-27  Quentin Ochem  <ochem@adacore.com>
+
+	* s-stausa.adb (Initialize): Updated result initialization, and
+	initialization of environment stack.
+	(Fill_Stack): Improved computation of the pattern zone, taking into
+	account already filled at the calling point.
+	(Get_Usage_Range): Now uses Min_Measure and Max_Measure instead of
+	Measure and Overflow_Guard.
+	(Report_Result): Fixed computation of the result using new fields of
+	Stack_Analyzer.
+	
+	* s-stausa.ads (Initialize_Analyzer): Replaced Size / Overflow_Guard
+	params by more explicit Stack_Size / Max_Pattern_Size params.
+	(Stack_Analyzer): Added distinct Stack_Size & Pattern_Size fields.
+	Added Stack_Used_When_Filling field.
+	(Task_Result): Replaced Measure / Overflow_Guard by more explicit
+	Min_Measure and Max_Measure fields.
+	
+	* s-tassta.adb (Task_Wrapper): Updated call to Initialize_Analyzer.
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb:
+	(Check_File): Make sure that a unit that replaces the same unit in a
+	 project being extended is properly processed.
+
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb:
+	(Get_Discr_Value): Remove obsolete code that failed to find the value
+	of a discriminant for an inherited task component appearing in a type
+	extension.
+
+2008-05-27  Thomas Quinot  <quinot@adacore.com>
+
+	(System.File_IO.{Close, Delete, Reset}):
+	Change File parameter from "in out AFCB_Ptr" to "access AFCB_Ptr".
+	
+	(Ada.*_IO.{Close, Delete, Reset, Set_Mode}):
+	Pass File parameter by reference.
+
 2008-05-27  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb:
