@@ -1340,7 +1340,7 @@ procedure GNATCmd is
             Put (To_Lower (Command_List (C).Cname.all));
             Set_Col (25);
 
-            --  No prefix for gnatstack
+            --  Never call gnatstack with a prefix
 
             if C = Stack then
                Put (Command_List (C).Unixcmd.all);
@@ -1575,6 +1575,8 @@ begin
 
    begin
       if The_Command = Stack then
+         --  Never call gnatstack with a prefix
+
          Program := new String'(Command_List (The_Command).Unixcmd.all);
 
       else
