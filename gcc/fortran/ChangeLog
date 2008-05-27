@@ -1,3 +1,9 @@
+2008-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36316
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec):
+	Add missing fold_convert.
+
 2008-05-26  Daniel Franke  <franke.daniel@gmail.com>
 
 	* fortran/cpp.c (cpp_define_builtins): Remove usage of TARGET_* macros,
