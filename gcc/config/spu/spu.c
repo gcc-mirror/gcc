@@ -4422,6 +4422,13 @@ spu_init_libfuncs (void)
 
   set_conv_libfunc (ufloat_optab, DFmode, SImode, "__float_unssidf");
   set_conv_libfunc (ufloat_optab, DFmode, DImode, "__float_unsdidf");
+
+  set_optab_libfunc (smul_optab, TImode, "__multi3");
+  set_optab_libfunc (sdiv_optab, TImode, "__divti3");
+  set_optab_libfunc (smod_optab, TImode, "__modti3");
+  set_optab_libfunc (udiv_optab, TImode, "__udivti3");
+  set_optab_libfunc (umod_optab, TImode, "__umodti3");
+  set_optab_libfunc (udivmod_optab, TImode, "__udivmodti4");
 }
 
 /* Make a subreg, stripping any existing subreg.  We could possibly just
@@ -4473,7 +4480,7 @@ spu_init_builtins (void)
   unsigned_V4SI_type_node = build_vector_type (unsigned_intSI_type_node, 4);
   unsigned_V2DI_type_node = build_vector_type (unsigned_intDI_type_node, 2);
 
-  spu_builtin_types[SPU_BTI_QUADWORD] = V16QI_type_node;
+  spu_builtin_types[SPU_BTI_QUADWORD] = intTI_type_node;
 
   spu_builtin_types[SPU_BTI_7] = global_trees[TI_INTSI_TYPE];
   spu_builtin_types[SPU_BTI_S7] = global_trees[TI_INTSI_TYPE];
@@ -5368,7 +5375,8 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
       if (VECTOR_MODE_P (mode)
 	  && (GET_CODE (ops[i]) == CONST_INT
 	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_FLOAT))
+	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_FLOAT)
+	  && d->parm[i] != SPU_BTI_QUADWORD)
 	{
 	  if (GET_CODE (ops[i]) == CONST_INT)
 	    ops[i] = spu_const (mode, INTVAL (ops[i]));
