@@ -1778,8 +1778,8 @@ package body Exp_Dist is
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Chars (Proxy_Object_Addr)),
-          Constant_Present => True,
-          Object_Definition => New_Occurrence_Of (RTE (RE_Address), Loc),
+          Constant_Present    => True,
+          Object_Definition   => New_Occurrence_Of (RTE (RE_Address), Loc),
           Expression =>
             Make_Attribute_Reference (Loc,
               Prefix => New_Occurrence_Of (
