@@ -4692,7 +4692,7 @@ package body Prj.Nmsc is
                Data.Other_Sources_Present := False;
 
             else
-               --  If the configuration file does not define a language either
+               --  Fail if there is no default language defined
 
                if Def_Lang.Default then
                   if not Default_Language_Is_Ada then
@@ -4707,8 +4707,6 @@ package body Prj.Nmsc is
                   end if;
 
                else
-                  --  ??? Are we supporting a single default language in the
-                  --  configuration file ?
                   Get_Name_String (Def_Lang.Value);
                   To_Lower (Name_Buffer (1 .. Name_Len));
                   Def_Lang_Id := Name_Find;
@@ -5208,8 +5206,7 @@ package body Prj.Nmsc is
                           In_Tree.Sources.Table (Source).Other_Part /=
                             No_Source
                         then
-                           Source :=
-                             In_Tree.Sources.Table (Source).Other_Part;
+                           Source := In_Tree.Sources.Table (Source).Other_Part;
                         end if;
 
                         String_Element_Table.Increment_Last
