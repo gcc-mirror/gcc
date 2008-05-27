@@ -1521,6 +1521,16 @@ package body Exp_Aggr is
                  Make_Integer_Literal (Loc, Uint_0))));
       end if;
 
+      --  If the component type contains tasks, we need to build a Master
+      --  entity in the current scope, because it will be needed if build-
+      --  in-place functions are called in the expanded code.
+
+      if Nkind (Parent (N)) = N_Object_Declaration
+        and then Has_Task (Typ)
+      then
+         Build_Master_Entity (Defining_Identifier (Parent (N)));
+      end if;
+
       --  STEP 1: Process component associations
 
       --  For those associations that may generate a loop, initialize
