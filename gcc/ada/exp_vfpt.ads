@@ -47,9 +47,9 @@ package Exp_VFpt is
 
    procedure Expand_Vax_Foreign_Return (N : Node_Id);
    --  The node N is a call to a foreign function that returns a Vax float
-   --  value in a floating point register.
-   --  Yes, but what does it do??? there is no hint anywhere in the spec or
-   --  body comments, need full spec here ???
+   --  value in a floating point register. Wraps the call in an asm stub
+   --  that moves the return value to an integer location on Alpha/VMS,
+   --  noop everywhere else.
 
    procedure Expand_Vax_Real_Literal (N : Node_Id);
    --  The node N is a real literal node where the type is a Vax floating-point
