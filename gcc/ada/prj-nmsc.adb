@@ -8593,13 +8593,21 @@ package body Prj.Nmsc is
 
                if Unit /= No_Name
                  and then Src_Data.Unit = Unit
-                 and then Src_Data.Kind /= Kind
+                 and then
+                   ((Src_Data.Kind = Spec and then Kind = Impl)
+                    or else
+                    (Src_Data.Kind = Impl and then Kind = Spec))
                then
                   Other_Part := Source;
 
                elsif (Unit /= No_Name
                        and then Src_Data.Unit = Unit
-                       and then Src_Data.Kind = Kind)
+                      and then
+                        (Src_Data.Kind = Kind
+                         or else
+                         (Src_Data.Kind = Sep and then Kind = Impl)
+                         or else
+                         (Src_Data.Kind = Impl and then Kind = Sep)))
                  or else (Unit = No_Name and then Src_Data.File = File_Name)
                then
                   --  Duplication of file/unit in same project is only
