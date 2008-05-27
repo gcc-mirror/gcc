@@ -133,8 +133,11 @@ package body Ada.Wide_Wide_Text_IO is
    -----------
 
    procedure Close (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Close (AP (File));
+      FIO.Close (AFCB'Access);
    end Close;
 
    ---------
@@ -232,8 +235,11 @@ package body Ada.Wide_Wide_Text_IO is
    ------------
 
    procedure Delete (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
-      FIO.Delete (AP (File));
+      FIO.Delete (AFCB'Access);
    end Delete;
 
    -----------------
@@ -1308,6 +1314,9 @@ package body Ada.Wide_Wide_Text_IO is
      (File : in out File_Type;
       Mode : File_Mode)
    is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
       --  Don't allow change of mode for current file (RM A.10.2(5))
 
@@ -1320,7 +1329,7 @@ package body Ada.Wide_Wide_Text_IO is
       end if;
 
       Terminate_Line (File);
-      FIO.Reset (AP (File), To_FCB (Mode));
+      FIO.Reset (AFCB'Access, To_FCB (Mode));
       File.Page := 1;
       File.Line := 1;
       File.Col  := 1;
@@ -1331,9 +1340,12 @@ package body Ada.Wide_Wide_Text_IO is
    end Reset;
 
    procedure Reset (File : in out File_Type) is
+      AFCB : aliased AP;
+      for AFCB'Address use File'Address;
+      pragma Import (Ada, AFCB);
    begin
       Terminate_Line (File);
-      FIO.Reset (AP (File));
+      FIO.Reset (AFCB'Access);
       File.Page := 1;
       File.Line := 1;
       File.Col  := 1;

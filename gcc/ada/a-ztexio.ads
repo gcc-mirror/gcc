@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -301,6 +301,32 @@ package Ada.Wide_Wide_Text_IO is
    Layout_Error : exception renames IO_Exceptions.Layout_Error;
 
 private
+
+   --  The following procedures have a File_Type formal of mode IN OUT because
+   --  they may close the original file. The Close operation may raise an
+   --  exception, but in that case we want any assignment to the formal to
+   --  be effective anyway, so it must be passed by reference (or the caller
+   --  will be left with a dangling pointer).
+
+   pragma Export_Procedure
+     (Internal  => Close,
+      External  => "",
+      Mechanism => Reference);
+   pragma Export_Procedure
+     (Internal  => Delete,
+      External  => "",
+      Mechanism => Reference);
+   pragma Export_Procedure
+     (Internal        => Reset,
+      External        => "",
+      Parameter_Types => (File_Type),
+      Mechanism       => Reference);
+   pragma Export_Procedure
+     (Internal        => Reset,
+      External        => "",
+      Parameter_Types => (File_Type, File_Mode),
+      Mechanism       => (File => Reference));
+
    package WCh_Con renames System.WCh_Con;
 
    -----------------------------------

@@ -206,9 +206,10 @@ package body System.File_IO is
    -- Close --
    -----------
 
-   procedure Close (File : in out AFCB_Ptr) is
+   procedure Close (File_Ptr : access AFCB_Ptr) is
       Close_Status : int := 0;
       Dup_Strm     : Boolean := False;
+      File         : AFCB_Ptr renames File_Ptr.all;
 
    begin
       --  Take a task lock, to protect the global data value Open_Files
@@ -296,7 +297,8 @@ package body System.File_IO is
    -- Delete --
    ------------
 
-   procedure Delete (File : in out AFCB_Ptr) is
+   procedure Delete (File_Ptr : access AFCB_Ptr) is
+      File : AFCB_Ptr renames File_Ptr.all;
    begin
       Check_File_Open (File);
 
@@ -308,7 +310,7 @@ package body System.File_IO is
          Filename : aliased constant String := File.Name.all;
 
       begin
-         Close (File);
+         Close (File_Ptr);
 
          --  Now unlink the external file. Note that we use the full name
          --  in this unlink, because the working directory may have changed
@@ -354,7 +356,7 @@ package body System.File_IO is
    procedure Finalize (V : in out File_IO_Clean_Up_Type) is
       pragma Warnings (Off, V);
 
-      Fptr1   : AFCB_Ptr;
+      Fptr1   : aliased AFCB_Ptr;
       Fptr2   : AFCB_Ptr;
 
       Discard : int;
@@ -371,7 +373,7 @@ package body System.File_IO is
       Fptr1 := Open_Files;
       while Fptr1 /= null loop
          Fptr2 := Fptr1.Next;
-         Close (Fptr1);
+         Close (Fptr1'Access);
          Fptr1 := Fptr2;
       end loop;
 
@@ -1058,17 +1060,19 @@ package body System.File_IO is
 
    --  The reset which does not change the mode simply does a rewind
 
-   procedure Reset (File : in out AFCB_Ptr) is
+   procedure Reset (File_Ptr : access AFCB_Ptr) is
+      File : AFCB_Ptr renames File_Ptr.all;
    begin
       Check_File_Open (File);
-      Reset (File, File.Mode);
+      Reset (File_Ptr, File.Mode);
    end Reset;
 
    --  The reset with a change in mode is done using freopen, and is
    --  not permitted except for regular files (since otherwise there
    --  is no name for the freopen, and in any case it seems meaningless)
 
-   procedure Reset (File : in out AFCB_Ptr; Mode : File_Mode) is
+   procedure Reset (File_Ptr : access AFCB_Ptr; Mode : File_Mode) is
+      File   : AFCB_Ptr renames File_Ptr.all;
       Fopstr : aliased Fopen_String;
 
    begin
@@ -1106,7 +1110,7 @@ package body System.File_IO is
            (File.Name.all'Address, Fopstr'Address, File.Stream, File.Encoding);
 
          if File.Stream = NULL_Stream then
-            Close (File);
+            Close (File_Ptr);
             raise Use_Error;
 
          else
