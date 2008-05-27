@@ -9850,7 +9850,6 @@ package body Sem_Ch3 is
       function Get_Discr_Value (Discrim : Entity_Id) return Node_Id is
          D : Entity_Id;
          E : Elmt_Id;
-         G : Elmt_Id;
 
       begin
          --  The discriminant may be declared for the type, in which case we
@@ -9880,14 +9879,15 @@ package body Sem_Ch3 is
          --  to one: one new discriminant can constrain several old ones. In
          --  that case, scan sequentially the stored_constraint, the list of
          --  discriminants of the parents, and the constraints.
+         --  Previous code checked for the present of the Stored_Constraint
+         --  list for the derived type, but did not use it at all. Should it
+         --  be present when the component is a discriminated task type?
 
          if Is_Derived_Type (Typ)
-           and then Present (Stored_Constraint (Typ))
            and then Scope (Entity (Discrim)) = Etype (Typ)
          then
             D := First_Discriminant (Etype (Typ));
             E := First_Elmt (Constraints);
-            G := First_Elmt (Stored_Constraint (Typ));
             while Present (D) loop
                if D = Entity (Discrim) then
                   return Node (E);
@@ -9895,7 +9895,6 @@ package body Sem_Ch3 is
 
                Next_Discriminant (D);
                Next_Elmt (E);
-               Next_Elmt (G);
             end loop;
          end if;
 
