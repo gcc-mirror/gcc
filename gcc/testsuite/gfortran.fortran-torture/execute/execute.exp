@@ -30,7 +30,7 @@ load_lib fortran-torture.exp
 load_lib torture-options.exp
 
 torture-init
-set-torture-options $FORTRAN_TORTURE_OPTIONS
+set-torture-options [get-fortran-torture-options]
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f]] {
     # If we're only testing specific files and this isn't one of them, skip it.

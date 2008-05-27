@@ -1,3 +1,11 @@
+2008-05-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/fortran-torture.exp (get-fortran-torture-options):
+	New function, replacing old FORTRAN_TORTURE_OPTIONS code.
+	* gfortran.fortran-torture/compile/compile.exp: Use
+	[get-fortran-torture-options] instead of $FORTRAN_TORTURE_OPTIONS.
+	* gfortran.fortran-torture/execute/execute.exp: Likewise.
+
 2008-05-27  Michael Matz  <matz@suse.de>
 
 	PR c++/27975

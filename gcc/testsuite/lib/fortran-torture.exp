@@ -22,12 +22,16 @@
 
 load_lib target-supports.exp
 
+# Return the list of options to use for fortran torture tests.
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+proc get-fortran-torture-options { } {
+    global TORTURE_OPTIONS
 
-if [info exists TORTURE_OPTIONS] {
-    set FORTRAN_TORTURE_OPTIONS $TORTURE_OPTIONS
-} else {
+    if [info exists TORTURE_OPTIONS] {
+	return $TORTURE_OPTIONS
+    }
+
     # determine if host supports vectorization, and the necessary set
     # of options, based on code from testsuite/vect/vect.exp
 
@@ -61,17 +65,22 @@ if [info exists TORTURE_OPTIONS] {
 	set test_tree_vectorize 0
     }
 
-    set FORTRAN_TORTURE_OPTIONS [list \
-	{ -O0 } { -O1 } { -O2 } \
+    set options {}
+
+    lappend options \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
 	{ -O2 -fbounds-check } \
 	{ -O3 -g } \
-	{ -Os }]
-
+	{ -Os }
     if { $test_tree_vectorize } {
-	lappend FORTRAN_TORTURE_OPTIONS $vectorizer_options
+	lappend options $vectorizer_options
     }
+
+    return $options
 }
 
 
