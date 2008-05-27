@@ -33,6 +33,12 @@
 
 --  This is the Windows (native) version of this module
 
+with System.OS_Interface;
+pragma Unreferenced (System.OS_Interface);
+--  System.OS_Interface is not used today, but the protocol between the
+--  run-time and the binder is that any tasking application uses
+--  System.OS_Interface, so notify the binder with this "with" clause.
+
 package body System.Task_Info is
 
    N_CPU : Natural := 0;
