@@ -1,3 +1,40 @@
+2008-05-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-ststio.adb, s-direio.adb:
+	Further code clean up of previous change.
+	Update comments.
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting
+
+2008-05-27  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Build_Incomplete_Type_Declaration): In the case of an
+	untagged private type with a tagged full type, where the full type has
+	a self reference, create the corresponding class-wide type early, in
+	case the self reference is "access T'Class".
+
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): If component type includes
+	tasks and context is an object declaration. create master entity before
+	expansion.
+
+2008-05-27  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-prj.adb: Minor reformatting
+
+	* prj-part.adb: Minor reformatting
+
+	* prj.ads: Minor reformatting
+
+	* exp_ch3.adb: Minor reformatting.
+
+	* sem_ch3.ads: Minor reformatting
+
+	* sem_eval.adb: Minor reformatting
+
 2008-05-27  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb:
