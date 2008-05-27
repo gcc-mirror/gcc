@@ -1,3 +1,55 @@
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: add guard to previous patch.
+
+2008-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Build_Dispatch_Tables): For a private type completed by
+	a synchronized tagged type, do not attempt to build dispatch table for
+	full view. The table is built for the corresponding record type, which
+	has its own declaration.
+
+2008-05-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Fixup_Bad_Constraint): Set the Etype on the bad subtype
+	to the known type entity E, rather than setting it to Any_Type. Fixes
+	possible blowup in function Base_Init_Proc, as called from Freeze_Entity
+	for objects whose type had an illegal constraint.
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi:
+	Add succinct documentation for attribute Excluded_Source_List_File
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add new project level attribute Map_File_Option
+	
+	* prj-nmsc.adb (Process_Linker): Process new attribute Map_File_Option
+	
+	* prj.ads: Minor reformatting and comment update
+	(Project_Configuration): New component Map_File_Option
+	
+	* snames.adb: New standard name Map_File_Option
+	
+	* snames.ads: New standard name Map_File_Option
+
+2008-05-27  Vincent Celier  <celier@adacore.com>
+
+	* xsnames.adb: Remove unused variable Oname
+
+2008-05-27  Doug Rupp  <rupp@adacore.com>
+
+	* exp_ch6.adb:
+	(Expand_N_Function_Call): Fix comments. Minor reformatting.
+
+	* exp_vfpt.ads:
+	(Expand_Vax_Foreign_Return): Fix comments.
+
+2008-05-27  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Minor reformating
+
 2008-05-26  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): Remove checks for
