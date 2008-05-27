@@ -4041,7 +4041,7 @@ package body Exp_Aggr is
          --      Aggr_Lo <= Aggr_Hi and then
          --        (Aggr_Lo < Ind_Lo or else Aggr_Hi > Ind_Hi)]
 
-         --  As an optimization try to see if some tests are trivially vacuos
+         --  As an optimization try to see if some tests are trivially vacuous
          --  because we are comparing an expression against itself.
 
          if Aggr_Lo = Ind_Lo and then Aggr_Hi = Ind_Hi then
@@ -4672,6 +4672,8 @@ package body Exp_Aggr is
               Make_Raise_Constraint_Error (Loc,
                 Condition => Cond,
                 Reason    => CE_Length_Check_Failed));
+            --  Questionable reason code, shouldn't that be a
+            --  CE_Range_Check_Failed ???
          end if;
 
          --  Now look inside the sub-aggregate to see if there is more work
