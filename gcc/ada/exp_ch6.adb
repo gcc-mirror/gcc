@@ -5182,9 +5182,9 @@ package body Exp_Ch6 is
       end if;
    end Make_Build_In_Place_Call_In_Anonymous_Context;
 
-   ---------------------------------------------------
+   --------------------------------------------
    -- Make_Build_In_Place_Call_In_Assignment --
-   ---------------------------------------------------
+   --------------------------------------------
 
    procedure Make_Build_In_Place_Call_In_Assignment
      (Assign        : Node_Id;
