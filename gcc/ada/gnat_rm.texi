@@ -8370,6 +8370,7 @@ of composite objects and the Max/Min attributes.
 
 @item No_Implicit_Dynamic_Code
 @findex No_Implicit_Dynamic_Code
+@cindex trampoline
 This restriction prevents the compiler from building ``trampolines''.
 This is a structure that is built on the stack and contains dynamic
 code to be executed at run time. On some targets, a trampoline is
@@ -8379,6 +8380,17 @@ nested task bodies; primitive operations of nested tagged types.
 Trampolines do not work on machines that prevent execution of stack
 data. For example, on windows systems, enabling DEP (data execution
 protection) will cause trampolines to raise an exception.
+Trampolines are also quite slow at run time.
+
+On many targets, trampolines have been largely eliminated. Look at the
+version of system.ads for your target --- if it has
+Always_Compatible_Rep equal to False, then trampolines are largely
+eliminated. In particular, a trampoline is built for the following
+features: @code{Address} of a nested subprogram;
+@code{Access} or @code{Unrestricted_Access} of a nested subprogram,
+but only if pragma Favor_Top_Level applies, or the access type has a
+foreign-language convention; primitive operations of nested tagged
+types.
 
 @item No_Implicit_Loops
 @findex No_Implicit_Loops
