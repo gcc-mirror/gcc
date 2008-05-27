@@ -4518,7 +4518,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		return error_mark_node;
 	      }
 	    if (lvalue & clk_bitfield)
-	      expr = convert_bitfield_to_declared_type (expr);
+	      {
+		expr = convert_bitfield_to_declared_type (expr);
+		expr = fold_convert (type, expr);
+	      }
 	    expr = build_target_expr_with_type (expr, type);
 	  }
 
