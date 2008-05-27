@@ -1,5 +1,14 @@
 2008-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/35767
+	PR target/35771
+	* config/i386/i386.c (ix86_function_arg_boundary): Use
+	alignment of canonical type.
+	(ix86_expand_vector_move): Check unaligned memory access for
+	all SSE modes.
+
+2008-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* dwarf2out.c (current_fde): Change return type to dw_fde_ref.
 	Moved to the front of file.
 

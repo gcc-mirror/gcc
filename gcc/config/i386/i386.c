@@ -4638,7 +4638,12 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 {
   int align;
   if (type)
-    align = TYPE_ALIGN (type);
+    {
+      if (TYPE_STRUCTURAL_EQUALITY_P (type))
+	align = TYPE_ALIGN (type);
+      else
+	align = TYPE_ALIGN (TYPE_CANONICAL (type));
+    }
   else
     align = GET_MODE_ALIGNMENT (mode);
   if (align < PARM_BOUNDARY)
@@ -10408,12 +10413,10 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
       && standard_sse_constant_p (op1) <= 0)
     op1 = validize_mem (force_const_mem (mode, op1));
 
-  /* TDmode values are passed as TImode on the stack.  TImode values
-     are moved via xmm registers, and moving them to stack can result in
-     unaligned memory access.  Use ix86_expand_vector_move_misalign()
-     if memory operand is not aligned correctly.  */
+  /* We need to check memory alignment for SSE mode since attribute
+     can make operands unaligned.  */
   if (can_create_pseudo_p ()
-      && (mode == TImode) && !TARGET_64BIT
+      && SSE_REG_MODE_P (mode)
       && ((MEM_P (op0) && (MEM_ALIGN (op0) < align))
 	  || (MEM_P (op1) && (MEM_ALIGN (op1) < align))))
     {

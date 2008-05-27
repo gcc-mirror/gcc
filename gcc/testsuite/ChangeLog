@@ -1,3 +1,17 @@
+2008-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35767
+	PR target/35771
+	* gcc.target/i386/pr35767-1.c: New.
+	* gcc.target/i386/pr35767-1d.c: Likewise.
+	* gcc.target/i386/pr35767-1i.c: Likewise.
+	* gcc.target/i386/pr35767-2.c: Likewise.
+	* gcc.target/i386/pr35767-2d.c: Likewise.
+	* gcc.target/i386/pr35767-2i.c: Likewise.
+	* gcc.target/i386/pr35767-3.c: Likewise.
+	* gcc.target/i386/pr35767-4.c: Likewise.
+	* gcc.target/i386/pr35767-5.c: Likewise.
+
 2008-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/assignment_3.f90: Add missing cleanup-modules.
