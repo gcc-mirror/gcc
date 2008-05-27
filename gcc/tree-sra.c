@@ -268,6 +268,7 @@ sra_type_can_be_decomposed_p (tree type)
 	    {
 	      /* Reject incorrectly represented bit fields.  */
 	      if (DECL_BIT_FIELD (t)
+		  && INTEGRAL_TYPE_P (TREE_TYPE (t))
 		  && (tree_low_cst (DECL_SIZE (t), 1)
 		      != TYPE_PRECISION (TREE_TYPE (t))))
 		goto fail;
