@@ -1,3 +1,8 @@
+2008-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (sra_type_can_be_decomposed_p) <RECORD_TYPE>: Make sure
+	that the bitfield is of integral type before testing its precision.
+
 2008-05-27  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 	    Sa Liu  <saliu@de.ibm.com> 
 
