@@ -103,7 +103,7 @@ package body Exp_Fixd is
    function Build_Multiply (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Multiply node from the given left and right operand
    --  expressions, using the source location from Sloc (N). The operands are
-   --  either both Universal_Real, in which case Build_Divide differs from
+   --  either both Universal_Real, in which case Build_Multiply differs from
    --  Make_Op_Multiply only in that the Etype of the resulting node is set (to
    --  Universal_Real), or they can be integer types. In this case the integer
    --  types need not be the same, and Build_Multiply chooses a type long
@@ -623,25 +623,17 @@ package body Exp_Fixd is
          --  the effective size of an operand is the RM_Size of the operand.
          --  But a special case arises with operands whose size is known at
          --  compile time. In this case, we can use the actual value of the
-         --  operand to get its size if it would fit in 8 or 16 bits.
-
-         --  Note: if both operands are known at compile time (can that
-         --  happen?) and both were equal to the power of 2, then we would
-         --  be one bit off in this test, so for the left operand, we only
-         --  go up to the power of 2 - 1. This ensures that we do not get
-         --  this anomalous case, and in practice the right operand is by
-         --  far the more likely one to be the constant.
+         --  operand to get its size if it would fit signed in 8 or 16 bits.
 
          Left_Size := UI_To_Int (RM_Size (Left_Type));
 
          if Compile_Time_Known_Value (L) then
             declare
                Val : constant Uint := Expr_Value (L);
-
             begin
-               if Val < Int'(2 ** 8) then
+               if Val < Int'(2 ** 7) then
                   Left_Size := 8;
-               elsif Val < Int'(2 ** 16) then
+               elsif Val < Int'(2 ** 15) then
                   Left_Size := 16;
                end if;
             end;
@@ -652,11 +644,10 @@ package body Exp_Fixd is
          if Compile_Time_Known_Value (R) then
             declare
                Val : constant Uint := Expr_Value (R);
-
             begin
-               if Val <= Int'(2 ** 8) then
+               if Val <= Int'(2 ** 7) then
                   Right_Size := 8;
-               elsif Val <= Int'(2 ** 16) then
+               elsif Val <= Int'(2 ** 15) then
                   Right_Size := 16;
                end if;
             end;
