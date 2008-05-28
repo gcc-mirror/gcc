@@ -17837,6 +17837,21 @@ In this example, @i{expression} is defined by the following grammar:
 @i{expression} ::=  ( @i{expression} )
 @end smallexample
 
+The following restriction exists: it is not allowed to have "and" or "or"
+following "not" in the same expression without parentheses. For example, this
+is not allowed:
+
+@smallexample
+   not X or Y
+@end smallexample
+
+This should be one of the following:
+
+@smallexample
+   (not X) or Y
+   not (X or Y)
+@end smallexample
+
 @noindent
 For the first test (@i{expression} ::= <symbol>) the symbol must have
 either the value true or false, that is to say the right-hand of the
