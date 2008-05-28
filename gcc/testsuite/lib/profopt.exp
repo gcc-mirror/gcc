@@ -184,6 +184,7 @@ proc profopt-get-options { src } {
 	     || ![string compare "dg-skip-if" $cmd] \
 	     || ![string compare "dg-final-generate" $cmd] \
 	     || ![string compare "dg-final-use" $cmd] \
+             || ![string compare "dg-additional-sources" $cmd] \
 	     || [string match "dg-require-*" $cmd]  } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
@@ -266,9 +267,11 @@ proc profopt-execute { src } {
 	    return
 	}
 
+        set extra_options [dg-additional-files-options "" "$src"]
+
 	# Compile for profiling.
 
-	set options ""
+	set options "$extra_options"
 	lappend options "additional_flags=$option $extra_flags $profile_option"
 	set optstr "$option $profile_option"
 	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options]
@@ -317,7 +320,7 @@ proc profopt-execute { src } {
 
 	# Compile with feedback-directed optimizations.
 
-	set options ""
+	set options "$extra_options"
 	lappend options "additional_flags=$option $extra_flags $feedback_option"
 	set optstr "$option $feedback_option"
 	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options]
@@ -364,7 +367,7 @@ proc profopt-execute { src } {
 
 	# Compile with normal optimizations.
 
-	set options ""
+	set options "$extra_options"
 	lappend options "additional_flags=$option"
 	set optstr "$option"
 	set comp_output [${tool}_target_compile "$src" "$execname3" "executable" $options]

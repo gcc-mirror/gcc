@@ -308,7 +308,7 @@ tree_gen_ic_func_profiler (void)
   edge e;
   basic_block bb;
   edge_iterator ei;
-  tree stmt1;
+  tree stmt1, stmt2;
   tree tree_uid, cur_func;
 
   if (flag_unit_at_a_time)
@@ -321,8 +321,11 @@ tree_gen_ic_func_profiler (void)
   
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     {
+      tree void0;
+
       bb = split_edge (e);
       bsi = bsi_start (bb);
+
       cur_func = force_gimple_operand_bsi (&bsi,
 					   build_addr (current_function_decl, 
 						       current_function_decl),
@@ -335,6 +338,16 @@ tree_gen_ic_func_profiler (void)
 			       cur_func,
 			       ic_void_ptr_var);
       bsi_insert_after (&bsi, stmt1, BSI_NEW_STMT);
+
+      gcc_assert (EDGE_COUNT (bb->succs) == 1);
+      bb = split_edge (EDGE_I (bb->succs, 0));
+      bsi = bsi_start (bb);
+      /* Set __gcov_indirect_call_callee to 0,
+         so that calls from other modules won't get misattributed
+	 to the last caller of the current callee. */
+      void0 = build_int_cst (build_pointer_type (void_type_node), 0);
+      stmt2 = build_gimple_modify_stmt (ic_void_ptr_var, void0);
+      bsi_insert_after (&bsi, stmt2, BSI_NEW_STMT);
     }
 }
 

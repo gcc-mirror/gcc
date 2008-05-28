@@ -1,3 +1,10 @@
+2008-05-28  Seongbae Park <seongbae.park@gmail.com>
+
+	* value-prof.c (tree_ic_transform): Print counts.
+	* tree-profile.c (tree_gen_ic_func_profiler):
+	Clear __gcov_indreict_call_callee variable
+	to avoid misattribution of the profile.
+
 2008-05-28  Rafael Espindola  <espindola@google.com>
 
 	* see.c (see_def_extension_not_merged): Use copy_rtx_if_shared to avoid

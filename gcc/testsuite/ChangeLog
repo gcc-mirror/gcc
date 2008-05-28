@@ -1,3 +1,11 @@
+2008-05-28  Seongbae Park <seongbae.park@gmail.com>
+
+	* gcc.dg/tree-prof/ic-misattribution-1.c: New test.
+	* gcc.dg/tree-prof/ic-misattribution-1a.c: New test.
+	* lib/profopt.exp (profopt-get-options): Support
+	dg-additional-sources.
+	(profopt-execute): Handle additional sources.
+
 2008-05-28  Rafael Espindola  <espindola@google.com>
 
 	* gcc.dg/20080528-1.c: New test.
