@@ -336,6 +336,25 @@ gimple_duplicate_stmt_histograms (struct function *fun, tree stmt,
     }
 }
 
+
+/* Move all histograms associated with OSTMT to STMT.  */
+
+void
+gimple_move_stmt_histograms (struct function *fun, tree stmt, tree ostmt)
+{
+  histogram_value val = gimple_histogram_value (fun, ostmt);
+  if (val)
+    {
+      /* The following three statements can't be reordered,
+         because histogram hashtab relies on stmt field value
+	 for finding the exact slot. */
+      set_histogram_value (fun, ostmt, NULL);
+      for (; val != NULL; val = val->hvalue.next)
+	val->hvalue.stmt = stmt;
+      set_histogram_value (fun, stmt, val);
+    }
+}
+
 static bool error_found = false;
 
 /* Helper function for verify_histograms.  For each histogram reachable via htab
