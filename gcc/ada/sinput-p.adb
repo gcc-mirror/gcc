@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,11 @@ package body Sinput.P is
    begin
       Prj.Err.Scanner.Initialize_Scanner (X);
 
+      --  No error for special characters that are used for preprocessing
+
+      Prj.Err.Scanner.Set_Special_Character ('#');
+      Prj.Err.Scanner.Set_Special_Character ('$');
+
       --  We scan past junk to the first interesting compilation unit
       --  token, to see if it is SEPARATE. We ignore WITH keywords during
       --  this and also PRIVATE. The reason for ignoring PRIVATE is that
@@ -107,6 +112,8 @@ package body Sinput.P is
       loop
          Prj.Err.Scanner.Scan;
       end loop;
+
+      Prj.Err.Scanner.Reset_Special_Characters;
 
       return Token = Tok_Separate;
    end Source_File_Is_Subunit;
