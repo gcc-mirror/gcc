@@ -1,3 +1,36 @@
+2008-05-28  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads:
+	Add missing restrictions, and properly label all GNAT defined ones
+	
+	* rtsfind.ads:
+	Add entry for Ada_Real_Time.Timing_Events.Timing_Event
+	Add entry for Ada.Task_Termination.Set_Specific_Handler
+	Add entry for Ada.Task_Termination.Specific_Handler
+	
+	* s-rident.ads:
+	Add missing restrictions and properly mark all gnat defined ones
+	
+	* sem_ch3.adb:
+	(Analyze_Object_Declaration): Check No_Local_Timing_Events restriction
+	
+	* sem_res.adb:
+	(Resolve_Call): Check violation of No_Specific_Termination_Handlers
+
+	* gnat_rm.texi: Add missing restrictions, and properly label all
+	GNAT defined ones
+
+2008-05-28  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb:
+	(Check_Restriction): violation of restriction No_Finalization is
+	treated as a serious error to stop expansion
+
+2008-05-28  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting
+	* exp_util.ads: Minor reformatting.
+
 2008-05-28  Arnaud Charlet  <charlet@adacore.com>
 
 	* Make-lang.in: Remove gprmake.
