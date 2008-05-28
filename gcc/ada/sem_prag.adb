@@ -3194,6 +3194,10 @@ package body Sem_Prag is
                            if Chars (Choice) = Chars (Formal) then
                               Set_Mechanism_Value
                                 (Formal, Expression (Massoc));
+
+                              --  Set entity on identifier for ASIS
+                              Set_Entity (Choice, Formal);
+
                               exit;
                            end if;
 
