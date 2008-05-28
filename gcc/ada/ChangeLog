@@ -1,3 +1,9 @@
+2008-05-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* Make-lang.in: Remove gprmake.
+
+	* gprmake.adb, makegpr.ads, makegpr.adb: Removed.
+
 2008-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Diagnose_Interface): Cleanup error messages involving
