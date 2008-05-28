@@ -47,6 +47,8 @@ enum processor_type {
   PROCESSOR_74KF2_1,
   PROCESSOR_74KF1_1,
   PROCESSOR_74KF3_2,
+  PROCESSOR_LOONGSON_2E,
+  PROCESSOR_LOONGSON_2F,
   PROCESSOR_M4K,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
@@ -237,6 +239,9 @@ enum mips_code_readable_setting {
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
 				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
+#define TARGET_LOONGSON_2E          (mips_arch == PROCESSOR_LOONGSON_2E)
+#define TARGET_LOONGSON_2F          (mips_arch == PROCESSOR_LOONGSON_2F)
+#define TARGET_LOONGSON_2EF         (TARGET_LOONGSON_2E || TARGET_LOONGSON_2F)
 
 /* Scheduling target defines.  */
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
@@ -646,7 +651,7 @@ enum mips_code_readable_setting {
   "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
      %{march=mips1|march=r2000|march=r3000|march=r3900:-mips1} \
      %{march=mips2|march=r6000:-mips2} \
-     %{march=mips3|march=r4*|march=vr4*|march=orion:-mips3} \
+     %{march=mips3|march=r4*|march=vr4*|march=orion|march=loongson2*:-mips3} \
      %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000:-mips4} \
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \

@@ -1,3 +1,16 @@
+2008-05-28  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/mips/mips.c (mips_cpu_info_table): Add loongson2e
+	and loongson2f entries.
+	(mips_rtx_cost_data): Add entries for Loongson-2E/2F.
+	* config/mips/mips.h (processor_type): Add Loongson-2E
+	and Loongson-2F entries.
+	(TARGET_LOONGSON_2E, TARGET_LOONGSON_2F, TARGET_LOONGSON_2EF): New.
+	(MIPS_ISA_LEVEL_SPEC): Handle Loongson-2E/2F.
+	* config/mips/mips.md (define_attr cpu): Add loongson2e and loongson2f.
+	* doc/invoke.texi (MIPS Options): Document loongson2e
+	and loongson2f processor names.
+
 2008-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35767
