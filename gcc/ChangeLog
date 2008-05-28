@@ -1,3 +1,10 @@
+2008-05-28  Seongbae Park  <seongbae.park@gmail.com>
+
+	* tree-ssa-propagate.c (set_rhs): Preserve the histogram
+	and the eh region information.
+	* value-prof.c (gimple_move_stmt_histograms): New function.
+	* value-prof.h (gimple_move_stmt_histograms): New function declaration.
+
 2008-05-28  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/pa/pa.md: Remove extern frame_pointer_needed declaration.
