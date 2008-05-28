@@ -5803,6 +5803,10 @@ package body Old_Pkg is
 end Old_Pkg;
 @end smallexample
 
+@noindent
+Note that it is allowed to apply 'Old to a constant entity, but this will
+result in a warning, since the old and new values will always be the same.
+
 @node Passed_By_Reference
 @unnumberedsec Passed_By_Reference
 @cindex Parameters, when passed by reference

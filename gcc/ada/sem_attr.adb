@@ -3501,6 +3501,13 @@ package body Sem_Attr is
             Error_Attr ("attribute % cannot apply to limited objects", P);
          end if;
 
+         if Is_Entity_Name (P)
+           and then Is_Constant_Object (Entity (P))
+         then
+            Error_Msg_N
+              ("?attribute Old applied to constant has no effect", P);
+         end if;
+
          --  Check that the expression does not refer to local entities
 
          Check_Local : declare
