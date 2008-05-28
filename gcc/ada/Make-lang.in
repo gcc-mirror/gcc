@@ -378,10 +378,6 @@ ada.all.cross:
 	then \
 	   $(MV) gnatsym$(exeext)  gnatsym-cross$(exeext); \
 	fi
-	-if [ -f gprmake$(exeext) ] ; \
-	then \
-	   $(MV) gprmake$(exeext)  gprmake-cross$(exeext); \
-	fi
 
 ada.start.encap:
 ada.rest.encap:
@@ -497,7 +493,7 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # and also as either gnatbind (if native) or $(tooldir)/bin/gnatbind
 # likewise for gnatf, gnatchop, and gnatlink, gnatkr, gnatmake, gnat,
 # gnatprep, gnatls, gnatxref, gnatfind, gnatname, gnatclean,
-# gnatsym, gprmake
+# gnatsym
 ada.install-common:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
@@ -664,17 +660,6 @@ ada.install-common:
 	    $(INSTALL_PROGRAM) gnatclean$(exeext) $(DESTDIR)$(bindir)/gnatclean$(exeext); \
 	  fi ; \
 	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gprmake-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gprmake$(exeext); \
-	    $(INSTALL_PROGRAM) gprmake-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gprmake$(exeext); \
-	  else \
-	    $(RM) $(bindir)/gprmake$(exeext); \
-	    $(INSTALL_PROGRAM) gprmake$(exeext) $(DESTDIR)$(bindir)/gprmake$(exeext); \
-	  fi ; \
-	fi
 #
 # Gnatsym is only built on some platforms, including VMS
 #
@@ -808,7 +793,6 @@ ada.distclean:
 	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
 	-$(RM) gnatsym$(exeext)
-	-$(RM) gprmake$(exeext)
 # Gnatlbr is only used on VMS
 	-$(RM) gnatlbr$(exeext)
 	-$(RM) ada/rts/*
