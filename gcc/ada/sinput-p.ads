@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,8 @@ with Scans; use Scans;
 package Sinput.P is
 
    function Load_Project_File (Path : String) return Source_File_Index;
-   --  Load into memory the source of a project source file.
-   --  Initialize the Scans state.
+   --  Load into memory the source of a project source file. Initialize the
+   --  Scans state.
 
    procedure Reset_First;
    --  Indicate that the next project loaded should be considered as the first
@@ -41,13 +41,13 @@ package Sinput.P is
    --  is to get the correct number of lines when error finalization is called.
 
    function Source_File_Is_Subunit (X : Source_File_Index) return Boolean;
-   --  This function determines if a source file represents a subunit. It
-   --  works by scanning for the first compilation unit token, and returning
-   --  True if it is the token SEPARATE. It will return False otherwise,
-   --  meaning that the file cannot possibly be a legal subunit. This
-   --  function does NOT do a complete parse of the file, or build a
-   --  tree. It is used in gnatmake to decide if a body without a spec
-   --  in a project file needs to be compiled or not.
+   --  This function determines if a source file represents a subunit. It works
+   --  by scanning for the first compilation unit token, and returning True if
+   --  it is the token SEPARATE. It will return False otherwise, meaning that
+   --  the file cannot possibly be a legal subunit. This function does NOT do a
+   --  complete parse of the file, or build a tree. It is used in gnatmake and
+   --  gprbuild to decide if a body without a spec in a project file needs to
+   --  be compiled or not.
 
    type Saved_Project_Scan_State is limited private;
    --  Used to save project scan state in following two routines
@@ -55,14 +55,14 @@ package Sinput.P is
    procedure Save_Project_Scan_State
      (Saved_State : out Saved_Project_Scan_State);
    pragma Inline (Save_Project_Scan_State);
-   --  Save the Scans state, as well as the values of
-   --  Source and Current_Source_File.
+   --  Save the Scans state, as well as the values of Source and
+   --  Current_Source_File.
 
    procedure Restore_Project_Scan_State
      (Saved_State : Saved_Project_Scan_State);
    pragma Inline (Restore_Project_Scan_State);
-   --  Restore the Scans state and the values of
-   --  Source and Current_Source_File.
+   --  Restore the Scans state and the values of Source and
+   --  Current_Source_File.
 
 private
 
