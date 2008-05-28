@@ -188,10 +188,6 @@ struct gimple_df GTY(())
 
   struct ssa_operands ssa_operands;
 
-  /* Hashtable of variables annotations.  Used for static variables only;
-     local variables have direct pointer in the tree node.  */
-  htab_t GTY((param_is (struct static_var_ann_d))) var_anns;
-
   /* Memory reference statistics collected during alias analysis.
      This information is used to drive the memory partitioning
      heuristics in compute_memory_partitions.  */
