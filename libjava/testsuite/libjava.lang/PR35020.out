@@ -4,3 +4,6 @@ Class
 int[]
 Object[][][][][][][][]
 
+PR35020$Inner
+outer$inner
+inner
