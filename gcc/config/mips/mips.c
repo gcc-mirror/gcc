@@ -584,6 +584,9 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "r4600", PROCESSOR_R4600, 3, 0 },
   { "orion", PROCESSOR_R4600, 3, 0 },
   { "r4650", PROCESSOR_R4650, 3, 0 },
+  /* ST Loongson 2E/2F processors.  */
+  { "loongson2e", PROCESSOR_LOONGSON_2E, 3, PTF_AVOID_BRANCHLIKELY },
+  { "loongson2f", PROCESSOR_LOONGSON_2F, 3, PTF_AVOID_BRANCHLIKELY },
 
   /* MIPS IV processors. */
   { "r8000", PROCESSOR_R8000, 4, 0 },
@@ -831,6 +834,12 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
     COSTS_N_INSNS (41),           /* int_div_di */
 		     1,           /* branch_cost */
 		     4            /* memory_latency */
+  },
+  { /* Loongson-2E */
+    DEFAULT_COSTS
+  },
+  { /* Loongson-2F */
+    DEFAULT_COSTS
   },
   { /* M4k */
     DEFAULT_COSTS
