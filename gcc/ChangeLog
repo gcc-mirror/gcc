@@ -1,3 +1,9 @@
+2008-05-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36339
+	* tree-ssa-alias.c (set_initial_properties): Move pt_anything
+	and clobbering code out of the loop.
+
 2008-05-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/constraints.md ('b', 'C', 'D', 'e'): New constraint
