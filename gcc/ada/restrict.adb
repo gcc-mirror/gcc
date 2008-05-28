@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -321,7 +321,16 @@ package body Restrict is
             if Restriction_Warnings (R) then
                Restriction_Msg ("|violation of restriction %#?", Rimage, N);
             else
-               Restriction_Msg ("|violation of restriction %#", Rimage, N);
+               --  Normally a restriction violation is a non-serious error,
+               --  but we treat violation of No_Finalization as a serious
+               --  error, since we want to turn off expansion in this case,
+               --  expansion just causes too many cascaded errors.
+
+               if R = No_Finalization then
+                  Restriction_Msg ("violation of restriction %#", Rimage, N);
+               else
+                  Restriction_Msg ("|violation of restriction %#", Rimage, N);
+               end if;
             end if;
 
          --  Otherwise we have the case of an implicit restriction
