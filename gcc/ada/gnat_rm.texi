@@ -3897,7 +3897,7 @@ the Profile (Ravenscar), the value of Max_Task_Entries is always
 no calls to Task_Identification.Abort_Task.
 
 @item No_Asynchronous_Control
-[RM D.7] There are no semantic dependences on the package
+There are no semantic dependences on the package
 Asynchronous_Task_Control.
 
 @item No_Calendar
@@ -3918,6 +3918,10 @@ Detach_Handler, and Reference).
 Protected objects and access types that designate
 such objects shall be declared only at library level.
 
+@item No_Local_Timing_Events
+[RM D.7] All objects of type Ada.Timing_Events.Timing_Event are
+declared at the library level.
+
 @item No_Protected_Type_Allocators
 There are no allocators for protected types or
 types containing protected subcomponents.
@@ -3930,6 +3934,10 @@ Requeue statements are not allowed.
 
 @item No_Select_Statements
 There are no select_statements.
+
+@item No_Specific_Termination_Handlers
+[RM D.7] There are no calls to Ada.Task_Termination.Set_Specific_Handler
+or to Ada.Task_Termination.Specific_Handler.
 
 @item No_Task_Allocators
 [RM D.7] There are no allocators for task types
@@ -3944,6 +3952,12 @@ directly on the environment task of the partition.
 
 @item No_Task_Termination
 Tasks which terminate are erroneous.
+
+@item No_Unchecked_Conversion
+There are no semantic dependencies on the Ada.Unchecked_Conversion package.
+
+@item No_Unchecked_Deallocation
+There are no semantic dependencies on the Ada.Unchecked_Deallocation package.
 
 @item Simple_Barriers
 Entry barrier condition expressions shall be either static

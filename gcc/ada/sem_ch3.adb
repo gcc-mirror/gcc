@@ -3064,6 +3064,14 @@ package body Sem_Ch3 is
       then
          Set_In_Private_Part (Id);
       end if;
+
+      --  Check for violation of No_Local_Timing_Events
+
+      if Is_RTE (Etype (Id), RE_Timing_Event)
+        and then not Is_Library_Level_Entity (Id)
+      then
+         Check_Restriction (No_Local_Timing_Events, N);
+      end if;
    end Analyze_Object_Declaration;
 
    ---------------------------

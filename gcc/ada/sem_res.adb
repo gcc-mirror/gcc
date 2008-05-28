@@ -5146,6 +5146,15 @@ package body Sem_Res is
          Check_Intrinsic_Call (N);
       end if;
 
+      --  Check for violation of restriction No_Specific_Termination_Handlers
+
+      if Is_RTE (Nam, RE_Set_Specific_Handler)
+           or else
+         Is_RTE (Nam, RE_Specific_Handler)
+      then
+         Check_Restriction (No_Specific_Termination_Handlers, N);
+      end if;
+
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);

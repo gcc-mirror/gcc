@@ -89,6 +89,7 @@ package System.Rident is
       No_Implicit_Loops,                       -- GNAT
       No_Initialize_Scalars,                   -- GNAT
       No_Local_Allocators,                     -- (RM H.4(8))
+      No_Local_Timing_Events,                  -- (RM D.7(10.2/2))
       No_Local_Protected_Objects,              -- GNAT
       No_Nested_Finalization,                  -- (RM D.7(4))
       No_Protected_Type_Allocators,            -- GNAT
@@ -99,6 +100,7 @@ package System.Rident is
       No_Requeue_Statements,                   -- GNAT
       No_Secondary_Stack,                      -- GNAT
       No_Select_Statements,                    -- GNAT (Ravenscar)
+      No_Specific_Termination_Handlers,        -- (RM D.7(10.7/2))
       No_Standard_Storage_Pools,               -- GNAT
       No_Streams,                              -- GNAT
       No_Task_Allocators,                      -- (RM D.7(7))
