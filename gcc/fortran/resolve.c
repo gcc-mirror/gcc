@@ -1571,7 +1571,8 @@ resolve_specific_f0 (gfc_symbol *sym, gfc_expr *expr)
       /* Existance of isym should be checked already.  */
       gcc_assert (isym);
 
-      sym->ts = isym->ts;
+      sym->ts.type = isym->ts.type;
+      sym->ts.kind = isym->ts.kind;
       sym->attr.function = 1;
       sym->attr.proc = PROC_EXTERNAL;
       goto found;
@@ -2646,8 +2647,9 @@ resolve_specific_s0 (gfc_code *c, gfc_symbol *sym)
       /* Existance of isym should be checked already.  */
       gcc_assert (isym);
 
-      sym->ts = isym->ts;
-      sym->attr.function = 1;
+      sym->ts.type = isym->ts.type;
+      sym->ts.kind = isym->ts.kind;
+      sym->attr.subroutine = 1;
       goto found;
     }
 

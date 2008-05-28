@@ -1,3 +1,16 @@
+2008-05-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36325
+	PR fortran/35830
+	* interface.c (gfc_procedure_use): Enable argument checking for
+	external procedures with explicit interface.
+	* symbol.c (check_conflict): Fix conflict checking for externals.
+	(copy_formal_args): Fix handling of arrays.
+	* resolve.c (resolve_specific_f0, resolve_specific_s0): Fix handling
+	of intrinsics.
+	* parse.c (parse_interface): Non-abstract INTERFACE statement implies
+	EXTERNAL attribute.
+
 2008-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36319

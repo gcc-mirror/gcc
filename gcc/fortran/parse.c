@@ -1917,12 +1917,28 @@ loop:
       new_state = COMP_SUBROUTINE;
       gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
 				  gfc_new_block->formal, NULL);
+      if (current_interface.type != INTERFACE_ABSTRACT &&
+	 !gfc_new_block->attr.dummy &&
+	 gfc_add_external (&gfc_new_block->attr, &gfc_current_locus) == FAILURE)
+	{
+	  reject_statement ();
+	  gfc_free_namespace (gfc_current_ns);
+	  goto loop;
+	}
       break;
 
     case ST_FUNCTION:
       new_state = COMP_FUNCTION;
       gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
 				  gfc_new_block->formal, NULL);
+      if (current_interface.type != INTERFACE_ABSTRACT &&
+	 !gfc_new_block->attr.dummy &&
+	 gfc_add_external (&gfc_new_block->attr, &gfc_current_locus) == FAILURE)
+	{
+	  reject_statement ();
+	  gfc_free_namespace (gfc_current_ns);
+	  goto loop;
+	}
       break;
 
     case ST_PROCEDURE:
