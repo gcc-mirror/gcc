@@ -1198,6 +1198,7 @@ tree_ic_transform (tree stmt)
       print_generic_stmt (dump_file, stmt, TDF_SLIM);
       fprintf (dump_file, " to ");
       print_generic_stmt (dump_file, modify, TDF_SLIM);
+      fprintf (dump_file, "hist->count %llu hist->all %llu\n", count, all);
     }
 
   return true;
