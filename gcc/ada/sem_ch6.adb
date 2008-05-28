@@ -6434,6 +6434,10 @@ package body Sem_Ch6 is
          elsif Present (First_Formal (Def_Id)) then
             Formal_Typ := Etype (First_Formal (Def_Id));
 
+            if Is_Access_Type (Formal_Typ) then
+               Formal_Typ := Directly_Designated_Type (Formal_Typ);
+            end if;
+
             if Is_Concurrent_Type (Formal_Typ)
               and then not Is_Generic_Actual_Type (Formal_Typ)
             then

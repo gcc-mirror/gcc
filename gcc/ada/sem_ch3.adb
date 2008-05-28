@@ -11391,7 +11391,9 @@ package body Sem_Ch3 is
             while Present (Prim_Elmt) loop
                Iface_Subp := Node (Prim_Elmt);
 
-               if not Is_Predefined_Dispatching_Operation (Iface_Subp) then
+               if not Is_Predefined_Dispatching_Operation (Iface_Subp)
+                 or else Comes_From_Source (Iface_Subp)
+               then
                   E := Find_Primitive_Covering_Interface
                          (Tagged_Type => Tagged_Type,
                           Iface_Prim  => Iface_Subp);
