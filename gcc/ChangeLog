@@ -1,3 +1,15 @@
+2008-05-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (z10_cost): New cost function for z10.
+	(s390_handle_arch_option, override_options): Support
+	-march=z10 switch.
+	(s390_issue_rate): Adjust issue rate for z10.
+	* config/s390/s390.h (processor_type): Add PROCESSOR_2097_Z10.
+	(processor_flags): Add PF_Z10.
+	(TARGET_CPU_Z10, TARGET_Z10): New macro definitions.
+	* config/s390/s390.md (cpu, cpu_facility attributes): Add z10.
+	* gcc/config.gcc: Add z10.
+
 2008-05-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36291

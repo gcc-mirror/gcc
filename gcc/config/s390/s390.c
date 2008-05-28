@@ -188,6 +188,38 @@ struct processor_costs z9_109_cost =
   COSTS_N_INSNS (24),    /* DSGR */
 };
 
+static const
+struct processor_costs z10_cost =
+{
+  COSTS_N_INSNS (4),     /* M     */
+  COSTS_N_INSNS (2),     /* MGHI  */
+  COSTS_N_INSNS (2),     /* MH    */
+  COSTS_N_INSNS (2),     /* MHI   */
+  COSTS_N_INSNS (4),     /* ML    */
+  COSTS_N_INSNS (4),     /* MR    */
+  COSTS_N_INSNS (5),     /* MS    */
+  COSTS_N_INSNS (6),     /* MSG   */
+  COSTS_N_INSNS (4),     /* MSGF  */
+  COSTS_N_INSNS (4),     /* MSGFR */
+  COSTS_N_INSNS (4),     /* MSGR  */
+  COSTS_N_INSNS (4),     /* MSR   */
+  COSTS_N_INSNS (1),     /* multiplication in DFmode */
+  COSTS_N_INSNS (28),    /* MXBR */
+  COSTS_N_INSNS (130),   /* SQXBR */
+  COSTS_N_INSNS (66),    /* SQDBR */
+  COSTS_N_INSNS (38),    /* SQEBR */
+  COSTS_N_INSNS (1),     /* MADBR */
+  COSTS_N_INSNS (1),     /* MAEBR */
+  COSTS_N_INSNS (60),    /* DXBR */
+  COSTS_N_INSNS (40),    /* DDBR */
+  COSTS_N_INSNS (26),    /* DEBR */
+  COSTS_N_INSNS (30),    /* DLGR */
+  COSTS_N_INSNS (23),    /* DLR */
+  COSTS_N_INSNS (23),    /* DR */
+  COSTS_N_INSNS (24),    /* DSGFR */
+  COSTS_N_INSNS (24),    /* DSGR */
+};
+
 extern int reload_completed;
 
 /* Save information from a "cmpxx" operation until the branch or scc is
@@ -1365,6 +1397,8 @@ s390_handle_arch_option (const char *arg,
                                        | PF_LONG_DISPLACEMENT | PF_EXTIMM},
       {"z9-ec", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
                              | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP },
+      {"z10", PROCESSOR_2097_Z10, PF_IEEE_FLOAT | PF_ZARCH
+                             | PF_LONG_DISPLACEMENT | PF_EXTIMM | PF_DFP | PF_Z10},
     };
   size_t i;
 
@@ -1472,13 +1506,21 @@ override_options (void)
     }
 
   /* Set processor cost function.  */
-  if (s390_tune == PROCESSOR_2094_Z9_109)
-    s390_cost = &z9_109_cost;
-  else if (s390_tune == PROCESSOR_2084_Z990)
-    s390_cost = &z990_cost;
-  else
-    s390_cost = &z900_cost;
-  
+  switch (s390_tune)
+    {
+    case PROCESSOR_2084_Z990:
+      s390_cost = &z990_cost;
+      break;
+    case PROCESSOR_2094_Z9_109:
+      s390_cost = &z9_109_cost;
+      break;
+    case PROCESSOR_2097_Z10:
+      s390_cost = &z10_cost;
+      break;
+    default:
+      s390_cost = &z900_cost;
+    }
+
   if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
     error ("-mbackchain -mpacked-stack -mhard-float are not supported "
 	   "in combination");
@@ -4930,10 +4972,16 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 static int
 s390_issue_rate (void)
 {
-  if (s390_tune == PROCESSOR_2084_Z990
-      || s390_tune == PROCESSOR_2094_Z9_109)
-    return 3;
-  return 1;
+  switch (s390_tune)
+    {
+    case PROCESSOR_2084_Z990:
+    case PROCESSOR_2094_Z9_109:
+      return 3;
+    case PROCESSOR_2097_Z10:
+      return 2;
+    default:
+      return 1;
+    }
 }
 
 static int

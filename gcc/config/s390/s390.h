@@ -40,6 +40,7 @@ enum processor_type
   PROCESSOR_2064_Z900,
   PROCESSOR_2084_Z990,
   PROCESSOR_2094_Z9_109,
+  PROCESSOR_2097_Z10,
   PROCESSOR_max
 };
 
@@ -51,7 +52,8 @@ enum processor_flags
   PF_ZARCH = 2,
   PF_LONG_DISPLACEMENT = 4,
   PF_EXTIMM = 8,
-  PF_DFP = 16
+  PF_DFP = 16,
+  PF_Z10 = 32
 };
 
 extern enum processor_type s390_tune;
@@ -70,6 +72,8 @@ extern enum processor_flags s390_arch_flags;
  	(s390_arch_flags & PF_EXTIMM)
 #define TARGET_CPU_DFP \
  	(s390_arch_flags & PF_DFP)
+#define TARGET_CPU_Z10 \
+ 	(s390_arch_flags & PF_Z10)
 
 #define TARGET_LONG_DISPLACEMENT \
        (TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
@@ -77,6 +81,8 @@ extern enum processor_flags s390_arch_flags;
        (TARGET_ZARCH && TARGET_CPU_EXTIMM)
 #define TARGET_DFP \
        (TARGET_ZARCH && TARGET_CPU_DFP)
+#define TARGET_Z10 \
+       (TARGET_ZARCH && TARGET_CPU_Z10)
 
 /* Run-time target specification.  */
 
