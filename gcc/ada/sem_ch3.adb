@@ -11398,6 +11398,13 @@ package body Sem_Ch3 is
             while Present (Prim_Elmt) loop
                Iface_Subp := Node (Prim_Elmt);
 
+               --  Exclude derivation of predefined primitives except those
+               --  that come from source. Required to catch declarations of
+               --  equality operators of interfaces. For example:
+
+               --     type Iface is interface;
+               --     function "=" (Left, Right : Iface) return Boolean;
+
                if not Is_Predefined_Dispatching_Operation (Iface_Subp)
                  or else Comes_From_Source (Iface_Subp)
                then
