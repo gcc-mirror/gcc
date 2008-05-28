@@ -1,5 +1,11 @@
 2008-05-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36339
+	* tree-ssa-alias.c (set_initial_properties): Move pt_anything
+	and subvariable clobbering code out of the loop.
+
+2008-05-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36300
 	* fold-const.c (extract_muldiv_1): Use TYPE_OVERFLOW_WRAPS,
 	not TYPE_UNSIGNED.  Use TYPE_PRECISION instead of GET_MODE_SIZE.
