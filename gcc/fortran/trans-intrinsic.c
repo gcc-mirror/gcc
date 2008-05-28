@@ -1327,9 +1327,7 @@ gfc_conv_intrinsic_ctime (gfc_se * se, gfc_expr * expr)
   tree var;
   tree len;
   tree tmp;
-  tree type;
   tree cond;
-  tree gfc_int8_type_node = gfc_get_int_type (8);
   tree fndecl;
   tree *args;
   unsigned int num_args;
@@ -1337,9 +1335,8 @@ gfc_conv_intrinsic_ctime (gfc_se * se, gfc_expr * expr)
   num_args = gfc_intrinsic_argument_list_length (expr) + 2;
   args = alloca (sizeof (tree) * num_args);
 
-  type = build_pointer_type (gfc_character1_type_node);
-  var = gfc_create_var (type, "pstr");
-  len = gfc_create_var (gfc_int8_type_node, "len");
+  var = gfc_create_var (pchar_type_node, "pstr");
+  len = gfc_create_var (gfc_get_int_type (8), "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = build_fold_addr_expr (var);
@@ -1368,9 +1365,7 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   tree var;
   tree len;
   tree tmp;
-  tree type;
   tree cond;
-  tree gfc_int4_type_node = gfc_get_int_type (4);
   tree fndecl;
   tree *args;
   unsigned int num_args;
@@ -1378,9 +1373,8 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   num_args = gfc_intrinsic_argument_list_length (expr) + 2;
   args = alloca (sizeof (tree) * num_args);
 
-  type = build_pointer_type (gfc_character1_type_node);
-  var = gfc_create_var (type, "pstr");
-  len = gfc_create_var (gfc_int4_type_node, "len");
+  var = gfc_create_var (pchar_type_node, "pstr");
+  len = gfc_create_var (gfc_get_int_type (4), "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = build_fold_addr_expr (var);
@@ -1411,19 +1405,16 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
   tree var;
   tree len;
   tree tmp;
-  tree type;
   tree cond;
   tree fndecl;
-  tree gfc_int4_type_node = gfc_get_int_type (4);
   tree *args;
   unsigned int num_args;
 
   num_args = gfc_intrinsic_argument_list_length (expr) + 2;
   args = alloca (sizeof (tree) * num_args);
 
-  type = build_pointer_type (gfc_character1_type_node);
-  var = gfc_create_var (type, "pstr");
-  len = gfc_create_var (gfc_int4_type_node, "len");
+  var = gfc_create_var (pchar_type_node, "pstr");
+  len = gfc_create_var (gfc_get_int_type (4), "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = build_fold_addr_expr (var);
@@ -1551,7 +1542,7 @@ gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
   /* Create the result variables.  */
   len = gfc_create_var (gfc_charlen_type_node, "len");
   args[0] = build_fold_addr_expr (len);
-  var = gfc_create_var (build_pointer_type (gfc_character1_type_node), "pstr");
+  var = gfc_create_var (gfc_get_pchar_type (expr->ts.kind), "pstr");
   args[1] = gfc_build_addr_expr (ppvoid_type_node, var);
   args[2] = build_int_cst (NULL_TREE, op);
   args[3] = build_int_cst (NULL_TREE, nargs / 2);
@@ -3237,6 +3228,24 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Helper function to compute the size of a character variable,
+   excluding the terminating null characters.  The result has
+   gfc_array_index_type type.  */
+
+static tree
+size_of_string_in_bytes (int kind, tree string_length)
+{
+  tree bytesize;
+  int i = gfc_validate_kind (BT_CHARACTER, kind, false);
+ 
+  bytesize = build_int_cst (gfc_array_index_type,
+			    gfc_character_kinds[i].bit_size / 8);
+
+  return fold_build2 (MULT_EXPR, gfc_array_index_type, bytesize,
+		      fold_convert (gfc_array_index_type, string_length));
+}
+
+
 static void
 gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 {
@@ -3249,7 +3258,6 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   tree tmp;
   tree lower;
   tree upper;
-  /*tree stride;*/
   int n;
 
   arg = expr->value.function.actual->expr;
@@ -3268,8 +3276,8 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 
       /* Obtain the source word length.  */
       if (arg->ts.type == BT_CHARACTER)
-	source_bytes = fold_convert (gfc_array_index_type,
-				     argse.string_length);
+	source_bytes = size_of_string_in_bytes (arg->ts.kind,
+						argse.string_length);
       else
 	source_bytes = fold_convert (gfc_array_index_type,
 				     size_in_bytes (type)); 
@@ -3283,7 +3291,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 
       /* Obtain the argument's word length.  */
       if (arg->ts.type == BT_CHARACTER)
-	tmp = fold_convert (gfc_array_index_type, argse.string_length);
+	tmp = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
       else
 	tmp = fold_convert (gfc_array_index_type,
 			    size_in_bytes (type)); 
@@ -3404,7 +3412,8 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
       /* Obtain the source word length.  */
       if (arg->expr->ts.type == BT_CHARACTER)
-	tmp = fold_convert (gfc_array_index_type, argse.string_length);
+	tmp = size_of_string_in_bytes (arg->expr->ts.kind,
+				       argse.string_length);
       else
 	tmp = fold_convert (gfc_array_index_type,
 			    size_in_bytes (source_type)); 
@@ -3443,7 +3452,8 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
       /* Obtain the source word length.  */
       if (arg->expr->ts.type == BT_CHARACTER)
-	tmp = fold_convert (gfc_array_index_type, argse.string_length);
+	tmp = size_of_string_in_bytes (arg->expr->ts.kind,
+				       argse.string_length);
       else
 	tmp = fold_convert (gfc_array_index_type,
 			    size_in_bytes (source_type)); 
@@ -3495,7 +3505,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
   if (arg->expr->ts.type == BT_CHARACTER)
     {
-      tmp = fold_convert (gfc_array_index_type, argse.string_length);
+      tmp = size_of_string_in_bytes (arg->expr->ts.kind, argse.string_length);
       mold_type = gfc_get_character_type_len (arg->expr->ts.kind, tmp);
     }
   else
@@ -3869,12 +3879,10 @@ gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
 static void
 gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 {
-  tree gfc_int4_type_node = gfc_get_int_type (4);
   tree var;
   tree len;
   tree addr;
   tree tmp;
-  tree type;
   tree cond;
   tree fndecl;
   tree function;
@@ -3884,10 +3892,9 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   num_args = gfc_intrinsic_argument_list_length (expr) + 2;
   args = alloca (sizeof (tree) * num_args);
 
-  type = build_pointer_type (gfc_character1_type_node);
-  var = gfc_create_var (type, "pstr");
+  var = gfc_create_var (gfc_get_pchar_type (expr->ts.kind), "pstr");
   addr = gfc_build_addr_expr (ppvoid_type_node, var);
-  len = gfc_create_var (gfc_int4_type_node, "len");
+  len = gfc_create_var (gfc_get_int_type (4), "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = build_fold_addr_expr (len);
@@ -3928,7 +3935,7 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   stmtblock_t block, body;
   int i;
 
-  /* We store in charsize the size of an character.  */
+  /* We store in charsize the size of a character.  */
   i = gfc_validate_kind (BT_CHARACTER, expr->ts.kind, false);
   size = build_int_cst (size_type_node, gfc_character_kinds[i].bit_size / 8);
 

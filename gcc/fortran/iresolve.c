@@ -627,9 +627,19 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
         }
     }
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("cshift%d_%d%s"), n, shift->ts.kind,
-		      array->ts.type == BT_CHARACTER ? "_char" : "");
+  if (array->ts.type == BT_CHARACTER)
+    {
+      if (array->ts.kind == gfc_default_character_kind)
+	f->value.function.name
+	  = gfc_get_string (PREFIX ("cshift%d_%d_char"), n, shift->ts.kind);
+      else
+	f->value.function.name
+	  = gfc_get_string (PREFIX ("cshift%d_%d_char%d"), n, shift->ts.kind,
+			    array->ts.kind);
+    }
+  else
+    f->value.function.name
+	= gfc_get_string (PREFIX ("cshift%d_%d"), n, shift->ts.kind);
 }
 
 
@@ -768,9 +778,19 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
         }
     }
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("eoshift%d_%d%s"), n, shift->ts.kind,
-		      array->ts.type == BT_CHARACTER ? "_char" : "");
+  if (array->ts.type == BT_CHARACTER)
+    {
+      if (array->ts.kind == gfc_default_character_kind)
+	f->value.function.name
+	  = gfc_get_string (PREFIX ("eoshift%d_%d_char"), n, shift->ts.kind);
+      else
+	f->value.function.name
+	  = gfc_get_string (PREFIX ("eoshift%d_%d_char%d"), n, shift->ts.kind,
+			    array->ts.kind);
+    }
+  else
+    f->value.function.name
+	= gfc_get_string (PREFIX ("eoshift%d_%d"), n, shift->ts.kind);
 }
 
 

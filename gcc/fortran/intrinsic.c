@@ -3807,7 +3807,6 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
   new->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   new->symtree->n.sym->attr.function = 1;
   new->symtree->n.sym->attr.elemental = 1;
-  new->symtree->n.sym->attr.pure = 1;
   new->symtree->n.sym->attr.referenced = 1;
   gfc_intrinsic_symbol(new->symtree->n.sym);
   gfc_commit_symbol (new->symtree->n.sym);

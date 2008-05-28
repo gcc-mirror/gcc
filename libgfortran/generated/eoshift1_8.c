@@ -42,7 +42,7 @@ eoshift1 (gfc_array_char * const restrict ret,
 	const gfc_array_i8 * const restrict h,
 	const char * const restrict pbound, 
 	const GFC_INTEGER_8 * const restrict pwhich, 
-	index_type size, char filler)
+	index_type size, const char * filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -183,7 +183,14 @@ eoshift1 (gfc_array_char * const restrict ret,
       else
 	while (n--)
 	  {
-	    memset (dest, filler, size);
+	    index_type i;
+
+	    if (filler_len == 1)
+	      memset (dest, filler[0], size);
+	    else
+	      for (i = 0; i < size; i += filler_len)
+		memcpy (&dest[i], filler, filler_len);
+
 	    dest += roffset;
 	  }
 
@@ -234,8 +241,10 @@ eoshift1_8 (gfc_array_char * const restrict ret,
 	const char * const restrict pbound,
 	const GFC_INTEGER_8 * const restrict pwhich)
 {
-  eoshift1 (ret, array, h, pbound, pwhich, GFC_DESCRIPTOR_SIZE (array), 0);
+  eoshift1 (ret, array, h, pbound, pwhich, GFC_DESCRIPTOR_SIZE (array),
+	    "\0", 1);
 }
+
 
 void eoshift1_8_char (gfc_array_char * const restrict, 
 	GFC_INTEGER_4,
@@ -256,7 +265,32 @@ eoshift1_8_char (gfc_array_char * const restrict ret,
 	GFC_INTEGER_4 array_length,
 	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
-  eoshift1 (ret, array, h, pbound, pwhich, array_length, ' ');
+  eoshift1 (ret, array, h, pbound, pwhich, array_length, " ", 1);
+}
+
+
+void eoshift1_8_char4 (gfc_array_char * const restrict, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict, 
+	const gfc_array_i8 * const restrict,
+	const char * const restrict, 
+	const GFC_INTEGER_8 * const restrict,
+	GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(eoshift1_8_char4);
+
+void
+eoshift1_8_char4 (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array, 
+	const gfc_array_i8 * const restrict h,
+	const char *  const restrict pbound, 
+	const GFC_INTEGER_8 * const restrict pwhich,
+	GFC_INTEGER_4 array_length,
+	GFC_INTEGER_4 bound_length __attribute__((unused)))
+{
+  static const gfc_char4_t space = (unsigned char) ' ';
+  eoshift1 (ret, array, h, pbound, pwhich, array_length * sizeof (gfc_char4_t),
+	    (const char *) &space, sizeof (gfc_char4_t));
 }
 
 #endif

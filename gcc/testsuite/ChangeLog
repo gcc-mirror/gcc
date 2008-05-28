@@ -1,3 +1,17 @@
+2008-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36319
+	* gfortran.dg/widechar_5.f90: New file.
+	* gfortran.dg/widechar_6.f90: New file.
+	* gfortran.dg/widechar_7.f90: New file.
+	* gfortran.dg/widechar_intrinsics_5.f90: Uncomment the lines
+	testing the SPREAD intrinsic.
+	* gfortran.dg/widechar_intrinsics_6.f90: New file.
+	* gfortran.dg/widechar_intrinsics_7.f90: New file.
+	* gfortran.dg/widechar_intrinsics_8.f90: New file.
+	* gfortran.dg/widechar_intrinsics_9.f90: New file.
+	* gfortran.dg/widechar_intrinsics_10.f90: New file.
+
 2008-05-28  Seongbae Park <seongbae.park@gmail.com>
 
 	* gcc.dg/tree-prof/ic-misattribution-1.c: New test.

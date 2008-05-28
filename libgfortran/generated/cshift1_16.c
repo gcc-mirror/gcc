@@ -212,6 +212,7 @@ cshift1_16 (gfc_array_char * const restrict ret,
   cshift1 (ret, array, h, pwhich, GFC_DESCRIPTOR_SIZE (array));
 }
 
+
 void cshift1_16_char (gfc_array_char * const restrict ret, 
 	GFC_INTEGER_4,
 	const gfc_array_char * const restrict array,
@@ -229,6 +230,26 @@ cshift1_16_char (gfc_array_char * const restrict ret,
 	GFC_INTEGER_4 array_length)
 {
   cshift1 (ret, array, h, pwhich, array_length);
+}
+
+
+void cshift1_16_char4 (gfc_array_char * const restrict ret, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict array,
+	const gfc_array_i16 * const restrict h, 
+	const GFC_INTEGER_16 * const restrict pwhich,
+	GFC_INTEGER_4);
+export_proto(cshift1_16_char4);
+
+void
+cshift1_16_char4 (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array,
+	const gfc_array_i16 * const restrict h, 
+	const GFC_INTEGER_16 * const restrict pwhich,
+	GFC_INTEGER_4 array_length)
+{
+  cshift1 (ret, array, h, pwhich, array_length * sizeof (gfc_char4_t));
 }
 
 #endif

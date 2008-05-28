@@ -334,6 +334,24 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 		      GFC_INTEGER_4 array_length)			      \
   {									      \
     cshift0 (ret, array, *pshift, pdim ? *pdim : 1, array_length);	      \
+  }									      \
+									      \
+  extern void cshift0_##N##_char4 (gfc_array_char *, GFC_INTEGER_4,	      \
+				   const gfc_array_char *,		      \
+				   const GFC_INTEGER_##N *,		      \
+				   const GFC_INTEGER_##N *, GFC_INTEGER_4);   \
+  export_proto(cshift0_##N##_char4);					      \
+									      \
+  void									      \
+  cshift0_##N##_char4 (gfc_array_char *ret,				      \
+		       GFC_INTEGER_4 ret_length __attribute__((unused)),      \
+		       const gfc_array_char *array,			      \
+		       const GFC_INTEGER_##N *pshift,			      \
+		       const GFC_INTEGER_##N *pdim,			      \
+		       GFC_INTEGER_4 array_length)			      \
+  {									      \
+    cshift0 (ret, array, *pshift, pdim ? *pdim : 1,			      \
+	     array_length * sizeof (gfc_char4_t));			      \
   }
 
 DEFINE_CSHIFT (1);

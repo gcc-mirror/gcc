@@ -1,3 +1,28 @@
+2008-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36319
+	* intrinsic.c (gfc_convert_chartype): Don't mark conversion
+	function as pure.
+	* trans-array.c (gfc_trans_array_ctor_element): Divide element
+	size by the size of one character to obtain length.
+	* iresolve.c (gfc_resolve_cshift): Call the _char4 variant when
+	appropriate.
+	(gfc_resolve_eoshift): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime): Minor beautification.
+	(gfc_conv_intrinsic_fdate): Minor beautification.
+	(gfc_conv_intrinsic_ttynam): Minor beautification.
+	(gfc_conv_intrinsic_minmax_char): Allow all character kinds.
+	(size_of_string_in_bytes): New function.
+	(gfc_conv_intrinsic_size): Call size_of_string_in_bytes for
+	character expressions.
+	(gfc_conv_intrinsic_sizeof): Likewise.
+	(gfc_conv_intrinsic_array_transfer): Likewise.
+	(gfc_conv_intrinsic_trim): Allow all character kinds. Minor
+	beautification.
+	(gfc_conv_intrinsic_repeat): Fix comment typo.
+	* simplify.c (gfc_convert_char_constant): Take care of conversion
+	of array constructors.
+
 2008-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36316

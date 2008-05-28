@@ -1,3 +1,37 @@
+2008-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36319
+	* intrinsics/string_intrinsics_inc.c (string_index): Return
+	correct value for zero-length substring.
+	* intrinsics/cshift0.c: Add _char4 variant.
+	* intrinsics/eoshift0.c (eoshift0): Allow filler to be a pattern
+	wider than a single byte. Add _char4 variant and use above
+	functionality.
+	* intrinsics/eoshift2.c (eoshift2): Likewise.
+	* m4/eoshift1.m4: Likewise.
+	* m4/eoshift3.m4: Likewise.
+	* m4/cshift1.m4: Add _char4 variants.
+	* gfortran.map (GFORTRAN_1.1): Add _gfortran_cshift0_1_char4,
+	_gfortran_cshift0_2_char4, _gfortran_cshift0_4_char4,
+	_gfortran_cshift0_8_char4, _gfortran_cshift1_16_char4,
+	_gfortran_cshift1_4_char4, _gfortran_cshift1_8_char4,
+	_gfortran_eoshift0_1_char4, _gfortran_eoshift0_2_char4,
+	_gfortran_eoshift0_4_char4, _gfortran_eoshift0_8_char4,
+	_gfortran_eoshift1_16_char4, _gfortran_eoshift1_4_char4,
+	_gfortran_eoshift1_8_char4, _gfortran_eoshift2_1_char4,
+	_gfortran_eoshift2_2_char4, _gfortran_eoshift2_4_char4,
+	_gfortran_eoshift2_8_char4, _gfortran_eoshift3_16_char4,
+	_gfortran_eoshift3_4_char4 and _gfortran_eoshift3_8_char4.
+	* generated/eoshift3_4.c: Regenerate.
+	* generated/eoshift1_8.c: Regenerate.
+	* generated/eoshift1_16.c: Regenerate.
+	* generated/cshift1_4.c: Regenerate.
+	* generated/eoshift1_4.c: Regenerate.
+	* generated/eoshift3_8.c: Regenerate.
+	* generated/eoshift3_16.c: Regenerate.
+	* generated/cshift1_8.c: Regenerate.
+	* generated/cshift1_16.c: Regenerate.
+
 2008-05-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32600

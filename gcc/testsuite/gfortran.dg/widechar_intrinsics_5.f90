@@ -70,15 +70,13 @@
   if (any(transpose(m2) /= transpose(m1))) call abort
   deallocate (m2)
 
-  ! Tests below should be uncommented when PR36257 is fixed.
-  !
-  !allocate (m2(3,3))
-  !m2 = p
-  !m1 = m2
-  !if (any (spread ( p, 1, 2) /= spread (m1, 1, 2))) call abort
-  !if (any (spread ( p, 1, 2) /= spread (m2, 1, 2))) call abort
-  !if (any (spread (m1, 1, 2) /= spread (m2, 1, 2))) call abort
-  !deallocate (m2)
+  allocate (m2(3,3))
+  m2 = p
+  m1 = m2
+  if (any (spread ( p, 1, 2) /= spread (m1, 1, 2))) call abort
+  if (any (spread ( p, 1, 2) /= spread (m2, 1, 2))) call abort
+  if (any (spread (m1, 1, 2) /= spread (m2, 1, 2))) call abort
+  deallocate (m2)
 
   allocate (m2(3,3))
   m2 = p

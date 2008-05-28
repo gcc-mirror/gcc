@@ -4811,26 +4811,75 @@ gfc_convert_char_constant (gfc_expr *e, bt type ATTRIBUTE_UNUSED, int kind)
   if (!gfc_is_constant_expr (e))
     return NULL;
 
-  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
-  if (result == NULL)
-    return &gfc_bad_expr;
-
-  result->value.character.length = e->value.character.length;
-  result->value.character.string
-    = gfc_get_wide_string (e->value.character.length + 1);
-  memcpy (result->value.character.string, e->value.character.string,
-	  (e->value.character.length + 1) * sizeof (gfc_char_t));
-
-  /* Check we only have values representable in the destination kind.  */
-  for (i = 0; i < result->value.character.length; i++)
-    if (!gfc_check_character_range (result->value.character.string[i], kind))
-      {
-	gfc_error ("Character '%s' in string at %L cannot be converted into "
-		   "character kind %d",
-		   gfc_print_wide_char (result->value.character.string[i]),
-		   &e->where, kind);
+  if (e->expr_type == EXPR_CONSTANT)
+    {
+      /* Simple case of a scalar.  */
+      result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
+      if (result == NULL)
 	return &gfc_bad_expr;
-      }
 
-  return result;
+      result->value.character.length = e->value.character.length;
+      result->value.character.string
+	= gfc_get_wide_string (e->value.character.length + 1);
+      memcpy (result->value.character.string, e->value.character.string,
+	      (e->value.character.length + 1) * sizeof (gfc_char_t));
+
+      /* Check we only have values representable in the destination kind.  */
+      for (i = 0; i < result->value.character.length; i++)
+	if (!gfc_check_character_range (result->value.character.string[i],
+					kind))
+	  {
+	    gfc_error ("Character '%s' in string at %L cannot be converted "
+		       "into character kind %d",
+		       gfc_print_wide_char (result->value.character.string[i]),
+		       &e->where, kind);
+	    return &gfc_bad_expr;
+	  }
+
+      return result;
+    }
+  else if (e->expr_type == EXPR_ARRAY)
+    {
+      /* For an array constructor, we convert each constructor element.  */
+      gfc_constructor *head = NULL, *tail = NULL, *c;
+
+      for (c = e->value.constructor; c; c = c->next)
+	{
+	  if (head == NULL)
+	    head = tail = gfc_get_constructor ();
+	  else
+	    {
+	      tail->next = gfc_get_constructor ();
+	      tail = tail->next;
+	    }
+
+	  tail->where = c->where;
+	  tail->expr = gfc_convert_char_constant (c->expr, type, kind);
+	  if (tail->expr == &gfc_bad_expr)
+	    {
+	      tail->expr = NULL;
+	      return &gfc_bad_expr;
+	    }
+
+	  if (tail->expr == NULL)
+	    {
+	      gfc_free_constructor (head);
+	      return NULL;
+	    }
+	}
+
+      result = gfc_get_expr ();
+      result->ts.type = type;
+      result->ts.kind = kind;
+      result->expr_type = EXPR_ARRAY;
+      result->value.constructor = head;
+      result->shape = gfc_copy_shape (e->shape, e->rank);
+      result->where = e->where;
+      result->rank = e->rank;
+      result->ts.cl = e->ts.cl;
+
+      return result;
+    }
+  else
+    return NULL;
 }
