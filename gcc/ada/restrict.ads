@@ -105,14 +105,18 @@ package Restrict is
 
    Implementation_Restriction : array (All_Restrictions) of Boolean :=
      (Simple_Barriers                    => True,
+      No_Asynchronous_Control            => True,
       No_Calendar                        => True,
       No_Dispatching_Calls               => True,
       No_Dynamic_Attachment              => True,
+      No_Elaboration_Code                => True,
       No_Enumeration_Maps                => True,
       No_Entry_Calls_In_Elaboration_Code => True,
       No_Entry_Queue                     => True,
       No_Exception_Handlers              => True,
       No_Exception_Registration          => True,
+      No_Implementation_Attributes       => True,
+      No_Implementation_Pragmas          => True,
       No_Implicit_Conditionals           => True,
       No_Implicit_Dynamic_Code           => True,
       No_Implicit_Loops                  => True,
@@ -126,12 +130,11 @@ package Restrict is
       No_Streams                         => True,
       No_Task_Attributes_Package         => True,
       No_Task_Termination                => True,
+      No_Unchecked_Conversion            => True,
+      No_Unchecked_Deallocation          => True,
       No_Wide_Characters                 => True,
       Static_Priorities                  => True,
       Static_Storage_Size                => True,
-      No_Implementation_Attributes       => True,
-      No_Implementation_Pragmas          => True,
-      No_Elaboration_Code                => True,
       others                             => False);
 
    --  The following table records entries made by Restrictions pragmas
