@@ -9673,8 +9673,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "*
 {
-  extern int frame_pointer_needed;
-
+ 
   /* We need two different versions depending on whether or not we
      need a frame pointer.   Also note that we return to the instruction
      immediately after the branch rather than two instructions after the
@@ -9726,7 +9725,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "*
 {
-  extern int frame_pointer_needed;
 
   /* We need two different versions depending on whether or not we
      need a frame pointer.   Also note that we return to the instruction
