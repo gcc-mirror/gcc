@@ -39,7 +39,7 @@ Boston, MA 02110-1301, USA.  */
 static void
 eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 	  int shift, const gfc_array_char *bound, int which,
-	  index_type size, char filler)
+	  index_type size, const char *filler, index_type filler_len)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -192,7 +192,14 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
       else
 	while (n--)
 	  {
-	    memset (dest, filler, size);
+	    index_type i;
+
+	    if (filler_len == 1)
+	      memset (dest, filler[0], size);
+	    else
+	      for (i = 0; i < size ; i += filler_len)
+		memcpy (&dest[i], filler, filler_len);
+
 	    dest += roffset;
 	  }
 
@@ -243,7 +250,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 		const GFC_INTEGER_##N *pdim)				      \
   {									      \
     eoshift2 (ret, array, *pshift, pbound, pdim ? *pdim : 1,		      \
-	      GFC_DESCRIPTOR_SIZE (array), 0);				      \
+	      GFC_DESCRIPTOR_SIZE (array), "\0", 1);			      \
   }									      \
 									      \
   extern void eoshift2_##N##_char (gfc_array_char *, GFC_INTEGER_4,	      \
@@ -265,7 +272,31 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
 		       GFC_INTEGER_4 bound_length __attribute__((unused)))    \
   {									      \
     eoshift2 (ret, array, *pshift, pbound, pdim ? *pdim : 1,		      \
-	      array_length, ' ');					      \
+	      array_length, " ", 1);					      \
+  }									      \
+									      \
+  extern void eoshift2_##N##_char4 (gfc_array_char *, GFC_INTEGER_4,	      \
+				    const gfc_array_char *,		      \
+				    const GFC_INTEGER_##N *,		      \
+				    const gfc_array_char *,		      \
+				    const GFC_INTEGER_##N *,		      \
+				    GFC_INTEGER_4, GFC_INTEGER_4);	      \
+  export_proto(eoshift2_##N##_char4);					      \
+									      \
+  void									      \
+  eoshift2_##N##_char4 (gfc_array_char *ret,				      \
+			GFC_INTEGER_4 ret_length __attribute__((unused)),     \
+			const gfc_array_char *array,			      \
+			const GFC_INTEGER_##N *pshift,			      \
+			const gfc_array_char *pbound,			      \
+			const GFC_INTEGER_##N *pdim,			      \
+			GFC_INTEGER_4 array_length,			      \
+			GFC_INTEGER_4 bound_length __attribute__((unused)))   \
+  {									      \
+    static const gfc_char4_t space = (unsigned char) ' ';		      \
+    eoshift2 (ret, array, *pshift, pbound, pdim ? *pdim : 1,		      \
+	      array_length * sizeof (gfc_char4_t), (const char *) &space,     \
+	      sizeof (gfc_char4_t));					      \
   }
 
 DEFINE_EOSHIFT (1);

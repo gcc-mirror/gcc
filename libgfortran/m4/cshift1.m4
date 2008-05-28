@@ -213,6 +213,7 @@ cshift1_'atype_kind` (gfc_array_char * const restrict ret,
   cshift1 (ret, array, h, pwhich, GFC_DESCRIPTOR_SIZE (array));
 }
 
+
 void cshift1_'atype_kind`_char (gfc_array_char * const restrict ret, 
 	GFC_INTEGER_4,
 	const gfc_array_char * const restrict array,
@@ -230,6 +231,26 @@ cshift1_'atype_kind`_char (gfc_array_char * const restrict ret,
 	GFC_INTEGER_4 array_length)
 {
   cshift1 (ret, array, h, pwhich, array_length);
+}
+
+
+void cshift1_'atype_kind`_char4 (gfc_array_char * const restrict ret, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict array,
+	const 'atype` * const restrict h, 
+	const 'atype_name` * const restrict pwhich,
+	GFC_INTEGER_4);
+export_proto(cshift1_'atype_kind`_char4);
+
+void
+cshift1_'atype_kind`_char4 (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array,
+	const 'atype` * const restrict h, 
+	const 'atype_name` * const restrict pwhich,
+	GFC_INTEGER_4 array_length)
+{
+  cshift1 (ret, array, h, pwhich, array_length * sizeof (gfc_char4_t));
 }
 
 #endif'

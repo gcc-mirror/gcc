@@ -214,7 +214,7 @@ string_index (gfc_charlen_type slen, const CHARTYPE *str,
   gfc_charlen_type start, last, delta, i;
 
   if (sslen == 0)
-    return 1;
+    return back ? (slen + 1) : 1;
 
   if (sslen > slen)
     return 0;
