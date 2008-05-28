@@ -1,3 +1,38 @@
+2008-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): If the name is of a local anonymous
+	access type, wrap the expression in a conversion to force an
+	accessibility check.
+
+	* sem_aggr.adb (Aggegate_Constraint_Checks): Apply conversion to force
+	accessibility checks even when expansion is disabled in order to
+	generate messages in the presence of previous errors or in
+	semantics-only mode.
+
+2008-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-lynxos-ppc.ads (Always_Compatible_Rep): Set to False.
+	* system-lynxos-x86.ads (Always_Compatible_Rep): Set to False.
+
+2008-05-28  Vincent Celier  <celier@adacore.com>
+
+	PR ada/34446
+	* gnat_ugn.texi: Document restriction introduced on 2007-04-20 in
+	preprocessing expressions
+
+2008-05-28  Vincent Celier  <celier@adacore.com>
+
+	* sinput-p.adb (Source_File_Is_Subunit): Allow special character used
+	for preprocessing
+	
+	* sinput-p.ads: Minor comment update and reformatting
+
+2008-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): An anonymous access_to_subprogram
+	type has a deeper level than any master only when it is the type of an
+	access parameter.
+
 2008-05-28  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Derive_Progenitor_Subprograms): Add documentation.
