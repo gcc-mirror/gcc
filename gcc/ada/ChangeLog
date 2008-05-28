@@ -1,3 +1,13 @@
+2008-05-28  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Primitives): Add missing support
+	for user-defined predefined primitives.
+	
+	* sem_util.adb (Matches_Prefixed_View_Profile): Ditto.
+	(Find_Overridden_Synchronized_Primitive): Ditto.
+
+	* sem_ch6.adb (Check_Synchronized_Overriding): Ditto.
+
 2008-05-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-ststio.adb, s-direio.adb:

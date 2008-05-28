@@ -3034,8 +3034,17 @@ package body Sem_Util is
          while Present (Iface_Param) and then Present (Prim_Param) loop
             Iface_Id  := Defining_Identifier (Iface_Param);
             Iface_Typ := Find_Parameter_Type (Iface_Param);
+
+            if Is_Access_Type (Iface_Typ) then
+               Iface_Typ := Directly_Designated_Type (Iface_Typ);
+            end if;
+
             Prim_Id   := Defining_Identifier (Prim_Param);
             Prim_Typ  := Find_Parameter_Type (Prim_Param);
+
+            if Is_Access_Type (Prim_Typ) then
+               Prim_Typ := Directly_Designated_Type (Prim_Typ);
+            end if;
 
             --  Case of multiple interface types inside a parameter profile
 
@@ -3097,6 +3106,10 @@ package body Sem_Util is
 
       else
          return Empty;
+      end if;
+
+      if Is_Access_Type (Tag_Typ) then
+         Tag_Typ := Directly_Designated_Type (Tag_Typ);
       end if;
 
       --  Traverse the homonym chain, looking at a potentially overridden
