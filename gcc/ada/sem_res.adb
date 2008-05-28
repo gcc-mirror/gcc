@@ -9434,7 +9434,9 @@ package body Sem_Res is
             end if;
          end;
 
-      --  Subprogram access types
+      --  access to subprogram types. If the operand is an access parameter,
+      --  the type has a deeper accessibility that any master, and cannot
+      --  be assigned.
 
       elsif (Ekind (Target_Type) = E_Access_Subprogram_Type
                or else
@@ -9443,6 +9445,8 @@ package body Sem_Res is
       then
          if
            Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
+             and then Is_Entity_Name (Operand)
+             and then Ekind (Entity (Operand)) = E_In_Parameter
          then
             Error_Msg_N
               ("illegal attempt to store anonymous access to subprogram",
@@ -9452,13 +9456,9 @@ package body Sem_Res is
                "(RM 3.10.2 (13))",
                Operand);
 
-            if Is_Entity_Name (Operand)
-              and then Ekind (Entity (Operand)) = E_In_Parameter
-            then
-               Error_Msg_NE
-                 ("\use named access type for& instead of access parameter",
-                  Operand, Entity (Operand));
-            end if;
+            Error_Msg_NE
+             ("\use named access type for& instead of access parameter",
+               Operand, Entity (Operand));
          end if;
 
          --  Check that the designated types are subtype conformant
