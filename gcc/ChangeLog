@@ -1,5 +1,70 @@
 2008-05-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/constraints.md ('b', 'C', 'D', 'e'): New constraint
+	letters defined.
+
+	* config/s390/s390.c (s390_compare_and_branch_condition_mask,
+	s390_contiguous_bitmask_p, s390_symref_operand_p,
+	s390_check_symref_alignment, s390_reload_larl_operand,
+	s390_reload_symref_address): New functions.
+	(s390_branch_condition_mnemonic): Support compare and branch
+	instructions.
+	(s390_mem_constraint): Avoid symrefs to accepted by the 'T'
+	and 'W' constraints.
+	(s390_secondary_reload): Add secondary reloads for unaligned
+	symbol refs or symbol refs to floating point or QI/TI mode
+	integer values.
+	(legitimate_address_p): Accept symbol references as addresses.
+	(s390_expand_insv): Use rotate and insert selected bits
+	instruction for insv when building for z10.
+	(print_operand_address): Handle symbol ref addresses.
+	(print_operand): Output modifier 'c' added for signed byte
+	values.
+	(s390_encode_section_info): Mark symbol refs with
+	SYMBOL_FLAG_NOT_NATURALLY_ALIGNED if appropriate.
+
+	* config/s390/s390.md (SIL,RRS,RIS): New instruction formats added.
+	(length attribute): RRF, RRR have 4 byte length.
+	(FPALL, INTALL): New mode iterators added.
+	(*tstdi_sign, *cmpdi_ccs_sign, *cmpsi_ccs_sign,
+	*cmp<mode>_ccs, *cmpdi_ccu_zero, *cmpdi_ccu, *cmpsi_ccu, *cmphi_ccu,
+	*movdi_64, *movsi_zarch, *movhi, movmem<mode>, *movmem_short,
+	*extendsidi2, *extendhidi2_extimm, *extendhisi2_extimm,
+	*zero_extendsidi2, adddi3, *adddi3_31z, *adddi3_31, addsi3,
+	*add<mode>3, *add<mode>3_carry1_cc, *add<mode>3_carry2_cc,
+	*add<mode>3_cc, *add<mode>3_imm_cc, *muldi3_sign, muldi3,
+	*mulsi3_sign, mulsi3, mulsidi3): Patterns enhanced with z10
+	instructions.
+	(*cmphi_ccs_z10, *cmpdi_ccs_signhi_rl, *cmpsi_ccu_zerohi_rlsi,
+	*cmp<GPR:mode>_ccu_zerohi_rldi, *cmp_and_br_signed_<mode>,
+	*cmp_and_br_unsigned_<mode>, reload<INTALL:mode><P:mode>_tomem_z10,
+	reload<INTALL:mode><P:mode>_toreg_z10,
+	reload<FPALL:mode><P:mode>_tomem_z10,
+	reload<FPALL:mode><P:mode>_toreg_z10,
+	reload<P:mode>_larl_odd_addend_z10, *execute_rl, *insv<mode>_z10,
+	*insv<mode>_z10_noshift, *insv<mode>_or_z10_noshift,
+	*zero_extendhi<mode>2_z10, *cmp_and_trap_signed_int<mode>,
+	*cmp_and_trap_unsigned_int<mode>, prefetch): New pattern or expander
+	definition.
+	(movmem, clrmem, cmpmem): New splitters added.
+
+	* config/s390/predicates.md (larl_operand): Use
+	SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1 replaced with
+	SYMBOL_REF_ALIGN1_P.
+	(s390_signed_integer_comparison,
+	s390_unsigned_integer_comparison): New predicates.
+
+	* config/s390/s390-protos.h (s390_check_symref_alignment,
+	s390_contiguous_bitmask_p, s390_reload_larl_operand,
+	s390_reload_symref_address,
+	s390_compare_and_branch_condition_mask): Prototypes added.
+
+	* config/s390/s390.h (TARGET_MEM_CONSTRAINT,
+	SYMBOL_REF_ALIGN1_P, SYMBOL_FLAG_NOT_NATURALLY_ALIGNED,
+	SYMBOL_REF_NOT_NATURALLY_ALIGNED_P): Macro definition added.
+
+2008-05-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (z10_cost): New cost function for z10.
 	(s390_handle_arch_option, override_options): Support
 	-march=z10 switch.

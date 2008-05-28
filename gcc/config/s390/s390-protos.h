@@ -1,5 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008 Free
+   Software Foundation, Inc.
+
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
 This file is part of GCC.
@@ -27,7 +29,7 @@ extern int s390_mem_constraint (const char *str, rtx op);
 extern int s390_O_constraint_str (const char c, HOST_WIDE_INT value);
 extern int s390_N_constraint_str (const char *str, HOST_WIDE_INT value);
 extern int s390_float_const_zero_p (rtx value);
-
+extern bool s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment);
 
 
 /* Declare functions in s390.c.  */
@@ -51,6 +53,7 @@ extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);
 extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, enum machine_mode, enum machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, enum machine_mode, int);
+extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, int, int *, int *);
 extern bool s390_split_ok_p (rtx, rtx, enum machine_mode, int);
 extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
@@ -80,6 +83,8 @@ extern enum reg_class s390_secondary_input_reload_class (enum reg_class,
 extern enum reg_class s390_secondary_output_reload_class (enum reg_class,
 							  enum machine_mode,
 							  rtx);
+extern void s390_reload_larl_operand (rtx , rtx , rtx);
+extern void s390_reload_symref_address (rtx , rtx , rtx , bool);
 extern void s390_expand_plus_operand (rtx, rtx, rtx);
 extern void emit_symbolic_move (rtx *);
 extern void s390_load_address (rtx, rtx);
@@ -113,6 +118,7 @@ extern void s390_emit_tpf_eh_return (rtx);
 extern bool s390_legitimate_address_without_index_p (rtx);
 extern bool s390_decompose_shift_count (rtx, rtx *, HOST_WIDE_INT *);
 extern int s390_branch_condition_mask (rtx);
+extern int s390_compare_and_branch_condition_mask (rtx);
 
 #endif /* RTX_CODE */
 

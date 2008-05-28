@@ -1,5 +1,5 @@
 ;; Predicate definitions for S/390 and zSeries.
-;; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 ;; Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 ;;                Ulrich Weigand (uweigand@de.ibm.com).
 ;;
@@ -110,7 +110,7 @@
   if (GET_CODE (op) == LABEL_REF)
     return true;
   if (GET_CODE (op) == SYMBOL_REF)
-    return ((SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1) == 0
+    return (!SYMBOL_REF_ALIGN1_P (op)
 	    && SYMBOL_REF_TLS_MODEL (op) == 0
 	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
 
@@ -170,6 +170,18 @@
     return false;
 
   return (s390_branch_condition_mask (op) >= 0);
+})
+
+(define_predicate "s390_signed_integer_comparison"
+  (match_code "eq, ne, lt, gt, le, ge")
+{
+  return (s390_compare_and_branch_condition_mask (op) >= 0);
+})
+
+(define_predicate "s390_unsigned_integer_comparison"
+  (match_code "eq, ne, ltu, gtu, leu, geu")
+{
+  return (s390_compare_and_branch_condition_mask (op) >= 0);
 })
 
 ;; Return nonzero if OP is a valid comparison operator

@@ -1,8 +1,9 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007 Free Software Foundation, Inc.
+   2007, 2008 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (uweigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com) and
+                  Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
 This file is part of GCC.
 
@@ -1061,6 +1062,41 @@ s390_branch_condition_mask (rtx code)
     }
 }
 
+
+/* Return branch condition mask to implement a compare and branch
+   specified by CODE.  Return -1 for invalid comparisons.  */
+
+int
+s390_compare_and_branch_condition_mask (rtx code)
+{
+  const int CC0 = 1 << 3;
+  const int CC1 = 1 << 2;
+  const int CC2 = 1 << 1;
+
+  switch (GET_CODE (code))
+    {
+    case EQ:
+      return CC0;
+    case NE:
+      return CC1 | CC2;
+    case LT:
+    case LTU:
+      return CC1;
+    case GT:
+    case GTU:
+      return CC2;
+    case LE:
+    case LEU:
+      return CC0 | CC1;
+    case GE:
+    case GEU:
+      return CC0 | CC2;
+    default:
+      gcc_unreachable ();
+    }
+  return -1;
+}
+
 /* If INV is false, return assembler mnemonic string to implement
    a branch specified by CODE.  If INV is true, return mnemonic
    for the corresponding inverted branch.  */
@@ -1068,6 +1104,8 @@ s390_branch_condition_mask (rtx code)
 static const char *
 s390_branch_condition_mnemonic (rtx code, int inv)
 {
+  int mask;
+
   static const char *const mnemonic[16] =
     {
       NULL, "o", "h", "nle",
@@ -1076,7 +1114,13 @@ s390_branch_condition_mnemonic (rtx code, int inv)
       "le", "nh", "no", NULL
     };
 
-  int mask = s390_branch_condition_mask (code);
+  if (GET_CODE (XEXP (code, 0)) == REG
+      && REGNO (XEXP (code, 0)) == CC_REGNUM
+      && XEXP (code, 1) == const0_rtx)
+    mask = s390_branch_condition_mask (code);
+  else
+    mask = s390_compare_and_branch_condition_mask (code);
+
   gcc_assert (mask >= 0);
 
   if (inv)
@@ -1151,6 +1195,67 @@ s390_single_part (rtx op,
 	}
     }
   return part == -1 ? -1 : n_parts - 1 - part;
+}
+
+/* Return true if IN contains a contiguous bitfield in the lower SIZE
+   bits and no other bits are set in IN.  POS and LENGTH can be used
+   to obtain the start position and the length of the bitfield.
+
+   POS gives the position of the first bit of the bitfield counting
+   from the lowest order bit starting with zero.  In order to use this
+   value for S/390 instructions this has to be converted to "bits big
+   endian" style.  */
+
+bool
+s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
+			   int *pos, int *length)
+{
+  int tmp_pos = 0;
+  int tmp_length = 0;
+  int i;
+  unsigned HOST_WIDE_INT mask = 1ULL;
+  bool contiguous = false;
+
+  for (i = 0; i < size; mask <<= 1, i++)
+    {
+      if (contiguous)
+	{
+	  if (mask & in)
+	    tmp_length++;
+	  else
+	    break;
+	}
+      else
+	{
+	  if (mask & in)
+	    {
+	      contiguous = true;
+	      tmp_length++;
+	    }
+	  else
+	    tmp_pos++;
+	}
+    }
+
+  if (!tmp_length)
+    return false;
+
+  /* Calculate a mask for all bits beyond the contiguous bits.  */
+  mask = (-1LL & ~(((1ULL << (tmp_length + tmp_pos - 1)) << 1) - 1));
+
+  if (mask & in)
+    return false;
+
+  if (tmp_length + tmp_pos - 1 > size)
+    return false;
+
+  if (length)
+    *length = tmp_length;
+
+  if (pos)
+    *pos = tmp_pos;
+
+  return true;
 }
 
 /* Check whether we can (and want to) split a double-word
@@ -2034,10 +2139,9 @@ s390_mem_constraint (const char *str, rtx op)
 	return 0;
       if (GET_CODE (op) != MEM)
 	return 0;
-      /* Any invalid address here will be fixed up by reload,
-	 so accept it for the most generic constraint.  */
-      if (s390_decompose_address (XEXP (op, 0), &addr)
-	  && s390_short_displacement (addr.disp))
+      if (!s390_decompose_address (XEXP (op, 0), &addr))
+	return 0;
+      if (s390_short_displacement (addr.disp))
 	return 0;
       break;
 
@@ -2054,10 +2158,9 @@ s390_mem_constraint (const char *str, rtx op)
     case 'W':
       if (!TARGET_LONG_DISPLACEMENT)
 	return 0;
-      /* Any invalid address here will be fixed up by reload,
-	 so accept it for the most generic constraint.  */
-      if (s390_decompose_address (op, &addr)
-	  && s390_short_displacement (addr.disp))
+      if (!s390_decompose_address (op, &addr))
+	return 0;
+      if (s390_short_displacement (addr.disp))
 	return 0;
       break;
 
@@ -2693,6 +2796,132 @@ s390_preferred_reload_class (rtx op, enum reg_class class)
   return class;
 }
 
+/* Return true if ADDR is of kind symbol_ref or symbol_ref + const_int
+   and return these parts in SYMREF and ADDEND.  You can pass NULL in
+   SYMREF and/or ADDEND if you are not interested in these values.  */
+
+static bool
+s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
+{
+  HOST_WIDE_INT tmpaddend = 0;
+
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
+	  && CONST_INT_P (XEXP (addr, 1)))
+	{
+	  tmpaddend = INTVAL (XEXP (addr, 1));
+	  addr = XEXP (addr, 0);
+	}
+      else
+	return false;
+    }
+  else
+    if (GET_CODE (addr) != SYMBOL_REF)
+	return false;
+
+  if (symref)
+    *symref = addr;
+  if (addend)
+    *addend = tmpaddend;
+
+  return true;
+}
+
+/* Return true if ADDR is SYMBOL_REF + addend with addend being a
+   multiple of ALIGNMENT and the SYMBOL_REF being naturally
+   aligned.  */
+
+bool
+s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
+{
+  HOST_WIDE_INT addend;
+  rtx symref;
+
+  if (!s390_symref_operand_p (addr, &symref, &addend))
+    return false;
+
+  return (!SYMBOL_REF_NOT_NATURALLY_ALIGNED_P (symref)
+	  && !(addend & (alignment - 1)));
+}
+
+/* ADDR is moved into REG using larl.  If ADDR isn't a valid larl
+   operand SCRATCH is used to reload the even part of the address and
+   adding one.  */
+
+void
+s390_reload_larl_operand (rtx reg, rtx addr, rtx scratch)
+{
+  HOST_WIDE_INT addend;
+  rtx symref;
+
+  if (!s390_symref_operand_p (addr, &symref, &addend))
+    gcc_unreachable ();
+
+  if (!(addend & 1))
+    /* Easy case.  The addend is even so larl will do fine.  */
+    emit_move_insn (reg, addr);
+  else
+    {
+      /* We can leave the scratch register untouched if the target
+	 register is a valid base register.  */
+      if (REGNO (reg) < FIRST_PSEUDO_REGISTER
+	  && REGNO_REG_CLASS (REGNO (reg)) == ADDR_REGS)
+	scratch = reg;
+
+      gcc_assert (REGNO (scratch) < FIRST_PSEUDO_REGISTER);
+      gcc_assert (REGNO_REG_CLASS (REGNO (scratch)) == ADDR_REGS);
+
+      if (addend != 1)
+	emit_move_insn (scratch,
+			gen_rtx_CONST (Pmode,
+				       gen_rtx_PLUS (Pmode, symref,
+						     GEN_INT (addend - 1))));
+      else
+	emit_move_insn (scratch, symref);
+
+      /* Increment the address using la in order to avoid clobbering cc.  */
+      emit_move_insn (reg, gen_rtx_PLUS (Pmode, scratch, const1_rtx));
+    }
+}
+
+/* Generate what is necessary to move between REG and MEM using
+   SCRATCH.  The direction is given by TOMEM.  */
+
+void
+s390_reload_symref_address (rtx reg, rtx mem, rtx scratch, bool tomem)
+{
+  /* Reload might have pulled a constant out of the literal pool.
+     Force it back in.  */
+  if (CONST_INT_P (mem) || GET_CODE (mem) == CONST_DOUBLE
+      || GET_CODE (mem) == CONST)
+    mem = force_const_mem (GET_MODE (reg), mem);
+
+  gcc_assert (MEM_P (mem));
+
+  /* For a load from memory we can leave the scratch register
+     untouched if the target register is a valid base register.  */
+  if (!tomem
+      && REGNO (reg) < FIRST_PSEUDO_REGISTER
+      && REGNO_REG_CLASS (REGNO (reg)) == ADDR_REGS
+      && GET_MODE (reg) == GET_MODE (scratch))
+    scratch = reg;
+
+  /* Load address into scratch register.  Since we can't have a
+     secondary reload for a secondary reload we have to cover the case
+     where larl would need a secondary reload here as well.  */
+  s390_reload_larl_operand (scratch, XEXP (mem, 0), scratch);
+
+  /* Now we can use a standard load/store to do the move.  */
+  if (tomem)
+    emit_move_insn (replace_equiv_address (mem, scratch), reg);
+  else
+    emit_move_insn (reg, replace_equiv_address (mem, scratch));
+}
+
 /* Inform reload about cases where moving X with a mode MODE to a register in
    CLASS requires an extra scratch or immediate register.  Return the class
    needed for the immediate register.  */
@@ -2704,6 +2933,60 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class class,
   /* Intermediate register needed.  */
   if (reg_classes_intersect_p (CC_REGS, class))
     return GENERAL_REGS;
+
+  if (TARGET_Z10)
+    {
+      /* On z10 several optimizer steps may generate larl operands with
+	 an odd addend.  */
+      if (in_p
+	  && s390_symref_operand_p (x, NULL, NULL)
+	  && mode == Pmode
+	  && !s390_check_symref_alignment (x, 2))
+	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
+		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
+
+      /* On z10 we need a scratch register when moving QI, TI or floating
+	 point mode values from or to a memory location with a SYMBOL_REF
+	 or if the symref addend of a SI or DI move is not aligned to the
+	 width of the access.  */
+      if (MEM_P (x)
+	  && s390_symref_operand_p (XEXP (x, 0), NULL, NULL)
+	  && (mode == QImode || mode == TImode || FLOAT_MODE_P (mode)
+	      || (!TARGET_64BIT && mode == DImode)
+	      || ((mode == HImode || mode == SImode || mode == DImode)
+		  && (!s390_check_symref_alignment (XEXP (x, 0),
+						    GET_MODE_SIZE (mode))))))
+	{
+#define __SECONDARY_RELOAD_CASE(M,m)					\
+	  case M##mode:							\
+	    if (TARGET_64BIT)						\
+	      sri->icode = in_p ? CODE_FOR_reload##m##di_toreg_z10 :	\
+                                  CODE_FOR_reload##m##di_tomem_z10;	\
+	    else							\
+  	      sri->icode = in_p ? CODE_FOR_reload##m##si_toreg_z10 :	\
+                                  CODE_FOR_reload##m##si_tomem_z10;	\
+	  break;
+
+	  switch (GET_MODE (x))
+	    {
+	      __SECONDARY_RELOAD_CASE (QI, qi);
+	      __SECONDARY_RELOAD_CASE (HI, hi);
+	      __SECONDARY_RELOAD_CASE (SI, si);
+	      __SECONDARY_RELOAD_CASE (DI, di);
+	      __SECONDARY_RELOAD_CASE (TI, ti);
+	      __SECONDARY_RELOAD_CASE (SF, sf);
+	      __SECONDARY_RELOAD_CASE (DF, df);
+	      __SECONDARY_RELOAD_CASE (TF, tf);
+	      __SECONDARY_RELOAD_CASE (SD, sd);
+	      __SECONDARY_RELOAD_CASE (DD, dd);
+	      __SECONDARY_RELOAD_CASE (TD, td);
+
+	    default:
+	      gcc_unreachable ();
+	    }
+#undef __SECONDARY_RELOAD_CASE
+	}
+    }
 
   /* We need a scratch register when loading a PLUS expression which
      is not a legitimate operand of the LOAD ADDRESS instruction.  */
@@ -2811,10 +3094,16 @@ s390_expand_plus_operand (rtx target, rtx src,
    STRICT specifies whether strict register checking applies.  */
 
 bool
-legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-		      rtx addr, int strict)
+legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 {
   struct s390_address ad;
+
+  if (TARGET_Z10
+      && larl_operand (addr, VOIDmode)
+      && (mode == VOIDmode
+	  || s390_check_symref_alignment (addr, GET_MODE_SIZE (mode))))
+    return true;
+
   if (!s390_decompose_address (addr, &ad))
     return false;
 
@@ -4052,13 +4341,30 @@ s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
   return false;
 }
 
-/* Expand code for the insv template. Return true if successful, false else.  */
+/* Expand code for the insv template. Return true if successful.  */
 
-bool 
+bool
 s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 {
   int bitsize = INTVAL (op1);
   int bitpos = INTVAL (op2);
+
+  /* On z10 we can use the risbg instruction to implement insv.  */
+  if (TARGET_Z10
+      && ((GET_MODE (dest) == DImode && GET_MODE (src) == DImode)
+	  || (GET_MODE (dest) == SImode && GET_MODE (src) == SImode)))
+    {
+      rtx op;
+      rtx clobber;
+
+      op = gen_rtx_SET (GET_MODE(src),
+			gen_rtx_ZERO_EXTRACT (GET_MODE (dest), dest, op1, op2),
+			src);
+      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
+
+      return true;
+    }
 
   /* We need byte alignment.  */
   if (bitsize % BITS_PER_UNIT)
@@ -4596,6 +4902,13 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct s390_address ad;
 
+  if (s390_symref_operand_p (addr, NULL, NULL))
+    {
+      gcc_assert (TARGET_Z10);
+      output_addr_const (file, addr);
+      return;
+    }
+
   if (!s390_decompose_address (addr, &ad)
       || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
       || (ad.indx && !REGNO_OK_FOR_INDEX_P (REGNO (ad.indx))))
@@ -4629,6 +4942,7 @@ print_operand_address (FILE *file, rtx addr)
     'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
+    'c': print integer X as if it's an signed byte.
     'x': print integer X as if it's an unsigned halfword.
     'h': print integer X as if it's a signed halfword.
     'i': print the first nonzero HImode part of X.
@@ -4774,6 +5088,8 @@ print_operand (FILE *file, rtx x, int code)
     case CONST_INT:
       if (code == 'b')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xff);
+      else if (code == 'c')
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xff) ^ 0x80) - 0x80);
       else if (code == 'x')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
       else if (code == 'h')
@@ -8563,11 +8879,30 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 {
   default_encode_section_info (decl, rtl, first);
 
-  /* If a variable has a forced alignment to < 2 bytes, mark it with
-     SYMBOL_FLAG_ALIGN1 to prevent it from being used as LARL operand.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16)
-    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      /* If a variable has a forced alignment to < 2 bytes, mark it
+	 with SYMBOL_FLAG_ALIGN1 to prevent it from being used as LARL
+	 operand.  */
+      if (DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16)
+	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
+      if (!DECL_SIZE (decl)
+	  || !DECL_ALIGN (decl)
+	  || !host_integerp (DECL_SIZE (decl), 0)
+	  || (DECL_ALIGN (decl) <= 64
+	      && DECL_ALIGN (decl) != tree_low_cst (DECL_SIZE (decl), 0)))
+	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
+    }
+
+  /* Literal pool references don't have a decl so they are handled
+     differently here.  We rely on the information in the MEM_ALIGN
+     entry to decide upon natural alignment.  */
+  if (MEM_P (rtl)
+      && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
+      && TREE_CONSTANT_POOL_ADDRESS_P (XEXP (rtl, 0))
+      && (MEM_ALIGN (rtl) == 0
+	  || MEM_ALIGN (rtl) < GET_MODE_BITSIZE (GET_MODE (rtl))))
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
 }
 
 /* Output thunk to FILE that implements a C++ virtual function call (with
