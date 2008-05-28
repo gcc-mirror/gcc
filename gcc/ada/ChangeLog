@@ -1,3 +1,20 @@
+2008-05-28  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Add documentation.
+
+2008-05-28  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads (Find_Overridden_Synchronized_Primitive): Removed.
+	* sem_util.adb (Find_Overridden_Synchronized_Primitive): Removed.
+	* sem_ch6.adb (Check_Synchronized_Overriding): Remove one formal.
+	Add code that was previously located in
+	Find_Overridden_Synchronized_Primitive because it is only used here.
+
+2008-05-28  Sergey Rybin  <rybin@adacore.com>
+
+	* sem_prag.adb (Process_Extended_Import_Export_Subprogram_Pragma): Set
+	Entity field for formal_parameter_NAME in MECHANISM_ASSOCIATION.
+
 2008-05-28  Robert Dewar  <dewar@adacore.com>
 
 	* restrict.ads:
