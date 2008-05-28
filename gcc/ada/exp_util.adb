@@ -908,9 +908,9 @@ package body Exp_Util is
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean is
    begin
-      --  If no component clause, then everything is fine, since the
-      --  back end never bit-misaligns by default, even if there is
-      --  a pragma Packed for the record.
+      --  If no component clause, then everything is fine, since the back end
+      --  never bit-misaligns by default, even if there is a pragma Packed for
+      --  the record.
 
       if No (Component_Clause (Comp)) then
          return False;
@@ -933,8 +933,8 @@ package body Exp_Util is
       then
          return False;
 
-      --  Otherwise if the component is not byte aligned, we
-      --  know we have the nasty unaligned case.
+      --  Otherwise if the component is not byte aligned, we know we have the
+      --  nasty unaligned case.
 
       elsif Normalized_First_Bit (Comp) /= Uint_0
         or else Esize (Comp) mod System_Storage_Unit /= Uint_0
@@ -4039,8 +4039,8 @@ package body Exp_Util is
 
             begin
                --  If we know the component size and it is less than 64, then
-               --  we are definitely OK. The back end always does assignment
-               --  of misaligned small objects correctly.
+               --  we are definitely OK. The back end always does assignment of
+               --  misaligned small objects correctly.
 
                if Known_Static_Component_Size (Ptyp)
                  and then Component_Size (Ptyp) <= 64
