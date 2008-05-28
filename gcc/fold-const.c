@@ -6066,17 +6066,17 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	   || BINARY_CLASS_P (op0)
 	   || VL_EXP_CLASS_P (op0)
 	   || EXPRESSION_CLASS_P (op0))
-	  /* ... and is unsigned, and its type is smaller than ctype,
-	     then we cannot pass through as widening.  */
-	  && ((TYPE_UNSIGNED (TREE_TYPE (op0))
+	  /* ... and has wrapping overflow, and its type is smaller
+	     than ctype, then we cannot pass through as widening.  */
+	  && ((TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
 	       && ! (TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
 		     && TYPE_IS_SIZETYPE (TREE_TYPE (op0)))
-	       && (GET_MODE_SIZE (TYPE_MODE (ctype))
-	           > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))))
+	       && (TYPE_PRECISION (ctype)
+	           > TYPE_PRECISION (TREE_TYPE (op0))))
 	      /* ... or this is a truncation (t is narrower than op0),
 		 then we cannot pass through this narrowing.  */
-	      || (GET_MODE_SIZE (TYPE_MODE (type))
-		  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0))))
+	      || (TYPE_PRECISION (type)
+		  < TYPE_PRECISION (TREE_TYPE (op0)))
 	      /* ... or signedness changes for division or modulus,
 		 then we cannot pass through this conversion.  */
 	      || (code != MULT_EXPR

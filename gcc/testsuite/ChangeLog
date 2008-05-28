@@ -1,3 +1,9 @@
+2008-05-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36300
+	* gcc.dg/pr36300-1.c: New testcase.
+	* gcc.dg/pr36300-2.c: Likewise.
+
 2008-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36339
