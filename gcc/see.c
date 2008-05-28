@@ -2554,6 +2554,17 @@ see_def_extension_not_merged (struct see_ref_s *curr_ref_s, rtx def_se)
 
   /* The manipulation succeeded.  Store the new manipulated reference.  */
 
+  /* It is possible for dest_reg to appear multiple times in ref_copy. In this
+     case, ref_copy now has invalid sharing. Copying solves the problem.
+     We don't use copy_rtx as an optimization for the common case (no sharing).
+     We can't just use copy_rtx_if_shared since it does nothing on INSNs.
+     Another possible solution would be to make validate_replace_rtx_1
+     public and use it instead of replace_rtx. */
+  reset_used_flags (PATTERN (ref_copy));
+  reset_used_flags (REG_NOTES (ref_copy));
+  PATTERN (ref_copy) = copy_rtx_if_shared (PATTERN (ref_copy));
+  REG_NOTES (ref_copy) = copy_rtx_if_shared (REG_NOTES (ref_copy));
+
   /* Try to simplify the new manipulated insn.  */
   validate_simplify_insn (ref_copy);
 
