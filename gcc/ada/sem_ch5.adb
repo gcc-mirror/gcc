@@ -582,9 +582,15 @@ package body Sem_Ch5 is
       --  Ada 2005 (AI-230 and AI-385): When the lhs type is an anonymous
       --  access type, apply an implicit conversion of the rhs to that type
       --  to force appropriate static and run-time accessibility checks.
+      --  This applies as well to anonymous access-to-subprogram types that
+      --  are component subtypes.
 
       if Ada_Version >= Ada_05
-        and then Ekind (T1) = E_Anonymous_Access_Type
+        and then
+          Is_Access_Type (T1)
+            and then
+             (Is_Local_Anonymous_Access (T1)
+               or else Can_Never_Be_Null (T1))
       then
          Rewrite (Rhs, Convert_To (T1, Relocate_Node (Rhs)));
          Analyze_And_Resolve (Rhs, T1);

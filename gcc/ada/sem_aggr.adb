@@ -414,6 +414,22 @@ package body Sem_Aggr is
          return;
       end if;
 
+      --  Ada 2005 (AI-230): Generate a conversion to an anonymous access
+      --  component's type to force the appropriate accessibility checks.
+
+      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
+      --  type to force the corresponding run-time check
+
+      if Is_Access_Type (Check_Typ)
+        and then ((Is_Local_Anonymous_Access (Check_Typ))
+                    or else (Can_Never_Be_Null (Check_Typ)
+                               and then not Can_Never_Be_Null (Exp_Typ)))
+      then
+         Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
+         Analyze_And_Resolve (Exp, Check_Typ);
+         Check_Unset_Reference (Exp);
+      end if;
+
       --  This is really expansion activity, so make sure that expansion
       --  is on and is allowed.
 
@@ -486,20 +502,6 @@ package body Sem_Aggr is
             Check_Unset_Reference (Exp);
          end if;
 
-      --  Ada 2005 (AI-230): Generate a conversion to an anonymous access
-      --  component's type to force the appropriate accessibility checks.
-
-      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-      --  type to force the corresponding run-time check
-
-      elsif Is_Access_Type (Check_Typ)
-        and then ((Is_Local_Anonymous_Access (Check_Typ))
-                    or else (Can_Never_Be_Null (Check_Typ)
-                               and then not Can_Never_Be_Null (Exp_Typ)))
-      then
-         Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
-         Analyze_And_Resolve (Exp, Check_Typ);
-         Check_Unset_Reference (Exp);
       end if;
    end Aggregate_Constraint_Checks;
 
