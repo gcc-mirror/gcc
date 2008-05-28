@@ -24,7 +24,7 @@ program main
   interface
     function ext1 (y)
       real ext1, y
-      external ext1  ! { dg-error "EXTERNAL attribute conflicts with FUNCTION" }
+      external ext1  ! { dg-error "Duplicate EXTERNAL attribute" }
     end function ext1
   end interface
   inval = 1.0

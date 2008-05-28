@@ -2421,8 +2421,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	}
     }
 
-  if (sym->attr.external
-      || sym->attr.if_source == IFSRC_UNKNOWN)
+  if (sym->attr.if_source == IFSRC_UNKNOWN)
     {
       gfc_actual_arglist *a;
       for (a = *ap; a; a = a->next)

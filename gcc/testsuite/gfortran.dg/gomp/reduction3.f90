@@ -33,11 +33,6 @@ subroutine f2
 end subroutine f2
 subroutine f3
   integer :: i
-  interface
-    function ior (a, b)
-      integer :: ior, a, b
-    end function
-  end interface
   intrinsic ior
   i = 6
 !$omp parallel reduction (ior:i)

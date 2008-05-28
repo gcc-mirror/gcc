@@ -434,12 +434,14 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (target, external);
   conf (target, intrinsic);
-  conf (external, dimension);   /* See Fortran 95's R504.  */
+
+  if (!attr->if_source)
+    conf (external, dimension);   /* See Fortran 95's R504.  */
 
   conf (external, intrinsic);
   conf (entry, intrinsic);
 
-  if ((attr->if_source && !attr->procedure) || attr->contained)
+  if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
     {
       conf (external, subroutine);
       conf (external, function);
@@ -3664,6 +3666,7 @@ copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
       /* May need to copy more info for the symbol.  */
       formal_arg->sym->attr = curr_arg->sym->attr;
       formal_arg->sym->ts = curr_arg->sym->ts;
+      formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
