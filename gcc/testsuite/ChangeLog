@@ -1,8 +1,12 @@
 2008-05-28  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnat.dg/old_errors.adb, gnat.dg/deep_old.adb: Adjust.
+
 	* gnat.dg/specs/iface_eq_test.ads,
 	gnat.dg/specs/iface_eq_test-child.ads: New test.
 	* gnat.dg/specs/self_class.ads: New test.
+	* gnat.dg/fixce.adb: New test.
+	* gnat.dg/frunaligned*.ad[sb]: New test.
 
 2008-05-27  Andy Hutchinson  <hutchinsonandy@aim.com>
 

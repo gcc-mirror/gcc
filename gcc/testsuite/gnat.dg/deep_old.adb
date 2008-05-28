@@ -1,3 +1,5 @@
+--  { dg-options "-gnatws" }
+
 procedure Deep_Old (X : Integer) is
 begin
    begin
