@@ -1,3 +1,9 @@
+2008-05-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/specs/iface_eq_test.ads,
+	gnat.dg/specs/iface_eq_test-child.ads: New test.
+	* gnat.dg/specs/self_class.ads: New test.
+
 2008-05-27  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.dg/tree-ssa/data-dep-1.c: Skip test for avr-*-* too much code.
