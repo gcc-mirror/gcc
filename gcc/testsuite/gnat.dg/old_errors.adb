@@ -37,7 +37,7 @@ package body Old_Errors is
       begin
          Y := Z'Old; -- { dg-error "cannot refer to local variable" }
       end;
-      Y := I'Old;   -- OK
+      Y := I'Old;   -- { dg-warning "Old applied to constant has no effect" }
       Y := O'Old;   -- OK
       Y := IO'Old;  -- OK
       Y := G;       -- OK, error has been signalled at G declaration
