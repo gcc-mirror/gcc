@@ -32,7 +32,7 @@ with Scans; use Scans;
 package Sinput.P is
 
    function Load_Project_File (Path : String) return Source_File_Index;
-   --  Load into memory the source of a project source file. Initialize the
+   --  Load the source of a project source file into memory and initialize the
    --  Scans state.
 
    procedure Reset_First;
