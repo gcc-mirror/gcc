@@ -1,3 +1,20 @@
+2008-05-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+	* sem_prag.adb: Minor reformatting
+	* sem_res.adb: Minor reformatting
+	* sinput-p.ads: Minor reformatting
+
+2008-05-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb:
+	(Abstract_Interface_List): Add missing support for full type-declaration
+	associated with synchronized types.
+
+2008-05-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Is_Same_Value): Take care of several more cases
+
 2008-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Assignment): If the name is of a local anonymous
