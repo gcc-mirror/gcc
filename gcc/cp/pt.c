@@ -15326,6 +15326,8 @@ tsubst_initializer_list (tree t, tree argvec)
 		    = tsubst_pack_expansion (expr, argvec,
 					     tf_warning_or_error,
 					     NULL_TREE);
+		  if (expanded_exprs == error_mark_node)
+		    continue;
 
 		  /* Prepend each of the expanded expressions to the
 		     corresponding TREE_LIST in EXPANDED_ARGUMENTS.  */
