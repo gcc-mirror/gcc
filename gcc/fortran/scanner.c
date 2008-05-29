@@ -1307,6 +1307,11 @@ gfc_gobble_whitespace (void)
    In fixed mode, we expand a tab that occurs within the statement
    label region to expand to spaces that leave the next character in
    the source region.
+
+   If first_char is not NULL, it's a pointer to a single char value holding
+   the first character of the line, which has already been read by the
+   caller.  This avoids the use of ungetc().
+
    load_line returns whether the line was truncated.
 
    NOTE: The error machinery isn't available at this point, so we can't
@@ -1314,7 +1319,7 @@ gfc_gobble_whitespace (void)
 	 parts of gfortran.  */
 
 static int
-load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
+load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 {
   static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
@@ -1349,20 +1354,20 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
   i = 0;
   buffer = *pbuf;
 
-  preprocessor_flag = 0;
-  c = getc (input);
-  if (c == '#')
-    /* In order to not truncate preprocessor lines, we have to
-       remember that this is one.  */
-    preprocessor_flag = 1;
-  ungetc (c, input);
+  if (first_char)
+    c = *first_char;
+  else
+    c = getc (input);
+
+  /* In order to not truncate preprocessor lines, we have to
+     remember that this is one.  */
+  preprocessor_flag = (c == '#' ? 1 : 0);
 
   for (;;)
     {
-      c = getc (input);
-
       if (c == EOF)
 	break;
+
       if (c == '\n')
 	{
 	  /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
@@ -1379,10 +1384,8 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
 	  break;
 	}
 
-      if (c == '\r')
-	continue;		/* Gobble characters.  */
-      if (c == '\0')
-	continue;
+      if (c == '\r' || c == '\0')
+	goto next_char;			/* Gobble characters.  */
 
       if (c == '&')
 	{
@@ -1407,7 +1410,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
 	  if (c >= '1' && c <= '9')
 	    {
 	      *(buffer-1) = c;
-	      continue;
+	      goto next_char;
 	    }
 	}
 
@@ -1429,7 +1432,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
 	      i++;
 	    }
 
-	  continue;
+	  goto next_char;
 	}
 
       *buffer++ = c;
@@ -1458,8 +1461,12 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen)
 	      trunc_flag = 1;
 	    }
 
-	  ungetc ('\n', input);
+	  c = '\n';
+	  continue;
 	}
+
+next_char:
+      c = getc (input);
     }
 
   /* Pad lines to the selected line length in fixed form.  */
@@ -1807,7 +1814,7 @@ load_file (const char *filename, bool initial)
 
   for (;;)
     {
-      int trunc = load_line (input, &line, &line_len);
+      int trunc = load_line (input, &line, &line_len, NULL);
 
       len = gfc_wide_strlen (line);
       if (feof (input) && len == 0)
@@ -1989,13 +1996,12 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
     return NULL;
 
   c = getc (gfc_src_file);
-  ungetc (c, gfc_src_file);
 
   if (c != '#')
     return NULL;
 
   len = 0;
-  load_line (gfc_src_file, &gfc_src_preprocessor_lines[0], &len);
+  load_line (gfc_src_file, &gfc_src_preprocessor_lines[0], &len, &c);
 
   if (wide_strncmp (gfc_src_preprocessor_lines[0], "# 1 \"", 5) != 0)
     return NULL;
@@ -2007,13 +2013,12 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
     return NULL;
 
   c = getc (gfc_src_file);
-  ungetc (c, gfc_src_file);
 
   if (c != '#')
     return filename;
 
   len = 0;
-  load_line (gfc_src_file, &gfc_src_preprocessor_lines[1], &len);
+  load_line (gfc_src_file, &gfc_src_preprocessor_lines[1], &len, &c);
 
   if (wide_strncmp (gfc_src_preprocessor_lines[1], "# 1 \"", 5) != 0)
     return filename;
