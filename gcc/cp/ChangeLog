@@ -1,3 +1,9 @@
+2008-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/35243
+        * pt.c (tsubst_initializer_list): Consistently check the tree
+        returned by tsubst_pack_expansion for error_mark_node.
+
 2008-05-27  Michael Matz  <matz@suse.de>
 
 	PR c++/27975
