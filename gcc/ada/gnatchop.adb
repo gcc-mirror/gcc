@@ -524,13 +524,16 @@ procedure Gnatchop is
      (Program_Name    : String;
       Look_For_Prefix : Boolean := True) return String_Access
    is
+      Gnatchop_Str    : constant String := "gnatchop";
       Current_Command : constant String := Normalize_Pathname (Command_Name);
       End_Of_Prefix   : Natural;
       Start_Of_Prefix : Positive;
+      Start_Of_Suffix : Positive;
       Result          : String_Access;
 
    begin
       Start_Of_Prefix := Current_Command'First;
+      Start_Of_Suffix := Current_Command'Last + 1;
       End_Of_Prefix   := Start_Of_Prefix - 1;
 
       if Look_For_Prefix then
@@ -549,18 +552,28 @@ procedure Gnatchop is
 
          --  Find End_Of_Prefix
 
-         for J in reverse Start_Of_Prefix .. Current_Command'Last loop
-            if Current_Command (J) = '-' then
-               End_Of_Prefix := J;
+         for J in Start_Of_Prefix ..
+                  Current_Command'Last - Gnatchop_Str'Length + 1
+         loop
+            if Current_Command (J .. J + Gnatchop_Str'Length - 1) =
+                                                                  Gnatchop_Str
+            then
+               End_Of_Prefix := J - 1;
                exit;
             end if;
          end loop;
       end if;
 
+      if End_Of_Prefix > Current_Command'First then
+         Start_Of_Suffix := End_Of_Prefix + Gnatchop_Str'Length + 1;
+      end if;
+
       declare
          Command : constant String :=
-                     Current_Command (Start_Of_Prefix .. End_Of_Prefix) &
-                                                                Program_Name;
+                     Current_Command (Start_Of_Prefix .. End_Of_Prefix)
+                       & Program_Name
+                       & Current_Command (Start_Of_Suffix ..
+                                          Current_Command'Last);
       begin
          Result := Locate_Exec_On_Path (Command);
 

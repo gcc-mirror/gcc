@@ -659,9 +659,9 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc             : String_Access := Program_Name ("gcc");
-   Gnatbind        : String_Access := Program_Name ("gnatbind");
-   Gnatlink        : String_Access := Program_Name ("gnatlink");
+   Gcc             : String_Access := Program_Name ("gcc", "gnatmake");
+   Gnatbind        : String_Access := Program_Name ("gnatbind", "gnatmake");
+   Gnatlink        : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
 
    Saved_Gcc       : String_Access := null;

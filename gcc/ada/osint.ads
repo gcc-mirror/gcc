@@ -105,7 +105,7 @@ package Osint is
    --  Put simple name of current program being run (excluding the directory
    --  path) in Name_Buffer, with the length in Name_Len.
 
-   function Program_Name (Nam : String) return String_Access;
+   function Program_Name (Nam : String; Prog : String) return String_Access;
    --  In the native compilation case, Create a string containing Nam. In the
    --  cross compilation case, looks at the prefix of the current program being
    --  run and prepend it to Nam. For instance if the program being run is
@@ -113,6 +113,9 @@ package Osint is
    --  to "<target>-gcc". In the specific case where AAMP_On_Target is set, the
    --  name "gcc" is mapped to "gnaamp", and names of the form "gnat*" are
    --  mapped to "gnaamp*". This function clobbers Name_Buffer and Name_Len.
+   --  Also look at any suffix, e.g. gnatmake-4.1 -> "gcc-4.1".
+   --  Prog is the default name of the current program being executed, e.g.
+   --  "gnatmake", "gnatlink".
 
    procedure Write_Program_Name;
    --  Writes name of program as invoked to the current output

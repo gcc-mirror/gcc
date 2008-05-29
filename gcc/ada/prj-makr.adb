@@ -1172,7 +1172,7 @@ package body Prj.Makr is
                         if Gcc_Path = null then
                            declare
                               Prefix_Gcc : String_Access :=
-                                             Program_Name (Gcc);
+                                             Program_Name (Gcc, "gnatname");
                            begin
                               Gcc_Path :=
                                 Locate_Exec_On_Path (Prefix_Gcc.all);
