@@ -1,3 +1,24 @@
+2008-05-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb: Minor reformatting
+
+2008-05-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Specification): if the return type
+	is abstract, do not apply abstractness check on subprogram if this is
+	a renaming declaration.
+
+2008-05-29  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/864
+	* osint.ads, osint.adb (Program_Name): New parameter "Prog" to
+	allow recognition of program suffix in addition to prefix.
+	
+	* gnatchop.adb (Locate_Executable): Add support for prefix.
+	
+	* make.adb, gnatcmd.adb, gnatlink.adb, prj-makr.adb,
+	mlib-utl.adb: Adjust calls to Program_Name.
+
 2008-05-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting
