@@ -1,3 +1,15 @@
+2008-05-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR target/36348
+	* config/darwin-f.c: New.
+	* config/t-darwin: Added rule to build darwin-f.o.
+	* config.gcc: Defined new variable, fortran_target_objs.
+	(*-*-darwin*): Set fortran_target_objs.
+	* Makefile.in: Defined new variable FORTRAN_TARGET_OBJS.
+	* configure.ac: Substitute fortran_target_objs, set
+	FORTRAN_TARGET_OBJS.
+	* configure: Regenerated.
+
 2008-05-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35771

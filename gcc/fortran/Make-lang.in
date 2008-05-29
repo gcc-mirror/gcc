@@ -61,7 +61,7 @@ F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
     fortran/resolve.o fortran/scanner.o fortran/simplify.o fortran/st.o \
     fortran/symbol.o fortran/target-memory.o
 
-F95_OBJS = $(F95_PARSER_OBJS) \
+F95_OBJS = $(F95_PARSER_OBJS) $(FORTRAN_TARGET_OBJS) \
     fortran/convert.o fortran/dependency.o fortran/f95-lang.o \
     fortran/trans.o fortran/trans-array.o fortran/trans-common.o \
     fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
