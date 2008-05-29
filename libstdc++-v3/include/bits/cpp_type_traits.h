@@ -180,6 +180,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 # endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<>
+    struct __is_integer<char16_t>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+
+  template<>
+    struct __is_integer<char32_t>
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
   template<>
     struct __is_integer<short>
     {

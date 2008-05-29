@@ -134,6 +134,12 @@ namespace __debug
 	       __n = (std::basic_string<_CharT,_Traits,_Allocator>::npos))
 	: _Base(__str, __pos, __n) { }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 778. std::bitset does not have any constructor taking a string literal
+      explicit
+      bitset(const char* __s)
+      : _Base(__s) { }
+
       bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
 
       // 23.3.5.2 bitset operations:
