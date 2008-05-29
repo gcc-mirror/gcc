@@ -629,7 +629,7 @@ package body Sem_Eval is
          then
             return True;
 
-         --  True if the same binary operator applied to the same operand
+         --  True if the same binary operator applied to the same operands
 
          elsif Nkind (Lf) in N_Binary_Op
            and then Is_Same_Value (Left_Opnd  (Lf), Left_Opnd  (Rf))
@@ -637,7 +637,7 @@ package body Sem_Eval is
          then
             return True;
 
-         --  All other cases, we can't tell, so False
+         --  All other cases, we can't tell, so return False
 
          else
             return False;
