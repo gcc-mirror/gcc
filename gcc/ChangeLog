@@ -1,3 +1,7 @@
+2008-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (check_for_nested_with_variably_modified): Fix typo.
+
 2008-05-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36339
