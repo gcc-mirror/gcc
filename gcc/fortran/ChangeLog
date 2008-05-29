@@ -1,3 +1,10 @@
+2008-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* scanner.c (load_line): Add first_char argument. Don't call ungetc.
+	(gfc_read_orig_filename): Adjust call to load_line. Don't call
+	ungetc.
+	(load_file): Adjust call to load_line.
+
 2008-05-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36325
