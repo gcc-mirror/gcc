@@ -3196,6 +3196,7 @@ package body Sem_Prag is
                                 (Formal, Expression (Massoc));
 
                               --  Set entity on identifier for ASIS
+
                               Set_Entity (Choice, Formal);
 
                               exit;
