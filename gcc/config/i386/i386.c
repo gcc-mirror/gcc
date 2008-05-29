@@ -4639,10 +4639,11 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
   int align;
   if (type)
     {
-      if (TYPE_STRUCTURAL_EQUALITY_P (type))
-	align = TYPE_ALIGN (type);
-      else
-	align = TYPE_ALIGN (TYPE_CANONICAL (type));
+      /* Since canonical type is used for call, we convert it to
+	 canonical type if needed.  */
+      if (!TYPE_STRUCTURAL_EQUALITY_P (type))
+	type = TYPE_CANONICAL (type);
+      align = TYPE_ALIGN (type);
     }
   else
     align = GET_MODE_ALIGNMENT (mode);
