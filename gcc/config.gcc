@@ -120,6 +120,9 @@
 #  cxx_target_objs	List of extra target-dependent objects that be
 #			linked into the C++ compiler only.
 #
+#  fortran_target_objs	List of extra target-dependent objects that be
+#			linked into the fortran compiler only.
+#
 #  target_gtfiles       List of extra source files with type information.
 #
 #  xm_defines		List of macros to define when compiling for the
@@ -173,6 +176,7 @@ extra_gcc_objs=
 extra_options=
 c_target_objs=
 cxx_target_objs=
+fortran_target_objs=
 tm_defines=
 xm_defines=
 # Set this to force installation and use of collect2.
@@ -433,6 +437,7 @@ case ${target} in
   extra_options="${extra_options} darwin.opt"
   c_target_objs="darwin-c.o"
   cxx_target_objs="darwin-c.o"
+  fortran_target_objs="darwin-f.o"
   extra_objs="darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes

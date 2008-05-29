@@ -3803,6 +3803,7 @@ AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
+AC_SUBST(fortran_target_objs)
 AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)

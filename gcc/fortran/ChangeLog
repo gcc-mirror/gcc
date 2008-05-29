@@ -1,3 +1,8 @@
+2008-05-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR target/36348
+	* Make-lang.in (F95_OBJS): Added dependency on FORTRAN_TARGET_OBJS.
+
 2008-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* scanner.c (load_line): Add first_char argument. Don't call ungetc.
