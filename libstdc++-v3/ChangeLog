@@ -1,3 +1,11 @@
+2008-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/bitset (bitset(const char*)): Implement DR 778
+	in debug-mode too.
+
+	* include/bits/cpp_type_traits.h (__is_integer): In C++0x mode
+	deal with char16_t and char32_t.
+
 2008-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_global/cmath (pow(float, int), pow(double, int),
