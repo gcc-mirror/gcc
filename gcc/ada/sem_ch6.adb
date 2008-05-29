@@ -2496,21 +2496,19 @@ package body Sem_Ch6 is
 
          May_Need_Actuals (Designator);
 
-         --  Ada 2005 (AI-251): In case of primitives associated with abstract
-         --  interface types the following error message will be reported later
-         --  (see Analyze_Subprogram_Declaration).
+         --  Ada 2005 (AI-251): If the return type is abstract, verify that
+         --  the subprogram is abstract also. This does not apply to renaming
+         --  declarations, where abstractness is inherited.
+         --  In case of primitives associated with abstract interface types
+         --  the check is applied later (see Analyze_Subprogram_Declaration).
 
          if Is_Abstract_Type (Etype (Designator))
            and then not Is_Interface (Etype (Designator))
+           and then Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
            and then Nkind (Parent (N)) /=
                       N_Abstract_Subprogram_Declaration
            and then
              (Nkind (Parent (N))) /= N_Formal_Abstract_Subprogram_Declaration
-                and then
-                  (Nkind (Parent (N)) /= N_Subprogram_Renaming_Declaration
-                     or else not Is_Entity_Name (Name (Parent (N)))
-                     or else not Is_Abstract_Subprogram
-                                    (Entity (Name (Parent (N)))))
          then
             Error_Msg_N
               ("function that returns abstract type must be abstract", N);
