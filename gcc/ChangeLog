@@ -1,3 +1,17 @@
+2008-05-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36343
+	PR tree-optimization/36346
+	PR tree-optimization/36347
+	* tree-flow.h (clobber_what_p_points_to): Declare.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Whether the
+	pointed-to variable is dereferenced is irrelevant to whether
+	the pointer can access the pointed-to variable.
+	(clobber_what_p_points_to): New function.
+	* tree-ssa-alias.c (set_initial_properties): Use it.
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Adjust
+	call clobber check for NMTs.
+
 2008-05-28  Seongbae Park  <seongbae.park@gmail.com>
 	
 	* value-prof.c (tree_ic_transform): Use HOST_WIDEST_INT_PRINT_DEC
