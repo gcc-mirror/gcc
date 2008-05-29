@@ -6285,14 +6285,13 @@ package body Sem_Ch3 is
                   C1 := First_Elmt (New_Discrs);
                   C2 := First_Elmt (Discriminant_Constraint (Derived_Type));
                   while Present (C1) and then Present (C2) loop
-
                      if Fully_Conformant_Expressions (Node (C1), Node (C2))
                        or else
-                     (Is_OK_Static_Expression (Node (C1))
-                        and then
-                      Is_OK_Static_Expression (Node (C2))
-                        and then
-                      Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
+                         (Is_OK_Static_Expression (Node (C1))
+                            and then
+                          Is_OK_Static_Expression (Node (C2))
+                            and then
+                          Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
                      then
                         null;
 
