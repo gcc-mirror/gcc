@@ -136,7 +136,7 @@ package body MLib.Utl is
 
    begin
       if Ar_Exec = null then
-         Ar_Name := Osint.Program_Name (Archive_Builder);
+         Ar_Name := Osint.Program_Name (Archive_Builder, "gnatmake");
          Ar_Exec := Locate_Exec_On_Path (Ar_Name.all);
 
          if Ar_Exec = null then
@@ -177,7 +177,7 @@ package body MLib.Utl is
 
          --  ranlib
 
-         Ranlib_Name := Osint.Program_Name (Archive_Indexer);
+         Ranlib_Name := Osint.Program_Name (Archive_Indexer, "gnatmake");
 
          if Ranlib_Name'Length > 0 then
             Ranlib_Exec := Locate_Exec_On_Path (Ranlib_Name.all);
@@ -408,7 +408,7 @@ package body MLib.Utl is
       if Driver_Name = No_Name then
          if Gcc_Exec = null then
             if Gcc_Name = null then
-               Gcc_Name :=  Osint.Program_Name ("gcc");
+               Gcc_Name :=  Osint.Program_Name ("gcc", "gnatmake");
             end if;
 
             Gcc_Exec := Locate_Exec_On_Path (Gcc_Name.all);

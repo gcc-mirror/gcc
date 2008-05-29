@@ -1874,8 +1874,10 @@ package body Osint is
    -- Program_Name --
    ------------------
 
-   function Program_Name (Nam : String) return String_Access is
-      Res : String_Access;
+   function Program_Name (Nam : String; Prog : String) return String_Access is
+      End_Of_Prefix   : Natural := 0;
+      Start_Of_Prefix : Positive := 1;
+      Start_Of_Suffix : Positive;
 
    begin
       --  GNAAMP tool names require special treatment
@@ -1907,34 +1909,42 @@ package body Osint is
 
       Find_Program_Name;
 
+      Start_Of_Suffix := Name_Len + 1;
+
       --  Find the target prefix if any, for the cross compilation case.
-      --  For instance in "alpha-dec-vxworks-gcc" the target prefix is
-      --  "alpha-dec-vxworks-"
+      --  For instance in "powerpc-elf-gcc" the target prefix is
+      --  "powerpc-elf-"
+      --  Ditto for suffix, e.g. in "gcc-4.1", the suffix is "-4.1"
 
-      while Name_Len > 0  loop
-
-         --  All done if we find the last hyphen
-
-         if Name_Buffer (Name_Len) = '-' then
-            exit;
-
-         --  If directory separator found, we don't want to look further
-         --  since in this case, no prefix has been found.
-
-         elsif Is_Directory_Separator (Name_Buffer (Name_Len)) then
-            Name_Len := 0;
+      for J in reverse 1 .. Name_Len loop
+         if Name_Buffer (J) = '/'
+           or else Name_Buffer (J) = Directory_Separator
+           or else Name_Buffer (J) = ':'
+         then
+            Start_Of_Prefix := J + 1;
             exit;
          end if;
-
-         Name_Len := Name_Len - 1;
       end loop;
+
+      --  Find End_Of_Prefix
+
+      for J in Start_Of_Prefix .. Name_Len - Prog'Length + 1 loop
+         if Name_Buffer (J .. J + Prog'Length - 1) = Prog then
+            End_Of_Prefix := J - 1;
+            exit;
+         end if;
+      end loop;
+
+      if End_Of_Prefix > 1 then
+         Start_Of_Suffix := End_Of_Prefix + Prog'Length + 1;
+      end if;
 
       --  Create the new program name
 
-      Res := new String (1 .. Name_Len + Nam'Length);
-      Res.all (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-      Res.all (Name_Len + 1 .. Name_Len + Nam'Length) := Nam;
-      return Res;
+      return new String'
+        (Name_Buffer (Start_Of_Prefix .. End_Of_Prefix)
+         & Nam
+         & Name_Buffer (Start_Of_Suffix .. Name_Len));
    end Program_Name;
 
    ------------------------------
