@@ -388,18 +388,17 @@ package body Sem_Eval is
         (N : Node_Id;
          R : out Node_Id;
          V : out Uint);
-      --  This procedure decomposes the node N into an expression node
-      --  and a signed offset, so that the value of N is equal to the
-      --  value of R plus the value V (which may be negative). If no
-      --  such decomposition is possible, then on return R is a copy
-      --  of N, and V is set to zero.
+      --  This procedure decomposes the node N into an expression node and a
+      --  signed offset, so that the value of N is equal to the value of R plus
+      --  the value V (which may be negative). If no such decomposition is
+      --  possible, then on return R is a copy of N, and V is set to zero.
 
       function Compare_Fixup (N : Node_Id) return Node_Id;
-      --  This function deals with replacing 'Last and 'First references
-      --  with their corresponding type bounds, which we then can compare.
-      --  The argument is the original node, the result is the identity,
-      --  unless we have a 'Last/'First reference in which case the value
-      --  returned is the appropriate type bound.
+      --  This function deals with replacing 'Last and 'First references with
+      --  their corresponding type bounds, which we then can compare. The
+      --  argument is the original node, the result is the identity, unless we
+      --  have a 'Last/'First reference in which case the value returned is the
+      --  appropriate type bound.
 
       function Is_Same_Value (L, R : Node_Id) return Boolean;
       --  Returns True iff L and R represent expressions that definitely
@@ -432,7 +431,6 @@ package body Sem_Eval is
             return;
 
          elsif Nkind (N) = N_Attribute_Reference  then
-
             if Attribute_Name (N) = Name_Succ then
                R := First (Expressions (N));
                V := Uint_1;
@@ -570,13 +568,15 @@ package body Sem_Eval is
       --  Start of processing for Is_Same_Value
 
       begin
-         --  Values are the same if they are the same identifier and the
-         --  identifier refers to a constant object (E_Constant). This
-         --  does not however apply to Float types, since we may have two
-         --  NaN values and they should never compare equal.
+         --  Values are the same if they refer to the same entity and the
+         --  entity is a constant object (E_Constant). This does not however
+         --  apply to Float types, since we may have two NaN values and they
+         --  should never compare equal.
 
-         if Nkind (Lf) = N_Identifier and then Nkind (Rf) = N_Identifier
+         if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
+           and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
            and then Entity (Lf) = Entity (Rf)
+           and then Present (Entity (Lf))
            and then not Is_Floating_Point_Type (Etype (L))
            and then Is_Constant_Object (Entity (Lf))
          then
@@ -591,24 +591,53 @@ package body Sem_Eval is
          then
             return True;
 
-         --  Or if they are both 'First or 'Last values applying to the
-         --  same entity (first and last don't change even if value does)
+         --  False if Nkind of the two nodes is different for remaining cases
+
+         elsif Nkind (Lf) /= Nkind (Rf) then
+            return False;
+
+         --  True if both 'First or 'Last values applying to the same entity
+         --  (first and last don't change even if value does). Note that we
+         --  need this even with the calls to Compare_Fixup, to handle the
+         --  case of unconstrained array attributes where Compare_Fixup
+         --  cannot find useful bounds.
 
          elsif Nkind (Lf) = N_Attribute_Reference
-                 and then
-               Nkind (Rf) = N_Attribute_Reference
            and then Attribute_Name (Lf) = Attribute_Name (Rf)
            and then (Attribute_Name (Lf) = Name_First
                        or else
                      Attribute_Name (Lf) = Name_Last)
-           and then Is_Entity_Name (Prefix (Lf))
-           and then Is_Entity_Name (Prefix (Rf))
+           and then Nkind_In (Prefix (Lf), N_Identifier, N_Expanded_Name)
+           and then Nkind_In (Prefix (Rf), N_Identifier, N_Expanded_Name)
            and then Entity (Prefix (Lf)) = Entity (Prefix (Rf))
            and then Is_Same_Subscript (Expressions (Lf), Expressions (Rf))
          then
             return True;
 
-         --  All other cases, we can't tell
+         --  True if the same selected component from the same record
+
+         elsif Nkind (Lf) = N_Selected_Component
+           and then Selector_Name (Lf) = Selector_Name (Rf)
+           and then Is_Same_Value (Prefix (Lf), Prefix (Rf))
+         then
+            return True;
+
+         --  True if the same unary operator applied to the same operand
+
+         elsif Nkind (Lf) in N_Unary_Op
+           and then Is_Same_Value (Right_Opnd (Lf), Right_Opnd (Rf))
+         then
+            return True;
+
+         --  True if the same binary operator applied to the same operand
+
+         elsif Nkind (Lf) in N_Binary_Op
+           and then Is_Same_Value (Left_Opnd  (Lf), Left_Opnd  (Rf))
+           and then Is_Same_Value (Right_Opnd (Lf), Right_Opnd (Rf))
+         then
+            return True;
+
+         --  All other cases, we can't tell, so False
 
          else
             return False;
