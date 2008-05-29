@@ -1167,6 +1167,7 @@ tree gimple_fold_indirect_ref (tree);
 
 /* In tree-ssa-structalias.c */
 bool find_what_p_points_to (tree);
+bool clobber_what_p_points_to (tree);
 
 /* In tree-ssa-live.c */
 extern void remove_unused_locals (void);

@@ -571,7 +571,9 @@ verify_flow_sensitive_alias_info (void)
 	  goto err;
 	}
 
-      if (pi->value_escapes_p && pi->name_mem_tag)
+      if (pi->value_escapes_p
+	  && pi->escape_mask & ~ESCAPE_TO_RETURN
+	  && pi->name_mem_tag)
 	{
 	  tree t = memory_partition (pi->name_mem_tag);
 	  if (t == NULL_TREE)

@@ -4664,17 +4664,19 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 	  || TREE_CODE (vi->decl) == RESULT_DECL)
 	{
 	  /* Just add VI->DECL to the alias set.
-	     Don't type prune artificial vars.  */
-	  if (vi->is_artificial_var)
+	     Don't type prune artificial vars or points-to sets
+	     for pointers that have not been dereferenced or with
+	     type-based pruning disabled.  */
+	  if (vi->is_artificial_var
+	      || !is_derefed
+	      || no_tbaa_pruning)
 	    bitmap_set_bit (into, DECL_UID (vi->decl));
 	  else
 	    {
 	      alias_set_type var_alias_set, ptr_alias_set;
 	      var_alias_set = get_alias_set (vi->decl);
 	      ptr_alias_set = get_alias_set (TREE_TYPE (TREE_TYPE (ptr)));
-	      if (no_tbaa_pruning
-		  || (!is_derefed && !vi->directly_dereferenced)
-		  || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
+	      if (alias_sets_conflict_p (ptr_alias_set, var_alias_set))
 	        bitmap_set_bit (into, DECL_UID (vi->decl));
 	    }
 	}
@@ -4885,7 +4887,71 @@ find_what_p_points_to (tree p)
   return false;
 }
 
+/* Mark everything that p points to as call clobbered.  Returns true
+   if everything is done and false if all addressable variables need to
+   be clobbered because p points to anything.  */
 
+bool
+clobber_what_p_points_to (tree p)
+{
+  tree lookup_p = p;
+  varinfo_t vi;
+  struct ptr_info_def *pi;
+  unsigned int i;
+  bitmap_iterator bi;
+
+  if (!have_alias_info)
+    return false;
+
+  /* For parameters, get at the points-to set for the actual parm
+     decl.  */
+  if (TREE_CODE (p) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (p)) == PARM_DECL
+      && SSA_NAME_IS_DEFAULT_DEF (p))
+    lookup_p = SSA_NAME_VAR (p);
+
+  vi = lookup_vi_for_tree (lookup_p);
+  if (!vi)
+    return false;
+
+  /* We are asking for the points-to solution of pointers.  */
+  gcc_assert (!vi->is_artificial_var
+	      && vi->size == vi->fullsize);
+
+  pi = get_ptr_info (p);
+
+  /* This variable may have been collapsed, let's get the real
+     variable.  */
+  vi = get_varinfo (find (vi->id));
+
+  /* Mark variables in the solution call-clobbered.  */
+  EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
+    {
+      varinfo_t vi = get_varinfo (i);
+
+      if (vi->is_artificial_var)
+	{
+	  /* nothing_id and readonly_id do not cause any
+	     call clobber ops.  For anything_id and integer_id
+	     we need to clobber all addressable vars.  */
+	  if (vi->id == anything_id
+	      || vi->id == integer_id)
+	    return false;
+	}
+
+      /* Only artificial heap-vars are further interesting.  */
+      if (vi->is_artificial_var && !vi->is_heap_var)
+	continue;
+
+      if ((TREE_CODE (vi->decl) == VAR_DECL
+	   || TREE_CODE (vi->decl) == PARM_DECL
+	   || TREE_CODE (vi->decl) == RESULT_DECL)
+	  && !unmodifiable_var_p (vi->decl))
+	mark_call_clobbered (vi->decl, pi->escape_mask);
+    }
+
+  return true;
+}
 
 /* Dump points-to information to OUTFILE.  */
 
