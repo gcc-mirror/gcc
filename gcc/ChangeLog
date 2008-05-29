@@ -1,3 +1,7 @@
+2008-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (check_for_nested_with_variably_modified): Fix typo.
+
 2008-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_widened_comparison): Do not allow

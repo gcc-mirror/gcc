@@ -693,7 +693,7 @@ check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
     {
       for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = TREE_CHAIN (arg))
-	if (variably_modified_type_p (TREE_TYPE (arg), 0), orig_fndecl)
+	if (variably_modified_type_p (TREE_TYPE (arg), orig_fndecl))
 	  return true;
 
       if (check_for_nested_with_variably_modified (cgn->decl, orig_fndecl))
