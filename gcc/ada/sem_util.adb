@@ -99,6 +99,10 @@ package body Sem_Util is
 
          Nod := Parent (Base_Type (Typ));
 
+         if Nkind (Nod) = N_Full_Type_Declaration then
+            return Empty_List;
+         end if;
+
       elsif Ekind (Typ) = E_Record_Type_With_Private then
          if Nkind (Parent (Typ)) = N_Full_Type_Declaration then
             Nod := Type_Definition (Parent (Typ));
