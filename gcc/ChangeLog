@@ -1,3 +1,9 @@
+2008-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_address,
+	rs6000_legitimize_reload_address, rs6000_emit_move): Make sure an
+	rtx is a SYMBOL_REF before calling get_pool_constant.
+
 2008-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_unary) <CASE_CONVERT>: Add ??? comment.
