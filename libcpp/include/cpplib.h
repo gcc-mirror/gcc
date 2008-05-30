@@ -508,6 +508,10 @@ struct cpp_dir
   char *name;
   unsigned int len;
 
+  /* The canonicalized NAME as determined by lrealpath.  This field 
+     is only used by hosts that lack reliable inode numbers.  */
+  char *canonical_name;
+
   /* One if a system header, two if a system header that has extern
      "C" guards for C++.  */
   unsigned char sysp;
