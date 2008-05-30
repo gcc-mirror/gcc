@@ -1,3 +1,12 @@
+2008-05-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/36320:
+	* internal.h (_cpp_parse_expr): Update.
+	* expr.c (_cpp_parse_expr): Add 'is_if' argument.  Update error
+	messages.
+	* directives.c (do_if): Update.
+	(do_elif): Require expression if processing group.
+
 2008-05-30  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/cpplib.h (struct cpp_dir): Add new field, canonical_name.

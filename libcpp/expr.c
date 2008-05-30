@@ -852,7 +852,7 @@ static const struct cpp_operator
    stored in the 'value' field of the stack element of the operator
    that precedes it.  */
 bool
-_cpp_parse_expr (cpp_reader *pfile)
+_cpp_parse_expr (cpp_reader *pfile, bool is_if)
 {
   struct op *top = pfile->op_stack;
   unsigned int lex_count;
@@ -927,7 +927,7 @@ _cpp_parse_expr (cpp_reader *pfile)
 	    SYNTAX_ERROR ("missing expression between '(' and ')'");
 
 	  if (op.op == CPP_EOF && top->op == CPP_EOF)
- 	    SYNTAX_ERROR ("#if with no expression");
+ 	    SYNTAX_ERROR2 ("%s with no expression", is_if ? "#if" : "#elif");
 
  	  if (top->op != CPP_EOF && top->op != CPP_OPEN_PAREN)
  	    SYNTAX_ERROR2 ("operator '%s' has no right operand",
@@ -988,7 +988,8 @@ _cpp_parse_expr (cpp_reader *pfile)
 
   if (top != pfile->op_stack)
     {
-      cpp_error (pfile, CPP_DL_ICE, "unbalanced stack in #if");
+      cpp_error (pfile, CPP_DL_ICE, "unbalanced stack in %s",
+		 is_if ? "#if" : "#elif");
     syntax_error:
       return false;  /* Return false on syntax error.  */
     }

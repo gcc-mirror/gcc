@@ -1,3 +1,8 @@
+2008-05-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/36320:
+	* gcc.dg/cpp/pr36320.c: New file.
+
 2008-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/35243
