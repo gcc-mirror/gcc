@@ -557,7 +557,7 @@ extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
 extern struct stat *_cpp_get_file_stat (_cpp_file *);
 
 /* In expr.c */
-extern bool _cpp_parse_expr (cpp_reader *);
+extern bool _cpp_parse_expr (cpp_reader *, bool);
 extern struct op *_cpp_expand_op_stack (cpp_reader *);
 
 /* In lex.c */
