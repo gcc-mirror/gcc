@@ -1,3 +1,8 @@
+2008-05-30  DJ Delorie  <dj@redhat.com>
+
+	* exec-tool.in: Use an environment variable (private) instead of a
+	file (shared) as a semaphore, so as to not break parallel builds.
+
 2008-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* optabs.c (maybe_encapsulate_block): Remove.
