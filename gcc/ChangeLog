@@ -1,5 +1,14 @@
 2008-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
 
+	* optabs.c (maybe_encapsulate_block): Remove.
+	(emit_libcall_block): Adjust accordingly.
+	* optabs.h (maybe_encapsulate_block): Remove prototype.
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address):
+	Don't use maybe_encapsulate_block.
+
+2008-05-30  Steven Bosscher  <stevenb.gcc@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_legitimize_address,
 	rs6000_legitimize_reload_address, rs6000_emit_move): Make sure an
 	rtx is a SYMBOL_REF before calling get_pool_constant.
