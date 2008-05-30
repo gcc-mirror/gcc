@@ -1,3 +1,11 @@
+2008-05-30  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* incpath.c: Use HOST_LACKS_INODE_NUMBERS conditional
+	rather than OS names to choose INO_T_EQ definition.
+	(DIRS_EQ) [!INO_T_EQ]: Don't worry about case in comparison.
+	(add_path) [!INO_T_EQ]: Use lrealpath to fill canonical_name
+	field.
+
 2008-05-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR target/36348

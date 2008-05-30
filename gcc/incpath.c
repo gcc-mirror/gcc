@@ -31,13 +31,12 @@
 #include "incpath.h"
 #include "cppdefault.h"
 
-/* Windows does not natively support inodes, and neither does MSDOS.
-   Cygwin's emulation can generate non-unique inodes, so don't use it.
+/* Microsoft Windows does not natively support inodes.
    VMS has non-numeric inodes.  */
 #ifdef VMS
 # define INO_T_EQ(A, B) (!memcmp (&(A), &(B), sizeof (A)))
 # define INO_T_COPY(DEST, SRC) memcpy(&(DEST), &(SRC), sizeof (SRC))
-#elif !((defined _WIN32 && !defined (_UWIN)) || defined __MSDOS__)
+#elif !defined (HOST_LACKS_INODE_NUMBERS)
 # define INO_T_EQ(A, B) ((A) == (B))
 # define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
 #endif
@@ -46,7 +45,7 @@
 #define DIRS_EQ(A, B) ((A)->dev == (B)->dev \
 	&& INO_T_EQ((A)->ino, (B)->ino))
 #else
-#define DIRS_EQ(A, B) (!strcasecmp ((A)->name, (B)->name))
+#define DIRS_EQ(A, B) (!strcmp ((A)->canonical_name, (B)->canonical_name))
 #endif
 
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
@@ -408,6 +407,9 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
   p = XNEW (cpp_dir);
   p->next = NULL;
   p->name = path;
+#ifndef INO_T_EQ
+  p->canonical_name = lrealpath (path);
+#endif
   if (chain == SYSTEM || chain == AFTER)
     p->sysp = 1 + !cxx_aware;
   else
