@@ -1,3 +1,7 @@
+2008-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_unary) <CASE_CONVERT>: Add ??? comment.
+
 2008-05-30  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* incpath.c: Use HOST_LACKS_INODE_NUMBERS conditional
