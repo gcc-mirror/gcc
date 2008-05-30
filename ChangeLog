@@ -1,3 +1,8 @@
+2008-05-30  Julian Brown  <julian@codesourcery.com>
+
+	* configure.ac (arm*-*-linux-gnueabi): Don't disable building
+	of libobjc for ARM EABI Linux.
+	* configure: Regenerate.
 
 2008-05-18 Xinliang David Li   <davidxl@google.com>
 

@@ -1,3 +1,16 @@
+2008-05-30  Julian Brown  <julian@codesourcery.com>
+
+	* exception.c (__objc_exception_class): Initialise as constant
+	array for ARM EABI. Change macro to static const for non-ARM EABI.
+	(ObjcException): Add note about structure layout. Remove landingPad
+	and handlerSwitchValue for ARM EABI.
+	(get_ttype_entry): Add __ARM_EABI_UNWINDER__ version
+	of function.
+	(CONTINUE_UNWINDING): Define for ARM EABI/otherwise cases.
+	(PERSONALITY_FUNCTION): Use ARM EABI-specific arguments, and add
+	ARM EABI unwinding support.
+	(objc_exception_throw): Use memcpy to initialise exception class.
+
 2008-05-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* encoding.c (strip_array_types): Rename from get_inner_array_type.

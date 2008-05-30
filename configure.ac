@@ -563,7 +563,6 @@ case "${target}" in
     ;;
   arm*-*-linux-gnueabi)
     noconfigdirs="$noconfigdirs target-qthreads"
-    noconfigdirs="$noconfigdirs target-libobjc"
     case ${with_newlib} in
       no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     esac
