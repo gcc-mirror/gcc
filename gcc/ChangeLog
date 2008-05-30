@@ -1,3 +1,8 @@
+2008-05-30  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (build_string_literal): Avoid generating
+	a non-gimple_val result.
+
 2008-05-30  DJ Delorie  <dj@redhat.com>
 
 	* exec-tool.in: Use an environment variable (private) instead of a

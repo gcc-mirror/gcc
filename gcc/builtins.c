@@ -5249,18 +5249,17 @@ build_string_literal (int len, const char *str)
 
   t = build_string (len, str);
   elem = build_type_variant (char_type_node, 1, 0);
-  index = build_index_type (build_int_cst (NULL_TREE, len - 1));
+  index = build_index_type (size_int (len - 1));
   type = build_array_type (elem, index);
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = 1;
   TREE_READONLY (t) = 1;
   TREE_STATIC (t) = 1;
 
-  type = build_pointer_type (type);
-  t = build1 (ADDR_EXPR, type, t);
-
   type = build_pointer_type (elem);
-  t = build1 (NOP_EXPR, type, t);
+  t = build1 (ADDR_EXPR, type,
+	      build4 (ARRAY_REF, elem,
+		      t, integer_zero_node, NULL_TREE, NULL_TREE));
   return t;
 }
 
