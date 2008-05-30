@@ -61,12 +61,11 @@ case "$original" in
       # libtool has not relinked ld-new yet, but we cannot just use the
       # previous stage (because then the relinking would just never happen!).
       # So we take extra care to use prev-ld/ld-new *on recursive calls*.
-      test -f $lt_prog-recursive && exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
+      test x"$LT_RCU" = x"1" && exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
 
-      touch $lt_prog-recursive
+      LT_RCU=1; export LT_RCU
       $scriptdir/../$dir/$prog ${1+"$@"}
       result=$?
-      rm -f $lt_prog-recursive
       exit $result
 
     else
