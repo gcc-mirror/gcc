@@ -123,24 +123,21 @@ gfc_arith_init_1 (void)
 {
   gfc_integer_info *int_info;
   gfc_real_info *real_info;
-  mpfr_t a, b, c;
-  mpz_t r;
+  mpfr_t a, b;
   int i;
 
   mpfr_set_default_prec (128);
   mpfr_init (a);
-  mpz_init (r);
 
   /* Convert the minimum and maximum values for each kind into their
      GNU MP representation.  */
   for (int_info = gfc_integer_kinds; int_info->kind != 0; int_info++)
     {
       /* Huge  */
-      mpz_set_ui (r, int_info->radix);
-      mpz_pow_ui (r, r, int_info->digits);
-
       mpz_init (int_info->huge);
-      mpz_sub_ui (int_info->huge, r, 1);
+      mpz_set_ui (int_info->huge, int_info->radix);
+      mpz_pow_ui (int_info->huge, int_info->huge, int_info->digits);
+      mpz_sub_ui (int_info->huge, int_info->huge, 1);
 
       /* These are the numbers that are actually representable by the
 	 target.  For bases other than two, this needs to be changed.  */
@@ -164,8 +161,7 @@ gfc_arith_init_1 (void)
       mpfr_set_z (a, int_info->huge, GFC_RND_MODE);
       mpfr_log10 (a, a, GFC_RND_MODE);
       mpfr_trunc (a, a);
-      gfc_mpfr_to_mpz (r, a);
-      int_info->range = mpz_get_si (r);
+      int_info->range = (int) mpfr_get_si (a, GFC_RND_MODE);
     }
 
   mpfr_clear (a);
@@ -176,49 +172,43 @@ gfc_arith_init_1 (void)
 
       mpfr_init (a);
       mpfr_init (b);
-      mpfr_init (c);
 
       /* huge(x) = (1 - b**(-p)) * b**(emax-1) * b  */
-      /* a = 1 - b**(-p)  */
-      mpfr_set_ui (a, 1, GFC_RND_MODE);
-      mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_si (b, b, -real_info->digits, GFC_RND_MODE);
-      mpfr_sub (a, a, b, GFC_RND_MODE);
-
-      /* c = b**(emax-1)  */
-      mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_ui (c, b, real_info->max_exponent - 1, GFC_RND_MODE);
-
-      /* a = a * c = (1 - b**(-p)) * b**(emax-1)  */
-      mpfr_mul (a, a, c, GFC_RND_MODE);
-
-      /* a = (1 - b**(-p)) * b**(emax-1) * b  */
-      mpfr_mul_ui (a, a, real_info->radix, GFC_RND_MODE);
-
+      /* 1 - b**(-p)  */
       mpfr_init (real_info->huge);
-      mpfr_set (real_info->huge, a, GFC_RND_MODE);
+      mpfr_set_ui (real_info->huge, 1, GFC_RND_MODE);
+      mpfr_set_ui (a, real_info->radix, GFC_RND_MODE);
+      mpfr_pow_si (a, a, -real_info->digits, GFC_RND_MODE);
+      mpfr_sub (real_info->huge, real_info->huge, a, GFC_RND_MODE);
 
-      /* tiny(x) = b**(emin-1)  */
-      mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_si (b, b, real_info->min_exponent - 1, GFC_RND_MODE);
+      /* b**(emax-1)  */
+      mpfr_set_ui (a, real_info->radix, GFC_RND_MODE);
+      mpfr_pow_ui (a, a, real_info->max_exponent - 1, GFC_RND_MODE);
 
-      mpfr_init (real_info->tiny);
-      mpfr_set (real_info->tiny, b, GFC_RND_MODE);
+      /* (1 - b**(-p)) * b**(emax-1)  */
+      mpfr_mul (real_info->huge, real_info->huge, a, GFC_RND_MODE);
 
-      /* subnormal (x) = b**(emin - digit)  */
-      mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_si (b, b, real_info->min_exponent - real_info->digits,
+      /* (1 - b**(-p)) * b**(emax-1) * b  */
+      mpfr_mul_ui (real_info->huge, real_info->huge, real_info->radix,
 		   GFC_RND_MODE);
 
+      /* tiny(x) = b**(emin-1)  */
+      mpfr_init (real_info->tiny);
+      mpfr_set_ui (real_info->tiny, real_info->radix, GFC_RND_MODE);
+      mpfr_pow_si (real_info->tiny, real_info->tiny,
+		   real_info->min_exponent - 1, GFC_RND_MODE);
+
+      /* subnormal (x) = b**(emin - digit)  */
       mpfr_init (real_info->subnormal);
-      mpfr_set (real_info->subnormal, b, GFC_RND_MODE);
+      mpfr_set_ui (real_info->subnormal, real_info->radix, GFC_RND_MODE);
+      mpfr_pow_si (real_info->subnormal, real_info->subnormal,
+		   real_info->min_exponent - real_info->digits, GFC_RND_MODE);
 
       /* epsilon(x) = b**(1-p)  */
-      mpfr_set_ui (b, real_info->radix, GFC_RND_MODE);
-      mpfr_pow_si (b, b, 1 - real_info->digits, GFC_RND_MODE);
-
       mpfr_init (real_info->epsilon);
-      mpfr_set (real_info->epsilon, b, GFC_RND_MODE);
+      mpfr_set_ui (real_info->epsilon, real_info->radix, GFC_RND_MODE);
+      mpfr_pow_si (real_info->epsilon, real_info->epsilon,
+		   1 - real_info->digits, GFC_RND_MODE);
 
       /* range(x) = int(min(log10(huge(x)), -log10(tiny))  */
       mpfr_log10 (a, real_info->huge, GFC_RND_MODE);
@@ -227,31 +217,23 @@ gfc_arith_init_1 (void)
 
       /* a = min(a, b)  */
       mpfr_min (a, a, b, GFC_RND_MODE);
-
       mpfr_trunc (a, a);
-      gfc_mpfr_to_mpz (r, a);
-      real_info->range = mpz_get_si (r);
+      real_info->range = (int) mpfr_get_si (a, GFC_RND_MODE);
 
       /* precision(x) = int((p - 1) * log10(b)) + k  */
       mpfr_set_ui (a, real_info->radix, GFC_RND_MODE);
       mpfr_log10 (a, a, GFC_RND_MODE);
-
       mpfr_mul_ui (a, a, real_info->digits - 1, GFC_RND_MODE);
       mpfr_trunc (a, a);
-      gfc_mpfr_to_mpz (r, a);
-      real_info->precision = mpz_get_si (r);
+      real_info->precision = (int) mpfr_get_si (a, GFC_RND_MODE);
 
       /* If the radix is an integral power of 10, add one to the precision.  */
       for (i = 10; i <= real_info->radix; i *= 10)
 	if (i == real_info->radix)
 	  real_info->precision++;
 
-      mpfr_clear (a);
-      mpfr_clear (b);
-      mpfr_clear (c);
+      mpfr_clears (a, b, NULL);
     }
-
-  mpz_clear (r);
 }
 
 
@@ -271,12 +253,7 @@ gfc_arith_done_1 (void)
     }
 
   for (rp = gfc_real_kinds; rp->kind; rp++)
-    {
-      mpfr_clear (rp->epsilon);
-      mpfr_clear (rp->huge);
-      mpfr_clear (rp->tiny);
-      mpfr_clear (rp->subnormal);
-    }
+    mpfr_clears (rp->epsilon, rp->huge, rp->tiny, rp->subnormal, NULL);
 }
 
 
@@ -345,29 +322,27 @@ gfc_check_real_range (mpfr_t p, int kind)
   mpfr_init (q);
   mpfr_abs (q, p, GFC_RND_MODE);
 
+  retval = ARITH_OK;
+
   if (mpfr_inf_p (p))
     {
-      if (gfc_option.flag_range_check == 0)
-	retval = ARITH_OK;
-      else
+      if (gfc_option.flag_range_check != 0)
 	retval = ARITH_OVERFLOW;
     }
   else if (mpfr_nan_p (p))
     {
-      if (gfc_option.flag_range_check == 0)
-	retval = ARITH_OK;
-      else
+      if (gfc_option.flag_range_check != 0)
 	retval = ARITH_NAN;
     }
   else if (mpfr_sgn (q) == 0)
-    retval = ARITH_OK;
+    {
+      mpfr_clear (q);
+      return retval;
+    }
   else if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
     {
       if (gfc_option.flag_range_check == 0)
-	{
-	  mpfr_set_inf (p, mpfr_sgn (p));
-	  retval = ARITH_OK;
-	}
+	mpfr_set_inf (p, mpfr_sgn (p));
       else
 	retval = ARITH_OVERFLOW;
     }
@@ -383,7 +358,6 @@ gfc_check_real_range (mpfr_t p, int kind)
 	    }
 	  else
 	    mpfr_set_ui (p, 0, GFC_RND_MODE);
-	  retval = ARITH_OK;
 	}
       else
 	retval = ARITH_UNDERFLOW;
@@ -412,11 +386,7 @@ gfc_check_real_range (mpfr_t p, int kind)
 	mpfr_neg (p, q, GMP_RNDN);
       else
 	mpfr_set (p, q, GMP_RNDN);
-
-      retval = ARITH_OK;
     }
-  else
-    retval = ARITH_OK;
 
   mpfr_clear (q);
 
@@ -779,8 +749,7 @@ gfc_arith_times (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       mpfr_mul (y, op1->value.complex.i, op2->value.complex.r, GFC_RND_MODE);
       mpfr_add (result->value.complex.i, x, y, GFC_RND_MODE);
 
-      mpfr_clear (x);
-      mpfr_clear (y);
+      mpfr_clears (x, y, NULL);
       break;
 
     default:
@@ -858,9 +827,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       mpfr_div (result->value.complex.i, result->value.complex.i, div,
 		GFC_RND_MODE);
 
-      mpfr_clear (x);
-      mpfr_clear (y);
-      mpfr_clear (div);
+      mpfr_clears (x, y, div, NULL);
       break;
 
     default:
@@ -879,30 +846,22 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 static void
 complex_reciprocal (gfc_expr *op)
 {
-  mpfr_t mod, a, re, im;
+  mpfr_t mod, tmp;
 
   gfc_set_model (op->value.complex.r);
   mpfr_init (mod);
-  mpfr_init (a);
-  mpfr_init (re);
-  mpfr_init (im);
+  mpfr_init (tmp);
 
   mpfr_mul (mod, op->value.complex.r, op->value.complex.r, GFC_RND_MODE);
-  mpfr_mul (a, op->value.complex.i, op->value.complex.i, GFC_RND_MODE);
-  mpfr_add (mod, mod, a, GFC_RND_MODE);
+  mpfr_mul (tmp, op->value.complex.i, op->value.complex.i, GFC_RND_MODE);
+  mpfr_add (mod, mod, tmp, GFC_RND_MODE);
 
-  mpfr_div (re, op->value.complex.r, mod, GFC_RND_MODE);
+  mpfr_div (op->value.complex.r, op->value.complex.r, mod, GFC_RND_MODE);
 
-  mpfr_neg (im, op->value.complex.i, GFC_RND_MODE);
-  mpfr_div (im, im, mod, GFC_RND_MODE);
+  mpfr_neg (op->value.complex.i, op->value.complex.i, GFC_RND_MODE);
+  mpfr_div (op->value.complex.i, op->value.complex.i, mod, GFC_RND_MODE);
 
-  mpfr_set (op->value.complex.r, re, GFC_RND_MODE);
-  mpfr_set (op->value.complex.i, im, GFC_RND_MODE);
-
-  mpfr_clear (re);
-  mpfr_clear (im);
-  mpfr_clear (mod);
-  mpfr_clear (a);
+  mpfr_clears (tmp, mod, NULL);
 }
 
 
@@ -934,8 +893,8 @@ complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
   mpfr_set (x_r, base->value.complex.r, GFC_RND_MODE);
   mpfr_set (x_i, base->value.complex.i, GFC_RND_MODE);
 
-/* Macro for complex multiplication. We have to take care that
-   res_r/res_i and a_r/a_i can (and will) be the same variable.  */
+  /* Macro for complex multiplication. We have to take care that
+     res_r/res_i and a_r/a_i can (and will) be the same variable.  */
 #define CMULT(res_r,res_i,a_r,a_i,b_r,b_i) \
     mpfr_mul (re, a_r, b_r, GFC_RND_MODE), \
     mpfr_mul (tmp, a_i, b_i, GFC_RND_MODE), \
@@ -964,11 +923,7 @@ complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
 #undef res_i
 #undef CMULT
 
-  mpfr_clear (x_r);
-  mpfr_clear (x_i);
-  mpfr_clear (tmp);
-  mpfr_clear (re);
-  mpfr_clear (im);
+  mpfr_clears (x_r, x_i, tmp, re, im, NULL);
 }
 
 
