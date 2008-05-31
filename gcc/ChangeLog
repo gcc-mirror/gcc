@@ -1,3 +1,28 @@
+2008-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*fop_<mode>_comm_mixed): Macroize from
+	*fop_sf_comm_mixed and *fop_df_comm_mixed insn patterns using MODEF
+	mode iterator.
+	(*fop_<mode>_comm_sse): Macroize from *fop_sf_comm_sse and
+	*fop_df_comm_sse insn patterns using MODEF mode iterator.
+	(*fop_<mode>_comm_i387): Macroize from *fop_sf_comm_i387 and
+	*fop_df_comm_i387 insn patterns using MODEF mode iterator.
+	(*fop_<mode>_1_mixed): Macroize from *fop_sf_1_mixed and
+	*fop_df_1_mixed insn patterns using MODEF mode iterator.
+	(*fop_<mode>_1_sse): Macroize from *fop_sf_1_sse and
+	*fop_df_1_sse insn patterns using MODEF mode iterator.
+	(*fop_<mode>_1_i387): Macroize from *fop_sf_1_i387 and
+	*fop_df_1_i387 insn patterns using MODEF mode iterator.
+	(*fop_<MODEF:mode>_2_i387): Macroize from *fop_sf_2<mode>_i387 and
+	*fop_df_2<mode>_i387 insn patterns using MODEF mode iterator.
+	(*fop_<MODEF:mode>_3_i387): Macroize from *fop_sf_3<mode>_i387 and
+	*fop_df_3<mode>_i387 insn patterns using MODEF mode iterator.
+	(*fop_xf_2_i387): Rename from *fop_xf_2<mode>_i387.
+	(*fop_xf_3_i387): Rename from *fop_xf_3<mode>_i387.
+	(*fop_xf_4_i387): Use <MODE> for mode attribute.
+	(*fop_xf_5_i387): Ditto.
+	(*fop_xf_6_i387): Ditto.
+
 2008-05-30  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (build_string_literal): Avoid generating
@@ -32,8 +57,7 @@
 	* incpath.c: Use HOST_LACKS_INODE_NUMBERS conditional
 	rather than OS names to choose INO_T_EQ definition.
 	(DIRS_EQ) [!INO_T_EQ]: Don't worry about case in comparison.
-	(add_path) [!INO_T_EQ]: Use lrealpath to fill canonical_name
-	field.
+	(add_path) [!INO_T_EQ]: Use lrealpath to fill canonical_name field.
 
 2008-05-29  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -43,8 +67,7 @@
 	* config.gcc: Defined new variable, fortran_target_objs.
 	(*-*-darwin*): Set fortran_target_objs.
 	* Makefile.in: Defined new variable FORTRAN_TARGET_OBJS.
-	* configure.ac: Substitute fortran_target_objs, set
-	FORTRAN_TARGET_OBJS.
+	* configure.ac: Substitute fortran_target_objs, set FORTRAN_TARGET_OBJS.
 	* configure: Regenerated.
 
 2008-05-29  H.J. Lu  <hongjiu.lu@intel.com>
@@ -91,8 +114,8 @@
 
 	* value-prof.c (tree_ic_transform): Print counts.
 	* tree-profile.c (tree_gen_ic_func_profiler):
-	Clear __gcov_indreict_call_callee variable
-	to avoid misattribution of the profile.
+	Clear __gcov_indreict_call_callee variable to avoid misattribution
+	of the profile.
 
 2008-05-28  Rafael Espindola  <espindola@google.com>
 
@@ -125,8 +148,7 @@
 	(s390_expand_insv): Use rotate and insert selected bits
 	instruction for insv when building for z10.
 	(print_operand_address): Handle symbol ref addresses.
-	(print_operand): Output modifier 'c' added for signed byte
-	values.
+	(print_operand): Output modifier 'c' added for signed byte values.
 	(s390_encode_section_info): Mark symbol refs with
 	SYMBOL_FLAG_NOT_NATURALLY_ALIGNED if appropriate.
 
@@ -173,8 +195,7 @@
 2008-05-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (z10_cost): New cost function for z10.
-	(s390_handle_arch_option, override_options): Support
-	-march=z10 switch.
+	(s390_handle_arch_option, override_options): Support -march=z10 switch.
 	(s390_issue_rate): Adjust issue rate for z10.
 	* config/s390/s390.h (processor_type): Add PROCESSOR_2097_Z10.
 	(processor_flags): Add PF_Z10.
@@ -255,8 +276,7 @@
 2008-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36245
-	* tree-ssa-address.c (add_to_parts): Deal with non-pointer
-	bases.
+	* tree-ssa-address.c (add_to_parts): Deal with non-pointer bases.
 
 2008-05-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -284,8 +304,7 @@
 	alternatives according to the "enabled" attribute
 	* recog.h (struct recog_data): New field alternative_enabled_p.
 	(skip_alternative): New inline function.
-	* regclass.c: (record_operand_costs): Check the "enabled"
-	attribute.
+	* regclass.c: (record_operand_costs): Check the "enabled" attribute.
 	(record_reg_classes): Skip alternative according to the
 	"enabled" attribute.
 
@@ -299,15 +318,12 @@
 	* recog.c (asm_operand_ok, preprocess_constraints,
 	constrain_operands): Likewise.
 	* regclass.c (record_reg_classes): Likewise.
-	* reload.c (find_reloads, alternative_allows_const_pool_ref):
-	Likewise.
+	* reload.c (find_reloads, alternative_allows_const_pool_ref): Likewise.
 	* reload1.c (maybe_fix_stack_asms): Likewise.
-	* stmt.c (parse_output_constraint, parse_input_constraint):
-	Likewise.
+	* stmt.c (parse_output_constraint, parse_input_constraint): Likewise.
 	* recog.h: Adjust comment.
 	* genpreds.c (generic_constraint_letters): Remove 'm' constraint.
-	* genoutput.c (note_constraint): Don't emit error for 'm'
-	constraint.
+	* genoutput.c (note_constraint): Don't emit error for 'm' constraint.
 	* doc/md.texi: Add a note to description of 'm' constraint.
 	* doc/tm.texi: Document the new TARGET_MEM_CONSTRAINT macro.
 
@@ -354,7 +370,7 @@
 	(cgraph_decide_inlining_incrementally): Likewise.
 
 2008-05-26  Tristan Gingold  <gingold@adacore.com>
-            Anatoly Sokolov  <aesok@post.ru>
+	    Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.md ("call_prologue_saves"): Use hi8(gs())/lo8(gs())
 	instead of pm_lo8/pm_hi8 to makes this call working on avr6.
@@ -369,29 +385,22 @@
 2008-05-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (expr_has_constants): Declare.
-	(visit_reference_op_load): Initialize VN_INFO->has_constants
-	properly.
+	(visit_reference_op_load): Initialize VN_INFO->has_constants properly.
 
 2008-05-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/36253
-	* caller-save.c (insert_restore): Verify alignment of spill
-	space.
+	* caller-save.c (insert_restore): Verify alignment of spill space.
 	(insert_save): Likewise.
-
 	* cfgexpand.c (LOCAL_ALIGNMENT): Removed.
-
 	* defaults.h (LOCAL_ALIGNMENT): New. Provide default.
 	(STACK_SLOT_ALIGNMENT): Likewise.
-
 	* function.c (LOCAL_ALIGNMENT): Removed.
 	(get_stack_local_alignment): New.
 	(assign_stack_local): Use it.  Set alignment on stack slot.
 	(assign_stack_temp_for_type): Use get_stack_local_alignment.
-
 	* config/i386/i386.h (LOCAL_ALIGNMENT): Updated.
 	(STACK_SLOT_ALIGNMENT): New.
-
 	* config/i386/i386.c (ix86_local_alignment): Handle caller-save
 	stack slot in XFmode.
 
@@ -421,7 +430,7 @@
 
 2008-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
-	 * tree-nested.c (convert_tramp_reference) <ADDR_EXPR>: Do not
+	* tree-nested.c (convert_tramp_reference) <ADDR_EXPR>: Do not
 	build a trampoline if we don't want one.
 	* varasm.c (initializer_constant_valid_p) <ADDR_EXPR>: Do not
 	return zero for nested functions if we don't want a trampoline.
@@ -510,9 +519,8 @@
 
 2008-05-24  Richard Guenther  <rguenther@suse.de>
 
-	* tree-dfa.c (refs_may_alias_p): Re-instantiate case that
-	a scalar variable can be only accessed through a pointer
-	or a union.
+	* tree-dfa.c (refs_may_alias_p): Re-instantiate case that a scalar
+	variable can be only accessed through a pointer or a union.
 
 2008-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -542,10 +550,8 @@
 	* target.h (gcc_target): Add allocate_stack_slots_for_args.
 	* function.c (use_register_for_decl): Use
 	targetm.calls.allocate_stack_slots_for_args.
-	* target-def.h (TARGET_CALLS): Add 
-	TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.
-	* config/arm/arm.c (arm_allocate_stack_slots_for_args): 
-	New function.
+	* target-def.h (TARGET_CALLS): Add TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.
+	* config/arm/arm.c (arm_allocate_stack_slots_for_args): New function.
 	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Define.
 
 2008-05-23  Eric Botcazou  <ebotcazou@adacore.com>
@@ -560,8 +566,7 @@
 
 2008-05-23  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-operands.c (mark_difference_for_renaming): Use
-	bitmap_xor.
+	* tree-ssa-operands.c (mark_difference_for_renaming): Use bitmap_xor.
 
 2008-05-23  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
@@ -584,8 +589,8 @@
 
 	* doc/install.texi (Options specification): Document --enable-cld.
 	* doc/invoke.texi (Machine Dependent Options)
-        [i386 and x86-64 Options]: Add -mcld option.
-        (Intel 386 and AMD x86-64 Options): Document -mcld option.
+	[i386 and x86-64 Options]: Add -mcld option.
+	(Intel 386 and AMD x86-64 Options): Document -mcld option.
 
 2008-05-23  Kai Tietz  <kai.tietz@onevison.com>
 	* config/i386/i386.c (return_in_memory_32): Add ATTRIBUTE_UNUSED.
@@ -824,16 +829,15 @@
 	parameter.
 	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP_12): Add OPS parameter.
 	(MIPS_COMPARE_AND_SWAP_12_0): Delete macro.
-	(MIPS_COMPARE_AND_SWAP_12_ZERO_OP,
-	MIPS_COMPARE_AND_SWAP_12_NONZERO_OP,
+	(MIPS_COMPARE_AND_SWAP_12_ZERO_OP, MIPS_COMPARE_AND_SWAP_12_NONZERO_OP,
 	MIPS_SYNC_OP_12, MIPS_SYNC_OP_12_NOT_NOP,
 	MIPS_SYNC_OP_12_NOT_NOT, MIPS_SYNC_OLD_OP_12,
 	MIPS_SYNC_OLD_OP_12_NOT_NOP, MIPS_SYNC_OLD_OP_12_NOT_NOP_REG,
 	MIPS_SYNC_OLD_OP_12_NOT_NOT, MIPS_SYNC_OLD_OP_12_NOT_NOT_REG,
 	MIPS_SYNC_NEW_OP_12, MIPS_SYNC_NEW_OP_12_NOT_NOP,
 	MIPS_SYNC_NEW_OP_12_NOT_NOT, MIPS_SYNC_EXCHANGE_12,
-	MIPS_SYNC_EXCHANGE_12_ZERO_OP,
-	MIPS_SYNC_EXCHANGE_12_NONZERO_OP): New macros.
+	MIPS_SYNC_EXCHANGE_12_ZERO_OP, MIPS_SYNC_EXCHANGE_12_NONZERO_OP):
+	New macros.
 
 2008-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -995,8 +999,8 @@
 
 	* config/i386/i386.c (ix86_expand_vector_init_concat): New.
 	(ix86_expand_vector_init_interleave): Likewise.
-	(ix86_expand_vector_init_general): Use them.  Assert word_mode
-	== SImode when n_words == 4.
+	(ix86_expand_vector_init_general): Use them.  Assert
+	word_mode == SImode when n_words == 4.
 
 2008-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
