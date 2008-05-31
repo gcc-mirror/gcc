@@ -1,3 +1,10 @@
+2008-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/36338
+	* include/bits/stl_heap.h (sort_heap): Use __pop_heap directly.
+	(pop_heap): Slightly tweak.
+
 2008-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/bitset (bitset(const char*)): Implement DR 778
