@@ -1,3 +1,14 @@
+2008-05-31  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.md (UNSPECV_WRITE_SP_IRQ_ON): New constants.
+	(UNSPECV_WRITE_SP_IRQ_OFF): (Ditto.).
+	(movhi_sp_r_irq_off, movhi_sp_r_irq_on): New insn.
+	* config/avr/avr.c (expand_prologue, expand_epilogue): Use 
+	movhi_sp_r_irq_off and movhi_sp_r_irq_on insns for writing to the 
+	stack pointer register.
+	(output_movhi): Remove code for interrupt specific writing to the 
+	stack pointer register.
+
 2008-05-31  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34244

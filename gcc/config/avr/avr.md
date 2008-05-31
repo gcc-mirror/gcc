@@ -56,7 +56,9 @@
    (UNSPEC_CLI		3)
 
    (UNSPECV_PROLOGUE_SAVES	0)
-   (UNSPECV_EPILOGUE_RESTORES	1)])
+   (UNSPECV_EPILOGUE_RESTORES	1)
+   (UNSPECV_WRITE_SP_IRQ_ON	2)
+   (UNSPECV_WRITE_SP_IRQ_OFF	3)])
 
 (include "predicates.md")
 (include "constraints.md")
@@ -229,6 +231,28 @@
   "* return output_movhi (insn, operands, NULL);"
   [(set_attr "length" "5,2")
    (set_attr "cc" "none,none")])
+
+(define_insn "movhi_sp_r_irq_off"
+  [(set (match_operand:HI 0 "stack_register_operand" "=q")
+        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
+			    UNSPECV_WRITE_SP_IRQ_OFF))]
+  ""
+  "out __SP_H__, %B1
+	out __SP_L__, %A1"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+(define_insn "movhi_sp_r_irq_on"
+  [(set (match_operand:HI 0 "stack_register_operand" "=q")
+        (unspec_volatile:HI [(match_operand:HI 1 "register_operand"  "r")] 
+			    UNSPECV_WRITE_SP_IRQ_ON))]
+  ""
+  "cli
+        out __SP_H__, %B1
+	sei
+	out __SP_L__, %A1"
+  [(set_attr "length" "4")
+   (set_attr "cc" "none")])
 
 (define_peephole2
   [(match_scratch:QI 2 "d")

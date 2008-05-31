@@ -763,8 +763,32 @@ expand_prologue (void)
 							    GET_MODE(myfp))));
               RTX_FRAME_RELATED_P (insn) = 1;
 
-              insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
-              RTX_FRAME_RELATED_P (insn) = 1;
+	      /* Copy to stack pointer.  */
+	      if (TARGET_TINY_STACK)
+		{
+		  insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else if (TARGET_NO_INTERRUPTS 
+		       || cfun->machine->is_signal
+		       || cfun->machine->is_OS_main)
+		{
+		  insn = 
+		    emit_insn (gen_movhi_sp_r_irq_off (stack_pointer_rtx, 
+						       frame_pointer_rtx));
+		  RTX_FRAME_RELATED_P (insn) = 1;		
+		}
+	      else if (cfun->machine->is_interrupt)
+		{
+		  insn = emit_insn (gen_movhi_sp_r_irq_on (stack_pointer_rtx, 
+							   frame_pointer_rtx));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
 
 	      fp_plus_insns = get_insns ();
 	      end_sequence ();
@@ -915,7 +939,25 @@ expand_epilogue (void)
 							  GET_MODE(myfp))));
 
 	      /* Copy to stack pointer.  */
-	      emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+	      if (TARGET_TINY_STACK)
+		{
+		  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+		}
+	      else if (TARGET_NO_INTERRUPTS 
+		       || cfun->machine->is_signal)
+		{
+		  emit_insn (gen_movhi_sp_r_irq_off (stack_pointer_rtx, 
+						     frame_pointer_rtx));
+		}
+	      else if (cfun->machine->is_interrupt)
+		{
+		  emit_insn (gen_movhi_sp_r_irq_on (stack_pointer_rtx, 
+						    frame_pointer_rtx));
+		}
+	      else
+		{
+		  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+		}
 
 	      fp_plus_insns = get_insns ();
 	      end_sequence ();	      
@@ -1708,32 +1750,12 @@ output_movhi (rtx insn, rtx operands[], int *l)
 	  if (test_hard_reg_class (STACK_REG, dest))
 	    {
 	      if (TARGET_TINY_STACK)
-		{
-		  *l = 1;
-		  return AS2 (out,__SP_L__,%A1);
-		}
-              /*  Use simple load of stack pointer if no interrupts are used
-              or inside main or signal function prologue where they disabled.  */
-	      else if (TARGET_NO_INTERRUPTS 
-                        || (reload_completed 
-                            && cfun->machine->is_signal 
-                            && prologue_epilogue_contains (insn)))
-                {
-                  *l = 2;
-                  return (AS2 (out,__SP_H__,%B1) CR_TAB
-                          AS2 (out,__SP_L__,%A1));
-                }
-              /*  In interrupt prolog we know interrupts are enabled.  */
-              else if (reload_completed 
-                        && cfun->machine->is_interrupt
-                        && prologue_epilogue_contains (insn))
-                {
-                  *l = 4;
-	           return ("cli"                   CR_TAB
-                           AS2 (out,__SP_H__,%B1) CR_TAB
-                           "sei"                   CR_TAB
-                           AS2 (out,__SP_L__,%A1));
-                }
+		return *l = 1, AS2 (out,__SP_L__,%A1);
+              /* Use simple load of stack pointer if no interrupts are 
+		 used.  */
+	      else if (TARGET_NO_INTERRUPTS)
+		return *l = 2, (AS2 (out,__SP_H__,%B1) CR_TAB
+				AS2 (out,__SP_L__,%A1));
 	      *l = 5;
 	      return (AS2 (in,__tmp_reg__,__SREG__)  CR_TAB
 		      "cli"                          CR_TAB
