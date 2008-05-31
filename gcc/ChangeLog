@@ -1,3 +1,8 @@
+2008-05-31  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__WORKAROUND_RETS when appropriate.
+
 2008-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*fop_<mode>_comm_mixed): Macroize from
