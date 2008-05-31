@@ -1,6 +1,6 @@
 // Heap implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -285,7 +285,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
-      std::__pop_heap(__first, __last - 1, __last - 1);
+      --__last;
+      std::__pop_heap(__first, __last, __last);
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
@@ -355,7 +356,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
-      std::__pop_heap(__first, __last - 1, __last - 1, __comp);
+      --__last;
+      std::__pop_heap(__first, __last, __last, __comp);
     }
 
   /**
@@ -458,7 +460,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_heap(__first, __last);
 
       while (__last - __first > 1)
-	std::pop_heap(__first, _RandomAccessIterator(__last--));
+	{
+	  --__last;
+	  std::__pop_heap(__first, __last, __last);
+	}
     }
 
   /**
@@ -483,7 +488,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       while (__last - __first > 1)
-	std::pop_heap(__first, _RandomAccessIterator(__last--), __comp);
+	{
+	  --__last;
+	  std::__pop_heap(__first, __last, __last, __comp);
+	}
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
