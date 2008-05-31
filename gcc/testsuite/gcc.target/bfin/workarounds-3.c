@@ -14,6 +14,10 @@
 #error "__WORKAROUNDS_ENABLED is defined"
 #endif
 
+#ifdef __WORKAROUND_RETS
+#error "__WORKAROUND_RETS is defined"
+#endif
+
 #ifdef __WORKAROUND_SPECULATIVE_LOADS
 #error "__WORKAROUND_SPECULATIVE_LOADS is defined"
 #endif

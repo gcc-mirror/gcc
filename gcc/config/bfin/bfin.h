@@ -133,6 +133,8 @@ extern int target_flags;
 	builtin_define ("__WORKAROUND_SPECULATIVE_LOADS");		\
       if (ENABLE_WA_SPECULATIVE_SYNCS)					\
 	builtin_define ("__WORKAROUND_SPECULATIVE_SYNCS");		\
+      if (ENABLE_WA_RETS)						\
+	builtin_define ("__WORKAROUND_RETS");		\
 						\
       if (TARGET_FDPIC)				\
 	{					\

@@ -1,3 +1,36 @@
+2008-05-30  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* gcc.target/bfin/mcpu-default.c: Adjust for recent changes: default
+	CPU has all workarounds, and no longer explicitly sets bf532 as CPU
+	type.
+
+	* gcc.target/bfin/mcpu-bf531.c: Adjust for WORKAROUND_RETS.
+	* gcc.target/bfin/mcpu-bf532.c: Likewise.
+	* gcc.target/bfin/mcpu-bf533.c: Likewise.
+	* gcc.target/bfin/mcpu-bf534.c: Likewise.
+	* gcc.target/bfin/mcpu-bf536.c: Likewise.
+	* gcc.target/bfin/mcpu-bf537.c: Likewise.
+	* gcc.target/bfin/mcpu-bf548.c: Likewise.
+	* gcc.target/bfin/mcpu-bf549.c: Likewise.
+	* gcc.target/bfin/mcpu-bf561.c: Likewise.
+	* gcc.target/bfin/mcpu-bf523.c: Likewise.
+	* gcc.target/bfin/mcpu-bf524.c: Likewise.
+	* gcc.target/bfin/mcpu-bf526.c: Likewise.
+	* gcc.target/bfin/mcpu-bf522.c: Likewise.
+	* gcc.target/bfin/mcpu-bf525.c: Likewise.
+	* gcc.target/bfin/mcpu-bf527.c: Likewise.
+	* gcc.target/bfin/mcpu-bf538.c: Likewise.
+	* gcc.target/bfin/mcpu-bf539.c: Likewise.
+	* gcc.target/bfin/mcpu-bf542.c: Likewise.
+	* gcc.target/bfin/mcpu-bf544.c: Likewise.
+	* gcc.target/bfin/mcpu-default.c: Likewise.
+	* gcc.target/bfin/workarounds-any.c: Likewise.
+	* gcc.target/bfin/workarounds-none.c: Likewise.
+	* gcc.target/bfin/workarounds-1.c: Likewise.
+	* gcc.target/bfin/workarounds-2.c: Likewise.
+	* gcc.target/bfin/workarounds-3.c: Likewise.
+	* gcc.target/bfin/workarounds-4.c: Likewise.
+
 2008-05-30  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/36320:

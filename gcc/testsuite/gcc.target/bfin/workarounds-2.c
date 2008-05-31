@@ -10,8 +10,12 @@
 #error "__SILICON_REVISION__ is not 0x0003"
 #endif
 
-#ifdef __WORKAROUNDS_ENABLED
-#error "__WORKAROUNDS_ENABLED is defined"
+#ifndef __WORKAROUNDS_ENABLED
+#error "__WORKAROUNDS_ENABLED is not defined"
+#endif
+
+#ifndef __WORKAROUND_RETS
+#error "__WORKAROUND_RETS is not defined"
 #endif
 
 #ifdef __WORKAROUND_SPECULATIVE_LOADS
