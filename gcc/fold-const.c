@@ -14074,11 +14074,6 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 
   switch (TREE_CODE (t))
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonnegative_p (t);
-
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
 
@@ -14563,11 +14558,6 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
   bool sub_strict_overflow_p;
   switch (TREE_CODE (t))
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonzero_p (t);
-
     case INTEGER_CST:
       return !integer_zerop (t);
 

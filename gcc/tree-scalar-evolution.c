@@ -2645,16 +2645,6 @@ scev_initialize (void)
     }
 }
 
-/* Clean the scalar evolution analysis cache, but preserve the cached
-   numbers of iterations for the loops.  */
-
-void
-scev_reset_except_niters (void)
-{
-  if (scalar_evolution_info)
-    htab_empty (scalar_evolution_info);
-}
-
 /* Cleans up the information cached by the scalar evolutions analysis.  */
 
 void
@@ -2666,8 +2656,7 @@ scev_reset (void)
   if (!scalar_evolution_info || !current_loops)
     return;
 
-  scev_reset_except_niters ();
-
+  htab_empty (scalar_evolution_info);
   FOR_EACH_LOOP (li, loop, 0)
     {
       loop->nb_iterations = NULL_TREE;
