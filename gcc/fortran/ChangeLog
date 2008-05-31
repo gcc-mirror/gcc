@@ -1,3 +1,53 @@
+2008-05-31  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_arith_init_1): Remove now unused r and c variables.
+	Cleanup numerical inquiry function initialization.
+	(gfc_arith_done_1): Replace multiple mpfr_clear() invocations with
+	a single mpfr_clears().
+	(gfc_check_real_range): Re-arrange logic to eliminate multiple
+	unnecessary branching and assignments.
+	(gfc_arith_times): Use mpfr_clears() in preference to multiple
+	mpfr_clear().
+	(gfc_arith_divide): Ditto.
+	(complex_reciprocal): Eliminate now unused variables a, re, im.
+	Cleanup the mpfr abuse.  Use mpfr_clears() in preference to
+	multiple mpfr_clear().
+	(complex_pow): Fix comment whitespace.  Use mpfr_clears() in
+	preference to multiple mpfr_clear().
+	* simplify.c (gfc_simplify_and): Remove blank line.
+	(gfc_simplify_atan2): Move error checking earlier to eliminate
+	a now unnecessay gfc_free_expr().
+	(gfc_simplify_bessel_j0): Remove unnecessary gfc_set_model_kind().
+	(gfc_simplify_bessel_j1): Ditto.
+	(gfc_simplify_bessel_jn): Ditto.
+ 	(gfc_simplify_bessel_y0): Ditto.
+	(gfc_simplify_bessel_y1): Ditto.
+	(gfc_simplify_bessel_yn): Ditto. 
+	(only_convert_cmplx_boz): Eliminate unnecessary duplicate code, and
+	combine nested if statement rational expressions.
+	(gfc_simplify_cos): Use mpfr_clears() in preference to multiple
+	mpfr_clear().
+	(gfc_simplify_exp): Ditto.
+	(gfc_simplify_fraction): Move gfc_set_model_kind() to after the
+	special case of 0.  Use mpfr_clears() in preference to multiple
+	mpfr_clear().
+	(gfc_simplify_gamma): Eliminate unnecessary gfc_set_model_kind().
+ 	(gfc_simplify_lgamma): Ditto.
+	(gfc_simplify_log10): Ditto.
+	(gfc_simplify_log): Move gfc_set_model_kind () inside switch
+	statement. Use mpfr_clears() in preference to multiple mpfr_clear().
+	(gfc_simplify_mod):  Eliminate now unused variables quot, iquot,
+	and term.  Simplify the mpfr magic.
+	(gfc_simplify_modulo): Ditto.
+	(gfc_simplify_nearest): Eliminate unnecessary gfc_set_model_kind().
+	(gfc_simplify_scale): Use mpfr_clears() in preference to multiple
+	mpfr_clear().
+	(gfc_simplify_sin): Ditto
+	(gfc_simplify_sqrt): Ditto
+	(gfc_simplify_set_exponent):  Move gfc_set_model_kind() to after the
+	special case of 0.  Use mpfr_clears() in preference to multiple
+	mpfr_clear().
+
 2008-05-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR target/36348

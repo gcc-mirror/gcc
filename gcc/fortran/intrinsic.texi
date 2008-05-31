@@ -1005,16 +1005,29 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+<<<<<<< .mine
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{J} @tab The type shall be the same as the type of @var{I}.
+=======
 @item @var{I} @tab The type shall be either a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{J} @tab The type shall be the same as the type of @var{I}.
+>>>>>>> .r136053
 @end multitable
 
 @item @emph{Return value}:
+<<<<<<< .mine
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
+=======
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
+>>>>>>> .r136053
 
 @item @emph{Example}:
 @smallexample
@@ -8310,16 +8323,29 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+<<<<<<< .mine
+@item @var{X} @tab The type shall be either a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{Y} @tab The type shall be the same as the type of @var{X}.
+=======
 @item @var{X} @tab The type shall be either a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{Y} @tab The type shall be the same as the type of @var{X}.
+>>>>>>> .r136053
 @end multitable
 
 @item @emph{Return value}:
+<<<<<<< .mine
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
+=======
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
+>>>>>>> .r136053
 
 @item @emph{Example}:
 @smallexample
@@ -11055,16 +11081,29 @@ Function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+<<<<<<< .mine
+@item @var{X} @tab The type shall be either  a scalar @code{INTEGER(*)}
+type or a scalar @code{LOGICAL} type.
+@item @var{Y} @tab The type shall be the same as the type of @var{I}.
+=======
 @item @var{X} @tab The type shall be either  a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
 @item @var{Y} @tab The type shall be the same as the type of @var{I}.
+>>>>>>> .r136053
 @end multitable
 
 @item @emph{Return value}:
+<<<<<<< .mine
+The return type is either a scalar @code{INTEGER(*)} or a scalar
+@code{LOGICAL}.  If the kind type parameters differ, then the
+smaller kind type is implicitly converted to larger kind, and the 
+return has the larger kind.
+=======
 The return type is either a scalar @code{INTEGER} or a scalar
 @code{LOGICAL}.  If the kind type parameters differ, then the
 smaller kind type is implicitly converted to larger kind, and the 
 return has the larger kind.
+>>>>>>> .r136053
 
 @item @emph{Example}:
 @smallexample
