@@ -257,6 +257,7 @@ extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
 extern enum mips_loadgp_style mips_current_loadgp_style (void);
 extern void mips_expand_prologue (void);
+extern void mips_expand_before_return (void);
 extern void mips_expand_epilogue (bool);
 extern bool mips_can_use_return_insn (void);
 extern rtx mips_function_value (const_tree, enum machine_mode);

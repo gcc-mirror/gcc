@@ -5739,7 +5739,12 @@
 ;; Trivial return.  Make it look like a normal return insn as that
 ;; allows jump optimizations to work better.
 
-(define_insn "return"
+(define_expand "return"
+  [(return)]
+  "mips_can_use_return_insn ()"
+  { mips_expand_before_return (); })
+
+(define_insn "*return"
   [(return)]
   "mips_can_use_return_insn ()"
   "%*j\t$31%/"

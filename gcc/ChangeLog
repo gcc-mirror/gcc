@@ -1,5 +1,13 @@
 2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips-protos.h (mips_expand_before_return): Declare.
+	* config/mips/mips.c (mips_expand_before_return): New function.
+	(mips_expand_epilogue): Call it.
+	* config/mips/mips.md (return): Turn into a define_expand.
+	(*return): New insn.
+
+2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (emit_clobber, gen_clobber, emit_use, gen_use): Declare.
 	* emit-rtl.c (emit_clobber, gen_clobber, emit_use, gen_use): New
 	functions.  Do not emit uses and clobbers of CONCATs; individually

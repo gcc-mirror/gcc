@@ -8633,6 +8633,24 @@ mips_restore_reg (rtx reg, rtx mem)
     mips_emit_move (reg, mem);
 }
 
+/* Emit any instructions needed before a return.  */
+
+void
+mips_expand_before_return (void)
+{
+  /* When using a call-clobbered gp, we start out with unified call
+     insns that include instructions to restore the gp.  We then split
+     these unified calls after reload.  These split calls explicitly
+     clobber gp, so there is no need to define
+     PIC_OFFSET_TABLE_REG_CALL_CLOBBERED.
+
+     For consistency, we should also insert an explicit clobber of $28
+     before return insns, so that the post-reload optimizers know that
+     the register is not live on exit.  */
+  if (TARGET_CALL_CLOBBERED_GP)
+    emit_clobber (pic_offset_table_rtx);
+}
+
 /* Expand an "epilogue" or "sibcall_epilogue" pattern; SIBCALL_P
    says which.  */
 
@@ -8775,6 +8793,7 @@ mips_expand_epilogue (bool sibcall_p)
 	regno = GP_REG_FIRST + 7;
       else
 	regno = GP_REG_FIRST + 31;
+      mips_expand_before_return ();
       emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, regno)));
     }
 }
