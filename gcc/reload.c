@@ -4083,7 +4083,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		  PUT_MODE (emit_insn_before (gen_rtx_USE (VOIDmode, operand),
 					      insn), QImode);
 		if (modified[i] != RELOAD_READ)
-		  emit_insn_after (gen_rtx_CLOBBER (VOIDmode, operand), insn);
+		  emit_insn_after (gen_clobber (operand), insn);
 	      }
 	  }
       }

@@ -3002,7 +3002,7 @@ cris_expand_prologue (void)
 	 the GOT register load as maybe-dead.  To see this, remove the
 	 line below and try libsupc++/vec.cc or a trivial
 	 "static void y (); void x () {try {y ();} catch (...) {}}".  */
-      emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+      emit_use (pic_offset_table_rtx);
     }
 
   if (cris_max_stackframe && framesize > cris_max_stackframe)

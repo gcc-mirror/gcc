@@ -680,7 +680,7 @@ expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* Prevent any attempt to delete the setting of ZERO_REG!  */
-      emit_insn (gen_rtx_USE (VOIDmode, zero_reg_rtx));
+      emit_use (zero_reg_rtx);
     }
   if (minimize && (frame_pointer_needed 
 		   || (AVR_2_BYTE_PC && live_seq > 6)

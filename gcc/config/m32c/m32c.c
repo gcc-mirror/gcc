@@ -4079,7 +4079,7 @@ m32c_emit_eh_epilogue (rtx ret_addr)
      (fudged), and return (fudged).  This is actually easier to do in
      assembler, so punt to libgcc.  */
   emit_jump_insn (gen_eh_epilogue (ret_addr, cfun->machine->eh_stack_adjust));
-  /*  emit_insn (gen_rtx_CLOBBER (HImode, gen_rtx_REG (HImode, R0L_REGNO))); */
+  /*  emit_clobber (gen_rtx_REG (HImode, R0L_REGNO)); */
   emit_barrier ();
 }
 

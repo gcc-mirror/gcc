@@ -1906,8 +1906,7 @@ spu_expand_epilogue (bool sibcall_p)
 
   if (!sibcall_p)
     {
-      emit_insn (gen_rtx_USE
-		 (VOIDmode, gen_rtx_REG (SImode, LINK_REGISTER_REGNUM)));
+      emit_use (gen_rtx_REG (SImode, LINK_REGISTER_REGNUM));
       jump = emit_jump_insn (gen__return ());
       emit_barrier_after (jump);
     }

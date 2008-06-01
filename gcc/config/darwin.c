@@ -555,7 +555,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	  emit_insn (gen_rtx_SET (VOIDmode, reg,
 				  gen_rtx_LO_SUM (Pmode, reg,
 						  copy_rtx (offset))));
-	  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+	  emit_use (pic_offset_table_rtx);
 
 	  orig = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, reg);
 #endif
@@ -756,9 +756,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
 	      pic_ref = reg;
 #else
-	      emit_insn (gen_rtx_USE (VOIDmode,
-				      gen_rtx_REG (Pmode,
-						   PIC_OFFSET_TABLE_REGNUM)));
+	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
 
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
 				      gen_rtx_HIGH (Pmode,
@@ -782,9 +780,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		  pic = reg;
 		}
 #if 0
-	      emit_insn (gen_rtx_USE (VOIDmode,
-				      gen_rtx_REG (Pmode,
-						   PIC_OFFSET_TABLE_REGNUM)));
+	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
 #endif
 
 	      if (reload_in_progress)
@@ -857,8 +853,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		      pic = reg;
 		    }
 #if 0
-		  emit_insn (gen_rtx_USE (VOIDmode,
-					  pic_offset_table_rtx));
+		  emit_use (pic_offset_table_rtx);
 #endif
 		  if (reload_in_progress)
 		    df_set_regs_ever_live (REGNO (pic), true);

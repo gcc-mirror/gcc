@@ -7104,8 +7104,8 @@
 		  adjust_address (result, TARGET_ARCH64 ? TFmode : DFmode, 8));
 
   /* Put USE insns before the return.  */
-  emit_insn (gen_rtx_USE (VOIDmode, valreg1));
-  emit_insn (gen_rtx_USE (VOIDmode, valreg2));
+  emit_use (valreg1);
+  emit_use (valreg2);
 
   /* Construct the return.  */
   expand_naked_return ();
@@ -7191,8 +7191,8 @@
      and reload the appropriate value into %fp.  */
   emit_move_insn (hard_frame_pointer_rtx, stack);
 
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
+  emit_use (stack_pointer_rtx);
+  emit_use (static_chain_rtx);
 
   /* ??? The V9-specific version was disabled in rev 1.65.  */
   emit_jump_insn (gen_goto_handler_and_restore (labreg));

@@ -3316,14 +3316,13 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	     this point.  */
 	  *recog_data.operand_loc[i] = 0;
 
-	/* If an output operand changed from a REG to a MEM and INSN is an
-	   insn, write a CLOBBER insn.  */
+	  /* If an output operand changed from a REG to a MEM and INSN is an
+	     insn, write a CLOBBER insn.  */
 	  if (recog_data.operand_type[i] != OP_IN
 	      && REG_P (orig_operand[i])
 	      && MEM_P (substed_operand[i])
 	      && replace)
-	    emit_insn_after (gen_rtx_CLOBBER (VOIDmode, orig_operand[i]),
-			     insn);
+	    emit_insn_after (gen_clobber (orig_operand[i]), insn);
 	}
     }
 

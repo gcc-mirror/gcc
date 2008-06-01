@@ -4548,6 +4548,62 @@ emit_note (enum insn_note kind)
   return note;
 }
 
+/* Emit a clobber of lvalue X.  */
+
+rtx
+emit_clobber (rtx x)
+{
+  /* CONCATs should not appear in the insn stream.  */
+  if (GET_CODE (x) == CONCAT)
+    {
+      emit_clobber (XEXP (x, 0));
+      return emit_clobber (XEXP (x, 1));
+    }
+  return emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+}
+
+/* Return a sequence of insns to clobber lvalue X.  */
+
+rtx
+gen_clobber (rtx x)
+{
+  rtx seq;
+
+  start_sequence ();
+  emit_clobber (x);
+  seq = get_insns ();
+  end_sequence ();
+  return seq;
+}
+
+/* Emit a use of rvalue X.  */
+
+rtx
+emit_use (rtx x)
+{
+  /* CONCATs should not appear in the insn stream.  */
+  if (GET_CODE (x) == CONCAT)
+    {
+      emit_use (XEXP (x, 0));
+      return emit_use (XEXP (x, 1));
+    }
+  return emit_insn (gen_rtx_USE (VOIDmode, x));
+}
+
+/* Return a sequence of insns to use rvalue X.  */
+
+rtx
+gen_use (rtx x)
+{
+  rtx seq;
+
+  start_sequence ();
+  emit_use (x);
+  seq = get_insns ();
+  end_sequence ();
+  return seq;
+}
+
 /* Cause next statement to emit a line note even if the line number
    has not changed.  */
 

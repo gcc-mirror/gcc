@@ -111,7 +111,7 @@
 /* The GNU/Linux profiler clobbers the link register.  Make sure the
    prologue knows to save it.  */
 #define PROFILE_HOOK(X)						\
-  emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)))
+  emit_clobber (gen_rtx_REG (SImode, LR_REGNUM))
 
 /* The GNU/Linux profiler needs a frame pointer.  */
 #define SUBTARGET_FRAME_POINTER_REQUIRED crtl->profile

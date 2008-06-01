@@ -1349,7 +1349,7 @@ m32r_reload_lr (rtx sp, int size)
       emit_insn (gen_movsi (lr, gen_frame_mem (Pmode, tmp)));
     }
 
-  emit_insn (gen_rtx_USE (VOIDmode, lr));
+  emit_use (lr);
 }
 
 void
@@ -1361,7 +1361,7 @@ m32r_load_pic_register (void)
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
-  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+  emit_use (pic_offset_table_rtx);
 }
 
 /* Expand the m32r prologue as a series of insns.  */

@@ -3693,7 +3693,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
-  emit_insn (gen_rtx_USE (VOIDmode, pic_reg));
+  emit_use (pic_reg);
 }
 
 
@@ -17064,10 +17064,10 @@ thumb1_expand_epilogue (void)
      so that flow2 will get register lifetimes correct.  */
   for (regno = 0; regno < 13; regno++)
     if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
-      emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, regno)));
+      emit_clobber (gen_rtx_REG (SImode, regno));
 
   if (! df_regs_ever_live_p (LR_REGNUM))
-    emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)));
+    emit_use (gen_rtx_REG (SImode, LR_REGNUM));
 }
 
 static void
@@ -18329,7 +18329,7 @@ thumb_set_return_address (rtx source, rtx scratch)
   rtx addr;
   unsigned long mask;
 
-  emit_insn (gen_rtx_USE (VOIDmode, source));
+  emit_use (source);
 
   offsets = arm_get_frame_offsets ();
   mask = offsets->saved_regs_mask;

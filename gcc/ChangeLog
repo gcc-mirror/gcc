@@ -1,3 +1,68 @@
+2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (emit_clobber, gen_clobber, emit_use, gen_use): Declare.
+	* emit-rtl.c (emit_clobber, gen_clobber, emit_use, gen_use): New
+	functions.  Do not emit uses and clobbers of CONCATs; individually
+	use and clobber their operands.
+	* builtins.c (expand_builtin_setjmp_receiver): Use emit_clobber,
+	gen_clobber, emit_use and gen_use.
+	(expand_builtin_longjmp, expand_builtin_nonlocal_goto): Likewise.
+	(expand_builtin_return): Likewise.
+	* cfgbuild.c (count_basic_blocks): Likewise.
+	* cfgrtl.c (rtl_flow_call_edges_add): Likewise.
+	* explow.c (emit_stack_restore): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	* expr.c (convert_move, emit_move_complex_parts): Likewise.
+	(emit_move_multi_word, store_constructor): Likewise.
+	* function.c (do_clobber_return_reg, do_use_return_reg): Likewise.
+	(thread_prologue_and_epilogue_insns): Likewise.
+	* lower-subreg.c (resolve_simple_move): Likewise.
+	* optabs.c (widen_operand, expand_binop): Likewise.
+	(expand_doubleword_bswap, emit_no_conflict_block): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (eliminate_regs_in_insn): Likewise.
+	* stmt.c (expand_nl_goto_receiver): Likewise.
+	* config/alpha/alpha.md (builtin_longjmp): Likewise.
+	* config/arc/arc.md (*movdi_insn, *movdf_insn): Likewise.
+	* config/arm/arm.c (arm_load_pic_register): Likewise.
+	(thumb1_expand_epilogue, thumb_set_return_address): Likewise.
+	* config/arm/arm.md (untyped_return): Likewise.
+	* config/arm/linux-elf.h (PROFILE_HOOK): Likewise.
+	* config/avr/avr.c (expand_prologue): Likewise.
+	* config/bfin/bfin.c (do_unlink): Likewise.
+	* config/bfin/bfin.md (<optab>di3, adddi3, subdi3): Likewise.
+	* config/cris/cris.c (cris_expand_prologue): Likewise.
+	* config/darwin.c (machopic_indirect_data_reference): Likewise.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/frv/frv.c (frv_frame_access, frv_expand_epilogue): Likewise.
+	(frv_ifcvt_modify_insn, frv_expand_mdpackh_builtin): Likewise.
+	* config/i386/i386.c (ix86_expand_vector_move_misalign): Likewise.
+	(ix86_expand_convert_uns_didf_sse): Likewise.
+	(ix86_expand_vector_init_general): Likewise.
+	* config/ia64/ia64.md (eh_epilogue): Likewise.
+	* config/iq2000/iq2000.c (iq2000_expand_epilogue): Likewise.
+	* config/m32c/m32c.c (m32c_emit_eh_epilogue): Likewise.
+	* config/m32r/m32r.c (m32r_reload_lr): Likewise.
+	(config/iq2000/iq2000.c): Likewise.
+	* config/mips/mips.md (fixuns_truncdfsi2): Likewise.
+	(fixuns_truncdfdi2, fixuns_truncsfsi2, fixuns_truncsfdi2): Likewise.
+	(builtin_longjmp): Likewise.
+	* config/mn10300/mn10300.md (call, call_value): Likewise.
+	* config/pa/pa.md (nonlocal_goto, nonlocal_longjmp): Likewise.
+	* config/pdp11/pdp11.md (abshi2): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Likewise.
+	* config/s390/s390.c (s390_emit_prologue): Likewise.
+	* config/s390/s390.md (movmem_long, setmem_long): Likewise.
+	(cmpmem_long, extendsidi2, zero_extendsidi2, udivmoddi4): Likewise.
+	(builtin_setjmp_receiver, restore_stack_nonlocal): Likewise.
+	* config/sh/sh.c (prepare_move_operands): Likewise.
+	(output_stack_adjust, sh_expand_epilogue): Likewise.
+	(sh_set_return_address, sh_expand_t_scc): Likewise.
+	* config/sparc/sparc.c (load_pic_register): Likewise.
+	* config/sparc/sparc.md (untyped_return, nonlocal_goto): Likewise.
+	* config/spu/spu.c (spu_expand_epilogue): Likewise.
+	* config/v850/v850.c (expand_epilogue): Likewise.
+
 2008-05-31  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.md (UNSPECV_WRITE_SP_IRQ_ON): New constants.
