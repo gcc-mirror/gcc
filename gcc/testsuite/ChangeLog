@@ -1,5 +1,9 @@
 2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.c-torture/execute/ieee/ieee.exp: Load c-torture.exp.
+
+2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/fpr-moves-7.c: New test.
 	* gcc.target/mips/fpr-moves-8.c: New test.
 
