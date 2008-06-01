@@ -1,3 +1,7 @@
+2008-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* intrinsic.texi: Revert wrong commit.
+
 2008-05-31  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.c (gfc_arith_init_1): Remove now unused r and c variables.
