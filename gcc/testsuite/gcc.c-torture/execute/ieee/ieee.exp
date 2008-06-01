@@ -22,6 +22,7 @@
 # Load support procs.
 load_lib gcc-dg.exp
 load_lib torture-options.exp
+load_lib c-torture.exp
 
 # These tests come from Torbjorn Granlund's (tege@cygnus.com)
 # C torture test suite, and other contributors.
