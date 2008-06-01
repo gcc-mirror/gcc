@@ -1,5 +1,20 @@
 2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_valid_offset_p): New function.
+	(mips_valid_lo_sum_p): Likewise.
+	(mips_classify_address): Use them.
+	(mips_force_address): New function.
+	(mips_legitimize_address): Use it.
+	* config/mips/mips.md (MOVE128): New mode iterator.
+	(movtf): Require TARGET_64BIT.  Remove empty strings.
+	(*movtf_internal): Rename to...
+	(*movtf): ...this and require !TARGET_MIPS16.  Use "m" instead
+	of "R" and use {,fp}{load,store} attributes instead of "multi".
+	Use a separate define_split.
+	(*movtf_mips16): New pattern.
+
+2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips-protos.h (mips_expand_before_return): Declare.
 	* config/mips/mips.c (mips_expand_before_return): New function.
 	(mips_expand_epilogue): Call it.
