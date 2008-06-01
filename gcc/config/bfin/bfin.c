@@ -1009,12 +1009,12 @@ do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all, int epilogue_p)
 	{
 	  rtx fpreg = gen_rtx_REG (Pmode, REG_FP);
 	  emit_move_insn (fpreg, postinc);
-	  emit_insn (gen_rtx_USE (VOIDmode, fpreg));
+	  emit_use (fpreg);
 	}
       if (! current_function_is_leaf)
 	{
 	  emit_move_insn (bfin_rets_rtx, postinc);
-	  emit_insn (gen_rtx_USE (VOIDmode, bfin_rets_rtx));
+	  emit_use (bfin_rets_rtx);
 	}
     }
 }

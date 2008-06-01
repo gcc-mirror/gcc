@@ -329,7 +329,7 @@ widen_operand (rtx op, enum machine_mode mode, enum machine_mode oldmode,
      part to OP.  */
 
   result = gen_reg_rtx (mode);
-  emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
+  emit_clobber (result);
   emit_move_insn (gen_lowpart (GET_MODE (op), result), op);
   return result;
 }
@@ -1998,7 +1998,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       /* Indicate for flow that the entire target reg is being set.  */
       if (REG_P (target))
-	emit_insn (gen_rtx_CLOBBER (VOIDmode, xtarget));
+	emit_clobber (xtarget);
 
       /* Do the actual arithmetic.  */
       for (i = 0; i < nwords; i++)
@@ -2755,7 +2755,7 @@ expand_doubleword_bswap (enum machine_mode mode, rtx op, rtx target)
   if (target == 0)
     target = gen_reg_rtx (mode);
   if (REG_P (target))
-    emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+    emit_clobber (target);
   emit_move_insn (operand_subword (target, 0, 1, mode), t0);
   emit_move_insn (operand_subword (target, 1, 1, mode), t1);
 

@@ -2912,7 +2912,7 @@
 
       /* Allow REG_NOTES to be set on last insn (labels don't have enough
 	 fields, and can't be used for REG_NOTES anyway).  */
-      emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+      emit_use (stack_pointer_rtx);
       DONE;
     }
 })
@@ -2955,7 +2955,7 @@
 
   /* Allow REG_NOTES to be set on last insn (labels don't have enough
      fields, and can't be used for REG_NOTES anyway).  */
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (stack_pointer_rtx);
   DONE;
 })
 
@@ -2997,7 +2997,7 @@
 
   /* Allow REG_NOTES to be set on last insn (labels don't have enough
      fields, and can't be used for REG_NOTES anyway).  */
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (stack_pointer_rtx);
   DONE;
 })
 
@@ -3039,7 +3039,7 @@
 
   /* Allow REG_NOTES to be set on last insn (labels don't have enough
      fields, and can't be used for REG_NOTES anyway).  */
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (stack_pointer_rtx);
   DONE;
 })
 
@@ -5685,9 +5685,9 @@
   mips_emit_move (pv, lab);
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
   mips_emit_move (gp, gpv);
-  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, gp));
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
+  emit_use (gp);
   emit_indirect_jump (pv);
   DONE;
 })

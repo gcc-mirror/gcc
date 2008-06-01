@@ -7797,7 +7797,7 @@ s390_emit_prologue (void)
       if (TARGET_BACKCHAIN && flag_non_call_exceptions)
 	{
 	  addr = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode, addr));
+	  emit_clobber (addr);
 	}
     }
 

@@ -1593,7 +1593,7 @@
 ;
 ;  /* allow REG_NOTES to be set on last insn (labels don't have enough
 ;     fields, and can't be used for REG_NOTES anyway).  */
-;  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+;  emit_use (stack_pointer_rtx);
 ;  DONE;
 ;}")
 

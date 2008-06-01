@@ -170,7 +170,7 @@ count_basic_blocks (const_rtx f)
      check for the edge case of do-nothing functions with no basic blocks.  */
   if (count == NUM_FIXED_BLOCKS)
     {
-      emit_insn (gen_rtx_USE (VOIDmode, const0_rtx));
+      emit_use (const0_rtx);
       count = NUM_FIXED_BLOCKS + 1;
     }
 

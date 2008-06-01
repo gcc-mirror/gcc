@@ -1682,7 +1682,7 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 	}
       else
 	emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
-      emit_insn (gen_rtx_USE (VOIDmode, reg));
+      emit_use (reg);
     }
   else
     {
@@ -1946,7 +1946,7 @@ frv_expand_epilogue (bool emit_return)
   if (frame_pointer_needed)
     {
       emit_insn (gen_rtx_SET (VOIDmode, fp, gen_rtx_MEM (Pmode, fp)));
-      emit_insn (gen_rtx_USE (VOIDmode, fp));
+      emit_use (fp);
     }
 
   /* Deallocate the stack frame.  */
@@ -1972,7 +1972,7 @@ frv_expand_epilogue (bool emit_return)
 	  emit_move_insn (lr, return_addr);
 	}
 
-      emit_insn (gen_rtx_USE (VOIDmode, lr));
+      emit_use (lr);
     }
 }
 
@@ -5999,7 +5999,7 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
 		goto fail;
 	    }
 
-	  frv_ifcvt_add_insn (gen_rtx_USE (VOIDmode, dest), insn, FALSE);
+	  frv_ifcvt_add_insn (gen_use (dest), insn, FALSE);
 	}
 
       /* If we are just loading a constant created for a nested conditional
@@ -9099,8 +9099,8 @@ frv_expand_mdpackh_builtin (tree call, rtx target)
 
   /* The high half of each word is not explicitly initialized, so indicate
      that the input operands are not live before this point.  */
-  emit_insn (gen_rtx_CLOBBER (DImode, op0));
-  emit_insn (gen_rtx_CLOBBER (DImode, op1));
+  emit_clobber (op0);
+  emit_clobber (op1);
 
   /* Move each argument into the low half of its associated input word.  */
   emit_move_insn (simplify_gen_subreg (HImode, op0, DImode, 2), arg1);

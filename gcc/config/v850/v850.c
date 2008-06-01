@@ -1909,7 +1909,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 					   plus_constant (stack_pointer_rtx,
 							  offset)));
 
-	      emit_insn (gen_rtx_USE (VOIDmode, restore_regs[i]));
+	      emit_use (restore_regs[i]);
 	      offset -= 4;
 	    }
 

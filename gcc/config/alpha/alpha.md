@@ -6948,8 +6948,8 @@
   emit_move_insn (hard_frame_pointer_rtx, fp);
   emit_move_insn (pv, lab);
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
-  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
 
   /* Load the label we are jumping through into $27 so that we know
      where to look for it when we get back to setjmp's function for

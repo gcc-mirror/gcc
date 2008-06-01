@@ -8785,8 +8785,7 @@
 
     /* Emit USE insns before the return.  */
     for (i = 0; i < XVECLEN (operands[1], 0); i++)
-      emit_insn (gen_rtx_USE (VOIDmode,
-			      SET_DEST (XVECEXP (operands[1], 0, i))));
+      emit_use (SET_DEST (XVECEXP (operands[1], 0, i)));
 
     /* Construct the return.  */
     expand_naked_return ();

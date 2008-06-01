@@ -7432,12 +7432,8 @@
 
   lab = copy_to_reg (lab);
 
-  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-			      gen_rtx_MEM (BLKmode,
-					   gen_rtx_SCRATCH (VOIDmode))));
-  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-			      gen_rtx_MEM (BLKmode,
-					   hard_frame_pointer_rtx)));
+  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  As a
@@ -7449,8 +7445,8 @@
 
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
-  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
 
   /* Nonlocal goto jumps are only used between functions in the same
      translation unit.  Thus, we can avoid the extra overhead of an
@@ -8892,12 +8888,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 			   (POINTER_SIZE * 2) / BITS_PER_UNIT));
   rtx pv = gen_rtx_REG (Pmode, 1);
 
-  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-			      gen_rtx_MEM (BLKmode,
-					   gen_rtx_SCRATCH (VOIDmode))));
-  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-			      gen_rtx_MEM (BLKmode,
-					   hard_frame_pointer_rtx)));
+  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  We need
@@ -8913,8 +8905,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
   /* This bit is the same as expand_builtin_longjmp.  */
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
-  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
 
   /* Load the label we are jumping through into r1 so that we know
      where to look for it when we get back to setjmp's function for

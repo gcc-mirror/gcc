@@ -1371,8 +1371,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 		  if (flag_schedule_insns)
 		    emit_insn (gen_blockage ());
 		  emit_insn (gen_GOTaddr2picreg ());
-		  emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode,
-								 PIC_REG)));
+		  emit_use (gen_rtx_REG (SImode, PIC_REG));
 		  if (flag_schedule_insns)
 		    emit_insn (gen_blockage ());
 		}
@@ -5723,8 +5722,8 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	      mem = gen_tmp_stack_mem (Pmode, gen_rtx_POST_INC (Pmode, reg));
 	      emit_move_insn (tmp_reg, mem);
 	      /* Tell flow the insns that pop r4/r5 aren't dead.  */
-	      emit_insn (gen_rtx_USE (VOIDmode, tmp_reg));
-	      emit_insn (gen_rtx_USE (VOIDmode, adj_reg));
+	      emit_use (tmp_reg);
+	      emit_use (adj_reg);
 	      return;
 	    }
 	  const_reg = gen_rtx_REG (GET_MODE (reg), temp);
@@ -6862,7 +6861,7 @@ sh_expand_epilogue (bool sibcall_p)
      USE PR_MEDIA_REG, since it will be explicitly copied to TR0_REG
      by the return pattern.  */
   if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
-    emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, PR_REG)));
+    emit_use (gen_rtx_REG (SImode, PR_REG));
 }
 
 static int sh_need_epilogue_known = 0;
@@ -6916,7 +6915,7 @@ sh_set_return_address (rtx ra, rtx tmp)
 
       emit_insn (GEN_MOV (rr, ra));
       /* Tell flow the register for return isn't dead.  */
-      emit_insn (gen_rtx_USE (VOIDmode, rr));
+      emit_use (rr);
       return;
     }
 
@@ -10714,7 +10713,7 @@ sh_expand_t_scc (enum rtx_code code, rtx target)
     emit_insn (gen_movrt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
     {
-      emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
+      emit_clobber (result);
       emit_insn (gen_subc (result, result, result));
       emit_insn (gen_addsi3 (result, result, const1_rtx));
     }

@@ -3427,7 +3427,7 @@ load_pic_register (bool delay_pic_helper)
   if (TARGET_VXWORKS_RTP)
     {
       emit_insn (gen_vxworks_load_got ());
-      emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+      emit_use (pic_offset_table_rtx);
       return;
     }
 
@@ -3457,7 +3457,7 @@ load_pic_register (bool delay_pic_helper)
      since setjmp/longjmp can cause life info to screw up.
      ??? In the case where we don't obey regdecls, this is not sufficient
      since we may not fall out the bottom.  */
-  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+  emit_use (pic_offset_table_rtx);
 }
 
 /* Emit a call instruction with the pattern given by PAT.  ADDR is the
