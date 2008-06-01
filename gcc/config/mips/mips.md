@@ -496,6 +496,9 @@
 (define_mode_iterator MOVE64
   [DI DF (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")])
 
+;; 128-bit modes for which we provide move patterns on 64-bit targets.
+(define_mode_iterator MOVE128 [TF])
+
 ;; This mode iterator allows the QI and HI extension patterns to be
 ;; defined from the same template.
 (define_mode_iterator SHORT [QI HI])
@@ -4064,34 +4067,52 @@
 ;; 128-bit floating point moves
 
 (define_expand "movtf"
-  [(set (match_operand:TF 0 "")
-	(match_operand:TF 1 ""))]
-  ""
+  [(set (match_operand:TF 0)
+	(match_operand:TF 1))]
+  "TARGET_64BIT"
 {
   if (mips_legitimize_move (TFmode, operands[0], operands[1]))
     DONE;
 })
 
 ;; This pattern handles both hard- and soft-float cases.
-(define_insn_and_split "*movtf_internal"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=d,R,f,dR")
-	(match_operand:TF 1 "move_operand" "dGR,dG,dGR,f"))]
-  ""
+(define_insn "*movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=d,d,m,f,d,f,m")
+	(match_operand:TF 1 "move_operand" "dG,m,dG,dG,f,m,f"))]
+  "TARGET_64BIT
+   && !TARGET_MIPS16
+   && (register_operand (operands[0], TFmode)
+       || reg_or_0_operand (operands[1], TFmode))"
   "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  mips_split_doubleword_move (operands[0], operands[1]);
-  DONE;
-}
-  [(set_attr "type" "multi")
-   (set_attr "length" "16")])
+  [(set_attr "type" "multi,load,store,multi,multi,fpload,fpstore")
+   (set_attr "length" "8,*,*,8,8,*,*")])
+
+(define_insn "*movtf_mips16"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=d,y,d,d,m")
+	(match_operand:TF 1 "move_operand" "d,d,y,m,d"))]
+  "TARGET_64BIT
+   && TARGET_MIPS16
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode))"
+  "#"
+  [(set_attr "type" "multi,multi,multi,load,store")
+   (set_attr "length" "8,8,8,*,*")])
 
 (define_split
   [(set (match_operand:MOVE64 0 "nonimmediate_operand")
 	(match_operand:MOVE64 1 "move_operand"))]
   "reload_completed && !TARGET_64BIT
    && mips_split_64bit_move_p (operands[0], operands[1])"
+  [(const_int 0)]
+{
+  mips_split_doubleword_move (operands[0], operands[1]);
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:MOVE128 0 "nonimmediate_operand")
+	(match_operand:MOVE128 1 "move_operand"))]
+  "TARGET_64BIT && reload_completed"
   [(const_int 0)]
 {
   mips_split_doubleword_move (operands[0], operands[1]);

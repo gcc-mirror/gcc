@@ -1809,6 +1809,51 @@ mips_valid_base_register_p (rtx x, enum machine_mode mode, bool strict_p)
 	  && mips_regno_mode_ok_for_base_p (REGNO (x), mode, strict_p));
 }
 
+/* Return true if, for every base register BASE_REG, (plus BASE_REG X)
+   can address a value of mode MODE.  */
+
+static bool
+mips_valid_offset_p (rtx x, enum machine_mode mode)
+{
+  /* Check that X is a signed 16-bit number.  */
+  if (!const_arith_operand (x, Pmode))
+    return false;
+
+  /* We may need to split multiword moves, so make sure that every word
+     is accessible.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && !SMALL_OPERAND (INTVAL (x) + GET_MODE_SIZE (mode) - UNITS_PER_WORD))
+    return false;
+
+  return true;
+}
+
+/* Return true if a LO_SUM can address a value of mode MODE when the
+   LO_SUM symbol has type SYMBOL_TYPE.  */
+
+static bool
+mips_valid_lo_sum_p (enum mips_symbol_type symbol_type, enum machine_mode mode)
+{
+  /* Check that symbols of type SYMBOL_TYPE can be used to access values
+     of mode MODE.  */
+  if (mips_symbol_insns (symbol_type, mode) == 0)
+    return false;
+
+  /* Check that there is a known low-part relocation.  */
+  if (mips_lo_relocs[symbol_type] == NULL)
+    return false;
+
+  /* We may need to split multiword moves, so make sure that each word
+     can be accessed without inducing a carry.  This is mainly needed
+     for o64, which has historically only guaranteed 64-bit alignment
+     for 128-bit types.  */
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode))
+    return false;
+
+  return true;
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  */
@@ -1831,7 +1876,7 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
       return (mips_valid_base_register_p (info->reg, mode, strict_p)
-	      && const_arith_operand (info->offset, VOIDmode));
+	      && mips_valid_offset_p (info->offset, mode));
 
     case LO_SUM:
       info->type = ADDRESS_LO_SUM;
@@ -1849,8 +1894,7 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       info->symbol_type
 	= mips_classify_symbolic_expression (info->offset, SYMBOL_CONTEXT_MEM);
       return (mips_valid_base_register_p (info->reg, mode, strict_p)
-	      && mips_symbol_insns (info->symbol_type, mode) > 0
-	      && mips_lo_relocs[info->symbol_type] != 0);
+	      && mips_valid_lo_sum_p (info->symbol_type, mode));
 
     case CONST_INT:
       /* Small-integer addresses don't occur very often, but they
@@ -2473,6 +2517,16 @@ mips_legitimize_tls_address (rtx loc)
   return dest;
 }
 
+/* If X is not a valid address for mode MODE, force it into a register.  */
+
+static rtx
+mips_force_address (rtx x, enum machine_mode mode)
+{
+  if (!mips_legitimate_address_p (mode, x, false))
+    x = force_reg (Pmode, x);
+  return x;
+}
+
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
    be legitimized in a way that the generic machinery might not expect,
    put the new address in *XLOC and return true.  MODE is the mode of
@@ -2481,7 +2535,7 @@ mips_legitimize_tls_address (rtx loc)
 bool
 mips_legitimize_address (rtx *xloc, enum machine_mode mode)
 {
-  rtx base;
+  rtx base, addr;
   HOST_WIDE_INT offset;
 
   if (mips_tls_symbol_p (*xloc))
@@ -2491,8 +2545,11 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
     }
 
   /* See if the address can split into a high part and a LO_SUM.  */
-  if (mips_split_symbol (NULL, *xloc, mode, xloc))
-    return true;
+  if (mips_split_symbol (NULL, *xloc, mode, &addr))
+    {
+      *xloc = mips_force_address (addr, mode);
+      return true;
+    }
 
   /* Handle BASE + OFFSET using mips_add_offset.  */
   mips_split_plus (*xloc, &base, &offset);
@@ -2500,7 +2557,8 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
     {
       if (!mips_valid_base_register_p (base, mode, false))
 	base = copy_to_mode_reg (Pmode, base);
-      *xloc = mips_add_offset (NULL, base, offset);
+      addr = mips_add_offset (NULL, base, offset);
+      *xloc = mips_force_address (addr, mode);
       return true;
     }
   return false;
