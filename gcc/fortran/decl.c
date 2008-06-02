@@ -6270,6 +6270,10 @@ gfc_match_derived_decl (void)
   if (attr.is_bind_c != 0)
     sym->attr.is_bind_c = attr.is_bind_c;
 
+  /* Construct the f2k_derived namespace if it is not yet there.  */
+  if (!sym->f2k_derived)
+    sym->f2k_derived = gfc_get_namespace (NULL, 0);
+
   gfc_new_block = sym;
 
   return MATCH_YES;
@@ -6480,3 +6484,105 @@ cleanup:
 
 }
 
+/* Match a FINAL declaration inside a derived type.  */
+
+match
+gfc_match_final_decl (void)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol* sym;
+  match m;
+  gfc_namespace* module_ns;
+  bool first, last;
+
+  if (gfc_state_stack->state != COMP_DERIVED)
+    {
+      gfc_error ("FINAL declaration at %C must be inside a derived type "
+		 "definition!");
+      return MATCH_ERROR;
+    }
+
+  gcc_assert (gfc_current_block ());
+
+  if (!gfc_state_stack->previous
+      || gfc_state_stack->previous->state != COMP_MODULE)
+    {
+      gfc_error ("Derived type declaration with FINAL at %C must be in the"
+		 " specification part of a MODULE");
+      return MATCH_ERROR;
+    }
+
+  module_ns = gfc_current_ns;
+  gcc_assert (module_ns);
+  gcc_assert (module_ns->proc_name->attr.flavor == FL_MODULE);
+
+  /* Match optional ::, don't care about MATCH_YES or MATCH_NO.  */
+  if (gfc_match (" ::") == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  /* Match the sequence of procedure names.  */
+  first = true;
+  last = false;
+  do
+    {
+      gfc_finalizer* f;
+
+      if (first && gfc_match_eos () == MATCH_YES)
+	{
+	  gfc_error ("Empty FINAL at %C");
+	  return MATCH_ERROR;
+	}
+
+      m = gfc_match_name (name);
+      if (m == MATCH_NO)
+	{
+	  gfc_error ("Expected module procedure name at %C");
+	  return MATCH_ERROR;
+	}
+      else if (m != MATCH_YES)
+	return MATCH_ERROR;
+
+      if (gfc_match_eos () == MATCH_YES)
+	last = true;
+      if (!last && gfc_match_char (',') != MATCH_YES)
+	{
+	  gfc_error ("Expected ',' at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_get_symbol (name, module_ns, &sym))
+	{
+	  gfc_error ("Unknown procedure name \"%s\" at %C", name);
+	  return MATCH_ERROR;
+	}
+
+      /* Mark the symbol as module procedure.  */
+      if (sym->attr.proc != PROC_MODULE
+	  && gfc_add_procedure (&sym->attr, PROC_MODULE,
+				sym->name, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      /* Check if we already have this symbol in the list, this is an error.  */
+      for (f = gfc_current_block ()->f2k_derived->finalizers; f; f = f->next)
+	if (f->procedure == sym)
+	  {
+	    gfc_error ("'%s' at %C is already defined as FINAL procedure!",
+		       name);
+	    return MATCH_ERROR;
+	  }
+
+      /* Add this symbol to the list of finalizers.  */
+      gcc_assert (gfc_current_block ()->f2k_derived);
+      ++sym->refs;
+      f = gfc_getmem (sizeof (gfc_finalizer));     
+      f->procedure = sym;
+      f->where = gfc_current_locus;
+      f->next = gfc_current_block ()->f2k_derived->finalizers;
+      gfc_current_block ()->f2k_derived->finalizers = f;
+
+      first = false;
+    }
+  while (!last);
+
+  return MATCH_YES;
+}

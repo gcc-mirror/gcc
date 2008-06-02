@@ -366,6 +366,7 @@ decode_statement (void)
       break;
 
     case 'f':
+      match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
@@ -1682,6 +1683,7 @@ static void
 parse_derived (void)
 {
   int compiling_type, seen_private, seen_sequence, seen_component, error_flag;
+  int seen_contains, seen_contains_comp;
   gfc_statement st;
   gfc_state_data s;
   gfc_symbol *derived_sym = NULL;
@@ -1697,6 +1699,8 @@ parse_derived (void)
   seen_private = 0;
   seen_sequence = 0;
   seen_component = 0;
+  seen_contains = 0;
+  seen_contains_comp = 0;
 
   compiling_type = 1;
 
@@ -1710,8 +1714,30 @@ parse_derived (void)
 
 	case ST_DATA_DECL:
 	case ST_PROCEDURE:
+	  if (seen_contains)
+	    {
+	      gfc_error ("Components in TYPE at %C must precede CONTAINS");
+	      error_flag = 1;
+	    }
+
 	  accept_statement (st);
 	  seen_component = 1;
+	  break;
+
+	case ST_FINAL:
+	  if (!seen_contains)
+	    {
+	      gfc_error ("FINAL declaration at %C must be inside CONTAINS");
+	      error_flag = 1;
+	    }
+
+	  if (gfc_notify_std (GFC_STD_F2003,
+			      "Fortran 2003:  FINAL procedure declaration"
+			      " at %C") == FAILURE)
+	    error_flag = 1;
+
+	  accept_statement (ST_FINAL);
+	  seen_contains_comp = 1;
 	  break;
 
 	case ST_END_TYPE:
@@ -1719,14 +1745,26 @@ parse_derived (void)
 
 	  if (!seen_component
 	      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Derived type "
-			         "definition at %C without components")
+				 "definition at %C without components")
 		  == FAILURE))
+	    error_flag = 1;
+
+	  if (seen_contains && !seen_contains_comp
+	      && (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Derived type "
+				 "definition at %C with empty CONTAINS "
+				 "section") == FAILURE))
 	    error_flag = 1;
 
 	  accept_statement (ST_END_TYPE);
 	  break;
 
 	case ST_PRIVATE:
+	  if (seen_contains)
+	    {
+	      gfc_error ("PRIVATE statement at %C must precede CONTAINS");
+	      error_flag = 1;
+	    }
+
 	  if (gfc_find_state (COMP_MODULE) == FAILURE)
 	    {
 	      gfc_error ("PRIVATE statement in TYPE at %C must be inside "
@@ -1755,6 +1793,12 @@ parse_derived (void)
 	  break;
 
 	case ST_SEQUENCE:
+	  if (seen_contains)
+	    {
+	      gfc_error ("SEQUENCE statement at %C must precede CONTAINS");
+	      error_flag = 1;
+	    }
+
 	  if (seen_component)
 	    {
 	      gfc_error ("SEQUENCE statement at %C must precede "
@@ -1776,6 +1820,22 @@ parse_derived (void)
 	  seen_sequence = 1;
 	  gfc_add_sequence (&gfc_current_block ()->attr, 
 			    gfc_current_block ()->name, NULL);
+	  break;
+
+	case ST_CONTAINS:
+	  if (gfc_notify_std (GFC_STD_F2003,
+			      "Fortran 2003:  CONTAINS block in derived type"
+			      " definition at %C") == FAILURE)
+	    error_flag = 1;
+
+	  if (seen_contains)
+	    {
+	      gfc_error ("Already inside a CONTAINS block at %C");
+	      error_flag = 1;
+	    }
+
+	  seen_contains = 1;
+	  accept_statement (ST_CONTAINS);
 	  break;
 
 	default:
