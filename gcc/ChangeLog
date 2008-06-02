@@ -1,3 +1,10 @@
+2008-06-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_emit_loadgp): Return early if
+	there is nothing do to, otherwise emit a blockage if
+	!TARGET_EXPLICIT_RELOCS || crtl->profile.
+	* config/mips/mips.md (loadgp_blockage): Use SI rather than DI.
+
 2008-06-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Drop unneeded backslash ending up in config.in.
