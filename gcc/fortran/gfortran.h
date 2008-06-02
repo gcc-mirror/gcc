@@ -210,7 +210,7 @@ typedef enum
   ST_CALL, ST_CASE, ST_CLOSE, ST_COMMON, ST_CONTINUE, ST_CONTAINS, ST_CYCLE,
   ST_DATA, ST_DATA_DECL, ST_DEALLOCATE, ST_DO, ST_ELSE, ST_ELSEIF,
   ST_ELSEWHERE, ST_END_BLOCK_DATA, ST_ENDDO, ST_IMPLIED_ENDDO,
-  ST_END_FILE, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
+  ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
   ST_END_INTERFACE, ST_END_MODULE, ST_END_PROGRAM, ST_END_SELECT,
   ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE, ST_ENTRY, ST_EQUIVALENCE,
   ST_EXIT, ST_FORALL, ST_FORALL_BLOCK, ST_FORMAT, ST_FUNCTION, ST_GOTO,
@@ -1014,6 +1014,10 @@ typedef struct gfc_symbol
   gfc_formal_arglist *formal;
   struct gfc_namespace *formal_ns;
 
+  /* The namespace containing type-associated procedure symbols.  */
+  /* TODO: Make this union with formal?  */
+  struct gfc_namespace *f2k_derived;
+
   struct gfc_expr *value;	/* Parameter/Initializer value */
   gfc_array_spec *as;
   struct gfc_symbol *result;	/* function result symbol */
@@ -1151,6 +1155,8 @@ typedef struct gfc_namespace
   gfc_symtree *uop_root;
   /* Tree containing all the common blocks.  */
   gfc_symtree *common_root;
+  /* Linked list of finalizer procedures.  */
+  struct gfc_finalizer *finalizers;
 
   /* If set_flag[letter] is set, an implicit type has been set for letter.  */
   int set_flag[GFC_LETTERS];
@@ -1942,6 +1948,17 @@ typedef struct iterator_stack
 iterator_stack;
 extern iterator_stack *iter_stack;
 
+
+/* Node in the linked list used for storing finalizer procedures.  */
+
+typedef struct gfc_finalizer
+{
+  struct gfc_finalizer* next;
+  gfc_symbol* procedure;
+  locus where; /* Where the FINAL declaration occured.  */
+}
+gfc_finalizer;
+
 /************************ Function prototypes *************************/
 
 /* decl.c */
@@ -2209,6 +2226,8 @@ gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 
 void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
+
+void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
 /* intrinsic.c */
 extern int gfc_init_expr;

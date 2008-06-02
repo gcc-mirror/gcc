@@ -7439,6 +7439,146 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 }
 
 
+/* Resolve a list of finalizer procedures.  That is, after they have hopefully
+   been defined and we now know their defined arguments, check that they fulfill
+   the requirements of the standard for procedures used as finalizers.  */
+
+static try
+gfc_resolve_finalizers (gfc_symbol* derived)
+{
+  gfc_finalizer* list;
+  gfc_finalizer** prev_link; /* For removing wrong entries from the list.  */
+  try result = SUCCESS;
+  bool seen_scalar = false;
+
+  if (!derived->f2k_derived || !derived->f2k_derived->finalizers)
+    return SUCCESS;
+
+  /* Walk over the list of finalizer-procedures, check them, and if any one
+     does not fit in with the standard's definition, print an error and remove
+     it from the list.  */
+  prev_link = &derived->f2k_derived->finalizers;
+  for (list = derived->f2k_derived->finalizers; list; list = *prev_link)
+    {
+      gfc_symbol* arg;
+      gfc_finalizer* i;
+      int my_rank;
+
+      /* Check this exists and is a SUBROUTINE.  */
+      if (!list->procedure->attr.subroutine)
+	{
+	  gfc_error ("FINAL procedure '%s' at %L is not a SUBROUTINE",
+		     list->procedure->name, &list->where);
+	  goto error;
+	}
+
+      /* We should have exactly one argument.  */
+      if (!list->procedure->formal || list->procedure->formal->next)
+	{
+	  gfc_error ("FINAL procedure at %L must have exactly one argument",
+		     &list->where);
+	  goto error;
+	}
+      arg = list->procedure->formal->sym;
+
+      /* This argument must be of our type.  */
+      if (arg->ts.type != BT_DERIVED || arg->ts.derived != derived)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must be of type '%s'",
+		     &arg->declared_at, derived->name);
+	  goto error;
+	}
+
+      /* It must neither be a pointer nor allocatable nor optional.  */
+      if (arg->attr.pointer)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must not be a POINTER",
+		     &arg->declared_at);
+	  goto error;
+	}
+      if (arg->attr.allocatable)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must not be"
+		     " ALLOCATABLE", &arg->declared_at);
+	  goto error;
+	}
+      if (arg->attr.optional)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must not be OPTIONAL",
+		     &arg->declared_at);
+	  goto error;
+	}
+
+      /* It must not be INTENT(OUT).  */
+      if (arg->attr.intent == INTENT_OUT)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must not be"
+		     " INTENT(OUT)", &arg->declared_at);
+	  goto error;
+	}
+
+      /* Warn if the procedure is non-scalar and not assumed shape.  */
+      if (gfc_option.warn_surprising && arg->as && arg->as->rank > 0
+	  && arg->as->type != AS_ASSUMED_SHAPE)
+	gfc_warning ("Non-scalar FINAL procedure at %L should have assumed"
+		     " shape argument", &arg->declared_at);
+
+      /* Check that it does not match in kind and rank with a FINAL procedure
+	 defined earlier.  To really loop over the *earlier* declarations,
+	 we need to walk the tail of the list as new ones were pushed at the
+	 front.  */
+      /* TODO: Handle kind parameters once they are implemented.  */
+      my_rank = (arg->as ? arg->as->rank : 0);
+      for (i = list->next; i; i = i->next)
+	{
+	  /* Argument list might be empty; that is an error signalled earlier,
+	     but we nevertheless continued resolving.  */
+	  if (i->procedure->formal)
+	    {
+	      gfc_symbol* i_arg = i->procedure->formal->sym;
+	      const int i_rank = (i_arg->as ? i_arg->as->rank : 0);
+	      if (i_rank == my_rank)
+		{
+		  gfc_error ("FINAL procedure '%s' declared at %L has the same"
+			     " rank (%d) as '%s'",
+			     list->procedure->name, &list->where, my_rank, 
+			     i->procedure->name);
+		  goto error;
+		}
+	    }
+	}
+
+	/* Is this the/a scalar finalizer procedure?  */
+	if (!arg->as || arg->as->rank == 0)
+	  seen_scalar = true;
+
+	prev_link = &list->next;
+	continue;
+
+	/* Remove wrong nodes immediatelly from the list so we don't risk any
+	   troubles in the future when they might fail later expectations.  */
+error:
+	result = FAILURE;
+	i = list;
+	*prev_link = list->next;
+	gfc_free_finalizer (i);
+    }
+
+  /* Warn if we haven't seen a scalar finalizer procedure (but we know there
+     were nodes in the list, must have been for arrays.  It is surely a good
+     idea to have a scalar version there if there's something to finalize.  */
+  if (gfc_option.warn_surprising && result == SUCCESS && !seen_scalar)
+    gfc_warning ("Only array FINAL procedures declared for derived type '%s'"
+		 " defined at %L, suggest also scalar one",
+		 derived->name, &derived->declared_at);
+
+  /* TODO:  Remove this error when finalization is finished.  */
+  gfc_error ("Finalization at %L is not yet implemented", &derived->declared_at);
+
+  return result;
+}
+
+
 /* Resolve the components of a derived type.  */
 
 static try
@@ -7516,6 +7656,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
     }
+
+  /* Resolve the finalizer procedures.  */
+  if (gfc_resolve_finalizers (sym) == FAILURE)
+    return FAILURE;
 
   /* Add derived type to the derived type list.  */
   for (dt_list = gfc_derived_types; dt_list; dt_list = dt_list->next)

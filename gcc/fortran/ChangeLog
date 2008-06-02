@@ -1,3 +1,27 @@
+2008-06-02  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h:  New statement-type ST_FINAL for FINAL declarations.
+	(struct gfc_symbol):  New member f2k_derived.
+	(struct gfc_namespace):  New member finalizers, for use in the above
+	mentioned f2k_derived namespace.
+	(struct gfc_finalizer):  New type defined for finalizers linked list.
+	* match.h (gfc_match_final_decl):  New function header.
+	* decl.c (gfc_match_derived_decl):  Create f2k_derived namespace on
+	constructed symbol node.
+	(gfc_match_final_decl):  New function to match a FINAL declaration line.
+	* parse.c (decode_statement):  match-call for keyword FINAL.
+	(parse_derived):  Parse CONTAINS section and accept FINAL statements.
+	* resolve.c (gfc_resolve_finalizers):  New function to resolve (that is
+	in this case, check) a list of finalizer procedures.
+	(resolve_fl_derived):  Call gfc_resolve_finalizers here.
+	* symbol.c (gfc_get_namespace):  Initialize new finalizers to NULL.
+	(gfc_free_namespace):  Free finalizers list.
+	(gfc_new_symbol):  Initialize new f2k_derived to NULL.
+	(gfc_free_symbol):  Free f2k_derived namespace.
+	(gfc_free_finalizer):  New function to free a single gfc_finalizer node.
+	(gfc_free_finalizer_list):  New function to free a linked list of
+	gfc_finalizer nodes.
+
 2008-06-02  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/36375
