@@ -58,7 +58,8 @@
    (UNSPECV_PROLOGUE_SAVES	0)
    (UNSPECV_EPILOGUE_RESTORES	1)
    (UNSPECV_WRITE_SP_IRQ_ON	2)
-   (UNSPECV_WRITE_SP_IRQ_OFF	3)])
+   (UNSPECV_WRITE_SP_IRQ_OFF	3)
+   (UNSPECV_GOTO_RECEIVER	4)])
 
 (include "predicates.md")
 (include "constraints.md")
@@ -114,6 +115,63 @@
 		       (const_int 1)
 		       (const_int 2))]
         (const_int 2)))
+
+;;========================================================================
+;; The following is used by nonlocal_goto and setjmp.
+;; The receiver pattern will create no instructions since internally
+;; virtual_stack_vars = hard_frame_pointer + 1 so the RTL become R28=R28
+;; This avoids creating add/sub offsets in frame_pointer save/resore.
+;; The 'null' receiver also avoids  problems with optimisation
+;; not recognising incoming jmp and removing code that resets frame_pointer.
+;; The code derived from builtins.c.
+
+(define_expand "nonlocal_goto_receiver"
+  [(set (reg:HI REG_Y) 
+	(unspec_volatile:HI [(const_int 0)] UNSPECV_GOTO_RECEIVER))]
+  ""
+  {
+    emit_move_insn (virtual_stack_vars_rtx, 
+		    gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx, 
+				  gen_int_mode (STARTING_FRAME_OFFSET,
+						Pmode)));
+  /* This might change the hard frame pointer in ways that aren't
+    apparent to early optimization passes, so force a clobber.  */
+    emit_clobber (hard_frame_pointer_rtx);
+    DONE;
+  })
+  
+
+;; Defining nonlocal_goto_receiver means we must also define this.
+;; even though its function is identical to that in builtins.c
+
+(define_expand "nonlocal_goto"
+  [
+  (use (match_operand 0 "general_operand"))
+  (use (match_operand 1 "general_operand"))
+  (use (match_operand 2 "general_operand"))
+  (use (match_operand 3 "general_operand"))
+  ]
+  ""
+{
+  rtx r_label = copy_to_reg (operands[1]);
+  rtx r_fp = operands[3];
+  rtx r_sp = operands[2];
+
+  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
+
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
+  emit_move_insn (hard_frame_pointer_rtx, r_fp);
+  emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
+
+  emit_use (hard_frame_pointer_rtx);
+  emit_use (stack_pointer_rtx);
+
+  emit_indirect_jump (r_label);
+ 
+  DONE;
+})
+
 
 (define_insn "*pushqi"
   [(set (mem:QI (post_dec (reg:HI REG_SP)))
