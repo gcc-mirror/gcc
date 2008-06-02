@@ -1,3 +1,11 @@
+2008-06-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* testsuite/27_io/basic_filebuf/sputbackc/char/9425.cc: Use
+	dg-require-fileio.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-out.cc: Likewise.
+ 
 2008-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/vector.tcc (vector<>::_M_insert_aux): In C++0x mode,
