@@ -1515,8 +1515,7 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 	return DECL_BIT_FIELD_TYPE (field);
       }
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (exp, 0)))
 	  == TYPE_MAIN_VARIANT (TREE_TYPE (exp)))
 	return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
@@ -2449,8 +2448,7 @@ cp_build_indirect_ref (tree ptr, const char *errorstring,
 	 types.  */
       tree t = canonical_type_variant (TREE_TYPE (type));
 
-      if (TREE_CODE (ptr) == CONVERT_EXPR
-          || TREE_CODE (ptr) == NOP_EXPR
+      if (CONVERT_EXPR_P (ptr)
           || TREE_CODE (ptr) == VIEW_CONVERT_EXPR)
 	{
 	  /* If a warning is issued, mark it to avoid duplicates from
@@ -4658,8 +4656,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 
       switch (TREE_CODE (arg))
 	{
-	case NOP_EXPR:
-	case CONVERT_EXPR:
+	CASE_CONVERT:
 	case FLOAT_EXPR:
 	case FIX_TRUNC_EXPR:
           /* Even if we're not being pedantic, we cannot allow this
@@ -6854,9 +6851,8 @@ maybe_warn_about_returning_address_of_local (tree retval)
     {
       if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
 	whats_returned = TREE_OPERAND (whats_returned, 1);
-      else if (TREE_CODE (whats_returned) == CONVERT_EXPR
-	       || TREE_CODE (whats_returned) == NON_LVALUE_EXPR
-	       || TREE_CODE (whats_returned) == NOP_EXPR)
+      else if (CONVERT_EXPR_P (whats_returned)
+	       || TREE_CODE (whats_returned) == NON_LVALUE_EXPR)
 	whats_returned = TREE_OPERAND (whats_returned, 0);
       else
 	break;
