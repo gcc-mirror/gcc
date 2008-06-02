@@ -81,7 +81,6 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/acx.m4 \
-	$(top_srcdir)/../config/confsubdir.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/gxx-include-dir.m4 \
@@ -94,6 +93,7 @@ am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
+	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/proginstall.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
@@ -10311,7 +10311,7 @@ libgcj-tools-$(gcc_version).jar: classpath/tools/tools.zip
 	cp $< $@
 
 mostlyclean-local:
-	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
 
 distclean-local:
 	find . -name '*.d' -print | xargs rm -f
