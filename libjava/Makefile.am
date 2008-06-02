@@ -372,7 +372,7 @@ DISTCLEANFILES = native.dirs
 
 mostlyclean-local:
 ## Use libtool rm to remove each libtool object
-	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
 
 distclean-local:
 ## Remove every .d file that was created.
