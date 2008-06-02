@@ -814,6 +814,14 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
       return FAILURE;
     }
 
+  if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
+      && gfc_find_state (COMP_INTERFACE) == FAILURE)
+    {
+      gfc_error ("ALLOCATABLE specified outside of INTERFACE body at %L",
+		 where);
+      return FAILURE;
+    }
+
   attr->allocatable = 1;
   return check_conflict (attr, NULL, where);
 }
@@ -829,6 +837,14 @@ gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
   if (attr->dimension)
     {
       duplicate_attr ("DIMENSION", where);
+      return FAILURE;
+    }
+
+  if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
+      && gfc_find_state (COMP_INTERFACE) == FAILURE)
+    {
+      gfc_error ("DIMENSION specified for '%s' outside its INTERFACE body "
+		 "at %L", name, where);
       return FAILURE;
     }
 
@@ -1450,6 +1466,13 @@ gfc_add_explicit_interface (gfc_symbol *sym, ifsrc source,
     {
       gfc_error ("Symbol '%s' at %L already has an explicit interface",
 		 sym->name, where);
+      return FAILURE;
+    }
+
+  if (source == IFSRC_IFBODY && (sym->attr.dimension || sym->attr.allocatable))
+    {
+      gfc_error ("'%s' at %L has attributes specified outside its INTERFACE "
+		 "body", sym->name, where);
       return FAILURE;
     }
 

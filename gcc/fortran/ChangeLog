@@ -1,3 +1,11 @@
+2008-06-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36361
+	* symbol.c (gfc_add_allocatable,gfc_add_dimension,
+	gfc_add_explicit_interface): Added checks.
+	* decl.c (attr_decl1): Added missing "var_locus".
+	* parse.c (parse_interface): Checking for errors.
+
 2008-06-02  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h:  New statement-type ST_FINAL for FINAL declarations.

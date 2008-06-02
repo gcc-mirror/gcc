@@ -1974,23 +1974,18 @@ loop:
       unexpected_eof ();
 
     case ST_SUBROUTINE:
-      new_state = COMP_SUBROUTINE;
-      gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
-				  gfc_new_block->formal, NULL);
-      if (current_interface.type != INTERFACE_ABSTRACT &&
-	 !gfc_new_block->attr.dummy &&
-	 gfc_add_external (&gfc_new_block->attr, &gfc_current_locus) == FAILURE)
+    case ST_FUNCTION:
+      if (st == ST_SUBROUTINE)
+	new_state = COMP_SUBROUTINE;
+      else if (st == ST_FUNCTION)
+	new_state = COMP_FUNCTION;
+      if (gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
+				  gfc_new_block->formal, NULL) == FAILURE)
 	{
 	  reject_statement ();
 	  gfc_free_namespace (gfc_current_ns);
 	  goto loop;
 	}
-      break;
-
-    case ST_FUNCTION:
-      new_state = COMP_FUNCTION;
-      gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
-				  gfc_new_block->formal, NULL);
       if (current_interface.type != INTERFACE_ABSTRACT &&
 	 !gfc_new_block->attr.dummy &&
 	 gfc_add_external (&gfc_new_block->attr, &gfc_current_locus) == FAILURE)
