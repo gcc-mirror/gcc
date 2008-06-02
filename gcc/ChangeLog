@@ -1,3 +1,9 @@
+2008-06-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Drop unneeded backslash ending up in config.in.
+	* acinclude.m4: Likewise.
+	* config.in: Regenerate.
+
 2008-05-26  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (maybe_hot_frequency_p): Break out of...
