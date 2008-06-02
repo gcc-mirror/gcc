@@ -34,17 +34,17 @@ extern void link_error(int);
 /* Test that frexp(ARG,&i) == RES && i == EXP.  Check the sign in
    case we get -0.0.  */
 #define TESTIT_FREXP(ARG,RES,EXP) do { \
-  int i = 123456; \
+  int i = 12345; \
   if (__builtin_frexpf(ARG##f,&i) != RES##f \
       || CKEXP(i,EXP) \
       || CKSGN_F(__builtin_frexpf(ARG##f,&i),RES##f)) \
     link_error(__LINE__); \
-  i = 123456; \
+  i = 12345; \
   if (__builtin_frexp(ARG,&i) != RES \
       || CKEXP(i,EXP) \
       || CKSGN(__builtin_frexp(ARG,&i),RES)) \
     link_error(__LINE__); \
-  i = 123456; \
+  i = 12345; \
   if (__builtin_frexpl(ARG##l,&i) != RES##l \
       || CKEXP(i,EXP) \
       || CKSGN_L(__builtin_frexpl(ARG##l,&i),RES##l)) \

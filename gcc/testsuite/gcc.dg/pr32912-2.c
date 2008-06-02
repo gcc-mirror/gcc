@@ -3,8 +3,11 @@
 
 extern void abort (void);
 
+#if(__SIZEOF_INT__ >= 4)
 typedef int __m128i __attribute__ ((__vector_size__ (16)));
-
+#else
+typedef long __m128i __attribute__ ((__vector_size__ (16)));
+#endif
 __m128i
 foo (void)
 {
@@ -22,7 +25,11 @@ bar (void)
 int
 main (void)
 {
+#if(__SIZEOF_INT__ >= 4)
   union { __m128i v; int i[sizeof (__m128i) / sizeof (int)]; } u, v;
+#else
+  union { __m128i v; long i[sizeof (__m128i) / sizeof (long)]; } u, v;
+#endif
   int i;
 
   u.v = foo ();

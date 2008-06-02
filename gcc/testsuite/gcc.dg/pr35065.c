@@ -5,7 +5,11 @@ typedef int vlc_bool_t;
 typedef __SIZE_TYPE__ size_t;
 typedef struct vlc_object_t vlc_object_t;
 typedef long long int64_t;
+#if(__SIZEOF_INT__ >= 4)
 typedef unsigned int uint32_t;
+#else
+typedef unsigned long uint32_t;
+#endif
 typedef unsigned char uint8_t;
 typedef int64_t mtime_t;
 typedef uint32_t vlc_fourcc_t;

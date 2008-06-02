@@ -7,8 +7,12 @@ extern void abort (void);
 
 int main(void)
 {
-  int U1;
   long long Y, Y2;
+#if(__SIZEOF_INT__ >= 4)
+  int U1;
+#else
+  long U1;
+#endif
   unsigned int t;
 
   U1 = -2147483647-1;

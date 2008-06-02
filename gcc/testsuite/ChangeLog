@@ -1,5 +1,17 @@
 2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/pr18241-1.c: Use long on small int target.
+	* gcc.dg/pr32912-2.c: Ditto.
+	* gcc.dg/pr35065.c: Ditto.
+	* gcc.dg/pr36300-1.c: Ditto.
+	* gcc.dg/pr36300-2.c: Ditto.
+	* gcc.dg/pr27639.c: Reduce array size for small int target.
+	* gcc.dg/pr28755.c: Skip test if pointers are smaller than 32 bits.
+	* gcc.dg/pr36194.c: Reduce constant on small int target.
+	* gcc.dg/torture/builtin-frexp-1.c: Ditto.
+
+2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/torture/pr34330.c: Skip test for targets without pthread.
 	* gcc.dg/torture/pr36244.c: Ditto.
 	* gcc.dg/tree-ssa/pr36181.c: Ditto.
