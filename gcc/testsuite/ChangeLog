@@ -1,3 +1,9 @@
+2008-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/36404
+        * g++.dg/template/crash79.C: New.
+	* g++.dg/other/pr28114.C: Adjust.	
+
 2008-06-02  Daniel Kraft  <d@domob.eu>
 
 	* finalize_1.f08:  New test.
