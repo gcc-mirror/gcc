@@ -27,7 +27,11 @@ static inline void tag_clear(struct radix_tree_node *node, int tag, int offset)
 {
 	int nr;
 	volatile unsigned long *addr;
+#if(__SIZEOF_INT__ >= 4)	
 	int mask;
+#else
+	long mask;
+#endif
 	
 	nr = offset;
 	addr = &node->tags[tag][0];

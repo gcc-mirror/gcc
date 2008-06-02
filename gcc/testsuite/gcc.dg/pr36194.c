@@ -6,7 +6,11 @@ void abort (void);
 __attribute__ ((noinline)) void
 f (int i)
 {
+#if(__SIZEOF_INT__ >= 4)
   if (i != 0x87654321)
+#else
+  if (i != 0x4321)
+#endif
     abort ();
   asm ("");
 }
