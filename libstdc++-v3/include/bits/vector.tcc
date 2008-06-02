@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -305,22 +305,29 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	{
 	  const size_type __len =
 	    _M_check_len(size_type(1), "vector::_M_insert_aux");
+	  const size_type __elems_before = __position - begin();
 	  pointer __new_start(this->_M_allocate(__len));
 	  pointer __new_finish(__new_start);
 	  try
 	    {
+	      // The order of the three operations is dictated by the C++0x
+	      // case, where the moves could alter a new element belonging
+	      // to the existing vector.  This is an issue only for callers
+	      // taking the element by const lvalue ref (see 23.1/13).
+	      this->_M_impl.construct(__new_start + __elems_before,
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-	      this->_M_impl.construct(__new_start + (__position - begin()),
 				      std::forward<_Args>(__args)...);
+#else
+	                              __x);
 #endif
+	      __new_finish = 0;
+
 	      __new_finish =
 		std::__uninitialized_move_a(this->_M_impl._M_start,
 					    __position.base(), __new_start,
 					    _M_get_Tp_allocator());
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-	      this->_M_impl.construct(__new_finish, __x);
-#endif
 	      ++__new_finish;
+
 	      __new_finish =
 		std::__uninitialized_move_a(__position.base(),
 					    this->_M_impl._M_finish,
@@ -329,7 +336,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    }
 	  catch(...)
 	    {
-	      std::_Destroy(__new_start, __new_finish, _M_get_Tp_allocator());
+	      if (!__new_finish)
+		this->_M_impl.destroy(__new_start + __elems_before);
+	      else
+		std::_Destroy(__new_start, __new_finish, _M_get_Tp_allocator());
 	      _M_deallocate(__new_start, __len);
 	      __throw_exception_again;
 	    }
@@ -351,15 +361,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     {
       if (__n != 0)
 	{
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	  value_type __x_copy = __x;
-#endif
 	  if (size_type(this->_M_impl._M_end_of_storage
 			- this->_M_impl._M_finish) >= __n)
 	    {
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	      value_type __x_copy = __x;
-#endif
 	      const size_type __elems_after = end() - __position;
 	      pointer __old_finish(this->_M_impl._M_finish);
 	      if (__elems_after > __n)
@@ -392,22 +397,24 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    {
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_fill_insert");
+	      const size_type __elems_before = __position - begin();
 	      pointer __new_start(this->_M_allocate(__len));
 	      pointer __new_finish(__new_start);
 	      try
 		{
+		  // See _M_insert_aux above.
+		  std::__uninitialized_fill_n_a(__new_start + __elems_before,
+						__n, __x,
+						_M_get_Tp_allocator());
+		  __new_finish = 0;
+
 		  __new_finish =
 		    std::__uninitialized_move_a(this->_M_impl._M_start,
 						__position.base(),
 						__new_start,
 						_M_get_Tp_allocator());
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-		  std::__uninitialized_fill_n_a(__new_finish, __n, __x_copy,
-#else
-		  std::__uninitialized_fill_n_a(__new_finish, __n, __x,
-#endif
-						_M_get_Tp_allocator());
 		  __new_finish += __n;
+
 		  __new_finish =
 		    std::__uninitialized_move_a(__position.base(),
 						this->_M_impl._M_finish,
@@ -416,8 +423,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 		}
 	      catch(...)
 		{
-		  std::_Destroy(__new_start, __new_finish,
-				_M_get_Tp_allocator());
+		  if (!__new_finish)
+		    std::_Destroy(__new_start + __elems_before,
+				  __new_start + __elems_before + __n,
+				  _M_get_Tp_allocator());
+		  else
+		    std::_Destroy(__new_start, __new_finish,
+				  _M_get_Tp_allocator());
 		  _M_deallocate(__new_start, __len);
 		  __throw_exception_again;
 		}

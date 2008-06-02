@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -104,11 +104,11 @@ test04()
   std::vector<copycounter> a(10, c);
   copycounter::copycount = 0;
   a.insert(a.begin(), 20, c);
-  VERIFY(copycounter::copycount == 20 + 1);
+  VERIFY(copycounter::copycount == 20);
   a.insert(a.end(), 50, c);
-  VERIFY(copycounter::copycount == 70 + 2);
+  VERIFY(copycounter::copycount == 70);
   a.insert(a.begin() + 50, 100, c);
-  VERIFY(copycounter::copycount == 170 + 3);
+  VERIFY(copycounter::copycount == 170);
 }
 
 // Test vector::insert(iterator, count, value) makes no unneeded copies
