@@ -1,0 +1,61 @@
+#   Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `gcc-dg.exp' driver, looping over
+# optimization options.
+
+# Exit immediately if this isn't a AVR target.
+if { ![istarget avr-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+    set AVR_TORTURE_OPTIONS [list \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
+	{ -O2 -mcall-prologues } \
+	{ -Os -fomit-frame-pointer } \
+	{ -Os -fomit-frame-pointer -finline-functions } \
+	{ -O3 -g } \
+	{ -Os -mcall-prologues} ]
+
+
+#Initialize use of torture lists. 
+torture-init
+
+set-torture-options $AVR_TORTURE_OPTIONS
+
+
+# Main loop.
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] $DEFAULT_CFLAGS
+
+# Finalize use of torture lists.
+torture-finish
+
+# All done.
+dg-finish
