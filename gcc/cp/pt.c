@@ -3791,7 +3791,10 @@ push_template_decl_real (tree decl, bool is_friend)
 	member_template_p = true;
       if (TREE_CODE (decl) == TYPE_DECL
 	  && ANON_AGGRNAME_P (DECL_NAME (decl)))
-	error ("template class without a name");
+	{
+	  error ("template class without a name");
+	  return error_mark_node;
+	}
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
 	  if (DECL_DESTRUCTOR_P (decl))
