@@ -524,6 +524,9 @@ gfc_cpp_init (void)
 {
   int i;
 
+  if (gfc_option.flag_preprocessed)
+    return;
+
   cpp_change_file (cpp_in, LC_RENAME, _("<built-in>"));
   if (!gfc_cpp_option.no_predefined)
     cpp_define_builtins (cpp_in);
@@ -573,6 +576,8 @@ gfc_cpp_preprocess (const char *source_file)
       putc ('\n', print.outf);
       cpp_forall_identifiers (cpp_in, dump_macro, NULL);
     }
+
+  putc ('\n', print.outf);
 
   if (!gfc_cpp_preprocess_only ()
       || (gfc_cpp_preprocess_only () && gfc_cpp_option.output_filename))
