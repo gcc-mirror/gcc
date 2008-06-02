@@ -5216,7 +5216,7 @@ attr_decl1 (void)
   /* Update symbol table.  DIMENSION attribute is set
      in gfc_set_array_spec().  */
   if (current_attr.dimension == 0
-      && gfc_copy_attr (&sym->attr, &current_attr, NULL) == FAILURE)
+      && gfc_copy_attr (&sym->attr, &current_attr, &var_locus) == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;
