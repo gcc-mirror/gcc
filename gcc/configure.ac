@@ -1078,7 +1078,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/resource.h>
 #endif
 ]], [[rlim_t l = 0;]])],[],[AC_DEFINE([rlim_t],[long],
-[Define to \`long' if <sys/resource.h> doesn't define.])])
+[Define to `long' if <sys/resource.h> doesn't define.])])
 
 # On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
 # FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname

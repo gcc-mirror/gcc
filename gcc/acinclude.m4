@@ -347,7 +347,7 @@ if test $gcc_cv_c_nbby = failed; then
   AC_MSG_ERROR(cannot determine number of bits in a byte)
 else
   AC_DEFINE_UNQUOTED(CHAR_BIT, $gcc_cv_c_nbby,
-  [Define as the number of bits in a byte, if \`limits.h' doesn't.])
+  [Define as the number of bits in a byte, if `limits.h' doesn't.])
 fi
 fi])
 
