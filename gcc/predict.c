@@ -107,6 +107,22 @@ static const struct predictor_info predictor_info[]= {
 };
 #undef DEF_PREDICTOR
 
+/* Return TRUE if frequency FREQ is considered to be hot.  */
+static bool
+maybe_hot_frequency_p (int freq)
+{
+  if (!profile_info || !flag_branch_probabilities)
+    {
+      if (cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+        return false;
+      if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
+        return true;
+    }
+  if (freq < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
+    return false;
+  return true;
+}
+
 /* Return true in case BB can be CPU intensive and should be optimized
    for maximal performance.  */
 
@@ -117,16 +133,20 @@ maybe_hot_bb_p (const_basic_block bb)
       && (bb->count
 	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
-  if (!profile_info || !flag_branch_probabilities)
-    {
-      if (cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
-        return false;
-      if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
-        return true;
-    }
-  if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
+  return maybe_hot_frequency_p (bb->frequency);
+}
+
+/* Return true in case BB can be CPU intensive and should be optimized
+   for maximal performance.  */
+
+bool
+maybe_hot_edge_p (edge e)
+{
+  if (profile_info && flag_branch_probabilities
+      && (e->count
+	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
-  return true;
+  return maybe_hot_frequency_p (EDGE_FREQUENCY (e));
 }
 
 /* Return true in case BB is cold and should be optimized for size.  */

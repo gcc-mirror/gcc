@@ -1,3 +1,11 @@
+2008-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (maybe_hot_frequency_p): Break out of...
+	(maybe_hot_bb_p): ... here.
+	(maybe_hot_edge_p): New.
+	* tree-ssa-coalesce.c (coalesce_cost_edge): Compute cost based on edge.
+	* basic-block.h (maybe_hot_edge_p): Declare.
+
 2008-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*cmpfp_<mode>): Enable for optimize_size.
