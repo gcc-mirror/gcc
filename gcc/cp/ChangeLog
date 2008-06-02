@@ -1,3 +1,10 @@
+2008-06-02  Tomas Bily  <tbily@suse.cz>
+
+        * typeck.c (is_bitfield_expr_with_lowered_type): Use CASE_CONVERT.
+        (cp_build_unary_op): Likewise.
+        (cp_build_indirect_ref): Use CONVERT_EXPR_P.
+        (maybe_warn_about_returning_address_of_local): Likewise.
+
 2008-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/35243

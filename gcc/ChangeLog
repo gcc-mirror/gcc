@@ -1,3 +1,7 @@
+2008-06-02  Tomas Bily  <tbily@suse.cz>
+
+        * tree-ssa-ifcombine.c (get_name_for_bit_test): Use CONVERT_EXPR_P.
+
 2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_valid_offset_p): New function.
