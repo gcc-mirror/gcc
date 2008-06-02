@@ -1,5 +1,10 @@
 2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/pr19340.c: Disable for AVR as it has no scheduling.
+	* gcc.dg/section1.c: XFAIL AVR as bss section is used  differently.
+
+2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/pr18241-1.c: Use long on small int target.
 	* gcc.dg/pr32912-2.c: Ditto.
 	* gcc.dg/pr35065.c: Ditto.
