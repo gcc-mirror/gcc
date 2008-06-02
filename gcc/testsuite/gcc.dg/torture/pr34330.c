@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-ftree-parallelize-loops=4 -ftree-vectorize" } */
 
 struct T
