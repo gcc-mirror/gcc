@@ -1,5 +1,12 @@
 2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.target/avr/avr.exp: Add avr testsuite.
+	* gcc.target/avr/trivial.c: Add simple test.
+	* gcc.target/avr/torture/avr-torture.exp: Add avr-torture testsuite.
+	* gcc.target/avr/torture/trivial.c: Add simple test.
+
+2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/pr19340.c: Disable for AVR as it has no scheduling.
 	* gcc.dg/section1.c: XFAIL AVR as bss section is used  differently.
 
