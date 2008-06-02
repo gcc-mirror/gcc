@@ -83,6 +83,8 @@ static bool avr_rtx_costs (rtx, int, int, int *);
 static int avr_address_cost (rtx);
 static bool avr_return_in_memory (const_tree, const_tree);
 static struct machine_function * avr_init_machine_status (void);
+static rtx avr_builtin_setjmp_frame_value (void);
+
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
 
@@ -323,6 +325,9 @@ int avr_case_values_threshold = 30000;
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
+#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
+#define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
@@ -521,6 +526,17 @@ initial_elimination_offset (int from, int to)
       offset += avr_regs_to_save (NULL);
       return get_frame_size () + (avr_pc_size) + 1 + offset;
     }
+}
+
+/* Actual start of frame is virtual_stack_vars_rtx this is offset from 
+   frame pointer by +STARTING_FRAME_OFFSET.
+   Using saved frame = virtual_stack_vars_rtx - STARTING_FRAME_OFFSET
+   avoids creating add/sub of offset in nonlocal goto and setjmp.  */
+
+rtx avr_builtin_setjmp_frame_value (void)
+{
+  return gen_rtx_MINUS (Pmode, virtual_stack_vars_rtx, 
+			 gen_int_mode (STARTING_FRAME_OFFSET, Pmode));
 }
 
 /* Return 1 if the function epilogue is just a single "ret".  */

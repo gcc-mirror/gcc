@@ -1,3 +1,11 @@
+2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com> 
+
+	PR target/34879
+	* config/avr/avr.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Redefine.
+	(avr_builtin_setjmp_frame_value): New function.
+	* config/avr/avr.md (nonlocal_goto_receiver): Define.
+	(nonlocal_goto): Define.
+
 2008-06-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_emit_loadgp): Return early if
