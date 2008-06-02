@@ -1,3 +1,12 @@
+2008-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/vector.tcc (vector<>::_M_insert_aux): In C++0x mode,
+	avoid a memory leak if the first __uninitialized_move_a throws.
+	(vector<>::_M_fill_insert): Do not always copy to __x_copy, similarly
+	to _M_insert_aux.
+	* testsuite/23_containers/vector/modifiers/moveable.cc: Adjust.
+	* testsuite/23_containers/vector/resize/moveable.cc: Likewise.
+
 2008-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Chris Jefferson  <chris@bubblescope.net>
 
