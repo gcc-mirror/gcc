@@ -114,7 +114,7 @@ coalesce_cost_edge (edge e)
     return MUST_COALESCE_COST;
 
   return coalesce_cost (EDGE_FREQUENCY (e), 
-			maybe_hot_bb_p (e->src), 
+			maybe_hot_edge_p (e), 
 			EDGE_CRITICAL_P (e));
 }
 
