@@ -1,6 +1,16 @@
+2008-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpfp_<mode>): Enable for optimize_size.
+	(*cmpfp_<mode>_cc): Ditto.
+	(*fp_jcc_8<mode>_387): Ditto.
+	(*fop_<MODEF:mode>_2_i387): Ditto.
+	(*fop_<MODEF:mode>_3_i387): Ditto.
+	(*fop_xf_2_i387): Ditto.
+	(*fop_xf_3_i387): Ditto.
+
 2008-06-02  Tomas Bily  <tbily@suse.cz>
 
-        * tree-ssa-ifcombine.c (get_name_for_bit_test): Use CONVERT_EXPR_P.
+	* tree-ssa-ifcombine.c (get_name_for_bit_test): Use CONVERT_EXPR_P.
 
 2008-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -116,14 +126,14 @@
 	Revert
 	2007-11-29  Zdenek Dvorak  <ook@ucw.cz>
 
-        PR tree-optimization/34244
-        * tree-vrp.c (adjust_range_with_scev): Clear scev cache.
-        (record_numbers_of_iterations): New function.
-        (execute_vrp): Cache the numbers of iterations of loops.
-        * tree-scalar-evolution.c (scev_reset_except_niters):
-        New function.
-        (scev_reset): Use scev_reset_except_niters.
-        * tree-scalar-evolution.h (scev_reset_except_niters): Declare.
+	PR tree-optimization/34244
+	* tree-vrp.c (adjust_range_with_scev): Clear scev cache.
+	(record_numbers_of_iterations): New function.
+	(execute_vrp): Cache the numbers of iterations of loops.
+	* tree-scalar-evolution.c (scev_reset_except_niters):
+	New function.
+	(scev_reset): Use scev_reset_except_niters.
+	* tree-scalar-evolution.h (scev_reset_except_niters): Declare.
 
 2008-05-31  Bernd Schmidt  <bernd.schmidt@analog.com>
 
