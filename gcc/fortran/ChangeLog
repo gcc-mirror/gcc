@@ -1,3 +1,11 @@
+2008-06-02  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/36375
+	PR fortran/36377
+	* cpp.c (gfc_cpp_init): Do not initialize builtins if
+	processing already preprocessed input.
+	(gfc_cpp_preprocess): Finalize output with newline.
+
 2008-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* intrinsic.texi: Revert wrong commit.
