@@ -26,12 +26,13 @@
 	* config/i386/i386.md (P): New mode iterator.
 	(SFmode push_operand splitter): Macroize DImode and SImode pushes
 	using P mode iterator.
-	(DFmode ...): Ditto.
-	(XFmode ...): Ditto.
+	(DFmode push_operand splitter): Ditto.
+	(XFmode push_operand splitter): Ditto.
 	(DFmode float_extend SFmode push_operand splitter): Ditto.
 	(XFmode float_extend SFmode push_operand splitter): Do not generate
-	SImode pushes for 64bit target.  Macroize Dimode and SImode ...
-	(XFmode float_extedn DFmode push_operand splitter): Ditto.
+	SImode pushes for 64bit target.  Macroize Dimode and SImode
+	pushes using P mode iterator.
+	(XFmode float_extend DFmode push_operand splitter): Ditto.
 
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
