@@ -1,3 +1,26 @@
+2008-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	*  config/i386/i386.c (ix86_gen_leave): New.
+	(ix86_gen_pop1): Likewise.
+	(ix86_gen_add3): Likewise.
+	(ix86_gen_sub3): Likewise.
+	(ix86_gen_sub3_carry): Likewise.
+	(ix86_gen_one_cmpl2): Likewise.
+	(ix86_gen_monitor): Likewise.
+	(override_options): Initialize ix86_gen_leave, ix86_gen_pop1,
+	ix86_gen_add3, ix86_gen_sub3, ix86_gen_sub3_carry,
+	ix86_gen_one_cmpl2 and ix86_gen_monitor.
+	(ix86_file_end): Use mov%z0 instead of mov{q}/mov{l}.
+	(output_set_got): Use mov%z0, pop%z0 and add%z0 instead of
+	mov{q}/mov{l}, pop{q}/pop{l} and add{q}/add{l}.
+	(ix86_expand_epilogue): Updated.
+	(print_operand): Handle integer register operand for 'z'.
+	(ix86_expand_strlensi_unroll_1): Likewise.
+	(ix86_expand_strlen): Likewise.
+	(ix86_expand_builtin): Likewise.
+	(x86_output_mi_thunk): Use mov%z1 and add%z1 instead of
+	mov{q}/mov{l} and add{q}/add{l}.
+
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.md (define_mode_iterator P): New.
