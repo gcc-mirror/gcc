@@ -2508,6 +2508,19 @@ instruction).  Caveat: such addressing is by definition not position
 independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
+@item ms_abi/sysv_abi
+@cindex @code[ms_abi} attribute
+@cindex @code{sysv_abi} attribute
+
+On 64-bit x86_65-*-* targets, you can use an ABI attribute to indicate
+which calling convention should be used for a function.  The @code{ms_abi}
+attribute tells the compiler to use the Microsoft ABI, while the
+@code{sysv_abi} attribute tells the compiler to use the ABI used on
+GNU/Linux and other systems.  The default is to use the Microsoft ABI
+when targeting Windows.  On all other systems, the default is the AMD ABI.
+
+Note, This feature is currently sorried out for Windows targets trying to
+
 @item naked
 @cindex function without a prologue/epilogue code
 Use this attribute on the ARM, AVR, IP2K and SPU ports to indicate that
