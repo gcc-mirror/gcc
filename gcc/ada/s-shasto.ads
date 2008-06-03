@@ -79,7 +79,7 @@
 
 --  The approach is as follows:
 
---    For each shared variable, var, an instanciation of the below generic
+--    For each shared variable, var, an instantiation of the below generic
 --    package is created which provides Read and Write supporting procedures.
 
 --    The routine Shared_Var_ROpen in package System.Shared_Storage
@@ -214,7 +214,7 @@ package System.Shared_Storage is
       --  the shared storage.
 
       procedure Write;
-      --  Shared passive variable assignement routine. Each assignment to
+      --  Shared passive variable assignment routine. Each assignment to
       --  the shared variable, V, is followed by a call to the corresponding
       --  Write procedure, which writes the new value to the shared storage.
 

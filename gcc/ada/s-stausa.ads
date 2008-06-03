@@ -216,7 +216,7 @@ package System.Stack_Usage is
    --  Max_Pattern_Size is the size of the pattern zone, might be smaller than
    --  the full stack size in order to take into account e.g. the secondary
    --  stack and a guard against overflow. The actual size taken will be
-   --  reajusted with data already used at the time the stack is actually
+   --  readjusted with data already used at the time the stack is actually
    --  filled.
 
    Is_Enabled : Boolean := False;

@@ -1729,7 +1729,7 @@ package body Sem_Ch8 is
          then
             --  Input stream functions are abstract if the object type is
             --  abstract. Similarly, all default stream functions for an
-            --  interface type are abstract. However, these suprograms may
+            --  interface type are abstract. However, these subprograms may
             --  receive explicit declarations in representation clauses, making
             --  the attribute subprograms usable as defaults in subsequent
             --  type extensions.
@@ -3851,7 +3851,7 @@ package body Sem_Ch8 is
                Only_One_Visible := False;
                All_Overloadable := All_Overloadable and Is_Overloadable (E2);
 
-            --  Ada 2005 (AI-262): Protect against a form of Beujolais effect
+            --  Ada 2005 (AI-262): Protect against a form of Beaujolais effect
             --  that can occur in private_with clauses. Example:
 
             --    with A;

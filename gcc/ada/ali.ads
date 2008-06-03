@@ -444,7 +444,7 @@ package ALI is
 
    Float_Format_Specified : Character := ' ';
    --  Set to blank by Initialize_ALI. Set to appropriate float format
-   --  character (V or I, see Opt.Float_Format) if an an ali file that
+   --  character (V or I, see Opt.Float_Format) if an ali file that
    --  is read contains an F line setting the floating point format.
 
    Initialize_Scalars_Used : Boolean := False;

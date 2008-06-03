@@ -3839,7 +3839,7 @@ package body Exp_Ch6 is
               Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
             Set_Is_Internal (Temp);
 
-            --  For the unconstrained case. the generated temporary has the
+            --  For the unconstrained case, the generated temporary has the
             --  same constrained declaration as the result variable.
             --  It may eventually be possible to remove that temporary and
             --  use the result variable directly.
@@ -3967,7 +3967,7 @@ package body Exp_Ch6 is
 
       --  If the return value of a foreign compiled function is
       --  VAX Float then expand the return (adjusts the location
-      --  of the return value on Alpha/VMS, noop everywere else).
+      --  of the return value on Alpha/VMS, noop everywhere else).
       --  Comes_From_Source intercepts recursive expansion.
 
       if Vax_Float (Etype (N))

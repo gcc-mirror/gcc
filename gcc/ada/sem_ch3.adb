@@ -11339,7 +11339,7 @@ package body Sem_Ch3 is
         and then Is_Tagged_Type (Tagged_Type)
         and then Has_Interfaces (Tagged_Type));
 
-      --  Step 1: Transfer to the full-view primitives asociated with the
+      --  Step 1: Transfer to the full-view primitives associated with the
       --  partial-view that cover interface primitives. Conceptually this
       --  work should be done later by Process_Full_View; done here to
       --  simplify its implementation at later stages. It can be safely

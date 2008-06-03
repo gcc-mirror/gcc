@@ -358,7 +358,7 @@ package Exp_Dbug is
       --  the protected/non-locking version of the operation.
 
       --  Operations generated for protected entries follow the same encoding.
-      --  Each entry results in two suprograms: a procedure that holds the
+      --  Each entry results in two subprograms: a procedure that holds the
       --  entry body, and a function that holds the evaluation of the barrier.
       --  The names of these subprograms include the prefix '_E' or '_B' res-
       --  pectively. The names also include a numeric suffix to render them

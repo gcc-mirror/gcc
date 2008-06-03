@@ -788,7 +788,7 @@ package GNAT.Sockets is
       Status   : out Selector_Status);
    --  Accept a new connection on Server using Accept_Socket, waiting no longer
    --  than the given timeout duration. Status is set to indicate whether the
-   --  operation completed successully, timed out, or was aborted. If Selector
+   --  operation completed successfully, timed out, or was aborted. If Selector
    --  is not null, the designated selector is used to wait for the socket to
    --  become available, else a private selector object is created by this
    --  procedure and destroyed before it returns.
@@ -816,7 +816,7 @@ package GNAT.Sockets is
       Status   : out Selector_Status);
    --  Connect Socket to the given Server address using Connect_Socket, waiting
    --  no longer than the given timeout duration. Status is set to indicate
-   --  whether the operation completed successully, timed out, or was aborted.
+   --  whether the operation completed successfully, timed out, or was aborted.
    --  If Selector is not null, the designated selector is used to wait for the
    --  socket to become available, else a private selector object is created
    --  by this procedure and destroyed before it returns.
@@ -1049,7 +1049,7 @@ package GNAT.Sockets is
    --  it is used in the visible part of GNAT.Sockets.Thin_Common. This is
    --  really an inversion of abstraction. The private part of GNAT.Sockets
    --  needs to have visibility on this type, but since Thin_Common is a child
-   --  of Sokcets, the type can't be declared there. The correct fix would
+   --  of Sockets, the type can't be declared there. The correct fix would
    --  be to move the thin sockets binding outside of GNAT.Sockets altogether,
    --  e.g. by renaming it to GNAT.Sockets_Thin.
 

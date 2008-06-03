@@ -454,7 +454,7 @@ package body Sem_Ch12 is
       Inst   : Node_Id) return Boolean;
    --  True if the instantiation Inst and the given freeze_node F_Node appear
    --  within the same declarative part, ignoring subunits, but with no inter-
-   --  vening suprograms or concurrent units. If true, the freeze node
+   --  vening subprograms or concurrent units. If true, the freeze node
    --  of the instance can be placed after the freeze node of the parent,
    --  which it itself an instance.
 

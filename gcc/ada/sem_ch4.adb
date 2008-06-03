@@ -2246,7 +2246,7 @@ package body Sem_Ch4 is
       end if;
 
       --  If the call has been transformed into a slice, it is of the form
-      --  F (Subtype) where F is paramterless. The node has ben rewritten in
+      --  F (Subtype) where F is parameterless. The node has been rewritten in
       --  Try_Indexed_Call and there is nothing else to do.
 
       if Is_Indexed

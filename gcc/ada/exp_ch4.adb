@@ -2422,7 +2422,7 @@ package body Exp_Ch4 is
       begin
          --  If the index type is an enumeration type, the computation can be
          --  done in standard integer. Otherwise, choose a large enough integer
-         --  type to accomodate the index type computation.
+         --  type to accommodate the index type computation.
 
          if Is_Enumeration_Type (Ind_Typ)
            or else Root_Type (Ind_Typ) = Standard_Integer
@@ -5947,7 +5947,7 @@ package body Exp_Ch4 is
          --  the mod value is always 0, and we can just ignore the left operand
          --  completely in this case.
 
-         --  The operand type may be private (e.g. in the expansion of an an
+         --  The operand type may be private (e.g. in the expansion of an
          --  intrinsic operation) so we must use the underlying type to get the
          --  bounds, and convert the literals explicitly.
 

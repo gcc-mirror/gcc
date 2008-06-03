@@ -146,7 +146,7 @@ package System.OS_Interface is
    SA_SIGINFO  : constant := 16#02#;
 
    SA_ONSTACK : constant := 16#00#;
-   --  SA_ONSTACK is not defined on RTEMS, but it is refered to in the POSIX
+   --  SA_ONSTACK is not defined on RTEMS, but it is referred to in the POSIX
    --  implementation of System.Interrupt_Management. Therefore we define a
    --  dummy value of zero here so that setting this flag is a nop.
 
