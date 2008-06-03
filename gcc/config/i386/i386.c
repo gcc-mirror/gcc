@@ -1697,6 +1697,14 @@ static int ix86_regparm;
 extern int ix86_force_align_arg_pointer;
 static const char ix86_force_align_arg_pointer_string[] = "force_align_arg_pointer";
 
+static rtx (*ix86_gen_leave) (void);
+static rtx (*ix86_gen_pop1) (rtx);
+static rtx (*ix86_gen_add3) (rtx, rtx, rtx);
+static rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
+static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx);
+static rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
+static rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
+
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
 
@@ -2765,6 +2773,27 @@ override_options (void)
      For abi switching it should be corrected.  */
   if (!TARGET_64BIT || DEFAULT_ABI == MS_ABI)
     targetm.expand_builtin_va_start = NULL;
+
+  if (TARGET_64BIT)
+    {
+      ix86_gen_leave = gen_leave_rex64;
+      ix86_gen_pop1 = gen_popdi1;
+      ix86_gen_add3 = gen_adddi3;
+      ix86_gen_sub3 = gen_subdi3;
+      ix86_gen_sub3_carry = gen_subdi3_carry_rex64;
+      ix86_gen_one_cmpl2 = gen_one_cmpldi2;
+      ix86_gen_monitor = gen_sse3_monitor64;
+    }
+  else
+    {
+      ix86_gen_leave = gen_leave;
+      ix86_gen_pop1 = gen_popsi1;
+      ix86_gen_add3 = gen_addsi3;
+      ix86_gen_sub3 = gen_subsi3;
+      ix86_gen_sub3_carry = gen_subsi3_carry;
+      ix86_gen_one_cmpl2 = gen_one_cmplsi2;
+      ix86_gen_monitor = gen_sse3_monitor;
+    }
 
 #ifdef USE_IX86_CLD
   /* Use -mcld by default for 32-bit code if configured with --enable-cld.  */
@@ -6029,10 +6058,7 @@ ix86_file_end (void)
 
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
-      if (TARGET_64BIT)
-	output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
-      else
-	output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
+      output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
       output_asm_insn ("ret", xops);
     }
 
@@ -6072,12 +6098,7 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
       xops[2] = gen_rtx_LABEL_REF (Pmode, label ? label : gen_label_rtx ());
 
       if (!flag_pic)
-        {
-          if (TARGET_64BIT)
-	    output_asm_insn ("mov{q}\t{%2, %0|%0, %2}", xops);
-	  else
-	    output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
-	}
+	output_asm_insn ("mov%z0\t{%2, %0|%0, %2}", xops);
       else
 	output_asm_insn ("call\t%a2", xops);
 
@@ -6092,12 +6113,7 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
 				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
 
       if (flag_pic)
-        {
-          if (TARGET_64BIT)
-	    output_asm_insn ("pop{q}\t%0", xops);
-	  else
-	    output_asm_insn ("pop{l}\t%0", xops);
-	}
+	output_asm_insn ("pop%z0\t%0", xops);
     }
   else
     {
@@ -6123,19 +6139,9 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
     return "";
 
   if (!flag_pic || TARGET_DEEP_BRANCH_PREDICTION)
-    {
-      if (TARGET_64BIT)
-        output_asm_insn ("add{q}\t{%1, %0|%0, %1}", xops);
-      else
-        output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
-    }
+    output_asm_insn ("add%z0\t{%1, %0|%0, %1}", xops);
   else
-    {
-      if (TARGET_64BIT)
-        output_asm_insn ("add{q}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
-      else
-        output_asm_insn ("add{l}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
-    }
+    output_asm_insn ("add%z0\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
 
   return "";
 }
@@ -6860,16 +6866,14 @@ ix86_expand_epilogue (int style)
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_size
 	       || !cfun->machine->use_fast_prologue_epilogue)
-	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
+	emit_insn ((*ix86_gen_leave) ());
       else
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx,
 				     hard_frame_pointer_rtx,
 				     const0_rtx, style);
-	  if (TARGET_64BIT)
-	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
-	  else
-	    emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+
+	  emit_insn ((*ix86_gen_pop1) (hard_frame_pointer_rtx));
 	}
     }
   else
@@ -6889,22 +6893,15 @@ ix86_expand_epilogue (int style)
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (ix86_save_reg (regno, false))
-	  {
-	    if (TARGET_64BIT)
-	      emit_insn (gen_popdi1 (gen_rtx_REG (Pmode, regno)));
-	    else
-	      emit_insn (gen_popsi1 (gen_rtx_REG (Pmode, regno)));
-	  }
+	  emit_insn ((*ix86_gen_pop1) (gen_rtx_REG (Pmode, regno)));
       if (frame_pointer_needed)
 	{
 	  /* Leave results in shorter dependency chains on CPUs that are
 	     able to grok it fast.  */
 	  if (TARGET_USE_LEAVE)
-	    emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
-	  else if (TARGET_64BIT)
-	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
+	    emit_insn ((*ix86_gen_leave) ());
 	  else
-	    emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+	    emit_insn ((*ix86_gen_pop1) (hard_frame_pointer_rtx));
 	}
     }
 
@@ -9170,12 +9167,17 @@ print_operand (FILE *file, rtx x, int code)
 	    case 8:
 	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 		{
+		  if (MEM_P (x))
+		    {
 #ifdef GAS_MNEMONICS
-		  putc ('q', file);
+		      putc ('q', file);
 #else
-		  putc ('l', file);
-		  putc ('l', file);
+		      putc ('l', file);
+		      putc ('l', file);
 #endif
+		    }
+		  else
+		    putc ('q', file);
 		}
 	      else
 	        putc ('l', file);
@@ -16258,10 +16260,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 			       QImode, 1, end_0_label);
 
       /* Increment the address.  */
-      if (TARGET_64BIT)
-	emit_insn (gen_adddi3 (out, out, const1_rtx));
-      else
-	emit_insn (gen_addsi3 (out, out, const1_rtx));
+      emit_insn ((*ix86_gen_add3) (out, out, const1_rtx));
 
       /* Not needed with an alignment of 2 */
       if (align != 2)
@@ -16271,10 +16270,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 	  emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
 				   end_0_label);
 
-	  if (TARGET_64BIT)
-	    emit_insn (gen_adddi3 (out, out, const1_rtx));
-	  else
-	    emit_insn (gen_addsi3 (out, out, const1_rtx));
+	  emit_insn ((*ix86_gen_add3) (out, out, const1_rtx));
 
 	  emit_label (align_3_label);
 	}
@@ -16282,10 +16278,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
       emit_cmp_and_jump_insns (mem, const0_rtx, EQ, NULL, QImode, 1,
 			       end_0_label);
 
-      if (TARGET_64BIT)
-	emit_insn (gen_adddi3 (out, out, const1_rtx));
-      else
-	emit_insn (gen_addsi3 (out, out, const1_rtx));
+      emit_insn ((*ix86_gen_add3) (out, out, const1_rtx));
     }
 
   /* Generate loop to check 4 bytes at a time.  It is not a good idea to
@@ -16295,10 +16288,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
   mem = change_address (src, SImode, out);
   emit_move_insn (scratch, mem);
-  if (TARGET_64BIT)
-    emit_insn (gen_adddi3 (out, out, GEN_INT (4)));
-  else
-    emit_insn (gen_addsi3 (out, out, GEN_INT (4)));
+  emit_insn ((*ix86_gen_add3) (out, out, GEN_INT (4)));
 
   /* This formula yields a nonzero result iff one of the bytes is zero.
      This saves three branches inside loop and many cycles.  */
@@ -16354,10 +16344,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
        /* Not in the first two.  Move two bytes forward.  */
        emit_insn (gen_lshrsi3 (tmpreg, tmpreg, GEN_INT (16)));
-       if (TARGET_64BIT)
-	 emit_insn (gen_adddi3 (out, out, const2_rtx));
-       else
-	 emit_insn (gen_addsi3 (out, out, const2_rtx));
+       emit_insn ((*ix86_gen_add3) (out, out, const2_rtx));
 
        emit_label (end_2_label);
 
@@ -16367,10 +16354,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
   tmpreg = gen_lowpart (QImode, tmpreg);
   emit_insn (gen_addqi3_cc (tmpreg, tmpreg, tmpreg));
   cmp = gen_rtx_LTU (Pmode, gen_rtx_REG (CCmode, FLAGS_REG), const0_rtx);
-  if (TARGET_64BIT)
-    emit_insn (gen_subdi3_carry_rex64 (out, out, GEN_INT (3), cmp));
-  else
-    emit_insn (gen_subsi3_carry (out, out, GEN_INT (3), cmp));
+  emit_insn ((*ix86_gen_sub3_carry) (out, out, GEN_INT (3), cmp));
 
   emit_label (end_0_label);
 }
@@ -16412,10 +16396,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       /* strlensi_unroll_1 returns the address of the zero at the end of
          the string, like memchr(), so compute the length by subtracting
          the start address.  */
-      if (TARGET_64BIT)
-	emit_insn (gen_subdi3 (out, out, addr));
-      else
-	emit_insn (gen_subsi3 (out, out, addr));
+      emit_insn ((*ix86_gen_sub3) (out, out, addr));
     }
   else
     {
@@ -16438,16 +16419,8 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (4, src, eoschar, align,
 						 scratch4), UNSPEC_SCAS);
       emit_insn (gen_strlenqi_1 (scratch1, scratch3, unspec));
-      if (TARGET_64BIT)
-	{
-	  emit_insn (gen_one_cmpldi2 (scratch2, scratch1));
-	  emit_insn (gen_adddi3 (out, scratch2, constm1_rtx));
-	}
-      else
-	{
-	  emit_insn (gen_one_cmplsi2 (scratch2, scratch1));
-	  emit_insn (gen_addsi3 (out, scratch2, constm1_rtx));
-	}
+      emit_insn ((*ix86_gen_one_cmpl2) (scratch2, scratch1));
+      emit_insn ((*ix86_gen_add3) (out, scratch2, constm1_rtx));
     }
   return 1;
 }
@@ -21542,10 +21515,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
-      if (!TARGET_64BIT)
-	emit_insn (gen_sse3_monitor (op0, op1, op2));
-      else
-	emit_insn (gen_sse3_monitor64 (op0, op1, op2));
+      emit_insn ((*ix86_gen_monitor) (op0, op1, op2));
       return 0;
 
     case IX86_BUILTIN_MWAIT:
@@ -23221,10 +23191,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       /* Put the this parameter into %eax.  */
       xops[0] = this_param;
       xops[1] = this_reg = gen_rtx_REG (Pmode, AX_REG);
-      if (TARGET_64BIT)
-        output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
-      else
-        output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
     }
   else
     this_reg = NULL_RTX;
@@ -23266,10 +23233,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 
       xops[0] = gen_rtx_MEM (Pmode, this_reg);
       xops[1] = tmp;
-      if (TARGET_64BIT)
-	output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
-      else
-	output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
 
       /* Adjust the this parameter.  */
       xops[0] = gen_rtx_MEM (Pmode, plus_constant (tmp, vcall_offset));
@@ -23282,10 +23246,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	  xops[0] = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, tmp, tmp2));
 	}
       xops[1] = this_reg;
-      if (TARGET_64BIT)
-	output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
-      else
-	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+      output_asm_insn ("add%z1\t{%0, %1|%1, %0}", xops);
     }
 
   /* If necessary, drop THIS back to its stack slot.  */
@@ -23293,10 +23254,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
     {
       xops[0] = this_reg;
       xops[1] = this_param;
-      if (TARGET_64BIT)
-        output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
-      else
-        output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
     }
 
   xops[0] = XEXP (DECL_RTL (function), 0);
