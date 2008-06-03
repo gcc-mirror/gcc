@@ -23,8 +23,15 @@
 
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/i386.md (define_mode_iterator P): New.
-	(split): Merged XF and DF rules using P.
+	* config/i386/i386.md (P): New mode iterator.
+	(SFmode push_operand splitter): Macroize DImode and SImode pushes
+	using P mode iterator.
+	(DFmode ...): Ditto.
+	(XFmode ...): Ditto.
+	(DFmode float_extend SFmode push_operand splitter): Ditto.
+	(XFmode float_extend SFmode push_operand splitter): Do not generate
+	SImode pushes for 64bit target.  Macroize Dimode and SImode ...
+	(XFmode float_extedn DFmode push_operand splitter): Ditto.
 
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
