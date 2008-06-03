@@ -6134,7 +6134,7 @@ use @option{L} parameter witout any integer value after that, because any
 digit following @option{-} in the parameter string of the @option{-gnaty}
 option will be threated as canceling indentation check. The same is true
 for @option{M} parameter. @option{y} and @option{N} parameters are not
-alloved after @option{-}.
+allowed after @option{-}.
 
 @item +
 This causes any subsequent options in the string to enable the corresponding
@@ -20401,7 +20401,7 @@ gnat_rm, GNAT Reference Manual}). Note, that in case of gnatcheck
 's' parameter, that corresponds to the GNAT @option{-gnatws} option, disables
 all the specific warnings, but not suppresses the warning mode,
 and 'e' parameter, corresponding to @option{-gnatwe} that means
-"therat warnings as errors", does not have any effect.
+"treat warnings as errors", does not have any effect.
 
 @end table
 
@@ -26224,7 +26224,7 @@ package body ada_main is
       --  a-except.ads/adb for full details of how zero cost
       --  exception handling works. This procedure, the call to
       --  it, and the two following tables are all omitted if the
-      --  build is in longjmp/setjump exception mode.
+      --  build is in longjmp/setjmp exception mode.
 
 @findex SDP_Table_Build
 @findex Zero Cost Exceptions
@@ -26299,7 +26299,7 @@ package body ada_main is
 
       --  Call SDP_Table_Build to build the top level procedure
       --  table for zero cost exception handling (omitted in
-      --  longjmp/setjump mode).
+      --  longjmp/setjmp mode).
 
       SDP_Table_Build (ST'Address, 23, EA'Address, 23);
 

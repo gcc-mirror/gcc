@@ -1,3 +1,17 @@
+2008-06-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (common_tools): Fix typos in $(exeext) extension.
+	* gnat_ugn.texi (Style Checking)
+	(Adding the Results of Compiler Checks to gnatcheck Output)
+	(Example of Binder Output File): Fix typos.
+	* ali.ads, einfo.ads, exp_ch4.adb, exp_ch6.adb,
+	exp_dbug.ads, exp_dist.adb, exp_smem.adb, g-socket.ads,
+	s-osinte-rtems.ads, s-shasto.ads, s-stausa.adb,
+	s-stausa.ads, sem_cat.adb, sem_ch12.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch6.adb, sem_ch8.adb, sem_util.ads,
+	sinfo.ads, utils.c: Fix typos in comments.
+	* sem_ch6.adb, vms_data.ads: Fix typos in strings.
+
 2008-05-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_eval.adb: Minor reformatting

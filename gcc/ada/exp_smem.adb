@@ -300,7 +300,7 @@ package body Exp_Smem is
       --  with Ent.
 
       Instantiation : Node_Id;
-      --  Package instanciation node for SVP_Instance
+      --  Package instantiation node for SVP_Instance
 
    --  Start of processing for Make_Shared_Var_Procs
 
@@ -308,7 +308,7 @@ package body Exp_Smem is
       Build_Full_Name (Ent, Vnm);
 
       --  We turn off Shared_Passive during construction and analysis of
-      --  the generic package instantition, to avoid improper attempts to
+      --  the generic package instantiation, to avoid improper attempts to
       --  process the variable references within these instantiation.
 
       Set_Is_Shared_Passive (Ent, False);

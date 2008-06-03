@@ -942,8 +942,8 @@ package Sem_Util is
    --  Returns True if the names of both entities correspond with matching
    --  primitives. This routine includes support for the case in which one
    --  or both entities correspond with entities built by Derive_Subprogram
-   --  with a special name to avoid being overriden (ie. return true in case
-   --  of entities with names "nameP" and "name" or viceversa).
+   --  with a special name to avoid being overridden (i.e. return true in case
+   --  of entities with names "nameP" and "name" or vice versa).
 
    function Private_Component (Type_Id : Entity_Id) return Entity_Id;
    --  Returns some private component (if any) of the given Type_Id.

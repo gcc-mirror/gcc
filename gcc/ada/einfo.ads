@@ -2602,7 +2602,7 @@ package Einfo is
 
 --    Is_Remote_Call_Interface (Flag62)
 --       Present in all entities. Set in E_Package and E_Generic_Package
---       entities to which a pragma Remote_Call_Interace is applied, and
+--       entities to which a pragma Remote_Call_Interface is applied, and
 --       also on entities declared in the visible part of such a package.
 
 --    Is_Remote_Types (Flag61)

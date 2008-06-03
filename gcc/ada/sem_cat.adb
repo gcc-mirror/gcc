@@ -1394,7 +1394,7 @@ package body Sem_Cat is
             elsif Ekind (Param_Type) = E_Anonymous_Access_Type
               or else Ekind (Param_Type) = E_Anonymous_Access_Subprogram_Type
             then
-               --  From RM E.2.2(14), no anonumous access parameter other than
+               --  From RM E.2.2(14), no anonymous access parameter other than
                --  controlling ones may be used (because an anonymous access
                --  type never supports external streaming).
 

@@ -6601,7 +6601,7 @@ package VMS_Data is
    --
    --   Output the execution time
 
-   S_Sync_Details : aliased constant S := "/DETAILs="                      &
+   S_Sync_Details : aliased constant S := "/DETAILS="                      &
                                              "MEDIUM "                     &
                                                "-om "                      &
                                              "SHORT "                      &

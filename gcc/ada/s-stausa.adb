@@ -261,7 +261,7 @@ package body System.Stack_Usage is
       Current_Stack_Level : aliased Integer;
 
    begin
-      --  Reajust the pattern size. When we arrive in this function, there is
+      --  Readjust the pattern size. When we arrive in this function, there is
       --  already a given amount of stack used, that we won't analyze.
 
       Analyzer.Stack_Used_When_Filling :=

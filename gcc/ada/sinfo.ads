@@ -3266,7 +3266,7 @@ package Sinfo is
       --  to Ada 2005 (AI-287).
 
       ----------------------------------
-      -- 4.3.1  Cmmponent Choice List --
+      -- 4.3.1  Component Choice List --
       ----------------------------------
 
       --  COMPONENT_CHOICE_LIST ::=

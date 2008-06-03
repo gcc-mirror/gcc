@@ -1781,23 +1781,23 @@ common-tools:
 	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
-	$(GNATLINK) -v gnatcmd -o ../../gnat$(exext) \
+	$(GNATLINK) -v gnatcmd -o ../../gnat$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exext) \
+	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exext) \
+	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatls -o ../../gnatls$(exext) \
+	$(GNATLINK) -v gnatls -o ../../gnatls$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exext) \
+	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatxref -o ../../gnatxref$(exext) \
+	$(GNATLINK) -v gnatxref -o ../../gnatxref$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatfind -o ../../gnatfind$(exext) \
+	$(GNATLINK) -v gnatfind -o ../../gnatfind$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatname -o ../../gnatname$(exext) \
+	$(GNATLINK) -v gnatname -o ../../gnatname$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exext) \
+	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
 		--GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../gnatsym$(exeext): 

@@ -95,7 +95,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree fake_attribute_handler      (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
-   this minimal set ot attributes to accomodate the needs of builtins.  */
+   this minimal set of attributes to accommodate the needs of builtins.  */
 const struct attribute_spec gnat_internal_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */

@@ -3087,7 +3087,7 @@ package body Exp_Dist is
          Set_Etype (Stubbed_Result, Stub_Type_Access);
 
          --  If the Address is Null_Address, then return a null object, unless
-         --  RACW_Type is null-excluding, in which case inconditionally raise
+         --  RACW_Type is null-excluding, in which case unconditionally raise
          --  CONSTRAINT_ERROR instead.
 
          declare
