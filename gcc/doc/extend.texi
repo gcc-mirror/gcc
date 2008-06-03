@@ -2509,7 +2509,7 @@ independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
 @item ms_abi/sysv_abi
-@cindex @code[ms_abi} attribute
+@cindex @code{ms_abi} attribute
 @cindex @code{sysv_abi} attribute
 
 On 64-bit x86_65-*-* targets, you can use an ABI attribute to indicate
