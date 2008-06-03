@@ -1,3 +1,9 @@
+2008-06-03  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR/34880
+	* gcc.c-torture/execute/float-floor.c: Adjust test for 4 byte 
+	doubles.
+
 2008-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aliasing1.ad[sb]: New test.
