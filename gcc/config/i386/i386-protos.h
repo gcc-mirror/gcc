@@ -137,6 +137,11 @@ extern int ix86_function_arg_boundary (enum machine_mode, tree);
 extern bool ix86_sol10_return_in_memory (const_tree,const_tree);
 extern rtx ix86_force_to_memory (enum machine_mode, rtx);
 extern void ix86_free_from_memory (enum machine_mode);
+extern int ix86_cfun_abi (void);
+extern int ix86_function_abi (const_tree);
+extern int ix86_function_type_abi (const_tree);
+extern void ix86_call_abi_override (const_tree);
+
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx, rtx);
 extern bool ix86_hard_regno_mode_ok (int, enum machine_mode);

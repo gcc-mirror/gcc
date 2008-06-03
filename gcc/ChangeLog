@@ -1,3 +1,73 @@
+2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
+
+	* doc/tm.texi (OVERRIDE_ABI_FORMAT): New.
+	* doc/extend.texi (ms_abi,sysv_abi): New attribute description.
+	* function.c (allocate_struct_function): Use of
+	OVERRIDE_ABI_FORMAT.
+	* config/i386/cygming.h (TARGET_64BIT_MS_ABI): Make use
+	of cfun and DEFAULT_ABI to deceide abi mode.
+	(DEFAULT_ABI): New.
+	(REG_PARM_STACK_SPACE): Removed.
+	(OUTGOING_REG_PARM_STACK_SPACE): Removed.
+	(STACK_BOUNDARY): Use default target to deceide stack boundary.
+	* config/i386/i386-protos.h (ix86_cfun_abi): New.
+	(ix86_function_abi): Likewise.
+	(ix86_function_type_abi): Likewise.
+	(ix86_call_abi_override): Likewise.
+	* confid/i386/i386.md (SSE_REGPARM_MAX): Replaced by abi
+	specific define X86_64_SSE_REGPARM_MAX/X64_SSE_REGPARM_MAX.
+	* config/i386/i386.c (override_options): Replace TARGET_64BIT_MS_ABI.
+	(X86_64_VARARGS_SIZE): Replace REGPARM_MAX and SSE_REGPARM_MAX by abi
+	specific defines.
+	(X86_64_REGPARM_MAX): New.
+	(X86_64_SSE_REGPARM_MAX): New.
+	(X64_REGPARM_MAX): New.
+	(X64_SSE_REGPARM_MAX): New.
+	(X86_32_REGPARM_MAX): New.
+	(X86_32_SSE_REGPARM_MAX): New.
+	(ix86_handle_cconv_attribute): Replace TARGET_64BIT_MS_ABI.
+	(ix86_function_regparm): Handle user calling abi.
+	(ix86_function_arg_regno_p): Replace TARGET_64BIT_MS_ABI
+	by DEFAULT_ABI versus SYSV_ABI check.
+	(ix86_reg_parm_stack_space): New.
+	(ix86_function_type_abi): New.
+	(ix86_call_abi_override): New.
+	(ix86_function_abi): New.
+	(ix86_cfun_abi): New.
+	(init_cumulative_args): Call abi specific initialization.
+	(function_arg_advance): Remove TARGET_64BIT_MS_ABI.
+	(function_arg_64): Extend SSE_REGPARM_MAX check.
+	(function_arg (): Remove TARGET_64BIT_MS_ABI.
+	(ix86_pass_by_reference): Likewise.
+	(ix86_function_value_regno_p): Likewise.
+	(function_value_64): Replace REGPARM_MAX, and SSE_REGPARM_MAX.
+	(ix86_function_value_1): Replace TARGET_64BIT_MS_ABI.
+	(return_in_memory_ms_64): Replace TARGET_64BIT_MS_ABI.
+	(ix86_build_builtin_va_list): Replace TARGET_64BIT_MS_ABI.
+	(setup_incoming_varargs_64): Adjust regparm for call abi.
+	(ix86_setup_incoming_varargs): Replace TARGET_64BIT_MS_ABI.
+	(ix86_va_start): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(ix86_expand_prologue): Likewise.
+	(output_pic_addr_const): Likewise.
+	(ix86_init_machine_status): Initialize call_abi by DEFAULT_ABI.
+	(x86_this_parameter): Replace TARGET_64BIT_MS_ABI.
+	(x86_output_mi_thunk): Likewise.
+	(x86_function_profiler): Likewise.
+	* config/i386/i386.h (TARGET_64BIT_MS_ABI): Use ix64_cfun_abi.
+	(SYSV_ABI, MS_ABI): New constants.
+	(DEFAULT_ABI): New.
+	(init_regs): Add prototype of function in regclass.c file.
+	(OVERRIDE_ABI_FORMAT): New.
+	(CONDITIONAL_REGISTER_USAGE): Remove TARGET_64BIT_MS_ABI part.
+	(REG_PARM_STACK_SPACE): Use ix86_reg_parm_stack_space.
+	(OUTGOING_REG_PARM_STACK_SPACE): New.
+	(ix86_reg_parm_stack_space): New prototype.
+	(CUMULATIVE_ARGS): Add call_abi member.
+	(machine_function): Add call_abi member.
+	* config/i386/mingw32.h (EXTRA_OS_CPP_BUILTINS): Replace TARGET_64BIT_MS_ABI
+	by DEFAULT_ABI compare to MS_ABI.
+
 2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com> 
 
 	PR target/34879
