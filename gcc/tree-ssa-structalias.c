@@ -3726,7 +3726,7 @@ find_func_aliases (tree origt)
 	  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
 	    {
 	      handle_rhs_call (GIMPLE_STMT_OPERAND (t, 1));
-	      if (POINTER_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (t, 1))))
+	      if (could_have_pointers (GIMPLE_STMT_OPERAND (t, 1)))
 		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0));
 	    }
 	  else
