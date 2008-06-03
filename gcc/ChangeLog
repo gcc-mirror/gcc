@@ -1,5 +1,10 @@
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
+	* config/i386/i386.md (define_mode_iterator P): New.
+	(split): Merged XF and DF rules using P.
+
+2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
+
 	* config/i386/i386-protos.h (ix86_reg_parm_stack_space): New.
 	* config/i386/i386.h (ix86_reg_parm_stack_space): Removed
 	prototype.
