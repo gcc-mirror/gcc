@@ -3542,7 +3542,7 @@ ix86_must_pass_in_stack (enum machine_mode mode, const_tree type)
 /* It returns the size, in bytes, of the area reserved for arguments passed
    in registers for the function represented by fndecl dependent to the used
    abi format.  */
-unsigned int
+int
 ix86_reg_parm_stack_space (const_tree fndecl)
 {
   int call_abi = 0;
@@ -3611,7 +3611,7 @@ ix86_call_abi_override (const_tree fndecl)
     cfun->machine->call_abi = DEFAULT_ABI;
   else
     cfun->machine->call_abi = ix86_function_type_abi (TREE_TYPE (fndecl));
-  if (TARGET_64BIT && cfun->machine->call_abi == MS_ABI && call_used_regs)
+  if (TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
     {
       if (call_used_regs[4 /*RSI*/] != 0 || call_used_regs[5 /*RDI*/] != 0)
         {
@@ -3620,7 +3620,7 @@ ix86_call_abi_override (const_tree fndecl)
           init_regs ();
         }
     }
-  else if (TARGET_64BIT && call_used_regs)
+  else if (TARGET_64BIT)
     {
       if (call_used_regs[4 /*RSI*/] != 1 || call_used_regs[5 /*RDI*/] != 1)
         {

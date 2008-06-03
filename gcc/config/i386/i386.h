@@ -1641,8 +1641,6 @@ enum reg_class
 
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) (ix86_function_type_abi (FNTYPE) == MS_ABI ? 1 : 0)
 
-extern unsigned int ix86_reg_parm_stack_space (const_tree);
-
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
