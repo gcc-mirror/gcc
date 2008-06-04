@@ -421,7 +421,6 @@ package body Einfo is
    --    Debug_Info_Off                  Flag166
    --    Sec_Stack_Needed_For_Return     Flag167
    --    Materialize_Entity              Flag168
-   --    Function_Returns_With_DSP       Flag169
    --    Is_Known_Valid                  Flag170
 
    --    Is_Hidden_Open_Scope            Flag171
@@ -506,6 +505,7 @@ package body Einfo is
    --    Overlays_Constant               Flag243
    --    Is_RACW_Stub_Type               Flag244
 
+   --    (unused)                        Flag169
    --    (unused)                        Flag245
    --    (unused)                        Flag246
    --    (unused)                        Flag247
@@ -1097,13 +1097,6 @@ package body Einfo is
       pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Constant);
       return Node11 (Id);
    end Full_View;
-
-   function Function_Returns_With_DSP (Id : E) return B is
-   begin
-      pragma Assert
-        (Is_Subprogram (Id) or else Ekind (Id) = E_Subprogram_Type);
-      return Flag169 (Id);
-   end Function_Returns_With_DSP;
 
    function Generic_Homonym (Id : E) return E is
    begin
@@ -3504,13 +3497,6 @@ package body Einfo is
       pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Constant);
       Set_Node11 (Id, V);
    end Set_Full_View;
-
-   procedure Set_Function_Returns_With_DSP (Id : E; V : B := True) is
-   begin
-      pragma Assert
-        (Is_Subprogram (Id) or else Ekind (Id) = E_Subprogram_Type);
-      Set_Flag169 (Id, V);
-   end Set_Function_Returns_With_DSP;
 
    procedure Set_Generic_Homonym (Id : E; V : E) is
    begin
@@ -7472,7 +7458,6 @@ package body Einfo is
       W ("Can_Use_Internal_Rep",            Flag229 (Id));
       W ("Finalize_Storage_Only",           Flag158 (Id));
       W ("From_With_Type",                  Flag159 (Id));
-      W ("Function_Returns_With_DSP",       Flag169 (Id));
       W ("Has_Aliased_Components",          Flag135 (Id));
       W ("Has_Alignment_Clause",            Flag46  (Id));
       W ("Has_All_Calls_Remote",            Flag79  (Id));
