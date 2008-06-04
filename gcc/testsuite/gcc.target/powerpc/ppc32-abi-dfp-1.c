@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-* && { ilp32 && dfprt } } } } */
+/* { dg-do run { target { powerpc_fprs && { ilp32 && dfprt } } } } */
 /* { dg-options "-std=gnu99 -O2 -fno-strict-aliasing" } */
 
 /* Testcase to check for ABI compliance of parameter passing
