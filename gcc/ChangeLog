@@ -1,3 +1,33 @@
+2008-06-04  Xinliang David Li  <davidxl@google.com>
+
+	* tree-call-cdce.c: New file. 
+	(cond_dead_built_in_calls): New static variable.
+	(input_domain): New struct.
+	(check_pow): New function.
+	(check_builtin_call): Ditto.
+	(check_target_format): Ditto.
+	(is_call_dce_candidate): Ditto.
+	(gen_one_condition): Ditto.
+	(gen_conditions_for_domain): Ditto.
+	(get_domain): Ditto.
+	(gen_conditions_for_pow_cst_base): Ditto.
+	(gen_conditions_for_pow_int_base): Ditto.
+	(gen_conditions_for_pow): Ditto.
+	(get_no_error_domain): Ditto.
+	(gen_shrink_wrap_conditions): Ditto.
+	(shrink_wrap_one_built_in_call): Ditto.
+	(shink_wrap_conditional_dead_built_in_calls): Ditto.
+	(tree_call_cdce): Ditto.
+	(gate_call_cdce): Ditto.
+	(pass_call_cdce): New gimple pass.
+	* passes.c: (init_optimization_passes): New pass.
+	* tree-pass.h: New pass declaration.
+	* opts.c (decode_options): New flag setting.
+	* common.opt: Add -ftree-builtin-call-dce flag.
+	* Makefile.in: Add new source file.
+	* tempvar.def: New tv_id.
+	* doc/invoke.texi (-ftree-builtin-call-dce): New flag.
+
 2008-06-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (is_global_var): Do not check TREE_STATIC
