@@ -178,7 +178,7 @@ namespace __gnu_pbds
 
       typedef Cmp_Fn cmp_fn;
 
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
 
     public:
 

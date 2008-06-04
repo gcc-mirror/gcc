@@ -85,9 +85,9 @@ namespace __gnu_pbds
 
       typedef E_Access_Traits e_access_traits;
 
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
 
-      typedef typename allocator::size_type size_type;
+      typedef typename allocator_type::size_type size_type;
 
       typedef null_node_metadata metadata_type;
 

@@ -180,7 +180,7 @@ void
 PB_DS_CLASS_C_DEC::
 policy_defs()
 {
-  typedef typename Cntnr::allocator test_allocator;
+  typedef typename Cntnr::allocator_type test_allocator;
 
   policy_defs(typename Cntnr::container_category());
 }

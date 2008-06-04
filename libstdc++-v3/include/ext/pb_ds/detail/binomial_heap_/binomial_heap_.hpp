@@ -93,7 +93,7 @@ namespace __gnu_pbds
       typedef typename base_type::const_iterator const_iterator;
       typedef typename base_type::iterator iterator;
       typedef typename base_type::cmp_fn cmp_fn;
-      typedef typename base_type::allocator allocator;
+      typedef typename base_type::allocator_type allocator_type;
 
       binomial_heap_();
 

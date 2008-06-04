@@ -80,8 +80,8 @@ namespace __gnu_pbds
 
   public:
     typedef Cmp_Fn cmp_fn;
-    typedef Allocator allocator;
-    typedef typename allocator::size_type size_type;
+    typedef Allocator allocator_type;
+    typedef typename allocator_type::size_type size_type;
     typedef typename base_type::key_type key_type;
     typedef typename base_type::const_key_reference const_key_reference;
 
@@ -120,7 +120,7 @@ namespace __gnu_pbds
     // Const pointer to the container's value-type.
     typedef typename base_type::const_pointer const_pointer;
 
-    typedef typename allocator::template rebind<metadata_type>::other metadata_rebind;
+    typedef typename allocator_type::template rebind<metadata_type>::other metadata_rebind;
     // Const metadata reference.
     typedef typename metadata_rebind::const_reference const_metadata_reference;
 

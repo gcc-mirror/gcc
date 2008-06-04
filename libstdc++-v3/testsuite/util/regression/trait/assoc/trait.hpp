@@ -76,7 +76,7 @@ namespace detail
 #define PB_DS_NATIVE_TYPE_TRAITS_C_DEC \
   native_type_traits<typename PB_DS_TYPE_TRAITS_C_DEC::key_type, \
 		     typename PB_DS_TYPE_TRAITS_C_DEC::mapped_type, \
-		     typename Cntnr::allocator>
+		     typename Cntnr::allocator_type>
 
 #define PB_DS_RESIZE_TRAITS_C_DEC \
   regression_test_resize_traits<Cntnr, typename Cntnr::container_category>

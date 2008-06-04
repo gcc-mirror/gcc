@@ -82,12 +82,12 @@ namespace __gnu_pbds
 	{ return extract_key_imp(r_val); }
 
       private:
-	typedef typename cntnr::allocator::template rebind<basic_type>::other
+	typedef typename cntnr::allocator_type::template rebind<basic_type>::other
 	basic_type_rebind;
 	
 	typedef typename basic_type_rebind::const_reference basic_type_const_reference;
 
-	typedef typename cntnr::allocator::template rebind<std::pair<basic_type, basic_type> >::other pair_type_rebind;
+	typedef typename cntnr::allocator_type::template rebind<std::pair<basic_type, basic_type> >::other pair_type_rebind;
 	typedef typename pair_type_rebind::const_reference pair_type_const_reference;
 
 	template<typename Gen>

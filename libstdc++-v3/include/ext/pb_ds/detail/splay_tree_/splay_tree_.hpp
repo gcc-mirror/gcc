@@ -145,7 +145,7 @@ namespace __gnu_pbds
       typedef typename base_type::node_pointer node_pointer;
 
     public:
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
       typedef typename Allocator::size_type size_type;
       typedef typename Allocator::difference_type difference_type;
       typedef Cmp_Fn cmp_fn;

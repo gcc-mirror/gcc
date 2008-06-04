@@ -66,13 +66,13 @@ namespace __gnu_pbds
   class move_to_front_lu_policy
   {
   public:
-    typedef Allocator allocator;
+    typedef Allocator allocator_type;
       
     // Metadata on which this functor operates.
     typedef null_lu_metadata metadata_type;
       
     // Reference to metadata on which this functor operates.
-    typedef typename allocator::template rebind<metadata_type>::other metadata_rebind;
+    typedef typename allocator_type::template rebind<metadata_type>::other metadata_rebind;
     typedef typename metadata_rebind::reference metadata_reference;
       
     // Creates a metadata object.
@@ -103,14 +103,14 @@ namespace __gnu_pbds
   : private detail::counter_lu_policy_base<typename Allocator::size_type>
   {
   public:
-    typedef Allocator allocator;
+    typedef Allocator allocator_type;
 
     enum
       {
 	max_count = Max_Count
       };
 
-    typedef typename allocator::size_type size_type;
+    typedef typename allocator_type::size_type size_type;
 
     // Metadata on which this functor operates.
     typedef detail::counter_lu_metadata<size_type> metadata_type;

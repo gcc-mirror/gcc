@@ -71,13 +71,13 @@ namespace __gnu_pbds
 
   public:
     typedef Tag 					container_category;
-    typedef Allocator 					allocator;
-    typedef typename allocator::size_type 		size_type;
-    typedef typename allocator::difference_type 	difference_type;
+    typedef Allocator 					allocator_type;
+    typedef typename allocator_type::size_type 		size_type;
+    typedef typename allocator_type::difference_type 	difference_type;
 
     // key_type
-    typedef typename allocator::template rebind<Key>::other::value_type key_type;
-    typedef typename allocator::template rebind<key_type>::other key_rebind;
+    typedef typename allocator_type::template rebind<Key>::other::value_type key_type;
+    typedef typename allocator_type::template rebind<key_type>::other key_rebind;
     typedef typename key_rebind::reference 		key_reference;
     typedef typename key_rebind::const_reference 	const_key_reference;
     typedef typename key_rebind::pointer 		key_pointer;
@@ -85,7 +85,7 @@ namespace __gnu_pbds
 
     // mapped_type
     typedef Mapped 					mapped_type;
-    typedef typename allocator::template rebind<mapped_type>::other mapped_rebind;
+    typedef typename allocator_type::template rebind<mapped_type>::other mapped_rebind;
     typedef typename mapped_rebind::reference 		mapped_reference;
     typedef typename mapped_rebind::const_reference	const_mapped_reference;
     typedef typename mapped_rebind::pointer 		mapped_pointer;
@@ -93,7 +93,7 @@ namespace __gnu_pbds
 
     // value_type
     typedef typename base_type::value_type 		value_type;
-    typedef typename allocator::template rebind<value_type>::other value_rebind;
+    typedef typename allocator_type::template rebind<value_type>::other value_rebind;
     typedef typename value_rebind::reference		reference;
     typedef typename value_rebind::const_reference 	const_reference;
     typedef typename value_rebind::pointer 		pointer;

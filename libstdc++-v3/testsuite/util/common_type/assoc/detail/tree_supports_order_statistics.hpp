@@ -69,7 +69,7 @@ namespace __gnu_pbds
             typename Tree_Cntnr::const_node_iterator,
             typename Tree_Cntnr::node_iterator,
             typename Tree_Cntnr::cmp_fn,
-            typename Tree_Cntnr::allocator> >::value
+            typename Tree_Cntnr::allocator_type> >::value
 	  };
       };
 
