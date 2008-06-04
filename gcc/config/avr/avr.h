@@ -360,7 +360,9 @@ enum reg_class {
 #define RETURN_ADDR_RTX(count, x) \
   gen_rtx_MEM (Pmode, memory_address (Pmode, plus_constant (tem, 1)))
 
-#define PUSH_ROUNDING(NPUSHED) (NPUSHED)
+/* Don't use Push rounding. expr.c: emit_single_push_insn is broken 
+   for POST_DEC targets (PR27386).  */
+/*#define PUSH_ROUNDING(NPUSHED) (NPUSHED)*/
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
