@@ -607,7 +607,8 @@ Objective-C and Objective-C++ Dialects}.
 -mnobitfield  -mrtd  -mno-rtd  -mdiv  -mno-div  -mshort @gol
 -mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
--mshared-library-id=n  -mid-shared-library  -mno-id-shared-library}
+-mshared-library-id=n  -mid-shared-library  -mno-id-shared-library @gol
+-mxgot -mno-xgot}
 
 @emph{M68hc1x Options}
 @gccoptlist{-m6811  -m6812  -m68hc11  -m68hc12   -m68hcs12 @gol
@@ -11775,6 +11776,38 @@ Specified the identification number of the ID based shared library being
 compiled.  Specifying a value of 0 will generate more compact code, specifying
 other values will force the allocation of that number to the current
 library but is no more space or time efficient than omitting this option.
+
+@item -mxgot
+@itemx -mno-xgot
+@opindex mxgot
+@opindex mno-xgot
+When generating position-independent code for ColdFire, generate code
+that works if the GOT has more than 8192 entries.  This code is
+larger and slower than code generated without this option.  On M680x0
+processors, this option is not needed; @option{-fPIC} suffices.
+
+GCC normally uses a single instruction to load values from the GOT@.
+While this is relatively efficient, it only works if the GOT
+is smaller than about 64k.  Anything larger causes the linker
+to report an error such as:
+
+@cindex relocation truncated to fit (ColdFire)
+@smallexample
+relocation truncated to fit: R_68K_GOT16O foobar
+@end smallexample
+
+If this happens, you should recompile your code with @option{-mxgot}.
+It should then work with very large GOTs.  However, code generated with
+@option{-mxgot} is less efficient, since it takes 4 instructions to fetch
+the value of a global symbol.
+
+Note that some linkers, including newer versions of the GNU linker,
+can create multiple GOTs and sort GOT entries.  If you have such a linker,
+you should only need to use @option{-mxgot} when compiling a single
+object file that accesses more than 8192 GOT entries.  Very few do.
+
+These options have no effect unless GCC is generating
+position-independent code.
 
 @end table
 

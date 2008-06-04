@@ -1,3 +1,14 @@
+2008-06-04  Joseph Myers  <joseph@codesourcery.com>
+            Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.opt (mxgot): New option.
+	* config/m68k/m68k.c (legitimize_pic_address): Handle -mxgot.
+	(m68k_output_addr_const_extra): New.
+	* config/m68k/m68k.h (OUTPUT_ADDR_CONST_EXTRA): New.
+	* config/m68k/m68k-protos.h (m68k_output_addr_const_extra): Declare.
+	* config/m68k/m68k.md (UNSPEC_GOTOFF): Define.
+	* doc/invoke.texi (M680x0 Options): Document -mxgot.
+
 2008-06-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (handle_ptr_arith): Correctly handle
