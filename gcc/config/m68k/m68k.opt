@@ -178,3 +178,7 @@ Do not use unaligned memory references
 mtune=
 Target RejectNegative Joined
 Tune for the specified target CPU or architecture
+
+mxgot
+Target Report Mask(XGOT)
+Support more than 8192 GOT entries on ColdFire

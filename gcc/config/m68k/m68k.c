@@ -2059,9 +2059,30 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     {
       gcc_assert (reg);
 
-      pic_ref = gen_rtx_MEM (Pmode,
-			     gen_rtx_PLUS (Pmode,
-					   pic_offset_table_rtx, orig));
+      if (TARGET_COLDFIRE && TARGET_XGOT)
+	/* When compiling with -mxgot switch the code for the above
+	   example will look like this:
+
+	   movel a5, a0
+	   addl _foo@GOT, a0
+	   movel a0@, a0
+	   movel #12345, a0@  */
+	{
+	  rtx pic_offset;
+
+	  /* Wrap ORIG in UNSPEC_GOTOFF to tip m68k_output_addr_const_extra
+	     to put @GOT after reference.  */
+	  pic_offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, orig),
+				       UNSPEC_GOTOFF);
+	  pic_offset = gen_rtx_CONST (Pmode, pic_offset);
+	  emit_move_insn (reg, pic_offset);
+	  emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
+	  pic_ref = gen_rtx_MEM (Pmode, reg);
+	}
+      else
+	pic_ref = gen_rtx_MEM (Pmode,
+			       gen_rtx_PLUS (Pmode,
+					     pic_offset_table_rtx, orig));
       crtl->uses_pic_offset_table = 1;
       MEM_READONLY_P (pic_ref) = 1;
       emit_move_insn (reg, pic_ref);
@@ -3867,6 +3888,20 @@ print_operand (FILE *file, rtx op, int letter)
       else
 	output_addr_const (file, op);
     }
+}
+
+/* m68k implementation of OUTPUT_ADDR_CONST_EXTRA.  */
+
+bool
+m68k_output_addr_const_extra (FILE *file, rtx x)
+{
+  if (GET_CODE (x) != UNSPEC || XINT (x, 1) != UNSPEC_GOTOFF)
+    return false;
+
+  output_addr_const (file, XVECEXP (x, 0, 0));
+  /* ??? What is the non-MOTOROLA syntax?  */
+  fputs ("@GOT", file);
+  return true;
 }
 
 

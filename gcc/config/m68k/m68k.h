@@ -1079,6 +1079,12 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
+#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
+do {							\
+  if (! m68k_output_addr_const_extra (FILE, (X)))	\
+    goto FAIL;						\
+} while (0);
+
 /* Values used in the MICROARCH argument to M68K_DEVICE.  */
 enum uarch_type
 {
