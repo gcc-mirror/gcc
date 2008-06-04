@@ -889,6 +889,8 @@ decode_options (unsigned int argc, const char **argv)
 
       if (!optimize_size)
 	{
+          /* Conditional DCE generates bigger code.  */
+          flag_tree_builtin_call_dce = 1;
           /* PRE tends to generate bigger code.  */
           flag_tree_pre = 1;
 	}

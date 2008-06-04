@@ -1255,6 +1255,10 @@ fweb
 Common Report Var(flag_web) Init(2) Optimization
 Construct webs and split unrelated uses of single variable
 
+ftree-builtin-call-dce
+Common Report Var(flag_tree_builtin_call_dce) Init(0) Optimization
+Enable conditional dead code elimination for builtin calls
+
 fwhole-program
 Common Report Var(flag_whole_program) Init(0) Optimization
 Perform whole program optimizations
