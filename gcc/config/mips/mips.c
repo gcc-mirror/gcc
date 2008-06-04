@@ -8339,8 +8339,6 @@ mips_emit_loadgp (void)
       emit_insn (Pmode == SImode
 		 ? gen_loadgp_newabi_si (pic_reg, offset, incoming_address)
 		 : gen_loadgp_newabi_di (pic_reg, offset, incoming_address));
-      if (!TARGET_EXPLICIT_RELOCS)
-	emit_insn (gen_loadgp_blockage ());
       break;
 
     case LOADGP_RTP:
@@ -8349,13 +8347,16 @@ mips_emit_loadgp (void)
       emit_insn (Pmode == SImode
 		 ? gen_loadgp_rtp_si (pic_reg, base, index)
 		 : gen_loadgp_rtp_di (pic_reg, base, index));
-      if (!TARGET_EXPLICIT_RELOCS)
-	emit_insn (gen_loadgp_blockage ());
       break;
 
     default:
-      break;
+      return;
     }
+  /* Emit a blockage if there are implicit uses of the GP register.
+     This includes profiled functions, because FUNCTION_PROFILE uses
+     a jal macro.  */
+  if (!TARGET_EXPLICIT_RELOCS || current_function_profile)
+    emit_insn (gen_loadgp_blockage ());
 }
 
 /* Expand the "prologue" pattern.  */

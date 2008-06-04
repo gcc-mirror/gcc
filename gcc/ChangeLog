@@ -1,3 +1,10 @@
+2008-06-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_emit_loadgp): Return early if
+	there is nothing do to, otherwise emit a blockage if
+	!TARGET_EXPLICIT_RELOCS || current_function_profile.
+	* config/mips/mips.md (loadgp_blockage): Use SI rather than DI.
+
 2008-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (check_for_nested_with_variably_modified): Fix typo.
