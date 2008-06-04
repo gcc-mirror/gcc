@@ -1,3 +1,9 @@
+2008-06-04  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/30243
+	* builtins.c (expand_builtin_signbit): Don't take lowpart when
+	register is already smaller or equal to required mode. 
+
 2008-06-04  Xinliang David Li  <davidxl@google.com>
 
 	* tree-call-cdce.c: New file. 
