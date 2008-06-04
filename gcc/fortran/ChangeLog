@@ -1,3 +1,10 @@
+2008-06-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36322
+	PR fortran/36275
+	* resolve.c (resolve_symbol): Correctly copy the interface for a
+	PROCEDURE declaration.
+
 2008-06-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36361

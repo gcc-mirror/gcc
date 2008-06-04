@@ -4,9 +4,19 @@
 
 module m
 
+  use ISO_C_BINDING
+
   abstract interface
     subroutine csub() bind(c)
     end subroutine csub
+  end interface
+
+  integer, parameter :: ckind = C_FLOAT_COMPLEX
+  abstract interface
+    function stub() bind(C)
+      import ckind
+      complex(ckind) stub
+    end function
   end interface
 
   procedure():: mp1
@@ -14,6 +24,7 @@ module m
   procedure(mfun), public:: mp3
   procedure(csub), public, bind(c) :: c, d
   procedure(csub), public, bind(c, name="myB") :: b
+  procedure(stub), bind(C) :: e
 
 contains
 
@@ -31,6 +42,15 @@ contains
     optional ::  a
     procedure(a), optional :: b
   end subroutine bar
+
+  subroutine bar2(x)
+    abstract interface
+      character function abs_fun()
+      end function
+    end interface
+    procedure(abs_fun):: x
+  end subroutine
+
 
 end module
 
