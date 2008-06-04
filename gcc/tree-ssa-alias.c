@@ -305,10 +305,7 @@ mark_non_addressable (tree var)
 
   mpt = memory_partition (var);
 
-  if (!MTAG_P (var))
-    var_ann (var)->call_clobbered = false;
-
-  bitmap_clear_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
+  clear_call_clobbered (var);
   TREE_ADDRESSABLE (var) = 0;
 
   if (mpt)
@@ -2003,21 +2000,12 @@ reset_alias_info (void)
 	bitmap_set_bit (all_nmts, DECL_UID (var));
 
       /* Since we are about to re-discover call-clobbered
-	 variables, clear the call-clobbered flag.  Variables that
-	 are intrinsically call-clobbered (globals, local statics,
-	 etc) will not be marked by the aliasing code, so we can't
-	 remove them from CALL_CLOBBERED_VARS.  
-
-	 NB: STRUCT_FIELDS are still call clobbered if they are for a
-	 global variable, so we *don't* clear their call clobberedness
-	 just because they are tags, though we will clear it if they
-	 aren't for global variables.  */
-      if (TREE_CODE (var) == NAME_MEMORY_TAG
-	  || TREE_CODE (var) == SYMBOL_MEMORY_TAG
-	  || TREE_CODE (var) == MEMORY_PARTITION_TAG
-	  || !is_global_var (var))
-	clear_call_clobbered (var);
+	 variables, clear the call-clobbered flag.  */
+      clear_call_clobbered (var);
     }
+
+  /* There should be no call-clobbered variable left.  */
+  gcc_assert (bitmap_empty_p (gimple_call_clobbered_vars (cfun)));
 
   /* Clear flow-sensitive points-to information from each SSA name.  */
   for (i = 1; i < num_ssa_names; i++)
@@ -2830,6 +2818,8 @@ set_pt_anything (tree ptr)
   struct ptr_info_def *pi = get_ptr_info (ptr);
 
   pi->pt_anything = 1;
+  /* Anything includes global memory.  */
+  pi->pt_global_mem = 1;
   pi->pt_vars = NULL;
 
   /* The pointer used to have a name tag, but we now found it pointing
@@ -2926,12 +2916,12 @@ create_tag_raw (enum tree_code code, tree type, const char *prefix)
 
   tmp_var = build_decl (code, create_tmp_var_name (prefix), type);
 
-  /* Make the variable writable.  */
+  /* Memory tags are always writable and non-static.  */
   TREE_READONLY (tmp_var) = 0;
+  TREE_STATIC (tmp_var) = 0;
 
   /* It doesn't start out global.  */
   MTAG_GLOBAL (tmp_var) = 0;
-  TREE_STATIC (tmp_var) = 0;
   TREE_USED (tmp_var) = 1;
 
   return tmp_var;
@@ -3365,7 +3355,7 @@ may_be_aliased (tree var)
   /* Globally visible variables can have their addresses taken by other
      translation units.  */
   if (MTAG_P (var)
-      && (MTAG_GLOBAL (var) || TREE_PUBLIC (var)))
+      && MTAG_GLOBAL (var))
     return true;
   else if (!MTAG_P (var)
            && (DECL_EXTERNAL (var) || TREE_PUBLIC (var)))

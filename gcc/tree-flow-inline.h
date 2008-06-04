@@ -698,7 +698,7 @@ static inline bool
 is_global_var (const_tree t)
 {
   if (MTAG_P (t))
-    return (TREE_STATIC (t) || MTAG_GLOBAL (t));
+    return MTAG_GLOBAL (t);
   else
     return (TREE_STATIC (t) || DECL_EXTERNAL (t));
 }
@@ -875,10 +875,7 @@ factoring_name_p (const_tree name)
 static inline bool
 is_call_clobbered (const_tree var)
 {
-  if (!MTAG_P (var))
-    return var_ann (var)->call_clobbered;
-  else
-    return bitmap_bit_p (gimple_call_clobbered_vars (cfun), DECL_UID (var)); 
+  return var_ann (var)->call_clobbered;
 }
 
 /* Mark variable VAR as being clobbered by function calls.  */
@@ -886,8 +883,7 @@ static inline void
 mark_call_clobbered (tree var, unsigned int escape_type)
 {
   var_ann (var)->escape_mask |= escape_type;
-  if (!MTAG_P (var))
-    var_ann (var)->call_clobbered = true;
+  var_ann (var)->call_clobbered = true;
   bitmap_set_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
 }
 
@@ -899,8 +895,7 @@ clear_call_clobbered (tree var)
   ann->escape_mask = 0;
   if (MTAG_P (var))
     MTAG_GLOBAL (var) = 0;
-  if (!MTAG_P (var))
-    var_ann (var)->call_clobbered = false;
+  var_ann (var)->call_clobbered = false;
   bitmap_clear_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
 }
 

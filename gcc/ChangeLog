@@ -1,3 +1,17 @@
+2008-06-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (is_global_var): Do not check TREE_STATIC
+	on MTAGs.
+	(is_call_clobbered): Always check var_ann->call_clobbered.
+	(mark_call_clobbered): Always set var_ann->call_clobbered.
+	(clear_call_clobbered): Always clear var_ann->call_clobbered.
+	* tree-ssa-alias.c (mark_non_addressable): Use clear_call_clobbered.
+	(reset_alias_info): Clear call clobbering info on MTAGs and
+	globals as well.
+	(set_pt_anything): Set pt_global_mem.
+	(create_tag_raw): Adjust comment.
+	(may_be_aliased): Do not check TREE_PUBLIC on MTAGs.
+
 2008-06-04  Joseph Myers  <joseph@codesourcery.com>
             Maxim Kuvyrkov  <maxim@codesourcery.com>
 
