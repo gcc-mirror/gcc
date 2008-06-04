@@ -112,7 +112,7 @@ namespace __gnu_pbds
 
       typedef typename base_type::cmp_fn cmp_fn;
 
-      typedef typename base_type::allocator allocator;
+      typedef typename base_type::allocator_type allocator_type;
 
     public:
 

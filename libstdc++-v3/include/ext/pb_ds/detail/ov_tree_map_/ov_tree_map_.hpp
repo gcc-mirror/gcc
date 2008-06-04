@@ -158,7 +158,7 @@ namespace __gnu_pbds
 
     public:
 
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
       typedef typename Allocator::size_type size_type;
       typedef typename Allocator::difference_type difference_type;
 

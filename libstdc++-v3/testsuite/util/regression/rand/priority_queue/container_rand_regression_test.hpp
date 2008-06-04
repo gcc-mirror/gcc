@@ -141,7 +141,7 @@ namespace __gnu_pbds
       private:
 	typedef Cntnr cntnr;
 
-	typedef typename cntnr::allocator allocator;
+	typedef typename cntnr::allocator_type allocator_type;
 
 	typedef typename cntnr::size_type size_type;
 

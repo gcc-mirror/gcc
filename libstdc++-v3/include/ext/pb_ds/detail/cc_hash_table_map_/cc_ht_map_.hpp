@@ -167,7 +167,7 @@ namespace __gnu_pbds
 #undef PB_DS_GEN_POS
 
     public:
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
       typedef typename Allocator::size_type size_type;
       typedef typename Allocator::difference_type difference_type;
       typedef Hash_Fn hash_fn;

@@ -62,24 +62,24 @@ namespace __gnu_pbds
     class rc
     {
     private:
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
 
-      typedef typename allocator::size_type size_type;
+      typedef typename allocator_type::size_type size_type;
 
       typedef Node node;
 
       typedef
-      typename allocator::template rebind<
+      typename allocator_type::template rebind<
 	node>::other::pointer
       node_pointer;
 
       typedef
-      typename allocator::template rebind<
+      typename allocator_type::template rebind<
 	node_pointer>::other::pointer
       entry_pointer;
 
       typedef
-      typename allocator::template rebind<
+      typename allocator_type::template rebind<
 	node_pointer>::other::const_pointer
       const_entry_pointer;
 

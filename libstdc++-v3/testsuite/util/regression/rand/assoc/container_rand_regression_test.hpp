@@ -129,7 +129,7 @@ namespace detail
 
   private:
     typedef Cntnr 					cntnr;
-    typedef typename cntnr::allocator 			allocator;
+    typedef typename cntnr::allocator_type 			allocator_type;
     typedef typename cntnr::size_type 			size_type;
     typedef regression_test_traits<Cntnr> 		test_traits;
     typedef typename test_traits::key_type 		key_type;

@@ -76,12 +76,12 @@ namespace __gnu_pbds
 
     public:
       typedef native_hash_tag 			container_category;
-      typedef Allocator 			allocator;
+      typedef Allocator 			allocator_type;
       typedef typename base_type::iterator 	iterator;
       typedef typename base_type::const_iterator const_iterator;
 
       typedef
-      typename allocator::template rebind<pair_type>::other::const_reference
+      typename allocator_type::template rebind<pair_type>::other::const_reference
       const_reference;
 
       native_hash_multimap() : base_type(Init_Size)

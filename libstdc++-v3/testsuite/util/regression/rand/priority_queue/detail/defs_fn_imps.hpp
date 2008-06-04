@@ -50,15 +50,10 @@ PB_DS_CLASS_C_DEC::
 defs()
 {
   // General container types.
-
   typedef typename Cntnr::size_type test_size_type;
-
   typedef typename Cntnr::difference_type difference_type;
-
   value_defs();
-
   iterator_defs();
-
   policy_defs();
 }
 
@@ -68,13 +63,9 @@ PB_DS_CLASS_C_DEC::
 value_defs()
 {
   typedef typename Cntnr::value_type test_value_type;
-
   typedef typename Cntnr::reference test_reference;
-
   typedef typename Cntnr::const_reference test_const_reference;
-
   typedef typename Cntnr::pointer test_pointer;
-
   typedef typename Cntnr::const_pointer test_const_pointer;
 }
 
@@ -92,11 +83,8 @@ PB_DS_CLASS_C_DEC::
 iterator_defs()
 {
   typedef typename Cntnr::point_iterator test_point_iterator;
-
   typedef typename Cntnr::const_point_iterator const_test_point_iterator;
-
   typedef typename Cntnr::iterator test_iterator;
-
   typedef typename Cntnr::const_iterator const_test_iterator;
 }
 
@@ -105,7 +93,6 @@ void
 PB_DS_CLASS_C_DEC::
 policy_defs()
 {
-  typedef typename Cntnr::allocator test_allocator;
-
+  typedef typename Cntnr::allocator_type test_allocator;
   typedef typename Cntnr::cmp_fn test_cmp_fn;
 }

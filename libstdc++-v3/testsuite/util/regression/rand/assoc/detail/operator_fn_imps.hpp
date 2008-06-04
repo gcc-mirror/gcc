@@ -71,7 +71,7 @@ operator()()
       for (m_i = 0; m_i < m_n; ++m_i)
         {
 	  PB_DS_TRACE("Op #" << static_cast<unsigned long>(m_i));
-	  allocator::set_label(m_i);
+	  allocator_type::set_label(m_i);
 	  switch (m_i)
             {
             case 0:

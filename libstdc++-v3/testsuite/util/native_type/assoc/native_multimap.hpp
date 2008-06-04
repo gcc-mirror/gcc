@@ -70,7 +70,7 @@ namespace __gnu_pbds
     public:
       typedef native_tree_tag container_category;
 
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
 
       typedef
       typename Allocator::template rebind<

@@ -154,7 +154,7 @@ namespace __gnu_pbds
       typedef cond_dealtor<entry, Allocator> cond_dealtor_t;
 
     public:
-      typedef Allocator allocator;
+      typedef Allocator allocator_type;
       typedef typename Allocator::size_type size_type;
       typedef typename Allocator::difference_type difference_type;
       typedef Eq_Fn eq_fn;

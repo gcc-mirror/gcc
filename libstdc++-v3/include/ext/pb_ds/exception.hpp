@@ -61,7 +61,7 @@ namespace __gnu_pbds
 
   // An entry cannot be inserted into a container object for logical
   // reasons (not, e.g., if memory is unabvailable, in which case
-  // the allocator's exception will be thrown).
+  // the allocator_type's exception will be thrown).
   struct insert_error : public container_error { };
 
   // A join cannot be performed logical reasons (i.e., the ranges of
