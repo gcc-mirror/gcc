@@ -1,3 +1,9 @@
+2008-06-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36322
+	PR fortran/36275
+	* gfortran.dg/proc_decl_2.f90: Extended.
+
 2008-06-04  Joseph Myers  <joseph@codesourcery.com>
             Maxim Kuvyrkov  <maxim@codesourcery.com>
 

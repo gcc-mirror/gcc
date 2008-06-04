@@ -7893,11 +7893,12 @@ resolve_symbol (gfc_symbol *sym)
       /* Get the attributes from the interface (now resolved).  */
       if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
 	{
-	  sym->ts.type = sym->ts.interface->ts.type;
-	  sym->ts.kind = sym->ts.interface->ts.kind;
-	  sym->attr.function = sym->ts.interface->attr.function;
-	  sym->attr.subroutine = sym->ts.interface->attr.subroutine;
-	  copy_formal_args (sym, sym->ts.interface);
+	  gfc_symbol *ifc = sym->ts.interface;
+	  sym->ts = ifc->ts;
+	  sym->ts.interface = ifc;
+	  sym->attr.function = ifc->attr.function;
+	  sym->attr.subroutine = ifc->attr.subroutine;
+	  copy_formal_args (sym, ifc);
 	}
       else if (sym->ts.interface->name[0] != '\0')
 	{
