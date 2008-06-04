@@ -1,3 +1,7 @@
+2008-06-04  Samuel Tardieu  <sam@rfc1149.net>
+
+	* einfo.ads, einfo.adb: Remove unused flag Function_Returns_With_DSP.
+
 2008-06-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in (common_tools): Fix typos in $(exeext) extension.

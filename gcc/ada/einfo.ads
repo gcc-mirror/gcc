@@ -1289,17 +1289,6 @@ package Einfo is
 --       For all types other than private and incomplete types, this field
 --       always contains Empty. See also Underlying_Type.
 
---    Function_Returns_With_DSP (Flag169)
---       Present in all subprogram entities, and type entities for access
---       to subprogram values. Set True if the function (or referenced
---       function in the case of an access value) returns with using the
---       DSP (depressed stack pointer) approach. This can only be set
---       True if Targparm.Functions_Return_By_DSP_On_Target is True and
---       the function returns a value of a type whose size is not known
---       at compile time.
---
---       Note: this flag is obsolete, it is always False ???
-
 --    Generic_Homonym (Node11)
 --       Present in generic packages. The generic homonym is the entity of
 --       a renaming declaration inserted in every generic unit. It is used
@@ -5027,7 +5016,6 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
-   --    Function_Returns_With_DSP           (Flag169)
    --    Default_Expressions_Processed       (Flag108)
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
@@ -5292,7 +5280,6 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
-   --    Function_Returns_With_DSP           (Flag169)  (false for procedure)
    --    Default_Expressions_Processed       (Flag108)
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
@@ -5459,7 +5446,6 @@ package Einfo is
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
    --    Number_Formals                      (synth)
-   --    Function_Returns_With_DSP           (Flag169)
    --    (plus type attributes)
 
    --  E_Task_Body
@@ -5841,7 +5827,6 @@ package Einfo is
    function Freeze_Node                         (Id : E) return N;
    function From_With_Type                      (Id : E) return B;
    function Full_View                           (Id : E) return E;
-   function Function_Returns_With_DSP           (Id : E) return B;
    function Generic_Homonym                     (Id : E) return E;
    function Generic_Renamings                   (Id : E) return L;
    function Handler_Records                     (Id : E) return S;
@@ -6399,7 +6384,6 @@ package Einfo is
    procedure Set_Freeze_Node                     (Id : E; V : N);
    procedure Set_From_With_Type                  (Id : E; V : B := True);
    procedure Set_Full_View                       (Id : E; V : E);
-   procedure Set_Function_Returns_With_DSP       (Id : E; V : B := True);
    procedure Set_Generic_Homonym                 (Id : E; V : E);
    procedure Set_Generic_Renamings               (Id : E; V : L);
    procedure Set_Handler_Records                 (Id : E; V : S);
@@ -7047,7 +7031,6 @@ package Einfo is
    pragma Inline (Freeze_Node);
    pragma Inline (From_With_Type);
    pragma Inline (Full_View);
-   pragma Inline (Function_Returns_With_DSP);
    pragma Inline (Generic_Homonym);
    pragma Inline (Generic_Renamings);
    pragma Inline (Handler_Records);
@@ -7472,7 +7455,6 @@ package Einfo is
    pragma Inline (Set_Freeze_Node);
    pragma Inline (Set_From_With_Type);
    pragma Inline (Set_Full_View);
-   pragma Inline (Set_Function_Returns_With_DSP);
    pragma Inline (Set_Generic_Homonym);
    pragma Inline (Set_Generic_Renamings);
    pragma Inline (Set_Handler_Records);
