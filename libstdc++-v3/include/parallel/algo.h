@@ -1647,7 +1647,7 @@ namespace __parallel
     {
       c_rand_number<> r;
       // Parallelization still possible.
-      random_shuffle(begin, end, r);
+      __gnu_parallel::random_shuffle(begin, end, r);
     }
 
   // Parallel algorithm for random access iterators.

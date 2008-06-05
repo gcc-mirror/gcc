@@ -1,3 +1,11 @@
+2008-06-05  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/random_shuffle.h:
+        (parallel_random_shuffle_drs) Get the actual number of
+        threads after entering the parallel region. Indentation.
+        * include/parallel/algo.h: (random_shuffle(begin, end))
+        Add namespace qualification to avoid ambiguity.
+
 2008-05-15  Johannes Singler  <singler@ira.uka.de>
 
         * doc/xml/manual/parallel_mode.xml:
