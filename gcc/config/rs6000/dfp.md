@@ -155,7 +155,7 @@
 (define_expand "negdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
 	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)"
+  "TARGET_HARD_FLOAT && TARGET_FPRS"
   "")
 
 (define_insn "*negdd2_fpr"
@@ -168,7 +168,7 @@
 (define_expand "absdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
 	(abs:DD (match_operand:DD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)"
+  "TARGET_HARD_FLOAT && TARGET_FPRS"
   "")
 
 (define_insn "*absdd2_fpr"
@@ -376,7 +376,7 @@
 (define_insn "*movdd_softfloat32"
   [(set (match_operand:DD 0 "nonimmediate_operand" "=r,r,m,r,r,r")
 	(match_operand:DD 1 "input_operand" "r,m,r,G,H,F"))]
-  "! TARGET_POWERPC64 && TARGET_SOFT_FLOAT
+  "! TARGET_POWERPC64 && (TARGET_SOFT_FLOAT || !TARGET_FPRS)
    && (gpc_reg_operand (operands[0], DDmode)
        || gpc_reg_operand (operands[1], DDmode))"
   "*
@@ -486,7 +486,7 @@
 (define_expand "negtd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")
 	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)"
+  "TARGET_HARD_FLOAT && TARGET_FPRS"
   "")
 
 (define_insn "*negtd2_fpr"
@@ -499,7 +499,7 @@
 (define_expand "abstd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")
 	(abs:TD (match_operand:TD 1 "gpc_reg_operand" "")))]
-  "TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)"
+  "TARGET_HARD_FLOAT && TARGET_FPRS"
   "")
 
 (define_insn "*abstd2_fpr"

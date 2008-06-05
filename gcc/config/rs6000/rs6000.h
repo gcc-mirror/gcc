@@ -583,7 +583,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 :	\
     (TARGET_E500_DOUBLE						\
-     && (TYPE_MODE (TYPE) == DFmode || TYPE_MODE (TYPE) == DDmode)) ? 64 : \
+     && TYPE_MODE (TYPE) == DFmode) ? 64 : \
     ((TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE \
      && SPE_VECTOR_MODE (TYPE_MODE (TYPE))) || (TARGET_PAIRED_FLOAT \
         && TREE_CODE (TYPE) == VECTOR_TYPE \
@@ -609,7 +609,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    fit into 1, whereas DI still needs two.  */
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
   ((TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE) \
-   || (TARGET_E500_DOUBLE && ((MODE) == DFmode || (MODE) == DDmode)))
+   || (TARGET_E500_DOUBLE && (MODE) == DFmode))
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -630,7 +630,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
   (TREE_CODE (TYPE) == VECTOR_TYPE ? ((TARGET_SPE_ABI \
    || TARGET_PAIRED_FLOAT) ? 64 : 128)	\
    : (TARGET_E500_DOUBLE			\
-      && (TYPE_MODE (TYPE) == DFmode || TYPE_MODE (TYPE) == DDmode)) ? 64 \
+      && TYPE_MODE (TYPE) == DFmode) ? 64 \
    : TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
@@ -1212,7 +1212,7 @@ enum reg_class
  (((CLASS) == FLOAT_REGS) 						\
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
   : (TARGET_E500_DOUBLE && (CLASS) == GENERAL_REGS			\
-     && ((MODE) == DFmode || (MODE) == DDmode))				\
+     && (MODE) == DFmode)				\
   ? 1                                                                   \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
