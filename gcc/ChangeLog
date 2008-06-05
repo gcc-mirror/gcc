@@ -1,3 +1,36 @@
+2008-06-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (powerpc-*-linux*spe*): Use t-dfprules.
+	* config/rs6000/dfp.md (negdd2, absdd2, negtd2, abstd2): Do not
+	enable for TARGET_E500_DOUBLE.
+	(*movdd_softfloat32): Also enable for !TARGET_FPRS.
+	* config/rs6000/rs6000.c (invalid_e500_subreg): Treat decimal
+	floating-point modes like integer modes for E500 double.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.  Do not allow REG+REG
+	addressing for DDmode for E500 double.
+	(rs6000_hard_regno_nregs): Do not treat decimal floating-point
+	modes as using 64-bits of registers for E500 double.
+	(spe_build_register_parallel): Do not handle DDmode or TDmode.
+	(rs6000_spe_function_arg): Do not handle DDmode or TDmode
+	specially for E500 double.
+	(function_arg): Do not call rs6000_spe_function_arg for DDmode or
+	TDmode for E500 double.
+	(rs6000_gimplify_va_arg): Only handle SDmode in registers
+	specially if TARGET_HARD_FLOAT && TARGET_FPRS.
+	(rs6000_split_multireg_move): Do not handle TDmode specially for
+	E500 double.
+	(spe_func_has_64bit_regs_p): Do not treat DDmode or TDmode as
+	using 64-bit registers for E500 double.
+	(emit_frame_save): Do not handle DDmode specially for E500 double.
+	(gen_frame_mem_offset): Likewise.
+	(rs6000_function_value): Do not call spe_build_register_parallel
+	for DDmode or TDmode.
+	(rs6000_libcall_value): Likewise.
+	* config/rs6000/rs6000.h (LOCAL_ALIGNMENT, MEMBER_TYPE_FORCES_BLK,
+	DATA_ALIGNMENT, CLASS_MAX_NREGS): Do not handle DDmode specially
+	for E500 double.
+
 2008-06-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (setup_incoming_varargs_64): Fix a typo
