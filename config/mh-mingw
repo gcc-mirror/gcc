@@ -1,3 +1,4 @@
 # Add -D__USE_MINGW_ACCESS to enable the built compiler to work on Windows
 # Vista (see PR33281 for details).
 BOOT_CFLAGS += -D__USE_MINGW_ACCESS
+CFLAGS += -D__USE_MINGW_ACCESS
