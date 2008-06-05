@@ -1,3 +1,8 @@
+2008-06-04  Junjie Gu <jgu@tensilica.com>
+
+	* config/xtensa/lib2funcs.S (__xtensa_nonlocal_goto): Use unsigned
+	comparison for frame pointers.
+
 2008-06-04  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/27386

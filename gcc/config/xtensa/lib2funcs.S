@@ -1,5 +1,5 @@
 /* Assembly functions for libgcc2.
-   Copyright (C) 2001, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -105,7 +105,7 @@ __xtensa_nonlocal_goto:
 	addi	a6, a7, -16	/* advance cur */
 .Lfirstframe:
 	l32i	a7, a6, 4	/* a7 = next */
-	bge	a2, a7, .Lnextframe
+	bgeu	a2, a7, .Lnextframe
 
 	/* At this point, prev (a5) points to the save area with the saved
 	   values of a0-a3.  Copy those values into the save area at the
