@@ -6709,13 +6709,16 @@ mips_emit_loadgp (void)
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
       incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
       emit_insn (gen_loadgp (offset, incoming_address));
-      if (!TARGET_EXPLICIT_RELOCS)
-	emit_insn (gen_loadgp_blockage ());
       break;
 
     default:
-      break;
+      return;
     }
+  /* Emit a blockage if there are implicit uses of the GP register.
+     This includes profiled functions, because FUNCTION_PROFILE uses
+     a jal macro.  */
+  if (!TARGET_EXPLICIT_RELOCS || current_function_profile)
+    emit_insn (gen_loadgp_blockage ());
 }
 
 /* Set up the stack and frame (if desired) for the function.  */
