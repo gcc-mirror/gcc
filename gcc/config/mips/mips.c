@@ -6534,7 +6534,7 @@ mips_emit_loadgp (void)
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
       incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
       emit_insn (gen_loadgp (offset, incoming_address));
-      if (!TARGET_EXPLICIT_RELOCS)
+      if (!TARGET_EXPLICIT_RELOCS || current_function_profile)
 	emit_insn (gen_loadgp_blockage ());
     }
 }

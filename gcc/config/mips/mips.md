@@ -3947,12 +3947,11 @@
 }
   [(set_attr "length" "12")])
 
-;; The use of gp is hidden when not using explicit relocations.
 ;; This blockage instruction prevents the gp load from being
 ;; scheduled after an implicit use of gp.  It also prevents
 ;; the load from being deleted as dead.
 (define_insn "loadgp_blockage"
-  [(unspec_volatile [(reg:DI 28)] UNSPEC_BLOCKAGE)]
+  [(unspec_volatile [(reg:SI 28)] UNSPEC_BLOCKAGE)]
   ""
   ""
   [(set_attr "type"	"unknown")
