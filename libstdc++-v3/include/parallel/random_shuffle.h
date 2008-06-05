@@ -333,6 +333,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
 #   pragma omp parallel num_threads(num_threads)
       {
+        thread_index_t num_threads = omp_get_num_threads();
 #       pragma omp single
           {
             pus = new DRSSorterPU<RandomAccessIterator, random_number>
@@ -375,9 +376,9 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
               }
             starts[num_threads] = start;
           } //single
-      // Now shuffle in parallel.
-      parallel_random_shuffle_drs_pu(pus);
-    }
+        // Now shuffle in parallel.
+        parallel_random_shuffle_drs_pu(pus);
+      }  // parallel
 
     delete[] starts;
     delete[] sd.bin_proc;
