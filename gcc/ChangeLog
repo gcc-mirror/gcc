@@ -1,3 +1,9 @@
+2008-06-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Do not
+	always place FP constants in the TOC for TARGET_POWERPC64.
+	* config/rs6000/linux64.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Same.
+
 2008-06-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (powerpc-*-linux*spe*): Use t-dfprules.
