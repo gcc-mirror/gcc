@@ -14125,11 +14125,6 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 
   switch (TREE_CODE (t))
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonnegative_p (t);
-
     case ABS_EXPR:
       /* We can't return 1 if flag_wrapv is set because
 	 ABS_EXPR<INT_MIN> = INT_MIN.  */
@@ -14495,11 +14490,6 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 
   switch (TREE_CODE (t))
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonzero_p (t);
-
     case ABS_EXPR:
       return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
 					strict_overflow_p);

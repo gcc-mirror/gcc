@@ -648,7 +648,9 @@ usable_range_p (value_range_t *vr, bool *strict_overflow_p)
 static bool
 vrp_expr_computes_nonnegative (tree expr, bool *strict_overflow_p)
 {
-  return tree_expr_nonnegative_warnv_p (expr, strict_overflow_p);
+  return (tree_expr_nonnegative_warnv_p (expr, strict_overflow_p)
+	  || (TREE_CODE (expr) == SSA_NAME
+	      && ssa_name_nonnegative_p (expr)));
 }
 
 /* Like tree_expr_nonzero_warnv_p, but this function uses value ranges
@@ -657,7 +659,9 @@ vrp_expr_computes_nonnegative (tree expr, bool *strict_overflow_p)
 static bool
 vrp_expr_computes_nonzero (tree expr, bool *strict_overflow_p)
 {
-  if (tree_expr_nonzero_warnv_p (expr, strict_overflow_p))
+  if (tree_expr_nonzero_warnv_p (expr, strict_overflow_p)
+      || (TREE_CODE (expr) == SSA_NAME
+	  && ssa_name_nonzero_p (expr)))
     return true;
 
   /* If we have an expression of the form &X->a, then the expression
@@ -2169,7 +2173,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 
       sop = false;
       if (range_is_nonnull (&vr0)
-	  || (tree_expr_nonzero_warnv_p (expr, &sop)
+	  || (vrp_expr_computes_nonzero (expr, &sop)
 	      && !sop))
 	set_value_range_to_nonnull (vr, TREE_TYPE (expr));
       else if (range_is_null (&vr0))
@@ -2636,13 +2640,6 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
      better opportunities than a regular range, but I'm not sure.  */
   if (vr->type == VR_ANTI_RANGE)
     return;
-
-  /* Ensure that there are not values in the scev cache based on assumptions
-     on ranges of ssa names that were changed
-     (in set_value_range/set_value_range_to_varying).  Preserve cached numbers
-     of iterations, that were computed before the start of VRP (we do not
-     recompute these each time to save the compile time).  */
-  scev_reset_except_niters ();
 
   chrec = instantiate_parameters (loop, analyze_scalar_evolution (loop, var));
 
@@ -6058,20 +6055,6 @@ vrp_finalize (void)
   vr_phi_edge_counts = NULL;
 }
 
-/* Calculates number of iterations for all loops, to ensure that they are
-   cached.  */
-
-static void
-record_numbers_of_iterations (void)
-{
-  loop_iterator li;
-  struct loop *loop;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      number_of_latch_executions (loop);
-    }
-}
 
 /* Main entry point to VRP (Value Range Propagation).  This pass is
    loosely based on J. R. C. Patterson, ``Accurate Static Branch
@@ -6125,17 +6108,6 @@ execute_vrp (void)
   scev_initialize ();
 
   insert_range_assertions ();
-
-  /* Compute the # of iterations for each loop before we start the VRP
-     analysis.  The value ranges determined by VRP are used in expression
-     simplification, that is also used by the # of iterations analysis.
-     However, in the middle of the VRP analysis, the value ranges do not take
-     all the possible paths in CFG into account, so they do not have to be
-     correct, and the # of iterations analysis can obtain wrong results.
-     This is a problem, since the results of the # of iterations analysis
-     are cached, so these mistakes would not be corrected when the value
-     ranges are corrected.  */
-  record_numbers_of_iterations ();
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
