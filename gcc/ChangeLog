@@ -1,3 +1,7 @@
+2008-06-06  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (execute_ipa_pass_list): Do not regenerate summaries.
+
 2008-06-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* cgraph.c: Fix typos in comments.

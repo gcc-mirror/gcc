@@ -1367,8 +1367,6 @@ execute_ipa_pass_list (struct opt_pass *pass)
 	    }
 	  summaries_generated = true;
 	}
-      else
-	summaries_generated = false;
       if (execute_one_pass (pass) && pass->sub)
 	{
 	  if (pass->sub->type == GIMPLE_PASS)
