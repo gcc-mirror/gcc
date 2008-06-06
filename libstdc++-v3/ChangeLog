@@ -1,3 +1,12 @@
+2008-06-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/17_intro/headers/all.cc,
+	testsuite/17_intro/headers/all_c++200x_compatibility.cc,
+	testsuite/17_intro/headers/all_pedantic_errors.cc,
+	testsuite/ext/headers.cc: Only include
+	<ext/codecvt_specializations.h> and <ext/enc_filebuf.h> if
+	_GLIBCXX_HAVE_ICONV.
+
 2008-06-05  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/random_shuffle.h:
