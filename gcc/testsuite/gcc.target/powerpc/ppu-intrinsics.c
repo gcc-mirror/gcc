@@ -1,4 +1,4 @@
-/* { dg-do link { target *-*-linux* } } */
+/* { dg-do link { target { *-*-linux* && powerpc_fprs } } } */
 /* { dg-options "-W -Wall -mcpu=cell" } */
 /* Test some PPU intrinsics from <ppu_intrinsics.h>.  */
 
