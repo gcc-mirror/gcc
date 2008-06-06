@@ -237,6 +237,7 @@ package System.OS_Interface is
    pragma Import (C, sysconf);
 
    SC_CLK_TCK : constant := 2;
+   SC_NPROCESSORS_ONLN : constant := 84;
 
    -------------------------
    -- Priority Scheduling --
@@ -268,6 +269,7 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
 
    function Thread_Body_Access is new
      Unchecked_Conversion (System.Address, Thread_Body);
@@ -448,11 +450,30 @@ package System.OS_Interface is
    pragma Import (C, pthread_getspecific, "pthread_getspecific");
 
    type destructor_pointer is access procedure (arg : System.Address);
+   pragma Convention (C, destructor_pointer);
 
    function pthread_key_create
      (key        : access pthread_key_t;
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
+
+   CPU_SETSIZE : constant := 1_024;
+
+   type bit_field is array (1 .. CPU_SETSIZE) of Boolean;
+   for bit_field'Size use CPU_SETSIZE;
+   pragma Pack (bit_field);
+   pragma Convention (C, bit_field);
+
+   type cpu_set_t is record
+      bits : bit_field;
+   end record;
+   pragma Convention (C, cpu_set_t);
+
+   function pthread_setaffinity_np
+     (thread     : pthread_t;
+      cpusetsize : size_t;
+      cpuset     : access cpu_set_t) return int;
+   pragma Import (C, pthread_setaffinity_np, "__gnat_pthread_setaffinity_np");
 
 private
 

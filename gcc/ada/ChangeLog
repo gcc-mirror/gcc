@@ -1,3 +1,14 @@
+2008-06-06  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* s-osinte-linux-alpha.ads (SC_NPROCESSORS_ONLN): New constant 
+	for sysconf call.
+	(bit_field): New packed boolean type used by cpu_set_t.
+	(cpu_set_t): New type corresponding to the C type with
+	the same name. Note that on the Ada side we use a bit
+	field array for the affinity mask. There is not need
+	for the C macro for setting individual bit.
+	(pthread_setaffinity_np): New imported routine.
+	
 2008-06-06  Release Manager
 
 	* GCC 4.3.1 released.
