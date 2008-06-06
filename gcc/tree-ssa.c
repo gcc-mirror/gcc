@@ -792,24 +792,6 @@ uid_decl_map_hash (const void *item)
   return ((const_tree)item)->decl_minimal.uid;
 }
 
-/* Return true if the uid in both int tree maps are equal.  */
-
-static int
-var_ann_eq (const void *va, const void *vb)
-{
-  const struct static_var_ann_d *a = (const struct static_var_ann_d *) va;
-  const_tree const b = (const_tree) vb;
-  return (a->uid == DECL_UID (b));
-}
-
-/* Hash a UID in a int_tree_map.  */
-
-static unsigned int
-var_ann_hash (const void *item)
-{
-  return ((const struct static_var_ann_d *)item)->uid;
-}
-
 /* Return true if the DECL_UID in both trees are equal.  */
 
 static int
@@ -839,8 +821,6 @@ init_tree_ssa (void)
 				     		      uid_decl_map_eq, NULL);
   cfun->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
 				                   uid_ssaname_map_eq, NULL);
-  cfun->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 
-					       var_ann_eq, NULL);
   cfun->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
   cfun->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
   init_ssanames ();
@@ -886,9 +866,17 @@ delete_tree_ssa (void)
       set_phi_nodes (bb, NULL);
     }
 
-  /* Remove annotations from every referenced variable.  */
+  /* Remove annotations from every referenced local variable.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
+      if (!MTAG_P (var)
+	  && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
+	{
+	  var_ann (var)->mpt = NULL_TREE;
+	  var_ann (var)->symbol_mem_tag = NULL_TREE;
+	  var_ann (var)->subvars = NULL;
+	  continue;
+	}
       if (var->base.ann)
         ggc_free (var->base.ann);
       var->base.ann = NULL;
@@ -906,8 +894,6 @@ delete_tree_ssa (void)
   
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;
-  htab_delete (cfun->gimple_df->var_anns);
-  cfun->gimple_df->var_anns = NULL;
   cfun->gimple_df->call_clobbered_vars = NULL;
   cfun->gimple_df->addressable_vars = NULL;
   cfun->gimple_df->modified_noreturn_calls = NULL;

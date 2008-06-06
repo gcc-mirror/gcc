@@ -123,33 +123,14 @@ var_ann_t
 create_var_ann (tree t)
 {
   var_ann_t ann;
-  struct static_var_ann_d *sann = NULL;
 
   gcc_assert (t);
   gcc_assert (DECL_P (t));
   gcc_assert (!t->base.ann || t->base.ann->common.type == VAR_ANN);
 
-  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
-    {
-      sann = GGC_CNEW (struct static_var_ann_d);
-      ann = &sann->ann;
-    }
-  else
-    ann = GGC_CNEW (struct var_ann_d);
-
+  ann = GGC_CNEW (struct var_ann_d);
   ann->common.type = VAR_ANN;
-
-  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
-    {
-       void **slot;
-       sann->uid = DECL_UID (t);
-       slot = htab_find_slot_with_hash (gimple_var_anns (cfun),
-				        t, DECL_UID (t), INSERT);
-       gcc_assert (!*slot);
-       *slot = sann;
-    }
-  else
-    t->base.ann = (tree_ann_t) ann;
+  t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -779,8 +760,21 @@ remove_referenced_var (tree var)
 
   clear_call_clobbered (var);
   if ((v_ann = var_ann (var)))
-    ggc_free (v_ann);
-  var->base.ann = NULL;
+    {
+      /* Preserve var_anns of globals, but clear their alias info.  */
+      if (MTAG_P (var)
+	  || (!TREE_STATIC (var) && !DECL_EXTERNAL (var)))
+	{
+	  ggc_free (v_ann);
+	  var->base.ann = NULL;
+	}
+      else
+	{
+	  v_ann->mpt = NULL_TREE;
+	  v_ann->symbol_mem_tag = NULL_TREE;
+	  v_ann->subvars = NULL;
+	}
+    }
   gcc_assert (DECL_P (var));
   in.uid = uid;
   loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,

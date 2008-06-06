@@ -1,5 +1,19 @@
 2008-06-06  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36291
+	* tree-flow. h (struct gimple_df): Remove var_anns member.
+	* tree-flow-inline.h (gimple_var_anns): Remove.
+	(var_ann): Simplify.
+	* tree-dfa.c (create_var_ann): Simplify.
+	(remove_referenced_var): Clear alias info from var_anns of globals.
+	* tree-ssa.c (init_tree_ssa): Do not allocate var_anns.
+	(delete_tree_ssa): Clear alias info from var_anns of globals.
+	Do not free var_anns.
+	(var_ann_eq): Remove.
+	(var_ann_hash): Likewise.
+
+2008-06-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/34244
 	* fold-const.c (tree_expr_nonnegative_warnv_p): Do not ask VRP.
 	(tree_expr_nonzero_warnv_p): Likewise.
