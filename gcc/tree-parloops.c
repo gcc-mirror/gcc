@@ -1617,13 +1617,16 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   for_stmt = make_node (OMP_FOR);
   TREE_TYPE (for_stmt) = void_type_node;
   OMP_FOR_CLAUSES (for_stmt) = t;
-  OMP_FOR_INIT (for_stmt) = build_gimple_modify_stmt (initvar, cvar_init);
-  OMP_FOR_COND (for_stmt) = cond;
-  OMP_FOR_INCR (for_stmt) = build_gimple_modify_stmt (cvar_base,
-						      build2 (PLUS_EXPR, type,
-							      cvar_base,
-							      build_int_cst
-							      (type, 1)));
+  OMP_FOR_INIT (for_stmt) = make_tree_vec (1);
+  TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), 0)
+    = build_gimple_modify_stmt (initvar, cvar_init);
+  OMP_FOR_COND (for_stmt) = make_tree_vec (1);
+  TREE_VEC_ELT (OMP_FOR_COND (for_stmt), 0) = cond;
+  OMP_FOR_INCR (for_stmt) = make_tree_vec (2);
+  TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), 0)
+    = build_gimple_modify_stmt (cvar_base,
+				build2 (PLUS_EXPR, type, cvar_base,
+					build_int_cst (type, 1)));
   OMP_FOR_BODY (for_stmt) = NULL_TREE;
   OMP_FOR_PRE_BODY (for_stmt) = NULL_TREE;
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -29,47 +29,109 @@
    primitives.  This implementation uses atomic instructions and the futex
    syscall.  */
 
-#include "libgomp.h"
 #include <string.h>
 #include <unistd.h>
 #include <sys/syscall.h>
-#include "futex.h"
+#include "wait.h"
 
 
 /* The internal gomp_mutex_t and the external non-recursive omp_lock_t
    have the same form.  Re-use it.  */
 
 void
-omp_init_lock (omp_lock_t *lock)
+gomp_init_lock_30 (omp_lock_t *lock)
 {
   gomp_mutex_init (lock);
 }
 
 void
-omp_destroy_lock (omp_lock_t *lock)
+gomp_destroy_lock_30 (omp_lock_t *lock)
 {
   gomp_mutex_destroy (lock);
 }
 
 void
-omp_set_lock (omp_lock_t *lock)
+gomp_set_lock_30 (omp_lock_t *lock)
 {
   gomp_mutex_lock (lock);
 }
 
 void
-omp_unset_lock (omp_lock_t *lock)
+gomp_unset_lock_30 (omp_lock_t *lock)
 {
   gomp_mutex_unlock (lock);
 }
 
 int
-omp_test_lock (omp_lock_t *lock)
+gomp_test_lock_30 (omp_lock_t *lock)
 {
   return __sync_bool_compare_and_swap (lock, 0, 1);
 }
 
-/* The external recursive omp_nest_lock_t form requires additional work.  */
+void
+gomp_init_nest_lock_30 (omp_nest_lock_t *lock)
+{
+  memset (lock, '\0', sizeof (*lock));
+}
+
+void
+gomp_destroy_nest_lock_30 (omp_nest_lock_t *lock)
+{
+}
+
+void
+gomp_set_nest_lock_30 (omp_nest_lock_t *lock)
+{
+  void *me = gomp_icv (true);
+
+  if (lock->owner != me)
+    {
+      gomp_mutex_lock (&lock->lock);
+      lock->owner = me;
+    }
+
+  lock->count++;
+}
+
+void
+gomp_unset_nest_lock_30 (omp_nest_lock_t *lock)
+{
+  if (--lock->count == 0)
+    {
+      lock->owner = NULL;
+      gomp_mutex_unlock (&lock->lock);
+    }
+}
+
+int
+gomp_test_nest_lock_30 (omp_nest_lock_t *lock)
+{
+  void *me = gomp_icv (true);
+
+  if (lock->owner == me)
+    return ++lock->count;
+
+  if (__sync_bool_compare_and_swap (&lock->lock, 0, 1))
+    {
+      lock->owner = me;
+      lock->count = 1;
+      return 1;
+    }
+
+  return 0;
+}
+
+#ifdef LIBGOMP_GNU_SYMBOL_VERSIONING
+/* gomp_mutex_* can be safely locked in one thread and
+   unlocked in another thread, so the OpenMP 2.5 and OpenMP 3.0
+   non-nested locks can be the same.  */
+strong_alias (gomp_init_lock_30, gomp_init_lock_25)
+strong_alias (gomp_destroy_lock_30, gomp_destroy_lock_25)
+strong_alias (gomp_set_lock_30, gomp_set_lock_25)
+strong_alias (gomp_unset_lock_30, gomp_unset_lock_25)
+strong_alias (gomp_test_lock_30, gomp_test_lock_25)
+
+/* The external recursive omp_nest_lock_25_t form requires additional work.  */
 
 /* We need an integer to uniquely identify this thread.  Most generally
    this is the thread's TID, which ideally we'd get this straight from
@@ -85,17 +147,17 @@ omp_test_lock (omp_lock_t *lock)
    always available directly.  Make do with the gomp_thread pointer
    since it's handy.  */
 
-#if !defined (HAVE_TLS)
+# if !defined (HAVE_TLS)
 static inline int gomp_tid (void)
 {
   return syscall (SYS_gettid);
 }
-#elif !defined(__LP64__)
+# elif !defined(__LP64__)
 static inline int gomp_tid (void)
 {
   return (int) gomp_thread ();
 }
-#else
+# else
 static __thread int tid_cache;
 static inline int gomp_tid (void)
 {
@@ -104,22 +166,22 @@ static inline int gomp_tid (void)
     tid_cache = tid = syscall (SYS_gettid);
   return tid;
 }
-#endif
+# endif
 
 
 void
-omp_init_nest_lock (omp_nest_lock_t *lock)
+gomp_init_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
   memset (lock, 0, sizeof (lock));
 }
 
 void
-omp_destroy_nest_lock (omp_nest_lock_t *lock)
+gomp_destroy_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
 }
 
 void
-omp_set_nest_lock (omp_nest_lock_t *lock)
+gomp_set_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
   int otid, tid = gomp_tid ();
 
@@ -137,12 +199,12 @@ omp_set_nest_lock (omp_nest_lock_t *lock)
 	  return;
 	}
 
-      futex_wait (&lock->owner, otid);
+      do_wait (&lock->owner, otid);
     }
 }
 
 void
-omp_unset_nest_lock (omp_nest_lock_t *lock)
+gomp_unset_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
   /* ??? Validate that we own the lock here.  */
 
@@ -154,7 +216,7 @@ omp_unset_nest_lock (omp_nest_lock_t *lock)
 }
 
 int
-omp_test_nest_lock (omp_nest_lock_t *lock)
+gomp_test_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
   int otid, tid = gomp_tid ();
 
@@ -170,6 +232,19 @@ omp_test_nest_lock (omp_nest_lock_t *lock)
   return 0;
 }
 
+omp_lock_symver (omp_init_lock)
+omp_lock_symver (omp_destroy_lock)
+omp_lock_symver (omp_set_lock)
+omp_lock_symver (omp_unset_lock)
+omp_lock_symver (omp_test_lock)
+omp_lock_symver (omp_init_nest_lock)
+omp_lock_symver (omp_destroy_nest_lock)
+omp_lock_symver (omp_set_nest_lock)
+omp_lock_symver (omp_unset_nest_lock)
+omp_lock_symver (omp_test_nest_lock)
+
+#else
+
 ialias (omp_init_lock)
 ialias (omp_init_nest_lock)
 ialias (omp_destroy_lock)
@@ -180,3 +255,5 @@ ialias (omp_unset_lock)
 ialias (omp_unset_nest_lock)
 ialias (omp_test_lock)
 ialias (omp_test_nest_lock)
+
+#endif

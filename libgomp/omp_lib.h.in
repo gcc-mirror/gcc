@@ -1,4 +1,4 @@
-!  Copyright (C) 2005 Free Software Foundation, Inc.
+!  Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU OpenMP Library (libgomp).
@@ -26,9 +26,16 @@
 !  General Public License.
 
       integer omp_lock_kind, omp_nest_lock_kind, openmp_version
+      integer omp_sched_kind, omp_sched_static, omp_sched_dynamic
+      integer omp_sched_guided, omp_sched_auto
       parameter (omp_lock_kind = @OMP_LOCK_KIND@)
       parameter (omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@)
-      parameter (openmp_version = 200505)
+      parameter (omp_sched_kind = 4)
+      parameter (omp_sched_static = 1)
+      parameter (omp_sched_dynamic = 2)
+      parameter (omp_sched_guided = 3)
+      parameter (omp_sched_auto = 4)
+      parameter (openmp_version = 200805)
 
       external omp_init_lock, omp_init_nest_lock
       external omp_destroy_lock, omp_destroy_nest_lock
@@ -51,3 +58,12 @@
 
       external omp_get_wtick, omp_get_wtime
       double precision omp_get_wtick, omp_get_wtime
+
+      external omp_set_schedule, omp_get_schedule
+      external omp_get_thread_limit, omp_set_max_active_levels
+      external omp_get_max_active_levels, omp_get_level
+      external omp_get_ancestor_thread_num, omp_get_team_size
+      external omp_get_active_level
+      integer*4 omp_get_thread_limit, omp_get_max_active_levels
+      integer*4 omp_get_level, omp_get_ancestor_thread_num
+      integer*4 omp_get_team_size, omp_get_active_level

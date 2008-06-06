@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -27,8 +27,9 @@
 
 /* This file handles the LOOP (FOR/DO) construct.  */
 
-#include "libgomp.h"
+#include <limits.h>
 #include <stdlib.h>
+#include "libgomp.h"
 
 
 /* Initialize the given work share construct from the given arguments.  */
@@ -44,6 +45,39 @@ gomp_loop_init (struct gomp_work_share *ws, long start, long end, long incr,
 	    ? start : end;
   ws->incr = incr;
   ws->next = start;
+  if (sched == GFS_DYNAMIC)
+    {
+      ws->chunk_size *= incr;
+
+#ifdef HAVE_SYNC_BUILTINS
+      {
+	/* For dynamic scheduling prepare things to make each iteration
+	   faster.  */
+	struct gomp_thread *thr = gomp_thread ();
+	struct gomp_team *team = thr->ts.team;
+	long nthreads = team ? team->nthreads : 1;
+
+	if (__builtin_expect (incr > 0, 1))
+	  {
+	    /* Cheap overflow protection.  */
+	    if (__builtin_expect ((nthreads | ws->chunk_size)
+				  >= 1UL << (sizeof (long)
+					     * __CHAR_BIT__ / 2 - 1), 0))
+	      ws->mode = 0;
+	    else
+	      ws->mode = ws->end < (LONG_MAX
+				    - (nthreads + 1) * ws->chunk_size);
+	  }
+	/* Cheap overflow protection.  */
+	else if (__builtin_expect ((nthreads | -ws->chunk_size)
+				   >= 1UL << (sizeof (long)
+					      * __CHAR_BIT__ / 2 - 1), 0))
+	  ws->mode = 0;
+	else
+	  ws->mode = ws->end > (nthreads + 1) * -ws->chunk_size - LONG_MAX;
+      }
+#endif
+    }
 }
 
 /* The *_start routines are called when first encountering a loop construct
@@ -68,10 +102,13 @@ gomp_loop_static_start (long start, long end, long incr, long chunk_size,
 {
   struct gomp_thread *thr = gomp_thread ();
 
+  thr->ts.static_trip = 0;
   if (gomp_work_share_start (false))
-    gomp_loop_init (thr->ts.work_share, start, end, incr,
-		    GFS_STATIC, chunk_size);
-  gomp_mutex_unlock (&thr->ts.work_share->lock);
+    {
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      GFS_STATIC, chunk_size);
+      gomp_work_share_init_done ();
+    }
 
   return !gomp_iter_static_next (istart, iend);
 }
@@ -84,13 +121,16 @@ gomp_loop_dynamic_start (long start, long end, long incr, long chunk_size,
   bool ret;
 
   if (gomp_work_share_start (false))
-    gomp_loop_init (thr->ts.work_share, start, end, incr,
-		    GFS_DYNAMIC, chunk_size);
+    {
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      GFS_DYNAMIC, chunk_size);
+      gomp_work_share_init_done ();
+    }
 
 #ifdef HAVE_SYNC_BUILTINS
-  gomp_mutex_unlock (&thr->ts.work_share->lock);
   ret = gomp_iter_dynamic_next (istart, iend);
 #else
+  gomp_mutex_lock (&thr->ts.work_share->lock);
   ret = gomp_iter_dynamic_next_locked (istart, iend);
   gomp_mutex_unlock (&thr->ts.work_share->lock);
 #endif
@@ -106,13 +146,16 @@ gomp_loop_guided_start (long start, long end, long incr, long chunk_size,
   bool ret;
 
   if (gomp_work_share_start (false))
-    gomp_loop_init (thr->ts.work_share, start, end, incr,
-		    GFS_GUIDED, chunk_size);
+    {
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      GFS_GUIDED, chunk_size);
+      gomp_work_share_init_done ();
+    }
 
 #ifdef HAVE_SYNC_BUILTINS
-  gomp_mutex_unlock (&thr->ts.work_share->lock);
   ret = gomp_iter_guided_next (istart, iend);
 #else
+  gomp_mutex_lock (&thr->ts.work_share->lock);
   ret = gomp_iter_guided_next_locked (istart, iend);
   gomp_mutex_unlock (&thr->ts.work_share->lock);
 #endif
@@ -124,17 +167,22 @@ bool
 GOMP_loop_runtime_start (long start, long end, long incr,
 			 long *istart, long *iend)
 {
-  switch (gomp_run_sched_var)
+  struct gomp_task_icv *icv = gomp_icv (false);
+  switch (icv->run_sched_var)
     {
     case GFS_STATIC:
-      return gomp_loop_static_start (start, end, incr, gomp_run_sched_chunk,
+      return gomp_loop_static_start (start, end, incr, icv->run_sched_modifier,
 				     istart, iend);
     case GFS_DYNAMIC:
-      return gomp_loop_dynamic_start (start, end, incr, gomp_run_sched_chunk,
+      return gomp_loop_dynamic_start (start, end, incr, icv->run_sched_modifier,
 				      istart, iend);
     case GFS_GUIDED:
-      return gomp_loop_guided_start (start, end, incr, gomp_run_sched_chunk,
+      return gomp_loop_guided_start (start, end, incr, icv->run_sched_modifier,
 				     istart, iend);
+    case GFS_AUTO:
+      /* For now map to schedule(static), later on we could play with feedback
+	 driven choice.  */
+      return gomp_loop_static_start (start, end, incr, 0, istart, iend);
     default:
       abort ();
     }
@@ -149,13 +197,14 @@ gomp_loop_ordered_static_start (long start, long end, long incr,
 {
   struct gomp_thread *thr = gomp_thread ();
 
+  thr->ts.static_trip = 0;
   if (gomp_work_share_start (true))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_STATIC, chunk_size);
       gomp_ordered_static_init ();
+      gomp_work_share_init_done ();
     }
-  gomp_mutex_unlock (&thr->ts.work_share->lock);
 
   return !gomp_iter_static_next (istart, iend);
 }
@@ -168,8 +217,14 @@ gomp_loop_ordered_dynamic_start (long start, long end, long incr,
   bool ret;
 
   if (gomp_work_share_start (true))
-    gomp_loop_init (thr->ts.work_share, start, end, incr,
-		    GFS_DYNAMIC, chunk_size);
+    {
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      GFS_DYNAMIC, chunk_size);
+      gomp_mutex_lock (&thr->ts.work_share->lock);
+      gomp_work_share_init_done ();
+    }
+  else
+    gomp_mutex_lock (&thr->ts.work_share->lock);
 
   ret = gomp_iter_dynamic_next_locked (istart, iend);
   if (ret)
@@ -187,8 +242,14 @@ gomp_loop_ordered_guided_start (long start, long end, long incr,
   bool ret;
 
   if (gomp_work_share_start (true))
-    gomp_loop_init (thr->ts.work_share, start, end, incr,
-		    GFS_GUIDED, chunk_size);
+    {
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      GFS_GUIDED, chunk_size);
+      gomp_mutex_lock (&thr->ts.work_share->lock);
+      gomp_work_share_init_done ();
+    }
+  else
+    gomp_mutex_lock (&thr->ts.work_share->lock);
 
   ret = gomp_iter_guided_next_locked (istart, iend);
   if (ret)
@@ -202,20 +263,26 @@ bool
 GOMP_loop_ordered_runtime_start (long start, long end, long incr,
 				 long *istart, long *iend)
 {
-  switch (gomp_run_sched_var)
+  struct gomp_task_icv *icv = gomp_icv (false);
+  switch (icv->run_sched_var)
     {
     case GFS_STATIC:
       return gomp_loop_ordered_static_start (start, end, incr,
-					     gomp_run_sched_chunk,
+					     icv->run_sched_modifier,
 					     istart, iend);
     case GFS_DYNAMIC:
       return gomp_loop_ordered_dynamic_start (start, end, incr,
-					      gomp_run_sched_chunk,
+					      icv->run_sched_modifier,
 					      istart, iend);
     case GFS_GUIDED:
       return gomp_loop_ordered_guided_start (start, end, incr,
-					     gomp_run_sched_chunk,
+					     icv->run_sched_modifier,
 					     istart, iend);
+    case GFS_AUTO:
+      /* For now map to schedule(static), later on we could play with feedback
+	 driven choice.  */
+      return gomp_loop_ordered_static_start (start, end, incr,
+					     0, istart, iend);
     default:
       abort ();
     }
@@ -279,6 +346,7 @@ GOMP_loop_runtime_next (long *istart, long *iend)
   switch (thr->ts.work_share->sched)
     {
     case GFS_STATIC:
+    case GFS_AUTO:
       return gomp_loop_static_next (istart, iend);
     case GFS_DYNAMIC:
       return gomp_loop_dynamic_next (istart, iend);
@@ -356,6 +424,7 @@ GOMP_loop_ordered_runtime_next (long *istart, long *iend)
   switch (thr->ts.work_share->sched)
     {
     case GFS_STATIC:
+    case GFS_AUTO:
       return gomp_loop_ordered_static_next (istart, iend);
     case GFS_DYNAMIC:
       return gomp_loop_ordered_dynamic_next (istart, iend);
@@ -375,12 +444,12 @@ gomp_parallel_loop_start (void (*fn) (void *), void *data,
 			  long incr, enum gomp_schedule_type sched,
 			  long chunk_size)
 {
-  struct gomp_work_share *ws;
+  struct gomp_team *team;
 
-  num_threads = gomp_resolve_num_threads (num_threads);
-  ws = gomp_new_work_share (false, num_threads);
-  gomp_loop_init (ws, start, end, incr, sched, chunk_size);
-  gomp_team_start (fn, data, num_threads, ws);
+  num_threads = gomp_resolve_num_threads (num_threads, 0);
+  team = gomp_new_team (num_threads);
+  gomp_loop_init (&team->work_shares[0], start, end, incr, sched, chunk_size);
+  gomp_team_start (fn, data, num_threads, team);
 }
 
 void
@@ -415,8 +484,9 @@ GOMP_parallel_loop_runtime_start (void (*fn) (void *), void *data,
 				  unsigned num_threads, long start, long end,
 				  long incr)
 {
+  struct gomp_task_icv *icv = gomp_icv (false);
   gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
-			    gomp_run_sched_var, gomp_run_sched_chunk);
+			    icv->run_sched_var, icv->run_sched_modifier);
 }
 
 /* The GOMP_loop_end* routines are called after the thread is told that

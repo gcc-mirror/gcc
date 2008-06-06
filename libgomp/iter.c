@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -154,7 +154,7 @@ gomp_iter_dynamic_next_locked (long *pstart, long *pend)
   if (start == ws->end)
     return false;
 
-  chunk = ws->chunk_size * ws->incr;
+  chunk = ws->chunk_size;
   left = ws->end - start;
   if (ws->incr < 0)
     {
@@ -186,11 +186,38 @@ gomp_iter_dynamic_next (long *pstart, long *pend)
   struct gomp_work_share *ws = thr->ts.work_share;
   long start, end, nend, chunk, incr;
 
-  start = ws->next;
   end = ws->end;
   incr = ws->incr;
-  chunk = ws->chunk_size * incr;
+  chunk = ws->chunk_size;
 
+  if (__builtin_expect (ws->mode, 1))
+    {
+      long tmp = __sync_fetch_and_add (&ws->next, chunk);
+      if (incr > 0)
+	{
+	  if (tmp >= end)
+	    return false;
+	  nend = tmp + chunk;
+	  if (nend > end)
+	    nend = end;
+	  *pstart = tmp;
+	  *pend = nend;
+	  return true;
+	}
+      else
+	{
+	  if (tmp <= end)
+	    return false;
+	  nend = tmp + chunk;
+	  if (nend < end)
+	    nend = end;
+	  *pstart = tmp;
+	  *pend = nend;
+	  return true;
+	}
+    }
+
+  start = ws->next;
   while (1)
     {
       long left = end - start;

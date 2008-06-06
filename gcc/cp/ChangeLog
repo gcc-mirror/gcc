@@ -1,3 +1,70 @@
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (cxx_omp_finish_clause, cxx_omp_create_clause_info,
+	dependent_omp_for_p, begin_omp_task, finish_omp_task,
+	finish_omp_taskwait): New prototypes.
+	(cxx_omp_clause_default_ctor): Add outer argument.
+	(finish_omp_for): Add new clauses argument.
+	* cp-gimplify.c (cxx_omp_finish_clause): New function.
+	(cxx_omp_predetermined_sharing): Moved from semantics.c, rewritten.
+	(cxx_omp_clause_default_ctor): Add outer argument.
+	(cp_genericize_r): Walk OMP_CLAUSE_LASTPRIVATE_STMT.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_FINISH_CLAUSE): Define.
+	* parser.c (cp_parser_omp_for_loop): Parse collapsed for loops.
+	Add par_clauses argument.  If decl is present in parallel's
+	lastprivate clause, change that clause to shared and add
+	a lastprivate clause for decl to OMP_FOR_CLAUSES.
+	Fix wording of error messages.  Adjust finish_omp_for caller.
+	Add clauses argument.  Parse loops with random access iterators.
+	(cp_parser_omp_clause_collapse, cp_parser_omp_clause_untied): New
+	functions.
+	(cp_parser_omp_for, cp_parser_omp_parallel): Adjust
+	cp_parser_omp_for_loop callers.
+	(cp_parser_omp_for_cond, cp_parser_omp_for_incr): New helper
+	functions.
+	(cp_parser_omp_clause_name): Handle collapse and untied
+	clauses.
+	(cp_parser_omp_clause_schedule): Handle auto schedule.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_COLLAPSE
+	and PRAGMA_OMP_CLAUSE_UNTIED.
+	(OMP_FOR_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_COLLAPSE.
+	(OMP_TASK_CLAUSE_MASK): Define.
+	(cp_parser_omp_task, cp_parser_omp_taskwait): New functions.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_TASK.
+	(cp_parser_pragma): Handle PRAGMA_OMP_TASK and
+	PRAGMA_OMP_TASKWAIT.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_COLLAPSE and
+	OMP_CLAUSE_UNTIED.  Handle OMP_CLAUSE_LASTPRIVATE_STMT.
+	(tsubst_omp_for_iterator): New function.
+	(dependent_omp_for_p): New function.
+	(tsubst_expr) <case OMP_FOR>: Use it.  Handle collapsed OMP_FOR
+	loops.  Adjust finish_omp_for caller.  Handle loops with random
+	access iterators.  Adjust for OMP_FOR_{INIT,COND,INCR} changes.
+	(tsubst_expr): Handle OMP_TASK.
+	* semantics.c (cxx_omp_create_clause_info): New function.
+	(finish_omp_clauses): Call it.  Handle OMP_CLAUSE_UNTIED and
+	OMP_CLAUSE_COLLAPSE.
+	(cxx_omp_predetermined_sharing): Removed.
+	* semantics.c (finish_omp_for): Allow pointer iterators.  Use
+	handle_omp_for_class_iterator and dependent_omp_for_p.  Handle
+	collapsed for loops.  Adjust c_finish_omp_for caller.  Add new
+	clauses argument.  Fix check for type dependent cond or incr.
+	Set OMP_FOR_CLAUSES to clauses.  Use cp_convert instead of
+	fold_convert to convert incr amount to difference_type.  Only
+	fold if not in template.  If decl is mentioned in lastprivate
+	clause, set OMP_CLAUSE_LASTPRIVATE_STMT.  Handle loops with random
+	access iterators.  Adjust for OMP_FOR_{INIT,COND,INCR}
+	changes.
+	(finish_omp_threadprivate): Allow static class members of the
+	current class.
+	(handle_omp_for_class_iterator, begin_omp_task, finish_omp_task,
+	finish_omp_taskwait): New functions.
+
+	* parser.c (cp_parser_binary_expression): Add prec argument.
+	(cp_parser_assignment_expression): Adjust caller.
+	* cp-tree.h (outer_curly_brace_block): New prototype.
+	* decl.c (outer_curly_brace_block): No longer static.
+
 2008-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/36404

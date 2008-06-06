@@ -4,7 +4,7 @@
         REAL, DIMENSION(:), ALLOCATABLE :: A
         REAL, DIMENSION(:), POINTER :: B
         ALLOCATE (A(N))
-!$OMP SINGLE            ! { dg-error "COPYPRIVATE clause object 'a'" }
+!$OMP SINGLE
             ALLOCATE (B(N))
         READ (11) A,B
 !$OMP END SINGLE COPYPRIVATE(A,B)

@@ -119,6 +119,7 @@ register_overhead (bitmap b, int amount)
 /* Global data */
 bitmap_element bitmap_zero_bits;  /* An element of all zero bits.  */
 bitmap_obstack bitmap_default_obstack;    /* The default bitmap obstack.  */
+static int bitmap_default_obstack_depth;
 static GTY((deletable)) bitmap_element *bitmap_ggc_free; /* Freelist of
 							    GC'd elements.  */
 
@@ -302,7 +303,11 @@ void
 bitmap_obstack_initialize (bitmap_obstack *bit_obstack)
 {
   if (!bit_obstack)
-    bit_obstack = &bitmap_default_obstack;
+    {
+      if (bitmap_default_obstack_depth++)
+	return;
+      bit_obstack = &bitmap_default_obstack;
+    }
 
 #if !defined(__GNUC__) || (__GNUC__ < 2)
 #define __alignof__(type) 0
@@ -323,7 +328,14 @@ void
 bitmap_obstack_release (bitmap_obstack *bit_obstack)
 {
   if (!bit_obstack)
-    bit_obstack = &bitmap_default_obstack;
+    {
+      if (--bitmap_default_obstack_depth)
+	{
+	  gcc_assert (bitmap_default_obstack_depth > 0);
+	  return;
+	}
+      bit_obstack = &bitmap_default_obstack;
+    }
 
   bit_obstack->elements = NULL;
   bit_obstack->heads = NULL;

@@ -63,6 +63,7 @@ extern int hook_int_size_t_constcharptr_int_0 (size_t, const char *, int);
 extern int hook_int_void_no_regs (void);
 
 extern tree hook_tree_tree_tree_null (tree, tree);
+extern tree hook_tree_tree_tree_tree_null (tree, tree, tree);
 extern tree hook_tree_tree_tree_tree_3rd_identity (tree, tree, tree);
 extern tree hook_tree_tree_tree_bool_null (tree, tree, bool);
 

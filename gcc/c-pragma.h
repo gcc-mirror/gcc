@@ -41,6 +41,8 @@ typedef enum pragma_kind {
   PRAGMA_OMP_SECTION,
   PRAGMA_OMP_SECTIONS,
   PRAGMA_OMP_SINGLE,
+  PRAGMA_OMP_TASK,
+  PRAGMA_OMP_TASKWAIT,
   PRAGMA_OMP_THREADPRIVATE,
 
   PRAGMA_GCC_PCH_PREPROCESS,
@@ -49,11 +51,12 @@ typedef enum pragma_kind {
 } pragma_kind;
 
 
-/* All clauses defined by OpenMP 2.5.
+/* All clauses defined by OpenMP 2.5 and 3.0.
    Used internally by both C and C++ parsers.  */
 typedef enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
+  PRAGMA_OMP_CLAUSE_COLLAPSE,
   PRAGMA_OMP_CLAUSE_COPYIN,
   PRAGMA_OMP_CLAUSE_COPYPRIVATE,
   PRAGMA_OMP_CLAUSE_DEFAULT,
@@ -66,7 +69,8 @@ typedef enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_PRIVATE,
   PRAGMA_OMP_CLAUSE_REDUCTION,
   PRAGMA_OMP_CLAUSE_SCHEDULE,
-  PRAGMA_OMP_CLAUSE_SHARED
+  PRAGMA_OMP_CLAUSE_SHARED,
+  PRAGMA_OMP_CLAUSE_UNTIED
 } pragma_omp_clause;
 
 extern struct cpp_reader* parse_in;

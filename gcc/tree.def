@@ -1001,6 +1001,23 @@ DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 7)
 
 DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 4)
 
+/* OpenMP - #pragma omp task [clause1 ... clauseN]
+   Operand 0: OMP_TASK_BODY: Code to be executed by all threads.
+   Operand 1: OMP_TASK_CLAUSES: List of clauses.
+   Operand 2: OMP_TASK_FN: FUNCTION_DECL used when outlining the
+	      body of the task region.  Only valid after
+	      pass_lower_omp.
+   Operand 3: OMP_TASK_DATA_ARG: Local variable in the parent
+	      function containing data to be shared with the child
+	      function.
+   Operand 4: OMP_TASK_COPYFN: FUNCTION_DECL used for constructing
+	      firstprivate variables.
+   Operand 5: OMP_TASK_ARG_SIZE: Length of the task argument block.
+   Operand 6: OMP_TASK_ARG_ALIGN: Required alignment of the task
+	      argument block.  */
+
+DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 7)
+
 /* OpenMP - #pragma omp for [clause1 ... clauseN]
    Operand 0: OMP_FOR_BODY: Loop body.
    Operand 1: OMP_FOR_CLAUSES: List of clauses.

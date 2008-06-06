@@ -27,7 +27,7 @@ main (void)
 	{
 	  if (a != 8 || b != 12 || e[0] != 'a' || f[0] != 'b')
 	    j++;
-#pragma omp barrier
+#pragma omp barrier	/* { dg-warning "may not be closely nested" } */
 #pragma omp atomic
 	  a += i;
 	  b += i;
@@ -38,7 +38,7 @@ main (void)
 	  f[0] += i;
 	  g[0] = 'g' + i;
 	  h[0] = 'h' + i;
-#pragma omp barrier
+#pragma omp barrier	/* { dg-warning "may not be closely nested" } */
 	  if (a != 8 + 6 || b != 12 + i || c != i || d != i)
 	    j += 8;
 	  if (e[0] != 'a' + 6 || f[0] != 'b' + i || g[0] != 'g' + i)

@@ -3727,6 +3727,7 @@ do_reorg_1 (void)
       }
 
   set_cfun (NULL);
+  bitmap_obstack_release (NULL);
 }
 
 /* This function creates new global struct variables.

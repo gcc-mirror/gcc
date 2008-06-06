@@ -55,6 +55,53 @@ OMP_2.0 {
 	omp_get_wtime_;
 } OMP_1.0;
 
+OMP_3.0 {
+  global:
+	omp_set_schedule;
+	omp_set_schedule_;
+	omp_set_schedule_8_;
+	omp_get_schedule;
+	omp_get_schedule_;
+	omp_get_schedule_8_;
+	omp_get_thread_limit;
+	omp_get_thread_limit_;
+	omp_set_max_active_levels;
+	omp_set_max_active_levels_;
+	omp_set_max_active_levels_8_;
+	omp_get_max_active_levels;
+	omp_get_max_active_levels_;
+	omp_get_level;
+	omp_get_level_;
+	omp_get_ancestor_thread_num;
+	omp_get_ancestor_thread_num_;
+	omp_get_ancestor_thread_num_8_;
+	omp_get_team_size;
+	omp_get_team_size_;
+	omp_get_team_size_8_;
+	omp_get_active_level;
+	omp_get_active_level_;
+	omp_init_lock;
+	omp_init_nest_lock;
+	omp_destroy_lock;
+	omp_destroy_nest_lock;
+	omp_set_lock;
+	omp_set_nest_lock;
+	omp_unset_lock;
+	omp_unset_nest_lock;
+	omp_test_lock;
+	omp_test_nest_lock;
+	omp_destroy_lock_;
+	omp_destroy_nest_lock_;
+	omp_init_lock_;
+	omp_init_nest_lock_;
+	omp_set_lock_;
+	omp_set_nest_lock_;
+	omp_test_lock_;
+	omp_test_nest_lock_;
+	omp_unset_lock_;
+	omp_unset_nest_lock_;
+} OMP_2.0;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;
@@ -70,16 +117,12 @@ GOMP_1.0 {
 	GOMP_loop_end_nowait;
 	GOMP_loop_guided_next;
 	GOMP_loop_guided_start;
-	GOMP_loop_ordered_dynamic_first;
 	GOMP_loop_ordered_dynamic_next;
 	GOMP_loop_ordered_dynamic_start;
-	GOMP_loop_ordered_guided_first;
 	GOMP_loop_ordered_guided_next;
 	GOMP_loop_ordered_guided_start;
-	GOMP_loop_ordered_runtime_first;
 	GOMP_loop_ordered_runtime_next;
 	GOMP_loop_ordered_runtime_start;
-	GOMP_loop_ordered_static_first;
 	GOMP_loop_ordered_static_next;
 	GOMP_loop_ordered_static_start;
 	GOMP_loop_runtime_next;
@@ -103,3 +146,25 @@ GOMP_1.0 {
 	GOMP_single_copy_start;
 	GOMP_single_start;
 };
+
+GOMP_2.0 {
+  global:
+	GOMP_task;
+	GOMP_taskwait;
+	GOMP_loop_ull_dynamic_next;
+	GOMP_loop_ull_dynamic_start;
+	GOMP_loop_ull_guided_next;
+	GOMP_loop_ull_guided_start;
+	GOMP_loop_ull_ordered_dynamic_next;
+	GOMP_loop_ull_ordered_dynamic_start;
+	GOMP_loop_ull_ordered_guided_next;
+	GOMP_loop_ull_ordered_guided_start;
+	GOMP_loop_ull_ordered_runtime_next;
+	GOMP_loop_ull_ordered_runtime_start;
+	GOMP_loop_ull_ordered_static_next;
+	GOMP_loop_ull_ordered_static_start;
+	GOMP_loop_ull_runtime_next;
+	GOMP_loop_ull_runtime_start;
+	GOMP_loop_ull_static_next;
+	GOMP_loop_ull_static_start;
+} GOMP_1.0;

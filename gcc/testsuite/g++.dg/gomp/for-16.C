@@ -4,7 +4,7 @@ template<typename T>
 void foo ()
 {
 #pragma omp for
-  for (unsigned int i = 0; i < 10; i++); // { dg-warning "is unsigned" }
+  for (unsigned int i = 0; i < 10; i++);
 #pragma omp for
   for (int j = 0; ; j++); // { dg-error "missing controlling predicate" }
 #pragma omp for
@@ -12,8 +12,7 @@ void foo ()
 #pragma omp for
   for (int l = 0; l < 10; ); // { dg-error "missing increment expression" }
 #pragma omp for
-  for (int m = 0; m < 10; m *= 3); // Error here is emitted only during
-				   // instantiation
+  for (int m = 0; m < 10; m *= 3); // { dg-error "invalid increment expression" }
 #pragma omp for
   for (T n = 0; ; n++); // { dg-error "missing controlling predicate" }
 #pragma omp for

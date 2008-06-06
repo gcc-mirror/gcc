@@ -1,4 +1,4 @@
-!  Copyright (C) 2005 Free Software Foundation, Inc.
+!  Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU OpenMP Library (libgomp).
@@ -30,11 +30,16 @@
         integer, parameter :: omp_logical_kind = 4
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
         integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
+        integer, parameter :: omp_sched_kind = 4
       end module
 
       module omp_lib
         use omp_lib_kinds
-        integer, parameter :: openmp_version = 200505
+        integer, parameter :: openmp_version = 200805
+        integer (omp_sched_kind), parameter :: omp_sched_static = 1
+        integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
+        integer (omp_sched_kind), parameter :: omp_sched_guided = 3
+        integer (omp_sched_kind), parameter :: omp_sched_auto = 4
 
         interface
           subroutine omp_init_lock (lock)
@@ -194,6 +199,97 @@
           function omp_get_wtime ()
             double precision :: omp_get_wtime
           end function omp_get_wtime
+        end interface
+
+        interface omp_set_schedule
+          subroutine omp_set_schedule (kind, modifier)
+            use omp_lib_kinds
+            integer (omp_sched_kind), intent (in) :: kind
+            integer (4), intent (in) :: modifier
+          end subroutine omp_set_schedule
+          subroutine omp_set_schedule_8 (kind, modifier)
+            use omp_lib_kinds
+            integer (omp_sched_kind), intent (in) :: kind
+            integer (8), intent (in) :: modifier
+          end subroutine omp_set_schedule_8
+         end interface
+
+        interface omp_get_schedule
+          subroutine omp_get_schedule (kind, modifier)
+            use omp_lib_kinds
+            integer (omp_sched_kind), intent (out) :: kind
+            integer (4), intent (out) :: modifier
+          end subroutine omp_get_schedule
+          subroutine omp_get_schedule_8 (kind, modifier)
+            use omp_lib_kinds
+            integer (omp_sched_kind), intent (out) :: kind
+            integer (8), intent (out) :: modifier
+          end subroutine omp_get_schedule_8
+         end interface
+
+        interface
+          function omp_get_thread_limit ()
+            use omp_lib_kinds
+            integer (omp_integer_kind) :: omp_get_thread_limit
+          end function omp_get_thread_limit
+        end interface
+
+        interface omp_set_max_active_levels
+          subroutine omp_set_max_active_levels (max_levels)
+            use omp_lib_kinds
+            integer (4), intent (in) :: max_levels
+          end subroutine omp_set_max_active_levels
+          subroutine omp_set_max_active_levels_8 (max_levels)
+            use omp_lib_kinds
+            integer (8), intent (in) :: max_levels
+          end subroutine omp_set_max_active_levels_8
+        end interface
+
+        interface
+          function omp_get_max_active_levels ()
+            use omp_lib_kinds
+            integer (omp_integer_kind) :: omp_get_max_active_levels
+          end function omp_get_max_active_levels
+        end interface
+
+        interface
+          function omp_get_level ()
+            use omp_lib_kinds
+            integer (omp_integer_kind) :: omp_get_level
+          end function omp_get_level
+        end interface
+
+        interface omp_get_ancestor_thread_num
+          function omp_get_ancestor_thread_num (level)
+            use omp_lib_kinds
+            integer (4), intent (in) :: level
+            integer (omp_integer_kind) :: omp_get_ancestor_thread_num
+          end function omp_get_ancestor_thread_num
+          function omp_get_ancestor_thread_num_8 (level)
+            use omp_lib_kinds
+            integer (8), intent (in) :: level
+            integer (omp_integer_kind) :: omp_get_ancestor_thread_num
+          end function omp_get_ancestor_thread_num_8
+        end interface
+
+        interface omp_get_team_size
+          function omp_get_team_size (level)
+            use omp_lib_kinds
+            integer (4), intent (in) :: level
+            integer (omp_integer_kind) :: omp_get_team_size
+          end function omp_get_team_size
+          function omp_get_team_size_8 (level)
+            use omp_lib_kinds
+            integer (8), intent (in) :: level
+            integer (omp_integer_kind) :: omp_get_team_size
+          end function omp_get_team_size_8
+        end interface
+
+        interface
+          function omp_get_active_level ()
+            use omp_lib_kinds
+            integer (omp_integer_kind) :: omp_get_active_level
+          end function omp_get_active_level
         end interface
 
       end module omp_lib

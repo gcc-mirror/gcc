@@ -277,6 +277,7 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
       break;
 
     case OMP_PARALLEL:
+    case OMP_TASK:
       lower_omp_directive (tsi, data);
       return;
 

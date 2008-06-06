@@ -56,7 +56,7 @@ common /blk/ i1
 !$omp end parallel
 !$omp parallel reduction (*:p1)		! { dg-error "POINTER object" }
 !$omp end parallel
-!$omp parallel reduction (-:aa1)	! { dg-error "is ALLOCATABLE" }
+!$omp parallel reduction (-:aa1)
 !$omp end parallel
 !$omp parallel reduction (*:ia1)	! { dg-error "Assumed size" }
 !$omp end parallel

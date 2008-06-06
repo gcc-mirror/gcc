@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -48,7 +48,7 @@ void
 gomp_init_num_threads (void)
 {
 #ifdef _SC_NPROCESSORS_ONLN
-  gomp_nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
+  gomp_global_icv.nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
 #endif
 }
 
@@ -63,13 +63,14 @@ unsigned
 gomp_dynamic_max_threads (void)
 {
   unsigned n_onln, loadavg;
+  unsigned nthreads_var = gomp_icv (false)->nthreads_var;
 
 #ifdef _SC_NPROCESSORS_ONLN
   n_onln = sysconf (_SC_NPROCESSORS_ONLN);
-  if (n_onln > gomp_nthreads_var)
-    n_onln = gomp_nthreads_var;
+  if (n_onln > nthreads_var)
+    n_onln = nthreads_var;
 #else
-  n_onln = gomp_nthreads_var;
+  n_onln = nthreads_var;
 #endif
 
   loadavg = 0;
@@ -96,7 +97,7 @@ omp_get_num_procs (void)
 #ifdef _SC_NPROCESSORS_ONLN
   return sysconf (_SC_NPROCESSORS_ONLN);
 #else
-  return gomp_nthreads_var;
+  return gomp_icv (false)->nthreads_var;
 #endif
 }
 

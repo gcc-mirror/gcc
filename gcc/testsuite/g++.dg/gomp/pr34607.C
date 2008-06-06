@@ -13,6 +13,6 @@ foo ()
     ;
   T j;				// { dg-error "was not declared|expected" }
 #pragma omp for
-  for (j = 1; j < 3; j++)	// { dg-error "was not declared" }
-    ;				// { dg-error "expected" }
+  for (j = 1; j < 3; j++)	// { dg-error "was not declared|expected" }
+    ;
 }

@@ -1,3 +1,87 @@
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* scanner.c (skip_free_comments, skip_fixed_comments): Handle tabs.
+	* parse.c (next_free): Allow tab after !$omp.
+	(decode_omp_directive): Handle !$omp task, !$omp taskwait
+	and !$omp end task.
+	(case_executable): Add ST_OMP_TASKWAIT.
+	(case_exec_markers): Add ST_OMP_TASK.
+	(gfc_ascii_statement): Handle ST_OMP_TASK, ST_OMP_END_TASK and
+	ST_OMP_TASKWAIT.
+	(parse_omp_structured_block, parse_executable): Handle ST_OMP_TASK.
+	* gfortran.h (gfc_find_sym_in_expr): New prototype.
+	(gfc_statement): Add ST_OMP_TASK, ST_OMP_END_TASK and ST_OMP_TASKWAIT.
+	(gfc_omp_clauses): Add OMP_SCHED_AUTO to sched_kind,
+	OMP_DEFAULT_FIRSTPRIVATE to default_sharing.  Add collapse and
+	untied fields.
+	(gfc_exec_op): Add EXEC_OMP_TASK and EXEC_OMP_TASKWAIT.
+	* f95-lang.c (LANG_HOOKS_OMP_CLAUSE_COPY_CTOR,
+	LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP, LANG_HOOKS_OMP_CLAUSE_DTOR,
+	LANG_HOOKS_OMP_PRIVATE_OUTER_REF): Define.
+	* trans.h (gfc_omp_clause_default_ctor): Add another argument.
+	(gfc_omp_clause_copy_ctor, gfc_omp_clause_assign_op,
+	gfc_omp_clause_dtor, gfc_omp_private_outer_ref): New prototypes.
+	* types.def (BT_ULONGLONG, BT_PTR_ULONGLONG,
+	BT_FN_BOOL_ULONGLONGPTR_ULONGLONGPTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_ULLPTR_ULLPTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_ULL_ULLPTR_ULLPTR,
+	BT_FN_VOID_PTR_PTR, BT_PTR_FN_VOID_PTR_PTR,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT): New.
+	(BT_BOOL): Use integer type with BOOL_TYPE_SIZE rather
+	than boolean_type_node.
+	* dump-parse-tree.c (gfc_show_omp_node): Handle EXEC_OMP_TASK,
+	EXEC_OMP_TASKWAIT, OMP_SCHED_AUTO, OMP_DEFAULT_FIRSTPRIVATE,
+	untied and collapse clauses.
+	(gfc_show_code_node): Handle EXEC_OMP_TASK and EXEC_OMP_TASKWAIT.
+	* trans.c (gfc_trans_code): Handle EXEC_OMP_TASK and
+	EXEC_OMP_TASKWAIT.
+	* st.c (gfc_free_statement): Likewise.
+	* resolve.c (gfc_resolve_blocks, resolve_code): Likewise.
+	(find_sym_in_expr): Rename to...
+	(gfc_find_sym_in_expr): ... this.  No longer static.
+	(resolve_allocate_expr, resolve_ordinary_assign): Adjust caller.
+	* match.h (gfc_match_omp_task, gfc_match_omp_taskwait): New
+	prototypes.
+	* openmp.c (resolve_omp_clauses): Allow allocatable arrays in
+	firstprivate, lastprivate, reduction, copyprivate and copyin
+	clauses.
+	(omp_current_do_code): Made static.
+	(omp_current_do_collapse): New variable.
+	(gfc_resolve_omp_do_blocks): Compute omp_current_do_collapse,
+	clear omp_current_do_code and omp_current_do_collapse on return.
+	(gfc_resolve_do_iterator): Handle collapsed do loops.
+	(resolve_omp_do): Likewise, diagnose errorneous collapsed do loops.
+	(OMP_CLAUSE_COLLAPSE, OMP_CLAUSE_UNTIED): Define.
+	(gfc_match_omp_clauses): Handle default (firstprivate),
+	schedule (auto), untied and collapse (n) clauses.
+	(OMP_DO_CLAUSES): Add OMP_CLAUSE_COLLAPSE.
+	(OMP_TASK_CLAUSES): Define.
+	(gfc_match_omp_task, gfc_match_omp_taskwait): New functions.
+	* trans-openmp.c (gfc_omp_private_outer_ref): New function.
+	(gfc_omp_clause_default_ctor): Add outer argument.  For allocatable
+	arrays allocate them with the bounds of the outer var if outer
+	var is allocated.
+	(gfc_omp_clause_copy_ctor, gfc_omp_clause_assign_op,
+	gfc_omp_clause_dtor): New functions.
+	(gfc_trans_omp_array_reduction): If decl is allocatable array,
+	allocate it with outer var's bounds in OMP_CLAUSE_REDUCTION_INIT
+	and deallocate it in OMP_CLAUSE_REDUCTION_MERGE.
+	(gfc_omp_predetermined_sharing): Return OMP_CLAUSE_DEFAULT_SHARED
+	for assumed-size arrays.
+	(gfc_trans_omp_do): Add par_clauses argument.  If dovar is
+	present in lastprivate clause and do loop isn't simple,
+	set OMP_CLAUSE_LASTPRIVATE_STMT.  If dovar is present in
+	parallel's lastprivate clause, change it to shared and add
+	lastprivate clause to OMP_FOR_CLAUSES.  Handle collapsed do loops.
+	(gfc_trans_omp_directive): Adjust gfc_trans_omp_do callers.
+	(gfc_trans_omp_parallel_do): Likewise.  Move collapse clause to
+	OMP_FOR from OMP_PARALLEL.
+	(gfc_trans_omp_clauses): Handle OMP_SCHED_AUTO,
+	OMP_DEFAULT_FIRSTPRIVATE, untied and collapse clauses.
+	(gfc_trans_omp_task, gfc_trans_omp_taskwait): New functions.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_TASK and
+	EXEC_OMP_TASKWAIT.
+
 2008-06-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36322

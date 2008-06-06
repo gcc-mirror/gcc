@@ -40,5 +40,5 @@ GOMP_barrier (void)
   if (team == NULL)
     return;
 
-  gomp_barrier_wait (&team->barrier);
+  gomp_team_barrier_wait (&team->barrier);
 }

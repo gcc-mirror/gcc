@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -83,6 +83,74 @@ extern void GOMP_parallel_loop_runtime_start (void (*)(void *), void *,
 extern void GOMP_loop_end (void);
 extern void GOMP_loop_end_nowait (void);
 
+/* loop_ull.c */
+
+extern bool GOMP_loop_ull_static_start (bool, unsigned long long,
+					unsigned long long,
+					unsigned long long,
+					unsigned long long,
+					unsigned long long *,
+					unsigned long long *);
+extern bool GOMP_loop_ull_dynamic_start (bool, unsigned long long,
+					 unsigned long long,
+					 unsigned long long,
+					 unsigned long long,
+					 unsigned long long *,
+					 unsigned long long *);
+extern bool GOMP_loop_ull_guided_start (bool, unsigned long long,
+					unsigned long long,
+					unsigned long long,
+					unsigned long long,
+					unsigned long long *,
+					unsigned long long *);
+extern bool GOMP_loop_ull_runtime_start (bool, unsigned long long,
+					 unsigned long long,
+					 unsigned long long,
+					 unsigned long long *,
+					 unsigned long long *);
+
+extern bool GOMP_loop_ull_ordered_static_start (bool, unsigned long long,
+						unsigned long long,
+						unsigned long long,
+						unsigned long long,
+						unsigned long long *,
+						unsigned long long *);
+extern bool GOMP_loop_ull_ordered_dynamic_start (bool, unsigned long long,
+						 unsigned long long,
+						 unsigned long long,
+						 unsigned long long,
+						 unsigned long long *,
+						 unsigned long long *);
+extern bool GOMP_loop_ull_ordered_guided_start (bool, unsigned long long,
+						unsigned long long,
+						unsigned long long,
+						unsigned long long,
+						unsigned long long *,
+						unsigned long long *);
+extern bool GOMP_loop_ull_ordered_runtime_start (bool, unsigned long long,
+						 unsigned long long,
+						 unsigned long long,
+						 unsigned long long *,
+						 unsigned long long *);
+
+extern bool GOMP_loop_ull_static_next (unsigned long long *,
+				       unsigned long long *);
+extern bool GOMP_loop_ull_dynamic_next (unsigned long long *,
+					unsigned long long *);
+extern bool GOMP_loop_ull_guided_next (unsigned long long *,
+				       unsigned long long *);
+extern bool GOMP_loop_ull_runtime_next (unsigned long long *,
+					unsigned long long *);
+
+extern bool GOMP_loop_ull_ordered_static_next (unsigned long long *,
+					       unsigned long long *);
+extern bool GOMP_loop_ull_ordered_dynamic_next (unsigned long long *,
+						unsigned long long *);
+extern bool GOMP_loop_ull_ordered_guided_next (unsigned long long *,
+					       unsigned long long *);
+extern bool GOMP_loop_ull_ordered_runtime_next (unsigned long long *,
+						unsigned long long *);
+
 /* ordered.c */
 
 extern void GOMP_ordered_start (void);
@@ -92,6 +160,12 @@ extern void GOMP_ordered_end (void);
 
 extern void GOMP_parallel_start (void (*) (void *), void *, unsigned);
 extern void GOMP_parallel_end (void);
+
+/* team.c */
+
+extern void GOMP_task (void (*) (void *), void *, void (*) (void *, void *),
+		       long, long, bool, unsigned);
+extern void GOMP_taskwait (void);
 
 /* sections.c */
 

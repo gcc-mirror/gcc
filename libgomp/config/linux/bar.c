@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -29,36 +29,97 @@
    mechanism for libgomp.  This type is private to the library.  This 
    implementation uses atomic instructions and the futex syscall.  */
 
-#include "libgomp.h"
-#include "futex.h"
 #include <limits.h>
+#include "wait.h"
 
 
 void
-gomp_barrier_wait_end (gomp_barrier_t *bar, bool last)
+gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 {
-  if (last)
+  if (__builtin_expect ((state & 1) != 0, 0))
     {
-      bar->generation++;
-      futex_wake (&bar->generation, INT_MAX);
+      /* Next time we'll be awaiting TOTAL threads again.  */
+      bar->awaited = bar->total;
+      atomic_write_barrier ();
+      bar->generation += 4;
+      futex_wake ((int *) &bar->generation, INT_MAX);
     }
   else
     {
-      unsigned int generation = bar->generation;
-
-      gomp_mutex_unlock (&bar->mutex);
+      unsigned int generation = state;
 
       do
-	futex_wait (&bar->generation, generation);
+	do_wait ((int *) &bar->generation, generation);
       while (bar->generation == generation);
     }
-
-  if (__sync_add_and_fetch (&bar->arrived, -1) == 0)
-    gomp_mutex_unlock (&bar->mutex);
 }
 
 void
-gomp_barrier_wait (gomp_barrier_t *barrier)
+gomp_barrier_wait (gomp_barrier_t *bar)
 {
-  gomp_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier));
+  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
+}
+
+/* Like gomp_barrier_wait, except that if the encountering thread
+   is not the last one to hit the barrier, it returns immediately.
+   The intended usage is that a thread which intends to gomp_barrier_destroy
+   this barrier calls gomp_barrier_wait, while all other threads
+   call gomp_barrier_wait_last.  When gomp_barrier_wait returns,
+   the barrier can be safely destroyed.  */
+
+void
+gomp_barrier_wait_last (gomp_barrier_t *bar)
+{
+  gomp_barrier_state_t state = gomp_barrier_wait_start (bar);
+  if (state & 1)
+    gomp_barrier_wait_end (bar, state);
+}
+
+void
+gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
+{
+  futex_wake ((int *) &bar->generation, count == 0 ? INT_MAX : count);
+}
+
+void
+gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+{
+  unsigned int generation;
+
+  if (__builtin_expect ((state & 1) != 0, 0))
+    {
+      /* Next time we'll be awaiting TOTAL threads again.  */
+      struct gomp_thread *thr = gomp_thread ();
+      struct gomp_team *team = thr->ts.team;
+      bar->awaited = bar->total;
+      atomic_write_barrier ();
+      if (__builtin_expect (team->task_count, 0))
+	{
+	  gomp_barrier_handle_tasks (state);
+	  state &= ~1;
+	}
+      else
+	{
+	  bar->generation = state + 3;
+	  futex_wake ((int *) &bar->generation, INT_MAX);
+	  return;
+	}
+    }
+
+  generation = state;
+  do
+    {
+      do_wait ((int *) &bar->generation, generation);
+      if (__builtin_expect (bar->generation & 1, 0))
+	gomp_barrier_handle_tasks (state);
+      if ((bar->generation & 2))
+	generation |= 2;
+    }
+  while (bar->generation != state + 4);
+}
+
+void
+gomp_team_barrier_wait (gomp_barrier_t *bar)
+{
+  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
 }

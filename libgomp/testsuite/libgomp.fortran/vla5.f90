@@ -66,7 +66,7 @@ contains
     forall (p = 1:2, q = 3:7, r = 1:7) u(p, q, r) = 30 - x - p + q - 2 * r
     forall (p = 1:5, q = 3:7, p + q .le. 8) v(p, q) = w(1:7)
     forall (p = 1:5, q = 3:7, p + q .gt. 8) v(p, q) = w(20:26)
-!$omp barrier
+!$omp barrier		! { dg-warning "may not be closely nested" }
     y = ''
     if (x .eq. 0) y = '0'
     if (x .eq. 1) y = '1'

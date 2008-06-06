@@ -1,3 +1,265 @@
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP value to
+	200805.
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_finish_clause.
+	Add omp_private_outer_ref hook, add another argument to
+	omp_clause_default_ctor hook.
+	* langhooks-def.h (LANG_HOOKS_OMP_FINISH_CLAUSE): Define.
+	(LANG_HOOKS_OMP_PRIVATE_OUTER_REF): Define.
+	(LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR): Change to
+	hook_tree_tree_tree_tree_null.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_OMP_FINISH_CLAUSE and
+	LANG_HOOKS_OMP_PRIVATE_OUTER_REF.
+	* hooks.c (hook_tree_tree_tree_tree_null): New function.
+	* hooks.h (hook_tree_tree_tree_tree_null): New prototype.
+	* tree.def (OMP_TASK): New tree code.
+	* tree.h (OMP_TASK_COPYFN, OMP_TASK_ARG_SIZE, OMP_TASK_ARG_ALIGN,
+	OMP_CLAUSE_PRIVATE_OUTER_REF, OMP_CLAUSE_LASTPRIVATE_STMT,
+	OMP_CLAUSE_COLLAPSE_ITERVAR, OMP_CLAUSE_COLLAPSE_COUNT,
+	OMP_TASKREG_CHECK, OMP_TASKREG_BODY, OMP_TASKREG_CLAUSES,
+	OMP_TASKREG_FN, OMP_TASKREG_DATA_ARG, OMP_TASK_BODY,
+	OMP_TASK_CLAUSES, OMP_TASK_FN, OMP_TASK_DATA_ARG,
+	OMP_CLAUSE_COLLAPSE_EXPR): Define.
+	(enum omp_clause_default_kind): Add OMP_CLAUSE_DEFAULT_FIRSTPRIVATE.
+	(OMP_DIRECTIVE_P): Add OMP_TASK.
+	(OMP_CLAUSE_COLLAPSE, OMP_CLAUSE_UNTIED): New clause codes.
+	(OMP_CLAUSE_SCHEDULE_AUTO): New schedule kind.
+	* tree.c (omp_clause_code_name): Add OMP_CLAUSE_COLLAPSE
+	and OMP_CLAUSE_UNTIED entries.
+	(omp_clause_num_ops): Likewise.  Increase OMP_CLAUSE_LASTPRIVATE
+	num_ops to 2.
+	(walk_tree_1): Handle OMP_CLAUSE_COLLAPSE and OMP_CLAUSE_UNTIED.
+	Walk OMP_CLAUSE_LASTPRIVATE_STMT.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_SCHEDULE_AUTO, OMP_CLAUSE_UNTIED, OMP_CLAUSE_COLLAPSE,
+	OMP_CLAUSE_DEFAULT_FIRSTPRIVATE.
+	(dump_generic_node): Handle OMP_TASK and collapsed OMP_FOR loops.
+	* c-omp.c (c_finish_omp_for): Allow pointer iterators.  Remove
+	warning about unsigned iterators.  Change decl/init/cond/incr
+	arguments to TREE_VECs, check arguments for all collapsed loops.
+	(c_finish_omp_taskwait): New function.
+	(c_split_parallel_clauses): Put OMP_CLAUSE_COLLAPSE clause to
+	ws_clauses.
+	* c-parser.c (c_parser_omp_for_loop): Parse collapsed loops.  Call
+	default_function_array_conversion on init.  Add par_clauses argument.
+	If decl is present in parallel's lastprivate clause, change it to
+	shared and add lastprivate clause for decl to OMP_FOR_CLAUSES.
+	Add clauses argument, on success set OMP_FOR_CLAUSES to it.  Look up
+	collapse count in clauses.
+	(c_parser_omp_for, c_parser_omp_parallel): Adjust
+	c_parser_omp_for_loop callers.
+	(OMP_FOR_CLAUSE_MASK): Add 1 << PRAGMA_OMP_CLAUSE_COLLAPSE.
+	(c_parser_pragma): Handle PRAGMA_OMP_TASKWAIT.
+	(c_parser_omp_clause_name): Handle collapse and untied clauses.
+	(c_parser_omp_clause_collapse, c_parser_omp_clause_untied): New
+	functions.
+	(c_parser_omp_clause_schedule): Handle schedule(auto).
+	Include correct location in the error message.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_COLLAPSE
+	and PRAGMA_OMP_CLAUSE_UNTIED.
+	(OMP_TASK_CLAUSE_MASK): Define.
+	(c_parser_omp_task, c_parser_omp_taskwait): New functions.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_TASK.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_LASTPRIVATE_STMT,
+	OMP_CLAUSE_REDUCTION_INIT, OMP_CLAUSE_REDUCTION_MERGE,
+	OMP_CLAUSE_COLLAPSE and OMP_CLAUSE_UNTIED.
+	Don't handle TREE_STATIC or DECL_EXTERNAL VAR_DECLs in
+	OMP_CLAUSE_DECL.
+	(conver_nonlocal_reference, convert_local_reference,
+	convert_call_expr): Handle OMP_TASK the same as OMP_PARALLEL.  Use
+	OMP_TASKREG_* macros rather than OMP_PARALLEL_*.
+	(walk_omp_for): Adjust for OMP_FOR_{INIT,COND,INCR} changes.
+	* tree-gimple.c (is_gimple_stmt): Handle OMP_TASK.
+	* c-tree.h (c_begin_omp_task, c_finish_omp_task): New prototypes.
+	* c-pragma.h (PRAGMA_OMP_TASK, PRAGMA_OMP_TASKWAIT): New.
+	(PRAGMA_OMP_CLAUSE_COLLAPSE, PRAGMA_OMP_CLAUSE_UNTIED): New.
+	* c-typeck.c (c_begin_omp_task, c_finish_omp_task): New functions.
+	(c_finish_omp_clauses): Handle OMP_CLAUSE_COLLAPSE and
+	OMP_CLAUSE_UNTIED.
+	* c-pragma.c (init_pragma): Init omp task and omp taskwait pragmas.
+	* c-common.h (c_finish_omp_taskwait): New prototype.
+	* gimple-low.c (lower_stmt): Handle OMP_TASK.
+	* tree-parloops.c (create_parallel_loop): Create 1 entry
+	vectors for OMP_FOR_{INIT,COND,INCR}.
+	* tree-cfg.c (remove_useless_stmts_1): Handle OMP_* containers.
+	(make_edges): Handle OMP_TASK.
+	* tree-ssa-operands.c (get_expr_operands): Handle collapsed OMP_FOR
+	loops, adjust for OMP_FOR_{INIT,COND,INCR} changes.
+	* tree-inline.c (estimate_num_insns_1): Handle OMP_TASK.
+	* builtin-types.def (BT_PTR_ULONGLONG, BT_PTR_FN_VOID_PTR_PTR,
+	BT_FN_BOOL_ULONGLONGPTR_ULONGLONGPTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_ULLPTR_ULLPTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_ULL_ULLPTR_ULLPTR,
+	BT_FN_VOID_OMPFN_PTR_OMPCPYFN_LONG_LONG_BOOL_UINT): New.
+	* omp-builtins.def (BUILT_IN_GOMP_TASK, BUILT_IN_GOMP_TASKWAIT,
+	BUILT_IN_GOMP_LOOP_ULL_STATIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_ULL_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_STATIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_STATIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_GUIDED_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_STATIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_GUIDED_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_ORDERED_RUNTIME_NEXT): New builtins.
+	* gimplify.c (gimplify_omp_for): Allow pointer type for decl,
+	handle POINTER_PLUS_EXPR.  If loop counter has been replaced and
+	original iterator is present in lastprivate clause or if
+	collapse > 1, set OMP_CLAUSE_LASTPRIVATE_STMT.  Handle collapsed
+	OMP_FOR loops, adjust for OMP_FOR_{INIT,COND,INCR} changes.
+	(gimplify_expr): Handle OMP_SECTIONS_SWITCH and OMP_TASK.
+	(enum gimplify_omp_var_data): Add GOVD_PRIVATE_OUTER_REF.
+	(omp_notice_variable): Set GOVD_PRIVATE_OUTER_REF if needed,
+	if it is set, lookup var in outer contexts too.  Handle
+	OMP_CLAUSE_DEFAULT_FIRSTPRIVATE.  Handle vars that are supposed
+	to be implicitly determined firstprivate for task regions.
+	(gimplify_scan_omp_clauses): Set GOVD_PRIVATE_OUTER_REF if needed,
+	if it is set, lookup var in outer contexts too.  Set
+	OMP_CLAUSE_PRIVATE_OUTER_REF if GOVD_PRIVATE_OUTER_REF is set.
+	Handle OMP_CLAUSE_LASTPRIVATE_STMT, OMP_CLAUSE_COLLAPSE and
+	OMP_CLAUSE_UNTIED.  Take region_type as last argument
+	instead of in_parallel and in_combined_parallel.
+	(gimplify_omp_parallel, gimplify_omp_for, gimplify_omp_workshare):
+	Adjust callers.
+	(gimplify_adjust_omp_clauses_1): Set OMP_CLAUSE_PRIVATE_OUTER_REF if
+	GOVD_PRIVATE_OUTER_REF is set.  Call omp_finish_clause
+	langhook.
+	(new_omp_context): Set default_kind to
+	OMP_CLAUSE_DEFAULT_UNSPECIFIED for OMP_TASK regions.
+	(omp_region_type): New enum.
+	(struct gimplify_omp_ctx): Remove is_parallel and is_combined_parallel
+	fields, add region_type.
+	(new_omp_context): Take region_type as argument instead of is_parallel
+	and is_combined_parallel.
+	(gimple_add_tmp_var, omp_firstprivatize_variable, omp_notice_variable,
+	omp_is_private, omp_check_private): Adjust ctx->is_parallel and
+	ctx->is_combined_parallel checks.
+	(gimplify_omp_task): New function.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_COLLAPSE and
+	OMP_CLAUSE_UNTIED.
+	* omp-low.c (extract_omp_for_data): Use schedule(static)
+	for schedule(auto).  Handle pointer and unsigned iterators.
+	Compute fd->iter_type.  Handle POINTER_PLUS_EXPR increments.
+	Add loops argument.  Extract data for collapsed OMP_FOR loops.
+	(expand_parallel_call): Assert sched_kind isn't auto,
+	map runtime schedule to index 3.
+	(struct omp_for_data_loop): New type.
+	(struct omp_for_data): Remove v, n1, n2, step, cond_code fields.
+	Add loop, loops, collapse and iter_type fields.
+	(workshare_safe_to_combine_p): Disallow combined for if
+	iter_type is unsigned long long.  Don't combine collapse > 1 loops
+	unless all bounds and steps are constant.  Adjust extract_omp_for_data
+	caller.
+	(expand_omp_for_generic): Handle pointer, unsigned and long long
+	iterators.  Handle collapsed OMP_FOR loops.  Adjust
+	for struct omp_for_data changes.  If libgomp function doesn't return
+	boolean_type_node, add comparison of the return value with 0.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk): Handle
+	pointer, unsigned and long long iterators.  Adjust for struct
+	omp_for_data changes.
+	(expand_omp_for): Assert sched_kind isn't auto, map runtime schedule
+	to index 3.  Use GOMP_loop_ull*{start,next} if iter_type is
+	unsigned long long.  Allocate loops array, pass it to
+	extract_omp_for_data.  For collapse > 1 loops use always
+	expand_omp_for_generic.
+	(omp_context): Add sfield_map and srecord_type fields.
+	(is_task_ctx, lookup_sfield): New functions.
+	(use_pointer_for_field): Use is_task_ctx helper.  Change first
+	argument's type from const_tree to tree.  Clarify comment.
+	In OMP_TASK disallow copy-in/out sharing.
+	(build_sender_ref): Call lookup_sfield instead of lookup_field.
+	(install_var_field): Add mask argument.  Populate both record_type
+	and srecord_type if needed.
+	(delete_omp_context): Destroy sfield_map, clear DECL_ABSTRACT_ORIGIN
+	in srecord_type.
+	(fixup_child_record_type): Also remap FIELD_DECL's DECL_SIZE{,_UNIT}
+	and DECL_FIELD_OFFSET.
+	(scan_sharing_clauses): Adjust install_var_field callers.  For
+	firstprivate clauses on explicit tasks allocate the var by value in
+	record_type unconditionally, rather than by reference.
+	Handle OMP_CLAUSE_PRIVATE_OUTER_REF.  Scan OMP_CLAUSE_LASTPRIVATE_STMT.
+	Use is_taskreg_ctx instead of is_parallel_ctx.
+	Handle OMP_CLAUSE_COLLAPSE and OMP_CLAUSE_UNTIED.
+	(create_omp_child_function_name): Add task_copy argument, use
+	*_omp_cpyfn* names if it is true.
+	(create_omp_child_function): Add task_copy argument, if true create
+	*_omp_cpyfn* helper function.
+	(scan_omp_parallel): Adjust create_omp_child_function callers.
+	Rename parallel_nesting_level to taskreg_nesting_level.
+	(scan_omp_task): New function.
+	(lower_rec_input_clauses): Don't run constructors for firstprivate
+	explicit task vars which are initialized by *_omp_cpyfn*.  
+	Pass outer var ref to omp_clause_default_ctor hook if
+	OMP_CLAUSE_PRIVATE_OUTER_REF or OMP_CLAUSE_LASTPRIVATE.
+	Replace OMP_CLAUSE_REDUCTION_PLACEHOLDER decls in
+	OMP_CLAUSE_REDUCTION_INIT.
+	(lower_send_clauses): Clear DECL_ABSTRACT_ORIGIN if in task to
+	avoid duplicate setting of fields.  Handle
+	OMP_CLAUSE_PRIVATE_OUTER_REF.
+	(lower_send_shared_vars): Use srecord_type if non-NULL.  Don't
+	copy-out if TREE_READONLY, only copy-in.
+	(expand_task_copyfn): New function.
+	(expand_task_call): New function.
+	(struct omp_taskcopy_context): New type.
+	(task_copyfn_copy_decl, task_copyfn_remap_type, create_task_copyfn):
+	New functions.
+	(lower_omp_parallel): Rename to...
+	(lower_omp_taskreg): ... this.  Use OMP_TASKREG_* macros where needed.
+	Call create_task_copyfn if srecord_type is needed.  Adjust
+	sender_decl type.
+	(task_shared_vars): New variable.
+	(check_omp_nesting_restrictions): Warn if work-sharing,
+	barrier, master or ordered region is closely nested inside OMP_TASK.
+	Add warnings for barrier if closely nested inside of work-sharing,
+	ordered, or master region.
+	(scan_omp_1): Call check_omp_nesting_restrictions even for
+	GOMP_barrier calls.  Rename parallel_nesting_level to
+	taskreg_nesting_level.  Handle OMP_TASK.
+	(lower_lastprivate_clauses): Even if some lastprivate is found on a
+	work-sharing construct, continue looking for them on parent parallel
+	construct.
+	(lower_omp_for_lastprivate): Add lastprivate clauses
+	to the beginning of dlist rather than end.  Adjust for struct
+	omp_for_data changes.
+	(lower_omp_for): Add rec input clauses before OMP_FOR_PRE_BODY,
+	not after it.  Handle collapsed OMP_FOR loops, adjust for
+	OMP_FOR_{INIT,COND,INCR} changes, adjust extract_omp_for_data
+	caller.
+	(get_ws_args_for): Adjust extract_omp_for_data caller.
+	(scan_omp_for): Handle collapsed OMP_FOR
+	loops, adjust for OMP_FOR_{INIT,COND,INCR} changes.
+	(lower_omp_single_simple): If libgomp function doesn't return
+	boolean_type_node, add comparison of the return value with 0.
+	(diagnose_sb_1, diagnose_sb_2): Handle collapsed OMP_FOR
+	loops, adjust for OMP_FOR_{INIT,COND,INCR} changes.  Handle OMP_TASK.
+	(parallel_nesting_level): Rename to...
+	(taskreg_nesting_level): ... this.
+	(is_taskreg_ctx): New function.
+	(build_outer_var_ref, omp_copy_decl): Use is_taskreg_ctx instead
+	of is_parallel_ctx.
+	(execute_lower_omp): Rename parallel_nesting_level to
+	taskreg_nesting_level.
+	(expand_omp_parallel): Rename to...
+	(expand_omp_taskreg): ... this.  Use OMP_TASKREG_* macros where needed.
+	Call omp_task_call for OMP_TASK regions.
+	(expand_omp): Adjust caller, handle OMP_TASK.
+	(lower_omp_1): Adjust lower_omp_taskreg caller, handle OMP_TASK.
+
+	* bitmap.c (bitmap_default_obstack_depth): New variable.
+	(bitmap_obstack_initialize, bitmap_obstack_release): Do nothing
+	if argument is NULL and bitmap_default_obstack is already initialized.
+	* ipa-struct-reorg.c (do_reorg_1): Call bitmap_obstack_release
+	at the end.
+	* matrix-reorg.c (matrix_reorg): Likewise.
+
 2008-06-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*indirect_jump): Macroize using P
