@@ -1,3 +1,13 @@
+2008-06-06  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR bootstrap/36452
+	* loop_ull.c (GOMP_loop_ull_static_start): Adjust API.
+	(GOMP_loop_ull_dynamic_start): Likewise.
+	(GOMP_loop_ull_guided_start): Likewise.
+	(GOMP_loop_ull_ordered_static_start): Likewise.
+	(GOMP_loop_ull_ordered_dynamic_start): Likewise.
+	(GOMP_loop_ull_ordered_guided_start): Likewise.
+
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 	    Ulrich Drepper  <drepper@redhat.com>

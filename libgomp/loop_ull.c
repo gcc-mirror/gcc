@@ -483,48 +483,57 @@ extern __typeof(gomp_loop_ull_ordered_guided_next) GOMP_loop_ull_ordered_guided_
 	__attribute__((alias ("gomp_loop_ull_ordered_guided_next")));
 #else
 bool
-GOMP_loop_ull_static_start (gomp_ull start, gomp_ull end, gomp_ull incr, gomp_ull chunk_size,
-			gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_static_start (bool up, gomp_ull start, gomp_ull end,
+			    gomp_ull incr, gomp_ull chunk_size,
+			    gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_static_start (start, end, incr, chunk_size, istart, iend);
+  return gomp_loop_ull_static_start (up, start, end, incr, chunk_size, istart,
+				     iend);
 }
 
 bool
-GOMP_loop_ull_dynamic_start (gomp_ull start, gomp_ull end, gomp_ull incr, gomp_ull chunk_size,
-			 gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_dynamic_start (bool up, gomp_ull start, gomp_ull end,
+			     gomp_ull incr, gomp_ull chunk_size,
+			     gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_dynamic_start (start, end, incr, chunk_size, istart, iend);
+  return gomp_loop_ull_dynamic_start (up, start, end, incr, chunk_size, istart,
+				      iend);
 }
 
 bool
-GOMP_loop_ull_guided_start (gomp_ull start, gomp_ull end, gomp_ull incr, gomp_ull chunk_size,
-			gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_guided_start (bool up, gomp_ull start, gomp_ull end,
+			    gomp_ull incr, gomp_ull chunk_size,
+			    gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_guided_start (start, end, incr, chunk_size, istart, iend);
+  return gomp_loop_ull_guided_start (up, start, end, incr, chunk_size, istart,
+				     iend);
 }
 
 bool
-GOMP_loop_ull_ordered_static_start (gomp_ull start, gomp_ull end, gomp_ull incr,
-				gomp_ull chunk_size, gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_ordered_static_start (bool up, gomp_ull start, gomp_ull end,
+				    gomp_ull incr, gomp_ull chunk_size,
+				    gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_ordered_static_start (start, end, incr, chunk_size,
-					 istart, iend);
+  return gomp_loop_ull_ordered_static_start (up, start, end, incr, chunk_size,
+					     istart, iend);
 }
 
 bool
-GOMP_loop_ull_ordered_dynamic_start (gomp_ull start, gomp_ull end, gomp_ull incr,
-				 gomp_ull chunk_size, gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_ordered_dynamic_start (bool up, gomp_ull start, gomp_ull end,
+				     gomp_ull incr, gomp_ull chunk_size,
+				     gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_ordered_dynamic_start (start, end, incr, chunk_size,
-					  istart, iend);
+  return gomp_loop_ull_ordered_dynamic_start (up, start, end, incr, chunk_size,
+					      istart, iend);
 }
 
 bool
-GOMP_loop_ull_ordered_guided_start (gomp_ull start, gomp_ull end, gomp_ull incr,
-				gomp_ull chunk_size, gomp_ull *istart, gomp_ull *iend)
+GOMP_loop_ull_ordered_guided_start (bool up, gomp_ull start, gomp_ull end,
+				    gomp_ull incr, gomp_ull chunk_size,
+				    gomp_ull *istart, gomp_ull *iend)
 {
-  return gomp_loop_ull_ordered_guided_start (start, end, incr, chunk_size,
-					 istart, iend);
+  return gomp_loop_ull_ordered_guided_start (up, start, end, incr, chunk_size,
+					     istart, iend);
 }
 
 bool
