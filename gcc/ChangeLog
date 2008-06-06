@@ -1,3 +1,13 @@
+2008-06-06  Sandip Matte  <sandip@rmicorp.com>
+
+	* doc/invoke.texi: Document -march=xlr.
+	* config/mips/xlr.md: New file.
+	* config/mips/mips.md: Include it.
+	(cpu): Add "xlr".
+	* config/mips/mips.h (PROCESSOR_XLR): New processor_type.
+	* config/mips/mips.c (mips_cpu_info_table): Add an XLR entry.
+	(mips_rtx_cost_data): Likewise.
+
 2008-06-06  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_mode_dependent_address): Remove

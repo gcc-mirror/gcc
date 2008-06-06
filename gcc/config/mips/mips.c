@@ -645,6 +645,7 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "sb1", PROCESSOR_SB1, 64, PTF_AVOID_BRANCHLIKELY },
   { "sb1a", PROCESSOR_SB1A, 64, PTF_AVOID_BRANCHLIKELY },
   { "sr71000", PROCESSOR_SR71000, 64, PTF_AVOID_BRANCHLIKELY },
+  { "xlr", PROCESSOR_XLR, 64, 0 }
 };
 
 /* Default costs.  If these are used for a processor we should look
@@ -1015,6 +1016,21 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
   { /* SR71000 */
     DEFAULT_COSTS
   },
+  { /* XLR */
+    /* Need to replace first five with the costs of calling the appropriate 
+       libgcc routine.  */
+    COSTS_N_INSNS (256),          /* fp_add */
+    COSTS_N_INSNS (256),          /* fp_mult_sf */
+    COSTS_N_INSNS (256),          /* fp_mult_df */
+    COSTS_N_INSNS (256),          /* fp_div_sf */
+    COSTS_N_INSNS (256),          /* fp_div_df */
+    COSTS_N_INSNS (8),            /* int_mult_si */
+    COSTS_N_INSNS (8),            /* int_mult_di */
+    COSTS_N_INSNS (72),           /* int_div_si */
+    COSTS_N_INSNS (72),           /* int_div_di */
+		     1,           /* branch_cost */
+		     4            /* memory_latency */
+  }
 };
 
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
