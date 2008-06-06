@@ -46,7 +46,7 @@ case "${host}" in
     # so we just check for all the features here.
     # Check for available headers.
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
-    machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
+    machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h \
     sys/types.h])
 
     # Don't call GLIBCXX_CHECK_LINKER_FEATURES, Darwin doesn't have a GNU ld
@@ -197,7 +197,7 @@ case "${host}" in
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h float.h endian.h inttypes.h locale.h float.h stdint.h \
-      sys/ipc.h sys/sem.h gconf.h])
+      sys/ipc.h sys/sem.h])
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS)
     GLIBCXX_CHECK_COMPILER_FEATURES
@@ -223,6 +223,10 @@ case "${host}" in
     # For C99 support to TR1.
     GLIBCXX_CHECK_C99_TR1
 
+    AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
+
+    AC_LC_MESSAGES
+
     # Check for sigsetjmp
     AC_TRY_COMPILE(
       [#include <setjmp.h>],
@@ -231,6 +235,11 @@ case "${host}" in
          siglongjmp (env, 1);
       ],
       [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
+
+    AC_DEFINE(HAVE_MMAP) 
+
+    # For iconv support.
+    AM_ICONV
     ;;
   *-mingw32*)
     AC_CHECK_HEADERS([sys/types.h locale.h float.h])

@@ -1,5 +1,14 @@
 2008-06-06  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac: Do not check for gconv.h.
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Do not test for gconv.h or
+	gconf.h.  For glibc and uClibc systems, define
+	_GLIBCXX_USE_RANDOM_TR1 and HAVE_MMAP and use AC_LC_MESSAGES and
+	AM_ICONV.
+	* configure, config.h.in: Regenerate.
+
+2008-06-06  Joseph Myers  <joseph@codesourcery.com>
+
 	* testsuite/17_intro/headers/all.cc,
 	testsuite/17_intro/headers/all_c++200x_compatibility.cc,
 	testsuite/17_intro/headers/all_pedantic_errors.cc,
