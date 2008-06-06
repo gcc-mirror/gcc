@@ -1,3 +1,7 @@
+2008-06-06  Release Manager
+
+	* GCC 4.3.1 released.
+
 2008-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* inclhack.def (solaris_math_10): New.
