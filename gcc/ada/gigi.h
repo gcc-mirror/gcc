@@ -535,6 +535,12 @@ extern void finish_record_type (tree record_type, tree fieldlist,
    so, unless explicitly requested not to through DO_NOT_FINALIZE.  */
 extern void rest_of_record_type_compilation (tree record_type);
 
+/* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
+extern void add_parallel_type (tree decl, tree parallel_type);
+
+/* Return the parallel type associated to a type, if any.  */
+extern tree get_parallel_type (tree type);
+
 /* Returns a FUNCTION_TYPE node. RETURN_TYPE is the type returned by the
    subprogram. If it is void_type_node, then we are dealing with a procedure,
    otherwise we are dealing with a function. PARAM_DECL_LIST is a list of

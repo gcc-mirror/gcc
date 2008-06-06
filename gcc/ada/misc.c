@@ -199,6 +199,13 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
+/* How much we want of our DWARF extensions.  Some of our dwarf+ extensions
+   are incompatible with regular GDB versions, so we must make sure to only
+   produce them on explicit request.  This is eventually reflected into the
+   use_gnu_debug_info_extensions common flag for later processing.  */
+
+static int gnat_dwarf_extensions = 0;
+
 /* Command-line argc and argv.
    These variables are global, since they are imported and used in
    back_end.adb  */
@@ -334,6 +341,10 @@ gnat_handle_option (size_t scode, const char *arg, int value)
       gnat_argc++;
       break;
 
+    case OPT_gdwarf_:
+      gnat_dwarf_extensions ++;
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -382,6 +393,11 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_eliminate_unused_debug_types = 1;
   else
     flag_eliminate_unused_debug_types = 0;
+
+  /* Reflect the explicit request of DWARF extensions into the common
+     flag for use by later passes.  */
+  if (write_symbols == DWARF2_DEBUG)
+    use_gnu_debug_info_extensions = gnat_dwarf_extensions > 0;
 
   return false;
 }

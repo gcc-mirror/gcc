@@ -56,6 +56,10 @@
 #include "einfo.h"
 #include "ada-tree.h"
 #include "gigi.h"
+#include "adadecode.h"
+
+#include "dwarf2.h"
+#include "dwarf2out.h"
 
 /* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca,
    for fear of running out of stack space.  If we need more, we use xmalloc
@@ -211,6 +215,11 @@ static tree gnat_stabilize_reference (tree, bool);
 static tree gnat_stabilize_reference_1 (tree, bool);
 static void set_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, int);
+
+/* Hooks for debug info back-ends, only supported and used in a restricted set
+   of configurations.  */
+static const char *extract_encoding (const char *) ATTRIBUTE_UNUSED;
+static const char *decode_name (const char *) ATTRIBUTE_UNUSED;
 
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
@@ -281,6 +290,18 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       TYPE_SIZE (void_type_node) = bitsize_zero_node;
       TYPE_SIZE_UNIT (void_type_node) = size_zero_node;
     }
+
+  /* If the GNU type extensions to DWARF are available, setup the hooks.  */
+#if defined (DWARF2_DEBUGGING_INFO) && defined (DWARF2_GNU_TYPE_EXTENSIONS)
+  /* We condition the name demangling and the generation of type encoding
+     strings on -gdwarf+ and always set descriptive types on.  */
+  if (use_gnu_debug_info_extensions)
+    {
+      dwarf2out_set_type_encoding_func (extract_encoding);
+      dwarf2out_set_demangle_name_func (decode_name);
+    }
+  dwarf2out_set_descriptive_type_func (get_parallel_type);
+#endif
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
@@ -6893,6 +6914,31 @@ set_expr_location_from_node (tree node, Node_Id gnat_node)
     return;
 
   set_expr_location (node, locus);
+}
+
+/* Return a colon-separated list of encodings contained in encoded Ada
+   name.  */
+
+static const char *
+extract_encoding (const char *name)
+{
+  char *encoding = ggc_alloc (strlen (name));
+  
+  get_encoding (name, encoding);
+  
+  return encoding;
+}
+
+/* Extract the Ada name from an encoded name.  */
+
+static const char *
+decode_name (const char *name)
+{
+  char *decoded = ggc_alloc (strlen (name) * 2 + 60);
+  
+  __gnat_decode (name, decoded, 0);
+  
+  return decoded;
 }
 
 /* Post an error message.  MSG is the error message, properly annotated.

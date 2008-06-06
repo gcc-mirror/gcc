@@ -1059,6 +1059,8 @@ rest_of_record_type_compilation (tree record_type)
       TYPE_SIZE_UNIT (new_record_type)
 	= size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
 
+      add_parallel_type (TYPE_STUB_DECL (record_type), new_record_type);
+
       /* Now scan all the fields, replacing each field with a new
 	 field corresponding to the new encoding.  */
       for (old_field = TYPE_FIELDS (record_type); old_field;
@@ -1199,6 +1201,30 @@ rest_of_record_type_compilation (tree record_type)
     }
 
   rest_of_type_decl_compilation (TYPE_STUB_DECL (record_type));
+}
+
+/* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
+
+void
+add_parallel_type (tree decl, tree parallel_type)
+{
+  tree d = decl;
+
+  while (DECL_PARALLEL_TYPE (d))
+    d = TYPE_STUB_DECL (DECL_PARALLEL_TYPE (d));
+
+  SET_DECL_PARALLEL_TYPE (d, parallel_type);
+}
+
+/* Return the parallel type associated to a type, if any.  */
+
+tree
+get_parallel_type (tree type)
+{
+  if (TYPE_STUB_DECL (type))
+    return DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type));
+  else
+    return NULL_TREE;
 }
 
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
