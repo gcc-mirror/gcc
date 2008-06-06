@@ -1,5 +1,6 @@
 /* Routines for performing Temporary Expression Replacement (TER) in SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -58,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
    v_9 = (b_5 + 6) * (C * 10)
 
    which will then have the ssa_name assigned to regular variables, and the
-   resulting code which will be passed ot the expander looks something like:
+   resulting code which will be passed to the expander looks something like:
 
    v = (b + 6) * (C * 10)
 
@@ -70,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    Although SSA_NAMES themselves don't change, this pass is performed after 
    coalescing has coalesced different SSA_NAMES together, so there could be a 
    definition of an SSA_NAME which is coalesced with a use that causes a
-   problem.  ie
+   problem, i.e.,
    
    PHI b_5 = <b_8(2), b_14(1)>
    <...>
@@ -95,8 +96,8 @@ along with GCC; see the file COPYING3.  If not see
    EXPR_DECL_UID bitmap is allocated and set to the base variable UID of the 
    def and any uses in the expression.  non-NULL means the expression is being 
    tracked.  The UID's themselves are used to prevent TER substitution into
-   accumulating sequences.
-   ie
+   accumulating sequences, i.e.,
+
    x = x + y
    x = x + z
    x = x + w
@@ -124,7 +125,7 @@ along with GCC; see the file COPYING3.  If not see
    a block to clear out the KILL_LIST bitmaps at the end of each block.
 
    NEW_REPLACEABLE_DEPENDENCIES is used as a temporary place to store 
-   dependencies which will be reused by the current definition. ALl the uses
+   dependencies which will be reused by the current definition. All the uses
    on an expression are processed before anything else is done. If a use is
    determined to be a replaceable expression AND the current stmt is also going
    to be replaceable, all the dependencies of this replaceable use will be
@@ -137,8 +138,8 @@ along with GCC; see the file COPYING3.  If not see
 
    a_2's expression 'b_5 + 6' is determined to be replaceable at the use 
    location. It is dependent on the partition 'b_5' is in. This is cached into
-   the NEW_REPLACEABLE_DEPENDENCIES bitmap. and when v_8 is examined for
-   replaceablility, it is a candidate, and it is dependent on the partition 
+   the NEW_REPLACEABLE_DEPENDENCIES bitmap, and when v_8 is examined for
+   replaceability, it is a candidate, and it is dependent on the partition
    b_5 is in *NOT* a_2, as well as c_4's partition.
 
    if v_8 is also replaceable:
@@ -520,7 +521,7 @@ kill_virtual_exprs (temp_expr_table_p tab)
 
 
 /* Mark the expression associated with VAR as replaceable, and enter
-   the defining stmt into the partition_dependencies table TAB.  if
+   the defining stmt into the partition_dependencies table TAB.  If
    MORE_REPLACING is true, accumulate the pending partition dependencies.  */
 
 static void

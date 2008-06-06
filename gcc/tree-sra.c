@@ -357,7 +357,7 @@ decl_can_be_decomposed_p (tree var)
   /* HACK: if we decompose a va_list_type_node before inlining, then we'll
      confuse tree-stdarg.c, and we won't be able to figure out which and
      how many arguments are accessed.  This really should be improved in
-     tree-stdarg.c, as the decomposition is truely a win.  This could also
+     tree-stdarg.c, as the decomposition is truly a win.  This could also
      be fixed if the stdarg pass ran early, but this can't be done until
      we've aliasing information early too.  See PR 30791.  */
   if (early_sra
@@ -2076,7 +2076,7 @@ generate_one_element_ref (struct sra_elt *elt, tree base)
       {
 	tree field = elt->element;
 
-	/* We can't test elt->in_bitfld_blk here because, when this is
+	/* We can't test elt->in_bitfld_block here because, when this is
 	   called from instantiate_element, we haven't set this field
 	   yet.  */
 	if (TREE_CODE (field) == BIT_FIELD_REF)
@@ -2162,7 +2162,7 @@ sra_build_assignment (tree dst, tree src)
       var = TREE_OPERAND (src, 0);
       width = TREE_OPERAND (src, 1);
       /* The offset needs to be adjusted to a right shift quantity
-	 depending on the endianess.  */
+	 depending on the endianness.  */
       if (BYTES_BIG_ENDIAN)
 	{
 	  tree tmp = size_binop (PLUS_EXPR, width, TREE_OPERAND (src, 2));

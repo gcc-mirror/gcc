@@ -1,5 +1,5 @@
 /* Struct-reorg optimization.
-   Copyright (C) 2002, 2003-2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003-2007, 2008 Free Software Foundation, Inc.
    Contributed by Olga Golovanevsky <olga@il.ibm.com>
 
 This file is part of GCC.
@@ -104,7 +104,7 @@ struct data_structure
   /* A data structure representing a reorganization decision.  */
   struct field_cluster *struct_clustering;
 
-  /* New types to replace an the original structure type.  */
+  /* New types to replace the original structure type.  */
   VEC(tree, heap) *new_types;
 };
 

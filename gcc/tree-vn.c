@@ -1,5 +1,6 @@
 /* Value Numbering routines for tree expressions.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>, Steven Bosscher
    <stevenb@suse.de> and Diego Novillo <dnovillo@redhat.com>
 
@@ -211,7 +212,7 @@ vn_add (tree expr, tree val)
     add_to_value (val, expr);
 }
 
-/* Insert EXPR into the value numbering tables.  with value VAL, and
+/* Insert EXPR into the value numbering tables with value VAL, and
    add expression EXPR to the value set for value VAL.  VUSES
    represents the virtual use operands associated with EXPR.  It is
    used when computing a hash value for EXPR.  */

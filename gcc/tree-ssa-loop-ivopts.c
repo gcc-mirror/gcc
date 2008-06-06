@@ -1,5 +1,6 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    
 This file is part of GCC.
    
@@ -3047,7 +3048,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	    {
 	      base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
 	      /* ??? We can run into trouble with some backends by presenting
-		 it with symbols which havn't been properly passed through
+		 it with symbols which haven't been properly passed through
 		 targetm.encode_section_info.  By setting the local bit, we
 		 enhance the probability of things working.  */
 	      SYMBOL_REF_FLAGS (base) = SYMBOL_FLAG_LOCAL;
@@ -3978,7 +3979,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
   cost = cost_step + cost_base.cost / AVG_LOOP_NITER (current_loop);
 
   /* Prefer the original ivs unless we may gain something by replacing it.
-     The reason is to makee debugging simpler; so this is not relevant for
+     The reason is to make debugging simpler; so this is not relevant for
      artificial ivs created by other optimization passes.  */
   if (cand->pos != IP_ORIGINAL
       || DECL_ARTIFICIAL (SSA_NAME_VAR (cand->var_before)))

@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -135,7 +135,7 @@ struct insn_def
   struct insn_def *next;	/* Next insn in chain.  */
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
-  int insn_index;		/* Expression numer in file, for errors.  */
+  int insn_index;		/* Expression number in file, for errors.  */
   int lineno;			/* Line number.  */
   int num_alternatives;		/* Number of alternatives.  */
   int vec_idx;			/* Index of attribute vector in `def'.  */

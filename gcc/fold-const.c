@@ -11389,7 +11389,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  if (strict_overflow_p)
 	    fold_overflow_warning (("assuming signed overflow does not occur "
-				    "when simplifying modulos"),
+				    "when simplifying modulus"),
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_convert (type, tem);
 	}
@@ -14758,7 +14758,7 @@ fold_read_from_constant_string (tree exp)
 	     with constant folding.  (E.g. suppose the lower bound is 1,
 	     and its mode is QI.  Without the conversion,l (ARRAY
 	     +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
-	     +INDEX), which becomes (ARRAY+255+INDEX).  Opps!)  */
+	     +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)  */
 	  if (! integer_zerop (low_bound))
 	    index = size_diffop (index, fold_convert (sizetype, low_bound));
 

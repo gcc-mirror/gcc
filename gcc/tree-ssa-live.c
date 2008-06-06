@@ -1,5 +1,6 @@
 /* Liveness for SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -46,7 +47,7 @@ static void  verify_live_on_entry (tree_live_info_p);
    At the end of out-of-ssa, each partition becomes a "real" variable and is
    rewritten as a compiler variable.
 
-   The var_map datat structure is used to manage these partitions.  It allows
+   The var_map data structure is used to manage these partitions.  It allows
    partitions to be combined, and determines which partition belongs to what
    ssa_name or variable, and vice versa.  */
 

@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -301,7 +301,7 @@ builtin_define_decimal_float_constants (const char *name_prefix,
   sprintf (buf, "1E-%d%s", fmt->p - 1, suffix);
   builtin_define_with_value (name, buf, 0);
 
-  /* Minimum denormalized postive decimal value.  */
+  /* Minimum denormalized positive decimal value.  */
   sprintf (name, "__%s_DEN__", name_prefix);
   p = buf;
   for (digits = fmt->p; digits > 1; digits--)

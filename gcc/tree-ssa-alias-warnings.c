@@ -1,5 +1,5 @@
 /* Strict aliasing checks.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
    Contributed by Silvius Rus <rus@google.com>.
 
    This file is part of GCC.
@@ -93,7 +93,7 @@
    -Wstrict-aliasing=3 (default)
    ===================
    Should have very few false positives and few false negatives.
-   Takes care of the common punn+dereference pattern in the front end:
+   Takes care of the common pun+dereference pattern in the front end:
    *(int*)&some_float.
    Takes care of multiple statement cases in the back end,
    using flow-sensitive points-to information (-O required).

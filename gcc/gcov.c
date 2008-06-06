@@ -83,7 +83,7 @@ typedef struct arc_info
   /* Arc is for a function that abnormally returns.  */
   unsigned int is_call_non_return : 1;
 
-  /* Arc is for catch/setjump.  */
+  /* Arc is for catch/setjmp.  */
   unsigned int is_nonlocal_return : 1;
 
   /* Is an unconditional branch.  */

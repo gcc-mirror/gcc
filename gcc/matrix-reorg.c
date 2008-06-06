@@ -1,5 +1,5 @@
 /* Matrix layout transformations.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <razya@il.ibm.com>
    Originally written by Revital Eres and Mustafa Hagog.
    
@@ -1543,7 +1543,7 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
 	  mark_min_matrix_escape_level (mi, level, call_stmt);
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Matrix %s: Cannot calculate the size of allocation. escaping at level %d\n",
+		     "Matrix %s: Cannot calculate the size of allocation, escaping at level %d\n",
 		     get_name (mi->decl), level);
 	  break;
 	}

@@ -1,5 +1,6 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -71,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
      7. Put the duplicated resources in B and all the B' blocks into SSA form.
 
    Note that block duplication can be minimized by first collecting the
-   the set of unique destination blocks that the incoming edges should
+   set of unique destination blocks that the incoming edges should
    be threaded to.  Block duplication can be further minimized by using
    B instead of creating B' for one destination if all edges into B are
    going to be threaded to a successor of B.
@@ -1089,7 +1090,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
    threading opportunities discovered by a pass and update the CFG
    and SSA form all at once.
 
-   E is the edge we can thread, E2 is the new target edge.  ie, we
+   E is the edge we can thread, E2 is the new target edge, i.e., we
    are effectively recording that E->dest can be changed to E2->dest
    after fixing the SSA graph.  */
 

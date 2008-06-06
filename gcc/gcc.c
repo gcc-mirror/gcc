@@ -1203,7 +1203,7 @@ static const struct {
 
 /* Translate the options described by *ARGCP and *ARGVP.
    Make a new vector and store it back in *ARGVP,
-   and store its length in *ARGVC.  */
+   and store its length in *ARGCP.  */
 
 static void
 translate_options (int *argcp, const char *const **argvp)
@@ -7823,8 +7823,8 @@ getenv_spec_function (int argc, const char **argv)
     fatal ("environment variable \"%s\" not defined", argv[0]);
 
   /* We have to escape every character of the environment variable so
-     they are not interpretted as active spec characters.  A
-     particulaly painful case is when we are reading a variable
+     they are not interpreted as active spec characters.  A
+     particularly painful case is when we are reading a variable
      holding a windows path complete with \ separators.  */
   len = strlen (value) * 2 + strlen (argv[1]) + 1;
   result = xmalloc (len);

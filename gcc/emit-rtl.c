@@ -1141,7 +1141,7 @@ get_first_label_num (void)
 
 /* If the rtx for label was created during the expansion of a nested
    function, then first_label_num won't include this label number.
-   Fix this now so that array indicies work later.  */
+   Fix this now so that array indices work later.  */
 
 void
 maybe_set_first_label_num (rtx x)
@@ -1623,7 +1623,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	}
 
       /* If this is a field reference and not a bit-field, record it.  */
-      /* ??? There is some information that can be gleened from bit-fields,
+      /* ??? There is some information that can be gleaned from bit-fields,
 	 such as the word offset in the structure that might be modified.
 	 But skip it for now.  */
       else if (TREE_CODE (t) == COMPONENT_REF
@@ -1726,7 +1726,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
   if (TREE_CODE (t) == ALIGN_INDIRECT_REF)
     {
-      /* Force EXPR and OFFSE to NULL, since we don't know exactly what
+      /* Force EXPR and OFFSET to NULL, since we don't know exactly what
 	 we're overlapping.  */
       offset = NULL;
       expr = NULL;
@@ -1960,7 +1960,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR, which is assumed to be
-   MEMREF offseted by OFFSET bytes.  If VALIDATE is
+   MEMREF offset by OFFSET bytes.  If VALIDATE is
    nonzero, the memory address is forced to be valid.  */
 
 rtx

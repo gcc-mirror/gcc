@@ -216,7 +216,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.
 
-     FORNOW: If we dont know the value of peel_iters for prologue or epilogue
+     FORNOW: If we don't know the value of peel_iters for prologue or epilogue
      at compile-time - we assume it's vf/2 (the worst would be vf-1).
 
      TODO: Build an expression that represents peel_iters for prologue and
@@ -332,7 +332,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      branches.
 
      TODO: The back end may reorder the BBS's differently and reverse
-     conditions/branch directions.  Change the stimates below to
+     conditions/branch directions.  Change the estimates below to
      something more reasonable.  */
 
   if (runtime_test)
@@ -1392,7 +1392,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
      created vectors. It is greater than 1 if unrolling is performed. 
 
      For example, we have two scalar operands, s1 and s2 (e.g., group of
-     strided accesses of size two), while NUINTS is four (i.e., four scalars
+     strided accesses of size two), while NUNITS is four (i.e., four scalars
      of this type can be packed in a vector). The output vector will contain
      two copies of each scalar operand: {s1, s2, s1, s2}. (NUMBER_OF_COPIES
      will be 2).
@@ -1400,7 +1400,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
      If GROUP_SIZE > NUNITS, the scalars will be split into several vectors 
      containing the operands.
 
-     For example, NUINTS is four as before, and the group size is 8 
+     For example, NUNITS is four as before, and the group size is 8
      (s1, s2, ..., s8). We will create two vectors {s1, s2, s3, s4} and
      {s5, s6, s7, s8}.  */
     
@@ -4481,7 +4481,7 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
 
       /* Arguments are ready. Create the new vector stmt.  We are creating 
          two vector defs because the widened result does not fit in one vector.
-         The vectorized stmt can be expressed as a call to a taregt builtin,
+         The vectorized stmt can be expressed as a call to a target builtin,
          or a using a tree-code.  */
       /* Generate first half of the widened result:  */
       new_stmt = vect_gen_widened_results_half (code1, vectype_out, decl1, 
@@ -6199,7 +6199,7 @@ vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   vec_then_clause = vect_get_vec_def_for_operand (then_clause, stmt, NULL);
   vec_else_clause = vect_get_vec_def_for_operand (else_clause, stmt, NULL);
 
-  /* Arguments are ready. create the new vector stmt.  */
+  /* Arguments are ready. Create the new vector stmt.  */
   vec_compare = build2 (TREE_CODE (cond_expr), vectype, 
 			vec_cond_lhs, vec_cond_rhs);
   vec_cond_expr = build3 (VEC_COND_EXPR, vectype, 

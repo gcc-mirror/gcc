@@ -1705,7 +1705,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 	 same PRE GCSE operation repeatedly on the same REG_EQUAL value if we
 	 do more than one PRE GCSE pass.
 
-	 Note that this does not impede profitale constant propagations.  We
+	 Note that this does not impede profitable constant propagations.  We
 	 "look through" reg-reg sets in lookup_avail_set.  */
       note = find_reg_equal_equiv_note (insn);
       if (note != 0
@@ -4680,7 +4680,7 @@ compute_transpout (void)
 
   FOR_EACH_BB (bb)
     {
-      /* Note that flow inserted a nop a the end of basic blocks that
+      /* Note that flow inserted a nop at the end of basic blocks that
 	 end in call instructions for reasons other than abnormal
 	 control flow.  */
       if (! CALL_P (BB_END (bb)))

@@ -1,5 +1,6 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1062,7 +1063,7 @@ find_func_by_pid (int	pid)
 
 /* Do transformation
 
-  if (actual_callee_addres == addres_of_most_common_function/method)
+  if (actual_callee_address == address_of_most_common_function/method)
     do direct call
   else
     old call

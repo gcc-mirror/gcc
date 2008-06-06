@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -142,7 +142,7 @@ typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
    formatting.  */
 #define pp_needs_newline(PP)  pp_base (PP)->need_newline 
 
-/* True if PRETTY-PTINTER is in line-wrapping mode.  */
+/* True if PRETTY-PRINTER is in line-wrapping mode.  */
 #define pp_is_wrapping_line(PP) (pp_line_cutoff (PP) > 0)
 
 /* The amount of whitespace to be emitted when starting a new line.  */

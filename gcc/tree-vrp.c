@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -1585,7 +1585,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 		3a. If the high limit of the VR_ANTI_RANGE resides
 		    within the VR_RANGE, then the result is a new
 		    VR_RANGE starting at the high limit of the
-		    the VR_ANTI_RANGE + 1 and extending to the
+		    VR_ANTI_RANGE + 1 and extending to the
 		    high limit of the original VR_RANGE.
 
 		3b. If the low limit of the VR_ANTI_RANGE resides
@@ -6440,7 +6440,7 @@ simplify_stmt_for_jump_threading (tree stmt, tree within_stmt)
 }
 
 /* Blocks which have more than one predecessor and more than
-   one successor present jump threading opportunities.  ie,
+   one successor present jump threading opportunities, i.e.,
    when the block is reached from a specific predecessor, we
    may be able to determine which of the outgoing edges will
    be traversed.  When this optimization applies, we are able

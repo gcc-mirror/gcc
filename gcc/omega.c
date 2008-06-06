@@ -5,7 +5,8 @@
    This code has no license restrictions, and is considered public
    domain.
 
-   Changes copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Changes copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>
 
 This file is part of GCC.
@@ -2433,7 +2434,7 @@ smooth_weird_equations (omega_pb pb)
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  {
 		    fprintf (dump_file,
-			     "Smoothing wierd equations; adding:\n");
+			     "Smoothing weird equations; adding:\n");
 		    omega_print_geq (dump_file, pb, &pb->geqs[e3]);
 		    fprintf (dump_file, "\nto:\n");
 		    omega_print_problem (dump_file, pb);

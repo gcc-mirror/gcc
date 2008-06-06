@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
@@ -471,7 +471,7 @@ struct insn_reserv_decl
   /* The following field is the insn regexp transformed that
      the regexp has not optional regexp, repetition regexp, and an
      reservation name (i.e. reservation identifiers are changed by the
-     corresponding regexp) and all alternations are the topest level
+     corresponding regexp) and all alternations are the top level
      of the regexp.  The value can be NULL only if it is special
      insn `cycle advancing'.  */
   regexp_t transformed_regexp;
@@ -4247,11 +4247,11 @@ initiate_presence_absence_pattern_sets (void)
 }
 
 /* The function checks that CHECKED_SET satisfies all presence pattern
-   sets for units in ORIGIONAL_SET.  The function returns TRUE if it
+   sets for units in ORIGINAL_SET.  The function returns TRUE if it
    is ok.  */
 static int
 check_presence_pattern_sets (reserv_sets_t checked_set,
-			     reserv_sets_t origional_set,
+			     reserv_sets_t original_set,
 			     int final_p)
 {
   int char_num;
@@ -4264,9 +4264,9 @@ check_presence_pattern_sets (reserv_sets_t checked_set,
 
   chars_num = els_in_cycle_reserv * sizeof (set_el_t);
   for (char_num = 0; char_num < chars_num; char_num++)
-    if (((unsigned char *) origional_set) [char_num])
+    if (((unsigned char *) original_set) [char_num])
       for (i = CHAR_BIT - 1; i >= 0; i--)
-	if ((((unsigned char *) origional_set) [char_num] >> i) & 1)
+	if ((((unsigned char *) original_set) [char_num] >> i) & 1)
 	  {
 	    start_unit_num = char_num * CHAR_BIT + i;
 	    if (start_unit_num >= description->units_num)
@@ -4296,11 +4296,11 @@ check_presence_pattern_sets (reserv_sets_t checked_set,
 }
 
 /* The function checks that CHECKED_SET satisfies all absence pattern
-   sets for units in ORIGIONAL_SET.  The function returns TRUE if it
+   sets for units in ORIGINAL_SET.  The function returns TRUE if it
    is ok.  */
 static int
 check_absence_pattern_sets (reserv_sets_t checked_set,
-			    reserv_sets_t origional_set,
+			    reserv_sets_t original_set,
 			    int final_p)
 {
   int char_num;
@@ -4312,9 +4312,9 @@ check_absence_pattern_sets (reserv_sets_t checked_set,
 
   chars_num = els_in_cycle_reserv * sizeof (set_el_t);
   for (char_num = 0; char_num < chars_num; char_num++)
-    if (((unsigned char *) origional_set) [char_num])
+    if (((unsigned char *) original_set) [char_num])
       for (i = CHAR_BIT - 1; i >= 0; i--)
-	if ((((unsigned char *) origional_set) [char_num] >> i) & 1)
+	if ((((unsigned char *) original_set) [char_num] >> i) & 1)
 	  {
 	    start_unit_num = char_num * CHAR_BIT + i;
 	    if (start_unit_num >= description->units_num)
@@ -5393,7 +5393,7 @@ make_automaton (automaton_t automaton)
   VEC_free (state_t,heap, state_stack);
 }
 
-/* Foms lists of all arcs of STATE marked by the same ainsn.  */
+/* Form lists of all arcs of STATE marked by the same ainsn.  */
 static void
 form_arcs_marked_by_insn (state_t state)
 {
@@ -8488,7 +8488,7 @@ output_description (void)
 	{
 	  if (DECL_UNIT (decl)->excl_list != NULL)
 	    {
-	      fprintf (output_description_file, "unit %s exlusion_set: ",
+	      fprintf (output_description_file, "unit %s exclusion_set: ",
 		       DECL_UNIT (decl)->name);
 	      output_unit_set_el_list (DECL_UNIT (decl)->excl_list);
 	      fprintf (output_description_file, "\n");

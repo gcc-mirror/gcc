@@ -64,7 +64,7 @@ location_for_asm (const_rtx insn)
   return loc;
 }
 
-/* Report a diagnostic MESSAGE (an errror or a WARNING) at the line number
+/* Report a diagnostic MESSAGE (an error or a WARNING) at the line number
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void

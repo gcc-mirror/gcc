@@ -161,7 +161,7 @@ df_compute_accessed_bytes_strict_low_part (struct df_ref *ref,
   int m2_size;
   int offset;
 
-  /* In order to accomodate multiword subregs of a hardreg, df_scan
+  /* In order to accommodate multiword subregs of a hardreg, df_scan
      eats the subreg and it can only be found from the loc.  */
   if (REG_P (reg))
     reg = *(DF_REF_LOC (ref));
@@ -214,7 +214,7 @@ df_compute_accessed_bytes_subreg (struct df_ref *ref, unsigned int *start_byte,
   enum machine_mode m2;
   int m2_size;
 
-  /* In order to accomodate multiword subregs of a hardreg, df_scan
+  /* In order to accommodate multiword subregs of a hardreg, df_scan
      eats the subreg and it can only be found from the loc.  */
   if (REG_P (reg))
     reg = *(DF_REF_LOC (ref));

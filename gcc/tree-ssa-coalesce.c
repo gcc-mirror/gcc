@@ -1,5 +1,6 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -582,7 +583,7 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
     return;
 
   /* Add a conflict between X and every one Y has.  If the bitmap doesn't
-     exist, then it has already been coalesced, and we dont need to add a 
+     exist, then it has already been coalesced, and we don't need to add a
      conflict.  */
   EXECUTE_IF_SET_IN_BITMAP (ptr->conflicts[y], 0, z, bi)
     if (ptr->conflicts[z])

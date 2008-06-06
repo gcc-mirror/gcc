@@ -119,9 +119,9 @@ along with GCC; see the file COPYING3.  If not see
 	Functions are output early using call of
 	cgraph_assemble_pending_function from cgraph_finalize_function.  The
 	decision on whether function is needed is made more conservative so
-	uninlininable static functions are needed too.  During the call-graph
+	uninlinable static functions are needed too.  During the call-graph
 	construction the edge destinations are not marked as reachable and it
-	is completely relied upn assemble_variable to mark them.  */
+	is completely relied upon assemble_variable to mark them.  */
 
 
 #include "config.h"
@@ -326,7 +326,7 @@ cgraph_build_cdtor_fns (void)
 
 /* Determine if function DECL is needed.  That is, visible to something
    either outside this translation unit, something magic in the system
-   configury, or (if not doing unit-at-a-time) to something we havn't
+   configury, or (if not doing unit-at-a-time) to something we haven't
    seen yet.  */
 
 static bool
@@ -1455,7 +1455,7 @@ cgraph_optimize (void)
 /* Generate and emit a static constructor or destructor.  WHICH must
    be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
    is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
-   initialization priority fot this constructor or destructor.  */
+   initialization priority for this constructor or destructor.  */
 
 void
 cgraph_build_static_cdtor (char which, tree body, int priority)

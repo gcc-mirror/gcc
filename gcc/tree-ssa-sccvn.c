@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006, 2007
+   Copyright (C) 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
@@ -2009,7 +2009,7 @@ extract_and_process_scc_for_name (tree name)
    Execution of this algorithm relies on the fact that the SCC's are
    popped off the stack in topological order.
    Returns true if successful, false if we stopped processing SCC's due
-   to ressource constraints.  */
+   to resource constraints.  */
 
 static bool
 DFS (tree name)
@@ -2238,7 +2238,7 @@ free_scc_vn (void)
 }
 
 /* Do SCCVN.  Returns true if it finished, false if we bailed out
-   due to ressource constraints.  */
+   due to resource constraints.  */
 
 bool
 run_scc_vn (bool may_insert_arg)

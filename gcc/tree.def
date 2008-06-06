@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
    Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000, 2001, 2004, 2005, 
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -942,7 +942,7 @@ DEFTREECODE (VALUE_HANDLE, "value_handle", tcc_exceptional, 0)
 	2- EXPR is a conditional expression and is known to be true.
 
    Valid and to be expected forms of conditional expressions are
-   valid GIMPLE condidional expressions (as defined by is_gimple_condexpr)
+   valid GIMPLE conditional expressions (as defined by is_gimple_condexpr)
    and conditional expressions with the first operand being a
    PLUS_EXPR with a variable possibly wrapped in a NOP_EXPR first
    operand and an integer constant second operand.
@@ -1096,7 +1096,7 @@ DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
 
-/* Widenning dot-product.
+/* Widening dot-product.
    The first two arguments are of type t1.
    The third argument and the result are of type t2, such that t2 is at least
    twice the size of t1. DOT_PROD_EXPR(arg1,arg2,arg3) is equivalent to:
@@ -1107,7 +1107,7 @@ DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
         arg3 = WIDEN_SUM_EXPR (tmp, arg3);		 */
 DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
 
-/* Widenning summation.
+/* Widening summation.
    The first argument is of type t1.
    The second argument is of type t2, such that t2 is at least twice
    the size of t1. The type of the entire expression is also t2.
@@ -1116,7 +1116,7 @@ DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
    with the second argument.  */
 DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
    
-/* Widenning multiplication. 
+/* Widening multiplication.
    The two arguments are of type t1.
    The result is of type t2, such that t2 is at least twice
    the size of t1. WIDEN_MULT_EXPR is equivalent to first widening (promoting)

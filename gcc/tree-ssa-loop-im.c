@@ -1,5 +1,6 @@
 /* Loop invariant motion.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    
 This file is part of GCC.
    
@@ -131,7 +132,7 @@ typedef struct mem_ref
   unsigned id;			/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
   hashval_t hash;		/* Its hash value.  */
-  bitmap stored;		/* The set of loops in that this memory locatio
+  bitmap stored;		/* The set of loops in that this memory location
 				   is stored to.  */
   VEC (mem_ref_locs_p, heap) *accesses_in_loop;
 				/* The locations of the accesses.  Vector
@@ -570,7 +571,7 @@ outermost_indep_loop (struct loop *outer, struct loop *loop, mem_ref_p ref)
 }
 
 /* If there is a simple load or store to a memory reference in STMT, returns
-   the location of the memory reference, and sets IS_STORE accoring to whether
+   the location of the memory reference, and sets IS_STORE according to whether
    it is a store or load.  Otherwise, returns NULL.  */
 
 static tree *

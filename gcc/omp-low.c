@@ -4110,7 +4110,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	}
       else if (code == OMP_ATOMIC_STORE)
 	{
-	  /* OMP_ATOMIC_STORE is analoguous to OMP_RETURN, but matches with
+	  /* OMP_ATOMIC_STORE is analogous to OMP_RETURN, but matches with
 	     OMP_ATOMIC_LOAD.  */
 	  gcc_assert (parent);
 	  gcc_assert (parent->type == OMP_ATOMIC_LOAD);
@@ -5124,7 +5124,7 @@ diagnose_sb_0 (tree *stmt_p, tree branch_ctx, tree label_ctx)
     return false;
 
   /* Try to avoid confusing the user by producing and error message
-     with correct "exit" or "enter" verbage.  We prefer "exit"
+     with correct "exit" or "enter" verbiage.  We prefer "exit"
      unless we can show that LABEL_CTX is nested within BRANCH_CTX.  */
   if (branch_ctx == NULL)
     exit_p = false;

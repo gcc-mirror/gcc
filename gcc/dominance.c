@@ -1,5 +1,6 @@
 /* Calculate (post)dominators in slightly super-linear time.
-   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008 Free
+   Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
 
    This file is part of GCC.
@@ -82,7 +83,7 @@ struct dom_info
 
   /* The following few fields implement the structures needed for disjoint
      sets.  */
-  /* set_chain[x] is the next node on the path from x to the representant
+  /* set_chain[x] is the next node on the path from x to the representative
      of the set containing x.  If set_chain[x]==0 then x is a root.  */
   TBB *set_chain;
   /* set_size[x] is the number of elements in the set named by x.  */
@@ -421,7 +422,7 @@ compress (struct dom_info *di, TBB v)
 static inline TBB
 eval (struct dom_info *di, TBB v)
 {
-  /* The representant of the set V is in, also called root (as the set
+  /* The representative of the set V is in, also called root (as the set
      representation is a tree).  */
   TBB rep = di->set_chain[v];
 

@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    
 This file is part of GCC.
@@ -636,7 +636,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
 
 /* Try to combine the instruction in INC_INSN with the instruction in
    MEM_INSN.  First the form is determined using the DECISION_TABLE
-   and and the results of parsing the INC_INSN and the MEM_INSN.
+   and the results of parsing the INC_INSN and the MEM_INSN.
    Assuming the form is ok, a prototype new address is built which is
    passed to ATTEMPT_CHANGE for final processing.  */
 

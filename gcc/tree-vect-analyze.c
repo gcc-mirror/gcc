@@ -1,5 +1,6 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -509,7 +510,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      /* Groups of strided accesses whose size is not a power of 2 are 
 		 not vectorizable yet using loop-vectorization. Therefore, if 
 		 this stmt feeds non-SLP-able stmts (i.e., this stmt has to be 
-		 both SLPed and loop-based vectorzed), the loop cannot be 
+		 both SLPed and loop-based vectorized), the loop cannot be
 		 vectorized.  */
 	      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
 		  && exact_log2 (DR_GROUP_SIZE (vinfo_for_stmt (
@@ -690,7 +691,7 @@ exist_non_indexing_operands_for_use_p (tree use, tree stmt)
 /* Function vect_analyze_scalar_cycles_1.
 
    Examine the cross iteration def-use cycles of scalar variables
-   in LOOP. LOOP_VINFO represents the loop that is noe being
+   in LOOP. LOOP_VINFO represents the loop that is now being
    considered for vectorization (can be LOOP, or an outer-loop
    enclosing LOOP).  */
 
@@ -3542,8 +3543,8 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
    Inputs:
    - a USE in STMT in a loop represented by LOOP_VINFO
    - LIVE_P, RELEVANT - enum values to be set in the STMT_VINFO of the stmt 
-     that defined USE. This is dont by calling mark_relevant and passing it
-     the WORKLIST (to add DEF_STMT to the WORKlist in case itis relevant). 
+     that defined USE. This is done by calling mark_relevant and passing it
+     the WORKLIST (to add DEF_STMT to the WORKLIST in case it is relevant).
 
    Outputs:
    Generally, LIVE_P and RELEVANT are used to define the liveness and

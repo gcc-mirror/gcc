@@ -1,5 +1,6 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    
 This file is part of GCC.
    
@@ -2313,7 +2314,7 @@ derive_constant_upper_bound (const_tree val)
 }
 
 /* Records that every statement in LOOP is executed I_BOUND times.
-   REALISTIC is true if I_BOUND is expected to be close the the real number
+   REALISTIC is true if I_BOUND is expected to be close to the real number
    of iterations.  UPPER is true if we are sure the loop iterates at most
    I_BOUND times.  */
 
@@ -2342,7 +2343,7 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
 /* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  IS_EXIT
    is true if the loop is exited immediately after STMT, and this exit
    is taken at last when the STMT is executed BOUND + 1 times.
-   REALISTIC is true if BOUND is expected to be close the the real number
+   REALISTIC is true if BOUND is expected to be close to the real number
    of iterations.  UPPER is true if we are sure the loop iterates at most
    BOUND times.  I_BOUND is an unsigned double_int upper estimate on BOUND.  */
 

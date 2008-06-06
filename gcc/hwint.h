@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2008 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -139,7 +139,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #    define HOST_WIDEST_FAST_INT __int64
 #    define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER___INT64
 #  else
-#    error "Your host said it wantted to use long long or __int64 but neither"
+#    error "Your host said it wanted to use long long or __int64 but neither"
 #    error "exist"
 #  endif
 #else

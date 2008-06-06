@@ -1,6 +1,7 @@
 /* ET-trees data structure implementation.
    Contributed by Pavel Nejedly
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -754,7 +755,7 @@ et_root (struct et_node *node)
 {
   struct et_occ *occ = node->rightmost_occ, *r;
 
-  /* The root of the tree corresponds to the rightmost occurence in the
+  /* The root of the tree corresponds to the rightmost occurrence in the
      represented path.  */
   et_splay (occ);
   for (r = occ; r->next; r = r->next)

@@ -1,5 +1,6 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -1029,7 +1030,7 @@ cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
 /* Conditional jumps are represented differently in trees and RTL,
    this hook takes a basic block that is known to have a cond jump
-   at its end and extracts the taken and not taken eges out of it
+   at its end and extracts the taken and not taken edges out of it
    and store it in E1 and E2 respectively.  */
 void
 extract_cond_bb_edges (basic_block b, edge *e1, edge *e2)

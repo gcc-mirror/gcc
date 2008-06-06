@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -345,7 +345,7 @@ struct insn_info
   /* The linked list of insns that are in consideration for removal in
      the forwards pass thru the basic block.  This pointer may be
      trash as it is not cleared when a wild read occurs.  The only
-     time it is guaranteed to be correct is when the traveral starts
+     time it is guaranteed to be correct is when the traversal starts
      at active_local_stores.  */
   struct insn_info * next_local_store;
 };

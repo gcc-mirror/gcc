@@ -6494,7 +6494,7 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   unshare_body (body_p, fndecl);
   unvisit_body (body_p, fndecl);
 
-  /* Make sure input_location isn't set to something wierd.  */
+  /* Make sure input_location isn't set to something weird.  */
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
   /* Resolve callee-copies.  This has to be done before processing

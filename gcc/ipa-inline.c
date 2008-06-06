@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -520,7 +520,7 @@ cgraph_edge_badness (struct cgraph_edge *edge)
      within function, the function itself is infrequent.
 
      Other objective to optimize for is number of different calls inlined.
-     We add the estimated growth after inlining all functions to biass the
+     We add the estimated growth after inlining all functions to bias the
      priorities slightly in this direction (so fewer times called functions
      of the same size gets priority).  */
   else if (flag_guess_branch_prob)

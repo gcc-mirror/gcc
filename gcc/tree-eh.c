@@ -1,5 +1,6 @@
 /* Exception handling semantics and decomposition for trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -314,7 +315,7 @@ struct leh_tf_state
   size_t goto_queue_size;
   size_t goto_queue_active;
 
-  /* Pointer map to help in searching qoto_queue when it is large.  */
+  /* Pointer map to help in searching goto_queue when it is large.  */
   struct pointer_map_t *goto_queue_map;
 
   /* The set of unique labels seen as entries in the goto queue.  */

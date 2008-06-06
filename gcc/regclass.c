@@ -1961,7 +1961,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
      we may want to adjust the cost of that register class to -1.
 
      Avoid the adjustment if the source does not die to avoid stressing of
-     register allocator by preferrencing two colliding registers into single
+     register allocator by preferencing two colliding registers into single
      class.
 
      Also avoid the adjustment if a copy between registers of the class

@@ -1,5 +1,6 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -213,7 +214,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	    (*walk_data->before_dom_children_after_stmts) (walk_data, bb);
 
 	  /* Mark the current BB to be popped out of the recursion stack
-	     once childs are processed.  */
+	     once children are processed.  */
 	  worklist[sp++] = bb;
 	  worklist[sp++] = NULL;
 

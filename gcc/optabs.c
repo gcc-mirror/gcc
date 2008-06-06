@@ -5785,7 +5785,7 @@ gen_fp_to_int_conv_libfunc (convert_optab tab,
   gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
 }
 
-/* Initialize the libfunc fiels of an of an intra-mode-class conversion optab.
+/* Initialize the libfunc fields of an of an intra-mode-class conversion optab.
    The string formation rules are
    similar to the ones for init_libfunc, above.  */
 

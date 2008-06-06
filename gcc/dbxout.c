@@ -2334,7 +2334,7 @@ dbxout_class_name_qualifiers (tree decl)
 
 /* This is a specialized subset of expand_expr for use by dbxout_symbol in
    evaluating DECL_VALUE_EXPR.  In particular, we stop if we find decls that
-   havn't been expanded, or if the expression is getting so complex we won't
+   haven't been expanded, or if the expression is getting so complex we won't
    be able to represent it in stabs anyway.  Returns NULL on failure.  */
 
 static rtx
@@ -2500,7 +2500,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 
   /* If we are to generate only the symbols actually used then such
      symbol nodes are flagged with TREE_USED.  Ignore any that
-     aren't flaged as TREE_USED.  */
+     aren't flagged as TREE_USED.  */
 
   if (flag_debug_only_used_symbols
       && (!TREE_USED (decl)

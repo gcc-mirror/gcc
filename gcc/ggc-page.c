@@ -386,7 +386,7 @@ static struct globals
   /* Maximum number of elements that can be used before resizing.  */
   unsigned int depth_max;
 
-  /* Each element of this arry is an index in by_depth where the given
+  /* Each element of this array is an index in by_depth where the given
      depth starts.  This structure is indexed by that given depth we
      are interested in.  */
   unsigned int *depth;

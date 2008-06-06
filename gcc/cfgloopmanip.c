@@ -1,5 +1,6 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1361,8 +1362,8 @@ loop_version (struct loop *loop,
       free (bbs);
     }
 
-  /* At this point condition_bb is loop predheader with two successors,
-     first_head and second_head.   Make sure that loop predheader has only
+  /* At this point condition_bb is loop preheader with two successors,
+     first_head and second_head.   Make sure that loop preheader has only
      one successor.  */
   split_edge (loop_preheader_edge (loop));
   split_edge (loop_preheader_edge (nloop));
@@ -1375,7 +1376,7 @@ loop_version (struct loop *loop,
    removed (thus the loop nesting may be wrong), and some blocks and edges
    were changed (so the information about bb --> loop mapping does not have
    to be correct).  But still for the remaining loops the header dominates
-   the latch, and loops did not get new subloobs (new loops might possibly
+   the latch, and loops did not get new subloops (new loops might possibly
    get created, but we are not interested in them).  Fix up the mess.
 
    If CHANGED_BBS is not NULL, basic blocks whose loop has changed are
