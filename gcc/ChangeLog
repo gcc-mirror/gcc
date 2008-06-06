@@ -1,3 +1,13 @@
+2008-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*indirect_jump): Macroize using P
+	mode iterator.  Remove !TARGET_64BIT from insn constraints.
+	(*tablejump_1): Ditto.
+	(*indirect_jump_rex64): Remove insn pattern.
+	(*tablejump_1_rex64): Ditto.
+	(eh_return_<mode>): Macroize using P mode iterator from eh_return_di
+	and eh_return_si insn patterns.
+
 2008-06-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (merge_smts_into): Remove.
