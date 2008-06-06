@@ -1,5 +1,9 @@
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/36362
+	* gimplify.c (gimplify_expr) <case TRUTH_NOT_EXPR>: If *expr_p type
+	is not bool, boolify the whole *expr_p and convert to the desired type.
+
 	* BASE-VER: Set to 4.3.2.
 	* DEV-PHASE: Set to prerelease.
 

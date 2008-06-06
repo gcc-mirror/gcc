@@ -5734,8 +5734,14 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case TRUTH_NOT_EXPR:
-	  TREE_OPERAND (*expr_p, 0)
-	    = gimple_boolify (TREE_OPERAND (*expr_p, 0));
+	  if (TREE_CODE (TREE_TYPE (*expr_p)) != BOOLEAN_TYPE)
+	    {
+	      tree type = TREE_TYPE (*expr_p);
+	      *expr_p = fold_convert (type, gimple_boolify (*expr_p));
+	      ret = GS_OK;
+	      break;
+	    }
+
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_val, fb_rvalue);
 	  recalculate_side_effects (*expr_p);
