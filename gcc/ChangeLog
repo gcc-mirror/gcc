@@ -1,3 +1,8 @@
+2008-06-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_mode_dependent_address): Remove
+	PRE_INC and PRE_DEC cases.
+
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36419
