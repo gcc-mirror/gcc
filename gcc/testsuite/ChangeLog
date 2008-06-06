@@ -1,5 +1,10 @@
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/36362
+	* gcc.c-torture/execute/20080529-1.c: New test.
+
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.dg/gomp/collapse-1.c: New test.
 	* gcc.dg/gomp/nesting-1.c: New test.
 	* g++.dg/gomp/task-1.C: New test.

@@ -1,5 +1,11 @@
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/36362
+	* gimplify.c (gimplify_expr) <case TRUTH_NOT_EXPR>: If *expr_p type
+	is not bool, boolify the whole *expr_p and convert to the desired type.
+
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP value to
 	200805.
 	* langhooks.h (struct lang_hooks_for_decls): Add omp_finish_clause.
