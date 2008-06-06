@@ -570,6 +570,7 @@ expand_resx_expr (tree exp)
 				     cfun->eh->region_array, region_nr);
 
   gcc_assert (!reg->resume);
+  do_pending_stack_adjust ();
   reg->resume = emit_jump_insn (gen_rtx_RESX (VOIDmode, region_nr));
   emit_barrier ();
 }
