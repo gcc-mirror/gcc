@@ -1,6 +1,6 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -4783,7 +4783,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
   /* If the actual alignment is less than the alignment of the type,
      adjust the type accordingly so that we don't assume strict alignment
-     when deferencing the pointer.  */
+     when dereferencing the pointer.  */
   boundary *= BITS_PER_UNIT;
   if (boundary < TYPE_ALIGN (type))
     {
@@ -8768,9 +8768,9 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
       if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
 	return NULL_TREE;
       /* With memcpy, it is possible to bypass aliasing rules, so without
-         this check i. e. execute/20060930-2.c would be misoptimized, because
+         this check i.e. execute/20060930-2.c would be misoptimized, because
 	 it use conflicting alias set to hold argument for the memcpy call.
-	 This check is probably unnecesary with -fno-strict-aliasing. 
+	 This check is probably unnecessary with -fno-strict-aliasing.
 	 Similarly for destvar.  See also PR29286.  */
       if (!var_decl_component_p (srcvar)
 	  /* Accept: memcpy (*char_var, "test", 1); that simplify

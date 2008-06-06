@@ -841,7 +841,7 @@ reg_set_p (const_rtx reg, const_rtx insn)
 
 /* Similar to reg_set_between_p, but check all registers in X.  Return 0
    only if none of them are modified between START and END.  Return 1 if
-   X contains a MEM; this routine does usememory aliasing.  */
+   X contains a MEM; this routine does use memory aliasing.  */
 
 int
 modified_between_p (const_rtx x, const_rtx start, const_rtx end)
@@ -1124,7 +1124,7 @@ noop_move_p (const_rtx insn)
     return 0;
 
   /* For now treat an insn with a REG_RETVAL note as a
-     a special insn which should not be considered a no-op.  */
+     special insn which should not be considered a no-op.  */
   if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
     return 0;
 

@@ -462,7 +462,7 @@ df_scan_add_problem (void)
 
 
 /* First, grow the reg_info information.  If the current size is less than
-   the number of psuedos, grow to 25% more than the number of
+   the number of pseudos, grow to 25% more than the number of
    pseudos.  
 
    Second, assure that all of the slots up to max_reg_num have been
@@ -3434,7 +3434,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 	 bottom of the sender block.
 
          The bottom of the sender block is problematic because not all
-         out-edges of the a block are eh-edges.  However, it is true
+         out-edges of a block are eh-edges.  However, it is true
          that all edges into a block are either eh-edges or none of
          them are eh-edges.  Thus, we can model this at the top of the
          eh-receiver for all of the edges at once. */

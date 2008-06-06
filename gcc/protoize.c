@@ -1,6 +1,7 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1723,7 +1724,7 @@ save_def_or_dec (const char *l, int is_syscalls)
     }
 
   /* Since we are unprotoizing, if this item is already in old (K&R) style,
-     we can just ignore it.  If that is true, throw away the itme now.  */
+     we can just ignore it.  If that is true, throw away the item now.  */
 
   if (!def_dec_p->prototyped)
     {

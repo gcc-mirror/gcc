@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004, 2005, 2006, 2007
+   Copyright (C) 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1269,7 +1269,7 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 
   memset (&stats, 0, sizeof (stats));
 
-  /* Allocate ememory for this pass.
+  /* Allocate memory for this pass.
      Also computes and initializes the insns' CUIDs.  */
   alloc_mem ();
 

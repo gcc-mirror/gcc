@@ -414,9 +414,9 @@ struct rtl_data GTY(())
 
 extern GTY(()) struct rtl_data x_rtl;
 
-/* Accestor to RTL datastructures.  We keep them statically allocated now since
+/* Accessor to RTL datastructures.  We keep them statically allocated now since
    we never keep multiple functions.  For threaded compiler we might however
-   want to do differntly.  */
+   want to do differently.  */
 #define crtl (&x_rtl)
 
 /* This structure can save all the important global and static variables

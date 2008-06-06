@@ -7522,7 +7522,7 @@ c_parser_omp_flush (c_parser *parser)
   c_finish_omp_flush ();
 }
 
-/* Parse the restricted form of the for statment allowed by OpenMP.
+/* Parse the restricted form of the for statement allowed by OpenMP.
    The real trick here is to determine the loop control variable early
    so that we can push a new decl if necessary to make it private.  */
 

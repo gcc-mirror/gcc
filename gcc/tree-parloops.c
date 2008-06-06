@@ -106,7 +106,7 @@ parloop
 ....
 
 
-  # Storing the the initial value given by the user.  #
+  # Storing the initial value given by the user.  #
 
   .paral_data_store.32.sum.27 = 1;
  
@@ -885,7 +885,7 @@ add_field_for_name (void **slot, void *data)
 
 /* Callback for htab_traverse.  A local result is the intermediate result 
    computed by a single 
-   thread, or the intial value in case no iteration was executed.
+   thread, or the initial value in case no iteration was executed.
    This function creates a phi node reflecting these values.  
    The phi's result will be stored in NEW_PHI field of the 
    reduction's data structure.  */ 
@@ -1043,7 +1043,7 @@ create_loads_for_reductions (void **slot, void *data)
 
 /* Load the reduction result that was stored in LD_ST_DATA.  
    REDUCTION_LIST describes the list of reductions that the
-   loades should be generated for.  */
+   loads should be generated for.  */
 static void
 create_final_loads_for_reduction (htab_t reduction_list, 
 				  struct clsn_data *ld_st_data)
@@ -1416,7 +1416,7 @@ canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
    exit of the loop.  NIT is the number of iterations of the loop
    (used to initialize the variables in the duplicated part).
  
-   TODO: the common case is that latch of the loop is empty and immediatelly
+   TODO: the common case is that latch of the loop is empty and immediately
    follows the loop exit.  In this case, it would be better not to copy the
    body of the loop, but only move the entry of the loop directly before the
    exit check and increase the number of iterations of the loop by one.
@@ -1648,7 +1648,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 
 /* Generates code to execute the iterations of LOOP in N_THREADS threads in
    parallel.  NITER describes number of iterations of LOOP.  
-   REDUCTION_LIST describes the reductions existant in the LOOP.  */
+   REDUCTION_LIST describes the reductions existent in the LOOP.  */
 
 static void
 gen_parallel_loop (struct loop *loop, htab_t reduction_list, 
@@ -1757,7 +1757,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   /* Ensure that the exit condition is the first statement in the loop.  */
   transform_to_exit_first_loop (loop, reduction_list, nit);
 
-  /* Generate intializations for reductions.  */
+  /* Generate initializations for reductions.  */
   if (htab_elements (reduction_list) > 0)  
     htab_traverse (reduction_list, initialize_reductions, loop);
 

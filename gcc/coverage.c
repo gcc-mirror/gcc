@@ -1,6 +1,7 @@
 /* Read and write coverage files, and associated functionality.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   2000, 2001, 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -489,7 +490,7 @@ coverage_checksum_string (unsigned chksum, const char *string)
          _GLOBAL__N_<filename>_<wrongmagicnumber>_<magicnumber>functionname
        since filename might contain extra underscores there seems
        to be no better chance then walk all possible offsets looking
-       for magicnuber.  */
+       for magicnumber.  */
       if (offset)
 	{
 	  for (i = i + offset; string[i]; i++)

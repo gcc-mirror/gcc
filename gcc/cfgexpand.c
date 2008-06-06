@@ -125,7 +125,7 @@ static struct stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
 
-/* An array of indicies such that stack_vars[stack_vars_sorted[i]].size
+/* An array of indices such that stack_vars[stack_vars_sorted[i]].size
    is non-decreasing.  */
 static size_t *stack_vars_sorted;
 
@@ -341,7 +341,7 @@ add_alias_set_conflicts (void)
 }
 
 /* A subroutine of partition_stack_vars.  A comparison function for qsort,
-   sorting an array of indicies by the size of the object.  */
+   sorting an array of indices by the size of the object.  */
 
 static int
 stack_var_size_cmp (const void *a, const void *b)

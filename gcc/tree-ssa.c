@@ -1,5 +1,6 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,7 +130,7 @@ redirect_edge_var_map_dup (edge newe, edge olde)
 }
 
 
-/* Return the varable mappings for a given edge.  If there is none, return
+/* Return the variable mappings for a given edge.  If there is none, return
    NULL.  */
 
 edge_var_map_vector

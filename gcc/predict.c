@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1493,7 +1493,7 @@ tree_estimate_probability (void)
   return 0;
 }
 
-/* Predict edges to succestors of CUR whose sources are not postdominated by
+/* Predict edges to successors of CUR whose sources are not postdominated by
    BB by PRED and recurse to all postdominators.  */
 
 static void

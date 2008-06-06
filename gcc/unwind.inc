@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines. -*- C -*-
-   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2008 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -108,7 +108,7 @@ _Unwind_RaiseException(struct _Unwind_Exception *exc)
 	return _URC_END_OF_STACK;
 
       if (code != _URC_NO_REASON)
-	/* Some error encountered.  Ususally the unwinder doesn't
+	/* Some error encountered.  Usually the unwinder doesn't
 	   diagnose these and merely crashes.  */
 	return _URC_FATAL_PHASE1_ERROR;
 

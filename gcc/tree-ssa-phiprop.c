@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 
 /* This pass propagates indirect loads through the PHI node for its
-   address to make the load source possiby non-addressable and to
+   address to make the load source possibly non-addressable and to
    allow for PHI optimization to trigger.
 
    For example the pass changes
@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 
      # tmp_1 = PHI <a, b>
 
-   but also handles more complex cenarios like
+   but also handles more complex scenarios like
 
      D.2077_2 = &this_1(D)->a1;
      ...

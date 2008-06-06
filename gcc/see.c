@@ -1,5 +1,5 @@
 /* Sign extension elimination optimization for GNU compiler.
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Leehod Baruch <leehod@il.ibm.com>
 
 This file is part of GCC.
@@ -1253,7 +1253,7 @@ see_update_leader_extra_info (struct web_entry *first, struct web_entry *second)
 	}
       break;
     default:
-      /* Unknown patern type.  */
+      /* Unknown pattern type.  */
       gcc_unreachable ();
     }
 
@@ -1945,7 +1945,7 @@ see_analyze_unmerged_def_local_prop (void **slot, void *b)
 }
 
 
-/* Analyze the properties of a use extension for the LCM and record anic and
+/* Analyze the properties of a use extension for the LCM and record any and
    avail occurrences.
 
    This is a subroutine of see_analyze_ref_local_prop called

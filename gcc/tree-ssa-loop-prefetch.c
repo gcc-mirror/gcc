@@ -1,5 +1,5 @@
 /* Array prefetching.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -156,7 +156,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In some cases we are only able to determine that there is a certain
    probability that the two accesses hit the same cache line.  In this
    case, we issue the prefetches for both of them if this probability
-   is less then (1000 - ACCEPTABLE_MISS_RATE) promile.  */
+   is less then (1000 - ACCEPTABLE_MISS_RATE) per thousand.  */
 
 #ifndef ACCEPTABLE_MISS_RATE
 #define ACCEPTABLE_MISS_RATE 50

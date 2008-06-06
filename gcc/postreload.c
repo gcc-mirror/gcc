@@ -1,6 +1,6 @@
 /* Perform simple optimizations to clean up the result of reload.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -661,7 +661,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
    replace them with reg+reg addressing.  */
 #define RELOAD_COMBINE_MAX_USES 6
 
-/* INSN is the insn where a register has ben used, and USEP points to the
+/* INSN is the insn where a register has been used, and USEP points to the
    location of the register within the rtl.  */
 struct reg_use { rtx insn, *usep; };
 

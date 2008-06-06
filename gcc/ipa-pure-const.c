@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This file mark functions as being either const (TREE_READONLY) or
-   pure (DECL_PURE_P).  It can also set the a variant of these that
-   are allowed to infinite loop (DECL_LOOPING_CONST_PURE_P).
+/* This file marks functions as being either const (TREE_READONLY) or
+   pure (DECL_PURE_P).  It can also set a variant of these that
+   are allowed to loop indefinitely (DECL_LOOPING_CONST_PURE_P).
 
    This must be run after inlining decisions have been made since
    otherwise, the local sets will not contain information that is
@@ -85,7 +85,7 @@ get_function_state (struct cgraph_node *node)
   return (funct_state) info->aux;
 }
 
-/* Check to see if the use (or definition when CHECHING_WRITE is true) 
+/* Check to see if the use (or definition when CHECKING_WRITE is true)
    variable T is legal in a function that is either pure or const.  */
 
 static inline void 
@@ -174,7 +174,7 @@ check_tree (funct_state local, tree t, bool checking_write)
       || TREE_CODE (t) == SSA_NAME)
     return;
 
-  /* Any tree which is volatile disqualifies thie function from being
+  /* Any tree which is volatile disqualifies this function from being
      const or pure. */
   if (TREE_THIS_VOLATILE (t))
     {
@@ -641,7 +641,7 @@ static_execute (void)
      is a master clone.  However, we do NOT process any
      AVAIL_OVERWRITABLE functions (these are never clones) we cannot
      guarantee that what we learn about the one we see will be true
-     for the one that overriders it.
+     for the one that overrides it.
   */
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed && cgraph_is_master_clone (node))

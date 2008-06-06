@@ -1,5 +1,5 @@
 /* Swing Modulo Scheduling implementation.
-   Copyright (C) 2004, 2005, 2006, 2007
+   Copyright (C) 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -965,7 +965,7 @@ sms_schedule (void)
       if (single_exit (loop)->count)
 	trip_count = latch_edge->count / single_exit (loop)->count;
 
-      /* Perfrom SMS only on loops that their average count is above threshold.  */
+      /* Perform SMS only on loops that their average count is above threshold.  */
 
       if ( latch_edge->count
           && (latch_edge->count < single_exit (loop)->count * SMS_LOOP_AVERAGE_COUNT_THRESHOLD))
@@ -1680,7 +1680,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
    parameters to decide if that's possible:
    PS - The partial schedule.
    U - The serial number of U_NODE.
-   NUM_SPLITS - The number of row spilts made so far.
+   NUM_SPLITS - The number of row splits made so far.
    MUST_PRECEDE - The nodes that must precede U_NODE. (only valid at
    the first row of the scheduling window)
    MUST_FOLLOW - The nodes that must follow U_NODE. (only valid at the
@@ -2125,7 +2125,7 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
   sbitmap_zero (prev_sccs);
   sbitmap_ones (ones);
 
-  /* Perfrom the node ordering starting from the SCC with the highest recMII.
+  /* Perform the node ordering starting from the SCC with the highest recMII.
      For each SCC order the nodes according to their ASAP/ALAP/HEIGHT etc.  */
   for (i = 0; i < all_sccs->num_sccs; i++)
     {
@@ -2740,7 +2740,7 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 	    return true;
 
 	  /* Update the DFA state and return with failure if the DFA found
-	     recource conflicts.  */
+	     resource conflicts.  */
 	  if (state_transition (curr_state, insn) >= 0)
 	    return true;
 

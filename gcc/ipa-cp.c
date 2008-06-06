@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
    2. For read-only parameters that do not live in memory, we replace all their
       uses with the constant.
 
-   We also need to modify some callsites to call the cloned functiosns instead
+   We also need to modify some callsites to call the cloned functions instead
    of the original ones.  For a callsite passing an argument found to be a
    constant by IPCP, there are two different cases to handle:
    1. A constant is passed as an argument.  In this case the callsite in the
@@ -109,7 +109,7 @@ along with GCC; see the file COPYING3.  If not see
       only the callsite in the cloned caller is redirected to call to the
       cloned callee.
 
-   This update is done in two steps: First all cloned functionss are created
+   This update is done in two steps: First all cloned functions are created
    during a traversal of the call graph, during which all callsites are
    redirected to call the cloned function.  Then the callsites are traversed
    and many calls redirected back to fit the description above.

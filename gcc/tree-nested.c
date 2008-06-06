@@ -156,7 +156,7 @@ build_addr (tree exp, tree context)
 
   /* Building the ADDR_EXPR will compute a set of properties for
      that ADDR_EXPR.  Those properties are unfortunately context
-     specific.  ie, they are dependent on CURRENT_FUNCTION_DECL.
+     specific, i.e., they are dependent on CURRENT_FUNCTION_DECL.
 
      Temporarily set CURRENT_FUNCTION_DECL to the desired context,
      build the ADDR_EXPR, then restore CURRENT_FUNCTION_DECL.  That

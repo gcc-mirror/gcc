@@ -12558,7 +12558,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	}
       else
 	{  /* Do nothing for now; maybe need to duplicate die, one for
-	      hot section and ond for cold section, then use the hot/cold
+	      hot section and one for cold section, then use the hot/cold
 	      section begin/end labels to generate the aranges...  */
 	  /*
 	    add_AT_lbl_id (subr_die, DW_AT_low_pc, hot_section_label);

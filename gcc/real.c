@@ -3526,7 +3526,7 @@ encode_ibm_extended (const struct real_format *fmt, long *buf,
 
   base_fmt = fmt->qnan_msb_set ? &ieee_double_format : &mips_double_format;
 
-  /* Renormlize R before doing any arithmetic on it.  */
+  /* Renormalize R before doing any arithmetic on it.  */
   normr = *r;
   if (normr.cl == rvc_normal)
     normalize (&normr);

@@ -1,5 +1,6 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -396,7 +397,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
    I.E., the overall structure is:
 
         loop1_preheader_bb:
-                guard1 (goto loop1/merg1_bb)
+                guard1 (goto loop1/merge1_bb)
         loop1
         loop1_exit_bb:
                 guard2 (goto merge1_bb/merge2_bb)
@@ -463,7 +464,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
    In the context of the overall structure, we have:
 
         loop1_preheader_bb: 
-                guard1 (goto loop1/merg1_bb)
+                guard1 (goto loop1/merge1_bb)
 LOOP->  loop1
         loop1_exit_bb:
                 guard2 (goto merge1_bb/merge2_bb)
@@ -506,7 +507,7 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
     {
       /* Virtual phi; Mark it for renaming. We actually want to call
 	 mar_sym_for_renaming, but since all ssa renaming datastructures
-	 are going to be freed before we get to call ssa_upate, we just
+	 are going to be freed before we get to call ssa_update, we just
 	 record this name for now in a bitmap, and will mark it for
 	 renaming later.  */
       name = PHI_RESULT (orig_phi);
@@ -590,7 +591,7 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
    In the context of the overall structure, we have:
 
         loop1_preheader_bb: 
-                guard1 (goto loop1/merg1_bb)
+                guard1 (goto loop1/merge1_bb)
         loop1
         loop1_exit_bb: 
                 guard2 (goto merge1_bb/merge2_bb)
@@ -979,13 +980,13 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
   basic_block loop1_entry_bb = loop_preheader_edge (first_loop)->src;
 
   /* A guard that controls whether the second_loop is to be executed or skipped
-     is placed in first_loop->exit.  first_loopt->exit therefore has two
+     is placed in first_loop->exit.  first_loop->exit therefore has two
      successors - one is the preheader of second_loop, and the other is a bb
      after second_loop.
    */
   gcc_assert (EDGE_COUNT (loop1_exit_bb->succs) == 2);
    
-  /* 1. Verify that one of the successors of first_loopt->exit is the preheader
+  /* 1. Verify that one of the successors of first_loop->exit is the preheader
         of second_loop.  */
    
   /* The preheader of new_loop is expected to have two predecessors:
@@ -997,7 +998,7 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
                || (EDGE_PRED (loop2_entry_bb, 1)->src ==  loop1_exit_bb
                    && EDGE_PRED (loop2_entry_bb, 0)->src == loop1_entry_bb)));
   
-  /* Verify that the other successor of first_loopt->exit is after the
+  /* Verify that the other successor of first_loop->exit is after the
      second_loop.  */
   /* TODO */
 }
@@ -1101,10 +1102,10 @@ set_prologue_iterations (basic_block bb_before_first_loop,
         is false, the caller of this function may want to take care of this
         (this can be useful if we don't want new stmts added to first-loop).
    - TH: cost model profitability threshold of iterations for vectorization.
-   - CHECK_PROFITABILITY: specify whether cost model check has not occured
+   - CHECK_PROFITABILITY: specify whether cost model check has not occurred
                           during versioning and hence needs to occur during
 			  prologue generation or whether cost model check 
-			  has not occured during prologue generation and hence
+			  has not occurred during prologue generation and hence
 			  needs to occur during epilogue generation.
 	    
 
@@ -1200,7 +1201,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   /* 2.  Add the guard code in one of the following ways:
 
      2.a Add the guard that controls whether the first loop is executed.
-         This occurs when this function is invoked for prologue or epilogiue
+         This occurs when this function is invoked for prologue or epilogue
 	 generation and when the cost model check can be done at compile time.
 
          Resulting CFG would be:
@@ -2120,7 +2121,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
   /* The result of a vectorized widening operation usually requires two vectors
      (because the widened results do not fit int one vector). The generated 
      vector results would normally be expected to be generated in the same 
-     order as in the original scalar computation. i.e. if 8 results are 
+     order as in the original scalar computation, i.e. if 8 results are
      generated in each vector iteration, they are to be organized as follows:
         vect1: [res1,res2,res3,res4], vect2: [res5,res6,res7,res8]. 
 
@@ -2132,7 +2133,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
      of {mult_even,mult_odd} generate the following vectors:
         vect1: [res1,res3,res5,res7], vect2: [res2,res4,res6,res8].
 
-     When vectorizaing outer-loops, we execute the inner-loop sequentially
+     When vectorizing outer-loops, we execute the inner-loop sequentially
      (each vectorized inner-loop iteration contributes to VF outer-loop 
      iterations in parallel). We therefore don't allow to change the order 
      of the computation in the inner-loop during outer-loop vectorization.  */
@@ -2493,7 +2494,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
      computation.  This may change the behavior of the program in some
      cases, so we need to check that this is ok.  One exception is when 
      vectorizing an outer-loop: the inner-loop is executed sequentially,
-     and therefore vectorizing reductions in the inner-loop durint 
+     and therefore vectorizing reductions in the inner-loop during
      outer-loop vectorization is safe.  */
 
   /* CHECKME: check for !flag_finite_math_only too?  */

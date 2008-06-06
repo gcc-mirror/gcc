@@ -1,5 +1,6 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.  
+   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -42,7 +43,7 @@ cgraph_postorder (struct cgraph_node **order)
   /* We have to deal with cycles nicely, so use a depth first traversal
      output algorithm.  Ignore the fact that some functions won't need
      to be output and put them into order as well, so we get dependencies
-     right through intline functions.  */
+     right through inline functions.  */
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
   for (node = cgraph_nodes; node; node = node->next)

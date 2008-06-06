@@ -2009,15 +2009,15 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
 
   memset (data, 0, sizeof (*data));
 
-  /* NAMED_ARG is a mis-nomer.  We really mean 'non-varadic'. */
+  /* NAMED_ARG is a misnomer.  We really mean 'non-variadic'. */
   if (!cfun->stdarg)
-    data->named_arg = 1;  /* No varadic parms.  */
+    data->named_arg = 1;  /* No variadic parms.  */
   else if (TREE_CHAIN (parm))
-    data->named_arg = 1;  /* Not the last non-varadic parm. */
+    data->named_arg = 1;  /* Not the last non-variadic parm. */
   else if (targetm.calls.strict_argument_naming (&all->args_so_far))
-    data->named_arg = 1;  /* Only varadic ones are unnamed.  */
+    data->named_arg = 1;  /* Only variadic ones are unnamed.  */
   else
-    data->named_arg = 0;  /* Treat as varadic.  */
+    data->named_arg = 0;  /* Treat as variadic.  */
 
   nominal_type = TREE_TYPE (parm);
   passed_type = DECL_ARG_TYPE (parm);
@@ -5304,7 +5304,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
       emit_insn_before (insns, insn);
 
       /* Now replace all mentions of the input with output.  We can't
-	 just replace the occurence in inputs[i], as the register might
+	 just replace the occurrence in inputs[i], as the register might
 	 also be used in some other input (or even in an address of an
 	 output), which would mean possibly increasing the number of
 	 inputs by one (namely 'output' in addition), which might pose
@@ -5314,7 +5314,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
 
 	 Here 'input' is used in two occurrences as input (once for the
 	 input operand, once for the address in the second output operand).
-	 If we would replace only the occurence of the input operand (to
+	 If we would replace only the occurrence of the input operand (to
 	 make the matching) we would be left with this:
 
 	   output = input

@@ -845,7 +845,7 @@ forward_propagate_comparison (tree cond, tree stmt)
 			TREE_OPERAND (cond, 0), TREE_OPERAND (cond, 1));
 	}
       /* We can propagate the condition into X op CST where op
-	 is EQ_EXRP or NE_EXPR and CST is either one or zero.  */
+	 is EQ_EXPR or NE_EXPR and CST is either one or zero.  */
       else if (COMPARISON_CLASS_P (rhs)
 	       && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
 	       && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)

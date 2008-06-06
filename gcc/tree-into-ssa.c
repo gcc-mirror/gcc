@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -207,7 +207,7 @@ struct ssa_name_info
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
   /* Age of this record (so that info_for_ssa_name table can be cleared
-     quicky); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
+     quickly); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
      are assumed to be null.  */
   unsigned age;
 };
@@ -362,7 +362,7 @@ set_current_def (tree var, tree def)
 }
 
 
-/* Compute global livein information given the set of blockx where
+/* Compute global livein information given the set of blocks where
    an object is locally live at the start of the block (LIVEIN)
    and the set of blocks where the object is defined (DEF_BLOCKS).
 

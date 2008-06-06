@@ -1,5 +1,6 @@
 /* Type based alias analysis.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1781,7 +1782,7 @@ type_for_uid (int uid)
   else return NULL;
 }
 
-/* Return the a bitmap with the subtypes of the type for UID.  If it
+/* Return a bitmap with the subtypes of the type for UID.  If it
    does not exist, return either NULL or a new bitmap depending on the
    value of CREATE.  */ 
 
@@ -2054,7 +2055,7 @@ type_escape_execute (void)
   FOR_EACH_STATIC_VARIABLE (vnode)
     analyze_variable (vnode);
 
-  /* Process all of the functions. next
+  /* Process all of the functions next.
 
      We do not want to process any of the clones so we check that this
      is a master clone.  However, we do need to process any

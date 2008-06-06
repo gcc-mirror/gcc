@@ -1,5 +1,6 @@
 /* Inline functions for tree-flow.h
-   Copyright (C) 2001, 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1463,7 +1464,7 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
 	if (USE_FROM_PTR (use_p) == use)
 	  last_p = move_use_after_head (use_p, head, last_p);
     }
-  /* LInk iter node in after last_p.  */
+  /* Link iter node in after last_p.  */
   if (imm->iter_node.prev != NULL)
     delink_imm_use (&imm->iter_node);
   link_imm_use_to_list (&(imm->iter_node), last_p);

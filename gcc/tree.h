@@ -174,7 +174,7 @@ extern const enum tree_code_class tree_code_type[];
 #define IS_EXPR_CODE_CLASS(CLASS)\
 	((CLASS) >= tcc_reference && (CLASS) <= tcc_expression)
 
-/* Returns nonzer iff CLASS is a GIMPLE statement.  */
+/* Returns nonzero iff CLASS is a GIMPLE statement.  */
 
 #define IS_GIMPLE_STMT_CODE_CLASS(CLASS) ((CLASS) == tcc_gimple_stmt)
 
@@ -3175,7 +3175,7 @@ extern void decl_debug_expr_insert (tree, tree);
 #define SET_DECL_DEBUG_EXPR(NODE, VAL) \
   (decl_debug_expr_insert (VAR_DECL_CHECK (NODE), VAL))
 
-/* An initializationp priority.  */
+/* An initialization priority.  */
 typedef unsigned short priority_type;
 
 extern priority_type decl_init_priority_lookup (tree);

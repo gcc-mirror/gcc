@@ -3946,7 +3946,7 @@ merge_dllimport_decl_attributes (tree old, tree new)
     }
   else if (DECL_DLLIMPORT_P (old) && !DECL_DLLIMPORT_P (new))
     {
-      /* Warn about overriding a symbol that has already been used. eg:
+      /* Warn about overriding a symbol that has already been used, e.g.:
            extern int __attribute__ ((dllimport)) foo;
 	   int* bar () {return &foo;}
 	   int foo;

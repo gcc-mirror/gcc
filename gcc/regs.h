@@ -1,6 +1,7 @@
 /* Define per-register tables for data flow info and register allocation.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,7 +130,7 @@ extern size_t reg_info_p_size;
 
 #define REG_FREQ(N) (reg_info_p[N].freq)
 
-/* The weights for each insn varries from 0 to REG_FREQ_BASE.
+/* The weights for each insn varies from 0 to REG_FREQ_BASE.
    This constant does not need to be high, as in infrequently executed
    regions we want to count instructions equivalently to optimize for
    size instead of speed.  */

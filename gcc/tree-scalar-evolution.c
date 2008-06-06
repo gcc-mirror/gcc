@@ -1,5 +1,6 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -2357,7 +2358,7 @@ end:
 
 /* Returns the number of executions of the exit condition of LOOP,
    i.e., the number by one higher than number_of_latch_executions.
-   Note that unline number_of_latch_executions, this number does
+   Note that unlike number_of_latch_executions, this number does
    not necessarily fit in the unsigned variant of the type of
    the control variable -- if the number of iterations is a constant,
    we return chrec_dont_know if adding one to number_of_latch_executions
@@ -2843,7 +2844,7 @@ scev_const_prop (void)
 	 and avoided final value elimination if that is the case.  The problem
 	 is that it is hard to evaluate whether the expression is too
 	 expensive, as we do not know what optimization opportunities the
-	 the elimination of the final value may reveal.  Therefore, we now
+	 elimination of the final value may reveal.  Therefore, we now
 	 eliminate the final values of induction variables unconditionally.  */
       if (niter == chrec_dont_know)
 	continue;

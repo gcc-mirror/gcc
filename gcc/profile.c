@@ -441,7 +441,7 @@ compute_branch_probabilities (void)
 		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    total += e->count;
 
-		  /* Seedgeh for the invalid edge, and set its count.  */
+		  /* Search for the invalid edge, and set its count.  */
 		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    if (! EDGE_INFO (e)->count_valid && ! EDGE_INFO (e)->ignore)
 		      break;

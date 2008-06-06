@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
@@ -947,7 +947,7 @@ search_object (struct object* ob, void *pc)
     }
   else
     {
-      /* Long slow labourious linear search, cos we've no memory.  */
+      /* Long slow laborious linear search, cos we've no memory.  */
       if (ob->s.b.from_array)
 	{
 	  fde **p;

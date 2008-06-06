@@ -1,5 +1,6 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -142,7 +143,7 @@ struct gimple_opt_pass
   struct opt_pass pass;
 };
 
-/* Decription of RTL pass.  */
+/* Description of RTL pass.  */
 struct rtl_opt_pass
 {
   struct opt_pass pass;

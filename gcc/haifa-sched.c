@@ -1110,7 +1110,7 @@ ready_sort (struct ready_list *ready)
 
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
    will help shorten or lengthen register lifetimes as appropriate.  Also
-   provide a hook for the target to tweek itself.  */
+   provide a hook for the target to tweak itself.  */
 
 HAIFA_INLINE static void
 adjust_priority (rtx prev)
@@ -2373,7 +2373,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 	      asm_p = (GET_CODE (PATTERN (insn)) == ASM_INPUT
 		       || asm_noperands (PATTERN (insn)) >= 0);
 	      if (!first_cycle_insn_p && asm_p)
-		/* This is asm insn which is tryed to be issued on the
+		/* This is asm insn which is tried to be issued on the
 		   cycle not first.  Issue it on the next cycle.  */
 		cost = 1;
 	      else
@@ -2548,7 +2548,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
     {
       targetm.sched.md_finish (sched_dump, sched_verbose);
 
-      /* Target might have added some instructions to the scheduled block.
+      /* Target might have added some instructions to the scheduled block
 	 in its md_finish () hook.  These new insns don't have any data
 	 initialized and to identify them we extend h_i_d so that they'll
 	 get zero luids.*/

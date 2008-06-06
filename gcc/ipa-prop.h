@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,7 +115,7 @@ struct ipa_replace_map
 struct ipa_node_params
 {
   /* Number of formal parameters of this function.  When set to 0,
-     this functions's parameters would not be analyzed by the different
+     this function's parameters would not be analyzed by the different
      stages of IPA CP.  */
   int param_count;
   /* Array of lattices.  */
@@ -134,7 +134,7 @@ struct ipa_node_params
      one.  */
   gcov_type count_scale;
 
-  /* Whether this fynction is called with variable number of actual
+  /* Whether this function is called with variable number of actual
      arguments.  */
   unsigned called_with_var_arguments : 1;
 };
@@ -165,7 +165,7 @@ ipa_get_ith_param (struct ipa_node_params *info, int i)
   return info->param_decls[i];
 }
 
-/* Returns the modification flag corresponding o the ith paramterer.  Note
+/* Returns the modification flag corresponding to the ith parameter.  Note
    there is no setter method as the goal is to set all flags when building the
    array in ipa_detect_param_modifications.  */
 static inline bool

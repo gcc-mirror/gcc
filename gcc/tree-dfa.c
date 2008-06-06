@@ -1,5 +1,6 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -724,7 +725,7 @@ add_referenced_var (tree var)
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
 	 variables.  
-	 Even non-constant intializers need to be walked, because
+	 Even non-constant initializers need to be walked, because
 	 IPA passes might prove that their are invariant later on.  */
       if (DECL_INITIAL (var)
 	  /* Initializers of external variables are not useful to the
@@ -911,7 +912,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      {
 		tree csize = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 		/* We need to adjust maxsize to the whole structure bitsize.
-		   But we can subtract any constant offset seen sofar,
+		   But we can subtract any constant offset seen so far,
 		   because that would get us out of the structure otherwise.  */
 		if (maxsize != -1 && csize && host_integerp (csize, 1))
 		  maxsize = TREE_INT_CST_LOW (csize) - bit_offset;
@@ -949,7 +950,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      {
 		tree asize = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 		/* We need to adjust maxsize to the whole array bitsize.
-		   But we can subtract any constant offset seen sofar,
+		   But we can subtract any constant offset seen so far,
 		   because that would get us outside of the array otherwise.  */
 		if (maxsize != -1 && asize && host_integerp (asize, 1))
 		  maxsize = TREE_INT_CST_LOW (asize) - bit_offset;
@@ -1060,7 +1061,7 @@ refs_may_alias_p (tree ref1, tree ref2)
 
   /* If both references are based on different variables, they cannot alias.
      If both references are based on the same variable, they cannot alias if
-     if the accesses do not overlap.  */
+     the accesses do not overlap.  */
   if (SSA_VAR_P (base1)
       && SSA_VAR_P (base2))
     {

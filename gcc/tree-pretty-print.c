@@ -2253,7 +2253,7 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
       pp_character (buffer, ')');
     }
 
-  /* The initial value of a function serves to determine wether the function
+  /* The initial value of a function serves to determine whether the function
      is declared or defined.  So the following does not apply to function
      nodes.  */
   if (TREE_CODE (t) != FUNCTION_DECL)

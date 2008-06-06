@@ -1,7 +1,6 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+   2008 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes 
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -2335,7 +2334,7 @@ df_chain_add_problem (enum df_chain_flags chain_flags)
    reach in the backwards direction.  In and out bitvectors are built
    for each basic block.  There are two mapping functions,
    df_byte_lr_get_regno_start and df_byte_lr_get_regno_len that are
-   used to map regnos into bit vector postions.  
+   used to map regnos into bit vector positions.
 
    This problem differs from the regular df_lr function in the way
    that subregs, *_extracts and strict_low_parts are handled. In lr

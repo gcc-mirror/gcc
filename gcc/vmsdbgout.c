@@ -1,6 +1,6 @@
 /* Output VMS debug format symbol table information from GCC.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
@@ -125,7 +125,7 @@ static unsigned int func_table_in_use;
 static vms_func_ref func_table;
 
 /* Local pointer to the name of the main input file.  Initialized in
-   avmdbgout_init.  */
+   vmsdbgout_init.  */
 static const char *primary_filename;
 
 static char *module_producer;

@@ -1,6 +1,6 @@
 /* File format for coverage information
-   Copyright (C) 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2007,
+   2008  Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -507,7 +507,7 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 #endif
 
 #if IN_LIBGCOV
-/* Move to the a set position in a gcov file.  */
+/* Move to a given position in a gcov file.  */
 
 GCOV_LINKAGE void
 gcov_seek (gcov_position_t base)

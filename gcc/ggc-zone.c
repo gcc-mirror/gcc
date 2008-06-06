@@ -2445,7 +2445,7 @@ ggc_pch_finish (struct ggc_pch_data *d, FILE *f)
     fatal_error ("can't seek PCH file: %m");
 
   if (fwrite (d->alloc_bits, d->alloc_size, 1, f) != 1)
-    fatal_error ("can't write PCH fle: %m");
+    fatal_error ("can't write PCH file: %m");
 
   /* Done with the PCH, so write out our footer.  */
   if (fwrite (&d->d, sizeof (d->d), 1, f) != 1)

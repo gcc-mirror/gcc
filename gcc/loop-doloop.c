@@ -1,5 +1,6 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -362,7 +363,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       fputs (" iterations).\n", dump_file);
     }
 
-  /* Get the probabilty of the original branch. If it exists we would
+  /* Get the probability of the original branch. If it exists we would
      need to update REG_BR_PROB of the new jump_insn.  */
   true_prob_val = find_reg_note (jump_insn, REG_BR_PROB, NULL_RTX);
 

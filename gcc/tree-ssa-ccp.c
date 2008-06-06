@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
@@ -286,7 +286,7 @@ get_symbol_constant_value (tree sym)
 	    return val;
 	}
       /* Variables declared 'const' without an initializer
-	 have zero as the intializer if they may not be
+	 have zero as the initializer if they may not be
 	 overridden at link or run time.  */
       if (!val
 	  && targetm.binds_local_p (sym)

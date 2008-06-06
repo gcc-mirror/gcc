@@ -378,7 +378,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
  }
 };
 
-/* Return sope resulting from combination of S1 and S2.  */
+/* Return scope resulting from combination of S1 and S2.  */
 static tree
 choose_inner_scope (tree s1, tree s2)
 {

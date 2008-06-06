@@ -1,5 +1,5 @@
 /* Struct-reorg optimization.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
    Contributed by Olga Golovanevsky <olga@il.ibm.com>
    (Initial version of this code was developed
    by Caroline Tice and Mostafa Hagog.)
@@ -309,7 +309,7 @@ is_result_of_mult (tree arg, tree *num, tree struct_size)
 {
   tree size_def_stmt = SSA_NAME_DEF_STMT (arg);
 
-  /* If allocation  statementt was of the form 
+  /* If the allocation statement was of the form
      D.2229_10 = <alloc_func> (D.2228_9);
      then size_def_stmt can be D.2228_9 = num.3_8 * 8;  */
 
@@ -406,7 +406,7 @@ decompose_indirect_ref_acc (tree str_decl, struct field_access_site *acc)
 
 
 /* This function checks whether the access ACC of structure type STR 
-   is of the form suitable for tranformation. If yes, it returns true. 
+   is of the form suitable for transformation. If yes, it returns true.
    False otherwise.  */
 
 static bool
@@ -435,7 +435,7 @@ make_field_acc_node (void)
 }
 
 /* This function returns the structure field access, defined by STMT,
-   if it is aready in hashtable of function accesses F_ACCS.  */
+   if it is already in hashtable of function accesses F_ACCS.  */
 
 static struct field_access_site *
 is_in_field_accs (tree stmt, htab_t f_accs)
@@ -538,7 +538,7 @@ finalize_new_vars_creation (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* This funciton updates statements in STMT_LIST with BB info.  */
+/* This function updates statements in STMT_LIST with BB info.  */
 
 static void
 add_bb_info (basic_block bb, tree stmt_list)
@@ -587,7 +587,7 @@ is_in_new_vars_htab (tree decl, htab_t new_vars_htab)
 					htab_hash_pointer (decl));
 }
 
-/* Given original varaiable ORIG_VAR, this function returns
+/* Given original variable ORIG_VAR, this function returns
    new variable corresponding to it of NEW_TYPE type. */
 
 static tree
@@ -1616,7 +1616,7 @@ is_equal_types (tree type1, tree type2)
     case ENUMERAL_TYPE:
       {
 	tree field1;
-	/* Compare fields of struture.  */
+	/* Compare fields of structure.  */
 	for (field1 = TYPE_FIELDS (type1); field1; 
 	     field1 = TREE_CHAIN (field1))
 	  {
@@ -1760,7 +1760,7 @@ create_new_malloc (tree malloc_stmt, tree new_type, tree *new_stmts, tree num)
 
 /* This function returns a tree representing 
    the number of instances of structure STR_DECL allocated 
-   by allocation STMT. If new statments are generated, 
+   by allocation STMT. If new statements are generated,
    they are filled into NEW_STMTS_P.  */
 
 static tree 
@@ -2074,7 +2074,7 @@ dump_acc (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* This function frees memory allocated for strcuture clusters, 
+/* This function frees memory allocated for structure clusters,
    starting from CLUSTER.  */
 
 static void
@@ -2402,7 +2402,7 @@ remove_structure (unsigned i)
 }
 
 /* Currently we support only EQ_EXPR or NE_EXPR conditions.
-   COND_STNT is a condition statement to check.  */
+   COND_STMT is a condition statement to check.  */
 
 static bool
 is_safe_cond_expr (tree cond_stmt)
@@ -2861,7 +2861,7 @@ check_bitfields (d_str str, VEC (tree, heap) **unsuitable_types)
 }
 
 /* This function adds to UNSUITABLE_TYPES those types that escape 
-   due to results of ipa-type-escpae analysis. See ipa-type-escpae.[c,h].  */
+   due to results of ipa-type-escape analysis. See ipa-type-escape.[c,h].  */
 
 static void
 exclude_escaping_types_1 (VEC (tree, heap) **unsuitable_types)
@@ -3158,7 +3158,7 @@ exclude_alloc_and_field_accs_1 (d_str str, struct cgraph_node *node)
     htab_traverse (dt.str->accs, exclude_from_accs, &dt);  
 }
 
-/* Collect accesses to the structure types that apear in basic bloack BB.  */
+/* Collect accesses to the structure types that appear in basic block BB.  */
 
 static void
 collect_accesses_in_bb (basic_block bb)
@@ -3181,8 +3181,8 @@ collect_accesses_in_bb (basic_block bb)
     }
 }
 
-/* This function generates cluster substructure that cointains FIELDS.
-   The cluster added to the set of clusters of the structure SRT.  */
+/* This function generates cluster substructure that contains FIELDS.
+   The cluster added to the set of clusters of the structure STR.  */
 
 static void
 gen_cluster (sbitmap fields, d_str str)

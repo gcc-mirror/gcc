@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1490,7 +1490,7 @@ fix_up_fall_thru_edges (void)
     }
 }
 
-/* This function checks the destination blockof a "crossing jump" to
+/* This function checks the destination block of a "crossing jump" to
    see if it has any crossing predecessors that begin with a code label
    and end with an unconditional jump.  If so, it returns that predecessor
    block.  (This is to avoid creating lots of new basic blocks that all

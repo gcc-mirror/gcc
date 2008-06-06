@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The auxiliary table is a series of 32 bit integers, that are
    referenced as needed from the local symbol table.  Unlike standard
-   COFF, the aux.  information does not follow the symbol that uses
+   COFF, the aux. information does not follow the symbol that uses
    it, but rather is a separate table.  In theory, this would allow
    the MIPS compilers to collapse duplicate aux. entries, but I've not
    noticed this happening with the 1.31 compiler suite.  The different

@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -639,7 +639,7 @@ rdg_flag_vertex (struct graph *rdg, int v, bitmap partition, bitmap loops,
 }
 
 /* Flag in the bitmap PARTITION the vertex V and all its predecessors.
-   Alse flag their loop number in LOOPS.  */
+   Also flag their loop number in LOOPS.  */
 
 static void
 rdg_flag_vertex_and_dependent (struct graph *rdg, int v, bitmap partition,

@@ -1,5 +1,6 @@
 /* Dead store elimination
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -207,7 +208,7 @@ memory_address_same (tree store1, tree store2)
 }
 
 /* Return true if there is a stmt that kills the lhs of STMT and is in the
-   virtual def-use chain of STMT without a use inbetween the kill and STMT.
+   virtual def-use chain of STMT without a use in between the kill and STMT.
    Returns false if no such stmt is found.
    *FIRST_USE_P is set to the first use of the single virtual def of
    STMT.  *USE_P is set to the vop killed by *USE_STMT.  */
@@ -691,7 +692,7 @@ execute_simple_dse (void)
 		if (TREE_THIS_VOLATILE (op))
 		  dead = false;
 
-	    /* Look for possible occurence var = indirect_ref (...) where
+	    /* Look for possible occurrence var = indirect_ref (...) where
 	       indirect_ref itself is volatile.  */
 
 	    if (dead && TREE_THIS_VOLATILE (GIMPLE_STMT_OPERAND (stmt, 1)))
