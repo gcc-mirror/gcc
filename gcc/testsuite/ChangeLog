@@ -1,3 +1,7 @@
+2008-06-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-18.c: XFAIL some sub-tests.
+
 2008-06-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc_spu):
