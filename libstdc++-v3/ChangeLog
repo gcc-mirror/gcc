@@ -1,3 +1,161 @@
+2008-06-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/using.xml: Outline exception topics.
+
+	* include/ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp: Format.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/priority_queue.hpp: Same.
+	* include/ext/throw_allocator.h: Same.
+
+	* include/ext/pb_ds/tag_and_trait.hpp (string_tag): New tag.
+	(sequence_tag): New tag. Doxygen markup fixes.
+
+	* testsuite/lib/libstdc++.exp: Remove twister_ran_gen.cc source file.
+
+	* testsuite/performance/ext/pb_ds/text_find_timing.cc: Fix
+	comment typo, include paths, format.
+	* testsuite/performance/ext/pb_ds/tree_text_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	hash_random_int_erase_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	random_int_subscript_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/random_int_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem_usage.hpp
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing.hpp
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_modify_timing.hpp
+	* testsuite/performance/ext/pb_ds/tree_order_statistics_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	random_int_subscript_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_text_lor_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_timing.hpp
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_pop_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	hash_zlob_random_int_find_timing.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Same.
+	* testsuite/util/regression/trait/priority_queue/trait.hpp: Same.
+	* testsuite/util/regression/trait/erase_if_fn.hpp: Same.
+	* testsuite/util/regression/trait/assoc/native_type_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/node_update_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/get_set_load_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/get_set_loads_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/resize_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/type_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/to_string.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+	* testsuite/util/common_type/priority_queue/string_form.hpp: Same.
+	* testsuite/util/common_type/priority_queue/detail/
+	ds_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	resize_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	trigger_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	comb_hash_fn_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/ds_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	size_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	probe_fn_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	list_update_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	store_hash_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/native_set.hpp: Same.
+	* testsuite/util/io/prog_bar.cc: Same.
+
+	* testsuite/util/regression/rand/io: Remove.
+	* testsuite/util/regression/rand/io/priority_queue: Same.
+	* testsuite/util/regression/rand/io/assoc: Same.
+	* testsuite/util/regression/rand/io/priority_queue/
+	xml_formatter.hpp: Consolidate this...
+	* testsuite/util/regression/rand/io/assoc/xml_formatter.hpp: ...this
+	* testsuite/util/regression/rand/io/xml_formatter.hpp: ... and this
+	* testsuite/util/regression/rand/xml_formatter.hpp: ...here.
+
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.hpp:To ...
+	container_rand_regression_test.h: ... this.
+	* testsuite/util/regression/rand/priority_queue/detail/*.hpp:To ...
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.tcc: ... this.
+	PB_DS_THROW_IF_FAIL: Change to _GLIBCXX_THROW_IF, adjust predicate.
+	PB_DS_SET_DESTRUCT_PRINT: Fold inline.
+	PB_DS_CANCEL_DESTRUCT_PRINT: Fold inline.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Adjust includes.
+
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.hpp: To ...
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.h: ... this.
+	* testsuite/util/regression/rand/assoc/detail/*.hpp:To ...
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.tcc: ...this.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Adjust
+	includes.
+
+	* testsuite/util/regression/priority_queue: Remove.
+	* testsuite/util/regression/assoc: Remove.
+	* testsuite/util/regression/priority_queue/
+	common_type.hpp: Consolidate this...
+	* testsuite/util/regression/assoc/common_type.hpp: ... and this
+	* testsuite/util/regression/common_type.hpp: ...here.
+
+	* testsuite/util/rng: Remove.
+	* testsuite/util/rng/twister_rand_gen.cc: Consolidate...
+	* testsuite/util/rng/twister_rand_gen.hpp: ... and this
+	* testsuite/util/testsuite_rng.h: ...here.
+
+	* testsuite/util/native_type/priority_queue: Remove.
+	* testsuite/util/native_type/priority_queue/
+	native_priority_queue.hpp: To...
+	* testsuite/util/native_type/native_priority_queue.hpp: ...here.
+
+	* testsuite/util/native_type/assoc: Remove.
+	* testsuite/util/native_type/assoc/native_multimap.hpp: To...
+	* testsuite/util/native_type/assoc/native_tree_tag.hpp: To...
+	* testsuite/util/native_type/assoc/native_hash_multimap.hpp: To...
+	* testsuite/util/native_type/assoc/native_set.hpp: To...
+	* testsuite/util/native_type/assoc/native_map.hpp: To...
+	* testsuite/util/native_type/assoc/native_hash_set.hpp: To...
+	* testsuite/util/native_type/assoc/native_hash_tag.hpp: To...
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: To...
+	* testsuite/util/native_type/native_multimap.hpp: ...here.
+	* testsuite/util/native_type/native_tree_tag.hpp: ...here.
+	* testsuite/util/native_type/native_hash_multimap.hpp: ...here.
+	* testsuite/util/native_type/native_set.hpp: ...here.
+	* testsuite/util/native_type/native_map.hpp: ...here.
+	* testsuite/util/native_type/native_hash_set.hpp: ...here.
+	* testsuite/util/native_type/native_hash_tag.hpp: ...here.
+	* testsuite/util/native_type/native_hash_map.hpp: ...here.
+
+	* testsuite/util/common_type/priority_queue/common_type.hpp:
+	Make include guard distinct.
+	* testsuite/util/common_type/assoc/common_type.hpp: Same.
+
 2008-06-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Do not check for gconv.h.
@@ -18,16 +176,16 @@
 
 2008-06-05  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/random_shuffle.h:
-        (parallel_random_shuffle_drs) Get the actual number of
-        threads after entering the parallel region. Indentation.
-        * include/parallel/algo.h: (random_shuffle(begin, end))
-        Add namespace qualification to avoid ambiguity.
+	* include/parallel/random_shuffle.h:
+	(parallel_random_shuffle_drs) Get the actual number of
+	threads after entering the parallel region. Indentation.
+	* include/parallel/algo.h: (random_shuffle(begin, end))
+	Add namespace qualification to avoid ambiguity.
 
 2008-06-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/assoc_container.hpp: Change allocator typedef
-	to allocator_type, as per existing conventions.	
+	to allocator_type, as per existing conventions.
 	* include/ext/pb_ds/detail/binomial_heap_base_/
 	binomial_heap_base_.hpp: Same.
 	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
@@ -74,7 +232,7 @@
 	trie_supports_prefix_search.hpp: Same.
 	* testsuite/util/common_type/assoc/detail/
 	trie_supports_order_statistics.hpp: Same.
-	
+
 2008-06-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
@@ -82,7 +240,7 @@
 	dg-require-fileio.
 	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/sputbackc/char/2-out.cc: Likewise.
- 
+
 2008-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/vector.tcc (vector<>::_M_insert_aux): In C++0x mode,
@@ -173,7 +331,7 @@
 
 2008-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* include/std/tuple: Replace int -> size_t throughout per DR 775. 
+	* include/std/tuple: Replace int -> size_t throughout per DR 775.
 	* include/tr1_impl/array: Likewise.
 	* include/tr1_impl/utility: Likewise.
 	* doc/xml/manual/intro.xml: Add an entry for DR 775.
@@ -190,7 +348,7 @@
 2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable_policy.h (_Map_base<,,
-	std::_Select1st<_Pair>, true,>::at): Add per DR 761. 
+	std::_Select1st<_Pair>, true,>::at): Add per DR 761.
 	* testsuite/23_containers/unordered_map/dr761.cc: New.
 	* doc/xml/manual/intro.xml: Add an entry for DR 761.
 
@@ -240,7 +398,7 @@
 	* testsuite/20_util/is_integral/requirements/typedefs.cc: Likewise.
 	* testsuite/20_util/is_integral/requirements/
 	explicit_instantiation.cc: Likewise.
-	* testsuite/18_support/numeric_limits/char16_32_t.cc: Likewise.	
+	* testsuite/18_support/numeric_limits/char16_32_t.cc: Likewise.
 	* config/abi/pre/gnu.ver: Export new numeric_limits symbols at
 	GLIBCXX_3.4.11.
 	* configure: Regenerate.
@@ -255,7 +413,7 @@
 	* include/std/ostream: Adjust error_code inserter.
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Remove sys_nerr test.
 	* config/abi/pre/gnu.ver: Add new exports.
-	
+
 	* testsuite/util/testsuite_error.h: Consolidate error testing
 	utilities here.
 	* testsuite/19_diagnostics/error_code/cons/1.cc: Use
@@ -266,7 +424,7 @@
 	* testsuite/19_diagnostics/error_category/cons/default.cc: Same.
 	* testsuite/19_diagnostics/error_category/operators/equal.cc: Same.
 	* testsuite/19_diagnostics/error_category/operators/not_equal.cc: Same.
-	* testsuite/19_diagnostics/system_error/cons_virtual_derivation.cc: 
+	* testsuite/19_diagnostics/system_error/cons_virtual_derivation.cc:
 	Same.
 	* testsuite/19_diagnostics/system_error/cons-1.cc: Same.
 	* testsuite/19_diagnostics/system_error/what-1.cc: Same.
@@ -282,9 +440,9 @@
 
 2008-05-15  Johannes Singler  <singler@ira.uka.de>
 
-        * xml/manual/parallel_mode.xml:
-        General revision and documentation of new compile-time 
-        options for sorting.
+	* xml/manual/parallel_mode.xml:
+	General revision and documentation of new compile-time
+	options for sorting.
 
 2008-05-14  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -313,7 +471,7 @@
 	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.c: Same.
 
 	* doc/doxygen/user.cfg.in: Remove thread include.
-	
+
 2008-05-13  David Daney  <ddaney@avtrex.com>
 
 	* config/cpu/mips/atomicity.h: Remove file.
@@ -344,7 +502,7 @@
        * include/parallel/quicksort.h:
        (parallel_sort_qs_conquer) Explicitly request number of threads
        in the parallel clause.
-       (parallel_sort_qs) Remove setting the number of threads globally. 
+       (parallel_sort_qs) Remove setting the number of threads globally.
 
 2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -355,7 +513,7 @@
 	* testsuite/30_threads/mutex/cons/copy_neg.cc: Same.
 	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Same.
 	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Same.
-	
+
 2008-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/condition_variable: New.

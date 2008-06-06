@@ -41,13 +41,14 @@
 
 /**
  * @file trait.hpp
- * Containsert traits for a random regression test
+ * Contains traits for a random regression test
  *    for a specific container type.
  */
 
 #ifndef PB_DS_REGRESSION_TEST_TRAIT_HPP
 #define PB_DS_REGRESSION_TEST_TRAIT_HPP
 
+#include <regression/trait/erase_if_fn.hpp>
 #include <regression/trait/assoc/to_string.hpp>
 #include <regression/trait/assoc/type_trait.hpp>
 #include <regression/trait/assoc/native_type_trait.hpp>
@@ -55,7 +56,6 @@
 #include <regression/trait/assoc/get_set_loads_trait.hpp>
 #include <regression/trait/assoc/get_set_load_trait.hpp>
 #include <regression/trait/assoc/node_update_trait.hpp>
-#include <regression/trait/erase_if_fn.hpp>
 
 namespace __gnu_pbds
 {
@@ -104,13 +104,15 @@ namespace detail
     typedef PB_DS_TYPE_TRAITS_C_DEC type_traits_base;
 
   public:
-    typedef typename Cntnr::key_type key_type;
-    typedef typename Cntnr::const_key_reference const_key_reference;
     typedef typename Cntnr::value_type value_type;
     typedef typename Cntnr::const_reference const_reference;
     typedef typename PB_DS_NATIVE_TYPE_TRAITS_C_DEC::type native_type;
-    typedef typename native_type::key_type native_key_type;
     typedef typename native_type::value_type native_value_type;
+
+    // Only associative containers.
+    typedef typename Cntnr::key_type key_type;
+    typedef typename Cntnr::const_key_reference const_key_reference;
+    typedef typename native_type::key_type native_key_type;
 
     enum
       {
@@ -128,8 +130,7 @@ namespace detail
     static size_t
     erase_if(native_type& r_native_c)
     {
-      typedef regression_test_erase_if_fn<typename native_type::value_type> erase_if_fn;
-
+      typedef regression_test_erase_if_fn<native_value_type> erase_if_fn;
       typename native_type::iterator it = r_native_c.begin();
       size_t num_ersd = 0;
       while (it != r_native_c.end())
@@ -193,13 +194,9 @@ namespace detail
     static bool
     prefix_match(const_key_reference r_key, const std::string& r_native_key)
     {
-      const size_t native_substr_len = std::min(r_key.length(), 
-						r_native_key.length());
-
-      const std::string native_substr = r_native_key.substr(0, 
-							    native_substr_len);
-
-      return native_substr == (const std::string&) r_key;
+      const size_t len = std::min(r_key.length(), r_native_key.length());
+      const std::string substr = r_native_key.substr(0, len);
+      return substr == static_cast<const std::string&>(r_key);
     }
   };
 

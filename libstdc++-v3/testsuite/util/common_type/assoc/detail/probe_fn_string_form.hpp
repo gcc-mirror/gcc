@@ -64,58 +64,39 @@ namespace __gnu_pbds
       struct probe_fn_string_form;
 
       template<typename Key, class Allocator>
-      struct probe_fn_string_form<
-	linear_probe_fn_t_<
-        Key,
-        Allocator> >
+      struct probe_fn_string_form<linear_probe_fn_t_<Key, Allocator> >
       {
 	static std::string
         name()
-	{
-	  return ("linp_");
-	}
+	{ return ("linp_"); }
 
 	static std::string
         desc()
-	{
-	  return (make_xml_tag(            "Probe_Fn", "value", "linear_probe_fn"));
-	}
+	{ return make_xml_tag("Probe_Fn", "value", "linear_probe_fn"); }
       };
 
       template<typename Key, class Allocator>
-      struct probe_fn_string_form<
-	quadratic_probe_fn_t_<
-        Key,
-        Allocator> >
+      struct probe_fn_string_form<quadratic_probe_fn_t_<Key, Allocator> >
       {
 	static std::string
         name()
-	{
-	  return ("quadp_");
-	}
+	{ return ("quadp_"); }
 
 	static std::string
         desc()
-	{
-	  return (make_xml_tag(            "Probe_Fn", "value", "quadratic_probe_fn"));
-	}
+	{ return make_xml_tag("Probe_Fn", "value", "quadratic_probe_fn"); }
       };
 
       template<>
-      struct probe_fn_string_form<
-	__gnu_pbds::null_probe_fn>
+      struct probe_fn_string_form<__gnu_pbds::null_probe_fn>
       {
 	static std::string
         name()
-	{
-	  return ("");
-	}
+	{ return (""); }
 
 	static std::string
         desc()
-	{
-	  return (make_xml_tag(            "Probe_Fn", "value", "null_probe_fn"));
-	}
+	{ return make_xml_tag("Probe_Fn", "value", "null_probe_fn"); }
       };
 
     } // namespace detail

@@ -71,10 +71,7 @@ namespace __gnu_pbds
 	       typename Size_Type>
       struct resize_policy_string_form<
 	__gnu_pbds::hash_standard_resize_policy<
-        Size_Policy,
-        Trigger_Policy,
-        External_Size_Access,
-        Size_Type> >
+        Size_Policy, Trigger_Policy, External_Size_Access, Size_Type> >
       {
 	static std::string
         name()
@@ -92,7 +89,7 @@ namespace __gnu_pbds
 	  const std::string trigger_policy_string_form_desc =
             trigger_policy_string_form<Trigger_Policy>::desc();
 
-	  return (make_xml_tag(            "Resize_Policy", "value", "hash_standard_resize_policy", size_policy_string_form_desc + trigger_policy_string_form_desc));
+	  return (make_xml_tag("Resize_Policy", "value", "hash_standard_resize_policy", size_policy_string_form_desc + trigger_policy_string_form_desc));
 	}
       };
 

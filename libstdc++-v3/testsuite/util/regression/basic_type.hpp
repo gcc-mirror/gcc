@@ -41,7 +41,7 @@
 
 /**
  * @file basic_type.hpp
- * Containsert a type used for regression tests' key and data.
+ * Contains a type used for regression tests' key and data.
  */
 
 #ifndef PB_DS_BASIC_TYPE_HPP

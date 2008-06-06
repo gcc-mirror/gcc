@@ -1013,9 +1013,22 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     </sect2>
   </sect1>
 
-  <sect1 id="manual.intro.using.exception_safety" xreflabel="Exception Safety">
-    <title>Exception Safety</title>
+  <sect1 id="manual.intro.using.exception" xreflabel="Exceptions">
+    <title>Exceptions</title>
     <para></para>
+
+  <sect2 id="intro.using.exception.propagating" xreflabel="Propagating Exceptions">
+    <title>Propagating Exceptions aka Exception Neutrality</title>
+  </sect2>
+
+  <sect2 id="intro.using.exception.safety" xreflabel="Exception Safety">
+    <title>Exception Safety</title>
+  </sect2>
+
+  <sect2 id="intro.using.exception.no" xreflabel="no-exceptions">
+    <title>Support for <literal>-fno-exceptions</literal></title>
+  </sect2>
+
   </sect1>  
 
 <!-- Section 0x : Debug -->

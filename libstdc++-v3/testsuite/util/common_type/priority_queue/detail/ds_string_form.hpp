@@ -120,6 +120,18 @@ namespace __gnu_pbds
 	{ return make_xml_tag("type", "value", "binary_heap"); }
       };
 
+      template<typename Cntnr>
+      struct ds_string_form<Cntnr, __gnu_pbds::sequence_tag>
+      {
+	static std::string
+        name()
+	{ return "sequence"; }
+
+	static std::string
+        desc()
+	{ return make_xml_tag("type", "value", "sequence"); }
+      };
+
     } // namespace detail
   } // namespace test
 } // namespace __gnu_pbds

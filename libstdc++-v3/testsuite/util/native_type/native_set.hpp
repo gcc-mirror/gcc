@@ -40,21 +40,58 @@
 // warranty.
 
 /**
- * @file clear_fn_imps.hpp
- * Containsert a random regression test for a specific container type.
+ * @file native_set.hpp
+ * Contains an adapter to std::set
  */
 
-PB_DS_CLASS_T_DEC
-bool
-PB_DS_CLASS_C_DEC::
-clear()
+#ifndef PB_DS_NATIVE_SET_HPP
+#define PB_DS_NATIVE_SET_HPP
+
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <native_type/native_tree_tag.hpp>
+#include <io/xml.hpp>
+
+namespace __gnu_pbds
 {
-  PB_DS_TRACE("clear");
+  namespace test
+  {
+#define PB_DS_BASE_C_DEC \
+    std::set<Key, Cmp_Fn, typename Allocator::template rebind<Key>::other>
 
-  m_p_c->clear();
+    template<typename Key, class Cmp_Fn = std::less<Key>,
+	     class Allocator = std::allocator<char> >
+    class native_set : public PB_DS_BASE_C_DEC
+    {
+    private:
+      typedef PB_DS_BASE_C_DEC 			 base_type;
 
-  m_native_c.clear();
+    public:
+      typedef native_tree_tag 			 container_category;
+      typedef typename base_type::const_iterator const_iterator;
 
-  return (true);
-}
+      native_set() : base_type()
+      { }
 
+      template<typename It>
+      native_set(It f,  It l) : base_type(f, l)
+      { }
+
+      native_set(const_iterator f,  const_iterator l) : base_type(f, l)
+      { }
+
+      static std::string
+      name()
+      { return std::string("n_set"); }
+
+      static std::string
+      desc()
+      { return make_xml_tag("type", "value", "std_set"); }
+    };
+
+#undef PB_DS_BASE_C_DEC
+  } // namespace test
+} // namespace __gnu_pbds
+
+#endif // #ifndef PB_DS_NATIVE_SET_HPP

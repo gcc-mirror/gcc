@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,12 +40,12 @@
 // warranty.
 
 /**
- * @file container_rand_regression_test.hpp
+ * @file container_rand_regression_test.h
  * Contains a random regression test for a specific container type.
  */
 
-#ifndef PB_DS_CONTAINER_RAND_REGRESSION_TEST_HPP
-#define PB_DS_CONTAINER_RAND_REGRESSION_TEST_HPP
+#ifndef PB_DS_CONTAINER_RAND_REGRESSION_TEST_H
+#define PB_DS_CONTAINER_RAND_REGRESSION_TEST_H
 
 #include <algorithm>
 #include <string>
@@ -53,10 +53,10 @@
 #include <utility>
 #include <ext/pb_ds/assoc_container.hpp>
 #include <io/prog_bar.hpp>
-#include <rng/twister_rand_gen.hpp>
+#include <testsuite_rng.h>
 #include <regression/trait/assoc/trait.hpp>
 #include <common_type/assoc/string_form.hpp>
-#include <regression/rand/io/assoc/xml_formatter.hpp>
+#include <regression/rand/xml_formatter.hpp>
 
 namespace __gnu_pbds
 {
@@ -64,54 +64,6 @@ namespace test
 {
 namespace detail
 {
-
-#ifdef PB_DS_REGRESSION_TRACE
-#define PB_DS_TRACE(X) std::cerr << X << std::endl
-#else 
-#define PB_DS_TRACE(X)
-#endif
-
-#define PB_DS_CLASS_T_DEC \
-  template<typename Cntnr>
-
-#define PB_DS_CLASS_C_DEC \
-  container_rand_regression_test<Cntnr>
-
-#define PB_DS_COND_COMPARE(L, R) \
-  if (m_g.get_prob() < m_mp)			\
-    cmp(L, R, __FUNCTION__);
-
-#define PB_DS_RUN_MTHD(MTHD) \
-  {						\
-    bool done = false;				\
-						\
-    while (!done)				\
-      done = MTHD();				\
-  }
-
-#define PB_DS_THROW_IF_FAILED_(PRED, MORE, P_C, P_NC, F, L) \
-  if (!(PRED))								\
-    {									\
-      std::cerr << "Failure at " << F << ": " << L << std::endl;	\
-      std::cerr << MORE << std::endl;					\
-      std::cerr << "container:" << std::endl;				\
-      print_container(*(P_C));						\
-      std::cerr << std::endl;						\
-      std::cerr << "native container:" << std::endl;			\
-      print_container(*(P_NC));						\
-      std::cerr << std::endl;						\
-      throw std::logic_error("fucked!");				\
-    }
-
-#define PB_DS_THROW_IF_FAILED(PRED, MORE, P_C, P_NC)			\
-  PB_DS_THROW_IF_FAILED_(PRED, MORE, P_C, P_NC, __FILE__, __LINE__)
-
-#define PB_DS_SET_DESTRUCT_PRINT \
-  destructor_printer dest_print___(__FUNCTION__);
-
-#define PB_DS_CANCEL_DESTRUCT_PRINT \
-  dest_print___.cancel_print();
-
   // Rand test specialized for a specific container.
   template<typename Cntnr>
   class container_rand_regression_test
@@ -129,7 +81,7 @@ namespace detail
 
   private:
     typedef Cntnr 					cntnr;
-    typedef typename cntnr::allocator_type 			allocator_type;
+    typedef typename cntnr::allocator_type 		allocator_type;
     typedef typename cntnr::size_type 			size_type;
     typedef regression_test_traits<Cntnr> 		test_traits;
     typedef typename test_traits::key_type 		key_type;
@@ -137,7 +89,7 @@ namespace detail
     typedef typename test_traits::value_type 		value_type;
     typedef typename test_traits::native_type 		native_type;
     typedef twister_rand_gen 				gen;
-    typedef __gnu_pbds::container_traits<Cntnr> 		container_traits;
+    typedef __gnu_pbds::container_traits<Cntnr> 	container_traits;
     typedef __gnu_cxx::throw_allocator<char> 		alloc_t;
 
     enum op
@@ -467,21 +419,54 @@ namespace detail
     size_t 			m_i;
   };
 
-#include <regression/rand/assoc/detail/constructor_destructor_fn_imps.hpp>
-#include <regression/rand/assoc/detail/cmp_fn_imps.hpp>
-#include <regression/rand/assoc/detail/operator_fn_imps.hpp>
-#include <regression/rand/assoc/detail/insert_fn_imps.hpp>
-#include <regression/rand/assoc/detail/subscript_fn_imps.hpp>
-#include <regression/rand/assoc/detail/clear_fn_imps.hpp>
-#include <regression/rand/assoc/detail/erase_fn_imps.hpp>
-#include <regression/rand/assoc/detail/defs_fn_imps.hpp>
-#include <regression/rand/assoc/detail/policy_access_fn_imps.hpp>
-#include <regression/rand/assoc/detail/split_join_fn_imps.hpp>
-#include <regression/rand/assoc/detail/it_conversion_fn_imps.hpp>
-#include <regression/rand/assoc/detail/resize_fn_imps.hpp>
-#include <regression/rand/assoc/detail/get_set_load_fn_imps.hpp>
-#include <regression/rand/assoc/detail/get_set_loads_fn_imps.hpp>
-#include <regression/rand/assoc/detail/diagnostic_fn_imps.hpp>
+#ifdef PB_DS_REGRESSION_TRACE
+#define PB_DS_TRACE(X) std::cerr << X << std::endl
+#else 
+#define PB_DS_TRACE(X)
+#endif
+
+#define PB_DS_CLASS_T_DEC \
+  template<typename Cntnr>
+
+#define PB_DS_CLASS_C_DEC \
+  container_rand_regression_test<Cntnr>
+
+#define PB_DS_COND_COMPARE(L, R) \
+  if (m_g.get_prob() < m_mp)			\
+    cmp(L, R, __FUNCTION__);
+
+#define PB_DS_RUN_MTHD(MTHD) \
+  {						\
+    bool done = false;				\
+						\
+    while (!done)				\
+      done = MTHD();				\
+  }
+
+#define PB_DS_THROW_IF_FAILED_(PRED, MORE, P_C, P_NC, F, L) \
+  if (!(PRED))								\
+    {									\
+      std::cerr << "Failure at " << F << ": " << L << std::endl;	\
+      std::cerr << MORE << std::endl;					\
+      std::cerr << "container:" << std::endl;				\
+      print_container(*(P_C));						\
+      std::cerr << std::endl;						\
+      std::cerr << "native container:" << std::endl;			\
+      print_container(*(P_NC));						\
+      std::cerr << std::endl;						\
+      throw std::logic_error("fucked!");				\
+    }
+
+#define PB_DS_THROW_IF_FAILED(PRED, MORE, P_C, P_NC)			\
+  PB_DS_THROW_IF_FAILED_(PRED, MORE, P_C, P_NC, __FILE__, __LINE__)
+
+#define PB_DS_SET_DESTRUCT_PRINT \
+  destructor_printer dest_print___(__FUNCTION__);
+
+#define PB_DS_CANCEL_DESTRUCT_PRINT \
+  dest_print___.cancel_print();
+
+#include <regression/rand/assoc/container_rand_regression_test.tcc>
 
 #undef PB_DS_COND_COMPARE
 #undef PB_DS_RUN_MTHD

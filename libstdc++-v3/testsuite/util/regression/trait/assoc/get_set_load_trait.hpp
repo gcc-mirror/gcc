@@ -41,7 +41,7 @@
 
 /**
  * @file get_set_load_trait.hpp
- * Containsert traits for a random regression test
+ * Contains traits for a random regression test
  *    for a specific container type.
  */
 

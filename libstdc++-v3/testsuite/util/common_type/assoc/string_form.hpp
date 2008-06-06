@@ -51,11 +51,11 @@
 #include <sstream>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/tag_and_trait.hpp>
-#include <native_type/assoc/native_hash_map.hpp>
-#include <native_type/assoc/native_hash_set.hpp>
-#include <native_type/assoc/native_multimap.hpp>
-#include <native_type/assoc/native_hash_multimap.hpp>
-#include <native_type/assoc/native_set.hpp>
+#include <native_type/native_hash_map.hpp>
+#include <native_type/native_hash_set.hpp>
+#include <native_type/native_multimap.hpp>
+#include <native_type/native_hash_multimap.hpp>
+#include <native_type/native_set.hpp>
 #include <common_type/assoc/template_policy.hpp>
 #include <common_type/assoc/detail/ds_string_form.hpp>
 #include <regression/basic_type.hpp>

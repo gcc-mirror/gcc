@@ -40,58 +40,113 @@
 // warranty.
 
 /**
- * @file native_set.hpp
- * Contains an adapter to std::set
+ * @file native_multimap.hpp
+ * Contains an adapter to std::multimap
  */
 
-#ifndef PB_DS_NATIVE_SET_HPP
-#define PB_DS_NATIVE_SET_HPP
+#ifndef PB_DS_NATIVE_MULTIMAP_HPP
+#define PB_DS_NATIVE_MULTIMAP_HPP
 
+#include <map>
 #include <string>
 #include <ext/pb_ds/detail/type_utils.hpp>
-#include <ext/pb_ds/detail/standard_policies.hpp>
-#include <native_type/assoc/native_tree_tag.hpp>
-#include <io/xml.hpp>
+#include <native_type/native_tree_tag.hpp>
 
 namespace __gnu_pbds
 {
   namespace test
   {
 #define PB_DS_BASE_C_DEC \
-    std::set<Key, Cmp_Fn, typename Allocator::template rebind<Key>::other>
+    std::multimap<Key, Data, Less_Fn, \
+      typename Allocator::template rebind<std::pair<const Key, Data> >::other>
 
-    template<typename Key, class Cmp_Fn = std::less<Key>,
+    template<typename Key, typename Data, class Less_Fn = std::less<Key>,
 	     class Allocator = std::allocator<char> >
-    class native_set : public PB_DS_BASE_C_DEC
+    class native_multimap : public PB_DS_BASE_C_DEC
     {
     private:
-      typedef PB_DS_BASE_C_DEC 			 base_type;
+      typedef PB_DS_BASE_C_DEC base_type;
 
     public:
-      typedef native_tree_tag 			 container_category;
+      typedef native_tree_tag container_category;
+
+      typedef Allocator allocator;
+
+      typedef
+      typename Allocator::template rebind<
+	std::pair<Key, Data> >::other::const_reference
+      const_reference;
+
+      typedef typename base_type::iterator iterator;
       typedef typename base_type::const_iterator const_iterator;
 
-      native_set() : base_type()
-      { }
+      native_multimap()  { }
 
       template<typename It>
-      native_set(It f,  It l) : base_type(f, l)
+      native_multimap(It f, It l) : base_type(f, l)
       { }
 
-      native_set(const_iterator f,  const_iterator l) : base_type(f, l)
-      { }
+      inline void
+      insert(const_reference r_val)
+      {
+        typedef std::pair<iterator, iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
 
+        iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return;
+            ++it;
+	  }
+        base_type::insert(r_val);
+      }
+
+      inline iterator
+      find(const_reference r_val)
+      {
+        typedef std::pair<iterator, iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
+
+        iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return it;
+            ++it;
+	  }
+
+        return base_type::end();
+      }
+
+      inline const_iterator
+      find(const_reference r_val) const
+      {
+        typedef std::pair<const_iterator, const_iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
+
+        const_iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return it;
+            ++it;
+	  }
+        return base_type::end();
+      }
+      
       static std::string
       name()
-      { return std::string("n_set"); }
+      { return std::string("n_mmap"); }
 
       static std::string
       desc()
-      { return make_xml_tag("type", "value", "std_set"); }
+      { return make_xml_tag("type", "value", "std_multimap"); }
     };
 
 #undef PB_DS_BASE_C_DEC
-  } // namespace test
+} // namespace test
+
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_NATIVE_SET_HPP
+#endif // #ifndef PB_DS_NATIVE_MULTIMAP_HPP

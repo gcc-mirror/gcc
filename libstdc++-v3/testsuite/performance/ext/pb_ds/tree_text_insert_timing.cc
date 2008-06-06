@@ -51,8 +51,8 @@
 #include <performance/assoc/timing/insert_test.hpp>
 #include <io/text_populate.hpp>
 #include <hash_fn/string_hash_fn.hpp>
-#include <native_type/assoc/native_hash_map.hpp>
-#include <native_type/assoc/native_map.hpp>
+#include <native_type/native_hash_map.hpp>
+#include <native_type/native_map.hpp>
 #include <iostream>
 #include <vector>
 

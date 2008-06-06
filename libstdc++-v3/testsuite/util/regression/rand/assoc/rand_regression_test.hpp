@@ -49,11 +49,11 @@
 
 #include <iostream>
 #include <vector>
-#include <regression/rand/assoc/container_rand_regression_test.hpp>
+#include <regression/rand/assoc/container_rand_regression_test.h>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <regression/basic_type.hpp>
-#include <regression/assoc/common_type.hpp>
+#include <regression/common_type.hpp>
 
 namespace __gnu_pbds
 {
@@ -111,7 +111,7 @@ namespace detail
     // Sane defaults.
     size_t n = iter;
     size_t m = keys;
-    size_t sd = 0; // 0 = time-determined arbitrary
+    size_t sd = twister_rand_gen::get_time_determined_seed();
     double tp = 0.2;
     double ip = 0.6;
     double ep = 0.2; 
@@ -133,12 +133,10 @@ namespace detail
 	return -2;
       };
 
+    // XXX RAII, constructor takes bool for display
     xml_test_rand_regression_formatter* p_fmt = NULL;
-    if (sd == 0)
-      sd = twister_rand_gen::get_time_determined_seed();
     if (disp)
-      p_fmt = new xml_test_rand_regression_formatter(sd, n, m, tp, ip, 
-						     ep, cp, mp);
+      p_fmt = new xml_test_rand_regression_formatter(sd, n, m, tp, ip, ep, cp, mp);
 
     try
       {
@@ -174,12 +172,12 @@ namespace detail
     cerr << "*  Performs the same operation on an cntnr object" << endl;
     cerr << "*  Possibly compares the container to the cntnr object" << endl;
     cerr << "*  Checks that exceptions (thrown by an allocator) "
-      "do not violate exception guarantees";
+      	    "do not violate exception guarantees";
 
     cerr << endl << endl;
 
-    cerr << "sd = seed for random-number generator; 0 = "
-      "time determined value" << endl;
+    cerr << "sd = seed for random-number generator; "
+            "0 = time determined value" << endl;
     cerr << "n = number of iterations" << endl;
     cerr << "m = number of distinct values" << endl;
     cerr << "tp = probability that an exception will be actively thrown" << endl;
