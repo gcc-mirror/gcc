@@ -2376,6 +2376,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      finish_record_type (gnu_bound_rec_type, gnu_field_list,
 				  0, false);
+
+	      TYPE_STUB_DECL (gnu_type)
+		= build_decl (TYPE_DECL, NULL_TREE, gnu_type);
+
+	      add_parallel_type
+		(TYPE_STUB_DECL (gnu_type), gnu_bound_rec_type);
 	    }
 
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
@@ -3106,6 +3112,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							 0, NULL_TREE,
 							 NULL_TREE, 0),
 				      0, false);
+
+		  add_parallel_type (TYPE_STUB_DECL (gnu_type),
+				     gnu_subtype_marker);
 		}
 
 	      /* Now we can finalize it.  */
@@ -5766,6 +5775,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 					     marker, 0, NULL_TREE, NULL_TREE,
 					     0),
 			  0, false);
+
+      add_parallel_type (TYPE_STUB_DECL (record), marker);
 
       if (size && TREE_CODE (size) != INTEGER_CST && definition)
 	create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
