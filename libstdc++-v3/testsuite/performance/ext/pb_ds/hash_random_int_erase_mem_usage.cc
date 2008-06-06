@@ -48,7 +48,7 @@
 #include <testsuite_allocator.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
-#include <rng/twister_rand_gen.hpp>
+#include <testsuite_rng.h>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/mem_usage/erase_test.hpp>
 #include <iostream>

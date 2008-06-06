@@ -61,20 +61,15 @@
 
 namespace __gnu_pbds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename Cntnr, class Tag>
       struct ds_string_form;
 
       template<typename Cntnr>
-      struct ds_string_form<
-	Cntnr,
-	__gnu_pbds::cc_hash_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::cc_hash_tag>
       {
 	static std::string
         name()
@@ -97,14 +92,12 @@ namespace __gnu_pbds
 	  const std::string store_hash_desc =
             store_hash_string_form<Cntnr::store_hash>::desc();
 
-	  return (make_xml_tag(            "type", "value", "cc_hash_table", comb_hash_fn_desc +            resize_policy_desc +            store_hash_desc));
+	  return (make_xml_tag("type", "value", "cc_hash_table", comb_hash_fn_desc + resize_policy_desc + store_hash_desc));
 	}
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-	Cntnr,
-	__gnu_pbds::gp_hash_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::gp_hash_tag>
       {
 	static std::string
         name()
@@ -130,8 +123,9 @@ namespace __gnu_pbds
 
 	  const std::string store_hash_desc =
             store_hash_string_form<Cntnr::store_hash>::desc();
-
-	  return (make_xml_tag(            "type", "value", "gp_hash_table", comb_probe_fn_desc +            probe_fn_desc +            resize_policy_desc +            store_hash_desc));
+	  
+	  return make_xml_tag("type", "value", "gp_hash_table", 
+			      comb_probe_fn_desc + probe_fn_desc + resize_policy_desc + store_hash_desc);
 	}
       };
 
@@ -143,31 +137,27 @@ namespace __gnu_pbds
 	{
 	  if (tree_supports_order_statistics<Cntnr>::value)
             return (container_category_str + "ost_");
-
-	  return (container_category_str);
+	  return container_category_str;
 	}
 
 	static std::string
         desc(const std::string container_category_str)
 	{
 	  const std::string category_str =
-            make_xml_tag(                "Tag",  "value",  container_category_str);
+            make_xml_tag("Tag",  "value",  container_category_str);
 
 	  const std::string node_update_str =
-            make_xml_tag(
-			 "Node_Update",
-			 "value",(tree_supports_order_statistics<Cntnr>::value?
-				  "tree_order_statistics_node_update" : "null_tree_node_update"));
+            make_xml_tag("Node_Update",
+			 "value",(tree_supports_order_statistics<Cntnr>::value ?
+	 "tree_order_statistics_node_update" : "null_tree_node_update"));
 
-	  return (make_xml_tag(            "type", "value", "tree", category_str + node_update_str));
+	  return make_xml_tag("type", "value", "tree", category_str + node_update_str);
 	}
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-        Cntnr,
-        __gnu_pbds::rb_tree_tag> : private tree_ds_string_form<
-        Cntnr>
+      struct ds_string_form<Cntnr, __gnu_pbds::rb_tree_tag> 
+      : private tree_ds_string_form<Cntnr>
       {
       private:
 	typedef tree_ds_string_form< Cntnr> base_type;
@@ -175,22 +165,16 @@ namespace __gnu_pbds
       public:
 	static std::string
         name()
-	{
-	  return (base_type::name("rb_tree_"));
-	}
+	{ return base_type::name("rb_tree_"); }
 
 	static std::string
         desc()
-	{
-	  return (base_type::desc("rb_tree_tag"));
-	}
+	{ return base_type::desc("rb_tree_tag"); }
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-        Cntnr,
-        __gnu_pbds::splay_tree_tag> : private tree_ds_string_form<
-        Cntnr>
+      struct ds_string_form<Cntnr, __gnu_pbds::splay_tree_tag> 
+      : private tree_ds_string_form<Cntnr>
       {
       private:
 	typedef tree_ds_string_form< Cntnr> base_type;
@@ -198,22 +182,16 @@ namespace __gnu_pbds
       public:
 	static std::string
         name()
-	{
-	  return (base_type::name("splay_tree_"));
-	}
+	{ return base_type::name("splay_tree_"); }
 
 	static std::string
         desc()
-	{
-	  return (base_type::desc("splay_tree_tag"));
-	}
+	{ return base_type::desc("splay_tree_tag"); }
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-        Cntnr,
-        __gnu_pbds::ov_tree_tag> : private tree_ds_string_form<
-        Cntnr>
+      struct ds_string_form<Cntnr, __gnu_pbds::ov_tree_tag> 
+      : private tree_ds_string_form<Cntnr>
       {
       private:
 	typedef tree_ds_string_form< Cntnr> base_type;
@@ -221,21 +199,15 @@ namespace __gnu_pbds
       public:
 	static std::string
         name()
-	{
-	  return (base_type::name("ov_tree_"));
-	}
+	{ return (base_type::name("ov_tree_")); }
 
 	static std::string
         desc()
-	{
-	  return (base_type::desc("ov_tree_tag"));
-	}
+	{ return (base_type::desc("ov_tree_tag")); }
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-	Cntnr,
-	__gnu_pbds::list_update_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::list_update_tag>
       {
 	static std::string
         name()
@@ -247,18 +219,13 @@ namespace __gnu_pbds
 	static std::string
         desc()
 	{
-	  return (make_xml_tag(
-			       "type",
-			       "value",
-			       "list_update",
-			       lu_policy_string_form<typename Cntnr::update_policy>::desc()));
+	  return make_xml_tag("type", "value", "list_update",
+			       lu_policy_string_form<typename Cntnr::update_policy>::desc());
 	}
       };
 
       template<typename Cntnr>
-      struct ds_string_form<
-	Cntnr,
-	__gnu_pbds::pat_trie_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::pat_trie_tag>
       {
 	static std::string
         name()
@@ -275,22 +242,16 @@ namespace __gnu_pbds
 	static std::string
         desc()
 	{
-	  const std::string category_str =
-            make_xml_tag(                "Tag",  "value",  "pat_trie_tag");
-
-	  std::string node_update_desc;
-
+	  std::string category_s = make_xml_tag("Tag", "value", "pat_trie_tag");
+	  const char* s;
 	  if (trie_supports_order_statistics<Cntnr>::value)
-            node_update_desc =
-	      make_xml_tag(                    "Node_Update",  "value",  "trie_order_statistics_node_update");
+            s = "trie_order_statistics_node_update";
 	  else if (trie_supports_prefix_search<Cntnr>::value)
-            node_update_desc =
-	      make_xml_tag(                    "Node_Update",  "value",  "trie_prefix_search_node_update");
+	    s = "trie_prefix_search_node_update";
 	  else
-            node_update_desc =
-	      make_xml_tag(                    "Node_Update",  "value",  "null_trie_node_update");
-
-	  return (make_xml_tag(            "type", "value", "trie", category_str + node_update_desc));
+            s = "null_trie_node_update";
+	  std::string node_s = make_xml_tag("Node_Update", "value", s);
+	  return make_xml_tag("type", "value", "trie", category_s + node_s);
 	}
       };
 

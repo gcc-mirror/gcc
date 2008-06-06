@@ -50,7 +50,7 @@
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/find_test.hpp>
 #include <io/text_populate.hpp>
-#include <native_type/assoc/native_map.hpp>
+#include <native_type/native_map.hpp>
 #include <iostream>
 #include <vector>
 

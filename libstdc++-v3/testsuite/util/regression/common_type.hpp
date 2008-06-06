@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,8 +47,10 @@
 #ifndef PB_DS_RAND_REGRESSION_TEST_COMMON_TYPE_HPP
 #define PB_DS_RAND_REGRESSION_TEST_COMMON_TYPE_HPP
 
+#include <vector>
 #include <regression/basic_type.hpp>
 #include <common_type/assoc/common_type.hpp>
+#include <common_type/priority_queue/common_type.hpp>
 
 namespace __gnu_pbds
 {
@@ -119,7 +121,64 @@ namespace test
 
   typedef tl_t min_tl_t;
   };
+ 
+  // Sequence types.
+  typedef pq_common_types<basic_type, std::less<basic_type>, alloc_type> pq_types;
+ 
+  typedef pq_types::regression_tl pq_tl_t;
+  typedef pq_tl_t min_pq_tl_t;
 
+  template<typename _Tp, typename _Alloc>
+  struct vector_adaptor : public std::vector<_Tp, _Alloc>
+  {
+  private:
+    typedef std::vector<_Tp, _Alloc> base_type;
+
+  public:
+    typedef typename base_type::value_type		value_type;
+    typedef typename base_type::pointer 		pointer; 
+    typedef typename base_type::const_pointer 		const_pointer; 
+    typedef typename base_type::reference 		reference; 
+    typedef typename base_type::const_reference 	const_reference; 
+    typedef typename base_type::iterator 		iterator; 
+    typedef typename base_type::const_iterator 		const_iterator; 
+    typedef typename base_type::reverse_iterator	reverse_iterator; 
+    typedef typename base_type::const_reverse_iterator 	const_reverse_iterator; 
+    typedef typename base_type::size_type 		size_type;
+    typedef typename base_type::difference_type 	difference_type;
+    typedef typename base_type::allocator_type 		allocator_type;
+
+    typedef __gnu_pbds::sequence_tag 			container_category;
+    typedef std::less<_Tp> 		   		cmp_fn;
+
+    const cmp_fn& 
+    get_cmp_fn() const
+    { return _M_cmp; }
+
+    vector_adaptor() { }
+    vector_adaptor(iterator) { }
+    vector_adaptor(iterator, iterator) { }
+    vector_adaptor(iterator, iterator, const cmp_fn&) { }
+    vector_adaptor(const cmp_fn& other) { }
+
+    using base_type::push_back;
+    using base_type::pop_back;
+
+    // erase_if
+
+    cmp_fn _M_cmp;
+
+  };
+ 
+  namespace detail
+  {
+
+  };
+
+  typedef vector_adaptor<basic_type, alloc_type>	vector_type;
+  typedef __gnu_cxx::typelist::create1<vector_type>::type vector_tl_t;
+
+  // Associative types.
   typedef tree_types<null_mapped_type>::tl_t 		tree_set_tl_t;
   typedef tree_types<null_mapped_type>::min_tl_t	min_tree_set_tl_t;
   typedef tree_types<basic_type>::tl_t 			tree_map_tl_t;

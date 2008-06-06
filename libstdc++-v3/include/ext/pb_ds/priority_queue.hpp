@@ -59,7 +59,7 @@ namespace __gnu_pbds
 	   typename Tag = pairing_heap_tag,
 	   typename Allocator = std::allocator<char> >
   class priority_queue 
-    : public detail::priority_queue_base_dispatch<Value_Type,Cmp_Fn,Tag,Allocator>::type
+  : public detail::priority_queue_base_dispatch<Value_Type,Cmp_Fn,Tag,Allocator>::type
   {
   private:
     typedef typename detail::priority_queue_base_dispatch<Value_Type,Cmp_Fn,Tag,Allocator>::type base_type;
@@ -114,7 +114,7 @@ namespace __gnu_pbds
     priority_queue& 
     operator=(const priority_queue& other)
     {
-      if (this !=& other)
+      if (this != &other)
 	{
 	  priority_queue tmp(other);
 	  swap(tmp);

@@ -41,7 +41,7 @@
 
 /**
  * @file to_string.hpp
- * Containsert classes for transforming stuff to strings.
+ * Contains classes for transforming stuff to strings.
  */
 
 #ifndef PB_DS_REGRESSION_TEST_TO_STRING_HPP

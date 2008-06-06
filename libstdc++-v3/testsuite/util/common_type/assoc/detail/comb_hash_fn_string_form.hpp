@@ -53,69 +53,55 @@
 
 namespace __gnu_pbds
 {
+namespace test
+{
+namespace detail
+{
 
-  namespace test
+  template<typename Comb_Hash_Fn>
+  struct comb_hash_fn_string_form
   {
+    static std::string
+    name()
+    { return (Comb_Hash_Fn::name()); }
 
-    namespace detail
+    static std::string
+    desc()
+    { return (Comb_Hash_Fn::desc()); }
+  };
+
+  template<typename Size_Type>
+  struct comb_hash_fn_string_form<
+    direct_mask_range_hashing_t_<
+      Size_Type> >
+  {
+    static std::string
+    name()
+    { return ("mask_"); }
+
+    static std::string
+    desc()
     {
+      return make_xml_tag("Comb_Hash_Fn", "value", "direct_mask_range_hashing");
+    }
+  };
 
-      template<typename Comb_Hash_Fn>
-      struct comb_hash_fn_string_form
-      {
-	static std::string
-        name()
-	{
-	  return (Comb_Hash_Fn::name());
-	}
+  template<typename Size_Type>
+  struct comb_hash_fn_string_form<direct_mod_range_hashing_t_<Size_Type> >
+  {
+    static std::string
+    name()
+    { return ("mod_"); }
 
-	static std::string
-        desc()
-	{
-	  return (Comb_Hash_Fn::desc());
-	}
-      };
+    static std::string
+    desc()
+    {
+      return make_xml_tag("Comb_Hash_Fn", "value", "direct_mod_range_hashing");
+    }
+  };
 
-      template<typename Size_Type>
-      struct comb_hash_fn_string_form<
-	direct_mask_range_hashing_t_<
-        Size_Type> >
-      {
-	static std::string
-        name()
-	{
-	  return ("mask_");
-	}
-
-	static std::string
-        desc()
-	{
-	  return (make_xml_tag(            "Comb_Hash_Fn", "value", "direct_mask_range_hashing"));
-	}
-      };
-
-      template<typename Size_Type>
-      struct comb_hash_fn_string_form<
-	direct_mod_range_hashing_t_<
-        Size_Type> >
-      {
-	static std::string
-        name()
-	{
-	  return ("mod_");
-	}
-
-	static std::string
-        desc()
-	{
-	  return (make_xml_tag(            "Comb_Hash_Fn", "value", "direct_mod_range_hashing"));
-	}
-      };
-
-    } // namespace detail
-
-  } // namespace test
-
+} // namespace detail
+} // namespace test
 } // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_COMB_HASH_FN_STRING_FORM_HPP

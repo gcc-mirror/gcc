@@ -40,40 +40,58 @@
 // warranty.
 
 /**
- * @file diagnostic_fn_imps.hpp
- * Containsert a random regression test for a specific container type.
+ * @file native_map.hpp
+ * Contains an adapter to std::map
  */
 
-PB_DS_CLASS_T_DEC
-void
-PB_DS_CLASS_C_DEC::
-print_container(const native_type& r_cnt, std::ostream& r_os /*= std::cerr*/) const
+#ifndef PB_DS_NATIVE_MAP_HPP
+#define PB_DS_NATIVE_MAP_HPP
+
+#include <map>
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <native_type/native_tree_tag.hpp>
+#include <io/xml.hpp>
+
+namespace __gnu_pbds
 {
-  m_alloc.set_throw_prob(0);
+  namespace test
+  {
+#define PB_DS_BASE_C_DEC \
+    std::map<Key, Data, Cmp_Fn,	\
+typename Allocator::template rebind<std::pair<const Key, Data > >::other >
 
-  typename native_type::const_iterator it = r_cnt.begin();
-
-  while (it != r_cnt.end())
+    template<typename Key, typename Data, class Cmp_Fn = std::less<Key>,
+	     class Allocator = std::allocator<char> >
+    class native_map : public PB_DS_BASE_C_DEC
     {
-      r_os << test_traits::val_to_string(*it) + "\n";
+    private:
+      typedef PB_DS_BASE_C_DEC base_type;
 
-      ++it;
-    }
-}
+    public:
+      typedef native_tree_tag container_category;
 
-PB_DS_CLASS_T_DEC
-void
-PB_DS_CLASS_C_DEC::
-print_container(const cntnr& r_cnt, std::ostream& r_os /*= std::cerr*/) const
-{
-  m_alloc.set_throw_prob(0);
+      native_map() : base_type()
+      { }
 
-  typename cntnr::const_iterator it = r_cnt.begin();
+      template<typename It>
+      native_map(It f, It l) : base_type(f, l)
+      { }
 
-  while (it != r_cnt.end())
-    {
-      r_os << test_traits::val_to_string(*it) + "\n";
+      static std::string
+      name()
+      { return std::string("n_map"); }
 
-      ++it;
-    }
-}
+      static std::string
+      desc()
+      { return make_xml_tag("type", "value", "std_map"); }
+    };
+
+#undef PB_DS_BASE_C_DEC
+
+  } // namespace test
+
+} // namespace __gnu_pbds
+
+#endif // #ifndef PB_DS_NATIVE_MAP_HPP

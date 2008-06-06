@@ -48,10 +48,8 @@
 
 namespace __gnu_pbds
 {
-
   namespace test
   {
-
     prog_bar::
     prog_bar(size_t max, std::ostream& r_os, bool display/*= true*/) :
       m_cur(0),
@@ -78,11 +76,10 @@ namespace __gnu_pbds
       if (m_display == false)
         return;
 
-      while (m_cur*  num_disp >= m_max*  m_cur_disp&&  m_cur_disp < num_disp)
+      while (m_cur * num_disp >= m_max * m_cur_disp && m_cur_disp < num_disp)
 	{
 	  m_r_os << '*';
 	  m_r_os.flush();
-
 	  ++m_cur_disp;
 	}
     }

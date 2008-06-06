@@ -44,8 +44,8 @@
  * Contains common types.
  */
 
-#ifndef PB_DS_COMMON_TYPES_HPP
-#define PB_DS_COMMON_TYPES_HPP
+#ifndef PB_DS_COMMON_TYPES_PQ_HPP
+#define PB_DS_COMMON_TYPES_PQ_HPP
 
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/priority_queue.hpp>
@@ -60,8 +60,6 @@ namespace __gnu_pbds
     struct pq_common_types
     {
     private:
-      //    typedef typename Allocator::size_type size_type;
-
       typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::pairing_heap_tag, Allocator> pairing_heap_t;
 
       typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::binomial_heap_tag, Allocator> binomial_heap_t;
@@ -84,4 +82,4 @@ namespace __gnu_pbds
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_COMMON_TYPES_HPP
+#endif // #ifndef PB_DS_COMMON_TYPES_PQ_HPP

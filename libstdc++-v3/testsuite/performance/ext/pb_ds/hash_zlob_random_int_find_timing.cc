@@ -46,9 +46,9 @@
 
 #include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
-#include <native_type/assoc/native_hash_set.hpp>
+#include <native_type/native_hash_set.hpp>
 #include <io/verified_cmd_line_input.hpp>
-#include <rng/twister_rand_gen.hpp>
+#include <testsuite_rng.h>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/find_test.hpp>
 #include <iostream>

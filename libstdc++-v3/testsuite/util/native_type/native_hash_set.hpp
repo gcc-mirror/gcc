@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,58 +40,96 @@
 // warranty.
 
 /**
- * @file native_map.hpp
- * Contains an adapter to std::map
+ * @file native_hash_set.hpp
+ * Contains an adapter to TR1 unordered containers.
  */
 
-#ifndef PB_DS_NATIVE_MAP_HPP
-#define PB_DS_NATIVE_MAP_HPP
+#ifndef PB_DS_NATIVE_HASH_SET_HPP
+#define PB_DS_NATIVE_HASH_SET_HPP
 
-#include <map>
 #include <string>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
-#include <native_type/assoc/native_tree_tag.hpp>
+#include <native_type/native_hash_tag.hpp>
 #include <io/xml.hpp>
+#include <tr1/unordered_set>
 
 namespace __gnu_pbds
 {
   namespace test
   {
 #define PB_DS_BASE_C_DEC \
-    std::map<Key, Data, Cmp_Fn,	\
-typename Allocator::template rebind<std::pair<const Key, Data > >::other >
+    std::tr1::__unordered_set<Key, Hash_Fn, Eq_Fn, \
+    typename Allocator::template rebind<Key>::other, Cache_Hash>
 
-    template<typename Key, typename Data, class Cmp_Fn = std::less<Key>,
-	     class Allocator = std::allocator<char> >
-    class native_map : public PB_DS_BASE_C_DEC
+    template<typename Key,
+	     size_t Init_Size = 8,
+         typename Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
+	     typename Eq_Fn = std::equal_to<Key>,
+	     typename Less_Fn = std::less<Key>,
+	     typename Allocator = std::allocator<char>, bool Cache_Hash = false
+	     >
+    class native_hash_set : public PB_DS_BASE_C_DEC
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
 
     public:
-      typedef native_tree_tag container_category;
+      typedef native_hash_tag container_category;
 
-      native_map() : base_type()
-      { }
+      native_hash_set() : base_type(Init_Size) { }
 
       template<typename It>
-      native_map(It f, It l) : base_type(f, l)
-      { }
+      native_hash_set(It f, It l) : base_type(f, l) { }
+
+      template<typename Pred>
+      inline size_t
+      erase_if(Pred pred)
+      {
+        size_t ersd = 0;
+        bool done = false;
+        while (!done)
+	  {
+            typename base_type::iterator b_it = base_type::begin();
+            typename base_type::iterator e_it = base_type::end();
+            done = true;
+            while (b_it != e_it)
+	      {
+                if (pred(*b_it))
+		  {
+                    ++ersd;
+                    done = false;
+                    base_type::erase(*b_it);
+                    b_it = e_it;
+		  }
+                else
+		  ++b_it;
+	      }
+	  }
+        return ersd;
+      }
 
       static std::string
       name()
-      { return std::string("n_map"); }
+      {
+        return std::string("n_hash_set_") 
+	       + (Cache_Hash ? std::string("cah") : std::string("ncah"));
+      }
 
       static std::string
       desc()
-      { return make_xml_tag("type", "value", "std_map"); }
+      {
+        const std::string cache_hash_desc =
+	make_xml_tag("cache_hash_code", "value",
+		     Cache_Hash ? std::string("true") : std::string("false"));
+
+        return make_xml_tag("type", "value", "std_tr1_unordered_set", 
+			    cache_hash_desc);
+      }
     };
 
 #undef PB_DS_BASE_C_DEC
-
   } // namespace test
-
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_NATIVE_MAP_HPP
+#endif

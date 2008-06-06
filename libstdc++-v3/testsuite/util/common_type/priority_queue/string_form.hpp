@@ -50,7 +50,7 @@
 #include <string>
 #include <sstream>
 #include <ext/pb_ds/detail/type_utils.hpp>
-#include <native_type/priority_queue/native_priority_queue.hpp>
+#include <native_type/native_priority_queue.hpp>
 #include <common_type/priority_queue/detail/ds_string_form.hpp>
 #include <io/xml.hpp>
 

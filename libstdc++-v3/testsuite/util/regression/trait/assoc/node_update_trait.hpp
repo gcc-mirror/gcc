@@ -41,7 +41,7 @@
 
 /**
  * @file node_update_trait.hpp
- * Containsert traits for a random regression test
+ * Contains traits for a random regression test
  *    for a specific container type.
  */
 

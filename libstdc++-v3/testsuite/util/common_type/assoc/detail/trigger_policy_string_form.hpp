@@ -94,15 +94,14 @@ namespace __gnu_pbds
         desc()
 	{
 	  const std::string ext_access_desc =
-            make_xml_tag(
-			 "External_Access",
+            make_xml_tag("External_Access",
 			 "value",(External_Access? "true" : "false"));
 
 	  const std::string loads_desc =
-            make_xml_tag(                "alpha_min",  "nom", Min_Load_Nom,  "denom", Min_Load_Denom) +
-            make_xml_tag(                "alpha_max",  "nom", Max_Load_Nom,  "denom", Max_Load_Denom);
+            make_xml_tag("alpha_min", "nom", Min_Load_Nom, "denom", Min_Load_Denom) +
+            make_xml_tag("alpha_max", "nom", Max_Load_Nom, "denom", Max_Load_Denom);
 
-	  return (make_xml_tag(            "Trigger_Policy", "value", "hash_load_check_resize_trigger", ext_access_desc + loads_desc));
+	  return (make_xml_tag("Trigger_Policy", "value", "hash_load_check_resize_trigger", ext_access_desc + loads_desc));
 	}
       };
 
@@ -132,14 +131,13 @@ namespace __gnu_pbds
         desc()
 	{
 	  const std::string ext_access_desc =
-            make_xml_tag(
-			 "External_Access",
+            make_xml_tag("External_Access",
 			 "value",(External_Access? "true" : "false"));
 
 	  const std::string load_desc =
-            make_xml_tag(                "alpha",  "nom", Load_Nom,  "denom", Load_Denom);
+            make_xml_tag("alpha",  "nom", Load_Nom,  "denom", Load_Denom);
 
-	  return (make_xml_tag(            "Trigger_Policy", "value", "cc_hash_max_collision_check_resize_trigger", ext_access_desc + load_desc));
+	  return (make_xml_tag("Trigger_Policy", "value", "cc_hash_max_collision_check_resize_trigger", ext_access_desc + load_desc));
 	}
       };
 

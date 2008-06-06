@@ -48,7 +48,7 @@
 #define PB_DS_NATIVE_SET_HPP
 
 #include <ext/pb_ds/detail/standard_policies.hpp>
-#include <native_type/assoc/native_tree_tag.hpp>
+#include <native_type/native_tree_tag.hpp>
 #include <io/xml.hpp>
 #include <string>
 

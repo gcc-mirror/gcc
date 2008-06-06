@@ -53,7 +53,7 @@
 #include <common_type/priority_queue/common_type.hpp>
 #include <performance/priority_queue/mem_usage/pop_test.hpp>
 #include <io/text_populate.hpp>
-#include <native_type/priority_queue/native_priority_queue.hpp>
+#include <native_type/native_priority_queue.hpp>
 
 void
 usage();

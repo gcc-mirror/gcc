@@ -67,19 +67,16 @@ namespace __gnu_pbds
 
       template<typename Allocator>
       struct size_policy_string_form<
-	__gnu_pbds::test::hash_exponential_size_policy_t_<
-        Allocator> >
+	__gnu_pbds::test::hash_exponential_size_policy_t_<Allocator> >
       {
 	static std::string
         name()
-	{
-	  return ("exp_");
-	}
+	{ return ("exp_"); }
 
 	static std::string
         desc()
 	{
-	  return (make_xml_tag(            "Size_Policy", "value", "hash_exponential_size_policy"));
+	  return (make_xml_tag("Size_Policy", "value", "hash_exponential_size_policy"));
 	}
       };
 
@@ -89,14 +86,12 @@ namespace __gnu_pbds
       {
 	static std::string
         name()
-	{
-	  return ("prime_");
-	}
+	{ return ("prime_"); }
 
 	static std::string
         desc()
 	{
-	  return (make_xml_tag(            "Size_Policy", "value", "hash_prime_size_policy"));
+	  return (make_xml_tag("Size_Policy", "value", "hash_prime_size_policy"));
 	}
       };
 

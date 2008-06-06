@@ -44,8 +44,8 @@
  * Contains common types.
  */
 
-#ifndef PB_DS_COMMON_TYPES_HPP
-#define PB_DS_COMMON_TYPES_HPP
+#ifndef PB_DS_COMMON_TYPES_ASSOC_HPP
+#define PB_DS_COMMON_TYPES_ASSOC_HPP
 
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <common_type/assoc/template_policy.hpp>
@@ -812,7 +812,6 @@ namespace __gnu_pbds
     };
 
   } // namespace test
-
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_COMMON_TYPES_HPP
+#endif // #ifndef PB_DS_COMMON_TYPES_ASSOC_HPP

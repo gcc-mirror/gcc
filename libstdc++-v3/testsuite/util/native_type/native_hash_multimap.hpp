@@ -40,68 +40,112 @@
 // warranty.
 
 /**
- * @file native_hash_map.hpp
+ * @file native_hash_multimap.hpp
  * Contains an adapter to TR1 unordered containers.
  */
 
-#ifndef PB_DS_NATIVE_HASH_MAP_HPP
-#define PB_DS_NATIVE_HASH_MAP_HPP
+#ifndef PB_DS_NATIVE_HASH_MULTIMAP_HPP
+#define PB_DS_NATIVE_HASH_MULTIMAP_HPP
 
 #include <string>
+#include <tr1/unordered_map>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
-#include <native_type/assoc/native_hash_tag.hpp>
+#include <native_type/native_hash_tag.hpp>
 #include <io/xml.hpp>
-#include <tr1/unordered_map>
 
 namespace __gnu_pbds
 {
   namespace test
   {
 #define PB_DS_BASE_C_DEC \
-    std::tr1::__unordered_map<Key, Data, Hash_Fn, Eq_Fn, \
-    typename Allocator::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
+    std::tr1::unordered_multimap<Key, Data, Hash_Fn, Eq_Fn, Allocator>
 
     template<typename Key,
 	     typename Data,
 	     size_t Init_Size = 8,
-	     typename Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
-	     typename Eq_Fn = std::equal_to<Key>,
-	     typename Less_Fn = std::less<Key>,
-	     typename Allocator = std::allocator<char>, bool Cache_Hash = false
-	     >
-    class native_hash_map : public PB_DS_BASE_C_DEC
+       class Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
+	     class Eq_Fn = std::equal_to<Key>,
+	     class Less_Fn = std::less<Key>,
+	     class Allocator = std::allocator<char> >
+    class native_hash_multimap : public PB_DS_BASE_C_DEC
     {
     private:
-      typedef PB_DS_BASE_C_DEC base_type;
+      typedef PB_DS_BASE_C_DEC 			base_type;
+      typedef std::pair<Key, Data> 		pair_type;
 
     public:
-      typedef native_hash_tag container_category;
+      typedef native_hash_tag 			container_category;
+      typedef Allocator 			allocator;
+      typedef typename base_type::iterator 	iterator;
+      typedef typename base_type::const_iterator const_iterator;
 
-    public:
-      native_hash_map() : base_type(Init_Size) { }
+      typedef
+      typename allocator::template rebind<pair_type>::other::const_reference
+      const_reference;
+
+      native_hash_multimap() : base_type(Init_Size)
+      { }
 
       template<typename It>
-      native_hash_map(It f, It l) : base_type(f, l) { }
+      native_hash_multimap(It f, It l) : base_type(f, l)
+      { }
+
+      inline void
+      insert(const_reference r_val)
+      {
+        typedef std::pair<iterator, iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
+
+        iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return;
+            ++it;
+	  }
+        base_type::insert(r_val);
+      }
+
+      inline iterator
+      find(const_reference r_val)
+      {
+        typedef std::pair<iterator, iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
+
+        iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return it;
+            ++it;
+	  }
+        return base_type::end();
+      }
+
+      inline const_iterator
+      find(const_reference r_val) const
+      {
+        typedef std::pair<const_iterator, const_iterator> eq_range_t;
+        eq_range_t f = base_type::equal_range(r_val.first);
+
+        const_iterator it = f.first;
+        while (it != f.second)
+	  {
+            if (it->second == r_val.second)
+	      return it;
+            ++it;
+	  }
+        return base_type::end();
+      }
 
       static std::string
       name()
-      {
-        return std::string("n_hash_map_") 
-               + (Cache_Hash ? std::string("cah") : std::string("ncah"));
-      }
+      { return std::string("n_hash_mmap"); }
 
       static std::string
       desc()
-      {
-        const std::string cache_hash_desc =
-	make_xml_tag("cache_hash_code",
-		     "value",
-		    (Cache_Hash ? std::string("true") : std::string("false")));
-
-        return make_xml_tag("type", "value", "std_tr1_unordered_map", 
-			    cache_hash_desc);
-      }
+      { return make_xml_tag("type", "value", "__gnucxx_hash_multimap"); }
     };
 
 #undef PB_DS_BASE_C_DEC
@@ -110,4 +154,3 @@ namespace __gnu_pbds
 } // namespace __gnu_pbds
 
 #endif 
-

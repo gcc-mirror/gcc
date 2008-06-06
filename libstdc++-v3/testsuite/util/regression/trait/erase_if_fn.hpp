@@ -41,7 +41,7 @@
 
 /**
  * @file erase_if_fn.hpp
- * Containsert traits for a random regression test
+ * Contains traits for a random regression test
  *    for a specific container type.
  */
 

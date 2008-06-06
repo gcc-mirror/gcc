@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,14 +40,15 @@
 // warranty.
 
 /**
- * @file twister_rand_gen.hpp
+ * @file testsuite_rng.h
  */
 
-#ifndef PB_DS_TWISTER_RAND_GEN_HPP
-#define PB_DS_TWISTER_RAND_GEN_HPP
+#ifndef _GLIBCXX_TESTSUITE_RNG_H
+#define _GLIBCXX_TESTSUITE_RNG_H
 
 #include <ctime>
-#include <limits.h>
+#include <climits>
+#include <debug/debug.h>
 #include <tr1/random>
 
 namespace __gnu_pbds
@@ -58,10 +59,15 @@ namespace __gnu_pbds
     {
     public:
       twister_rand_gen(unsigned int seed = 
-		       static_cast<unsigned int>(std::time(0)));
+		       static_cast<unsigned int>(std::time(0)))
+      : m_base_generator(seed)
+      {
+	// Do nothing.
+      }
 
       void
-      init(unsigned int seed);
+      init(unsigned int seed)
+      { m_base_generator.seed(seed); }
 
       static unsigned int
       get_time_determined_seed()
@@ -69,18 +75,33 @@ namespace __gnu_pbds
 
       unsigned long
       get_unsigned_long(unsigned long min = 0, 
-			unsigned long max = UINT_MAX - 1);
+			unsigned long max = UINT_MAX - 1)
+      {
+	_GLIBCXX_DEBUG_ASSERT(max >= min);
+	const double prob = get_prob();
+	const unsigned long r = (unsigned long)((max - min + 1) * prob) + min;
+	_GLIBCXX_DEBUG_ASSERT(r <= max);
+	return r;
+      }
 
       double
-      get_prob();
+      get_prob()
+      {
+	const double min = m_base_generator.min();
+	const double max = m_base_generator.max();
+	const double range = static_cast<const double>(max - min);
+	const double res = static_cast<const double>(m_base_generator() - min);
+	const double ret = res / range;
+	_GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
+	return ret;
+      }
 
     private:
       typedef std::tr1::mt19937 base_generator_t;
 
-    private:
       base_generator_t m_base_generator;
     };
   } // namespace test
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_TWISTER_RAND_GEN_HPP
+#endif // #ifndef _GLIBCXX_TESTSUITE_RNG_H

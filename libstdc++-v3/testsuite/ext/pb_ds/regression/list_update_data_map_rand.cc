@@ -48,7 +48,7 @@
 // { dg-require-time "" }
 
 #include <regression/rand/assoc/rand_regression_test.hpp>
-#include <regression/assoc/common_type.hpp>
+#include <regression/common_type.hpp>
 
 int
 main(int argc, char* a_p_argv[])

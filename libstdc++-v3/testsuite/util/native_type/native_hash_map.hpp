@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,83 +40,74 @@
 // warranty.
 
 /**
- * @file get_set_loads_fn_imps.hpp
- * Containsert a random regression test for a specific container type.
+ * @file native_hash_map.hpp
+ * Contains an adapter to TR1 unordered containers.
  */
 
-PB_DS_CLASS_T_DEC
-bool
-PB_DS_CLASS_C_DEC::
-get_set_loads()
+#ifndef PB_DS_NATIVE_HASH_MAP_HPP
+#define PB_DS_NATIVE_HASH_MAP_HPP
+
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <native_type/native_hash_tag.hpp>
+#include <io/xml.hpp>
+#include <tr1/unordered_map>
+
+namespace __gnu_pbds
 {
-  typedef
-    __gnu_pbds::detail::integral_constant<int,
-    test_traits::get_set_loads>
-    get_set_loads_ind;
+  namespace test
+  {
+#define PB_DS_BASE_C_DEC \
+    std::tr1::__unordered_map<Key, Data, Hash_Fn, Eq_Fn, \
+    typename Allocator::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
 
-  return (get_set_loads_imp(get_set_loads_ind()));
-}
-
-PB_DS_CLASS_T_DEC
-bool
-PB_DS_CLASS_C_DEC::
-get_set_loads_imp(__gnu_pbds::detail::false_type)
-{
-  return (true);
-}
-
-PB_DS_CLASS_T_DEC
-bool
-PB_DS_CLASS_C_DEC::
-get_set_loads_imp(__gnu_pbds::detail::true_type)
-{
-  PB_DS_TRACE("get_set_loads");
-
-  bool done = true;
-
-  PB_DS_SET_DESTRUCT_PRINT
-
-    const std::pair<float, float> old_loads =
-    m_p_c->get_loads();
-
-  try
+    template<typename Key,
+	     typename Data,
+	     size_t Init_Size = 8,
+	     typename Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
+	     typename Eq_Fn = std::equal_to<Key>,
+	     typename Less_Fn = std::less<Key>,
+	     typename Allocator = std::allocator<char>, bool Cache_Hash = false
+	     >
+    class native_hash_map : public PB_DS_BASE_C_DEC
     {
-      m_alloc.set_throw_prob(m_tp);
+    private:
+      typedef PB_DS_BASE_C_DEC base_type;
 
-      typename alloc_t::group_throw_prob_adjustor adjust(
-							 m_p_c->size());
+    public:
+      typedef native_hash_tag container_category;
 
-      const float min_min_load = static_cast<float>(0.05);
-      const float max_min_load = static_cast<float>(0.2);
+    public:
+      native_hash_map() : base_type(Init_Size) { }
 
-      const float new_min_load =
-	static_cast<float>(
-			   m_g.get_prob()*  (max_min_load - min_min_load) +
-			   min_min_load);
+      template<typename It>
+      native_hash_map(It f, It l) : base_type(f, l) { }
 
-      const float new_max_load = static_cast<float>(new_min_load*  2.5);
+      static std::string
+      name()
+      {
+        return std::string("n_hash_map_") 
+               + (Cache_Hash ? std::string("cah") : std::string("ncah"));
+      }
 
-      PB_DS_THROW_IF_FAILED(            new_max_load < 1, new_max_load, m_p_c, & m_native_c);
+      static std::string
+      desc()
+      {
+        const std::string cache_hash_desc =
+	make_xml_tag("cache_hash_code",
+		     "value",
+		    (Cache_Hash ? std::string("true") : std::string("false")));
 
-      m_p_c->set_loads(
-		       std::make_pair(                new_min_load,  new_max_load));
-    }
-  catch(...)
-    {
-      PB_DS_THROW_IF_FAILED(
-			    old_loads == m_p_c->get_loads(),
-			    old_loads.first << " " << old_loads.second << " " <<
-			    m_p_c->get_loads().first << " " <<
-			    m_p_c->get_loads().second,
-			    m_p_c,
-			    & m_native_c);
+        return make_xml_tag("type", "value", "std_tr1_unordered_map", 
+			    cache_hash_desc);
+      }
+    };
 
-      done = false;
-    }
+#undef PB_DS_BASE_C_DEC
 
-  PB_DS_COND_COMPARE(*m_p_c, m_native_c);
+  } // namespace test
+} // namespace __gnu_pbds
 
-  PB_DS_CANCEL_DESTRUCT_PRINT
+#endif 
 
-    return (done);
-}

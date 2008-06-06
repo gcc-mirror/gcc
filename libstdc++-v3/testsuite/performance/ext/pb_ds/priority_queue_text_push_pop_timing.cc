@@ -50,7 +50,7 @@
 #include <common_type/priority_queue/common_type.hpp>
 #include <performance/priority_queue/timing/push_pop_test.hpp>
 #include <io/text_populate.hpp>
-#include <native_type/priority_queue/native_priority_queue.hpp>
+#include <native_type/native_priority_queue.hpp>
 #include <iostream>
 #include <vector>
 

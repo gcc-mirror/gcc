@@ -64,42 +64,36 @@ namespace __gnu_pbds
       struct lu_policy_string_form;
 
       template<>
-      struct lu_policy_string_form<
-	move_to_front_lu_policy_t_>
+      struct lu_policy_string_form<move_to_front_lu_policy_t_>
       {
 	static std::string
         name()
-	{
-	  return ("mtf_");
-	}
+	{ return ("mtf_"); }
 
 	static std::string
         desc()
 	{
-	  return (make_xml_tag(            "Update_Policy", "value", "move_to_front_lu_policy"));
+	  return make_xml_tag("Update_Policy", "value", 
+			      "move_to_front_lu_policy");
 	}
       };
 
       template<typename Allocator, typename Allocator::size_type Max_Count>
-      struct lu_policy_string_form<
-	counter_lu_policy_t_<
-        Allocator,
-        Max_Count> >
+      struct lu_policy_string_form<counter_lu_policy_t_<Allocator, Max_Count> >
       {
 	static std::string
         name()
 	{
 	  std::ostringstream ret;
-
 	  ret << "cnt_" << Max_Count << "_";
-
 	  return (ret.str());
 	}
 
 	static std::string
         desc()
 	{
-	  return (make_xml_tag(            "Update_Policy", "value", "counter_lu_policy", "Max_Count", Max_Count));
+	  return (make_xml_tag("Update_Policy", "value", "counter_lu_policy", 
+			       "Max_Count", Max_Count));
 	}
       };
 
