@@ -1523,7 +1523,8 @@ get_addr_dereference_operands (tree stmt, tree *addr, int flags, tree full_ref,
 	  if (dump_file
 	      && TREE_CODE (ptr) == SSA_NAME
 	      && (pi == NULL
-		  || pi->name_mem_tag == NULL_TREE))
+		  || (pi->name_mem_tag == NULL_TREE
+		      && !pi->pt_anything)))
 	    {
 	      fprintf (dump_file,
 		  "NOTE: no flow-sensitive alias info for ");

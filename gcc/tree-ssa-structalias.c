@@ -4721,32 +4721,6 @@ set_used_smts (void)
     }
 }
 
-/* Merge the necessary SMT's into the bitmap INTO, which is
-   P's varinfo.  This involves merging all SMT's that are a subset of
-   the SMT necessary for P. */
-
-static void
-merge_smts_into (tree p, bitmap solution)
-{
-  tree smt;
-  bitmap aliases;
-  tree var = p;
-
-  if (TREE_CODE (p) == SSA_NAME)
-    var = SSA_NAME_VAR (p);
-
-  smt = var_ann (var)->symbol_mem_tag;
-  if (smt)
-    {
-      /* The smt itself isn't included in its aliases.  */
-      bitmap_set_bit (solution, DECL_UID (smt));
-
-      aliases = MTAG_ALIASES (smt);
-      if (aliases)
-	bitmap_ior_into (solution, aliases);
-    }
-}
-
 /* Given a pointer variable P, fill in its points-to set, or return
    false if we can't.
    Rather than return false for variables that point-to anything, we
@@ -4828,18 +4802,17 @@ find_what_p_points_to (tree p)
 		}
 	    }
 
+	  /* Instead of doing extra work, simply do not create
+	     points-to information for pt_anything pointers.  This
+	     will cause the operand scanner to fall back to the
+	     type-based SMT and its aliases.  Which is the best
+	     we could do here for the points-to set as well.  */
+	  if (was_pt_anything)
+	    return false;
+
 	  /* Share the final set of variables when possible.  */
 	  finished_solution = BITMAP_GGC_ALLOC ();
 	  stats.points_to_sets_created++;
-
-	  /* Instead of using pt_anything, we merge in the SMT aliases
-	     for the underlying SMT.  In addition, if they could have
-	     pointed to anything, they could point to global memory.  */
-	  if (was_pt_anything)
-	    {
-	      merge_smts_into (p, finished_solution);
-	      pi->pt_global_mem = 1;
-	    }
 
 	  set_uids_in_ptset (p, finished_solution, vi->solution,
 			     vi->directly_dereferenced,

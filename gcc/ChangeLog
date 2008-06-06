@@ -1,3 +1,11 @@
+2008-06-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (merge_smts_into): Remove.
+	(find_what_p_points_to): Do not bother to compute the
+	points-to set for pt_anything pointers.
+	* tree-ssa-operands.c (get_addr_dereference_operands): No NMT
+	for pt_anything pointers is ok.
+
 2008-06-06  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (execute_ipa_pass_list): Do not regenerate summaries.
