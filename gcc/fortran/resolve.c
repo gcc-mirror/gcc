@@ -4670,8 +4670,8 @@ sym_in_expr (gfc_expr *e, gfc_symbol *sym, int *f ATTRIBUTE_UNUSED)
   return false;
 }
 
-static bool
-find_sym_in_expr (gfc_symbol *sym, gfc_expr *e)
+bool
+gfc_find_sym_in_expr (gfc_symbol *sym, gfc_expr *e)
 {
   return gfc_traverse_expr (e, sym, sym_in_expr, 0);
 }
@@ -4868,8 +4868,10 @@ check_symbols:
 	  if (sym->ts.type == BT_DERIVED)
 	    continue;
 
-	  if ((ar->start[i] != NULL && find_sym_in_expr (sym, ar->start[i]))
-		 || (ar->end[i] != NULL && find_sym_in_expr (sym, ar->end[i])))
+	  if ((ar->start[i] != NULL
+	       && gfc_find_sym_in_expr (sym, ar->start[i]))
+	      || (ar->end[i] != NULL
+		  && gfc_find_sym_in_expr (sym, ar->end[i])))
 	    {
 	      gfc_error ("'%s' must not appear an the array specification at "
 			 "%L in the same ALLOCATE statement where it is "
@@ -5982,6 +5984,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SINGLE:
+	case EXEC_OMP_TASK:
+	case EXEC_OMP_TASKWAIT:
 	case EXEC_OMP_WORKSHARE:
 	  break;
 
@@ -6100,8 +6104,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	  {
 	    for (n = 0; n < ref->u.ar.dimen; n++)
 	      if (ref->u.ar.dimen_type[n] == DIMEN_VECTOR
-		    && find_sym_in_expr (lhs->symtree->n.sym,
-					 ref->u.ar.start[n]))
+		  && gfc_find_sym_in_expr (lhs->symtree->n.sym,
+					   ref->u.ar.start[n]))
 		ref->u.ar.start[n]
 			= gfc_get_parentheses (ref->u.ar.start[n]);
 	  }
@@ -6176,6 +6180,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
+	    case EXEC_OMP_TASK:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 0;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
@@ -6418,6 +6423,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_OMP_ORDERED:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SINGLE:
+	case EXEC_OMP_TASKWAIT:
 	case EXEC_OMP_WORKSHARE:
 	  gfc_resolve_omp_directive (code, ns);
 	  break;
@@ -6426,6 +6432,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
+	case EXEC_OMP_TASK:
 	  omp_workshare_save = omp_workshare_flag;
 	  omp_workshare_flag = 0;
 	  gfc_resolve_omp_directive (code, ns);

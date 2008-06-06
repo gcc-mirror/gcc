@@ -11759,7 +11759,7 @@ finish_function_body (tree compstmt)
    of curly braces, skipping the artificial block created for constructor
    initializers.  */
 
-static tree
+tree
 outer_curly_brace_block (tree fndecl)
 {
   tree block = BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl));

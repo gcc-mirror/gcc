@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -44,6 +44,7 @@ gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
   gomp_sem_init (&bar->sem2, 0);
   bar->total = count;
   bar->arrived = 0;
+  bar->generation = 0;
 }
 
 void
@@ -70,11 +71,11 @@ gomp_barrier_reinit (gomp_barrier_t *bar, unsigned count)
 }
 
 void
-gomp_barrier_wait_end (gomp_barrier_t *bar, bool last)
+gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 {
   unsigned int n;
 
-  if (last)
+  if (state & 1)
     {
       n = --bar->arrived;
       if (n > 0)
@@ -108,4 +109,73 @@ void
 gomp_barrier_wait (gomp_barrier_t *barrier)
 {
   gomp_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier));
+}
+
+void
+gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+{
+  unsigned int n;
+
+  if (state & 1)
+    {
+      n = --bar->arrived;
+      struct gomp_thread *thr = gomp_thread ();
+      struct gomp_team *team = thr->ts.team;
+
+      if (team->task_count)
+	{
+	  gomp_barrier_handle_tasks (state);
+	  if (n > 0)
+	    gomp_sem_wait (&bar->sem2);
+	  gomp_mutex_unlock (&bar->mutex1);
+	  return;
+	}
+
+      bar->generation = state + 3;
+      if (n > 0)
+	{
+	  do
+	    gomp_sem_post (&bar->sem1);
+	  while (--n != 0);
+	  gomp_sem_wait (&bar->sem2);
+	}
+      gomp_mutex_unlock (&bar->mutex1);
+    }
+  else
+    {
+      gomp_mutex_unlock (&bar->mutex1);
+      do
+	{
+	  gomp_sem_wait (&bar->sem1);
+	  if (bar->generation & 1)
+	    gomp_barrier_handle_tasks (state);
+	}
+      while (bar->generation != state + 4);
+
+#ifdef HAVE_SYNC_BUILTINS
+      n = __sync_add_and_fetch (&bar->arrived, -1);
+#else
+      gomp_mutex_lock (&bar->mutex2);
+      n = --bar->arrived;
+      gomp_mutex_unlock (&bar->mutex2);
+#endif
+
+      if (n == 0)
+	gomp_sem_post (&bar->sem2);
+    }
+}
+
+void
+gomp_team_barrier_wait (gomp_barrier_t *barrier)
+{
+  gomp_team_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier));
+}
+
+void
+gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
+{
+  if (count == 0)
+    count = bar->total - 1;
+  while (count-- > 0)
+    gomp_sem_post (&bar->sem1);
 }

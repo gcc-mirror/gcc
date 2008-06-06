@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -38,9 +38,6 @@
 #ifdef HAVE_PTHREAD_AFFINITY_NP
 
 static unsigned int affinity_counter;
-#ifndef HAVE_SYNC_BUILTINS
-static gomp_mutex_t affinity_lock;
-#endif
 
 void
 gomp_init_affinity (void)
@@ -76,9 +73,6 @@ gomp_init_affinity (void)
   CPU_SET (gomp_cpu_affinity[0], &cpuset);
   pthread_setaffinity_np (pthread_self (), sizeof (cpuset), &cpuset);
   affinity_counter = 1;
-#ifndef HAVE_SYNC_BUILTINS
-  gomp_mutex_init (&affinity_lock);
-#endif
 }
 
 void
@@ -87,13 +81,7 @@ gomp_init_thread_affinity (pthread_attr_t *attr)
   unsigned int cpu;
   cpu_set_t cpuset;
 
-#ifdef HAVE_SYNC_BUILTINS
   cpu = __sync_fetch_and_add (&affinity_counter, 1);
-#else
-  gomp_mutex_lock (&affinity_lock);
-  cpu = affinity_counter++;
-  gomp_mutex_unlock (&affinity_lock);
-#endif
   cpu %= gomp_cpu_affinity_len;
   CPU_ZERO (&cpuset);
   CPU_SET (gomp_cpu_affinity[cpu], &cpuset);

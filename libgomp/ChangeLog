@@ -1,3 +1,470 @@
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+	    Jakob Blomer  <jakob.blomer@ira.uka.de>
+
+	* configure.ac (LIBGOMP_GNU_SYMBOL_VERSIONING): New AC_DEFINE.
+	Substitute also OMP_*LOCK_25*.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* Makefile.am (libgomp_la_SOURCES): Add loop_ull.c, iter_ull.c,
+	ptrlock.c and task.c.
+	* Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* task.c: New file.
+	* loop_ull.c: New file.
+	* iter_ull.c: New file.
+	* libgomp.h: Include ptrlock.h.
+	(enum gomp_task_kind): New type.
+	(struct gomp_team): Add task_lock, task_queue, task_count,
+	task_running_count, single_count fields.  Add
+	work_share_list_free_lock ifndef HAVE_SYNC_BUILTINS.
+	Remove work_share_lock, generation_mask,
+	oldest_live_gen, num_live_gen and init_work_shares fields, add
+	work work_share_list_alloc, work_share_list_free and work_share_chunk
+	fields.  Change work_shares from pointer to pointers into an array.
+	Change ordered_release field into gomp_sem_t ** from flexible array
+	member.  Add implicit_task and initial_work_shares fields.
+	Move close to the end of the struct.
+	(struct gomp_team_state): Add single_count, last_work_share,
+	active_level and level fields, remove work_share_generation.
+	(gomp_barrier_handle_tasks): New prototype.
+	(gomp_finish_task): New inline function.
+	(struct gomp_work_share): Move chunk_size, end, incr into
+	transparent union/struct, add chunk_size_ull, end_ll, incr_ll and
+	next_ll fields.  Reshuffle fields.  Add next_alloc,
+	next_ws, next_free and inline_ordered_team_ids fields, change
+	ordered_team_ids into pointer from flexible array member.
+	Add mode field.  Put lock and next into a different cache line
+	from most of the write-once fields.
+	(gomp_iter_ull_static_next, gomp_iter_ull_dynamic_next_locked,
+	gomp_iter_ull_guided_next_locked, gomp_iter_ull_dynamic_next,
+	gomp_iter_ull_guided_next): New prototypes.
+	(gomp_new_icv): New prototype.
+	(struct gomp_thread): Add thread_pool and task fields.
+	(struct gomp_thread_pool): New type.
+	(gomp_new_team): New prototype.
+	(gomp_team_start): Change type of last argument.
+	(gomp_new_work_share): Removed.
+	(gomp_init_work_share, gomp_fini_work_share): New prototypes.
+	(gomp_work_share_init_done): New static inline.
+	(gomp_throttled_spin_count_var, gomp_available_cpus,
+	gomp_managed_threads): New extern decls.
+	(gomp_init_task): New prototype.
+	(gomp_spin_count_var): New extern var decl.
+	(LIBGOMP_GNU_SYMBOL_VERSIONING): Undef if no visibility
+	or no alias support, or if not PIC.
+	(gomp_init_lock_30, gomp_destroy_lock_30, gomp_set_lock_30,
+	gomp_unset_lock_30, gomp_test_lock_30, gomp_init_nest_lock_30,
+	gomp_destroy_nest_lock_30, gomp_set_nest_lock_30,
+	gomp_unset_nest_lock_30, gomp_test_nest_lock_30, gomp_init_lock_25,
+	gomp_destroy_lock_25, gomp_set_lock_25, gomp_unset_lock_25,
+	gomp_test_lock_25, gomp_init_nest_lock_25, gomp_destroy_nest_lock_25,
+	gomp_set_nest_lock_25, gomp_unset_nest_lock_25,
+	gomp_test_nest_lock_25): New prototypes.
+	(omp_lock_symver, strong_alias): Define.
+	(gomp_remaining_threads_count, gomp_remaining_threads_lock): New
+	decls.
+	(gomp_end_task): New.
+	(struct gomp_task_icv, gomp_global_icv): New.
+	(gomp_thread_limit_var, gomp_max_active_levels_var): New.
+	(struct gomp_task): New.
+	(gomp_nthreads_var, gomp_dyn_var, gomp_nest_var,
+	gomp_run_sched_var, gomp_run_sched_chunk): Remove.
+	(gomp_icv): New.
+	(gomp_schedule_type): Reorder enum to match
+	omp_sched_t.
+	* team.c (struct gomp_thread_start_data): Add thread_pool and task
+	fields.
+	(gomp_thread_start): Add gomp_team_barrier_wait call.
+	For non-nested case remove clearing of docked thread thr fields.
+	Use pool fields instead of global gomp_* variables.  Use
+	gomp_barrier_wait_last when needed.  Initialize ts.active_level.
+	Create tasks for each member thread.
+	(free_team): Only destroy team barrier, task_lock here and free it.
+	(gomp_free_thread): Free last_team if non-NULL.
+	(gomp_team_end): Call gomp_team_barrier_wait instead of
+	gomp_barrier_wait.  For nested case call one extra
+	gomp_barrier_wait.  Move here some destruction from free_team.
+	Call free_team on pool->last_team if any, rather than freeing
+	current team.  Destroy work_share_list_free_lock ifndef
+	HAVE_SYNC_BUILTINS.
+	(gomp_new_icv): New function.
+	(gomp_threads, gomp_threads_size, gomp_threads_used,
+	gomp_threads_dock): Removed.
+	(gomp_thread_destructor): New variable.
+	(gomp_new_thread_pool, gomp_free_pool_helper, gomp_free_thread): New
+	functions.
+	(gomp_team_start): Create new pool if current thread doesn't have
+	one.  Use pool fields instead of global gomp_* variables. 
+	Initialize thread_pool field for new threads.  Clear single_count.
+	Change last argument from ws to team, don't create
+	new team, set ts.work_share to &team->work_shares[0] and clear
+	ts.last_work_share.  Don't clear ts.work_share_generation.
+	If number of threads changed, adjust atomically gomp_managed_threads.
+	Use gomp_init_task instead of gomp_new_task,
+	set thr->task to the corresponding implicit_task array entry.
+	Create tasks for each member thread.  Initialize ts.level.
+	(initialize_team): Call pthread_key_create on
+	gomp_thread_destructor.
+	(team_destructor): New function.
+	(new_team): Removed.
+	(gomp_new_team): New function.
+	(free_team): Free gomp_work_share blocks chained through next_alloc,
+	instead of freeing work_shares and destroying work_share_lock.
+	(gomp_team_end): Call gomp_fini_work_share.  If number of threads
+	changed, adjust atomically gomp_managed_threads.  Use gomp_end_task.
+	* barrier.c (GOMP_barrier): Call gomp_team_barrier_wait instead
+	of gomp_barrier_wait.
+	* single.c (GOMP_single_copy_start): Call gomp_team_barrier_wait
+	instead of gomp_barrier_wait.  Call gomp_work_share_init_done
+	if gomp_work_share_start returned true.  Don't unlock ws->lock.
+	(GOMP_single_copy_end): Call gomp_team_barrier_wait instead
+	of gomp_barrier_wait.
+	(GOMP_single_start): Rewritten if HAVE_SYNC_BUILTINS.  Call
+	gomp_work_share_init_done if gomp_work_share_start returned true.
+	Don't unlock ws->lock.
+	* work.c: Include stddef.h.
+	(free_work_share): Use work_share_list_free_lock instead
+	of atomic chaining ifndef HAVE_SYNC_BUILTINS.  Add team argument.
+	Call gomp_fini_work_share and then either free ws if orphaned, or
+	put it into work_share_list_free list of the current team.
+	(alloc_work_share, gomp_init_work_share, gomp_fini_work_share): New
+	functions.
+	(gomp_work_share_start, gomp_work_share_end,
+	gomp_work_share_end_nowait): Rewritten.
+	* omp_lib.f90.in Change some tabs to spaces to prevent warnings.
+	(openmp_version): Set to 200805.
+	(omp_sched_kind, omp_sched_static, omp_sched_dynamic,
+	omp_sched_guided, omp_sched_auto): New parameters.
+	(omp_set_schedule, omp_get_schedule, omp_get_thread_limit,
+	omp_set_max_active_levels, omp_get_max_active_levels,
+	omp_get_level, omp_get_ancestor_thread_num, omp_get_team_size,
+	omp_get_active_level): New interfaces.
+	* omp_lib.h.in (openmp_version): Set to 200805.
+	(omp_sched_kind, omp_sched_static, omp_sched_dynamic,
+	omp_sched_guided, omp_sched_auto): New parameters.
+	(omp_set_schedule, omp_get_schedule, omp_get_thread_limit,
+	omp_set_max_active_levels, omp_get_max_active_levels,
+	omp_get_level, omp_get_ancestor_thread_num, omp_get_team_size,
+	omp_get_active_level): New externals.
+	* loop.c: Include limits.h.
+	(GOMP_loop_runtime_next, GOMP_loop_ordered_runtime_next): Handle
+	GFS_AUTO.
+	(GOMP_loop_runtime_start, GOMP_loop_ordered_runtime_start):
+	Likewise.  Use gomp_icv.
+	(gomp_loop_static_start, gomp_loop_dynamic_start): Clear
+	ts.static_trip here.
+	(gomp_loop_static_start, gomp_loop_ordered_static_start): Call
+	gomp_work_share_init_done after gomp_loop_init.  Don't unlock ws->lock.
+	(gomp_loop_dynamic_start, gomp_loop_guided_start): Call
+	gomp_work_share_init_done after gomp_loop_init.  If HAVE_SYNC_BUILTINS,
+	don't unlock ws->lock, otherwise lock it.
+	(gomp_loop_ordered_dynamic_start, gomp_loop_ordered_guided_start): Call
+	gomp_work_share_init_done after gomp_loop_init.  Lock ws->lock.
+	(gomp_parallel_loop_start): Call gomp_new_team instead of
+	gomp_new_work_share.  Call gomp_loop_init on &team->work_shares[0].
+	Adjust gomp_team_start caller.  Pass 0 as second argument to
+	gomp_resolve_num_threads.
+	(gomp_loop_init): For GFS_DYNAMIC, multiply ws->chunk_size by incr.
+	If adding ws->chunk_size nthreads + 1 times after end won't
+	overflow, set ws->mode to 1.
+	* libgomp_g.h (GOMP_loop_ull_static_start, GOMP_loop_ull_dynamic_start,
+	GOMP_loop_ull_guided_start, GOMP_loop_ull_runtime_start,
+	GOMP_loop_ull_ordered_static_start,
+	GOMP_loop_ull_ordered_dynamic_start,
+	GOMP_loop_ull_ordered_guided_start,
+	GOMP_loop_ull_ordered_runtime_start, GOMP_loop_ull_static_next,
+	GOMP_loop_ull_dynamic_next, GOMP_loop_ull_guided_next,
+	GOMP_loop_ull_runtime_next, GOMP_loop_ull_ordered_static_next,
+	GOMP_loop_ull_ordered_dynamic_next, GOMP_loop_ull_ordered_guided_next,
+	GOMP_loop_ull_ordered_runtime_next, GOMP_task, GOMP_taskwait): New
+	prototypes.
+	* libgomp.map: Export lock routines also @@OMP_2.0.
+	(GOMP_loop_ordered_dynamic_first,
+	GOMP_loop_ordered_guided_first, GOMP_loop_ordered_runtime_first,
+	GOMP_loop_ordered_static_first): Remove.
+	(GOMP_loop_ull_dynamic_next, GOMP_loop_ull_dynamic_start,
+	GOMP_loop_ull_guided_next, GOMP_loop_ull_guided_start,
+	GOMP_loop_ull_ordered_dynamic_next,
+	GOMP_loop_ull_ordered_dynamic_start,
+	GOMP_loop_ull_ordered_guided_next,
+	GOMP_loop_ull_ordered_guided_start,
+	GOMP_loop_ull_ordered_runtime_next,
+	GOMP_loop_ull_ordered_runtime_start,
+	GOMP_loop_ull_ordered_static_next,
+	GOMP_loop_ull_ordered_static_start,
+	GOMP_loop_ull_runtime_next, GOMP_loop_ull_runtime_start,
+	GOMP_loop_ull_static_next, GOMP_loop_ull_static_start,
+	GOMP_task, GOMP_taskwait): Export @@GOMP_2.0.
+	(omp_set_schedule, omp_get_schedule,
+	omp_get_thread_limit, omp_set_max_active_levels,
+	omp_get_max_active_levels, omp_get_level,
+	omp_get_ancestor_thread_num, omp_get_team_size, omp_get_active_level,
+	omp_set_schedule_, omp_set_schedule_8_,
+	omp_get_schedule_, omp_get_schedule_8_, omp_get_thread_limit_,
+	omp_set_max_active_levels_, omp_set_max_active_levels_8_,
+	omp_get_max_active_levels_, omp_get_level_,
+	omp_get_ancestor_thread_num_, omp_get_ancestor_thread_num_8_,
+	omp_get_team_size_, omp_get_team_size_8_, omp_get_active_level_):
+	New exports @@OMP_3.0.
+	* omp.h.in (omp_sched_t): New type.
+	(omp_set_schedule, omp_get_schedule, omp_get_thread_limit,
+	omp_set_max_active_levels, omp_get_max_active_levels,
+	omp_get_level, omp_get_ancestor_thread_num, omp_get_team_size,
+	omp_get_active_level): New prototypes.
+	* env.c (gomp_spin_count_var, gomp_throttled_spin_count_var,
+	gomp_available_cpus, gomp_managed_threads, gomp_max_active_levels_var,
+	gomp_thread_limit_var, gomp_remaining_threads_count,
+	gomp_remaining_threads_lock): New variables.
+	(parse_spincount): New function.
+	(initialize_env): Call gomp_init_num_threads unconditionally.
+	Initialize gomp_available_cpus.  Call parse_spincount,
+	initialize gomp_{,throttled_}spin_count_var
+	depending on presence and value of OMP_WAIT_POLICY and
+	GOMP_SPINCOUNT env vars.  Handle GOMP_BLOCKTIME env var.
+	Handle OMP_WAIT_POLICY, OMP_MAX_ACTIVE_LEVELS,
+	OMP_THREAD_LIMIT, OMP_STACKSIZE env vars.  Handle unit specification
+	for GOMP_STACKSIZE.  Initialize gomp_remaining_threads_count and
+	gomp_remaining_threads_lock if needed.  Use gomp_global_icv.
+	(gomp_nthreads_var, gomp_dyn_var, gomp_nest_var,
+	gomp_run_sched_var, gomp_run_sched_chunk): Remove.
+	(gomp_global_icv): New.
+	(parse_schedule): Use it.  Parse "auto".
+	(omp_set_num_threads): Use gomp_icv.
+	(omp_set_dynamic, omp_get_dynamic, omp_set_nested, omp_get_nested):
+	Likewise.
+	(omp_get_max_threads): Move from parallel.c.
+	(omp_set_schedule, omp_get_schedule, omp_get_thread_limit,
+	omp_set_max_active_levels, omp_get_max_active_levels): New functions,
+	add ialias.
+	(parse_stacksize, parse_wait_policy): New functions.
+	* fortran.c: Rewrite lock wrappers, if symbol versioning provide
+	both wrappers for compatibility and new locks.
+	(omp_set_schedule, omp_get_schedule,
+	omp_get_thread_limit, omp_set_max_active_levels,
+	omp_get_max_active_levels, omp_get_level,
+	omp_get_ancestor_thread_num, omp_get_team_size,
+	omp_get_active_level): New ialias_redirect.
+	(omp_set_schedule_, omp_set_schedule_8_,
+	omp_get_schedule_, omp_get_schedule_8_, omp_get_thread_limit_,
+	omp_set_max_active_levels_, omp_set_max_active_levels_8_,
+	omp_get_max_active_levels_, omp_get_level_,
+	omp_get_ancestor_thread_num_, omp_get_ancestor_thread_num_8_,
+	omp_get_team_size_, omp_get_team_size_8_, omp_get_active_level_):
+	New functions.
+	* parallel.c: Include limits.h.
+	(gomp_resolve_num_threads): Add count argument.  Rewritten.
+	(GOMP_parallel_start): Call gomp_new_team and pass that as last
+	argument to gomp_team_start.  Pass 0 as second argument to
+	gomp_resolve_num_threads.
+	(GOMP_parallel_end): Decrease gomp_remaining_threads_count
+	if gomp_thread_limit_var != ULONG_MAX.
+	(omp_in_parallel): Implement using ts.active_level.
+	(omp_get_max_threads): Move to env.c.
+	(omp_get_level, omp_get_ancestor_thread_num,
+	omp_get_team_size, omp_get_active_level): New functions,
+	add ialias.
+	* sections.c (GOMP_sections_start): Call gomp_work_share_init_done
+	after gomp_sections_init.  If HAVE_SYNC_BUILTINS, call
+	gomp_iter_dynamic_next instead of the _locked variant and don't take
+	lock around it, otherwise acquire it before calling
+	gomp_iter_dynamic_next_locked.
+	(GOMP_sections_next): If HAVE_SYNC_BUILTINS, call
+	gomp_iter_dynamic_next instead of the _locked variant and don't take
+	lock around it.
+	(GOMP_parallel_sections_start): Call gomp_new_team instead of
+	gomp_new_work_share.  Call gomp_sections_init on &team->work_shares[0].
+	Adjust gomp_team_start caller.  Pass count as second argument to
+	gomp_resolve_num_threads, don't adjust num_threads after the call.
+	Use gomp_icv.
+	* iter.c (gomp_iter_dynamic_next_locked): Don't multiply
+	ws->chunk_size by incr.
+	(gomp_iter_dynamic_next): Likewise.  If ws->mode, use more efficient
+	code.
+	* libgomp_f.h.in (omp_lock_25_arg_t, omp_nest_lock_25_arg_t): New
+	types.
+	(omp_lock_25_arg, omp_nest_lock_25_arg): New macros.
+	(omp_check_defines): Check even the compat defines.
+	* config/linux/ptrlock.c: New file.
+	* config/linux/ptrlock.h: New file.
+	* config/linux/wait.h: New file.
+	* config/posix/ptrlock.c: New file.
+	* config/posix/ptrlock.h: New file.
+	* config/linux/bar.h (gomp_team_barrier_wait,
+	gomp_team_barrier_wait_end, gomp_team_barrier_wake): New prototypes.
+	(gomp_team_barrier_set_task_pending,
+	gomp_team_barrier_clear_task_pending,
+	gomp_team_barrier_set_waiting_for_tasks,
+	gomp_team_barrier_waiting_for_tasks,
+	gomp_team_barrier_done): New inlines.
+	(gomp_barrier_t): Rewritten.
+	(gomp_barrier_state_t): New typedef.
+	(gomp_barrier_init, gomp_barrier_reinit, gomp_barrier_destroy,
+	gomp_barrier_wait_start): Rewritten.
+	(gomp_barrier_wait_end): Change second argument to
+	gomp_barrier_state_t.
+	(gomp_barrier_last_thread, gomp_barrier_wait_last): New static
+	inlines.
+	* config/linux/bar.c: Include wait.h instead of libgomp.h and
+	futex.h.
+	(gomp_barrier_wait_end): Rewritten.
+	(gomp_team_barrier_wait, gomp_team_barrier_wait_end,
+	gomp_team_barrier_wake, gomp_barrier_wait_last): New functions.
+	* config/posix/bar.h (gomp_barrier_t): Add generation field.
+	(gomp_barrier_state_t): New typedef.
+	(gomp_team_barrier_wait,
+	gomp_team_barrier_wait_end, gomp_team_barrier_wake): New prototypes.
+	(gomp_barrier_wait_start): Or all but low 2 bits from generation
+	into the return value.  Return gomp_barrier_state_t.
+	(gomp_team_barrier_set_task_pending,
+	gomp_team_barrier_clear_task_pending,
+	gomp_team_barrier_set_waiting_for_tasks,
+	gomp_team_barrier_waiting_for_tasks,
+	gomp_team_barrier_done): New inlines.
+	(gomp_barrier_wait_end): Change second argument to
+	gomp_barrier_state_t.
+	(gomp_barrier_last_thread, gomp_barrier_wait_last): New static
+	inlines.
+	* config/posix/bar.c (gomp_barrier_init): Clear generation field.
+	(gomp_barrier_wait_end): Change second argument to
+	gomp_barrier_state_t. 
+	(gomp_team_barrier_wait, gomp_team_barrier_wait_end,
+	gomp_team_barrier_wake): New functions.
+	* config/linux/mutex.c: Include wait.h instead of libgomp.h and
+	futex.h.
+	(gomp_futex_wake, gomp_futex_wait): New variables.
+	(gomp_mutex_lock_slow): Call do_wait instead of futex_wait.
+	* config/linux/lock.c: Rewrite to make locks task owned,
+	for backwards compatibility provide the old entrypoints
+	if symbol versioning.  Include wait.h instead of libgomp.h and
+	futex.h.
+	(gomp_set_nest_lock_25): Call do_wait instead of futex_wait.
+	* config/posix95/lock.c: Rewrite to make locks task owned,
+	for backwards compatibility provide the old entrypoints
+	if symbol versioning.
+	* config/posix/lock.c: Rewrite to make locks task owned,
+	for backwards compatibility provide the old entrypoints
+	if symbol versioning.
+	* config/linux/proc.c (gomp_init_num_threads): Use gomp_global_icv.
+	(get_num_procs, gomp_dynamic_max_threads): Use gomp_icv.
+	* config/posix/proc.c, config/mingw32/proc.c: Similarly.
+	* config/linux/powerpc/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(sys_futex0): Return error code.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/alpha/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/x86/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(sys_futex0): Return error code.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/s390/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(sys_futex0): Return error code.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/ia64/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(sys_futex0): Return error code.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/sparc/futex.h (FUTEX_WAIT, FUTEX_WAKE): Remove.
+	(sys_futex0): Return error code.
+	(futex_wake, futex_wait): If ENOSYS was returned, clear
+	FUTEX_PRIVATE_FLAG in gomp_futex_wa{ke,it} and retry.
+	(cpu_relax, atomic_write_barrier): New static inlines.
+	* config/linux/sem.c: Include wait.h instead of libgomp.h and
+	futex.h.
+	(gomp_sem_wait_slow): Call do_wait instead of futex_wait.
+	* config/linux/affinity.c: Assume HAVE_SYNC_BUILTINS.
+	* config/linux/omp-lock.h (omp_lock_25_t, omp_nest_lock_25_t): New
+	types.
+	(omp_nest_lock_t): Change owner into void *, add lock field.
+	* config/posix95/omp-lock.h: Include semaphore.h.
+	(omp_lock_25_t, omp_nest_lock_25_t): New types.
+	(omp_lock_t): Use sem_t instead of mutex if semaphores
+	aren't broken.
+	(omp_nest_lock_t): Likewise.  Change owner to void *.
+	* config/posix/omp-lock.h: Include semaphore.h.
+	(omp_lock_25_t, omp_nest_lock_25_t): New types.
+	(omp_lock_t): Use sem_t instead of mutex if semaphores
+	aren't broken.
+	(omp_nest_lock_t): Likewise.  Add owner field.
+
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/collapse-1.c: New test.
+	* testsuite/libgomp.c/collapse-2.c: New test.
+	* testsuite/libgomp.c/collapse-3.c: New test.
+	* testsuite/libgomp.c/icv-1.c: New test.
+	* testsuite/libgomp.c/icv-2.c: New test.
+	* testsuite/libgomp.c/lib-2.c: New test.
+	* testsuite/libgomp.c/lock-1.c: New test.
+	* testsuite/libgomp.c/lock-2.c: New test.
+	* testsuite/libgomp.c/lock-3.c: New test.
+	* testsuite/libgomp.c/loop-4.c: New test.
+	* testsuite/libgomp.c/loop-5.c: New test.
+	* testsuite/libgomp.c/loop-6.c: New test.
+	* testsuite/libgomp.c/loop-7.c: New test.
+	* testsuite/libgomp.c/loop-8.c: New test.
+	* testsuite/libgomp.c/loop-9.c: New test.
+	* testsuite/libgomp.c/nested-3.c: New test.
+	* testsuite/libgomp.c/nestedfn-6.c: New test.
+	* testsuite/libgomp.c/sort-1.c: New test.
+	* testsuite/libgomp.c/task-1.c: New test.
+	* testsuite/libgomp.c/task-2.c: New test.
+	* testsuite/libgomp.c/task-3.c: New test.
+	* testsuite/libgomp.c/task-4.c: New test.
+	* testsuite/libgomp.c++/c++.exp: Add libstdc++-v3 build includes
+	to C++ testsuite default compiler options.
+	* testsuite/libgomp.c++/collapse-1.C: New test.
+	* testsuite/libgomp.c++/collapse-2.C: New test.
+	* testsuite/libgomp.c++/ctor-10.C: New test.
+	* testsuite/libgomp.c++/for-1.C: New test.
+	* testsuite/libgomp.c++/for-2.C: New test.
+	* testsuite/libgomp.c++/for-3.C: New test.
+	* testsuite/libgomp.c++/for-4.C: New test.
+	* testsuite/libgomp.c++/for-5.C: New test.
+	* testsuite/libgomp.c++/loop-8.C: New test.
+	* testsuite/libgomp.c++/loop-9.C: New test.
+	* testsuite/libgomp.c++/loop-10.C: New test.
+	* testsuite/libgomp.c++/task-1.C: New test.
+	* testsuite/libgomp.c++/task-2.C: New test.
+	* testsuite/libgomp.c++/task-3.C: New test.
+	* testsuite/libgomp.c++/task-4.C: New test.
+	* testsuite/libgomp.c++/task-5.C: New test.
+	* testsuite/libgomp.c++/task-6.C: New test.
+	* testsuite/libgomp.fortran/allocatable1.f90: New test.
+	* testsuite/libgomp.fortran/allocatable2.f90: New test.
+	* testsuite/libgomp.fortran/allocatable3.f90: New test.
+	* testsuite/libgomp.fortran/allocatable4.f90: New test.
+	* testsuite/libgomp.fortran/collapse1.f90: New test.
+	* testsuite/libgomp.fortran/collapse2.f90: New test.
+	* testsuite/libgomp.fortran/collapse3.f90: New test.
+	* testsuite/libgomp.fortran/collapse4.f90: New test.
+	* testsuite/libgomp.fortran/lastprivate1.f90: New test.
+	* testsuite/libgomp.fortran/lastprivate2.f90: New test.
+	* testsuite/libgomp.fortran/lib4.f90: New test.
+	* testsuite/libgomp.fortran/lock-1.f90: New test.
+	* testsuite/libgomp.fortran/lock-2.f90: New test.
+	* testsuite/libgomp.fortran/nested1.f90: New test.
+	* testsuite/libgomp.fortran/nestedfn4.f90: New test.
+	* testsuite/libgomp.fortran/strassen.f90: New test.
+	* testsuite/libgomp.fortran/tabs1.f90: New test.
+	* testsuite/libgomp.fortran/tabs2.f: New test.
+	* testsuite/libgomp.fortran/task1.f90: New test.
+	* testsuite/libgomp.fortran/task2.f90: New test.
+	* testsuite/libgomp.fortran/vla4.f90: Add dg-warning.
+	* testsuite/libgomp.fortran/vla5.f90: Likewise.
+	* testsuite/libgomp.c/pr26943-2.c: Likewise.
+	* testsuite/libgomp.c/pr26943-3.c: Likewise.
+	* testsuite/libgomp.c/pr26943-4.c: Likewise.
+
 2008-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36308

@@ -702,7 +702,8 @@ skip_free_comments (void)
 		      if (((c = next_char ()) == 'm' || c == 'M')
 			  && ((c = next_char ()) == 'p' || c == 'P'))
 			{
-			  if ((c = next_char ()) == ' ' || continue_flag)
+			  if ((c = next_char ()) == ' ' || c == '\t'
+			      || continue_flag)
 			    {
 			      while (gfc_is_whitespace (c))
 				c = next_char ();
@@ -724,7 +725,7 @@ skip_free_comments (void)
 		      next_char ();
 		      c = next_char ();
 		    }
-		  if (continue_flag || c == ' ')
+		  if (continue_flag || c == ' ' || c == '\t')
 		    {
 		      gfc_current_locus = old_loc;
 		      next_char ();
@@ -820,11 +821,11 @@ skip_fixed_comments (void)
 			  c = next_char ();
 			  if (c != '\n'
 			      && ((openmp_flag && continue_flag)
-				  || c == ' ' || c == '0'))
+				  || c == ' ' || c == '\t' || c == '0'))
 			    {
-			      c = next_char ();
-			      while (gfc_is_whitespace (c))
+			      do
 				c = next_char ();
+			      while (gfc_is_whitespace (c));
 			      if (c != '\n' && c != '!')
 				{
 				  /* Canonicalize to *$omp.  */
@@ -843,6 +844,11 @@ skip_fixed_comments (void)
 		      for (col = 3; col < 6; col++, c = next_char ())
 			if (c == ' ')
 			  continue;
+			else if (c == '\t')
+			  {
+			    col = 6;
+			    break;
+			  }
 			else if (c < '0' || c > '9')
 			  break;
 			else
@@ -850,7 +856,7 @@ skip_fixed_comments (void)
 
 		      if (col == 6 && c != '\n'
 			  && ((continue_flag && !digit_seen)
-			      || c == ' ' || c == '0'))
+			      || c == ' ' || c == '\t' || c == '0'))
 			{
 			  gfc_current_locus = start;
 			  start.nextc[0] = ' ';

@@ -141,6 +141,8 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP cxx_omp_clause_assign_op
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
 #define LANG_HOOKS_OMP_CLAUSE_DTOR cxx_omp_clause_dtor
+#undef LANG_HOOKS_OMP_FINISH_CLAUSE
+#define LANG_HOOKS_OMP_FINISH_CLAUSE cxx_omp_finish_clause
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE cxx_omp_privatize_by_reference
 

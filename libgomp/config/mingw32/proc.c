@@ -35,7 +35,7 @@
 #include <windows.h>
 
 /* Count the CPU's currently available to this process.  */
-static int
+static unsigned int
 count_avail_process_cpus ()
 {
   DWORD_PTR process_cpus;
@@ -59,7 +59,7 @@ count_avail_process_cpus ()
 void
 gomp_init_num_threads (void)
 {
-  gomp_nthreads_var = count_avail_process_cpus ();
+  gomp_global_icv.nthreads_var = count_avail_process_cpus ();
 }
 
 /* When OMP_DYNAMIC is set, at thread launch determine the number of
@@ -69,8 +69,9 @@ gomp_init_num_threads (void)
 unsigned
 gomp_dynamic_max_threads (void)
 {
-  int n_onln = count_avail_process_cpus ();
-  return n_onln > gomp_nthreads_var ? gomp_nthreads_var : n_onln;
+  unsigned int n_onln = count_avail_process_cpus ();
+  unsigned int nthreads_var = gomp_icv (false)->nthreads_var;
+  return n_onln > nthreads_var ? nthreads_var : n_onln;
 }
 
 int

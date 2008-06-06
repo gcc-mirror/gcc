@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -13,7 +13,7 @@
    FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
    more details.
 
-   You should have received a copy of the GNU Lesser General Public License 
+   You should have received a copy of the GNU Lesser General Public License
    along with libgomp; see the file COPYING.LIB.  If not, write to the
    Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
@@ -48,13 +48,24 @@
 #include <errno.h>
 
 
-unsigned long gomp_nthreads_var = 1;
-bool gomp_dyn_var = false;
-bool gomp_nest_var = false;
-enum gomp_schedule_type gomp_run_sched_var = GFS_DYNAMIC;
-unsigned long gomp_run_sched_chunk = 1;
+struct gomp_task_icv gomp_global_icv = {
+  .nthreads_var = 1,
+  .run_sched_var = GFS_DYNAMIC,
+  .run_sched_modifier = 1,
+  .dyn_var = false,
+  .nest_var = false
+};
+
 unsigned short *gomp_cpu_affinity;
 size_t gomp_cpu_affinity_len;
+unsigned long gomp_max_active_levels_var = INT_MAX;
+unsigned long gomp_thread_limit_var = ULONG_MAX;
+unsigned long gomp_remaining_threads_count;
+#ifndef HAVE_SYNC_BUILTINS
+gomp_mutex_t gomp_remaining_threads_lock;
+#endif
+unsigned long gomp_available_cpus = 1, gomp_managed_threads = 1;
+unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -72,18 +83,23 @@ parse_schedule (void)
     ++env;
   if (strncasecmp (env, "static", 6) == 0)
     {
-      gomp_run_sched_var = GFS_STATIC;
+      gomp_global_icv.run_sched_var = GFS_STATIC;
       env += 6;
     }
   else if (strncasecmp (env, "dynamic", 7) == 0)
     {
-      gomp_run_sched_var = GFS_DYNAMIC;
+      gomp_global_icv.run_sched_var = GFS_DYNAMIC;
       env += 7;
     }
   else if (strncasecmp (env, "guided", 6) == 0)
     {
-      gomp_run_sched_var = GFS_GUIDED;
+      gomp_global_icv.run_sched_var = GFS_GUIDED;
       env += 6;
+    }
+  else if (strncasecmp (env, "auto", 4) == 0)
+    {
+      gomp_global_icv.run_sched_var = GFS_AUTO;
+      env += 4;
     }
   else
     goto unknown;
@@ -109,7 +125,10 @@ parse_schedule (void)
   if (*end != '\0')
     goto invalid;
 
-  gomp_run_sched_chunk = value;
+  if ((int)value != value)
+    goto invalid;
+
+  gomp_global_icv.run_sched_modifier = value;
   return;
 
  unknown:
@@ -122,7 +141,7 @@ parse_schedule (void)
   return;
 }
 
-/* Parse an unsigned long environment varible.  Return true if one was
+/* Parse an unsigned long environment variable.  Return true if one was
    present and it was successfully parsed.  */
 
 static bool
@@ -158,7 +177,141 @@ parse_unsigned_long (const char *name, unsigned long *pvalue)
   return false;
 }
 
-/* Parse a boolean value for environment variable NAME and store the 
+/* Parse the OMP_STACKSIZE environment varible.  Return true if one was
+   present and it was successfully parsed.  */
+
+static bool
+parse_stacksize (const char *name, unsigned long *pvalue)
+{
+  char *env, *end;
+  unsigned long value, shift = 10;
+
+  env = getenv (name);
+  if (env == NULL)
+    return false;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    goto invalid;
+
+  errno = 0;
+  value = strtoul (env, &end, 10);
+  if (errno)
+    goto invalid;
+
+  while (isspace ((unsigned char) *end))
+    ++end;
+  if (*end != '\0')
+    {
+      switch (tolower (*end))
+	{
+	case 'b':
+	  shift = 0;
+	  break;
+	case 'k':
+	  break;
+	case 'm':
+	  shift = 20;
+	  break;
+	case 'g':
+	  shift = 30;
+	  break;
+	default:
+	  goto invalid;
+	}
+      ++end;
+      while (isspace ((unsigned char) *end))
+	++end;
+      if (*end != '\0')
+	goto invalid;
+    }
+
+  if (((value << shift) >> shift) != value)
+    goto invalid;
+
+  *pvalue = value << shift;
+  return true;
+
+ invalid:
+  gomp_error ("Invalid value for environment variable %s", name);
+  return false;
+}
+
+/* Parse the GOMP_SPINCOUNT environment varible.  Return true if one was
+   present and it was successfully parsed.  */
+
+static bool
+parse_spincount (const char *name, unsigned long long *pvalue)
+{
+  char *env, *end;
+  unsigned long long value, mult = 1;
+
+  env = getenv (name);
+  if (env == NULL)
+    return false;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    goto invalid;
+
+  if (strncasecmp (env, "infinite", 8) == 0
+      || strncasecmp (env, "infinity", 8) == 0)
+    {
+      value = ~0ULL;
+      end = env + 8;
+      goto check_tail;
+    }
+
+  errno = 0;
+  value = strtoull (env, &end, 10);
+  if (errno)
+    goto invalid;
+
+  while (isspace ((unsigned char) *end))
+    ++end;
+  if (*end != '\0')
+    {
+      switch (tolower (*end))
+	{
+	case 'k':
+	  mult = 1000LL;
+	  break;
+	case 'm':
+	  mult = 1000LL * 1000LL;
+	  break;
+	case 'g':
+	  mult = 1000LL * 1000LL * 1000LL;
+	  break;
+	case 't':
+	  mult = 1000LL * 1000LL * 1000LL * 1000LL;
+	  break;
+	default:
+	  goto invalid;
+	}
+      ++end;
+     check_tail:
+      while (isspace ((unsigned char) *end))
+	++end;
+      if (*end != '\0')
+	goto invalid;
+    }
+
+  if (value > ~0ULL / mult)
+    value = ~0ULL;
+  else
+    value *= mult;
+
+  *pvalue = value;
+  return true;
+
+ invalid:
+  gomp_error ("Invalid value for environment variable %s", name);
+  return false;
+}
+
+/* Parse a boolean value for environment variable NAME and store the
    result in VALUE.  */
 
 static void
@@ -188,6 +341,41 @@ parse_boolean (const char *name, bool *value)
     ++env;
   if (*env != '\0')
     gomp_error ("Invalid value for environment variable %s", name);
+}
+
+/* Parse the OMP_WAIT_POLICY environment variable and store the
+   result in gomp_active_wait_policy.  */
+
+static int
+parse_wait_policy (void)
+{
+  const char *env;
+  int ret = -1;
+
+  env = getenv ("OMP_WAIT_POLICY");
+  if (env == NULL)
+    return -1;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "active", 6) == 0)
+    {
+      ret = 1;
+      env += 6;
+    }
+  else if (strncasecmp (env, "passive", 7) == 0)
+    {
+      ret = 0;
+      env += 7;
+    }
+  else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    return ret;
+  gomp_error ("Invalid value for environment variable OMP_WAIT_POLICY");
+  return -1;
 }
 
 /* Parse the GOMP_CPU_AFFINITY environment varible.  Return true if one was
@@ -285,27 +473,61 @@ static void __attribute__((constructor))
 initialize_env (void)
 {
   unsigned long stacksize;
+  int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
   omp_check_defines ();
 
   parse_schedule ();
-  parse_boolean ("OMP_DYNAMIC", &gomp_dyn_var);
-  parse_boolean ("OMP_NESTED", &gomp_nest_var);
-  if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_nthreads_var))
-    gomp_init_num_threads ();
+  parse_boolean ("OMP_DYNAMIC", &gomp_global_icv.dyn_var);
+  parse_boolean ("OMP_NESTED", &gomp_global_icv.nest_var);
+  parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var);
+  parse_unsigned_long ("OMP_THREAD_LIMIT", &gomp_thread_limit_var);
+  if (gomp_thread_limit_var != ULONG_MAX)
+    {
+      gomp_remaining_threads_count = gomp_thread_limit_var - 1;
+#ifndef HAVE_SYNC_BUILTINS
+      gomp_mutex_init (&gomp_remaining_threads_lock);
+#endif
+    }
+  gomp_init_num_threads ();
+  gomp_available_cpus = gomp_global_icv.nthreads_var;
+  if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_global_icv.nthreads_var))
+    gomp_global_icv.nthreads_var = gomp_available_cpus;
   if (parse_affinity ())
     gomp_init_affinity ();
+  wait_policy = parse_wait_policy ();
+  if (!parse_spincount ("GOMP_SPINCOUNT", &gomp_spin_count_var))
+    {
+      /* Using a rough estimation of 100000 spins per msec,
+	 use 5 min blocking for OMP_WAIT_POLICY=active,
+	 200 msec blocking when OMP_WAIT_POLICY is not specificed
+	 and 0 when OMP_WAIT_POLICY=passive.
+	 Depending on the CPU speed, this can be e.g. 5 times longer
+	 or 5 times shorter.  */
+      if (wait_policy > 0)
+	gomp_spin_count_var = 30000000000LL;
+      else if (wait_policy < 0)
+	gomp_spin_count_var = 20000000LL;
+    }
+  /* gomp_throttled_spin_count_var is used when there are more libgomp
+     managed threads than available CPUs.  Use very short spinning.  */
+  if (wait_policy > 0)
+    gomp_throttled_spin_count_var = 1000LL;
+  else if (wait_policy < 0)
+    gomp_throttled_spin_count_var = 100LL;
+  if (gomp_throttled_spin_count_var > gomp_spin_count_var)
+    gomp_throttled_spin_count_var = gomp_spin_count_var;
 
   /* Not strictly environment related, but ordering constructors is tricky.  */
   pthread_attr_init (&gomp_thread_attr);
   pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 
-  if (parse_unsigned_long ("GOMP_STACKSIZE", &stacksize))
+  if (parse_stacksize ("OMP_STACKSIZE", &stacksize)
+      || parse_stacksize ("GOMP_STACKSIZE", &stacksize))
     {
       int err;
 
-      stacksize *= 1024;
       err = pthread_attr_setstacksize (&gomp_thread_attr, stacksize);
 
 #ifdef PTHREAD_STACK_MIN
@@ -331,31 +553,95 @@ initialize_env (void)
 void
 omp_set_num_threads (int n)
 {
-  gomp_nthreads_var = (n > 0 ? n : 1);
+  struct gomp_task_icv *icv = gomp_icv (true);
+  icv->nthreads_var = (n > 0 ? n : 1);
 }
 
 void
 omp_set_dynamic (int val)
 {
-  gomp_dyn_var = val;
+  struct gomp_task_icv *icv = gomp_icv (true);
+  icv->dyn_var = val;
 }
 
 int
 omp_get_dynamic (void)
 {
-  return gomp_dyn_var;
+  struct gomp_task_icv *icv = gomp_icv (false);
+  return icv->dyn_var;
 }
 
 void
 omp_set_nested (int val)
 {
-  gomp_nest_var = val;
+  struct gomp_task_icv *icv = gomp_icv (true);
+  icv->nest_var = val;
 }
 
 int
 omp_get_nested (void)
 {
-  return gomp_nest_var;
+  struct gomp_task_icv *icv = gomp_icv (false);
+  return icv->nest_var;
+}
+
+void
+omp_set_schedule (omp_sched_t kind, int modifier)
+{
+  struct gomp_task_icv *icv = gomp_icv (true);
+  switch (kind)
+    {
+    case omp_sched_static:
+      if (modifier < 1)
+	modifier = 0;
+      icv->run_sched_modifier = modifier;
+      break;
+    case omp_sched_dynamic:
+    case omp_sched_guided:
+      if (modifier < 1)
+	modifier = 1;
+      icv->run_sched_modifier = modifier;
+      break;
+    case omp_sched_auto:
+      break;
+    default:
+      return;
+    }
+  icv->run_sched_var = kind;
+}
+
+void
+omp_get_schedule (omp_sched_t *kind, int *modifier)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  *kind = icv->run_sched_var;
+  *modifier = icv->run_sched_modifier;
+}
+
+int
+omp_get_max_threads (void)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  return icv->nthreads_var;
+}
+
+int
+omp_get_thread_limit (void)
+{
+  return gomp_thread_limit_var > INT_MAX ? INT_MAX : gomp_thread_limit_var;
+}
+
+void
+omp_set_max_active_levels (int max_levels)
+{
+  if (max_levels > 0)
+    gomp_max_active_levels_var = max_levels;
+}
+
+int
+omp_get_max_active_levels (void)
+{
+  return gomp_max_active_levels_var;
 }
 
 ialias (omp_set_dynamic)
@@ -363,3 +649,9 @@ ialias (omp_set_nested)
 ialias (omp_set_num_threads)
 ialias (omp_get_dynamic)
 ialias (omp_get_nested)
+ialias (omp_set_schedule)
+ialias (omp_get_schedule)
+ialias (omp_get_max_threads)
+ialias (omp_get_thread_limit)
+ialias (omp_set_max_active_levels)
+ialias (omp_get_max_active_levels)

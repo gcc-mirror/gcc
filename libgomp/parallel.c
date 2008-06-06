@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -28,52 +28,107 @@
 /* This file handles the (bare) PARALLEL construct.  */
 
 #include "libgomp.h"
+#include <limits.h>
 
 
 /* Determine the number of threads to be launched for a PARALLEL construct.
-   This algorithm is explicitly described in OpenMP 2.5 section 2.4.1.
+   This algorithm is explicitly described in OpenMP 3.0 section 2.4.1.
    SPECIFIED is a combination of the NUM_THREADS clause and the IF clause.
    If the IF clause is false, SPECIFIED is forced to 1.  When NUM_THREADS
    is not present, SPECIFIED is 0.  */
 
 unsigned
-gomp_resolve_num_threads (unsigned specified)
+gomp_resolve_num_threads (unsigned specified, unsigned count)
 {
-  /* Early exit for false IF condition or degenerate NUM_THREADS.  */
+  struct gomp_thread *thread = gomp_thread();
+  struct gomp_task_icv *icv;
+  unsigned threads_requested, max_num_threads, num_threads;
+  unsigned long remaining;
+
+  icv = gomp_icv (false);
+
   if (specified == 1)
     return 1;
-
-  /* If this is a nested region, and nested regions are disabled, force
-     this team to use only one thread.  */
-  if (gomp_thread()->ts.team && !gomp_nest_var)
+  else if (thread->ts.active_level >= 1 && !icv->nest_var)
+    return 1;
+  else if (thread->ts.active_level >= gomp_max_active_levels_var)
     return 1;
 
   /* If NUM_THREADS not specified, use nthreads_var.  */
   if (specified == 0)
-    specified = gomp_nthreads_var;
+    threads_requested = icv->nthreads_var;
+  else
+    threads_requested = specified;
+
+  max_num_threads = threads_requested;
 
   /* If dynamic threads are enabled, bound the number of threads
      that we launch.  */
-  if (gomp_dyn_var)
+  if (icv->dyn_var)
     {
       unsigned dyn = gomp_dynamic_max_threads ();
-      if (dyn < specified)
-	return dyn;
+      if (dyn < max_num_threads)
+	max_num_threads = dyn;
+
+      /* Optimization for parallel sections.  */
+      if (count && count < max_num_threads)
+	max_num_threads = count;
     }
 
-  return specified;
+  /* ULONG_MAX stands for infinity.  */
+  if (__builtin_expect (gomp_thread_limit_var == ULONG_MAX, 1)
+      || max_num_threads == 1)
+    return max_num_threads;
+
+#ifdef HAVE_SYNC_BUILTINS
+  do
+    {
+      remaining = gomp_remaining_threads_count;
+      num_threads = max_num_threads;
+      if (num_threads > remaining)
+	num_threads = remaining + 1;
+    }
+  while (__sync_val_compare_and_swap (&gomp_remaining_threads_count,
+				      remaining, remaining - num_threads + 1)
+	 != remaining);
+#else
+  gomp_mutex_lock (&gomp_remaining_threads_lock);
+  num_threads = max_num_threads;
+  remaining = gomp_remaining_threads_count;
+  if (num_threads > remaining)
+    num_threads = remaining + 1;
+  gomp_remaining_threads_count -= num_threads - 1;
+  gomp_mutex_unlock (&gomp_remaining_threads_lock);
+#endif
+
+  return num_threads;
 }
 
 void
 GOMP_parallel_start (void (*fn) (void *), void *data, unsigned num_threads)
 {
-  num_threads = gomp_resolve_num_threads (num_threads);
-  gomp_team_start (fn, data, num_threads, NULL);
+  num_threads = gomp_resolve_num_threads (num_threads, 0);
+  gomp_team_start (fn, data, num_threads, gomp_new_team (num_threads));
 }
 
 void
 GOMP_parallel_end (void)
 {
+  if (__builtin_expect (gomp_thread_limit_var != ULONG_MAX, 0))
+    {
+      struct gomp_thread *thr = gomp_thread ();
+      struct gomp_team *team = thr->ts.team;
+      if (team && team->nthreads > 1)
+	{
+#ifdef HAVE_SYNC_BUILTINS
+	  __sync_fetch_and_add (&gomp_remaining_threads_count,
+				1UL - team->nthreads);
+#else
+	  gomp_mutex_lock (&gomp_remaining_threads_lock);
+	  gomp_remaining_threads_count -= team->nthreads - 1;
+#endif
+	}
+    }
   gomp_team_end ();
 }
 
@@ -87,40 +142,63 @@ omp_get_num_threads (void)
   return team ? team->nthreads : 1;
 }
 
-/* ??? Does this function need to disregard dyn_var?  I don't see
-   how else one could get a useable "maximum".  */
-
-int
-omp_get_max_threads (void)
-{
-  return gomp_resolve_num_threads (0);
-}
-
 int
 omp_get_thread_num (void)
 {
   return gomp_thread ()->ts.team_id;
 }
 
-/* ??? This isn't right.  The definition of this function is false if any
-   of the IF clauses for any of the parallels is false.  Which is not the
-   same thing as any outer team having more than one thread.  */
+/* This wasn't right for OpenMP 2.5.  Active region used to be non-zero
+   when the IF clause doesn't evaluate to false, starting with OpenMP 3.0
+   it is non-zero with more than one thread in the team.  */
 
-int omp_in_parallel (void)
+int
+omp_in_parallel (void)
 {
-  struct gomp_team *team = gomp_thread ()->ts.team;
+  return gomp_thread ()->ts.active_level > 0;
+}
 
-  while (team)
-    {
-      if (team->nthreads > 1)
-	return true;
-      team = team->prev_ts.team;
-    }
+int
+omp_get_level (void)
+{
+  return gomp_thread ()->ts.level;
+}
 
-  return false;
+int
+omp_get_ancestor_thread_num (int level)
+{
+  struct gomp_team_state *ts = &gomp_thread ()->ts;
+  if (level < 0 || level > ts->level)
+    return -1;
+  for (level = ts->level - level; level > 0; --level)
+    ts = &ts->team->prev_ts;
+  return ts->team_id;
+}
+
+int
+omp_get_team_size (int level)
+{
+  struct gomp_team_state *ts = &gomp_thread ()->ts;
+  if (level < 0 || level > ts->level)
+    return -1;
+  for (level = ts->level - level; level > 0; --level)
+    ts = &ts->team->prev_ts;
+  if (ts->team == NULL)
+    return 1;
+  else
+    return ts->team->nthreads;
+}
+
+int
+omp_get_active_level (void)
+{
+  return gomp_thread ()->ts.active_level;
 }
 
 ialias (omp_get_num_threads)
-ialias (omp_get_max_threads)
 ialias (omp_get_thread_num)
 ialias (omp_in_parallel)
+ialias (omp_get_level)
+ialias (omp_get_ancestor_thread_num)
+ialias (omp_get_team_size)
+ialias (omp_get_active_level)

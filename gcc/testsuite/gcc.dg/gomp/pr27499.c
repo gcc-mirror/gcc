@@ -8,6 +8,6 @@ foo (void)
 {
   unsigned int i;
 #pragma omp parallel for
-  for (i = 0; i < 64; ++i)	/* { dg-warning "is unsigned" } */
+  for (i = 0; i < 64; ++i)
     bar (i);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -50,6 +50,7 @@
 #include "sem.h"
 #include "mutex.h"
 #include "bar.h"
+#include "ptrlock.h"
 
 
 /* This structure contains the data to control one work-sharing construct,
@@ -57,10 +58,11 @@
 
 enum gomp_schedule_type
 {
+  GFS_RUNTIME,
   GFS_STATIC,
   GFS_DYNAMIC,
   GFS_GUIDED,
-  GFS_RUNTIME
+  GFS_AUTO
 };
 
 struct gomp_work_share
@@ -70,48 +72,29 @@ struct gomp_work_share
      If this is a SECTIONS construct, this value will always be DYNAMIC.  */
   enum gomp_schedule_type sched;
 
-  /* This is the chunk_size argument to the SCHEDULE clause.  */
-  long chunk_size;
-
-  /* This is the iteration end point.  If this is a SECTIONS construct, 
-     this is the number of contained sections.  */
-  long end;
-
-  /* This is the iteration step.  If this is a SECTIONS construct, this
-     is always 1.  */
-  long incr;
-
-  /* This lock protects the update of the following members.  */
-  gomp_mutex_t lock;
+  int mode;
 
   union {
-    /* This is the next iteration value to be allocated.  In the case of
-       GFS_STATIC loops, this the iteration start point and never changes.  */
-    long next;
+    struct {
+      /* This is the chunk_size argument to the SCHEDULE clause.  */
+      long chunk_size;
 
-    /* This is the returned data structure for SINGLE COPYPRIVATE.  */
-    void *copyprivate;
+      /* This is the iteration end point.  If this is a SECTIONS construct,
+	 this is the number of contained sections.  */
+      long end;
+
+      /* This is the iteration step.  If this is a SECTIONS construct, this
+	 is always 1.  */
+      long incr;
+    };
+
+    struct {
+      /* The same as above, but for the unsigned long long loop variants.  */
+      unsigned long long chunk_size_ull;
+      unsigned long long end_ull;
+      unsigned long long incr_ull;
+    };
   };
-
-  /* This is the count of the number of threads that have exited the work
-     share construct.  If the construct was marked nowait, they have moved on
-     to other work; otherwise they're blocked on a barrier.  The last member
-     of the team to exit the work share construct must deallocate it.  */
-  unsigned threads_completed;
-
-  /* This is the index into the circular queue ordered_team_ids of the 
-     current thread that's allowed into the ordered reason.  */
-  unsigned ordered_cur;
-
-  /* This is the number of threads that have registered themselves in
-     the circular queue ordered_team_ids.  */
-  unsigned ordered_num_used;
-
-  /* This is the team_id of the currently acknoledged owner of the ordered
-     section, or -1u if the ordered section has not been acknowledged by
-     any thread.  This is distinguished from the thread that is *allowed*
-     to take the section next.  */
-  unsigned ordered_owner;
 
   /* This is a circular queue that details which threads will be allowed
      into the ordered region and in which order.  When a thread allocates
@@ -119,7 +102,64 @@ struct gomp_work_share
      the end of the array.  When a thread reaches the ordered region, it
      checks to see if it is the one at the head of the queue.  If not, it
      blocks on its RELEASE semaphore.  */
-  unsigned ordered_team_ids[];
+  unsigned *ordered_team_ids;
+
+  /* This is the number of threads that have registered themselves in
+     the circular queue ordered_team_ids.  */
+  unsigned ordered_num_used;
+
+  /* This is the team_id of the currently acknowledged owner of the ordered
+     section, or -1u if the ordered section has not been acknowledged by
+     any thread.  This is distinguished from the thread that is *allowed*
+     to take the section next.  */
+  unsigned ordered_owner;
+
+  /* This is the index into the circular queue ordered_team_ids of the
+     current thread that's allowed into the ordered reason.  */
+  unsigned ordered_cur;
+
+  /* This is a chain of allocated gomp_work_share blocks, valid only
+     in the first gomp_work_share struct in the block.  */
+  struct gomp_work_share *next_alloc;
+
+  /* The above fields are written once during workshare initialization,
+     or related to ordered worksharing.  Make sure the following fields
+     are in a different cache line.  */
+
+  /* This lock protects the update of the following members.  */
+  gomp_mutex_t lock __attribute__((aligned (64)));
+
+  /* This is the count of the number of threads that have exited the work
+     share construct.  If the construct was marked nowait, they have moved on
+     to other work; otherwise they're blocked on a barrier.  The last member
+     of the team to exit the work share construct must deallocate it.  */
+  unsigned threads_completed;
+
+  union {
+    /* This is the next iteration value to be allocated.  In the case of
+       GFS_STATIC loops, this the iteration start point and never changes.  */
+    long next;
+
+    /* The same, but with unsigned long long type.  */
+    unsigned long long next_ull;
+
+    /* This is the returned data structure for SINGLE COPYPRIVATE.  */
+    void *copyprivate;
+  };
+
+  union {
+    /* Link to gomp_work_share struct for next work sharing construct
+       encountered after this one.  */
+    gomp_ptrlock_t next_ws;
+
+    /* gomp_work_share structs are chained in the free work share cache
+       through this.  */
+    struct gomp_work_share *next_free;
+  };
+
+  /* If only few threads are in the team, ordered_team_ids can point
+     to this array which fills the padding at the end of this struct.  */
+  unsigned inline_ordered_team_ids[0];
 };
 
 /* This structure contains all of the thread-local data associated with 
@@ -133,21 +173,30 @@ struct gomp_team_state
 
   /* This is the work share construct which this thread is currently
      processing.  Recall that with NOWAIT, not all threads may be 
-     processing the same construct.  This value is NULL when there
-     is no construct being processed.  */
+     processing the same construct.  */
   struct gomp_work_share *work_share;
+
+  /* This is the previous work share construct or NULL if there wasn't any.
+     When all threads are done with the current work sharing construct,
+     the previous one can be freed.  The current one can't, as its
+     next_ws field is used.  */
+  struct gomp_work_share *last_work_share;
 
   /* This is the ID of this thread within the team.  This value is
      guaranteed to be between 0 and N-1, where N is the number of
      threads in the team.  */
   unsigned team_id;
 
-  /* The work share "generation" is a number that increases by one for
-     each work share construct encountered in the dynamic flow of the
-     program.  It is used to find the control data for the work share
-     when encountering it for the first time.  This particular number
-     reflects the generation of the work_share member of this struct.  */
-  unsigned work_share_generation;
+  /* Nesting level.  */
+  unsigned level;
+
+  /* Active nesting level.  Only active parallel regions are counted.  */
+  unsigned active_level;
+
+#ifdef HAVE_SYNC_BUILTINS
+  /* Number of single stmts encountered.  */
+  unsigned long single_count;
+#endif
 
   /* For GFS_RUNTIME loops that resolved to GFS_STATIC, this is the
      trip number through the loop.  So first time a particular loop
@@ -157,48 +206,118 @@ struct gomp_team_state
   unsigned long static_trip;
 };
 
+/* These are the OpenMP 3.0 Internal Control Variables described in
+   section 2.3.1.  Those described as having one copy per task are
+   stored within the structure; those described as having one copy
+   for the whole program are (naturally) global variables.  */
+
+struct gomp_task_icv
+{
+  unsigned long nthreads_var;
+  enum gomp_schedule_type run_sched_var;
+  int run_sched_modifier;
+  bool dyn_var;
+  bool nest_var;
+};
+
+extern struct gomp_task_icv gomp_global_icv;
+extern unsigned long gomp_thread_limit_var;
+extern unsigned long gomp_remaining_threads_count;
+#ifndef HAVE_SYNC_BUILTINS
+extern gomp_mutex_t gomp_remaining_threads_lock;
+#endif
+extern unsigned long gomp_max_active_levels_var;
+extern unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
+extern unsigned long gomp_available_cpus, gomp_managed_threads;
+
+enum gomp_task_kind
+{
+  GOMP_TASK_IMPLICIT,
+  GOMP_TASK_IFFALSE,
+  GOMP_TASK_WAITING,
+  GOMP_TASK_TIED
+};
+
+/* This structure describes a "task" to be run by a thread.  */
+
+struct gomp_task
+{
+  struct gomp_task *parent;
+  struct gomp_task *children;
+  struct gomp_task *next_child;
+  struct gomp_task *prev_child;
+  struct gomp_task *next_queue;
+  struct gomp_task *prev_queue;
+  struct gomp_task_icv icv;
+  void (*fn) (void *);
+  void *fn_data;
+  enum gomp_task_kind kind;
+  bool in_taskwait;
+  gomp_sem_t taskwait_sem;
+};
+
 /* This structure describes a "team" of threads.  These are the threads
    that are spawned by a PARALLEL constructs, as well as the work sharing
    constructs that the team encounters.  */
 
 struct gomp_team
 {
-  /* This lock protects access to the following work shares data structures.  */
-  gomp_mutex_t work_share_lock;
-
-  /* This is a dynamically sized array containing pointers to the control
-     structs for all "live" work share constructs.  Here "live" means that
-     the construct has been encountered by at least one thread, and not
-     completed by all threads.  */
-  struct gomp_work_share **work_shares;
-
-  /* The work_shares array is indexed by "generation & generation_mask".
-     The mask will be 2**N - 1, where 2**N is the size of the array.  */
-  unsigned generation_mask;
-
-  /* These two values define the bounds of the elements of the work_shares
-     array that are currently in use.  */
-  unsigned oldest_live_gen;
-  unsigned num_live_gen;
-
   /* This is the number of threads in the current team.  */
   unsigned nthreads;
+
+  /* This is number of gomp_work_share structs that have been allocated
+     as a block last time.  */
+  unsigned work_share_chunk;
 
   /* This is the saved team state that applied to a master thread before
      the current thread was created.  */
   struct gomp_team_state prev_ts;
-
-  /* This barrier is used for most synchronization of the team.  */
-  gomp_barrier_t barrier;
 
   /* This semaphore should be used by the master thread instead of its
      "native" semaphore in the thread structure.  Required for nested
      parallels, as the master is a member of two teams.  */
   gomp_sem_t master_release;
 
-  /* This array contains pointers to the release semaphore of the threads
-     in the team.  */
-  gomp_sem_t *ordered_release[];
+  /* This points to an array with pointers to the release semaphore
+     of the threads in the team.  */
+  gomp_sem_t **ordered_release;
+
+  /* List of gomp_work_share structs chained through next_free fields.
+     This is populated and taken off only by the first thread in the
+     team encountering a new work sharing construct, in a critical
+     section.  */
+  struct gomp_work_share *work_share_list_alloc;
+
+  /* List of gomp_work_share structs freed by free_work_share.  New
+     entries are atomically added to the start of the list, and
+     alloc_work_share can safely only move all but the first entry
+     to work_share_list alloc, as free_work_share can happen concurrently
+     with alloc_work_share.  */
+  struct gomp_work_share *work_share_list_free;
+
+#ifdef HAVE_SYNC_BUILTINS
+  /* Number of simple single regions encountered by threads in this
+     team.  */
+  unsigned long single_count;
+#else
+  /* Mutex protecting addition of workshares to work_share_list_free.  */
+  gomp_mutex_t work_share_list_free_lock;
+#endif
+
+  /* This barrier is used for most synchronization of the team.  */
+  gomp_barrier_t barrier;
+
+  /* Initial work shares, to avoid allocating any gomp_work_share
+     structs in the common case.  */
+  struct gomp_work_share work_shares[8];
+
+  gomp_mutex_t task_lock;
+  struct gomp_task *task_queue;
+  int task_count;
+  int task_running_count;
+
+  /* This array contains structures for implicit tasks.  */
+  struct gomp_task implicit_task[];
 };
 
 /* This structure contains all data that is private to libgomp and is
@@ -214,8 +333,28 @@ struct gomp_thread
      is NULL only if the thread is idle.  */
   struct gomp_team_state ts;
 
+  /* This is the task that the thread is currently executing.  */
+  struct gomp_task *task;
+
   /* This semaphore is used for ordered loops.  */
   gomp_sem_t release;
+
+  /* user pthread thread pool */
+  struct gomp_thread_pool *thread_pool;
+};
+
+
+struct gomp_thread_pool
+{
+  /* This array manages threads spawned from the top level, which will
+     return to the idle loop once the current PARALLEL construct ends.  */
+  struct gomp_thread **threads;
+  unsigned threads_size;
+  unsigned threads_used;
+  struct gomp_team *last_team;
+
+  /* This barrier holds and releases threads waiting in threads.  */
+  gomp_barrier_t threads_dock;
 };
 
 /* ... and here is that TLS data.  */
@@ -234,14 +373,20 @@ static inline struct gomp_thread *gomp_thread (void)
 }
 #endif
 
-/* These are the OpenMP 2.5 internal control variables described in
-   section 2.3.  At least those that correspond to environment variables.  */
+extern struct gomp_task_icv *gomp_new_icv (void);
 
-extern unsigned long gomp_nthreads_var;
-extern bool gomp_dyn_var;
-extern bool gomp_nest_var;
-extern enum gomp_schedule_type gomp_run_sched_var;
-extern unsigned long gomp_run_sched_chunk;
+/* Here's how to access the current copy of the ICVs.  */
+
+static inline struct gomp_task_icv *gomp_icv (bool write)
+{
+  struct gomp_task *task = gomp_thread ()->task;
+  if (task)
+    return &task->icv;
+  else if (write)
+    return gomp_new_icv ();
+  else
+    return &gomp_global_icv;
+}
 
 /* The attributes to be used during thread creation.  */
 extern pthread_attr_t gomp_thread_attr;
@@ -286,6 +431,22 @@ extern bool gomp_iter_dynamic_next (long *, long *);
 extern bool gomp_iter_guided_next (long *, long *);
 #endif
 
+/* iter_ull.c */
+
+extern int gomp_iter_ull_static_next (unsigned long long *,
+				      unsigned long long *);
+extern bool gomp_iter_ull_dynamic_next_locked (unsigned long long *,
+					       unsigned long long *);
+extern bool gomp_iter_ull_guided_next_locked (unsigned long long *,
+					      unsigned long long *);
+
+#if defined HAVE_SYNC_BUILTINS && defined __LP64__
+extern bool gomp_iter_ull_dynamic_next (unsigned long long *,
+					unsigned long long *);
+extern bool gomp_iter_ull_guided_next (unsigned long long *,
+				       unsigned long long *);
+#endif
+
 /* ordered.c */
 
 extern void gomp_ordered_first (void);
@@ -297,25 +458,48 @@ extern void gomp_ordered_sync (void);
 
 /* parallel.c */
 
-extern unsigned gomp_resolve_num_threads (unsigned);
+extern unsigned gomp_resolve_num_threads (unsigned, unsigned);
 
 /* proc.c (in config/) */
 
 extern void gomp_init_num_threads (void);
 extern unsigned gomp_dynamic_max_threads (void);
 
+/* task.c */
+
+extern void gomp_init_task (struct gomp_task *, struct gomp_task *,
+			    struct gomp_task_icv *);
+extern void gomp_end_task (void);
+extern void gomp_barrier_handle_tasks (gomp_barrier_state_t);
+
+static void inline
+gomp_finish_task (struct gomp_task *task)
+{
+  gomp_sem_destroy (&task->taskwait_sem);
+}
+
 /* team.c */
 
+extern struct gomp_team *gomp_new_team (unsigned);
 extern void gomp_team_start (void (*) (void *), void *, unsigned,
-			     struct gomp_work_share *);
+			     struct gomp_team *);
 extern void gomp_team_end (void);
 
 /* work.c */
 
-extern struct gomp_work_share * gomp_new_work_share (bool, unsigned);
+extern void gomp_init_work_share (struct gomp_work_share *, bool, unsigned);
+extern void gomp_fini_work_share (struct gomp_work_share *);
 extern bool gomp_work_share_start (bool);
 extern void gomp_work_share_end (void);
 extern void gomp_work_share_end_nowait (void);
+
+static inline void
+gomp_work_share_init_done (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  if (__builtin_expect (thr->ts.last_work_share != NULL, 1))
+    gomp_ptrlock_set (&thr->ts.last_work_share->next_ws, thr->ts.work_share);
+}
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility pop
@@ -328,6 +512,53 @@ extern void gomp_work_share_end_nowait (void);
 #include "omp-lock.h"
 #define _LIBGOMP_OMP_LOCK_DEFINED 1
 #include "omp.h.in"
+
+#if !defined (HAVE_ATTRIBUTE_VISIBILITY) \
+    || !defined (HAVE_ATTRIBUTE_ALIAS) \
+    || !defined (PIC)
+# undef LIBGOMP_GNU_SYMBOL_VERSIONING
+#endif
+
+#ifdef LIBGOMP_GNU_SYMBOL_VERSIONING
+extern void gomp_init_lock_30 (omp_lock_t *) __GOMP_NOTHROW;
+extern void gomp_destroy_lock_30 (omp_lock_t *) __GOMP_NOTHROW;
+extern void gomp_set_lock_30 (omp_lock_t *) __GOMP_NOTHROW;
+extern void gomp_unset_lock_30 (omp_lock_t *) __GOMP_NOTHROW;
+extern int gomp_test_lock_30 (omp_lock_t *) __GOMP_NOTHROW;
+extern void gomp_init_nest_lock_30 (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void gomp_destroy_nest_lock_30 (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void gomp_set_nest_lock_30 (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void gomp_unset_nest_lock_30 (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern int gomp_test_nest_lock_30 (omp_nest_lock_t *) __GOMP_NOTHROW;
+
+extern void gomp_init_lock_25 (omp_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_destroy_lock_25 (omp_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_set_lock_25 (omp_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_unset_lock_25 (omp_lock_25_t *) __GOMP_NOTHROW;
+extern int gomp_test_lock_25 (omp_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_init_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_destroy_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_set_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
+extern void gomp_unset_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
+extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
+
+# define strong_alias(fn, al) \
+  extern __typeof (fn) al __attribute__ ((alias (#fn)));
+# define omp_lock_symver(fn) \
+  __asm (".symver g" #fn "_30, " #fn "@@OMP_3.0"); \
+  __asm (".symver g" #fn "_25, " #fn "@OMP_1.0");
+#else
+# define gomp_init_lock_30 omp_init_lock
+# define gomp_destroy_lock_30 omp_destroy_lock
+# define gomp_set_lock_30 omp_set_lock
+# define gomp_unset_lock_30 omp_unset_lock
+# define gomp_test_lock_30 omp_test_lock
+# define gomp_init_nest_lock_30 omp_init_nest_lock
+# define gomp_destroy_nest_lock_30 omp_destroy_nest_lock
+# define gomp_set_nest_lock_30 omp_set_nest_lock
+# define gomp_unset_nest_lock_30 omp_unset_nest_lock
+# define gomp_test_nest_lock_30 omp_test_nest_lock
+#endif
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # define attribute_hidden __attribute__ ((visibility ("hidden")))

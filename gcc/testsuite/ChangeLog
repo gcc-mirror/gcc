@@ -1,3 +1,27 @@
+2008-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/collapse-1.c: New test.
+	* gcc.dg/gomp/nesting-1.c: New test.
+	* g++.dg/gomp/task-1.C: New test.
+	* g++.dg/gomp/predetermined-1.C: New test.
+	* g++.dg/gomp/tls-4.C: New test.
+	* gfortran.dg/gomp/collapse1.f90: New test.
+	* gfortran.dg/gomp/sharing-3.f90: New test.
+	* gcc.dg/gomp/pr27499.c (foo): Remove is unsigned dg-warning.
+	* g++.dg/gomp/pr27499.C (foo): Likewise.
+	* g++.dg/gomp/for-16.C (foo): Likewise.
+	* g++.dg/gomp/tls-3.C: Remove dg-error, add S::s definition.
+	* g++.dg/gomp/pr34607.C: Adjust dg-error location.
+	* g++.dg/gomp/for-16.C (foo): Add a new dg-error.
+	* gcc.dg/gomp/appendix-a/a.35.4.c: Add dg-warning.
+	* gcc.dg/gomp/appendix-a/a.35.6.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.4.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.35.6.f90: Likewise.
+	* gfortran.dg/gomp/omp_parse1.f90: Remove !$omp tab test.
+	* gfortran.dg/gomp/appendix-a/a.33.4.f90: Remove dg-error
+	about allocatable array.
+	* gfortran.dg/gomp/reduction1.f90: Likewise.
+
 2008-06-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/alias-18.c: XFAIL some sub-tests.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -28,10 +28,8 @@
 /* Provide target-specific access to the futex system call.  */
 
 #include <sys/syscall.h>
-#define FUTEX_WAIT	0
-#define FUTEX_WAKE	1
 
-static inline void
+static inline long
 sys_futex0 (int *addr, int op, int val)
 {
   register long int gpr2  __asm__ ("2");
@@ -49,16 +47,41 @@ sys_futex0 (int *addr, int op, int val)
 		  : "i" (SYS_futex),
 		    "0" (gpr2), "d" (gpr3), "d" (gpr4), "d" (gpr5)
 		  : "memory");
+  return gpr2;
 }
 
 static inline void
 futex_wait (int *addr, int val)
 {
-  sys_futex0 (addr, FUTEX_WAIT, val);
+  long err = sys_futex0 (addr, gomp_futex_wait, val);
+  if (__builtin_expect (err == -ENOSYS, 0))
+    {
+      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
+      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
+      sys_futex0 (addr, gomp_futex_wait, val);
+    }
 }
 
 static inline void
 futex_wake (int *addr, int count)
 {
-  sys_futex0 (addr, FUTEX_WAKE, count);
+  long err = sys_futex0 (addr, gomp_futex_wake, count);
+  if (__builtin_expect (err == -ENOSYS, 0))
+    {
+      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
+      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
+      sys_futex0 (addr, gomp_futex_wake, count);
+    }
+}
+
+static inline void
+cpu_relax (void)
+{
+  __asm volatile ("" : : : "memory");
+}
+
+static inline void
+atomic_write_barrier (void)
+{
+  __sync_synchronize ();
 }

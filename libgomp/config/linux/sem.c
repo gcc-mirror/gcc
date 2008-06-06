@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -29,8 +29,7 @@
    mechanism for libgomp.  This type is private to the library.  This 
    implementation uses atomic instructions and the futex syscall.  */
 
-#include "libgomp.h"
-#include "futex.h"
+#include "wait.h"
 
 
 void
@@ -44,7 +43,7 @@ gomp_sem_wait_slow (gomp_sem_t *sem)
 	  if (__sync_bool_compare_and_swap (sem, val, val - 1))
 	    return;
 	}
-      futex_wait (sem, -1);
+      do_wait (sem, -1);
     }
 }
 

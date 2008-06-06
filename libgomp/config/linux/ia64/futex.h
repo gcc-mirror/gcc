@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -29,23 +29,24 @@
 
 #include <sys/syscall.h>
 
-#define FUTEX_WAIT	0
-#define FUTEX_WAKE	1
 
 
-static inline void
-sys_futex0(int *addr, int op, int val)
+static inline long
+sys_futex0(int *addr, long op, int val)
 {
   register long out0 asm ("out0") = (long) addr;
   register long out1 asm ("out1") = op;
   register long out2 asm ("out2") = val;
   register long out3 asm ("out3") = 0;
+  register long r8 asm ("r8");
+  register long r10 asm ("r10");
   register long r15 asm ("r15") = SYS_futex;
 
   __asm __volatile ("break 0x100000"
-	: "=r"(r15), "=r"(out0), "=r"(out1), "=r"(out2), "=r"(out3)
+	: "=r"(r15), "=r"(out0), "=r"(out1), "=r"(out2), "=r"(out3),
+	  "=r"(r8), "=r"(r10)
 	: "r"(r15), "r"(out0), "r"(out1), "r"(out2), "r"(out3)
-        : "memory", "r8", "r10", "out4", "out5", "out6", "out7",
+	: "memory", "out4", "out5", "out6", "out7",
 	  /* Non-stacked integer registers, minus r8, r10, r15.  */
 	  "r2", "r3", "r9", "r11", "r12", "r13", "r14", "r16", "r17", "r18",
 	  "r19", "r20", "r21", "r22", "r23", "r24", "r25", "r26", "r27",
@@ -56,16 +57,41 @@ sys_futex0(int *addr, int op, int val)
 	  "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",
 	  /* Branch registers.  */
 	  "b6");
+  return r8 & r10;
 }
 
 static inline void
 futex_wait (int *addr, int val)
 {
-  sys_futex0 (addr, FUTEX_WAIT, val);
+  long err = sys_futex0 (addr, gomp_futex_wait, val);
+  if (__builtin_expect (err == ENOSYS, 0))
+    {
+      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
+      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
+      sys_futex0 (addr, gomp_futex_wait, val);
+    }
 }
 
 static inline void
 futex_wake (int *addr, int count)
 {
-  sys_futex0 (addr, FUTEX_WAKE, count);
+  long err = sys_futex0 (addr, gomp_futex_wake, count);
+  if (__builtin_expect (err == ENOSYS, 0))
+    {
+      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
+      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
+      sys_futex0 (addr, gomp_futex_wake, count);
+    }
+}
+
+static inline void
+cpu_relax (void)
+{
+  __asm volatile ("hint @pause" : : : "memory");
+}
+
+static inline void
+atomic_write_barrier (void)
+{
+  __sync_synchronize ();
 }

@@ -596,6 +596,8 @@ extern void c_end_vm_scope (unsigned int);
 extern tree c_expr_to_decl (tree, bool *, bool *);
 extern tree c_begin_omp_parallel (void);
 extern tree c_finish_omp_parallel (tree, tree);
+extern tree c_begin_omp_task (void);
+extern tree c_finish_omp_task (tree, tree);
 extern tree c_finish_omp_clauses (tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if

@@ -2478,6 +2478,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
       }
 
     case OMP_PARALLEL:
+    case OMP_TASK:
     case OMP_FOR:
     case OMP_SECTIONS:
     case OMP_SINGLE:

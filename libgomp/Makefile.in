@@ -83,9 +83,10 @@ toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgomp_la_LIBADD =
 am_libgomp_la_OBJECTS = alloc.lo barrier.lo critical.lo env.lo \
-	error.lo iter.lo loop.lo ordered.lo parallel.lo sections.lo \
-	single.lo team.lo work.lo lock.lo mutex.lo proc.lo sem.lo \
-	bar.lo time.lo fortran.lo affinity.lo
+	error.lo iter.lo iter_ull.lo loop.lo loop_ull.lo ordered.lo \
+	parallel.lo sections.lo single.lo task.lo team.lo work.lo \
+	lock.lo mutex.lo proc.lo sem.lo bar.lo ptrlock.lo time.lo \
+	fortran.lo affinity.lo
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -193,9 +194,15 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
 OBJEXT = @OBJEXT@
+OMP_LOCK_25_ALIGN = @OMP_LOCK_25_ALIGN@
+OMP_LOCK_25_KIND = @OMP_LOCK_25_KIND@
+OMP_LOCK_25_SIZE = @OMP_LOCK_25_SIZE@
 OMP_LOCK_ALIGN = @OMP_LOCK_ALIGN@
 OMP_LOCK_KIND = @OMP_LOCK_KIND@
 OMP_LOCK_SIZE = @OMP_LOCK_SIZE@
+OMP_NEST_LOCK_25_ALIGN = @OMP_NEST_LOCK_25_ALIGN@
+OMP_NEST_LOCK_25_KIND = @OMP_NEST_LOCK_25_KIND@
+OMP_NEST_LOCK_25_SIZE = @OMP_NEST_LOCK_25_SIZE@
 OMP_NEST_LOCK_ALIGN = @OMP_NEST_LOCK_ALIGN@
 OMP_NEST_LOCK_KIND = @OMP_NEST_LOCK_KIND@
 OMP_NEST_LOCK_SIZE = @OMP_NEST_LOCK_SIZE@
@@ -289,8 +296,9 @@ nodist_toolexeclib_HEADERS = libgomp.spec
 libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script)
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
-	loop.c ordered.c parallel.c sections.c single.c team.c work.c \
-	lock.c mutex.c proc.c sem.c bar.c time.c fortran.c affinity.c
+	iter_ull.c loop.c loop_ull.c ordered.c parallel.c sections.c single.c \
+	task.c team.c work.c lock.c mutex.c proc.c sem.c bar.c ptrlock.c \
+	time.c fortran.c affinity.c
 
 nodist_noinst_HEADERS = libgomp_f.h
 nodist_libsubinclude_HEADERS = omp.h
@@ -426,15 +434,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fortran.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter_ull.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop_ull.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordered.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptrlock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sections.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/task.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/team.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/work.Plo@am__quote@

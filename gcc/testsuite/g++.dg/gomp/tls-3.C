@@ -13,8 +13,10 @@ namespace N
 struct S
 {
   static int s;
-#pragma omp thr (s) // { dg-error "is not file, namespace or block scope" }
+#pragma omp thr (s)
 };
+
+int S::s = 5;
 
 int
 foo ()
