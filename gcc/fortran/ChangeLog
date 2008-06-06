@@ -1,3 +1,7 @@
+2008-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi (BESSEL_J1): Fix BES(S)EL_J1 typo.
+
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* scanner.c (skip_free_comments, skip_fixed_comments): Handle tabs.
