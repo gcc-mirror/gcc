@@ -1,3 +1,9 @@
+2008-06-06 Uros Bizjak <ubizjak@gmail.com>
+
+	PR rtl-optimization/36438
+	* cse.c (fold_rtx) [ASHIFT, LSHIFTRT, ASHIFTRT]: Break out early
+	for vector shifts with constant scalar shift operands.
+
 2008-06-06  Sandip Matte  <sandip@rmicorp.com>
 
 	* doc/invoke.texi: Document -march=xlr.
@@ -25,8 +31,7 @@
 
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
-	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP value to
-	200805.
+	* c-cppbuiltin.c (c_cpp_builtins): Change _OPENMP value to 200805.
 	* langhooks.h (struct lang_hooks_for_decls): Add omp_finish_clause.
 	Add omp_private_outer_ref hook, add another argument to
 	omp_clause_default_ctor hook.
@@ -155,8 +160,7 @@
 	(gimplify_omp_parallel, gimplify_omp_for, gimplify_omp_workshare):
 	Adjust callers.
 	(gimplify_adjust_omp_clauses_1): Set OMP_CLAUSE_PRIVATE_OUTER_REF if
-	GOVD_PRIVATE_OUTER_REF is set.  Call omp_finish_clause
-	langhook.
+	GOVD_PRIVATE_OUTER_REF is set.  Call omp_finish_clause langhook.
 	(new_omp_context): Set default_kind to
 	OMP_CLAUSE_DEFAULT_UNSPECIFIED for OMP_TASK regions.
 	(omp_region_type): New enum.
@@ -256,8 +260,7 @@
 	omp_for_data changes.
 	(lower_omp_for): Add rec input clauses before OMP_FOR_PRE_BODY,
 	not after it.  Handle collapsed OMP_FOR loops, adjust for
-	OMP_FOR_{INIT,COND,INCR} changes, adjust extract_omp_for_data
-	caller.
+	OMP_FOR_{INIT,COND,INCR} changes, adjust extract_omp_for_data caller.
 	(get_ws_args_for): Adjust extract_omp_for_data caller.
 	(scan_omp_for): Handle collapsed OMP_FOR
 	loops, adjust for OMP_FOR_{INIT,COND,INCR} changes.
@@ -490,7 +493,7 @@
 2008-06-04  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/27386
-	* config/avr/avr.h: (PUSH_ROUNDING): Remove.
+	* config/avr/avr.h (PUSH_ROUNDING): Remove.
 
 2008-06-04  Andy Hutchinson  <hutchinsonandy@aim.com>
 
@@ -530,8 +533,7 @@
 
 2008-06-04  Richard Guenther  <rguenther@suse.de>
 
-	* tree-flow-inline.h (is_global_var): Do not check TREE_STATIC
-	on MTAGs.
+	* tree-flow-inline.h (is_global_var): Do not check TREE_STATIC on MTAGs.
 	(is_call_clobbered): Always check var_ann->call_clobbered.
 	(mark_call_clobbered): Always set var_ann->call_clobbered.
 	(clear_call_clobbered): Always clear var_ann->call_clobbered.
@@ -543,7 +545,7 @@
 	(may_be_aliased): Do not check TREE_PUBLIC on MTAGs.
 
 2008-06-04  Joseph Myers  <joseph@codesourcery.com>
-            Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.opt (mxgot): New option.
 	* config/m68k/m68k.c (legitimize_pic_address): Handle -mxgot.
@@ -560,7 +562,7 @@
 
 2008-06-03  H.J. Lu  <hongjiu.lu@intel.com>
 
-	*  config/i386/i386.c (ix86_gen_leave): New.
+	* config/i386/i386.c (ix86_gen_leave): New.
 	(ix86_gen_pop1): Likewise.
 	(ix86_gen_add3): Likewise.
 	(ix86_gen_sub3): Likewise.
@@ -597,8 +599,7 @@
 2008-06-03  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386-protos.h (ix86_reg_parm_stack_space): New.
-	* config/i386/i386.h (ix86_reg_parm_stack_space): Removed
-	prototype.
+	* config/i386/i386.h (ix86_reg_parm_stack_space): Removed prototype.
 	* config/i386/i386.c (ix86_reg_parm_stack_space): Changed
 	return type to int.
 	(ix86_call_abi_override): Remove check for call_used_regs.
@@ -612,8 +613,7 @@
 
 	* doc/tm.texi (OVERRIDE_ABI_FORMAT): New.
 	* doc/extend.texi (ms_abi,sysv_abi): New attribute description.
-	* function.c (allocate_struct_function): Use of
-	OVERRIDE_ABI_FORMAT.
+	* function.c (allocate_struct_function): Use of OVERRIDE_ABI_FORMAT.
 	* config/i386/cygming.h (TARGET_64BIT_MS_ABI): Make use
 	of cfun and DEFAULT_ABI to deceide abi mode.
 	(DEFAULT_ABI): New.
@@ -675,8 +675,8 @@
 	(ix86_reg_parm_stack_space): New prototype.
 	(CUMULATIVE_ARGS): Add call_abi member.
 	(machine_function): Add call_abi member.
-	* config/i386/mingw32.h (EXTRA_OS_CPP_BUILTINS): Replace TARGET_64BIT_MS_ABI
-	by DEFAULT_ABI compare to MS_ABI.
+	* config/i386/mingw32.h (EXTRA_OS_CPP_BUILTINS): Replace
+	TARGET_64BIT_MS_ABI by DEFAULT_ABI compare to MS_ABI.
 
 2008-06-02  Andy Hutchinson  <hutchinsonandy@aim.com> 
 
