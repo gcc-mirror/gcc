@@ -1541,7 +1541,7 @@ end program test_besj0
 
 
 @node BESSEL_J1
-@section @code{BESEL_J1} --- Bessel function of the first kind of order 1
+@section @code{BESSEL_J1} --- Bessel function of the first kind of order 1
 @fnindex BESSEL_J1
 @fnindex BESJ1
 @fnindex DBESJ1
