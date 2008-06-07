@@ -179,10 +179,14 @@ try_interchange_loops (lambda_trans_matrix trans,
 		       VEC (data_reference_p, heap) *datarefs,
 		       struct loop *first_loop)
 {
+  bool res;
   struct loop *loop_i;
   struct loop *loop_j;
   unsigned int dependence_steps_i, dependence_steps_j;
   double_int access_strides_i, access_strides_j;
+  double_int small, large, nb_iter;
+  double_int l1_cache_size, l2_cache_size;
+  int cmp;
   unsigned int nb_deps_not_carried_by_i, nb_deps_not_carried_by_j;
   struct data_dependence_relation *ddr;
 
@@ -194,7 +198,10 @@ try_interchange_loops (lambda_trans_matrix trans,
   ddr = VEC_index (ddr_p, dependence_relations, 0);
   if (ddr == NULL || DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     return trans;
-  
+
+  l1_cache_size = uhwi_to_double_int (L1_CACHE_SIZE * 1024);
+  l2_cache_size = uhwi_to_double_int (L2_CACHE_SIZE * 1024);
+
   /* LOOP_I is always the outer loop.  */
   for (loop_j = first_loop->inner; 
        loop_j; 
@@ -216,18 +223,38 @@ try_interchange_loops (lambda_trans_matrix trans,
 	
 	/* Heuristics for loop interchange profitability:
 
+	   0. Don't transform if the smallest stride is larger than
+	      the L2 cache, or if the largest stride multiplied by the
+	      number of iterations is smaller than the L1 cache.
+
 	   1. (spatial locality) Inner loops should have smallest
               dependence steps.
 
 	   2. (spatial locality) Inner loops should contain more
 	   dependence relations not carried by the loop.
 
-	   3. (temporal locality) Inner loops should have smallest 
+	   3. (temporal locality) Inner loops should have smallest
 	      array access strides.
 	*/
+
+	cmp = double_int_ucmp (access_strides_i, access_strides_j);
+	small = cmp < 0 ? access_strides_i : access_strides_j;
+	large = cmp < 0 ? access_strides_j : access_strides_i;
+
+	if (double_int_ucmp (small, l2_cache_size) > 0)
+	  continue;
+
+	res = cmp < 0 ?
+	  estimated_loop_iterations (loop_j, false, &nb_iter):
+	  estimated_loop_iterations (loop_i, false, &nb_iter);
+	large = double_int_mul (large, nb_iter);
+
+	if (res && double_int_ucmp (large, l1_cache_size) < 0)
+	  continue;
+
 	if (dependence_steps_i < dependence_steps_j 
 	    || nb_deps_not_carried_by_i > nb_deps_not_carried_by_j
-	    || double_int_ucmp (access_strides_i, access_strides_j) < 0)
+	    || cmp < 0)
 	  {
 	    lambda_matrix_row_exchange (LTM_MATRIX (trans),
 					loop_depth (loop_i) - loop_depth (first_loop),

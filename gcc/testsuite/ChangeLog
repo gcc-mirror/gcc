@@ -1,3 +1,8 @@
+2008-06-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/gcc.dg/tree-ssa/ltrans-8.c: Fix outer loop strides
+	to be large enough to not be in L1 cache.
+
 2008-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

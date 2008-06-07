@@ -1,3 +1,11 @@
+2008-06-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34976
+	* tree-loop-linear.c (try_interchange_loops): Look at size of
+	caches: don't transform if the smallest stride is larger than
+	the L2 cache, or if the largest stride multiplied by the number of
+	iterations is smaller than the L1 cache.
+
 2008-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

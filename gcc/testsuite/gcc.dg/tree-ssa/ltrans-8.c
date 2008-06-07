@@ -4,9 +4,9 @@ double foo(double *a)
 {
        int i,j;
        double r = 0.0;
-      for (i=0; i<8; ++i)
-               for (j=0; j<8; ++j)
-                      r += a[j*8+i];
+      for (i=0; i<100; ++i)
+               for (j=0; j<1000; ++j)
+                      r += a[j*100+i];
        return r;
 }
 
