@@ -68,8 +68,6 @@ mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-mt port			Aldy Hernandez		aldyh@redhat.com
-mt port			Nathan Sidwell		nathan@codesourcery.com
 pdp11 port		Paul Koning		ni1d@arrl.net
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
@@ -106,7 +104,6 @@ hpux			Steve Ellcey		sje@cup.hp.com
 irix, osf		Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org
 netbsd			Krister Walfridsson	cato@df.lth.se
-sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
@@ -337,6 +334,7 @@ Andreas Jaeger					aj@suse.de
 Harsha Jagasia					harsha.jagasia@amd.com
 Fariborz Jahanian				fjahanian@apple.com
 Martin Jambor					mjambor@suse.cz
+Kean Johnston					jkj@sco.com
 Phillip Jordan					phillip.m.jordan@gmail.com
 Tim Josling					tej@melbpc.org.au
 Klaus Kaempf					kkaempf@progis.de

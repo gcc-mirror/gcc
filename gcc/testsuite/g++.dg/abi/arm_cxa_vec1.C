@@ -1,5 +1,5 @@
 // Check that __cxa_vec_[c]ctor returns a pointer to the array
-// { dg-do run { target arm*-*-* xscale*-*-* } }
+// { dg-do run { target arm*-*-* } }
 
 #include <cxxabi.h>
 

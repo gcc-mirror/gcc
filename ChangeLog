@@ -1,3 +1,9 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (mt port): Remove.
+	(sco5, unixware, sco udk): Remove.
+	(Kean Johnston): Add to Write After Approval.
+
 2008-05-30  Julian Brown  <julian@codesourcery.com>
 
 	* configure.ac (arm*-*-linux-gnueabi): Don't disable building

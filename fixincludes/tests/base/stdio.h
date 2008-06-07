@@ -100,15 +100,4 @@ extern char *tempnam( const char *, const char *);
 
 #endif  /* ULTRIX_CONST2_CHECK */
 
-
-#if defined( ULTRIX_CONST3_CHECK )
-extern FILE *	fdopen( int __filedes, const char *__type );
-
-#endif  /* ULTRIX_CONST3_CHECK */
-
-
-#if defined( UNICOSMK_RESTRICT_CHECK )
-void f (char * __restrict__ x);
-#endif  /* UNICOSMK_RESTRICT_CHECK */
-
 #endif  /* FIXINC_WRAP_STDIO_H_STDIO_STDARG_H */

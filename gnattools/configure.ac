@@ -80,8 +80,6 @@ case "${target}" in
   | powerpc*-wrs-vxworks \
   | sparc*-wrs-vx* \
   | *86-wrs-vxworks \
-  | xscale*-wrs-vx* \
-  | xscale*-wrs-coff \
   | mips*-wrs-vx*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-vxworks.adb"
     ;;

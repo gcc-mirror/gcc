@@ -3918,8 +3918,8 @@ programs.  When preprocessing assembler, however, dollars are not
 identifier characters by default.
 
 Currently the targets that by default do not permit @samp{$} are AVR,
-IP2K, MMIX, MIPS Irix 3, ARM aout, and PowerPC targets for the AIX and
-BeOS operating systems.
+IP2K, MMIX, MIPS Irix 3, ARM aout, and PowerPC targets for the AIX
+operating system.
 
 You can override the default with @option{-fdollars-in-identifiers} or
 @option{fno-dollars-in-identifiers}.  @xref{fdollars-in-identifiers}.

@@ -12,20 +12,13 @@ target=fixinc.sh
 # Check for special fix rules for particular targets
 case $machine in
     alpha*-dec-*vms* | \
-    arm-semi-aof | \
-    hppa1.1-*-osf* | \
-    hppa1.1-*-bsd* | \
-    i370-*-openedition | \
     i?86-moss-msdos* | \
-    i?86-*-moss* | \
     i?86-*-pe | \
     i?86-*-cygwin* | \
     i?86-*-mingw32* | \
     x86_64-*-mingw32* | \
-    i?86-*-uwin* | \
     i?86-*-interix* | \
     *-*-vxworks* | \
-    powerpc-*-eabiaix* | \
     powerpc-*-eabisim* | \
     powerpc-*-eabi*    | \
     powerpc-*-rtems*   | \

@@ -21,7 +21,7 @@
 load_lib gcc-dg.exp
 
 dg-init
-if {[istarget "*arm-*-*"] || [istarget "xscale-*-*"]} {
+if { [istarget "arm*-*-*"] } {
   dg-runtest "$srcdir/$subdir/arm-isr.c" "" ""
 }
 dg-finish

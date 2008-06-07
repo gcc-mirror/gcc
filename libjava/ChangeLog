@@ -1,3 +1,7 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.host (strongarm*-elf, xscale*-elf): Remove.
+
 2008-06-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (mostlyclean-local): Use libtool --mode=clean.

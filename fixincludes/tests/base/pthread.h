@@ -47,7 +47,7 @@
 #else
 # define PTHREAD_MUTEX_INITIALIZER {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, 0, 0, 0, 0, 0, 0 }
 # define PTHREAD_MUTEX_INITWITHNAME_NP(_n_,_a_)     {0, _PTHREAD_MVALID | _PTHREAD_MVF_STA, _n_, _a_, 0, 0, 0, 0 }
-# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_)     {{{0},0}, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_, 0, 0 }
+# define PTHREAD_COND_INITWITHNAME_NP(_n_,_a_)     {0, _PTHREAD_CVALID | _PTHREAD_CVF_STA, _n_, _a_, 0, 0 }
 #endif
 
 #define PTHREAD_RWLOCK_INITIALIZER {_PTHREAD_RWVALID | _PTHREAD_RWVF_STA, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -105,22 +105,6 @@ extern int __page_size;
 #if defined( PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK )
 extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
-
-
-#if defined( SOLARIS_MUTEX_INIT_1_CHECK )
-#ident "@(#)pthread.h  1.16    97/05/05 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_MUTEX_INITIALIZER	{{{0}, 0}, {{{0}}}, 0}
-#else
-#define PTHREAD_MUTEX_INITIALIZER	{{{0}, 0}, {{{0}}}, {0}}
-#endif
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_COND_INITIALIZER	{{{0},0}, 0} /* */
-#else
-#define PTHREAD_COND_INITIALIZER	{{{0},0}, {0}} /* */
-#endif
-
-#endif  /* SOLARIS_MUTEX_INIT_1_CHECK */
 
 
 #if defined( SOLARIS_MUTEX_INIT_2_CHECK )

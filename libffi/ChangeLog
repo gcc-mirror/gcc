@@ -1,3 +1,9 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (parisc*-*-linux*, powerpc-*-sysv*,
+	powerpc-*-beos*): Remove.
+	* configure: Regenerate.
+
 2008-05-09  Julian Brown  <julian@codesourcery.com>
 
 	* Makefile.am (LTLDFLAGS): New.

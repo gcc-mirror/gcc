@@ -74,13 +74,6 @@ BSD43__IOWR('T', 1) /* Some are multi-line */
 #endif  /* IO_QUOTES_USE_CHECK */
 
 
-#if defined( LIBC1_IFDEFD_MEMX_CHECK )
-/* Copy N bytes of SRC to DEST.  */
-extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,
-                         size_t __n));
-#endif  /* LIBC1_IFDEFD_MEMX_CHECK */
-
-
 #if defined( MACHINE_ANSI_H_VA_LIST_CHECK )
  # define _BSD_VA_LIST_	__builtin_va_list
 #endif  /* MACHINE_ANSI_H_VA_LIST_CHECK */
@@ -127,8 +120,3 @@ extern unsigned int
 extern size_t
 	strlen(), strspn();
 #endif  /* SYSV68_STRING_CHECK */
-
-
-#if defined( WINDISS_VALIST_CHECK )
-#include <stdarg.h>
-#endif  /* WINDISS_VALIST_CHECK */

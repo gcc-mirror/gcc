@@ -72,7 +72,7 @@ BACKTRACESPEC=
 
 # This case statement supports per-CPU defaults.
 case "${host}" in
-  arm*-elf | strongarm*-elf | xscale*-elf)
+  arm*-elf)
 	with_libffi_default=no
 	PROCESS=Ecos
 	FILE=Posix

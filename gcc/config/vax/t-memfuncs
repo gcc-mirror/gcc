@@ -1,3 +1,0 @@
-LIB2FUNCS_EXTRA = \
-    $(srcdir)/config/memcmp.c $(srcdir)/config/memcpy.c \
-    $(srcdir)/config/memmove.c $(srcdir)/config/memset.c

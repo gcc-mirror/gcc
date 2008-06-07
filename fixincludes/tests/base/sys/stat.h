@@ -33,48 +33,6 @@ extern int fchmod(int, mode_t);
 #endif  /* RS6000_FCHMOD_CHECK */
 
 
-#if defined( SCO_STATIC_FUNC_CHECK )
-#ifdef __STDC__
-#if __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-static int	stat(const char *__f, struct stat *__p) {
-	return __stat32(__f, __p);
-}
-#if __cplusplus
- }
-#endif /* __cplusplus */
-
-#  else /* !__STDC__ THIS FAILS ON BSD SYSTEMS */
-#if __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-static int	stat(__f, __p)
-	char *__f;
-	struct stat *__p;
-{
-	return __stat32(__f, __p);
-}
-#if __cplusplus
- }
-#endif /* __cplusplus */
-#endif
-#endif  /* SCO_STATIC_FUNC_CHECK */
-
-
-#if defined( ULTRIX_STAT_CHECK )
-@(#)stat.h      6.1     (ULTRIX)
-#define S_IFPORT S_IFIFO
-
-/* macro to test for symbolic link */
-#define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)
-
-	fstat(),
-	lstat(),
-/* THE INSERTION LINE FAILS ON BSD SYSTEMS */
-#endif  /* ULTRIX_STAT_CHECK */
-
-
 #if defined( VXWORKS_NEEDS_VXWORKS_CHECK )
 #include </dev/null> /* ULONG */
 # define	__INCstath <sys/stat.h>

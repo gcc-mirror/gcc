@@ -453,8 +453,6 @@ proc check_profiling_available { test_what } {
 	     || [istarget avr-*-*]
 	     || [istarget bfin-*-*]
 	     || [istarget powerpc-*-eabi*]
-	     || [istarget strongarm*-*-elf]
-	     || [istarget xscale*-*-elf]
 	     || [istarget cris-*-*]
 	     || [istarget crisv32-*-*]
 	     || [istarget fido-*-elf]
@@ -465,8 +463,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget mips*-*-elf*]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa-*-elf]
-	     || [istarget *-*-vxworks*]
-	     || [istarget *-*-windiss] } {
+	     || [istarget *-*-vxworks*] } {
 	    set profiling_available_saved 0
 	} else {
 	    set profiling_available_saved 1
