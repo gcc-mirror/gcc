@@ -1,3 +1,7 @@
+2008-06-07  Samuel Tardieu  <sam@rfc1149.net>
+
+	* gnat.dg/specs/oversize.ads: New.
+
 2008-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/35327

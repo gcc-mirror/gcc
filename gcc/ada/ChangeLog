@@ -1,3 +1,11 @@
+2008-06-07  Samuel Tardieu  <sam@rfc1149.net>
+
+	* sem_res.adb (Large_Storage_Type): A type is large if it
+	requires as many bits as Positive to store its values and its
+	bounds are known at compile time.
+	* sem_ch13.adb (Minimum_Size): Note that this function returns
+	0 if the size is not known at compile time.
+
 2008-06-06  Nicolas Setton  <setton@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
