@@ -8088,17 +8088,17 @@ grokdeclarator (const cp_declarator *declarator,
 		set_no_warning = true;
 	      }
 
-	    /* Warn about some types functions can't return.  */
+	    /* Error about some types functions can't return.  */
 
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
 		error ("%qs declared as function returning a function", name);
-		type = integer_type_node;
+		return error_mark_node;
 	      }
 	    if (TREE_CODE (type) == ARRAY_TYPE)
 	      {
 		error ("%qs declared as function returning an array", name);
-		type = integer_type_node;
+		return error_mark_node;
 	      }
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
