@@ -1,3 +1,10 @@
+2008-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): Implement c_sizeof.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Do not
+	create unneeded variable in the scalar case.
+	* intrinsic.texi: Add C_SIZEOF documentation.
+
 2008-06-06  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.texi (BESSEL_J1): Fix BES(S)EL_J1 typo.

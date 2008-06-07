@@ -75,6 +75,7 @@ Some basic guidelines for editing this document:
 * @code{C_F_PROCPOINTER}: C_F_PROCPOINTER, Convert C into Fortran procedure pointer
 * @code{C_FUNLOC}:      C_FUNLOC,  Obtain the C address of a procedure
 * @code{C_LOC}:         C_LOC,     Obtain the C address of an object
+* @code{C_SIZEOF}:      C_SIZEOF,  Size in bytes of an expression
 * @code{CEILING}:       CEILING,   Integer ceiling function
 * @code{CHAR}:          CHAR,      Integer-to-character conversion function
 * @code{CHDIR}:         CHDIR,     Change working directory
@@ -2136,6 +2137,56 @@ end subroutine association_test
 
 @item @emph{See also}:
 @ref{C_ASSOCIATED}, @ref{C_FUNLOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@end table
+
+
+@node C_SIZEOF
+@section @code{C_SIZEOF} --- Size in bytes of an expression
+@fnindex C_SIZEOF
+@cindex expression size
+@cindex size of an expression
+
+@table @asis
+@item @emph{Description}:
+@code{C_SIZEOF(X)} calculates the number of bytes of storage the
+expression @code{X} occupies.
+
+@item @emph{Standard}:
+Fortran 2008
+
+@item @emph{Class}:
+Intrinsic function
+
+@item @emph{Syntax}:
+@code{N = C_SIZEOF(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The argument shall be of any type, rank or shape.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type integer and of the system-dependent kind
+@var{C_SIZE_T} (from the @var{ISO_C_BINDING} module). Its value is the
+number of bytes occupied by the argument.  If the argument has the
+@code{POINTER} attribute, the number of bytes of the storage area pointed
+to is returned.  If the argument is of a derived type with @code{POINTER}
+or @code{ALLOCATABLE} components, the return value doesn't account for
+the sizes of the data pointed to by these components.
+
+@item @emph{Example}:
+@smallexample
+   use iso_c_binding
+   integer(c_int) :: i
+   real(c_float) :: r, s(5)
+   print *, (c_sizeof(s)/c_sizeof(r) == 5)
+   end
+@end smallexample
+The example will print @code{.TRUE.} unless you are using a platform
+where default @code{REAL} variables are unusually padded.
+
+@item @emph{See also}:
+@ref{SIZEOF}
 @end table
 
 
@@ -9870,7 +9921,11 @@ the sizes of the data pointed to by these components.
 @end smallexample
 The example will print @code{.TRUE.} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
+
+@item @emph{See also}:
+@ref{C_SIZEOF}
 @end table
+
 
 @node SLEEP
 @section @code{SLEEP} --- Sleep for the specified number of seconds
