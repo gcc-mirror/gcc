@@ -1,3 +1,11 @@
+2008-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/36111
+	* gcc.dg/pr36111.c: New test.
+	
 2008-06-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc_spu):
