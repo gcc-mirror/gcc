@@ -3265,8 +3265,6 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   gfc_init_se (&argse, NULL);
   ss = gfc_walk_expr (arg);
 
-  source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
-
   if (ss == gfc_ss_terminator)
     {
       gfc_conv_expr_reference (&argse, arg);
@@ -3276,14 +3274,14 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 
       /* Obtain the source word length.  */
       if (arg->ts.type == BT_CHARACTER)
-	source_bytes = size_of_string_in_bytes (arg->ts.kind,
-						argse.string_length);
+	se->expr = size_of_string_in_bytes (arg->ts.kind,
+					    argse.string_length);
       else
-	source_bytes = fold_convert (gfc_array_index_type,
-				     size_in_bytes (type)); 
+	se->expr = fold_convert (gfc_array_index_type, size_in_bytes (type)); 
     }
   else
     {
+      source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg, ss);
       source = gfc_conv_descriptor_data_get (argse.expr);
@@ -3312,10 +3310,10 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 			     tmp, source_bytes);
 	  gfc_add_modify_expr (&argse.pre, source_bytes, tmp);
 	}
+      se->expr = source_bytes;
     }
 
   gfc_add_block_to_block (&se->pre, &argse.pre);
-  se->expr = source_bytes;
 }
 
 
