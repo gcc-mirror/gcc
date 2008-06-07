@@ -1,29 +1,3 @@
-2008-06-06  Nicolas Setton  <setton@adacore.com>
-	    Olivier Hainque  <hainque@adacore.com>
-
-	* ada-tree.h (DECL_PARALLEL_TYPE): New language specific
-	attribute, parallel descriptive type attached to another
-	type for debug info generation purposes.
-	* utils.c (add_parallel_type): New function, register
-	parallel type to be attached to a type.
-	(get_parallel_type): New function, fetch a registered
-	parallel type, if any.
-	(rest_of_record_type_compilation): Register the parallel
-	type we	make for variable size records.
-	* gigi.h (add_parallel_type, get_parallel_type): Declare.
-	* decl.c (gnat_to_gnu_entity, maybe_pad_type): Register	the
-	parallel debug types we make.
-	* trans.c (extract_encoding, decode_name): New functions.
-	(gigi): If the DWARF attribute extensions are available, setup
-	to use them.
-	* lang.opt: Register language specific processing request
-	for -gdwarf+.
-	* misc.c (gnat_dwarf_extensions): New global variable. How much
-	do we want of our DWARF extensions. 0 by default.
-	(gnat_handle_option) <OPT_gdwarf_>: Increment gnat_dwarf_extensions.
-	(gnat_post_options): Map gnat_dwarf_extensions to the
-	commonuse_gnu_debug_info_extensions for later processing.
-	
 2008-06-06 Uros Bizjak <ubizjak@gmail.com>
 
 	PR rtl-optimization/36438
