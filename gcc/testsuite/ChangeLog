@@ -1,3 +1,8 @@
+2008-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/35327
+        * g++.dg/parse/crash41.C: New.
+
 2008-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36362
