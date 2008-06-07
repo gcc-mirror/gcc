@@ -115,6 +115,7 @@ maybe_clone_body (tree fn)
       TREE_PUBLIC (clone) = TREE_PUBLIC (fn);
       DECL_VISIBILITY (clone) = DECL_VISIBILITY (fn);
       DECL_VISIBILITY_SPECIFIED (clone) = DECL_VISIBILITY_SPECIFIED (fn);
+      DECL_DLLIMPORT_P (clone) = DECL_DLLIMPORT_P (fn);
 
       /* Adjust the parameter names and locations.  */
       parm = DECL_ARGUMENTS (fn);
