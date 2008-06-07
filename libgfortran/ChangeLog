@@ -1,3 +1,20 @@
+2008-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/36420
+	PR libfortran/36421
+	PR libfortran/36422
+	* io/io.h: Add prototype for write_real.
+	* io/transfer.c (formatted_transfer_scalar): For FMT_G and width zero,
+	use write_real.
+	* io/format.c: Add zero width error message. (parse_format_list): Use
+	error message for FMT_A if followed by FMT_ZERO. Use zero width error
+	message	for FMT_G if mode is READ or if -std=f95 or f2003. (fmormat0):
+	Fix typo in comment.
+	* io/write.c(write_a): Set wlen to len if FMT_G	and length is zero.
+	(write_l): Add wlen variable and use it if FMT_G and width is zero.
+	(write_decimal): If FMT_G, set m to -1 to flag processor dependent
+	formatting. (write_real): Remove static declaration.
+
 2008-05-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/36319

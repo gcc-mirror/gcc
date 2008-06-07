@@ -1175,7 +1175,10 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 		write_a (dtp, f, p, len);
 		break;
 	      case BT_REAL:
-		write_d (dtp, f, p, len);
+		if (f->u.real.w == 0)
+		  write_real (dtp, p, len);
+		else
+		  write_d (dtp, f, p, len);
 		break;
 	      default:
 	      bad_type:
