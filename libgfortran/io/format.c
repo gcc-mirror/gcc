@@ -71,8 +71,8 @@ static const char posint_required[] = "Positive width required in format",
   unexpected_end[] = "Unexpected end of format string",
   bad_string[] = "Unterminated character constant in format",
   bad_hollerith[] = "Hollerith constant extends past the end of the format",
-  reversion_error[] = "Exhausted data descriptors in format";
-
+  reversion_error[] = "Exhausted data descriptors in format",
+  zero_width[] = "Zero width in format descriptor";
 
 /* next_char()-- Return the next character in the format string.
  * Returns -1 when the string is done.  If the literal flag is set,
@@ -698,6 +698,12 @@ parse_format_list (st_parameter_dt *dtp)
 
     case FMT_A:
       t = format_lex (fmt);
+      if (t == FMT_ZERO)
+	{
+	  fmt->error = zero_width;
+	  goto finished;
+	}
+
       if (t != FMT_POSINT)
 	{
 	  fmt->saved_token = t;
@@ -719,6 +725,17 @@ parse_format_list (st_parameter_dt *dtp)
       tail->repeat = repeat;
 
       u = format_lex (fmt);
+      if (t == FMT_G && u == FMT_ZERO)
+	{
+	  if (notification_std (GFC_STD_F2008) == ERROR
+	      || dtp->u.p.mode == READING)
+	    {
+	      fmt->error = zero_width;
+	      goto finished;
+	    }
+	  tail->u.real.w = 0;
+	  break;
+	}
       if (t == FMT_F || dtp->u.p.mode == WRITING)
 	{
 	  if (u != FMT_POSINT && u != FMT_ZERO)
@@ -1079,7 +1096,7 @@ next_format0 (fnode * f)
 
 /* next_format()-- Return the next format node.  If the format list
  * ends up being exhausted, we do reversion.  Reversion is only
- * allowed if the we've seen a data descriptor since the
+ * allowed if we've seen a data descriptor since the
  * initialization or the last reversion.  We return NULL if there
  * are no more data descriptors to return (which is an error
  * condition). */

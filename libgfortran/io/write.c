@@ -46,7 +46,9 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   int wlen;
   char *p;
 
-  wlen = f->u.string.length < 0 ? len : f->u.string.length;
+  wlen = f->u.string.length < 0
+	 || (f->format == FMT_G && f->u.string.length == 0)
+	 ? len : f->u.string.length;
 
 #ifdef HAVE_CRLF
   /* If this is formatted STREAM IO convert any embedded line feed characters
@@ -235,15 +237,18 @@ void
 write_l (st_parameter_dt *dtp, const fnode *f, char *source, int len)
 {
   char *p;
+  int wlen;
   GFC_INTEGER_LARGEST n;
 
-  p = write_block (dtp, f->u.w);
+  wlen = (f->format == FMT_G && f->u.w == 0) ? 1 : f->u.w;
+  
+  p = write_block (dtp, wlen);
   if (p == NULL)
     return;
 
-  memset (p, ' ', f->u.w - 1);
+  memset (p, ' ', wlen - 1);
   n = extract_int (source, len);
-  p[f->u.w - 1] = (n) ? 'T' : 'F';
+  p[wlen - 1] = (n) ? 'T' : 'F';
 }
 
 
@@ -340,12 +345,11 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   char itoa_buf[GFC_BTOA_BUF_SIZE];
 
   w = f->u.integer.w;
-  m = f->u.integer.m;
+  m = f->format == FMT_G ? -1 : f->u.integer.m;
 
   n = extract_int (source, len);
 
   /* Special case:  */
-
   if (m == 0 && n == 0)
     {
       if (w == 0)
@@ -690,7 +694,7 @@ write_character (st_parameter_dt *dtp, const char *source, int length)
    This is 1PG14.7E2 for REAL(4), 1PG23.15E3 for REAL(8),
    1PG28.19E4 for REAL(10) and 1PG43.34E4 for REAL(16).  */
 
-static void
+void
 write_real (st_parameter_dt *dtp, const char *source, int length)
 {
   fnode f ;
