@@ -28,37 +28,40 @@ FIXINC_DEBUG = yes;
  * building with g++ and -D_LARGE_FILES
  */
 fix = {
-	hackname  = AAB_aix_stdio;
-	files     = stdio.h;
-	select    = "define fopen fopen64";
-	mach      = "*-*-aix*";
+    hackname  = AAB_aix_stdio;
+    files     = stdio.h;
+    select    = "define fopen fopen64";
+    mach      = "*-*-aix*";
+    test-text = ''; /* no way to test */
 
-	c_fix	  = wrap;
+    c_fix     = wrap;
 
-	c_fix_arg = "";
+    c_fix_arg = "";
 
-	c_fix_arg = "\n" 
-	"#if defined __GNUG__ && defined _LARGE_FILES && defined __cplusplus\n"
-	"#define __need__aix_stdio_h_fix\n"
-	"#ifdef __need__aix_stdio_h_fix\n"
-	"#undef fseeko\n"
-	"#undef ftello\n"
-	"#undef fgetpos\n"
-	"#undef fsetpos\n"
-	"#undef fopen\n"
-	"#undef freopen\n"
-	"/* Alias the symbols using asm */\n"
-	"extern \"C\" {\n"
-	"extern int fgetpos(FILE *, fpos64_t *) __asm__(\"fgetpos64\");\n"
-	"extern FILE *fopen(const char *, const char *) __asm__(\"fopen64\");\n"
-	"extern FILE *freopen(const char *, const char *, FILE *) __asm__(\"freopen64\");\n"
-	"extern int fseeko(FILE *, off64_t, int) __asm__(\"fseeko64\");\n"
-	"extern int fsetpos(FILE *, const fpos64_t *) __asm__(\"fsetpos64\");\n"
-	"extern off64_t ftello(FILE *) __asm__(\"ftello64\");\n"
-	"}\n"
-	"#endif\n"
-	"#endif\n";
-	test_text = "";
+    c_fix_arg = <<- _EOArg_
+
+	#if defined __GNUG__ && defined _LARGE_FILES && defined __cplusplus
+	#define __need__aix_stdio_h_fix
+	#ifdef __need__aix_stdio_h_fix
+	#undef fseeko
+	#undef ftello
+	#undef fgetpos
+	#undef fsetpos
+	#undef fopen
+	#undef freopen
+	/* Alias the symbols using asm */
+	extern "C" {
+	extern int fgetpos(FILE *, fpos64_t *) __asm__("fgetpos64");
+	extern FILE *fopen(const char *, const char *) __asm__("fopen64");
+	extern FILE *freopen(const char *, const char *, FILE *) __asm__("freopen64");
+	extern int fseeko(FILE *, off64_t, int) __asm__("fseeko64");
+	extern int fsetpos(FILE *, const fpos64_t *) __asm__("fsetpos64");
+	extern off64_t ftello(FILE *) __asm__("ftello64");
+	}
+	#endif
+	#endif
+
+	_EOArg_;
 };
 
 
@@ -202,10 +205,10 @@ fix = {
 	#define __FD_ZERO(fdsetp) \
 	  do { \
 	    int __d0, __d1; \
-			__asm__ __volatile__("cld ; rep ; stosl" \
-				: "=&c" (__d0), "=&D" (__d1) \
-				: "a" (0), "0" (__FDSET_LONGS), \
-				  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
+		__asm__ __volatile__("cld ; rep ; stosl" \
+			: "=&c" (__d0), "=&D" (__d1) \
+			: "a" (0), "0" (__FDSET_LONGS), \
+			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
 	  } while (0)
 	#endif
 	
@@ -348,7 +351,7 @@ fix = {
 	  extern int memcmp();
 
 	#endif /* __memory_h__ */
-	_EndOfHeader;
+	_EndOfHeader_;
 };
 
 
@@ -373,24 +376,6 @@ fix = {
                "#endif  /* _SYS_VARARGS_H */\n";
 };
 #endif
-
-
-/*
- *  The Ultrix 4.3 file string.h is a symbolic link to strings.h.
- *  Replace string.h link with a file that includes strings.h to prevent
- *  problems from multiple inclusion.
- */
-fix = {
-    hackname = AAB_ultrix_string;
-    files    = string.h;
-    mach     = "*-*-ultrix4.3";
-    replace  = <<-  _EndOfHeader_
-	#ifndef _STRING_INCLUDED
-	  #define _STRING_INCLUDED
-	  #include <strings.h>
-	#endif /* _STRING_INCLUDED */
-	_EndOfHeader_;
-};
 
 
 /*
@@ -1173,11 +1158,11 @@ fix = {
     c_fix     = format;
     c_fix_arg = "%0 && (defined __extern_inline || defined __GNUC_GNU_INLINE__)";
     test_text = <<-EOT
-#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ \
-    && !defined __OPTIMIZE_SIZE__ && !defined __NO_INLINE__
-# define __USE_EXTERN_INLINES	1
-#endif
-EOT;
+	#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ \
+	    && !defined __OPTIMIZE_SIZE__ && !defined __NO_INLINE__
+	# define __USE_EXTERN_INLINES	1
+	#endif
+	EOT;
 };
 
 
@@ -1192,10 +1177,10 @@ fix = {
     c_fix     = format;
     c_fix_arg = "%1 && (defined __extern_inline || defined __GNUC_GNU_INLINE__)\n%2";
     test_text = <<-EOT
-#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__
-# define __USE_EXTERN_INLINES	1
-#endif
-EOT;
+	#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__
+	# define __USE_EXTERN_INLINES	1
+	#endif
+	EOT;
 };
 
 
@@ -1285,39 +1270,39 @@ fix = {
                "s/{ { 0, } }/{ { 0, 0, 0, 0, 0, (void *) 0, 0, 0 } }/";
 
     test_text = <<- _EOText_
-#define PTHREAD_MUTEX_INITIALIZER \\
-  { { 0, } }
-#ifdef __USE_GNU
-# if __WORDSIZE == 64
-#  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP } }
-#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP } }
-#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP } }
-# else
-#  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP } }
-#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP } }
-#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \\
-  { { 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP } }
-# endif
-#endif
-# define PTHREAD_RWLOCK_INITIALIZER \\
-  { { 0, } }
-# ifdef __USE_GNU
-#  if __WORDSIZE == 64
-#   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \\
-  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,					      \\
-      PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP } }
-#  else
-#   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \\
-  { { 0, 0, 0, 0, 0, 0, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP } }
-#  endif
-# endif
-#define PTHREAD_COND_INITIALIZER { { 0, } }
-_EOText_;
+	#define PTHREAD_MUTEX_INITIALIZER \\
+	  { { 0, } }
+	#ifdef __USE_GNU
+	# if __WORDSIZE == 64
+	#  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP } }
+	#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP } }
+	#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP } }
+	# else
+	#  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP } }
+	#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP } }
+	#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \\
+	  { { 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP } }
+	# endif
+	#endif
+	# define PTHREAD_RWLOCK_INITIALIZER \\
+	  { { 0, } }
+	# ifdef __USE_GNU
+	#  if __WORDSIZE == 64
+	#   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \\
+	  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			      \\
+	      PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP } }
+	#  else
+	#   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \\
+	  { { 0, 0, 0, 0, 0, 0, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP } }
+	#  endif
+	# endif
+	#define PTHREAD_COND_INITIALIZER { { 0, } }
+	_EOText_;
 };
 
 
