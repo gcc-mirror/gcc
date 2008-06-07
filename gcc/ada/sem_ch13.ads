@@ -64,7 +64,8 @@ package Sem_Ch13 is
    --  the given type, of the size the type would have if it were biased. If
    --  the type is already biased, then Minimum_Size returns the biased size,
    --  regardless of the setting of Biased. Also, fixed-point types are never
-   --  biased in the current implementation.
+   --  biased in the current implementation. If the size is not known at
+   --  compile time, this function returns 0.
 
    procedure Check_Constant_Address_Clause (Expr : Node_Id; U_Ent : Entity_Id);
    --  Expr is an expression for an address clause. This procedure checks

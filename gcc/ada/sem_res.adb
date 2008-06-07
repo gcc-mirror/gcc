@@ -56,6 +56,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elab; use Sem_Elab;
@@ -471,12 +472,15 @@ package body Sem_Res is
 
                function Large_Storage_Type (T : Entity_Id) return Boolean is
                begin
-                  return
-                    T = Standard_Integer
-                      or else
-                    T = Standard_Positive
-                      or else
-                    T = Standard_Natural;
+                  --  The type is considered large if its bounds are known at
+                  --  compile time and if it requires at least as many bits as
+                  --  a Positive to store the possible values.
+
+                  return Compile_Time_Known_Value (Type_Low_Bound (T))
+                    and then Compile_Time_Known_Value (Type_High_Bound (T))
+                    and then
+                      Minimum_Size (T, Biased => True) >=
+                        Esize (Standard_Integer) - 1;
                end Large_Storage_Type;
 
             begin
