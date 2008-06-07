@@ -1,3 +1,18 @@
+2008-06-07  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/27386
+	* config/avr/avr.h: (PUSH_ROUNDING): Remove.
+	
+	PR target/30243
+	* builtins.c (expand_builtin_signbit): Don't take lowpart when
+	register is already smaller or equal to required mode. 	
+
+	PR target/34932
+	* config/avr/avr.md (*addhi3_zero_extend2): Remove.
+	
+	* config/avr/avr.h (MAX_OFILE_ALIGNMENT): Define.
+
+	
 2008-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36291

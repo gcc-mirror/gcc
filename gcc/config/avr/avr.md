@@ -586,18 +586,6 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
-(define_insn "*addhi3_zero_extend2"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(plus:HI
-	 (zero_extend:HI (match_operand:QI 1 "register_operand" "%0"))
-	 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
-  ""
-  "add %0,%2
-	mov %B0,__zero_reg__
-	adc %B0,__zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "set_n")])
-
 (define_insn "*addhi3_sp_R_pc2"
   [(set (match_operand:HI 1 "stack_register_operand" "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand" "q")

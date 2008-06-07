@@ -5780,7 +5780,7 @@ expand_builtin_signbit (tree exp, rtx target)
 	  lo = 0;
 	}
 
-      if (imode != rmode)
+      if (GET_MODE_SIZE (imode) > GET_MODE_SIZE (rmode))
 	temp = gen_lowpart (rmode, temp);
       temp = expand_binop (rmode, and_optab, temp,
 			   immed_double_const (lo, hi, rmode),

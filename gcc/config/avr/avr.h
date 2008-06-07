@@ -138,6 +138,8 @@ extern GTY(()) section *progmem_section;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 8
 
+#define MAX_OFILE_ALIGNMENT (32768 * 8)
+
 #define TARGET_VTABLE_ENTRY_ALIGN 8
 
 #define STRICT_ALIGNMENT 0
@@ -349,7 +351,9 @@ enum reg_class {
 #define RETURN_ADDR_RTX(count, x) \
   gen_rtx_MEM (Pmode, memory_address (Pmode, plus_constant (tem, 1)))
 
-#define PUSH_ROUNDING(NPUSHED) (NPUSHED)
+/* Don't use Push rounding. expr.c: emit_single_push_insn is broken 
+   for POST_DEC targets (PR27386).  */
+/*#define PUSH_ROUNDING(NPUSHED) (NPUSHED)*/
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
