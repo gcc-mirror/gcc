@@ -86,7 +86,7 @@
 # ifdef __USE_GNU
 #  if __WORDSIZE == 64
 #   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \
-  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,					      \
+  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			      \
       PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP } }
 #  else
 #   define PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP \
