@@ -1,3 +1,98 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (Obsolete configurations): Remove list of
+	configurations.
+	(Unsupported targets list): Add *-*-linux*aout*, *-*-linux*libc1*,
+	*-*-solaris2.[0-6], *-*-solaris2.[0-6].*, *-*-sysv*.  Remove other
+	targets matched by those patterns.
+	(strongarm*-*-*, ep9312*-*-*, xscale-*-*, parisc*-*-*,
+	m680[012]0-*-*, *-*-linux*libc1*, *-*-linux*aout*,
+	alpha*-*-unicosmk*, strongarm*-*-freebsd*, ep9312-*-elf,
+	arm*-*-kaos*, cris-*-aout, parisc*64*-*-linux*, parisc*-*-linux*,
+	hppa1.1-*-pro*, hppa1.1-*-osf*, hppa1.1-*-bsd*,
+	i[34567]86-sequent-ptx4*, i[34567]86-sequent-sysv4*,
+	i[34567]86-*-beoself*, i[34567]86-*-beos*, i[34567]86-*-sco3.2v5*,
+	i[34567]86-*-sysv5*, i[34567]86-*-sysv4*, i[34567]86-*-uwin*,
+	i[34567]86-*-kaos*, m68020-*-elf*, m68010-*-netbsdelf*,
+	mips-wrs-windiss, mt-*-elf, powerpc-*-beos*, powerpc-*-chorusos*,
+	powerpc-wrs-windiss*, powerpcle-*-sysv*, powerpc-*-kaos*,
+	powerpcle-*-kaos*, sh*-*-kaos*, sparc-*-sysv4*, strongarm-*-elf*,
+	strongarm-*-pe, strongarm-*-kaos*, vax-*-bsd*, vax-*-sysv*,
+	vax-*-ultrix*, xscale-*-elf, xscale-*-coff,
+	i[34567]86-*-linux*aout*, i[34567]86-*-linux*libc1): Remove.
+	Make code for Solaris 7 and greater unconditional for Solaris.
+	(ep9312-*-*, parisc1*, m680[012]0-*-*, parisc*-*-*, mt-*-*):
+	Remove --with-* handling.
+	* config/rs6000/sysv4.h (-mwindiss): Remove from all specs.
+	(LIB_WINDISS_SPEC, CPP_OS_WINDISS_SPEC, STARTFILE_WINDISS_SPEC,
+	ENDFILE_WINDISS_SPEC, LINK_START_WINDISS_SPEC,
+	LINK_OS_WINDISS_SPEC): Remove.
+	* config/rs6000/sysv4.opt (mwindiss): Remove.
+	* configure.ac (strongarm*-*-*, xscale*-*-*): Remove.
+	* configure: Regenerate.
+	* doc/cpp.texi: Don't mention BeOS.
+	* doc/extend.texi (interrupt): Don't mention MS1.
+	* doc/install.texi: (i386-@var{any}-sysv, m68k-bull-sysv,
+	m68k-hp-hpux, m68000-hp-hpux, m68000-att-sysv,
+	alphaev5-cray-unicosmk*, xscale-*-*, i?86-*-linux*aout,
+	i?86-*-sco3.2v5*, i?86-*-udk, m68k-hp-hpux, powerpc-*-sysv4,
+	powerpc-*-sysv4, powerpcle-*-sysv4, *-*-sysv*, vax-dec-ultrix):
+	Remove.
+	* doc/invoke.texi (MT Options): Remove.
+	(-mwindiss): Remove.
+	(CRIS Options): Remove cris-axis-aout references.
+	(HPPA Options): Don't mention hppa1.1-*-pro.
+	* doc/md.texi: (MorphoTech family): Remove.
+	* libgcc2.c: Don't handle UWIN.
+	* config/alpha/t-unicosmk: Remove.
+	* config/alpha/unicosmk.h: Remove.
+	* config/arm/kaos-arm.h: Remove.
+	* config/arm/kaos-strongarm.h: Remove.
+	* config/arm/strongarm-coff.h: Remove.
+	* config/arm/strongarm-elf.h: Remove.
+	* config/arm/strongarm-pe.h: Remove.
+	* config/arm/t-strongarm-pe: Remove.
+	* config/arm/t-xscale-coff: Remove.
+	* config/arm/t-xscale-elf: Remove.
+	* config/arm/xscale-coff.h: Remove.
+	* config/arm/xscale-elf.h: Remove.
+	* config/chorus.h: Remove.
+	* config/cris/aout.h: Remove.
+	* config/cris/aout.opt: Remove.
+	* config/cris/t-aout: Remove.
+	* config/i386/beos-elf.h: Remove.
+	* config/i386/kaos-i386.h: Remove.
+	* config/i386/ptx4-i.h: Remove.
+	* config/i386/sco5.h: Remove.
+	* config/i386/sco5.opt: Remove.
+	* config/i386/sysv4-cpp.h: Remove.
+	* config/i386/sysv5.h: Remove.
+	* config/i386/t-beos: Remove.
+	* config/i386/t-sco5: Remove.
+	* config/i386/t-uwin: Remove.
+	* config/i386/uwin.asm: Remove.
+	* config/i386/uwin.h: Remove.
+	* config/kaos.h: Remove.
+	* config/mips/windiss.h: Remove.
+	* config/mt: Remove directory.
+	* config/pa/pa-osf.h: Remove.
+	* config/pa/pa-pro-end.h: Remove.
+	* config/pa/t-pro: Remove.
+	* config/ptx4.h: Remove.
+	* config/rs6000/beos.h: Remove.
+	* config/rs6000/kaos-ppc.h: Remove.
+	* config/rs6000/t-beos: Remove.
+	* config/rs6000/windiss.h: Remove.
+	* config/sh/kaos-sh.h: Remove.
+	* config/sol2-6.h: Remove.
+	* config/sparc/sol26-sld.h: Remove.
+	* config/sparc/sysv4-only.h: Remove.
+	* config/vax/bsd.h: Remove.
+	* config/vax/t-memfuncs: Remove.
+	* config/vax/ultrix.h: Remove.
+	* config/vax/vaxv.h: Remove.
+	* config/windiss.h: Remove.
+
 2008-06-06 Uros Bizjak <ubizjak@gmail.com>
 
 	PR rtl-optimization/36438

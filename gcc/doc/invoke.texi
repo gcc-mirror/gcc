@@ -668,10 +668,6 @@ Objective-C and Objective-C++ Dialects}.
 -mreturn-pointer-on-d0 @gol
 -mno-crt0  -mrelax}
 
-@emph{MT Options}
-@gccoptlist{-mno-crt0 -mbacc -msim @gol
--march=@var{cpu-type} }
-
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -721,7 +717,7 @@ See RS/6000 and PowerPC Options.
 -mfloat-gprs=yes  -mfloat-gprs=no -mfloat-gprs=single -mfloat-gprs=double @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
--msdata=@var{opt}  -mvxworks  -mwindiss  -G @var{num}  -pthread}
+-msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread}
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -8390,7 +8386,6 @@ platform.
 * MIPS Options::
 * MMIX Options::
 * MN10300 Options::
-* MT Options::
 * PDP-11 Options::
 * PowerPC Options::
 * RS/6000 and PowerPC Options::
@@ -9061,12 +9056,6 @@ choices for @var{architecture-type} are the same as for
 @opindex mmax-stack-frame
 Warn when the stack frame of a function exceeds @var{n} bytes.
 
-@item -melinux-stacksize=@var{n}
-@opindex melinux-stacksize
-Only available with the @samp{cris-axis-aout} target.  Arranges for
-indications in the program to the kernel loader that the stack of the
-program should be set to @var{n} bytes.
-
 @item -metrax4
 @itemx -metrax100
 @opindex metrax4
@@ -9146,20 +9135,10 @@ instruction sequences that load addresses for functions from the PLT part
 of the GOT rather than (traditional on other architectures) calls to the
 PLT@.  The default is @option{-mgotplt}.
 
-@item -maout
-@opindex maout
-Legacy no-op option only recognized with the cris-axis-aout target.
-
 @item -melf
 @opindex melf
 Legacy no-op option only recognized with the cris-axis-elf and
 cris-axis-linux-gnu targets.
-
-@item -melinux
-@opindex melinux
-Only recognized with the cris-axis-aout target, where it selects a
-GNU/linux-like multilib, include files and instruction set for
-@option{-march=v8}.
 
 @item -mlinux
 @opindex mlinux
@@ -9167,7 +9146,7 @@ Legacy no-op option only recognized with the cris-axis-linux-gnu target.
 
 @item -sim
 @opindex sim
-This option, recognized for the cris-axis-aout and cris-axis-elf arranges
+This option, recognized for the cris-axis-elf arranges
 to link with input-output functions from a simulator library.  Code,
 initialized data and zero-initialized data are allocated consecutively.
 
@@ -10276,8 +10255,7 @@ Generate output containing library calls for floating point.
 targets.  Normally the facilities of the machine's usual C compiler are
 used, but this cannot be done directly in cross-compilation.  You must make
 your own arrangements to provide suitable library functions for
-cross-compilation.  The embedded target @samp{hppa1.1-*-pro}
-does provide software floating point support.
+cross-compilation.
 
 @option{-msoft-float} changes the calling convention in the output file;
 therefore, it is only useful if you compile @emph{all} of a program with
@@ -12756,44 +12734,6 @@ has an effect when used on the command line for the final link step.
 This option makes symbolic debugging impossible.
 @end table
 
-@node MT Options
-@subsection MT Options
-@cindex MT options
-
-These @option{-m} options are defined for Morpho MT architectures:
-
-@table @gcctabopt
-
-@item -march=@var{cpu-type}
-@opindex march
-Generate code that will run on @var{cpu-type}, which is the name of a system
-representing a certain processor type.  Possible values for
-@var{cpu-type} are @samp{ms1-64-001}, @samp{ms1-16-002},
-@samp{ms1-16-003} and @samp{ms2}.
-
-When this option is not used, the default is @option{-march=ms1-16-002}.
-
-@item -mbacc
-@opindex mbacc
-Use byte loads and stores when generating code.
-
-@item -mno-bacc
-@opindex mno-bacc
-Do not use byte loads and stores when generating code.
-
-@item -msim
-@opindex msim
-Use simulator runtime
-
-@item -mno-crt0
-@opindex mno-crt0
-Do not link in the C run-time initialization object file
-@file{crti.o}.  Other run-time initialization and termination files
-such as @file{startup.o} and @file{exit.o} are still included on the
-linker command line.
-
-@end table
-
 @node PDP-11 Options
 @subsection PDP-11 Options
 @cindex PDP-11 Options
@@ -13575,10 +13515,6 @@ On embedded PowerPC systems, assume that the startup module is called
 @opindex mvxworks
 On System V.4 and embedded PowerPC systems, specify that you are
 compiling for a VxWorks system.
-
-@item -mwindiss
-@opindex mwindiss
-Specify that you are compiling for the WindISS simulation environment.
 
 @item -memb
 @opindex memb

@@ -1,3 +1,46 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (AAB_svr4_replace_byteorder,
+	AAB_ultrix_ansi_compat, AAB_ultrix_limits, AAB_ultrix_memory,
+	libc1_G_va_list, libc1_ifdefd_memx, nested_motorola,
+	ptx_sys_mc_param_h, sco_regset, sco_static_func, sco_utime,
+	solaris_mutex_init_1, solaris_socket, solaris_unistd,
+	solaris_widec, svr4_krnl, ultrix_atexit_param, ultrix_atof_param,
+	ultrix_const3, ultrix_fix_fixproto, ultrix_ifdef, ultrix_locale,
+	ultrix_math_ifdef, ultrix_nested_ioctl, ultrix_nested_svc,
+	ultrix_stat, ultrix_static, ultrix_stdlib, ultrix_strings,
+	ultrix_strings2, ultrix_sys_time, ultrix_unistd,
+	unicosmk_restrict, uw7_byteorder_fix, windiss_math1,
+	windiss_math2, windiss_valist): Remove.
+	* fixincl.x: Regenerate.
+	* mkfixinc.sh: (arm-semi-aof, hppa1.1-*-osf*, hppa1.1-*-bsd*,
+	i370-*-openedition, i?86-*-moss*, i?86-*-uwin*,
+	powerpc-*-eabiaix*): Remove.
+	* tests/base/math.h: Update.
+	* tests/base/pthread.h: Update.
+	* tests/base/stdio.h: Update.
+	* tests/base/stdlib.h: Update.
+	* tests/base/string.h: Update.
+	* tests/base/strings.h: Update.
+	* tests/base/sys/file.h: Update.
+	* tests/base/sys/limits.h: Update.
+	* tests/base/sys/socket.h: Update.
+	* tests/base/sys/stat.h: Update.
+	* tests/base/sys/time.h: Update.
+	* tests/base/testing.h: Update.
+	* tests/base/unistd.h: Update.
+	* tests/base/_G_config.h: Remove.
+	* tests/base/arpa: Remove directory.
+	* tests/base/fs: Remove directory.
+	* tests/base/locale.h: Remove.
+	* tests/base/machine: Remove directory.
+	* tests/base/rpc/svc.h: Remove.
+	* tests/base/sys/ioctl.h: Remove.
+	* tests/base/sys/regset.h: Remove.
+	* tests/base/sys/times.h: Remove.
+	* tests/base/sys/utsname.h: Remove.
+	* tests/base/widec.h: Remove.
+
 2008-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* inclhack.def (solaris_math_4): Use GCC's __builtin_fpclassify.

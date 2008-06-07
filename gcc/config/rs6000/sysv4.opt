@@ -119,10 +119,6 @@ memb
 Target RejectNegative
 Set the PPC_EMB bit in the ELF flags header
 
-mwindiss
-Target RejectNegative
-Use the WindISS simulator
-
 mshlib
 Target RejectNegative
 no description yet

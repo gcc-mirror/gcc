@@ -50,23 +50,3 @@ extern void *	realloc(void*,size_t);
 extern void *	bsearch(void*,size_t,size_t);
 
 #endif  /* SYSZ_STDLIB_FOR_SUN_CHECK */
-
-
-#if defined( ULTRIX_ATEXIT_PARAM_CHECK )
-int atexit( void (*__func)( void ) );
-
-#endif  /* ULTRIX_ATEXIT_PARAM_CHECK */
-
-
-#if defined( ULTRIX_STDLIB_CHECK )
-@(#)stdlib.h      6.1     (ULTRIX)
-char *		getenv( const char *__name );
-int		setenv( const char *__name, const char *__val, int __ovrwrt );
-void		unsetenv( const char *__name );
-int		putenv( char *__s );
-char	*getenv();
-int	setenv();
-void	unsetenv();
-int	putenv();
-
-#endif  /* ULTRIX_STDLIB_CHECK */

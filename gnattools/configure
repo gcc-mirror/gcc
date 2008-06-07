@@ -1516,10 +1516,17 @@ test -n "$target_alias" &&
 
 # Test for GNAT.
 # We require the gnatbind program, and a compiler driver that
-# understands Ada.  We use the user's CC setting, already found.
+# understands Ada.  We use the user's CC setting, already found,
+# and possibly add $1 to the command-line parameters.
 #
 # Sets the shell variable have_gnat to yes or no as appropriate, and
 # substitutes GNATBIND and GNATMAKE.
+
+
+
+
+
+
 
 
 
@@ -1597,8 +1604,6 @@ case "${target}" in
   | powerpc*-wrs-vxworks \
   | sparc*-wrs-vx* \
   | *86-wrs-vxworks \
-  | xscale*-wrs-vx* \
-  | xscale*-wrs-coff \
   | mips*-wrs-vx*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-vxworks.adb"
     ;;

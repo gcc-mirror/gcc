@@ -35,10 +35,3 @@ typedef int socklen_t;
 typedef u_int32_t socklen_t;
 #endif /* _NO_XOPEN4 && _NO_XOPEN5 */
 #endif  /* IRIX_SOCKLEN_T_CHECK */
-
-
-#if defined( SOLARIS_SOCKET_CHECK )
-#ident   "@(#)socket.h   1.30    97/01/20 SMI"
-extern int recv(int, void *, int, int);
-extern int send(int, const void *, int, int);
-#endif  /* SOLARIS_SOCKET_CHECK */

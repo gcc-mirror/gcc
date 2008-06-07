@@ -118,22 +118,6 @@ int foo;
 #endif
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */
 
-
-#if defined( ULTRIX_ATOF_PARAM_CHECK )
-extern double atof(const char *__nptr);
-
-#endif  /* ULTRIX_ATOF_PARAM_CHECK */
-
-
-#if defined( WINDISS_MATH1_CHECK )
-#ifndef __GNUC__
-#endif  /* WINDISS_MATH1_CHECK */
-
-
-#if defined( WINDISS_MATH2_CHECK )
-#endif /* __GNUC__ */
-#endif  /* WINDISS_MATH2_CHECK */
-
 #endif  /* FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE */
 #ifdef __cplusplus
 #undef exception

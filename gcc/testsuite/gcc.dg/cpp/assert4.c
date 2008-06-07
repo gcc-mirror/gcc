@@ -128,14 +128,6 @@
 # error
 #endif
 
-#if defined __BEOS__
-# if !#system(beos)
-#  error
-# endif
-#elif #system(beos)
-# error
-#endif
-
 #if defined __netware__
 # if !#system(netware)
 #  error

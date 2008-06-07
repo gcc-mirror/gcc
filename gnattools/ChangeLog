@@ -1,3 +1,8 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (xscale*-wrs-vx*, xscale*-wrs-coff): Remove.
+	* configure: Regenerate.
+
 2008-05-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.in (GNATTOOLS2_FILES): Replaced by common-tools target

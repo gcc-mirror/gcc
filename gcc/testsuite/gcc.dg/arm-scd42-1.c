@@ -1,5 +1,5 @@
 /* Verify that mov is preferred on XScale for loading a 1 byte constant. */
-/* { dg-do compile { target xscale-*-* } } */
+/* { dg-do compile { target arm*-*-* } } */
 /* { dg-options "-mcpu=xscale -O" } */
 
 unsigned load1(void) __attribute__ ((naked));

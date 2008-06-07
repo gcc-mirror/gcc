@@ -1,3 +1,8 @@
+2008-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (parisc*64*-*-*): Remove.
+	* configure: Regenerate.
+
 2008-05-30  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/36320:

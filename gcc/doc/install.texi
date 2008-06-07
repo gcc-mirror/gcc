@@ -835,11 +835,6 @@ whether you use the GNU assembler.  On any other system,
 @itemize @bullet
 @item @samp{hppa1.0-@var{any}-@var{any}}
 @item @samp{hppa1.1-@var{any}-@var{any}}
-@item @samp{i386-@var{any}-sysv}
-@item @samp{m68k-bull-sysv}
-@item @samp{m68k-hp-hpux}
-@item @samp{m68000-hp-hpux}
-@item @samp{m68000-att-sysv}
 @item @samp{sparc-sun-solaris2.@var{any}}
 @item @samp{sparc64-@var{any}-solaris2.@var{any}}
 @end itemize
@@ -2480,15 +2475,11 @@ information are.
 @item
 @uref{#alpha-dec-osf,,alpha*-dec-osf*}
 @item
-@uref{#alphaev5-cray-unicosmk,,alphaev5-cray-unicosmk*}
-@item
 @uref{#arc-x-elf,,arc-*-elf}
 @item
 @uref{#arm-x-elf,,arm-*-elf}
 @uref{#arm-x-coff,,arm-*-coff}
 @uref{#arm-x-aout,,arm-*-aout}
-@item
-@uref{#xscale-x-x,,xscale-*-*}
 @item
 @uref{#avr,,avr}
 @item
@@ -2508,15 +2499,9 @@ information are.
 @item
 @uref{#x-x-linux-gnu,,*-*-linux-gnu}
 @item
-@uref{#ix86-x-linuxaout,,i?86-*-linux*aout}
-@item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
-@uref{#ix86-x-sco32v5,,i?86-*-sco3.2v5*}
-@item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
-@item
-@uref{#ix86-x-udk,,i?86-*-udk}
 @item
 @uref{#ia64-x-linux,,ia64-*-linux}
 @item
@@ -2536,8 +2521,6 @@ information are.
 @item
 @uref{#m68k-x-x,,m68k-*-*}
 @item
-@uref{#m68k-hp-hpux,,m68k-hp-hpux}
-@item
 @uref{#m68k-uclinux,,m68k-uclinux}
 @item
 @uref{#mips-x-x,,mips-*-*}
@@ -2546,11 +2529,11 @@ information are.
 @item
 @uref{#mips-sgi-irix6,,mips-sgi-irix6}
 @item
-@uref{#powerpc-x-x,,powerpc*-*-*, powerpc-*-sysv4}
+@uref{#powerpc-x-x,,powerpc*-*-*}
 @item
 @uref{#powerpc-x-darwin,,powerpc-*-darwin*}
 @item
-@uref{#powerpc-x-elf,,powerpc-*-elf, powerpc-*-sysv4}
+@uref{#powerpc-x-elf,,powerpc-*-elf}
 @item
 @uref{#powerpc-x-linux-gnu,,powerpc*-*-linux-gnu*}
 @item
@@ -2560,7 +2543,7 @@ information are.
 @item
 @uref{#powerpc-x-eabi,,powerpc-*-eabi}
 @item
-@uref{#powerpcle-x-elf,,powerpcle-*-elf, powerpcle-*-sysv4}
+@uref{#powerpcle-x-elf,,powerpcle-*-elf}
 @item
 @uref{#powerpcle-x-eabisim,,powerpcle-*-eabisim}
 @item
@@ -2583,10 +2566,6 @@ information are.
 @uref{#sparc64-x-solaris2,,sparc64-*-solaris2*}
 @item
 @uref{#sparcv9-x-solaris2,,sparcv9-*-solaris2*}
-@item
-@uref{#x-x-sysv,,*-*-sysv*}
-@item
-@uref{#vax-dec-ultrix,,vax-dec-ultrix}
 @item
 @uref{#x-x-vxworks,,*-*-vxworks*}
 @item
@@ -2710,32 +2689,6 @@ provide a fix shortly.
 @html
 <hr />
 @end html
-@heading @anchor{alphaev5-cray-unicosmk}alphaev5-cray-unicosmk*
-Cray T3E systems running Unicos/Mk.
-
-This port is incomplete and has many known bugs.  We hope to improve the
-support for this target soon.  Currently, only the C front end is supported,
-and it is not possible to build parallel applications.  Cray modules are not
-supported; in particular, Craylibs are assumed to be in
-@file{/opt/ctl/craylibs/craylibs}.
-
-On this platform, you need to tell GCC where to find the assembler and
-the linker.  The simplest way to do so is by providing @option{--with-as}
-and @option{--with-ld} to @file{configure}, e.g.@:
-
-@smallexample
-    configure --with-as=/opt/ctl/bin/cam --with-ld=/opt/ctl/bin/cld \
-      --enable-languages=c
-@end smallexample
-
-The comparison test at the end of the bootstrapping process fails on Unicos/Mk
-because the assembler inserts timestamps into object files.  You should
-be able to work around this by doing @samp{make all} after getting this
-failure.
-
-@html
-<hr />
-@end html
 @heading @anchor{arc-x-elf}arc-*-elf
 Argonaut ARC processor.
 This configuration is intended for embedded systems.
@@ -2744,11 +2697,10 @@ This configuration is intended for embedded systems.
 <hr />
 @end html
 @heading @anchor{arm-x-elf}arm-*-elf
-@heading @anchor{xscale-x-x}xscale-*-*
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
-@code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux},
-@code{arm-*-rtems} and @code{arm-*-kaos}.
+@code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux}
+and @code{arm-*-rtems}.
 
 @html
 <hr />
@@ -2840,9 +2792,6 @@ for a list of CRIS-specific options.
 
 There are a few different CRIS targets:
 @table @code
-@item cris-axis-aout
-Old target.  Includes a multilib for the @samp{elinux} a.out-based
-target.  No multilibs for newer architecture variants.
 @item cris-axis-elf
 Mainly for monolithic embedded systems.  Includes a multilib for the
 @samp{v10} core used in @samp{ETRAX 100 LX}.
@@ -2851,7 +2800,7 @@ A GNU/Linux port for the CRIS architecture, currently targeting
 @samp{ETRAX 100 LX} by default.
 @end table
 
-For @code{cris-axis-aout} and @code{cris-axis-elf} you need binutils 2.11
+For @code{cris-axis-elf} you need binutils 2.11
 or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
 
 Pre-packaged tools can be obtained from
@@ -3192,13 +3141,6 @@ libstdc++-v3 documentation.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-linuxaout}i?86-*-linux*aout
-Use this configuration to generate @file{a.out} binaries on Linux-based
-GNU systems.  This configuration is being superseded.
-
-@html
-<hr />
-@end html
 @heading @anchor{ix86-x-linux}i?86-*-linux*
 
 As of GCC 3.3, binutils 2.13.1 or later is required for this platform.
@@ -3211,50 +3153,6 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @html
 <hr />
 @end html
-@heading @anchor{ix86-x-sco32v5}i?86-*-sco3.2v5*
-Use this for the SCO OpenServer Release 5 family of operating systems.
-
-Unlike earlier versions of GCC, the ability to generate COFF with this
-target is no longer provided.
-
-Earlier versions of GCC emitted DWARF 1 when generating ELF to allow
-the system debugger to be used.  That support was too burdensome to
-maintain.  GCC now emits only DWARF 2 for this target.  This means you
-may use either the UDK debugger or GDB to debug programs built by this
-version of GCC@.
-
-GCC is now only supported on releases 5.0.4 and later, and requires that
-you install Support Level Supplement OSS646B or later, and Support Level
-Supplement OSS631C or later.  If you are using release 5.0.7 of
-OpenServer, you must have at least the first maintenance pack installed
-(this includes the relevant portions of OSS646).  OSS646, also known as
-the ``Execution Environment Update'', provides updated link editors and
-assemblers, as well as updated standard C and math libraries.  The C
-startup modules are also updated to support the System V gABI draft, and
-GCC relies on that behavior.  OSS631 provides a collection of commonly
-used open source libraries, some of which GCC depends on (such as GNU
-gettext and zlib).  SCO OpenServer Release 5.0.7 has all of this built
-in by default, but OSS631C and later also apply to that release.  Please
-visit
-@uref{ftp://ftp.sco.com/pub/openserver5,,ftp://ftp.sco.com/pub/openserver5}
-for the latest versions of these (and other potentially useful)
-supplements.
-
-Although there is support for using the native assembler, it is
-recommended that you configure GCC to use the GNU assembler.  You do
-this by using the flags
-@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You should
-use a modern version of GNU binutils.  Version 2.13.2.1 was used for all
-testing.  In general, only the @option{--with-gnu-as} option is tested.
-A modern bintuils (as well as a plethora of other development related
-GNU utilities) can be found in Support Level Supplement OSS658A, the
-``GNU Development Tools'' package.  See the SCO web and ftp sites for details.
-That package also contains the currently ``officially supported'' version of
-GCC, version 2.95.3.  It is useful for bootstrapping this version.
-
-@html
-<hr />
-@end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
 configuration is supported by GCC 4.0 and later versions only.
@@ -3263,42 +3161,6 @@ It is recommended that you configure GCC to use the GNU assembler in
 @file{/usr/sfw/bin/gas} but the Sun linker, using the options
 @option{--with-gnu-as --with-as=/usr/sfw/bin/gas --without-gnu-ld
 --with-ld=/usr/ccs/bin/ld}.
-
-@html
-<hr />
-@end html
-@heading @anchor{ix86-x-udk}i?86-*-udk
-
-This target emulates the SCO Universal Development Kit and requires that
-package be installed.  (If it is installed, you will have a
-@file{/udk/usr/ccs/bin/cc} file present.)  It's very much like the
-@samp{i?86-*-unixware7*} target
-but is meant to be used when hosting on a system where UDK isn't the
-default compiler such as OpenServer 5 or Unixware 2.  This target will
-generate binaries that will run on OpenServer, Unixware 2, or Unixware 7,
-with the same warnings and caveats as the SCO UDK@.
-
-This target is a little tricky to build because we have to distinguish
-it from the native tools (so it gets headers, startups, and libraries
-from the right place) while making the tools not think we're actually
-building a cross compiler.   The easiest way to do this is with a configure
-command like this:
-
-@smallexample
-    CC=/udk/usr/ccs/bin/cc @var{/your/path/to}/gcc/configure \
-      --host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-
-@end smallexample
-
-@emph{You should substitute @samp{i686} in the above command with the appropriate
-processor for your host.}
-
-After the usual @samp{make} and
-@samp{make install}, you can then access the UDK-targeted GCC
-tools by adding @command{udk-} before the commonly known name.  For
-example, to invoke the C compiler, you would use @command{udk-gcc}.
-They will coexist peacefully with any native-target GCC tools you may
-have installed.
-
 
 @html
 <hr />
@@ -3528,59 +3390,6 @@ be a @option{-mcpu} argument or one of the following values:
 @html
 <hr />
 @end html
-@heading @anchor{m68k-hp-hpux}m68k-hp-hpux
-HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in
-the assembler that prevents compilation of GCC@.  This
-bug manifests itself during the first stage of compilation, while
-building @file{libgcc2.a}:
-
-@smallexample
-_floatdisf
-cc1: warning: `-g' option not supported on this version of GCC
-cc1: warning: `-g1' option not supported on this version of GCC
-./xgcc: Internal compiler error: program as got fatal signal 11
-@end smallexample
-
-A patched version of the assembler is available as the file
-@uref{ftp://altdorf.ai.mit.edu/archive/cph/hpux-8.0-assembler}.  If you
-have HP software support, the patch can also be obtained directly from
-HP, as described in the following note:
-
-@quotation
-This is the patched assembler, to patch SR#1653-010439, where the
-assembler aborts on floating point constants.
-
-The bug is not really in the assembler, but in the shared library
-version of the function ``cvtnum(3c)''.  The bug on ``cvtnum(3c)'' is
-SR#4701-078451.  Anyway, the attached assembler uses the archive
-library version of ``cvtnum(3c)'' and thus does not exhibit the bug.
-@end quotation
-
-This patch is also known as PHCO_4484.
-
-In addition gdb does not understand that native HP-UX format, so
-you must use gas if you wish to use gdb.
-
-On HP-UX version 8.05, but not on 8.07 or more recent versions, the
-@command{fixproto} shell script triggers a bug in the system shell.  If you
-encounter this problem, upgrade your operating system or use BASH (the
-GNU shell) to run @command{fixproto}.  This bug will cause the fixproto
-program to report an error of the form:
-
-@smallexample
-./fixproto: sh internal 1K buffer overflow
-@end smallexample
-
-To fix this, you can also change the first line of the fixproto script
-to look like:
-
-@smallexample
-#!/bin/ksh
-@end smallexample
-
-@html
-<hr />
-@end html
 @heading @anchor{m68k-x-uclinux}m68k-*-uclinux
 GCC 4.3 changed the uClinux configuration so that it uses the
 @samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
@@ -3789,7 +3598,7 @@ on systems older than 10.3.9 (aka darwin7.9.0).
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-x-elf}powerpc-*-elf, powerpc-*-sysv4
+@heading @anchor{powerpc-x-elf}powerpc-*-elf
 PowerPC system in big endian mode, running System V.4.
 
 @html
@@ -3825,7 +3634,7 @@ Embedded PowerPC system in big endian mode.
 @html
 <hr />
 @end html
-@heading @anchor{powerpcle-x-elf}powerpcle-*-elf, powerpcle-*-sysv4
+@heading @anchor{powerpcle-x-elf}powerpcle-*-elf
 PowerPC system in little endian mode, running System V.4.
 
 @html
@@ -4132,47 +3941,6 @@ and @option{-xildoff} turns off the incremental linker.
 @heading @anchor{sparcv9-x-solaris2}sparcv9-*-solaris2*
 
 This is a synonym for sparc64-*-solaris2*.
-
-@html
-<hr />
-@end html
-@heading @anchor{x-x-sysv}*-*-sysv*
-On System V release 3, you may get this error message
-while linking:
-
-@smallexample
-ld fatal: failed to write symbol name @var{something}
- in strings table for file @var{whatever}
-@end smallexample
-
-This probably indicates that the disk is full or your ulimit won't allow
-the file to be as large as it needs to be.
-
-This problem can also result because the kernel parameter @code{MAXUMEM}
-is too small.  If so, you must regenerate the kernel and make the value
-much larger.  The default value is reported to be 1024; a value of 32768
-is said to work.  Smaller values may also work.
-
-On System V, if you get an error like this,
-
-@smallexample
-/usr/local/lib/bison.simple: In function `yyparse':
-/usr/local/lib/bison.simple:625: virtual memory exhausted
-@end smallexample
-
-@noindent
-that too indicates a problem with disk space, ulimit, or @code{MAXUMEM}.
-
-On a System V release 4 system, make sure @file{/usr/bin} precedes
-@file{/usr/ucb} in @code{PATH}.  The @command{cc} command in
-@file{/usr/ucb} uses libraries which have bugs.
-
-@html
-<hr />
-@end html
-@heading @anchor{vax-dec-ultrix}vax-dec-ultrix
-Don't try compiling with VAX C (@command{vcc}).  It produces incorrect code
-in some cases (for example, when @code{alloca} is used).
 
 @html
 <hr />
