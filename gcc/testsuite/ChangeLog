@@ -1,3 +1,10 @@
+2008-06-07  Xinliang David Li  <davidxl@google.com>
+
+	PR/36440
+	* gcc.dg/cdce1.c: Remove run target clause.
+	* gcc.dg/cdce2.c: Ditto.
+	* g++.dg/cdce3.C: Fix a bug in target specification.
+
 2008-06-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36437

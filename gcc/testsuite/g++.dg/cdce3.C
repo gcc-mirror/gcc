@@ -1,4 +1,4 @@
-/* { dg-do  run { target { ! "*-*-darwin" } } } */
+/* { dg-do  run { target { ! "*-*-darwin*" } } } */
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -lm" } */
 /* { dg-final { scan-tree-dump  "cdce3.C:68: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
 /* { dg-final { scan-tree-dump  "cdce3.C:69: note: function call is shrink-wrapped into error conditions\." "cdce" } }*/
