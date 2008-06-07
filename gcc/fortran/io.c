@@ -476,6 +476,7 @@ check_format (bool is_input)
   const char *nonneg_required	  = _("Nonnegative width required");
   const char *unexpected_element  = _("Unexpected element");
   const char *unexpected_end	  = _("Unexpected end of format string");
+  const char *zero_width	  = _("Zero width in format descriptor");
 
   const char *error;
   format_token t, u;
@@ -672,6 +673,11 @@ data_desc:
       t = format_lex ();
       if (t == FMT_ERROR)
 	goto fail;
+      if (t == FMT_ZERO)
+	{
+	  error = zero_width;
+	  goto syntax;
+	}
       if (t != FMT_POSINT)
 	saved_token = t;
       break;
@@ -681,6 +687,18 @@ data_desc:
     case FMT_G:
     case FMT_EXT:
       u = format_lex ();
+      if (t == FMT_G && u == FMT_ZERO)
+	{
+	  if (is_input)
+	    {
+	      error = zero_width;
+	      goto syntax;
+	    }
+	  else
+	    return gfc_notify_std (GFC_STD_F2008, "Fortran F2008: 'G0' in "
+				   "format at %C");
+	}
+
       if (u == FMT_ERROR)
 	goto fail;
       if (u != FMT_POSINT)
@@ -1711,7 +1729,7 @@ gfc_match_open (void)
   if (open->round)
     {
       /* When implemented, change the following to use gfc_notify_std F2003.  */
-      gfc_error ("F2003 Feature: ROUND= specifier at %C not implemented");
+      gfc_error ("Fortran F2003: ROUND= specifier at %C not implemented");
       goto cleanup;
 
       if (open->round->expr_type == EXPR_CONSTANT)
