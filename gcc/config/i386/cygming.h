@@ -70,8 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <stdio.h>
 
-#define MAYBE_UWIN_CPP_BUILTINS() /* Nothing.  */
-
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
@@ -90,7 +88,6 @@ along with GCC; see the file COPYING3.  If not see
 	    to compare typeinfo symbols across dll boundaries.  */	\
 	builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");		\
 	builtin_define ("__GXX_TYPEINFO_EQUALITY_INLINE=0");		\
-	MAYBE_UWIN_CPP_BUILTINS ();					\
 	EXTRA_OS_CPP_BUILTINS ();					\
   }									\
   while (0)

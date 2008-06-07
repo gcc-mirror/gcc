@@ -1,3 +1,7 @@
+2008-06-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (MAYBE_UWIN_CPP_BUILTINS): Remove.
+
 2008-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (Obsolete configurations): Remove list of
