@@ -1,3 +1,8 @@
+2008-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/35242
+        * g++.dg/cpp0x/vt-35242.C: New.
+
 2008-06-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36459

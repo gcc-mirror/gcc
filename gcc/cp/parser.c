@@ -14832,7 +14832,13 @@ cp_parser_class_head (cp_parser* parser,
 	    }
 	}
 
-      maybe_process_partial_specialization (TREE_TYPE (type));
+      if (maybe_process_partial_specialization (TREE_TYPE (type))
+	  == error_mark_node)
+	{
+	  type = NULL_TREE;
+	  goto done;
+	}
+
       class_type = current_class_type;
       /* Enter the scope indicated by the nested-name-specifier.  */
       pushed_scope = push_scope (nested_name_specifier);
