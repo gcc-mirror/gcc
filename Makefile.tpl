@@ -147,6 +147,12 @@ BUILD_EXPORTS = \
 	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
 	WINDMC="$(WINDMC_FOR_BUILD)"; export WINDMC;
 
+# These variables must be set on the make command line for directories
+# built for the build system to override those in BASE_FLAGS_TO_PASSS.
+EXTRA_BUILD_FLAGS = \
+	CFLAGS="$(CFLAGS_FOR_BUILD)" \
+	LDFLAGS="$(LDFLAGS_FOR_BUILD)"
+
 # This is the list of directories to built for the host system.
 SUBDIRS = @configdirs@
 # This is set by the configure script to the arguments to use when configuring
@@ -955,7 +961,8 @@ clean-stage[+id+]-[+prefix+][+module+]:
 	     target_alias=(get "target" "${target_alias}")
 	     args="$(BUILD_CONFIGARGS)" no-config-site=true +]
 
-[+ all prefix="build-" subdir="$(BUILD_SUBDIR)" exports="$(BUILD_EXPORTS)" +]
+[+ all prefix="build-" subdir="$(BUILD_SUBDIR)" exports="$(BUILD_EXPORTS)"
+	     args="$(EXTRA_BUILD_FLAGS)" +]
 [+ ENDFOR build_module +]
 
 # --------------------------------------

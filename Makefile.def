@@ -215,6 +215,7 @@ flags_to_pass = { flag= INSTALL ; };
 flags_to_pass = { flag= INSTALL_DATA ; };
 flags_to_pass = { flag= INSTALL_PROGRAM ; };
 flags_to_pass = { flag= INSTALL_SCRIPT ; };
+flags_to_pass = { flag= LDFLAGS_FOR_BUILD ; };
 flags_to_pass = { flag= LEX ; };
 flags_to_pass = { flag= M4 ; };
 flags_to_pass = { flag= MAKE ; };

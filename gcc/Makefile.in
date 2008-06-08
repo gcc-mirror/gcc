@@ -662,7 +662,7 @@ CC_FOR_BUILD = @CC_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
-BUILD_LDFLAGS=$(LDFLAGS)
+BUILD_LDFLAGS=@BUILD_LDFLAGS@
 BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
 
 # Actual name to use when installing a native compiler.
