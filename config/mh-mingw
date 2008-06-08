@@ -2,3 +2,5 @@
 # Vista (see PR33281 for details).
 BOOT_CFLAGS += -D__USE_MINGW_ACCESS
 CFLAGS += -D__USE_MINGW_ACCESS
+# Increase stack limit to same as Linux default.
+LDFLAGS = -Wl,--stack,8388608

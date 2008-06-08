@@ -1,3 +1,12 @@
+2008-06-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/36218
+	* configure.ac: Use LDFLAGS="${LDFLAGS_FOR_BUILD}" when running
+	configure for the build system.
+	(BUILD_LDFLAGS): Define.
+	* configure: Regenerate.
+	* Makefile.in (BUILD_LDFLAGS): Define to @BUILD_LDFLAGS@.
+
 2008-07-08  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/36424
