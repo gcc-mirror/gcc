@@ -4085,8 +4085,10 @@ match_procedure_decl (void)
 	  return MATCH_ERROR;
 	}
       /* Handle intrinsic procedures.  */
-      if (gfc_intrinsic_name (proc_if->name, 0)
-	  || gfc_intrinsic_name (proc_if->name, 1))
+      if (!(proc_if->attr.external || proc_if->attr.use_assoc
+	    || proc_if->attr.if_source == IFSRC_IFBODY)
+	  && (gfc_intrinsic_name (proc_if->name, 0)
+	      || gfc_intrinsic_name (proc_if->name, 1)))
 	proc_if->attr.intrinsic = 1;
       if (proc_if->attr.intrinsic
 	  && !gfc_intrinsic_actual_ok (proc_if->name, 0))
