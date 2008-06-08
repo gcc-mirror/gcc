@@ -75,86 +75,86 @@ fix = {
   files     = architecture/ppc/math.h;
   bypass    = "powl";
   replace = <<- _EndOfHeader_
-/* This file prototypes the long double functions available on Mac OS
-   10.3.9.  */
-#ifndef __MATH__
-# undef __APPLE_CC__
-# define __APPLE_CC__  1345
-# include_next <architecture/ppc/math.h>
-# undef __APPLE_CC__
-# define __APPLE_CC__ 1
-# ifndef __LIBMLDBL_COMPAT
-#  ifdef __LONG_DOUBLE_128__
-#   define __LIBMLDBL_COMPAT(sym) __asm("_" #sym "$LDBL128")
-#  else
-#   define __LIBMLDBL_COMPAT(sym)
-#  endif /* __LONG_DOUBLE_128__ */
-# endif /* __LIBMLDBL_COMPAT */
-# ifdef __cplusplus
-   extern "C" {
-# endif
-  extern long double acosl( long double ) __LIBMLDBL_COMPAT(acosl);
-  extern long double asinl( long double ) __LIBMLDBL_COMPAT(asinl);
-  extern long double atanl( long double ) __LIBMLDBL_COMPAT(atanl);
-  extern long double atan2l( long double, long double ) __LIBMLDBL_COMPAT(atan2l);
-  extern long double cosl( long double ) __LIBMLDBL_COMPAT(cosl);
-  extern long double sinl( long double ) __LIBMLDBL_COMPAT(sinl);
-  extern long double tanl( long double ) __LIBMLDBL_COMPAT(tanl);
-  extern long double acoshl( long double ) __LIBMLDBL_COMPAT(acoshl);
-  extern long double asinhl( long double ) __LIBMLDBL_COMPAT(asinhl);
-  extern long double atanhl( long double ) __LIBMLDBL_COMPAT(atanhl);
-  extern long double coshl( long double ) __LIBMLDBL_COMPAT(coshl);
-  extern long double sinhl( long double ) __LIBMLDBL_COMPAT(sinhl);
-  extern long double tanhl( long double ) __LIBMLDBL_COMPAT(tanhl);
-  extern long double expl( long double ) __LIBMLDBL_COMPAT(expl);
-  extern long double exp2l( long double ) __LIBMLDBL_COMPAT(exp2l);
-  extern long double expm1l( long double ) __LIBMLDBL_COMPAT(expm1l);
-  extern long double logl( long double ) __LIBMLDBL_COMPAT(logl);
-  extern long double log10l( long double ) __LIBMLDBL_COMPAT(log10l);
-  extern long double log2l( long double ) __LIBMLDBL_COMPAT(log2l);
-  extern long double log1pl( long double ) __LIBMLDBL_COMPAT(log1pl);
-  extern long double logbl( long double ) __LIBMLDBL_COMPAT(logbl);
-  extern long double modfl( long double, long double * ) __LIBMLDBL_COMPAT(modfl);
-  extern long double ldexpl( long double, int ) __LIBMLDBL_COMPAT(ldexpl);
-  extern long double frexpl( long double, int * ) __LIBMLDBL_COMPAT(frexpl);
-  extern int ilogbl( long double ) __LIBMLDBL_COMPAT(ilogbl);
-  extern long double scalbnl( long double, int ) __LIBMLDBL_COMPAT(scalbnl);
-  extern long double scalblnl( long double, long int ) __LIBMLDBL_COMPAT(scalblnl);
-  extern long double fabsl( long double ) __LIBMLDBL_COMPAT(fabsl);
-  extern long double cbrtl( long double ) __LIBMLDBL_COMPAT(cbrtl);
-  extern long double hypotl( long double, long double ) __LIBMLDBL_COMPAT(hypotl);
-  extern long double powl( long double, long double ) __LIBMLDBL_COMPAT(powl);
-  extern long double sqrtl( long double ) __LIBMLDBL_COMPAT(sqrtl);
-  extern long double erfl( long double ) __LIBMLDBL_COMPAT(erfl);
-  extern long double erfcl( long double ) __LIBMLDBL_COMPAT(erfcl);
-  extern long double lgammal( long double ) __LIBMLDBL_COMPAT(lgammal);
-  extern long double tgammal( long double ) __LIBMLDBL_COMPAT(tgammal);
-  extern long double ceill( long double ) __LIBMLDBL_COMPAT(ceill);
-  extern long double floorl( long double ) __LIBMLDBL_COMPAT(floorl);
-  extern long double nearbyintl( long double ) __LIBMLDBL_COMPAT(nearbyintl);
-  extern long double rintl( long double ) __LIBMLDBL_COMPAT(rintl);
-  extern long int lrintl( long double ) __LIBMLDBL_COMPAT(lrintl);
-  extern long long int llrintl( long double ) __LIBMLDBL_COMPAT(llrintl);
-  extern long double roundl( long double ) __LIBMLDBL_COMPAT(roundl);
-  extern long int lroundl( long double ) __LIBMLDBL_COMPAT(lroundl);
-  extern long long int llroundl( long double ) __LIBMLDBL_COMPAT(llroundl);
-  extern long double truncl( long double ) __LIBMLDBL_COMPAT(truncl);
-  extern long double fmodl( long double, long double) __LIBMLDBL_COMPAT(fmodl);
-  extern long double remainderl( long double, long double ) __LIBMLDBL_COMPAT(remainderl);
-  extern long double remquol( long double, long double, int * ) __LIBMLDBL_COMPAT(remquol);
-  extern long double copysignl( long double, long double ) __LIBMLDBL_COMPAT(copysignl);
-  extern long double nanl( const char * ) __LIBMLDBL_COMPAT(nanl);
-  extern long double nextafterl( long double, long double ) __LIBMLDBL_COMPAT(nextafterl);
-  extern long double nexttowardl( long double, long double ) __LIBMLDBL_COMPAT(nexttowardl);
-  extern long double fdiml( long double, long double ) __LIBMLDBL_COMPAT(fdiml);
-  extern long double fmaxl( long double, long double ) __LIBMLDBL_COMPAT(fmaxl);
-  extern long double fminl( long double, long double ) __LIBMLDBL_COMPAT(fminl);
-  extern long double fmal( long double, long double, long double ) __LIBMLDBL_COMPAT(fmal);
-# ifdef __cplusplus
-   }
-# endif
-#endif /* __MATH__ */
-_EndOfHeader_;
+	/* This file prototypes the long double functions available on Mac OS
+	   10.3.9.  */
+	#ifndef __MATH__
+	# undef __APPLE_CC__
+	# define __APPLE_CC__  1345
+	# include_next <architecture/ppc/math.h>
+	# undef __APPLE_CC__
+	# define __APPLE_CC__ 1
+	# ifndef __LIBMLDBL_COMPAT
+	#  ifdef __LONG_DOUBLE_128__
+	#   define __LIBMLDBL_COMPAT(sym) __asm("_" #sym "$LDBL128")
+	#  else
+	#   define __LIBMLDBL_COMPAT(sym)
+	#  endif /* __LONG_DOUBLE_128__ */
+	# endif /* __LIBMLDBL_COMPAT */
+	# ifdef __cplusplus
+	   extern "C" {
+	# endif
+	  extern long double acosl( long double ) __LIBMLDBL_COMPAT(acosl);
+	  extern long double asinl( long double ) __LIBMLDBL_COMPAT(asinl);
+	  extern long double atanl( long double ) __LIBMLDBL_COMPAT(atanl);
+	  extern long double atan2l( long double, long double ) __LIBMLDBL_COMPAT(atan2l);
+	  extern long double cosl( long double ) __LIBMLDBL_COMPAT(cosl);
+	  extern long double sinl( long double ) __LIBMLDBL_COMPAT(sinl);
+	  extern long double tanl( long double ) __LIBMLDBL_COMPAT(tanl);
+	  extern long double acoshl( long double ) __LIBMLDBL_COMPAT(acoshl);
+	  extern long double asinhl( long double ) __LIBMLDBL_COMPAT(asinhl);
+	  extern long double atanhl( long double ) __LIBMLDBL_COMPAT(atanhl);
+	  extern long double coshl( long double ) __LIBMLDBL_COMPAT(coshl);
+	  extern long double sinhl( long double ) __LIBMLDBL_COMPAT(sinhl);
+	  extern long double tanhl( long double ) __LIBMLDBL_COMPAT(tanhl);
+	  extern long double expl( long double ) __LIBMLDBL_COMPAT(expl);
+	  extern long double exp2l( long double ) __LIBMLDBL_COMPAT(exp2l);
+	  extern long double expm1l( long double ) __LIBMLDBL_COMPAT(expm1l);
+	  extern long double logl( long double ) __LIBMLDBL_COMPAT(logl);
+	  extern long double log10l( long double ) __LIBMLDBL_COMPAT(log10l);
+	  extern long double log2l( long double ) __LIBMLDBL_COMPAT(log2l);
+	  extern long double log1pl( long double ) __LIBMLDBL_COMPAT(log1pl);
+	  extern long double logbl( long double ) __LIBMLDBL_COMPAT(logbl);
+	  extern long double modfl( long double, long double * ) __LIBMLDBL_COMPAT(modfl);
+	  extern long double ldexpl( long double, int ) __LIBMLDBL_COMPAT(ldexpl);
+	  extern long double frexpl( long double, int * ) __LIBMLDBL_COMPAT(frexpl);
+	  extern int ilogbl( long double ) __LIBMLDBL_COMPAT(ilogbl);
+	  extern long double scalbnl( long double, int ) __LIBMLDBL_COMPAT(scalbnl);
+	  extern long double scalblnl( long double, long int ) __LIBMLDBL_COMPAT(scalblnl);
+	  extern long double fabsl( long double ) __LIBMLDBL_COMPAT(fabsl);
+	  extern long double cbrtl( long double ) __LIBMLDBL_COMPAT(cbrtl);
+	  extern long double hypotl( long double, long double ) __LIBMLDBL_COMPAT(hypotl);
+	  extern long double powl( long double, long double ) __LIBMLDBL_COMPAT(powl);
+	  extern long double sqrtl( long double ) __LIBMLDBL_COMPAT(sqrtl);
+	  extern long double erfl( long double ) __LIBMLDBL_COMPAT(erfl);
+	  extern long double erfcl( long double ) __LIBMLDBL_COMPAT(erfcl);
+	  extern long double lgammal( long double ) __LIBMLDBL_COMPAT(lgammal);
+	  extern long double tgammal( long double ) __LIBMLDBL_COMPAT(tgammal);
+	  extern long double ceill( long double ) __LIBMLDBL_COMPAT(ceill);
+	  extern long double floorl( long double ) __LIBMLDBL_COMPAT(floorl);
+	  extern long double nearbyintl( long double ) __LIBMLDBL_COMPAT(nearbyintl);
+	  extern long double rintl( long double ) __LIBMLDBL_COMPAT(rintl);
+	  extern long int lrintl( long double ) __LIBMLDBL_COMPAT(lrintl);
+	  extern long long int llrintl( long double ) __LIBMLDBL_COMPAT(llrintl);
+	  extern long double roundl( long double ) __LIBMLDBL_COMPAT(roundl);
+	  extern long int lroundl( long double ) __LIBMLDBL_COMPAT(lroundl);
+	  extern long long int llroundl( long double ) __LIBMLDBL_COMPAT(llroundl);
+	  extern long double truncl( long double ) __LIBMLDBL_COMPAT(truncl);
+	  extern long double fmodl( long double, long double) __LIBMLDBL_COMPAT(fmodl);
+	  extern long double remainderl( long double, long double ) __LIBMLDBL_COMPAT(remainderl);
+	  extern long double remquol( long double, long double, int * ) __LIBMLDBL_COMPAT(remquol);
+	  extern long double copysignl( long double, long double ) __LIBMLDBL_COMPAT(copysignl);
+	  extern long double nanl( const char * ) __LIBMLDBL_COMPAT(nanl);
+	  extern long double nextafterl( long double, long double ) __LIBMLDBL_COMPAT(nextafterl);
+	  extern long double nexttowardl( long double, long double ) __LIBMLDBL_COMPAT(nexttowardl);
+	  extern long double fdiml( long double, long double ) __LIBMLDBL_COMPAT(fdiml);
+	  extern long double fmaxl( long double, long double ) __LIBMLDBL_COMPAT(fmaxl);
+	  extern long double fminl( long double, long double ) __LIBMLDBL_COMPAT(fminl);
+	  extern long double fmal( long double, long double, long double ) __LIBMLDBL_COMPAT(fmal);
+	# ifdef __cplusplus
+	   }
+	# endif
+	#endif /* __MATH__ */
+	_EndOfHeader_;
 };
 
 
@@ -353,29 +353,6 @@ fix = {
 	#endif /* __memory_h__ */
 	_EndOfHeader_;
 };
-
-
-/*
- *  Completely replace <sys/varargs.h> with a file that includes gcc's
- *  stdarg.h or varargs.h files as appropriate.
- */
-#ifdef SVR4
-fix = {
-    hackname = AAB_svr4_no_varargs;
-    files    = sys/varargs.h;
-    replace  = "/* This file was generated by fixincludes.  */\n"
-               "#ifndef _SYS_VARARGS_H\n"
-               "#define _SYS_VARARGS_H\n\n"
-
-               "#ifdef __STDC__\n"
-               "#include <stdarg.h>\n"
-               "#else\n"
-               "#include <varargs.h>\n"
-               "#endif\n\n"
-
-               "#endif  /* _SYS_VARARGS_H */\n";
-};
-#endif
 
 
 /*
@@ -2217,20 +2194,6 @@ fix = {
 };
 
 
-/*
- * Apparently some SVR4 systems typedef longlong_t to long ?
- */
-#ifdef SVR4
-fix = {
-    hackname  = longlong_t;
-    select    = "typedef[ \t]+(unsigned[ \t]+)?long[ \t]+(u_)?longlong_t";
-    c_fix     = format;
-    c_fix_arg = "typedef %1long long %2longlong_t";
-    test_text = "typedef long longlong_t\n"
-                "typedef unsigned long u_longlong_t";
-};
-#endif
-
 /* 
  *  Remove header file warning from sys/time.h.  Autoconf's
  *  AC_HEADER_TIME recommends to include both sys/time.h and time.h
@@ -3415,98 +3378,6 @@ fix = {
 
 
 /*
- *  Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
- *  On some systems (UnixWare 2, UnixWare 7), the file is byteorder.h
- *  but we still "hijack" it and redirect it to the GNU byteorder.h..
- */
-#ifdef SVR5
-fix = {
-    hackname = svr4_endian;
-    files    = sys/endian.h;
-#ifdef LATER
-    /*
-     * since we emit our own sys/byteorder.h,
-     * this fix can never be applied to that file.
-     */
-    files    = sys/byteorder.h;
-#endif
-    bypass   = '__GNUC__';
-
-    sed      = "/#\tifdef\t__STDC__/i\\\n"
-               "#   if !defined (__GNUC__) && !defined (__GNUG__)\n";
-
-    sed      = "/#\t\tinclude\t<sys\\/byteorder.h>/s/\t\t/   /";
-
-    sed      = "/#   include\t<sys\\/byteorder.h>/i\\\n"
-               "#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\n";
-};
-#endif /* SVR5 */
-
-
-/*
- *  Remove useless extern keyword from struct forward declarations
- *  in <sys/stream.h> and <sys/strsubr.h>
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_extern_struct;
-    files    = sys/stream.h;
-    files    = sys/strsubr.h;
-    select   = 'extern struct [a-z_]*;';
-    sed      = 's/extern struct \([a-z][a-z_]*\)/struct \1/';
-};
-#endif
-
-/*
- *  Fix declarations of `ftw' and `nftw' in <ftw.h>.  On some/most SVR4
- *  systems the file <ftw.h> contains extern declarations of these
- *  functions followed by explicitly `static' definitions of these
- *  functions... and that's not allowed according to ANSI C.  (Note
- *  however that on Solaris, this header file glitch has been pre-fixed by
- *  Sun.  In the Solaris version of <ftw.h> there are no static
- *  definitions of any function so we don't need to do any of this stuff
- *  when on Solaris.
- */
-#ifdef SVR4
-#ifndef SOLARIS
-fix = {
-    hackname = svr4_ftw;
-    files    = ftw.h;
-    select   = '^extern int ftw\(const';
-
-    sed = '/^extern int ftw(const/i' "\\\n"
-            "#if !defined(_STYPES)\\\n"
-            "static\\\n"
-            "#else\\\n"
-            "extern\\\n"
-            "#endif";
-    sed = 's/extern \(int ftw(const.*\)$/\1/';
-    sed = "/^extern int nftw/i\\\n"
-            "#if defined(_STYPES)\\\n"
-            "static\\\n"
-            "#else\\\n"
-            "extern\\\n"
-            "#endif";
-    sed = 's/extern \(int nftw.*\)$/\1/';
-    sed = "/^extern int ftw(),/c\\\n"
-            "#if !defined(_STYPES)\\\n"
-            "static\\\n"
-            "#else\\\n"
-            "extern\\\n"
-            "#endif\\\n"
-            "  int ftw();\\\n"
-            "#if defined(_STYPES)\\\n"
-            "static\\\n"
-            "#else\\\n"
-            "extern\\\n"
-            "#endif\\\n"
-            "  int nftw();";
-};
-#endif
-#endif
-
-
-/*
  *   Fix broken decl of getcwd present on some svr4 systems.
  */
 fix = {
@@ -3521,95 +3392,6 @@ fix = {
 
     test_text = "extern char* getcwd(char *, int);";
 };
-
-
-/*
- *  Delete any #defines of `__i386' which may be present in <ieeefp.h>.  They
- *  tend to conflict with the compiler's own definition of this symbol.  (We
- *  will use the compiler's definition.)
- *  Likewise __sparc, for Solaris, and __i860, and a few others
- *  (guessing it is necessary for all of them).
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_mach_defines;
-    files    = ieeefp.h;
-    select   = "#define[ \t]*__(i386|mips|sparc|m88k|m68k)[ \t]";
-    sed      = "/#define[ \t]*__\\(i386|mips|sparc|m88k|m68k\\)[ \t]/d";
-};
-#endif
-
-
-/*
- *  Fix declarations of `makedev', `major', and `minor' in <sys/mkdev.h>.
- *  They are declared as non-static then immediately redeclared as static.
- */
-#ifdef SVR5
-fix = {
-    hackname = svr4_mkdev;
-    files    = sys/mkdev.h;
-    select   = '^static';
-
-    sed      = "/^dev_t makedev(/s/^/static /";
-    sed      = "/^major_t major(/s/^/static /";
-    sed      = "/^minor_t minor(/s/^/static /";
-};
-#endif /* SVR5 */
-
-
-/*
- *  Fix reference to NC_NPI_RAW in <sys/netcspace.h>.
- *  Also fix types of array initializers.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_netcspace;
-    files    = sys/netcspace.h;
-    select   = 'NC_NPI_RAW';
-    sed      = 's/NC_NPI_RAW/NC_TPI_RAW/g';
-    sed      = 's/NC_/(unsigned long) NC_/';
-};
-#endif
-
-/*
- *  Fix reference to NMSZ in <sys/adv.h>.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_nmsz;
-    files    = sys/adv.h;
-    select   = '\[NMSZ\]';
-    sed      = 's/\[NMSZ\]/\[RFS_NMSZ\]/g';
-};
-#endif
-
-
-/*
- * Some SVR4 systems supposedly use these non-ANSI preprocessor directives.
- */
-#ifdef SVR4
-fix = {
-    hackname  = svr4_preproc_lint_on;
-    select    = '#lint\(on\)';
-    c_fix     = format;
-    c_fix_arg = 'defined(lint)';
-    test_text = "#if #lint(on)";
-};
-fix = {
-    hackname  = svr4_preproc_lint_off;
-    select    = '#lint\(off\)';
-    c_fix     = format;
-    c_fix_arg = '!defined(lint)';
-    test_text = "#if #lint(off)";
-};
-fix = {
-    hackname  = svr4_preproc_machine;
-    select    = '#(machine|system|cpu)\(([^)]*)\)';
-    c_fix     = format;
-    c_fix_arg = 'defined(__%1__)';
-    test_text = "#if #machine(i386) || #system(vax) || #cpu(sparc)";
-};
-#endif
 
 
 /*
@@ -3634,75 +3416,6 @@ fix = {
 
 
 /*
- *  Convert functions to prototype form, and fix arg names in <sys/stat.h>.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_proto_form;
-    files    = sys/stat.h;
-    select   = 'const extern';
-
-    sed      = "/^stat([ \t]*[^c]/ {\nN\nN\n"
-                   "s/(.*)\\n/( /\n"
-                   "s/;\\n/, /\n"
-                   "s/;$/)/\n"  "}";
-
-    sed      = "/^lstat([ \t]*[^c]/ {\nN\nN\n"
-                   "s/(.*)\\n/( /\n"
-                   "s/;\\n/, /\n"
-                   "s/;$/)/\n"  "}";
-
-    sed      = "/^fstat([ \t]*[^i]/ {\nN\nN\n"
-                   "s/(.*)\\n/( /\n"
-                   "s/;\\n/, /\n"
-                   "s/;$/)/\n"  "}";
-
-    sed      = "/^mknod([ \t]*[^c]/{\nN\nN\nN\n"
-                   "s/(.*)\\n/( /\n"
-                   "s/;\\n/, /g\n"
-                   "s/;$/)/\n"  "}";
-
-    sed      = "1,$s/\\([^A-Za-z]\\)path\\([^A-Za-z]\\)/\\1__path\\2/g";
-    sed      = "1,$s/\\([^A-Za-z]\\)buf\\([^A-Za-z]\\)/\\1__buf\\2/g";
-    sed      = "1,$s/\\([^A-Za-z]\\)fd\\([^A-Za-z]\\)/\\1__fd\\2/g";
-    sed      = "1,$s/ret\\([^u]\\)/__ret\\1/g";
-    sed      = "1,$s/\\([^_]\\)mode\\([^_]\\)/\\1__mode\\2/g";
-    sed      = "1,$s/\\([^_r]\\)dev\\([^_]\\)/\\1__dev\\2/g";
-};
-#endif
-
-/*
- *  Add a prototyped declaration of mmap to <sys/mman.h>.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_proto_mmap;
-    files    = sys/mman.h;
-    select   = '^extern caddr_t mmap();$';
-    sed = '/^extern caddr_t mmap();$/c' "\\\n"
-          "#ifdef __STDC__\\\n"
-          "extern caddr_t mmap (caddr_t, size_t, int, int, int, off_t);\\\n"
-          "#else /* !defined(__STDC__) */\\\n"
-          "extern caddr_t mmap ();\\\n"
-          "#endif /* !defined(__STDC__) */\\\n";
-};
-#endif
-
-/*
- *  Add a #define of _SIGACTION_ into <sys/signal.h>.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_sigaction;
-    files    = sys/signal.h;
-    sed      = "/^struct sigaction {/i\\\n"
-               "#define _SIGACTION_";
-    sed      = 's/(void *(\*)())/(void (*)(int))/';
-};
-#endif
-
-
-/*
  * Correct types for signal handler constants like SIG_DFL; they might be
  * void (*) (), and should be void (*) (int).  C++ doesn't like the
  * old style.
@@ -3716,18 +3429,6 @@ fix = {
     test_text = "#define SIG_DFL (void(*)())0\n"
                 "#define SIG_IGN (void (*)())0\n";
 };
-
-/*
- *  Put storage class at start of decl, to avoid warning.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_storage_class;
-    files    = rpc/types.h;
-    select   = 'const extern';
-    sed      = 's/const extern/extern const/g';
-};
-#endif
 
 
 /*
@@ -3757,20 +3458,6 @@ fix = {
                 "static getrnge()\n"
                 "{}";
 };
-
-
-/*
- *  Like svr4_mach_defines, but with newfangled syntax.
- *  Source lines are of #define __i386 #machine(i386).   Delete them.
- */
-#ifdef SVR5
-fix = {
-    hackname = svr5_mach_defines;
-    files    = ieeefp.h;
-    select   = "#define[ \t]*__i386.*\(i386\)";
-    sed      = "/#define[ \t]*__i386.*/d";
-};
-#endif /*  SVR5 */
 
 
 /*
