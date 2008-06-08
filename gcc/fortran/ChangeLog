@@ -1,6 +1,7 @@
 2008-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/36420, 36422
+	PR fortran/36420
+	PR fortran/36422
 	* io.c (check_format): Add new error message for zero width.
 	Use new	error message for FMT_A and with READ, FMT_G.  Allow
 	FMT_G with WRITE except when -std=F95 and -std=F2003.
