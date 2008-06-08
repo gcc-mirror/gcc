@@ -135,14 +135,14 @@ extern tree (*lang_eh_runtime_type) (tree);
    has appropriate support.  */
 
 #ifndef MUST_USE_SJLJ_EXCEPTIONS
-# if !(defined (EH_RETURN_DATA_REGNO)			\
+# if defined (EH_RETURN_DATA_REGNO)			\
        && (defined (TARGET_UNWIND_INFO)			\
 	   || (DWARF2_UNWIND_INFO			\
 	       && (defined (EH_RETURN_HANDLER_RTX)	\
-		   || defined (HAVE_eh_return)))))
-#  define MUST_USE_SJLJ_EXCEPTIONS	1
-# else
+		   || defined (HAVE_eh_return))))
 #  define MUST_USE_SJLJ_EXCEPTIONS	0
+# else
+#  define MUST_USE_SJLJ_EXCEPTIONS	1
 # endif
 #endif
 
@@ -152,14 +152,21 @@ extern tree (*lang_eh_runtime_type) (tree);
 # endif
 # if CONFIG_SJLJ_EXCEPTIONS == 0
 #  define USING_SJLJ_EXCEPTIONS		0
-#  ifndef EH_RETURN_DATA_REGNO
+#  if !defined(EH_RETURN_DATA_REGNO)
     #error "EH_RETURN_DATA_REGNO required"
 #  endif
-#  if !defined(EH_RETURN_HANDLER_RTX) && !defined(HAVE_eh_return)
+#  if ! (defined(TARGET_UNWIND_INFO) || DWARF2_UNWIND_INFO)
+    #error "{DWARF2,TARGET}_UNWIND_INFO required"
+#  endif
+#  if !defined(TARGET_UNWIND_INFO) \
+	&& !(defined(EH_RETURN_HANDLER_RTX) || defined(HAVE_eh_return))
     #error "EH_RETURN_HANDLER_RTX or eh_return required"
 #  endif
-#  if !defined(DWARF2_UNWIND_INFO) && !defined(TARGET_UNWIND_INFO)
-    #error "{DWARF2,TARGET}_UNWIND_INFO required"
+/* Usually the above error checks will have already triggered an
+   error, but backends may set MUST_USE_SJLJ_EXCEPTIONS for their own
+   reasons.  */
+#  if MUST_USE_SJLJ_EXCEPTIONS
+    #error "Must use SJLJ exceptions but configured not to"
 #  endif
 # endif
 #else
