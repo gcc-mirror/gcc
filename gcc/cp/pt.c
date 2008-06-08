@@ -772,7 +772,11 @@ maybe_process_partial_specialization (tree type)
 	  check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type));
 	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
 	  if (processing_template_decl)
-	    push_template_decl (TYPE_MAIN_DECL (type));
+	    {
+	      if (push_template_decl (TYPE_MAIN_DECL (type))
+		  == error_mark_node)
+		return error_mark_node;
+	    }
 	}
       else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
 	error ("specialization of %qT after instantiation", type);
