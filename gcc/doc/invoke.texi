@@ -3659,7 +3659,8 @@ the semicolon.  This warning is also enabled by @option{-Wextra}.
 @item -Wenum-compare @r{(C++ and Objective-C++ only)}
 @opindex Wenum-compare
 @opindex Wno-enum-compare
-Warn about a comparison between values of different enum types.
+Warn about a comparison between values of different enum types. This
+warning is enabled by default.
 
 @item -Wsign-compare
 @opindex Wsign-compare
