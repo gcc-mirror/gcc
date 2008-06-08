@@ -37,6 +37,7 @@ extern int initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
 extern void gas_output_limited_string (FILE *file, const char *str);
 extern void gas_output_ascii (FILE *file, const char *str, size_t length);
+extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 
 #ifdef TREE_CODE
 extern void asm_output_external (FILE *file, tree decl, char *name);
