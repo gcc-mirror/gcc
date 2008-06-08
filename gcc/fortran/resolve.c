@@ -7905,6 +7905,14 @@ resolve_symbol (gfc_symbol *sym)
 	  sym->ts.interface = ifc;
 	  sym->attr.function = ifc->attr.function;
 	  sym->attr.subroutine = ifc->attr.subroutine;
+	  sym->attr.allocatable = ifc->attr.allocatable;
+	  sym->attr.pointer = ifc->attr.pointer;
+	  sym->attr.pure = ifc->attr.pure;
+	  sym->attr.elemental = ifc->attr.elemental;
+	  sym->attr.dimension = ifc->attr.dimension;
+	  sym->attr.recursive = ifc->attr.recursive;
+	  sym->attr.always_explicit = ifc->attr.always_explicit;
+	  sym->as = gfc_copy_array_spec (ifc->as);
 	  copy_formal_args (sym, ifc);
 	}
       else if (sym->ts.interface->name[0] != '\0')
