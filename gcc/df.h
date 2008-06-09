@@ -409,9 +409,8 @@ struct df_ref_extract
   enum machine_mode mode;
 };
 
-/* These links are used for two purposes:
-   1) def-use or use-def chains. 
-   2) Multiword hard registers that underly a single hardware register.  */
+/* These links are used for ref-ref chains.  Currently only DEF-USE and
+   USE-DEF chains can be built by DF.  */
 struct df_link
 {
   struct df_ref *ref;

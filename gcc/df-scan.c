@@ -166,7 +166,6 @@ struct df_scan_problem_data
   alloc_pool insn_pool;
   alloc_pool reg_pool;
   alloc_pool mw_reg_pool;
-  alloc_pool mw_link_pool;
   bitmap_obstack reg_bitmaps;
   bitmap_obstack insn_bitmaps;
 };
@@ -221,7 +220,6 @@ df_scan_free_internal (void)
   free_alloc_pool (problem_data->insn_pool);
   free_alloc_pool (problem_data->reg_pool);
   free_alloc_pool (problem_data->mw_reg_pool);
-  free_alloc_pool (problem_data->mw_link_pool);
   bitmap_obstack_release (&problem_data->reg_bitmaps);
   bitmap_obstack_release (&problem_data->insn_bitmaps);
   free (df_scan->problem_data);
@@ -312,9 +310,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   problem_data->mw_reg_pool 
     = create_alloc_pool ("df_scan_mw_reg pool", 
 			 sizeof (struct df_mw_hardreg), block_size);
-  problem_data->mw_link_pool 
-    = create_alloc_pool ("df_scan_mw_link pool", 
-			 sizeof (struct df_link), block_size);
 
   bitmap_obstack_initialize (&problem_data->reg_bitmaps);
   bitmap_obstack_initialize (&problem_data->insn_bitmaps);

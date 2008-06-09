@@ -1,3 +1,11 @@
+2008-06-08  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* df-scan.c (struct df_scan_problem_data): Remove the
+	mw_link_pool alloc pool.
+	(df_scan_free_internal): Don't free it.
+	(df_scan_alloc): Don't allocate it.
+	* df.h (struct df_link): Update comment.
+
 2008-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* except.h: Correct checks for when SJLJ exceptions must be used.
