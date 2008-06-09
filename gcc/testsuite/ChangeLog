@@ -1,3 +1,8 @@
+2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/pack3.ads: New test.
+	* gnat.dg/specs/pack3_pkg.ads: New helper.
+
 2008-06-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/gcc.dg/tree-ssa/ltrans-8.c: Fix outer loop strides
