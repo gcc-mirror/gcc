@@ -1,3 +1,8 @@
+2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/pack3.ads: New test.
+	* gnat.dg/specs/pack3_pkg.ads: New helper.
+
 2008-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/35242
