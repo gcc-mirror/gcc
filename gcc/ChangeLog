@@ -1,3 +1,8 @@
+2008-06-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (*-*-solaris2*): Remove obsolete contents.
+	(sparc-sun-solaris2*): Likewise.
+
 2008-06-09  Arnaud Charlet  <charlet@adacore.com
 
 	* doc/install.texi: Update requirements to build the Ada compiler.
