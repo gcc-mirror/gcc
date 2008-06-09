@@ -1,3 +1,8 @@
+2008-06-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* Make-lang.in: Use -gnatwns instead of -gnatws to make sytyle
+	checks non fatal.
+
 2008-06-07  Samuel Tardieu  <sam@rfc1149.net>
 
 	* sem_res.adb (Large_Storage_Type): A type is large if it
