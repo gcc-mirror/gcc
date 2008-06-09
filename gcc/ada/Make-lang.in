@@ -50,7 +50,7 @@ BOOT_ADAFLAGS= $(COMMON_ADAFLAGS)
 ifeq ($(CROSS),)
 # If not in cross context we are probably doing a bootstrap
 # so disable warnings during stage1
-ADAFLAGS= $(COMMON_ADAFLAGS) -gnatws
+ADAFLAGS= $(COMMON_ADAFLAGS) -gnatwns
 else
 ADAFLAGS= $(COMMON_ADAFLAGS)
 endif
