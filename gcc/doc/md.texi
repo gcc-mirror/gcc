@@ -2469,13 +2469,15 @@ generating MIPS16 code.
 A floating-point register (if available).
 
 @item h
-The @code{hi} register.
+Formerly the @code{hi} register.  This constraint is no longer supported.
 
 @item l
-The @code{lo} register.
+The @code{lo} register.  Use this register to store values that are
+no bigger than a word.
 
 @item x
-The @code{hi} and @code{lo} registers.
+The concatenated @code{hi} and @code{lo} registers.  Use this register
+to store doubleword values.
 
 @item c
 A register suitable for use in an indirect jump.  This will always be
