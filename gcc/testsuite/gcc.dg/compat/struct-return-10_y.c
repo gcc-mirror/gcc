@@ -2,11 +2,6 @@
 
 #include "compat-common.h"
 
-#ifdef SKIP_VA
-const int test_va = 0;
-#else
-const int test_va = 1;
-#endif
 
 #include "fp2-struct-defs.h"
 #include "fp2-struct-init.h"
@@ -58,7 +53,7 @@ testva##TYPE (int n, ...)					\
   int i;							\
   TYPE rslt;							\
   va_list ap;							\
-  if (test_va)							\
+  if (1)							\
     {								\
       va_start (ap, n);						\
       for (i = 0; i < n; i++)					\
