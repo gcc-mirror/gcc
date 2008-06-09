@@ -6,7 +6,11 @@ typedef int __attribute__((mode(HI))) hi;
 typedef int __attribute__((mode(SI))) si;
 typedef int __attribute__((mode(DI))) di;
 typedef float __attribute__((mode(SF))) sf;
+#if ((__SIZEOF_DOUBLE__ >= 8) || (__SIZEOF_LONG_DOUBLE__ >= 8))
 typedef float __attribute__((mode(DF))) df;
+#else
+typedef float __attribute__((mode(SF))) df;
+#endif
 
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 5)
 

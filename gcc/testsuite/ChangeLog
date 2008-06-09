@@ -1,3 +1,12 @@
+2008-06-09  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR testsuite/36285
+	* gcc.dg/compat/struct-return-10_y.c: Remove test_va.
+	* gcc.dg/compat/vector-defs.h: Add check for availability of 8 byte 
+	double.
+	* gcc.dg/compat/struct-layout-1_test.h: Change bitfield to match 
+	integer size.
+
 2008-06-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/pr34856.c: Condition use of -maltivec on
