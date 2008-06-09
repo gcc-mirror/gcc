@@ -1,3 +1,80 @@
+2008-06-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/md.texi: Synchronize with later constraints.md change.
+	* longlong.h (umul_ppmm): Replace the MIPS asm implementation
+	with a C implementation.
+	* config/mips/mips.c (mips_legitimize_move): Remove MFHI and
+	MFLO handling.
+	(mips_subword): Assume TImode for CONST_INTs if TARGET_64BIT.
+	(mips_split_doubleword_move): Use special MTHI and MFHI instructions
+	when moving to and from MD_REGNUM.
+	(mips_output_move): Don't handle moves from GPRs to HI_REGNUM.
+	Handle moves from LO_REGNUM to GPRs using MFLO, MACC or DMACC.
+	Handle byte and halfword moves.
+	(mips_hard_regno_mode_ok_p): Handle MD_REGS and DSP_ACC_REGS
+	separately.
+	* config/mips/constraints.md (h): Turn into NO_REGS.
+	(l, x): Update documentation.
+	* config/mips/mips.md (UNSPEC_MFHILO): Delete.
+	(UNSPEC_MFHI, UNSPEC_MTHI, UNSPEC_SET_HILO): New.
+	(UNSPEC_TLS_LDM, UNSPEC_TLS_GET_TP): Renumber.
+	(HILO): New mode iterator.
+	(MOVE128): Add TI.
+	(any_div): New code iterator.
+	(u): Extend code attribute to div and udiv.
+	(*add<mode>3_mips16, *movdi_64bit_mips16, *movsi_mips16): Use
+	d_operand in the splitters.  Remove redundant CONST_INT checks.
+	(mulsi3_mult3, mul<mode>3_internal, mul<mode>3_r4000, *mul_acc_si)
+	(*macc, *msac, *msac_using_macc, *macc2, *msac2, *mul_sub_si)
+	(*muls): Remove "=h" clobbers.  Adjust peephole2s and define_splits
+	accordingly, using normal moves instead of unspecs to move LO into
+	a GPR.  Use d_operand and lo_operand instead of *_REG_P checks.
+	(<u>mulsidi3): Handle expansion in C code.
+	(<u>mulsidi3_32bit_internal): Rename to...
+	(<u>mulsidi3_32bit): ...this.
+	(<u>mulsidi3_32bit_r4000): Fix insn separator.
+	(*<u>mulsidi3_64bit): Rename to...
+	(<u>mulsidi3_64bit): ...this.  Combine DImode "=h" and "=l" clobbers
+	into a TImode "=x" clobber.  In the split, use an UNSPEC_SET_HILO
+	to set LO and HI to the multiplication result.  Use a normal move
+	for MFLO and an unspec for MFHI.
+	(*<u>mulsidi3_64bit_parts): Replace with...
+	(<u>mulsidi3_64bit_hilo): ...this new instruction.
+	(<su>mulsi3_highpart): Extend to TARGET_FIX_R4000.
+	(<su>mulsi3_highpart_internal): Turn into a define_insn_and_split
+	and extend it to TARGET_FIX_R4000.  Store the destination in a GPR
+	instead of HI.  Split the instruction into a separate multiplication
+	and MFHI if !TARGET_FIX_R4000.
+	(<su>muldi3_highpart): Likewise.
+	(<su>mulsi3_highpart_mulhi_internal): Remove the first alternative
+	and the "=h" clobber.
+	(*<su>mulsi3_highpart_neg_mulhi_internal): Likewise.
+	(<u>mulditi3): New expander.
+	(<u>mulditi3_internal, <u>mulditi3_r4000): New patterns.
+	(madsi): Remove "=h" clobber.
+	(divmod<mode>4, udivmod<mode>4): Turn into define_insn_and_splits.
+	Force the modulus result to be a GPR and split the instruction into
+	a division followed by an MFHI after reload.
+	(<u>divmod<GPR:mode>4_hilo_<HILO:mode>): New instruction.
+	(*lea_high64): Use d_operand in the define_peephole2.  Likewise
+	the MIPS16 HIGH define_split.
+	(*movdi_32bit, *movdi_gp32_fp64, *movdi_32bit_mips16): Change type
+	of acc<->gpr moves to "multi".
+	(*movdi_64bit): Replace the single "x" alternative with
+	alternatives for moving into and out of "a".
+	(*movhi_internal, *movqi_internal): Likewise.  Use mips_output_move.
+	(*movsi_internal): Extend the "d<-A" alternative to "d<-a".
+	(*movdi_64bit_mips16, *movsi_mips16): Add d<-a alternatives.
+	Use d_operand in the splitters.  Remove redundant CONST_INT checks.
+	(*movhi_mips16, *movqi_mips16): Likewise.  Use mips_output_move.
+	(movti): New expander.
+	(*movti, *movti_mips16): New insns.
+	(mfhilo_<mode>, *mfhilo_<mode>, *mfhilo_<mode>_macc): Delete.
+	(mfhi<GPR:mode>_<HILO:mode>): New pattern.
+	(mthi<GPR:mode>_<HILO:mode>): Likewise.
+	* config/mips/predicates.md (fpr_operand): Delete.
+	(d_operand): New predicate.
+
 2008-06-09  Michael Meissner  <michael.meissner@amd.com>
 
 	* config.gcc (i[34567]86-*-*): Put test in quotes to prevent

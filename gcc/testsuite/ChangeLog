@@ -1,3 +1,26 @@
+2008-06-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/torture/mips-hilo-1.c: Delete.
+	* gcc.target/mips/pr35232.c: Likewise.
+	* gcc.target/mips/fix-vr4130-1.c: Use modulus to create an mfhi.
+	* gcc.target/mips/fix-vr4130-3.c: Likewise.
+	* gcc.target/mips/int-moves-1.c: New test.
+	* gcc.target/mips/int-moves-2.c: Likewise.
+	* gcc.target/mips/fix-r4000-1.c: Likewise.
+	* gcc.target/mips/fix-r4000-2.c: Likewise.
+	* gcc.target/mips/fix-r4000-3.c: Likewise.
+	* gcc.target/mips/fix-r4000-4.c: Likewise.
+	* gcc.target/mips/fix-r4000-5.c: Likewise.
+	* gcc.target/mips/fix-r4000-6.c: Likewise.
+	* gcc.target/mips/fix-r4000-7.c: Likewise.
+	* gcc.target/mips/fix-r4000-8.c: Likewise.
+	* gcc.target/mips/fix-r4000-9.c: Likewise.
+	* gcc.target/mips/fix-r4000-10.c: Likewise.
+	* gcc.target/mips/fix-r4000-11.c: Likewise.
+	* gcc.target/mips/fix-r4000-12.c: Likewise.
+	* gcc.target/mips/timode-1.c: Likewise.
+	* gcc.target/mips/timode-2.c: Likewise.
+
 2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack3.ads: New test.

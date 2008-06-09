@@ -29,14 +29,16 @@
 (define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
   "A floating-point register (if available).")
 
-(define_register_constraint "h" "TARGET_BIG_ENDIAN ? MD0_REG : MD1_REG"
-  "The @code{hi} register.")
+(define_register_constraint "h" "NO_REGS"
+  "Formerly the @code{hi} register.  This constraint is no longer supported.")
 
 (define_register_constraint "l" "TARGET_BIG_ENDIAN ? MD1_REG : MD0_REG"
-  "The @code{lo} register.")
+  "The @code{lo} register.  Use this register to store values that are
+   no bigger than a word.")
 
 (define_register_constraint "x" "MD_REGS"
-  "The @code{hi} and @code{lo} registers.")
+  "The concatenated @code{hi} and @code{lo} registers.  Use this register
+   to store doubleword values.")
 
 (define_register_constraint "b" "ALL_REGS"
   "@internal")

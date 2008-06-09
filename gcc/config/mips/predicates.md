@@ -76,9 +76,11 @@
        (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
 	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
 
-(define_predicate "fpr_operand"
+(define_predicate "d_operand"
   (and (match_code "reg")
-       (match_test "FP_REG_P (REGNO (op))")))
+       (match_test "TARGET_MIPS16
+		    ? M16_REG_P (REGNO (op))
+		    : GP_REG_P (REGNO (op))")))
 
 (define_predicate "lo_operand"
   (and (match_code "reg")
