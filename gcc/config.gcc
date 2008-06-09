@@ -393,13 +393,13 @@ fi
 
 case ${target} in
 i[34567]86-*-*)
-	if test $enable_cld = yes; then
+	if test "x$enable_cld" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_CLD=1"
 	fi
 	;;
 x86_64-*-*)
 	tm_file="i386/biarch64.h ${tm_file}"
-	if test $enable_cld = yes; then
+	if test "x$enable_cld" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_CLD=1"
 	fi
 	;;

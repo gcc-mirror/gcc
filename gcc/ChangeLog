@@ -1,3 +1,9 @@
+2008-06-09  Michael Meissner  <michael.meissner@amd.com>
+
+	* config.gcc (i[34567]86-*-*): Put test in quotes to prevent
+	failure on some Bourne shells.
+	(x86_64-*-*): Ditto.
+
 2008-06-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34976
