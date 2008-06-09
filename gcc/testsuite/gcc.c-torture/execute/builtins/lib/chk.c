@@ -1,5 +1,7 @@
 #include <stdarg.h>
+#ifdef __unix__
 #include <sys/types.h>
+#endif
 
 extern void abort (void);
 
