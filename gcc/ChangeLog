@@ -1,3 +1,18 @@
+2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36473
+	* config/i386/i386.c (ix86_tune_features) [TUNE_USE_BT]:
+	Add m_CORE2 and m_GENERIC.
+	* config/i386/predicates.md (bt_comparison_operator): New predicate.
+	* config/i386/i386.md (*btdi_rex64): New instruction pattern.
+	(*btsi): Ditto.
+	(*jcc_btdi_rex64): New instruction and split pattern.
+	(*jcc_btsi): Ditto.
+	(*jcc_btsi_1): Ditto.
+	(*btsq): Fix Intel asm dialect operand order.
+	(*btrq): Ditto.
+	(*btcq): Ditto.
+
 2008-06-09  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR middle-end/36447
