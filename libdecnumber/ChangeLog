@@ -1,3 +1,16 @@
+2008-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* dconfig.h: New.
+	* decContext.c, decExcept.c, decExcept.h, decLibrary.c,
+	decNumber.c, decNumberLocal.h, decRound.c, dpd/decimal128.c,
+	dpd/decimal32.c, dpd/decimal64.c: Include dconfig.h not config.h.
+	* dpd/decimal128Local.h (decimal128SetSign, decimal128ClearSign,
+	decimal128FlipSign): Use WORDS_BIGENDIAN not
+	FLOAT_WORDS_BIG_ENDIAN.
+	* bid/host-ieee128.c: Include dconfig.h.
+	(__host_to_ieee_128, __ieee_to_host_128): Swap 64-bit halves of
+	value if WORDS_BIGENDIAN.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

@@ -1,3 +1,9 @@
+2008-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (DECNUMINC): Remove
+	-I$(MULTIBUILDTOP)../../libdecnumber.
+	* gstdint.h: New.
+
 2008-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (strongarm*-*-*, ep9312*-*-*, xscale-*-*,
