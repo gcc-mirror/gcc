@@ -1,3 +1,14 @@
+2008-06-10  Vinodha Ramasamy  <vinodha@google.com>
+        * value_prob.c (tree_divmod_fixed_value_transform): Use gcov_type.
+	Avoid division by 0.
+	(tree_mod_pow2_value_transform): Likewise.
+	(tree_ic_transform): Likewise.
+	(tree_stringops_transform): Likewise.
+	(tree_mod_subtract_transform): Likewise.
+	* tree-inline-c (copy_bb): Corrected int type to gcov_type.
+	(copy_edges_for_bb): Likewise.
+	(initialize_cfun): Likewise.
+
 2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*btdi_rex64): Change operand 1 predicate to
