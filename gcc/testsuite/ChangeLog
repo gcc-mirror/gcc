@@ -1,8 +1,13 @@
 2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/bt-mask-1.c: New test.
+	* gcc.target/i386/bt-mask-2.c: Ditto.
+
+2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/36473
-	* testsuite/gcc.target/i386/bt-1.c: New test.
-	* testsuite/gcc.target/i386/bt-2.c: Ditto.
+	* gcc.target/i386/bt-1.c: New test.
+	* gcc.target/i386/bt-2.c: Ditto.
 
 2008-06-09  Andy Hutchinson  <hutchinsonandy@aim.com>
 
