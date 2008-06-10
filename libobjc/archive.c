@@ -908,7 +908,7 @@ objc_read_class (struct objc_typed_stream *stream, Class *class)
 
 	  objc_read_unsigned_long (stream, &version);
 	  objc_hash_add (&stream->class_table,
-			 (*class)->name, (void *)version);
+			 (*class)->name, (void *) ((size_t) version));
 	}
 
       else if ((buf[0]&_B_CODE) == _B_UCOMM)

@@ -115,7 +115,7 @@ extern int errno;
   return self==anObject;
 }
 
-- (int)compare:anotherObject;
+- (int)compare:(id)anotherObject;
 {
   if ([self isEqual:anotherObject])
     return 0;

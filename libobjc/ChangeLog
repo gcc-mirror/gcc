@@ -1,3 +1,12 @@
+2008-06-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	* Object.m (compare): Add type id.
+	* objc/Object.h: Likewise.
+	* archive.c (objc_read_class): Use size_t to extend version to be
+	size of pointer scalar width.
+	* sendmsg.c (rtx): Undefine it before redefinition.
+	(__objc_print_dtable_stats): Cast arguments to long as intended.
+
 2008-05-30  Julian Brown  <julian@codesourcery.com>
 
 	* exception.c (__objc_exception_class): Initialise as constant
