@@ -1,3 +1,12 @@
+2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*btdi_rex64): Change operand 1 predicate to
+	nonmemory_operand. Add "N" operand constraint.
+	(*btsi): Ditto.
+	(*jcc_btdi_mask_rex64): New instruction and split pattern.
+	(*jcc_btsi_mask): Ditto.
+	(*jcc_btsi_mask_1): Ditto.
+
 2008-06-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (build_opaque_vector_type): Set
