@@ -1,3 +1,8 @@
+2008-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (build_opaque_vector_type): Set
+	TYPE_CANONICAL for copied element type.
+
 2008-06-09  Michael Meissner  <michael.meissner@amd.com>
 
 	* config.gcc (i[34567]86-*-*): Put test in quotes to prevent

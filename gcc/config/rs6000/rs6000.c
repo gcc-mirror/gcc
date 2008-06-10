@@ -9042,6 +9042,7 @@ build_opaque_vector_type (tree node, int nunits)
 {
   node = copy_node (node);
   TYPE_MAIN_VARIANT (node) = node;
+  TYPE_CANONICAL (node) = node;
   return build_vector_type (node, nunits);
 }
 
