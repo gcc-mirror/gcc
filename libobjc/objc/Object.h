@@ -66,7 +66,7 @@ extern "C" {
 - self;
 - (unsigned int)hash;
 - (BOOL)isEqual:anObject;
-- (int)compare:anotherObject;
+- (int)compare:(id)anotherObject;
 
         /* Testing object type */
 - (BOOL)isMetaClass;

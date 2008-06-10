@@ -41,6 +41,8 @@ Boston, MA 02110-1301, USA.  */
 #define gen_rtx(args...) 1
 #define gen_rtx_MEM(args...) 1
 #define gen_rtx_REG(args...) 1
+/* Alread defined in gcc/coretypes.h. So prevent double definition warning.  */
+#undef rtx
 #define rtx int
 
 #if ! defined (STRUCT_VALUE) || STRUCT_VALUE == 0
@@ -685,14 +687,14 @@ __objc_print_dtable_stats ()
 #endif
 
   printf ("arrays: %d = %ld bytes\n", narrays, 
-	  (long) narrays * sizeof (struct sarray));
+	  (long) (narrays * sizeof (struct sarray)));
   total += narrays * sizeof (struct sarray);
   printf ("buckets: %d = %ld bytes\n", nbuckets, 
-	  (long) nbuckets * sizeof (struct sbucket));
+	  (long) (nbuckets * sizeof (struct sbucket)));
   total += nbuckets * sizeof (struct sbucket);
 
   printf ("idxtables: %d = %ld bytes\n",
-	  idxsize, (long) idxsize * sizeof (void *));
+	  idxsize, (long) (idxsize * sizeof (void *)));
   total += idxsize * sizeof (void *);
   printf ("-----------------------------------\n");
   printf ("total: %d bytes\n", total);
