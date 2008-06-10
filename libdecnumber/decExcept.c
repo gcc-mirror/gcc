@@ -28,7 +28,7 @@
    02110-1301, USA.  */
 
 #include <fenv.h>
-#include "config.h"
+#include "dconfig.h"
 #include "decContext.h"
 #include "decExcept.h"
 

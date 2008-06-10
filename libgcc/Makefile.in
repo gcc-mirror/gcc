@@ -191,8 +191,7 @@ ifeq ($(enable_decimal_float),bid)
 DECNUMINC = -I$(srcdir)/config/libbid -DENABLE_DECIMAL_BID_FORMAT
 else
 DECNUMINC = -I$(srcdir)/../libdecnumber/$(enable_decimal_float) \
-	    -I$(srcdir)/../libdecnumber \
-	    -I$(MULTIBUILDTOP)../../libdecnumber
+	    -I$(srcdir)/../libdecnumber
 endif
 else
 DECNUMINC =

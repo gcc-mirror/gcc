@@ -27,7 +27,7 @@
    Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
-#include "config.h"
+#include "dconfig.h"
 #include "decContext.h"
 #include "decimal128.h"
 #include "decimal64.h"

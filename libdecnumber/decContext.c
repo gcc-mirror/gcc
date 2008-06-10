@@ -37,7 +37,7 @@
 
 #include <string.h>	      /* for strcmp */
 #include <stdio.h>	      /* for printf if DECCHECK */
-#include "config.h"	      /* for GCC definitions */
+#include "dconfig.h"	      /* for GCC definitions */
 #include "decContext.h"	      /* context and base types */
 #include "decNumberLocal.h"   /* decNumber local types, etc. */
 
