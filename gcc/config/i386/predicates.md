@@ -920,6 +920,9 @@
 (define_predicate "ix86_comparison_uns_operator"
   (match_code "ne,eq,geu,gtu,leu,ltu"))
 
+(define_predicate "bt_comparison_operator"
+  (match_code "ne,eq"))
+
 ;; Return 1 if OP is a valid comparison operator in valid mode.
 (define_predicate "ix86_comparison_operator"
   (match_operand 0 "comparison_operator")

@@ -1390,7 +1390,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_AMD_MULTIPLE | m_K6_GEODE | m_PENT | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_USE_BT */
-  m_AMD_MULTIPLE,
+  m_AMD_MULTIPLE | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_USE_INCDEC */
   ~(m_PENT4 | m_NOCONA | m_GENERIC),
