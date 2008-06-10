@@ -1989,7 +1989,18 @@ create_subprog_decl (tree subprog_name, tree asm_name,
     DECL_DECLARED_INLINE_P (subprog_decl) = 1;
 
   if (asm_name)
-    SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
+    {
+      SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
+
+      /* The expand_main_function circuitry expects "main_identifier_node" to
+	 designate the DECL_NAME of the 'main' entry point, in turn expected
+	 to be declared as the "main" function literally by default.  Ada
+	 program entry points are typically declared with a different name
+	 within the binder generated file, exported as 'main' to satisfy the
+	 system expectations.  Redirect main_identifier_node in this case.  */
+      if (asm_name == main_identifier_node)
+	main_identifier_node = DECL_NAME (subprog_decl);
+    }
 
   process_attributes (subprog_decl, attr_list);
 

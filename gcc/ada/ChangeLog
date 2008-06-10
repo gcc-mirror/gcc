@@ -1,3 +1,8 @@
+2008-06-10  Olivier Hainque  <hainque@adacore.com>
+
+	* utils.c (create_subprog_decl): If this is for the 'main' entry
+	point according to the asm name, redirect main_identifier_node.
+
 2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (components_to_record): Adjust the packedness for the
