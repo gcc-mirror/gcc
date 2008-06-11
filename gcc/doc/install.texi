@@ -1014,14 +1014,23 @@ Specify that the target does not support TLS.
 This is an alias for @option{--enable-tls=no}.
 
 @item --with-cpu=@var{cpu}
+@itemx --with-cpu-32=@var{cpu}
+@itemx --with-cpu-64=@var{cpu}
 Specify which cpu variant the compiler should generate code for by default.
 @var{cpu} will be used as the default value of the @option{-mcpu=} switch.
 This option is only supported on some targets, including ARM, i386, M68k,
-PowerPC, and SPARC@.
+PowerPC, and SPARC@.  The @option{--with-cpu-32} and
+@option{--with-cpu-64} options specify separate default CPUs for
+32-bit and 64-bit modes; these options are only supported for i386 and
+x86-64.
 
 @item --with-schedule=@var{cpu}
 @itemx --with-arch=@var{cpu}
+@itemx --with-arch-32=@var{cpu}
+@itemx --with-arch-64=@var{cpu}
 @itemx --with-tune=@var{cpu}
+@itemx --with-tune-32=@var{cpu}
+@itemx --with-tune-64=@var{cpu}
 @itemx --with-abi=@var{abi}
 @itemx --with-fpu=@var{type}
 @itemx --with-float=@var{type}
