@@ -1775,7 +1775,7 @@ stmt_expr_value_expr (tree stmt_expr)
   if (TREE_CODE (t) == BIND_EXPR)
     t = BIND_EXPR_BODY (t);
 
-  if (TREE_CODE (t) == STATEMENT_LIST)
+  if (TREE_CODE (t) == STATEMENT_LIST && STATEMENT_LIST_TAIL (t))
     t = STATEMENT_LIST_TAIL (t)->stmt;
 
   if (TREE_CODE (t) == EXPR_STMT)

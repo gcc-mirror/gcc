@@ -1,3 +1,9 @@
+2008-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36408
+	* semantics.c (stmt_expr_value_expr): Don't crash on empty
+	STATEMENT_LIST.
+
 2008-06-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/35921
