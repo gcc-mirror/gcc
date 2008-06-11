@@ -1,3 +1,13 @@
+2008-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35336
+	* fold-const.c (fold_truthop): Remove code generating
+	BIT_FIELD_REFs of structure bases.
+	(fold_binary): Likewise.
+	(make_bit_field_ref): Remove.
+	(optimize_bit_field_compare): Remove.
+	(all_ones_mask_p): Remove.
+
 2008-06-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (arm_init_neon_builtins): Move initialization
