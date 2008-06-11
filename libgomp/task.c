@@ -43,6 +43,7 @@ gomp_init_task (struct gomp_task *task, struct gomp_task *parent_task,
   task->icv = *prev_icv;
   task->kind = GOMP_TASK_IMPLICIT;
   task->in_taskwait = false;
+  task->in_tied_task = false;
   task->children = NULL;
   gomp_sem_init (&task->taskwait_sem, 0);
 }
@@ -103,6 +104,8 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 
       gomp_init_task (&task, thr->task, gomp_icv (false));
       task.kind = GOMP_TASK_IFFALSE;
+      if (thr->task)
+	task.in_tied_task = thr->task->in_tied_task;
       thr->task = &task;
       if (__builtin_expect (cpyfn != NULL, 0))
 	{
@@ -134,6 +137,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 		      & ~(uintptr_t) (arg_align - 1));
       gomp_init_task (task, parent, gomp_icv (false));
       task->kind = GOMP_TASK_IFFALSE;
+      task->in_tied_task = parent->in_tied_task;
       thr->task = task;
       if (cpyfn)
 	cpyfn (arg, data);
@@ -143,6 +147,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       task->kind = GOMP_TASK_WAITING;
       task->fn = fn;
       task->fn_data = arg;
+      task->in_tied_task = true;
       gomp_mutex_lock (&team->task_lock);
       if (parent->children)
 	{
@@ -170,9 +175,10 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  task->prev_queue = task;
 	  team->task_queue = task;
 	}
-      if (team->task_count++ == 0)
-	gomp_team_barrier_set_task_pending (&team->barrier);
-      do_wake = team->task_running_count < team->nthreads;
+      ++team->task_count;
+      gomp_team_barrier_set_task_pending (&team->barrier);
+      do_wake = team->task_running_count + !parent->in_tied_task
+		< team->nthreads;
       gomp_mutex_unlock (&team->task_lock);
       if (do_wake)
 	gomp_team_barrier_wake (&team->barrier, 1);
