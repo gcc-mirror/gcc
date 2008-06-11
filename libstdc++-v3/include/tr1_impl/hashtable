@@ -1,6 +1,6 @@
 // Internal header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -326,18 +326,29 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       local_iterator
       begin(size_type __n)
       { return local_iterator(_M_buckets[__n]); }
-  
+
       local_iterator
       end(size_type)
       { return local_iterator(0); }
-  
+
       const_local_iterator
       begin(size_type __n) const
       { return const_local_iterator(_M_buckets[__n]); }
-  
+
       const_local_iterator
       end(size_type) const
       { return const_local_iterator(0); }
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      // DR 691.
+      const_local_iterator
+      cbegin(size_type __n) const
+      { return const_local_iterator(_M_buckets[__n]); }
+
+      const_local_iterator
+      cend(size_type) const
+      { return const_local_iterator(0); }
+#endif
 
       float
       load_factor() const

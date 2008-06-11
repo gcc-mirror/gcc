@@ -1,3 +1,17 @@
+2008-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/hashtable (_Hashtable<>::cbegin(size_type),
+	cend(size_type)): Add per DR 691. 
+	* testsuite/23_containers/unordered_map/requirements/cliterators.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	cliterators.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/cliterators.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	cliterators.cc: Likewise.
+	* doc/xml/manual/intro.xml: Add an entry for DR 691.
+
 2008-06-11  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/30_threads/lock_error, testsuite/30_threads/once_flag:
