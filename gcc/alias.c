@@ -640,6 +640,18 @@ get_alias_set (tree t)
   else if (TREE_CODE (t) == VECTOR_TYPE)
     set = get_alias_set (TREE_TYPE (t));
 
+  /* Unless the language specifies otherwise, treat array types the
+     same as their components.  This avoids the asymmetry we get
+     through recording the components.  Consider accessing a
+     character(kind=1) through a reference to a character(kind=1)[1:1].
+     Or consider if we want to assign integer(kind=4)[0:D.1387] and
+     integer(kind=4)[4] the same alias set or not.
+     Just be pragmatic here and make sure the array and its element
+     type get the same alias set assigned.  */
+  else if (TREE_CODE (t) == ARRAY_TYPE
+	   && !TYPE_NONALIASED_COMPONENT (t))
+    set = get_alias_set (TREE_TYPE (t));
+
   else
     /* Otherwise make a new alias set for this type.  */
     set = new_alias_set ();
@@ -747,11 +759,6 @@ record_component_aliases (tree type)
 
   switch (TREE_CODE (type))
     {
-    case ARRAY_TYPE:
-      if (!TYPE_NONALIASED_COMPONENT (type))
-	record_alias_subset (superset, get_alias_set (TREE_TYPE (type)));
-      break;
-
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
@@ -774,6 +781,9 @@ record_component_aliases (tree type)
     case COMPLEX_TYPE:
       record_alias_subset (superset, get_alias_set (TREE_TYPE (type)));
       break;
+
+    /* VECTOR_TYPE and ARRAY_TYPE share the alias set with their
+       element type.  */
 
     default:
       break;

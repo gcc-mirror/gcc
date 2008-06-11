@@ -187,6 +187,8 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 build/gengtype-lex.o-warn = -Wno-error
 # SYSCALLS.c misses prototypes
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
+# dfp.c contains alias violations
+dfp.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
