@@ -3431,8 +3431,8 @@ else
   enable_tls=yes
 fi;
 
-  echo "$as_me:$LINENO: checking whether the target asssembler upports thread-local storage" >&5
-echo $ECHO_N "checking whether the target asssembler upports thread-local storage... $ECHO_C" >&6
+  echo "$as_me:$LINENO: checking whether the target assembler supports thread-local storage" >&5
+echo $ECHO_N "checking whether the target assembler supports thread-local storage... $ECHO_C" >&6
 if test "${gcc_cv_have_cc_tls+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
