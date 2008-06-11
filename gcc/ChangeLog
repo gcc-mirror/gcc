@@ -1,3 +1,8 @@
+2008-06-11  Tom Tromey  <tromey@redhat.com>
+
+	* c-lex.c (fe_file_change): Pass SOURCE_LINE to start_source_file
+	debug hook.
+
 2008-06-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35336

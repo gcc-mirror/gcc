@@ -1,6 +1,6 @@
 /* Mainly the interface between cpplib and the C front ends.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -214,17 +214,20 @@ fe_file_change (const struct line_map *new_map)
       if (!MAIN_FILE_P (new_map))
 	{
 #ifdef USE_MAPPED_LOCATION
-	  int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  unsigned int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  int line = 0;
+	  if (included_at > BUILTINS_LOCATION)
+	    line = SOURCE_LINE (new_map - 1, included_at);
 
 	  input_location = included_at;
 	  push_srcloc (new_map->start_location);
 #else
-	  int included_at = LAST_SOURCE_LINE (new_map - 1);
+	  int line = LAST_SOURCE_LINE (new_map - 1);
 
-	  input_line = included_at;
+	  input_line = line;
 	  push_srcloc (new_map->to_file, 1);
 #endif
-	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
+	  (*debug_hooks->start_source_file) (line, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
