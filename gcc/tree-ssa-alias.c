@@ -2783,6 +2783,23 @@ may_alias_p (tree ptr, alias_set_type mem_alias_set,
   return true;
 }
 
+/* Return true, if PTR may point to a global variable.  */
+
+bool
+may_point_to_global_var (tree ptr)
+{
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+
+  /* If we do not have points-to information for this variable,
+     we have to punt.  */
+  if (!pi
+      || !pi->name_mem_tag)
+    return true;
+
+  /* The name memory tag is marked as global variable if the points-to
+     set contains a global variable.  */
+  return is_global_var (pi->name_mem_tag);
+}
 
 /* Add ALIAS to the set of variables that may alias VAR.  */
 

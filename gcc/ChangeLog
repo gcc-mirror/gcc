@@ -1,3 +1,9 @@
+2008-06-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (may_point_to_global_var): Declare.
+	* tree-ssa-alias.c (may_point_to_global_var): New function.
+	* tree-ssa-sink.c (is_hidden_global_store): Use it.
+
 2008-06-10  Kazu Hirata  <kazu@codesourcery.com>
 
 	* configure.ac: Teach that fido supports .debug_line.
