@@ -1,3 +1,9 @@
+2008-06-11  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/36425
+	* gcc.target/powerpc/e500-1.c: New test case to verify
+	mno-isel option.
+
 2008-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/varsize_copy.ad[sb]: New test.

@@ -1553,7 +1553,7 @@ rs6000_override_options (const char *default_cpu)
 	}
     }
 
-  if (TARGET_E500)
+  if (TARGET_E500 && !rs6000_explicit_options.isel)
     rs6000_isel = 1;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3)

@@ -36,8 +36,6 @@
     rs6000_float_gprs = 1; \
   if (!rs6000_explicit_options.spe) \
     rs6000_spe = 1; \
-  if (!rs6000_explicit_options.isel) \
-    rs6000_isel = 1; \
   if (target_flags & MASK_64BIT) \
     error ("-m64 not supported in this configuration")
 

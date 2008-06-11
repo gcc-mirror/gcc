@@ -1,3 +1,13 @@
+2008-06-11  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/36425
+	* config/rs6000/rs6000.c (rs6000_override_options): Set
+	rs6000_isel conditionally to the absence of comand line
+	override.
+	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
+	Remove duplicate rs6000_isel setting.
+	* config/rs6000/eabispe.h: Ditto.
+
 2008-06-11  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (get_alias_set): Use the element alias-set for arrays.
