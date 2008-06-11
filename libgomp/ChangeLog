@@ -1,5 +1,9 @@
 2008-06-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/36471
+	* omp_lib.f90.in (omp_get_ancestor_thread_num_8,
+	omp_get_team_size_8): Fix pastos.
+
 	PR libgomp/36469
 	* configure.ac: Add AC_CHECK_FUNCS (strtoull).
 	* configure: Regenerated.
