@@ -1,3 +1,8 @@
+2008-06-10  Kazu Hirata  <kazu@codesourcery.com>
+
+	* configure.ac: Teach that fido supports .debug_line.
+	* configure: Regenerate.
+
 2008-06-10  Tom Tromey  <tromey@redhat.com>
 
 	* c-lex.c (fe_file_change): Pass SOURCE_LINE to start_source_file
