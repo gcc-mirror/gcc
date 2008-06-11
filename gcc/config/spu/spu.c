@@ -5374,8 +5374,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
       if (VECTOR_MODE_P (mode)
 	  && (GET_CODE (ops[i]) == CONST_INT
 	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_FLOAT)
-	  && d->parm[i] != SPU_BTI_QUADWORD)
+	      || GET_MODE_CLASS (GET_MODE (ops[i])) == MODE_FLOAT))
 	{
 	  if (GET_CODE (ops[i]) == CONST_INT)
 	    ops[i] = spu_const (mode, INTVAL (ops[i]));
