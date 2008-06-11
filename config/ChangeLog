@@ -1,7 +1,11 @@
+2008-06-11  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* tls.m4: Fix typos.
+
 2008-06-08  Joseph Myers  <joseph@codesourcery.com>
 
 	PR tree-optimization/36218
-	* config/mh-mingw (LDFLAGS): Define.
+	* mh-mingw (LDFLAGS): Define.
 
 2008-06-05  Danny Smith  <dannysmith@users.sourceforge.net>
 

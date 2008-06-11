@@ -77,7 +77,7 @@ AC_DEFUN([GCC_CHECK_TLS], [
 dnl Check whether the target assembler supports TLS.
 AC_DEFUN([GCC_CHECK_CC_TLS], [
   GCC_ENABLE(tls, yes, [], [Use thread-local storage])
-  AC_CACHE_CHECK([whether the target asssembler upports thread-local storage],
+  AC_CACHE_CHECK([whether the target assembler supports thread-local storage],
 		 gcc_cv_have_cc_tls, [
     AC_COMPILE_IFELSE([__thread int a; int b; int main() { return a = b; }],
       [gcc_cv_have_cc_tls=yes], [gcc_cv_have_cc_tls=no])]
