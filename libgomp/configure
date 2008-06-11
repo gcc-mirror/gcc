@@ -16624,7 +16624,8 @@ rm -f conftest.err conftest.$ac_objext \
 # Check for functions needed.
 
 
-for ac_func in getloadavg clock_gettime
+
+for ac_func in getloadavg clock_gettime strtoull
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5

@@ -1,3 +1,12 @@
+2008-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/36469
+	* configure.ac: Add AC_CHECK_FUNCS (strtoull).
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* env.c (strtoull): Define to strtoul if HAVE_STRTOULL is not
+	defined.
+
 2008-06-06  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR bootstrap/36452
