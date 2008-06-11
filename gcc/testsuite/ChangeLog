@@ -1,3 +1,8 @@
+2008-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36474
+	* gcc.dg/tree-ssa/alias-15.c: Adjust testcase.
+
 2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack3.ads: New test.

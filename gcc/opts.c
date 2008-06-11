@@ -846,6 +846,9 @@ decode_options (unsigned int argc, const char **argv)
 
       /* Allow more virtual operators to increase alias precision.  */
       set_param_value ("max-aliased-vops", 500);
+
+      /* Track fields in field-sensitive alias analysis.  */
+      set_param_value ("max-fields-for-field-sensitive", 100);
     }
 
   if (optimize >= 3)

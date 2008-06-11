@@ -1,3 +1,12 @@
+2008-06-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36474
+	* opts.c (decode_options): Set max-fields-for-field-sensitive
+	parameter to 100 for -O2, -Os and -O3.
+	* params.def (max-fields-for-field-sensitive): Set default to zero.
+	* doc/invoke.texi (max-fields-for-field-sensitive): Document
+	defaults.
+
 2008-06-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (build_opaque_vector_type): Set
