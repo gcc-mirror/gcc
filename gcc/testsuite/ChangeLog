@@ -1,3 +1,7 @@
+2008-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/varsize_copy.ad[sb]: New test.
+
 2008-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bt-mask-1.c: New test.
