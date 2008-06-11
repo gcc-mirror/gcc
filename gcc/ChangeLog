@@ -1,3 +1,9 @@
+2008-06-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (arm_init_neon_builtins): Move initialization
+	with function calls after declarations.  Lay out
+	neon_float_type_node before further use.
+
 2008-06-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36474

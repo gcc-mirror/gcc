@@ -14830,123 +14830,189 @@ arm_init_neon_builtins (void)
 {
   unsigned int i, fcode = ARM_BUILTIN_NEON_BASE;
 
-  /* Create distinguished type nodes for NEON vector element types,
-     and pointers to values of such types, so we can detect them later.  */
-  tree neon_intQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  tree neon_intHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  tree neon_polyQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
-  tree neon_polyHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
-  tree neon_intSI_type_node = make_signed_type (GET_MODE_PRECISION (SImode));
-  tree neon_intDI_type_node = make_signed_type (GET_MODE_PRECISION (DImode));
-  tree neon_float_type_node = make_node (REAL_TYPE);
+  tree neon_intQI_type_node;
+  tree neon_intHI_type_node;
+  tree neon_polyQI_type_node;
+  tree neon_polyHI_type_node;
+  tree neon_intSI_type_node;
+  tree neon_intDI_type_node;
+  tree neon_float_type_node;
 
-  tree intQI_pointer_node = build_pointer_type (neon_intQI_type_node);
-  tree intHI_pointer_node = build_pointer_type (neon_intHI_type_node);
-  tree intSI_pointer_node = build_pointer_type (neon_intSI_type_node);
-  tree intDI_pointer_node = build_pointer_type (neon_intDI_type_node);
-  tree float_pointer_node = build_pointer_type (neon_float_type_node);
+  tree intQI_pointer_node;
+  tree intHI_pointer_node;
+  tree intSI_pointer_node;
+  tree intDI_pointer_node;
+  tree float_pointer_node;
 
-  /* Next create constant-qualified versions of the above types.  */
-  tree const_intQI_node = build_qualified_type (neon_intQI_type_node,
-						TYPE_QUAL_CONST);
-  tree const_intHI_node = build_qualified_type (neon_intHI_type_node,
-						TYPE_QUAL_CONST);
-  tree const_intSI_node = build_qualified_type (neon_intSI_type_node,
-						TYPE_QUAL_CONST);
-  tree const_intDI_node = build_qualified_type (neon_intDI_type_node,
-						TYPE_QUAL_CONST);
-  tree const_float_node = build_qualified_type (neon_float_type_node,
-						TYPE_QUAL_CONST);
+  tree const_intQI_node;
+  tree const_intHI_node;
+  tree const_intSI_node;
+  tree const_intDI_node;
+  tree const_float_node;
 
-  tree const_intQI_pointer_node = build_pointer_type (const_intQI_node);
-  tree const_intHI_pointer_node = build_pointer_type (const_intHI_node);
-  tree const_intSI_pointer_node = build_pointer_type (const_intSI_node);
-  tree const_intDI_pointer_node = build_pointer_type (const_intDI_node);
-  tree const_float_pointer_node = build_pointer_type (const_float_node);
+  tree const_intQI_pointer_node;
+  tree const_intHI_pointer_node;
+  tree const_intSI_pointer_node;
+  tree const_intDI_pointer_node;
+  tree const_float_pointer_node;
 
-  /* Now create vector types based on our NEON element types.  */
-  /* 64-bit vectors.  */
-  tree V8QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V8QImode);
-  tree V4HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V4HImode);
-  tree V2SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V2SImode);
-  tree V2SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V2SFmode);
-  /* 128-bit vectors.  */
-  tree V16QI_type_node =
-    build_vector_type_for_mode (neon_intQI_type_node, V16QImode);
-  tree V8HI_type_node =
-    build_vector_type_for_mode (neon_intHI_type_node, V8HImode);
-  tree V4SI_type_node =
-    build_vector_type_for_mode (neon_intSI_type_node, V4SImode);
-  tree V4SF_type_node =
-    build_vector_type_for_mode (neon_float_type_node, V4SFmode);
-  tree V2DI_type_node =
-    build_vector_type_for_mode (neon_intDI_type_node, V2DImode);
+  tree V8QI_type_node;
+  tree V4HI_type_node;
+  tree V2SI_type_node;
+  tree V2SF_type_node;
+  tree V16QI_type_node;
+  tree V8HI_type_node;
+  tree V4SI_type_node;
+  tree V4SF_type_node;
+  tree V2DI_type_node;
 
-  /* Unsigned integer types for various mode sizes.  */
-  tree intUQI_type_node = make_unsigned_type (GET_MODE_PRECISION (QImode));
-  tree intUHI_type_node = make_unsigned_type (GET_MODE_PRECISION (HImode));
-  tree intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
-  tree intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
+  tree intUQI_type_node;
+  tree intUHI_type_node;
+  tree intUSI_type_node;
+  tree intUDI_type_node;
 
-  /* Opaque integer types for structures of vectors.  */
-  tree intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
-  tree intOI_type_node = make_signed_type (GET_MODE_PRECISION (OImode));
-  tree intCI_type_node = make_signed_type (GET_MODE_PRECISION (CImode));
-  tree intXI_type_node = make_signed_type (GET_MODE_PRECISION (XImode));
+  tree intEI_type_node;
+  tree intOI_type_node;
+  tree intCI_type_node;
+  tree intXI_type_node;
 
-  /* Pointers to vector types.  */
-  tree V8QI_pointer_node = build_pointer_type (V8QI_type_node);
-  tree V4HI_pointer_node = build_pointer_type (V4HI_type_node);
-  tree V2SI_pointer_node = build_pointer_type (V2SI_type_node);
-  tree V2SF_pointer_node = build_pointer_type (V2SF_type_node);
-  tree V16QI_pointer_node = build_pointer_type (V16QI_type_node);
-  tree V8HI_pointer_node = build_pointer_type (V8HI_type_node);
-  tree V4SI_pointer_node = build_pointer_type (V4SI_type_node);
-  tree V4SF_pointer_node = build_pointer_type (V4SF_type_node);
-  tree V2DI_pointer_node = build_pointer_type (V2DI_type_node);
+  tree V8QI_pointer_node;
+  tree V4HI_pointer_node;
+  tree V2SI_pointer_node;
+  tree V2SF_pointer_node;
+  tree V16QI_pointer_node;
+  tree V8HI_pointer_node;
+  tree V4SI_pointer_node;
+  tree V4SF_pointer_node;
+  tree V2DI_pointer_node;
 
-  /* Operations which return results as pairs.  */
-  tree void_ftype_pv8qi_v8qi_v8qi =
-    build_function_type_list (void_type_node, V8QI_pointer_node, V8QI_type_node,
-  			      V8QI_type_node, NULL);
-  tree void_ftype_pv4hi_v4hi_v4hi =
-    build_function_type_list (void_type_node, V4HI_pointer_node, V4HI_type_node,
-  			      V4HI_type_node, NULL);
-  tree void_ftype_pv2si_v2si_v2si =
-    build_function_type_list (void_type_node, V2SI_pointer_node, V2SI_type_node,
-  			      V2SI_type_node, NULL);
-  tree void_ftype_pv2sf_v2sf_v2sf =
-    build_function_type_list (void_type_node, V2SF_pointer_node, V2SF_type_node,
-  			      V2SF_type_node, NULL);
-  tree void_ftype_pdi_di_di =
-    build_function_type_list (void_type_node, intDI_pointer_node,
-			      neon_intDI_type_node, neon_intDI_type_node, NULL);
-  tree void_ftype_pv16qi_v16qi_v16qi =
-    build_function_type_list (void_type_node, V16QI_pointer_node,
-			      V16QI_type_node, V16QI_type_node, NULL);
-  tree void_ftype_pv8hi_v8hi_v8hi =
-    build_function_type_list (void_type_node, V8HI_pointer_node, V8HI_type_node,
-  			      V8HI_type_node, NULL);
-  tree void_ftype_pv4si_v4si_v4si =
-    build_function_type_list (void_type_node, V4SI_pointer_node, V4SI_type_node,
-  			      V4SI_type_node, NULL);
-  tree void_ftype_pv4sf_v4sf_v4sf =
-    build_function_type_list (void_type_node, V4SF_pointer_node, V4SF_type_node,
-  			      V4SF_type_node, NULL);
-  tree void_ftype_pv2di_v2di_v2di =
-    build_function_type_list (void_type_node, V2DI_pointer_node, V2DI_type_node,
-			      V2DI_type_node, NULL);
+  tree void_ftype_pv8qi_v8qi_v8qi;
+  tree void_ftype_pv4hi_v4hi_v4hi;
+  tree void_ftype_pv2si_v2si_v2si;
+  tree void_ftype_pv2sf_v2sf_v2sf;
+  tree void_ftype_pdi_di_di;
+  tree void_ftype_pv16qi_v16qi_v16qi;
+  tree void_ftype_pv8hi_v8hi_v8hi;
+  tree void_ftype_pv4si_v4si_v4si;
+  tree void_ftype_pv4sf_v4sf_v4sf;
+  tree void_ftype_pv2di_v2di_v2di;
 
   tree reinterp_ftype_dreg[5][5];
   tree reinterp_ftype_qreg[5][5];
   tree dreg_types[5], qreg_types[5];
 
+  /* Create distinguished type nodes for NEON vector element types,
+     and pointers to values of such types, so we can detect them later.  */
+  neon_intQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
+  neon_intHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
+  neon_polyQI_type_node = make_signed_type (GET_MODE_PRECISION (QImode));
+  neon_polyHI_type_node = make_signed_type (GET_MODE_PRECISION (HImode));
+  neon_intSI_type_node = make_signed_type (GET_MODE_PRECISION (SImode));
+  neon_intDI_type_node = make_signed_type (GET_MODE_PRECISION (DImode));
+  neon_float_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (neon_float_type_node) = FLOAT_TYPE_SIZE;
   layout_type (neon_float_type_node);
+
+  intQI_pointer_node = build_pointer_type (neon_intQI_type_node);
+  intHI_pointer_node = build_pointer_type (neon_intHI_type_node);
+  intSI_pointer_node = build_pointer_type (neon_intSI_type_node);
+  intDI_pointer_node = build_pointer_type (neon_intDI_type_node);
+  float_pointer_node = build_pointer_type (neon_float_type_node);
+
+  /* Next create constant-qualified versions of the above types.  */
+  const_intQI_node = build_qualified_type (neon_intQI_type_node,
+					   TYPE_QUAL_CONST);
+  const_intHI_node = build_qualified_type (neon_intHI_type_node,
+					   TYPE_QUAL_CONST);
+  const_intSI_node = build_qualified_type (neon_intSI_type_node,
+					   TYPE_QUAL_CONST);
+  const_intDI_node = build_qualified_type (neon_intDI_type_node,
+					   TYPE_QUAL_CONST);
+  const_float_node = build_qualified_type (neon_float_type_node,
+					   TYPE_QUAL_CONST);
+
+  const_intQI_pointer_node = build_pointer_type (const_intQI_node);
+  const_intHI_pointer_node = build_pointer_type (const_intHI_node);
+  const_intSI_pointer_node = build_pointer_type (const_intSI_node);
+  const_intDI_pointer_node = build_pointer_type (const_intDI_node);
+  const_float_pointer_node = build_pointer_type (const_float_node);
+
+  /* Now create vector types based on our NEON element types.  */
+  /* 64-bit vectors.  */
+  V8QI_type_node =
+    build_vector_type_for_mode (neon_intQI_type_node, V8QImode);
+  V4HI_type_node =
+    build_vector_type_for_mode (neon_intHI_type_node, V4HImode);
+  V2SI_type_node =
+    build_vector_type_for_mode (neon_intSI_type_node, V2SImode);
+  V2SF_type_node =
+    build_vector_type_for_mode (neon_float_type_node, V2SFmode);
+  /* 128-bit vectors.  */
+  V16QI_type_node =
+    build_vector_type_for_mode (neon_intQI_type_node, V16QImode);
+  V8HI_type_node =
+    build_vector_type_for_mode (neon_intHI_type_node, V8HImode);
+  V4SI_type_node =
+    build_vector_type_for_mode (neon_intSI_type_node, V4SImode);
+  V4SF_type_node =
+    build_vector_type_for_mode (neon_float_type_node, V4SFmode);
+  V2DI_type_node =
+    build_vector_type_for_mode (neon_intDI_type_node, V2DImode);
+
+  /* Unsigned integer types for various mode sizes.  */
+  intUQI_type_node = make_unsigned_type (GET_MODE_PRECISION (QImode));
+  intUHI_type_node = make_unsigned_type (GET_MODE_PRECISION (HImode));
+  intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
+  intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
+
+  /* Opaque integer types for structures of vectors.  */
+  intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
+  intOI_type_node = make_signed_type (GET_MODE_PRECISION (OImode));
+  intCI_type_node = make_signed_type (GET_MODE_PRECISION (CImode));
+  intXI_type_node = make_signed_type (GET_MODE_PRECISION (XImode));
+
+  /* Pointers to vector types.  */
+  V8QI_pointer_node = build_pointer_type (V8QI_type_node);
+  V4HI_pointer_node = build_pointer_type (V4HI_type_node);
+  V2SI_pointer_node = build_pointer_type (V2SI_type_node);
+  V2SF_pointer_node = build_pointer_type (V2SF_type_node);
+  V16QI_pointer_node = build_pointer_type (V16QI_type_node);
+  V8HI_pointer_node = build_pointer_type (V8HI_type_node);
+  V4SI_pointer_node = build_pointer_type (V4SI_type_node);
+  V4SF_pointer_node = build_pointer_type (V4SF_type_node);
+  V2DI_pointer_node = build_pointer_type (V2DI_type_node);
+
+  /* Operations which return results as pairs.  */
+  void_ftype_pv8qi_v8qi_v8qi =
+    build_function_type_list (void_type_node, V8QI_pointer_node, V8QI_type_node,
+  			      V8QI_type_node, NULL);
+  void_ftype_pv4hi_v4hi_v4hi =
+    build_function_type_list (void_type_node, V4HI_pointer_node, V4HI_type_node,
+  			      V4HI_type_node, NULL);
+  void_ftype_pv2si_v2si_v2si =
+    build_function_type_list (void_type_node, V2SI_pointer_node, V2SI_type_node,
+  			      V2SI_type_node, NULL);
+  void_ftype_pv2sf_v2sf_v2sf =
+    build_function_type_list (void_type_node, V2SF_pointer_node, V2SF_type_node,
+  			      V2SF_type_node, NULL);
+  void_ftype_pdi_di_di =
+    build_function_type_list (void_type_node, intDI_pointer_node,
+			      neon_intDI_type_node, neon_intDI_type_node, NULL);
+  void_ftype_pv16qi_v16qi_v16qi =
+    build_function_type_list (void_type_node, V16QI_pointer_node,
+			      V16QI_type_node, V16QI_type_node, NULL);
+  void_ftype_pv8hi_v8hi_v8hi =
+    build_function_type_list (void_type_node, V8HI_pointer_node, V8HI_type_node,
+  			      V8HI_type_node, NULL);
+  void_ftype_pv4si_v4si_v4si =
+    build_function_type_list (void_type_node, V4SI_pointer_node, V4SI_type_node,
+  			      V4SI_type_node, NULL);
+  void_ftype_pv4sf_v4sf_v4sf =
+    build_function_type_list (void_type_node, V4SF_pointer_node, V4SF_type_node,
+  			      V4SF_type_node, NULL);
+  void_ftype_pv2di_v2di_v2di =
+    build_function_type_list (void_type_node, V2DI_pointer_node, V2DI_type_node,
+			      V2DI_type_node, NULL);
 
   /* Define typedefs which exactly correspond to the modes we are basing vector
      types on.  If you change these names you'll need to change
