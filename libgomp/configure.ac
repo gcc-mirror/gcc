@@ -178,7 +178,7 @@ AC_LINK_IFELSE(
    [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
 
 # Check for functions needed.
-AC_CHECK_FUNCS(getloadavg clock_gettime)
+AC_CHECK_FUNCS(getloadavg clock_gettime strtoull)
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.
