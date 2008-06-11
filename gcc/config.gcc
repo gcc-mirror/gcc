@@ -1081,13 +1081,13 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 			tmake_file="${tmake_file} i386/t-linux64 i386/t-fprules-softfp64 soft-fp/t-softfp"
 			need_64bit_hwint=yes
-			# FIXME: -m64 for i[34567]86-*-* should be allowed just
-			# like -m32 for x86_64-*-*.
 			case X"${with_cpu}" in
 			Xgeneric|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx)
 				;;
 			X)
-				with_cpu=generic
+				if test x$with_cpu_64 = x; then
+					with_cpu_64=generic
+				fi
 				;;
 			*)
 				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
@@ -1192,13 +1192,13 @@ i[34567]86-*-solaris2*)
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 		tmake_file="$tmake_file i386/t-crtstuff i386/t-sol2-10"
 		need_64bit_hwint=yes
-		# FIXME: -m64 for i[34567]86-*-* should be allowed just
-		# like -m32 for x86_64-*-*.
 		case X"${with_cpu}" in
 		Xgeneric|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx)
 			;;
 		X)
-			with_cpu=generic
+			if test x$with_cpu_64 = x; then
+				with_cpu_64=generic
+			fi
 			;;
 		*)
 			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
@@ -2537,6 +2537,23 @@ if test x$with_cpu = x ; then
       with_cpu="`echo ${target} | sed 's/-.*$//'`"
       ;;
   esac
+
+  # Avoid overriding --with-cpu-32 and --with-cpu-64 values.
+  case ${target} in
+    i[34567]86-*-*|x86_64-*-*)
+      if test x$with_cpu != x; then
+        if test x$with_cpu_32 != x || test x$with_cpu_64 != x; then
+          if test x$with_cpu_32 = x; then
+            with_cpu_32=$with_cpu
+          fi
+          if test x$with_cpu_64 = x; then
+            with_cpu_64=$with_cpu
+          fi
+          with_cpu=
+        fi
+      fi
+      ;;
+  esac
 fi
 
 # Similarly for --with-schedule.
@@ -2738,8 +2755,8 @@ case "${target}" in
 		;;
 
 	i[34567]86-*-* | x86_64-*-*)
-		supported_defaults="arch cpu tune"
-		for which in arch cpu tune; do
+		supported_defaults="arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64"
+		for which in arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
 			case ${val} in
 			i386 | i486 \
@@ -2750,8 +2767,14 @@ case "${target}" in
 			| prescott | pentium-m | pentium4m | pentium3m)
 				case "${target}" in
 				  x86_64-*-*)
-				      echo "CPU given in --with-$which=$val doesn't support 64bit mode." 1>&2
-				      exit 1
+				      case "x$which" in
+					*_32)
+						;;
+					*)
+						echo "CPU given in --with-$which=$val doesn't support 64bit mode." 1>&2
+						exit 1
+						;;
+				      esac
 				      ;;
 				esac
 				# OK
@@ -3059,7 +3082,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu arch tune schedule float mode fpu divide llsc"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc"
 for option in $all_defaults
 do
 	eval "val=\$with_$option"
