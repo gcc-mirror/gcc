@@ -1,3 +1,9 @@
+2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: In the case of a
+	constrained subtype of a discriminated type, discard the fields that
+	are beyond its limits according to its size.
+
 2008-06-10  Olivier Hainque  <hainque@adacore.com>
 
 	* utils.c (create_subprog_decl): If this is for the 'main' entry
