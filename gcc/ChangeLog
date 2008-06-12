@@ -1,3 +1,9 @@
+2008-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36506
+	* omp-low.c (expand_omp_sections): Initialize l2 to avoid bogus
+	warning.
+
 2008-06-12  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

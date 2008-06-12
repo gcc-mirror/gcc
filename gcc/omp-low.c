@@ -3439,6 +3439,7 @@ expand_omp_sections (struct omp_region *region)
 	  gcc_assert (len > 0);
 	  e = EDGE_SUCC (l0_bb, len - 1);
 	  si = bsi_last (e->dest);
+	  l2 = NULL_TREE;
 	  if (bsi_end_p (si) || TREE_CODE (bsi_stmt (si)) != OMP_SECTION)
 	    l2 = tree_block_label (e->dest);
 	  else
