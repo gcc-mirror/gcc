@@ -1,3 +1,12 @@
+2008-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (pow(const complex<>&, int)): Do not define in
+	C++0x mode, per DR 844.
+	* include/tr1/complex (pow(const complex<>&, int)): Remove.
+	* doc/xml/manual/intro.xml: Add an entry for DR 844.
+	* testsuite/26_numerics/complex/dr844.cc: New.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc: Adjust.
+
 2008-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/hashtable (_Hashtable<>::cbegin(size_type),
