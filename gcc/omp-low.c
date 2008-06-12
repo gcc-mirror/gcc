@@ -3418,6 +3418,8 @@ expand_omp_sections (struct omp_region *region)
   unsigned i, casei, len;
   basic_block entry_bb, l0_bb, l1_bb, l2_bb, default_bb;
   block_stmt_iterator si;
+  edge_iterator ei;
+  edge e;
   struct omp_region *inner;
   bool exit_reachable = region->cont != NULL;
 
@@ -3428,10 +3430,30 @@ expand_omp_sections (struct omp_region *region)
   l2_bb = region->exit;
   if (exit_reachable)
     {
-      gcc_assert (single_pred (l2_bb) == l0_bb);
+      if (single_pred (l2_bb) == l0_bb)
+	l2 = tree_block_label (l2_bb);
+      else
+	{
+	  /* This can happen if there are reductions.  */
+	  len = EDGE_COUNT (l0_bb->succs);
+	  gcc_assert (len > 0);
+	  e = EDGE_SUCC (l0_bb, len - 1);
+	  si = bsi_last (e->dest);
+	  if (bsi_end_p (si) || TREE_CODE (bsi_stmt (si)) != OMP_SECTION)
+	    l2 = tree_block_label (e->dest);
+	  else
+	    FOR_EACH_EDGE (e, ei, l0_bb->succs)
+	      {
+		si = bsi_last (e->dest);
+		if (bsi_end_p (si) || TREE_CODE (bsi_stmt (si)) != OMP_SECTION)
+		  {
+		    l2 = tree_block_label (e->dest);
+		    break;
+		  }
+	      }
+	}
       default_bb = create_empty_bb (l1_bb->prev_bb);
       l1 = tree_block_label (l1_bb);
-      l2 = tree_block_label (l2_bb);
     }
   else
     {
@@ -3508,6 +3530,14 @@ expand_omp_sections (struct omp_region *region)
        inner = inner->next, i++, casei++)
     {
       basic_block s_entry_bb, s_exit_bb;
+
+      /* Skip optional reduction region.  */
+      if (inner->type == OMP_ATOMIC_LOAD)
+	{
+	  --i;
+	  --casei;
+	  continue;
+	}
 
       s_entry_bb = inner->entry;
       s_exit_bb = inner->exit;
