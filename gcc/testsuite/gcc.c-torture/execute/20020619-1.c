@@ -14,19 +14,11 @@ static int ref(void)
   return u.i;
 }
 
-#define MAX(a,b)  (a < b ? b : a)
-
-static int test(void)
-{
-  char c[MAX(5, sizeof(int))] __attribute__((aligned)) = { 1, 2, 3, 4 };
-  return *(int *)c;
-}
-
 int main()
 {
-  int a = test();
   int b = ref();
-  if (a != b)
+  if (b != 0x01020304
+      && b != 0x04030201)
     abort ();
   return 0;
 }

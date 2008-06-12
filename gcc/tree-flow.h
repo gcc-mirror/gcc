@@ -227,6 +227,9 @@ typedef struct
 /* Aliasing information for SSA_NAMEs representing pointer variables.  */
 struct ptr_info_def GTY(())
 {
+  /* Mask of reasons this pointer's value escapes the function.  */
+  ENUM_BITFIELD (escape_type) escape_mask : 9;
+
   /* Nonzero if points-to analysis couldn't determine where this pointer
      is pointing to.  */
   unsigned int pt_anything : 1;
@@ -234,7 +237,11 @@ struct ptr_info_def GTY(())
   /* Nonzero if the value of this pointer escapes the current function.  */
   unsigned int value_escapes_p : 1;
 
-  /* Nonzero if this pointer is dereferenced.  */
+  /* Nonzero if a memory tag is needed for this pointer.  This is
+     true if this pointer is eventually dereferenced.  */
+  unsigned int memory_tag_needed : 1;
+
+  /* Nonzero if this pointer is really dereferenced.  */
   unsigned int is_dereferenced : 1;
 
   /* Nonzero if this pointer points to a global variable.  */
@@ -242,9 +249,6 @@ struct ptr_info_def GTY(())
 
   /* Nonzero if this pointer points to NULL.  */
   unsigned int pt_null : 1;
-
-  /* Mask of reasons this pointer's value escapes the function  */
-  ENUM_BITFIELD (escape_type) escape_mask : 9;
 
   /* Set of variables that this pointer may point to.  */
   bitmap pt_vars;
@@ -852,6 +856,7 @@ extern void debug_points_to_info (void);
 extern void dump_points_to_info_for (FILE *, tree);
 extern void debug_points_to_info_for (tree);
 extern bool may_be_aliased (tree);
+extern bool may_alias_p (tree, alias_set_type, tree, alias_set_type, bool);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern bool may_point_to_global_var (tree);
 extern void new_type_alias (tree, tree, tree);

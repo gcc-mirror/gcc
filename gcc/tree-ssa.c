@@ -559,7 +559,7 @@ verify_flow_sensitive_alias_info (void)
 	continue;
 
       ann = var_ann (var);
-      if (pi->is_dereferenced && !pi->name_mem_tag && !ann->symbol_mem_tag)
+      if (pi->memory_tag_needed && !pi->name_mem_tag && !ann->symbol_mem_tag)
 	{
 	  error ("dereferenced pointers should have a name or a symbol tag");
 	  goto err;
