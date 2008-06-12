@@ -197,7 +197,6 @@ static bitmap_obstack alias_bitmap_obstack;
 /* Local functions.  */
 static void compute_flow_insensitive_aliasing (struct alias_info *);
 static void dump_alias_stats (FILE *);
-static bool may_alias_p (tree, alias_set_type, tree, alias_set_type, bool);
 static tree create_memory_tag (tree type, bool is_type_tag);
 static tree get_smt_for (tree, struct alias_info *);
 static tree get_nmt_for (tree);
@@ -588,14 +587,14 @@ set_initial_properties (struct alias_info *ai)
          So removing this code and fixing all the bugs would be nice.
          It is the cause of a bunch of clobbering.  */
       if ((pi->pt_global_mem || pi->pt_anything) 
-	  && pi->is_dereferenced && pi->name_mem_tag)
+	  && pi->memory_tag_needed && pi->name_mem_tag)
 	{
 	  mark_call_clobbered (pi->name_mem_tag, ESCAPE_IS_GLOBAL);
 	  MTAG_GLOBAL (pi->name_mem_tag) = true;
 	}
       
       if ((pi->pt_global_mem || pi->pt_anything) 
-	  && pi->is_dereferenced
+	  && pi->memory_tag_needed
 	  && tag)
 	{
 	  mark_call_clobbered (tag, ESCAPE_IS_GLOBAL);
@@ -1278,7 +1277,7 @@ update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
       if (ptr
 	  && POINTER_TYPE_P (TREE_TYPE (ptr))
 	  && (pi = SSA_NAME_PTR_INFO (ptr)) != NULL
-	  && pi->is_dereferenced)
+	  && pi->memory_tag_needed)
 	{
 	  unsigned j;
 	  bitmap_iterator bj;
@@ -2027,6 +2026,7 @@ reset_alias_info (void)
 	  pi->pt_anything = 0;
 	  pi->pt_null = 0;
 	  pi->value_escapes_p = 0;
+	  pi->memory_tag_needed = 0;
 	  pi->is_dereferenced = 0;
 	  if (pi->pt_vars)
 	    bitmap_clear (pi->pt_vars);
@@ -2170,7 +2170,7 @@ create_name_tags (void)
 
       pi = SSA_NAME_PTR_INFO (ptr);
 
-      if (pi->pt_anything || !pi->is_dereferenced)
+      if (pi->pt_anything || !pi->memory_tag_needed)
 	{
 	  /* No name tags for pointers that have not been
 	     dereferenced or point to an arbitrary location.  */
@@ -2649,7 +2649,7 @@ maybe_create_global_var (void)
    
    VAR_ALIAS_SET is the alias set for VAR.  */
 
-static bool
+bool
 may_alias_p (tree ptr, alias_set_type mem_alias_set,
 	     tree var, alias_set_type var_alias_set,
 	     bool alias_set_only)
@@ -3231,6 +3231,8 @@ dump_points_to_info_for (FILE *file, tree ptr)
 
       if (pi->is_dereferenced)
 	fprintf (file, ", is dereferenced");
+      else if (pi->memory_tag_needed)
+	fprintf (file, ", is dereferenced in call");
 
       if (pi->value_escapes_p)
 	fprintf (file, ", its value escapes");

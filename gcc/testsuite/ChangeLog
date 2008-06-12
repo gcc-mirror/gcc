@@ -1,3 +1,9 @@
+2008-06-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36345
+	* gcc.c-torture/execute/20020619-1.c: Remove broken part of
+	the testcase.
+
 2008-06-11  Edmar Wienskoski  <edmar@freescale.com>
 
 	PR target/36425
