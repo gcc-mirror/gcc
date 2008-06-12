@@ -2751,11 +2751,17 @@ gfc_conv_intrinsic_index_scan_verify (gfc_se * se, gfc_expr * expr,
   tree *args;
   unsigned int num_args;
 
-  num_args = gfc_intrinsic_argument_list_length (expr);
   args = alloca (sizeof (tree) * 5);
 
-  gfc_conv_intrinsic_function_args (se, expr, args,
-				    num_args >= 5 ? 5 : num_args);
+  /* Get number of arguments; characters count double due to the
+     string length argument. Kind= is not passed to the libary
+     and thus ignored.  */
+  if (expr->value.function.actual->next->next->expr == NULL)
+    num_args = 4;
+  else
+    num_args = 5;
+
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
   type = gfc_typenode_for_spec (&expr->ts);
 
   if (num_args == 4)
