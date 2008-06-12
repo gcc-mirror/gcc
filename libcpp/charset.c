@@ -1412,6 +1412,7 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
 
   pfile->narrow_cset_desc.func = convert_no_conversion;
   pfile->narrow_cset_desc.cd = (iconv_t) -1;
+  pfile->narrow_cset_desc.width = CPP_OPTION (pfile, char_precision);
 
   retval = cpp_interpret_string (pfile, from, count, to, CPP_STRING);
 

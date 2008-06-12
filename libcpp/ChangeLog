@@ -1,3 +1,9 @@
+2008-06-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR preprocessor/36479
+	* charset.c (cpp_interpret_string_notranslate): Also set
+	narrow_cset_desc.width.
+
 2008-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (parisc*64*-*-*): Remove.
