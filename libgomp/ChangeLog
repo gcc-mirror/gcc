@@ -1,3 +1,7 @@
+2008-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	* omp_lib.f90.in: Add "implicit none".
+
 2008-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36506

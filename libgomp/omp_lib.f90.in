@@ -26,6 +26,7 @@
 !  General Public License.
 
       module omp_lib_kinds
+        implicit none
         integer, parameter :: omp_integer_kind = 4
         integer, parameter :: omp_logical_kind = 4
         integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
@@ -35,6 +36,7 @@
 
       module omp_lib
         use omp_lib_kinds
+        implicit none
         integer, parameter :: openmp_version = 200805
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
