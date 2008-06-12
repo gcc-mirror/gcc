@@ -1,3 +1,10 @@
+2008-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/36443
+	* gcc.dg/compat/struct-layout-1.exp: Temporarily unset
+	GCC_EXEC_PREFIX from environment when running $HOSTCC.
+	* g++.dg/compat/struct-layout-1.exp: Likewise.
+
 2008-06-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36474
