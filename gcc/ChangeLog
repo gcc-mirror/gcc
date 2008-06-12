@@ -1,5 +1,10 @@
 2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-inline.c (copy_body_r): Copy TREE_SIDE_EFFECTS along with
+	TREE_THIS_VOLATILE on INDIRECT_REF nodes.
+
+2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* expr.c (store_field): Do a block copy from BLKmode to BLKmode-like.
 	(get_inner_reference): Use BLKmode for byte-aligned BLKmode bitfields.
 
