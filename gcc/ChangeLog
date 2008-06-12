@@ -1,3 +1,10 @@
+2008-06-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_tune_flags): New.
+	(override_options): Compute m68k_tune_flags.
+	(MULL_COST, MULW_COST): Update for various variants of CFV2.
+	* config/m68k/m68k.h (TUNE_MAC, TUNE_EMAC): New.
+
 2008-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36506
