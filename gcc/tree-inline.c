@@ -715,6 +715,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 		    {
 	              *tp = build1 (INDIRECT_REF, type, new);
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
+		      TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 		    }
 		}
 	      *walk_subtrees = 0;
