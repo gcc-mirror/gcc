@@ -1,3 +1,11 @@
+2008-06-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (ix86_compute_frame_layout): Disable red zone for
+	w64 abi.
+	(ix86_expand_prologue): Likewise.
+	(ix86_force_to_memory): Likewise.
+	(ix86_free_from_memory): Likewise.
+
 2008-06-11  Edmar Wienskoski  <edmar@freescale.com>
 
 	PR target/36425
