@@ -82,8 +82,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp> complex<_Tp> log(const complex<_Tp>&);
   /// Return complex base 10 logarithm of @a z.
   template<typename _Tp> complex<_Tp> log10(const complex<_Tp>&);
-  /// Return complex cosine of @a z.
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+  // DR 844.
+  /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, int);
+#endif
   /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, const _Tp&);
   /// Return @a x to the @a y'th power.
@@ -945,10 +948,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 26.2.8/9  pow(__x, __y): Returns the complex power base of __x
   //                          raised to the __y-th power.  The branch
   //                          cut is on the negative axis.
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 844. complex pow return type is ambiguous.
   template<typename _Tp>
     inline complex<_Tp>
     pow(const complex<_Tp>& __z, int __n)
     { return std::__pow_helper(__z, __n); }
+#endif
 
   template<typename _Tp>
     complex<_Tp>

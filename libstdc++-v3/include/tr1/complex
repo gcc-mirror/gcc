@@ -78,11 +78,6 @@ namespace tr1
 
   template<typename _Tp>
     inline std::complex<_Tp>
-    pow(const std::complex<_Tp>& __x, int __n)
-    { return std::pow(__x, __n); }
-
-  template<typename _Tp>
-    inline std::complex<_Tp>
     pow(const std::complex<_Tp>& __x, const _Tp& __y)
     { return std::pow(__x, __y); }
 
