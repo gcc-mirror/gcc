@@ -406,6 +406,18 @@ SYM (__\name):
 .endm
 #endif
 
+#ifdef __ARMEB__
+#define xxh r0
+#define xxl r1
+#define yyh r2
+#define yyl r3
+#else
+#define xxh r1
+#define xxl r0
+#define yyh r3
+#define yyl r2
+#endif	
+
 #ifdef __thumb__
 /* Register aliases.  */
 
@@ -1211,6 +1223,120 @@ LSYM(Lover12):
 #endif
 
 #endif /* __symbian__ */
+
+#if ((__ARM_ARCH__ > 5) && !defined(__ARM_ARCH_6M__)) \
+    || defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
+    || defined(__ARM_ARCH_5TEJ__)
+#define HAVE_ARM_CLZ 1
+#endif
+
+#ifdef L_clzsi2
+#if defined(__ARM_ARCH_6M__)
+FUNC_START clzsi2
+	mov	r1, #28
+	mov	r3, #1
+	lsl	r3, r3, #16
+	cmp	r0, r3 /* 0x10000 */
+	bcc	2f
+	lsr	r0, r0, #16
+	sub	r1, r1, #16
+2:	lsr	r3, r3, #8
+	cmp	r0, r3 /* #0x100 */
+	bcc	2f
+	lsr	r0, r0, #8
+	sub	r1, r1, #8
+2:	lsr	r3, r3, #4
+	cmp	r0, r3 /* #0x10 */
+	bcc	2f
+	lsr	r0, r0, #4
+	sub	r1, r1, #4
+2:	adr	r2, 1f
+	ldrb	r0, [r2, r0]
+	add	r0, r0, r1
+	bx lr
+.align 2
+1:
+.byte 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+	FUNC_END clzsi2
+#else
+ARM_FUNC_START clzsi2
+# if defined(HAVE_ARM_CLZ)
+	clz	r0, r0
+	RET
+# else
+	mov	r1, #28
+	cmp	r0, #0x10000
+	do_it	cs, t
+	movcs	r0, r0, lsr #16
+	subcs	r1, r1, #16
+	cmp	r0, #0x100
+	do_it	cs, t
+	movcs	r0, r0, lsr #8
+	subcs	r1, r1, #8
+	cmp	r0, #0x10
+	do_it	cs, t
+	movcs	r0, r0, lsr #4
+	subcs	r1, r1, #4
+	adr	r2, 1f
+	ldrb	r0, [r2, r0]
+	add	r0, r0, r1
+	bx lr
+.align 2
+1:
+.byte 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+# endif /* !HAVE_ARM_CLZ */
+	FUNC_END clzsi2
+#endif
+#endif /* L_clzsi2 */
+
+#ifdef L_clzdi2
+#if !defined(HAVE_ARM_CLZ)
+
+# if defined(__ARM_ARCH_6M__)
+FUNC_START clzdi2
+	push	{r4, lr}
+# else
+ARM_FUNC_START clzdi2
+	do_push	{r4, lr}
+# endif
+	cmp	xxh, #0
+	bne	1f
+# ifdef __ARMEB__
+	mov	r0, xxl
+	bl	__clzsi2
+	add	r0, r0, #32
+	b 2f
+1:
+	bl	__clzsi2
+# else
+	bl	__clzsi2
+	add	r0, r0, #32
+	b 2f
+1:
+	mov	r0, xxh
+	bl	__clzsi2
+# endif
+2:
+# if defined(__ARM_ARCH_6M__)
+	pop	{r4, pc}
+# else
+	RETLDM	r4
+# endif
+	FUNC_END clzdi2
+
+#else /* HAVE_ARM_CLZ */
+
+ARM_FUNC_START clzdi2
+	cmp	xxh, #0
+	do_it	eq, et
+	clzeq	r0, xxl
+	clzne	r0, xxh
+	addeq	r0, r0, #32
+	RET
+	FUNC_END clzdi2
+
+#endif
+#endif /* L_clzdi2 */
 
 /* ------------------------------------------------------------------------ */
 /* These next two sections are here despite the fact that they contain Thumb 
