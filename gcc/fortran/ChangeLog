@@ -1,3 +1,9 @@
+2008-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36462
+	* trans-intrinsic.c (gfc_conv_intrinsic_index_scan_verify):
+	Fix passing of the BACK= argument.
+
 2008-06-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* cpp.c: Add copyright notice.
