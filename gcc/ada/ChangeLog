@@ -1,5 +1,13 @@
 2008-06-13  Olivier Hainque  <hainque@adacore.com>
 
+	* decl.c (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): Define to 0
+	if undefined.
+	(gnat_to_gnu_entity) <case E_Function/Procedure>: Request stack
+	realignment with force_align_arg_pointer attribute on foreign
+	convention subprograms if FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN.
+	
+2008-06-13  Olivier Hainque  <hainque@adacore.com>
+
 	* utils.c (rest_of_record_type_compilation): When computing
 	encodings for the components of a variable size type, early
 	strip conversions on the current position expression to make
