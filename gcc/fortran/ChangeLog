@@ -1,3 +1,12 @@
+2008-06-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35863
+	* trans-io.c (gfc_build_io_library_fndecls): Build declaration for
+	transfer_character_wide which includes passing in the character kind to
+	support wide character IO. (transfer_expr): If the kind == 4, create the
+	argument and build the call.
+	* gfortran.texi: Fix typo.
+
 2008-06-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36476

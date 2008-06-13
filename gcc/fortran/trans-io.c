@@ -121,6 +121,7 @@ enum iocall
   IOCALL_X_INTEGER,
   IOCALL_X_LOGICAL,
   IOCALL_X_CHARACTER,
+  IOCALL_X_CHARACTER_WIDE,
   IOCALL_X_REAL,
   IOCALL_X_COMPLEX,
   IOCALL_X_ARRAY,
@@ -326,6 +327,13 @@ gfc_build_io_library_fndecls (void)
 				     (PREFIX("transfer_character")),
 				     void_type_node, 3, dt_parm_type,
 				     pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_CHARACTER_WIDE] =
+    gfc_build_library_function_decl (get_identifier
+				     (PREFIX("transfer_character_wide")),
+				     void_type_node, 4, dt_parm_type,
+				     pvoid_type_node, gfc_charlen_type_node,
+				     gfc_int4_type_node);
 
   iocall[IOCALL_X_REAL] =
     gfc_build_library_function_decl (get_identifier (PREFIX("transfer_real")),
@@ -1977,7 +1985,7 @@ transfer_array_component (tree expr, gfc_component * cm)
 static void
 transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 {
-  tree tmp, function, arg2, field, expr;
+  tree tmp, function, arg2, arg3, field, expr;
   gfc_component *c;
   int kind;
 
@@ -2009,6 +2017,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
   kind = ts->kind;
   function = NULL;
   arg2 = NULL;
+  arg3 = NULL;
 
   switch (ts->type)
     {
@@ -2033,6 +2042,26 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
       break;
 
     case BT_CHARACTER:
+      if (kind == 4)
+	{
+	  if (se->string_length)
+	    arg2 = se->string_length;
+	  else
+	    {
+	      tmp = build_fold_indirect_ref (addr_expr);
+	      gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
+	      arg2 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
+	      arg2 = fold_convert (gfc_charlen_type_node, arg2);
+	    }
+	  arg3 = build_int_cst (NULL_TREE, kind);
+	  function = iocall[IOCALL_X_CHARACTER_WIDE];
+	  tmp = build_fold_addr_expr (dt_parm);
+	  tmp = build_call_expr (function, 4, tmp, addr_expr, arg2, arg3);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	  gfc_add_block_to_block (&se->pre, &se->post);
+	  return;
+	}
+      /* Fall through. */
     case BT_HOLLERITH:
       if (se->string_length)
 	arg2 = se->string_length;
