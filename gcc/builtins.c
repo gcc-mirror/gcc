@@ -1125,14 +1125,16 @@ get_memory_rtx (tree exp, tree len)
 			      && (TREE_INT_CST_LOW (DECL_SIZE (field))
 				  % BITS_PER_UNIT) == 0));
 
+	      /* If we can prove that the memory starting at XEXP (mem, 0) and
+		 ending at XEXP (mem, 0) + LENGTH will fit into this field, we
+		 can keep the COMPONENT_REF in MEM_EXPR.  But be careful with
+		 fields without DECL_SIZE_UNIT like flexible array members.  */
 	      if (length >= 0
+		  && DECL_SIZE_UNIT (field)
 		  && host_integerp (DECL_SIZE_UNIT (field), 0))
 		{
 		  HOST_WIDE_INT size
 		    = TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
-		  /* If we can prove the memory starting at XEXP (mem, 0)
-		     and ending at XEXP (mem, 0) + LENGTH will fit into
-		     this field, we can keep that COMPONENT_REF in MEM_EXPR.  */
 		  if (offset <= size
 		      && length <= size
 		      && offset + length <= size)

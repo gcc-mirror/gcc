@@ -1,3 +1,9 @@
+2008-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/36520
+	* builtins.c (get_memory_rtx): Test for the presence of DECL_SIZE_UNIT
+	before evaluating it.
+
 2008-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/36507
