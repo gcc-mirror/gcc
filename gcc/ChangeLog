@@ -1,3 +1,23 @@
+2008-06-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (BUILTIN_AVAIL_NON_MIPS16): New macro.
+	(AVAIL_NON_MIPS16): Likewise.
+	(mips_builtin_description): Replace target_flags with a predicate.
+	(paired_single, sb1_paired_single, mips3d, dsp, dspr2, dsp_32)
+	(dspr2_32): New availability predicates.
+	(MIPS_BUILTIN): New macro.
+	(DIRECT_BUILTIN, CMP_SCALAR_BUILTINS, CMP_PS_BUILTINS)
+	(CMP_4S_BUILTINS, MOVTF_BUILTINS, CMP_BUILTINS)
+	(DIRECT_NO_TARGET_BUILTIN, BPOSGE_BUILTIN): Use it.
+	Replace the TARGET_FLAGS parameters with AVAIL parameters.
+	(mips_ps_bdesc, mips_sb1_bdesc, mips_dsp_bdesc)
+	(mips_dsp_32only_bdesc): Merge into...
+	(mips_builtins): ...this new array.
+	(mips_bdesc_map, mips_bdesc_arrays): Delete.
+	(mips_init_builtins): Update after above changes.
+	(mips_expand_builtin_1): Merge into...
+	(mips_expand_builtin): ...here and update after above changes.
+
 2008-06-12  Paul Brook  <paul@codesourcery.com>
 
 	* longlong.h (__arm__): Define count_leading_zeros.
