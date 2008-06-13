@@ -88,6 +88,24 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    template<typename... _Args>
+      void
+      vector<_Tp, _Alloc>::
+      emplace_back(_Args&&... __args)
+      {
+	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	  {
+	    this->_M_impl.construct(this->_M_impl._M_finish,
+				    std::forward<_Args>(__args)...);
+	    ++this->_M_impl._M_finish;
+	  }
+	else
+	  _M_insert_aux(end(), std::forward<_Args>(__args)...);
+      }
+#endif
+
   template<typename _Tp, typename _Alloc>
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::

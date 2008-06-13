@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -84,6 +84,41 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
       return *this;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    template<typename... _Args>
+      void
+      deque<_Tp, _Alloc>::
+      emplace_front(_Args&&... __args)
+      {
+	if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
+	  {
+	    this->_M_impl.construct(this->_M_impl._M_start._M_cur - 1,
+				    std::forward<_Args>(__args)...);
+	    --this->_M_impl._M_start._M_cur;
+	  }
+	else
+	  _M_push_front_aux(std::forward<_Args>(__args)...);
+      }
+
+  template<typename _Tp, typename _Alloc>
+    template<typename... _Args>
+      void
+      deque<_Tp, _Alloc>::
+      emplace_back(_Args&&... __args)
+      {
+	if (this->_M_impl._M_finish._M_cur
+	    != this->_M_impl._M_finish._M_last - 1)
+	  {
+	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
+				    std::forward<_Args>(__args)...);
+	    ++this->_M_impl._M_finish._M_cur;
+	  }
+	else
+	  _M_push_back_aux(std::forward<_Args>(__args)...);
+      }
+#endif
 
   template <typename _Tp, typename _Alloc>
     typename deque<_Tp, _Alloc>::iterator

@@ -681,7 +681,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  done in constant time if the %vector has preallocated space
        *  available.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const value_type& __x)
       {
@@ -693,20 +692,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_insert_aux(end(), __x);
       }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_back(value_type&& __x)
+      { emplace_back(std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_back(_Args&&... __args)
-	{
-	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
-	    {
-	      this->_M_impl.construct(this->_M_impl._M_finish,
-				      std::forward<_Args>(__args)...);
-	      ++this->_M_impl._M_finish;
-	    }
-	  else
-	    _M_insert_aux(end(), std::forward<_Args>(__args)...);
-	}
+        emplace_back(_Args&&... __args);
 #endif
 
       /**

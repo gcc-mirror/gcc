@@ -1117,7 +1117,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  data to it.  Due to the nature of a %deque this operation
        *  can be done in constant time.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_front(const value_type& __x)
       {
@@ -1129,20 +1128,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_push_front_aux(__x);
       }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_front(value_type&& __x)
+      { emplace_front(std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_front(_Args&&... __args)
-	{
-	  if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
-	    {
-	      this->_M_impl.construct(this->_M_impl._M_start._M_cur - 1,
-				      std::forward<_Args>(__args)...);
-	      --this->_M_impl._M_start._M_cur;
-	    }
-	  else
-	    _M_push_front_aux(std::forward<_Args>(__args)...);
-	}
+        emplace_front(_Args&&... __args);
 #endif
 
       /**
@@ -1154,7 +1148,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  to it.  Due to the nature of a %deque this operation can be
        *  done in constant time.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const value_type& __x)
       {
@@ -1167,21 +1160,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_push_back_aux(__x);
       }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_back(value_type&& __x)
+      { emplace_back(std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_back(_Args&&... __args)
-	{
-	  if (this->_M_impl._M_finish._M_cur
-	      != this->_M_impl._M_finish._M_last - 1)
-	    {
-	      this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
-				      std::forward<_Args>(__args)...);
-	      ++this->_M_impl._M_finish._M_cur;
-	    }
-	  else
-	    _M_push_back_aux(std::forward<_Args>(__args)...);
-	}
+        emplace_back(_Args&&... __args);
 #endif
 
       /**
