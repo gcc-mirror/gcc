@@ -525,7 +525,7 @@ support is reported in the @ref{Fortran 2003 status} section of the
 documentation.
 
 The next version of the Fortran standard after Fortran 2003 is currently
-being developped and the GNU Fortran compiler supports some of its new
+being developed and the GNU Fortran compiler supports some of its new
 features. This support is based on the latest draft of the standard
 (available from @url{http://www.nag.co.uk/sc22wg5/}) and no guarantee of
 future compatibility is made, as the final standard might differ from the
