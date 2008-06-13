@@ -20,6 +20,7 @@
 
 
 elemental function _gfortran_specific__dprod_r8 (p1, p2)
+   implicit none
    real (kind=4), intent (in) :: p1, p2
    real (kind=8) :: _gfortran_specific__dprod_r8
 
