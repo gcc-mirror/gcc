@@ -666,8 +666,15 @@
     <listitem><para>Implement the int -> size_t replacements.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#776">776</ulink>:
+        <emphasis>Undescribed assign function of std::array</emphasis>
+    </term>
+    <listitem><para>In C++0x mode, remove assign, add fill.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-active.html#778">778</ulink>:
-        <emphasis>std::bitset does not have any constructor taking a string literal</emphasis>
+        <emphasis>std::bitset does not have any constructor taking a string 
+	          literal</emphasis>
     </term>
     <listitem><para>Add it.
     </para></listitem></varlistentry>

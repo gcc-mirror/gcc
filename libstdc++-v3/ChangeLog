@@ -1,3 +1,11 @@
+2008-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/array (array<>::assign): Do not define in
+	C++0x mode, per DR 776...
+	(array<>::fill): ... define instead.
+	* doc/xml/manual/intro.xml: Add an entry for DR 776.
+	* testsuite/23_containers/array/requirements/fill.cc: New.
+
 2008-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/complex (pow(const complex<>&, int)): Do not define in
