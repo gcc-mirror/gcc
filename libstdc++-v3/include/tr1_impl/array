@@ -56,11 +56,16 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
       // No explicit construct/copy/destroy for aggregate type.
 
-      void 
+      void
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      // DR 776.
+      fill(const value_type& __u)
+#else
       assign(const value_type& __u)
+#endif
       { std::fill_n(begin(), size(), __u); }
 
-      void 
+      void
       swap(array& __other)
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
@@ -74,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       { return const_iterator(&_M_instance[0]); }
 
       iterator
-      end() 
+      end()
       { return iterator(&_M_instance[_Nm]); }
 
       const_iterator
