@@ -1,5 +1,32 @@
 2008-06-13  Tobias Burnus  <burnus@net-b.de>
 
+	* configure.ac (AM_CFLAGS): Remove -Werror again.
+	* configure: Regenerate.
+
+2008-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgfortran/36518
+	* configure.ac (AM_CFLAGS): Add -Werror.
+	* configure: Regenerate.
+	* m4/ifunction_logical.m4: Cast "n" to "(int)".
+	* generated/any_l16.c: Regenerate.
+	* generated/any_l2.c: Regenerate.
+	* generated/all_l1.c: Regenerate.
+	* generated/all_l2.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/count_4_l.c: Regenerate.
+	* generated/count_8_l.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/count_1_l.c: Regenerate.
+	* generated/count_16_l.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/count_2_l.c: Regenerate.
+	* generated/any_l1.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+
+2008-06-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/36495
 	* configure.ac (AM_FCFLAGS): Add "-Werror -fimplicit-none".
 	* configure: (generated) ditto.
