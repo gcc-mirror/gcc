@@ -1,3 +1,9 @@
+2008-06-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36498
+	* tree-flow-inline.h (var_can_have_subvars): Unions cannot
+	have subvars.
+
 2008-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36506

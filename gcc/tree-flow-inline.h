@@ -1691,6 +1691,11 @@ var_can_have_subvars (const_tree v)
   if (!DECL_P (v) || MTAG_P (v))
     return false;
 
+  /* Unions cannot have subvars.  */
+  if (TREE_CODE (TREE_TYPE (v)) == UNION_TYPE
+      || TREE_CODE (TREE_TYPE (v)) == QUAL_UNION_TYPE)
+    return false;
+
   /* Aggregates can have subvars.  */
   if (AGGREGATE_TYPE_P (TREE_TYPE (v)))
     return true;
