@@ -1,3 +1,8 @@
+2008-06-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36476
+	* decl.c (do_parm): Handle init expression for len=*.
+
 2008-06-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36462
