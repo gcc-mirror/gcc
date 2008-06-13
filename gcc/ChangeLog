@@ -1,5 +1,10 @@
 2008-06-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.md: Remove TARGET_DEBUG_D_MODE conditions from
+	splits that must be made for correctness.
+
+2008-06-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (BUILTIN_AVAIL_NON_MIPS16): New macro.
 	(AVAIL_NON_MIPS16): Likewise.
 	(mips_builtin_description): Replace target_flags with a predicate.
