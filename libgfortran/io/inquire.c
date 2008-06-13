@@ -268,10 +268,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  case ENCODING_DEFAULT:
 	    p = "UNKNOWN";
 	    break;
-	  /* TODO: Enable UTF-8 case here when implemented.
 	  case ENCODING_UTF8:
 	    p = "UTF-8";
-	    break; */
+	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad encoding");
 	  }
@@ -497,13 +496,13 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
       else
 	switch (u->flags.convert)
 	  {
-	    /*  l8_to_l4_offset is 0 for little-endian, 1 for big-endian.  */
+	    /*  big_endian is 0 for little-endian, 1 for big-endian.  */
 	  case GFC_CONVERT_NATIVE:
-	    p = l8_to_l4_offset ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
+	    p = big_endian ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
 	    break;
 
 	  case GFC_CONVERT_SWAP:
-	    p = l8_to_l4_offset ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
+	    p = big_endian ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
 	    break;
 
 	  default:

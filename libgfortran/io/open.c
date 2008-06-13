@@ -107,7 +107,7 @@ static const st_option decimal_opt[] =
 
 static const st_option encoding_opt[] =
 {
-  /* TODO { "utf-8", ENCODING_UTF8}, */
+  { "utf-8", ENCODING_UTF8},
   { "default", ENCODING_DEFAULT},
   { NULL, 0}
 };
@@ -795,7 +795,7 @@ st_open (st_parameter_open *opp)
 	conv = compile_options.convert;
     }
   
-  /* We use l8_to_l4_offset, which is 0 on little-endian machines
+  /* We use big_endian, which is 0 on little-endian machines
      and 1 on big-endian machines.  */
   switch (conv)
     {
@@ -804,11 +804,11 @@ st_open (st_parameter_open *opp)
       break;
       
     case GFC_CONVERT_BIG:
-      conv = l8_to_l4_offset ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
+      conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
       break;
       
     case GFC_CONVERT_LITTLE:
-      conv = l8_to_l4_offset ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
+      conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
       break;
       
     default:

@@ -1,3 +1,36 @@
+2008-06-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35863
+	* libgfortran.h: Change l8_to_l4_offset to big_endian and add endian_off.
+	* runtime/main.c: Fix error in comment. Change l8_to_l4_offset to
+	big_endian. (determine_endianness): Add endian_off and set its value
+	according to big_endian.
+	* gfortran.map: Add symbol for new _gfortran_transfer_character_wide.
+	* io/io.h: Add prototype declarations for new functions.
+	* io/list_read.c (list_formatted_read_scalar): Modify to handle kind=4.
+	(list_formatted_read): Calculate stride based on kind for character type
+	and use it when calling list_formatted_read_scalar.
+	* io/inquire.c (inquire_via_unit): Change l8_to_l4_offset to big_endian.
+	* io/open.c (st_open): Change l8_to_l4_offset to big_endian.
+	* io/read.c (read_a_char4): New function to handle formatted read.
+	* io/write.c: Define GFC_CHAR4(x) to improve readability of code.
+	(write_a_char4): New function to handle formatted write.
+	(write_character): Modify to accept the kind parameter and adjust for
+	endianess of the machine. (list_formatted_write): Calculate the stride
+	resulting from the kind and adjust the list_formatted_write_scalar call
+	accordingly. (nml_write_obj): Adjust calls to write_character.
+	(namelist_write): Likewise.
+	* io/transfer.c (formatted_transfer_scaler): Rename 'len' argument to
+	'kind' argument to better describe what it is. Add calls to new
+	functions for kind == 4. (formatted_transfer): Modify to handle the case
+	of type character and kind equals 4 to pass in the kind to the transfer
+	routines. (transfer_character_wide): Add this new function.
+	(transfer_array): Don't set kind to the character string length. Adjust
+	strides bases on character kind.
+	(unformatted_read): Adjust size based on kind for character types.
+	(unformatted_write): Likewise. (data_transfer_init): Change
+	l8_to_l4_offset to big_endian. 
+
 2008-06-13  Tobias Burnus  <burnus@net-b.de>
 
 	* configure.ac (AM_CFLAGS): Remove -Werror again.

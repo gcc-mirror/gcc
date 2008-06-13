@@ -1083,6 +1083,7 @@ GFORTRAN_1.1 {
     _gfortran_string_trim_char4;
     _gfortran_string_verify_char4;
     _gfortran_st_wait;
+    _gfortran_transfer_character_wide;
     _gfortran_transpose_char4;
     _gfortran_unpack0_char4;
     _gfortran_unpack1_char4;

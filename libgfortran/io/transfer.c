@@ -54,6 +54,7 @@ Boston, MA 02110-1301, USA.  */
       transfer_integer
       transfer_logical
       transfer_character
+      transfer_character_wide
       transfer_real
       transfer_complex
 
@@ -75,6 +76,9 @@ export_proto(transfer_logical);
 
 extern void transfer_character (st_parameter_dt *, void *, int);
 export_proto(transfer_character);
+
+extern void transfer_character_wide (st_parameter_dt *, void *, int, int);
+export_proto(transfer_character_wide);
 
 extern void transfer_complex (st_parameter_dt *, void *, int);
 export_proto(transfer_complex);
@@ -730,35 +734,43 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
 static void
 unformatted_read (st_parameter_dt *dtp, bt type,
-		  void *dest, int kind __attribute__((unused)),
-		  size_t size, size_t nelems)
+		  void *dest, int kind, size_t size, size_t nelems)
 {
   size_t i, sz;
 
-  /* Currently, character implies size=1.  */
   if (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE
-      || size == 1 || type == BT_CHARACTER)
+      || size == 1)
     {
       sz = size * nelems;
+      if (type == BT_CHARACTER)
+	sz *= GFC_SIZE_OF_CHAR_KIND(kind);
       read_block_direct (dtp, dest, &sz);
     }
   else
     {
       char buffer[16];
       char *p;
-      
+
+      p = dest;
+
+      /* Handle wide chracters.  */
+      if (type == BT_CHARACTER && kind != 1)
+	{
+	  nelems *= size;
+	  size = kind;
+	}
+
       /* Break up complex into its constituent reals.  */
       if (type == BT_COMPLEX)
 	{
 	  nelems *= 2;
 	  size /= 2;
 	}
-      p = dest;
       
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
       
-      for (i=0; i<nelems; i++)
+      for (i = 0; i < nelems; i++)
 	{
  	  read_block_direct (dtp, buffer, &size);
  	  reverse_memcpy (p, buffer, size);
@@ -775,20 +787,30 @@ unformatted_read (st_parameter_dt *dtp, bt type,
 
 static void
 unformatted_write (st_parameter_dt *dtp, bt type,
-		   void *source, int kind __attribute__((unused)),
-		   size_t size, size_t nelems)
+		   void *source, int kind, size_t size, size_t nelems)
 {
   if (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE ||
-      size == 1 || type == BT_CHARACTER)
+      size == 1)
     {
-      size *= nelems;
-      write_buf (dtp, source, size);
+      size_t stride = type == BT_CHARACTER ?
+		  size * GFC_SIZE_OF_CHAR_KIND(kind) : size;
+
+      write_buf (dtp, source, stride * nelems);
     }
   else
     {
       char buffer[16];
       char *p;
       size_t i;
+
+      p = source;
+
+      /* Handle wide chracters.  */
+      if (type == BT_CHARACTER && kind != 1)
+	{
+	  nelems *= size;
+	  size = kind;
+	}
   
       /* Break up complex into its constituent reals.  */
       if (type == BT_COMPLEX)
@@ -797,16 +819,13 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  size /= 2;
 	}      
 
-      p = source;
-
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
 
-
-      for (i=0; i<nelems; i++)
+      for (i = 0; i < nelems; i++)
 	{
 	  reverse_memcpy(buffer, p, size);
- 	  p+= size;
+ 	  p += size;
 	  write_buf (dtp, buffer, size);
 	}
     }
@@ -904,7 +923,7 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
    of the next element, then comes back here to process it.  */
 
 static void
-formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
+formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 			   size_t size)
 {
   char scratch[SCRATCH_SIZE];
@@ -1004,9 +1023,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_decimal (dtp, f, p, len);
+	    read_decimal (dtp, f, p, kind);
 	  else
-	    write_i (dtp, f, p, len);
+	    write_i (dtp, f, p, kind);
 
 	  break;
 
@@ -1019,9 +1038,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_radix (dtp, f, p, len, 2);
+	    read_radix (dtp, f, p, kind, 2);
 	  else
-	    write_b (dtp, f, p, len);
+	    write_b (dtp, f, p, kind);
 
 	  break;
 
@@ -1034,9 +1053,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_radix (dtp, f, p, len, 8);
+	    read_radix (dtp, f, p, kind, 8);
 	  else
-	    write_o (dtp, f, p, len);
+	    write_o (dtp, f, p, kind);
 
 	  break;
 
@@ -1049,9 +1068,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_radix (dtp, f, p, len, 16);
+	    read_radix (dtp, f, p, kind, 16);
 	  else
-	    write_z (dtp, f, p, len);
+	    write_z (dtp, f, p, kind);
 
 	  break;
 
@@ -1059,11 +1078,23 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	  if (n == 0)
 	    goto need_data;
 
+	  /* It is possible to have FMT_A with something not BT_CHARACTER such
+	     as when writing out hollerith strings, so check both type
+	     and kind before calling wide character routines.  */
 	  if (dtp->u.p.mode == READING)
-	    read_a (dtp, f, p, len);
+	    {
+	      if (type == BT_CHARACTER && kind == 4)
+		read_a_char4 (dtp, f, p, size);
+	      else
+		read_a (dtp, f, p, size);
+	    }
 	  else
-	    write_a (dtp, f, p, len);
-
+	    {
+	      if (type == BT_CHARACTER && kind == 4)
+		write_a_char4 (dtp, f, p, size);
+	      else
+		write_a (dtp, f, p, size);
+	    }
 	  break;
 
 	case FMT_L:
@@ -1071,9 +1102,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    goto need_data;
 
 	  if (dtp->u.p.mode == READING)
-	    read_l (dtp, f, p, len);
+	    read_l (dtp, f, p, kind);
 	  else
-	    write_l (dtp, f, p, len);
+	    write_l (dtp, f, p, kind);
 
 	  break;
 
@@ -1084,9 +1115,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_f (dtp, f, p, len);
+	    read_f (dtp, f, p, kind);
 	  else
-	    write_d (dtp, f, p, len);
+	    write_d (dtp, f, p, kind);
 
 	  break;
 
@@ -1097,9 +1128,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_f (dtp, f, p, len);
+	    read_f (dtp, f, p, kind);
 	  else
-	    write_e (dtp, f, p, len);
+	    write_e (dtp, f, p, kind);
 	  break;
 
 	case FMT_EN:
@@ -1109,9 +1140,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_f (dtp, f, p, len);
+	    read_f (dtp, f, p, kind);
 	  else
-	    write_en (dtp, f, p, len);
+	    write_en (dtp, f, p, kind);
 
 	  break;
 
@@ -1122,9 +1153,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_f (dtp, f, p, len);
+	    read_f (dtp, f, p, kind);
 	  else
-	    write_es (dtp, f, p, len);
+	    write_es (dtp, f, p, kind);
 
 	  break;
 
@@ -1135,9 +1166,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    return;
 
 	  if (dtp->u.p.mode == READING)
-	    read_f (dtp, f, p, len);
+	    read_f (dtp, f, p, kind);
 	  else
-	    write_f (dtp, f, p, len);
+	    write_f (dtp, f, p, kind);
 
 	  break;
 
@@ -1148,16 +1179,19 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    switch (type)
 	      {
 	      case BT_INTEGER:
-		read_decimal (dtp, f, p, len);
+		read_decimal (dtp, f, p, kind);
 		break;
 	      case BT_LOGICAL:
-		read_l (dtp, f, p, len);
+		read_l (dtp, f, p, kind);
 		break;
 	      case BT_CHARACTER:
-		read_a (dtp, f, p, len);
+		if (kind == 4)
+		  read_a_char4 (dtp, f, p, size);
+		else
+		  read_a (dtp, f, p, size);
 		break;
 	      case BT_REAL:
-		read_f (dtp, f, p, len);
+		read_f (dtp, f, p, kind);
 		break;
 	      default:
 		goto bad_type;
@@ -1166,19 +1200,22 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	    switch (type)
 	      {
 	      case BT_INTEGER:
-		write_i (dtp, f, p, len);
+		write_i (dtp, f, p, kind);
 		break;
 	      case BT_LOGICAL:
-		write_l (dtp, f, p, len);
+		write_l (dtp, f, p, kind);	
 		break;
 	      case BT_CHARACTER:
-		write_a (dtp, f, p, len);
+		if (kind == 4)
+		  write_a_char4 (dtp, f, p, size);
+		else
+		  write_a (dtp, f, p, size);
 		break;
 	      case BT_REAL:
 		if (f->u.real.w == 0)
-		  write_real (dtp, p, len);
+		  write_real (dtp, p, kind);
 		else
-		  write_d (dtp, f, p, len);
+		  write_d (dtp, f, p, kind);
 		break;
 	      default:
 	      bad_type:
@@ -1407,12 +1444,13 @@ formatted_transfer (st_parameter_dt *dtp, bt type, void *p, int kind,
   char *tmp;
 
   tmp = (char *) p;
-
+  size_t stride = type == BT_CHARACTER ?
+		  size * GFC_SIZE_OF_CHAR_KIND(kind) : size;
   /* Big loop over all the elements.  */
   for (elem = 0; elem < nelems; elem++)
     {
       dtp->u.p.item_count++;
-      formatted_transfer_scalar (dtp, type, tmp + size*elem, kind, size);
+      formatted_transfer_scalar (dtp, type, tmp + stride*elem, kind, size);
     }
 }
 
@@ -1465,10 +1503,26 @@ transfer_character (st_parameter_dt *dtp, void *p, int len)
   if (len == 0 && p == NULL)
     p = empty_string;
 
-  /* Currently we support only 1 byte chars, and the library is a bit
-     confused of character kind vs. length, so we kludge it by setting
-     kind = length.  */
-  dtp->u.p.transfer (dtp, BT_CHARACTER, p, len, len, 1);
+  /* Set kind here to 1.  */
+  dtp->u.p.transfer (dtp, BT_CHARACTER, p, 1, len, 1);
+}
+
+void
+transfer_character_wide (st_parameter_dt *dtp, void *p, int len, int kind)
+{
+  static char *empty_string[0];
+
+  if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
+    return;
+
+  /* Strings of zero length can have p == NULL, which confuses the
+     transfer routines into thinking we need more data elements.  To avoid
+     this, we give them a nice pointer.  */
+  if (len == 0 && p == NULL)
+    p = empty_string;
+
+  /* Here we pass the actual kind value.  */
+  dtp->u.p.transfer (dtp, BT_CHARACTER, p, kind, len, 1);
 }
 
 
@@ -1522,13 +1576,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
       break;
     case GFC_DTYPE_CHARACTER:
       iotype = BT_CHARACTER;
-      /* FIXME: Currently dtype contains the charlen, which is
-	 clobbered if charlen > 2**24. That's why we use a separate
-	 argument for the charlen. However, if we want to support
-	 non-8-bit charsets we need to fix dtype to contain
-	 sizeof(chartype) and fix the code below.  */
       size = charlen;
-      kind = charlen;
       break;
     case GFC_DTYPE_DERIVED:
       internal_error (&dtp->common,
@@ -1542,7 +1590,9 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      stride[n] = desc->dim[n].stride;
+      stride[n] = iotype == BT_CHARACTER ?
+		  desc->dim[n].stride * GFC_SIZE_OF_CHAR_KIND(kind) :
+		  desc->dim[n].stride;
       extent[n] = desc->dim[n].ubound + 1 - desc->dim[n].lbound;
 
       /* If the extent of even one dimension is zero, then the entire
@@ -1815,7 +1865,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
      if (conv == GFC_CONVERT_NONE)
        conv = compile_options.convert;
 
-     /* We use l8_to_l4_offset, which is 0 on little-endian machines
+     /* We use big_endian, which is 0 on little-endian machines
 	and 1 on big-endian machines.  */
      switch (conv)
        {
@@ -1824,11 +1874,11 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	 break;
 	 
        case GFC_CONVERT_BIG:
-	 conv = l8_to_l4_offset ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
+	 conv = big_endian ? GFC_CONVERT_NATIVE : GFC_CONVERT_SWAP;
 	 break;
       
        case GFC_CONVERT_LITTLE:
-	 conv = l8_to_l4_offset ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
+	 conv = big_endian ? GFC_CONVERT_SWAP : GFC_CONVERT_NATIVE;
 	 break;
 	 
        default:

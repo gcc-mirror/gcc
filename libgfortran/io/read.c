@@ -270,6 +270,43 @@ read_a (st_parameter_dt *dtp, const fnode *f, char *p, int length)
     memset (p + m, ' ', n);
 }
 
+void
+read_a_char4 (st_parameter_dt *dtp, const fnode *f, char *p, int length)
+{
+  char *s;
+  gfc_char4_t *dest;
+  int m, n, wi, status;
+  size_t w;
+
+  wi = f->u.w;
+  if (wi == -1) /* '(A)' edit descriptor  */
+    wi = length;
+
+  w = wi;
+
+  s = gfc_alloca (w);
+
+  /* Read in w bytes, treating comma as not a separator.  */
+  dtp->u.p.sf_read_comma = 0;
+  status = read_block_form (dtp, s, &w);
+  dtp->u.p.sf_read_comma =
+    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
+  
+  if (status == FAILURE)
+    return;
+  if (w > (size_t) length)
+     s += (w - length);
+
+  m = ((int) w > length) ? length : (int) w;
+  
+  dest = (gfc_char4_t *) p;
+  
+  for (n = 0; n < m; n++, dest++, s++)
+    *dest = (unsigned char ) *s;
+
+  for (n = 0; n < length - (int) w; n++, dest++)
+    *dest = (unsigned char) ' ';
+}
 
 /* eat_leading_spaces()-- Given a character pointer and a width,
  * ignore the leading spaces.  */

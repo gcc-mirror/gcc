@@ -1728,7 +1728,8 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
 			    int kind, size_t size)
 {
   char c;
-  int m;
+  gfc_char4_t *q;
+  int i, m;
   jmp_buf eof_jump;
 
   dtp->u.p.namelist_mode = 0;
@@ -1831,17 +1832,33 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
 
     case BT_CHARACTER:
       if (dtp->u.p.saved_string)
-       {
+	{
 	  m = ((int) size < dtp->u.p.saved_used)
 	      ? (int) size : dtp->u.p.saved_used;
-	  memcpy (p, dtp->u.p.saved_string, m);
-       }
+	  if (kind == 1)
+	    memcpy (p, dtp->u.p.saved_string, m);
+	  else
+	    {
+	      q = (gfc_char4_t *) p;
+	      for (i = 0; i < m; i++)
+		q[i] = (unsigned char) dtp->u.p.saved_string[i];
+	    }
+	}
       else
 	/* Just delimiters encountered, nothing to copy but SPACE.  */
         m = 0;
 
       if (m < (int) size)
-	memset (((char *) p) + m, ' ', size - m);
+	{
+	  if (kind == 1)
+	    memset (((char *) p) + m, ' ', size - m);
+	  else
+	    {
+	      q = (gfc_char4_t *) p;
+	      for (i = m; i < (int) size; i++)
+		q[i] = (unsigned char) ' ';
+	    }
+	}
       break;
 
     case BT_NULL:
@@ -1862,6 +1879,8 @@ list_formatted_read (st_parameter_dt *dtp, bt type, void *p, int kind,
 {
   size_t elem;
   char *tmp;
+  size_t stride = type == BT_CHARACTER ?
+		  size * GFC_SIZE_OF_CHAR_KIND(kind) : size;
 
   tmp = (char *) p;
 
@@ -1869,7 +1888,7 @@ list_formatted_read (st_parameter_dt *dtp, bt type, void *p, int kind,
   for (elem = 0; elem < nelems; elem++)
     {
       dtp->u.p.item_count++;
-      list_formatted_read_scalar (dtp, type, tmp + size*elem, kind, size);
+      list_formatted_read_scalar (dtp, type, tmp + stride*elem, kind, size);
     }
 }
 

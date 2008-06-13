@@ -869,6 +869,9 @@ internal_proto(convert_real);
 extern void read_a (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_a);
 
+extern void read_a_char4 (st_parameter_dt *, const fnode *, char *, int);
+internal_proto(read_a);
+
 extern void read_f (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_f);
 
@@ -903,6 +906,9 @@ internal_proto(namelist_write);
 
 extern void write_a (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_a);
+
+extern void write_a_char4 (st_parameter_dt *, const fnode *, const char *, int);
+internal_proto(write_a_char4);
 
 extern void write_b (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_b);
