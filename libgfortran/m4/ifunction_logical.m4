@@ -121,7 +121,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
 			       " u_name intrinsic in dimension %d:"
-			       " is %ld, should be %ld", n + 1,
+			       " is %ld, should be %ld", (int) n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
 	}
