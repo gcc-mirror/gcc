@@ -67,6 +67,29 @@
 #define Has_Stdcall_Convention(E) (0)
 #endif
 
+/* Stack realignment for functions with foreign conventions is provided on a
+   per back-end basis now, as it is handled by the prologue expanders and not
+   as part of the function's body any more.  It might be requested by way of a
+   dedicated function type attribute on the targets that support it.
+
+   We need a way to avoid setting the attribute on the targets that don't
+   support it and use FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN for this purpose.
+
+   It is defined on targets where the circuitry is available, and indicates
+   whether the realignment is needed for 'main'. We use this to decide for
+   foreign subprograms as well.
+
+   It is not defined on targets where the circuitry is not implemented, and
+   we just never set the attribute in these cases.
+
+   Whether it is defined on all targets that would need it in theory is
+   not entirely clear.  We currently trust the base GCC settings for this
+   purpose.  */
+
+#ifndef FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN 0
+#endif
+
 struct incomplete
 {
   struct incomplete *next;
@@ -3949,6 +3972,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  prepend_one_attribute_to
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
+	     gnat_entity);
+
+	/* If we are on a target where stack realignment is needed for 'main'
+	   to honor GCC's implicit expectations (stack alignment greater than
+	   what the base ABI guarantees), ensure we do the same for foreign
+	   convention subprograms as they might be used as callbacks from code
+	   breaking such expectations.  Note that this applies to task entry
+	   points in particular.  */
+	if (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+	    && Has_Foreign_Convention (gnat_entity))
+	  prepend_one_attribute_to
+	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+	     get_identifier ("force_align_arg_pointer"), NULL_TREE,
 	     gnat_entity);
 
 	/* The lists have been built in reverse.  */
