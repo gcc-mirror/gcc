@@ -833,15 +833,19 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  done in constant time, and does not invalidate iterators and
        *  references.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_front(const value_type& __x)
       { this->_M_insert(begin(), __x); }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_front(value_type&& __x)
+      { this->_M_insert(begin(), std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_front(_Args&&... __args)
-	{ this->_M_insert(begin(), std::forward<_Args>(__args)...); }
+        emplace_front(_Args&&... __args)
+        { this->_M_insert(begin(), std::forward<_Args>(__args)...); }
 #endif
 
       /**
@@ -870,15 +874,19 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  in constant time, and does not invalidate iterators and
        *  references.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const value_type& __x)
       { this->_M_insert(end(), __x); }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_back(value_type&& __x)
+      { this->_M_insert(end(), std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_back(_Args&&... __args)
-	{ this->_M_insert(end(), std::forward<_Args>(__args)...); }
+        emplace_back(_Args&&... __args)
+        { this->_M_insert(end(), std::forward<_Args>(__args)...); }
 #endif
 
       /**

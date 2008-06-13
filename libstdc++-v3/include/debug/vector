@@ -289,7 +289,6 @@ namespace __debug
       using _Base::data;
 
       // 23.2.4.3 modifiers:
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const _Tp& __x)
       {
@@ -299,13 +298,18 @@ namespace __debug
 	  this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
       }
-#else
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push_back(_Tp&& __x)
+      { emplace_back(std::move(__x)); }
+
       template<typename... _Args>
         void
-        push_back(_Args&&... __args)
+        emplace_back(_Args&&... __args)
 	{
 	  bool __realloc = _M_requires_reallocation(this->size() + 1);
-	  _Base::push_back(std::forward<_Args>(__args)...);
+	  _Base::emplace_back(std::forward<_Args>(__args)...);
 	  if (__realloc)
 	    this->_M_invalidate_all();
 	  _M_update_guaranteed_capacity();

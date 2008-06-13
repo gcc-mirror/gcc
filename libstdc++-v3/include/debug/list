@@ -280,6 +280,10 @@ namespace __debug
       // 23.2.2.3 modifiers:
       using _Base::push_front;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      using _Base::emplace_front;
+#endif
+
       void
       pop_front()
       {
@@ -290,6 +294,10 @@ namespace __debug
       }
 
       using _Base::push_back;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      using _Base::emplace_back;
+#endif
 
       void
       pop_back()

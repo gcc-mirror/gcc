@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -220,16 +220,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  to it.  The time complexity of the operation depends on the
        *  underlying sequence.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push(const value_type& __x)
       { c.push_back(__x); }
-#else
-      // NB: DR 756.
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push(value_type&& __x)
+      { c.push_back(std::move(__x)); }
+
       template<typename... _Args>
         void
-        push(_Args&&... __args)
-	{ c.push_back(std::forward<_Args>(__args)...); }
+        emplace(_Args&&... __args)
+	{ c.emplace_back(std::forward<_Args>(__args)...); }
 #endif
 
       /**
@@ -509,20 +512,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  The time complexity of the operation depends on the underlying
        *  sequence.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push(const value_type& __x)
       {
 	c.push_back(__x);
 	std::push_heap(c.begin(), c.end(), comp);
       }
-#else
-      // NB: DR 756.
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push(value_type&& __x)
+      {
+	c.push_back(std::move(__x));
+	std::push_heap(c.begin(), c.end(), comp);
+      }
+
       template<typename... _Args>
         void
-        push(_Args&&... __args)
-	{ 
-	  c.push_back(std::forward<_Args>(__args)...);
+        emplace(_Args&&... __args)
+	{
+	  c.emplace_back(std::forward<_Args>(__args)...);
 	  std::push_heap(c.begin(), c.end(), comp);
 	}
 #endif

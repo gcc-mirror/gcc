@@ -1,5 +1,81 @@
 2008-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_deque.h (deque<>::push_back(_Args&&...),
+	deque<>::push_front(_Args&&...)): Remove.
+	(deque<>::push_back(value_type&&),
+	deque<>::push_front(value_type&&)): Add.
+	(deque<>::push_back(const value_type&),
+	deque<>::push_front(const value_type&)): Add back.
+	(deque<>::emplace_back(_Args&&...),
+	deque<>::emplace_front(_Args&&...)): Declare...
+	* include/bits/deque.tcc: ... and define.	
+	* include/bits/stl_list.h (list<>::push_back(_Args&&...),
+	list<>::push_front(_Args&&...)): Remove.
+	(list<>::push_back(value_type&&), list<>::push_front(value_type&&),
+	list<>::emplace_back(_Args&&...), list<>::emplace_front(_Args&&...)):
+	Add.
+	(list<>::push_back(const value_type&),
+	list<>::push_front(const value_type&)): Add back.
+	* include/bits/stl_vector.h (vector<>::push_back(_Args&&...)): Remove.
+	(vector<>::push_back(value_type&&)): Add.
+	(vector<>::push_back(const value_type&)): Add back.
+	(vector<>::emplace_back(_Args&&...)): Declare...
+	* include/bits/vector.tcc: ... and define.
+	* include/bits/stl_queue.h (queue<>::push(_Args&&...),
+	priority_queue<>::push(_Args&&...)): Remove.
+	(queue<>::push(value_type&&), queue<>::emplace(_Args&&...),
+	priority_queue<>::push(value_type&&),
+	priority_queue<>::emplace(_Args&&...)): Add.
+	(queue<>::push(const value_type&),
+	priority_queue<>::push(const value_type&)): Add back.
+	* include/bits/stl_stack.h (stack<>::push(_Args&&...)): Remove.
+	(stack<>::push(value_type&&), stack<>::emplace(_Args&&...)): Add.
+	(stack<>::push(const value_type&)): Add back.
+	* include/debug/deque (deque<>::push_back(_Args&&...),
+	deque<>::push_front(_Args&&...)): Remove.
+	(deque<>::push_back(value_type&&), deque<>::push_front(value_type&&),
+	deque<>::emplace_back(_Args&&...), deque<>::emplace_front(_Args&&...)):
+	Add.
+	(deque<>::push_back(const value_type&),
+	deque<>::push_front(const value_type&)): Add back.
+	* include/debug/list (list<>::push_back(_Args&&...),
+	list<>::push_front(_Args&&...)): Remove.
+	(list<>::push_back(value_type&&), list<>::push_front(value_type&&),
+	list<>::emplace_back(_Args&&...), list<>::emplace_front(_Args&&...)):
+	Add.
+	(list<>::push_back(const value_type&),
+	list<>::push_front(const value_type&)): Add back.
+	* include/debug/vector (vector<>::push_back(_Args&&...)): Remove.
+	(vector<>::push_back(value_type&&),
+	vector<>::emplace_back(_Args&&...)): Add.
+	(vector<>::push_back(const value_type&)): Add back.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2008-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/tr1_impl/array (array<>::assign): Do not define in
 	C++0x mode, per DR 776...
 	(array<>::fill): ... define instead.
