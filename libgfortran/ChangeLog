@@ -29,7 +29,8 @@
 	strides bases on character kind.
 	(unformatted_read): Adjust size based on kind for character types.
 	(unformatted_write): Likewise. (data_transfer_init): Change
-	l8_to_l4_offset to big_endian. 
+	l8_to_l4_offset to big_endian.
+	io/fbuf.c (fbuf_seek): Add cast to eliminate warning.
 
 2008-06-13  Tobias Burnus  <burnus@net-b.de>
 
