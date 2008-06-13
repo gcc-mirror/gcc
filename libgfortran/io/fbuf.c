@@ -157,7 +157,7 @@ fbuf_seek (gfc_unit * u, gfc_offset off)
   /* Moving to the left past the flushed marked would imply moving past
      the left tab limit, which is never allowed. So return error if
      that is attempted.  */
-  if (pos < u->fbuf->flushed)
+  if (pos < (gfc_offset) u->fbuf->flushed)
     return -1;
   u->fbuf->pos = pos;
   return 0;
