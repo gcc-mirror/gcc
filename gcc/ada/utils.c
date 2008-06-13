@@ -1085,6 +1085,10 @@ rest_of_record_type_compilation (tree record_type)
 
 	  If this is a union, the position can be taken as zero. */
 
+	  /* Some computations depend on the shape of the position expression,
+	     so strip conversions to make sure it's exposed.  */
+	  curpos = remove_conversions (curpos, true);
+
 	  if (TREE_CODE (new_record_type) == UNION_TYPE)
 	    pos = bitsize_zero_node, align = 0;
 	  else
@@ -1096,13 +1100,9 @@ rest_of_record_type_compilation (tree record_type)
 	      tree offset = TREE_OPERAND (curpos, 0);
 	      align = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
 
-	      /* Strip off any conversions.  */
-	      while (TREE_CODE (offset) == NON_LVALUE_EXPR
-		     || CONVERT_EXPR_P (offset))
-		offset = TREE_OPERAND (offset, 0);
-
 	      /* An offset which is a bitwise AND with a negative power of 2
 		 means an alignment corresponding to this power of 2.  */
+	      offset = remove_conversions (offset, true);
 	      if (TREE_CODE (offset) == BIT_AND_EXPR
 		  && host_integerp (TREE_OPERAND (offset, 1), 0)
 		  && tree_int_cst_sgn (TREE_OPERAND (offset, 1)) < 0)
