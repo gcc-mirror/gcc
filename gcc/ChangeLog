@@ -1,3 +1,11 @@
+2008-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/36507
+	* c-decl.c (merge_decls): Don't clear DECL_EXTERNAL for
+	nested inline functions.
+	(start_decl, start_function): Don't invert DECL_EXTERNAL
+	for nested inline functions.
+
 2008-06-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36498

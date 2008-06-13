@@ -1773,7 +1773,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  || !DECL_DECLARED_INLINE_P (olddecl)
 	  || !DECL_EXTERNAL (olddecl))
       && DECL_EXTERNAL (newdecl)
-      && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (newdecl)))
+      && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (newdecl))
+      && (DECL_CONTEXT (newdecl) == NULL_TREE
+	  || TREE_CODE (DECL_CONTEXT (newdecl)) != FUNCTION_DECL))
     DECL_EXTERNAL (newdecl) = 0;
 
   if (DECL_EXTERNAL (newdecl))
@@ -3279,7 +3281,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   if (declspecs->inline_p
       && !flag_gnu89_inline
       && TREE_CODE (decl) == FUNCTION_DECL
-      && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
+      && (lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl))
+	  || current_function_decl))
     {
       if (declspecs->storage_class == csc_auto && current_scope != file_scope)
 	;
@@ -6114,7 +6117,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (declspecs->inline_p
       && !flag_gnu89_inline
       && TREE_CODE (decl1) == FUNCTION_DECL
-      && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl1)))
+      && (lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl1))
+	  || current_function_decl))
     {
       if (declspecs->storage_class != csc_static)
 	DECL_EXTERNAL (decl1) = !DECL_EXTERNAL (decl1);

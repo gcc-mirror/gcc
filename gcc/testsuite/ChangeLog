@@ -1,3 +1,10 @@
+2008-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/36507
+	* gcc.dg/inline-28.c: New test.
+	* gcc.dg/inline-29.c: New test.
+	* gcc.dg/inline-30.c: New test.
+
 2008-06-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1.exp (orig_gcc_exec_prefix_saved):
