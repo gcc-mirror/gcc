@@ -1295,7 +1295,7 @@
 		 (match_operand:SI 3 "d_operand")))
    (clobber (match_operand:SI 4 "lo_operand"))
    (clobber (match_operand:SI 5 "d_operand"))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
+  "reload_completed"
   [(parallel [(set (match_dup 5)
 		   (mult:SI (match_dup 1) (match_dup 2)))
 	      (clobber (match_dup 4))])
@@ -1311,7 +1311,7 @@
                  (match_operand:SI 3 "lo_operand")))
    (clobber (match_dup 3))
    (clobber (scratch:SI))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
+  "reload_completed"
   [(parallel [(set (match_dup 3)
                    (plus:SI (mult:SI (match_dup 1) (match_dup 2))
                             (match_dup 3)))
@@ -1523,7 +1523,7 @@
                            (match_operand:SI 3 "d_operand"))))
    (clobber (match_operand:SI 4 "lo_operand"))
    (clobber (match_operand:SI 5 "d_operand"))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
+  "reload_completed"
   [(parallel [(set (match_dup 5)
                    (mult:SI (match_dup 2) (match_dup 3)))
               (clobber (match_dup 4))])
@@ -1539,7 +1539,7 @@
                            (match_operand:SI 3 "d_operand"))))
    (clobber (match_dup 1))
    (clobber (scratch:SI))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
+  "reload_completed"
   [(parallel [(set (match_dup 1)
                    (minus:SI (match_dup 1)
                              (mult:SI (match_dup 2) (match_dup 3))))
@@ -5842,7 +5842,7 @@
 (define_split
   [(unspec [(match_operand 0 "register_operand")] UNSPEC_EH_RETURN)
    (clobber (match_scratch 1))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
+  "reload_completed"
   [(const_int 0)]
 {
   mips_set_return_address (operands[0], operands[1]);
