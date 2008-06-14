@@ -1,5 +1,11 @@
 2008-06-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/36538
+	* io/list_read.c (namelist_read): Add eat_separator to eliminate leading
+	tabs.
+
+2008-06-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/35863
 	* libgfortran.h: Change l8_to_l4_offset to big_endian and add endian_off.
 	* runtime/main.c: Fix error in comment. Change l8_to_l4_offset to
