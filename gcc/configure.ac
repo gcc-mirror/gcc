@@ -1368,8 +1368,12 @@ fi
 # Make gthr-default.h if we have a thread file.
 gthread_flags=
 if test $thread_file != single; then
-  rm -f gthr-default.h
-  echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h
+  echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h-t
+  if diff gthr-default.h-t gthr-default.h 2>/dev/null; then
+    rm -f gthr-default.h-t
+  else
+    mv -f gthr-default.h-t gthr-default.h
+  fi
   gthread_flags=-DHAVE_GTHR_DEFAULT
 fi
 AC_SUBST(gthread_flags)

@@ -1,3 +1,9 @@
+2008-06-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Update gthr-default.h lazily, to avoid unneeded
+	library rebuilds.
+	* configure: Regenerate.
+
 2008-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/36520
