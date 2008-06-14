@@ -2906,6 +2906,8 @@ find_nml_name:
       goto find_nml_name;
     }
 
+  eat_separator (dtp);
+
   /* Ready to read namelist objects.  If there is an error in input
      from stdin, output the error message and continue.  */
 
