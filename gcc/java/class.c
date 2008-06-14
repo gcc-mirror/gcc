@@ -1142,7 +1142,13 @@ build_class_ref (tree type)
 	return build_indirect_class_ref (type);
 
       if (type == output_class && flag_indirect_classes)
-	return this_classdollar;
+	{
+	  /* This can be NULL if we see a JNI stub before we see any
+	     other method.  */
+	  if (! this_classdollar)
+	    this_classdollar = build_classdollar_field (output_class);
+	  return this_classdollar;
+	}
       
       if (TREE_CODE (type) == RECORD_TYPE)
 	return build_static_class_ref (type);
