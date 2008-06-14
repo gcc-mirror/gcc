@@ -1,3 +1,8 @@
+2008-06-14  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/35320
+	* g++.dg/parse/bitfield3.C: New test.
+
 2008-06-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/36538
