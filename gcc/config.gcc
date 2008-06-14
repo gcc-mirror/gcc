@@ -665,7 +665,6 @@ alpha*-dec-*vms*)
 arc-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
-	use_fixproto=yes
 	;;
 arm-*-coff* | armel-*-coff*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h"
@@ -787,7 +786,6 @@ avr-*-rtems*)
 	;;
 avr-*-*)
 	tm_file="avr/avr.h dbxelf.h"
-	use_fixproto=yes
 	;;
 bfin*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
@@ -852,12 +850,10 @@ fr30-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	tmake_file=fr30/t-fr30
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-	use_fixproto=yes
 	;;
 frv-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} frv/frv-abi.h"
 	tmake_file=frv/t-frv
-	use_fixproto=yes
 	;;
 frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
@@ -871,11 +867,9 @@ h8300-*-rtems*)
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300 h8300/t-elf"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h"
-	use_fixproto=yes
 	;;
 h8300-*-*)
 	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h"
-	use_fixproto=yes
 	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -1022,16 +1016,13 @@ x86_64-*-darwin*)
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
 	tmake_file="i386/t-i386elf t-svr4"
-	use_fixproto=yes
 	;;
 x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/x86-64.h"
 	tmake_file="i386/t-i386elf t-svr4"
-	use_fixproto=yes
 	;;
 i[34567]86-*-aout*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/i386-aout.h"
-	use_fixproto=yes
 	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
@@ -1068,7 +1059,6 @@ i[34567]86-*-openbsd*)
 	;;
 i[34567]86-*-coff*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
-	use_fixproto=yes
 	;;
 i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
 			# Intel 80386's running GNU/*
@@ -1306,7 +1296,6 @@ ia64*-*-elf*)
 		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 	fi
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	use_fixproto=yes
 	;;
 ia64*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} ia64/sysv4.h ia64/freebsd.h"
@@ -1336,33 +1325,26 @@ ia64*-*-hpux*)
 	c_target_objs="ia64-c.o"
 	cxx_target_objs="ia64-c.o"
 	extra_options="${extra_options} ia64/ilp32.opt"
-	# If we decide to run fixproto we should define FIXPROTO_DEFINES
-	# in ia64/t-hpux, and also fix the definition of putenv in
-	# sys-protos.h (const char not char).
 	;;
 iq2000*-*-elf*)
         tm_file="svr4.h elfos.h iq2000/iq2000.h"
         tmake_file=iq2000/t-iq2000
         out_file=iq2000/iq2000.c
         md_file=iq2000/iq2000.md
-	use_fixproto=yes
         ;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
-	use_fixproto=yes
  	;;
 m32rle-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h m32r/little.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
-	use_fixproto=yes
 	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
-	use_fixproto=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -1372,7 +1354,6 @@ m32rle-*-linux*)
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
-	use_fixproto=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -1384,7 +1365,6 @@ m68hc11-*-*|m6811-*-*)
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
 	tmake_file="m68hc11/t-m68hc11"
-	use_fixproto=yes
         ;;
 m68hc12-*-*|m6812-*-*)
 	tm_file="m68hc11/m68hc12.h dbxelf.h elfos.h usegas.h m68hc11/m68hc11.h"
@@ -1393,7 +1373,6 @@ m68hc12-*-*|m6812-*-*)
 	out_file="m68hc11/m68hc11.c"
 	tmake_file="m68hc11/t-m68hc11"
 	extra_options="${extra_options} m68hc11/m68hc11.opt"
-	use_fixproto=yes
         ;;
 m68k-*-aout*)
 	default_m68k_cpu=68020
@@ -1407,7 +1386,6 @@ m68k-*-coff*)
 	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-mlibs"
 	tm_defines="${tm_defines} MOTOROLA=1"
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
-	use_fixproto=yes
 	;;
 m68k-*-elf* | fido-*-elf*)
 	case ${target} in
@@ -1465,7 +1443,6 @@ m68k-*-uclinuxoldabi*)		# Motorola m68k/ColdFire running uClinux
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux-oldabi.h"
  	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux"
-	use_fixproto=no
 	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# with uClibc, using the new GNU/Linux-style
@@ -1476,7 +1453,6 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
  	tm_defines="${tm_defines} MOTOROLA=1 UCLIBC_DEFAULT=1"
 	extra_options="${extra_options} linux.opt"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"
-	use_fixproto=no
 	;;
 m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
@@ -1503,13 +1479,11 @@ m68k-*-rtems*)
 mcore-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} mcore/mcore-elf.h"
 	tmake_file=mcore/t-mcore
-	use_fixproto=yes
 	inhibit_libc=true
 	;;
 mcore-*-pe*)
 	tm_file="svr3.h dbxcoff.h ${tm_file} mcore/mcore-pe.h"
 	tmake_file=mcore/t-mcore-pe
-	use_fixproto=yes
 	inhibit_libc=true
 	;;
 mips-sgi-irix[56]*)
@@ -1639,38 +1613,32 @@ mipsisa64sr71k-*-elf*)
         tmake_file=mips/t-sr71k
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
-	use_fixproto=yes
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf mips/t-libgcc-mips16 mips/t-sb1"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
-	use_fixproto=yes
 	;;
 mips-*-elf* | mipsel-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf mips/t-libgcc-mips16"
-	use_fixproto=yes
 	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf mips/t-libgcc-mips16"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
-	use_fixproto=yes
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
         tm_file="mips/vr.h elfos.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-vr
-	use_fixproto=yes
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/elforion.h mips/elf.h"
 	tmake_file="mips/t-elf mips/t-libgcc-mips16"
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
-	use_fixproto=yes
 	;;
 mips*-*-rtems*)
 	tm_file="elfos.h ${tm_file} mips/elf.h mips/rtems.h rtems.h"
@@ -1683,7 +1651,6 @@ mips-wrs-vxworks)
 mipstx39-*-elf* | mipstx39el-*-elf*)
 	tm_file="elfos.h ${tm_file} mips/r3900.h mips/elf.h"
 	tmake_file="mips/t-r3900 mips/t-libgcc-mips16"
-	use_fixproto=yes
 	;;
 mmix-knuth-mmixware)
 	need_64bit_hwint=yes
@@ -1695,14 +1662,12 @@ mn10300-*-*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	use_collect2=no
-	use_fixproto=yes
 	;;
 pdp11-*-bsd)
 	tm_file="${tm_file} pdp11/2bsd.h"
 	use_fixproto=yes
         ;;
 pdp11-*-*)
-	use_fixproto=yes
 	;;
 # port not yet contributed
 #powerpc-*-openbsd*)
@@ -1776,7 +1741,6 @@ powerpc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
-	use_fixproto=yes
 	;;
 powerpc-*-eabialtivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/eabialtivec.h"
@@ -1875,7 +1839,6 @@ powerpcle-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h"
 	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	use_fixproto=yes
 	;;
 powerpcle-*-eabisim*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/e500.h rs6000/eabisim.h"
@@ -2127,7 +2090,6 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	if test x${enable_incomplete_targets} = xyes ; then
 		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1 SUPPORT_SH5_32MEDIA=1 SUPPORT_SH5_32MEDIA_NOFPU=1 SUPPORT_SH5_64MEDIA=1 SUPPORT_SH5_64MEDIA_NOFPU=1"
 	fi
-	use_fixproto=yes
 	;;
 sh-*-rtems*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems sh/t-rtems"
@@ -2139,7 +2101,6 @@ sh-wrs-vxworks)
 	;;
 sh-*-*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h"
-	use_fixproto=yes
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
@@ -2155,7 +2116,6 @@ sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp-elf.h"
 	tmake_file="sparc/t-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
-	use_fixproto=yes
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h linux.h"
@@ -2258,7 +2218,6 @@ sparc64-*-elf*)
 	extra_options="${extra_options} sparc/little-endian.opt"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
 	;;
 sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/freebsd.h"
@@ -2304,7 +2263,6 @@ v850e1-*-*)
 	use_collect2=no
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"
-	use_fixproto=yes
 	;;
 v850e-*-*)
 	target_cpu_default="TARGET_CPU_v850e"
@@ -2321,7 +2279,6 @@ v850e-*-*)
 	use_collect2=no
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"
-	use_fixproto=yes
 	;;
 v850-*-*)
 	target_cpu_default="TARGET_CPU_generic"
@@ -2334,7 +2291,6 @@ v850-*-*)
 	use_collect2=no
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"
-	use_fixproto=yes
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
@@ -2358,7 +2314,6 @@ xstormy16-*-elf)
 	extra_options=stormy16/stormy16.opt
 	tmake_file="stormy16/t-stormy16"
 	extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
 	;;
 xtensa-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h xtensa/elf.h"
@@ -2379,7 +2334,6 @@ m32c-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
-	use_fixproto=yes
  	;;
 *)
 	echo "*** Configuration ${target} not supported" 1>&2

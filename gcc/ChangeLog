@@ -1,3 +1,25 @@
+2008-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (arc-*-elf*, avr-*-*, fr30-*-elf, frv-*-elf,
+	h8300-*-elf*, h8300-*-*, i[34567]86-*-elf*, x86_64-*-elf*,
+	i[34567]86-*-aout*, i[34567]86-*-coff*, ia64*-*-elf*,
+	iq2000*-*-elf*, m32r-*-elf*, m32rle-*-elf*, m32r-*-linux*,
+	m32rle-*-linux*, m68hc11-*-*|m6811-*-*, m68hc12-*-*|m6812-*-*,
+	m68k-*-coff*, mcore-*-elf, mcore-*-pe*, mipsisa64sr71k-*-elf*,
+	mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*, mips-*-elf* |
+	mipsel-*-elf*, mips64-*-elf* | mips64el-*-elf*, mips64vr-*-elf* |
+	mips64vrel-*-elf*, mips64orion-*-elf* | mips64orionel-*-elf*,
+	mipstx39-*-elf* | mipstx39el-*-elf*, mn10300-*-*, pdp11-*-,
+	powerpc-*-elf*, powerpcle-*-elf*, sh-*-elf* | sh[12346l]*-*-elf* |
+	sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | sh-*-linux* |
+	sh[2346lbe]*-*-linux* | sh-*-netbsdelf* | shl*-*-netbsdelf* |
+	sh5-*-netbsd* | sh5l*-*-netbsd* | sh64-*-netbsd* |
+	sh64l*-*-netbsd*, sh-*-*, sparc-*-elf*, sparc64-*-elf*,
+	v850e1-*-*, v850e-*-*, v850-*-*, xstormy16-*-elf, m32c-*-elf*):
+	Remove use_fixproto=yes.
+	(ia64*-*-hpux*): Remove comment about using fixproto.
+	(m68k-*-uclinuxoldabi*, m68k-*-uclinux*): Remove use_fixproto=no.
+
 2008-06-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Update gthr-default.h lazily, to avoid unneeded
