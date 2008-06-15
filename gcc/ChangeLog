@@ -1,3 +1,10 @@
+2008-06-15  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/36424
+	* config/avr/avr.h (HARD_REGNO_RENAME_OK): Define.
+	* config/avr/avr.c (avr_hard_regno_rename_ok): New function. 
+	* config/avr/avr-protos.h (avr_hard_regno_rename_ok): New prototype. 
+
 2008-06-15  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/36336

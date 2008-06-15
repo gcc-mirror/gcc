@@ -1019,6 +1019,12 @@ mmcu=*:-mmcu=%*}"
 
 #define OBJECT_FORMAT_ELF
 
+/* Interrupt functions can only use registers that have already been
+   saved by the prologue, even if they would normally be
+   call-clobbered.  */
+#define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG)		\
+   avr_hard_regno_rename_ok (OLD_REG, NEW_REG)
+
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
 struct machine_function GTY(())

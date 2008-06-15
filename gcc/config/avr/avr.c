@@ -5845,6 +5845,23 @@ avr_peep2_scratch_safe (rtx scratch)
   return 1;
 }
 
+/* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
+
+int
+avr_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
+			    unsigned int new_reg)
+{
+  /* Interrupt functions can only use registers that have already been
+     saved by the prologue, even if they would normally be
+     call-clobbered.  */
+
+  if ((cfun->machine->is_interrupt || cfun->machine->is_signal)
+      && !df_regs_ever_live_p (new_reg))
+    return 0;
+
+  return 1;
+}
+
 /* Output a branch that tests a single bit of a register (QI, HI or SImode)
    or memory location in the I/O space (QImode only).
 
