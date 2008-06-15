@@ -4123,6 +4123,10 @@ type_requires_array_cookie (tree type)
       second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
       if (second_parm == void_list_node)
 	return false;
+      /* Do not consider this function if its second argument is an
+	 ellipsis.  */
+      if (!second_parm)
+	continue;
       /* Otherwise, if we have a two-argument function and the second
 	 argument is `size_t', it will be the usual deallocation
 	 function -- unless there is one-argument function, too.  */

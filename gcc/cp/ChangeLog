@@ -1,3 +1,9 @@
+2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/35317
+	* class.c (type_requires_array_cookie): Do not consider delete[]
+	operators with an ellipsis as second argument.
+
 2008-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36408
