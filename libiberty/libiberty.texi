@@ -10,7 +10,7 @@
 
 @finalout
 @c %**end of header
- 
+
 @dircategory GNU libraries
 @direntry
 * Libiberty: (libiberty).          Library of utility functions which

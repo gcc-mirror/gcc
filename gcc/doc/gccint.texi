@@ -125,7 +125,7 @@ Additional tutorial information is linked to from
 * GNU Project::     The GNU Project and GNU/Linux.
 
 * Copying::         GNU General Public License says
-                     how you can copy and share GCC.
+                    how you can copy and share GCC.
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Contributors::    People who have contributed to GCC.
 

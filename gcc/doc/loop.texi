@@ -17,16 +17,16 @@ RTL, as well as the interfaces to loop-related analyses (induction
 variable analysis and number of iterations analysis).
 
 @menu
-* Loop representation::		Representation and analysis of loops.
-* Loop querying::		Getting information about loops.
-* Loop manipulation::		Loop manipulation functions.
-* LCSSA::			Loop-closed SSA form.
-* Scalar evolutions::   	Induction variables on GIMPLE.
-* loop-iv::			Induction variables on RTL.
-* Number of iterations::	Number of iterations analysis.
-* Dependency analysis::		Data dependency analysis.
-* Lambda::			Linear loop transformations framework.
-* Omega::			A solver for linear programming problems.
+* Loop representation::         Representation and analysis of loops.
+* Loop querying::               Getting information about loops.
+* Loop manipulation::           Loop manipulation functions.
+* LCSSA::                       Loop-closed SSA form.
+* Scalar evolutions::           Induction variables on GIMPLE.
+* loop-iv::                     Induction variables on RTL.
+* Number of iterations::        Number of iterations analysis.
+* Dependency analysis::         Data dependency analysis.
+* Lambda::                      Linear loop transformations framework.
+* Omega::                       A solver for linear programming problems.
 @end menu
 
 @node Loop representation

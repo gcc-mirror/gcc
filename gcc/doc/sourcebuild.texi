@@ -198,9 +198,7 @@ timestamp.
 
 @itemize @bullet
 @item The standard GNU @file{config.sub} and @file{config.guess}
-files, kept in the top level directory, are used.  FIXME: when is the
-@file{config.guess} file in the @file{gcc} directory (that just calls
-the top level one) used?
+files, kept in the top level directory, are used.
 
 @item The file @file{config.gcc} is used to handle configuration
 specific to the particular target machine.  The file

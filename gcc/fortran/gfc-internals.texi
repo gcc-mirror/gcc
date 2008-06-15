@@ -121,7 +121,7 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
                            Data structures used by the frontend
 * LibGFortran::            The LibGFortran Runtime Library.
 * GNU Free Documentation License::
-		           How you can copy and share this manual.
+                           How you can copy and share this manual.
 * Index::                  Index of this documentation.
 @end menu
 @end ifnottex

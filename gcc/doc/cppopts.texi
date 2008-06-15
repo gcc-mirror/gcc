@@ -541,7 +541,7 @@ files previously preprocessed with @code{-E -fdirectives-only}.
 @anchor{fdollars-in-identifiers}
 Accept @samp{$} in identifiers.
 @ifset cppmanual
-  @xref{Identifier characters}.
+@xref{Identifier characters}.
 @end ifset
 
 @item -fextended-identifiers

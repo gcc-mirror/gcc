@@ -1,3 +1,7 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gcj.texi: Expand TABs, remove whitespace from blank lines.
+
 2008-06-14  Tom Tromey  <tromey@redhat.com>
 
 	PR java/36247:

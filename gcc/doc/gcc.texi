@@ -147,12 +147,12 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * GNU Project::     The GNU Project and GNU/Linux.
 
 * Copying::         GNU General Public License says
-                     how you can copy and share GCC.
+                    how you can copy and share GCC.
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Contributors::    People who have contributed to GCC.
 
 * Option Index::    Index to command line options.
-* Keyword Index::    Index of concepts and symbol names.
+* Keyword Index::   Index of concepts and symbol names.
 @end menu
 
 @include frontends.texi

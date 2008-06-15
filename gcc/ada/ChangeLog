@@ -1,3 +1,10 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gnat_rm.texi (Implementation Defined Characteristics)
+	(Standard Library Routines): Use @smallexample for indented
+	text.  Drop Indentation outside examples.
+	* gnat_ugn.texi: Likewise.
+
 2008-06-13  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): Define to 0

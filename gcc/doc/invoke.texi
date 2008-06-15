@@ -120,11 +120,11 @@ only one of these two forms, whichever one is not the default.
 @xref{Option Index}, for an index to GCC's options.
 
 @menu
-* Option Summary::	Brief list of all options, without explanations.
+* Option Summary::      Brief list of all options, without explanations.
 * Overall Options::     Controlling the kind of output:
                         an executable, object files, assembler files,
                         or preprocessed source.
-* Invoking G++::	Compiling C++ programs.
+* Invoking G++::        Compiling C++ programs.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
 * Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
@@ -748,7 +748,7 @@ See RS/6000 and PowerPC Options.
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
- -minvalid-symbols}
+-minvalid-symbols}
 
 @emph{SPARC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -5349,9 +5349,9 @@ as follows:
 
 @table @gcctabopt
 @item max-inline-insns-single
- is set to @var{n}/2.
+is set to @var{n}/2.
 @item max-inline-insns-auto
- is set to @var{n}/2.
+is set to @var{n}/2.
 @end table
 
 See below for a documentation of the individual
@@ -9028,7 +9028,7 @@ link scripts will be used to put the application into SDRAM.
 Loader should initialize SDRAM before loading the application
 into SDRAM. This option defines @code{__BFIN_SDRAM}.
 @end table
-  
+
 @node CRIS Options
 @subsection CRIS Options
 @cindex CRIS Options

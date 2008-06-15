@@ -1,3 +1,8 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libiberty.texi: Expand TABs, drop indentation outside examples.
+	* obstacks.texi: Likewise.
+
 2008-04-21  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* libiberty/configure.ac: use -fPIC on Linux/MIPS hosts.

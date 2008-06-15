@@ -15,20 +15,20 @@ the objects are usually small.  And the only space overhead per object is
 the padding needed to start each object on a suitable boundary.
 
 @menu
-* Creating Obstacks::		How to declare an obstack in your program.
-* Preparing for Obstacks::	Preparations needed before you can
-				 use obstacks.
+* Creating Obstacks::           How to declare an obstack in your program.
+* Preparing for Obstacks::      Preparations needed before you can
+                                use obstacks.
 * Allocation in an Obstack::    Allocating objects in an obstack.
 * Freeing Obstack Objects::     Freeing objects in an obstack.
-* Obstack Functions::		The obstack functions are both
-				 functions and macros.
+* Obstack Functions::           The obstack functions are both
+                                functions and macros.
 * Growing Objects::             Making an object bigger by stages.
-* Extra Fast Growing::		Extra-high-efficiency (though more
-				 complicated) growing objects.
+* Extra Fast Growing::          Extra-high-efficiency (though more
+                                complicated) growing objects.
 * Status of an Obstack::        Inquiries about the status of an obstack.
 * Obstacks Data Alignment::     Controlling alignment of objects in obstacks.
 * Obstack Chunks::              How obstacks obtain and release chunks;
-				 efficiency considerations.
+                                efficiency considerations.
 * Summary of Obstacks::
 @end menu
 

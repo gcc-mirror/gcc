@@ -20,7 +20,7 @@ where near complete.
 @menu
 * Parsing pass::         The language front end turns text into bits.
 * Gimplification pass::  The bits are turned into something we can optimize.
-* Pass manager::	 Sequencing the optimization passes.
+* Pass manager::         Sequencing the optimization passes.
 * Tree-SSA passes::      Optimizations on a high-level representation.
 * RTL passes::           Optimizations on a low-level representation.
 @end menu

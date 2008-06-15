@@ -655,7 +655,7 @@ internal data files of GCC@.  The default is @file{@var{exec-prefix}/lib}.
 
 @item --libexecdir=@var{dirname}
 Specify the installation directory for internal executables of GCC@.
-  The default is @file{@var{exec-prefix}/libexec}.
+The default is @file{@var{exec-prefix}/libexec}.
 
 @item --with-slibdir=@var{dirname}
 Specify the installation directory for the shared libgcc library.  The

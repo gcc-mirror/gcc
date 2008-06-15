@@ -19,21 +19,21 @@ missing features that are too much work to add, and some are places
 where people's opinions differ as to what is best.
 
 @menu
-* Actual Bugs::		      Bugs we will fix later.
-* Cross-Compiler Problems::   Common problems of cross compiling with GCC.
+* Actual Bugs::         Bugs we will fix later.
+* Cross-Compiler Problems:: Common problems of cross compiling with GCC.
 * Interoperation::      Problems using GCC with other compilers,
-			   and with certain linkers, assemblers and debuggers.
+                        and with certain linkers, assemblers and debuggers.
 * Incompatibilities::   GCC is incompatible with traditional C.
 * Fixed Headers::       GCC uses corrected versions of system header files.
-                           This is necessary, but doesn't always work smoothly.
+                        This is necessary, but doesn't always work smoothly.
 * Standard Libraries::  GCC uses the system C library, which might not be
-                           compliant with the ISO C standard.
+                        compliant with the ISO C standard.
 * Disappointments::     Regrettable things we can't change, but not quite bugs.
-* C++ Misunderstandings::     Common misunderstandings with GNU C++.
+* C++ Misunderstandings:: Common misunderstandings with GNU C++.
 * Protoize Caveats::    Things to watch out for when using @code{protoize}.
-* Non-bugs::		Things we think are right, but some others disagree.
+* Non-bugs::            Things we think are right, but some others disagree.
 * Warnings and Errors:: Which problems in your code get warnings,
-                         and which get errors.
+                        and which get errors.
 @end menu
 
 @node Actual Bugs

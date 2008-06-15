@@ -29,13 +29,13 @@ The files can contain the following types of record:
 
 @itemize @bullet
 @item
-A language definition record.  These records have two fields: the
-string @samp{Language} and the name of the language.  Once a language
+A language definition record.  These records have two fields: the
+string @samp{Language} and the name of the language.  Once a language
 has been declared in this way, it can be used as an option property.
 @xref{Option properties}.
 
 @item
-An option definition record.  These records have the following fields:
+An option definition record.  These records have the following fields:
 
 @enumerate
 @item
@@ -62,11 +62,11 @@ tab forms the help text.  This allows you to elaborate on what type
 of argument the option takes.
 
 @item
-A target mask record.  These records have one field of the form
-@samp{Mask(@var{x})}.  The options-processing script will automatically
+A target mask record.  These records have one field of the form
+@samp{Mask(@var{x})}.  The options-processing script will automatically
 allocate a bit in @code{target_flags} (@pxref{Run-time Target}) for
 each mask name @var{x} and set the macro @code{MASK_@var{x}} to the
-appropriate bitmask.  It will also declare a @code{TARGET_@var{x}}
+appropriate bitmask.  It will also declare a @code{TARGET_@var{x}}
 macro that has the value 1 when bit @code{MASK_@var{x}} is set and
 0 otherwise.
 
