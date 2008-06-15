@@ -1,3 +1,44 @@
+2008-06-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/loongson2ef.md: New file.
+	* config/mips/mips.md (UNSPEC_LOONGSON_ALU1_TURN_ENABLED_INSN)
+	(UNSPEC_LOONGSON_ALU2_TURN_ENABLED_INSN)
+	(UNSPEC_LOONGSON_FALU1_TURN_ENABLED_INSN)
+	(UNSPEC_LOONGSON_FALU2_TURN_ENABLED_INSN): New constants.
+	(define_attr "cpu"): Rename loongson2e and loongson2f to loongson_2e
+	and loongson_2f.
+	(loongson2ef.md): New include.
+	* config/mips/loongson.md (vec_pack_ssat_<mode>, vec_pack_usat_<mode>)
+	(add<mode>3, paddd, ssadd<mode>3, usadd<mode>3)
+	(loongson_and_not_<mode>, loongson_average_<mode>, loongson_eq_<mode>)
+	(loongson_gt_<mode>, loongson_extract_halfword)
+	(loongson_insert_halfword_0, loongson_insert_halfword_2)
+	(loongson_insert_halfword_3, loongson_mult_add, smax<mode>3)
+	(umax<mode>3, smin<mode>3, umin<mode>3, loongson_move_byte_mask)
+	(umul<mode>3_highpart, smul<mode>3_highpart, loongson_smul_lowpart)
+	(loongson_umul_word, loongson_pasubub, reduc_uplus_<mode>)
+	(loongson_psadbh, loongson_pshufh, loongson_psll<mode>)
+	(loongson_psra<mode>, loongson_psrl<mode>, sub<mode>3, psubd)
+	(sssub<mode>3, ussub<mode>3, vec_interleave_high<mode>)
+	(vec_interleave_low<mode>): Define type attribute.
+	* config/mips/mips.c (mips_ls2): New static variable.
+	(mips_issue_rate): Update to handle tuning for Loongson 2E/2F.
+	(mips_ls2_init_dfa_post_cycle_insn, mips_init_dfa_post_cycle_insn)
+	(sched_ls2_dfa_post_advance_cycle, mips_dfa_post_advance_cycle):
+	Implement target scheduling hooks.
+	(mips_multipass_dfa_lookahead): Update to handle tuning for
+	Loongson 2E/2F.
+	(mips_sched_init): Initialize data for Loongson scheduling.
+	(mips_ls2_variable_issue): New static function.
+	(mips_variable_issue): Update to handle tuning for Loongson 2E/2F.
+	Add sanity check.
+	(TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN)
+	(TARGET_SCHED_DFA_POST_ADVANCE_CYCLE): Override target hooks.
+	* config/mips/mips.h (TUNE_LOONGSON_2EF): New macros.
+	(ISA_HAS_XFER_DELAY, ISA_HAS_FCMP_DELAY, ISA_HAS_HILO_INTERLOCKS):
+	Handle ST Loongson 2E/2F cores.
+	(CPU_UNITS_QUERY): Define macro to enable querying of DFA units.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* omp-low.c (extract_omp_for_data): Fix comment typo.

@@ -266,6 +266,8 @@ enum mips_code_readable_setting {
 				     || mips_tune == PROCESSOR_74KF1_1  \
 				     || mips_tune == PROCESSOR_74KF3_2)
 #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
+#define TUNE_LOONGSON_2EF           (mips_tune == PROCESSOR_LOONGSON_2E	\
+				     || mips_tune == PROCESSOR_LOONGSON_2F)
 
 /* Whether vector modes and intrinsics for ST Microelectronics
    Loongson-2E/2F processors should be enabled.  In o32 pairs of
@@ -891,10 +893,12 @@ enum mips_code_readable_setting {
 				 && !TARGET_MIPS16)
 
 /* Likewise mtc1 and mfc1.  */
-#define ISA_HAS_XFER_DELAY	(mips_isa <= 3)
+#define ISA_HAS_XFER_DELAY	(mips_isa <= 3			\
+				 && !TARGET_LOONGSON_2EF)
 
 /* Likewise floating-point comparisons.  */
-#define ISA_HAS_FCMP_DELAY	(mips_isa <= 3)
+#define ISA_HAS_FCMP_DELAY	(mips_isa <= 3			\
+				 && !TARGET_LOONGSON_2EF)
 
 /* True if mflo and mfhi can be immediately followed by instructions
    which write to the HI and LO registers.
@@ -911,7 +915,8 @@ enum mips_code_readable_setting {
 #define ISA_HAS_HILO_INTERLOCKS	(ISA_MIPS32				\
 				 || ISA_MIPS32R2			\
 				 || ISA_MIPS64				\
-				 || TARGET_MIPS5500)
+				 || TARGET_MIPS5500			\
+				 || TARGET_LOONGSON_2EF)
 
 /* ISA includes synci, jr.hb and jalr.hb.  */
 #define ISA_HAS_SYNCI (ISA_MIPS32R2 && !TARGET_MIPS16)
@@ -3212,3 +3217,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 extern const struct mips_rtx_cost_data *mips_cost;
 extern enum mips_code_readable_setting mips_code_readable;
 #endif
+
+/* Enable querying of DFA units.  */
+#define CPU_UNITS_QUERY 1
