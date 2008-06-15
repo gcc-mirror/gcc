@@ -1,3 +1,8 @@
+2008-06-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36515
+	* gfortran.dg/no_range_check_2.f90: New test.
+
 2008-06-15  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_mips_loongson): New.
