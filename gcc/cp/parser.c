@@ -20423,7 +20423,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
   return build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, rhs);
 }
 
-/* Parse the restricted form of the for statment allowed by OpenMP.  */
+/* Parse the restricted form of the for statement allowed by OpenMP.  */
 
 static tree
 cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)

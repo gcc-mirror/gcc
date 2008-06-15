@@ -1,3 +1,7 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* parser.c: Fix comment typo.
+
 2008-06-14  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/35320

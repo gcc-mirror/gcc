@@ -679,7 +679,7 @@ Enable OpenMP
 
 foperator-names
 C++ ObjC++
-Recognize C++ kewords like \"compl\" and \"xor\"
+Recognize C++ keywords like \"compl\" and \"xor\"
 
 foptional-diags
 C++ ObjC++
