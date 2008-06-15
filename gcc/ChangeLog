@@ -1,3 +1,9 @@
+2008-06-15  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/36336
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Add check for 
+	reg_equiv_constant.
+
 2008-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/36507

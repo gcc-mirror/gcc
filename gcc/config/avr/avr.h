@@ -428,6 +428,11 @@ extern int avr_reg_order[];
 }
 
 #define XEXP_(X,Y) (X)
+
+/* LEGITIMIZE_RELOAD_ADDRESS will allow register R26/27 to be used, where it
+   is no worse than normal base pointers R28/29 and R30/31. For example:
+   If base offset is greater than 63 bytes or for R++ or --R addressing.  */
+   
 #define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)    \
 do {									    \
   if (1&&(GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC))	    \
@@ -439,6 +444,7 @@ do {									    \
     }									    \
   if (GET_CODE (X) == PLUS						    \
       && REG_P (XEXP (X, 0))						    \
+      && reg_equiv_constant[REGNO (XEXP (X, 0))] == 0			    \
       && GET_CODE (XEXP (X, 1)) == CONST_INT				    \
       && INTVAL (XEXP (X, 1)) >= 1)					    \
     {									    \
