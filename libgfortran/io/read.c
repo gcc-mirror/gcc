@@ -428,13 +428,13 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
       if (c < '0' || c > '9')
 	goto bad;
 
-      if (value > maxv_10)
+      if (value > maxv_10 && compile_options.range_check == 1)
 	goto overflow;
 
       c -= '0';
       value = 10 * value;
 
-      if (value > maxv - c)
+      if (value > maxv - c && compile_options.range_check == 1)
 	goto overflow;
       value += c;
     }

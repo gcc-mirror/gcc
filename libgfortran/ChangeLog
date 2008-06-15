@@ -1,3 +1,12 @@
+2008-06-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36515
+	* libgfortran.h (compile_options_t): Add int range_check to structure.
+	* runtime/compile_options.c (set_options): Add range_check option.
+	(init_compile_options): Likewise.
+	*io/read.c (read_decimal): Change overflow checks to include
+	range_check.
+	
 2008-06-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/36538
