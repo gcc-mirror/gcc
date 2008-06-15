@@ -307,6 +307,7 @@ m68k-*-*)
 mips*-*-*)
 	cpu_type=mips
 	need_64bit_hwint=yes
+	extra_headers="loongson.h"
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000

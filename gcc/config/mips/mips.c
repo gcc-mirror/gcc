@@ -3532,6 +3532,12 @@ mips_split_doubleword_move (rtx dest, rtx src)
 	emit_insn (gen_move_doubleword_fprdf (dest, src));
       else if (!TARGET_64BIT && GET_MODE (dest) == V2SFmode)
 	emit_insn (gen_move_doubleword_fprv2sf (dest, src));
+      else if (!TARGET_64BIT && GET_MODE (dest) == V2SImode)
+	emit_insn (gen_move_doubleword_fprv2si (dest, src));
+      else if (!TARGET_64BIT && GET_MODE (dest) == V4HImode)
+	emit_insn (gen_move_doubleword_fprv4hi (dest, src));
+      else if (!TARGET_64BIT && GET_MODE (dest) == V8QImode)
+	emit_insn (gen_move_doubleword_fprv8qi (dest, src));
       else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
 	emit_insn (gen_move_doubleword_fprtf (dest, src));
       else
@@ -8960,6 +8966,14 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
       if (mode == TFmode && ISA_HAS_8CC)
 	return true;
 
+      /* Allow 64-bit vector modes for Loongson-2E/2F.  */
+      if (TARGET_LOONGSON_VECTORS
+	  && (mode == V2SImode
+	      || mode == V4HImode
+	      || mode == V8QImode
+	      || mode == DImode))
+	return true;
+
       if (class == MODE_FLOAT
 	  || class == MODE_COMPLEX_FLOAT
 	  || class == MODE_VECTOR_FLOAT)
@@ -9322,6 +9336,11 @@ mips_vector_mode_supported_p (enum machine_mode mode)
     case V4QQmode:
     case V4UQQmode:
       return TARGET_DSP;
+
+    case V2SImode:
+    case V4HImode:
+    case V8QImode:
+      return TARGET_LOONGSON_VECTORS;
 
     default:
       return false;
@@ -10192,6 +10211,7 @@ AVAIL_NON_MIPS16 (dsp, TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2, TARGET_DSPR2)
 AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
+AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_VECTORS)
 
 /* Construct a mips_builtin_description from the given arguments.
 
@@ -10288,12 +10308,62 @@ AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
   MIPS_BUILTIN (bposge, f, "bposge" #VALUE,				\
 		MIPS_BUILTIN_BPOSGE ## VALUE, MIPS_SI_FTYPE_VOID, AVAIL)
 
+/* Define a Loongson MIPS_BUILTIN_DIRECT function __builtin_loongson_<FN_NAME>
+   for instruction CODE_FOR_loongson_<INSN>.  FUNCTION_TYPE is a
+   builtin_description field.  */
+#define LOONGSON_BUILTIN_ALIAS(INSN, FN_NAME, FUNCTION_TYPE)		\
+  { CODE_FOR_loongson_ ## INSN, 0, "__builtin_loongson_" #FN_NAME,	\
+    MIPS_BUILTIN_DIRECT, FUNCTION_TYPE, mips_builtin_avail_loongson }
+
+/* Define a Loongson MIPS_BUILTIN_DIRECT function __builtin_loongson_<INSN>
+   for instruction CODE_FOR_loongson_<INSN>.  FUNCTION_TYPE is a
+   builtin_description field.  */
+#define LOONGSON_BUILTIN(INSN, FUNCTION_TYPE)				\
+  LOONGSON_BUILTIN_ALIAS (INSN, INSN, FUNCTION_TYPE)
+
+/* Like LOONGSON_BUILTIN, but add _<SUFFIX> to the end of the function name.
+   We use functions of this form when the same insn can be usefully applied
+   to more than one datatype.  */
+#define LOONGSON_BUILTIN_SUFFIX(INSN, SUFFIX, FUNCTION_TYPE)		\
+  LOONGSON_BUILTIN_ALIAS (INSN, INSN ## _ ## SUFFIX, FUNCTION_TYPE)
+
 #define CODE_FOR_mips_sqrt_ps CODE_FOR_sqrtv2sf2
 #define CODE_FOR_mips_addq_ph CODE_FOR_addv2hi3
 #define CODE_FOR_mips_addu_qb CODE_FOR_addv4qi3
 #define CODE_FOR_mips_subq_ph CODE_FOR_subv2hi3
 #define CODE_FOR_mips_subu_qb CODE_FOR_subv4qi3
 #define CODE_FOR_mips_mul_ph CODE_FOR_mulv2hi3
+
+#define CODE_FOR_loongson_packsswh CODE_FOR_vec_pack_ssat_v2si
+#define CODE_FOR_loongson_packsshb CODE_FOR_vec_pack_ssat_v4hi
+#define CODE_FOR_loongson_packushb CODE_FOR_vec_pack_usat_v4hi
+#define CODE_FOR_loongson_paddw CODE_FOR_addv2si3
+#define CODE_FOR_loongson_paddh CODE_FOR_addv4hi3
+#define CODE_FOR_loongson_paddb CODE_FOR_addv8qi3
+#define CODE_FOR_loongson_paddsh CODE_FOR_ssaddv4hi3
+#define CODE_FOR_loongson_paddsb CODE_FOR_ssaddv8qi3
+#define CODE_FOR_loongson_paddush CODE_FOR_usaddv4hi3
+#define CODE_FOR_loongson_paddusb CODE_FOR_usaddv8qi3
+#define CODE_FOR_loongson_pmaxsh CODE_FOR_smaxv4hi3
+#define CODE_FOR_loongson_pmaxub CODE_FOR_umaxv8qi3
+#define CODE_FOR_loongson_pminsh CODE_FOR_sminv4hi3
+#define CODE_FOR_loongson_pminub CODE_FOR_uminv8qi3
+#define CODE_FOR_loongson_pmulhuh CODE_FOR_umulv4hi3_highpart
+#define CODE_FOR_loongson_pmulhh CODE_FOR_smulv4hi3_highpart
+#define CODE_FOR_loongson_biadd CODE_FOR_reduc_uplus_v8qi
+#define CODE_FOR_loongson_psubw CODE_FOR_subv2si3
+#define CODE_FOR_loongson_psubh CODE_FOR_subv4hi3
+#define CODE_FOR_loongson_psubb CODE_FOR_subv8qi3
+#define CODE_FOR_loongson_psubsh CODE_FOR_sssubv4hi3
+#define CODE_FOR_loongson_psubsb CODE_FOR_sssubv8qi3
+#define CODE_FOR_loongson_psubush CODE_FOR_ussubv4hi3
+#define CODE_FOR_loongson_psubusb CODE_FOR_ussubv8qi3
+#define CODE_FOR_loongson_punpckhbh CODE_FOR_vec_interleave_highv8qi
+#define CODE_FOR_loongson_punpckhhw CODE_FOR_vec_interleave_highv4hi
+#define CODE_FOR_loongson_punpckhwd CODE_FOR_vec_interleave_highv2si
+#define CODE_FOR_loongson_punpcklbh CODE_FOR_vec_interleave_lowv8qi
+#define CODE_FOR_loongson_punpcklhw CODE_FOR_vec_interleave_lowv4hi
+#define CODE_FOR_loongson_punpcklwd CODE_FOR_vec_interleave_lowv2si
 
 static const struct mips_builtin_description mips_builtins[] = {
   DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
@@ -10471,7 +10541,108 @@ static const struct mips_builtin_description mips_builtins[] = {
   DIRECT_BUILTIN (dpaqx_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
   DIRECT_BUILTIN (dpaqx_sa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
   DIRECT_BUILTIN (dpsqx_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
-  DIRECT_BUILTIN (dpsqx_sa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32)
+  DIRECT_BUILTIN (dpsqx_sa_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, dspr2_32),
+
+  /* Builtin functions for ST Microelectronics Loongson-2E/2F cores.  */
+  LOONGSON_BUILTIN (packsswh, MIPS_V4HI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN (packsshb, MIPS_V8QI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (packushb, MIPS_UV8QI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (paddw, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (paddh, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (paddb, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (paddw, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_SUFFIX (paddh, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (paddb, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (paddd, u, MIPS_UDI_FTYPE_UDI_UDI),
+  LOONGSON_BUILTIN_SUFFIX (paddd, s, MIPS_DI_FTYPE_DI_DI),
+  LOONGSON_BUILTIN (paddsh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (paddsb, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN (paddush, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN (paddusb, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_ALIAS (pandn_d, pandn_ud, MIPS_UDI_FTYPE_UDI_UDI),
+  LOONGSON_BUILTIN_ALIAS (pandn_w, pandn_uw, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_ALIAS (pandn_h, pandn_uh, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_ALIAS (pandn_b, pandn_ub, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_ALIAS (pandn_d, pandn_sd, MIPS_DI_FTYPE_DI_DI),
+  LOONGSON_BUILTIN_ALIAS (pandn_w, pandn_sw, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_ALIAS (pandn_h, pandn_sh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_ALIAS (pandn_b, pandn_sb, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN (pavgh, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN (pavgb, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqw, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqh, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqb, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqw, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqh, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpeqb, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgtw, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgth, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgtb, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgtw, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgth, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (pcmpgtb, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (pextrh, u, MIPS_UV4HI_FTYPE_UV4HI_USI),
+  LOONGSON_BUILTIN_SUFFIX (pextrh, s, MIPS_V4HI_FTYPE_V4HI_USI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_0, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_1, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_2, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_3, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_0, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_1, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_2, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (pinsrh_3, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pmaddhw, MIPS_V2SI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pmaxsh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pmaxub, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN (pminsh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pminub, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pmovmskb, u, MIPS_UV8QI_FTYPE_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pmovmskb, s, MIPS_V8QI_FTYPE_V8QI),
+  LOONGSON_BUILTIN (pmulhuh, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN (pmulhh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pmullh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (pmuluw, MIPS_UDI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN (pasubub, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN (biadd, MIPS_UV4HI_FTYPE_UV8QI),
+  LOONGSON_BUILTIN (psadbh, MIPS_UV4HI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (pshufh, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (pshufh, s, MIPS_V4HI_FTYPE_V4HI_V4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psllh, u, MIPS_UV4HI_FTYPE_UV4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psllh, s, MIPS_V4HI_FTYPE_V4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psllw, u, MIPS_UV2SI_FTYPE_UV2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psllw, s, MIPS_V2SI_FTYPE_V2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrah, u, MIPS_UV4HI_FTYPE_UV4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrah, s, MIPS_V4HI_FTYPE_V4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psraw, u, MIPS_UV2SI_FTYPE_UV2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psraw, s, MIPS_V2SI_FTYPE_V2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrlh, u, MIPS_UV4HI_FTYPE_UV4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrlh, s, MIPS_V4HI_FTYPE_V4HI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrlw, u, MIPS_UV2SI_FTYPE_UV2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psrlw, s, MIPS_V2SI_FTYPE_V2SI_UQI),
+  LOONGSON_BUILTIN_SUFFIX (psubw, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (psubh, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (psubb, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (psubw, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_SUFFIX (psubh, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (psubb, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (psubd, u, MIPS_UDI_FTYPE_UDI_UDI),
+  LOONGSON_BUILTIN_SUFFIX (psubd, s, MIPS_DI_FTYPE_DI_DI),
+  LOONGSON_BUILTIN (psubsh, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN (psubsb, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN (psubush, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN (psubusb, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhbh, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhhw, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhwd, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhbh, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhhw, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (punpckhwd, s, MIPS_V2SI_FTYPE_V2SI_V2SI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklbh, u, MIPS_UV8QI_FTYPE_UV8QI_UV8QI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklhw, u, MIPS_UV4HI_FTYPE_UV4HI_UV4HI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklwd, u, MIPS_UV2SI_FTYPE_UV2SI_UV2SI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklbh, s, MIPS_V8QI_FTYPE_V8QI_V8QI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklhw, s, MIPS_V4HI_FTYPE_V4HI_V4HI),
+  LOONGSON_BUILTIN_SUFFIX (punpcklwd, s, MIPS_V2SI_FTYPE_V2SI_V2SI)
 };
 
 /* MODE is a vector mode whose elements have type TYPE.  Return the type
@@ -10480,11 +10651,17 @@ static const struct mips_builtin_description mips_builtins[] = {
 static tree
 mips_builtin_vector_type (tree type, enum machine_mode mode)
 {
-  static tree types[(int) MAX_MACHINE_MODE];
+  static tree types[2 * (int) MAX_MACHINE_MODE];
+  int mode_index;
 
-  if (types[(int) mode] == NULL_TREE)
-    types[(int) mode] = build_vector_type_for_mode (type, mode);
-  return types[(int) mode];
+  mode_index = (int) mode;
+
+  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_UNSIGNED (type))
+    mode_index += MAX_MACHINE_MODE;
+
+  if (types[mode_index] == NULL_TREE)
+    types[mode_index] = build_vector_type_for_mode (type, mode);
+  return types[mode_index];
 }
 
 /* Source-level argument types.  */
@@ -10493,16 +10670,27 @@ mips_builtin_vector_type (tree type, enum machine_mode mode)
 #define MIPS_ATYPE_POINTER ptr_type_node
 
 /* Standard mode-based argument types.  */
+#define MIPS_ATYPE_UQI unsigned_intQI_type_node
 #define MIPS_ATYPE_SI intSI_type_node
 #define MIPS_ATYPE_USI unsigned_intSI_type_node
 #define MIPS_ATYPE_DI intDI_type_node
+#define MIPS_ATYPE_UDI unsigned_intDI_type_node
 #define MIPS_ATYPE_SF float_type_node
 #define MIPS_ATYPE_DF double_type_node
 
 /* Vector argument types.  */
 #define MIPS_ATYPE_V2SF mips_builtin_vector_type (float_type_node, V2SFmode)
 #define MIPS_ATYPE_V2HI mips_builtin_vector_type (intHI_type_node, V2HImode)
+#define MIPS_ATYPE_V2SI mips_builtin_vector_type (intSI_type_node, V2SImode)
 #define MIPS_ATYPE_V4QI mips_builtin_vector_type (intQI_type_node, V4QImode)
+#define MIPS_ATYPE_V4HI mips_builtin_vector_type (intHI_type_node, V4HImode)
+#define MIPS_ATYPE_V8QI mips_builtin_vector_type (intQI_type_node, V8QImode)
+#define MIPS_ATYPE_UV2SI					\
+  mips_builtin_vector_type (unsigned_intSI_type_node, V2SImode)
+#define MIPS_ATYPE_UV4HI					\
+  mips_builtin_vector_type (unsigned_intHI_type_node, V4HImode)
+#define MIPS_ATYPE_UV8QI					\
+  mips_builtin_vector_type (unsigned_intQI_type_node, V8QImode)
 
 /* MIPS_FTYPE_ATYPESN takes N MIPS_FTYPES-like type codes and lists
    their associated MIPS_ATYPEs.  */
@@ -12616,6 +12804,30 @@ mips_conditional_register_usage (void)
       for (regno = DSP_ACC_REG_FIRST; regno <= DSP_ACC_REG_LAST; regno += 2)
 	mips_swap_registers (regno);
     }
+}
+
+/* Initialize vector TARGET to VALS.  */
+
+void
+mips_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode mode;
+  enum machine_mode inner;
+  unsigned int i, n_elts;
+  rtx mem;
+
+  mode = GET_MODE (target);
+  inner = GET_MODE_INNER (mode);
+  n_elts = GET_MODE_NUNITS (mode);
+
+  gcc_assert (VECTOR_MODE_P (mode));
+
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  for (i = 0; i < n_elts; i++)
+    emit_move_insn (adjust_address_nv (mem, inner, i * GET_MODE_SIZE (inner)),
+                    XVECEXP (vals, 0, i));
+
+  emit_move_insn (target, mem);
 }
 
 /* When generating MIPS16 code, we want to allocate $24 (T_REG) before

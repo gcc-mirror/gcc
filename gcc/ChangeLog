@@ -1,3 +1,53 @@
+2008-06-15  Mark Shinwell  <shinwell@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+	
+	* config/mips/mips-modes.def: Add V8QI, V4HI and V2SI modes.
+	* config/mips/mips-protos.h (mips_expand_vector_init): New.
+	* config/mips/mips-ftypes.def: Add function types for Loongson-2E/2F
+	builtins.
+	* config/mips/mips.c (mips_split_doubleword_move): Handle new modes.
+	(mips_hard_regno_mode_ok_p): Allow 64-bit vector modes for Loongson.
+	(mips_vector_mode_supported_p): Add V2SImode, V4HImode and
+	V8QImode cases.
+	(LOONGSON_BUILTIN, LOONGSON_BUILTIN_ALIAS): New.
+	(CODE_FOR_loongson_packsswh, CODE_FOR_loongson_packsshb,
+	(CODE_FOR_loongson_packushb, CODE_FOR_loongson_paddw,
+	(CODE_FOR_loongson_paddh, CODE_FOR_loongson_paddb,
+	(CODE_FOR_loongson_paddsh, CODE_FOR_loongson_paddsb)
+	(CODE_FOR_loongson_paddush, CODE_FOR_loongson_paddusb)
+	(CODE_FOR_loongson_pmaxsh, CODE_FOR_loongson_pmaxub)
+	(CODE_FOR_loongson_pminsh, CODE_FOR_loongson_pminub)
+	(CODE_FOR_loongson_pmulhuh, CODE_FOR_loongson_pmulhh)
+	(CODE_FOR_loongson_biadd, CODE_FOR_loongson_psubw)
+	(CODE_FOR_loongson_psubh, CODE_FOR_loongson_psubb)
+	(CODE_FOR_loongson_psubsh, CODE_FOR_loongson_psubsb)
+	(CODE_FOR_loongson_psubush, CODE_FOR_loongson_psubusb)
+	(CODE_FOR_loongson_punpckhbh, CODE_FOR_loongson_punpckhhw)
+	(CODE_FOR_loongson_punpckhwd, CODE_FOR_loongson_punpcklbh)
+	(CODE_FOR_loongson_punpcklhw, CODE_FOR_loongson_punpcklwd): New.
+	(mips_builtins): Add Loongson builtins.
+	(mips_loongson_2ef_bdesc): New.
+	(mips_bdesc_arrays): Add mips_loongson_2ef_bdesc.
+	(mips_builtin_vector_type): Handle unsigned versions of vector modes.
+	(MIPS_ATYPE_UQI, MIPS_ATYPE_UDI, MIPS_ATYPE_V2SI, MIPS_ATYPE_UV2SI)
+	(MIPS_ATYPE_V4HI, MIPS_ATYPE_UV4HI, MIPS_ATYPE_V8QI, MIPS_ATYPE_UV8QI):
+	New.
+	(mips_expand_vector_init): New.
+	* config/mips/mips.h (HAVE_LOONGSON_VECTOR_MODES): New.
+	(TARGET_CPU_CPP_BUILTINS): Define __mips_loongson_vector_rev
+	if appropriate.
+	* config/mips/mips.md: Add unspec numbers for Loongson
+	builtins.  Include loongson.md.
+	(MOVE64): Include Loongson vector modes.
+	(SPLITF): Include Loongson vector modes.
+	(HALFMODE): Handle Loongson vector modes.
+	* config/mips/loongson.md: New.
+	* config/mips/loongson.h: New.
+	* config.gcc: Add loongson.h header for mips*-*-* targets.
+	* doc/extend.texi (MIPS Loongson Built-in Functions): New.
+
 2008-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (arc-*-elf*, avr-*-*, fr30-*-elf, frv-*-elf,

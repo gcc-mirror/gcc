@@ -267,6 +267,12 @@ enum mips_code_readable_setting {
 				     || mips_tune == PROCESSOR_74KF3_2)
 #define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
 
+/* Whether vector modes and intrinsics for ST Microelectronics
+   Loongson-2E/2F processors should be enabled.  In o32 pairs of
+   floating-point registers provide 64-bit values.  */
+#define TARGET_LOONGSON_VECTORS	    (TARGET_HARD_FLOAT_ABI		\
+				     && TARGET_LOONGSON_2EF)
+
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,
    suppose we have:
@@ -497,6 +503,10 @@ enum mips_code_readable_setting {
 	  builtin_define_std ("MIPSEL");				\
 	  builtin_define ("_MIPSEL");					\
 	}								\
+                                                                        \
+      /* Whether Loongson vector modes are enabled.  */                 \
+      if (TARGET_LOONGSON_VECTORS)					\
+        builtin_define ("__mips_loongson_vector_rev");                  \
 									\
       /* Macros dependent on the C dialect.  */				\
       if (preprocessing_asm_p ())					\
