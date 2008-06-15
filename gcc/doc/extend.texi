@@ -6788,6 +6788,7 @@ instructions, but allow the compiler to schedule those calls.
 * X86 Built-in Functions::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
+* MIPS Loongson Built-in Functions::
 * PowerPC AltiVec Built-in Functions::
 * SPARC VIS Built-in Functions::
 * SPU Built-in Functions::
@@ -8666,6 +8667,132 @@ On little-endian targets, the first value is the lower one and the second
 value is the upper one.  The opposite order applies to big-endian targets.
 For example, the code above will set the lower half of @code{a} to
 @code{1.5} on little-endian targets and @code{9.1} on big-endian targets.
+
+@node MIPS Loongson Built-in Functions
+@subsection MIPS Loongson Built-in Functions
+
+GCC provides intrinsics to access the SIMD instructions provided by the
+ST Microelectronics Loongson-2E and -2F processors.  These intrinsics,
+available after inclusion of the @code{loongson.h} header file,
+operate on the following 64-bit vector types:
+
+@itemize
+@item @code{uint8x8_t}, a vector of eight unsigned 8-bit integers;
+@item @code{uint16x4_t}, a vector of four unsigned 16-bit integers;
+@item @code{uint32x2_t}, a vector of two unsigned 32-bit integers;
+@item @code{int8x8_t}, a vector of eight signed 8-bit integers;
+@item @code{int16x4_t}, a vector of four signed 16-bit integers;
+@item @code{int32x2_t}, a vector of two signed 32-bit integers.
+@end itemize
+
+The intrinsics provided are listed below; each is named after the
+machine instruction to which it corresponds, with suffixes added as
+appropriate to distinguish intrinsics that expand to the same machine
+instruction yet have different argument types.  Refer to the architecture
+documentation for a description of the functionality of each
+instruction.
+
+@smallexample
+int16x4_t packsswh (int32x2_t s, int32x2_t t);
+int8x8_t packsshb (int16x4_t s, int16x4_t t);
+uint8x8_t packushb (uint16x4_t s, uint16x4_t t);
+uint32x2_t paddw_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t paddh_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t paddb_u (uint8x8_t s, uint8x8_t t);
+int32x2_t paddw_s (int32x2_t s, int32x2_t t);
+int16x4_t paddh_s (int16x4_t s, int16x4_t t);
+int8x8_t paddb_s (int8x8_t s, int8x8_t t);
+uint64_t paddd_u (uint64_t s, uint64_t t);
+int64_t paddd_s (int64_t s, int64_t t);
+int16x4_t paddsh (int16x4_t s, int16x4_t t);
+int8x8_t paddsb (int8x8_t s, int8x8_t t);
+uint16x4_t paddush (uint16x4_t s, uint16x4_t t);
+uint8x8_t paddusb (uint8x8_t s, uint8x8_t t);
+uint64_t pandn_ud (uint64_t s, uint64_t t);
+uint32x2_t pandn_uw (uint32x2_t s, uint32x2_t t);
+uint16x4_t pandn_uh (uint16x4_t s, uint16x4_t t);
+uint8x8_t pandn_ub (uint8x8_t s, uint8x8_t t);
+int64_t pandn_sd (int64_t s, int64_t t);
+int32x2_t pandn_sw (int32x2_t s, int32x2_t t);
+int16x4_t pandn_sh (int16x4_t s, int16x4_t t);
+int8x8_t pandn_sb (int8x8_t s, int8x8_t t);
+uint16x4_t pavgh (uint16x4_t s, uint16x4_t t);
+uint8x8_t pavgb (uint8x8_t s, uint8x8_t t);
+uint32x2_t pcmpeqw_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t pcmpeqh_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t pcmpeqb_u (uint8x8_t s, uint8x8_t t);
+int32x2_t pcmpeqw_s (int32x2_t s, int32x2_t t);
+int16x4_t pcmpeqh_s (int16x4_t s, int16x4_t t);
+int8x8_t pcmpeqb_s (int8x8_t s, int8x8_t t);
+uint32x2_t pcmpgtw_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t pcmpgth_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t pcmpgtb_u (uint8x8_t s, uint8x8_t t);
+int32x2_t pcmpgtw_s (int32x2_t s, int32x2_t t);
+int16x4_t pcmpgth_s (int16x4_t s, int16x4_t t);
+int8x8_t pcmpgtb_s (int8x8_t s, int8x8_t t);
+uint16x4_t pextrh_u (uint16x4_t s, int field);
+int16x4_t pextrh_s (int16x4_t s, int field);
+uint16x4_t pinsrh_0_u (uint16x4_t s, uint16x4_t t);
+uint16x4_t pinsrh_1_u (uint16x4_t s, uint16x4_t t);
+uint16x4_t pinsrh_2_u (uint16x4_t s, uint16x4_t t);
+uint16x4_t pinsrh_3_u (uint16x4_t s, uint16x4_t t);
+int16x4_t pinsrh_0_s (int16x4_t s, int16x4_t t);
+int16x4_t pinsrh_1_s (int16x4_t s, int16x4_t t);
+int16x4_t pinsrh_2_s (int16x4_t s, int16x4_t t);
+int16x4_t pinsrh_3_s (int16x4_t s, int16x4_t t);
+int32x2_t pmaddhw (int16x4_t s, int16x4_t t);
+int16x4_t pmaxsh (int16x4_t s, int16x4_t t);
+uint8x8_t pmaxub (uint8x8_t s, uint8x8_t t);
+int16x4_t pminsh (int16x4_t s, int16x4_t t);
+uint8x8_t pminub (uint8x8_t s, uint8x8_t t);
+uint8x8_t pmovmskb_u (uint8x8_t s);
+int8x8_t pmovmskb_s (int8x8_t s);
+uint16x4_t pmulhuh (uint16x4_t s, uint16x4_t t);
+int16x4_t pmulhh (int16x4_t s, int16x4_t t);
+int16x4_t pmullh (int16x4_t s, int16x4_t t);
+int64_t pmuluw (uint32x2_t s, uint32x2_t t);
+uint8x8_t pasubub (uint8x8_t s, uint8x8_t t);
+uint16x4_t biadd (uint8x8_t s);
+uint16x4_t psadbh (uint8x8_t s, uint8x8_t t);
+uint16x4_t pshufh_u (uint16x4_t dest, uint16x4_t s, uint8_t order);
+int16x4_t pshufh_s (int16x4_t dest, int16x4_t s, uint8_t order);
+uint16x4_t psllh_u (uint16x4_t s, uint8_t amount);
+int16x4_t psllh_s (int16x4_t s, uint8_t amount);
+uint32x2_t psllw_u (uint32x2_t s, uint8_t amount);
+int32x2_t psllw_s (int32x2_t s, uint8_t amount);
+uint16x4_t psrlh_u (uint16x4_t s, uint8_t amount);
+int16x4_t psrlh_s (int16x4_t s, uint8_t amount);
+uint32x2_t psrlw_u (uint32x2_t s, uint8_t amount);
+int32x2_t psrlw_s (int32x2_t s, uint8_t amount);
+uint16x4_t psrah_u (uint16x4_t s, uint8_t amount);
+int16x4_t psrah_s (int16x4_t s, uint8_t amount);
+uint32x2_t psraw_u (uint32x2_t s, uint8_t amount);
+int32x2_t psraw_s (int32x2_t s, uint8_t amount);
+uint32x2_t psubw_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t psubh_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t psubb_u (uint8x8_t s, uint8x8_t t);
+int32x2_t psubw_s (int32x2_t s, int32x2_t t);
+int16x4_t psubh_s (int16x4_t s, int16x4_t t);
+int8x8_t psubb_s (int8x8_t s, int8x8_t t);
+uint64_t psubd_u (uint64_t s, uint64_t t);
+int64_t psubd_s (int64_t s, int64_t t);
+int16x4_t psubsh (int16x4_t s, int16x4_t t);
+int8x8_t psubsb (int8x8_t s, int8x8_t t);
+uint16x4_t psubush (uint16x4_t s, uint16x4_t t);
+uint8x8_t psubusb (uint8x8_t s, uint8x8_t t);
+uint32x2_t punpckhwd_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t punpckhhw_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t punpckhbh_u (uint8x8_t s, uint8x8_t t);
+int32x2_t punpckhwd_s (int32x2_t s, int32x2_t t);
+int16x4_t punpckhhw_s (int16x4_t s, int16x4_t t);
+int8x8_t punpckhbh_s (int8x8_t s, int8x8_t t);
+uint32x2_t punpcklwd_u (uint32x2_t s, uint32x2_t t);
+uint16x4_t punpcklhw_u (uint16x4_t s, uint16x4_t t);
+uint8x8_t punpcklbh_u (uint8x8_t s, uint8x8_t t);
+int32x2_t punpcklwd_s (int32x2_t s, int32x2_t t);
+int16x4_t punpcklhw_s (int16x4_t s, int16x4_t t);
+int8x8_t punpcklbh_s (int8x8_t s, int8x8_t t);
+@end smallexample
 
 @menu
 * Paired-Single Arithmetic::

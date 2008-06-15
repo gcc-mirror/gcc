@@ -1,3 +1,8 @@
+2008-06-15  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_mips_loongson): New.
+	* gcc.target/mips/loongson-simd.c: New.
+
 2008-06-14  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/35320

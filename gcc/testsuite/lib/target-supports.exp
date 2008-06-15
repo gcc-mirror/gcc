@@ -1249,6 +1249,17 @@ proc check_effective_target_arm_neon_hw { } {
     } "-mfpu=neon -mfloat-abi=softfp"]
 }
 
+# Return 1 if this a Loongson-2E or -2F target using an ABI that supports
+# the Loongson vector modes.
+
+proc check_effective_target_mips_loongson { } {
+    return [check_no_compiler_messages loongson assembly {
+	#if !defined(__mips_loongson_vector_rev)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {

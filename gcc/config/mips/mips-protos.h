@@ -303,4 +303,6 @@ union mips_gen_fn_ptrs
 extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 				     rtx, rtx, rtx, rtx);
 
+extern void mips_expand_vector_init (rtx, rtx);
+
 #endif /* ! GCC_MIPS_PROTOS_H */

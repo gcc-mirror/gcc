@@ -215,6 +215,30 @@
    (UNSPEC_DPAQX_SA_W_PH	446)
    (UNSPEC_DPSQX_S_W_PH		447)
    (UNSPEC_DPSQX_SA_W_PH	448)
+
+   ;; ST Microelectronics Loongson-2E/2F.
+   (UNSPEC_LOONGSON_PAVG	500)
+   (UNSPEC_LOONGSON_PCMPEQ	501)
+   (UNSPEC_LOONGSON_PCMPGT	502)
+   (UNSPEC_LOONGSON_PEXTR	503)
+   (UNSPEC_LOONGSON_PINSR_0	504)
+   (UNSPEC_LOONGSON_PINSR_1	505)
+   (UNSPEC_LOONGSON_PINSR_2	506)
+   (UNSPEC_LOONGSON_PINSR_3	507)
+   (UNSPEC_LOONGSON_PMADD	508)
+   (UNSPEC_LOONGSON_PMOVMSK	509)
+   (UNSPEC_LOONGSON_PMULHU	510)
+   (UNSPEC_LOONGSON_PMULH	511)
+   (UNSPEC_LOONGSON_PMULL	512)
+   (UNSPEC_LOONGSON_PMULU	513)
+   (UNSPEC_LOONGSON_PASUBUB	514)
+   (UNSPEC_LOONGSON_BIADD	515)
+   (UNSPEC_LOONGSON_PSADBH	516)
+   (UNSPEC_LOONGSON_PSHUFH	517)
+   (UNSPEC_LOONGSON_PUNPCKH	518)
+   (UNSPEC_LOONGSON_PUNPCKL	519)
+   (UNSPEC_LOONGSON_PADDD	520)
+   (UNSPEC_LOONGSON_PSUBD	521)
   ]
 )
 
@@ -500,7 +524,11 @@
 
 ;; 64-bit modes for which we provide move patterns.
 (define_mode_iterator MOVE64
-  [DI DF (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")])
+  [DI DF
+   (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")
+   (V2SI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
+   (V4HI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
+   (V8QI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")])
 
 ;; 128-bit modes for which we provide move patterns on 64-bit targets.
 (define_mode_iterator MOVE128 [TI TF])
@@ -527,6 +555,9 @@
   [(DF "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (DI "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (V2SF "!TARGET_64BIT && TARGET_PAIRED_SINGLE_FLOAT")
+   (V2SI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
+   (V4HI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
+   (V8QI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
    (TF "TARGET_64BIT && TARGET_FLOAT64")])
 
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
@@ -579,7 +610,9 @@
 
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
-(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (V2SF "SI") (TF "DI")])
+(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (V2SF "SI")
+			    (V2SI "SI") (V4HI "SI") (V8QI "SI")
+			    (TF "DI")])
 
 ;; This attribute works around the early SB-1 rev2 core "F2" erratum:
 ;;
@@ -6435,3 +6468,6 @@
 
 ; MIPS fixed-point instructions.
 (include "mips-fixed.md")
+
+; ST-Microelectronics Loongson-2E/2F-specific patterns.
+(include "loongson.md")
