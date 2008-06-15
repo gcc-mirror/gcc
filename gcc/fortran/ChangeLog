@@ -1,3 +1,9 @@
+2008-06-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36515
+	* trans-decl.c (gfc_generate_function_code): Add range_check to options
+	array.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gfc-internals.texi: Expand TABs, drop indentation outside examples.
