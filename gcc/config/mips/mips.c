@@ -9778,6 +9778,41 @@ mips_store_data_bypass_p (rtx out_insn, rtx in_insn)
   return !store_data_bypass_p (out_insn, in_insn);
 }
 
+
+/* Variables and flags used in scheduler hooks when tuning for
+   Loongson 2E/2F.  */
+static struct
+{
+  /* Variables to support Loongson 2E/2F round-robin [F]ALU1/2 dispatch
+     strategy.  */
+
+  /* If true, then next ALU1/2 instruction will go to ALU1.  */
+  bool alu1_turn_p;
+
+  /* If true, then next FALU1/2 unstruction will go to FALU1.  */
+  bool falu1_turn_p;
+
+  /* Codes to query if [f]alu{1,2}_core units are subscribed or not.  */
+  int alu1_core_unit_code;
+  int alu2_core_unit_code;
+  int falu1_core_unit_code;
+  int falu2_core_unit_code;
+
+  /* True if current cycle has a multi instruction.
+     This flag is used in mips_ls2_dfa_post_advance_cycle.  */
+  bool cycle_has_multi_p;
+
+  /* Instructions to subscribe ls2_[f]alu{1,2}_turn_enabled units.
+     These are used in mips_ls2_dfa_post_advance_cycle to initialize
+     DFA state.
+     E.g., when alu1_turn_enabled_insn is issued it makes next ALU1/2
+     instruction to go ALU1.  */
+  rtx alu1_turn_enabled_insn;
+  rtx alu2_turn_enabled_insn;
+  rtx falu1_turn_enabled_insn;
+  rtx falu2_turn_enabled_insn;
+} mips_ls2;
+
 /* Implement TARGET_SCHED_ADJUST_COST.  We assume that anti and output
    dependencies have no cost, except on the 20Kc where output-dependence
    is treated like input-dependence.  */
@@ -9828,9 +9863,122 @@ mips_issue_rate (void)
 	 reach the theoretical max of 4.  */
       return 3;
 
+    case PROCESSOR_LOONGSON_2E:
+    case PROCESSOR_LOONGSON_2F:
+      return 4;
+
     default:
       return 1;
     }
+}
+
+/* Implement TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN hook for Loongson2.  */
+
+static void
+mips_ls2_init_dfa_post_cycle_insn (void)
+{
+  start_sequence ();
+  emit_insn (gen_ls2_alu1_turn_enabled_insn ());
+  mips_ls2.alu1_turn_enabled_insn = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+  emit_insn (gen_ls2_alu2_turn_enabled_insn ());
+  mips_ls2.alu2_turn_enabled_insn = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+  emit_insn (gen_ls2_falu1_turn_enabled_insn ());
+  mips_ls2.falu1_turn_enabled_insn = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+  emit_insn (gen_ls2_falu2_turn_enabled_insn ());
+  mips_ls2.falu2_turn_enabled_insn = get_insns ();
+  end_sequence ();
+
+  mips_ls2.alu1_core_unit_code = get_cpu_unit_code ("ls2_alu1_core");
+  mips_ls2.alu2_core_unit_code = get_cpu_unit_code ("ls2_alu2_core");
+  mips_ls2.falu1_core_unit_code = get_cpu_unit_code ("ls2_falu1_core");
+  mips_ls2.falu2_core_unit_code = get_cpu_unit_code ("ls2_falu2_core");
+}
+
+/* Implement TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN hook.
+   Init data used in mips_dfa_post_advance_cycle.  */
+
+static void
+mips_init_dfa_post_cycle_insn (void)
+{
+  if (TUNE_LOONGSON_2EF)
+    mips_ls2_init_dfa_post_cycle_insn ();
+}
+
+/* Initialize STATE when scheduling for Loongson 2E/2F.
+   Support round-robin dispatch scheme by enabling only one of
+   ALU1/ALU2 and one of FALU1/FALU2 units for ALU1/2 and FALU1/2 instructions
+   respectively.  */
+
+static void
+mips_ls2_dfa_post_advance_cycle (state_t state)
+{
+  if (cpu_unit_reservation_p (state, mips_ls2.alu1_core_unit_code))
+    {
+      /* Though there are no non-pipelined ALU1 insns,
+	 we can get an instruction of type 'multi' before reload.  */
+      gcc_assert (mips_ls2.cycle_has_multi_p);
+      mips_ls2.alu1_turn_p = false;
+    }
+
+  mips_ls2.cycle_has_multi_p = false;
+
+  if (cpu_unit_reservation_p (state, mips_ls2.alu2_core_unit_code))
+    /* We have a non-pipelined alu instruction in the core,
+       adjust round-robin counter.  */
+    mips_ls2.alu1_turn_p = true;
+
+  if (mips_ls2.alu1_turn_p)
+    {
+      if (state_transition (state, mips_ls2.alu1_turn_enabled_insn) >= 0)
+	gcc_unreachable ();
+    }
+  else
+    {
+      if (state_transition (state, mips_ls2.alu2_turn_enabled_insn) >= 0)
+	gcc_unreachable ();
+    }
+
+  if (cpu_unit_reservation_p (state, mips_ls2.falu1_core_unit_code))
+    {
+      /* There are no non-pipelined FALU1 insns.  */
+      gcc_unreachable ();
+      mips_ls2.falu1_turn_p = false;
+    }
+
+  if (cpu_unit_reservation_p (state, mips_ls2.falu2_core_unit_code))
+    /* We have a non-pipelined falu instruction in the core,
+       adjust round-robin counter.  */
+    mips_ls2.falu1_turn_p = true;
+
+  if (mips_ls2.falu1_turn_p)
+    {
+      if (state_transition (state, mips_ls2.falu1_turn_enabled_insn) >= 0)
+	gcc_unreachable ();
+    }
+  else
+    {
+      if (state_transition (state, mips_ls2.falu2_turn_enabled_insn) >= 0)
+	gcc_unreachable ();
+    }
+}
+
+/* Implement TARGET_SCHED_DFA_POST_ADVANCE_CYCLE.
+   This hook is being called at the start of each cycle.  */
+
+static void
+mips_dfa_post_advance_cycle (void)
+{
+  if (TUNE_LOONGSON_2EF)
+    mips_ls2_dfa_post_advance_cycle (curr_state);
 }
 
 /* Implement TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD.  This should
@@ -9841,6 +9989,9 @@ mips_multipass_dfa_lookahead (void)
 {
   /* Can schedule up to 4 of the 6 function units in any one cycle.  */
   if (TUNE_SB1)
+    return 4;
+
+  if (TUNE_LOONGSON_2EF)
     return 4;
 
   return 0;
@@ -10103,6 +10254,12 @@ mips_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
   mips_macc_chains_last_hilo = 0;
   vr4130_last_insn = 0;
   mips_74k_agen_init (NULL_RTX);
+
+  /* When scheduling for Loongson2, branch instructions go to ALU1,
+     therefore basic block is most likely to start with round-robin counter
+     pointed to ALU2.  */
+  mips_ls2.alu1_turn_p = false;
+  mips_ls2.falu1_turn_p = true;
 }
 
 /* Implement TARGET_SCHED_REORDER and TARGET_SCHED_REORDER2.  */
@@ -10128,6 +10285,37 @@ mips_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
   return mips_issue_rate ();
 }
 
+/* Update round-robin counters for ALU1/2 and FALU1/2.  */
+
+static void
+mips_ls2_variable_issue (rtx insn)
+{
+  if (mips_ls2.alu1_turn_p)
+    {
+      if (cpu_unit_reservation_p (curr_state, mips_ls2.alu1_core_unit_code))
+	mips_ls2.alu1_turn_p = false;
+    }
+  else
+    {
+      if (cpu_unit_reservation_p (curr_state, mips_ls2.alu2_core_unit_code))
+	mips_ls2.alu1_turn_p = true;
+    }
+
+  if (mips_ls2.falu1_turn_p)
+    {
+      if (cpu_unit_reservation_p (curr_state, mips_ls2.falu1_core_unit_code))
+	mips_ls2.falu1_turn_p = false;
+    }
+  else
+    {
+      if (cpu_unit_reservation_p (curr_state, mips_ls2.falu2_core_unit_code))
+	mips_ls2.falu1_turn_p = true;
+    }
+
+  if (recog_memoized (insn) >= 0)
+    mips_ls2.cycle_has_multi_p |= (get_attr_type (insn) == TYPE_MULTI);
+}
+
 /* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
 
 static int
@@ -10143,7 +10331,16 @@ mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
       vr4130_last_insn = insn;
       if (TUNE_74K)
 	mips_74k_agen_init (insn);
+      else if (TUNE_LOONGSON_2EF)
+	mips_ls2_variable_issue (insn);
     }
+
+  /* Instructions of type 'multi' should all be split before
+     the second scheduling pass.  */
+  gcc_assert (!reload_completed
+	      || recog_memoized (insn) < 0
+	      || get_attr_type (insn) != TYPE_MULTI);
+
   return more;
 }
 
@@ -12881,6 +13078,10 @@ mips_order_regs_for_local_alloc (void)
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE mips_issue_rate
+#undef TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN
+#define TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN mips_init_dfa_post_cycle_insn
+#undef TARGET_SCHED_DFA_POST_ADVANCE_CYCLE
+#define TARGET_SCHED_DFA_POST_ADVANCE_CYCLE mips_dfa_post_advance_cycle
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   mips_multipass_dfa_lookahead
