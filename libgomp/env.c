@@ -487,12 +487,10 @@ initialize_env (void)
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var);
   parse_unsigned_long ("OMP_THREAD_LIMIT", &gomp_thread_limit_var);
   if (gomp_thread_limit_var != ULONG_MAX)
-    {
-      gomp_remaining_threads_count = gomp_thread_limit_var - 1;
+    gomp_remaining_threads_count = gomp_thread_limit_var - 1;
 #ifndef HAVE_SYNC_BUILTINS
-      gomp_mutex_init (&gomp_remaining_threads_lock);
+  gomp_mutex_init (&gomp_remaining_threads_lock);
 #endif
-    }
   gomp_init_num_threads ();
   gomp_available_cpus = gomp_global_icv.nthreads_var;
   if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_global_icv.nthreads_var))
