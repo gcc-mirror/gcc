@@ -1,3 +1,8 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* src/condition_variable.cc (~condition_variable): Drop unused
+	variable.
+
 2008-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_deque.h (deque<>::push_back(_Args&&...),

@@ -49,7 +49,7 @@ namespace std
   {
 #if __GTHREAD_HAS_COND
     // XXX no thread blocked
-    int __e = pthread_cond_destroy(&_M_cond);
+    /* int __e = */ pthread_cond_destroy(&_M_cond);
     // if __e == EBUSY then blocked
 #endif
   }
