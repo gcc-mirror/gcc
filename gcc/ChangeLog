@@ -1,3 +1,9 @@
+2008-06-015  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/36336
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Add check for 
+	reg_equiv_constant.
+
 2008-06-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/loongson2ef.md: New file.
