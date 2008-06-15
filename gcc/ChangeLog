@@ -1,5 +1,10 @@
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* omp-low.c (extract_omp_for_data): Fix comment typo.
+	* c.opt: Fix typo.
+
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* doc/sourcebuild.texi (Config Fragments): Remove obsolete
 	FIXME note about gcc/config.guess.
 	* doc/options.texi (Option file format): Remove non-ASCII bytes.

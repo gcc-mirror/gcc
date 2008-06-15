@@ -235,7 +235,7 @@ extract_omp_for_data (tree for_stmt, struct omp_for_data *fd,
   /* FIXME: for now map schedule(auto) to schedule(static).
      There should be analysis to determine whether all iterations
      are approximately the same amount of work (then schedule(static)
-     is best) or if it varries (then schedule(dynamic,N) is better).  */
+     is best) or if it varies (then schedule(dynamic,N) is better).  */
   if (fd->sched_kind == OMP_CLAUSE_SCHEDULE_AUTO)
     {
       fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
