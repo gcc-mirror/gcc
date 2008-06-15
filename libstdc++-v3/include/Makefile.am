@@ -151,7 +151,7 @@ backward_headers = \
 	${backward_srcdir}/hash_set \
 	${backward_srcdir}/hash_fun.h \
 	${backward_srcdir}/hashtable.h \
-	${backward_srcdir}/strstream 
+	${backward_srcdir}/strstream
 
 pb_srcdir = ${glibcxx_srcdir}/include/ext/pb_ds
 pb_builddir = ./ext/pb_ds
@@ -183,7 +183,7 @@ pb_subdirs = \
 	${pb_builddir}/detail/list_update_policy
 
 # The ability for make and the underlying host to deal with this
-# unweildy list as one entire entity is not a sure thing, and may
+# unwieldy list as one entire entity is not a sure thing, and may
 # cause build errors. Thus, split one list into many smaller
 # mini-lists, with the maximum size per mini-list of no more than 42.
 
@@ -228,7 +228,7 @@ pb_headers1 = \
 	${pb_srcdir}/detail/binomial_heap_/debug_fn_imps.hpp \
 	${pb_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp \
 	${pb_srcdir}/detail/bin_search_tree_/cond_dtor_entry_dealtor.hpp \
-	${pb_srcdir}/detail/bin_search_tree_/cond_key_dtor_entry_dealtor.hpp 
+	${pb_srcdir}/detail/bin_search_tree_/cond_key_dtor_entry_dealtor.hpp
 
 pb_headers2 = \
 	${pb_srcdir}/detail/bin_search_tree_/constructors_destructor_fn_imps.hpp \
@@ -270,7 +270,7 @@ pb_headers2 = \
 	${pb_srcdir}/detail/cc_hash_table_map_/resize_no_store_hash_fn_imps.hpp \
 	${pb_srcdir}/detail/cc_hash_table_map_/resize_store_hash_fn_imps.hpp \
 	${pb_srcdir}/detail/cc_hash_table_map_/size_fn_imps.hpp \
-	${pb_srcdir}/detail/cc_hash_table_map_/standard_policies.hpp 
+	${pb_srcdir}/detail/cc_hash_table_map_/standard_policies.hpp
 
 pb_headers3 = \
 	${pb_srcdir}/detail/cc_hash_table_map_/trace_fn_imps.hpp \
@@ -311,7 +311,7 @@ pb_headers3 = \
 	${pb_srcdir}/detail/hash_fn/probe_fn_base.hpp \
 	${pb_srcdir}/detail/hash_fn/quadratic_probe_fn_imp.hpp \
 	${pb_srcdir}/detail/hash_fn/ranged_hash_fn.hpp \
-	${pb_srcdir}/detail/hash_fn/ranged_probe_fn.hpp 
+	${pb_srcdir}/detail/hash_fn/ranged_probe_fn.hpp
 
 pb_headers4 = \
 	${pb_srcdir}/detail/hash_fn/sample_probe_fn.hpp \
@@ -354,7 +354,7 @@ pb_headers4 = \
 	${pb_srcdir}/detail/ov_tree_map_/insert_fn_imps.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/iterators_fn_imps.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/node_iterators.hpp \
-	${pb_srcdir}/detail/ov_tree_map_/ov_tree_map_.hpp 
+	${pb_srcdir}/detail/ov_tree_map_/ov_tree_map_.hpp
 
 pb_headers5 = \
 	${pb_srcdir}/detail/ov_tree_map_/policy_access_fn_imps.hpp \
@@ -396,7 +396,7 @@ pb_headers5 = \
 	${pb_srcdir}/detail/pat_trie_/update_fn_imps.hpp \
 	${pb_srcdir}/detail/priority_queue_base_dispatch.hpp \
 	${pb_srcdir}/detail/rb_tree_map_/constructors_destructor_fn_imps.hpp \
-	${pb_srcdir}/detail/rb_tree_map_/debug_fn_imps.hpp 
+	${pb_srcdir}/detail/rb_tree_map_/debug_fn_imps.hpp
 
 pb_headers6 = \
 	${pb_srcdir}/detail/rb_tree_map_/erase_fn_imps.hpp \
@@ -438,7 +438,7 @@ pb_headers6 = \
 	${pb_srcdir}/detail/standard_policies.hpp \
 	${pb_srcdir}/detail/thin_heap_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/thin_heap_/debug_fn_imps.hpp \
-	${pb_srcdir}/detail/thin_heap_/erase_fn_imps.hpp 
+	${pb_srcdir}/detail/thin_heap_/erase_fn_imps.hpp
 
 pb_headers7 = \
 	${pb_srcdir}/detail/thin_heap_/find_fn_imps.hpp \
@@ -464,11 +464,11 @@ pb_headers7 = \
 	${pb_srcdir}/detail/unordered_iterator/const_iterator.hpp \
 	${pb_srcdir}/detail/unordered_iterator/const_point_iterator.hpp \
 	${pb_srcdir}/detail/unordered_iterator/iterator.hpp \
-	${pb_srcdir}/detail/unordered_iterator/point_iterator.hpp 
+	${pb_srcdir}/detail/unordered_iterator/point_iterator.hpp
 
 
 ext_srcdir = ${glibcxx_srcdir}/include/ext
-ext_builddir = ./ext 
+ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
 	${ext_srcdir}/atomicity.h \
@@ -634,14 +634,14 @@ c_compatibility_srcdir = ${glibcxx_srcdir}/include/c_compatibility
 c_compatibility_builddir = .
 
 if GLIBCXX_C_HEADERS_C_STD
-c_compatibility_headers = 
+c_compatibility_headers =
 endif
 
 if GLIBCXX_C_HEADERS_C_GLOBAL
 c_compatibility_headers = \
 	${c_compatibility_srcdir}/complex.h \
 	${c_compatibility_srcdir}/fenv.h \
-	${c_compatibility_srcdir}/tgmath.h 
+	${c_compatibility_srcdir}/tgmath.h
 endif
 
 if GLIBCXX_C_HEADERS_C
@@ -703,9 +703,8 @@ debug_headers = \
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
 parallel_headers = \
-        ${parallel_srcdir}/algorithm \
-        ${parallel_srcdir}/algobase.h \
         ${parallel_srcdir}/algo.h \
+        ${parallel_srcdir}/algobase.h \
         ${parallel_srcdir}/algorithm \
         ${parallel_srcdir}/algorithmfwd.h \
         ${parallel_srcdir}/balanced_quicksort.h \
@@ -731,8 +730,8 @@ parallel_headers = \
         ${parallel_srcdir}/numericfwd.h \
         ${parallel_srcdir}/omp_loop.h \
         ${parallel_srcdir}/omp_loop_static.h \
-        ${parallel_srcdir}/parallel.h \
         ${parallel_srcdir}/par_loop.h \
+        ${parallel_srcdir}/parallel.h \
         ${parallel_srcdir}/partial_sum.h \
         ${parallel_srcdir}/partition.h \
         ${parallel_srcdir}/queue.h \
@@ -746,7 +745,7 @@ parallel_headers = \
         ${parallel_srcdir}/tags.h \
         ${parallel_srcdir}/types.h \
         ${parallel_srcdir}/unique_copy.h \
-        ${parallel_srcdir}/workstealing.h 
+        ${parallel_srcdir}/workstealing.h
 
 
 # Some of the different "C" header models need extra files.
@@ -777,7 +776,7 @@ host_headers = \
 	${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h \
 	${glibcxx_srcdir}/include/precompiled/stdc++.h \
 	${glibcxx_srcdir}/include/precompiled/stdtr1c++.h \
-	${glibcxx_srcdir}/include/precompiled/extc++.h 
+	${glibcxx_srcdir}/include/precompiled/extc++.h
 
 # Non-installed host_header files.
 COMPATIBILITY_H = config/abi/compatibility.h
@@ -793,7 +792,7 @@ host_headers_extra = \
 	${host_builddir}/c++io.h \
 	${host_builddir}/c++locale.h \
 	${host_builddir}/messages_members.h \
-	${host_builddir}/time_members.h 
+	${host_builddir}/time_members.h
 
 thread_host_headers = \
 	${host_builddir}/gthr.h \
@@ -900,7 +899,7 @@ stamp-ext: ${ext_headers}
 stamp-pb:
 	@if [ ! -d "${pb_builddir}" ]; then \
 	    mkdir -p ${pb_subdirs} ;\
-	fi 
+	fi
 	@if [ ! -f stamp-pb ]; then \
 	    cd ${pb_builddir} && for h in ${pb_headers1}; do \
 		build_name=`echo $$h | sed -e "s|${pb_srcdir}|.|g"` ;\
@@ -1102,7 +1101,7 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 # the rest are taken from the original source tree.
 
 if GLIBCXX_HOSTED
-install-data-local: install-headers 
+install-data-local: install-headers
 else
 install-data-local: install-freestanding-headers
 endif
