@@ -1,5 +1,10 @@
 2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
 
+	PR c++/35320
+	* g++.dg/parse/bitfield3.C: New test.
+
+2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
+
 	PR c++/35317
 	* g++.dg/other/dtor2.C: New test.
 

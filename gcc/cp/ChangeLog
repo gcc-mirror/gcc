@@ -1,5 +1,16 @@
 2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
 
+	PR c++/35320
+	* decl2.c (grokbitfield): Receive the list of attributes, pass it to
+	grokdeclarator and apply it to the created declaration.
+	* cp-tree.h (grokbitfield): Update prototype.
+	* parser.c (cp_parser_member_declaration): Don't apply the attributes
+	since they are now applied in grokbitfield. Adjusted the call to
+	grokbitfield.
+	(cp_parser_objc_class_ivars): Likewise.
+
+2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
+
 	PR c++/35317
 	* class.c (type_requires_array_cookie): Do not consider delete[]
 	operators with an ellipsis as second argument.
