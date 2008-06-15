@@ -104,20 +104,20 @@ files and object files, and it can read both Java source code and
 @file{.class} files.
 
 @menu
-* Copying::		 The GNU General Public License
+* Copying::             The GNU General Public License
 * GNU Free Documentation License::
-			How you can share and copy this manual
-* Invoking gcj::	Compiler options supported by @command{gcj}
-* Compatibility::	Compatibility between gcj and other tools for Java
+                        How you can share and copy this manual
+* Invoking gcj::        Compiler options supported by @command{gcj}
+* Compatibility::       Compatibility between gcj and other tools for Java
 * Invoking jcf-dump::   Print information about class files
-* Invoking gij::	Interpreting Java bytecodes
+* Invoking gij::        Interpreting Java bytecodes
 * Invoking gcj-dbtool:: Tool for manipulating class file databases.
 * Invoking jv-convert:: Converting from one encoding to another
 * Invoking grmic::      Generate stubs for Remote Method Invocation.
 * Invoking gc-analyze:: Analyze Garbage Collector (GC) memory dumps.
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
-* Resources::		Where to look for more information
+* Resources::           Where to look for more information
 * Index::               Index.
 @end menu
 
@@ -159,12 +159,12 @@ options specific to @command{gcj}.
 
 @menu
 * Input and output files::
-* Input Options::		How gcj finds files
+* Input Options::               How gcj finds files
 * Encodings::                   Options controlling source file encoding
-* Warnings::			Options controlling warnings specific to gcj
-* Linking::			Options for making an executable
-* Code Generation::		Options controlling the output of gcj
-* Configure-time Options::	Options you won't use
+* Warnings::                    Options controlling warnings specific to gcj
+* Linking::                     Options for making an executable
+* Code Generation::             Options controlling the output of gcj
+* Configure-time Options::      Options you won't use
 @end menu
 
 @c man begin OPTIONS gcj
@@ -1176,7 +1176,7 @@ public class GCDumpTest
     static public void main(String args[])
     @{
         ArrayList<String> l = new ArrayList<String>(1000);
-        
+
         for (int i = 1; i < 1500; i++) @{
             l.add("This is string #" + i);
         @}
@@ -1243,7 +1243,7 @@ alternative to the standard JNI (Java Native Interface).
 * Mixing with C++::             How CNI can interoperate with C++.
 * Exception Handling::          How exceptions are handled.
 * Synchronization::             Synchronizing between Java and C++.
-* Invocation::			Starting the Java runtime from C++.
+* Invocation::                  Starting the Java runtime from C++.
 * Reflection::                  Using reflection from C++.
 @end menu
 
@@ -1493,7 +1493,7 @@ you can only call an interface method when the declared type of the
 field being called matches the interface which declares that
 method.  The workaround is to cast the interface reference to the right
 superinterface.
- 
+
 For example if you have: 
 
 @example 
@@ -1501,13 +1501,13 @@ interface A
 @{ 
   void a(); 
 @} 
- 
+
 interface B extends A 
 @{ 
   void b(); 
 @} 
 @end example
- 
+
 and declare a variable of type @code{B} in C++, you can't call
 @code{a()} unless you cast it to an @code{A} first.
 
@@ -2269,7 +2269,7 @@ The example can be compiled with @command{c++ -c test.cc; gcj test.o}.
 int main(int argc, char *argv[])
 @{
   using namespace java::lang;
-  
+
   try
   @{
     JvCreateJavaVM(NULL);

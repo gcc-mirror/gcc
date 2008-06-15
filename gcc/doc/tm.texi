@@ -35,7 +35,7 @@ through the macros defined in the @file{.h} file.
 * Register Classes::    Defining the classes of hardware registers.
 * Old Constraints::     The old way to define machine-specific constraints.
 * Stack and Calling::   Defining which way the stack grows and by how much.
-* Varargs::		Defining the varargs macros.
+* Varargs::             Defining the varargs macros.
 * Trampolines::         Code set up at run time to enter a nested function.
 * Library Calls::       Controlling how library routines are implicitly called.
 * Addressing Modes::    Defining addressing modes valid for memory operands.
@@ -44,7 +44,7 @@ through the macros defined in the @file{.h} file.
 * Costs::               Defining relative costs of different operations.
 * Scheduling::          Adjusting the behavior of the instruction scheduler.
 * Sections::            Dividing storage into text, data, and other sections.
-* PIC::			Macros for position independent code.
+* PIC::                 Macros for position independent code.
 * Assembler Format::    Defining how to write insns and pseudo-ops to output.
 * Debugging Info::      Defining the format of debugging output.
 * Floating Point::      Handling floating point for cross-compilers.
@@ -1911,11 +1911,11 @@ For passing values in registers, see @ref{Register Arguments}.
 For returning values in registers, see @ref{Scalar Return}.
 
 @menu
-* Register Basics::		Number and kinds of registers.
-* Allocation Order::		Order in which registers are allocated.
-* Values in Registers::		What kinds of values each reg can hold.
-* Leaf Functions::		Renumbering registers for leaf functions.
-* Stack Registers::		Handling a register stack such as 80387.
+* Register Basics::             Number and kinds of registers.
+* Allocation Order::            Order in which registers are allocated.
+* Values in Registers::         What kinds of values each reg can hold.
+* Leaf Functions::              Renumbering registers for leaf functions.
+* Stack Registers::             Handling a register stack such as 80387.
 @end menu
 
 @node Register Basics
@@ -2985,7 +2985,7 @@ be treated like memory constraints by the reload pass.
 
 It should return 1 if the operand type represented by the constraint
 at the start of @var{str}, the first letter of which is the letter @var{c},
- comprises a subset of all memory references including
+comprises a subset of all memory references including
 all those whose address is simply a base register.  This allows the reload
 pass to reload an operand, if it does not directly correspond to the operand
 type of @var{c}, by copying its address into a base register.
@@ -6779,10 +6779,10 @@ instructions do.
 * Uninitialized Data::   Output of uninitialized variables.
 * Label Output::         Output and generation of labels.
 * Initialization::       General principles of initialization
-			   and termination routines.
+                         and termination routines.
 * Macros for Initialization::
-			 Specific macros that control the handling of
-			   initialization and termination routines.
+                         Specific macros that control the handling of
+                         initialization and termination routines.
 * Instruction Output::   Output of actual instructions.
 * Dispatch Tables::      Output of jump tables.
 * Exception Region Output:: Output of exception region code.
@@ -6911,7 +6911,7 @@ This is true on most ELF targets.
 Choose a set of section attributes for use by @code{TARGET_ASM_NAMED_SECTION}
 based on a variable or function decl, a section name, and whether or not the
 declaration's initializer may contain runtime relocations.  @var{decl} may be
- null, in which case read-write data should be assumed.
+null, in which case read-write data should be assumed.
 
 The default version of this function handles choosing code vs data,
 read-only vs read-write data, and @code{flag_pic}.  You should only
@@ -7115,7 +7115,7 @@ assembler for grouping arithmetic expressions.  If not overridden, they
 default to normal parentheses, which is correct for most assemblers.
 @end deftypevr
 
-  These macros are provided by @file{real.h} for writing the definitions
+These macros are provided by @file{real.h} for writing the definitions
 of @code{ASM_OUTPUT_DOUBLE} and the like:
 
 @defmac REAL_VALUE_TO_TARGET_SINGLE (@var{x}, @var{l})

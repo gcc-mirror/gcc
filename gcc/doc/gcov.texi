@@ -38,8 +38,8 @@ included in the gfdl(7) man page.
 test code coverage in your programs.
 
 @menu
-* Gcov Intro::         	        Introduction to gcov.
-* Invoking Gcov::       	How to use gcov.
+* Gcov Intro::                  Introduction to gcov.
+* Invoking Gcov::               How to use gcov.
 * Gcov and Optimization::       Using gcov with GCC optimization.
 * Gcov Data Files::             The files used by gcov.
 * Cross-profiling::             Data file relocation.

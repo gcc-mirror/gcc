@@ -52,7 +52,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @ifinfo
 @dircategory Software development
 @direntry
-* Cpp: (cpp).		       The GNU C preprocessor.
+* Cpp: (cpp).                  The GNU C preprocessor.
 @end direntry
 @end ifinfo
 

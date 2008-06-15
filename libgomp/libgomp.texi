@@ -512,7 +512,7 @@ a deadlock occurs.
 Before setting a simple lock, the lock variable must be initialized by 
 @code{omp_init_lock}. Contrary to @code{omp_set_lock}, @code{omp_test_lock} 
 does not block if the lock is not available. This function returns 
-@code{true} upon success,@code{false} otherwise. Here, @code{true} and 
+@code{true} upon success, @code{false} otherwise. Here, @code{true} and 
 @code{false} represent their language-specific counterparts.
 
 @item @emph{C/C++}:

@@ -28,10 +28,10 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
-* Constructing Calls::	Dispatching a call to another function.
+* Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
-* Long Long::		Double-word integers---@code{long long int}.
+* Long Long::           Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
 * Decimal Float::       Decimal Floating Types. 
@@ -40,41 +40,41 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
 * Empty Structures::    Structures with no members.
-* Variadic Macros::	Macros with a variable number of arguments.
+* Variadic Macros::     Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
 * Compound Literals::   Compound literals give structures, unions
-                         or arrays as values.
-* Designated Inits::	Labeling elements of initializers.
+                        or arrays as values.
+* Designated Inits::    Labeling elements of initializers.
 * Cast to Union::       Casting to union type from any member of the union.
-* Case Ranges::		`case 1 ... 9' and such.
-* Mixed Declarations::	Mixing declarations and code.
+* Case Ranges::         `case 1 ... 9' and such.
+* Mixed Declarations::  Mixing declarations and code.
 * Function Attributes:: Declaring that functions have no side effects,
-                         or that they can never return.
+                        or that they can never return.
 * Attribute Syntax::    Formal syntax for attributes.
 * Function Prototypes:: Prototype declarations and old-style definitions.
 * C++ Comments::        C++ comments are recognized.
 * Dollar Signs::        Dollar sign is allowed in identifiers.
 * Character Escapes::   @samp{\e} stands for the character @key{ESC}.
-* Variable Attributes::	Specifying attributes of variables.
-* Type Attributes::	Specifying attributes of types.
+* Variable Attributes:: Specifying attributes of variables.
+* Type Attributes::     Specifying attributes of types.
 * Alignment::           Inquiring about the alignment of a type or variable.
 * Inline::              Defining inline functions (as fast as macros).
 * Extended Asm::        Assembler instructions with C expressions as operands.
-                         (With them you can define ``built-in'' functions.)
+                        (With them you can define ``built-in'' functions.)
 * Constraints::         Constraints for asm operands
 * Asm Labels::          Specifying the assembler name to use for a C symbol.
 * Explicit Reg Vars::   Defining variables residing in specified registers.
 * Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
 * Incomplete Enums::    @code{enum foo;}, with details to follow.
-* Function Names::	Printable strings which are the name of the current
-			 function.
+* Function Names::      Printable strings which are the name of the current
+                        function.
 * Return Address::      Getting the return or frame address of a function.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
-* Atomic Builtins::	Built-in functions for atomic memory access.
+* Atomic Builtins::     Built-in functions for atomic memory access.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * Other Builtins::      Other built-in functions.
@@ -2584,7 +2584,7 @@ be non-null pointers.  For instance, the declaration:
 @smallexample
 extern void *
 my_memcpy (void *dest, const void *src, size_t len)
-	__attribute__((nonnull (1, 2)));
+        __attribute__((nonnull (1, 2)));
 @end smallexample
 
 @noindent
@@ -2602,7 +2602,7 @@ following declaration is equivalent to the previous example:
 @smallexample
 extern void *
 my_memcpy (void *dest, const void *src, size_t len)
-	__attribute__((nonnull));
+        __attribute__((nonnull));
 @end smallexample
 
 @item noreturn
@@ -5503,12 +5503,12 @@ the @code{offsetof} macro.
 
 @smallexample
 primary:
-	"__builtin_offsetof" "(" @code{typename} "," offsetof_member_designator ")"
+        "__builtin_offsetof" "(" @code{typename} "," offsetof_member_designator ")"
 
 offsetof_member_designator:
-	  @code{identifier}
-	| offsetof_member_designator "." @code{identifier}
-	| offsetof_member_designator "[" @code{expr} "]"
+          @code{identifier}
+        | offsetof_member_designator "." @code{identifier}
+        | offsetof_member_designator "[" @code{expr} "]"
 @end smallexample
 
 This extension is sufficient such that
@@ -5701,7 +5701,7 @@ assert (__builtin_object_size (p, 0) == sizeof (var) - 1);
 assert (__builtin_object_size (p, 1) == sizeof (var.buf1) - 1);
 /* The object q points to is var.  */
 assert (__builtin_object_size (q, 0)
-	== (char *) (&var + 1) - (char *) &var.b);
+        == (char *) (&var + 1) - (char *) &var.b);
 /* The subobject q points to is var.b.  */
 assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @end smallexample
@@ -5753,11 +5753,11 @@ There are also checking built-in functions for formatted output functions.
 @smallexample
 int __builtin___sprintf_chk (char *s, int flag, size_t os, const char *fmt, ...);
 int __builtin___snprintf_chk (char *s, size_t maxlen, int flag, size_t os,
-			      const char *fmt, ...);
+                              const char *fmt, ...);
 int __builtin___vsprintf_chk (char *s, int flag, size_t os, const char *fmt,
-			      va_list ap);
+                              va_list ap);
 int __builtin___vsnprintf_chk (char *s, size_t maxlen, int flag, size_t os,
-			       const char *fmt, va_list ap);
+                               const char *fmt, va_list ap);
 @end smallexample
 
 The added @var{flag} argument is passed unchanged to @code{__sprintf_chk}
@@ -11795,7 +11795,7 @@ test specifically for GNU C++ (@pxref{Common Predefined Macros,,
 Predefined Macros,cpp,The GNU C Preprocessor}).
 
 @menu
-* Volatiles::		What constitutes an access to a volatile object.
+* Volatiles::           What constitutes an access to a volatile object.
 * Restricted Pointers:: C99 restricted pointers and references.
 * Vague Linkage::       Where G++ puts inlines, vtables and such.
 * C++ Interface::       You can use a single C++ header file for both

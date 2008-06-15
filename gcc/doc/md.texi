@@ -25,11 +25,11 @@ See the next chapter for information on the C header file.
 * Example::             An explained example of a @code{define_insn} pattern.
 * RTL Template::        The RTL template defines what insns match a pattern.
 * Output Template::     The output template says how to make assembler code
-                          from such an insn.
+                        from such an insn.
 * Output Statement::    For more generality, write C code to output
-                          the assembler code.
+                        the assembler code.
 * Predicates::          Controlling what kinds of operands can be used
-                          for an insn.
+                        for an insn.
 * Constraints::         Fine-tuning operand selection.
 * Standard Names::      Names mark patterns to use for code generation.
 * Pattern Ordering::    When the order of patterns makes a difference.
@@ -38,13 +38,13 @@ See the next chapter for information on the C header file.
 * Looping Patterns::    How to define patterns for special looping insns.
 * Insn Canonicalizations::Canonicalization of Instructions
 * Expander Definitions::Generating a sequence of several RTL insns
-                          for a standard operation.
+                        for a standard operation.
 * Insn Splitting::      Splitting Instructions into Multiple Instructions.
-* Including Patterns::      Including Patterns in Machine Descriptions.
+* Including Patterns::  Including Patterns in Machine Descriptions.
 * Peephole Definitions::Defining machine-specific peephole optimizations.
 * Insn Attributes::     Specifying the value of attributes for generated insns.
 * Conditional Execution::Generating @code{define_insn} patterns for
-                           predication.
+                         predication.
 * Constant Definitions::Defining symbolic constants that can be used in the
                         md file.
 * Iterators::           Using iterators to generate patterns from a template.
@@ -1629,7 +1629,7 @@ it includes both constraints that are useful for @code{asm} and
 constraints that aren't.  The compiler source file mentioned in the
 table heading for each architecture is the definitive reference for
 the meanings of that architecture's constraints.
- 
+
 @table @emph
 @item ARM family---@file{config/arm/arm.h}
 @table @code
@@ -2849,10 +2849,10 @@ Signed 16-bit constant (@minus{}32768--32767)
 @item L
 Value appropriate as displacement.
 @table @code
-       @item (0..4095)
-       for short displacement
-       @item (-524288..524287)
-       for long displacement
+@item (0..4095)
+for short displacement
+@item (-524288..524287)
+for long displacement
 @end table
 
 @item M
@@ -2861,14 +2861,14 @@ Constant integer with a value of 0x7fffffff.
 @item N
 Multiple letter constraint followed by 4 parameter letters.
 @table @code
-         @item 0..9:
-         number of the part counting from most to least significant
-         @item H,Q:
-         mode of the part
-         @item D,S,H:
-         mode of the containing operand
-         @item 0,F:
-         value of the other parts (F---all bits set)
+@item 0..9:
+number of the part counting from most to least significant
+@item H,Q:
+mode of the part
+@item D,S,H:
+mode of the containing operand
+@item 0,F:
+value of the other parts (F---all bits set)
 @end table
 The constraint matches if the specified part of a constant
 has a value different from its other parts.
@@ -3398,8 +3398,8 @@ definition from the i386 machine description.)
 (define_peephole2
   [(match_scratch:SI 3 "r")
    (set (match_operand:SI 0 "register_operand" "")
-	(mult:SI (match_operand:SI 1 "memory_operand" "")
-		 (match_operand:SI 2 "immediate_operand" "")))]
+        (mult:SI (match_operand:SI 1 "memory_operand" "")
+                 (match_operand:SI 2 "immediate_operand" "")))]
 
   "!satisfies_constraint_K (operands[2])"
 
@@ -5440,15 +5440,15 @@ following for its @code{dbra} instruction:
 @group
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
-	(if_then_else
-	  (ge (plus:SI (match_operand:SI 0 "general_operand" "+d*am")
-		       (const_int -1))
-	      (const_int 0))
-	  (label_ref (match_operand 1 "" ""))
-	  (pc)))
+        (if_then_else
+          (ge (plus:SI (match_operand:SI 0 "general_operand" "+d*am")
+                       (const_int -1))
+              (const_int 0))
+          (label_ref (match_operand 1 "" ""))
+          (pc)))
    (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int -1)))]
+        (plus:SI (match_dup 0)
+                 (const_int -1)))]
   "find_reg_note (insn, REG_NONNEG, 0)"
   "@dots{}")
 @end group
@@ -5466,14 +5466,14 @@ pattern will not be matched by the combiner.
 @group
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
-	(if_then_else
-	  (ge (match_operand:SI 0 "general_operand" "+d*am")
-	      (const_int 1))
-	  (label_ref (match_operand 1 "" ""))
-	  (pc)))
+        (if_then_else
+          (ge (match_operand:SI 0 "general_operand" "+d*am")
+              (const_int 1))
+          (label_ref (match_operand 1 "" ""))
+          (pc)))
    (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int -1)))]
+        (plus:SI (match_dup 0)
+                 (const_int -1)))]
   "find_reg_note (insn, REG_NONNEG, 0)"
   "@dots{}")
 @end group
@@ -6095,7 +6095,7 @@ from i386.md:
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
                    (and:SI (match_dup 0) (const_int 65535)))
-	      (clobber (reg:CC 17))])]
+              (clobber (reg:CC 17))])]
   ""
   [(set_attr "type" "alu1")])
 
@@ -7236,10 +7236,10 @@ the instruction issue is possible if there is a transition from one
 automaton state to another one.  This algorithm is very fast, and
 furthermore, its speed is not dependent on processor
 complexity@footnote{However, the size of the automaton depends on
-  processor complexity.  To limit this effect, machine descriptions
-  can split orthogonal parts of the machine description among several
-  automata: but then, since each of these must be stepped independently,
-  this does cause a small decrease in the algorithm's performance.}.
+processor complexity.  To limit this effect, machine descriptions
+can split orthogonal parts of the machine description among several
+automata: but then, since each of these must be stepped independently,
+this does cause a small decrease in the algorithm's performance.}.
 
 @cindex automaton based pipeline description
 The rest of this section describes the directives that constitute
@@ -7839,8 +7839,8 @@ rtx-based construct, such as a @code{define_insn},
 
 @menu
 * Defining Mode Iterators:: Defining a new mode iterator.
-* Substitutions::	    Combining mode iterators with substitutions
-* Examples::		    Examples
+* Substitutions::           Combining mode iterators with substitutions
+* Examples::                Examples
 @end menu
 
 @node Defining Mode Iterators

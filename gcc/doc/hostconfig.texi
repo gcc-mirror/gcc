@@ -22,9 +22,9 @@ definitions, consider using the @code{xm_defines} variable in your
 header.  @xref{System Config}.
 
 @menu
-* Host Common::		Things every host probably needs implemented.
+* Host Common::         Things every host probably needs implemented.
 * Filesystem::          Your host can't have the letter `a' in filenames?
-* Host Misc::         	Rare configuration options for hosts.
+* Host Misc::           Rare configuration options for hosts.
 @end menu
 
 @node Host Common

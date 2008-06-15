@@ -190,7 +190,7 @@ Part II: Language Reference
 * Copying::              GNU General Public License says
                          how you can copy and share GNU Fortran.
 * GNU Free Documentation License::
-		         How you can copy and share this manual.
+                         How you can copy and share this manual.
 * Funding::              How to help assure continued work for free software.
 * Option Index::         Index of command line options
 * Keyword Index::        Index of concepts
@@ -229,7 +229,7 @@ or alternative to, the unix @command{f95} command;
 * Preprocessing and conditional compilation:: The Fortran preprocessor
 * GNU Fortran and G77::  Why we chose to start from scratch.
 * Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
-* Standards::	         Standards supported by GNU Fortran.
+* Standards::            Standards supported by GNU Fortran.
 @end menu
 
 
@@ -693,7 +693,7 @@ the modes are the same as for the @code{CONVERT} specifier:
 @item @code{NATIVE} Use the native format.  This is the default.
 @item @code{SWAP} Swap between little- and big-endian.
 @item @code{LITTLE_ENDIAN} Use the little-endian format
-        for unformatted files.
+for unformatted files.
 @item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
 @end itemize
 A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
@@ -1415,9 +1415,9 @@ Valid values for @code{CONVERT} are:
 @item @code{CONVERT='NATIVE'} Use the native format.  This is the default.
 @item @code{CONVERT='SWAP'} Swap between little- and big-endian.
 @item @code{CONVERT='LITTLE_ENDIAN'} Use the little-endian representation
-        for unformatted files.
+for unformatted files.
 @item @code{CONVERT='BIG_ENDIAN'} Use the big-endian representation for
-        unformatted files.
+unformatted files.
 @end itemize
 
 Using the option could look like this:

@@ -1,3 +1,7 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libgomp.texi (omp_test_lock): Fix typo.
+
 2008-06-12  Tobias Burnus  <burnus@net-b.de>
 
 	* omp_lib.f90.in: Add "implicit none".

@@ -37,12 +37,12 @@ functions and programming constructs needed to implement optimization
 passes for GIMPLE@.
 
 @menu
-* GENERIC::		A high-level language-independent representation.
+* GENERIC::             A high-level language-independent representation.
 * GIMPLE::              A lower-level factored tree representation.
-* Annotations::		Attributes for statements and variables.
-* Statement Operands::	Variables referenced by GIMPLE statements.
-* SSA::			Static Single Assignment representation.
-* Alias analysis::	Representing aliased loads and stores.
+* Annotations::         Attributes for statements and variables.
+* Statement Operands::  Variables referenced by GIMPLE statements.
+* SSA::                 Static Single Assignment representation.
+* Alias analysis::      Representing aliased loads and stores.
 @end menu
 
 @node GENERIC
@@ -735,10 +735,10 @@ void f()
                 | RELOP
                         op0 -> val
                         op1 -> val
-		| COND_EXPR
-			op0 -> condition
-			op1 -> val
-			op2 -> val
+                | COND_EXPR
+                        op0 -> condition
+                        op1 -> val
+                        op2 -> val
 @end smallexample
 
 @node Annotations
@@ -943,7 +943,7 @@ How to choose the appropriate iterator:
 
 @enumerate
 @item Determine whether you are need to see the operand pointers, or just the
-    trees, and choose the appropriate macro:
+trees, and choose the appropriate macro:
 
 @smallexample
 Need            Macro:
@@ -954,12 +954,12 @@ tree            FOR_EACH_SSA_TREE_OPERAND
 @end smallexample
 
 @item You need to declare a variable of the type you are interested
-    in, and an ssa_op_iter structure which serves as the loop
-    controlling variable.
+in, and an ssa_op_iter structure which serves as the loop controlling
+variable.
 
 @item Determine which operands you wish to use, and specify the flags of
-    those you are interested in.  They are documented in
-    @file{tree-ssa-operands.h}:
+those you are interested in.  They are documented in
+@file{tree-ssa-operands.h}:
 
 @smallexample
 #define SSA_OP_USE              0x01    /* @r{Real USE operands.}  */
@@ -1228,27 +1228,27 @@ which''.
 
 The following macros can be used to examine PHI nodes
 
-@defmac	PHI_RESULT (@var{phi})
+@defmac PHI_RESULT (@var{phi})
 Returns the @code{SSA_NAME} created by PHI node @var{phi} (i.e.,
 @var{phi}'s LHS)@.
 @end defmac
 
-@defmac	PHI_NUM_ARGS (@var{phi})
+@defmac PHI_NUM_ARGS (@var{phi})
 Returns the number of arguments in @var{phi}.  This number is exactly
 the number of incoming edges to the basic block holding @var{phi}@.
 @end defmac
 
-@defmac	PHI_ARG_ELT (@var{phi}, @var{i})
+@defmac PHI_ARG_ELT (@var{phi}, @var{i})
 Returns a tuple representing the @var{i}th argument of @var{phi}@.
 Each element of this tuple contains an @code{SSA_NAME} @var{var} and
 the incoming edge through which @var{var} flows.
 @end defmac
 
-@defmac	PHI_ARG_EDGE (@var{phi}, @var{i})
+@defmac PHI_ARG_EDGE (@var{phi}, @var{i})
 Returns the incoming edge for the @var{i}th argument of @var{phi}.
 @end defmac
 
-@defmac	PHI_ARG_DEF (@var{phi}, @var{i})
+@defmac PHI_ARG_DEF (@var{phi}, @var{i})
 Returns the @code{SSA_NAME} for the @var{i}th argument of @var{phi}.
 @end defmac
 
@@ -1274,36 +1274,36 @@ the program@.
 For instance, given the following code:
 
 @smallexample
-     1	L0:
-     2	x_1 = PHI (0, x_5)
-     3	if (x_1 < 10)
-     4	  if (x_1 > 7)
-     5	    y_2 = 0
-     6	  else
-     7	    y_3 = x_1 + x_7
-     8	  endif
-     9	  x_5 = x_1 + 1
+     1  L0:
+     2  x_1 = PHI (0, x_5)
+     3  if (x_1 < 10)
+     4    if (x_1 > 7)
+     5      y_2 = 0
+     6    else
+     7      y_3 = x_1 + x_7
+     8    endif
+     9    x_5 = x_1 + 1
      10   goto L0;
-     11	endif
+     11 endif
 @end smallexample
 
 Suppose that we insert new names @code{x_10} and @code{x_11} (lines
 @code{4} and @code{8})@.
 
 @smallexample
-     1	L0:
-     2	x_1 = PHI (0, x_5)
-     3	if (x_1 < 10)
-     4	  x_10 = @dots{}
-     5	  if (x_1 > 7)
-     6	    y_2 = 0
-     7	  else
-     8	    x_11 = @dots{}
-     9	    y_3 = x_1 + x_7
-     10	  endif
-     11	  x_5 = x_1 + 1
-     12	  goto L0;
-     13	endif
+     1  L0:
+     2  x_1 = PHI (0, x_5)
+     3  if (x_1 < 10)
+     4    x_10 = @dots{}
+     5    if (x_1 > 7)
+     6      y_2 = 0
+     7    else
+     8      x_11 = @dots{}
+     9      y_3 = x_1 + x_7
+     10   endif
+     11   x_5 = x_1 + 1
+     12   goto L0;
+     13 endif
 @end smallexample
 
 We want to replace all the uses of @code{x_1} with the new definitions
@@ -1341,40 +1341,40 @@ There are several @code{TODO} flags that control the behavior of
 
 @itemize @bullet
 @item @code{TODO_update_ssa}.  Update the SSA form inserting PHI nodes
-      for newly exposed symbols and virtual names marked for updating.
-      When updating real names, only insert PHI nodes for a real name
-      @code{O_j} in blocks reached by all the new and old definitions for
-      @code{O_j}.  If the iterated dominance frontier for @code{O_j}
-      is not pruned, we may end up inserting PHI nodes in blocks that
-      have one or more edges with no incoming definition for
-      @code{O_j}.  This would lead to uninitialized warnings for
-      @code{O_j}'s symbol@.
+for newly exposed symbols and virtual names marked for updating.
+When updating real names, only insert PHI nodes for a real name
+@code{O_j} in blocks reached by all the new and old definitions for
+@code{O_j}.  If the iterated dominance frontier for @code{O_j}
+is not pruned, we may end up inserting PHI nodes in blocks that
+have one or more edges with no incoming definition for
+@code{O_j}.  This would lead to uninitialized warnings for
+@code{O_j}'s symbol@.
 
 @item @code{TODO_update_ssa_no_phi}.  Update the SSA form without
-      inserting any new PHI nodes at all.  This is used by passes that
-      have either inserted all the PHI nodes themselves or passes that
-      need only to patch use-def and def-def chains for virtuals
-      (e.g., DCE)@.
+inserting any new PHI nodes at all.  This is used by passes that
+have either inserted all the PHI nodes themselves or passes that
+need only to patch use-def and def-def chains for virtuals
+(e.g., DCE)@.
 
 
 @item @code{TODO_update_ssa_full_phi}.  Insert PHI nodes everywhere
-      they are needed.  No pruning of the IDF is done.  This is used
-      by passes that need the PHI nodes for @code{O_j} even if it
-      means that some arguments will come from the default definition
-      of @code{O_j}'s symbol (e.g., @code{pass_linear_transform})@.
+they are needed.  No pruning of the IDF is done.  This is used
+by passes that need the PHI nodes for @code{O_j} even if it
+means that some arguments will come from the default definition
+of @code{O_j}'s symbol (e.g., @code{pass_linear_transform})@.
 
-      WARNING: If you need to use this flag, chances are that your
-      pass may be doing something wrong.  Inserting PHI nodes for an
-      old name where not all edges carry a new replacement may lead to
-      silent codegen errors or spurious uninitialized warnings@.
+WARNING: If you need to use this flag, chances are that your
+pass may be doing something wrong.  Inserting PHI nodes for an
+old name where not all edges carry a new replacement may lead to
+silent codegen errors or spurious uninitialized warnings@.
 
 @item @code{TODO_update_ssa_only_virtuals}.  Passes that update the
-      SSA form on their own may want to delegate the updating of
-      virtual names to the generic updater.  Since FUD chains are
-      easier to maintain, this simplifies the work they need to do.
-      NOTE: If this flag is used, any OLD->NEW mappings for real names
-      are explicitly destroyed and only the symbols marked for
-      renaming are processed@.
+SSA form on their own may want to delegate the updating of
+virtual names to the generic updater.  Since FUD chains are
+easier to maintain, this simplifies the work they need to do.
+NOTE: If this flag is used, any OLD->NEW mappings for real names
+are explicitly destroyed and only the symbols marked for
+renaming are processed@.
 @end itemize
 
 @subsection Preserving the virtual SSA form
@@ -1445,8 +1445,8 @@ slightly different.  For each argument @var{arg} of the PHI node, this
 function will:
 
 @enumerate
-@item	Walk the use-def chains for @var{arg}.
-@item	Call @code{FN (@var{arg}, @var{phi}, @var{data})}.
+@item Walk the use-def chains for @var{arg}.
+@item Call @code{FN (@var{arg}, @var{phi}, @var{data})}.
 @end enumerate
 
 Note how the first argument to @var{fn} is no longer the original
@@ -1466,26 +1466,26 @@ hooks to execute custom code at various points during traversal:
 
 @enumerate
 @item Once to initialize any local data needed while processing
-      @var{bb} and its children.  This local data is pushed into an
-      internal stack which is automatically pushed and popped as the
-      walker traverses the dominator tree.
+@var{bb} and its children.  This local data is pushed into an
+internal stack which is automatically pushed and popped as the
+walker traverses the dominator tree.
 
 @item Once before traversing all the statements in the @var{bb}.
 
 @item Once for every statement inside @var{bb}.
 
 @item Once after traversing all the statements and before recursing
-      into @var{bb}'s dominator children.
+into @var{bb}'s dominator children.
 
 @item It then recurses into all the dominator children of @var{bb}.
 
 @item After recursing into all the dominator children of @var{bb} it
-      can, optionally, traverse every statement in @var{bb} again
-      (i.e., repeating steps 2 and 3).
+can, optionally, traverse every statement in @var{bb} again
+(i.e., repeating steps 2 and 3).
 
 @item Once after walking the statements in @var{bb} and @var{bb}'s
-      dominator children.  At this stage, the block local data stack
-      is popped.
+dominator children.  At this stage, the block local data stack
+is popped.
 @end enumerate
 @end deftypefn
 
@@ -1535,16 +1535,16 @@ int bar (void)
 If you copy the symbol tag for a variable for some reason, you probably
 also want to copy the subvariables for that variable.
 
-@item	Points-to and escape analysis.
+@item Points-to and escape analysis.
 
 This phase walks the use-def chains in the SSA web looking for
 three things:
 
-	@itemize @bullet
-	@item	Assignments of the form @code{P_i = &VAR}
-	@item	Assignments of the form P_i = malloc()
-	@item	Pointers and ADDR_EXPR that escape the current function.
-	@end itemize
+@itemize @bullet
+@item Assignments of the form @code{P_i = &VAR}
+@item Assignments of the form P_i = malloc()
+@item Pointers and ADDR_EXPR that escape the current function.
+@end itemize
 
 The concept of `escaping' is the same one used in the Java world.
 When a pointer or an ADDR_EXPR escapes, it means that it has been
@@ -1562,7 +1562,7 @@ call-clobbered.  Simply put, if an ADDR_EXPR escapes, then the
 variable is call-clobbered.  If a pointer P_i escapes, then all
 the variables pointed-to by P_i (and its memory tag) also escape.
 
-@item	Compute flow-sensitive aliases
+@item Compute flow-sensitive aliases
 
 We have two classes of memory tags.  Memory tags associated with
 the pointed-to data type of the pointers in the program.  These
@@ -1579,7 +1579,7 @@ associated with each pointer P_i.  If P_i escapes, we mark
 call-clobbered the variables it points to and its tag.
 
 
-@item	Compute flow-insensitive aliases
+@item Compute flow-insensitive aliases
 
 This pass will compare the alias set of every symbol memory tag and
 every addressable variable found in the program.  Given a symbol

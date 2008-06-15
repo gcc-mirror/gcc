@@ -1,3 +1,26 @@
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/sourcebuild.texi (Config Fragments): Remove obsolete
+	FIXME note about gcc/config.guess.
+	* doc/options.texi (Option file format): Remove non-ASCII bytes.
+	* doc/cpp.texi: Expand TABs, drop indentation outside examples.
+	* doc/cppopts.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/gcc.texi: Likewise.
+	* doc/gccint.texi: Likewise.
+	* doc/gcov.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/hostconfig.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/loop.texi: Likewise.
+	* doc/makefile.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+
 2008-06-15  Mark Shinwell  <shinwell@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>

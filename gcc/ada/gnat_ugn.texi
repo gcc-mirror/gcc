@@ -8862,7 +8862,7 @@ Project File is specified, with the ALI file extension.
 Compile only. Do not perform binding, except when @option{^-b^/ACTIONS=BIND^}
 is also specified. Do not perform linking, except if both
 @option{^-b^/ACTIONS=BIND^} and
- @option{^-l^/ACTIONS=LINK^} are also specified.
+@option{^-l^/ACTIONS=LINK^} are also specified.
 If the root unit specified by @var{file_name} is not a main unit, this is the
 default. Otherwise @command{gnatmake} will attempt binding and linking
 unless all objects are up to date and the executable is more recent than
@@ -8894,7 +8894,9 @@ This switch is not compatible with a project file
 @cindex @option{^-d^/DISPLAY_PROGRESS^} (@command{gnatmake})
 Display progress for each source, up to date or not, as a single line
 
-   completed x out of y (zz%)
+@smallexample
+completed x out of y (zz%)
+@end smallexample
 
 If the file needs to be compiled this is displayed after the invocation of
 the compiler. These lines are displayed even in quiet output mode.
@@ -9419,8 +9421,8 @@ and @file{^main3^MAIN3.EXE^}.
 
 @ifset vms
 @item gnatmake Main_Unit /QUIET
-   /COMPILER_QUALIFIERS /OPTIMIZE=ALL
-   /BINDER_QUALIFIERS /ORDER_OF_ELABORATION
+/COMPILER_QUALIFIERS /OPTIMIZE=ALL
+/BINDER_QUALIFIERS /ORDER_OF_ELABORATION
 @end ifset
 Compile all files necessary to bind and link the main program unit
 @code{Main_Unit} (from file @file{main_unit.adb}). All compilations will
@@ -12640,7 +12642,7 @@ The prefix of an attribute may be:
 @item The name of an imported project
 @item The name of a parent project that is extended by the current project
 @item An expanded name whose prefix is imported/parent project name,
-      and whose selector is a package name
+and whose selector is a package name
 @end itemize
 
 @noindent
@@ -15287,8 +15289,8 @@ specifies the command used to compile a single file in the application.
 @ifclear vms
 @item make_cmd=COMMAND
 [default: @code{"gnatmake $@{main@} -aI$@{src_dir@}
- -aO$@{obj_dir@} -g -gnatq -cargs $@{comp_opt@}
- -bargs $@{bind_opt@} -largs $@{link_opt@}"}]
+-aO$@{obj_dir@} -g -gnatq -cargs $@{comp_opt@}
+-bargs $@{bind_opt@} -largs $@{link_opt@}"}]
 @end ifclear
 specifies the command used to recompile the whole application.
 
@@ -17961,25 +17963,23 @@ $ GNAT LIBRARY /[CREATE | SET | DELETE]=directory [/CONFIG=file]
 @c !sort!
 @item /CREATE=directory
 @cindex @code{/CREATE} (@code{gnatlbr})
-     Create the new run-time library in the specified directory.
+Create the new run-time library in the specified directory.
 
 @item /SET=directory
 @cindex @code{/SET} (@code{gnatlbr})
-     Make the library in the specified directory the current run-time
-     library.
+Make the library in the specified directory the current run-time library.
 
 @item /DELETE=directory
 @cindex @code{/DELETE} (@code{gnatlbr})
-     Delete the run-time library in the specified directory.
+Delete the run-time library in the specified directory.
 
 @item /CONFIG=file
 @cindex @code{/CONFIG} (@code{gnatlbr})
-     With /CREATE:
-     Use the configuration pragmas in the specified file when building
-     the library.
+With /CREATE: Use the configuration pragmas in the specified file when
+building the library.
 
-     With /SET:
-     Use the configuration pragmas in the specified file when compiling.
+With /SET: Use the configuration pragmas in the specified file when
+compiling.
 
 @end table
 
@@ -21102,14 +21102,14 @@ The following declarations are checked:
 
 @itemize @bullet
 @item
- type declarations
+type declarations
 
 @item
- constant declarations (but not number declarations)
+constant declarations (but not number declarations)
 
 @item
- package renaming declarations (but not generic package renaming
-    declarations)
+package renaming declarations (but not generic package renaming
+declarations)
 @end itemize
 
 @noindent
@@ -21118,12 +21118,12 @@ the following checks:
 
 @itemize @bullet
 @item
-   type-defining names end with @code{_T}, unless the type is an access type,
-    in which case the suffix must be @code{_A}
+type-defining names end with @code{_T}, unless the type is an access type,
+in which case the suffix must be @code{_A}
 @item
-   constant names end with @code{_C}
+constant names end with @code{_C}
 @item
-   names defining package renamings end with @code{_R}
+names defining package renamings end with @code{_R}
 @end itemize
 
 @noindent
@@ -21132,19 +21132,19 @@ made for the defining name suffix:
 
 @itemize @bullet
 @item
- For an incomplete type declaration: if the corresponding full type
-  declaration is available, the defining identifier from the full type
-  declaration is checked, but the defining identifier from the incomplete type
-  declaration is not; otherwise the defining identifier from the incomplete
-  type declaration is checked against the suffix specified for type
-  declarations.
+For an incomplete type declaration: if the corresponding full type
+declaration is available, the defining identifier from the full type
+declaration is checked, but the defining identifier from the incomplete type
+declaration is not; otherwise the defining identifier from the incomplete
+type declaration is checked against the suffix specified for type
+declarations.
 
 @item
- For a private type declaration (including private extensions),  the defining
-  identifier from the private type declaration is checked against the type
-  suffix (even if the corresponding full declaration is an access type
-  declaration), and the defining identifier from the corresponding full type
-  declaration is not checked.
+For a private type declaration (including private extensions),  the defining
+identifier from the private type declaration is checked against the type
+suffix (even if the corresponding full declaration is an access type
+declaration), and the defining identifier from the corresponding full type
+declaration is not checked.
 @end itemize
 
 @noindent
@@ -24217,7 +24217,7 @@ functions:
 @item @code{TO_UNSIGNED_LONGWORD(ADDRESS)}
 
 @item Function @code{IMPORT_VALUE return UNSIGNED_LONGWORD} and the
-              functions @code{IMPORT_ADDRESS} and @code{IMPORT_LARGEST_VALUE}
+functions @code{IMPORT_ADDRESS} and @code{IMPORT_LARGEST_VALUE}
 @end itemize
 
 @noindent
@@ -24410,16 +24410,15 @@ GNAT supplies the following task-related pragmas:
 @itemize @bullet
 @item  @code{TASK_INFO}
 
-              This pragma appears within a task definition and
-              applies to the task in which it appears. The argument
-              must be of type @code{SYSTEM.TASK_INFO.TASK_INFO_TYPE}.
+This pragma appears within a task definition and
+applies to the task in which it appears. The argument
+must be of type @code{SYSTEM.TASK_INFO.TASK_INFO_TYPE}.
 
 @item  @code{TASK_STORAGE}
 
-              GNAT implements pragma @code{TASK_STORAGE} in the same way as
-              HP Ada.
-              Both HP Ada and GNAT supply the pragmas @code{PASSIVE},
-              @code{SUPPRESS}, and @code{VOLATILE}.
+GNAT implements pragma @code{TASK_STORAGE} in the same way as HP Ada.
+Both HP Ada and GNAT supply the pragmas @code{PASSIVE},
+@code{SUPPRESS}, and @code{VOLATILE}.
 @end itemize
 @node Scheduling and Task Priority
 @subsection Scheduling and Task Priority
@@ -24875,17 +24874,16 @@ On HP Ada, main programs are defined to meet the
 following conditions:
 @itemize @bullet
 @item  Procedure with no formal parameters (returns @code{0} upon
-       normal completion)
+normal completion)
 
 @item  Procedure with no formal parameters (returns @code{42} when
-       an unhandled exception is raised)
+an unhandled exception is raised)
 
 @item  Function with no formal parameters whose returned value
-       is of a discrete type
+is of a discrete type
 
 @item  Procedure with one @code{out} formal of a discrete type for
-       which a specification of pragma @code{EXPORT_VALUED_PROCEDURE}
-       is given.
+which a specification of pragma @code{EXPORT_VALUED_PROCEDURE} is given.
 
 @end itemize
 
@@ -25270,7 +25268,7 @@ and GNAT systems.
 @sp 1
 
 @item  In a subprogram or entry  declaration, maximum number of
-       formal parameters that are of an unconstrained record type
+formal parameters that are of an unconstrained record type
 @tab   32
 @tab   No set limit
 @sp 1
@@ -25296,7 +25294,7 @@ and GNAT systems.
 @sp 1
 
 @item  Maximum number of formal parameters in an entry or
-       subprogram declaration
+subprogram declaration
 @tab   246
 @tab    No set limit
 @sp 1
@@ -25317,13 +25315,13 @@ and GNAT systems.
 @sp 1
 
 @item  Maximum number of objects declared with the pragma @code{COMMON_OBJECT}
-       or @code{PSECT_OBJECT}
+or @code{PSECT_OBJECT}
 @tab   32757
 @tab   No set limit
 @sp 1
 
 @item  Maximum number of enumeration literals in an enumeration type
-       definition
+definition
 @tab   65535
 @tab   No set limit
 @sp 1
@@ -25422,35 +25420,35 @@ of the DECset package.
 @c @multitable @columnfractions .3 .4 .4
 @multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with GNAT Pro}
 @item @i{Tool}
- @tab @i{Tool with HP Ada}
- @tab @i{Tool with @value{EDITION}}
+@tab @i{Tool with HP Ada}
+@tab @i{Tool with @value{EDITION}}
 @item Code Management@*System
- @tab HP CMS
- @tab HP CMS
+@tab HP CMS
+@tab HP CMS
 @item Language-Sensitive@*Editor
- @tab HP LSE
- @tab emacs or HP LSE (Alpha)
+@tab HP LSE
+@tab emacs or HP LSE (Alpha)
 @item
- @tab
- @tab HP LSE (I64)
+@tab
+@tab HP LSE (I64)
 @item Debugger
- @tab OpenVMS Debug
- @tab gdb (Alpha),
+@tab OpenVMS Debug
+@tab gdb (Alpha),
 @item
- @tab
- @tab OpenVMS Debug (I64)
+@tab
+@tab OpenVMS Debug (I64)
 @item Source Code Analyzer /@*Cross Referencer
- @tab HP SCA
- @tab GNAT XREF
+@tab HP SCA
+@tab GNAT XREF
 @item Test Manager
- @tab HP Digital Test@*Manager (DTM)
- @tab HP DTM
+@tab HP Digital Test@*Manager (DTM)
+@tab HP DTM
 @item Performance and@*Coverage Analyzer
- @tab HP PCA
- @tab HP PCA
+@tab HP PCA
+@tab HP PCA
 @item Module Management@*System
- @tab HP MMS
- @tab Not applicable
+@tab HP MMS
+@tab Not applicable
 @end multitable
 @end flushleft
 @end ifnottex
@@ -25787,16 +25785,16 @@ to one of the following:
 @table @code
 @item -2
 Use the default configuration (run the program on all
-         available processors) - this is the same as having
-         @code{GNAT_PROCESSOR} unset
+available processors) - this is the same as having @code{GNAT_PROCESSOR}
+unset
 
 @item -1
 Let the run-time implementation choose one processor and run the program on
-         that processor
+that processor
 
 @item 0 .. Last_Proc
 Run the program on the specified processor.
-  @code{Last_Proc} is equal to @code{_SC_NPROCESSORS_CONF - 1}
+@code{Last_Proc} is equal to @code{_SC_NPROCESSORS_CONF - 1}
 (where @code{_SC_NPROCESSORS_CONF} is a system variable).
 @end table
 

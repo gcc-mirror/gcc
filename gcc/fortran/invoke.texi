@@ -15,7 +15,7 @@ Invariant Sections being ``GNU General Public License'' and ``Funding
 Free Software'', the Front-Cover texts being (a) (see below), and with
 the Back-Cover Texts being (b) (see below).  A copy of the license is
 included in the gfdl(7) man page.
- 
+
 (a) The FSF's Front-Cover Text is:
 
      A GNU Manual
@@ -36,7 +36,7 @@ gfortran [@option{-c}|@option{-S}|@option{-E}]
          [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
          [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
          [@option{-f}@var{option}@dots{}]
-	 [@option{-m}@var{machine-option}@dots{}]
+         [@option{-m}@var{machine-option}@dots{}]
          [@option{-o} @var{outfile}] @var{infile}@dots{}
 
 Only the most useful options are listed here; see below for the

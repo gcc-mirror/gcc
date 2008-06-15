@@ -66,9 +66,9 @@ The parser understands simple typedefs such as
 These don't need to be marked.
 
 @menu
-* GTY Options::		What goes inside a @code{GTY(())}.
-* GGC Roots::		Making global variables GGC roots.
-* Files::		How the generated files work.
+* GTY Options::         What goes inside a @code{GTY(())}.
+* GGC Roots::           Making global variables GGC roots.
+* Files::               How the generated files work.
 @end menu
 
 @node GTY Options
@@ -136,7 +136,7 @@ the length of an array.  The first case is when a structure ends in a
 variable-length array, like this:
 @smallexample
 struct rtvec_def GTY(()) @{
-  int num_elem;		/* @r{number of elements} */
+  int num_elem;         /* @r{number of elements} */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 @};
 @end smallexample
