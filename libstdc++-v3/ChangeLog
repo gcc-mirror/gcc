@@ -1,5 +1,11 @@
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* include/Makefile.am: Remove trailing white space, fix typo.
+	(parallel_headers): Remove duplicate file, sort entries.
+	* include/Makefile.in: Regenerate.
+
+2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* src/condition_variable.cc (~condition_variable): Drop unused
 	variable.
 
