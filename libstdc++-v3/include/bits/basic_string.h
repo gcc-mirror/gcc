@@ -2473,6 +2473,42 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    wchar_t __delim);
 #endif  
 
+
+#if (defined(__GXX_EXPERIMENTAL_CXX0X__) && defined(_GLIBCXX_USE_C99))
+
+  // 21.4 Numeric Conversions [string.conversions].
+  int stoi(const string&, size_t* = 0, int = 10);
+  long stol(const string&, size_t* = 0, int = 10);
+  unsigned long stoul(const string&, size_t* = 0, int = 10);
+  long long stoll(const string&, size_t* = 0, int = 10);
+  unsigned long long stoull(const string&, size_t* = 0, int = 10);
+
+  float stof(const string&, size_t* = 0);
+  double stod(const string&, size_t* = 0);
+  long double stold(const string&, size_t* = 0);
+
+  string to_string(long long);
+  string to_string(unsigned long long);
+  string to_string(long double);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  int stoi(const wstring&, size_t* = 0, int = 10);
+  long stol(const wstring&, size_t* = 0, int = 10);
+  unsigned long stoul(const wstring&, size_t* = 0, int = 10);
+  long long stoll(const wstring&, size_t* = 0, int = 10);
+  unsigned long long stoull(const wstring&, size_t* = 0, int = 10);
+
+  float stof(const wstring&, size_t* = 0);
+  double stod(const wstring&, size_t* = 0);
+  long double stold(const wstring&, size_t* = 0);
+
+  wstring to_wstring(long long);
+  wstring to_wstring(unsigned long long);
+  wstring to_wstring(long double);
+#endif
+
+#endif
+
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _BASIC_STRING_H */
