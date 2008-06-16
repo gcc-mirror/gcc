@@ -83,11 +83,12 @@ am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	allocator-inst.cc concept-inst.cc fstream-inst.cc ext-inst.cc \
 	ios-inst.cc iostream-inst.cc istream-inst.cc istream.cc \
 	locale-inst.cc misc-inst.cc ostream-inst.cc sstream-inst.cc \
-	streambuf-inst.cc streambuf.cc string-inst.cc valarray-inst.cc \
-	wlocale-inst.cc wstring-inst.cc mutex.cc condition_variable.cc \
-	atomicity.cc codecvt_members.cc collate_members.cc \
-	ctype_members.cc messages_members.cc monetary_members.cc \
-	numeric_members.cc time_members.cc basic_file.cc c++locale.cc \
+	streambuf-inst.cc streambuf.cc string-inst.cc \
+	string_conversions.cc valarray-inst.cc wlocale-inst.cc \
+	wstring-inst.cc mutex.cc condition_variable.cc atomicity.cc \
+	codecvt_members.cc collate_members.cc ctype_members.cc \
+	messages_members.cc monetary_members.cc numeric_members.cc \
+	time_members.cc basic_file.cc c++locale.cc \
 	compatibility-ldbl.cc parallel_list.cc parallel_settings.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
@@ -108,8 +109,8 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	fstream-inst.lo ext-inst.lo ios-inst.lo iostream-inst.lo \
 	istream-inst.lo istream.lo locale-inst.lo misc-inst.lo \
 	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
-	string-inst.lo valarray-inst.lo wlocale-inst.lo \
-	wstring-inst.lo mutex.lo condition_variable.lo \
+	string-inst.lo string_conversions.lo valarray-inst.lo \
+	wlocale-inst.lo wstring-inst.lo mutex.lo condition_variable.lo \
 	$(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
@@ -418,6 +419,7 @@ sources = \
 	streambuf-inst.cc \
 	streambuf.cc \
 	string-inst.cc \
+	string_conversions.cc \
 	valarray-inst.cc \
 	wlocale-inst.cc \
 	wstring-inst.cc \
@@ -870,6 +872,11 @@ date_time.o: date_time.cc
 atomic.lo: atomic.cc
 	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
 atomic.o: atomic.cc
+	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
+
+string_conversions.lo: string_conversions.cc
+	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
+string_conversions.o: string_conversions.cc
 	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
