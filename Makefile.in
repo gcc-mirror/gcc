@@ -50797,7 +50797,7 @@ stage1-end::
 
 # Bubble a bug fix through all the stages up to stage 1.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stage1-bubble
 stage1-bubble:: 
 	@r=`${PWD_COMMAND}`; export r; \
@@ -51020,7 +51020,7 @@ stage2-end::
 
 # Bubble a bug fix through all the stages up to stage 2.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stage2-bubble
 stage2-bubble:: stage1-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -51264,7 +51264,7 @@ stageb2g0-end::
 
 # Bubble a bug fix through all the stages up to stage b2g0.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stageb2g0-bubble
 stageb2g0-bubble:: stage1-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -51508,7 +51508,7 @@ stage3-end::
 
 # Bubble a bug fix through all the stages up to stage 3.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stage3-bubble
 stage3-bubble:: stage2-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -51806,7 +51806,7 @@ stageb3g2-end::
 
 # Bubble a bug fix through all the stages up to stage b3g2.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stageb3g2-bubble
 stageb3g2-bubble:: stageb2g0-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -52104,7 +52104,7 @@ stage4-end::
 
 # Bubble a bug fix through all the stages up to stage 4.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stage4-bubble
 stage4-bubble:: stage3-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -52391,7 +52391,7 @@ stageprofile-end::
 
 # Bubble a bug fix through all the stages up to stage profile.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stageprofile-bubble
 stageprofile-bubble:: stage1-bubble
 	@r=`${PWD_COMMAND}`; export r; \
@@ -52614,7 +52614,7 @@ stagefeedback-end::
 
 # Bubble a bug fix through all the stages up to stage feedback.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stagefeedback-bubble
 stagefeedback-bubble:: stageprofile-bubble
 	@r=`${PWD_COMMAND}`; export r; \
