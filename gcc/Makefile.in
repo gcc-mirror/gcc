@@ -958,6 +958,7 @@ FLAGS_TO_PASS = \
 	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
 	"libexecsubdir=$(libsubdir)" \
+	"datarootdir=$(datarootdir)" \
 	"datadir=$(datadir)" \
 	"localedir=$(localedir)"
 #

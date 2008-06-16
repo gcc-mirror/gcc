@@ -54,6 +54,7 @@ XGETTEXT = @XGETTEXT@
 DEPMODE = @CCDEPMODE@
 DEPDIR = @DEPDIR@
 
+datarootdir = @datarootdir@
 datadir = @datadir@
 exec_prefix = @prefix@
 libdir = @libdir@

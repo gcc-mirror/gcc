@@ -1,3 +1,7 @@
+2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Add $(datarootdir).
+
 2008-06-16  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36493
