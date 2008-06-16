@@ -873,6 +873,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=attiny88|\
   mmcu=at90can*|\
   mmcu=at90pwm*|\
+  mmcu=atmega32m1|\
   mmcu=at90usb*: -Tdata 0x800100}\
 %{mmcu=atmega640|\
   mmcu=atmega1280|\
@@ -982,6 +983,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=at90can64:crtcan64.o%s} \
 %{mmcu=at90pwm216:crt90pwm216.o%s} \
 %{mmcu=at90pwm316:crt90pwm316.o%s} \
+%{mmcu=atmega32m1:crtm32m1.o%s} \
 %{mmcu=at90usb646:crtusb646.o%s} \
 %{mmcu=at90usb647:crtusb647.o%s} \
 %{mmcu=at94k:crtat94k.o%s} \

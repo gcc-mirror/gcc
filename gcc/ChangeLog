@@ -1,3 +1,9 @@
+2008-06-16  Eric B. Weddington  <eric.weddington@atmel.com>
+
+	* config/avr/avr.c (avr_mcu_t): Add atmega32m1.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): Likewise.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise. 
+
 2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in (FLAGS_TO_PASS): Add $(datarootdir).
