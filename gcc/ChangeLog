@@ -1,3 +1,15 @@
+2008-06-16  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36493
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Remove TYPE from
+	the arguments list. Use VECTYPE to create vector pointer.
+	(vectorizable_store): Fail if accesses through a pointer to vectype
+	do not alias the original memory reference operands.
+	Call vect_create_data_ref_ptr without the removed argument.
+	(vectorizable_load): Likewise.
+	(vect_setup_realignment): Call vect_create_data_ref_ptr without the
+	removed argument.
+
 2008-06-15  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/36424

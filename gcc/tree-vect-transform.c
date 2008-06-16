@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool vect_transform_stmt (tree, block_stmt_iterator *, bool *, slp_tree);
 static tree vect_create_destination_var (tree, tree);
 static tree vect_create_data_ref_ptr 
-  (tree, struct loop*, tree, tree *, tree *, bool, tree, bool *); 
+  (tree, struct loop*, tree, tree *, tree *, bool, bool *); 
 static tree vect_create_addr_base_for_vector_ref 
   (tree, tree *, tree, struct loop *);
 static tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
@@ -951,7 +951,6 @@ vect_create_addr_base_for_vector_ref (tree stmt,
         by the data-ref in STMT.
    4. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
         pointing to the initial address.
-   5. TYPE: if not NULL indicates the required type of the data-ref
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
@@ -981,7 +980,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 static tree
 vect_create_data_ref_ptr (tree stmt, struct loop *at_loop,
 			  tree offset, tree *initial_address, tree *ptr_incr,
-			  bool only_init, tree type, bool *inv_p)
+			  bool only_init, bool *inv_p)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1040,10 +1039,8 @@ vect_create_data_ref_ptr (tree stmt, struct loop *at_loop,
     }
 
   /** (1) Create the new vector-pointer variable:  **/
-  if (type)  
-    vect_ptr_type = build_pointer_type (type);
-  else
-    vect_ptr_type = build_pointer_type (vectype);
+  vect_ptr_type = build_pointer_type (vectype);
+
   vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                     get_name (base_name));
   add_referenced_var (vect_ptr);
@@ -4740,6 +4737,24 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
       return false;
     }
 
+  /* If accesses through a pointer to vectype do not alias the original
+     memory reference we have a problem.  */
+  if (get_alias_set (vectype) != get_alias_set (TREE_TYPE (scalar_dest))
+      && !alias_set_subset_of (get_alias_set (vectype), 
+                               get_alias_set (TREE_TYPE (scalar_dest))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "vector type does not alias scalar type");
+      return false;
+    }
+
+  if (!useless_type_conversion_p (TREE_TYPE (op), TREE_TYPE (scalar_dest)))
+    {      
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "operands of different types");
+      return false;
+    }
+
   vec_mode = TYPE_MODE (vectype);
   /* FORNOW. In some cases can vectorize even if data-type not supported
      (e.g. - array initialization with 0).  */
@@ -4914,9 +4929,10 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 		  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 		}
 	    }
+
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE, 
-						  &dummy, &ptr_incr, false,
-						  TREE_TYPE (vec_oprnd), &inv_p);
+						  &dummy, &ptr_incr, false, 
+						  &inv_p);
 	  gcc_assert (!inv_p);
 	}
       else 
@@ -5149,7 +5165,7 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
       pe = loop_preheader_edge (loop_for_initial_load);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-				&init_addr, &inc, true, NULL_TREE, &inv_p);
+				      &init_addr, &inc, true, &inv_p);
       data_ref = build1 (ALIGN_INDIRECT_REF, vectype, ptr);
       new_stmt = build_gimple_modify_stmt (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -5594,6 +5610,17 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
       return false;
     }
 
+  /* If accesses through a pointer to vectype do not alias the original
+     memory reference we have a problem.  */
+  if (get_alias_set (vectype) != get_alias_set (scalar_type)
+      && !alias_set_subset_of (get_alias_set (vectype),
+                               get_alias_set (scalar_type)))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "vector type does not alias scalar type");
+      return false;
+    }
+
   /* Check if the load is a part of an interleaving chain.  */
   if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
     {
@@ -5785,7 +5812,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
         dataref_ptr = vect_create_data_ref_ptr (first_stmt,
 					        at_loop, offset, 
 						&dummy, &ptr_incr, false, 
-						NULL_TREE, &inv_p);
+						&inv_p);
       else
         dataref_ptr = 
 		bump_vector_ptr (dataref_ptr, ptr_incr, bsi, stmt, NULL_TREE);

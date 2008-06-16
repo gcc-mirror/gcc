@@ -1,3 +1,8 @@
+2008-06-16  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36493
+	* gcc.dg/vect/pr36493.c: New testcase.
+
 2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/35320
