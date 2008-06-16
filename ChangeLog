@@ -1,3 +1,8 @@
+2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.tpl: Fix comment errors.
+	* Makefile.in: Regenerate.
+
 2008-06-12  David S. Miller  <davem@davemloft.net>
 	    David Edelsohn  <edelsohn@gnu.org>
 

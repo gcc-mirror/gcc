@@ -1318,7 +1318,7 @@ stage[+id+]-end:: [+ FOR host_modules +][+ IF bootstrap +]
 
 # Bubble a bug fix through all the stages up to stage [+id+].  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
-# reconfigured as well.
+# reconfigured either.
 .PHONY: stage[+id+]-bubble
 stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1492,7 +1492,7 @@ configure-target-[+module+]: maybe-all-gcc[+
 
 [+ ;; These Scheme functions build the bulk of the dependencies.
    ;; dep-target builds a string like "maybe-all-MODULE_KIND-gcc",
-   ;; where "maybe-" is only included if HARD is true, and all-gcc
+   ;; where "maybe-" is only included if HARD is not true, and all-gcc
    ;; is taken from VAR-NAME.
    (define dep-target (lambda (module-kind var-name hard)
       (string-append
