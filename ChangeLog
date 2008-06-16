@@ -1,5 +1,11 @@
 2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* configure.ac: Set TOPLEVEL_CONFIGURE_ARGUMENTS early, when
+	"$@" is still intact with both Autoconf 2.59 and 2.62.
+	* configure: Regenerate.
+
+2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.tpl: Fix comment errors.
 	* Makefile.in: Regenerate.
 

@@ -1,5 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-#   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+#   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+#   Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -24,6 +25,34 @@ m4_include(config/proginstall.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.59)
+
+progname=$0
+# if PWD already has a value, it is probably wrong.
+if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
+
+# Export original configure arguments for use by sub-configures.
+# Quote arguments with shell meta charatcers.
+TOPLEVEL_CONFIGURE_ARGUMENTS=
+set -- "$progname" "$@"
+for ac_arg
+do
+  case "$ac_arg" in
+  *" "*|*"	"*|*[[\[\]\~\#\$\^\&\*\(\)\{\}\\\|\;\<\>\?\']]*)
+    ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"`
+    # if the argument is of the form -foo=baz, quote the baz part only
+    ac_arg=`echo "'$ac_arg'" | sed "s/^'\([[-a-zA-Z0-9]]*=\)/\\1'/"` ;;
+  *) ;;
+  esac
+  # Add the quoted argument to the list.
+  TOPLEVEL_CONFIGURE_ARGUMENTS="$TOPLEVEL_CONFIGURE_ARGUMENTS $ac_arg"
+done
+if test "$silent" = yes; then
+  TOPLEVEL_CONFIGURE_ARGUMENTS="$TOPLEVEL_CONFIGURE_ARGUMENTS --silent"
+fi
+# Remove the initial space we just introduced and, as these will be
+# expanded by make, quote '$'.
+TOPLEVEL_CONFIGURE_ARGUMENTS=`echo "x$TOPLEVEL_CONFIGURE_ARGUMENTS" | sed -e 's/^x *//' -e 's,\\$,$$,g'`
+AC_SUBST(TOPLEVEL_CONFIGURE_ARGUMENTS)
 
 # Find the build, host, and target systems.
 ACX_NONCANONICAL_BUILD
@@ -83,34 +112,6 @@ case "${OSTYPE}" in
 esac
 
 config_shell=${CONFIG_SHELL-/bin/sh}
-
-progname=$0
-# if PWD already has a value, it is probably wrong.
-if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
-
-# Export original configure arguments for use by sub-configures.
-# Quote arguments with shell meta charatcers.
-TOPLEVEL_CONFIGURE_ARGUMENTS=
-set -- "$progname" "$@"
-for ac_arg
-do
-  case "$ac_arg" in
-  *" "*|*"	"*|*[[\[\]\~\#\$\^\&\*\(\)\{\}\\\|\;\<\>\?\']]*)
-    ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"`
-    # if the argument is of the form -foo=baz, quote the baz part only
-    ac_arg=`echo "'$ac_arg'" | sed "s/^'\([[-a-zA-Z0-9]]*=\)/\\1'/"` ;;
-  *) ;;
-  esac
-  # Add the quoted argument to the list.
-  TOPLEVEL_CONFIGURE_ARGUMENTS="$TOPLEVEL_CONFIGURE_ARGUMENTS $ac_arg"
-done
-if test "$silent" = yes; then
-  TOPLEVEL_CONFIGURE_ARGUMENTS="$TOPLEVEL_CONFIGURE_ARGUMENTS --silent"
-fi
-# Remove the initial space we just introduced and, as these will be
-# expanded by make, quote '$'.
-TOPLEVEL_CONFIGURE_ARGUMENTS=`echo "x$TOPLEVEL_CONFIGURE_ARGUMENTS" | sed -e 's/^x *//' -e 's,\\$,$$,g'`
-AC_SUBST(TOPLEVEL_CONFIGURE_ARGUMENTS)
 
 moveifchange=${srcdir}/move-if-change
 
