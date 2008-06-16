@@ -1,3 +1,7 @@
+2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (datarootdir): New variable.
+
 2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/35457

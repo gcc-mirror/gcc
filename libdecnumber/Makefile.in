@@ -44,6 +44,7 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 
+datarootdir = @datarootdir@
 datadir = @datadir@
 exec_prefix = @prefix@
 libdir = @libdir@
