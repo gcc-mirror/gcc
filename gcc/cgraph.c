@@ -132,9 +132,6 @@ static GTY(()) struct cgraph_asm_node *cgraph_asm_last_node;
    them, to support -fno-toplevel-reorder.  */
 int cgraph_order;
 
-static hashval_t hash_node (const void *);
-static int eq_node (const void *, const void *);
-
 /* Returns a hash code for P.  */
 
 static hashval_t
