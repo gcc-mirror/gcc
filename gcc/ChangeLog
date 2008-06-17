@@ -1,3 +1,9 @@
+2008-06-17  Eric B. Weddington  <eric.weddington@atmel.com>
+
+	* config/avr/avr.c (avr_mcu_t): Add atmega32u4.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): Likewise. 
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise. 
+
 2008-06-17  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tree-ssa-sccvn.c: Fix format of comments.

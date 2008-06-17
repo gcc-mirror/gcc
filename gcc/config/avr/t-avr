@@ -116,6 +116,7 @@ MULTILIB_MATCHES = \
 	mmcu?avr5=mmcu?at90pwm316 \
 	mmcu?avr5=mmcu?atmega32c1 \
 	mmcu?avr5=mmcu?atmega32m1 \
+	mmcu?avr5=mmcu?atmega32u4 \
 	mmcu?avr5=mmcu?at90usb646 \
 	mmcu?avr5=mmcu?at90usb647 \
 	mmcu?avr5=mmcu?at94k \
