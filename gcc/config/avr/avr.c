@@ -256,6 +256,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at90pwm316",   ARCH_AVR5, "__AVR_AT90PWM316__" },
   { "atmega32m1",   ARCH_AVR5, "__AVR_ATmega32M1__" },
   { "atmega32c1",   ARCH_AVR5, "__AVR_ATmega32C1__" },
+  { "atmega32u4",   ARCH_AVR5, "__AVR_ATmega32U4__" },
   { "at90usb646",   ARCH_AVR5, "__AVR_AT90USB646__" },
   { "at90usb647",   ARCH_AVR5, "__AVR_AT90USB647__" },
   { "at94k",        ARCH_AVR5, "__AVR_AT94K__" },
