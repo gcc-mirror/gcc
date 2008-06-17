@@ -152,9 +152,7 @@ union_defs (struct df_ref *use, struct web_entry *def_entry,
 	eq_use_link++;
     }
 
-  /* Recognize trivial noop moves and attempt to keep them as noop.
-     While most of noop moves should be removed, we still keep some
-     of them at libcall boundaries and such.  */
+  /* Recognize trivial noop moves and attempt to keep them as noop.  */
 
   if (set
       && SET_SRC (set) == DF_REF_REG (use)

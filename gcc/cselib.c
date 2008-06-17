@@ -78,7 +78,6 @@ static htab_t cselib_hash_table;
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
 static rtx cselib_current_insn;
-static bool cselib_current_insn_in_libcall;
 
 /* Every new unknown value gets a unique number.  */
 static unsigned int next_unknown_value;
@@ -160,7 +159,6 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
   el->next = next;
   el->loc = loc;
   el->setting_insn = cselib_current_insn;
-  el->in_libcall = cselib_current_insn_in_libcall;
   return el;
 }
 
@@ -1655,8 +1653,6 @@ cselib_process_insn (rtx insn)
   int i;
   rtx x;
 
-  if (find_reg_note (insn, REG_LIBCALL, NULL))
-    cselib_current_insn_in_libcall = true;
   cselib_current_insn = insn;
 
   /* Forget everything at a CODE_LABEL, a volatile asm, or a setjmp.  */
@@ -1667,16 +1663,12 @@ cselib_process_insn (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
-      if (find_reg_note (insn, REG_RETVAL, NULL))
-        cselib_current_insn_in_libcall = false;
       cselib_clear_table ();
       return;
     }
 
   if (! INSN_P (insn))
     {
-      if (find_reg_note (insn, REG_RETVAL, NULL))
-        cselib_current_insn_in_libcall = false;
       cselib_current_insn = 0;
       return;
     }
@@ -1719,8 +1711,6 @@ cselib_process_insn (rtx insn)
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 
-  if (find_reg_note (insn, REG_RETVAL, NULL))
-    cselib_current_insn_in_libcall = false;
   cselib_current_insn = 0;
 
   if (n_useless_values > MAX_USELESS_VALUES
@@ -1769,7 +1759,6 @@ cselib_init (bool record_memory)
   n_used_regs = 0;
   cselib_hash_table = htab_create (31, get_value_hash,
 				   entry_and_rtx_equal_p, NULL);
-  cselib_current_insn_in_libcall = false;
 }
 
 /* Called when the current user is done with cselib.  */

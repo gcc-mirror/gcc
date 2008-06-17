@@ -52,22 +52,8 @@ REG_NOTE (EQUIV)
 
 /* Like REG_EQUIV except that the destination is only momentarily
    equal to the specified rtx.  Therefore, it cannot be used for
-   substitution; but it can be used for cse.  Together with a
-   REG_RETVAL note, it means that the insn sets the full contents of
-   the libcall value.  */
+   substitution; but it can be used for cse.  */
 REG_NOTE (EQUAL)
-
-/* This insn copies the return-value of a library call out of the hard
-   reg for return values.  This note is actually an INSN_LIST and it
-   points to the first insn involved in setting up arguments for the
-   call.  flow.c uses this to delete the entire library call when its
-   result is dead.  */
-REG_NOTE (RETVAL)
-
-/* The inverse of REG_RETVAL: it goes on the first insn of the library
-   call and points at the one that has the REG_RETVAL.  This note is
-   also an INSN_LIST.  */
-REG_NOTE (LIBCALL)
 
 /* The register is always nonnegative during the containing loop.
    This is used in branches so that decrement and branch instructions

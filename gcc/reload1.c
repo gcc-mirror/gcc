@@ -1219,9 +1219,8 @@ reload (rtx first, int global)
      notes.  Delete all CLOBBER insns, except those that refer to the return
      value and the special mem:BLK CLOBBERs added to prevent the scheduler
      from misarranging variable-array code, and simplify (subreg (reg))
-     operands.  Also remove all REG_RETVAL and REG_LIBCALL notes since they
-     are no longer useful or accurate.  Strip and regenerate REG_INC notes
-     that may have been moved around.  */
+     operands.  Strip and regenerate REG_INC notes that may have been moved
+     around.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
@@ -1274,9 +1273,7 @@ reload (rtx first, int global)
 	  {
 	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
 		|| REG_NOTE_KIND (*pnote) == REG_UNUSED
-		|| REG_NOTE_KIND (*pnote) == REG_INC
-		|| REG_NOTE_KIND (*pnote) == REG_RETVAL
-		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL)
+		|| REG_NOTE_KIND (*pnote) == REG_INC)
 	      *pnote = XEXP (*pnote, 1);
 	    else
 	      pnote = &XEXP (*pnote, 1);

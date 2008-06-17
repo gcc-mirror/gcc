@@ -1945,48 +1945,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 
   before_call = get_last_insn ();
 
-  target = expand_call (exp, target, target == const0_rtx);
-
-  /* If this is a sqrt operation and we don't care about errno, try to
-     attach a REG_EQUAL note with a SQRT rtx to the emitted libcall.
-     This allows the semantics of the libcall to be visible to the RTL
-     optimizers.  */
-  if (builtin_optab == sqrt_optab && !errno_set)
-    {
-      /* Search backwards through the insns emitted by expand_call looking
-	 for the instruction with the REG_RETVAL note.  */
-      rtx last = get_last_insn ();
-      while (last != before_call)
-	{
-	  if (find_reg_note (last, REG_RETVAL, NULL))
-	    {
-	      rtx note = find_reg_note (last, REG_EQUAL, NULL);
-	      /* Check that the REQ_EQUAL note is an EXPR_LIST with
-		 two elements, i.e. symbol_ref(sqrt) and the operand.  */
-	      if (note
-		  && GET_CODE (note) == EXPR_LIST
-		  && GET_CODE (XEXP (note, 0)) == EXPR_LIST
-		  && XEXP (XEXP (note, 0), 1) != NULL_RTX
-		  && XEXP (XEXP (XEXP (note, 0), 1), 1) == NULL_RTX)
-		{
-		  rtx operand = XEXP (XEXP (XEXP (note, 0), 1), 0);
-		  /* Check operand is a register with expected mode.  */
-		  if (operand
-		      && REG_P (operand)
-		      && GET_MODE (operand) == mode)
-		    {
-		      /* Replace the REG_EQUAL note with a SQRT rtx.  */
-		      rtx equiv = gen_rtx_SQRT (mode, operand);
-		      set_unique_reg_note (last, REG_EQUAL, equiv);
-		    }
-		}
-	      break;
-	    }
-	  last = PREV_INSN (last);
-	}
-    }
-
-  return target;
+  return expand_call (exp, target, target == const0_rtx);
 }
 
 /* Expand a call to the builtin binary math functions (pow and atan2).

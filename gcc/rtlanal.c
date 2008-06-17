@@ -1123,11 +1123,6 @@ noop_move_p (const_rtx insn)
   if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
     return 0;
 
-  /* For now treat an insn with a REG_RETVAL note as a
-     special insn which should not be considered a no-op.  */
-  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-    return 0;
-
   if (GET_CODE (pat) == SET && set_noop_p (pat))
     return 1;
 

@@ -3489,12 +3489,6 @@ see_analyze_one_def (rtx insn, enum machine_mode *source_mode,
       if (!reg_set_between_p (source_register, PREV_INSN (prev_insn), insn))
 	return NOT_RELEVANT;
 
-      if (find_reg_note (prev_insn, REG_LIBCALL, NULL_RTX))
-	return NOT_RELEVANT;
-
-      if (find_reg_note (prev_insn, REG_RETVAL, NULL_RTX))
-	return NOT_RELEVANT;
-
       /* If we can't use copy_rtx on the reference it can't be a reference.  */
       if (GET_CODE (PATTERN (prev_insn)) == PARALLEL
 	   && asm_noperands (PATTERN (prev_insn)) >= 0)
@@ -3690,11 +3684,7 @@ see_update_relevancy (void)
 	  unsigned int uid = INSN_UID (insn);
 	  if (INSN_P (insn))
 	    {
-	      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX)
-		  || find_reg_note (insn, REG_RETVAL, NULL_RTX))
-		et = NOT_RELEVANT;
-	      else
-		et = RELEVANT_USE;
+	      et = RELEVANT_USE;
 
 	      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		{
