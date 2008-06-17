@@ -1,6 +1,6 @@
 // Functions used by iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -176,6 +176,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename iterator_traits<_InputIterator>::difference_type __d = __n;
       std::__advance(__i, __d, std::__iterator_category(__i));
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _InputIterator>
+    inline _InputIterator 
+    next(_InputIterator __x, typename
+	 iterator_traits<_InputIterator>::difference_type __n = 1)
+    {
+      std::advance(__x, __n);
+      return __x;
+    }
+
+  template<typename _BidirectionalIterator>
+    inline _BidirectionalIterator 
+    prev(_BidirectionalIterator __x, typename
+	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
+    {
+      std::advance(__x, -__n);
+      return __x;
+    }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

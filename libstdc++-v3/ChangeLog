@@ -1,3 +1,10 @@
+2008-06-17  Chris Fairles  <chris.fairles@gmail.com>
+
+	* include/bits/stl_iterator_base_funcs.h (next, prev): Add in
+	C++0x mode.
+	* testsuite/24_iterators/operations/next.cc: New.
+	* testsuite/24_iterators/operations/prev.cc: Likewise.
+
 2008-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/string_conversions.cc (__to_xstring<>): New.
