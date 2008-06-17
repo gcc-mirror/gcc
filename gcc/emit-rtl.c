@@ -3160,8 +3160,7 @@ try_split (rtx pat, rtx trial, int last)
   rtx before = PREV_INSN (trial);
   rtx after = NEXT_INSN (trial);
   int has_barrier = 0;
-  rtx tem, note_retval, note_libcall;
-  rtx note, seq;
+  rtx note, seq, tem;
   int probability;
   rtx insn_last, insn;
   int njumps = 0;
@@ -3295,30 +3294,6 @@ try_split (rtx pat, rtx trial, int last)
 	    }
 	  break;
 #endif
-
-	case REG_LIBCALL:
-	  /* Relink the insns with REG_LIBCALL note and with REG_RETVAL note 
-	     after split.  */
-	  REG_NOTES (insn_last) 
-	    = gen_rtx_INSN_LIST (REG_LIBCALL,
-				 XEXP (note, 0),
-				 REG_NOTES (insn_last)); 
-
-	  note_retval = find_reg_note (XEXP (note, 0), REG_RETVAL, NULL);
-	  XEXP (note_retval, 0) = insn_last;
-	  break;
-
-	case REG_RETVAL:
-	  /* Relink the insns with REG_LIBCALL note and with REG_RETVAL note
-	     after split.  */
-	  REG_NOTES (insn_last) 
-	    = gen_rtx_INSN_LIST (REG_RETVAL,
-				 XEXP (note, 0),
-				 REG_NOTES (insn_last)); 
-
-	  note_libcall = find_reg_note (XEXP (note, 0), REG_LIBCALL, NULL);
-	  XEXP (note_libcall, 0) = insn_last;
-	  break;
 
 	default:
 	  break;
@@ -5501,8 +5476,7 @@ init_emit_once (int line_numbers)
 rtx
 emit_copy_of_insn_after (rtx insn, rtx after)
 {
-  rtx new;
-  rtx note1, note2, link;
+  rtx new, link;
 
   switch (GET_CODE (insn))
     {
@@ -5556,15 +5530,6 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 		 XEXP (link, 0),  REG_NOTES (new));
       }
 
-  /* Fix the libcall sequences.  */
-  if ((note1 = find_reg_note (new, REG_RETVAL, NULL_RTX)) != NULL)
-    {
-      rtx p = new;
-      while ((note2 = find_reg_note (p, REG_LIBCALL, NULL_RTX)) == NULL)
-	p = PREV_INSN (p);
-      XEXP (note1, 0) = p;
-      XEXP (note2, 0) = new;
-    }
   INSN_CODE (new) = INSN_CODE (insn);
   return new;
 }

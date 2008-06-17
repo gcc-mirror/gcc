@@ -519,7 +519,7 @@ static void free_reg_set_mem (void);
 static void record_one_set (int, rtx);
 static void record_set_info (rtx, const_rtx, void *);
 static void compute_sets (void);
-static void hash_scan_insn (rtx, struct hash_table *, int);
+static void hash_scan_insn (rtx, struct hash_table *);
 static void hash_scan_set (rtx, rtx, struct hash_table *);
 static void hash_scan_clobber (rtx, rtx, struct hash_table *);
 static void hash_scan_call (rtx, rtx, struct hash_table *);
@@ -635,8 +635,7 @@ static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
 static rtx gcse_emit_move_after (rtx, rtx, rtx);
 static void local_cprop_find_used_regs (rtx *, void *);
-static bool do_local_cprop (rtx, rtx, bool, rtx*);
-static bool adjust_libcall_notes (rtx, rtx, rtx, rtx*);
+static bool do_local_cprop (rtx, rtx, bool);
 static void local_cprop_pass (bool);
 static bool is_too_expensive (const char *);
 
@@ -1838,18 +1837,13 @@ hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
    are also in the PARALLEL.  Later.
 
    If SET_P is nonzero, this is for the assignment hash table,
-   otherwise it is for the expression hash table.
-   If IN_LIBCALL_BLOCK nonzero, we are in a libcall block, and should
-   not record any expressions.  */
+   otherwise it is for the expression hash table.  */
 
 static void
-hash_scan_insn (rtx insn, struct hash_table *table, int in_libcall_block)
+hash_scan_insn (rtx insn, struct hash_table *table)
 {
   rtx pat = PATTERN (insn);
   int i;
-
-  if (in_libcall_block)
-    return;
 
   /* Pick out the sets of INSN and for other forms of instructions record
      what's been modified.  */
@@ -2063,7 +2057,6 @@ compute_hash_table_work (struct hash_table *table)
     {
       rtx insn;
       unsigned int regno;
-      int in_libcall_block;
 
       /* First pass over the instructions records information used to
 	 determine when registers and memory are first and last set.
@@ -2094,18 +2087,9 @@ compute_hash_table_work (struct hash_table *table)
 		       BB_HEAD (current_bb), table);
 
       /* The next pass builds the hash table.  */
-      in_libcall_block = 0;
       FOR_BB_INSNS (current_bb, insn)
 	if (INSN_P (insn))
-	  {
-	    if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	      in_libcall_block = 1;
-	    else if (table->set_p && find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	      in_libcall_block = 0;
-	    hash_scan_insn (insn, table, in_libcall_block);
-	    if (!table->set_p && find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	      in_libcall_block = 0;
-	  }
+	  hash_scan_insn (insn, table);
     }
 
   free (reg_avail_info);
@@ -3077,11 +3061,11 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
   find_used_regs (xptr, data);
 }
 
-/* LIBCALL_SP is a zero-terminated array of insns at the end of a libcall;
-   their REG_EQUAL notes need updating.  */
+/* Try to perform local const/copy propagation on X in INSN.
+   If ALTER_JUMPS is false, changing jump insns is not allowed.  */
 
 static bool
-do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
+do_local_cprop (rtx x, rtx insn, bool alter_jumps)
 {
   rtx newreg = NULL, newcnst = NULL;
 
@@ -3102,10 +3086,6 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
 	  rtx this_rtx = l->loc;
 	  rtx note;
 
-	  /* Don't CSE non-constant values out of libcall blocks.  */
-	  if (l->in_libcall && ! CONSTANT_P (this_rtx))
-	    continue;
-
 	  if (gcse_constant_p (this_rtx))
 	    newcnst = this_rtx;
 	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
@@ -3120,16 +3100,6 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
 	}
       if (newcnst && constprop_register (insn, x, newcnst, alter_jumps))
 	{
-	  /* If we find a case where we can't fix the retval REG_EQUAL notes
-	     match the new register, we either have to abandon this replacement
-	     or fix delete_trivially_dead_insns to preserve the setting insn,
-	     or make it delete the REG_EQUAL note, and fix up all passes that
-	     require the REG_EQUAL note there.  */
-	  bool adjusted;
-
-	  adjusted = adjust_libcall_notes (x, newcnst, insn, libcall_sp);
-	  gcc_assert (adjusted);
-	  
 	  if (dump_file != NULL)
 	    {
 	      fprintf (dump_file, "LOCAL CONST-PROP: Replacing reg %d in ",
@@ -3144,7 +3114,6 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
 	}
       else if (newreg && newreg != x && try_replace_reg (x, newreg, insn))
 	{
-	  adjust_libcall_notes (x, newreg, insn, libcall_sp);
 	  if (dump_file != NULL)
 	    {
 	      fprintf (dump_file,
@@ -3159,47 +3128,6 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps, rtx *libcall_sp)
   return false;
 }
 
-/* LIBCALL_SP is a zero-terminated array of insns at the end of a libcall;
-   their REG_EQUAL notes need updating to reflect that OLDREG has been
-   replaced with NEWVAL in INSN.  Return true if all substitutions could
-   be made.  */
-static bool
-adjust_libcall_notes (rtx oldreg, rtx newval, rtx insn, rtx *libcall_sp)
-{
-  rtx end;
-
-  while ((end = *libcall_sp++))
-    {
-      rtx note = find_reg_equal_equiv_note (end);
-
-      if (! note)
-	continue;
-
-      if (REG_P (newval))
-	{
-	  if (reg_set_between_p (newval, PREV_INSN (insn), end))
-	    {
-	      do
-		{
-		  note = find_reg_equal_equiv_note (end);
-		  if (! note)
-		    continue;
-		  if (reg_mentioned_p (newval, XEXP (note, 0)))
-		    return false;
-		}
-	      while ((end = *libcall_sp++));
-	      return true;
-	    }
-	}
-      XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), oldreg, newval);
-      df_notes_rescan (end);
-      insn = end;
-    }
-  return true;
-}
-
-#define MAX_NESTED_LIBCALLS 9
-
 /* Do local const/copy propagation (i.e. within each basic block).
    If ALTER_JUMPS is true, allow propagating into jump insns, which
    could modify the CFG.  */
@@ -3210,29 +3138,16 @@ local_cprop_pass (bool alter_jumps)
   basic_block bb;
   rtx insn;
   struct reg_use *reg_used;
-  rtx libcall_stack[MAX_NESTED_LIBCALLS + 1], *libcall_sp;
   bool changed = false;
 
   cselib_init (false);
-  libcall_sp = &libcall_stack[MAX_NESTED_LIBCALLS];
-  *libcall_sp = 0;
   FOR_EACH_BB (bb)
     {
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (INSN_P (insn))
 	    {
-	      rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-
-	      if (note)
-		{
-		  gcc_assert (libcall_sp != libcall_stack);
-		  *--libcall_sp = XEXP (note, 0);
-		}
-	      note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-	      if (note)
-		libcall_sp++;
-	      note = find_reg_equal_equiv_note (insn);
+	      rtx note = find_reg_equal_equiv_note (insn);
 	      do
 		{
 		  reg_use_count = 0;
@@ -3244,8 +3159,7 @@ local_cprop_pass (bool alter_jumps)
 		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
 		       reg_used++, reg_use_count--)
 		    {
-		      if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps,
-					  libcall_sp))
+		      if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps))
 			{
 			  changed = true;
 			  break;
@@ -3259,10 +3173,8 @@ local_cprop_pass (bool alter_jumps)
 	  cselib_process_insn (insn);
 	}
 
-      /* Forget everything at the end of a basic block.  Make sure we are
-	 not inside a libcall, they should never cross basic blocks.  */
+      /* Forget everything at the end of a basic block.  */
       cselib_clear_table ();
-      gcc_assert (libcall_sp == &libcall_stack[MAX_NESTED_LIBCALLS]);
     }
 
   cselib_finish ();
@@ -6376,7 +6288,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 static void
 replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
 {
-  rtx insn, mem, note, set, ptr, pair;
+  rtx insn, mem, note, set, ptr;
 
   mem = smexpr->pattern;
   insn = gen_move_insn (reg, SET_SRC (single_set (del)));
@@ -6388,24 +6300,8 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
 	break;
       }
 
-  /* Move the notes from the deleted insn to its replacement, and patch
-     up the LIBCALL notes.  */
+  /* Move the notes from the deleted insn to its replacement.  */
   REG_NOTES (insn) = REG_NOTES (del);
-
-  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-  if (note)
-    {
-      pair = XEXP (note, 0);
-      note = find_reg_note (pair, REG_LIBCALL, NULL_RTX);
-      XEXP (note, 0) = insn;
-    }
-  note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-  if (note)
-    {
-      pair = XEXP (note, 0);
-      note = find_reg_note (pair, REG_RETVAL, NULL_RTX);
-      XEXP (note, 0) = insn;
-    }
 
   /* Emit the insn AFTER all the notes are transferred.
      This is cheaper since we avoid df rescanning for the note change.  */

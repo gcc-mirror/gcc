@@ -225,11 +225,9 @@ enum classify_move_insn
 {
   /* Not a simple move from one location to another.  */
   NOT_SIMPLE_MOVE,
-  /* A simple move from one pseudo-register to another with no
-     REG_RETVAL note.  */
+  /* A simple move from one pseudo-register to another.  */
   SIMPLE_PSEUDO_REG_MOVE,
-  /* A simple move involving a non-pseudo-register, or from one
-     pseudo-register to another with a REG_RETVAL note.  */
+  /* A simple move involving a non-pseudo-register.  */
   SIMPLE_MOVE
 };
 
@@ -304,10 +302,10 @@ find_decomposable_subregs (rtx *px, void *data)
 
 	 If this is not a simple copy from one location to another,
 	 then we can not decompose this register.  If this is a simple
-	 copy from one pseudo-register to another, with no REG_RETVAL
-	 note, and the mode is right, then we mark the register as
-	 decomposable.  Otherwise we don't say anything about this
-	 register--it could be decomposed, but whether that would be
+	 copy from one pseudo-register to another, and the mode is right
+	 then we mark the register as decomposable.
+	 Otherwise we don't say anything about this register --
+	 it could be decomposed, but whether that would be
 	 profitable depends upon how it is used elsewhere.
 
 	 We only set bits in the bitmap for multi-word
@@ -558,47 +556,6 @@ move_eh_region_note (rtx insn, rtx insns)
     }
 }
 
-/* If there is a REG_LIBCALL note on OLD_START, move it to NEW_START,
-   and link the corresponding REG_RETVAL note to NEW_START.  */
-
-static void
-move_libcall_note (rtx old_start, rtx new_start)
-{
-  rtx note0, note1, end;
-
-  note0 = find_reg_note (old_start, REG_LIBCALL, NULL);
-  if (note0 == NULL_RTX)
-    return;
-
-  remove_note (old_start, note0);
-  end = XEXP (note0, 0);
-  note1 = find_reg_note (end, REG_RETVAL, NULL);
-
-  XEXP (note0, 1) = REG_NOTES (new_start);
-  REG_NOTES (new_start) = note0;
-  XEXP (note1, 0) = new_start;
-}
-
-/* Remove any REG_RETVAL note, the corresponding REG_LIBCALL note, and
-   any markers for a no-conflict block.  We have decomposed the
-   registers so the non-conflict is now obvious.  */
-
-static void
-remove_retval_note (rtx insn1)
-{
-  rtx note0, insn0, note1;
-
-  note1 = find_reg_note (insn1, REG_RETVAL, NULL);
-  if (note1 == NULL_RTX)
-    return;
-
-  insn0 = XEXP (note1, 0);
-  note0 = find_reg_note (insn0, REG_LIBCALL, NULL);
-
-  remove_note (insn0, note0);
-  remove_note (insn1, note1);
-}
-
 /* Resolve any decomposed registers which appear in register notes on
    INSN.  */
 
@@ -612,10 +569,7 @@ resolve_reg_notes (rtx insn)
     {
       int old_count = num_validated_changes ();
       if (for_each_rtx (&XEXP (note, 0), resolve_subreg_use, NULL))
-	{
-	  remove_note (insn, note);
-	  remove_retval_note (insn);
-	}
+	remove_note (insn, note);
       else
 	if (old_count != num_validated_changes ())
 	  df_notes_rescan (insn);
@@ -870,8 +824,6 @@ resolve_simple_move (rtx set, rtx insn)
 
   emit_insn_before (insns, insn);
 
-  move_libcall_note (insn, insns);
-  remove_retval_note (insn);
   delete_insn (insn);
 
   return insns;
@@ -1156,34 +1108,8 @@ decompose_multiword_subregs (void)
 	    cmi = NOT_SIMPLE_MOVE;
 	  else
 	    {
-	      bool retval;
-
-	      retval = find_reg_note (insn, REG_RETVAL, NULL_RTX) != NULL_RTX;
-
-	      if (find_pseudo_copy (set) && !retval)
+	      if (find_pseudo_copy (set))
 		cmi = SIMPLE_PSEUDO_REG_MOVE;
-	      else if (retval
-		       && REG_P (SET_SRC (set))
-		       && HARD_REGISTER_P (SET_SRC (set)))
-		{
-		  rtx note;
-
-		  /* We don't want to decompose an assignment which
-		     copies the value returned by a libcall to a
-		     pseudo-register.  Doing that will lose the RETVAL
-		     note with no real gain.  */
-		  cmi = NOT_SIMPLE_MOVE;
-
-		  /* If we have a RETVAL note, there should be an
-		     EQUAL note.  We don't want to decompose any
-		     registers which that EQUAL note refers to
-		     directly.  If we do, we will no longer know the
-		     value of the libcall.  */
-		  note = find_reg_equal_equiv_note (insn);
-		  if (note != NULL_RTX)
-		    for_each_rtx (&XEXP (note, 0), find_decomposable_subregs,
-				  &cmi);
-		}
 	      else
 		cmi = SIMPLE_MOVE;
 	    }
@@ -1277,8 +1203,6 @@ decompose_multiword_subregs (void)
 		      insn = resolve_simple_move (set, insn);
 		      if (insn != orig_insn)
 			{
-			  remove_retval_note (insn);
-
 			  recog_memoized (insn);
 			  extract_insn (insn);
 
@@ -1319,8 +1243,6 @@ decompose_multiword_subregs (void)
 
 		      i = apply_change_group ();
 		      gcc_assert (i);
-
-		      remove_retval_note (insn);
 		    }
 		}
 	    }

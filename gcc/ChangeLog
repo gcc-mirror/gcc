@@ -1,3 +1,57 @@
+2008-06-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* see.c (see_analyse_one_def): Do not look for REG_LIBCALL and
+	REG_RETVAL notes.
+	(see_update_relevancy): Likewise.
+	* fwprop.c (try_fwprop_subst): Likewise.
+	* rtlanal.c (noop_move_p): Likewise.
+	* builtins.c (expand_buitlin_mathfn): Don't try to add REG_EQUAL
+	notes to non-existing libcall blocks.
+	* cse.c (cse_insn): Change prototype.  Don't update libcall notes.
+	Remove orig_set.
+	(cse_extended_basic_block): Don't track libcall and no-conflict notes.
+	(dead_libcall_p): Remove.
+	(delete_trivially_dead_insns): Don't use it.
+	* web.c (union_defs): Remove comment about keeping nops.
+	* gcse.c (hash_scan_insn): Don't take libcall pointers.
+	(compute_hash_table_work): Don't track libcall notes.
+	(do_local_cprop): Don't take libcall pointers.  Don't update
+	libcall notes.
+	(adjust_libcall_notes): Deleted.
+	(local_cprop_pass): Remove stack for nested libcalls (which shouldn't
+	ever have existed in the first place).
+	(replace_store_insn): Don't try to remove libcall notes.
+	* lower-subreg.c (move_libcall_note, move_retval_note): Deleted.
+	(resolve_reg_notes): Don't call them.
+	(resolve_simple_move): Likewise.
+	(decompose_multiword_subregs): Remove block handling REG_RETVAL notes.
+	Don't remove REG_RETVAL notes.
+	* emit-rtl.c (try_split): Don't update libcall notes.
+	(emit_copy_of_insn_after): Dito.
+	* cselib.c (cselib_current_insn_in_libcall): Remove.
+	(cselib_process_insn): Don't set/clear it.
+	(new_elt_loc_list): Don't record it.
+	(cselib_init): Don't initialize it.
+	* cselib.c (struct elt_loc_list): Remove in_libcall field.
+	* loop-invariant.c (find_invariant_insn): Don't look for libcall
+	notes.
+	* sched-deps.c (sched_analyze_insn): Don't group libcall blocks.
+	(sched_analyze): Don't set up deps->libcall_block_tail_insn.
+	(init_deps): Don't initialize it.
+	* sched-int.h (struct deps): Rremove libcall_block_tail_insn field.
+	* combine.c (delete_noop_moves): Don't update libcall notes.
+	(can_combine_p): Remove now pointless #if 0 block.
+	(try_combine): Remove another obsolete #if 0 block.
+	(distribute_notes): Don't distribute libcall notes.
+	* reg-notes.def (REG_LIBCALL, REG_RETVAL): Remove.
+	* dce.c (libcall_dead_p): Remove.
+	(delete_unmarked_insns): Don't handle libcall blocks.
+	(preserve_libcall_for_dce): Remove.
+	(prescan_insns_for_dce): Don't special-case libcall block insns.
+	* reload1 (reload): Don't handle libcall notes. 
+	* doc/rtl.texi (REG_LIBCALL, REG_RETVAL, REG_LIBCALL_ID): Remove
+	documentation.
+
 2008-06-16  Eric B. Weddington  <eric.weddington@atmel.com>
 
 	* config/avr/avr.c (avr_mcu_t): Add atmega32c1.

@@ -18,9 +18,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This implements the loop invariant motion pass.  It is very simple
-   (no calls, libcalls, etc.).  This should be sufficient to cleanup things
-   like address arithmetics -- other more complicated invariants should be
-   eliminated on tree level either in tree-ssa-loop-im.c or in tree-ssa-pre.c.
+   (no calls, no loads/stores, etc.).  This should be sufficient to cleanup
+   things like address arithmetics -- other more complicated invariants should
+   be eliminated on GIMPLE either in tree-ssa-loop-im.c or in tree-ssa-pre.c.
 
    We proceed loop by loop -- it is simpler than trying to handle things
    globally and should not lose much.  First we inspect all sets inside loop
@@ -794,11 +794,6 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
   rtx set, dest;
   bool simple = true;
   struct invariant *inv;
-
-  /* Until we get rid of LIBCALLS.  */
-  if (find_reg_note (insn, REG_RETVAL, NULL_RTX)
-      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-    return;
 
 #ifdef HAVE_cc0
   /* We can't move a CC0 setter without the user.  */

@@ -214,62 +214,6 @@ mark_nonreg_stores (rtx body, rtx insn, bool fast)
 }
 
 
-/* Return true if the entire libcall sequence starting at INSN is dead.
-   NOTE is the REG_LIBCALL note attached to INSN.
-
-   A libcall sequence is a block of insns with no side-effects, i.e.
-   that is only used for its return value.  The terminology derives
-   from that of a call, but a libcall sequence need not contain one.
-   It is only defined by a pair of REG_LIBCALL/REG_RETVAL notes.
-
-   From a dataflow viewpoint, a libcall sequence has the property that
-   no UD chain can enter it from the outside.  As a consequence, if a
-   libcall sequence has a dead return value, it is effectively dead.
-   This is both enforced by CSE (cse_extended_basic_block) and relied
-   upon by delete_trivially_dead_insns.
-
-   However, in practice, the return value business is a tricky one and
-   only checking the liveness of the last insn is not sufficient to
-   decide whether the whole sequence is dead (e.g. PR middle-end/19551)
-   so we check the liveness of every insn starting from the call.  */
-
-static bool
-libcall_dead_p (rtx insn, rtx note)
-{
-  rtx last = XEXP (note, 0);
-
-  /* Find the call insn.  */
-  while (insn != last && !CALL_P (insn))
-    insn = NEXT_INSN (insn);
-
-  /* If there is none, do nothing special, since ordinary death handling
-     can understand these insns.  */
-  if (!CALL_P (insn))
-    return false;
-
-  /* If this is a call that returns a value via an invisible pointer, the
-     dataflow engine cannot see it so it has been marked unconditionally.
-     Skip it unless it has been made the last insn in the libcall, for
-     example by the combiner, in which case we're left with no easy way
-     of asserting its liveness.  */
-  if (!single_set (insn))
-    {
-      if (insn == last)
-	return false;
-      insn = NEXT_INSN (insn);
-    }
-
-  while (insn != NEXT_INSN (last))
-    {
-      if (INSN_P (insn) && marked_insn_p (insn))
-	return false;
-      insn = NEXT_INSN (insn);
-    }
-
-  return true;
-}
-
-
 /* Delete all REG_EQUAL notes of the registers INSN writes, to prevent
    bad dangling REG_EQUAL notes. */
 
@@ -316,28 +260,9 @@ delete_unmarked_insns (void)
     FOR_BB_INSNS_SAFE (bb, insn, next)
       if (INSN_P (insn))
 	{
-	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-
 	  /* Always delete no-op moves.  */
 	  if (noop_move_p (insn))
 	    ;
-
-	  /* Try to delete libcall sequences as a whole.  */
-	  else if (note && libcall_dead_p (insn, note))
-	    {
-	      rtx last = XEXP (note, 0);
-
-	      if (!dbg_cnt (dce))
-		continue;
-
-	      if (dump_file)
-	        fprintf (dump_file, "DCE: Deleting libcall %d-%d\n",
-			 INSN_UID (insn), INSN_UID (last));
-
-	      next = NEXT_INSN (last);
-	      delete_insn_chain_and_edges (insn, last);
-	      continue;
-	    }
 
 	  /* Otherwise rely only on the DCE algorithm.  */
 	  else if (marked_insn_p (insn))
@@ -353,41 +278,6 @@ delete_unmarked_insns (void)
 	     for the destination regs in order to avoid dangling notes.  */
 	  delete_corresponding_reg_eq_notes (insn);
 
-	  /* If we're about to delete the first insn of a libcall, then
-	     move the REG_LIBCALL note to the next real insn and update
-	     the REG_RETVAL note.  */
-	  if (note && (XEXP (note, 0) != insn))
-	    {
-	      rtx new_libcall_insn = next_real_insn (insn);
-	      rtx retval_note = find_reg_note (XEXP (note, 0),
-					       REG_RETVAL, NULL_RTX);
-	      /* If the RETVAL and LIBCALL notes would land on the same
-		 insn just remove them.  */
-	      if (XEXP (note, 0) == new_libcall_insn)
-		remove_note (new_libcall_insn, retval_note);
-	      else
-		{
-		  REG_NOTES (new_libcall_insn)
-		    = gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
-					 REG_NOTES (new_libcall_insn));
-		  XEXP (retval_note, 0) = new_libcall_insn;
-		}
-	    }
-
-	  /* If the insn contains a REG_RETVAL note and is dead, but the
-	     libcall as a whole is not dead, then we want to remove the
-	     insn, but not the whole libcall sequence.  However, we also
-	     need to remove the dangling REG_LIBCALL note in order to
-	     avoid mismatched notes.  We could find a new location for
-	     the REG_RETVAL note, but it hardly seems worth the effort.  */
-	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-	  if (note && (XEXP (note, 0) != insn))
-	    {
-	      rtx libcall_note
-		= find_reg_note (XEXP (note, 0), REG_LIBCALL, NULL_RTX);
-	      remove_note (XEXP (note, 0), libcall_note);
-	    }
-
 	  /* If a pure or const call is deleted, this may make the cfg
 	     have unreachable blocks.  We rememeber this and call
 	     delete_unreachable_blocks at the end.  */
@@ -401,43 +291,6 @@ delete_unmarked_insns (void)
   /* Deleted a pure or const call.  */
   if (must_clean)
     delete_unreachable_blocks ();
-}
-
-
-/* Helper function for prescan_insns_for_dce: prescan the entire libcall
-   sequence starting at INSN and return the insn following the libcall.
-   NOTE is the REG_LIBCALL note attached to INSN.  */
-
-static rtx
-prescan_libcall_for_dce (rtx insn, rtx note, bool fast)
-{
-  rtx last = XEXP (note, 0);
-
-  /* A libcall is never necessary on its own but we need to mark the stores
-     to a non-register destination.  */
-  while (insn != last && !CALL_P (insn))
-    {
-      if (INSN_P (insn))
-	mark_nonreg_stores (PATTERN (insn), insn, fast);
-      insn = NEXT_INSN (insn);
-    }
-
-  /* If this is a call that returns a value via an invisible pointer, the
-     dataflow engine cannot see it so it has to be marked unconditionally.  */
-  if (CALL_P (insn) && !single_set (insn))
-    {
-      mark_insn (insn, fast);
-      insn = NEXT_INSN (insn);
-    }
-
-  while (insn != NEXT_INSN (last))
-    {
-      if (INSN_P (insn))
-	mark_nonreg_stores (PATTERN (insn), insn, fast);
-      insn = NEXT_INSN (insn);
-    }
-
-  return insn;
 }
 
 
@@ -458,10 +311,7 @@ prescan_insns_for_dce (bool fast)
     FOR_BB_INSNS_SAFE (bb, insn, next)
       if (INSN_P (insn))
 	{
-	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-	  if (note)
-	    next = prescan_libcall_for_dce (insn, note, fast);
-	  else if (deletable_insn_p (insn, fast))
+	  if (deletable_insn_p (insn, fast))
 	    mark_nonreg_stores (PATTERN (insn), insn, fast);
 	  else
 	    mark_insn (insn, fast);

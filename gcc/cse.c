@@ -584,7 +584,7 @@ static rtx equiv_constant (rtx);
 static void record_jump_equiv (rtx, bool);
 static void record_jump_cond (enum rtx_code, enum machine_mode, rtx, rtx,
 			      int);
-static void cse_insn (rtx, rtx);
+static void cse_insn (rtx);
 static void cse_prescan_path (struct cse_basic_block_data *);
 static void invalidate_from_clobbers (rtx);
 static rtx cse_process_notes (rtx, rtx, bool *);
@@ -599,7 +599,6 @@ static int check_dependence (rtx *, void *);
 static void flush_hash_table (void);
 static bool insn_live_p (rtx, int *);
 static bool set_live_p (rtx, rtx, int *);
-static bool dead_libcall_p (rtx, int *);
 static int cse_change_cc_mode (rtx *, void *);
 static void cse_change_cc_mode_insn (rtx, rtx);
 static void cse_change_cc_mode_insns (rtx, rtx, rtx);
@@ -3929,11 +3928,7 @@ record_jump_cond (enum rtx_code code, enum machine_mode mode, rtx op0,
    First simplify sources and addresses of all assignments
    in the instruction, using previously-computed equivalents values.
    Then install the new sources and destinations in the table
-   of available values.
-
-   If LIBCALL_INSN is nonzero, don't record any equivalence made in
-   the insn.  It means that INSN is inside libcall block.  In this
-   case LIBCALL_INSN is the corresponding insn with REG_LIBCALL.  */
+   of available values.  */
 
 /* Data on one SET contained in the instruction.  */
 
@@ -3962,8 +3957,6 @@ struct set
   ENUM_BITFIELD(machine_mode) mode : 8;
   /* A constant equivalent for SET_SRC, if any.  */
   rtx src_const;
-  /* Original SET_SRC value used for libcall notes.  */
-  rtx orig_src;
   /* Hash value of constant equivalent for SET_SRC.  */
   unsigned src_const_hash;
   /* Table entry for constant equivalent for SET_SRC, if any.  */
@@ -3973,7 +3966,7 @@ struct set
 };
 
 static void
-cse_insn (rtx insn, rtx libcall_insn)
+cse_insn (rtx insn)
 {
   rtx x = PATTERN (insn);
   int i;
@@ -4170,7 +4163,6 @@ cse_insn (rtx insn, rtx libcall_insn)
       rtx src = SET_SRC (sets[i].rtl);
       rtx new = canon_reg (src, insn);
 
-      sets[i].orig_src = src;
       validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
 
       if (GET_CODE (dest) == ZERO_EXTRACT)
@@ -4821,22 +4813,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 	    {
 	      rtx new = canon_reg (SET_SRC (sets[i].rtl), insn);
 
-	      /* If we just made a substitution inside a libcall, then we
-		 need to make the same substitution in any notes attached
-		 to the RETVAL insn.  */
-	      if (libcall_insn
-		  && (REG_P (sets[i].orig_src)
-		      || GET_CODE (sets[i].orig_src) == SUBREG
-		      || MEM_P (sets[i].orig_src)))
-		{
-	          rtx note = find_reg_equal_equiv_note (libcall_insn);
-		  if (note != 0)
-		    XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0),
-							   sets[i].orig_src,
-							   copy_rtx (new));
-		  df_notes_rescan (libcall_insn);
-		}
-
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
 
@@ -5175,27 +5151,19 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	    if (sets[i].src_elt == 0)
 	      {
-		/* Don't put a hard register source into the table if this is
-		   the last insn of a libcall.  In this case, we only need
-		   to put src_eqv_elt in src_elt.  */
-		if (! find_reg_note (insn, REG_RETVAL, NULL_RTX))
-		  {
-		    struct table_elt *elt;
+		struct table_elt *elt;
 
-		    /* Note that these insert_regs calls cannot remove
-		       any of the src_elt's, because they would have failed to
-		       match if not still valid.  */
-		    if (insert_regs (src, classp, 0))
-		      {
-			rehash_using_reg (src);
-			sets[i].src_hash = HASH (src, mode);
-		      }
-		    elt = insert (src, classp, sets[i].src_hash, mode);
-		    elt->in_memory = sets[i].src_in_memory;
-		    sets[i].src_elt = classp = elt;
+		/* Note that these insert_regs calls cannot remove
+		   any of the src_elt's, because they would have failed to
+		   match if not still valid.  */
+		if (insert_regs (src, classp, 0))
+		  {
+		    rehash_using_reg (src);
+		    sets[i].src_hash = HASH (src, mode);
 		  }
-		else
-		  sets[i].src_elt = classp;
+		elt = insert (src, classp, sets[i].src_hash, mode);
+		elt->in_memory = sets[i].src_in_memory;
+		sets[i].src_elt = classp = elt;
 	      }
 	    if (sets[i].src_const && sets[i].src_const_elt == 0
 		&& src != sets[i].src_const
@@ -5392,11 +5360,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 	       size of it, and can't be sure that other BLKmode values
 	       have the same or smaller size.  */
 	    || GET_MODE (dest) == BLKmode
-	    /* Don't record values of destinations set inside a libcall block
-	       since we might delete the libcall.  Things should have been set
-	       up so we won't want to reuse such a value, but we play it safe
-	       here.  */
-	    || libcall_insn
 	    /* If we didn't put a REG_EQUAL value or a source into the hash
 	       table, there is no point is recording DEST.  */
 	    || sets[i].src_elt == 0
@@ -5540,11 +5503,7 @@ cse_insn (rtx insn, rtx libcall_insn)
      then be used in the sequel and we may be changing a two-operand insn
      into a three-operand insn.
 
-     Also do not do this if we are operating on a copy of INSN.
-
-     Also don't do this if INSN ends a libcall; this would cause an unrelated
-     register to be set in the middle of a libcall, and we then get bad code
-     if the libcall is deleted.  */
+     Also do not do this if we are operating on a copy of INSN.  */
 
   if (n_sets == 1 && sets[0].rtl && REG_P (SET_DEST (sets[0].rtl))
       && NEXT_INSN (PREV_INSN (insn)) == insn
@@ -5555,8 +5514,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       int src_q = REG_QTY (REGNO (SET_SRC (sets[0].rtl)));
       struct qty_table_elem *src_ent = &qty_table[src_q];
 
-      if ((src_ent->first_reg == REGNO (SET_DEST (sets[0].rtl)))
-	  && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+      if (src_ent->first_reg == REGNO (SET_DEST (sets[0].rtl)))
 	{
 	  /* Scan for the previous nonnote insn, but stop at a basic
 	     block boundary.  */
@@ -5993,8 +5951,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
     {
       basic_block bb;
       rtx insn;
-      rtx libcall_insn = NULL_RTX;
-      int no_conflict = 0;
 
       bb = ebb_data->path[path_entry].bb;
 
@@ -6043,39 +5999,8 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		    df_notes_rescan (insn);
 		}
 
-	      /* Track when we are inside in LIBCALL block.  Inside such
-		 a block we do not want to record destinations.  The last
-		 insn of a LIBCALL block is not considered to be part of
-		 the block, since its destination is the result of the
-		 block and hence should be recorded.  */
-	      if (REG_NOTES (insn) != 0)
-		{
-		  rtx p;
+	      cse_insn (insn);
 
-		  if ((p = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
-		    libcall_insn = XEXP (p, 0);
-		  else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-		    {
-		      /* Keep libcall_insn for the last SET insn of
-			 a no-conflict block to prevent changing the
-			 destination.  */
-		      if (!no_conflict)
-			libcall_insn = NULL_RTX;
-		      else
-			no_conflict = -1;
-		    }
-		}
-
-	      cse_insn (insn, libcall_insn);
-
-	      /* If we kept libcall_insn for a no-conflict bock,
-		 clear it here.  */
-	      if (no_conflict == -1)
-		{
-		  libcall_insn = NULL_RTX;
-		  no_conflict = 0;
-		}
-	    
 	      /* If we haven't already found an insn where we added a LABEL_REF,
 		 check this one.  */
 	      if (INSN_P (insn) && !recorded_label_ref
@@ -6111,9 +6036,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 #endif
 	    }
 	}
-
-      /* Make sure that libcalls don't span multiple basic blocks.  */
-      gcc_assert (libcall_insn == NULL_RTX);
 
       /* With non-call exceptions, we are not always able to update
 	 the CFG properly inside cse_insn.  So clean up possibly
@@ -6479,57 +6401,6 @@ insn_live_p (rtx insn, int *counts)
     return true;
 }
 
-/* Return true if libcall is dead as a whole.  */
-
-static bool
-dead_libcall_p (rtx insn, int *counts)
-{
-  rtx note, set, new;
-
-  /* See if there's a REG_EQUAL note on this insn and try to
-     replace the source with the REG_EQUAL expression.
-
-     We assume that insns with REG_RETVALs can only be reg->reg
-     copies at this point.  */
-  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-  if (!note)
-    return false;
-
-  set = single_set (insn);
-  if (!set)
-    return false;
-
-  new = simplify_rtx (XEXP (note, 0));
-  if (!new)
-    new = XEXP (note, 0);
-
-  /* While changing insn, we must update the counts accordingly.  */
-  count_reg_usage (insn, counts, NULL_RTX, -1);
-
-  if (validate_change (insn, &SET_SRC (set), new, 0))
-    {
-      count_reg_usage (insn, counts, NULL_RTX, 1);
-      remove_note (insn, find_reg_note (insn, REG_RETVAL, NULL_RTX));
-      remove_note (insn, note);
-      return true;
-    }
-
-  if (CONSTANT_P (new))
-    {
-      new = force_const_mem (GET_MODE (SET_DEST (set)), new);
-      if (new && validate_change (insn, &SET_SRC (set), new, 0))
-	{
-	  count_reg_usage (insn, counts, NULL_RTX, 1);
-	  remove_note (insn, find_reg_note (insn, REG_RETVAL, NULL_RTX));
-	  remove_note (insn, note);
-	  return true;
-	}
-    }
-
-  count_reg_usage (insn, counts, NULL_RTX, 1);
-  return false;
-}
-
 /* Scan all the insns and delete any that are dead; i.e., they store a register
    that is never used or they copy a register to itself.
 
@@ -6543,7 +6414,6 @@ delete_trivially_dead_insns (rtx insns, int nreg)
 {
   int *counts;
   rtx insn, prev;
-  int in_libcall = 0, dead_libcall = 0;
   int ndead = 0;
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
@@ -6568,21 +6438,7 @@ delete_trivially_dead_insns (rtx insns, int nreg)
       if (!INSN_P (insn))
 	continue;
 
-      /* Don't delete any insns that are part of a libcall block unless
-	 we can delete the whole libcall block.
-
-	 Flow or loop might get confused if we did that.  Remember
-	 that we are scanning backwards.  */
-      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	{
-	  in_libcall = 1;
-	  live_insn = 1;
-	  dead_libcall = dead_libcall_p (insn, counts);
-	}
-      else if (in_libcall)
-	live_insn = ! dead_libcall;
-      else
-	live_insn = insn_live_p (insn, counts);
+      live_insn = insn_live_p (insn, counts);
 
       /* If this is a dead insn, delete it and show registers in it aren't
 	 being used.  */
@@ -6592,12 +6448,6 @@ delete_trivially_dead_insns (rtx insns, int nreg)
 	  count_reg_usage (insn, counts, NULL_RTX, -1);
 	  delete_insn_and_edges (insn);
 	  ndead++;
-	}
-
-      if (in_libcall && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	{
-	  in_libcall = 0;
-	  dead_libcall = 0;
 	}
     }
 

@@ -3754,31 +3754,6 @@ insn has one of a pair of notes that points to a second insn, which has
 the inverse note pointing back to the first insn.
 
 @table @code
-@findex REG_RETVAL
-@item REG_RETVAL
-This insn copies the value of a multi-insn sequence (for example, a
-library call), and @var{op} is the first insn of the sequence (for a
-library call, the first insn that was generated to set up the arguments
-for the library call).
-
-Loop optimization uses this note to treat such a sequence as a single
-operation for code motion purposes and flow analysis uses this note to
-delete such sequences whose results are dead.
-
-A @code{REG_EQUAL} note will also usually be attached to this insn to
-provide the expression being computed by the sequence.
-
-These notes will be deleted after reload, since they are no longer
-accurate or useful.
-
-@findex REG_LIBCALL
-@item REG_LIBCALL
-This is the inverse of @code{REG_RETVAL}: it is placed on the first
-insn of a multi-insn sequence, and it points to the last one.
-
-These notes are deleted after reload, since they are no longer useful or
-accurate.
-
 @findex REG_CC_SETTER
 @findex REG_CC_USER
 @item REG_CC_SETTER
@@ -3836,12 +3811,6 @@ of the JUMP@.  The format is a bitmask of ATTR_FLAG_* values.
 This is used on an RTX_FRAME_RELATED_P insn wherein the attached expression
 is used in place of the actual insn pattern.  This is done in cases where
 the pattern is either complex or misleading.
-
-@findex REG_LIBCALL_ID
-@item REG_LIBCALL_ID
-This is used to specify that an insn is part of a libcall.  Each libcall
-in a function has a unique id, and all the insns that are part of that
-libcall will have a REG_LIBCALL_ID note attached with the same ID.
 @end table
 
 For convenience, the machine mode in an @code{insn_list} or
