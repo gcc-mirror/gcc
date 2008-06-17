@@ -17,16 +17,16 @@ PROGRAM test_fseek
   IF (FTELL(fd) /= 11 + newline_length) CALL abort()
 
   ! move backward from current position
-  CALL FSEEK(fd, -12, SEEK_CUR, ierr)
+  CALL FSEEK(fd, -11 - newline_length, SEEK_CUR, ierr)
   IF (ierr /= 0 .OR. FTELL(fd) /= 0) CALL abort()
 
   ! move to negative position (error)
   CALL FSEEK(fd, -1, SEEK_SET, ierr)
   IF (ierr == 0 .OR. FTELL(fd) /= 0) CALL abort()
 
-  ! move forward from end (12 + 10)
+  ! move forward from end (11 + 10 + newline)
   CALL FSEEK(fd, 10, SEEK_END, ierr)
-  IF (ierr /= 0 .OR. FTELL(fd) /= 22) CALL abort()
+  IF (ierr /= 0 .OR. FTELL(fd) /= 21 + newline_length) CALL abort()
 
   ! set position (0)
   CALL FSEEK(fd, 0, SEEK_SET, ierr)
