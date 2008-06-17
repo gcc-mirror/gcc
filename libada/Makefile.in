@@ -152,7 +152,8 @@ Makefile: $(srcdir)/Makefile.in config.status
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac \
+	$(srcdir)/../config/acx.m4 $(srcdir)/../config/override.m4
 	cd $(srcdir) && autoconf
 
 # Don't export variables to the environment, in order to not confuse

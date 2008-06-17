@@ -15,12 +15,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+sinclude(../config/acx.m4)
+sinclude(../config/override.m4)
+
 AC_INIT
 AC_PREREQ([2.59])
 
 AC_CONFIG_SRCDIR([Makefile.in])
-
-sinclude(../config/acx.m4)
 
 # Determine the host, build, and target systems
 AC_CANONICAL_BUILD

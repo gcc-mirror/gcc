@@ -1,3 +1,9 @@
+2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2008-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (parisc*-*-linux*, powerpc-*-sysv*,

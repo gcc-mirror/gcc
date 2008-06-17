@@ -2,10 +2,15 @@ dnl Fix Autoconf-2.59 bugs: by overriding broken internal
 dnl Autoconf macros with backports of the 2.60+ fix.
 dnl - AC_CONFIG_SUBDIRS whitespace mangling,
 dnl - more lenient precious variable checks
+dnl - better configure error message
+dnl - reliance on non-Posix m4wrap (M4 1.6 or newer implement FIFO)
 dnl
-dnl This file should be a no-op for Autoconf versions != 2.59.
-dnl It can be removed once the complete tree has moved to a
-dnl newer Autoconf version.
+dnl The override bits of this file should be a no-op for the newest
+dnl Autoconf version, which means they can be removed once the complete
+dnl tree has moved to a new enough Autoconf version.
+dnl
+dnl The _GCC_AUTOCONF_VERSION_TEST ensures that exactly the desired
+dnl Autoconf version is used.  It should be kept for consistency.
 
 dnl m4_PACKAGE_VERSION is an undocumented Autoconf macro.
 dnl We use it because this fix is intended for 2.59 only.
@@ -22,7 +27,36 @@ m4_copy([AC_PREREQ], [_AC_PREREQ])
 AC_DEFUN([AC_PREREQ], [frob])
 m4_copy([_AC_PREREQ], [AC_PREREQ])
 
-ifelse(m4_PACKAGE_VERSION, [2.59], [
+
+dnl Ensure exactly this Autoconf version is used
+m4_ifndef([_GCC_AUTOCONF_VERSION],
+  [m4_define([_GCC_AUTOCONF_VERSION], [2.59])])
+
+dnl Test for the exact version when AC_INIT is expanded.
+dnl This allows to update the tree in steps (for testing)
+dnl by putting
+dnl   m4_define([_GCC_AUTOCONF_VERSION], [X.Y])
+dnl in configure.ac before AC_INIT,
+dnl without rewriting this file.
+dnl Or for updating the whole tree at once with the definition above.
+AC_DEFUN([_GCC_AUTOCONF_VERSION_CHECK],
+[m4_if(m4_defn([_GCC_AUTOCONF_VERSION]),
+  m4_defn([m4_PACKAGE_VERSION]), [],
+  [m4_fatal([Please use exactly Autoconf ]_GCC_AUTOCONF_VERSION[ instead of ]m4_defn([m4_PACKAGE_VERSION])[.])])
+])
+m4_define([AC_INIT], m4_defn([AC_INIT])[
+_GCC_AUTOCONF_VERSION_CHECK
+])
+
+m4_version_prereq([2.60],, [
+dnl We use $ac_pwd in some of the overrides below; ensure its definition
+m4_divert_push([PARSE_ARGS])dnl
+ac_pwd=`pwd`
+m4_divert_pop([PARSE_ARGS])dnl
+])
+
+
+m4_version_prereq([2.60],, [
 
 # _AC_OUTPUT_SUBDIRS
 # ------------------
@@ -128,13 +162,15 @@ fi
 ])# _AC_OUTPUT_SUBDIRS
 ])
 
-ifelse(m4_PACKAGE_VERSION, [2.62],, [
+m4_version_prereq([2.63],, [
 
 # _AC_ARG_VAR_VALIDATE
 # --------------------
 # The code is the same as autoconf 2.59, but with a more lenient check
-# on precious variables that has been added in autoconf 2.62.
+# on precious variables and an output of pwd that have been added in
+# autoconf 2.62.
 m4_define([_AC_ARG_VAR_VALIDATE],
+[m4_divert_text([INIT_PREPARE],
 [# Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -184,8 +220,32 @@ dnl it's sensitive.  Putting any kind of quote in it causes syntax errors.
   fi
 done
 if $ac_cache_corrupted; then
+  AS_MESSAGE([error: in `$ac_pwd':], 2)
   AS_MESSAGE([error: changes in the environment can compromise the build], 2)
   AS_ERROR([run `make distclean' and/or `rm $cache_file' and start over])
-fi
+fi])dnl
 ])# _AC_ARG_VAR_VALIDATE
-])])
+])
+
+m4_version_prereq([2.63],, [
+
+# AC_MSG_FAILURE(ERROR, [EXIT-STATUS = 1])
+# ----------------------------------------
+# This is the same code as in 2.59 and 2.61, except it also outputs pwd.
+m4_define([AC_MSG_FAILURE],
+[{ AS_MESSAGE([error: in `$ac_pwd':], 2)
+AC_MSG_ERROR([$1
+See `config.log' for more details.], [$2]); }])
+])
+])
+
+m4_version_prereq([2.60],, [
+dnl M4 1.6 and newer implement m4wrap using FIFO semantics, as required
+dnl by Posix; earlier versions used LIFO semantics.  Unfortunately,
+dnl Autoconf versions before 2.60 require those LIFO semantics, so
+dnl make sure to give it to them.
+m4_define([m4_wrap], [m4_ifdef([_$0_text],
+  [m4_define([_$0_text], [$1]m4_defn([_$0_text]))],
+  [m4_define([_$0_text], [$1])m4_builtin([m4wrap],
+    [m4_default(m4_defn([_$0_text])m4_undefine([_$0_text]))])])])
+])

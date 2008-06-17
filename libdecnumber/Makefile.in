@@ -96,7 +96,7 @@ $(srcdir)/configure: @MAINT@ $(srcdir)/aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
 
 $(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../config/stdint.m4 \
-	$(srcdir)/../config/warnings.m4 \
+	$(srcdir)/../config/warnings.m4 $(srcdir)/../config/override.m4 \
 	$(srcdir)/configure.ac
 	cd $(srcdir) && $(ACLOCAL) -I ../config
 
