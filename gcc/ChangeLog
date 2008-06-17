@@ -1,4 +1,8 @@
-2008-06-17  Bernhard Fischer  <>
+2008-06-17  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* tree-ssa-sccvn.c: Fix format of comments.
+
+2008-06-17  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* cgraph.c: Remove unneeded forward declarations of eq_node()
 	and hash_node().

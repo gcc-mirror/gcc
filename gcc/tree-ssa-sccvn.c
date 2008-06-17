@@ -290,7 +290,7 @@ free_reference (void *vp)
   VEC_free (vn_reference_op_s, heap, vr->operands);
 }
 
-/* Compare two reference operands P1 and P2 for equality.  return true if
+/* Compare two reference operands P1 and P2 for equality.  Return true if
    they are equal, and false otherwise.  */
 
 static int
@@ -304,7 +304,7 @@ vn_reference_op_eq (const void *p1, const void *p2)
     && expressions_equal_p (vro1->op1, vro2->op1);
 }
 
-/* Compute the hash for a reference operand VRO1  */
+/* Compute the hash for a reference operand VRO1.  */
 
 static hashval_t
 vn_reference_op_compute_hash (const vn_reference_op_t vro1)
@@ -386,7 +386,7 @@ vn_reference_eq (const void *p1, const void *p2)
   return true;
 }
 
-/* Place the vuses from STMT into *result */
+/* Place the vuses from STMT into *result.  */
 
 static inline void
 vuses_to_vec (tree stmt, VEC (tree, gc) **result)
@@ -418,7 +418,7 @@ copy_vuses_from_stmt (tree stmt)
   return vuses;
 }
 
-/* Place the vdefs from STMT into *result */
+/* Place the vdefs from STMT into *result.  */
 
 static inline void
 vdefs_to_vec (tree stmt, VEC (tree, gc) **result)
