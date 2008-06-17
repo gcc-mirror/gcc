@@ -31,6 +31,7 @@
 #include <limits>
 #include <cerrno>
 #include <cstdlib>
+#include <cstdarg>
 
 #ifdef _GLIBCXX_USE_C99
 
@@ -64,6 +65,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	*__idx = __endptr - __str.c_str();
 
       return __ret;
+    }
+
+  // Helper for the to_string / to_wstring functions.
+  template<typename _CharT>
+    inline basic_string<_CharT>
+    __to_xstring(int (*__convf) (_CharT*, size_t, const _CharT*, va_list),
+		 size_t __n, const _CharT* __fmt, ...)
+    {
+      // XXX Eventually the result will be constructed in place in
+      // the C++0x string, likely with the help of internal hooks.
+      _CharT* __s = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							  * __n));
+
+      va_list __args;
+      va_start(__args, __fmt);
+
+      const int __len = __convf(__s, __n, __fmt, __args);
+
+      va_end(__args);
+
+      return basic_string<_CharT>(__s, __s + __len);
     }
 
 
@@ -101,30 +123,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   stold(const string& __str, size_t* __idx)
   { return std::__stoa(&std::strtold, "stold", __str, __idx); }
 
+  // NB: (v)snprintf vs sprintf.
   string
   to_string(long long __val)
-  {
-    // XXX Eventually the result will be constructed in place in
-    // the C++0x string, likely with the help of internal hooks.
-    const int __n = 4 * sizeof(long long);
-    char* __s = static_cast<char*>(__builtin_alloca(__n));
-    return string(__s, __s + std::snprintf(__s, __n, "%lld", __val));
-  }
+  { return std::__to_xstring(&std::vsnprintf, 4 * sizeof(long long),
+			     "%lld", __val); }
 
   string
   to_string(unsigned long long __val)
-  {
-    const int __n = 4 * sizeof(unsigned long long);
-    char* __s = static_cast<char*>(__builtin_alloca(__n));
-    return string(__s, __s + std::snprintf(__s, __n, "%llu", __val));
-  }
+  { return std::__to_xstring(&std::vsnprintf, 4 * sizeof(unsigned long long),
+			     "%llu", __val); }
 
   string
   to_string(long double __val)
   {
     const int __n = numeric_limits<long double>::max_exponent10 + 20;
-    char* __s = static_cast<char*>(__builtin_alloca(__n));
-    return string(__s, __s + std::snprintf(__s, __n, "%Lf", __val));
+    return std::__to_xstring(&std::vsnprintf, __n, "%Lf", __val);
   }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -164,29 +178,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   wstring
   to_wstring(long long __val)
-  {
-    const int __n = 4 * sizeof(long long);
-    wchar_t* __s = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t)
-							  * __n));
-    return wstring(__s, __s + std::swprintf(__s, __n, L"%lld", __val));
-  }
+  { return std::__to_xstring(&std::vswprintf, 4 * sizeof(long long),
+			     L"%lld", __val); }
 
   wstring
   to_wstring(unsigned long long __val)
-  {
-    const int __n = 4 * sizeof(unsigned long long);
-    wchar_t* __s = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t)
-							  * __n));
-    return wstring(__s, __s + std::swprintf(__s, __n, L"%llu", __val));
-  }
+  { return std::__to_xstring(&std::vswprintf, 4 * sizeof(unsigned long long),
+			     L"%llu", __val); }
 
   wstring
   to_wstring(long double __val)
   {
     const int __n = numeric_limits<long double>::max_exponent10 + 20;
-    wchar_t* __s = static_cast<wchar_t*>(__builtin_alloca(sizeof(wchar_t)
-							  * __n));
-    return wstring(__s, __s + std::swprintf(__s, __n, L"%Lf", __val));
+    return std::__to_xstring(&std::vswprintf, __n, L"%Lf", __val);
   }
 #endif
 
