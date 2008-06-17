@@ -366,7 +366,7 @@ eat_separator (st_parameter_dt *dtp)
 		    }
 		}
 	    }
-	  while (c == '\n' || c == '\r' || c == ' ');
+	  while (c == '\n' || c == '\r' || c == ' ' || c == '\t');
 	  unget_char (dtp, c);
 	}
       break;
