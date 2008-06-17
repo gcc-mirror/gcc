@@ -4,6 +4,7 @@ sinclude(../config/enable.m4)
 sinclude(../config/tls.m4)
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
+sinclude(../config/override.m4)
 
 AC_PREREQ(2.59)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])

@@ -48,9 +48,6 @@
 /* support for Solaris pthreads */
 #undef GC_SOLARIS_PTHREADS
 
-/* support for Solaris (thr_) threads */
-#undef GC_SOLARIS_THREADS
-
 /* support for win32 threads */
 #undef GC_WIN32_THREADS
 
@@ -77,6 +74,9 @@
 
 /* x86_thread_state64_t has field __rax */
 #undef HAS_X86_THREAD_STATE64___RAX
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -113,6 +113,10 @@
 
 /* Add code to save back pointers */
 #undef KEEP_BACK_PTRS
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Enable GC_PRINT_BACK_HEIGHT environment variable */
 #undef MAKE_BACK_GRAPH

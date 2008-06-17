@@ -1,3 +1,10 @@
+2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: move sinclude of acx.m4 before AC_INIT,
+	also sinclude override.m4.
+	* Makefile.in ($(srcdir)/configure): Update dependencies.
+	* configure: Regenerate.
+
 2008-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (xscale*-wrs-vx*, xscale*-wrs-coff): Remove.

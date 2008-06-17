@@ -1,3 +1,10 @@
+2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: move sinclude of acx.m4 before AC_INIT,
+	also sinclude override.m4.
+	* Makefile.in ($(srcdir)/configure): Update dependencies.
+	* configure: Regenerate.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add dummy install-pdf target.

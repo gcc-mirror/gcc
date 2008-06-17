@@ -15,6 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+sinclude(../config/acx.m4)
+sinclude(../config/override.m4)
+
 AC_INIT
 AC_PREREQ([2.59])
 
@@ -43,7 +46,6 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-sinclude(../config/acx.m4)
 ACX_NONCANONICAL_TARGET
 
 # Need to pass this down for now :-P

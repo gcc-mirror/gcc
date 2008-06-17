@@ -1,3 +1,15 @@
+2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* override.m4: Use m4_version_prereq throughout.
+	(_AC_ARG_VAR_VALIDATE, AC_MSG_FAILURE): Backport from git
+	Autoconf: output pwd along with fatal errors, so the right
+	config.log file is hinted at more prominently.
+	(PARSE_ARGS): Push setting of ac_pwd in this diversion.
+	(_GCC_AUTOCONF_VERSION): New, define to 2.59 if not defined.
+	(_GCC_AUTOCONF_VERSION_CHECK): New macro, require use of Autoconf
+	version _GCC_AUTOCONF_VERSION throughout the tree.
+	(m4_wrap): New override, fix for Posix semantics of m4wrap.
+
 2008-06-11  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tls.m4: Fix typos.

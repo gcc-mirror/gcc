@@ -1,3 +1,7 @@
+2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2008-06-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in (datarootdir): New variable.
