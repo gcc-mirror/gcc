@@ -1,5 +1,5 @@
-/* Local definitions for use with the decNumber C Library.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+/* Configure decNumber for either host or target.
+   Copyright (C) 2008 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,21 +27,26 @@
    Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
-#if !defined(DECIMAL128LOCAL)
+#ifdef IN_LIBGCC2
 
-/* The compiler needs sign manipulation functions for decimal128 which
-   are not part of the decNumber package.  */
+#include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
 
-/* Set sign; this assumes the sign was previously zero.  */
-#define decimal128SetSign(d,b) \
-  { (d)->bytes[WORDS_BIGENDIAN ? 0 : 15] |= ((unsigned) (b) << 7); }
+#ifndef LIBGCC2_WORDS_BIG_ENDIAN
+#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
+#endif
 
-/* Clear sign.  */
-#define decimal128ClearSign(d) \
-  { (d)->bytes[WORDS_BIGENDIAN ? 0 : 15] &= ~0x80; }
+#ifndef LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
+#define LIBGCC2_FLOAT_WORDS_BIG_ENDIAN LIBGCC2_WORDS_BIG_ENDIAN
+#endif
 
-/* Flip sign.  */
-#define decimal128FlipSign(d) \
-  { (d)->bytes[WORDS_BIGENDIAN ? 0 : 15] ^= 0x80; }
+#if LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
+#define WORDS_BIGENDIAN 1
+#endif
+
+#else
+
+#include "config.h"
 
 #endif

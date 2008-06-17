@@ -1,3 +1,10 @@
+2008-06-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* dfp.c (WORDS_BIGENDIAN): Define to 0 if not defined.
+	(encode_decimal64, decode_decimal64, encode_decimal128,
+	decode_decimal128): Reverse order of 32-bit parts of value if host
+	and target endianness differ.
+
 2008-06-16  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36493
