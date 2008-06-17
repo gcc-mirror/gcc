@@ -1,5 +1,10 @@
 2008-06-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/36546
+	* gfortran.dg: namelist_49.f90: New test.
+
+2008-06-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/36544
 	* gfortran.dg/fseek.f90: Adjust test conditions for variable newline.
 
