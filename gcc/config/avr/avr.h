@@ -828,7 +828,8 @@ mmcu=*:-mmcu=%*}"
   mmcu=at43*|\
   mmcu=at76*|\
   mmcu=at90usb82|\
-  mmcu=at90usb162: -m avr3}\
+  mmcu=at90usb162|\
+  mmcu=attiny167: -m avr3}\
 %{mmcu=atmega8*|\
   mmcu=atmega48*|\
   mmcu=at90pwm1|\
@@ -871,6 +872,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega32hvb|\
   mmcu=attiny48|\
   mmcu=attiny88|\
+  mmcu=attiny167|\
   mmcu=at90can*|\
   mmcu=at90pwm*|\
   mmcu=atmega32c1|\
@@ -928,6 +930,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=attiny43u:crttn43u.o%s} \
 %{mmcu=attiny48:crttn48.o%s} \
 %{mmcu=attiny88:crttn88.o%s} \
+%{mmcu=attiny167:crttn167.o%s} \
 %{mmcu=at43usb320|mmcu=avr3:crt43320.o%s} \
 %{mmcu=at43usb355:crt43355.o%s} \
 %{mmcu=at76c711:crt76711.o%s} \
