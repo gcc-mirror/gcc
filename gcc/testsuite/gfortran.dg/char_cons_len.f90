@@ -3,7 +3,7 @@
 ! constructor, as an argument for LEN, would cause an ICE.
 !
   character(11) :: chr1, chr2
-  i = len ((/chr1, chr2, "ggg"/))
+  i = len ((/chr1, chr2, "ggg        "/))
   j = len ((/"abcdefghijk", chr1, chr2/))
   k = len ((/'hello  ','goodbye'/))
   l = foo ("yes siree, Bob")

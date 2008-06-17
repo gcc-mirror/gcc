@@ -1459,6 +1459,9 @@ get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
 
 
 /* Figure out the string length of a character array constructor.
+   If len is NULL, don't calculate the length; this happens for recursive calls
+   when a sub-array-constructor is an element but not at the first position,
+   so when we're not interested in the length.
    Returns TRUE if all elements are character constants.  */
 
 bool
@@ -1470,16 +1473,20 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
 
   if (c == NULL)
     {
-      *len = build_int_cstu (gfc_charlen_type_node, 0);
+      if (len)
+	*len = build_int_cstu (gfc_charlen_type_node, 0);
       return is_const;
     }
 
-  for (; c; c = c->next)
+  /* Loop over all constructor elements to find out is_const, but in len we
+     want to store the length of the first, not the last, element.  We can
+     of course exit the loop as soon as is_const is found to be false.  */
+  for (; c && is_const; c = c->next)
     {
       switch (c->expr->expr_type)
 	{
 	case EXPR_CONSTANT:
-	  if (!(*len && INTEGER_CST_P (*len)))
+	  if (len && !(*len && INTEGER_CST_P (*len)))
 	    *len = build_int_cstu (gfc_charlen_type_node,
 				   c->expr->value.character.length);
 	  break;
@@ -1491,14 +1498,19 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
 
 	case EXPR_VARIABLE:
 	  is_const = false;
-	  get_array_ctor_var_strlen (c->expr, len);
+	  if (len)
+	    get_array_ctor_var_strlen (c->expr, len);
 	  break;
 
 	default:
 	  is_const = false;
-	  get_array_ctor_all_strlen (block, c->expr, len);
+	  if (len)
+	    get_array_ctor_all_strlen (block, c->expr, len);
 	  break;
 	}
+
+      /* After the first iteration, we don't want the length modified.  */
+      len = NULL;
     }
 
   return is_const;

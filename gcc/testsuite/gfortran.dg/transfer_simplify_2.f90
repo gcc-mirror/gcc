@@ -92,7 +92,7 @@ contains
   end subroutine integer8_to_complex4
 
   subroutine character16_to_complex8
-    character(16), parameter ::  c1(2) = (/"abcdefghijklmnop","qrstuvwxyz1234567890"/)
+    character(16), parameter ::  c1(2) = (/"abcdefghijklmnop","qrstuvwxyz123456"/)
     character(16)            ::  c2(2) = c1
     complex(8), parameter    ::  z1(2) = transfer (c1, (1.0_8,1.0_8), 2)
     complex(8)               ::  z2(2)
