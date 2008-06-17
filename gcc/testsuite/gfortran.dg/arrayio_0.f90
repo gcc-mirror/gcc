@@ -8,7 +8,7 @@
   character(len=48), dimension(2) :: iue
   equivalence (iu, iue)
   integer, dimension(4) :: v = (/2,1,4,3/)
-  iu = (/"Vector","subscripts","not","allowed!"/)
+  iu = (/"Vector    ","subscripts","not       ","allowed!  "/)
   read (iu, '(a12/)') buff
   read (iue(1), '(4a12)') buff
   read (iu(4:1:-1), '(a12/)') buff

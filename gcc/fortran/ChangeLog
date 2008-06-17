@@ -1,3 +1,18 @@
+2008-06-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36112
+	* array.c (gfc_resolve_character_array_constructor):  Check that all
+	elements with constant character length have the same one rather than
+	fixing it if no typespec is given, emit an error if they don't.  Changed
+	return type to "try" and return FAILURE for the case above.
+	(gfc_resolve_array_constructor):  Removed unneeded call to
+	gfc_resolve_character_array_constructor in this function.
+	* gfortran.h (gfc_resolve_character_array_constructor):  Returns try.
+	* trans-array.c (get_array_ctor_strlen):  Return length of first element
+	rather than last element.
+	* resolve.c (gfc_resolve_expr):  Handle FAILURE return from
+	gfc_resolve_character_array_constructor.
+
 2008-06-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34396
