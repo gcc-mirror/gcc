@@ -1,3 +1,8 @@
+2008-06-17  Bernhard Fischer  <>
+
+	* cgraph.c: Remove unneeded forward declarations of eq_node()
+	and hash_node().
+
 2008-06-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* see.c (see_analyse_one_def): Do not look for REG_LIBCALL and
