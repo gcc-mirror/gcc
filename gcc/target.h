@@ -463,6 +463,9 @@ struct gcc_target
   /* Return machine mode for libgcc expanded shift instructions.  */
   enum machine_mode (* libgcc_shift_count_mode) (void);
 
+  /* Return machine mode to be used for _Unwind_Word type.  */
+  enum machine_mode (* unwind_word_mode) (void);
+
   /* Given two decls, merge their attributes and return the result.  */
   tree (* merge_decl_attributes) (tree, tree);
 
