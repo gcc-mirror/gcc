@@ -1,5 +1,10 @@
 2008-06-18  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (cgraph_optimize): Output debug info when doing
+	toplevel reorder too.
+
+2008-06-18  Jan Hubicka  <jh@suse.cz>
+
 	* c-opts.c (c_common_post_options): PCH is not compatible with
 	no-unit-at-a-time.
 	* opts.c (handle_options): Enable unit-at-a-time at O0 along with
