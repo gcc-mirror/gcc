@@ -19,9 +19,7 @@
 LIBGCC1 =
 CROSS_LIBGCC1 =
 
-# On SPU __word__ is TImode which is too inefficient and incomplete for
-# implementing libgcc routines.
-TARGET_LIBGCC2_CFLAGS = -fPIC -D__word__=SI -mwarn-reloc -D__IN_LIBGCC2
+TARGET_LIBGCC2_CFLAGS = -fPIC -mwarn-reloc -D__IN_LIBGCC2
 
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/float_unsdidf.c \
