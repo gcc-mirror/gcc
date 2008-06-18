@@ -1,6 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the support for char32_t* string constants. */
 /* { dg-do run } */
+/* { dg-xfail-run-if "PR36470" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=gnu99 -Wall -Werror" } */
 
 typedef unsigned int char32_t;
