@@ -1,5 +1,12 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	PR c/36460
+	* gcc.dg/utf32-1.c: Mark xfail for AVR target.
+	* gcc.dg/utf32-2.c: Ditto.
+	* gcc.dg/utf32-3.c: Ditto.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.c-torture/compile/limits-fndefn.c: Skip for AVR.
 	* gcc.dg/builtins-config.h: Use standard independent __AVR__ symbol.
 	* gcc.dg/cdce1.c: Skip for AVR.
@@ -7,7 +14,8 @@
 	* gcc.dg/fold-bitand-1.c: Ignore warnings such as alignment.
 	* gcc.dg/fold-eqandshift-3.c: Use long on AVR.
 	* gcc.dg/fold-overflow-1.c: Skip for AVR.
-	* gcc.dg/multiple-overflow-warn-3.c: Use target independent macro for ms bit position.
+	* gcc.dg/multiple-overflow-warn-3.c: Use target independent macro 
+	for ms bit position.
 	* gcc.dg/pch/struct-1.c: Allow for target without 32 bit int.
 	* gcc.dg/tree-ssa/pr33920.c: Add warning check for AVR.
 	* gcc.dg/ucnid-5.c: Skip for AVR.
