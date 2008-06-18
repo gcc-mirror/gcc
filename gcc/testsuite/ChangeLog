@@ -1,5 +1,10 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/tree-ssa/loop-35.c: xfail avr target. Add new avr specific 
+	tests.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/tree-ssa/forwprop-6.c: Use long or int to match size of
 	float. Otherwise error.
 	* gcc.dg/tree-ssa/ssa-fre-7.c: Ditto.

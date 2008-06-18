@@ -59,6 +59,7 @@ void test4(struct a *A, unsigned long b)
       A[b+1].Y += i;
     }
 }
-
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim" } } */
+/* long index not hoisted for avr target PR 36561 */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim" { xfail { "avr-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 6 "lim" { target { "avr-*-*" } } } } */
 /* { dg-final { cleanup-tree-dump "lim" } } */
