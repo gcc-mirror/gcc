@@ -1,3 +1,8 @@
+2008-06-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/30739
+	* doc/install.texi (Prerequisites): Document dependency on awk.
+
 2008-06-18  Uros Bizjak  <ubizjak@gmail.com>
 	    Ian Lance Taylor  <iant@google.com>
 
