@@ -1,11 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-original" } */
+/* { dg-options "-w -fdump-tree-original" } */
 
 char c1 __attribute__ ((aligned (1)));
 char c2 __attribute__ ((aligned (2)));
 char c4 __attribute__ ((aligned (4)));
-char c8 __attribute__ ((aligned (8)));
-
+char c8 __attribute__ ((aligned (8))); 
 unsigned f1(void)
 {
   return 3 & (__SIZE_TYPE__)&c1;

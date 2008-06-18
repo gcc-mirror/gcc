@@ -28,9 +28,9 @@ testfunc1 ()
   foo_f (cd); /* { dg-warning "as floating rather than complex" "prototype conversion warning" } */
 
   foo_ld (i); /* { dg-warning "as floating rather than integer" "prototype conversion warning" } */
-  foo_ld (f);
-  foo_ld (ld);
-  foo_ld (cd); /* { dg-warning "as floating rather than complex" "prototype conversion warning" } */
+  foo_ld (f); /* { dg-warning "as 'float' rather than 'double'" "small double" { target { "avr-*-*" } } } */
+  foo_ld (ld);/* { dg-warning "as 'float' rather than 'double'" "small long double" { target { "avr-*-*" } } } */
+  foo_ld (cd);/* { dg-warning "as floating rather than complex" "prototype conversion warning" } */
 
   foo_cd (i); /* { dg-warning "as complex rather than integer" "prototype conversion warning" } */
   foo_cd (f); /* { dg-warning "as complex rather than floating" "prototype conversion warning" } */

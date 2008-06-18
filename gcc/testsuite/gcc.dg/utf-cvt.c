@@ -1,6 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the char16_t and char32_t promotion rules. */
 /* { dg-do compile } */
+/* { dg-excess-errors "short and int are 16bit" { target { "avr-*-*" } } } */
 /* { dg-options "-std=gnu99 -Wall -Wconversion -Wsign-conversion" } */
 
 typedef short unsigned int	char16_t;
@@ -43,9 +44,9 @@ void m (char16_t c0, char32_t c1)
     f_c (c1);	/* { dg-warning "alter its value" } */
     fsc (c1);	/* { dg-warning "alter its value" } */
     fuc (c1);	/* { dg-warning "alter its value" } */
-    f_s (c1);	/* { dg-warning "alter its value" } */
-    fss (c1);	/* { dg-warning "alter its value" } */
-    fus (c1);	/* { dg-warning "alter its value" } */
+    f_s (c1);	/* { dg-warning "alter its value" "" { target { ! "avr-*-*" } } } */
+    fss (c1);	/* { dg-warning "alter its value" "" { target { ! "avr-*-*" } } } */
+    fus (c1);	/* { dg-warning "alter its value" "" { target { ! "avr-*-*" } } } */
     f_i (c1);	/* { dg-warning "change the sign" } */
     fsi (c1);	/* { dg-warning "change the sign" } */
     fui (c1);

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
+/* { dg-excess-errors "short=int" { target { avr-*-* } } }  */
 /* { dg-options "-Wtype-limits" } */
-
 
 
 void a (unsigned char x)
@@ -22,10 +22,10 @@ void a (unsigned char x)
 
 void b (unsigned short x)
 {
-  if (x < 0)  return;/* { dg-warning "comparison is always false due to limited range of data type" } */
-  if (x >= 0) return;/* { dg-warning "comparison is always true due to limited range of data type" } */
-  if (0 > x)  return;/* { dg-warning "comparison is always false due to limited range of data type" } */
-  if (0 <= x) return;/* { dg-warning "comparison is always true due to limited range of data type" } */
+  if (x < 0)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { ! "avr-*-*" } } } */
+  if (x >= 0) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { ! "avr-*-*" } } } */
+  if (0 > x)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { ! "avr-*-*" } } } */
+  if (0 <= x) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { ! "avr-*-*" } } } */
 }
 
 void c (unsigned int x)
@@ -63,4 +63,5 @@ int test (int x)
   else 
     return 0;
 }
+
 

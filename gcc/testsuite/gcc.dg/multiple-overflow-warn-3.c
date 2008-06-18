@@ -5,8 +5,9 @@
 short int
 g (void)
 {
-  short int wc = ((short int)1 << 31) - 1; /* { dg-bogus "overflow .* overflow" } */
+  short int wc = ((short int)1 << (8 * __SIZEOF_INT__ - 1)) - 1; /* { dg-bogus "overflow .* overflow" } */
   /* { dg-warning "overflow" "" { target *-*-* } 8 } */
   return wc;
 }
+
 
