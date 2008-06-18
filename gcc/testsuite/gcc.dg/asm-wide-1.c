@@ -30,6 +30,3 @@ f (void)
 /* { dg-error "output" "output" { target *-*-* } 16 } */
 /* { dg-error "output" "output" { target *-*-* } 18 } */
 /* { dg-error "output" "output" { target *-*-* } 20 } */
-/* { dg-warning "match" "match" { target *-*-* } 21 } */
-/* { dg-error "register" "register" { target *-*-* } 23 } */
-/* { dg-error "register" "register" { target *-*-* } 25 } */
