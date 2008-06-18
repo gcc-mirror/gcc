@@ -1234,6 +1234,24 @@ proc check_effective_target_powerpc_fprs { } {
     }
 }
 
+# Return 1 if this is a PowerPC target with hardware double-precision
+# floating point.
+
+proc check_effective_target_powerpc_hard_double { } {
+    if { [istarget powerpc*-*-*]
+	 || [istarget rs6000-*-*] } {
+	return [check_no_compiler_messages powerpc_hard_double object {
+	    #ifdef _SOFT_DOUBLE
+	    #error soft double
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a PowerPC target supporting -maltivec.
 
 proc check_effective_target_powerpc_altivec_ok { } {

@@ -4,7 +4,7 @@
  
    The testcase comes from PR 29256 (and originally, the stream benchmark).  */
 
-/* { dg-do compile { target i?86-*-* x86_64-*-* powerpc*-*-*} } */
+/* { dg-do compile { target { i?86-*-* || { x86_64-*-* || powerpc_hard_double } } } } */
 /* { dg-require-effective-target nonpic } */
 /* { dg-options "-O3 -fdump-tree-final_cleanup" } */
 
