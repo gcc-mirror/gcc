@@ -1,5 +1,10 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.c-torture/execute/20020619-1.c: Correct for targets
+	without 32 bit int.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.c-torture/execute/ieee/20000320-1.x: Skip for AVR target.
 	* gcc.c-torture/execute/ieee/rbug.x: Ditto.
 	* gcc.c-torture/execute/ieee/pr30704.x: Add new file. Skip for AVR 
