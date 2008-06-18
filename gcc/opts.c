@@ -822,6 +822,13 @@ decode_options (unsigned int argc, const char **argv)
       flag_merge_constants = 0;
     }
 
+  if (!no_unit_at_a_time_default)
+    {
+      flag_unit_at_a_time = 1;
+      if (!optimize)
+        flag_toplevel_reorder = 0;
+    }
+
   if (optimize >= 1)
     {
       flag_defer_pop = 1;
@@ -848,8 +855,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_fre = 1;
       flag_tree_copy_prop = 1;
       flag_tree_sink = 1;
-      if (!no_unit_at_a_time_default)
-        flag_unit_at_a_time = 1;
 
       if (!optimize_size)
 	{

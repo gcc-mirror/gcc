@@ -1,5 +1,14 @@
 2008-06-16  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/weak/weak-2.c: We no longer complain about incompatibilty.
+	* gcc.dg/weak/weak-3.c: We no longer complain about incompatibilty.
+	* gcc.dg/weak/weak-4.c: We no longer complain about incompatibilty.
+	* gcc.dg/weak/weak-5.c: We no longer complain about incompatibilty.
+	* gcc.dg/weak/weak-6.c: Fix thinko in previous change.
+	* gcc.dg/weak/weak-7.c: Likewise.
+
+2008-06-16  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/asm-wide-1.c: Do not require extra errors we output
 	confused by earlier errors.
 	* gcc.target/i386/sseregparm-2.c: Remove markers for errors not

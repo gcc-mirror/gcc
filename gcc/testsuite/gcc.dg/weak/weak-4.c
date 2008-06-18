@@ -32,7 +32,7 @@ void * foo1b (void)
 }
 
 
-extern int vfoo1c;  /* { dg-warning "applying #pragma weak" "applying #pragma weak" } */
+extern int vfoo1c;
 void * foo1c (void)
 {
   return (void *)&vfoo1c;
@@ -64,7 +64,7 @@ void * foo1f (void)
 #pragma weak vfoo1f
 
 
-extern int vfoo1g;  /* { dg-warning "applying #pragma weak" "applying #pragma weak" } */
+extern int vfoo1g;
 void * foo1g (void)
 {
   return (void *)&vfoo1g;
