@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Most of this is PRE specific.  The real grunt work is done in
    tree-ssa-sccvn.c.  This is where the lookup and insertion
-   functions, etc, can be found */
+   functions, etc, can be found.  */
 
 /* Create and return a new value handle node of type TYPE.  */
 
@@ -50,8 +50,6 @@ make_value_handle (tree type)
   VALUE_HANDLE_ID (vh) = id++;
   return vh;
 }
-
-
 
 /* Compare two expressions E1 and E2 and return true if they are
    equal.  */
@@ -136,7 +134,6 @@ print_creation_to_file (tree v, tree expr, VEC (tree, gc) *vuses)
   fprintf (dump_file, "\n");
 }
 
-
 /* Sort the VUSE array so that we can do equality comparisons
    quicker on two vuse vecs.  */
 
@@ -162,6 +159,7 @@ sort_vuses_heap (VEC (tree,heap) *vuses)
 	   sizeof (tree),
 	   operand_build_cmp);
 }
+
 /* Insert EXPR into VALUE_TABLE with value VAL, and add expression
    EXPR to the value set for value VAL.  */
 
@@ -231,7 +229,6 @@ vn_add_with_vuses (tree expr, tree val, VEC (tree, gc) *vuses)
   if (TREE_CODE (val) == VALUE_HANDLE)
     add_to_value (val, expr);
 }
-
 
 /* Lookup EXPR in the value numbering tables and return the result, if
    we have one.  */

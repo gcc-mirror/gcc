@@ -1,3 +1,7 @@
+2006-06-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* gcc/tree-vn.c: Fix typo in comment.
+
 2008-06-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_optimize): Output debug info when doing
