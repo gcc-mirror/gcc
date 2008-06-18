@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-pass.h"
 #include "diagnostic.h"
+#include "cgraph.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -523,8 +524,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       pop_deferring_access_checks ();
 
       thunk_fndecl = finish_function (0);
-      tree_lowering_passes (thunk_fndecl);
-      tree_rest_of_compilation (thunk_fndecl);
+      cgraph_add_new_function (thunk_fndecl, false);
     }
 
   pop_from_top_level ();

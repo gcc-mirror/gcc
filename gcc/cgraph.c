@@ -1052,6 +1052,21 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	node->local.local = false;
 	node->local.finalized = true;
 	node->reachable = node->needed = true;
+	if (!lowered && cgraph_state == CGRAPH_STATE_EXPANSION)
+	  {
+	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+	    current_function_decl = fndecl;
+	    tree_register_cfg_hooks ();
+            tree_lowering_passes (fndecl);
+	    bitmap_obstack_initialize (NULL);
+	    if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
+	      execute_pass_list (pass_early_local_passes.pass.sub);
+	    bitmap_obstack_release (NULL);
+	    pop_cfun ();
+	    current_function_decl = NULL;
+
+	    lowered = true;
+	  }
 	if (lowered)
 	  node->lowered = true;
 	node->next_needed = cgraph_new_nodes;

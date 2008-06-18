@@ -1,3 +1,9 @@
+2008-06-16  Jan Hubicka  <jh@suse.cz>
+
+	* method.c: Include cgraph.h.
+	(use_thunk): Use cgraph_add_new_function instead of calling backend
+	directly.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* parser.c: Fix comment typo.
