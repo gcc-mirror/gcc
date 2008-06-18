@@ -1038,6 +1038,9 @@ c_common_post_options (const char **pfilename)
   if (num_in_fnames > 1)
     flag_unit_at_a_time = 1;
 
+  if (pch_file && !flag_unit_at_a_time)
+    sorry ("Precompiled headers require -funit-at-a-time");
+
   /* Default to ObjC sjlj exception handling if NeXT runtime.  */
   if (flag_objc_sjlj_exceptions < 0)
     flag_objc_sjlj_exceptions = flag_next_runtime;
