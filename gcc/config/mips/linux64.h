@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    in order to make the other specs easier to write.  */
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS \
-NO_SHARED_SPECS \
+BASE_DRIVER_SELF_SPECS \
 " %{!EB:%{!EL:%(endian_spec)}}" \
 " %{!mabi=*: -mabi=n32}"
 

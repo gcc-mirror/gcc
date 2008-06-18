@@ -11972,6 +11972,11 @@ The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
+Native Linux/GNU toolchains also support the value @samp{native},
+which selects the best architecture option for the host processor.
+@option{-march=native} has no effect if GCC does not recognize
+the processor.
+
 In processor names, a final @samp{000} can be abbreviated as @samp{k}
 (for example, @samp{-march=r2k}).  Prefixes are optional, and
 @samp{vr} may be written @samp{r}.
