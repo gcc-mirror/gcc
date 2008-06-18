@@ -1,3 +1,28 @@
+2008-06-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_CONDMOVE): Slice ISA_HAS_FP_CONDMOVE
+	from it.
+	(ISA_HAS_FP_CONDMOVE): New macro.
+	(ISA_HAS_FP_MADD4_MSUB4, ISA_HAS_FP_MADD3_MSUB3): New macros.
+	(ISA_HAS_NMADD_NMSUB): Rename to ISA_HAS_NMADD4_NMSUB4.
+	(ISA_HAS_NMADD3_NMSUB3): New macro.
+	* config/mips/mips.c (mips_rtx_costs): Update.
+	* config/mips/mips.md (MOVECC): Don't use FP conditional moves when
+	compiling for ST Loongson 2E/2F.
+	(madd<mode>): Rename to madd4<mode>.  Update.
+	(madd3<mode>): New pattern.
+	(msub<mode>): Rename to msub4<mode>.  Update.
+	(msub3<mode>): New pattern.
+	(nmadd<mode>): Rename to nmadd4<mode>.  Update.
+	(nmadd3<mode>): New pattern.
+	(nmadd<mode>_fastmath): Rename to nmadd4<mode>_fastmath.  Update.
+	(nmadd3<mode>_fastmath): New pattern.
+	(nmsub<mode>): Rename to nmsub4<mode>.  Update.
+	(nmsub3<mode>): New pattern.
+	(nmsub<mode>_fastmath): Rename to nmsub4<mode>_fastmath.  Update.
+	(nmsub3<mode>_fastmath): New pattern.
+	(mov<SCALARF:mode>_on_<MOVECC:mode>, mov<mode>cc): Update.
+
 2008-06-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* df.h (struct df_ref): Replace 'insn' field with 'insn_info' field.

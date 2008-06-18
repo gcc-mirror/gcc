@@ -745,13 +745,18 @@ enum mips_code_readable_setting {
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS16)
 
-/* ISA has the conditional move instructions introduced in mips4.  */
-#define ISA_HAS_CONDMOVE	((ISA_MIPS4				\
+/* ISA has the floating-point conditional move instructions introduced
+   in mips4.  */
+#define ISA_HAS_FP_CONDMOVE	((ISA_MIPS4				\
 				  || ISA_MIPS32				\
 				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS5500			\
 				 && !TARGET_MIPS16)
+
+/* ISA has the integer conditional move instructions introduced in mips4 and
+   ST Loongson 2E/2F.  */
+#define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE || TARGET_LOONGSON_2EF)
 
 /* ISA has LDC1 and SDC1.  */
 #define ISA_HAS_LDC1_SDC1	(!ISA_MIPS1 && !TARGET_MIPS16)
@@ -787,13 +792,25 @@ enum mips_code_readable_setting {
 /* Integer multiply-accumulate instructions should be generated.  */
 #define GENERATE_MADD_MSUB      (ISA_HAS_MADD_MSUB && !TUNE_74K)
 
-/* ISA has floating-point nmadd and nmsub instructions for mode MODE.  */
-#define ISA_HAS_NMADD_NMSUB(MODE) \
+/* ISA has floating-point madd and msub instructions 'd = a * b [+-] c'.  */
+#define ISA_HAS_FP_MADD4_MSUB4  ISA_HAS_FP4
+
+/* ISA has floating-point madd and msub instructions 'c = a * b [+-] c'.  */
+#define ISA_HAS_FP_MADD3_MSUB3  TARGET_LOONGSON_2EF
+
+/* ISA has floating-point nmadd and nmsub instructions
+   'd = -((a * b) [+-] c)'.  */
+#define ISA_HAS_NMADD4_NMSUB4(MODE)					\
 				((ISA_MIPS4				\
 				  || (ISA_MIPS32R2 && (MODE) == V2SFmode) \
 				  || ISA_MIPS64)			\
 				 && (!TARGET_MIPS5400 || TARGET_MAD)	\
 				 && !TARGET_MIPS16)
+
+/* ISA has floating-point nmadd and nmsub instructions
+   'c = -((a * b) [+-] c)'.  */
+#define ISA_HAS_NMADD3_NMSUB3(MODE)					\
+                                TARGET_LOONGSON_2EF
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO		((ISA_MIPS32				\

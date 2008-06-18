@@ -3286,7 +3286,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MINUS:
       if (float_mode_p
-	  && ISA_HAS_NMADD_NMSUB (mode)
+	  && (ISA_HAS_NMADD4_NMSUB4 (mode) || ISA_HAS_NMADD3_NMSUB3 (mode))
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && !HONOR_SIGNED_ZEROS (mode))
@@ -3337,7 +3337,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case NEG:
       if (float_mode_p
-	  && ISA_HAS_NMADD_NMSUB (mode)
+	  && (ISA_HAS_NMADD4_NMSUB4 (mode) || ISA_HAS_NMADD3_NMSUB3 (mode))
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && HONOR_SIGNED_ZEROS (mode))
