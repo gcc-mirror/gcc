@@ -762,6 +762,7 @@ switchfiles (int fields)
       exit (1);
     }
   fprintf (outfile, "\
+/* { dg-require-effective-target int32plus } */\n\
 /* { dg-options \"-I%s\" } */\n\
 /* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n\
 /* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
