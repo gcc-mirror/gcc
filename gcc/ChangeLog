@@ -1,3 +1,10 @@
+2008-06-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (reg_align): Remove.
+	(regno_aligned_for_load): Also accept ARG_POINTER_REGNUM.
+	(spu_split_load): Use regno_aligned_for_load instead of reg_align.
+	(spu_split_store): Likewise.
+
 2008-06-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* dfp.c (WORDS_BIGENDIAN): Define to 0 if not defined.
