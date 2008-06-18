@@ -642,6 +642,18 @@ cgraph_finalize_function (tree decl, bool nested)
     do_warn_unused_parameter (decl);
 }
 
+/* C99 extern inline keywords allow changing of declaration after function
+   has been finalized.  We need to re-decide if we want to mark the function as
+   needed then.   */
+
+void
+cgraph_mark_if_needed (tree decl)
+{
+  struct cgraph_node *node = cgraph_node (decl);
+  if (node->local.finalized && decide_is_function_needed (node, decl))
+    cgraph_mark_needed_node (node);
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 void
 verify_cgraph_node (struct cgraph_node *node)
