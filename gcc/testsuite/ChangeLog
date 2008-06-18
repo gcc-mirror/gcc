@@ -1,5 +1,13 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.c-torture/execute/ieee/20000320-1.x: Skip for AVR target.
+	* gcc.c-torture/execute/ieee/rbug.x: Ditto.
+	* gcc.c-torture/execute/ieee/pr30704.x: Add new file. Skip for AVR 
+	target.
+	* gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.x: Ditto.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	PR testsuite/36284
 	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles): Require
 	int32plus for generated main files.
