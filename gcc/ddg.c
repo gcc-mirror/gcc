@@ -289,7 +289,7 @@ add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
 	     deps when broken.	If the first_def reaches the USE then
 	     there is such a dep.  */
 	  ddg_node_ptr first_def_node = get_node_of_insn (g,
-							  first_def->insn);
+							  DF_REF_INSN (first_def));
 
 	  gcc_assert (first_def_node);
 
@@ -314,7 +314,7 @@ add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
       if (last_def->id == first_def->id)
 	return;
 
-      dest_node = get_node_of_insn (g, first_def->insn);
+      dest_node = get_node_of_insn (g, DF_REF_INSN (first_def));
       gcc_assert (dest_node);
       create_ddg_dep_no_link (g, last_def_node, dest_node,
 			      OUTPUT_DEP, REG_DEP, 1);

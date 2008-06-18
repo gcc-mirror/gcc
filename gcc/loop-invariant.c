@@ -248,7 +248,7 @@ invariant_for_use (struct df_ref *use)
 {
   struct df_link *defs;
   struct df_ref *def;
-  basic_block bb = BLOCK_FOR_INSN (use->insn), def_bb;
+  basic_block bb = DF_REF_BB (use), def_bb;
 
   if (use->flags & DF_REF_READ_WRITE)
     return NULL;
@@ -768,13 +768,14 @@ check_dependency (basic_block bb, struct df_ref *use, bitmap depends_on)
 static bool
 check_dependencies (rtx insn, bitmap depends_on)
 {
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   struct df_ref **use_rec;
   basic_block bb = BLOCK_FOR_INSN (insn);
 
-  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+  for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
     if (!check_dependency (bb, *use_rec, depends_on))
       return false;
-  for (use_rec = DF_INSN_EQ_USES (insn); *use_rec; use_rec++)
+  for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
     if (!check_dependency (bb, *use_rec, depends_on))
       return false;
 	
@@ -850,17 +851,18 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 static void
 record_uses (rtx insn)
 {
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   struct df_ref **use_rec;
   struct invariant *inv;
 
-  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+  for (use_rec = DF_INSN_INFO_USES (insn_info); *use_rec; use_rec++)
     {
       struct df_ref *use = *use_rec;
       inv = invariant_for_use (use);
       if (inv)
 	record_use (inv->def, DF_REF_REAL_LOC (use), DF_REF_INSN (use));
     }
-  for (use_rec = DF_INSN_EQ_USES (insn); *use_rec; use_rec++)
+  for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
     {
       struct df_ref *use = *use_rec;
       inv = invariant_for_use (use);

@@ -1,3 +1,48 @@
+2008-06-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df.h (struct df_ref): Replace 'insn' field with 'insn_info' field.
+	(DF_REF_INSN_INFO): New.
+	(DF_REF_INSN, DF_REF_INSN_UID): Rewrite macros using DF_REF_INSN_INFO.
+	(DF_REF_IS_ARTIFICIAL): Artificial refs are now identified as refs
+	with a NULL DF_REF_INSN_INFO.
+	(DF_INSN_INFO_GET, DF_INSN_INFO_SET): Renamed from DF_INSN_GET and
+	DF_INSN_SET.
+	(DF_INSN_INFO_LUID, DF_INSN_INFO_DEFS, DF_INSN_INFO_USES,
+	DF_INSN_INFO_EQ_USES): New.
+	(DF_INSN_LUID, DF_INSN_DEFS, DF_INSN_USES, DF_INSN_EQ_USES,
+	DF_INSN_UID_LUID, DF_INSN_UID_DEFS, DF_INSN_UID_USES,
+	DF_INSN_UID_EQ_USES): Rewrite using DF_INSN_INFO_* macros.
+	* df-core.c: Update comment for above changes.
+	(df_insn_debug_regno): Use DF_INSN_INFO_GET instead of INSN_UID and
+	DF_INSN_UID_* macros.
+	(df_ref_debug): Check for NULL DF_REF_INSN_INFO.
+	* df-scan.c (df_ref_record): Take a df_insn_info instead of an
+	insn rtx.  Update all callers.
+	(df_def_record_1, df_defs_record, df_uses_record, df_get_call_refs,
+	df_ref_create_structure, df_insn_refs_collect): Likewise.
+	(df_ref_equal_p): Compare DF_REF_INSN_INFO pointers for the refs.
+	* df-problems.c (df_chain_dump): Test for non-NULL DF_REF_INSN_INFO.
+	(df_live_bb_local_compute): Retrieve DF_INSN_INFO, use DF_INSN_INFO_*
+	macros to access the insn refs.
+	(df_chain_top_dump, df_chain_bottom_dump, df_byte_lr_alloc): Likewise.
+	* fwprop.c (use_killed_between): Use DF_REF_INSN accessor macro.
+	(all_uses_available): Retrieve DF_INSN_INFO for def_insn, and use it
+	for accessing the refs.
+	(try_fwprop_subst): Likewise.
+	* ddg.c (add_cross_iteration_register_deps): Use DF_REF_INSN macro.
+	* web.c (union_defs): Retrieve DF_INSN_INFO for def_insn, and use it
+	for accessing the refs.
+	* loop-invariant.c (invariant_for_use): Use DF_REF_BB macro.
+	(check_dependencies): Use DF_INSN_INFO_GET, use DF_INSN_INFO_* macros
+	to look at the insn refs.
+	(record_uses): Likewise.
+	* dce.c (deletable_insn_p): Don't tolerate artificial DEFs in this
+	function anymore.
+	(mark_artificial_uses): Don't mark_insn for artificial refs.
+	(mark_reg_rependencies): Likewise.
+
+	* doc/rtl.texi: Remove documentation of ADDRESSOF.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

@@ -129,7 +129,7 @@ df_chain_dump (struct df_link *link, FILE *file)
 	       DF_REF_REG_DEF_P (link->ref) ? 'd' : 'u',
 	       DF_REF_ID (link->ref),
 	       DF_REF_BBNO (link->ref),
-	       DF_REF_INSN (link->ref) ? DF_REF_INSN_UID (link->ref) : -1);
+	       DF_REF_INSN_INFO (link->ref) ? DF_REF_INSN_UID (link->ref) : -1);
     }
   fprintf (file, "}");
 }
@@ -1429,15 +1429,15 @@ df_live_bb_local_compute (unsigned int bb_index)
       if (!insn_info)
 	{
 	  gcc_assert (!INSN_P (insn));
-	  df_insn_create_insn_record (insn);
+	  insn_info = df_insn_create_insn_record (insn);
 	}
 
-      DF_INSN_LUID (insn) = luid;
+      DF_INSN_INFO_LUID (insn_info) = luid;
       if (!INSN_P (insn))
 	continue;
 
       luid++;
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+      for (def_rec = DF_INSN_INFO_DEFS (insn_info); *def_rec; def_rec++)
 	{
 	  struct df_ref *def = *def_rec;
 	  unsigned int regno = DF_REF_REGNO (def);
@@ -2201,14 +2201,14 @@ df_chain_top_dump (basic_block bb, FILE *file)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  unsigned int uid = INSN_UID (insn);
 	  if (INSN_P (insn))
 	    {
-	      def_rec = DF_INSN_UID_DEFS (uid);
+	      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+	      def_rec = DF_INSN_INFO_DEFS (insn_info);
 	      if (*def_rec)
 		{
 		  fprintf (file, ";;   DU chains for insn luid %d uid %d\n", 
-			   DF_INSN_LUID (insn), uid);
+			   DF_INSN_INFO_LUID (insn_info), INSN_UID (insn));
 		  
 		  while (*def_rec)
 		    {
@@ -2250,15 +2250,15 @@ df_chain_bottom_dump (basic_block bb, FILE *file)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  unsigned int uid = INSN_UID (insn);
 	  if (INSN_P (insn))
 	    {
-	      struct df_ref **eq_use_rec = DF_INSN_UID_EQ_USES (uid);
-	      use_rec = DF_INSN_UID_USES (uid);
+	      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+	      struct df_ref **eq_use_rec = DF_INSN_INFO_EQ_USES (insn_info);
+	      use_rec = DF_INSN_INFO_USES (insn_info);
 	      if (*use_rec || *eq_use_rec)
 		{
 		  fprintf (file, ";;   UD chains for insn luid %d uid %d\n", 
-			   DF_INSN_LUID (insn), uid);
+			   DF_INSN_INFO_LUID (insn_info), INSN_UID (insn));
 		  
 		  while (*use_rec)
 		    {
@@ -2515,8 +2515,9 @@ df_byte_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 	{
 	  if (INSN_P (insn))
 	    {
-	      df_byte_lr_check_regs (DF_INSN_DEFS (insn));
-	      df_byte_lr_check_regs (DF_INSN_USES (insn));
+	      struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+	      df_byte_lr_check_regs (DF_INSN_INFO_DEFS (insn_info));
+	      df_byte_lr_check_regs (DF_INSN_INFO_USES (insn_info));
 	    }
 	}
       bitmap_set_bit (df_byte_lr->out_of_date_transfer_functions, bb->index);
