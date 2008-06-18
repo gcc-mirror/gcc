@@ -1,3 +1,4 @@
+/* { dg-xfail-run-if "" { lax_strtofp } "*" "" } */
 /* { dg-options "-std=gnu99 -w" } */
 
 /* This test assumes IEEE float and double.  */

@@ -1,5 +1,10 @@
 2008-06-18  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/dfp/convert-bfp-6.c, gcc.dg/dfp/convert-bfp-9.c: XFAIL
+	for lax_strtofp.
+
+2008-06-18  Joseph Myers  <joseph@codesourcery.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_powerpc_hard_double): New.
 	* gcc.dg/tree-ssa/loop-19.c: Use powerpc_hard_double instead of
