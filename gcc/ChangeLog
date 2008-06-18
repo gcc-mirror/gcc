@@ -1,3 +1,10 @@
+2008-06-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	PR rtl-optimization/35604
+	* jump.c (redirect_exp_1): Skip the condition of an IF_THEN_ELSE. We
+	only want to change jump destinations, not eventual label comparisons.
+
 2008-06-16  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_expand_pending_functions): Give up at
@@ -436,8 +443,7 @@
 2008-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36506
-	* omp-low.c (expand_omp_sections): Initialize l2 to avoid bogus
-	warning.
+	* omp-low.c (expand_omp_sections): Initialize l2 to avoid bogus warning.
 
 2008-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -482,8 +488,8 @@
 
 2008-06-12  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/i386.c (ix86_compute_frame_layout): Disable red zone for
-	w64 abi.
+	* config/i386/i386.c (ix86_compute_frame_layout): Disable
+	red zone for w64 abi.
 	(ix86_expand_prologue): Likewise.
 	(ix86_force_to_memory): Likewise.
 	(ix86_free_from_memory): Likewise.
@@ -492,8 +498,7 @@
 
 	PR target/36425
 	* config/rs6000/rs6000.c (rs6000_override_options): Set
-	rs6000_isel conditionally to the absence of comand line
-	override.
+	rs6000_isel conditionally to the absence of comand line override.
 	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
 	Remove duplicate rs6000_isel setting.
 	* config/rs6000/eabispe.h: Ditto.
@@ -524,7 +529,7 @@
 	arch_32 and arch_64.
 
 2008-06-11  Eric Botcazou  <ebotcazou@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* builtins.c (get_memory_rtx): Accept byte-addressable bitfields.
 	Use DECL_SIZE_UNIT to retrieve the size of the field.
@@ -559,7 +564,8 @@
 	and target endianness differ.
 
 2008-06-10  Vinodha Ramasamy  <vinodha@google.com>
-        * value_prob.c (tree_divmod_fixed_value_transform): Use gcov_type.
+
+	* value_prob.c (tree_divmod_fixed_value_transform): Use gcov_type.
 	Avoid division by 0.
 	(tree_mod_pow2_value_transform): Likewise.
 	(tree_ic_transform): Likewise.
