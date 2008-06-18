@@ -1,5 +1,11 @@
 2008-06-16  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (cgraph_expand_pending_functions): Give up at
+	syntax errors.
+	(cgraph_analyze_function): Likewise.
+
+2008-06-16  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_mark_if_needed): New function.
 	* cgraphunit.c (cgraph_mark_if_needed): New function.
 	* c-decl.c (duplicate_decl): Use it.

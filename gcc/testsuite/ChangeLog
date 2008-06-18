@@ -1,3 +1,15 @@
+2008-06-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/asm-wide-1.c: Do not require extra errors we output
+	confused by earlier errors.
+	* gcc.target/i386/sseregparm-2.c: Remove markers for errors not
+	output at parsing time.
+	* gcc.target/i386/sseregparm-8.c: Move here compile time errors
+	from gcc.target/i386/sseregparm-2.c.
+	* gcc.dg/weak/weak-6.c: Do not require extra errors we output
+	confused by earlier errors.
+	* gcc.dg/weak/weak-7.c: Likewise.
+
 2008-06-18  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36517, fortran/36492

@@ -496,7 +496,7 @@ cgraph_assemble_pending_functions (void)
 {
   bool output = false;
 
-  if (flag_unit_at_a_time)
+  if (flag_unit_at_a_time || errorcount || sorrycount)
     return false;
 
   cgraph_output_pending_asms ();
@@ -857,7 +857,7 @@ cgraph_analyze_function (struct cgraph_node *node)
   cgraph_lower_function (node);
   node->analyzed = true;
 
-  if (!flag_unit_at_a_time)
+  if (!flag_unit_at_a_time && !sorrycount && !errorcount)
     {
       bitmap_obstack_initialize (NULL);
       tree_register_cfg_hooks ();
