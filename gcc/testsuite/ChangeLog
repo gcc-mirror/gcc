@@ -1,5 +1,11 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	PR testsuite/36284
+	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles): Require
+	int32plus for generated main files.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	PR c/36460
 	* gcc.dg/utf32-1.c: Mark xfail for AVR target.
 	* gcc.dg/utf32-2.c: Ditto.
