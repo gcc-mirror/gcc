@@ -1,3 +1,7 @@
+2008-06-16  Jan Hubicka  <jh@suse.cz>
+
+	* tree-outof-ssa.c (pass_out_of_ssa): Do not depend on PROP_alias.
+
 2008-06-16  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Kazu Hirata  <kazu@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com
