@@ -1,5 +1,10 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	PR c/36571
+	* gcc.dg/builtin-return-1.c: Mark as xfail on AVR.
+	
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/tree-ssa/loop-35.c: xfail avr target. Add new avr specific 
 	tests.
 
