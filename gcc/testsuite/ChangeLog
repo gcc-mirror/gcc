@@ -1,5 +1,12 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/tree-ssa/forwprop-6.c: Use long or int to match size of
+	float. Otherwise error.
+	* gcc.dg/tree-ssa/ssa-fre-7.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Ditto.
+
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.c-torture/execute/20020619-1.c: Correct for targets
 	without 32 bit int.
 
