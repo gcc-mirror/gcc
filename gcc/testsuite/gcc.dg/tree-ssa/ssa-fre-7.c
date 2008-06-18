@@ -1,16 +1,23 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-fre-details -fdump-tree-optimized" } */
+#if (__SIZEOF_INT__ == __SIZEOF_FLOAT__)
+typedef int intflt;
+#elif (__SIZEOF_LONG__ == __SIZEOF_FLOAT__)
+typedef long intflt;
+#else
+#error Add target support here for type that will union float size
+#endif
 
 struct X {
   int i;
   union {
-    int j;
-    int k;
+    intflt j;
+    intflt k;
     float f;
   } u;
 };
 
-int foo(int j)
+intflt foo(intflt j)
 {
   struct X a;
 
