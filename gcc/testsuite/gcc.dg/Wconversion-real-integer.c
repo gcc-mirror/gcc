@@ -2,6 +2,7 @@
    integers.  */
 
 /* { dg-do compile }
+/* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=c99 -Wconversion" } */
 
 #include <limits.h>
@@ -68,5 +69,6 @@ void h (void)
   fdouble (si);
   vdouble = si;
 }
+
 
 

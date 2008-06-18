@@ -3,14 +3,22 @@
 /* { dg-options "-O2 -fdump-tree-original" } */
 
 void foo (void);
-
+#if(__SIZEOF_INT__ >= 4) 
 int test1 (int a)
+#else
+int test1 (long a)
+#endif
+
 {
   if ((a >> 3) & 134217728)
     foo ();
 }
 
+#if(__SIZEOF_INT__ >= 4) 
 int test2 (unsigned int b)
+#else
+int test2 (unsigned long b)
+#endif
 {
   if ((b >> 3) & 134217728)
     foo ();

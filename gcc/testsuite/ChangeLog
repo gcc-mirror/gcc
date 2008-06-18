@@ -1,3 +1,24 @@
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.c-torture/compile/limits-fndefn.c: Skip for AVR.
+	* gcc.dg/builtins-config.h: Use standard independent __AVR__ symbol.
+	* gcc.dg/cdce1.c: Skip for AVR.
+	* gcc.dg/cdce2.c: Ditto.
+	* gcc.dg/fold-bitand-1.c: Ignore warnings such as alignment.
+	* gcc.dg/fold-eqandshift-3.c: Use long on AVR.
+	* gcc.dg/fold-overflow-1.c: Skip for AVR.
+	* gcc.dg/multiple-overflow-warn-3.c: Use target independent macro for ms bit position.
+	* gcc.dg/pch/struct-1.c: Allow for target without 32 bit int.
+	* gcc.dg/tree-ssa/pr33920.c: Add warning check for AVR.
+	* gcc.dg/ucnid-5.c: Skip for AVR.
+	* gcc.dg/Wconversion-5.c: Mark warning xfail for AVR target.
+	* gcc.dg/Wconversion-real-integer.c: Skip for AVR.
+	* gcc.dg/Wconversion-real.c: Ditto.
+	* gcc.dg/wtr-conversion-1.c: Add warning test for AVR.
+	* gcc.dg/utf-cvt.c: Skip tests and mark excess xfail for AVR.
+	* gcc.dg/Wtype-limits-Wextra.c: Ditto.
+	* gcc.dg/Wtype-limits.c: Ditto. 
+   
 2008-06-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/dfp/convert-bfp-6.c, gcc.dg/dfp/convert-bfp-9.c: XFAIL

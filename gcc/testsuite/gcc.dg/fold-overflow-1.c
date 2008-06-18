@@ -1,5 +1,5 @@
 /* { dg-compile } */
-/* { dg-skip-if "consts are shorts, not longs" { "m32c-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "consts are shorts, not longs" { "m32c-*-*" "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-O -ftrapping-math" } */
 
 /* There should be exactly 2 +Inf in the assembly file.  */
