@@ -143,9 +143,27 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_AS_NO_SHARED
 /* Default to -mno-shared for non-PIC.  */
-#define NO_SHARED_SPECS \
+# define NO_SHARED_SPECS \
   "%{mshared|mno-shared|fpic|fPIC|fpie|fPIE:;:-mno-shared}"
-#define DRIVER_SELF_SPECS NO_SHARED_SPECS
 #else
-#define NO_SHARED_SPECS
+# define NO_SHARED_SPECS ""
 #endif
+
+/* -march=native handling only makes sense with compiler running on
+   a MIPS chip.  */
+#if defined(__mips__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define EXTRA_SPEC_FUNCTIONS \
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define MARCH_MTUNE_NATIVE_SPECS				\
+  " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
+  " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MARCH_MTUNE_NATIVE_SPECS ""
+#endif
+
+#define BASE_DRIVER_SELF_SPECS \
+  NO_SHARED_SPECS \
+  MARCH_MTUNE_NATIVE_SPECS
+#define DRIVER_SELF_SPECS BASE_DRIVER_SELF_SPECS

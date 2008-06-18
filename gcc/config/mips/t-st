@@ -1,0 +1,14 @@
+MULTILIB_OPTIONS = march=loongson2e/march=loongson2f mabi=n32/mabi=32/mabi=64 
+MULTILIB_DIRNAMES = 2e 2f lib32 lib lib64
+
+MULTILIB_OSDIRNAMES  = march.loongson2e/mabi.n32=../lib32/2e
+MULTILIB_OSDIRNAMES += march.loongson2e/mabi.32=../lib/2e
+MULTILIB_OSDIRNAMES += march.loongson2e/mabi.64=../lib64/2e
+MULTILIB_OSDIRNAMES += march.loongson2f/mabi.n32=../lib32/2f
+MULTILIB_OSDIRNAMES += march.loongson2f/mabi.32=../lib/2f
+MULTILIB_OSDIRNAMES += march.loongson2f/mabi.64=../lib64/2f
+MULTILIB_OSDIRNAMES += mabi.n32=../lib32
+MULTILIB_OSDIRNAMES += mabi.32=../lib
+MULTILIB_OSDIRNAMES += mabi.64=../lib64
+
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o

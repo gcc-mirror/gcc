@@ -1,3 +1,19 @@
+2008-06-16  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Kazu Hirata  <kazu@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com
+
+	* config.gcc (mips64el-st-linux-gnu): Use mips/st.h and mips/t-st.
+	* config.host: Use driver-native.o and mips/x-native for mips*-linux*.
+	* config/mips/linux.h (host_detect_local_cpu): Declare, add to
+	EXTRA_SPEC_FUNCTIONS.
+	(MARCH_MTUNE_NATIVE_SPECS, BASE_DRIVER_SELF_SPECS): New macros.
+	(DRIVER_SELF_SPECS): Adjust.
+	* config/mips/linux64.h (DRIVER_SELF_SPECS): Update.
+	* config/mips/st.h, config/mips/t-st: New.
+	* config/mips/driver-native.c, config/mips/x-native: New.
+	* doc/invoke.texi (MIPS): Document 'native' value for -march and
+	-mtune options.
+
 2008-06-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/mips.h (ISA_HAS_CONDMOVE): Slice ISA_HAS_FP_CONDMOVE
