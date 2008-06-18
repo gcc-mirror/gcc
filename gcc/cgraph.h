@@ -331,6 +331,7 @@ void cgraph_add_new_function (tree, bool);
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function (tree, bool);
+void cgraph_mark_if_needed (tree);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
