@@ -1680,25 +1680,29 @@ got_charlen:
 	 (without typespec) all elements are verified to have the same length
 	 anyway.  */
       if (found_length != -1)
-        for (p = expr->value.constructor; p; p = p->next)
-          if (p->expr->expr_type == EXPR_CONSTANT)
-            {
-              gfc_expr *cl = NULL;
-              int current_length = -1;
+	for (p = expr->value.constructor; p; p = p->next)
+	  if (p->expr->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_expr *cl = NULL;
+	      int current_length = -1;
+	      bool has_ts;
 
-              if (p->expr->ts.cl && p->expr->ts.cl->length)
-              {
-                cl = p->expr->ts.cl->length;
-                gfc_extract_int (cl, &current_length);
-              }
+	      if (p->expr->ts.cl && p->expr->ts.cl->length)
+	      {
+		cl = p->expr->ts.cl->length;
+		gfc_extract_int (cl, &current_length);
+	      }
 
-              /* If gfc_extract_int above set current_length, we implicitly
-                 know the type is BT_INTEGER and it's EXPR_CONSTANT.  */
+	      /* If gfc_extract_int above set current_length, we implicitly
+		 know the type is BT_INTEGER and it's EXPR_CONSTANT.  */
 
-              if (! cl
-                  || (current_length != -1 && current_length < found_length))
-                gfc_set_constant_character_len (found_length, p->expr, true);
-            }
+	      has_ts = (expr->ts.cl && expr->ts.cl->length_from_typespec);
+
+	      if (! cl
+		  || (current_length != -1 && current_length < found_length))
+		gfc_set_constant_character_len (found_length, p->expr,
+						has_ts ? -1 : found_length);
+	    }
     }
 
   return SUCCESS;

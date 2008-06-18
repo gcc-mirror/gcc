@@ -147,7 +147,7 @@ match gfc_match_final_decl (void);
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);
 
-void gfc_set_constant_character_len (int, gfc_expr *, bool);
+void gfc_set_constant_character_len (int, gfc_expr *, int);
 
 /* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);

@@ -1,3 +1,16 @@
+2008-06-18  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36517, fortran/36492
+	* gfortran.dg/array_constructor_25.f03:  New test.
+	* gfortran.dg/array_constructor_26.f03:  New test.
+	* gfortran.dg/array_constructor_27.f03:  New test.
+	* gfortran.dg/array_constructor_28.f03:  New test.
+	* gfortran.dg/array_constructor_29.f03:  New test.
+	* gfortran.dg/array_constructor_30.f03:  New test.
+	* gfortran.dg/array_constructor_type_19.f03:  New test.
+	* gfortran.dg/array_constructor_type_20.f03:  New test.
+	* gfortran.dg/array_constructor_type_21.f03:  New test.
+
 2008-06-17  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36112
