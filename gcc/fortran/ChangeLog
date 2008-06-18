@@ -1,3 +1,20 @@
+2008-06-18  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36517, fortran/36492
+	* array.c (gfc_resolve_character_array_constructor):  Call
+	gfc_set_constant_character_len with changed length-chec argument.
+	* decl.c (gfc_set_constant_character_len):  Changed array argument to
+	be a generic length-checking argument that can be used for correct
+	checking with typespec and in special cases where the should-be length
+	is different from the target length.
+	(build_struct):  Call gfc_set_constant_character_len with changed length
+	checking argument and introduced additional checks for exceptional
+	conditions on invalid code.
+	(add_init_expr_to_sym), (do_parm):  Call gfc_set_constant_character_len
+	with changed argument.
+	* match.h (gfc_set_constant_character_len):  Changed third argument to
+	int for the should-be length rather than bool.
+
 2008-06-17  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36112
