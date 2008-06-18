@@ -370,9 +370,10 @@ struct df_ref
   rtx reg;			/* The register referenced.  */
   basic_block bb;               /* Basic block containing the instruction. */
 
-  /* Insn containing ref. This will be null if this is an artificial
-     reference.  */
-  rtx insn;
+  /* Insn info for the insn containing ref. This will be null if this is
+     an artificial reference.  */
+  struct df_insn_info *insn_info;
+
   rtx *loc;			/* The location of the reg.  */
   struct df_link *chain;	/* Head of def-use, use-def.  */
   /* Location in the ref table.  This is only valid after a call to 
@@ -612,8 +613,9 @@ struct df
 #define DF_REF_LOC(REF) ((REF)->loc)
 #define DF_REF_BB(REF) ((REF)->bb)
 #define DF_REF_BBNO(REF) (DF_REF_BB (REF)->index)
-#define DF_REF_INSN(REF) ((REF)->insn)
-#define DF_REF_INSN_UID(REF) (INSN_UID ((REF)->insn))
+#define DF_REF_INSN_INFO(REF) ((REF)->insn_info)
+#define DF_REF_INSN(REF) ((REF)->insn_info->insn)
+#define DF_REF_INSN_UID(REF) (INSN_UID (DF_REF_INSN(REF)))
 #define DF_REF_TYPE(REF) ((REF)->type)
 #define DF_REF_CHAIN(REF) ((REF)->chain)
 #define DF_REF_ID(REF) ((REF)->id)
@@ -626,7 +628,7 @@ struct df
    but an artificial one created to model 
    always live registers, eh uses, etc.  
    ARTIFICIAL refs has NULL insn.  */
-#define DF_REF_IS_ARTIFICIAL(REF) ((REF)->insn == NULL)
+#define DF_REF_IS_ARTIFICIAL(REF) ((REF)->insn_info == NULL)
 #define DF_REF_REG_MARK(REF) (DF_REF_FLAGS_SET ((REF),DF_REF_REG_MARKER))
 #define DF_REF_REG_UNMARK(REF) (DF_REF_FLAGS_CLEAR ((REF),DF_REF_REG_MARKER))
 #define DF_REF_IS_REG_MARKED(REF) (DF_REF_FLAGS_IS_SET ((REF),DF_REF_REG_MARKER))
@@ -691,12 +693,17 @@ struct df
 /* Macros to access the elements within the insn_info structure table.  */
 
 #define DF_INSN_SIZE() ((df)->insns_size)
-#define DF_INSN_GET(INSN) (df->insns[(INSN_UID(INSN))])
-#define DF_INSN_SET(INSN,VAL) (df->insns[(INSN_UID (INSN))]=(VAL))
-#define DF_INSN_LUID(INSN) (DF_INSN_GET(INSN)->luid)
-#define DF_INSN_DEFS(INSN) (DF_INSN_GET(INSN)->defs)
-#define DF_INSN_USES(INSN) (DF_INSN_GET(INSN)->uses)
-#define DF_INSN_EQ_USES(INSN) (DF_INSN_GET(INSN)->eq_uses)
+#define DF_INSN_INFO_GET(INSN) (df->insns[(INSN_UID(INSN))])
+#define DF_INSN_INFO_SET(INSN,VAL) (df->insns[(INSN_UID (INSN))]=(VAL))
+#define DF_INSN_INFO_LUID(II) ((II)->luid)
+#define DF_INSN_INFO_DEFS(II) ((II)->defs)
+#define DF_INSN_INFO_USES(II) ((II)->uses)
+#define DF_INSN_INFO_EQ_USES(II) ((II)->eq_uses)
+
+#define DF_INSN_LUID(INSN) (DF_INSN_INFO_LUID (DF_INSN_INFO_GET(INSN)))
+#define DF_INSN_DEFS(INSN) (DF_INSN_INFO_DEFS (DF_INSN_INFO_GET(INSN)))
+#define DF_INSN_USES(INSN) (DF_INSN_INFO_USES (DF_INSN_INFO_GET(INSN)))
+#define DF_INSN_EQ_USES(INSN) (DF_INSN_INFO_EQ_USES (DF_INSN_INFO_GET(INSN)))
 
 #define DF_INSN_UID_GET(UID) (df->insns[(UID)])
 #define DF_INSN_UID_SET(UID,VAL) (df->insns[(UID)]=(VAL))

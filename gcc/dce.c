@@ -154,12 +154,10 @@ deletable_insn_p (rtx insn, bool fast)
 static inline int
 marked_insn_p (rtx insn)
 {
-  if (insn)
-    return TEST_BIT (marked, INSN_UID (insn));
-  else 
-    /* Artificial defs are always needed and they do not have an
-       insn.  */
-    return true;
+  /* Artificial defs are always needed and they do not have an insn.
+     We should never see them here.  */
+  gcc_assert (insn);
+  return TEST_BIT (marked, INSN_UID (insn));
 }
 
 
@@ -339,7 +337,8 @@ mark_artificial_uses (void)
       for (use_rec = df_get_artificial_uses (bb->index); 
 	   *use_rec; use_rec++)
 	for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
-	  mark_insn (DF_REF_INSN (defs->ref), false);
+	  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+	    mark_insn (DF_REF_INSN (defs->ref), false);
     }
 }
 
@@ -362,7 +361,8 @@ mark_reg_dependencies (rtx insn)
 	  fprintf (dump_file, " in insn %d:\n", INSN_UID (insn));
 	}
       for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
-	mark_insn (DF_REF_INSN (defs->ref), false);
+	if (! DF_REF_IS_ARTIFICIAL (defs->ref))
+	  mark_insn (DF_REF_INSN (defs->ref), false);
     }
 }
 

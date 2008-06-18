@@ -268,25 +268,29 @@ pseudos and long for the hard registers.
 
 ACCESSING INSNS:
 
-1) The df insn information is kept in the insns array.  This array is
-   indexed by insn uid.  
+1) The df insn information is kept in an array of DF_INSN_INFO objects.
+   The array is indexed by insn uid, and every DF_REF points to the
+   DF_INSN_INFO object of the insn that contains the reference.
 
-2) Each insn has three sets of refs: They are linked into one of three
-   lists: the insn's defs list (accessed by the DF_INSN_DEFS or
-   DF_INSN_UID_DEFS macros), the insn's uses list (accessed by the
-   DF_INSN_USES or DF_INSN_UID_USES macros) or the insn's eq_uses list
-   (accessed by the DF_INSN_EQ_USES or DF_INSN_UID_EQ_USES macros).
-   The latter list are the list of references in REG_EQUAL or
-   REG_EQUIV notes.  These macros produce a ref (or NULL), the rest of
-   the list can be obtained by traversal of the NEXT_REF field
-   (accessed by the DF_REF_NEXT_REF macro.)  There is no significance
-   to the ordering of the uses or refs in an instruction.
+2) Each insn has three sets of refs, which are linked into one of three
+   lists: The insn's defs list (accessed by the DF_INSN_INFO_DEFS,
+   DF_INSN_DEFS, or DF_INSN_UID_DEFS macros), the insn's uses list
+   (accessed by the DF_INSN_INFO_USES, DF_INSN_USES, or
+   DF_INSN_UID_USES macros) or the insn's eq_uses list (accessed by the
+   DF_INSN_INFO_EQ_USES, DF_INSN_EQ_USES or DF_INSN_UID_EQ_USES macros).
+   The latter list are the list of references in REG_EQUAL or REG_EQUIV
+   notes.  These macros produce a ref (or NULL), the rest of the list
+   can be obtained by traversal of the NEXT_REF field (accessed by the
+   DF_REF_NEXT_REF macro.)  There is no significance to the ordering of
+   the uses or refs in an instruction.
 
-3) Each insn has a logical uid field (LUID).  When properly set, this
-   is an integer that numbers each insn in the basic block, in order from
-   the start of the block.  The numbers are only correct after a call to
-   df_analyse.  They will rot after insns are added deleted or moved
-   around.
+3) Each insn has a logical uid field (LUID) which is stored in the
+   DF_INSN_INFO object for the insn.  The LUID field is accessed by
+   the DF_INSN_INFO_LUID, DF_INSN_LUID, and DF_INSN_UID_LUID macros.
+   When properly set, the LUID is an integer that numbers each insn in
+   the basic block, in order from the start of the block.
+   The numbers are only correct after a call to df_analyze.  They will
+   rot after insns are added deleted or moved round.
 
 ACCESSING REFS:
 
@@ -2152,17 +2156,18 @@ df_insn_debug (rtx insn, bool follow_chain, FILE *file)
 void
 df_insn_debug_regno (rtx insn, FILE *file)
 {
-  unsigned int uid = INSN_UID(insn);
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 
   fprintf (file, "insn %d bb %d luid %d defs ",
-	   uid, BLOCK_FOR_INSN (insn)->index, DF_INSN_LUID (insn));
-  df_refs_chain_dump (DF_INSN_UID_DEFS (uid), false, file);
+	   INSN_UID (insn), BLOCK_FOR_INSN (insn)->index,
+	   DF_INSN_INFO_LUID (insn_info));
+  df_refs_chain_dump (DF_INSN_INFO_DEFS (insn_info), false, file);
     
   fprintf (file, " uses ");
-  df_refs_chain_dump (DF_INSN_UID_USES (uid), false, file);
+  df_refs_chain_dump (DF_INSN_INFO_USES (insn_info), false, file);
 
   fprintf (file, " eq_uses ");
-  df_refs_chain_dump (DF_INSN_UID_EQ_USES (uid), false, file);
+  df_refs_chain_dump (DF_INSN_INFO_EQ_USES (insn_info), false, file);
   fprintf (file, "\n");
 }
 
@@ -2188,7 +2193,7 @@ df_ref_debug (struct df_ref *ref, FILE *file)
   fprintf (file, "reg %d bb %d insn %d flag 0x%x type 0x%x ",
 	   DF_REF_REGNO (ref),
 	   DF_REF_BBNO (ref),
-	   DF_REF_INSN (ref) ? INSN_UID (DF_REF_INSN (ref)) : -1,
+	   DF_REF_INSN_INFO (ref) ? INSN_UID (DF_REF_INSN (ref)) : -1,
 	   DF_REF_FLAGS (ref),
 	   DF_REF_TYPE (ref));
   if (DF_REF_LOC (ref))
