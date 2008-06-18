@@ -28,6 +28,7 @@
 
 #include "mprec.h"
 #include <string.h>
+#include <stdlib.h>
 
 static int
 _DEFUN (quorem,
