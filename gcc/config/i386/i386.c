@@ -1435,6 +1435,11 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
      from integer to FP. */
   m_AMDFAM10,
+
+  /* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
+     with a subsequent conditional jump instruction into a single
+     compare-and-branch uop.  */
+  m_CORE2,
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -9020,6 +9025,7 @@ get_some_local_dynamic_name (void)
    L,W,B,Q,S,T -- print the opcode suffix for specified size of operand.
    C -- print opcode suffix for set/cmov insn.
    c -- like C, but print reversed condition
+   E,e -- likewise, but for compare-and-branch fused insn.
    F,f -- likewise, but for floating-point.
    O -- if HAVE_AS_IX86_CMOV_SUN_SYNTAX, expand to "w.", "l." or "q.",
         otherwise nothing
@@ -9290,6 +9296,14 @@ print_operand (FILE *file, rtx x, int code)
 	    putc ('.', file);
 #endif
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 1, 1, file);
+	  return;
+
+	case 'E':
+	  put_condition_code (GET_CODE (x), CCmode, 0, 0, file);
+	  return;
+
+	case 'e':
+	  put_condition_code (GET_CODE (x), CCmode, 1, 0, file);
 	  return;
 
 	case 'H':
