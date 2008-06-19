@@ -817,7 +817,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90s8*|\
   mmcu=at90c8*|\
   mmcu=at86rf401|\
-  mmcu=attiny13|\
+  mmcu=attiny13*|\
   mmcu=attiny2313|\
   mmcu=attiny24|\
   mmcu=attiny25|\
@@ -916,6 +916,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=at90s8535:crts8535.o%s} \
 %{mmcu=at86rf401:crt86401.o%s} \
 %{mmcu=attiny13:crttn13.o%s} \
+%{mmcu=attiny13a:crttn13a.o%s} \
 %{mmcu=attiny2313|mmcu=avr25:crttn2313.o%s} \
 %{mmcu=attiny24:crttn24.o%s} \
 %{mmcu=attiny44:crttn44.o%s} \
