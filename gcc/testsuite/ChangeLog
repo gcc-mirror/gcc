@@ -1,5 +1,19 @@
 2008-06-19  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* lib/target-supports.exp 
+	(check_effective_target_keeps_null_pointer_checks) : New function.
+	* gcc.dg/tree-ssa/20030730-1.c: Use keeps_null_pointer_checks to 
+	determine correct test response.
+	* gcc.dg/tree-ssa/20030730-2.c: Ditto.
+	* gcc.dg/tree-ssa/pr20701.c: Ditto.
+	* gcc.dg/tree-ssa/pr20702.c: Ditto.
+	* gcc.dg/tree-ssa/pr21086.c: Ditto.
+	* gcc.dg/tree-ssa/vrp02.c:: Ditto.
+	* gcc.dg/tree-ssa/vrp07.c:: Ditto.
+	* gcc.dg/tree-ssa/vrp08.c:: Ditto. 
+  
+2008-06-19  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/pragma-pack-4.c: Skip for AVR target.
 
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>

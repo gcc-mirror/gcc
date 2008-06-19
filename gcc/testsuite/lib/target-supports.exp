@@ -398,6 +398,20 @@ proc check_effective_target_trampolines { } {
     return 1
 }
 
+# Return 1 if according to target_info struct and explicit target list
+# target is supposed to keep null pointer checks. This could be due to 
+# use of option fno-delete-null-pointer-checks or hardwired in target.
+ 
+proc check_effective_target_keeps_null_pointer_checks { } {
+    if [target_info exists keeps_null_pointer_checks] {
+      return 1
+    }
+    if { [istarget avr-*-*] } {
+	return 1;   
+    }
+    return 0
+}
+
 # Return true if profiling is supported on the target.
 
 proc check_profiling_available { test_what } {

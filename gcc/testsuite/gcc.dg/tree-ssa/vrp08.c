@@ -17,7 +17,8 @@ foo (int a, int *p)
 
   return a;
 }
-
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_.* ne_expr 0" 1 "vrp1" } } */
+/* Target with fno-delete-null-pointer-checks should not fold checks */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
+/* { dg-final { scan-tree-dump-times "PREDICATE: p_.* ne_expr 0" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

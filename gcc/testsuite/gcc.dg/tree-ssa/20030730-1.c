@@ -18,7 +18,8 @@ foo (int attr_kind, unsigned long offset)
     exit (0);
 }
 
-/* There should be no IF conditionals.  */
-/* { dg-final { scan-tree-dump-times "if " 0 "dom3" } } */
-                                                                                
+/* There should be no IF conditionals, unless target has fno-delete-null-pointer-checks  */
+/* { dg-final { scan-tree-dump-times "if " 0 "dom3" { target { ! keeps_null_pointer_checks } } } } */
+/* { dg-final { scan-tree-dump "if " "dom3" { target { keeps_null_pointer_checks } } } } */
+     
 /* { dg-final { cleanup-tree-dump "dom3" } } */
