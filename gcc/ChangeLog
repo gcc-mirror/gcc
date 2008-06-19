@@ -1,3 +1,11 @@
+2008-06-16  Chung-Lin Tang  <ctang@marvell.com>
+
+	* arm-protos.h (arm_return_in_memory): Remove public
+	arm_return_in_memory() prototype.
+	* arm.c (arm_return_in_memory): Add static prototype, add target
+	hook macro, change definition and comments.
+	* arm.h (TARGET_RETURN_IN_MEMORY): Remove.
+
 2008-06-19  Ben Elliston  <bje@au.ibm.com>
 
 	* dfp.h, dfp.c, config/dfp-bit.h, config/dfp-bit.c, real.h,

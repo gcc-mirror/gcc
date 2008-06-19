@@ -166,6 +166,7 @@ static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
 static bool arm_return_in_msb (const_tree);
 static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
+static bool arm_return_in_memory (const_tree, const_tree);
 #ifdef TARGET_UNWIND_INFO
 static void arm_unwind_emit (FILE *, rtx);
 static bool arm_output_ttype (rtx);
@@ -332,6 +333,9 @@ static bool arm_allocate_stack_slots_for_args (void);
 
 #undef TARGET_RETURN_IN_MSB
 #define TARGET_RETURN_IN_MSB arm_return_in_msb
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY arm_return_in_memory
 
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK arm_must_pass_in_stack
@@ -2747,9 +2751,9 @@ arm_apply_result_size (void)
 }
 
 /* Decide whether a type should be returned in memory (true)
-   or in a register (false).  This is called by the macro
+   or in a register (false).  This is called as the target hook
    TARGET_RETURN_IN_MEMORY.  */
-bool
+static bool
 arm_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size;
