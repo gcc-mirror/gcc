@@ -273,6 +273,12 @@ environment to your ``good'' shell prior to running
 @command{zsh} is not a fully compliant POSIX shell and will not
 work when configuring GCC@.
 
+@item A POSIX or SVR4 awk
+
+Necessary for creating some of the generated source files for GCC@.
+If in doubt, use a recent GNU awk version, as some of the older ones
+are broken.  GNU awk version 3.1.5 is known to work.
+
 @item GNU binutils
 
 Necessary in some circumstances, optional in others.  See the
