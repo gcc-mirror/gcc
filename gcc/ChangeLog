@@ -1,3 +1,10 @@
+2008-06-19  Uros Bizjak  <ubizjak@gmail.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	PR rtl-optimization/35604
+	* jump.c (redirect_exp_1): Skip the condition of an IF_THEN_ELSE. We
+	only want to change jump destinations, not eventual label comparisons.
+
 2008-06-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/30739
@@ -178,14 +185,14 @@
 	Revert
 	2007-11-29  Zdenek Dvorak  <ook@ucw.cz>
 
-        PR tree-optimization/34244
-        * tree-vrp.c (adjust_range_with_scev): Clear scev cache.
-        (record_numbers_of_iterations): New function.
-        (execute_vrp): Cache the numbers of iterations of loops.
-        * tree-scalar-evolution.c (scev_reset_except_niters):
-        New function.
-        (scev_reset): Use scev_reset_except_niters.
-        * tree-scalar-evolution.h (scev_reset_except_niters): Declare.
+	PR tree-optimization/34244
+	* tree-vrp.c (adjust_range_with_scev): Clear scev cache.
+	(record_numbers_of_iterations): New function.
+	(execute_vrp): Cache the numbers of iterations of loops.
+	* tree-scalar-evolution.c (scev_reset_except_niters):
+	New function.
+	(scev_reset): Use scev_reset_except_niters.
+	* tree-scalar-evolution.h (scev_reset_except_niters): Declare.
 
 2008-06-06  Joseph Myers  <joseph@codesourcery.com>
 
