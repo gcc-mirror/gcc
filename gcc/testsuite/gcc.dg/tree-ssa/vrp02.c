@@ -19,6 +19,7 @@ foo (struct A *p, struct A *q)
   if (p)
     return x + p->b;
 }
-
-/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
+/* Target with fno-delete-null-pointer-checks should not fold check */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
