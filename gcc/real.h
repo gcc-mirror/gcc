@@ -319,7 +319,7 @@ extern const struct real_format decimal_quad_format;
 #define REAL_VALUE_FROM_UNSIGNED_INT(r, lo, hi, mode) \
   real_from_integer (&(r), mode, lo, hi, 1)
 
-/* Real values to IEEE 754R decimal floats.  */
+/* Real values to IEEE 754 decimal floats.  */
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #define REAL_VALUE_TO_TARGET_DECIMAL128(IN, OUT) \

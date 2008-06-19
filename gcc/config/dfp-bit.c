@@ -27,7 +27,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/* This implements IEEE 754R decimal floating point arithmetic, but
+/* This implements IEEE 754 decimal floating point arithmetic, but
    does not provide a mechanism for setting the rounding mode, or for
    generating or handling exceptions.  Conversions between decimal
    floating point types and other types depend on C library functions.

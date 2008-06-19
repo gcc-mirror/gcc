@@ -65,7 +65,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    DFP_C_TYPE: type of the arguments to the libgcc functions;
 	(eg _Decimal32)
 
-   IEEE_TYPE: the corresponding (encoded) IEEE754R type;
+   IEEE_TYPE: the corresponding (encoded) IEEE754 type;
 	(eg decimal32)
    
    TO_INTERNAL: the name of the decNumber function to convert an
@@ -163,7 +163,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    DFP_C_TYPE_TO: type of the result of dfp to dfp conversion.
 
-   IEEE_TYPE_TO: the corresponding (encoded) IEEE754R type.
+   IEEE_TYPE_TO: the corresponding (encoded) IEEE754 type.
 
    TO_ENCODED_TO: the name of the decNumber function to convert an
    internally represented decNumber into the encoded representation

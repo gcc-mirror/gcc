@@ -495,9 +495,9 @@ These functions return the quotient of @math{@var{a} + i@var{b}} and
 @node Decimal float library routines
 @section Routines for decimal floating point emulation
 @cindex decimal float library
-@cindex IEEE-754R
+@cindex IEEE 754-2008
 
-The software decimal floating point library implements IEEE 754R
+The software decimal floating point library implements IEEE 754-2008
 decimal floating point arithmetic and is only activated on selected
 targets.
 

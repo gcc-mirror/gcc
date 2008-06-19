@@ -1,3 +1,10 @@
+2008-06-19  Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.h, dfp.c, config/dfp-bit.h, config/dfp-bit.c, real.h,
+	real.c: Remove references to IEEE 754R.
+	* doc/install.texi (Configuration): IEEE 754R -> IEEE 754-2008.
+	* doc/libgcc.texi (Decimal float library routines): Likewise.
+
 2008-06-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* targhooks.h (struct gcc_target): New member unwind_word_mode.
