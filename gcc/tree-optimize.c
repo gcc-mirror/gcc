@@ -111,7 +111,11 @@ struct simple_ipa_opt_pass pass_early_local_passes =
 static unsigned int
 execute_early_local_optimizations (void)
 {
-  if (flag_unit_at_a_time)
+  /* First time we start with early optimization we need to advance
+     cgraph state so newly inserted functions are also early optimized.
+     However we execute early local optimizations for lately inserted
+     functions, in that case don't reset cgraph state back to IPA_SSA.  */
+  if (flag_unit_at_a_time && cgraph_state < CGRAPH_STATE_IPA_SSA)
     cgraph_state = CGRAPH_STATE_IPA_SSA;
   return 0;
 }
