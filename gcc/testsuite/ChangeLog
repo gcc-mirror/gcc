@@ -1,5 +1,9 @@
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	* gcc.dg/builtin-apply2.c: Mark skip for avr target.
+	
+2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	PR c/36571
 	* gcc.dg/builtin-return-1.c: Mark as xfail on AVR.
 	
