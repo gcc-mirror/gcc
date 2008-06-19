@@ -173,6 +173,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
     /* Classic + MOVW, <= 8K.  */
   { "avr25",        ARCH_AVR25, NULL },
   { "attiny13",     ARCH_AVR25, "__AVR_ATtiny13__" },
+  { "attiny13a",    ARCH_AVR25, "__AVR_ATtiny13A__" },
   { "attiny2313",   ARCH_AVR25, "__AVR_ATtiny2313__" },
   { "attiny24",     ARCH_AVR25, "__AVR_ATtiny24__" },
   { "attiny44",     ARCH_AVR25, "__AVR_ATtiny44__" },
