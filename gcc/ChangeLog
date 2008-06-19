@@ -1,3 +1,7 @@
+2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (-Wc++-compat): Activate as a warning, no an error.
+
 2008-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (ix86_tune_indices)
