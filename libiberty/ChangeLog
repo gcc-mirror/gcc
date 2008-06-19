@@ -1,3 +1,8 @@
+2008-06-19  Eric Blake  <ebb9@byu.net>
+
+	Adjust strsignal to POSIX 200x prototype.
+	* strsignal.c (strsignal): Remove const.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
@@ -123,9 +128,9 @@
 	* pexecute.txh (pex_free): Document process killing.
 
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
-	
+
 	* cp-demangle.c (d_dump): Handle
-	DEMANGLE_COMPONENT_RVALUE_REFERENCE. 
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE.
 	(d_make_comp): Ditto.
 	(cplus_demangle_type): Ditto.
 	(d_print_comp): Ditto.
@@ -252,7 +257,7 @@
 	* testsuite/Makefile.in: Add dummy install-pdf target.
 
 2007-03-01  Peter Breitenlohner  <peb@mppmu.mpg.de>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/16513
 	* Makefile.in: Install library under $(MULTIOSDIR), not $(MULTISUBDIR).
@@ -263,7 +268,7 @@
 	* configure.ac: add djgpp-specific results, so we don't have to
 	link during a cross compilation.
 	* configure: Regenerated.
-	
+
 2007-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* hex.c: Fix typo.
@@ -273,7 +278,7 @@
 2007-01-31  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* pex-common.h (struct pex_obj): New fields
-	stderr_pipe and read_err.	
+	stderr_pipe and read_err.
 	* pex-common.c (pex_init_common): Initialize
 	stderr_pipe.
 	(pex_run_in_environment): Add error checking
@@ -362,7 +367,7 @@
 	the end of the string.
 
 2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
-            J"orn Rennecke <joern.rennecke@st.com>
+	    J"orn Rennecke <joern.rennecke@st.com>
 
 	PR driver/29931
 	* make-relative-prefix.c (make_relative_prefix_1): New function,
@@ -377,7 +382,7 @@
 	(std_suffixes): Add "" as first element.
 	(find_executable): Remove detection of already-present
 	extension. Try all suffixes in std_suffixes.
-				
+
 2006-11-07  Julian Brown  <julian@codesourcery.com>
 
 	* floatformat.c (get_field): Fix segfault with little-endian word
@@ -396,7 +401,7 @@
 2006-10-25  Ben Elliston  <bje@au.ibm.com>
 
 	* pexecute.txh: Wrap pexecute's "flag" argument with @var {..}.
-	
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.in: Added "pdf", "libiberty.pdf" target support.
@@ -501,8 +506,8 @@
 2006-04-06  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add install-html, install-html-am, and
-	install-html-recursive targets. Define mkdir_p and 
-	NORMAL_INSTALL. 
+	install-html-recursive targets. Define mkdir_p and
+	NORMAL_INSTALL.
 	* configure.ac: AC_SUBST datarootdir, docdir, htmldir.
 	* configure: Regenerate.
 	* testsuite/Makefile.in: Add install-html and html targets.
@@ -552,7 +557,7 @@
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* configure.ac: Add -Wc++-compat to ac_libibety_warn_cflags where
-	supported. 
+	supported.
 	* configure: Regenerated.
 
 2006-01-20  Carlos O'Donell  <carlos@codesourcery.com>
@@ -582,7 +587,7 @@
 	* testsuite/test-demangle.c (main): Recognize option --ret-postfix
 	* testsuite/demangle-expected: Test cases to verify extended encoding.
 	Updated comment to document --ret-postfix option.
-	
+
 2005-11-06  Richard Guenther  <rguenther@suse.de>
 
 	* splay-tree.c (rotate_left): New function.
@@ -718,7 +723,7 @@
 2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	* hashtab.c (EMPTY_ENTRY): Moved and renamed.
-	(DELETED_ENTRY): Ditto.	
+	(DELETED_ENTRY): Ditto.
 
 2005-06-20  Geoffrey Keating  <geoffk@apple.com>
 
