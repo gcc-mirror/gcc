@@ -1,4 +1,13 @@
-2008-06-16  Chung-Lin Tang  <ctang@marvell.com>
+2008-06-19  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* cgraphunit.c (cgraph_finalize_function): Remove redundant setting of
+	node->decl.
+	(cgraph_expand_function): Use local copy of decl.
+	(cgraph_expand_all_functions): Remove redundant initialization of
+	order_pos.
+	(cgraph_optimize): Reword internal_error message.
+
+2008-06-19  Chung-Lin Tang  <ctang@marvell.com>
 
 	* arm-protos.h (arm_return_in_memory): Remove public
 	arm_return_in_memory() prototype.
@@ -54,7 +63,7 @@
 	(spu_split_load): Use regno_aligned_for_load instead of reg_align.
 	(spu_split_store): Likewise.
 
-2006-06-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+2008-06-18  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* gcc/tree-vn.c: Fix typo in comment.
 
