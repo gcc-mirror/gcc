@@ -1,3 +1,14 @@
+2008-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (ix86_tune_indices)
+	[X86_TUNE_FUSE_CMP_AND_BRANCH]: New.
+	(TARGET_FUSE_CMP_AND_BRANCH): New define.
+	* config/i386/i386.md (*jcc_fused_1): New insn pattern
+	(*jcc_fused_2): Ditto.
+	* config/i386/i386.c (ix86_tune_features): Add m_CORE2 to
+	X86_TUNE_USE_VECTOR_COMPARES targets.
+	(print operand): Handle 'E' and 'e' code.
+
 2008-06-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_t): Add attiny13a.
