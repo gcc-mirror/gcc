@@ -123,7 +123,7 @@ decimal_to_decnumber (const REAL_VALUE_TYPE *r, decNumber *dn)
     dn->bits ^= DECNEG;
 }
 
-/* Encode a real into an IEEE 754R decimal32 type.  */
+/* Encode a real into an IEEE 754 decimal32 type.  */
 
 void
 encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
@@ -142,7 +142,7 @@ encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   buf[0] = *(uint32_t *) d32.bytes;
 }
 
-/* Decode an IEEE 754R decimal32 type into a real.  */
+/* Decode an IEEE 754 decimal32 type into a real.  */
 
 void
 decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
@@ -161,7 +161,7 @@ decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_from_decnumber (r, &dn, &set); 
 }
 
-/* Encode a real into an IEEE 754R decimal64 type.  */
+/* Encode a real into an IEEE 754 decimal64 type.  */
 
 void
 encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
@@ -189,7 +189,7 @@ encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
     }
 }
 
-/* Decode an IEEE 754R decimal64 type into a real.  */
+/* Decode an IEEE 754 decimal64 type into a real.  */
 
 void
 decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
@@ -217,7 +217,7 @@ decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_from_decnumber (r, &dn, &set); 
 }
 
-/* Encode a real into an IEEE 754R decimal128 type.  */
+/* Encode a real into an IEEE 754 decimal128 type.  */
 
 void
 encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
@@ -249,7 +249,7 @@ encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
     }
 }
 
-/* Decode an IEEE 754R decimal128 type into a real.  */
+/* Decode an IEEE 754 decimal128 type into a real.  */
 
 void
 decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,

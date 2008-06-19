@@ -20,12 +20,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DFP_H
 #define GCC_DFP_H
 
-/* Encode REAL_VALUE_TYPEs into 32/64/128-bit IEEE 754R encoded values.  */
+/* Encode REAL_VALUE_TYPEs into 32/64/128-bit IEEE 754 encoded values.  */
 void encode_decimal32  (const struct real_format *fmt, long *, const REAL_VALUE_TYPE *);
 void encode_decimal64  (const struct real_format *fmt, long *, const REAL_VALUE_TYPE *);
 void decode_decimal128 (const struct real_format *, REAL_VALUE_TYPE *, const long *);
 
-/* Decode 32/64/128-bit IEEE 754R encoded values into REAL_VALUE_TYPEs.  */
+/* Decode 32/64/128-bit IEEE 754 encoded values into REAL_VALUE_TYPEs.  */
 void decode_decimal32  (const struct real_format *, REAL_VALUE_TYPE *, const long *);
 void decode_decimal64  (const struct real_format *, REAL_VALUE_TYPE *, const long *);
 void encode_decimal128 (const struct real_format *fmt, long *, const REAL_VALUE_TYPE *);
