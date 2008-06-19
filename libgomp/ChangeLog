@@ -1,3 +1,7 @@
+2008-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/nqueens-1.c: New test.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
