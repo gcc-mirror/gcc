@@ -1,3 +1,7 @@
+2008-06-19  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/pragma-pack-4.c: Skip for AVR target.
+
 2008-06-18  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.dg/builtin-apply2.c: Mark skip for avr target.
