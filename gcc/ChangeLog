@@ -1,5 +1,10 @@
 2008-06-19  Jan Hubicka  <jh@suse.cz>
 
+	* builtins.c (expand_builtin_nonlocal_goto): Stabilize r_sp before
+	clobbering framepointer.
+
+2008-06-19  Jan Hubicka  <jh@suse.cz>
+
 	* tree-optimize.c (execute_early_local_optimizations): Set
 	cgraph_state only at first invocation.
 

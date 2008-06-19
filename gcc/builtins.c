@@ -887,6 +887,7 @@ expand_builtin_nonlocal_goto (tree exp)
 #endif
     {
       r_label = copy_to_reg (r_label);
+      r_sp = copy_to_reg (r_sp);
 
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
