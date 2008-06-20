@@ -48,7 +48,7 @@ gfc_get_code (void)
 {
   gfc_code *c;
 
-  c = gfc_getmem (sizeof (gfc_code));
+  c = XCNEW (gfc_code);
   c->loc = gfc_current_locus;
   return c;
 }

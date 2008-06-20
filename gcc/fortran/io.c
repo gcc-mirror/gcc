@@ -1537,7 +1537,7 @@ gfc_match_open (void)
   if (m == MATCH_NO)
     return m;
 
-  open = gfc_getmem (sizeof (gfc_open));
+  open = XCNEW (gfc_open);
 
   m = match_open_element (open);
 
@@ -1927,7 +1927,7 @@ gfc_match_close (void)
   if (m == MATCH_NO)
     return m;
 
-  close = gfc_getmem (sizeof (gfc_close));
+  close = XCNEW (gfc_close);
 
   m = match_close_element (close);
 
@@ -2053,7 +2053,7 @@ match_filepos (gfc_statement st, gfc_exec_op op)
   gfc_filepos *fp;
   match m;
 
-  fp = gfc_getmem (sizeof (gfc_filepos));
+  fp = XCNEW (gfc_filepos);
 
   if (gfc_match_char ('(') == MATCH_NO)
     {
@@ -3218,7 +3218,7 @@ match_io (io_kind k)
 
   where = gfc_current_locus;
   comma_flag = 0;
-  current_dt = dt = gfc_getmem (sizeof (gfc_dt));
+  current_dt = dt = XCNEW (gfc_dt);
   m = gfc_match_char ('(');
   if (m == MATCH_NO)
     {
@@ -3569,7 +3569,7 @@ gfc_match_inquire (void)
   if (m == MATCH_NO)
     return m;
 
-  inquire = gfc_getmem (sizeof (gfc_inquire));
+  inquire = XCNEW (gfc_inquire);
 
   loc = gfc_current_locus;
 
@@ -3790,7 +3790,7 @@ gfc_match_wait (void)
   if (m == MATCH_NO)
     return m;
 
-  wait = gfc_getmem (sizeof (gfc_wait));
+  wait = XCNEW (gfc_wait);
 
   loc = gfc_current_locus;
 

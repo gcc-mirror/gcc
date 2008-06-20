@@ -206,7 +206,7 @@ typedef struct gfc_ss
   unsigned useflags:2, where:1;
 }
 gfc_ss;
-#define gfc_get_ss() gfc_getmem(sizeof(gfc_ss))
+#define gfc_get_ss() XCNEW (gfc_ss)
 
 /* The contents of this aren't actually used.  A NULL SS chain indicates a
    scalar expression, so this pointer is used to terminate SS chains.  */

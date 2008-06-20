@@ -196,7 +196,7 @@ match_integer_constant (gfc_expr **result, int signflag)
   if (length == -1)
     return MATCH_NO;
 
-  buffer = alloca (length + 1);
+  buffer = (char *) alloca (length + 1);
   memset (buffer, '\0', length + 1);
 
   gfc_gobble_whitespace ();
@@ -276,7 +276,7 @@ match_hollerith_constant (gfc_expr **result)
 	  e = gfc_constant_result (BT_HOLLERITH, gfc_default_character_kind,
 				   &gfc_current_locus);
 
-	  e->representation.string = gfc_getmem (num + 1);
+	  e->representation.string = XCNEWVEC (char, num + 1);
 
 	  for (i = 0; i < num; i++)
 	    {
@@ -411,7 +411,7 @@ match_boz_constant (gfc_expr **result)
 
   gfc_current_locus = old_loc;
 
-  buffer = alloca (length + 1);
+  buffer = (char *) alloca (length + 1);
   memset (buffer, '\0', length + 1);
 
   match_digits (0, radix, buffer);
@@ -562,7 +562,7 @@ done:
   gfc_current_locus = old_loc;
   gfc_gobble_whitespace ();
 
-  buffer = alloca (count + 1);
+  buffer = (char *) alloca (count + 1);
   memset (buffer, '\0', count + 1);
 
   p = buffer;
@@ -1975,8 +1975,7 @@ typedef struct gfc_structure_ctor_component
 }
 gfc_structure_ctor_component;
 
-#define gfc_get_structure_ctor_component() \
-  gfc_getmem(sizeof(gfc_structure_ctor_component))
+#define gfc_get_structure_ctor_component() XCNEW (gfc_structure_ctor_component)
 
 static void
 gfc_free_structure_ctor_component (gfc_structure_ctor_component *comp)
@@ -2023,7 +2022,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
 	      comp_tail->next = gfc_get_structure_ctor_component ();
 	      comp_tail = comp_tail->next;
 	    }
-	  comp_tail->name = gfc_getmem(GFC_MAX_SYMBOL_LEN + 1);
+	  comp_tail->name = XCNEWVEC (char, GFC_MAX_SYMBOL_LEN + 1);
 	  comp_tail->val = NULL;
 	  comp_tail->where = gfc_current_locus;
 

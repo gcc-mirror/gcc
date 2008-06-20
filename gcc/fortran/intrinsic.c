@@ -2853,7 +2853,7 @@ add_char_conversions (void)
 	ncharconv++;
 
   /* Allocate memory.  */
-  char_conversions = gfc_getmem (sizeof (gfc_intrinsic_sym) * ncharconv);
+  char_conversions = XCNEWVEC (gfc_intrinsic_sym, ncharconv);
 
   /* Add the conversions themselves.  */
   n = 0;
@@ -2905,13 +2905,14 @@ gfc_intrinsic_init_1 (void)
   sizing = SZ_CONVS;
   add_conversions ();
 
-  functions = gfc_getmem (sizeof (gfc_intrinsic_sym) * (nfunc + nsub)
-			  + sizeof (gfc_intrinsic_arg) * nargs);
+  functions = XCNEWVAR (struct gfc_intrinsic_sym,
+			sizeof (gfc_intrinsic_sym) * (nfunc + nsub)
+			+ sizeof (gfc_intrinsic_arg) * nargs);
 
   next_sym = functions;
   subroutines = functions + nfunc;
 
-  conversion = gfc_getmem (sizeof (gfc_intrinsic_sym) * nconv);
+  conversion = XCNEWVEC (gfc_intrinsic_sym, nconv);
 
   next_arg = ((gfc_intrinsic_arg *) (subroutines + nsub)) - 1;
 

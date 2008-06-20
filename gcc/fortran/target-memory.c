@@ -527,7 +527,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
   else
     {
       result->representation.string =
-        gfc_getmem (result->representation.length + 1);
+        (char *) gfc_getmem (result->representation.length + 1);
       memcpy (result->representation.string, buffer,
 	      result->representation.length);
       result->representation.string[result->representation.length] = '\0';

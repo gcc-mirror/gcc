@@ -1595,7 +1595,7 @@ gfc_simplify_ibits (gfc_expr *x, gfc_expr *y, gfc_expr *z)
   convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);
 
-  bits = gfc_getmem (bitsize * sizeof (int));
+  bits = XCNEWVEC (int, bitsize);
 
   for (i = 0; i < bitsize; i++)
     bits[i] = 0;
@@ -2030,7 +2030,7 @@ gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
       return range_check (result, "ISHFT");
     }
   
-  bits = gfc_getmem (isize * sizeof (int));
+  bits = XCNEWVEC (int, isize);
 
   for (i = 0; i < isize; i++)
     bits[i] = mpz_tstbit (e->value.integer, i);
@@ -2134,7 +2134,7 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
 
   convert_mpz_to_unsigned (result->value.integer, isize);
 
-  bits = gfc_getmem (ssize * sizeof (int));
+  bits = XCNEWVEC (int, ssize);
 
   for (i = 0; i < ssize; i++)
     bits[i] = mpz_tstbit (e->value.integer, i);

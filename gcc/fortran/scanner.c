@@ -196,7 +196,7 @@ gfc_widechar_to_char (const gfc_char_t *s, int length)
   /* Passing a negative length is used to indicate that length should be
      calculated using gfc_wide_strlen().  */
   len = (length >= 0 ? (size_t) length : gfc_wide_strlen (s));
-  res = gfc_getmem (len + 1);
+  res = XNEWVEC (char, len + 1);
 
   for (i = 0; i < len; i++)
     {
@@ -319,19 +319,19 @@ add_path_to_list (gfc_directorylist **list, const char *path,
 
   dir = *list;
   if (!dir)
-    dir = *list = gfc_getmem (sizeof (gfc_directorylist));
+    dir = *list = XCNEW (gfc_directorylist);
   else
     {
       while (dir->next)
 	dir = dir->next;
 
-      dir->next = gfc_getmem (sizeof (gfc_directorylist));
+      dir->next = XCNEW (gfc_directorylist);
       dir = dir->next;
     }
 
   dir->next = NULL;
   dir->use_for_modules = use_for_modules;
-  dir->path = gfc_getmem (strlen (p) + 2);
+  dir->path = XCNEWVEC (char, strlen (p) + 2);
   strcpy (dir->path, p);
   strcat (dir->path, "/");	/* make '/' last character */
 }
@@ -495,9 +495,8 @@ add_file_change (const char *filename, int line)
 	file_changes_allocated *= 2;
       else
 	file_changes_allocated = 16;
-      file_changes
-	= xrealloc (file_changes,
-		    file_changes_allocated * sizeof (*file_changes));
+      file_changes = XRESIZEVEC (struct gfc_file_change, file_changes,
+				 file_changes_allocated);
     }
   file_changes[file_changes_count].filename = filename;
   file_changes[file_changes_count].lb = NULL;
@@ -1451,7 +1450,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      /* Reallocate line buffer to double size to hold the
 		overlong line.  */
 	      buflen = buflen * 2;
-	      *pbuf = xrealloc (*pbuf, (buflen + 1) * sizeof (gfc_char_t));
+	      *pbuf = XRESIZEVEC (gfc_char_t, *pbuf, (buflen + 1));
 	      buffer = (*pbuf) + i;
 	    }
 	}
@@ -1501,10 +1500,9 @@ get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
 {
   gfc_file *f;
 
-  f = gfc_getmem (sizeof (gfc_file));
+  f = XCNEW (gfc_file);
 
-  f->filename = gfc_getmem (strlen (name) + 1);
-  strcpy (f->filename, name);
+  f->filename = xstrdup (name);
 
   f->next = file_head;
   file_head = f;
@@ -1655,8 +1653,7 @@ preprocessor_line (gfc_char_t *c)
   if (strcmp (current_file->filename, filename) != 0)
     {
       gfc_free (current_file->filename);
-      current_file->filename = gfc_getmem (strlen (filename) + 1);
-      strcpy (current_file->filename, filename);
+      current_file->filename = xstrdup (filename);
     }
 
   /* Set new line number.  */
@@ -1881,8 +1878,8 @@ load_file (const char *filename, bool initial)
 
       /* Add line.  */
 
-      b = gfc_getmem (gfc_linebuf_header_size
-		      + (len + 1) * sizeof (gfc_char_t));
+      b = (gfc_linebuf *) gfc_getmem (gfc_linebuf_header_size
+				      + (len + 1) * sizeof (gfc_char_t));
 
       b->location
 	= linemap_line_start (line_table, current_file->line++, 120);
@@ -1973,7 +1970,7 @@ unescape_filename (const char *ptr)
 
   /* Undo effects of cpp_quote_string.  */
   s = ptr;
-  d = gfc_getmem (p + 1 - ptr - unescape);
+  d = XCNEWVEC (char, p + 1 - ptr - unescape);
   ret = d;
 
   while (s != p)
@@ -2046,7 +2043,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
 
   if (! IS_ABSOLUTE_PATH (filename))
     {
-      char *p = gfc_getmem (len + strlen (filename));
+      char *p = XCNEWVEC (char, len + strlen (filename));
 
       memcpy (p, dirname, len - 2);
       p[len - 2] = '/';

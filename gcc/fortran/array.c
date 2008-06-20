@@ -678,7 +678,7 @@ gfc_get_constructor (void)
 {
   gfc_constructor *c;
 
-  c = gfc_getmem (sizeof(gfc_constructor));
+  c = XCNEW (gfc_constructor);
   c->expr = NULL;
   c->iterator = NULL;
   c->next = NULL;

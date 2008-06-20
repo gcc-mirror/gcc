@@ -2413,7 +2413,7 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 		   &src->where, gfc_typename(&result->ts));
     }
 
-  result->representation.string = gfc_getmem (result_len + 1);
+  result->representation.string = XCNEWVEC (char, result_len + 1);
   memcpy (result->representation.string, src->representation.string,
 	  MIN (result_len, src_len));
 

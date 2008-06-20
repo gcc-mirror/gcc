@@ -159,7 +159,7 @@ typedef struct pointer_info
 }
 pointer_info;
 
-#define gfc_get_pointer_info() gfc_getmem(sizeof(pointer_info))
+#define gfc_get_pointer_info() XCNEW (pointer_info)
 
 
 /* Lists of rename info for the USE statement.  */
@@ -174,7 +174,7 @@ typedef struct gfc_use_rename
 }
 gfc_use_rename;
 
-#define gfc_get_use_rename() gfc_getmem(sizeof(gfc_use_rename))
+#define gfc_get_use_rename() XCNEW (gfc_use_rename);
 
 /* Local variables */
 
@@ -460,17 +460,17 @@ add_fixup (int integer, void *gp)
 
   if (p->integer == 0 || p->u.pointer != NULL)
     {
-      cp = gp;
-      *cp = p->u.pointer;
+      cp = (char **) gp;
+      *cp = (char *) p->u.pointer;
     }
   else
     {
-      f = gfc_getmem (sizeof (fixup_t));
+      f = XCNEW (fixup_t);
 
       f->next = p->fixup;
       p->fixup = f;
 
-      f->pointer = gp;
+      f->pointer = (void **) gp;
     }
 
   return p;
@@ -839,7 +839,7 @@ add_true_name (gfc_symbol *sym)
 {
   true_name *t;
 
-  t = gfc_getmem (sizeof (true_name));
+  t = XCNEW (true_name);
   t->sym = sym;
 
   gfc_insert_bbt (&true_name_root, t, compare_true_names);
@@ -1028,7 +1028,7 @@ parse_string (void)
 
   set_module_locus (&start);
 
-  atom_string = p = gfc_getmem (len + 1);
+  atom_string = p = XCNEWVEC (char, len + 1);
 
   for (; len > 0; len--)
     {
@@ -1324,7 +1324,7 @@ write_atom (atom_type atom, const void *v)
     {
     case ATOM_STRING:
     case ATOM_NAME:
-      p = v;
+      p = (const char *) v;
       break;
 
     case ATOM_LPAREN:
@@ -1496,7 +1496,7 @@ quote_string (const gfc_char_t *s, const size_t slength)
 	len++;
     }
 
-  q = res = gfc_getmem (len + 1);
+  q = res = XCNEWVEC (char, len + 1);
   for (p = s, i = 0; i < slength; p++, i++)
     {
       if (*p == '\\')
@@ -2455,7 +2455,7 @@ mio_symtree_ref (gfc_symtree **stp)
 	}
       else
 	{
-	  f = gfc_getmem (sizeof (fixup_t));
+	  f = XCNEW (fixup_t);
 
 	  f->next = p->u.rsym.stfixup;
 	  p->u.rsym.stfixup = f;
@@ -2674,7 +2674,7 @@ mio_gmp_real (mpfr_t *real)
 	  return;
 	}
 
-      atom_string = gfc_getmem (strlen (p) + 20);
+      atom_string = XCNEWVEC (char, strlen (p) + 20);
 
       sprintf (atom_string, "0.%s@%ld", p, exponent);
 
@@ -4126,7 +4126,7 @@ write_common_0 (gfc_symtree *st)
       mio_rparen ();
 
       /* Record that we have written this common.  */
-      w = gfc_getmem (sizeof (struct written_common));
+      w = XCNEW (struct written_common);
       w->name = p->name;
       w->label = label;
       gfc_insert_bbt (&written_commons, w, compare_written_commons);

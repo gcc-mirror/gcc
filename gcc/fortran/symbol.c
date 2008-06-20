@@ -1950,7 +1950,7 @@ gfc_get_st_label (int labelno)
 	lp = lp->right;
     }
 
-  lp = gfc_getmem (sizeof (gfc_st_label));
+  lp = XCNEW (gfc_st_label);
 
   lp->value = labelno;
   lp->defined = ST_LABEL_UNKNOWN;
@@ -2116,7 +2116,7 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
   gfc_intrinsic_op in;
   int i;
 
-  ns = gfc_getmem (sizeof (gfc_namespace));
+  ns = XCNEW (gfc_namespace);
   ns->sym_root = NULL;
   ns->uop_root = NULL;
   ns->finalizers = NULL;
@@ -2184,7 +2184,7 @@ gfc_new_symtree (gfc_symtree **root, const char *name)
 {
   gfc_symtree *st;
 
-  st = gfc_getmem (sizeof (gfc_symtree));
+  st = XCNEW (gfc_symtree);
   st->name = gfc_get_string (name);
 
   gfc_insert_bbt (root, st, compare_symtree);
@@ -2259,7 +2259,7 @@ gfc_get_uop (const char *name)
 
   st = gfc_new_symtree (&gfc_current_ns->uop_root, name);
 
-  uop = st->n.uop = gfc_getmem (sizeof (gfc_user_op));
+  uop = st->n.uop = XCNEW (gfc_user_op);
   uop->name = gfc_get_string (name);
   uop->access = ACCESS_UNKNOWN;
   uop->ns = gfc_current_ns;
@@ -2321,7 +2321,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
 {
   gfc_symbol *p;
 
-  p = gfc_getmem (sizeof (gfc_symbol));
+  p = XCNEW (gfc_symbol);
 
   gfc_clear_ts (&p->ts);
   gfc_clear_attr (&p->attr);
@@ -2434,7 +2434,7 @@ save_symbol_data (gfc_symbol *sym)
   if (sym->new || sym->old_symbol != NULL)
     return;
 
-  sym->old_symbol = gfc_getmem (sizeof (gfc_symbol));
+  sym->old_symbol = XCNEW (gfc_symbol);
   *(sym->old_symbol) = *sym;
 
   sym->tlink = changed_syms;
@@ -3197,7 +3197,7 @@ gfc_get_gsymbol (const char *name)
   if (s != NULL)
     return s;
 
-  s = gfc_getmem (sizeof (gfc_gsymbol));
+  s = XCNEW (gfc_gsymbol);
   s->type = GSYM_UNKNOWN;
   s->name = gfc_get_string (name);
 

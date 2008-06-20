@@ -28,9 +28,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
-#define gfc_get_data_variable() gfc_getmem (sizeof (gfc_data_variable))
-#define gfc_get_data_value() gfc_getmem (sizeof (gfc_data_value))
-#define gfc_get_data() gfc_getmem( sizeof (gfc_data))
+#define gfc_get_data_variable() XCNEW (gfc_data_variable)
+#define gfc_get_data_value() XCNEW (gfc_data_value)
+#define gfc_get_data() XCNEW (gfc_data)
 
 
 /* This flag is set if an old-style length selector is matched
@@ -1140,7 +1140,7 @@ create_enum_history (gfc_symbol *sym, gfc_expr *init)
   enumerator_history *new_enum_history;
   gcc_assert (sym != NULL && init != NULL);
 
-  new_enum_history = gfc_getmem (sizeof (enumerator_history));
+  new_enum_history = XCNEW (enumerator_history);
 
   new_enum_history->sym = sym;
   new_enum_history->initializer = init;
@@ -6625,7 +6625,7 @@ gfc_match_final_decl (void)
       /* Add this symbol to the list of finalizers.  */
       gcc_assert (gfc_current_block ()->f2k_derived);
       ++sym->refs;
-      f = gfc_getmem (sizeof (gfc_finalizer));     
+      f = XCNEW (gfc_finalizer);
       f->procedure = sym;
       f->where = gfc_current_locus;
       f->next = gfc_current_block ()->f2k_derived->finalizers;

@@ -1593,7 +1593,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   gcc_assert (new_symtree == root);
 
   /* Create a dummy->actual mapping.  */
-  sm = gfc_getmem (sizeof (*sm));
+  sm = XCNEW (gfc_interface_sym_mapping);
   sm->next = mapping->syms;
   sm->old = sym;
   sm->new = new_symtree;
