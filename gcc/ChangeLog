@@ -1,3 +1,13 @@
+2008-06-20  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+        * tree-ssa-pre.c: Fix typo in comment.
+        (init_antic, fini_antic): Add explicit funtions for
+        initializing and deinitializing ANTIC and AVAIL sets.
+        (create_expression_by_pieces): Fix typo in comment.
+        Remove redundant set of new_stuff and use NULL_TREE instead of
+        NULL.
+        (execute_pre): Eventually dump details about ANTIC_IN.
+
 2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (main, add_to_list): Fix for -Wc++-compat.
@@ -14,7 +24,7 @@
 2008-06-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi: Updated subreg section.
-	
+
 2008-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36523
