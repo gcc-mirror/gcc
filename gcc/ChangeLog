@@ -1,3 +1,7 @@
+2008-06-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/rtl.texi: Updated subreg section.
+	
 2008-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36523

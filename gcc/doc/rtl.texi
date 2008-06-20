@@ -1747,12 +1747,45 @@ mode other than its natural one, or to refer to one register of
 a multi-part @code{reg} that actually refers to several registers.
 
 Each pseudo register has a natural mode.  If it is necessary to
-operate on it in a different mode, the pseudo register must be
+operate on it in a different mode, the register must be
 enclosed in a @code{subreg}.  
 
+There are currently three supported types for the first operand of a
+@code{subreg}:
+@itemize
+@item pseudo registers
+This is the most common case.  Most @code{subreg}s have pseudo
+@code{reg}s as their first operand.
+
+@item mem
+@code{subreg}s of @code{mem} were common in earlier versions of GCC and
+are still supported.  During the reload pass these are replaced by plain
+@code{mem}s.  On machines that do not do instruction scheduling, use of
+@code{subreg}s of @code{mem} are still used, but this is no longer
+recommended.  Such @code{subreg}s are considered to be
+@code{register_operand}s rather than @code{memory_operand}s before and
+during reload.  Because of this, the scheduling passes cannot properly
+schedule instructions with @code{subreg}s of @code{mem}, so for machines
+that do scheduling, @code{subreg}s of @code{mem} should never be used.
+To support this, the combine and recog passes have explicit code to
+inhibit the creation of @code{subreg}s of @code{mem} when
+@code{INSN_SCHEDULING} is defined.
+
+The use of @code{subreg}s of @code{mem} after the reload pass is an area
+that is not well understood and should be avoided.  There is still some
+code in the compiler to support this, but this code has possibly rotted.
+This use of @code{subreg}s is discouraged and will most likely not be
+supported in the future.
+
+@item hard registers
 It is seldom necessary to wrap hard registers in @code{subreg}s; such
 registers would normally reduce to a single @code{reg} rtx.  This use of
-@code{subregs} is discouraged and may not be supported in the future.
+@code{subreg}s is discouraged and may not be supported in the future.
+
+@end itemize
+
+@code{subreg}s of @code{subreg}s are not supported.  Using
+@code{simplify_gen_subreg} is the recommended way to avoid this problem.
 
 @code{subreg}s come in two distinct flavors, each having its own
 usage and rules:
@@ -1768,10 +1801,26 @@ GET_MODE_SIZE (@var{m1}) > GET_MODE_SIZE (@var{m2})
 @end smallexample
 
 Paradoxical @code{subreg}s can be used as both lvalues and rvalues.
+When used as an lvalue, the low-order bits of the source value
+are stored in @var{reg} and the high-order bits are discarded.
 When used as an rvalue, the low-order bits of the @code{subreg} are
-taken from @var{reg} while the high-order bits are left undefined.
-When used as an lvalue, the low-order bits of the source value are
-stored in @var{reg} and the high-order bits are discarded.
+taken from @var{reg} while the high-order bits may or may not be
+defined.  
+
+The high-order bits of rvalues are in the following circumstances:
+
+@itemize
+@item @code{subreg}s of @code{mem}
+When @var{m2} is smaller than a word, the macro @code{LOAD_EXTEND_OP},
+can control how the high-order bits are defined.
+
+@item @code{subreg} of @code{reg}s
+The upper bits are defined when @code{SUBREG_PROMOTED_VAR_P} is true.
+@code{SUBREG_PROMOTED_UNSIGNED_P} describes what the upper bits hold.
+Such subregs usually represent local variables, register variables
+and parameter pseudo variables that have been promoted to a wider mode.
+
+@end itemize
 
 @var{bytenum} is always zero for a paradoxical @code{subreg}, even on
 big-endian targets.
@@ -1789,18 +1838,19 @@ stores the lower 2 bytes of @var{y} in @var{x} and discards the upper
 (set @var{z} (subreg:SI (reg:HI @var{x}) 0))
 @end smallexample
 
-would set the lower two bytes of @var{z} to @var{y} and set the upper two
-bytes to an unknown value.
+would set the lower two bytes of @var{z} to @var{y} and set the upper
+two bytes to an unknown value assuming @code{SUBREG_PROMOTED_VAR_P} is
+false.
 
 @item Normal subregs 
 When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
 expression is called @dfn{normal}.
 
-Normal @code{subreg}s restrict consideration to certain bits of @var{reg}.
-There are two cases.  If @var{m1} is smaller than a word, the
-@code{subreg} refers to the least-significant part (or @dfn{lowpart})
-of one word of @var{reg}.  If @var{m1} is word-sized or greater, the
-@code{subreg} refers to one or more complete words.
+Normal @code{subreg}s restrict consideration to certain bits of
+@var{reg}.  There are two cases.  If @var{m1} is smaller than a word,
+the @code{subreg} refers to the least-significant part (or
+@dfn{lowpart}) of one word of @var{reg}.  If @var{m1} is word-sized or
+greater, the @code{subreg} refers to one or more complete words.
 
 When used as an lvalue, @code{subreg} is a word-based accessor.
 Storing to a @code{subreg} modifies all the words of @var{reg} that
@@ -1917,11 +1967,8 @@ The first operand of a @code{subreg} expression is customarily accessed
 with the @code{SUBREG_REG} macro and the second operand is customarily
 accessed with the @code{SUBREG_BYTE} macro.
 
-@code{subreg}s of @code{subreg}s are not supported.  Using
-@code{simplify_gen_subreg} is the recommended way to avoid this problem.
-
 It has been several years since a platform in which
-@code{BYTES_BIG_ENDIAN} was not equal to @code{WORDS_BIG_ENDIAN} has
+@code{BYTES_BIG_ENDIAN} not equal to @code{WORDS_BIG_ENDIAN} has
 been tested.  Anyone wishing to support such a platform in the future
 may be confronted with code rot.
 
