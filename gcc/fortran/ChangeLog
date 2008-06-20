@@ -1,3 +1,11 @@
+2008-06-20  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34908
+	PR fortran/36276
+	* scanner.c (preprocessor_line): do not call gfc_free for
+	current_file->filename if it differs from filename.
+
 2008-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arith.c (hollerith2representation): Fix for -Wc++-compat.
@@ -1139,7 +1147,7 @@
 	(check_init_expr): Remove tests that first argument is an array
 	in the call to scalarize_intrinsic_call.
 
-2008-04-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-04-06  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	PR fortran/35832
 	* io.c (io_tag): Add field 'value'.  Split 'spec' field in
@@ -1298,7 +1306,7 @@
 	function, ensure that the derived type is visible in the same
 	namespace as the function.
 
-2008-03-23  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-03-23  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* trans.h: Use fold_build in build1_v, build2_v and build3_v
 	macros.
@@ -1496,7 +1504,7 @@
 	(gfc_call_realloc): Likewise.
 	* trans-io.c (gfc_trans_io_runtime_check): Likewise.
 
-2008-02-24  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-02-24  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* arith.c: Update copyright years.
 	* arith.h: Likewise.
@@ -1560,7 +1568,7 @@
 	(gfc_simplify_real): Add call gfc_clear_ts to initialize the
 	temporary gfc_typspec variable.
 
-2008-02-24  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-02-24  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
 
 	* trans-array.c (gfc_conv_descriptor_data_get,
 	gfc_conv_descriptor_data_set_internal,
