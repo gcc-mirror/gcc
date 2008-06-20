@@ -430,7 +430,7 @@ type_assertion_eq (const void * k1_p, const void * k2_p)
 static hashval_t
 type_assertion_hash (const void *p)
 {
-  const type_assertion *k_p = p;
+  const type_assertion *k_p = (const type_assertion *) p;
   hashval_t hash = iterative_hash (&k_p->assertion_code, sizeof
 				   k_p->assertion_code, 0);
 
@@ -3009,7 +3009,7 @@ note_instructions (JCF *jcf, tree method)
 
   JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
   byte_ops = jcf->read_ptr;
-  instruction_bits = xrealloc (instruction_bits, length + 1);
+  instruction_bits = XRESIZEVAR (char, instruction_bits, length + 1);
   memset (instruction_bits, 0, length + 1);
   type_states = VEC_alloc (tree, gc, length + 1);
   VEC_safe_grow_cleared (tree, gc, type_states, length + 1);

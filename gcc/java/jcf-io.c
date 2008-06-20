@@ -78,8 +78,9 @@ jcf_filbuf_from_stdio (JCF *jcf, int count)
       JCF_u4 old_read_end = jcf->read_end - jcf->buffer;
       JCF_u4 old_size = jcf->buffer_end - jcf->buffer;
       JCF_u4 new_size = (old_size == 0 ? 2000 : 2 * old_size) + count;
-      unsigned char *new_buffer = jcf->buffer == NULL ? ALLOC (new_size)
-	: REALLOC (jcf->buffer, new_size);
+      unsigned char *new_buffer
+	= jcf->buffer == NULL ? XNEWVAR (unsigned char, new_size)
+	: XRESIZEVAR (unsigned char, jcf->buffer, new_size);
       jcf->buffer = new_buffer;
       jcf->buffer_end = new_buffer + new_size;
       jcf->read_ptr = new_buffer + old_read_ptr;
@@ -115,7 +116,7 @@ opendir_in_zip (const char *zipfile, int is_system)
 	return zipf;
     }
 
-  zipf = ALLOC (sizeof (struct ZipFile) + strlen (zipfile) + 1);
+  zipf = XNEWVAR (struct ZipFile, sizeof (struct ZipFile) + strlen (zipfile) + 1);
   zipf->next = SeenZipFiles;
   zipf->name = (char*)(zipf+1);
   strcpy (zipf->name, zipfile);
@@ -471,7 +472,7 @@ find_class (const char *classname, int classname_length, JCF *jcf)
   /* Allocate and zero out the buffer, since we don't explicitly put a
      null pointer when we're copying it below.  */
   buflen = jcf_path_max_len () + classname_length + 10;
-  buffer = ALLOC (buflen);
+  buffer = XNEWVAR (char, buflen);
   memset (buffer, 0, buflen);
 
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))

@@ -983,7 +983,7 @@ copy_state_with_stack (state *s, state *orig, int max_stack, int max_locals)
 static state *
 make_state_copy (state *orig, int max_stack, int max_locals)
 {
-  state *s = vfy_alloc (sizeof (state));
+  state *s = (state *) vfy_alloc (sizeof (state));
   copy_state_with_stack (s, orig, max_stack, max_locals);
   return s;
 }
@@ -991,7 +991,7 @@ make_state_copy (state *orig, int max_stack, int max_locals)
 static state *
 make_state (int max_stack, int max_locals)
 {
-  state *s = vfy_alloc (sizeof (state));
+  state *s = (state *) vfy_alloc (sizeof (state));
   init_state_with_stack (s, max_stack, max_locals);
   return s;
 }
@@ -1385,7 +1385,7 @@ add_new_state (int npc, state *old_state)
   debug_print_state (new_state, "New", npc, current_method->max_stack,
 		    current_method->max_locals);
 
-  nlink = vfy_alloc (sizeof (state_list));
+  nlink = (state_list *) vfy_alloc (sizeof (state_list));
   nlink->val = new_state;
   nlink->next = vfr->states[npc];
   vfr->states[npc] = nlink;

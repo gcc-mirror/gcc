@@ -177,5 +177,5 @@ do_mangle_classname (const char *string)
   append_gpp_mangled_name (&ptr [-count], count);
   obstack_grow (mangle_obstack, "6class$E", strlen ("6class$E"));
   obstack_1grow (mangle_obstack, '\0');
-  return obstack_finish (mangle_obstack);
+  return XOBFINISH (mangle_obstack, char *);
 }

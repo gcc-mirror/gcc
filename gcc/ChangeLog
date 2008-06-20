@@ -1,3 +1,16 @@
+2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (main, add_to_list): Fix for -Wc++-compat.
+	* gcc.c (translate_options, init_spec, store_arg, read_specs,
+	add_to_obstack, file_at_path, find_a_file, execute,
+	add_preprocessor_option, add_assembler_option, add_linker_option,
+	process_command, insert_wrapper, do_option_spec, do_self_spec,
+	spec_path, do_spec_1, is_directory, main, used_arg,
+	getenv_spec_function): Likewise.
+	* tlink.c (symbol_hash_lookup, file_hash_lookup,
+	demangled_hash_lookup, symbol_push, file_push, frob_extension):
+	Likewise.
+
 2008-06-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* doc/rtl.texi: Updated subreg section.

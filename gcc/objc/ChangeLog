@@ -1,3 +1,10 @@
+2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc-act.c (setup_string_decl, objc_build_string_object,
+	hash_interface, eq_interface, objc_begin_try_stmt,
+	encode_method_prototype, build_ivar_list_initializer,
+	objc_build_encode_expr): Fix for -Wc++-compat.
+
 2008-05-12  Tomas Bily  <tbily@suse.cz>
 
         * objc-act.c (objc_generate_write_barrier, objc_finish_message_expr):

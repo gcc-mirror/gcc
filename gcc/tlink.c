@@ -127,7 +127,7 @@ symbol_hash_lookup (const char *string, int create)
       *e = v = XCNEW (struct symbol_hash_entry);
       v->key = xstrdup (string);
     }
-  return *e;
+  return (struct symbol_hash_entry *) *e;
 }
 
 static htab_t file_table;
@@ -147,7 +147,7 @@ file_hash_lookup (const char *string)
       *e = v = XCNEW (struct file_hash_entry);
       v->key = xstrdup (string);
     }
-  return *e;
+  return (struct file_hash_entry *) *e;
 }
 
 static htab_t demangled_table;
@@ -169,7 +169,7 @@ demangled_hash_lookup (const char *string, int create)
       *e = v = XCNEW (struct demangled_hash_entry);
       v->key = xstrdup (string);
     }
-  return *e;
+  return (struct demangled_hash_entry *) *e;
 }
 
 /* Stack code.  */
@@ -193,8 +193,8 @@ struct file_stack_entry *file_stack;
 static void
 symbol_push (symbol *p)
 {
-  struct symbol_stack_entry *ep = obstack_alloc
-    (&symbol_stack_obstack, sizeof (struct symbol_stack_entry));
+  struct symbol_stack_entry *ep
+    = XOBNEW (&symbol_stack_obstack, struct symbol_stack_entry);
   ep->value = p;
   ep->next = symbol_stack;
   symbol_stack = ep;
@@ -221,8 +221,7 @@ file_push (file *p)
   if (p->tweaking)
     return;
 
-  ep = obstack_alloc
-    (&file_stack_obstack, sizeof (struct file_stack_entry));
+  ep = XOBNEW (&file_stack_obstack, struct file_stack_entry);
   ep->value = p;
   ep->next = file_stack;
   file_stack = ep;
@@ -298,7 +297,7 @@ frob_extension (const char *s, const char *ext)
     p = s + strlen (s);
 
   obstack_grow (&temporary_obstack, s, p - s);
-  return obstack_copy0 (&temporary_obstack, ext, strlen (ext));
+  return (char *) obstack_copy0 (&temporary_obstack, ext, strlen (ext));
 }
 
 static char *
