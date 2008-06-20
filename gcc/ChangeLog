@@ -1,3 +1,14 @@
+2008-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36523
+	* cgraphunit.c (cgraph_process_new_functions): Don't clear
+	node->needed and node->reachable.
+	* cgraphbuild.c (record_reference): Handle OMP_PARALLEL and OMP_TASK.
+	* omp-low.c (delete_omp_context): Call finalize_task_copyfn.
+	(expand_task_call): Don't call expand_task_copyfn.
+	(expand_task_copyfn): Renamed to...
+	(finalize_task_copyfn): ... this.
+
 2008-06-19  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (expand_builtin_nonlocal_goto): Stabilize r_sp before

@@ -62,6 +62,24 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	}
       break;
 
+    case OMP_PARALLEL:
+      if (flag_unit_at_a_time)
+	{
+	  if (OMP_PARALLEL_FN (*tp))
+	    cgraph_mark_needed_node (cgraph_node (OMP_PARALLEL_FN (*tp)));
+	}
+      break;
+
+    case OMP_TASK:
+      if (flag_unit_at_a_time)
+	{
+	  if (OMP_TASK_FN (*tp))
+	    cgraph_mark_needed_node (cgraph_node (OMP_TASK_FN (*tp)));
+	  if (OMP_TASK_COPYFN (*tp))
+	    cgraph_mark_needed_node (cgraph_node (OMP_TASK_COPYFN (*tp)));
+	}
+      break;
+
     default:
       /* Save some cycles by not walking types and declaration as we
 	 won't find anything useful there anyway.  */

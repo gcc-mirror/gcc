@@ -443,7 +443,6 @@ cgraph_process_new_functions (void)
 	     it into reachable functions list.  */
 
 	  node->next_needed = NULL;
-	  node->needed = node->reachable = false;
 	  cgraph_finalize_function (fndecl, false);
 	  cgraph_mark_reachable_node (node);
 	  output = true;

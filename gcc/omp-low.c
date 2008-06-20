@@ -1188,6 +1188,37 @@ new_omp_context (tree stmt, omp_context *outer_ctx)
   return ctx;
 }
 
+static void maybe_catch_exception (tree *stmt_p);
+
+/* Finalize task copyfn.  */
+
+static void
+finalize_task_copyfn (tree task_stmt)
+{
+  struct function *child_cfun;
+  tree child_fn, old_fn;
+
+  child_fn = OMP_TASK_COPYFN (task_stmt);
+  if (child_fn == NULL_TREE)
+    return;
+
+  child_cfun = DECL_STRUCT_FUNCTION (child_fn);
+
+  /* Inform the callgraph about the new function.  */
+  DECL_STRUCT_FUNCTION (child_fn)->curr_properties
+    = cfun->curr_properties;
+
+  old_fn = current_function_decl;
+  push_cfun (child_cfun);
+  current_function_decl = child_fn;
+  gimplify_body (&DECL_SAVED_TREE (child_fn), child_fn, false);
+  maybe_catch_exception (&BIND_EXPR_BODY (DECL_SAVED_TREE (child_fn)));
+  pop_cfun ();
+  current_function_decl = old_fn;
+
+  cgraph_add_new_function (child_fn, false);
+}
+
 /* Destroy a omp_context data structures.  Called through the splay tree
    value delete callback.  */
 
@@ -1217,6 +1248,9 @@ delete_omp_context (splay_tree_value value)
       for (t = TYPE_FIELDS (ctx->srecord_type); t ; t = TREE_CHAIN (t))
 	DECL_ABSTRACT_ORIGIN (t) = NULL;
     }
+
+  if (is_task_ctx (ctx))
+    finalize_task_copyfn (ctx->stmt);
 
   XDELETE (ctx);
 }
@@ -2882,35 +2916,6 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 }
 
 
-static void maybe_catch_exception (tree *stmt_p);
-
-
-/* Finalize task copyfn.  */
-
-static void
-expand_task_copyfn (tree task_stmt)
-{
-  struct function *child_cfun;
-  tree child_fn, old_fn;
-
-  child_fn = OMP_TASK_COPYFN (task_stmt);
-  child_cfun = DECL_STRUCT_FUNCTION (child_fn);
-
-  /* Inform the callgraph about the new function.  */
-  DECL_STRUCT_FUNCTION (child_fn)->curr_properties
-    = cfun->curr_properties;
-
-  old_fn = current_function_decl;
-  push_cfun (child_cfun);
-  current_function_decl = child_fn;
-  gimplify_body (&DECL_SAVED_TREE (child_fn), child_fn, false);
-  maybe_catch_exception (&BIND_EXPR_BODY (DECL_SAVED_TREE (child_fn)));
-  pop_cfun ();
-  current_function_decl = old_fn;
-
-  cgraph_add_new_function (child_fn, false);
-}
-
 /* Build the function call to GOMP_task to actually
    generate the task operation.  BB is the block where to insert the code.  */
 
@@ -2921,9 +2926,6 @@ expand_task_call (basic_block bb, tree entry_stmt)
   block_stmt_iterator si;
 
   clauses = OMP_TASK_CLAUSES (entry_stmt);
-
-  if (OMP_TASK_COPYFN (entry_stmt))
-    expand_task_copyfn (entry_stmt);
 
   c = find_omp_clause (clauses, OMP_CLAUSE_IF);
   if (c)

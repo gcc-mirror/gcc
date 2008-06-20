@@ -2,6 +2,9 @@
 
 	* testsuite/libgomp.c/nqueens-1.c: New test.
 
+	PR c++/36523
+	* testsuite/libgomp.c++/task-7.C: New function.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
