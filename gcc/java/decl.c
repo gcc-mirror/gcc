@@ -1254,7 +1254,7 @@ static struct binding_level *
 make_binding_level (void)
 {
   /* NOSTRICT */
-  return ggc_alloc_cleared (sizeof (struct binding_level));
+  return GGC_CNEW (struct binding_level);
 }
 
 void
@@ -1593,7 +1593,7 @@ java_dup_lang_specific_decl (tree node)
     return;
 
   lang_decl_size = sizeof (struct lang_decl);
-  x = ggc_alloc (lang_decl_size);
+  x = GGC_NEW (struct lang_decl);
   memcpy (x, DECL_LANG_SPECIFIC (node), lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
 }
@@ -1720,7 +1720,7 @@ start_java_method (tree fndecl)
   i = DECL_MAX_LOCALS(fndecl) + DECL_MAX_STACK(fndecl);
   decl_map = make_tree_vec (i);
   base_decl_map = make_tree_vec (i);
-  type_map = xrealloc (type_map, i * sizeof (tree));
+  type_map = XRESIZEVEC (tree, type_map, i);
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   fprintf (stderr, "%s:\n", lang_printable_name (fndecl, 2));

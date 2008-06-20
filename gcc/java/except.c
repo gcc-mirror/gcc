@@ -391,7 +391,7 @@ prepare_eh_table_type (tree type)
   if (is_compiled_class (type) && !flag_indirect_dispatch)
     {
       name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-      buf = alloca (strlen (name) + 5);
+      buf = (char *) alloca (strlen (name) + 5);
       sprintf (buf, "%s_ref", name);
       decl = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
       TREE_STATIC (decl) = 1;
@@ -408,7 +408,7 @@ prepare_eh_table_type (tree type)
     {
       utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
       name = IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0)));
-      buf = alloca (strlen (name) + 5);
+      buf = (char *) alloca (strlen (name) + 5);
       sprintf (buf, "%s_ref", name);
       decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_ptr_type);
       TREE_STATIC (decl) = 1;

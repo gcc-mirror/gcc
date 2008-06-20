@@ -145,7 +145,7 @@ reverse (const char *s)
   else
     {
       int len = strlen (s);
-      char *d = xmalloc (len + 1);
+      char *d = XNEWVAR (char, len + 1);
       const char *sp;
       char *dp;
       
@@ -213,11 +213,11 @@ java_read_sourcefilenames (const char *fsource_filename)
       /* Read the filenames.  Put a pointer to each filename into the
 	 array FILENAMES.  */
       {
-	char *linebuf = alloca (longest_line + 1);
+	char *linebuf = (char *) alloca (longest_line + 1);
 	int i = 0;
 	int charpos;
 
-	filenames = xmalloc (num_files * sizeof (char*));
+	filenames = XNEWVEC (char *, num_files);
 
 	charpos = 0;
 	for (;;)
@@ -249,7 +249,7 @@ java_read_sourcefilenames (const char *fsource_filename)
     }
   else
     {
-      filenames = xmalloc (sizeof (char*));      
+      filenames = XNEWVEC (char *, 1);      
       filenames[0] = reverse (fsource_filename);
       num_files = 1;
     }
@@ -391,13 +391,13 @@ annotation_grow (int delta)
 
   if (*data == NULL)
     {
-      *data = xmalloc (delta);
+      *data = XNEWVAR (unsigned char, delta);
     }
   else
     {
       int newlen = *datasize + delta;
       if (floor_log2 (newlen) != floor_log2 (*datasize))
-	*data = xrealloc (*data,  2 << (floor_log2 (newlen)));
+	*data = XRESIZEVAR (unsigned char, *data,  2 << (floor_log2 (newlen)));
     }
   *datasize += delta;
   return *data + len;
@@ -746,7 +746,7 @@ rewrite_reflection_indexes (void *arg)
 {
   bitmap_iterator bi;
   unsigned int offset;
-  VEC(int, heap) *map = arg;
+  VEC(int, heap) *map = (VEC(int, heap) *) arg;
   unsigned char *data = TYPE_REFLECTION_DATA (current_class);
 
   if (map)
@@ -1731,7 +1731,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    {
 	      count = next - list;
 	      avail = 2 * (count + avail);
-	      list = xrealloc (list, avail);
+	      list = XRESIZEVEC (char, list, avail);
 	      next = list + count;
 	      avail = avail - count;
 	    }
@@ -1877,7 +1877,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       if (magic == 0xcafebabe)
 	{
 	  CLASS_FILE_P (node) = 1;
-	  current_jcf = ggc_alloc (sizeof (JCF));
+	  current_jcf = GGC_NEW (JCF);
 	  JCF_ZERO (current_jcf);
 	  current_jcf->read_state = finput;
 	  current_jcf->filbuf = jcf_filbuf_from_stdio;
@@ -1895,7 +1895,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
       else if (magic == (JCF_u4)ZIPMAGIC)
 	{
-	  main_jcf = ggc_alloc (sizeof (JCF));
+	  main_jcf = GGC_NEW (JCF);
 	  JCF_ZERO (main_jcf);
 	  main_jcf->read_state = finput;
 	  main_jcf->filbuf = jcf_filbuf_from_stdio;
@@ -1905,7 +1905,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    fatal_error ("bad zip/jar file %s", filename);
 	  localToFile = SeenZipFiles;
 	  /* Register all the classes defined there.  */
-	  process_zip_dir (main_jcf->read_state);
+	  process_zip_dir ((FILE *) main_jcf->read_state);
 	  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 	  parse_zip_file_entries ();
 	}
@@ -2157,7 +2157,7 @@ process_zip_dir (FILE *finput)
 
       class_name = compute_class_name (zdir);
       file_name  = XNEWVEC (char, zdir->filename_length+1);
-      jcf = ggc_alloc (sizeof (JCF));
+      jcf = GGC_NEW (JCF);
       JCF_ZERO (jcf);
 
       strncpy (file_name, class_name_in_zip_dir, zdir->filename_length);

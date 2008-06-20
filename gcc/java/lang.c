@@ -389,7 +389,7 @@ put_decl_string (const char *str, int len)
       else
 	{
 	  decl_buflen *= 2;
-	  decl_buf = xrealloc (decl_buf, decl_buflen);
+	  decl_buf = XRESIZEVAR (char, decl_buf, decl_buflen);
 	}
     }
   strcpy (decl_buf + decl_bufpos, str);

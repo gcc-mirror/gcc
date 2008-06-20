@@ -154,7 +154,7 @@ add_entry (struct entry **entp, const char *filename, int is_system)
      work more easily.  Eww.  */
   if (! IS_DIR_SEPARATOR (filename[len - 1]))
     {
-      char *f2 = alloca (len + 2);
+      char *f2 = (char *) alloca (len + 2);
       strcpy (f2, filename);
       f2[len] = DIR_SEPARATOR;
       f2[len + 1] = '\0';
@@ -177,7 +177,7 @@ add_path (struct entry **entp, const char *cp, int is_system)
 
   if (cp)
     {
-      char *buf = alloca (strlen (cp) + 3);
+      char *buf = (char *) alloca (strlen (cp) + 3);
       startp = endp = cp;
       while (1)
 	{
@@ -227,7 +227,7 @@ jcf_path_init (void)
   GET_ENVIRONMENT (cp, "GCC_EXEC_PREFIX");
   if (cp)
     {
-      try = alloca (strlen (cp) + 50);
+      try = (char *) alloca (strlen (cp) + 50);
       /* The exec prefix can be something like
 	 /usr/local/bin/../lib/gcc-lib/.  We want to change this
 	 into a pointer to the share/java directory.  We support two
@@ -285,7 +285,7 @@ jcf_path_init (void)
       /* Desperation: use the installed one.  */
       char *extdirs;
       add_entry (&sys_dirs, LIBGCJ_ZIP_FILE, 1);
-      extdirs = alloca (strlen (LIBGCJ_ZIP_FILE) + 1);
+      extdirs = (char *) alloca (strlen (LIBGCJ_ZIP_FILE) + 1);
       strcpy (extdirs, LIBGCJ_ZIP_FILE);
       strcpy (&extdirs[strlen (LIBGCJ_ZIP_FILE)
 		      - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],
@@ -329,7 +329,7 @@ jcf_path_extdirs_arg (const char *cp)
 
   if (cp)
     {
-      char *buf = alloca (strlen (cp) + 3);
+      char *buf = (char *) alloca (strlen (cp) + 3);
       startp = endp = cp;
       while (1)
 	{
@@ -358,7 +358,7 @@ jcf_path_extdirs_arg (const char *cp)
 		    
 		    if (direntp->d_name[0] != '.')
 		      {
-			char *name = alloca (dirname_length
+			char *name = (char *) alloca (dirname_length
 					     + strlen (direntp->d_name) + 2);
 			strcpy (name, buf);
 			if (! IS_DIR_SEPARATOR (name[dirname_length-1]))

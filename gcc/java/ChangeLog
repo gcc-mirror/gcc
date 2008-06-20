@@ -1,3 +1,30 @@
+2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (ident_subst, mangled_classname, unmangle_classname,
+	gen_indirect_dispatch_tables, add_method_1,
+	build_fieldref_cache_entry, make_local_function_alias,
+	layout_class, java_treetreehash_find, java_treetreehash_new,
+	split_qualified_name): Fix for -Wc++-compat.
+	* constants.c (set_constant_entry, cpool_for_class): Likewise.
+	* decl.c (make_binding_level, java_dup_lang_specific_decl,
+	start_java_method): Likewise.
+	* except.c (prepare_eh_table_type): Likewise.
+	* expr.c (type_assertion_hash, note_instructions): Likewise.
+	* java-tree.h (MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC,
+	MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Likewise.
+	* jcf-io.c (jcf_filbuf_from_stdio, opendir_in_zip, find_class):
+	Likewise.
+	* jcf-parse.c (reverse, java_read_sourcefilenames,
+	annotation_grow, rewrite_reflection_indexes, java_parse_file,
+	process_zip_dir): Likewise.
+	* jcf-path.c (add_entry, add_path, jcf_path_init,
+	jcf_path_extdirs_arg): Likewise.
+	* jcf-reader.c (jcf_parse_constant_pool): Likewise.
+	* jvgenmain.c (do_mangle_classname): Likewise.
+	* lang.c (put_decl_string): Likewise.
+	* verify-impl.c (make_state_copy, make_state, add_new_state):
+	Likewise.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gcj.texi: Expand TABs, remove whitespace from blank lines.
