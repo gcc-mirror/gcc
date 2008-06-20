@@ -216,7 +216,7 @@ prefix_name (const char *prefix, tree name)
 {
   unsigned plen = strlen (prefix);
   unsigned nlen = strlen (IDENTIFIER_POINTER (name));
-  char *toname = alloca (plen + nlen + 1);
+  char *toname = (char *) alloca (plen + nlen + 1);
   
   memcpy (toname, prefix, plen);
   memcpy (toname + plen, IDENTIFIER_POINTER (name), nlen + 1);
@@ -366,7 +366,7 @@ emutls_decl (tree decl)
   in.hash = htab_hash_string (IDENTIFIER_POINTER (name));
   in.base.from = decl;
   loc = htab_find_slot_with_hash (emutls_htab, &in, in.hash, INSERT);
-  h = *loc;
+  h = (struct tree_map *) *loc;
   if (h != NULL)
     to = h->to;
   else
@@ -374,7 +374,7 @@ emutls_decl (tree decl)
       to = build_decl (VAR_DECL, get_emutls_object_name (name),
 		       get_emutls_object_type ());
 
-      h = ggc_alloc (sizeof (struct tree_map));
+      h = GGC_NEW (struct tree_map);
       h->hash = in.hash;
       h->base.from = decl;
       h->to = to;
@@ -469,8 +469,8 @@ emutls_finish (void)
 static int
 section_entry_eq (const void *p1, const void *p2)
 {
-  const section *old = p1;
-  const char *new = p2;
+  const section *old = (const section *) p1;
+  const char *new = (const char *) p2;
 
   return strcmp (old->named.name, new) == 0;
 }
@@ -478,7 +478,7 @@ section_entry_eq (const void *p1, const void *p2)
 static hashval_t
 section_entry_hash (const void *p)
 {
-  const section *old = p;
+  const section *old = (const section *) p;
   return htab_hash_string (old->named.name);
 }
 
@@ -497,8 +497,8 @@ hash_section (section *sect)
 static int
 object_block_entry_eq (const void *p1, const void *p2)
 {
-  const struct object_block *old = p1;
-  const section *new = p2;
+  const struct object_block *old = (const struct object_block *) p1;
+  const section *new = (const section *) p2;
 
   return old->sect == new;
 }
@@ -506,7 +506,7 @@ object_block_entry_eq (const void *p1, const void *p2)
 static hashval_t
 object_block_entry_hash (const void *p)
 {
-  const struct object_block *old = p;
+  const struct object_block *old = (const struct object_block *) p;
   return hash_section (old->sect);
 }
 
@@ -626,7 +626,7 @@ create_block_symbol (const char *label, struct object_block *block,
 
   /* Create the extended SYMBOL_REF.  */
   size = RTX_HDR_SIZE + sizeof (struct block_symbol);
-  symbol = ggc_alloc_zone (size, &rtl_zone);
+  symbol = (rtx) ggc_alloc_zone (size, &rtl_zone);
 
   /* Initialize the normal SYMBOL_REF fields.  */
   memset (symbol, 0, size);
@@ -656,7 +656,7 @@ initialize_cold_section_name (void)
   dsn = DECL_SECTION_NAME (current_function_decl);
   if (flag_function_sections && dsn)
     {
-      name = alloca (TREE_STRING_LENGTH (dsn) + 1);
+      name = (char *) alloca (TREE_STRING_LENGTH (dsn) + 1);
       memcpy (name, TREE_STRING_POINTER (dsn), TREE_STRING_LENGTH (dsn) + 1);
 
       stripped_name = targetm.strip_name_encoding (name);
@@ -870,7 +870,7 @@ default_function_rodata_section (tree decl)
       if (DECL_ONE_ONLY (decl) && HAVE_COMDAT_GROUP)
         {
 	  size_t len = strlen (name) + 3;
-	  char* rname = alloca (len);
+	  char* rname = (char *) alloca (len);
 
 	  strcpy (rname, ".rodata");
 	  strcat (rname, name + 5);
@@ -881,7 +881,7 @@ default_function_rodata_section (tree decl)
 	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
 	  size_t len = strlen (name) + 1;
-	  char *rname = alloca (len);
+	  char *rname = (char *) alloca (len);
 
 	  memcpy (rname, name, len);
 	  rname[14] = 'r';
@@ -892,7 +892,7 @@ default_function_rodata_section (tree decl)
 	       && strncmp (name, ".text.", 6) == 0)
 	{
 	  size_t len = strlen (name) + 1;
-	  char *rname = alloca (len + 2);
+	  char *rname = (char *) alloca (len + 2);
 
 	  memcpy (rname, ".rodata", 7);
 	  memcpy (rname + 7, name + 5, len - 5);
@@ -1015,7 +1015,7 @@ strip_reg_name (const char *name)
 void
 set_user_assembler_name (tree decl, const char *name)
 {
-  char *starred = alloca (strlen (name) + 2);
+  char *starred = (char *) alloca (strlen (name) + 2);
   starred[0] = '*';
   strcpy (starred + 1, name);
   change_decl_assembler_name (decl, get_identifier (starred));
@@ -2887,8 +2887,10 @@ const_hash_1 (const tree exp)
 static int
 const_desc_eq (const void *p1, const void *p2)
 {
-  const struct constant_descriptor_tree *c1 = p1;
-  const struct constant_descriptor_tree *c2 = p2;
+  const struct constant_descriptor_tree *const c1
+    = (const struct constant_descriptor_tree *) p1;
+  const struct constant_descriptor_tree *const c2
+    = (const struct constant_descriptor_tree *) p2;
   if (c1->hash != c2->hash)
     return 0;
   return compare_constant (c1->value, c2->value);
@@ -3151,7 +3153,7 @@ build_constant_desc (tree exp)
   int labelno;
   struct constant_descriptor_tree *desc;
 
-  desc = ggc_alloc (sizeof (*desc));
+  desc = GGC_NEW (struct constant_descriptor_tree);
   desc->value = copy_constant (exp);
 
   /* Propagate marked-ness to copied constant.  */
@@ -3219,7 +3221,7 @@ output_constant_def (tree exp, int defer)
   key.hash = const_hash_1 (exp);
   loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
 
-  desc = *loc;
+  desc = (struct constant_descriptor_tree *) *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
@@ -3330,7 +3332,8 @@ lookup_constant_def (tree exp)
 
   key.value = exp;
   key.hash = const_hash_1 (exp);
-  desc = htab_find_with_hash (const_desc_htab, &key, key.hash);
+  desc = (struct constant_descriptor_tree *)
+    htab_find_with_hash (const_desc_htab, &key, key.hash);
 
   return (desc ? desc->rtl : NULL_RTX);
 }
@@ -3378,15 +3381,18 @@ struct constant_descriptor_rtx GTY((chain_next ("%h.next")))
 static hashval_t
 const_desc_rtx_hash (const void *ptr)
 {
-  const struct constant_descriptor_rtx *desc = ptr;
+  const struct constant_descriptor_rtx *const desc
+    = (const struct constant_descriptor_rtx *) ptr;
   return desc->hash;
 }
 
 static int
 const_desc_rtx_eq (const void *a, const void *b)
 {
-  const struct constant_descriptor_rtx *x = a;
-  const struct constant_descriptor_rtx *y = b;
+  const struct constant_descriptor_rtx *const x
+    = (const struct constant_descriptor_rtx *) a;
+  const struct constant_descriptor_rtx *const y
+    = (const struct constant_descriptor_rtx *) b;
 
   if (x->mode != y->mode)
     return 0;
@@ -3467,7 +3473,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
       break;
     }
 
-  hp = data;
+  hp = (hashval_t *) data;
   *hp = *hp * 509 + h;
   return 0;
 }
@@ -3490,7 +3496,7 @@ create_constant_pool (void)
 {
   struct rtx_constant_pool *pool;
 
-  pool = ggc_alloc (sizeof (struct rtx_constant_pool));
+  pool = GGC_NEW (struct rtx_constant_pool);
   pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
 					  const_desc_rtx_eq, NULL);
   pool->first = NULL;
@@ -3549,14 +3555,14 @@ force_const_mem (enum machine_mode mode, rtx x)
   tmp.mode = mode;
   hash = const_rtx_hash (x);
   slot = htab_find_slot_with_hash (pool->const_rtx_htab, &tmp, hash, INSERT);
-  desc = *slot;
+  desc = (struct constant_descriptor_rtx *) *slot;
 
   /* If the constant was already present, return its memory.  */
   if (desc)
     return copy_rtx (desc->mem);
 
   /* Otherwise, create a new descriptor.  */
-  desc = ggc_alloc (sizeof (*desc));
+  desc = GGC_NEW (struct constant_descriptor_rtx);
   *slot = desc;
 
   /* Align the location counter as required by EXP's data type.  */
@@ -6046,7 +6052,7 @@ default_unique_section (tree decl, int reloc)
 static int
 compute_reloc_for_rtx_1 (rtx *xp, void *data)
 {
-  int *preloc = data;
+  int *preloc = (int *) data;
   rtx x = *xp;
 
   switch (GET_CODE (x))
@@ -6323,7 +6329,7 @@ void
 default_internal_label (FILE *stream, const char *prefix,
 			unsigned long labelno)
 {
-  char *const buf = alloca (40 + strlen (prefix));
+  char *const buf = (char *) alloca (40 + strlen (prefix));
   ASM_GENERATE_INTERNAL_LABEL (buf, prefix, labelno);
   ASM_OUTPUT_INTERNAL_LABEL (stream, buf);
 }

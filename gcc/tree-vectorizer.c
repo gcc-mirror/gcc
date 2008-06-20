@@ -2712,7 +2712,7 @@ vectorize_loops (void)
       loop = get_loop (i);
       if (!loop)
 	continue;
-      loop_vinfo = loop->aux;
+      loop_vinfo = (loop_vec_info) loop->aux;
       destroy_loop_vec_info (loop_vinfo, true);
       loop->aux = NULL;
     }

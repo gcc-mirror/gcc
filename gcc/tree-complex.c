@@ -66,7 +66,7 @@ cvc_lookup (unsigned int uid)
 {
   struct int_tree_map *h, in;
   in.uid = uid;
-  h = htab_find_with_hash (complex_variable_components, &in, uid);
+  h = (struct int_tree_map *) htab_find_with_hash (complex_variable_components, &in, uid);
   return h ? h->to : NULL;
 }
  

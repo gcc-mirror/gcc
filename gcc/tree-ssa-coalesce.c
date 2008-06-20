@@ -315,8 +315,8 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 static int 
 compare_pairs (const void *p1, const void *p2)
 {
-  const_coalesce_pair_p const * pp1 = p1;
-  const_coalesce_pair_p const * pp2 = p2;
+  const_coalesce_pair_p const *const pp1 = (const_coalesce_pair_p const *) p1;
+  const_coalesce_pair_p const *const pp2 = (const_coalesce_pair_p const *) p2;
   int result;
 
   result = (* pp2)->cost - (* pp1)->cost;

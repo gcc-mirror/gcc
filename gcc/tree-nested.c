@@ -258,7 +258,7 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
   if (insert == NO_INSERT)
     {
       slot = pointer_map_contains (info->field_map, decl);
-      return slot ? *slot : NULL;
+      return slot ? (tree) *slot : NULL_TREE;
     }
 
   slot = pointer_map_insert (info->field_map, decl);
@@ -291,7 +291,7 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
 	info->any_parm_remapped = true;
     }
 
-  return *slot;
+  return (tree) *slot;
 }
 
 /* Build or return the variable that holds the static chain within
@@ -450,7 +450,7 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
   if (insert == NO_INSERT)
     {
       slot = pointer_map_contains (info->var_map, decl);
-      return slot ? *slot : NULL;
+      return slot ? (tree) *slot : NULL_TREE;
     }
 
   slot = pointer_map_insert (info->var_map, decl);
@@ -467,7 +467,7 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
       info->any_tramp_created = true;
     }
 
-  return *slot;
+  return (tree) *slot;
 } 
 
 /* Build or return the field within the non-local frame state that holds
@@ -896,7 +896,7 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   slot = pointer_map_insert (info->var_map, decl);
 
   if (*slot)
-    return *slot;
+    return (tree) *slot;
 
   target_context = decl_function_context (decl);
 
@@ -961,7 +961,7 @@ static tree
 convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   tree t = *tp;
   tree save_local_var_chain;
   bitmap save_suppress;
@@ -1053,7 +1053,8 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	       where we only accept variables (and min_invariant, presumably),
 	       then compute the address into a temporary.  */
 	    if (save_val_only)
-	      *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
+	      *tp = tsi_gimplify_val ((struct nesting_info *) wi->info,
+				      t, &wi->tsi);
 	  }
       }
       break;
@@ -1165,7 +1166,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 static bool
 convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   bool need_chain = false, need_stmts = false;
   tree clause, decl;
   int dummy;
@@ -1277,7 +1278,7 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
 
   slot = pointer_map_insert (info->var_map, decl);
   if (*slot)
-    return *slot;
+    return (tree) *slot;
 
   /* Make sure frame_decl gets created.  */
   (void) get_frame_type (info);
@@ -1318,7 +1319,7 @@ static tree
 convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   tree t = *tp, field, x;
   bool save_val_only;
   tree save_local_var_chain;
@@ -1388,7 +1389,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	  /* If we are in a context where we only accept values, then
 	     compute the address into a temporary.  */
 	  if (save_val_only)
-	    *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
+	    *tp = tsi_gimplify_val ((struct nesting_info *)wi->info, t, &wi->tsi);
 	}
       break;
 
@@ -1501,7 +1502,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 static bool
 convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 {
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   bool need_frame = false, need_stmts = false;
   tree clause, decl;
   int dummy;
@@ -1613,7 +1614,7 @@ static tree
 convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info, *i;
+  struct nesting_info *const info = (struct nesting_info *) wi->info, *i;
   tree t = *tp, label, new_label, target_context, x, field;
   void **slot;
 
@@ -1645,7 +1646,7 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
       *slot = new_label;
     }
   else
-    new_label = *slot;
+    new_label = (tree) *slot;
   
   /* Build: __builtin_nl_goto(new_label, &chain->nl_goto_field).  */
   field = get_nl_goto_field (i);
@@ -1671,7 +1672,7 @@ static tree
 convert_nl_goto_receiver (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   tree t = *tp, label, new_label, x;
   tree_stmt_iterator tmp_tsi;
   void **slot;
@@ -1710,7 +1711,7 @@ static tree
 convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info, *i;
+  struct nesting_info *const info = (struct nesting_info *) wi->info, *i;
   tree t = *tp, decl, target_context, x;
 
   *walk_subtrees = 0;
@@ -1793,7 +1794,7 @@ static tree
 convert_call_expr (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct nesting_info *info = wi->info;
+  struct nesting_info *const info = (struct nesting_info *) wi->info;
   tree t = *tp, decl, target_context;
   char save_static_chain_added;
   int i;

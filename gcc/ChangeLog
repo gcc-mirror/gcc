@@ -1,3 +1,81 @@
+2008-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ggc.h (GGC_RESIZEVAR): New, reorder macros.
+	* tracer.c (tail_duplicate): Fix for -Wc++-compat.
+	* tree-affine.c (aff_combination_expand, free_name_expansion):
+	Likewise.
+	* tree-cfg.c (replace_by_duplicate_decl, replace_ssa_name,
+	move_stmt_r, new_label_mapper): Likewise.
+	* tree-complex.c (cvc_lookup): Likewise.
+	* tree-dfa.c (create_function_ann): Likewise.
+	* tree-dump.c (dump_register): Likewise.
+	* tree-if-conv.c (tree_if_conversion, add_to_predicate_list,
+	find_phi_replacement_condition): Likewise.
+	* tree-inline.c (copy_phis_for_bb, estimate_num_insns_1,
+	tree_function_versioning): Likewise.
+	* tree-into-ssa.c (cmp_dfsnum): Likewise.
+	* tree-iterator.c (tsi_link_before, tsi_link_after): Likewise.
+	* tree-nested.c (lookup_field_for_decl, lookup_tramp_for_decl,
+	get_nonlocal_debug_decl, convert_nonlocal_reference,
+	convert_nonlocal_omp_clauses, get_local_debug_decl,
+	convert_local_reference, convert_local_omp_clauses,
+	convert_nl_goto_reference, convert_nl_goto_receiver,
+	convert_tramp_reference, convert_call_expr): Likewise.
+	* tree-outof-ssa.c (contains_tree_r): Likewise.
+	* tree-parloops.c (reduction_phi, initialize_reductions,
+	eliminate_local_variables_1, add_field_for_reduction,
+	add_field_for_name, create_phi_for_local_result,
+	create_call_for_reduction_1, create_loads_for_reductions,
+	create_stores_for_reduction, create_loads_and_stores_for_name):
+	Likewise.
+	* tree-phinodes.c (allocate_phi_node): Likewise.
+	* tree-predcom.c (order_drefs, execute_pred_commoning_cbck):
+	Likewise.
+	* tree-sra.c (sra_elt_hash, sra_elt_eq, lookup_element):
+	Likewise.
+	* tree-ssa-alias.c (get_mem_sym_stats_for): Likewise.
+	* tree-ssa-coalesce.c (compare_pairs): Likewise.
+	* tree-ssa-loop-im.c (mem_ref_in_stmt, memref_hash, memref_eq,
+	memref_free, gather_mem_refs_stmt, vtoe_hash, vtoe_eq, vtoe_free,
+	record_vop_access, get_vop_accesses, get_vop_stores): Likewise.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Likewise. 
+	* tree-ssa-sccvn.c (VN_INFO_GET, free_phi, free_reference,
+	vn_nary_op_insert): Likewise.
+	* tree-ssa.c (redirect_edge_var_map_add,
+	redirect_edge_var_map_clear, redirect_edge_var_map_dup): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+	* tree.c (make_node_stat, copy_node_stat, build_int_cst_wide,
+	build_fixed, build_real, make_tree_binfo_stat, make_tree_vec_stat,
+	tree_cons_stat, build1_stat, build_variant_type_copy,
+	decl_init_priority_lookup, decl_fini_priority_lookup,
+	decl_priority_info, decl_restrict_base_lookup,
+	decl_restrict_base_insert, decl_debug_expr_lookup,
+	decl_debug_expr_insert, decl_value_expr_lookup,
+	decl_value_expr_insert, type_hash_eq, type_hash_lookup,
+	type_hash_add, get_file_function_name, tree_check_failed,
+	tree_not_check_failed, tree_range_check_failed,
+	omp_clause_range_check_failed, build_omp_clause,
+	build_vl_exp_stat): Likewise.
+	* value-prof.c (gimple_histogram_value,
+	gimple_duplicate_stmt_histograms): Likewise.
+	* var-tracking.c (attrs_list_insert, attrs_list_copy,
+	unshare_variable, variable_union_info_cmp_pos, variable_union,
+	dataflow_set_different_1, dataflow_set_different_2,
+	vt_find_locations, variable_was_changed, set_variable_part,
+	emit_notes_for_differences_1, emit_notes_for_differences_2):
+	Likewise.
+	* varasm.c (prefix_name, emutls_decl, section_entry_eq,
+	section_entry_hash, object_block_entry_eq,
+	object_block_entry_hash, create_block_symbol,
+	initialize_cold_section_name, default_function_rodata_section,
+	strip_reg_name, set_user_assembler_name, const_desc_eq,
+	build_constant_desc, output_constant_def, lookup_constant_def,
+	const_desc_rtx_hash, const_desc_rtx_eq, const_rtx_hash_1,
+	create_constant_pool, force_const_mem, compute_reloc_for_rtx_1,
+	default_internal_label): Likewise.
+	* varray.c (varray_init, varray_grow): Likewise.
+	* vec.c (vec_gc_o_reserve_1, vec_heap_o_reserve_1): Likewise.
+
 2008-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*jcc_fused_1): Handle all valid compare

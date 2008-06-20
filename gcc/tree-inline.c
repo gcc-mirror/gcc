@@ -1201,7 +1201,7 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb)
 static void
 copy_phis_for_bb (basic_block bb, copy_body_data *id)
 {
-  basic_block new_bb = bb->aux;
+  basic_block const new_bb = (basic_block) bb->aux;
   edge_iterator ei;
   tree phi;
 
@@ -1219,7 +1219,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	    = new_phi = create_phi_node (new_res, new_bb);
 	  FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
 	    {
-	      edge old_edge = find_edge (new_edge->src->aux, bb);
+	      edge const old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
 	      tree arg = PHI_ARG_DEF_FROM_EDGE (phi, old_edge);
 	      tree new_arg = arg;
 
@@ -2173,7 +2173,7 @@ struct eni_data
 static tree
 estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct eni_data *d = data;
+  struct eni_data *const d = (struct eni_data *) data;
   tree x = *tp;
   unsigned cost;
 
@@ -3589,7 +3589,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   if (tree_map)
     for (i = 0; i < VARRAY_ACTIVE_SIZE (tree_map); i++)
       {
-	replace_info = VARRAY_GENERIC_PTR (tree_map, i);
+	replace_info = (struct ipa_replace_map *) VARRAY_GENERIC_PTR (tree_map, i);
 	if (replace_info->replace_p)
 	  insert_decl_map (&id, replace_info->old_tree,
 			   replace_info->new_tree);

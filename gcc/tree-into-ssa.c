@@ -787,8 +787,8 @@ struct dom_dfsnum
 static int
 cmp_dfsnum (const void *a, const void *b)
 {
-  const struct dom_dfsnum *da = a;
-  const struct dom_dfsnum *db = b;
+  const struct dom_dfsnum *const da = (const struct dom_dfsnum *) a;
+  const struct dom_dfsnum *const db = (const struct dom_dfsnum *) b;
 
   return (int) da->dfs_num - (int) db->dfs_num;
 }

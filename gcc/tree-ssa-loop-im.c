@@ -619,7 +619,7 @@ mem_ref_in_stmt (tree stmt)
   gcc_assert (!store);
 
   hash = iterative_hash_expr (*mem, 0);
-  ref = htab_find_with_hash (memory_accesses.refs, *mem, hash);
+  ref = (mem_ref_p) htab_find_with_hash (memory_accesses.refs, *mem, hash);
 
   gcc_assert (ref != NULL);
   return ref;
@@ -1165,7 +1165,7 @@ force_move_till (tree ref, tree *index, void *data)
 static hashval_t
 memref_hash (const void *obj)
 {
-  const struct mem_ref *mem = obj;
+  const struct mem_ref *const mem = (const struct mem_ref *) obj;
 
   return mem->hash;
 }
@@ -1176,9 +1176,9 @@ memref_hash (const void *obj)
 static int
 memref_eq (const void *obj1, const void *obj2)
 {
-  const struct mem_ref *mem1 = obj1;
+  const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
 
-  return operand_equal_p (mem1->mem, (tree) obj2, 0);
+  return operand_equal_p (mem1->mem, (const_tree) obj2, 0);
 }
 
 /* Releases list of memory reference locations ACCS.  */
@@ -1203,7 +1203,7 @@ free_mem_ref_locs (mem_ref_locs_p accs)
 static void
 memref_free (void *obj)
 {
-  struct mem_ref *mem = obj;
+  struct mem_ref *const mem = (struct mem_ref *) obj;
   unsigned i;
   mem_ref_locs_p accs;
 
@@ -1322,7 +1322,7 @@ gather_mem_refs_stmt (struct loop *loop, tree stmt)
 
   if (*slot)
     {
-      ref = *slot;
+      ref = (mem_ref_p) *slot;
       id = ref->id;
     }
   else
@@ -1416,7 +1416,8 @@ struct vop_to_refs_elt
 static hashval_t
 vtoe_hash (const void *obj)
 {
-  const struct vop_to_refs_elt *vtoe = obj;
+  const struct vop_to_refs_elt *const vtoe =
+    (const struct vop_to_refs_elt *) obj;
 
   return vtoe->uid;
 }
@@ -1427,8 +1428,9 @@ vtoe_hash (const void *obj)
 static int
 vtoe_eq (const void *obj1, const void *obj2)
 {
-  const struct vop_to_refs_elt *vtoe = obj1;
-  const unsigned *uid = obj2;
+  const struct vop_to_refs_elt *const vtoe =
+    (const struct vop_to_refs_elt *) obj1;
+  const unsigned *const uid = (const unsigned *) obj2;
 
   return vtoe->uid == *uid;
 }
@@ -1438,7 +1440,8 @@ vtoe_eq (const void *obj1, const void *obj2)
 static void
 vtoe_free (void *obj)
 {
-  struct vop_to_refs_elt *vtoe = obj;
+  struct vop_to_refs_elt *const vtoe =
+    (struct vop_to_refs_elt *) obj;
 
   BITMAP_FREE (vtoe->refs_all);
   BITMAP_FREE (vtoe->refs_stored);
@@ -1463,7 +1466,7 @@ record_vop_access (htab_t vop_to_refs, unsigned vop, unsigned ref, bool stored)
       *slot = vtoe;
     }
   else
-    vtoe = *slot;
+    vtoe = (struct vop_to_refs_elt *) *slot;
 
   bitmap_set_bit (vtoe->refs_all, ref);
   if (stored)
@@ -1476,7 +1479,8 @@ record_vop_access (htab_t vop_to_refs, unsigned vop, unsigned ref, bool stored)
 static bitmap
 get_vop_accesses (htab_t vop_to_refs, unsigned vop)
 {
-  struct vop_to_refs_elt *vtoe = htab_find_with_hash (vop_to_refs, &vop, vop);
+  struct vop_to_refs_elt *const vtoe =
+    (struct vop_to_refs_elt *) htab_find_with_hash (vop_to_refs, &vop, vop);
   return vtoe->refs_all;
 }
 
@@ -1486,7 +1490,8 @@ get_vop_accesses (htab_t vop_to_refs, unsigned vop)
 static bitmap
 get_vop_stores (htab_t vop_to_refs, unsigned vop)
 {
-  struct vop_to_refs_elt *vtoe = htab_find_with_hash (vop_to_refs, &vop, vop);
+  struct vop_to_refs_elt *const vtoe =
+    (struct vop_to_refs_elt *) htab_find_with_hash (vop_to_refs, &vop, vop);
   return vtoe->refs_stored;
 }
 
