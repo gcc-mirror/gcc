@@ -168,6 +168,7 @@ package System.OS_Interface is
 
    SA_RESTART  : constant  := 16#40#;
    SA_SIGINFO  : constant  := 16#10#;
+   SA_ONSTACK  : constant  := 16#01#;
 
    SIG_BLOCK   : constant  := 0;
    SIG_UNBLOCK : constant  := 1;
