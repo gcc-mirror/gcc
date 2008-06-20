@@ -1,3 +1,8 @@
+2008-06-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/36573
+	* s-osinte-hpux-dce.ads (SA_ONSTACK): Define.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnat_rm.texi (Implementation Defined Characteristics)
