@@ -148,8 +148,8 @@ gimple_histogram_value (struct function *fun, tree stmt)
 {
   if (!VALUE_HISTOGRAMS (fun))
     return NULL;
-  return htab_find_with_hash (VALUE_HISTOGRAMS (fun), stmt,
-                              htab_hash_pointer (stmt));
+  return (histogram_value) htab_find_with_hash (VALUE_HISTOGRAMS (fun), stmt,
+						htab_hash_pointer (stmt));
 }
 
 /* Add histogram for STMT.  */
@@ -331,7 +331,7 @@ gimple_duplicate_stmt_histograms (struct function *fun, tree stmt,
       histogram_value new = gimple_alloc_histogram_value (fun, val->type, NULL, NULL);
       memcpy (new, val, sizeof (*val));
       new->hvalue.stmt = stmt;
-      new->hvalue.counters = xmalloc (sizeof (*new->hvalue.counters) * new->n_counters);
+      new->hvalue.counters = XNEWVAR (gcov_type, sizeof (*new->hvalue.counters) * new->n_counters);
       memcpy (new->hvalue.counters, val->hvalue.counters, sizeof (*new->hvalue.counters) * new->n_counters);
       gimple_add_histogram_value (fun, stmt, new);
     }

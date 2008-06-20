@@ -208,7 +208,7 @@ reduction_phi (htab_t reduction_list, tree phi)
     return NULL;
 
   tmpred.reduc_phi = phi;
-  red = htab_find (reduction_list, &tmpred);
+  red = (struct reduction_info *) htab_find (reduction_list, &tmpred);
 
   return red;
 }
@@ -527,7 +527,7 @@ initialize_reductions (void **slot, void *data)
   tree bvar, type, arg;
   edge e;
 
-  struct reduction_info *reduc = *slot;
+  struct reduction_info *const reduc = (struct reduction_info *) *slot;
   struct loop *loop = (struct loop *) data;
 
   /* Create initialization in preheader: 
@@ -583,7 +583,7 @@ struct elv_data
 static tree
 eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct elv_data *dta = data;
+  struct elv_data *const dta = (struct elv_data *) data;
   tree t = *tp, var, addr, addr_type, type, obj;
 
   if (DECL_P (t))
@@ -853,8 +853,8 @@ static int
 add_field_for_reduction (void **slot, void *data)
 {
   
-  struct reduction_info *red = *slot;
-  tree type = data;
+  struct reduction_info *const red = (struct reduction_info *) *slot;
+  tree const type = (tree) data;
   tree var = SSA_NAME_VAR (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
   tree field = build_decl (FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
 
@@ -871,8 +871,8 @@ add_field_for_reduction (void **slot, void *data)
 static int
 add_field_for_name (void **slot, void *data)
 {
-  struct name_to_copy_elt *elt = *slot;
-  tree type = data;
+  struct name_to_copy_elt *const elt = (struct name_to_copy_elt *) *slot;
+  tree type = (tree) data;
   tree name = ssa_name (elt->version);
   tree var = SSA_NAME_VAR (name);
   tree field = build_decl (FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
@@ -893,8 +893,8 @@ add_field_for_name (void **slot, void *data)
 static int
 create_phi_for_local_result (void **slot, void *data)
 {
-  struct reduction_info *reduc = *slot;
-  struct loop *loop = data;
+  struct reduction_info *const reduc = (struct reduction_info *) *slot;
+  const struct loop *const loop = (const struct loop *) data;
   edge e;
   tree new_phi;
   basic_block store_bb;
@@ -942,8 +942,8 @@ struct clsn_data
 static int
 create_call_for_reduction_1 (void **slot, void *data)
 {
-  struct reduction_info *reduc = *slot;
-  struct clsn_data *clsn_data = data;
+  struct reduction_info *const reduc = (struct reduction_info *) *slot;
+  struct clsn_data *const clsn_data = (struct clsn_data *) data;
   block_stmt_iterator bsi;
   tree type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
   tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
@@ -1013,8 +1013,8 @@ create_call_for_reduction (struct loop *loop, htab_t reduction_list,
 static int
 create_loads_for_reductions (void **slot, void *data)
 {
-  struct reduction_info *red = *slot;
-  struct clsn_data *clsn_data = data;
+  struct reduction_info *const red = (struct reduction_info *) *slot;
+  struct clsn_data *const clsn_data = (struct clsn_data *) data;
   tree stmt;
   block_stmt_iterator bsi;
   tree type = TREE_TYPE (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
@@ -1074,8 +1074,8 @@ create_final_loads_for_reduction (htab_t reduction_list,
 static int
 create_stores_for_reduction (void **slot, void *data)
 {
-  struct reduction_info *red = *slot;
-  struct clsn_data *clsn_data = data;
+  struct reduction_info *const red = (struct reduction_info *) *slot;
+  struct clsn_data *const clsn_data = (struct clsn_data *) data;
   tree stmt;
   block_stmt_iterator bsi;
   tree type = TREE_TYPE (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
@@ -1099,8 +1099,8 @@ create_stores_for_reduction (void **slot, void *data)
 static int
 create_loads_and_stores_for_name (void **slot, void *data)
 {
-  struct name_to_copy_elt *elt = *slot;
-  struct clsn_data *clsn_data = data;
+  struct name_to_copy_elt *const elt = (struct name_to_copy_elt *) *slot;
+  struct clsn_data *const clsn_data = (struct clsn_data *) data;
   tree stmt;
   block_stmt_iterator bsi;
   tree type = TREE_TYPE (elt->new_name);

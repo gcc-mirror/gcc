@@ -228,7 +228,7 @@ get_mem_sym_stats_for (tree var)
   slot = pointer_map_insert (map, var);
   if (*slot == NULL)
     {
-      stats = pool_alloc (mem_sym_stats_pool);
+      stats = (struct mem_sym_stats_d *) pool_alloc (mem_sym_stats_pool);
       memset (stats, 0, sizeof (*stats));
       stats->var = var;
       *slot = (void *) stats;

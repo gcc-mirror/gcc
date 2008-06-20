@@ -881,7 +881,7 @@ contains_tree_r (tree * tp, int *walk_subtrees, void *data)
   if (*tp == data)
     {
       *walk_subtrees = 0;
-      return data;
+      return (tree) data;
     }
   else
     return NULL_TREE;

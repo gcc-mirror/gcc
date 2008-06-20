@@ -265,7 +265,7 @@ tail_duplicate (void)
   while (traced_insns < cover_insns && nduplicated < max_dup_insns
          && !fibheap_empty (heap))
     {
-      basic_block bb = fibheap_extract_min (heap);
+      basic_block bb = (basic_block) fibheap_extract_min (heap);
       int n, pos;
 
       if (!bb)

@@ -171,7 +171,7 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
       bb = ifc_bbs [i];
 
       /* Update condition using predicate list.  */
-      cond = bb->aux;
+      cond = (tree) bb->aux;
 
       /* Process all statements in this basic block.
 	 Remove conditional expression, if any, and annotate
@@ -620,7 +620,7 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 static void
 add_to_predicate_list (basic_block bb, tree new_cond)
 {
-  tree cond = bb->aux;
+  tree cond = (tree) bb->aux;
 
   if (cond)
     cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
@@ -737,7 +737,7 @@ find_phi_replacement_condition (struct loop *loop,
         See PR23115.  */
 
   /* Select condition that is not TRUTH_NOT_EXPR.  */
-  tmp_cond = (first_edge->src)->aux;
+  tmp_cond = (tree) (first_edge->src)->aux;
   gcc_assert (tmp_cond);
 
   if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
@@ -755,13 +755,13 @@ find_phi_replacement_condition (struct loop *loop,
       || dominated_by_p (CDI_DOMINATORS,
 			 second_edge->src, first_edge->src))
     {
-      *cond = (second_edge->src)->aux;
+      *cond = (tree) (second_edge->src)->aux;
 
       /* If there is a condition on an incoming edge,
 	 AND it with the incoming bb predicate.  */
       if (second_edge->aux)
 	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
-			*cond, second_edge->aux);
+			*cond, (tree) second_edge->aux);
 
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
 	/* We can be smart here and choose inverted
@@ -774,13 +774,13 @@ find_phi_replacement_condition (struct loop *loop,
   else
     {
       /* FIRST_BB is not loop header */
-      *cond = (first_edge->src)->aux;
+      *cond = (tree) (first_edge->src)->aux;
 
       /* If there is a condition on an incoming edge,
 	 AND it with the incoming bb predicate.  */
       if (first_edge->aux)
 	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
-			*cond, first_edge->aux);
+			*cond, (tree) first_edge->aux);
     }
 
   /* Create temp. for the condition. Vectorizer prefers to have gimple

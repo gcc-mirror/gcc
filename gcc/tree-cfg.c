@@ -5622,7 +5622,7 @@ replace_by_duplicate_decl (tree *tp, struct pointer_map_t *vars_map,
       *loc = new_t;
     }
   else
-    new_t = *loc;
+    new_t = (tree) *loc;
 
   *tp = new_t;
 }
@@ -5658,7 +5658,7 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
       *loc = new_name;
     }
   else
-    new_name = *loc;
+    new_name = (tree) *loc;
 
   return new_name;
 }
@@ -5713,7 +5713,8 @@ move_stmt_r (tree *tp, int *walk_subtrees, void *data)
 	    {
 	      struct tree_map in, *out;
 	      in.base.from = t;
-	      out = htab_find_with_hash (p->new_label_map, &in, DECL_UID (t));
+	      out = (struct tree_map *)
+		htab_find_with_hash (p->new_label_map, &in, DECL_UID (t));
 	      if (out)
 		*tp = t = out->to;
 	    }
@@ -5972,7 +5973,7 @@ new_label_mapper (tree decl, void *data)
 
   gcc_assert (TREE_CODE (decl) == LABEL_DECL);
 
-  m = xmalloc (sizeof (struct tree_map));
+  m = XNEW (struct tree_map);
   m->hash = DECL_UID (decl);
   m->base.from = decl;
   m->to = create_artificial_label ();

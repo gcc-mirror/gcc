@@ -152,7 +152,7 @@ allocate_phi_node (int len)
     }
   else
     {
-      phi = ggc_alloc (size);
+      phi = (tree) ggc_alloc (size);
 #ifdef GATHER_STATISTICS
       phi_nodes_created++;
       tree_node_counts[(int) phi_kind]++;
