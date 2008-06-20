@@ -254,7 +254,7 @@ gfc_post_options (const char **pfilename)
 
   if (i != 0)
     {
-      source_path = alloca (i + 1);
+      source_path = (char *) alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
       gfc_add_include_path (source_path, true);

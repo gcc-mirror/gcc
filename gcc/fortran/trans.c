@@ -933,7 +933,7 @@ gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 void
 gfc_get_backend_locus (locus * loc)
 {
-  loc->lb = gfc_getmem (sizeof (gfc_linebuf));    
+  loc->lb = XCNEW (gfc_linebuf);
   loc->lb->location = input_location;
   loc->lb->file = gfc_current_backend_file;
 }

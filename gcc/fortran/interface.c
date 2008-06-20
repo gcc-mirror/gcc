@@ -795,7 +795,7 @@ count_types_test (gfc_formal_arglist *f1, gfc_formal_arglist *f2)
 
   /* Build an array of integers that gives the same integer to
      arguments of the same type/rank.  */
-  arg = gfc_getmem (n1 * sizeof (arginfo));
+  arg = XCNEWVEC (arginfo, n1);
 
   f = f1;
   for (i = 0; i < n1; i++, f = f->next)

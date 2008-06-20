@@ -1222,7 +1222,7 @@ not_yes:
 	    case 'e':
 	    case 'v':
 	      vp = va_arg (argp, void **);
-	      gfc_free_expr (*vp);
+	      gfc_free_expr ((struct gfc_expr *)*vp);
 	      *vp = NULL;
 	      break;
 	    }
@@ -3770,7 +3770,7 @@ match_forall_iterator (gfc_forall_iterator **result)
   match m;
 
   where = gfc_current_locus;
-  iter = gfc_getmem (sizeof (gfc_forall_iterator));
+  iter = XCNEW (gfc_forall_iterator);
 
   m = gfc_match_expr (&iter->var);
   if (m != MATCH_YES)

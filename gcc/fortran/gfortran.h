@@ -792,7 +792,7 @@ typedef struct gfc_charlen
 }
 gfc_charlen;
 
-#define gfc_get_charlen() gfc_getmem(sizeof(gfc_charlen))
+#define gfc_get_charlen() XCNEW (gfc_charlen)
 
 /* Type specification structure.  FIXME: derived and cl could be union???  */
 typedef struct
@@ -824,7 +824,7 @@ typedef struct
 }
 gfc_array_spec;
 
-#define gfc_get_array_spec() gfc_getmem(sizeof(gfc_array_spec))
+#define gfc_get_array_spec() XCNEW (gfc_array_spec)
 
 
 /* Components of derived types.  */
@@ -844,7 +844,7 @@ typedef struct gfc_component
 }
 gfc_component;
 
-#define gfc_get_component() gfc_getmem(sizeof(gfc_component))
+#define gfc_get_component() XCNEW (gfc_component)
 
 /* Formal argument lists are lists of symbols.  */
 typedef struct gfc_formal_arglist
@@ -856,7 +856,7 @@ typedef struct gfc_formal_arglist
 }
 gfc_formal_arglist;
 
-#define gfc_get_formal_arglist() gfc_getmem(sizeof(gfc_formal_arglist))
+#define gfc_get_formal_arglist() XCNEW (gfc_formal_arglist)
 
 
 /* The gfc_actual_arglist structure is for actual arguments.  */
@@ -876,7 +876,7 @@ typedef struct gfc_actual_arglist
 }
 gfc_actual_arglist;
 
-#define gfc_get_actual_arglist() gfc_getmem(sizeof(gfc_actual_arglist))
+#define gfc_get_actual_arglist() XCNEW (gfc_actual_arglist)
 
 
 /* Because a symbol can belong to multiple namelists, they must be
@@ -888,7 +888,7 @@ typedef struct gfc_namelist
 }
 gfc_namelist;
 
-#define gfc_get_namelist() gfc_getmem(sizeof(gfc_namelist))
+#define gfc_get_namelist() XCNEW (gfc_namelist)
 
 enum
 {
@@ -945,7 +945,7 @@ typedef struct gfc_omp_clauses
 }
 gfc_omp_clauses;
 
-#define gfc_get_omp_clauses() gfc_getmem(sizeof(gfc_omp_clauses))
+#define gfc_get_omp_clauses() XCNEW (gfc_omp_clauses)
 
 
 /* The gfc_st_label structure is a doubly linked list attached to a
@@ -978,7 +978,7 @@ typedef struct gfc_interface
 }
 gfc_interface;
 
-#define gfc_get_interface() gfc_getmem(sizeof(gfc_interface))
+#define gfc_get_interface() XCNEW (gfc_interface)
 
 
 /* User operator nodes.  These are like stripped down symbols.  */
@@ -1092,7 +1092,7 @@ typedef struct gfc_common_head
 }
 gfc_common_head;
 
-#define gfc_get_common_head() gfc_getmem(sizeof(gfc_common_head))
+#define gfc_get_common_head() XCNEW (gfc_common_head)
 
 
 /* A list of all the alternate entry points for a procedure.  */
@@ -1142,7 +1142,7 @@ typedef struct gfc_dt_list
 }
 gfc_dt_list;
 
-#define gfc_get_dt_list() gfc_getmem(sizeof(gfc_dt_list))
+#define gfc_get_dt_list() XCNEW (gfc_dt_list)
 
   /* A list of all derived types.  */
   extern gfc_dt_list *gfc_derived_types;
@@ -1277,7 +1277,7 @@ typedef struct gfc_array_ref
 }
 gfc_array_ref;
 
-#define gfc_get_array_ref() gfc_getmem(sizeof(gfc_array_ref))
+#define gfc_get_array_ref() XCNEW (gfc_array_ref)
 
 
 /* Component reference nodes.  A variable is stored as an expression
@@ -1319,7 +1319,7 @@ typedef struct gfc_ref
 }
 gfc_ref;
 
-#define gfc_get_ref() gfc_getmem(sizeof(gfc_ref))
+#define gfc_get_ref() XCNEW (gfc_ref)
 
 
 /* Structures representing intrinsic symbols and their arguments lists.  */
@@ -1599,7 +1599,7 @@ typedef struct gfc_equiv
 }
 gfc_equiv;
 
-#define gfc_get_equiv() gfc_getmem(sizeof(gfc_equiv))
+#define gfc_get_equiv() XCNEW (gfc_equiv)
 
 /* Holds a single equivalence member after processing.  */
 typedef struct gfc_equiv_info
@@ -1651,7 +1651,7 @@ typedef struct gfc_case
 }
 gfc_case;
 
-#define gfc_get_case() gfc_getmem(sizeof(gfc_case))
+#define gfc_get_case() XCNEW (gfc_case)
 
 
 typedef struct
@@ -1660,7 +1660,7 @@ typedef struct
 }
 gfc_iterator;
 
-#define gfc_get_iterator() gfc_getmem(sizeof(gfc_iterator))
+#define gfc_get_iterator() XCNEW (gfc_iterator)
 
 
 /* Allocation structure for ALLOCATE, DEALLOCATE and NULLIFY statements.  */
@@ -1672,7 +1672,7 @@ typedef struct gfc_alloc
 }
 gfc_alloc;
 
-#define gfc_get_alloc() gfc_getmem(sizeof(gfc_alloc))
+#define gfc_get_alloc() XCNEW (gfc_alloc)
 
 
 typedef struct
@@ -1997,7 +1997,7 @@ gfc_char_t *gfc_wide_memset (gfc_char_t *, gfc_char_t, size_t);
 char *gfc_widechar_to_char (const gfc_char_t *, int);
 gfc_char_t *gfc_char_to_widechar (const char *);
 
-#define gfc_get_wide_string(n) gfc_getmem((n) * sizeof(gfc_char_t))
+#define gfc_get_wide_string(n) XCNEWVEC (gfc_char_t, n)
 
 void gfc_skip_comments (void);
 gfc_char_t gfc_next_char_literal (int);

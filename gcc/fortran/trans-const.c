@@ -99,7 +99,7 @@ gfc_build_wide_string_const (int kind, int length, const gfc_char_t *string)
   i = gfc_validate_kind (BT_CHARACTER, kind, false);
   size = length * gfc_character_kinds[i].bit_size / 8;
 
-  s = gfc_getmem (size);
+  s = XCNEWVAR (char, size);
   gfc_encode_character (kind, length, string, (unsigned char *) s, size);
 
   str = build_string (size, s);
