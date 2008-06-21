@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Iterator Wrappers for the C++ library testsuite. 
 //
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
 
 #include <testsuite_hooks.h>
 #include <bits/stl_iterator_base_types.h>
-#include <bits/stl_move.h>
+#include <bits/move.h>
 
 #ifndef _TESTSUITE_ITERATORS
 #define _TESTSUITE_ITERATORS

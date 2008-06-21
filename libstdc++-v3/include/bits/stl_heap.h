@@ -62,7 +62,7 @@
 #define _STL_HEAP_H 1
 
 #include <debug/debug.h>
-#include <bits/stl_move.h>
+#include <bits/move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

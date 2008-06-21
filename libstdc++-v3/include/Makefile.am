@@ -104,6 +104,7 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
+	${bits_srcdir}/move.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/postypes.h \
@@ -123,7 +124,6 @@ bits_headers = \
 	${bits_srcdir}/stl_iterator_base_types.h \
 	${bits_srcdir}/stl_list.h \
 	${bits_srcdir}/stl_map.h \
-	${bits_srcdir}/stl_move.h \
 	${bits_srcdir}/stl_multimap.h \
 	${bits_srcdir}/stl_multiset.h \
 	${bits_srcdir}/stl_numeric.h \
@@ -139,6 +139,7 @@ bits_headers = \
 	${bits_srcdir}/stl_vector.h \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
+	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \

@@ -74,7 +74,7 @@
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
 #include <debug/debug.h>
-#include <bits/stl_move.h> // For std::swap and _GLIBCXX_MOVE
+#include <bits/move.h> // For std::swap and _GLIBCXX_MOVE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
