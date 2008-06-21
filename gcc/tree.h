@@ -33,17 +33,16 @@ along with GCC; see the file COPYING3.  If not see
 /* Codes of tree nodes */
 
 #define DEFTREECODE(SYM, STRING, TYPE, NARGS)   SYM,
+#define END_OF_BASE_TREE_CODES LAST_AND_UNUSED_TREE_CODE,
 
 enum tree_code {
-#include "tree.def"
-
-  LAST_AND_UNUSED_TREE_CODE	/* A convenient way to get a value for
-				   NUM_TREE_CODES.  */
+#include "all-tree.def"
+MAX_TREE_CODES
 };
 
 #undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
 
-#define MAX_TREE_CODES 512
 extern unsigned char tree_contains_struct[MAX_TREE_CODES][64];
 #define CODE_CONTAINS_STRUCT(CODE, STRUCT) (tree_contains_struct[(CODE)][(STRUCT)])
 

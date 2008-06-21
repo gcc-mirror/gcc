@@ -9773,7 +9773,7 @@ grok_op_properties (tree decl, bool complain)
 	gcc_unreachable ();
       }
     while (0);
-  gcc_assert (operator_code != LAST_CPLUS_TREE_CODE);
+  gcc_assert (operator_code != MAX_TREE_CODES);
   SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
 
   if (class_type)

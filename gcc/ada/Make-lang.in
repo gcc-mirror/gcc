@@ -980,7 +980,7 @@ ada/sdefault.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/s-wchcon.ads ada/system.ads ada/table.adb ada/table.ads ada/tree_io.ads \
    ada/types.ads ada/unchdeal.ads ada/unchconv.ads
 
-ADA_TREE_H = ada/ada-tree.h ada/ada-tree.def
+ADA_TREE_H = ada/ada-tree.h
 
 # force debugging information on s-tasdeb.o so that it is always
 # possible to set conditional breakpoints on tasks.

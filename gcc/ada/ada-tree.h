@@ -23,15 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Ada language-specific GC tree codes.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
-enum gnat_tree_code {
-  __DUMMY = LAST_AND_UNUSED_TREE_CODE,
-#include "ada-tree.def"
-  LAST_GNAT_TREE_CODE
-};
-#undef DEFTREECODE
-
 /* Ada uses the lang_decl and lang_type fields to hold a tree.  */
 union lang_tree_node
   GTY((desc ("0"),

@@ -2108,7 +2108,7 @@ write_expression (tree expr)
 	      /* Unfortunately, there is no easy way to go from the
 		 name of the operator back to the corresponding tree
 		 code.  */
-	      for (i = 0; i < LAST_CPLUS_TREE_CODE; ++i)
+	      for (i = 0; i < MAX_TREE_CODES; ++i)
 		if (operator_name_info[i].identifier == member)
 		  {
 		    /* The ABI says that we prefer binary operator
