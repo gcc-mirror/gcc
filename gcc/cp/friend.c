@@ -253,7 +253,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
   else if (same_type_p (type, friend_type))
     {
       if (complain)
-	pedwarn ("class %qT is implicitly friends with itself",
+	warning (0, "class %qT is implicitly friends with itself",
 		 type);
       return;
     }

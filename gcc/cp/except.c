@@ -1015,8 +1015,8 @@ check_handlers (tree handlers)
 	if (tsi_end_p (i))
 	  break;
 	if (TREE_TYPE (handler) == NULL_TREE)
-	  pedwarn ("%H%<...%> handler must be the last handler for"
-		   " its try block", EXPR_LOCUS (handler));
+	  permerror ("%H%<...%> handler must be the last handler for"
+		     " its try block", EXPR_LOCUS (handler));
 	else
 	  check_handlers_1 (handler, i);
       }

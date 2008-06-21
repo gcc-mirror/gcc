@@ -1,3 +1,35 @@
+2008-06-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* typeck.c (composite_pointer_type_r, cxx_sizeof_expr,
+	cxx_alignof_expr, check_template_keyword, cp_build_binary_op,
+	pointer_diff, cp_build_unary_op, build_x_compound_expr_from_list,
+	build_reinterpret_cast_1, cp_build_c_cast, check_return_expr): Change
+	pedwarn to permerror.
+	* init.c (perform_member_init, build_new_1, build_new): Likewise.
+	* decl.c (warn_extern_redeclared_static, duplicate_decls,
+	* identify_goto, check_previous_goto_1, check_goto, define_label,
+	check_tag_decl, start_decl, check_class_member_definition_namespace,
+	grokfndecl, grokdeclarator): Likewise.
+	* except.c (check_handlers): Likewise.
+	* typeck2.c (digest_init): Likewise.
+	* pt.c (check_specialization_namespace,
+	check_explicit_instantiation_namespace,
+	maybe_process_partial_specialization, check_explicit_specialization,
+	convert_template_argument, do_decl_instantiation,
+	do_type_instantiation, instantiate_decl): Likewise.
+	* semantics.c (finish_template_type_parm): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend,
+	check_for_out_of_scope_variable): Likewise.
+	* decl2.c (finish_static_data_member_decl, build_anon_union_vars,
+	coerce_new_type): Likewise.
+	* parser.c (cp_parser_nested_name_specifier_opt,
+	cp_parser_mem_initializer, cp_parser_elaborated_type_specifier,
+	cp_parser_class_head, cp_parser_check_class_key): Likewise.
+	(cp_parser_parameter_declaration): Check flag_permissive instead of
+	flag_pedantic_errors.
+	* call.c (joust): Change pedwarn to warning.
+	* friend.c (make_friend_class): Likewise.
+
 2008-06-16  Jan Hubicka  <jh@suse.cz>
 
 	* method.c: Include cgraph.h.
