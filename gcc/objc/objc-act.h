@@ -122,24 +122,6 @@ enum gimplify_status objc_gimplify_expr (tree *, tree *, tree *);
 #define OBJC_TYPE_NAME(TYPE) TYPE_NAME(TYPE)
 #define OBJC_SET_TYPE_NAME(TYPE, NAME) (TYPE_NAME (TYPE) = NAME)
 
-/* Define the Objective-C or Objective-C++ language-specific tree codes.  */
-
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
-enum objc_tree_code {
-#if defined (GCC_CP_TREE_H)
-  LAST_BASE_TREE_CODE = LAST_CPLUS_TREE_CODE,
-#else 
-#if defined (GCC_C_TREE_H)
-  LAST_BASE_TREE_CODE = LAST_C_TREE_CODE,
-#else
-  #error You must include <c-tree.h> or <cp/cp-tree.h> before <objc/objc-act.h>
-#endif
-#endif
-#include "objc-tree.def"
-  LAST_OBJC_TREE_CODE
-};
-#undef DEFTREECODE
-
 /* Hash tables to manage the global pool of method prototypes.  */
 
 typedef struct hashed_entry	*hash;

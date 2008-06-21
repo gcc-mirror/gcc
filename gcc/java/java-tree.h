@@ -30,15 +30,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "hashtab.h"
 
-/* Java language-specific tree codes.  */
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
-enum java_tree_code {
-  __DUMMY = LAST_AND_UNUSED_TREE_CODE,
-#include "java-tree.def"
-  LAST_JAVA_TREE_CODE
-};
-#undef DEFTREECODE
-
 struct JCF;
 
 /* Usage of TREE_LANG_FLAG_?:

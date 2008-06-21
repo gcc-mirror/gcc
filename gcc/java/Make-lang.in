@@ -242,7 +242,7 @@ java.stagefeedback: stageprofile-start
 
 #
 # .o:.h dependencies.
-JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h java/java-tree.def
+JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h
 
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \

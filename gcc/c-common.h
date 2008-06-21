@@ -763,16 +763,6 @@ extern void finish_file	(void);
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
 
-#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
-
-enum c_tree_code {
-  C_DUMMY_TREE_CODE = LAST_AND_UNUSED_TREE_CODE,
-#include "c-common.def"
-  LAST_C_TREE_CODE
-};
-
-#undef DEFTREECODE
-
 extern int anon_aggr_type_p (const_tree);
 
 /* For a VAR_DECL that is an anonymous union, these are the various
