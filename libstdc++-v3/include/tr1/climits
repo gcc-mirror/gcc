@@ -1,6 +1,6 @@
 // TR1 climits -*- C++ -*-
 
-// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
 #include <climits>
 
 #ifndef LLONG_MIN
-#define LLONG_MIN -__LONG_LONG_MAX__ - 1
+#define LLONG_MIN (-__LONG_LONG_MAX__ - 1)
 #endif
 
 #ifndef LLONG_MAX
@@ -45,7 +45,7 @@
 #endif
 
 #ifndef ULLONG_MAX
-#define ULLONG_MAX __LONG_LONG_MAX__ * 2ULL + 1
+#define ULLONG_MAX (__LONG_LONG_MAX__ * 2ULL + 1)
 #endif
 
 #endif // _GLIBCXX_TR1_CLIMITS
