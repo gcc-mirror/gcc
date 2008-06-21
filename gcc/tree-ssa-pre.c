@@ -2017,6 +2017,8 @@ fini_antic (void)
 {
   basic_block bb;
 
+  if (maximal_set)
+    bitmap_set_free (maximal_set);
   free (postorder);
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
@@ -2025,8 +2027,6 @@ fini_antic (void)
   free_alloc_pool (unary_node_pool);
   free_alloc_pool (comparison_node_pool);
 
-  if (maximal_set)
-    bitmap_set_free (maximal_set);
   FOR_ALL_BB (bb)
     {
       free (bb->aux);

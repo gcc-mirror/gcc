@@ -1,3 +1,8 @@
+2008-06-21  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* tree-ssa-pre.c (fini_antic): Bitmap_sets have to be freed before
+	the grand_bitmap_obstack.
+
 2008-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc.h (GGC_RESIZEVAR): New, reorder macros.
