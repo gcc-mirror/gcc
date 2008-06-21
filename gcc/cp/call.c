@@ -6563,10 +6563,10 @@ tweak:
 	{
 	  if (warn)
 	    {
-	      pedwarn ("\
-ISO C++ says that these are ambiguous, even \
-though the worst conversion for the first is better than \
-the worst conversion for the second:");
+	      warning (0,
+	      "ISO C++ says that these are ambiguous, even "
+	      "though the worst conversion for the first is better than "
+	      "the worst conversion for the second:");
 	      print_z_candidate (_("candidate 1:"), w);
 	      print_z_candidate (_("candidate 2:"), l);
 	    }

@@ -846,8 +846,8 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      pedwarn ("type mismatch with previous external decl of %q#D", x);
-	      pedwarn ("previous external decl of %q+#D", decl);
+	      permerror ("type mismatch with previous external decl of %q#D", x);
+	      permerror ("previous external decl of %q+#D", decl);
 	    }
 	}
 
@@ -1165,7 +1165,7 @@ check_for_out_of_scope_variable (tree decl)
 
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     {
-      error ("name lookup of %qD changed for new ISO %<for%> scoping",
+      error ("name lookup of %qD changed for ISO %<for%> scoping",
 	     DECL_NAME (decl));
       error ("  cannot use obsolete binding at %q+D because "
 	     "it has a destructor", decl);
@@ -1173,9 +1173,19 @@ check_for_out_of_scope_variable (tree decl)
     }
   else
     {
-      pedwarn ("name lookup of %qD changed for new ISO %<for%> scoping",
-	       DECL_NAME (decl));
-      pedwarn ("  using obsolete binding at %q+D", decl);
+      permerror ("name lookup of %qD changed for ISO %<for%> scoping",
+	         DECL_NAME (decl));
+      if (flag_permissive)
+        permerror ("  using obsolete binding at %q+D", decl);
+      else
+	{
+	  static bool hint;
+	  if (!hint)
+	    {
+	      inform ("(if you use %<-fpermissive%> G++ will accept your code)");
+	      hint = true;
+	    }
+	}
     }
 
   return decl;

@@ -533,11 +533,11 @@ perform_member_init (tree member, tree init)
 	    }
 	  /* member traversal: note it leaves init NULL */
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)
-	    pedwarn ("%Juninitialized reference member %qD",
-		     current_function_decl, member);
+	    permerror ("%Juninitialized reference member %qD",
+		       current_function_decl, member);
 	  else if (CP_TYPE_CONST_P (type))
-	    pedwarn ("%Juninitialized member %qD with %<const%> type %qT",
-		     current_function_decl, member, type);
+	    permerror ("%Juninitialized member %qD with %<const%> type %qT",
+		       current_function_decl, member, type);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work
@@ -2158,7 +2158,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	  else if (init)
             {
               if (complain & tf_error)
-                pedwarn ("ISO C++ forbids initialization in array new");
+                permerror ("ISO C++ forbids initialization in array new");
               else
                 return error_mark_node;
             }
@@ -2370,7 +2370,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
       if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
         {
           if (complain & tf_error)
-            pedwarn ("size in array new must have integral type");
+            permerror ("size in array new must have integral type");
           else
             return error_mark_node;
         }
