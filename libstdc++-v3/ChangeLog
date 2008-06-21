@@ -1,3 +1,34 @@
+2008-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_move.h: Rename to move.h.
+	* include/std/utility: Adjust.
+	* include/ext/vstring_util.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/stl_heap.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+	* testsuite/util/testsuite_iterators.h: Likewise.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+
+2008-06-21  Chris Fairles  <chris.fairles@gmail.com>
+
+	* include/bits/unique_ptr.h: New.
+	* include/std/memory: Adjust.
+	* include/Makefile.am: Add.
+	* testsuite/20_util/unique_ptr/requirements/explicit_instantiation/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign.cc: Likewise.
+	* include/Makefile.in: Regenerate.
+
 2008-06-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/c_global/climits, include/tr1/climits: Add parentheses.

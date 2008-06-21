@@ -1,6 +1,6 @@
 // Bitmap Allocator. -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@
 #include <new> // For operator new.
 #include <debug/debug.h> // _GLIBCXX_DEBUG_ASSERT
 #include <ext/concurrence.h>
-#include <bits/stl_move.h>
+#include <bits/move.h>
 
 /** @brief The constant in the expression below is the alignment
  * required in bytes.

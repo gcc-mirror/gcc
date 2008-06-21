@@ -54,7 +54,7 @@
 #include <bits/functexcept.h>
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
-#include <bits/stl_move.h>
+#include <bits/move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
