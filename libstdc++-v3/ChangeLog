@@ -1,3 +1,14 @@
+2008-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (swap(_Tp (&)[_Nm], _Tp (&)[_Nm])): Add,
+	per DR 809.
+	* include/bits/algorithmfwd.h: Add.
+	* doc/xml/manual/intro.xml: Add an entry for DR 809.
+	* testsuite/25_algorithms/swap/dr809.cc: New.
+
+	* testsuite/25_algorithms/swap/requirements/explicit_instantiation/
+	2.cc: Remove stray empty line.
+
 2008-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_move.h: Rename to move.h.

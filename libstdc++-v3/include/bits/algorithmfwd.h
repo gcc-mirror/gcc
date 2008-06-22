@@ -1,6 +1,6 @@
 // <algorithm> declarations  -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -391,6 +391,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp> 
     void 
     swap(_Tp&, _Tp&);
+
+  template<typename _Tp, size_t _Nm>
+    void
+    swap(_Tp (&)[_Nm], _Tp (&)[_Nm]);
 
   template<typename _FIter1, typename _FIter2>
     _FIter2 

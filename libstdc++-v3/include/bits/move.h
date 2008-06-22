@@ -1,6 +1,6 @@
 // Move, forward and identity for C++0x + swap -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,15 +27,16 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file stl_move.h
+/** @file move.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-#ifndef _STL_MOVE_H
-#define _STL_MOVE_H 1
+#ifndef _MOVE_H
+#define _MOVE_H 1
 
 #include <bits/c++config.h>
+#include <cstddef>
 #include <bits/concept_check.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -87,6 +88,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __b = _GLIBCXX_MOVE(__tmp);
     }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 809. std::swap should be overloaded for array types.
+  template<typename _Tp, size_t _Nm>
+    inline void
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    {
+      for (size_t __n = 0; __n < _Nm; ++__n)
+	swap(__a[__n], __b[__n]);
+    }
+
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _STL_MOVE_H */
+#endif /* _MOVE_H */

@@ -1,8 +1,6 @@
 // { dg-do compile }
 
-// 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
-
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,14 +27,29 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <string>
 #include <algorithm>
-#include <testsuite_api.h>
 
-namespace std
+template<class T>
+  class W
+  {
+  public:
+    T data;
+  };
+
+template<class T>
+  void
+  swap(W<T>& x, W<T>& y)
+  {
+    using std::swap;
+    swap(x.data, y.data);
+  }
+
+// DR 809. std::swap should be overloaded for array types.
+void test01()
 {
-  using __gnu_test::NonDefaultConstructible;
-
-  typedef NonDefaultConstructible 		value_type;
-
-  template void swap(value_type&, value_type&);
-} 
+  W<std::string[8]> w1, w2;  // Two objects of a Swappable type.
+    
+  using std::swap;
+  swap(w1, w2);
+}
