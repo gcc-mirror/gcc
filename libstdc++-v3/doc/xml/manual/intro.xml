@@ -685,6 +685,12 @@
     <listitem><para>In C++0x mode, add std::proj.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#809">809</ulink>:
+        <emphasis>std::swap should be overloaded for array types</emphasis>
+    </term>
+    <listitem><para>Add the overload.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-active.html#844">844</ulink>:
         <emphasis>complex pow return type is ambiguous</emphasis>
     </term>
