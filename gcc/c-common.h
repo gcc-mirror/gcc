@@ -184,7 +184,10 @@ enum c_tree_index
     CTI_MAX
 };
 
-#define C_RID_CODE(id)	(((struct c_common_identifier *) (id))->node.rid_code)
+#define C_RID_CODE(id) \
+  ((enum rid) (((struct c_common_identifier *) (id))->node.rid_code))
+#define C_SET_RID_CODE(id, code) \
+  (((struct c_common_identifier *) (id))->node.rid_code = (unsigned char) code)
 
 /* Identifier part common to the C front ends.  Inherits from
    tree_identifier, despite appearances.  */

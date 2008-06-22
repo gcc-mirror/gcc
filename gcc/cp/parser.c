@@ -446,7 +446,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 
               /* Clear out the C_RID_CODE so we don't warn about this
                  particular identifier-turned-keyword again.  */
-              C_RID_CODE (token->u.value) = RID_MAX;
+              C_SET_RID_CODE (token->u.value, RID_MAX);
             }
 
 	  token->ambiguous_p = false;

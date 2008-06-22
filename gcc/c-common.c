@@ -3558,7 +3558,7 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
   va_start (list, n);
   for (i = 0; i < n; ++i)
     {
-      builtin_type a = va_arg (list, builtin_type);
+      builtin_type a = (builtin_type) va_arg (list, int);
       t = builtin_types[a];
       if (t == error_mark_node)
 	goto egress;
@@ -4588,9 +4588,10 @@ finish_label_address_expr (tree label)
 
 rtx
 c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
-	       int modifier /* Actually enum_modifier.  */,
+	       int modifiera /* Actually enum expand_modifier.  */,
 	       rtx *alt_rtl)
 {
+  enum expand_modifier modifier = (enum expand_modifier) modifiera;
   switch (TREE_CODE (exp))
     {
     case COMPOUND_LITERAL_EXPR:

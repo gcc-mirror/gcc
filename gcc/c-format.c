@@ -283,36 +283,38 @@ typedef struct format_wanted_type
   struct format_wanted_type *next;
 } format_wanted_type;
 
+/* Convenience macro for format_length_info meaning unused.  */
+#define NO_FMT NULL, FMT_LEN_none, STD_C89
 
 static const format_length_info printf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C9L },
-  { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
-  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
-  { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
-  { "Z", FMT_LEN_z, STD_EXT, NULL, 0, 0 },
-  { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
-  { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
-  { "H", FMT_LEN_H, STD_EXT, NULL, 0, 0 },
+  { "q", FMT_LEN_ll, STD_EXT, NO_FMT },
+  { "L", FMT_LEN_L, STD_C89, NO_FMT },
+  { "z", FMT_LEN_z, STD_C99, NO_FMT },
+  { "Z", FMT_LEN_z, STD_EXT, NO_FMT },
+  { "t", FMT_LEN_t, STD_C99, NO_FMT },
+  { "j", FMT_LEN_j, STD_C99, NO_FMT },
+  { "H", FMT_LEN_H, STD_EXT, NO_FMT },
   { "D", FMT_LEN_D, STD_EXT, "DD", FMT_LEN_DD, STD_EXT },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { NO_FMT, NO_FMT }
 };
 
 /* Length specifiers valid for asm_fprintf.  */
 static const format_length_info asm_fprintf_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
-  { "w", FMT_LEN_none, STD_C89, NULL, 0, 0 },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { "w", FMT_LEN_none, STD_C89, NO_FMT },
+  { NO_FMT, NO_FMT }
 };
 
 /* Length specifiers valid for GCC diagnostics.  */
 static const format_length_info gcc_diag_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
-  { "w", FMT_LEN_none, STD_C89, NULL, 0, 0 },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { "w", FMT_LEN_none, STD_C89, NO_FMT },
+  { NO_FMT, NO_FMT }
 };
 
 /* The custom diagnostics all accept the same length specifiers.  */
@@ -325,14 +327,14 @@ static const format_length_info scanf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C9L },
-  { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
-  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
-  { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
-  { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
-  { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
-  { "H", FMT_LEN_H, STD_EXT, NULL, 0, 0 },
+  { "q", FMT_LEN_ll, STD_EXT, NO_FMT },
+  { "L", FMT_LEN_L, STD_C89, NO_FMT },
+  { "z", FMT_LEN_z, STD_C99, NO_FMT },
+  { "t", FMT_LEN_t, STD_C99, NO_FMT },
+  { "j", FMT_LEN_j, STD_C99, NO_FMT },
+  { "H", FMT_LEN_H, STD_EXT, NO_FMT },
   { "D", FMT_LEN_D, STD_EXT, "DD", FMT_LEN_DD, STD_EXT },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { NO_FMT, NO_FMT }
 };
 
 
@@ -341,16 +343,16 @@ static const format_length_info scanf_length_specs[] =
 static const format_length_info strfmon_length_specs[] =
 {
   /* A GNU extension.  */
-  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { "L", FMT_LEN_L, STD_C89, NO_FMT },
+  { NO_FMT, NO_FMT }
 };
 
 
 /* For now, the Fortran front-end routines only use l as length modifier.  */
 static const format_length_info gcc_gfc_length_specs[] =
 {
-  { "l", FMT_LEN_l, STD_C89, NULL, 0, 0 },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { "l", FMT_LEN_l, STD_C89, NO_FMT },
+  { NO_FMT, NO_FMT }
 };
 
 
@@ -366,7 +368,7 @@ static const format_flag_spec printf_flag_specs[] =
   { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -388,7 +390,7 @@ static const format_flag_spec asm_fprintf_flag_specs[] =
   { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 static const format_flag_pair asm_fprintf_flag_pairs[] =
@@ -419,7 +421,7 @@ static const format_flag_spec gcc_diag_flag_specs[] =
   { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 #define gcc_tdiag_flag_specs gcc_diag_flag_specs
@@ -432,7 +434,7 @@ static const format_flag_spec gcc_cxxdiag_flag_specs[] =
   { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 static const format_flag_spec scanf_flag_specs[] =
@@ -444,7 +446,7 @@ static const format_flag_spec scanf_flag_specs[] =
   { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
   { '\'', 0, 0, N_("''' flag"),               N_("the ''' scanf flag"),                       STD_EXT },
   { 'I',  0, 0, N_("'I' flag"),               N_("the 'I' scanf flag"),                       STD_EXT },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -467,7 +469,7 @@ static const format_flag_spec strftime_flag_specs[] =
   { 'E', 0,   0, N_("'E' modifier"), N_("the 'E' strftime modifier"),      STD_C99 },
   { 'O', 0,   0, N_("'O' modifier"), N_("the 'O' strftime modifier"),      STD_C99 },
   { 'O', 'o', 0, NULL,               N_("the 'O' modifier"),               STD_EXT },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -494,7 +496,7 @@ static const format_flag_spec strfmon_flag_specs[] =
   { '#',  0, 0, N_("left precision"),  N_("left precision in strfmon format"),  STD_C89 },
   { 'p',  0, 0, N_("right precision"), N_("right precision in strfmon format"), STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in strfmon format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 static const format_flag_pair strfmon_flag_pairs[] =
@@ -524,7 +526,7 @@ static const format_char_info print_char_table[] =
   { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "R",  NULL },
   /* GNU conversion specifiers.  */
   { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",       "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info asm_fprintf_char_table[] =
@@ -544,7 +546,7 @@ static const format_char_info asm_fprintf_char_table[] =
   { "U",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "r",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  "", NULL },
   { "@",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_diag_char_table[] =
@@ -567,7 +569,7 @@ static const format_char_info gcc_diag_char_table[] =
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_tdiag_char_table[] =
@@ -590,7 +592,7 @@ static const format_char_info gcc_tdiag_char_table[] =
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_cdiag_char_table[] =
@@ -613,7 +615,7 @@ static const format_char_info gcc_cdiag_char_table[] =
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_cxxdiag_char_table[] =
@@ -639,7 +641,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info gcc_gfc_char_table[] =
@@ -657,7 +659,7 @@ static const format_char_info gcc_gfc_char_table[] =
   /* This will require a "locus" at runtime.  */
   { "L",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "R", NULL },
 
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info scan_char_table[] =
@@ -678,7 +680,7 @@ static const format_char_info scan_char_table[] =
   /* X/Open conversion specifiers.  */
   { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "W",   NULL },
   { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "W",   NULL },
-  { NULL, 0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL, 0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info time_char_table[] =
@@ -705,13 +707,13 @@ static const format_char_info time_char_table[] =
   /* GNU conversion specifiers.  */
   { "kls",		0, STD_EXT, NOLENGTHS, "-_0Ow",  "",   NULL },
   { "P",		0, STD_EXT, NOLENGTHS, "",       "",   NULL },
-  { NULL,		0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,		0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 static const format_char_info monetary_char_table[] =
 {
   { "in", 0, STD_C89, { T89_D, BADLEN, BADLEN, BADLEN, BADLEN, T89_LD, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }, "=^+(!-w#p", "", NULL },
-  { NULL, 0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL, 0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 /* This must be in the same order as enum format_type.  */
