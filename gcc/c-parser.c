@@ -208,7 +208,7 @@ c_parse_init (void)
 	continue;
 
       id = get_identifier (reswords[i].word);
-      C_RID_CODE (id) = reswords[i].rid;
+      C_SET_RID_CODE (id, reswords[i].rid);
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
     }
@@ -396,7 +396,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
       break;
     case CPP_PRAGMA:
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
-      token->pragma_kind = TREE_INT_CST_LOW (token->value);
+      token->pragma_kind = (enum pragma_kind) TREE_INT_CST_LOW (token->value);
       token->value = NULL;
       break;
     default:
@@ -6312,7 +6312,7 @@ static tree
 c_parser_objc_type_name (c_parser *parser)
 {
   tree quals = NULL_TREE;
-  struct c_type_name *typename = NULL;
+  struct c_type_name *type_name = NULL;
   tree type = NULL_TREE;
   while (true)
     {
@@ -6332,9 +6332,9 @@ c_parser_objc_type_name (c_parser *parser)
 	break;
     }
   if (c_parser_next_token_starts_typename (parser))
-    typename = c_parser_type_name (parser);
-  if (typename)
-    type = groktypename (typename);
+    type_name = c_parser_type_name (parser);
+  if (type_name)
+    type = groktypename (type_name);
   return build_tree_list (quals, type);
 }
 
@@ -6848,7 +6848,8 @@ c_parser_omp_clause_name (c_parser *parser)
 /* Validate that a clause of the given type does not already exist.  */
 
 static void
-check_no_duplicate_clause (tree clauses, enum tree_code code, const char *name)
+check_no_duplicate_clause (tree clauses, enum omp_clause_code code,
+			   const char *name)
 {
   tree c;
 
@@ -6914,7 +6915,8 @@ c_parser_omp_variable_list (c_parser *parser, enum omp_clause_code kind,
    common case for omp clauses.  */
 
 static tree
-c_parser_omp_var_list_parens (c_parser *parser, enum tree_code kind, tree list)
+c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
+			      tree list)
 {
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
@@ -7596,7 +7598,7 @@ c_parser_omp_flush (c_parser *parser)
 {
   c_parser_consume_pragma (parser);
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
-    c_parser_omp_var_list_parens (parser, 0, NULL);
+    c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
   else if (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     c_parser_error (parser, "expected %<(%> or end of line");
   c_parser_skip_to_pragma_eol (parser);
@@ -8231,7 +8233,7 @@ c_parser_omp_threadprivate (c_parser *parser)
   tree vars, t;
 
   c_parser_consume_pragma (parser);
-  vars = c_parser_omp_var_list_parens (parser, 0, NULL);
+  vars = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
 
   /* Mark every variable in VARS to be assigned thread local storage.  */
   for (t = vars; t; t = TREE_CHAIN (t))

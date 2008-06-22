@@ -344,7 +344,7 @@ init_reswords (void)
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);
-      C_RID_CODE (id) = reswords[i].rid;
+      C_SET_RID_CODE (id, reswords[i].rid);
       ridpointers [(int) reswords[i].rid] = id;
       if (! (reswords[i].disable & mask))
 	C_IS_RESERVED_WORD (id) = 1;

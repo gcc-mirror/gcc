@@ -1,3 +1,53 @@
+2008-06-22  Ian Lance Taylor  <iant@google.com>
+
+	* c-lex.c (narrowest_unsigned_type): Change itk to int.
+	(narrowest_signed_type): Likewise.
+	* c-typeck.c (c_common_type): Change local variable mclass to enum
+	mode_class, twice.
+	(parser_build_binary_op): Compare the TREE_CODE_CLASS with
+	tcc_comparison, not the tree code itself.
+	* c-common.c (def_fn_type): Pass int, not an enum, to va_arg.
+	(c_expand_expr): Cast modifier to enum expand_modifier.
+	* c-common.h (C_RID_CODE): Add casts.
+	(C_SET_RID_CODE): Define.
+	* c-parser.c (c_parse_init): Use C_SET_RID_CODE.
+	(c_lex_one_token): Add cast to avoid warning.
+	(c_parser_objc_type_name): Rename local typename to type_name.
+	(check_no_duplicate_clause): Change code parameter to enum
+	omp_clause_code.
+	(c_parser_omp_var_list_parens): Change kind parameter to enum
+	omp_clause_code.
+	(c_parser_omp_flush): Pass OMP_CLAUSE_ERROR, not 0, to
+	c_parser_omp_list_var_parens.
+	(c_parser_omp_threadprivate): Likewise.
+	* cp/lex.c (init_reswords): Use C_SET_RID_CODE.
+	* cp/parser.c (cp_lexer_get_preprocessor_token): Likewise.
+	* c-format.c (NO_FMT): Define.
+	(printf_length_specs): Use NO_FMT.
+	(asm_fprintf_length_specs): Likewise.
+	(gcc_diag_length_specs): Likewise.
+	(scanf_length_specs): Likewise.
+	(strfmon_length_specs): Likewise.
+	(gcc_gfc_length_specs): Likewise.
+	(printf_flag_specs): Change 0 to STD_C89.
+	(asm_fprintf_flag_specs): Likewise.
+	(gcc_diag_flag_specs): Likewise.
+	(gcc_cxxdiag_flag_specs): Likewise.
+	(scanf_flag_specs): Likewise.
+	(strftime_flag_specs): Likewise.
+	(strfmon_flag_specs): Likewise.
+	(print_char_table): Likewise.
+	(asm_fprintf_char_table): Likewise.
+	(gcc_diag_char_table): Likewise.
+	(gcc_tdiag_char_table): Likewise.
+	(gcc_cdiag_char_table): Likewise.
+	(gcc_cxxdiag_char_table): Likewise.
+	(gcc_gfc_char_table): Likewise.
+	(scan_char_table): Likewise.
+	(time_char_table): Likewis.
+	(monetary_char_table): Likewise.
+	* c-format.h (BADLEN): Likewise.
+
 2008-06-21  Ian Lance Taylor  <iant@google.com>
 
 	* tree.h (enum tree_code): Include all-tree.def, not tree.def.

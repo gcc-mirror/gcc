@@ -117,7 +117,7 @@ typedef struct
 
 /* Macros to fill out tables of these.  */
 #define NOARGUMENTS	{ T89_V, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
-#define BADLEN	{ 0, NULL, NULL }
+#define BADLEN	{ STD_C89, NULL, NULL }
 #define NOLENGTHS	{ BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
 
 

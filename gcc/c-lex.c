@@ -471,7 +471,7 @@ narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
 			 unsigned HOST_WIDE_INT high,
 			 unsigned int flags)
 {
-  enum integer_type_kind itk;
+  int itk;
 
   if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
     itk = itk_unsigned_int;
@@ -487,7 +487,7 @@ narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
       if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
 	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
 	      && TREE_INT_CST_LOW (upper) >= low))
-	return itk;
+	return (enum integer_type_kind) itk;
     }
 
   return itk_none;
@@ -498,7 +498,7 @@ static enum integer_type_kind
 narrowest_signed_type (unsigned HOST_WIDE_INT low,
 		       unsigned HOST_WIDE_INT high, unsigned int flags)
 {
-  enum integer_type_kind itk;
+  int itk;
 
   if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
     itk = itk_int;
@@ -515,7 +515,7 @@ narrowest_signed_type (unsigned HOST_WIDE_INT low,
       if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
 	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
 	      && TREE_INT_CST_LOW (upper) >= low))
-	return itk;
+	return (enum integer_type_kind) itk;
     }
 
   return itk_none;
