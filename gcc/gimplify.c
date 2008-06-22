@@ -4308,14 +4308,20 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
   for (i = 0, link = ASM_OUTPUTS (expr); link; ++i, link = TREE_CHAIN (link))
     {
       size_t constraint_len;
+      bool ok;
       oconstraints[i] = constraint
 	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
       constraint_len = strlen (constraint);
       if (constraint_len == 0)
         continue;
 
-      parse_output_constraint (&constraint, i, 0, 0,
-			       &allows_mem, &allows_reg, &is_inout);
+      ok = parse_output_constraint (&constraint, i, 0, 0,
+				    &allows_mem, &allows_reg, &is_inout);
+      if (!ok)
+	{
+	  ret = GS_ERROR;
+	  is_inout = false;
+	}
 
       if (!allows_reg && allows_mem)
 	mark_addressable (TREE_VALUE (link));

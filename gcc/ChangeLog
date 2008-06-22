@@ -1,3 +1,10 @@
+2008-06-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	PR middle-end/34906
+	* gimplify.c (gimplify_asm_expr): Check the return code of
+	parse_output_constraint call, set function return and is_inout
+	value if it failed.
+
 2008-06-22  Ian Lance Taylor  <iant@google.com>
 
 	* c-lex.c (narrowest_unsigned_type): Change itk to int.
