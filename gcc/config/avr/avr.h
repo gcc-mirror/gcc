@@ -526,6 +526,8 @@ do {									    \
 
 #define TARGET_ASM_DESTRUCTOR avr_asm_out_dtor
 
+#define SUPPORTS_INIT_PRIORITY 0
+
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 
 #define ASM_COMMENT_START " ; "
