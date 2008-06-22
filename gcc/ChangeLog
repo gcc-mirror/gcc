@@ -1,3 +1,7 @@
+2008-06-22  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* config/avr/avr.h (SUPPORTS_INIT_PRIORITY): Define.
+	
 2008-06-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR middle-end/34906
