@@ -167,7 +167,7 @@ cpp_define_builtins (cpp_reader *pfile)
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
   if (gfc_option.flag_openmp)
-    cpp_define (pfile, "_OPENMP=200505");
+    cpp_define (pfile, "_OPENMP=200805");
 
 
   /* More builtins that might be useful, but are not documented

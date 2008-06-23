@@ -1,3 +1,8 @@
+2008-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/36597
+	* cpp.c (cpp_define_builtins): Change _OPENMP value to 200805.
+
 2008-06-20  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 
