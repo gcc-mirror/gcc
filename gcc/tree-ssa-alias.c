@@ -866,7 +866,8 @@ mem_sym_score (mem_sym_stats_t mp)
      the list.  They are not stored in partitions, but they are used
      for computing overall statistics.  */
   if (TREE_CODE (mp->var) == STRUCT_FIELD_TAG
-      && SFT_UNPARTITIONABLE_P (mp->var))
+      && SFT_UNPARTITIONABLE_P (mp->var)
+      && !is_call_clobbered (mp->var))
     return LONG_MAX;
 
   return mp->frequency_writes * 64 + mp->frequency_reads * 32
@@ -1573,6 +1574,9 @@ compute_memory_partitions (void)
   VEC(tree,heap) *tags;
   struct mem_ref_stats_d *mem_ref_stats;
   int prev_max_aliased_vops;
+#ifdef ENABLE_CHECKING
+  referenced_var_iterator rvi;
+#endif
 
   mem_ref_stats = gimple_mem_ref_stats (cfun);
   gcc_assert (mem_ref_stats->num_vuses == 0 && mem_ref_stats->num_vdefs == 0);
@@ -1639,11 +1643,67 @@ compute_memory_partitions (void)
 	 fields.  See add_vars_for_offset for details.  */
       if (TREE_CODE (mp_p->var) == STRUCT_FIELD_TAG
 	  && SFT_UNPARTITIONABLE_P (mp_p->var))
-	continue;
+	{
+	  subvar_t subvars;
+	  unsigned i;
+	  tree subvar;
 
-      mpt = find_partition_for (mp_p);
+	  /* For call clobbered we can partition them because we
+	     are sure all subvars end up in the same partition.  */
+	  if (!is_call_clobbered (mp_p->var))
+	    continue;
+
+	  mpt = find_partition_for (mp_p);
+	  estimate_vop_reduction (mem_ref_stats, mp_p, mpt);
+
+	  /* If we encounter a call-clobbered but unpartitionable SFT
+	     partition all SFTs of its parent variable.  */
+	  subvars = get_subvars_for_var (SFT_PARENT_VAR (mp_p->var));
+	  for (i = 0; VEC_iterate (tree, subvars, i, subvar); ++i)
+	    {
+	      if (!var_ann (subvar)->mpt)
+		{
+		  set_memory_partition (subvar, mpt);
+		  mark_sym_for_renaming (subvar);
+		}
+	      else
+		gcc_assert (var_ann (subvar)->mpt == mpt);
+	    }
+
+	  /* ???  We possibly underestimate the VOP reduction if
+	     we do not encounter all subvars before we are below
+	     the threshold.  We could fix this by sorting in a way
+	     that all subvars of a var appear before all
+	     unpartitionable vars of it.  */
+	  continue;
+	}
+
+      /* We might encounter an already partitioned symbol due to
+         the SFT handling above.  Deal with that.  */
+      if (var_ann (mp_p->var)->mpt)
+	mpt = var_ann (mp_p->var)->mpt;
+      else
+	mpt = find_partition_for (mp_p);
       estimate_vop_reduction (mem_ref_stats, mp_p, mpt);
     }
+
+#ifdef ENABLE_CHECKING
+  /* For all partitioned unpartitionable subvars make sure all
+     subvars of its parent var are partitioned into the same partition.  */
+  FOR_EACH_REFERENCED_VAR (tag, rvi)
+    if (TREE_CODE (tag) == STRUCT_FIELD_TAG
+	&& SFT_UNPARTITIONABLE_P (tag)
+	&& var_ann (tag)->mpt != NULL_TREE)
+      {
+	subvar_t subvars;
+	unsigned i;
+	tree subvar;
+
+	subvars = get_subvars_for_var (SFT_PARENT_VAR (tag));
+	for (i = 0; VEC_iterate (tree, subvars, i, subvar); ++i)
+	  gcc_assert (var_ann (subvar)->mpt == var_ann (tag)->mpt);
+      }
+#endif
 
   /* After partitions have been created, rewrite alias sets to use
      them instead of the original symbols.  This way, if the alias set

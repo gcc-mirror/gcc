@@ -1,3 +1,12 @@
+2008-06-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36519
+	* tree-ssa-alias.c (mem_sym_score): Count call-clobbered
+	unpartitionable SFTs in the usual way.
+	(compute_memory_partitions): Do partition call-clobbered
+	unpartitionable SFTs, but make sure to partition all other
+	SFTs of its parent var into the same partition.
+
 2008-06-19  Uros Bizjak  <ubizjak@gmail.com>
 	    Ian Lance Taylor  <iant@google.com>
 
