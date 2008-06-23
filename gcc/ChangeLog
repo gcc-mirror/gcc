@@ -1,3 +1,9 @@
+2008-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36508
+	* tree-ssa-pre.c (compute_antic): Allow num_iterations up to
+	499, don't check it at all in release compilers.
+
 2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*fop_<mode>_1_i387): Use SSE_FLOAT_MODE_P
