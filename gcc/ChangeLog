@@ -1,3 +1,8 @@
+2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/PR36584
+	* calls.c (expand_call): Increase alignment for recursive functions.
+
 2008-06-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_function_value): Add new 'outgoing' argument.
@@ -147,8 +152,7 @@
 
 	* ggc.h (GGC_RESIZEVAR): New, reorder macros.
 	* tracer.c (tail_duplicate): Fix for -Wc++-compat.
-	* tree-affine.c (aff_combination_expand, free_name_expansion):
-	Likewise.
+	* tree-affine.c (aff_combination_expand, free_name_expansion): Likewise.
 	* tree-cfg.c (replace_by_duplicate_decl, replace_ssa_name,
 	move_stmt_r, new_label_mapper): Likewise.
 	* tree-complex.c (cvc_lookup): Likewise.

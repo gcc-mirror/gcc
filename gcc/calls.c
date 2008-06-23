@@ -2298,11 +2298,9 @@ expand_call (tree exp, rtx target, int ignore)
       || !lang_hooks.decls.ok_for_sibcall (fndecl))
     try_tail_call = 0;
 
-  /* Ensure current function's preferred stack boundary is at least
-     what we need.  We don't have to increase alignment for recursive
-     functions.  */
-  if (crtl->preferred_stack_boundary < preferred_stack_boundary
-      && fndecl != current_function_decl)
+  /* Ensure current function's preferred stack
+     boundary is at least what we need.  */
+  if (crtl->preferred_stack_boundary < preferred_stack_boundary)
     crtl->preferred_stack_boundary = preferred_stack_boundary;
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
