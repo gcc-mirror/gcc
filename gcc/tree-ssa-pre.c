@@ -2016,8 +2016,10 @@ compute_antic (void)
 						      block->index));
 	    }
 	}
+#ifdef ENABLE_CHECKING
       /* Theoretically possible, but *highly* unlikely.  */
-      gcc_assert (num_iterations < 50);
+      gcc_assert (num_iterations < 500);
+#endif
     }
 
   if (dump_file && (dump_flags & TDF_STATS))
@@ -2047,8 +2049,10 @@ compute_antic (void)
 							    block->index));
 		}
 	    }
+#ifdef ENABLE_CHECKING
 	  /* Theoretically possible, but *highly* unlikely.  */
-	  gcc_assert (num_iterations < 50);
+	  gcc_assert (num_iterations < 500);
+#endif
 	}
       if (dump_file && (dump_flags & TDF_STATS))
 	fprintf (dump_file, "compute_partial_antic required %d iterations\n",
