@@ -1,5 +1,9 @@
 2008-06-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/36533
+	* emit-rtl.c (set_reg_attrs_from_value): Do nothing if
+	REG is a hard register.
+
 	PR tree-optimization/36508
 	* tree-ssa-pre.c (compute_antic): Allow num_iterations up to
 	499, don't check it at all in release compilers.
