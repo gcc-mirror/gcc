@@ -1,3 +1,10 @@
+2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*fop_<mode>_1_i387): Use SSE_FLOAT_MODE_P
+	together with SSE_TARGET_MATH to disable insn pattern.
+	(*fop_<MODEF:mode>_2_i387): Ditto.
+	(*fop_<MODEF:mode>_3_i387): Ditto.
+
 2008-06-22  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* config/avr/avr.h (SUPPORTS_INIT_PRIORITY): Define.
@@ -143,10 +150,8 @@
 	create_stores_for_reduction, create_loads_and_stores_for_name):
 	Likewise.
 	* tree-phinodes.c (allocate_phi_node): Likewise.
-	* tree-predcom.c (order_drefs, execute_pred_commoning_cbck):
-	Likewise.
-	* tree-sra.c (sra_elt_hash, sra_elt_eq, lookup_element):
-	Likewise.
+	* tree-predcom.c (order_drefs, execute_pred_commoning_cbck): Likewise.
+	* tree-sra.c (sra_elt_hash, sra_elt_eq, lookup_element): Likewise.
 	* tree-ssa-alias.c (get_mem_sym_stats_for): Likewise.
 	* tree-ssa-coalesce.c (compare_pairs): Likewise.
 	* tree-ssa-loop-im.c (mem_ref_in_stmt, memref_hash, memref_eq,
@@ -176,8 +181,7 @@
 	unshare_variable, variable_union_info_cmp_pos, variable_union,
 	dataflow_set_different_1, dataflow_set_different_2,
 	vt_find_locations, variable_was_changed, set_variable_part,
-	emit_notes_for_differences_1, emit_notes_for_differences_2):
-	Likewise.
+	emit_notes_for_differences_1, emit_notes_for_differences_2): Likewise.
 	* varasm.c (prefix_name, emutls_decl, section_entry_eq,
 	section_entry_hash, object_block_entry_eq,
 	object_block_entry_hash, create_block_symbol,
