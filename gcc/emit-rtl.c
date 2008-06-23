@@ -960,6 +960,12 @@ set_reg_attrs_from_value (rtx reg, rtx x)
 {
   int offset;
 
+  /* Hard registers can be reused for multiple purposes within the same
+     function, so setting REG_ATTRS, REG_POINTER and REG_POINTER_ALIGN
+     on them is wrong.  */
+  if (HARD_REGISTER_P (reg))
+    return;
+
   offset = byte_lowpart_offset (GET_MODE (reg), GET_MODE (x));
   if (MEM_P (x))
     {
