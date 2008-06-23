@@ -2094,8 +2094,10 @@ compute_antic (void)
 						      block->index));
 	    }
 	}
+#ifdef ENABLE_CHECKING
       /* Theoretically possible, but *highly* unlikely.  */
-      gcc_assert (num_iterations < 50);
+      gcc_assert (num_iterations < 500);
+#endif
     }
 
   statistics_histogram_event (cfun, "compute_antic iterations",
@@ -2124,8 +2126,10 @@ compute_antic (void)
 							    block->index));
 		}
 	    }
+#ifdef ENABLE_CHECKING
 	  /* Theoretically possible, but *highly* unlikely.  */
-	  gcc_assert (num_iterations < 50);
+	  gcc_assert (num_iterations < 500);
+#endif
 	}
       statistics_histogram_event (cfun, "compute_partial_antic iterations",
 				  num_iterations);
