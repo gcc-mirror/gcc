@@ -385,8 +385,6 @@ extern int avr_reg_order[];
 
 #define RET_REGISTER avr_ret_register ()
 
-#define FUNCTION_VALUE(VALTYPE, FUNC) avr_function_value (VALTYPE, FUNC)
-
 #define LIBCALL_VALUE(MODE)  avr_libcall_value (MODE)
 
 #define FUNCTION_VALUE_REGNO_P(N) ((int) (N) == RET_REGISTER)

@@ -71,6 +71,7 @@ static void avr_file_start (void);
 static void avr_file_end (void);
 static void avr_asm_function_end_prologue (FILE *);
 static void avr_asm_function_begin_epilogue (FILE *);
+static rtx avr_function_value (const_tree, const_tree, bool);
 static void avr_insert_attributes (tree, tree *);
 static void avr_asm_init_sections (void);
 static unsigned int avr_section_type_flags (tree, const char *, int);
@@ -308,6 +309,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_FUNCTION_END_PROLOGUE avr_asm_function_end_prologue
 #undef TARGET_ASM_FUNCTION_BEGIN_EPILOGUE
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE avr_asm_function_begin_epilogue
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE avr_function_value
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
@@ -5703,7 +5706,9 @@ avr_libcall_value (enum machine_mode mode)
    function returns a value of data type VALTYPE.  */
 
 rtx
-avr_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
+avr_function_value (const_tree type, 
+		    const_tree func ATTRIBUTE_UNUSED, 
+		    bool outgoing ATTRIBUTE_UNUSED)
 {
   unsigned int offs;
   

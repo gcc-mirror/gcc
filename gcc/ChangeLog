@@ -1,3 +1,10 @@
+2008-06-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_function_value): Add new 'outgoing' argument.
+	(TARGET_FUNCTION_VALUE): New define.
+	* config/avr/avr-protos.h (avr_function_value): Remove declaration.
+	* config/avr/avr.h (FUNCTION_VALUE): Remove.
+
 2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fmodxf3): Change sequence of move instructions.
