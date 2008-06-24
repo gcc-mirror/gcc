@@ -1,3 +1,9 @@
+2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/36584
+	* testsuite/gcc.dg/pr36584.c: New test.
+	* testsuite/gcc.target/i386/local2.c: Remove invalid test.
+
 2008-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/36533
