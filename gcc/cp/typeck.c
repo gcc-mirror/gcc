@@ -2850,8 +2850,8 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	error ("must use %<.*%> or %<->*%> to call pointer-to-member "
-	       "function in %<%E (...)%>",
-	       original);
+	       "function in %<%E (...)%>, e.g. %<(... ->* %E) (...)%>",
+	       original, original);
       return error_mark_node;
     }
 
