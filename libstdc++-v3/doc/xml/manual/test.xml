@@ -113,8 +113,6 @@ util		  Files for libtestc++, utilities and testing routines.
 
 <sect2 id="test.naming" xreflabel="test.naming">
 <title>Naming Conventions</title>
-  <para> 
-  </para>
 
    <para>
       In addition, there are some special names and suffixes that are

@@ -34,26 +34,10 @@ overloads are used to dispatch calls from the ISO C++ function
 signature to the appropriate parallel function (or sequential
 function, if no parallel functions are deemed worthy), based on either
 compile-time or run-time conditions.
-</p><p> Compile-time conditions are referred to as "embarrassingly
-parallel," and are denoted with the appropriate dispatch object, i.e.,
-one of <code class="code">__gnu_parallel::sequential_tag</code>,
-<code class="code">__gnu_parallel::parallel_tag</code>,
-<code class="code">__gnu_parallel::balanced_tag</code>,
-<code class="code">__gnu_parallel::unbalanced_tag</code>,
-<code class="code">__gnu_parallel::omp_loop_tag</code>, or
-<code class="code">__gnu_parallel::omp_loop_static_tag</code>.
-</p><p> Run-time conditions depend on the hardware being used, the number
-of threads available, etc., and are denoted by the use of the enum
-<code class="code">__gnu_parallel::parallelism</code>. Values of this enum include
-<code class="code">__gnu_parallel::sequential</code>,
-<code class="code">__gnu_parallel::parallel_unbalanced</code>,
-<code class="code">__gnu_parallel::parallel_balanced</code>,
-<code class="code">__gnu_parallel::parallel_omp_loop</code>,
-<code class="code">__gnu_parallel::parallel_omp_loop_static</code>, or
-<code class="code">__gnu_parallel::parallel_taskqueue</code>.
-</p><p> Putting all this together, the general view of overloads for the
-parallel algorithms look like this:
-</p><div class="itemizedlist"><ul type="disc"><li><p>ISO C++ signature</p></li><li><p>ISO C++ signature + sequential_tag argument</p></li><li><p>ISO C++ signature + parallelism argument</p></li></ul></div><p> Please note that the implementation may use additional functions
+</p><p> The available signature options are specific for the different
+algorithms/algorithm classes.</p><p> The general view of overloads for the parallel algorithms look like this:
+</p><div class="itemizedlist"><ul type="disc"><li><p>ISO C++ signature</p></li><li><p>ISO C++ signature + sequential_tag argument</p></li><li><p>ISO C++ signature + algorithm-specific tag type
+    (several signatures)</p></li></ul></div><p> Please note that the implementation may use additional functions
 (designated with the <code class="code">_switch</code> suffix) to dispatch from the
 ISO C++ signature to the correct parallel version. Also, some of the
 algorithms do not have support for run-time conditions, so the last
@@ -62,8 +46,8 @@ overload is therefore missing.
 Several aspects of the overall runtime environment can be manipulated
 by standard OpenMP function calls.
 </p><p>
-To specify the number of threads to be used for an algorithm, use the
-function <code class="function">omp_set_num_threads</code>. An example:
+To specify the number of threads to be used for the algorithms globally,
+use the function <code class="function">omp_set_num_threads</code>. An example:
 </p><pre class="programlisting">
 #include &lt;stdlib.h&gt;
 #include &lt;omp.h&gt;
@@ -75,11 +59,15 @@ int main()
   omp_set_dynamic(false);
   omp_set_num_threads(threads_wanted);
 
-  // Do work.
+  // Call parallel mode algorithms.
 
   return 0;
 }
 </pre><p>
+ Some algorithms allow the number of threads being set for a particular call,
+ by augmenting the algorithm variant.
+ See the next section for further information.
+</p><p>
 Other parts of the runtime environment able to be manipulated include
 nested parallelism (<code class="function">omp_set_nested</code>), schedule kind
 (<code class="function">omp_set_schedule</code>), and others. See the OpenMP
@@ -88,22 +76,56 @@ documentation for more information.
 To force an algorithm to execute sequentially, even though parallelism
 is switched on in general via the macro <code class="constant">_GLIBCXX_PARALLEL</code>,
 add <code class="classname">__gnu_parallel::sequential_tag()</code> to the end
-of the algorithm's argument list, or explicitly qualify the algorithm
-with the <code class="code">__gnu_parallel::</code> namespace.
+of the algorithm's argument list.
 </p><p>
 Like so:
 </p><pre class="programlisting">
 std::sort(v.begin(), v.end(), __gnu_parallel::sequential_tag());
 </pre><p>
-or
-</p><pre class="programlisting">
-__gnu_serial::sort(v.begin(), v.end());
-</pre><p> 
-In addition, some parallel algorithm variants can be enabled/disabled/selected 
-at compile-time.
+Some parallel algorithm variants can be excluded from compilation by
+preprocessor defines. See the doxygen documentation on
+<code class="code">compiletime_settings.h</code> and <code class="code">features.h</code> for details.
 </p><p>
-See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00446.html" target="_top"><code class="filename">compiletime_settings.h</code></a> and
-See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00505.html" target="_top"><code class="filename">features.h</code></a> for details.
+For some algorithms, the desired variant can be chosen at compile-time by
+appending a tag object. The available options are specific to the particular
+algorithm (class).
+</p><p>
+For the "embarrassingly parallel" algorithms, there is only one "tag object
+type", the enum _Parallelism.
+It takes one of the following values,
+<code class="code">__gnu_parallel::parallel_tag</code>,
+<code class="code">__gnu_parallel::balanced_tag</code>,
+<code class="code">__gnu_parallel::unbalanced_tag</code>,
+<code class="code">__gnu_parallel::omp_loop_tag</code>,
+<code class="code">__gnu_parallel::omp_loop_static_tag</code>.
+This means that the actual parallelization strategy is chosen at run-time.
+(Choosing the variants at compile-time will come soon.)
+</p><p>
+For the following algorithms in general, we have
+<code class="code">__gnu_parallel::parallel_tag</code> and
+<code class="code">__gnu_parallel::default_parallel_tag</code>, in addition to
+<code class="code">__gnu_parallel::sequential_tag</code>.
+<code class="code">__gnu_parallel::default_parallel_tag</code> chooses the default 
+algorithm at compiletime, as does omitting the tag.
+<code class="code">__gnu_parallel::parallel_tag</code> postpones the decision to runtime
+(see next section).
+For all tags, the number of threads desired for this call can optionally be
+passed to the respective tag's constructor.
+</p><p>
+The <code class="code">multiway_merge</code> algorithm comes with the additional choices,
+<code class="code">__gnu_parallel::exact_tag</code> and
+<code class="code">__gnu_parallel::sampling_tag</code>.
+Exact and sampling are the two available splitting strategies.
+</p><p>
+For the <code class="code">sort</code> and <code class="code">stable_sort</code> algorithms, there are
+several additional choices, namely
+<code class="code">__gnu_parallel::multiway_mergesort_tag</code>,
+<code class="code">__gnu_parallel::multiway_mergesort_exact_tag</code>, 
+<code class="code">__gnu_parallel::multiway_mergesort_sampling_tag</code>,
+<code class="code">__gnu_parallel::quicksort_tag</code>, and
+<code class="code">__gnu_parallel::balanced_quicksort_tag</code>.
+Multiway mergesort comes with the two splitting strategies for multi-way
+merging. The quicksort options cannot be used for <code class="code">stable_sort</code>.
 </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.settings"></a>Run Time Settings and Defaults</h4></div></div></div><p>
 The default parallelization strategy, the choice of specific algorithm
 strategy, the minimum threshold limits for individual parallel
@@ -112,16 +134,15 @@ desired via manipulation
 of <code class="classname">__gnu_parallel::_Settings</code> member data.
 </p><p>
 First off, the choice of parallelization strategy: serial, parallel,
-or implementation-deduced. This corresponds
+or heuristically deduced. This corresponds
 to <code class="code">__gnu_parallel::_Settings::algorithm_strategy</code> and is a
 value of enum <span class="type">__gnu_parallel::_AlgorithmStrategy</span>
 type. Choices
 include: <span class="type">heuristic</span>, <span class="type">force_sequential</span>,
-and <span class="type">force_parallel</span>. The default is
-implementation-deduced, i.e. <span class="type">heuristic</span>.
+and <span class="type">force_parallel</span>. The default is <span class="type">heuristic</span>.
 </p><p>
-Next, the sub-choices for algorithm implementation. Specific
-algorithms like <code class="function">find</code> or <code class="function">sort</code>
+Next, the sub-choices for algorithm variant, if not fixed at compile-time.
+Specific algorithms like <code class="function">find</code> or <code class="function">sort</code>
 can be implemented in multiple ways: when this is the case,
 a <code class="classname">__gnu_parallel::_Settings</code> member exists to
 pick the default strategy. For
@@ -140,14 +161,22 @@ active <code class="classname">__gnu_parallel::_Settings</code> object.  This
 threshold variable follows the following naming scheme:
 <code class="code">__gnu_parallel::_Settings::[algorithm]_minimal_n</code>.  So,
 for <code class="function">fill</code>, the threshold variable
-is <code class="code">__gnu_parallel::_Settings::fill_minimal_n</code>
+is <code class="code">__gnu_parallel::_Settings::fill_minimal_n</code>,
 </p><p>
 Finally, hardware details like L1/L2 cache size can be hardwired
 via <code class="code">__gnu_parallel::_Settings::L1_cache_size</code> and friends.
 </p><p>
+</p><p>
 All these configuration variables can be changed by the user, if
-desired.  Please
-see <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html" target="_top"><code class="filename">settings.h</code></a>
+desired.
+There exists one global instance of the class <code class="classname">_Settings</code>,
+i. e. it is a singleton. It can be read and written by calling
+<code class="code">__gnu_parallel::_Settings::get</code> and
+<code class="code">__gnu_parallel::_Settings::set</code>, respectively.
+Please note that the first call return a const object, so direct manipulation
+is forbidden.
+See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html" target="_top">
+  <code class="filename">settings.h</code></a>
 for complete details.
 </p><p>
 A small example of tuning the default:
