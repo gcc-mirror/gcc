@@ -1,3 +1,9 @@
+2008-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/23194
+	* typeck.c (cp_build_function_call): Show example syntax in
+	diagnostic.
+
 2008-06-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* typeck.c (composite_pointer_type_r, cxx_sizeof_expr,
