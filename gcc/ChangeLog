@@ -1,3 +1,9 @@
+2008-06-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/36594
+	* builtins.c (expand_builtin_nonlocal_goto): Stabilize the address of
+	the memory instead of the memory itself for the save area.
+
 2008-06-24  Olivier Hainque  <hainque@adacore.com>
             Nicolas Roche  <roche@adacore.com>
 
