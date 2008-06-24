@@ -1,5 +1,9 @@
 2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_algo.h (remove_if): Cast __pred result to bool.
+
+2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/36616
 	* testsuite/22_locale/money_put/put/char/9780-3.cc: Fix expected
 	results for recent glibcs (2.8 and later).

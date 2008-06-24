@@ -712,7 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return   An iterator designating the end of the resulting sequence.
    *
    *  Copies each element in the range @p [first,last) for which
-   *  @p pred returns true to the range beginning at @p result.
+   *  @p pred returns false to the range beginning at @p result.
    *
    *  remove_copy_if() is stable, so the relative order of elements that are
    *  copied is unchanged.
@@ -816,7 +816,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __result = __first;
       ++__first;
       for(; __first != __last; ++__first)
-        if(!__pred(*__first))
+        if(!bool(__pred(*__first)))
           {
             *__result = _GLIBCXX_MOVE(*__first);
             ++__result;
