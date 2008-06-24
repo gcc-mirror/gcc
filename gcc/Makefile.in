@@ -3171,8 +3171,17 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   @all_gtfiles@
 
-GTFILES_H = $(subst /,-, $(patsubst $(srcdir)/%,gt-%, $(patsubst %.c,%.h, \
-		  $(filter %.c, $(GTFILES)))))
+# Compute the list of GT header files from the corresponding C sources,
+# possibly nested within config or language subdirectories.  Match gengtype's
+# behavior in this respect: gt-LANG-file.h for "file" anywhere within a LANG
+# language subdir, gt-file.h otherwise (no subdir indication for config/
+# related sources).
+
+GTFILES_H = $(subst /,-, \
+	    $(shell echo $(patsubst $(srcdir)/%,gt-%, \
+			   $(patsubst %.c,%.h, \
+			     $(filter %.c, $(GTFILES)))) \
+			| sed -e "s;/[^ ]*/;/;g" -e "s;gt-config/;gt-;g"))
 
 GTFILES_LANG_H = $(patsubst [%], gtype-%.h, $(filter [%], $(GTFILES)))
 ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))

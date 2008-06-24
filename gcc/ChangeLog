@@ -1,3 +1,24 @@
+2008-06-24  Olivier Hainque  <hainque@adacore.com>
+            Nicolas Roche  <roche@adacore.com>
+
+	* gengtype.c (srcdir_len): size_t instead of int.
+	(get_file_realbasename): New function.  For F a filename, the real
+	basename of F, with all the path components stripped.
+	(get_file_srcdir_relative_path): New function.  For F a filename, the
+	relative path to F from $(srcdir).
+	(get_file_basename): Rewrite using get_file_srcdir_relative_path and
+	get_file_realbasename.  Adjust the head comment.
+	(get_prefix_langdir_index): New function. For F a filename, return the
+	lang_dir_names[] relative index of the language directory that is
+	a prefix in F.
+	(get_file_langdir): For F a filename, return the name of the language
+	directory where F is located.
+	(get_file_gtfilename): New function. The gt- output file name for an
+	input filename F.
+	(get_output_file_with_visibility): Replace in-line computations with
+	uses of get_file_gtfilename and get_prefix_langdir_index.
+	* Makefile.in (GTFILES_H): Adjust to match what gengtype generates.
+
 2008-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36504

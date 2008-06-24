@@ -148,10 +148,16 @@ static outf_p header_file;
 static const char *srcdir;
 
 /* Length of srcdir name.  */
-static int srcdir_len = 0;
+static size_t srcdir_len = 0;
 
 static outf_p create_file (const char *, const char *);
+
 static const char * get_file_basename (const char *);
+static const char * get_file_realbasename (const char *);
+static const char * get_file_srcdir_relative_path (const char *);
+
+static int get_prefix_langdir_index (const char *);
+static const char * get_file_langdir (const char *);
 
 
 /* Nonzero iff an error has occurred.  */
@@ -1545,41 +1551,114 @@ open_base_files (void)
   }
 }
 
-/* Determine the pathname to F relative to $(srcdir).  */
+/* For F a filename, return the real basename of F, with all the directory
+   components skipped.  */
+
+static const char *
+get_file_realbasename (const char *f)
+{
+  const char * lastslash = strrchr (f, '/');
+  
+  return (lastslash != NULL) ? lastslash + 1 : f;
+}
+
+/* For F a filename, return the relative path to F from $(srcdir) if the
+   latter is a prefix in F, NULL otherwise.  */
+
+static const char *
+get_file_srcdir_relative_path (const char *f)
+{
+  if (strlen (f) > srcdir_len
+      && IS_DIR_SEPARATOR (f[srcdir_len])
+      && memcmp (f, srcdir, srcdir_len) == 0)
+    return f + srcdir_len + 1;
+  else
+    return NULL;
+}
+
+/* For F a filename, return the relative path to F from $(srcdir) if the
+   latter is a prefix in F, or the real basename of F otherwise.  */
 
 static const char *
 get_file_basename (const char *f)
 {
-  const char *basename;
-  unsigned i;
+  const char * srcdir_path = get_file_srcdir_relative_path (f);
 
-  basename = strrchr (f, '/');
+  return (srcdir_path != NULL) ? srcdir_path : get_file_realbasename (f);
+}
 
-  if (!basename)
-    return f;
+/* For F a filename, return the lang_dir_names relative index of the language
+   directory that is a prefix in F, if any, -1 otherwise.  */
 
-  basename++;
+static int
+get_prefix_langdir_index (const char *f)
+{
+  size_t f_len = strlen (f);
+  size_t lang_index;
 
-  for (i = 0; i < num_lang_dirs; i++)
+  for (lang_index = 0; lang_index < num_lang_dirs; lang_index++)
     {
-      const char * s1;
-      const char * s2;
-      int l1;
-      int l2;
-      s1 = basename - strlen (lang_dir_names [i]) - 1;
-      s2 = lang_dir_names [i];
-      l1 = strlen (s1);
-      l2 = strlen (s2);
-      if (l1 >= l2 && IS_DIR_SEPARATOR (s1[-1]) && !memcmp (s1, s2, l2))
-        {
-          basename -= l2 + 1;
-          if ((basename - f - 1) != srcdir_len)
-	    fatal ("filename `%s' should be preceded by $srcdir", f);
-          break;
-        }
+      const char * langdir = lang_dir_names [lang_index];
+      size_t langdir_len = strlen (langdir);
+	  
+      if (f_len > langdir_len
+	  && IS_DIR_SEPARATOR (f[langdir_len])
+	  && memcmp (f, langdir, langdir_len) == 0)
+	return lang_index;
     }
 
-  return basename;
+  return -1;
+}
+
+/* For F a filename, return the name of language directory where F is located,
+   if any, NULL otherwise.  */
+
+static const char *
+get_file_langdir (const char *f)
+{
+  /* Get the relative path to F from $(srcdir) and find the language by
+     comparing the prefix with language directory names.  If F is not even
+     srcdir relative, no point in looking further.  */
+
+  int lang_index;
+  const char * srcdir_relative_path = get_file_srcdir_relative_path (f);
+
+  if (!srcdir_relative_path)
+    return NULL;
+
+  lang_index = get_prefix_langdir_index (srcdir_relative_path);
+
+  return (lang_index >= 0) ? lang_dir_names [lang_index] : NULL;
+}
+
+/* The gt- output file name for F.  */
+
+static const char *
+get_file_gtfilename (const char *f)
+{
+  /* Cook up an initial version of the gt- file name from the file real
+     basename and the language name, if any.  */
+
+  const char *basename = get_file_realbasename (f);
+  const char *langdir = get_file_langdir (f);
+  
+  char * result =
+    (langdir ? xasprintf ("gt-%s-%s", langdir, basename)
+     : xasprintf ("gt-%s", basename));
+
+  /* Then replace all non alphanumerics characters by '-' and change the
+     extenstion to ".h".  We expect the input filename extension was at least
+     one character long.  */
+
+  char *s = result;
+
+  for (; *s != '.'; s++)
+    if (! ISALNUM (*s) && *s != '-')
+      *s = '-';
+
+  memcpy (s, ".h", sizeof (".h"));
+
+  return result;
 }
 
 /* An output file, suitable for definitions, that can see declarations
@@ -1609,13 +1688,7 @@ get_output_file_with_visibility (const char *input_file)
       || (len > 2 && memcmp (basename+len-2, ".y", 2) == 0)
       || (len > 3 && memcmp (basename+len-3, ".in", 3) == 0))
     {
-      char *s;
-
-      output_name = s = xasprintf ("gt-%s", basename);
-      for (; *s != '.'; s++)
-	if (! ISALNUM (*s) && *s != '-')
-	  *s = '-';
-      memcpy (s, ".h", sizeof (".h"));
+      output_name = get_file_gtfilename (input_file); 
       for_name = basename;
     }
   /* Some headers get used by more than one front-end; hence, it
@@ -1641,12 +1714,10 @@ get_output_file_with_visibility (const char *input_file)
     output_name = "gt-objc-objc-act.h", for_name = "objc/objc-act.c";
   else 
     {
-      size_t i;
+      int lang_index = get_prefix_langdir_index (basename);
 
-      for (i = 0; i < num_lang_dirs; i++)
-	if (memcmp (basename, lang_dir_names[i], strlen (lang_dir_names[i])) == 0
-	    && basename[strlen(lang_dir_names[i])] == '/')
-	  return base_files[i];
+      if (lang_index >= 0)
+	return base_files[lang_index];
 
       output_name = "gtype-desc.c";
       for_name = NULL;
