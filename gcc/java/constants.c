@@ -1,6 +1,6 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
-   2007  Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -327,14 +327,14 @@ get_tag_node (int tag)
 /* Given a class, return its constant pool, creating one if necessary.  */
 
 CPool *
-cpool_for_class (tree class)
+cpool_for_class (tree klass)
 {
-  CPool *cpool = TYPE_CPOOL (class);
+  CPool *cpool = TYPE_CPOOL (klass);
 
   if (cpool == NULL)
     {
       cpool = GGC_CNEW (struct CPool);
-      TYPE_CPOOL (class) = cpool;
+      TYPE_CPOOL (klass) = cpool;
     }
   return cpool;
 }
@@ -370,13 +370,13 @@ find_name_and_type_constant_tree (CPool *cpool, tree name, tree type)
 }
 
 /* Look for a field ref that matches DECL in the constant pool of
-   CLASS.  
+   KLASS.  
    Return the index of the entry.  */
 
 int
-alloc_constant_fieldref (tree class, tree decl)
+alloc_constant_fieldref (tree klass, tree decl)
 {
-  CPool *outgoing_cpool = cpool_for_class (class);
+  CPool *outgoing_cpool = cpool_for_class (klass);
   int class_index 
     = find_tree_constant (outgoing_cpool, CONSTANT_Class, 
 			  DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))));

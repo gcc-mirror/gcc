@@ -1,6 +1,6 @@
 /* Utility routines for finding and reading Java(TM) .class files.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005,
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -448,7 +448,7 @@ const char *
 find_class (const char *classname, int classname_length, JCF *jcf)
 {
   int fd;
-  int i, k, class = -1;
+  int i, k, klass = -1;
   struct stat class_buf;
   char *dep_file;
   void *entry;
@@ -478,7 +478,7 @@ find_class (const char *classname, int classname_length, JCF *jcf)
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
       const char *path_name = jcf_path_name (entry);
-      if (class != 0)
+      if (klass != 0)
 	{
 	  int dir_len;
 
@@ -521,12 +521,12 @@ find_class (const char *classname, int classname_length, JCF *jcf)
 	      else
 		continue;
 	    }
-	  class = caching_stat(buffer, &class_buf);
+	  klass = caching_stat(buffer, &class_buf);
 	}
     }
 
   dep_file = buffer;
-  if (!class)
+  if (!klass)
     {
       SOURCE_FRONTEND_DEBUG ((stderr, "[Class selected: %s]\n",
 			      classname+classname_length-

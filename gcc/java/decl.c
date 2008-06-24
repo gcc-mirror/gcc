@@ -1899,15 +1899,15 @@ java_mark_cni_decl_local (tree decl)
 /* Use the preceding two functions and mark all members of the class.  */
 
 void
-java_mark_class_local (tree class)
+java_mark_class_local (tree klass)
 {
   tree t;
 
-  for (t = TYPE_FIELDS (class); t ; t = TREE_CHAIN (t))
+  for (t = TYPE_FIELDS (klass); t ; t = TREE_CHAIN (t))
     if (FIELD_STATIC (t))
       java_mark_decl_local (t);
 
-  for (t = TYPE_METHODS (class); t ; t = TREE_CHAIN (t))
+  for (t = TYPE_METHODS (klass); t ; t = TREE_CHAIN (t))
     if (!METHOD_ABSTRACT (t))
       {
 	if (METHOD_NATIVE (t) && !flag_jni)

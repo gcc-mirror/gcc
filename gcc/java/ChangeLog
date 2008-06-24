@@ -1,3 +1,27 @@
+2008-06-24  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-path.c (jcf_path_init): Don't name variable 'try'.
+	* expr.c (add_type_assertion): Rename argument.
+	(build_java_arrayaccess): Don't name variable 'throw'.
+	(ARRAY_NEW_MULTI): Don't name variable 'class'.
+	* jcf-io.c (find_class): Don't name variable 'class'.
+	* mangle.c (compression_table_add): Don't name variable 'new'.
+	* constants.c (cpool_for_class): Rename argument.
+	(alloc_constant_fieldref): Likewise.
+	* jcf-parse.c (handle_innerclass_attribute): Don't name variable
+	'class'.
+	(read_class): Likewise.
+	(parse_zip_file_entries): Likewise.
+	(process_zip_dir): Likewise.
+	* decl.c (java_mark_class_local): Rename argument.
+	* class.c (GEN_TABLE): Use type_name, not typename.
+	(gen_indirect_dispatch_tables): Likewise.
+	(add_field): Rename argument.
+	(is_compiled_class): Likewise.
+	(safe_layout_class): Likewise.
+	(emit_assertion_table): Likewise.
+	* typeck.c (has_method): Rename argument.
+
 2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (ident_subst, mangled_classname, unmangle_classname,

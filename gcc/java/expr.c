@@ -457,20 +457,20 @@ type_assertion_hash (const void *p)
 }
 
 /* Add an entry to the type assertion table for the given class.  
-   CLASS is the class for which this assertion will be evaluated by the 
+   KLASS is the class for which this assertion will be evaluated by the 
    runtime during loading/initialization.
    ASSERTION_CODE is the 'opcode' or type of this assertion: see java-tree.h.
    OP1 and OP2 are the operands. The tree type of these arguments may be
    specific to each assertion_code. */
 
 void
-add_type_assertion (tree class, int assertion_code, tree op1, tree op2)
+add_type_assertion (tree klass, int assertion_code, tree op1, tree op2)
 {
   htab_t assertions_htab;
   type_assertion as;
   void **as_pp;
 
-  assertions_htab = TYPE_ASSERTIONS (class);
+  assertions_htab = TYPE_ASSERTIONS (klass);
   if (assertions_htab == NULL)
     {
       assertions_htab = htab_create_ggc (7, type_assertion_hash, 
@@ -893,7 +893,7 @@ build_java_indirect_ref (tree type, tree expr, int check)
 tree
 build_java_arrayaccess (tree array, tree type, tree index)
 {
-  tree node, throw = NULL_TREE;
+  tree node, throw_expr = NULL_TREE;
   tree data_field;
   tree ref;
   tree array_type = TREE_TYPE (TREE_TYPE (array));
@@ -921,17 +921,18 @@ build_java_arrayaccess (tree array, tree type, tree index)
 			  len);
       if (! integer_zerop (test))
 	{
-	  throw = build2 (TRUTH_ANDIF_EXPR, int_type_node, test,
-			  build_java_throw_out_of_bounds_exception (index));
+	  throw_expr
+	    = build2 (TRUTH_ANDIF_EXPR, int_type_node, test,
+		      build_java_throw_out_of_bounds_exception (index));
 	  /* allows expansion within COMPOUND */
-	  TREE_SIDE_EFFECTS( throw ) = 1;
+	  TREE_SIDE_EFFECTS( throw_expr ) = 1;
 	}
     }
 
   /* If checking bounds, wrap the index expr with a COMPOUND_EXPR in order
      to have the bounds check evaluated first. */
-  if (throw != NULL_TREE)
-    index = build2 (COMPOUND_EXPR, int_type_node, throw, index);
+  if (throw_expr != NULL_TREE)
+    index = build2 (COMPOUND_EXPR, int_type_node, throw_expr, index);
 
   data_field = lookup_field (&array_type, get_identifier ("data"));
 
@@ -3447,9 +3448,9 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
   }
 #define ARRAY_NEW_MULTI()					\
   {								\
-    tree class = get_class_constant (current_jcf, IMMEDIATE_u2 );	\
+    tree klass = get_class_constant (current_jcf, IMMEDIATE_u2 );	\
     int  ndims = IMMEDIATE_u1;					\
-    expand_java_multianewarray( class, ndims );			\
+    expand_java_multianewarray( klass, ndims );			\
   }
 
 #define UNOP(OPERAND_TYPE, OPERAND_VALUE) \
