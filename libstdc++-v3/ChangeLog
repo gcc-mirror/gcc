@@ -1,6 +1,7 @@
 2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Chalathip Thumkanon  <chalathip@gmail.com>
 
+	PR libstdc++/36612
 	* include/ext/pb_ds/exception.hpp (__throw_container_error,
 	__throw_insert_error, __throw_join_error, __throw_resize_error):
 	Mark inline.
