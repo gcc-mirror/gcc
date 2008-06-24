@@ -164,6 +164,7 @@ ENABLE_LOCAL_SOCKETS_TRUE = @ENABLE_LOCAL_SOCKETS_TRUE@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
 FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
@@ -402,6 +403,7 @@ libfdlibm_la_SOURCES = \
 			namespace.h
 
 AM_LDFLAGS = @CLASSPATH_CONVENIENCE@ 
+AM_CFLAGS = @EXTRA_CFLAGS@
 all: all-am
 
 .SUFFIXES:
@@ -704,9 +706,7 @@ uninstall-am: uninstall-info-am
 	uninstall-info-am
 
 
-# We just want the standard flags for fdlibm since it is an upstream lib
-# and our normal -pedantic -Wall -Werror breaks this lib. So no AM_CFLAGS.
-# We also don't need extra includes, so no AM_CPPFLAGS either.
+# We don't need extra includes, so no AM_CPPFLAGS.
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

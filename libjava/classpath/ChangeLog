@@ -1,3 +1,24 @@
+2008-06-11  Andrew Haley  <aph@redhat.com>
+
+	* native/jawt/Makefile.am,
+	native/fdlibm/Makefile.am,
+	native/jni/java-util/Makefile.am,
+	native/jni/gstreamer-peer/Makefile.am,
+	native/jni/native-lib/Makefile.am,
+	native/jni/gconf-peer/Makefile.am,
+	native/jni/gtk-peer/Makefile.am,
+	native/jni/xmlj/Makefile.am,
+	native/jni/midi-alsa/Makefile.am,
+	native/jni/java-nio/Makefile.am,
+	native/jni/midi-dssi/Makefile.am,
+	native/jni/classpath/Makefile.am,
+	native/jni/java-io/Makefile.am,
+	native/jni/java-lang/Makefile.am,
+	native/jni/java-net/Makefile.am (AM_CFLAGS): Add @EXTRA_CFLAGS@.
+	* configure.ac (EXTRA_CFLAGS): New macro.
+
+	* lib/Makefile.am (resources): Add .svn.
+
 2008-06-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* native/fdlibm/dtoa.c: include stdlib.h, for 'free'.
