@@ -503,6 +503,12 @@ if test "x${COMPILE_JNI}" = xyes; then
     WARNING_CFLAGS='-W -Wall -Wmissing-declarations -Wwrite-strings -Wmissing-prototypes -Wno-long-long'
     AC_SUBST(WARNING_CFLAGS)
 
+    dnl CFLAGS that are used for all native code.  We want to compile
+    dnl everything with unwinder data so that backtrace() will always
+    dnl work.
+    EXTRA_CFLAGS='-fexceptions -fasynchronous-unwind-tables'
+    AC_SUBST(EXTRA_CFLAGS)
+
     dnl Strict warning flags which not every module uses.
     dnl Should probably be configurable.
     STRICT_WARNING_CFLAGS='-Wstrict-prototypes -pedantic'

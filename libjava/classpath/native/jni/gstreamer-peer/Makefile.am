@@ -19,4 +19,5 @@ AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 # gstreamer contain broken prototypes (by design).
 AM_CFLAGS = @WARNING_CFLAGS@ -Wno-write-strings -Wno-missing-field-initializers \
             @ERROR_CFLAGS@ -Wno-unused-parameter @GSTREAMER_BASE_CFLAGS@ \
-            @GDK_CFLAGS@ @GSTREAMER_CFLAGS@ @GSTREAMER_PLUGINS_BASE_CFLAGS@ 
+            @GDK_CFLAGS@ @GSTREAMER_CFLAGS@ @GSTREAMER_PLUGINS_BASE_CFLAGS@ \
+            @EXTRA_CFLAGS@

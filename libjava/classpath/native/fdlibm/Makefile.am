@@ -60,6 +60,6 @@ libfdlibm_la_SOURCES =  \
 
 AM_LDFLAGS = @CLASSPATH_CONVENIENCE@ 
 
-# We just want the standard flags for fdlibm since it is an upstream lib
-# and our normal -pedantic -Wall -Werror breaks this lib. So no AM_CFLAGS.
-# We also don't need extra includes, so no AM_CPPFLAGS either.
+AM_CFLAGS = @EXTRA_CFLAGS@
+
+# We don't need extra includes, so no AM_CPPFLAGS.

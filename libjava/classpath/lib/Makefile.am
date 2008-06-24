@@ -96,7 +96,7 @@ resources: copy-vmresources.sh
           if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
 	  cp $(top_srcdir)/resource/$$p $$p; \
 	done
-	@list=`cd $(top_srcdir)/resource && $(FIND) META-INF -name CVS -prune -o -name \*\.in -prune -o -type f -print`; for p in $$list; do \
+	@list=`cd $(top_srcdir)/resource && $(FIND) META-INF -name CVS -prune -o -name .svn -prune -o -name \*\.in -prune -o -type f -print`; for p in $$list; do \
           dirname=`dirname $$p`; \
           if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
 	  cp $(top_srcdir)/resource/$$p $$p; \

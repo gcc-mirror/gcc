@@ -164,6 +164,7 @@ ENABLE_LOCAL_SOCKETS_TRUE = @ENABLE_LOCAL_SOCKETS_TRUE@
 ERROR_CFLAGS = @ERROR_CFLAGS@
 EXAMPLESDIR = @EXAMPLESDIR@
 EXEEXT = @EXEEXT@
+EXTRA_CFLAGS = @EXTRA_CFLAGS@
 FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
@@ -352,7 +353,7 @@ AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 # Just the WARNING_CFLAGS. We cannot use the strict flags since the gtk
 # headers contain broken prototypes (by design, see gtkitemfactory.h).
 AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@ \
-            @GTK_CFLAGS@ @PANGOFT2_CFLAGS@
+            @GTK_CFLAGS@ @PANGOFT2_CFLAGS@ @EXTRA_CFLAGS@
 
 all: all-am
 

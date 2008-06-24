@@ -12,4 +12,4 @@ AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 # No STRICT_WARNING_CFLAGS here as we use dlsym to load the address of 
 # a function,and ISO C prohibits casting void pointers, like those returned
 # by dlsym, to function pointers.
-AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@
+AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@ @EXTRA_CFLAGS@
