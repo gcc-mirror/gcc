@@ -136,23 +136,6 @@ known_alignment (tree exp)
 {
   unsigned int this_alignment;
   unsigned int lhs, rhs;
-  unsigned int type_alignment;
-
-  /* For pointer expressions, we know that the designated object is always at
-     least as strictly aligned as the designated subtype, so we account for
-     both type and expression information in this case.
-
-     Beware that we can still get a dummy designated subtype here (e.g. Taft
-     Amendement types), in which the alignment information is meaningless and
-     should be ignored.
-
-     We always compute a type_alignment value and return the MAX of it
-     compared with what we get from the expression tree. Just set the
-     type_alignment value to 0 when the type information is to be ignored.  */
-  type_alignment
-    = ((POINTER_TYPE_P (TREE_TYPE (exp))
-	&& !TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp))))
-       ? TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))) : 0);
 
   switch (TREE_CODE (exp))
     {
@@ -171,13 +154,23 @@ known_alignment (tree exp)
       break;
 
     case PLUS_EXPR:
-    case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       /* If two address are added, the alignment of the result is the
 	 minimum of the two alignments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
       this_alignment = MIN (lhs, rhs);
+      break;
+
+    case POINTER_PLUS_EXPR:
+      lhs = known_alignment (TREE_OPERAND (exp, 0));
+      rhs = known_alignment (TREE_OPERAND (exp, 1));
+      /* If we don't know the alignment of the offset, we assume that
+	 of the base.  */
+      if (rhs == 0)
+	this_alignment = lhs;
+      else
+	this_alignment = MIN (lhs, rhs);
       break;
 
     case COND_EXPR:
@@ -188,12 +181,12 @@ known_alignment (tree exp)
       break;
 
     case INTEGER_CST:
-      /* The first part of this represents the lowest bit in the constant,
-	 but is it in bytes, not bits.  */
-      this_alignment
-	= MIN (BITS_PER_UNIT
-		  * (TREE_INT_CST_LOW (exp) & - TREE_INT_CST_LOW (exp)),
-		  BIGGEST_ALIGNMENT);
+      {
+	unsigned HOST_WIDE_INT c = TREE_INT_CST_LOW (exp);
+	/* The first part of this represents the lowest bit in the constant,
+	   but it is originally in bytes, not bits.  */
+	this_alignment = MIN (BITS_PER_UNIT * (c & -c), BIGGEST_ALIGNMENT);
+      }
       break;
 
     case MULT_EXPR:
@@ -202,10 +195,12 @@ known_alignment (tree exp)
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
 
-      if (lhs == 0 || rhs == 0)
-	this_alignment = MIN (BIGGEST_ALIGNMENT, MAX (lhs, rhs));
+      if (lhs == 0)
+	this_alignment = rhs;
+      else if (rhs == 0)
+	this_alignment = lhs;
       else
-	this_alignment = MIN (BIGGEST_ALIGNMENT, lhs * rhs);
+	this_alignment = MIN (lhs * rhs, BIGGEST_ALIGNMENT);
       break;
 
     case BIT_AND_EXPR:
@@ -221,11 +216,19 @@ known_alignment (tree exp)
       break;
 
     default:
-      this_alignment = 0;
+      /* For other pointer expressions, we assume that the pointed-to object
+	 is at least as aligned as the pointed-to type.  Beware that we can
+	 have a dummy type here (e.g. a Taft Amendment type), for which the
+	 alignment is meaningless and should be ignored.  */
+      if (POINTER_TYPE_P (TREE_TYPE (exp))
+	  && !TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp))))
+	this_alignment = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
+      else
+	this_alignment = 0;
       break;
     }
 
-  return MAX (type_alignment, this_alignment);
+  return this_alignment;
 }
 
 /* We have a comparison or assignment operation on two types, T1 and T2,

@@ -1,3 +1,7 @@
+2008-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn5.adb: New test.
+
 2008-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36504

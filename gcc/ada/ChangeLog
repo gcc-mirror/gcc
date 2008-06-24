@@ -1,3 +1,12 @@
+2008-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils2.c (known_alignment): Derive the alignment from pointed-to
+	types only if it is otherwise unknown.
+	<INTEGER_CST>: Tidy.
+	<MULT_EXPR>: Likewise.
+	<POINTER_PLUS_EXPR>: If the alignment of the offset is unknown, use
+	that of the base.
+
 2008-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (components_to_record): Adjust the packedness for the
