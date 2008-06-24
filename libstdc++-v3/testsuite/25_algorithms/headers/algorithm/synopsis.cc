@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -115,6 +115,12 @@ namespace std
     void 
     swap(_Tp&, _Tp& b);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, size_t _Nm>
+    void
+    swap(_Tp (&)[_Nm], _Tp (&)[_Nm]);
+#endif
+
   template<typename _FIter1, typename _FIter2>
     _FIter2 
     swap_ranges(_FIter1 first1, _FIter1, _FIter2);
@@ -179,6 +185,12 @@ namespace std
   template<typename _IIter, typename _OIter, typename _Predicate>
     _OIter 
     remove_copy_if(_IIter, _IIter, _OIter, _Predicate);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _OIter, typename _Predicate>
+    _OIter 
+    copy_if(_IIter, _IIter, _OIter, _Predicate);
+#endif
 
   template<typename _FIter>
     _FIter 

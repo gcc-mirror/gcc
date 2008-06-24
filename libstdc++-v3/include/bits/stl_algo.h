@@ -712,7 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return   An iterator designating the end of the resulting sequence.
    *
    *  Copies each element in the range @p [first,last) for which
-   *  @p pred returns true to the range beginning at @p result.
+   *  @p pred returns false to the range beginning at @p result.
    *
    *  remove_copy_if() is stable, so the relative order of elements that are
    *  copied is unchanged.
@@ -739,6 +739,45 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
       return __result;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief Copy the elements of a sequence for which a predicate is true.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  result  An output iterator.
+   *  @param  pred    A predicate.
+   *  @return   An iterator designating the end of the resulting sequence.
+   *
+   *  Copies each element in the range @p [first,last) for which
+   *  @p pred returns true to the range beginning at @p result.
+   *
+   *  copy_if() is stable, so the relative order of elements that are
+   *  copied is unchanged.
+  */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _Predicate>
+    _OutputIterator
+    copy_if(_InputIterator __first, _InputIterator __last,
+	    _OutputIterator __result, _Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first)
+	if (__pred(*__first))
+	  {
+	    *__result = *__first;
+	    ++__result;
+	  }
+      return __result;
+    }
+#endif
 
   /**
    *  @brief Remove elements from a sequence.
@@ -816,7 +855,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __result = __first;
       ++__first;
       for(; __first != __last; ++__first)
-        if(!__pred(*__first))
+        if(!bool(__pred(*__first)))
           {
             *__result = _GLIBCXX_MOVE(*__first);
             ++__result;

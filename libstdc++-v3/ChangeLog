@@ -1,4 +1,14 @@
 2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (remove_if): Cast __pred result to bool.
+	(copy_if): Add, per N2666.
+	* testsuite/25_algorithms/copy_if/requirements/explicit_instantiation/
+	2.cc: New.
+	* testsuite/25_algorithms/copy_if/requirements/explicit_instantiation/
+	pod.cc: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Update.
+
+2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Chalathip Thumkanon  <chalathip@gmail.com>
 
 	PR libstdc++/36612
