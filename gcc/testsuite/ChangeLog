@@ -1,3 +1,8 @@
+2008-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36504
+	* gcc.dg/pr36504.c: New test.
+
 2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/36584

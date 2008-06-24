@@ -1,3 +1,9 @@
+2008-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36504
+	* tree-ssa-loop-prefetch.c (gather_memory_references_ref): Skip
+	references without base address.
+
 2008-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fmodxf3): Change sequence of move instructions.

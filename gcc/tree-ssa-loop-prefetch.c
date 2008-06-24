@@ -457,6 +457,9 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   HOST_WIDE_INT step, delta;
   struct mem_ref_group *agrp;
 
+  if (get_base_address (ref) == NULL)
+    return false;
+
   if (!analyze_ref (loop, &ref, &base, &step, &delta, stmt))
     return false;
 
