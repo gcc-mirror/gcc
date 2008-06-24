@@ -2829,6 +2829,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   if (gfc_compare_types (&lvalue->ts, &rvalue->ts))
     return SUCCESS;
 
+  /* Only DATA Statements come here.  */
   if (!conform)
     {
       /* Numeric can be converted to any other numeric. And Hollerith can be
@@ -2840,9 +2841,9 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
       if (lvalue->ts.type == BT_LOGICAL && rvalue->ts.type == BT_LOGICAL)
 	return SUCCESS;
 
-      gfc_error ("Incompatible types in assignment at %L; attempted assignment "
-		 "of %s to %s", &rvalue->where, gfc_typename (&rvalue->ts),
-		 gfc_typename (&lvalue->ts));
+      gfc_error ("Incompatible types in DATA statement at %L; attempted "
+		 "conversion of %s to %s", &lvalue->where,
+		 gfc_typename (&rvalue->ts), gfc_typename (&lvalue->ts));
 
       return FAILURE;
     }
