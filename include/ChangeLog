@@ -1,3 +1,8 @@
+2008-06-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (XALLOCA, XDUP, XALLOCAVEC, XDUPVEC, XALLOCAVAR,
+	XDUPVAR, XOBNEWVEC, XOBNEWVAR): New.
+
 2008-03-24  Ian Lance Taylor  <iant@google.com>
 
 	* sha1.h: New file, from gnulib.
