@@ -1,3 +1,11 @@
+2008-06-24  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/32198:
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java
+	(compile): Reverse isAssignableFrom test.
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.class:
+        Rebuilt.
+
 2008-04-17  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/35950:
