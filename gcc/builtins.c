@@ -873,6 +873,9 @@ expand_builtin_nonlocal_goto (tree exp)
   r_label = convert_memory_address (Pmode, r_label);
   r_save_area = expand_normal (t_save_area);
   r_save_area = convert_memory_address (Pmode, r_save_area);
+  /* Copy the address of the save location to a register just in case it was based
+    on the frame pointer.   */
+  r_save_area = copy_to_reg (r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
 		      plus_constant (r_save_area, GET_MODE_SIZE (Pmode)));
@@ -887,7 +890,6 @@ expand_builtin_nonlocal_goto (tree exp)
 #endif
     {
       r_label = copy_to_reg (r_label);
-      r_sp = copy_to_reg (r_sp);
 
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
