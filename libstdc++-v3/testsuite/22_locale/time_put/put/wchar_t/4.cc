@@ -2,7 +2,8 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,12 +49,20 @@ void test04()
   const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
   iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
   wstring result4 = oss.str();
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
+  VERIFY( result4 == L"dim." );
+#else
   VERIFY( result4 == L"dim" );
+#endif
 
   oss.str(empty); // "%d.%m.%Y"
   iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
-  wstring result27 = oss.str(); // "04.04.1971"
+  wstring result27 = oss.str();
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
+  VERIFY( result27 == L"04/04/1971" );
+#else
   VERIFY( result27 == L"04.04.1971" );
+#endif
 
   oss.str(empty); // "%T"
   iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X');
@@ -62,8 +71,12 @@ void test04()
 
   oss.str(empty);
   iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
-  wstring result37 = oss.str(); // "04.04.1971"
+  wstring result37 = oss.str();
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
+  VERIFY( result37 == L"04/04/1971" );
+#else
   VERIFY( result37 == L"04.04.1971" );
+#endif
 
   oss.str(empty);
   iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X', 'E');

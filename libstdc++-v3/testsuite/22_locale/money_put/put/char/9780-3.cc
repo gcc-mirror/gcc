@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "" }
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,8 +38,12 @@ int main()
   long double ld = -1234567890;
   mp.put(oss.rdbuf(), true, oss, ' ', ld); // -EUR  12.345.678,90
   string res = oss.str();
-  
+
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
+  VERIFY( res == "-12.345.678,90 EUR " );
+#else
   VERIFY( res == "-EUR  12.345.678,90" );
+#endif
 
   return 0;
 }
