@@ -412,11 +412,12 @@ unmangle_classname (const char *name, int name_length)
 #define GEN_TABLE(TABLE, NAME, TABLE_TYPE, TYPE)			\
 do									\
 {									\
-  const char *typename = IDENTIFIER_POINTER (mangled_classname ("", TYPE)); \
-  char *buf = (char *) alloca (strlen (typename) + strlen (#NAME "_syms_") + 1); \
+  const char *type_name = IDENTIFIER_POINTER (mangled_classname ("", TYPE)); \
+  char *buf = (char *) alloca (strlen (type_name)			\
+                               + strlen (#NAME "_syms_") + 1);		\
   tree decl;								\
 									\
-  sprintf (buf, #NAME "_%s", typename);					\
+  sprintf (buf, #NAME "_%s", type_name);				\
   TYPE_## TABLE ##_DECL (type) = decl =					\
     build_decl (VAR_DECL, get_identifier (buf), TABLE_TYPE);		\
   DECL_EXTERNAL (decl) = 1;						\
@@ -428,7 +429,7 @@ do									\
   pushdecl (decl);							\
   MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);				\
   DECL_OWNER (decl) = TYPE;						\
-  sprintf (buf, #NAME "_syms_%s", typename);				\
+  sprintf (buf, #NAME "_syms_%s", type_name);				\
   TYPE_## TABLE ##_SYMS_DECL (TYPE) =					\
     build_decl (VAR_DECL, get_identifier (buf), symbols_array_type);	\
   TREE_STATIC (TYPE_## TABLE ##_SYMS_DECL (TYPE)) = 1;			\
@@ -442,13 +443,14 @@ while (0)
 void
 gen_indirect_dispatch_tables (tree type)
 {
-  const char *typename = IDENTIFIER_POINTER (mangled_classname ("", type));
+  const char *type_name = IDENTIFIER_POINTER (mangled_classname ("", type));
   {  
     tree field = NULL;
-    char *buf = (char *) alloca (strlen (typename) + strlen ("_catch_classes_") + 1);
+    char *buf = (char *) alloca (strlen (type_name)
+				 + strlen ("_catch_classes_") + 1);
     tree catch_class_type = make_node (RECORD_TYPE);
 
-    sprintf (buf, "_catch_classes_%s", typename);
+    sprintf (buf, "_catch_classes_%s", type_name);
     PUSH_FIELD (catch_class_type, field, "address", utf8const_ptr_type);
     PUSH_FIELD (catch_class_type, field, "classname", ptr_type_node);
     FINISH_RECORD (catch_class_type);
@@ -837,14 +839,14 @@ add_method (tree this_class, int access_flags, tree name, tree method_sig)
 }
 
 tree
-add_field (tree class, tree name, tree field_type, int flags)
+add_field (tree klass, tree name, tree field_type, int flags)
 {
   int is_static = (flags & ACC_STATIC) != 0;
   tree field;
   field = build_decl (is_static ? VAR_DECL : FIELD_DECL, name, field_type);
-  TREE_CHAIN (field) = TYPE_FIELDS (class);
-  TYPE_FIELDS (class) = field;
-  DECL_CONTEXT (field) = class;
+  TREE_CHAIN (field) = TYPE_FIELDS (klass);
+  TYPE_FIELDS (klass) = field;
+  DECL_CONTEXT (field) = klass;
   MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (field);
 
   if (flags & ACC_PUBLIC) FIELD_PUBLIC (field) = 1;
@@ -871,7 +873,7 @@ add_field (tree class, tree name, tree field_type, int flags)
 	java_hide_decl (field);
       /* Considered external unless we are compiling it into this
 	 object file.  */
-      DECL_EXTERNAL (field) = (is_compiled_class (class) != 2);
+      DECL_EXTERNAL (field) = (is_compiled_class (klass) != 2);
     }
 
   return field;
@@ -2227,43 +2229,43 @@ finish_class (void)
   rest_of_decl_compilation (TYPE_NAME (current_class), 1, 0);
 }
 
-/* Return 2 if CLASS is compiled by this compilation job;
-   return 1 if CLASS can otherwise be assumed to be compiled;
-   return 0 if we cannot assume that CLASS is compiled.
+/* Return 2 if KLASS is compiled by this compilation job;
+   return 1 if KLASS can otherwise be assumed to be compiled;
+   return 0 if we cannot assume that KLASS is compiled.
    Returns 1 for primitive and 0 for array types.  */
 int
-is_compiled_class (tree class)
+is_compiled_class (tree klass)
 {
   int seen_in_zip;
-  if (TREE_CODE (class) == POINTER_TYPE)
-    class = TREE_TYPE (class);
-  if (TREE_CODE (class) != RECORD_TYPE)  /* Primitive types are static. */
+  if (TREE_CODE (klass) == POINTER_TYPE)
+    klass = TREE_TYPE (klass);
+  if (TREE_CODE (klass) != RECORD_TYPE)  /* Primitive types are static. */
     return 1;
-  if (TYPE_ARRAY_P (class))
+  if (TYPE_ARRAY_P (klass))
     return 0;
 
-  seen_in_zip = (TYPE_JCF (class) && JCF_SEEN_IN_ZIP (TYPE_JCF (class)));
-  if (CLASS_FROM_CURRENTLY_COMPILED_P (class))
+  seen_in_zip = (TYPE_JCF (klass) && JCF_SEEN_IN_ZIP (TYPE_JCF (klass)));
+  if (CLASS_FROM_CURRENTLY_COMPILED_P (klass))
     {
       /* The class was seen in the current ZIP file and will be
 	 available as a compiled class in the future but may not have
 	 been loaded already. Load it if necessary. This prevent
 	 build_class_ref () from crashing. */
 
-      if (seen_in_zip && !CLASS_LOADED_P (class) && (class != current_class))
-        load_class (class, 1);
+      if (seen_in_zip && !CLASS_LOADED_P (klass) && (klass != current_class))
+        load_class (klass, 1);
 
       /* We return 2 for class seen in ZIP and class from files
          belonging to the same compilation unit */
       return 2;
     }
 
-  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class)))))
+  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (klass)))))
     {
-      if (!CLASS_LOADED_P (class))
+      if (!CLASS_LOADED_P (klass))
 	{
-	  if (class != current_class)
-	    load_class (class, 1);
+	  if (klass != current_class)
+	    load_class (klass, 1);
 	}
       return 1;
     }
@@ -2382,12 +2384,12 @@ maybe_layout_super_class (tree super_class, tree this_class ATTRIBUTE_UNUSED)
    about the class processed currently.  */
 
 void
-safe_layout_class (tree class)
+safe_layout_class (tree klass)
 {
   tree save_current_class = current_class;
   location_t save_location = input_location;
 
-  layout_class (class);
+  layout_class (klass);
 
   current_class = save_current_class;
   input_location = save_location;
@@ -3010,14 +3012,14 @@ add_assertion_table_entry (void **htab_entry, void *ptr)
   return true;
 }
 
-/* Generate the type assertion table for CLASS, and return its DECL.  */
+/* Generate the type assertion table for KLASS, and return its DECL.  */
 
 static tree
-emit_assertion_table (tree class)
+emit_assertion_table (tree klass)
 {
   tree null_entry, ctor, table_decl;
   tree list = NULL_TREE;
-  htab_t assertions_htab = TYPE_ASSERTIONS (class);
+  htab_t assertions_htab = TYPE_ASSERTIONS (klass);
 
   /* Iterate through the hash table.  */
   htab_traverse (assertions_htab, add_assertion_table_entry, &list);
@@ -3035,7 +3037,7 @@ emit_assertion_table (tree class)
   list = nreverse (list);
   ctor = build_constructor_from_list (assertion_table_type, list);
 
-  table_decl = build_decl (VAR_DECL, mangled_classname ("_type_assert_", class),
+  table_decl = build_decl (VAR_DECL, mangled_classname ("_type_assert_", klass),
 			   assertion_table_type);
 
   TREE_STATIC (table_decl) = 1;

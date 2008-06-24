@@ -1,6 +1,6 @@
 /* Functions related to mangling class names for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2006, 2007
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -782,13 +782,13 @@ compression_table_add (tree type)
 {
   if (compression_next == TREE_VEC_LENGTH (compression_table))
     {
-      tree new = make_tree_vec (2*compression_next);
+      tree new_table = make_tree_vec (2*compression_next);
       int i;
 
       for (i = 0; i < compression_next; i++)
-	TREE_VEC_ELT (new, i) = TREE_VEC_ELT (compression_table, i);
+	TREE_VEC_ELT (new_table, i) = TREE_VEC_ELT (compression_table, i);
 
-      compression_table = new;
+      compression_table = new_table;
     }
   TREE_VEC_ELT (compression_table, compression_next++) = type;
 }

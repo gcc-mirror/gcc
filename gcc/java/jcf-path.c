@@ -1,6 +1,6 @@
 /* Handle CLASSPATH, -classpath, and path searching.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006,
-   2007 Free Software Foundation, Inc.
+   2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -213,7 +213,7 @@ void
 jcf_path_init (void)
 {
   char *cp;
-  char *try, sep[2];
+  char *attempt, sep[2];
   struct stat stat_b;
   int found = 0, len;
 
@@ -227,56 +227,56 @@ jcf_path_init (void)
   GET_ENVIRONMENT (cp, "GCC_EXEC_PREFIX");
   if (cp)
     {
-      try = (char *) alloca (strlen (cp) + 50);
+      attempt = (char *) alloca (strlen (cp) + 50);
       /* The exec prefix can be something like
 	 /usr/local/bin/../lib/gcc-lib/.  We want to change this
 	 into a pointer to the share/java directory.  We support two
 	 configurations: one where prefix and exec-prefix are the
 	 same, and one where exec-prefix is `prefix/SOMETHING'.  */
-      strcpy (try, cp);
-      strcat (try, DIR_UP);
-      strcat (try, sep);
-      strcat (try, DIR_UP);
-      strcat (try, sep);
-      len = strlen (try);
+      strcpy (attempt, cp);
+      strcat (attempt, DIR_UP);
+      strcat (attempt, sep);
+      strcat (attempt, DIR_UP);
+      strcat (attempt, sep);
+      len = strlen (attempt);
 
-      strcpy (try + len, "share");
-      strcat (try, sep);
-      strcat (try, "java");
-      strcat (try, sep);
-      strcat (try, "libgcj-" DEFAULT_TARGET_VERSION ".jar");
-      if (! stat (try, &stat_b))
+      strcpy (attempt + len, "share");
+      strcat (attempt, sep);
+      strcat (attempt, "java");
+      strcat (attempt, sep);
+      strcat (attempt, "libgcj-" DEFAULT_TARGET_VERSION ".jar");
+      if (! stat (attempt, &stat_b))
 	{
-	  add_entry (&sys_dirs, try, 1);
+	  add_entry (&sys_dirs, attempt, 1);
 	  found = 1;
-	  strcpy (&try[strlen (try)
-		      - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],
+	  strcpy (&attempt[strlen (attempt)
+			   - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],
 		  sep);
-	  strcat (try, "ext");
-	  strcat (try, sep);
-	  if (! stat (try, &stat_b))
-	    jcf_path_extdirs_arg (try);
+	  strcat (attempt, "ext");
+	  strcat (attempt, sep);
+	  if (! stat (attempt, &stat_b))
+	    jcf_path_extdirs_arg (attempt);
 	}
       else
 	{
-	  strcpy (try + len, DIR_UP);
-	  strcat (try, sep);
-	  strcat (try, "share");
-	  strcat (try, sep);
-	  strcat (try, "java");
-	  strcat (try, sep);
-	  strcat (try, "libgcj-" DEFAULT_TARGET_VERSION ".jar");
-	  if (! stat (try, &stat_b))
+	  strcpy (attempt + len, DIR_UP);
+	  strcat (attempt, sep);
+	  strcat (attempt, "share");
+	  strcat (attempt, sep);
+	  strcat (attempt, "java");
+	  strcat (attempt, sep);
+	  strcat (attempt, "libgcj-" DEFAULT_TARGET_VERSION ".jar");
+	  if (! stat (attempt, &stat_b))
 	    {
-	      add_entry (&sys_dirs, try, 1);
+	      add_entry (&sys_dirs, attempt, 1);
 	      found = 1;
-	      strcpy (&try[strlen (try)
-			  - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],
+	      strcpy (&attempt[strlen (attempt)
+			       - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],
 		      sep);
-	      strcat (try, "ext");
-	      strcat (try, sep);
-	      if (! stat (try, &stat_b))
-		jcf_path_extdirs_arg (try);
+	      strcat (attempt, "ext");
+	      strcat (attempt, sep);
+	      if (! stat (attempt, &stat_b))
+		jcf_path_extdirs_arg (attempt);
 	    }
 	}
     }
