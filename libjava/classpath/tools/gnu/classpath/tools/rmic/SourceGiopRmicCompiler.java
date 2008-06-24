@@ -1,5 +1,5 @@
 /* SourceGiopRmicCompiler -- Central GIOP-based RMI stub and tie compiler class.
-   Copyright (C) 2006 Free Software Foundation
+   Copyright (C) 2006, 2008 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -292,7 +292,7 @@ public class SourceGiopRmicCompiler
 
             for (int j = 0; j < exc.length; j++)
               {
-                if (RemoteException.class.isAssignableFrom(exc[j]))
+                if (exc[j].isAssignableFrom(RemoteException.class))
                   {
                     remEx = true;
                     break;
