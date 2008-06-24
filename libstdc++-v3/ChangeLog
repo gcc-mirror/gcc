@@ -1,3 +1,10 @@
+2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Chalathip Thumkanon  <chalathip@gmail.com>
+
+	* include/ext/pb_ds/exception.hpp (__throw_container_error,
+	__throw_insert_error, __throw_join_error, __throw_resize_error):
+	Mark inline.
+
 2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* include/Makefile.am: Remove trailing white space, fix typo.
