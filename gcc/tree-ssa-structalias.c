@@ -4001,14 +4001,20 @@ fieldoff_compare (const void *pa, const void *pb)
 {
   const fieldoff_s *foa = (const fieldoff_s *)pa;
   const fieldoff_s *fob = (const fieldoff_s *)pb;
-  HOST_WIDE_INT foasize, fobsize;
+  unsigned HOST_WIDE_INT foasize, fobsize;
 
-  if (foa->offset != fob->offset)
-    return foa->offset - fob->offset;
+  if (foa->offset < fob->offset)
+    return -1;
+  else if (foa->offset > fob->offset)
+    return 1;
 
   foasize = TREE_INT_CST_LOW (foa->size);
   fobsize = TREE_INT_CST_LOW (fob->size);
-  return foasize - fobsize;
+  if (foasize < fobsize)
+    return - 1;
+  else if (foasize > fobsize)
+    return 1;
+  return 0;
 }
 
 /* Sort a fieldstack according to the field offset and sizes.  */
