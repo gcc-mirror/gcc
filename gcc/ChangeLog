@@ -1,3 +1,11 @@
+2008-06-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Set
+	use_backchain_to_restore_sp to true
+	if the offset of the link register save area would go over the 32k - 1
+	offset limit of the load
+	instructions.
+
 2008-06-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/invoke.texi (Optimize Options) <fstrict-aliasing>: Add
