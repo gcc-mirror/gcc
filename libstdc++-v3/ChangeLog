@@ -1,5 +1,21 @@
 2008-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/29_atomics/atomic_flag/cons/default.cc: Avoid -Wall
+	warnings.
+	* testsuite/29_atomics/atomic_flag/cons/aggregate.cc: Likewise.
+	* testsuite/29_atomics/headers/cstdatomic/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/types.c: Likewise.
+	* testsuite/util/testsuite_common_types.h (struct assignable,
+	struct default_constructible, struct copy_constructible,
+	struct explicit_value_constructible): Use a tad of simulated
+	concept checking techniques to avoid spurious warnings.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust dg-error
+	markers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+
+2008-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algo.h (__find_if_not, find_if_not, all_of,
 	any_of, none_of): Add in C++0x, per N2666.
 	* include/bits/algorithmfwd.h: Update.

@@ -76,5 +76,6 @@ void test01()
 
   using std::atomic_address;
 
-  &std::atomic_global_fence_compatibility;
+  const std::atomic_flag* p __attribute__((unused))
+    = &std::atomic_global_fence_compatibility;
 }

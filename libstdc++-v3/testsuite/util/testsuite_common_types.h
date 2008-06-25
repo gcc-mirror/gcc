@@ -300,36 +300,59 @@ namespace __gnu_test
   // Generator to test assignment operator.
   struct assignable
   {
-    template<typename _T>
+    template<typename _Tp>
       void 
       operator()()
       {
-        _T v1;
-        _T v2;
-        v1 = v2;
+	struct _Concept
+	{
+	  void __constraint()
+	  { __v1 = __v2; }
+
+	  _Tp __v1;
+	  _Tp __v2;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
       }
   };
 
   // Generator to test default constructor.
   struct default_constructible
   {
-    template<typename _T>
+    template<typename _Tp>
       void 
       operator()()
       {
-        _T v;
+	struct _Concept
+	{
+	  void __constraint()
+	  { _Tp __v; }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
       }
   };
 
   // Generator to test copy constructor.
   struct copy_constructible
   {
-    template<typename _T>
+    template<typename _Tp>
       void 
       operator()()
       {
-        _T v1;
-        _T v2(v1);
+	struct _Concept
+	{
+	  void __constraint()
+	  { _Tp __v2(__v1); }
+
+	  _Tp __v1;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
       }
   };
 
@@ -340,8 +363,16 @@ namespace __gnu_test
       void 
       operator()()
       {
-        _Tvalue a;
-	_Ttype v(a);
+	struct _Concept
+	{
+	  void __constraint()
+	  { _Ttype __v(__a); }
+	  
+	  _Tvalue __a;
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
       }
   };
 

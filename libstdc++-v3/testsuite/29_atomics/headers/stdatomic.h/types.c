@@ -24,11 +24,11 @@
 void test01()
 {
   typedef memory_order t_01;
-  memory_order t_02 = memory_order_relaxed;
-  memory_order t_03 = memory_order_acquire;
-  memory_order t_04 = memory_order_release;
-  memory_order t_05 = memory_order_acq_rel;
-  memory_order t_06 = memory_order_seq_cst;
+  memory_order t_02 __attribute__((unused)) = memory_order_relaxed;
+  memory_order t_03 __attribute__((unused)) = memory_order_acquire;
+  memory_order t_04 __attribute__((unused)) = memory_order_release;
+  memory_order t_05 __attribute__((unused)) = memory_order_acq_rel;
+  memory_order t_06 __attribute__((unused)) = memory_order_seq_cst;
 
   typedef atomic_flag t_07;
 
@@ -76,5 +76,6 @@ void test01()
 
   typedef atomic_address t_46;
 
-  &atomic_global_fence_compatibility;
+  const atomic_flag* p __attribute__((unused))
+    = &atomic_global_fence_compatibility;
 }
