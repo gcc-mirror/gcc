@@ -260,6 +260,67 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /// This is an overload used by find_if_not() for the Input Iterator case.
+  template<typename _InputIterator, typename _Predicate>
+    inline _InputIterator
+    __find_if_not(_InputIterator __first, _InputIterator __last,
+		  _Predicate __pred, input_iterator_tag)
+    {
+      while (__first != __last && bool(__pred(*__first)))
+	++__first;
+      return __first;
+    }
+
+  /// This is an overload used by find_if_not() for the RAI case.
+  template<typename _RandomAccessIterator, typename _Predicate>
+    _RandomAccessIterator
+    __find_if_not(_RandomAccessIterator __first, _RandomAccessIterator __last,
+		  _Predicate __pred, random_access_iterator_tag)
+    {
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+	__trip_count = (__last - __first) >> 2;
+
+      for (; __trip_count > 0; --__trip_count)
+	{
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+	}
+
+      switch (__last - __first)
+	{
+	case 3:
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+	case 2:
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+	case 1:
+	  if (!bool(__pred(*__first)))
+	    return __first;
+	  ++__first;
+	case 0:
+	default:
+	  return __last;
+	}
+    }
+#endif
+
   // set_difference
   // set_intersection
   // set_symmetric_difference
@@ -666,6 +727,79 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			     std::__iterator_category(__first2),
 			     __comp);
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief Checks that a predicate is true for all the elements
+   *         of a sequence.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  pred    A predicate.
+   *  @return  True if the check is true, false otherwise.
+   *
+   *  Returns true if @p pred is true for each element in the range
+   *  @p [first,last), and false otherwise.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    inline bool
+    all_of(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+    { return __last == std::find_if_not(__first, __last, __pred); }
+
+  /**
+   *  @brief Checks that a predicate is false for all the elements
+   *         of a sequence.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  pred    A predicate.
+   *  @return  True if the check is true, false otherwise.
+   *
+   *  Returns true if @p pred is false for each element in the range
+   *  @p [first,last), and false otherwise.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    inline bool
+    none_of(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+    { return __last == _GLIBCXX_STD_P::find_if(__first, __last, __pred); }
+
+  /**
+   *  @brief Checks that a predicate is false for at least an element
+   *         of a sequence.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  pred    A predicate.
+   *  @return  True if the check is true, false otherwise.
+   *
+   *  Returns true if an element exists in the range @p [first,last) such that
+   *  @p pred is true, and false otherwise.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    inline bool
+    any_of(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+    { return !std::none_of(__first, __last, __pred); }
+
+  /**
+   *  @brief Find the first element in a sequence for which a
+   *         predicate is false.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  pred   A predicate.
+   *  @return   The first iterator @c i in the range @p [first,last)
+   *  such that @p pred(*i) is false, or @p last if no such iterator exists.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    inline _InputIterator
+    find_if_not(_InputIterator __first, _InputIterator __last,
+		_Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	      typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      return std::__find_if_not(__first, __last, __pred,
+				std::__iterator_category(__first));
+    }
+#endif
 
 
   /**
@@ -1171,7 +1305,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _BidirectionalIterator, typename _OutputIterator>
     _OutputIterator
     reverse_copy(_BidirectionalIterator __first, _BidirectionalIterator __last,
-			     _OutputIterator __result)
+		 _OutputIterator __result)
     {
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<

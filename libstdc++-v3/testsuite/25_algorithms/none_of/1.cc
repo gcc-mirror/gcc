@@ -1,4 +1,8 @@
-// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++0x" }
+
+// 2008-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,8 +19,6 @@
 // with this library; see the file COPYING.  If not, write to the Free
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
-
-// 25.1.2 find_if
 
 #include <algorithm>
 #include <testsuite_hooks.h>
@@ -38,8 +40,7 @@ test1()
   bool test __attribute__((unused)) = true;
 
   Container con(array, array);
-  VERIFY( std::find_if(con.begin(), con.end(), 
-		       predicate).ptr == array );
+  VERIFY( std::none_of(con.begin(), con.end(), predicate) );
 }
 
 void
@@ -48,8 +49,7 @@ test2()
   bool test __attribute__((unused)) = true;
   
   Container con(array, array + 1);
-  VERIFY( std::find_if(con.begin(), con.end(), 
-		       predicate).ptr == array + 1 );
+  VERIFY( std::none_of(con.begin(), con.end(), predicate) );
 }
 
 void
@@ -58,8 +58,7 @@ test3()
   bool test __attribute__((unused)) = true;
 
   Container con(array, array + 6);
-  VERIFY( std::find_if(con.begin(), con.end(),
-		       predicate).ptr == array + 3 );
+  VERIFY( !std::none_of(con.begin(), con.end(), predicate) );
 }
 
 int 
