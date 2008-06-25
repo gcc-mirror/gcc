@@ -1,3 +1,11 @@
+2008-06-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35518
+	* fold-const.c (fold_ternary): Strip trivial BIT_FIELD_REFs.
+	* tree-sra.c (instantiate_element): Use fold_build3 to build
+	BIT_FIELD_REFs.
+	(try_instantiate_multiple_fields): Likewise.
+
 2008-06-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000.md: Change all string instruction's clobber to

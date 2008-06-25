@@ -1284,13 +1284,13 @@ instantiate_element (struct sra_elt *elt)
       DECL_SIZE_UNIT (var) = DECL_SIZE_UNIT (elt->element);
 
       elt->in_bitfld_block = 1;
-      elt->replacement = build3 (BIT_FIELD_REF, elt->type, var,
-				 DECL_SIZE (var),
-				 BYTES_BIG_ENDIAN
-				 ? size_binop (MINUS_EXPR,
-					       TYPE_SIZE (elt->type),
-					       DECL_SIZE (var))
-				 : bitsize_int (0));
+      elt->replacement = fold_build3 (BIT_FIELD_REF, elt->type, var,
+				      DECL_SIZE (var),
+				      BYTES_BIG_ENDIAN
+				      ? size_binop (MINUS_EXPR,
+						    TYPE_SIZE (elt->type),
+						    DECL_SIZE (var))
+				      : bitsize_int (0));
     }
 
   /* For vectors, if used on the left hand side with BIT_FIELD_REF,
@@ -1698,8 +1698,7 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
     type = build_nonstandard_integer_type (size, 1);
   gcc_assert (type);
   var = build3 (BIT_FIELD_REF, type, NULL_TREE,
-		bitsize_int (size),
-		bitsize_int (bit));
+		bitsize_int (size), bitsize_int (bit));
 
   block = instantiate_missing_elements_1 (elt, var, type);
   gcc_assert (block && block->is_scalar);
@@ -1709,10 +1708,10 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
   if ((bit & ~alchk)
       || (HOST_WIDE_INT)size != tree_low_cst (DECL_SIZE (var), 1))
     {
-      block->replacement = build3 (BIT_FIELD_REF,
-				   TREE_TYPE (block->element), var,
-				   bitsize_int (size),
-				   bitsize_int (bit & ~alchk));
+      block->replacement = fold_build3 (BIT_FIELD_REF,
+					TREE_TYPE (block->element), var,
+					bitsize_int (size),
+					bitsize_int (bit & ~alchk));
     }
 
   block->in_bitfld_block = 2;
@@ -1727,14 +1726,14 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
 
       gcc_assert (fld && fld->is_scalar && !fld->replacement);
 
-      fld->replacement = build3 (BIT_FIELD_REF, field_type, var,
-				 DECL_SIZE (f),
-				 bitsize_int
-				 ((TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f))
-				   * BITS_PER_UNIT
-				   + (TREE_INT_CST_LOW
-				      (DECL_FIELD_BIT_OFFSET (f))))
-				  & ~alchk));
+      fld->replacement = fold_build3 (BIT_FIELD_REF, field_type, var,
+				      DECL_SIZE (f),
+				      bitsize_int
+				      ((TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f))
+					* BITS_PER_UNIT
+					+ (TREE_INT_CST_LOW
+					   (DECL_FIELD_BIT_OFFSET (f))))
+				       & ~alchk));
       fld->in_bitfld_block = 1;
     }
 
