@@ -1,5 +1,10 @@
 2008-06-25  Richard Guenther  <rguenther@suse.de>
 
+	* tree-vn.c (vn_add): Handle TRUTH_*_EXPR.
+	(vn_lookup): Likewise.
+
+2008-06-25  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/35518
 	* fold-const.c (fold_ternary): Strip trivial BIT_FIELD_REFs.
 	* tree-sra.c (instantiate_element): Use fold_build3 to build

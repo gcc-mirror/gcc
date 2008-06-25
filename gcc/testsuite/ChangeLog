@@ -1,3 +1,7 @@
+2008-06-25  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/20080625-1.C: New testcase.
+
 2008-06-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36371
