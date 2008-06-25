@@ -3181,7 +3181,7 @@ GTFILES_H = $(subst /,-, \
 	    $(shell echo $(patsubst $(srcdir)/%,gt-%, \
 			   $(patsubst %.c,%.h, \
 			     $(filter %.c, $(GTFILES)))) \
-			| sed -e "s;/[^ ]*/;/;g" -e "s;gt-config/;gt-;g"))
+			| sed -e "s|/[^ ]*/|/|g" -e "s|gt-config/|gt-|g"))
 
 GTFILES_LANG_H = $(patsubst [%], gtype-%.h, $(filter [%], $(GTFILES)))
 ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))

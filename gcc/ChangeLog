@@ -1,3 +1,8 @@
+2008-06-25  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (GTFILES_H): Use | instead of ; as separator in
+	sed substitutions.
+
 2008-06-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (fieldoff_compare): Make sure to
