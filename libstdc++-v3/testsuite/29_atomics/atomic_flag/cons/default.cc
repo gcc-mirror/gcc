@@ -32,6 +32,6 @@
 int main()
 {
   // Default constructor.
-  std::atomic_flag a;
+  std::atomic_flag a __attribute__((unused));
   return 0;
 }

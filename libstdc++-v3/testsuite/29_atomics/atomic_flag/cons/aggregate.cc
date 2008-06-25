@@ -33,6 +33,6 @@
 int main()
 {
   // Only safe usage.
-  std::atomic_flag guard = ATOMIC_FLAG_INIT;
+  std::atomic_flag guard __attribute__((unused)) = ATOMIC_FLAG_INIT;
   return 0;
 }

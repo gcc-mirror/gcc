@@ -38,9 +38,9 @@ int main()
   return 0;
 }
 
-// { dg-error "within this context" "" { target *-*-* } 332 } 
-// { dg-error "is private" "" { target *-*-* } 1749 } 
-// { dg-error "is private" "" { target *-*-* } 1781 } 
+// { dg-error "within this context" "" { target *-*-* } 349 } 
+// { dg-error "is private" "" { target *-*-* } 1749 }
+// { dg-error "is private" "" { target *-*-* } 1781 }
 // { dg-error "is private" "" { target *-*-* } 1798 }
 // { dg-error "is private" "" { target *-*-* } 1814 }
 // { dg-error "is private" "" { target *-*-* } 1831 }
