@@ -1,3 +1,8 @@
+2008-06-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vn.c (vn_add): Handle TRUTH_*_EXPR.
+	(vn_lookup): Likewise.
+
 2008-06-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/invoke.texi (Optimize Options) <fstrict-aliasing>: Add

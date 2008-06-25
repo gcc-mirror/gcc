@@ -199,12 +199,19 @@ vn_add (tree expr, tree val)
 	  SSA_NAME_VALUE (expr) = val;
 	  break;
 	}
-      else if (TREE_CODE (expr) == ADDR_EXPR)
+      switch (TREE_CODE (expr))
 	{
+	case ADDR_EXPR:
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case TRUTH_XOR_EXPR:
+	case TRUTH_NOT_EXPR:
 	  vn_unary_op_insert (expr, val);
 	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      /* FALLTHROUGH */
+      break;
     default:
       gcc_unreachable ();
     }
@@ -267,9 +274,18 @@ vn_lookup (tree expr)
 	return vn_reference_lookup (expr, NULL);
       else if (TREE_CODE (expr) == SSA_NAME)
 	return SSA_NAME_VALUE (expr);
-      else if (TREE_CODE (expr) == ADDR_EXPR)
-	return vn_unary_op_lookup (expr);
-      /* FALLTHROUGH */
+      switch (TREE_CODE (expr))
+	{
+	case ADDR_EXPR:
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case TRUTH_XOR_EXPR:
+	case TRUTH_NOT_EXPR:
+	  return vn_unary_op_lookup (expr);
+	default:
+	  gcc_unreachable ();
+	}
+      break;
     default:
       gcc_unreachable ();
     }
