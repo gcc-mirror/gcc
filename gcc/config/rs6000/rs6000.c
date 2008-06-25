@@ -16313,6 +16313,9 @@ rs6000_emit_epilogue (int sibcall)
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
   use_backchain_to_restore_sp = (info->total_size > 32767
+				 || info->total_size
+				     + (info->lr_save_p ? info->lr_save_offset : 0)
+				       > 32767
 				 || (cfun->calls_alloca
 				     && !frame_pointer_needed));
 
