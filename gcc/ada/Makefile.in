@@ -1538,7 +1538,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   system.ads<system-linux-sh4.ads
 
   TOOLS_TARGET_PAIRS =  \
-    mlib-tgt-specific.adb<mlib-tgt-linux.adb \
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-linux.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
