@@ -1,3 +1,7 @@
+2008-06-25  Samuel Tardieu  <sam@rfc1149.net>
+
+	* Makefile.in: Use mlib-tgt-specific-linux.adb for sh4 as well.
+
 2008-06-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils2.c (known_alignment): Derive the alignment from pointed-to
