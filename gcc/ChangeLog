@@ -1,5 +1,10 @@
 2008-06-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	* config/rs6000/rs6000.md: Change all string instruction's clobber to
+	be early clobbers.
+
+2008-06-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Set
 	use_backchain_to_restore_sp to true
 	if the offset of the link register save area would go over the 32k - 1
