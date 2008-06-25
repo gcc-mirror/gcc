@@ -1,3 +1,13 @@
+2008-06-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/invoke.texi (Optimize Options) <fstrict-aliasing>: Add
+	anchor for the type-punning blurb.  Cross-reference "Structures
+	unions enumerations and bit-fields implementation".  Provide a
+	cast-through-pointer example.  Make final sentence self-contained.
+	* doc/implement-c.texi (Structures unions enumerations and
+	bit-fields implementation): Cross-reference the type-punning blurb
+	in the -fstrict-aliasing documentation.
+
 2008-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/36504

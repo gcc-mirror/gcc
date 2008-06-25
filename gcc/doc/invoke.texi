@@ -6129,7 +6129,7 @@ example, an @code{unsigned int} can alias an @code{int}, but not a
 @code{void*} or a @code{double}.  A character type may alias any other
 type.
 
-Pay special attention to code like this:
+@anchor{Type-punning}Pay special attention to code like this:
 @smallexample
 union a_union @{
   int i;
@@ -6146,7 +6146,8 @@ The practice of reading from a different union member than the one most
 recently written to (called ``type-punning'') is common.  Even with
 @option{-fstrict-aliasing}, type-punning is allowed, provided the memory
 is accessed through the union type.  So, the code above will work as
-expected.  However, this code might not:
+expected.  @xref{Structures unions enumerations and bit-fields
+implementation}.  However, this code might not:
 @smallexample
 int f() @{
   a_union t;
@@ -6157,7 +6158,18 @@ int f() @{
 @}
 @end smallexample
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Similarly, access by taking the address, casting the resulting pointer
+and dereferencing the result has undefined behavior, even if the cast
+uses a union type, e.g.:
+@smallexample
+int f() @{
+  double d = 3.0;
+  return ((union a_union *) &d)->i;
+@}
+@end smallexample
+
+The @option{-fstrict-aliasing} option is enabled at levels
+@option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fstrict-overflow
 @opindex fstrict-overflow
