@@ -32,8 +32,26 @@ namespace std
     find(_IIter, _IIter, const _Tp&);
 
   template<typename _IIter, typename _Predicate>
-    _IIter 
+    _IIter
     find_if(_IIter, _IIter, _Predicate);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _Predicate>
+    bool
+    all_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    any_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    none_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    _IIter
+    find_if_not(_IIter, _IIter, _Predicate);
+#endif
 
   template<typename _FIter1, typename _FIter2>
     _FIter1

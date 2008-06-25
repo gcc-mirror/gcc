@@ -169,6 +169,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // generate
   // generate_n
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _Predicate>
+    bool
+    all_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    any_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    none_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    _IIter
+    find_if_not(_IIter, _IIter, _Predicate);
+#endif
+
   template<typename _IIter1, typename _IIter2>
     bool 
     includes(_IIter1, _IIter1, _IIter2, _IIter2);
@@ -461,7 +479,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
     find_first_of(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
   template<typename _IIter, typename _Predicate>
-    _IIter 
+    _IIter
     find_if(_IIter, _IIter, _Predicate);
 
   template<typename _IIter, typename _Funct>
