@@ -433,8 +433,8 @@ used to determine if a function has not been inlined and why not.
 different type (C90 6.3.2.3).}
 
 The relevant bytes of the representation of the object are treated as
-an object of the type used for the access.  This may be a trap
-representation.
+an object of the type used for the access.  @xref{Type-punning}.  This
+may be a trap representation.
 
 @item
 @cite{Whether a ``plain'' @code{int} bit-field is treated as a
