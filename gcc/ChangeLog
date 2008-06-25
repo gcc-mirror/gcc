@@ -1,3 +1,14 @@
+2008-06-25 Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36627
+	* config/i386/i386.md : Change constraints of HImode and QImode
+	immediate operands from "i" to "n".  Change SImode "ni" constraint to
+	"i" and SImode "rmi" constraint to "g".  Remove all constraints
+	from const0_operand and const1_operand predicated operands.
+	(i): Change QImode and HImode attribute from "i" to "n".
+	(*subqi_2): Change HImode operands to QImode.
+	(*subqi_3): Ditto.
+
 2008-06-25  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (GTFILES_H): Use | instead of ; as separator in
@@ -51,7 +62,7 @@
 	the memory instead of the memory itself for the save area.
 
 2008-06-24  Olivier Hainque  <hainque@adacore.com>
-            Nicolas Roche  <roche@adacore.com>
+	    Nicolas Roche  <roche@adacore.com>
 
 	* gengtype.c (srcdir_len): size_t instead of int.
 	(get_file_realbasename): New function.  For F a filename, the real
@@ -79,7 +90,7 @@
 
 2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR middle-end/PR36584
+	PR middle-end/36584
 	* calls.c (expand_call): Increase alignment for recursive functions.
 
 2008-06-23  Anatoly Sokolov  <aesok@post.ru>

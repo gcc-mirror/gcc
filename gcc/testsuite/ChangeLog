@@ -22,7 +22,7 @@
 
 2008-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR middle-end/PR36584
+	PR middle-end/36584
 	* testsuite/gcc.dg/pr36584.c: New test.
 	* testsuite/gcc.target/i386/local2.c: Remove invalid test.
 
