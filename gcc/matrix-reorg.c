@@ -358,7 +358,8 @@ static bool check_transpose_p;
 static hashval_t
 mat_acc_phi_hash (const void *p)
 {
-  const struct matrix_access_phi_node *ma_phi = p;
+  const struct matrix_access_phi_node *const ma_phi =
+    (const struct matrix_access_phi_node *) p;
 
   return htab_hash_pointer (ma_phi->phi);
 }
@@ -368,8 +369,10 @@ mat_acc_phi_hash (const void *p)
 static int
 mat_acc_phi_eq (const void *p1, const void *p2)
 {
-  const struct matrix_access_phi_node *phi1 = p1;
-  const struct matrix_access_phi_node *phi2 = p2;
+  const struct matrix_access_phi_node *const phi1 =
+    (const struct matrix_access_phi_node *) p1;
+  const struct matrix_access_phi_node *const phi2 =
+    (const struct matrix_access_phi_node *) p2;
 
   if (phi1->phi == phi2->phi)
     return 1;
@@ -397,8 +400,8 @@ mtt_info_hash (const void *mtt)
 static int
 mtt_info_eq (const void *mtt1, const void *mtt2)
 {
-  const struct matrix_info *i1 = mtt1;
-  const struct matrix_info *i2 = mtt2;
+  const struct matrix_info *const i1 = (const struct matrix_info *) mtt1;
+  const struct matrix_info *const i2 = (const struct matrix_info *) mtt2;
 
   if (i1->decl == i2->decl)
     return true;
@@ -521,7 +524,7 @@ analyze_matrix_decl (tree var_decl)
 
   /* Check to see if this pointer is already in there.  */
   tmpmi.decl = var_decl;
-  mi = htab_find (matrices_to_reorg, &tmpmi);
+  mi = (struct matrix_info *) htab_find (matrices_to_reorg, &tmpmi);
 
   if (mi)
     return NULL;
@@ -738,13 +741,13 @@ add_allocation_site (struct matrix_info *mi, tree stmt, int level)
      calls like calloc and realloc.  */
   if (!mi->malloc_for_level)
     {
-      mi->malloc_for_level = xcalloc (level + 1, sizeof (tree));
+      mi->malloc_for_level = XCNEWVEC (tree, level + 1);
       mi->max_malloced_level = level + 1;
     }
   else if (mi->max_malloced_level <= level)
     {
       mi->malloc_for_level
-	= xrealloc (mi->malloc_for_level, (level + 1) * sizeof (tree));
+	= XRESIZEVEC (tree, mi->malloc_for_level, level + 1);
 
       /* Zero the newly allocated items.  */
       memset (&(mi->malloc_for_level[mi->max_malloced_level + 1]),
@@ -879,7 +882,7 @@ analyze_matrix_allocation_site (struct matrix_info *mi, tree stmt,
 static int
 analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
 {
-  struct matrix_info *mi = *slot;
+  struct matrix_info *mi = (struct matrix_info *) *slot;
   int min_escape_l = mi->min_indirect_level_escape;
   struct loop *loop;
   affine_iv iv;
@@ -1079,7 +1082,8 @@ analyze_accesses_for_phi_node (struct matrix_info *mi, tree use_stmt,
   struct matrix_access_phi_node tmp_maphi, *maphi, **pmaphi;
 
   tmp_maphi.phi = use_stmt;
-  if ((maphi = htab_find (htab_mat_acc_phi_nodes, &tmp_maphi)))
+  if ((maphi = (struct matrix_access_phi_node *)
+       htab_find (htab_mat_acc_phi_nodes, &tmp_maphi)))
     {
       if (maphi->indirection_level == current_indirect_level)
 	return;
@@ -1358,7 +1362,7 @@ check_var_notmodified_p (tree * tp, int *walk_subtrees, void *data)
 {
   basic_block bb;
   tree t = *tp;
-  tree fn = data;
+  tree fn = (tree) data;
   block_stmt_iterator bsi;
   tree stmt;
 
@@ -1482,7 +1486,7 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
   int level;
   block_stmt_iterator bsi;
   basic_block bb_level_0;
-  struct matrix_info *mi = *slot;
+  struct matrix_info *mi = (struct matrix_info *) *slot;
   sbitmap visited;
 
   if (!mi->malloc_for_level)
@@ -1587,7 +1591,8 @@ find_sites_in_func (bool record)
 	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == VAR_DECL)
 	  {
 	    tmpmi.decl = GIMPLE_STMT_OPERAND (stmt, 0);
-	    if ((mi = htab_find (matrices_to_reorg, &tmpmi)))
+	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
+							&tmpmi)))
 	      {
 		sbitmap_zero (visited_stmts_1);
 		analyze_matrix_allocation_site (mi, stmt, 0, visited_stmts_1);
@@ -1598,7 +1603,8 @@ find_sites_in_func (bool record)
 	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == VAR_DECL)
 	  {
 	    tmpmi.decl = GIMPLE_STMT_OPERAND (stmt, 1);
-	    if ((mi = htab_find (matrices_to_reorg, &tmpmi)))
+	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
+							&tmpmi)))
 	      {
 		sbitmap_zero (visited_stmts_1);
 		analyze_matrix_accesses (mi,
@@ -1645,7 +1651,7 @@ record_all_accesses_in_func (void)
          chain for this SSA_VAR and check for escapes or apply the
          flattening.  */
       tmpmi.decl = rhs;
-      if ((mi = htab_find (matrices_to_reorg, &tmpmi)))
+      if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg, &tmpmi)))
 	{
 	  /* This variable will track the visited PHI nodes, so we can limit
 	     its size to the maximum number of SSA names.  */
@@ -1714,7 +1720,7 @@ static int
 transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   block_stmt_iterator bsi;
-  struct matrix_info *mi = *slot;
+  struct matrix_info *mi = (struct matrix_info *) *slot;
   int min_escape_l = mi->min_indirect_level_escape;
   struct access_site_info *acc_info;
   int i;
@@ -1942,7 +1948,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   int min_escape_l;
   int id;
 
-  mi = *slot;
+  mi = (struct matrix_info *) *slot;
 
   min_escape_l = mi->min_indirect_level_escape;
 
@@ -2184,7 +2190,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 static int
 dump_matrix_reorg_analysis (void **slot, void *data ATTRIBUTE_UNUSED)
 {
-  struct matrix_info *mi = *slot;
+  struct matrix_info *mi = (struct matrix_info *) *slot;
 
   if (!dump_file)
     return 1;

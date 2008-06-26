@@ -131,8 +131,8 @@ void
 prune_options (int *argcp, char ***argvp)
 {
   int argc = *argcp;
-  int *options = xmalloc (argc * sizeof (*options));
-  char **argv = xmalloc (argc * sizeof (char *));
+  int *options = XNEWVEC (int, argc);
+  char **argv = XNEWVEC (char *, argc);
   int i, arg_count, need_prune = 0;
   const struct cl_option *option;
   size_t opt_index;

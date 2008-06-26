@@ -346,7 +346,7 @@ set_pass_for_id (int id, struct opt_pass *pass)
   pass->static_pass_number = id;
   if (passes_by_id_size <= id)
     {
-      passes_by_id = xrealloc (passes_by_id, (id + 1) * sizeof (void *));
+      passes_by_id = XRESIZEVEC (struct opt_pass *, passes_by_id, id + 1);
       memset (passes_by_id + passes_by_id_size, 0,
 	      (id + 1 - passes_by_id_size) * sizeof (void *));
       passes_by_id_size = id + 1;
@@ -449,7 +449,7 @@ next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
     {
       struct opt_pass *new;
 
-      new = xmalloc (sizeof (*new));
+      new = XNEW (struct opt_pass);
       memcpy (new, pass, sizeof (*new));
       new->next = NULL;
 
@@ -884,7 +884,7 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
   else
     {
       gcc_assert (!order);
-      order = ggc_alloc (sizeof (*order) * cgraph_n_nodes);
+      order = GGC_NEWVEC (struct cgraph_node *, cgraph_n_nodes);
       nnodes = cgraph_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
 	{
@@ -1150,7 +1150,7 @@ pass_fini_dump_file (struct opt_pass *pass)
 static void
 update_properties_after_pass (void *data)
 {
-  struct opt_pass *pass = data;
+  struct opt_pass *pass = (struct opt_pass *) data;
   cfun->curr_properties = (cfun->curr_properties | pass->properties_provided)
 		           & ~pass->properties_destroyed;
 }

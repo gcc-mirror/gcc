@@ -40,8 +40,8 @@ void
 add_params (const param_info params[], size_t n)
 {
   /* Allocate enough space for the new parameters.  */
-  compiler_params = xrealloc (compiler_params,
-			      (num_compiler_params + n) * sizeof (param_info));
+  compiler_params = XRESIZEVEC (param_info, compiler_params,
+				num_compiler_params + n);
   /* Copy them into the table.  */
   memcpy (compiler_params + num_compiler_params,
 	  params,

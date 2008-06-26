@@ -52,7 +52,7 @@ ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *mt)
 {
   struct ipa_func_list *temp;
 
-  temp = xcalloc (1, sizeof (struct ipa_func_list));
+  temp = XCNEW (struct ipa_func_list);
   temp->node = mt;
   temp->next = *wl;
   *wl = temp;

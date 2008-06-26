@@ -651,7 +651,7 @@ static void
 add_input_filename (const char *filename)
 {
   num_in_fnames++;
-  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
+  in_fnames = XRESIZEVEC (const char *, in_fnames, num_in_fnames);
   in_fnames[num_in_fnames - 1] = filename;
 }
 
@@ -1134,7 +1134,7 @@ print_filtered_help (unsigned int include_flags,
     }
 
   if (!printed)
-    printed = xcalloc (1, cl_options_count);
+    printed = XCNEWVAR (char, cl_options_count);
 
   for (i = 0; i < cl_options_count; i++)
     {
@@ -2143,7 +2143,7 @@ get_option_state (int option, struct cl_option_state *state)
       state->data = *(const char **) cl_options[option].flag_var;
       if (state->data == 0)
 	state->data = "";
-      state->size = strlen (state->data) + 1;
+      state->size = strlen ((const char *) state->data) + 1;
       break;
     }
   return true;

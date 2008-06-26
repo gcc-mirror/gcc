@@ -226,7 +226,7 @@ print_rtl_graph_with_bb (const char *base, rtx rtx_first)
   rtx tmp_rtx;
   size_t namelen = strlen (base);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + extlen);
+  char *buf = XALLOCAVEC (char, namelen + extlen);
   FILE *fp;
 
   if (basic_block_info == NULL)
@@ -389,7 +389,7 @@ clean_graph_dump_file (const char *base)
 {
   size_t namelen = strlen (base);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + extlen);
+  char *buf = XALLOCAVEC (char, namelen + extlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);
@@ -413,7 +413,7 @@ finish_graph_dump_file (const char *base)
 {
   size_t namelen = strlen (base);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + extlen);
+  char *buf = XALLOCAVEC (char, namelen + extlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);

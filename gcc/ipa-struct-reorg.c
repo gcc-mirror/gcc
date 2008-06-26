@@ -1954,7 +1954,7 @@ gen_var_name (tree orig_decl, unsigned HOST_WIDE_INT i)
      appropriate new name for the new variable.  */
 
   old_name = IDENTIFIER_POINTER (DECL_NAME (orig_decl));
-  prefix = alloca (strlen (old_name) + 1);
+  prefix = XALLOCAVEC (char, strlen (old_name) + 1);
   strcpy (prefix, old_name);
   ASM_FORMAT_PRIVATE_NAME (new_name, prefix, i);
   return get_identifier (new_name);
@@ -2827,7 +2827,7 @@ gen_cluster_name (tree decl, int clust_num, int str_num)
     ASM_FORMAT_PRIVATE_NAME(tmp_name, "struct", str_num);
 
   len = strlen (tmp_name ? tmp_name : orig_name) + strlen ("_sub");
-  prefix = alloca (len + 1);
+  prefix = XALLOCAVEC (char, len + 1);
   memcpy (prefix, tmp_name ? tmp_name : orig_name, 
 	  strlen (tmp_name ? tmp_name : orig_name));
   strcpy (prefix + strlen (tmp_name ? tmp_name : orig_name), "_sub");      

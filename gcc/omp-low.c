@@ -1097,7 +1097,7 @@ debug_all_omp_regions (void)
 struct omp_region *
 new_omp_region (basic_block bb, enum tree_code type, struct omp_region *parent)
 {
-  struct omp_region *region = xcalloc (1, sizeof (*region));
+  struct omp_region *region = XCNEW (struct omp_region);
 
   region->outer = parent;
   region->entry = bb;
@@ -1493,7 +1493,7 @@ create_omp_child_function_name (bool task_copy)
   const char *suffix;
 
   suffix = task_copy ? "_omp_cpyfn" : "_omp_fn";
-  prefix = alloca (len + strlen (suffix) + 1);
+  prefix = XALLOCAVEC (char, len + strlen (suffix) + 1);
   memcpy (prefix, IDENTIFIER_POINTER (name), len);
   strcpy (prefix + len, suffix);
 #ifndef NO_DOT_IN_LABEL
@@ -1853,8 +1853,8 @@ check_omp_nesting_restrictions (tree t, omp_context *ctx)
 static tree
 scan_omp_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct walk_stmt_info *wi = data;
-  omp_context *ctx = wi->info;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  omp_context *ctx = (omp_context *) wi->info;
   tree t = *tp;
 
   if (EXPR_HAS_LOCATION (t))
@@ -5800,8 +5800,8 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
 static tree
 check_combined_parallel (tree *tp, int *walk_subtrees, void *data)
 {
-  struct walk_stmt_info *wi = data;
-  int *info = wi->info;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  int *info = (int *) wi->info;
 
   *walk_subtrees = 0;
   switch (TREE_CODE (*tp))
@@ -6194,7 +6194,7 @@ static tree
 lower_omp_2 (tree *tp, int *walk_subtrees, void *data)
 {
   tree t = *tp;
-  omp_context *ctx = data;
+  omp_context *ctx = (omp_context *) data;
 
   /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
   if (TREE_CODE (t) == VAR_DECL
@@ -6470,7 +6470,7 @@ diagnose_sb_0 (tree *stmt_p, tree branch_ctx, tree label_ctx)
 static tree
 diagnose_sb_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct walk_stmt_info *wi = data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   tree context = (tree) wi->info;
   tree inner_context;
   tree t = *tp;
@@ -6532,7 +6532,7 @@ diagnose_sb_1 (tree *tp, int *walk_subtrees, void *data)
 static tree
 diagnose_sb_2 (tree *tp, int *walk_subtrees, void *data)
 {
-  struct walk_stmt_info *wi = data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   tree context = (tree) wi->info;
   splay_tree_node n;
   tree t = *tp;

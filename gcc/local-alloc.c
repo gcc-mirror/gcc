@@ -806,7 +806,7 @@ update_equiv_regs (void)
   bitmap cleared_regs;
   
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  reg_equiv_init = ggc_alloc_cleared (max_regno * sizeof (rtx));
+  reg_equiv_init = GGC_CNEWVEC (rtx, max_regno);
   reg_equiv_init_size = max_regno;
 
   init_alias_analysis ();
