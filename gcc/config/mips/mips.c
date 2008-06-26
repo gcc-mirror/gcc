@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
+#include "libfuncs.h"
 #include "flags.h"
 #include "reload.h"
 #include "tm_p.h"
@@ -9424,6 +9425,11 @@ mips_init_libfuncs (void)
   else
     /* Register the gofast functions if selected using --enable-gofast.  */
     gofast_maybe_init_libfuncs ();
+
+  /* The MIPS16 ISA does not have an encoding for "sync", so we rely
+     on an external non-MIPS16 routine to implement __sync_synchronize.  */
+  if (TARGET_MIPS16)
+    synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
 }
 
 /* Return the length of INSN.  LENGTH is the initial length computed by

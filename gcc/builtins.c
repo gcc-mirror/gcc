@@ -5999,6 +5999,12 @@ expand_builtin_synchronize (void)
     }
 #endif
 
+  if (synchronize_libfunc != NULL_RTX)
+    {
+      emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
+      return;
+    }
+
   /* If no explicit memory barrier instruction is available, create an
      empty asm stmt with a memory clobber.  */
   x = build4 (ASM_EXPR, void_type_node, build_string (0, ""), NULL, NULL,
