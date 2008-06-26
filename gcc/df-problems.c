@@ -109,8 +109,7 @@ df_grow_bb_info (struct dataflow *dflow)
   if (dflow->block_info_size < new_size)
     {
       new_size += new_size / 4;
-      dflow->block_info = xrealloc (dflow->block_info, 
-				    new_size *sizeof (void*));
+      dflow->block_info = XRESIZEVEC (void *, dflow->block_info, new_size);
       memset (dflow->block_info + dflow->block_info_size, 0,
 	      (new_size - dflow->block_info_size) *sizeof (void *));
       dflow->block_info_size = new_size;
@@ -1862,7 +1861,7 @@ struct df_link *
 df_chain_create (struct df_ref *src, struct df_ref *dst)
 {
   struct df_link *head = DF_REF_CHAIN (src);
-  struct df_link *link = pool_alloc (df_chain->block_pool);
+  struct df_link *link = (struct df_link *) pool_alloc (df_chain->block_pool);
   
   DF_REF_CHAIN (src) = link;
   link->next = head;

@@ -637,8 +637,11 @@ struct df
 /* The following two macros may only be applied if one of 
    DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT is true. */ 
 #define DF_REF_EXTRACT_WIDTH(REF) (((struct df_ref_extract *)(REF))->width)
+#define DF_REF_EXTRACT_WIDTH_CONST(REF) (((const struct df_ref_extract *)(REF))->width)
 #define DF_REF_EXTRACT_OFFSET(REF) (((struct df_ref_extract *)(REF))->offset)
+#define DF_REF_EXTRACT_OFFSET_CONST(REF) (((const struct df_ref_extract *)(REF))->offset)
 #define DF_REF_EXTRACT_MODE(REF) (((struct df_ref_extract *)(REF))->mode)
+#define DF_REF_EXTRACT_MODE_CONST(REF) (((const struct df_ref_extract *)(REF))->mode)
 /* Macros to determine the reference type.  */
 
 #define DF_REF_REG_DEF_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_DEF)

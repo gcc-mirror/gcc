@@ -206,8 +206,9 @@ lookup_attribute_spec (tree name)
   attr.str = IDENTIFIER_POINTER (name);
   attr.length = IDENTIFIER_LENGTH (name);
   extract_attribute_substring (&attr);
-  return htab_find_with_hash (attribute_hash, &attr,
-			      substring_hash (attr.str, attr.length));
+  return (const struct attribute_spec *)
+    htab_find_with_hash (attribute_hash, &attr,
+			 substring_hash (attr.str, attr.length));
 }
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,

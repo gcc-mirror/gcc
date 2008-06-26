@@ -1,5 +1,49 @@
 2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alias.c (record_alias_subset, init_alias_analysis): Fix
+	-Wc++-compat and/or -Wcast-qual warnings.
+	* attribs.c (lookup_attribute_spec): Likewise.
+	* bb-reorder.c (find_traces, rotate_loop, find_traces_1_round,
+	copy_bb, connect_traces,
+	find_rarely_executed_basic_blocks_and_cr): Likewise.
+	* bt-load.c (find_btr_def_group, add_btr_def, new_btr_user,
+	note_btr_set, migrate_btr_defs): Likewise.
+	* builtins.c (result_vector, expand_builtin_memcpy,
+	expand_builtin_mempcpy_args, expand_builtin_strncpy,
+	builtin_memset_read_str, expand_builtin_printf,
+	fold_builtin_memchr, rewrite_call_expr, fold_builtin_printf):
+	Likewise.
+	* caller-save.c (mark_set_regs): Likewise.
+	* calls.c (expand_call, emit_library_call_value_1): Likewise.
+	* cgraph.c (cgraph_edge): Likewise.
+	* combine.c (likely_spilled_retval_1): Likewise.
+	* coverage.c (htab_counts_entry_hash, htab_counts_entry_eq,
+	htab_counts_entry_del, get_coverage_counts): Likewise.
+	* cselib.c (new_elt_list, new_elt_loc_list, entry_and_rtx_equal_p,
+	new_cselib_val): Likewise.
+	* dbgcnt.c (dbg_cnt_process_opt): Likewise.
+	* dbxout.c (dbxout_init, dbxout_type, output_used_types_helper):
+	Likewise.
+	* df-core.c (df_compact_blocks): Likewise.
+	* df-problems.c (df_grow_bb_info, df_chain_create): Likewise.
+	* df-scan.c (df_grow_reg_info, df_ref_create,
+	df_insn_create_insn_record, df_insn_rescan, df_notes_rescan,
+	df_ref_compare, df_ref_create_structure, df_bb_refs_record,
+	df_record_entry_block_defs, df_record_exit_block_uses,
+	df_bb_verify): Likewise.
+	* df.h (DF_REF_EXTRACT_WIDTH_CONST, DF_REF_EXTRACT_OFFSET_CONST,
+	DF_REF_EXTRACT_MODE_CONST): New.
+	* dominance.c (get_immediate_dominator, get_dominated_by,
+	nearest_common_dominator, root_of_dom_tree,
+	iterate_fix_dominators, first_dom_son, next_dom_son): Fix
+	-Wc++-compat and/or -Wcast-qual warnings.
+	* dse.c (clear_alias_set_lookup, get_group_info, gen_rtx_MEM,
+	record_store, replace_read, check_mem_read_rtx, scan_insn,
+	dse_step1, dse_record_singleton_alias_set): Likewise.
+	* dwarf2asm.c (dw2_force_const_mem): Likewise.
+
+2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* dwarf2out.c (new_cfi, queue_reg_save, dwarf2out_begin_prologue,
 	dwarf2out_frame_init, new_loc_descr, new_die, lookup_decl_die,
 	lookup_decl_loc, add_var_loc_to_decl, compute_section_prefix,

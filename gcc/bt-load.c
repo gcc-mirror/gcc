@@ -279,8 +279,7 @@ find_btr_def_group (btr_def_group *all_btr_def_groups, btr_def def)
 
       if (!this_group)
 	{
-	  this_group = obstack_alloc (&migrate_btrl_obstack,
-				      sizeof (struct btr_def_group_s));
+	  this_group = XOBNEW (&migrate_btrl_obstack, struct btr_def_group_s);
 	  this_group->src = def_src;
 	  this_group->members = NULL;
 	  this_group->next = *all_btr_def_groups;
@@ -303,7 +302,7 @@ add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
 	     btr_def_group *all_btr_def_groups)
 {
   btr_def this
-    = obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_def_s));
+    = XOBNEW (&migrate_btrl_obstack, struct btr_def_s);
   this->bb = bb;
   this->luid = insn_luid;
   this->insn = insn;
@@ -354,7 +353,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx insn)
 	usep = NULL;
     }
   use = usep ? *usep : NULL_RTX;
-  user = obstack_alloc (&migrate_btrl_obstack, sizeof (struct btr_user_s));
+  user = XOBNEW (&migrate_btrl_obstack, struct btr_user_s);
   user->bb = bb;
   user->luid = insn_luid;
   user->insn = insn;
@@ -425,7 +424,7 @@ typedef struct {
 static void
 note_btr_set (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
 {
-  defs_uses_info *info = data;
+  defs_uses_info *info = (defs_uses_info *) data;
   int regno, end_regno;
 
   if (!REG_P (dest))
@@ -1428,14 +1427,14 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	  first_btr = reg;
       }
 
-  btrs_live = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
-  btrs_live_at_end = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
+  btrs_live = XCNEWVEC (HARD_REG_SET, n_basic_blocks);
+  btrs_live_at_end = XCNEWVEC (HARD_REG_SET, n_basic_blocks);
 
   build_btr_def_use_webs (all_btr_defs);
 
   while (!fibheap_empty (all_btr_defs))
     {
-      btr_def def = fibheap_extract_min (all_btr_defs);
+      btr_def def = (btr_def) fibheap_extract_min (all_btr_defs);
       int min_cost = -fibheap_min_key (all_btr_defs);
       if (migrate_btr_def (def, min_cost))
 	{

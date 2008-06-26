@@ -1455,7 +1455,7 @@ df_compact_blocks (void)
   void **problem_temps;
   int size = last_basic_block * sizeof (void *);
   bitmap tmp = BITMAP_ALLOC (&df_bitmap_obstack);
-  problem_temps = xmalloc (size);
+  problem_temps = XNEWVAR (void *, size);
 
   for (p = 0; p < df->num_problems_defined; p++)
     {

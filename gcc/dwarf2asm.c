@@ -757,7 +757,7 @@ dw2_force_const_mem (rtx x, bool public)
 
       if (public && USE_LINKONCE_INDIRECT)
 	{
-	  char *ref_name = alloca (strlen (str) + sizeof "DW.ref.");
+	  char *ref_name = XALLOCAVEC (char, strlen (str) + sizeof "DW.ref.");
 
 	  sprintf (ref_name, "DW.ref.%s", str);
 	  id = get_identifier (ref_name);

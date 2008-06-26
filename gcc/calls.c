@@ -2214,7 +2214,7 @@ expand_call (tree exp, rtx target, int ignore)
     n_named_args = num_actuals;
 
   /* Make a vector to hold all the information about each arg.  */
-  args = alloca (num_actuals * sizeof (struct arg_data));
+  args = XALLOCAVEC (struct arg_data, num_actuals);
   memset (args, 0, num_actuals * sizeof (struct arg_data));
 
   /* Build up entries in the ARGS array, compute the size of the
@@ -3316,7 +3316,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      of the full argument passing conventions to limit complexity here since
      library functions shouldn't have many args.  */
 
-  argvec = alloca ((nargs + 1) * sizeof (struct arg));
+  argvec = XALLOCAVEC (struct arg, nargs + 1);
   memset (argvec, 0, (nargs + 1) * sizeof (struct arg));
 
 #ifdef INIT_CUMULATIVE_LIBCALL_ARGS
