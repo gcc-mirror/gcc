@@ -439,7 +439,7 @@ read_input_list (const char *listname)
 				     : lang_dir_names[langno - 1]);
 
 		    bmap |= curlangs;
-		    set_lang_bitmap ((char *)gt_files[i], bmap);
+		    set_lang_bitmap (CONST_CAST(char *, gt_files[i]), bmap);
 		    here = committed;
 		    goto next_line;
 		  }
@@ -1272,9 +1272,9 @@ adjust_field_type (type_p t, options_p opt)
 	if (params[num] != NULL)
 	  error_at_line (&lexer_line, "duplicate `%s' option", opt->name);
 	if (! ISDIGIT (opt->name[5]))
-	  params[num] = create_pointer ((type_p) opt->info);
+	  params[num] = create_pointer (CONST_CAST2(type_p, const char *, opt->info));
 	else
-	  params[num] = (type_p) opt->info;
+	  params[num] = CONST_CAST2 (type_p, const char *, opt->info);
       }
     else if (strcmp (opt->name, "special") == 0)
       {
@@ -1323,7 +1323,8 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
   options_p o;
   for (o = opt; o; o = o->next)
     if (strcmp (o->name, "ptr_alias") == 0 && level == GC_POINTED_TO)
-      set_gc_used_type ((type_p) o->info, GC_POINTED_TO, NULL);
+      set_gc_used_type (CONST_CAST2 (type_p, const char *, o->info),
+			GC_POINTED_TO, NULL);
     else if (strcmp (o->name, "maybe_undef") == 0)
       *maybe_undef = 1;
     else if (strcmp (o->name, "use_params") == 0)

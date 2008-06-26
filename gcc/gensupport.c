@@ -1434,7 +1434,7 @@ record_insn_name (int code, const char *name)
     {
       int new_size;
       new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
-      insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+      insn_name_ptr = XRESIZEVEC (char *, insn_name_ptr, new_size);
       memset (insn_name_ptr + insn_name_ptr_size, 0,
 	      sizeof(char *) * (new_size - insn_name_ptr_size));
       insn_name_ptr_size = new_size;
@@ -1442,7 +1442,7 @@ record_insn_name (int code, const char *name)
 
   if (!name || name[0] == '\0')
     {
-      new = xmalloc (strlen (last_real_name) + 10);
+      new = XNEWVAR (char, strlen (last_real_name) + 10);
       sprintf (new, "%s+%d", last_real_name, code - last_real_code);
     }
   else

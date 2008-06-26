@@ -1173,7 +1173,7 @@ note_constraint (rtx exp, int lineno)
 	  return;
 	}
     }
-  new = xmalloc (sizeof (struct constraint_data) + namelen);
+  new = XNEWVAR (struct constraint_data, sizeof (struct constraint_data) + namelen);
   strcpy ((char *)new + offsetof(struct constraint_data, name), name);
   new->namelen = namelen;
   new->lineno = lineno;

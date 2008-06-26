@@ -286,7 +286,8 @@ static rtx one_fn		   (rtx);
 static rtx max_fn		   (rtx);
 static rtx min_fn		   (rtx);
 
-#define oballoc(size) obstack_alloc (hash_obstack, size)
+#define oballoc(T) XOBNEW (hash_obstack, T)
+#define oballocvec(T, N) XOBNEWVEC (hash_obstack, T, (N))
 
 /* Hash table for sharing RTL and strings.  */
 
@@ -326,7 +327,7 @@ attr_hash_add_rtx (int hashcode, rtx rtl)
 {
   struct attr_hash *h;
 
-  h = obstack_alloc (hash_obstack, sizeof (struct attr_hash));
+  h = XOBNEW (hash_obstack, struct attr_hash);
   h->hashcode = hashcode;
   h->u.rtl = rtl;
   h->next = attr_hash_table[hashcode % RTL_HASH_SIZE];
@@ -340,7 +341,7 @@ attr_hash_add_string (int hashcode, char *str)
 {
   struct attr_hash *h;
 
-  h = obstack_alloc (hash_obstack, sizeof (struct attr_hash));
+  h = XOBNEW (hash_obstack, struct attr_hash);
   h->hashcode = -hashcode;
   h->u.str = str;
   h->next = attr_hash_table[hashcode % RTL_HASH_SIZE];
@@ -601,7 +602,7 @@ attr_string (const char *str, int len)
       return h->u.str;			/* <-- return if found.  */
 
   /* Not found; create a permanent copy and add it to the hash table.  */
-  new_str = obstack_alloc (hash_obstack, len + 1);
+  new_str = XOBNEWVAR (hash_obstack, char, len + 1);
   memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
@@ -1297,7 +1298,7 @@ get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
 	    || insn_alternatives[av->first_insn->def->insn_code]))
       return av;
 
-  av = oballoc (sizeof (struct attr_value));
+  av = oballoc (struct attr_value);
   av->value = value;
   av->next = attr->first_value;
   attr->first_value = av;
@@ -1440,7 +1441,7 @@ fill_attr (struct attr_desc *attr)
       else
 	av = get_attr_value (value, attr, id->insn_code);
 
-      ie = oballoc (sizeof (struct insn_ent));
+      ie = oballoc (struct insn_ent);
       ie->def = id;
       insert_insn_ent (av, ie);
     }
@@ -1571,7 +1572,7 @@ make_length_attrs (void)
 							 no_address_fn[i],
 							 address_fn[i]),
 				     new_attr, ie->def->insn_code);
-	    new_ie = oballoc (sizeof (struct insn_ent));
+	    new_ie = oballoc (struct insn_ent);
 	    new_ie->def = ie->def;
 	    insert_insn_ent (new_av, new_ie);
 	  }
@@ -2949,7 +2950,7 @@ gen_attr (rtx exp, int lineno)
       name_ptr = XSTR (exp, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	{
-	  av = oballoc (sizeof (struct attr_value));
+	  av = oballoc (struct attr_value);
 	  av->value = attr_rtx (CONST_STRING, p);
 	  av->next = attr->first_value;
 	  attr->first_value = av;
@@ -3062,7 +3063,7 @@ gen_insn (rtx exp, int lineno)
 {
   struct insn_def *id;
 
-  id = oballoc (sizeof (struct insn_def));
+  id = oballoc (struct insn_def);
   id->next = defs;
   defs = id;
   id->def = exp;
@@ -3126,7 +3127,7 @@ gen_delay (rtx def, int lineno)
 	have_annul_false = 1;
     }
 
-  delay = oballoc (sizeof (struct delay_desc));
+  delay = oballoc (struct delay_desc);
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
@@ -4158,7 +4159,7 @@ find_attr (const char **name_p, int create)
   if (! create)
     return NULL;
 
-  attr = oballoc (sizeof (struct attr_desc));
+  attr = oballoc (struct attr_desc);
   attr->name = DEF_ATTR_STRING (name);
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->is_const = attr->is_special = 0;
@@ -4297,7 +4298,7 @@ static size_t n_insn_reservs;
 static void
 gen_insn_reserv (rtx def)
 {
-  struct insn_reserv *decl = oballoc (sizeof (struct insn_reserv));
+  struct insn_reserv *decl = oballoc (struct insn_reserv);
 
   decl->name            = DEF_ATTR_STRING (XSTR (def, 0));
   decl->default_latency = XINT (def, 1);
@@ -4338,7 +4339,7 @@ gen_bypass_1 (const char *s, size_t len)
     if (s == b->insn)
       return;  /* already got that one */
 
-  b = oballoc (sizeof (struct bypass_list));
+  b = oballoc (struct bypass_list);
   b->insn = s;
   b->next = all_bypasses;
   all_bypasses = b;
@@ -4544,13 +4545,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#define operands recog_data.operand\n\n");
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = oballoc (insn_code_number * sizeof (int));
+  insn_alternatives = oballocvec (int, insn_code_number);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = oballoc (insn_code_number * sizeof (int));
+  insn_n_alternatives = oballocvec (int, insn_code_number);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;
