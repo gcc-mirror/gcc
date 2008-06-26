@@ -262,8 +262,9 @@ cgraph_edge (struct cgraph_node *node, tree call_stmt)
   int n = 0;
 
   if (node->call_site_hash)
-    return htab_find_with_hash (node->call_site_hash, call_stmt,
-      				htab_hash_pointer (call_stmt));
+    return (struct cgraph_edge *)
+      htab_find_with_hash (node->call_site_hash, call_stmt,
+			   htab_hash_pointer (call_stmt));
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best

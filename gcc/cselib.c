@@ -142,7 +142,7 @@ static inline struct elt_list *
 new_elt_list (struct elt_list *next, cselib_val *elt)
 {
   struct elt_list *el;
-  el = pool_alloc (elt_list_pool);
+  el = (struct elt_list *) pool_alloc (elt_list_pool);
   el->next = next;
   el->elt = elt;
   return el;
@@ -155,7 +155,7 @@ static inline struct elt_loc_list *
 new_elt_loc_list (struct elt_loc_list *next, rtx loc)
 {
   struct elt_loc_list *el;
-  el = pool_alloc (elt_loc_list_pool);
+  el = (struct elt_loc_list *) pool_alloc (elt_loc_list_pool);
   el->next = next;
   el->loc = loc;
   el->setting_insn = cselib_current_insn;
@@ -232,7 +232,7 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 {
   struct elt_loc_list *l;
   const cselib_val *const v = (const cselib_val *) entry;
-  rtx x = (rtx) x_arg;
+  rtx x = CONST_CAST_RTX ((const_rtx)x_arg);
   enum machine_mode mode = GET_MODE (x);
 
   gcc_assert (GET_CODE (x) != CONST_INT && GET_CODE (x) != CONST_FIXED
@@ -749,7 +749,7 @@ cselib_hash_rtx (rtx x, int create)
 static inline cselib_val *
 new_cselib_val (unsigned int value, enum machine_mode mode)
 {
-  cselib_val *e = pool_alloc (cselib_val_pool);
+  cselib_val *e = (cselib_val *) pool_alloc (cselib_val_pool);
 
   gcc_assert (value);
 
@@ -759,7 +759,7 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
      precisely when we can have VALUE RTXen (when cselib is active)
      so we don't need to put them in garbage collected memory.
      ??? Why should a VALUE be an RTX in the first place?  */
-  e->val_rtx = pool_alloc (value_pool);
+  e->val_rtx = (rtx) pool_alloc (value_pool);
   memset (e->val_rtx, 0, RTX_HDR_SIZE);
   PUT_CODE (e->val_rtx, VALUE);
   PUT_MODE (e->val_rtx, mode);

@@ -129,7 +129,7 @@ dbg_cnt_process_opt (const char *arg)
 
    if (next == NULL || *next != 0)
      {
-       char *buffer = alloca (arg - start + 2);
+       char *buffer = XALLOCAVEC (char, arg - start + 2);
        sprintf (buffer, "%*c", (int)(1 + (arg - start)), '^');
        error ("Can not find a valid counter:value pair:");
        error ("-fdbg-cnt=%s", start);

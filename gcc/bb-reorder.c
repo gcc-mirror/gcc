@@ -278,7 +278,7 @@ find_traces (int *n_traces, struct trace *traces)
 	  basic_block bb;
 	  fprintf (dump_file, "Trace %d (round %d):  ", i + 1,
 		   traces[i].round + 1);
-	  for (bb = traces[i].first; bb != traces[i].last; bb = bb->aux)
+	  for (bb = traces[i].first; bb != traces[i].last; bb = (basic_block) bb->aux)
 	    fprintf (dump_file, "%d [%d] ", bb->index, bb->frequency);
 	  fprintf (dump_file, "%d [%d]\n", bb->index, bb->frequency);
 	}
@@ -358,7 +358,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		}
 	    }
 	}
-      bb = bb->aux;
+      bb = (basic_block) bb->aux;
     }
   while (bb != back_edge->dest);
 
@@ -368,7 +368,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	 the trace.  */
       if (back_edge->dest == trace->first)
 	{
-	  trace->first = best_bb->aux;
+	  trace->first = (basic_block) best_bb->aux;
 	}
       else
 	{
@@ -376,7 +376,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 
 	  for (prev_bb = trace->first;
 	       prev_bb->aux != back_edge->dest;
-	       prev_bb = prev_bb->aux)
+	       prev_bb = (basic_block) prev_bb->aux)
 	    ;
 	  prev_bb->aux = best_bb->aux;
 
@@ -442,7 +442,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       fibheapkey_t key;
       edge_iterator ei;
 
-      bb = fibheap_extract_min (*heap);
+      bb = (basic_block) fibheap_extract_min (*heap);
       bbd[bb->index].heap = NULL;
       bbd[bb->index].node = NULL;
 
@@ -780,7 +780,7 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 
       new_size = MAX (last_basic_block, new_bb->index + 1);
       new_size = GET_ARRAY_SIZE (new_size);
-      bbd = xrealloc (bbd, new_size * sizeof (bbro_basic_block_data));
+      bbd = XRESIZEVEC (bbro_basic_block_data, bbd, new_size);
       for (i = array_size; i < new_size; i++)
 	{
 	  bbd[i].start_of_trace = -1;
@@ -1143,7 +1143,7 @@ connect_traces (int n_traces, struct trace *traces)
       basic_block bb;
 
       fprintf (dump_file, "Final order:\n");
-      for (bb = traces[0].first; bb; bb = bb->aux)
+      for (bb = traces[0].first; bb; bb = (basic_block) bb->aux)
 	fprintf (dump_file, "%d ", bb->index);
       fprintf (dump_file, "\n");
       fflush (dump_file);
@@ -1251,8 +1251,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
 	  if (i == *max_idx)
 	    {
 	      *max_idx *= 2;
-	      *crossing_edges = xrealloc (*crossing_edges,
-					 (*max_idx) * sizeof (edge));
+	      *crossing_edges = XRESIZEVEC (edge, *crossing_edges, *max_idx);
 	    }
 	  (*crossing_edges)[i++] = e;
 	}

@@ -706,7 +706,7 @@ get_immediate_dominator (enum cdi_direction dir, basic_block bb)
   if (!node->father)
     return NULL;
 
-  return node->father->data;
+  return (basic_block) node->father->data;
 }
 
 /* Set the immediate dominator of the block possibly removing
@@ -749,9 +749,9 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
   if (!son)
     return NULL;
 
-  VEC_safe_push (basic_block, heap, bbs, son->data);
+  VEC_safe_push (basic_block, heap, bbs, (basic_block) son->data);
   for (ason = son->right, n = 1; ason != son; ason = ason->right)
-    VEC_safe_push (basic_block, heap, bbs, ason->data);
+    VEC_safe_push (basic_block, heap, bbs, (basic_block) ason->data);
 
   return bbs;
 }
@@ -823,7 +823,7 @@ nearest_common_dominator (enum cdi_direction dir, basic_block bb1, basic_block b
   if (!bb2)
     return bb1;
 
-  return et_nca (bb1->dom[dir_index], bb2->dom[dir_index])->data;
+  return (basic_block) et_nca (bb1->dom[dir_index], bb2->dom[dir_index])->data;
 }
 
 
@@ -1103,7 +1103,7 @@ succeed:
 static basic_block
 root_of_dom_tree (enum cdi_direction dir, basic_block bb)
 {
-  return et_root (bb->dom[dom_convert_dir_to_idx (dir)])->data;
+  return (basic_block) et_root (bb->dom[dom_convert_dir_to_idx (dir)])->data;
 }
 
 /* See the comment in iterate_fix_dominators.  Finds the immediate dominators
@@ -1313,10 +1313,10 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 	  dom_i = (size_t) *pointer_map_contains (map, dom);
 
 	  /* Do not include parallel edges to G.  */
-	  if (bitmap_bit_p (g->vertices[dom_i].data, i))
+	  if (bitmap_bit_p ((bitmap) g->vertices[dom_i].data, i))
 	    continue;
 
-	  bitmap_set_bit (g->vertices[dom_i].data, i);
+	  bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i);
 	  add_edge (g, dom_i, i);
 	}
     }
@@ -1394,7 +1394,7 @@ first_dom_son (enum cdi_direction dir, basic_block bb)
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *son = bb->dom[dir_index]->son;
 
-  return son ? son->data : NULL;
+  return (basic_block) (son ? son->data : NULL);
 }
 
 /* Returns the next dominance son after BB in the dominator or postdominator
@@ -1406,7 +1406,7 @@ next_dom_son (enum cdi_direction dir, basic_block bb)
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *next = bb->dom[dir_index]->right;
 
-  return next->father->son == next ? NULL : next->data;
+  return (basic_block) (next->father->son == next ? NULL : next->data);
 }
 
 /* Return dominance availability for dominance info DIR.  */

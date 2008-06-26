@@ -1292,7 +1292,7 @@ result_vector (int savep, rtx result)
   int regno, size, align, nelts;
   enum machine_mode mode;
   rtx reg, mem;
-  rtx *savevec = alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
+  rtx *savevec = XALLOCAVEC (rtx, FIRST_PSEUDO_REGISTER);
 
   size = nelts = 0;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -3327,11 +3327,13 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (void *) src_str, dest_align, false))
+				  CONST_CAST (char *, src_str),
+				  dest_align, false))
 	{
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (void *) src_str, dest_align, false, 0);
+				      CONST_CAST (char *, src_str),
+				      dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3440,14 +3442,15 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len, tree type,
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (void *) src_str, dest_align, false))
+				  CONST_CAST (char *, src_str),
+				  dest_align, false))
 	{
 	  dest_mem = get_memory_rtx (dest, len);
 	  set_mem_align (dest_mem, dest_align);
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (void *) src_str, dest_align,
-				      false, endp);
+				      CONST_CAST (char *, src_str),
+				      dest_align, false, endp);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3789,13 +3792,14 @@ expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
 	  if (!p || dest_align == 0 || !host_integerp (len, 1)
 	      || !can_store_by_pieces (tree_low_cst (len, 1),
 				       builtin_strncpy_read_str,
-				       (void *) p, dest_align, false))
+				       CONST_CAST (char *, p),
+				       dest_align, false))
 	    return NULL_RTX;
 
 	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
-			   (void *) p, dest_align, false, 0);
+			   CONST_CAST (char *, p), dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3813,7 +3817,7 @@ builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 			 enum machine_mode mode)
 {
   const char *c = (const char *) data;
-  char *p = alloca (GET_MODE_SIZE (mode));
+  char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
 
   memset (p, *c, GET_MODE_SIZE (mode));
 
@@ -3837,7 +3841,7 @@ builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
   if (size == 1)
     return (rtx) data;
 
-  p = alloca (size);
+  p = XALLOCAVEC (char, size);
   memset (p, 1, size);
   coeff = c_readstr (p, mode);
 
@@ -5311,7 +5315,7 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
 	    {
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      char *newstr = alloca (len);
+	      char *newstr = XALLOCAVEC (char, len);
 	      memcpy (newstr, fmt_str, len - 1);
 	      newstr[len - 1] = 0;
 	      arg = build_string_literal (len, newstr);
@@ -8902,7 +8906,7 @@ fold_builtin_memchr (tree arg1, tree arg2, tree len, tree type)
 	  if (target_char_cast (arg2, &c))
 	    return NULL_TREE;
 
-	  r = memchr (p1, c, tree_low_cst (len, 1));
+	  r = (char *) memchr (p1, c, tree_low_cst (len, 1));
 
 	  if (r == NULL)
 	    return build_int_cst (TREE_TYPE (arg1), 0);
@@ -10752,7 +10756,7 @@ rewrite_call_expr (tree exp, int skip, tree fndecl, int n, ...)
       int i, j;
       va_list ap;
 
-      buffer = alloca (nargs * sizeof (tree));
+      buffer = XALLOCAVEC (tree, nargs);
       va_start (ap, n);
       for (i = 0; i < n; i++)
 	buffer[i] = va_arg (ap, tree);
@@ -12469,7 +12473,7 @@ fold_builtin_printf (tree fndecl, tree fmt, tree arg, bool ignore,
 	    {
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      char *newstr = alloca (len);
+	      char *newstr = XALLOCAVEC (char, len);
 	      memcpy (newstr, str, len - 1);
 	      newstr[len - 1] = 0;
 

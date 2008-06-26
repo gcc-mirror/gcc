@@ -516,7 +516,7 @@ static void
 mark_set_regs (rtx reg, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   int regno, endregno, i;
-  HARD_REG_SET *this_insn_sets = data;
+  HARD_REG_SET *this_insn_sets = (HARD_REG_SET *) data;
 
   if (GET_CODE (reg) == SUBREG)
     {
