@@ -1,3 +1,7 @@
+2008-06-26  Chris Proctor  <chrisp_42@bigpond.com>
+
+	* Makefile.in: Fix *86 kfreebsd target specific pairs.
+
 2008-06-25  Samuel Tardieu  <sam@rfc1149.net>
 
 	* Makefile.in: Use mlib-tgt-specific-linux.adb for sh4 as well.
