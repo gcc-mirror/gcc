@@ -1,3 +1,8 @@
+2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (plus, multiplies): Use __typeof__,
+	not typeof.
+
 2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (remove_if): Cast __pred result to bool.

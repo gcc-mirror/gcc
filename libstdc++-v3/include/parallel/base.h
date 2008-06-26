@@ -287,8 +287,8 @@ struct less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
 template<typename _Tp1, typename _Tp2>
   struct plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
-    typedef typeof(*static_cast<_Tp1*>(NULL)
-                    + *static_cast<_Tp2*>(NULL)) result;
+    typedef __typeof__(*static_cast<_Tp1*>(NULL)
+		       + *static_cast<_Tp2*>(NULL)) result;
 
     result
     operator()(const _Tp1& __x, const _Tp2& __y) const
@@ -299,8 +299,8 @@ template<typename _Tp1, typename _Tp2>
 template<typename _Tp>
   struct plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
-    typedef typeof(*static_cast<_Tp*>(NULL)
-                    + *static_cast<_Tp*>(NULL)) result;
+    typedef __typeof__(*static_cast<_Tp*>(NULL)
+		       + *static_cast<_Tp*>(NULL)) result;
 
     result
     operator()(const _Tp& __x, const _Tp& __y) const
@@ -312,8 +312,8 @@ template<typename _Tp>
 template<typename _Tp1, typename _Tp2>
   struct multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
   {
-    typedef typeof(*static_cast<_Tp1*>(NULL)
-                    * *static_cast<_Tp2*>(NULL)) result;
+    typedef __typeof__(*static_cast<_Tp1*>(NULL)
+		       * *static_cast<_Tp2*>(NULL)) result;
 
     result
     operator()(const _Tp1& __x, const _Tp2& __y) const
@@ -324,8 +324,8 @@ template<typename _Tp1, typename _Tp2>
 template<typename _Tp>
   struct multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
   {
-    typedef typeof(*static_cast<_Tp*>(NULL)
-                    * *static_cast<_Tp*>(NULL)) result;
+    typedef __typeof__(*static_cast<_Tp*>(NULL)
+		       * *static_cast<_Tp*>(NULL)) result;
 
     result
     operator()(const _Tp& __x, const _Tp& __y) const
