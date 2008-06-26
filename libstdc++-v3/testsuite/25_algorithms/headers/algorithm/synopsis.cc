@@ -208,6 +208,11 @@ namespace std
   template<typename _IIter, typename _OIter, typename _Predicate>
     _OIter 
     copy_if(_IIter, _IIter, _OIter, _Predicate);
+
+  template<typename _IIter, typename _OIter1,
+	   typename _OIter2, typename _Predicate>
+    pair<_OIter1, _OIter2>
+    partition_copy(_IIter, _IIter, _OIter1, _OIter2, _Predicate);
 #endif
 
   template<typename _FIter>

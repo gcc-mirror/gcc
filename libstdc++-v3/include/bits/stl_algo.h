@@ -911,6 +911,52 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
       return __result;
     }
+
+  /**
+   *  @brief Copy the elements of a sequence to separate output sequences
+   *         depending on the truth value of a predicate.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  out_true   An output iterator.
+   *  @param  out_false  An output iterator.
+   *  @param  pred    A predicate.
+   *  @return   A pair designating the ends of the resulting sequences.
+   *
+   *  Copies each element in the range @p [first,last) for which
+   *  @p pred returns true to the range beginning at @p out_true
+   *  and each element for which @p pred returns false to @p out_false.
+  */
+  template<typename _InputIterator, typename _OutputIterator1,
+	   typename _OutputIterator2, typename _Predicate>
+    pair<_OutputIterator1, _OutputIterator2>
+    partition_copy(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator1 __out_true, _OutputIterator2 __out_false,
+		   _Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator1,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator2,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      
+      for (; __first != __last; ++__first)
+	if (__pred(*__first))
+	  {
+	    *__out_true = *__first;
+	    ++__out_true;
+	  }
+	else
+	  {
+	    *__out_false = *__first;
+	    ++__out_false;
+	  }
+
+      return pair<_OutputIterator1, _OutputIterator2>(__out_true, __out_false);
+    }
 #endif
 
   /**
