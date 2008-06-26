@@ -1,3 +1,18 @@
+2008-06-26  Chris Fairles  <chris.fairles@gmail.com>
+
+        * testsuite/20_util/unique_ptr/cons/pointer_array.cc: New.
+        * testsuite/20_util/unique_ptr/cons/pointer.cc: Likewise.
+        * testsuite/20_util/unique_ptr/cons/pointer_array_convertible.cc:
+        Likewise.
+        * testsuite/20_util/unique_ptr/assign/move_array.cc: Likewise.
+        * testsuite/20_util/unique_ptr/assign/move.cc: Likewise.
+        * testsuite/20_util/unique_ptr/specialized_algorithms/
+        comparisons_array.cc: Likewise.
+        * testsuite/20_util/unique_ptr/specialized_algorithms/comparisons.cc:
+        Likewise
+        * testsuite/20_util/unique_ptr/specialized_algorithms/swap.cc:
+        Likewise.
+
 2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/base.h (plus, multiplies): Use __typeof__,
