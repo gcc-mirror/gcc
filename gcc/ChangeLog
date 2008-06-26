@@ -1,5 +1,43 @@
 2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cse.c (approx_reg_cost_1, cse_insn): Fix -Wc++-compat and/or
+	-Wcast-qual warnings.
+	* gcc.c (process_command): Likewise.
+	* genattrtab.c (oballoc): Use XOBNEW.
+	(oballocvec): Define.
+	(attr_hash_add_rtx, attr_hash_add_string, attr_string,
+	get_attr_value, fill_attr, make_length_attrs, gen_attr, gen_insn,
+	gen_delay, find_attr, gen_insn_reserv, gen_bypass_1): Fix
+	-Wc++-compat and/or -Wcast-qual warnings.
+	* genautomata.c (XCREATENODE, XCREATENODEVEC, XCREATENODEVAR,
+	XCOPYNODE, XCOPYNODEVEC, XCOPYNODEVAR): New.
+	(gen_cpu_unit, gen_query_cpu_unit, gen_bypass, gen_excl_set,
+	gen_presence_absence_set, gen_automaton, gen_regexp_el,
+	gen_regexp_repeat, gen_regexp_allof, gen_regexp_oneof,
+	gen_regexp_sequence, gen_reserv, gen_insn_reserv, process_excls,
+	add_excls, process_presence_absence_names,
+	process_presence_absence_patterns, add_presence_absence,
+	process_regexp, add_advance_cycle_insn_decl, get_free_alt_state,
+	get_free_state, add_arc, get_free_automata_list_el,
+	form_reserv_sets_list, copy_insn_regexp, transform_1, transform_2,
+	transform_3, cache_presence, create_ainsns, create_automata,
+	create_state_ainsn_table, dfa_insn_code_enlarge,
+	output_trans_func, output_min_issue_delay_func,
+	output_dead_lock_func, output_reset_func,
+	output_get_cpu_unit_code_func, output_dfa_start_func,
+	expand_automata): Likewise.
+	* genextract.c (gen_insn): Likewise.
+	* gengtype-lex.l: Likewise.
+	* gengtype.c (read_input_list, adjust_field_type,
+	process_gc_options): Likewise.
+	* genoutput.c (note_constraint): Likewise.
+	* genpreds.c (mangle, add_constraint): Likewise.
+	* genrecog.c (process_define_predicate, new_decision,
+	add_to_sequence): Likewise.
+	* gensupport.c (record_insn_name): Likewise.
+
+2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* config/i386/driver-i386.c (detect_caches_amd,
 	detect_caches_intel, host_detect_local_cpu): Fix -Wc++-compat
 	and/or -Wcast-qual warnings.

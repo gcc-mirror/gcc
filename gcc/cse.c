@@ -663,7 +663,7 @@ static int
 approx_reg_cost_1 (rtx *xp, void *data)
 {
   rtx x = *xp;
-  int *cost_p = data;
+  int *cost_p = (int *) data;
 
   if (x && REG_P (x))
     {
@@ -4005,7 +4005,7 @@ cse_insn (rtx insn)
 
   if (GET_CODE (x) == SET)
     {
-      sets = alloca (sizeof (struct set));
+      sets = XALLOCA (struct set);
       sets[0].rtl = x;
 
       /* Ignore SETs that are unconditional jumps.
@@ -4040,7 +4040,7 @@ cse_insn (rtx insn)
     {
       int lim = XVECLEN (x, 0);
 
-      sets = alloca (lim * sizeof (struct set));
+      sets = XALLOCAVEC (struct set, lim);
 
       /* Find all regs explicitly clobbered in this insn,
 	 and ensure they are not replaced with any other regs

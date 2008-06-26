@@ -3409,15 +3409,14 @@ process_command (int argc, const char **argv)
       for (baselen = strlen (progname); baselen > 0; baselen--)
 	if (IS_DIR_SEPARATOR (progname[baselen-1]))
 	  break;
-      new_argv0 = (char *) xmemdup (progname, baselen,
+      new_argv0 = XDUPVAR (char, progname, baselen,
 			   baselen + concat_length (new_version, new_machine,
 						    "-gcc-", NULL) + 1);
       strcpy (new_argv0 + baselen, new_machine);
       strcat (new_argv0, "-gcc-");
       strcat (new_argv0, new_version);
 
-      new_argv = (char **) xmemdup (argv, (argc + 1) * sizeof (argv[0]),
-			  (argc + 1) * sizeof (argv[0]));
+      new_argv = XDUPVEC (char *, argv, argc + 1);
       new_argv[0] = new_argv0;
 
       execvp (new_argv0, new_argv);

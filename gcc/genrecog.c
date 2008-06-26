@@ -366,7 +366,7 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 static void
 process_define_predicate (rtx desc)
 {
-  struct pred_data *pred = xcalloc (sizeof (struct pred_data), 1);
+  struct pred_data *pred = XCNEW (struct pred_data);
   char codes[NUM_RTX_CODE];
   int i;
 
@@ -474,7 +474,7 @@ extern void debug_decision_list
 static struct decision *
 new_decision (const char *position, struct decision_head *last)
 {
-  struct decision *new = xcalloc (1, sizeof (struct decision));
+  struct decision *new = XCNEW (struct decision);
 
   new->success = *last;
   new->position = xstrdup (position);
@@ -890,7 +890,7 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
   if (depth > max_depth)
     max_depth = depth;
 
-  subpos = xmalloc (depth + 2);
+  subpos = XNEWVAR (char, depth + 2);
   strcpy (subpos, position);
   subpos[depth + 1] = 0;
 

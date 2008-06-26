@@ -732,7 +732,7 @@ mangle (const char *name)
       }
 
   obstack_1grow (rtl_obstack, '\0');
-  return obstack_finish (rtl_obstack);
+  return XOBFINISH (rtl_obstack, const char *);
 }
 
 /* Add one constraint, of any sort, to the tables.  NAME is its name;
@@ -897,7 +897,7 @@ add_constraint (const char *name, const char *regclass,
     }
 
   
-  c = obstack_alloc (rtl_obstack, sizeof (struct constraint_data));
+  c = XOBNEW (rtl_obstack, struct constraint_data);
   c->name = name;
   c->c_name = need_mangled_name ? mangle (name) : name;
   c->lineno = lineno;

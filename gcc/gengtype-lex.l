@@ -116,7 +116,7 @@ EOID	[^[:alnum:]_]
 "nested_ptr"/{EOID}		{ return NESTED_PTR; }
 [0-9]+				{ return NUM; }
 "param"[0-9]*"_is"/{EOID}		{
-  *yylval = xmemdup (yytext, yyleng, yyleng+1);
+  *yylval = XDUPVAR (const char, yytext, yyleng, yyleng+1);
   return PARAM_IS;
 }
 
@@ -127,28 +127,28 @@ EOID	[^[:alnum:]_]
   for (len = yyleng; ISSPACE (yytext[len-1]); len--)
     ;
 
-  *yylval = xmemdup (yytext, len, len+1);
+  *yylval = XDUPVAR (const char, yytext, len, len+1);
   update_lineno (yytext, yyleng);
   return SCALAR;
 }
 
 
 {ID}/{EOID}			{
-  *yylval = xmemdup (yytext, yyleng, yyleng+1);
+  *yylval = XDUPVAR (const char, yytext, yyleng, yyleng+1);
   return ID;
 }
 
 \"([^"\\]|\\.)*\"		{
-  *yylval = xmemdup (yytext+1, yyleng-2, yyleng-1);
+  *yylval = XDUPVAR (const char, yytext+1, yyleng-2, yyleng-1);
   return STRING;
 }
   /* This "terminal" avoids having to parse integer constant expressions.  */
 "["[^\[\]]*"]"			{
-  *yylval = xmemdup (yytext+1, yyleng-2, yyleng-1);
+  *yylval = XDUPVAR (const char, yytext+1, yyleng-2, yyleng-1);
   return ARRAY;
 }
 "'"("\\".|[^\\])"'"		{
-  *yylval = xmemdup (yytext+1, yyleng-2, yyleng);
+  *yylval = XDUPVAR (const char, yytext+1, yyleng-2, yyleng);
   return CHAR;
 }
 
