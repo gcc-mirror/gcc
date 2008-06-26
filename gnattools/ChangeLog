@@ -1,3 +1,7 @@
+2008-06-26  Chris Proctor  <chrisp_42@bigpond.com>
+
+	* configure.ac, configure: Fix target specific pairs.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: move sinclude of acx.m4 before AC_INIT,
