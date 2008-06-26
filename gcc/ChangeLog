@@ -1,3 +1,7 @@
+2008-06-25  John David Anglin  <dave.anglin@gcc-cnrc.gc.ca>
+
+	* config.gcc (hppa[12]*-*-hpux10*): Don't use fixproto.
+
 2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (record_alias_subset, init_alias_analysis): Fix
