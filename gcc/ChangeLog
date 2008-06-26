@@ -1,5 +1,10 @@
 2008-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* tree-into-ssa (insert_phi_nodes_for): 'var' must be a DECL at
+	this point, so assert that.
+
+2008-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* cfganal.c: Include vec.h and vecprim.h.
 	(compute_idf): Import from...
 	* tree-into-ssa (compute_idf): ...here.
