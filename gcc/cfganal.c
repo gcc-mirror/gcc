@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "vec.h"
+#include "vecprim.h"
 #include "timevar.h"
 
 /* Store the data structures necessary for depth-first search.  */
@@ -1292,3 +1294,64 @@ compute_dominance_frontiers (bitmap *frontiers)
 
   timevar_pop (TV_DOM_FRONTIERS);
 }
+
+/* Given a set of blocks with variable definitions (DEF_BLOCKS),
+   return a bitmap with all the blocks in the iterated dominance
+   frontier of the blocks in DEF_BLOCKS.  DFS contains dominance
+   frontier information as returned by compute_dominance_frontiers.
+
+   The resulting set of blocks are the potential sites where PHI nodes
+   are needed.  The caller is responsible for freeing the memory
+   allocated for the return value.  */
+
+bitmap
+compute_idf (bitmap def_blocks, bitmap *dfs)
+{
+  bitmap_iterator bi;
+  unsigned bb_index, i;
+  VEC(int,heap) *work_stack;
+  bitmap phi_insertion_points;
+
+  work_stack = VEC_alloc (int, heap, n_basic_blocks);
+  phi_insertion_points = BITMAP_ALLOC (NULL);
+
+  /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
+     VEC_quick_push here for speed.  This is safe because we know that
+     the number of definition blocks is no greater than the number of
+     basic blocks, which is the initial capacity of WORK_STACK.  */
+  EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
+    VEC_quick_push (int, work_stack, bb_index);
+
+  /* Pop a block off the worklist, add every block that appears in
+     the original block's DF that we have not already processed to
+     the worklist.  Iterate until the worklist is empty.   Blocks
+     which are added to the worklist are potential sites for
+     PHI nodes.  */
+  while (VEC_length (int, work_stack) > 0)
+    {
+      bb_index = VEC_pop (int, work_stack);
+
+      /* Since the registration of NEW -> OLD name mappings is done
+	 separately from the call to update_ssa, when updating the SSA
+	 form, the basic blocks where new and/or old names are defined
+	 may have disappeared by CFG cleanup calls.  In this case,
+	 we may pull a non-existing block from the work stack.  */
+      gcc_assert (bb_index < (unsigned) last_basic_block);
+
+      EXECUTE_IF_AND_COMPL_IN_BITMAP (dfs[bb_index], phi_insertion_points,
+	                              0, i, bi)
+	{
+	  /* Use a safe push because if there is a definition of VAR
+	     in every basic block, then WORK_STACK may eventually have
+	     more than N_BASIC_BLOCK entries.  */
+	  VEC_safe_push (int, heap, work_stack, i);
+	  bitmap_set_bit (phi_insertion_points, i);
+	}
+    }
+
+  VEC_free (int, heap, work_stack);
+
+  return phi_insertion_points;
+}
+
+

@@ -1,3 +1,10 @@
+2008-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfganal.c: Include vec.h and vecprim.h.
+	(compute_idf): Import from...
+	* tree-into-ssa (compute_idf): ...here.
+	* basic-block.h (compute_idf): Export.
+
 2008-06-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (merge_decls): Use !current_function_decl to check for
