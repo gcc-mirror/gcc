@@ -1,3 +1,8 @@
+2008-06-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (merge_decls): Use !current_function_decl to check for
+	extern declaration of C99 inline function being at file scope.
+
 2008-06-25  John David Anglin  <dave.anglin@gcc-cnrc.gc.ca>
 
 	* config.gcc (hppa[12]*-*-hpux10*): Don't use fixproto.
