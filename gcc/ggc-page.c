@@ -503,7 +503,7 @@ push_depth (unsigned int i)
   if (G.depth_in_use >= G.depth_max)
     {
       G.depth_max *= 2;
-      G.depth = xrealloc (G.depth, G.depth_max * sizeof (unsigned int));
+      G.depth = XRESIZEVEC (unsigned int, G.depth, G.depth_max);
     }
   G.depth[G.depth_in_use++] = i;
 }
@@ -516,10 +516,9 @@ push_by_depth (page_entry *p, unsigned long *s)
   if (G.by_depth_in_use >= G.by_depth_max)
     {
       G.by_depth_max *= 2;
-      G.by_depth = xrealloc (G.by_depth,
-			     G.by_depth_max * sizeof (page_entry *));
-      G.save_in_use = xrealloc (G.save_in_use,
-				G.by_depth_max * sizeof (unsigned long *));
+      G.by_depth = XRESIZEVEC (page_entry *, G.by_depth, G.by_depth_max);
+      G.save_in_use = XRESIZEVEC (unsigned long *, G.save_in_use,
+				  G.by_depth_max);
     }
   G.by_depth[G.by_depth_in_use] = p;
   G.save_in_use[G.by_depth_in_use++] = s;
@@ -657,12 +656,12 @@ static inline char *
 alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
 {
 #ifdef HAVE_MMAP_ANON
-  char *page = mmap (pref, size, PROT_READ | PROT_WRITE,
-		     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
+			      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #endif
 #ifdef HAVE_MMAP_DEV_ZERO
-  char *page = mmap (pref, size, PROT_READ | PROT_WRITE,
-		     MAP_PRIVATE, G.dev_zero_fd, 0);
+  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
+			      MAP_PRIVATE, G.dev_zero_fd, 0);
 #endif
 
   if (page == (char *) MAP_FAILED)
@@ -772,7 +771,7 @@ alloc_page (unsigned order)
 	 memory order.  */
       for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
 	{
-	  e = xcalloc (1, page_entry_size);
+	  e = XCNEWVAR (struct page_entry, page_entry_size);
 	  e->order = order;
 	  e->bytes = G.pagesize;
 	  e->page = page + (i << G.lg_pagesize);
@@ -857,7 +856,7 @@ alloc_page (unsigned order)
 #endif
 
   if (entry == NULL)
-    entry = xcalloc (1, page_entry_size);
+    entry = XCNEWVAR (struct page_entry, page_entry_size);
 
   entry->bytes = entry_size;
   entry->page = page;
@@ -1285,7 +1284,7 @@ gt_ggc_m_S (const void *p)
 	 a STRING_CST.  */
       gcc_assert (offset == offsetof (struct tree_string, str));
       p = ((const char *) p) - offset;
-      gt_ggc_mx_lang_tree_node ((void *) p);
+      gt_ggc_mx_lang_tree_node (CONST_CAST (void *, p));
       return;
     }
 
@@ -1666,7 +1665,7 @@ clear_marks (void)
 	  if (p->context_depth < G.context_depth)
 	    {
 	      if (! save_in_use_p (p))
-		save_in_use_p (p) = xmalloc (bitmap_size);
+		save_in_use_p (p) = XNEWVAR (unsigned long, bitmap_size);
 	      memcpy (save_in_use_p (p), p->in_use_p, bitmap_size);
 	    }
 
@@ -2272,7 +2271,7 @@ ggc_pch_read (FILE *f, void *addr)
 {
   struct ggc_pch_ondisk d;
   unsigned i;
-  char *offs = addr;
+  char *offs = (char *) addr;
   unsigned long count_old_page_tables;
   unsigned long count_new_page_tables;
 
@@ -2318,9 +2317,9 @@ ggc_pch_read (FILE *f, void *addr)
 
       bytes = ROUND_UP (d.totals[i] * OBJECT_SIZE (i), G.pagesize);
       num_objs = bytes / OBJECT_SIZE (i);
-      entry = xcalloc (1, (sizeof (struct page_entry)
-			   - sizeof (long)
-			   + BITMAP_SIZE (num_objs + 1)));
+      entry = XCNEWVAR (struct page_entry, (sizeof (struct page_entry)
+					    - sizeof (long)
+					    + BITMAP_SIZE (num_objs + 1)));
       entry->bytes = bytes;
       entry->page = offs;
       entry->context_depth = 0;

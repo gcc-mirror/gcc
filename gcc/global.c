@@ -216,7 +216,7 @@ compute_regsets (HARD_REG_SET *elim_set,
 /* Like regs_ever_live, but 1 if a reg is set or clobbered from an asm.
    Unlike regs_ever_live, elements of this array corresponding to
    eliminable regs like the frame pointer are set if an asm sets them.  */
-  char *regs_asm_clobbered = alloca (FIRST_PSEUDO_REGISTER * sizeof (char));
+  char *regs_asm_clobbered = XALLOCAVEC (char, FIRST_PSEUDO_REGISTER);
 
 #ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;

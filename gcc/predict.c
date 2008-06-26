@@ -211,7 +211,7 @@ tree_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
   if (!preds)
     return false;
   
-  for (i = *preds; i; i = i->ep_next)
+  for (i = (struct edge_prediction *) *preds; i; i = i->ep_next)
     if (i->ep_predictor == predictor)
       return true;
   return false;
@@ -316,7 +316,7 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
       struct edge_prediction *i = XNEW (struct edge_prediction);
       void **preds = pointer_map_insert (bb_predictions, e->src);
 
-      i->ep_next = *preds;
+      i->ep_next = (struct edge_prediction *) *preds;
       *preds = i;
       i->ep_probability = probability;
       i->ep_predictor = predictor;
@@ -366,7 +366,7 @@ clear_bb_predictions (basic_block bb)
   if (!preds)
     return;
 
-  for (pred = *preds; pred; pred = next)
+  for (pred = (struct edge_prediction *) *preds; pred; pred = next)
     {
       next = pred->ep_next;
       free (pred);
@@ -638,7 +638,7 @@ combine_predictions_for_bb (basic_block bb)
     {
       /* We implement "first match" heuristics and use probability guessed
 	 by predictor with smallest index.  */
-      for (pred = *preds; pred; pred = pred->ep_next)
+      for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
 	{
 	  int predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
@@ -688,7 +688,7 @@ combine_predictions_for_bb (basic_block bb)
 
   if (preds)
     {
-      for (pred = *preds; pred; pred = pred->ep_next)
+      for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
 	{
 	  int predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;

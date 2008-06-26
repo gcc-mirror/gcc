@@ -70,7 +70,7 @@ decode_l2_cache (unsigned *l2_size, unsigned *l2_line, unsigned *l2_assoc)
 
 /* Returns the description of caches for an AMD processor.  */
 
-static char *
+static const char *
 detect_caches_amd (unsigned max_ext_level)
 {
   unsigned eax, ebx, ecx, edx;
@@ -78,7 +78,7 @@ detect_caches_amd (unsigned max_ext_level)
   unsigned l2_sizekb, l2_line, l2_assoc;
 
   if (max_ext_level < 0x80000005)
-    return (char *) "";
+    return "";
 
   __cpuid (0x80000005, eax, ebx, ecx, edx);
 
@@ -282,7 +282,7 @@ decode_caches_intel (unsigned reg, unsigned *l1_sizekb, unsigned *l1_line,
 
 /* Returns the description of caches for an intel processor.  */
 
-static char *
+static const char *
 detect_caches_intel (unsigned max_level, unsigned max_ext_level)
 {
   unsigned eax, ebx, ecx, edx;
@@ -290,7 +290,7 @@ detect_caches_intel (unsigned max_level, unsigned max_ext_level)
   unsigned l2_sizekb = 0, l2_line = 0, l2_assoc = 0;
 
   if (max_level < 2)
-    return (char *) "";
+    return "";
 
   __cpuid (2, eax, ebx, ecx, edx);
 
@@ -304,7 +304,7 @@ detect_caches_intel (unsigned max_level, unsigned max_ext_level)
       &l2_sizekb, &l2_line, &l2_assoc);
 
   if (!l1_sizekb)
-    return (char *) "";
+    return "";
 
   /* Newer Intel CPUs are equipped with AMD style L2 cache info */
   if (max_ext_level >= 0x80000006)
@@ -393,13 +393,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == *(unsigned int*) "Auth")
+      if (vendor == *(const unsigned int*) "Auth")
 	cache = detect_caches_amd (ext_level);
-      else if (vendor == *(unsigned int*) "Genu")
+      else if (vendor == *(const unsigned int*) "Genu")
 	cache = detect_caches_intel (max_level, ext_level);
     }
 
-  if (vendor == *(unsigned int*) "Auth")
+  if (vendor == *(const unsigned int*) "Auth")
     {
       processor = PROCESSOR_PENTIUM;
 
@@ -412,7 +412,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
     }
-  else if (vendor == *(unsigned int*) "Geod")
+  else if (vendor == *(const unsigned int*) "Geod")
     processor = PROCESSOR_GEODE;
   else
     {

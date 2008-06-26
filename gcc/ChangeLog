@@ -1,5 +1,56 @@
 2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* config/i386/driver-i386.c (detect_caches_amd,
+	detect_caches_intel, host_detect_local_cpu): Fix -Wc++-compat
+	and/or -Wcast-qual warnings.
+	*ggc-common.c (ggc_mark_roots, gt_pch_note_object,
+	gt_pch_note_reorder, relocate_ptrs, write_pch_globals,
+	gt_pch_save): Likewise.
+	* ggc-page.c (push_depth, push_by_depth, alloc_anon, alloc_page,
+	gt_ggc_m_S, clear_marks, ggc_pch_read): Likewise.
+	* global.c (compute_regsets): Likewise.
+	* graph.c (print_rtl_graph_with_bb, clean_graph_dump_file,
+	finish_graph_dump_file): Likewise.
+	* haifa-sched.c (schedule_block, extend_h_i_d, extend_ready,
+	unlink_bb_notes): Likewise.
+	* integrate.c (get_hard_reg_initial_val): Likewise.
+	* ipa-prop.c (ipa_push_func_to_list): Likewise.
+	* ipa-struct-reorg.c (gen_var_name, gen_cluster_name): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* loop-invariant.c (check_invariant_table_size,
+	hash_invariant_expr, eq_invariant_expr, find_or_insert_inv):
+	Likewise.
+	* loop-iv.c (check_iv_ref_table_size, analyzed_for_bivness_p,
+	altered_reg_used, mark_altered): Likewise.
+	* loop-unroll.c (si_info_eq, ve_info_eq, allocate_basic_variable,
+	insert_var_expansion_initialization,
+	combine_var_copies_in_loop_exit, apply_opt_in_copies,
+	release_var_copies): Likewise.
+	* matrix-reorg.c (mat_acc_phi_hash, mat_acc_phi_eq, mtt_info_eq,
+	analyze_matrix_decl, add_allocation_site, analyze_transpose,
+	analyze_accesses_for_phi_node, check_var_notmodified_p,
+	check_allocation_function, find_sites_in_func,
+	record_all_accesses_in_func, transform_access_sites,
+	transform_allocation_sites): Likewise.
+	* omp-low.c (new_omp_region, create_omp_child_function_name,
+	check_omp_nesting_restrictions, check_combined_parallel,
+	lower_omp_2, diagnose_sb_1, diagnose_sb_2): Likewise.
+	* optabs.c (no_conflict_move_test, gen_libfunc, gen_fp_libfunc,
+	gen_intv_fp_libfunc, gen_interclass_conv_libfunc,
+	gen_intraclass_conv_libfunc, set_optab_libfunc, set_conv_libfunc):
+	Likewise.
+	* opts-common.c (prune_options): Likewise.
+	* opts.c (add_input_filename, print_filtered_help,
+	get_option_state): Likewise.
+	* params.c (add_params): Likewise.
+	* passes.c (set_pass_for_id, next_pass_1,
+	do_per_function_toporder, pass_fini_dump_file): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* predict.c (tree_predicted_by_p, tree_predict_edge,
+	clear_bb_predictions, combine_predictions_for_bb): Likewise.
+
+2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* ra.h (add_neighbor): Fix -Wc++-compat and/or -Wcast-qual
 	warnings.
 	* recog.c (check_asm_operands, validate_change_1): Likewise.

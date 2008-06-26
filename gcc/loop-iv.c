@@ -173,8 +173,7 @@ check_iv_ref_table_size (void)
   if (iv_ref_table_size < DF_DEFS_TABLE_SIZE())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
-      iv_ref_table = xrealloc (iv_ref_table, 
-			       sizeof (struct rtx_iv *) * new_size);
+      iv_ref_table = XRESIZEVEC (struct rtx_iv *, iv_ref_table, new_size);
       memset (&iv_ref_table[iv_ref_table_size], 0, 
 	      (new_size - iv_ref_table_size) * sizeof (struct rtx_iv *));
       iv_ref_table_size = new_size;
@@ -819,7 +818,8 @@ record_iv (struct df_ref *def, struct rtx_iv *iv)
 static bool
 analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
 {
-  struct biv_entry *biv = htab_find_with_hash (bivs, def, REGNO (def));
+  struct biv_entry *biv =
+    (struct biv_entry *) htab_find_with_hash (bivs, def, REGNO (def));
 
   if (!biv)
     return false;
@@ -1304,7 +1304,7 @@ altered_reg_used (rtx *reg, void *alt)
   if (!REG_P (*reg))
     return 0;
 
-  return REGNO_REG_SET_P (alt, REGNO (*reg));
+  return REGNO_REG_SET_P ((bitmap) alt, REGNO (*reg));
 }
 
 /* Marks registers altered by EXPR in set ALT.  */
@@ -1317,7 +1317,7 @@ mark_altered (rtx expr, const_rtx by ATTRIBUTE_UNUSED, void *alt)
   if (!REG_P (expr))
     return;
 
-  SET_REGNO_REG_SET (alt, REGNO (expr));
+  SET_REGNO_REG_SET ((bitmap) alt, REGNO (expr));
 }
 
 /* Checks whether RHS is simple enough to process.  */

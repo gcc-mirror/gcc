@@ -2179,7 +2179,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
   q_ptr = 0;
   q_size = 0;
 
-  insn_queue = alloca ((max_insn_queue_index + 1) * sizeof (rtx));
+  insn_queue = XALLOCAVEC (rtx, max_insn_queue_index + 1);
   memset (insn_queue, 0, (max_insn_queue_index + 1) * sizeof (rtx));
 
   /* Start just before the beginning of time.  */
@@ -3158,7 +3158,8 @@ extend_h_i_d (void)
      pseudos which do not cross calls.  */
   int new_max_uid = get_max_uid () + 1;  
 
-  h_i_d = xrecalloc (h_i_d, new_max_uid, old_max_uid, sizeof (*h_i_d));
+  h_i_d = (struct haifa_insn_data *)
+    xrecalloc (h_i_d, new_max_uid, old_max_uid, sizeof (*h_i_d));
   old_max_uid = new_max_uid;
 
   if (targetm.sched.h_i_d_extended)
@@ -3175,8 +3176,8 @@ extend_ready (int n_new_insns)
   readyp->veclen = rgn_n_insns + n_new_insns + 1 + issue_rate;
   readyp->vec = XRESIZEVEC (rtx, readyp->vec, readyp->veclen);
  
-  ready_try = xrecalloc (ready_try, rgn_n_insns + n_new_insns + 1,
-			 rgn_n_insns + 1, sizeof (char));
+  ready_try = (char *) xrecalloc (ready_try, rgn_n_insns + n_new_insns + 1,
+				  rgn_n_insns + 1, sizeof (char));
 
   rgn_n_insns += n_new_insns;
 
@@ -4098,7 +4099,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   if (first == last)
     return;
 
-  bb_header = xmalloc (last_basic_block * sizeof (*bb_header));
+  bb_header = XNEWVEC (rtx, last_basic_block);
 
   /* Make a sentinel.  */
   if (last->next_bb != EXIT_BLOCK_PTR)

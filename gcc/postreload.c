@@ -394,9 +394,9 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
 
-  alternative_reject = alloca (recog_data.n_alternatives * sizeof (int));
-  alternative_nregs = alloca (recog_data.n_alternatives * sizeof (int));
-  alternative_order = alloca (recog_data.n_alternatives * sizeof (int));
+  alternative_reject = XALLOCAVEC (int, recog_data.n_alternatives);
+  alternative_nregs = XALLOCAVEC (int, recog_data.n_alternatives);
+  alternative_order = XALLOCAVEC (int, recog_data.n_alternatives);
   memset (alternative_reject, 0, recog_data.n_alternatives * sizeof (int));
   memset (alternative_nregs, 0, recog_data.n_alternatives * sizeof (int));
 
@@ -487,7 +487,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
       int regno;
       const char *p;
 
-      op_alt_regno[i] = alloca (recog_data.n_alternatives * sizeof (int));
+      op_alt_regno[i] = XALLOCAVEC (int, recog_data.n_alternatives);
       for (j = 0; j < recog_data.n_alternatives; j++)
 	op_alt_regno[i][j] = -1;
 

@@ -3801,7 +3801,7 @@ struct no_conflict_data
 static void
 no_conflict_move_test (rtx dest, const_rtx set, void *p0)
 {
-  struct no_conflict_data *p= p0;
+  struct no_conflict_data *p= (struct no_conflict_data *) p0;
 
   /* If this inns directly contributes to setting the target, it must stay.  */
   if (reg_overlap_mentioned_p (p->target, dest))
@@ -5463,7 +5463,7 @@ gen_libfunc (optab optable, const char *opname, int suffix, enum machine_mode mo
   unsigned opname_len = strlen (opname);
   const char *mname = GET_MODE_NAME (mode);
   unsigned mname_len = strlen (mname);
-  char *libfunc_name = alloca (2 + opname_len + mname_len + 1 + 1);
+  char *libfunc_name = XALLOCAVEC (char, 2 + opname_len + mname_len + 1 + 1);
   char *p;
   const char *q;
 
@@ -5511,7 +5511,7 @@ gen_fp_libfunc (optab optable, const char *opname, char suffix,
     gen_libfunc (optable, opname, suffix, mode);
   if (DECIMAL_FLOAT_MODE_P (mode))
     {
-      dec_opname = alloca (sizeof (DECIMAL_PREFIX) + strlen (opname));
+      dec_opname = XALLOCAVEC (char, sizeof (DECIMAL_PREFIX) + strlen (opname));
       /* For BID support, change the name to have either a bid_ or dpd_ prefix
 	 depending on the low level floating format used.  */
       memcpy (dec_opname, DECIMAL_PREFIX, sizeof (DECIMAL_PREFIX) - 1);
@@ -5579,7 +5579,7 @@ gen_intv_fp_libfunc (optab optable, const char *name, char suffix,
   if (GET_MODE_CLASS (mode) == MODE_INT)
     {
       int len = strlen (name);
-      char *v_name = alloca (len + 2);
+      char *v_name = XALLOCAVEC (char, len + 2);
       strcpy (v_name, name);
       v_name[len] = 'v';
       v_name[len + 1] = 0;
@@ -5683,13 +5683,13 @@ gen_interclass_conv_libfunc (convert_optab tab,
 
   mname_len = strlen (GET_MODE_NAME (tmode)) + strlen (GET_MODE_NAME (fmode));
 
-  nondec_name = alloca (2 + opname_len + mname_len + 1 + 1);
+  nondec_name = XALLOCAVEC (char, 2 + opname_len + mname_len + 1 + 1);
   nondec_name[0] = '_';
   nondec_name[1] = '_';
   memcpy (&nondec_name[2], opname, opname_len);
   nondec_suffix = nondec_name + opname_len + 2;
 
-  dec_name = alloca (2 + dec_len + opname_len + mname_len + 1 + 1);
+  dec_name = XALLOCAVEC (char, 2 + dec_len + opname_len + mname_len + 1 + 1);
   dec_name[0] = '_';
   dec_name[1] = '_';
   memcpy (&dec_name[2], DECIMAL_PREFIX, dec_len);
@@ -5808,13 +5808,13 @@ gen_intraclass_conv_libfunc (convert_optab tab, const char *opname,
 
   mname_len = strlen (GET_MODE_NAME (tmode)) + strlen (GET_MODE_NAME (fmode));
 
-  nondec_name = alloca (2 + opname_len + mname_len + 1 + 1);
+  nondec_name = XALLOCAVEC (char, 2 + opname_len + mname_len + 1 + 1);
   nondec_name[0] = '_';
   nondec_name[1] = '_';
   memcpy (&nondec_name[2], opname, opname_len);
   nondec_suffix = nondec_name + opname_len + 2;
 
-  dec_name = alloca (2 + dec_len + opname_len + mname_len + 1 + 1);
+  dec_name = XALLOCAVEC (char, 2 + dec_len + opname_len + mname_len + 1 + 1);
   dec_name[0] = '_';
   dec_name[1] = '_';
   memcpy (&dec_name[2], DECIMAL_PREFIX, dec_len);
@@ -6026,7 +6026,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
     val = 0;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
-    *slot = ggc_alloc (sizeof (struct libfunc_entry));
+    *slot = GGC_NEW (struct libfunc_entry);
   (*slot)->optab = (size_t) (optable - &optab_table[0]);
   (*slot)->mode1 = mode;
   (*slot)->mode2 = VOIDmode;
@@ -6053,7 +6053,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
     val = 0;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
-    *slot = ggc_alloc (sizeof (struct libfunc_entry));
+    *slot = GGC_NEW (struct libfunc_entry);
   (*slot)->optab = (size_t) (optable - &convert_optab_table[0]);
   (*slot)->mode1 = tmode;
   (*slot)->mode2 = fmode;
