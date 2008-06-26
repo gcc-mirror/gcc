@@ -606,7 +606,7 @@ dwarf_cfi_name (unsigned int cfi_opc)
 static inline dw_cfi_ref
 new_cfi (void)
 {
-  dw_cfi_ref cfi = ggc_alloc (sizeof (dw_cfi_node));
+  dw_cfi_ref cfi = GGC_NEW (dw_cfi_node);
 
   cfi->dw_cfi_next = NULL;
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = 0;
@@ -1251,7 +1251,7 @@ queue_reg_save (const char *label, rtx reg, rtx sreg, HOST_WIDE_INT offset)
 
   if (q == NULL)
     {
-      q = ggc_alloc (sizeof (*q));
+      q = GGC_NEW (struct queued_reg_save);
       q->next = queued_reg_saves;
       queued_reg_saves = q;
     }
@@ -2643,8 +2643,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   if (fde_table_in_use == fde_table_allocated)
     {
       fde_table_allocated += FDE_TABLE_INCREMENT;
-      fde_table = ggc_realloc (fde_table,
-			       fde_table_allocated * sizeof (dw_fde_node));
+      fde_table = GGC_RESIZEVEC (dw_fde_node, fde_table, fde_table_allocated);
       memset (fde_table + fde_table_in_use, 0,
 	      FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
     }
@@ -2704,7 +2703,7 @@ void
 dwarf2out_frame_init (void)
 {
   /* Allocate the initial hunk of the fde_table.  */
-  fde_table = ggc_alloc_cleared (FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
+  fde_table = GGC_CNEWVEC (dw_fde_node, FDE_TABLE_INCREMENT);
   fde_table_allocated = FDE_TABLE_INCREMENT;
   fde_table_in_use = 0;
 
@@ -3228,7 +3227,7 @@ static inline dw_loc_descr_ref
 new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
 	       unsigned HOST_WIDE_INT oprnd2)
 {
-  dw_loc_descr_ref descr = ggc_alloc_cleared (sizeof (dw_loc_descr_node));
+  dw_loc_descr_ref descr = GGC_CNEW (dw_loc_descr_node);
 
   descr->dw_loc_opc = op;
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
@@ -5747,7 +5746,7 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 static inline dw_die_ref
 new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 {
-  dw_die_ref die = ggc_alloc_cleared (sizeof (die_node));
+  dw_die_ref die = GGC_CNEW (die_node);
 
   die->die_tag = tag_value;
 
@@ -5757,7 +5756,7 @@ new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
     {
       limbo_die_node *limbo_node;
 
-      limbo_node = ggc_alloc_cleared (sizeof (limbo_die_node));
+      limbo_node = GGC_CNEW (limbo_die_node);
       limbo_node->die = die;
       limbo_node->created_for = t;
       limbo_node->next = limbo_die_list;
@@ -5804,7 +5803,7 @@ decl_die_table_eq (const void *x, const void *y)
 static inline dw_die_ref
 lookup_decl_die (tree decl)
 {
-  return htab_find_with_hash (decl_die_table, decl, DECL_UID (decl));
+  return (dw_die_ref) htab_find_with_hash (decl_die_table, decl, DECL_UID (decl));
 }
 
 /* Returns a hash value for X (which really is a var_loc_list).  */
@@ -5829,7 +5828,8 @@ decl_loc_table_eq (const void *x, const void *y)
 static inline var_loc_list *
 lookup_decl_loc (const_tree decl)
 {
-  return htab_find_with_hash (decl_loc_table, decl, DECL_UID (decl));
+  return (var_loc_list *)
+    htab_find_with_hash (decl_loc_table, decl, DECL_UID (decl));
 }
 
 /* Equate a DIE to a particular declaration.  */
@@ -5857,12 +5857,12 @@ add_var_loc_to_decl (tree decl, struct var_loc_node *loc)
   slot = htab_find_slot_with_hash (decl_loc_table, decl, decl_id, INSERT);
   if (*slot == NULL)
     {
-      temp = ggc_alloc_cleared (sizeof (var_loc_list));
+      temp = GGC_CNEW (var_loc_list);
       temp->decl_id = decl_id;
       *slot = temp;
     }
   else
-    temp = *slot;
+    temp = (var_loc_list *) *slot;
 
   if (temp->last)
     {
@@ -6354,7 +6354,7 @@ compute_section_prefix (dw_die_ref unit_die)
 {
   const char *die_name = get_AT_string (unit_die, DW_AT_name);
   const char *base = die_name ? lbasename (die_name) : "anonymous";
-  char *name = alloca (strlen (base) + 64);
+  char *name = XALLOCAVEC (char, strlen (base) + 64);
   char *p;
   int i, mark;
   unsigned char checksum[16];
@@ -6476,7 +6476,7 @@ assign_symbol_names (dw_die_ref die)
     {
       if (comdat_symbol_id)
 	{
-	  char *p = alloca (strlen (comdat_symbol_id) + 64);
+	  char *p = XALLOCAVEC (char, strlen (comdat_symbol_id) + 64);
 
 	  sprintf (p, "%s.%s.%x", DIE_LABEL_PREFIX,
 		   comdat_symbol_id, comdat_symbol_number++);
@@ -6500,7 +6500,8 @@ struct cu_hash_table_entry
 static hashval_t
 htab_cu_hash (const void *of)
 {
-  const struct cu_hash_table_entry *entry = of;
+  const struct cu_hash_table_entry *const entry =
+    (const struct cu_hash_table_entry *) of;
 
   return htab_hash_string (entry->cu->die_symbol);
 }
@@ -6508,8 +6509,9 @@ htab_cu_hash (const void *of)
 static int
 htab_cu_eq (const void *of1, const void *of2)
 {
-  const struct cu_hash_table_entry *entry1 = of1;
-  const struct die_struct *entry2 = of2;
+  const struct cu_hash_table_entry *const entry1 =
+    (const struct cu_hash_table_entry *) of1;
+  const struct die_struct *const entry2 = (const struct die_struct *) of2;
 
   return !strcmp (entry1->cu->die_symbol, entry2->die_symbol);
 }
@@ -6517,7 +6519,8 @@ htab_cu_eq (const void *of1, const void *of2)
 static void
 htab_cu_del (void *what)
 {
-  struct cu_hash_table_entry *next, *entry = what;
+  struct cu_hash_table_entry *next,
+    *entry = (struct cu_hash_table_entry *) what;
 
   while (entry)
     {
@@ -6737,8 +6740,8 @@ build_abbrev_table (dw_die_ref die)
       if (abbrev_die_table_in_use >= abbrev_die_table_allocated)
 	{
 	  n_alloc = abbrev_die_table_allocated + ABBREV_DIE_TABLE_INCREMENT;
-	  abbrev_die_table = ggc_realloc (abbrev_die_table,
-					  sizeof (dw_die_ref) * n_alloc);
+	  abbrev_die_table = GGC_RESIZEVEC (dw_die_ref, abbrev_die_table,
+					    n_alloc);
 
 	  memset (&abbrev_die_table[abbrev_die_table_allocated], 0,
 		 (n_alloc - abbrev_die_table_allocated) * sizeof (dw_die_ref));
@@ -7128,7 +7131,7 @@ static inline dw_loc_list_ref
 new_loc_list (dw_loc_descr_ref expr, const char *begin, const char *end,
 	      const char *section, unsigned int gensym)
 {
-  dw_loc_list_ref retlist = ggc_alloc_cleared (sizeof (dw_loc_list_node));
+  dw_loc_list_ref retlist = GGC_CNEW (dw_loc_list_node);
 
   retlist->begin = begin;
   retlist->end = end;
@@ -7458,7 +7461,7 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
   oldsym = die->die_symbol;
   if (oldsym)
     {
-      tmp = alloca (strlen (oldsym) + 24);
+      tmp = XALLOCAVEC (char, strlen (oldsym) + 24);
 
       sprintf (tmp, ".gnu.linkonce.wi.%s", oldsym);
       secname = tmp;
@@ -7602,9 +7605,8 @@ add_arange (tree decl, dw_die_ref die)
   if (arange_table_in_use == arange_table_allocated)
     {
       arange_table_allocated += ARANGE_TABLE_INCREMENT;
-      arange_table = ggc_realloc (arange_table,
-				  (arange_table_allocated
-				   * sizeof (dw_die_ref)));
+      arange_table = GGC_RESIZEVEC (dw_die_ref, arange_table,
+				    arange_table_allocated);
       memset (arange_table + arange_table_in_use, 0,
 	      ARANGE_TABLE_INCREMENT * sizeof (dw_die_ref));
     }
@@ -7715,9 +7717,8 @@ add_ranges_num (int num)
   if (in_use == ranges_table_allocated)
     {
       ranges_table_allocated += RANGES_TABLE_INCREMENT;
-      ranges_table
-	= ggc_realloc (ranges_table, (ranges_table_allocated
-				      * sizeof (struct dw_ranges_struct)));
+      ranges_table = GGC_RESIZEVEC (struct dw_ranges_struct, ranges_table,
+				    ranges_table_allocated);
       memset (ranges_table + ranges_table_in_use, 0,
 	      RANGES_TABLE_INCREMENT * sizeof (struct dw_ranges_struct));
     }
@@ -7748,10 +7749,9 @@ add_ranges_by_labels (const char *begin, const char *end)
   if (in_use == ranges_by_label_allocated)
     {
       ranges_by_label_allocated += RANGES_TABLE_INCREMENT;
-      ranges_by_label
-	= ggc_realloc (ranges_by_label,
-		       (ranges_by_label_allocated
-			* sizeof (struct dw_ranges_by_label_struct)));
+      ranges_by_label = GGC_RESIZEVEC (struct dw_ranges_by_label_struct,
+				       ranges_by_label,
+				       ranges_by_label_allocated);
       memset (ranges_by_label + ranges_by_label_in_use, 0,
 	      RANGES_TABLE_INCREMENT
 	      * sizeof (struct dw_ranges_by_label_struct));
@@ -7876,8 +7876,8 @@ struct dir_info
 static int
 file_info_cmp (const void *p1, const void *p2)
 {
-  const struct file_info *s1 = p1;
-  const struct file_info *s2 = p2;
+  const struct file_info *const s1 = (const struct file_info *) p1;
+  const struct file_info *const s2 = (const struct file_info *) p2;
   const unsigned char *cp1;
   const unsigned char *cp2;
 
@@ -7920,8 +7920,8 @@ struct file_name_acquire_data
 static int
 file_name_acquire (void ** slot, void *data)
 {
-  struct file_name_acquire_data *fnad = data;
-  struct dwarf_file_data *d = *slot;
+  struct file_name_acquire_data *fnad = (struct file_name_acquire_data *) data;
+  struct dwarf_file_data *d = (struct dwarf_file_data *) *slot;
   struct file_info *fi;
   const char *f;
 
@@ -7991,8 +7991,8 @@ output_file_names (void)
   numfiles = last_emitted_file->emitted_number;
 
   /* Allocate the various arrays we need.  */
-  files = alloca (numfiles * sizeof (struct file_info));
-  dirs = alloca (numfiles * sizeof (struct dir_info));
+  files = XALLOCAVEC (struct file_info, numfiles);
+  dirs = XALLOCAVEC (struct dir_info, numfiles);
 
   fnad.files = files;
   fnad.used_files = 0;
@@ -8050,8 +8050,8 @@ output_file_names (void)
      where we would have to check out every combination of every single
      possible prefix.  Instead we use a heuristic which provides nearly optimal
      results in most cases and never is much off.  */
-  saved = alloca (ndirs * sizeof (int));
-  savehere = alloca (ndirs * sizeof (int));
+  saved = XALLOCAVEC (int, ndirs);
+  savehere = XALLOCAVEC (int, ndirs);
 
   memset (saved, '\0', ndirs * sizeof (saved[0]));
   for (i = 0; i < ndirs; i++)
@@ -8117,7 +8117,7 @@ output_file_names (void)
   /* We have to emit them in the order of emitted_number since that's
      used in the debug info generation.  To do this efficiently we
      generate a back-mapping of the indices first.  */
-  backmap = alloca (numfiles * sizeof (int));
+  backmap = XALLOCAVEC (int, numfiles);
   for (i = 0; i < numfiles; i++)
     backmap[files[i].file_idx->emitted_number - 1] = i;
 
@@ -10293,7 +10293,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	if (SCALAR_FLOAT_MODE_P (mode))
 	  {
 	    unsigned int length = GET_MODE_SIZE (mode);
-	    unsigned char *array = ggc_alloc (length);
+	    unsigned char *array = GGC_NEWVEC (unsigned char, length);
 
 	    insert_float (rtl, array);
 	    add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
@@ -10314,7 +10314,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	enum machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
 	unsigned int length = CONST_VECTOR_NUNITS (rtl);
-	unsigned char *array = ggc_alloc (length * elt_size);
+	unsigned char *array = GGC_NEWVEC (unsigned char, length * elt_size);
 	unsigned int i;
 	unsigned char *p;
 
@@ -12359,7 +12359,7 @@ premark_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
   tree type;
   dw_die_ref die;
 
-  type = *slot;
+  type = (tree) *slot;
   die = lookup_type_die (type);
   if (die != NULL)
     die->die_perennial_p = 1;
@@ -14423,15 +14423,16 @@ dwarf2out_ignore_block (const_tree block)
 static int
 file_table_eq (const void *p1_p, const void *p2_p)
 {
-  const struct dwarf_file_data * p1 = p1_p;
-  const char * p2 = p2_p;
+  const struct dwarf_file_data *const p1 =
+    (const struct dwarf_file_data *) p1_p;
+  const char *const p2 = (const char *) p2_p;
   return strcmp (p1->filename, p2) == 0;
 }
 
 static hashval_t
 file_table_hash (const void *p_p)
 {
-  const struct dwarf_file_data * p = p_p;
+  const struct dwarf_file_data *const p = (const struct dwarf_file_data *) p_p;
   return htab_hash_string (p->filename);
 }
 
@@ -14463,9 +14464,9 @@ lookup_filename (const char *file_name)
   slot = htab_find_slot_with_hash (file_table, file_name,
 				   htab_hash_string (file_name), INSERT);
   if (*slot)
-    return *slot;
+    return (struct dwarf_file_data *) *slot;
 
-  created = ggc_alloc (sizeof (struct dwarf_file_data));
+  created = GGC_NEW (struct dwarf_file_data);
   created->filename = file_name;
   created->emitted_number = 0;
   *slot = created;
@@ -14519,7 +14520,7 @@ dwarf2out_var_location (rtx loc_note)
     return;
   prev_insn = PREV_INSN (loc_note);
 
-  newloc = ggc_alloc_cleared (sizeof (struct var_loc_node));
+  newloc = GGC_CNEW (struct var_loc_node);
   /* If the insn we processed last time is the previous insn
      and it is also a var location note, use the label we emitted
      last time.  */
@@ -14607,9 +14608,9 @@ dwarf2out_source_line (unsigned int line, const char *filename)
 	    {
 	      separate_line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
 	      separate_line_info_table
-		= ggc_realloc (separate_line_info_table,
-			       separate_line_info_table_allocated
-			       * sizeof (dw_separate_line_info_entry));
+		= GGC_RESIZEVEC (dw_separate_line_info_entry,
+				 separate_line_info_table,
+				 separate_line_info_table_allocated);
 	      memset (separate_line_info_table
 		       + separate_line_info_table_in_use,
 		      0,
@@ -14636,9 +14637,8 @@ dwarf2out_source_line (unsigned int line, const char *filename)
 	    {
 	      line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
 	      line_info_table
-		= ggc_realloc (line_info_table,
-			       (line_info_table_allocated
-				* sizeof (dw_line_info_entry)));
+		= GGC_RESIZEVEC (dw_line_info_entry, line_info_table,
+				 line_info_table_allocated);
 	      memset (line_info_table + line_info_table_in_use, 0,
 		      LINE_INFO_TABLE_INCREMENT * sizeof (dw_line_info_entry));
 	    }
@@ -14749,15 +14749,13 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   decl_scope_table = VEC_alloc (tree, gc, 256);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
-  abbrev_die_table = ggc_alloc_cleared (ABBREV_DIE_TABLE_INCREMENT
-					* sizeof (dw_die_ref));
+  abbrev_die_table = GGC_CNEWVEC (dw_die_ref, ABBREV_DIE_TABLE_INCREMENT);
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
   /* Zero-th entry is allocated, but unused.  */
   abbrev_die_table_in_use = 1;
 
   /* Allocate the initial hunk of the line_info_table.  */
-  line_info_table = ggc_alloc_cleared (LINE_INFO_TABLE_INCREMENT
-				       * sizeof (dw_line_info_entry));
+  line_info_table = GGC_CNEWVEC (dw_line_info_entry, LINE_INFO_TABLE_INCREMENT);
   line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
 
   /* Zero-th entry is allocated, but unused.  */
@@ -15121,8 +15119,8 @@ prune_unused_types (void)
 static int
 file_table_relative_p (void ** slot, void *param)
 {
-  bool *p = param;
-  struct dwarf_file_data *d = *slot;
+  bool *p = (bool *) param;
+  struct dwarf_file_data *d = (struct dwarf_file_data *) *slot;
   if (!IS_ABSOLUTE_PATH (d->filename))
     {
       *p = true;

@@ -349,7 +349,7 @@ get_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
       memcpy (*slot, &attrs, sizeof (mem_attrs));
     }
 
-  return *slot;
+  return (mem_attrs *) *slot;
 }
 
 /* Returns a hash code for X (which is a really a reg_attrs *).  */
@@ -398,7 +398,7 @@ get_reg_attrs (tree decl, int offset)
       memcpy (*slot, &attrs, sizeof (reg_attrs));
     }
 
-  return *slot;
+  return (reg_attrs *) *slot;
 }
 
 
@@ -812,7 +812,7 @@ gen_rtvec (int n, ...)
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
 
-  vector = alloca (n * sizeof (rtx));
+  vector = XALLOCAVEC (rtx, n);
 
   for (i = 0; i < n; i++)
     vector[i] = va_arg (p, rtx);
@@ -893,12 +893,11 @@ gen_reg_rtx (enum machine_mode mode)
       char *new;
       rtx *new1;
 
-      new = xrealloc (crtl->emit.regno_pointer_align, old_size * 2);
+      new = XRESIZEVEC (char, crtl->emit.regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
       crtl->emit.regno_pointer_align = (unsigned char *) new;
 
-      new1 = ggc_realloc (regno_reg_rtx,
-			  old_size * 2 * sizeof (rtx));
+      new1 = GGC_RESIZEVEC (rtx, regno_reg_rtx, old_size * 2);
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
@@ -4741,7 +4740,7 @@ start_sequence (void)
       free_sequence_stack = tem->next;
     }
   else
-    tem = ggc_alloc (sizeof (struct sequence_stack));
+    tem = GGC_NEW (struct sequence_stack);
 
   tem->next = seq_stack;
   tem->first = first_insn;
@@ -5047,11 +5046,10 @@ init_emit (void)
   crtl->emit.regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
   crtl->emit.regno_pointer_align
-    = xcalloc (crtl->emit.regno_pointer_align_length
-	       * sizeof (unsigned char), 1);
+    = XCNEWVEC (unsigned char, crtl->emit.regno_pointer_align_length);
 
   regno_reg_rtx
-    = ggc_alloc (crtl->emit.regno_pointer_align_length * sizeof (rtx));
+    = GGC_NEWVEC (rtx, crtl->emit.regno_pointer_align_length);
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,

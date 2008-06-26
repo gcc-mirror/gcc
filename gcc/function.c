@@ -598,7 +598,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
-	      p = ggc_alloc (sizeof (struct temp_slot));
+	      p = GGC_NEW (struct temp_slot);
 	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
@@ -623,7 +623,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
     {
       HOST_WIDE_INT frame_offset_old = frame_offset;
 
-      p = ggc_alloc (sizeof (struct temp_slot));
+      p = GGC_NEW (struct temp_slot);
 
       /* We are passing an explicit alignment request to assign_stack_local.
 	 One side effect of that is assign_stack_local will not round SIZE
@@ -3841,7 +3841,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
   tree result;
   tree fntype = fndecl ? TREE_TYPE (fndecl) : NULL_TREE;
 
-  cfun = ggc_alloc_cleared (sizeof (struct function));
+  cfun = GGC_CNEW (struct function);
 
   current_function_funcdef_no = get_next_funcdef_no ();
 
@@ -5251,7 +5251,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
   rtx op = SET_SRC (p_sets[0]);
   int ninputs = ASM_OPERANDS_INPUT_LENGTH (op);
   rtvec inputs = ASM_OPERANDS_INPUT_VEC (op);
-  bool *output_matched = alloca (noutputs * sizeof (bool));
+  bool *output_matched = XALLOCAVEC (bool, noutputs);
 
   memset (output_matched, 0, noutputs * sizeof (bool));
   for (i = 0; i < ninputs; i++)
