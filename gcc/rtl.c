@@ -323,7 +323,7 @@ shallow_copy_rtx_stat (const_rtx orig MEM_STAT_DECL)
 {
   const unsigned int size = rtx_size (orig);
   rtx const copy = (rtx) ggc_alloc_zone_pass_stat (size, &rtl_zone);
-  return memcpy (copy, orig, size);
+  return (rtx) memcpy (copy, orig, size);
 }
 
 /* Nonzero when we are generating CONCATs.  */

@@ -189,7 +189,7 @@ regrename_optimize (void)
   memset (tick, 0, sizeof tick);
 
   gcc_obstack_init (&rename_obstack);
-  first_obj = obstack_alloc (&rename_obstack, 0);
+  first_obj = XOBNEWVAR (&rename_obstack, char, 0);
 
   FOR_EACH_BB (bb)
     {
@@ -385,8 +385,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
     {
       if (type == OP_OUT)
 	{
-	  struct du_chain *this
-	    = obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+	  struct du_chain *this = XOBNEW (&rename_obstack, struct du_chain);
 	  this->next_use = 0;
 	  this->next_chain = open_chains;
 	  this->loc = loc;
@@ -438,7 +437,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 		 be replaced with, terminate the chain.  */
 	      if (cl != NO_REGS)
 		{
-		  this = obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+		  this = XOBNEW (&rename_obstack, struct du_chain);
 		  this->next_use = 0;
 		  this->next_chain = (*p)->next_chain;
 		  this->loc = loc;
@@ -1165,7 +1164,7 @@ init_value_data (struct value_data *vd)
 static void
 kill_clobbered_value (rtx x, const_rtx set, void *data)
 {
-  struct value_data *vd = data;
+  struct value_data *const vd = (struct value_data *) data;
   if (GET_CODE (set) == CLOBBER)
     kill_value (x, vd);
 }
@@ -1176,7 +1175,7 @@ kill_clobbered_value (rtx x, const_rtx set, void *data)
 static void
 kill_set_value (rtx x, const_rtx set, void *data)
 {
-  struct value_data *vd = data;
+  struct value_data *const vd = (struct value_data *) data;
   if (GET_CODE (set) != CLOBBER)
     {
       kill_value (x, vd);
@@ -1193,7 +1192,7 @@ static int
 kill_autoinc_value (rtx *px, void *data)
 {
   rtx x = *px;
-  struct value_data *vd = data;
+  struct value_data *const vd = (struct value_data *) data;
 
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     {

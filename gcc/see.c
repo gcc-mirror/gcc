@@ -807,8 +807,10 @@ see_gen_normalized_extension (rtx reg, enum rtx_code extension_code,
 static int
 eq_descriptor_pre_extension (const void *p1, const void *p2)
 {
-  const struct see_pre_extension_expr *extension1 = p1;
-  const struct see_pre_extension_expr *extension2 = p2;
+  const struct see_pre_extension_expr *const extension1 =
+    (const struct see_pre_extension_expr *) p1;
+  const struct see_pre_extension_expr *const extension2 =
+    (const struct see_pre_extension_expr *) p2;
   rtx set1 = single_set (extension1->se_insn);
   rtx set2 = single_set (extension2->se_insn);
   rtx rhs1, rhs2;
@@ -828,7 +830,8 @@ eq_descriptor_pre_extension (const void *p1, const void *p2)
 static hashval_t
 hash_descriptor_pre_extension (const void *p)
 {
-  const struct see_pre_extension_expr *extension = p;
+  const struct see_pre_extension_expr *const extension =
+    (const struct see_pre_extension_expr *) p;
   rtx set = single_set (extension->se_insn);
   rtx rhs;
 
@@ -846,7 +849,8 @@ hash_descriptor_pre_extension (const void *p)
 static void
 hash_del_pre_extension (void *p)
 {
-  struct see_pre_extension_expr *extension = p;
+  struct see_pre_extension_expr *const extension =
+    (struct see_pre_extension_expr *) p;
   struct see_occr *curr_occr = extension->antic_occr;
   struct see_occr *next_occr = NULL;
 
@@ -884,8 +888,10 @@ hash_del_pre_extension (void *p)
 static int
 eq_descriptor_properties (const void *p1, const void *p2)
 {
-  const struct see_register_properties *curr_prop1 = p1;
-  const struct see_register_properties *curr_prop2 = p2;
+  const struct see_register_properties *const curr_prop1 =
+    (const struct see_register_properties *) p1;
+  const struct see_register_properties *const curr_prop2 =
+    (const struct see_register_properties *) p2;
 
   return curr_prop1->regno == curr_prop2->regno;
 }
@@ -897,7 +903,8 @@ eq_descriptor_properties (const void *p1, const void *p2)
 static hashval_t
 hash_descriptor_properties (const void *p)
 {
-  const struct see_register_properties *curr_prop = p;
+  const struct see_register_properties *const curr_prop =
+    (const struct see_register_properties *) p;
   return curr_prop->regno;
 }
 
@@ -906,7 +913,8 @@ hash_descriptor_properties (const void *p)
 static void
 hash_del_properties (void *p)
 {
-  struct see_register_properties *curr_prop = p;
+  struct see_register_properties *const curr_prop =
+    (struct see_register_properties *) p;
   free (curr_prop);
 }
 
@@ -1031,7 +1039,7 @@ see_seek_pre_extension_expr (rtx extension, enum extension_type type)
     /* This is the first time this extension instruction is encountered.  Store
        it in the hash.  */
     {
-      (*slot_pre_exp) = xmalloc (sizeof (struct see_pre_extension_expr));
+      (*slot_pre_exp) = XNEW (struct see_pre_extension_expr);
       (*slot_pre_exp)->se_insn = extension;
       (*slot_pre_exp)->bitmap_index =
 	(htab_elements (see_pre_extension_hash) - 1);
@@ -1352,16 +1360,16 @@ see_initialize_data_structures (void)
     }
 
   /*  Allocate web entries array for the union-find data structure.  */
-  def_entry = xcalloc (defs_num, sizeof (struct web_entry));
-  use_entry = xcalloc (uses_num, sizeof (struct web_entry));
+  def_entry = XCNEWVEC (struct web_entry, defs_num);
+  use_entry = XCNEWVEC (struct web_entry, uses_num);
 
   /*  Allocate an array of splay trees.
       One splay tree for each basic block.  */
-  see_bb_splay_ar = xcalloc (last_bb, sizeof (splay_tree));
+  see_bb_splay_ar = XCNEWVEC (splay_tree, last_bb);
 
   /*  Allocate an array of hashes.
       One hash for each basic block.  */
-  see_bb_hash_ar = xcalloc (last_bb, sizeof (htab_t));
+  see_bb_hash_ar = XCNEWVEC (htab_t, last_bb);
 
   /*  Allocate the extension hash.  It will hold the extensions that we want
       to PRE.  */
@@ -1478,7 +1486,8 @@ see_want_to_be_merged_with_extension (rtx ref, rtx extension,
 static int
 see_print_register_properties (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct see_register_properties *prop = *slot;
+  const struct see_register_properties *const prop =
+    (const struct see_register_properties *) *slot;
 
   gcc_assert (prop);
   fprintf (dump_file, "Property found for register %d\n", prop->regno);
@@ -1495,7 +1504,8 @@ see_print_register_properties (void **slot, void *b ATTRIBUTE_UNUSED)
 static int
 see_print_pre_extension_expr (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct see_pre_extension_expr *pre_extension = *slot;
+  const struct see_pre_extension_expr *const pre_extension =
+    (const struct see_pre_extension_expr *) *slot;
 
   gcc_assert (pre_extension
   	      && pre_extension->se_insn
@@ -1520,7 +1530,7 @@ see_print_pre_extension_expr (void **slot, void *b ATTRIBUTE_UNUSED)
 static int
 see_delete_merged_def_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
 
   if (dump_file)
     {
@@ -1548,7 +1558,7 @@ see_delete_merged_def_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 static int
 see_delete_unmerged_def_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
 
   if (dump_file)
     {
@@ -1571,7 +1581,7 @@ see_delete_unmerged_def_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 static int
 see_emit_use_extension (void **slot, void *b)
 {
-  rtx use_se = *slot;
+  rtx use_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
 
   if (INSN_DELETED_P (use_se))
@@ -1737,7 +1747,8 @@ see_pre_insert_extensions (struct see_pre_extension_expr **index_map)
 static int
 see_pre_delete_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct see_pre_extension_expr *expr = *slot;
+  struct see_pre_extension_expr *const expr =
+    (struct see_pre_extension_expr *) *slot;
   struct see_occr *occr;
   int indx = expr->bitmap_index;
 
@@ -1768,8 +1779,9 @@ see_pre_delete_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 static int
 see_map_extension (void **slot, void *b)
 {
-  struct see_pre_extension_expr *expr = *slot;
-  struct see_pre_extension_expr **index_map =
+  struct see_pre_extension_expr *const expr =
+    (struct see_pre_extension_expr *) *slot;
+  struct see_pre_extension_expr **const index_map =
     (struct see_pre_extension_expr **) b;
 
   index_map[expr->bitmap_index] = expr;
@@ -1792,8 +1804,7 @@ see_commit_changes (void)
   bool did_insert = false;
   int i;
 
-  index_map = xcalloc (pre_extension_num,
-  		       sizeof (struct see_pre_extension_expr *));
+  index_map = XCNEWVEC (struct see_pre_extension_expr *, pre_extension_num);
 
   if (dump_file)
     fprintf (dump_file,
@@ -1842,7 +1853,7 @@ see_commit_changes (void)
 static int
 see_analyze_merged_def_local_prop (void **slot, void *b)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx ref = curr_ref_s->insn;
   struct see_pre_extension_expr *extension_expr;
@@ -1880,7 +1891,7 @@ see_analyze_merged_def_local_prop (void **slot, void *b)
       /* Set the available bit.  */
       SET_BIT (comp[bb_num], indx);
       /* Record the available occurrence.  */
-      curr_occr = xmalloc (sizeof (struct see_occr));
+      curr_occr = XNEW (struct see_occr);
       curr_occr->next = NULL;
       curr_occr->insn = def_se;
       curr_occr->block_num = bb_num;
@@ -1910,7 +1921,7 @@ see_analyze_merged_def_local_prop (void **slot, void *b)
 static int
 see_analyze_unmerged_def_local_prop (void **slot, void *b)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx ref = curr_ref_s->insn;
   struct see_pre_extension_expr *extension_expr;
@@ -1958,7 +1969,7 @@ static int
 see_analyze_use_local_prop (void **slot, void *b)
 {
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
-  rtx use_se = *slot;
+  rtx use_se = (rtx) *slot;
   rtx ref = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (use_se, 1);
   struct see_pre_extension_expr *extension_expr;
@@ -1990,7 +2001,7 @@ see_analyze_use_local_prop (void **slot, void *b)
       /* Set the anticipatable bit.  */
       SET_BIT (antloc[bb_num], indx);
       /* Record the anticipatable occurrence.  */
-      curr_occr = xmalloc (sizeof (struct see_occr));
+      curr_occr = XNEW (struct see_occr);
       curr_occr->next = NULL;
       curr_occr->insn = use_se;
       curr_occr->block_num = bb_num;
@@ -2008,7 +2019,7 @@ see_analyze_use_local_prop (void **slot, void *b)
 	  /* Set the available bit.  */
 	  SET_BIT (comp[bb_num], indx);
 	  /* Record the available occurrence.  */
-	  curr_occr = xmalloc (sizeof (struct see_occr));
+	  curr_occr = XNEW (struct see_occr);
 	  curr_occr->next = NULL;
 	  curr_occr->insn = use_se;
 	  curr_occr->block_num = bb_num;
@@ -2032,7 +2043,7 @@ see_analyze_use_local_prop (void **slot, void *b)
       /* Reset the killed bit.  */
       RESET_BIT (ae_kill[bb_num], indx);
       /* Record the available occurrence.  */
-      curr_occr = xmalloc (sizeof (struct see_occr));
+      curr_occr = XNEW (struct see_occr);
       curr_occr->next = NULL;
       curr_occr->insn = use_se;
       curr_occr->block_num = bb_num;
@@ -2155,7 +2166,7 @@ see_execute_LCM (void)
 static int
 see_set_prop_merged_def (void **slot, void *b)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
@@ -2194,7 +2205,7 @@ see_set_prop_merged_def (void **slot, void *b)
   else
     {
       /* Property doesn't exist yet.  */
-      curr_prop = xmalloc (sizeof (struct see_register_properties));
+      curr_prop = XNEW (struct see_register_properties);
       curr_prop->regno = REGNO (dest_extension_reg);
       curr_prop->last_def = ref_luid;
       curr_prop->first_se_before_any_def = -1;
@@ -2226,7 +2237,7 @@ see_set_prop_merged_def (void **slot, void *b)
 static int
 see_set_prop_unmerged_def (void **slot, void *b)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (def_se, 1);
@@ -2265,7 +2276,7 @@ see_set_prop_unmerged_def (void **slot, void *b)
   else
     {
       /* Property doesn't exist yet.  */
-      curr_prop = xmalloc (sizeof (struct see_register_properties));
+      curr_prop = XNEW (struct see_register_properties);
       curr_prop->regno = REGNO (dest_extension_reg);
       curr_prop->last_def = ref_luid;
       curr_prop->first_se_before_any_def = -1;
@@ -2299,7 +2310,7 @@ see_set_prop_unmerged_def (void **slot, void *b)
 static int
 see_set_prop_unmerged_use (void **slot, void *b)
 {
-  rtx use_se = *slot;
+  rtx use_se = (rtx) *slot;
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
   rtx insn = curr_ref_s->insn;
   rtx dest_extension_reg = see_get_extension_reg (use_se, 1);
@@ -2359,7 +2370,7 @@ see_set_prop_unmerged_use (void **slot, void *b)
   else
     {
       /* Property doesn't exist yet.  Create a new one.  */
-      curr_prop = xmalloc (sizeof (struct see_register_properties));
+      curr_prop = XNEW (struct see_register_properties);
       curr_prop->regno = REGNO (dest_extension_reg);
       curr_prop->last_def = -1;
       curr_prop->first_se_before_any_def = ref_luid;
@@ -2389,7 +2400,7 @@ see_set_prop_unmerged_use (void **slot, void *b)
 static int
 see_print_one_extension (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
 
   gcc_assert (def_se && INSN_P (def_se));
   print_rtl_single (dump_file, def_se);
@@ -2619,7 +2630,7 @@ static int
 see_merge_one_use_extension (void **slot, void *b)
 {
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
-  rtx use_se = *slot;
+  rtx use_se = (rtx) *slot;
   rtx ref = curr_ref_s->merged_insn
 	    ? curr_ref_s->merged_insn : curr_ref_s->insn;
   rtx merged_ref_next = curr_ref_s->merged_insn
@@ -2780,7 +2791,7 @@ static int
 see_merge_one_def_extension (void **slot, void *b)
 {
   struct see_ref_s *curr_ref_s = (struct see_ref_s *) b;
-  rtx def_se = *slot;
+  rtx def_se = (rtx) *slot;
   /* If the original insn was already merged with an extension before,
      take the merged one.  */
   rtx ref = curr_ref_s->merged_insn
@@ -3160,7 +3171,7 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
      tree.  */
   if (!stn)
     {
-      ref_s = xmalloc (sizeof (struct see_ref_s));
+      ref_s = XNEW (struct see_ref_s);
       ref_s->luid = DF_INSN_LUID (ref_insn);
       ref_s->insn = ref_insn;
       ref_s->merged_insn = NULL;
@@ -3409,7 +3420,7 @@ see_update_uses_relevancy (rtx insn, struct df_ref *ref,
     }
 
   DF_REF_ID (ref) = index;
-  curr_entry_extra_info = xmalloc (sizeof (struct see_entry_extra_info));
+  curr_entry_extra_info = XNEW (struct see_entry_extra_info);
   curr_entry_extra_info->relevancy = et;
   curr_entry_extra_info->local_relevancy = et;
   use_entry[index].extra_info = curr_entry_extra_info;
@@ -3583,7 +3594,7 @@ see_update_defs_relevancy (rtx insn, struct df_ref *ref,
 			   unsigned int index)
 {
   struct see_entry_extra_info *curr_entry_extra_info 
-    = xmalloc (sizeof (struct see_entry_extra_info));
+    = XNEW (struct see_entry_extra_info);
   curr_entry_extra_info->relevancy = et;
   curr_entry_extra_info->local_relevancy = et;
 

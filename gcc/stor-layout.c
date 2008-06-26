@@ -506,7 +506,7 @@ relayout_decl (tree decl)
 record_layout_info
 start_record_layout (tree t)
 {
-  record_layout_info rli = xmalloc (sizeof (struct record_layout_info_s));
+  record_layout_info rli = XNEW (struct record_layout_info_s);
 
   rli->t = t;
 

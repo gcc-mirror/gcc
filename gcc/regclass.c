@@ -1310,7 +1310,7 @@ regclass (rtx f, int nregs)
 
   init_recog ();
 
-  reg_renumber = xmalloc (max_regno * sizeof (short));
+  reg_renumber = XNEWVEC (short, max_regno);
   reg_pref = XCNEWVEC (struct reg_pref, max_regno);
   memset (reg_renumber, -1, max_regno * sizeof (short));
 
@@ -2500,15 +2500,18 @@ static htab_t subregs_of_mode;
 static hashval_t
 som_hash (const void *x)
 {
-  const struct subregs_of_mode_node *a = x;
+  const struct subregs_of_mode_node *const a =
+    (const struct subregs_of_mode_node *) x;
   return a->block;
 }
 
 static int
 som_eq (const void *x, const void *y)
 {
-  const struct subregs_of_mode_node *a = x;
-  const struct subregs_of_mode_node *b = y;
+  const struct subregs_of_mode_node *const a =
+    (const struct subregs_of_mode_node *) x;
+  const struct subregs_of_mode_node *const b =
+    (const struct subregs_of_mode_node *) y;
   return a->block == b->block;
 }
 
@@ -2533,7 +2536,7 @@ record_subregs_of_mode (rtx subreg)
   dummy.block = regno & -8;
   slot = htab_find_slot_with_hash (subregs_of_mode, &dummy,
 				   dummy.block, INSERT);
-  node = *slot;
+  node = (struct subregs_of_mode_node *) *slot;
   if (node == NULL)
     {
       node = XCNEW (struct subregs_of_mode_node);
@@ -2605,7 +2608,8 @@ cannot_change_mode_set_regs (HARD_REG_SET *used, enum machine_mode from,
 
   gcc_assert (subregs_of_mode);
   dummy.block = regno & -8;
-  node = htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
+  node = (struct subregs_of_mode_node *)
+    htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
   if (node == NULL)
     return;
 
@@ -2632,7 +2636,8 @@ invalid_mode_change_p (unsigned int regno,
 
   gcc_assert (subregs_of_mode);
   dummy.block = regno & -8;
-  node = htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
+  node = (struct subregs_of_mode_node *)
+    htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
   if (node == NULL)
     return false;
 

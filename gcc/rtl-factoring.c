@@ -323,14 +323,14 @@ compute_rtx_cost (rtx insn)
   tmp_bucket.hash = compute_hash (insn);
 
   /* Select the hash group.  */
-  bucket = htab_find (hash_buckets, &tmp_bucket);
+  bucket = (p_hash_bucket) htab_find (hash_buckets, &tmp_bucket);
 
   if (bucket)
   {
     tmp_elem.insn = insn;
 
     /* Select the insn.  */
-    elem = htab_find (bucket->seq_candidates, &tmp_elem);
+    elem = (p_hash_elem) htab_find (bucket->seq_candidates, &tmp_elem);
 
     /* If INSN is parsed the cost will be the cached length.  */
     if (elem)
@@ -1319,7 +1319,7 @@ fill_hash_bucket (void)
           tmp_bucket.hash = compute_hash (insn);
 
           /* Select the hash group.  */
-          bucket = htab_find (hash_buckets, &tmp_bucket);
+          bucket = (p_hash_bucket) htab_find (hash_buckets, &tmp_bucket);
 
           if (!bucket)
             {

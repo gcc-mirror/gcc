@@ -93,7 +93,7 @@ ggc_alloc_string (const char *contents, int length)
   if (length == 1 && ISDIGIT (contents[0]))
     return digit_string (contents[0] - '0');
 
-  result = ggc_alloc (length + 1);
+  result = GGC_NEWVAR (char, length + 1);
   memcpy (result, contents, length + 1);
   return (const char *) result;
 }
@@ -207,8 +207,8 @@ gt_pch_p_S (void *obj ATTRIBUTE_UNUSED, void *x ATTRIBUTE_UNUSED,
 void
 gt_pch_n_S (const void *x)
 {
-  gt_pch_note_object ((void *)x, (void *)x, &gt_pch_p_S,
-		      gt_types_enum_last);
+  gt_pch_note_object (CONST_CAST (void *, x), CONST_CAST (void *, x),
+		      &gt_pch_p_S, gt_types_enum_last);
 }
 
 /* Handle saving and restoring the string pool for PCH.  */
@@ -234,10 +234,10 @@ static GTY(()) struct string_pool_data * spd;
 void
 gt_pch_save_stringpool (void)
 {
-  spd = ggc_alloc (sizeof (*spd));
+  spd = GGC_NEW (struct string_pool_data);
   spd->nslots = ident_hash->nslots;
   spd->nelements = ident_hash->nelements;
-  spd->entries = ggc_alloc (sizeof (spd->entries[0]) * spd->nslots);
+  spd->entries = GGC_NEWVEC (struct ht_identifier *, spd->nslots);
   memcpy (spd->entries, ident_hash->entries,
 	  spd->nslots * sizeof (spd->entries[0]));
 }

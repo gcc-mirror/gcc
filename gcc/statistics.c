@@ -53,7 +53,7 @@ static unsigned nr_statistics_hashes;
 static hashval_t
 hash_statistics_hash (const void *p)
 {
-  statistics_counter_t *c = (statistics_counter_t *)p;
+  const statistics_counter_t *const c = (const statistics_counter_t *)p;
   return htab_hash_string (c->id) + c->val;
 }
 
@@ -62,8 +62,8 @@ hash_statistics_hash (const void *p)
 static int
 hash_statistics_eq (const void *p, const void *q)
 {
-  statistics_counter_t *c1 = (statistics_counter_t *)p;
-  statistics_counter_t *c2 = (statistics_counter_t *)q;
+  const statistics_counter_t *const c1 = (const statistics_counter_t *)p;
+  const statistics_counter_t *const c2 = (const statistics_counter_t *)q;
   return c1->val == c2->val && strcmp (c1->id, c2->id) == 0;
 }
 
@@ -72,7 +72,7 @@ hash_statistics_eq (const void *p, const void *q)
 static void
 hash_statistics_free (void *p)
 {
-  free ((void *)((statistics_counter_t *)p)->id);
+  free (CONST_CAST(char *, ((statistics_counter_t *)p)->id));
   free (p);
 }
 
@@ -90,8 +90,7 @@ curr_statistics_hash (void)
 
   if (idx >= nr_statistics_hashes)
     {
-      statistics_hashes = xrealloc (statistics_hashes,
-				    (idx + 1) * sizeof (htab_t));
+      statistics_hashes = XRESIZEVEC (struct htab *, statistics_hashes, idx+1);
       memset (statistics_hashes + nr_statistics_hashes, 0,
 	      (idx + 1 - nr_statistics_hashes) * sizeof (htab_t));
       nr_statistics_hashes = idx + 1;

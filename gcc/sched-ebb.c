@@ -335,7 +335,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 		    /* insn2 not guaranteed to be a 1 base reg load.  */
 		    continue;
 
-		  for (bb = last_block; bb; bb = bb->aux)
+		  for (bb = last_block; bb; bb = (basic_block) bb->aux)
 		    if (insn2_block == bb)
 		      break;
 
@@ -382,7 +382,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 		bb = earliest_block_with_similiar_load (last_block, insn);
 		if (bb)
 		  {
-		    bb = bb->aux;
+		    bb = (basic_block) bb->aux;
 		    if (!bb)
 		      break;
 		    prev = BB_END (bb);
@@ -436,7 +436,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
   /* Maintain the invariant that bb->aux is clear after use.  */
   while (last_block)
     {
-      bb = last_block->aux;
+      bb = (basic_block) last_block->aux;
       last_block->aux = NULL;
       last_block = bb;
     }

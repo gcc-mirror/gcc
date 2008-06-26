@@ -144,7 +144,7 @@ add_neighbor (int alloc_no, int neighbor)
 
   if (adjlist == NULL || adjlist->index == ADJACENCY_VEC_LENGTH)
     {
-      adjacency_t *new = pool_alloc (adjacency_pool);
+      adjacency_t *new = (adjacency_t *) pool_alloc (adjacency_pool);
       new->index = 0;
       new->next = adjlist;
       adjlist = new;

@@ -1,3 +1,58 @@
+2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ra.h (add_neighbor): Fix -Wc++-compat and/or -Wcast-qual
+	warnings.
+	* recog.c (check_asm_operands, validate_change_1): Likewise.
+	* reg-stack.c (check_asm_stack_operands, subst_asm_stack_regs,
+	subst_asm_stack_regs): Likewise.
+	* regclass.c (regclass, som_hash, som_eq, record_subregs_of_mode,
+	cannot_change_mode_set_regs, invalid_mode_change_p): Likewise.
+	* regmove.c (reg_is_remote_constant_p): Likewise.
+	* regrename.c (regrename_optimize, scan_rtx_reg,
+	kill_clobbered_value, kill_set_value, kill_autoinc_value):
+	Likewise.
+	* regstat.c (regstat_init_n_sets_and_refs, regstat_compute_ri,
+	regstat_compute_calls_crossed): Likewise.
+	* reload1.c (init_reload, new_insn_chain,
+	has_nonexceptional_receiver, reload, copy_reloads,
+	calculate_needs_all_insns, init_elim_table): Likewise.
+	* rtl-factoring.c (compute_rtx_cost, fill_hash_bucket): Likewise.
+	* rtl.c (shallow_copy_rtx_stat): Likewise.
+	* rtlanal.c (parms_set): Likewise.
+	* sbitmap.c (sbitmap_alloc, sbitmap_alloc_with_popcount,
+	sbitmap_resize, sbitmap_vector_alloc): Likewise.
+	* sched-ebb.c (earliest_block_with_similiar_load,
+	add_deps_for_risky_insns): Likewise.
+	* sched-rgn.c (find_rgns, gather_region_statistics, extend_rgns,
+	schedule_region): Likewise.
+	* see.c (eq_descriptor_pre_extension,
+	hash_descriptor_pre_extension, hash_del_pre_extension,
+	eq_descriptor_properties, hash_descriptor_properties,
+	hash_del_properties, see_seek_pre_extension_expr,
+	see_initialize_data_structures, see_print_register_properties,
+	see_print_pre_extension_expr, see_delete_merged_def_extension,
+	see_delete_unmerged_def_extension, see_emit_use_extension,
+	see_pre_delete_extension, see_map_extension, see_commit_changes,
+	see_analyze_merged_def_local_prop,
+	see_analyze_merged_def_local_prop,
+	see_analyze_unmerged_def_local_prop, see_analyze_use_local_prop,
+	see_set_prop_merged_def, see_set_prop_unmerged_def,
+	see_set_prop_unmerged_use, see_print_one_extension,
+	see_merge_one_use_extension, see_merge_one_def_extension,
+	see_store_reference_and_extension, see_update_uses_relevancy,
+	see_update_defs_relevancy): Likewise.
+	* statistics.c (hash_statistics_hash, hash_statistics_eq,
+	hash_statistics_free, curr_statistics_hash): Likewise.
+	* stmt.c (parse_output_constraint, decl_overlaps_hard_reg_set_p,
+	expand_asm_operands, expand_return, case_bit_test_cmp,
+	expand_case): Likewise.
+	* stor-layout.c (start_record_layout): Likewise.
+	* stringpool.c (ggc_alloc_string, gt_pch_n_S,
+	gt_pch_save_stringpool): Likewise.
+	* tree-data-ref.c (hash_stmt_vertex_info,
+	have_similar_memory_accesses_1, ref_base_address_1): Likewise.
+	* tree-ssa-phiopt.c (name_to_bb_hash): Likewise.
+
 2008-06-25 Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36627
