@@ -929,7 +929,6 @@ hppa[12]*-*-hpux10*)
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	use_collect2=yes
-	use_fixproto=yes
 	gas=yes
 	;;
 hppa*64*-*-hpux11*)
