@@ -1,3 +1,15 @@
+2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (partition_copy): Add in C++0x mode.
+	* include/bits/algorithmfwd.h: Add.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Update.
+	* testsuite/25_algorithms/partition_copy/1.cc: New.
+	* testsuite/25_algorithms/partition_copy/check_type.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
 2008-06-26  Chris Fairles  <chris.fairles@gmail.com>
 
         * testsuite/20_util/unique_ptr/cons/pointer_array.cc: New.

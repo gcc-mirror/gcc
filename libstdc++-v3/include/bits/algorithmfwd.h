@@ -25,9 +25,12 @@
 
 /*
   adjacent_find
+  all_of (C++0x)
+  any_of (C++0x)
   binary_search
   copy
   copy_backward
+  copy_if (C++0x)
   count
   count_if
   equal
@@ -38,6 +41,7 @@
   find_end
   find_first_of
   find_if
+  find_if_not (C++0x)
   for_each
   generate
   generate_n
@@ -60,10 +64,12 @@
   minmax_element (C++0x)
   mismatch
   next_permutation
+  none_of (C++0x)
   nth_element
   partial_sort
   partial_sort_copy
   partition
+  partition_copy (C++0x)
   pop_heap
   prev_permutation
   push_heap
@@ -111,6 +117,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // adjacent_find
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _Predicate>
+    bool
+    all_of(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    any_of(_IIter, _IIter, _Predicate);
+#endif
+
   template<typename _FIter, typename _Tp>
     bool 
     binary_search(_FIter, _FIter, const _Tp&);
@@ -126,6 +142,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _BIter1, typename _BIter2>
     _BIter2
     copy_backward(_BIter1, _BIter1, _BIter2);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _OIter, typename _Predicate>
+    _OIter
+    copy_if(_IIter, _IIter, _OIter, _Predicate);
+#endif
 
   // count
   // count_if
@@ -165,27 +187,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // find_first_of
   // find_if
-  // for_each
-  // generate
-  // generate_n
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _IIter, typename _Predicate>
-    bool
-    all_of(_IIter, _IIter, _Predicate);
-
-  template<typename _IIter, typename _Predicate>
-    bool
-    any_of(_IIter, _IIter, _Predicate);
-
-  template<typename _IIter, typename _Predicate>
-    bool
-    none_of(_IIter, _IIter, _Predicate);
-
   template<typename _IIter, typename _Predicate>
     _IIter
     find_if_not(_IIter, _IIter, _Predicate);
 #endif
+
+  // for_each
+  // generate
+  // generate_n
 
   template<typename _IIter1, typename _IIter2>
     bool 
@@ -306,6 +317,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     bool 
     next_permutation(_BIter, _BIter, _Compare);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _Predicate>
+    bool
+    none_of(_IIter, _IIter, _Predicate);
+#endif
+
   // nth_element
   // partial_sort
 
@@ -316,6 +333,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _IIter, typename _RAIter, typename _Compare>
     _RAIter
     partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter, _Compare);
+
+  // partition
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _IIter, typename _OIter1,
+	   typename _OIter2, typename _Predicate>
+    pair<_OIter1, _OIter2>
+    partition_copy(_IIter, _IIter, _OIter1, _OIter2, _Predicate);
+#endif
 
   template<typename _RAIter>
     void 
