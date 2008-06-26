@@ -3138,3 +3138,41 @@
   "TARGET_E500"
   "cror 4*%0+gt,4*%1+gt,4*%2+gt"
   [(set_attr "type" "cr_logical")])
+
+;; Out-of-line prologues and epilogues.
+(define_insn "*save_gpregs_spe"
+  [(match_parallel 0 "any_parallel_operand"
+		   [(clobber (reg:P 65))
+		    (use (match_operand:P 1 "symbol_ref_operand" "s"))
+		    (use (match_operand:P 2 "gpc_reg_operand" "r"))
+		    (set (match_operand:V2SI 3 "memory_operand" "=m")
+			 (match_operand:V2SI 4 "gpc_reg_operand" "r"))])]
+  "TARGET_SPE_ABI"
+  "bl %z1"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*restore_gpregs_spe"
+ [(match_parallel 0 "any_parallel_operand"
+		  [(clobber (reg:P 65))
+		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
+		   (use (match_operand:P 2 "gpc_reg_operand" "r"))
+		   (set (match_operand:V2SI 3 "gpc_reg_operand" "=r")
+			(match_operand:V2SI 4 "memory_operand" "m"))])]
+ "TARGET_SPE_ABI"
+ "bl %z1"
+ [(set_attr "type" "branch")
+  (set_attr "length" "4")])
+
+(define_insn "*return_and_restore_gpregs_spe"
+ [(match_parallel 0 "any_parallel_operand"
+		  [(return)
+		   (clobber (reg:P 65))
+		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
+		   (use (match_operand:P 2 "gpc_reg_operand" "r"))
+		   (set (match_operand:V2SI 3 "gpc_reg_operand" "=r")
+			(match_operand:V2SI 4 "memory_operand" "m"))])]
+ "TARGET_SPE_ABI"
+ "b %z1"
+ [(set_attr "type" "branch")
+  (set_attr "length" "4")])

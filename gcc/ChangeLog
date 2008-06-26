@@ -1,3 +1,41 @@
+2008-06-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (emit_allocate_stack): Add copy_r11
+	parameter.  Copy stack_reg to r11 where appropriate.
+	(no_global_regs_above): Add gpr parameter.
+	(rs6000_stack_info): Only add padding for SPE save area if we
+	are saving SPE GPRs and CR.
+	(saveres_routine_syms): New variable.
+	(FIRST_SAVRES_REGISTER, LAST_SAVRES_REGISTER, N_SAVRES_REGISTERS):
+	Define.
+	(rs6000_savres_routine_sym): New function.
+	(rs6000_emit_stack_reset, rs6000_restore_saved_cr): New functions,
+	split out of...
+	(rs6000_emit_epilogue): ...here.  Use rs6000_use_multiple_p and
+	rs6000_savres_strategy.  Restore GPRs out-of-line if appropriate.
+	Tweak FPR out-of-line saving.
+	(rs6000_make_savres_rtx): New function.
+	(rs6000_use_multiple_p): New function.
+	(rs6000_savres_strategy): New function.
+	(rs6000_emit_prologue): Use rs6000_savres_strategy.  Save GPRs
+	out-of-line if appropriate.
+	* config/rs6000/sysv4.h (FP_SAVE_INLINE): Save FPRs out-of-line
+	if we are optimizing for size.
+	(GP_SAVE_INLINE): Define.
+	(SAVE_FP_SUFFIX, RESTORE_FP_SUFFIX): Only use _l on 64-bit targets.
+	* config/rs6000/darwin.h (GP_SAVE_INLINE): Define.
+	* config/rs6000/aix.h (GP_SAVE_INLINE): Define.
+	* config/rs6000/rs6000.md (*save_gpregs_<mode>): New insn.
+	(*save_fpregs_<mode>): Add use of r11.
+	(*restore_gpregs_<mode>): New insn.
+	(*return_and_restore_gpregs_<mode>): New insn.
+	(*return_and_restore_fpregs_<mode>): Adjust to clobber LR and
+	use r11.
+	* config/rs6000/spe.md (*save_gpregs_spe): New insn.
+	(*restore_gpregs_spe): New insn.
+	(*return_and_restore_gpregs_spe): New insn.
+	* config/rs6000/predicates.md (save_world_operation): Fix check.
+
 2008-06-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-into-ssa (insert_phi_nodes_for): 'var' must be a DECL at

@@ -201,6 +201,8 @@
 
 /* Define cutoff for using external functions to save floating point.  */
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
+/* And similarly for general purpose registers.  */
+#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32)
 
 /* __throw will restore its own return address to be the same as the
    return address of the function that the throw is being made to.

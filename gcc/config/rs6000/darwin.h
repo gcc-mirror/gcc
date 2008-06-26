@@ -191,6 +191,8 @@
 
 #undef	FP_SAVE_INLINE
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 64)
+#undef GP_SAVE_INLINE
+#define GP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 32)
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
 #undef WORLD_SAVE_P

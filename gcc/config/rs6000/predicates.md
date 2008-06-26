@@ -912,7 +912,7 @@
   rtx elt;
   int count = XVECLEN (op, 0);
 
-  if (count != 55)
+  if (count != 54)
     return 0;
 
   index = 0;
@@ -961,9 +961,8 @@
       || GET_MODE (SET_SRC (elt)) != Pmode)
     return 0;
 
-  if (GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
+  if (GET_CODE (XVECEXP (op, 0, index++)) != SET
+      || GET_CODE (XVECEXP (op, 0, index++)) != SET)
     return 0;
   return 1;
 })
