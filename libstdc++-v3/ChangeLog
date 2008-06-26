@@ -1,3 +1,8 @@
+2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (plus, multiplies): Use __typeof__,
+	not typeof.
+
 2008-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/29_atomics/atomic_flag/cons/default.cc: Avoid -Wall
