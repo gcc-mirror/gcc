@@ -1,5 +1,11 @@
 2008-06-26  Ira Rosen  <irar@il.ibm.com>
 
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_vect_cmdline_needed): Add SPU to the list
+	of targets that do not need command line argument to enable SIMD.
+
+2008-06-26  Ira Rosen  <irar@il.ibm.com>
+
 	PR target/36510
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31d.c: Change the loop
 	bound.
