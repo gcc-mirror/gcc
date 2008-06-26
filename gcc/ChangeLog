@@ -1,5 +1,44 @@
 2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* dwarf2out.c (new_cfi, queue_reg_save, dwarf2out_begin_prologue,
+	dwarf2out_frame_init, new_loc_descr, new_die, lookup_decl_die,
+	lookup_decl_loc, add_var_loc_to_decl, compute_section_prefix,
+	assign_symbol_names, htab_cu_hash, htab_cu_eq, htab_cu_del,
+	build_abbrev_table, new_loc_list, output_comp_unit, add_arange,
+	add_ranges_num, add_ranges_by_labels, file_info_cmp,
+	file_name_acquire, output_file_names, add_const_value_attribute,
+	premark_used_types_helper, file_table_eq, file_table_hash,
+	lookup_filename, dwarf2out_var_location, dwarf2out_source_line,
+	dwarf2out_init, file_table_relative_p): Fix -Wc++-compat and/or
+	-Wcast-qual warnings.
+	* ebitmap.c (ebitmap_array_grow, ebitmap_array_init,
+	ebitmap_alloc, ebitmap_ior, ebitmap_and_compl): Likewise.
+	* emit-rtl.c (get_mem_attrs, get_reg_attrs, gen_rtvec,
+	gen_reg_rtx, start_sequence, init_emit): Likewise.
+	* et-forest.c (et_new_occ, et_new_tree): Likewise.
+	* except.c (init_eh_for_function, gen_eh_region,
+	remove_unreachable_regions, add_ehl_entry, duplicate_eh_regions_1,
+	arh_to_landing_pad, arh_to_label, add_action_record,
+	add_call_site, switch_to_exception_section): Likewise.
+	* expmed.c (synth_mult): Likewise.
+	* expr.c (gen_group_rtx, emit_group_load, emit_group_store,
+	store_expr): Likewise.
+	* final.c (shorten_branches, final_scan_insn, debug_queue_symbol):
+	Likewise.
+	* function.c (assign_stack_temp_for_type,
+	allocate_struct_function, match_asm_constraints_1): Likewise.
+	* gcov-io.c (gcov_allocate): Likewise.
+	* gcse.c (GNEW, GCNEW, GNEWVEC, GCNEWVEC, GRESIZEVEC, GNEWVAR,
+	GCNEWVAR, GRESIZEVAR, GOBNEW, GOBNEWVAR): New.
+	(gcse_main, alloc_gcse_mem, alloc_gcse_mem, alloc_reg_set_mem,
+	record_one_set, insert_expr_in_table, insert_set_in_table,
+	dump_hash_table, compute_hash_table_work, alloc_hash_table,
+	pre_ldst_expr_hash, pre_ldst_expr_eq, find_rtx_in_ldst,
+	reg_set_info, reg_clear_last_set): Fix -Wc++-compat and/or
+	-Wcast-qual warnings.
+
+2008-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cse.c (approx_reg_cost_1, cse_insn): Fix -Wc++-compat and/or
 	-Wcast-qual warnings.
 	* gcc.c (process_command): Likewise.

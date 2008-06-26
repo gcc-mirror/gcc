@@ -447,7 +447,7 @@ et_new_occ (struct et_node *node)
   
   if (!et_occurrences)
     et_occurrences = create_alloc_pool ("et_occ pool", sizeof (struct et_occ), 300);
-  nw = pool_alloc (et_occurrences);
+  nw = (struct et_occ *) pool_alloc (et_occurrences);
 
   nw->of = node;
   nw->parent = NULL;
@@ -470,7 +470,7 @@ et_new_tree (void *data)
   
   if (!et_nodes)
     et_nodes = create_alloc_pool ("et_node pool", sizeof (struct et_node), 300);
-  nw = pool_alloc (et_nodes);
+  nw = (struct et_node *) pool_alloc (et_nodes);
 
   nw->data = data;
   nw->father = NULL;

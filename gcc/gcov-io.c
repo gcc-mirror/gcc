@@ -196,7 +196,7 @@ gcov_allocate (unsigned length)
   new_size *= 2;
   
   gcov_var.alloc = new_size;
-  gcov_var.buffer = xrealloc (gcov_var.buffer, new_size << 2);
+  gcov_var.buffer = XRESIZEVAR (gcov_unsigned_t, gcov_var.buffer, new_size << 2);
 }
 #endif
 

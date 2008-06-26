@@ -409,7 +409,7 @@ init_eh (void)
 void
 init_eh_for_function (void)
 {
-  cfun->eh = ggc_alloc_cleared (sizeof (struct eh_status));
+  cfun->eh = GGC_CNEW (struct eh_status);
 }
 
 /* Routines to generate the exception tree somewhat directly.
@@ -426,7 +426,7 @@ gen_eh_region (enum eh_region_type type, struct eh_region *outer)
 #endif
 
   /* Insert a new blank region as a leaf in the tree.  */
-  new = ggc_alloc_cleared (sizeof (*new));
+  new = GGC_CNEW (struct eh_region);
   new->type = type;
   new->outer = outer;
   if (outer)
@@ -632,8 +632,8 @@ remove_unreachable_regions (rtx insns)
   struct eh_region *r;
   rtx insn;
 
-  uid_region_num = xcalloc (get_max_uid (), sizeof(int));
-  reachable = xcalloc (cfun->eh->last_region_number + 1, sizeof(bool));
+  uid_region_num = XCNEWVEC (int, get_max_uid ());
+  reachable = XCNEWVEC (bool, cfun->eh->last_region_number + 1);
 
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
@@ -736,7 +736,7 @@ add_ehl_entry (rtx label, struct eh_region *region)
 
   LABEL_PRESERVE_P (label) = 1;
 
-  entry = ggc_alloc (sizeof (*entry));
+  entry = GGC_NEW (struct ehl_map_entry);
   entry->label = label;
   entry->region = region;
 
@@ -847,7 +847,7 @@ duplicate_eh_regions_1 (eh_region old, eh_region outer, int eh_offset)
 {
   eh_region ret, n;
 
-  ret = n = ggc_alloc (sizeof (struct eh_region));
+  ret = n = GGC_NEW (struct eh_region);
 
   *n = *old;
   n->outer = outer;
@@ -2587,7 +2587,7 @@ foreach_reachable_handler (int region_number, bool is_resx,
 static void
 arh_to_landing_pad (struct eh_region *region, void *data)
 {
-  rtx *p_handlers = data;
+  rtx *p_handlers = (rtx *) data;
   if (! *p_handlers)
     *p_handlers = alloc_INSN_LIST (region->landing_pad, NULL_RTX);
 }
@@ -2595,7 +2595,7 @@ arh_to_landing_pad (struct eh_region *region, void *data)
 static void
 arh_to_label (struct eh_region *region, void *data)
 {
-  rtx *p_handlers = data;
+  rtx *p_handlers = (rtx *) data;
   *p_handlers = alloc_INSN_LIST (region->label, *p_handlers);
 }
 
@@ -3055,7 +3055,7 @@ add_action_record (htab_t ar_hash, int filter, int next)
 
   if ((new = *slot) == NULL)
     {
-      new = xmalloc (sizeof (*new));
+      new = XNEW (struct action_record);
       new->offset = VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data) + 1;
       new->filter = filter;
       new->next = next;
@@ -3191,7 +3191,7 @@ add_call_site (rtx landing_pad, int action)
 {
   call_site_record record;
   
-  record = ggc_alloc (sizeof (struct call_site_record));
+  record = GGC_NEW (struct call_site_record);
   record->landing_pad = landing_pad;
   record->action = action;
 
@@ -3522,7 +3522,7 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 #ifdef HAVE_LD_EH_GC_SECTIONS
 	  if (flag_function_sections)
 	    {
-	      char *section_name = xmalloc (strlen (fnname) + 32);
+	      char *section_name = XNEWVEC (char, strlen (fnname) + 32);
 	      sprintf (section_name, ".gcc_except_table.%s", fnname);
 	      s = get_section (section_name, flags, NULL);
 	      free (section_name);

@@ -858,8 +858,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
       n_labels = max_labelno - min_labelno + 1;
       n_old_labels = old - min_labelno + 1;
 
-      label_align = xrealloc (label_align,
-			      n_labels * sizeof (struct label_alignment));
+      label_align = XRESIZEVEC (struct label_alignment, label_align, n_labels);
 
       /* Range of labels grows monotonically in the function.  Failing here
          means that the initialization of array got lost.  */
@@ -2181,7 +2180,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	if (asm_noperands (body) >= 0)
 	  {
 	    unsigned int noperands = asm_noperands (body);
-	    rtx *ops = alloca (noperands * sizeof (rtx));
+	    rtx *ops = XALLOCAVEC (rtx, noperands);
 	    const char *string;
 	    location_t loc;
 	    expanded_location expanded;
@@ -4056,8 +4055,7 @@ debug_queue_symbol (tree decl)
   if (symbol_queue_index >= symbol_queue_size)
     {
       symbol_queue_size += 10;
-      symbol_queue = xrealloc (symbol_queue,
-			       symbol_queue_size * sizeof (tree));
+      symbol_queue = XRESIZEVEC (tree, symbol_queue, symbol_queue_size);
     }
 
   symbol_queue[symbol_queue_index++] = decl;
