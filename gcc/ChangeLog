@@ -1,3 +1,8 @@
+2008-06-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (merge_decls): Use !current_function_decl to check for
+	extern declaration of C99 inline function being at file scope.
+
 2008-06-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (fieldoff_compare): Make sure to

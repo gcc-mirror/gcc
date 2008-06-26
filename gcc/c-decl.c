@@ -1774,8 +1774,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  || !DECL_EXTERNAL (olddecl))
       && DECL_EXTERNAL (newdecl)
       && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (newdecl))
-      && (DECL_CONTEXT (newdecl) == NULL_TREE
-	  || TREE_CODE (DECL_CONTEXT (newdecl)) != FUNCTION_DECL))
+      && !current_function_decl)
     DECL_EXTERNAL (newdecl) = 0;
 
   if (DECL_EXTERNAL (newdecl))

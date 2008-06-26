@@ -1,3 +1,8 @@
+2008-06-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/inline-31.c, gcc.dg/inline-32.c, gcc.dg/inline-32a.c: New
+	tests.
+
 2008-06-26  Ira Rosen  <irar@il.ibm.com>
 
 	* testsuite/lib/target-supports.exp
