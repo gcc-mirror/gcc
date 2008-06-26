@@ -1,3 +1,10 @@
+2008-06-26  Ira Rosen  <irar@il.ibm.com>
+
+	PR target/36510
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31d.c: Change the loop
+	bound.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68d.c: Likewise.
+
 2008-06-25  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/compile/20080625-1.c: New testcase.

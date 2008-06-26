@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "../../tree-vect.h"
 
-#define N 32
+#define N 5 
 
 struct t{
   int k[N];
@@ -24,13 +24,13 @@ int main1 ()
   struct s tmp;
 
   /* unaligned */
-  for (i = 0; i < N/2; i++)
+  for (i = 0; i < N; i++)
     {
       tmp.e.k[i] = 8;
     }
 
   /* check results:  */
-  for (i = 0; i <N/2; i++)
+  for (i = 0; i < N; i++)
     {
       if (tmp.e.k[i] != 8)
         abort ();

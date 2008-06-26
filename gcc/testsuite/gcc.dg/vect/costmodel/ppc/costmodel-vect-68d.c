@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "../../tree-vect.h"
 
-#define N 20
+#define N 11 
 
 struct s{
   int m;
