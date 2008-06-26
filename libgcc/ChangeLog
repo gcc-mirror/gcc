@@ -1,3 +1,8 @@
+2008-06-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/t-ppccomm: Remove rules that conflict with
+	auto-generated rules.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: sinclude override.m4.
