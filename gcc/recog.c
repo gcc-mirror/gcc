@@ -145,8 +145,8 @@ check_asm_operands (rtx x)
   if (noperands == 0)
     return 1;
 
-  operands = alloca (noperands * sizeof (rtx));
-  constraints = alloca (noperands * sizeof (char *));
+  operands = XALLOCAVEC (rtx, noperands);
+  constraints = XALLOCAVEC (const char *, noperands);
 
   decode_asm_operands (x, operands, NULL, constraints, NULL, NULL);
 
@@ -221,7 +221,7 @@ validate_change_1 (rtx object, rtx *loc, rtx new, bool in_group, bool unshare)
       else
 	changes_allocated *= 2;
 
-      changes = xrealloc (changes, sizeof (change_t) * changes_allocated);
+      changes = XRESIZEVEC (change_t, changes, changes_allocated);
     }
 
   changes[num_changes].object = object;

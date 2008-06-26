@@ -4780,8 +4780,9 @@ known_dependences_p (VEC (ddr_p, heap) *dependence_relations)
 static hashval_t
 hash_stmt_vertex_info (const void *elt)
 {
-  struct rdg_vertex_info *rvi = (struct rdg_vertex_info *) elt;
-  tree stmt = rvi->stmt;
+  const struct rdg_vertex_info *const rvi =
+    (const struct rdg_vertex_info *) elt;
+  const_tree stmt = rvi->stmt;
 
   return htab_hash_pointer (stmt);
 }
@@ -4982,7 +4983,8 @@ have_similar_memory_accesses (tree s1, tree s2)
 static int
 have_similar_memory_accesses_1 (const void *s1, const void *s2)
 {
-  return have_similar_memory_accesses ((tree) s1, (tree) s2);
+  return have_similar_memory_accesses (CONST_CAST_TREE ((const_tree)s1),
+				       CONST_CAST_TREE ((const_tree)s2));
 }
 
 /* Helper function for the hashtab.  */
@@ -4990,7 +4992,7 @@ have_similar_memory_accesses_1 (const void *s1, const void *s2)
 static hashval_t
 ref_base_address_1 (const void *s)
 {
-  tree stmt = (tree) s;
+  tree stmt = CONST_CAST_TREE((const_tree)s);
   unsigned i;
   VEC (data_ref_loc, heap) *refs;
   data_ref_loc *ref;

@@ -700,7 +700,7 @@ find_rgns (void)
       extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
       if (extend_regions_p)
         {
-          degree1 = xmalloc (last_basic_block * sizeof (int));
+          degree1 = XNEWVEC (int, last_basic_block);
           extended_rgn_header = sbitmap_alloc (last_basic_block);
           sbitmap_zero (extended_rgn_header);
 	}
@@ -990,7 +990,7 @@ gather_region_statistics (int **rsp)
 
       if (nr_blocks > a_sz)
 	{	 
-	  a = xrealloc (a, nr_blocks * sizeof (*a));
+	  a = XRESIZEVEC (int, a, nr_blocks);
 	  do
 	    a[a_sz++] = 0;
 	  while (a_sz != nr_blocks);
@@ -1047,9 +1047,9 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 
   max_iter = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS);
 
-  max_hdr = xmalloc (last_basic_block * sizeof (*max_hdr));
+  max_hdr = XNEWVEC (int, last_basic_block);
 
-  order = xmalloc (last_basic_block * sizeof (*order));
+  order = XNEWVEC (int, last_basic_block);
   post_order_compute (order, false, false);
 
   for (i = nblocks - 1; i >= 0; i--)
@@ -2685,7 +2685,7 @@ schedule_region (int rgn)
   current_blocks = RGN_BLOCKS (rgn);
   
   /* See comments in add_block1, for what reasons we allocate +1 element.  */ 
-  ebb_head = xrealloc (ebb_head, (current_nr_blocks + 1) * sizeof (*ebb_head));
+  ebb_head = XRESIZEVEC (int, ebb_head, current_nr_blocks + 1);
   for (bb = 0; bb <= current_nr_blocks; bb++)
     ebb_head[bb] = current_blocks + bb;
 

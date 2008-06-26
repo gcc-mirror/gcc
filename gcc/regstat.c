@@ -60,7 +60,7 @@ regstat_init_n_sets_and_refs (void)
   df_grow_reg_info ();
   gcc_assert (!regstat_n_sets_and_refs);
 
-  regstat_n_sets_and_refs = xmalloc (max_regno * sizeof (struct regstat_n_sets_and_refs_t));
+  regstat_n_sets_and_refs = XNEWVEC (struct regstat_n_sets_and_refs_t, max_regno);
 
   for (i = 0; i < max_regno; i++)
     {
@@ -344,7 +344,7 @@ regstat_compute_ri (void)
   setjmp_crosses = BITMAP_ALLOC (&df_bitmap_obstack);
   max_regno = max_reg_num ();
   reg_info_p_size = max_regno;
-  reg_info_p = xcalloc (max_regno, sizeof (struct reg_info_t));
+  reg_info_p = XCNEWVEC (struct reg_info_t, max_regno);
 
   FOR_EACH_BB (bb)
     {
@@ -488,7 +488,7 @@ regstat_compute_calls_crossed (void)
   timevar_push (TV_REG_STATS);
   max_regno = max_reg_num ();
   reg_info_p_size = max_regno;
-  reg_info_p = xcalloc (max_regno, sizeof (struct reg_info_t));
+  reg_info_p = XCNEWVEC (struct reg_info_t, max_regno);
 
   FOR_EACH_BB (bb)
     {

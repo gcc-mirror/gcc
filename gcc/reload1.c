@@ -498,7 +498,7 @@ init_reload (void)
 
   /* Initialize obstack for our rtl allocation.  */
   gcc_obstack_init (&reload_obstack);
-  reload_startobj = obstack_alloc (&reload_obstack, 0);
+  reload_startobj = XOBNEWVAR (&reload_obstack, char, 0);
 
   INIT_REG_SET (&spilled_pseudos);
   INIT_REG_SET (&pseudos_counted);
@@ -515,7 +515,7 @@ new_insn_chain (void)
 
   if (unused_insn_chains == 0)
     {
-      c = obstack_alloc (&reload_obstack, sizeof (struct insn_chain));
+      c = XOBNEW (&reload_obstack, struct insn_chain);
       INIT_REG_SET (&c->live_throughout);
       INIT_REG_SET (&c->dead_or_set);
     }
@@ -633,7 +633,7 @@ has_nonexceptional_receiver (void)
     return true;
   
   /* First determine which blocks can reach exit via normal paths.  */
-  tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
 
   FOR_EACH_BB (bb)
     bb->flags &= ~BB_REACHABLE;
@@ -710,7 +710,7 @@ reload (rtx first, int global)
 
   failure = 0;
 
-  reload_firstobj = obstack_alloc (&reload_obstack, 0);
+  reload_firstobj = XOBNEWVAR (&reload_obstack, char, 0);
 
   /* Make sure that the last insn in the chain
      is not something that needs reloading.  */
@@ -1031,7 +1031,7 @@ reload (rtx first, int global)
 	{
 	  save_call_clobbered_regs ();
 	  /* That might have allocated new insn_chain structures.  */
-	  reload_firstobj = obstack_alloc (&reload_obstack, 0);
+	  reload_firstobj = XOBNEWVAR (&reload_obstack, char, 0);
 	}
 
       calculate_needs_all_insns (global);
@@ -1500,10 +1500,9 @@ static void
 copy_reloads (struct insn_chain *chain)
 {
   chain->n_reloads = n_reloads;
-  chain->rld = obstack_alloc (&reload_obstack,
-			      n_reloads * sizeof (struct reload));
+  chain->rld = XOBNEWVEC (&reload_obstack, struct reload, n_reloads);
   memcpy (chain->rld, rld, n_reloads * sizeof (struct reload));
-  reload_insn_firstobj = obstack_alloc (&reload_obstack, 0);
+  reload_insn_firstobj = XOBNEWVAR (&reload_obstack, char, 0);
 }
 
 /* Walk the chain of insns, and determine for each whether it needs reloads
@@ -1517,7 +1516,7 @@ calculate_needs_all_insns (int global)
 
   something_needs_elimination = 0;
 
-  reload_insn_firstobj = obstack_alloc (&reload_obstack, 0);
+  reload_insn_firstobj = XOBNEWVAR (&reload_obstack, char, 0);
   for (chain = reload_insn_chain; chain != 0; chain = next)
     {
       rtx insn = chain->insn;
@@ -3707,7 +3706,7 @@ init_elim_table (void)
 #endif
 
   if (!reg_eliminate)
-    reg_eliminate = xcalloc (sizeof (struct elim_table), NUM_ELIMINABLE_REGS);
+    reg_eliminate = XCNEWVEC (struct elim_table, NUM_ELIMINABLE_REGS);
 
   /* Does this function require a frame pointer?  */
 

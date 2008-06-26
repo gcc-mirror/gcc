@@ -916,7 +916,7 @@ reg_is_remote_constant_p (rtx reg, rtx insn)
   if (!reg_set_in_bb)
     {
       max_reg_computed = max = max_reg_num ();
-      reg_set_in_bb = xcalloc (max, sizeof (*reg_set_in_bb));
+      reg_set_in_bb = XCNEWVEC (basic_block, max);
 
       FOR_EACH_BB (bb)
 	FOR_BB_INSNS (bb, p)

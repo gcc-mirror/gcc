@@ -1115,8 +1115,8 @@ static struct pointer_set_t *nontrap_set;
 static hashval_t
 name_to_bb_hash (const void *p)
 {
-  tree n = ((struct name_to_bb *)p)->ssa_name;
-  return htab_hash_pointer (n) ^ ((struct name_to_bb *)p)->store;
+  const_tree n = ((const struct name_to_bb *)p)->ssa_name;
+  return htab_hash_pointer (n) ^ ((const struct name_to_bb *)p)->store;
 }
 
 /* The equality function of *P1 and *P2.  SSA_NAMEs are shared, so

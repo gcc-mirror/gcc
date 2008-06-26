@@ -333,7 +333,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 		 *p, operand_num);
 
       /* Make a copy of the constraint.  */
-      buf = alloca (c_len + 1);
+      buf = XALLOCAVEC (char, c_len + 1);
       strcpy (buf, constraint);
       /* Swap the first character and the `=' or `+'.  */
       buf[p - constraint] = buf[0];
@@ -565,7 +565,7 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
 			      void *data)
 {
   tree decl = *declp;
-  const HARD_REG_SET *regs = data;
+  const HARD_REG_SET *const regs = (const HARD_REG_SET *) data;
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
@@ -651,13 +651,11 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   tree t;
   int i;
   /* Vector of RTX's of evaluated output operands.  */
-  rtx *output_rtx = alloca (noutputs * sizeof (rtx));
-  int *inout_opnum = alloca (noutputs * sizeof (int));
-  rtx *real_output_rtx = alloca (noutputs * sizeof (rtx));
-  enum machine_mode *inout_mode
-    = alloca (noutputs * sizeof (enum machine_mode));
-  const char **constraints
-    = alloca ((noutputs + ninputs) * sizeof (const char *));
+  rtx *output_rtx = XALLOCAVEC (rtx, noutputs);
+  int *inout_opnum = XALLOCAVEC (int, noutputs);
+  rtx *real_output_rtx = XALLOCAVEC (rtx, noutputs);
+  enum machine_mode *inout_mode = XALLOCAVEC (enum machine_mode, noutputs);
+  const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
 
   /* An ASM with no outputs needs to be treated as volatile, for now.  */
@@ -1616,7 +1614,7 @@ expand_return (tree retval)
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       unsigned int bitsize
 	= MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)), BITS_PER_WORD);
-      rtx *result_pseudos = alloca (sizeof (rtx) * n_regs);
+      rtx *result_pseudos = XALLOCAVEC (rtx, n_regs);
       rtx result_reg, src = NULL_RTX, dst = NULL_RTX;
       rtx result_val = expand_normal (retval_rhs);
       enum machine_mode tmpmode, result_reg_mode;
@@ -2182,8 +2180,8 @@ bool lshift_cheap_p (void)
 static int
 case_bit_test_cmp (const void *p1, const void *p2)
 {
-  const struct case_bit_test *d1 = p1;
-  const struct case_bit_test *d2 = p2;
+  const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
+  const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
 
   if (d2->bits != d1->bits)
     return d2->bits - d1->bits;
@@ -2547,7 +2545,7 @@ expand_case (tree exp)
 	  /* Get table of labels to jump to, in order of case index.  */
 
 	  ncases = tree_low_cst (range, 0) + 1;
-	  labelvec = alloca (ncases * sizeof (rtx));
+	  labelvec = XALLOCAVEC (rtx, ncases);
 	  memset (labelvec, 0, ncases * sizeof (rtx));
 
 	  for (n = case_list; n; n = n->right)
