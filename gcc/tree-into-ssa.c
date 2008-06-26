@@ -1111,8 +1111,8 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	}
       else
 	{
-	  tree sym = DECL_P (var) ? var : SSA_NAME_VAR (var);
-	  phi = create_phi_node (sym, bb);
+	  gcc_assert (DECL_P (var));
+	  phi = create_phi_node (var, bb);
 	}
 
       /* Mark this PHI node as interesting for update_ssa.  */
