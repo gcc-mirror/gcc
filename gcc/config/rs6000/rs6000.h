@@ -133,6 +133,7 @@
 %{mcpu=8548: -me500} \
 %{mcpu=e300c2: -me300} \
 %{mcpu=e300c3: -me300} \
+%{mcpu=e500mc: -me500mc} \
 %{maltivec: -maltivec} \
 -many"
 
@@ -282,6 +283,7 @@ enum processor_type
    PROCESSOR_PPC8540,
    PROCESSOR_PPCE300C2,
    PROCESSOR_PPCE300C3,
+   PROCESSOR_PPCE500MC,
    PROCESSOR_POWER4,
    PROCESSOR_POWER5,
    PROCESSOR_POWER6,
@@ -400,7 +402,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define TARGET_SPE_ABI 0
 #define TARGET_SPE 0
 #define TARGET_E500 0
-#define TARGET_ISEL 0
+#define TARGET_ISEL rs6000_isel
 #define TARGET_FPRS 1
 #define TARGET_E500_SINGLE 0
 #define TARGET_E500_DOUBLE 0

@@ -1,3 +1,29 @@
+2008-06-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/t-aix52: Append large data option to LDFLAGS for
+	genautomata.
+
+2008-06-27  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config.gcc (powerpc*-*-*): Add new core e500mc.
+	* config/rs6000/e500mc.md: New file.
+	* config/rs6000/rs6000.c (processor_costs): Add new costs for
+	e500mc.
+	(rs6000_override_options): Add e500mc case to
+	processor_target_table. Altivec and Spe options not allowed
+	with e500mc. Add isel instruction to e500mc by
+	default. Initialize rs6000_cost for e500mc.
+	(rs6000_issue_rate): Set issue rate for e500mc.
+	* config/rs6000/rs6000.h (processor_type): Add
+	PROCESSOR_PPCE500MC.
+	(ASM_CPU_SPEC): Add e500mc.
+	Set TARGET_ISEL to rs6000_isel.
+	* config/rs6000/e500.h: Remove redefinition of TARGET_ISEL.
+	(CHECK_E500_OPTIONS): Remove TARGET_ISEL.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add ppce500mc.
+	Include e500mc.md.
+	* doc/invoke.texi: Add e500mc to list of cpus.
+
 2008-06-27  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR c/34867
