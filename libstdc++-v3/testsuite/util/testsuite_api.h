@@ -84,6 +84,13 @@ namespace __gnu_test
   {
     NonDefaultConstructible(int) { }
     NonDefaultConstructible(const NonDefaultConstructible&) { }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    // For std::iota.
+    NonDefaultConstructible&
+    operator++()
+    { return *this; }
+#endif
   };
  
   // See: 20.1.1 Template argument requirements.

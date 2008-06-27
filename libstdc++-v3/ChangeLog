@@ -1,3 +1,23 @@
+2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_numeric.h (iota): Add in C++0x mode.
+	* testsuite/util/testsuite_character.h (pod_int): Add operator++
+	in C++0x mode.
+	* testsuite/util/testsuite_api.h (NonDefaultConstructible): Likewise.
+	* testsuite/26_numerics/iota/1.cc: New.
+	* testsuite/26_numerics/iota/requirements/explicit_instantiation/
+	2.cc: Likewise.
+	* testsuite/26_numerics/iota/requirements/explicit_instantiation/
+	pod.cc: Likewise.
+
+	* include/ext/algorithm: Do not fiddle with the legacy headers.
+
+	* testsuite/26_numerics/partial_sum/1.cc: Minor changes, comments,
+	style.
+	* testsuite/26_numerics/accumulate/1.cc: Likewise.
+	* testsuite/26_numerics/adjacent_difference/1.cc: Likewise.
+	* testsuite/26_numerics/inner_product/1.cc: Likewise.
+
 2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (partition_copy): Add in C++0x mode.

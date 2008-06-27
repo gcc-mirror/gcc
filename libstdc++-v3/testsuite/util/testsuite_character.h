@@ -3,7 +3,8 @@
 // Testing character type and state type with char_traits and codecvt
 // specializations for the C++ library testsuite.
 //
-// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +45,18 @@ namespace __gnu_test
   struct pod_int
   {
     int value;
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    // For std::iota.
+    pod_int&
+    operator++()
+    {
+      ++value;
+      return *this;
+    }
+#endif
   };
-  
+
   // For 20.1 requirements for instantiable type: equality comparable
   // and less than comparable.
   inline bool
