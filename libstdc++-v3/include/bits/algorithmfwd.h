@@ -49,6 +49,7 @@
   inplace_merge
   is_heap (C++0x)
   is_heap_until (C++0x)
+  is_partitioned (C++0x)
   is_sorted (C++0x)
   is_sorted_until (C++0x)
   iter_swap
@@ -230,6 +231,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _RAIter, typename _Compare>
     _RAIter 
     is_heap_until(_RAIter, _RAIter, _Compare);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    is_partitioned(_IIter, _IIter, _Predicate);
 
   template<typename _FIter>
     bool 
