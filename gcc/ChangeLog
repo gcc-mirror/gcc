@@ -1,3 +1,8 @@
+2008-06-26  Olivier Hainque  <hainque@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr_to_memset): Assert our
+	documented assumptions.
+
 2008-06-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dwarf2out.c: Remove trailing white spaces.  Break long line

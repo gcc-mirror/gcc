@@ -2809,8 +2809,19 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value)
 static enum gimplify_status
 gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value)
 {
-  tree t, to, to_ptr;
+  tree t, from, to, to_ptr;
 
+  /* Assert our assumptions, to abort instead of producing wrong code
+     silently if they are not met.  Beware that the RHS CONSTRUCTOR might
+     not be immediately exposed.  */
+  from = GENERIC_TREE_OPERAND (*expr_p, 1);  
+  if (TREE_CODE (from) == WITH_SIZE_EXPR)
+    from = TREE_OPERAND (from, 0);
+
+  gcc_assert (TREE_CODE (from) == CONSTRUCTOR
+	      && VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (from)));
+
+  /* Now proceed.  */
   to = GENERIC_TREE_OPERAND (*expr_p, 0);
 
   to_ptr = build_fold_addr_expr (to);

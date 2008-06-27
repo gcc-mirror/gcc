@@ -1,3 +1,7 @@
+2008-06-27  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/aligned_vla.adb: New test.
+
 2008-06-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/inline-32.c, gcc.dg/inline-32a.c: New tests.
