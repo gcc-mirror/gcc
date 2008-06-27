@@ -3897,7 +3897,8 @@ find_func_aliases (tree origt)
      need to re-scan most statements.  FIXME: Try to minimize the
      number of statements re-scanned.  It's not really necessary to
      re-scan *all* statements.  */
-  mark_stmt_modified (origt);
+  if (!in_ipa_mode)
+    mark_stmt_modified (origt);
   VEC_free (ce_s, heap, rhsc);
   VEC_free (ce_s, heap, lhsc);
 }
