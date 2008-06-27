@@ -51,6 +51,10 @@ namespace std
   template<typename _IIter, typename _Predicate>
     _IIter
     find_if_not(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter, typename _Predicate>
+    bool
+    is_partitioned(_IIter, _IIter, _Predicate);
 #endif
 
   template<typename _FIter1, typename _FIter2>

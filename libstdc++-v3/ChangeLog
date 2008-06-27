@@ -1,5 +1,17 @@
 2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_algo.h (is_partitioned): Add in C++0x mode.
+	* include/bits/algorithmfwd.h: Add.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Update.
+	* testsuite/25_algorithms/is_partitioned/1.cc: New.
+	* testsuite/25_algorithms/is_partitioned/check_type.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_numeric.h (iota): Add in C++0x mode.
 	* testsuite/util/testsuite_character.h (pod_int): Add operator++
 	in C++0x mode.
