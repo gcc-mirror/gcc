@@ -461,6 +461,9 @@ namespace __aeabiv1
   __aeabi_vec_dtor_cookie (void *array_address, 
 			   abi::__cxa_cdtor_type destructor)
   {
+    if (!array_address)
+      return NULL;
+
     abi::__cxa_vec_dtor (array_address, 
 			 reinterpret_cast<std::size_t *>(array_address)[-1],
 			 reinterpret_cast<std::size_t *>(array_address)[-2],
@@ -473,6 +476,9 @@ namespace __aeabiv1
   __aeabi_vec_delete (void *array_address, 
 		      abi::__cxa_cdtor_type destructor)
   {
+    if (!array_address)
+      return;
+
     abi::__cxa_vec_delete (array_address,
 			   reinterpret_cast<std::size_t *>(array_address)[-2],
 			   2 * sizeof (std::size_t),
@@ -484,6 +490,9 @@ namespace __aeabiv1
 		       abi::__cxa_cdtor_type destructor,
 		       void (*dealloc) (void *, std::size_t))
   {
+    if (!array_address)
+      return;
+
     abi::__cxa_vec_delete3 (array_address,
 			    reinterpret_cast<std::size_t *>(array_address)[-2],
 			    2 * sizeof (std::size_t),
@@ -494,6 +503,9 @@ namespace __aeabiv1
   __aeabi_vec_delete3_nodtor (void *array_address,
 			      void (*dealloc) (void *, std::size_t))
   {
+    if (!array_address)
+      return;
+
     abi::__cxa_vec_delete3 (array_address,
 			    reinterpret_cast<std::size_t *>(array_address)[-2],
 			    2 * sizeof (std::size_t),

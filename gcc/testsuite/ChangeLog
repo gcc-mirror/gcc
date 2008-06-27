@@ -1,3 +1,7 @@
+2008-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/arm_cxa_vec2.C: New test.
+
 2008-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36364
