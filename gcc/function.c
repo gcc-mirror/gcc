@@ -3843,8 +3843,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 
   cfun = GGC_CNEW (struct function);
 
-  current_function_funcdef_no = get_next_funcdef_no ();
-
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
 
   init_eh_for_function ();
@@ -3860,6 +3858,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
     {
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
       cfun->decl = fndecl;
+      current_function_funcdef_no = get_next_funcdef_no ();
 
       result = DECL_RESULT (fndecl);
       if (!abstract_p && aggregate_value_p (result, fndecl))

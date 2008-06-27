@@ -1,5 +1,10 @@
 2008-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* function.c (allocate_struct_function): Only allocate a unique
+	funcdef_no if the decl is nonzero.
+
+2008-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips-protos.h (mips_split_const_insns): Declare.
 	* config/mips/mips.c (mips_split_const_insns): New function.
 	* config/mips/mips.md (move_type): New attribute.
