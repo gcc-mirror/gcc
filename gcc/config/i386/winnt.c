@@ -199,7 +199,7 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
 	}
       }
   /* Assume max of 8 base 10 digits in the suffix.  */
-  p = new_str = alloca (1 + strlen (old_str) + 1 + 8 + 1);
+  p = new_str = XALLOCAVEC (char, 1 + strlen (old_str) + 1 + 8 + 1);
   if (fastcall)
     *p++ = FASTCALL_PREFIX;
   sprintf (p, "%s@" HOST_WIDE_INT_PRINT_DEC, old_str, total);
@@ -380,7 +380,7 @@ i386_pe_unique_section (tree decl, int reloc)
   else
     prefix = ".data$";
   len = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
+  string = XALLOCAVEC (char, len + 1);
   sprintf (string, "%s%s", prefix, name);
 
   DECL_SECTION_NAME (decl) = build_string (len, string);

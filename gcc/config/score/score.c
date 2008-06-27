@@ -922,7 +922,7 @@ score_block_move_straight (rtx dst, rtx src, HOST_WIDE_INT length)
   length -= leftover;
   reg_count = length / UNITS_PER_WORD;
 
-  regs = alloca (sizeof (rtx) * reg_count);
+  regs = XALLOCAVEC (rtx, reg_count);
   for (i = 0; i < reg_count; i++)
     regs[i] = gen_reg_rtx (SImode);
 
@@ -1006,7 +1006,7 @@ score_block_move_loop_body (rtx dst_reg, HOST_WIDE_INT dst_align,
                             HOST_WIDE_INT length)
 {
   int reg_count = length / UNITS_PER_WORD;
-  rtx *regs = alloca (sizeof (rtx) * reg_count);
+  rtx *regs = XALLOCAVEC (rtx, reg_count);
   int i;
   bool src_unaligned = (src_align < BITS_PER_WORD);
   bool dst_unaligned = (dst_align < BITS_PER_WORD);

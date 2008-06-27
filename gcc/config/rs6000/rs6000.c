@@ -11525,7 +11525,7 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
 static struct machine_function *
 rs6000_init_machine_status (void)
 {
-  return ggc_alloc_cleared (sizeof (machine_function));
+  return GGC_CNEW (machine_function);
 }
 
 /* These macros test for integers and extract the low-order bits.  */
@@ -12402,7 +12402,7 @@ print_operand_address (FILE *file, rtx x)
 	      char *newname;
 
 	      name = XSTR (symref, 0);
-	      newname = alloca (strlen (name) + sizeof ("@toc"));
+	      newname = XALLOCAVEC (char, strlen (name) + sizeof ("@toc"));
 	      strcpy (newname, name);
 	      strcat (newname, "@toc");
 	      XSTR (symref, 0) = newname;
@@ -17846,7 +17846,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	toc_hash_table = htab_create_ggc (1021, toc_hash_function,
 					  toc_hash_eq, NULL);
 
-      h = ggc_alloc (sizeof (*h));
+      h = GGC_NEW (struct toc_hash_struct);
       h->key = x;
       h->key_mode = mode;
       h->labelno = labelno;
@@ -19905,7 +19905,7 @@ redefine_groups (FILE *dump, int sched_verbose, rtx prev_head_insn, rtx tail)
 
   /* Initialize.  */
   issue_rate = rs6000_issue_rate ();
-  group_insns = alloca (issue_rate * sizeof (rtx));
+  group_insns = XALLOCAVEC (rtx, issue_rate);
   for (i = 0; i < issue_rate; i++)
     {
       group_insns[i] = 0;
@@ -20501,7 +20501,7 @@ rs6000_elf_encode_section_info (tree decl, rtx rtl, int first)
     {
       rtx sym_ref = XEXP (rtl, 0);
       size_t len = strlen (XSTR (sym_ref, 0));
-      char *str = alloca (len + 2);
+      char *str = XALLOCAVEC (char, len + 2);
       str[0] = '.';
       memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
       XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
@@ -20800,10 +20800,10 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
 
 
   length = strlen (symb);
-  symbol_name = alloca (length + 32);
+  symbol_name = XALLOCAVEC (char, length + 32);
   GEN_SYMBOL_NAME_FOR_SYMBOL (symbol_name, symb, length);
 
-  lazy_ptr_name = alloca (length + 32);
+  lazy_ptr_name = XALLOCAVEC (char, length + 32);
   GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
 
   if (flag_pic == 2)
@@ -20819,7 +20819,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       label++;
-      local_label_0 = alloca (sizeof ("\"L00000000000$spb\""));
+      local_label_0 = XALLOCAVEC (char, sizeof ("\"L00000000000$spb\""));
       sprintf (local_label_0, "\"L%011d$spb\"", label);
 
       fprintf (file, "\tmflr r0\n");

@@ -2436,7 +2436,7 @@ bfin_init_machine_status (void)
 {
   struct machine_function *f;
 
-  f = ggc_alloc_cleared (sizeof (struct machine_function));
+  f = GGC_CNEW (struct machine_function);
 
   return f;
 }
@@ -3838,7 +3838,7 @@ bfin_optimize_loop (loop_info loop)
 
   if (JUMP_P (last_insn))
     {
-      loop_info inner = bb->aux;
+      loop_info inner = (loop_info) bb->aux;
       if (inner
 	  && inner->outer == loop
 	  && inner->loop_end == last_insn

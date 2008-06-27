@@ -15609,8 +15609,8 @@ arm_expand_unop_builtin (enum insn_code icode,
 static int
 neon_builtin_compare (const void *a, const void *b)
 {
-  const neon_builtin_datum *key = a;
-  const neon_builtin_datum *memb = b;
+  const neon_builtin_datum *const key = (const neon_builtin_datum *) a;
+  const neon_builtin_datum *const memb = (const neon_builtin_datum *) b;
   unsigned int soughtcode = key->base_fcode;
 
   if (soughtcode >= memb->base_fcode
@@ -15629,7 +15629,8 @@ locate_neon_builtin_icode (int fcode, neon_itype *itype)
   int idx;
 
   key.base_fcode = fcode;
-  found = bsearch (&key, &neon_builtin_data[0], ARRAY_SIZE (neon_builtin_data),
+  found = (neon_builtin_datum *)
+    bsearch (&key, &neon_builtin_data[0], ARRAY_SIZE (neon_builtin_data),
 		   sizeof (neon_builtin_data[0]), neon_builtin_compare);
   gcc_assert (found);
   idx = fcode - (int) found->base_fcode;

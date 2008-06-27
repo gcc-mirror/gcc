@@ -112,7 +112,7 @@ arm_mark_dllexport (tree decl)
   else if (arm_dllexport_name_p (oldname))
     return; /* already done */
 
-  newname = alloca (strlen (oldname) + 4);
+  newname = XALLOCAVEC (char, strlen (oldname) + 4);
   sprintf (newname, "%ce.%s", ARM_PE_FLAG_CHAR, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
@@ -178,7 +178,7 @@ arm_mark_dllimport (tree decl)
       TREE_PUBLIC (decl) = 1;
     }
 
-  newname = alloca (strlen (oldname) + 11);
+  newname = XALLOCAVEC (char, strlen (oldname) + 11);
   sprintf (newname, "%ci.__imp_%s", ARM_PE_FLAG_CHAR, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
@@ -250,7 +250,7 @@ arm_pe_unique_section (tree decl, int reloc)
   else
     prefix = ".data$";
   len = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
+  string = XALLOCAVEC (char, len + 1);
   sprintf (string, "%s%s", prefix, name);
 
   DECL_SECTION_NAME (decl) = build_string (len, string);

@@ -1242,7 +1242,7 @@ translate_options (int *argcp, const char *const **argvp)
 		}
 
 	      newvsize += spaces * sizeof (const char *);
-	      newv =  xrealloc (newv, newvsize);
+	      newv =  XRESIZEVAR (const char *, newv, newvsize);
 
 	      sp = target_option_translations[tott_idx].replacements;
 	      np = xstrdup (sp);
@@ -3955,7 +3955,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
 		if (! strcmp (argv[i], modify_target[j].sw))
 		  {
-		    char *new_name = xmalloc (strlen (modify_target[j].str)
+		    char *new_name = XNEWVEC (char, strlen (modify_target[j].str)
 					      + strlen (spec_machine));
 		    const char *p, *r;
 		    char *q;

@@ -3101,7 +3101,7 @@ static int
 find_auto_inc (rtx *xp, void *data)
 {
   rtx x = *xp;
-  rtx reg = data;
+  rtx reg = (rtx) data;
 
   if (GET_RTX_CLASS (GET_CODE (x)) != RTX_AUTOINC)
     return 0;
