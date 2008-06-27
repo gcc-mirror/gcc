@@ -629,6 +629,12 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 31)")))
 
+;; Return nonzero if OP is CONST_INT >= 1 and <= 63 (a valid operand
+;; for 64bit shift & compare patterns, as shifting by 0 does not change flags).
+(define_predicate "const_1_to_63_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 63)")))
+
 ;; Match 2 or 3.
 (define_predicate "const_2_to_3_operand"
   (and (match_code "const_int")
