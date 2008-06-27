@@ -1,5 +1,8 @@
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-// Free Software Foundation, Inc.
+// { dg-options "-std=gnu++0x" }
+
+// 2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,39 +20,30 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 26.4.1 [lib.accumulate]
-
 #include <numeric>
+#include <algorithm>
 #include <testsuite_hooks.h>
 
-int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-const int NA = sizeof(A) / sizeof(int);
+int A[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+int B[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+int C[] = {-9, -8, -7, -6, -5, -4, -3, -2, -1};
+const int N = sizeof(A) / sizeof(int);
 
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-  int res = std::accumulate(A, A + NA, 11);
-  VERIFY( res == 66 );
-}
+  std::iota(A, A + N, 1);
+  VERIFY( std::equal(A, A + N, B) );
 
-bool B[] = {true, false, true, true, false, true, false, true, true, false};
-const int NB = sizeof(B) / sizeof(bool);
-
-void
-test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  int res = std::accumulate(B, B + NB, 100);
-  VERIFY( res == 106 );
+  std::iota(A, A + N, -9);
+  VERIFY( std::equal(A, A + N, C) );
 }
 
 int
 main()
 {
   test01();
-  test02();
   return 0;
 }
