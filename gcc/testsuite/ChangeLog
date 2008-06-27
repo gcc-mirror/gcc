@@ -1,3 +1,8 @@
+2008-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr9.ad[sb]: New test.
+	* gnat.dg/aggr9_pkg.ads: New helper.
+
 2008-06-27  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/aligned_vla.adb: New test.
