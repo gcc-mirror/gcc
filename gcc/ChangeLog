@@ -1,3 +1,35 @@
+2008-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36400
+	PR tree-optimization/36373
+	PR tree-optimization/36344
+	* tree-ssa-structalias.c (var_escaped, escaped_tree, escaped_id,
+	var_nonlocal, nonlocal_tree, nonlocal_id): New globals
+	(update_alias_info): Remove call clobbering code.
+	(make_constraint_to): New helper function.
+	(make_escape_constraint): Likewise.
+	(handle_rhs_call): Use it on all pointer containing arguments.
+	Also mark the static chain escaped.
+	(handle_lhs_call): Make constraints from NONLOCAL and ESCAPED
+	instead of ANYTHING.
+	(make_constraint_from): New helper split out from ...
+	(make_constraint_from_anything): ... here.
+	(find_func_aliases): Add constraints for escape sites.
+	(intra_create_variable_infos): Make constraints from NONLOCAL
+	for parameters.
+	(find_what_p_points_to): Interpret NONLOCAL and ESCAPED the same
+	as ANYTHING.
+	(clobber_what_p_points_to): Remove.
+	(clobber_what_escaped): New function.
+	(init_base_vars): Init NONLOCAL and ESCAPED.
+	(do_sd_constraint): Do not propagate the solution from ESCAPED
+	but use ESCAPED as a placeholder.
+	(solve_graph): Likewise.
+	* tree-flow.h (clobber_what_p_points_to): Remove.
+	(clobber_what_escaped): Declare.
+	* tree-ssa-alias.c (set_initial_properties): Call it.
+	Remove code clobbering escaped pointers.
+
 2008-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* function.c (allocate_struct_function): Only allocate a unique
