@@ -14588,8 +14588,8 @@ do_decl_instantiation (tree decl, tree storage)
     ;
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
-      if (pedantic && !in_system_header)
-	pedwarn ("ISO C++ forbids the use of %<extern%> on explicit "
+      if (pedantic && !in_system_header && (cxx_dialect == cxx98))
+	pedwarn ("ISO C++ 1998 forbids the use of %<extern%> on explicit "
 		 "instantiations");
       extern_p = 1;
     }

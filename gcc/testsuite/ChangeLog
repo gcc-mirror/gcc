@@ -1,3 +1,8 @@
+2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36655
+	* g++.dg/cpp0x/extern_template.C: New.
+
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/pr27388-3.c: Adjust dg-final.
