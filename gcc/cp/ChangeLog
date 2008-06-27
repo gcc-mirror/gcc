@@ -1,3 +1,9 @@
+2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36655
+	* pt.c (do_decl_instantiation): In c++0x mode do not warn for
+	extern template.
+
 2008-06-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/23194
