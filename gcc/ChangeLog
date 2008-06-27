@@ -1,4 +1,4 @@
-2008-06-26  Olivier Hainque  <hainque@adacore.com>
+2008-06-27  Olivier Hainque  <hainque@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr_to_memset): Assert our
 	documented assumptions.
