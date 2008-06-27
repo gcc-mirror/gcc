@@ -5060,15 +5060,16 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
 	    error ("iteration variable %qs should not be reduction",
 		   IDENTIFIER_POINTER (DECL_NAME (decl)));
 	}
-      return true;
+      return (ctx == gimplify_omp_ctxp
+	      || (ctx->region_type == ORT_COMBINED_PARALLEL
+		  && gimplify_omp_ctxp->outer_context == ctx));
     }
 
   if (ctx->region_type != ORT_WORKSHARE)
     return false;
   else if (ctx->outer_context)
     return omp_is_private (ctx->outer_context, decl);
-  else
-    return !is_global_var (decl);
+  return false;
 }
 
 /* Return true if DECL is private within a parallel region

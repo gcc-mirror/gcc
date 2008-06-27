@@ -1,5 +1,9 @@
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/loop-10.c: New test.
+	* libgomp.c/loop-3.c (main): Add lastprivate clause.
+	* libgomp.c++/loop-6.C (main): Likewise.
+
 	PR debug/36617
 	* testsuite/libgomp.c/debug-1.c: New test.
 

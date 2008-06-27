@@ -8,10 +8,11 @@ static int test(void)
   return ++count > 0;
 }
 
+int i;
+
 int main()
 {
-  int i;
-  #pragma omp for
+  #pragma omp for lastprivate (i)
   for (i = 0; i < 10; ++i)
     {
       if (test())

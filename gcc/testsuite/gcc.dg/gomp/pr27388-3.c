@@ -19,5 +19,5 @@ foo (void)
   }
 }
 
-/* { dg-final { scan-tree-dump-times "omp for\[^\\n\]*private" 0 "omplower" } } */
+/* { dg-final { scan-tree-dump-times "omp for\[^\\n\]*private" 2 "omplower" } } */
 /* { dg-final { cleanup-tree-dump "omplower" } } */
