@@ -3273,7 +3273,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  int i;
 	  char *string;
 	  if (length >= ALLOCA_THRESHOLD)
-             string = xmalloc (length + 1); /* in case of large strings */
+             string = XNEWVEC (char, length + 1); /* in case of large strings */
           else
              string = (char *) alloca (length + 1);
 
@@ -6922,7 +6922,7 @@ set_expr_location_from_node (tree node, Node_Id gnat_node)
 static const char *
 extract_encoding (const char *name)
 {
-  char *encoding = ggc_alloc (strlen (name));
+  char *encoding = GGC_NEWVEC (char, strlen (name));
   
   get_encoding (name, encoding);
   
@@ -6934,7 +6934,7 @@ extract_encoding (const char *name)
 static const char *
 decode_name (const char *name)
 {
-  char *decoded = ggc_alloc (strlen (name) * 2 + 60);
+  char *decoded = GGC_NEWVEC (char, strlen (name) * 2 + 60);
   
   __gnat_decode (name, decoded, 0);
   
@@ -6998,7 +6998,7 @@ post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent, int n)
 void
 post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent, tree t)
 {
-  char *newmsg = alloca (strlen (msg) + 1);
+  char *newmsg = XALLOCAVEC (char, strlen (msg) + 1);
   String_Template temp = {1, 0};
   Fat_Pointer fp;
   char start_yes, end_yes, start_no, end_no;

@@ -232,7 +232,7 @@ gnat_handle_option (size_t scode, const char *arg, int value)
   switch (code)
     {
     case OPT_I:
-      q = xmalloc (sizeof("-I") + strlen (arg));
+      q = XNEWVEC (char, sizeof("-I") + strlen (arg));
       strcpy (q, "-I");
       strcat (q, arg);
       gnat_argv[gnat_argc] = q;
@@ -289,7 +289,7 @@ gnat_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_gnat:
       /* Recopy the switches without the 'gnat' prefix.  */
-      gnat_argv[gnat_argc] = xmalloc (strlen (arg) + 2);
+      gnat_argv[gnat_argc] = XNEWVEC (char, strlen (arg) + 2);
       gnat_argv[gnat_argc][0] = '-';
       strcpy (gnat_argv[gnat_argc] + 1, arg);
       gnat_argc++;

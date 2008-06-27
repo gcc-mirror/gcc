@@ -1,3 +1,14 @@
+2008-06-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ada-tree.h (SET_TYPE_LANG_SPECIFIC, SET_DECL_LANG_SPECIFIC): Fix
+	-Wc++-compat warnings.
+	* adaint.c (__gnat_locate_regular_file, __gnat_locate_exec,
+	__gnat_locate_exec_on_path): Likewise.
+	* decl.c (annotate_value): Likewise.
+	* misc.c (gnat_handle_option): Likewise.
+	* trans.c (gnat_to_gnu, extract_encoding, decode_name,
+	post_error_ne_tree): Likewise.
+
 2008-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (convert) <CONSTRUCTOR>: When converting it to a packable
