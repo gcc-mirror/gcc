@@ -1017,8 +1017,7 @@
   "ISA_HAS_DSP"
   "lbux\t%0,%2(%1)"
   [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SI")])
 
 (define_insn "mips_lhx"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1029,8 +1028,7 @@
   "ISA_HAS_DSP"
   "lhx\t%0,%2(%1)"
   [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SI")])
 
 (define_insn "mips_lwx"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1039,8 +1037,7 @@
   "ISA_HAS_DSP"
   "lwx\t%0,%2(%1)"
   [(set_attr "type"	"load")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"4")])
+   (set_attr "mode"	"SI")])
 
 ;; Table 2-8. MIPS DSP ASE Instructions: Branch
 ;; BPOSGE32
