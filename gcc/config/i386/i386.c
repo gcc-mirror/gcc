@@ -9207,7 +9207,7 @@ print_operand (FILE *file, rtx x, int code)
 	  if (CONST_INT_P (x) || ! SHIFT_DOUBLE_OMITS_COUNT)
 	    {
 	      PRINT_OPERAND (file, x, 0);
-	      putc (',', file);
+	      fputs (", ", file);
 	    }
 	  return;
 
@@ -14542,7 +14542,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 	  if (!rtx_equal_p (operands[0], operands[1]))
 	    emit_move_insn (operands[0], operands[1]);
 	  emit_insn ((mode == DImode
-		     ? gen_x86_shld_1
+		     ? gen_x86_shld
 		     : gen_x86_64_shld) (high[0], low[0], GEN_INT (count)));
 	  ix86_expand_ashl_const (low[0], count, mode);
 	}
@@ -14627,7 +14627,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 
       (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
       emit_insn ((mode == DImode
-		  ? gen_x86_shld_1
+		  ? gen_x86_shld
 		  : gen_x86_64_shld) (high[0], low[0], operands[2]));
     }
 
@@ -14685,7 +14685,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
 	  if (!rtx_equal_p (operands[0], operands[1]))
 	    emit_move_insn (operands[0], operands[1]);
 	  emit_insn ((mode == DImode
-		      ? gen_x86_shrd_1
+		      ? gen_x86_shrd
 		      : gen_x86_64_shrd) (low[0], high[0], GEN_INT (count)));
 	  emit_insn ((mode == DImode
 		      ? gen_ashrsi3
@@ -14700,7 +14700,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
       (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
 
       emit_insn ((mode == DImode
-		  ? gen_x86_shrd_1
+		  ? gen_x86_shrd
 		  : gen_x86_64_shrd) (low[0], high[0], operands[2]));
       emit_insn ((mode == DImode
 		  ? gen_ashrsi3
@@ -14751,7 +14751,7 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
 	  if (!rtx_equal_p (operands[0], operands[1]))
 	    emit_move_insn (operands[0], operands[1]);
 	  emit_insn ((mode == DImode
-		      ? gen_x86_shrd_1
+		      ? gen_x86_shrd
 		      : gen_x86_64_shrd) (low[0], high[0], GEN_INT (count)));
 	  emit_insn ((mode == DImode
 		      ? gen_lshrsi3
@@ -14766,7 +14766,7 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
       (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
 
       emit_insn ((mode == DImode
-		  ? gen_x86_shrd_1
+		  ? gen_x86_shrd
 		  : gen_x86_64_shrd) (low[0], high[0], operands[2]));
       emit_insn ((mode == DImode
 		  ? gen_lshrsi3

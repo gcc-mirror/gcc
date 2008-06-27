@@ -1,3 +1,32 @@
+2008-06-27 Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ashlti3, ashrti3, lshrti3): Expand using
+	ix86_expand_binary_operator directly.
+	(*ashlti3_1): Rename from ashlti3_1.  Use nonmemory_operand predicate
+	for operand 2.
+	(*ashrti3_1): Ditto.
+	(*lshrti3_1): Ditto.
+	(*ashlti3_2, *ashrti3_2, *lshrti3_2): Remove insn patterns.
+	(ashlti, ashrti and lshrti splitters): Handle nonmemory operand 2
+	using only one splitter.  Conditionaly execute splitter before or
+	after peephole2 pass.
+	(ashlti, ashrti and lshrti peephole2): Define peephole2 patterns.
+	(x86_shld): Rename from x86_shld_1.  Compress operand 2 constraints.
+	Use only one alternative in asm template.
+	(x86_64_shld): Compress operand 2 constraints. Use only one alternative
+	in asm template.
+	(*ashldi3_cmp_rex64): Use const_1_to_63_operand operand predicate and
+	"J" operand constraint for operand 2.
+	(*ashldi3_cconly_rex64): Ditto.
+	(*ashrdi3_cmp_rex64): Ditto.
+	(*ashrdi3_cconly_rex64): Ditto.
+	(*lshrdi3_cmp_rex64): Ditto.
+	(*lshrdi3_cconly_rex64): Ditto.
+	* config/i386/predicates.md (const_1_to_63_operand): New predicate.
+	* config/i386/i386.md (print_operand) ['s']: Print ", " using fputs.
+	(split_ashr, split_ashl, split_lshr): Use gen_x86_shrd instead of
+	gen_x86_shrd_1.
+
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (omp_is_private): Don't return true if decl
