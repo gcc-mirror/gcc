@@ -694,6 +694,25 @@ struct processor_costs ppce300c2c3_cost = {
   1,			/* prefetch streams /*/
 };
 
+/* Instruction costs on PPCE500MC processors.  */
+static const
+struct processor_costs ppce500mc_cost = {
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (14),   /* divsi */
+  COSTS_N_INSNS (14),   /* divdi */
+  COSTS_N_INSNS (8),    /* fp */
+  COSTS_N_INSNS (10),   /* dmul */
+  COSTS_N_INSNS (36),   /* sdiv */
+  COSTS_N_INSNS (66),   /* ddiv */
+  64,			/* cache line size */
+  32,			/* l1 cache */
+  128,			/* l2 cache */
+  1,			/* prefetch streams /*/
+};
+
 /* Instruction costs on POWER4 and POWER5 processors.  */
 static const
 struct processor_costs power4_cost = {
@@ -1456,6 +1475,7 @@ rs6000_override_options (const char *default_cpu)
 	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN},
 	 {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
+	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
 	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"970", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
@@ -1559,10 +1579,12 @@ rs6000_override_options (const char *default_cpu)
 	}
     }
 
-  if (TARGET_E500 && !rs6000_explicit_options.isel)
+  if ((TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC)
+      && !rs6000_explicit_options.isel)
     rs6000_isel = 1;
 
-  if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3)
+  if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
+      || rs6000_cpu == PROCESSOR_PPCE500MC)
     {
       if (TARGET_ALTIVEC)
 	error ("AltiVec not supported in this target");
@@ -1679,9 +1701,9 @@ rs6000_override_options (const char *default_cpu)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
-  if (TARGET_E500)
+  if (TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC)
     {
-      /* The e500 does not have string instructions, and we set
+      /* The e500 and e500mc do not have string instructions, and we set
 	 MASK_STRING above when optimizing for size.  */
       if ((target_flags & MASK_STRING) != 0)
 	target_flags = target_flags & ~MASK_STRING;
@@ -1892,6 +1914,10 @@ rs6000_override_options (const char *default_cpu)
       case PROCESSOR_PPCE300C2:
       case PROCESSOR_PPCE300C3:
 	rs6000_cost = &ppce300c2c3_cost;
+	break;
+
+      case PROCESSOR_PPCE500MC:
+	rs6000_cost = &ppce500mc_cost;
 	break;
 
       case PROCESSOR_POWER4:
@@ -19008,6 +19034,7 @@ rs6000_issue_rate (void)
   case CPU_CELL:
   case CPU_PPCE300C2:
   case CPU_PPCE300C3:
+  case CPU_PPCE500MC:
     return 2;
   case CPU_RIOS2:
   case CPU_PPC604:
