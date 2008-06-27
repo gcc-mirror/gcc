@@ -6774,7 +6774,7 @@ annotate_value (tree gnu_size)
   /* Save the result in the cache.  */
   if (h)
     {
-      *h = ggc_alloc (sizeof (struct tree_int_map));
+      *h = GGC_NEW (struct tree_int_map);
       (*h)->base.from = gnu_size;
       (*h)->to = ret;
     }
