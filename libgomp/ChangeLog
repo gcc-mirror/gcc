@@ -1,3 +1,8 @@
+2008-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36617
+	* testsuite/libgomp.c/debug-1.c: New test.
+
 2008-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/nqueens-1.c: New test.
