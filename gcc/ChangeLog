@@ -1,3 +1,8 @@
+2008-06-27  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	PR c/34867
+	* c-lex.c (lex_charconst): Initialize unsignedp.
+
 2008-06-27  Olivier Hainque  <hainque@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr_to_memset): Assert our
