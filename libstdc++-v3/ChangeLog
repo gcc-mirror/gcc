@@ -1,3 +1,11 @@
+2008-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/vec.cc (__aeabi_vec_dtor_cookie): Handle NULL array
+	address.
+	(__aeabi_vec_delete): Likewise.
+	(__aeabi_vec_delete3): Likewise.
+	(__aeabi_vec_delete3_nodtor): Likewise.
+
 2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (is_partitioned): Add in C++0x mode.
