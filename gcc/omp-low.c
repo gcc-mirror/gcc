@@ -3140,7 +3140,7 @@ expand_omp_taskreg (struct omp_region *region)
 {
   basic_block entry_bb, exit_bb, new_bb;
   struct function *child_cfun;
-  tree child_fn, block, t, ws_args;
+  tree child_fn, block, t, ws_args, *tp;
   block_stmt_iterator si;
   tree entry_stmt;
   edge e;
@@ -3251,6 +3251,7 @@ expand_omp_taskreg (struct omp_region *region)
       block = DECL_INITIAL (child_fn);
       BLOCK_VARS (block) = list2chain (child_cfun->local_decls);
       DECL_SAVED_TREE (child_fn) = bb_stmt_list (single_succ (entry_bb));
+      TREE_USED (block) = 1;
 
       /* Reset DECL_CONTEXT on function arguments.  */
       for (t = DECL_ARGUMENTS (child_fn); t; t = TREE_CHAIN (t))
@@ -3287,10 +3288,21 @@ expand_omp_taskreg (struct omp_region *region)
 	  init_ssa_operands ();
 	  cfun->gimple_df->in_ssa_p = true;
 	  pop_cfun ();
+	  block = NULL_TREE;
 	}
-      new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb);
+      else
+	block = TREE_BLOCK (entry_stmt);
+
+      new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb, block);
       if (exit_bb)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
+
+      /* Remove non-local VAR_DECLs from child_cfun->local_decls list.  */
+      for (tp = &child_cfun->local_decls; *tp; )
+	if (DECL_CONTEXT (TREE_VALUE (*tp)) != cfun->decl)
+	  tp = &TREE_CHAIN (*tp);
+	else
+	  *tp = TREE_CHAIN (*tp);
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties
@@ -5030,6 +5042,8 @@ expand_omp (struct omp_region *region)
 {
   while (region)
     {
+      location_t saved_location;
+
       /* First, determine whether this is a combined parallel+workshare
        	 region.  */
       if (region->type == OMP_PARALLEL)
@@ -5037,6 +5051,10 @@ expand_omp (struct omp_region *region)
 
       if (region->inner)
 	expand_omp (region->inner);
+
+      saved_location = input_location;
+      if (EXPR_HAS_LOCATION (last_stmt (region->entry)))
+	input_location = EXPR_LOCATION (last_stmt (region->entry));
 
       switch (region->type)
 	{
@@ -5075,11 +5093,11 @@ expand_omp (struct omp_region *region)
 	  expand_omp_atomic (region);
 	  break;
 
-
 	default:
 	  gcc_unreachable ();
 	}
 
+      input_location = saved_location;
       region = region->next;
     }
 }
@@ -5312,11 +5330,17 @@ lower_omp_sections (tree *stmt_p, omp_context *ctx)
   olist = NULL_TREE;
   lower_reduction_clauses (OMP_SECTIONS_CLAUSES (stmt), &olist, ctx);
 
-  pop_gimplify_context (NULL_TREE);
-  record_vars_into (ctx->block_vars, ctx->cb.dst_fn);
-
-  new_stmt = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  block = make_node (BLOCK);
+  new_stmt = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
   TREE_SIDE_EFFECTS (new_stmt) = 1;
+
+  pop_gimplify_context (new_stmt);
+
+  BIND_EXPR_VARS (new_stmt)
+    = chainon (BIND_EXPR_VARS (new_stmt), ctx->block_vars);
+  BLOCK_VARS (block) = BIND_EXPR_VARS (new_stmt);
+  if (BLOCK_VARS (block))
+    TREE_USED (block) = 1;
 
   new_body = alloc_stmt_list ();
   append_to_statement_list (ilist, &new_body);
@@ -5491,6 +5515,8 @@ lower_omp_single (tree *stmt_p, omp_context *ctx)
 
   BIND_EXPR_VARS (bind) = chainon (BIND_EXPR_VARS (bind), ctx->block_vars);
   BLOCK_VARS (block) = BIND_EXPR_VARS (bind);
+  if (BLOCK_VARS (block))
+    TREE_USED (block) = 1;
 }
 
 
@@ -5714,7 +5740,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, tree *body_p,
 static void
 lower_omp_for (tree *stmt_p, omp_context *ctx)
 {
-  tree t, stmt, ilist, dlist, new_stmt, *body_p, *rhs_p;
+  tree t, stmt, ilist, dlist, new_stmt, block, *body_p, *rhs_p;
   struct omp_for_data fd;
   int i;
 
@@ -5725,14 +5751,17 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   lower_omp (&OMP_FOR_PRE_BODY (stmt), ctx);
   lower_omp (&OMP_FOR_BODY (stmt), ctx);
 
+  block = make_node (BLOCK);
+  new_stmt = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
+  TREE_SIDE_EFFECTS (new_stmt) = 1;
+  body_p = &BIND_EXPR_BODY (new_stmt);
+
   /* Move declaration of temporaries in the loop body before we make
      it go away.  */
   if (TREE_CODE (OMP_FOR_BODY (stmt)) == BIND_EXPR)
-    record_vars_into (BIND_EXPR_VARS (OMP_FOR_BODY (stmt)), ctx->cb.dst_fn);
-
-  new_stmt = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-  TREE_SIDE_EFFECTS (new_stmt) = 1;
-  body_p = &BIND_EXPR_BODY (new_stmt);
+    BIND_EXPR_VARS (new_stmt)
+      = chainon (BIND_EXPR_VARS (new_stmt),
+		 BIND_EXPR_VARS (OMP_FOR_BODY (stmt)));
 
   /* The pre-body and input clauses go before the lowered OMP_FOR.  */
   ilist = NULL;
@@ -5786,8 +5815,12 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   OMP_RETURN_NOWAIT (t) = fd.have_nowait;
   append_to_statement_list (t, body_p);
 
-  pop_gimplify_context (NULL_TREE);
-  record_vars_into (ctx->block_vars, ctx->cb.dst_fn);
+  pop_gimplify_context (new_stmt);
+  BIND_EXPR_VARS (new_stmt)
+    = chainon (BIND_EXPR_VARS (new_stmt), ctx->block_vars);
+  BLOCK_VARS (block) = BIND_EXPR_VARS (new_stmt);
+  if (BLOCK_VARS (block))
+    TREE_USED (block) = 1;
 
   OMP_FOR_BODY (stmt) = NULL_TREE;
   OMP_FOR_PRE_BODY (stmt) = NULL_TREE;
@@ -6157,8 +6190,9 @@ lower_omp_taskreg (tree *stmt_p, omp_context *ctx)
 
   /* Once all the expansions are done, sequence all the different
      fragments inside OMP_TASKREG_BODY.  */
-  bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-  append_to_statement_list (ilist, &BIND_EXPR_BODY (bind));
+  bind = build3 (BIND_EXPR, void_type_node, NULL, NULL,
+		 BIND_EXPR_BLOCK (par_bind));
+  TREE_SIDE_EFFECTS (bind) = 1;
 
   new_body = alloc_stmt_list ();
 
@@ -6180,7 +6214,14 @@ lower_omp_taskreg (tree *stmt_p, omp_context *ctx)
   OMP_TASKREG_BODY (stmt) = new_body;
 
   append_to_statement_list (stmt, &BIND_EXPR_BODY (bind));
-  append_to_statement_list (olist, &BIND_EXPR_BODY (bind));
+  if (ilist || olist)
+    {
+      append_to_statement_list (bind, &ilist);
+      append_to_statement_list (olist, &ilist);
+      bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+      TREE_SIDE_EFFECTS (bind) = 1;
+      append_to_statement_list (ilist, &BIND_EXPR_BODY (bind));
+    }
 
   *stmt_p = bind;
 
@@ -6363,7 +6404,9 @@ lower_omp_1 (tree *tp, omp_context *ctx, tree_stmt_iterator *tsi)
 static void
 lower_omp (tree *stmt_p, omp_context *ctx)
 {
+  location_t saved_location = input_location;
   lower_omp_1 (stmt_p, ctx, NULL);
+  input_location = saved_location;
 }
 
 /* Main entry point.  */

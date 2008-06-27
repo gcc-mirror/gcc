@@ -1,3 +1,34 @@
+2008-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36617
+	* tree-cfg.c (struct move_stmt_d): Replace block field with
+	orig_block and new_block fields.
+	(move_stmt_r): Only set TREE_BLOCK to p->new_block if
+	if it used to be NULL, p->orig_block or if p->orig_block is NULL.
+	(move_block_to_fn): Replace vars_map and new_label_map arguments
+	with struct move_stmt_d pointer.
+	(replace_block_vars_by_duplicates): New function.
+	(move_sese_region_to_fn): Add ORIG_BLOCK argument.  Adjust
+	move_block_to_fn caller.  If ORIG_BLOCK is non-NULL, move over
+	all subblocks of ORIG_BLOCK to the new function.  Call
+	replace_block_vars_by_duplicates.
+	* tree-flow.h (move_sese_region_to_fn): Adjust prototype.
+	* omp-low.c (expand_omp_taskreg): Set TREE_USED on DECL_INITIAL
+	BLOCK of the new function.  Adjust move_sese_region_to_fn caller.
+	Prune vars with original DECL_CONTEXT from child_cfun->local_decls.
+	(expand_omp): Temporarily set input_location to the location of
+	region's controlling stmt.
+	(lower_omp_sections, lower_omp_for): Add a BLOCK into outermost
+	BIND_EXPR, push ctx->block_vars and gimplification vars into
+	the BIND_EXPR and its block's BLOCK_VARS instead of directly
+	into dest function.
+	(lower_omp_single): Set TREE_USED on the BIND_EXPR's BLOCK if
+	there are any BLOCK_VARS.
+	(lower_omp_taskreg): Set BLOCK on a BIND_EXPR containing the
+	OMP_PARALLEL or OMP_TASK stmt.
+	(lower_omp): Save and restore input_location around the lower_omp_1
+	call.
+
 2008-06-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36400

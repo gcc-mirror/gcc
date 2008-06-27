@@ -5665,7 +5665,8 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
 
 struct move_stmt_d
 {
-  tree block;
+  tree orig_block;
+  tree new_block;
   tree from_context;
   tree to_context;
   struct pointer_map_t *vars_map;
@@ -5674,8 +5675,8 @@ struct move_stmt_d
 };
 
 /* Helper for move_block_to_fn.  Set TREE_BLOCK in every expression
-   contained in *TP and change the DECL_CONTEXT of every local
-   variable referenced in *TP.  */
+   contained in *TP if it has been ORIG_BLOCK previously and change the
+   DECL_CONTEXT of every local variable referenced in *TP.  */
 
 static tree
 move_stmt_r (tree *tp, int *walk_subtrees, void *data)
@@ -5683,9 +5684,22 @@ move_stmt_r (tree *tp, int *walk_subtrees, void *data)
   struct move_stmt_d *p = (struct move_stmt_d *) data;
   tree t = *tp;
 
-  if (p->block
-      && (EXPR_P (t) || GIMPLE_STMT_P (t)))
-    TREE_BLOCK (t) = p->block;
+  if (EXPR_P (t) || GIMPLE_STMT_P (t))
+    {
+      tree block = TREE_BLOCK (t);
+      if (p->orig_block == NULL_TREE
+	  || block == p->orig_block
+	  || block == NULL_TREE)
+	TREE_BLOCK (t) = p->new_block;
+#ifdef ENABLE_CHECKING
+      else if (block != p->new_block)
+	{
+	  while (block && block != p->orig_block)
+	    block = BLOCK_SUPERCONTEXT (block);
+	  gcc_assert (block);
+	}
+#endif
+    }
 
   if (OMP_DIRECTIVE_P (t)
       && TREE_CODE (t) != OMP_RETURN
@@ -5792,14 +5806,12 @@ mark_virtual_ops_in_region (VEC (basic_block,heap) *bbs)
 static void
 move_block_to_fn (struct function *dest_cfun, basic_block bb,
 		  basic_block after, bool update_edge_count_p,
-		  struct pointer_map_t *vars_map, htab_t new_label_map,
-		  int eh_offset)
+		  struct move_stmt_d *d, int eh_offset)
 {
   struct control_flow_graph *cfg;
   edge_iterator ei;
   edge e;
   block_stmt_iterator si;
-  struct move_stmt_d d;
   unsigned old_len, new_len;
   tree phi, next_phi;
 
@@ -5856,33 +5868,22 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  continue;
 	}
 
-      SET_PHI_RESULT (phi, replace_ssa_name (op, vars_map, dest_cfun->decl));
+      SET_PHI_RESULT (phi,
+		      replace_ssa_name (op, d->vars_map, dest_cfun->decl));
       FOR_EACH_PHI_ARG (use, phi, oi, SSA_OP_USE)
 	{
 	  op = USE_FROM_PTR (use);
 	  if (TREE_CODE (op) == SSA_NAME)
-	    SET_USE (use, replace_ssa_name (op, vars_map, dest_cfun->decl));
+	    SET_USE (use, replace_ssa_name (op, d->vars_map, dest_cfun->decl));
 	}
     }
-
-  /* The statements in BB need to be associated with a new TREE_BLOCK.
-     Labels need to be associated with a new label-to-block map.  */
-  memset (&d, 0, sizeof (d));
-  d.vars_map = vars_map;
-  d.from_context = cfun->decl;
-  d.to_context = dest_cfun->decl;
-  d.new_label_map = new_label_map;
 
   for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
     {
       tree stmt = bsi_stmt (si);
       int region;
 
-      d.remap_decls_p = true;
-      if (TREE_BLOCK (stmt))
-	d.block = DECL_INITIAL (dest_cfun->decl);
-
-      walk_tree (&stmt, move_stmt_r, &d, NULL);
+      walk_tree (&stmt, move_stmt_r, d, NULL);
 
       if (TREE_CODE (stmt) == LABEL_EXPR)
 	{
@@ -5989,6 +5990,35 @@ new_label_mapper (tree decl, void *data)
   return m->to;
 }
 
+/* Change DECL_CONTEXT of all BLOCK_VARS in block, including
+   subblocks.  */
+
+static void
+replace_block_vars_by_duplicates (tree block, struct pointer_map_t *vars_map,
+				  tree to_context)
+{
+  tree *tp, t;
+
+  for (tp = &BLOCK_VARS (block); *tp; tp = &TREE_CHAIN (*tp))
+    {
+      t = *tp;
+      replace_by_duplicate_decl (&t, vars_map, to_context);
+      if (t != *tp)
+	{
+	  if (TREE_CODE (*tp) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*tp))
+	    {
+	      SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (*tp));
+	      DECL_HAS_VALUE_EXPR_P (t) = 1;
+	    }
+	  TREE_CHAIN (t) = TREE_CHAIN (*tp);
+	  *tp = t;
+	}
+    }
+
+  for (block = BLOCK_SUBBLOCKS (block); block; block = BLOCK_CHAIN (block))
+    replace_block_vars_by_duplicates (block, vars_map, to_context);
+}
+
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
    single basic block in the original CFG and the new basic block is
@@ -5999,13 +6029,17 @@ new_label_mapper (tree decl, void *data)
    is that ENTRY_BB should be the only entry point and it must
    dominate EXIT_BB.
 
+   Change TREE_BLOCK of all statements in ORIG_BLOCK to the new
+   functions outermost BLOCK, move all subblocks of ORIG_BLOCK
+   to the new function.
+
    All local variables referenced in the region are assumed to be in
    the corresponding BLOCK_VARS and unexpanded variable lists
    associated with DEST_CFUN.  */
 
 basic_block
 move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
-		        basic_block exit_bb)
+		        basic_block exit_bb, tree orig_block)
 {
   VEC(basic_block,heap) *bbs, *dom_bbs;
   basic_block dom_entry = get_immediate_dominator (CDI_DOMINATORS, entry_bb);
@@ -6019,6 +6053,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   htab_t new_label_map;
   struct pointer_map_t *vars_map;
   struct loop *loop = entry_bb->loop_father;
+  struct move_stmt_d d;
 
   /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
      region.  */
@@ -6115,15 +6150,41 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   gcc_assert (VEC_length (basic_block, bbs) >= 2);
   after = dest_cfun->cfg->x_entry_block_ptr;
   vars_map = pointer_map_create ();
+
+  memset (&d, 0, sizeof (d));
+  d.vars_map = vars_map;
+  d.from_context = cfun->decl;
+  d.to_context = dest_cfun->decl;
+  d.new_label_map = new_label_map;
+  d.remap_decls_p = true;
+  d.orig_block = orig_block;
+  d.new_block = DECL_INITIAL (dest_cfun->decl);
+
   for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
     {
       /* No need to update edge counts on the last block.  It has
 	 already been updated earlier when we detached the region from
 	 the original CFG.  */
-      move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, vars_map,
-	                new_label_map, eh_offset);
+      move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, &d, eh_offset);
       after = bb;
     }
+
+  /* Rewire BLOCK_SUBBLOCKS of orig_block.  */
+  if (orig_block)
+    {
+      tree block;
+      gcc_assert (BLOCK_SUBBLOCKS (DECL_INITIAL (dest_cfun->decl))
+		  == NULL_TREE);
+      BLOCK_SUBBLOCKS (DECL_INITIAL (dest_cfun->decl))
+	= BLOCK_SUBBLOCKS (orig_block);
+      for (block = BLOCK_SUBBLOCKS (orig_block);
+	   block; block = BLOCK_CHAIN (block))
+	BLOCK_SUPERCONTEXT (block) = DECL_INITIAL (dest_cfun->decl);
+      BLOCK_SUBBLOCKS (orig_block) = NULL_TREE;
+    }
+
+  replace_block_vars_by_duplicates (DECL_INITIAL (dest_cfun->decl),
+				    vars_map, dest_cfun->decl);
 
   if (new_label_map)
     htab_delete (new_label_map);
