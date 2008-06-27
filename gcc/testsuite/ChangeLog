@@ -1,3 +1,8 @@
+2008-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36364
+	* g++.dg/template/repo9.C: New test.
+
 2008-06-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/inline-31.c, gcc.dg/inline-32.c, gcc.dg/inline-32a.c: New

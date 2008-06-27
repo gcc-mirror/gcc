@@ -1,3 +1,10 @@
+2008-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36364
+	* repo.c (repo_emit_p): Put const static data members initialized
+	by const expr into *.rpo file, just return 2 if IDENTIFIER_REPO_CHOSEN
+	for it is 0.
+
 2008-06-15  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/35320
