@@ -537,6 +537,12 @@ set_initial_properties (struct alias_info *ai)
 	}
     }
 
+  if (!clobber_what_escaped ())
+    {
+      any_pt_anything = true;
+      pt_anything_mask |= ESCAPE_TO_CALL;
+    }
+
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
@@ -557,18 +563,6 @@ set_initial_properties (struct alias_info *ai)
 
 	  if (tag)
 	    mark_call_clobbered (tag, pi->escape_mask);
-
-	  /* Defer to points-to analysis if possible, otherwise
-	     clobber all addressable variables.  Parameters cannot
-	     point to local memory though.
-	     ???  Properly tracking which pointers point to non-local
-	     memory only would make a big difference here.  */
-	  if (!clobber_what_p_points_to (ptr)
-	      && !(pi->escape_mask & ESCAPE_IS_PARM))
-	    {
-	      any_pt_anything = true;
-	      pt_anything_mask |= pi->escape_mask;
-	    }
 	}
 
       /* If the name tag is call clobbered, so is the symbol tag
@@ -2904,6 +2898,12 @@ is_escape_site (tree stmt)
       /* If the LHS is an SSA name, it can't possibly represent a non-local
 	 memory store.  */
       if (TREE_CODE (lhs) == SSA_NAME)
+	return NO_ESCAPE;
+
+      /* If the LHS is a non-global decl, it isn't a non-local memory store.
+	 If the LHS escapes, the RHS escape is dealt with in the PTA solver.  */
+      if (DECL_P (lhs)
+	  && !is_global_var (lhs))
 	return NO_ESCAPE;
 
       /* FIXME: LHS is not an SSA_NAME.  Even if it's an assignment to a

@@ -1,3 +1,24 @@
+2008-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36400
+	PR tree-optimization/36373
+	PR tree-optimization/36344
+	* gcc.dg/torture/pr36373-1.c: New testcase.
+	* gcc.dg/torture/pr36373-2.c: Likewise.
+	* gcc.dg/torture/pr36373-3.c: Likewise.
+	* gcc.dg/torture/pr36373-4.c: Likewise.
+	* gcc.dg/torture/pr36373-5.c: Likewise.
+	* gcc.dg/torture/pr36373-6.c: Likewise.
+	* gcc.dg/torture/pr36373-7.c: Likewise.
+	* gcc.dg/torture/pr36373-8.c: Likewise.
+	* gcc.dg/torture/pr36373-9.c: Likewise.
+	* gcc.dg/torture/pr36373-10.c: Likewise.
+	* gcc.dg/torture/pr36400.c: Likewise.
+	* gcc.c-torture/execute/pta-field-1.c: Likewise.
+	* gcc.c-torture/execute/pta-field-2.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre8.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/pr24287.c: XFAIL.
+
 2008-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr9.ad[sb]: New test.
