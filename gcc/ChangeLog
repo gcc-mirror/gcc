@@ -1,3 +1,74 @@
+2008-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (mips_split_const_insns): Declare.
+	* config/mips/mips.c (mips_split_const_insns): New function.
+	* config/mips/mips.md (move_type): New attribute.
+	(mode): Move attribute definition earlier in file.  Add "TI"
+	and "TF".
+	(dword_mode): New attribute.
+	(type): Avoid long line.  Map "move_type"s to "type"s,
+	choosing "multi" for doubleword moves if appropriate.
+	Swap MTC/MFC comments to match their declaration order.
+	(extended_mips16): Default to "yes" if "move_type" is "sll0",
+	"type" is "branch" or "jal" is "direct".
+	(length): Handle "extended_mips16" first.  Make the default
+	"0" for "ghost" instructions.  Set the length from "move_type".
+	(truncdisi2, truncdihi2, truncdiqi2): Use "move_type" instead
+	of "type", with "sll0" for the register alternative.  Remove the
+	"extended_mips16" attribute.
+	(zero_extendsidi2, *clear_upper32): Use "move_type" instead
+	of "type", with "shift_shift" for the register alternative.
+	Remove the "length" attribute.
+	(*extend<SHORT:mode><GPR:mode>2, *extendqihi2): Likewise.
+	(*zero_extend<SHORT:mode><GPR:mode>2): Use "move_type" instead
+	of "type", with "andi" for the register alternative.
+	(*zero_extendqihi2): Likewise.
+	(*zero_extend<SHORT:mode><GPR:mode>2_mips16e): Use a "move_type"
+	of "andi" instead of a "type" of "arith".
+	(*zero_extend<SHORT:mode><GPR:mode>2_mips16): Use "move_type"
+	instead of "type".
+	(*zero_extendqihi2_mips16, mov_<load>l, mov_<load>r, mov_<store>l)
+	(mov_<store>r, *mov<mode>_ra): Likewise.
+	(extendsidi2): Use "move_type" instead of "type", with "move"
+	for the register alternative.
+	(*extend<SHORT:mode><GPR:mode>2_mips16e): Use "move_type" instead
+	of "type", with "signext" for the register alternative.
+	(*extend<SHORT:mode><GPR:mode>2_se<SHORT:size>): Likewise.
+	(*extendqihi2_mips16e, *extendqihi2_seb): Likewise.
+	(fix_truncdfsi2_insn, fix_truncsfsi2_insn, fix_truncdfdi2)
+	(fix_truncsfdi2, floatsidf2, floatdidf2, floatsisf2, floatdisf2)
+	(floatdisf2, *branch_equality<mode>_mips16): Likewise.
+	(unnamed branch insn): Likewise.
+	(*movdi_gp32_fp64): Fold into...
+	(*movdi_32bit): ...here.
+	(*movdf_hardfloat_64bit, *movdf_hardfloat_32bit): Combine into...
+	(*movdf_hardfloat): ...this new pattern.
+	(*movdf_softfloat): Remove redundant FPR alternatives.
+	(*movti, *movti_mips16, *movtf, *movtf_mips16): Add "mode" attributes.
+	(*movv2sf_hardfloat_64bit, *movv2sf_hardfloat_32bit): Combine into...
+	(*movv2sf): ...this new pattern.  Use "DF" rather than "SF" for
+	the "move" attribute.
+	(*movdi_32bit): Use "move_type" instead of "type" and remove the
+	"length" attribute.  Use "fpload" and "fpstore" instead of "load"
+	and "store" for COP loads and stores.
+	(*movdi_32bit_mips16, *movdi_64bit, *movsi_internal, movcc)
+	(*movhi_internal, *movhi_mips16, *movqi_internal, *movqi_mips16)
+	(*movsf_hardfloat, *movsf_softfloat, *movsi_mips16, *movdf_hardfloat)
+	(*movdf_softfloat, *movdf_mips16, *movti, *movti_mips16, *movtf)
+	(*movtf_mips16, *movv2sf): Likewise.
+	(mfhi<GPR:mode>_<HILO:mode>, mflo<GPR:mode>_<HILO:mode>)
+	(load_low<mode>, load_high<mode>, store_word<mode>, mthc1<mode>)
+	(mfhc1<mode>): Use "move_type" instead of "move".
+	(*low<mode>_mips16): Use "extended_mips16" instead of "length".
+	(loadgp_blockage): Remove the "length" attribute.
+	(blockage, set_got_version, update_got_version): Likewise.
+	(call_internal): Remove the "extended_mips16" attribute.
+	(call_value_internal, call_value_multiple_internal): Likewise.
+	* config/mips/loongson.md (mov<mode>_internal): Use "move_type"
+	instead of "move".
+	* config/mips/mips-dsp.md (mips_lbux, mips_lhx, mips_lwx): Remove
+	the "length" attribute.
+
 2008-06-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-format.c (handle_format_attribute): Fix -Wc++-compat and/or

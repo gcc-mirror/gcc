@@ -2121,6 +2121,21 @@ mips_const_insns (rtx x)
     }
 }
 
+/* X is a doubleword constant that can be handled by splitting it into
+   two words and loading each word separately.  Return the number of
+   instructions required to do this.  */
+
+int
+mips_split_const_insns (rtx x)
+{
+  unsigned int low, high;
+
+  low = mips_const_insns (mips_subword (x, false));
+  high = mips_const_insns (mips_subword (x, true));
+  gcc_assert (low > 0 && high > 0);
+  return low + high;
+}
+
 /* Return the number of instructions needed to implement INSN,
    given that it loads from or stores to MEM.  Count extended
    MIPS16 instructions as two instructions.  */
