@@ -3579,16 +3579,46 @@ convert (tree type, tree expr)
 
     case CONSTRUCTOR:
       /* If we are converting a CONSTRUCTOR to a mere variant type, just make
-	 a new one in the proper type.  Likewise for a conversion between
-	 original and packable version.  */
-      if (code == ecode
-	  && (gnat_types_compatible_p (type, etype)
-	      || (code == RECORD_TYPE
-		  && TYPE_NAME (type) == TYPE_NAME (etype))))
+	 a new one in the proper type.  */
+      if (code == ecode && gnat_types_compatible_p (type, etype))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
 	  return expr;
+	}
+
+      /* Likewise for a conversion between original and packable version, but
+	 we have to work harder in order to preserve type consistency.  */
+      if (code == ecode
+	  && code == RECORD_TYPE
+	  && TYPE_NAME (type) == TYPE_NAME (etype))
+	{
+	  VEC(constructor_elt,gc) *e = CONSTRUCTOR_ELTS (expr);
+	  unsigned HOST_WIDE_INT len = VEC_length (constructor_elt, e);
+	  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, len);
+	  tree efield = TYPE_FIELDS (etype), field = TYPE_FIELDS (type);
+	  unsigned HOST_WIDE_INT idx;
+	  tree index, value;
+
+	  FOR_EACH_CONSTRUCTOR_ELT(e, idx, index, value)
+	    {
+	      constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
+	      /* We expect only simple constructors.  Otherwise, punt.  */
+	      if (!(index == efield || index == DECL_ORIGINAL_FIELD (efield)))
+		break;
+	      elt->index = field;
+	      elt->value = convert (TREE_TYPE (field), value);
+	      efield = TREE_CHAIN (efield);
+	      field = TREE_CHAIN (field);
+	    }
+
+	  if (idx == len)
+	    {
+	      expr = copy_node (expr);
+	      TREE_TYPE (expr) = type;
+	      CONSTRUCTOR_ELTS (expr) = v;
+	      return expr;
+	    }
 	}
       break;
 

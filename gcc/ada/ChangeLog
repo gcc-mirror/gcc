@@ -1,3 +1,8 @@
+2008-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (convert) <CONSTRUCTOR>: When converting it to a packable
+	version of its type, attempt to first convert its elements.
+
 2008-06-26  Chris Proctor  <chrisp_42@bigpond.com>
 
 	* Makefile.in: Fix *86 kfreebsd target specific pairs.
