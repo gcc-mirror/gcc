@@ -4280,7 +4280,7 @@ static int type_is_enum (const_tree);
 static unsigned int dbx_reg_number (const_rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static dw_loc_descr_ref reg_loc_descriptor (rtx, enum var_init_status);
-static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int, 
+static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int,
 						enum var_init_status);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
 						     enum var_init_status);
@@ -8910,7 +8910,7 @@ one_reg_loc_descriptor (unsigned int regno, enum var_init_status initialized)
    designates a value that spans more than one register.  */
 
 static dw_loc_descr_ref
-multiple_reg_loc_descriptor (rtx rtl, rtx regs, 
+multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 			     enum var_init_status initialized)
 {
   int nregs, size, i;
@@ -9298,7 +9298,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONCATN:
-      mem_loc_result = concatn_mem_loc_descriptor (rtl, mode, 
+      mem_loc_result = concatn_mem_loc_descriptor (rtl, mode,
 						   VAR_INIT_STATUS_INITIALIZED);
       break;
 
@@ -9529,7 +9529,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	      first_op = DW_OP_addr;
 	      second_op = DW_OP_form_tls_address;
 	    }
-	  
+
 	  rtl = rtl_for_decl_location (loc);
 	  if (rtl == NULL_RTX)
 	    return 0;
@@ -9543,7 +9543,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  ret = new_loc_descr (first_op, 0, 0);
 	  ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
 	  ret->dw_loc_oprnd1.v.val_addr = rtl;
-	  
+
 	  ret1 = new_loc_descr (second_op, 0, 0);
 	  add_loc_descr (&ret, ret1);
 
@@ -10887,7 +10887,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	    enum var_init_status initialized =
 	      NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 	    varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	    add_loc_descr_to_loc_list (&list, 
+	    add_loc_descr_to_loc_list (&list,
 				       loc_descriptor (varloc, initialized),
 				       node->label, node->next->label, secname);
 	  }
@@ -10909,7 +10909,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 					   current_function_funcdef_no);
 	      endname = ggc_strdup (label_id);
 	    }
-	  add_loc_descr_to_loc_list (&list, 
+	  add_loc_descr_to_loc_list (&list,
 				     loc_descriptor (varloc, initialized),
 				     node->label, endname, secname);
 	}
@@ -14154,13 +14154,13 @@ static void
 dwarf2out_global_decl (tree decl)
 {
   /* Output DWARF2 information for file-scope tentative data object
-     declarations, file-scope (extern) function declarations (which had no
-     corresponding body) and file-scope tagged type declarations and
-     definitions which have not yet been forced out.
+     declarations, file-scope (extern) function declarations (which
+     had no corresponding body) and file-scope tagged type declarations
+     and definitions which have not yet been forced out.
 
-     Ignore the global decl of any Fortran COMMON blocks which also wind up here
-     though they have already been described in the local scope for the 
-     procedures using them.  */
+     Ignore the global decl of any Fortran COMMON blocks which also
+     wind up here though they have already been described in the local
+     scope for the procedures using them.  */
   if (TREE_CODE (decl) == VAR_DECL
       && TREE_PUBLIC (decl) && TREE_STATIC (decl) && is_fortran ())
     return;
