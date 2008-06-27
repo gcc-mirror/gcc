@@ -977,7 +977,7 @@ lex_charconst (const cpp_token *token)
   cppchar_t result;
   tree type, value;
   unsigned int chars_seen;
-  int unsignedp;
+  int unsignedp = 0;
 
   result = cpp_interpret_charconst (parse_in, token,
 				    &chars_seen, &unsignedp);
