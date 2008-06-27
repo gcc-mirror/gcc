@@ -1,5 +1,8 @@
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimplify.c (omp_is_private): Don't return true if decl
+	is not already private on #pragma omp for or #pragma omp parallel for.
+
 	PR debug/36617
 	* tree-cfg.c (struct move_stmt_d): Replace block field with
 	orig_block and new_block fields.
