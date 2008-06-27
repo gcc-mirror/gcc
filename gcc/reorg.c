@@ -3834,7 +3834,7 @@ dbr_schedule (rtx first)
 	epilogue_insn = insn;
     }
 
-  uid_to_ruid = xmalloc ((max_uid + 1) * sizeof (int));
+  uid_to_ruid = XNEWVEC (int, max_uid + 1);
   for (i = 0, insn = first; insn; i++, insn = NEXT_INSN (insn))
     uid_to_ruid[INSN_UID (insn)] = i;
 
@@ -3842,7 +3842,7 @@ dbr_schedule (rtx first)
   if (unfilled_firstobj == 0)
     {
       gcc_obstack_init (&unfilled_slots_obstack);
-      unfilled_firstobj = obstack_alloc (&unfilled_slots_obstack, 0);
+      unfilled_firstobj = XOBNEWVAR (&unfilled_slots_obstack, rtx, 0);
     }
 
   for (insn = next_active_insn (first); insn; insn = next_active_insn (insn))
@@ -3917,7 +3917,7 @@ dbr_schedule (rtx first)
   obstack_free (&unfilled_slots_obstack, unfilled_firstobj);
 
   /* It is not clear why the line below is needed, but it does seem to be.  */
-  unfilled_firstobj = obstack_alloc (&unfilled_slots_obstack, 0);
+  unfilled_firstobj = XOBNEWVAR (&unfilled_slots_obstack, rtx, 0);
 
   if (dump_file)
     {

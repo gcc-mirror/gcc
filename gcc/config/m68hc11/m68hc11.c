@@ -1172,7 +1172,7 @@ m68hc11_encode_label (tree decl)
 {
   const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int len = strlen (str);
-  char *newstr = alloca (len + 2);
+  char *newstr = XALLOCAVEC (char, len + 2);
 
   newstr[0] = '@';
   strcpy (&newstr[1], str);

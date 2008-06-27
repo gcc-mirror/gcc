@@ -121,7 +121,7 @@ extern int target_flags;
       if (bfin_si_revision != -1)		\
 	{					\
 	  /* space of 0xnnnn and a NUL */	\
-	  char *buf = alloca (7);		\
+	  char *buf = XALLOCAVEC (char, 7);	\
 						\
 	  sprintf (buf, "0x%04x", bfin_si_revision);			\
 	  builtin_define_with_value ("__SILICON_REVISION__", buf, 0);	\

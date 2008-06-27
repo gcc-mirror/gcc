@@ -1,3 +1,62 @@
+2008-06-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (handle_format_attribute): Fix -Wc++-compat and/or
+	-Wcast-qual warnings.
+	* c-pragma.c (dpm_eq, handle_pragma_push_macro,
+	handle_pragma_pop_macro): Likewise.
+	* collect2.c (resolve_lib_name): Likewise.
+	* config/arc/arc.c (arc_init): Likewise.
+	* config/arm/arm.c (neon_builtin_compare,
+	locate_neon_builtin_icode): Likewise.
+	* config/arm/pe.c (arm_mark_dllexport, arm_pe_unique_section):
+	Likewise.
+	* config/bfin/bfin.c (bfin_init_machine_status,
+	bfin_optimize_loop): Likewise.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	* config/cris/cris.c (cris_init_expanders): Likewise.
+	* config/darwin-c.c (frameworks_in_use, add_framework): Likewise.
+	* config/darwin.c (machopic_indirection_eq,
+	machopic_indirection_name, machopic_output_indirection):
+	Likewise.
+	* config/frv/frv.c (frv_init_machine_status, frv_compare_insns,
+	frv_io_check_address, frv_io_handle_set, frv_io_handle_use_1,
+	frv_optimize_membar): Likewise.
+	* config/i386/cygwin.h (mingw_scan,
+	GCC_DRIVER_HOST_INITIALIZATION): Likewise.
+	* config/i386/cygwin1.c (mingw_scan): Likewise.
+	* config/i386/i386.c (machopic_output_stub): Likewise.
+	* config/i386/winnt.c (gen_stdcall_or_fastcall_suffix,
+	i386_pe_unique_section): Likewise.
+	* config/ia64/ia64.c (ia64_init_machine_status,
+	ia64_h_i_d_extended, get_free_bundle_state, bundling, ia64_reorg):
+	Likewise.
+	* config/iq2000/iq2000.c, iq2000_init_machine_status): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_encode_label): Likewise.
+	* config/m68k/m68k.c (m68k_handle_option,
+	m68k_sched_md_init_global): Likewise.
+	* config/mcore/mcore.c (mcore_mark_dllexport,
+	mcore_mark_dllimport, mcore_unique_section): Likewise.
+	* config/mips/mips.c (mips_block_move_straight,
+	mips16_rewrite_pool_refs, mips_sim_wait_regs_2,
+	mips_sim_record_set): Likewise.
+	* config/mmix/mmix.c (mmix_init_machine_status,
+	mmix_encode_section_info): Likewise.
+	* config/pa/pa.c (pa_init_machine_status, hppa_encode_label):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_machine_status,
+	print_operand_address, output_toc, redefine_groups,
+	rs6000_elf_encode_section_info, machopic_output_stub): Likewise.
+	* config/s390/s390.c (s390_init_machine_status): Likewise.
+	* config/score/score.c (score_block_move_straight,
+	score_block_move_loop_body): Likewise.
+	* config/sparc/sparc.c (sparc_init_machine_status): Likewise.
+	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
+	* emit-rtl.c (find_auto_inc): Likewise.
+	* gcc.c (translate_options, process_command): Likewise.
+	* reorg.c (dbr_schedule): Likewise.
+	* sdbout.c (sdbout_start_source_file, sdbout_init): Likewise.
+	* xcoffout.c (xcoffout_declare_function): Likewise.
+
 2008-06-27  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (find_func_aliases): Trivial fix to get

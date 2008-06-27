@@ -2804,8 +2804,8 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
      add them to FORMAT_TYPES at first use.  */
   if (TARGET_FORMAT_TYPES != NULL && !dynamic_format_types)
     {
-      dynamic_format_types = xmalloc ((n_format_types + TARGET_N_FORMAT_TYPES)
-				      * sizeof (dynamic_format_types[0]));
+      dynamic_format_types = XNEWVEC (format_kind_info,
+				      n_format_types + TARGET_N_FORMAT_TYPES);
       memcpy (dynamic_format_types, format_types_orig,
 	      sizeof (format_types_orig));
       memcpy (&dynamic_format_types[n_format_types], TARGET_FORMAT_TYPES,

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 mingw_scan (int argc ATTRIBUTE_UNUSED,
             const char *const *argv,
-            char **spec_machine)
+            const char **spec_machine)
 {
   putenv (xstrdup ("GCC_CYGWIN_MINGW=0"));
  
@@ -42,7 +42,7 @@ mingw_scan (int argc ATTRIBUTE_UNUSED,
 	if (p)
 	  {
 	    int len = p - *spec_machine;
-	    char *s = xmalloc (strlen (*spec_machine) + 3);
+	    char *s = XNEWVEC (char, strlen (*spec_machine) + 3);
 	    memcpy (s, *spec_machine, len);
 	    strcpy (s + len, "-mingw32");
 	    *spec_machine = s;

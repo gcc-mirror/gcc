@@ -413,7 +413,7 @@ xcoffout_declare_function (FILE *file, tree decl, const char *name)
   len = strlen (name);
   if (name[len - 1] == ']')
     {
-      char *n = alloca (len - 3);
+      char *n = XALLOCAVEC (char, len - 3);
       memcpy (n, name, len - 4);
       n[len - 4] = '\0';
       name = n;

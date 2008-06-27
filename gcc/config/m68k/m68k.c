@@ -500,7 +500,11 @@ m68k_handle_option (size_t code, const char *arg, int value)
 	error ("-mshared-library-id=%s is not between 0 and %d",
 	       arg, MAX_LIBRARY_ID);
       else
-	asprintf ((char **) &m68k_library_id_string, "%d", (value * -4) - 4);
+        {
+	  char *tmp;
+	  asprintf (&tmp, "%d", (value * -4) - 4);
+	  m68k_library_id_string = tmp;
+	}
       return true;
 
     default:
@@ -5446,8 +5450,7 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
   {
     rtx insn;
 
-    sched_branch_type = xcalloc (get_max_uid () + 1,
-				 sizeof (*sched_branch_type));
+    sched_branch_type = XCNEWVEC (enum attr_type, get_max_uid () + 1);
 
     for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
       {
@@ -5504,8 +5507,7 @@ m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
     case CPU_CFV3:
       max_insn_size = 3;
       sched_ib.records.n_insns = 8;
-      sched_ib.records.adjust = xmalloc (sched_ib.records.n_insns
-					 * sizeof (*sched_ib.records.adjust));
+      sched_ib.records.adjust = XNEWVEC (int, sched_ib.records.n_insns);
       break;
 
     default:
