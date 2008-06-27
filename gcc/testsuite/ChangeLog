@@ -1,3 +1,8 @@
+2008-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36364
+	* g++.dg/template/repo9.C: New test.
+
 2008-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36655

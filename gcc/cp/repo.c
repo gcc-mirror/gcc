@@ -280,6 +280,7 @@ finish_repo (void)
 int
 repo_emit_p (tree decl)
 {
+  int ret = 0;
   gcc_assert (TREE_PUBLIC (decl));
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL);
@@ -306,10 +307,12 @@ repo_emit_p (tree decl)
 	return 2;
       /* Const static data members initialized by constant expressions must
 	 be processed where needed so that their definitions are
-	 available.  */
+	 available.  Still record them into *.rpo files, so if they
+	 weren't actually emitted and collect2 requests them, they can
+	 be provided.  */
       if (DECL_INTEGRAL_CONSTANT_VAR_P (decl)
 	  && DECL_CLASS_SCOPE_P (decl))
-	return 2;
+	ret = 2;
     }
   else if (!DECL_TEMPLATE_INSTANTIATION (decl))
     return 2;
@@ -343,7 +346,7 @@ repo_emit_p (tree decl)
       pending_repo = tree_cons (NULL_TREE, decl, pending_repo);
     }
 
-  return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl));
+  return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl)) ? 1 : ret;
 }
 
 /* Returns true iff the prelinker has explicitly marked CLASS_TYPE for
