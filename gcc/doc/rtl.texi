@@ -3188,11 +3188,9 @@ represents @var{x} before @var{x} is modified.  @var{x} must be a
 @var{m} must be the machine mode for pointers on the machine in use.
 
 The expression @var{y} must be one of three forms:
-@table @code
 @code{(plus:@var{m} @var{x} @var{z})},
 @code{(minus:@var{m} @var{x} @var{z})}, or
 @code{(plus:@var{m} @var{x} @var{i})},
-@end table
 where @var{z} is an index register and @var{i} is a constant.
 
 Here is an example of its use:
