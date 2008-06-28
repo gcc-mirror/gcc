@@ -55,12 +55,12 @@ public class RSAKeyGenParameterSpec implements AlgorithmParameterSpec
   /**
      Public Exponent F0 = 3
   */
-  public static final BigInteger F0 = new BigInteger("3");
+  public static final BigInteger F0 = BigInteger.valueOf(3);
 
   /**
      Public Exponent F4 = 3
   */
-  public static final BigInteger F4 = new BigInteger("65537");
+  public static final BigInteger F4 = BigInteger.valueOf(65537L);
 
   /**
      Create a new RSAKeyGenParameterSpec to store the RSA key's keysize 

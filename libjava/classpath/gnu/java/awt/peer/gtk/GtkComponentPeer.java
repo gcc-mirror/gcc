@@ -105,7 +105,9 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetGetDimensions (int[] dim);
   native void gtkWidgetGetPreferredDimensions (int[] dim);
   native void gtkWindowGetLocationOnScreen (int[] point);
+  native void gtkWindowGetLocationOnScreenUnlocked (int[] point);
   native void gtkWidgetGetLocationOnScreen (int[] point);
+  native void gtkWidgetGetLocationOnScreenUnlocked (int[] point);
   native void gtkWidgetSetCursor (int type, GtkImage image, int x, int y);
   native void gtkWidgetSetCursorUnlocked (int type, GtkImage image,
                                           int x, int y);
@@ -250,7 +252,10 @@ public class GtkComponentPeer extends GtkGenericPeer
   public Point getLocationOnScreen () 
   { 
     int point[] = new int[2];
-    gtkWidgetGetLocationOnScreen (point);
+    if (Thread.currentThread() == GtkMainThread.mainThread)
+        gtkWidgetGetLocationOnScreenUnlocked (point);
+    else
+        gtkWidgetGetLocationOnScreen (point);
     return new Point (point[0], point[1]);
   }
 

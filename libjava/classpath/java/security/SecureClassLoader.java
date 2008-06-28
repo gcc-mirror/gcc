@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package java.security;
 
-import java.util.WeakHashMap;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -113,7 +111,7 @@ public class SecureClassLoader extends ClassLoader
       {
 	synchronized (protectionDomainCache)
 	  {
-	    protectionDomain = (ProtectionDomain)protectionDomainCache.get(cs);
+	    protectionDomain = protectionDomainCache.get(cs);
 	  }
 
 	if (protectionDomain == null)
@@ -122,8 +120,7 @@ public class SecureClassLoader extends ClassLoader
 	      = new ProtectionDomain(cs, getPermissions(cs), this, null);
 	    synchronized (protectionDomainCache)
 	      {
-		ProtectionDomain domain 
-		  = (ProtectionDomain)protectionDomainCache.get(cs);
+		ProtectionDomain domain = protectionDomainCache.get(cs);
 		if (domain == null)
 		  protectionDomainCache.put(cs, protectionDomain);
 		else

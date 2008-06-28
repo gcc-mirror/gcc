@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.x;
 
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -223,16 +224,21 @@ public class XEventPump
         System.err.println("resize request for window id: " + key);
 
       // Detect and report size changes.
-      if (c.width() != awtWindow.getWidth()
-          || c.height() != awtWindow.getHeight())
+      XWindowPeer xwindow = (XWindowPeer) awtWindow.getPeer();
+      Insets i = xwindow.insets();
+      if (c.width() != awtWindow.getWidth() - i.left - i.right
+          || c.height() != awtWindow.getHeight() - i.top - i.bottom)
         {
           if (XToolkit.DEBUG)
             System.err.println("Setting size on AWT window: " + c.width()
                              + ", " + c.height() + ", " + awtWindow.getWidth()
                              + ", " + awtWindow.getHeight());
-          ((XWindowPeer) awtWindow.getPeer()).callback = true;
-          awtWindow.setSize(c.width(), c.height());
-          ((XWindowPeer) awtWindow.getPeer()).callback = false;
+          xwindow.callback = true;
+          xwindow.xwindow.width = c.width();
+          xwindow.xwindow.height = c.height();
+          awtWindow.setSize(c.width() + i.left + i.right,
+                            c.height() + i.top + i.bottom);
+          xwindow.callback = false;
         }
       break;
     case Expose.CODE:
@@ -245,6 +251,7 @@ public class XEventPump
                                   exp.height());
       //System.err.println("expose paint: " + r);
       // We need to clear the background of the exposed rectangle.
+      assert awtWindow != null : "awtWindow == null for window ID: " + key;
       Graphics g = awtWindow.getGraphics();
       g.clearRect(r.x, r.y, r.width, r.height);
       g.dispose();

@@ -722,7 +722,7 @@ public class Date
     boolean localTimezone = true;
 
     // Trim out any nested stuff in parentheses now to make parsing easier.
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     int parenNesting = 0;
     int len = string.length();
     for (int i = 0;  i < len;  i++)

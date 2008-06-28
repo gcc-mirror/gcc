@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
-import java.util.ArrayList;
-
 import org.omg.CORBA.Bounds;
 import org.omg.CORBA.ContextList;
 

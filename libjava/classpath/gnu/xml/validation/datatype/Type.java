@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.validation.datatype;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.xml.namespace.QName;
 /**
  * Abstract base class for XML Schema datatypes.

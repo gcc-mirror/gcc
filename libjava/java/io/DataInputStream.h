@@ -32,6 +32,11 @@ public:
   virtual jint readUnsignedShort();
   virtual ::java::lang::String * readUTF();
   static ::java::lang::String * readUTF(::java::io::DataInput *);
+public: // actually package-private
+  virtual ::java::lang::String * readUTFLong();
+private:
+  static ::java::lang::String * readUTF(::java::io::DataInput *, jint);
+public:
   virtual jint skipBytes(jint);
 public: // actually package-private
   static jboolean convertToBoolean(jint);

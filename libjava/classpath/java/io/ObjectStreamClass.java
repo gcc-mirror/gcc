@@ -106,7 +106,7 @@ public class ObjectStreamClass implements Serializable
     if (cl == null)
       return null;
 
-    ObjectStreamClass osc = (ObjectStreamClass) classLookupTable.get(cl);
+    ObjectStreamClass osc = classLookupTable.get(cl);
 
     if (osc != null)
       return osc;
@@ -830,7 +830,7 @@ outer:
           }
 
         if (loadedByBootOrApplicationClassLoader(cl))
-          uidCache.put(cl,new Long(result));
+          uidCache.put(cl,Long.valueOf(result));
       }
     return result;
   }
@@ -1074,7 +1074,7 @@ outer:
 
     try
     {
-	return (Externalizable)constructor.newInstance(null);
+	return (Externalizable)constructor.newInstance();
     }
     catch(Exception x)
     {

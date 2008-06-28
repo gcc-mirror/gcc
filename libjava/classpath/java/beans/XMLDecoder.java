@@ -164,7 +164,7 @@ public class XMLDecoder
 	 * 
 	 * @param in InputStream to read XML data from.
 	 * @param owner Owner object which can be accessed and modified while parsing.
-	 * @param exceptionListener ExceptionListener instance to which exception notifications are send.
+	 * @param listener ExceptionListener instance to which exception notifications are send.
 	 * @param cl ClassLoader instance that is used for calls to <code>Class.forName(String, boolean, ClassLoader)</code>
 	 * @since 1.5
 	 */

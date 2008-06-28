@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
-import gnu.java.net.PlainSocketImpl;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;

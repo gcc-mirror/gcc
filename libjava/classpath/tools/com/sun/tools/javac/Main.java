@@ -139,8 +139,11 @@ public class Main
           new PrintWriter(System.err),
           Boolean.FALSE
         });
+    String[] runArgs = new String[args.length + 1];
+    runArgs[0] = "-1.5";
+    System.arraycopy(args, 0, runArgs, 1, args.length);
     return ((Boolean) ecjMethod.invoke(ecjInstance, new Object[]
-        { args })).booleanValue() ? 0 : -1;
+        { runArgs })).booleanValue() ? 0 : -1;
   }
 
   public static int compile(String[] args) throws Exception

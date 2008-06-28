@@ -41,8 +41,6 @@ package gnu.CORBA.GIOP;
 import gnu.CORBA.CDR.AbstractCdrInput;
 import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.IOR;
-import gnu.CORBA.IOR.CodeSets_profile;
-
 import java.io.IOException;
 
 /**

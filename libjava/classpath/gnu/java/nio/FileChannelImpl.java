@@ -412,7 +412,7 @@ public final class FileChannelImpl extends FileChannel
 
     if (buffer == null)
       {
-	buffer = ByteBuffer.allocate ((int) count);
+	buffer = ByteBuffer.allocate (count);
 	src.read (buffer);
 	buffer.flip();
       }

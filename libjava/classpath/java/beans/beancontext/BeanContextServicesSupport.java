@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.beans.beancontext;
 
-import gnu.classpath.NotImplementedException;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -87,11 +85,6 @@ public class BeanContextServicesSupport
     private static final long serialVersionUID = 7078212910685744490L;
 
     private BeanContextServiceProvider provider;
-
-    private BCSSProxyServiceProvider(BeanContextServiceProvider p)
-    {
-      provider = p;
-    }
 
     public Iterator getCurrentServiceSelectors (BeanContextServices bcs,
                                                 Class serviceClass)
@@ -427,7 +420,7 @@ public class BeanContextServicesSupport
    * Subclasses may envelope its behaviour in order to read further
    * serialized data to the stream.
    *
-   * @param oos the stream from which data is being deserialized.
+   * @param ois the stream from which data is being deserialized.
    * @throws IOException if an I/O error occurs.
    * @throws ClassNotFoundException if the class of a deserialized object
    *                                can not be found.

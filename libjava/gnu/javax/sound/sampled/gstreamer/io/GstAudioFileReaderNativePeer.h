@@ -11,6 +11,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace javax
     {
       namespace sound
@@ -59,12 +63,14 @@ public:
   static ::javax::sound::sampled::AudioFormat * getAudioFormat(::java::io::InputStream *);
   static ::javax::sound::sampled::AudioFormat * getAudioFormat(::java::net::URL *);
 private:
+  static ::javax::sound::sampled::AudioFormat * getAudioFormat(::java::io::InputStream *, ::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *);
   static ::javax::sound::sampled::AudioFormat$Encoding * getEncoding(::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *);
   static ::javax::sound::sampled::AudioFormat * getAudioFormat(::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *);
 public: // actually protected
-  static jboolean gstreamer_get_audio_format_stream(::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *, ::java::io::BufferedInputStream *);
+  static jboolean gstreamer_get_audio_format_stream(::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *, ::gnu::classpath::Pointer *);
   static jboolean gstreamer_get_audio_format_file(::gnu::javax::sound::sampled::gstreamer::io::GstAudioFileReaderNativePeer$GstHeader *);
 private:
+  static void init_id_cache();
   static ::java::lang::String * GST_ENCODING;
 public:
   static ::java::lang::Class class$;

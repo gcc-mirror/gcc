@@ -117,9 +117,9 @@ public class ExceptionEvent
       return _exception.getClass();
     else if (type == EVENT_EXCEPTION_CAUGHT)
       if (_catchLocation.getMethod() != null)
-        return new Boolean(true);
+        return Boolean.TRUE;
       else
-        return new Boolean(false);
+        return Boolean.FALSE;
 
     return null;
   }

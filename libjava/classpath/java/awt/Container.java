@@ -1322,10 +1322,10 @@ public class Container extends Component
         while (true)
           {
             if (comp == null)
-              return false;
-            if (comp == this)
-              return true;
+	      return false;
             comp = comp.getParent();
+            if (comp == this)
+	      return true;
           }
       }
   }

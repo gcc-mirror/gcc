@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.event.KeyEvent;
-
 /**
   * This class implements a keyboard accelerator for a menu item.
   *

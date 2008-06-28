@@ -398,7 +398,7 @@ public class MessageHeader
         if (service != null)
           service.setSoTimeout(to_read);
 
-        reading: while (n < r.length)
+        while (n < r.length)
           {
             n += source.read(r, n, r.length - n);
           }
@@ -426,7 +426,7 @@ public class MessageHeader
                 int dn;
 
                 n = 0;
-                reading: while (n < h2.message_size)
+                while (n < h2.message_size)
                   {
                     dn = source.read(r, 0, h2.message_size - n);
 

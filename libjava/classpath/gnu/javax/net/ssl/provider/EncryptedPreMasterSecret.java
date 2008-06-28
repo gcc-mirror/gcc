@@ -38,9 +38,6 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import gnu.classpath.debug.Component;
-import gnu.classpath.debug.SystemLogger;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 

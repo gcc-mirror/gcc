@@ -469,7 +469,7 @@ public interface ImageInputStream
    * @param offset the index of the first element in <code>i</code>
    * that will hold read data.
    *
-   * @param numLongs the number of signed 32-bit integers to read
+   * @param numInts the number of signed 32-bit integers to read
    * (which is one fourth of the number of bytes).
    *
    * @throws IndexOutOfBoundsException if <code>offset</code> or

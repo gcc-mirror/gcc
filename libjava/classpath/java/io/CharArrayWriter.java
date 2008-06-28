@@ -267,7 +267,7 @@ public class CharArrayWriter extends Writer
    * sequence is wrapped around an input buffer, the results will
    * depend on the current position and length of that buffer.
    *
-   * @param seq the character sequence to append.  If seq is null,
+   * @param cs the character sequence to append.  If seq is null,
    *        then the string "null" (the string representation of null)
    *        is appended.
    * @return a reference to this object.
@@ -294,7 +294,7 @@ public class CharArrayWriter extends Writer
    * <code>append(seq.subSequence(start,end))</code> when the sequence
    * is not null.
    *
-   * @param seq the character sequence to append.  If seq is null,
+   * @param cs the character sequence to append.  If seq is null,
    *        then the string "null" (the string representation of null)
    *        is appended.
    * @param start the index of the first Unicode character to use from

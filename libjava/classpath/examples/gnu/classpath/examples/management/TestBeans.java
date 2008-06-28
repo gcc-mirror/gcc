@@ -22,34 +22,19 @@ package gnu.classpath.examples.management;
 
 import java.lang.management.ManagementFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
-import javax.management.DynamicMBean;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 public class TestBeans
 {
   public static void main(String[] args)
     throws Exception
   {
-    List beans = new ArrayList();
-    /* FIXME: When there's a server, this will be easier... :) */
-    beans.add(ManagementFactory.getOperatingSystemMXBean());
-    beans.add(ManagementFactory.getRuntimeMXBean());
-    beans.add(ManagementFactory.getThreadMXBean());
-    beans.add(ManagementFactory.getCompilationMXBean());
-    beans.add(ManagementFactory.getClassLoadingMXBean());
-    beans.add(ManagementFactory.getMemoryMXBean());
-    beans.addAll(ManagementFactory.getMemoryPoolMXBeans());
-    beans.addAll(ManagementFactory.getMemoryManagerMXBeans());
-    beans.addAll(ManagementFactory.getGarbageCollectorMXBeans());
-    Iterator it = beans.iterator();
-    while (it.hasNext())
-      {
-	DynamicMBean bean = (DynamicMBean) it.next();
-	if (bean != null)
-	  System.out.println(bean.getMBeanInfo());
-      }
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    Set<ObjectName> names = server.queryNames(null, null);
+    for (ObjectName name : names)
+      System.out.println(server.getMBeanInfo(name));
   }
 }

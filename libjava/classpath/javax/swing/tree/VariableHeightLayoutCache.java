@@ -138,7 +138,7 @@ public class VariableHeightLayoutCache
                 }
             }
 
-          LinkedList lpath = new LinkedList();
+          LinkedList<Object> lpath = new LinkedList<Object>();
           NodeRecord rp = this;
           while (rp != null)
             {
@@ -146,7 +146,7 @@ public class VariableHeightLayoutCache
               if (rp.parent != null)
                 {
                   Object parent = rp.parent;
-                  rp = (NodeRecord) nodes.get(parent);
+                  rp = nodes.get(parent);
                   // Add the root node, even if it is not visible.
                   if (rp == null)
                     lpath.addFirst(parent);
@@ -171,17 +171,17 @@ public class VariableHeightLayoutCache
   /**
    * The set of all expanded tree nodes.
    */
-  Set expanded = new HashSet();
+  Set<Object> expanded = new HashSet<Object>();
   
   /**
    * Maps nodes to the row numbers.
    */
-  Hashtable nodes = new Hashtable();
+  Hashtable<Object,NodeRecord> nodes = new Hashtable<Object,NodeRecord>();
   
   /**
    * Maps row numbers to nodes.
    */
-  ArrayList row2node = new ArrayList();
+  ArrayList<Object> row2node = new ArrayList<Object>();
   
   /**
    * If true, the row map must be recomputed before using.
@@ -292,7 +292,7 @@ public class VariableHeightLayoutCache
    */
   public void invalidatePathBounds(TreePath path)
   {
-    NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
+    NodeRecord r = nodes.get(path.getLastPathComponent());
     if (r != null)
       r.bounds = null;
   } 
@@ -354,7 +354,7 @@ public class VariableHeightLayoutCache
 
     Object last = path.getLastPathComponent();
     Rectangle result = null;
-    NodeRecord r = (NodeRecord) nodes.get(last);
+    NodeRecord r = nodes.get(last);
     if (r != null)
       {
         // The RI allows null arguments for rect, in which case a new Rectangle
@@ -405,7 +405,7 @@ public class VariableHeightLayoutCache
     if (dirty)
       update();
 
-    NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
+    NodeRecord r = nodes.get(path.getLastPathComponent());
     if (r == null)
       return - 1;
     else
@@ -427,13 +427,13 @@ public class VariableHeightLayoutCache
     // As the rows have arbitrary height, we need to iterate.
     NodeRecord best = null;
     NodeRecord r;
-    Enumeration en = nodes.elements();
+    Enumeration<NodeRecord> en = nodes.elements();
     
     int dist = Integer.MAX_VALUE;
 
     while (en.hasMoreElements() && dist > 0)
       {
-        r = (NodeRecord) en.nextElement();
+        r = en.nextElement();
         if (best == null)
           {
             best = r;
@@ -488,7 +488,7 @@ public class VariableHeightLayoutCache
   } 
 
   /**
-   * Get the enumeration over all visible pathes that start from the given
+   * Get the enumeration over all visible paths that start from the given
    * parent path.
    * 
    * @param parentPath the parent path
@@ -505,7 +505,7 @@ public class VariableHeightLayoutCache
     for (int i = 0; i < parentPath.getPathCount(); i++)
       {
         node = parentPath.getPathComponent(i);
-        nr = (NodeRecord) nodes.get(node);
+        nr = nodes.get(node);
         if (nr != null && nr.row >= 0)
           p.add(node);
       }
@@ -603,7 +603,7 @@ public class VariableHeightLayoutCache
     int rowCount = getRowCount();
     if (rowCount > 0)
       {
-        NodeRecord last = (NodeRecord) nodes.get(row2node.get(rowCount - 1));
+        NodeRecord last = nodes.get(row2node.get(rowCount - 1));
         height = last.bounds.y + last.bounds.height;
       }
     return height;
@@ -618,10 +618,10 @@ public class VariableHeightLayoutCache
       update();
     
     maximalWidth = 0;
-    Enumeration en = nodes.elements();
+    Enumeration<NodeRecord> en = nodes.elements();
     while (en.hasMoreElements())
       {
-        NodeRecord nr = (NodeRecord) en.nextElement();
+        NodeRecord nr = en.nextElement();
         if (nr != null)
           {
             Rectangle r = nr.getBounds();

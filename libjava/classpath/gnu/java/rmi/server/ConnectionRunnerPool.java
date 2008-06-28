@@ -103,7 +103,7 @@ class ConnectionRunnerPool
   static {
     ConnectionRunner[] pools = new ConnectionRunner[size];
     for(int i = 0; i < pools.length; i++){
-      pools[i] = new ConnectionRunner(group, new Integer(i).toString());
+      pools[i] = new ConnectionRunner(group, Integer.toString(i));
       pools[i].setContextClassLoader(Thread.currentThread().getContextClassLoader());
       pools[i].start();
     }
@@ -123,7 +123,7 @@ class ConnectionRunnerPool
     if(freelist.size() == 0){
       if(size < max_size){
 	++size;
-	ConnectionRunner a = new ConnectionRunner(group, new Integer(size).toString());
+	ConnectionRunner a = new ConnectionRunner(group, Integer.toString(size));
 	a.start();
 	freelist.add(a);
       }else

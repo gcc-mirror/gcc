@@ -239,7 +239,6 @@ private:
   ::java::util::LinkedList * endEntityStack;
   jint state;
   jint event;
-  jboolean lookahead;
   ::java::util::LinkedList * stack;
   ::java::util::LinkedList * namespaces;
   ::java::util::LinkedList * bases;

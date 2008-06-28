@@ -91,7 +91,7 @@ public class AttributedFormatBuffer implements FormatBuffer
    * comprised between the last entry in 'ranges' and the specified new range.
    *
    * @param new_range A new range to insert in the list.
-   * @param new_attribute A new attribute to insert in the list.
+   * @param attr A new attribute to insert in the list.
    */  
   private final void addAttribute(int new_range, AttributedCharacterIterator.Attribute attr)
   {

@@ -153,7 +153,7 @@ public class ComponentGraphics extends CairoGraphics2D
   /**
    * Creates a cairo_t for a volatile image
    */
-  protected native long initFromVolatile( long pixmapPtr, int width, int height);
+  protected native long initFromVolatile( long pixmapPtr);
 
   /**
    * Grab lock

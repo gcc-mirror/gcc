@@ -1,6 +1,6 @@
 /* LinkedHashSet.java -- a set backed by a LinkedHashMap, for linked
    list traversal.
-   Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,7 +98,7 @@ public class LinkedHashSet<T> extends HashSet<T>
 
   /**
    * Construct a new, empty HashSet whose backing HashMap has the default
-   * capacity (11) and loadFacor (0.75).
+   * capacity (11) and loadFactor (0.75).
    */
   public LinkedHashSet()
   {

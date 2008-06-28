@@ -170,7 +170,7 @@ public class CoderResult
       if (length <= 0)
         throw new IllegalArgumentException ("Non-positive length");
 
-      Integer len = new Integer (length);
+      Integer len = Integer.valueOf (length);
       CoderResult cr = null;
       Object o;
       if ((o = cache.get (len)) != null)

@@ -321,7 +321,7 @@ public class MinimalHTMLWriter extends AbstractWriter
       }
     else
       { // What else to do here?
-	Style s = (Style)doc.getStyle("default");
+	Style s = doc.getStyle("default");
 	if(s != null)
 	  writeStyle( s );
       }

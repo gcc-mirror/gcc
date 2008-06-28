@@ -70,22 +70,6 @@ final class VMDouble
    * layout. Bit 63 (the most significant) is the sign bit, bits 62-52
    * (masked by 0x7ff0000000000000L) represent the exponent, and bits 51-0
    * (masked by 0x000fffffffffffffL) are the mantissa. This function
-   * collapses all versions of NaN to 0x7ff8000000000000L. The result of this
-   * function can be used as the argument to
-   * <code>Double.longBitsToDouble(long)</code> to obtain the original
-   * <code>double</code> value.
-   *
-   * @param value the <code>double</code> to convert
-   * @return the bits of the <code>double</code>
-   * @see #longBitsToDouble(long)
-   */
-  public static native long doubleToLongBits(double value);
-
-  /**
-   * Convert the double to the IEEE 754 floating-point "double format" bit
-   * layout. Bit 63 (the most significant) is the sign bit, bits 62-52
-   * (masked by 0x7ff0000000000000L) represent the exponent, and bits 51-0
-   * (masked by 0x000fffffffffffffL) are the mantissa. This function
    * leaves NaN alone, rather than collapsing to a canonical value. The
    * result of this function can be used as the argument to
    * <code>Double.longBitsToDouble(long)</code> to obtain the original

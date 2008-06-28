@@ -42,6 +42,7 @@ import gnu.java.lang.ClassHelper;
 
 import gnu.java.lang.reflect.MethodSignatureParser;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 
 /**
@@ -393,4 +394,27 @@ public final class Constructor<T>
     MethodSignatureParser p = new MethodSignatureParser(this, sig);
     return p.getGenericParameterTypes();
   }
+
+  /**
+   * <p>
+   * Return an array of arrays representing the annotations on each
+   * of the constructor's parameters.  The outer array is aligned against
+   * the parameters of the constructors and is thus equal in length to
+   * the number of parameters (thus having a length zero if there are none).
+   * Each array element in the outer array contains an inner array which
+   * holds the annotations.  This array has a length of zero if the parameter
+   * has no annotations.
+   * </p>
+   * <p>
+   * The returned annotations are serialized.  Changing the annotations has
+   * no affect on the return value of future calls to this method.
+   * </p>
+   * 
+   * @return an array of arrays which represents the annotations used on the
+   *         parameters of this constructor.  The order of the array elements
+   *         matches the declaration order of the parameters.
+   * @since 1.5
+   */
+  public native Annotation[][] getParameterAnnotations();
+
 }

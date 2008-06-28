@@ -37,8 +37,6 @@ exception statement from your version. */
 
 #include "jcl.h"
 #include "gtkpeer.h"
-#include <cairo-xlib.h>
-#include <gdk/gdkx.h>
 
 #include "gnu_java_awt_peer_gtk_GtkImage.h"
 

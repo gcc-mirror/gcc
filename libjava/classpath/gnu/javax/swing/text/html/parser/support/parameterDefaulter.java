@@ -80,7 +80,7 @@ public class parameterDefaulter
     if (atts == null)
       {
         htmlAttributeSet set = new htmlAttributeSet();
-        Element e = (Element) dtd.elementHash.get(element.toLowerCase());
+        Element e = dtd.elementHash.get(element.toLowerCase());
 
         if (e != null)
           {

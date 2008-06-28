@@ -177,7 +177,7 @@ public class node
   /**
    * Do the match operation with the given token. This sets various
    * flags.
-   * @param token The token to match.
+   * @param a_token The token to match.
    * @return true if the the token matches node, false if it does not match
    * or if the node is closed.
    */

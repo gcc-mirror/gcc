@@ -66,7 +66,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.Attributes2;
 import org.xml.sax.ext.DeclHandler;
-import org.xml.sax.ext.EntityResolver2;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.ext.Locator2;
 
@@ -234,7 +233,7 @@ public class SAXParser
       return baseAware ? Boolean.TRUE : Boolean.FALSE;
     if ((GNU_PROPERTIES + "document-xml-encoding").equals(name))
       return xmlEncoding;
-    throw new SAXNotSupportedException(name);
+    throw new SAXNotRecognizedException(name);
   }
 
   public boolean isXIncludeAware()

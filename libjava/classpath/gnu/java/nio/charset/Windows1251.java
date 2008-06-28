@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1251 Cyrillic char set.
  * aka cp1251 or Windows-1251 or whatever.
  */
-public class Windows1251 extends ByteCharset
+public final class Windows1251 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1251 extends ByteCharset
 	  "cp_1251", 
 	  "windows1251",
 	  "windows_1251" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1251

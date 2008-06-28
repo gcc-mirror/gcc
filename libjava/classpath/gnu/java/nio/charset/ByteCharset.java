@@ -45,32 +45,34 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 
 /**
- * A generic encoding framework for single-byte encodings, 
- * utilizing a look-up table.
+ * A generic encoding framework for single-byte encodings, utilizing a look-up
+ * table.
  * 
- * This replaces the gnu.java.io.EncoderEightBitLookup class, 
- * created by Aron Renn.
- *
+ * This replaces the gnu.java.io.EncoderEightBitLookup class, created by Aron
+ * Renn.
+ * 
  * @author Sven de Marothy
+ * @modified Ian Rogers
  */
 abstract class ByteCharset extends Charset
 {
-  protected char[] lookupTable;
-    /**
-     * Char to signify the character in the table is undefined
-     */
-  protected static final char NONE = (char)0xFFFD;
+  protected final char[] lookupTable;
+  /**
+   * Char to signify the character in the table is undefined
+   */
+  protected static final char NONE = (char) 0xFFFD;
 
-  ByteCharset (String canonicalName, String[] aliases)
+  ByteCharset(String canonicalName, String[] aliases, char[] lookup)
   {
-    super (canonicalName, aliases);
+    super(canonicalName, aliases);
+    lookupTable = lookup;
   }
 
   /**
-   * Most western charsets include ASCII, but this should
-   * be overloaded for others.
+   * Most western charsets include ASCII, but this should be overloaded for
+   * others.
    */
-  public boolean contains (Charset cs)
+  public boolean contains(Charset cs)
   {
     return cs instanceof US_ASCII || (cs.getClass() == getClass());
   }
@@ -80,83 +82,91 @@ abstract class ByteCharset extends Charset
     return lookupTable;
   }
 
-  public CharsetDecoder newDecoder ()
+  public CharsetDecoder newDecoder()
   {
-    return new Decoder (this);
+    return new Decoder(this);
   }
 
-  public CharsetEncoder newEncoder ()
+  public CharsetEncoder newEncoder()
   {
-    return new Encoder (this);
+    return new Encoder(this);
   }
 
   private static final class Decoder extends CharsetDecoder
   {
-    private char[] lookup;
-
-    // Package-private to avoid a trampoline constructor.
-    Decoder (ByteCharset cs)
+    /** Lookup of byte to char mappings */
+    private final char[] lookup;
+    
+    /** Helper to decode loops */
+    private final ByteDecodeLoopHelper helper = new ByteDecodeLoopHelper()
     {
-      super (cs, 1.0f, 1.0f);
+      protected boolean isMappable(byte b)
+      {
+        return lookup[(int) (b & 0xFF)] != NONE;
+      }
+      protected char mapToChar(byte b)
+      {
+        return lookup[(int) (b & 0xFF)];
+      }
+    };
+    
+    // Package-private to avoid a trampoline constructor.
+    Decoder(ByteCharset cs)
+    {
+      super(cs, 1.0f, 1.0f);
       lookup = cs.getLookupTable();
     }
 
-    protected CoderResult decodeLoop (ByteBuffer in, CharBuffer out)
+    protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-      {
-        byte b = in.get ();
-	char c;
-
-        if (!out.hasRemaining ())
-          {
-            in.position (in.position () - 1);
-            return CoderResult.OVERFLOW;
-          }
-	
-	if((c = lookup[(int) (b & 0xFF)]) == NONE)
-          {
-            in.position (in.position () - 1);
-            return CoderResult.unmappableForLength (1);
-          }
-        out.put (c);
-      }
-
-      return CoderResult.UNDERFLOW;
+      return helper.decodeLoop(in, out);
     }
   }
 
   private static final class Encoder extends CharsetEncoder
   {
-    private byte[] lookup;
-
-    // Package-private to avoid a trampoline constructor.
-    Encoder (ByteCharset cs)
+    /** Lookup of char to byte mappings */
+    private final byte[] lookup;
+    
+    /** Helper to encode loops */
+    private final ByteEncodeLoopHelper helper = new ByteEncodeLoopHelper()
     {
-      super (cs, 1.0f, 1.0f);
+      protected boolean isMappable(char c)
+      {
+        return canEncode(c);
+      }
+      protected byte mapToByte(char c)
+      {
+        return lookup[c];
+      }
+    };
+    
+    // Package-private to avoid a trampoline constructor.
+    Encoder(ByteCharset cs)
+    {
+      super(cs, 1.0f, 1.0f);
 
       char[] lookup_table = cs.getLookupTable();
 
       // Create the inverse look-up table.
-      // determine required size of encoding_table: 
-      int max = 0; 
+      // determine required size of encoding_table:
+      int max = 0;
       for (int i = 0; i < lookup_table.length; i++)
-	  {
-	      int c = (int)lookup_table[i]; 
-	      max = (c > max && c < NONE) ? c : max;
-	  }
+        {
+          int c = (int) lookup_table[i];
+          max = (c > max && c < NONE) ? c : max;
+        }
 
-      lookup = new byte[max+1];
-      
+      lookup = new byte[max + 1];
+
       for (int i = 0; i < lookup_table.length; i++)
-	  {
-	    int c = (int)lookup_table[i]; 
-	    if (c != 0 && c < NONE) 
-	      {
-		lookup[c] = (byte)i;
-	      }
-	  }
+        {
+          int c = (int) lookup_table[i];
+          if (c != 0 && c < NONE)
+            {
+              lookup[c] = (byte) i;
+            }
+        }
     }
 
     public boolean canEncode(char c)
@@ -169,38 +179,15 @@ abstract class ByteCharset extends Charset
     {
       for (int i = 0; i < cs.length(); ++i)
         {
-          if (! canEncode(cs.charAt(i)))
+          if (!canEncode(cs.charAt(i)))
             return false;
         }
       return true;
     }
 
-    protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
+    protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-      {
-	int c = (int)in.get ();
-
-        if (!out.hasRemaining ())
-          {
-            in.position (in.position () - 1);
-            return CoderResult.OVERFLOW;
-          }
-
-	// lookup byte encoding
-	byte b = (c < lookup.length) ? lookup[c] : (byte)0;
-
-	if ((int)b != 0 || (int)c == 0)
-	    {
-		out.put (b);
-	    } else {
-		in.position (in.position () - 1);
-		return CoderResult.unmappableForLength (1);		
-	    }
-      }
-
-      return CoderResult.UNDERFLOW;
+      return helper.encodeLoop(in, out);
     }
   }
 }

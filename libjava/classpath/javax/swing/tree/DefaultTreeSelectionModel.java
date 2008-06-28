@@ -164,7 +164,7 @@ public class DefaultTreeSelectionModel
    * @see #removeSelectionPaths(TreePath[])
    * @see #setSelectionPaths(TreePath[])
    */
-  private transient HashSet selectedPaths;
+  private transient HashSet<TreePath> selectedPaths;
 
   /**
    * A supporting datastructure that is used in addSelectionPaths() and
@@ -174,7 +174,7 @@ public class DefaultTreeSelectionModel
    * @see #removeSelectionPaths(TreePath[])
    * @see #setSelectionPaths(TreePath[])
    */
-  private transient HashSet tmpPaths;
+  private transient HashSet<TreePath> tmpPaths;
 
   /**
    * Constructs a new DefaultTreeSelectionModel.
@@ -185,8 +185,8 @@ public class DefaultTreeSelectionModel
     listSelectionModel = new DefaultListSelectionModel();
     listenerList = new EventListenerList();
     leadIndex = -1;
-    tmpPaths = new HashSet();
-    selectedPaths = new HashSet();
+    tmpPaths = new HashSet<TreePath>();
+    selectedPaths = new HashSet<TreePath>();
   }
 
   /**
@@ -206,8 +206,8 @@ public class DefaultTreeSelectionModel
     cloned.listenerList = new EventListenerList();
     cloned.listSelectionModel =
       (DefaultListSelectionModel) listSelectionModel.clone();
-    cloned.selectedPaths = new HashSet();
-    cloned.tmpPaths = new HashSet();
+    cloned.selectedPaths = new HashSet<TreePath>();
+    cloned.tmpPaths = new HashSet<TreePath>();
 
     return cloned;
   }
@@ -394,7 +394,7 @@ public class DefaultTreeSelectionModel
             newLength = 1;
           }
         // Find new paths.
-        Vector changedPaths = null;
+        Vector<PathPlaceHolder> changedPaths = null;
         tmpPaths.clear();
         int validPaths = 0;
         TreePath oldLeadPath = leadPath;
@@ -407,7 +407,7 @@ public class DefaultTreeSelectionModel
                 if (! selectedPaths.contains(paths[i]))
                   {
                     if (changedPaths == null)
-                      changedPaths = new Vector();
+                      changedPaths = new Vector<PathPlaceHolder>();
                     changedPaths.add(new PathPlaceHolder(paths[i], true));
                   }
                 leadPath = paths[i];
@@ -422,10 +422,10 @@ public class DefaultTreeSelectionModel
                 // Some of the paths are already selected, put together
                 // the new selection carefully.
                 newSelection = new TreePath[validPaths];
-                Iterator newPaths = tmpPaths.iterator();
+                Iterator<TreePath> newPaths = tmpPaths.iterator();
                 validPaths = 0;
                 for (int i = 0; newPaths.hasNext(); i++)
-                  newSelection[i] = (TreePath) newPaths.next();
+                  newSelection[i] = newPaths.next();
               }
             else
               {
@@ -440,14 +440,14 @@ public class DefaultTreeSelectionModel
             if (selection[i] != null && ! tmpPaths.contains(selection[i]))
               {
                 if (changedPaths == null)
-                  changedPaths = new Vector();
+                  changedPaths = new Vector<PathPlaceHolder>();
                 changedPaths.add(new PathPlaceHolder(selection[i], false));
               }
           }
 
         // Perform changes and notification.
         selection = newSelection;
-        HashSet tmp = selectedPaths;
+        HashSet<TreePath> tmp = selectedPaths;
         selectedPaths = tmpPaths;
         tmpPaths = tmp;
         tmpPaths.clear();
@@ -505,7 +505,7 @@ public class DefaultTreeSelectionModel
           }
         else
           {
-            Vector changedPaths = null;
+            Vector<PathPlaceHolder> changedPaths = null;
             tmpPaths.clear();
             int validPaths = 0;
             TreePath oldLeadPath = leadPath;
@@ -521,7 +521,7 @@ public class DefaultTreeSelectionModel
                       {
                         validPaths++;
                         if (changedPaths == null)
-                          changedPaths = new Vector();
+                          changedPaths = new Vector<PathPlaceHolder>();
                         changedPaths.add(new PathPlaceHolder(paths[i], true));
                         selectedPaths.add(paths[i]);
                         tmpPaths.add(paths[i]);
@@ -538,11 +538,11 @@ public class DefaultTreeSelectionModel
                   {
                     // Some of the paths are already selected, put together
                     // the new selection carefully.
-                    Iterator newPaths = tmpPaths.iterator();
+                    Iterator<TreePath> newPaths = tmpPaths.iterator();
                     i = oldPaths;
                     while (newPaths.hasNext())
                       {
-                        newSelection[i] = (TreePath) newPaths.next();
+                        newSelection[i] = newPaths.next();
                         i++;
                       }
                   }
@@ -589,13 +589,13 @@ public class DefaultTreeSelectionModel
           clearSelection();
         else
           {
-            Vector pathsToRemove = null;
+            Vector<PathPlaceHolder> pathsToRemove = null;
             for (int i = paths.length - 1; i >= 0; i--)
               {
                 if (paths[i] != null && selectedPaths.contains(paths[i]))
                   {
                     if (pathsToRemove == null)
-                      pathsToRemove = new Vector();
+                      pathsToRemove = new Vector<PathPlaceHolder>();
                     selectedPaths.remove(paths[i]);
                     pathsToRemove.add(new PathPlaceHolder(paths[i],
                                                           false));
@@ -610,9 +610,9 @@ public class DefaultTreeSelectionModel
                 else
                   {
                     selection = new TreePath[selection.length - numRemove];
-                    Iterator keep = selectedPaths.iterator();
+                    Iterator<TreePath> keep = selectedPaths.iterator();
                     for (int valid = 0; keep.hasNext(); valid++)
-                      selection[valid] = (TreePath) keep.next();
+                      selection[valid] = keep.next();
                   }
                 // Update lead path.
                 if (leadPath != null && ! selectedPaths.contains(leadPath))
@@ -1120,7 +1120,7 @@ public class DefaultTreeSelectionModel
         || selectionMode == DISCONTIGUOUS_TREE_SELECTION)
       return true;
     
-    HashSet set = new HashSet();
+    HashSet<TreePath> set = new HashSet<TreePath>();
     for (int i = 0; i < selection.length; i++)
       set.add(selection[i]);
     
@@ -1128,10 +1128,10 @@ public class DefaultTreeSelectionModel
       set.remove(paths[i]);
     
     TreePath[] remaining = new TreePath[set.size()];
-    Iterator iter = set.iterator();
+    Iterator<TreePath> iter = set.iterator();
     
     for (int i = 0; i < remaining.length; i++)
-      remaining[i] = (TreePath) iter.next();
+      remaining[i] = iter.next();
     
     return arePathsContiguous(remaining);
   }
@@ -1144,7 +1144,8 @@ public class DefaultTreeSelectionModel
    * @param vPaths the vector of the changed patches
    * @param oldLeadSelection the old selection index
    */
-  protected void notifyPathChange(Vector vPaths, TreePath oldLeadSelection)
+  protected void notifyPathChange(Vector<PathPlaceHolder> vPaths,
+				  TreePath oldLeadSelection)
   {
 
     int numChangedPaths = vPaths.size();
@@ -1152,7 +1153,7 @@ public class DefaultTreeSelectionModel
     TreePath[] paths = new TreePath[numChangedPaths];
     for (int i = 0; i < numChangedPaths; i++)
       {
-        PathPlaceHolder p = (PathPlaceHolder) vPaths.get(i);
+        PathPlaceHolder p = vPaths.get(i);
         news[i] = p.isNew;
         paths[i] = p.path;
       }

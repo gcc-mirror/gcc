@@ -43,7 +43,6 @@ import gnu.java.security.action.SetAccessibleAction;
 
 import java.awt.Component;
 import java.awt.Frame;
-import java.awt.Toolkit;
 import java.lang.reflect.Field;
 import java.security.AccessController;
 

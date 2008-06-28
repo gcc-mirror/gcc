@@ -59,7 +59,7 @@ public interface Attribute
   /**
    * Returns the type of this attribute.
    */
-  QName getDTDType();
+  String getDTDType();
 
   /**
    * Indicates whether this attribute was specified in the input source, or

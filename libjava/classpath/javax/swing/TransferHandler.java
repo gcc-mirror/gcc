@@ -149,7 +149,7 @@ public class TransferHandler implements Serializable
           Object o;
           try
             {
-              o = getter.invoke(component, null);
+              o = getter.invoke(component);
               return o;
             }
           catch (Exception ex)

@@ -38,7 +38,7 @@ class javax::xml::stream::events::Attribute : public ::java::lang::Object
 public:
   virtual ::javax::xml::namespace::QName * getName() = 0;
   virtual ::java::lang::String * getValue() = 0;
-  virtual ::javax::xml::namespace::QName * getDTDType() = 0;
+  virtual ::java::lang::String * getDTDType() = 0;
   virtual jboolean isSpecified() = 0;
   virtual jint getEventType() = 0;
   virtual ::javax::xml::stream::Location * getLocation() = 0;

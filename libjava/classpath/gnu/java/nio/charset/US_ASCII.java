@@ -48,6 +48,7 @@ import java.nio.charset.CoderResult;
  * US-ASCII charset.
  *
  * @author Jesse Rosenstock
+ * @modified Ian Rogers
  */
 final class US_ASCII extends Charset
 {
@@ -95,6 +96,19 @@ final class US_ASCII extends Charset
 
   private static final class Decoder extends CharsetDecoder
   {
+    /** Helper to decode loops */
+    private static final ByteDecodeLoopHelper helper = new ByteDecodeLoopHelper()
+    {
+      protected boolean isMappable(byte b)
+      {
+        return b >= 0;
+      }
+      protected char mapToChar(byte b)
+      {
+        return (char)b;
+      }
+    };
+    
     // Package-private to avoid a trampoline constructor.
     Decoder (Charset cs)
     {
@@ -103,31 +117,24 @@ final class US_ASCII extends Charset
 
     protected CoderResult decodeLoop (ByteBuffer in, CharBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-        {
-          byte b = in.get ();
-
-          if (b < 0)
-            {
-              in.position (in.position () - 1);
-              return CoderResult.malformedForLength (1);
-            }
-          if (!out.hasRemaining ())
-            {
-              in.position (in.position () - 1);
-              return CoderResult.OVERFLOW;
-            }
-
-          out.put ((char) b);
-        }
-
-      return CoderResult.UNDERFLOW;
+      return helper.decodeLoop(in, out);
     }
   }
 
   private static final class Encoder extends CharsetEncoder
   {
+    /** Helper to encode loops */
+    private static final ByteEncodeLoopHelper helper = new ByteEncodeLoopHelper()
+    {
+      protected boolean isMappable(char c)
+      {
+        return c <= 0x7f;
+      }
+      protected byte mapToByte(char c)
+      {
+        return (byte)c;
+      }
+    };
     // Package-private to avoid a trampoline constructor.
     Encoder (Charset cs)
     {
@@ -149,26 +156,7 @@ final class US_ASCII extends Charset
 
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-      {
-        char c = in.get ();
-
-        if (c > 0x7f)
-          {
-            in.position (in.position () - 1);
-            return CoderResult.unmappableForLength (1);
-          }
-        if (!out.hasRemaining ())
-          {
-            in.position (in.position () - 1);
-            return CoderResult.OVERFLOW;
-          }
-
-        out.put ((byte) c);
-      }
-
-      return CoderResult.UNDERFLOW;
+      return helper.encodeLoop(in, out);
     }
   }
 }

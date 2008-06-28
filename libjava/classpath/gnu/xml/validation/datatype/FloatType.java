@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.validation.datatype;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.xml.XMLConstants;

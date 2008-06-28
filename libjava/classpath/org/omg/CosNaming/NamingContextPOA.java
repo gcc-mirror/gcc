@@ -92,7 +92,7 @@ public abstract class NamingContextPOA
   public OutputStream _invoke(String method, InputStream in, ResponseHandler rh)
   {
     OutputStream out = null;
-    Integer call_method = (Integer) _NamingContextImplBase.methods.get(method);
+    Integer call_method = _NamingContextImplBase.methods.get(method);
     if (call_method == null)
       throw new BAD_OPERATION(Minor.Method, CompletionStatus.COMPLETED_MAYBE);
 

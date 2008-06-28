@@ -271,7 +271,6 @@ public class gnuDynUnion
 
 
         // Get the discriminator variant.
-        Variants:
         for (int i = 0; i < final_type.member_count(); i++)
           {
             if (final_type.member_label(i).equal(da))
@@ -392,7 +391,6 @@ public class gnuDynUnion
 
 
         // Get the discriminator variant.
-        Variants:
         for (int i = 0; i < final_type.member_count(); i++)
           {
             if (final_type.member_label(i).equal(da))

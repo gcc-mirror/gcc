@@ -50,7 +50,7 @@ import java.rmi.server.RMIClientSocketFactory;
  * SslRMIClientSocketFactory
  *
  * This class implements an RMIClientSocketFactory for SSL sockets.
- * it uses the defeult SSLClientSocketFactory.
+ * it uses the default SSLClientSocketFactory.
  *
  * This class can optionally use the following system properties, if set: 
  * <code>javax.rmi.ssl.client.enabledCipherSuites</code>
@@ -92,17 +92,19 @@ public class SslRMIClientSocketFactory
 
   private String[] getProp(String p)
   {
-    StringTokenizer st;
+    String o;
     try
       {
-	String o = (String)System.getProperty( p );
-	st = new StringTokenizer( o, "," );
+	o = System.getProperty(p);
       }
     catch(SecurityException se)
       {
 	return null;
       }
 
+    if (o == null)
+      return null;
+    StringTokenizer st = new StringTokenizer( o, "," );
     int n = st.countTokens();
     if( n < 1 )
       return null;

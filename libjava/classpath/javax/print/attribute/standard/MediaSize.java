@@ -214,7 +214,7 @@ public class MediaSize extends Size2DSyntax
 
     for (int i = 0; i < mediaCache.size(); i++)
       {
-        MediaSize size = (MediaSize) mediaCache.get(i);
+        MediaSize size = mediaCache.get(i);
         int dist = (Math.abs(size.getXMicrometers() - xMicro) 
                     + Math.abs(size.getYMicrometers() - yMicro));
 
@@ -240,7 +240,7 @@ public class MediaSize extends Size2DSyntax
   {
     for (int i = 0; i < mediaCache.size(); i++)
       {
-	MediaSize size = (MediaSize) mediaCache.get(i);
+	MediaSize size = mediaCache.get(i);
 	
 	if (size.getMediaSizeName().equals(media))
 	  return size;

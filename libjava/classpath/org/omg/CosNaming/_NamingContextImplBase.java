@@ -123,7 +123,7 @@ public abstract class _NamingContextImplBase
   public OutputStream _invoke(String method, InputStream in, ResponseHandler rh)
   {
     OutputStream out = null;
-    Integer call_method = (Integer) methods.get(method);
+    Integer call_method = methods.get(method);
     if (call_method == null)
       throw new BAD_OPERATION(Minor.Method, CompletionStatus.COMPLETED_MAYBE);
 
@@ -389,7 +389,7 @@ public abstract class _NamingContextImplBase
     Streamable result = null;
 
     // The server request contains no required result type.
-    Integer call_method = (Integer) methods.get(request.operation());
+    Integer call_method = methods.get(request.operation());
     if (call_method == null)
       throw new BAD_OPERATION(Minor.Method, CompletionStatus.COMPLETED_MAYBE);
 

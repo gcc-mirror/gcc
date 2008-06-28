@@ -94,8 +94,7 @@ public final class DiffieHellmanImpl
     DHPublicKey pub = (DHPublicKey) incoming;
     DHParameterSpec s1 = key.getParams();
     DHParameterSpec s2 = pub.getParams();
-    if (! s1.getG().equals(s2.getG()) || ! s1.getP().equals(s2.getP())
-        || s1.getL() != s2.getL())
+    if (! s1.getG().equals(s2.getG()) || ! s1.getP().equals(s2.getP()))
       throw new InvalidKeyException("Incompatible key");
     if (! lastPhase)
       throw new IllegalArgumentException(

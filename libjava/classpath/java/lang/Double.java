@@ -518,7 +518,10 @@ public final class Double extends Number implements Comparable<Double>
    */
   public static long doubleToLongBits(double value)
   {
-    return VMDouble.doubleToLongBits(value);
+    if (isNaN(value))
+      return 0x7ff8000000000000L;
+    else
+      return VMDouble.doubleToRawLongBits(value);
   }
 
   /**
@@ -587,16 +590,25 @@ public final class Double extends Number implements Comparable<Double>
    */
   public static int compare(double x, double y)
   {
-    if (isNaN(x))
-      return isNaN(y) ? 0 : 1;
-    if (isNaN(y))
-      return -1;
-    // recall that 0.0 == -0.0, so we convert to infinites and try again
-    if (x == 0 && y == 0)
-      return (int) (1 / x - 1 / y);
-    if (x == y)
-      return 0;
+      // handle the easy cases:
+      if (x < y)
+	  return -1;
+      if (x > y)
+	  return 1;
 
-    return x > y ? 1 : -1;
+      // handle equality respecting that 0.0 != -0.0 (hence not using x == y):
+      long lx = doubleToRawLongBits(x);
+      long ly = doubleToRawLongBits(y);
+      if (lx == ly)
+	  return 0;
+
+      // handle NaNs:
+      if (x != x)
+	  return (y != y) ? 0 : 1;
+      else if (y != y)
+	  return -1;
+
+      // handle +/- 0.0
+      return (lx < ly) ? -1 : 1;
   }
 }

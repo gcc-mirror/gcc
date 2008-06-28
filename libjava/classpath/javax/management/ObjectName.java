@@ -39,7 +39,6 @@ package javax.management;
 
 import java.io.Serializable;
 
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;

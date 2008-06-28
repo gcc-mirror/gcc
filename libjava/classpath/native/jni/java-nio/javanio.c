@@ -45,7 +45,9 @@ exception statement from your version.  */
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
 #include <sys/uio.h>
 
 CPNIO_EXPORT ssize_t

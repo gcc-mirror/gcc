@@ -40,7 +40,6 @@ package gnu.java.nio;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.SocketTimeoutException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.ServerSocketChannel;

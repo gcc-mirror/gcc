@@ -84,7 +84,7 @@ public interface PortableRemoteObjectDelegate
    * unexported. Also, such object cannot be collected by garbage collector.
    * This is usually impemented via {@link Util#unexportObject}
    * 
-   * @param object the object to export.
+   * @param obj the object to export.
    * 
    * @throws RemoteException
    */
@@ -113,7 +113,7 @@ public interface PortableRemoteObjectDelegate
    * returned stub is also connected to the same ORB. If the target is
    * unconnected, the returned stub is unconnected.
    * 
-   * @param target a server side object.
+   * @param obj a server side object.
    * @return a stub object that can be used to access that server object.
    * 
    * @throws NoSuchObjectException if a stub cannot be located for the given
@@ -127,7 +127,7 @@ public interface PortableRemoteObjectDelegate
    * object to becomes available for garbage collection. This is usually
    * impemented via {@link Util#unexportObject}
    * 
-   * @param object the object to unexport.
+   * @param obj the object to unexport.
    * 
    * @throws NoSuchObjectException if the passed object is not currently
    * exported.

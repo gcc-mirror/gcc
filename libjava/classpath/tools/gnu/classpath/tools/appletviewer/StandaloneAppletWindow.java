@@ -512,7 +512,7 @@ class StandaloneAppletWindow
    * Called when the hierarchy of this component changes. Use
    * <code>getChangeFlags()</code> on the event to see what exactly changed.
    *
-   * @param e the event describing the change
+   * @param event the event describing the change
    */
   public void hierarchyChanged(HierarchyEvent event)
   {

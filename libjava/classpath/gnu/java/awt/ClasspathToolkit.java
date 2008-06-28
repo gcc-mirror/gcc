@@ -51,7 +51,6 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.font.TextAttribute;
 import java.awt.peer.DesktopPeer;
 import java.awt.peer.RobotPeer;
 import java.io.IOException;

@@ -109,7 +109,7 @@ public class FixedTypeCode
   /**
    * Get the number of digits in thid BigDecimal
    *
-   * @param x a BigDecimal to check.
+   * @param number a BigDecimal to check.
    */
   public static int countDigits(BigDecimal number)
   {

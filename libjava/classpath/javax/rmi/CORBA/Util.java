@@ -332,7 +332,7 @@ public class Util
    * </tr>
    * </table>
    * 
-   * @param ex an exception that was thrown on a server side implementation.
+   * @param exception an exception that was thrown on a server side implementation.
    * 
    * @return the corresponding RemoteException unless it is a RuntimeException.
    * 

@@ -1158,6 +1158,9 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     private void insertElement(ElementSpec spec)
     {
+      if (elementStack.isEmpty())
+        return;
+      
       Edit edit = (Edit) elementStack.peek();
       switch (spec.getType())
         {

@@ -15,7 +15,9 @@ class java::io::PipedInputStream : public ::java::io::InputStream
 
 public:
   PipedInputStream();
+  PipedInputStream(jint);
   PipedInputStream(::java::io::PipedOutputStream *);
+  PipedInputStream(::java::io::PipedOutputStream *, jint);
   virtual void connect(::java::io::PipedOutputStream *);
 public: // actually protected
   virtual void receive(jint);

@@ -37,16 +37,9 @@ exception statement from your version. */
 
 package gnu.javax.imageio.jpeg;
 
-import java.io.EOFException;
 import java.io.IOException;
-import javax.imageio.*;
-import javax.imageio.spi.*;
-import javax.imageio.metadata.*;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
-
-import java.util.Iterator;
-import java.awt.image.BufferedImage;
 
 public class JPEGImageInputStream
   extends ImageInputStreamImpl

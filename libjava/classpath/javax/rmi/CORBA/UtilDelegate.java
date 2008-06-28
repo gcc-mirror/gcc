@@ -243,7 +243,7 @@ public interface UtilDelegate
    * </tr>
    * </table>
    * 
-   * @param ex an exception that was thrown on a server side implementation.
+   * @param e an exception that was thrown on a server side implementation.
    * 
    * @return the corresponding RemoteException unless it is a RuntimeException.
    * 
@@ -266,7 +266,7 @@ public interface UtilDelegate
    * 
    * @param output a stream to write to, must be
    * org.omg.CORBA_2_3.portable.OutputStream
-   * @param object an object to write.
+   * @param obj an object to write.
    */
   void writeRemoteObject(OutputStream output, Object obj);
 

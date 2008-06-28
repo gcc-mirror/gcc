@@ -143,7 +143,7 @@ public class FontSize
   {
     int end = value.indexOf("pt");
     String number = value.substring(0, end);
-    int intVal = Integer.parseInt(number);
+    int intVal = (int) Double.parseDouble(number);
     return intVal;
   }
 
@@ -160,7 +160,7 @@ public class FontSize
     String number = value.substring(0, end);
     try
       {
-        int intVal = Integer.parseInt(number);
+        int intVal = (int) Double.parseDouble(number);
         return intVal;
       }
     catch (NumberFormatException ex)
@@ -177,7 +177,7 @@ public class FontSize
     String number = value.substring(0, end);
     try
       {
-        int intVal = Integer.parseInt(number);
+        int intVal = (int) Double.parseDouble(number);
         return intVal * par / 100;
       }
     catch (NumberFormatException ex)

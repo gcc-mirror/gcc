@@ -483,7 +483,7 @@ public final class URI
    */
   private static String quote(String str, String legalCharacters)
   {
-    StringBuffer sb = new StringBuffer(str.length());
+    StringBuilder sb = new StringBuilder(str.length());
     for (int i = 0; i < str.length(); i++)
       {
 	char c = str.charAt(i);
@@ -778,8 +778,8 @@ public final class URI
        This follows the algorithm in section 5.2.4. of RFC3986,
        but doesn't modify the input buffer.
     */
-    StringBuffer input = new StringBuffer(relativePath);
-    StringBuffer output = new StringBuffer();
+    StringBuilder input = new StringBuilder(relativePath);
+    StringBuilder output = new StringBuilder();
     int start = 0;
     while (start < input.length())
       {
@@ -853,7 +853,7 @@ public final class URI
    *
    * @param buffer the buffer containing the path.
    */
-  private void removeLastSegment(StringBuffer buffer)
+  private void removeLastSegment(StringBuilder buffer)
   {
     int lastSlash = buffer.lastIndexOf("/");
     if (lastSlash == -1)
@@ -899,7 +899,7 @@ public final class URI
 	      path = "";
 	    if (! (path.startsWith("/")))
 	      {
-		StringBuffer basepath = new StringBuffer(this.path);
+		StringBuilder basepath = new StringBuilder(this.path);
 		int i = this.path.lastIndexOf('/');
 
 		if (i >= 0)
@@ -1321,7 +1321,8 @@ public final class URI
 	    int hCompare = host.compareTo(uri.getHost());
 	    if (hCompare != 0)
 	      return hCompare;
-	    return new Integer(port).compareTo(new Integer(uri.getPort()));
+	    int uriPort = uri.getPort();
+	    return (uriPort == port) ? 0 : (uriPort > port) ? -1 : 1;
 	  }
       }
     if (rawPath == null && uri.getRawPath() != null)
@@ -1387,8 +1388,8 @@ public final class URI
   {
     String strRep = toString();
     boolean inNonAsciiBlock = false;
-    StringBuffer buffer = new StringBuffer();
-    StringBuffer encBuffer = null;
+    StringBuilder buffer = new StringBuilder();
+    StringBuilder encBuffer = null;
     for (int i = 0; i < strRep.length(); i++)
       {
 	char c = strRep.charAt(i);
@@ -1405,7 +1406,7 @@ public final class URI
 	  {
 	    if (!inNonAsciiBlock)
 	      {
-		encBuffer = new StringBuffer();
+		encBuffer = new StringBuilder();
 		inNonAsciiBlock = true;
 	      }
 	    encBuffer.append(c);
@@ -1427,7 +1428,7 @@ public final class URI
   {
     try
       {
-	StringBuffer sb = new StringBuffer(); 
+	StringBuilder sb = new StringBuilder(); 
 	// this is far from optimal, but it works
 	byte[] utf8 = str.getBytes("utf-8");
 	for (int j = 0; j < utf8.length; j++)

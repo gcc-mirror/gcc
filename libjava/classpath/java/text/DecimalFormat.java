@@ -716,15 +716,15 @@ public class DecimalFormat extends NumberFormat
         if (this.parseBigDecimal)
           {
             if (isNegative)
-              return new BigDecimal(Double.NEGATIVE_INFINITY);
+              return BigDecimal.valueOf(Double.NEGATIVE_INFINITY);
             
-            return new BigDecimal(Double.POSITIVE_INFINITY);
+            return BigDecimal.valueOf(Double.POSITIVE_INFINITY);
           }
         
         if (isNegative)
-          return new Double(Double.NEGATIVE_INFINITY);
+          return Double.valueOf(Double.NEGATIVE_INFINITY);
 
-        return new Double(Double.POSITIVE_INFINITY);
+        return Double.valueOf(Double.POSITIVE_INFINITY);
       }
     
     // no number...
@@ -771,21 +771,21 @@ public class DecimalFormat extends NumberFormat
     
     // want integer?
     if (this.parseIntegerOnly)
-      return new Long(bigDecimal.longValue());
+      return Long.valueOf(bigDecimal.longValue());
 
     // 3th special case -0.0
     if (isNegative && (bigDecimal.compareTo(BigDecimal.ZERO) == 0))
-      return new Double(-0.0);
+      return Double.valueOf(-0.0);
     
     try
       {
         BigDecimal integer
           = bigDecimal.setScale(0, BigDecimal.ROUND_UNNECESSARY);
-        return new Long(integer.longValue());
+        return Long.valueOf(integer.longValue());
       }
     catch (ArithmeticException e)
       {
-        return new Double(bigDecimal.doubleValue());
+        return Double.valueOf(bigDecimal.doubleValue());
       }
   }
 
@@ -1787,7 +1787,7 @@ public class DecimalFormat extends NumberFormat
     int endIndexFract = 0;
     
     // compute the multiplier to use with percent and similar
-    number = number.multiply(new BigDecimal(_multiplier));
+    number = number.multiply(BigDecimal.valueOf(_multiplier));
     
     // XXX: special case, not sure if it belongs here or if it is
     // correct at all. There may be other special cases as well

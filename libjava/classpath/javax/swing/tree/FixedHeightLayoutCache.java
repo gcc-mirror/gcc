@@ -135,7 +135,7 @@ public class FixedHeightLayoutCache
                 }
             }
 
-          LinkedList lpath = new LinkedList();
+          LinkedList<Object> lpath = new LinkedList<Object>();
           NodeRecord rp = this;
           while (rp != null)
             {
@@ -173,17 +173,17 @@ public class FixedHeightLayoutCache
   /**
    * The set of all expanded tree nodes.
    */
-  Set expanded = new HashSet();
+  Set<Object> expanded = new HashSet<Object>();
   
   /**
    * Maps nodes to the row numbers.
    */
-  Hashtable nodes = new Hashtable();
+  Hashtable<Object,NodeRecord> nodes = new Hashtable<Object,NodeRecord>();
   
   /**
    * Maps row numbers to nodes.
    */
-  Hashtable row2node = new Hashtable();
+  Hashtable<Integer,Object> row2node = new Hashtable<Integer,Object>();
   
   /**
    * If true, the row map must be recomputed before using.
@@ -338,7 +338,7 @@ public class FixedHeightLayoutCache
     if (dirty)
       update();
     Object last = path.getLastPathComponent();
-    NodeRecord r = (NodeRecord) nodes.get(last);
+    NodeRecord r = nodes.get(last);
     if (r == null)
     // This node is not visible.
       {
@@ -373,7 +373,7 @@ public class FixedHeightLayoutCache
       return null;
     else
       {
-        NodeRecord r = (NodeRecord) nodes.get(last);
+        NodeRecord r = nodes.get(last);
         return r.getPath();
       }
   } 
@@ -391,7 +391,7 @@ public class FixedHeightLayoutCache
     
     if (dirty) update();
 
-    NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
+    NodeRecord r = nodes.get(path.getLastPathComponent());
     if (r == null)
       return - 1;
     else
@@ -413,13 +413,13 @@ public class FixedHeightLayoutCache
     // As the rows have arbitrary height, we need to iterate.
     NodeRecord best = null;
     NodeRecord r;
-    Enumeration en = nodes.elements();
+    Enumeration<NodeRecord> en = nodes.elements();
     
     int dist = Integer.MAX_VALUE;
 
     while (en.hasMoreElements() && dist > 0)
       {
-        r = (NodeRecord) en.nextElement();
+        r = en.nextElement();
         if (best == null)
           {
             best = r;
@@ -474,7 +474,7 @@ public class FixedHeightLayoutCache
   } 
 
   /**
-   * Get the enumeration over all visible pathes that start from the given
+   * Get the enumeration over all visible paths that start from the given
    * parent path.
    * 
    * @param parentPath the parent path
@@ -491,7 +491,7 @@ public class FixedHeightLayoutCache
     for (int i = 0; i < parentPath.getPathCount(); i++)
       {
         node = parentPath.getPathComponent(i);
-        nr = (NodeRecord) nodes.get(node);
+        nr = nodes.get(node);
         if (nr.row >= 0)
           p.add(node);
       }
@@ -583,10 +583,10 @@ public class FixedHeightLayoutCache
     if (dirty)
       update();
     totalHeight = 0;
-    Enumeration en = nodes.elements();
+    Enumeration<NodeRecord> en = nodes.elements();
     while (en.hasMoreElements())
       {
-        NodeRecord nr = (NodeRecord) en.nextElement();
+        NodeRecord nr = en.nextElement();
         Rectangle r = nr.getBounds();
         totalHeight += r.height;
       }
@@ -602,10 +602,10 @@ public class FixedHeightLayoutCache
       update();
     
     maximalWidth = 0;
-    Enumeration en = nodes.elements();
+    Enumeration<NodeRecord> en = nodes.elements();
     while (en.hasMoreElements())
       {
-        NodeRecord nr = (NodeRecord) en.nextElement();
+        NodeRecord nr = en.nextElement();
         Rectangle r = nr.getBounds();
         if (r.x + r.width > maximalWidth)
           maximalWidth = r.x + r.width;

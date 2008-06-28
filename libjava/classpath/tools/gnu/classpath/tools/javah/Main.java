@@ -188,7 +188,7 @@ public class Main
     return "javah";
   }
 
-  protected Parser getParser()
+  protected ClasspathToolParser getParser()
   {
     ClasspathToolParser result = new ClasspathToolParser(getName(), true);
     result.setHeader("usage: javah [OPTIONS] CLASS...");
@@ -324,11 +324,11 @@ public class Main
     while (i.hasNext())
       {
 	Map.Entry e = (Map.Entry) i.next();
-	File filename = (File) e.getKey();
+	File file = (File) e.getKey();
         ClassWrapper klass = (ClassWrapper) e.getValue();
         if (verbose)
-          System.err.println("[writing " + klass + " as " + filename + "]");
-        printer.printClass(filename, klass);
+          System.err.println("[writing " + klass + " as " + file + "]");
+        printer.printClass(file, klass);
       }
   }
 
@@ -339,8 +339,8 @@ public class Main
 
   protected void run(String[] args) throws IOException
   {
-    Parser p = getParser();
-    String[] classNames = p.parse(args);
+    ClasspathToolParser p = getParser();
+    String[] classNames = p.parse(args, true);
     postParse(classNames);
     loader = classpath.getLoader();
 

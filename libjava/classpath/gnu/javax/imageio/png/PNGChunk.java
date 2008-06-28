@@ -40,7 +40,6 @@ package gnu.javax.imageio.png;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Class to load and validate a generic PNG chunk.

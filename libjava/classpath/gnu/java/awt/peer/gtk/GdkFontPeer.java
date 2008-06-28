@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.Pointer;
 
 import gnu.java.awt.ClasspathToolkit;
@@ -166,7 +167,10 @@ public class GdkFontPeer extends ClasspathFontPeer
 
   static 
   {
-    System.loadLibrary("gtkpeer");
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("gtkpeer");
+      }
 
     initStaticState ();
 

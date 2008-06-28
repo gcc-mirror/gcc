@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.stream;
 
-import java.io.IOException;
 import java.io.Writer;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;

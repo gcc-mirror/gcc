@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-7, ISO Latin/Greek char set.
  */
-public class ISO_8859_7 extends ByteCharset
+public final class ISO_8859_7 extends ByteCharset
 {
 
   /**
@@ -103,8 +103,7 @@ public class ISO_8859_7 extends ByteCharset
 	  "cp813",
 	  "813",
 	  "windows-28597"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_7

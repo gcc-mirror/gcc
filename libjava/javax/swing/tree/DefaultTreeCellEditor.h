@@ -56,7 +56,6 @@ public:
   DefaultTreeCellEditor(::javax::swing::JTree *, ::javax::swing::tree::DefaultTreeCellRenderer *);
   DefaultTreeCellEditor(::javax::swing::JTree *, ::javax::swing::tree::DefaultTreeCellRenderer *, ::javax::swing::tree::TreeCellEditor *);
 private:
-  void configureEditingComponent(::javax::swing::JTree *, ::javax::swing::tree::DefaultTreeCellRenderer *, ::javax::swing::tree::TreeCellEditor *);
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
 public:
@@ -104,8 +103,6 @@ public: // actually protected
   ::java::awt::Color * borderSelectionColor;
   ::javax::swing::Icon * editingIcon;
   ::java::awt::Font * font;
-private:
-  ::javax::swing::tree::TreePath * tPath;
 public:
   static ::java::lang::Class class$;
 };

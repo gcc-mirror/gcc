@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.java.nio.charset;
 
-public class Cp857 extends ByteCharset
+public final class Cp857 extends ByteCharset
 {
 
     /**
@@ -82,10 +82,7 @@ public class Cp857 extends ByteCharset
 
     public Cp857()
     {
-	super("Cp857", new String[] {
-	    "cp-857"
-	});
-	lookupTable = lookup;
+	super("Cp857", new String[] {"cp-857"}, lookup);
     }
 
 } // class Cp857

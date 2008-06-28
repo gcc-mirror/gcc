@@ -62,11 +62,6 @@ public final class ScanlineConverter
   private static int ONE = Fixed.fixedValue(FIXED_DIGITS, 1);
 
   /**
-   * The number of significant bits for the Y resolution.
-   */
-  private static int Y_RESOLUTION = 4;
-
-  /**
    * The actual number of scanlines.
    */
   private int numScanlines;
@@ -92,6 +87,11 @@ public final class ScanlineConverter
    * This is a fixed point value.
    */
   private int resolution;
+
+  /**
+   * The number of significant bits for the 'Y' resolution.
+   */
+  private int yResolution;
 
   /**
    * One half step according to the resolution. This is stored to avoid
@@ -145,14 +145,15 @@ public final class ScanlineConverter
    * @param trans the transform
    */
   public void renderShape(Pixelizer p, Shape shape, Shape clip,
-                          AffineTransform trans, int res, RenderingHints hints)
+                          AffineTransform trans, int res, int yRes,
+                          RenderingHints hints)
   {
     // TODO: Do something useful with the rendering hints. Like, adjusting
     // the resolution.
 
     // Prepare resolution and upper bounds.
     clear();
-    setResolution(res);
+    setResolution(res, yRes);
 
     boolean haveClip = clip != null;
 
@@ -278,10 +279,10 @@ public final class ScanlineConverter
             int frac0 = ONE - Fixed.trunc(FIXED_DIGITS, x0);
             int frac1 = ONE - Fixed.trunc(FIXED_DIGITS, x1);
             // Only keep the first 4 digits after the point.
-            frac0 = frac0 >> (FIXED_DIGITS - Y_RESOLUTION);
-            frac1 = frac1 >> (FIXED_DIGITS - Y_RESOLUTION);
-            scanlineCoverage.add(pix0, 1 * (1 << Y_RESOLUTION), frac0);
-            scanlineCoverage.add(pix1, -1 * (1 << Y_RESOLUTION), -frac1);
+            frac0 = frac0 >> (FIXED_DIGITS - yResolution);
+            frac1 = frac1 >> (FIXED_DIGITS - yResolution);
+            scanlineCoverage.add(pix0, 1 * (1 << yResolution), frac0);
+            scanlineCoverage.add(pix1, -1 * (1 << yResolution), -frac1);
           }
         if (edge.isClip)
           inClip = ! inClip;
@@ -306,14 +307,16 @@ public final class ScanlineConverter
    *
    * @param res the resolution
    */
-  private void setResolution(int res)
+  private void setResolution(int res, int yRes)
   {
     int scanlinesPerPixel = 1 << res;
     int one = Fixed.fixedValue(FIXED_DIGITS, 1);
     resolution = one / (scanlinesPerPixel);
     halfStep = resolution / 2;
 
-    scanlineCoverage.setMaxCoverage(scanlinesPerPixel << Y_RESOLUTION);
+    scanlineCoverage.setMaxCoverage(scanlinesPerPixel << yResolution);
+
+    yResolution = yRes;
   }
 
   /**

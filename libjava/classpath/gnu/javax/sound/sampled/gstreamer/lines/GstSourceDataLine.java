@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.javax.sound.sampled.gstreamer.lines;
 
 import gnu.javax.sound.AudioSecurityManager;
+import gnu.javax.sound.sampled.gstreamer.lines.GstPipeline.State;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
@@ -48,87 +49,105 @@ import static gnu.javax.sound.AudioSecurityManager.Permission;
 public class GstSourceDataLine
     extends GstDataLine implements SourceDataLine
 {
+  private GstPipeline pipeline = null;
+  private boolean open = false;
+  
   public GstSourceDataLine(AudioFormat format)
   {
     super(format);
   }
 
+  public void open() throws LineUnavailableException
+  {
+    AudioSecurityManager.checkPermissions(Permission.PLAY);
+    
+    if (open)
+      throw new IllegalStateException("Line already opened");
+    
+    // create the pipeline
+    pipeline = GstNativeDataLine.createSourcePipeline(getBufferSize());
+    
+    this.open = true;
+  }
+  
   public void open(AudioFormat fmt) throws LineUnavailableException
   {
     AudioSecurityManager.checkPermissions(Permission.PLAY);
-    throw new LineUnavailableException("Line unavailable");
+    
+    setFormat(fmt);
+    this.open();
   }
 
   public void open(AudioFormat fmt, int size) throws LineUnavailableException
   {
     AudioSecurityManager.checkPermissions(Permission.PLAY);
-    throw new LineUnavailableException("Line unavailable");
+    
+    setBufferSize(size);
+    this.open(fmt);
   }
 
   public int write(byte[] buf, int offset, int length)
-  {
-    // TODO Auto-generated method stub
-    return 0;
+  { 
+    return this.pipeline.write(buf, offset, length);
   }
 
   public int available()
   {
-    // TODO Auto-generated method stub
-    return 0;
+    return this.pipeline.available();
   }
 
   public void drain()
   {
-    // TODO Auto-generated method stub
-    
+    this.pipeline.drain();
   }
 
   public void flush()
   {
-    // TODO Auto-generated method stub
-    
+    this.pipeline.flush();
   }
 
   public int getFramePosition()
   {
-    // TODO Auto-generated method stub
+    System.out.println("getFramePosition -: IMPLEMENT ME!!");
     return 0;
   }
 
   public long getLongFramePosition()
   {
-    // TODO Auto-generated method stub
+    System.out.println("getLongFramePosition -: IMPLEMENT ME!!");
     return 0;
   }
 
   public long getMicrosecondPosition()
   {
-    // TODO Auto-generated method stub
+    System.out.println("getMicrosecondPosition -: IMPLEMENT ME!!");
     return 0;
   }
 
   public boolean isActive()
   {
-    // TODO Auto-generated method stub
-    return false;
+    State state = pipeline.getState();
+    return (state == State.PLAY || state == State.PAUSE);
   }
 
   public void start()
   {
-    // TODO Auto-generated method stub
-    
+    pipeline.setState(State.PLAY);
   }
 
   public void stop()
   {
-    // TODO Auto-generated method stub
-    
+    pipeline.setState(State.PAUSE);
   }
 
   public void close()
   {
-    // TODO Auto-generated method stub
-    
+    pipeline.close();
+    this.open = false;
   }
-
+  
+  public boolean isRunning()
+  {
+    return (pipeline.getState() == State.PLAY);
+  }
 }

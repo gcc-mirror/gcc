@@ -1,5 +1,5 @@
 /* DataOutputStream.java -- Writes primitive Java datatypes to streams
-   Copyright (C) 1998, 2001, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2003, 2005, 2008  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -379,19 +379,20 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 
   /**
    *  Calculate the length, in bytes, of a <code>String</code> in Utf8 format.
+   *  This method is package-private so that <code>ObjectOutputStream</code>
+   *  may use it.  The return type is long so that a long string whose
+   *  Utf8 byte count is 64 bit long may be handled.
    *
    *  @param value The <code>String</code> to measure
    *  @param start String index at which to begin count
    *  @param sum Starting Utf8 byte count
    *
-   *  @throws UTFDataFormatException if result would exceed 65535
    */
-  private int getUTFlength(String value, int start, int sum)
-    throws IOException
+  long getUTFlength(String value, int start, long sum)
   {
     int len = value.length();
 
-    for (int i = start; i < len && sum <= 65535; ++i)
+    for (int i = start; i < len; ++i)
       {
 	char c = value.charAt(i);
 	if (c >= '\u0001' && c <= '\u007f')
@@ -401,9 +402,6 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 	else
 	  sum += 3;
       }
-
-    if (sum > 65535)
-      throw new UTFDataFormatException ();
 
     return sum;
   }
@@ -442,10 +440,70 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    */
   public final synchronized void writeUTF(String value) throws IOException
   {
+    long l = getUTFlength(value, 0, 0);
+    if (l > 65535)
+      throw new UTFDataFormatException ();
+    writeUTFShort(value, (int)l);
+  }
+
+  /**
+   * This method performs the main task of <code>writeUTF</code>.
+   * This method is package-private because ObjectOutputStream uses it.
+   *
+   * @param value The <code>String</code> to write to the output in UTF format
+   *
+   * @param bytelen The UTF-8 byte length of the <code>String</code>. When
+   * this method is called, the expected byte length must have been calculated
+   * by <code>getUTFlength</code>.
+   *
+   * @exception IOException If an error occurs
+   *
+   * @see DataInput#readUTF
+   */
+  final synchronized void writeUTFShort(String value, int bytelen)
+    throws IOException
+  {
+    writeShort(bytelen);
+    writeUTFBytes(value);
+  }
+
+  /**
+   * This method is similar to <code>writeUTF</code>, but it writes the
+   * UTF-8 byte length in 64 bits.
+   * This method is not public but <code>ObjectOutputStream</code> uses it.
+   *
+   * @param value The <code>String</code> to write to the output in UTF format
+   *
+   * @param bytelen The UTF-8 byte length of the <code>String</code>. When
+   * this method is called, the expected byte length must have been calculated
+   * by <code>getUTFlength</code>.
+   *
+   * @exception IOException If an error occurs
+   *
+   */
+  final synchronized void writeUTFLong(String value, long bytelen)
+    throws IOException
+  {
+    writeLong(bytelen);
+    writeUTFBytes(value);
+  }
+
+  /**
+   * This method performes the main task of <code>writeUTF</code> and
+   * <code>WriteUTFLong</code>, which is to write the UTF-8 byte
+   * sequence to the output.
+   *
+   * @param value The <code>String</code> to write to the output in UTF format
+   *
+   * @exception IOException If an error occurs
+   *
+   */
+  private final synchronized void writeUTFBytes(String value)
+    throws IOException
+  {
     int len = value.length();
     int i = 0;
     int pos = 0;
-    boolean lengthWritten = false;
 
     if (buf == null)
       buf = new byte[512];
@@ -471,14 +529,6 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
 		buf[pos++] = (byte) (0x80 | (0x3f & (c >> 6)));
 		buf[pos++] = (byte) (0x80 | (0x3f & c));
 	      }
-	  }
-	if (! lengthWritten)
-	  {
-	    if (i == len)
-	      writeShort(pos);
-	    else
-	      writeShort(getUTFlength(value, i, pos));
-	    lengthWritten = true;
 	  }
 	write(buf, 0, pos);
 	pos = 0;

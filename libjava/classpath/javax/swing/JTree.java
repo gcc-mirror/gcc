@@ -3105,7 +3105,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
   {
     while (toRemove.hasMoreElements())
       {
-        TreePath current = (TreePath) toRemove.nextElement();
+        TreePath current = toRemove.nextElement();
         Enumeration descendants = getDescendantToggledPaths(current);
         
         while (descendants.hasMoreElements())

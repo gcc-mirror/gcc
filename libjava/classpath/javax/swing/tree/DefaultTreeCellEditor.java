@@ -306,13 +306,7 @@ public class DefaultTreeCellEditor
    * Font to paint with, null indicates font of renderer is to be used.
    */
   protected Font font;
-  
-  /**
-   * Helper field used to save the last path seen while the timer was
-   * running.
-   */
-    private TreePath tPath;
-    
+      
   /**
    * Constructs a DefaultTreeCellEditor object for a JTree using the 
    * specified renderer and a default editor. (Use this constructor 
@@ -346,38 +340,6 @@ public class DefaultTreeCellEditor
     setTree(tree);
     Color c = UIManager.getColor("Tree.editorBorderSelectionColor");
     setBorderSelectionColor(c);
-  }
-
-  /**
-   * Configures the editing component whenever it is null.
-   * 
-   * @param tree the tree to configure to component for.
-   * @param renderer the renderer used to set up the nodes
-   * @param editor the editor used 
-   */
-  private void configureEditingComponent(JTree tree,
-                                         DefaultTreeCellRenderer renderer,
-                                         TreeCellEditor editor)
-  {    
-    if (tree != null && lastPath != null)
-      {
-        Object val = lastPath.getLastPathComponent();
-        boolean isLeaf = tree.getModel().isLeaf(val);
-        boolean expanded = tree.isExpanded(lastPath);
-        determineOffset(tree, val, true, expanded, isLeaf, lastRow);
-
-        // set up icon
-        if (isLeaf)
-          renderer.setIcon(renderer.getLeafIcon());
-        else if (expanded)
-          renderer.setIcon(renderer.getOpenIcon());
-        else
-          renderer.setIcon(renderer.getClosedIcon());
-        editingIcon = renderer.getIcon();
-        
-        editingComponent = getTreeCellEditorComponent(tree, val, true,
-                                                      expanded, isLeaf, lastRow);
-      }
   }
   
   /**

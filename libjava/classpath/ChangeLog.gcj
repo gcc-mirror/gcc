@@ -1,3 +1,14 @@
+2008-06-28  Matthias Klose  <doko@ubuntu.com>
+
+	* m4/ac_prog_javac.m4: Disable check for JAVAC, when
+	not configured with --enable-java-maintainer-mode.
+	* aclocal.m4, configure: Regenerate.
+	* native/jni/gstreamer-peer/Makefile.am: Do not link with
+	libclasspathnative.
+	* native/jni/gstreamer-peer/Makefile.in: Regenerate.
+	* tools/Makefile.am, lib/Makefile.am: Use JAVAC for setting
+	JCOMPILER, drop flags not understood by gcj.
+
 2008-06-24  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/32198:
@@ -6,12 +17,84 @@
 	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.class:
         Rebuilt.
 
+2008-04-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35457
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2008-04-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/gen-classlist.sh.in: Avoid grepping each omission, by
+	building an awk script with a hash for literal files, and
+	awk regular expressions for the rest.
+	* configure.ac: Call AC_PROG_AWK.
+	* configure: Regenerate.
+
+	* m4/gcc_attribute.m4 (GCC_ATTRIBUTE): Fix cache variable name.
+	* tools/Makefile.am (gappletviewer, gjarsigner, gkeytool, gjar)
+	(gnative2ascii, gserialver, gjavah, grmiregistry, gtnameserv)
+	(gorbd, grmid, grmic) [!CREATE_WRAPPERS]: Add stub dependencies
+	for these scripts, to trick automake into hiding the respective
+	rules for the programs below the CREATE_WRAPPERS conditional.
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* native/jni/Makefile.in: Likewise.
+	* native/jni/classpath/Makefile.in: Likewise.
+	* native/jni/gstreamer-peer/Makefile.in: Likewise.
+	* native/jni/midi-dssi/Makefile.in: Likewise.
+	* native/jni/gconf-peer/Makefile.in: Likewise.
+	* native/jni/java-io/Makefile.in: Likewise.
+	* native/jni/native-lib/Makefile.in: Likewise.
+	* native/jni/java-util/Makefile.in: Likewise.
+	* native/jni/java-lang/Makefile.in: Likewise.
+	* native/jni/midi-alsa/Makefile.in: Likewise.
+	* native/jni/java-nio/Makefile.in: Likewise.
+	* native/jni/java-net/Makefile.in: Likewise.
+	* native/jni/xmlj/Makefile.in: Likewise.
+	* native/jni/qt-peer/Makefile.in: Likewise.
+	* native/jni/gtk-peer/Makefile.in: Likewise.
+	* native/Makefile.in: Likewise.
+	* native/jawt/Makefile.in: Likewise.
+	* native/fdlibm/Makefile.in: Likewise.
+	* native/plugin/Makefile.in: Likewise.
+	* resource/Makefile.in: Likewise.
+	* scripts/Makefile.in: Likewise.
+	* tools/Makefile.in: Likewise.
+	* doc/Makefile.in: Likewise.
+	* doc/api/Makefile.in: Likewise.
+	* lib/Makefile.in: Likewise.
+	* external/Makefile.in: Likewise.
+	* external/jsr166/Makefile.in: Likewise.
+	* external/sax/Makefile.in: Likewise.
+	* external/w3c_dom/Makefile.in: Likewise.
+	* external/relaxngDatatype/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* examples/Makefile.in: Likewise.
+
 2008-04-17  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/35950:
 	* tools/gnu/classpath/tools/jar/Entry.java: New version from
 	Classpath.
 	* tools/classes/gnu/classpath/tools/jar/Entry.class: Update.
+
+2008-03-10  Jim Meyering  <meyering@redhat.com>
+
+	Don't leak upon failed realloc.
+	* native/jni/classpath/jcl.c (JCL_realloc): Upon failed realloc,
+	free the original buffer before throwing the exception.
+
+2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cp-hacking.texinfo: Fix spacing after periods.
+	* doc/cp-tools.texinfo: Likewise.
+	* doc/cp-vmintegration.texinfo: Likewise.
+
+	* doc/cp-hacking.texinfo: Fix some typos.
+	* doc/cp-tools.texinfo: Likewise.
+	* doc/cp-vmintegration.texinfo: Likewise.
 
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -41,6 +124,16 @@
 
 	* tools/classes/gnu/classpath/tools/native2ascii/Native2ASCII$3.class:
 	Added.
+
+2008-01-27  Bernhard Fischer  <rep.dot.nop@gmail.com>
+
+	* java/util/SimpleTimeZone.java (SimpleTimeZone): Fix typo in comment.
+	* gnu/CORBA/GIOP/v1_2/RequestHeader.java (RequestHeader): Fix typo in
+	exception message.
+
+2008-01-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/README.jaxp: Fix typos.
 
 2007-09-04  Matthias Klose  <doko@ubuntu.com>
 

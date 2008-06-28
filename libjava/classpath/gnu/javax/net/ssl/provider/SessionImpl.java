@@ -40,22 +40,16 @@ package gnu.javax.net.ssl.provider;
 
 import gnu.javax.crypto.key.GnuPBEKey;
 import gnu.javax.net.ssl.Session;
-import gnu.javax.net.ssl.Session.ID;
-
 import java.io.IOException;
 import java.io.Serializable;
 
-import java.security.Certificate;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
-import javax.crypto.spec.PBEKeySpec;
 import javax.net.ssl.SSLException;
 
 public class SessionImpl extends Session

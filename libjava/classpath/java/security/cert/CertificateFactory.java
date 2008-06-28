@@ -42,7 +42,6 @@ import gnu.java.security.Engine;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;

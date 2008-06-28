@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package gnu.java.nio.charset;
 
-public class MacDingbat extends ByteCharset
+public final class MacDingbat extends ByteCharset
 {
 
   /**
@@ -81,9 +81,7 @@ public class MacDingbat extends ByteCharset
 
     public MacDingbat()
     {
-	super("MacDingbat", new String[] {
-	});
-	lookupTable = lookup;
+	super("MacDingbat", new String[] {}, lookup);
     }
 
 } // class MacDingbat

@@ -40,8 +40,6 @@ public: // actually package-private
   jint limit;
   jint markPos;
   static const jint DEFAULT_BUFFER_SIZE = 8192;
-private:
-  ::java::lang::StringBuffer * sbuf;
 public:
   static ::java::lang::Class class$;
 };

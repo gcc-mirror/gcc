@@ -39,8 +39,6 @@ exception statement from your version. */
 package gnu.java.nio;
 
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;

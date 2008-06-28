@@ -28,6 +28,8 @@ public:
   static ::java::lang::String * DECREMENT;
   static ::java::lang::String * INCREMENT;
   static ::java::lang::String * TOGGLE_EXPAND;
+  static ::java::lang::String * CLICK;
+  static ::java::lang::String * TOGGLE_POPUP;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

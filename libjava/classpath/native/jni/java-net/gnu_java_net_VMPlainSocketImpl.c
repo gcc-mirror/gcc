@@ -51,7 +51,9 @@ exception statement from your version. */
 #endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#ifdef HAVE_NET_IF_H
 #include <net/if.h>
+#endif
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -416,7 +418,7 @@ Java_gnu_java_net_VMPlainSocketImpl_setMulticastInterface6 (JNIEnv *env,
 #ifdef HAVE_INET6	
   int result;
   const char *str_ifname = JCL_jstring_to_cstring (env, ifname);
-  u_int if_index;
+  unsigned int if_index;
 
   if ((*env)->ExceptionOccurred (env))
     {
@@ -433,7 +435,7 @@ Java_gnu_java_net_VMPlainSocketImpl_setMulticastInterface6 (JNIEnv *env,
     }
 
   result = setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
-                      (u_int *) &if_index, sizeof(if_index));
+                      (unsigned int *) &if_index, sizeof(if_index));
 
   JCL_free_cstring(env, ifname, str_ifname);
   

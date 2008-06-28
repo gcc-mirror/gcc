@@ -28,9 +28,6 @@ extern "Java"
 class java::lang::management::ThreadInfo : public ::java::lang::Object
 {
 
-  ThreadInfo(::java::lang::Thread *, jlong, jlong, ::java::lang::Object *, ::java::lang::Thread *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *);
-  ThreadInfo(::java::lang::Thread *, jlong, jlong, ::java::lang::Object *, ::java::lang::Thread *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *, JArray< ::java::lang::management::MonitorInfo * > *, JArray< ::java::lang::management::LockInfo * > *);
-  ThreadInfo(jlong, ::java::lang::String *, ::java::lang::Thread$State *, jlong, jlong, ::java::lang::String *, jlong, ::java::lang::String *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *);
   ThreadInfo(jlong, ::java::lang::String *, ::java::lang::Thread$State *, jlong, jlong, ::java::lang::String *, jlong, ::java::lang::String *, jlong, jlong, jboolean, jboolean, JArray< ::java::lang::StackTraceElement * > *, JArray< ::java::lang::management::MonitorInfo * > *, JArray< ::java::lang::management::LockInfo * > *);
 public: // actually package-private
   static void checkAttribute(::javax::management::openmbean::CompositeType *, ::java::lang::String *, ::javax::management::openmbean::OpenType *);

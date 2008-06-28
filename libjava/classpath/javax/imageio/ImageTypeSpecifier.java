@@ -119,7 +119,7 @@ public class ImageTypeSpecifier
    * @param colorSpace the color space
    * @param bankIndices the bank indices at which each band will be
    * stored
-   * @param bandOffsets the starting band offset for each band within
+   * @param bankOffsets the starting band offset for each band within
    * its bank
    * @param dataType the data type, a DataBuffer constant
    * @param hasAlpha true if this image type specifier should have an
@@ -168,8 +168,8 @@ public class ImageTypeSpecifier
    * Create a buffered image with the given dimensions using that has
    * the characteristics specified by this image type specifier.
    *
-   * @param the width of the buffered image, in pixels
-   * @param the height of the buffered image, in pixels
+   * @param width  width of the buffered image, in pixels
+   * @param height the height of the buffered image, in pixels
    *
    * @return a buffered image
    *

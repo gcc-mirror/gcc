@@ -216,12 +216,11 @@ public class InputContext
         recent.put(locale, im);
         return true;
       }
-    InputMethod next = (InputMethod) recent.get(locale);
-  outer:
+    InputMethod next = recent.get(locale);
     if (next != null)
       for (int i = 0, limit = descriptors.size(); i < limit; i++)
         {
-          InputMethodDescriptor d = (InputMethodDescriptor) descriptors.get(i);
+          InputMethodDescriptor d = descriptors.get(i);
           Locale[] list;
           try
             {

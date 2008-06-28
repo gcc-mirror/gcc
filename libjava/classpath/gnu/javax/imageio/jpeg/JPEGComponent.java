@@ -336,7 +336,7 @@ public class JPEGComponent
           {
             k += r;
             r = (int) JPEGStream.readBits(s);
-            s = (int) HuffmanTable.extend(r, s);
+            s = HuffmanTable.extend(r, s);
             zz[k] = s;
           }
         else

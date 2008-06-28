@@ -1303,13 +1303,13 @@ public final class String
         break;
     if (i < 0)
       return this;
-    char[] newStr = (char[]) value.clone();
-    newStr[x] = newChar;
+    char[] newStr = toCharArray();
+    newStr[x - offset] = newChar;
     while (--i >= 0)
       if (value[++x] == oldChar)
-        newStr[x] = newChar;
+        newStr[x - offset] = newChar;
     // Package constructor avoids an array copy.
-    return new String(newStr, offset, count, true);
+    return new String(newStr, 0, count, true);
   }
 
   /**
@@ -1431,6 +1431,47 @@ public final class String
   }
 
   /**
+   * Convert string to lower case for a Turkish locale that requires special
+   * handling of '\u0049'
+   */
+  private String toLowerCaseTurkish()
+  {
+    // First, see if the current string is already lower case.
+    int i = count;
+    int x = offset - 1;
+    while (--i >= 0)
+      {
+        char ch = value[++x];
+        if ((ch == '\u0049') || ch != Character.toLowerCase(ch))
+          break;
+      }
+    if (i < 0)
+      return this;
+
+    // Now we perform the conversion. Fortunately, there are no multi-character
+    // lowercase expansions in Unicode 3.0.0.
+    char[] newStr = new char[count];
+    VMSystem.arraycopy(value, offset, newStr, 0, x - offset);
+    do
+      {
+        char ch = value[x];
+        // Hardcoded special case.
+        if (ch != '\u0049')
+          {
+            newStr[x - offset] = Character.toLowerCase(ch);
+          }
+        else
+          {
+            newStr[x - offset] = '\u0131';
+          }
+        x++;
+      }
+    while (--i >= 0);
+    // Package constructor avoids an array copy.
+    return new String(newStr, 0, count, true);
+  }
+
+  /**
    * Lowercases this String according to a particular locale. This uses
    * Unicode's special case mappings, as applied to the given Locale, so the
    * resulting string may be a different length.
@@ -1444,32 +1485,40 @@ public final class String
   public String toLowerCase(Locale loc)
   {
     // First, see if the current string is already lower case.
-    boolean turkish = "tr".equals(loc.getLanguage());
-    int i = count;
-    int x = offset - 1;
-    while (--i >= 0)
-      {
-        char ch = value[++x];
-        if ((turkish && ch == '\u0049')
-            || ch != Character.toLowerCase(ch))
-          break;
-      }
-    if (i < 0)
-      return this;
 
-    // Now we perform the conversion. Fortunately, there are no multi-character
-    // lowercase expansions in Unicode 3.0.0.
-    char[] newStr = (char[]) value.clone();
-    do
+    // Is loc turkish? String equality test is ok as Locale.language is interned
+    if ("tr" == loc.getLanguage())
       {
-        char ch = value[x];
-        // Hardcoded special case.
-        newStr[x++] = (turkish && ch == '\u0049') ? '\u0131'
-          : Character.toLowerCase(ch);
+        return toLowerCaseTurkish();
       }
-    while (--i >= 0);
-    // Package constructor avoids an array copy.
-    return new String(newStr, offset, count, true);
+    else
+      {
+        int i = count;
+        int x = offset - 1;
+        while (--i >= 0)
+          {
+            char ch = value[++x];
+            if (ch != Character.toLowerCase(ch))
+              break;
+          }
+        if (i < 0)
+          return this;
+
+        // Now we perform the conversion. Fortunately, there are no
+        // multi-character lowercase expansions in Unicode 3.0.0.
+        char[] newStr = new char[count];
+        VMSystem.arraycopy(value, offset, newStr, 0, x - offset);
+        do
+          {
+            char ch = value[x];
+            // Hardcoded special case.
+            newStr[x - offset] = Character.toLowerCase(ch);
+            x++;
+          }
+        while (--i >= 0);
+        // Package constructor avoids an array copy.
+        return new String(newStr, 0, count, true);
+     }
   }
 
   /**
@@ -1487,21 +1536,12 @@ public final class String
   }
 
   /**
-   * Uppercases this String according to a particular locale. This uses
-   * Unicode's special case mappings, as applied to the given Locale, so the
-   * resulting string may be a different length.
-   *
-   * @param loc locale to use
-   * @return new uppercased String, or this if no characters were uppercased
-   * @throws NullPointerException if loc is null
-   * @see #toLowerCase(Locale)
-   * @since 1.1
+   * Uppercase this string for a Turkish locale
    */
-  public String toUpperCase(Locale loc)
+  private String toUpperCaseTurkish()
   {
     // First, see how many characters we have to grow by, as well as if the
     // current string is already upper case.
-    boolean turkish = "tr".equals(loc.getLanguage());
     int expand = 0;
     boolean unchanged = true;
     int i = count;
@@ -1511,7 +1551,7 @@ public final class String
         char ch = value[--x];
         expand += upperCaseExpansion(ch);
         unchanged = (unchanged && expand == 0
-                     && ! (turkish && ch == '\u0069')
+                     && ch != '\u0069'
                      && ch == Character.toUpperCase(ch));
       }
     if (unchanged)
@@ -1521,16 +1561,24 @@ public final class String
     i = count;
     if (expand == 0)
       {
-        char[] newStr = (char[]) value.clone();
+        char[] newStr = new char[count];
+        VMSystem.arraycopy(value, offset, newStr, 0, count - (x - offset));
         while (--i >= 0)
           {
             char ch = value[x];
             // Hardcoded special case.
-            newStr[x++] = (turkish && ch == '\u0069') ? '\u0130'
-              : Character.toUpperCase(ch);
+            if (ch != '\u0069')
+              {
+                newStr[x - offset] = Character.toUpperCase(ch);
+              }
+            else
+              {
+                newStr[x - offset] = '\u0130';
+              }
+            x++;
           }
         // Package constructor avoids an array copy.
-        return new String(newStr, offset, count, true);
+        return new String(newStr, 0, count, true);
       }
 
     // Expansion is necessary.
@@ -1540,7 +1588,7 @@ public final class String
       {
         char ch = value[x++];
         // Hardcoded special case.
-        if (turkish && ch == '\u0069')
+        if (ch == '\u0069')
           {
             newStr[j++] = '\u0130';
             continue;
@@ -1559,6 +1607,79 @@ public final class String
     return new String(newStr, 0, newStr.length, true);
   }
 
+  /**
+   * Uppercases this String according to a particular locale. This uses
+   * Unicode's special case mappings, as applied to the given Locale, so the
+   * resulting string may be a different length.
+   *
+   * @param loc locale to use
+   * @return new uppercased String, or this if no characters were uppercased
+   * @throws NullPointerException if loc is null
+   * @see #toLowerCase(Locale)
+   * @since 1.1
+   */
+  public String toUpperCase(Locale loc)
+  {
+    // First, see how many characters we have to grow by, as well as if the
+    // current string is already upper case.
+
+    // Is loc turkish? String equality test is ok as Locale.language is interned
+    if ("tr" == loc.getLanguage())
+      {
+        return toUpperCaseTurkish();
+      }
+    else
+      {
+        int expand = 0;
+        boolean unchanged = true;
+        int i = count;
+        int x = i + offset;
+        while (--i >= 0)
+          {
+            char ch = value[--x];
+            expand += upperCaseExpansion(ch);
+            unchanged = (unchanged && expand == 0
+                         && ch == Character.toUpperCase(ch));
+          }
+        if (unchanged)
+          return this;
+
+        // Now we perform the conversion.
+        i = count;
+        if (expand == 0)
+          {
+            char[] newStr = new char[count];
+            VMSystem.arraycopy(value, offset, newStr, 0, count - (x - offset));
+            while (--i >= 0)
+              {
+                char ch = value[x];
+                newStr[x - offset] = Character.toUpperCase(ch);
+                x++;
+              }
+            // Package constructor avoids an array copy.
+            return new String(newStr, 0, count, true);
+          }
+
+        // Expansion is necessary.
+        char[] newStr = new char[count + expand];
+        int j = 0;
+        while (--i >= 0)
+          {
+            char ch = value[x++];
+            expand = upperCaseExpansion(ch);
+            if (expand > 0)
+              {
+                int index = upperCaseIndex(ch);
+                while (expand-- >= 0)
+                  newStr[j++] = upperExpand[index++];
+              }
+            else
+              newStr[j++] = Character.toUpperCase(ch);
+          }
+        // Package constructor avoids an array copy.
+        return new String(newStr, 0, newStr.length, true);
+      }
+  }
   /**
    * Uppercases this String. This uses Unicode's special case mappings, as
    * applied to the platform's default Locale, so the resulting string may
@@ -1617,9 +1738,6 @@ public final class String
    */
   public char[] toCharArray()
   {
-    if (count == value.length)
-      return (char[]) value.clone();
-
     char[] copy = new char[count];
     VMSystem.arraycopy(value, offset, copy, 0, count);
     return copy;

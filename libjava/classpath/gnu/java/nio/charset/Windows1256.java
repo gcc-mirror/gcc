@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1256 Arabic char set.
  * aka cp1256 or Windows-1256 or whatever.
  */
-public class Windows1256 extends ByteCharset
+public final class Windows1256 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1256 extends ByteCharset
 	  "cp_1256", 
 	  "windows1256",
 	  "windows_1256" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1256

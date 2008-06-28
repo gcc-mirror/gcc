@@ -172,9 +172,9 @@ public class Main
     }
   }
 
-  private Parser initializeParser()
+  private ClasspathToolParser initializeParser()
   {
-    Parser p = new JarParser("jar"); //$NON-NLS-1$
+    ClasspathToolParser p = new JarParser("jar"); //$NON-NLS-1$
     p.setHeader(Messages.getString("Main.Usage")); //$NON-NLS-1$
 
     OptionGroup grp = new OptionGroup(Messages.getString("Main.OpMode")); //$NON-NLS-1$
@@ -265,11 +265,11 @@ public class Main
   private void run(String[] args)
       throws InstantiationException, IllegalAccessException, IOException
   {
-    Parser p = initializeParser();
+    ClasspathToolParser p = initializeParser();
     // Special hack to emulate old tar-style commands.
     if (args.length > 0 && args[0].charAt(0) != '-')
       args[0] = '-' + args[0];
-    p.parse(args, new HandleFile());
+    p.parse(args, new HandleFile(), true);
     if (readNamesFromStdin)
       readNames();
     Action t = (Action) operationMode.newInstance();

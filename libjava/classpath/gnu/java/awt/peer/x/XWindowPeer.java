@@ -39,9 +39,11 @@ exception statement from your version. */
 package gnu.java.awt.peer.x;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -54,9 +56,12 @@ import java.awt.event.PaintEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.VolatileImage;
 
+import gnu.x11.Atom;
 import gnu.x11.Window;
 import gnu.x11.event.Event;
 
+import gnu.java.awt.font.OpenTypeFontPeer;
+import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.swing.SwingWindowPeer;
 
 public class XWindowPeer
@@ -84,7 +89,12 @@ public class XWindowPeer
   /**
    * The X window.
    */
-  private Window xwindow;
+  protected Window xwindow;
+
+  /**
+   * The frame insets. These get updated in {@link #show()}.
+   */
+  private Insets insets;
 
   XWindowPeer(java.awt.Window window)
   {
@@ -92,15 +102,47 @@ public class XWindowPeer
     XGraphicsDevice dev = XToolkit.getDefaultDevice();
 
     // TODO: Maybe initialize lazily in show().
+    Window.Attributes atts = new Window.Attributes();
     // FIXME: Howto generate a Window without decorations?
     int x = Math.max(window.getX(), 0);
     int y = Math.max(window.getY(), 0);
     int w = Math.max(window.getWidth(), 1);
     int h = Math.max(window.getHeight(), 1);
-    xwindow = new Window(dev.getDisplay().default_root, x, y, w, h);
-    xwindow.create();
+    xwindow = new Window(dev.getDisplay().default_root, x, y, w, h, 0, atts);
     xwindow.select_input(standardSelect);
     dev.getEventPump().registerWindow(xwindow, window);
+
+    boolean undecorated;
+    if (awtComponent instanceof Frame)
+      {
+        Frame f = (Frame) awtComponent;
+        undecorated = f.isUndecorated();
+      }
+    else if (awtComponent instanceof Dialog)
+      {
+        Dialog d = (Dialog) awtComponent;
+        undecorated = d.isUndecorated();
+      }
+    else
+      {
+        undecorated = true;
+      }
+    if (undecorated)
+      {
+        // First try the Motif implementation of undecorated frames. This
+        // is semantically closest and supported by all major window
+        // managers.
+        // TODO: At the time of writing this, there's no freedesktop.org
+        // standard extension that matches the required semantic. Maybe
+        // undecorated frames are added in the future, if so, then use these.
+        Atom at = Atom.intern(dev.getDisplay(), "_MOTIF_WM_HINTS");
+        if (at != null)
+          {
+            xwindow.change_property(Window.REPLACE, at, at, 32,
+                                    new int[]{1 << 1, 0, 0, 0, 0}, 0, 5);
+          }
+      }
+    insets = new Insets(0, 0, 0, 0);
   }
 
   public void toBack()
@@ -139,7 +181,11 @@ public class XWindowPeer
    */
   public Graphics getGraphics()
   {
-    return new XGraphics2D(xwindow);
+	XGraphics2D xg2d = new XGraphics2D(xwindow);
+	xg2d.setColor(awtComponent.getForeground());
+	xg2d.setBackground(awtComponent.getBackground());
+	xg2d.setFont(awtComponent.getFont());
+	return xg2d;
   }
 
   public Image createImage(int w, int h)
@@ -164,16 +210,11 @@ public class XWindowPeer
    */
   public void show()
   {
-//    // Prevent ResizeRedirect events.
-//    //xwindow.select_input(noResizeRedirectSelect);
-//    Window.Attributes atts = new Window.Attributes();
-//    atts.set_override_redirect(true);
-//    xwindow.change_attributes(atts);
-
     // Prevent ResizeRedirect events.
     //xwindow.select_input(Event.NO_EVENT_MASK);
     //xwindow.select_input(noResizeRedirectSelect);
 
+    XGraphicsDevice dev = XToolkit.getDefaultDevice();
     xwindow.map();
     EventQueue eq = XToolkit.getDefaultToolkit().getSystemEventQueue();
     java.awt.Window w = (java.awt.Window) super.awtComponent;
@@ -188,6 +229,20 @@ public class XWindowPeer
 //    // Reset input selection.
 //    atts.set_override_redirect(false);
 //    xwindow.change_attributes(atts);
+    
+    // Determine the frame insets.
+    Atom atom = (Atom) Atom.intern(dev.getDisplay(), "_NET_FRAME_EXTENTS");
+    Window.Property p = xwindow.get_property(false, atom, Atom.CARDINAL, 0,
+                                             Window.MAX_WM_LENGTH);
+    if (p.format() != 0)
+      {
+        insets = new Insets(p.value(0), p.value(1), p.value(2), p.value(3));
+        Window.Changes ch = new Window.Changes();
+        ch.width(awtComponent.getWidth() - insets.left - insets.top);
+        ch.height(awtComponent.getHeight() - insets.top - insets.bottom);
+        xwindow.configure(ch);
+      }
+
   }
 
   /**
@@ -214,40 +269,19 @@ public class XWindowPeer
    */
   public void reshape(int x, int y, int width, int height)
   {
-    // Prevent ResizeRedirect events.
-//    //xwindow.select_input(noResizeRedirectSelect);
-//    Window.Attributes atts = new Window.Attributes();
-//    atts.set_override_redirect(true);
-//    xwindow.change_attributes(atts);
-
     // Need to substract insets because AWT size is including insets,
-    // and X size is excuding insets.
-    Insets i = insets();
-    xwindow.move_resize(x - i.left, y - i.right, width - i.left - i.right,
-                        height - i.top - i.bottom);
-
-    // Reset input selection.
-//    atts = new Window.Attributes();
-//    atts.set_override_redirect(false);
-//    xwindow.change_attributes(atts);
+    // and X size is excluding insets.
+    if (! callback)
+      {
+        Insets i = insets;
+        xwindow.move_resize(x - i.left, y - i.right, width - i.left - i.right,
+                            height - i.top - i.bottom);
+      }
   }
 
   public Insets insets()
   {
-    Insets i = new Insets(0, 0, 0, 0);
-//    Window.GeometryReply g = xwindow.geometry();
-//    int b = g.border_width();
-//    Insets i = new Insets(b, b, b, b);
-//    Window.WMSizeHints wmSize = xwindow.wm_normal_hints();
-//    if (wmSize != null)
-//      {
-//        i.left = wmSize.x() - g.x();
-//        i.right = wmSize.width() - g.width() - i.left ;
-//        i.top = wmSize.y() - g.y();
-//        i.bottom = wmSize.height() - g.height() - i.top;
-//      }
-//    System.err.println("insets: " + i);
-    return i;
+    return (Insets) insets.clone();
   }
 
   /**
@@ -257,7 +291,7 @@ public class XWindowPeer
    */
   public FontMetrics getFontMetrics(Font font)
   {
-    XFontPeer2 fontPeer = (XFontPeer2) font.getPeer();
+    ClasspathFontPeer fontPeer = (ClasspathFontPeer) font.getPeer();
     return fontPeer.getFontMetrics(font);
   }
 

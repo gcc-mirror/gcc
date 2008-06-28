@@ -192,6 +192,15 @@
 /* Define to 1 if you have the `munmap' function. */
 #undef HAVE_MUNMAP
 
+/* Define to 1 if you have the <netinet/in_systm.h> header file. */
+#undef HAVE_NETINET_IN_SYSTM_H
+
+/* Define to 1 if you have the <netinet/ip.h> header file. */
+#undef HAVE_NETINET_IP_H
+
+/* Define to 1 if you have the <net/if.h> header file. */
+#undef HAVE_NET_IF_H
+
 /* Define to 1 if you have the `open' function. */
 #undef HAVE_OPEN
 
@@ -200,9 +209,6 @@
 
 /* Define to 1 if you have the `read' function. */
 #undef HAVE_READ
-
-/* Define to 1 if you have the `readdir_r' function. */
-#undef HAVE_READDIR_R
 
 /* Define to 1 if you have the `readlink' function. */
 #undef HAVE_READLINK
@@ -233,6 +239,9 @@
 
 /* Define this symbol if you have SO_NOSIGPIPE */
 #undef HAVE_SO_NOSIGPIPE
+
+/* Define to 1 if you have the `statvfs' function. */
+#undef HAVE_STATVFS
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -272,6 +281,9 @@
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/loadavg.h> header file. */
+#undef HAVE_SYS_LOADAVG_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
@@ -325,6 +337,12 @@
 
 /* Define to 1 if you have libXrender. */
 #undef HAVE_XRENDER
+
+/* Define to 1 if you have libXtst. */
+#undef HAVE_XTEST
+
+/* Define to 1 if you have the `\' function. */
+#undef HAVE__
 
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */

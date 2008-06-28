@@ -637,7 +637,7 @@ public abstract class Vio
               r = new byte[chunk_size + 256];
 
             n = 0;
-            reading: while (n < chunk_size)
+            while (n < chunk_size)
               n += input.read(r, n, chunk_size - n);
             output.write(r, 0, n);
           }

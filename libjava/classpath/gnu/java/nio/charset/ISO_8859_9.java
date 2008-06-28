@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-9, ISO Latin-5 char set.
  */
-public class ISO_8859_9 extends ByteCharset
+public final class ISO_8859_9 extends ByteCharset
 {
 
   /**
@@ -102,8 +102,7 @@ public class ISO_8859_9 extends ByteCharset
 	  "920", 
 	  "windows-28599",
 	  "ECMA-128"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_9

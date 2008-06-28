@@ -87,7 +87,7 @@ public class GtkFramePeer extends GtkWindowPeer
       {
         // We're adding a menubar where there was no menubar before.
         gtkFixedSetVisible (false);
-        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
+        menuBar = (MenuBarPeer) bar.getPeer();
         setMenuBarPeer (menuBar);
         int menuBarWidth =
           awtComponent.getWidth () - insets.left - insets.right;
@@ -109,7 +109,7 @@ public class GtkFramePeer extends GtkWindowPeer
         int oldHeight = menuBarHeight;
         int menuBarWidth =
           awtComponent.getWidth () - insets.left - insets.right;
-        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer ();
+        menuBar = (MenuBarPeer) bar.getPeer ();
         setMenuBarPeer (menuBar);
         if (menuBarWidth > 0)
           setMenuBarWidth (menuBar, menuBarWidth);

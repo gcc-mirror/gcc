@@ -55,16 +55,16 @@ public abstract class CancelHeader
   public int request_id;
 
   /**
-   * Write the header.
+   * Read the header.
    *
-   * @param out a stream to write to.
+   * @param input a stream to read from.
    */
   public abstract void read(InputStream input);
 
   /**
    * Write the header.
    *
-   * @param out a stream to write to.
+   * @param output a stream to write to.
    */
   public abstract void write(OutputStream output);
 }

@@ -40,16 +40,13 @@ package gnu.javax.net.ssl.provider;
 
 import gnu.classpath.debug.Component;
 import gnu.classpath.debug.SystemLogger;
-import gnu.java.security.util.ByteArray;
 import gnu.java.security.util.ByteBufferOutputStream;
 
 import java.nio.ByteBuffer;
 
-import java.util.logging.Level;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;

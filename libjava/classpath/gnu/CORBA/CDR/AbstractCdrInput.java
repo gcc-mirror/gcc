@@ -195,9 +195,9 @@ public abstract class AbstractCdrInput
    * Set the Big Endian or Little Endian encoding. The stream reads Big Endian
    * by default.
    * 
-   * @param use_little_endian if true, the stream expect the multi-byte data in
-   * the form "less significant byte first" (Little Endian). This is the
-   * opposite to the java standard (Big Endian).
+   * @param use_big_endian if true, the stream expect the multi-byte data in
+   * the form "most significant byte first" (Big Endian). This is the
+   * java standard.
    */
   public void setBigEndian(boolean use_big_endian)
   {
@@ -208,7 +208,7 @@ public abstract class AbstractCdrInput
   /**
    * Get the used encoding.
    * 
-   * @param true for Big Endian, false for Little Endian.
+   * @return true for Big Endian, false for Little Endian.
    */
   public boolean isBigEndian()
   {
@@ -654,7 +654,7 @@ public abstract class AbstractCdrInput
 
         byte[] r = new byte[l];
         int n = 0;
-        reading: while (n < r.length)
+        while (n < r.length)
           {
             n += read(r, n, r.length - n);
           }

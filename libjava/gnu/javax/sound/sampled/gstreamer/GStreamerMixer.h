@@ -33,7 +33,6 @@ extern "Java"
     {
       namespace sampled
       {
-          class AudioFormat;
           class Control;
           class Control$Type;
           class Line;
@@ -74,8 +73,9 @@ public:
   virtual void removeLineListener(::javax::sound::sampled::LineListener *);
   static ::java::lang::String * GST_BACKEND;
   static ::java::lang::String * GST_DECODER;
+  static ::java::lang::String * GST_TYPE_NAME;
+  static ::java::lang::String * GST_FILE_EXTENSION;
 private:
-  static JArray< ::javax::sound::sampled::AudioFormat * > * BASIC_FORMATS;
   static ::javax::sound::sampled::Mixer$Info * INFO;
 public:
   static ::java::lang::Class class$;

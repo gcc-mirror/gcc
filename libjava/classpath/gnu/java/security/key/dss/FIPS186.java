@@ -173,7 +173,7 @@ public class FIPS186
         // 6. Let counter = 0 and offset = 2.
         counter = 0;
         offset = 2;
-        step7: while (true)
+        while (true)
           {
             OFFSET = BigInteger.valueOf(offset & 0xFFFFFFFFL);
             SEED_PLUS_OFFSET = SEED.add(OFFSET);

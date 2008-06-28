@@ -23,16 +23,52 @@ package gnu.classpath.examples.management;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.ManagementFactory;
 
+import static java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME;
+
+import javax.management.Attribute;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 public class TestClassLoading
 {
   public static void main(String[] args)
+    throws Exception
   {
+    System.out.println("Testing locally...");
     ClassLoadingMXBean bean = ManagementFactory.getClassLoadingMXBean();
     System.out.println("Bean: " + bean);
     System.out.println("Loaded classes: " + bean.getLoadedClassCount());
     System.out.println("Unloaded classes: " + bean.getUnloadedClassCount());
     System.out.println("Total loaded classes: " + bean.getTotalLoadedClassCount());
     boolean verbosity = bean.isVerbose();
+    System.out.println("Verbose class output: " + (verbosity ? "yes" : "no"));
+    System.out.println("Changing verbose setting...");
+    bean.setVerbose(!verbosity);
+    System.out.println("Verbose class output: " + (bean.isVerbose() ? "yes" : "no"));
+    System.out.println("Testing via the server...");
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    ObjectName classBean = new ObjectName(CLASS_LOADING_MXBEAN_NAME);
+    System.out.println("Bean: " + classBean);
+    System.out.println("Loaded classes: " + server.getAttribute(classBean, "LoadedClassCount"));
+    System.out.println("Unloaded classes: " + server.getAttribute(classBean,
+								  "UnloadedClassCount"));
+    System.out.println("Total loaded classes: " + server.getAttribute(classBean,
+								      "TotalLoadedClassCount"));
+    verbosity = (Boolean) server.getAttribute(classBean, "Verbose");
+    System.out.println("Verbose class output: " + (verbosity ? "yes" : "no"));
+    System.out.println("Changing verbose setting...");
+    server.setAttribute(classBean, new Attribute("Verbose", !verbosity));
+    System.out.println("Verbose class output: " + ((Boolean)
+						   server.getAttribute(classBean, "Verbose") ?
+						   "yes" : "no"));
+    System.out.println("Testing via the proxy...");
+    bean = ManagementFactory.newPlatformMXBeanProxy(server, CLASS_LOADING_MXBEAN_NAME,
+						    ClassLoadingMXBean.class);
+    System.out.println("Bean: " + bean);
+    System.out.println("Loaded classes: " + bean.getLoadedClassCount());
+    System.out.println("Unloaded classes: " + bean.getUnloadedClassCount());
+    System.out.println("Total loaded classes: " + bean.getTotalLoadedClassCount());
+    verbosity = bean.isVerbose();
     System.out.println("Verbose class output: " + (verbosity ? "yes" : "no"));
     System.out.println("Changing verbose setting...");
     bean.setVerbose(!verbosity);

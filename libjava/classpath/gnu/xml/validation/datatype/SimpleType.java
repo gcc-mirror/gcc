@@ -40,7 +40,6 @@ package gnu.xml.validation.datatype;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Matcher;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.relaxng.datatype.Datatype;
 import org.relaxng.datatype.DatatypeException;

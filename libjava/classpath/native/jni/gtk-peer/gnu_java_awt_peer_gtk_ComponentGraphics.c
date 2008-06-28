@@ -37,20 +37,21 @@ exception statement from your version. */
 
 #include "jcl.h"
 #include "gtkpeer.h"
-#include <cairo-xlib.h>
 #include <gdk/gdktypes.h>
 #include <gdk/gdkprivate.h>
-#include <gdk/gdkx.h>
-#include <X11/extensions/Xrender.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf/gdk-pixdata.h>
 
 #include <cairo-ft.h>
-#include <cairo-xlib.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#if HAVE_XRENDER
+#include <gdk/gdkx.h>
+#include <X11/extensions/Xrender.h>
+#endif
 
 #include "gnu_java_awt_peer_gtk_ComponentGraphics.h"
 
@@ -62,7 +63,7 @@ static gboolean flush (gpointer data __attribute__((unused)))
 {
   gdk_threads_enter ();
 
-  XFlush (GDK_DISPLAY ());
+  gdk_display_flush (gdk_display_get_default ());
   flush_scheduled = 0;
 
   gdk_threads_leave ();
@@ -107,7 +108,7 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_hasXRender
 {
 #if HAVE_XRENDER
   int ev = 0, err = 0; 
-  if( XRenderQueryExtension (GDK_DISPLAY (), &ev, &err) )
+  if( XRenderQueryExtension (GDK_DISPLAY(), &ev, &err) )
     return JNI_TRUE;
 #endif
   return JNI_FALSE;
@@ -118,13 +119,8 @@ JNIEXPORT jlong JNICALL
 Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
   (JNIEnv *env, jobject obj __attribute__ ((unused)), jobject peer)
 {
-  Drawable draw;
-  Display * dpy;
-  Visual * vis;
   GdkDrawable *drawable;
-  cairo_surface_t *surface;
-  GdkWindow *win;
-  GtkWidget *widget = NULL;
+  GtkWidget *widget;
   int width, height;
   cairo_t *cr;
   void *ptr;
@@ -137,29 +133,15 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
   widget = GTK_WIDGET (ptr);
   g_assert (widget != NULL);
 
-  cp_gtk_grab_current_drawable (widget, &drawable, &win);
+  drawable = widget->window;
   g_assert (drawable != NULL);
 
   width = widget->allocation.width;
   height = widget->allocation.height;
 
-  g_assert (drawable != NULL);
+  cr = gdk_cairo_create(drawable);
 
-  draw = gdk_x11_drawable_get_xid(drawable);
-  g_assert (draw != (XID) 0);
-  
-  dpy = gdk_x11_drawable_get_xdisplay(drawable);
-  g_assert (dpy != NULL);
-  
-  vis = gdk_x11_visual_get_xvisual(gdk_drawable_get_visual(drawable));
-  g_assert (vis != NULL);
-  
-  surface = cairo_xlib_surface_create (dpy, draw, vis, width, height);
-  g_assert (surface != NULL);
-
-  cr = cairo_create (surface);
   g_assert(cr != NULL);
-  cairo_surface_destroy(surface);
 
   gdk_threads_leave();
 
@@ -169,13 +151,9 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
 JNIEXPORT jlong JNICALL 
 Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile
   (JNIEnv *env  __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
-   jlong ptr, jint width, jint height)
+   jlong ptr)
 {
-  Drawable draw;
-  Display * dpy;
-  Visual * vis;
   GdkDrawable *drawable;
-  cairo_surface_t *surface;
   cairo_t *cr;
 
   gdk_threads_enter();
@@ -183,21 +161,8 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile
   drawable = JLONG_TO_PTR(GdkDrawable, ptr);
   g_assert (drawable != NULL);
 
-  draw = gdk_x11_drawable_get_xid(drawable);
-  g_assert (draw != (XID) 0);
-  
-  dpy = gdk_x11_drawable_get_xdisplay(drawable);
-  g_assert (dpy != NULL);
-  
-  vis = gdk_x11_visual_get_xvisual(gdk_drawable_get_visual(drawable));
-  g_assert (vis != NULL);
-  
-  surface = cairo_xlib_surface_create (dpy, draw, vis, width, height);
-  g_assert (surface != NULL);
-
-  cr = cairo_create (surface);
+  cr = gdk_cairo_create (drawable);
   g_assert(cr != NULL);
-  cairo_surface_destroy(surface);
 
   gdk_threads_leave();
 

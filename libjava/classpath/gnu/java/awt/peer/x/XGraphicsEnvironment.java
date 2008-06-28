@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.x;
 
+import gnu.java.awt.font.OpenTypeFontPeer;
 import gnu.java.awt.java2d.RasterGraphics;
 import gnu.x11.Display;
 
@@ -189,14 +190,14 @@ public class XGraphicsEnvironment
 
   public String[] getAvailableFontFamilyNames()
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    return getAvailableFontFamilyNames(Locale.getDefault());
   }
 
   public String[] getAvailableFontFamilyNames(Locale l)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    // TODO: This doesn't work when we are using X fonts.
+    // Fix this.
+    return OpenTypeFontPeer.getAvailableFontFamilyNames(l);
   }
 
 }

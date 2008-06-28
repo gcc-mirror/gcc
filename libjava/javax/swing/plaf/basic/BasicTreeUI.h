@@ -272,7 +272,6 @@ public: // actually package-private
   ::javax::swing::event::TreeExpansionListener * treeExpansionListener;
   ::javax::swing::event::TreeModelListener * treeModelListener;
   static ::javax::swing::Icon * nullIcon;
-  static ::java::awt::event::MouseEvent * EDIT;
 public:
   static ::java::lang::Class class$;
 };

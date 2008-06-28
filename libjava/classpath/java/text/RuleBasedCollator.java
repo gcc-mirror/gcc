@@ -923,17 +923,8 @@ element_loop:
    * @return A <code>CollationElementIterator</code> for the specified <code>String</code>.
    */
   public CollationElementIterator getCollationElementIterator(CharacterIterator source)
-    throws NotImplementedException  // Because decomposeCharacter does not work
   {
-    StringBuffer expand = new StringBuffer("");
-    
-    // Right now we assume that we will read from the beginning of the string.
-    for (char c = source.first();
-	 c != CharacterIterator.DONE;
-	 c = source.next())
-      decomposeCharacter(c, expand);
-
-    return getCollationElementIterator(expand.toString());
+    return new CollationElementIterator(this, source);
   }
 
   /**

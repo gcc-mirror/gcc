@@ -372,6 +372,8 @@ case "${which_gcj}" in
       GCJH=gcjh
    ;;
 esac
+JAVAC="$GCJ -C"
+export JAVAC
 
 AC_SUBST(GCJ_FOR_ECJX)
 AC_SUBST(GCJH)
@@ -424,6 +426,7 @@ else
   fi
 fi
 # -Werror causes unavoidable problems in code using alsa.
+ac_configure_args="$ac_configure_args --disable-regen-headers"
 ac_configure_args="$ac_configure_args --disable-Werror"
 dnl --with-gcj=$GCJ
 dnl --with-javah=$GCJH

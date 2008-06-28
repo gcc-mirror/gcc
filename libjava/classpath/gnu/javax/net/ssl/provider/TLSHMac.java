@@ -39,7 +39,6 @@ exception statement from your version.  */
 package gnu.javax.net.ssl.provider;
 
 import java.security.InvalidKeyException;
-import java.util.HashMap;
 import java.util.Map;
 
 import gnu.java.security.hash.IMessageDigest;

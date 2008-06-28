@@ -37,7 +37,12 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 #include <config.h>
+
+#if defined HAVE_SYS_LOADAVG_H /* Get getloadavg() on Solaris 9 */
+#include <sys/loadavg.h>
+#else
 #include <stdlib.h>
+#endif
 
 #include "gnu_java_lang_management_VMOperatingSystemMXBeanImpl.h"
 

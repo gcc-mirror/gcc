@@ -17,6 +17,7 @@ extern "Java"
       {
         namespace charset
         {
+            class ByteDecodeLoopHelper;
             class US_ASCII$Decoder;
         }
       }
@@ -44,6 +45,8 @@ public: // actually package-private
   US_ASCII$Decoder(::java::nio::charset::Charset *);
 public: // actually protected
   ::java::nio::charset::CoderResult * decodeLoop(::java::nio::ByteBuffer *, ::java::nio::CharBuffer *);
+private:
+  static ::gnu::java::nio::charset::ByteDecodeLoopHelper * helper;
 public:
   static ::java::lang::Class class$;
 };

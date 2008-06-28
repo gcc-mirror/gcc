@@ -102,11 +102,13 @@ void gtkpeer_init_pointer_IDs(JNIEnv* env)
 #else
 #if SIZEOF_VOID_P == 4
   pointerClass = (*env)->FindClass(env, "gnu/classpath/Pointer32");
-  pointerDataFID = (*env)->GetFieldID(env, pointerClass, "data", "I");
-
-  /* Find the Pointer32 constructor. */
-  pointerConstructorMID = (*env)->GetMethodID(env, pointerClass, "<init>",
-                                              "(I)V");
+  if (pointerClass != NULL)
+    {
+      pointerClass = (*env)->NewGlobalRef (env, pointerClass);
+      pointerDataFID = (*env)->GetFieldID (env, pointerClass, "data", "I");
+      pointerConstructorMID = (*env)->GetMethodID (env, pointerClass, "<init>",
+                                                   "(I)V");
+    }
 #else
 #error "Pointer size is not supported."
 #endif /* SIZEOF_VOID_P == 4 */

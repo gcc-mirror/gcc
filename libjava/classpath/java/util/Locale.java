@@ -178,21 +178,21 @@ public final class Locale implements Serializable, Cloneable
    *
    * @serial the languange, possibly ""
    */
-  private String language;
+  private final String language;
 
   /**
    * The country code, as returned by getCountry().
    *
    * @serial the country, possibly ""
    */
-  private String country;
+  private final String country;
 
   /**
    * The variant code, as returned by getVariant().
    *
    * @serial the variant, possibly ""
    */
-  private String variant;
+  private final String variant;
 
   /**
    * This is the cached hashcode. When writing to stream, we write -1.
@@ -324,13 +324,12 @@ public final class Locale implements Serializable, Cloneable
     // default locale.
     if (defaultLocale != null)
       {
-        language = convertLanguage(language).intern();
-        country = country.toUpperCase().intern();
-        variant = variant.intern();
+        language = convertLanguage(language);
+        country = country.toUpperCase();
       }
-    this.language = language;
-    this.country = country;
-    this.variant = variant;
+    this.language = language.intern();
+    this.country = country.intern();
+    this.variant = variant.intern();
     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
 
@@ -1022,9 +1021,6 @@ public final class Locale implements Serializable, Cloneable
     throws IOException, ClassNotFoundException
   {
     s.defaultReadObject();
-    language = language.intern();
-    country = country.intern();
-    variant = variant.intern();
     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
 } // class Locale

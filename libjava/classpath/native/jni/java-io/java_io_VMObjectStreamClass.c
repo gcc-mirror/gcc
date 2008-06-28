@@ -175,7 +175,7 @@ getFieldReference (JNIEnv * env, jobject field, const char *type)
        * If it isn't an array class then the actual field type descriptor
        * starts with 'L', ends with ';' and has '/' instead of '.'.
        */
-      type_len = strlen ((char *) type_name);
+      type_len = strlen (type_name);
       if (type_name[0] != '[')
 	{
 	  /* XXX - FIXME - should not use dynamic allocation in core lib. */

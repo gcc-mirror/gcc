@@ -83,6 +83,15 @@ JNIEXPORT int cpio_removeFile (const char *filename);
 JNIEXPORT int cpio_mkdir (const char *filename);
 JNIEXPORT int cpio_rename (const char *old_name, const char *new_name);
 
+/* to be used with cpio_df */
+typedef enum {
+  TOTAL = 0,
+  FREE,
+  USABLE
+} CPFILE_DF_TYPE;
+
+JNIEXPORT long long cpio_df (const char *path, CPFILE_DF_TYPE type);
+
 JNIEXPORT int cpio_openDir (const char *dirname, void **handle);
 JNIEXPORT int cpio_closeDir (void *handle);
 JNIEXPORT int cpio_readDir (void *handle, char *filename);

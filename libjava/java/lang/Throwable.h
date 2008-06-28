@@ -28,7 +28,7 @@ public:
   virtual void printStackTrace(::java::io::PrintWriter *);
 private:
   ::java::lang::String * stackTraceString();
-  static void stackTraceStringBuffer(::java::lang::StringBuffer *, ::java::lang::String *, JArray< ::java::lang::StackTraceElement * > *, jint);
+  static void stackTraceStringBuffer(::java::lang::StringBuilder *, ::java::lang::String *, JArray< ::java::lang::StackTraceElement * > *, jint);
 public:
   virtual ::java::lang::Throwable * fillInStackTrace();
   virtual JArray< ::java::lang::StackTraceElement * > * getStackTrace();

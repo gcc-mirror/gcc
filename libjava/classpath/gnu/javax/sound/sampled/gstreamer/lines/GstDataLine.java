@@ -41,21 +41,12 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineListener;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Control.Type;
 
 public abstract class GstDataLine
     implements DataLine
 {
-  public static enum State
-  {
-    PLAY, PAUSE, STOP
-  }
-  
   public static final int DEFAULT_BUFFER_SIZE = 1024;
-  
-  /** Represents the playing state of this Line. */
-  protected State state = State.STOP;
   
   /** Represents if this Line is opened or not.  */
   protected Boolean open = false; 
@@ -90,12 +81,7 @@ public abstract class GstDataLine
     // TODO Auto-generated method stub
     return 0;
   }
-
-  public boolean isRunning()
-  {
-    return (state == State.PLAY || state == State.PAUSE);
-  }
-
+  
   public void addLineListener(LineListener listener)
   {
     // TODO Auto-generated method stub
@@ -131,15 +117,35 @@ public abstract class GstDataLine
     return false;
   }
 
-  public void open() throws LineUnavailableException
+  public void removeLineListener(LineListener listener)
   {
     // TODO Auto-generated method stub
 
   }
 
-  public void removeLineListener(LineListener listener)
+  /* protected methods for subclasses */
+  
+  /**
+   * @param open the open to set
+   */
+  protected void setOpen(Boolean open)
   {
-    // TODO Auto-generated method stub
+    this.open = open;
+  }
 
+  /**
+   * @param bufferSize the bufferSize to set
+   */
+  protected void setBufferSize(int bufferSize)
+  {
+    this.bufferSize = bufferSize;
+  }
+
+  /**
+   * @param format the format to set
+   */
+  protected void setFormat(AudioFormat format)
+  {
+    this.format = format;
   }
 }

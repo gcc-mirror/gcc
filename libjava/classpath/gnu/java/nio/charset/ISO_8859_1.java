@@ -48,6 +48,7 @@ import java.nio.charset.CoderResult;
  * ISO-8859-1 charset.
  *
  * @author Jesse Rosenstock
+ * @modified Ian Rogers
  */
 final class ISO_8859_1 extends Charset
 {
@@ -98,6 +99,19 @@ final class ISO_8859_1 extends Charset
 
   private static final class Decoder extends CharsetDecoder
   {
+    /** Helper to decode loops */
+    private static final ByteDecodeLoopHelper helper = new ByteDecodeLoopHelper()
+    {
+      protected boolean isMappable(byte b)
+      {
+        return true;
+      }
+      protected char mapToChar(byte b)
+      {
+        return (char)(b & 0xFF);
+      }
+    };
+    
     // Package-private to avoid a trampoline constructor.
     Decoder (Charset cs)
     {
@@ -106,26 +120,24 @@ final class ISO_8859_1 extends Charset
 
     protected CoderResult decodeLoop (ByteBuffer in, CharBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-      {
-        byte b = in.get ();
-
-        if (!out.hasRemaining ())
-          {
-            in.position (in.position () - 1);
-            return CoderResult.OVERFLOW;
-          }
-
-        out.put ((char) (b & 0xFF));
-      }
-
-      return CoderResult.UNDERFLOW;
+      return helper.decodeLoop(in, out);
     }
   }
 
   private static final class Encoder extends CharsetEncoder
   {
+    /** Helper to encode loops */
+    private static final ByteEncodeLoopHelper helper = new ByteEncodeLoopHelper()
+    {
+      protected boolean isMappable(char c)
+      {
+        return c <= 0xff;
+      }
+      protected byte mapToByte(char c)
+      {
+        return (byte)c;
+      }
+    };
     // Package-private to avoid a trampoline constructor.
     Encoder (Charset cs)
     {
@@ -147,26 +159,7 @@ final class ISO_8859_1 extends Charset
 
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
-      // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      while (in.hasRemaining ())
-      {
-        char c = in.get ();
-
-        if (c > 0xFF)
-          {
-            in.position (in.position () - 1);
-            return CoderResult.unmappableForLength (1);
-          }
-        if (!out.hasRemaining ())
-          {
-            in.position (in.position () - 1);
-            return CoderResult.OVERFLOW;
-          }
-
-        out.put ((byte) c);
-      }
-
-      return CoderResult.UNDERFLOW;
+      return helper.encodeLoop(in, out);
     }
   }
 }

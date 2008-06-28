@@ -498,7 +498,7 @@ public class MessageFormat extends Format
 	    int position = output_iterator.getEndIndex();
 	    
 	    hash_argument.put (MessageFormat.Field.ARGUMENT,
-			       new Integer(elements[i].argNumber));
+			       Integer.valueOf(elements[i].argNumber));
 
 	    
 	    if (iterator != null)
@@ -630,7 +630,7 @@ public class MessageFormat extends Format
 	    // have recursive formatting.
 	    ChoiceFormat cf = (ChoiceFormat) formatter;
 	    String[] formats = (String[]) cf.getFormats();
-	    double[] limits = (double[]) cf.getLimits();
+	    double[] limits = cf.getLimits();
 	    MessageFormat subfmt = new MessageFormat ();
 	    subfmt.setLocale(locale);
 	    ParsePosition subpos = new ParsePosition (index);

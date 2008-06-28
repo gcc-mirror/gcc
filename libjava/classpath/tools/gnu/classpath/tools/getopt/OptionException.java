@@ -49,4 +49,10 @@ public class OptionException
   {
     super(message);
   }
+
+  public OptionException(String message, Throwable cause)
+  {
+    super(message, cause);
+  }
+
 }

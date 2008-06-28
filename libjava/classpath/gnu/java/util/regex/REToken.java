@@ -128,7 +128,7 @@ abstract class REToken implements Serializable, Cloneable {
       * of the REmatch found this time so that another possible match
       * may be found when backtrack is called.
       * By default, nothing is added to the backtrackStack.
-      * @param CharIndexed input Input character sequence.
+      * @param input Input character sequence.
       * @param mymatch Position at which a match should be found
       * @return REMatch object if a match was found, null otherwise.
       */

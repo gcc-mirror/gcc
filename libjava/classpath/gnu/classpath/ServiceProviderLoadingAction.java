@@ -54,15 +54,15 @@ import java.security.PrivilegedExceptionAction;
  *
  * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
  */
-final class ServiceProviderLoadingAction
-  implements PrivilegedExceptionAction
+final class ServiceProviderLoadingAction<P>
+  implements PrivilegedExceptionAction<P>
 {
   /**
    * The interface to which the loaded service provider implementation
    * must conform.  Usually, this is a Java interface type, but it
    * might also be an abstract class or even a concrete class.
    */
-  private final Class spi;
+  private final Class<P> spi;
 
 
   /**
@@ -97,7 +97,7 @@ final class ServiceProviderLoadingAction
    * <code>providerName</code> or <code>loader</code> is
    * <code>null</code>.
    */
-  ServiceProviderLoadingAction(Class spi, String providerName,
+  ServiceProviderLoadingAction(Class<P> spi, String providerName,
                                ClassLoader loader)
   {
     if (spi == null || providerName == null || loader == null)
@@ -130,13 +130,13 @@ final class ServiceProviderLoadingAction
    * no-argument constructor; or if there some other problem with
    * creating a new instance of the service provider.
    */
-  public Object run()
+  public P run()
     throws Exception
   {
-    Class loadedClass;
-    Object serviceProvider;
+    Class<P> loadedClass;
+    P serviceProvider;
 
-    loadedClass = loader.loadClass(providerName);
+    loadedClass = (Class<P>) loader.loadClass(providerName);
     serviceProvider = loadedClass.newInstance();
 
     // Ensure that the loaded provider is actually implementing

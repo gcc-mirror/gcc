@@ -794,12 +794,12 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Deerializes the children using the
+   * Deserializes the children using the
    * {@link #deserialize(ObjectInputStream, Collection} method
    * and then calls {@link childDeserializedHook(Object, BCSChild)}
    * for each child deserialized.
    *
-   * @param oos the output stream.
+   * @param ois the input stream.
    * @throws IOException if an I/O error occurs.
    */
   public final void readChildren (ObjectInputStream ois)

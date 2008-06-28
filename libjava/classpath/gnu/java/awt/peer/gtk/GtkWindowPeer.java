@@ -396,7 +396,10 @@ public class GtkWindowPeer extends GtkContainerPeer
   public Point getLocationOnScreen()
   {
     int point[] = new int[2];
-    gtkWindowGetLocationOnScreen(point);
+    if (Thread.currentThread() == GtkMainThread.mainThread)
+      gtkWindowGetLocationOnScreenUnlocked(point);
+    else
+      gtkWindowGetLocationOnScreen(point);
     return new Point(point[0], point[1]);
   }
 

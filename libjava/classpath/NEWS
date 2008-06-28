@@ -1,9 +1,61 @@
-New in release 0.96
+Bug fixes in release 0.97.2 (Jun 06, 2007)
+
+* Include headers in the release tarball.
+* Allow the building of tools to be optional.
+* Only check for a Java compiler when required.
+* Allow VMOperatingSystemMXBeanImpl to compile on Solaris.
+* Documentation typo fixes
+* Fix memory leak in native/jni/classpath/jcl.c
+* Web page updates (PR classpath/22883)
+* Fixes to pass the JSR166 TCK
+* Use awk to construct the classlist on building
+* Fix deadlock in Logger (PR classpath/35974)
+* Fix regression in java.lang.String (PR classpath/35482)
+* Allow Classpath tools to handle @file options.
+* Allow parseInt to handle a + prefix correctly.
+* Remove use of 1.5 language constructs in the VM layer.
+
+Bug fixes in release 0.97.1 (Mar 11, 2007)
+
+* Include documentation for JSR166 (java.util.concurrent)
+* Fix STaX API compatability.
+* Include the tools properties file in the release tarball.
+
+New in release 0.97 (Feb 22, 2007)
+
+Build changes:
+
+* A copy of javah (to produce C header files from Java source code)
+is now required to generate the files in include.
+* The javac check has been changed so that it attempts to find ecj,
+javac and gcj (in that order).  You may override this by using
+JAVAC=<preferred javac>
+
+Runtime interface changes:
+
+* Removed VMFloat.floatToIntBits amd VMDouble.doubleToLongBits.
+* Added new getParameterAnnotations() methods in Constructor and Method.
+
+New in release 0.96.1 (Oct 16, 2007)
+
+* Small compile, configure and build fixes.
+
+New in release 0.96 (Oct 15, 2007)
+
+* New experimental GStreamer javax.sound peer (see README.gstreamer)
+* The JNI interface has been updated to 1.6
+* Better support for the OpenJDK javac compiler
+* Support for using javah via tools.zip and com.sun.tools.javah.Main
+* Much improved Escher AWT peers
+* Many bug fixes including improvements to AWT and Swing support
 
 Runtime interface changes:
 
 * Add VMFloat.toString(float) and VMFloat.parseFloat(String). Default
   implementations are the same as previous behavior.
+* Add new default implementations of VMMemoryMXBean.getHeapUsage()
+  and VMMemoryMXBean.getNonHeapUsage() via iteration over the memory
+  pools of the appropriate type.
 
 New in release 0.95 (Apr 23, 2007)
 

@@ -22,8 +22,6 @@ package gnu.classpath.examples.management;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryUsage;
-
 import java.util.Arrays;
 import java.util.Iterator;
 

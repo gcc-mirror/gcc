@@ -177,8 +177,8 @@ public class StateEdit
   {
     object = obj;
     undoRedoName = name;
-    preState = new Hashtable();
-    postState = new Hashtable();
+    preState = new Hashtable<Object,Object>();
+    postState = new Hashtable<Object,Object>();
     obj.storeState(preState);
   }
 

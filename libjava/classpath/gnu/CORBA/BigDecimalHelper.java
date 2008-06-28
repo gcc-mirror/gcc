@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodePackage.BadKind;
 
 /**
@@ -128,9 +127,6 @@ public class BigDecimalHelper
    * 
    * @param out a stream to write into.
    * @param x a big decimal to write.
-   * @param digits a number of the decimal digits in the record
-   * being written. For the smaller
-   * numbers, zeroes are added to the left.
    *
    * @throws IOException if the stream write method throws one.
    * @throws BadKind if this BigDecimal has more digits than

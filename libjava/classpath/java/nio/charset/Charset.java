@@ -234,7 +234,7 @@ public abstract class Charset implements Comparable<Charset>
       {
         for (Iterator<Charset> i = providers[j].charsets(); i.hasNext(); )
           {
-            Charset cs = (Charset) i.next();
+            Charset cs = i.next();
             charsets.put(cs.name(), cs);
           }
       }

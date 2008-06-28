@@ -41,10 +41,8 @@ import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.IOR;
 import gnu.CORBA.NamingService.Ext;
 import gnu.classpath.tools.common.ClasspathToolParser;
-import gnu.classpath.tools.getopt.FileArgumentCallback;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
-import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
 
 import org.omg.CosNaming.NamingContextExt;

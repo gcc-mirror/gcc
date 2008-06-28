@@ -168,7 +168,7 @@ public class AccessibleRelationSet
   {
     int i = relations.size();
     while (--i >= 0)
-      if (((AccessibleRelation) relations.get(i)).key.equals(key))
+      if ((relations.get(i)).key.equals(key))
         return true;
     return false;
   }
@@ -184,7 +184,7 @@ public class AccessibleRelationSet
     int i = relations.size();
     while (--i >= 0)
       {
-        AccessibleRelation r = (AccessibleRelation) relations.get(i);
+        AccessibleRelation r = relations.get(i);
         if (r.key.equals(key))
           return r;
       }

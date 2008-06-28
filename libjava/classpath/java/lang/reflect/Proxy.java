@@ -471,9 +471,9 @@ public class Proxy implements Serializable
                                  .getMethod("equals",
                                             new Class[] {Object.class}));
           coreMethods.put(sig, sig);
-          sig = new ProxySignature(Object.class.getMethod("hashCode", null));
+          sig = new ProxySignature(Object.class.getMethod("hashCode"));
           coreMethods.put(sig, sig);
-          sig = new ProxySignature(Object.class.getMethod("toString", null));
+          sig = new ProxySignature(Object.class.getMethod("toString"));
           coreMethods.put(sig, sig);
         }
       catch (Exception e)
@@ -1033,7 +1033,7 @@ public class Proxy implements Serializable
           code_length += 9; // new, dup_x1, swap, invokespecial, athrow
         }
       int handler_pc = code_length - 1;
-      StringBuffer signature = new StringBuffer("(");
+      StringBuilder signature = new StringBuilder("(");
       for (int j = 0; j < paramtypes.length; j++)
         signature.append(TypeSignature.getEncodingOfClass(paramtypes[j]));
       signature.append(")").append(TypeSignature.getEncodingOfClass(ret_type));
@@ -1261,8 +1261,8 @@ public class Proxy implements Serializable
 	  // we're in the same package.
           m.flag = true;
 
-          Object[] args = {loader, qualName, bytecode, new Integer(0),
-                           new Integer(bytecode.length),
+          Object[] args = {loader, qualName, bytecode, Integer.valueOf(0),
+                           Integer.valueOf(bytecode.length),
                            Object.class.getProtectionDomain() };
           Class clazz = (Class) m.invoke(null, args);
 
@@ -1492,7 +1492,7 @@ public class Proxy implements Serializable
       if (i == len)
         return str;
 
-      final StringBuffer sb = new StringBuffer(str);
+      final StringBuilder sb = new StringBuilder(str);
       sb.setLength(i);
       for ( ; i < len; i++)
         {
@@ -1533,7 +1533,7 @@ public class Proxy implements Serializable
           int size = poolEntries.size() + 1;
           if (size >= 65535)
             throw new IllegalArgumentException("exceeds VM limitations");
-          i = new Integer(size);
+          i = Integer.valueOf(size);
           poolEntries.put(sequence, i);
           pool.append(sequence);
         }

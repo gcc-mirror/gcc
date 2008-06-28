@@ -139,9 +139,9 @@ public class SimpleDateFormat extends DateFormat
      */
     public String toString()
     {
-      StringBuffer builder;
+      StringBuilder builder;
 
-      builder = new StringBuffer(getClass().getName());
+      builder = new StringBuilder(getClass().getName());
       builder.append("[field=");
       builder.append(field);
       builder.append(", size=");
@@ -322,7 +322,7 @@ public class SimpleDateFormat extends DateFormat
 		    // Look for the terminating quote.  However, if we
 		    // see a '', that represents a literal quote and
 		    // we must iterate.
-		    StringBuffer buf = new StringBuffer();
+		    StringBuilder buf = new StringBuilder();
 		    int oldPos = i + 1;
 		    do
 		      {
@@ -346,7 +346,7 @@ public class SimpleDateFormat extends DateFormat
 	    else
 	      {
 		// A special character
-		tokens.add(new Character(thisChar));
+		tokens.add(Character.valueOf(thisChar));
 	      }
 	  }
 	else
@@ -372,7 +372,7 @@ public class SimpleDateFormat extends DateFormat
    */
   public String toString() 
   {
-    StringBuffer output = new StringBuffer(getClass().getName());
+    StringBuilder output = new StringBuilder(getClass().getName());
     output.append("[tokens=");
     output.append(tokens);
     output.append(", formatData=");
@@ -554,7 +554,7 @@ public class SimpleDateFormat extends DateFormat
 					   String oldChars, String newChars)
   {
     int len = pattern.length();
-    StringBuffer buf = new StringBuffer(len);
+    StringBuilder buf = new StringBuilder(len);
     boolean quoted = false;
     for (int i = 0;  i < len;  i++)
       {
@@ -1279,12 +1279,12 @@ public class SimpleDateFormat extends DateFormat
 
 	// advance the index
 	pos.setIndex(pos.getIndex() + matcher.end());
-	return new Integer(offset);
+	return Integer.valueOf(offset);
       }
     else if (zoneString.startsWith("GMT"))
       {
 	pos.setIndex(pos.getIndex() + 3);
-	return new Integer(0);
+	return Integer.valueOf(0);
       }
     return null;
   }

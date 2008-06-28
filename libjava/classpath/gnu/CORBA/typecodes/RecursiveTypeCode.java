@@ -63,7 +63,7 @@ public class RecursiveTypeCode
    * Create a typecode that serves as a placeholder for
    * the typecode with the given id.
    *
-   * @param id the Id of the type for that this type serves as a
+   * @param an_id the Id of the type for that this type serves as a
    * placeholder.
    */
   public RecursiveTypeCode(String an_id)

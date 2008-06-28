@@ -21,6 +21,7 @@ extern "Java"
         {
             class ByteCharset;
             class ByteCharset$Encoder;
+            class ByteEncodeLoopHelper;
         }
       }
     }
@@ -49,8 +50,11 @@ public:
   jboolean canEncode(::java::lang::CharSequence *);
 public: // actually protected
   ::java::nio::charset::CoderResult * encodeLoop(::java::nio::CharBuffer *, ::java::nio::ByteBuffer *);
+public: // actually package-private
+  static JArray< jbyte > * access$0(::gnu::java::nio::charset::ByteCharset$Encoder *);
 private:
   JArray< jbyte > * __attribute__((aligned(__alignof__( ::java::nio::charset::CharsetEncoder)))) lookup;
+  ::gnu::java::nio::charset::ByteEncodeLoopHelper * helper;
 public:
   static ::java::lang::Class class$;
 };

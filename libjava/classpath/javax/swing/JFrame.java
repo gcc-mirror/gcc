@@ -258,7 +258,7 @@ public class JFrame extends Frame
   {
     // If we're adding in the initialization stage use super.add.
     // Otherwise pass the add onto the content pane.
-    if (isRootPaneCheckingEnabled())
+    if (isRootPaneCheckingEnabled() && comp != rootPane)
       getContentPane().add(comp,constraints,index);
     else
       super.addImpl(comp, constraints, index);

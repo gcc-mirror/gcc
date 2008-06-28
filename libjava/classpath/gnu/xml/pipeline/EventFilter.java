@@ -187,14 +187,14 @@ public class EventFilter
         Method m = null;
 
         try {
-            m = Thread.class.getMethod("getContextClassLoader", null);
+            m = Thread.class.getMethod("getContextClassLoader");
         } catch (NoSuchMethodException e) {
             // Assume that we are running JDK 1.1, use the current ClassLoader
             return EventFilter.class.getClassLoader();
         }
 
         try {
-            return (ClassLoader) m.invoke(Thread.currentThread(), null);
+            return (ClassLoader) m.invoke(Thread.currentThread());
         } catch (IllegalAccessException e) {
             // assert(false)
             throw new UnknownError(e.getMessage());

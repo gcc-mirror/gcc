@@ -844,7 +844,7 @@ public class Socket
     if (timeout < 0)
       throw new IllegalArgumentException("SO_TIMEOUT value must be >= 0");
 
-    getImpl().setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
+    getImpl().setOption(SocketOptions.SO_TIMEOUT, Integer.valueOf(timeout));
   }
 
   /**
@@ -896,7 +896,7 @@ public class Socket
     if (size <= 0)
       throw new IllegalArgumentException("SO_SNDBUF value must be > 0");
 
-    getImpl().setOption(SocketOptions.SO_SNDBUF, new Integer(size));
+    getImpl().setOption(SocketOptions.SO_SNDBUF, Integer.valueOf(size));
   }
 
   /**
@@ -943,7 +943,7 @@ public class Socket
     if (size <= 0)
       throw new IllegalArgumentException("SO_RCVBUF value must be > 0");
 
-    getImpl().setOption(SocketOptions.SO_RCVBUF, new Integer(size));
+    getImpl().setOption(SocketOptions.SO_RCVBUF, Integer.valueOf(size));
   }
 
   /**
@@ -1211,7 +1211,7 @@ public class Socket
     if (tc < 0 || tc > 255)
       throw new IllegalArgumentException();
 
-    getImpl().setOption(SocketOptions.IP_TOS, new Integer(tc));
+    getImpl().setOption(SocketOptions.IP_TOS, Integer.valueOf(tc));
   }
 
   /**

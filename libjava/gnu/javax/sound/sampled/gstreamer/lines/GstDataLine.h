@@ -24,7 +24,6 @@ extern "Java"
             namespace lines
             {
                 class GstDataLine;
-                class GstDataLine$State;
             }
           }
         }
@@ -56,15 +55,18 @@ public:
   virtual jint getBufferSize();
   virtual ::javax::sound::sampled::AudioFormat * getFormat();
   virtual jfloat getLevel();
-  virtual jboolean isRunning();
   virtual void addLineListener(::javax::sound::sampled::LineListener *);
   virtual ::javax::sound::sampled::Control * getControl(::javax::sound::sampled::Control$Type *);
   virtual JArray< ::javax::sound::sampled::Control * > * getControls();
   virtual ::javax::sound::sampled::Line$Info * getLineInfo();
   virtual jboolean isControlSupported(::javax::sound::sampled::Control$Type *);
   virtual jboolean isOpen();
-  virtual void open();
   virtual void removeLineListener(::javax::sound::sampled::LineListener *);
+public: // actually protected
+  virtual void setOpen(::java::lang::Boolean *);
+  virtual void setBufferSize(jint);
+  virtual void setFormat(::javax::sound::sampled::AudioFormat *);
+public:
   virtual jint available() = 0;
   virtual void drain() = 0;
   virtual void flush() = 0;
@@ -72,13 +74,14 @@ public:
   virtual jlong getLongFramePosition() = 0;
   virtual jlong getMicrosecondPosition() = 0;
   virtual jboolean isActive() = 0;
+  virtual jboolean isRunning() = 0;
   virtual void start() = 0;
   virtual void stop() = 0;
   virtual void close() = 0;
+  virtual void open() = 0;
   static const jint DEFAULT_BUFFER_SIZE = 1024;
 public: // actually protected
-  ::gnu::javax::sound::sampled::gstreamer::lines::GstDataLine$State * __attribute__((aligned(__alignof__( ::java::lang::Object)))) state;
-  ::java::lang::Boolean * open__;
+  ::java::lang::Boolean * __attribute__((aligned(__alignof__( ::java::lang::Object)))) open;
 private:
   ::javax::sound::sampled::AudioFormat * format;
   jint bufferSize;

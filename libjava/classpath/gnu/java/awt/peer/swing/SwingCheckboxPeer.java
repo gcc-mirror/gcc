@@ -37,16 +37,12 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.swing;
 
-import java.awt.Button;
 import java.awt.Checkbox;
 import java.awt.CheckboxGroup;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Label;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -56,7 +52,6 @@ import java.awt.peer.CheckboxPeer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 
 /**

@@ -40,8 +40,6 @@ package gnu.javax.net.ssl.provider;
 
 import gnu.javax.net.ssl.provider.Extension.Value;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.ByteBuffer;
 
 public class UnresolvedExtensionValue extends Value

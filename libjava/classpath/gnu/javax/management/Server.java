@@ -169,7 +169,7 @@ public class Server
    * Constructs a new management server using the specified
    * default domain, delegate bean and outer server.
    *
-   * @param domain the default domain to use for beans constructed
+   * @param defaultDomain the default domain to use for beans constructed
    *               with no specified domain.
    * @param outer an {@link javax.management.MBeanServer} to pass
    *              to beans implementing the {@link MBeanRegistration}
@@ -229,8 +229,8 @@ public class Server
 	  if (name != null)
 	    {
 	      Object bean = getBean(name);
-	      Method method = bean.getClass().getMethod("getMBeanInfo", null);
-	      info = (MBeanInfo) method.invoke(bean, null);
+	      Method method = bean.getClass().getMethod("getMBeanInfo");
+	      info = (MBeanInfo) method.invoke(bean);
 	    }
 	  sm.checkPermission(new MBeanPermission((info == null) ? 
 						 null : info.getClassName(),
@@ -1031,13 +1031,20 @@ public class Server
     checkSecurity(name, null, "getMBeanInfo");
     try
       {
-	Method method = bean.getClass().getMethod("getMBeanInfo", null);
-	return (MBeanInfo) method.invoke(bean, null);
+	Method method = bean.getClass().getMethod("getMBeanInfo");
+	return (MBeanInfo) method.invoke(bean);
       }
     catch (NoSuchMethodException e)
       {
-	throw new IntrospectionException("The getMBeanInfo method " + 
-					 "could not be found.");
+	try
+	  {
+	    return new StandardMBean(bean, null).getMBeanInfo();
+	  }
+	catch (NotCompliantMBeanException ex)
+	  {
+	    throw new IntrospectionException("An error occurred in executing " +
+					     "getMBeanInfo on the bean: " + ex + ".");
+	  }
       }
     catch (IllegalAccessException e)
       {

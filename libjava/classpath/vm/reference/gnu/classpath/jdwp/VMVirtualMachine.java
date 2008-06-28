@@ -48,7 +48,6 @@ import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
 import gnu.classpath.jdwp.value.Value;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 

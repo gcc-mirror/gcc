@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package sun.reflect.annotation;
 
-import gnu.classpath.NotImplementedException;
-
 public class ExceptionProxy
 {
 

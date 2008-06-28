@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1257 Baltic char set.
  * aka cp1257 or Windows-1257 or whatever.
  */
-public class Windows1257 extends ByteCharset
+public final class Windows1257 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1257 extends ByteCharset
 	  "cp_1257", 
 	  "windows1257",
 	  "windows_1257" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1257

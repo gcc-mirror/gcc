@@ -562,7 +562,7 @@ public interface GSSContext
    * @param inStream  Input stream containing the message to generate
    *                  the MIC over.
    * @param outStream Output stream to write the GSS-API output token to.
-   * @param msgProp   Instance of MessageProp that is used by the
+   * @param mgProp    Instance of MessageProp that is used by the
    *                  application to set the desired QOP.  Set the desired
    *                  QOP to 0 in msgProp to request the default QOP.
    *                  Alternatively pass in <code>null</code> for msgProp

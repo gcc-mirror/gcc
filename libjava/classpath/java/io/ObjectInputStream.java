@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006, 2008
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -367,7 +367,6 @@ public class ObjectInputStream extends InputStream
  	}
  	
        case TC_STRING:
-       case TC_LONGSTRING:
  	{
  	  if(dump) dumpElement("STRING=");
  	  String s = this.realInputStream.readUTF();
@@ -377,6 +376,16 @@ public class ObjectInputStream extends InputStream
  	  break;
  	}
  
+       case TC_LONGSTRING:
+ 	{
+ 	  if(dump) dumpElement("STRING=");
+ 	  String s = this.realInputStream.readUTFLong();
+ 	  if(dump) dumpElementln(s);
+ 	  ret_val = processResolution(null, s, assignNewHandle(s,shared),
+				      shared);
+ 	  break;
+ 	}
+
        case TC_ARRAY:
  	{
  	  if(dump) dumpElementln("ARRAY");
@@ -926,7 +935,7 @@ public class ObjectInputStream extends InputStream
       return null;
 
     ObjectStreamClass oclazz;
-    oclazz = (ObjectStreamClass)classLookupTable.get(clazz);
+    oclazz = classLookupTable.get(clazz);
     if (oclazz == null)
       return ObjectStreamClass.lookup(clazz);
     else

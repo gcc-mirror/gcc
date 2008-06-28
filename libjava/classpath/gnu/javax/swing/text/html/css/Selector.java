@@ -93,8 +93,6 @@ public class Selector
    * instance, the html tag).
    *
    * @param tags
-   * @param classes
-   * @param ids
    *
    * @return <code>true</code> when this selector matches the element path,
    *         <code>false</code> otherwise

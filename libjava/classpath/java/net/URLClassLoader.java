@@ -452,7 +452,7 @@ public class URLClassLoader extends SecureClassLoader
   {
     // Compute the name of the package as it may appear in the
     // Manifest.
-    StringBuffer xform = new StringBuffer(name);
+    StringBuilder xform = new StringBuilder(name);
     for (int i = xform.length () - 1; i >= 0; --i)
       if (xform.charAt(i) == '.')
 	xform.setCharAt(i, '/');
@@ -641,7 +641,7 @@ public class URLClassLoader extends SecureClassLoader
       {
 	if (thisString == null)
 	  {
-	    StringBuffer sb = new StringBuffer();
+	    StringBuilder sb = new StringBuilder();
 	    sb.append(this.getClass().getName());
 	    sb.append("{urls=[" );
 	    URL[] thisURLs = getURLs();

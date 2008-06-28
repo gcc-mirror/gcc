@@ -40,7 +40,6 @@ package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 
 import gnu.CORBA.OrbRestricted;
 
-import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;

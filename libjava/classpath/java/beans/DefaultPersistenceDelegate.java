@@ -127,7 +127,7 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
                       {
                         Method readMethod = propertyDescs[i].getReadMethod();
 
-                        args[i] = readMethod.invoke(oldInstance, null);
+                        args[i] = readMethod.invoke(oldInstance);
                       }
                   }
               }
@@ -186,7 +186,7 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
 
             if (readMethod != null && writeMethod != null)
               {
-                Object oldValue = readMethod.invoke(oldInstance, null);
+                Object oldValue = readMethod.invoke(oldInstance);
 
                 if (oldValue != null)
                   out.writeStatement(new Statement(oldInstance,

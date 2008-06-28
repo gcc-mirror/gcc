@@ -126,7 +126,7 @@ public class AWTUtilities
        *
        * @return the next visible <code>Component</code> in the List
        *
-       * @throws if there is no next element
+       * @throws NoSuchElementException if there is no next element
        */
       public Object next()
       {

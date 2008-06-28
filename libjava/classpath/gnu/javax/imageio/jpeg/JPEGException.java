@@ -37,14 +37,7 @@ exception statement from your version. */
 
 package gnu.javax.imageio.jpeg;
 
-// FIXME: change to IIOException
-import java.io.IOException;
 import javax.imageio.*;
-import javax.imageio.spi.*;
-import javax.imageio.metadata.*;
-import javax.imageio.stream.ImageInputStream;
-import java.util.Iterator;
-import java.awt.image.BufferedImage;
 
 public class JPEGException extends IIOException
 {

@@ -196,7 +196,7 @@ public class UndoManager
 
     size = edits.size();
     for (int i = size - 1; i >= 0; i--)
-      ((UndoableEdit) edits.get(i)).die();
+      edits.get(i).die();
     indexOfNextAdd = 0;
     edits.clear();
   }
@@ -244,7 +244,7 @@ public class UndoManager
       return;
 
     for (int i = to; i >= from; i--)
-        ((UndoableEdit) edits.get(i)).die();
+        edits.get(i).die();
 
     // Remove the range [from .. to] from edits. If from == to, which
     // is likely to be a very common case, we can do better than
@@ -275,7 +275,7 @@ public class UndoManager
 
     for (int i = indexOfNextAdd - 1; i >= 0; i--)
       {
-        result = (UndoableEdit) edits.get(i);
+        result = edits.get(i);
         if (result.isSignificant())
           return result;
       }
@@ -298,7 +298,7 @@ public class UndoManager
 
     for (int i = indexOfNextAdd; i < edits.size(); i++)
       {
-        result = (UndoableEdit) edits.get(i);
+        result = edits.get(i);
         if (result.isSignificant())
           return result;
       }
@@ -324,7 +324,7 @@ public class UndoManager
     while (true)
       {
         indexOfNextAdd -= 1;
-        cur = (UndoableEdit) edits.get(indexOfNextAdd);
+        cur = edits.get(indexOfNextAdd);
         cur.undo();
         if (cur == edit)
           return;
@@ -348,7 +348,7 @@ public class UndoManager
 
     while (true)
       {
-        cur = (UndoableEdit) edits.get(indexOfNextAdd);
+        cur = edits.get(indexOfNextAdd);
         indexOfNextAdd += 1;
         cur.redo();
         if (cur == edit)

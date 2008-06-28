@@ -37,13 +37,9 @@ exception statement from your version. */
 
 package gnu.javax.sound.sampled.gstreamer;
 
-import java.awt.AWTPermission;
-
 import gnu.javax.sound.sampled.gstreamer.lines.GstSourceDataLine;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioPermission;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
@@ -52,7 +48,6 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.Control.Type;
-import javax.sound.sampled.Line.Info;
 
 /**
  * @author Mario Torre <neugens@limasoftware.net>
@@ -81,32 +76,15 @@ public class GStreamerMixer
       super(name, vendor, desc, vers);
     }
   }
-  
+    
   public static final String GST_BACKEND = GstInfo.name;
   public static final String GST_DECODER = "decoder";
-  
-  private static AudioFormat[] BASIC_FORMATS =
-  {
-     new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     true),
-
-     new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     AudioSystem.NOT_SPECIFIED,
-                     false),
-  };
+  public static final String GST_TYPE_NAME = "type";
+  public static final String GST_FILE_EXTENSION = "ext";
   
   /** Mixer Info */
   private static final Mixer.Info INFO = new GStreamerMixer.GstInfo();
-
+  
   public Line getLine(Line.Info info)
       throws LineUnavailableException
   {

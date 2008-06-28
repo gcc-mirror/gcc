@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.dom.html2;
 
-import org.w3c.dom.Node;
 import org.w3c.dom.html2.HTMLButtonElement;
 import org.w3c.dom.html2.HTMLFormElement;
 

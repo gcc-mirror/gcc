@@ -350,7 +350,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     while (i.hasNext ())
       {
         KeyEventPostProcessor processor = (KeyEventPostProcessor) i.next ();
-        if (processor.postProcessKeyEvent ((KeyEvent) e))
+        if (processor.postProcessKeyEvent (e))
           return true;
       }
 

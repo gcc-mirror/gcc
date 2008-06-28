@@ -228,13 +228,13 @@ public class StandardMBean
     Method getter;
     try 
       {
-	getter = iface.getMethod("get" + name, null);
+	getter = iface.getMethod("get" + name);
       }
     catch (NoSuchMethodException e)
       {
 	try 
 	  {
-	    getter = iface.getMethod("is" + name, null);
+	    getter = iface.getMethod("is" + name);
 	  }
 	catch (NoSuchMethodException ex)
 	  {
@@ -246,7 +246,7 @@ public class StandardMBean
     Object result;
     try
       {
-	result = getter.invoke(impl, null);
+	result = getter.invoke(impl);
       }
     catch (IllegalAccessException e)
       {

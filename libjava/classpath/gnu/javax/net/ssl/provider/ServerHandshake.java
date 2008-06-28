@@ -775,7 +775,7 @@ class ServerHandshake extends AbstractHandshake
     //     outgoing buffer. This isn't that great because we'd need to
     //     store and copy things unnecessarily.
     //
-    //  2. Build outgoing handshake objects “virtually,” that is, store them
+    //  2. Build outgoing handshake objects 'virtually', that is, store them
     //     as collections of objects, then compute the length, and then write
     //     them to a buffer, instead of making the objects views on
     //     ByteBuffers for both input and output. This would complicate the
@@ -784,7 +784,7 @@ class ServerHandshake extends AbstractHandshake
     //     pretty OK), and we still need to figure out how exactly to chunk
     //     those objects across record boundaries.
     //
-    //  3. Try to build these objects on the buffer we’re given, but detect
+    //  3. Try to build these objects on the buffer we're given, but detect
     //     when we run out of space in the output buffer, and split the
     //     overflow message. This sounds like the best, but also probably
     //     the hardest to code.

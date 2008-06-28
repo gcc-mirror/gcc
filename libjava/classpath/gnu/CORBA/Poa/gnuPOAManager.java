@@ -41,7 +41,6 @@ package gnu.CORBA.Poa;
 import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.LocalObject;
 import org.omg.PortableInterceptor.NON_EXISTENT;
-import org.omg.PortableInterceptor.ObjectReferenceTemplate;
 import org.omg.PortableServer.POAManager;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
 import org.omg.PortableServer.POAManagerPackage.State;
@@ -89,9 +88,9 @@ public class gnuPOAManager
    * Turns the associated POAs into active state, allowing them to receive
    * and process requests.
    *
-   * @throws if the POAs are in the inactive state. If once inactivated,
-   * the POA cannot be activated again. This method can only be called
-   * to leave the holding or discarding state.
+   * @throws AdapterInactive if the POAs are in the inactive state.
+   * If once inactivated, the POA cannot be activated again. This
+   * method can only be called to leave the holding or discarding state.
    */
   public void activate()
                 throws AdapterInactive

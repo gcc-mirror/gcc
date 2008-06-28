@@ -334,7 +334,7 @@ public class IIOMetadataNode
    */
   public void setAttribute(String name, String value)
   {
-    Attr attr = (Attr) getAttributeNode(name);
+    Attr attr = getAttributeNode(name);
     if (attr != null)
       attr.setValue(value);
     else

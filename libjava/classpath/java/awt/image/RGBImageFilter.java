@@ -245,7 +245,7 @@ public abstract class RGBImageFilter extends ImageFilter
           {
             for (int xp = 0; xp < w; xp++)
               {
-                filtered[xp] = model.getRGB((pixels[index] & 0xff));
+                filtered[xp] = model.getRGB((pixels[index]));
                 index++;
               }
             index += scansize - w;

@@ -44,8 +44,6 @@ import java.lang.management.ManagementPermission;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.TypeVariable;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,13 +57,11 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
-import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ReflectionException;
 import javax.management.StandardMBean;
 
 import javax.management.openmbean.ArrayType;
-import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
@@ -80,7 +76,6 @@ import javax.management.openmbean.OpenMBeanOperationInfoSupport;
 import javax.management.openmbean.OpenMBeanParameterInfo;
 import javax.management.openmbean.OpenMBeanParameterInfoSupport;
 import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
@@ -277,7 +272,7 @@ public class BeanImpl
 	Method getter = null;
 	try 
 	  {
-	    getter = vClass.getMethod("get" + field, null);
+	    getter = vClass.getMethod("get" + field);
 	  }
 	catch (NoSuchMethodException e)
 	  {
@@ -285,7 +280,7 @@ public class BeanImpl
 	  }
 	try
 	  {
-	    values.add(getter.invoke(value, null));
+	    values.add(getter.invoke(value));
 	  }
 	catch (IllegalAccessException e)
 	  {
@@ -321,6 +316,90 @@ public class BeanImpl
   protected MBeanInfo getCachedMBeanInfo()
   {
     return (MBeanInfo) openInfo;
+  }
+
+  /**
+   * Override this method so as to prevent the description of a constructor's
+   * parameter being @code{null}.  Open MBeans can not have @code{null} descriptions,
+   * but one will occur as the names of parameters aren't stored for reflection.
+   * 
+   * @param constructor the constructor whose parameter needs describing.
+   * @param parameter the parameter to be described.
+   * @param sequenceNo the number of the parameter to describe.
+   * @return a description of the constructor's parameter.
+   */
+  protected String getDescription(MBeanConstructorInfo constructor,
+				  MBeanParameterInfo parameter,
+				  int sequenceNo)
+  {
+    String desc = parameter.getDescription();
+    if (desc == null)
+      return "param" + sequenceNo;
+    else
+      return desc;
+  }
+
+  /**
+   * Override this method so as to prevent the description of an operation's
+   * parameter being @code{null}.  Open MBeans can not have @code{null} descriptions,
+   * but one will occur as the names of parameters aren't stored for reflection.
+   * 
+   * @param operation the operation whose parameter needs describing.
+   * @param parameter the parameter to be described.
+   * @param sequenceNo the number of the parameter to describe.
+   * @return a description of the operation's parameter.
+   */
+  protected String getDescription(MBeanOperationInfo operation,
+				  MBeanParameterInfo parameter,
+				  int sequenceNo)
+  {
+    String desc = parameter.getDescription();
+    if (desc == null)
+      return "param" + sequenceNo;
+    else
+      return desc;
+  }
+
+  /**
+   * Override this method so as to prevent the name of a constructor's
+   * parameter being @code{null}.  Open MBeans can not have @code{null} names,
+   * but one will occur as the names of parameters aren't stored for reflection.
+   * 
+   * @param constructor the constructor whose parameter needs a name.
+   * @param parameter the parameter to be named.
+   * @param sequenceNo the number of the parameter to name.
+   * @return a description of the constructor's parameter.
+   */
+  protected String getParameterName(MBeanConstructorInfo constructor,
+				    MBeanParameterInfo parameter,
+				    int sequenceNo)
+  {
+    String name = parameter.getName();
+    if (name == null)
+      return "param" + sequenceNo;
+    else
+      return name;
+  }
+
+  /**
+   * Override this method so as to prevent the name of an operation's
+   * parameter being @code{null}.  Open MBeans can not have @code{null} names,
+   * but one will occur as the names of parameters aren't stored for reflection.
+   * 
+   * @param operation the operation whose parameter needs a name.
+   * @param parameter the parameter to be named.
+   * @param sequenceNo the number of the parameter to name.
+   * @return a description of the operation's parameter.
+   */
+  protected String getParameterName(MBeanOperationInfo operation,
+				    MBeanParameterInfo parameter,
+				    int sequenceNo)
+  {
+    String name = parameter.getName();
+    if (name == null)
+      return "param" + sequenceNo;
+    else
+      return name;
   }
 
   public MBeanInfo getMBeanInfo()

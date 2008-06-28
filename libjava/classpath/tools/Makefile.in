@@ -65,6 +65,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../ltoptions.m4 \
 	$(top_srcdir)/../../ltsugar.m4 \
 	$(top_srcdir)/../../ltversion.m4 \
+	$(top_srcdir)/m4/ac_prog_javac.m4 \
+	$(top_srcdir)/m4/ac_prog_javac_works.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
 	$(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
@@ -232,7 +234,6 @@ DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
-ECJ = @ECJ@
 ECJ_JAR = @ECJ_JAR@
 EGREP = @EGREP@
 ENABLE_LOCAL_SOCKETS_FALSE = @ENABLE_LOCAL_SOCKETS_FALSE@
@@ -244,19 +245,8 @@ EXTRA_CFLAGS = @EXTRA_CFLAGS@
 FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
-FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
-FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
-FOUND_GCJ_FALSE = @FOUND_GCJ_FALSE@
-FOUND_GCJ_TRUE = @FOUND_GCJ_TRUE@
-FOUND_JAVAC_FALSE = @FOUND_JAVAC_FALSE@
-FOUND_JAVAC_TRUE = @FOUND_JAVAC_TRUE@
-FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
-FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
-FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
-FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
-GCJ = @GCJ@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -288,15 +278,12 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAVAC = @JAVAC@
+JAVAC_MEM_OPT = @JAVAC_MEM_OPT@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
 JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
 JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
-JIKES = @JIKES@
-JIKESENCODING = @JIKESENCODING@
-JIKESWARNINGS = @JIKESWARNINGS@
-KJC = @KJC@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -344,10 +331,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRICT_WARNING_CFLAGS = @STRICT_WARNING_CFLAGS@
 STRIP = @STRIP@
-USER_CLASSLIB = @USER_CLASSLIB@
+TOOLSDIR = @TOOLSDIR@
 USER_JAVAH = @USER_JAVAH@
-USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
-USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
 USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
@@ -420,12 +405,10 @@ target_vendor = @target_vendor@
 toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 GLIBJ_BOOTCLASSPATH = '$(top_srcdir)/lib'
-GLIBJ_CLASSPATH = $(srcdir)/asm
-@FOUND_ECJ_FALSE@@FOUND_GCJ_FALSE@@FOUND_JAVAC_TRUE@JCOMPILER = $(JAVAC) -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
-@FOUND_ECJ_TRUE@@FOUND_GCJ_FALSE@JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
+GLIBJ_CLASSPATH = .:$(srcdir)/asm
 
 # Setup the compiler to use the GNU Classpath library we just build
-@FOUND_GCJ_TRUE@JCOMPILER = $(GCJ) -C -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH):.
+JCOMPILER = $(JAVAC) -g -w --encoding=UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH)
 @CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
 @CREATE_WRAPPERS_TRUE@AM_CPPFLAGS = -Wall \
 @CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
@@ -522,17 +505,36 @@ TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/xml/*.java
 
 
+# Properties files that must be included in the generated zip file.
+PROPERTY_FILES = $(srcdir)/external/asm/org/objectweb/asm/optimizer/shrink.properties \
+	$(srcdir)/resource/com/sun/tools/javac/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/jar/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/orbd/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmic/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmid/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/serialver/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/keytool/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/native2ascii/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/appletviewer/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/common/Messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/getopt/Messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/tnameserv/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/jarsigner/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmiregistry/messages.properties \
+	$(srcdir)/resource/sun/rmi/rmic/messages.properties
+
+
+# RMIC templates that must be included in the generated zip file.
+RMIC_TEMPLATES = $(srcdir)/resource/gnu/classpath/tools/rmic/templates/*.jav
+
 # The zip files with classes we want to produce.
 TOOLS_ZIP = tools.zip
 
 # Extra objects that will not exist until configure-time
 BUILT_SOURCES = $(TOOLS_ZIP)
 
-# RMIC templates that must be included in the generated zip file.
-RMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/rmic/templates/*.jav
-
 # All the files we find "interesting"
-ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES)
+ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES) $(PROPERTY_FILES)
 
 # Some architecture independent data to be installed.
 # GCJ LOCAL: do not install this.
@@ -1094,7 +1096,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-info-am
 
-@FOUND_ECJ_FALSE@@FOUND_GCJ_FALSE@@FOUND_JAVAC_FALSE@error dunno how to setup the JCOMPILER and compile
 @CREATE_WRAPPERS_FALSE@gappletviewer: gappletviewer.in
 @CREATE_WRAPPERS_FALSE@gjarsigner: gjarsigner.in
 @CREATE_WRAPPERS_FALSE@gkeytool: gkeytool.in
@@ -1126,7 +1127,7 @@ dist-hook:
 # the class files. Always regenerate all .class files and remove them
 # immediately.  And copy the template files we use to the classes dir
 # so they get also included.
-$(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
+$(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
 	find $(srcdir)/gnu/classpath/tools \
 	     $(srcdir)/com/sun/javadoc \
@@ -1147,14 +1148,13 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 @JAVA_MAINTAINER_MODE_TRUE@	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 @JAVA_MAINTAINER_MODE_TRUE@	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 @JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
-@JAVA_MAINTAINER_MODE_TRUE@	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
-@JAVA_MAINTAINER_MODE_TRUE@	       com/sun/javadoc com/sun/tools/doclets com/sun/tools/javac \
-@JAVA_MAINTAINER_MODE_TRUE@	       sun/rmi/rmic -name \*.properties -print`; \
+@JAVA_MAINTAINER_MODE_TRUE@	@list=`cd $(srcdir)/resource && find gnu/classpath/tools com/sun/tools/javac \
+@JAVA_MAINTAINER_MODE_TRUE@	       sun/rmi/rmic -name \*.properties -print -o -name \*.jav -print`; \
 @JAVA_MAINTAINER_MODE_TRUE@	for p in $$list; do \
 @JAVA_MAINTAINER_MODE_TRUE@	  dirname=classes/`dirname $$p`; \
 @JAVA_MAINTAINER_MODE_TRUE@	  if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
-@JAVA_MAINTAINER_MODE_TRUE@	  echo "  cp $(top_srcdir)/resource/$$p classes/$$p"; \
-@JAVA_MAINTAINER_MODE_TRUE@	  cp $(top_srcdir)/resource/$$p classes/$$p; \
+@JAVA_MAINTAINER_MODE_TRUE@	  echo "  cp $(srcdir)resource/$$p classes/$$p"; \
+@JAVA_MAINTAINER_MODE_TRUE@	  cp $(srcdir)/resource/$$p classes/$$p; \
 @JAVA_MAINTAINER_MODE_TRUE@	done
 	@list=`cd $(srcdir) && find gnu/classpath/tools -name \*.jav -print`; \
 	for p in $$list; do \
@@ -1167,11 +1167,11 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	cp -pR $(srcdir)/classes .
 	(cd classes; \
 	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf ../$(TOOLS_ZIP) .; fi; \
+	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" cf ../$(TOOLS_ZIP) .; fi; \
 	cd ..)
 	(cd asm; \
 	if test "$(ZIP)" != ""; then $(ZIP) -u -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) uf ../$(TOOLS_ZIP) .; fi; \
+	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" uf ../$(TOOLS_ZIP) .; fi; \
 	cd ..)
 	rm -rf asm classes classes.lst asm.lst
 

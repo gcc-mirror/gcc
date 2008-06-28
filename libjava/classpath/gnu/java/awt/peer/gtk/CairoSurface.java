@@ -43,9 +43,7 @@ import gnu.java.awt.Buffers;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.color.ColorSpace;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -102,7 +100,8 @@ public class CairoSurface extends WritableRaster
                                                           0x000000FF);
   /**
    * Allocates and clears the buffer and creates the cairo surface.
-   * @param width, height - the image size
+   * @param width - the image size
+   * @param height - the image size
    * @param stride - the buffer row stride. (in ints)
    */
   private native void create(int width, int height, int stride, int[] buf);

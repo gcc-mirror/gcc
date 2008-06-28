@@ -1457,10 +1457,10 @@ public abstract class QuadCurve2D implements Shape, Cloneable
      */
     public Rectangle2D getBounds2D()
     {
-      float nx1 = (float) Math.min(Math.min(x1, ctrlx), x2);
-      float ny1 = (float) Math.min(Math.min(y1, ctrly), y2);
-      float nx2 = (float) Math.max(Math.max(x1, ctrlx), x2);
-      float ny2 = (float) Math.max(Math.max(y1, ctrly), y2);
+      float nx1 = Math.min(Math.min(x1, ctrlx), x2);
+      float ny1 = Math.min(Math.min(y1, ctrly), y2);
+      float nx2 = Math.max(Math.max(x1, ctrlx), x2);
+      float ny2 = Math.max(Math.max(y1, ctrly), y2);
       return new Rectangle2D.Float(nx1, ny1, nx2 - nx1, ny2 - ny1);
     }
   }

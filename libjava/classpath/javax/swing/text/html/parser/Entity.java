@@ -41,8 +41,6 @@ package javax.swing.text.html.parser;
 
 import gnu.javax.swing.text.html.parser.support.gnuStringIntMapper;
 
-import java.io.Serializable;
-
 /**
  * <p>Stores information, obtained by parsing SGML DTL
  * &lt;!ENTITY % .. &gt; tag.</p>

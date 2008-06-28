@@ -38,25 +38,10 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import java.math.BigInteger;
-
 import java.nio.ByteBuffer;
-
-import java.security.PublicKey;
-import java.security.interfaces.RSAKey;
-
-import java.util.Arrays;
-
-import gnu.java.security.der.*;
 
 /**
  * The signature structure.

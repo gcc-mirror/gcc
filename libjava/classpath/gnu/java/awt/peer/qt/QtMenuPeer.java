@@ -74,7 +74,7 @@ public class QtMenuPeer extends QtMenuComponentPeer implements MenuPeer
 	Menu o = (Menu)owner;
 	for( int i=0; i < o.getItemCount(); i++ )
 	  {
-	    MenuItem ci = (MenuItem)o.getItem(i);
+	    MenuItem ci = o.getItem(i);
 	    if (ci instanceof Menu && ci.getPeer() != null)
 	      ((QtMenuPeer)ci.getPeer()).addItems();
 	    addItem( ci );

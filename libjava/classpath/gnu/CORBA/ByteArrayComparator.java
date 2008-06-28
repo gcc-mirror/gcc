@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 /**

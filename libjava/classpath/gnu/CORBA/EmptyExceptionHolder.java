@@ -39,10 +39,8 @@ exception statement from your version. */
 package gnu.CORBA;
 
 import org.omg.CORBA.BAD_OPERATION;
-import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.UNKNOWN;
-import org.omg.CORBA.UnknownUserException;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;

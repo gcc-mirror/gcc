@@ -1279,7 +1279,7 @@ public abstract class Arc2D extends RectangularShape
       width = (float) r.getWidth();
       height = (float) r.getHeight();
       this.start = start;
-      this.extent = (float) extent;
+      this.extent = extent;
     }
 
     /**

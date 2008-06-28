@@ -123,7 +123,7 @@ public abstract class DuplicateNameHelper
   public static DuplicateName read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();
+    input.read_string();
     DuplicateName value = new DuplicateName();
 
     value.name = input.read_string();

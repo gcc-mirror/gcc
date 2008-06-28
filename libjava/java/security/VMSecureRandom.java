@@ -38,11 +38,6 @@ exception statement from your version.  */
 
 package java.security;
 
-import gnu.classpath.SystemProperties;
-import gnu.java.security.action.GetSecurityPropertyAction;
-
-import java.net.URL;
-
 /**
  * VM-specific methods for generating real (or almost real) random
  * seeds. VM implementors should write a version of this class that

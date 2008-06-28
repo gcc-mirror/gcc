@@ -181,7 +181,7 @@ public class DTD
   public static DTD getDTD(String name)
                     throws IOException
   {
-    DTD d = (DTD) dtdHash.get(name);
+    DTD d = dtdHash.get(name);
 
     if (d == null)
       {
@@ -210,7 +210,7 @@ public class DTD
    */
   public Element getElement(int index)
   {
-    return (Element) elements.get(index);
+    return elements.get(index);
   }
 
   /**
@@ -235,7 +235,7 @@ public class DTD
    */
   public Entity getEntity(String entity_name)
   {
-    return (Entity) entityHash.get(entity_name);
+    return entityHash.get(entity_name);
   }
 
   /**

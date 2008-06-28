@@ -286,7 +286,8 @@ final class LightweightDispatcher
   private void redispatch(MouseEvent ev, Component target, int id)
   {
     Component source = ev.getComponent();
-    if (target != null)
+    assert target != null;
+    if (target.isShowing())
       {
         // Translate coordinates.
         int x = ev.getX();

@@ -127,7 +127,7 @@ public abstract class UnknownUserExceptionHelper
   public static UnknownUserException read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();
+    input.read_string();
     UnknownUserException value = new UnknownUserException();
 
     value.except = input.read_any();

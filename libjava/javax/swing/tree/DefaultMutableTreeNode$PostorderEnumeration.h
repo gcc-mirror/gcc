@@ -29,9 +29,11 @@ public: // actually package-private
   DefaultMutableTreeNode$PostorderEnumeration(::javax::swing::tree::TreeNode *);
 public:
   virtual jboolean hasMoreElements();
-  virtual ::java::lang::Object * nextElement();
+  virtual ::javax::swing::tree::TreeNode * DefaultMutableTreeNode$PostorderEnumeration$nextElement();
 private:
-  ::java::lang::Object * traverse(::java::util::Enumeration *);
+  ::javax::swing::tree::TreeNode * traverse(::java::util::Enumeration *);
+public:
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::java::util::Stack * __attribute__((aligned(__alignof__( ::java::lang::Object)))) nodes;
   ::java::util::Stack * childrenEnums;

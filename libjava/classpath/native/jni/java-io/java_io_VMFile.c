@@ -334,6 +334,94 @@ Java_java_io_VMFile_setExecutable (JNIEnv *env,
   return set_file_permissions (env, name, executable, ownerOnly,
                                CPFILE_FLAG_EXEC);
 }
+
+/*************************************************************************/
+
+JNIEXPORT jlong JNICALL
+Java_java_io_VMFile_getTotalSpace (JNIEnv *env,
+                                   jclass clazz __attribute__ ((__unused__)),
+                                   jstring path)
+{
+#ifndef WITHOUT_FILESYSTEM
+  
+  jlong result;
+  const char *_path = NULL;
+  
+  _path = (*env)->GetStringUTFChars (env, path, 0);
+  if (_path == NULL)
+    {
+      return 0L;
+    }
+
+  result = cpio_df (_path, TOTAL);
+
+  (*env)->ReleaseStringUTFChars (env, path, _path);
+
+  return result;
+
+#else /* not WITHOUT_FILESYSTEM */
+  return 0L;
+#endif /* not WITHOUT_FILESYSTEM */  
+}
+
+/*************************************************************************/
+
+JNIEXPORT jlong JNICALL
+Java_java_io_VMFile_getFreeSpace (JNIEnv *env,
+                                  jclass clazz __attribute__ ((__unused__)),
+                                  jstring path)
+{
+#ifndef WITHOUT_FILESYSTEM
+  
+  jlong result;
+  const char *_path = NULL;
+  
+  _path = (*env)->GetStringUTFChars (env, path, 0);
+  if (_path == NULL)
+    {
+      return 0L;
+    }
+
+  result = cpio_df (_path, FREE);
+
+  (*env)->ReleaseStringUTFChars (env, path, _path);
+
+  return result;
+
+#else /* not WITHOUT_FILESYSTEM */
+  return 0L;
+#endif /* not WITHOUT_FILESYSTEM */  
+}
+
+/*************************************************************************/
+
+JNIEXPORT jlong JNICALL
+Java_java_io_VMFile_getUsableSpace (JNIEnv *env,
+                                    jclass clazz __attribute__ ((__unused__)),
+                                    jstring path)
+{
+#ifndef WITHOUT_FILESYSTEM
+  
+  jlong result;
+  const char *_path = NULL;
+  
+  _path = (*env)->GetStringUTFChars (env, path, 0);
+  if (_path == NULL)
+    {
+      return 0L;
+    }
+
+  result = cpio_df (_path, USABLE);
+
+  (*env)->ReleaseStringUTFChars (env, path, _path);
+
+  return result;
+
+#else /* not WITHOUT_FILESYSTEM */
+  return 0L;
+#endif /* not WITHOUT_FILESYSTEM */  
+}
+
 /*************************************************************************/
 
 /*

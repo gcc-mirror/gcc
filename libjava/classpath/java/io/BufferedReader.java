@@ -89,11 +89,6 @@ public class BufferedReader extends Reader
   static final int DEFAULT_BUFFER_SIZE = 8192;
 
   /**
-   * The line buffer for <code>readLine</code>.
-   */
-  private StringBuffer sbuf = null;
-
-  /**
     * Create a new <code>BufferedReader</code> that will read from the 
     * specified subordinate stream with a default buffer size of 8192 chars.
     *
@@ -455,10 +450,7 @@ public class BufferedReader extends Reader
 	    pos++;
 	return str;
       }
-    if (sbuf == null)
-      sbuf = new StringBuffer(200);
-    else
-      sbuf.setLength(0);
+    StringBuilder sbuf = new StringBuilder(200);
     sbuf.append(buffer, pos, i - pos);
     pos = i;
     // We only want to return null when no characters were read before

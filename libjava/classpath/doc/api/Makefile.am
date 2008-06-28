@@ -2,7 +2,7 @@ if CREATE_API_DOCS
 noinst_DATA = html
 endif
 
-sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax
+sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/jsr166
 
 classpathbox = "<span class='logo'><a href='http://www.gnu.org/software/classpath' target='_top'>GNU Classpath</a> ($(VERSION))"
 

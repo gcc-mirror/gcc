@@ -39,10 +39,8 @@ package gnu.classpath.tools.tnameserv;
 
 import gnu.CORBA.NamingService.NamingServiceTransient;
 import gnu.classpath.tools.common.ClasspathToolParser;
-import gnu.classpath.tools.getopt.FileArgumentCallback;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
-import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
 
 /**

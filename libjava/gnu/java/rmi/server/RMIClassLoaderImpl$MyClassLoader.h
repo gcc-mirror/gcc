@@ -38,8 +38,6 @@ class gnu::java::rmi::server::RMIClassLoaderImpl$MyClassLoader : public ::java::
 
 public: // actually package-private
   RMIClassLoaderImpl$MyClassLoader(JArray< ::java::net::URL * > *, ::java::lang::ClassLoader *, ::java::lang::String *);
-private:
-  RMIClassLoaderImpl$MyClassLoader(JArray< ::java::net::URL * > *, ::java::lang::ClassLoader *);
 public:
   static ::java::lang::String * urlToAnnotation(JArray< ::java::net::URL * > *);
   virtual ::java::lang::String * getClassAnnotation();

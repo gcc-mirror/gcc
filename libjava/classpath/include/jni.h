@@ -136,12 +136,23 @@ struct _jfieldID;
 struct _jmethodID;
 typedef struct _jfieldID *jfieldID;
 typedef struct _jmethodID *jmethodID;
+
+enum _jobjectRefType
+{
+  JNIInvalidRefType    = 0,
+  JNILocalRefType      = 1,
+  JNIGlobalRefType     = 2,
+  JNIWeakGlobalRefType = 3 
+};
+
+typedef enum _jobjectRefType jobjectRefType;
 #endif 
 
 /* Version numbers.  */
 #define JNI_VERSION_1_1 0x00010001
 #define JNI_VERSION_1_2 0x00010002
 #define JNI_VERSION_1_4 0x00010004
+#define JNI_VERSION_1_6 0x00010006
 
 /* Used when releasing array elements.  */
 #define JNI_COMMIT 1
@@ -612,6 +623,7 @@ struct JNINativeInterface_
   jint     (JNICALL *GetJavaVM)                    (JNIEnv *, JavaVM **);
 
   /* ---- JNI 1.2 functions ---- */
+
   void	   (JNICALL *GetStringRegion)	           (JNIEnv *, jstring, jsize,
 					            jsize, jchar *);
   void     (JNICALL *GetStringUTFRegion)	   (JNIEnv *, jstring, jsize,
@@ -633,9 +645,14 @@ struct JNINativeInterface_
   jboolean	(JNICALL *ExceptionCheck)	   (JNIEnv *);
 
   /* ---- JNI 1.4 functions ---- */
+
   jobject (JNICALL *NewDirectByteBuffer)           (JNIEnv *, void *, jlong);
   void *  (JNICALL *GetDirectBufferAddress)        (JNIEnv *, jobject);
   jlong   (JNICALL *GetDirectBufferCapacity)       (JNIEnv *, jobject);
+
+  /* ---- JNI 1.6 functions ---- */
+
+  jobjectRefType (JNICALL *GetObjectRefType)       (JNIEnv *, jobject);
 };
 
 #ifdef __cplusplus
@@ -1488,6 +1505,8 @@ public:
   jint GetJavaVM (JavaVM ** val0)
   { return p->GetJavaVM (this, val0); }
 
+  /* ---- JNI 1.2 functions ---- */
+
   void GetStringRegion (jstring val0, jsize val1, jsize val2, jchar * val3)
   { p->GetStringRegion (this, val0, val1, val2, val3); }
 
@@ -1515,6 +1534,8 @@ public:
   jboolean ExceptionCheck ()
   { return p->ExceptionCheck (this); }
 
+  /* ---- JNI 1.4 functions ---- */
+
   jobject NewDirectByteBuffer (void *addr, jlong capacity)
   { return p->NewDirectByteBuffer (this, addr, capacity); }
 
@@ -1523,6 +1544,11 @@ public:
 
   jlong GetDirectBufferCapacity (jobject buf)
   { return p->GetDirectBufferCapacity (this, buf); }
+
+  /* ---- JNI 1.6 functions ---- */
+
+  jobjectRefType GetObjectRefType (jobject obj)
+  { return p->GetObjectRefType (this, obj); }
 };
 
 #endif /* __cplusplus */

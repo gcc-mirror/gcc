@@ -38,25 +38,10 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 
 import java.nio.ByteBuffer;
-
-import java.security.PublicKey;
-
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.net.ssl.SSLProtocolException;
 
 /**
  * An SSL handshake message. SSL handshake messages have the following

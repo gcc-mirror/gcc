@@ -41,10 +41,8 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_CairoGraphics2D.h"
 #include <gdk/gdktypes.h>
 #include <gdk/gdkprivate.h>
-#include <gdk/gdkx.h>
 
 #include <cairo-ft.h>
-#include <cairo-xlib.h>
 
 #include <stdio.h>
 #include <stdlib.h>

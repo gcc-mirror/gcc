@@ -79,20 +79,20 @@ public class XMLEventFactoryImpl
   {
     return new AttributeImpl(location,
                              new QName(namespaceURI, localName, prefix),
-                             value, QName.valueOf("CDATA"), true);
+                             value, "CDATA", true);
   }
   
   public Attribute createAttribute(String localName, String value)
   {
     return new AttributeImpl(location,
                              new QName(localName),
-                             value, QName.valueOf("CDATA"), true);
+                             value, "CDATA", true);
   }
 
   public Attribute createAttribute(QName name, String value)
   {
     return new AttributeImpl(location, name, value,
-                             QName.valueOf("CDATA"), true);
+                             "CDATA", true);
   }
 
   public Namespace createNamespace(String namespaceURI)
