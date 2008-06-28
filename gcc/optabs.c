@@ -5984,28 +5984,58 @@ gen_satfractuns_conv_libfunc (convert_optab tab,
   gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
 }
 
+/* A table of previously-created libfuncs, hashed by name.  */
+static GTY ((param_is (union tree_node))) htab_t libfunc_decls;
+
+/* Hashtable callbacks for libfunc_decls.  */
+
+static hashval_t
+libfunc_decl_hash (const void *entry)
+{
+  return htab_hash_string (IDENTIFIER_POINTER (DECL_NAME ((tree) entry)));
+}
+
+static int
+libfunc_decl_eq (const void *entry1, const void *entry2)
+{
+  return DECL_NAME ((tree) entry1) == (tree) entry2;
+}
+
 rtx
 init_one_libfunc (const char *name)
 {
-  rtx symbol;
+  tree id, decl;
+  void **slot;
+  hashval_t hash;
 
-  /* Create a FUNCTION_DECL that can be passed to
-     targetm.encode_section_info.  */
-  /* ??? We don't have any type information except for this is
-     a function.  Pretend this is "int foo()".  */
-  tree decl = build_decl (FUNCTION_DECL, get_identifier (name),
-			  build_function_type (integer_type_node, NULL_TREE));
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
+  if (libfunc_decls == NULL)
+    libfunc_decls = htab_create_ggc (37, libfunc_decl_hash,
+				     libfunc_decl_eq, NULL);
 
-  symbol = XEXP (DECL_RTL (decl), 0);
+  /* See if we have already created a libfunc decl for this function.  */
+  id = get_identifier (name);
+  hash = htab_hash_string (name);
+  slot = htab_find_slot_with_hash (libfunc_decls, id, hash, INSERT);
+  decl = (tree) *slot;
+  if (decl == NULL)
+    {
+      /* Create a new decl, so that it can be passed to
+	 targetm.encode_section_info.  */
+      /* ??? We don't have any type information except for this is
+	 a function.  Pretend this is "int foo()".  */
+      decl = build_decl (FUNCTION_DECL, get_identifier (name),
+			 build_function_type (integer_type_node, NULL_TREE));
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
 
-  /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
-     are the flags assigned by targetm.encode_section_info.  */
-  SET_SYMBOL_REF_DECL (symbol, 0);
+      /* Zap the nonsensical SYMBOL_REF_DECL for this.  What we're left with
+	 are the flags assigned by targetm.encode_section_info.  */
+      SET_SYMBOL_REF_DECL (XEXP (DECL_RTL (decl), 0), NULL);
 
-  return symbol;
+      *slot = decl;
+    }
+  return XEXP (DECL_RTL (decl), 0);
 }
 
 /* Call this to reset the function entry for one optab (OPTABLE) in mode
