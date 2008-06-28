@@ -1,3 +1,10 @@
+2008-06-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* tree.c (build_varargs_function_type_list): New.
+	(build_function_type_list_1): New.
+	(build_function_type_list): Use build_function_type_list_1.
+	* tree.h (build_varargs_function_type_list): New.
+
 2008-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/34856
