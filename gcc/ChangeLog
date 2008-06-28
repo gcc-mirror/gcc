@@ -1,3 +1,7 @@
+2008-06-28  Andrew Jenner  <andrew@codesourcery.com>
+
+	* regrename.c (build_def_use): Don't copy RTX.
+
 2008-06-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Variable Attributes): Use @ref instead of @xref.
