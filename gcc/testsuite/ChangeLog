@@ -1,3 +1,7 @@
+2008-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/20080628-1.c: New test.
+
 2008-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36364

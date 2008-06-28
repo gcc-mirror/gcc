@@ -1,3 +1,8 @@
+2008-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Reject TFmode
+	constants for E500 double.
+
 2008-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/34856
