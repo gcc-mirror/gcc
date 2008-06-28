@@ -1,9 +1,9 @@
 2008-06-28  Matthias Klose  <doko@ubuntu.com>
 
-        Import GNU Classpath (classpath-0_97_2-release).
+	Import GNU Classpath (classpath-0_97_2-release).
 
-        * Regenerate class and header files.
-        * Regenerate auto* files.
+	* Regenerate class and header files.
+	* Regenerate auto* files.
 	* gcj/javaprims.h: Define jobjectRefType.
 	* jni.cc (_Jv_JNI_GetObjectRefType): New (stub only).
 	(_Jv_JNIFunctions): Initialize GetObjectRefType.
