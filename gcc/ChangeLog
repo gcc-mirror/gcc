@@ -1,3 +1,10 @@
+2008-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/34856
+	* config/spu/spu.c (spu_builtin_splats): Do not generate
+	invalid CONST_VECTOR expressions.
+	(spu_expand_vector_init): Likewise.
+
 2008-06-26  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* targhooks.h (struct gcc_target): New member unwind_word_mode.
