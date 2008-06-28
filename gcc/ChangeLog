@@ -1,3 +1,10 @@
+2008-06-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* optabs.c (libfunc_decls): New variable.
+	(libfunc_decl_hash, libfunc_decl_eq): New functions.
+	(init_one_libfunc): Reuse decls and SYMBOL_REFs when asked
+	for the same function twice.
+
 2008-06-27 Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ashlti3, ashrti3, lshrti3): Expand using
