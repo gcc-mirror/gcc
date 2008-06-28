@@ -1,3 +1,18 @@
+2008-06-28 Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (addti3, adddi3, addsi3, addhi3, addqi3):
+	Remove FLAGS_REG clobber from expander pattern.
+	(subti3, subdi3, subsi3, subhi3, subqi3): Ditto.
+	(anddi3, andsi3, andhi3, andqi3): Ditto.
+	(iordi3, iorsi3, iorhi3, iorqi3): Ditto.
+	(xordi3, xorsi3, xorhi3, xorqi3): Ditto.
+	(negti2, negdi2, negsi2, neghi2, negqi2): Ditto.
+	(ashlsi3, ashlhi3, ashlqi3): Ditto.
+	(ashrsi3, ashrhi3, ashrqi3): Ditto.
+	(lshrsi3, lshrhi3, lshrqi3): Ditto.
+	(rotldi3, rotlsi3, rotlhi3, rotlqi3): Ditto.
+	(rotrdi3, rotrsi3, rotrhi3, rotrqi3): Ditto.
+
 2008-06-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (callused_id, var_callused,
@@ -78,8 +93,8 @@
 
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
-	* gimplify.c (omp_is_private): Don't return true if decl
-	is not already private on #pragma omp for or #pragma omp parallel for.
+	* gimplify.c (omp_is_private): Don't return true if decl is not
+	already private on #pragma omp for or #pragma omp parallel for.
 
 	PR debug/36617
 	* tree-cfg.c (struct move_stmt_d): Replace block field with
@@ -152,8 +167,7 @@
 	* config/mips/mips-protos.h (mips_split_const_insns): Declare.
 	* config/mips/mips.c (mips_split_const_insns): New function.
 	* config/mips/mips.md (move_type): New attribute.
-	(mode): Move attribute definition earlier in file.  Add "TI"
-	and "TF".
+	(mode): Move attribute definition earlier in file.  Add "TI" and "TF".
 	(dword_mode): New attribute.
 	(type): Avoid long line.  Map "move_type"s to "type"s,
 	choosing "multi" for doubleword moves if appropriate.
@@ -228,16 +242,14 @@
 	* config/arc/arc.c (arc_init): Likewise.
 	* config/arm/arm.c (neon_builtin_compare,
 	locate_neon_builtin_icode): Likewise.
-	* config/arm/pe.c (arm_mark_dllexport, arm_pe_unique_section):
-	Likewise.
+	* config/arm/pe.c (arm_mark_dllexport, arm_pe_unique_section): Likewise.
 	* config/bfin/bfin.c (bfin_init_machine_status,
 	bfin_optimize_loop): Likewise.
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Likewise.
 	* config/cris/cris.c (cris_init_expanders): Likewise.
 	* config/darwin-c.c (frameworks_in_use, add_framework): Likewise.
 	* config/darwin.c (machopic_indirection_eq,
-	machopic_indirection_name, machopic_output_indirection):
-	Likewise.
+	machopic_indirection_name, machopic_output_indirection): Likewise.
 	* config/frv/frv.c (frv_init_machine_status, frv_compare_insns,
 	frv_io_check_address, frv_io_handle_set, frv_io_handle_use_1,
 	frv_optimize_membar): Likewise.
@@ -254,15 +266,14 @@
 	* config/m68hc11/m68hc11.c (m68hc11_encode_label): Likewise.
 	* config/m68k/m68k.c (m68k_handle_option,
 	m68k_sched_md_init_global): Likewise.
-	* config/mcore/mcore.c (mcore_mark_dllexport,
-	mcore_mark_dllimport, mcore_unique_section): Likewise.
+	* config/mcore/mcore.c (mcore_mark_dllexport, mcore_mark_dllimport,
+	mcore_unique_section): Likewise.
 	* config/mips/mips.c (mips_block_move_straight,
-	mips16_rewrite_pool_refs, mips_sim_wait_regs_2,
-	mips_sim_record_set): Likewise.
+	mips16_rewrite_pool_refs, mips_sim_wait_regs_2, mips_sim_record_set):
+	Likewise.
 	* config/mmix/mmix.c (mmix_init_machine_status,
 	mmix_encode_section_info): Likewise.
-	* config/pa/pa.c (pa_init_machine_status, hppa_encode_label):
-	Likewise.
+	* config/pa/pa.c (pa_init_machine_status, hppa_encode_label): Likewise.
 	* config/rs6000/rs6000.c (rs6000_init_machine_status,
 	print_operand_address, output_toc, redefine_groups,
 	rs6000_elf_encode_section_info, machopic_output_stub): Likewise.
