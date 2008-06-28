@@ -1,3 +1,9 @@
+2008-06-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36657
+	* io/list_read.c (read_character): Check for '!' along with separators.
+	(find_nml_name): Likewise and eat the comment if found.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
