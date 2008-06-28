@@ -296,7 +296,7 @@ get_varinfo_fc (unsigned int n)
 
 /* Static IDs for the special variables.  */
 enum { nothing_id = 0, anything_id = 1, readonly_id = 2,
-       escaped_id = 3, nonlocal_id = 4, integer_id = 5 };
+       escaped_id = 3, nonlocal_id = 4, callused_id = 5, integer_id = 6 };
 
 /* Variable that represents the unknown pointer.  */
 static varinfo_t var_anything;
@@ -317,6 +317,10 @@ static tree escaped_tree;
 /* Variable that represents nonlocal memory.  */
 static varinfo_t var_nonlocal;
 static tree nonlocal_tree;
+
+/* Variable that represents call-used memory.  */
+static varinfo_t var_callused;
+static tree callused_tree;
 
 /* Variable that represents integers.  This is used for when people do things
    like &0->a.b.  */
@@ -1429,11 +1433,13 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  if (get_varinfo (t)->is_special_var)
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	  /* Merging the solution from ESCAPED needlessly increases
-	     the set.  Use ESCAPED as representative instead.  */
-	  else if (get_varinfo (t)->id == escaped_id
+	     the set.  Use ESCAPED as representative instead.
+	     Same for CALLUSED.  */
+	  else if ((get_varinfo (t)->id == escaped_id
+		    || get_varinfo (t)->id == callused_id)
 		   && !bitmap_bit_p (sol, get_varinfo (t)->id))
 	    {
-	      bitmap_set_bit (sol, escaped_id);
+	      bitmap_set_bit (sol, get_varinfo (t)->id);
 	      flag = true;
 	    }
 	  else if (add_graph_edge (graph, lhs, t))
@@ -2369,8 +2375,9 @@ solve_graph (constraint_graph_t graph)
 	      solution_empty = bitmap_empty_p (solution);
 
 	      if (!solution_empty
-		  /* Do not propagate the ESCAPED solution.  */
-		  && i != escaped_id)
+		  /* Do not propagate the ESCAPED/CALLUSED solutions.  */
+		  && i != escaped_id
+		  && i != callused_id)
 		{
 		  bitmap_iterator bi;
 
@@ -3702,6 +3709,61 @@ handle_const_call (tree stmt)
   VEC_free (ce_s, heap, lhsc);
 }
 
+/* For non-IPA mode, generate constraints necessary for a call to a
+   pure function in statement STMT.  */
+
+static void
+handle_pure_call (tree stmt)
+{
+  tree call = get_call_expr_in (stmt);
+  tree arg;
+  call_expr_arg_iterator iter;
+
+  /* Memory reached from pointer arguments is call-used.  */
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+    if (could_have_pointers (arg))
+      make_constraint_to (callused_id, arg);
+
+  /* The static chain is used as well.  */
+  if (CALL_EXPR_STATIC_CHAIN (call))
+    make_constraint_to (callused_id, CALL_EXPR_STATIC_CHAIN (call));
+
+  /* If the call returns a pointer it may point to reachable memory
+     from the arguments.  */
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+      && could_have_pointers (GIMPLE_STMT_OPERAND (stmt, 0)))
+    {
+      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+      VEC(ce_s, heap) *lhsc = NULL;
+      struct constraint_expr rhsc;
+      struct constraint_expr *lhsp;
+      unsigned j;
+
+      get_constraint_for (lhs, &lhsc);
+
+      /* If this is a nested function then it can return anything.  */
+      if (CALL_EXPR_STATIC_CHAIN (call))
+	{
+	  rhsc.var = anything_id;
+	  rhsc.offset = 0;
+	  rhsc.type = ADDRESSOF;
+	  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
+	    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+	  VEC_free (ce_s, heap, lhsc);
+	  return;
+	}
+
+      /* Else just add the call-used memory here.  Escaped variables
+         and globals will be dealt with in handle_lhs_call.  */
+      rhsc.var = callused_id;
+      rhsc.offset = 0;
+      rhsc.type = ADDRESSOF;
+      for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
+	process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+      VEC_free (ce_s, heap, lhsc);
+    }
+}
+
 /* Walk statement T setting up aliasing constraints according to the
    references found in T.  This function is the main part of the
    constraint builder.  AI points to auxiliary alias information used
@@ -3777,6 +3839,13 @@ find_func_aliases (tree origt)
 	      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
 		  && could_have_pointers (GIMPLE_STMT_OPERAND (t, 1)))
 		handle_const_call (t);
+	    }
+	  else if (flags & ECF_PURE)
+	    {
+	      handle_pure_call (t);
+	      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
+		  && could_have_pointers (GIMPLE_STMT_OPERAND (t, 1)))
+		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0));
 	    }
 	  /* Pure functions can return addresses in and of memory
 	     reachable from their arguments, but they are not an escape
@@ -4940,7 +5009,8 @@ find_what_p_points_to (tree p)
 		    pi->pt_null = 1;
 		  else if (vi->id == anything_id
 			   || vi->id == nonlocal_id
-			   || vi->id == escaped_id)
+			   || vi->id == escaped_id
+			   || vi->id == callused_id)
 		    was_pt_anything = 1;
 		  else if (vi->id == readonly_id)
 		    was_pt_anything = 1;
@@ -5007,6 +5077,15 @@ clobber_what_escaped (void)
      variable for escaped_id.  */
   vi = get_varinfo (find (escaped_id));
 
+  /* If call-used memory escapes we need to include it in the
+     set of escaped variables.  This can happen if a pure
+     function returns a pointer and this pointer escapes.  */
+  if (bitmap_bit_p (vi->solution, callused_id))
+    {
+      varinfo_t cu_vi = get_varinfo (find (callused_id));
+      bitmap_ior_into (vi->solution, cu_vi->solution);
+    }
+
   /* Mark variables in the solution call-clobbered.  */
   EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
     {
@@ -5034,6 +5113,54 @@ clobber_what_escaped (void)
     }
 
   return true;
+}
+
+/* Compute the call-used variables.  */
+
+void
+compute_call_used_vars (void)
+{
+  varinfo_t vi;
+  unsigned int i;
+  bitmap_iterator bi;
+  bool has_anything_id = false;
+
+  if (!have_alias_info)
+    return;
+
+  /* This variable may have been collapsed, let's get the real
+     variable for escaped_id.  */
+  vi = get_varinfo (find (callused_id));
+
+  /* Mark variables in the solution call-clobbered.  */
+  EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
+    {
+      varinfo_t vi = get_varinfo (i);
+
+      if (vi->is_artificial_var)
+	{
+	  /* For anything_id and integer_id we need to make
+	     all local addressable vars call-used.  */
+	  if (vi->id == anything_id
+	      || vi->id == integer_id)
+	    has_anything_id = true;
+	}
+
+      /* Only artificial heap-vars are further interesting.  */
+      if (vi->is_artificial_var && !vi->is_heap_var)
+	continue;
+
+      if ((TREE_CODE (vi->decl) == VAR_DECL
+	   || TREE_CODE (vi->decl) == PARM_DECL
+	   || TREE_CODE (vi->decl) == RESULT_DECL)
+	  && !unmodifiable_var_p (vi->decl))
+	bitmap_set_bit (gimple_call_used_vars (cfun), DECL_UID (vi->decl));
+    }
+
+  /* If anything is call-used, add all addressable locals to the set.  */
+  if (has_anything_id)
+    bitmap_ior_into (gimple_call_used_vars (cfun),
+		     gimple_addressable_vars (cfun));
 }
 
 
@@ -5192,6 +5319,27 @@ init_base_vars (void)
   rhs.var = escaped_id;
   rhs.offset = 0;
   process_constraint (new_constraint (lhs, rhs));
+
+  /* Create the CALLUSED variable, used to represent the set of call-used
+     memory.  */
+  callused_tree = create_tmp_var_raw (void_type_node, "CALLUSED");
+  var_callused = new_var_info (callused_tree, callused_id, "CALLUSED");
+  insert_vi_for_tree (callused_tree, var_callused);
+  var_callused->is_artificial_var = 1;
+  var_callused->offset = 0;
+  var_callused->size = ~0;
+  var_callused->fullsize = ~0;
+  var_callused->is_special_var = 0;
+  VEC_safe_push (varinfo_t, heap, varmap, var_callused);
+
+  /* CALLUSED = *CALLUSED, because call-used is may-deref'd at calls, etc.  */
+  lhs.type = SCALAR;
+  lhs.var = callused_id;
+  lhs.offset = 0;
+  rhs.type = DEREF;
+  rhs.var = callused_id;
+  rhs.offset = 0;
+  process_constraint_1 (new_constraint (lhs, rhs), true);
 
   /* Create the INTEGER variable, used to represent that a variable points
      to an INTEGER.  */

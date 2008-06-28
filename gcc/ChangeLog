@@ -1,3 +1,31 @@
+2008-06-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (callused_id, var_callused,
+	callused_tree): Add.
+	(handle_pure_call): New function.
+	(find_func_aliases): Call it.
+	(find_what_p_points_to): Handle the call-used set.
+	(clobber_what_escaped): Likewise.
+	(compute_call_used_vars): New function.
+	(init_base_vars): Init the call-used variable.
+	(do_sd_constraint): Do not propagate the solution from CALLUSED
+	but use CALLUSED as a placeholder.
+	(solve_graph): Likewise.
+	* tree-flow-inline.h (gimple_call_used_vars): New function.
+	* tree-flow.h (struct gimple_df): Add call_used_vars bitmap.
+	(compute_call_used_vars): Declare.
+	* tree-ssa-alias.c (set_initial_properties): Call
+	compute_call_used_vars.
+	(reset_alias_info): Clear call-used variables.
+	(add_call_clobber_ops): Assert we are not called for const/pure
+	functions.  Remove handling of them.
+	(add_call_read_ops): Handle pure functions by adding the
+	call-used set of variables as VUSEs.
+	* tree-ssa.c (init_tree_ssa): Allocate call-used bitmap.
+	(delete_tree_ssa): Free it.
+	* tree-dfa.c (remove_referenced_var): Clear the var from the
+	call-used bitmap.
+
 2008-06-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* tree.c (build_varargs_function_type_list): New.
