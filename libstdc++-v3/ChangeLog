@@ -1,3 +1,9 @@
+2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/36660
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_trigger.hpp: Remove spurious namespace end.
+
 2008-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/vec.cc (__aeabi_vec_dtor_cookie): Handle NULL array
