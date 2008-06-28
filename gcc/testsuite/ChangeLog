@@ -1,3 +1,7 @@
+2008-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/20080628-1.c: New test.
+
 2008-06-28  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/pta-field-1.c: Add return 0.

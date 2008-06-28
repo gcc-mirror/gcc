@@ -213,6 +213,9 @@
   switch (mode)
     {
     case TFmode:
+      if (TARGET_E500_DOUBLE)
+	return 0;
+
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
 
