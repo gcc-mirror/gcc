@@ -368,7 +368,8 @@ init_eh (void)
       DECL_FIELD_CONTEXT (f_cs) = sjlj_fc_type_node;
 
       tmp = build_index_type (build_int_cst (NULL_TREE, 4 - 1));
-      tmp = build_array_type (lang_hooks.types.type_for_mode (word_mode, 1),
+      tmp = build_array_type (lang_hooks.types.type_for_mode
+				(targetm.unwind_word_mode (), 1),
 			      tmp);
       f_data = build_decl (FIELD_DECL, get_identifier ("__data"), tmp);
       DECL_FIELD_CONTEXT (f_data) = sjlj_fc_type_node;
@@ -1976,6 +1977,8 @@ sjlj_emit_function_exit (void)
 static void
 sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
 {
+  enum machine_mode unwind_word_mode = targetm.unwind_word_mode ();
+  enum machine_mode filter_mode = targetm.eh_return_filter_mode ();
   int i, first_reachable;
   rtx mem, dispatch, seq, fc;
   rtx before;
@@ -1998,8 +2001,8 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
 			sjlj_fc_call_site_ofs);
   dispatch = copy_to_reg (mem);
 
-  mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs);
-  if (word_mode != ptr_mode)
+  mem = adjust_address (fc, unwind_word_mode, sjlj_fc_data_ofs);
+  if (unwind_word_mode != ptr_mode)
     {
 #ifdef POINTERS_EXTEND_UNSIGNED
       mem = convert_memory_address (ptr_mode, mem);
@@ -2009,7 +2012,10 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
     }
   emit_move_insn (cfun->eh->exc_ptr, mem);
 
-  mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs + UNITS_PER_WORD);
+  mem = adjust_address (fc, unwind_word_mode,
+			sjlj_fc_data_ofs + GET_MODE_SIZE (unwind_word_mode));
+  if (unwind_word_mode != filter_mode)
+    mem = convert_to_mode (filter_mode, mem, 0);
   emit_move_insn (cfun->eh->filter, mem);
 
   /* Jump to one of the directly reachable regions.  */
@@ -3044,7 +3050,7 @@ expand_builtin_extend_pointer (tree addr_tree)
   extend = 1;
 #endif
 
-  return convert_modes (word_mode, ptr_mode, addr, extend);
+  return convert_modes (targetm.unwind_word_mode (), ptr_mode, addr, extend);
 }
 
 /* In the following functions, we represent entries in the action table

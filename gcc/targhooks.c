@@ -156,7 +156,7 @@ default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 enum machine_mode
 default_eh_return_filter_mode (void)
 {
-  return word_mode;
+  return targetm.unwind_word_mode ();
 }
 
 enum machine_mode
@@ -167,6 +167,12 @@ default_libgcc_cmp_return_mode (void)
 
 enum machine_mode
 default_libgcc_shift_count_mode (void)
+{
+  return word_mode;
+}
+
+enum machine_mode
+default_unwind_word_mode (void)
 {
   return word_mode;
 }

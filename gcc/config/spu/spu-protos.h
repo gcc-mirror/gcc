@@ -19,7 +19,6 @@
 
 #include "rtl.h"
 
-extern enum machine_mode spu_eh_return_filter_mode (void);
 extern void spu_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern void builtin_define_std (const char *);
 extern void spu_optimization_options (int level, int size);
@@ -76,7 +75,6 @@ extern rtx gen_cpat_const (rtx * ops);
 extern void constant_to_array (enum machine_mode mode, rtx x,
 			       unsigned char *arr);
 extern rtx array_to_constant (enum machine_mode mode, unsigned char *arr);
-extern enum machine_mode spu_eh_return_filter_mode (void);
 extern void spu_allocate_stack (rtx op0, rtx op1);
 extern void spu_restore_stack_nonlocal (rtx op0, rtx op1);
 extern void spu_restore_stack_block (rtx op0, rtx op1);

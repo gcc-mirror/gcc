@@ -176,6 +176,8 @@ static int cpat_info(unsigned char *arr, int size, int *prun, int *pstart);
 static enum immediate_class classify_immediate (rtx op,
 						enum machine_mode mode);
 
+static enum machine_mode spu_unwind_word_mode (void);
+
 static enum machine_mode
 spu_libgcc_cmp_return_mode (void);
 
@@ -193,8 +195,8 @@ tree spu_builtin_types[SPU_BTI_MAX];
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN spu_expand_builtin
 
-#undef TARGET_EH_RETURN_FILTER_MODE
-#define TARGET_EH_RETURN_FILTER_MODE spu_eh_return_filter_mode
+#undef TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE spu_unwind_word_mode
 
 /* The .8byte directive doesn't seem to work well for a 32 bit
    architecture. */
@@ -4305,12 +4307,10 @@ spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
   return true;
 }
 
-enum machine_mode
-spu_eh_return_filter_mode (void)
+static enum machine_mode
+spu_unwind_word_mode (void)
 {
-  /* We would like this to be SImode, but sjlj exceptions seems to work
-     only with word_mode. */
-  return TImode;
+  return SImode;
 }
 
 /* Decide whether we can make a sibling call to a function.  DECL is the
