@@ -3768,13 +3768,13 @@ targets.  You can use @code{__declspec (selectany)} as a synonym for
 compilers.
 
 @item weak
-The @code{weak} attribute is described in @xref{Function Attributes}.
+The @code{weak} attribute is described in @ref{Function Attributes}.
 
 @item dllimport
-The @code{dllimport} attribute is described in @xref{Function Attributes}.
+The @code{dllimport} attribute is described in @ref{Function Attributes}.
 
 @item dllexport
-The @code{dllexport} attribute is described in @xref{Function Attributes}.
+The @code{dllexport} attribute is described in @ref{Function Attributes}.
 
 @end table
 
@@ -3955,21 +3955,21 @@ Three attributes currently are defined for PowerPC configurations:
 @code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
 For full documentation of the struct attributes please see the
-documentation in the @xref{i386 Variable Attributes}, section.
+documentation in @ref{i386 Variable Attributes}.
 
 For documentation of @code{altivec} attribute please see the
-documentation in the @xref{PowerPC Type Attributes}, section.
+documentation in @ref{PowerPC Type Attributes}.
 
 @subsection SPU Variable Attributes
 
 The SPU supports the @code{spu_vector} attribute for variables.  For
-documentation of this attribute please see the documentation in the
-@xref{SPU Type Attributes}, section.
+documentation of this attribute please see the documentation in
+@ref{SPU Type Attributes}.
 
 @subsection Xstormy16 Variable Attributes
 
 One attribute is currently defined for xstormy16 configurations:
-@code{below100}
+@code{below100}.
 
 @table @code
 @item below100
@@ -4283,6 +4283,8 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects will be unable to use the same
 typeinfo node and exception handling will break.
 
+@end table
+
 @subsection ARM Type Attributes
 
 On those ARM targets that support @code{dllimport} (such as Symbian
@@ -4310,7 +4312,9 @@ most Symbian OS code uses @code{__declspec}.)
 @subsection i386 Type Attributes
 
 Two attributes are currently defined for i386 configurations:
-@code{ms_struct} and @code{gcc_struct}
+@code{ms_struct} and @code{gcc_struct}.
+
+@table @code
 
 @item ms_struct
 @itemx gcc_struct
@@ -4338,8 +4342,8 @@ packed))}.
 Three attributes currently are defined for PowerPC configurations:
 @code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
-For full documentation of the struct attributes please see the
-documentation in the @xref{i386 Type Attributes}, section.
+For full documentation of the @code{ms_struct} and @code{gcc_struct} 
+attributes please see the documentation in @ref{i386 Type Attributes}.
 
 The @code{altivec} attribute allows one to declare AltiVec vector data
 types supported by the AltiVec Programming Interface Manual.  The
@@ -5283,7 +5287,6 @@ GCC provides three magic variables which hold the name of the current
 function, as a string.  The first of these is @code{__func__}, which
 is part of the C99 standard:
 
-@display
 The identifier @code{__func__} is implicitly declared by the translator
 as if, immediately following the opening brace of each function
 definition, the declaration
@@ -5292,9 +5295,9 @@ definition, the declaration
 static const char __func__[] = "function-name";
 @end smallexample
 
+@noindent
 appeared, where function-name is the name of the lexically-enclosing
 function.  This name is the unadorned name of the function.
-@end display
 
 @code{__FUNCTION__} is another name for @code{__func__}.  Older
 versions of GCC recognize only this name.  However, it is not
@@ -12316,7 +12319,7 @@ interface table mechanism, instead of regular virtual table dispatch.
 
 @end table
 
-See also @xref{Namespace Association}.
+See also @ref{Namespace Association}.
 
 @node Namespace Association
 @section Namespace Association
@@ -12543,7 +12546,7 @@ should work just fine for standard-conforming code.
 Previously it was possible to use an empty prototype parameter list to
 indicate an unspecified number of parameters (like C), rather than no
 parameters, as C++ demands.  This feature has been removed, except where
-it is required for backwards compatibility @xref{Backwards Compatibility}.
+it is required for backwards compatibility.   @xref{Backwards Compatibility}.
 @end table
 
 G++ allows a virtual function returning @samp{void *} to be overridden
@@ -12594,7 +12597,7 @@ used to be acceptable in previous drafts of the standard, such as the ARM
 compilation of C++ written to such drafts, G++ contains some backwards
 compatibilities.  @emph{All such backwards compatibility features are
 liable to disappear in future versions of G++.} They should be considered
-deprecated @xref{Deprecated Features}.
+deprecated.   @xref{Deprecated Features}.
 
 @table @code
 @item For scope

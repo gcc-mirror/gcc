@@ -1,3 +1,14 @@
+2008-06-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Variable Attributes): Use @ref instead of @xref.
+	(Type Attributes): Fix nesting of @table and @subsection.  Adjust
+	punctuation.  Use @ref instead of @xref.
+	(Function Names): Remove stray @display/@end display.
+	(C++ Attributes): Use @ref instead of @xref.
+	(Deprecated Features): Fix punctuation around @xref.
+	(Backwards Compatibility): Likewise.
+	* doc/rtl.texi (Incdec): Remove stray @table/@end table.
+
 2008-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Reject TFmode
