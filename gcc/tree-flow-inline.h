@@ -66,6 +66,15 @@ gimple_call_clobbered_vars (const struct function *fun)
   return fun->gimple_df->call_clobbered_vars;
 }
 
+/* Call-used variables in the function.  If bit I is set, then
+   REFERENCED_VARS (I) is call-used at pure function call-sites.  */
+static inline bitmap
+gimple_call_used_vars (const struct function *fun)
+{
+  gcc_assert (fun && fun->gimple_df);
+  return fun->gimple_df->call_used_vars;
+}
+
 /* Array of all variables referenced in the function.  */
 static inline htab_t
 gimple_referenced_vars (const struct function *fun)

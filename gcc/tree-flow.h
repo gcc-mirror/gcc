@@ -162,6 +162,10 @@ struct gimple_df GTY(())
      REFERENCED_VARS (I) is call-clobbered.  */
   bitmap call_clobbered_vars;
 
+  /* Call-used variables in the function.  If bit I is set, then
+     REFERENCED_VARS (I) is call-used at pure function call-sites.  */
+  bitmap call_used_vars;
+
   /* Addressable variables in the function.  If bit I is set, then
      REFERENCED_VARS (I) has had its address taken.  Note that
      CALL_CLOBBERED_VARS and ADDRESSABLE_VARS are not related.  An
@@ -1174,6 +1178,7 @@ tree gimple_fold_indirect_ref (tree);
 /* In tree-ssa-structalias.c */
 bool find_what_p_points_to (tree);
 bool clobber_what_escaped (void);
+void compute_call_used_vars (void);
 
 /* In tree-ssa-live.c */
 extern void remove_unused_locals (void);

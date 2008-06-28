@@ -1,3 +1,7 @@
+2008-06-28  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr24287.c: Remove XFAIL.
+
 2008-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/arm_cxa_vec2.C: New test.

@@ -746,6 +746,7 @@ remove_referenced_var (tree var)
   unsigned int uid = DECL_UID (var);
 
   clear_call_clobbered (var);
+  bitmap_clear_bit (gimple_call_used_vars (cfun), uid);
   if ((v_ann = var_ann (var)))
     {
       /* Preserve var_anns of globals, but clear their alias info.  */

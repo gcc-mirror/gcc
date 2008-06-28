@@ -505,7 +505,7 @@ compute_tag_properties (void)
   VEC_free (tree, heap, taglist);
 }
 
-/* Set up the initial variable clobbers and globalness.
+/* Set up the initial variable clobbers, call-uses and globalness.
    When this function completes, only tags whose aliases need to be
    clobbered will be set clobbered.  Tags clobbered because they   
    contain call clobbered vars are handled in compute_tag_properties.  */
@@ -542,6 +542,8 @@ set_initial_properties (struct alias_info *ai)
       any_pt_anything = true;
       pt_anything_mask |= ESCAPE_TO_CALL;
     }
+
+  compute_call_used_vars ();
 
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
@@ -1999,6 +2001,9 @@ reset_alias_info (void)
 
   /* There should be no call-clobbered variable left.  */
   gcc_assert (bitmap_empty_p (gimple_call_clobbered_vars (cfun)));
+
+  /* Clear the call-used variables.  */
+  bitmap_clear (gimple_call_used_vars (cfun));
 
   /* Clear flow-sensitive points-to information from each SSA name.  */
   for (i = 1; i < num_ssa_names; i++)
