@@ -1,3 +1,8 @@
+2008-06-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* doc/rtl.texi (const_vector): Document const_fixed as legitimate
+	element type of const_vector.
+
 2008-06-28 Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (addti3, adddi3, addsi3, addhi3, addqi3):
