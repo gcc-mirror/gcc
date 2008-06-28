@@ -104,7 +104,7 @@ public class HeadlessInput
   /**
    * Create an instance, reading from the given buffer.
    * 
-   * @param a_stram a stream from where the data will be read.
+   * @param a_stream a stream from where the data will be read.
    * @param inheritSettings a stream from that endian and other settings are
    * inherited.
    */
@@ -151,7 +151,7 @@ public class HeadlessInput
     else
       {
         subsequentCalls = true;
-        Serializable value = (Serializable) Vio.readValue(this, NONE, null,
+        Serializable value = Vio.readValue(this, NONE, null,
           null, repository_id, null, null);
         return value;
       }
@@ -167,7 +167,7 @@ public class HeadlessInput
     else
       {
         subsequentCalls = true;
-        value = (Serializable) Vio.readValue(this, NONE, value, null, null,
+        value = Vio.readValue(this, NONE, value, null, null,
           null, null);
         return value;
       }
@@ -186,7 +186,7 @@ public class HeadlessInput
           {
             subsequentCalls = true;
             Serializable value = (Serializable) Vio.instantiateAnyWay(clz);
-            value = (Serializable) Vio.readValue(this, NONE, value, null, null,
+            value = Vio.readValue(this, NONE, value, null, null,
               null, null);
             return value;
           }

@@ -542,7 +542,7 @@ final class XmlParser
   private void error(String message, char textFound, String textExpected)
     throws SAXException
   {
-    error(message, new Character(textFound).toString(), textExpected);
+    error(message, Character.toString(textFound), textExpected);
   }
 
   /**
@@ -2281,7 +2281,7 @@ loop2:
       {
         // too big for surrogate
         error("character reference " + value + " is too large for UTF-16",
-              new Integer(value).toString(), null);
+              Integer.toString(value), null);
       }
     
   }
@@ -2375,7 +2375,7 @@ loop2:
       {
         // too big for surrogate
         error("character reference " + value + " is too large for UTF-16",
-              new Integer(value).toString(), null);
+              Integer.toString(value), null);
       }
     if (doFlush)
       {
@@ -3095,7 +3095,6 @@ loop:
     nameBufferPos = 0;
 
     // Read the first character.
-loop:
     while (true)
       {
         c = readCh();
@@ -3295,7 +3294,7 @@ loop:
     catch (EOFException e)
       {
         error("end of input while looking for delimiter (started on line "
-              + startLine + ')', null, new Character(delim).toString());
+              + startLine + ')', null, Character.toString(delim));
       }
     inLiteral = false;
     expandPE = saved;
@@ -3599,7 +3598,7 @@ loop:
     
     if (c != delim)
       {
-        error("required character", c, new Character(delim).toString());
+        error("required character", c, Character.toString(delim));
       }
   }
   
@@ -4299,7 +4298,7 @@ loop:
       }
     else
       {
-        pushString(null, new Character(c).toString());
+        pushString(null, Character.toString(c));
       }
   }
 

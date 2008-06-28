@@ -163,7 +163,7 @@ public final class Engine
           }
         else if (key.equalsIgnoreCase(ALG_ALIAS + service + "." + algorithm))
           {
-            alias = (String) provider.getProperty(key);
+            alias = provider.getProperty(key);
             if (! algorithm.equalsIgnoreCase(alias)) // does not refer to itself
               {
                 algorithm = alias;

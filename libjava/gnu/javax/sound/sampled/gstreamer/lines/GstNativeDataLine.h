@@ -11,6 +11,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace javax
     {
       namespace sound
@@ -22,6 +26,7 @@ extern "Java"
             namespace lines
             {
                 class GstNativeDataLine;
+                class GstPipeline;
             }
           }
         }
@@ -35,6 +40,11 @@ class gnu::javax::sound::sampled::gstreamer::lines::GstNativeDataLine : public :
 
 public:
   GstNativeDataLine();
+  static ::gnu::javax::sound::sampled::gstreamer::lines::GstPipeline * createSourcePipeline(jint);
+private:
+  static void init_id_cache();
+  static jboolean setup_sink_pipeline(::gnu::classpath::Pointer *);
+public:
   static ::java::lang::Class class$;
 };
 

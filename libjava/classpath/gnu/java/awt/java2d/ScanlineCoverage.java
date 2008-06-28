@@ -157,7 +157,7 @@ public final class ScanlineCoverage
    * A data object that carries information about pixel coverage on a scanline.
    * The data consists of a starting X position on the scanline, the
    * length of the range in pixels and the actual coverage value.
-´  */
+   **/
   public static final class Range
   {
     /**

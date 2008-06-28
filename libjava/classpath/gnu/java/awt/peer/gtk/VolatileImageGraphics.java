@@ -68,14 +68,14 @@ public class VolatileImageGraphics extends ComponentGraphics
   public VolatileImageGraphics(GtkVolatileImage img)
   {
     this.owner = img;
-    cairo_t = initFromVolatile( owner.nativePointer, img.width, img.height );
+    cairo_t = initFromVolatile( owner.nativePointer );
     setup( cairo_t );
   }
 
   private VolatileImageGraphics(VolatileImageGraphics copy)
   {
     this.owner = copy.owner;
-    cairo_t = initFromVolatile(owner.nativePointer, owner.width, owner.height);
+    cairo_t = initFromVolatile(owner.nativePointer);
     copy( copy, cairo_t );
   }
 

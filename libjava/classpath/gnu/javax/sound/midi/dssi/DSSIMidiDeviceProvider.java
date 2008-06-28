@@ -44,8 +44,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import gnu.classpath.Configuration;
-import gnu.javax.sound.midi.alsa.AlsaMidiSequencerDevice;
-
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.spi.MidiDeviceProvider;

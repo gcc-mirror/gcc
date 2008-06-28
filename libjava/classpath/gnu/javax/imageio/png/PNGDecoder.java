@@ -140,7 +140,7 @@ public class PNGDecoder
 
   /**
    * Parse the appropriate color type and create an AWT raster for it.
-   * @param raster - the file header.
+   * @param header - the file header.
    */
   public WritableRaster getRaster( PNGHeader header )
   {

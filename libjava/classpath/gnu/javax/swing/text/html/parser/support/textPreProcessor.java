@@ -109,7 +109,7 @@ public class textPreProcessor
    * \r or \r\n mutate into \n. Tabs are
    * preserved.
    * The content of the passed buffer is destroyed.
-   * @param text
+   * @param a_text
    * @return
    */
   public char[] preprocessPreformatted(StringBuffer a_text)

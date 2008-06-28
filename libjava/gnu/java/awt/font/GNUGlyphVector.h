@@ -93,6 +93,7 @@ private:
   JArray< jfloat > * pos;
   JArray< ::java::awt::geom::AffineTransform * > * transforms;
   jint layoutFlags;
+  ::java::awt::Shape * cleanOutline;
 public:
   static ::java::lang::Class class$;
 };

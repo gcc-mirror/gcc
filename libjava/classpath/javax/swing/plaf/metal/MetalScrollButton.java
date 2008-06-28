@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;

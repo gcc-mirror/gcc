@@ -96,7 +96,7 @@ public abstract class _NamingContextExtImplBase
 
   public OutputStream _invoke(String method, InputStream in, ResponseHandler rh)
   {
-    Integer call_method = (Integer) _methods.get(method);
+    Integer call_method = _methods.get(method);
 
     if (call_method == null)
 
@@ -206,7 +206,7 @@ public abstract class _NamingContextExtImplBase
   {
     Streamable result = null;
 
-    Integer call_method = (Integer) _methods.get(request.operation());
+    Integer call_method = _methods.get(request.operation());
 
     if (call_method == null)
       {

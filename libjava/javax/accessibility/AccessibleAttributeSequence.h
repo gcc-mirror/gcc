@@ -29,7 +29,7 @@ class javax::accessibility::AccessibleAttributeSequence : public ::java::lang::O
 {
 
 public:
-  AccessibleAttributeSequence();
+  AccessibleAttributeSequence(jint, jint, ::javax::swing::text::AttributeSet *);
   ::javax::swing::text::AttributeSet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) attributes;
   jint startIndex;
   jint endIndex;

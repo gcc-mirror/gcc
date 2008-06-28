@@ -40,7 +40,6 @@ package gnu.javax.net.ssl.provider;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 public final class ProtocolVersion
   implements Comparable<ProtocolVersion>, Constructed

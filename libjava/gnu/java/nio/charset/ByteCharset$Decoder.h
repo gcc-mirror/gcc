@@ -21,6 +21,7 @@ extern "Java"
         {
             class ByteCharset;
             class ByteCharset$Decoder;
+            class ByteDecodeLoopHelper;
         }
       }
     }
@@ -46,8 +47,11 @@ public: // actually package-private
   ByteCharset$Decoder(::gnu::java::nio::charset::ByteCharset *);
 public: // actually protected
   ::java::nio::charset::CoderResult * decodeLoop(::java::nio::ByteBuffer *, ::java::nio::CharBuffer *);
+public: // actually package-private
+  static JArray< jchar > * access$0(::gnu::java::nio::charset::ByteCharset$Decoder *);
 private:
   JArray< jchar > * __attribute__((aligned(__alignof__( ::java::nio::charset::CharsetDecoder)))) lookup;
+  ::gnu::java::nio::charset::ByteDecodeLoopHelper * helper;
 public:
   static ::java::lang::Class class$;
 };

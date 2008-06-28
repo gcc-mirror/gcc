@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package gnu.java.io;
 
-import java.util.StringTokenizer;
-
 /**
  * We had many changes in File.java, URLStreamHandler.java etc. to handle
  * path representations on different platforms (Windows/Unix-family).

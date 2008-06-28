@@ -43,8 +43,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 
 /*
  * This class is a reference version, mainly for compiling a class library
@@ -298,12 +296,27 @@ final class VMClass
    */
   static String getSimpleName(Class klass)
   {
+    if (isAnonymousClass(klass))
+      return "";
     if (isArray(klass))
       {
 	return getComponentType(klass).getSimpleName() + "[]";
       }
     String fullName = getName(klass);
-    return fullName.substring(fullName.lastIndexOf(".") + 1);
+    int pos = fullName.lastIndexOf("$");
+    if (pos == -1)
+      pos = 0;
+    else
+      {
+	++pos;
+	while (Character.isDigit(fullName.charAt(pos)))
+	  ++pos;
+      }
+    int packagePos = fullName.lastIndexOf(".", pos);
+    if (packagePos == -1)
+      return fullName.substring(pos);
+    else
+      return fullName.substring(packagePos + 1);
   }
 
   /**
@@ -357,6 +370,8 @@ final class VMClass
    */
   static String getCanonicalName(Class klass)
   {
+    if (isLocalClass(klass) || isAnonymousClass(klass))
+      return null;
     if (isArray(klass))
       {
 	String componentName = getComponentType(klass).getCanonicalName();
@@ -368,9 +383,9 @@ final class VMClass
 	String memberName = getDeclaringClass(klass).getCanonicalName();
 	if (memberName != null)
 	  return memberName + "." + getSimpleName(klass);
+	else
+	  return memberName;
       }
-    if (isLocalClass(klass) || isAnonymousClass(klass))
-      return null;
     return getName(klass);
   }
 

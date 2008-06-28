@@ -41,8 +41,6 @@ package java.awt.image;
 import gnu.java.awt.Buffers;
 import gnu.java.awt.ClasspathGraphicsEnvironment;
 import gnu.java.awt.ComponentDataBlitOp;
-import gnu.java.awt.peer.gtk.CairoSurface;
-
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;

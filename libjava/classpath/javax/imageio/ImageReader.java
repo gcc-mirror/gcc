@@ -429,7 +429,7 @@ public abstract class ImageReader
    * IllegalStateException).  If input is null then the current input
    * source will be removed.
    *
-   * @param input the input source object
+   * @param in the input source object
    * @param seekForwardOnly true if this reader should be allowed to
    * read input from the data stream more than once, false otherwise
    *
@@ -1498,7 +1498,7 @@ public abstract class ImageReader
    * null.  IllegalArgumentException is thrown if either region will
    * contain 0 pixels after clipping.
    *
-   * @param image read parameters, or null
+   * @param param read parameters, or null
    * @param srcWidth the width of the source image
    * @param srcHeight the height of the source image
    * @param image the destination image, or null
@@ -1734,7 +1734,7 @@ public abstract class ImageReader
   public ImageTypeSpecifier getRawImageType (int imageIndex)
     throws IOException
   {
-    return (ImageTypeSpecifier) getImageTypes(imageIndex).next();
+    return getImageTypes(imageIndex).next();
   }
 
   /**
@@ -1828,7 +1828,7 @@ public abstract class ImageReader
    * warning listeners will be notified of read progress, changes in
    * sample sets and warnings respectively.
    *
-   * @param the index of the image frame to read
+   * @param imageIndex the index of the image frame to read
    *
    * @return a buffered image
    *
@@ -1855,8 +1855,8 @@ public abstract class ImageReader
    * The source and destination band settings are checked with a call
    * to checkReadParamBandSettings.
    *
-   * @param the index of the image frame to read
-   * @param the image read parameters
+   * @param imageIndex the index of the image frame to read
+   * @param param the image read parameters
    *
    * @return an IIOImage
    *
@@ -1902,7 +1902,7 @@ public abstract class ImageReader
    * Each set of source and destination band settings are checked with
    * a call to checkReadParamBandSettings.
    *
-   * @param an iterator over the image read parameters
+   * @param params iterator over the image read parameters
    *
    * @return an IIOImage
    *
@@ -1938,8 +1938,8 @@ public abstract class ImageReader
    * before this method returns and so listeners will not necessarily
    * be notified.
    *
-   * @param the index of the image frame to read
-   * @param the image read parameters
+   * @param imageIndex the index of the image frame to read
+   * @param param the image read parameters
    *
    * @return a rendered image
    *

@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
+
 import gnu.java.awt.AWTUtilities;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.dnd.GtkMouseDragGestureRecognizer;
@@ -170,7 +172,10 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   static
   {
-    System.loadLibrary("gtkpeer");
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("gtkpeer");
+      }
 
     /**
      * Gotta do that first.

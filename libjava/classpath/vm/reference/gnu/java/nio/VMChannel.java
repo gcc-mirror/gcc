@@ -256,7 +256,6 @@ public final class VMChannel
    * Assumes the that buffer list constains DirectBuffers.  Will perform
    * as gathering write.
    * 
-   * @param fd
    * @param srcs
    * @param offset
    * @param length

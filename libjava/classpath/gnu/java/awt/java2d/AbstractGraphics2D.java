@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.awt.java2d;
 
+import gnu.java.util.LRUCache;
+
 import java.awt.AWTError;
 import java.awt.AlphaComposite;
 import java.awt.AWTPermission;
@@ -80,7 +82,9 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
 import java.text.AttributedCharacterIterator;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -152,22 +156,46 @@ public abstract class AbstractGraphics2D
 {
 
   /**
+   * Wether we use anti aliasing for rendering text by default or not.
+   */
+  private static final boolean DEFAULT_TEXT_AA =
+    Boolean.getBoolean("gnu.java2d.default_text_aa");
+
+  /**
    * The default font to use on the graphics object.
    */
   private static final Font FONT = new Font("SansSerif", Font.PLAIN, 12);
 
   /**
+   * The size of the LRU cache used for caching GlyphVectors.
+   */
+  private static final int GV_CACHE_SIZE = 50;
+
+  /**
    * Caches certain shapes to avoid massive creation of such Shapes in
    * the various draw* and fill* methods.
    */
-  private static final ThreadLocal<ShapeCache> shapeCache =
-    new ThreadLocal<ShapeCache>();
+  private static final ShapeCache shapeCache = new ShapeCache();
 
   /**
-   * The scanline converters by thread.
+   * A pool of scanline converters. It is important to reuse scanline
+   * converters because they keep their datastructures in place. We pool them
+   * for use in multiple threads.
    */
-  private static final ThreadLocal<ScanlineConverter> scanlineConverters =
-    new ThreadLocal<ScanlineConverter>();
+  private static final LinkedList<ScanlineConverter> scanlineConverters =
+    new LinkedList<ScanlineConverter>();
+
+  /**
+   * Caches glyph vectors for better drawing performance.
+   */
+  private static final Map<TextCacheKey,GlyphVector> gvCache =
+    Collections.synchronizedMap(new LRUCache<TextCacheKey,GlyphVector>(GV_CACHE_SIZE));
+
+  /**
+   * This key is used to search in the gvCache without allocating a new
+   * key each time.
+   */
+  private static final TextCacheKey searchTextKey = new TextCacheKey();
 
   /**
    * The transformation for this Graphics2D instance
@@ -484,14 +512,25 @@ public abstract class AbstractGraphics2D
    */
   public void drawString(String text, int x, int y)
   {
-    if (isOptimized)
-      rawDrawString(text, x, y);
-    else
+    GlyphVector gv;
+    synchronized (searchTextKey)
       {
-        FontRenderContext ctx = getFontRenderContext();
-        GlyphVector gv = font.createGlyphVector(ctx, text.toCharArray());
-        drawGlyphVector(gv, x, y);
+        TextCacheKey tck = searchTextKey;
+        FontRenderContext frc = getFontRenderContext();
+        tck.setString(text);
+        tck.setFont(font);
+        tck.setFontRenderContext(frc);
+        if (gvCache.containsKey(tck))
+          {
+            gv = gvCache.get(tck);
+          }
+        else
+          {
+            gv = font.createGlyphVector(frc, text.toCharArray());
+            gvCache.put(new TextCacheKey(text, font, frc), gv);
+          }
       }
+    drawGlyphVector(gv, x, y);
   }
 
   /**
@@ -949,7 +988,10 @@ public abstract class AbstractGraphics2D
 
   public FontRenderContext getFontRenderContext()
   {
-    return new FontRenderContext(transform, false, true);
+    // Protect our own transform from beeing modified.
+    AffineTransform tf = new AffineTransform(transform);
+    // TODO: Determine antialias and fractionalmetrics parameters correctly.
+    return new FontRenderContext(tf, false, true);
   }
 
   /**
@@ -992,8 +1034,10 @@ public abstract class AbstractGraphics2D
         // Copy the clip. If it's a Rectangle, preserve that for optimization.
         if (clip instanceof Rectangle)
           copy.clip = new Rectangle((Rectangle) clip);
-        else
+        else if (clip != null)
           copy.clip = new GeneralPath(clip);
+        else
+          copy.clip = null;
 
 	copy.renderingHints = new RenderingHints(null);
 	copy.renderingHints.putAll(renderingHints);
@@ -1163,7 +1207,7 @@ public abstract class AbstractGraphics2D
       }
     else
       {
-        ShapeCache sc = getShapeCache();
+        ShapeCache sc = shapeCache;
         if (sc.line == null)
           sc.line = new Line2D.Float();
         sc.line.setLine(x1, y1, x2, y2);
@@ -1175,11 +1219,13 @@ public abstract class AbstractGraphics2D
   {
     if (isOptimized)
       {
-        rawDrawRect(x, y, w, h);
+        int tx = (int) transform.getTranslateX();
+        int ty = (int) transform.getTranslateY();
+        rawDrawRect(x + tx, y + ty, w, h);
       }
     else
       {
-        ShapeCache sc = getShapeCache();
+        ShapeCache sc = shapeCache;
         if (sc.rect == null)
           sc.rect = new Rectangle();
         sc.rect.setBounds(x, y, w, h);
@@ -1204,7 +1250,7 @@ public abstract class AbstractGraphics2D
       }
     else
       {
-        ShapeCache sc = getShapeCache();
+        ShapeCache sc = shapeCache;
         if (sc.rect == null)
           sc.rect = new Rectangle();
         sc.rect.setBounds(x, y, width, height);
@@ -1249,7 +1295,7 @@ public abstract class AbstractGraphics2D
   public void drawRoundRect(int x, int y, int width, int height, int arcWidth,
                             int arcHeight)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.roundRect == null)
       sc.roundRect = new RoundRectangle2D.Float();
     sc.roundRect.setRoundRect(x, y, width, height, arcWidth, arcHeight);
@@ -1269,7 +1315,7 @@ public abstract class AbstractGraphics2D
   public void fillRoundRect(int x, int y, int width, int height, int arcWidth,
                             int arcHeight)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.roundRect == null)
       sc.roundRect = new RoundRectangle2D.Float();
     sc.roundRect.setRoundRect(x, y, width, height, arcWidth, arcHeight);
@@ -1286,7 +1332,7 @@ public abstract class AbstractGraphics2D
    */
   public void drawOval(int x, int y, int width, int height)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.ellipse == null)
       sc.ellipse = new Ellipse2D.Float();
     sc.ellipse.setFrame(x, y, width, height);
@@ -1303,7 +1349,7 @@ public abstract class AbstractGraphics2D
    */
   public void fillOval(int x, int y, int width, int height)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.ellipse == null)
       sc.ellipse = new Ellipse2D.Float();
     sc.ellipse.setFrame(x, y, width, height);
@@ -1316,7 +1362,7 @@ public abstract class AbstractGraphics2D
   public void drawArc(int x, int y, int width, int height, int arcStart,
                       int arcAngle)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.arc == null)
       sc.arc = new Arc2D.Float();
     sc.arc.setArc(x, y, width, height, arcStart, arcAngle, Arc2D.OPEN);
@@ -1329,7 +1375,7 @@ public abstract class AbstractGraphics2D
   public void fillArc(int x, int y, int width, int height, int arcStart,
                       int arcAngle)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.arc == null)
       sc.arc = new Arc2D.Float();
     sc.arc.setArc(x, y, width, height, arcStart, arcAngle, Arc2D.PIE);
@@ -1338,7 +1384,7 @@ public abstract class AbstractGraphics2D
 
   public void drawPolyline(int[] xPoints, int[] yPoints, int npoints)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.polyline == null)
       sc.polyline = new GeneralPath();
     GeneralPath p = sc.polyline;
@@ -1355,7 +1401,7 @@ public abstract class AbstractGraphics2D
    */
   public void drawPolygon(int[] xPoints, int[] yPoints, int npoints)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.polygon == null)
       sc.polygon = new Polygon();
     sc.polygon.reset();
@@ -1370,7 +1416,7 @@ public abstract class AbstractGraphics2D
    */
   public void fillPolygon(int[] xPoints, int[] yPoints, int npoints)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.polygon == null)
       sc.polygon = new Polygon();
     sc.polygon.reset();
@@ -1559,8 +1605,9 @@ public abstract class AbstractGraphics2D
       {
         Object v = renderingHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
         // We default to antialiasing for text rendering.
-        antialias = (v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON
-                     || v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        antialias = v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                    || (v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT
+                         && DEFAULT_TEXT_AA);
       }
     else
       {
@@ -1569,12 +1616,15 @@ public abstract class AbstractGraphics2D
       }
     ScanlineConverter sc = getScanlineConverter();
     int resolution = 0;
+    int yRes = 0;
     if (antialias)
       {
         // Adjust resolution according to rendering hints.
         resolution = 2;
+        yRes = 4;
       }
-    sc.renderShape(this, s, clip, transform, resolution, renderingHints);
+    sc.renderShape(this, s, clip, transform, resolution, yRes, renderingHints);
+    freeScanlineConverter(sc);
   }
 
   /**
@@ -1606,7 +1656,7 @@ public abstract class AbstractGraphics2D
    */
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.line == null)
       sc.line = new Line2D.Float();
     sc.line.setLine(x0, y0, x1, y1);
@@ -1615,27 +1665,11 @@ public abstract class AbstractGraphics2D
 
   protected void rawDrawRect(int x, int y, int w, int h)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.rect == null)
       sc.rect = new Rectangle();
     sc.rect.setBounds(x, y, w, h);
     draw(sc.rect);
-  }
-
-  /**
-   * Draws a string in optimization mode. The implementation should respect the
-   * clip and translation. It can assume that the clip is a rectangle and that
-   * the transform is only a translating transform.
-   *
-   * @param text the string to be drawn
-   * @param x the start of the baseline, X coordinate
-   * @param y the start of the baseline, Y coordinate
-   */
-  protected void rawDrawString(String text, int x, int y)
-  {
-    FontRenderContext ctx = getFontRenderContext();
-    GlyphVector gv = font.createGlyphVector(ctx, text.toCharArray());
-    drawGlyphVector(gv, x, y);
   }
 
   /**
@@ -1667,7 +1701,7 @@ public abstract class AbstractGraphics2D
    */
   protected void rawFillRect(int x, int y, int w, int h)
   {
-    ShapeCache sc = getShapeCache();
+    ShapeCache sc = shapeCache;
     if (sc.rect == null)
       sc.rect = new Rectangle();
     sc.rect.setBounds(x, y, w, h);
@@ -1918,35 +1952,38 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Returns the ShapeCache for the calling thread.
+   * Returns a free scanline converter from the pool.
    *
-   * @return the ShapeCache for the calling thread
-   */
-  private ShapeCache getShapeCache()
-  {
-    ShapeCache sc = shapeCache.get();
-    if (sc == null)
-      {
-        sc = new ShapeCache();
-        shapeCache.set(sc);
-      }
-    return sc;
-  }
-
-  /**
-   * Returns the scanline converter for this thread.
-   *
-   * @return the scanline converter for this thread
+   * @return a scanline converter
    */
   private ScanlineConverter getScanlineConverter()
   {
-    ScanlineConverter sc = scanlineConverters.get();
-    if (sc == null)
+    synchronized (scanlineConverters)
       {
-        sc = new ScanlineConverter();
-        scanlineConverters.set(sc);
+        ScanlineConverter sc;
+        if (scanlineConverters.size() > 0)
+          {
+            sc = scanlineConverters.removeFirst();
+          }
+        else
+          {
+            sc = new ScanlineConverter();
+          }
+        return sc;
       }
-    return sc;
+  }
+
+  /**
+   * Puts a scanline converter back in the pool.
+   *
+   * @param sc
+   */
+  private void freeScanlineConverter(ScanlineConverter sc)
+  {
+    synchronized (scanlineConverters)
+      {
+        scanlineConverters.addLast(sc);
+      }
   }
 
 }

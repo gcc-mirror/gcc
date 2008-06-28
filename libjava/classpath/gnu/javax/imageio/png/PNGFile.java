@@ -44,7 +44,6 @@ import java.util.Vector;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
 import java.awt.color.ColorSpace;
 
 public class PNGFile 

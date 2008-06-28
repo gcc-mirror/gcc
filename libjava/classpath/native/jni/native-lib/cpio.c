@@ -71,6 +71,10 @@ exception statement from your version. */
 #include <sys/select.h>
 #endif
 
+#if defined(HAVE_STATVFS)
+#include <sys/statvfs.h>
+#endif
+
 #include <utime.h>
 
 #include "cpnative.h"
@@ -345,9 +349,11 @@ int cpio_setFileReadonly (const char *filename)
 
   if (stat(filename, &statbuf) < 0)
     return errno;
- 
+
+#ifdef S_IWRITE 
   if (chmod(filename, statbuf.st_mode & ~(S_IWRITE | S_IWGRP | S_IWOTH)) < 0)
     return errno;
+#endif
 
   return 0;
 }
@@ -393,6 +399,44 @@ int cpio_chmod (const char *filename, int permissions)
     return errno;
   
   return 0;
+}
+
+JNIEXPORT long long
+cpio_df (__attribute__((unused)) const char *path,
+         __attribute__((unused)) CPFILE_DF_TYPE type)
+{
+  long long result = 0L;
+  
+#if defined(HAVE_STATVFS)
+
+  long long scale_factor = 0L;
+  struct statvfs buf;
+  
+  if (statvfs (path, &buf) < 0)
+    return 0L;
+  
+  /* f_blocks, f_bfree and f_bavail are defined in terms of f_frsize */
+  scale_factor = (long long) (buf.f_frsize);
+
+  switch (type)
+    {
+      case TOTAL:
+        result = (long long) (buf.f_blocks * scale_factor);
+        break;
+      case FREE:
+        result = (long long) (buf.f_bfree * scale_factor);
+        break;
+      case USABLE:
+        result = (long long) (buf.f_bavail * scale_factor);
+        break;
+      default:
+        result = 0L;
+        break;  
+    }
+    
+#endif
+
+  return result;
 }
 
 int cpio_checkAccess (const char *filename, unsigned int flag)
@@ -520,16 +564,10 @@ int cpio_closeDir (void *handle)
 
 int cpio_readDir (void *handle, char *filename)
 {
-#ifdef HAVE_READDIR_R
-  struct dirent dent;
-#endif /* HAVE_READDIR_R */
   struct dirent *dBuf;
 
-#ifdef HAVE_READDIR_R
-  readdir_r ((DIR *) handle, &dent, &dBuf);
-#else
+  errno = 0;
   dBuf = readdir((DIR *)handle);
-#endif /* HAVE_READDIR_R */
 
   if (dBuf == NULL)
     {
@@ -540,10 +578,9 @@ int cpio_readDir (void *handle, char *filename)
       return errno;
     }
 
-  strncpy (filename, dBuf->d_name, FILENAME_MAX);
+  strncpy (filename, dBuf->d_name, FILENAME_MAX - 1);
   return 0;
 }
-
 
 int
 cpio_closeOnExec(int fd)

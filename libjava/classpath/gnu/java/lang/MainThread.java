@@ -69,7 +69,7 @@ public class MainThread
   {
     try
       {
-	mainMethod.invoke(null,args);
+	mainMethod.invoke(null,(Object) args);
       }
     catch(IllegalAccessException e)
       {

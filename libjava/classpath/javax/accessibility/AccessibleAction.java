@@ -78,6 +78,22 @@ public interface AccessibleAction
   static final String TOGGLE_EXPAND = "toggle expand";
 
   /**
+   * The name of an action which causes a component to perform its default
+   * action.
+   *
+   * @since 1.6
+   */
+  static final String CLICK = "click";
+
+  /**
+   * The name of an action which toggles the state of a popup, causing a
+   * hidden popup to be displayed and a visible popup to be hidden.
+   *
+   * @since 1.6
+   */
+  static final String TOGGLE_POPUP = "toggle popup";
+
+  /**
    * Get the number possible actions for this object, with the zeroth
    * representing the default action.
    *

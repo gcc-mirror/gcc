@@ -138,7 +138,7 @@ public class Manifest implements Cloneable
    */
   public Attributes getAttributes(String entryName)
   {
-    return (Attributes) getEntries().get(entryName);
+    return getEntries().get(entryName);
   }
 
   /**

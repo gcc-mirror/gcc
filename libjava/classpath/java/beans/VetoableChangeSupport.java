@@ -349,8 +349,8 @@ public class VetoableChangeSupport implements Serializable
   {
     if (oldVal != newVal)
       fireVetoableChange(new PropertyChangeEvent(source, propertyName,
-                                                 new Integer(oldVal),
-                                                 new Integer(newVal)));
+                                                 Integer.valueOf(oldVal),
+                                                 Integer.valueOf(newVal)));
   }
 
   /**

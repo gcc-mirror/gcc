@@ -787,10 +787,10 @@ public class ServiceRegistry
    * @param category the service category to which an ordering
    * constraint is to be added.
    *
-   * @param first the provider which is supposed to come before
+   * @param firstProvider the provider which is supposed to come before
    * <code>second</code>.
    *
-   * @param second the provider which is supposed to come after
+   * @param secondProvider the provider which is supposed to come after
    * <code>first</code>.
    *
    * @throws IllegalArgumentException if <code>first</code> and
@@ -815,10 +815,10 @@ public class ServiceRegistry
    * @param category the service category from which an ordering
    * constraint is to be removed.
    *
-   * @param first the provider which is supposed to come before
+   * @param firstProvider the provider which is supposed to come before
    * <code>second</code>.
    *
-   * @param second the provider which is supposed to come after
+   * @param secondProvider the provider which is supposed to come after
    * <code>first</code>.
    *
    * @throws IllegalArgumentException if <code>first</code> and

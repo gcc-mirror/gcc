@@ -243,7 +243,7 @@ public class DefaultTableColumnModel
     int columnCount = tableColumns.size();
     for (int i = 0; i < columnCount; i++) 
     {
-      TableColumn tc = (TableColumn) tableColumns.get(i);
+      TableColumn tc = tableColumns.get(i);
       if (identifier.equals(tc.getIdentifier()))
         return i;
     }
@@ -264,7 +264,7 @@ public class DefaultTableColumnModel
    */
   public TableColumn getColumn(int columnIndex)
   {
-    return (TableColumn) tableColumns.get(columnIndex);
+    return tableColumns.get(columnIndex);
   }
 
   /**
@@ -299,7 +299,7 @@ public class DefaultTableColumnModel
   {    
     for (int i = 0; i < tableColumns.size(); ++i)
       {
-        int w = ((TableColumn) tableColumns.get(i)).getWidth();
+        int w = (tableColumns.get(i)).getWidth();
         if (0 <= x && x < w)
           return i;
         else
@@ -654,7 +654,7 @@ public class DefaultTableColumnModel
         totalColumnWidth = 0;
         for (int i = 0; i < tableColumns.size(); ++i)
           {
-            totalColumnWidth += ((TableColumn) tableColumns.get(i)).getWidth();
+            totalColumnWidth += tableColumns.get(i).getWidth();
           }
       }
   }

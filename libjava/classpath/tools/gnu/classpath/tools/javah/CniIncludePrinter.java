@@ -63,14 +63,14 @@ public class CniIncludePrinter
     return new PrintStream(fos);
   }
 
-  public void printClass(File filename, ClassWrapper klass) throws IOException
+  public void printClass(File file, ClassWrapper klass) throws IOException
   {
     // Never write Object or Class. This is a hack, maybe
     // the user would like to see what they look like...
     if (klass.name.equals("java/lang/Object")
         || klass.name.equals("java/lang/Class"))
       return;
-    PrintStream ps = getPrintStream(filename + ".h", klass);
+    PrintStream ps = getPrintStream(file + ".h", klass);
     if (ps == null)
       return;
     ps.println();

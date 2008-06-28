@@ -469,7 +469,7 @@ public class ServerSocket
     if (timeout < 0)
       throw new IllegalArgumentException("SO_TIMEOUT value must be >= 0");
 
-    impl.setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
+    impl.setOption(SocketOptions.SO_TIMEOUT, Integer.valueOf(timeout));
   }
 
   /**
@@ -556,7 +556,7 @@ public class ServerSocket
     if (size <= 0)
       throw new IllegalArgumentException("SO_RCVBUF value must be > 0");
 
-    impl.setOption(SocketOptions.SO_RCVBUF, new Integer(size));
+    impl.setOption(SocketOptions.SO_RCVBUF, Integer.valueOf(size));
   }
 
   /**

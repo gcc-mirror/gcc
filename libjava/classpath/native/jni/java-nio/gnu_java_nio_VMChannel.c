@@ -43,7 +43,9 @@ exception statement from your version. */
 #include <config-int.h>
 
 #include <sys/types.h>
+#ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
+#endif
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

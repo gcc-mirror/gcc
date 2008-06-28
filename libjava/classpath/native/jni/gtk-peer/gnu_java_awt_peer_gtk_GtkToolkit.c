@@ -40,7 +40,6 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkToolkit.h"
 #include "jcl.h"
-#include <gdk/gdkx.h>
 
 #define RC_FILE ".classpath-gtkrc"
 
@@ -183,10 +182,6 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
 #endif
 
   gtk_widget_set_default_colormap (gdk_rgb_get_colormap ());
-
-  /* Make sure queued calls don't get sent to GTK/GDK while 
-     we're shutting down. */
-  atexit (gdk_threads_enter);
 
   if ((homedir = getenv ("HOME")))
     {

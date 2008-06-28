@@ -1,5 +1,5 @@
 /* java.math.BigInteger -- Arbitary precision integers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1313,7 +1313,7 @@ public class BigInteger extends Number implements Comparable<BigInteger>
     int b = pMinus1.getLowestSetBit();
 
     // Set m such that this = 1 + 2^b * m.
-    BigInteger m = pMinus1.divide(valueOf(2L << b - 1));
+    BigInteger m = pMinus1.divide(valueOf(2L).pow(b));
 
     // The HAC (Handbook of Applied Cryptography), Alfred Menezes & al. Note
     // 4.49 (controlling the error probability) gives the number of trials

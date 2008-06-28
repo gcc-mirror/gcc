@@ -43,7 +43,6 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;

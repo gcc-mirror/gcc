@@ -28,7 +28,9 @@ extern "Java"
   {
     namespace management
     {
+        class MBeanConstructorInfo;
         class MBeanInfo;
+        class MBeanOperationInfo;
         class MBeanParameterInfo;
       namespace openmbean
       {
@@ -51,6 +53,10 @@ public:
   virtual ::java::lang::Object * getAttribute(::java::lang::String *);
 public: // actually protected
   virtual ::javax::management::MBeanInfo * getCachedMBeanInfo();
+  virtual ::java::lang::String * getDescription(::javax::management::MBeanConstructorInfo *, ::javax::management::MBeanParameterInfo *, jint);
+  virtual ::java::lang::String * getDescription(::javax::management::MBeanOperationInfo *, ::javax::management::MBeanParameterInfo *, jint);
+  virtual ::java::lang::String * getParameterName(::javax::management::MBeanConstructorInfo *, ::javax::management::MBeanParameterInfo *, jint);
+  virtual ::java::lang::String * getParameterName(::javax::management::MBeanOperationInfo *, ::javax::management::MBeanParameterInfo *, jint);
 public:
   virtual ::javax::management::MBeanInfo * getMBeanInfo();
 private:

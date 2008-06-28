@@ -209,19 +209,19 @@ public final class Array
     if (array instanceof boolean[])
       return ((boolean[]) array)[index] ? Boolean.TRUE : Boolean.FALSE;
     if (array instanceof byte[])
-      return new Byte(((byte[]) array)[index]);
+      return Byte.valueOf(((byte[]) array)[index]);
     if (array instanceof char[])
-      return new Character(((char[]) array)[index]);
+      return Character.valueOf(((char[]) array)[index]);
     if (array instanceof short[])
-      return new Short(((short[]) array)[index]);
+      return Short.valueOf(((short[]) array)[index]);
     if (array instanceof int[])
-      return new Integer(((int[]) array)[index]);
+      return Integer.valueOf(((int[]) array)[index]);
     if (array instanceof long[])
-      return new Long(((long[]) array)[index]);
+      return Long.valueOf(((long[]) array)[index]);
     if (array instanceof float[])
-      return new Float(((float[]) array)[index]);
+      return Float.valueOf(((float[]) array)[index]);
     if (array instanceof double[])
-      return new Double(((double[]) array)[index]);
+      return Double.valueOf(((double[]) array)[index]);
     if (array == null)
       throw new NullPointerException();
     throw new IllegalArgumentException();

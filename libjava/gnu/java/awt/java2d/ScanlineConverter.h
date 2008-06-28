@@ -50,11 +50,11 @@ class gnu::java::awt::java2d::ScanlineConverter : public ::java::lang::Object
 public: // actually package-private
   ScanlineConverter();
 public:
-  void renderShape(::gnu::java::awt::java2d::Pixelizer *, ::java::awt::Shape *, ::java::awt::Shape *, ::java::awt::geom::AffineTransform *, jint, ::java::awt::RenderingHints *);
+  void renderShape(::gnu::java::awt::java2d::Pixelizer *, ::java::awt::Shape *, ::java::awt::Shape *, ::java::awt::geom::AffineTransform *, jint, jint, ::java::awt::RenderingHints *);
 private:
   void clear();
   void doScanline(::gnu::java::awt::java2d::Pixelizer *, jint, jboolean, jboolean);
-  void setResolution(jint);
+  void setResolution(jint, jint);
   void setUpperBounds(jint);
   void addShape(::java::awt::geom::PathIterator *, jboolean);
   void addEdge(::gnu::java::awt::java2d::PolyEdge *);
@@ -63,11 +63,11 @@ private:
   void edgePoolAdd(jint, jint, jint, jint, jboolean);
   static jint FIXED_DIGITS;
   static jint ONE;
-  static jint Y_RESOLUTION;
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) numScanlines;
   JArray< ::gnu::java::awt::java2d::Scanline * > * scanlines;
   jint upperBounds;
   jint resolution;
+  jint yResolution;
   jint halfStep;
   JArray< jfloat > * coords;
   ::gnu::java::awt::java2d::ActiveEdges * activeEdges;

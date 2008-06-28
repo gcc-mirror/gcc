@@ -524,7 +524,7 @@ public abstract class AbstractMap<K, V> implements Map<K, V>
   public String toString()
   {
     Iterator<Map.Entry<K, V>> entries = entrySet().iterator();
-    StringBuffer r = new StringBuffer("{");
+    StringBuilder r = new StringBuilder("{");
     for (int pos = size(); pos > 0; pos--)
       {
         Map.Entry<K, V> entry = entries.next();

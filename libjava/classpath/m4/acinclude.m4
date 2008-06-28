@@ -1,194 +1,6 @@
 dnl Used by aclocal to generate configure
 
 dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_FIND_JAVAC],
-[
-  user_specified_javac=
-
-  CLASSPATH_WITH_GCJ
-  CLASSPATH_WITH_JIKES
-  CLASSPATH_WITH_KJC
-  CLASSPATH_WITH_ECJ
-  CLASSPATH_WITH_JAVAC
-
-  if test "x${user_specified_javac}" = x; then
-    AM_CONDITIONAL(FOUND_GCJ, test "x${GCJ}" != x)
-    AM_CONDITIONAL(FOUND_JIKES, test "x${JIKES}" != x)
-    AM_CONDITIONAL(FOUND_ECJ, test "x${ECJ}" != x)
-    AM_CONDITIONAL(FOUND_JAVAC, test "x${JAVAC}" != x)
-  else
-    AM_CONDITIONAL(FOUND_GCJ, test "x${user_specified_javac}" = xgcj)
-    AM_CONDITIONAL(FOUND_JIKES, test "x${user_specified_javac}" = xjikes)
-    AM_CONDITIONAL(FOUND_ECJ, test "x${user_specified_javac}" = xecj)
-    AM_CONDITIONAL(FOUND_JAVAC, test "x${user_specified_javac}" = xjavac)
-  fi
-  AM_CONDITIONAL(FOUND_KJC, test "x${user_specified_javac}" = xkjc)
-
-  ## GCJ LOCAL
-  if test "x${GCJ}" = x && test "x${JIKES}" = x && test "x${ECJ}" = x \
-     && test "x${JAVAC}" = x && test "x${user_specified_javac}" != xkjc
-  then
-      AC_MSG_ERROR([cannot find javac, try --with-ecj])
-  fi
-  ## END GCJ LOCAL
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_WITH_GCJ],
-[
-  AC_ARG_WITH([gcj],
-	      [AS_HELP_STRING(--with-gcj,bytecode compilation with gcj)],
-  [
-    if test "x${withval}" != x && test "x${withval}" != xyes && test "x${withval}" != xno; then
-      CLASSPATH_CHECK_GCJ(${withval})
-    else
-      if test "x${withval}" != xno; then
-        CLASSPATH_CHECK_GCJ
-      fi
-    fi
-    user_specified_javac=gcj
-  ],
-  [
-    CLASSPATH_CHECK_GCJ
-  ])
-  AC_SUBST(GCJ)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_CHECK_GCJ],
-[
-  if test "x$1" != x; then
-    if test -f "$1"; then
-      GCJ="$1"
-    else
-      AC_PATH_PROG(GCJ, "$1")
-    fi
-  else
-    AC_PATH_PROG(GCJ, "gcj")
-  fi  
-  dnl Test the given GCJ, but use it as C (!) compiler to check version
-  if test "x$GCJ" != x; then
-    AC_MSG_CHECKING([gcj version 4.0])
-    AC_LANG_PUSH([C])
-    AC_LANG_CONFTEST(
-    [[#if __GNUC__ <= 3
-    #error GCJ 4.0.0 or higher is required
-    #endif
-    ]])
-    $GCJ -E conftest.c > /dev/null
-    gcj_4_result=$?
-    if test "x$gcj_4_result" = "x0"; then
-      AC_MSG_RESULT([4.0 or higher found])
-    else
-      AC_MSG_WARN([4.0 or higher required])
-    fi
-    AC_LANG_POP
-  fi 
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_WITH_JIKES],
-[
-  AC_ARG_WITH([jikes],
-	      [AS_HELP_STRING(--with-jikes,bytecode compilation with jikes)],
-  [
-    if test "x${withval}" != x && test "x${withval}" != xyes && test "x${withval}" != xno; then
-      CLASSPATH_CHECK_JIKES(${withval})
-    else
-      if test "x${withval}" != xno; then
-        CLASSPATH_CHECK_JIKES
-      fi
-    fi
-    user_specified_javac=jikes
-  ],
-  [ 
-    CLASSPATH_CHECK_JIKES
-  ])
-  AC_SUBST(JIKES)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_CHECK_JIKES],
-[
-  if test "x$1" != x; then
-    if test -f "$1"; then
-      JIKES="$1"
-    else
-      AC_PATH_PROG(JIKES, "$1")
-    fi
-  else
-    AC_PATH_PROG(JIKES, "jikes")
-  fi
-  if test "x$JIKES" != "x"; then
-    dnl Require at least version 1.19
-    AC_MSG_CHECKING(jikes version)
-    JIKES_VERSION=`$JIKES --version | awk '/^Jikes Compiler/' | cut -d ' ' -f 5`
-    JIKES_VERSION_MAJOR=`echo "$JIKES_VERSION" | cut -d '.' -f 1`
-    JIKES_VERSION_MINOR=`echo "$JIKES_VERSION" | cut -d '.' -f 2`
-    if expr "$JIKES_VERSION_MAJOR" = 1 > /dev/null; then
-      if expr "$JIKES_VERSION_MINOR" \< 19 > /dev/null; then
-        JIKES=""
-      fi
-    fi
-    if test "x$JIKES" != "x"; then
-      AC_MSG_RESULT($JIKES_VERSION)
-    else
-      AC_MSG_WARN($JIKES_VERSION: jikes 1.19 or higher required)
-    fi
-
-    JIKESENCODING=
-    if test -n "`$JIKES --help 2>&1 | grep encoding`"; then
-      JIKESENCODING='-encoding UTF-8'
-    fi
-    AC_SUBST(JIKESENCODING)
-
-    JIKESWARNINGS="+Pno-switchcheck"
-    if test "x$JIKES_VERSION_MAJOR" = x"1" ; then
-      if ! test "x$JIKES_VERSION_MINOR" = x"19"; then
-        JIKESWARNINGS="$JIKESWARNINGS +Pno-shadow"
-      fi
-    fi
-    AC_SUBST(JIKESWARNINGS)
-
-  fi
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_WITH_KJC],
-[
-  AC_ARG_WITH([kjc], 
-  	      [AS_HELP_STRING(--with-kjc,bytecode compilation with kjc)],
-  [
-    if test "x${withval}" != x && test "x${withval}" != xyes && test "x${withval}" != xno; then
-      CLASSPATH_CHECK_KJC(${withval})
-    else
-      if test "x${withval}" != xno; then
-        CLASSPATH_CHECK_KJC
-      fi
-    fi
-    user_specified_javac=kjc
-  ],
-  [ 
-    CLASSPATH_CHECK_KJC
-  ])
-  AC_SUBST(KJC)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_CHECK_KJC],
-[
-  if test "x$1" != x; then
-    if test -f "$1"; then
-      KJC="$1"
-    else
-      AC_PATH_PROG(KJC, "$1")
-    fi
-  else
-    AC_PATH_PROG(KJC, "kJC")
-  fi
-])
-
-dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_WITH_JAVAH],
 [
   AC_ARG_WITH([javah],
@@ -218,7 +30,7 @@ AC_DEFUN([CLASSPATH_CHECK_JAVAH],
       AC_PATH_PROG(USER_JAVAH, "$1")
     fi
   else
-    AC_PATH_PROGS([USER_JAVAH],[gjavah gcjh-wrapper-4.1 gcjh-4.1 gcjh javah])
+    AC_PATH_PROGS([USER_JAVAH],[gjavah gjavah-4.3 gjavah-4.2 gjavah-4.1 gcjh-wrapper-4.1 gcjh-4.1 javah])
   fi
   
   if test "x${USER_JAVAH}" = x; then
@@ -231,28 +43,6 @@ dnl CLASSPATH_WITH_CLASSLIB - checks for user specified classpath additions
 dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_WITH_CLASSLIB],
 [
-  AC_ARG_WITH([classpath],
-	      [AS_HELP_STRING(--with-classpath,specify path to a classes.zip like file)],
-  [
-    if test "x${withval}" = xyes; then
-      # set user classpath to CLASSPATH from env
-      AC_MSG_CHECKING(for classlib)
-      USER_CLASSLIB=${CLASSPATH}
-      AC_SUBST(USER_CLASSLIB)
-      AC_MSG_RESULT(${USER_CLASSLIB})
-      conditional_with_classlib=true      
-    elif test "x${withval}" != x && test "x${withval}" != xno; then
-      # set user classpath to specified value
-      AC_MSG_CHECKING(for classlib)
-      USER_CLASSLIB=${withval}
-      AC_SUBST(USER_CLASSLIB)
-      AC_MSG_RESULT(${withval})
-      conditional_with_classlib=true
-    fi
-  ],
-  [ conditional_with_classlib=false ])
-  AM_CONDITIONAL(USER_SPECIFIED_CLASSLIB, test "x${conditional_with_classlib}" = xtrue)
-
   AC_ARG_WITH([vm-classes],
 	      [AS_HELP_STRING(--with-vm-classes,specify path to VM override source files)], [vm_classes="$with_vm_classes"],
 	      [vm_classes='${top_srcdir}/vm/reference'])
@@ -272,7 +62,7 @@ AC_DEFUN([CLASSPATH_WITH_GLIBJ],
 		FASTJAR=${withval}
 		AC_MSG_RESULT([${FASTJAR}])
 	      ],
-	      [AC_PATH_PROG(FASTJAR, fastjar)])
+	      [AC_PATH_PROGS([FASTJAR], [fastjar gjar jar])])
 dnl We disable ZIP by default if we find fastjar.
   if test x"${FASTJAR}" != x; then
     ZIP=""
@@ -325,6 +115,19 @@ dnl We disable ZIP by default if we find fastjar.
     EXAMPLESDIR=""
   fi
   AC_SUBST(EXAMPLESDIR)
+
+  AC_ARG_ENABLE([tools],
+		[AS_HELP_STRING(--enable-tools,enable build of the tools [default=yes])],
+		[case "${enableval}" in
+		  yes) TOOLSDIR="tools" ;;
+		  no) TOOLSDIR="" ;;
+		  *) AC_MSG_ERROR(bad value ${enableval} for --enable-tools) ;;
+		esac],
+		[TOOLSDIR="tools"])
+  if test "x${use_zip}" = xno && test "x${install_class_files}" = xno; then
+    TOOLSDIR=""
+  fi
+  AC_SUBST(TOOLSDIR)
 ])
 
 dnl -----------------------------------------------------------
@@ -363,63 +166,44 @@ dnl -----------------------------------------------------------
 AC_DEFUN([REGEN_WITH_JAY],
 [
   AC_ARG_WITH([jay],
-              [AS_HELP_STRING(--with-jay,Regenerate the parsers with jay must be given the path to the jay executable)],
+              [AS_HELP_STRING(--with-jay[=DIR|PATH],Regenerate the parsers with jay)],
   [
-    if test -d "${withval}"; then
+    AC_MSG_CHECKING([whether to regenerate parsers with jay])
+    JAY_FOUND=no
+    JAY_DIR_PATH=
+    if test "x${withval}" = xno; then
+      AC_MSG_RESULT(no)
+    elif test "x${withval}" = xyes; then
+      AC_MSG_RESULT(yes)
+      JAY_DIR_PATH="/usr/share/jay"
+    elif test -d "${withval}"; then
+      AC_MSG_RESULT(yes)
       JAY_DIR_PATH="${withval}"
-      AC_PATH_PROG(JAY, jay, "no", ${JAY_DIR_PATH})
-      if test "x${JAY}" = xno; then
-        AC_MSG_ERROR("jay executable not found");
-      fi
-    else
+    elif test -f "${withval}"; then
+      AC_MSG_RESULT(yes)
       JAY_DIR_PATH=`dirname "${withval}"`
       JAY="${withval}"
-      AC_SUBST(JAY)
+    else
+        AC_MSG_ERROR(jay not found at ${withval})
     fi
-    JAY_SKELETON="${JAY_DIR_PATH}/skeleton"
-    AC_CHECK_FILE(${JAY_SKELETON}, AC_SUBST(JAY_SKELETON),
-	AC_MSG_ERROR("Expected skeleton file in `dirname ${withval}`"))
-    JAY_FOUND=yes
+
+    if test "x${JAY_DIR_PATH}" != x; then
+      AC_PATH_PROG(JAY, jay, "no", ${JAY_DIR_PATH}:${PATH})
+      if test "x${JAY}" = xno; then
+        AC_MSG_ERROR(jay executable not found);
+      fi
+      JAY_SKELETON="${JAY_DIR_PATH}/skeleton"
+      AC_CHECK_FILE(${JAY_SKELETON}, AC_SUBST(JAY_SKELETON),
+          AC_MSG_ERROR(Expected skeleton file in ${JAY_DIR_PATH}))
+      JAY_FOUND=yes
+    fi
   ],
   [
+    AC_MSG_CHECKING([whether to regenerate parsers with jay])
+    AC_MSG_RESULT(no)
     JAY_FOUND=no
   ])
   AM_CONDITIONAL(REGEN_PARSERS, test "x${JAY_FOUND}" = xyes)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_WITH_ECJ],
-[
-  AC_ARG_WITH([ecj],
-	      [AS_HELP_STRING(--with-ecj,bytecode compilation with ecj)],
-  [
-    if test "x${withval}" != x && test "x${withval}" != xyes && test "x${withval}" != xno; then
-      CLASSPATH_CHECK_ECJ(${withval})
-    else
-      if test "x${withval}" != xno; then
-        CLASSPATH_CHECK_ECJ
-      fi
-    fi
-    user_specified_javac=ecj
-  ],
-  [ 
-    CLASSPATH_CHECK_ECJ
-  ])
-  AC_SUBST(ECJ)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_CHECK_ECJ],
-[
-  if test "x$1" != x; then
-    if test -f "$1"; then
-      ECJ="$1"
-    else
-      AC_PATH_PROG(ECJ, "$1")
-    fi
-  else
-    AC_PATH_PROG(ECJ, "ecj")
-  fi
 ])
 
 dnl -----------------------------------------------------------
@@ -436,32 +220,29 @@ AC_DEFUN([CLASSPATH_TOOLEXECLIBDIR],
 ])
 
 dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_WITH_JAVAC],
+AC_DEFUN([CLASSPATH_JAVAC_MEM_CHECK],
 [
-  AC_ARG_WITH([javac],
-	      [AS_HELP_STRING(--with-javac,bytecode compilation with javac)],
-  [
-    if test "x${withval}" != x && test "x${withval}" != xyes && test "x${withval}" != xno; then
-      CLASSPATH_CHECK_JAVAC(${withval})
-    else
-      if test "x${withval}" != xno; then
-        CLASSPATH_CHECK_JAVAC
-      fi
-    fi
-    user_specified_javac=javac
-  ],
-  [ 
-    CLASSPATH_CHECK_JAVAC
-  ])
-  AC_SUBST(JAVAC)
-])
-
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_CHECK_JAVAC],
-[
-  if test "x$1" != x; then
-    JAVAC="$1"
+  JAVA_TEST=Test.java
+  CLASS_TEST=Test.class
+  cat << \EOF > $JAVA_TEST
+  /* [#]line __oline__ "configure" */
+  public class Test 
+  {
+    public static void main(String[] args)
+    {
+      System.out.println("Hello World");
+    }
+  }
+EOF
+  AC_MSG_CHECKING([whether javac supports -J])
+  $JAVAC $JAVACFLAGS -J-Xmx768M -sourcepath '' $JAVA_TEST
+  javac_result=$?
+  if test "x$javac_result" = "x0"; then
+    AC_MSG_RESULT([yes])
+    JAVAC_MEM_OPT="-J-Xmx768M"
   else
-    AC_PATH_PROG(JAVAC, "javac")
+    AC_MSG_RESULT([no])
   fi
+  rm -f $JAVA_TEST $CLASS_TEST
+  AC_SUBST(JAVAC_MEM_OPT)
 ])

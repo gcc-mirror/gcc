@@ -202,7 +202,7 @@ public final class StackTraceElement implements Serializable
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (declaringClass != null)
       {
         sb.append(declaringClass);

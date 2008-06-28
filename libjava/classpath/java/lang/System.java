@@ -832,7 +832,7 @@ public final class System
      * Blocks the retention of all elements in the specified
      * collection from the collection.
      *
-     * @param c the collection of elements to retain.
+     * @param coll the collection of elements to retain.
      * @return true if the other elements were removed.
      * @throws NullPointerException if the collection is null.
      * @throws NullPointerException if any collection entry is null.

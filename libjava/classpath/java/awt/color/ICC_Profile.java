@@ -426,10 +426,15 @@ public class ICC_Profile implements Serializable
     System.arraycopy(headerData, 0, data, 0, ProfileHeader.HEADERSIZE);
 
     // read the rest
-    if (in.read(data, ProfileHeader.HEADERSIZE,
-                header.getSize() - ProfileHeader.HEADERSIZE) != header.getSize()
-        - ProfileHeader.HEADERSIZE)
-      throw new IOException("Incorrect profile size");
+    int totalBytes = header.getSize() - ProfileHeader.HEADERSIZE;
+    int bytesLeft = totalBytes;
+    while (bytesLeft > 0)
+      {
+    	int read = in.read(data,
+                           ProfileHeader.HEADERSIZE + (totalBytes - bytesLeft),
+                           bytesLeft);
+    	bytesLeft -= read;
+      }
 
     return getInstance(data);
   }

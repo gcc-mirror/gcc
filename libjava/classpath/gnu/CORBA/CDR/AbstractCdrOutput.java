@@ -291,7 +291,7 @@ public abstract class AbstractCdrOutput
 
   /**
    * Write a single byte.
-   * @param a byte to write (low 8 bits are written).
+   * @param n byte to write (low 8 bits are written).
    */
   public void write(int n)
   {
@@ -497,7 +497,7 @@ public abstract class AbstractCdrOutput
    * Writes the lower bytes of the passed array members.
    *
    * @param chars an array
-   * @param offsets offset
+   * @param offset offset
    * @param length length
    */
   public void write_char_array(char[] chars, int offset, int length)

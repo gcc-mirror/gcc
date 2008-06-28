@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-2, ISO Latin-2 char set.
  */
-public class ISO_8859_2 extends ByteCharset
+public final class ISO_8859_2 extends ByteCharset
 {
 
   /**
@@ -102,8 +102,7 @@ public class ISO_8859_2 extends ByteCharset
 	  "cp912",
 	  "912", 
 	  "windows-28592"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_2

@@ -202,7 +202,7 @@ public class DefaultMutableTreeNode
    */
   public void remove(int index)
   {
-    MutableTreeNode child = (MutableTreeNode) children.remove(index);
+    MutableTreeNode child = children.remove(index);
     child.setParent(null);
   }
 
@@ -553,7 +553,7 @@ public class DefaultMutableTreeNode
               {
                 node = node.getParent();
                 size = node.getChildCount();
-                index = ((Integer) stack.pop()).intValue() + 1;
+                index = stack.pop().intValue() + 1;
                 current--;
               }
             while (index >= size
@@ -1052,10 +1052,10 @@ public class DefaultMutableTreeNode
   /** Provides an enumeration of a tree in breadth-first traversal
    * order.
    */
-  static class BreadthFirstEnumeration implements Enumeration
+  static class BreadthFirstEnumeration implements Enumeration<TreeNode>
   {
 
-      LinkedList queue = new LinkedList();
+      LinkedList<TreeNode> queue = new LinkedList<TreeNode>();
 
       BreadthFirstEnumeration(TreeNode node)
       {
@@ -1067,14 +1067,16 @@ public class DefaultMutableTreeNode
           return !queue.isEmpty();
       }
 
-      public Object nextElement()
+      @SuppressWarnings("unchecked")
+      public TreeNode nextElement()
       {
           if (queue.isEmpty())
               throw new NoSuchElementException("No more elements left.");
 
-          TreeNode node = (TreeNode) queue.removeFirst();
+          TreeNode node = queue.removeFirst();
 
-          Enumeration children = node.children();
+          Enumeration<TreeNode> children =
+	    (Enumeration<TreeNode>) node.children();
           while (children.hasMoreElements())
               queue.add(children.nextElement());
 
@@ -1085,16 +1087,18 @@ public class DefaultMutableTreeNode
   /** Provides an enumeration of a tree traversing it
    * preordered.
    */
-  static class PreorderEnumeration implements Enumeration
+  static class PreorderEnumeration implements Enumeration<TreeNode>
   {
 	  TreeNode next;
 
-      Stack childrenEnums = new Stack();
+      Stack<Enumeration<TreeNode>> childrenEnums =
+	new Stack<Enumeration<TreeNode>>();
 
+      @SuppressWarnings("unchecked")
       PreorderEnumeration(TreeNode node)
       {
           next = node;
-          childrenEnums.push(node.children());
+          childrenEnums.push((Enumeration<TreeNode>) node.children());
       }
 
       public boolean hasMoreElements()
@@ -1102,14 +1106,14 @@ public class DefaultMutableTreeNode
           return next != null;
       }
 
-      public Object nextElement()
+      public TreeNode nextElement()
       {
           if (next == null)
               throw new NoSuchElementException("No more elements left.");
 
-          Object current = next;
+          TreeNode current = next;
 
-          Enumeration children = (Enumeration) childrenEnums.peek();
+          Enumeration<TreeNode> children = childrenEnums.peek();
 
           // Retrieves the next element.
           next = traverse(children);
@@ -1117,13 +1121,14 @@ public class DefaultMutableTreeNode
           return current;
       }
 
-      private TreeNode traverse(Enumeration children)
+      @SuppressWarnings("unchecked")
+      private TreeNode traverse(Enumeration<TreeNode> children)
       {
           // If more children are available step down.
           if (children.hasMoreElements())
           {
-              TreeNode child = (TreeNode) children.nextElement();
-              childrenEnums.push(child.children());
+              TreeNode child = children.nextElement();
+              childrenEnums.push((Enumeration<TreeNode>) child.children());
 
               return child;
           }
@@ -1137,7 +1142,7 @@ public class DefaultMutableTreeNode
               return null;
           else
           {
-              return traverse((Enumeration) childrenEnums.peek());
+              return traverse(childrenEnums.peek());
           }
       }
    }
@@ -1145,16 +1150,18 @@ public class DefaultMutableTreeNode
   /** Provides an enumeration of a tree traversing it
    * postordered (= depth-first).
    */
-   static class PostorderEnumeration implements Enumeration
+   static class PostorderEnumeration implements Enumeration<TreeNode>
    {
 
        Stack<TreeNode> nodes = new Stack<TreeNode>();
-       Stack childrenEnums = new Stack();
+       Stack<Enumeration<TreeNode>> childrenEnums =
+	 new Stack<Enumeration<TreeNode>>();
 
+       @SuppressWarnings("unchecked")
        PostorderEnumeration(TreeNode node)
        {
            nodes.push(node);
-           childrenEnums.push(node.children());
+           childrenEnums.push((Enumeration<TreeNode>) node.children());
        }
 
        public boolean hasMoreElements()
@@ -1162,24 +1169,26 @@ public class DefaultMutableTreeNode
            return !nodes.isEmpty();
        }
 
-       public Object nextElement()
+       public TreeNode nextElement()
        {
            if (nodes.isEmpty())
                throw new NoSuchElementException("No more elements left!");
 
-           Enumeration children = (Enumeration) childrenEnums.peek();
+           Enumeration<TreeNode> children = childrenEnums.peek();
 
            return traverse(children);
        }
 
-       private Object traverse(Enumeration children)
+       @SuppressWarnings("unchecked")
+       private TreeNode traverse(Enumeration<TreeNode> children)
        {
            if (children.hasMoreElements())
            {
-               TreeNode node = (TreeNode) children.nextElement();
+               TreeNode node = children.nextElement();
                nodes.push(node);
 
-               Enumeration newChildren = node.children();
+               Enumeration<TreeNode> newChildren =
+		 (Enumeration<TreeNode>) node.children();
                childrenEnums.push(newChildren);
 
                return traverse(newChildren);
@@ -1190,7 +1199,7 @@ public class DefaultMutableTreeNode
 
                // Returns the node whose children
                // have all been visited. (= postorder)
-               Object next = nodes.peek();
+               TreeNode next = nodes.peek();
                nodes.pop();
 
                return next;

@@ -129,14 +129,14 @@ public class ContextContinuation implements Context
    * Creates a new naming context that uses naming service, represented by the
    * given CORBA object.
    * 
-   * @param namingService
+   * @param nsObject
    *          the naming service object. It must be possible to narrow it into
    *          the NamingContextExt.
    * @param props
    *          the environment table.
-   * @param orb
+   * @param anOrb
    *          the associated ORB. This reference is used during cleanup.
-   * @param the
+   * @param aFactory
    *          parent factory. This reference is used during cleanup.
    */
   public ContextContinuation(org.omg.CORBA.Object nsObject,
@@ -293,7 +293,7 @@ public class ContextContinuation implements Context
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
    * 
-   * @param name
+   * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
    *         that the method has been called
@@ -336,7 +336,7 @@ public class ContextContinuation implements Context
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
    * 
-   * @param name
+   * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
    *         that the method has been called
@@ -380,7 +380,7 @@ public class ContextContinuation implements Context
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
    * 
-   * @param name
+   * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
    *           if the named context is not empty.
@@ -396,7 +396,7 @@ public class ContextContinuation implements Context
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
    * 
-   * @param name
+   * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
    *           if the named context is not empty.
@@ -868,9 +868,9 @@ public class ContextContinuation implements Context
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal.
    * 
-   * @param propName
+   * @param key
    *          the name of the new property
-   * @param propVal
+   * @param value
    *          the value of the new property
    * @return the previous value of this property or null if the property has not
    *         been previously defined

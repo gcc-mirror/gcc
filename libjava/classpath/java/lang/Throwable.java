@@ -411,7 +411,7 @@ public class Throwable implements Serializable
   // different threads to get mixed up when written to the same PrintWriter.
   private String stackTraceString()
   {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     // Main stacktrace
     StackTraceElement[] stack = getStackTrace();
@@ -455,7 +455,7 @@ public class Throwable implements Serializable
 
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
-  private static void stackTraceStringBuffer(StringBuffer sb, String name,
+  private static void stackTraceStringBuffer(StringBuilder sb, String name,
 					StackTraceElement[] stack, int equal)
   {
     String nl = StaticData.nl;

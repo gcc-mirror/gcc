@@ -59,8 +59,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.swing.text.JTextComponent;
-
 /**
  * <p>The repaint manager holds a set of dirty regions, invalid components,
  * and a double buffer surface.  The dirty regions and invalid components

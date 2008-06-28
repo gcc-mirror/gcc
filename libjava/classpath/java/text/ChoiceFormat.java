@@ -114,10 +114,10 @@ public class ChoiceFormat extends NumberFormat
 	
 	if (index == max)
 	  throw new IllegalArgumentException ("unexpected end of text");
-	Double d = new Double (newPattern.substring(dstart, index));
+	Double d = Double.valueOf (newPattern.substring(dstart, index));
 
 	if (newPattern.charAt(index) == '<')
-	  d = new Double (nextDouble (d.doubleValue()));
+	  d = Double.valueOf (nextDouble (d.doubleValue()));
 
 	limitVec.addElement(d);
 
@@ -404,11 +404,11 @@ public class ChoiceFormat extends NumberFormat
 	if (sourceStr.startsWith(choiceFormats[i], index))
 	  {
 	    pos.setIndex(index + choiceFormats[i].length());
-	    return new Double (choiceLimits[i]);
+	    return Double.valueOf (choiceLimits[i]);
 	  }
       }
     pos.setErrorIndex(index);
-    return new Double (Double.NaN);
+    return Double.valueOf (Double.NaN);
   }
 
   /**

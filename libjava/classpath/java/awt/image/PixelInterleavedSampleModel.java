@@ -69,9 +69,34 @@ public class PixelInterleavedSampleModel
    */
   public SampleModel createCompatibleSampleModel(int width, int height)
   {
+    // Find minimum band offset.
+    int minBandoff = bandOffsets[0];
+    int numBands = bandOffsets.length;
+    for (int i = 1; i < numBands; i++)
+      {
+        if (bandOffsets[i] < minBandoff)
+          {
+            minBandoff = bandOffsets[i];
+          }
+      }
+    // Adjust band offsets so that minimum offset is at 0.
+    int[] bandOff;
+    if (minBandoff > 0)
+      {
+        bandOff = new int[numBands];
+        for (int i = 0; i < numBands; i++)
+          {
+            bandOff[i] = bandOffsets[i] - minBandoff;
+          }
+      }
+    else
+      {
+        bandOff = bandOffsets;
+      }
+    // Adjust scanline stride for new width.
     return new PixelInterleavedSampleModel(dataType, width, height,
-                                           pixelStride, scanlineStride,
-                                           bandOffsets);
+                                           pixelStride, pixelStride * width,
+                                           bandOff);
   }
 
 

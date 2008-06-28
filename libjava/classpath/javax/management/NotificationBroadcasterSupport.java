@@ -105,7 +105,7 @@ public class NotificationBroadcasterSupport
    */
   public NotificationBroadcasterSupport()
   {
-    this(null, null);
+    this(null, (MBeanNotificationInfo[]) null);
   }
 
   /**
@@ -124,7 +124,7 @@ public class NotificationBroadcasterSupport
    */
   public NotificationBroadcasterSupport(Executor executor)
   {
-    this(executor, null);
+    this(executor, (MBeanNotificationInfo) null);
   }
 
   /**

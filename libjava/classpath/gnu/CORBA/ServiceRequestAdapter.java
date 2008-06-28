@@ -41,7 +41,6 @@ package gnu.CORBA;
 import gnu.CORBA.CDR.BufferedCdrOutput;
 
 import org.omg.CORBA.ARG_IN;
-import org.omg.CORBA.ARG_INOUT;
 import org.omg.CORBA.ARG_OUT;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.Bounds;

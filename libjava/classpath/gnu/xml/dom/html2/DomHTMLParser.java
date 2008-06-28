@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.xml.dom.html2;
 
-import gnu.javax.swing.text.html.parser.support.Parser;
-
 import java.io.IOException;
 import java.io.Reader;
 

@@ -17,6 +17,7 @@ extern "Java"
       {
         namespace charset
         {
+            class ByteEncodeLoopHelper;
             class US_ASCII$Encoder;
         }
       }
@@ -47,6 +48,8 @@ public:
   jboolean canEncode(::java::lang::CharSequence *);
 public: // actually protected
   ::java::nio::charset::CoderResult * encodeLoop(::java::nio::CharBuffer *, ::java::nio::ByteBuffer *);
+private:
+  static ::gnu::java::nio::charset::ByteEncodeLoopHelper * helper;
 public:
   static ::java::lang::Class class$;
 };

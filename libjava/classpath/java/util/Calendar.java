@@ -572,7 +572,7 @@ public abstract class Calendar
    * Cache of locale->calendar-class mappings. This avoids having to do a ResourceBundle
    * lookup for every getInstance call.
    */
-  private static HashMap<Locale,Class> cache = new HashMap<Locale,Class>();
+  private static final HashMap<Locale,Class> cache = new HashMap<Locale,Class>();
 
   /** Preset argument types for calendar-class constructor lookup.  */
   private static Class[] ctorArgTypes = new Class[]
@@ -1266,7 +1266,7 @@ public abstract class Calendar
 
   /**
    * Compares the time of two calendar instances.
-   * @param calendar the calendar to which the time should be compared.
+   * @param cal the calendar to which the time should be compared.
    * @return 0 if the two calendars are set to the same time, 
    * less than 0 if the time of this calendar is before that of 
    * <code>cal</code>, or more than 0 if the time of this calendar is after
@@ -1328,8 +1328,8 @@ public abstract class Calendar
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer();
-    sb.append(getClass().getName()).append('[');
+    StringBuilder sb = new StringBuilder(getClass().getName());
+    sb.append('[');
     sb.append("time=");
     if (isTimeSet)
       sb.append(time);

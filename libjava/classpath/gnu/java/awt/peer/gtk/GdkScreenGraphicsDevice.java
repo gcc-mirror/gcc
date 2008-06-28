@@ -46,6 +46,7 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.Pointer;
 
 class GdkScreenGraphicsDevice extends GraphicsDevice
@@ -98,7 +99,11 @@ class GdkScreenGraphicsDevice extends GraphicsDevice
 
   static
   {
-    System.loadLibrary("gtkpeer");
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("gtkpeer");
+      }
+
     GtkToolkit.initializeGlobalIDs();
     initIDs();
   }

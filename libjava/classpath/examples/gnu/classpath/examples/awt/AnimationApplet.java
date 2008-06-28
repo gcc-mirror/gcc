@@ -21,7 +21,6 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 package gnu.classpath.examples.awt;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.applet.*;
 
 

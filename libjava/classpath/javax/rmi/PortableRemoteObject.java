@@ -97,10 +97,10 @@ public class PortableRemoteObject
    * <code>a_source</code> parameter. The a_target is connected to the same
    * ORB (and, if applicable, to the same {@link POA}) as the a_source.
    * 
-   * @param a_target the target to connect to ORB, must be an instance of either
+   * @param target the target to connect to ORB, must be an instance of either
    * {@link ObjectImpl} (Stubs and old-style ties) or {@link Tie}.
    * 
-   * @param a_source the object, providing the connection information, must be
+   * @param source the object, providing the connection information, must be
    * an instance of either {@link ObjectImpl} (Stubs and old-style ties) or
    * {@link Servant} (the next-generation Ties supporting {@link POA}).
    * 

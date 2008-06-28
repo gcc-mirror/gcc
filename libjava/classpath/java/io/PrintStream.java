@@ -76,7 +76,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
   /**
    *  Encoding name
    */
-  private String encoding;
+  private final String encoding;
 
   /**
    * This boolean indicates whether or not an error has ever occurred
@@ -88,7 +88,7 @@ public class PrintStream extends FilterOutputStream implements Appendable
    * This is <code>true</code> if auto-flush is enabled, 
    * <code>false</code> otherwise
    */
-  private boolean auto_flush;
+  private final boolean auto_flush;
 
   /**
    * This method initializes a new <code>PrintStream</code> object to write
@@ -185,16 +185,17 @@ public class PrintStream extends FilterOutputStream implements Appendable
   public PrintStream (OutputStream out, boolean auto_flush)
   {
     super (out);
-
+    String encoding;
     try {
-	this.encoding = SystemProperties.getProperty("file.encoding");
+	encoding = SystemProperties.getProperty("file.encoding");
     } catch (SecurityException e){
-	this.encoding = "ISO8859_1";
+	encoding = "ISO8859_1";
     } catch (IllegalArgumentException e){
-	this.encoding = "ISO8859_1";
+	encoding = "ISO8859_1";
     } catch (NullPointerException e){
-	this.encoding = "ISO8859_1";
+	encoding = "ISO8859_1";
     }
+    this.encoding = encoding;
     this.auto_flush = auto_flush;
   }
 

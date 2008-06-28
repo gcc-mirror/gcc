@@ -64,12 +64,6 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
       this.annotation = annotation;
     }
 
-    private MyClassLoader (URL[] urls, ClassLoader parent)
-    {
-      super (urls, parent);
-      this.annotation = urlToAnnotation (urls);
-    }
-
     public static String urlToAnnotation (URL[] urls)
     {
       if (urls.length == 0)

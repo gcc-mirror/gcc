@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1254 Turkish char set.
  * aka cp1254 or Windows-1254 or whatever.
  */
-public class Windows1254 extends ByteCharset
+public final class Windows1254 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1254 extends ByteCharset
 	  "cp_1254", 
 	  "windows1254",
 	  "windows_1254" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1254

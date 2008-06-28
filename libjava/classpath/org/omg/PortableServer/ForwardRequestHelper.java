@@ -114,7 +114,7 @@ public abstract class ForwardRequestHelper
   public static ForwardRequest read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();
+    input.read_string();
     ForwardRequest value = new ForwardRequest();
 
     value.forward_reference = input.read_Object();

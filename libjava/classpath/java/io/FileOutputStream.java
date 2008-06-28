@@ -59,7 +59,7 @@ public class FileOutputStream extends OutputStream
 {
   private FileDescriptor fd;
 
-  private FileChannelImpl ch;
+  private final FileChannelImpl ch;
 
   /**
    * This method initializes a <code>FileOutputStream</code> object to write

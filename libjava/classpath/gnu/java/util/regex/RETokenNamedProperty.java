@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 final class RETokenNamedProperty extends REToken {
   String name;
   boolean insens;
@@ -268,6 +271,20 @@ final class RETokenNamedProperty extends REToken {
 	      return true;
 	    }
 	  };
+      if (name.startsWith("java"))
+	{
+	  try
+	    {
+	      Method m = Character.class.getMethod("is" + name.substring(4),
+						   Character.TYPE);
+	      return new JavaCategoryHandler(m);
+	    }
+	  catch (NoSuchMethodException e)
+	    {
+	      throw new REException("Unsupported Java handler: " + name, e,
+				    REException.REG_ESCAPE, 0);
+	    }
+	}
       throw new REException("unsupported name " + name, REException.REG_ESCAPE, 0);
   }
 
@@ -318,6 +335,39 @@ final class RETokenNamedProperty extends REToken {
 	  Character.UnicodeBlock cblock = Character.UnicodeBlock.of(c);
 	  return (cblock != null && cblock.equals(block));
       }
+  }
+
+  /**
+   * Handle the Java-specific extensions \p{javaX} where X
+   * is a method from Character of the form isX
+   *
+   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+   */
+  private static class JavaCategoryHandler 
+    extends Handler 
+  {
+    private Method method;
+
+    public JavaCategoryHandler(Method m) 
+    {
+      this.method = m;
+    }
+
+    public boolean includes(char c) 
+    {
+      try
+	{
+	  return (Boolean) method.invoke(null, c);
+	}
+      catch (IllegalAccessException e)
+	{
+	  throw new InternalError("Unable to access method " + method);
+	}
+      catch (InvocationTargetException e)
+	{
+	  throw new InternalError("Error invoking " + method);
+	}
+    }
   }
 
 }

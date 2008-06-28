@@ -224,7 +224,7 @@ public class MBeanPermission
    *               or either <code>null</code> or <code>"-"</code> for a
    *               value which may be implied by any member, but not
    *               imply any member itself.
-   * @param objectName the {@link ObjectName} to which this permission applies,
+   * @param name the {@link ObjectName} to which this permission applies,
    *                  or <code>null</code> for a value which may be implied by
    *                  any object name, but not imply any object name itself.
    * @param actions the actions associated with this permission.

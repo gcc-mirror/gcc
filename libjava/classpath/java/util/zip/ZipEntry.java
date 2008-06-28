@@ -357,7 +357,7 @@ public class ZipEntry implements ZipConstants, Cloneable
 			    | (extra[pos+2] & 0xff) << 8
 			    | (extra[pos+3] & 0xff) << 16
 			    | (extra[pos+4] & 0xff) << 24);
-		    setTime(time);
+		    setTime(time*1000);
 		  }
 	      }
 	    pos += len;

@@ -276,7 +276,7 @@ public class GIFFile
    *
    * @param in - the stream (reads 6 bytes, does not close or reset).
    * @return true if the signature is a valid GIF signature.
-   * @throws an IOException if the signature could not be read.
+   * @throws IOException if the signature could not be read.
    */
   public static boolean readSignature( InputStream in ) throws IOException
   { 

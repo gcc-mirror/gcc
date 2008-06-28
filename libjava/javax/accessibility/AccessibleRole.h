@@ -86,6 +86,7 @@ public:
   static ::javax::accessibility::AccessibleRole * PARAGRAPH;
   static ::javax::accessibility::AccessibleRole * PROGRESS_MONITOR;
   static ::javax::accessibility::AccessibleRole * RULER;
+  static ::javax::accessibility::AccessibleRole * HTML_CONTAINER;
   static ::java::lang::Class class$;
 };
 

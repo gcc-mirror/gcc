@@ -39,18 +39,18 @@ class gnu::xml::stream::AttributeImpl : public ::gnu::xml::stream::XMLEventImpl
 {
 
 public: // actually protected
-  AttributeImpl(::javax::xml::stream::Location *, ::javax::xml::namespace::QName *, ::java::lang::String *, ::javax::xml::namespace::QName *, jboolean);
+  AttributeImpl(::javax::xml::stream::Location *, ::javax::xml::namespace::QName *, ::java::lang::String *, ::java::lang::String *, jboolean);
 public:
   virtual jint getEventType();
   virtual ::javax::xml::namespace::QName * getName();
   virtual ::java::lang::String * getValue();
-  virtual ::javax::xml::namespace::QName * getDTDType();
+  virtual ::java::lang::String * getDTDType();
   virtual jboolean isSpecified();
   virtual void writeAsEncodedUnicode(::java::io::Writer *);
 public: // actually protected
   ::javax::xml::namespace::QName * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) name;
   ::java::lang::String * value;
-  ::javax::xml::namespace::QName * type;
+  ::java::lang::String * type;
   jboolean specified;
 public:
   static ::java::lang::Class class$;

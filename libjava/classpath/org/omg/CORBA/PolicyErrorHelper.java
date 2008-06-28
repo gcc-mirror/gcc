@@ -128,7 +128,7 @@ public abstract class PolicyErrorHelper
   public static PolicyError read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();
+    input.read_string();
     PolicyError value = new PolicyError();
 
     value.reason = input.read_short();

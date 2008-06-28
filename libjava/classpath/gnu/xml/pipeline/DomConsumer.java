@@ -743,7 +743,7 @@ public class DomConsumer implements EventConsumer
 	    // ELSE ... search up the tree we've been building
 	    for (Node n = top;
 		    n != null && n.getNodeType () != Node.DOCUMENT_NODE;
-		    n = (Node) n.getParentNode ()) {
+		    n = n.getParentNode ()) {
 		if (n.getNodeType () == Node.ENTITY_REFERENCE_NODE)
 		    continue;
 		Element e = (Element) n;

@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.dom.html2;
 
 import gnu.xml.dom.DomDOMException;
-import gnu.xml.dom.DomElement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;

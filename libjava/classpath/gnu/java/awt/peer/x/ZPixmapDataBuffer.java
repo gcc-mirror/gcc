@@ -59,4 +59,9 @@ class ZPixmapDataBuffer
     zpixmap.set_data_element(i, (byte) val);
   }
 
+  ZPixmap getZPixmap()
+  {
+    return zpixmap;
+  }
+
 }

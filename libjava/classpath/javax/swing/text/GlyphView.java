@@ -736,7 +736,6 @@ public class GlyphView extends View implements TabableView, Cloneable
     if (bg != null)
       {
         g.setColor(bg);
-        System.err.println("fill background: " + bg);
         g.fillRect(r.x, r.y, r.width, r.height);
       }
 

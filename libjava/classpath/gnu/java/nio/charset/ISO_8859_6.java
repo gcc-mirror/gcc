@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-6, ISO Arabic char set.
  */
-public class ISO_8859_6 extends ByteCharset
+public final class ISO_8859_6 extends ByteCharset
 {
 
   /**
@@ -104,8 +104,7 @@ public class ISO_8859_6 extends ByteCharset
 	  "windows-28596", 
 	  "ISO-8859-6-I", 
 	  "ISO-8859-6-E"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_6

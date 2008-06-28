@@ -76,7 +76,7 @@ private:
   void lock();
   void unlock();
 public: // actually protected
-  virtual jlong initFromVolatile(jlong, jint, jint);
+  virtual jlong initFromVolatile(jlong);
 private:
   void start_gdk_drawing();
   void end_gdk_drawing();

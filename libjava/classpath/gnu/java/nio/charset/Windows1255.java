@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1255 Hebrew char set.
  * aka cp1255 or Windows-1255 or whatever.
  */
-public class Windows1255 extends ByteCharset
+public final class Windows1255 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1255 extends ByteCharset
 	  "cp_1255", 
 	  "windows1255",
 	  "windows_1255" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1255

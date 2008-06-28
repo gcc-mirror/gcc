@@ -80,10 +80,10 @@ final class VMFile
   static native boolean create(String path) throws IOException;
 
   /*
-   * This native function actually produces the list of file in this
+   * This native function actually produces the list of files in this
    * directory
    */
-  static native String[] list(String dirpath);
+  static native synchronized String[] list(String dirpath);
 
   /*
    * This native method actually performs the rename.
@@ -116,6 +116,21 @@ final class VMFile
    */
   static native boolean mkdir(String dirpath);
 
+  /**
+   * Gets the total bytes of the filesystem named by path.
+   */
+  public static native long getTotalSpace(String path);
+  
+  /**
+   * Gets the total free bytes of the filesystem named by path.
+   */
+  public static native long getFreeSpace(String path);
+  
+  /**
+   * Gets the available bytes of the filesystem named by path.
+   */
+  public static native long getUsableSpace(String path);
+  
   /**
    * Set the read permission of the file.
    */

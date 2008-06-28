@@ -22,7 +22,7 @@ class javax::accessibility::AccessibleTextSequence : public ::java::lang::Object
 {
 
 public:
-  AccessibleTextSequence();
+  AccessibleTextSequence(jint, jint, ::java::lang::String *);
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) text;
   jint startIndex;
   jint endIndex;

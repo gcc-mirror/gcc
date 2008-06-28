@@ -82,7 +82,7 @@ public class PipedInputStream extends InputStream
     * This is the internal circular buffer used for storing bytes written
     * to the pipe and from which bytes are read by this stream
     */
-  protected byte[] buffer = new byte[PIPE_SIZE];
+  protected byte[] buffer = null;
 
   /**
     * The index into buffer where the next byte from the connected
@@ -107,8 +107,25 @@ public class PipedInputStream extends InputStream
     */
   public PipedInputStream()
   {
+    this(PIPE_SIZE);
   }
 
+  /**
+   * Creates a new <code>PipedInputStream</code> of the given size that is not
+   * connected to a <code>PipedOutputStream</code>.
+   * It must be connected before bytes can be read from this stream.
+   * 
+   * @since 1.6
+   * @since IllegalArgumentException If pipeSize <= 0.
+   */
+  public PipedInputStream(int pipeSize) throws IllegalArgumentException 
+  {
+    if (pipeSize <= 0)
+      throw new IllegalArgumentException("pipeSize must be > 0");
+    
+    this.buffer = new byte[pipeSize];
+  }
+  
   /**
     * This constructor creates a new <code>PipedInputStream</code> and connects
     * it to the passed in <code>PipedOutputStream</code>. The stream is then 
@@ -121,9 +138,28 @@ public class PipedInputStream extends InputStream
     */
   public PipedInputStream(PipedOutputStream source) throws IOException
   {
+    this();
     connect(source);
   }
 
+  /**
+   * This constructor creates a new <code>PipedInputStream</code> of the given
+   * size and connects it to the passed in <code>PipedOutputStream</code>.
+   * The stream is then ready for reading.
+   *
+   * @param source The <code>PipedOutputStream</code> to connect this 
+   * stream to
+   *
+   * @since 1.6
+   * @exception IOException If <code>source</code> is already connected.
+   */
+ public PipedInputStream(PipedOutputStream source, int pipeSize)
+   throws IOException
+ {
+   this(pipeSize);
+   connect(source);
+ }
+  
   /**
     * This method connects this stream to the passed in 
     * <code>PipedOutputStream</code>.

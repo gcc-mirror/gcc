@@ -29,6 +29,7 @@ class gnu::java::util::regex::REException : public ::java::lang::Exception
 
 public: // actually package-private
   REException(::java::lang::String *, jint, jint);
+  REException(::java::lang::String *, ::java::lang::Throwable *, jint, jint);
 public:
   virtual jint getType();
   virtual jint getPosition();

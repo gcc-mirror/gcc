@@ -146,6 +146,9 @@ public class QName implements Serializable
 
   public static QName valueOf(String qNameAsString)
   {
+    if (qNameAsString == null)
+      throw new IllegalArgumentException("qNameAsString can't be null");
+    
     String namespaceUri = "", prefix = null;
     int start = qNameAsString.indexOf('{');
     int end = qNameAsString.indexOf('}');

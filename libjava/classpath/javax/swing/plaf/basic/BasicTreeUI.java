@@ -279,14 +279,6 @@ public class BasicTreeUI
   static Icon nullIcon;
 
   /**
-   * The special value of the mouse event is sent indicating that this is not
-   * just the mouse click, but the mouse click on the selected node. Sending
-   * such event forces to start the cell editing session.
-   */
-  static final MouseEvent EDIT = new MouseEvent(new Label(), 7, 7, 7, 7, 7, 7,
-                                                false);
-
-  /**
    * Creates a new BasicTreeUI object.
    */
   public BasicTreeUI()

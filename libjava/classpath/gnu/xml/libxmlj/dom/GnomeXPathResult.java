@@ -101,7 +101,7 @@ implements XPathResult
       case STRING_TYPE:
         return getStringValue ();
       case NUMBER_TYPE:
-        return new Double (getNumberValue ()).toString ();
+        return Double.toString (getNumberValue ());
       case BOOLEAN_TYPE:
         return Boolean.valueOf (getBooleanValue ()).toString ();
       case UNORDERED_NODE_SNAPSHOT_TYPE:

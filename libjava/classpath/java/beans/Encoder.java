@@ -195,7 +195,7 @@ public class Encoder
 
     PersistenceDelegate pd = (PersistenceDelegate) delegates.get(type);
 
-    return (pd != null) ? pd : (PersistenceDelegate) defaultPersistenceDelegate;
+    return (pd != null) ? pd : defaultPersistenceDelegate;
   }
 
   /**

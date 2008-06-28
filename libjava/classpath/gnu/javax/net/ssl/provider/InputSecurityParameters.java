@@ -47,11 +47,9 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;

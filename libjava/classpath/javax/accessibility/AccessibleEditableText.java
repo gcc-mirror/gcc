@@ -125,7 +125,7 @@ public interface AccessibleEditableText extends AccessibleText
    * Select the text between two points.
    *
    * @param start the start position, inclusive
-   * @param end the end position, exclusive
+   * @param stop the end position, exclusive
    */
   // XXX What happens if indices are out of bounds?
   void selectText(int start, int stop);

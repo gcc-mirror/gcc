@@ -55,6 +55,9 @@ public:
   GstAudioFileReader();
   virtual ::javax::sound::sampled::AudioFileFormat * getAudioFileFormat(::java::io::File *);
   virtual ::javax::sound::sampled::AudioFileFormat * getAudioFileFormat(::java::io::InputStream *);
+private:
+  ::javax::sound::sampled::AudioFileFormat * getAudioFileFormat(::java::io::InputStream *, ::java::lang::String *);
+public:
   virtual ::javax::sound::sampled::AudioFileFormat * getAudioFileFormat(::java::net::URL *);
   virtual ::javax::sound::sampled::AudioInputStream * getAudioInputStream(::java::io::File *);
   virtual ::javax::sound::sampled::AudioInputStream * getAudioInputStream(::java::io::InputStream *);

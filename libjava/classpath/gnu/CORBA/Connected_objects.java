@@ -109,7 +109,7 @@ public class Connected_objects
   /**
    * Get the record of the stored object.
    *
-   * @param object the stored object
+   * @param stored_object the stored object
    *
    * @return the record about the stored object, null if
    * this object is not stored here.
@@ -141,7 +141,7 @@ public class Connected_objects
    * generated automatically.
    *
    * @param object the object to add.
-   * @param port, on that the ORB will be listening to the remote
+   * @param port on that the ORB will be listening to the remote
    * invocations.
    *
    * @return the newly created object record.

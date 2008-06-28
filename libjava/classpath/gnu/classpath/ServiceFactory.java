@@ -48,6 +48,7 @@ import java.security.PrivilegedActionException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ServiceConfigurationError;
 import java.util.logging.Level;
@@ -222,8 +223,8 @@ public final class ServiceFactory
    * @throws IllegalArgumentException if <code>spi</code> is
    * <code>null</code>.
    */
-  public static Iterator lookupProviders(Class spi,
-                                         ClassLoader loader)
+  public static <P> Iterator<P> lookupProviders(Class<P> spi,
+						ClassLoader loader)
   {
     return lookupProviders(spi, loader, false);
   }
@@ -266,12 +267,12 @@ public final class ServiceFactory
    * @throws IllegalArgumentException if <code>spi</code> is
    * <code>null</code>.
    */
-  public static Iterator lookupProviders(Class spi,
-                                         ClassLoader loader,
-					 boolean error)
+  public static <P> Iterator<P> lookupProviders(Class<P> spi,
+						ClassLoader loader,
+						boolean error)
   {
     String resourceName;
-    Enumeration urls;
+    Enumeration<URL> urls;
 
     if (spi == null)
       throw new IllegalArgumentException();
@@ -295,11 +296,14 @@ public final class ServiceFactory
 	  throw new ServiceConfigurationError("Failed to access + " +
 					      resourceName, ioex);
 	else
-	  return Collections.EMPTY_LIST.iterator();
+	  {
+	    List<P> empty = Collections.emptyList();
+	    return empty.iterator();
+	  }
       }
 
-    return new ServiceIterator(spi, urls, loader, error,
-                               AccessController.getContext());
+    return new ServiceIterator<P>(spi, urls, loader, error,
+				  AccessController.getContext());
   }
 
 
@@ -318,7 +322,7 @@ public final class ServiceFactory
    *
    * @see #lookupProviders(Class, ClassLoader)
    */
-  public static Iterator lookupProviders(Class spi)
+  public static <P> Iterator<P> lookupProviders(Class<P> spi)
   {
     ClassLoader ctxLoader;
 
@@ -335,14 +339,14 @@ public final class ServiceFactory
    *
    * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
    */
-  private static final class ServiceIterator
-    implements Iterator
+  private static final class ServiceIterator<P>
+    implements Iterator<P>
   {
     /**
      * The service provider interface (usually an interface, sometimes
      * an abstract class) which the services must implement.
      */
-    private final Class spi;
+    private final Class<P> spi;
 
 
     /**
@@ -350,7 +354,7 @@ public final class ServiceFactory
      * <code>META-INF/services/&lt;org.foo.SomeService&gt;</code>,
      * as returned by {@link ClassLoader#getResources(String)}.
      */
-    private final Enumeration urls;
+    private final Enumeration<URL> urls;
 
 
     /**
@@ -389,7 +393,7 @@ public final class ServiceFactory
      * {@link #next()}, or <code>null</code> if the iterator has
      * already returned all service providers.
      */
-    private Object nextProvider;
+    private P nextProvider;
 
     /**
      * True if a {@link ServiceConfigurationError} should be thrown
@@ -420,7 +424,7 @@ public final class ServiceFactory
      * @param securityContext the security context to use when loading
      * and initializing service providers.
      */
-    ServiceIterator(Class spi, Enumeration urls, ClassLoader loader,
+    ServiceIterator(Class<P> spi, Enumeration<URL> urls, ClassLoader loader,
 		    boolean error, AccessControlContext securityContext)
     {
       this.spi = spi;
@@ -436,9 +440,9 @@ public final class ServiceFactory
      * @throws NoSuchElementException if {@link #hasNext} returns
      * <code>false</code>.
      */
-    public Object next()
+    public P next()
     {
-      Object result;
+      P result;
 
       if (!hasNext())
         throw new NoSuchElementException();
@@ -461,7 +465,7 @@ public final class ServiceFactory
     }
 
 
-    private Object loadNextServiceProvider()
+    private P loadNextServiceProvider()
     {
       String line;
       
@@ -523,7 +527,7 @@ public final class ServiceFactory
                * active when calling lookupProviders.
                */
               return AccessController.doPrivileged(
-                new ServiceProviderLoadingAction(spi, line, loader),
+                new ServiceProviderLoadingAction<P>(spi, line, loader),
                 securityContext);
             }
           catch (Exception ex)
@@ -577,7 +581,7 @@ public final class ServiceFactory
         if (!urls.hasMoreElements())
           return;
 
-        currentURL = (URL) urls.nextElement();
+        currentURL = urls.nextElement();
         try
           {
             reader = new BufferedReader(new InputStreamReader(

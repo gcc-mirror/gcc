@@ -56,7 +56,6 @@ import gnu.classpath.jdwp.value.ValueFactory;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 /**

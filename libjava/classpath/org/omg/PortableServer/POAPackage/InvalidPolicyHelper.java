@@ -136,7 +136,7 @@ public abstract class InvalidPolicyHelper
   public static InvalidPolicy read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();
+    input.read_string();
     InvalidPolicy value = new InvalidPolicy();
 
     value.index = input.read_short();

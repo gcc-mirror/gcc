@@ -40,7 +40,6 @@ package gnu.javax.imageio.png;
 import java.util.Vector;
 import java.util.zip.Deflater;
 import java.awt.color.ColorSpace;
-import java.awt.color.ICC_Profile;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -48,7 +47,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
-import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 public class PNGEncoder 

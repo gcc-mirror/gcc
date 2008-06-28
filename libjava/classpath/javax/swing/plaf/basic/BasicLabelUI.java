@@ -59,7 +59,6 @@ import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.LabelUI;
 import javax.swing.text.View;

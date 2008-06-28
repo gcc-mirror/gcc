@@ -107,7 +107,7 @@ class ResolverCache
   /**
    * Return the hostname for the specified IP address.
    *
-   * @param ip The IP address as a byte array
+   * @param addr The IP address as a byte array
    *
    * @return The hostname
    *
@@ -116,7 +116,7 @@ class ResolverCache
   public static String getHostByAddr(byte[] addr) throws UnknownHostException
   {
     Object key = makeHashableAddress(addr);
-    Entry entry = (Entry) get(key);
+    Entry entry = get(key);
     if (entry != null)
       {
 	if (entry.value == null)
@@ -149,7 +149,7 @@ class ResolverCache
   public static byte[][] getHostByName(String hostname)
     throws UnknownHostException
   {
-    Entry entry = (Entry) get(hostname);
+    Entry entry = get(hostname);
     if (entry != null)
       {
 	if (entry.value == null)

@@ -37,10 +37,6 @@ exception statement from your version. */
 
 package gnu.javax.imageio.png;
 
-import java.awt.color.ICC_ProfileGray;
-import java.awt.color.ICC_ProfileRGB;
-import java.awt.color.ICC_Profile;
-import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ColorSpace;
 
 /**

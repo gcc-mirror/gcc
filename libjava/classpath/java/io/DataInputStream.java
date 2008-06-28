@@ -1,5 +1,6 @@
 /* DataInputStream.java -- FilteredInputStream that implements DataInput
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2008
+   Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -349,7 +350,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final String readLine() throws IOException
   {
-    StringBuffer strb = new StringBuffer();
+    StringBuilder strb = new StringBuilder();
 
     while (true)
       {
@@ -590,13 +591,56 @@ public class DataInputStream extends FilterInputStream implements DataInput
   public static final String readUTF(DataInput in) throws IOException
   {
     final int UTFlen = in.readUnsignedShort ();
-    byte[] buf = new byte [UTFlen];
+    
+    return readUTF(in, UTFlen);
+  }
+
+  /**
+   * This method is similar to <code>readUTF</code>, but the
+   * UTF-8 byte length is in 64 bits.
+   * This method is not public. It is used by <code>ObjectInputStream</code>.
+   * 
+   * @return The <code>String</code> read
+   *
+   * @exception EOFException If end of file is reached before reading
+   * the String
+   * @exception UTFDataFormatException If the data is not in UTF-8 format
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput#writeUTFLong
+   */
+  final String readUTFLong () throws IOException
+  {
+    long l = readLong ();
+    if (l > Integer.MAX_VALUE)
+      throw new IOException("The string length > Integer.MAX_VALUE");
+    final int UTFlen = (int)l;
+    return readUTF (this, UTFlen);
+  }
+
+  /**
+   * This method performs the main task of <code>readUTF</code> and
+   * <code>readUTFLong</code>.
+   *
+   * @param in The <code>DataInput</code> source to read from
+   *
+   * @param len The UTF-8 byte length of the String to be read
+   *
+   * @return The String read from the source
+   *
+   * @exception IOException If an error occurs
+   *
+   * @see DataInput#readUTF
+   */
+  private static final String readUTF(DataInput in, int len) throws IOException
+  {
+    byte[] buf = new byte [len];
 
     // This blocks until the entire string is available rather than
     // doing partial processing on the bytes that are available and then
     // blocking.  An advantage of the latter is that Exceptions
     // could be thrown earlier.  The former is a bit cleaner.
-    in.readFully (buf, 0, UTFlen);
+    in.readFully (buf, 0, len);
 
     return convertFromUTF (buf);
   }
@@ -703,7 +747,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
   {
     // Give StringBuffer an initial estimated size to avoid 
     // enlarge buffer frequently
-    StringBuffer strbuf = new StringBuffer (buf.length / 2 + 2);
+    StringBuilder strbuf = new StringBuilder (buf.length / 2 + 2);
 
     for (int i = 0; i < buf.length; )
       {

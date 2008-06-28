@@ -165,7 +165,7 @@ public class XMLEventAllocatorImpl
           attributes.add(new AttributeImpl(location,
                                            reader.getAttributeName(i),
                                            reader.getAttributeValue(i),
-                                           QName.valueOf(reader.getAttributeType(i)),
+                                           reader.getAttributeType(i),
                                            reader.isAttributeSpecified(i)));
         return new StartElementImpl(location,
                                     reader.getName(),

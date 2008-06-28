@@ -167,11 +167,11 @@ libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/util.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/value.lo gnu/gcj/jvmti.lo
 am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
-	gnu/classpath/debug.lo gnu/gcj.lo gnu/gcj/convert.lo \
-	gnu/gcj/io.lo gnu/gcj/runtime.lo gnu/gcj/util.lo \
-	gnu/java/awt.lo gnu/java/awt/color.lo gnu/java/awt/dnd.lo \
-	gnu/java/awt/font.lo gnu/java/awt/font/autofit.lo \
-	gnu/java/awt/font/opentype.lo \
+	gnu/classpath/debug.lo gnu/classpath/toolkit.lo gnu/gcj.lo \
+	gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/runtime.lo \
+	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
+	gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
+	gnu/java/awt/font/autofit.lo gnu/java/awt/font/opentype.lo \
 	gnu/java/awt/font/opentype/truetype.lo gnu/java/awt/image.lo \
 	gnu/java/awt/java2d.lo gnu/java/awt/peer.lo \
 	gnu/java/awt/peer/headless.lo gnu/java/awt/print.lo \
@@ -259,7 +259,8 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/accessibility.lo javax/activity.lo javax/crypto.lo \
 	javax/crypto/interfaces.lo javax/crypto/spec.lo \
 	javax/management.lo javax/management/loading.lo \
-	javax/management/openmbean.lo javax/naming.lo \
+	javax/management/openmbean.lo javax/management/remote.lo \
+	javax/management/remote/rmi.lo javax/naming.lo \
 	javax/naming/directory.lo javax/naming/event.lo \
 	javax/naming/ldap.lo javax/naming/spi.lo javax/net.lo \
 	javax/net/ssl.lo javax/print.lo javax/print/attribute.lo \
@@ -278,7 +279,7 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/table.lo javax/swing/text.lo \
 	javax/swing/text/html.lo javax/swing/text/html/parser.lo \
 	javax/swing/text/rtf.lo javax/swing/tree.lo \
-	javax/swing/undo.lo javax/transaction.lo \
+	javax/swing/undo.lo javax/tools.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo sun/awt.lo \
 	sun/misc.lo sun/reflect.lo sun/reflect/annotation.lo \
 	sun/reflect/misc.lo $(am__DEPENDENCIES_1)
@@ -1352,6 +1353,10 @@ classpath/gnu/classpath/jdwp/value/ValueFactory.java \
 classpath/gnu/classpath/jdwp/value/VoidValue.java
 
 gnu_classpath_jdwp_value_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_value_source_files)))
+gnu_classpath_toolkit_source_files = \
+classpath/gnu/classpath/toolkit/DefaultDaemonThreadFactory.java
+
+gnu_classpath_toolkit_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_toolkit_source_files)))
 gnu_gcj_source_files = \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
@@ -1488,7 +1493,8 @@ classpath/gnu/java/awt/dnd/peer/gtk/GtkDropTargetPeer.java
 gnu_java_awt_font_source_files = \
 classpath/gnu/java/awt/font/FontDelegate.java \
 classpath/gnu/java/awt/font/FontFactory.java \
-classpath/gnu/java/awt/font/GNUGlyphVector.java
+classpath/gnu/java/awt/font/GNUGlyphVector.java \
+classpath/gnu/java/awt/font/OpenTypeFontPeer.java
 
 gnu_java_awt_font_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_font_source_files)))
 gnu_java_awt_font_autofit_source_files = \
@@ -1533,6 +1539,8 @@ classpath/gnu/java/awt/font/opentype/truetype/ZonePathIterator.java
 
 gnu_java_awt_font_opentype_truetype_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_font_opentype_truetype_source_files)))
 gnu_java_awt_image_source_files = \
+classpath/gnu/java/awt/image/AsyncImage.java \
+classpath/gnu/java/awt/image/ImageConverter.java \
 classpath/gnu/java/awt/image/ImageDecoder.java \
 classpath/gnu/java/awt/image/XBMDecoder.java
 
@@ -1544,6 +1552,7 @@ classpath/gnu/java/awt/java2d/AlphaCompositeContext.java \
 classpath/gnu/java/awt/java2d/CubicSegment.java \
 classpath/gnu/java/awt/java2d/ImagePaint.java \
 classpath/gnu/java/awt/java2d/LineSegment.java \
+classpath/gnu/java/awt/java2d/PixelCoverage.java \
 classpath/gnu/java/awt/java2d/Pixelizer.java \
 classpath/gnu/java/awt/java2d/PolyEdge.java \
 classpath/gnu/java/awt/java2d/PolyEdgeComparator.java \
@@ -1554,6 +1563,8 @@ classpath/gnu/java/awt/java2d/ScanlineConverter.java \
 classpath/gnu/java/awt/java2d/ScanlineCoverage.java \
 classpath/gnu/java/awt/java2d/Segment.java \
 classpath/gnu/java/awt/java2d/ShapeCache.java \
+classpath/gnu/java/awt/java2d/ShapeWrapper.java \
+classpath/gnu/java/awt/java2d/TextCacheKey.java \
 classpath/gnu/java/awt/java2d/TexturePaintContext.java
 
 gnu_java_awt_java2d_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_java2d_source_files)))
@@ -1690,12 +1701,11 @@ classpath/gnu/java/awt/peer/swing/SwingWindowPeer.java
 
 gnu_java_awt_peer_x_source_files = \
 classpath/gnu/java/awt/peer/x/GLGraphics.java \
-classpath/gnu/java/awt/peer/x/ImageConverter.java \
 classpath/gnu/java/awt/peer/x/KeyboardMapping.java \
 classpath/gnu/java/awt/peer/x/PixmapVolatileImage.java \
 classpath/gnu/java/awt/peer/x/XDialogPeer.java \
 classpath/gnu/java/awt/peer/x/XEventPump.java \
-classpath/gnu/java/awt/peer/x/XFontPeer2.java \
+classpath/gnu/java/awt/peer/x/XFontPeer.java \
 classpath/gnu/java/awt/peer/x/XFramePeer.java \
 classpath/gnu/java/awt/peer/x/XGraphics2D.java \
 classpath/gnu/java/awt/peer/x/XGraphicsConfiguration.java \
@@ -1991,6 +2001,8 @@ gnu/java/nio/channels/FileChannelImpl.java
 gnu_java_nio_channels_header_files = $(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files))
 gnu_java_nio_charset_source_files = \
 classpath/gnu/java/nio/charset/ByteCharset.java \
+classpath/gnu/java/nio/charset/ByteDecodeLoopHelper.java \
+classpath/gnu/java/nio/charset/ByteEncodeLoopHelper.java \
 classpath/gnu/java/nio/charset/Cp424.java \
 classpath/gnu/java/nio/charset/Cp437.java \
 classpath/gnu/java/nio/charset/Cp737.java \
@@ -2347,6 +2359,7 @@ gnu_java_util_source_files = \
 classpath/gnu/java/util/Base64.java \
 classpath/gnu/java/util/DoubleEnumeration.java \
 classpath/gnu/java/util/EmptyEnumeration.java \
+classpath/gnu/java/util/LRUCache.java \
 classpath/gnu/java/util/WeakIdentityHashMap.java \
 classpath/gnu/java/util/ZoneInfo.java
 
@@ -5296,6 +5309,16 @@ classpath/javax/management/openmbean/TabularDataSupport.java \
 classpath/javax/management/openmbean/TabularType.java
 
 javax_management_openmbean_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_management_openmbean_source_files)))
+javax_management_remote_source_files = \
+classpath/javax/management/remote/NotificationResult.java \
+classpath/javax/management/remote/TargetedNotification.java
+
+javax_management_remote_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_management_remote_source_files)))
+javax_management_remote_rmi_source_files = \
+classpath/javax/management/remote/rmi/RMIConnection.java \
+classpath/javax/management/remote/rmi/RMIServer.java
+
+javax_management_remote_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_management_remote_rmi_source_files)))
 javax_naming_source_files = \
 classpath/javax/naming/AuthenticationException.java \
 classpath/javax/naming/AuthenticationNotSupportedException.java \
@@ -6328,6 +6351,12 @@ classpath/javax/swing/undo/UndoableEdit.java \
 classpath/javax/swing/undo/UndoableEditSupport.java
 
 javax_swing_undo_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_undo_source_files)))
+javax_tools_source_files = \
+classpath/javax/tools/Diagnostic.java \
+classpath/javax/tools/DiagnosticListener.java \
+classpath/javax/tools/FileObject.java
+
+javax_tools_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_tools_source_files)))
 javax_transaction_source_files = \
 classpath/javax/transaction/HeuristicCommitException.java \
 classpath/javax/transaction/HeuristicMixedException.java \
@@ -7260,6 +7289,7 @@ all_packages_source_files = \
   gnu/awt/j2d.list \
   gnu/classpath.list \
   gnu/classpath/debug.list \
+  gnu/classpath/toolkit.list \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
@@ -7450,6 +7480,8 @@ all_packages_source_files = \
   javax/management.list \
   javax/management/loading.list \
   javax/management/openmbean.list \
+  javax/management/remote.list \
+  javax/management/remote/rmi.list \
   javax/naming.list \
   javax/naming/directory.list \
   javax/naming/event.list \
@@ -7491,6 +7523,7 @@ all_packages_source_files = \
   javax/swing/text/rtf.list \
   javax/swing/tree.list \
   javax/swing/undo.list \
+  javax/tools.list \
   javax/transaction.list \
   javax/transaction/xa.list \
   org/ietf/jgss.list \
@@ -7506,6 +7539,7 @@ ordinary_header_files = \
   $(gnu_awt_j2d_header_files) \
   $(gnu_classpath_header_files) \
   $(gnu_classpath_debug_header_files) \
+  $(gnu_classpath_toolkit_header_files) \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
@@ -7693,6 +7727,8 @@ ordinary_header_files = \
   $(javax_management_header_files) \
   $(javax_management_loading_header_files) \
   $(javax_management_openmbean_header_files) \
+  $(javax_management_remote_header_files) \
+  $(javax_management_remote_rmi_header_files) \
   $(javax_naming_header_files) \
   $(javax_naming_directory_header_files) \
   $(javax_naming_event_header_files) \
@@ -7734,6 +7770,7 @@ ordinary_header_files = \
   $(javax_swing_text_rtf_header_files) \
   $(javax_swing_tree_header_files) \
   $(javax_swing_undo_header_files) \
+  $(javax_tools_header_files) \
   $(javax_transaction_header_files) \
   $(javax_transaction_xa_header_files) \
   $(org_ietf_jgss_header_files) \
@@ -7784,23 +7821,10 @@ bc_objects = \
   org-xml.lo
 
 property_files = \
-  classpath/resource/gnu/classpath/tools/appletviewer/messages.properties \
-  classpath/resource/gnu/classpath/tools/common/Messages.properties \
-  classpath/resource/gnu/classpath/tools/getopt/Messages.properties \
-  classpath/resource/gnu/classpath/tools/jar/messages.properties \
-  classpath/resource/gnu/classpath/tools/jarsigner/MessageBundle.properties \
-  classpath/resource/gnu/classpath/tools/jarsigner/messages.properties \
-  classpath/resource/gnu/classpath/tools/keytool/MessageBundle.properties \
-  classpath/resource/gnu/classpath/tools/keytool/messages.properties \
-  classpath/resource/gnu/classpath/tools/native2ascii/messages.properties \
-  classpath/resource/gnu/classpath/tools/orbd/messages.properties \
-  classpath/resource/gnu/classpath/tools/rmic/messages.properties \
-  classpath/resource/gnu/classpath/tools/rmid/messages.properties \
-  classpath/resource/gnu/classpath/tools/rmiregistry/messages.properties \
-  classpath/resource/gnu/classpath/tools/serialver/messages.properties \
-  classpath/resource/gnu/classpath/tools/tnameserv/messages.properties \
+  classpath/resource/gnu/java/awt/font/fonts.properties \
   classpath/resource/gnu/java/awt/peer/gtk/font.properties \
   classpath/resource/gnu/java/awt/peer/x/fonts.properties \
+  classpath/resource/gnu/java/awt/peer/x/xfonts.properties \
   classpath/resource/gnu/java/locale/LocaleInformation.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_aa.properties \
   classpath/resource/gnu/java/locale/LocaleInformation_aa_DJ.properties \
@@ -8081,8 +8105,6 @@ property_files = \
   classpath/resource/javax/imageio/plugins/jpeg/MessagesBundle.properties \
   classpath/resource/javax/swing/text/html/default.css \
   classpath/resource/org/ietf/jgss/MessagesBundle.properties \
-  classpath/resource/sun/rmi/rmic/messages.properties \
-  classpath/resource/com/sun/tools/javac/messages.properties \
   classpath/resource/META-INF/services/java.util.prefs.PreferencesFactory \
   classpath/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
   classpath/resource/META-INF/services/javax.sound.midi.spi.MidiDeviceProvider \
@@ -10424,6 +10446,12 @@ gnu/classpath/jdwp/value.list: $(gnu_classpath_jdwp_value_source_files)
 
 -include gnu/classpath/jdwp/value.deps
 
+gnu/classpath/toolkit.list: $(gnu_classpath_toolkit_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/gnu/classpath/toolkit/*.class > gnu/classpath/toolkit.list
+
+-include gnu/classpath/toolkit.deps
+
 gnu/gcj.list: $(gnu_gcj_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	echo $(srcdir)/classpath/lib/gnu/gcj/*.class > gnu/gcj.list
@@ -11692,6 +11720,18 @@ javax/management/openmbean.list: $(javax_management_openmbean_source_files)
 
 -include javax/management/openmbean.deps
 
+javax/management/remote.list: $(javax_management_remote_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/javax/management/remote/*.class > javax/management/remote.list
+
+-include javax/management/remote.deps
+
+javax/management/remote/rmi.list: $(javax_management_remote_rmi_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/javax/management/remote/rmi/*.class > javax/management/remote/rmi.list
+
+-include javax/management/remote/rmi.deps
+
 javax/naming.list: $(javax_naming_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	echo $(srcdir)/classpath/lib/javax/naming/*.class > javax/naming.list
@@ -11942,6 +11982,12 @@ javax/swing/undo.list: $(javax_swing_undo_source_files)
 	echo $(srcdir)/classpath/lib/javax/swing/undo/*.class > javax/swing/undo.list
 
 -include javax/swing/undo.deps
+
+javax/tools.list: $(javax_tools_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/javax/tools/*.class > javax/tools.list
+
+-include javax/tools.deps
 
 javax/transaction.list: $(javax_transaction_source_files)
 	@$(mkinstalldirs) $(dir $@)

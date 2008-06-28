@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1252-Latin-1, 
  * aka cp1252 or Windows-1252 or whatever.
  */
-public class Windows1252 extends ByteCharset
+public final class Windows1252 extends ByteCharset
 {
 
   /**
@@ -92,8 +92,7 @@ public class Windows1252 extends ByteCharset
 	  "windows-1252",
 	  "cp1252", 
 	  "cp-1252"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1252

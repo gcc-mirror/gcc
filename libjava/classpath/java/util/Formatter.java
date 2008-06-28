@@ -291,7 +291,7 @@ public final class Formatter
    * If the locale is <code>null</code>, then no localization is
    * applied.
    *
-   * @param file the output stream.
+   * @param out the output stream.
    * @param charset the character set to use for output.
    * @param loc the locale to use.
    * @throws UnsupportedEncodingException if the supplied character
@@ -1427,7 +1427,7 @@ public final class Formatter
    * Outputs a formatted string based on the supplied specification,
    * <code>fmt</code>, and its arguments using the formatter's locale.
    *
-   * @param fmt the format specification.
+   * @param format the format specification.
    * @param args the arguments to apply to the specification.
    * @throws IllegalFormatException if there is a problem with
    *                                the syntax of the format

@@ -134,7 +134,7 @@ public class GtkMainThread extends Thread
                   }
               }
             GtkGenericPeer.q()
-              .postEvent(new NativeEventLoopRunningEvent(new Boolean(true)));
+              .postEvent(new NativeEventLoopRunningEvent(Boolean.TRUE));
           }
       }
   }
@@ -161,7 +161,7 @@ public class GtkMainThread extends Thread
                   }
               }
             GtkGenericPeer.q()
-              .postEvent(new NativeEventLoopRunningEvent(new Boolean(false)));
+              .postEvent(new NativeEventLoopRunningEvent(Boolean.FALSE));
             }
       }
   }

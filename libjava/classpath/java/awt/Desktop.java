@@ -120,7 +120,7 @@ public class Desktop
   }
   
   /**
-   * Returns an istance of the Desktop Class.
+   * Returns an instance of the Desktop Class.
    * 
    * If this implementation does not support Desktop, an 
    * UnsupportedOperationException will be thrown.
@@ -155,7 +155,7 @@ public class Desktop
    * @return true if this class is supported on the current platform;
    * false otherwise
    */
-  private static boolean isDesktopSupported()
+  public static boolean isDesktopSupported()
   {
     if (GraphicsEnvironment.isHeadless())
       return false;

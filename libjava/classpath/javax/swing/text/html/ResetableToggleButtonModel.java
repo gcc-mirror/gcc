@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
 class ResetableToggleButtonModel

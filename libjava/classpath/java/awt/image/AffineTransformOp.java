@@ -188,7 +188,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       if (dst == null)
         dst = createCompatibleDestImage(src, null);
 
-      Graphics2D gr = (Graphics2D) dst.createGraphics();
+      Graphics2D gr = dst.createGraphics();
       gr.setRenderingHints(hints);
       gr.drawImage(src, transform, null);
       return dst;

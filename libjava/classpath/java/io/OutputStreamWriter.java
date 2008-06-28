@@ -91,17 +91,17 @@ public class OutputStreamWriter extends Writer
   /**
    * The charset encoder.
    */
-  private CharsetEncoder encoder;
+  private final CharsetEncoder encoder;
 
   /**
    * java.io canonical name of the encoding.
    */
-  private String encodingName;
+  private final String encodingName;
 
   /**
    * Buffer output before character conversion as it has costly overhead.
    */
-  private CharBuffer outputBuffer;
+  private final CharBuffer outputBuffer;
   private final static int BUFFER_SIZE = 1024;
 
   /**
@@ -120,7 +120,11 @@ public class OutputStreamWriter extends Writer
   public OutputStreamWriter (OutputStream out, String encoding_scheme) 
     throws UnsupportedEncodingException
   {
+    CharsetEncoder encoder;
+    String encodingName;
     this.out = out;
+    outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
+
     try 
       {
 	// Don't use NIO if avoidable
@@ -128,44 +132,44 @@ public class OutputStreamWriter extends Writer
 	  {
 	    encodingName = "ISO8859_1";
 	    encoder = null;
-	    return;
 	  }
-
-	/*
-	 * Workraround for encodings with a byte-order-mark.
-	 * We only want to write it once per stream.
-	 */
-	try 
-	  {
-	    if(encoding_scheme.equalsIgnoreCase("UnicodeBig") || 
-	       encoding_scheme.equalsIgnoreCase("UTF-16") ||
-	       encoding_scheme.equalsIgnoreCase("UTF16"))
-	      {
-		encoding_scheme = "UTF-16BE";	  
-		out.write((byte)0xFE);
-		out.write((byte)0xFF);
-	      } 
-	    else if(encoding_scheme.equalsIgnoreCase("UnicodeLittle")){
-	      encoding_scheme = "UTF-16LE";
-	      out.write((byte)0xFF);
-	      out.write((byte)0xFE);
-	    }
-	  }
-	catch(IOException ioe)
-	  {
-	  }
-      
-	outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
-
-	Charset cs = EncodingHelper.getCharset(encoding_scheme);
-	if(cs == null)
-	  throw new UnsupportedEncodingException("Encoding "+encoding_scheme+
-						 " unknown");
-	encoder = cs.newEncoder();
-	encodingName = EncodingHelper.getOldCanonical(cs.name());
-
-	encoder.onMalformedInput(CodingErrorAction.REPLACE);
-	encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+       else
+	 {
+	   /*
+	    * Workaround for encodings with a byte-order-mark.
+	    * We only want to write it once per stream.
+	    */
+	   try 
+	     {
+	       if(encoding_scheme.equalsIgnoreCase("UnicodeBig") || 
+		  encoding_scheme.equalsIgnoreCase("UTF-16") ||
+		  encoding_scheme.equalsIgnoreCase("UTF16"))
+		 {
+		   encoding_scheme = "UTF-16BE";	  
+		   out.write((byte)0xFE);
+		   out.write((byte)0xFF);
+		 } 
+	       else if(encoding_scheme.equalsIgnoreCase("UnicodeLittle"))
+		 {
+		   encoding_scheme = "UTF-16LE";
+		   out.write((byte)0xFF);
+		   out.write((byte)0xFE);
+		 }
+	     }
+	   catch(IOException ioe)
+	     {
+	     }
+	   
+	   Charset cs = EncodingHelper.getCharset(encoding_scheme);
+	   if(cs == null)
+	     throw new UnsupportedEncodingException("Encoding "+encoding_scheme+
+						    " unknown");
+	   encoder = cs.newEncoder();
+	   encodingName = EncodingHelper.getOldCanonical(cs.name());
+	   
+	   encoder.onMalformedInput(CodingErrorAction.REPLACE);
+	   encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+	 }
       } 
     catch(RuntimeException e) 
       {
@@ -174,6 +178,8 @@ public class OutputStreamWriter extends Writer
 	encoder = null; 
 	encodingName = "ISO8859_1";
       }
+    this.encoder = encoder;
+    this.encodingName = encodingName;
   }
 
   /**
@@ -184,8 +190,10 @@ public class OutputStreamWriter extends Writer
    */
   public OutputStreamWriter (OutputStream out)
   {
+    CharsetEncoder encoder;
+    String encodingName;
     this.out = out;
-    outputBuffer = null;
+    outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
     try 
       {
 	String encoding = System.getProperty("file.encoding");
@@ -203,8 +211,9 @@ public class OutputStreamWriter extends Writer
       {
 	encoder.onMalformedInput(CodingErrorAction.REPLACE);
 	encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
       }
+    this.encoder = encoder;
+    this.encodingName = encodingName;
   }
 
   /**
@@ -345,7 +354,7 @@ public class OutputStreamWriter extends Writer
     {
       byte[] b = new byte[count];
       for(int i=0;i<count;i++)
-	b[i] = (byte)((buf[offset+i] <= 0xFF)?buf[offset+i]:'?');
+	b[i] = nullConversion(buf[offset+i]);
       out.write(b);
     } else {
       try  {
@@ -367,6 +376,10 @@ public class OutputStreamWriter extends Writer
 	throw new IOException("Unmappable character.");
       }
     }
+  }
+
+  private byte nullConversion(char c) {
+	  return (byte)((c <= 0xFF)?c:'?');
   }
 
   /**
@@ -398,7 +411,20 @@ public class OutputStreamWriter extends Writer
    */
   public void write (int ch) throws IOException
   {
-    write(new char[]{ (char)ch }, 0, 1);
+	  // No buffering, no encoding ... just pass through
+	  if (encoder == null && outputBuffer == null) {
+		  out.write(nullConversion((char)ch));
+	  } else {
+		  if (outputBuffer != null) {
+			  if (outputBuffer.remaining() == 0) {
+				  writeConvert(outputBuffer.array(), 0, BUFFER_SIZE);
+				  outputBuffer.clear();
+			  }
+			  outputBuffer.put((char)ch);
+		  } else {
+		      writeConvert(new char[]{ (char)ch }, 0, 1);
+		  }
+	  }
   }
 } // class OutputStreamWriter
 

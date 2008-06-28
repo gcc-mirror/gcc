@@ -517,6 +517,19 @@ public class AccessibleRole extends AccessibleBundle
     = new AccessibleRole("ruler");
 
   /**
+   * A HTML container is an accessible object which contains other
+   * accessible objects that together form some HTML content.  For example,
+   * the content may be a sequence of text containing a link, which
+   * would be represent as two children, one an {@link AccessibleText}
+   * object holding the normal text and the other an
+   * {@link AccessibleHypertext} object representing the link.
+   *
+   * @since 1.6
+   */
+  public static final AccessibleRole HTML_CONTAINER
+    = new AccessibleRole("HTML container");
+
+  /**
    * Create a new constant with a locale independent key. Follow the example,
    * keep the constructor private and make public constants instead.
    *

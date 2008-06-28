@@ -114,7 +114,7 @@ public interface ValueHandler
    * When the value provides the writeReplace method, the result of this method
    * is written. Otherwise, the value itself is written.
    * 
-   * @param the value that should be written to the stream.
+   * @param value the value that should be written to the stream.
    * 
    * @return the value that will be actually written to the stream.
    */

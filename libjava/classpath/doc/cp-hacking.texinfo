@@ -121,12 +121,12 @@ Localization
 @comment node-name, next, previous, up
 @chapter Introduction
 
-The GNU Classpath Project is a dedicated to providing a 100% free,
+The GNU Classpath Project is dedicated to providing a 100% free,
 clean room implementation of the standard core class libraries for
 compilers and runtime environments for the java programming language.
 It offers free software developers an alternative core library
 implementation upon which larger java-like programming environments
-can be build.  The GNU Classpath Project was started in the Spring of
+can be built.  The GNU Classpath Project was started in the Spring of
 1998 as an official Free Software Foundation project.  Most of the
 volunteers working on GNU Classpath do so in their spare time, but a
 couple of projects based on GNU Classpath have paid programmers to
@@ -225,7 +225,7 @@ java.net package, there are non-public classes for implementing sockets.
 Without those classes, the public socket interface is useless.  But do
 not feel obligated to completely implement all of the functionality at
 once.  For example, in the java.net package, there are different types
-of protocol handlers for different types of URL's.  Not all of these
+of protocol handlers for different types of URLs.  Not all of these
 need to be written at once.
 
 @item
@@ -278,8 +278,8 @@ While free operating systems are the top priority, the other priorities
 can shift depending on whether or not there is a volunteer to port
 Classpath to those platforms and to test releases.
 
-Eventually we hope the Classpath will support all JVM's that provide
-JNI or CNI support.  However, the top priority is free JVM's.  A small
+Eventually we hope the Classpath will support all JVMs that provide
+JNI or CNI support.  However, the top priority is free JVMs.  A small
 list of Compiler/VM environments that are currently actively
 incorporating GNU Classpath is below.  A more complete overview of
 projects based on GNU classpath can be found online at
@@ -292,38 +292,40 @@ Classpath stories page}.
 @item 
 @uref{http://jamvm.sourceforge.net/,jamvm}
 @item 
-@uref{http://kissme.sourceforge.net/,Kissme}
+@uref{http://www.cacaojvm.org/,cacao}
 @item
-@uref{http://www.ibm.com/developerworks/oss/jikesrvm/,Jikes RVM}
-@item
-@uref{http://www.sablevm.org/,SableVM}
+@uref{http://jikesrvm.org,Jikes RVM}
 @item
 @uref{http://www.kaffe.org/,Kaffe}
+@item
+@uref{http://www.ikvm.net/,IKVM}
 @end enumerate
 
 As with OS platform support, this priority list could change if a
 volunteer comes forward to port, maintain, and test releases for a
 particular JVM@.  Since gcj is part of the GNU Compiler Collective it
 is one of the most important targets.  But since it doesn't currently
-work out of the box with GNU Classpath it is currently not the easiest
-target.  When hacking on GNU Classpath the easiest is to use
-compilers and runtime environments that that work out of the box with
-it, such as the jikes compiler and the runtime environments jamvm and
-kissme.  But you can also work directly with targets like gcj and
-kaffe that have their own copy of GNU Classpath currently.  In that
-case changes have to be merged back into GNU Classpath proper though,
-which is sometimes more work.  SableVM is starting to migrate from an
-integrated GNU Classpath version to being usable with GNU Classpath
-out of the box.
+work out of the box with GNU Classpath it is not the easiest
+target.  When hacking on GNU Classpath the easiest solution is to use
+compilers and runtime environments that work out of the box with
+it, such as the Eclipse compiler, ecj, and the runtime environments jamvm and
+cacao.  Both Jikes RVM and Kaffe use an included version of GNU Classpath by
+default, but Kaffe can now use a pre-installed version and Jikes RVM supports 
+using a CVS snapshot as well as the latest release.  Working directly with
+targets such as Jikes RVM, gcj and IKVM is possible but can be a little more
+difficult as changes have to be merged back into GNU Classpath proper,
+which requires additional work.  Due to a recent switch to the use of 1.5 language
+features within GNU Classpath, a compiler compatible with these features is required.
+At present, this includes the Eclipse compiler, ecj, and the OpenJDK compiler.
 
-
-The initial target version for Classpath is the 1.1 spec.  Higher
-versions can be implemented (and have been implemented, including lots
-of 1.4 functionality) if desired, but please do not create classes
-that depend on features in those packages unless GNU Classpath already
+GNU Classpath currently implements the majority of the 1.4 and 1.5 APIs
+(binary compatibility is above 95% for both, but does not take into account
+internal implementations of features such as graphic and sound support).  There
+is support for some 1.6 APIs but this is still nascent.  Please do not create classes
+that depend on features in other packages unless GNU Classpath already
 contains those features.  GNU Classpath has been free of any
 proprietary dependencies for a long time now and we like to keep it
-that way.  But finishing, polishing up, documenting, testing and
+that way.  Finishing, polishing up, documenting, testing and
 debugging current functionality is of higher priority then adding new
 functionality.
 
@@ -332,11 +334,11 @@ functionality.
 @chapter Needed Tools and Libraries
 
 If you want to hack on Classpath, you should at least download and
-install the following tools.  And try to familiarize yourself with
-them.  Although in most cases having these tools installed will be all
+install the following tools and try to familiarize yourself with
+them.  In most cases having these tools installed will be all
 you really need to know about them.  Also note that when working on
-(snapshot) releases only GCC 3.3+ (plus a free VM from the list above
-and the libraries listed below) is needed.  The other tools are only
+(snapshot) releases only a 1.5 compiler (plus a free VM from the list above
+and the libraries listed below) is required.  The other tools are only
 needed when working directly on the CVS version.
 
 @itemize @bullet
@@ -446,8 +448,8 @@ When working from CVS you can run those tools by executing
 
 For building the Java bytecode (.class files), you can select 
 which compiler should be employed using @option{--with-javac} or 
-@option{--with-ecj} as argument to @command{configure}; 
-the present default is @command{ecj}.
+@option{--with-ecj} as an argument to @command{configure}; 
+the present default is @command{ecj} if found.
 
 Instead of @command{ecj}, you can also use @command{javac}, which is 
 available at 
@@ -563,12 +565,25 @@ configuration settings in GNOME.
 
 @end table
 
+The GStreamer backend for javax.sound.sampled (The Java Sound API, not
+including the MIDI portion) needs the following library headers:
+
+@table @b
+@item GStreamer
+@uref{http://gstreamer.freedesktop.org/,GStreamer} version 0.10.10
+(or higher). You will also need at least gstreamer-base and
+gstreamer-plugins-base. More plugins can be used to allow streaming of
+different sound types but are not a compile time requirement. See
+README.gstreamer in the source distribution for more informations.
+
+@end table
+
 For building @command{gcjwebplugin} you'll need the Mozilla plugin
 support headers and libraries, which are available at 
 @uref{http://www.mozilla.org,www.mozilla.org}.
 
 For enabling the com.sun.tools.javac support in tools.zip you
-will a need jar file containing the Eclipse Java Compiler.
+will need a jar file containing the Eclipse Java Compiler.
 Otherwise com.sun.tools.javac will not be included in @file{tools.zip}.
 
 For building the xmlj JAXP implementation (disabled by default, 
@@ -591,7 +606,7 @@ that are not part of GNU Classpath proper, but that have been included
 to provide certain needed functionality.  All these external libraries
 should be clearly marked as such.  In general we try to use as much as
 possible the clean upstream versions of these sources.  That way
-merging in new versions will be easiest.  You should always try to get
+merging in new versions will be easier.  You should always try to get
 bug fixes to these files accepted upstream first.  Currently we
 include the following 'external' libraries.  Most of these sources are
 included in the @file{external} directory.  That directory also
@@ -599,10 +614,24 @@ contains a @file{README} file explaining how to import newer versions.
 
 @table @b
 
-@item GNU jaxp
-Can be found in @file{external/jaxp}.  Provides javax.xml, org.w3c and
-org.xml packages.  Upstream is
-@uref{http://www.gnu.org/software/classpathx/,GNU ClasspathX}.
+@item JSR166 concurrency support
+Can be found in @file{external/jsr166}.  Provides java.util.concurrent
+and its subpackages.  Upstream is
+@uref{http://g.oswego.edu/dl/concurrency-interest/,Doug Lea's Concurrency Interest Site}.
+
+@item RelaxNG Datatype Interfaces
+Can be found in @file{external/relaxngDatatype}.  Provides org.relaxng.datatype
+and its subpackages.  Upstream is
+@uref{http://www.oasis-open.org/committees/relax-ng/}.
+
+@item Simple API for XML (SAX)
+Can be found in @file{external/sax}.  Provides org.xml.sax and its subpackages.
+Upstream is
+@uref{http://www.saxproject.org}.
+
+@item Document Object Model (DOM) bindings
+Can be found in @file{external/w3c_dom}.  Provides org.w3c.dom and its subpackages.
+Upstream locations are listed in @file{external/w3c_dom/README}.
 
 @item fdlibm
 Can be found in @file{native/fdlibm}.  Provides native implementations
@@ -694,6 +723,10 @@ use prebuilt glibj.zip class library
 
 specify jar file containing the Eclipse Java Compiler
 
+@item --with-gstreamer-peer
+
+build the experimental GStreamer peer (see @file{README.gstreamer})
+
 @end table
 
 For more flags run @command{configure --help}.
@@ -770,7 +803,7 @@ The @option{--enable-maintainer-mode} option to @command{configure} currently do
 little and shouldn't be used by ordinary developers or users anyway.
 
 On Windows machines, the native libraries do not currently build, but
-the Java bytecode library will.  Gcj trunk is beginning to work under
+the Java bytecode library will.  GCJ trunk is beginning to work under
 Cygwin.
 
 @node Programming Standards, Hacking Code, Misc. Notes, Top
@@ -1097,7 +1130,7 @@ Patches that are already approved for libgcj or also OK for Classpath.
 patches require you to think whether or not they are really OK and
 non-controversial, or if you would like some feedback first on them
 before committing.  We might get real commit rules in the future, for
-now use your own judgment, but be a bit conservative.
+now use your own judgement, but be a bit conservative.
 
 Always contact the GNU Classpath maintainer before adding anything
 non-trivial that you didn't write yourself and that does not come from

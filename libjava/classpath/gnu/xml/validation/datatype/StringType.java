@@ -37,12 +37,8 @@ exception statement from your version. */
 
 package gnu.xml.validation.datatype;
 
-import java.util.Collections;
-import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import org.relaxng.datatype.DatatypeException;
-import org.relaxng.datatype.ValidationContext;
 
 /**
  * The XML Schema string type.

@@ -51,9 +51,9 @@ public class CancelHeader
   extends gnu.CORBA.GIOP.CancelHeader
 {
   /**
-   * Write the header.
+   * Read the header.
    *
-   * @param out a stream to write to.
+   * @param input a stream to read from.
    */
   public void read(InputStream input)
   {
@@ -63,7 +63,7 @@ public class CancelHeader
   /**
    * Write the header.
    *
-   * @param out a stream to write to.
+   * @param output a stream to write to.
    */
   public void write(OutputStream output)
   {

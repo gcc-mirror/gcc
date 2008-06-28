@@ -294,7 +294,9 @@ struct _Jv_Bigint
 #define	_SIGNED		signed
 #define	_DOTS		, ...
 #define _VOID void
+#ifndef _EXFUN
 #define	_EXFUN(name, proto)		name proto
+#endif  /* !EXFUN */
 #define	_DEFUN(name, arglist, args)	name(args)
 #define	_DEFUN_VOID(name)		name(_NOARGS)
 #define _CAST_VOID (void)

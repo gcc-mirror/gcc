@@ -302,7 +302,7 @@ public class Raster
       Point location)
   {
     SampleModel sm = new ComponentSampleModel(dataBuffer.getDataType(),
-        w, h, scanlineStride, pixelStride, bandOffsets);
+        w, h, pixelStride, scanlineStride, bandOffsets);
     return createWritableRaster(sm, dataBuffer, location);
   }
 

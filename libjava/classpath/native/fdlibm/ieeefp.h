@@ -87,6 +87,10 @@
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
+#ifdef __AVR32__
+#define __IEEE_BIG_ENDIAN
+#endif
+
 #ifdef __MIPSEL__
 #define __IEEE_LITTLE_ENDIAN
 #endif

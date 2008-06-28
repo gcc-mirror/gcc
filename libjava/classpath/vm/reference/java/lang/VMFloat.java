@@ -67,21 +67,6 @@ final class VMFloat
    * Convert the float to the IEEE 754 floating-point "single format" bit
    * layout. Bit 31 (the most significant) is the sign bit, bits 30-23
    * (masked by 0x7f800000) represent the exponent, and bits 22-0
-   * (masked by 0x007fffff) are the mantissa. This function collapses all
-   * versions of NaN to 0x7fc00000. The result of this function can be used
-   * as the argument to <code>Float.intBitsToFloat(int)</code> to obtain the
-   * original <code>float</code> value.
-   *
-   * @param value the <code>float</code> to convert
-   * @return the bits of the <code>float</code>
-   * @see #intBitsToFloat(int)
-   */
-  static native int floatToIntBits(float value);
-
-  /**
-   * Convert the float to the IEEE 754 floating-point "single format" bit
-   * layout. Bit 31 (the most significant) is the sign bit, bits 30-23
-   * (masked by 0x7f800000) represent the exponent, and bits 22-0
    * (masked by 0x007fffff) are the mantissa. This function leaves NaN alone,
    * rather than collapsing to a canonical value. The result of this function
    * can be used as the argument to <code>Float.intBitsToFloat(int)</code> to

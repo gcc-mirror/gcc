@@ -526,7 +526,10 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static int floatToIntBits(float value)
   {
-    return VMFloat.floatToIntBits(value);
+    if (isNaN(value))
+      return 0x7fc00000;
+    else
+      return VMFloat.floatToRawIntBits(value);
   }
 
   /**
@@ -594,16 +597,25 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static int compare(float x, float y)
   {
-    if (isNaN(x))
-      return isNaN(y) ? 0 : 1;
-    if (isNaN(y))
-      return -1;
-    // recall that 0.0 == -0.0, so we convert to infinities and try again
-    if (x == 0 && y == 0)
-      return (int) (1 / x - 1 / y);
-    if (x == y)
-      return 0;
+      // handle the easy cases:
+      if (x < y)
+	  return -1;
+      if (x > y)
+	  return 1;
 
-    return x > y ? 1 : -1;
+      // handle equality respecting that 0.0 != -0.0 (hence not using x == y):
+      int ix = floatToRawIntBits(x);
+      int iy = floatToRawIntBits(y);
+      if (ix == iy)
+	  return 0;
+
+      // handle NaNs:
+      if (x != x)
+	  return (y != y) ? 0 : 1;
+      else if (y != y)
+	  return -1;
+
+      // handle +/- 0.0
+      return (ix < iy) ? -1 : 1;
   }
 }

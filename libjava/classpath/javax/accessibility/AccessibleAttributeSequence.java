@@ -41,8 +41,12 @@ package javax.accessibility;
 import javax.swing.text.AttributeSet;
 
 /**
- * This is a convenience class that represents an accessible
- * attribute sequence.
+ * This is a convenience class that wraps together a sequence
+ * of text with the attributes applied to it.  This allows a single
+ * object to be used when
+ * {@link AccessibleContext#ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED}
+ * events are fired.
+ *
  * @since 1.5
  */
 public class AccessibleAttributeSequence
@@ -63,9 +67,19 @@ public class AccessibleAttributeSequence
   public int endIndex;
 
   /**
-   * Create a new instance. 
+   * Creates a new instance using the specified attributes
+   * and the supplied start and end indicies.
+   *
+   * @param start the index of the start of the text.
+   * @param end the index of the end of the text.
+   * @param attr the attributes applied to the text sequence.
+   * @since 1.6
    */
-  public AccessibleAttributeSequence()
+  public AccessibleAttributeSequence(int start, int end, AttributeSet attr)
   {
+    startIndex = start;
+    endIndex = end;
+    attributes = attr;
   }
+
 }

@@ -83,12 +83,10 @@ import org.omg.PortableInterceptor.ClientRequestInterceptorOperations;
 import org.omg.PortableInterceptor.ForwardRequest;
 import org.omg.PortableInterceptor.InvalidSlot;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.net.BindException;
 import java.net.Socket;
 
 import java.util.ArrayList;

@@ -37,16 +37,13 @@ exception statement from your version. */
 
 #include "jcl.h"
 #include "gtkpeer.h"
-#include <cairo-xlib.h>
 #include <gdk/gdktypes.h>
 #include <gdk/gdkprivate.h>
-#include <gdk/gdkx.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf/gdk-pixdata.h>
 
 #include <cairo-ft.h>
-#include <cairo-xlib.h>
 
 #include <stdio.h>
 #include <stdlib.h>

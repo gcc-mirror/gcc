@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package gnu.java.nio.charset;
 
-public class MacGreek extends ByteCharset
+public final class MacGreek extends ByteCharset
 {
 
   /**
@@ -81,9 +81,7 @@ public class MacGreek extends ByteCharset
 
     public MacGreek()
     {
-	super("MacGreek", new String[] {
-	});
-	lookupTable = lookup;
+	super("MacGreek", new String[] {}, lookup);
     }
 
 } // class MacGreek

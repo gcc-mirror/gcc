@@ -61,8 +61,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.JOptionPane;
-
 
 class PluginAppletWindow
     extends EmbeddedWindow
@@ -350,7 +348,7 @@ class PluginAppletWindow
    * Called when the hierarchy of this component changes. Use
    * <code>getChangeFlags()</code> on the event to see what exactly changed.
    *
-   * @param e the event describing the change
+   * @param event the event describing the change
    */
   public void hierarchyChanged(HierarchyEvent event)
   {

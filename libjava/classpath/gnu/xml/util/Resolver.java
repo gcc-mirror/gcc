@@ -170,7 +170,7 @@ public class Resolver implements EntityResolver, Cloneable
      * Constructs a resolver which understands how to map PUBLIC identifiers
      * to other URIs, typically for local copies of standard DTD components.
      * 
-     * @param dictionary maps PUBLIC identifiers to URIs.  This is not
+     * @param dict maps PUBLIC identifiers to URIs.  This is not
      *	copied; subsequent modifications will be reported through the
      *	resolution operations.
      */

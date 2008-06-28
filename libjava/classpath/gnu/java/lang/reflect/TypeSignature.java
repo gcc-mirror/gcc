@@ -239,7 +239,7 @@ public class TypeSignature
   public static String getEncodingOfMethod(Method m)
   {
     Class[] paramTypes = m.getParameterTypes();
-    StringBuffer buf = new StringBuffer().append('(');
+    StringBuilder buf = new StringBuilder("(");
     for (int i = 0; i < paramTypes.length; i++)
       buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
     buf.append(')').append(getEncodingOfClass(m.getReturnType().getName(),
@@ -261,7 +261,7 @@ public class TypeSignature
   public static String getEncodingOfConstructor(Constructor c)
   {
     Class[] paramTypes = c.getParameterTypes();
-    StringBuffer buf = new StringBuffer().append('(');
+    StringBuilder buf = new StringBuilder("(");
     for (int i = 0; i < paramTypes.length; i++)
       buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
     buf.append(")V");

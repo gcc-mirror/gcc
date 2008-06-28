@@ -38,9 +38,6 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.Shape;
 
 import javax.swing.SizeRequirements;

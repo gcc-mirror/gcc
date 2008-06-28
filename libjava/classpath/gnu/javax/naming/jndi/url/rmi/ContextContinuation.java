@@ -97,9 +97,9 @@ public class ContextContinuation implements Context
    * the registry. The new registry will be lazily instantiated on the first
    * call.
    * 
-   * @param propName
+   * @param key
    *          the name of the new property
-   * @param propVal
+   * @param value
    *          the value of the new property
    * @return the previous value of this property or null if the property has not
    *         been previously defined
@@ -426,7 +426,7 @@ public class ContextContinuation implements Context
    * @param name
    *          the object name (.toString()) is used to convert into string
    *          representation.
-   * @param the
+   * @param obj
    *          object (must be an instance of Remote).
    */
   public void rebind(Name name, Object obj) throws NamingException
@@ -439,7 +439,7 @@ public class ContextContinuation implements Context
    * 
    * @param name
    *          the object name.
-   * @param the
+   * @param obj
    *          object (must be an instance of Remote).
    */
   public void rebind(String name, Object obj) throws NamingException

@@ -42,7 +42,7 @@ class gnu::java::nio::charset::ByteCharset : public ::java::nio::charset::Charse
 {
 
 public: // actually package-private
-  ByteCharset(::java::lang::String *, JArray< ::java::lang::String * > *);
+  ByteCharset(::java::lang::String *, JArray< ::java::lang::String * > *, JArray< jchar > *);
 public:
   virtual jboolean contains(::java::nio::charset::Charset *);
 public: // actually package-private

@@ -23,6 +23,7 @@ extern "Java"
           {
             namespace lines
             {
+                class GstPipeline;
                 class GstSourceDataLine;
             }
           }
@@ -47,6 +48,7 @@ class gnu::javax::sound::sampled::gstreamer::lines::GstSourceDataLine : public :
 
 public:
   GstSourceDataLine(::javax::sound::sampled::AudioFormat *);
+  virtual void open();
   virtual void open(::javax::sound::sampled::AudioFormat *);
   virtual void open(::javax::sound::sampled::AudioFormat *, jint);
   virtual jint write(JArray< jbyte > *, jint, jint);
@@ -60,6 +62,11 @@ public:
   virtual void start();
   virtual void stop();
   virtual void close();
+  virtual jboolean isRunning();
+private:
+  ::gnu::javax::sound::sampled::gstreamer::lines::GstPipeline * __attribute__((aligned(__alignof__( ::gnu::javax::sound::sampled::gstreamer::lines::GstDataLine)))) pipeline;
+  jboolean open__;
+public:
   static ::java::lang::Class class$;
 };
 

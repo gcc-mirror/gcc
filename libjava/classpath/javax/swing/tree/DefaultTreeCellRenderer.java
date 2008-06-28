@@ -42,18 +42,14 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Rectangle;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
 
 /**
@@ -515,7 +511,6 @@ public class DefaultTreeCellRenderer
     int xOffset = -1;
     if (bgColor != null)
       {
-        Icon i = getIcon();
 	xOffset = getXOffset();
 	g.setColor(bgColor);
 	g.fillRect(xOffset, 0, getWidth() - xOffset, getHeight());

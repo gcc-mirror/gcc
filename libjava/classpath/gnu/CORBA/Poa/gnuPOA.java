@@ -421,7 +421,7 @@ public class gnuPOA
    * or adding the returned instance to any possible table.
    *
    * @param child_name the name of the poa being created.
-   * @param manager the poa manager (never null).
+   * @param a_manager the poa manager (never null).
    * @param policies the array of policies.
    * @param an_orb the ORB for this POA.
    *
@@ -1239,7 +1239,7 @@ public class gnuPOA
    * @param x the aom entry, where the object is replaced by value, returned by
    * servant activator (if not null).
    * 
-   * @param key the object key.
+   * @param object_key the object key.
    * 
    * @param a_servant the servant that was passed as a parameter in the
    * activation method.
@@ -1317,7 +1317,7 @@ public class gnuPOA
   /**
   * Set the adapter activator for this POA.
   *
-  * @param the activator being set.
+  * @param an_activator the activator being set.
   */
   public void the_activator(AdapterActivator an_activator)
   {

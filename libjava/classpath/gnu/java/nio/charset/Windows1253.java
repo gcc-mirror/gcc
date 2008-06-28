@@ -42,7 +42,7 @@ package gnu.java.nio.charset;
  * Encoding table for Windows-1253 Greek char set.
  * aka cp1253 or Windows-1253 or whatever.
  */
-public class Windows1253 extends ByteCharset
+public final class Windows1253 extends ByteCharset
 {
 
   /**
@@ -93,8 +93,7 @@ public class Windows1253 extends ByteCharset
 	  "cp_1253", 
 	  "windows1253",
 	  "windows_1253" 
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class Windows1253

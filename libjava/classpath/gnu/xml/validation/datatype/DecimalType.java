@@ -38,8 +38,6 @@ exception statement from your version. */
 package gnu.xml.validation.datatype;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.relaxng.datatype.DatatypeException;

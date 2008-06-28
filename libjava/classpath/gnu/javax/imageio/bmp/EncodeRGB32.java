@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.javax.imageio.bmp;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.IOException;

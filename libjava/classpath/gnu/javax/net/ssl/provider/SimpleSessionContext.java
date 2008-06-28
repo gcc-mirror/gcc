@@ -41,8 +41,6 @@ package gnu.javax.net.ssl.provider;
 import gnu.javax.net.ssl.AbstractSessionContext;
 import gnu.javax.net.ssl.Session;
 import gnu.javax.net.ssl.SessionStoreException;
-import gnu.javax.net.ssl.Session.ID;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;

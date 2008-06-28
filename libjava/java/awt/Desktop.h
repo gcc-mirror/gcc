@@ -33,9 +33,7 @@ class java::awt::Desktop : public ::java::lang::Object
   Desktop();
 public:
   static ::java::awt::Desktop * getDesktop();
-private:
   static jboolean isDesktopSupported();
-public:
   virtual jboolean isSupported(::java::awt::Desktop$Action *);
   virtual void browse(::java::net::URI *);
   virtual void edit(::java::io::File *);

@@ -642,7 +642,7 @@ public class BasicGraphicsUtils
         fmet = g.getFontMetrics();
         g.fillRect(
           /* x */ x + fmet.stringWidth(text.substring(0, underlinedIndex)),
-          /* y */ y + fmet.getDescent() - 1,
+          /* y */ y + 1,
           /* width */ fmet.charWidth(text.charAt(underlinedIndex)),
           /* height */ 1);
       }

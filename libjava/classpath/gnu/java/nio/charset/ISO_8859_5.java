@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-5, ISO cyrillic char set.
  */
-public class ISO_8859_5 extends ByteCharset
+public final class ISO_8859_5 extends ByteCharset
 {
 
   /**
@@ -100,8 +100,7 @@ public class ISO_8859_5 extends ByteCharset
 	  "cp915", 
 	  "915", 
 	  "windows-28595"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_5

@@ -158,7 +158,7 @@ public class AreaAveragingScaleFilter extends ReplicateScaleFilter
    * @param srcOffset - Starting offset into the source pixel data array.
    * @param srcScansize - Source array scanline size.
    * @param rx,ry - Scaling factor.
-   * @param dstScansize - Destination array scanline size.
+   * @param destScansize - Destination array scanline size.
    */
   private byte[] averagePixels(int srcx, int srcy, int srcw, int srch,
 			       ColorModel model, byte[] srcPixels,
@@ -218,7 +218,7 @@ public class AreaAveragingScaleFilter extends ReplicateScaleFilter
    * @param srcOffset - Starting offset into the source pixel data array.
    * @param srcScansize - Source array scanline size.
    * @param rx,ry - Scaling factor.
-   * @param dstScansize - Destination array scanline size.
+   * @param destScansize - Destination array scanline size.
    */
   private int[] averagePixels(int srcx, int srcy, int srcw, int srch,
 			      ColorModel model, int[] srcPixels,

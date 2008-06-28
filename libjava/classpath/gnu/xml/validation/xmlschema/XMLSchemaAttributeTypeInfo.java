@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.validation.xmlschema;
 
-import org.w3c.dom.TypeInfo;
 import gnu.xml.validation.datatype.SimpleType;
 
 /**

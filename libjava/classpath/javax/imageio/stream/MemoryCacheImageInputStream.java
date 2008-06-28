@@ -39,10 +39,8 @@ exception statement from your version. */
 package javax.imageio.stream;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 /**
  * @author Michael Koch (konqueror@gmx.de)

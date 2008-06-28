@@ -167,7 +167,7 @@ public class gnuRuntime
    * @param a_id a repository Id, if only one Id was specified in the stream.
    * @param a_ids a repository Ids, if the multiple Ids were specified in te
    * stream.
-   * @param a_codabase a codebase, if it was specified in the stream.
+   * @param a_codebase a codebase, if it was specified in the stream.
    */
   public gnuRuntime(String a_codebase, Object a_target)
   {

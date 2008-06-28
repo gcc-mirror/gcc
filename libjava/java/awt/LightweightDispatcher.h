@@ -44,6 +44,8 @@ private:
   static ::java::util::WeakHashMap * instances;
   ::java::awt::Component * __attribute__((aligned(__alignof__( ::java::lang::Object)))) lastTarget;
   ::java::awt::Component * mouseEventTarget;
+public: // actually package-private
+  static jboolean $assertionsDisabled;
 public:
   static ::java::lang::Class class$;
 };

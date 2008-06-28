@@ -44,7 +44,7 @@ public:
   ::java::net::URI * normalize();
 private:
   ::java::lang::String * normalizePath(::java::lang::String *);
-  void removeLastSegment(::java::lang::StringBuffer *);
+  void removeLastSegment(::java::lang::StringBuilder *);
 public:
   ::java::net::URI * resolve(::java::net::URI *);
   ::java::net::URI * resolve(::java::lang::String *);

@@ -260,7 +260,7 @@ public class AWTKeyStroke implements Serializable
                 c.setAccessible(true);
                 // Create a new instance, to make sure that we can, and
                 // to cause any ClassCastException.
-                AWTKeyStroke dummy = (AWTKeyStroke) c.newInstance(null);
+                AWTKeyStroke dummy = (AWTKeyStroke) c.newInstance();
                 return c;
               }
             });
@@ -632,7 +632,7 @@ public class AWTKeyStroke implements Serializable
     else
       try
         {
-          stroke = (AWTKeyStroke) c.newInstance(null);
+          stroke = (AWTKeyStroke) c.newInstance();
           stroke.keyChar = keyChar;
           stroke.keyCode = keyCode;
           stroke.modifiers = modifiers;
@@ -643,7 +643,7 @@ public class AWTKeyStroke implements Serializable
           throw (Error) new InternalError().initCause(e);
         }
     // Check level 1 cache.
-    AWTKeyStroke cached = (AWTKeyStroke) cache.get(stroke);
+    AWTKeyStroke cached = cache.get(stroke);
     if (cached == null)
       cache.put(stroke, stroke);
     else

@@ -29,10 +29,15 @@ public:
   virtual void writeDouble(jdouble);
   virtual void writeBytes(::java::lang::String *);
   virtual void writeChars(::java::lang::String *);
-private:
-  jint getUTFlength(::java::lang::String *, jint, jint);
+public: // actually package-private
+  virtual jlong getUTFlength(::java::lang::String *, jint, jlong);
 public:
   virtual void writeUTF(::java::lang::String *);
+public: // actually package-private
+  virtual void writeUTFShort(::java::lang::String *, jint);
+  virtual void writeUTFLong(::java::lang::String *, jlong);
+private:
+  void writeUTFBytes(::java::lang::String *);
 public: // actually protected
   jint __attribute__((aligned(__alignof__( ::java::io::FilterOutputStream)))) written;
 private:

@@ -67,14 +67,14 @@ public final class Provider extends CharsetProvider
    * are all lower-case to allow case-insensitive retrieval of
    * Charset instances. 
    */
-  private final HashMap canonicalNames;
+  private final HashMap<String, String> canonicalNames;
 
   /**
    * Map from lower-case canonical name to Charset.
    * TODO: We may want to use soft references.  We would then need to keep
    * track of the class name to regenerate the object.
    */
-  private final HashMap charsets;
+  private final HashMap<String, Charset> charsets;
 
   /**
    * We don't load all available charsets at the start
@@ -85,8 +85,8 @@ public final class Provider extends CharsetProvider
   Provider ()
   {
     extendedLoaded = false;
-    canonicalNames = new HashMap ();
-    charsets = new HashMap ();
+    canonicalNames = new HashMap<String,String> ();
+    charsets = new HashMap<String,Charset> ();
 
     // US-ASCII aka ISO646-US
     addCharset (new US_ASCII ());
@@ -203,7 +203,7 @@ public final class Provider extends CharsetProvider
     extendedLoaded = true;
   }
 
-  public Iterator charsets ()
+  public Iterator<Charset> charsets ()
   {
     loadExtended();
     return Collections.unmodifiableCollection (charsets.values ())
@@ -250,7 +250,7 @@ public final class Provider extends CharsetProvider
      */  
     canonicalNames.put(canonicalName, canonicalName);
 
-    for (Iterator i = cs.aliases ().iterator (); i.hasNext (); )
+    for (Iterator<String> i = cs.aliases ().iterator (); i.hasNext (); )
       canonicalNames.put (((String) i.next()).toLowerCase(), canonicalName);
   }
 
@@ -258,10 +258,10 @@ public final class Provider extends CharsetProvider
   {
     // The default provider is safe to instantiate.
     if (singleton == null)
-      singleton = (Provider) AccessController.doPrivileged
-	(new PrivilegedAction()
+      singleton = AccessController.doPrivileged
+	(new PrivilegedAction<Provider>()
 	  {
-	    public Object run()
+	    public Provider run()
 	    {
 	      return new Provider();
 	    }

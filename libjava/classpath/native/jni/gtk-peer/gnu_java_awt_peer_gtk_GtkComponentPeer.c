@@ -517,10 +517,20 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreen
   (JNIEnv * env, jobject obj, jintArray jpoint)
 {
+  gdk_threads_enter();
+  
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreenUnlocked
+    (env, obj, jpoint);
+    
+  gdk_threads_leave();
+	
+}
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreenUnlocked
+  (JNIEnv * env, jobject obj, jintArray jpoint)
+{
   void *ptr;
   jint *point;
-
-  gdk_threads_enter ();
 
   ptr = gtkpeer_get_widget (env, obj);
   point = (*env)->GetIntArrayElements (env, jpoint, 0);
@@ -528,8 +538,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreen
   gdk_window_get_root_origin (get_widget(GTK_WIDGET (ptr))->window, point, point+1);
 
   (*env)->ReleaseIntArrayElements(env, jpoint, point, 0);
-
-  gdk_threads_leave ();
 }
 
 /*
@@ -539,11 +547,21 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
   (JNIEnv * env, jobject obj, jintArray jpoint)
 {
+  gdk_threads_enter();
+  
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreenUnlocked
+    (env, obj, jpoint);
+  
+  gdk_threads_leave();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreenUnlocked
+  (JNIEnv * env, jobject obj, jintArray jpoint)
+{
   void *ptr;
   jint *point;
   GtkWidget *widget;
-
-  gdk_threads_enter ();
 
   ptr = gtkpeer_get_widget (env, obj);
   point = (*env)->GetIntArrayElements (env, jpoint, 0);
@@ -557,8 +575,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
   *(point+1) += GTK_WIDGET(ptr)->allocation.y;
 
   (*env)->ReleaseIntArrayElements(env, jpoint, point, 0);
-
-  gdk_threads_leave ();
 }
 
 /*

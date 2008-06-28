@@ -185,7 +185,7 @@ public class OrbFocused
             p = (portServer) portServers.get(i);
             if (p.s_port == port)
               {
-                return (portServer) p;
+                return p;
               }
           }
         // The server is not yet instantiated. Instantiate.

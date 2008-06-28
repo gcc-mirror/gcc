@@ -44,10 +44,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import org.omg.CORBA.LocalObject;
-import org.omg.CORBA.portable.Delegate;
-import org.omg.CORBA.portable.ObjectImpl;
-
 /**
  * This class provides support for the direct method invocations without
  * involving the network in the case when both ORBs run on the same java

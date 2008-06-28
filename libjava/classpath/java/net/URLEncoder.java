@@ -113,7 +113,7 @@ public class URLEncoder
     int start = 0;
     int i = 0;
 
-    StringBuffer result = new StringBuffer(length);
+    StringBuilder result = new StringBuilder(length);
     while (true)
       {
 	while (i < length && isSafe(s.charAt(i)))

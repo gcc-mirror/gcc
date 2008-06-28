@@ -601,7 +601,7 @@ public class J2dBenchmark
   void runTestSet(Graphics2D g, Dimension size)
   {
     // Any user-specified options (ie set transforms, rendering hints)
-    prepareGraphics((Graphics2D) g);
+    prepareGraphics(g);
 
     if ((awtTests & J2DTEST_ARC) != 0)
       {

@@ -39,7 +39,10 @@ exception statement from your version. */
 package javax.accessibility;
 
 /**
- * This is a convenience class that encapsulates a String and a range.
+ * This is a convenience class that encapsulates a string of text
+ * and a range specifying where, within a larger body of text, the
+ * string may be found.
+ *
  * @since 1.5
  */
 public class AccessibleTextSequence
@@ -61,8 +64,18 @@ public class AccessibleTextSequence
 
   /**
    * Create a new instance.
+   *
+   * @param start the initial index of the text within a larger
+   *              body of text.
+   * @param end the final index of the text within a larger body
+   *              of text.
+   * @param txt the text itself.
+   * @since 1.6
    */
-  public AccessibleTextSequence()
+  public AccessibleTextSequence(int start, int end, String txt)
   {
+    startIndex = start;
+    endIndex = end;
+    text = txt;
   }
 }

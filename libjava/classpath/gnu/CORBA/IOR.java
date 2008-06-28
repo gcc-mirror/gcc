@@ -385,7 +385,7 @@ public class IOR
   /**
    * Parse the provided stringifed reference.
    *
-   * @param stringified_reference, in the form of IOR:nnnnnn.....
+   * @param stringified_reference in the form of IOR:nnnnnn.....
    *
    * @return the parsed IOR
    *

@@ -84,7 +84,7 @@ public abstract class NamingContextExtPOA
   /** @inheritDoc */
   public OutputStream _invoke(String method, InputStream in, ResponseHandler rh)
   {
-    Integer call_method = (Integer) _NamingContextExtImplBase._methods.get(method);
+    Integer call_method = _NamingContextExtImplBase._methods.get(method);
 
     if (call_method == null)
       // The older methods are handled separately.
@@ -189,7 +189,7 @@ public abstract class NamingContextExtPOA
   OutputStream super_invoke(String method, InputStream in, ResponseHandler rh)
   {
     OutputStream out = null;
-    Integer call_method = (Integer) _NamingContextImplBase.methods.get(method);
+    Integer call_method = _NamingContextImplBase.methods.get(method);
     if (call_method == null)
       throw new BAD_OPERATION(Minor.Method, CompletionStatus.COMPLETED_MAYBE);
 

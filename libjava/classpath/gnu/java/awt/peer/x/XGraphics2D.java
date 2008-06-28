@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.x;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
@@ -45,12 +46,18 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
+import java.awt.peer.FontPeer;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 
+import gnu.java.awt.image.AsyncImage;
 import gnu.java.awt.java2d.AbstractGraphics2D;
 import gnu.java.awt.java2d.ScanlineCoverage;
 import gnu.x11.Colormap;
@@ -61,6 +68,14 @@ import gnu.x11.image.ZPixmap;
 public class XGraphics2D
   extends AbstractGraphics2D
 {
+
+  /**
+   * When this property is set to true, then images are always rendered as
+   * opaque images, ignoring their translucence. This is intended for
+   * debugging and demonstration purposes.
+   */
+  private static final boolean RENDER_OPAQUE =
+    Boolean.getBoolean("escherpeer.renderopaque");
 
   /**
    * The X Drawable to draw on.
@@ -92,11 +107,19 @@ public class XGraphics2D
     //setClip(new Rectangle(0, 0, xdrawable.width, xdrawable.height));
   }
 
+  @Override
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
     xdrawable.segment(xgc, x0, y0, x1, y1);
   }
 
+  @Override
+  protected void rawDrawRect(int x, int y, int w, int h)
+  {
+    xdrawable.rectangle(xgc, x, y, w, h, false);
+  }
+
+  @Override
   protected void rawFillRect(int x, int y, int w, int h)
   {
     xdrawable.rectangle(xgc, x, y, w, h, true);
@@ -217,55 +240,65 @@ public class XGraphics2D
       }
   }
 
+  @Override
   public void renderScanline(int y, ScanlineCoverage c)
   {
+    if (y >= xdrawable.height)
+      return;
+
+    // TODO: Handle Composite and Paint.
     ScanlineCoverage.Iterator iter = c.iterate();
-    float coverageAlpha = 0;
+    int coverageAlpha = 0;
     int maxCoverage = c.getMaxCoverage();
-    Color old = getColor();
-    Color col = getColor();
-    if (col == null)
-      col = Color.BLACK;
     while (iter.hasNext())
       {
         ScanlineCoverage.Range range = iter.next();
-        // TODO: Dumb implementation for testing.
+
         coverageAlpha = range.getCoverage();
-        if (coverageAlpha > 0)
+        int x0 = range.getXPos();
+        int l = range.getLength();
+        if (coverageAlpha == c.getMaxCoverage())
           {
-            int red = col.getRed();
-            int green = col.getGreen();
-            int blue = col.getBlue();
-            if (coverageAlpha < c.getMaxCoverage())
-              {
-                float alpha = coverageAlpha / maxCoverage;
-                red = 255 - (int) ((255 - red) * alpha);
-                green = 255 - (int) ((255 - green) * alpha);
-                blue = 255 - (int) ((255 - blue) * alpha);
-              }
-            xgc.set_foreground(red << 16 | green << 8 | blue);
-            int x0 = range.getXPos();
-            int l = range.getLength();
+            // Simply paint the current color over the existing pixels.
             xdrawable.fill_rectangle(xgc, x0, y, l, 1);
           }
+        else if (coverageAlpha > 0)
+          {
+            // Composite the current color with the existing pixels.
+            int x1 = x0 + l;
+            x0 = Math.min(Math.max(0, x0), xdrawable.width - 1);
+            x1 = Math.min(Math.max(0, x1), xdrawable.width - 1);
+            if ((x1 - x0) < 1)
+              continue;
+            l = x1 - x0;
+            gnu.x11.image.ZPixmap existing = (ZPixmap)
+            xdrawable.image(x0, y, l, 1, 0xFFFFFFFF,
+                            gnu.x11.image.Image.Format.ZPIXMAP);
+            for (int x = 0; x < l; x++)
+              {
+                Color col = getColor();
+                if (col == null)
+                  {
+                    col = Color.BLACK;
+                  }
+                int red = col.getRed();
+                int green = col.getGreen();
+                int blue = col.getBlue();
+                int redOut = existing.get_red(x, 0);
+                int greenOut = existing.get_green(x, 0);
+                int blueOut = existing.get_blue(x, 0);
+                int outAlpha = maxCoverage - coverageAlpha;
+                redOut = redOut * outAlpha + red * coverageAlpha;
+                redOut = redOut / maxCoverage;
+                greenOut = greenOut * outAlpha + green * coverageAlpha;
+                greenOut = greenOut / maxCoverage;
+                blueOut = blueOut * outAlpha + blue * coverageAlpha;
+                blueOut = blueOut / maxCoverage;
+                existing.set(x, 0, redOut, greenOut, blueOut);
+              }
+            xdrawable.put_image(xgc, existing, x0, y);
+          }
       }
-    if (old != null)
-      xgc.set_foreground(old.getRGB());
-  }
-
-  protected void fillScanline(int x0, int x1, int y)
-  {
-    xdrawable.segment(xgc, x0, y, x1, y);
-  }
-
-  protected void fillScanlineAA(int x0, int x1, int y, int alpha)
-  {
-    //System.err.println("fillScanlineAA: " + x0 + ", " + x1 + ", " + y + ", " + alpha);
-    // FIXME: This is for testing only.
-    Color c = getColor();
-    setColor(new Color(255-alpha, 255-alpha, 255-alpha));
-    xdrawable.segment(xgc, x0, y, x1, y);
-    setColor(c);
   }
 
   protected void init()
@@ -278,6 +311,7 @@ public class XGraphics2D
     super.setPaint(p);
     if (p instanceof Color)
       {
+        // TODO: Optimize for different standard bit-depths.
         Color c = (Color) p;
         XToolkit tk = (XToolkit) Toolkit.getDefaultToolkit();
         HashMap colorMap = tk.colorMap;
@@ -302,8 +336,11 @@ public class XGraphics2D
     }
   }
 
+  private static WeakHashMap<Image,ZPixmap> imageCache = new WeakHashMap<Image,ZPixmap>();
+
   protected boolean rawDrawImage(Image image, int x, int y, ImageObserver obs)
   {
+    image = unwrap(image);
     boolean ret;
     if (image instanceof XImage)
       {
@@ -319,6 +356,87 @@ public class XGraphics2D
                             pvi.getHeight(obs), x, y);
         ret = true;
       }
+    else if (image instanceof BufferedImage)
+      {
+        BufferedImage bi = (BufferedImage) image;
+        DataBuffer db = bi.getRaster().getDataBuffer();
+        if (db instanceof ZPixmapDataBuffer)
+          {
+            ZPixmapDataBuffer zpmdb = (ZPixmapDataBuffer) db;
+            ZPixmap zpixmap = zpmdb.getZPixmap();
+            xdrawable.put_image(xgc, zpixmap, x, y);
+            ret = true;
+          }
+        else
+          {
+            int transparency = bi.getTransparency();
+            int w = bi.getWidth();
+            int h = bi.getHeight();
+            if (imageCache.containsKey(image))
+              {
+                ZPixmap zpixmap = imageCache.get(image);
+                xdrawable.put_image(xgc, zpixmap, x, y);
+              }
+            else if (transparency == Transparency.OPAQUE || RENDER_OPAQUE)
+              {
+                XGraphicsDevice gd = XToolkit.getDefaultDevice();
+                ZPixmap zpixmap = new ZPixmap(gd.getDisplay(), w, h);
+                for (int yy = 0; yy < h; yy++)
+                  {
+                    for (int xx = 0; xx < w; xx++)
+                      {
+                        int rgb = bi.getRGB(xx, yy);
+                        zpixmap.set(xx, yy, rgb);
+                      }
+                  }
+                xdrawable.put_image(xgc, zpixmap, x, y);
+                imageCache.put(image, zpixmap);
+              } else {
+                ZPixmap zpixmap = (ZPixmap) xdrawable.image(x, y, w, h,
+                                                            0xffffffff,
+                                           gnu.x11.image.Image.Format.ZPIXMAP);
+                for (int yy = 0; yy < h; yy++)
+                  {
+                    for (int xx = 0; xx < w; xx++)
+                      {
+                        int rgb = bi.getRGB(xx, yy);
+                        int alpha = 0xff & (rgb >> 24);
+                        if (alpha == 0)
+                          {
+                            // Completely translucent.
+                            rgb = zpixmap.get_red(xx, yy) << 16
+                                  | zpixmap.get_green(xx, yy) << 8
+                                  | zpixmap.get_blue(xx, yy);
+                          }
+                        else if (alpha < 255)
+                          {
+                            // Composite pixels.
+                            int red = 0xff & (rgb >> 16);
+                            red = red * alpha
+                                     + (255 - alpha) * zpixmap.get_red(xx, yy);
+                            red = red / 255;
+                            int green = 0xff & (rgb >> 8);
+                            green = green * alpha
+                                   + (255 - alpha) * zpixmap.get_green(xx, yy);
+                            green = green / 255;
+                            int blue = 0xff & rgb;
+                            blue = blue * alpha
+                                    + (255 - alpha) * zpixmap.get_blue(xx, yy);
+                            blue = blue / 255;
+                            rgb = red << 16 | green << 8 | blue;
+                          }
+                        // else keep rgb value from source image.
+
+                        zpixmap.set(xx, yy, rgb);
+                      }
+                  }
+                xdrawable.put_image(xgc, zpixmap, x, y);
+                // We can't cache prerendered translucent images, because
+                // we never know how the background changes.
+              }
+            ret = true;
+          }
+      }
     else
       {
         ret = super.rawDrawImage(image, x, y, obs);
@@ -326,6 +444,50 @@ public class XGraphics2D
     return ret;
   }
 
+  public void setFont(Font f)
+  {
+    super.setFont(f);
+    FontPeer p = getFont().getPeer();
+    if (p instanceof XFontPeer)
+      {
+        XFontPeer xFontPeer = (XFontPeer) p;
+        xgc.set_font(xFontPeer.getXFont());
+      }
+  }
+
+  public void drawString(String s, int x, int y)
+  {
+    FontPeer p = getFont().getPeer();
+    if (p instanceof XFontPeer)
+      {
+        int tx = (int) transform.getTranslateX();
+        int ty = (int) transform.getTranslateY();
+        xdrawable.text(xgc, x + tx, y + ty, s);
+      }
+    else
+      {
+        super.drawString(s, x, y);
+      }
+  }
+
+  /**
+   * Extracts an image instance out of an AsyncImage. If the image isn't
+   * an AsyncImage, then the original instance is returned.
+   *
+   * @param im the image
+   *
+   * @return the image to render
+   */
+  private Image unwrap(Image im)
+  {
+    Image image = im;
+    if (image instanceof AsyncImage)
+      {
+        AsyncImage aIm = (AsyncImage) image;
+        image = aIm.getRealImage();
+      }
+    return image;
+  }
 
 }
 

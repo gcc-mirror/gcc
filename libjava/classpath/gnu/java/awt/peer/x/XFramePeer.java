@@ -65,6 +65,7 @@ public class XFramePeer
   XFramePeer(Frame f)
   {
     super(f);
+    setTitle(f.getTitle());
   }
 
   public void setIconImage(Image image)
@@ -87,8 +88,7 @@ public class XFramePeer
 
   public void setTitle(String title)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    xwindow.set_wm_name (title);
   }
 
   public int getState()

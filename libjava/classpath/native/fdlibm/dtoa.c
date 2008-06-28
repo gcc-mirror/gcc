@@ -26,8 +26,9 @@
 	dmg@research.att.com or research!dmg
  */
 
-#include "mprec.h"
 #include <string.h>
+#include <stdlib.h>
+#include "mprec.h"
 #include <stdlib.h>
 
 static int

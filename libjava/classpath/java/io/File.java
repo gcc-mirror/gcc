@@ -1293,6 +1293,73 @@ public class File implements Serializable, Comparable<File>
   }
 
   /**
+   * Get the total space for the partition pointed by this file path, in bytes.
+   * 
+   * @return the total number of bytes in this partition. 
+   * @since 1.6
+   */
+  public long getTotalSpace()
+  {
+    // check security manager.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new RuntimePermission("getFileSystemAttributes"));
+    checkRead();
+    
+    return VMFile.getTotalSpace(path);
+  }
+  
+  /**
+   * Get the free space in the partition pointed by this file path, in bytes.
+   * 
+   * @return the number of free bytes in this partition. 
+   * @since 1.6
+   */
+  public long getFreeSpace()
+  {
+    // check security manager.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new RuntimePermission("getFileSystemAttributes"));
+    checkRead();
+    
+    return VMFile.getFreeSpace(path);
+  }
+  
+  /**
+   * Get the usable space in the partition pointed by this file path, in bytes.
+   * This is not necessarily the same as the number returned by
+   * {@link #getFreeSpace()}.
+   * 
+   * <strong>Implementation note</strong>: Unlike the RI, on Linux and UNIX
+   * like systems this methods take into account the reserved space for the
+   * "root" user. This means that the returned results will be a little
+   * different if a normal user or root perform the query.
+   * 
+   * Also, the bytes returned should be interpreted as an hint, and may be
+   * different at each call of this method or even right after the method
+   * returns.
+   * 
+   * @return the number of usable bytes in this partition. 
+   * @since 1.6
+   */
+  public long getUsableSpace()
+  {
+    // check security manager.
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkPermission(new RuntimePermission("getFileSystemAttributes"));
+    checkRead();
+    
+    // root users can use the reserved extra space
+    String user = System.getProperty("user.name");
+    if (user != null && user.equals("root"))
+      return VMFile.getFreeSpace(path);
+    
+    return VMFile.getUsableSpace(path);
+  }
+  
+  /**
    * This method sets the file represented by this object to be read only.
    * A read only file or directory cannot be modified.  Please note that 
    * GNU systems allow read only files to be deleted if the directory it

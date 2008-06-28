@@ -526,10 +526,8 @@ compiler, and is specific to the compiler implementation.
 of doubles.
 
 @itemize @bullet
-@item @code{doubleToLongBits(double)} -- Converts the double to the IEEE 754
-bit layout, collapsing NaNs to @code{0x7ff8000000000000L}.
-@item @code{doubleToRawLongBits(double)} -- Same as the above, but preserves
-NaNs.
+@item @code{doubleToRawLongBits(double)} -- Converts the double to the IEEE 754
+bit layout, preserving NaNs.
 @item @code{longBitsToDouble(long)} -- This is the inverse of the last method,
 preserving NaNs so that the output of one can be fed into the other without
 data loss.
@@ -552,10 +550,8 @@ implementation optional.
 @code{VMFloat} provides native support for the conversion of floats.
 
 @itemize @bullet
-@item @code{floatToIntBits(float)} -- Converts the float to the IEEE 754
-bit layout, collapsing NaNs to @code{0x7fc00000}.
-@item @code{floatToRawIntBits(float)} -- Same as the above, but preserves
-NaNs.
+@item @code{floatToRawIntBits(float)} -- Converts the float to the IEEE 754
+bit layout, preserving NaNs.
 @item @code{intBitsToFloat(int)} -- This is the inverse of the last method,
 preserving NaNs so that the output of one can be fed into the other without
 data loss.

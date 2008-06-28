@@ -37,6 +37,10 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.x;
 
+import gnu.x11.Display;
+import gnu.x11.Screen;
+
+import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.Point;
@@ -156,6 +160,40 @@ public class XGraphicsConfiguration
   {
     // TODO: Implement this.
     throw new UnsupportedOperationException("Not yet implemented.");
+  }
+
+  /**
+   * Determines the size of the primary screen.
+   *
+   * @return the size of the primary screen
+   */
+  Dimension getSize()
+  {
+    // TODO: A GraphicsConfiguration should correspond to a Screen instance.
+    Display d = device.getDisplay();
+    Screen screen = d.default_screen;
+    int w = screen.width;
+    int h = screen.height;
+    return new Dimension(w, h);
+  }
+
+  /**
+   * Determines the resolution of the primary screen in pixel-per-inch.
+   *
+   * @returnthe resolution of the primary screen in pixel-per-inch
+   */
+  int getResolution()
+  {
+    Display d = device.getDisplay();
+    Screen screen = d.default_screen;
+    int w = screen.width * 254;
+    int h = screen.height * 254;
+    int wmm = screen.width_in_mm * 10;
+    int hmm = screen.height_in_mm * 10;
+    int xdpi = w / wmm;
+    int ydpi = h / hmm;
+    int dpi = (xdpi + ydpi) / 2;
+    return dpi;
   }
 
 }

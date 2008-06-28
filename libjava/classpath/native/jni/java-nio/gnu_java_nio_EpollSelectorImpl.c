@@ -44,6 +44,8 @@ exception statement from your version.  */
 #include <sys/epoll.h>
 #endif /* HAVE_SYS_EPOLL_H */
 
+#include <config-int.h>
+
 #include <gnu_java_nio_EpollSelectorImpl.h>
 #include <jcl.h>
 #include <errno.h>

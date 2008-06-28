@@ -39,7 +39,6 @@ exception statement from your version. */
 package java.awt.font;
 
 import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.awt.Shape;
 
 /**

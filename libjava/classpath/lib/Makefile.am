@@ -5,28 +5,11 @@ JAVA_DEPEND = java.dep
 ## this file and restart the make process again
 sinclude $(JAVA_DEPEND)
 
-compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:$(top_srcdir)/external/jsr166:.:$(USER_CLASSLIB):$(PATH_TO_ESCHER)
+compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:$(top_srcdir)/external/jsr166:.:$(PATH_TO_GLIBJ_ZIP):$(PATH_TO_ESCHER)
 
 # handling source to bytecode compiler programs like gcj, jikes  and kjc
-if FOUND_GCJ
-## See the compile-classes target.
-## There's no point in warning, and we always want debug info.
-## GCJ LOCAL: use srcdir
-JCOMPILER = $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath '' --classpath $(compile_classpath) -d $(srcdir) @classes
-else
-if FOUND_JIKES
-JCOMPILER = $(JIKES) $(JIKESWARNINGS) +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
-else
-if FOUND_KJC
-## FIXME: from what I can tell, kjc does not support a -encoding option.
-JCOMPILER = $(KJC) -classpath .:$(USER_CLASSLIB) -d . @classes
-else
-if FOUND_ECJ
-JCOMPILER = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,unused -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
-endif # FOUND_ECJ
-endif # FOUND_KJC
-endif # FOUND_GCJ
-endif # FOUND_JIKES
+## GCJ LOCAL: use srcdir, don't pass $(JAVACFLAGS) $(JAVAC_MEM_OPT) -source 1.5 -target 1.5
+JCOMPILER = $(JAVAC) -g -w --encoding=UTF-8 -bootclasspath '' --classpath $(compile_classpath) -d $(srcdir) @classes
 
 if CREATE_COLLECTIONS
 COLLECTIONS = collections.jar
@@ -35,7 +18,7 @@ collections.jar: mkcollections.pl
 	./mkcollections.pl $(top_srcdir)
 	$(JCOMPILER) `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
 	if test "$(FASTJAR)" != ""; then \
-	  $(FASTJAR) cf $@ $(COLLECTIONS_PREFIX); \
+	  "$(FASTJAR)" cf $@ $(COLLECTIONS_PREFIX); \
 	else \
 	  echo "fastjar not found" > collections.jar; \
 	fi
@@ -56,7 +39,7 @@ endif # BUILD_CLASS_FILES
 if INSTALL_CLASS_FILES
 
 install-data-local: genclasses compile-classes
-	-$(top_srcdir)/mkinstalldirs $(DESTDIR)$(pkgdatadir)
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	cp -R gnu $(DESTDIR)$(pkgdatadir)
 	cp -R java $(DESTDIR)$(pkgdatadir)
 	cp -R javax $(DESTDIR)$(pkgdatadir)
@@ -86,7 +69,7 @@ else
 
 glibj.zip: classes compile-classes resources
 	if test "$(ZIP)" != ""; then $(ZIP) -r -D glibj.zip gnu java javax org sun META-INF > /dev/null; fi
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf glibj.zip gnu java javax org sun META-INF; fi
+	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" cf glibj.zip gnu java javax org sun META-INF; fi
 
 endif # USE_PREBUILT_GLIBJ_ZIP
 
@@ -154,7 +137,7 @@ endif
 	touch compile-classes
 # endif
 
-EXTRA_DIST = standard.omit.in mkcollections.pl.in Makefile.gcj split-for-gcj.sh
+EXTRA_DIST = standard.omit.in mkcollections.pl.in Makefile.gcj split-for-gcj.sh glibj.zip
 CLEANFILES = compile-classes resources classes \
 	glibj.zip classes.1 classes.2 Makefile.deps \
 	$(top_builddir)/gnu/java/locale/LocaleData.java \
@@ -181,3 +164,4 @@ dist-hook:
 	rm -f $(distdir)/../gnu/classpath/Configuration.java
 	rm -f $(distdir)/../gnu/java/security/Configuration.java
 	rm -f $(distdir)/../gnu/java/locale/LocaleData.java
+	rm -f $(distdir)/glibj.zip

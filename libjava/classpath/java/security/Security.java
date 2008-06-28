@@ -702,7 +702,7 @@ public final class Security
               return true;
 
             // assume value is a number. cehck for greater-than-or-equal
-            return (new Integer(val).intValue() >= new Integer(realVal).intValue());
+            return (Integer.parseInt(val) >= Integer.parseInt(realVal));
           }
       }
 

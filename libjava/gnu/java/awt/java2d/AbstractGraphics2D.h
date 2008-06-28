@@ -23,6 +23,7 @@ extern "Java"
             class ScanlineConverter;
             class ScanlineCoverage;
             class ShapeCache;
+            class TextCacheKey;
         }
       }
     }
@@ -170,7 +171,6 @@ public: // actually protected
   virtual ::java::awt::Rectangle * getDeviceBounds();
   virtual void rawDrawLine(jint, jint, jint, jint);
   virtual void rawDrawRect(jint, jint, jint, jint);
-  virtual void rawDrawString(::java::lang::String *, jint, jint);
   virtual void rawClearRect(jint, jint, jint, jint);
   virtual void rawFillRect(jint, jint, jint, jint);
   virtual jboolean rawDrawImage(::java::awt::Image *, jint, jint, ::java::awt::image::ImageObserver *);
@@ -187,11 +187,15 @@ private:
   void updateOptimization();
   static ::java::awt::Rectangle * computeIntersection(jint, jint, jint, jint, ::java::awt::Rectangle *);
   void updateClip(::java::awt::geom::AffineTransform *);
-  ::gnu::java::awt::java2d::ShapeCache * getShapeCache();
   ::gnu::java::awt::java2d::ScanlineConverter * getScanlineConverter();
+  void freeScanlineConverter(::gnu::java::awt::java2d::ScanlineConverter *);
+  static jboolean DEFAULT_TEXT_AA;
   static ::java::awt::Font * FONT;
-  static ::java::lang::ThreadLocal * shapeCache;
-  static ::java::lang::ThreadLocal * scanlineConverters;
+  static const jint GV_CACHE_SIZE = 50;
+  static ::gnu::java::awt::java2d::ShapeCache * shapeCache;
+  static ::java::util::LinkedList * scanlineConverters;
+  static ::java::util::Map * gvCache;
+  static ::gnu::java::awt::java2d::TextCacheKey * searchTextKey;
 public: // actually protected
   ::java::awt::geom::AffineTransform * __attribute__((aligned(__alignof__( ::java::awt::Graphics2D)))) transform__;
 private:

@@ -479,17 +479,17 @@ public final class PrinterDialog extends JDialog implements ActionListener
        */
       void updateForSelectedService()
       {
-        PrinterMakeAndModel att1 = (PrinterMakeAndModel)
+        PrinterMakeAndModel att1 =
           getSelectedPrintService().getAttribute(PrinterMakeAndModel.class);
         typValue.setText(att1 == null ? "" : att1.getValue());
         
-        PrinterInfo att2 = (PrinterInfo) 
+        PrinterInfo att2 = 
           getSelectedPrintService().getAttribute(PrinterInfo.class);
         infoValue.setText(att2 == null ? "" : att2.getValue());
         
-        PrinterIsAcceptingJobs att3 = (PrinterIsAcceptingJobs)
+        PrinterIsAcceptingJobs att3 =
           getSelectedPrintService().getAttribute(PrinterIsAcceptingJobs.class);
-        PrinterState att4 = (PrinterState)
+        PrinterState att4 =
           getSelectedPrintService().getAttribute(PrinterState.class);
         
         String status = att4.toString();  

@@ -37,13 +37,14 @@ exception statement from your version. */
 
 package gnu.javax.sound.sampled.gstreamer.io;
 
+import gnu.javax.sound.sampled.gstreamer.GStreamerMixer;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -59,21 +60,61 @@ import javax.sound.sampled.spi.AudioFileReader;
  */
 public class GstAudioFileReader
     extends AudioFileReader
-{
+{ 
   @Override
   public AudioFileFormat getAudioFileFormat(File file)
       throws UnsupportedAudioFileException, IOException
   {
-    throw new UnsupportedAudioFileException("Unsupported encoding.");
+    StringBuffer name = new StringBuffer(file.getName());
+    String _name = name.substring(name.lastIndexOf(".") + 1);
+    
+    return getAudioFileFormat(
+               new BufferedInputStream(new FileInputStream(file)), _name);
   }
 
   @Override
   public AudioFileFormat getAudioFileFormat(InputStream is)
       throws UnsupportedAudioFileException, IOException
   {
-    throw new UnsupportedAudioFileException("Unsupported encoding.");
+    return getAudioFileFormat(is, null);
   }
 
+  private AudioFileFormat getAudioFileFormat(InputStream is, String extension)
+    throws UnsupportedAudioFileException
+    {
+      AudioFormat format = null;
+      try
+        {
+          format = GstAudioFileReaderNativePeer.getAudioFormat(is);
+        }
+      catch (Exception e)
+        {
+          UnsupportedAudioFileException ex =
+            new UnsupportedAudioFileException("Unsupported encoding.");
+         
+          ex.initCause(ex.getCause());
+          throw ex;
+        }
+      
+      if (format == null)
+        throw new UnsupportedAudioFileException("Unsupported encoding.");
+      
+      String name = format.getProperty(GStreamerMixer.GST_DECODER).toString();
+      
+      if (extension == null)
+        {
+          extension =
+            format.getProperty(GStreamerMixer.GST_FILE_EXTENSION).toString();
+        }
+      
+      AudioFileFormat.Type type =
+        new AudioFileFormat.Type(name, extension);
+      
+      // TODO: we should calculate this in some way. We don't need it, but
+      // application may want to use this data.
+      return new AudioFileFormat(type, format, AudioSystem.NOT_SPECIFIED);
+    }
+  
   @Override
   public AudioFileFormat getAudioFileFormat(URL url)
       throws UnsupportedAudioFileException, IOException
@@ -96,8 +137,11 @@ public class GstAudioFileReader
       }
     catch (Exception e)
       {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        UnsupportedAudioFileException ex =
+          new UnsupportedAudioFileException("Unsupported encoding.");
+       
+        ex.initCause(ex.getCause());
+        throw ex;
       }
     
     // get the header size

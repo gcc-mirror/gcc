@@ -899,7 +899,7 @@ public abstract class ImageWriter
    * IllegalStateException).  If input is null then the current input
    * source will be removed.
    *
-   * @param input the output destination object
+   * @param output the output destination object
    *
    * @exception IllegalArgumentException if input is not a valid input
    * source for this writer and is not an ImageInputStream
@@ -1338,7 +1338,7 @@ public abstract class ImageWriter
    * @param imageIndex the frame index at which to insert the image
    * @param image the image data, metadata and thumbnails to be
    * inserted
-   * @param the image write parameters, or null
+   * @param param image write parameters, or null
    *
    * @exception IllegalStateException if output is null
    * @exception UnsupportedOperationException if image insertion is

@@ -39,7 +39,6 @@ exception statement from your version.  */
 package gnu.javax.net.ssl;
 
 import java.nio.ByteBuffer;
-import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 
 public abstract class SSLRecordHandler

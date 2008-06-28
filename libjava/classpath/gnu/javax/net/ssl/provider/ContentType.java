@@ -38,10 +38,6 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.IOException;
-
 /**
  * The content type enumeration, which marks packets in the record layer.
  *

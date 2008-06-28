@@ -29,6 +29,7 @@ public: // actually package-private
   DefaultMutableTreeNode$BreadthFirstEnumeration(::javax::swing::tree::TreeNode *);
 public:
   virtual jboolean hasMoreElements();
+  virtual ::javax::swing::tree::TreeNode * DefaultMutableTreeNode$BreadthFirstEnumeration$nextElement();
   virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::java::util::LinkedList * __attribute__((aligned(__alignof__( ::java::lang::Object)))) queue;

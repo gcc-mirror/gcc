@@ -1,5 +1,5 @@
 /* ObjectOutputStream.java -- Class used to write serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -363,10 +363,22 @@ public class ObjectOutputStream extends OutputStream
 
 	    if (obj instanceof String)
 	      {
-		realOutput.writeByte(TC_STRING);
-		if (shared)
-		  assignNewHandle(obj);
-		realOutput.writeUTF((String)obj);
+                String s = (String)obj;
+                long l = realOutput.getUTFlength(s, 0, 0);
+                if (l <= 65535)
+                  {
+		    realOutput.writeByte(TC_STRING);
+		    if (shared)
+		      assignNewHandle(obj);
+		    realOutput.writeUTFShort(s, (int)l);
+                  }
+                else
+                  {
+		    realOutput.writeByte(TC_LONGSTRING);
+		    if (shared)
+		      assignNewHandle(obj);
+		    realOutput.writeUTFLong(s, l);
+                  }
 		break;
 	      }
 

@@ -13,9 +13,12 @@
 #ifndef __CLASSPATH_FDLIBM_H__
 #define __CLASSPATH_FDLIBM_H__
 
-/* AIX needs _XOPEN_SOURCE */
+/*
+ * On AIX we need _ALL_SOURCE defined to compile/configure native-lib, but can't
+ *  have it defined to compile fdlibm.  UGH.
+ */
 #ifdef _AIX
-#define _XOPEN_SOURCE
+#undef _ALL_SOURCE
 #endif
 
 #include <config.h>

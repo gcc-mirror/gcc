@@ -38,7 +38,6 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import gnu.java.security.x509.X500DistinguishedName;
 import gnu.javax.net.ssl.provider.Extension.Value;
 
 import java.io.PrintWriter;

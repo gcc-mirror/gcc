@@ -22,16 +22,10 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 package gnu.classpath.tools.rmic;
 
 import gnu.classpath.tools.common.ClasspathToolParser;
-import gnu.classpath.tools.getopt.FileArgumentCallback;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
-import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 /**

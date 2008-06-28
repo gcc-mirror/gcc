@@ -229,6 +229,11 @@ public class Font implements Serializable
   // The ClasspathToolkit-provided peer which implements this font
   private transient ClasspathFontPeer peer;
 
+  /**
+   * The cached hashcode. A value of 0 (default initialized) means that the
+   * hashcode is not computed yet.
+   */
+  private transient int hashCode;
 
   /**
    * Creates a <code>Font</code> object from the specified string, which
@@ -1318,7 +1323,21 @@ public class Font implements Serializable
    */
   public int hashCode()
   {
-    return this.toString().hashCode();
+    // We cache the hashcode. This makes sense, because the font wouldn't
+    // change the relevant properties.
+    if (hashCode == 0)
+      {
+        hashCode = getName().hashCode() ^ getTransform().hashCode() ^ getSize()
+                   ^ getStyle();
+        // In the rare case when the above yields 0, we set this to some other
+        // value to avoid recomputing over and over again. This is still
+        // conform to the specification of hashCode().
+        if (hashCode == 0)
+          {
+            hashCode = -1;
+          }
+      }
+    return hashCode;
   }
 
 

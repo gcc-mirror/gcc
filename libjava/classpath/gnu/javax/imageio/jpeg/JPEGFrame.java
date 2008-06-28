@@ -101,7 +101,7 @@ public class JPEGFrame
   public void setHuffmanTables(byte componentID, JPEGHuffmanTable ACTable,
                                JPEGHuffmanTable DCTable)
   {
-    JPEGComponent comp = (JPEGComponent)components.getComponentByID(componentID);
+    JPEGComponent comp = components.getComponentByID(componentID);
     comp.setACTable(ACTable);
     comp.setDCTable(DCTable);
   }

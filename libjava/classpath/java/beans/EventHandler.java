@@ -173,19 +173,17 @@ public class EventHandler implements InvocationHandler
     try
       {
 	// Look for boolean property getter isProperty
-	getter = o.getClass().getMethod("is" + capitalize(prop),
-						 null);
+	getter = o.getClass().getMethod("is" + capitalize(prop));
       }
     catch (NoSuchMethodException nsme1)
       {
         try {
           // Look for regular property getter getProperty
-          getter = o.getClass().getMethod("get" + capitalize(prop),
-						 null);
+          getter = o.getClass().getMethod("get" + capitalize(prop));
         } catch(NoSuchMethodException nsme2) {
             try {
             // Finally look for a method of the name prop
-            getter = o.getClass().getMethod(prop, null);
+            getter = o.getClass().getMethod(prop);
             } catch(NoSuchMethodException nsme3) {
                 // Ok, give up with an intelligent hint for the user.
                 throw new RuntimeException("Method not called: Could not find a property or method '" + prop
@@ -194,7 +192,7 @@ public class EventHandler implements InvocationHandler
         }
       }
     try {
-      Object val = getter.invoke(o, null);
+      Object val = getter.invoke(o);
 
       if (rest != null)
         return getProperty(val, rest);
@@ -304,7 +302,7 @@ public class EventHandler implements InvocationHandler
     // more specification compliant than the JDK itself because this one will fail in such a case.
     try
       {
-      actionMethod = targetClass.getMethod(action, null);
+      actionMethod = targetClass.getMethod(action);
       }
     catch(NoSuchMethodException nsme)
       {
@@ -342,7 +340,7 @@ public class EventHandler implements InvocationHandler
       throw new ArrayIndexOutOfBoundsException(0);
     
     // Invoke target.action(property)
-    return actionMethod.invoke(target, null);
+    return actionMethod.invoke(target);
       } catch(InvocationTargetException ite) {
          throw new RuntimeException(ite.getCause());
       } catch(IllegalAccessException iae) {

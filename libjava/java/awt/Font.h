@@ -156,6 +156,7 @@ public: // actually protected
 private:
   static const jlong serialVersionUID = -4206021311591459213LL;
   ::gnu::java::awt::peer::ClasspathFontPeer * peer;
+  jint hashCode__;
 public:
   static ::java::lang::Class class$;
 };

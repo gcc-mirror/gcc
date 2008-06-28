@@ -136,7 +136,7 @@ public class RFC2631
           }
         // 8. Let counter = 0
         counter = 0;
-        step9: while (true)
+        while (true)
           {
             // 9. Set R = seed + 2*m' + (L' * counter)
             R = SEED

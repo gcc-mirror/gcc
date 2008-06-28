@@ -38,10 +38,11 @@
 
 package gnu.classpath.tools.javah;
 
+import gnu.classpath.tools.common.ClasspathToolParser;
+
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
-import gnu.classpath.tools.getopt.Parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,9 +61,9 @@ public class GcjhMain extends Main
     return "gcjh";
   }
 
-  protected Parser getParser()
+  protected ClasspathToolParser getParser()
   {
-    Parser result = super.getParser();
+    ClasspathToolParser result = super.getParser();
 
     result.setHeader("usage: gcjh [OPTION]... CLASS...");
 

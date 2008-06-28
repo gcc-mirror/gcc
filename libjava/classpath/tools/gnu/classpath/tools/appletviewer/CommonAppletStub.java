@@ -113,7 +113,7 @@ class CommonAppletStub
    */
   public String getParameter(String name)
   {
-    return (String) tag.getParameter(name.toLowerCase());
+    return tag.getParameter(name.toLowerCase());
   }
 
   /**

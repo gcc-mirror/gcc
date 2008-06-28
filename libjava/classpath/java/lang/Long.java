@@ -296,7 +296,7 @@ public final class Long extends Number implements Comparable<Long>
    * @return the <code>Long</code>
    * @since 1.5
    */
-  public static synchronized Long valueOf(long val)
+  public static Long valueOf(long val)
   {
     // We aren't required to cache here.  We could, though perhaps we
     // ought to consider that as an empirical question.

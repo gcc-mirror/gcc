@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.javax.net.ssl.provider;
 
-import static gnu.javax.net.ssl.provider.CertificateRequest.ClientCertificateType;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -39,8 +39,6 @@ package gnu.javax.imageio.bmp;
 
 import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;

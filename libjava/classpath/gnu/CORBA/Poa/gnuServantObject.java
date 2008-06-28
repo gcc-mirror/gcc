@@ -785,7 +785,7 @@ public class gnuServantObject extends ObjectImpl
    * assumed equal if they are connected to the same orb and poa under the same
    * Id, regardless of they delegates.
    *
-   * @param another instance to check.
+   * @param other instance to check.
    * @return
    */
   public boolean _is_equivalent(org.omg.CORBA.Object other)

@@ -855,6 +855,15 @@ struct _Jv_JNIEnv;
 typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
 
+enum _Jv_jobjectRefType
+{
+  JNIInvalidRefType    = 0,
+  JNILocalRefType      = 1,
+  JNIGlobalRefType     = 2,
+  JNIWeakGlobalRefType = 3
+};
+typedef enum _Jv_jobjectRefType jobjectRefType;
+
 extern "C" jobject _Jv_AllocObject (jclass) __attribute__((__malloc__));
 extern "C" jobject _Jv_AllocObjectNoFinalizer (jclass) __attribute__((__malloc__));
 extern "C" jobject _Jv_AllocObjectNoInitNoFinalizer (jclass) __attribute__((__malloc__));

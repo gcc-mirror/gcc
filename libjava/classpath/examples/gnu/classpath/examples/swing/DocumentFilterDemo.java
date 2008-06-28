@@ -44,7 +44,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.TextAction;
 
 /**
  * A demonstration of the <code>javax.swing.text.DocumentFilter</code> class.

@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.CORBA.CDR;
 
-import java.io.DataInput;
 import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;

@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for the KOI8 cyrillic char set.
  */
-public class KOI_8 extends ByteCharset
+public final class KOI_8 extends ByteCharset
 {
 
   /**
@@ -94,8 +94,7 @@ public class KOI_8 extends ByteCharset
 	  "koi8r", 
 	  "koi-8-r",
 	  "koi"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class KOI_8

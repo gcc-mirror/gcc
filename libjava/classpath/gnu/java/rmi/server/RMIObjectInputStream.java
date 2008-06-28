@@ -46,7 +46,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
-import java.util.ArrayList;
 
 public class RMIObjectInputStream
 	extends ObjectInputStream {

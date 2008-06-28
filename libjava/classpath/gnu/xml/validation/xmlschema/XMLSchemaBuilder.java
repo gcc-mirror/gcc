@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.validation.xmlschema;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.XMLConstants;
@@ -49,11 +48,8 @@ import org.relaxng.datatype.helpers.DatatypeLibraryLoader;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import gnu.xml.validation.datatype.Annotation;
-import gnu.xml.validation.datatype.AtomicSimpleType;
-import gnu.xml.validation.datatype.ListSimpleType;
 import gnu.xml.validation.datatype.SimpleType;
 import gnu.xml.validation.datatype.Type;
-import gnu.xml.validation.datatype.UnionSimpleType;
 
 /**
  * Parses an XML Schema DOM tree, constructing a compiled internal

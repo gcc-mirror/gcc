@@ -28,7 +28,8 @@ extern "Java"
 class java::beans::beancontext::BeanContextServicesSupport$BCSSProxyServiceProvider : public ::java::lang::Object
 {
 
-  BeanContextServicesSupport$BCSSProxyServiceProvider(::java::beans::beancontext::BeanContextServicesSupport *, ::java::beans::beancontext::BeanContextServiceProvider *);
+public: // actually protected
+  BeanContextServicesSupport$BCSSProxyServiceProvider(::java::beans::beancontext::BeanContextServicesSupport *);
 public:
   virtual ::java::util::Iterator * getCurrentServiceSelectors(::java::beans::beancontext::BeanContextServices *, ::java::lang::Class *);
   virtual ::java::lang::Object * getService(::java::beans::beancontext::BeanContextServices *, ::java::lang::Object *, ::java::lang::Class *, ::java::lang::Object *);

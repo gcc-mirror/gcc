@@ -40,4 +40,4 @@ DIST_SUBDIRS = classpath java-io java-lang java-net java-nio java-util \
                midi-dssi native-lib
 
 all-local:
-	cd $(top_srcdir) && $(SHELL) ./scripts/check_jni_methods.sh
+	$(SHELL) $(top_builddir)/scripts/check_jni_methods.sh

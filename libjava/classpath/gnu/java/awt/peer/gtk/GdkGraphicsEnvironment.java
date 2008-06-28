@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
 import gnu.java.awt.ClasspathGraphicsEnvironment;
 
 import java.awt.Font;
@@ -72,7 +73,10 @@ public class GdkGraphicsEnvironment extends ClasspathGraphicsEnvironment
 
   static
   {
-    System.loadLibrary("gtkpeer");
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("gtkpeer");
+      }
 
     GtkToolkit.initializeGlobalIDs();
     initIDs();

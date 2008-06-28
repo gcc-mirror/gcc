@@ -178,11 +178,6 @@ public class XMLParser
   private int event;
 
   /**
-   * Whether we are looking ahead. Used by hasNext.
-   */
-  private boolean lookahead;
-
-  /**
    * The element name stack. The first element in this stack will be the
    * root element.
    */
@@ -1013,24 +1008,12 @@ public class XMLParser
   public boolean hasNext()
     throws XMLStreamException
   {
-    if (event == XMLStreamConstants.END_DOCUMENT)
-      return false;
-    if (!lookahead)
-      {
-        next();
-        lookahead = true;
-      }
-    return event != -1;
+    return (event != XMLStreamConstants.END_DOCUMENT && event != -1);
   }
   
   public int next()
     throws XMLStreamException
   {
-    if (lookahead)
-      {
-        lookahead = false;
-        return event;
-      }
     if (event == XMLStreamConstants.END_ELEMENT)
       {
         // Pop namespace context

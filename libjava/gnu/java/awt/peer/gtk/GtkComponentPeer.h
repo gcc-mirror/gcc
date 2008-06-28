@@ -87,7 +87,9 @@ public: // actually package-private
   virtual void gtkWidgetGetDimensions(JArray< jint > *);
   virtual void gtkWidgetGetPreferredDimensions(JArray< jint > *);
   virtual void gtkWindowGetLocationOnScreen(JArray< jint > *);
+  virtual void gtkWindowGetLocationOnScreenUnlocked(JArray< jint > *);
   virtual void gtkWidgetGetLocationOnScreen(JArray< jint > *);
+  virtual void gtkWidgetGetLocationOnScreenUnlocked(JArray< jint > *);
   virtual void gtkWidgetSetCursor(jint, ::gnu::java::awt::peer::gtk::GtkImage *, jint, jint);
   virtual void gtkWidgetSetCursorUnlocked(jint, ::gnu::java::awt::peer::gtk::GtkImage *, jint, jint);
   virtual void gtkWidgetSetBackground(jint, jint, jint);

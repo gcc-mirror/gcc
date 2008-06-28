@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;

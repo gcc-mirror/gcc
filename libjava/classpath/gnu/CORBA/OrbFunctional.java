@@ -855,7 +855,7 @@ public class OrbFunctional extends OrbRestricted
    * internet address and port. With this information, the object can be found
    * by another ORB, possibly located on remote computer.
    *
-   * @param the CORBA object
+   * @param forObject CORBA object
    * @return the object IOR representation.
    *
    * @throws BAD_PARAM if the object has not been previously connected to this
@@ -1040,7 +1040,7 @@ public class OrbFunctional extends OrbRestricted
    * computer, possibly running a different (not necessary java) CORBA
    * implementation.
    * 
-   * @param ior the object IOR representation string.
+   * @param an_ior the object IOR representation string.
    * 
    * @return the found CORBA object.
    * @see object_to_string(org.omg.CORBA.Object)

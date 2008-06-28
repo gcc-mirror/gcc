@@ -41,7 +41,7 @@ package gnu.java.nio.charset;
 /**
  * Encoding table for ISO-8859-4, ISO Latin-4 char set.
  */
-public class ISO_8859_4 extends ByteCharset
+public final class ISO_8859_4 extends ByteCharset
 {
 
   /**
@@ -102,8 +102,7 @@ public class ISO_8859_4 extends ByteCharset
 	  "cp914",
 	  "914", 
 	  "windows-28594"
-      });
-      lookupTable = lookup;
+      }, lookup);
  }
   
 } // class ISO_8859_4

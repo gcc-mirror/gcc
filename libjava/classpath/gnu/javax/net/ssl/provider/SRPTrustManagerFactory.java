@@ -44,8 +44,6 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.Security;
-
 import java.util.HashMap;
 
 import javax.net.ssl.ManagerFactoryParameters;

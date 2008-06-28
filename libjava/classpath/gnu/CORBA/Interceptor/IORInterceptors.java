@@ -42,7 +42,6 @@ import org.omg.CORBA.OBJ_ADAPTER;
 import org.omg.CORBA.OMGVMCID;
 import org.omg.PortableInterceptor.IORInfo;
 import org.omg.PortableInterceptor.IORInterceptor;
-import org.omg.PortableInterceptor.IORInterceptorOperations;
 import org.omg.PortableInterceptor.IORInterceptor_3_0Operations;
 import org.omg.PortableInterceptor.ObjectReferenceTemplate;
 

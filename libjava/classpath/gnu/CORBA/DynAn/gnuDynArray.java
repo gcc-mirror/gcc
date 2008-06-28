@@ -46,7 +46,6 @@ import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.portable.Streamable;
 import org.omg.DynamicAny.DynAny;
 import org.omg.DynamicAny.DynAnyFactoryPackage.InconsistentTypeCode;

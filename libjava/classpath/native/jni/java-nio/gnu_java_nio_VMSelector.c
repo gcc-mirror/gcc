@@ -41,8 +41,9 @@ exception statement from your version. */
 #if defined(HAVE_SYS_TYPES_H)
 #include <sys/types.h>
 #endif
-
+#if defined(HAVE_SYS_SELECT_H)
 #include <sys/select.h>
+#endif
 #include <sys/time.h>
 
 #include <string.h>

@@ -63,7 +63,7 @@ public class NameTransformer
    * representation. See {@link #toString(NameComponent)} for the
    * description of this format.
    *
-   * @param name the string form of the name.
+   * @param a_name the string form of the name.
    *
    * @return the array form of the name.
    *

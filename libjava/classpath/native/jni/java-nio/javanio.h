@@ -39,6 +39,8 @@ exception statement from your version.  */
 #ifndef __JAVANIO_H__
 #define __JAVANIO_H__
 
+#include <sys/time.h>
+
 /**
  * This header defines functions that are called by our JNI reference
  * implementation of java.nio.*. In our reference implementation, these

@@ -111,7 +111,7 @@ public class ObjectCreator
    * mapped to the local java class. The omg.org domain must be mapped into the
    * object in either org/omg or gnu/CORBA namespace.
    * 
-   * @param IDL name
+   * @param idl name
    * @return instantiated object instance or null if no such available.
    */
   public static java.lang.Object createObject(String idl, String suffix)

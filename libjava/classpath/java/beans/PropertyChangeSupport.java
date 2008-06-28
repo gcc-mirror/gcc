@@ -346,8 +346,8 @@ public class PropertyChangeSupport implements Serializable
   {
     if (oldVal != newVal)
       firePropertyChange(new PropertyChangeEvent(source, propertyName,
-                                                 new Integer(oldVal),
-                                                 new Integer(newVal)));
+                                                 Integer.valueOf(oldVal),
+                                                 Integer.valueOf(newVal)));
   }
 
   /**

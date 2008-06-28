@@ -39,7 +39,6 @@ package gnu.xml.validation.datatype;
 
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
-import javax.xml.namespace.QName;
 import org.relaxng.datatype.Datatype;
 import org.relaxng.datatype.DatatypeBuilder;
 import org.relaxng.datatype.DatatypeException;

@@ -147,6 +147,12 @@ public class REException extends Exception {
     this.pos = position;
   }
 
+  REException(String msg, Throwable cause, int type, int position) { 
+    super(msg, cause); 
+    this.type = type;
+    this.pos = position;
+  }
+
   /**
    * Returns the type of the exception, one of the constants listed above.
    */

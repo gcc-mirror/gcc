@@ -38,10 +38,8 @@ exception statement from your version. */
 package gnu.javax.sound.midi.file;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.sound.midi.MetaMessage;

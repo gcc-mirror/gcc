@@ -50,6 +50,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../ltoptions.m4 \
 	$(top_srcdir)/../../ltsugar.m4 \
 	$(top_srcdir)/../../ltversion.m4 \
+	$(top_srcdir)/m4/ac_prog_javac.m4 \
+	$(top_srcdir)/m4/ac_prog_javac_works.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
 	$(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
@@ -131,7 +133,6 @@ DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
-ECJ = @ECJ@
 ECJ_JAR = @ECJ_JAR@
 EGREP = @EGREP@
 ENABLE_LOCAL_SOCKETS_FALSE = @ENABLE_LOCAL_SOCKETS_FALSE@
@@ -143,19 +144,8 @@ EXTRA_CFLAGS = @EXTRA_CFLAGS@
 FASTJAR = @FASTJAR@
 FGREP = @FGREP@
 FIND = @FIND@
-FOUND_ECJ_FALSE = @FOUND_ECJ_FALSE@
-FOUND_ECJ_TRUE = @FOUND_ECJ_TRUE@
-FOUND_GCJ_FALSE = @FOUND_GCJ_FALSE@
-FOUND_GCJ_TRUE = @FOUND_GCJ_TRUE@
-FOUND_JAVAC_FALSE = @FOUND_JAVAC_FALSE@
-FOUND_JAVAC_TRUE = @FOUND_JAVAC_TRUE@
-FOUND_JIKES_FALSE = @FOUND_JIKES_FALSE@
-FOUND_JIKES_TRUE = @FOUND_JIKES_TRUE@
-FOUND_KJC_FALSE = @FOUND_KJC_FALSE@
-FOUND_KJC_TRUE = @FOUND_KJC_TRUE@
 FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
-GCJ = @GCJ@
 GCONF_CFLAGS = @GCONF_CFLAGS@
 GCONF_LIBS = @GCONF_LIBS@
 GDK_CFLAGS = @GDK_CFLAGS@
@@ -187,15 +177,12 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAVAC = @JAVAC@
+JAVAC_MEM_OPT = @JAVAC_MEM_OPT@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
 JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
 JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
-JIKES = @JIKES@
-JIKESENCODING = @JIKESENCODING@
-JIKESWARNINGS = @JIKESWARNINGS@
-KJC = @KJC@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -243,10 +230,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRICT_WARNING_CFLAGS = @STRICT_WARNING_CFLAGS@
 STRIP = @STRIP@
-USER_CLASSLIB = @USER_CLASSLIB@
+TOOLSDIR = @TOOLSDIR@
 USER_JAVAH = @USER_JAVAH@
-USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
-USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
 USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
@@ -319,7 +304,7 @@ target_vendor = @target_vendor@
 toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 @CREATE_API_DOCS_TRUE@noinst_DATA = html
-sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax
+sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/jsr166
 classpathbox = "<span class='logo'><a href='http://www.gnu.org/software/classpath' target='_top'>GNU Classpath</a> ($(VERSION))"
 all: all-am
 

@@ -2,23 +2,12 @@
 
 ## GCJ LOCAL: use srcdir to find core classes.
 GLIBJ_BOOTCLASSPATH='$(top_srcdir)/lib'
-GLIBJ_CLASSPATH=$(srcdir)/asm
+GLIBJ_CLASSPATH=.:$(srcdir)/asm
 ## END GCJ LOCAL
 
 # Setup the compiler to use the GNU Classpath library we just build
-if FOUND_GCJ
-JCOMPILER = $(GCJ) -C -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH):.
-else
-if FOUND_ECJ
-JCOMPILER = $(ECJ) -1.5 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
-else
-if FOUND_JAVAC
-JCOMPILER = $(JAVAC) -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath .:$(GLIBJ_CLASSPATH)
-else
-error dunno how to setup the JCOMPILER and compile
-endif # FOUND_JAVAC
-endif # FOUND_ECJ
-endif # FOUND_GCJ
+## GCJ LOCAL: don't pass $(JAVACFLAGS) -source 1.5 -target 1.5
+JCOMPILER = $(JAVAC) -g -w --encoding=UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH)
 
 if CREATE_WRAPPERS
 bin_SCRIPTS =
@@ -136,17 +125,35 @@ TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/util/attrs/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/xml/*.java
 
+# Properties files that must be included in the generated zip file.
+PROPERTY_FILES = $(srcdir)/external/asm/org/objectweb/asm/optimizer/shrink.properties \
+	$(srcdir)/resource/com/sun/tools/javac/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/jar/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/orbd/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmic/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmid/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/serialver/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/keytool/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/native2ascii/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/appletviewer/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/common/Messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/getopt/Messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/tnameserv/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/jarsigner/messages.properties \
+	$(srcdir)/resource/gnu/classpath/tools/rmiregistry/messages.properties \
+	$(srcdir)/resource/sun/rmi/rmic/messages.properties
+
+# RMIC templates that must be included in the generated zip file.
+RMIC_TEMPLATES = $(srcdir)/resource/gnu/classpath/tools/rmic/templates/*.jav
+
 # The zip files with classes we want to produce.
 TOOLS_ZIP = tools.zip
 
 # Extra objects that will not exist until configure-time
 BUILT_SOURCES = $(TOOLS_ZIP)
 
-# RMIC templates that must be included in the generated zip file.
-RMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/rmic/templates/*.jav
-
 # All the files we find "interesting"
-ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES)
+ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES) $(PROPERTY_FILES)
 
 # Some architecture independent data to be installed.
 # GCJ LOCAL: do not install this.
@@ -173,7 +180,7 @@ dist-hook:
 # the class files. Always regenerate all .class files and remove them
 # immediately.  And copy the template files we use to the classes dir
 # so they get also included.
-$(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
+$(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 ## GCJ LOCAL: put classes in srcdir
 ##	@rm -rf classes asm
 ##	mkdir classes asm
@@ -200,14 +207,13 @@ if JAVA_MAINTAINER_MODE
 	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 ## Copy over tools resource files.
-	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
-	       com/sun/javadoc com/sun/tools/doclets com/sun/tools/javac \
-	       sun/rmi/rmic -name \*.properties -print`; \
+	@list=`cd $(srcdir)/resource && find gnu/classpath/tools com/sun/tools/javac \
+	       sun/rmi/rmic -name \*.properties -print -o -name \*.jav -print`; \
 	for p in $$list; do \
 	  dirname=classes/`dirname $$p`; \
 	  if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
-	  echo "  cp $(top_srcdir)/resource/$$p classes/$$p"; \
-	  cp $(top_srcdir)/resource/$$p classes/$$p; \
+	  echo "  cp $(srcdir)resource/$$p classes/$$p"; \
+	  cp $(srcdir)/resource/$$p classes/$$p; \
 	done
 endif
 ## Copy over rmic template files.
@@ -224,12 +230,12 @@ endif
 ## First add classpath tools stuff.
 	(cd classes; \
 	if test "$(ZIP)" != ""; then $(ZIP) -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf ../$(TOOLS_ZIP) .; fi; \
+	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" cf ../$(TOOLS_ZIP) .; fi; \
 	cd ..)
 ## Now add ASM classes.
 	(cd asm; \
 	if test "$(ZIP)" != ""; then $(ZIP) -u -r ../$(TOOLS_ZIP) .; fi; \
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) uf ../$(TOOLS_ZIP) .; fi; \
+	if test "$(FASTJAR)" != ""; then "$(FASTJAR)" uf ../$(TOOLS_ZIP) .; fi; \
 	cd ..)
 	rm -rf asm classes classes.lst asm.lst
 
