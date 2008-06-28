@@ -817,6 +817,51 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __first = std::find_if_not(__first, __last, __pred);
       return std::none_of(__first, __last, __pred);
     }
+
+  /**
+   *  @brief  Find the partition point of a partitioned range.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  pred    A predicate.
+   *  @return  An iterator @p mid such that @p all_of(first, mid, pred)
+   *           and @p none_of(mid, last, pred) are both true.
+  */
+  template<typename _ForwardIterator, typename _Predicate>
+    _ForwardIterator
+    partition_point(_ForwardIterator __first, _ForwardIterator __last,
+		    _Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	      typename iterator_traits<_ForwardIterator>::value_type>)
+
+      // A specific debug-mode test will be necessary...
+      __glibcxx_requires_valid_range(__first, __last);
+
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
+
+      _DistanceType __len = std::distance(__first, __last);
+      _DistanceType __half;
+      _ForwardIterator __middle;
+
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__pred(*__middle))
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else
+	    __len = __half;
+	}
+      return __first;
+    }
 #endif
 
 

@@ -71,6 +71,7 @@
   partial_sort_copy
   partition
   partition_copy (C++0x)
+  partition_point (C++0x)
   pop_heap
   prev_permutation
   push_heap
@@ -346,6 +347,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	   typename _OIter2, typename _Predicate>
     pair<_OIter1, _OIter2>
     partition_copy(_IIter, _IIter, _OIter1, _OIter2, _Predicate);
+
+  template<typename _FIter, typename _Predicate>
+    _FIter
+    partition_point(_FIter, _FIter, _Predicate);
 #endif
 
   template<typename _RAIter>
