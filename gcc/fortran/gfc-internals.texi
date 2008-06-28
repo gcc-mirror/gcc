@@ -284,8 +284,11 @@ should exhaust all possible valid combinations of content for these
 structures.
 
 @menu
-* gfc_code:: Representation of Executable Statements
+* gfc_code:: Representation of Executable Statements.
 @end menu
+
+@c gfc_code
+@c --------
 
 @node gfc_code
 @section @code{gfc_code}
@@ -309,13 +312,95 @@ current statement.
 If the current statement is one of @code{IF}, @code{DO}, @code{SELECT}
 it starts a block, i.e.@: a nested level in the program.  In order to
 represent this, the @code{block} member is set to point to a
-@code{gfc_code} structure whose @code{block} member points to the
-block in question.  The @code{SELECT} and @code{IF} statements may
-contain various blocks (the chain of @code{ELSE IF} and @code{ELSE}
-blocks or the various @code{CASE}s, respectively).
+@code{gfc_code} structure whose @code{next} member starts the chain of
+statements inside the block; this structure's @code{op} member should be set to
+the same value as the parent structure's @code{op} member.  The @code{SELECT}
+and @code{IF} statements may contain various blocks (the chain of @code{ELSE IF}
+and @code{ELSE} blocks or the various @code{CASE}s, respectively).  These chains
+are linked-lists formed by the @code{block} members.
 
-@c What would be nice here would be an example program together with
-@c an image that says more than the mythical thousand words.
+Consider the following example code:
+
+@example
+IF (foo < 20) THEN
+  PRINT *, "Too small"
+  foo = 20
+ELSEIF (foo > 50) THEN
+  PRINT *, "Too large"
+  foo = 50
+ELSE
+  PRINT *, "Good"
+END IF
+@end example
+
+This statement-block will be represented in the internal gfortran tree as
+follows, were the horizontal link-chains are those induced by the @code{next}
+members and vertical links down are those of @code{block}. @samp{==|} and
+@samp{--|} mean @code{NULL} pointers to mark the end of a chain:
+
+@example
+... ==> IF ==> ...
+        |
+        +--> IF foo < 20 ==> PRINT *, "Too small" ==> foo = 20 ==|
+             |
+             +--> IF foo > 50 ==> PRINT *, "Too large" ==> foo = 50 ==|
+                  |
+                  +--> ELSE ==> PRINT *, "Good" ==|
+                       |
+                       +--|
+@end example
+
+
+@subsection IF Blocks
+
+Conditionals are represented by @code{gfc_code} structures with their
+@code{op} member set to @code{EXEC_IF}.  This structure's @code{block}
+member must point to another @code{gfc_code} node that is the header of the
+if-block.  This header's @code{op} member must be set to @code{EXEC_IF}, too,
+its @code{expr} member holds the condition to check for, and its @code{next}
+should point to the code-chain of the statements to execute if the condition is
+true.
+
+If in addition an @code{ELSEIF} or @code{ELSE} block is present, the
+@code{block} member of the if-block-header node points to yet another
+@code{gfc_code} structure that is the header of the elseif- or else-block.  Its
+structure is identical to that of the if-block-header, except that in case of an
+@code{ELSE} block without a new condition the @code{expr} member should be
+@code{NULL}.  This block can itself have its @code{block} member point to the
+next @code{ELSEIF} or @code{ELSE} block if there's a chain of them.
+
+
+@subsection Loops
+
+@code{DO} loops are stored in the tree as @code{gfc_code} nodes with their
+@code{op} set to @code{EXEC_DO} for a @code{DO} loop with iterator variable and
+to @code{EXEC_DO_WHILE} for infinite @code{DO}s and @code{DO WHILE} blocks.
+Their @code{block} member should point to a @code{gfc_code} structure heading
+the code-chain of the loop body; its @code{op} member should be set to
+@code{EXEC_DO} or @code{EXEC_DO_WHILE}, too, respectively.
+
+For @code{DO WHILE} loops, the loop condition is stored on the top
+@code{gfc_code} structure's @code{expr} member; @code{DO} forever loops are
+simply @code{DO WHILE} loops with a constant @code{.TRUE.} loop condition in
+the internal representation.
+
+Similarly, @code{DO} loops with an iterator have instead of the condition their
+@code{ext.iterator} member set to the correct values for the loop iterator
+variable and its range.
+
+
+@subsection @code{SELECT} Statements
+
+A @code{SELECT} block is introduced by a @code{gfc_code} structure with an
+@code{op} member of @code{EXEC_SELECT} and @code{expr} containing the expression
+to evaluate and test.  Its @code{block} member starts a list of @code{gfc_code}
+structures linked together by their @code{block} members that stores the various
+@code{CASE} parts.
+
+Each @code{CASE} node has its @code{op} member set to @code{EXEC_SELECT}, too,
+its @code{next} member points to the code-chain to be executed in the current
+case-block, and @code{extx.case_list} contains the case-values this block
+corresponds to.  The @code{block} member links to the next case in the list.
 
 
 @c ---------------------------------------------------------------------
