@@ -1,5 +1,17 @@
 2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_algo.h (partition_point): Add in C++0x mode.
+	* include/bits/algorithmfwd.h: Add.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Update.
+	* testsuite/25_algorithms/partition_point/1.cc: New.
+	* testsuite/25_algorithms/partition_point/check_type.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/36660
 	* include/ext/pb_ds/detail/resize_policy/
 	sample_resize_trigger.hpp: Remove spurious namespace end.
