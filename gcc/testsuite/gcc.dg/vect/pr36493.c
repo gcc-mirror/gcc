@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_long } */
 
 #include "tree-vect.h"
 
