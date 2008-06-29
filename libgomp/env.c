@@ -207,7 +207,7 @@ parse_stacksize (const char *name, unsigned long *pvalue)
     ++end;
   if (*end != '\0')
     {
-      switch (tolower (*end))
+      switch (tolower ((unsigned char) *end))
 	{
 	case 'b':
 	  shift = 0;
@@ -276,7 +276,7 @@ parse_spincount (const char *name, unsigned long long *pvalue)
     ++end;
   if (*end != '\0')
     {
-      switch (tolower (*end))
+      switch (tolower ((unsigned char) *end))
 	{
 	case 'k':
 	  mult = 1000LL;

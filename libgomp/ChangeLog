@@ -1,3 +1,8 @@
+2008-06-29  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	* env.c (parse_stacksize): Add cast to avoid warning.
+	(parse_spincount): Likewise.
+
 2008-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/loop-10.c: New test.
