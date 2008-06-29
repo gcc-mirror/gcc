@@ -1,3 +1,22 @@
+2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (copy_n): Add in C++0x mode.
+	* include/bits/algorithmfwd.h: Add.
+	* include/bits/stl_uninitialized.h (uninitialized_copy_n): Add
+	in C++0x mode.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	move_iterators/1.cc: New
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Update.
+	* testsuite/25_algorithms/copy_n/1.cc: New.
+	* testsuite/25_algorithms/copy_n/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/3.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/4.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	
 2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algo.h (partition_point): Add in C++0x mode.

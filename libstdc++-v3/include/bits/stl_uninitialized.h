@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -430,6 +430,53 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __throw_exception_again;
 	}
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _InputIterator, typename _Size,
+	   typename _ForwardIterator>
+    _ForwardIterator
+    __uninitialized_copy_n(_InputIterator __first, _Size __n,
+			   _ForwardIterator __result, input_iterator_tag)
+    {
+      _ForwardIterator __cur = __result;
+      try
+	{
+	  for (; __n > 0; --__n, ++__first, ++__cur)
+	    ::new(static_cast<void*>(&*__cur)) typename
+		iterator_traits<_ForwardIterator>::value_type(*__first);
+	  return __cur;
+	}
+      catch(...)
+	{
+	  std::_Destroy(__result, __cur);
+	  __throw_exception_again;
+	}
+    }
+
+  template<typename _RandomAccessIterator, typename _Size,
+	   typename _ForwardIterator>
+    inline _ForwardIterator
+    __uninitialized_copy_n(_RandomAccessIterator __first, _Size __n,
+			   _ForwardIterator __result,
+			   random_access_iterator_tag)
+    { return std::uninitialized_copy(__first, __first + __n, __result); }
+
+  /**
+   *  @brief Copies the range [first,first+n) into result.
+   *  @param  first  An input iterator.
+   *  @param  n      The number of elements to copy.
+   *  @param  result An output iterator.
+   *  @return  result + n
+   *
+   *  Like copy_n(), but does not require an initialized output range.
+  */
+  template<typename _InputIterator, typename _Size, typename _ForwardIterator>
+    inline _ForwardIterator
+    uninitialized_copy_n(_InputIterator __first, _Size __n,
+			 _ForwardIterator __result)
+    { return std::__uninitialized_copy_n(__first, __n, __result,
+					 std::__iterator_category(__first)); }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

@@ -217,6 +217,10 @@ namespace std
     _OIter 
     copy_if(_IIter, _IIter, _OIter, _Predicate);
 
+  template<typename _IIter, typename _Size, typename _OIter>
+    _OIter
+    copy_n(_IIter, _Size, _OIter);
+
   template<typename _IIter, typename _OIter1,
 	   typename _OIter2, typename _Predicate>
     pair<_OIter1, _OIter2>
