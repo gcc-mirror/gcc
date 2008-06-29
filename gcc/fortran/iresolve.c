@@ -1341,6 +1341,34 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 
   f->rank = (a->rank == 2 && b->rank == 2) ? 2 : 1;
 
+  if (a->rank == 2 && b->rank == 2)
+    {
+      if (a->shape && b->shape)
+	{
+	  f->shape = gfc_get_shape (f->rank);
+	  mpz_init_set (f->shape[0], a->shape[0]);
+	  mpz_init_set (f->shape[1], b->shape[1]);
+	}
+    }
+  else if (a->rank == 1)
+    {
+      if (b->shape)
+	{
+	  f->shape = gfc_get_shape (f->rank);
+	  mpz_init_set (f->shape[0], b->shape[1]);
+	}
+    }
+  else 
+    {
+      /* b->rank == 1 and a->rank == 2 here, all other cases have
+	 been caught in check.c.   */
+      if (a->shape)
+	{
+	  f->shape = gfc_get_shape (f->rank);
+	  mpz_init_set (f->shape[0], a->shape[0]);
+	}
+    }
+
   f->value.function.name
     = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (f->ts.type),
 		      f->ts.kind);
