@@ -1,3 +1,7 @@
+2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (java/jcf-io.o-warn): New.
+
 2008-06-24  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-path.c (jcf_path_init): Don't name variable 'try'.

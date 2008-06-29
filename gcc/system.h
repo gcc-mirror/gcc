@@ -797,11 +797,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define CONST_CAST_RTX(X) CONST_CAST(struct rtx_def *, (X))
 #define CONST_CAST_BB(X) CONST_CAST(struct basic_block_def *, (X))
 
-/* Activate -Wcast-qual and -Wc++-compat as warnings (not errors via
-   the -Werror flag).  */
+/* Activate certain diagnostics as warnings (not errors via the
+   -Werror flag).  */
 #if GCC_VERSION >= 4003
-#pragma GCC diagnostic warning "-Wcast-qual"
-#pragma GCC diagnostic warning "-Wc++-compat"
 /* If asserts are disabled, activate -Wuninitialized as a warning (not
    an error/-Werror).  */
 #ifndef ENABLE_ASSERT_CHECKING

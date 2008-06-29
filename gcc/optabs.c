@@ -5992,13 +5992,13 @@ static GTY ((param_is (union tree_node))) htab_t libfunc_decls;
 static hashval_t
 libfunc_decl_hash (const void *entry)
 {
-  return htab_hash_string (IDENTIFIER_POINTER (DECL_NAME ((tree) entry)));
+  return htab_hash_string (IDENTIFIER_POINTER (DECL_NAME ((const_tree) entry)));
 }
 
 static int
 libfunc_decl_eq (const void *entry1, const void *entry2)
 {
-  return DECL_NAME ((tree) entry1) == (tree) entry2;
+  return DECL_NAME ((const_tree) entry1) == (const_tree) entry2;
 }
 
 rtx
