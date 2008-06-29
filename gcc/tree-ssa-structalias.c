@@ -2526,13 +2526,11 @@ get_constraint_exp_from_ssa_var (tree t)
   return cexpr;
 }
 
-/* Process a completed constraint T, and add it to the constraint
-   list.  FROM_CALL is true if this is a constraint coming from a
-   call, which means any DEREFs we see are "may-deref's", not
-   "must-deref"'s.  */
+/* Process constraint T, performing various simplifications and then
+   adding it to our list of overall constraints.  */
 
 static void
-process_constraint_1 (constraint_t t, bool from_call)
+process_constraint (constraint_t t)
 {
   struct constraint_expr rhs = t->rhs;
   struct constraint_expr lhs = t->lhs;
@@ -2556,7 +2554,7 @@ process_constraint_1 (constraint_t t, bool from_call)
       rhs = t->lhs;
       t->lhs = t->rhs;
       t->rhs = rhs;
-      process_constraint_1 (t, from_call);
+      process_constraint (t);
     }
   /* This can happen in our IR with things like n->a = *p */
   else if (rhs.type == DEREF && lhs.type == DEREF && rhs.var != anything_id)
@@ -2574,8 +2572,8 @@ process_constraint_1 (constraint_t t, bool from_call)
       gcc_assert (!AGGREGATE_TYPE_P (pointedtotype)
 		  || get_varinfo (rhs.var)->is_unknown_size_var);
 
-      process_constraint_1 (new_constraint (tmplhs, rhs), from_call);
-      process_constraint_1 (new_constraint (lhs, tmplhs), from_call);
+      process_constraint (new_constraint (tmplhs, rhs));
+      process_constraint (new_constraint (lhs, tmplhs));
     }
   else if (rhs.type == ADDRESSOF && lhs.type == DEREF)
     {
@@ -2585,24 +2583,14 @@ process_constraint_1 (constraint_t t, bool from_call)
       tree tmpvar = create_tmp_var_raw (pointertype, "derefaddrtmp");
       struct constraint_expr tmplhs = get_constraint_exp_from_ssa_var (tmpvar);
 
-      process_constraint_1 (new_constraint (tmplhs, rhs), from_call);
-      process_constraint_1 (new_constraint (lhs, tmplhs), from_call);
+      process_constraint (new_constraint (tmplhs, rhs));
+      process_constraint (new_constraint (lhs, tmplhs));
     }
   else
     {
       gcc_assert (rhs.type != ADDRESSOF || rhs.offset == 0);
       VEC_safe_push (constraint_t, heap, constraints, t);
     }
-}
-
-
-/* Process constraint T, performing various simplifications and then
-   adding it to our list of overall constraints.  */
-
-static void
-process_constraint (constraint_t t)
-{
-  process_constraint_1 (t, false);
 }
 
 /* Return true if T is a variable of a type that could contain
@@ -3267,248 +3255,6 @@ do_structure_copy (tree lhsop, tree rhsop)
 }
 
 
-/* Update related alias information kept in AI.  This is used when
-   building name tags, alias sets and deciding grouping heuristics.
-   STMT is the statement to process.  This function also updates
-   ADDRESSABLE_VARS.  */
-
-static void
-update_alias_info (tree stmt, struct alias_info *ai)
-{
-  bitmap addr_taken;
-  use_operand_p use_p;
-  ssa_op_iter iter;
-  bool stmt_dereferences_ptr_p;
-  enum escape_type stmt_escape_type = is_escape_site (stmt);
-  struct mem_ref_stats_d *mem_ref_stats = gimple_mem_ref_stats (cfun);
-
-  stmt_dereferences_ptr_p = false;
-
-  if (stmt_escape_type == ESCAPE_TO_CALL
-      || stmt_escape_type == ESCAPE_TO_PURE_CONST)
-    {
-      mem_ref_stats->num_call_sites++;
-      if (stmt_escape_type == ESCAPE_TO_PURE_CONST)
-	mem_ref_stats->num_pure_const_call_sites++;
-    }
-  else if (stmt_escape_type == ESCAPE_TO_ASM)
-    mem_ref_stats->num_asm_sites++;
-
-  /* Mark all the variables whose address are taken by the statement.  */
-  addr_taken = addresses_taken (stmt);
-  if (addr_taken)
-    bitmap_ior_into (gimple_addressable_vars (cfun), addr_taken);
-
-  /* Process each operand use.  For pointers, determine whether they
-     are dereferenced by the statement, or whether their value
-     escapes, etc.  */
-  FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
-    {
-      tree op, var;
-      var_ann_t v_ann;
-      struct ptr_info_def *pi;
-      unsigned num_uses, num_loads, num_stores;
-
-      op = USE_FROM_PTR (use_p);
-
-      /* If STMT is a PHI node, OP may be an ADDR_EXPR.  If so, add it
-	 to the set of addressable variables.  */
-      if (TREE_CODE (op) == ADDR_EXPR)
-	{
-	  bitmap addressable_vars = gimple_addressable_vars (cfun);
-
-	  gcc_assert (TREE_CODE (stmt) == PHI_NODE);
-	  gcc_assert (addressable_vars);
-
-	  /* PHI nodes don't have annotations for pinning the set
-	     of addresses taken, so we collect them here.
-
-	     FIXME, should we allow PHI nodes to have annotations
-	     so that they can be treated like regular statements?
-	     Currently, they are treated as second-class
-	     statements.  */
-	  add_to_addressable_set (TREE_OPERAND (op, 0), &addressable_vars);
-	  continue;
-	}
-
-      /* Ignore constants (they may occur in PHI node arguments).  */
-      if (TREE_CODE (op) != SSA_NAME)
-	continue;
-
-      var = SSA_NAME_VAR (op);
-      v_ann = var_ann (var);
-
-      /* The base variable of an SSA name must be a GIMPLE register, and thus
-	 it cannot be aliased.  */
-      gcc_assert (!may_be_aliased (var));
-
-      /* We are only interested in pointers.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (op)))
-	continue;
-
-      pi = get_ptr_info (op);
-
-      /* Add OP to AI->PROCESSED_PTRS, if it's not there already.  */
-      if (!TEST_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op)))
-	{
-	  SET_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op));
-	  VEC_safe_push (tree, heap, ai->processed_ptrs, op);
-	}
-
-      /* If STMT is a PHI node, then it will not have pointer
-	 dereferences and it will not be an escape point.  */
-      if (TREE_CODE (stmt) == PHI_NODE)
-	continue;
-
-      /* Determine whether OP is a dereferenced pointer, and if STMT
-	 is an escape point, whether OP escapes.  */
-      count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
-
-      /* For directly dereferenced pointers we can apply
-	 TBAA-pruning to their points-to set.  We may not count the
-	 implicit dereferences &PTR->FLD here.  */
-      if (num_loads + num_stores > 0)
-	pi->is_dereferenced = 1;
-
-      /* Handle a corner case involving address expressions of the
-	 form '&PTR->FLD'.  The problem with these expressions is that
-	 they do not represent a dereference of PTR.  However, if some
-	 other transformation propagates them into an INDIRECT_REF
-	 expression, we end up with '*(&PTR->FLD)' which is folded
-	 into 'PTR->FLD'.
-
-	 So, if the original code had no other dereferences of PTR,
-	 the aliaser will not create memory tags for it, and when
-	 &PTR->FLD gets propagated to INDIRECT_REF expressions, the
-	 memory operations will receive no VDEF/VUSE operands.
-
-	 One solution would be to have count_uses_and_derefs consider
-	 &PTR->FLD a dereference of PTR.  But that is wrong, since it
-	 is not really a dereference but an offset calculation.
-
-	 What we do here is to recognize these special ADDR_EXPR
-	 nodes.  Since these expressions are never GIMPLE values (they
-	 are not GIMPLE invariants), they can only appear on the RHS
-	 of an assignment and their base address is always an
-	 INDIRECT_REF expression.  */
-      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ADDR_EXPR
-	  && !is_gimple_val (GIMPLE_STMT_OPERAND (stmt, 1)))
-	{
-	  /* If the RHS if of the form &PTR->FLD and PTR == OP, then
-	     this represents a potential dereference of PTR.  */
-	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-	  tree base = get_base_address (TREE_OPERAND (rhs, 0));
-	  if (TREE_CODE (base) == INDIRECT_REF
-	      && TREE_OPERAND (base, 0) == op)
-	    num_loads++;
-	}
-
-      if (num_loads + num_stores > 0)
-	{
-	  /* Mark OP as dereferenced.  In a subsequent pass,
-	     dereferenced pointers that point to a set of
-	     variables will be assigned a name tag to alias
-	     all the variables OP points to.  */
-	  pi->memory_tag_needed = 1;
-
-	  /* ???  For always executed direct dereferences we can
-	     apply TBAA-pruning to their escape set.  */
-
-	  /* If this is a store operation, mark OP as being
-	     dereferenced to store, otherwise mark it as being
-	     dereferenced to load.  */
-	  if (num_stores > 0)
-	    pointer_set_insert (ai->dereferenced_ptrs_store, var);
-	  else
-	    pointer_set_insert (ai->dereferenced_ptrs_load, var);
-
-	  /* Update the frequency estimate for all the dereferences of
-	     pointer OP.  */
-	  update_mem_sym_stats_from_stmt (op, stmt, num_loads, num_stores);
-
-	  /* Indicate that STMT contains pointer dereferences.  */
-	  stmt_dereferences_ptr_p = true;
-	}
-
-      if (stmt_escape_type != NO_ESCAPE && num_loads + num_stores < num_uses)
-	{
-	  /* If STMT is an escape point and STMT contains at
-	     least one direct use of OP, then the value of OP
-	     escapes and so the pointed-to variables need to
-	     be marked call-clobbered.  */
-	  pi->value_escapes_p = 1;
-	  pi->escape_mask |= stmt_escape_type;
-
-	  /* If the statement makes a function call, assume
-	     that pointer OP will be dereferenced in a store
-	     operation inside the called function.  */
-	  if (get_call_expr_in (stmt)
-	      || stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
-	    {
-	      pointer_set_insert (ai->dereferenced_ptrs_store, var);
-	      pi->memory_tag_needed = 1;
-	    }
-	}
-    }
-
-  if (TREE_CODE (stmt) == PHI_NODE)
-    return;
-
-  /* Mark stored variables in STMT as being written to and update the
-     memory reference stats for all memory symbols referenced by STMT.  */
-  if (stmt_references_memory_p (stmt))
-    {
-      unsigned i;
-      bitmap_iterator bi;
-
-      mem_ref_stats->num_mem_stmts++;
-
-      /* Notice that we only update memory reference stats for symbols
-	 loaded and stored by the statement if the statement does not
-	 contain pointer dereferences and it is not a call/asm site.
-	 This is to avoid double accounting problems when creating
-	 memory partitions.  After computing points-to information,
-	 pointer dereference statistics are used to update the
-	 reference stats of the pointed-to variables, so here we
-	 should only update direct references to symbols.
-
-	 Indirect references are not updated here for two reasons: (1)
-	 The first time we compute alias information, the sets
-	 LOADED/STORED are empty for pointer dereferences, (2) After
-	 partitioning, LOADED/STORED may have references to
-	 partitions, not the original pointed-to variables.  So, if we
-	 always counted LOADED/STORED here and during partitioning, we
-	 would count many symbols more than once.
-
-	 This does cause some imprecision when a statement has a
-	 combination of direct symbol references and pointer
-	 dereferences (e.g., MEMORY_VAR = *PTR) or if a call site has
-	 memory symbols in its argument list, but these cases do not
-	 occur so frequently as to constitute a serious problem.  */
-      if (STORED_SYMS (stmt))
-	EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
-	  {
-	    tree sym = referenced_var (i);
-	    pointer_set_insert (ai->written_vars, sym);
-	    if (!stmt_dereferences_ptr_p
-		&& stmt_escape_type != ESCAPE_TO_CALL
-		&& stmt_escape_type != ESCAPE_TO_PURE_CONST
-		&& stmt_escape_type != ESCAPE_TO_ASM)
-	      update_mem_sym_stats_from_stmt (sym, stmt, 0, 1);
-	  }
-
-      if (!stmt_dereferences_ptr_p
-	  && LOADED_SYMS (stmt)
-	  && stmt_escape_type != ESCAPE_TO_CALL
-	  && stmt_escape_type != ESCAPE_TO_PURE_CONST
-	  && stmt_escape_type != ESCAPE_TO_ASM)
-	EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
-	  update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
-    }
-}
-
-
 /* Handle pointer arithmetic EXPR when creating aliasing constraints.
    Expressions of the type PTR + CST can be handled in two ways:
 
@@ -3598,7 +3344,7 @@ make_constraint_to (unsigned id, tree op)
 
   get_constraint_for (op, &rhsc);
   for (j = 0; VEC_iterate (ce_s, rhsc, j, c); j++)
-    process_constraint_1 (new_constraint (includes, *c), true);
+    process_constraint (new_constraint (includes, *c));
   VEC_free (ce_s, heap, rhsc);
 }
 
@@ -3643,16 +3389,11 @@ handle_lhs_call (tree lhs)
   struct constraint_expr *lhsp;
 
   get_constraint_for (lhs, &lhsc);
-  rhsc.var = nonlocal_id;
-  rhsc.offset = 0;
-  rhsc.type = ADDRESSOF;
-  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
   rhsc.var = escaped_id;
   rhsc.offset = 0;
   rhsc.type = ADDRESSOF;
   for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+    process_constraint (new_constraint (*lhsp, rhsc));
   VEC_free (ce_s, heap, lhsc);
 }
 
@@ -3680,7 +3421,7 @@ handle_const_call (tree stmt)
       rhsc.offset = 0;
       rhsc.type = ADDRESSOF;
       for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+	process_constraint (new_constraint (*lhsp, rhsc));
       VEC_free (ce_s, heap, lhsc);
       return;
     }
@@ -3690,7 +3431,7 @@ handle_const_call (tree stmt)
   rhsc.offset = 0;
   rhsc.type = ADDRESSOF;
   for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+    process_constraint (new_constraint (*lhsp, rhsc));
 
   /* May return arguments.  */
   FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
@@ -3702,7 +3443,7 @@ handle_const_call (tree stmt)
 	get_constraint_for (arg, &argc);
 	for (i = 0; VEC_iterate (ce_s, argc, i, argp); i++)
 	  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	    process_constraint_1 (new_constraint (*lhsp, *argp), true);
+	    process_constraint (new_constraint (*lhsp, *argp));
 	VEC_free (ce_s, heap, argc);
       }
 
@@ -3748,7 +3489,7 @@ handle_pure_call (tree stmt)
 	  rhsc.offset = 0;
 	  rhsc.type = ADDRESSOF;
 	  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+	    process_constraint (new_constraint (*lhsp, rhsc));
 	  VEC_free (ce_s, heap, lhsc);
 	  return;
 	}
@@ -3759,7 +3500,7 @@ handle_pure_call (tree stmt)
       rhsc.offset = 0;
       rhsc.type = ADDRESSOF;
       for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+	process_constraint (new_constraint (*lhsp, rhsc));
       VEC_free (ce_s, heap, lhsc);
     }
 }
@@ -3957,10 +3698,8 @@ find_func_aliases (tree origt)
       tree rhsop = GIMPLE_STMT_OPERAND (t, 1);
       int i;
 
-      if ((AGGREGATE_TYPE_P (TREE_TYPE (lhsop))
-	   || TREE_CODE (TREE_TYPE (lhsop)) == COMPLEX_TYPE)
-	  && (AGGREGATE_TYPE_P (TREE_TYPE (rhsop))
-	      || TREE_CODE (TREE_TYPE (lhsop)) == COMPLEX_TYPE))
+      if (AGGREGATE_TYPE_P (TREE_TYPE (lhsop))
+	  && AGGREGATE_TYPE_P (TREE_TYPE (rhsop)))
 	{
 	  do_structure_copy (lhsop, rhsop);
 	}
@@ -4340,13 +4079,6 @@ make_constraint_from (varinfo_t vi, int from)
   process_constraint (new_constraint (lhs, rhs));
 }
 
-/* Create a constraint from ANYTHING variable to VI.  */
-static void
-make_constraint_from_anything (varinfo_t vi)
-{
-  make_constraint_from (vi, anything_id);
-}
-
 /* Count the number of arguments DECL has, and set IS_VARARGS to true
    if it is a varargs function.  */
 
@@ -4552,8 +4284,9 @@ create_variable_info_for (tree decl, const char *name)
 
   insert_vi_for_tree (vi->decl, vi);
   VEC_safe_push (varinfo_t, heap, varmap, vi);
-  if (is_global && (!flag_whole_program || !in_ipa_mode))
-    make_constraint_from_anything (vi);
+  if (is_global && (!flag_whole_program || !in_ipa_mode)
+      && could_have_pointers (decl))
+    make_constraint_from (vi, escaped_id);
 
   stats.total_vars++;
   if (use_field_sensitive
@@ -4633,8 +4366,9 @@ create_variable_info_for (tree decl, const char *name)
 	  newvi->fullsize = vi->fullsize;
 	  insert_into_field_list (vi, newvi);
 	  VEC_safe_push (varinfo_t, heap, varmap, newvi);
-	  if (is_global && (!flag_whole_program || !in_ipa_mode))
-	      make_constraint_from_anything (newvi);
+	  if (is_global && (!flag_whole_program || !in_ipa_mode)
+	      && (!fo->decl || could_have_pointers (fo->decl)))
+	    make_constraint_from (newvi, escaped_id);
 
 	  stats.total_vars++;
 	}
@@ -5296,7 +5030,7 @@ init_base_vars (void)
   rhs.type = DEREF;
   rhs.var = escaped_id;
   rhs.offset = 0;
-  process_constraint_1 (new_constraint (lhs, rhs), true);
+  process_constraint (new_constraint (lhs, rhs));
 
   /* Create the NONLOCAL variable, used to represent the set of nonlocal
      memory.  */
@@ -5339,7 +5073,7 @@ init_base_vars (void)
   rhs.type = DEREF;
   rhs.var = callused_id;
   rhs.offset = 0;
-  process_constraint_1 (new_constraint (lhs, rhs), true);
+  process_constraint (new_constraint (lhs, rhs));
 
   /* Create the INTEGER variable, used to represent that a variable points
      to an INTEGER.  */
@@ -5372,7 +5106,7 @@ init_base_vars (void)
   rhs.type = ADDRESSOF;
   rhs.var = escaped_id;
   rhs.offset = 0;
-  process_constraint_1 (new_constraint (lhs, rhs), true);
+  process_constraint (new_constraint (lhs, rhs));
 
   /* *ESCAPED = &NONLOCAL.  This is true because we have to assume
      everything pointed to by escaped can also point to nonlocal. */
@@ -5382,7 +5116,7 @@ init_base_vars (void)
   rhs.type = ADDRESSOF;
   rhs.var = nonlocal_id;
   rhs.offset = 0;
-  process_constraint_1 (new_constraint (lhs, rhs), true);
+  process_constraint (new_constraint (lhs, rhs));
 }
 
 /* Initialize things necessary to perform PTA */
@@ -5581,7 +5315,7 @@ compute_tbaa_pruning (void)
    at the start of the file for an algorithmic overview.  */
 
 void
-compute_points_to_sets (struct alias_info *ai)
+compute_points_to_sets (void)
 {
   struct scc_info *si;
   basic_block bb;
@@ -5600,30 +5334,14 @@ compute_points_to_sets (struct alias_info *ai)
       tree phi;
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  if (is_gimple_reg (PHI_RESULT (phi)))
-	    {
-	      find_func_aliases (phi);
-
-	      /* Update various related attributes like escaped
-		 addresses, pointer dereferences for loads and stores.
-		 This is used when creating name tags and alias
-		 sets.  */
-	      update_alias_info (phi, ai);
-	    }
-	}
+	if (is_gimple_reg (PHI_RESULT (phi)))
+	  find_func_aliases (phi);
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
 	{
 	  tree stmt = bsi_stmt (bsi);
 
 	  find_func_aliases (stmt);
-
-	  /* Update various related attributes like escaped
-	     addresses, pointer dereferences for loads and stores.
-	     This is used when creating name tags and alias
-	     sets.  */
-	  update_alias_info (stmt, ai);
 
 	  /* The information in CHANGE_DYNAMIC_TYPE_EXPR nodes has now
 	     been captured, and we can remove them.  */
@@ -5761,7 +5479,7 @@ ipa_pta_execute (void)
 	    {
 	      varinfo_t fi = get_varinfo (varid);
 	      for (; fi; fi = fi->next)
-		make_constraint_from_anything (fi);
+		make_constraint_from (fi, anything_id);
 	    }
 	}
     }
