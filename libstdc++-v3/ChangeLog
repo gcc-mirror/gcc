@@ -1,5 +1,18 @@
 2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* src/string_conversions.cc: Remove.
+	* config/abi/pre/gnu.ver: Delete exports.
+	* src/Makefile.am: Update.
+	* include/ext/string_conversions.h: Add.
+	* include/Makefile.am: Update.
+	* include/bits/basic_string.h: Include string_conversions.h,
+	define numeric conversion functions.
+	* include/ext/vstring.h: Likewise.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.	
+
+2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algo.h (copy_n): Add in C++0x mode.
 	* include/bits/algorithmfwd.h: Add.
 	* include/bits/stl_uninitialized.h (uninitialized_copy_n): Add

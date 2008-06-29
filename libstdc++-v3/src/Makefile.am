@@ -182,7 +182,6 @@ sources = \
 	streambuf-inst.cc \
 	streambuf.cc \
 	string-inst.cc \
-	string_conversions.cc \
 	valarray-inst.cc \
 	wlocale-inst.cc \
 	wstring-inst.cc \
@@ -277,11 +276,6 @@ date_time.o: date_time.cc
 atomic.lo: atomic.cc
 	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
 atomic.o: atomic.cc
-	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
-
-string_conversions.lo: string_conversions.cc
-	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
-string_conversions.o: string_conversions.cc
 	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT

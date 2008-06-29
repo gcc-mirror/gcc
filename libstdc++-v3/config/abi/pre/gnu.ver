@@ -896,11 +896,6 @@ GLIBCXX_3.4.11 {
     # char16_t and char32_t
     _ZNSt14numeric_limitsIu8char*;
 
-    # string conversions
-    _ZSt?sto*;
-    _ZSt9to_string*;
-    _ZSt10to_wstring*;    
-
 } GLIBCXX_3.4.10;
 
 # Symbols in the support library (libsupc++) have their own tag.
