@@ -1,5 +1,18 @@
 2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (CXX_COMPAT_WARN, cxx_compat_warn): Delete.
+	(bitmap.o-warn, dominance.o-warn): New.
+	* configure.ac (cxx_compat_warn): Delete.
+	(loose_warn): Add -Wcast-qual and -Wc++-compat.
+	* system.h: Remove #pragma diagnostic for -Wcast-qual and
+	-Wc++-compat.
+	* configure: Regenerate.
+
+	* optabs.c (libfunc_decl_hash, libfunc_decl_eq): Fix -Wcast-qual
+	warnings.
+
+2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* alloc-pool.c (create_alloc_pool): Fix -Wc++-compat warnings.
 	* df-scan.c (df_notes_rescan): Likewise.
 	* ggc-page.c (set_page_table_entry): Likewise.

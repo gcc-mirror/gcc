@@ -160,10 +160,8 @@ coverageexts = .{gcda,gcno}
 # STRICT_WARN are the additional warning flags to
 # apply to the back end and the C front end, which may be compiled
 # with other compilers.
-# CXX_COMPAT_WARN are C++ source compatibility warnings.
 LOOSE_WARN = @loose_warn@
 STRICT_WARN = @strict_warn@
-CXX_COMPAT_WARN = @cxx_compat_warn@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.
@@ -189,6 +187,10 @@ build/gengtype-lex.o-warn = -Wno-error
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # dfp.c contains alias violations
 dfp.o-warn = -Wno-error
+# bitmap.c contains -Wc++compat warnings.
+bitmap.o-warn = -Wno-error
+# dominance.c contains a -Wc++compat warning.
+dominance.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either

@@ -1,3 +1,7 @@
+2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (cp-warn): Delete $(CXX_COMPAT_WARN).
+
 2008-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36364
