@@ -1,3 +1,8 @@
+2008-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* invoke.texi: Add documentation for runtime behavior of
+	-fno-range-check.
+
 2008-06-28  Daniel Kraft  <d@domob.eu>
 
 	* gfc-internals.texi (section gfc_code):  Extended documentation about
