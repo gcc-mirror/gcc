@@ -156,8 +156,9 @@ and warnings}.
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
-@gccoptlist{-fconvert=@var{conversion}  -frecord-marker=@var{length} @gol
--fmax-subrecord-length=@var{length}  -fsign-zero}
+@gccoptlist{-fconvert=@var{conversion}  -fno-range-check
+-frecord-marker=@var{length} @gol  -fmax-subrecord-length=@var{length}
+-fsign-zero}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
@@ -937,6 +938,16 @@ representation for unformatted files.
 @emph{This option has an effect only when used in the main program.
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
 variable override the default specified by @option{-fconvert}.}
+
+
+@item -fno-range-check
+@opindex @code{-fno-range-check}
+Disable range checking of input values during integer @code{READ} operations.
+For example, GNU Fortran will give an error if an input value is
+outside of the relevant range of [@code{-HUGE()}:@code{HUGE()}]. In other words,
+with @code{INTEGER (kind=4) :: i} , attempting to read @math{-2147483648} will
+give an error unless @option{-fno-range-check} is given. 
+
 
 @item -frecord-marker=@var{length}
 @opindex @code{frecord-marker=}@var{length}
