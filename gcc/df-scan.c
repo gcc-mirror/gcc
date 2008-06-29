@@ -2082,9 +2082,9 @@ df_notes_rescan (rtx insn)
 	      if (collection_rec.next_mw > num_deleted)
 		{
 		  insn_info->mw_hardregs = 
-		    xrealloc (insn_info->mw_hardregs, 
-			      (count + 1 + collection_rec.next_mw) 
-			      * sizeof (struct df_ref*));
+		    XRESIZEVEC (struct df_mw_hardreg *,
+				insn_info->mw_hardregs, 
+				count + 1 + collection_rec.next_mw);
 		}
 	      memcpy (&insn_info->mw_hardregs[count], collection_rec.mw_vec, 
 		      (collection_rec.next_mw + 1) * sizeof (struct df_mw_hardreg *));

@@ -610,7 +610,7 @@ set_page_table_entry (void *p, page_entry *entry)
       goto found;
 
   /* Not found -- allocate a new table.  */
-  table = xcalloc (1, sizeof(*table));
+  table = XCNEW (struct page_table_chain);
   table->next = G.lookup;
   table->high_bits = high_bits;
   G.lookup = table;

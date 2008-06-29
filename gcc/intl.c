@@ -91,7 +91,7 @@ size_t
 gcc_gettext_width (const char *msgstr)
 {
   size_t nwcs = mbstowcs (0, msgstr, 0);
-  wchar_t *wmsgstr = alloca ((nwcs + 1) * sizeof (wchar_t));
+  wchar_t *wmsgstr = XALLOCAVEC (wchar_t, nwcs + 1);
 
   mbstowcs (wmsgstr, msgstr, nwcs + 1);
   return wcswidth (wmsgstr, nwcs);
