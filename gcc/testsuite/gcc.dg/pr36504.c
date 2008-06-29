@@ -1,6 +1,6 @@
 /* PR tree-optimization/36504 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -fprefetch-loop-arrays" } */
+/* { dg-options "-O3 -fprefetch-loop-arrays -w" } */
 
 struct A { struct { int a; } b[8]; };
 struct B { int c; int d; };
