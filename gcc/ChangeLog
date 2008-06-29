@@ -1,3 +1,30 @@
+2008-06-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.h (compute_points_to_sets): Adjust
+	prototype.
+	(struct alias_info): Move ...
+	* tree-ssa-alias.c: ... here.
+	(update_alias_info): Declare.
+	(compute_may_aliases): Call it.
+	(update_alias_info): New function.
+	* tree-ssa-structalias.c (update_alias_info): Move ...
+	* tree-ssa-alias.c (update_alias_info_1): ... here.
+	* tree-ssa-structalias.c (process_constraint_1): Remove
+	unused from_call argument.  Rename to ...
+	(process_constraint): ... this.  Delete old wrapper.
+	(make_constraint_to): Adjust callers.
+	(handle_const_call): Likewise.
+	(handle_pure_call): Likewise.
+	(init_base_vars): Likewise.
+	(handle_lhs_call): Likewise.  Remove unnecessary constraint.
+	(find_func_aliases): We don't need structure copies for
+	complex types.
+	(make_constraint_from_anything): Remove.
+	(create_variable_info_for): For globals make constraints
+	from escaped, not from anything.
+	(compute_points_to_sets): Do not call update_alias_info.
+	(ipa_pta_execute): Use make_constraint_from.
+
 2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (CXX_COMPAT_WARN, cxx_compat_warn): Delete.

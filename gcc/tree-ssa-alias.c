@@ -166,6 +166,40 @@ along with GCC; see the file COPYING3.  If not see
    Lastly, we delete partitions with no symbols, and clean up after
    ourselves.  */
 
+
+/* Alias information used by compute_may_aliases and its helpers.  */
+struct alias_info
+{
+  /* SSA names visited while collecting points-to information.  If bit I
+     is set, it means that SSA variable with version I has already been
+     visited.  */
+  sbitmap ssa_names_visited;
+
+  /* Array of SSA_NAME pointers processed by the points-to collector.  */
+  VEC(tree,heap) *processed_ptrs;
+
+  /* ADDRESSABLE_VARS contains all the global variables and locals that
+     have had their address taken.  */
+  struct alias_map_d **addressable_vars;
+  size_t num_addressable_vars;
+
+  /* POINTERS contains all the _DECL pointers with unique memory tags
+     that have been referenced in the program.  */
+  struct alias_map_d **pointers;
+  size_t num_pointers;
+
+  /* Variables that have been written to directly (i.e., not through a
+     pointer dereference).  */
+  struct pointer_set_t *written_vars;
+
+  /* Pointers that have been used in an indirect store operation.  */
+  struct pointer_set_t *dereferenced_ptrs_store;
+
+  /* Pointers that have been used in an indirect load operation.  */
+  struct pointer_set_t *dereferenced_ptrs_load;
+};
+
+
 /* Structure to map a variable to its alias set.  */
 struct alias_map_d
 {
@@ -205,6 +239,7 @@ static struct alias_info *init_alias_info (void);
 static void delete_alias_info (struct alias_info *);
 static void compute_flow_sensitive_aliasing (struct alias_info *);
 static void setup_pointers_and_addressables (struct alias_info *);
+static void update_alias_info (struct alias_info *);
 static void create_global_var (void);
 static void maybe_create_global_var (void);
 static void set_pt_anything (tree);
@@ -1722,7 +1757,12 @@ compute_may_aliases (void)
      address of V escapes the current function, making V call-clobbered
      (i.e., whether &V is stored in a global variable or if its passed as a
      function call argument).  */
-  compute_points_to_sets (ai);
+  compute_points_to_sets ();
+
+  /* Update various related attributes like escaped addresses,
+     pointer dereferences for loads and stores.  This is used
+     when creating name tags and alias sets.  */
+  update_alias_info (ai);
 
   /* Collect all pointers and addressable variables, compute alias sets,
      create memory tags for pointers and promote variables whose address is
@@ -2437,6 +2477,270 @@ create_alias_map_for (tree var, struct alias_info *ai)
   ai->addressable_vars[ai->num_addressable_vars++] = alias_map;
 }
 
+
+/* Update related alias information kept in AI.  This is used when
+   building name tags, alias sets and deciding grouping heuristics.
+   STMT is the statement to process.  This function also updates
+   ADDRESSABLE_VARS.  */
+
+static void
+update_alias_info_1 (tree stmt, struct alias_info *ai)
+{
+  bitmap addr_taken;
+  use_operand_p use_p;
+  ssa_op_iter iter;
+  bool stmt_dereferences_ptr_p;
+  enum escape_type stmt_escape_type = is_escape_site (stmt);
+  struct mem_ref_stats_d *mem_ref_stats = gimple_mem_ref_stats (cfun);
+
+  stmt_dereferences_ptr_p = false;
+
+  if (stmt_escape_type == ESCAPE_TO_CALL
+      || stmt_escape_type == ESCAPE_TO_PURE_CONST)
+    {
+      mem_ref_stats->num_call_sites++;
+      if (stmt_escape_type == ESCAPE_TO_PURE_CONST)
+	mem_ref_stats->num_pure_const_call_sites++;
+    }
+  else if (stmt_escape_type == ESCAPE_TO_ASM)
+    mem_ref_stats->num_asm_sites++;
+
+  /* Mark all the variables whose address are taken by the statement.  */
+  addr_taken = addresses_taken (stmt);
+  if (addr_taken)
+    bitmap_ior_into (gimple_addressable_vars (cfun), addr_taken);
+
+  /* Process each operand use.  For pointers, determine whether they
+     are dereferenced by the statement, or whether their value
+     escapes, etc.  */
+  FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree op, var;
+      var_ann_t v_ann;
+      struct ptr_info_def *pi;
+      unsigned num_uses, num_loads, num_stores;
+
+      op = USE_FROM_PTR (use_p);
+
+      /* If STMT is a PHI node, OP may be an ADDR_EXPR.  If so, add it
+	 to the set of addressable variables.  */
+      if (TREE_CODE (op) == ADDR_EXPR)
+	{
+	  bitmap addressable_vars = gimple_addressable_vars (cfun);
+
+	  gcc_assert (TREE_CODE (stmt) == PHI_NODE);
+	  gcc_assert (addressable_vars);
+
+	  /* PHI nodes don't have annotations for pinning the set
+	     of addresses taken, so we collect them here.
+
+	     FIXME, should we allow PHI nodes to have annotations
+	     so that they can be treated like regular statements?
+	     Currently, they are treated as second-class
+	     statements.  */
+	  add_to_addressable_set (TREE_OPERAND (op, 0), &addressable_vars);
+	  continue;
+	}
+
+      /* Ignore constants (they may occur in PHI node arguments).  */
+      if (TREE_CODE (op) != SSA_NAME)
+	continue;
+
+      var = SSA_NAME_VAR (op);
+      v_ann = var_ann (var);
+
+      /* The base variable of an SSA name must be a GIMPLE register, and thus
+	 it cannot be aliased.  */
+      gcc_assert (!may_be_aliased (var));
+
+      /* We are only interested in pointers.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (op)))
+	continue;
+
+      pi = get_ptr_info (op);
+
+      /* Add OP to AI->PROCESSED_PTRS, if it's not there already.  */
+      if (!TEST_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op)))
+	{
+	  SET_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (op));
+	  VEC_safe_push (tree, heap, ai->processed_ptrs, op);
+	}
+
+      /* If STMT is a PHI node, then it will not have pointer
+	 dereferences and it will not be an escape point.  */
+      if (TREE_CODE (stmt) == PHI_NODE)
+	continue;
+
+      /* Determine whether OP is a dereferenced pointer, and if STMT
+	 is an escape point, whether OP escapes.  */
+      count_uses_and_derefs (op, stmt, &num_uses, &num_loads, &num_stores);
+
+      /* For directly dereferenced pointers we can apply
+	 TBAA-pruning to their points-to set.  We may not count the
+	 implicit dereferences &PTR->FLD here.  */
+      if (num_loads + num_stores > 0)
+	pi->is_dereferenced = 1;
+
+      /* Handle a corner case involving address expressions of the
+	 form '&PTR->FLD'.  The problem with these expressions is that
+	 they do not represent a dereference of PTR.  However, if some
+	 other transformation propagates them into an INDIRECT_REF
+	 expression, we end up with '*(&PTR->FLD)' which is folded
+	 into 'PTR->FLD'.
+
+	 So, if the original code had no other dereferences of PTR,
+	 the aliaser will not create memory tags for it, and when
+	 &PTR->FLD gets propagated to INDIRECT_REF expressions, the
+	 memory operations will receive no VDEF/VUSE operands.
+
+	 One solution would be to have count_uses_and_derefs consider
+	 &PTR->FLD a dereference of PTR.  But that is wrong, since it
+	 is not really a dereference but an offset calculation.
+
+	 What we do here is to recognize these special ADDR_EXPR
+	 nodes.  Since these expressions are never GIMPLE values (they
+	 are not GIMPLE invariants), they can only appear on the RHS
+	 of an assignment and their base address is always an
+	 INDIRECT_REF expression.  */
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ADDR_EXPR
+	  && !is_gimple_val (GIMPLE_STMT_OPERAND (stmt, 1)))
+	{
+	  /* If the RHS if of the form &PTR->FLD and PTR == OP, then
+	     this represents a potential dereference of PTR.  */
+	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+	  tree base = get_base_address (TREE_OPERAND (rhs, 0));
+	  if (TREE_CODE (base) == INDIRECT_REF
+	      && TREE_OPERAND (base, 0) == op)
+	    num_loads++;
+	}
+
+      if (num_loads + num_stores > 0)
+	{
+	  /* Mark OP as dereferenced.  In a subsequent pass,
+	     dereferenced pointers that point to a set of
+	     variables will be assigned a name tag to alias
+	     all the variables OP points to.  */
+	  pi->memory_tag_needed = 1;
+
+	  /* ???  For always executed direct dereferences we can
+	     apply TBAA-pruning to their escape set.  */
+
+	  /* If this is a store operation, mark OP as being
+	     dereferenced to store, otherwise mark it as being
+	     dereferenced to load.  */
+	  if (num_stores > 0)
+	    pointer_set_insert (ai->dereferenced_ptrs_store, var);
+	  else
+	    pointer_set_insert (ai->dereferenced_ptrs_load, var);
+
+	  /* Update the frequency estimate for all the dereferences of
+	     pointer OP.  */
+	  update_mem_sym_stats_from_stmt (op, stmt, num_loads, num_stores);
+
+	  /* Indicate that STMT contains pointer dereferences.  */
+	  stmt_dereferences_ptr_p = true;
+	}
+
+      if (stmt_escape_type != NO_ESCAPE && num_loads + num_stores < num_uses)
+	{
+	  /* If STMT is an escape point and STMT contains at
+	     least one direct use of OP, then the value of OP
+	     escapes and so the pointed-to variables need to
+	     be marked call-clobbered.  */
+	  pi->value_escapes_p = 1;
+	  pi->escape_mask |= stmt_escape_type;
+
+	  /* If the statement makes a function call, assume
+	     that pointer OP will be dereferenced in a store
+	     operation inside the called function.  */
+	  if (get_call_expr_in (stmt)
+	      || stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
+	    {
+	      pointer_set_insert (ai->dereferenced_ptrs_store, var);
+	      pi->memory_tag_needed = 1;
+	    }
+	}
+    }
+
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
+  /* Mark stored variables in STMT as being written to and update the
+     memory reference stats for all memory symbols referenced by STMT.  */
+  if (stmt_references_memory_p (stmt))
+    {
+      unsigned i;
+      bitmap_iterator bi;
+
+      mem_ref_stats->num_mem_stmts++;
+
+      /* Notice that we only update memory reference stats for symbols
+	 loaded and stored by the statement if the statement does not
+	 contain pointer dereferences and it is not a call/asm site.
+	 This is to avoid double accounting problems when creating
+	 memory partitions.  After computing points-to information,
+	 pointer dereference statistics are used to update the
+	 reference stats of the pointed-to variables, so here we
+	 should only update direct references to symbols.
+
+	 Indirect references are not updated here for two reasons: (1)
+	 The first time we compute alias information, the sets
+	 LOADED/STORED are empty for pointer dereferences, (2) After
+	 partitioning, LOADED/STORED may have references to
+	 partitions, not the original pointed-to variables.  So, if we
+	 always counted LOADED/STORED here and during partitioning, we
+	 would count many symbols more than once.
+
+	 This does cause some imprecision when a statement has a
+	 combination of direct symbol references and pointer
+	 dereferences (e.g., MEMORY_VAR = *PTR) or if a call site has
+	 memory symbols in its argument list, but these cases do not
+	 occur so frequently as to constitute a serious problem.  */
+      if (STORED_SYMS (stmt))
+	EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	  {
+	    tree sym = referenced_var (i);
+	    pointer_set_insert (ai->written_vars, sym);
+	    if (!stmt_dereferences_ptr_p
+		&& stmt_escape_type != ESCAPE_TO_CALL
+		&& stmt_escape_type != ESCAPE_TO_PURE_CONST
+		&& stmt_escape_type != ESCAPE_TO_ASM)
+	      update_mem_sym_stats_from_stmt (sym, stmt, 0, 1);
+	  }
+
+      if (!stmt_dereferences_ptr_p
+	  && LOADED_SYMS (stmt)
+	  && stmt_escape_type != ESCAPE_TO_CALL
+	  && stmt_escape_type != ESCAPE_TO_PURE_CONST
+	  && stmt_escape_type != ESCAPE_TO_ASM)
+	EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
+	  update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
+    }
+}
+
+/* Update various related attributes like escaped addresses,
+   pointer dereferences for loads and stores.  This is used
+   when creating name tags and alias sets.  */
+
+static void
+update_alias_info (struct alias_info *ai)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+      tree phi;
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	if (is_gimple_reg (PHI_RESULT (phi)))
+	  update_alias_info_1 (phi, ai);
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	update_alias_info_1 (bsi_stmt (bsi), ai);
+    }
+}
 
 /* Create memory tags for all the dereferenced pointers and build the
    ADDRESSABLE_VARS and POINTERS arrays used for building the may-alias
