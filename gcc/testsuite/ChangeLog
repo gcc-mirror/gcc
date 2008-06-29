@@ -1,3 +1,10 @@
+2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36655
+	* g++.dg/cpp0x/extern_template-2.C: New.
+	* g++.dg/cpp0x/extern_template.C: Rename to...
+	* g++.dg/cpp0x/extern_template-1.C: ... this.
+
 2008-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36341

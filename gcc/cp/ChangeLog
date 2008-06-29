@@ -1,3 +1,9 @@
+2008-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36655
+	* pt.c (do_type_instantiation): In c++0x mode do not warn for
+	extern template.
+
 2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (cp-warn): Delete $(CXX_COMPAT_WARN).
