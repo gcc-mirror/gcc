@@ -975,6 +975,53 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __result;
     }
 
+
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    _OutputIterator
+    __copy_n(_InputIterator __first, _Size __n,
+	     _OutputIterator __result, input_iterator_tag)
+    {
+      for (; __n > 0; --__n)
+	{
+	  *__result = *__first;
+	  ++__first;
+	  ++__result;
+	}
+      return __result;
+    }
+
+  template<typename _RandomAccessIterator, typename _Size,
+	   typename _OutputIterator>
+    inline _OutputIterator
+    __copy_n(_RandomAccessIterator __first, _Size __n,
+	     _OutputIterator __result, random_access_iterator_tag)
+    { return std::copy(__first, __first + __n, __result); }
+
+  /**
+   *  @brief Copies the range [first,first+n) into [result,result+n).
+   *  @param  first  An input iterator.
+   *  @param  n      The number of elements to copy.
+   *  @param  result An output iterator.
+   *  @return  result+n.
+   *
+   *  This inline function will boil down to a call to @c memmove whenever
+   *  possible.  Failing that, if random access iterators are passed, then the
+   *  loop count will be known (and therefore a candidate for compiler
+   *  optimizations such as unrolling).
+  */
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    inline _OutputIterator
+    copy_n(_InputIterator __first, _Size __n, _OutputIterator __result)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+
+      return std::__copy_n(__first, __n, __result,
+			   std::__iterator_category(__first));
+    }
+
   /**
    *  @brief Copy the elements of a sequence to separate output sequences
    *         depending on the truth value of a predicate.

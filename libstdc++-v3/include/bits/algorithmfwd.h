@@ -31,6 +31,7 @@
   copy
   copy_backward
   copy_if (C++0x)
+  copy_n (C++0x)
   count
   count_if
   equal
@@ -149,6 +150,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _IIter, typename _OIter, typename _Predicate>
     _OIter
     copy_if(_IIter, _IIter, _OIter, _Predicate);
+
+  template<typename _IIter, typename _Size, typename _OIter>
+    _OIter
+    copy_n(_IIter, _Size, _OIter);
 #endif
 
   // count
