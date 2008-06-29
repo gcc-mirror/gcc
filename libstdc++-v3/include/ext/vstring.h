@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -2320,6 +2320,136 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return getline(__is, __str, __is.widen('\n')); }      
 
 _GLIBCXX_END_NAMESPACE
+
+#if (defined(__GXX_EXPERIMENTAL_CXX0X__) && defined(_GLIBCXX_USE_C99))
+
+#include <ext/string_conversions.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
+  // 21.4 Numeric Conversions [string.conversions].
+  inline int
+  stoi(const __vstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa<long, int>(&std::strtol, "stoi", __str.c_str(),
+					__idx, __base); }
+
+  inline long
+  stol(const __vstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::strtol, "stol", __str.c_str(),
+			     __idx, __base); }
+
+  inline unsigned long
+  stoul(const __vstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::strtoul, "stoul", __str.c_str(),
+			     __idx, __base); }
+
+  inline long long
+  stoll(const __vstring& __str, std::size_t* __idx = 0,	int __base = 10)
+  { return __gnu_cxx::__stoa(&std::strtoll, "stoll", __str.c_str(),
+			     __idx, __base); }
+
+  inline unsigned long long
+  stoull(const __vstring& __str, std::size_t* __idx, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::strtoull, "stoull", __str.c_str(),
+			     __idx, __base); }
+
+  // NB: strtof vs strtod.
+  inline float
+  stof(const __vstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::strtof, "stof", __str.c_str(), __idx); }
+
+  inline double
+  stod(const __vstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::strtod, "stod", __str.c_str(), __idx); }
+
+  inline long double
+  stold(const __vstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
+
+  // NB: (v)snprintf vs sprintf.
+  inline __vstring
+  to_string(long long __val)
+  { return __gnu_cxx::__to_xstring<__vstring>(&std::vsnprintf,
+					      4 * sizeof(long long),
+					      "%lld", __val); }
+
+  inline __vstring
+  to_string(unsigned long long __val)
+  { return __gnu_cxx::__to_xstring<__vstring>(&std::vsnprintf,
+					      4 * sizeof(unsigned long long),
+					      "%llu", __val); }
+
+  inline __vstring
+  to_string(long double __val)
+  {
+    const int __n = __numeric_traits<long double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<__vstring>(&std::vsnprintf, __n,
+					      "%Lf", __val);
+  }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  inline int 
+  stoi(const __wvstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa<long, int>(&std::wcstol, "stoi", __str.c_str(),
+					__idx, __base); }
+
+  inline long 
+  stol(const __wvstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::wcstol, "stol", __str.c_str(),
+			     __idx, __base); }
+
+  inline unsigned long
+  stoul(const __wvstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::wcstoul, "stoul", __str.c_str(),
+			     __idx, __base); }
+
+  inline long long
+  stoll(const __wvstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::wcstoll, "stoll", __str.c_str(),
+			     __idx, __base); }
+
+  inline unsigned long long
+  stoull(const __wvstring& __str, std::size_t* __idx = 0, int __base = 10)
+  { return __gnu_cxx::__stoa(&std::wcstoull, "stoull", __str.c_str(),
+			     __idx, __base); }
+
+  // NB: wcstof vs wcstod.
+  inline float
+  stof(const __wvstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::wcstof, "stof", __str.c_str(), __idx); }
+
+  inline double
+  stod(const __wvstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::wcstod, "stod", __str.c_str(), __idx); }
+
+  inline long double
+  stold(const __wvstring& __str, std::size_t* __idx = 0)
+  { return __gnu_cxx::__stoa(&std::wcstold, "stold", __str.c_str(), __idx); }
+
+  inline __wvstring
+  to_wstring(long long __val)
+  { return __gnu_cxx::__to_xstring<__wvstring>(&std::vswprintf,
+					       4 * sizeof(long long),
+					       L"%lld", __val); }
+
+  inline __wvstring
+  to_wstring(unsigned long long __val)
+  { return __gnu_cxx::__to_xstring<__wvstring>(&std::vswprintf,
+					       4 * sizeof(unsigned long long),
+					       L"%llu", __val); }
+
+  inline __wvstring
+  to_wstring(long double __val)
+  {
+    const int __n = __numeric_traits<long double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<__wvstring>(&std::vswprintf, __n,
+					       L"%Lf", __val);
+  }
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include "vstring.tcc" 
