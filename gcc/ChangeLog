@@ -1,3 +1,12 @@
+2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alloc-pool.c (create_alloc_pool): Fix -Wc++-compat warnings.
+	* df-scan.c (df_notes_rescan): Likewise.
+	* ggc-page.c (set_page_table_entry): Likewise.
+	* intl.c (gcc_gettext_width): Likewise.
+	* varasm.c (get_unnamed_section, get_noswitch_section,
+	get_section): Likewise.
+
 2008-06-28  Andrew Jenner  <andrew@codesourcery.com>
 
 	* regrename.c (build_def_use): Don't copy RTX.
