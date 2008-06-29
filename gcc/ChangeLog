@@ -1,5 +1,11 @@
 2008-06-29  Andreas Schwab  <schwab@suse.de>
 
+	* config/m68k/m68k.c (print_operand): Always print a float
+	constant in hex.
+	* config/m68k/m68k.h (ASM_OUTPUT_FLOAT_OPERAND)
+	(ASM_OUTPUT_DOUBLE_OPERAND, ASM_OUTPUT_LONG_DOUBLE_OPERAND):
+	Remove macros.
+
 	* config/rs6000/x-linux64: Remove never used file.
 
 2008-06-29  Richard Guenther  <rguenther@suse.de>
