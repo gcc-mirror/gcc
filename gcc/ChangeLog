@@ -1,3 +1,8 @@
+2008-06-30 Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movti_rex64): Add "!" to "r" constraint
+	of operand 0.
+
 2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* ifcvt.c (cond_move_process_if_block): Free vectors on false
@@ -19,7 +24,7 @@
 
 	* config/i386/i386.c (contains_aligned_value_p): Return true
 	for __float128.
-	(ix86_function_arg_boundary): Return its natural boundary for
+	(ix86_function_arg_boundary): Return its natural boundary
 	for __float128.
 	(return_in_memory_32): Don't check TDmode.
 	(ix86_split_to_parts): Support splitting into 4 parts and
@@ -27,8 +32,7 @@
 	(ix86_split_long_move): Support splitting into 4 parts.
 	(bdesc_args): Enable IX86_BUILTIN_FABSQ and IX86_BUILTIN_COPYSIGNQ
 	for SSE2.
-	(ix86_init_mmx_sse_builtins): Move __float80 and __float128
-	to ...
+	(ix86_init_mmx_sse_builtins): Move __float80 and __float128 to ...
 	(ix86_init_builtins): Here.
 	(ix86_scalar_mode_supported_p): Always return true for TFmode.
 	(ix86_c_mode_for_suffix): Always return TFmode and XFmode for
@@ -51,9 +55,7 @@
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	* global.c (compute_regsets): Set frame_pointer_needed here.
-
-	* reload1.c (init_elim_table): Don't set frame_pointer_needed
-	here.
+	* reload1.c (init_elim_table): Don't set frame_pointer_needed here.
 
 2008-06-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
