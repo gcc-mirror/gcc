@@ -1,10 +1,3 @@
-2008-06-30  Jakub Jelinek  <jakub@redhat.com>
-
-	PR c++/36662
-	* decl2.c (is_late_template_attribute): If the first attribute
-	argument is IDENTIFIER_NODE, don't consider it when checking
-	if arguments are value or type dependent.
-
 2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* ifcvt.c (cond_move_process_if_block): Free vectors on false
