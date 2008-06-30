@@ -1,3 +1,9 @@
+2008-06-30  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36648
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Divide
+	number of prolog iterations by step. Fix the comment.
+
 2008-06-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36671
