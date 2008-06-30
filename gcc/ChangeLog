@@ -1,3 +1,35 @@
+2008-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (contains_aligned_value_p): Return true
+	for __float128.
+	(ix86_function_arg_boundary): Return its natural boundary for
+	for __float128.
+	(return_in_memory_32): Don't check TDmode.
+	(ix86_split_to_parts): Support splitting into 4 parts and
+	support TFmode for 32bit target.
+	(ix86_split_long_move): Support splitting into 4 parts.
+	(bdesc_args): Enable IX86_BUILTIN_FABSQ and IX86_BUILTIN_COPYSIGNQ
+	for SSE2.
+	(ix86_init_mmx_sse_builtins): Move __float80 and __float128
+	to ...
+	(ix86_init_builtins): Here.
+	(ix86_scalar_mode_supported_p): Always return true for TFmode.
+	(ix86_c_mode_for_suffix): Always return TFmode and XFmode for
+	'q' and 'w', respectively. 
+
+	* config/i386/i386.md (movtf): Check TARGET_SSE2 instead of
+	TARGET_64BIT.
+	(movtf_internal): Likewise.
+	(<code>tf2): Likewise.
+	(*absnegtf2_sse): Likewise.
+	(copysign<mode>3): Likewise.
+	(copysign<mode>3_const): Likewise.
+	(copysign<mode>3_var): Likewise.
+	(define_split UNSPEC_COPYSIGN): Likewise.
+	* config/i386/sse.md (*nandtf3): Likewise.
+	(<code>tf3): Likewise.
+	(*<code>tf3): Likewise.
+
 2008-06-30  Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
