@@ -1,3 +1,8 @@
+2008-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36662
+	* g++.dg/ext/altivec-16.C: New test.
+
 2008-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/36620
