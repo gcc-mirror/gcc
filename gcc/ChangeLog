@@ -1,3 +1,11 @@
+2008-06-30  Joey Ye  <joey.ye@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* global.c (compute_regsets): Set frame_pointer_needed here.
+
+	* reload1.c (init_elim_table): Don't set frame_pointer_needed
+	here.
+
 2008-06-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* doc/install.texi (specific): Expand Windows build notes.
