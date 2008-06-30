@@ -1,3 +1,15 @@
+2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New
+	macros.
+       	(df_scan_free_internal): Free data structures not
+	allocated in storage pools.
+	(df_mw_hardreg_chain_delete_eq_uses): Use df_scan_free_mws_vec.
+	(df_refs_add_to_chains): Use df_scan_free_ref_vec and 
+	df_scan_free_mws_vec.
+	* dse.c (dse_step6): Free offset_map_p and offset_map_n
+	unconditionally.
+
 2008-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (contains_aligned_value_p): Return true
