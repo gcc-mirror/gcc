@@ -2614,7 +2614,11 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   /* Make sure the blocks are suitable.  */
   if (!check_cond_move_block (then_bb, then_vals, then_regs, cond)
       || (else_bb && !check_cond_move_block (else_bb, else_vals, else_regs, cond)))
-    return FALSE;
+    {
+      VEC_free (int, heap, then_regs);
+      VEC_free (int, heap, else_regs);
+      return FALSE;
+    }
 
   /* Make sure the blocks can be used together.  If the same register
      is set in both blocks, and is not set to a constant in both
@@ -2635,7 +2639,11 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 	  if (!CONSTANT_P (then_vals[reg])
 	      && !CONSTANT_P (else_vals[reg])
 	      && !rtx_equal_p (then_vals[reg], else_vals[reg]))
-	    return FALSE;
+	    {
+	      VEC_free (int, heap, then_regs);
+	      VEC_free (int, heap, else_regs);
+	      return FALSE;
+	    }
 	}
     }
 
@@ -2649,7 +2657,11 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      branches, since if we convert we are going to always execute
      them.  */
   if (c > MAX_CONDITIONAL_EXECUTE)
-    return FALSE;
+    {
+      VEC_free (int, heap, then_regs);
+      VEC_free (int, heap, else_regs);
+      return FALSE;
+    }
 
   /* Try to emit the conditional moves.  First do the then block,
      then do anything left in the else blocks.  */
@@ -2661,11 +2673,17 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 					  then_vals, else_vals, true)))
     {
       end_sequence ();
+      VEC_free (int, heap, then_regs);
+      VEC_free (int, heap, else_regs);
       return FALSE;
     }
   seq = end_ifcvt_sequence (if_info);
   if (!seq)
-    return FALSE;
+    {
+      VEC_free (int, heap, then_regs);
+      VEC_free (int, heap, else_regs);
+      return FALSE;
+    }
 
   loc_insn = first_active_insn (then_bb);
   if (!loc_insn)
@@ -2698,7 +2716,6 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 
   VEC_free (int, heap, then_regs);
   VEC_free (int, heap, else_regs);
-
   return TRUE;
 }
 
