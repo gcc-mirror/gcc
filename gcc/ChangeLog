@@ -1,3 +1,12 @@
+2008-06-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36671
+	* tree-ssa-structalias.c (handle_lhs_call): Add flags argument,
+	handle calls from ECF_MALLOC functions.
+	(handle_pure_call): ECF_MALLOC functions do not return
+	call-used memory.
+	(find_func_aliases): Handle all calls, adjust calls to handle_lhs_call.
+
 2008-06-29  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (print_operand): Always print a float

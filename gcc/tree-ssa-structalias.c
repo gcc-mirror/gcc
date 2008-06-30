@@ -3381,7 +3381,7 @@ handle_rhs_call  (tree rhs)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (tree lhs)
+handle_lhs_call (tree lhs, int flags)
 {
   VEC(ce_s, heap) *lhsc = NULL;
   struct constraint_expr rhsc;
@@ -3389,9 +3389,36 @@ handle_lhs_call (tree lhs)
   struct constraint_expr *lhsp;
 
   get_constraint_for (lhs, &lhsc);
-  rhsc.var = escaped_id;
-  rhsc.offset = 0;
-  rhsc.type = ADDRESSOF;
+
+  if (flags & ECF_MALLOC)
+    {
+      tree heapvar = heapvar_lookup (lhs);
+      varinfo_t vi;
+
+      if (heapvar == NULL)
+	{
+	  heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
+	  DECL_EXTERNAL (heapvar) = 1;
+	  get_var_ann (heapvar)->is_heapvar = 1;
+	  if (gimple_referenced_vars (cfun))
+	    add_referenced_var (heapvar);
+	  heapvar_insert (lhs, heapvar);
+	}
+
+      rhsc.var = create_variable_info_for (heapvar,
+					   alias_get_name (heapvar));
+      vi = get_varinfo (rhsc.var);
+      vi->is_artificial_var = 1;
+      vi->is_heap_var = 1;
+      rhsc.type = ADDRESSOF;
+      rhsc.offset = 0;
+    }
+  else
+    {
+      rhsc.var = escaped_id;
+      rhsc.offset = 0;
+      rhsc.type = ADDRESSOF;
+    }
   for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
     process_constraint (new_constraint (*lhsp, rhsc));
   VEC_free (ce_s, heap, lhsc);
@@ -3470,9 +3497,10 @@ handle_pure_call (tree stmt)
     make_constraint_to (callused_id, CALL_EXPR_STATIC_CHAIN (call));
 
   /* If the call returns a pointer it may point to reachable memory
-     from the arguments.  */
+     from the arguments.  Not so for malloc functions though.  */
   if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-      && could_have_pointers (GIMPLE_STMT_OPERAND (stmt, 0)))
+      && could_have_pointers (GIMPLE_STMT_OPERAND (stmt, 0))
+      && !(call_expr_flags (call) & ECF_MALLOC))
     {
       tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
       VEC(ce_s, heap) *lhsc = NULL;
@@ -3518,7 +3546,6 @@ find_func_aliases (tree origt)
   VEC(ce_s, heap) *rhsc = NULL;
   struct constraint_expr *c;
   enum escape_type stmt_escape_type;
-  int flags;
 
   if (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0))
     t = TREE_OPERAND (t, 0);
@@ -3567,10 +3594,9 @@ find_func_aliases (tree origt)
 
      In non-ipa mode, we need to generate constraints for each
      pointer passed by address.  */
-  else if ((call = get_call_expr_in (t)) != NULL_TREE
-	   && !((flags = call_expr_flags (call))
-		& (ECF_MALLOC | ECF_MAY_BE_ALLOCA)))
+  else if ((call = get_call_expr_in (t)) != NULL_TREE)
     {
+      int flags = call_expr_flags (call);
       if (!in_ipa_mode)
 	{
 	  /* Const functions can return their arguments and addresses
@@ -3586,7 +3612,7 @@ find_func_aliases (tree origt)
 	      handle_pure_call (t);
 	      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
 		  && could_have_pointers (GIMPLE_STMT_OPERAND (t, 1)))
-		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0));
+		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0), flags);
 	    }
 	  /* Pure functions can return addresses in and of memory
 	     reachable from their arguments, but they are not an escape
@@ -3597,7 +3623,7 @@ find_func_aliases (tree origt)
 	    {
 	      handle_rhs_call (GIMPLE_STMT_OPERAND (t, 1));
 	      if (could_have_pointers (GIMPLE_STMT_OPERAND (t, 1)))
-		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0));
+		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0), flags);
 	    }
 	  else
 	    handle_rhs_call (t);
