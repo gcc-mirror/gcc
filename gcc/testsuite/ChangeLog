@@ -1,3 +1,8 @@
+2008-06-30  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/36598
+	* gcc.dg/memcpy-1.c: Mark test XFAIL for avr target.
+
 2008-06-30 Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/movti.c: New test.
