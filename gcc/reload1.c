@@ -3695,7 +3695,9 @@ elimination_target_reg_p (rtx x)
   return false;
 }
 
-/* Initialize the table of registers to eliminate.  */
+/* Initialize the table of registers to eliminate.
+   Pre-condition: global flag frame_pointer_needed has been set before
+   calling this function.  */
 
 static void
 init_elim_table (void)
@@ -3707,19 +3709,6 @@ init_elim_table (void)
 
   if (!reg_eliminate)
     reg_eliminate = XCNEWVEC (struct elim_table, NUM_ELIMINABLE_REGS);
-
-  /* Does this function require a frame pointer?  */
-
-  frame_pointer_needed = (! flag_omit_frame_pointer
-			  /* ?? If EXIT_IGNORE_STACK is set, we will not save
-			     and restore sp for alloca.  So we can't eliminate
-			     the frame pointer in that case.  At some point,
-			     we should improve this by emitting the
-			     sp-adjusting insns for this case.  */
-			  || (cfun->calls_alloca
-			      && EXIT_IGNORE_STACK)
-			  || crtl->accesses_prior_frames
-			  || FRAME_POINTER_REQUIRED);
 
   num_eliminable = 0;
 
