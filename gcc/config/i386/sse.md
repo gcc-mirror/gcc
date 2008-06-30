@@ -3895,7 +3895,7 @@
 	(and:TF
 	  (not:TF (match_operand:TF 1 "register_operand" "0"))
 	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_64BIT"
+  "TARGET_SSE2"
   "pandn\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
@@ -3936,7 +3936,7 @@
 	(plogic:TF
 	  (match_operand:TF 1 "nonimmediate_operand" "")
 	  (match_operand:TF 2 "nonimmediate_operand" "")))]
-  "TARGET_64BIT"
+  "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, TFmode, operands);")
 
 (define_insn "*<code>tf3"
@@ -3944,7 +3944,7 @@
 	(plogic:TF
 	  (match_operand:TF 1 "nonimmediate_operand" "%0")
 	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
-  "TARGET_64BIT && ix86_binary_operator_ok (<CODE>, TFmode, operands)"
+  "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, TFmode, operands)"
   "p<plogicprefix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
