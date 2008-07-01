@@ -1,3 +1,11 @@
+2008-07-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_build_signbit_mask): Generate TImode and
+	TFmode constants via two element DImode vector for hosts with
+	HOST_BITS_PER_WIDE_INT < 64.
+	(ix86_init_builtins): Define __builtin_fabsq and __builtin_copysignq
+	also for HOST_BITS_PER_WIDE_INT < 64.
+
 2008-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36666
@@ -14,8 +22,7 @@
 	if the results address is not taken.
 	(do_deref): Use get_constraint_exp_for_temp.
 	(get_constraint_for_1): Rename from ...
-	(get_constraint_for): ... this.  Add the old function as
-	wrapper.
+	(get_constraint_for): ... this.  Add the old function as wrapper.
 	(do_structure_copy): Use get_constraint_for_1.
 
 2008-07-01  Martin Jambor  <mjambor@suse.cz>
@@ -39,25 +46,23 @@
 	* config/darwin-driver.c (darwin_default_min_version): Fix
 	-Wc++-compat warnings.
 
-2008-06-30 Uros Bizjak  <ubizjak@gmail.com>
+2008-06-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movti_rex64): Add "!" to "r" constraint
 	of operand 0.
 
 2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* ifcvt.c (cond_move_process_if_block): Free vectors on false
-	return.
+	* ifcvt.c (cond_move_process_if_block): Free vectors on false return.
 	
 2008-06-30  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/34744
-	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New
-	macros.
+	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New macros.
        	(df_scan_free_internal): Free data structures not
 	allocated in storage pools.
 	(df_mw_hardreg_chain_delete_eq_uses): Use df_scan_free_mws_vec.
-	(df_refs_add_to_chains): Use df_scan_free_ref_vec and 
+	(df_refs_add_to_chains): Use df_scan_free_ref_vec and
 	df_scan_free_mws_vec.
 	* dse.c (dse_step6): Free offset_map_p and offset_map_n
 	unconditionally.
@@ -202,7 +207,7 @@
 	* doc/rtl.texi (const_vector): Document const_fixed as legitimate
 	element type of const_vector.
 
-2008-06-28 Uros Bizjak  <ubizjak@gmail.com>
+2008-06-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (addti3, adddi3, addsi3, addhi3, addqi3):
 	Remove FLAGS_REG clobber from expander pattern.
@@ -266,7 +271,7 @@
 	(init_one_libfunc): Reuse decls and SYMBOL_REFs when asked
 	for the same function twice.
 
-2008-06-27 Uros Bizjak  <ubizjak@gmail.com>
+2008-06-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ashlti3, ashrti3, lshrti3): Expand using
 	ix86_expand_binary_operator directly.
@@ -833,7 +838,7 @@
 	have_similar_memory_accesses_1, ref_base_address_1): Likewise.
 	* tree-ssa-phiopt.c (name_to_bb_hash): Likewise.
 
-2008-06-25 Uros Bizjak  <ubizjak@gmail.com>
+2008-06-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36627
 	* config/i386/i386.md : Change constraints of HImode and QImode
@@ -2155,7 +2160,7 @@
 	* config/vax/vaxv.h: Remove.
 	* config/windiss.h: Remove.
 
-2008-06-06 Uros Bizjak <ubizjak@gmail.com>
+2008-06-06  Uros Bizjak <ubizjak@gmail.com>
 
 	PR rtl-optimization/36438
 	* cse.c (fold_rtx) [ASHIFT, LSHIFTRT, ASHIFTRT]: Break out early

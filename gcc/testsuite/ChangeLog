@@ -1,3 +1,7 @@
+2008-07-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/quad-sse.c: New test.
+
 2008-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36666
@@ -12,7 +16,7 @@
 	PR target/36598
 	* gcc.dg/memcpy-1.c: Mark test XFAIL for avr target.
 
-2008-06-30 Uros Bizjak  <ubizjak@gmail.com>
+2008-06-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/movti.c: New test.
 

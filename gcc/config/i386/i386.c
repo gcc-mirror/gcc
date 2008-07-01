@@ -11330,10 +11330,35 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
 
     case TImode:
     case TFmode:
-      imode = TImode;
       vec_mode = VOIDmode;
-      gcc_assert (HOST_BITS_PER_WIDE_INT >= 64);
-      lo = 0, hi = (HOST_WIDE_INT)1 << shift;
+      if (HOST_BITS_PER_WIDE_INT >= 64)
+	{
+	  imode = TImode;
+	  lo = 0, hi = (HOST_WIDE_INT)1 << shift;
+	}
+      else
+	{
+	  rtvec vec;
+
+	  imode = DImode;
+	  lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
+
+	  if (invert)
+	    {
+	      lo = ~lo, hi = ~hi;
+	      v = constm1_rtx;
+	    }
+	  else
+	    v = const0_rtx;
+
+	  mask = immed_double_const (lo, hi, imode);
+
+	  vec = gen_rtvec (2, v, mask);
+	  v = gen_rtx_CONST_VECTOR (V2DImode, vec);
+	  v = copy_to_mode_reg (mode, gen_lowpart (mode, v));
+
+	  return v;
+	}
      break;
 
     default:
@@ -20222,20 +20247,16 @@ ix86_init_builtins (void)
 			       NULL, NULL_TREE);
   ix86_builtins[(int) IX86_BUILTIN_INFQ] = decl;
 
-  if (HOST_BITS_PER_WIDE_INT >= 64)
-    {
-      /* Those builtins need TImode to compile.  */
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
-					NULL_TREE);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_fabsq", ftype, IX86_BUILTIN_FABSQ);
+  ftype = build_function_type_list (float128_type_node,
+				    float128_type_node,
+				    NULL_TREE);
+  def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_fabsq", ftype, IX86_BUILTIN_FABSQ);
 
-      ftype = build_function_type_list (float128_type_node,
-					float128_type_node,
-					float128_type_node,
-					NULL_TREE);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
-    }
+  ftype = build_function_type_list (float128_type_node,
+				    float128_type_node,
+				    float128_type_node,
+				    NULL_TREE);
+  def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
 
   if (TARGET_MMX)
     ix86_init_mmx_sse_builtins ();
