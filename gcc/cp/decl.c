@@ -11606,7 +11606,8 @@ finish_constructor_body (void)
   tree val;
   tree exprstmt;
 
-  if (targetm.cxx.cdtor_returns_this ())
+  if (targetm.cxx.cdtor_returns_this ()
+      && (! TYPE_FOR_JAVA (current_class_type)))
     {
       /* Any return from a constructor will end up here.  */
       add_stmt (build_stmt (LABEL_EXPR, cdtor_label));
