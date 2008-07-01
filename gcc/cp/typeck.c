@@ -7164,6 +7164,7 @@ static int
 comp_ptr_ttypes_real (tree to, tree from, int constp)
 {
   bool to_more_cv_qualified = false;
+  bool is_opaque_pointer = false;
 
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
@@ -7198,9 +7199,13 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    constp &= TYPE_READONLY (to);
 	}
 
+      if (TREE_CODE (to) == VECTOR_TYPE)
+	is_opaque_pointer = vector_targets_convertible_p (to, from);
+
       if (TREE_CODE (to) != POINTER_TYPE && !TYPE_PTRMEM_P (to))
 	return ((constp >= 0 || to_more_cv_qualified)
-		&& same_type_ignoring_top_level_qualifiers_p (to, from));
+		&& (is_opaque_pointer
+		    || same_type_ignoring_top_level_qualifiers_p (to, from)));
     }
 }
 
@@ -7261,6 +7266,8 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 bool
 comp_ptr_ttypes_const (tree to, tree from)
 {
+  bool is_opaque_pointer = false;
+
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
       if (TREE_CODE (to) != TREE_CODE (from))
@@ -7271,8 +7278,12 @@ comp_ptr_ttypes_const (tree to, tree from)
 			  TYPE_OFFSET_BASETYPE (to)))
 	  continue;
 
+      if (TREE_CODE (to) == VECTOR_TYPE)
+	is_opaque_pointer = vector_targets_convertible_p (to, from);
+
       if (TREE_CODE (to) != POINTER_TYPE)
-	return same_type_ignoring_top_level_qualifiers_p (to, from);
+	return (is_opaque_pointer
+		|| same_type_ignoring_top_level_qualifiers_p (to, from));
     }
 }
 

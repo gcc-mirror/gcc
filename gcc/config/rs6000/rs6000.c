@@ -22332,7 +22332,6 @@ rs6000_is_opaque_type (const_tree type)
 {
   return (type == opaque_V2SI_type_node
 	      || type == opaque_V2SF_type_node
-	      || type == opaque_p_V2SI_type_node
 	      || type == opaque_V4SI_type_node);
 }
 

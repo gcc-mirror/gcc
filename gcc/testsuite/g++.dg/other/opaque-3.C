@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-*-eabi* } } */
+/* { dg-do compile { target powerpc-*-eabi* powerpc*-*-linux*spe* } } */
 /* { dg-options "-mcpu=8540 -mabi=spe" } */
 
 __ev64_opaque__ o;
