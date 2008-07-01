@@ -3163,42 +3163,29 @@ dse_step6 (bool global_done)
   group_info_t group;
   basic_block bb;
   
-  if (global_done)
+  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
     {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
-	{
-	  free (group->offset_map_n);
-	  free (group->offset_map_p);
-	  BITMAP_FREE (group->store1_n);
-	  BITMAP_FREE (group->store1_p);
-	  BITMAP_FREE (group->store2_n);
-	  BITMAP_FREE (group->store2_p);
-	  BITMAP_FREE (group->group_kill);
-	}
+      free (group->offset_map_n);
+      free (group->offset_map_p);
+      BITMAP_FREE (group->store1_n);
+      BITMAP_FREE (group->store1_p);
+      BITMAP_FREE (group->store2_n);
+      BITMAP_FREE (group->store2_p);
+      BITMAP_FREE (group->group_kill);
+    }
 
-      FOR_ALL_BB (bb)
-	{
-	  bb_info_t bb_info = bb_table[bb->index];
-	  BITMAP_FREE (bb_info->gen);
-	  if (bb_info->kill)
-	    BITMAP_FREE (bb_info->kill);
-	  if (bb_info->in)
-	    BITMAP_FREE (bb_info->in);
-	  if (bb_info->out)
-	    BITMAP_FREE (bb_info->out);
-	}
-    }
-  else
-    {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
-	{
-	  BITMAP_FREE (group->store1_n);
-	  BITMAP_FREE (group->store1_p);
-	  BITMAP_FREE (group->store2_n);
-	  BITMAP_FREE (group->store2_p);
-	  BITMAP_FREE (group->group_kill);
-	}
-    }
+  if (global_done)
+    FOR_ALL_BB (bb)
+      {
+	bb_info_t bb_info = bb_table[bb->index];
+	BITMAP_FREE (bb_info->gen);
+	if (bb_info->kill)
+	  BITMAP_FREE (bb_info->kill);
+	if (bb_info->in)
+	  BITMAP_FREE (bb_info->in);
+	if (bb_info->out)
+	  BITMAP_FREE (bb_info->out);
+      }
 
   if (clear_alias_sets)
     {
@@ -3222,7 +3209,6 @@ dse_step6 (bool global_done)
   free_alloc_pool (rtx_group_info_pool);
   free_alloc_pool (deferred_change_pool);
 }
-
 
 
 /* -------------------------------------------------------------------------
