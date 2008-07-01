@@ -1,3 +1,8 @@
+2008-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36666
+	* gcc.c-torture/compile/pr36666.c: New testcase.
+
 2008-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack10.adb: New test.

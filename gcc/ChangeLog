@@ -1,4 +1,25 @@
+2008-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36666
+	* tree-ssa-structalias.c (get_constraint_for_1): Declare.
+	(get_constraint_exp_from_ssa_var): Split into ...
+	(get_constraint_exp_for_temp): ... this ...
+	(get_constraint_for_ssa_var): ... and that.
+	Return constraint expressions for all touched sub-fields
+	if the results address is not taken.
+	(process_constraint): Remove assertion that aggregate
+	assignments do not happen at this place.
+	(get_constraint_for_component_ref): Add address_p argument.
+	Return constraint expressions for all touched sub-fields
+	if the results address is not taken.
+	(do_deref): Use get_constraint_exp_for_temp.
+	(get_constraint_for_1): Rename from ...
+	(get_constraint_for): ... this.  Add the old function as
+	wrapper.
+	(do_structure_copy): Use get_constraint_for_1.
+
 2008-07-01  Martin Jambor  <mjambor@suse.cz>
+
         * Makefile.in (tree-switch-conversion.o): Add.
         (OBJS-common): Add tree-swtch-conversion.o.
         * passes.c (init_optimization_passes): Add pass_convert_switch.

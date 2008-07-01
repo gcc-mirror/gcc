@@ -412,6 +412,7 @@ struct constraint_expr
 typedef struct constraint_expr ce_s;
 DEF_VEC_O(ce_s);
 DEF_VEC_ALLOC_O(ce_s, heap);
+static void get_constraint_for_1 (tree, VEC(ce_s, heap) **, bool);
 static void get_constraint_for (tree, VEC(ce_s, heap) **);
 static void do_deref (VEC (ce_s, heap) **);
 
@@ -2495,13 +2496,32 @@ get_vi_for_tree (tree t)
   return (varinfo_t) *slot;
 }
 
-/* Get a constraint expression from an SSA_VAR_P node.  */
+/* Get a constraint expression for a new temporary variable.  */
 
 static struct constraint_expr
-get_constraint_exp_from_ssa_var (tree t)
+get_constraint_exp_for_temp (tree t)
 {
   struct constraint_expr cexpr;
 
+  gcc_assert (SSA_VAR_P (t));
+
+  cexpr.type = SCALAR;
+  cexpr.var = get_vi_for_tree (t)->id;
+  cexpr.offset = 0;
+
+  return cexpr;
+}
+
+/* Get a constraint expression vector from an SSA_VAR_P node.
+   If address_p is true, the result will be taken its address of.  */
+
+static void
+get_constraint_for_ssa_var (tree t, VEC(ce_s, heap) **results, bool address_p)
+{
+  struct constraint_expr cexpr;
+  varinfo_t vi;
+
+  /* We allow FUNCTION_DECLs here even though it doesn't make much sense.  */
   gcc_assert (SSA_VAR_P (t) || DECL_P (t));
 
   /* For parameters, get at the points-to set for the actual parm
@@ -2509,21 +2529,37 @@ get_constraint_exp_from_ssa_var (tree t)
   if (TREE_CODE (t) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
       && SSA_NAME_IS_DEFAULT_DEF (t))
-    return get_constraint_exp_from_ssa_var (SSA_NAME_VAR (t));
+    {
+      get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
+      return;
+    }
 
+  vi = get_vi_for_tree (t);
+  cexpr.var = vi->id;
   cexpr.type = SCALAR;
-
-  cexpr.var = get_vi_for_tree (t)->id;
+  cexpr.offset = 0;
   /* If we determine the result is "anything", and we know this is readonly,
      say it points to readonly memory instead.  */
   if (cexpr.var == anything_id && TREE_READONLY (t))
     {
+      gcc_unreachable ();
       cexpr.type = ADDRESSOF;
       cexpr.var = readonly_id;
     }
 
-  cexpr.offset = 0;
-  return cexpr;
+  /* If we are not taking the address of the constraint expr, add all
+     sub-fiels of the variable as well.  */
+  if (!address_p)
+    {
+      for (; vi; vi = vi->next)
+	{
+	  cexpr.var = vi->id;
+	  VEC_safe_push (ce_s, heap, *results, &cexpr);
+	}
+      return;
+    }
+
+  VEC_safe_push (ce_s, heap, *results, &cexpr);
 }
 
 /* Process constraint T, performing various simplifications and then
@@ -2564,13 +2600,7 @@ process_constraint (constraint_t t)
       tree pointertype = TREE_TYPE (rhsdecl);
       tree pointedtotype = TREE_TYPE (pointertype);
       tree tmpvar = create_tmp_var_raw (pointedtotype, "doubledereftmp");
-      struct constraint_expr tmplhs = get_constraint_exp_from_ssa_var (tmpvar);
-
-      /* If this is an aggregate of known size, we should have passed
-	 this off to do_structure_copy, and it should have broken it
-	 up.  */
-      gcc_assert (!AGGREGATE_TYPE_P (pointedtotype)
-		  || get_varinfo (rhs.var)->is_unknown_size_var);
+      struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
 
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
@@ -2581,7 +2611,7 @@ process_constraint (constraint_t t)
       tree rhsdecl = get_varinfo (rhs.var)->decl;
       tree pointertype = TREE_TYPE (rhsdecl);
       tree tmpvar = create_tmp_var_raw (pointertype, "derefaddrtmp");
-      struct constraint_expr tmplhs = get_constraint_exp_from_ssa_var (tmpvar);
+      struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
 
       process_constraint (new_constraint (tmplhs, rhs));
       process_constraint (new_constraint (lhs, tmplhs));
@@ -2625,10 +2655,12 @@ bitpos_of_field (const tree fdecl)
 }
 
 
-/* Given a COMPONENT_REF T, return the constraint_expr for it.  */
+/* Given a COMPONENT_REF T, return the constraint_expr vector for it.
+   If address_p is true the result will be taken its address of.  */
 
 static void
-get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
+get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
+				  bool address_p)
 {
   tree orig_t = t;
   HOST_WIDE_INT bitsize = -1;
@@ -2636,7 +2668,6 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
   HOST_WIDE_INT bitpos;
   tree forzero;
   struct constraint_expr *result;
-  unsigned int beforelength = VEC_length (ce_s, *results);
 
   /* Some people like to do cute things like take the address of
      &0->a.b */
@@ -2657,11 +2688,12 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
 
-  get_constraint_for (t, results);
+  /* Pretend to take the address of the base, we'll take care of
+     adding the required subset of sub-fields below.  */
+  get_constraint_for_1 (t, results, true);
   result = VEC_last (ce_s, *results);
-  result->offset = bitpos;
 
-  gcc_assert (beforelength + 1 == VEC_length (ce_s, *results));
+  gcc_assert (VEC_length (ce_s, *results) == 1);
 
   /* This can also happen due to weird offsetof type macros.  */
   if (TREE_CODE (t) != ADDR_EXPR && result->type == ADDRESSOF)
@@ -2674,28 +2706,34 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	 ignore this constraint. When we handle pointer subtraction,
 	 we may have to do something cute here.  */
 
-      if (result->offset < get_varinfo (result->var)->fullsize
+      if ((unsigned HOST_WIDE_INT)bitpos < get_varinfo (result->var)->fullsize
 	  && bitmaxsize != 0)
 	{
 	  /* It's also not true that the constraint will actually start at the
 	     right offset, it may start in some padding.  We only care about
 	     setting the constraint to the first actual field it touches, so
 	     walk to find it.  */
+	  struct constraint_expr cexpr = *result;
 	  varinfo_t curr;
-	  for (curr = get_varinfo (result->var); curr; curr = curr->next)
+	  VEC_pop (ce_s, *results);
+	  cexpr.offset = 0;
+	  for (curr = get_varinfo (cexpr.var); curr; curr = curr->next)
 	    {
 	      if (ranges_overlap_p (curr->offset, curr->size,
-				    result->offset, bitmaxsize))
+				    bitpos, bitmaxsize))
 		{
-		  result->var = curr->id;
-		  break;
+		  cexpr.var = curr->id;
+		  VEC_safe_push (ce_s, heap, *results, &cexpr);
+		  if (address_p)
+		    break;
 		}
 	    }
 	  /* assert that we found *some* field there. The user couldn't be
 	     accessing *only* padding.  */
 	  /* Still the user could access one past the end of an array
 	     embedded in a struct resulting in accessing *only* padding.  */
-	  gcc_assert (curr || ref_contains_array_ref (orig_t));
+	  gcc_assert (VEC_length (ce_s, *results) >= 1
+		      || ref_contains_array_ref (orig_t));
 	}
       else if (bitmaxsize == 0)
 	{
@@ -2706,8 +2744,6 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
       else
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, "Access to past the end of variable, ignoring\n");
-
-      result->offset = 0;
     }
   else if (bitmaxsize == -1)
     {
@@ -2716,6 +2752,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
       result->var = anything_id;
       result->offset = 0;
     }
+  else
+    result->offset = bitpos;
 }
 
 
@@ -2740,7 +2778,7 @@ do_deref (VEC (ce_s, heap) **constraints)
       else if (c->type == DEREF)
 	{
 	  tree tmpvar = create_tmp_var_raw (ptr_type_node, "dereftmp");
-	  struct constraint_expr tmplhs = get_constraint_exp_from_ssa_var (tmpvar);
+	  struct constraint_expr tmplhs = get_constraint_exp_for_temp (tmpvar);
 	  process_constraint (new_constraint (tmplhs, *c));
 	  c->var = tmplhs.var;
 	}
@@ -2752,7 +2790,7 @@ do_deref (VEC (ce_s, heap) **constraints)
 /* Given a tree T, return the constraint expression for it.  */
 
 static void
-get_constraint_for (tree t, VEC (ce_s, heap) **results)
+get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 {
   struct constraint_expr temp;
 
@@ -2796,32 +2834,8 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	      struct constraint_expr *c;
 	      unsigned int i;
 	      tree exp = TREE_OPERAND (t, 0);
-	      tree pttype = TREE_TYPE (TREE_TYPE (t));
 
-	      get_constraint_for (exp, results);
-
-
-	      /* Complex types are special. Taking the address of one
-		 allows you to access either part of it through that
-		 pointer.  */
-	      if (VEC_length (ce_s, *results) == 1 &&
-		  TREE_CODE (pttype) == COMPLEX_TYPE)
-		{
-		  struct constraint_expr *origrhs;
-		  varinfo_t origvar;
-		  struct constraint_expr tmp;
-
-		  gcc_assert (VEC_length (ce_s, *results) == 1);
-		  origrhs = VEC_last (ce_s, *results);
-		  tmp = *origrhs;
-		  VEC_pop (ce_s, *results);
-		  origvar = get_varinfo (origrhs->var);
-		  for (; origvar; origvar = origvar->next)
-		    {
-		      tmp.var = origvar->id;
-		      VEC_safe_push (ce_s, heap, *results, &tmp);
-		    }
-		}
+	      get_constraint_for_1 (exp, results, true);
 
 	      for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
 		{
@@ -2888,14 +2902,14 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	  {
 	  case INDIRECT_REF:
 	    {
-	      get_constraint_for (TREE_OPERAND (t, 0), results);
+	      get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p);
 	      do_deref (results);
 	      return;
 	    }
 	  case ARRAY_REF:
 	  case ARRAY_RANGE_REF:
 	  case COMPONENT_REF:
-	    get_constraint_for_component_ref (t, results);
+	    get_constraint_for_component_ref (t, results, address_p);
 	    return;
 	  default:
 	    {
@@ -2920,7 +2934,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	      if (!(POINTER_TYPE_P (TREE_TYPE (t))
 		    && ! POINTER_TYPE_P (TREE_TYPE (op))))
 		{
-		  get_constraint_for (op, results);
+		  get_constraint_for_1 (op, results, address_p);
 		  return;
 		}
 
@@ -2942,15 +2956,13 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	  {
 	  case PHI_NODE:
 	    {
-	      get_constraint_for (PHI_RESULT (t), results);
+	      get_constraint_for_1 (PHI_RESULT (t), results, address_p);
 	      return;
 	    }
 	    break;
 	  case SSA_NAME:
 	    {
-	      struct constraint_expr temp;
-	      temp = get_constraint_exp_from_ssa_var (t);
-	      VEC_safe_push (ce_s, heap, *results, &temp);
+	      get_constraint_for_ssa_var (t, results, address_p);
 	      return;
 	    }
 	    break;
@@ -2966,9 +2978,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
       }
     case tcc_declaration:
       {
-	struct constraint_expr temp;
-	temp = get_constraint_exp_from_ssa_var (t);
-	VEC_safe_push (ce_s, heap, *results, &temp);
+	get_constraint_for_ssa_var (t, results, address_p);
 	return;
       }
     default:
@@ -2982,6 +2992,15 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
     }
 }
 
+/* Given a gimple tree T, return the constraint expression vector for it.  */
+
+static void
+get_constraint_for (tree t, VEC (ce_s, heap) **results)
+{
+  gcc_assert (VEC_length (ce_s, *results) == 0);
+
+  get_constraint_for_1 (t, results, false);
+}
 
 /* Handle the structure copy case where we have a simple structure copy
    between LHS and RHS that is of SIZE (in bits)
@@ -3140,8 +3159,10 @@ do_structure_copy (tree lhsop, tree rhsop)
   unsigned HOST_WIDE_INT lhssize;
   unsigned HOST_WIDE_INT rhssize;
 
-  get_constraint_for (lhsop, &lhsc);
-  get_constraint_for (rhsop, &rhsc);
+  /* Pretend we are taking the address of the constraint exprs.
+     We deal with walking the sub-fields ourselves.  */
+  get_constraint_for_1 (lhsop, &lhsc, true);
+  get_constraint_for_1 (rhsop, &rhsc, true);
   gcc_assert (VEC_length (ce_s, lhsc) == 1);
   gcc_assert (VEC_length (ce_s, rhsc) == 1);
   lhs = *(VEC_last (ce_s, lhsc));
@@ -3436,8 +3457,9 @@ handle_const_call (tree stmt)
   struct constraint_expr rhsc;
   unsigned int j;
   struct constraint_expr *lhsp;
-  tree arg;
+  tree arg, tmpvar;
   call_expr_arg_iterator iter;
+  struct constraint_expr tmpc;
 
   get_constraint_for (lhs, &lhsc);
 
@@ -3453,12 +3475,18 @@ handle_const_call (tree stmt)
       return;
     }
 
+  /* We always use a temporary here, otherwise we end up with a quadratic
+     amount of constraints for
+       large_struct = const_call (large_struct);
+     in field-sensitive PTA.  */
+  tmpvar = create_tmp_var_raw (ptr_type_node, "consttmp");
+  tmpc = get_constraint_exp_for_temp (tmpvar);
+
   /* May return addresses of globals.  */
   rhsc.var = nonlocal_id;
   rhsc.offset = 0;
   rhsc.type = ADDRESSOF;
-  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint (new_constraint (*lhsp, rhsc));
+  process_constraint (new_constraint (tmpc, rhsc));
 
   /* May return arguments.  */
   FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
@@ -3467,12 +3495,15 @@ handle_const_call (tree stmt)
 	VEC(ce_s, heap) *argc = NULL;
 	struct constraint_expr *argp;
 	int i;
+
 	get_constraint_for (arg, &argc);
 	for (i = 0; VEC_iterate (ce_s, argc, i, argp); i++)
-	  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	    process_constraint (new_constraint (*lhsp, *argp));
+	  process_constraint (new_constraint (tmpc, *argp));
 	VEC_free (ce_s, heap, argc);
       }
+
+  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
+    process_constraint (new_constraint (*lhsp, tmpc));
 
   VEC_free (ce_s, heap, lhsc);
 }
