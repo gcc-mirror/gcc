@@ -1,5 +1,14 @@
 2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* function.c (assign_parm_remove_parallels): New.
+	(assign_parm_setup_block_p): Do not return true for non-BLKmode
+	PARALLELs.
+	(assign_parm_setup_block): Do not handle them.
+	(assign_parm_setup_reg, assign_parm_setup_stack): Call
+	assign_parm_remove_parallels.
+
+2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* c-typeck.c (convert_for_assignment): Use
 	vector_targets_convertible_p.
 	* c-common.c (vector_targets_convertible_p): New.
