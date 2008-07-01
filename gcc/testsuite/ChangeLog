@@ -1,3 +1,14 @@
+2008-07-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_int,
+	check_effective_target_vect_shift,
+	check_effective_target_vect_long,
+	check_effective_target_vect_float,
+	check_effective_target_vect_no_align,
+	check_effective_target_vect_int_mult): Check for ARM.
+	(check_effective_target_arm_neon): New.
+	(check_effective_target_vect_cmdline_needed): Use it.
+
 2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* g++.dg/other/opaque-1.C, g++.dg/other/opaque-2.C,
