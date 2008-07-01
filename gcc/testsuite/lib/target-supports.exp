@@ -1131,7 +1131,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || ([istarget powerpc*-*-*]
 		 && ([check_effective_target_powerpc_spe]
 		     || [check_effective_target_powerpc_altivec]))
-             || [istarget spu-*-*] } {
+             || [istarget spu-*-*]
+	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
@@ -1158,7 +1159,8 @@ proc check_effective_target_vect_int { } {
 	      || [istarget x86_64-*-*]
 	      || [istarget sparc*-*-*]
 	      || [istarget alpha*-*-*]
-	      || [istarget ia64-*-*] } {
+	      || [istarget ia64-*-*] 
+	      || [check_effective_target_arm32] } {
 	   set et_vect_int_saved 1
 	}
     }
@@ -1262,6 +1264,22 @@ proc check_effective_target_arm_neon_hw { } {
 	  return (a != 1);
 	}
     } "-mfpu=neon -mfloat-abi=softfp"]
+}
+
+# Return 1 if this is a ARM target with NEON enabled.
+
+proc check_effective_target_arm_neon { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_neon object {
+	    #ifndef __ARM_NEON__
+	    #error not NEON
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if this a Loongson-2E or -2F target using an ABI that supports
@@ -1395,7 +1413,8 @@ proc check_effective_target_vect_shift { } {
              && ![istarget powerpc-*-linux*paired*])
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*]
+	     || [check_effective_target_arm32] } {
 	   set et_vect_shift_saved 1
 	}
     }
@@ -1414,6 +1433,7 @@ proc check_effective_target_vect_long { } {
               && ![istarget powerpc-*-linux*paired*]) 
               && [check_effective_target_ilp32])
 	 || [istarget x86_64-*-*]
+	 || [check_effective_target_arm32]
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
 	set answer 1
     } else {
@@ -1440,7 +1460,8 @@ proc check_effective_target_vect_float { } {
 	      || [istarget spu-*-*]
 	      || [istarget mipsisa64*-*-*]
 	      || [istarget x86_64-*-*]
-	      || [istarget ia64-*-*] } {
+	      || [istarget ia64-*-*]
+	      || [check_effective_target_arm32] } {
 	   set et_vect_float_saved 1
 	}
     }
@@ -1819,7 +1840,8 @@ proc check_effective_target_vect_no_align { } {
 	set et_vect_no_align_saved 0
 	if { [istarget mipsisa64*-*-*]
 	     || [istarget sparc*-*-*]
-	     || [istarget ia64-*-*] } { 
+	     || [istarget ia64-*-*]
+	     || [check_effective_target_arm32] } { 
 	    set et_vect_no_align_saved 1
 	}
     }
@@ -2008,7 +2030,8 @@ proc check_effective_target_vect_int_mult { } {
 	if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
-	     || [istarget x86_64-*-*] } {
+	     || [istarget x86_64-*-*]
+	     || [check_effective_target_arm32] } {
 	   set et_vect_int_mult_saved 1
 	}
     }
