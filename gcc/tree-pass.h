@@ -508,6 +508,7 @@ extern struct gimple_opt_pass pass_O0_always_inline;
 extern struct gimple_opt_pass pass_inline_parameters;
 extern struct gimple_opt_pass pass_all_early_optimizations;
 extern struct gimple_opt_pass pass_update_address_taken;
+extern struct gimple_opt_pass pass_convert_switch;
 
 /* The root of the compilation pass tree, once constructed.  */
 extern struct opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;

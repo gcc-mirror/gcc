@@ -572,6 +572,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_update_address_taken);
 	  NEXT_PASS (pass_simple_dse);
 	  NEXT_PASS (pass_tail_recursion);
+	  NEXT_PASS (pass_convert_switch);
           NEXT_PASS (pass_profile);
 	  NEXT_PASS (pass_release_ssa_names);
 	}
