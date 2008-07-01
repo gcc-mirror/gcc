@@ -93,7 +93,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
 	&& macosx_deployment_target[0])
       {
 	++*argc_p;
-	*argv_p = xmalloc (sizeof (char *) * *argc_p);
+	*argv_p = XNEWVEC (char *, *argc_p);
 	(*argv_p)[0] = argv[0];
 	(*argv_p)[1] = concat ("-mmacosx-version-min=",
 			       macosx_deployment_target, NULL);
@@ -144,7 +144,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
 
   /* Add the new flag.  */
   ++*argc_p;
-  *argv_p = xmalloc (sizeof (char *) * *argc_p);
+  *argv_p = XNEWVEC (char *, *argc_p);
   (*argv_p)[0] = argv[0];
   (*argv_p)[1] = new_flag;
   memcpy (*argv_p + 2, argv + 1, (argc - 1) * sizeof (char *));
