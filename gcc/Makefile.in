@@ -1176,6 +1176,7 @@ OBJS-common = \
 	tree-profile.o \
 	tree-scalar-evolution.o \
 	tree-sra.o \
+	tree-switch-conversion.o \
 	tree-ssa-address.o \
 	tree-ssa-alias.o \
 	tree-ssa-alias-warnings.o \
@@ -2629,6 +2630,11 @@ tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) \
     $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_GIMPLE_H) \
     langhooks.h tree-pass.h $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) \
     bitmap.h $(GGC_H) hard-reg-set.h $(OBSTACK_H) $(PARAMS_H) $(TARGET_H)
+tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
+    $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
+    $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_GIMPLE_H) \
+    tree-pass.h $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) output.h \
+    $(GGC_H) $(OBSTACK_H) $(PARAMS_H) $(CPPLIB_H) $(PARAMS_H)
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(TM_H) $(RTL_H) $(REAL_H) $(FLAGS_H) $(TREE_FLOW_H) $(TREE_GIMPLE_H) \
     tree-iterator.h tree-pass.h tree-ssa-propagate.h $(DIAGNOSTIC_H)

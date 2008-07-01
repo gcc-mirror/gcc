@@ -1088,6 +1088,10 @@ ftree-cselim
 Common Report Var(flag_tree_cselim) Init(2) Optimization
 Transform condition stores into unconditional ones
 
+ftree-switch-conversion
+Common Report Var(flag_tree_switch_conversion) Optimization
+Perform conversions of switch initializations.
+
 ftree-dce
 Common Report Var(flag_tree_dce) Optimization
 Enable SSA dead code elimination optimization on trees

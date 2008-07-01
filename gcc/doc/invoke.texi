@@ -359,10 +359,10 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc @gol
--ftree-sink -ftree-sra -ftree-store-ccp -ftree-ter @gol
--ftree-vect-loop-version -ftree-vectorize -ftree-vrp -funit-at-a-time @gol
--funroll-all-loops -funroll-loops -funsafe-loop-optimizations @gol
--funsafe-math-optimizations -funswitch-loops @gol
+-ftree-sink -ftree-sra -ftree-store-ccp -ftree-switch-conversion @gol
+-ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
+-funit-at-a-time -funroll-all-loops -funroll-loops @gol
+-funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
 -fwhole-program @gol
 --param @var{name}=@var{value}
@@ -5194,6 +5194,7 @@ also turns on the following optimization flags:
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fstrict-aliasing -fstrict-overflow @gol
+-ftree-switch-conversion @gol
 -ftree-pre @gol
 -ftree-vrp}
 
@@ -5867,6 +5868,11 @@ Perform sparse conditional constant propagation (CCP) on trees.  This
 pass operates on both local scalar variables and memory stores and
 loads (global variables, structures, arrays, etc).  This flag is
 enabled by default at @option{-O2} and higher.
+
+@item -ftree-switch-conversion
+Perform conversion of simple initializations in a switch to
+initializations from a scalar array.  This flag is enabled by default
+at @option{-O2} and higher.
 
 @item -ftree-dce
 @opindex ftree-dce
@@ -7343,6 +7349,11 @@ default, this should always be 1, which uses a more efficient internal
 mechanism for comparing types in C++ and Objective-C++.  However, if
 bugs in the canonical type system are causing compilation failures,
 set this value to 0 to disable canonical types.
+
+@item switch-conversion-max-branch-ratio
+Switch initialization conversion will refuse to create arrays that are
+bigger than @option{cswtch-max-branch-ratio} times the number of
+branches in the switch.
 
 @item max-partial-antic-length
 Maximum length of the partial antic set computed during the tree
