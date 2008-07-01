@@ -1,3 +1,12 @@
+2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* c-typeck.c (convert_for_assignment): Use
+	vector_targets_convertible_p.
+	* c-common.c (vector_targets_convertible_p): New.
+	* c-common.h (vector_targets_convertible_p): New prototype.
+	* config/rs6000/rs6000.c (rs6000_is_opaque_type): Do not check
+	opaque_p_V2SI_type_node.
+
 2008-07-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_cannot_force_const_mem): Do not allow

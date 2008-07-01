@@ -1,3 +1,8 @@
+2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* g++.dg/other/opaque-1.C, g++.dg/other/opaque-2.C,
+	g++.dg/other/opaque-3.C: Also run on powerpc*-*-linux*spe*.
+
 2008-07-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/quad-sse.c: New test.
