@@ -2352,6 +2352,30 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
   data->entry_parm = entry_parm;
 }
 
+/* A subroutine of assign_parms.  Reconstitute any values which were
+   passed in multiple registers and would fit in a single register.  */
+
+static void
+assign_parm_remove_parallels (struct assign_parm_data_one *data)
+{
+  rtx entry_parm = data->entry_parm;
+
+  /* Convert the PARALLEL to a REG of the same mode as the parallel.
+     This can be done with register operations rather than on the
+     stack, even if we will store the reconstituted parameter on the
+     stack later.  */
+  if (GET_CODE (entry_parm) == PARALLEL
+      && data->passed_mode != BLKmode)
+    {
+      rtx parmreg = gen_reg_rtx (GET_MODE (entry_parm));
+      emit_group_store (parmreg, entry_parm, NULL_TREE,
+			GET_MODE_SIZE (GET_MODE (entry_parm)));
+      entry_parm = parmreg;
+    }
+
+  data->entry_parm = entry_parm;
+}
+
 /* A subroutine of assign_parms.  Adjust DATA->STACK_RTL such that it's
    always valid and properly aligned.  */
 
@@ -2397,8 +2421,6 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
 {
   if (data->nominal_mode == BLKmode)
     return true;
-  if (GET_CODE (data->entry_parm) == PARALLEL)
-    return true;
 
 #ifdef BLOCK_REG_PADDING
   /* Only assign_parm_setup_block knows how to deal with register arguments
@@ -2424,58 +2446,9 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   rtx stack_parm = data->stack_parm;
   HOST_WIDE_INT size;
   HOST_WIDE_INT size_stored;
-  rtx orig_entry_parm = entry_parm;
 
   if (GET_CODE (entry_parm) == PARALLEL)
     entry_parm = emit_group_move_into_temps (entry_parm);
-
-  /* If we've a non-block object that's nevertheless passed in parts,
-     reconstitute it in register operations rather than on the stack.  */
-  if (GET_CODE (entry_parm) == PARALLEL
-      && data->nominal_mode != BLKmode)
-    {
-      rtx elt0 = XEXP (XVECEXP (orig_entry_parm, 0, 0), 0);
-
-      if ((XVECLEN (entry_parm, 0) > 1
-	   || hard_regno_nregs[REGNO (elt0)][GET_MODE (elt0)] > 1)
-	  && use_register_for_decl (parm))
-	{
-	  rtx parmreg = gen_reg_rtx (data->nominal_mode);
-
-	  push_to_sequence2 (all->first_conversion_insn,
-			     all->last_conversion_insn);
-
-	  /* For values returned in multiple registers, handle possible
-	     incompatible calls to emit_group_store.
-
-	     For example, the following would be invalid, and would have to
-	     be fixed by the conditional below:
-
-	     emit_group_store ((reg:SF), (parallel:DF))
-	     emit_group_store ((reg:SI), (parallel:DI))
-
-	     An example of this are doubles in e500 v2:
-	     (parallel:DF (expr_list (reg:SI) (const_int 0))
-	     (expr_list (reg:SI) (const_int 4))).  */
-	  if (data->nominal_mode != data->passed_mode)
-	    {
-	      rtx t = gen_reg_rtx (GET_MODE (entry_parm));
-	      emit_group_store (t, entry_parm, NULL_TREE,
-				GET_MODE_SIZE (GET_MODE (entry_parm)));
-	      convert_move (parmreg, t, 0);
-	    }
-	  else
-	    emit_group_store (parmreg, entry_parm, data->nominal_type,
-			      int_size_in_bytes (data->nominal_type));
-
-	  all->first_conversion_insn = get_insns ();
-	  all->last_conversion_insn = get_last_insn ();
-	  end_sequence ();
-
-	  SET_DECL_RTL (parm, parmreg);
-	  return;
-	}
-    }
 
   size = int_size_in_bytes (data->passed_type);
   size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
@@ -2641,6 +2614,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   else
     SET_DECL_RTL (parm, parmreg);
 
+  assign_parm_remove_parallels (data);
+
   /* Copy the value into the register.  */
   if (data->nominal_mode != data->passed_mode
       || promoted_nominal_mode != data->promoted_mode)
@@ -2802,6 +2777,8 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
   /* Value must be stored in the stack slot STACK_PARM during function
      execution.  */
   bool to_conversion = false;
+
+  assign_parm_remove_parallels (data);
 
   if (data->promoted_mode != data->nominal_mode)
     {
