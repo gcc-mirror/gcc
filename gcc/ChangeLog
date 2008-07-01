@@ -1,3 +1,9 @@
+2008-07-01  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/36648
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Divide
+	number of prolog iterations by step. Fix the comment.
+
 2008-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Reject TFmode

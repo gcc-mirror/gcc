@@ -6697,16 +6697,14 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
    Else, compute address misalignment in bytes:
      addr_mis = addr & (vectype_size - 1)
 
-   prolog_niters = min ( LOOP_NITERS , (VF - addr_mis/elem_size)&(VF-1) )
-   
-   (elem_size = element type size; an element is the scalar element 
-	whose type is the inner type of the vectype)  
+   prolog_niters = min (LOOP_NITERS, ((VF - addr_mis/elem_size)&(VF-1))/step)
 
-   For interleaving,
+   (elem_size = element type size; an element is the scalar element whose type
+   is the inner type of the vectype)
 
-   prolog_niters = min ( LOOP_NITERS , 
-                        (VF/group_size - addr_mis/elem_size)&(VF/group_size-1) )
-	 where group_size is the size of the interleaved group.
+   When the step of the data-ref in the loop is not 1 (as in interleaved data
+   and SLP), the number of iterations of the prolog must be divided by the step
+   (which is equal to the size of interleaved group).
 
    The above formulas assume that VF == number of elements in the vector. This
    may not hold when there are multiple-types in the loop.
@@ -6728,18 +6726,12 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
   tree niters_type = TREE_TYPE (loop_niters);
-  int group_size = 1;
+  int step = 1;
   int element_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
   int nelements = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
-    {
-      /* For interleaved access element size must be multiplied by the size of
-	 the interleaved group.  */
-      group_size = DR_GROUP_SIZE (vinfo_for_stmt (
-					       DR_GROUP_FIRST_DR (stmt_info)));
-      element_size *= group_size;
-    }
+    step = DR_GROUP_SIZE (vinfo_for_stmt (DR_GROUP_FIRST_DR (stmt_info)));
 
   pe = loop_preheader_edge (loop); 
 
@@ -6750,8 +6742,9 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "known alignment = %d.", byte_misalign);
-      iters = build_int_cst (niters_type, 
-			     (nelements - elem_misalign)&(nelements/group_size-1));
+
+      iters = build_int_cst (niters_type,
+                     (((nelements - elem_misalign) & (nelements - 1)) / step));
     }
   else
     {
