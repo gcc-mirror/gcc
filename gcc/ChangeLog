@@ -1,3 +1,8 @@
+2008-06-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/darwin-driver.c (darwin_default_min_version): Fix
+	-Wc++-compat warnings.
+
 2008-06-30 Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movti_rex64): Add "!" to "r" constraint
