@@ -257,42 +257,27 @@ static bool
 can_propagate_from (tree def_stmt)
 {
   tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
+  use_operand_p use_p;
+  ssa_op_iter iter;
 
   /* If the rhs has side-effects we cannot propagate from it.  */
   if (TREE_SIDE_EFFECTS (rhs))
     return false;
 
   /* If the rhs is a load we cannot propagate from it.  */
-  if (REFERENCE_CLASS_P (rhs))
+  if (REFERENCE_CLASS_P (rhs)
+      || DECL_P (rhs))
     return false;
 
   /* Constants can be always propagated.  */
   if (is_gimple_min_invariant (rhs))
     return true;
 
-  /* We cannot propagate ssa names that occur in abnormal phi nodes.  */
-  switch (TREE_CODE_LENGTH (TREE_CODE (rhs)))
-    {
-    case 3:
-      if (TREE_OPERAND (rhs, 2) != NULL_TREE
-	  && TREE_CODE (TREE_OPERAND (rhs, 2)) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (rhs, 2)))
-	return false;
-    case 2:
-      if (TREE_OPERAND (rhs, 1) != NULL_TREE
-	  && TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (rhs, 1)))
-	return false;
-    case 1:
-      if (TREE_OPERAND (rhs, 0) != NULL_TREE
-	  && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (rhs, 0)))
-	return false;
-      break;
-
-    default:
+  /* If any of the SSA operands occurs in abnormal PHIs we cannot
+     propagate from this stmt.  */
+  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
+    if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (use_p)))
       return false;
-    }
 
   /* If the definition is a conversion of a pointer to a function type,
      then we can not apply optimizations as some targets require function
