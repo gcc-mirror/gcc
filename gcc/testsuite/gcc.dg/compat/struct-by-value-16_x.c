@@ -19,10 +19,7 @@ TEST(Scf9, _Complex float)
 TEST(Scf10, _Complex float)
 TEST(Scf11, _Complex float)
 TEST(Scf12, _Complex float)
-TEST(Scf13, _Complex float)
-TEST(Scf14, _Complex float)
-TEST(Scf15, _Complex float)
-TEST(Scf16, _Complex float)
+
 
 #undef T
 
@@ -45,10 +42,7 @@ T(Scf9, _Complex float)
 T(Scf10, _Complex float)
 T(Scf11, _Complex float)
 T(Scf12, _Complex float)
-T(Scf13, _Complex float)
-T(Scf14, _Complex float)
-T(Scf15, _Complex float)
-T(Scf16, _Complex float)
+
 
 DEBUG_FINI
 

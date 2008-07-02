@@ -19,10 +19,7 @@ TEST(Scld9, _Complex long double)
 TEST(Scld10, _Complex long double)
 TEST(Scld11, _Complex long double)
 TEST(Scld12, _Complex long double)
-TEST(Scld13, _Complex long double)
-TEST(Scld14, _Complex long double)
-TEST(Scld15, _Complex long double)
-TEST(Scld16, _Complex long double)
+
 
 #undef T
 
@@ -45,10 +42,7 @@ T(Scld9, _Complex long double)
 T(Scld10, _Complex long double)
 T(Scld11, _Complex long double)
 T(Scld12, _Complex long double)
-T(Scld13, _Complex long double)
-T(Scld14, _Complex long double)
-T(Scld15, _Complex long double)
-T(Scld16, _Complex long double)
+
 
 DEBUG_FINI
 

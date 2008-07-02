@@ -1,5 +1,28 @@
 2008-07-02  Andy Hutchinson  <hutchinsonandy@aim.com>
 
+	PR testsuite/36285
+	* gcc.dg/compat/struct-by-value-16_x.c: Move some tests to new file 
+	to reduce code size.
+	* gcc.dg/compat/struct-by-value-16_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-16a_main.c: New file.
+	* gcc.dg/compat/struct-by-value-16a_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-16a_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-17_x.c: Move some tests to new file 
+	to reduce code size.
+	* gcc.dg/compat/struct-by-value-17_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-17a_main.c: New file.
+	* gcc.dg/compat/struct-by-value-17a_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-17a_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-18_x.c: Move some tests to new file 
+	to reduce code size.
+	* gcc.dg/compat/struct-by-value-18_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-18a_main.c: New file.
+	* gcc.dg/compat/struct-by-value-18a_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-18a_y.c: Ditto.
+
+
+2008-07-02  Andy Hutchinson  <hutchinsonandy@aim.com>
+
 	* gcc.dg/pr36227.c: Correct test for targets where long is
 	not the same size as pointer.
 
