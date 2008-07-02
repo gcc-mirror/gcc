@@ -1,5 +1,9 @@
 2008-07-02  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-switch-conversion.c: Included timevar.h which I forgot before.
+	
+2008-07-02  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-switch-conversion.c: Included timevar.h
 	(pass_convert_switch): Added a timevar id (TV_TREE_SWITCH_CONVERSION).
 
