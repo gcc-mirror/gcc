@@ -5,6 +5,20 @@
 # to defer implementation of these routines to libgcc.so via DT_AUXILIARY.
 
 %ifndef __x86_64__
+%exclude {
+  __divdi3
+  __moddi3
+  __udivdi3
+  __umoddi3
+  __register_frame
+  __register_frame_table
+  __deregister_frame
+  __register_frame_info
+  __deregister_frame_info
+  __frame_state_for
+  __register_frame_info_table
+}
+
 %inherit GCC_3.0 GLIBC_2.0
 GLIBC_2.0 {
   # Sampling of DImode arithmetic used by (at least) i386 and m68k.
@@ -24,16 +38,18 @@ GLIBC_2.0 {
 }
 %endif
 
-% 128 bit long double support was introduced with GCC 4.3.0.
-% These lines make the symbols to get a @@GCC_4.3.0 attached.
+# 128 bit long double support was introduced with GCC 4.3.0 to 64bit
+# and with GCC 4.4.0 to 32bit.  These lines make the symbols to get
+# a @@GCC_4.3.0 or @@GCC_4.4.0 attached.
 
-%ifdef __x86_64__
 %exclude {
   __addtf3
+  __divtc3
   __divtf3
   __eqtf2
   __extenddftf2
   __extendsftf2
+  __extendxftf2
   __fixtfdi
   __fixtfsi
   __fixtfti
@@ -47,21 +63,45 @@ GLIBC_2.0 {
   __floatunsitf
   __floatuntitf
   __getf2
+  __gttf2
   __letf2
+  __lttf2
+  __multc3
   __multf3
   __negtf2
+  __netf2
+  __powitf2
   __subtf3
   __trunctfdf2
   __trunctfsf2
+  __trunctfxf2
   __unordtf2
+}
+
+%ifdef __x86_64__
+# Those symbols had improper versions when they were added to gcc 4.3.0.
+# We corrected the default version to GCC_4.3.0.  But we keep the old
+# version for backward binary compatibility. 
+GCC_3.0 {
+  __gttf2
+  __lttf2
+  __netf2
+}
+
+GCC_4.0.0 {
+  __divtc3
+  __multc3
+  __powitf2
 }
 
 GCC_4.3.0 {
   __addtf3
+  __divtc3
   __divtf3
   __eqtf2
   __extenddftf2
   __extendsftf2
+  __extendxftf2
   __fixtfdi
   __fixtfsi
   __fixtfti
@@ -75,12 +115,51 @@ GCC_4.3.0 {
   __floatunsitf
   __floatuntitf
   __getf2
+  __gttf2
   __letf2
+  __lttf2
+  __multc3
   __multf3
   __negtf2
+  __netf2
+  __powitf2
   __subtf3
   __trunctfdf2
   __trunctfsf2
+  __trunctfxf2
+  __unordtf2
+}
+%else
+GCC_4.4.0 {
+  __addtf3
+  __copysigntf3
+  __divtc3
+  __divtf3
+  __eqtf2
+  __extenddftf2
+  __extendsftf2
+  __fabstf2
+  __fixtfdi
+  __fixtfsi
+  __fixunstfdi
+  __fixunstfsi
+  __floatditf
+  __floatsitf
+  __floatunditf
+  __floatunsitf
+  __getf2
+  __gttf2
+  __letf2
+  __lttf2
+  __multc3
+  __multf3
+  __negtf2
+  __netf2
+  __powitf2
+  __subtf3
+  __trunctfdf2
+  __trunctfsf2
+  __trunctfxf2
   __unordtf2
 }
 %endif

@@ -1,9 +1,3 @@
-# On x86-64 we do not need any exports for glibc for 64-bit libgcc_s,
-# override the settings
-# from t-slibgcc-elf-ver and t-linux
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
-		 $(srcdir)/config/i386/libgcc-x86_64-glibc.ver
-
 # On Debian, Ubuntu and other derivative distributions, the 32bit libraries
 # are found in /lib32 and /usr/lib32, /lib64 and /usr/lib64 are symlinks to
 # /lib and /usr/lib, while other distributions install libraries into /lib64
@@ -21,6 +15,3 @@ INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
 		     crtbeginT.o crtprec32.o crtprec64.o crtprec80.o \
 		     crtfastmath.o
-
-softfp_wrap_start := '\#ifdef __x86_64__'
-softfp_wrap_end := '\#endif'

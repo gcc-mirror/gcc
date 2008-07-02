@@ -1,0 +1,12 @@
+# Filter out the following TImode functions and provide backward binary
+# compatibility.
+tf-compats = getf2.c letf2.c eqtf2.c
+tf-functions := $(addprefix $(gcc_srcdir)/config/soft-fp/, $(tf-compats))
+LIB2ADD := $(filter-out $(tf-functions), $(LIB2ADD))
+LIB2ADD += $(addprefix $(srcdir)/config/i386/64/, $(tf-compats))
+
+# Replace _divtc3, _multc3 and _powitf2.
+libgcc2-tf-functions = _divtc3 _multc3 _powitf2
+LIB2FUNCS_EXCLUDE += $(libgcc2-tf-functions)
+libgcc2-tf-compats = $(addsuffix -compat.c, $(libgcc2-tf-functions))
+LIB2ADD += $(addprefix $(srcdir)/config/i386/64/, $(libgcc2-tf-compats))

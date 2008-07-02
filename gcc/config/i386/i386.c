@@ -20247,16 +20247,26 @@ ix86_init_builtins (void)
 			       NULL, NULL_TREE);
   ix86_builtins[(int) IX86_BUILTIN_INFQ] = decl;
 
+  /* We will expand them to normal call if SSE2 isn't available since
+     they are used by libgcc. */
   ftype = build_function_type_list (float128_type_node,
 				    float128_type_node,
 				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_fabsq", ftype, IX86_BUILTIN_FABSQ);
+  decl = add_builtin_function ("__builtin_fabsq", ftype,
+			       IX86_BUILTIN_FABSQ, BUILT_IN_MD,
+			       "__fabstf2", NULL_TREE);
+  ix86_builtins[(int) IX86_BUILTIN_FABSQ] = decl;
+  TREE_READONLY (decl) = 1;
 
   ftype = build_function_type_list (float128_type_node,
 				    float128_type_node,
 				    float128_type_node,
 				    NULL_TREE);
-  def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_copysignq", ftype, IX86_BUILTIN_COPYSIGNQ);
+  decl = add_builtin_function ("__builtin_copysignq", ftype,
+			       IX86_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
+			       "__copysigntf3", NULL_TREE);
+  ix86_builtins[(int) IX86_BUILTIN_COPYSIGNQ] = decl;
+  TREE_READONLY (decl) = 1;
 
   if (TARGET_MMX)
     ix86_init_mmx_sse_builtins ();
@@ -21610,7 +21620,16 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
        i < ARRAY_SIZE (bdesc_args);
        i++, d++)
     if (d->code == fcode)
-      return ix86_expand_args_builtin (d, exp, target);
+      switch (fcode)
+	{
+	case IX86_BUILTIN_FABSQ:
+	case IX86_BUILTIN_COPYSIGNQ:
+	  if (!TARGET_SSE2)
+	    /* Emit a normal call if SSE2 isn't available.  */
+	    return expand_call (exp, target, ignore);
+	default:
+	  return ix86_expand_args_builtin (d, exp, target);
+	}
 
   for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     if (d->code == fcode)

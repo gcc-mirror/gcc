@@ -1,0 +1,8 @@
+# Filter out TImode functions
+tifunctions = fixtfti.c fixunstfti.c floattitf.c floatuntitf.c
+tifunctions := $(addprefix $(gcc_srcdir)/config/soft-fp/, $(tifunctions))
+
+LIB2ADD := $(filter-out $(tifunctions), $(LIB2ADD))
+
+# Provide fallbacks for __builtin_copysignq and __builtin_fabsq.
+LIB2ADD += $(srcdir)/config/i386/32/tf-signs.c
