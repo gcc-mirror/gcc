@@ -1,3 +1,12 @@
+2008-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/alpha/alpha.c (alpha_need_linkage, alpha_use_linkage):
+	Fix -Wc++-compat and/or -Wcast-qual warnings.
+	* config/i386/netware.c (gen_stdcall_or_fastcall_decoration,
+	gen_regparm_prefix): Likewise.
+	* vmsdbgout.c (write_modbeg, lookup_filename,
+	vmsdbgout_source_line, vmsdbgout_init): Likewise.
+
 2008-07-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/mingw32.h (TARGET_USE_JCR_SECTION): Undef to let

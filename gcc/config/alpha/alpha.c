@@ -9489,7 +9489,7 @@ alpha_need_linkage (const char *name, int is_local)
   /* Construct a SYMBOL_REF for us to call.  */
   {
     size_t name_len = strlen (name);
-    char *linksym = alloca (name_len + 6);
+    char *linksym = XALLOCAVEC (char, name_len + 6);
     linksym[0] = '$';
     memcpy (linksym + 1, name, name_len);
     memcpy (linksym + 1 + name_len, "..lk", 5);
@@ -9556,7 +9556,7 @@ alpha_use_linkage (rtx linkage, tree cfundecl, int lflag, int rflag)
 
       sprintf (buf, "$%d..%s..lk", cfaf->num, name);
       buflen = strlen (buf);
-      linksym = alloca (buflen + 1);
+      linksym = XALLOCAVEC (char, buflen + 1);
       memcpy (linksym, buf, buflen + 1);
 
       al->linkage = gen_rtx_SYMBOL_REF

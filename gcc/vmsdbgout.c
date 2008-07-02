@@ -715,7 +715,7 @@ write_modbeg (int dosizeonly)
   int totsize = 0;
 
   /* Assumes primary filename has Unix syntax file spec.  */
-  module_name = xstrdup (basename ((char *) primary_filename));
+  module_name = xstrdup (lbasename (primary_filename));
 
   m = strrchr (module_name, '.');
   if (m)
@@ -1510,9 +1510,8 @@ lookup_filename (const char *file_name)
     {
 
       file_info_table_allocated += FILE_TABLE_INCREMENT;
-      file_info_table = xrealloc (file_info_table,
-				  (file_info_table_allocated
-				   * sizeof (dst_file_info_entry)));
+      file_info_table = XRESIZEVEC (dst_file_info_entry, file_info_table,
+				    file_info_table_allocated);
     }
 
   /* Add the new entry to the end of the filename table.  */
@@ -1549,9 +1548,8 @@ vmsdbgout_source_line (register unsigned line, register const char *filename)
       if (line_info_table_in_use == line_info_table_allocated)
 	{
 	  line_info_table_allocated += LINE_INFO_TABLE_INCREMENT;
-	  line_info_table = xrealloc (line_info_table,
-				      (line_info_table_allocated
-				       * sizeof (dst_line_info_entry)));
+	  line_info_table = XRESIZEVEC (dst_line_info_entry, line_info_table,
+					line_info_table_allocated);
 	}
 
       /* Add the new entry at the end of the line_info_table.  */
@@ -1600,8 +1598,7 @@ vmsdbgout_init (const char *main_input_filename)
   primary_filename = main_input_filename;
 
   /* Allocate the initial hunk of the file_info_table.  */
-  file_info_table
-    = xcalloc (FILE_TABLE_INCREMENT, sizeof (dst_file_info_entry));
+  file_info_table = XCNEWVEC (dst_file_info_entry, FILE_TABLE_INCREMENT);
   file_info_table_allocated = FILE_TABLE_INCREMENT;
 
   /* Skip the first entry - file numbers begin at 1 */
@@ -1612,8 +1609,7 @@ vmsdbgout_init (const char *main_input_filename)
   func_table_in_use = 1;
 
   /* Allocate the initial hunk of the line_info_table.  */
-  line_info_table
-    = xcalloc (LINE_INFO_TABLE_INCREMENT, sizeof (dst_line_info_entry));
+  line_info_table = XCNEWVEC (dst_line_info_entry, LINE_INFO_TABLE_INCREMENT);
   line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
   /* zero-th entry is allocated, but unused */
   line_info_table_in_use = 1;
