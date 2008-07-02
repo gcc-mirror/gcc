@@ -1385,6 +1385,9 @@ asm_insn_count (rtx body)
   else
     template = decode_asm_operands (body, NULL, NULL, NULL, NULL, NULL);
 
+  if (!*template)
+    return 0;
+
   for (; *template; template++)
     if (IS_ASM_LOGICAL_LINE_SEPARATOR (*template, template)
 	|| *template == '\n')
