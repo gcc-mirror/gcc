@@ -1,3 +1,14 @@
+2008-07-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR fortran/36676
+	PR fortran/36657
+	PR fortran/36546
+	Backport from trunk.
+	* io/list_read.c (find_nml_name): Use unget_char before eat_separator.
+	(read_character): Check for '!' along with separators.
+	(eat_separator): Add tab character to condition	for looping past
+	whitespace.
+	
 2008-06-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/36538
