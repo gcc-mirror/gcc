@@ -95,6 +95,7 @@ eight) times the number of the actual switch branches. */
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "tree-dump.h"
+#include "timevar.h"
 
 /* The main structure of the pass.  */
 struct switch_conv_info
