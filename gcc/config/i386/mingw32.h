@@ -160,9 +160,8 @@ do {						         \
 #undef TARGET_N_FORMAT_TYPES
 #define TARGET_N_FORMAT_TYPES 3
 
-/* JCR_SECTION works on mingw32.  */
+/* Let defaults.h definition of TARGET_USE_JCR_SECTION apply. */
 #undef TARGET_USE_JCR_SECTION
-#define TARGET_USE_JCR_SECTION 1
 
 #undef MINGW_ENABLE_EXECUTE_STACK
 #define MINGW_ENABLE_EXECUTE_STACK     \
