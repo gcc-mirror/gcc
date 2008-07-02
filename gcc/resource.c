@@ -266,12 +266,9 @@ mark_referenced_resources (rtx x, struct resources *res,
       return;
 
     case UNSPEC_VOLATILE:
+    case TRAP_IF:
     case ASM_INPUT:
       /* Traditional asm's are always volatile.  */
-      res->volatil = 1;
-      return;
-
-    case TRAP_IF:
       res->volatil = 1;
       break;
 

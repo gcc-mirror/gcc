@@ -1,3 +1,8 @@
+2008-07-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* resource.c (mark_referenced_resources): Look inside
+	UNSPEC_VOLATILEs and ASM_INPUTs.
+
 2008-07-02  Ian Lance Taylor  <iant@google.com>
 
 	* rtlanal.c (add_reg_note): New function.
