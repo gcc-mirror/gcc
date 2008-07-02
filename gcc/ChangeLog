@@ -1,3 +1,56 @@
+2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36669
+	* config/libgcc-glibc.ver: Add %exclude.
+	* config/m32r/libgcc-glibc.ver: Likwise.
+	* config/s390/libgcc-glibc.ver: Likwise.
+	* config/sh/libgcc-glibc.ver: Likwise.
+	* config/sparc/libgcc-sparc-glibc.ver: Likwise.
+
+	* config/i386/libgcc-glibc.ver: New.
+
+	* config/i386/libgcc-x86_64-glibc.ver: Removed.
+
+2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Remove i386/t-fprules-softfp64 soft-fp/t-softfp
+	from tmake_file from i[34567]86-*-darwin*, x86_64-*-darwin*,
+	i[34567]86-*-linux*, x86_64-*-linux*.  Add
+	i386/t-fprules-softfp and soft-fp/t-softfp to tmake_file for
+	i[34567]86-*-darwin*, x86_64-*-darwin*, i[34567]86-*-linux*,
+	x86_64-*-linux*.  Add i386/t-linux to tmake_file for
+	i[34567]86-*-linux*, x86_64-*-linux*.
+
+	* libgcc-std.ver: Add empty GCC_4.4.0.
+
+	* mkmap-symver.awk: Support multiple versions per symbol.
+
+	* config/i386/i386.c (ix86_init_builtins): Always define
+	__builtin_fabsq and __builtin_copysignq with fallbacks.
+	(ix86_expand_builtin): Emit normal call for __builtin_fabsq
+	and __builtin_copysignq if SSE2 isn't available.
+
+	* config/i386/linux.h (LIBGCC2_HAS_TF_MODE): Defined.
+	(LIBGCC2_TF_CEXT): Likwise.
+	(TF_SIZE): Likwise.
+
+	* config/i386/linux64.h (LIBGCC2_HAS_TF_MODE): Defined as 1.
+
+	* config/i386/sfp-machine.h: Moved to libgcc.
+
+	* config/i386/sfp-machine.h: New.
+	* config/i386/t-linux: Likwise.
+
+	* config/i386/t-darwin: Remove softfp_wrap_start and
+	softfp_wrap_end.
+	* config/i386/t-darwin64: Likewise.
+
+	* config/i386/t-fprules-softfp64: Renamed to ...
+	* config/i386/t-fprules-softfp: This.
+
+	* config/i386/t-linux64: Remove SHLIB_MAPFILES, softfp_wrap_start
+	and softfp_wrap_end.
+
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (ctor_to_list): New fn.

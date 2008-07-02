@@ -1,5 +1,2 @@
 LIB2_SIDITI_CONV_FUNCS=yes
 LIB2FUNCS_EXTRA = $(srcdir)/config/darwin-64.c
-
-softfp_wrap_start := '\#ifdef __x86_64__'
-softfp_wrap_end := '\#endif'

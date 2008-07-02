@@ -46,7 +46,8 @@ state == "nm" && ($1 == "U" || $2 == "U") {
 }
 
 state == "nm" && NF == 3 {
-  def[$3] = 1;
+  split ($3, s, "@")
+  def[s[1]] = 1;
   sawsymbol = 1;
   next;
 }
@@ -82,10 +83,13 @@ $1 == "}" {
 
 {
   sym = prefix $1;
+  symbols[sym] = 1
   if (thislib != "%exclude")
-    ver[sym] = thislib;
-  else
-    delete ver[sym];
+    ver[sym, thislib] = 1;
+  else {
+    for (l in libs)
+      ver[sym, l] = 0;
+  }
   next;
 }
 
@@ -107,8 +111,8 @@ function output(lib) {
     output(inherit[lib]);
 
   empty=1
-  for (sym in ver)
-    if ((ver[sym] == lib) && (sym in def))
+  for (sym in symbols)
+    if ((ver[sym, lib] != 0) && (sym in def))
       {
 	if (empty)
 	  {

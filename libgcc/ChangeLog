@@ -1,3 +1,38 @@
+2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36669
+	* shared-object.mk ($(base)_s$(objext)): Add -DSHARED.
+
+	* config/i386/64/_divtc3-compat.c: New.
+	* config/i386/64/_multc3-compat.c: Likewise.
+	* config/i386/64/_powitf2-compat.c: Likewise.
+	* config/i386/64/eqtf2.c: Likewise.
+	* config/i386/64/getf2.c: Likewise.
+	* config/i386/64/letf2.c: Likewise.
+	* config/i386/64/t-fprules-softfp: Likewise.
+
+2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.host: Add i386/${host_address}/t-fprules-softfp to
+	tmake_file for i[34567]86-*-darwin*, x86_64-*-darwin*,
+	i[34567]86-*-linux*, x86_64-*-linux*. 
+
+	* configure.ac: Set host_address to 64 or 32 for x86.
+	* configure: Regenerated.
+
+	* Makefile.in (config.status): Also depend on
+	$(srcdir)/config.host.
+
+	* config/i386/32/t-fprules-softfp: New.
+	* config/i386/32/tf-signs.c: Likewise.
+
+	* config/i386/64/sfp-machine.h: New. Moved from gcc.
+
+2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.h: New.
+
 2008-06-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/t-ppccomm: Remove rules that conflict with
