@@ -12,15 +12,20 @@ int
 main ()
 {
   double pinf = __builtin_inf ();
+#ifndef __SPU__
+  /* The SPU single-precision floating point format does not support Inf.  */
   float pinff = __builtin_inff ();
+#endif
   long double pinfl = __builtin_infl ();
 
   if (__builtin_isinf (pinf) != 1)
     link_error ();
+#ifndef __SPU__
   if (__builtin_isinf (pinff) != 1)
     link_error ();
   if (__builtin_isinff (pinff) != 1)
     link_error ();
+#endif
   if (__builtin_isinf (pinfl) != 1)
     link_error ();
   if (__builtin_isinfl (pinfl) != 1)
@@ -28,10 +33,12 @@ main ()
 
   if (__builtin_isinf (-pinf) != -1)
     link_error ();
+#ifndef __SPU__
   if (__builtin_isinf (-pinff) != -1)
     link_error ();
   if (__builtin_isinff (-pinff) != -1)
     link_error ();
+#endif
   if (__builtin_isinf (-pinfl) != -1)
     link_error ();
   if (__builtin_isinfl (-pinfl) != -1)

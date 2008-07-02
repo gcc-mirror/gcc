@@ -59,15 +59,21 @@ extern void fool (long double);
 void bar()
 {
   /* An argument of NaN is not evaluated at compile-time.  */
+#ifndef __SPU__
   foof (__builtin_exp2f (__builtin_nanf("")));
+#endif
   foo (__builtin_exp2 (__builtin_nan("")));
   fool (__builtin_exp2l (__builtin_nanl("")));
 
   /* An argument of Inf/-Inf is not evaluated at compile-time.  */
+#ifndef __SPU__
   foof (__builtin_exp2f (__builtin_inff()));
+#endif
   foo (__builtin_exp2 (__builtin_inf()));
   fool (__builtin_exp2l (__builtin_infl()));
+#ifndef __SPU__
   foof (__builtin_exp2f (-__builtin_inff()));
+#endif
   foo (__builtin_exp2 (-__builtin_inf()));
   fool (__builtin_exp2l (-__builtin_infl()));
 
@@ -130,24 +136,36 @@ void bar()
   TESTIT (tgamma, -3.0);
 
   /* An argument of NaN is not evaluated at compile-time.  */
+#ifndef __SPU__
   foof (__builtin_powf (__builtin_nanf(""), 2.5F));
+#endif
   foo (__builtin_pow (__builtin_nan(""), 2.5));
   fool (__builtin_powl (__builtin_nanl(""), 2.5L));
+#ifndef __SPU__
   foof (__builtin_powf (2.5F, __builtin_nanf("")));
+#endif
   foo (__builtin_pow (2.5, __builtin_nan("")));
   fool (__builtin_powl (2.5L, __builtin_nanl("")));
 
   /* An argument of Inf/-Inf is not evaluated at compile-time.  */
+#ifndef __SPU__
   foof (__builtin_powf (__builtin_inff(), 2.5F));
+#endif
   foo (__builtin_pow (__builtin_inf(), 2.5));
   fool (__builtin_powl (__builtin_infl(), 2.5L));
+#ifndef __SPU__
   foof (__builtin_powf (-__builtin_inff(), 2.5F));
+#endif
   foo (__builtin_pow (-__builtin_inf(), 2.5));
   fool (__builtin_powl (-__builtin_infl(), 2.5L));
+#ifndef __SPU__
   foof (__builtin_powf (2.5F, __builtin_inff()));
+#endif
   foo (__builtin_pow (2.5, __builtin_inf()));
   fool (__builtin_powl (2.5L, __builtin_infl()));
+#ifndef __SPU__
   foof (__builtin_powf (2.5F, -__builtin_inff()));
+#endif
   foo (__builtin_pow (2.5, -__builtin_inf()));
   fool (__builtin_powl (2.5L, -__builtin_infl()));
 
@@ -235,17 +253,25 @@ void bar()
   TESTIT (ilogb, 0.0);
   TESTIT (ilogb, -0.0);
 
+#ifndef __SPU__
   foof (__builtin_ilogbf (__builtin_inff()));
+#endif
   foo (__builtin_ilogb (__builtin_inf()));
   fool (__builtin_ilogbl (__builtin_infl()));
+#ifndef __SPU__
   foof (__builtin_ilogbf (-__builtin_inff()));
+#endif
   foo (__builtin_ilogb (-__builtin_inf()));
   fool (__builtin_ilogbl (-__builtin_infl()));
 
+#ifndef __SPU__
   foof (__builtin_ilogbf (__builtin_nanf("")));
+#endif
   foo (__builtin_ilogb (__builtin_nan("")));
   fool (__builtin_ilogbl (__builtin_nanl("")));
+#ifndef __SPU__
   foof (__builtin_ilogbf (-__builtin_nanf("")));
+#endif
   foo (__builtin_ilogb (-__builtin_nan("")));
   fool (__builtin_ilogbl (-__builtin_nanl("")));
 
@@ -291,7 +317,8 @@ void bar()
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
-/* { dg-final { scan-tree-dump-times "exp2f" 9 "original" } } */
+/* { dg-final { scan-tree-dump-times "exp2f" 9 "original" { target { ! { spu*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "exp2f" 6 "original" { target { spu*-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "exp2l" 9 "original" } } */
 /* { dg-final { scan-tree-dump-times "asin " 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "asinf" 2 "original" } } */
@@ -321,7 +348,8 @@ void bar()
 /* { dg-final { scan-tree-dump-times "tgammaf" 5 "original" } } */
 /* { dg-final { scan-tree-dump-times "tgammal" 5 "original" } } */
 /* { dg-final { scan-tree-dump-times "pow " 13 "original" } } */
-/* { dg-final { scan-tree-dump-times "powf" 13 "original" } } */
+/* { dg-final { scan-tree-dump-times "powf" 13 "original" { target { ! { spu*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "powf" 7 "original" { target { spu*-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "powl" 13 "original" } } */
 /* { dg-final { scan-tree-dump-times "fma " 3 "original" } } */
 /* { dg-final { scan-tree-dump-times "fmaf" 3 "original" } } */
@@ -342,7 +370,8 @@ void bar()
 /* { dg-final { scan-tree-dump-times "_logbf" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "_logbl" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "ilogb " 6 "original" } } */
-/* { dg-final { scan-tree-dump-times "ilogbf" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "ilogbf" 6 "original" { target { ! { spu*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "ilogbf" 2 "original" { target { spu*-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "ilogbl" 6 "original" } } */
 /* { dg-final { scan-tree-dump-times "y0 " 3 "original" } } */
 /* { dg-final { scan-tree-dump-times "y0f" 3 "original" } } */
