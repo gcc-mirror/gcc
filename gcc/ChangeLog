@@ -1,3 +1,8 @@
+2008-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (can_propagate_from): Exclude loads
+	from decls explicitly.  Merge operand checking from tuples.
+
 2008-07-02  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-switch-conversion.c: Included timevar.h which I forgot before.
