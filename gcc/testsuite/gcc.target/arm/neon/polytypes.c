@@ -28,7 +28,8 @@ void foo ()
   poly8x16_t v128_8;
   poly16x8_t v128_16;
 
-  s64_8 (v64_8); /* { dg-error "use -flax-vector-conversions.*incompatible type for argument 1 of 's64_8'" } */
+  s64_8 (v64_8); /* { dg-message "use -flax-vector-conversions" } */
+  /* { dg-error "incompatible type for argument 1 of 's64_8'" "" { target *-*-* } 31 } */
   u64_8 (v64_8); /* { dg-error "incompatible type for argument 1 of 'u64_8'" } */
   p64_8 (v64_8);
 

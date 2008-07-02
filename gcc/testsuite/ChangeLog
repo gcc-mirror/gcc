@@ -1,3 +1,8 @@
+2008-07-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/arm/neon/polytypes.c: Use dg-message separately from
+	dg-error to match separate messages.
+
 2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/abi/mangle24.C: Remove -mmmx.
