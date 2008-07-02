@@ -1,5 +1,4 @@
 /* { dg-do run { target *-*-linux* } } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2" } */
 
 extern void abort(void);

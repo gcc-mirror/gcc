@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-std=c99" } */
 
 typedef _Complex float __attribute__((mode(TC))) _Complex128;
