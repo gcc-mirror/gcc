@@ -1,3 +1,15 @@
+2008-07-02  Joshua Sumali  <jsumali@redhat.com>
+
+	* doc/install.texi (--enable-java-home): Document.
+	(--enable-aot-compile-rpm): Likewise.
+	(--with-arch-directory): Likewise.
+	(--with-os-directory): Likewise.
+	(--with-origin-name): Likewise.
+	(--with-arch-suffix): Likewise.
+	(--with-jvm-root-dir): Likewise.
+	(--with-jvm-jar-dir): Likewise.
+	(--with-python-dir): Likewise.
+
 2008-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (can_propagate_from): Exclude loads

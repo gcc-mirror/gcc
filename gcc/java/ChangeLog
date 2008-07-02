@@ -1,3 +1,14 @@
+2008-06-30  Joshua Sumali  <jsumali@redhat.com>
+
+	* Make-lang.in (JAVA_MANFILES): Add doc/aot-compile.1 and
+	doc/rebuild-gcj-db.1
+	(java.uninstall): Likewise.
+	(java.maintainer-clean): Likewise.
+	(aot-compile.pod): New rule.
+	(rebuild-gcj-db.pod): New rule.
+	(java.install-man): Install doc/aot-compile.1 and doc/rebuild-gcj-db.1
+	* gcj.texi: Add new sections for aot-compile and rebuild-gcj-db.
+
 2008-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (java/jcf-io.o-warn): New.

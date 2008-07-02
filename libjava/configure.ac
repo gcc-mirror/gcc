@@ -1416,6 +1416,7 @@ case $multi_os_directory in
    ;;
 esac
 AC_SUBST(dbexecdir)
+AC_SUBST(gcjsubdir)
 
 AC_DEFINE(JV_VERSION, "1.5.0", [Compatibility version string])
 AC_DEFINE(JV_API_VERSION, "1.5", [API compatibility version string])
@@ -1628,6 +1629,207 @@ AC_SUBST(here)
 # We get this from the environment.
 AC_SUBST(GCJFLAGS)
 
+AC_ARG_WITH([python-dir],
+            AS_HELP_STRING([--with-python-dir],
+                           [the location to install Python modules. This path should NOT include the prefix.]),
+            [with_python_dir=$withval], [with_python_dir=""])
+
+if test "x${with_python_dir}" = "x"
+then
+  # Needed for installing Python modules during make install.
+  python_mod_dir="\${prefix}/share/python"
+  # Needed for substituting into aot-compile*
+  python_mod_dir_expanded="${prefix}/share/python"
+else
+  python_mod_dir="\${prefix}${with_python_dir}"
+  python_mod_dir_expanded="${prefix}${with_python_dir}"
+fi
+AC_MSG_RESULT(Python modules dir: ${python_mod_dir_expanded});
+AC_SUBST(python_mod_dir)
+AC_SUBST(python_mod_dir_expanded)
+
+# needed for aot-compile-rpm
+MAKE=`which make`
+AC_SUBST(MAKE)
+
+AC_ARG_ENABLE([aot-compile-rpm],
+  [AS_HELP_STRING([--enable-aot-compile-rpm],
+                 [enable installation of aot-compile-rpm [default=no]])],
+  [case "${enableval}" in
+    yes) AOT_RPM_ENABLED=yes ;;
+    no)  AOT_RPM_ENABLED=no ;;
+    *)   AC_MSG_ERROR([Unknown argument to enable/disable aot-compile-rpm]) ;;
+  esac],
+  [AOT_RPM_ENABLED=no]
+)
+AM_CONDITIONAL(INSTALL_AOT_RPM, test "x${AOT_RPM_ENABLED}" == xyes)
+
+AC_ARG_ENABLE([java-home],
+  [AS_HELP_STRING([--enable-java-home],
+                 [create a standard JDK-style directory layout in the install tree [default=no]])],
+  [case "${enableval}" in
+    yes) JAVA_HOME_ENABLED=yes ;;
+    no)  JAVA_HOME_ENABLED=no ;;
+    *)   AC_MSG_ERROR([Unknown argument to enable/disable java-home]) ;;
+  esac],
+  [JAVA_HOME_ENABLED=no]
+)
+AM_CONDITIONAL(CREATE_JAVA_HOME, test "x${JAVA_HOME_ENABLED}" == xyes)
+
+# Only do these checks if java-home above is enabled.
+if test "x${JAVA_HOME_ENABLED}" == xyes
+then
+
+  AC_ARG_WITH([gcc-suffix],
+              AS_HELP_STRING([--with-gcc-suffix],
+                             [the GCC tool suffix (defaults to empty string)]),
+              [gcc_suffix=$withval], [gcc_suffix=""])
+  AC_MSG_RESULT(GCC suffix: ${gcc_suffix})
+  AC_SUBST(gcc_suffix)
+
+  AC_ARG_WITH([arch-directory],
+              AS_HELP_STRING([--with-arch-directory],
+                             [the arch directory under jre/lib (defaults to auto-detect)]),
+              [host_cpu=$withval], [host_cpu=""])
+
+  AC_ARG_WITH([os-directory],
+              AS_HELP_STRING([--with-os-directory],
+                             [the os directory under include (defaults to auto-detect)]),
+              [host_os=$withval], [host_os=""])
+
+  AC_ARG_WITH([origin-name],
+              AS_HELP_STRING([--with-origin-name],
+                             [the JPackage origin name of this package (default is gcj${gcc_suffix}]),
+              [origin_name=$withval], [origin_name=gcj${gcc_suffix}])
+  AC_MSG_RESULT(JPackage origin name: ${origin_name})
+
+  AC_ARG_WITH([arch-suffix],
+              AS_HELP_STRING([--with-arch-suffix],
+                             [the arch directory suffix (default is the empty string]),
+              [arch_suffix=$withval], [arch_suffix=""])
+  AC_MSG_RESULT(arch suffix: ${arch_suffix})
+
+  AC_ARG_WITH([jvm-root-dir],
+              AS_HELP_STRING([--with-jvm-root-dir],
+                             [where to install SDK (default is ${prefix}/lib/jvm)]),
+              [jvm_root_dir=$withval], [jvm_root_dir="\${prefix}/lib/jvm"])
+  AC_MSG_RESULT(JVM root installation directory: ${jvm_root_dir})
+
+  AC_ARG_WITH([jvm-jar-dir],
+              AS_HELP_STRING([--with-jvm-jar-dir],
+			                 [where to install jars (default is ${prefix}/lib/jvm-exports)]),
+              [jvm_jar_dir=$withval], [jvm_jar_dir=\${prefix}/lib/jvm-exports])
+  AC_MSG_RESULT(JAR root installation directory: ${jvm_jar_dir})
+
+  JAVA_VERSION=1.5.0
+  BUILD_VERSION=0
+  AC_SUBST(JAVA_VERSION)
+  AC_SUBST(BUILD_VERSION)
+  AC_MSG_RESULT(Java version: ${JAVA_VERSION})
+
+  jre_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}/jre
+  sdk_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}
+  jre_lnk=jre-${JAVA_VERSION}-${origin_name}
+  sdk_lnk=java-${JAVA_VERSION}-${origin_name}
+
+  JVM_ROOT_DIR=${jvm_root_dir}
+  AC_SUBST(JVM_ROOT_DIR)
+  AC_MSG_RESULT(JVM ROOT directory: ${JVM_ROOT_DIR})
+
+  JVM_JAR_ROOT_DIR=${jvm_jar_dir}
+  AC_SUBST(JVM_JAR_ROOT_DIR)
+  AC_MSG_RESULT(JVM JAR ROOT directory: ${JVM_JAR_ROOT_DIR})
+
+  JVM_JAR_DIR=${jvm_jar_dir}/${sdk_dir}
+  AC_SUBST(JVM_JAR_DIR)
+  AC_MSG_RESULT(JVM JAR directory: ${JVM_JAR_DIR})
+
+  JRE_DIR=${jre_dir}
+  AC_SUBST(JRE_DIR)
+
+  SDK_DIR=${sdk_dir}
+  AC_SUBST(SDK_DIR)
+
+  JRE_LNK=${jre_lnk}
+  AC_SUBST(JRE_LNK)
+
+  SDK_LNK=${sdk_lnk}
+  AC_SUBST(SDK_LNK)
+
+  SDK_BIN_DIR=${jvm_root_dir}/${sdk_dir}/bin
+  AC_SUBST(SDK_BIN_DIR)
+  AC_MSG_RESULT(SDK tools directory: ${SDK_BIN_DIR})
+
+  SDK_LIB_DIR=${jvm_root_dir}/${sdk_dir}/lib
+  AC_SUBST(SDK_LIB_DIR)
+  AC_MSG_RESULT(SDK jar directory: ${SDK_LIB_DIR})
+
+  SDK_INCLUDE_DIR=${jvm_root_dir}/${sdk_dir}/include
+  AC_SUBST(SDK_INCLUDE_DIR)
+  AC_MSG_RESULT(SDK include directory: ${SDK_INCLUDE_DIR})
+
+  JRE_BIN_DIR=${jvm_root_dir}/${jre_dir}/bin
+  AC_SUBST(JRE_BIN_DIR)
+  AC_MSG_RESULT(JRE tools directory: ${JRE_BIN_DIR})
+
+  JRE_LIB_DIR=${jvm_root_dir}/${jre_dir}/lib
+  AC_SUBST(JRE_LIB_DIR)
+  AC_MSG_RESULT(JRE lib directory: ${JRE_LIB_DIR})
+
+  # Find gcj prefix using gcj found in PATH.
+  gcj_prefix=`which gcj${gcc_suffix} | sed "s%/bin/gcj${gcc_suffix}%%"`
+
+  # Where do the gcj binaries live?
+  # For jhbuild based builds, they all live in a sibling of bin called
+  # gcj-bin.  Check for gcj-bin first, and use bin otherwise.
+  GCJ_BIN_DIR=`if test -d ${gcj_prefix}/gcj-bin; then echo ${gcj_prefix}/gcj-bin; else echo ${gcj_prefix}/bin; fi`
+  AC_SUBST(GCJ_BIN_DIR)
+  AC_MSG_RESULT(GCJ tools directory: ${GCJ_BIN_DIR})
+
+  echo host is ${host}
+  if test "x${host_cpu}" = "x"
+  then
+    case ${host} in
+      *-mingw* | *-cygwin*)
+        host_cpu=x86;;
+      i486-* | i586-* | i686-*)
+        host_cpu=i386;;
+      *)
+        host_cpu=${host_cpu};;
+    esac
+  fi
+  AC_MSG_RESULT(arch directory: ${host_cpu})
+  CPU=${host_cpu}
+  AC_SUBST(CPU)
+
+  if test "x${host_os}" = "x"
+  then
+    case ${host} in
+      *-mingw* | *-cygwin*)
+        host_os=win32;;
+      *-linux*)
+        host_os=linux;;
+      *)
+        host_os=${host_os};;
+    esac
+  fi
+  echo os directory: ${host_os}
+  OS=${host_os}
+  AC_SUBST(OS)
+
+  # make an expanded $libdir, for substituting into
+  # scripts (and other non-Makefile things).
+  LIBDIR=$libdir
+  if test "x${exec_prefix}" = "xNONE"
+  then
+      lib_exec_prefix=$prefix
+  else
+      lib_exec_prefix=$exec_prefix
+  fi
+  LIBDIR=`echo $libdir | sed "s:\\\${exec_prefix}:$lib_exec_prefix:g"`
+  AC_SUBST(LIBDIR)
+fi
+
 AC_CONFIG_FILES([
 Makefile
 libgcj.pc
@@ -1636,6 +1838,10 @@ libgcj-test.spec
 gcj/Makefile
 include/Makefile
 testsuite/Makefile
+contrib/aotcompile.py
+contrib/aot-compile
+contrib/aot-compile-rpm
+contrib/rebuild-gcj-db
 ])
 
 if test ${multilib} = yes; then
