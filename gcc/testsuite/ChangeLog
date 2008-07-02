@@ -1,5 +1,12 @@
 2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	PR target/36698
+	* gcc.c-torture/compile/20001226-1.c: XFAIL -O0 case on SPU.
+
+	* gcc.dg/pr27095.c: Provide target-specific regexp for SPU.
+
+2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* lib/compat.exp (compat-execute): Add -ffunction-sections
 	and -Wl,--auto-overlay when building for spu-*-elf*.
 

@@ -11,7 +11,7 @@ main (int argc, char **argv)
   memset (x, argc, strlen (x));
   return 0;
 }
-/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" { target { ! { powerpc*-*-darwin* hppa*-*-hpux* ia64-*-hpux* alpha*-*-* } } } } } */
+/* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen" { target { ! { powerpc*-*-darwin* hppa*-*-hpux* ia64-*-hpux* alpha*-*-* spu-*-* } } } } } */
 /* hppa*-*-hpux* has an IMPORT statement for strlen (plus the branch). */
 /* *-*-darwin* has something similar. */
 /* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen" { target hppa*-*-hpux* } } } */
@@ -20,3 +20,5 @@ main (int argc, char **argv)
 /* { dg-final { scan-assembler-not "(?n)strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen\(.*\n\)+.*strlen" { target ia64-*-hpux* } } } */
 /* alpha-*-* has a GOT load and the call.  */
 /* { dg-final { scan-assembler-not "(?n)jsr .*,strlen\(.*\n\)+.*jsr .*,strlen" { target alpha*-*-* } } } */
+/* spu-*-* has a branch hint and the call.  */
+/* { dg-final { scan-assembler-not "(?n)brsl.*,strlen\(.*\n\)+.*brsl.*,strlen" { target spu-*-* } } } */
