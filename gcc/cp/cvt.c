@@ -725,8 +725,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       if (abstract_virtuals_error (NULL_TREE, type))
 	return error_mark_node;
 
-      if ((flags & LOOKUP_ONLYCONVERTING)
-	  && ! (MAYBE_CLASS_TYPE_P (dtype) && DERIVED_FROM_P (type, dtype)))
+      if (BRACE_ENCLOSED_INITIALIZER_P (ctor))
+	ctor = perform_implicit_conversion (type, ctor, tf_warning_or_error);
+      else if ((flags & LOOKUP_ONLYCONVERTING)
+	       && ! (CLASS_TYPE_P (dtype) && DERIVED_FROM_P (type, dtype)))
 	/* For copy-initialization, first we create a temp of the proper type
 	   with a user-defined conversion sequence, then we direct-initialize
 	   the target with the temp (see [dcl.init]).  */

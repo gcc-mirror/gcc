@@ -616,6 +616,14 @@ build_cplus_array_type (tree elt_type, tree index_type)
   return t;
 }
 
+/* Return an ARRAY_TYPE with element type ELT and length N.  */
+
+tree
+build_array_of_n_type (tree elt, int n)
+{
+  return build_cplus_array_type (elt, build_index_type (size_int (n - 1)));
+}
+
 /* Return a reference type node referring to TO_TYPE.  If RVAL is
    true, return an rvalue reference type, otherwise return an lvalue
    reference type.  If a type node exists, reuse it, otherwise create

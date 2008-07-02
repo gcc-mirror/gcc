@@ -4639,7 +4639,8 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case TYPENAME_TYPE:
       return false;
     case LANG_TYPE:
-      gcc_assert (type == unknown_type_node);
+      gcc_assert (type == unknown_type_node
+		  || type == init_list_type_node);
       return false;
     case TYPE_PACK_EXPANSION:
       return arg_assoc_type (k, PACK_EXPANSION_PATTERN (type));

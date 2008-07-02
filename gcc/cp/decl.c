@@ -3344,6 +3344,9 @@ cxx_init_decl_processing (void)
   TYPE_POINTER_TO (unknown_type_node) = unknown_type_node;
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 
+  init_list_type_node = make_node (UNKNOWN_TYPE);
+  record_unknown_type (init_list_type_node, "init list");
+
   {
     /* Make sure we get a unique function type, so we can give
        its pointer type a name.  (This wins for gdb.) */
@@ -4295,6 +4298,39 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
   return NULL_TREE;
 }
 
+/* Subroutine of check_initializer.  We're initializing a DECL of
+   std::initializer_list<T> TYPE from a braced-init-list INIT, and need to
+   extend the lifetime of the underlying array to match that of the decl,
+   just like for reference initialization.  CLEANUP is as for
+   grok_reference_init.  */
+
+static tree
+build_init_list_var_init (tree decl, tree type, tree init, tree *cleanup)
+{
+  tree aggr_init, array, arrtype;
+  init = perform_implicit_conversion (type, init, tf_warning_or_error);
+  aggr_init = TARGET_EXPR_INITIAL (init);
+  init = build2 (INIT_EXPR, type, decl, init);
+
+  array = AGGR_INIT_EXPR_ARG (aggr_init, 1);
+  arrtype = TREE_TYPE (array);
+  STRIP_NOPS (array);
+  gcc_assert (TREE_CODE (array) == ADDR_EXPR);
+  array = TREE_OPERAND (array, 0);
+  /* If the array is constant, finish_compound_literal already made it a
+     static variable and we don't need to do anything here.  */
+  if (decl && TREE_CODE (array) == TARGET_EXPR)
+    {
+      tree subinit;
+      tree var = set_up_extended_ref_temp (decl, array, cleanup, &subinit);
+      var = build_address (var);
+      var = convert (arrtype, var);
+      AGGR_INIT_EXPR_ARG (aggr_init, 1) = var;
+      init = build2 (COMPOUND_EXPR, TREE_TYPE (init), subinit, init);
+    }
+  return init;
+}
+
 /* Designated initializers in arrays are not supported in GNU C++.
    The parser cannot detect this error since it does not know whether
    a given brace-enclosed initializer is for a class type or for an
@@ -4573,7 +4609,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
   unsigned HOST_WIDE_INT index;
 
   /* The initializer for an array is always a CONSTRUCTOR.  */
-  new_init = build_constructor (NULL_TREE, NULL);
+  new_init = build_constructor (init_list_type_node, NULL);
 
   if (sized_array_p)
     {
@@ -4668,7 +4704,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
   gcc_assert (CLASS_TYPE_P (type));
 
   /* The initializer for a class is always a CONSTRUCTOR.  */
-  new_init = build_constructor (NULL_TREE, NULL);
+  new_init = build_constructor (init_list_type_node, NULL);
   field = next_initializable_field (TYPE_FIELDS (type));
 
   if (!field)
@@ -4926,6 +4962,26 @@ check_array_initializer (tree decl, tree type, tree init)
   return false;
 }
 
+/* Subroutine of check_initializer; args are passed down from that function.
+   Set stmts_are_full_exprs_p to 1 across a call to build_aggr_init.  */
+
+static tree
+build_aggr_init_full_exprs (tree decl, tree init, int flags)
+     
+{
+  int saved_stmts_are_full_exprs_p = 0;
+  if (building_stmt_tree ())
+    {
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+      current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+    }
+  init = build_aggr_init (decl, init, flags, tf_warning_or_error);
+  if (building_stmt_tree ())
+    current_stmt_tree ()->stmts_are_full_exprs_p =
+      saved_stmts_are_full_exprs_p;
+  return init;
+}
+
 /* Verify INIT (the initializer for DECL), and record the
    initialization in DECL_INITIAL, if appropriate.  CLEANUP is as for
    grok_reference_init.
@@ -4967,22 +5023,18 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       int init_len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init));
       if (SCALAR_TYPE_P (type))
 	{
-	  if (init_len != 1)
+	  if (init_len == 0)
+	    {
+	      maybe_warn_cpp0x ("extended initializer lists");
+	      init = build_zero_init (type, NULL_TREE, false);
+	    }
+	  else if (init_len != 1)
 	    {
 	      error ("scalar object %qD requires one element in initializer",
 		     decl);
 	      TREE_TYPE (decl) = error_mark_node;
 	      return NULL_TREE;
 	    }
-	}
-      else if ((cxx_dialect == cxx98) && !CP_AGGREGATE_TYPE_P (type))
-	{
-	  /* A non-aggregate that is not a scalar cannot be initialized
-	     via an initializer-list in C++98.  */
-	  error ("braces around initializer for non-aggregate type %qT",
-		 type);
-	  TREE_TYPE (decl) = error_mark_node;
-	  return NULL_TREE;
 	}
     }
 
@@ -5001,17 +5053,26 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     {
       /* Do not reshape constructors of vectors (they don't need to be
 	 reshaped.  */
-      if (TREE_CODE (init) == CONSTRUCTOR
-	  && !COMPOUND_LITERAL_P (init)
-	  && !TREE_TYPE (init))  /* ptrmemfunc */
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
-	  init = reshape_init (type, init);
-
-	  if ((*targetm.vector_opaque_p) (type))
+	  if (is_std_init_list (type))
+	    return build_init_list_var_init (decl, type, init, cleanup);
+	  else if (TYPE_NON_AGGREGATE_CLASS (type))
+	    {
+	      /* Don't reshape if the class has constructors.  */
+	      if (cxx_dialect == cxx98)
+		error ("in C++98 %qD must be initialized by constructor, "
+		       "not by %<{...}%>",
+		       decl);
+	      init = build_tree_list (NULL_TREE, init);
+	    }
+	  else if ((*targetm.vector_opaque_p) (type))
 	    {
 	      error ("opaque vector types cannot be initialized");
 	      init = error_mark_node;
 	    }
+	  else
+	    init = reshape_init (type, init);	    
 	}
 
       /* If DECL has an array type without a specific bound, deduce the
@@ -5021,60 +5082,26 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       if (type == error_mark_node)
 	return NULL_TREE;
 
-      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
-	goto initialize_aggr;
-      else if (CLASS_TYPE_P (type))
+      if (TYPE_NEEDS_CONSTRUCTING (type)
+	  || (CLASS_TYPE_P (type)
+	      && !BRACE_ENCLOSED_INITIALIZER_P (init)))
+	return build_aggr_init_full_exprs (decl, init, flags);
+      else if (TREE_CODE (init) != TREE_VEC)
 	{
-	  if (TREE_CODE (init) == CONSTRUCTOR)
-	    {
-	      if (TYPE_NON_AGGREGATE_CLASS (type))
-		{
-		  error ("%qD must be initialized by constructor, "
-			 "not by %<{...}%>",
-			 decl);
-		  init = error_mark_node;
-		}
-	      else
-		goto dont_use_constructor;
-	    }
-	  else
-	    {
-	      int saved_stmts_are_full_exprs_p;
-
-	    initialize_aggr:
-	      saved_stmts_are_full_exprs_p = 0;
-	      if (building_stmt_tree ())
-		{
-		  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-		  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-		}
-	      init = build_aggr_init (decl, init, flags, tf_warning_or_error);
-	      if (building_stmt_tree ())
-		current_stmt_tree ()->stmts_are_full_exprs_p =
-		  saved_stmts_are_full_exprs_p;
-	      return init;
-	    }
-	}
-      else
-	{
-	dont_use_constructor:
-	  if (TREE_CODE (init) != TREE_VEC)
-	    {
-	      init_code = store_init_value (decl, init);
-	      if (pedantic && TREE_CODE (type) == ARRAY_TYPE
-		  && DECL_INITIAL (decl)
-		  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
-		  && PAREN_STRING_LITERAL_P (DECL_INITIAL (decl)))
-		warning (0, "array %qD initialized by parenthesized string literal %qE",
-			 decl, DECL_INITIAL (decl));
-	      init = NULL;
-	    }
+	  init_code = store_init_value (decl, init);
+	  if (pedantic && TREE_CODE (type) == ARRAY_TYPE
+	      && DECL_INITIAL (decl)
+	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
+	      && PAREN_STRING_LITERAL_P (DECL_INITIAL (decl)))
+	    warning (0, "array %qD initialized by parenthesized string literal %qE",
+		     decl, DECL_INITIAL (decl));
+	  init = NULL;
 	}
     }
   else if (DECL_EXTERNAL (decl))
     ;
   else if (TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
-    goto initialize_aggr;
+    return build_aggr_init_full_exprs (decl, init, flags);
   else if (MAYBE_CLASS_TYPE_P (type))
     {
       tree core_type = strip_array_types (type);
@@ -5311,7 +5338,7 @@ initialize_artificial_var (tree decl, tree init)
 {
   gcc_assert (DECL_ARTIFICIAL (decl));
   if (TREE_CODE (init) == TREE_LIST)
-    init = build_constructor_from_list (NULL_TREE, init);
+    init = build_constructor_from_list (TREE_TYPE (decl), init);
   gcc_assert (TREE_CODE (init) == CONSTRUCTOR);
   DECL_INITIAL (decl) = init;
   DECL_INITIALIZED_P (decl) = 1;
@@ -8921,17 +8948,11 @@ grokdeclarator (const cp_declarator *declarator,
 	      DECL_NONCONVERTING_P (decl) = 1;
 	    else if (DECL_CONSTRUCTOR_P (decl))
 	      {
-		/* The constructor can be called with exactly one
-		   parameter if there is at least one parameter, and
-		   any subsequent parameters have default arguments.
+		/* A constructor with no parms is not a conversion.
 		   Ignore any compiler-added parms.  */
 		tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (decl);
 
-		if (arg_types == void_list_node
-		    || (arg_types
-			&& TREE_CHAIN (arg_types)
-			&& TREE_CHAIN (arg_types) != void_list_node
-			&& !TREE_PURPOSE (TREE_CHAIN (arg_types))))
+		if (arg_types == void_list_node)
 		  DECL_NONCONVERTING_P (decl) = 1;
 	      }
 	  }
@@ -9646,6 +9667,8 @@ grok_special_member_properties (tree decl)
 	}
       else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
+      else if (is_list_ctor (decl))
+	TYPE_HAS_LIST_CTOR (class_type) = 1;
     }
   else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
     {

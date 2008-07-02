@@ -6,7 +6,7 @@ struct A {
 };
 
 struct B {
-   B(const B&);
+   B(const B&);			// { dg-error "candidate" }
    int b;
 };
 
@@ -18,8 +18,8 @@ int main()
 {
    int i = { 1 };
    int j = { 1, 2 }; /* { dg-error "requires one element" } */
-   A a = { 6 }; /* { dg-error "initializer for non" } */
-   B b = { 6 }; /* { dg-error "initializer for non" } */
+   A a = { 6 }; /* { dg-error "initialize" } */
+   B b = { 6 }; /* { dg-error "initialize" } */
    C c = { 6 }; /* { dg-error "too many initializers" } */
    D d = { 6 };
 }

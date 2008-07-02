@@ -1,3 +1,10 @@
+2008-07-02  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (ctor_to_list): New fn.
+	* tree.h: Declare it.
+	(CONSTRUCTOR_ELT): New macro.
+	(CONSTRUCTOR_NELTS): New macro.
+
 2008-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (struct variable_info): Reorder

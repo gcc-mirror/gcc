@@ -64,6 +64,7 @@
 
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
+#include <initializer_list>
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
@@ -467,6 +468,18 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       std::pair<iterator, bool>
       insert(const value_type& __x)
       { return _M_t._M_insert_unique(__x); }
+
+      /**
+       *  @brief Attempts to insert a list of std::pairs into the %map.
+       *  @param  list  A std::initializer_list<value_type> of pairs to be
+       *                inserted.
+       *
+       *  Complexity similar to that of the range constructor.
+       *
+       */
+      void
+      insert(std::initializer_list<value_type> list)
+      { insert (list.begin(), list.end()); }
 
       /**
        *  @brief Attempts to insert a std::pair into the %map.

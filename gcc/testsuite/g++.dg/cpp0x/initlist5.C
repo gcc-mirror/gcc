@@ -1,0 +1,21 @@
+// Test for narrowing diagnostics
+// { dg-options "-std=c++0x" }
+
+#include <initializer_list>
+
+struct A { int i; int j; };
+A a2 { 1.2 }; // { dg-error "narrowing" }
+A a1 { 1, 2 }; // aggregate initialization 
+struct B {
+  B(std::initializer_list<int>);
+};
+B b1 { 1, 2 }; // creates initializer_list<int> and calls constructor
+B b2 { 1, 2.0 }; // { dg-error "narrowing" }
+struct C {
+  C(int i, double j);
+};
+C c1 = { 1, 2.2 }; // calls constructor with arguments (1, 2.2) 
+C c2 = { 1.1, 2 }; // { dg-error "narrowing" }
+
+int j { 1 }; // initialize to 1
+int k {}; // initialize to 0

@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "output.h"
 #include "diagnostic.h"
+#include "real.h"
 
 static tree
 process_init_constructor (tree type, tree init);
@@ -592,7 +593,7 @@ store_init_value (tree decl, tree init)
 	{
 	  error ("constructor syntax used, but no constructor declared "
 		 "for type %qT", type);
-	  init = build_constructor_from_list (NULL_TREE, nreverse (init));
+	  init = build_constructor_from_list (init_list_type_node, nreverse (init));
 	}
     }
   else if (TREE_CODE (init) == TREE_LIST
@@ -631,15 +632,70 @@ store_init_value (tree decl, tree init)
 }
 
 
+/* Give errors about narrowing conversions within { }.  */
+
+void
+check_narrowing (tree type, tree init)
+{
+  tree ftype = TREE_TYPE (init);
+  bool ok = true;
+  REAL_VALUE_TYPE d;
+
+  if (DECL_P (init))
+    init = decl_constant_value (init);
+
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && TREE_CODE (ftype) == REAL_TYPE)
+    ok = false;
+  else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
+	   && CP_INTEGRAL_TYPE_P (type))
+    {
+      if (TYPE_PRECISION (type) < TYPE_PRECISION (ftype)
+	  && (TREE_CODE (init) != INTEGER_CST
+	      || !int_fits_type_p (init, type)))
+	ok = false;
+    }
+  else if (TREE_CODE (ftype) == REAL_TYPE
+	   && TREE_CODE (type) == REAL_TYPE)
+    {
+      if (TYPE_PRECISION (type) < TYPE_PRECISION (ftype))
+	{
+	  ok = false;
+	  if (TREE_CODE (init) == REAL_CST)
+	    {
+	      d = TREE_REAL_CST (init);
+	      if (exact_real_truncate (TYPE_MODE (type), &d))
+		ok = true;
+	    }
+	}
+    }
+  else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
+	   && TREE_CODE (type) == REAL_TYPE)
+    {
+      ok = false;
+      if (TREE_CODE (init) == INTEGER_CST)
+	{
+	  d = real_value_from_int_cst (0, init);
+	  if (exact_real_truncate (TYPE_MODE (type), &d))
+	    ok = true;
+	}
+    }
+
+  if (!ok)
+    error ("narrowing conversion of %qE to %qT inside { }", init, type);
+}
+
 /* Process the initializer INIT for a variable of type TYPE, emitting
    diagnostics for invalid initializers and converting the initializer as
    appropriate.
 
    For aggregate types, it assumes that reshape_init has already run, thus the
-   initializer will have the right shape (brace elision has been undone).  */
+   initializer will have the right shape (brace elision has been undone).
 
-tree
-digest_init (tree type, tree init)
+   NESTED is true iff we are being called for an element of a CONSTRUCTOR.  */
+
+static tree
+digest_init_r (tree type, tree init, bool nested)
 {
   enum tree_code code = TREE_CODE (type);
 
@@ -706,6 +762,8 @@ digest_init (tree type, tree init)
     {
       tree *exp;
 
+      if (cxx_dialect != cxx98 && nested)
+	check_narrowing (type, init);
       init = convert_for_initialization (0, type, init, LOOKUP_NORMAL,
 					 "initialization", NULL_TREE, 0,
                                          tf_warning_or_error);
@@ -731,7 +789,7 @@ digest_init (tree type, tree init)
 	      || TREE_CODE (type) == COMPLEX_TYPE);
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
-      return process_init_constructor (type, init);
+    return process_init_constructor (type, init);
   else
     {
       if (COMPOUND_LITERAL_P (init) && TREE_CODE (type) == ARRAY_TYPE)
@@ -757,6 +815,11 @@ digest_init (tree type, tree init)
     }
 }
 
+tree
+digest_init (tree type, tree init)
+{
+  return digest_init_r (type, init, false);
+}
 
 /* Set of flags used within process_init_constructor to describe the
    initializers.  */
@@ -828,7 +891,7 @@ process_init_constructor_array (tree type, tree init)
       else
 	ce->index = size_int (i);
       gcc_assert (ce->value);
-      ce->value = digest_init (TREE_TYPE (type), ce->value);
+      ce->value = digest_init_r (TREE_TYPE (type), ce->value, true);
 
       if (ce->value != error_mark_node)
 	gcc_assert (same_type_ignoring_top_level_qualifiers_p
@@ -854,7 +917,7 @@ process_init_constructor_array (tree type, tree init)
               next = build_functional_cast (TREE_TYPE (type), NULL_TREE,
                                             tf_warning_or_error);
 	    else
-		next = build_constructor (NULL_TREE, NULL);
+	      next = build_constructor (init_list_type_node, NULL);
 	    next = digest_init (TREE_TYPE (type), next);
 	  }
 	else if (!zero_init_p (TREE_TYPE (type)))
@@ -929,7 +992,7 @@ process_init_constructor_record (tree type, tree init)
 	    }
 
 	  gcc_assert (ce->value);
-	  next = digest_init (TREE_TYPE (field), ce->value);
+	  next = digest_init_r (TREE_TYPE (field), ce->value, true);
 	  ++idx;
 	}
       else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
@@ -942,9 +1005,9 @@ process_init_constructor_record (tree type, tree init)
 	    next = build_functional_cast (TREE_TYPE (field), NULL_TREE,
                                           tf_warning_or_error);
 	  else
-	    next = build_constructor (NULL_TREE, NULL);
+	    next = build_constructor (init_list_type_node, NULL);
 
-	  next = digest_init (TREE_TYPE (field), next);
+	  next = digest_init_r (TREE_TYPE (field), next, true);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  warning (OPT_Wmissing_field_initializers,
@@ -1037,7 +1100,7 @@ process_init_constructor_union (tree type, tree init)
     }
 
   if (ce->value && ce->value != error_mark_node)
-    ce->value = digest_init (TREE_TYPE (ce->index), ce->value);
+    ce->value = digest_init_r (TREE_TYPE (ce->index), ce->value, true);
 
   return picflag_from_initializer (ce->value);
 }

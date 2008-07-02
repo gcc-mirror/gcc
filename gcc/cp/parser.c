@@ -529,6 +529,14 @@ cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
   return cp_lexer_peek_token (lexer)->keyword == keyword;
 }
 
+/* Return true if the next token is not the indicated KEYWORD.  */
+
+static inline bool
+cp_lexer_next_token_is_not_keyword (cp_lexer* lexer, enum rid keyword)
+{
+  return cp_lexer_peek_token (lexer)->keyword != keyword;
+}
+
 /* Return true if the next token is a keyword for a decl-specifier.  */
 
 static bool
@@ -1743,6 +1751,8 @@ static tree cp_parser_initializer
   (cp_parser *, bool *, bool *);
 static tree cp_parser_initializer_clause
   (cp_parser *, bool *);
+static tree cp_parser_braced_list
+  (cp_parser*, bool*);
 static VEC(constructor_elt,gc) *cp_parser_initializer_list
   (cp_parser *, bool *);
 
@@ -1965,7 +1975,7 @@ static bool cp_parser_optional_template_keyword
   (cp_parser *);
 static void cp_parser_pre_parsed_nested_name_specifier
   (cp_parser *);
-static void cp_parser_cache_group
+static bool cp_parser_cache_group
   (cp_parser *, enum cpp_ttype, unsigned);
 static void cp_parser_parse_tentatively
   (cp_parser *);
@@ -4534,7 +4544,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  }
 		/* Form the representation of the compound-literal.  */
 		postfix_expression
-		  = finish_compound_literal (type, initializer_list);
+		  = (finish_compound_literal
+		     (type, build_constructor (init_list_type_node,
+					       initializer_list)));
 		break;
 	      }
 	  }
@@ -5070,10 +5082,19 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	  }
 	else
 	  {
+	    bool expr_non_constant_p;
+
 	    /* Parse the next assignment-expression.  */
-	    if (non_constant_p)
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	      {
-		bool expr_non_constant_p;
+		/* A braced-init-list.  */
+		maybe_warn_cpp0x ("extended initializer lists");
+		expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+		if (non_constant_p && expr_non_constant_p)
+		  *non_constant_p = true;
+	      }
+	    else if (non_constant_p)
+	      {
 		expr = (cp_parser_constant_expression
 			(parser, /*allow_non_constant_p=*/true,
 			 &expr_non_constant_p));
@@ -5535,8 +5556,9 @@ cp_parser_new_expression (cp_parser* parser)
   else
     type = cp_parser_new_type_id (parser, &nelts);
 
-  /* If the next token is a `(', then we have a new-initializer.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+  /* If the next token is a `(' or '{', then we have a new-initializer.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+      || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     initializer = cp_parser_new_initializer (parser);
   else
     initializer = NULL_TREE;
@@ -5748,6 +5770,7 @@ cp_parser_direct_new_declarator (cp_parser* parser)
 
    new-initializer:
      ( expression-list [opt] )
+     braced-init-list
 
    Returns a representation of the expression-list.  If there is no
    expression-list, VOID_ZERO_NODE is returned.  */
@@ -5757,9 +5780,18 @@ cp_parser_new_initializer (cp_parser* parser)
 {
   tree expression_list;
 
-  expression_list = (cp_parser_parenthesized_expression_list
-		     (parser, false, /*cast_p=*/false, /*allow_expansion_p=*/true,
-		      /*non_constant_p=*/NULL));
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      bool expr_non_constant_p;
+      maybe_warn_cpp0x ("extended initializer lists");
+      expression_list = cp_parser_braced_list (parser, &expr_non_constant_p);
+      CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
+      expression_list = build_tree_list (NULL_TREE, expression_list);
+    }
+  else
+    expression_list = (cp_parser_parenthesized_expression_list
+		       (parser, false, /*cast_p=*/false, /*allow_expansion_p=*/true,
+			/*non_constant_p=*/NULL));
   if (!expression_list)
     expression_list = void_zero_node;
 
@@ -6208,10 +6240,14 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p)
 	    = cp_parser_assignment_operator_opt (parser);
 	  if (assignment_operator != ERROR_MARK)
 	    {
-	      tree rhs;
+	      bool non_constant_p;
 
 	      /* Parse the right-hand side of the assignment.  */
-	      rhs = cp_parser_assignment_expression (parser, cast_p);
+	      tree rhs = cp_parser_initializer_clause (parser, &non_constant_p);
+
+	      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
+		maybe_warn_cpp0x ("extended initializer lists");
+
 	      /* An assignment may not appear in a
 		 constant-expression.  */
 	      if (cp_parser_non_integral_constant_expression (parser,
@@ -7124,7 +7160,8 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 
    condition:
      expression
-     type-specifier-seq declarator = assignment-expression
+     type-specifier-seq declarator = initializer-clause
+     type-specifier-seq declarator braced-init-list
 
    GNU Extension:
 
@@ -7170,31 +7207,47 @@ cp_parser_condition (cp_parser* parser)
       attributes = cp_parser_attributes_opt (parser);
       /* Parse the asm-specification.  */
       asm_specification = cp_parser_asm_specification_opt (parser);
-      /* If the next token is not an `=', then we might still be
+      /* If the next token is not an `=' or '{', then we might still be
 	 looking at an expression.  For example:
 
 	   if (A(a).x)
 
 	 looks like a decl-specifier-seq and a declarator -- but then
 	 there is no `=', so this is an expression.  */
-      cp_parser_require (parser, CPP_EQ, "%<=%>");
-      /* If we did see an `=', then we are looking at a declaration
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
+	cp_parser_simulate_error (parser);
+	
+      /* If we did see an `=' or '{', then we are looking at a declaration
 	 for sure.  */
       if (cp_parser_parse_definitely (parser))
 	{
 	  tree pushed_scope;
 	  bool non_constant_p;
+	  bool flags = LOOKUP_ONLYCONVERTING;
 
 	  /* Create the declaration.  */
 	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
 			     attributes, /*prefix_attributes=*/NULL_TREE,
 			     &pushed_scope);
-	  /* Parse the assignment-expression.  */
-	  initializer
-	    = cp_parser_constant_expression (parser,
-					     /*allow_non_constant_p=*/true,
-					     &non_constant_p);
+
+	  /* Parse the initializer.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	    {
+	      initializer = cp_parser_braced_list (parser, &non_constant_p);
+	      CONSTRUCTOR_IS_DIRECT_INIT (initializer) = 1;
+	      flags = 0;
+	    }
+	  else
+	    {
+	      /* Consume the `='.  */
+	      cp_lexer_consume_token (parser->lexer);
+	      initializer = cp_parser_initializer_clause (parser, &non_constant_p);
+	    }
+	  if (BRACE_ENCLOSED_INITIALIZER_P (initializer))
+	    maybe_warn_cpp0x ("extended initializer lists");
+
 	  if (!non_constant_p)
 	    initializer = fold_non_dependent_expr (initializer);
 
@@ -7202,7 +7255,7 @@ cp_parser_condition (cp_parser* parser)
 	  cp_finish_decl (decl,
 			  initializer, !non_constant_p,
 			  asm_specification,
-			  LOOKUP_ONLYCONVERTING);
+			  flags);
 
 	  if (pushed_scope)
 	    pop_scope (pushed_scope);
@@ -7426,6 +7479,7 @@ cp_parser_for_init_statement (cp_parser* parser)
      break ;
      continue ;
      return expression [opt] ;
+     return braced-init-list ;
      goto identifier ;
 
    GNU extension:
@@ -7496,12 +7550,18 @@ cp_parser_jump_statement (cp_parser* parser)
     case RID_RETURN:
       {
 	tree expr;
+	bool expr_non_constant_p;
 
-	/* If the next token is a `;', then there is no
-	   expression.  */
-	if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+	if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	  {
+	    maybe_warn_cpp0x ("extended initializer lists");
+	    expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+	  }
+	else if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	  expr = cp_parser_expression (parser, /*cast_p=*/false);
 	else
+	  /* If the next token is a `;', then there is no
+	     expression.  */
 	  expr = NULL_TREE;
 	/* Build the return-statement.  */
 	statement = finish_return_stmt (expr);
@@ -7964,7 +8024,8 @@ cp_parser_simple_declaration (cp_parser* parser,
      is not a parenthesis, then we must be looking at a declaration.
      (After "int (" we might be looking at a functional cast.)  */
   if (decl_specifiers.any_specifiers_p
-      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
     cp_parser_commit_to_tentative_parse (parser);
 
   /* Keep going until we hit the `;' at the end of the simple
@@ -8907,6 +8968,7 @@ cp_parser_mem_initializer_list (cp_parser* parser)
 
    mem-initializer:
      mem-initializer-id ( expression-list [opt] )
+     mem-initializer-id braced-init-list
 
    GNU extension:
 
@@ -8937,11 +8999,20 @@ cp_parser_mem_initializer (cp_parser* parser)
   if (member && !DECL_P (member))
     in_base_initializer = 1;
 
-  expression_list
-    = cp_parser_parenthesized_expression_list (parser, false,
-					       /*cast_p=*/false,
-                                               /*allow_expansion_p=*/true,
-					       /*non_constant_p=*/NULL);
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      bool expr_non_constant_p;
+      maybe_warn_cpp0x ("extended initializer lists");
+      expression_list = cp_parser_braced_list (parser, &expr_non_constant_p);
+      CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
+      expression_list = build_tree_list (NULL_TREE, expression_list);
+    }
+  else
+    expression_list
+      = cp_parser_parenthesized_expression_list (parser, false,
+						 /*cast_p=*/false,
+						 /*allow_expansion_p=*/true,
+						 /*non_constant_p=*/NULL);
   if (expression_list == error_mark_node)
     return error_mark_node;
   if (!expression_list)
@@ -12197,7 +12268,7 @@ cp_parser_init_declarator (cp_parser* parser,
      initialized with "= ..", CPP_OPEN_PAREN if initialized with
      "(...)".  */
   enum cpp_ttype initialization_kind;
-  bool is_parenthesized_init = false;
+  bool is_direct_init = false;
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p;
@@ -12263,7 +12334,8 @@ cp_parser_init_declarator (cp_parser* parser,
   token = cp_lexer_peek_token (parser->lexer);
   /* Check to see if the token indicates the start of a
      function-definition.  */
-  if (cp_parser_token_starts_function_definition_p (token))
+  if (function_declarator_p (declarator)
+      && cp_parser_token_starts_function_definition_p (token))
     {
       if (!function_definition_allowed_p)
 	{
@@ -12314,9 +12386,10 @@ cp_parser_init_declarator (cp_parser* parser,
       return error_mark_node;
     }
 
-  /* An `=' or an `(' indicates an initializer.  */
+  /* An `=' or an `(', or an '{' in C++0x, indicates an initializer.  */
   if (token->type == CPP_EQ
-      || token->type == CPP_OPEN_PAREN)
+      || token->type == CPP_OPEN_PAREN
+      || token->type == CPP_OPEN_BRACE)
     {
       is_initialized = true;
       initialization_kind = token->type;
@@ -12399,7 +12472,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Parse the initializer.  */
   initializer = NULL_TREE;
-  is_parenthesized_init = false;
+  is_direct_init = false;
   is_non_constant_init = true;
   if (is_initialized)
     {
@@ -12422,7 +12495,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	}
       else
 	initializer = cp_parser_initializer (parser,
-					     &is_parenthesized_init,
+					     &is_direct_init,
 					     &is_non_constant_init);
     }
 
@@ -12430,7 +12503,8 @@ cp_parser_init_declarator (cp_parser* parser,
      initializer.  Mark Mitchell proposed removing this functionality
      on the GCC mailing lists on 2002-08-13.  This parser accepts the
      attributes -- but ignores them.  */
-  if (cp_parser_allow_gnu_extensions_p (parser) && is_parenthesized_init)
+  if (cp_parser_allow_gnu_extensions_p (parser)
+      && initialization_kind == CPP_OPEN_PAREN)
     if (cp_parser_attributes_opt (parser))
       warning (OPT_Wattributes,
 	       "attributes after parenthesized initializer ignored");
@@ -12463,8 +12537,8 @@ cp_parser_init_declarator (cp_parser* parser,
 			 a direct-initialization, which means that an
 			 `explicit' constructor is OK.  Otherwise, an
 			 `explicit' constructor cannot be used.  */
-		      ((is_parenthesized_init || !is_initialized)
-		     ? 0 : LOOKUP_ONLYCONVERTING));
+		      ((is_direct_init || !is_initialized)
+		       ? 0 : LOOKUP_ONLYCONVERTING));
     }
   else if ((cxx_dialect != cxx98) && friend_p
 	   && decl && TREE_CODE (decl) == FUNCTION_DECL)
@@ -13983,14 +14057,14 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
    Returns an expression representing the initializer.  If no
    initializer is present, NULL_TREE is returned.
 
-   *IS_PARENTHESIZED_INIT is set to TRUE if the `( expression-list )'
-   production is used, and zero otherwise.  *IS_PARENTHESIZED_INIT is
-   set to FALSE if there is no initializer present.  If there is an
+   *IS_DIRECT_INIT is set to FALSE if the `= initializer-clause'
+   production is used, and TRUE otherwise.  *IS_DIRECT_INIT is
+   set to TRUE if there is no initializer present.  If there is an
    initializer, and it is not a constant-expression, *NON_CONSTANT_P
    is set to true; otherwise it is set to false.  */
 
 static tree
-cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
+cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
 		       bool* non_constant_p)
 {
   cp_token *token;
@@ -14001,7 +14075,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
 
   /* Let our caller know whether or not this initializer was
      parenthesized.  */
-  *is_parenthesized_init = (token->type == CPP_OPEN_PAREN);
+  *is_direct_init = (token->type != CPP_EQ);
   /* Assume that the initializer is constant.  */
   *non_constant_p = false;
 
@@ -14017,6 +14091,12 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
 						    /*cast_p=*/false,
                                                     /*allow_expansion_p=*/true,
 						    non_constant_p);
+  else if (token->type == CPP_OPEN_BRACE)
+    {
+      maybe_warn_cpp0x ("extended initializer lists");
+      init = cp_parser_braced_list (parser, non_constant_p);
+      CONSTRUCTOR_IS_DIRECT_INIT (init) = 1;
+    }
   else
     {
       /* Anything else is an error.  */
@@ -14031,20 +14111,14 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
 
    initializer-clause:
      assignment-expression
-     { initializer-list , [opt] }
-     { }
+     braced-init-list
 
    Returns an expression representing the initializer.
 
    If the `assignment-expression' production is used the value
    returned is simply a representation for the expression.
 
-   Otherwise, a CONSTRUCTOR is returned.  The CONSTRUCTOR_ELTS will be
-   the elements of the initializer-list (or NULL, if the last
-   production is used).  The TREE_TYPE for the CONSTRUCTOR will be
-   NULL_TREE.  There is no way to detect whether or not the optional
-   trailing `,' was provided.  NON_CONSTANT_P is as for
-   cp_parser_initializer.  */
+   Otherwise, calls cp_parser_braced_list.  */
 
 static tree
 cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
@@ -14066,25 +14140,46 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
 	initializer = fold_non_dependent_expr (initializer);
     }
   else
-    {
-      /* Consume the `{' token.  */
-      cp_lexer_consume_token (parser->lexer);
-      /* Create a CONSTRUCTOR to represent the braced-initializer.  */
-      initializer = make_node (CONSTRUCTOR);
-      /* If it's not a `}', then there is a non-trivial initializer.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
-	{
-	  /* Parse the initializer list.  */
-	  CONSTRUCTOR_ELTS (initializer)
-	    = cp_parser_initializer_list (parser, non_constant_p);
-	  /* A trailing `,' token is allowed.  */
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	    cp_lexer_consume_token (parser->lexer);
-	}
-      /* Now, there should be a trailing `}'.  */
-      cp_parser_require (parser, CPP_CLOSE_BRACE, "%<}%>");
-    }
+    initializer = cp_parser_braced_list (parser, non_constant_p);
 
+  return initializer;
+}
+
+/* Parse a brace-enclosed initializer list.
+
+   braced-init-list:
+     { initializer-list , [opt] }
+     { }
+
+   Returns a CONSTRUCTOR.  The CONSTRUCTOR_ELTS will be
+   the elements of the initializer-list (or NULL, if the last
+   production is used).  The TREE_TYPE for the CONSTRUCTOR will be
+   NULL_TREE.  There is no way to detect whether or not the optional
+   trailing `,' was provided.  NON_CONSTANT_P is as for
+   cp_parser_initializer.  */     
+
+static tree
+cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
+{
+  tree initializer;
+
+  /* Consume the `{' token.  */
+  cp_lexer_consume_token (parser->lexer);
+  /* Create a CONSTRUCTOR to represent the braced-initializer.  */
+  initializer = make_node (CONSTRUCTOR);
+  /* If it's not a `}', then there is a non-trivial initializer.  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
+    {
+      /* Parse the initializer list.  */
+      CONSTRUCTOR_ELTS (initializer)
+	= cp_parser_initializer_list (parser, non_constant_p);
+      /* A trailing `,' token is allowed.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+    }
+  /* Now, there should be a trailing `}'.  */
+  cp_parser_require (parser, CPP_CLOSE_BRACE, "%<}%>");
+  TREE_TYPE (initializer) = init_list_type_node;
   return initializer;
 }
 
@@ -17297,11 +17392,22 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 {
   tree expression_list;
   tree cast;
+  bool nonconst_p;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      maybe_warn_cpp0x ("extended initializer lists");
+      expression_list = cp_parser_braced_list (parser, &nonconst_p);
+      CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
+      if (TREE_CODE (type) == TYPE_DECL)
+	type = TREE_TYPE (type);
+      return finish_compound_literal (type, expression_list);
+    }
 
   expression_list
     = cp_parser_parenthesized_expression_list (parser, false,
 					       /*cast_p=*/true,
-                                               /*allow_expansion_p=*/true,
+					       /*allow_expansion_p=*/true,
 					       /*non_constant_p=*/NULL);
 
   cast = build_functional_cast (type, expression_list,
@@ -17352,6 +17458,22 @@ cp_parser_save_member_function_body (cp_parser* parser,
   /* Save away the tokens that make up the body of the
      function.  */
   first = parser->lexer->next_token;
+  /* We can have braced-init-list mem-initializers before the fn body.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
+	     && cp_lexer_next_token_is_not_keyword (parser->lexer, RID_TRY))
+	{
+	  /* cache_group will stop after an un-nested { } pair, too.  */
+	  if (cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0))
+	    break;
+
+	  /* variadic mem-inits have ... after the ')'.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	    cp_lexer_consume_token (parser->lexer);
+	}
+    }
   cp_parser_cache_group (parser, CPP_CLOSE_BRACE, /*depth=*/0);
   /* Handle function try blocks.  */
   while (cp_lexer_next_token_is_keyword (parser->lexer, RID_CATCH))
@@ -18210,41 +18332,54 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   parser->object_scope = NULL_TREE;
 }
 
-/* Consume tokens up through a non-nested END token.  */
+/* Consume tokens up through a non-nested END token.  Returns TRUE if we
+   encounter the end of a block before what we were looking for.  */
 
-static void
+static bool
 cp_parser_cache_group (cp_parser *parser,
 		       enum cpp_ttype end,
 		       unsigned depth)
 {
   while (true)
     {
-      cp_token *token;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-      /* Abort a parenthesized expression if we encounter a brace.  */
+      /* Abort a parenthesized expression if we encounter a semicolon.  */
       if ((end == CPP_CLOSE_PAREN || depth == 0)
-	  && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	return;
+	  && token->type == CPP_SEMICOLON)
+	return true;
       /* If we've reached the end of the file, stop.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF)
+      if (token->type == CPP_EOF
 	  || (end != CPP_PRAGMA_EOL
-	      && cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA_EOL)))
-	return;
-      /* Consume the next token.  */
-      token = cp_lexer_consume_token (parser->lexer);
+	      && token->type == CPP_PRAGMA_EOL))
+	return true;
+      if (token->type == CPP_CLOSE_BRACE && depth == 0)
+	/* We've hit the end of an enclosing block, so there's been some
+	   kind of syntax error.  */
+	return true;
+
+      /* Consume the token.  */
+      cp_lexer_consume_token (parser->lexer);
       /* See if it starts a new group.  */
       if (token->type == CPP_OPEN_BRACE)
 	{
 	  cp_parser_cache_group (parser, CPP_CLOSE_BRACE, depth + 1);
+	  /* In theory this should probably check end == '}', but
+	     cp_parser_save_member_function_body needs it to exit
+	     after either '}' or ')' when called with ')'.  */
 	  if (depth == 0)
-	    return;
+	    return false;
 	}
       else if (token->type == CPP_OPEN_PAREN)
-	cp_parser_cache_group (parser, CPP_CLOSE_PAREN, depth + 1);
+	{
+	  cp_parser_cache_group (parser, CPP_CLOSE_PAREN, depth + 1);
+	  if (depth == 0 && end == CPP_CLOSE_PAREN)
+	    return false;
+	}
       else if (token->type == CPP_PRAGMA)
 	cp_parser_cache_group (parser, CPP_PRAGMA_EOL, depth + 1);
       else if (token->type == end)
-	return;
+	return false;
     }
 }
 
@@ -20503,10 +20638,10 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 		  if (CLASS_TYPE_P (TREE_TYPE (decl))
 		      || type_dependent_expression_p (decl))
 		    {
-		      bool is_parenthesized_init, is_non_constant_init;
+		      bool is_direct_init, is_non_constant_init;
 
 		      init = cp_parser_initializer (parser,
-						    &is_parenthesized_init,
+						    &is_direct_init,
 						    &is_non_constant_init);
 
 		      cp_finish_decl (decl, init, !is_non_constant_init,
