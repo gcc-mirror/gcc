@@ -24,7 +24,12 @@ void *memcpy (void *dest, const void *src, __SIZE_TYPE__ n)
 }
  
 struct T {
+#ifdef __SPU__
+  /* SPU returns aggregates up to 1172 bytes in registers.  */
+  int a[300];
+#else
   int a[128];
+#endif
   T &operator+=(T const &v) __attribute__((noinline));
   T operator+(T const &v) const { T t = *this; t += v; return t; }
 };
