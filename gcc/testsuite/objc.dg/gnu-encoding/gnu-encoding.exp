@@ -37,7 +37,7 @@ set generator_src "$srcdir/$subdir/struct-layout-encoding-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
 set generator_cmd "-o $generator $generator_src"
-set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
+set status [remote_exec build "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
 if { $status == 0 } then {
     file delete -force $tstobjdir
