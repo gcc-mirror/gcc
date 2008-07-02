@@ -1,3 +1,10 @@
+2008-07-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/compat/struct-layout-1.exp: Compile generator on build
+	system.
+	* gcc.dg/compat/struct-layout-1.exp: Likewise.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Likewise.
+
 2008-07-02  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR testsuite/36285

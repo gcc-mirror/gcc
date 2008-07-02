@@ -136,7 +136,7 @@ if [info exists env(GCC_EXEC_PREFIX)] {
      set orig_gcc_exec_prefix_saved 1
      unsetenv GCC_EXEC_PREFIX
 }
-set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
+set status [remote_exec build "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
 if { $orig_gcc_exec_prefix_saved } {
      set orig_gcc_exec_prefix_saved 0
