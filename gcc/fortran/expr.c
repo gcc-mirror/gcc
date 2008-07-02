@@ -2874,7 +2874,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   int is_pure;
   int pointer, check_intent_in;
 
-  if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN)
+  if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN
+      && !lvalue->symtree->n.sym->attr.proc_pointer)
     {
       gfc_error ("Pointer assignment target is not a POINTER at %L",
 		 &lvalue->where);
@@ -2894,7 +2895,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   /* Check INTENT(IN), unless the object itself is the component or
      sub-component of a pointer.  */
   check_intent_in = 1;
-  pointer = lvalue->symtree->n.sym->attr.pointer;
+  pointer = lvalue->symtree->n.sym->attr.pointer
+	      | lvalue->symtree->n.sym->attr.proc_pointer;
 
   for (ref = lvalue->ref; ref; ref = ref->next)
     {
@@ -2931,6 +2933,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
      kind, etc for lvalue and rvalue must match, and rvalue must be a
      pure variable if we're in a pure function.  */
   if (rvalue->expr_type == EXPR_NULL && rvalue->ts.type == BT_UNKNOWN)
+    return SUCCESS;
+
+  /* TODO checks on rvalue for a procedure pointer assignment.  */
+  if (lvalue->symtree->n.sym->attr.proc_pointer)
     return SUCCESS;
 
   if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
@@ -3024,7 +3030,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.symtree->n.sym = sym;
   lvalue.where = sym->declared_at;
 
-  if (sym->attr.pointer)
+  if (sym->attr.pointer || sym->attr.proc_pointer)
     r = gfc_check_pointer_assign (&lvalue, rvalue);
   else
     r = gfc_check_assign (&lvalue, rvalue, 1);

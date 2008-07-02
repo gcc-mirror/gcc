@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 
+int gfc_matching_procptr_assignment = 0;
 
 /* For debugging and diagnostic purposes.  Return the textual representation
    of the intrinsic operator OP.  */
@@ -1329,6 +1330,7 @@ gfc_match_pointer_assignment (void)
   old_loc = gfc_current_locus;
 
   lvalue = rvalue = NULL;
+  gfc_matching_procptr_assignment = 0;
 
   m = gfc_match (" %v =>", &lvalue);
   if (m != MATCH_YES)
@@ -1337,7 +1339,11 @@ gfc_match_pointer_assignment (void)
       goto cleanup;
     }
 
+  if (lvalue->symtree->n.sym->attr.proc_pointer)
+    gfc_matching_procptr_assignment = 1;
+
   m = gfc_match (" %e%t", &rvalue);
+  gfc_matching_procptr_assignment = 0;
   if (m != MATCH_YES)
     goto cleanup;
 

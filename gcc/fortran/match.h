@@ -33,6 +33,8 @@ extern gfc_symbol *gfc_new_block;
    separate.  */
 extern gfc_st_label *gfc_statement_label;
 
+extern int gfc_matching_procptr_assignment;
+
 /****************** All gfc_match* routines *****************/
 
 /* match.c.  */

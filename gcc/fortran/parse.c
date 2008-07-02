@@ -1992,6 +1992,11 @@ loop:
 	new_state = COMP_SUBROUTINE;
       else if (st == ST_FUNCTION)
 	new_state = COMP_FUNCTION;
+      if (gfc_new_block->attr.pointer)
+	{
+	  gfc_new_block->attr.pointer = 0;
+	  gfc_new_block->attr.proc_pointer = 1;
+	}
       if (gfc_add_explicit_interface (gfc_new_block, IFSRC_IFBODY,
 				  gfc_new_block->formal, NULL) == FAILURE)
 	{

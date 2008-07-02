@@ -2323,6 +2323,9 @@ gfc_match_rvalue (gfc_expr **result)
 	}
     }
 
+  if (gfc_matching_procptr_assignment)
+    goto procptr0;
+
   if (sym->attr.function || sym->attr.external || sym->attr.intrinsic)
     goto function0;
 
@@ -2399,6 +2402,27 @@ gfc_match_rvalue (gfc_expr **result)
     /* If we're here, then the name is known to be the name of a
        procedure, yet it is not sure to be the name of a function.  */
     case FL_PROCEDURE:
+
+    /* Procedure Pointer Assignments. */
+    procptr0:
+      if (gfc_matching_procptr_assignment)
+	{
+	  gfc_gobble_whitespace ();
+	  if (sym->attr.function && gfc_peek_ascii_char () == '(')
+	    /* Parse functions returning a procptr.  */
+	    goto function0;
+
+	  if (sym->attr.flavor == FL_UNKNOWN) sym->attr.flavor = FL_PROCEDURE;
+	  if (gfc_intrinsic_name (sym->name, 0)
+	      || gfc_intrinsic_name (sym->name, 1))
+	    sym->attr.intrinsic = 1;
+	  e = gfc_get_expr ();
+	  e->expr_type = EXPR_VARIABLE;
+	  e->symtree = symtree;
+	  m = match_varspec (e, 0);
+	  break;
+	}
+
       if (sym->attr.subroutine)
 	{
 	  gfc_error ("Unexpected use of subroutine name '%s' at %C",
@@ -2779,6 +2803,9 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	    return MATCH_ERROR;
 	  break;
 	}
+
+      if (sym->attr.proc_pointer)
+	break;
 
       /* Fall through to error */
 

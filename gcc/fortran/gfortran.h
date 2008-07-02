@@ -620,7 +620,7 @@ typedef struct
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, target:1, value:1, volatile_:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
-    implied_index:1, subref_array_pointer:1;
+    implied_index:1, subref_array_pointer:1, proc_pointer:1;
 
   ENUM_BITFIELD (save_state) save:2;
 
