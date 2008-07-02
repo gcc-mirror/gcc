@@ -7105,41 +7105,43 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 
 /* Given a type TYPE, return a new type whose size is appropriate for SIZE.
    If TYPE is the best type, return it.  Otherwise, make a new type.  We
-   only support new integral and pointer types.  BIASED_P is nonzero if
+   only support new integral and pointer types.  FOR_BIASED is nonzero if
    we are making a biased type.  */
 
 static tree
-make_type_from_size (tree type, tree size_tree, bool biased_p)
+make_type_from_size (tree type, tree size_tree, bool for_biased)
 {
-  tree new_type;
   unsigned HOST_WIDE_INT size;
-  bool unsigned_p;
+  bool biased_p;
+  tree new_type;
 
-  /* If size indicates an error, just return TYPE to avoid propagating the
-     error.  Likewise if it's too large to represent.  */
+  /* If size indicates an error, just return TYPE to avoid propagating
+     the error.  Likewise if it's too large to represent.  */
   if (!size_tree || !host_integerp (size_tree, 1))
     return type;
 
   size = tree_low_cst (size_tree, 1);
+
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      /* Only do something if the type is not already the proper size and is
-	 not a packed array type.  */
+      biased_p = (TREE_CODE (type) == INTEGER_TYPE
+		  && TYPE_BIASED_REPRESENTATION_P (type));
+
+      /* Only do something if the type is not a packed array type and
+	 doesn't already have the proper size.  */
       if (TYPE_PACKED_ARRAY_TYPE_P (type)
-	  || (TYPE_PRECISION (type) == size
-	      && biased_p == (TREE_CODE (type) == INTEGER_CST
-			      && TYPE_BIASED_REPRESENTATION_P (type))))
+	  || (TYPE_PRECISION (type) == size && biased_p == for_biased))
 	break;
 
-      biased_p |= (TREE_CODE (type) == INTEGER_TYPE
-		   && TYPE_BIASED_REPRESENTATION_P (type));
-      unsigned_p = TYPE_UNSIGNED (type) || biased_p;
-
+      biased_p |= for_biased;
       size = MIN (size, LONG_LONG_TYPE_SIZE);
-      new_type
-	= unsigned_p ? make_unsigned_type (size) : make_signed_type (size);
+
+      if (TYPE_UNSIGNED (type) || biased_p)
+	new_type = make_unsigned_type (size);
+      else
+	new_type = make_signed_type (size);
       TREE_TYPE (new_type) = TREE_TYPE (type) ? TREE_TYPE (type) : type;
       TYPE_MIN_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MIN_VALUE (type));
@@ -7164,7 +7166,6 @@ make_type_from_size (tree type, tree size_tree, bool biased_p)
       if (TYPE_THIN_POINTER_P (type) && size >= POINTER_SIZE * 2)
 	return
 	  build_pointer_type (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)));
-
       break;
 
     default:

@@ -1,3 +1,7 @@
+2008-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (make_type_from_size) <INTEGER_TYPE>: Fix typo and tidy up.
+
 2008-06-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ada-tree.h (SET_TYPE_LANG_SPECIFIC, SET_DECL_LANG_SPECIFIC): Fix
