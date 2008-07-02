@@ -1827,6 +1827,26 @@ tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
   return node;
 }
 
+/* Return the elements of a CONSTRUCTOR as a TREE_LIST.  */
+
+tree
+ctor_to_list (tree ctor)
+{
+  tree list = NULL_TREE;
+  tree *p = &list;
+  unsigned ix;
+  constructor_elt *ce;
+
+  for (ix = 0;
+       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (ctor), ix, ce);
+       ++ix)
+    {
+      *p = build_tree_list (ce->index, ce->value);
+      p = &TREE_CHAIN (*p);
+    }
+
+  return list;
+}
 
 /* Return the size nominally occupied by an object of type TYPE
    when it resides in memory.  The value is measured in units of bytes,

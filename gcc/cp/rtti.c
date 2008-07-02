@@ -900,7 +900,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
 
   init = tree_cons (NULL_TREE, decay_conversion (name_decl), init);
 
-  init = build_constructor_from_list (NULL_TREE, nreverse (init));
+  init = build_constructor_from_list (init_list_type_node, nreverse (init));
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   init = tree_cons (NULL_TREE, init, NULL_TREE);
@@ -917,7 +917,7 @@ generic_initializer (tinfo_s *ti, tree target)
 {
   tree init = tinfo_base_init (ti, target);
 
-  init = build_constructor_from_list (NULL_TREE, init);
+  init = build_constructor_from_list (init_list_type_node, init);
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
@@ -942,7 +942,7 @@ ptr_initializer (tinfo_s *ti, tree target)
 		    get_tinfo_ptr (TYPE_MAIN_VARIANT (to)),
 		    init);
 
-  init = build_constructor_from_list (NULL_TREE, nreverse (init));
+  init = build_constructor_from_list (init_list_type_node, nreverse (init));
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
@@ -974,7 +974,7 @@ ptm_initializer (tinfo_s *ti, tree target)
 		    get_tinfo_ptr (klass),
 		    init);
 
-  init = build_constructor_from_list (NULL_TREE, nreverse (init));
+  init = build_constructor_from_list (init_list_type_node, nreverse (init));
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
@@ -990,7 +990,7 @@ class_initializer (tinfo_s *ti, tree target, tree trail)
   tree init = tinfo_base_init (ti, target);
 
   TREE_CHAIN (init) = trail;
-  init = build_constructor_from_list (NULL_TREE, init);
+  init = build_constructor_from_list (init_list_type_node, init);
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   return init;
@@ -1102,10 +1102,10 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 				  build_int_cst (offset_type, flags));
 	    base_init = tree_cons (NULL_TREE, offset, base_init);
 	    base_init = tree_cons (NULL_TREE, tinfo, base_init);
-	    base_init = build_constructor_from_list (NULL_TREE, base_init);
+	    base_init = build_constructor_from_list (init_list_type_node, base_init);
 	    base_inits = tree_cons (NULL_TREE, base_init, base_inits);
 	  }
-	base_inits = build_constructor_from_list (NULL_TREE, base_inits);
+	base_inits = build_constructor_from_list (init_list_type_node, base_inits);
 	base_inits = tree_cons (NULL_TREE, base_inits, NULL_TREE);
 	/* Prepend the number of bases.  */
 	base_inits = tree_cons (NULL_TREE,

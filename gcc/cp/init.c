@@ -1334,10 +1334,10 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   to run a new constructor; and catching an exception, where we
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
-      else if (BRACE_ENCLOSED_INITIALIZER_P (init))
+      else if (BRACE_ENCLOSED_INITIALIZER_P (init)
+	       && CP_AGGREGATE_TYPE_P (type))
 	{
 	  /* A brace-enclosed initializer for an aggregate.  */
-	  gcc_assert (CP_AGGREGATE_TYPE_P (type));
 	  init = digest_init (type, init);
 	}
       else

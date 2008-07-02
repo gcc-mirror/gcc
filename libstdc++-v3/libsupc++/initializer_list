@@ -1,0 +1,64 @@
+// std::initializer_list support -*- C++ -*-
+
+// Copyright (C) 2008 Free Software Foundation, Inc.
+//
+// This file is part of GCC.
+//
+// GCC is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2, or (at your option)
+// any later version.
+// 
+// GCC is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+#ifndef __CXX_INITIALIZER_LIST
+#define __CXX_INITIALIZER_LIST
+
+#pragma GCC visibility push(default)
+
+#include <cstddef>
+
+namespace std
+{
+  template<class E>
+  class initializer_list
+  {
+    const E* _array;
+    size_t _len;
+
+    // The compiler can call a private constructor.
+    initializer_list(const E* _a, size_t _l)
+      : _array(_a), _len(_l) { }
+
+  public:
+    initializer_list()
+      : _array(NULL), _len(0) {}
+    
+    size_t size() const		// number of elements
+    { return _len; }
+    const E* begin() const	// first element
+    { return _array; }
+    const E* end() const	// one past the last element
+    { return begin() + size(); }
+  };
+}
+
+#pragma GCC visibility pop
+#endif // __CXX_INITIALIZER_LIST

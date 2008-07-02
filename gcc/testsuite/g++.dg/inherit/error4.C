@@ -2,9 +2,9 @@
 
 struct A { virtual ~A(); };
 
-struct B : A A {};            // { dg-error "'A'|function definition|extra" }
+struct B : A A {};		// { dg-error "" }
 
-A foo(const B &b)
+A foo(const B &b)		// { dg-error "" }
 {
-  return b;                   // { dg-error "conversion" }
+  return b;
 }

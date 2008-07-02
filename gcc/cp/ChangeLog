@@ -1,3 +1,73 @@
+2008-07-02  Jason Merrill  <jason@redhat.com>
+
+	Implement WG21 N2672, Initializer List proposed wording
+	* cp-tree.h (enum cp_tree_index): Add CPTI_INIT_LIST_TYPE.
+	(struct lang_type_class): Add has_list_ctor bitfield.
+	(TYPE_HAS_LIST_CTOR): New macro.
+	(BRACE_ENCLOSED_INITIALIZER_P): Expect init_list_type_node.
+	(CONSTRUCTOR_IS_DIRECT_INIT): New macro.
+	(LOOKUP_NO_NARROWING): New macro.
+	(LOOKUP_NO_COPY_CTOR_CONVERSION): New macro.
+	* parser.c (cp_parse_braced_list): Split out from...
+	(cp_parser_initializer_clause): ...here.
+	(cp_parser_postfix_expression): Build up CONSTRUCTOR for compound 
+	literal here.
+	(cp_lexer_next_token_is_not_keyword): New fn.
+	(cp_parser_parenthesized_expression_list): Handle { }.
+	(cp_parser_new_expression, cp_parser_new_initializer): Likewise.
+	(cp_parser_assignment_expression, cp_parser_condition): Likewise.
+	(cp_parser_jump_statement, cp_parser_simple_declaration): Likewise.
+	(cp_parser_mem_initializer, cp_parser_init_declarator): Likewise.
+	(cp_parser_initializer, cp_parser_functional_cast): Likewise.
+	(cp_parser_omp_for_loop, cp_parser_cache_group): Likewise.
+	(cp_parser_save_member_function_body): Likewise.
+	* call.c (conversion_kind): Add ck_list, ck_aggr.
+	(struct conversion): Add check_narrowing bitfield, conversion list.
+	(build_list_conv): New fn.
+	(build_aggr_conv): New fn.
+	(implicit_conversion): Call them.
+	(standard_conversion): Set check_narrowing if appropriate.
+	(add_function_candidate): Handle LOOKUP_NO_COPY_CTOR_CONVERSION.
+	(build_user_type_conversion_1): When converting from an init list,
+	we allow additional conversions except when calling a copy ctor.
+	(convert_like_real): Calling an explicit ctor for an init list is 
+	ill-formed.  Handle ck_list and ck_addr.  Check narrowing.
+	(build_new_method_call): If CONSTRUCTOR_IS_DIRECT_INIT is set and
+	class doesn't have a list ctor, break the {} into a TREE_LIST.
+	(compare_ics): ck_list is better than other UDCs.
+	(set_up_extended_ref_temp): Split out from initialize_reference.
+	(is_std_init_list): New fn.
+	(is_list_ctor): New fn.
+	* decl.c (cxx_init_decl_processing): Create init_list_type_node.
+	(reshape_init_array_1): Pass it to build_constructor.
+	(reshape_init_class): Ditto.
+	(initialize_artificial_var): Pass the appropriate type.
+	(build_aggr_init_full_exprs): Split out from...
+	(check_initializer): ...here.  Handle new semantics.
+	(build_init_list_var_init): New subroutine of check_initializer.
+	(grokdeclarator): Converting constructors can have more than one parm.
+	(grok_special_member_properties): Set TYPE_HAS_LIST_CTOR.
+	* init.c (expand_default_init): Only do digest_init for aggregates.
+	* rtti.c (tinfo_base_init): Pass init_list_type_node to 
+	build_constructor_from_list.
+	(generic_initializer, ptr_initializer): Ditto.
+	(ptm_initializer, class_initializer): Ditto.
+	(get_pseudo_ti_init): Ditto.
+	* error.c (dump_type): Handle init_list_type_node.
+	(maybe_warn_cpp0x): New fn.
+	(maybe_varn_variadic_templates): Call it.
+	* cvt.c (ocp_convert): Handle conversion from { }.
+	* tree.c (build_array_of_n_type): New fn.
+	* typeck2.c (store_init_value): Use init_list_type_node.
+	(digest_init): Likewise.
+	(check_narrowing): New fn.
+	* semantics.c: (finish_compound_literal): Take CONSTRUCTOR instead 
+	of vector of constructor elts.  Handle non-aggregate types.  Make
+	constant literals static.
+	* pt.c: (tsubst_copy_and_build): Adjust.
+	(unify): Handle { }.
+	* name-lookup.c (arg_assoc_type): Handle init_list_type_node.
+	
 2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* typeck.c (comp_ptr_ttypes_real): Use vector_targets_convertible_p.

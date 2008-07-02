@@ -54,6 +54,8 @@ typedef enum conversion_kind {
   ck_ref_bind,
   ck_user,
   ck_ambig,
+  ck_list,
+  ck_aggr,
   ck_rvalue
 } conversion_kind;
 
@@ -96,6 +98,7 @@ struct conversion {
      being bound to an lvalue expression or an rvalue reference is
      being bound to an rvalue expression. */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
+  BOOL_BITFIELD check_narrowing: 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -107,6 +110,8 @@ struct conversion {
     /* The expression at the beginning of the conversion chain.  This
        variant is used only if KIND is ck_identity or ck_ambig.  */
     tree expr;
+    /* The array of conversions for an initializer_list.  */
+    conversion **list;
   } u;
   /* The function candidate corresponding to this conversion
      sequence.  This field is only used if KIND is ck_user.  */
@@ -174,6 +179,7 @@ static conversion *implicit_conversion (tree, tree, tree, bool, int);
 static conversion *standard_conversion (tree, tree, tree, bool, int);
 static conversion *reference_binding (tree, tree, tree, bool, int);
 static conversion *build_conv (conversion_kind, tree, conversion *);
+static conversion *build_list_conv (tree, tree, int);
 static bool is_subseq (conversion *, conversion *);
 static conversion *maybe_handle_ref_bind (conversion **);
 static void maybe_handle_implicit_object (conversion **);
@@ -529,9 +535,8 @@ build_conv (conversion_kind code, tree type, conversion *from)
   conversion *t;
   conversion_rank rank = CONVERSION_RANK (from);
 
-  /* We can't use buildl1 here because CODE could be USER_CONV, which
-     takes two arguments.  In that case, the caller is responsible for
-     filling in the second argument.  */
+  /* Note that the caller is responsible for filling in t->cand for
+     user-defined conversions.  */
   t = alloc_conversion (code);
   t->type = type;
   t->u.next = from;
@@ -559,6 +564,83 @@ build_conv (conversion_kind code, tree type, conversion *from)
   t->bad_p = from->bad_p;
   t->base_p = false;
   return t;
+}
+
+/* Represent a conversion from CTOR, a braced-init-list, to TYPE, a
+   specialization of std::initializer_list<T>, if such a conversion is
+   possible.  */
+
+static conversion *
+build_list_conv (tree type, tree ctor, int flags)
+{
+  tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (type), 0);
+  unsigned len = CONSTRUCTOR_NELTS (ctor);
+  conversion **subconvs = alloc_conversions (len);
+  conversion *t;
+  unsigned i;
+  tree val;
+
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+    {
+      conversion *sub
+	= implicit_conversion (elttype, TREE_TYPE (val), val,
+			       false, flags);
+      if (sub == NULL)
+	return NULL;
+
+      subconvs[i] = sub;
+    }
+
+  t = alloc_conversion (ck_list);
+  t->type = type;
+  t->u.list = subconvs;
+  t->rank = cr_exact;
+
+  for (i = 0; i < len; ++i)
+    {
+      conversion *sub = subconvs[i];
+      if (sub->rank > t->rank)
+	t->rank = sub->rank;
+      if (sub->user_conv_p)
+	t->user_conv_p = true;
+      if (sub->bad_p)
+	t->bad_p = true;
+    }
+
+  return t;
+}
+
+/* Represent a conversion from CTOR, a braced-init-list, to TYPE, an
+   aggregate class, if such a conversion is possible.  */
+
+static conversion *
+build_aggr_conv (tree type, tree ctor, int flags)
+{
+  unsigned HOST_WIDE_INT i = 0;
+  conversion *c;
+  tree field = TYPE_FIELDS (type);
+
+  for (; field; field = TREE_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (i < CONSTRUCTOR_NELTS (ctor))
+	{
+	  constructor_elt *ce = CONSTRUCTOR_ELT (ctor, i);
+	  if (!can_convert_arg (TREE_TYPE (field), TREE_TYPE (ce->value),
+				ce->value, flags))
+	    return NULL;
+	}
+      else if (build_value_init (TREE_TYPE (field)) == error_mark_node)
+	return NULL;
+    }
+
+  c = alloc_conversion (ck_aggr);
+  c->type = type;
+  c->rank = cr_exact;
+  c->user_conv_p = true;
+  c->u.next = NULL;
+  return c;
 }
 
 /* Build a representation of the identity conversion from EXPR to
@@ -864,6 +946,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     }
   else
     return NULL;
+
+  if (flags & LOOKUP_NO_NARROWING)
+    conv->check_narrowing = true;
 
   return conv;
 }
@@ -1296,6 +1381,10 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
   if (conv)
     return conv;
 
+  if (is_std_init_list (to) && expr
+      && BRACE_ENCLOSED_INITIALIZER_P (expr))
+    return build_list_conv (to, expr, flags);
+
   if (expr != NULL_TREE
       && (MAYBE_CLASS_TYPE_P (from)
 	  || MAYBE_CLASS_TYPE_P (to))
@@ -1304,6 +1393,11 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
       struct z_candidate *cand;
       int convflags = ((flags & LOOKUP_NO_TEMP_BIND)
 		       |LOOKUP_ONLYCONVERTING);
+
+      if (CLASS_TYPE_P (to)
+	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to))
+	  && BRACE_ENCLOSED_INITIALIZER_P (expr))
+	return build_aggr_conv (to, expr, flags);
 
       cand = build_user_type_conversion_1 (to, expr, convflags);
       if (cand)
@@ -1431,6 +1525,7 @@ add_function_candidate (struct z_candidate **candidates,
       if (parmnode)
 	{
 	  tree parmtype = TREE_VALUE (parmnode);
+	  int lflags = flags;
 
 	  /* The type of the implicit object parameter ('this') for
 	     overload resolution is not always the same as for the
@@ -1449,8 +1544,12 @@ add_function_candidate (struct z_candidate **candidates,
 	      parmtype = build_pointer_type (parmtype);
 	    }
 
+	  if ((flags & LOOKUP_NO_COPY_CTOR_CONVERSION)
+	      && ctype && i == 0 && DECL_COPY_CONSTRUCTOR_P (fn))
+	    lflags |= LOOKUP_NO_CONVERSION;
+
 	  t = implicit_conversion (parmtype, argtype, arg,
-				   /*c_cast_p=*/false, flags);
+				   /*c_cast_p=*/false, lflags);
 	}
       else
 	{
@@ -2607,7 +2706,18 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       ctors = BASELINK_FUNCTIONS (ctors);
 
       t = build_int_cst (build_pointer_type (totype), 0);
-      args = build_tree_list (NULL_TREE, expr);
+      if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+	  && !TYPE_HAS_LIST_CTOR (totype))
+	{
+	  args = ctor_to_list (expr);
+	  /* We still allow more conversions within an init-list.  */
+	  flags = ((flags & ~LOOKUP_NO_CONVERSION)
+		   /* But not for the copy ctor.  */
+		   |LOOKUP_NO_COPY_CTOR_CONVERSION
+		   |LOOKUP_NO_NARROWING);
+	}
+      else
+	args = build_tree_list (NULL_TREE, expr);
       /* We should never try to call the abstract or base constructor
 	 from here.  */
       gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
@@ -2617,7 +2727,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   for (; ctors; ctors = OVL_NEXT (ctors))
     {
       tree ctor = OVL_CURRENT (ctors);
-      if (DECL_NONCONVERTING_P (ctor))
+      if (DECL_NONCONVERTING_P (ctor)
+	  && !BRACE_ENCLOSED_INITIALIZER_P (expr))
 	continue;
 
       if (TREE_CODE (ctor) == TEMPLATE_DECL)
@@ -4443,6 +4554,17 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree convfn = cand->fn;
 	unsigned i;
 
+	/* When converting from an init list we consider explicit
+	   constructors, but actually trying to call one is an error.  */
+	if (DECL_NONCONVERTING_P (convfn))
+	  {
+	    if (complain & tf_error)
+	      error ("converting to %qT from initializer list would use "
+		     "explicit constructor %qD", totype, convfn);
+	    else
+	      return error_mark_node;
+	  }
+
 	/* Set user_conv_p on the argument conversions, so rvalue/base
 	   handling knows not to allow any more UDCs.  */
 	for (i = 0; i < cand->num_convs; ++i)
@@ -4477,6 +4599,44 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       /* Call build_user_type_conversion again for the error.  */
       return build_user_type_conversion
 	(totype, convs->u.expr, LOOKUP_NORMAL);
+
+    case ck_list:
+      {
+	/* Conversion to std::initializer_list<T>.  */
+	tree elttype = TREE_VEC_ELT (CLASSTYPE_TI_ARGS (totype), 0);
+	tree new_ctor = build_constructor (init_list_type_node, NULL);
+	unsigned len = CONSTRUCTOR_NELTS (expr);
+	tree array, parms, val;
+	unsigned ix;
+
+	/* Convert all the elements.  */
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
+	  {
+	    tree sub = convert_like_real (convs->u.list[ix], val, fn, argnum,
+					  1, false, false, complain);
+	    if (sub == error_mark_node)
+	      return sub;
+	    check_narrowing (TREE_TYPE (sub), val);
+	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
+	  }
+	/* Build up the array.  */
+	elttype = cp_build_qualified_type
+	  (elttype, TYPE_QUALS (elttype) | TYPE_QUAL_CONST);
+	array = build_array_of_n_type (elttype, len);
+	array = finish_compound_literal (array, new_ctor);
+
+	parms = build_tree_list (NULL_TREE, size_int (len));
+	parms = tree_cons (NULL_TREE, decay_conversion (array), parms);
+	/* Call the private constructor.  */
+	push_deferring_access_checks (dk_no_check);
+	new_ctor = build_special_member_call
+	  (NULL_TREE, complete_ctor_identifier, parms, totype, 0, complain);
+	pop_deferring_access_checks ();
+	return build_cplus_new (totype, new_ctor);
+      }
+
+    case ck_aggr:
+      return get_target_expr (digest_init (totype, expr));
 
     default:
       break;
@@ -4624,6 +4784,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     default:
       break;
     }
+
+  if (convs->check_narrowing)
+    check_narrowing (totype, expr);
 
   if (issue_conversion_warnings)
     expr = convert_and_check (totype, expr);
@@ -5626,6 +5789,18 @@ build_new_method_call (tree instance, tree fns, tree args,
   if (DECL_DESTRUCTOR_P (fn))
     name = complete_dtor_identifier;
 
+  /* If CONSTRUCTOR_IS_DIRECT_INIT is set, this was a T{ } form
+     initializer, not T({ }).  If the type doesn't have a list ctor,
+     break apart the list into separate ctor args.  */
+  if (DECL_CONSTRUCTOR_P (fn) && args
+      && BRACE_ENCLOSED_INITIALIZER_P (TREE_VALUE (args))
+      && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (args))
+      && !TYPE_HAS_LIST_CTOR (basetype))
+    {
+      gcc_assert (TREE_CHAIN (args) == NULL_TREE);
+      args = ctor_to_list (TREE_VALUE (args));
+    }
+
   class_type = (conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE);
   mem_args = tree_cons (NULL_TREE, instance_ptr, args);
 
@@ -5977,12 +6152,25 @@ compare_ics (conversion *ics1, conversion *ics2)
       conversion *t1;
       conversion *t2;
 
-      for (t1 = ics1; t1->kind != ck_user; t1 = t1->u.next)
-	if (t1->kind == ck_ambig)
+      for (t1 = ics1; t1->kind != ck_user && t1->kind != ck_list; t1 = t1->u.next)
+	if (t1->kind == ck_ambig || t1->kind == ck_aggr)
 	  return 0;
-      for (t2 = ics2; t2->kind != ck_user; t2 = t2->u.next)
-	if (t2->kind == ck_ambig)
+      for (t2 = ics2; t2->kind != ck_user && t2->kind != ck_list; t2 = t2->u.next)
+	if (t2->kind == ck_ambig || t2->kind == ck_aggr)
 	  return 0;
+
+      /* Conversion to std::initializer_list is better than other
+	 user-defined conversions.  */
+      if (t1->kind == ck_list
+	  || t2->kind == ck_list)
+	{
+	  if (t2->kind != ck_list)
+	    return 1;
+	  else if (t1->kind != ck_list)
+	    return -1;
+	  else
+	    return 0;
+	}
 
       if (t1->cand->fn != t2->cand->fn)
 	return 0;
@@ -6815,6 +7003,76 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   return var;
 }
 
+/* EXPR is the initializer for a variable DECL of reference or
+   std::initializer_list type.  Create, push and return a new VAR_DECL
+   for the initializer so that it will live as long as DECL.  Any
+   cleanup for the new variable is returned through CLEANUP, and the
+   code to initialize the new variable is returned through INITP.  */
+
+tree
+set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
+{
+  tree init;
+  tree type;
+  tree var;
+
+  /* Create the temporary variable.  */
+  type = TREE_TYPE (expr);
+  var = make_temporary_var_for_ref_to_temp (decl, type);
+  layout_decl (var, 0);
+  /* If the rvalue is the result of a function call it will be
+     a TARGET_EXPR.  If it is some other construct (such as a
+     member access expression where the underlying object is
+     itself the result of a function call), turn it into a
+     TARGET_EXPR here.  It is important that EXPR be a
+     TARGET_EXPR below since otherwise the INIT_EXPR will
+     attempt to make a bitwise copy of EXPR to initialize
+     VAR.  */
+  if (TREE_CODE (expr) != TARGET_EXPR)
+    expr = get_target_expr (expr);
+  /* Create the INIT_EXPR that will initialize the temporary
+     variable.  */
+  init = build2 (INIT_EXPR, type, var, expr);
+  if (at_function_scope_p ())
+    {
+      add_decl_expr (var);
+
+      if (TREE_STATIC (var))
+	init = add_stmt_to_compound (init, register_dtor_fn (var));
+      else
+	*cleanup = cxx_maybe_build_cleanup (var);
+
+      /* We must be careful to destroy the temporary only
+	 after its initialization has taken place.  If the
+	 initialization throws an exception, then the
+	 destructor should not be run.  We cannot simply
+	 transform INIT into something like:
+
+	 (INIT, ({ CLEANUP_STMT; }))
+
+	 because emit_local_var always treats the
+	 initializer as a full-expression.  Thus, the
+	 destructor would run too early; it would run at the
+	 end of initializing the reference variable, rather
+	 than at the end of the block enclosing the
+	 reference variable.
+
+	 The solution is to pass back a cleanup expression
+	 which the caller is responsible for attaching to
+	 the statement tree.  */
+    }
+  else
+    {
+      rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	static_aggregates = tree_cons (NULL_TREE, var,
+				       static_aggregates);
+    }
+
+  *initp = init;
+  return var;
+}
+
 /* Convert EXPR to the indicated reference TYPE, in a way suitable for
    initializing a variable of that TYPE.  If DECL is non-NULL, it is
    the VAR_DECL being initialized with the EXPR.  (In that case, the
@@ -6919,60 +7177,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	  if (!real_lvalue_p (expr))
 	    {
 	      tree init;
-	      tree type;
-
-	      /* Create the temporary variable.  */
-	      type = TREE_TYPE (expr);
-	      var = make_temporary_var_for_ref_to_temp (decl, type);
-	      layout_decl (var, 0);
-	      /* If the rvalue is the result of a function call it will be
-		 a TARGET_EXPR.  If it is some other construct (such as a
-		 member access expression where the underlying object is
-		 itself the result of a function call), turn it into a
-		 TARGET_EXPR here.  It is important that EXPR be a
-		 TARGET_EXPR below since otherwise the INIT_EXPR will
-		 attempt to make a bitwise copy of EXPR to initialize
-		 VAR.  */
-	      if (TREE_CODE (expr) != TARGET_EXPR)
-		expr = get_target_expr (expr);
-	      /* Create the INIT_EXPR that will initialize the temporary
-		 variable.  */
-	      init = build2 (INIT_EXPR, type, var, expr);
-	      if (at_function_scope_p ())
-		{
-		  add_decl_expr (var);
-
-		  if (TREE_STATIC (var))
-		    init = add_stmt_to_compound (init, register_dtor_fn (var));
-		  else
-		    *cleanup = cxx_maybe_build_cleanup (var);
-
-		  /* We must be careful to destroy the temporary only
-		     after its initialization has taken place.  If the
-		     initialization throws an exception, then the
-		     destructor should not be run.  We cannot simply
-		     transform INIT into something like:
-
-			 (INIT, ({ CLEANUP_STMT; }))
-
-		     because emit_local_var always treats the
-		     initializer as a full-expression.  Thus, the
-		     destructor would run too early; it would run at the
-		     end of initializing the reference variable, rather
-		     than at the end of the block enclosing the
-		     reference variable.
-
-		     The solution is to pass back a cleanup expression
-		     which the caller is responsible for attaching to
-		     the statement tree.  */
-		}
-	      else
-		{
-		  rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
-		  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-		    static_aggregates = tree_cons (NULL_TREE, var,
-						   static_aggregates);
-		}
+	      var = set_up_extended_ref_temp (decl, expr, cleanup, &init);
 	      /* Use its address to initialize the reference variable.  */
 	      expr = build_address (var);
 	      if (base_conv_type)
@@ -7001,6 +7206,41 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
   obstack_free (&conversion_obstack, p);
 
   return expr;
+}
+
+/* Returns true iff TYPE is some variant of std::initializer_list.  */
+
+bool
+is_std_init_list (tree type)
+{
+  return (CLASS_TYPE_P (type)
+	  && CP_TYPE_CONTEXT (type) == std_node
+	  && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0);
+}
+
+/* Returns true iff DECL is a list constructor: i.e. a constructor which
+   will accept an argument list of a single std::initializer_list<T>.  */
+
+bool
+is_list_ctor (tree decl)
+{
+  tree args = FUNCTION_FIRST_USER_PARMTYPE (decl);
+  tree arg;
+
+  if (!args || args == void_list_node)
+    return false;
+
+  arg = non_reference (TREE_VALUE (args));
+  if (!is_std_init_list (arg))
+    return false;
+
+  args = TREE_CHAIN (args);
+
+  if (args && args != void_list_node && !TREE_PURPOSE (args))
+    /* There are more non-defaulted parms.  */
+    return false;
+
+  return true;
 }
 
 #include "gt-cp-call.h"
