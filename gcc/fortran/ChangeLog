@@ -1,3 +1,10 @@
+2008-07-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36590
+	PR fortran/36681
+	* iresolve.c (resolve_mask_arg):  Don't convert mask to
+	kind=1 logical if it is of that type already.
+
 2008-06-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36341

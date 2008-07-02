@@ -106,7 +106,7 @@ resolve_mask_arg (gfc_expr *mask)
       /* In the library, we access the mask with a GFC_LOGICAL_1
 	 argument.  No need to waste memory if we are about to create
 	 a temporary array.  */
-      if (mask->expr_type == EXPR_OP)
+      if (mask->expr_type == EXPR_OP && mask->ts.kind != 1)
 	{
 	  ts.type = BT_LOGICAL;
 	  ts.kind = 1;
