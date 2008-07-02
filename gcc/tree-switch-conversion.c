@@ -107,7 +107,7 @@ struct switch_conv_info
      cases.  */
   tree range_min;
 
-  /* The difference of between the above two numbers, i.e. The size of the array
+  /* The difference between the above two numbers, i.e. The size of the array
      that would have to be created by the transformation.  */
   tree range_size;
 
@@ -121,7 +121,7 @@ struct switch_conv_info
   /* Number of phi nodes in the final bb (that we'll be replacing).  */
   int phi_count;
 
-  /* Array of default values, n the same order as phi nodes.  */
+  /* Array of default values, in the same order as phi nodes.  */
   tree *default_values;
 
   /* Constructors of new static arrays.  */
@@ -144,7 +144,8 @@ struct switch_conv_info
   /* Combined count of all other (non-default) edges in the replaced switch.  */
   gcov_type other_count;
 
-  /* The last load statement that loads a temporary from a new static array.  */
+  /* The first load statement that loads a temporary from a new static array.
+   */
   tree arr_ref_first;
 
   /* The last load statement that loads a temporary from a new static array.  */
@@ -299,7 +300,7 @@ check_final_bb (void)
 	      && !is_gimple_min_invariant (PHI_ARG_ELT (phi, i).def))
 	    {
 	      info.reason = "   Non-invariant value from a case\n";
-	      return false; 		/* non invariant argument */
+	      return false; /* non invariant argument */
 	    }
 	}
     }
@@ -409,13 +410,13 @@ build_constructors (tree swtch)
 
 	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node, 0);
 	}
-      gcc_assert (tree_int_cst_equal (pos, CASE_LOW(cs)));
+      gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
       j = 0;
       if (CASE_HIGH (cs))
 	high = CASE_HIGH (cs);
       else
-	high = CASE_LOW(cs);
+	high = CASE_LOW (cs);
       for (phi = phi_nodes (info.final_bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -793,7 +794,7 @@ process_switch (tree swtch)
   build_constructors (swtch);
 
   build_arrays (swtch); /* Build the static arrays and assignments.   */
-  gen_inbound_check (swtch); 	/* Build the bounds check.  */
+  gen_inbound_check (swtch);	/* Build the bounds check.  */
 
   /* Cleanup:  */
   free_temp_arrays ();
@@ -862,12 +863,12 @@ struct gimple_opt_pass pass_convert_switch =
  {
   GIMPLE_PASS,
   "switchconv",				/* name */
-  switchconv_gate,        		/* gate */
+  switchconv_gate,			/* gate */
   do_switchconv,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  0,			        	/* tv_id */
+  0,					/* tv_id */
   PROP_cfg | PROP_ssa,	                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

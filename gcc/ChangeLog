@@ -1,3 +1,12 @@
+2008-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-switch-conversion.c: Corrected various comments and
+	whitespace issues
+	(build_constructors): Fixed minor formatting mistakes.
+
+	* invoke.texi (Optimize Options): Corrected the
+	switch-conversion-max-branch-ratio parameter.
+
 2008-07-02  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* final.c (asm_insn_count): Return zero for an empty asm body.

@@ -7352,7 +7352,7 @@ set this value to 0 to disable canonical types.
 
 @item switch-conversion-max-branch-ratio
 Switch initialization conversion will refuse to create arrays that are
-bigger than @option{cswtch-max-branch-ratio} times the number of
+bigger than @option{switch-conversion-max-branch-ratio} times the number of
 branches in the switch.
 
 @item max-partial-antic-length
