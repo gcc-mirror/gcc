@@ -1,3 +1,9 @@
+2008-07-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36590
+	PR fortran/36681
+	* gfortran.dg/count_mask_1.f90:  New test.
+
 2008-07-02  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/spu/costmodel-vect-iv-9.c: Add noinline
