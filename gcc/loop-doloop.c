@@ -321,9 +321,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   JUMP_LABEL (jump) = label;
 
   /* The jump is supposed to handle an unlikely special case.  */
-  REG_NOTES (jump)
-	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
-			       const0_rtx, REG_NOTES (jump));
+  add_reg_note (jump, REG_BR_PROB, const0_rtx);
+
   LABEL_NUSES (label)++;
 
   make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
@@ -518,18 +517,14 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   /* Add a REG_NONNEG note if the actual or estimated maximum number
      of iterations is non-negative.  */
   if (nonneg)
-    {
-      REG_NOTES (jump_insn)
-	= gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX, REG_NOTES (jump_insn));
-    }
+    add_reg_note (jump_insn, REG_NONNEG, NULL_RTX);
+
   /* Update the REG_BR_PROB note.  */
   if (true_prob_val)
     {
       /* Seems safer to use the branch probability.  */
-      REG_NOTES (jump_insn) =
-        gen_rtx_EXPR_LIST (REG_BR_PROB,
-                           GEN_INT (desc->in_edge->probability),
-                           REG_NOTES (jump_insn));
+      add_reg_note (jump_insn, REG_BR_PROB, 
+		    GEN_INT (desc->in_edge->probability));
     }
 }
 

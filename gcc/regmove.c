@@ -200,9 +200,8 @@ try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
 		  if (note)
 		    PUT_MODE (note, REG_UNUSED);
 
-		  REG_NOTES (insn)
-		    = gen_rtx_EXPR_LIST (REG_INC,
-					 reg, REG_NOTES (insn));
+		  add_reg_note (insn, REG_INC, reg);
+
 		  if (! inc_insn_set)
 		    delete_insn (inc_insn);
 		  return 1;

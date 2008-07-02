@@ -3191,7 +3191,7 @@ df_set_note (enum reg_note note_type, rtx insn, rtx old, rtx reg)
       }
   
   /* Did not find the note.  */
-  REG_NOTES (insn) = alloc_EXPR_LIST (note_type, reg, REG_NOTES (insn));
+  add_reg_note (insn, note_type, reg);
   return old;
 }
 

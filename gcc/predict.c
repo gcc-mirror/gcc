@@ -263,12 +263,10 @@ predict_insn (rtx insn, enum br_predictor predictor, int probability)
   if (!flag_guess_branch_prob)
     return;
 
-  REG_NOTES (insn)
-    = gen_rtx_EXPR_LIST (REG_BR_PRED,
-			 gen_rtx_CONCAT (VOIDmode,
-					 GEN_INT ((int) predictor),
-					 GEN_INT ((int) probability)),
-			 REG_NOTES (insn));
+  add_reg_note (insn, REG_BR_PRED,
+		gen_rtx_CONCAT (VOIDmode,
+				GEN_INT ((int) predictor),
+				GEN_INT ((int) probability)));
 }
 
 /* Predict insn by given predictor.  */
@@ -561,9 +559,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 
   if (!prob_note)
     {
-      REG_NOTES (insn)
-	= gen_rtx_EXPR_LIST (REG_BR_PROB,
-			     GEN_INT (combined_probability), REG_NOTES (insn));
+      add_reg_note (insn, REG_BR_PROB, GEN_INT (combined_probability));
 
       /* Save the prediction into CFG in case we are seeing non-degenerated
 	 conditional jump.  */

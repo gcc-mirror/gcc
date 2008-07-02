@@ -1111,11 +1111,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 	  && JUMP_P (BB_END (jump_block))
 	  && !any_condjump_p (BB_END (jump_block))
 	  && (EDGE_SUCC (jump_block, 0)->flags & EDGE_CROSSING))
-	REG_NOTES (BB_END (jump_block)) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
-							     NULL_RTX,
-							     REG_NOTES
-							     (BB_END
-							      (jump_block)));
+	add_reg_note (BB_END (jump_block), REG_CROSSING_JUMP, NULL_RTX);
 
       /* Wire edge in.  */
       new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
@@ -1418,8 +1414,7 @@ commit_one_edge_insertion (edge e)
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
 		  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
-		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST
-		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
+		add_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX);
 	    }
 	}
     }

@@ -1,3 +1,42 @@
+2008-07-02  Ian Lance Taylor  <iant@google.com>
+
+	* rtlanal.c (add_reg_note): New function.
+	* rtl.h (add_reg_note): Declare.
+	* auto-inc-dec.c (attempt_change): Use add_reg_note.
+	* bb-reorder.c (add_reg_crossing_jump_notes): Likewise.
+	* builtins.c (expand_builtin_longjmp): Likewise.
+	(expand_builtin_nonlocal_goto): Likewise.
+	* calls.c (emit_call_1, expand_call): Likewise.
+	* cfgexpand.c (add_reg_br_prob_note): Likewise.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+	(commit_one_edge_insertion): Likewise.
+	* combine.c (move_deaths, distribute_notes): Likewise.
+	* df-problems.c (df_set_note): Likewise.
+	* emit-rtl.c (link_cc0_insns, try_split): Likewise.
+	(set_unique_reg_note): Likewise.
+	(emit_copy_of_insn_after): Likewise.
+	* expr.c (expand_expr_real): Likewise.
+	* gcse.c (add_label_notes): Likewise.
+	* haifa-sched.c (create_check_block_twin): Likewise.
+	* jump.c (mark_jump_label_1): Likewise.
+	* loop-doloop.c (add_test, doloop_modify): Likewise.
+	* loop-unswitch.c (compare_and_jump_seq): Likewise.
+	* lower-subreg.c (move_eh_region_note): Likewise.
+	* optabs.c (emit_libcall_block): Likewise.
+	* predict.c (predict_insn): Likewise.
+	(combine_predictions_for_insn): Likewise.
+	* recog.c (peephole2_optimize): Likewise.
+	* regmove.c (try_auto_increment): Likewise.
+	* reg-stack.c (emit_pop_insn, move_for_stack_reg): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (fixup_eh_region_note): Likewise.
+	(reload_as_needed, add_auto_inc_notes, copy_eh_notes): Likewise.
+	* reorg.c (delete_prior_computation): Likewise.
+	(delete_computation, dbr_schedule): Likewise.
+	* config/pa/pa.c (legitimize_pic_address): Likewise.
+	* config/sh/sh.c (sh_reorg): Likewise.
+
 2008-07-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/36669

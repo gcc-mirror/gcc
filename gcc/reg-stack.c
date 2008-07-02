@@ -788,9 +788,7 @@ emit_pop_insn (rtx insn, stack regstack, rtx reg, enum emit_where where)
   else
     pop_insn = emit_insn_before (pop_rtx, insn);
 
-  REG_NOTES (pop_insn)
-    = gen_rtx_EXPR_LIST (REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode),
-			 REG_NOTES (pop_insn));
+  add_reg_note (pop_insn, REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];
@@ -1064,8 +1062,7 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
 
 	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
 	  emit_insn_before (push_rtx, insn);
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, top_stack_reg,
-						REG_NOTES (insn));
+	  add_reg_note (insn, REG_DEAD, top_stack_reg);
 	}
 
       replace_reg (psrc, FIRST_STACK_REG);

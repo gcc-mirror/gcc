@@ -1842,6 +1842,34 @@ find_regno_fusage (const_rtx insn, enum rtx_code code, unsigned int regno)
 }
 
 
+/* Add register note with kind KIND and datum DATUM to INSN.  */
+
+void
+add_reg_note (rtx insn, enum reg_note kind, rtx datum)
+{
+  rtx note;
+
+  switch (kind)
+    {
+    case REG_CC_SETTER:
+    case REG_CC_USER:
+    case REG_LABEL_TARGET:
+    case REG_LABEL_OPERAND:
+      /* These types of register notes use an INSN_LIST rather than an
+	 EXPR_LIST, so that copying is done right and dumps look
+	 better.  */
+      note = alloc_INSN_LIST (datum, REG_NOTES (insn));
+      PUT_REG_NOTE_KIND (note, kind);
+      break;
+
+    default:
+      note = alloc_EXPR_LIST (kind, datum, REG_NOTES (insn));
+      break;
+    }
+
+  REG_NOTES (insn) = note;
+}
+
 /* Remove register note NOTE from the REG_NOTES of INSN.  */
 
 void

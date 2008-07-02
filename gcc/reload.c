@@ -4145,9 +4145,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      && (!JUMP_P (insn)
 		  || !label_is_jump_target_p (XEXP (substitution, 0),
 					      insn)))
-	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL_OPERAND,
-						  XEXP (substitution, 0),
-						  REG_NOTES (insn));
+	    add_reg_note (insn, REG_LABEL_OPERAND, XEXP (substitution, 0));
 	}
       else
 	retval |= (substed_operand[i] != *recog_data.operand_loc[i]);

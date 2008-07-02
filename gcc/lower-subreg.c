@@ -551,8 +551,7 @@ move_eh_region_note (rtx insn, rtx insns)
 	  || (flag_non_call_exceptions
 	      && INSN_P (p)
 	      && may_trap_p (PATTERN (p))))
-	REG_NOTES (p) = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0),
-					   REG_NOTES (p));
+	add_reg_note (p, REG_EH_REGION, XEXP (note, 0));
     }
 }
 

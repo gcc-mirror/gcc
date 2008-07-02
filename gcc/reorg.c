@@ -3217,9 +3217,7 @@ delete_prior_computation (rtx note, rtx insn)
 		{
 		  int i;
 
-		  REG_NOTES (our_prev)
-		    = gen_rtx_EXPR_LIST (REG_UNUSED, reg,
-					 REG_NOTES (our_prev));
+		  add_reg_note (our_prev, REG_UNUSED, reg);
 
 		  for (i = dest_regno; i < dest_endregno; i++)
 		    if (! find_regno_note (our_prev, REG_UNUSED, i))
@@ -3281,8 +3279,7 @@ delete_computation (rtx insn)
 	    delete_computation (prev);
 	  else
 	    /* Otherwise, show that cc0 won't be used.  */
-	    REG_NOTES (prev) = gen_rtx_EXPR_LIST (REG_UNUSED,
-						  cc0_rtx, REG_NOTES (prev));
+	    add_reg_note (prev, REG_UNUSED, cc0_rtx);
 	}
     }
 #endif
@@ -4024,9 +4021,7 @@ dbr_schedule (rtx first)
 	continue;
 
       pred_flags = get_jump_flags (insn, JUMP_LABEL (insn));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_BR_PRED,
-					    GEN_INT (pred_flags),
-					    REG_NOTES (insn));
+      add_reg_note (insn, REG_BR_PRED, GEN_INT (pred_flags));
     }
   free_resource_info ();
   free (uid_to_ruid);

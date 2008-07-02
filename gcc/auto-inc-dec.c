@@ -621,8 +621,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
     }
 
   /* Record that this insn has an implicit side effect.  */
-  REG_NOTES (mem_insn.insn) 
-    = alloc_EXPR_LIST (REG_INC, inc_reg, REG_NOTES (mem_insn.insn));
+  add_reg_note (mem_insn.insn, REG_INC, inc_reg);
 
   if (dump_file)
     {

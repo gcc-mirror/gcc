@@ -3773,11 +3773,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
 	    /* any_condjump_p (jump) == false.
 	       We don't need the same note for the check because
 	       any_condjump_p (check) == true.  */
-	    {
-	      REG_NOTES (jump) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
-						    NULL_RTX,
-						    REG_NOTES (jump));
-	    }
+	    add_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
 	  edge_flags = EDGE_CROSSING;
 	}
       else

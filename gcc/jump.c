@@ -1068,8 +1068,7 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 		   a label, except for the primary target of a jump,
 		   must have such a note.  */
 		if (! find_reg_note (insn, kind, label))
-		  REG_NOTES (insn)
-		    = gen_rtx_INSN_LIST (kind, label, REG_NOTES (insn));
+		  add_reg_note (insn, kind, label);
 	      }
 	  }
 	return;
