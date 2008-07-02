@@ -1413,6 +1413,7 @@ case $multi_os_directory in
    ;;
 esac
 AC_SUBST(dbexecdir)
+AC_SUBST(gcjsubdir)
 
 AC_DEFINE(JV_VERSION, "1.5.0", [Compatibility version string])
 AC_DEFINE(JV_API_VERSION, "1.5", [API compatibility version string])

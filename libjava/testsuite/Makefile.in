@@ -283,6 +283,7 @@ exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
 extra_ldflags_libjava = @extra_ldflags_libjava@
+gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@

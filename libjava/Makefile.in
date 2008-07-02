@@ -772,6 +772,7 @@ exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
 extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_5)
+gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
@@ -844,7 +845,7 @@ jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar \
 @JAVA_HOME_SET_FALSE@BOOT_CLASS_PATH_DIR = $(jardir)/libgcj-$(gcc_version).jar
 @JAVA_HOME_SET_TRUE@BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 db_name = classmap.db
-db_pathtail = gcj-$(gcc_version)/$(db_name)
+db_pathtail = $(gcjsubdir)/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated

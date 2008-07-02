@@ -67,7 +67,8 @@ endif
 ## Name of the default .db.
 db_name = classmap.db
 ## Compiler specific component of the .db file
-db_pathtail = gcj-$(gcc_version)/$(db_name)
+gcjsubdir = @gcjsubdir@
+db_pathtail = $(gcjsubdir)/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
