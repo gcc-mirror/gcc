@@ -904,11 +904,8 @@ add_implicit_graph_edge (constraint_graph_t graph, unsigned int to,
   if (!graph->implicit_preds[to])
     graph->implicit_preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
 
-  if (!bitmap_bit_p (graph->implicit_preds[to], from))
-    {
-      stats.num_implicit_edges++;
-      bitmap_set_bit (graph->implicit_preds[to], from);
-    }
+  if (bitmap_set_bit (graph->implicit_preds[to], from))
+    stats.num_implicit_edges++;
 }
 
 /* Add a predecessor graph edge to GRAPH, going from TO to FROM if
@@ -921,8 +918,7 @@ add_pred_graph_edge (constraint_graph_t graph, unsigned int to,
 {
   if (!graph->preds[to])
     graph->preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
-  if (!bitmap_bit_p (graph->preds[to], from))
-    bitmap_set_bit (graph->preds[to], from);
+  bitmap_set_bit (graph->preds[to], from);
 }
 
 /* Add a graph edge to GRAPH, going from FROM to TO if
@@ -943,12 +939,11 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
 
       if (!graph->succs[from])
 	graph->succs[from] = BITMAP_ALLOC (&pta_obstack);
-      if (!bitmap_bit_p (graph->succs[from], to))
+      if (bitmap_set_bit (graph->succs[from], to))
 	{
 	  r = true;
 	  if (to < FIRST_REF_NODE && from < FIRST_REF_NODE)
 	    stats.num_edges++;
-	  bitmap_set_bit (graph->succs[from], to);
 	}
       return r;
     }
@@ -1405,13 +1400,11 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
   unsigned int j;
   bitmap_iterator bi;
 
- if (bitmap_bit_p (delta, anything_id))
-   {
-     flag = !bitmap_bit_p (sol, anything_id);
-     if (flag)
-       bitmap_set_bit (sol, anything_id);
-     goto done;
-   }
+  if (bitmap_bit_p (delta, anything_id))
+    {
+      flag |= bitmap_set_bit (sol, anything_id);
+      goto done;
+    }
 
   /* For each variable j in delta (Sol(y)), add
      an edge in the graph from j to x, and union Sol(j) into Sol(x).  */
@@ -1436,13 +1429,9 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  /* Merging the solution from ESCAPED needlessly increases
 	     the set.  Use ESCAPED as representative instead.
 	     Same for CALLUSED.  */
-	  else if ((get_varinfo (t)->id == escaped_id
-		    || get_varinfo (t)->id == callused_id)
-		   && !bitmap_bit_p (sol, get_varinfo (t)->id))
-	    {
-	      bitmap_set_bit (sol, get_varinfo (t)->id);
-	      flag = true;
-	    }
+	  else if (get_varinfo (t)->id == escaped_id
+		   || get_varinfo (t)->id == callused_id)
+	    flag |= bitmap_set_bit (sol, get_varinfo (t)->id);
 	  else if (add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	}
@@ -1486,14 +1475,11 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	   continue;
 	 t = find (v->id);
 
-	 if (!bitmap_bit_p (get_varinfo (t)->solution, anything_id))
+	 if (bitmap_set_bit (get_varinfo (t)->solution, anything_id)
+	     && !TEST_BIT (changed, t))
 	   {
-	     bitmap_set_bit (get_varinfo (t)->solution, anything_id);
-	     if (!TEST_BIT (changed, t))
-	       {
-		 SET_BIT (changed, t);
-		 changed_count++;
-	       }
+	     SET_BIT (changed, t);
+	     changed_count++;
 	   }
        }
      return;

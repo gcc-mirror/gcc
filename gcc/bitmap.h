@@ -136,11 +136,11 @@ extern bool bitmap_ior_and_compl (bitmap DST, const_bitmap A, const_bitmap B, co
 /* A |= (B & ~C).  Return true if A changes.  */
 extern bool bitmap_ior_and_compl_into (bitmap DST, const_bitmap B, const_bitmap C);
 
-/* Clear a single register in a register set.  */
-extern void bitmap_clear_bit (bitmap, int);
+/* Clear a single bit in a bitmap.  Return true if the bit changed.  */
+extern bool bitmap_clear_bit (bitmap, int);
 
-/* Set a single register in a register set.  */
-extern void bitmap_set_bit (bitmap, int);
+/* Set a single bit in a bitmap.  Return true if the bit changed.  */
+extern bool bitmap_set_bit (bitmap, int);
 
 /* Return true if a register is set in a register set.  */
 extern int bitmap_bit_p (bitmap, int);

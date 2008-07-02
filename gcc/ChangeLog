@@ -1,3 +1,17 @@
+2008-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* bitmap.h (bitmap_set_bit): Return bool.
+	(bitmap_clear_bit): Likewise.
+	* bitmap.c (bitmap_set_bit): Return if the bit changed.  Only
+	write to the bitmap if it would.
+	(bitmap_clear_bit): Likewise.
+	* tree-ssa-structalias.c (add_implicit_graph_edge): Use
+	bitmap_set_bit return value.
+	(add_pred_graph_edge): Likewise.
+	(add_graph_edge): Likewise.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+
 2008-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/alpha/alpha.c (alpha_need_linkage, alpha_use_linkage):
