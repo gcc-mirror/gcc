@@ -1,3 +1,14 @@
+2008-07-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org
+
+	PR fortran/36676
+	PR fortran/36657
+	PR fortran/36546
+	PR fortran/36538
+	* gfortran.dg/namelist_50.f90
+	* gfortran.dg/namelist_51.f90
+	* gfortran.dg/namelist_48.f90
+	* gfortran.dg/namelist_49.f90
+
 2008-07-01  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/36648
