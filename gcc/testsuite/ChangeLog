@@ -1,3 +1,9 @@
+2008-07-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* g++.dg/cdce3.C: Test long double math functions for
+	large_long_double target only.  Skip pow10 and exp10
+	functions for *-*-darwin*.
+
 2008-07-02  Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
