@@ -1,5 +1,10 @@
 2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* lib/compat.exp (compat-execute): Add -ffunction-sections
+	and -Wl,--auto-overlay when building for spu-*-elf*.
+
+2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* gcc.dg/nrv3.c (S): Increase size of padding for SPU.
 	* g++.dg/opt/temp1.C (struct T): Likewise.
 
