@@ -27,7 +27,4 @@ TEST(Scd9, _Complex double)
 TEST(Scd10, _Complex double)
 TEST(Scd11, _Complex double)
 TEST(Scd12, _Complex double)
-TEST(Scd13, _Complex double)
-TEST(Scd14, _Complex double)
-TEST(Scd15, _Complex double)
-TEST(Scd16, _Complex double)
+

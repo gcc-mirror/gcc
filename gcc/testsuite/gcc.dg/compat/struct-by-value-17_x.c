@@ -19,10 +19,7 @@ TEST(Scd9, _Complex double)
 TEST(Scd10, _Complex double)
 TEST(Scd11, _Complex double)
 TEST(Scd12, _Complex double)
-TEST(Scd13, _Complex double)
-TEST(Scd14, _Complex double)
-TEST(Scd15, _Complex double)
-TEST(Scd16, _Complex double)
+
 
 #undef T
 
@@ -45,10 +42,7 @@ T(Scd9, _Complex double)
 T(Scd10, _Complex double)
 T(Scd11, _Complex double)
 T(Scd12, _Complex double)
-T(Scd13, _Complex double)
-T(Scd14, _Complex double)
-T(Scd15, _Complex double)
-T(Scd16, _Complex double)
+
 
 DEBUG_FINI
 

@@ -27,7 +27,4 @@ TEST(Scf9, _Complex float)
 TEST(Scf10, _Complex float)
 TEST(Scf11, _Complex float)
 TEST(Scf12, _Complex float)
-TEST(Scf13, _Complex float)
-TEST(Scf14, _Complex float)
-TEST(Scf15, _Complex float)
-TEST(Scf16, _Complex float)
+
