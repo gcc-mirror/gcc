@@ -1,3 +1,8 @@
+2008-07-02  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	* gcc.dg/pr36227.c: Correct test for targets where long is
+	not the same size as pointer.
+
 2008-07-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* g++.dg/cdce3.C: Test long double math functions for
