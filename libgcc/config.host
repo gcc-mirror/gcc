@@ -582,6 +582,17 @@ esac
 case ${host} in
 i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-linux* | x86_64-*-linux*)
-	tmake_file="${tmake_file} i386/${host_address}/t-fprules-softfp"
+	if test "${host_address}" = 32; then
+		tmake_file="${tmake_file} i386/${host_address}/t-fprules-softfp"
+	fi
+	;;
+esac
+
+case ${host} in
+i[34567]86-*-linux* | x86_64-*-linux*)
+	# Provide backward binary compatibility for 64bit Linux/x86.
+	if test "${host_address}" = 64; then
+		tmake_file="${tmake_file} i386/${host_address}/t-softfp-compat"
+	fi
 	;;
 esac
