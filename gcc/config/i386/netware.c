@@ -77,7 +77,7 @@ gen_stdcall_or_fastcall_decoration (tree decl, tree id, char prefix)
 	}
     }
 
-  new_str = alloca (1 + strlen (old_str) + 1 + 10 + 1);
+  new_str = XALLOCAVEC (char, 1 + strlen (old_str) + 1 + 10 + 1);
   sprintf (new_str, "%c%s@" HOST_WIDE_INT_PRINT_UNSIGNED,
 	   prefix, old_str, total);
 
@@ -132,7 +132,7 @@ gen_regparm_prefix (tree decl, tree id, unsigned int nregs)
   if (nregs > total / UNITS_PER_WORD)
     nregs = total / UNITS_PER_WORD;
   gcc_assert (nregs <= 9);
-  new_str = alloca (3 + strlen (old_str) + 1);
+  new_str = XALLOCAVEC (char, 3 + strlen (old_str) + 1);
   sprintf (new_str, "_%u@%s", nregs, old_str);
 
   return get_identifier (new_str);
