@@ -1,3 +1,11 @@
+2008-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (struct variable_info): Reorder
+	to fill padding on 64bit hosts.  Make collapsed_to an int.
+	(get_varinfo_fc): Deal with that.
+	(new_var_info): Likewise.
+	(collapse_rest_of_var): Likewise.
+
 2008-07-02  Joshua Sumali  <jsumali@redhat.com>
 
 	* doc/install.texi (--enable-java-home): Document.
