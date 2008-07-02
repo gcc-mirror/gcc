@@ -209,24 +209,6 @@ struct variable_info
   /* ID of this variable  */
   unsigned int id;
 
-  /* Name of this variable */
-  const char *name;
-
-  /* Tree that this variable is associated with.  */
-  tree decl;
-
-  /* Offset of this variable, in bits, from the base variable  */
-  unsigned HOST_WIDE_INT offset;
-
-  /* Size of the variable, in bits.  */
-  unsigned HOST_WIDE_INT size;
-
-  /* Full size of the base variable, in bits.  */
-  unsigned HOST_WIDE_INT fullsize;
-
-  /* A link to the variable for the next field in this structure.  */
-  struct variable_info *next;
-
   /* True if this is a variable created by the constraint analysis, such as
      heap variables and constraints we had to break up.  */
   unsigned int is_artificial_var:1;
@@ -248,16 +230,34 @@ struct variable_info
      variable.  This is used for C++ placement new.  */
   unsigned int no_tbaa_pruning : 1;
 
+  /* Variable id this was collapsed to due to type unsafety.  Zero if
+     this variable was not collapsed.  This should be unused completely
+     after build_succ_graph, or something is broken.  */
+  unsigned int collapsed_to;
+
+  /* A link to the variable for the next field in this structure.  */
+  struct variable_info *next;
+
+  /* Offset of this variable, in bits, from the base variable  */
+  unsigned HOST_WIDE_INT offset;
+
+  /* Size of the variable, in bits.  */
+  unsigned HOST_WIDE_INT size;
+
+  /* Full size of the base variable, in bits.  */
+  unsigned HOST_WIDE_INT fullsize;
+
+  /* Name of this variable */
+  const char *name;
+
+  /* Tree that this variable is associated with.  */
+  tree decl;
+
   /* Points-to set for this variable.  */
   bitmap solution;
 
   /* Old points-to set for this variable.  */
   bitmap oldsolution;
-
-  /* Variable id this was collapsed to due to type unsafety.  This
-     should be unused completely after build_succ_graph, or something
-     is broken.  */
-  struct variable_info *collapsed_to;
 };
 typedef struct variable_info *varinfo_t;
 
@@ -289,8 +289,8 @@ get_varinfo_fc (unsigned int n)
 {
   varinfo_t v = VEC_index (varinfo_t, varmap, n);
 
-  if (v->collapsed_to)
-    return v->collapsed_to;
+  if (v->collapsed_to != 0)
+    return get_varinfo (v->collapsed_to);
   return v;
 }
 
@@ -385,7 +385,7 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;
-  ret->collapsed_to = NULL;
+  ret->collapsed_to = 0;
   return ret;
 }
 
@@ -3123,8 +3123,8 @@ collapse_rest_of_var (unsigned int var)
 	fprintf (dump_file, "Type safety: Collapsing var %s into %s\n",
 		 field->name, currvar->name);
 
-      gcc_assert (!field->collapsed_to);
-      field->collapsed_to = currvar;
+      gcc_assert (field->collapsed_to == 0);
+      field->collapsed_to = currvar->id;
     }
 
   currvar->next = NULL;
