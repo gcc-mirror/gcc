@@ -72,8 +72,6 @@
 .endm
 		
 	
-	.file		"crtn.asm"
-
 	.section	".init"
 	;;
 	FUNC_END

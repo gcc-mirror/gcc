@@ -36,7 +36,6 @@
 # This file just supplies labeled starting points for the .got* and other
 # special sections.  It is linked in first before other modules.
  
-	.file	"scrti.s"
 	.ident	"GNU C scrti.s"
 
 #ifndef __powerpc64__

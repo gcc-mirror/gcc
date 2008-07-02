@@ -1,3 +1,35 @@
+2008-07-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/vms_tramp.asm, config/arm/crti.asm,
+	config/arm/crtn.asm, config/bfin/crti.s, config/bfin/crtlibid.s,
+	config/bfin/crtn.s, config/fr30/crti.asm, config/fr30/crtn.asm,
+	config/frv/lib1funcs.asm, config/i386/sol2-c1.asm,
+	config/i386/sol2-ci.asm, config/i386/sol2-cn.asm,
+	config/i386/sol2-gc1.asm, config/ia64/crti.asm,
+	config/ia64/crtn.asm, config/m68hc11/larith.asm,
+	config/m68hc11/m68hc11-crt0.S, config/m68k/crti.s,
+	config/m68k/crtn.s, config/mcore/crti.asm, config/mcore/crtn.asm,
+	config/rs6000/crtresfpr.asm, config/rs6000/crtresgpr.asm,
+	config/rs6000/crtresxfpr.asm, config/rs6000/crtresxgpr.asm,
+	config/rs6000/crtsavfpr.asm, config/rs6000/crtsavgpr.asm,
+	config/rs6000/crtsavres.asm, config/rs6000/e500crtres32gpr.asm,
+	config/rs6000/e500crtres64gpr.asm,
+	config/rs6000/e500crtres64gprctr.asm,
+	config/rs6000/e500crtrest32gpr.asm,
+	config/rs6000/e500crtrest64gpr.asm,
+	config/rs6000/e500crtresx32gpr.asm,
+	config/rs6000/e500crtresx64gpr.asm,
+	config/rs6000/e500crtsav32gpr.asm,
+	config/rs6000/e500crtsav64gpr.asm,
+	config/rs6000/e500crtsav64gprctr.asm,
+	config/rs6000/e500crtsavg32gpr.asm,
+	config/rs6000/e500crtsavg64gpr.asm,
+	config/rs6000/e500crtsavg64gprctr.asm, config/rs6000/eabi-ci.asm,
+	config/rs6000/eabi-cn.asm, config/rs6000/eabi.asm,
+	config/rs6000/sol-ci.asm, config/rs6000/sol-cn.asm,
+	config/rs6000/tramp.asm, config/sparc/sol2-ci.asm,
+	config/sparc/sol2-cn.asm: Remove .file directives.
+
 2008-07-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* resource.c (mark_referenced_resources): Look inside

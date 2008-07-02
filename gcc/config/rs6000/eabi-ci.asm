@@ -36,7 +36,6 @@ Boston, MA 02110-1301, USA.
 /* This file just supplies labeled starting points for the .got* and other
    special sections.  It is linked in first before other modules.  */
  
-	.file	"crti.s"
 	.ident	"GNU C crti.s"
 
 #include <ppc-asm.h>

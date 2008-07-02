@@ -37,7 +37,6 @@
 ! sections.  It is linked in before the values-Xx.o files and also before
 ! crtbegin.o.
  
-	.file	"crti.s"
 	.ident	"GNU C crti.s"
 
 	.section .init

@@ -33,8 +33,6 @@ Boston, MA 02110-1301, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-	.file "larith.asm"
-
 #ifdef __HAVE_SHORT_INT__
 	.mode mshort
 #else

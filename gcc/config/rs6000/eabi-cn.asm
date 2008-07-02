@@ -36,7 +36,6 @@ Boston, MA 02110-1301, USA.
 /* This file just supplies labeled ending points for the .got* and other
    special sections.  It is linked in last after other modules.  */
  
-	.file	"crtn.s"
 	.ident	"GNU C crtn.s"
 
 #ifndef __powerpc64__

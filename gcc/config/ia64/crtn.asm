@@ -35,8 +35,6 @@
 # fact return.  Users may put any desired instructions in those sections.
 # This file is the last thing linked into any executable.
 
-	.file		"crtn.asm"
-
 	.section	".init"
 	;;
 	mov	ar.pfs = r34

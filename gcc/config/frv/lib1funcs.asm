@@ -32,7 +32,6 @@
 #ifdef L_cmpll
 /* icc0 = __cmpll (long long a, long long b)  */
 
-	.file	"_cmpll.s"
 	.globl	EXT(__cmpll)
 	.type	EXT(__cmpll),@function
 	.text
@@ -51,7 +50,6 @@ EXT(__cmpll):
 /* Note, because this function returns the result in ICC0, it means it can't
    handle NaNs.  */
 
-	.file	"_cmpf.s"
 	.globl	EXT(__cmpf)
 	.type	EXT(__cmpf),@function
 	.text
@@ -91,7 +89,6 @@ EXT(__cmpf):
 /* Note, because this function returns the result in ICC0, it means it can't
    handle NaNs.  */
 
-	.file	"_cmpd.s"
 	.globl	EXT(__cmpd)
 	.type	EXT(__cmpd),@function
 	.text
@@ -118,7 +115,6 @@ EXT(__cmpd):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_addll.s"
 	.globl	EXT(__addll)
 	.type	EXT(__addll),@function
 	.text
@@ -136,7 +132,6 @@ EXT(__addll):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_subll.s"
 	.globl	EXT(__subll)
 	.type	EXT(__subll),@function
 	.text
@@ -154,7 +149,6 @@ EXT(__subll):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_andll.s"
 	.globl	EXT(__andll)
 	.type	EXT(__andll),@function
 	.text
@@ -172,7 +166,6 @@ EXT(__andll):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_orll.s"
 	.globl	EXT(__orll)
 	.type	EXT(__orll),@function
 	.text
@@ -190,7 +183,6 @@ EXT(__orll):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_xorll.s"
 	.globl	EXT(__xorll)
 	.type	EXT(__xorll),@function
 	.text
@@ -208,7 +200,6 @@ EXT(__xorll):
 /* Note, gcc will never call this function, but it is present in case an
    ABI program calls it.  */
 
-	.file	"_notll.s"
 	.globl	EXT(__notll)
 	.type	EXT(__notll),@function
 	.text
@@ -241,7 +232,6 @@ EXT(__notll):
  * }
  */
 
-	.file	"_cmov.s"
 	.globl	EXT(__cmov)
 	.type	EXT(__cmov),@function
 	.text

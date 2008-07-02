@@ -36,7 +36,6 @@
 
 /* Do any initializations needed for the eabi environment */
 
-	.file	"eabi.asm"
 	.section ".text"
 	#include "ppc-asm.h"
 

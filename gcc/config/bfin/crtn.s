@@ -31,7 +31,6 @@ Boston, MA 02110-1301, USA.  */
  * It is linked in after all other files.
  */
 
-	.file   "crtn.o"
 	.ident  "GNU C crtn.o"
 
 	.section .init

@@ -35,7 +35,6 @@
 
 /* Set up trampolines.  */
 
-	.file	"tramp.asm"
 	.section ".text"
 #include "ppc-asm.h"
 #include "config.h"

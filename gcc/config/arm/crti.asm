@@ -64,8 +64,6 @@
 #endif
 .endm
 		
-	.file		"crti.asm"
-
 	.section	".init"
 	.align 2
 	.global	_init

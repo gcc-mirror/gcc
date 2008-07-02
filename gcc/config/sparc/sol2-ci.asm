@@ -40,8 +40,6 @@
 ! This file is linked in before the Values-Xx.o files and also before
 ! crtbegin, with which perhaps it should be merged.
  
-	.file		"crti.s"
-
 	.section	".init"
 	.proc	022
 	.global	_init

@@ -36,7 +36,6 @@
 # This file just supplies labeled ending points for the .got* and other
 # special sections.  It is linked in last after other modules.
  
-	.file	"scrtn.s"
 	.ident	"GNU C scrtn.s"
 
 #ifndef __powerpc64__

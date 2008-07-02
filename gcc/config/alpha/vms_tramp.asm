@@ -33,7 +33,6 @@ Boston, MA 02110-1301, USA.  */
 	.set noreorder
 	.set volatile
 	.set noat
-	.file 1 "vms_tramp.asm"
 .text
 	.align 3
 	.globl __tramp
