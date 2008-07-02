@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "../../tree-vect.h"
 
-#define N 16
+#define N 17
 struct test {
   char ca[N];
 };
