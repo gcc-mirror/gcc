@@ -34,7 +34,6 @@
  *    the executable file might be covered by the GNU General Public License.
  */ 
 
-	.file	"e500crtsav32gpr.asm"
 	.section ".text"
 	#include "ppc-asm.h"
 

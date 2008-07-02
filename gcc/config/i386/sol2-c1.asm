@@ -41,7 +41,6 @@
 ! information obtained by single stepping executables on other i386 SVR4
 ! implementations.  This file is the first thing linked into any executable.
 
-	.file	"crt1.s"
 	.ident	"GNU C crt1.s"
 	.weak	_cleanup
 	.weak	_DYNAMIC

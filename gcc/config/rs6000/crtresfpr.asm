@@ -38,7 +38,6 @@
 
 /* Do any initializations needed for the eabi environment */
 
-	.file	"crtresfpr.asm"
 	.section ".text"
 	#include "ppc-asm.h"
 

@@ -34,7 +34,6 @@ Boston, MA 02110-1301, USA.  */
 ;-----------------------------------------
 ; startup code
 ;-----------------------------------------
-	.file	"crt0.s"
 
 #ifdef __HAVE_SHORT_INT__
 	.mode mshort

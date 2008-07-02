@@ -45,7 +45,6 @@
 ! to allow program profiling, by calling monstartup on entry and _mcleanup 
 ! on exit
 
-	.file	"gcrt1.s"
 	.ident	"GNU C gcrt1.s"
 	.weak	_DYNAMIC
 	.text

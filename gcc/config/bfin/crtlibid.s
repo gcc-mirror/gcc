@@ -25,7 +25,6 @@ Boston, MA 02110-1301, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-	.file   "crtlibid.o"
 	.ident  "GNU C crtlibid.o"
 
 .weak _current_shared_library_p5_offset_

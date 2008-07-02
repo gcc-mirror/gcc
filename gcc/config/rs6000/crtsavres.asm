@@ -37,7 +37,6 @@
 
 /* Do any initializations needed for the eabi environment */
 
-	.file	"crtsavres.asm"
 	.section ".text"
 	#include "ppc-asm.h"
 

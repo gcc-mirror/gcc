@@ -35,8 +35,6 @@
 # .init sections.  Users may put any desired instructions in those
 # sections.
 
-	.file		"crti.asm"
-
 	.section	".init"
 	.align 16
 	.global	_init
