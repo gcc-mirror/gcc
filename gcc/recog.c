@@ -3045,10 +3045,9 @@ peephole2_optimize (void)
 			  {
 			  case REG_NORETURN:
 			  case REG_SETJMP:
-			    REG_NOTES (new_insn)
-			      = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
-						   XEXP (note, 0),
-						   REG_NOTES (new_insn));
+			    add_reg_note (new_insn, REG_NOTE_KIND (note),
+					  XEXP (note, 0));
+			    break;
 			  default:
 			    /* Discard all other reg notes.  */
 			    break;
@@ -3096,10 +3095,7 @@ peephole2_optimize (void)
 				&& !find_reg_note (x, REG_EH_REGION, NULL)))
 			  {
 			    if (note)
-			      REG_NOTES (x)
-			        = gen_rtx_EXPR_LIST (REG_EH_REGION,
-						     XEXP (note, 0),
-						     REG_NOTES (x));
+			      add_reg_note (x, REG_EH_REGION, XEXP (note, 0));
 
 			    if (x != BB_END (bb) && eh_edge)
 			      {

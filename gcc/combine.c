@@ -12149,10 +12149,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx to_insn,
 
 	      for (i = deadregno; i < deadend; i++)
 		if (i < regno || i >= ourend)
-		  REG_NOTES (where_dead)
-		    = gen_rtx_EXPR_LIST (REG_DEAD,
-					 regno_reg_rtx[i],
-					 REG_NOTES (where_dead));
+		  add_reg_note (where_dead, REG_DEAD, regno_reg_rtx[i]);
 	    }
 
 	  /* If we didn't find any note, or if we found a REG_DEAD note that
@@ -12774,9 +12771,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 				    || reg_bitfield_target_p (piece,
 							      PATTERN (tem)))
 				  {
-				    REG_NOTES (tem)
-				      = gen_rtx_EXPR_LIST (REG_UNUSED, piece,
-							   REG_NOTES (tem));
+				    add_reg_note (tem, REG_UNUSED, piece);
 				    break;
 				  }
 			      }

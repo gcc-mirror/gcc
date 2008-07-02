@@ -7102,10 +7102,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && (CALL_P (insn) || may_trap_p (PATTERN (insn))))
-	    {
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION, GEN_INT (rn),
-						  REG_NOTES (insn));
-	    }
+	    add_reg_note (insn, REG_EH_REGION, GEN_INT (rn));
 	}
     }
 

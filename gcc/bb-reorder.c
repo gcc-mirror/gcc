@@ -1785,10 +1785,7 @@ add_reg_crossing_jump_notes (void)
     FOR_EACH_EDGE (e, ei, bb->succs)
       if ((e->flags & EDGE_CROSSING)
 	  && JUMP_P (BB_END (e->src)))
-	REG_NOTES (BB_END (e->src)) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
-							 NULL_RTX,
-							 REG_NOTES (BB_END
-								  (e->src)));
+	add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
 }
 
 /* Hot and cold basic blocks are partitioned and put in separate

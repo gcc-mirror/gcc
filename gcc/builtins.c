@@ -845,8 +845,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 
       if (JUMP_P (insn))
 	{
-	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
-					      REG_NOTES (insn));
+	  add_reg_note (insn, REG_NON_LOCAL_GOTO, const0_rtx);
 	  break;
 	}
       else if (CALL_P (insn))
@@ -929,8 +928,7 @@ expand_builtin_nonlocal_goto (tree exp)
     {
       if (JUMP_P (insn))
 	{
-	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO,
-					      const0_rtx, REG_NOTES (insn));
+	  add_reg_note (insn, REG_NON_LOCAL_GOTO, const0_rtx);
 	  break;
 	}
       else if (CALL_P (insn))

@@ -4000,8 +4000,7 @@ fixup_eh_region_note (rtx insn, rtx prev, rtx next)
     if (INSN_P (i) && i != insn && may_trap_p (PATTERN (i)))
       {
 	trap_count++;
-	REG_NOTES (i)
-	  = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0), REG_NOTES (i));
+	add_reg_note (i, REG_EH_REGION, XEXP (note, 0));
       }
 }
 
@@ -4235,9 +4234,7 @@ reload_as_needed (int live_known)
 			}
 		      if (n == 1)
 			{
-			  REG_NOTES (p)
-			    = gen_rtx_EXPR_LIST (REG_INC, reload_reg,
-						 REG_NOTES (p));
+			  add_reg_note (p, REG_INC, reload_reg);
 			  /* Mark this as having an output reload so that the
 			     REG_INC processing code below won't invalidate
 			     the reload for inheritance.  */
@@ -8535,8 +8532,7 @@ add_auto_inc_notes (rtx insn, rtx x)
 
   if (code == MEM && auto_inc_p (XEXP (x, 0)))
     {
-      REG_NOTES (insn)
-	= gen_rtx_EXPR_LIST (REG_INC, XEXP (XEXP (x, 0), 0), REG_NOTES (insn));
+      add_reg_note (insn, REG_INC, XEXP (XEXP (x, 0), 0));
       return;
     }
 
@@ -8563,9 +8559,7 @@ copy_eh_notes (rtx insn, rtx x)
       for (; x != 0; x = NEXT_INSN (x))
 	{
 	  if (may_trap_p (PATTERN (x)))
-	    REG_NOTES (x)
-	      = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (eh_note, 0),
-				   REG_NOTES (x));
+	    add_reg_note (x, REG_EH_REGION, XEXP (eh_note, 0));
 	}
     }
 }

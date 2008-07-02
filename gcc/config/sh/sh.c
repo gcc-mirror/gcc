@@ -4983,10 +4983,8 @@ sh_reorg (void)
              or pseudo-op.  */
 
 	  label = gen_label_rtx ();
-	  REG_NOTES (link) = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, label,
-						REG_NOTES (link));
-	  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, label,
-						REG_NOTES (insn));
+	  add_reg_note (link, REG_LABEL_OPERAND, label);
+	  add_reg_note (insn, REG_LABEL_OPERAND, label);
 	  if (rescan)
 	    {
 	      scan = link;
@@ -5000,9 +4998,7 @@ sh_reorg (void)
 			   && reg_mentioned_p (reg, scan))
 			  || ((reg2 = sfunc_uses_reg (scan))
 			      && REGNO (reg2) == REGNO (reg))))
-		    REG_NOTES (scan)
-		      = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, label,
-					   REG_NOTES (scan));
+		    add_reg_note (scan, REG_LABEL_OPERAND, label);
 		}
 	      while (scan != dies);
 	    }

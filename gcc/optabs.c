@@ -3879,8 +3879,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 	  if (note != 0)
 	    XEXP (note, 0) = constm1_rtx;
 	  else
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, constm1_rtx,
-						  REG_NOTES (insn));
+	    add_reg_note (insn, REG_EH_REGION, constm1_rtx);
 	}
 
   /* First emit all insns that set pseudos.  Remove them from the list as

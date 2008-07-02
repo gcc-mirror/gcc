@@ -3044,9 +3044,8 @@ link_cc0_insns (rtx insn)
   if (NONJUMP_INSN_P (user) && GET_CODE (PATTERN (user)) == SEQUENCE)
     user = XVECEXP (PATTERN (user), 0, 0);
 
-  REG_NOTES (user) = gen_rtx_INSN_LIST (REG_CC_SETTER, insn,
-					REG_NOTES (user));
-  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_CC_USER, user, REG_NOTES (insn));
+  add_reg_note (user, REG_CC_SETTER, insn);
+  add_reg_note (insn, REG_CC_USER, user);
 }
 
 /* Return the next insn that uses CC0 after INSN, which is assumed to
@@ -3223,10 +3222,7 @@ try_split (rtx pat, rtx trial, int last)
 		 is responsible for this step using
 		 split_branch_probability variable.  */
 	      gcc_assert (njumps == 1);
-	      REG_NOTES (insn)
-		= gen_rtx_EXPR_LIST (REG_BR_PROB,
-				     GEN_INT (probability),
-				     REG_NOTES (insn));
+	      add_reg_note (insn, REG_BR_PROB, GEN_INT (probability));
 	    }
 	}
     }
@@ -3257,10 +3253,7 @@ try_split (rtx pat, rtx trial, int last)
 	      if (CALL_P (insn)
 		  || (flag_non_call_exceptions && INSN_P (insn)
 		      && may_trap_p (PATTERN (insn))))
-		REG_NOTES (insn)
-		  = gen_rtx_EXPR_LIST (REG_EH_REGION,
-				       XEXP (note, 0),
-				       REG_NOTES (insn));
+		add_reg_note (insn, REG_EH_REGION, XEXP (note, 0));
 	    }
 	  break;
 
@@ -3269,10 +3262,7 @@ try_split (rtx pat, rtx trial, int last)
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn))
-		REG_NOTES (insn)
-		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
-				       XEXP (note, 0),
-				       REG_NOTES (insn));
+		add_reg_note (insn, REG_NOTE_KIND (note), XEXP (note, 0));
 	    }
 	  break;
 
@@ -3280,10 +3270,7 @@ try_split (rtx pat, rtx trial, int last)
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))
-		REG_NOTES (insn)
-		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
-				       XEXP (note, 0),
-				       REG_NOTES (insn));
+		add_reg_note (insn, REG_NOTE_KIND (note), XEXP (note, 0));
 	    }
 	  break;
 
@@ -3294,8 +3281,7 @@ try_split (rtx pat, rtx trial, int last)
 	      rtx reg = XEXP (note, 0);
 	      if (!FIND_REG_INC_NOTE (insn, reg)
 		  && for_each_rtx (&PATTERN (insn), find_auto_inc, reg) > 0)
-		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, reg,
-						      REG_NOTES (insn));
+		add_reg_note (insn, REG_INC, reg);
 	    }
 	  break;
 #endif
@@ -4600,7 +4586,6 @@ rtx
 set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 {
   rtx note = find_reg_note (insn, kind, NULL_RTX);
-  rtx new_note = NULL;
 
   switch (kind)
     {
@@ -4638,8 +4623,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
       break;
     }
 
-  new_note = gen_rtx_EXPR_LIST (kind, datum, REG_NOTES (insn));
-  REG_NOTES (insn) = new_note;
+  add_reg_note (insn, kind, datum);
 
   switch (kind)
     {
@@ -5525,13 +5509,10 @@ emit_copy_of_insn_after (rtx insn, rtx after)
     if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
       {
 	if (GET_CODE (link) == EXPR_LIST)
-	  REG_NOTES (new)
-		= gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
-		  copy_insn_1 (XEXP (link, 0)),  REG_NOTES (new));
+	  add_reg_note (new, REG_NOTE_KIND (link),
+			copy_insn_1 (XEXP (link, 0)));
 	else
-	  REG_NOTES (new)
-	       = gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
-		 XEXP (link, 0),  REG_NOTES (new));
+	  add_reg_note (new, REG_NOTE_KIND (link), XEXP (link, 0));
       }
 
   INSN_CODE (new) = INSN_CODE (insn);

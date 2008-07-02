@@ -694,8 +694,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	    orig = XEXP (XEXP (orig, 0), 0);
 	  /* Extract CODE_LABEL.  */
 	  orig = XEXP (orig, 0);
-	  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, orig,
-						REG_NOTES (insn));
+	  add_reg_note (insn, REG_LABEL_OPERAND, orig);
 	  LABEL_NUSES (orig)++;
 	}
       crtl->uses_pic_offset_table = 1;
