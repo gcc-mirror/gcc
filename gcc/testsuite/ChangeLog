@@ -1,5 +1,11 @@
 2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gcc.c-torture/execute/20030222-1.x: New file.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Disable test on SPU.
+	* gcc.dg/lower-subreg-1.c: Likewise.
+
+2008-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	SPU single-precision FP does not support subnormals:
 	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: New file.
 

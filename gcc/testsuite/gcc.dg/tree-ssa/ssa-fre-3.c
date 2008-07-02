@@ -5,7 +5,7 @@
 
    When the condition is true, we distribute "(int) (a + b)" as
    "(int) a + (int) b", otherwise we keep the original.  */
-/* { dg-do compile { target { ! mips64 } } } */
+/* { dg-do compile { target { { ! mips64 } && { ! spu-*-* } } } } */
 /* { dg-options "-O -fwrapv -fdump-tree-fre-details" } */
 
 /* From PR14844.  */
