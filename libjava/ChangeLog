@@ -1,3 +1,36 @@
+2008-06-30  Joshua Sumali  <jsumali@redhat.com>
+	Andrew Haley  <aph@redhat.com>
+	
+	* configure.ac (java-home): new AC_ARG_ENABLE.
+	(aot-compile-rpm): Likewise.
+	(CREATE_JAVA_HOME): new AM_CONDITIONAL.
+	(INSTALL_AOT_RPM): Likewise.
+	(gcc-suffix): new AC_ARG_WITH.
+	(arch-directory): Likewise.
+	(os-directory): Likewise.
+	(origin-name): Likewise.
+	(arch-suffix): Likewise.
+	(jvm-root-dir): Likewise.
+	(jvm-jar-dir): Likewise.
+	(python-dir): Likewise.
+	(AC_CONFIG_FILES): Add contrib/aotcompile.py, contrib/aot-compile,
+	contrib/aot-compile-rpm, contrib/rebuild-gcj-db.
+	(gcjsubdir): New AC_SUBST.
+	* Makefile.am (install-data-local): Install Python modules for
+	aot-compile. Also install an sdk style directory if
+	--enable-java-home is passed to configure.
+	(bin_SCRIPTS): Add 
+	contrib/rebuild-gcj-db and contrib/aot-compile.
+	(gcjsubdir): Add.
+	(db_pathtail): Redefine in terms of gcjsubdir.
+	* contrib/aot-compile.in: New file.
+	* contrib/aotcompile.py.in: Likewise.
+	* contrib/aot-compile-rpm.in: Likewise.
+	* contrib/classfile.py: Likewise.
+	* contrib/rebuild-gcj-db.in: Likewise.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate. 
+
 2008-06-28  Matthias Klose  <doko@ubuntu.com>
 
 	Import GNU Classpath (classpath-0_97_2-release).

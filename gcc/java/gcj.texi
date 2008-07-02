@@ -72,6 +72,11 @@ man page gfdl(7).
                             Generate stubs for Remote Method Invocation.
 * gc-analyze: (gcj)Invoking gc-analyze.
                             Analyze Garbage Collector (GC) memory dumps.
+* aot-compile: (gcj)Invoking aot-compile.
+                            Compile bytecode to native and generate databases.
+* rebuild-gcj-db: (gcj)Invoking rebuild-gcj-db.
+                            Merge the per-solib databases made by aot-compile
+                            into one system-wide database.
 @end direntry
 @end format
 
@@ -115,6 +120,9 @@ files and object files, and it can read both Java source code and
 * Invoking jv-convert:: Converting from one encoding to another
 * Invoking grmic::      Generate stubs for Remote Method Invocation.
 * Invoking gc-analyze:: Analyze Garbage Collector (GC) memory dumps.
+* Invoking aot-compile:: Compile bytecode to native and generate databases.
+* Invoking rebuild-gcj-db:: Merge the per-solib databases made by aot-compile
+                            into one system-wide database.
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
 * Resources::           Where to look for more information
@@ -921,7 +929,7 @@ gcj-dbtool [@option{-0}] [@option{-}] [@option{-n}] [@option{-a}] [@option{-f}]
   [@option{-v}] [@option{-m}] [@option{--version}] [@option{--help}]
 
 @c man end
-@c man begin SEEALSO gij
+@c man begin SEEALSO gcj-dbtool
 gcc(1), gcj(1), gcjh(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
@@ -1217,6 +1225,87 @@ Print a help message, then exit.
 Print version information, then exit.
 @end table
 
+@c man end
+
+@node Invoking aot-compile
+@chapter Invoking aot-compile
+
+@c man title aot-compile Compile bytecode to native and generate databases
+
+@ignore
+
+@c man begin SYNOPSIS aot-compile
+aot-compile [@option{OPTION}] @dots{} @var{SRCDIR} @var{DSTDIR}
+
+aot-compile [@option{-M, --make}=@var{PATH}] [@option{-C, --gcj}=@var{PATH}]
+  [@option{-D, --dbtool}=@var{PATH}] [@option{-m, --makeflags}=@var{FLAGS}] 
+  [@option{-c, --gcjflags}=@var{FLAGS}] [@option{-l, --ldflags}=@var{FLAGS}] 
+  [@option{-e, --exclude}=@var{PATH}]
+@c man end
+
+@c man begin SEEALSO aot-compile
+gcc(1), gcj(1), gcjh(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+
+@end ignore
+
+@c man begin DESCRIPTION aot-compile
+@code{aot-compile} is a script that searches a directory for Java bytecode
+(as class files, or in jars) and uses @code{gcj} to compile it to native
+code and generate the databases from it.
+@c man end
+
+@c man begin OPTIONS aot-compile
+@table @gcctabopt
+@item -M, --make=@var{PATH}
+Specify the path to the @code{make} executable to use.
+
+@item -C, --gcj=@var{PATH}
+Specify the path to the @code{gcj} executable to use.
+
+@item -D, --dbtool=@var{PATH}
+Specify the path to the @code{gcj-dbtool} executable to use.
+
+@item -m, --makeflags=@var{FLAGS}
+Specify flags to pass to @code{make} during the build.
+
+@item -c, --gcjflags=@var{FLAGS}
+Specify flags to pass to @code{gcj} during compilation, in addition to
+'-fPIC -findirect-dispatch -fjni'.
+
+@item -l, --ldflags=@var{FLAGS}
+Specify flags to pass to @code{gcj} during linking, in addition to
+'-Wl,-Bsymbolic'.
+
+@item -e, --exclude=@var{PATH}
+Do not compile @var{PATH}.
+
+@end table
+
+@c man end
+
+@node Invoking rebuild-gcj-db
+@chapter Invoking rebuild-gcj-db
+
+@c man title rebuild-gcj-db Merge the per-solib databases made by aot-compile into one system-wide database.
+@ignore
+
+@c man begin SYNOPSIS rebuild-gcj-db
+rebuild-gcj-db
+@c man end
+
+@c man begin SEEALSO rebuild-gcj-db
+gcc(1), gcj(1), gcjh(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+
+@end ignore
+
+@c man begin DESCRIPTION rebuild-gcj-db
+@code{rebuild-gcj-db} is a script that merges the per-solib databases made by
+@code{aot-compile} into one system-wide database so @code{gij} can find the 
+solibs.
 @c man end
 
 @node About CNI

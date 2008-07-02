@@ -459,7 +459,7 @@ ac_includes_default="\
 #endif"
 
 ac_subdirs_all="$ac_subdirs_all classpath libltdl"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir multi_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs JAVA_MAINTAINER_MODE_TRUE JAVA_MAINTAINER_MODE_FALSE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJ_LD_SYMBOLIC_FUNCTIONS LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE X_AWT_TRUE X_AWT_FALSE GCJ_FOR_ECJX GCJH host_exeext INCLTDL LIBLTDL DIRLTDL LIBTOOL SED EGREP FGREP GREP DUMPBIN ac_ct_DUMPBIN NM lt_ECHO CPP CPPFLAGS CXXCPP GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ECJ_BUILD_JAR ECJ_JAR BUILD_ECJ1_TRUE BUILD_ECJ1_FALSE INSTALL_ECJ_JAR_TRUE INSTALL_ECJ_JAR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME SUPPRESS_LIBGCJ_BC_TRUE SUPPRESS_LIBGCJ_BC_FALSE INTERPRETER INTERPRETER_TRUE INTERPRETER_FALSE LIBFFI LIBFFIINCS PLATFORM USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava extra_gij_ldflags extra_ldflags LIBSTDCXXSPEC LIBGCJTESTSPEC GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE ENABLE_SHARED_TRUE ENABLE_SHARED_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION dbexecdir gxx_include_dir libstdcxx_incdir PERL SYSDEP_SOURCES ANONVERSCRIPT_TRUE ANONVERSCRIPT_FALSE LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir multi_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs JAVA_MAINTAINER_MODE_TRUE JAVA_MAINTAINER_MODE_FALSE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJ_LD_SYMBOLIC_FUNCTIONS LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE X_AWT_TRUE X_AWT_FALSE GCJ_FOR_ECJX GCJH host_exeext INCLTDL LIBLTDL DIRLTDL LIBTOOL SED EGREP FGREP GREP DUMPBIN ac_ct_DUMPBIN NM lt_ECHO CPP CPPFLAGS CXXCPP GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ECJ_BUILD_JAR ECJ_JAR BUILD_ECJ1_TRUE BUILD_ECJ1_FALSE INSTALL_ECJ_JAR_TRUE INSTALL_ECJ_JAR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME SUPPRESS_LIBGCJ_BC_TRUE SUPPRESS_LIBGCJ_BC_FALSE INTERPRETER INTERPRETER_TRUE INTERPRETER_FALSE LIBFFI LIBFFIINCS PLATFORM USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava extra_gij_ldflags extra_ldflags LIBSTDCXXSPEC LIBGCJTESTSPEC GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE ENABLE_SHARED_TRUE ENABLE_SHARED_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION dbexecdir gcjsubdir gxx_include_dir libstdcxx_incdir PERL SYSDEP_SOURCES ANONVERSCRIPT_TRUE ANONVERSCRIPT_FALSE LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here python_mod_dir python_mod_dir_expanded MAKE INSTALL_AOT_RPM_TRUE INSTALL_AOT_RPM_FALSE CREATE_JAVA_HOME_TRUE CREATE_JAVA_HOME_FALSE gcc_suffix JAVA_VERSION BUILD_VERSION JVM_ROOT_DIR JVM_JAR_ROOT_DIR JVM_JAR_DIR JRE_DIR SDK_DIR JRE_LNK SDK_LNK SDK_BIN_DIR SDK_LIB_DIR SDK_INCLUDE_DIR JRE_BIN_DIR JRE_LIB_DIR GCJ_BIN_DIR CPU OS LIBDIR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 ac_pwd=`pwd`
 
@@ -1047,6 +1047,10 @@ Optional Features:
   --enable-java-gc=TYPE   choose garbage collector (default is boehm)
   --disable-rpath         do not hardcode runtime library paths
   --enable-tls            Use thread-local storage [default=yes]
+  --enable-aot-compile-rpm
+                          enable installation of aot-compile-rpm [default=no]
+  --enable-java-home      create a standard JDK-style directory layout in the
+                          install tree [default=no]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1072,6 +1076,20 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+  --with-python-dir       the location to install Python modules. This path
+                          should NOT include the prefix.
+  --with-gcc-suffix       the GCC tool suffix (defaults to empty string)
+  --with-arch-directory   the arch directory under jre/lib (defaults to
+                          auto-detect)
+  --with-os-directory     the os directory under include (defaults to
+                          auto-detect)
+  --with-origin-name      the JPackage origin name of this package (default is
+                          gcj${gcc_suffix}
+  --with-arch-suffix      the arch directory suffix (default is the empty
+                          string
+  --with-jvm-root-dir     where to install SDK (default is ${prefix}/lib/jvm)
+  --with-jvm-jar-dir      where to install jars (default is
+                          ${prefix}/lib/jvm-exports)
 
 Some influential environment variables:
   CC          C compiler command
@@ -6003,13 +6021,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:6006: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:6024: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6009: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:6027: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6012: output\"" >&5)
+  (eval echo "\"\$as_me:6030: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -7053,7 +7071,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 7056 "configure"' > conftest.$ac_ext
+  echo '#line 7074 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -8754,11 +8772,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8757: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8775: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8761: \$? = $ac_status" >&5
+   echo "$as_me:8779: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9076,11 +9094,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9079: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9097: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9083: \$? = $ac_status" >&5
+   echo "$as_me:9101: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9181,11 +9199,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9184: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9202: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9188: \$? = $ac_status" >&5
+   echo "$as_me:9206: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9236,11 +9254,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9239: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9257: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9243: \$? = $ac_status" >&5
+   echo "$as_me:9261: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12088,7 +12106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12091 "configure"
+#line 12109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12188,7 +12206,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12191 "configure"
+#line 12209 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14226,11 +14244,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14229: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14247: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14233: \$? = $ac_status" >&5
+   echo "$as_me:14251: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14325,11 +14343,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14328: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14346: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14332: \$? = $ac_status" >&5
+   echo "$as_me:14350: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14377,11 +14395,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14380: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14398: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14384: \$? = $ac_status" >&5
+   echo "$as_me:14402: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15765,11 +15783,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15768: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15786: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15772: \$? = $ac_status" >&5
+   echo "$as_me:15790: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16081,11 +16099,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16084: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16102: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16088: \$? = $ac_status" >&5
+   echo "$as_me:16106: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16180,11 +16198,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16183: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16201: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16187: \$? = $ac_status" >&5
+   echo "$as_me:16205: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16232,11 +16250,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16235: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16253: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16239: \$? = $ac_status" >&5
+   echo "$as_me:16257: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18588,7 +18606,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 18591 "configure"
+#line 18609 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -26299,6 +26317,7 @@ esac
 
 
 
+
 cat >>confdefs.h <<\_ACEOF
 #define JV_VERSION "1.5.0"
 _ACEOF
@@ -27872,7 +27891,283 @@ here=`${PWDCMD-pwd}`
 # We get this from the environment.
 
 
-                                                                      ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile"
+
+# Check whether --with-python-dir or --without-python-dir was given.
+if test "${with_python_dir+set}" = set; then
+  withval="$with_python_dir"
+  with_python_dir=$withval
+else
+  with_python_dir=""
+fi;
+
+if test "x${with_python_dir}" = "x"
+then
+  # Needed for installing Python modules during make install.
+  python_mod_dir="\${prefix}/share/python"
+  # Needed for substituting into aot-compile*
+  python_mod_dir_expanded="${prefix}/share/python"
+else
+  python_mod_dir="\${prefix}${with_python_dir}"
+  python_mod_dir_expanded="${prefix}${with_python_dir}"
+fi
+echo "$as_me:$LINENO: result: Python modules dir: ${python_mod_dir_expanded}" >&5
+echo "${ECHO_T}Python modules dir: ${python_mod_dir_expanded}" >&6;
+
+
+
+# needed for aot-compile-rpm
+MAKE=`which make`
+
+
+# Check whether --enable-aot-compile-rpm or --disable-aot-compile-rpm was given.
+if test "${enable_aot_compile_rpm+set}" = set; then
+  enableval="$enable_aot_compile_rpm"
+  case "${enableval}" in
+    yes) AOT_RPM_ENABLED=yes ;;
+    no)  AOT_RPM_ENABLED=no ;;
+    *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable aot-compile-rpm" >&5
+echo "$as_me: error: Unknown argument to enable/disable aot-compile-rpm" >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+else
+  AOT_RPM_ENABLED=no
+
+fi;
+
+
+if test "x${AOT_RPM_ENABLED}" == xyes; then
+  INSTALL_AOT_RPM_TRUE=
+  INSTALL_AOT_RPM_FALSE='#'
+else
+  INSTALL_AOT_RPM_TRUE='#'
+  INSTALL_AOT_RPM_FALSE=
+fi
+
+
+# Check whether --enable-java-home or --disable-java-home was given.
+if test "${enable_java_home+set}" = set; then
+  enableval="$enable_java_home"
+  case "${enableval}" in
+    yes) JAVA_HOME_ENABLED=yes ;;
+    no)  JAVA_HOME_ENABLED=no ;;
+    *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable java-home" >&5
+echo "$as_me: error: Unknown argument to enable/disable java-home" >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+else
+  JAVA_HOME_ENABLED=no
+
+fi;
+
+
+if test "x${JAVA_HOME_ENABLED}" == xyes; then
+  CREATE_JAVA_HOME_TRUE=
+  CREATE_JAVA_HOME_FALSE='#'
+else
+  CREATE_JAVA_HOME_TRUE='#'
+  CREATE_JAVA_HOME_FALSE=
+fi
+
+
+# Only do these checks if java-home above is enabled.
+if test "x${JAVA_HOME_ENABLED}" == xyes
+then
+
+
+# Check whether --with-gcc-suffix or --without-gcc-suffix was given.
+if test "${with_gcc_suffix+set}" = set; then
+  withval="$with_gcc_suffix"
+  gcc_suffix=$withval
+else
+  gcc_suffix=""
+fi;
+  echo "$as_me:$LINENO: result: GCC suffix: ${gcc_suffix}" >&5
+echo "${ECHO_T}GCC suffix: ${gcc_suffix}" >&6
+
+
+
+# Check whether --with-arch-directory or --without-arch-directory was given.
+if test "${with_arch_directory+set}" = set; then
+  withval="$with_arch_directory"
+  host_cpu=$withval
+else
+  host_cpu=""
+fi;
+
+
+# Check whether --with-os-directory or --without-os-directory was given.
+if test "${with_os_directory+set}" = set; then
+  withval="$with_os_directory"
+  host_os=$withval
+else
+  host_os=""
+fi;
+
+
+# Check whether --with-origin-name or --without-origin-name was given.
+if test "${with_origin_name+set}" = set; then
+  withval="$with_origin_name"
+  origin_name=$withval
+else
+  origin_name=gcj${gcc_suffix}
+fi;
+  echo "$as_me:$LINENO: result: JPackage origin name: ${origin_name}" >&5
+echo "${ECHO_T}JPackage origin name: ${origin_name}" >&6
+
+
+# Check whether --with-arch-suffix or --without-arch-suffix was given.
+if test "${with_arch_suffix+set}" = set; then
+  withval="$with_arch_suffix"
+  arch_suffix=$withval
+else
+  arch_suffix=""
+fi;
+  echo "$as_me:$LINENO: result: arch suffix: ${arch_suffix}" >&5
+echo "${ECHO_T}arch suffix: ${arch_suffix}" >&6
+
+
+# Check whether --with-jvm-root-dir or --without-jvm-root-dir was given.
+if test "${with_jvm_root_dir+set}" = set; then
+  withval="$with_jvm_root_dir"
+  jvm_root_dir=$withval
+else
+  jvm_root_dir="\${prefix}/lib/jvm"
+fi;
+  echo "$as_me:$LINENO: result: JVM root installation directory: ${jvm_root_dir}" >&5
+echo "${ECHO_T}JVM root installation directory: ${jvm_root_dir}" >&6
+
+
+# Check whether --with-jvm-jar-dir or --without-jvm-jar-dir was given.
+if test "${with_jvm_jar_dir+set}" = set; then
+  withval="$with_jvm_jar_dir"
+  jvm_jar_dir=$withval
+else
+  jvm_jar_dir=\${prefix}/lib/jvm-exports
+fi;
+  echo "$as_me:$LINENO: result: JAR root installation directory: ${jvm_jar_dir}" >&5
+echo "${ECHO_T}JAR root installation directory: ${jvm_jar_dir}" >&6
+
+  JAVA_VERSION=1.5.0
+  BUILD_VERSION=0
+
+
+  echo "$as_me:$LINENO: result: Java version: ${JAVA_VERSION}" >&5
+echo "${ECHO_T}Java version: ${JAVA_VERSION}" >&6
+
+  jre_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}/jre
+  sdk_dir=java-${JAVA_VERSION}-${origin_name}-${JAVA_VERSION}.${BUILD_VERSION}${arch_suffix}
+  jre_lnk=jre-${JAVA_VERSION}-${origin_name}
+  sdk_lnk=java-${JAVA_VERSION}-${origin_name}
+
+  JVM_ROOT_DIR=${jvm_root_dir}
+
+  echo "$as_me:$LINENO: result: JVM ROOT directory: ${JVM_ROOT_DIR}" >&5
+echo "${ECHO_T}JVM ROOT directory: ${JVM_ROOT_DIR}" >&6
+
+  JVM_JAR_ROOT_DIR=${jvm_jar_dir}
+
+  echo "$as_me:$LINENO: result: JVM JAR ROOT directory: ${JVM_JAR_ROOT_DIR}" >&5
+echo "${ECHO_T}JVM JAR ROOT directory: ${JVM_JAR_ROOT_DIR}" >&6
+
+  JVM_JAR_DIR=${jvm_jar_dir}/${sdk_dir}
+
+  echo "$as_me:$LINENO: result: JVM JAR directory: ${JVM_JAR_DIR}" >&5
+echo "${ECHO_T}JVM JAR directory: ${JVM_JAR_DIR}" >&6
+
+  JRE_DIR=${jre_dir}
+
+
+  SDK_DIR=${sdk_dir}
+
+
+  JRE_LNK=${jre_lnk}
+
+
+  SDK_LNK=${sdk_lnk}
+
+
+  SDK_BIN_DIR=${jvm_root_dir}/${sdk_dir}/bin
+
+  echo "$as_me:$LINENO: result: SDK tools directory: ${SDK_BIN_DIR}" >&5
+echo "${ECHO_T}SDK tools directory: ${SDK_BIN_DIR}" >&6
+
+  SDK_LIB_DIR=${jvm_root_dir}/${sdk_dir}/lib
+
+  echo "$as_me:$LINENO: result: SDK jar directory: ${SDK_LIB_DIR}" >&5
+echo "${ECHO_T}SDK jar directory: ${SDK_LIB_DIR}" >&6
+
+  SDK_INCLUDE_DIR=${jvm_root_dir}/${sdk_dir}/include
+
+  echo "$as_me:$LINENO: result: SDK include directory: ${SDK_INCLUDE_DIR}" >&5
+echo "${ECHO_T}SDK include directory: ${SDK_INCLUDE_DIR}" >&6
+
+  JRE_BIN_DIR=${jvm_root_dir}/${jre_dir}/bin
+
+  echo "$as_me:$LINENO: result: JRE tools directory: ${JRE_BIN_DIR}" >&5
+echo "${ECHO_T}JRE tools directory: ${JRE_BIN_DIR}" >&6
+
+  JRE_LIB_DIR=${jvm_root_dir}/${jre_dir}/lib
+
+  echo "$as_me:$LINENO: result: JRE lib directory: ${JRE_LIB_DIR}" >&5
+echo "${ECHO_T}JRE lib directory: ${JRE_LIB_DIR}" >&6
+
+  # Find gcj prefix using gcj found in PATH.
+  gcj_prefix=`which gcj${gcc_suffix} | sed "s%/bin/gcj${gcc_suffix}%%"`
+
+  # Where do the gcj binaries live?
+  # For jhbuild based builds, they all live in a sibling of bin called
+  # gcj-bin.  Check for gcj-bin first, and use bin otherwise.
+  GCJ_BIN_DIR=`if test -d ${gcj_prefix}/gcj-bin; then echo ${gcj_prefix}/gcj-bin; else echo ${gcj_prefix}/bin; fi`
+
+  echo "$as_me:$LINENO: result: GCJ tools directory: ${GCJ_BIN_DIR}" >&5
+echo "${ECHO_T}GCJ tools directory: ${GCJ_BIN_DIR}" >&6
+
+  echo host is ${host}
+  if test "x${host_cpu}" = "x"
+  then
+    case ${host} in
+      *-mingw* | *-cygwin*)
+        host_cpu=x86;;
+      i486-* | i586-* | i686-*)
+        host_cpu=i386;;
+      *)
+        host_cpu=${host_cpu};;
+    esac
+  fi
+  echo "$as_me:$LINENO: result: arch directory: ${host_cpu}" >&5
+echo "${ECHO_T}arch directory: ${host_cpu}" >&6
+  CPU=${host_cpu}
+
+
+  if test "x${host_os}" = "x"
+  then
+    case ${host} in
+      *-mingw* | *-cygwin*)
+        host_os=win32;;
+      *-linux*)
+        host_os=linux;;
+      *)
+        host_os=${host_os};;
+    esac
+  fi
+  echo os directory: ${host_os}
+  OS=${host_os}
+
+
+  # make an expanded $libdir, for substituting into
+  # scripts (and other non-Makefile things).
+  LIBDIR=$libdir
+  if test "x${exec_prefix}" = "xNONE"
+  then
+      lib_exec_prefix=$prefix
+  else
+      lib_exec_prefix=$exec_prefix
+  fi
+  LIBDIR=`echo $libdir | sed "s:\\\${exec_prefix}:$lib_exec_prefix:g"`
+
+fi
+
+                                                                                                              ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile contrib/aotcompile.py contrib/aot-compile contrib/aot-compile-rpm contrib/rebuild-gcj-db"
 
 
 if test ${multilib} = yes; then
@@ -28181,6 +28476,20 @@ if test -z "${ANONVERSCRIPT_TRUE}" && test -z "${ANONVERSCRIPT_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"ANONVERSCRIPT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"ANONVERSCRIPT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${INSTALL_AOT_RPM_TRUE}" && test -z "${INSTALL_AOT_RPM_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"INSTALL_AOT_RPM\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"INSTALL_AOT_RPM\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${CREATE_JAVA_HOME_TRUE}" && test -z "${CREATE_JAVA_HOME_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"CREATE_JAVA_HOME\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"CREATE_JAVA_HOME\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -29064,6 +29373,10 @@ do
   "gcj/Makefile" ) CONFIG_FILES="$CONFIG_FILES gcj/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+  "contrib/aotcompile.py" ) CONFIG_FILES="$CONFIG_FILES contrib/aotcompile.py" ;;
+  "contrib/aot-compile" ) CONFIG_FILES="$CONFIG_FILES contrib/aot-compile" ;;
+  "contrib/aot-compile-rpm" ) CONFIG_FILES="$CONFIG_FILES contrib/aot-compile-rpm" ;;
+  "contrib/rebuild-gcj-db" ) CONFIG_FILES="$CONFIG_FILES contrib/rebuild-gcj-db" ;;
   "scripts/jar" ) CONFIG_FILES="$CONFIG_FILES scripts/jar" ;;
   "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;
   "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
@@ -29383,6 +29696,7 @@ s,@toolexecmainlibdir@,$toolexecmainlibdir,;t t
 s,@toolexeclibdir@,$toolexeclibdir,;t t
 s,@GCJVERSION@,$GCJVERSION,;t t
 s,@dbexecdir@,$dbexecdir,;t t
+s,@gcjsubdir@,$gcjsubdir,;t t
 s,@gxx_include_dir@,$gxx_include_dir,;t t
 s,@libstdcxx_incdir@,$libstdcxx_incdir,;t t
 s,@PERL@,$PERL,;t t
@@ -29392,6 +29706,32 @@ s,@ANONVERSCRIPT_FALSE@,$ANONVERSCRIPT_FALSE,;t t
 s,@LD_START_STATIC_SPEC@,$LD_START_STATIC_SPEC,;t t
 s,@LD_FINISH_STATIC_SPEC@,$LD_FINISH_STATIC_SPEC,;t t
 s,@here@,$here,;t t
+s,@python_mod_dir@,$python_mod_dir,;t t
+s,@python_mod_dir_expanded@,$python_mod_dir_expanded,;t t
+s,@MAKE@,$MAKE,;t t
+s,@INSTALL_AOT_RPM_TRUE@,$INSTALL_AOT_RPM_TRUE,;t t
+s,@INSTALL_AOT_RPM_FALSE@,$INSTALL_AOT_RPM_FALSE,;t t
+s,@CREATE_JAVA_HOME_TRUE@,$CREATE_JAVA_HOME_TRUE,;t t
+s,@CREATE_JAVA_HOME_FALSE@,$CREATE_JAVA_HOME_FALSE,;t t
+s,@gcc_suffix@,$gcc_suffix,;t t
+s,@JAVA_VERSION@,$JAVA_VERSION,;t t
+s,@BUILD_VERSION@,$BUILD_VERSION,;t t
+s,@JVM_ROOT_DIR@,$JVM_ROOT_DIR,;t t
+s,@JVM_JAR_ROOT_DIR@,$JVM_JAR_ROOT_DIR,;t t
+s,@JVM_JAR_DIR@,$JVM_JAR_DIR,;t t
+s,@JRE_DIR@,$JRE_DIR,;t t
+s,@SDK_DIR@,$SDK_DIR,;t t
+s,@JRE_LNK@,$JRE_LNK,;t t
+s,@SDK_LNK@,$SDK_LNK,;t t
+s,@SDK_BIN_DIR@,$SDK_BIN_DIR,;t t
+s,@SDK_LIB_DIR@,$SDK_LIB_DIR,;t t
+s,@SDK_INCLUDE_DIR@,$SDK_INCLUDE_DIR,;t t
+s,@JRE_BIN_DIR@,$JRE_BIN_DIR,;t t
+s,@JRE_LIB_DIR@,$JRE_LIB_DIR,;t t
+s,@GCJ_BIN_DIR@,$GCJ_BIN_DIR,;t t
+s,@CPU@,$CPU,;t t
+s,@OS@,$OS,;t t
+s,@LIBDIR@,$LIBDIR,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

@@ -52,18 +52,19 @@ target_triplet = @target@
 @NATIVE_TRUE@	gnative2ascii$(EXEEXT) gorbd$(EXEEXT) \
 @NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
 @NATIVE_TRUE@	gtnameserv$(EXEEXT) gc-analyze$(EXEEXT)
+@INSTALL_AOT_RPM_TRUE@am__append_5 = contrib/aot-compile-rpm
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
-@ANONVERSCRIPT_TRUE@am__append_5 = -Wl,--version-script=$(srcdir)/libgcj.ver
-@USING_GCC_TRUE@am__append_6 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_7 = boehm.cc
-@USING_NOGC_TRUE@am__append_8 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_9 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_10 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_11 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_12 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_13 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_14 = no-threads.cc
-@ANONVERSCRIPT_TRUE@am__append_15 = $(srcdir)/libgcj.ver
+@ANONVERSCRIPT_TRUE@am__append_6 = -Wl,--version-script=$(srcdir)/libgcj.ver
+@USING_GCC_TRUE@am__append_7 = $(WARNINGS)
+@USING_BOEHMGC_TRUE@am__append_8 = boehm.cc
+@USING_NOGC_TRUE@am__append_9 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_10 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_11 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_12 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_13 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_14 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_15 = no-threads.cc
+@ANONVERSCRIPT_TRUE@am__append_16 = $(srcdir)/libgcj.ver
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -72,11 +73,15 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/Makefile.in $(srcdir)/libgcj-test.spec.in \
 	$(srcdir)/libgcj.pc.in $(srcdir)/libgcj.spec.in \
 	$(srcdir)/sources.am $(top_srcdir)/configure \
+	$(top_srcdir)/contrib/aot-compile-rpm.in \
+	$(top_srcdir)/contrib/aot-compile.in \
+	$(top_srcdir)/contrib/aotcompile.py.in \
+	$(top_srcdir)/contrib/rebuild-gcj-db.in \
 	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_16 = libgcj_bc.la
-@XLIB_AWT_TRUE@am__append_17 = $(xlib_nat_headers)
+@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_17 = libgcj_bc.la
+@XLIB_AWT_TRUE@am__append_18 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
@@ -109,7 +114,9 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
-	scripts/jar java/io/natFile.cc java/lang/natConcreteProcess.cc \
+	contrib/aotcompile.py contrib/aot-compile \
+	contrib/aot-compile-rpm contrib/rebuild-gcj-db scripts/jar \
+	java/io/natFile.cc java/lang/natConcreteProcess.cc \
 	java/net/natVMInetAddress.cc java/net/natVMNetworkInterface.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
@@ -581,6 +588,7 @@ AWK = @AWK@
 BACKTRACESPEC = @BACKTRACESPEC@
 BUILD_ECJ1_FALSE = @BUILD_ECJ1_FALSE@
 BUILD_ECJ1_TRUE = @BUILD_ECJ1_TRUE@
+BUILD_VERSION = @BUILD_VERSION@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -588,6 +596,9 @@ CHECKREFSPEC = @CHECKREFSPEC@
 CLASSPATH_SEPARATOR = @CLASSPATH_SEPARATOR@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CPU = @CPU@
+CREATE_JAVA_HOME_FALSE = @CREATE_JAVA_HOME_FALSE@
+CREATE_JAVA_HOME_TRUE = @CREATE_JAVA_HOME_TRUE@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
@@ -617,6 +628,7 @@ GCJDEPMODE = @GCJDEPMODE@
 GCJFLAGS = @GCJFLAGS@
 GCJH = @GCJH@
 GCJVERSION = @GCJVERSION@
+GCJ_BIN_DIR = @GCJ_BIN_DIR@
 GCJ_FOR_ECJX = @GCJ_FOR_ECJX@
 GCLIBS = @GCLIBS@
 GCSPEC = @GCSPEC@
@@ -629,6 +641,8 @@ GTK_LIBS = @GTK_LIBS@
 HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 IEEESPEC = @IEEESPEC@
 INCLTDL = @INCLTDL@
+INSTALL_AOT_RPM_FALSE = @INSTALL_AOT_RPM_FALSE@
+INSTALL_AOT_RPM_TRUE = @INSTALL_AOT_RPM_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_ECJ_JAR_FALSE = @INSTALL_ECJ_JAR_FALSE@
 INSTALL_ECJ_JAR_TRUE = @INSTALL_ECJ_JAR_TRUE@
@@ -644,13 +658,22 @@ JAVA_HOME_SET_FALSE = @JAVA_HOME_SET_FALSE@
 JAVA_HOME_SET_TRUE = @JAVA_HOME_SET_TRUE@
 JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
 JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
+JAVA_VERSION = @JAVA_VERSION@
 JC1GCSPEC = @JC1GCSPEC@
+JRE_BIN_DIR = @JRE_BIN_DIR@
+JRE_DIR = @JRE_DIR@
+JRE_LIB_DIR = @JRE_LIB_DIR@
+JRE_LNK = @JRE_LNK@
+JVM_JAR_DIR = @JVM_JAR_DIR@
+JVM_JAR_ROOT_DIR = @JVM_JAR_ROOT_DIR@
+JVM_ROOT_DIR = @JVM_ROOT_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LD_FINISH_STATIC_SPEC = @LD_FINISH_STATIC_SPEC@
 LD_START_STATIC_SPEC = @LD_START_STATIC_SPEC@
 LIBART_CFLAGS = @LIBART_CFLAGS@
 LIBART_LIBS = @LIBART_LIBS@
+LIBDIR = @LIBDIR@
 LIBFFI = @LIBFFI@
 LIBFFIINCS = @LIBFFIINCS@
 LIBGCJDEBUG = @LIBGCJDEBUG@
@@ -673,6 +696,7 @@ LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
+MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 NATIVE_FALSE = @NATIVE_FALSE@
 NATIVE_TRUE = @NATIVE_TRUE@
@@ -680,6 +704,7 @@ NEEDS_DATA_START_FALSE = @NEEDS_DATA_START_FALSE@
 NEEDS_DATA_START_TRUE = @NEEDS_DATA_START_TRUE@
 NM = nm
 OBJEXT = @OBJEXT@
+OS = @OS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -691,6 +716,11 @@ PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PLATFORM = @PLATFORM@
 RANLIB = @RANLIB@
+SDK_BIN_DIR = @SDK_BIN_DIR@
+SDK_DIR = @SDK_DIR@
+SDK_INCLUDE_DIR = @SDK_INCLUDE_DIR@
+SDK_LIB_DIR = @SDK_LIB_DIR@
+SDK_LNK = @SDK_LNK@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -777,7 +807,9 @@ dbexecdir = @dbexecdir@
 exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
-extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_5)
+extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_6)
+gcc_suffix = @gcc_suffix@
+gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
@@ -802,6 +834,8 @@ multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+python_mod_dir = @python_mod_dir@
+python_mod_dir_expanded = @python_mod_dir_expanded@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
@@ -858,9 +892,10 @@ jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar \
 @JAVA_HOME_SET_FALSE@BOOT_CLASS_PATH_DIR = $(jardir)/libgcj-$(gcc_version).jar
 @JAVA_HOME_SET_TRUE@BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 db_name = classmap.db
-db_pathtail = gcj-$(gcc_version)/$(db_name)
+db_pathtail = $(gcjsubdir)/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
-bin_SCRIPTS = addr2name.awk
+bin_SCRIPTS = addr2name.awk contrib/rebuild-gcj-db contrib/aot-compile \
+	$(am__append_5)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
           $(LDFLAGS) -o $@
@@ -898,7 +933,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_6)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_7)
 @SUPPRESS_LIBGCJ_BC_FALSE@LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 @SUPPRESS_LIBGCJ_BC_TRUE@LIBGCJ_BC_FLAGS = 
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
@@ -923,9 +958,9 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 @INTERPRETER_TRUE@libgcj_interpret_source_files = jvmti.cc interpret.cc
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc verify.cc $(libgcj_interpret_source_files) \
-	$(nat_source_files) $(am__append_7) $(am__append_8) \
-	$(am__append_9) $(am__append_10) $(am__append_11) \
-	$(am__append_12) $(am__append_13) $(am__append_14)
+	$(nat_source_files) $(am__append_8) $(am__append_9) \
+	$(am__append_10) $(am__append_11) $(am__append_12) \
+	$(am__append_13) $(am__append_14) $(am__append_15)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -949,7 +984,7 @@ libgcj_la_LIBADD = \
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
 	java/lang/Class.lo java/process-$(PLATFORM).lo \
 	$(all_packages_source_files:.list=.lo) $(LIBLTDL) \
-	$(libgcj_la_LIBADD) $(am__append_15)
+	$(libgcj_la_LIBADD) $(am__append_16)
 libgcj_la_LINK = $(LIBLINK)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 libgcj_tools_la_SOURCES = classpath/tools/tools.zip
@@ -8192,7 +8227,7 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs libgcj.la
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
-@NATIVE_TRUE@	$(am__append_16)
+@NATIVE_TRUE@	$(am__append_17)
 gappletviewer_SOURCES = 
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8401,7 +8436,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_17)
+headers_to_make = $(nat_headers) $(am__append_18)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -8499,6 +8534,14 @@ libgcj.pc: $(top_builddir)/config.status $(srcdir)/libgcj.pc.in
 libgcj.spec: $(top_builddir)/config.status $(srcdir)/libgcj.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 libgcj-test.spec: $(top_builddir)/config.status $(srcdir)/libgcj-test.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+contrib/aotcompile.py: $(top_builddir)/config.status $(top_srcdir)/contrib/aotcompile.py.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+contrib/aot-compile: $(top_builddir)/config.status $(top_srcdir)/contrib/aot-compile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+contrib/aot-compile-rpm: $(top_builddir)/config.status $(top_srcdir)/contrib/aot-compile-rpm.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+contrib/rebuild-gcj-db: $(top_builddir)/config.status $(top_srcdir)/contrib/rebuild-gcj-db.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 scripts/jar: $(top_builddir)/config.status $(top_srcdir)/scripts/jar.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -9972,7 +10015,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/libltdl $(distdir)/scripts
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/contrib $(distdir)/libltdl $(distdir)/scripts
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -12189,6 +12232,136 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/net/
 	$(INSTALL_DATA) $(srcdir)/'gnu/java/nio/PipeImpl$$SinkChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
 	$(INSTALL_DATA) $(srcdir)/'gnu/java/nio/PipeImpl$$SourceChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
+	$(mkinstalldirs) $(DESTDIR)$(python_mod_dir); \
+	$(INSTALL_DATA) $(srcdir)/contrib/classfile.py \
+	  $(DESTDIR)$(python_mod_dir)/classfile.py; \
+	$(INSTALL_DATA) contrib/aotcompile.py \
+	  $(DESTDIR)$(python_mod_dir)/aotcompile.py;
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_BIN_DIR)
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_BIN_DIR)
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)/$(OS)
+@CREATE_JAVA_HOME_TRUE@	relative() { \
+@CREATE_JAVA_HOME_TRUE@	  $(PERL) -e 'use File::Spec; \
+@CREATE_JAVA_HOME_TRUE@	    print File::Spec->abs2rel($$ARGV[0], $$ARGV[1])' $$1 $$2; \
+@CREATE_JAVA_HOME_TRUE@	}; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(SDK_BIN_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/java; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjar | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/jar; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjdoc | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/javadoc; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo grmic | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/rmic; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjavah | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/javah; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/ecj $(DESTDIR)$(SDK_BIN_DIR)/javac; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gappletviewer | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/appletviewer; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjarsigner | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/jarsigner; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo grmiregistry | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/rmiregistry; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gkeytool | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/keytool; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gorbd | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/orbd; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gnative2ascii | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/native2ascii; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo grmid | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/rmid; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gtnameserv | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/tnameserv; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gserialver | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/serialver; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(JRE_BIN_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo grmiregistry | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/rmiregistry; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gkeytool | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/keytool; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/java; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gorbd | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/orbd; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo grmid | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/rmid; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gtnameserv | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_BIN_DIR)/tnameserv; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JVM_JAR_DIR); \
+@CREATE_JAVA_HOME_TRUE@	version=$(JAVA_VERSION).$(BUILD_VERSION); \
+@CREATE_JAVA_HOME_TRUE@	working_dir=`pwd`; \
+@CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JVM_JAR_DIR); \
+@CREATE_JAVA_HOME_TRUE@	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
+@CREATE_JAVA_HOME_TRUE@	    jndi-ldap jndi-rmi jsse sasl; \
+@CREATE_JAVA_HOME_TRUE@	  do \
+@CREATE_JAVA_HOME_TRUE@	    ln -s $$RELATIVE/$$jarname.jar $$jarname-$$version.jar; \
+@CREATE_JAVA_HOME_TRUE@	  done; \
+@CREATE_JAVA_HOME_TRUE@	  for jar in *-$$version.jar; \
+@CREATE_JAVA_HOME_TRUE@	  do \
+@CREATE_JAVA_HOME_TRUE@	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|-$(JAVA_VERSION).jar|g"); \
+@CREATE_JAVA_HOME_TRUE@	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|.jar|g"); \
+@CREATE_JAVA_HOME_TRUE@	  done; \
+@CREATE_JAVA_HOME_TRUE@	cd $$working_dir; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/security; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(libdir)/security \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/security); \
+@CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JRE_LIB_DIR)/security; \
+@CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/classpath.security java.security; \
+@CREATE_JAVA_HOME_TRUE@	cd $$working_dir; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)/linux; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server; \
+@CREATE_JAVA_HOME_TRUE@	$(mkinstalldirs) $(DESTDIR)$(SDK_LIB_DIR); \
+@CREATE_JAVA_HOME_TRUE@	cd $(DESTDIR)$(JRE_LIB_DIR); \
+@CREATE_JAVA_HOME_TRUE@	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
+@CREATE_JAVA_HOME_TRUE@	    jndi-ldap jndi-rmi jsse sasl; \
+@CREATE_JAVA_HOME_TRUE@	  do \
+@CREATE_JAVA_HOME_TRUE@	    ln -s rt.jar $$jarname.jar; \
+@CREATE_JAVA_HOME_TRUE@	  done; \
+@CREATE_JAVA_HOME_TRUE@	cd $$working_dir; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libgcj-$(gcc_version).jar \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/rt.jar; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libjawt.so \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/libjawt.so; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libjvm.so \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client/libjvm.so; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libjvm.so \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server/libjvm.so;	\
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_LIB_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
+@CREATE_JAVA_HOME_TRUE@	for headername in jawt jni; do \
+@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+@CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/$$headername.h \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
+@CREATE_JAVA_HOME_TRUE@	done; \
+@CREATE_JAVA_HOME_TRUE@	for headername in jawt_md jni_md; do \
+@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+@CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
+@CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
+@CREATE_JAVA_HOME_TRUE@	  ln -sf $$RELATIVE/$$headername.h \
+@CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
+@CREATE_JAVA_HOME_TRUE@	done; \
+@CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/src-$(gcc_version).zip \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;
 
 maintainer-check: libgcj.la
 	$(NM) .libs/libgcj.a | grep ' T ' \

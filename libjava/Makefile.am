@@ -74,7 +74,8 @@ endif
 ## Name of the default .db.
 db_name = classmap.db
 ## Compiler specific component of the .db file
-db_pathtail = gcj-$(gcc_version)/$(db_name)
+gcjsubdir = @gcjsubdir@
+db_pathtail = $(gcjsubdir)/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
@@ -85,9 +86,13 @@ bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool \
 ## It is convenient to actually build and install the default database
 ## when gcj-dbtool is available.
 dbexec_DATA = $(db_name)
-endif
+endif 
 
-bin_SCRIPTS = addr2name.awk
+bin_SCRIPTS = addr2name.awk contrib/rebuild-gcj-db contrib/aot-compile
+
+if INSTALL_AOT_RPM
+bin_SCRIPTS += contrib/aot-compile-rpm
+endif
 
 if BUILD_ECJ1
 ## We build ecjx and not ecj1 because in one mode, ecjx will not work
@@ -528,7 +533,140 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/'gnu/java/nio/PipeImpl$$SinkChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
 	$(INSTALL_DATA) $(srcdir)/'gnu/java/nio/PipeImpl$$SourceChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
 ## Don't install java/nio/DirectByteBufferImpl$$ReadWrite.h here. It's for internal use only.
-
+## Install Python modules for aot-compile.
+	$(mkinstalldirs) $(DESTDIR)$(python_mod_dir); \
+	$(INSTALL_DATA) $(srcdir)/contrib/classfile.py \
+	  $(DESTDIR)$(python_mod_dir)/classfile.py; \
+	$(INSTALL_DATA) contrib/aotcompile.py \
+	  $(DESTDIR)$(python_mod_dir)/aotcompile.py;
+if CREATE_JAVA_HOME
+## Create sdk style directories
+	$(mkinstalldirs) $(DESTDIR)$(JRE_BIN_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(SDK_BIN_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)
+	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)
+	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)/$(OS)
+	relative() { \
+	  $(PERL) -e 'use File::Spec; \
+	    print File::Spec->abs2rel($$ARGV[0], $$ARGV[1])' $$1 $$2; \
+	}; \
+	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(SDK_BIN_DIR)); \
+	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/java; \
+	ln -sf $$RELATIVE/`echo gjar | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/jar; \
+	ln -sf $$RELATIVE/`echo gjdoc | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/javadoc; \
+	ln -sf $$RELATIVE/`echo grmic | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/rmic; \
+	ln -sf $$RELATIVE/`echo gjavah | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/javah; \
+	ln -sf $$RELATIVE/ecj $(DESTDIR)$(SDK_BIN_DIR)/javac; \
+	ln -sf $$RELATIVE/`echo gappletviewer | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/appletviewer; \
+	ln -sf $$RELATIVE/`echo gjarsigner | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/jarsigner; \
+	ln -sf $$RELATIVE/`echo grmiregistry | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/rmiregistry; \
+	ln -sf $$RELATIVE/`echo gkeytool | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/keytool; \
+	ln -sf $$RELATIVE/`echo gorbd | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/orbd; \
+	ln -sf $$RELATIVE/`echo gnative2ascii | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/native2ascii; \
+	ln -sf $$RELATIVE/`echo grmid | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/rmid; \
+	ln -sf $$RELATIVE/`echo gtnameserv | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/tnameserv; \
+	ln -sf $$RELATIVE/`echo gserialver | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/serialver; \
+	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(JRE_BIN_DIR)); \
+	ln -sf $$RELATIVE/`echo grmiregistry | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/rmiregistry; \
+	ln -sf $$RELATIVE/`echo gkeytool | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/keytool; \
+	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/java; \
+	ln -sf $$RELATIVE/`echo gorbd | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/orbd; \
+	ln -sf $$RELATIVE/`echo grmid | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/rmid; \
+	ln -sf $$RELATIVE/`echo gtnameserv | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(JRE_BIN_DIR)/tnameserv; \
+	$(mkinstalldirs) $(DESTDIR)$(JVM_JAR_DIR); \
+	version=$(JAVA_VERSION).$(BUILD_VERSION); \
+	working_dir=`pwd`; \
+	cd $(DESTDIR)$(JVM_JAR_DIR); \
+	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
+	    jndi-ldap jndi-rmi jsse sasl; \
+	  do \
+	    ln -s $$RELATIVE/$$jarname.jar $$jarname-$$version.jar; \
+	  done; \
+	  for jar in *-$$version.jar; \
+	  do \
+	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|-$(JAVA_VERSION).jar|g"); \
+	    ln -sf $$jar $$(echo $$jar | sed "s|-$$version.jar|.jar|g"); \
+	  done; \
+	cd $$working_dir; \
+	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/security; \
+	RELATIVE=$$(relative $(DESTDIR)$(libdir)/security \
+	  $(DESTDIR)$(JRE_LIB_DIR)/security); \
+	cd $(DESTDIR)$(JRE_LIB_DIR)/security; \
+	  ln -sf $$RELATIVE/classpath.security java.security; \
+	cd $$working_dir; \
+	$(mkinstalldirs) $(DESTDIR)$(SDK_INCLUDE_DIR)/linux; \
+	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client; \
+	$(mkinstalldirs) $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server; \
+	$(mkinstalldirs) $(DESTDIR)$(SDK_LIB_DIR); \
+	cd $(DESTDIR)$(JRE_LIB_DIR); \
+	  for jarname in jaas jce jdbc-stdext jndi jndi-cos jndi-dns \
+	    jndi-ldap jndi-rmi jsse sasl; \
+	  do \
+	    ln -s rt.jar $$jarname.jar; \
+	  done; \
+	cd $$working_dir; \
+	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	  $(DESTDIR)$(JRE_LIB_DIR)); \
+	ln -sf $$RELATIVE/libgcj-$(gcc_version).jar \
+	  $(DESTDIR)$(JRE_LIB_DIR)/rt.jar; \
+	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)); \
+	ln -sf $$RELATIVE/libjawt.so \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/libjawt.so; \
+	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client); \
+	ln -sf $$RELATIVE/libjvm.so \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/client/libjvm.so; \
+	RELATIVE=$$(relative $(DESTDIR)$(dbexecdir) \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server); \
+	ln -sf $$RELATIVE/libjvm.so \
+	  $(DESTDIR)$(JRE_LIB_DIR)/$(CPU)/server/libjvm.so;	\
+	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	  $(DESTDIR)$(SDK_LIB_DIR)); \
+	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
+	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
+	for headername in jawt jni; do \
+	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+	    -print-file-name=include/$$headername.h)); \
+	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
+	  ln -sf $$RELATIVE/$$headername.h \
+	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
+	done; \
+	for headername in jawt_md jni_md; do \
+	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+	    -print-file-name=include/$$headername.h)); \
+	  RELATIVE=$$(relative $(DESTDIR)$$DIRECTORY \
+	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
+	  ln -sf $$RELATIVE/$$headername.h \
+	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux/$$headername.h; \
+	done; \
+	RELATIVE=$$(relative $(DESTDIR)$(datarootdir)/java \
+	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)); \
+	ln -sf $$RELATIVE/src-$(gcc_version).zip \
+	  $(DESTDIR)$(JVM_ROOT_DIR)/$(SDK_DIR)/src.zip;
+endif
 
 ## ################################################################
 
