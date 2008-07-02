@@ -4,6 +4,7 @@
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
 /* { dg-options "-ansi -pedantic-errors -Woverflow" } */
+/* { dg-skip-if "No Inf support" { spu-*-* } } */
 
 void
 f (void)
