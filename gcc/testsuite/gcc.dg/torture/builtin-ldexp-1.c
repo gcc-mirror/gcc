@@ -45,6 +45,7 @@ extern void link_error(int);
 
 /* Test that FUNCRES(FUNC(NEG FUNCARG(ARGARG),ARG2)) is false.  Check
    the sign as well.  */
+#ifndef __SPU__
 #define TESTIT3(FUNC,NEG,FUNCARG,ARGARG,ARG2,FUNCRES) do { \
   if (!__builtin_##FUNCRES##f(__builtin_##FUNC##f(NEG __builtin_##FUNCARG##f(ARGARG),ARG2)) \
       || CKSGN_F(__builtin_##FUNC##f(NEG __builtin_##FUNCARG##f(ARGARG),ARG2), NEG __builtin_##FUNCARG##f(ARGARG))) \
@@ -56,6 +57,17 @@ extern void link_error(int);
       || CKSGN_L(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2), NEG __builtin_##FUNCARG##l(ARGARG))) \
     link_error(__LINE__); \
   } while (0)
+#else
+#define TESTIT3(FUNC,NEG,FUNCARG,ARGARG,ARG2,FUNCRES) do { \
+  /* SPU single-precision floating point format does not support Inf or Nan.  */ \
+  if (!__builtin_##FUNCRES(__builtin_##FUNC(NEG __builtin_##FUNCARG(ARGARG),ARG2)) \
+      || CKSGN(__builtin_##FUNC(NEG __builtin_##FUNCARG(ARGARG),ARG2), NEG __builtin_##FUNCARG(ARGARG))) \
+    link_error(__LINE__); \
+  if (!__builtin_##FUNCRES##l(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2)) \
+      || CKSGN_L(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2), NEG __builtin_##FUNCARG##l(ARGARG))) \
+    link_error(__LINE__); \
+  } while (0)
+#endif
 
 /* Using foo==MIN/MAX float values, test that FUNC(foo,EXP) == foo*exp2(EXP),
    and also that FUNC(foo,-EXP) == foo*exp2(-EXP).  */

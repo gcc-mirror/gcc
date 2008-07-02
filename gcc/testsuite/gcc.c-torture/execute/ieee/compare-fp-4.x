@@ -13,5 +13,11 @@ if [istarget "arm*-*-vxworks*"] {
     }
 }
 
+if [istarget "spu-*-*"] {
+    # The SPU single-precision floating point format does not
+    # support Nan & Inf.
+    return 1
+}
+
 lappend additional_flags "-fno-trapping-math"
 return 0

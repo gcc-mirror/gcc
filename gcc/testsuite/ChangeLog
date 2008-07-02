@@ -1,3 +1,43 @@
+2008-07-002  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	SPU single-precision FP does not support subnormals:
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: New file.
+
+	SPU single-precision FP does not support Inf or Nan:
+	* gcc.c-torture/execute/ieee/inf-1.c: Disable "float" Inf test on SPU.
+	* gcc.c-torture/execute/ieee/compare-fp-1.x: New file.
+	* gcc.c-torture/execute/ieee/compare-fp-4.x: Disable test on SPU.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.x: Disable test on SPU.
+	* gcc.c-torture/execute/ieee/fp-cmp-4f.x: New file.
+	* gcc.c-torture/execute/ieee/fp-cmp-8f.x: New file.
+	* gcc.dg/pr15784-3.c: Disable test on SPU.
+	* gcc.dg/pr28796-2.c: Likewise.
+	* gcc.dg/float-range-1.c: Likewise.
+	* gcc.dg/float-range-3.c: Likewise.
+	* gcc.dg/float-range-4.c: Likewise.
+	* gcc.dg/float-range-5.c: Likewise.
+	* gcc.dg/fold-overflow-1.c: Likewise.
+	* gcc.dg/builtins-1.c: SPU does not support __builtin_inff.
+	* gcc.dg/builtin-inf-1.c: SPU does not support __builtin_inff.
+	Check for error instead of warning "does not support infinity".
+	* gcc.dg/builtins-43.c: Disable "float" Inf/Nan tests on SPU. 
+	* gcc.dg/builtins-44.c: Likewise.
+	* gcc.dg/builtins-45.c: Likewise.
+	* gcc.dg/torture/builtin-math-2.c: Likewise.
+	* gcc.dg/torture/builtin-logb-1.c: Likewise.
+	* gcc.dg/torture/builtin-modf-1.c: Likewise.
+	* gcc.dg/torture/builtin-ldexp-1.c: Likewise.
+	* gcc.dg/torture/builtin-frexp-1.c: Likewise.
+	* gcc.dg/torture/type-generic-1.c: Disable test on SPU.
+	* g++.dg/torture/type-generic-1.C: Likewise.
+
+	SPU single-precision FP always rounds towards zero:
+	* gcc.c-torture/execute/ieee/920518-1.x: New file.
+	* gcc.c-torture/execute/ieee/20010114-2.x: New file.
+	* gcc.c-torture/execute/ieee/20030331-1.x: New file.
+	* gcc.dg/torture/fp-int-convert-float.c: Disable test on SPU.
+	* gcc.dg/torture/fp-int-convert-timode.c: Disable "float" test on SPU.
+
 2008-07-02  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/spu/costmodel-vect-iv-9.c: Add noinline

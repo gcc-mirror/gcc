@@ -62,6 +62,7 @@ extern void link_error(int);
 /* Test that modf(NEG FUNCARG(ARGARG, &iptr)) == FRACRES &&
    FUNCRES(iptr) is true.  Check the sign of both as well.  This is
    for checking an argument of Inf.  */
+#ifndef __SPU__
 #define TESTIT_MODF2(NEG,FUNCARG,ARGARG,FUNCRES,FRACRES) do { \
   float iptrf = 0.5; double iptr = 0.5; long double iptrl = 0.5; \
   if (__builtin_modff(NEG __builtin_##FUNCARG##f(ARGARG),&iptrf) != FRACRES##f \
@@ -80,10 +81,27 @@ extern void link_error(int);
       || CKSGN_IPTR_L(iptrl,FRACRES##l)) \
     link_error(__LINE__); \
   } while (0)
+#else
+#define TESTIT_MODF2(NEG,FUNCARG,ARGARG,FUNCRES,FRACRES) do { \
+  /* SPU single-precision floating point format does not support Inf or Nan.  */ \
+  double iptr = 0.5; long double iptrl = 0.5; \
+  if (__builtin_modf(NEG __builtin_##FUNCARG(ARGARG),&iptr) != FRACRES \
+      || CKSGN(__builtin_modf(NEG __builtin_##FUNCARG(ARGARG),&iptr), FRACRES) \
+      || CKIPTR(!__builtin_##FUNCRES(iptr),0) \
+      || CKSGN_IPTR(iptr,FRACRES)) \
+    link_error(__LINE__); \
+  if (__builtin_modfl(NEG __builtin_##FUNCARG##l(ARGARG),&iptrl) != FRACRES##l \
+      || CKSGN_L(__builtin_modfl(NEG __builtin_##FUNCARG##l(ARGARG),&iptrl), FRACRES##l) \
+      || CKIPTR(!__builtin_##FUNCRES##l(iptrl),0) \
+      || CKSGN_IPTR_L(iptrl,FRACRES##l)) \
+    link_error(__LINE__); \
+  } while (0)
+#endif
 
 /* Test that FUNCRES(modf(NEG FUNCARG(ARGARG, &iptr))) is true &&
    FUNCRES(iptr) is true.  Check the sign of both as well.  This is
    for checking an argument of NaN.  */
+#ifndef __SPU__
 #define TESTIT_MODF3(NEG,FUNCARG,ARGARG,FUNCRES) do { \
   float iptrf = 0.5; double iptr = 0.5; long double iptrl = 0.5; \
   if (CKRES(!__builtin_##FUNCRES##f(__builtin_modff(NEG __builtin_##FUNCARG##f(ARGARG),&iptrf))) \
@@ -102,6 +120,22 @@ extern void link_error(int);
       || CKSGN_IPTR_L(iptrl,NEG 1)) \
     link_error(__LINE__); \
   } while (0)
+#else
+#define TESTIT_MODF3(NEG,FUNCARG,ARGARG,FUNCRES) do { \
+  /* SPU single-precision floating point format does not support Inf or Nan.  */ \
+  double iptr = 0.5; long double iptrl = 0.5; \
+  if (CKRES(!__builtin_##FUNCRES(__builtin_modf(NEG __builtin_##FUNCARG(ARGARG),&iptr))) \
+      || CKSGN(__builtin_modf(NEG __builtin_##FUNCARG(ARGARG),&iptr), NEG 1) \
+      || CKIPTR(!__builtin_##FUNCRES(iptr),0) \
+      || CKSGN_IPTR(iptr,NEG 1)) \
+    link_error(__LINE__); \
+  if (CKRES(!__builtin_##FUNCRES##l(__builtin_modfl(NEG __builtin_##FUNCARG##l(ARGARG),&iptrl))) \
+      || CKSGN_L(__builtin_modfl(NEG __builtin_##FUNCARG##l(ARGARG),&iptrl), NEG 1) \
+      || CKIPTR(!__builtin_##FUNCRES##l(iptrl),0) \
+      || CKSGN_IPTR_L(iptrl,NEG 1)) \
+    link_error(__LINE__); \
+  } while (0)
+#endif
 
 void __attribute__ ((__noinline__))
 foo(void)

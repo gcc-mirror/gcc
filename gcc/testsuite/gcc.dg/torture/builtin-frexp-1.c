@@ -53,6 +53,7 @@ extern void link_error(int);
 
 /* Test that FUNCRES(frexp(NEG FUNCARG(ARGARG),&i)) is false.  Check
    the sign as well.  Ensure side-effects are evaluated in i.  */
+#ifndef __SPU__
 #define TESTIT_FREXP2(NEG,FUNCARG,ARGARG,FUNCRES) do { \
   int i=5; \
   if (!__builtin_##FUNCRES##f(__builtin_frexpf(NEG __builtin_##FUNCARG##f(ARGARG),&i)) \
@@ -68,6 +69,20 @@ extern void link_error(int);
       || CKEXP(i,8)) \
     link_error(__LINE__); \
   } while (0)
+#else
+#define TESTIT_FREXP2(NEG,FUNCARG,ARGARG,FUNCRES) do { \
+  int i=6; \
+  /* SPU single-precision floating point format does not support Inf or Nan.  */ \
+  if (!__builtin_##FUNCRES(__builtin_frexp(NEG __builtin_##FUNCARG(ARGARG),&i)) \
+      || CKSGN(__builtin_frexp(NEG __builtin_##FUNCARG(ARGARG),(i++,&i)), NEG __builtin_##FUNCARG(ARGARG)) \
+      || CKEXP(i,7)) \
+    link_error(__LINE__); \
+  if (!__builtin_##FUNCRES##l(__builtin_frexpl(NEG __builtin_##FUNCARG##l(ARGARG),&i)) \
+      || CKSGN_L(__builtin_frexpl(NEG __builtin_##FUNCARG##l(ARGARG),(i++,&i)), NEG __builtin_##FUNCARG##l(ARGARG)) \
+      || CKEXP(i,8)) \
+    link_error(__LINE__); \
+  } while (0)
+#endif
 
 void __attribute__ ((__noinline__))
 foo(void)
