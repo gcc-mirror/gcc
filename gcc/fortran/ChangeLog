@@ -1,3 +1,26 @@
+2008-07-02  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32580
+	* gfortran.h (struct gfc_symbol): New member "proc_pointer".
+	* check.c (gfc_check_associated,gfc_check_null): Implement
+	procedure pointers.
+	* decl.c (match_procedure_decl): Ditto.
+	* expr.c (gfc_check_pointer_assign,gfc_check_assign_symbol): Ditto.
+	* interface.c (compare_actual_formal): Ditto.
+	* match.h: Ditto.
+	* match.c (gfc_match_pointer_assignment): Ditto.
+	* parse.c (parse_interface): Ditto.
+	* primary.c (gfc_match_rvalue,match_variable): Ditto.
+	* resolve.c (resolve_fl_procedure): Ditto.
+	* symbol.c (check_conflict,gfc_add_external,gfc_add_pointer,
+	gfc_copy_attr,gen_fptr_param,build_formal_args): Ditto.
+	* trans-decl.c (get_proc_pointer_decl,gfc_get_extern_function_decl,
+	create_function_arglist): Ditto.
+	* trans-expr.c (gfc_conv_variable,gfc_conv_function_val,
+	gfc_conv_function_call,gfc_trans_pointer_assignment): Ditto.
+
 2008-07-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36590

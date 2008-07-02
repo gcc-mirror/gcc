@@ -40,8 +40,6 @@ program prog
   procedure(dcos) :: my1
   procedure(amax0) :: my2  ! { dg-error "not allowed in PROCEDURE statement" }
 
-  procedure(),pointer:: ptr  ! { dg-error "not yet implemented" }
-
   type t
     procedure(),pointer:: p  ! { dg-error "not yet implemented" }
   end type

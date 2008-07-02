@@ -14,11 +14,11 @@ program test
   type(c_funptr) :: cfunptr
   integer(4), pointer :: fptr
   integer(4), pointer :: fptr_array(:)
-!  procedure(integer(4)), pointer :: fprocptr ! TODO
+  procedure(integer(4)), pointer :: fprocptr
 
   call c_f_pointer(cptr, fptr)
   call c_f_pointer(cptr, fptr_array, [ 1 ])
-!  call c_f_procpointer(cfunptr, fprocptr) ! TODO
+  call c_f_procpointer(cfunptr, fprocptr)
 end program test
 
 ! Make sure there is only a single function call:
@@ -30,6 +30,6 @@ end program test
 ! { dg-final { scan-tree-dump-times "  fptr = .integer.kind=4. .. cptr" 1 "original" } }
 !
 ! Check c_f_procpointer
-!   TODO     { scan-tree-dump-times "  fprocptr = .integer.kind=4. .\\*<.*>. .void.. cfunptr;" 1 "original" } }  TODO
+! { dg-final { scan-tree-dump-times "  fprocptr = .integer.kind=4. .\\*<.*>. .void.. cfunptr;" 1 "original" } }
 !
 ! { dg-final { cleanup-tree-dump "original" } }

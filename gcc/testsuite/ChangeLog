@@ -1,3 +1,18 @@
+2008-07-02  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32580
+	* gfortran.dg/c_f_pointer_tests_3.f90: Updated.
+	* gfortran.dg/proc_decl_1.f90: Updated.
+	* gfortran.dg/proc_ptr_1.f90: New.
+	* gfortran.dg/proc_ptr_2.f90: New.
+	* gfortran.dg/proc_ptr_3.f90: New.
+	* gfortran.dg/proc_ptr_4.f90: New.
+	* gfortran.dg/proc_ptr_5.f90: New.
+	* gfortran.dg/proc_ptr_6.f90: New.
+	* gfortran.dg/proc_ptr_7.f90: New.
+	* gfortran.dg/proc_ptr_8.f90: New.
+
 2008-07-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/arm/neon/polytypes.c: Use dg-message separately from

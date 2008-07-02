@@ -480,8 +480,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       else if (sym->attr.flavor == FL_PROCEDURE
 	       && se->expr != current_function_decl)
 	{
-	  gcc_assert (se->want_pointer);
-	  if (!sym->attr.dummy)
+	  if (!sym->attr.dummy && !sym->attr.proc_pointer)
 	    {
 	      gcc_assert (TREE_CODE (se->expr) == FUNCTION_DECL);
 	      se->expr = build_fold_addr_expr (se->expr);
@@ -1372,6 +1371,8 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
   if (sym->attr.dummy)
     {
       tmp = gfc_get_symbol_decl (sym);
+      if (sym->attr.proc_pointer)
+        tmp = build_fold_indirect_ref (tmp);
       gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (tmp))) == FUNCTION_TYPE);
     }
@@ -2498,9 +2499,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		{
 		  gfc_conv_expr_reference (&parmse, e);
-		  if (fsym && fsym->attr.pointer
-		      && fsym->attr.flavor != FL_PROCEDURE
-		      && e->expr_type != EXPR_NULL)
+		  if (fsym && e->expr_type != EXPR_NULL
+		      && ((fsym->attr.pointer
+			   && fsym->attr.flavor != FL_PROCEDURE)
+			  || fsym->attr.proc_pointer))
 		    {
 		      /* Scalar pointer dummy args require an extra level of
 			 indirection. The null pointer already contains
@@ -3867,6 +3869,11 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_init_se (&rse, NULL);
       rse.want_pointer = 1;
       gfc_conv_expr (&rse, expr2);
+
+      if (expr1->symtree->n.sym->attr.proc_pointer
+	  && expr1->symtree->n.sym->attr.dummy)
+	lse.expr = build_fold_indirect_ref (lse.expr);
+
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);
       gfc_add_modify_expr (&block, lse.expr,

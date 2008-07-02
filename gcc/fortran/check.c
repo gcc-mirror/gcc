@@ -584,7 +584,7 @@ gfc_check_x_yd (gfc_expr *x, gfc_expr *y)
 try
 gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 {
-  symbol_attribute attr;
+  symbol_attribute attr1, attr2;
   int i;
   try t;
   locus *where;
@@ -592,15 +592,15 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   where = &pointer->where;
 
   if (pointer->expr_type == EXPR_VARIABLE)
-    attr = gfc_variable_attr (pointer, NULL);
+    attr1 = gfc_variable_attr (pointer, NULL);
   else if (pointer->expr_type == EXPR_FUNCTION)
-    attr = pointer->symtree->n.sym->attr;
+    attr1 = pointer->symtree->n.sym->attr;
   else if (pointer->expr_type == EXPR_NULL)
     goto null_arg;
   else
     gcc_assert (0); /* Pointer must be a variable or a function.  */
 
-  if (!attr.pointer)
+  if (!attr1.pointer && !attr1.proc_pointer)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER",
 		 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
@@ -617,9 +617,9 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     goto null_arg;
 
   if (target->expr_type == EXPR_VARIABLE)
-    attr = gfc_variable_attr (target, NULL);
+    attr2 = gfc_variable_attr (target, NULL);
   else if (target->expr_type == EXPR_FUNCTION)
-    attr = target->symtree->n.sym->attr;
+    attr2 = target->symtree->n.sym->attr;
   else
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
@@ -628,7 +628,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
       return FAILURE;
     }
 
-  if (!attr.pointer && !attr.target)
+  if (attr1.pointer && !attr2.pointer && !attr2.target)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER "
 		 "or a TARGET", gfc_current_intrinsic_arg[1],
@@ -2071,7 +2071,7 @@ gfc_check_null (gfc_expr *mold)
 
   attr = gfc_variable_attr (mold, NULL);
 
-  if (!attr.pointer)
+  if (!attr.pointer && !attr.proc_pointer)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER",
 		 gfc_current_intrinsic_arg[0],

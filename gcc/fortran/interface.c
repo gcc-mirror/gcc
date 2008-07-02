@@ -1959,6 +1959,17 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return  0;
 	}
 
+      /* Satisfy 12.4.1.3 by ensuring that a procedure pointer actual argument
+	 is provided for a procedure pointer formal argument.  */
+      if (f->sym->attr.proc_pointer
+	  && !a->expr->symtree->n.sym->attr.proc_pointer)
+	{
+	  if (where)
+	    gfc_error ("Expected a procedure pointer for argument '%s' at %L",
+		       f->sym->name, &a->expr->where);
+	  return 0;
+	}
+
       /* Satisfy 12.4.1.2 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */
       if (a->expr->ts.type != BT_PROCEDURE
