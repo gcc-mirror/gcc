@@ -4,6 +4,7 @@
 /* { dg-xfail-if "function larger than 64K" { m6811-*-* } { "*" } { "" } } */
 /* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-xfail-if "jump beyond 128K not supported" { xtensa-*-* } { "-O0" } { "" } } */
+/* { dg-xfail-if "PR36698" { spu-*-* } { "-O0" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
 
 /* This testcase exposed two branch shortening bugs on powerpc.  */
