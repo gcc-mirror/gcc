@@ -1,3 +1,12 @@
+2008-07-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/pr28243.c: Skip on SPU.
+	* gcc.dg/torture/pr25947-1.c: Likewise.
+	* gcc.dg/20030702-1.c: Likewise.
+	* g++.old-deja/g++.other/comdat5.C: Likewise.
+	* g++.old-deja/g++.other/local-alloc1.C: Likewise.
+	* g++.dg/opt/vt1.C: Likewise.
+
 2008-07-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/arm/neon/polytypes.c: Use dg-message separately from
