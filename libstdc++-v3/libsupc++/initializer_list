@@ -40,25 +40,30 @@
 namespace std
 {
   template<class _E>
-  class initializer_list
-  {
-    const _E* __array;
-    size_t __len;
+    class initializer_list
+    {
+      const _E* __array;
+      size_t __len;
 
-    // The compiler can call a private constructor.
-    initializer_list(const _E* __a, size_t __l)
+      // The compiler can call a private constructor.
+      initializer_list(const _E* __a, size_t __l)
       : __array(__a), __len(__l) { }
 
-  public:
-    initializer_list()
-      : __array(NULL), __len(0) {}
-    
-    size_t size() const		// number of elements
-    { return __len; }
-    const _E* begin() const	// first element
-    { return __array; }
-    const _E* end() const	// one past the last element
-    { return begin() + size(); }
+    public:
+      initializer_list()
+      : __array(NULL), __len(0) { }
+
+      // Number of elements.
+      size_t size() const
+      { return __len; }
+
+      // First element.
+      const _E* begin() const
+      { return __array; }
+
+      // One past the last element.
+      const _E* end() const
+      { return begin() + size(); }
   };
 }
 
