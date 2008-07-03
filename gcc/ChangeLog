@@ -1,3 +1,10 @@
+2008-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36710
+	* config/i386/i386.md (mode): Add TF to "mode" attribute.
+	(*pushtf_sse): New insn pattern.
+	(pushtf splitters): New splitters.
+
 2008-07-03  Michael Meissner  <gnu@the-meissners.org>
 
 	PR middle-end/35736
@@ -292,19 +299,19 @@
 
 2008-07-01  Martin Jambor  <mjambor@suse.cz>
 
-        * Makefile.in (tree-switch-conversion.o): Add.
-        (OBJS-common): Add tree-swtch-conversion.o.
-        * passes.c (init_optimization_passes): Add pass_convert_switch.
-        * tree-pass.h: (pass_convert_switch): Add.
-        * tree-switch-conversion.c: New file.
-        * gcc.dg/tree-ssa/cswtch.c: New testcase.
-        * common.opt (ftree-cswtch): New option.
-        * params.h (PARAM_SWITCH_CONVERSION_BRANCH_RATIO): New parameter.
-        * params.def (PARAM_SWITCH_CONVERSION_BRANCH_RATIO): New parameter.
-        * opts.c (decode_options): Set flag_tree_switch_conversion when
-        optimization level is >= 2.
-        * doc/invoke.texi (Optimize Options): Added description of
-        -ftree-swtch-conversion and switch-conversion-max-branch-ratio.
+	* Makefile.in (tree-switch-conversion.o): Add.
+	(OBJS-common): Add tree-swtch-conversion.o.
+	* passes.c (init_optimization_passes): Add pass_convert_switch.
+	* tree-pass.h: (pass_convert_switch): Add.
+	* tree-switch-conversion.c: New file.
+	* gcc.dg/tree-ssa/cswtch.c: New testcase.
+	* common.opt (ftree-cswtch): New option.
+	* params.h (PARAM_SWITCH_CONVERSION_BRANCH_RATIO): New parameter.
+	* params.def (PARAM_SWITCH_CONVERSION_BRANCH_RATIO): New parameter.
+	* opts.c (decode_options): Set flag_tree_switch_conversion when
+	optimization level is >= 2.
+	* doc/invoke.texi (Optimize Options): Added description of
+	-ftree-swtch-conversion and switch-conversion-max-branch-ratio.
 
 2008-06-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -324,7 +331,7 @@
 
 	PR rtl-optimization/34744
 	* df-scan.c (df_scan_free_ref_vec, df_scan_free_mws_vec): New macros.
-       	(df_scan_free_internal): Free data structures not
+	(df_scan_free_internal): Free data structures not
 	allocated in storage pools.
 	(df_mw_hardreg_chain_delete_eq_uses): Use df_scan_free_mws_vec.
 	(df_refs_add_to_chains): Use df_scan_free_ref_vec and
