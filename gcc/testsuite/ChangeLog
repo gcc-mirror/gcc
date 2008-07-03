@@ -1,3 +1,8 @@
+2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization3.adb: New test.
+	* gnat.dg/loop_optimization3_pkg.ad[sb]: New helper.
+
 2008-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36710
