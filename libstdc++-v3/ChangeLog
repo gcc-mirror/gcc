@@ -1,5 +1,16 @@
 2008-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Improve check on long double limits.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stof.cc: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	stod.cc: Likewise.
+
+2008-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* libsupc++/Makefile.am: Add initializer_list to the headers.
 	* libsupc++/Makefile.in: Regenerate.
 
