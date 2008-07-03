@@ -1,3 +1,14 @@
+2008-07-03  Andrew Haley  <aph@redhat.com>
+
+	PR preprocessor/33305
+	* gcc.dg/cpp/avoidpaste1.c: Use dg-options "-ansi" to avoid
+	"-pedantic".
+	* gcc.dg/cpp/avoidpaste2.c: Likewise
+	* gcc.dg/cpp/20000519-1.c: Likewise.
+	* g++.dg/ext/gnu-inline-global-reject.C: Likewise.
+	* gcc.dg/cpp/c99-empty-macro-args.c: New test.
+	* gcc.dg/cpp/c90-empty-macro-args.c: New test.
+
 2008-07-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/36128

@@ -4,6 +4,7 @@
 */
 
 /* { dg-do compile } */
+/* { dg-options " -ansi -Wno-long-long" } */
 
 #include "gnu-inline-common.h"
 
