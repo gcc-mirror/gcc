@@ -1803,10 +1803,6 @@ GCC_4.3.0 {
 
 %inherit GCC_4.4.0 GCC_4.3.0
 GCC_4.4.0 {
-}
-
-%inherit GCC_4.4.0 GCC_4.3.0
-GCC_4.4.0 {
   __sync_fetch_and_add_1
   __sync_fetch_and_sub_1
   __sync_fetch_and_or_1
