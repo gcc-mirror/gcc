@@ -1,6 +1,7 @@
 /* Copyright (C) 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
+/* { dg-options "-ansi" } */
 
 /* This tests that we avoid accidental pasting, as well as gratuitous
    space insertion, in various nasty places _inside_ a macro's

@@ -1,6 +1,7 @@
 /* Regression test for preprocessor crash.
    Reported by Mathias Froehlich <frohlich@na.uni-tuebingen.de>.  */
 /* { dg-do preprocess } */
+/* { dg-options "-ansi" } */
 #define foo
 
 #define __CAT__(a,b,c,d) a##b##c##d

@@ -1,6 +1,7 @@
 /* Copyright (C) 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
+/* { dg-options "-ansi" } */
 
 /* This tests that we avoid accidental pasting only before and after
    macros and arguments, and not when the tokens are already pasted
