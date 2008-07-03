@@ -989,6 +989,7 @@ void tree_ssa_iv_optimize (void);
 unsigned tree_predictive_commoning (void);
 bool parallelize_loops (void);
 
+bool loop_only_exit_p (const struct loop *, const_edge);
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter, bool);
 tree find_loop_niter (struct loop *, edge *);

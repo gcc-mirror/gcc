@@ -3725,13 +3725,12 @@ may_eliminate_iv (struct ivopts_data *data,
   tree nit, period;
   struct loop *loop = data->current_loop;
   aff_tree bnd;
-  double_int period_value, max_niter;
 
   if (TREE_CODE (cand->iv->step) != INTEGER_CST)
     return false;
 
-  /* For now works only for exits that dominate the loop latch.  TODO -- extend
-     for other conditions inside loop body.  */
+  /* For now works only for exits that dominate the loop latch.
+     TODO: extend to other conditions inside loop body.  */
   ex_bb = bb_for_stmt (use->stmt);
   if (use->stmt != last_stmt (ex_bb)
       || TREE_CODE (use->stmt) != COND_EXPR)
@@ -3749,19 +3748,33 @@ may_eliminate_iv (struct ivopts_data *data,
   if (!nit)
     return false;
 
-  /* Determine whether we may use the variable to test whether niter iterations
-     elapsed.  This is the case iff the period of the induction variable is
-     greater than the number of iterations.  */
+  /* Determine whether we can use the variable to test the exit condition.
+     This is the case iff the period of the induction variable is greater
+     than the number of iterations for which the exit condition is true.  */
   period = iv_period (cand->iv);
-  if (!period)
-    return false;
 
-  /* Compare the period with the estimate on the number of iterations of the
-     loop.  */
-  if (!estimated_loop_iterations (loop, true, &max_niter))
-    return false;
-  period_value = tree_to_double_int (period);
-  if (double_int_ucmp (period_value, max_niter) <= 0)
+  /* If the number of iterations is constant, compare against it directly.  */
+  if (TREE_CODE (nit) == INTEGER_CST)
+    {
+      if (!tree_int_cst_lt (nit, period))
+	return false;
+    }
+
+  /* If not, and if this is the only possible exit of the loop, see whether
+     we can get a conservative estimate on the number of iterations of the
+     entire loop and compare against that instead.  */
+  else if (loop_only_exit_p (loop, exit))
+    {
+      double_int period_value, max_niter;
+      if (!estimated_loop_iterations (loop, true, &max_niter))
+	return false;
+      period_value = tree_to_double_int (period);
+      if (double_int_ucmp (max_niter, period_value) >= 0)
+	return false;
+    }
+
+  /* Otherwise, punt.  */
+  else
     return false;
 
   cand_value_at (loop, cand, use->stmt, nit, &bnd);

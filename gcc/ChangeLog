@@ -1,3 +1,12 @@
+2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-flow.h (loop_only_exit_p): Declare.
+	* tree-ssa-loop-niter.c (loop_only_exit_p): Make public.
+	* tree-ssa-loop-ivopts.c (may_eliminate_iv): Reinstate direct check on
+	the number of iterations if it is constant.  Otherwise, if this is the
+	only possible exit of the loop, use the conservative estimate on the
+	number of iterations of the entire loop if available.
+
 2008-07-01  Steve Ellcey  <sje@cup.hp.com>
 
 	Backport from mainline:

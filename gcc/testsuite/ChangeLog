@@ -1,3 +1,8 @@
+2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization3.adb: New test.
+	* gnat.dg/loop_optimization3_pkg.ad[sb]: New helper.
+
 2008-07-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.dg/pr28243.c: Skip on SPU.
