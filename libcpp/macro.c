@@ -1009,6 +1009,17 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 	  if (src->flags & PASTE_LEFT)
 	    paste_flag = dest - 1;
 	}
+      else if (CPP_PEDANTIC (pfile) && ! macro->syshdr
+	       && ! CPP_OPTION (pfile, c99)
+	       && ! cpp_in_system_header (pfile))
+	{
+	  cpp_error (pfile, CPP_DL_PEDWARN,
+		     "invoking macro %s argument %d: "
+		     "empty macro arguments are undefined"
+		     " in ISO C90 and ISO C++98",
+		     NODE_NAME (node),
+		     src->val.arg_no);
+	}
 
       /* Avoid paste on RHS (even case count == 0).  */
       if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))
