@@ -1,5 +1,6 @@
 /* PR target/25947: define_split in cris.md caused unrecognized insn.  */
 /* { dg-options "-fpic" { target fpic } } */
+/* { dg-skip-if "requires unsupported run-time relocation" { spu-*-* } { "-O0" } { "" } } */
 
 extern char *rl_line_buffer;
 extern int rl_point;
