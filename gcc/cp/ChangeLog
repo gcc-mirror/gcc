@@ -1,5 +1,7 @@
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (cp/typeck2.o): Add $(REAL_H) dependency.
+
 	Implement WG21 N2672, Initializer List proposed wording
 	* cp-tree.h (enum cp_tree_index): Add CPTI_INIT_LIST_TYPE.
 	(struct lang_type_class): Add has_list_ctor bitfield.
