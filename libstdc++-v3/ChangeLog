@@ -1,3 +1,10 @@
+2008-07-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libsupc++/Makefile.am: Add initializer_list to the headers.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* libsupc++/initializer_list: Minor cosmetic changes.
+
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/initializer_list: Uglify and wrap in 

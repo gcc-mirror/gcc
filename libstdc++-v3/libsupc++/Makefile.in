@@ -354,7 +354,8 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 headers = \
-	exception new typeinfo cxxabi.h cxxabi-forced.h exception_defines.h
+	exception new typeinfo cxxabi.h cxxabi-forced.h exception_defines.h \
+	initializer_list
 
 @GLIBCXX_HOSTED_TRUE@c_sources = \
 @GLIBCXX_HOSTED_TRUE@	cp-demangle.c 
