@@ -1,3 +1,8 @@
+2008-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/float128-1.c: New.
+
 2008-07-03  Andrew Haley  <aph@redhat.com>
 
 	PR preprocessor/33305
