@@ -1,3 +1,12 @@
+2008-07-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* Makefile.in (libgcc.mvars): Add LIBGCC_SYNC and LIBGCC_SYNC_CFLAGS.
+	* libgcc-std.ver (GCC_4.4.0): New version, inherited from GCC_4.3.0.
+	Add synchronization functions.
+	* config/sync.c: New file.
+	* config/mips/t-libgcc-mips16 (LIBGCC_SYNC): Define.
+	(LIBGCC_SYNC_CFLAGS): Likewise.
+
 2008-07-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36710

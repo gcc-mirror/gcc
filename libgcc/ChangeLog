@@ -1,3 +1,7 @@
+2008-07-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* Makefile.in: Add support for __sync_* libgcc functions.
+
 2008-07-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* shared-object.mk ($(base)_s$(objext)): Remove -DSHARED.
