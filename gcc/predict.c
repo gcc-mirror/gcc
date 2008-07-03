@@ -1944,7 +1944,8 @@ gate_estimate_probability (void)
 tree
 build_predict_expr (enum br_predictor predictor, enum prediction taken)
 {
-  tree t = build1 (PREDICT_EXPR, NULL_TREE, build_int_cst (NULL, predictor));
+  tree t = build1 (PREDICT_EXPR, void_type_node,
+		   build_int_cst (NULL, predictor));
   PREDICT_EXPR_OUTCOME (t) = taken;
   return t;
 }

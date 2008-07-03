@@ -1,3 +1,9 @@
+2008-07-03  Michael Meissner  <gnu@the-meissners.org>
+
+	PR middle-end/35736
+	* predict.c (build_predict_expr): Use void_type_node for the tree
+	type, instead of NULL_TREE.
+
 2008-07-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (contains_aligned_value_p): Return true
