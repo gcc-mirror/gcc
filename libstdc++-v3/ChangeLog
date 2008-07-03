@@ -1,5 +1,11 @@
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
+	* libsupc++/initializer_list: Uglify and wrap in 
+	__GXX_EXPERIMENTAL_CXX0X__.
+	* include/bits/stl_map.h (insert(initializer_list)): Wrap.
+
+2008-07-02  Jason Merrill  <jason@redhat.com>
+
 	* libsupc++/initializer_list: New file.
 	* include/bits/stl_map.h (insert(initializer_list)): New method.
 

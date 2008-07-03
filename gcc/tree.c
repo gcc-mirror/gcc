@@ -1835,13 +1835,11 @@ ctor_to_list (tree ctor)
   tree list = NULL_TREE;
   tree *p = &list;
   unsigned ix;
-  constructor_elt *ce;
+  tree purpose, val;
 
-  for (ix = 0;
-       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (ctor), ix, ce);
-       ++ix)
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), ix, purpose, val)
     {
-      *p = build_tree_list (ce->index, ce->value);
+      *p = build_tree_list (purpose, val);
       p = &TREE_CHAIN (*p);
     }
 

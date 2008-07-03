@@ -469,6 +469,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       insert(const value_type& __x)
       { return _M_t._M_insert_unique(__x); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief Attempts to insert a list of std::pairs into the %map.
        *  @param  list  A std::initializer_list<value_type> of pairs to be
@@ -478,8 +479,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        */
       void
-      insert(std::initializer_list<value_type> list)
-      { insert (list.begin(), list.end()); }
+      insert(std::initializer_list<value_type> __list)
+      { insert (__list.begin(), __list.end()); }
+#endif
 
       /**
        *  @brief Attempts to insert a std::pair into the %map.

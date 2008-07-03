@@ -129,6 +129,8 @@
 
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (ctor_to_list): Use FOR_EACH_CONSTRUCTOR_ELT.
+
 	* tree.c (ctor_to_list): New fn.
 	* tree.h: Declare it.
 	(CONSTRUCTOR_ELT): New macro.
