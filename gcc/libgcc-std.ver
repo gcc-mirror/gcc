@@ -1804,3 +1804,88 @@ GCC_4.3.0 {
 %inherit GCC_4.4.0 GCC_4.3.0
 GCC_4.4.0 {
 }
+
+%inherit GCC_4.4.0 GCC_4.3.0
+GCC_4.4.0 {
+  __sync_fetch_and_add_1
+  __sync_fetch_and_sub_1
+  __sync_fetch_and_or_1
+  __sync_fetch_and_and_1
+  __sync_fetch_and_xor_1
+  __sync_fetch_and_nand_1
+  __sync_add_and_fetch_1
+  __sync_sub_and_fetch_1
+  __sync_or_and_fetch_1
+  __sync_and_and_fetch_1
+  __sync_xor_and_fetch_1
+  __sync_nand_and_fetch_1
+  __sync_bool_compare_and_swap_1
+  __sync_val_compare_and_swap_1
+  __sync_lock_test_and_set_1
+
+  __sync_fetch_and_add_2
+  __sync_fetch_and_sub_2
+  __sync_fetch_and_or_2
+  __sync_fetch_and_and_2
+  __sync_fetch_and_xor_2
+  __sync_fetch_and_nand_2
+  __sync_add_and_fetch_2
+  __sync_sub_and_fetch_2
+  __sync_or_and_fetch_2
+  __sync_and_and_fetch_2
+  __sync_xor_and_fetch_2
+  __sync_nand_and_fetch_2
+  __sync_bool_compare_and_swap_2
+  __sync_val_compare_and_swap_2
+  __sync_lock_test_and_set_2
+
+  __sync_fetch_and_add_4
+  __sync_fetch_and_sub_4
+  __sync_fetch_and_or_4
+  __sync_fetch_and_and_4
+  __sync_fetch_and_xor_4
+  __sync_fetch_and_nand_4
+  __sync_add_and_fetch_4
+  __sync_sub_and_fetch_4
+  __sync_or_and_fetch_4
+  __sync_and_and_fetch_4
+  __sync_xor_and_fetch_4
+  __sync_nand_and_fetch_4
+  __sync_bool_compare_and_swap_4
+  __sync_val_compare_and_swap_4
+  __sync_lock_test_and_set_4
+
+  __sync_fetch_and_add_8
+  __sync_fetch_and_sub_8
+  __sync_fetch_and_or_8
+  __sync_fetch_and_and_8
+  __sync_fetch_and_xor_8
+  __sync_fetch_and_nand_8
+  __sync_add_and_fetch_8
+  __sync_sub_and_fetch_8
+  __sync_or_and_fetch_8
+  __sync_and_and_fetch_8
+  __sync_xor_and_fetch_8
+  __sync_nand_and_fetch_8
+  __sync_bool_compare_and_swap_8
+  __sync_val_compare_and_swap_8
+  __sync_lock_test_and_set_8
+
+  __sync_fetch_and_add_16
+  __sync_fetch_and_sub_16
+  __sync_fetch_and_or_16
+  __sync_fetch_and_and_16
+  __sync_fetch_and_xor_16
+  __sync_fetch_and_nand_16
+  __sync_add_and_fetch_16
+  __sync_sub_and_fetch_16
+  __sync_or_and_fetch_16
+  __sync_and_and_fetch_16
+  __sync_xor_and_fetch_16
+  __sync_nand_and_fetch_16
+  __sync_bool_compare_and_swap_16
+  __sync_val_compare_and_swap_16
+  __sync_lock_test_and_set_16
+
+  __sync_synchronize
+}
