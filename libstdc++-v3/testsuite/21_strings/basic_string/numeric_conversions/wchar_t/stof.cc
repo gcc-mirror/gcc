@@ -107,7 +107,8 @@ test01()
     }
   VERIFY( test );
 
-  if (sizeof(float) < sizeof(long double))
+  if ((numeric_limits<long double>::max() / 10000.0L)
+      > numeric_limits<float>::max())
     {
       test = false;
       f1 = -1.0f;
