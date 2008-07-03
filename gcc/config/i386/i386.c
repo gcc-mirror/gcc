@@ -4746,7 +4746,8 @@ contains_aligned_value_p (tree type)
   enum machine_mode mode = TYPE_MODE (type);
   if (((TARGET_SSE && SSE_REG_MODE_P (mode))
        || mode == TDmode
-       || mode == TFmode)
+       || mode == TFmode
+       || mode == TCmode)
       && (!TYPE_USER_ALIGN (type) || TYPE_ALIGN (type) > 128))
     return true;
   if (TYPE_ALIGN (type) < 128)
@@ -17103,7 +17104,8 @@ ix86_data_alignment (tree type, int align)
 
       if (TYPE_MODE (type) == DCmode && align < 64)
 	return 64;
-      if (TYPE_MODE (type) == XCmode && align < 128)
+      if ((TYPE_MODE (type) == XCmode
+	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
   else if ((TREE_CODE (type) == RECORD_TYPE
@@ -17169,7 +17171,8 @@ ix86_local_alignment (tree type, enum machine_mode mode,
     {
       if (TYPE_MODE (type) == DCmode && align < 64)
 	return 64;
-      if (TYPE_MODE (type) == XCmode && align < 128)
+      if ((TYPE_MODE (type) == XCmode
+	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
   else if ((TREE_CODE (type) == RECORD_TYPE
