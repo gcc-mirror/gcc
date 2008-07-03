@@ -12,7 +12,7 @@ $(base)$(objext): $o
 	$(gcc_compile) $(c_flags) -c $< $(vis_hide)
 
 $(base)_s$(objext): $o
-	$(gcc_s_compile) -DSHARED $(c_flags) -c $<
+	$(gcc_s_compile) $(c_flags) -c $<
 
 else
 
@@ -29,6 +29,6 @@ $(base).vis: $(base)_s$(objext)
 	$(gen-hide-list)
 
 $(base)_s$(objext): $o
-	$(gcc_s_compile) -DSHARED -c -xassembler-with-cpp $<
+	$(gcc_s_compile) -c -xassembler-with-cpp $<
 
 endif
