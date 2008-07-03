@@ -5418,6 +5418,13 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
       && cfun)
     cp_function_chain->can_throw = 1;
 
+  /* Check that arguments to builtin functions match the expectations.  */
+  if (fndecl
+      && DECL_BUILT_IN (fndecl)
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && !check_builtin_function_arguments (fndecl, nargs, argarray))
+    return error_mark_node;
+
   /* Some built-in function calls will be evaluated at compile-time in
      fold ().  */
   fn = fold_if_not_in_template (fn);

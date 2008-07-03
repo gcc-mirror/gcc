@@ -1,3 +1,10 @@
+2008-07-03  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/36128
+	* typeck.c (cp_build_function_call): Move code to verify
+	builtin function arguments ...
+	* call.c (build_cxx_call): ... here.
+
 2008-07-02  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (cp/typeck2.o): Add $(REAL_H) dependency.

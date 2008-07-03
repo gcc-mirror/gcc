@@ -2887,13 +2887,6 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
   if (nargs < 0)
     return error_mark_node;
 
-  /* Check that arguments to builtin functions match the expectations.  */
-  if (fndecl
-      && DECL_BUILT_IN (fndecl)
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-      && !check_builtin_function_arguments (fndecl, nargs, argarray))
-    return error_mark_node;
-
   /* Check for errors in format strings and inappropriately
      null parameters.  */
   check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
