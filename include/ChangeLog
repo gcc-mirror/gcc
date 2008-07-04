@@ -1,3 +1,9 @@
+2008-07-04  Joel Brobecker  <brobecker@adacore.com>
+
+	* safe-ctype.h: Remove #error when detecting that ctype.h has been
+	included. Redefine the various macros provided by ctype.h as
+	undefined variables.
+
 2008-06-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (XALLOCA, XDUP, XALLOCAVEC, XDUPVEC, XALLOCAVAR,
