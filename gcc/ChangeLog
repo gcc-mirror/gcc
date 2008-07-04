@@ -1,3 +1,10 @@
+2008-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-switch-conversion.c (build_one_array, gen_def_assigns): Use
+	build_gimple_modify_stmt.
+	(build_arrays, gen_inbound_check): Likewise.  Force RHS to be
+	gimple operand.  Use fold_build* instead of build*.
+
 2008-07-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (lookup_vi_for_tree): Declare.
