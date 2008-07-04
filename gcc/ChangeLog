@@ -1,3 +1,16 @@
+2008-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alloc-pool.c (hash_descriptor, eq_descriptor,
+	alloc_pool_descriptor): Fix -Wc++-compat warnings.
+	* bitmap.c (hash_descriptor, eq_descriptor, bitmap_descriptor):
+	Likewise.
+	* ggc-common.c (hash_descriptor, eq_descriptor, hash_ptr, eq_ptr,
+	loc_descriptor, ggc_prune_ptr, ggc_free_overhead,
+	final_cmp_statistic, cmp_statistic, dump_ggc_loc_statistics):
+	Likewise.
+	* varray.c (hash_descriptor, eq_descriptor, varray_descriptor):
+	Likewise.
+
 2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-flow.h (loop_only_exit_p): Declare.

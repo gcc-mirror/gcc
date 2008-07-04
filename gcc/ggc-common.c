@@ -791,7 +791,7 @@ static htab_t loc_hash;
 static hashval_t
 hash_descriptor (const void *p)
 {
-  const struct loc_descriptor *const d = p;
+  const struct loc_descriptor *const d = (const struct loc_descriptor *) p;
 
   return htab_hash_pointer (d->function) | d->line;
 }
@@ -799,8 +799,8 @@ hash_descriptor (const void *p)
 static int
 eq_descriptor (const void *p1, const void *p2)
 {
-  const struct loc_descriptor *const d = p1;
-  const struct loc_descriptor *const d2 = p2;
+  const struct loc_descriptor *const d = (const struct loc_descriptor *) p1;
+  const struct loc_descriptor *const d2 = (const struct loc_descriptor *) p2;
 
   return (d->file == d2->file && d->line == d2->line
 	  && d->function == d2->function);
@@ -819,7 +819,7 @@ struct ptr_hash_entry
 static hashval_t
 hash_ptr (const void *p)
 {
-  const struct ptr_hash_entry *const d = p;
+  const struct ptr_hash_entry *const d = (const struct ptr_hash_entry *) p;
 
   return htab_hash_pointer (d->ptr);
 }
@@ -827,7 +827,7 @@ hash_ptr (const void *p)
 static int
 eq_ptr (const void *p1, const void *p2)
 {
-  const struct ptr_hash_entry *const p = p1;
+  const struct ptr_hash_entry *const p = (const struct ptr_hash_entry *) p1;
 
   return (p->ptr == p2);
 }
@@ -848,7 +848,7 @@ loc_descriptor (const char *name, int line, const char *function)
   slot = (struct loc_descriptor **) htab_find_slot (loc_hash, &loc, 1);
   if (*slot)
     return *slot;
-  *slot = xcalloc (sizeof (**slot), 1);
+  *slot = XCNEW (struct loc_descriptor);
   (*slot)->file = name;
   (*slot)->line = line;
   (*slot)->function = function;
@@ -883,7 +883,7 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 static int
 ggc_prune_ptr (void **slot, void *b ATTRIBUTE_UNUSED)
 {
-  struct ptr_hash_entry *p = *slot;
+  struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
   if (!ggc_marked_p (p->ptr))
     {
       p->loc->collected += p->size;
@@ -907,7 +907,7 @@ ggc_free_overhead (void *ptr)
 {
   PTR *slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr),
 					NO_INSERT);
-  struct ptr_hash_entry *p = *slot;
+  struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
   p->loc->freed += p->size;
   htab_clear_slot (ptr_hash, slot);
   free (p);
@@ -917,8 +917,10 @@ ggc_free_overhead (void *ptr)
 static int
 final_cmp_statistic (const void *loc1, const void *loc2)
 {
-  struct loc_descriptor *l1 = *(struct loc_descriptor **) loc1;
-  struct loc_descriptor *l2 = *(struct loc_descriptor **) loc2;
+  const struct loc_descriptor *const l1 =
+    *(const struct loc_descriptor *const *) loc1;
+  const struct loc_descriptor *const l2 =
+    *(const struct loc_descriptor *const *) loc2;
   long diff;
   diff = ((long)(l1->allocated + l1->overhead - l1->freed) -
 	  (l2->allocated + l2->overhead - l2->freed));
@@ -929,8 +931,10 @@ final_cmp_statistic (const void *loc1, const void *loc2)
 static int
 cmp_statistic (const void *loc1, const void *loc2)
 {
-  struct loc_descriptor *l1 = *(struct loc_descriptor **) loc1;
-  struct loc_descriptor *l2 = *(struct loc_descriptor **) loc2;
+  const struct loc_descriptor *const l1 =
+    *(const struct loc_descriptor *const *) loc1;
+  const struct loc_descriptor *const l2 =
+    *(const struct loc_descriptor *const *) loc2;
   long diff;
 
   diff = ((long)(l1->allocated + l1->overhead - l1->freed - l1->collected) -
@@ -967,7 +971,7 @@ dump_ggc_loc_statistics (bool final ATTRIBUTE_UNUSED)
   ggc_force_collect = true;
   ggc_collect ();
 
-  loc_array = xcalloc (sizeof (*loc_array), loc_hash->n_elements);
+  loc_array = XCNEWVEC (struct loc_descriptor *, loc_hash->n_elements);
   fprintf (stderr, "-------------------------------------------------------\n");
   fprintf (stderr, "\n%-48s %10s       %10s       %10s       %10s       %10s\n",
 	   "source location", "Garbage", "Freed", "Leak", "Overhead", "Times");
