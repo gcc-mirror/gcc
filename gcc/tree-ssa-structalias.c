@@ -262,6 +262,7 @@ struct variable_info
 typedef struct variable_info *varinfo_t;
 
 static varinfo_t first_vi_for_offset (varinfo_t, unsigned HOST_WIDE_INT);
+static varinfo_t lookup_vi_for_tree (tree);
 
 /* Pool of variable info structures.  */
 static alloc_pool variable_info_pool;
@@ -1404,6 +1405,47 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
     {
       flag |= bitmap_set_bit (sol, anything_id);
       goto done;
+    }
+
+  /* For x = *ESCAPED and x = *CALLUSED we want to compute the
+     reachability set of the rhs var.  As a pointer to a sub-field
+     of a variable can also reach all other fields of the variable
+     we simply have to expand the solution to contain all sub-fields
+     if one sub-field is contained.  */
+  if (c->rhs.var == escaped_id
+      || c->rhs.var == callused_id)
+    {
+      bitmap vars = NULL;
+      /* In a first pass record all variables we need to add all
+         sub-fields off.  This avoids quadratic behavior.  */
+      EXECUTE_IF_SET_IN_BITMAP (delta, 0, j, bi)
+	{
+	  varinfo_t v = lookup_vi_for_tree (get_varinfo (j)->decl);
+	  if (v->next != NULL)
+	    {
+	      if (vars == NULL)
+		vars = BITMAP_ALLOC (NULL);
+	      bitmap_set_bit (vars, v->id);
+	    }
+	}
+      /* In the second pass now do the addition to the solution and
+         to speed up solving add it to the delta as well.  */
+      if (vars != NULL)
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (vars, 0, j, bi)
+	    {
+	      varinfo_t v = get_varinfo (j);
+	      for (; v != NULL; v = v->next)
+		{
+		  if (bitmap_set_bit (sol, v->id))
+		    {
+		      flag = true;
+		      bitmap_set_bit (delta, v->id);
+		    }
+		}
+	    }
+	  BITMAP_FREE (vars);
+	}
     }
 
   /* For each variable j in delta (Sol(y)), add

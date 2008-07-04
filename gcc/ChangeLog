@@ -1,3 +1,12 @@
+2008-07-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (lookup_vi_for_tree): Declare.
+	(do_sd_constraint): Handle a dereference of ESCAPED and CALLUSED
+	properly to compute the reachability set if we do field-sensitive PTA.
+	* invoke.texi (max-fields-for-field-sensitive): Document default.
+	* opts.c (decode_options): Set max-fields-for-field-sensitive to
+	100 for optimize >= 2.
+
 2008-07-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc (extra_headers): Add cross-stdarg.h for target
