@@ -1,3 +1,16 @@
+2008-07-04  Chris Fairles  <chris.fairles@gmail.com>
+
+	* include/std/ratio: New, per N2661.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Regenerate.
+	* testsuite/20_util/ratio/cons/cons1.cc: New.
+	* testsuite/20_util/ratio/cons/cons_overflow.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops1.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops2.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops3.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow.cc: Likewise.
+	* testsuite/20_util/ratio/comparisons/comp1.cc: Likewise.
+
 2008-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/36616
