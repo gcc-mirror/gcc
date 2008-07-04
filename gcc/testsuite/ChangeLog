@@ -1,3 +1,7 @@
+2008-07-04  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pta-callused.c: New testcase.
+
 2008-07-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/callabi/callabi.h: New.
