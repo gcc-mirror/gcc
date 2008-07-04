@@ -2,14 +2,6 @@
 
 	* gcc.dg/tree-ssa/pta-callused.c: New testcase.
 
-2008-07-04  Kai Tietz  <kai.tietz@onevision.com>
-
-	* gcc.dg/callabi/callabi.h: New.
-	* gcc.dg/callabi/vaarg-1.c: New.
-	* gcc.dg/callabi/vaarg-2.c: New.
-	* gcc.dg/callabi/vaarg-3.c: New.
-	* gcc.dg/callabi/func-1.c: New.
-
 2008-07-04  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/m68k/interrupt-2.c: New file.
