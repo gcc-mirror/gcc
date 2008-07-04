@@ -1,3 +1,11 @@
+2008-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ggc-zone.c (lookup_page_table_if_allocated,
+	set_page_table_entry, zone_find_object_size, alloc_small_page,
+	alloc_large_page, ggc_free, gt_ggc_m_S, ggc_marked_p, init_ggc,
+	new_ggc_zone, init_ggc_pch, ggc_pch_this_base, ggc_pch_read): Fix
+	-Wc++-compat and/or -Wcast-qual warnings.
+
 2008-07-04  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/36634
