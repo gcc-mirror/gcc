@@ -308,6 +308,26 @@ sra_type_can_be_decomposed_p (tree type)
   return false;
 }
 
+/* Returns true if the TYPE is one of the available va_list types.
+   Otherwise it returns false.
+   Note, that for multiple calling conventions there can be more
+   than just one va_list type present.  */
+
+static bool
+is_va_list_type (tree type)
+{
+  tree h;
+
+  if (type == NULL_TREE)
+    return false;
+  h = targetm.canonical_va_list_type (type);
+  if (h == NULL_TREE)
+    return false;
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (h))
+	 return true;
+  return false;
+}
+
 /* Return true if DECL can be decomposed into a set of independent
    (though not necessarily scalar) variables.  */
 
@@ -360,9 +380,7 @@ decl_can_be_decomposed_p (tree var)
      tree-stdarg.c, as the decomposition is truly a win.  This could also
      be fixed if the stdarg pass ran early, but this can't be done until
      we've aliasing information early too.  See PR 30791.  */
-  if (early_sra
-      && TYPE_MAIN_VARIANT (TREE_TYPE (var))
-	 == TYPE_MAIN_VARIANT (va_list_type_node))
+  if (early_sra && is_va_list_type (TREE_TYPE (var)))
     return false;
 
   return true;
