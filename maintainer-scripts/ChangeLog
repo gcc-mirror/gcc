@@ -1,3 +1,13 @@
+2008-07-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* crontab: Remove 4.1 snapshots job.
+	* update_version: Remove.
+	* gcc_release: Remove support for g77 and release status in
+	version.c.
+	* update_version_svn: Ignore 4.1 branch.  Remove support for
+	updating files other than DATESTAMP.
+	* update_web_docs_svn: Remove support for g77 manual.
+
 2008-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Add 4.3 branch.  Set trunk to 4.4.

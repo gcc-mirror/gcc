@@ -17,7 +17,6 @@ MANUALS="cpp
   gcc
   gccint
   gcj
-  g77
   gfortran
   gfc-internals
   gnat_ug_unx

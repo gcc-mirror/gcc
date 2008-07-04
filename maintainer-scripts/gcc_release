@@ -139,25 +139,14 @@ EOF
       fi
     done
 
-    # Update gcc/DEV-PHASE if it exists, otherwise gcc/version.c.
+    # Update gcc/DEV-PHASE.
 
-    if [ -f ${SOURCE_DIRECTORY}/gcc/DEV-PHASE ]; then
-      [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
-      error "Release number ${RELEASE} does not match BASE-VER"
-      (changedir ${SOURCE_DIRECTORY}/gcc && \
-       : > DEV-PHASE && \
-       ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
-      error "Could not update DEV-PHASE"
-    else
-      for x in gcc/version.c; do 
-        y=`basename ${x}`
-        (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-            sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
-	    mv ${y}.new ${y} && \
-            ${SVN} -q ci -m 'Update version' ${y}) || \
-	    error "Could not update ${x}"
-      done
-    fi
+    [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
+    error "Release number ${RELEASE} does not match BASE-VER"
+    (changedir ${SOURCE_DIRECTORY}/gcc && \
+     : > DEV-PHASE && \
+     ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
+    error "Could not update DEV-PHASE"
 
     # Make sure we tag the sources for a final release.
     TAG="tags/gcc_`echo ${RELEASE} | tr . _`_release"
@@ -297,7 +286,6 @@ build_tarfiles() {
   # Now, build one for each of the languages.
   maybe_build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
   maybe_build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
-  maybe_build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
   maybe_build_tarfile gcc-fortran-${RELEASE} ${FORTRAN95_DIRS}
   maybe_build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
   maybe_build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
@@ -305,7 +293,7 @@ build_tarfiles() {
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${FORTRAN95_DIRS}\
+  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN95_DIRS}\
 	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
@@ -328,7 +316,7 @@ build_diffs() {
   old_vers=${old_file%.tar.bz2}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-ada gcc-g++ gcc-g77 gcc-fortran gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc gcc-ada gcc-g++ gcc-fortran gcc-java gcc-objc gcc-testsuite gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.bz2
     if [ ! -e $old_tar ]; then
@@ -453,7 +441,6 @@ with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revisi
   snapshot_print gcc-ada-${RELEASE}.tar.bz2 "Ada front end and runtime"
   snapshot_print gcc-fortran-${RELEASE}.tar.bz2 "Fortran front end and runtime"
   snapshot_print gcc-g++-${RELEASE}.tar.bz2 "C++ front end and runtime"
-  snapshot_print gcc-g77-${RELEASE}.tar.bz2 "Fortran 77 front end and runtime"
   snapshot_print gcc-java-${RELEASE}.tar.bz2 "Java front end and runtime"
   snapshot_print gcc-objc-${RELEASE}.tar.bz2 "Objective-C front end and runtime"
   snapshot_print gcc-testsuite-${RELEASE}.tar.bz2 "The GCC testsuite"
@@ -560,7 +547,6 @@ SOURCE_DIRECTORY=""
 # tar files.  These are all relative to the top of the source tree.
 ADA_DIRS="gcc/ada libada gnattools"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
-FORTRAN_DIRS="gcc/f libf2c"
 FORTRAN95_DIRS="gcc/fortran libgfortran"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
 OBJECTIVEC_DIRS="gcc/objc gcc/objcp libobjc"
@@ -707,7 +693,6 @@ SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
 # relative to the WORKING_DIRECTORY.
 ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
 CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
-FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
 FORTRAN95_DIRS=`adjust_dirs ${FORTRAN95_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
