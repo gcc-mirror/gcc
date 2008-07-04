@@ -55,6 +55,7 @@ std_headers = \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
 	${std_srcdir}/regex \
+	${std_srcdir}/ratio \
 	${std_srcdir}/set \
 	${std_srcdir}/sstream \
 	${std_srcdir}/stack \
