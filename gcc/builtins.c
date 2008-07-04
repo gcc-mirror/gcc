@@ -4623,19 +4623,18 @@ expand_builtin_next_arg (void)
 static tree
 stabilize_va_list (tree valist, int needs_lvalue)
 {
-  tree vatype = targetm.canonical_va_list_type (TREE_TYPE (valist));
-  if (vatype !=NULL && TREE_CODE (vatype) == ARRAY_TYPE)
+  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {
       if (TREE_SIDE_EFFECTS (valist))
 	valist = save_expr (valist);
 
       /* For this case, the backends will be expecting a pointer to
-	 vatype, but it's possible we've actually been given an array
-	 (an actual TARGET_CANONICAL_VA_LIST_TYPE (valist)).
+	 TREE_TYPE (va_list_type_node), but it's possible we've
+	 actually been given an array (an actual va_list_type_node).
 	 So fix it.  */
       if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
 	{
-	  tree p1 = build_pointer_type (TREE_TYPE (vatype));
+	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
 	  valist = build_fold_addr_expr_with_type (valist, p1);
 	}
     }
@@ -4648,7 +4647,7 @@ stabilize_va_list (tree valist, int needs_lvalue)
 	  if (! TREE_SIDE_EFFECTS (valist))
 	    return valist;
 
-	  pt = build_pointer_type (vatype);
+	  pt = build_pointer_type (va_list_type_node);
 	  valist = fold_build1 (ADDR_EXPR, pt, valist);
 	  TREE_SIDE_EFFECTS (valist) = 1;
 	}
@@ -4667,42 +4666,6 @@ tree
 std_build_builtin_va_list (void)
 {
   return ptr_type_node;
-}
-
-/* The "standard" abi va_list is va_list_type_node.  */
-
-tree
-std_fn_abi_va_list (tree fndecl ATTRIBUTE_UNUSED)
-{
-  return va_list_type_node;
-}
-
-/* The "standard" type of va_list is va_list_type_node.  */
-
-tree
-std_canonical_va_list_type (tree type)
-{
-  tree wtype, htype;
-
-  wtype = va_list_type_node;
-  htype = type;
-  if (TREE_CODE (wtype) == ARRAY_TYPE)
-    {
-      /* If va_list is an array type, the argument may have decayed
-	 to a pointer type, e.g. by being passed to another function.
-	 In that case, unwrap both types so that we can compare the
-	 underlying records.  */
-      if (TREE_CODE (htype) == ARRAY_TYPE
-	  || POINTER_TYPE_P (htype))
-	{
-	  wtype = TREE_TYPE (wtype);
-	  htype = TREE_TYPE (htype);
-	}
-    }
-  if (TYPE_MAIN_VARIANT (wtype) == TYPE_MAIN_VARIANT (htype))
-    return va_list_type_node;
-
-  return NULL_TREE;
 }
 
 /* The "standard" implementation of va_start: just assign `nextarg' to
@@ -4860,18 +4823,33 @@ dummy_object (tree type)
 enum gimplify_status
 gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
 {
-  tree promoted_type, have_va_type;
+  tree promoted_type, want_va_type, have_va_type;
   tree valist = TREE_OPERAND (*expr_p, 0);
   tree type = TREE_TYPE (*expr_p);
   tree t;
 
   /* Verify that valist is of the proper type.  */
+  want_va_type = va_list_type_node;
   have_va_type = TREE_TYPE (valist);
+
   if (have_va_type == error_mark_node)
     return GS_ERROR;
-  have_va_type = targetm.canonical_va_list_type (have_va_type);
 
-  if (have_va_type == NULL_TREE)
+  if (TREE_CODE (want_va_type) == ARRAY_TYPE)
+    {
+      /* If va_list is an array type, the argument may have decayed
+	 to a pointer type, e.g. by being passed to another function.
+	 In that case, unwrap both types so that we can compare the
+	 underlying records.  */
+      if (TREE_CODE (have_va_type) == ARRAY_TYPE
+	  || POINTER_TYPE_P (have_va_type))
+	{
+	  want_va_type = TREE_TYPE (want_va_type);
+	  have_va_type = TREE_TYPE (have_va_type);
+	}
+    }
+
+  if (TYPE_MAIN_VARIANT (want_va_type) != TYPE_MAIN_VARIANT (have_va_type))
     {
       error ("first argument to %<va_arg%> not of type %<va_list%>");
       return GS_ERROR;
@@ -4879,7 +4857,7 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
   /* Generate a diagnostic for requesting data of a type that cannot
      be passed through `...' due to type promotion at the call site.  */
-  if ((promoted_type = lang_hooks.types.type_promotes_to (type))
+  else if ((promoted_type = lang_hooks.types.type_promotes_to (type))
 	   != type)
     {
       static bool gave_help;
@@ -4911,15 +4889,15 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
     {
       /* Make it easier for the backends by protecting the valist argument
 	 from multiple evaluations.  */
-      if (TREE_CODE (have_va_type) == ARRAY_TYPE)
+      if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
 	{
 	  /* For this case, the backends will be expecting a pointer to
-	     TREE_TYPE (abi), but it's possible we've
-	     actually been given an array (an actual TARGET_FN_ABI_VA_LIST).
+	     TREE_TYPE (va_list_type_node), but it's possible we've
+	     actually been given an array (an actual va_list_type_node).
 	     So fix it.  */
 	  if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
 	    {
-	      tree p1 = build_pointer_type (TREE_TYPE (have_va_type));
+	      tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
 	      valist = build_fold_addr_expr_with_type (valist, p1);
 	    }
 	  gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
@@ -4967,11 +4945,9 @@ expand_builtin_va_copy (tree exp)
   dst = stabilize_va_list (dst, 1);
   src = stabilize_va_list (src, 0);
 
-  gcc_assert (cfun != NULL && cfun->decl != NULL_TREE);
-
-  if (TREE_CODE (targetm.fn_abi_va_list (cfun->decl)) != ARRAY_TYPE)
+  if (TREE_CODE (va_list_type_node) != ARRAY_TYPE)
     {
-      t = build2 (MODIFY_EXPR, targetm.fn_abi_va_list (cfun->decl), dst, src);
+      t = build2 (MODIFY_EXPR, va_list_type_node, dst, src);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -4982,8 +4958,8 @@ expand_builtin_va_copy (tree exp)
       /* Evaluate to pointers.  */
       dstb = expand_expr (dst, NULL_RTX, Pmode, EXPAND_NORMAL);
       srcb = expand_expr (src, NULL_RTX, Pmode, EXPAND_NORMAL);
-      size = expand_expr (TYPE_SIZE_UNIT (targetm.fn_abi_va_list (cfun->decl)),
-      		  NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      size = expand_expr (TYPE_SIZE_UNIT (va_list_type_node), NULL_RTX,
+			  VOIDmode, EXPAND_NORMAL);
 
       dstb = convert_memory_address (Pmode, dstb);
       srcb = convert_memory_address (Pmode, srcb);
@@ -4991,10 +4967,10 @@ expand_builtin_va_copy (tree exp)
       /* "Dereference" to BLKmode memories.  */
       dstb = gen_rtx_MEM (BLKmode, dstb);
       set_mem_alias_set (dstb, get_alias_set (TREE_TYPE (TREE_TYPE (dst))));
-      set_mem_align (dstb, TYPE_ALIGN (targetm.fn_abi_va_list (cfun->decl)));
+      set_mem_align (dstb, TYPE_ALIGN (va_list_type_node));
       srcb = gen_rtx_MEM (BLKmode, srcb);
       set_mem_alias_set (srcb, get_alias_set (TREE_TYPE (TREE_TYPE (src))));
-      set_mem_align (srcb, TYPE_ALIGN (targetm.fn_abi_va_list (cfun->decl)));
+      set_mem_align (srcb, TYPE_ALIGN (va_list_type_node));
 
       /* Copy.  */
       emit_block_move (dstb, srcb, size, BLOCK_OP_NORMAL);
