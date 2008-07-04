@@ -81,13 +81,15 @@ static htab_t alloc_pool_hash;
 static hashval_t
 hash_descriptor (const void *p)
 {
-  const struct alloc_pool_descriptor *d = p;
+  const struct alloc_pool_descriptor *const d =
+    (const struct alloc_pool_descriptor * )p;
   return htab_hash_pointer (d->name);
 }
 static int
 eq_descriptor (const void *p1, const void *p2)
 {
-  const struct alloc_pool_descriptor *d = p1;
+  const struct alloc_pool_descriptor *const d =
+    (const struct alloc_pool_descriptor *) p1;
   return d->name == p2;
 }
 
@@ -106,7 +108,7 @@ alloc_pool_descriptor (const char *name)
 			      1);
   if (*slot)
     return *slot;
-  *slot = xcalloc (sizeof (**slot), 1);
+  *slot = XCNEW (struct alloc_pool_descriptor);
   (*slot)->name = name;
   return *slot;
 }

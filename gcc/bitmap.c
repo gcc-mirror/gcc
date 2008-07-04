@@ -51,7 +51,8 @@ static htab_t bitmap_desc_hash;
 static hashval_t
 hash_descriptor (const void *p)
 {
-  const struct bitmap_descriptor *const d = p;
+  const struct bitmap_descriptor *const d =
+    (const struct bitmap_descriptor *) p;
   return htab_hash_pointer (d->file) + d->line;
 }
 struct loc
@@ -63,8 +64,9 @@ struct loc
 static int
 eq_descriptor (const void *p1, const void *p2)
 {
-  const struct bitmap_descriptor *const d = p1;
-  const struct loc *const l = p2;
+  const struct bitmap_descriptor *const d =
+    (const struct bitmap_descriptor *) p1;
+  const struct loc *const l = (const struct loc *) p2;
   return d->file == l->file && d->function == l->function && d->line == l->line;
 }
 
@@ -88,7 +90,7 @@ bitmap_descriptor (const char *file, const char *function, int line)
 			      1);
   if (*slot)
     return *slot;
-  *slot = xcalloc (sizeof (**slot), 1);
+  *slot = XCNEW (struct bitmap_descriptor);
   (*slot)->file = file;
   (*slot)->function = function;
   (*slot)->line = line;
