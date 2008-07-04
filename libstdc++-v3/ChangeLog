@@ -1,3 +1,9 @@
+2008-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/36616
+	* testsuite/22_locale/time_put/put/char/4.cc: Just use es_ES instead.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+
 2008-06-30  Alfred E. Heggestad  <aeh@db.org>
 
 	* include/backward/backward_warning.h: Fix typo.
