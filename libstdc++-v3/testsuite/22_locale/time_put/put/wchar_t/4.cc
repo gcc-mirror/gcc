@@ -39,30 +39,22 @@ void test04()
 
   // basic construction and sanity check
   locale loc_c = locale::classic();
-  locale loc_fr = locale("fr_FR@euro");
-  VERIFY( loc_fr != loc_c );
+  locale loc_es = locale("es_ES");
+  VERIFY( loc_es != loc_c );
 
   // create an ostream-derived object, cache the time_put facet
   const wstring empty;
   wostringstream oss;
-  oss.imbue(loc_fr);
+  oss.imbue(loc_es);
   const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
   iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
   wstring result4 = oss.str();
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
-  VERIFY( result4 == L"dim." );
-#else
-  VERIFY( result4 == L"dim" );
-#endif
+  VERIFY( result4 == L"dom" );
 
-  oss.str(empty); // "%d.%m.%Y"
+  oss.str(empty); // "%d/%m/%y"
   iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
-  wstring result27 = oss.str();
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
-  VERIFY( result27 == L"04/04/1971" );
-#else
-  VERIFY( result27 == L"04.04.1971" );
-#endif
+  wstring result27 = oss.str(); // "04/04/71"
+  VERIFY( result27 == L"04/04/71" );
 
   oss.str(empty); // "%T"
   iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X');
@@ -71,12 +63,8 @@ void test04()
 
   oss.str(empty);
   iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
-  wstring result37 = oss.str();
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 7)
-  VERIFY( result37 == L"04/04/1971" );
-#else
-  VERIFY( result37 == L"04.04.1971" );
-#endif
+  wstring result37 = oss.str(); // "04/04/71"
+  VERIFY( result37 == L"04/04/71" );
 
   oss.str(empty);
   iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X', 'E');
