@@ -1,3 +1,14 @@
+2008-07-04  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/36634
+	* config/rs6000/rs6000.md (call, call_value): Don't arrange for
+	pic_offset_table_rtx to be marked as used here.
+	(call_nonlocal_sysv, call_value_nonlocal_sysv): Add split for
+	TARGET_SECURE_PLT to "use" pic_offset_table_rtx.
+	(call_nonlocal_sysv_secure, call_value_nonlocal_sysv_secure): New insn.
+	(sibcall_nonlocal_sysv, sibcall_value_nonlocal_sysv): Assert
+	!TARGET_SECURE_PLT.
+
 2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-flow.h (loop_only_exit_p): Declare.
