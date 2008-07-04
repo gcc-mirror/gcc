@@ -4002,6 +4002,20 @@ c_common_nodes_and_builtins (void)
   lang_hooks.decls.pushdecl
     (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 		 va_list_type_node));
+#ifdef TARGET_ENUM_VA_LIST
+  {
+    int l;
+    const char *pname;
+    tree ptype;
+    for (l = 0; TARGET_ENUM_VA_LIST (l, &pname, &ptype); ++l)
+      {
+	lang_hooks.decls.pushdecl
+	  (build_decl (TYPE_DECL, get_identifier (pname),
+	  	       ptype));
+
+      }
+  }
+#endif
 
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {

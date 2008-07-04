@@ -141,6 +141,9 @@ extern int ix86_cfun_abi (void);
 extern int ix86_function_abi (const_tree);
 extern int ix86_function_type_abi (const_tree);
 extern void ix86_call_abi_override (const_tree);
+extern tree ix86_fn_abi_va_list (tree);
+extern tree ix86_canonical_va_list_type (tree);
+extern int ix86_enum_va_list (int, const char **, tree *);
 extern int ix86_reg_parm_stack_space (const_tree);
 
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
