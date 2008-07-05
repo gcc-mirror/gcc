@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
 
 // Copyright (C) 2008 Free Software Foundation
 //
@@ -20,39 +19,38 @@
 // Boston, MA 02110-1301, USA.
 
 #include <ratio>
+#include <testsuite_hooks.h>
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
+
+static const std::intmax_t M = INTMAX_MAX;
 
 void
 test01()
 {
-  std::ratio<INTMAX_MAX, INTMAX_MAX> r1;
-  std::ratio<-INTMAX_MAX, INTMAX_MAX> r2;
+  bool test __attribute__((unused)) = true;
+ 
+  //no overflow with same denominator
+  VERIFY(( std::ratio_less<std::ratio<M - 2, M>,
+           std::ratio<M - 1, M>>::value == 1 ) );
+  
+  VERIFY(( std::ratio_less<std::ratio<M - 1, M>,
+           std::ratio<M - 2, M>>::value == 0 ) );
+           
+  //no overflow if signs differ
+  VERIFY(( std::ratio_less<std::ratio<-M, M - 1>,
+           std::ratio<M - 1, M - 2>>::value == 1 ) );
+  
+  VERIFY(( std::ratio_less<std::ratio<M - 1, M - 2>,
+           std::ratio<-M, M - 1>>::value == 0 ) );
 }
-
-void
-test02()
-{
-  std::ratio<INTMAX_MIN, 1> r1;
-}
-
-void
-test03()
-{
-  std::ratio<1, INTMAX_MIN> r1;
-}
-
-void
-test04()
-{
-  std::ratio<1,0> r1;
-}
-
-// { dg-error "instantiated from here" "" { target *-*-* } 36 }
-// { dg-error "instantiated from here" "" { target *-*-* } 42 }
-// { dg-error "instantiated from here" "" { target *-*-* } 48 }
-// { dg-error "denominator cannot be zero" "" { target *-*-* } 150 }
-// { dg-error "out of range" "" { target *-*-* } 151 }
-// { dg-excess-errors "In instantiation of" }
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
+
+int main()
+{
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  test01();
+#endif
+  return 0;
+}
