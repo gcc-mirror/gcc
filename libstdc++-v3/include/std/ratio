@@ -96,10 +96,10 @@ namespace std
         "overflow in multiplication");
       static_assert(__a0 * __b1 + __b0 * __a1 < (__c >> 1), 
         "overflow in multiplication");
-      static_assert(__b0 * __a0 <= INTMAX_MAX, 
+      static_assert(__b0 * __a0 <= __INTMAX_MAX__, 
         "overflow in multiplication");
       static_assert((__a0 * __b1 + __b0 * __a1) * __c <= 
-        INTMAX_MAX -  __b0 * __a0, "overflow in multiplication");
+        __INTMAX_MAX__ -  __b0 * __a0, "overflow in multiplication");
 
     public:
       static const intmax_t value = _Pn * _Qn;
@@ -108,12 +108,12 @@ namespace std
   // Helpers for __safe_add
   template<intmax_t _Pn, intmax_t _Qn, bool>
     struct __add_overflow_check_impl
-    : integral_constant<bool, (_Pn <= INTMAX_MAX - _Qn)>
+    : integral_constant<bool, (_Pn <= __INTMAX_MAX__ - _Qn)>
     { };
 
   template<intmax_t _Pn, intmax_t _Qn>
     struct __add_overflow_check_impl<_Pn, _Qn, false>
-    : integral_constant<bool, (_Pn >= -INTMAX_MAX - _Qn)>
+    : integral_constant<bool, (_Pn >= -__INTMAX_MAX__ - _Qn)>
     { };
 
   template<intmax_t _Pn, intmax_t _Qn>
@@ -130,12 +130,27 @@ namespace std
       static const intmax_t value = _Pn + _Qn;
     };
 
+  /**
+   *  @brief Provides compile-time rational arithmetic.
+   * 
+   *  This class template represents any finite rational number with a
+   *  numerator and denominator representable by compile-time constants of
+   *  type intmax_t. The ratio is simplified when instantiated.
+   *
+   *  For example:
+   *  @code
+   *    std::ratio<7,-21>::num == -1;
+   *    std::ratio<7,-21>::den == 3;
+   *  @endcode
+   *  
+  */
   template<intmax_t _Num, intmax_t _Den = 1>
     struct ratio
     {
       static_assert(_Den != 0, "denominator cannot be zero");
-      static_assert(_Num > INTMAX_MIN && _Den > INTMAX_MIN, "out of range");
-      
+      static_assert(_Num >= -__INTMAX_MAX__ && _Den >= -__INTMAX_MAX__,
+		    "out of range");
+
       // Note: sign(N) * abs(N) == N
       static const intmax_t num =
         _Num * __static_sign<_Den>::value / __static_gcd<_Num, _Den>::value;
@@ -211,10 +226,26 @@ namespace std
     { };
   
   template<typename _R1, typename _R2>
-    struct ratio_less
+    struct __ratio_less_simple_impl
     : integral_constant<bool,
-        (__safe_multiply<_R1::num, _R2::den>::value < 
-         __safe_multiply<_R2::num, _R1::den>::value)>        
+			(__safe_multiply<_R1::num, _R2::den>::value
+			 < __safe_multiply<_R2::num, _R1::den>::value)>
+    { };
+
+  // If the denominators are equal or the signs differ, we can just compare
+  // numerators, otherwise fallback to the simple cross-multiply method.
+  template<typename _R1, typename _R2>
+    struct __ratio_less_impl
+    : conditional<(_R1::den == _R2::den
+		   || (__static_sign<_R1::num>::value
+		       != __static_sign<_R2::num>::value)),
+      integral_constant<bool, (_R1::num < _R2::num)>,
+      __ratio_less_simple_impl<_R1, _R2>>::type
+    { };
+
+  template<typename _R1, typename _R2>
+    struct ratio_less
+    : __ratio_less_impl<_R1, _R2>::type
     { };
     
   template<typename _R1, typename _R2>
