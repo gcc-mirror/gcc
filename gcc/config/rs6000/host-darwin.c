@@ -1,5 +1,6 @@
 /* Darwin/powerpc host-specific hook definitions.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -138,7 +139,7 @@ darwin_rs6000_extra_signals (void)
   struct sigaction sact;
   stack_t sigstk;
 
-  sigstk.ss_sp = xmalloc (SIGSTKSZ);
+  sigstk.ss_sp = (char*)xmalloc (SIGSTKSZ);
   sigstk.ss_size = SIGSTKSZ;
   sigstk.ss_flags = 0;
   if (sigaltstack (&sigstk, NULL) < 0)

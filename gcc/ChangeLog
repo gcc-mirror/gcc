@@ -1,3 +1,8 @@
+2008-07-04  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_extra_siganls): Cast
+	the "void*" result of xmalloc to "char*" to fix bootstrap breakage.
+
 2008-07-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/36684
