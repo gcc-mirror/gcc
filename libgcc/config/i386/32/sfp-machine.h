@@ -8,88 +8,80 @@
 typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define CMPtype __gcc_CMPtype
 
-#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
-  __asm__ ("add{l} {%11,%3|%3,%11}\n\t"					\
-	   "adc{l} {%9,%2|%2,%9}\n\t"					\
-	   "adc{l} {%7,%1|%1,%7}\n\t"					\
-	   "adc{l} {%5,%0|%0,%5}"					\
-	   : "=r" ((USItype) (r3)),					\
-	     "=&r" ((USItype) (r2)),					\
-	     "=&r" ((USItype) (r1)),					\
-	     "=&r" ((USItype) (r0))					\
-	   : "%0" ((USItype) (x3)),					\
-	     "g" ((USItype) (y3)),					\
-	     "%1" ((USItype) (x2)),					\
-	     "g" ((USItype) (y2)),					\
-	     "%2" ((USItype) (x1)),					\
-	     "g" ((USItype) (y1)),					\
-	     "%3" ((USItype) (x0)),					\
+#define __FP_FRAC_ADD_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
+  __asm__ ("add{l} {%11,%3|%3,%11}\n\t"				\
+	   "adc{l} {%9,%2|%2,%9}\n\t"				\
+	   "adc{l} {%7,%1|%1,%7}\n\t"				\
+	   "adc{l} {%5,%0|%0,%5}"				\
+	   : "=r" ((USItype) (r3)),				\
+	     "=&r" ((USItype) (r2)),				\
+	     "=&r" ((USItype) (r1)),				\
+	     "=&r" ((USItype) (r0))				\
+	   : "%0" ((USItype) (x3)),				\
+	     "g" ((USItype) (y3)),				\
+	     "%1" ((USItype) (x2)),				\
+	     "g" ((USItype) (y2)),				\
+	     "%2" ((USItype) (x1)),				\
+	     "g" ((USItype) (y1)),				\
+	     "%3" ((USItype) (x0)),				\
+	     "g" ((USItype) (y0)))
+#define __FP_FRAC_ADD_3(r2,r1,r0,x2,x1,x0,y2,y1,y0)		\
+  __asm__ ("add{l} {%8,%2|%2,%8}\n\t"				\
+	   "adc{l} {%6,%1|%1,%6}\n\t"				\
+	   "adc{l} {%4,%0|%0,%4}"				\
+	   : "=r" ((USItype) (r2)),				\
+	     "=&r" ((USItype) (r1)),				\
+	     "=&r" ((USItype) (r0))				\
+	   : "%0" ((USItype) (x2)),				\
+	     "g" ((USItype) (y2)),				\
+	     "%1" ((USItype) (x1)),				\
+	     "g" ((USItype) (y1)),				\
+	     "%2" ((USItype) (x0)),				\
 	     "g" ((USItype) (y0)))
 
-#define __FP_FRAC_ADD_3(r2,r1,r0,x2,x1,x0,y2,y1,y0)			\
-  __asm__ ("add{l} {%8,%2|%2,%8}\n\t"					\
-	   "adc{l} {%6,%1|%1,%6}\n\t"					\
-	   "adc{l} {%4,%0|%0,%4}"					\
-	   : "=r" ((USItype) (r2)),					\
-	     "=&r" ((USItype) (r1)),					\
-	     "=&r" ((USItype) (r0))					\
-	   : "%0" ((USItype) (x2)),					\
-	     "g" ((USItype) (y2)),					\
-	     "%1" ((USItype) (x1)),					\
-	     "g" ((USItype) (y1)),					\
-	     "%2" ((USItype) (x0)),					\
-	     "g" ((USItype) (y0)))
-
-/* FIXME: The last constraint should be "g" instead of "im" if reload
-   works properly.  */
-#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)		\
-  __asm__ ("sub{l} {%11,%3|%3,%11}\n\t"					\
-	   "sbb{l} {%9,%2|%2,%9}\n\t"					\
-	   "sbb{l} {%7,%1|%1,%7}\n\t"					\
-	   "sbb{l} {%5,%0|%0,%5}"					\
-	   : "=r" ((USItype) (r3)),					\
-	     "=&r" ((USItype) (r2)),					\
-	     "=&r" ((USItype) (r1)),					\
-	     "=&r" ((USItype) (r0))					\
-	   : "0" ((USItype) (x3)),					\
-	     "g" ((USItype) (y3)),					\
-	     "1" ((USItype) (x2)),					\
-	     "g" ((USItype) (y2)),					\
-	     "2" ((USItype) (x1)),					\
-	     "g" ((USItype) (y1)),					\
-	     "3" ((USItype) (x0)),					\
+/* FIXME: Change last operand constraint
+   from "im" to "g" when reload works properly.  */
+#define __FP_FRAC_SUB_4(r3,r2,r1,r0,x3,x2,x1,x0,y3,y2,y1,y0)	\
+  __asm__ ("sub{l} {%11,%3|%3,%11}\n\t"				\
+	   "sbb{l} {%9,%2|%2,%9}\n\t"				\
+	   "sbb{l} {%7,%1|%1,%7}\n\t"				\
+	   "sbb{l} {%5,%0|%0,%5}"				\
+	   : "=r" ((USItype) (r3)),				\
+	     "=&r" ((USItype) (r2)),				\
+	     "=&r" ((USItype) (r1)),				\
+	     "=&r" ((USItype) (r0))				\
+	   : "0" ((USItype) (x3)),				\
+	     "g" ((USItype) (y3)),				\
+	     "1" ((USItype) (x2)),				\
+	     "g" ((USItype) (y2)),				\
+	     "2" ((USItype) (x1)),				\
+	     "g" ((USItype) (y1)),				\
+	     "3" ((USItype) (x0)),				\
 	     "im" ((USItype) (y0)))
-
-#define __FP_FRAC_SUB_3(r2,r1,r0,x2,x1,x0,y2,y1,y0)			\
-  __asm__ ("sub{l} {%8,%2|%2,%8}\n\t"					\
-	   "sbb{l} {%6,%1|%1,%6}\n\t"					\
-	   "sbb{l} {%4,%0|%0,%4}"					\
-	   : "=r" ((USItype) (r2)),					\
-	     "=&r" ((USItype) (r1)),					\
-	     "=&r" ((USItype) (r0))					\
-	   : "0" ((USItype) (x2)),					\
-	     "g" ((USItype) (y2)),					\
-	     "1" ((USItype) (x1)),					\
-	     "g" ((USItype) (y1)),					\
-	     "2" ((USItype) (x0)),					\
+#define __FP_FRAC_SUB_3(r2,r1,r0,x2,x1,x0,y2,y1,y0)		\
+  __asm__ ("sub{l} {%8,%2|%2,%8}\n\t"				\
+	   "sbb{l} {%6,%1|%1,%6}\n\t"				\
+	   "sbb{l} {%4,%0|%0,%4}"				\
+	   : "=r" ((USItype) (r2)),				\
+	     "=&r" ((USItype) (r1)),				\
+	     "=&r" ((USItype) (r0))				\
+	   : "0" ((USItype) (x2)),				\
+	     "g" ((USItype) (y2)),				\
+	     "1" ((USItype) (x1)),				\
+	     "g" ((USItype) (y1)),				\
+	     "2" ((USItype) (x0)),				\
 	     "g" ((USItype) (y0)))
 
 
-#define _FP_MUL_MEAT_S(R,X,Y)					\
-  _FP_MUL_MEAT_1_wide(_FP_WFRACBITS_S,R,X,Y,umul_ppmm)
-#define _FP_MUL_MEAT_D(R,X,Y)					\
-  _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_D,R,X,Y,umul_ppmm)
 #define _FP_MUL_MEAT_Q(R,X,Y)					\
   _FP_MUL_MEAT_4_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
 
-#define _FP_DIV_MEAT_S(R,X,Y)	_FP_DIV_MEAT_1_udiv(S,R,X,Y)
-#define _FP_DIV_MEAT_D(R,X,Y)	_FP_DIV_MEAT_2_udiv(D,R,X,Y)
 #define _FP_DIV_MEAT_Q(R,X,Y)   _FP_DIV_MEAT_4_udiv(Q,R,X,Y)
 
 #define _FP_NANFRAC_S		_FP_QNANBIT_S
 #define _FP_NANFRAC_D		_FP_QNANBIT_D, 0
-/* Even if XFmode is 12byte,  we have to pad it to 16byte since soft-fp
-   emulation is done in 16byte.  */
+/* Even if XFmode is 12byte,  we have to pad it to
+   16byte since soft-fp emulation is done in 16byte.  */
 #define _FP_NANFRAC_E		_FP_QNANBIT_E, 0, 0, 0
 #define _FP_NANFRAC_Q		_FP_QNANBIT_Q, 0, 0, 0
 #define _FP_NANSIGN_S		1
