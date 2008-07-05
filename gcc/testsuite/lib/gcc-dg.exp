@@ -354,6 +354,11 @@ proc remove-build-file { pat } {
     set file_list "[glob -nocomplain $pat]"
     verbose "remove-build-file `$file_list'" 2
     foreach output_file $file_list {
+	if [is_remote host] {
+	    # Ensure the host knows the file is gone by deleting there
+	    # first.
+	    remote_file host delete $output_file
+	}
 	remote_file build delete $output_file
     }
 }
