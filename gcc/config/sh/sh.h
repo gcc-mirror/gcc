@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -716,8 +716,8 @@ do {									\
 	 to the pressure on R0.  */					\
       /* Enable sched1 for SH4; ready queue will be reordered by	\
 	 the target hooks when pressure is high. We can not do this for \
-	 SH3 and lower as they give spill failures for R0.  */		\
-      if (!TARGET_HARD_SH4) 						\
+	 PIC, SH3 and lower as they give spill failures for R0.  */	\
+      if (!TARGET_HARD_SH4 || flag_pic)					\
         flag_schedule_insns = 0;		 			\
       /* ??? Current exception handling places basic block boundaries	\
 	 after call_insns.  It causes the high pressure on R0 and gives	\
