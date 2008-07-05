@@ -1,5 +1,11 @@
 2008-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/postypes.h: Do not include <stdint.h>.
+
+	* include/Makefile.am: Reorder.
+
+2008-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/ratio: Prefer __INTMAX_MAX__ to INTMAX_MAX (INTMAX_MIN).
 
 2008-07-05  Chris Fairles  <chris.fairles@gmail.com>

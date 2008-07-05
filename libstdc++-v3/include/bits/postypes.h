@@ -46,10 +46,6 @@
 
 #include <cwchar> // For mbstate_t
 
-#ifdef _GLIBCXX_HAVE_STDINT_H
-#include <stdint.h> // For int64_t
-#endif
-
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // The types streamoff, streampos and wstreampos and the class
@@ -68,7 +64,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  was typedef long.
   */  
 #ifdef _GLIBCXX_HAVE_INT64_T
-  typedef int64_t       streamoff;
+# if (__CHAR_BIT__ * __SIZEOF_LONG__ == 64)
+  typedef long          streamoff;
+# else
+  typedef long long     streamoff;
+# endif
 #else
   typedef long long     streamoff;
 #endif
