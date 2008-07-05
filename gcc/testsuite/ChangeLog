@@ -1,3 +1,7 @@
+2008-07-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* g++.dg/tree-ssa/ptrmemfield.C: New testcase.
+
 2008-07-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/gcc-dg.exp (remove-build-file): Remove files on remote host

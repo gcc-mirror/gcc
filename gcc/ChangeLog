@@ -1,3 +1,8 @@
+2008-07-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* fold-const.c (fold_convert_const): Treat OFFSET_TYPE the same as
+	integral and pointer types.
+
 2008-07-04  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/host-darwin.c (darwin_rs6000_extra_siganls): Cast
