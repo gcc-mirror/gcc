@@ -34,10 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "java-tree.h"
 #include "hashtab.h"
-#if JCF_USE_SCANDIR
 #include <dirent.h>
-#include <fnmatch.h>
-#endif
 
 #include "zlib.h"
 
@@ -283,145 +280,6 @@ find_classfile (char *filename, JCF *jcf, const char *dep_name)
   return open_class (filename, jcf, fd, dep_name);
 }
 
-#if JCF_USE_SCANDIR
-
-/* A comparison function (as for qsort) that compares KEY (a char *
-   giving the basename of a file) with the name stored in ENTRY (a
-   dirent **).  */
-
-static int
-compare_path (const void *key, const void *entry)
-{
-  return strcmp ((const char *) key, 
-		 (*((const struct dirent *const*) entry))->d_name);
-}
-
-/* Returns nonzero if ENTRY names a .java or .class file.  */
-
-static int
-java_or_class_file (const struct dirent *entry)
-{
-  const char *base = lbasename (entry->d_name);
-  return (fnmatch ("*.java", base, 0) == 0 || 
-	  fnmatch ("*.class", base, 0) == 0);
-}
-
-/* Information about the files present in a particular directory.  */
-typedef struct memoized_dirlist_entry 
-{
-  /* The name of the directory.  */
-  const char *dir;
-  /* The number of .java and .class files present, or -1 if we could
-     not, for some reason, obtain the list.  */
-  int num_files;
-  /* The .java and .class files in the directory, in alphabetical
-     order.  */
-  struct dirent **files;
-} memoized_dirlist_entry;
-
-/* A hash function for a memoized_dirlist_entry.  */
-static hashval_t
-memoized_dirlist_hash (const void *entry)
-{
-  const memoized_dirlist_entry *mde = (const memoized_dirlist_entry *) entry;
-  return htab_hash_string (mde->dir);
-}
-
-/* Returns true if ENTRY (a memoized_dirlist_entry *) corresponds to
-   the directory given by KEY (a char *) giving the directory 
-   name.  */
-
-static int
-memoized_dirlist_lookup_eq (const void *entry, const void *key)
-{
-  return strcmp ((const char *) key,
-		 ((const memoized_dirlist_entry *) entry)->dir) == 0;
-}
-
-/* A hash table mapping directory names to the lists of .java and
-   .class files in that directory.  */
-
-static htab_t memoized_dirlists;
-
-#endif
-
-/* Like stat, but avoids actually making the stat system call if we
-   know that it cannot succeed.  FILENAME and BUF are as for stat.  */
-
-static int
-caching_stat (char *filename, struct stat *buf)
-{
-#if JCF_USE_SCANDIR
-  char *sep;
-  char origsep = 0;
-  char *base;
-  memoized_dirlist_entry *dent;
-  void **slot;
-  struct memoized_dirlist_entry temp;
-  
-  /* If the hashtable has not already been created, create it now.  */
-  if (!memoized_dirlists)
-    memoized_dirlists = htab_create (37,
-				     memoized_dirlist_hash,
-				     memoized_dirlist_lookup_eq,
-				     NULL);
-
-  /* Get the name of the directory.  */
-  sep = strrchr (filename, DIR_SEPARATOR);
-#ifdef DIR_SEPARATOR_2
-  if (! sep)
-    sep = strrchr (filename, DIR_SEPARATOR_2);
-#endif
-  if (sep)
-    {
-      origsep = *sep;
-      *sep = '\0';
-      base = sep + 1;
-    }
-  else
-    base = filename;
-
-  /* Obtain the entry for this directory from the hash table.  This
-     approach is ok since we know that the hash function only looks at
-     the directory name.  */
-  temp.dir = filename;
-  temp.num_files = 0;
-  temp.files = NULL;
-  slot = htab_find_slot (memoized_dirlists, &temp, INSERT);
-  if (!*slot)
-    {
-      /* We have not already scanned this directory; scan it now.  */
-      dent = XNEW (memoized_dirlist_entry);
-      dent->dir = xstrdup (filename);
-      /* Unfortunately, scandir is not fully standardized.  In
-	 particular, the type of the function pointer passed as the
-	 third argument sometimes takes a "const struct dirent *"
-	 parameter, and sometimes just a "struct dirent *".  We cast
-	 to (void *) and use __extension__ so that either way it is
-	 quietly accepted.  FIXME: scandir is not in POSIX.  */
-      dent->num_files = __extension__ scandir (filename, &dent->files, 
-					       (void *) java_or_class_file, 
-					       alphasort);
-      *slot = dent;
-    }
-  else
-    dent = *((memoized_dirlist_entry **) slot);
-
-  /* Put the separator back.  */
-  if (sep)
-    *sep = origsep;
-
-  /* If the file is not in the list, there is no need to stat it; it
-     does not exist.  */
-  if (dent->num_files != -1
-      && !bsearch (base, dent->files, dent->num_files,
-		   sizeof (struct dirent *), compare_path))
-    return -1;
-#endif
-  
-  return stat (filename, buf);
-}
-
 /* Returns 1 if the CLASSNAME (really a char *) matches the name
    stored in TABLE_ENTRY (also a char *).  */
 
@@ -521,7 +379,7 @@ find_class (const char *classname, int classname_length, JCF *jcf)
 	      else
 		continue;
 	    }
-	  klass = caching_stat(buffer, &class_buf);
+	  klass = stat (buffer, &class_buf);
 	}
     }
 

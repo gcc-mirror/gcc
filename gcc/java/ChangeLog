@@ -1,3 +1,16 @@
+2008-07-05  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-io.c: Don't include fnmatch.h.  Don't use JCF_USE_SCANDIR.
+	(compare_path): Remove.
+	(java_or_class_file): Likewise.
+	(memoized_dirlist_entry): Likewise.
+	(memoized_dirlist_hash): Likewise.
+	(memoized_dirlist_lookup_eq): Likewise.
+	(memoized_dirlists): Likewise.
+	(caching_stat): Likewise.
+	(find_class): Use stat.
+	* jcf.h (JCF_USE_SCANDIR): Remove.
+
 2008-06-30  Joshua Sumali  <jsumali@redhat.com>
 
 	* Make-lang.in (JAVA_MANFILES): Add doc/aot-compile.1 and
