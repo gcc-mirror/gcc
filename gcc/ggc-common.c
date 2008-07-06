@@ -638,7 +638,7 @@ mmap_gt_pch_get_address (size_t size, int fd)
   if (ret == (void *) MAP_FAILED)
     ret = NULL;
   else
-    munmap (ret, size);
+    munmap ((caddr_t) ret, size);
 
   return ret;
 }
@@ -662,7 +662,7 @@ mmap_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
   if (size == 0)
     return -1;
 
-  addr = mmap (base, size, PROT_READ | PROT_WRITE, MAP_PRIVATE,
+  addr = mmap ((caddr_t) base, size, PROT_READ | PROT_WRITE, MAP_PRIVATE,
 	       fd, offset);
 
   return addr == base ? 1 : -1;

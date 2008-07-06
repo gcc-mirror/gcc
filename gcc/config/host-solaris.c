@@ -42,7 +42,7 @@ sol_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
   if (size == 0)
     return -1;
 
-  addr = mmap (base, size, PROT_READ | PROT_WRITE, MAP_PRIVATE,
+  addr = mmap ((caddr_t) base, size, PROT_READ | PROT_WRITE, MAP_PRIVATE,
 	       fd, offset);
 
   /* Solaris isn't good about honoring the mmap START parameter
@@ -55,18 +55,18 @@ sol_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
       size_t i;
 
       if (addr != (void *) MAP_FAILED)
-	munmap (addr, size);
+	munmap ((caddr_t) addr, size);
 
       errno = 0;
       for (i = 0; i < size; i += page_size)
-	if (mincore ((char *)base + i, page_size, (void *)&one_byte) == -1
+	if (mincore ((char *)base + i, page_size, (char *) &one_byte) == -1
 	    && errno == ENOMEM)
 	  continue; /* The page is not mapped.  */
 	else
 	  break;
 
       if (i >= size)
-	addr = mmap (base, size, 
+	addr = mmap ((caddr_t) base, size, 
 		     PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
 		     fd, offset);
     }

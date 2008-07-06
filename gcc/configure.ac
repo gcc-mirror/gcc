@@ -1010,6 +1010,7 @@ int main()
 fi
 
 AC_CHECK_TYPE(ssize_t, int)
+AC_CHECK_TYPE(caddr_t, char *)
 
 # Try to determine the array type of the second argument of getgroups
 # for the target system (int or gid_t).
