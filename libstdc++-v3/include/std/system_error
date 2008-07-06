@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   class system_error;
 
   /// is_error_code_enum
-  template<typename _T>
+  template<typename _Tp>
     struct is_error_code_enum : public false_type { };
 
   template<> 
@@ -61,7 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public true_type { };
 
   /// is_error_condition_enum
-  template<typename _T>
+  template<typename _Tp>
     struct is_error_condition_enum : public false_type { };
 
   template<> 
