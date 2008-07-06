@@ -220,9 +220,6 @@ struct variable_info
   /* True for variables whose size is not known or variable.  */
   unsigned int is_unknown_size_var:1;
 
-  /* True for variables that have unions somewhere in them.  */
-  unsigned int has_union:1;
-
   /* True if this is a heap variable.  */
   unsigned int is_heap_var:1;
 
@@ -376,7 +373,6 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->is_heap_var = false;
   ret->is_special_var = false;
   ret->is_unknown_size_var = false;
-  ret->has_union = false;
   var = t;
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
@@ -769,7 +765,6 @@ solution_set_add (bitmap set, unsigned HOST_WIDE_INT offset)
 	  bitmap_set_bit (result, v->id);
 	}
       else if (get_varinfo (i)->is_artificial_var
-	       || get_varinfo (i)->has_union
 	       || get_varinfo (i)->is_unknown_size_var)
 	{
 	  bitmap_set_bit (result, i);
@@ -2670,16 +2665,16 @@ could_have_pointers (tree t)
 /* Return the position, in bits, of FIELD_DECL from the beginning of its
    structure.  */
 
-static unsigned HOST_WIDE_INT
+static HOST_WIDE_INT
 bitpos_of_field (const tree fdecl)
 {
 
-  if (TREE_CODE (DECL_FIELD_OFFSET (fdecl)) != INTEGER_CST
-      || TREE_CODE (DECL_FIELD_BIT_OFFSET (fdecl)) != INTEGER_CST)
+  if (!host_integerp (DECL_FIELD_OFFSET (fdecl), 0)
+      || !host_integerp (DECL_FIELD_BIT_OFFSET (fdecl), 0))
     return -1;
 
-  return (tree_low_cst (DECL_FIELD_OFFSET (fdecl), 1) * 8)
-	 + tree_low_cst (DECL_FIELD_BIT_OFFSET (fdecl), 1);
+  return (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (fdecl)) * 8
+	  + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fdecl)));
 }
 
 
@@ -4005,17 +4000,15 @@ insert_into_field_list_sorted (varinfo_t base, varinfo_t field)
 
 struct fieldoff
 {
-  /* Type of the field.  */
-  tree type;
+  /* Offset from the base of the base containing object to this field.  */
+  HOST_WIDE_INT offset;
 
   /* Size, in bits, of the field.  */
-  tree size;
+  unsigned HOST_WIDE_INT size;
 
-  /* Field.  */
-  tree decl;
+  unsigned has_unknown_size : 1;
 
-  /* Offset from the base of the base containing object to this field.  */
-  HOST_WIDE_INT offset;  
+  unsigned may_have_pointers : 1;
 };
 typedef struct fieldoff fieldoff_s;
 
@@ -4036,10 +4029,10 @@ fieldoff_compare (const void *pa, const void *pb)
   else if (foa->offset > fob->offset)
     return 1;
 
-  foasize = TREE_INT_CST_LOW (foa->size);
-  fobsize = TREE_INT_CST_LOW (fob->size);
+  foasize = foa->size;
+  fobsize = fob->size;
   if (foasize < fobsize)
-    return - 1;
+    return -1;
   else if (foasize > fobsize)
     return 1;
   return 0;
@@ -4083,14 +4076,11 @@ var_can_have_subvars (const_tree v)
 
    OFFSET is used to keep track of the offset in this entire
    structure, rather than just the immediately containing structure.
-   Returns the number of fields pushed.
-
-   HAS_UNION is set to true if we find a union type as a field of
-   TYPE.  */
+   Returns the number of fields pushed.  */
 
 static int
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
-			     HOST_WIDE_INT offset, bool *has_union)
+			     HOST_WIDE_INT offset)
 {
   tree field;
   int count = 0;
@@ -4109,19 +4099,14 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
       {
 	bool push = false;
 	int pushed = 0;
+	HOST_WIDE_INT foff = bitpos_of_field (field);
 
-	if (has_union
-	    && (TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
-		|| TREE_CODE (TREE_TYPE (field)) == UNION_TYPE))
-	  *has_union = true;
-
-	if (!var_can_have_subvars (field))
+	if (!var_can_have_subvars (field)
+	    || TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
+	    || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  push = true;
 	else if (!(pushed = push_fields_onto_fieldstack
-		   (TREE_TYPE (field),
-		    fieldstack,
-		    offset + bitpos_of_field (field),
-		    has_union))
+		   (TREE_TYPE (field), fieldstack, offset + foff))
 		 && (DECL_SIZE (field)
 		     && !integer_zerop (DECL_SIZE (field))))
 	  /* Empty structures may have actual size, like in C++.  So
@@ -4131,14 +4116,39 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 
 	if (push)
 	  {
-	    fieldoff_s *pair;
+	    fieldoff_s *pair = NULL;
+	    bool has_unknown_size = false;
 
-	    pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
-	    pair->type = TREE_TYPE (field);
-	    pair->size = DECL_SIZE (field);
-	    pair->decl = field;
-	    pair->offset = offset + bitpos_of_field (field);
-	    count++;
+	    if (!VEC_empty (fieldoff_s, *fieldstack))
+	      pair = VEC_last (fieldoff_s, *fieldstack);
+
+	    if (!DECL_SIZE (field)
+		|| !host_integerp (DECL_SIZE (field), 1))
+	      has_unknown_size = true;
+
+	    /* If adjacent fields do not contain pointers merge them.  */
+	    if (pair
+		&& !pair->may_have_pointers
+		&& !could_have_pointers (field)
+		&& !pair->has_unknown_size
+		&& !has_unknown_size
+		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
+	      {
+		pair = VEC_last (fieldoff_s, *fieldstack);
+		pair->size += TREE_INT_CST_LOW (DECL_SIZE (field));
+	      }
+	    else
+	      {
+		pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+		pair->offset = offset + foff;
+		pair->has_unknown_size = has_unknown_size;
+		if (!has_unknown_size)
+		  pair->size = TREE_INT_CST_LOW (DECL_SIZE (field));
+		else
+		  pair->size = -1;
+		pair->may_have_pointers = could_have_pointers (field);
+		count++;
+	      }
 	  }
 	else
 	  count += pushed;
@@ -4204,7 +4214,6 @@ create_function_info_for (tree decl, const char *name)
   vi = new_var_info (decl, index, name);
   vi->decl = decl;
   vi->offset = 0;
-  vi->has_union = 0;
   vi->size = 1;
   vi->fullsize = count_num_arguments (decl, &is_varargs) + 1;
   insert_vi_for_tree (vi->decl, vi);
@@ -4249,7 +4258,6 @@ create_function_info_for (tree decl, const char *name)
       argvi->offset = i;
       argvi->size = 1;
       argvi->fullsize = vi->fullsize;
-      argvi->has_union = false;
       insert_into_field_list_sorted (vi, argvi);
       stats.total_vars ++;
       if (arg)
@@ -4285,7 +4293,6 @@ create_function_info_for (tree decl, const char *name)
       resultvi->offset = i;
       resultvi->size = 1;
       resultvi->fullsize = vi->fullsize;
-      resultvi->has_union = false;
       insert_into_field_list_sorted (vi, resultvi);
       stats.total_vars ++;
       if (DECL_RESULT (decl))
@@ -4325,25 +4332,14 @@ create_variable_info_for (tree decl, const char *name)
   varinfo_t vi;
   tree decltype = TREE_TYPE (decl);
   tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decltype);
-  bool notokay = false;
-  bool hasunion;
   bool is_global = DECL_P (decl) ? is_global_var (decl) : false;
   VEC (fieldoff_s,heap) *fieldstack = NULL;
 
   if (TREE_CODE (decl) == FUNCTION_DECL && in_ipa_mode)
     return create_function_info_for (decl, name);
 
-  hasunion = TREE_CODE (decltype) == UNION_TYPE
-	     || TREE_CODE (decltype) == QUAL_UNION_TYPE;
-  if (var_can_have_subvars (decl) && use_field_sensitive && !hasunion)
-    {
-      push_fields_onto_fieldstack (decltype, &fieldstack, 0, &hasunion);
-      if (hasunion)
-	{
-	  VEC_free (fieldoff_s, heap, fieldstack);
-	  notokay = true;
-	}
-    }
+  if (var_can_have_subvars (decl) && use_field_sensitive)
+    push_fields_onto_fieldstack (decltype, &fieldstack, 0);
 
   /* If the variable doesn't have subvars, we may end up needing to
      sort the field list and create fake variables for all the
@@ -4351,11 +4347,8 @@ create_variable_info_for (tree decl, const char *name)
   vi = new_var_info (decl, index, name);
   vi->decl = decl;
   vi->offset = 0;
-  vi->has_union = hasunion;
   if (!declsize
-      || TREE_CODE (declsize) != INTEGER_CST
-      || TREE_CODE (decltype) == UNION_TYPE
-      || TREE_CODE (decltype) == QUAL_UNION_TYPE)
+      || !host_integerp (declsize, 1))
     {
       vi->is_unknown_size_var = true;
       vi->fullsize = ~0;
@@ -4375,7 +4368,6 @@ create_variable_info_for (tree decl, const char *name)
 
   stats.total_vars++;
   if (use_field_sensitive
-      && !notokay
       && !vi->is_unknown_size_var
       && var_can_have_subvars (decl)
       && VEC_length (fieldoff_s, fieldstack) > 1
@@ -4383,12 +4375,12 @@ create_variable_info_for (tree decl, const char *name)
     {
       unsigned int newindex = VEC_length (varinfo_t, varmap);
       fieldoff_s *fo = NULL;
+      bool notokay = false;
       unsigned int i;
 
       for (i = 0; !notokay && VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
-	  if (! fo->size
-	      || TREE_CODE (fo->size) != INTEGER_CST
+	  if (fo->has_unknown_size
 	      || fo->offset < 0)
 	    {
 	      notokay = true;
@@ -4423,7 +4415,7 @@ create_variable_info_for (tree decl, const char *name)
 	  return index;
 	}
 
-      vi->size = TREE_INT_CST_LOW (fo->size);
+      vi->size = fo->size;
       vi->offset = fo->offset;
       for (i = VEC_length (fieldoff_s, fieldstack) - 1;
 	   i >= 1 && VEC_iterate (fieldoff_s, fieldstack, i, fo);
@@ -4436,23 +4428,20 @@ create_variable_info_for (tree decl, const char *name)
 	  newindex = VEC_length (varinfo_t, varmap);
 	  if (dump_file)
 	    {
-	      if (fo->decl)
-		asprintf (&tempname, "%s.%s",
-			  vi->name, alias_get_name (fo->decl));
-	      else
-		asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC,
-			  vi->name, fo->offset);
+	      asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC
+			"+" HOST_WIDE_INT_PRINT_DEC,
+			vi->name, fo->offset, fo->size);
 	      newname = ggc_strdup (tempname);
 	      free (tempname);
 	    }
 	  newvi = new_var_info (decl, newindex, newname);
 	  newvi->offset = fo->offset;
-	  newvi->size = TREE_INT_CST_LOW (fo->size);
+	  newvi->size = fo->size;
 	  newvi->fullsize = vi->fullsize;
 	  insert_into_field_list (vi, newvi);
 	  VEC_safe_push (varinfo_t, heap, varmap, newvi);
 	  if (is_global && (!flag_whole_program || !in_ipa_mode)
-	      && (!fo->decl || could_have_pointers (fo->decl)))
+	      && fo->may_have_pointers)
 	    make_constraint_from (newvi, escaped_id);
 
 	  stats.total_vars++;
