@@ -390,7 +390,7 @@ enum mips_code_readable_setting {
       else								\
 	builtin_define ("__mips_fpr=32");				\
 									\
-      if (TARGET_MIPS16)						\
+      if (mips_base_mips16)						\
 	builtin_define ("__mips16");					\
 									\
       if (TARGET_MIPS3D)						\
@@ -3232,6 +3232,7 @@ extern int mips_abi;			/* which ABI to use */
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 extern const struct mips_rtx_cost_data *mips_cost;
+extern bool mips_base_mips16;
 extern enum mips_code_readable_setting mips_code_readable;
 #endif
 
