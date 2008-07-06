@@ -453,7 +453,7 @@ extern tree x86_mfence;
 #define TARGET_64BIT_MS_ABI (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
 
 /* Available call abi.  */
-enum
+enum calling_abi
 {
   SYSV_ABI = 0,
   MS_ABI = 1
@@ -2555,6 +2555,11 @@ struct machine_function GTY(())
 /* Cost of conditional branch.  */
 #undef TARG_COND_BRANCH_COST
 #define TARG_COND_BRANCH_COST           ix86_cost->branch_cost
+
+/* Enum through the target specific extra va_list types. Please, do not
+   iterate the base va_list type name.  */
+#define TARGET_ENUM_VA_LIST(IDX, PNAME, PTYPE) \
+  (!TARGET_64BIT ? 0 : ix86_enum_va_list (IDX, PNAME, PTYPE))
 
 /* Cost of any scalar operation, excluding load and store.  */
 #undef TARG_SCALAR_STMT_COST

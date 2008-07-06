@@ -1,3 +1,53 @@
+2008-07-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc (extra_headers): Add cross-stdarg.h for target
+	x86_64-*-* and i?86-*-*.
+	* config/i386/cross-stdarg.h: New.
+	* builtins.c (std_fn_abi_va_list): New.
+	(std_canonical_va_list_type): New.
+	(stabilize_va_list): Replace va_list_type_node use by
+	mtarget.canonical_va_list_type.
+	(gimplify_va_arg_expr): Likewise.
+	(expand_builtin_va_copy): Replace va_list_type_node use by
+	mtarget.fn_abi_va_list.
+	* tree-sra.c (is_va_list_type): New helper.
+	(decl_can_be_decomposed_p): Replace
+	va_list_type_node use by is_va_list_type.
+	* tree-ssa-ccp.c (optimize_stdarg_builtin): Likewise.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* c-common.c (c_common_nodes_and_builtins): Use TARGET_ENUM_VA_LIST.
+	* config/i386/i386-protos.h (ix86_get_valist_type): New.
+	(ix86_enum_va_list): New.
+	* config/i386/i386.c (sysv_va_list_type_node): New.
+	(ms_va_list_type_node): New.
+	(ix86_function_type_abi): Remove sorry.
+	(ix86_build_builtin_va_list_abi): New.
+	(ix86_build_builtin_va_list): Call ix86_build_builtin_va_list_abi
+	for 64-bit targets.
+	(ix86_va_start): Replace va_list_type_node by sysv_va_list_type_node.
+	(ix86_init_builtins_va_builtins_abi): New.
+	(ix86_init_builtins): Use ix86_init_builtins_va_builtins_abi
+	for 64-bit targets.
+	(ix86_handle_abi_attribute): New.
+	(attribute_spec): Add sysv_abi and ms_abi.
+	(ix86_fn_abi_va_list): New.
+	(ix86_canonical_va_list_type): New.
+	(ix86_enum_va_list): New.
+	(TARGET_FN_ABI_VA_LIST): New.
+	(TARGET_CANONICAL_VA_LIST_TYPE): New.
+	* config/i386/i386.h (TARGET_ENUM_VA_LIST): New.
+	* doc/tm.texi (TARGET_FN_ABI_VA_LIST): New.
+	(TARGET_CANONICAL_VA_LIST_TYPE): New.
+	(TARGET_ENUM_VA_LIST): New.
+	* expr.h (std_fn_abi_va_list): New.
+	(std_canonical_va_list_type): New.
+	* target-def.h (TARGET_FN_ABI_VA_LIST): New.
+	(TARGET_CANONICAL_VA_LIST_TYPE): New.
+	(TARGET_INITIALIZER): Add TARGET_FN_ABI_VA_LIST and
+	TARGET_CANONICAL_VA_LIST_TYPE.
+	* target.h (struct gcc_target): Add fn_abi_va_list hook
+	and canonical_va_list_type hook.
+
 2008-07-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* fold-const.c (fold_convert_const): Treat OFFSET_TYPE the same as
