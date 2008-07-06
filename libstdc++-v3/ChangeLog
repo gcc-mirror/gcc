@@ -1,3 +1,9 @@
+2008-07-06  Roger Sayle  <roger@eyesopen.com>
+
+	* include/std/system_error (is_error_code_enum): Use identifier
+	_Tp instead of _T to avoid conflict with system macro on Darwin.
+	(is_error_condition_enum): Likewise.
+
 2008-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/postypes.h: Do not include <stdint.h>.
