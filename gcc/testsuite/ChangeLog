@@ -1,3 +1,7 @@
+2008-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pta-callused.c: Adjust testcase.
+
 2008-07-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/callabi/callabi.h: New.

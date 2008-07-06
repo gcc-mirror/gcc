@@ -22,6 +22,6 @@ int bar (int b)
   return foo (&q);
 }
 
-/* { dg-final { scan-tree-dump "CALLUSED = { f f.q i q }" "alias" } } */
+/* { dg-final { scan-tree-dump "CALLUSED = { f.* i q }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */
 

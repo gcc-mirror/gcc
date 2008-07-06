@@ -1,3 +1,18 @@
+2008-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (struct variable_info): Remove has_union.
+	(new_var_info): Deal with it.
+	(solution_set_add): Likewise.
+	(bitpos_of_field): Make signed, fix.
+	(struct fieldoff): Remove type and decl fields.  Make size field
+	unsigned HOST_WIDE_INT.  Add has_unknown_size and may_have_pointers
+	flags.
+	(fieldoff_compare): Deal with it.
+	(push_fields_onto_fieldstack): Remove has_union argument, glob
+	adjacent non-pointer fields together.
+	(create_function_info_for): Do not set has_union.
+	(create_variable_info_for): Simplify.
+
 2008-07-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc (extra_headers): Add cross-stdarg.h for target
