@@ -1,5 +1,6 @@
-/* { dg-do preprocess } */
-/* { dg-mips-options "-mips2" } */
+/* { dg-do preprocess { target mips16_attribute } } */
+/* { dg-mips-options "-mips2 -mips16" } */
+/* { dg-add-options mips16_attribute } */
 
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
 #error nonono

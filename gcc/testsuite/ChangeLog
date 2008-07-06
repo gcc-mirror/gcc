@@ -1,3 +1,11 @@
+2008-07-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Expect the
+	macros to be defined for MIPS16 too.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Likewise.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-3.c: New test.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-4.c: Likewise.
+
 2008-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pta-callused.c: Adjust testcase.
