@@ -1,3 +1,11 @@
+2008-07-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.dg/callabi/callabi.h: New.
+	* gcc.dg/callabi/vaarg-1.c: New.
+	* gcc.dg/callabi/vaarg-2.c: New.
+	* gcc.dg/callabi/vaarg-3.c: New.
+	* gcc.dg/callabi/func-1.c: New.
+
 2008-07-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* g++.dg/tree-ssa/ptrmemfield.C: New testcase.
