@@ -2748,17 +2748,19 @@ optimize_stack_restore (basic_block bb, tree call, block_stmt_iterator i)
 static tree
 optimize_stdarg_builtin (tree call)
 {
-  tree callee, lhs, rhs;
+  tree callee, lhs, rhs, cfun_va_list;
   bool va_list_simple_ptr;
 
   if (TREE_CODE (call) != CALL_EXPR)
     return NULL_TREE;
 
-  va_list_simple_ptr = POINTER_TYPE_P (va_list_type_node)
-		       && (TREE_TYPE (va_list_type_node) == void_type_node
-			   || TREE_TYPE (va_list_type_node) == char_type_node);
-
   callee = get_callee_fndecl (call);
+
+  cfun_va_list = targetm.fn_abi_va_list (callee);
+  va_list_simple_ptr = POINTER_TYPE_P (cfun_va_list)
+		       && (TREE_TYPE (cfun_va_list) == void_type_node
+			   || TREE_TYPE (cfun_va_list) == char_type_node);
+
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_VA_START:
@@ -2773,7 +2775,7 @@ optimize_stdarg_builtin (tree call)
       lhs = CALL_EXPR_ARG (call, 0);
       if (!POINTER_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
-	     != TYPE_MAIN_VARIANT (va_list_type_node))
+	     != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
 
       lhs = build_fold_indirect_ref (lhs);
@@ -2792,13 +2794,13 @@ optimize_stdarg_builtin (tree call)
       lhs = CALL_EXPR_ARG (call, 0);
       if (!POINTER_TYPE_P (TREE_TYPE (lhs))
 	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
-	     != TYPE_MAIN_VARIANT (va_list_type_node))
+	     != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
 
       lhs = build_fold_indirect_ref (lhs);
       rhs = CALL_EXPR_ARG (call, 1);
       if (TYPE_MAIN_VARIANT (TREE_TYPE (rhs))
-	  != TYPE_MAIN_VARIANT (va_list_type_node))
+	  != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
 
       rhs = fold_convert (TREE_TYPE (lhs), rhs);

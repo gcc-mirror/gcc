@@ -697,6 +697,12 @@ struct gcc_target
   /* Create the __builtin_va_list type.  */
   tree (* build_builtin_va_list) (void);
 
+  /* Get the cfun/fndecl calling abi __builtin_va_list type.  */
+  tree (* fn_abi_va_list) (tree);
+
+  /* Get the __builtin_va_list type dependent on input type.  */
+  tree (* canonical_va_list_type) (tree);
+
   /* Expand the __builtin_va_start builtin.  */
   void (* expand_builtin_va_start) (tree valist, rtx nextarg);
 

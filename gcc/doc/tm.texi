@@ -4187,6 +4187,18 @@ This hook returns a type node for @code{va_list} for the target.
 The default version of the hook returns @code{void*}.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_FN_ABI_VA_LIST (tree @var{fndecl})
+This hook returns the va_list type of the calling convention specified by
+@var{fndecl}.
+The default version of this hook returns @code{va_list_type_node}.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_CANONICAL_VA_LIST_TYPE (tree @var{type})
+This hook returns the va_list type of the calling convention specified by the
+type of @var{type}. If @var{type} is not a valid va_list type, it returns
+@code{NULL_TREE}.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_GIMPLIFY_VA_ARG_EXPR (tree @var{valist}, tree @var{type}, tree *@var{pre_p}, tree *@var{post_p})
 This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
@@ -4315,6 +4327,20 @@ suffices:
 If the machine has register windows, so that the caller and the called
 function use different registers for the return value, this macro
 should recognize only the caller's register numbers.
+@end defmac
+
+@defmac TARGET_ENUM_VA_LIST (@var{idx}, @var{pname}, @var{ptype})
+This target macro is used in function @code{c_common_nodes_and_builtins}
+to iterate through the target specific builtin types for va_list. The
+variable @var{idx} is used as iterator. @var{pname} has to be a pointer
+to a @code{const char *} and @var{ptype} a pointer to a @code{tree} typed
+variable.
+The arguments @var{pname} and @var{ptype} are used to store the result of
+this macro and are set to the name of the va_list builtin type and its
+internal type.
+If the return value of this macro is zero, then there is no more element.
+Otherwise the @var{IDX} should be increased for the next call of this
+macro to iterate through all types.
 @end defmac
 
 @defmac APPLY_RESULT_SIZE
