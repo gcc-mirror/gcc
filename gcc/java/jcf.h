@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,14 +44,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifdef JCF_word
 #define JCF_word JCF_u4
 #endif
-
-/* If we have both "scandir" and "alphasort", we can cache directory
-   listings to reduce the time taken to search the classpath.  */
-#if defined(HAVE_SCANDIR) && defined(HAVE_ALPHASORT)
-#define JCF_USE_SCANDIR 1
-#else
-#define JCF_USE_SCANDIR 0
-#endif 
 
 /* On case-insensitive file systems, we need to ensure that a request
    to open a .java or .class file is honored only if the file to be
