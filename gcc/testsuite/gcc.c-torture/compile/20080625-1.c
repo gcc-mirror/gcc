@@ -1,3 +1,4 @@
+/* { dg-skip-if "too much data" { "avr-*-*" } { "*" } { "" } } */
 struct peakbufStruct {
     unsigned int lnum [5000];
     int lscan [5000][4000];
