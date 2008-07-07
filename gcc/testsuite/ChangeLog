@@ -1,3 +1,9 @@
+2008-07-07  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pta-ptrarith-1.c: New testcase.
+	* gcc.dg/torture/pta-ptrarith-2.c: Likewise.
+	* gcc.dg/torture/ipa-pta-1.c: Likewise.
+
 2008-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36726
