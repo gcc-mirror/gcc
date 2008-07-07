@@ -2316,7 +2316,6 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
   tree ptr;
   
   timevar_push (TV_FLOW_SENSITIVE);
-  set_used_smts ();
   
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {

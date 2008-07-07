@@ -4684,61 +4684,6 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 
 static bool have_alias_info = false;
 
-/* The list of SMT's that are in use by our pointer variables.  This
-   is the set of SMT's for all pointers that can point to anything.   */
-static bitmap used_smts;
-
-/* Due to the ordering of points-to set calculation and SMT
-   calculation being a bit co-dependent, we can't just calculate SMT
-   used info whenever we want, we have to calculate it around the time
-   that find_what_p_points_to is called.  */
-
-/* Mark which SMT's are in use by points-to anything variables.  */
-
-void
-set_used_smts (void)
-{
-  int i;
-  varinfo_t vi;
-  used_smts = BITMAP_ALLOC (&pta_obstack);
-
-  for (i = 0; VEC_iterate (varinfo_t, varmap, i, vi); i++)
-    {
-      tree var = vi->decl;
-      varinfo_t withsolution = get_varinfo (find (i));
-      tree smt;
-      var_ann_t va;
-      struct ptr_info_def *pi = NULL;
-
-      /* For parm decls, the pointer info may be under the default
-	 def.  */
-      if (TREE_CODE (vi->decl) == PARM_DECL
-	  && gimple_default_def (cfun, var))
-	pi = SSA_NAME_PTR_INFO (gimple_default_def (cfun, var));
-      else if (TREE_CODE (var) == SSA_NAME)
-	pi = SSA_NAME_PTR_INFO (var);
-
-      /* Skip the special variables and those that can't be aliased.  */
-      if (vi->is_special_var
-	  || !SSA_VAR_P (var)
-	  || (pi && !pi->memory_tag_needed)
-	  || (TREE_CODE (var) == VAR_DECL && !may_be_aliased (var))
-	  || !POINTER_TYPE_P (TREE_TYPE (var)))
-	continue;
-
-      if (TREE_CODE (var) == SSA_NAME)
-	var = SSA_NAME_VAR (var);
-
-      va = var_ann (var);
-      if (!va)
-	continue;
-
-      smt = va->symbol_mem_tag;
-      if (smt && bitmap_bit_p (withsolution->solution, anything_id))
-	bitmap_set_bit (used_smts, DECL_UID (smt));
-    }
-}
-
 /* Given a pointer variable P, fill in its points-to set, or return
    false if we can't.
    Rather than return false for variables that point-to anything, we
