@@ -471,7 +471,7 @@ gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
 am_gcjh_OBJECTS =
 gcjh_OBJECTS = $(am_gcjh_OBJECTS)
 am__gen_from_JIS_SOURCES_DIST = gnu/gcj/convert/gen-from-JIS.c \
-	gnu/gcj/convert/make-trie.c
+	gnu/gcj/convert/make-trie.c gnu/gcj/convert/make-trie.h
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am_gen_from_JIS_OBJECTS = gnu/gcj/convert/gen-from-JIS.$(OBJEXT) \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.$(OBJEXT)
 gen_from_JIS_OBJECTS = $(am_gen_from_JIS_OBJECTS)
@@ -8176,7 +8176,8 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 install_data_local_split = 50
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@gen_from_JIS_SOURCES = \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/gen-from-JIS.c \
-@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.c
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.c \
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.h
 
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@gen_from_JIS_DEPENDENCIES = \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/JIS0201.h \

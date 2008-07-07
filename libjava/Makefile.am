@@ -727,7 +727,8 @@ noinst_PROGRAMS = gen-from-JIS
 
 gen_from_JIS_SOURCES = \
 	gnu/gcj/convert/gen-from-JIS.c \
-	gnu/gcj/convert/make-trie.c
+	gnu/gcj/convert/make-trie.c \
+	gnu/gcj/convert/make-trie.h
 
 gen_from_JIS_DEPENDENCIES = \
 	gnu/gcj/convert/JIS0201.h \

@@ -1,3 +1,12 @@
+2008-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gnu/gcj/convert/make-trie.h: New.
+	* gnu/gcj/convert/gen-from-JIS.c: Include it.
+	* gnu/gcj/convert/make-trie.c: Likewise.
+	Fix typos and compiler warnings, diagnose a missing argument.
+	* Makefile.am (gen_from_JIS_SOURCES): Add gnu/gcj/convert/make-trie.h.
+	* Makefile.in: Regenerate.
+
 2008-06-30  Joshua Sumali  <jsumali@redhat.com>
 	Andrew Haley  <aph@redhat.com>
 	
