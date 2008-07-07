@@ -1,3 +1,40 @@
+2008-07-07  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_edge_max_uid): New variable.
+	(struct cgraph_edge_hook_list): New type.
+	(struct cgraph_node_hook_list): New type.
+	(struct cgraph_2edge_hook_list): New type.
+	(struct cgraph_2node_hook_list): New type.
+	(first_cgraph_edge_removal_hook): New variable.
+	(first_cgraph_node_removal_hook): New variable.
+	(first_cgraph_edge_duplicated_hook): New variable.
+	(first_cgraph_node_duplicated_hook): New variable.
+	(cgraph_add_edge_removal_hook): New function.
+	(cgraph_remove_edge_removal_hook): New function.
+	(cgraph_call_edge_removal_hooks):  New function.
+	(cgraph_add_node_removal_hook):  New function.
+	(cgraph_remove_node_removal_hook):  New function.
+	(cgraph_call_node_removal_hooks):  New function.
+	(cgraph_add_edge_duplication_hook):  New function.
+	(cgraph_remove_edge_duplication_hook):  New function.
+	(cgraph_call_edge_duplication_hooks):  New function.
+	(cgraph_add_node_duplication_hook):  New function.
+	(cgraph_remove_node_duplication_hook):  New function.
+	(cgraph_call_node_duplication_hooks):  New function.
+	(cgraph_create_edge): Assign to edge uid.
+	(cgraph_remove_edge): Call edge removal hooks.
+	(cgraph_node_remove_callees): Call edge removal hooks.
+	(cgraph_node_remove_callers): Call edge removal hooks.
+	(cgraph_remove_node): Call node removal hooks.
+	(cgraph_clone_edge): Call edge duplication hooks.
+	(cgraph_clone_node): Call node duplication hooks.
+
+	* cgraph.h (cgraph_edge): New field uid.
+	(cgraph_edge_hook): New type.
+	(cgraph_node_hook): New type.
+	(cgraph_2edge_hook): New type.
+	(cgraph_2node_hook): New type.
+
 2008-07-07  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config.in: Regenerate.
