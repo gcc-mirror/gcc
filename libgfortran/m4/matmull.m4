@@ -100,6 +100,47 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
 	= internal_malloc_size (sizeof ('rtype_name`) * size0 ((array_t *) retarray));
       retarray->offset = 0;
     }
+    else if (compile_options.bounds_check)
+      {
+	index_type ret_extent, arg_extent;
+
+	if (GFC_DESCRIPTOR_RANK (a) == 1)
+	  {
+	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
+	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    if (arg_extent != ret_extent)
+	      runtime_error ("Incorrect extent in return array in"
+			     " MATMUL intrinsic: is %ld, should be %ld",
+			     (long int) ret_extent, (long int) arg_extent);
+	  }
+	else if (GFC_DESCRIPTOR_RANK (b) == 1)
+	  {
+	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
+	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    if (arg_extent != ret_extent)
+	      runtime_error ("Incorrect extent in return array in"
+			     " MATMUL intrinsic: is %ld, should be %ld",
+			     (long int) ret_extent, (long int) arg_extent);	    
+	  }
+	else
+	  {
+	    arg_extent = a->dim[0].ubound + 1 - a->dim[0].lbound;
+	    ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
+	    if (arg_extent != ret_extent)
+	      runtime_error ("Incorrect extent in return array in"
+			     " MATMUL intrinsic for dimension 1:"
+			     " is %ld, should be %ld",
+			     (long int) ret_extent, (long int) arg_extent);
+
+	    arg_extent = b->dim[1].ubound + 1 - b->dim[1].lbound;
+	    ret_extent = retarray->dim[1].ubound + 1 - retarray->dim[1].lbound;
+	    if (arg_extent != ret_extent)
+	      runtime_error ("Incorrect extent in return array in"
+			     " MATMUL intrinsic for dimension 2:"
+			     " is %ld, should be %ld",
+			     (long int) ret_extent, (long int) arg_extent);
+	  }
+      }
 
   abase = a->data;
   a_kind = GFC_DESCRIPTOR_SIZE (a);
