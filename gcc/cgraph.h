@@ -209,6 +209,8 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   int frequency;
   /* Depth of loop nest, 1 means no loop nest.  */
   int loop_nest;
+  /* Unique id of the edge.  */
+  int uid;
 };
 
 #define CGRAPH_FREQ_BASE 1000
@@ -266,6 +268,7 @@ struct cgraph_asm_node GTY(())
 extern GTY(()) struct cgraph_node *cgraph_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
+extern GTY(()) int cgraph_edge_max_uid;
 extern GTY(()) int cgraph_max_pid;
 extern bool cgraph_global_info_ready;
 enum cgraph_state
@@ -350,6 +353,26 @@ void cgraph_analyze_function (struct cgraph_node *);
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree);
 bool cgraph_process_new_functions (void);
+
+typedef void (*cgraph_edge_hook)(struct cgraph_edge *, void *);
+typedef void (*cgraph_node_hook)(struct cgraph_node *, void *);
+typedef void (*cgraph_2edge_hook)(struct cgraph_edge *, struct cgraph_edge *,
+				  void *);
+typedef void (*cgraph_2node_hook)(struct cgraph_node *, struct cgraph_node *,
+				  void *);
+struct cgraph_edge_hook_list;
+struct cgraph_node_hook_list;
+struct cgraph_2edge_hook_list;
+struct cgraph_2node_hook_list;
+struct cgraph_edge_hook_list *cgraph_add_edge_removal_hook (cgraph_edge_hook, void *);
+void cgraph_remove_edge_removal_hook (struct cgraph_edge_hook_list *);
+struct cgraph_node_hook_list *cgraph_add_node_removal_hook (cgraph_node_hook,
+							    void *);
+void cgraph_remove_node_removal_hook (struct cgraph_node_hook_list *);
+struct cgraph_2edge_hook_list *cgraph_add_edge_duplication_hook (cgraph_2edge_hook, void *);
+void cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *);
+struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_hook, void *);
+void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
