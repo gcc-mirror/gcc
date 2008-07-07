@@ -1459,9 +1459,11 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# aka the GNU/Linux C library 6.
 	default_m68k_cpu=68020
 	default_cf_cpu=5475
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
+	with_arch=${with_arch:-m68k}
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h m68k/linux.h ./sysroot-suffix.h"
 	extra_options="${extra_options} m68k/ieee.opt"
 	tm_defines="${tm_defines} MOTOROLA=1"
+	tmake_file="${tmake_file} m68k/t-floatlib m68k/t-linux m68k/t-mlibs"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number
 	if test x$sjlj != x1; then
