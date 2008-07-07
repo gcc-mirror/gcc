@@ -1,3 +1,8 @@
+2008-07-07  Tom Tromey  <tromey@redhat.com>
+
+	* configure, config.in: Rebuilt.
+	* configure.ac: Don't check for scandir or alphasort.
+
 2008-07-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (arm_init_neon_builtins): Register built-in
