@@ -1,3 +1,17 @@
+2008-07-07  Fernando Pereira <fernando@cs.ucla.edu>
+
+        * tree-ssa-structalias.c (compute_points_to_sets): Add call to
+        dump_constraint_graph.
+        (dump_constraint_edge): New function.
+        (dump_constraint_graph): New function.
+        (debug_constraint_graph): New function.
+        (dump_constraint): Removed useless comparison.
+        * tree-ssa-structalias.h (dump_constraint_edge): Declare.
+        (dump_constraint_graph): Declare.
+        (debug_constraint_graph): Declare.
+        * tree-dump.c (struct dump_option_value_info): Declare
+        TDF_GRAPH.
+
 2008-07-07  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (is_va_list_char_pointer): New.

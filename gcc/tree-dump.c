@@ -814,6 +814,7 @@ static const struct dump_option_value_info dump_options[] =
   {"address", TDF_ADDRESS},
   {"slim", TDF_SLIM},
   {"raw", TDF_RAW},
+  {"graph", TDF_GRAPH},
   {"details", TDF_DETAILS},
   {"stats", TDF_STATS},
   {"blocks", TDF_BLOCKS},
