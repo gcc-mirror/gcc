@@ -191,9 +191,6 @@
 }
 #endif
 
-/* Arm Assembler barfs on dollars.  */
-#define DOLLARS_IN_IDENTIFIERS 0
-
 #ifndef NO_DOLLAR_IN_LABEL
 #define NO_DOLLAR_IN_LABEL 1
 #endif
