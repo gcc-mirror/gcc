@@ -138,14 +138,14 @@ suitable_for_tail_opt_p (void)
   if (cfun->stdarg)
     return false;
 
-  /* No local variable nor structure field should be call-clobbered.  We
+  /* No local variable nor structure field should be call-used.  We
      ignore any kind of memory tag, as these are not real variables.  */
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       if (!is_global_var (var)
 	  && !MTAG_P (var)
-	  && (gimple_aliases_computed_p (cfun) ? is_call_clobbered (var)
+	  && (gimple_aliases_computed_p (cfun)? is_call_used (var)
 	      : TREE_ADDRESSABLE (var)))
 	return false;
     }

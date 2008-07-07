@@ -881,7 +881,15 @@ factoring_name_p (const_tree name)
   return TREE_CODE (SSA_NAME_VAR (name)) == MEMORY_PARTITION_TAG;
 }
 
-/* Return true if VAR is a clobbered by function calls.  */
+/* Return true if VAR is used by function calls.  */
+static inline bool
+is_call_used (const_tree var)
+{
+  return (var_ann (var)->call_clobbered
+	  || bitmap_bit_p (gimple_call_used_vars (cfun), DECL_UID (var)));
+}
+
+/* Return true if VAR is clobbered by function calls.  */
 static inline bool
 is_call_clobbered (const_tree var)
 {

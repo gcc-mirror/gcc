@@ -1,3 +1,11 @@
+2008-07-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36713
+	* tree-flow-inline.h (is_call_used): New function.
+	* tree-nrv.c (dest_safe_for_nrv_p): Use it.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Likewise.
+	* tree-outof-ssa.c (create_temp): Set call-used flag if required.
+
 2008-07-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_return_in_memory): Fix arguments types.
