@@ -2,3 +2,6 @@
 
 M68K_MLIB_CPU += && (CPU ~ "^mcf")
 M68K_ARCH := cf
+# Do not stamp the multilibs with a MAC type, as we never use those
+# instructions in compiler-generated code.
+MULTILIB_EXTRA_OPTS += Wa,-mno-mac
