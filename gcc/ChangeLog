@@ -1,3 +1,7 @@
+2008-07-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c (execute): Fix -Wc++-compat warning.
+
 2008-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/36720

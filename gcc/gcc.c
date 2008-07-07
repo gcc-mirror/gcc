@@ -2973,7 +2973,7 @@ execute (void)
       for (argc = 0; commands[i].argv[argc] != NULL; argc++)
 	;
 
-      argv = alloca ((argc + 3) * sizeof (char *));
+      argv = XALLOCAVEC (const char *, argc + 3);
 
       argv[0] = VALGRIND_PATH;
       argv[1] = "-q";
