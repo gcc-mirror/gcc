@@ -1,3 +1,10 @@
+2008-07-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36670
+	* iresolve.c (gfc_resolve_product):  Set shape of return
+	value from array.
+	(gfc_resolve_sum):  Likewise.
+
 2008-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36726
