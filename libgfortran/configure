@@ -33157,16 +33157,16 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking configured target thread model" >&5
 echo $ECHO_N "checking configured target thread model... $ECHO_C" >&6
-if test "${target_thread_file+set}" = set; then
+if test "${libgfor_cv_target_thread_file+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
-target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+libgfor_cv_target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
 fi
-echo "$as_me:$LINENO: result: $target_thread_file" >&5
-echo "${ECHO_T}$target_thread_file" >&6
+echo "$as_me:$LINENO: result: $libgfor_cv_target_thread_file" >&5
+echo "${ECHO_T}$libgfor_cv_target_thread_file" >&6
 
-  if test $target_thread_file != single; then
+  if test $libgfor_cv_target_thread_file != single; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_GTHR_DEFAULT 1
