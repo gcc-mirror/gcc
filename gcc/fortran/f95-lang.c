@@ -435,6 +435,10 @@ poplevel (int keep, int reverse, int functionbody)
       DECL_INITIAL (current_function_decl) = block_node;
       BLOCK_VARS (block_node) = 0;
     }
+  else if (current_binding_level == global_binding_level)
+    /* When using gfc_start_block/gfc_finish_block from middle-end hooks,
+       don't add newly created BLOCKs as sublocks of global_binding_level.  */
+    ;
   else if (block_node)
     {
       current_binding_level->blocks
