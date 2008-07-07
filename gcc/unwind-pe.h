@@ -71,6 +71,9 @@
    include leb128.  */
 
 static unsigned int
+size_of_encoded_value (unsigned char encoding) __attribute__ ((unused));
+
+static unsigned int
 size_of_encoded_value (unsigned char encoding)
 {
   if (encoding == DW_EH_PE_omit)
