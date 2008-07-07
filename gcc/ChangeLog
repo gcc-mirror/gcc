@@ -1,3 +1,9 @@
+2008-07-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36720
+	* config/ia64/ia64.c (ia64_split_tmode): Fix typo in TImode
+	constant for little endian.
+
 2008-07-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Check
