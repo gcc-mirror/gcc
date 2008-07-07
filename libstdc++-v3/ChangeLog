@@ -1,3 +1,8 @@
+2008-07-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* configure.ac: Don't check AC_LIBTOOL_DLOPEN if using newlib.
+	* configure: Regenerate.
+
 2008-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/36616
