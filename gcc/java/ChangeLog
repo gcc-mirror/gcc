@@ -1,3 +1,8 @@
+2008-07-06  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (java/parse.o-warn): Remove.
+	(java/jcf-io.o-warn): Remove.
+
 2008-07-05  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-io.c: Don't include fnmatch.h.  Don't use JCF_USE_SCANDIR.
