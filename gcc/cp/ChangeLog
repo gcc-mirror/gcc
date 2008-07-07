@@ -1,3 +1,9 @@
+2008-07-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/34963
+	* decl.c (grokdeclarator): Reset storage_class and staticp for friend
+	functions declared with a storage class qualifier.
+
 2008-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36662

@@ -1,3 +1,8 @@
+2008-07-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/34963
+	* g++.dg/parse/dtor13.C: New test.
+
 2008-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization3.adb: New test.
