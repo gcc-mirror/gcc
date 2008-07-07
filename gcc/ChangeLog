@@ -1,3 +1,7 @@
+2008-07-07  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/m68k/lb1sf68.asm: Add PIC macros for Linux targets.
+
 2008-07-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 

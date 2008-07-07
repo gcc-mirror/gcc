@@ -129,10 +129,11 @@ Boston, MA 02110-1301, USA.  */
 
 #else /* __PIC__ */
 
-	/* Common for -mid-shared-libary and -msep-data */
+	/* Common for Linux and uClinux, the latter with either
+	   -mid-shared-library or -msep-data.  */
 
 	.macro PICCALL addr
-#if defined (__mcoldfire__) && !defined (__mcfisab__)
+#if defined (__mcoldfire__) && !defined (__mcfisab__) && !defined (__mcfisac__)
 	lea	\addr-.-8,a0
 	jsr	pc@(a0)
 #else
@@ -141,6 +142,9 @@ Boston, MA 02110-1301, USA.  */
 	.endm
 
 	.macro PICJUMP addr
+	/* ISA C has no bra.l instruction, and since this assembly file
+	   gets assembled into multiple object files, we avoid the
+	   bra instruction entirely.  */
 #if defined (__mcoldfire__) && !defined (__mcfisab__)
 	lea	\addr-.-8,a0
 	jmp	pc@(a0)
@@ -149,7 +153,11 @@ Boston, MA 02110-1301, USA.  */
 #endif
 	.endm
 
-# if defined(__ID_SHARED_LIBRARY__)
+# if defined (__uClinux__)
+
+	/* Versions for uClinux */
+
+#  if defined(__ID_SHARED_LIBRARY__)
 
 	/* -mid-shared-library versions  */
 
@@ -163,7 +171,7 @@ Boston, MA 02110-1301, USA.  */
 	movel	\sym@GOT(\areg), sp@-
 	.endm
 
-# else /* !__ID_SHARED_LIBRARY__ */
+#  else /* !__ID_SHARED_LIBRARY__ */
 
 	/* Versions for -msep-data */
 
@@ -175,7 +183,25 @@ Boston, MA 02110-1301, USA.  */
 	movel	\sym@GOT(a5), sp@-
 	.endm
 
-# endif /* !__ID_SHARED_LIBRARY__ */
+#  endif
+
+# else /* !__uClinux__ */
+
+	/* Versions for Linux */
+
+	.macro PICLEA sym, reg
+	movel	#_GLOBAL_OFFSET_TABLE_@GOTPC, \reg
+	lea	(-6, pc, \reg), \reg
+	movel	\sym@GOT(\reg), \reg
+	.endm
+
+	.macro PICPEA sym, areg
+	movel	#_GLOBAL_OFFSET_TABLE_@GOTPC, \areg
+	lea	(-6, pc, \areg), \areg
+	movel	\sym@GOT(\areg), sp@-
+	.endm
+
+# endif
 #endif /* __PIC__ */
 
 
