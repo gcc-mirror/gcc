@@ -310,7 +310,7 @@ Objective-C and Objective-C++ Dialects}.
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
--print-sysroot-headers-suffix @gol
+-print-sysroot -print-sysroot-headers-suffix @gol
 -save-temps  -time}
 
 @item Optimization Options
@@ -5058,6 +5058,14 @@ components where @command{gcc} expects to find them, or you can set the environm
 variable @env{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing @samp{/}.
 @xref{Environment Variables}.
+
+@item -print-sysroot
+@opindex print-sysroot
+Print the target sysroot directory that will be used during
+compilation.  This is the target sysroot specified either at configure
+time or or using the @option{--sysroot} option, possibly with an extra
+suffix that depends on compilation options.  If no target sysroot is
+specified, the option prints nothing.
 
 @item -print-sysroot-headers-suffix
 @opindex print-sysroot-headers-suffix

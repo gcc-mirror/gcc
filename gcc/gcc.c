@@ -155,6 +155,8 @@ static const char *print_prog_name = NULL;
 
 static int print_multi_directory;
 
+static int print_sysroot;
+
 /* Flag saying to print the relative path we'd use to
    find OS libraries given the current compiler flags.  */
 
@@ -1162,6 +1164,7 @@ static const struct option_map option_map[] =
    {"--print-multi-directory", "-print-multi-directory", 0},
    {"--print-multi-os-directory", "-print-multi-os-directory", 0},
    {"--print-prog-name", "-print-prog-name=", "aj"},
+   {"--print-sysroot", "-print-sysroot", 0},
    {"--print-sysroot-headers-suffix", "-print-sysroot-headers-suffix", 0},
    {"--profile", "-p", 0},
    {"--profile-blocks", "-a", 0},
@@ -3244,6 +3247,7 @@ display_help (void)
   -print-multi-lib         Display the mapping between command line options and\n\
                            multiple library search directories\n"), stdout);
   fputs (_("  -print-multi-os-directory Display the relative path to OS libraries\n"), stdout);
+  fputs (_("  -print-sysroot           Display the target libraries directory\n"), stdout);
   fputs (_("  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"), stdout);
   fputs (_("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"), stdout);
   fputs (_("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"), stdout);
@@ -3686,6 +3690,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	print_multi_lib = 1;
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	print_multi_directory = 1;
+      else if (! strcmp (argv[i], "-print-sysroot"))
+	print_sysroot = 1;
       else if (! strcmp (argv[i], "-print-multi-os-directory"))
 	print_multi_os_directory = 1;
       else if (! strcmp (argv[i], "-print-sysroot-headers-suffix"))
@@ -4125,6 +4131,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       else if (! strcmp (argv[i], "-print-multi-lib"))
 	;
       else if (! strcmp (argv[i], "-print-multi-directory"))
+	;
+      else if (! strcmp (argv[i], "-print-sysroot"))
 	;
       else if (! strcmp (argv[i], "-print-multi-os-directory"))
 	;
@@ -6526,6 +6534,18 @@ main (int argc, char **argv)
 	printf (".\n");
       else
 	printf ("%s\n", multilib_dir);
+      return (0);
+    }
+
+  if (print_sysroot)
+    {
+      if (target_system_root)
+	{
+          if (target_sysroot_suffix)
+	    printf ("%s%s\n", target_system_root, target_sysroot_suffix);
+          else
+	    printf ("%s\n", target_system_root);
+	}
       return (0);
     }
 
