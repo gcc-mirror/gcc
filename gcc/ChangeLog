@@ -1,5 +1,13 @@
 2008-07-07  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.h (set_used_smts): Remove.
+	* tree-ssa-structalias.c (used_smts): Likewise.
+	(set_used_smts): Likewise.
+	* tree-ssa-alias.c (compute_flow_sensitive_aliasing): Remove
+	call to set_used_smts.
+
+2008-07-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (struct variable_info): Add is_full_var flag.
 	(new_var_info): Set it to false.
 	(solution_set_add): Correctly handle pointers outside a var and
