@@ -624,6 +624,96 @@ debug_constraints (void)
   dump_constraints (stderr);
 }
 
+/* Print out to FILE the edge in the constraint graph that is created by
+   constraint c. The edge may have a label, depending on the type of
+   constraint that it represents. If complex1, e.g: a = *b, then the label
+   is "=*", if complex2, e.g: *a = b, then the label is "*=", if
+   complex with an offset, e.g: a = b + 8, then the label is "+".
+   Otherwise the edge has no label.  */
+
+void
+dump_constraint_edge (FILE *file, constraint_t c)
+{
+  if (c->rhs.type != ADDRESSOF)
+    {
+      const char *src = get_varinfo_fc (c->rhs.var)->name;
+      const char *dst = get_varinfo_fc (c->lhs.var)->name;
+      fprintf (file, "  \"%s\" -> \"%s\" ", src, dst);
+      /* Due to preprocessing of constraints, instructions like *a = *b are
+         illegal; thus, we do not have to handle such cases.  */
+      if (c->lhs.type == DEREF)
+        fprintf (file, " [ label=\"*=\" ] ;\n");
+      else if (c->rhs.type == DEREF)
+        fprintf (file, " [ label=\"=*\" ] ;\n");
+      else
+        {
+          /* We must check the case where the constraint is an offset.
+             In this case, it is treated as a complex constraint.  */
+          if (c->rhs.offset != c->lhs.offset)
+            fprintf (file, " [ label=\"+\" ] ;\n");
+          else
+            fprintf (file, " ;\n");
+        }
+    }
+}
+
+/* Print the constraint graph in dot format.  */
+
+void
+dump_constraint_graph (FILE *file)
+{
+  unsigned int i=0, size;
+  constraint_t c;
+
+  /* Only print the graph if it has already been initialized:  */
+  if (!graph)
+    return;
+
+  /* Print the constraints used to produce the constraint graph. The
+     constraints will be printed as comments in the dot file:  */
+  fprintf (file, "\n\n/* Constraints used in the constraint graph:\n");
+  dump_constraints (file);
+  fprintf (file, "*/\n");
+
+  /* Prints the header of the dot file:  */
+  fprintf (file, "\n\n// The constraint graph in dot format:\n");
+  fprintf (file, "strict digraph {\n");
+  fprintf (file, "  node [\n    shape = box\n  ]\n");
+  fprintf (file, "  edge [\n    fontsize = \"12\"\n  ]\n");
+  fprintf (file, "\n  // List of nodes in the constraint graph:\n");
+
+  /* The next lines print the nodes in the graph. In order to get the
+     number of nodes in the graph, we must choose the minimum between the
+     vector VEC (varinfo_t, varmap) and graph->size. If the graph has not
+     yet been initialized, then graph->size == 0, otherwise we must only
+     read nodes that have an entry in VEC (varinfo_t, varmap).  */
+  size = VEC_length (varinfo_t, varmap);
+  size = size < graph->size ? size : graph->size;
+  for (i = 0; i < size; i++)
+    {
+      const char *name = get_varinfo_fc (graph->rep[i])->name;
+      fprintf (file, "  \"%s\" ;\n", name);
+    }
+
+  /* Go over the list of constraints printing the edges in the constraint
+     graph.  */
+  fprintf (file, "\n  // The constraint edges:\n");
+  for (i = 0; VEC_iterate (constraint_t, constraints, i, c); i++)
+    if (c)
+      dump_constraint_edge (file, c);
+
+  /* Prints the tail of the dot file. By now, only the closing bracket.  */
+  fprintf (file, "}\n\n\n");
+}
+
+/* Print out the constraint graph to stderr.  */
+
+void
+debug_constraint_graph (void)
+{
+  dump_constraint_graph (stderr);
+}
+
 /* SOLVER FUNCTIONS
 
    The solver is a simple worklist solver, that works on the following
@@ -5397,6 +5487,10 @@ compute_points_to_sets (void)
   free_var_substitution_info (si);
 
   build_succ_graph ();
+
+  if (dump_file && (dump_flags & TDF_GRAPH))
+    dump_constraint_graph (dump_file);
+
   move_complex_constraints (graph);
 
   if (dump_file)
