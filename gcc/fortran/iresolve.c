@@ -1788,6 +1788,7 @@ gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
       gfc_resolve_dim_arg (dim);
     }
 
@@ -2271,6 +2272,7 @@ gfc_resolve_sum (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
       gfc_resolve_dim_arg (dim);
     }
 
