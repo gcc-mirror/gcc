@@ -1,3 +1,17 @@
+2008-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/64/_divtc3-compat.c: Moved to ...
+	* config/i386/64/_divtc3.c: Here.
+
+	* config/i386/64/_multc3-compat.c: Moved to ...
+	* config/i386/64/_multc3.c: Here.
+
+	* config/i386/64/_powitf2-compat.c: Moved to ...
+	* config/i386/64/_powitf2.c: Here.
+
+	* config/i386/64/t-softfp-compat (libgcc2-tf-compats): Add
+	.c suffix instead of -compat.c.
+
 2008-07-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/32/sfp-machine.h (_FP_MUL_MEAT_S): Remove.
