@@ -1,3 +1,9 @@
+2008-07-07  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* function.c (assign_parm_remove_parallels): Check mode of
+	entry_parm.
+	(assign_parm_setup_block_p): Also check mode of entry_parm.
+
 2008-07-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.h (set_used_smts): Remove.
