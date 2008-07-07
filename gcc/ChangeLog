@@ -1,3 +1,12 @@
+2008-07-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+	
+	Backport from mainline:
+	PR target/36736
+	2008-02-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_secondary_reload): Handle loading a float
+	constant to fpul.
+
 2008-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR target/34780

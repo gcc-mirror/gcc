@@ -1,6 +1,6 @@
 /* Output routines for GCC for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -10875,8 +10875,10 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
         return GENERAL_REGS;
       if (class == FPUL_REGS && immediate_operand (x, mode))
 	{
-	  if (satisfies_constraint_I08 (x))
+	  if (satisfies_constraint_I08 (x) || fp_zero_operand (x))
 	    return GENERAL_REGS;
+	  else if (mode == SFmode)
+	    return FP_REGS;
 	  sri->icode = CODE_FOR_reload_insi__i_fpul;
 	  return NO_REGS;
 	}
