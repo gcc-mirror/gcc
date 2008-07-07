@@ -1,3 +1,8 @@
+2008-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR target/34780
+	* unwind-pe.h (size_of_encoded_value): add attribute unused.
+
 2008-07-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
