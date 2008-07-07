@@ -1518,6 +1518,12 @@
 #endif
 
 
+/* Define to `char *' if <sys/types.h> does not define. */
+#ifndef USED_FOR_TARGET
+#undef caddr_t
+#endif
+
+
 /* Define to `int' if <sys/types.h> doesn't define. */
 #ifndef USED_FOR_TARGET
 #undef gid_t

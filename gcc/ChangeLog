@@ -1,3 +1,7 @@
+2008-07-07  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config.in: Regenerate.
+
 2008-07-07  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* gcc.c (print_sysroot): New.
