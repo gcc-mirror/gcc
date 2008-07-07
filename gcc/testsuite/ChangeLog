@@ -1,3 +1,8 @@
+2008-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36726
+	* gfortran.dg/gomp/pr36726.f90: New test.
+
 2008-07-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Expect the
