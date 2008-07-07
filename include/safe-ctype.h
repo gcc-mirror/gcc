@@ -116,7 +116,10 @@ extern const unsigned char  _sch_tolower[256];
    from ctype.h.  Initially, the approach was to produce an error when
    detecting that ctype.h has been included.  But this was causing
    trouble as ctype.h might get indirectly included as a result of
-   including another system header (for instance gnulib's stdint.h).  */
+   including another system header (for instance gnulib's stdint.h).
+   So we include ctype.h here and then immediately redefine its macros.  */
+
+#include <ctype.h>
 #undef isalpha
 #define isalpha(c) do_not_use_isalpha_with_safe_ctype
 #undef isalnum
