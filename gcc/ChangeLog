@@ -1,3 +1,11 @@
+2008-07-07  Vladimir Prus  <vladimir@codesourcery.com>
+
+	* gcc.c (print_sysroot): New.
+	(option_map, display_help, process_command): Handle the
+	-print-sysroot option.
+	(main): Print the sysroot if requested.
+	* doc/invoke.texi (Debugging Options): Document -print-sysroot.
+	
 2008-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR target/34780
