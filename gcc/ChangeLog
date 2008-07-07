@@ -1,5 +1,10 @@
 2008-07-07  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/arm/arm.c (arm_init_neon_builtins): Register built-in
+	types immediately after creating them.
+
+2008-07-07  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/arm/aout.h (DOLLARS_IN_IDENTIFIERS): Remove.
 
 2008-07-07  Fernando Pereira <fernando@cs.ucla.edu>
