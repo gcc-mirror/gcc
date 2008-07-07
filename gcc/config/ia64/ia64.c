@@ -1119,8 +1119,8 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 	    }
 	  else
 	    {
-	      p[0] = (((unsigned HOST_WIDE_INT) l[3]) << 32) + l[2];
-	      p[1] = (((unsigned HOST_WIDE_INT) l[1]) << 32) + l[0];
+	      p[0] = (((unsigned HOST_WIDE_INT) l[1]) << 32) + l[0];
+	      p[1] = (((unsigned HOST_WIDE_INT) l[3]) << 32) + l[2];
 	    }
 	  out[0] = GEN_INT (p[0]);
 	  out[1] = GEN_INT (p[1]);
