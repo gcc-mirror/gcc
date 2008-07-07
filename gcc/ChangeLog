@@ -1,3 +1,10 @@
+2008-07-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (is_va_list_char_pointer): New.
+	(ix86_va_start): Replace compare with ms_va_list_type_node
+	by is_va_list_char_pointer.
+	(ix86_gimplify_va_arg): Likewise.
+
 2008-07-07  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.c (cgraph_edge_max_uid): New variable.
