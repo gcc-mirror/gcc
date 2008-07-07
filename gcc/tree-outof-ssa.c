@@ -128,6 +128,8 @@ create_temp (tree t)
   set_symbol_mem_tag (tmp, symbol_mem_tag (t));
   if (is_call_clobbered (t))
     mark_call_clobbered (tmp, var_ann (t)->escape_mask);
+  if (bitmap_bit_p (gimple_call_used_vars (cfun), DECL_UID (t)))
+    bitmap_set_bit (gimple_call_used_vars (cfun), DECL_UID (tmp));
 
   return tmp;
 }
