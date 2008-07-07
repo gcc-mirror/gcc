@@ -2364,8 +2364,7 @@ assign_parm_remove_parallels (struct assign_parm_data_one *data)
      This can be done with register operations rather than on the
      stack, even if we will store the reconstituted parameter on the
      stack later.  */
-  if (GET_CODE (entry_parm) == PARALLEL
-      && data->passed_mode != BLKmode)
+  if (GET_CODE (entry_parm) == PARALLEL && GET_MODE (entry_parm) != BLKmode)
     {
       rtx parmreg = gen_reg_rtx (GET_MODE (entry_parm));
       emit_group_store (parmreg, entry_parm, NULL_TREE,
@@ -2420,6 +2419,8 @@ static bool
 assign_parm_setup_block_p (struct assign_parm_data_one *data)
 {
   if (data->nominal_mode == BLKmode)
+    return true;
+  if (GET_MODE (data->entry_parm) == BLKmode)
     return true;
 
 #ifdef BLOCK_REG_PADDING
