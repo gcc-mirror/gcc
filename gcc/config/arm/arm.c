@@ -15094,6 +15094,24 @@ arm_init_neon_builtins (void)
   TYPE_PRECISION (neon_float_type_node) = FLOAT_TYPE_SIZE;
   layout_type (neon_float_type_node);
 
+  /* Define typedefs which exactly correspond to the modes we are basing vector
+     types on.  If you change these names you'll need to change
+     the table used by arm_mangle_type too.  */
+  (*lang_hooks.types.register_builtin_type) (neon_intQI_type_node,
+					     "__builtin_neon_qi");
+  (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
+					     "__builtin_neon_hi");
+  (*lang_hooks.types.register_builtin_type) (neon_intSI_type_node,
+					     "__builtin_neon_si");
+  (*lang_hooks.types.register_builtin_type) (neon_float_type_node,
+					     "__builtin_neon_sf");
+  (*lang_hooks.types.register_builtin_type) (neon_intDI_type_node,
+					     "__builtin_neon_di");
+  (*lang_hooks.types.register_builtin_type) (neon_polyQI_type_node,
+					     "__builtin_neon_poly8");
+  (*lang_hooks.types.register_builtin_type) (neon_polyHI_type_node,
+					     "__builtin_neon_poly16");
+
   intQI_pointer_node = build_pointer_type (neon_intQI_type_node);
   intHI_pointer_node = build_pointer_type (neon_intHI_type_node);
   intSI_pointer_node = build_pointer_type (neon_intSI_type_node);
@@ -15146,11 +15164,31 @@ arm_init_neon_builtins (void)
   intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
   intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
 
+  (*lang_hooks.types.register_builtin_type) (intUQI_type_node,
+					     "__builtin_neon_uqi");
+  (*lang_hooks.types.register_builtin_type) (intUHI_type_node,
+					     "__builtin_neon_uhi");
+  (*lang_hooks.types.register_builtin_type) (intUSI_type_node,
+					     "__builtin_neon_usi");
+  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
+					     "__builtin_neon_udi");
+
   /* Opaque integer types for structures of vectors.  */
   intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
   intOI_type_node = make_signed_type (GET_MODE_PRECISION (OImode));
   intCI_type_node = make_signed_type (GET_MODE_PRECISION (CImode));
   intXI_type_node = make_signed_type (GET_MODE_PRECISION (XImode));
+
+  (*lang_hooks.types.register_builtin_type) (intTI_type_node,
+					     "__builtin_neon_ti");
+  (*lang_hooks.types.register_builtin_type) (intEI_type_node,
+					     "__builtin_neon_ei");
+  (*lang_hooks.types.register_builtin_type) (intOI_type_node,
+					     "__builtin_neon_oi");
+  (*lang_hooks.types.register_builtin_type) (intCI_type_node,
+					     "__builtin_neon_ci");
+  (*lang_hooks.types.register_builtin_type) (intXI_type_node,
+					     "__builtin_neon_xi");
 
   /* Pointers to vector types.  */
   V8QI_pointer_node = build_pointer_type (V8QI_type_node);
@@ -15194,44 +15232,6 @@ arm_init_neon_builtins (void)
   void_ftype_pv2di_v2di_v2di =
     build_function_type_list (void_type_node, V2DI_pointer_node, V2DI_type_node,
 			      V2DI_type_node, NULL);
-
-  /* Define typedefs which exactly correspond to the modes we are basing vector
-     types on.  If you change these names you'll need to change
-     the table used by arm_mangle_type too.  */
-  (*lang_hooks.types.register_builtin_type) (neon_intQI_type_node,
-					     "__builtin_neon_qi");
-  (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
-					     "__builtin_neon_hi");
-  (*lang_hooks.types.register_builtin_type) (neon_intSI_type_node,
-					     "__builtin_neon_si");
-  (*lang_hooks.types.register_builtin_type) (neon_float_type_node,
-					     "__builtin_neon_sf");
-  (*lang_hooks.types.register_builtin_type) (neon_intDI_type_node,
-					     "__builtin_neon_di");
-
-  (*lang_hooks.types.register_builtin_type) (neon_polyQI_type_node,
-					     "__builtin_neon_poly8");
-  (*lang_hooks.types.register_builtin_type) (neon_polyHI_type_node,
-					     "__builtin_neon_poly16");
-  (*lang_hooks.types.register_builtin_type) (intUQI_type_node,
-					     "__builtin_neon_uqi");
-  (*lang_hooks.types.register_builtin_type) (intUHI_type_node,
-					     "__builtin_neon_uhi");
-  (*lang_hooks.types.register_builtin_type) (intUSI_type_node,
-					     "__builtin_neon_usi");
-  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
-					     "__builtin_neon_udi");
-
-  (*lang_hooks.types.register_builtin_type) (intTI_type_node,
-					     "__builtin_neon_ti");
-  (*lang_hooks.types.register_builtin_type) (intEI_type_node,
-					     "__builtin_neon_ei");
-  (*lang_hooks.types.register_builtin_type) (intOI_type_node,
-					     "__builtin_neon_oi");
-  (*lang_hooks.types.register_builtin_type) (intCI_type_node,
-					     "__builtin_neon_ci");
-  (*lang_hooks.types.register_builtin_type) (intXI_type_node,
-					     "__builtin_neon_xi");
 
   dreg_types[0] = V8QI_type_node;
   dreg_types[1] = V4HI_type_node;
