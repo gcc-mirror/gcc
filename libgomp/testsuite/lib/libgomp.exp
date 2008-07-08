@@ -96,6 +96,10 @@ proc libgomp_init { args } {
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
+	# Add AIX pthread directory first.
+	if { [llength [glob -nocomplain ${gccdir}/pthread/libgcc_s*.a]] >= 1 } {
+	    append always_ld_library_path ":${gccdir}/pthread"
+	}
 	append always_ld_library_path ":${gccdir}"
 	set compiler [lindex $GCC_UNDER_TEST 0]
 

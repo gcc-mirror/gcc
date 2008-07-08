@@ -1,3 +1,11 @@
+2008-07-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/libgomp.c++/c++.exp: Append multilib library path.
+	* testsuite/libgomp.fortran/fortran.exp: Same.
+	* testsuite/libgomp.c/c.exp: Same.
+	* testsuite/lib/libgomp.exp: Append AIX libgcc pthread multilib
+	directory to library path first.
+
 2008-06-29  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	* env.c (parse_stacksize): Add cast to avoid warning.
