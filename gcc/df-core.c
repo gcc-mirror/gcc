@@ -622,7 +622,7 @@ df_remove_problem (struct dataflow *dflow)
 	int j;
 	for (j = i + 1; j < df->num_problems_defined; j++)
 	  df->problems_in_order[j-1] = df->problems_in_order[j];
-	df->problems_in_order[j] = NULL;
+	df->problems_in_order[j-1] = NULL;
 	df->num_problems_defined--;
 	break;
       }
