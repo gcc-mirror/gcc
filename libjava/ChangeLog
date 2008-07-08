@@ -1,3 +1,7 @@
+2008-07-08  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
 2008-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnu/gcj/convert/make-trie.h: New.
