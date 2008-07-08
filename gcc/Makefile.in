@@ -839,6 +839,7 @@ TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBIMAP_H = ebitmap.h sbitmap.h
+IPA_PROP_H = $(TREE_H) vec.h
 
 #
 # Now figure out from those variables how to compile and link.
@@ -2007,7 +2008,7 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
    langhooks.h $(TREE_INLINE_H) $(CGRAPH_H) intl.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
    debug.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
-   ipa-prop.h value-prof.h $(TARGET_H) $(INTEGRATE_H)
+   $(IPA_PROP_H) value-prof.h $(TARGET_H) $(INTEGRATE_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(GGC_H) langhooks.h $(REAL_H) tree-iterator.h fixed-value.h $(TREE_FLOW_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -2520,7 +2521,7 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
    $(TREE_FLOW_H) tree-pass.h $(C_COMMON_H) debug.h $(DIAGNOSTIC_H) \
-   $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) ipa-prop.h \
+   $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
    gt-cgraphunit.h 
 cgraphbuild.o : cgraphbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(CGRAPH_H) intl.h pointer-set.h $(TREE_GIMPLE_H) \
@@ -2529,14 +2530,14 @@ varpool.o : varpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
    $(TREE_FLOW_H) tree-pass.h $(C_COMMON_H) debug.h $(DIAGNOSTIC_H) \
-   $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) ipa-prop.h \
+   $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
    gt-varpool.h
 ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H)
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
-   langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) ipa-prop.h \
-   $(TREE_FLOW_H) $(TM_H) tree-pass.h $(FLAGS_H) $(TREE_H)
+   langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) \
+   $(TREE_FLOW_H) $(TM_H) tree-pass.h $(FLAGS_H) $(TREE_H) tree-inline.h
 ipa-cp.o : ipa-cp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
-   langhooks.h $(TARGET_H) $(CGRAPH_H) ipa-prop.h tree-inline.h tree-dump.h \
+   langhooks.h $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) tree-inline.h tree-dump.h \
    $(TREE_FLOW_H) $(TM_H) tree-pass.h $(FLAGS_H) $(TREE_H) $(DIAGNOSTIC_H)
 matrix-reorg.o : matrix-reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(TARGET_H) $(CGRAPH_H) $(TREE_FLOW_H) $(TM_H) tree-pass.h  \
