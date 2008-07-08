@@ -156,6 +156,8 @@ proc compat-run { testname objlist dest optall optfile optstr } {
 proc compat-get-options-main { src } {
     # dg-options sets a variable called dg-extra-tool-flags.
     set dg-extra-tool-flags ""
+    # dg-options sets a variable called tool_flags.
+    set tool_flags ""
 
     # dg-require-* sets dg-do-what.
     upvar dg-do-what dg-do-what 
@@ -164,6 +166,7 @@ proc compat-get-options-main { src } {
     foreach op $tmp {
 	set cmd [lindex $op 0]
 	if { ![string compare "dg-options" $cmd] \
+	     || [string match "dg-skip-if" $cmd] \
 	     || [string match "dg-require-*" $cmd]  } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
