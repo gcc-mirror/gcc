@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
@@ -23,8 +24,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 void
 test01()
 {
@@ -34,15 +33,15 @@ test01()
     std::ratio<2, INTMAX_MAX>,
     std::ratio<INTMAX_MAX, 2>>::type r1;
 
-  VERIFY( r1.num == 1);
-  VERIFY( r1.den == 1);
+  VERIFY( r1.num == 1 );
+  VERIFY( r1.den == 1 );
 
   std::ratio_multiply<
     std::ratio<INTMAX_MAX, 2>,
     std::ratio<2 , INTMAX_MAX - 1>>::type r2;
   
-  VERIFY( r2.num == INTMAX_MAX);
-  VERIFY( r2.den == INTMAX_MAX - 1);
+  VERIFY( r2.num == INTMAX_MAX );
+  VERIFY( r2.den == INTMAX_MAX - 1 );
 }
 
 void
@@ -54,24 +53,20 @@ test02()
     std::ratio<INTMAX_MAX, 2>,
     std::ratio<INTMAX_MAX, 2>>::type r1;
 
-  VERIFY( r1.num == 1);
-  VERIFY( r1.den == 1);
+  VERIFY( r1.num == 1 );
+  VERIFY( r1.den == 1 );
 
   std::ratio_divide<
     std::ratio<INTMAX_MAX-1, 2>,
     std::ratio<INTMAX_MAX, 2>>::type r2;
   
-  VERIFY( r2.num == INTMAX_MAX - 1);
-  VERIFY( r2.den == INTMAX_MAX);
+  VERIFY( r2.num == INTMAX_MAX - 1 );
+  VERIFY( r2.den == INTMAX_MAX );
 }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
   test02();
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
   return 0;
 }

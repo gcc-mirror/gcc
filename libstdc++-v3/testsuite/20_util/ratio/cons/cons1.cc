@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
@@ -23,8 +24,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 void
 test01()
 {
@@ -46,12 +45,8 @@ test01()
   VERIFY( r3.den == r0.den );  
 }
 
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
-
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
   return 0;
 }

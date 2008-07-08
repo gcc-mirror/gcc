@@ -1,5 +1,6 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
@@ -23,8 +24,6 @@
 
 #include <ratio>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 void
 test01()
 {
@@ -38,14 +37,12 @@ test02()
   std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2;
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 31 }
+// { dg-error "instantiated from here" "" { target *-*-* } 30 }
+// { dg-error "instantiated from here" "" { target *-*-* } 36 }
 // { dg-error "instantiated from here" "" { target *-*-* } 37 }
-// { dg-error "instantiated from here" "" { target *-*-* } 38 }
 // { dg-error "overflow in addition" "" { target *-*-* } 127 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 95 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 97 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 99 }
 // { dg-excess-errors "In instantiation of" }
 // { dg-excess-errors "out of range" }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1

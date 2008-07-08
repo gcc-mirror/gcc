@@ -203,13 +203,13 @@ namespace std
     : public integral_constant<bool, __has_trivial_destructor(_Tp)>
     { };
 
-  /// has_nothrow_default_destructor
+  /// has_nothrow_default_constructor
   template<typename _Tp>
     struct has_nothrow_default_constructor
     : public integral_constant<bool, __has_nothrow_constructor(_Tp)>
     { };
 
-  /// has_nothrow_copy_destructor
+  /// has_nothrow_copy_constructor
   template<typename _Tp>
     struct has_nothrow_copy_constructor
     : public integral_constant<bool, __has_nothrow_copy(_Tp)>

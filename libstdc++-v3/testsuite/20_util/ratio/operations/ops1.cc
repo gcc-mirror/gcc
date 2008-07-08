@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
@@ -23,8 +24,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 void
 test01()
 {
@@ -32,8 +31,8 @@ test01()
 
   std::ratio_add<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
-  VERIFY( r.num == 19);
-  VERIFY( r.den == 24);
+  VERIFY( r.num == 19 );
+  VERIFY( r.den == 24 );
 }
 
 void
@@ -42,8 +41,8 @@ test02()
   bool test __attribute__((unused)) = true;
   std::ratio_subtract<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
-  VERIFY( r.num == -1);
-  VERIFY( r.den == 24);
+  VERIFY( r.num == -1 );
+  VERIFY( r.den == 24 );
 }
 
 void
@@ -52,8 +51,8 @@ test03()
   bool test __attribute__((unused)) = true;
   std::ratio_multiply<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
-  VERIFY( r.num == 5);
-  VERIFY( r.den == 32);
+  VERIFY( r.num == 5 );
+  VERIFY( r.den == 32 );
 }
 
 void
@@ -62,19 +61,15 @@ test04()
   bool test __attribute__((unused)) = true;
   std::ratio_divide<std::ratio<3,8>, std::ratio<5,12>>::type r;
 
-  VERIFY( r.num == 9);
-  VERIFY( r.den == 10);
+  VERIFY( r.num == 9 );
+  VERIFY( r.den == 10 );
 }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
   test02();
   test03();
   test04();
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
   return 0;
 }

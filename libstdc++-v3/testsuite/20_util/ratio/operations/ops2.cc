@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
@@ -23,8 +24,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 typedef std::ratio<1, INTMAX_MAX> one_over_max;
 typedef std::ratio<2, INTMAX_MAX> two_over_max;
 typedef std::ratio<INTMAX_MAX, 1> max_over_one;
@@ -44,8 +43,8 @@ test01()
     std::ratio<INTMAX_MAX / 2, INTMAX_MAX / 2>,
     std::ratio<INTMAX_MAX / 2 , INTMAX_MAX / 2 + 1>>::type r2;
   
-  VERIFY( r2.num == INTMAX_MAX);
-  VERIFY( r2.den == (INTMAX_MAX / 2) + 1);
+  VERIFY( r2.num == INTMAX_MAX );
+  VERIFY( r2.den == (INTMAX_MAX / 2) + 1 );
 }
 
 void
@@ -62,17 +61,13 @@ test02()
     std::ratio<INTMAX_MAX / 2, INTMAX_MAX / 2>,
     std::ratio<INTMAX_MAX / 2 , INTMAX_MAX / 2 + 1>>::type r2;
   
-  VERIFY( r2.num == 1);
-  VERIFY( r2.den == (INTMAX_MAX / 2) + 1);
+  VERIFY( r2.num == 1 );
+  VERIFY( r2.den == (INTMAX_MAX / 2) + 1 );
 }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
   test02();
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
   return 0;
 }
