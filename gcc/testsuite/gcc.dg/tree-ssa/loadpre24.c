@@ -18,7 +18,7 @@ int foo(int argc)
   return d + e;
 }
 
-/* PRE of globals doesn't work.  */
+/* We will move the load of a out of the loop.  */
 
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
