@@ -1,3 +1,8 @@
+2008-07-07  Tianwei Sheng  <tianweis@google.com>
+
+	* df-core.c (df_remove_problem): Adjust the access to avoid out of
+	bounds array access.
+
 2008-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-sra.c (sra_build_assignment): Handle CONVERT_EXPR_P
