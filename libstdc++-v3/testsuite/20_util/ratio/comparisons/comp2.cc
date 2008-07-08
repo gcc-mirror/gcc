@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // Copyright (C) 2008 Free Software Foundation
 //
@@ -21,8 +22,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 static const std::intmax_t M = INTMAX_MAX;
 
 void
@@ -30,27 +29,23 @@ test01()
 {
   bool test __attribute__((unused)) = true;
  
-  //no overflow with same denominator
-  VERIFY(( std::ratio_less<std::ratio<M - 2, M>,
-           std::ratio<M - 1, M>>::value == 1 ) );
+  // No overflow with same denominator
+  VERIFY( (std::ratio_less<std::ratio<M - 2, M>,
+           std::ratio<M - 1, M>>::value == 1) );
   
-  VERIFY(( std::ratio_less<std::ratio<M - 1, M>,
-           std::ratio<M - 2, M>>::value == 0 ) );
-           
-  //no overflow if signs differ
-  VERIFY(( std::ratio_less<std::ratio<-M, M - 1>,
-           std::ratio<M - 1, M - 2>>::value == 1 ) );
+  VERIFY( (std::ratio_less<std::ratio<M - 1, M>,
+           std::ratio<M - 2, M>>::value == 0) );
+     
+  // No overflow if signs differ
+  VERIFY( (std::ratio_less<std::ratio<-M, M - 1>,
+           std::ratio<M - 1, M - 2>>::value == 1) );
   
-  VERIFY(( std::ratio_less<std::ratio<M - 1, M - 2>,
-           std::ratio<-M, M - 1>>::value == 0 ) );
+  VERIFY( (std::ratio_less<std::ratio<M - 1, M - 2>,
+           std::ratio<-M, M - 1>>::value == 0) );
 }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
-#endif
   return 0;
 }

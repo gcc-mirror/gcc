@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 # Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -939,7 +939,7 @@ proc check_v3_target_debug_mode { } {
     } else {
 	set et_debug_mode 0
 
-	# Set up, compile, and execute a C++ test program that depends
+	# Set up and compile a C++ test program that depends
 	# on debug mode working.
 	set src debug_mode[pid].cc
 	set exe debug_mode[pid].exe
@@ -993,7 +993,7 @@ proc check_v3_target_parallel_mode { } {
     } else {
 	set et_parallel_mode 0
 
-	# Set up, compile, and execute a C++ test program that depends
+	# Set up and compile a C++ test program that depends
 	# on parallel mode working.
 	set src parallel_mode[pid].cc
 	set exe parallel_mode[pid].exe
@@ -1020,4 +1020,62 @@ proc check_v3_target_parallel_mode { } {
     }
     verbose "check_v3_target_parallel_mode: $et_parallel_mode" 2
     return $et_parallel_mode
+}
+
+proc check_v3_target_cstdint { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_cstdint
+
+    global tool	
+
+    if { ![info exists et_cstdint_target_name] } {
+	set et_cstdint_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_cstdint_target_name } {
+	verbose "check_v3_target_cstdint: `$et_cstdint_target_name'" 2
+	set et_cstdint_target_name $current_target
+	if [info exists et_cstdint] {
+	    verbose "check_v3_target_cstdint: removing cached result" 2
+	    unset et_cstdint
+	}
+    }
+
+    if [info exists et_cstdint] {
+	verbose "check_v3_target_cstdint: using cached result" 2
+    } else {
+	set et_cstdint 0
+
+	# Set up and compile a C++0x test program that depends
+	# on the C99 stdint facilities to be available.
+	set src cstdint[pid].cc
+	set exe cstdint[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#include <cstdint>"
+	puts $f "int main()"
+	puts $f "#ifdef _GLIBCXX_USE_C99_STDINT_TR1"
+	puts $f "{ return 0; }"
+	puts $f "#endif"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -std=gnu++0x -Werror"
+
+	set lines [v3_target_compile $src $exe executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_cstdint 1
+	} else {
+	    verbose "check_v3_target_cstdint: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_cstdint: $et_cstdint" 2
+    return $et_cstdint
 }

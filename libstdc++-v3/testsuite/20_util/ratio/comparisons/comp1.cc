@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // Copyright (C) 2008 Free Software Foundation
 //
@@ -21,8 +22,6 @@
 #include <ratio>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
-
 void
 test01()
 {
@@ -31,10 +30,10 @@ test01()
   VERIFY(( std::ratio_equal<std::ratio<2,6>, std::ratio<1,3>>::value == 1 ));
   VERIFY(( std::ratio_equal<std::ratio<2,6>, std::ratio<1,4>>::value == 0 ));
   
-  VERIFY(( std::ratio_not_equal<std::ratio<2,6>, 
-           std::ratio<1,3>>::value == 0 ));
-  VERIFY(( std::ratio_not_equal<std::ratio<2,6>, 
-           std::ratio<1,4>>::value == 1 ));
+  VERIFY( (std::ratio_not_equal<std::ratio<2,6>, 
+           std::ratio<1,3>>::value == 0) );
+  VERIFY( (std::ratio_not_equal<std::ratio<2,6>, 
+           std::ratio<1,4>>::value == 1) );
 }
 
 void
@@ -42,46 +41,42 @@ test02()
 {
   bool test __attribute__((unused)) = true;
  
-  VERIFY(( std::ratio_less<std::ratio<1,4>, std::ratio<1,3>>::value == 1 ));
-  VERIFY(( std::ratio_less<std::ratio<-1,3>, std::ratio<1,3>>::value == 1 ));
+  VERIFY( (std::ratio_less<std::ratio<1,4>, std::ratio<1,3>>::value == 1) );
+  VERIFY( (std::ratio_less<std::ratio<-1,3>, std::ratio<1,3>>::value == 1) );
   
-  VERIFY(( std::ratio_less<std::ratio<1,3>, std::ratio<1,4>>::value == 0 ));
-  VERIFY(( std::ratio_less<std::ratio<1,3>, std::ratio<-1,3>>::value == 0 ));
+  VERIFY( (std::ratio_less<std::ratio<1,3>, std::ratio<1,4>>::value == 0) );
+  VERIFY( (std::ratio_less<std::ratio<1,3>, std::ratio<-1,3>>::value == 0) );
       
-  VERIFY(( std::ratio_less_equal<std::ratio<-1,3>, 
-           std::ratio<-1,3>>::value == 1 ));
-  VERIFY(( std::ratio_less_equal<std::ratio<1,4>, 
-           std::ratio<1,3>>::value == 1 ));
+  VERIFY( (std::ratio_less_equal<std::ratio<-1,3>, 
+           std::ratio<-1,3>>::value == 1) );
+  VERIFY( ( std::ratio_less_equal<std::ratio<1,4>, 
+           std::ratio<1,3>>::value == 1) );
   
-  VERIFY(( std::ratio_less_equal<std::ratio<1,4>, 
-           std::ratio<-1,3>>::value == 0 ));
-  VERIFY(( std::ratio_less_equal<std::ratio<1,3>, 
-           std::ratio<-1,3>>::value == 0 ));
+  VERIFY( (std::ratio_less_equal<std::ratio<1,4>, 
+           std::ratio<-1,3>>::value == 0) );
+  VERIFY( (std::ratio_less_equal<std::ratio<1,3>, 
+           std::ratio<-1,3>>::value == 0) );
   
-  VERIFY(( std::ratio_greater<std::ratio<1,3>, std::ratio<1,4>>::value == 1 ));
-  VERIFY(( std::ratio_greater<std::ratio<1,3>, std::ratio<-1,3>>::value == 1 ));
+  VERIFY( (std::ratio_greater<std::ratio<1,3>, std::ratio<1,4>>::value == 1) );
+  VERIFY( (std::ratio_greater<std::ratio<1,3>, std::ratio<-1,3>>::value == 1) );
   
-  VERIFY(( std::ratio_greater<std::ratio<1,4>, std::ratio<1,3>>::value == 0 ));
-  VERIFY(( std::ratio_greater<std::ratio<-1,3>, std::ratio<1,3>>::value == 0 ));
+  VERIFY( (std::ratio_greater<std::ratio<1,4>, std::ratio<1,3>>::value == 0) );
+  VERIFY( (std::ratio_greater<std::ratio<-1,3>, std::ratio<1,3>>::value == 0) );
 
-  VERIFY(( std::ratio_greater_equal<std::ratio<1,3>, 
-           std::ratio<1,3>>::value == 1 ));
-  VERIFY(( std::ratio_greater_equal<std::ratio<1,3>, 
-           std::ratio<-1,3>>::value == 1 ));
-  
-  VERIFY(( std::ratio_greater_equal<std::ratio<-1,3>, 
-           std::ratio<1,3>>::value == 0 ));
-  VERIFY(( std::ratio_greater_equal<std::ratio<1,4>, 
-           std::ratio<1,3>>::value == 0 ));
+  VERIFY( (std::ratio_greater_equal<std::ratio<1,3>, 
+           std::ratio<1,3>>::value == 1) );
+  VERIFY( (std::ratio_greater_equal<std::ratio<1,3>, 
+           std::ratio<-1,3>>::value == 1) );
+
+  VERIFY( (std::ratio_greater_equal<std::ratio<-1,3>, 
+           std::ratio<1,3>>::value == 0) );
+  VERIFY( (std::ratio_greater_equal<std::ratio<1,4>, 
+           std::ratio<1,3>>::value == 0) );
 }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
 
 int main()
 {
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   test01();
   test02();
-#endif
   return 0;
 }

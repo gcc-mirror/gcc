@@ -1,5 +1,6 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
 
 // Copyright (C) 2008 Free Software Foundation
 //
@@ -20,8 +21,6 @@
 // Boston, MA 02110-1301, USA.
 
 #include <ratio>
-
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 void
 test01()
@@ -48,11 +47,9 @@ test04()
   std::ratio<1,0> r1;
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 36 }
-// { dg-error "instantiated from here" "" { target *-*-* } 42 }
-// { dg-error "instantiated from here" "" { target *-*-* } 48 }
+// { dg-error "instantiated from here" "" { target *-*-* } 35 }
+// { dg-error "instantiated from here" "" { target *-*-* } 41 }
+// { dg-error "instantiated from here" "" { target *-*-* } 47 }
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 150 }
 // { dg-error "out of range" "" { target *-*-* } 151 }
 // { dg-excess-errors "In instantiation of" }
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
