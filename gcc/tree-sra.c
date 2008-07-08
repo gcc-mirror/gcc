@@ -2282,6 +2282,9 @@ sra_build_assignment (tree dst, tree src)
 	  var = utmp;
 	}
 
+      /* fold_build3 (BIT_FIELD_REF, ...) sometimes returns a cast.  */
+      STRIP_NOPS (dst);
+
       /* Finally, move and convert to the destination.  */
       if (!useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (var)))
 	{
@@ -2306,6 +2309,12 @@ sra_build_assignment (tree dst, tree src)
       return list;
     }
 
+  /* fold_build3 (BIT_FIELD_REF, ...) sometimes returns a cast.  */
+  if (CONVERT_EXPR_P (dst))
+    {
+      STRIP_NOPS (dst);
+      src = fold_convert (TREE_TYPE (dst), src);
+    }
   /* It was hoped that we could perform some type sanity checking
      here, but since front-ends can emit accesses of fields in types
      different from their nominal types and copy structures containing
@@ -2316,8 +2325,8 @@ sra_build_assignment (tree dst, tree src)
      So we just assume type differences at this point are ok.
      The only exception we make here are pointer types, which can be different
      in e.g. structurally equal, but non-identical RECORD_TYPEs.  */
-  if (POINTER_TYPE_P (TREE_TYPE (dst))
-      && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
+  else if (POINTER_TYPE_P (TREE_TYPE (dst))
+	   && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
     src = fold_convert (TREE_TYPE (dst), src);
 
   return build_gimple_modify_stmt (dst, src);
