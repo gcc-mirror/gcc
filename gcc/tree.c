@@ -462,7 +462,6 @@ tree_code_size (enum tree_code code)
 
 	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
 	case BLOCK:		return sizeof (struct tree_block);
-	case VALUE_HANDLE:	return sizeof (struct tree_value_handle);
 	case CONSTRUCTOR:	return sizeof (struct tree_constructor);
 
 	default:
@@ -2387,7 +2386,6 @@ tree_node_structure (const_tree t)
     case BLOCK:			return TS_BLOCK;
     case CONSTRUCTOR:		return TS_CONSTRUCTOR;
     case TREE_BINFO:		return TS_BINFO;
-    case VALUE_HANDLE:		return TS_VALUE_HANDLE;
     case OMP_CLAUSE:		return TS_OMP_CLAUSE;
 
     default:
@@ -3639,7 +3637,7 @@ build_decl_attribute_variant (tree ddecl, tree attribute)
 
 
 /* Produce good hash value combining VAL and VAL2.  */
-static inline hashval_t
+hashval_t
 iterative_hash_hashval_t (hashval_t val, hashval_t val2)
 {
   /* the golden ratio; an arbitrary value.  */
@@ -5358,7 +5356,6 @@ iterative_hash_expr (const_tree t, hashval_t val)
       return iterative_hash_expr (TREE_VECTOR_CST_ELTS (t), val);
 
     case SSA_NAME:
-    case VALUE_HANDLE:
       /* we can just compare by pointer.  */
       return iterative_hash_pointer (t, val);
 

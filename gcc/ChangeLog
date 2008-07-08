@@ -1,3 +1,84 @@
+2008-07-05  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/23455
+	Fix PR tree-optimization/35286
+	Fix PR tree-optimization/35287
+	* Makefile.in (OBJS-common): Remove tree-vn.o.
+	tree-vn.o: Remove.
+	* dbgcnt.def: Add treepre_insert debug counter.
+	* gcc/tree-flow.h (add_to_value): Updated for other changes.
+	(debug_value_expressions): Ditto.
+	(print_value_expressions): Ditto.
+	* tree-pretty-print.c (dump_generic_node): Updated for
+	VALUE_HANDLE removal.
+	* tree-ssa-dom.c (record_equality): Ditto.
+	(cprop_operand): Ditto.
+	(lookup_avail_expr): Ditto.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Ditto.
+	(simplify_control_stmt_condition): Ditto.
+	* tree.c (tree_code_size): Ditto.
+	(tree_node_structure): Ditto.
+	(iterative_hash_expr): Ditto.
+	* tree.def: Ditto.
+	* tree.h (VALUE_HANDLE_ID): Ditto.
+	(VALUE_HANDLE_EXPR_SET): Ditto.
+	(struct tree_value_handle): Ditto.
+	(union tree_node): Ditto.
+	* treestruct.def: Ditto.
+	* tree-vn.c: Removed.
+	* tree-ssa-pre.c: Rewritten entirely.
+	* tree-ssa-sccvn.c (constant_to_value_id): New hashtable.
+	(constant_value_ids): Ditto.
+	(vn_nary_op_t): Moved to header.
+	(vn_phi_t): Ditto.
+	(vn_reference_op_t): Ditto
+	(vn_reference_t): Ditto.
+	(next_value_id): New variable.
+	(VN_INFO): Add an assert.
+	(vn_constant_eq): New function.
+	(vn_constant_hash): Ditto.
+	(get_or_alloc_constant_value_id): Ditto.
+	(value_id_constant_p): Ditto.
+	(vn_reference_compute_hash): De-staticify.
+	(copy_reference_ops_from_ref): Don't use get_callee_fndecl.
+	Disable some code with a FIXME.
+	Remove VALUE_HANDLE use.
+	(valueize_refs): Update opcode if it changes from ssa name to
+	constant.
+	(vn_reference_lookup_1): Add new argument.
+	(vn_reference_lookup):  Ditto.
+	(vn_reference_lookup_pieces): New function.
+	(vn_reference_insert): Add return type. Modify to deal with value
+	ids.
+	(vn_reference_insert_pieces):  New function.
+	(vn_nary_op_compute_hash): De-staticify.
+	(vn_nary_op_eq): Ditto.
+	(vn_nary_op_lookup_pieces): New function.
+	(vn_nary_op_lookup): Add new argument.  
+	(vn_nary_op_insert_pieces): New function.
+	(vn_nary_op_insert): Add return type. Modify to deal with value
+	ids.
+	(vn_phi_insert): Ditto.
+	(visit_unary_op): Update for callee changes.
+	(visit_binary_op): Ditto.
+	(visit_reference_op_load): Ditto.
+	(visit_reference_op_store): Ditto.
+	(init_scc_vn): Init next_value_id, constant_to_value_id and
+	constant_value_ids. 
+	(free_scc_vn): Free them.
+	(set_hashtable_value_ids): New function.
+	(run_scc_vn): Use it.
+	(get_max_value_id): New function.
+	(get_next_value_id): Ditto.
+	(expressions_equal_p): Moved from tree-vn.c
+	(sort_vuses): Ditto.
+	(sort_vuses_heap): Ditto.
+	* tree-ssa-sccvn.h: Structures moved from tree-ssa-sccvn.c (noted
+	above).
+	* tree.c (iterative_hash_hashval_t): Made non-static
+	* tree.h (iterative_hash_hashval_t): Declare it.
+	
 2008-07-08  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_init_cloned_node): Call ipa_check_create_node_params

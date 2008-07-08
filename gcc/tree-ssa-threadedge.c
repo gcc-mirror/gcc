@@ -313,7 +313,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	      copy[i++] = use;
 	      if (TREE_CODE (use) == SSA_NAME)
 		tmp = SSA_NAME_VALUE (use);
-	      if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
+	      if (tmp)
 		SET_USE (use_p, tmp);
 	    }
 
@@ -407,14 +407,14 @@ simplify_control_stmt_condition (edge e,
       if (TREE_CODE (op0) == SSA_NAME)
 	{
           tree tmp = SSA_NAME_VALUE (op0);
-	  if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
+	  if (tmp)
 	    op0 = tmp;
 	}
 
       if (TREE_CODE (op1) == SSA_NAME)
 	{
 	  tree tmp = SSA_NAME_VALUE (op1);
-	  if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
+	  if (tmp)
 	    op1 = tmp;
 	}
 

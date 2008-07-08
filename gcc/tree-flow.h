@@ -1124,9 +1124,10 @@ extern bool remove_stmt_from_eh_region (tree);
 extern bool maybe_clean_or_replace_eh_stmt (tree, tree);
 
 /* In tree-ssa-pre.c  */
-void add_to_value (tree, tree);
-void debug_value_expressions (tree);
-void print_value_expressions (FILE *, tree);
+struct pre_expr_d;
+void add_to_value (unsigned int, struct pre_expr_d *);
+void debug_value_expressions (unsigned int);
+void print_value_expressions (FILE *, unsigned int);
 
 
 /* In tree-vn.c  */

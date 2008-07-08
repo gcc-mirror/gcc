@@ -24,12 +24,96 @@
 /* TOP of the VN lattice.  */
 extern tree VN_TOP;
 
+/* N-ary operations in the hashtable consist of length operands, an
+   opcode, and a type.  Result is the value number of the operation,
+   and hashcode is stored to avoid having to calculate it
+   repeatedly.  */
+
+typedef struct vn_nary_op_s
+{
+  /* Unique identify that all expressions with the same value have. */
+  unsigned int value_id;
+  ENUM_BITFIELD(tree_code) opcode : 16;
+  unsigned length : 16;
+  hashval_t hashcode;
+  tree result;
+  tree type;
+  tree op[4];
+} *vn_nary_op_t;
+typedef const struct vn_nary_op_s *const_vn_nary_op_t;
+
+/* Phi nodes in the hashtable consist of their non-VN_TOP phi
+   arguments, and the basic block the phi is in. Result is the value
+   number of the operation, and hashcode is stored to avoid having to
+   calculate it repeatedly.  Phi nodes not in the same block are never
+   considered equivalent.  */
+
+typedef struct vn_phi_s
+{
+  /* Unique identifier that all expressions with the same value have. */
+  unsigned int value_id;
+  hashval_t hashcode;
+  VEC (tree, heap) *phiargs;
+  basic_block block;
+  tree result;
+} *vn_phi_t;
+typedef const struct vn_phi_s *const_vn_phi_t;
+
+/* Reference operands only exist in reference operations structures.
+   They consist of an opcode, type, and some number of operands.  For
+   a given opcode, some, all, or none of the operands may be used.
+   The operands are there to store the information that makes up the
+   portion of the addressing calculation that opcode performs.  */
+
+typedef struct vn_reference_op_struct
+{
+  enum tree_code opcode;
+  tree type;
+  tree op0;
+  tree op1;
+  tree op2;
+} vn_reference_op_s;
+typedef vn_reference_op_s *vn_reference_op_t;
+typedef const vn_reference_op_s *const_vn_reference_op_t;
+
+DEF_VEC_O(vn_reference_op_s);
+DEF_VEC_ALLOC_O(vn_reference_op_s, heap);
+
+/* A reference operation in the hashtable is representation as a
+   collection of vuses, representing the memory state at the time of
+   the operation, and a collection of operands that make up the
+   addressing calculation.  If two vn_reference_t's have the same set
+   of operands, they access the same memory location. We also store
+   the resulting value number, and the hashcode.  The vuses are
+   always stored in order sorted by ssa name version.  */
+
+typedef struct vn_reference_s
+{
+  /* Unique identifier that all expressions with the same value have. */
+  unsigned int value_id;
+  hashval_t hashcode;
+  VEC (tree, gc) *vuses;
+  VEC (vn_reference_op_s, heap) *operands;
+  tree result;
+} *vn_reference_t;
+typedef const struct vn_reference_s *const_vn_reference_t;
+
+typedef struct vn_constant_s
+{
+  unsigned int value_id;
+  hashval_t hashcode;
+  tree constant;
+} *vn_constant_t;
+  
 typedef struct vn_ssa_aux
 {
   /* Value number. This may be an SSA name or a constant.  */
   tree valnum;
   /* Representative expression, if not a direct constant. */
   tree expr;
+
+  /* Unique identifier that all expressions with the same value have. */
+  unsigned int value_id;
 
   /* SCC information.  */
   unsigned int dfsnum;
@@ -57,12 +141,31 @@ extern vn_ssa_aux_t VN_INFO_GET (tree);
 bool run_scc_vn (bool);
 void free_scc_vn (void);
 void switch_to_PRE_table (void);
-tree vn_nary_op_lookup (tree);
-void vn_nary_op_insert (tree, tree);
-tree vn_reference_lookup (tree, VEC (tree, gc) *, bool);
-void vn_reference_insert (tree, tree, VEC (tree, gc) *);
+tree vn_nary_op_lookup (tree, vn_nary_op_t *);
+tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
+			       tree, tree, tree, tree, tree,
+			       vn_nary_op_t *);
+vn_nary_op_t vn_nary_op_insert (tree, tree);
+vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
+				       tree, tree, tree, tree,
+				       tree, tree, unsigned int);
+tree vn_reference_lookup_pieces (VEC (tree, gc) *,
+				 VEC (vn_reference_op_s, heap) *,
+				 vn_reference_t *);
+tree vn_reference_lookup (tree, VEC (tree, gc) *, bool, vn_reference_t *);
+vn_reference_t vn_reference_insert (tree, tree, VEC (tree, gc) *);
+vn_reference_t vn_reference_insert_pieces (VEC (tree, gc) *,
+					   VEC (vn_reference_op_s, heap) *,
+					   tree, unsigned int);
+
+hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
+int vn_nary_op_eq (const void *, const void *);
+hashval_t vn_reference_compute_hash (const vn_reference_t);
+int vn_reference_eq (const void *, const void *);
+unsigned int get_max_value_id (void);
+unsigned int get_next_value_id (void);
+unsigned int get_or_alloc_constant_value_id (tree);
+bool value_id_constant_p (unsigned int);
 VEC (tree, gc) *shared_vuses_from_stmt (tree);
 VEC (tree, gc) *copy_vuses_from_stmt (tree);
-
-
 #endif /* TREE_SSA_SCCVN_H  */
