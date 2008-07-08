@@ -551,6 +551,41 @@ namespace std
   // Integral, but don't define.
   template<>
     struct make_signed<bool>;
+
+  template<typename... _Tp>
+    struct common_type;
+
+  template<typename _Tp>
+    struct common_type<_Tp>
+    {
+      static_assert(sizeof(_Tp) > 0, "must be complete type");
+      typedef _Tp type;
+    };
+
+  template<typename _Tp, typename _Up>
+    class common_type<_Tp, _Up>
+    {
+      static_assert(sizeof(_Tp) > 0, "must be complete type");
+      static_assert(sizeof(_Up) > 0, "must be complete type");
+
+      static _Tp&& __t();
+      static _Up&& __u();
+
+      // HACK: Prevents optimization of ?: in the decltype
+      // expression when the condition is the literal, "true".
+      // See, PR36628.
+      static bool __true_or_false();
+
+    public:
+      typedef decltype(__true_or_false() ? __t() : __u()) type;
+    };
+
+  template<typename _Tp, typename _Up, typename... _Vp>
+    struct common_type<_Tp, _Up, _Vp...>
+    {
+      typedef typename
+        common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
+    };
 }
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__
