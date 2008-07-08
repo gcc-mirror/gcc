@@ -28,8 +28,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
+#include "tree-inline.h"
 #include "flags.h"
 #include "timevar.h"
+#include "flags.h"
+
+/* Vector where the parameter infos are actually stored. */
+VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
+/* Vector where the parameter infos are actually stored. */
+VEC (ipa_edge_args_t, heap) *ipa_edge_args_vector;
+
+/* Holders of ipa cgraph hooks: */
+struct cgraph_edge_hook_list *edge_removal_hook_holder;
+struct cgraph_node_hook_list *node_removal_hook_holder;
+struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
+struct cgraph_2node_hook_list *node_duplication_hook_holder;
 
 /* Initialize worklist to contain all functions.  */
 struct ipa_func_list *
@@ -176,7 +189,7 @@ ipa_detect_param_modifications (struct cgraph_node *mt)
   tree stmt, parm_tree;
   struct ipa_node_params *info = IPA_NODE_REF (mt);
 
-  if (ipa_get_param_count (info) == 0)
+  if (ipa_get_param_count (info) == 0 || info->modified_flags)
     return;
 
   count = ipa_get_param_count (info);
@@ -244,7 +257,7 @@ ipa_compute_jump_functions (struct cgraph_edge *cs)
   call_expr_arg_iterator iter;
   struct ipa_edge_args *args = IPA_EDGE_REF (cs);
 
-  if (ipa_get_cs_argument_count (args) == 0)
+  if (ipa_get_cs_argument_count (args) == 0 || args->jump_functions)
     return;
   args->jump_functions = XCNEWVEC (struct ipa_jump_func,
 				   ipa_get_cs_argument_count (args));
@@ -316,74 +329,184 @@ ipa_compute_jump_functions (struct cgraph_edge *cs)
     }
 }
 
-/* Allocate and initialize ipa_node_params structure for the given cgraph
-   node.  */
+/* Frees all dynamically allocated structures that the argument info points
+   to.  */
 void
-ipa_create_node_params (struct cgraph_node *node)
+ipa_free_edge_args_substructures (struct ipa_edge_args *args)
 {
-  node->aux = xcalloc (1, sizeof (struct ipa_node_params));
+  if (args->jump_functions)
+    free (args->jump_functions);
+
+  memset (args, 0, sizeof (*args));
 }
 
-/* Allocate and initialize ipa_node_params structure for all
-   nodes in callgraph.  */
-void
-ipa_create_all_node_params (void)
-{
-  struct cgraph_node *node;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    ipa_create_node_params (node);
-}
-
-/* Allocate and initialize ipa_edge structure.  */
-void
-ipa_create_all_edge_args (void)
-{
-  struct cgraph_node *node;
-  struct cgraph_edge *cs;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    for (cs = node->callees; cs; cs = cs->next_callee)
-      cs->aux = xcalloc (1, sizeof (struct ipa_edge_args));
-}
-
-/* Free ipa_edge structure.  */
+/* Free all ipa_edge structures.  */
 void
 ipa_free_all_edge_args (void)
 {
-  struct cgraph_node *node;
-  struct cgraph_edge *cs;
+  int i;
+  struct ipa_edge_args *args;
 
-  for (node = cgraph_nodes; node; node = node->next)
-    for (cs = node->callees; cs; cs = cs->next_callee)
-      if (cs->aux)
-	{
-	  if (IPA_EDGE_REF (cs)->jump_functions)
-	    free (IPA_EDGE_REF (cs)->jump_functions);
-	  free (cs->aux);
-	  cs->aux = NULL;
-	}
+  for (i = 0;
+       VEC_iterate (ipa_edge_args_t, ipa_edge_args_vector, i, args);
+       i++)
+    ipa_free_edge_args_substructures (args);
+
+  VEC_free (ipa_edge_args_t, heap, ipa_edge_args_vector);
+  ipa_edge_args_vector = NULL;
 }
 
-/* Free ipa data structures of ipa_node_params and ipa_edge_args.  */
+/* Frees all dynamically allocated structures that the param info points
+   to.  */
+void
+ipa_free_node_params_substructures (struct ipa_node_params *info)
+{
+  if (info->ipcp_lattices)
+    free (info->ipcp_lattices);
+  if (info->param_decls)
+    free (info->param_decls);
+  if (info->modified_flags)
+    free (info->modified_flags);
+
+  memset (info, 0, sizeof (*info));
+}
+
+/* Free all ipa_node_params structures.  */
 void
 ipa_free_all_node_params (void)
 {
-  struct cgraph_node *node;
+  int i;
+  struct ipa_node_params *info;
 
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (node->aux == NULL)
-	continue;
-      if (IPA_NODE_REF (node)->ipcp_lattices)
-	free (IPA_NODE_REF (node)->ipcp_lattices);
-      if (IPA_NODE_REF (node)->param_decls)
-	free (IPA_NODE_REF (node)->param_decls);
-      if (IPA_NODE_REF (node)->modified_flags)
-	free (IPA_NODE_REF (node)->modified_flags);
-      free (node->aux);
-      node->aux = NULL;
-    }
+  for (i = 0;
+       VEC_iterate (ipa_node_params_t, ipa_node_params_vector, i, info);
+       i++)
+    ipa_free_node_params_substructures (info);
+
+  VEC_free (ipa_node_params_t, heap, ipa_node_params_vector);
+  ipa_node_params_vector = NULL;
+}
+
+/* Hook that is called by cgraph.c when an edge is removed.  */
+static void
+ipa_edge_removal_hook (struct cgraph_edge *cs,
+		       void *data __attribute__ ((unused)))
+{
+  ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
+}
+
+/* Hook that is called by cgraph.c when a node is removed.  */
+static void
+ipa_node_removal_hook (struct cgraph_node *node,
+		       void *data __attribute__ ((unused)))
+{
+  ipa_free_node_params_substructures (IPA_NODE_REF (node));
+}
+
+/* Helper function to duplicate an array of size N that is at SRC and store a
+   pointer to it to DST.  Nothing is done if SRC is NULL.  */
+static void *
+duplicate_array (void *src, size_t n)
+{
+  void *p;
+
+  if (!src)
+    return NULL;
+
+  p = xcalloc (1, n);
+  memcpy (p, src, n);
+  return p;
+}
+
+/* Hook that is called by cgraph.c when a node is duplicated.  */
+static void
+ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
+			   void *data)
+{
+  struct ipa_edge_args *old_args, *new_args;
+  int arg_count;
+
+  ipa_check_create_edge_args ();
+
+  old_args = IPA_EDGE_REF (src);
+  new_args = IPA_EDGE_REF (dst);
+
+  arg_count = ipa_get_cs_argument_count (old_args);
+  ipa_set_cs_argument_count (new_args, arg_count);
+  new_args->jump_functions = (struct ipa_jump_func *)
+    duplicate_array (old_args->jump_functions,
+		     sizeof (struct ipa_jump_func) * arg_count);
+  data = data; 			/* Suppressing compiler warning.  */
+}
+
+/* Hook that is called by cgraph.c when a node is duplicated.  */
+static void
+ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
+			   void *data)
+{
+  struct ipa_node_params *old_info, *new_info;
+  int param_count;
+
+  ipa_check_create_node_params ();
+  old_info = IPA_NODE_REF (src);
+  new_info = IPA_NODE_REF (dst);
+  param_count = ipa_get_param_count (old_info);
+
+  ipa_set_param_count (new_info, param_count);
+  new_info->ipcp_lattices = (struct ipcp_lattice *)
+    duplicate_array (old_info->ipcp_lattices,
+		     sizeof (struct ipcp_lattice) * param_count);
+  new_info->param_decls = (tree *)
+    duplicate_array (old_info->param_decls, sizeof (tree) * param_count);
+  new_info->modified_flags = (bool *)
+    duplicate_array (old_info->modified_flags, sizeof (bool) * param_count);
+
+  new_info->ipcp_orig_node = old_info->ipcp_orig_node;
+  new_info->count_scale = old_info->count_scale;
+
+  data = data; 			/* Suppressing compiler warning.  */
+}
+
+/* Register our cgraph hooks if they are not already there.  */
+void
+ipa_register_cgraph_hooks (void)
+{
+  if (!edge_removal_hook_holder)
+    edge_removal_hook_holder =
+      cgraph_add_edge_removal_hook (&ipa_edge_removal_hook, NULL);
+  if (!node_removal_hook_holder)
+    node_removal_hook_holder =
+      cgraph_add_node_removal_hook (&ipa_node_removal_hook, NULL);
+  if (!edge_duplication_hook_holder)
+    edge_duplication_hook_holder =
+      cgraph_add_edge_duplication_hook (&ipa_edge_duplication_hook, NULL);
+  if (!node_duplication_hook_holder)
+    node_duplication_hook_holder =
+      cgraph_add_node_duplication_hook (&ipa_node_duplication_hook, NULL);
+}
+
+/* Unregister our cgraph hooks if they are not already there.  */
+static void
+ipa_unregister_cgraph_hooks (void)
+{
+  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
+  edge_removal_hook_holder = NULL;
+  cgraph_remove_node_removal_hook (node_removal_hook_holder);
+  node_removal_hook_holder = NULL;
+  cgraph_remove_edge_duplication_hook (edge_duplication_hook_holder);
+  edge_duplication_hook_holder = NULL;
+  cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
+  node_duplication_hook_holder = NULL;
+}
+
+/* Free all ipa_node_params and all ipa_edge_args structures if they are no
+   longer needed after ipa-cp.  */
+void
+free_all_ipa_structures_after_ipa_cp (void)
+{
+  ipa_free_all_edge_args ();
+  ipa_free_all_node_params ();
+  ipa_unregister_cgraph_hooks ();
 }
 
 /* Print ipa_tree_map data structures of all functions in the

@@ -153,7 +153,7 @@ static void
 ipcp_init_cloned_node (struct cgraph_node *orig_node,
 		       struct cgraph_node *new_node)
 {
-  ipa_create_node_params (new_node);
+  ipa_check_create_node_params ();
   IPA_NODE_REF (new_node)->ipcp_orig_node = orig_node;
   ipa_count_formal_params (new_node);
   ipa_create_param_decls_array (new_node);
@@ -998,8 +998,9 @@ ipcp_driver (void)
 {
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation start:\n");
-  ipa_create_all_node_params ();
-  ipa_create_all_edge_args ();
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+  ipa_register_cgraph_hooks ();
   /* 1. Call the init stage to initialize 
      the ipa_node_params and ipa_edge_args structures.  */
   ipcp_init_stage ();
@@ -1025,8 +1026,7 @@ ipcp_driver (void)
       ipcp_print_profile_data (dump_file);
     }
   /* Free all IPCP structures.  */
-  ipa_free_all_node_params ();
-  ipa_free_all_edge_args ();
+  free_all_ipa_structures_after_ipa_cp ();
   if (dump_file)
     fprintf (dump_file, "\nIPA constant propagation end\n");
   cgraph_remove_unreachable_nodes (true, NULL);

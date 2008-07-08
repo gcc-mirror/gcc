@@ -1,3 +1,46 @@
+2008-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_init_cloned_node): Call ipa_check_create_node_params
+	instead of ipa_create_node_params.
+	(ipcp_driver): Allocate infos with ipa_check_create_node_params and
+	ipa_check_create_edge_args, free them with
+	free_all_ipa_structures_after_ipa_cp, call ipa_register_cgraph_hooks.
+
+	* ipa-prop.c: Include flags.h and tree-inline.h.
+	(ipa_node_params_vector): New variable.
+	(ipa_edge_args_vector): New variable.
+	(edge_removal_hook_holder): New variable.
+	(node_removal_hook_holder): New variable.
+	(edge_duplication_hook_holder): New variable.
+	(node_duplication_hook_holder): New variable.
+	(ipa_detect_param_modifications): Check for presence of modified flags.
+	(ipa_compute_jump_functions): Check for presence of jump functions.
+	(ipa_free_edge_args_substructures): New function.
+	(ipa_create_node_params): Removed.
+	(ipa_free_all_edge_args): Changed to deallocate the on-the-side vector.
+	(ipa_free_node_params_substructures): New function.
+	(ipa_free_all_node_params): Changed to deallocate the on-the-side
+	vector.
+	(ipa_edge_removal_hook): New function.
+	(ipa_node_removal_hook): New function.
+	(duplicate_array): New function.
+	(ipa_edge_duplication_hook): New function.
+	(ipa_node_duplication_hook): New function.
+	(ipa_register_cgraph_hooks): New function.
+	(ipa_unregister_cgraph_hooks): New function.
+	(free_all_ipa_structures_after_ipa_cp): New function.
+	
+	* ipa-prop.h: Include vec.h.
+	(ipa_node_params_t): New typedef with vector types for it.
+	(ipa_edge_args_t):  New typedef with vector types for it.
+	(IPA_NODE_REF): Changed to access an on-the-side vector.
+	(IPA_EDGE_REF): Changed to access an on-the-side vector.
+	(ipa_check_create_node_params): New function.
+	(ipa_check_create_edge_args): New function.
+	
+	* Makefile.in (IPA_PROP_H): New variable for ipa-prop.h.  Converted
+	all users.
+	
 2008-07-07  Tom Tromey  <tromey@redhat.com>
 
 	* configure, config.in: Rebuilt.
