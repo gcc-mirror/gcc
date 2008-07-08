@@ -1,5 +1,8 @@
-# Filter out the following TImode functions and provide backward binary
-# compatibility.
+# When TFmode was first added to x86-64 in gcc 4.3.0, some TFmode
+# support functions got improper versions by accident.  Here we
+# correct the version and provide backward binary compatibility.
+
+# Filter out the following TFmode functions.
 tf-compats = getf2.c letf2.c eqtf2.c
 tf-functions := $(addprefix $(gcc_srcdir)/config/soft-fp/, $(tf-compats))
 LIB2ADD := $(filter-out $(tf-functions), $(LIB2ADD))
