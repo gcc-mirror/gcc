@@ -8036,7 +8036,11 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (storage_class && friendp)
-    error ("storage class specifiers invalid in friend function declarations");
+    {
+      error ("storage class specifiers invalid in friend function declarations");
+      storage_class = sc_none;
+      staticp = 0;
+    }
 
   if (!id_declarator)
     unqualified_id = NULL_TREE;
