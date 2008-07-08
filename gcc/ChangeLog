@@ -1,3 +1,8 @@
+2008-07-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* reload.c (find_reloads_subreg_address): Do not require validity
+	of address in original mode before reloading address.
+
 2008-07-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 	
 	Backport from mainline:

@@ -6036,7 +6036,6 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
 	      int offset;
 	      rtx orig = tem;
-	      enum machine_mode orig_mode = GET_MODE (orig);
 	      int reloaded;
 
 	      /* For big-endian paradoxical subregs, SUBREG_BYTE does not
@@ -6082,7 +6081,9 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      /* For some processors an address may be valid in the
 		 original mode but not in a smaller mode.  For
 		 example, ARM accepts a scaled index register in
-		 SImode but not in HImode.  find_reloads_address
+		 SImode but not in HImode.  Similarly, the address may
+		 have been valid before the subreg offset was added,
+		 but not afterwards.  find_reloads_address
 		 assumes that we pass it a valid address, and doesn't
 		 force a reload.  This will probably be fine if
 		 find_reloads_address finds some reloads.  But if it
@@ -6090,7 +6091,6 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 		 valid address into an invalid one.  Check for that
 		 here.  */
 	      if (reloaded != 1
-		  && strict_memory_address_p (orig_mode, XEXP (tem, 0))
 		  && !strict_memory_address_p (GET_MODE (tem),
 					       XEXP (tem, 0)))
 		push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
