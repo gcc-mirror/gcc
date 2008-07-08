@@ -1360,7 +1360,8 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
 	    pat = GEN_FCN ((int) code) (x, y, op2, opalign);
 	  else
 	    pat = GEN_FCN ((int) code) (x, y, op2, opalign,
-					GEN_INT (expected_align),
+					GEN_INT (expected_align
+						 / BITS_PER_UNIT),
 					GEN_INT (expected_size));
 	  if (pat)
 	    {
@@ -2780,7 +2781,8 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	    pat = GEN_FCN ((int) code) (object, opsize, opchar, opalign);
 	  else
 	    pat = GEN_FCN ((int) code) (object, opsize, opchar, opalign,
-					GEN_INT (expected_align),
+					GEN_INT (expected_align
+						 / BITS_PER_UNIT),
 					GEN_INT (expected_size));
 	  if (pat)
 	    {
