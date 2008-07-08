@@ -1,3 +1,14 @@
+2008-07-08  Raksit Ashok  <raksit@google.com>
+
+	* expr.c (emit_block_move_via_movmem): Fix expected_align parameter.
+	(set_storage_via_setmem): Fix expected_align parameter.
+	* doc/invoke.texi (i386 and x86-64 Options): Add a couple of options
+	missing from the list.
+	* doc/md.texi (movmem): Explicitly state that expected alignment is
+	to be expressed in bytes.
+	(setmem): Explicitly state that expected alignment is to be expressed
+	in bytes.
+
 2008-07-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* reload.c (find_reloads_subreg_address): Do not require validity
