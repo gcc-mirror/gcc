@@ -1,6 +1,5 @@
-/* { dg-options "-O" } */
+/* { dg-options "-O -msse2" } */
 
-#ifdef __x86_64__
 #include "union-m128-1.h"
 
 SS_union_mi128 un;
@@ -23,7 +22,3 @@ union_m128_1_x ()
   foo(un);
   foo(st);
 }
-#else
-int dummy_x;
-#endif
-

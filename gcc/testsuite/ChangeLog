@@ -1,3 +1,44 @@
+2008-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/compat/struct-layout-1_generate.c (vector_types): Add
+	v32qi, v16hi, v8si, v4di, v8sf, v4df, u32qi, u16hi, u8si, u4di,
+	u8sf and u4df.
+
+	* gcc.dg/compat/union-m128-1_main.c: Run only on x86.  Remove
+	__x86_64__ check.  Include "cpuid.h".
+	(main): Check SSE2 at runtime.
+
+	* gcc.dg/compat/union-m128-1_x.c: Compile with -msse2.  Remove
+	__x86_64__ check.
+	* gcc.dg/compat/union-m128-1_y.c: Likewise.
+
+	* gcc.dg/compat/vector-1_x.c: Add 32byte vector tests.
+	* gcc.dg/compat/vector-1_y.c: Likewise.
+	* gcc.dg/compat/vector-2_x.c: Likewise.
+	* gcc.dg/compat/vector-2_y.c: Likewise.
+
+	* gcc.dg/compat/vector-1a_main.c: New.
+	* gcc.dg/compat/vector-1a_x.c: Likewise.
+	* gcc.dg/compat/vector-1a_y.c: Likewise.
+	* gcc.dg/compat/vector-2a_main.c: Likewise.
+	* gcc.dg/compat/vector-2a_x.c: Likewise.
+	* gcc.dg/compat/vector-2a_y.c: Likewise.
+
+	* gcc.dg/compat/vector-defs.h (v32qi): New.
+	(v16hi): Likewise.
+	(v8si): Likewise.
+	(v4di): Likewise.
+	(v8sf): Likewise.
+	(v4df): Likewise.
+	(u32qi): Likewise.
+	(u16hi): Likewise.
+	(u8si): Likewise.
+	(u4di): Likewise.
+	(u8sf): Likewise.
+	(u4df): Likewise.
+
+	* lib/compat.exp (compat-get-options-main): Support dg-skip-if.
+
 2008-07-07  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* gcc.c-torture/compile/20080625-1.c: Skip for AVR target.

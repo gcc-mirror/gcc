@@ -1,6 +1,5 @@
-/* { dg-options "-O" } */
+/* { dg-options "-O -msse2" } */
 
-#ifdef __x86_64__
 #include <stdlib.h>
 
 #include "union-m128-1.h"
@@ -26,7 +25,3 @@ foo (SS_struct_mi128 st)
       || x.u [1] != 0xfedcba9876543210LL)
     abort ();
 }
-#else
-int dummy_y;
-#endif
-
