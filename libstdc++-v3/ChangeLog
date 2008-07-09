@@ -1,5 +1,6 @@
 2008-07-09  Johannes Singler  <singler@ira.uka.de>
 
+	PR libstdc++/36729
         * include/parallel/random_shuffle.h:
         (sequential_random_shuffle) Copy data back.
         * testsuite/25_algorithms/random_shuffle/1.cc:
