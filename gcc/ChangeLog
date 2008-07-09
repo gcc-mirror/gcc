@@ -1,3 +1,7 @@
+2008-07-09  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/driver-native.c: Include coretypes.h and tm.h.
+
 2008-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (struct gimplify_ctx): Move to tree-gimple.h.
