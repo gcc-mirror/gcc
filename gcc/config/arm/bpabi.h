@@ -59,10 +59,19 @@
 #define SUBTARGET_EXTRA_LINK_SPEC ""
 #endif
 
+#define ANDROID_LINK_SPEC \
+"%{mandroid:" \
+   "%{!static:" \
+      "%{shared: -Bsymbolic} " \
+      "%{!shared:" \
+         "%{rdynamic:-export-dynamic} " \
+         "%{!dynamic-linker:-dynamic-linker /system/bin/linker}}}} "
+
 /* The generic link spec in elf.h does not support shared libraries.  */
 #undef  LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} "		\
   "%{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic} "	\
+  ANDROID_LINK_SPEC							\
   "-X" SUBTARGET_EXTRA_LINK_SPEC
 
 #if defined (__thumb__)
@@ -129,6 +138,8 @@
   do							\
     {							\
       builtin_define ("__GXX_TYPEINFO_EQUALITY_INLINE=0");	\
+      if (TARGET_ANDROID)				\
+	builtin_define ("__ANDROID__");			\
     }							\
   while (false)
 
@@ -142,3 +153,33 @@
 #undef FINI_SECTION_ASM_OP
 #define INIT_ARRAY_SECTION_ASM_OP ARM_EABI_CTORS_SECTION_OP
 #define FINI_ARRAY_SECTION_ASM_OP ARM_EABI_DTORS_SECTION_OP
+
+/* Android uses -fno-rtti and -fno-exceptions by default. */
+
+#undef CC1_SPEC
+#define CC1_SPEC "%{mandroid:%{!fexceptions:-fno-exceptions}}"
+
+#undef CC1PLUS_SPEC
+#define CC1PLUS_SPEC "%{mandroid:%{!frtti:-fno-rtti}}"
+
+/* Startfile and endfile specs are the same as unknown-elf.h except
+   for Android. */
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+"%{!mandroid:%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}} " \
+"%{mandroid:-lc %{!static:-ldl}}"
+
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC \
+"%{!mandroid:crti%O%s crtbegin%O%s crt0%O%s} " \
+"%{mandroid:" \
+  "%{!shared:" \
+    "%{static:crtbegin_static%O%s} " \
+    "%{!static:crtbegin_dynamic%O%s}}}"
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+"%{!mandroid:crtend%O%s crtn%O%s} "\
+"%{mandroid:" \
+  "%{!shared:crtend%O%s}}"
