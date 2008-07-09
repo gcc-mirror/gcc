@@ -2832,8 +2832,9 @@ static bool
 generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 {
   bool ret;
+  struct gimplify_ctx gctx;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
   ret = generate_element_init_1 (elt, init, list_p);
   pop_gimplify_context (NULL);
 

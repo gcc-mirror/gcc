@@ -1,3 +1,25 @@
+2008-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_ctx): Move to tree-gimple.h.
+	(push_gimplify_context): Don't allocate temp_htab nor c itself here.
+	Add c argument.
+	(pop_gimplify_context): Check c->temp_htab instead of optimize whether
+	htab_delete should be called.  Don't free c.
+	(lookup_tmp_var): Create temp_htab lazily.
+	(gimplify_scan_omp_clauses, gimplify_omp_parallel, gimplify_omp_task,
+	gimplify_body, force_gimple_operand): Adjust push_gimplify_context
+	callers.
+	* omp-low.c (lower_omp_sections, lower_omp_single, lower_omp_master,
+	lower_omp_ordered, lower_omp_critical, lower_omp_for,
+	create_task_copyfn, lower_omp_taskreg, execute_lower_omp): 
+	* tree-ssa-ccp.c (convert_to_gimple_builtin): Likewise.
+	* tree-sra.c (generate_element_init): Likewise.
+	* tree-mudflap.c (execute_mudflap_function_ops,
+	execute_mudflap_function_decls): Likewise.
+	* tree-inline.c (setup_one_parameter, optimize_inline_calls): Likewise.
+	* tree-gimple.h (struct gimplify_ctx): New type.
+	(push_gimplify_context): Adjust prototype.
+
 2008-07-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (phi_translate_1): Update placement of

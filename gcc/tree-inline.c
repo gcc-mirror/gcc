@@ -1590,8 +1590,9 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	  || !is_gimple_reg (var))
 	{
           tree_stmt_iterator i;
+          struct gimplify_ctx gctx;
 
-	  push_gimplify_context ();
+	  push_gimplify_context (&gctx);
 	  gimplify_stmt (&init_stmt);
 	  if (gimple_in_ssa_p (cfun)
               && init_stmt && TREE_CODE (init_stmt) == STATEMENT_LIST)
@@ -2986,6 +2987,8 @@ optimize_inline_calls (tree fn)
   tree prev_fn;
   basic_block bb;
   int last = n_basic_blocks;
+  struct gimplify_ctx gctx;
+
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
      code.  */
@@ -3012,7 +3015,7 @@ optimize_inline_calls (tree fn)
   id.transform_lang_insert_block = NULL;
   id.statements_to_fold = pointer_set_create ();
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   /* We make no attempts to keep dominance info up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);

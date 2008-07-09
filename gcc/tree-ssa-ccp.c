@@ -2825,8 +2825,9 @@ convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr, bool ignore)
   tree_stmt_iterator ti;
   tree stmt = bsi_stmt (*si_p);
   tree tmp, stmts = NULL;
+  struct gimplify_ctx gctx;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
   if (ignore)
     {
       tmp = build_empty_stmt ();

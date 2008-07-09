@@ -5281,10 +5281,11 @@ lower_omp_sections (tree *stmt_p, omp_context *ctx)
   tree t, dlist;
   tree_stmt_iterator tsi;
   unsigned i, len;
+  struct gimplify_ctx gctx;
 
   stmt = *stmt_p;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   dlist = NULL;
   ilist = NULL;
@@ -5482,8 +5483,9 @@ static void
 lower_omp_single (tree *stmt_p, omp_context *ctx)
 {
   tree t, bind, block, single_stmt = *stmt_p, dlist;
+  struct gimplify_ctx gctx;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   block = make_node (BLOCK);
   *stmt_p = bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
@@ -5526,8 +5528,9 @@ static void
 lower_omp_master (tree *stmt_p, omp_context *ctx)
 {
   tree bind, block, stmt = *stmt_p, lab = NULL, x;
+  struct gimplify_ctx gctx;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   block = make_node (BLOCK);
   *stmt_p = bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
@@ -5565,8 +5568,9 @@ static void
 lower_omp_ordered (tree *stmt_p, omp_context *ctx)
 {
   tree bind, block, stmt = *stmt_p, x;
+  struct gimplify_ctx gctx;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   block = make_node (BLOCK);
   *stmt_p = bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
@@ -5609,6 +5613,7 @@ lower_omp_critical (tree *stmt_p, omp_context *ctx)
 {
   tree bind, block, stmt = *stmt_p;
   tree t, lock, unlock, name;
+  struct gimplify_ctx gctx;
 
   name = OMP_CRITICAL_NAME (stmt);
   if (name)
@@ -5658,7 +5663,7 @@ lower_omp_critical (tree *stmt_p, omp_context *ctx)
       unlock = build_call_expr (unlock, 0);
     }
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   block = make_node (BLOCK);
   *stmt_p = bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, block);
@@ -5743,10 +5748,11 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   tree t, stmt, ilist, dlist, new_stmt, block, *body_p, *rhs_p;
   struct omp_for_data fd;
   int i;
+  struct gimplify_ctx gctx;
 
   stmt = *stmt_p;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   lower_omp (&OMP_FOR_PRE_BODY (stmt), ctx);
   lower_omp (&OMP_FOR_BODY (stmt), ctx);
@@ -5909,6 +5915,7 @@ create_task_copyfn (tree task_stmt, omp_context *ctx)
   bool record_needs_remap = false, srecord_needs_remap = false;
   splay_tree_node n;
   struct omp_taskcopy_context tcctx;
+  struct gimplify_ctx gctx;
 
   child_fn = OMP_TASK_COPYFN (task_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
@@ -5921,7 +5928,7 @@ create_task_copyfn (tree task_stmt, omp_context *ctx)
     DECL_CONTEXT (t) = child_fn;
 
   /* Populate the function.  */
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
   current_function_decl = child_fn;
 
   bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
@@ -6138,6 +6145,7 @@ lower_omp_taskreg (tree *stmt_p, omp_context *ctx)
   tree clauses, par_bind, par_body, new_body, bind;
   tree olist, ilist, par_olist, par_ilist;
   tree stmt, child_fn, t;
+  struct gimplify_ctx gctx;
 
   stmt = *stmt_p;
 
@@ -6161,7 +6169,7 @@ lower_omp_taskreg (tree *stmt_p, omp_context *ctx)
   if (ctx->srecord_type)
     create_task_copyfn (stmt, ctx);
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   par_olist = NULL_TREE;
   par_ilist = NULL_TREE;
@@ -6422,8 +6430,10 @@ execute_lower_omp (void)
 
   if (all_contexts->root)
     {
+      struct gimplify_ctx gctx;
+
       if (task_shared_vars)
-	push_gimplify_context ();
+	push_gimplify_context (&gctx);
       lower_omp (&DECL_SAVED_TREE (current_function_decl), NULL);
       if (task_shared_vars)
 	pop_gimplify_context (NULL);
