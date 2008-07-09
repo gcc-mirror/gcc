@@ -1399,8 +1399,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		if (constant != expr)
 		  return constant;
 		get_or_alloc_expression_id (expr);
-		add_to_value (new_val_id, expr);
 	      }
+	    add_to_value (new_val_id, expr);
 	  }
 	phi_trans_add (oldexpr, expr, pred);
 	return expr;
@@ -1532,8 +1532,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						     result, new_val_id);
 		PRE_EXPR_REFERENCE (expr) = newref;
 		get_or_alloc_expression_id (expr);
-		add_to_value (new_val_id, expr);
 	      }
+	    add_to_value (new_val_id, expr);
 	  }
 	phi_trans_add (oldexpr, expr, pred);
 	return expr;

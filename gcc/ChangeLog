@@ -1,3 +1,8 @@
+2008-07-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (phi_translate_1): Update placement of
+	add_to_value calls.
+
 2008-07-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct gcc_target): Add hard_regno_scratch_ok field.
