@@ -1,3 +1,9 @@
+2008-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36760
+	* g++.dg/warn/pragma-system_header5.C: New.
+	* g++.dg/warn/pragma-system_header5.h: Likewise.
+
 2008-07-09  Raksit Ashok <raksit@google.com>
 
 	* gcc.dg/wdisallowed-functions-1.c: New test.
