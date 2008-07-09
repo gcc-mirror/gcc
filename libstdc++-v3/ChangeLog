@@ -1,3 +1,10 @@
+2008-07-09  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/random_shuffle.h:
+        (sequential_random_shuffle) Copy data back.
+        * testsuite/25_algorithms/random_shuffle/1.cc:
+        New. Generic random_shuffle functionality test.
+
 2008-07-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* configure.ac: Don't check AC_LIBTOOL_DLOPEN if using newlib.

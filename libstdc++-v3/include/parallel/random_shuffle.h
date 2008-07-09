@@ -491,6 +491,9 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
                                       rng);
           }
 
+        // Copy elements back.
+        std::copy(target, target + n, begin);
+
         delete[] dist0;
         delete[] dist1;
         delete[] oracles;
