@@ -1,3 +1,16 @@
+2008-07-08  Doug Kwan  <dougkwan@google.com>
+
+	* config/arm/arm.opt (mandroid): New option.
+	* config/arm/bpabi.h (ANDROID_LINK_SPEC): New macro.
+	(LINK_SPEC): Enable Android specific behaviour when -mandroid is used.
+	(CC1_SPEC): Same.
+	(CC1PLUS_SPEC): Same.
+	(LIB_SPEC): Same.
+	(STARTFILE_SPEC): Same.
+	(ENDFILE_SPEC): Same.
+	(TARGET_BPABI_CPP_BUILTINS): Define __ANDROID__ when -mandroid is
+	used.
+
 2008-07-08  Raksit Ashok  <raksit@google.com>
 
 	* expr.c (emit_block_move_via_movmem): Fix expected_align parameter.
