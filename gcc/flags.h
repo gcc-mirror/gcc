@@ -279,6 +279,13 @@ extern bool flag_speculative_prefetching_set;
    instrumentation.  */
 extern bool flag_instrument_functions_exclude_p (tree fndecl);
 
+/* Emit warning if the function call is disallowed under
+   -Wdisallowed-function-list=...  */
+extern void warn_if_disallowed_function_p (const_tree fncall);
+
+/* True, if the -Wdisallowed-function-list=... option has been specified.  */
+extern bool warn_disallowed_functions;
+
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
    x * 0 into 0, are not correct for NaN operands, and are normally
