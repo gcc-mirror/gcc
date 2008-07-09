@@ -1,3 +1,16 @@
+2008-07-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattrtab.c (insert_right_side, evaluate_eq_attr): Avoid C++
+	keywords.
+	* genemit.c (gen_insn): Likewise.
+	* gengtype.c (note_def_vec): Likewise.
+	* gengtype.h (note_def_vec): Likewise.
+	* genoutput.c (struct data, output_insn_data, process_template,
+	gen_expand, gen_split, note_constraint): Likewise.
+	* genrecog.c (new_decision, add_to_sequence, factor_tests,
+	make_insn_sequence): Likewise.
+	* gensupport.c (record_insn_name): Likewise.
+
 2008-07-08  Doug Kwan  <dougkwan@google.com>
 
 	* config/arm/arm.opt (mandroid): New option.

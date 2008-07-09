@@ -3529,22 +3529,22 @@ write_roots (pair_p variables)
    where the GTY(()) tags are only present if is_scalar is _false_.  */
 
 void
-note_def_vec (const char *typename, bool is_scalar, struct fileloc *pos)
+note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
 {
   pair_p fields;
   type_p t;
   options_p o;
   type_p len_ty = create_scalar_type ("unsigned");
-  const char *name = concat ("VEC_", typename, "_base", (char *)0);
+  const char *name = concat ("VEC_", type_name, "_base", (char *)0);
 
   if (is_scalar)
     {
-      t = create_scalar_type (typename);
+      t = create_scalar_type (type_name);
       o = 0;
     }
   else
     {
-      t = resolve_typedef (typename, pos);
+      t = resolve_typedef (type_name, pos);
       o = create_option (0, "length", "%h.num");
     }
 

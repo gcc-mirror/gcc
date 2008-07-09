@@ -154,7 +154,7 @@ struct data
 {
   struct data *next;
   const char *name;
-  const char *template;
+  const char *template_code;
   int code_number;
   int index_number;
   const char *filename;
@@ -336,7 +336,7 @@ output_insn_data (void)
 	  break;
 	case INSN_OUTPUT_FORMAT_SINGLE:
 	  {
-	    const char *p = d->template;
+	    const char *p = d->template_code;
 	    char prev = 0;
 
 	    printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
@@ -656,36 +656,36 @@ place_operands (struct data *d)
    templates, or C code to generate the assembler code template.  */
 
 static void
-process_template (struct data *d, const char *template)
+process_template (struct data *d, const char *template_code)
 {
   const char *cp;
   int i;
 
   /* Templates starting with * contain straight code to be run.  */
-  if (template[0] == '*')
+  if (template_code[0] == '*')
     {
-      d->template = 0;
+      d->template_code = 0;
       d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 
       puts ("\nstatic const char *");
       printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
 	      d->code_number);
       puts ("{");
-      print_rtx_ptr_loc (template);
-      puts (template + 1);
+      print_rtx_ptr_loc (template_code);
+      puts (template_code + 1);
       puts ("}");
     }
 
   /* If the assembler code template starts with a @ it is a newline-separated
      list of assembler code templates, one for each alternative.  */
-  else if (template[0] == '@')
+  else if (template_code[0] == '@')
     {
-      d->template = 0;
+      d->template_code = 0;
       d->output_format = INSN_OUTPUT_FORMAT_MULTI;
 
       printf ("\nstatic const char * const output_%d[] = {\n", d->code_number);
 
-      for (i = 0, cp = &template[1]; *cp; )
+      for (i = 0, cp = &template_code[1]; *cp; )
 	{
 	  const char *ep, *sp;
 
@@ -725,7 +725,7 @@ process_template (struct data *d, const char *template)
     }
   else
     {
-      d->template = template;
+      d->template_code = template_code;
       d->output_format = INSN_OUTPUT_FORMAT_SINGLE;
     }
 }
@@ -952,7 +952,7 @@ gen_expand (rtx insn, int lineno)
 
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
-  d->template = 0;
+  d->template_code = 0;
   d->output_format = INSN_OUTPUT_FORMAT_NONE;
 
   validate_insn_alternatives (d);
@@ -993,7 +993,7 @@ gen_split (rtx split, int lineno)
   d->n_operands = max_opno + 1;
   d->n_dups = 0;
   d->n_alternatives = 0;
-  d->template = 0;
+  d->template_code = 0;
   d->output_format = INSN_OUTPUT_FORMAT_NONE;
 
   place_operands (d);
@@ -1120,7 +1120,7 @@ note_constraint (rtx exp, int lineno)
 {
   const char *name = XSTR (exp, 0);
   unsigned int namelen = strlen (name);
-  struct constraint_data **iter, **slot, *new;
+  struct constraint_data **iter, **slot, *new_cdata;
 
   /* The 'm' constraint is special here since that constraint letter
      can be overridden by the back end by defining the
@@ -1173,12 +1173,12 @@ note_constraint (rtx exp, int lineno)
 	  return;
 	}
     }
-  new = XNEWVAR (struct constraint_data, sizeof (struct constraint_data) + namelen);
-  strcpy ((char *)new + offsetof(struct constraint_data, name), name);
-  new->namelen = namelen;
-  new->lineno = lineno;
-  new->next_this_letter = *slot;
-  *slot = new;
+  new_cdata = XNEWVAR (struct constraint_data, sizeof (struct constraint_data) + namelen);
+  strcpy ((char *)new_cdata + offsetof(struct constraint_data, name), name);
+  new_cdata->namelen = namelen;
+  new_cdata->lineno = lineno;
+  new_cdata->next_this_letter = *slot;
+  *slot = new_cdata;
 }
 
 /* Return the length of the constraint name beginning at position S
