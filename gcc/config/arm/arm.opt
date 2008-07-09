@@ -26,10 +26,6 @@ mabort-on-noreturn
 Target Report Mask(ABORT_NORETURN)
 Generate a call to abort if a noreturn function returns
 
-mandroid
-Target RejectNegative Mask(ANDROID)
-Generate code for the Android operating system.
-
 mapcs
 Target RejectNegative Mask(APCS_FRAME) MaskExists Undocumented
 
