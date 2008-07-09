@@ -1,3 +1,8 @@
+2008-07-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_canonical_va_list_type): New.
+	(TARGET_CANONICAL_VA_LIST_TYPE): Define.
+
 2008-07-09  Raksit Ashok <raksit@google.com>
 
 	* doc/invoke.texi (Option Summary): Mention new option
