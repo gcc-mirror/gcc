@@ -85,26 +85,6 @@ struct gimplify_omp_ctx
   enum omp_region_type region_type;
 };
 
-struct gimplify_ctx
-{
-  struct gimplify_ctx *prev_context;
-
-  tree current_bind_expr;
-  tree temps;
-  tree conditional_cleanups;
-  tree exit_label;
-  tree return_temp;
-  
-  VEC(tree,heap) *case_labels;
-  /* The formal temporary table.  Should this be persistent?  */
-  htab_t temp_htab;
-
-  int conditions;
-  bool save_stack;
-  bool into_ssa;
-  bool allow_rhs_cond_expr;
-};
-
 static struct gimplify_ctx *gimplify_ctxp;
 static struct gimplify_omp_ctx *gimplify_omp_ctxp;
 
@@ -169,15 +149,10 @@ gimple_tree_eq (const void *p1, const void *p2)
 /* Set up a context for the gimplifier.  */
 
 void
-push_gimplify_context (void)
+push_gimplify_context (struct gimplify_ctx *c)
 {
-  struct gimplify_ctx *c;
-
-  c = (struct gimplify_ctx *) xcalloc (1, sizeof (struct gimplify_ctx));
+  memset (c, '\0', sizeof (*c));
   c->prev_context = gimplify_ctxp;
-  if (optimize)
-    c->temp_htab = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
-
   gimplify_ctxp = c;
 }
 
@@ -202,9 +177,8 @@ pop_gimplify_context (tree body)
   else
     record_vars (c->temps);
 
-  if (optimize)
+  if (c->temp_htab)
     htab_delete (c->temp_htab);
-  free (c);
 }
 
 static void
@@ -575,6 +549,9 @@ lookup_tmp_var (tree val, bool is_formal)
       void **slot;
 
       elt.val = val;
+      if (gimplify_ctxp->temp_htab == NULL)
+        gimplify_ctxp->temp_htab
+	  = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
       slot = htab_find_slot (gimplify_ctxp->temp_htab, (void *)&elt, INSERT);
       if (*slot == NULL)
 	{
@@ -5105,6 +5082,7 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p,
 			   enum omp_region_type region_type)
 {
   struct gimplify_omp_ctx *ctx, *outer_ctx;
+  struct gimplify_ctx gctx;
   tree c;
 
   ctx = new_omp_context (region_type);
@@ -5161,10 +5139,10 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p,
 	      omp_add_variable (ctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
 				GOVD_LOCAL | GOVD_SEEN);
 	      gimplify_omp_ctxp = ctx;
-	      push_gimplify_context ();
+	      push_gimplify_context (&gctx);
 	      gimplify_stmt (&OMP_CLAUSE_REDUCTION_INIT (c));
 	      pop_gimplify_context (OMP_CLAUSE_REDUCTION_INIT (c));
-	      push_gimplify_context ();
+	      push_gimplify_context (&gctx);
 	      gimplify_stmt (&OMP_CLAUSE_REDUCTION_MERGE (c));
 	      pop_gimplify_context (OMP_CLAUSE_REDUCTION_MERGE (c));
 	      gimplify_omp_ctxp = outer_ctx;
@@ -5173,7 +5151,7 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p,
 		   && OMP_CLAUSE_LASTPRIVATE_STMT (c))
 	    {
 	      gimplify_omp_ctxp = ctx;
-	      push_gimplify_context ();
+	      push_gimplify_context (&gctx);
 	      if (TREE_CODE (OMP_CLAUSE_LASTPRIVATE_STMT (c)) != BIND_EXPR)
 		{
 		  tree bind = build3 (BIND_EXPR, void_type_node, NULL,
@@ -5396,13 +5374,14 @@ static enum gimplify_status
 gimplify_omp_parallel (tree *expr_p, tree *pre_p)
 {
   tree expr = *expr_p;
+  struct gimplify_ctx gctx;
 
   gimplify_scan_omp_clauses (&OMP_PARALLEL_CLAUSES (expr), pre_p,
 			     OMP_PARALLEL_COMBINED (expr)
 			     ? ORT_COMBINED_PARALLEL
 			     : ORT_PARALLEL);
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   gimplify_stmt (&OMP_PARALLEL_BODY (expr));
 
@@ -5425,10 +5404,11 @@ static enum gimplify_status
 gimplify_omp_task (tree *expr_p, tree *pre_p)
 {
   tree expr = *expr_p;
+  struct gimplify_ctx gctx;
 
   gimplify_scan_omp_clauses (&OMP_TASK_CLAUSES (expr), pre_p, ORT_TASK);
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   gimplify_stmt (&OMP_TASK_BODY (expr));
 
@@ -6653,11 +6633,12 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
   tree body, parm_stmts;
+  struct gimplify_ctx gctx;
 
   timevar_push (TV_TREE_GIMPLIFY);
 
   gcc_assert (gimplify_ctxp == NULL);
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   /* Unshare most shared trees in the body and in that of any nested functions.
      It would seem we don't have to do this for nested functions because
@@ -6799,6 +6780,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
   tree t;
   enum gimplify_status ret;
   gimple_predicate gimple_test_f;
+  struct gimplify_ctx gctx;
 
   *stmts = NULL_TREE;
 
@@ -6807,7 +6789,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 
   gimple_test_f = simple ? is_gimple_val : is_gimple_reg_rhs;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
   gimplify_ctxp->into_ssa = gimple_in_ssa_p (cfun);
   gimplify_ctxp->allow_rhs_cond_expr = true;
 

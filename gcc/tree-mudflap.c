@@ -421,13 +421,15 @@ mudflap_init (void)
 static unsigned int
 execute_mudflap_function_ops (void)
 {
+  struct gimplify_ctx gctx;
+
   /* Don't instrument functions such as the synthetic constructor
      built during mudflap_finish_file.  */
   if (mf_marked_p (current_function_decl) ||
       DECL_ARTIFICIAL (current_function_decl))
     return 0;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   /* In multithreaded mode, don't cache the lookup cache parameters.  */
   if (! flag_mudflap_threads)
@@ -958,13 +960,15 @@ mf_xform_derefs (void)
 static unsigned int
 execute_mudflap_function_decls (void)
 {
+  struct gimplify_ctx gctx;
+
   /* Don't instrument functions such as the synthetic constructor
      built during mudflap_finish_file.  */
   if (mf_marked_p (current_function_decl) ||
       DECL_ARTIFICIAL (current_function_decl))
     return 0;
 
-  push_gimplify_context ();
+  push_gimplify_context (&gctx);
 
   mf_xform_decls (DECL_SAVED_TREE (current_function_decl),
                   DECL_ARGUMENTS (current_function_decl));
