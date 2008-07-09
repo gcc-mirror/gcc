@@ -703,4 +703,10 @@ default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
   return true;
 }
 
+bool
+default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 #include "gt-targhooks.h"

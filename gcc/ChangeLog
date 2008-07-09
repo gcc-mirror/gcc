@@ -1,3 +1,16 @@
+2008-07-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct gcc_target): Add hard_regno_scratch_ok field.
+	* target-def.h (TARGET_HARD_REGNO_SCRATCH_OK): New.
+	(TARGET_INITIALIZER): Use TARGET_HARD_REGNO_SCRATCH_OK.
+	* targhooks.c (default_hard_regno_scratch_ok): New function.
+	* targhooks.h (default_hard_regno_scratch_ok): Declare function.
+	* doc/tm.texi: Document TARGET_HARD_REGNO_SCRATCH_OK hook.
+	* recog.c:  Include "target.h".
+	(peep2_find_free_register): Add check for global regs. Add target
+	specific check.
+	* Makefile.in (recog.o): Depend on target.h.
+
 2008-07-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_canonical_va_list_type): New.
