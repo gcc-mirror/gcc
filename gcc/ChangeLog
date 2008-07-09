@@ -1,3 +1,8 @@
+2008-07-09  Christian Bruel  <christian.bruel@st.com>
+
+	* final.c (get_attr_length_1): Call get_attr_length_1 with fallback_fn
+	 instead of get_attr_length.
+
 2008-07-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattrtab.c (insert_right_side, evaluate_eq_attr): Avoid C++

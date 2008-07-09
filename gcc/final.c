@@ -410,7 +410,7 @@ get_attr_length_1 (rtx insn ATTRIBUTE_UNUSED,
 	  length = asm_insn_count (body) * fallback_fn (insn);
 	else if (GET_CODE (body) == SEQUENCE)
 	  for (i = 0; i < XVECLEN (body, 0); i++)
-	    length += get_attr_length (XVECEXP (body, 0, i));
+	    length += get_attr_length_1 (XVECEXP (body, 0, i), fallback_fn);
 	else
 	  length = fallback_fn (insn);
 	break;
