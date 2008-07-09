@@ -872,6 +872,10 @@ struct gcc_target
      but will be later.  */
   void (* instantiate_decls) (void);
 
+  /* Return true if is OK to use a hard register REGNO as scratch register
+     in peephole2.  */
+  bool (* hard_regno_scratch_ok) (unsigned int regno);
+
   /* Functions specific to the C family of frontends.  */
   struct c {
     /* Return machine mode for non-standard suffix

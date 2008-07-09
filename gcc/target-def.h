@@ -619,6 +619,10 @@
 #define TARGET_INSTANTIATE_DECLS hook_void_void
 #endif
 
+#ifndef TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK default_hard_regno_scratch_ok
+#endif
+
 /* C specific.  */
 #ifndef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
@@ -846,6 +850,7 @@
   TARGET_SECONDARY_RELOAD,			\
   TARGET_EXPAND_TO_RTL_HOOK,			\
   TARGET_INSTANTIATE_DECLS,			\
+  TARGET_HARD_REGNO_SCRATCH_OK,			\
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EMUTLS,				\
