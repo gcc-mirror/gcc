@@ -474,14 +474,14 @@ extern void debug_decision_list
 static struct decision *
 new_decision (const char *position, struct decision_head *last)
 {
-  struct decision *new = XCNEW (struct decision);
+  struct decision *new_decision = XCNEW (struct decision);
 
-  new->success = *last;
-  new->position = xstrdup (position);
-  new->number = next_number++;
+  new_decision->success = *last;
+  new_decision->position = xstrdup (position);
+  new_decision->number = next_number++;
 
-  last->first = last->last = new;
-  return new;
+  last->first = last->last = new_decision;
+  return new_decision;
 }
 
 /* Create a new test and link it in at PLACE.  */
@@ -877,7 +877,7 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
 		 enum routine_type insn_type, int top)
 {
   RTX_CODE code;
-  struct decision *this, *sub;
+  struct decision *this_decision, *sub;
   struct decision_test *test;
   struct decision_test **place;
   char *subpos;
@@ -894,8 +894,8 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
   strcpy (subpos, position);
   subpos[depth + 1] = 0;
 
-  sub = this = new_decision (position, last);
-  place = &this->tests;
+  sub = this_decision = new_decision (position, last);
+  place = &this_decision->tests;
 
  restart:
   mode = GET_MODE (pattern);
@@ -1142,20 +1142,20 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
      before any of the nodes we may have added above.  */
   if (code != UNKNOWN)
     {
-      place = &this->tests;
+      place = &this_decision->tests;
       test = new_decision_test (DT_code, &place);
       test->u.code = code;
     }
 
   if (mode != VOIDmode)
     {
-      place = &this->tests;
+      place = &this_decision->tests;
       test = new_decision_test (DT_mode, &place);
       test->u.mode = mode;
     }
 
   /* If we didn't insert any tests or accept nodes, hork.  */
-  gcc_assert (this->tests);
+  gcc_assert (this_decision->tests);
 
  ret:
   free (subpos);
@@ -1592,7 +1592,7 @@ factor_tests (struct decision_head *head)
   for (first = head->first; first && first->next; first = next)
     {
       enum decision_type type;
-      struct decision *new, *old_last;
+      struct decision *new_dec, *old_last;
 
       type = first->tests->type;
       next = first->next;
@@ -1615,8 +1615,8 @@ factor_tests (struct decision_head *head)
          below our first test.  */
       if (first->tests->next != NULL)
 	{
-	  new = new_decision (first->position, &first->success);
-	  new->tests = first->tests->next;
+	  new_dec = new_decision (first->position, &first->success);
+	  new_dec->tests = first->tests->next;
 	  first->tests->next = NULL;
 	}
 
@@ -1633,14 +1633,14 @@ factor_tests (struct decision_head *head)
 
 	  if (next->tests->next != NULL)
 	    {
-	      new = new_decision (next->position, &next->success);
-	      new->tests = next->tests->next;
+	      new_dec = new_decision (next->position, &next->success);
+	      new_dec->tests = next->tests->next;
 	      next->tests->next = NULL;
 	    }
-	  new = next;
+	  new_dec = next;
 	  next = next->next;
-	  new->next = NULL;
-	  h.first = h.last = new;
+	  new_dec->next = NULL;
+	  h.first = h.last = new_dec;
 
 	  merge_trees (head, &h);
 	}
@@ -2618,25 +2618,25 @@ make_insn_sequence (rtx insn, enum routine_type type)
 
 	  if (i != XVECLEN (x, 0))
 	    {
-	      rtx new;
+	      rtx new_rtx;
 	      struct decision_head clobber_head;
 
 	      /* Build a similar insn without the clobbers.  */
 	      if (i == 1)
-		new = XVECEXP (x, 0, 0);
+		new_rtx = XVECEXP (x, 0, 0);
 	      else
 		{
 		  int j;
 
-		  new = rtx_alloc (PARALLEL);
-		  XVEC (new, 0) = rtvec_alloc (i);
+		  new_rtx = rtx_alloc (PARALLEL);
+		  XVEC (new_rtx, 0) = rtvec_alloc (i);
 		  for (j = i - 1; j >= 0; j--)
-		    XVECEXP (new, 0, j) = XVECEXP (x, 0, j);
+		    XVECEXP (new_rtx, 0, j) = XVECEXP (x, 0, j);
 		}
 
 	      /* Recognize it.  */
 	      memset (&clobber_head, 0, sizeof(clobber_head));
-	      last = add_to_sequence (new, &clobber_head, "", type, 1);
+	      last = add_to_sequence (new_rtx, &clobber_head, "", type, 1);
 
 	      /* Find the end of the test chain on the last node.  */
 	      for (test = last->tests; test->next; test = test->next)

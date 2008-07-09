@@ -1846,11 +1846,11 @@ insert_right_side (enum rtx_code code, rtx exp, rtx term, int insn_code, int ins
 
   if (GET_CODE (exp) == code)
     {
-      rtx new = insert_right_side (code, XEXP (exp, 1),
-				   term, insn_code, insn_index);
-      if (new != XEXP (exp, 1))
+      rtx new_rtx = insert_right_side (code, XEXP (exp, 1),
+				       term, insn_code, insn_index);
+      if (new_rtx != XEXP (exp, 1))
 	/* Make a copy of this expression and call recursively.  */
-	newexp = attr_rtx (code, XEXP (exp, 0), new);
+	newexp = attr_rtx (code, XEXP (exp, 0), new_rtx);
       else
 	newexp = exp;
     }
@@ -1980,10 +1980,10 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
       for (i = 0; i < XVECLEN (value, 0); i += 2)
 	{
-	  rtx this = simplify_test_exp_in_temp (XVECEXP (value, 0, i),
-						insn_code, insn_index);
+	  rtx this_cond = simplify_test_exp_in_temp (XVECEXP (value, 0, i),
+						    insn_code, insn_index);
 
-	  right = insert_right_side (AND, andexp, this,
+	  right = insert_right_side (AND, andexp, this_cond,
 				     insn_code, insn_index);
 	  right = insert_right_side (AND, right,
 				     evaluate_eq_attr (exp,
@@ -1995,7 +1995,7 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 				     insn_code, insn_index);
 
 	  /* Add this condition into the AND expression.  */
-	  newexp = attr_rtx (NOT, this);
+	  newexp = attr_rtx (NOT, this_cond);
 	  andexp = insert_right_side (AND, andexp, newexp,
 				      insn_code, insn_index);
 	}

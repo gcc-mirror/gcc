@@ -1428,7 +1428,7 @@ record_insn_name (int code, const char *name)
 {
   static const char *last_real_name = "insn";
   static int last_real_code = 0;
-  char *new;
+  char *new_name;
 
   if (insn_name_ptr_size <= code)
     {
@@ -1442,14 +1442,14 @@ record_insn_name (int code, const char *name)
 
   if (!name || name[0] == '\0')
     {
-      new = XNEWVAR (char, strlen (last_real_name) + 10);
-      sprintf (new, "%s+%d", last_real_name, code - last_real_code);
+      new_name = XNEWVAR (char, strlen (last_real_name) + 10);
+      sprintf (new_name, "%s+%d", last_real_name, code - last_real_code);
     }
   else
     {
-      last_real_name = new = xstrdup (name);
+      last_real_name = new_name = xstrdup (name);
       last_real_code = code;
     }
 
-  insn_name_ptr[code] = new;
+  insn_name_ptr[code] = new_name;
 }
