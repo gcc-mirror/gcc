@@ -8765,14 +8765,6 @@ tsubst_function_type (tree t,
   if (arg_types == error_mark_node)
     return error_mark_node;
 
-  if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED
-      && in_decl != NULL_TREE
-      && !TREE_NO_WARNING (in_decl)
-      && !DECL_IN_SYSTEM_HEADER (in_decl)
-      && (SCALAR_TYPE_P (return_type) || VOID_TYPE_P (return_type)))
-    warning (OPT_Wignored_qualifiers,
-            "type qualifiers ignored on function return type");
-
   /* Construct a new type node and return it.  */
   if (TREE_CODE (t) == FUNCTION_TYPE)
     fntype = build_function_type (return_type, arg_types);
