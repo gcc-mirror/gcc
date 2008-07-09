@@ -478,7 +478,7 @@ static const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
-  LEA_REGS,	LEA_REGS,	M16_NA_REGS,	V1_REG,
+  LEA_REGS,	LEA_REGS,	M16_NA_REGS,	M16_NA_REGS,
   M16_REGS,	M16_REGS,	M16_REGS,	M16_REGS,
   LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
   LEA_REGS,	LEA_REGS,	LEA_REGS,	LEA_REGS,
@@ -2367,6 +2367,21 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
   return insn;
 }
 
+/* Return a pseudo register that contains the current thread pointer.  */
+
+static rtx
+mips_get_tp (void)
+{
+  rtx tp;
+
+  tp = gen_reg_rtx (Pmode);
+  if (Pmode == DImode)
+    emit_insn (gen_tls_get_tp_di (tp));
+  else
+    emit_insn (gen_tls_get_tp_si (tp));
+  return tp;
+}
+
 /* Generate the code to access LOC, a thread-local SYMBOL_REF, and return
    its address.  The return value will be both a valid address and a valid
    SET_SRC (either a REG or a LO_SUM).  */
@@ -2374,7 +2389,7 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 static rtx
 mips_legitimize_tls_address (rtx loc)
 {
-  rtx dest, insn, v0, v1, tmp1, tmp2, eqv;
+  rtx dest, insn, v0, tp, tmp1, tmp2, eqv;
   enum tls_model model;
 
   if (TARGET_MIPS16)
@@ -2416,31 +2431,20 @@ mips_legitimize_tls_address (rtx loc)
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
-      v1 = gen_rtx_REG (Pmode, GP_RETURN + 1);
+      tp = mips_get_tp ();
       tmp1 = gen_reg_rtx (Pmode);
       tmp2 = mips_unspec_address (loc, SYMBOL_GOTTPREL);
       if (Pmode == DImode)
-	{
-	  emit_insn (gen_tls_get_tp_di (v1));
-	  emit_insn (gen_load_gotdi (tmp1, pic_offset_table_rtx, tmp2));
-	}
+	emit_insn (gen_load_gotdi (tmp1, pic_offset_table_rtx, tmp2));
       else
-	{
-	  emit_insn (gen_tls_get_tp_si (v1));
-	  emit_insn (gen_load_gotsi (tmp1, pic_offset_table_rtx, tmp2));
-	}
+	emit_insn (gen_load_gotsi (tmp1, pic_offset_table_rtx, tmp2));
       dest = gen_reg_rtx (Pmode);
-      emit_insn (gen_add3_insn (dest, tmp1, v1));
+      emit_insn (gen_add3_insn (dest, tmp1, tp));
       break;
 
     case TLS_MODEL_LOCAL_EXEC:
-      v1 = gen_rtx_REG (Pmode, GP_RETURN + 1);
-      if (Pmode == DImode)
-	emit_insn (gen_tls_get_tp_di (v1));
-      else
-	emit_insn (gen_tls_get_tp_si (v1));
-
-      tmp1 = mips_unspec_offset_high (NULL, v1, loc, SYMBOL_TPREL);
+      tp = mips_get_tp ();
+      tmp1 = mips_unspec_offset_high (NULL, tp, loc, SYMBOL_TPREL);
       dest = gen_rtx_LO_SUM (Pmode, tmp1,
 			     mips_unspec_address (loc, SYMBOL_TPREL));
       break;

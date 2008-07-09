@@ -53,9 +53,6 @@
 (define_register_constraint "j" "PIC_FN_ADDR_REG"
   "@internal")
 
-(define_register_constraint "v" "V1_REG"
-  "@internal")
-
 (define_register_constraint "y" "GR_REGS"
   "Equivalent to @code{r}; retained for backwards compatibility.")
 

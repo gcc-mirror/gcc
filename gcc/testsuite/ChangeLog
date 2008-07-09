@@ -1,3 +1,8 @@
+2008-07-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/35802
+	* gcc.target/mips/pr35802.c: New test.
+
 2008-07-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/34963

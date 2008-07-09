@@ -63,6 +63,7 @@
    
    (UNSPEC_ADDRESS_FIRST	100)
 
+   (TLS_GET_TP_REGNUM		3)
    (GOT_VERSION_REGNUM		79)
 
    ;; For MIPS Paired-Singled Floating Point Instructions.
@@ -6145,25 +6146,46 @@
   [(set_attr "type" "arith")
    (set_attr "extended_mips16" "yes")])
 
-; Thread-Local Storage
+;; Thread-Local Storage
 
-; The TLS base pointer is accessed via "rdhwr $v1, $29".  No current
-; MIPS architecture defines this register, and no current
-; implementation provides it; instead, any OS which supports TLS is
-; expected to trap and emulate this instruction.  rdhwr is part of the
-; MIPS 32r2 specification, but we use it on any architecture because
-; we expect it to be emulated.  Use .set to force the assembler to
-; accept it.
-
-(define_insn "tls_get_tp_<mode>"
-  [(set (match_operand:P 0 "register_operand" "=v")
-	(unspec:P [(const_int 0)]
-		  UNSPEC_TLS_GET_TP))]
+;; The TLS base pointer is accessed via "rdhwr $3, $29".  No current
+;; MIPS architecture defines this register, and no current
+;; implementation provides it; instead, any OS which supports TLS is
+;; expected to trap and emulate this instruction.  rdhwr is part of the
+;; MIPS 32r2 specification, but we use it on any architecture because
+;; we expect it to be emulated.  Use .set to force the assembler to
+;; accept it.
+;;
+;; We do not use a constraint to force the destination to be $3
+;; because $3 can appear explicitly as a function return value.
+;; If we leave the use of $3 implicit in the constraints until
+;; reload, we may end up making a $3 return value live across
+;; the instruction, leading to a spill failure when reloading it.
+(define_insn_and_split "tls_get_tp_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(unspec:P [(const_int 0)] UNSPEC_TLS_GET_TP))
+   (clobber (reg:P TLS_GET_TP_REGNUM))]
   "HAVE_AS_TLS && !TARGET_MIPS16"
-  ".set\tpush\;.set\tmips32r2\t\;rdhwr\t%0,$29\;.set\tpop"
+  "#"
+  "&& reload_completed"
+  [(set (reg:P TLS_GET_TP_REGNUM)
+	(unspec:P [(const_int 0)] UNSPEC_TLS_GET_TP))
+   (set (match_dup 0) (reg:P TLS_GET_TP_REGNUM))]
+  ""
   [(set_attr "type" "unknown")
    ; Since rdhwr always generates a trap for now, putting it in a delay
    ; slot would make the kernel's emulation of it much slower.
+   (set_attr "can_delay" "no")
+   (set_attr "mode" "<MODE>")
+   (set_attr "length" "8")])
+
+(define_insn "*tls_get_tp_<mode>_split"
+  [(set (reg:P TLS_GET_TP_REGNUM)
+	(unspec:P [(const_int 0)] UNSPEC_TLS_GET_TP))]
+  "HAVE_AS_TLS && !TARGET_MIPS16"
+  ".set\tpush\;.set\tmips32r2\t\;rdhwr\t$3,$29\;.set\tpop"
+  [(set_attr "type" "unknown")
+   ; See tls_get_tp_<mode>
    (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")])
 
