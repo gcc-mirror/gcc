@@ -371,6 +371,12 @@ DEF_VEC_ALLOC_P(const_char_p,heap);
 
 static VEC(const_char_p,heap) *ignored_options;
 
+/* Function calls disallowed under -Wdisallowed-function-list=...  */
+static VEC(char_p,heap) *warning_disallowed_functions;
+
+/* If -Wdisallowed-function-list=...  */
+bool warn_disallowed_functions = false;
+
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
@@ -655,12 +661,10 @@ add_input_filename (const char *filename)
   in_fnames[num_in_fnames - 1] = filename;
 }
 
-/* Add functions or file names to a vector of names to exclude from
-   instrumentation.  */
+/* Add comma-separated strings to a char_p vector.  */
 
 static void
-add_instrument_functions_exclude_list (VEC(char_p,heap) **pvec,
-				       const char* arg)
+add_comma_separated_to_vector (VEC(char_p,heap) **pvec, const char* arg)
 {
   char *tmp;
   char *r;
@@ -734,6 +738,31 @@ flag_instrument_functions_exclude_p (tree fndecl)
     }
 
   return false;
+}
+
+
+/* Return whether this function call is disallowed.  */
+void
+warn_if_disallowed_function_p (const_tree exp)
+{
+  if (TREE_CODE(exp) == CALL_EXPR
+      && VEC_length (char_p, warning_disallowed_functions) > 0)
+    {
+      int i;
+      char *s;
+      const char *fnname =
+          IDENTIFIER_POINTER (DECL_NAME (get_callee_fndecl (exp)));
+      for (i = 0; VEC_iterate (char_p, warning_disallowed_functions, i, s);
+           ++i)
+        {
+          if (strcmp (fnname, s) == 0)
+            {
+              warning (OPT_Wdisallowed_function_list_,
+                       "disallowed call to %qs", fnname);
+              break;
+            }
+        }
+    }
 }
 
 /* Decode and handle the vector of command line options.  LANG_MASK
@@ -1541,6 +1570,12 @@ common_handle_option (size_t scode, const char *arg, int value,
       set_Wextra (value);
       break;
 
+    case OPT_Wdisallowed_function_list_:
+      warn_disallowed_functions = true;
+      add_comma_separated_to_vector
+	(&warning_disallowed_functions, arg);
+      break;
+
     case OPT_Werror_:
       enable_warning_as_error (arg, value, lang_mask);
       break;
@@ -1691,12 +1726,12 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_finstrument_functions_exclude_function_list_:
-      add_instrument_functions_exclude_list
+      add_comma_separated_to_vector
 	(&flag_instrument_functions_exclude_functions, arg);
       break;
 
     case OPT_finstrument_functions_exclude_file_list_:
-      add_instrument_functions_exclude_list
+      add_comma_separated_to_vector
 	(&flag_instrument_functions_exclude_files, arg);
       break;
 

@@ -1,3 +1,10 @@
+2008-07-09  Raksit Ashok <raksit@google.com>
+
+	* gcc.dg/wdisallowed-functions-1.c: New test.
+	* gcc.dg/wdisallowed-functions-2.c: New test.
+	* g++.dg/warn/Wdisallowed-functions-1.C: New test.
+	* g++.dg/warn/Wdisallowed-functions-2.C: New test.
+
 2008-07-08  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/34963

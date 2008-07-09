@@ -1,3 +1,23 @@
+2008-07-09  Raksit Ashok <raksit@google.com>
+
+	* doc/invoke.texi (Option Summary): Mention new option
+	-Wdisallowed-function-list=...
+	(Warning Options): Document -Wdisallowed-function-list=...
+	* common.opt (Wdisallowed-function-list=): New flag.
+	* flags.h (warn_disallowed_functions): External definition of new
+	boolean warning flag.
+	(warn_if_disallowed_function_p): Declare new function.
+	* opts.c (warning_disallowed_functions): New static variable.
+	(warn_disallowed_functions): New boolean warning flag.
+	(warn_if_disallowed_function_p): New function.
+	(add_comma_separated_to_vector): Rename
+	add_instrument_functions_exclude_list to this.
+	(common_handle_option): Handle new option. Rename calls to
+	add_instrument_functions_exclude_list into calls to
+	add_comma_separated_to_vector.
+	* c-parser.c (c_parser_postfix_expression_after_primary): New warning
+	based on flag warn_disallowed_functions.
+
 2008-07-09  Christian Bruel  <christian.bruel@st.com>
 
 	* final.c (get_attr_length_1): Call get_attr_length_1 with fallback_fn
