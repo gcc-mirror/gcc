@@ -1,6 +1,12 @@
 2008-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36760
+	* pt.c (tsubst_function_type): Remove warning for type qualifiers
+	on function return type.
+
+2008-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36760
 	* pt.c (tsubst_function_type): Don't warn for type qualifiers
 	on function return type in case of system header.
 
