@@ -8768,6 +8768,7 @@ tsubst_function_type (tree t,
   if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED
       && in_decl != NULL_TREE
       && !TREE_NO_WARNING (in_decl)
+      && !DECL_IN_SYSTEM_HEADER (in_decl)
       && (SCALAR_TYPE_P (return_type) || VOID_TYPE_P (return_type)))
     warning (OPT_Wignored_qualifiers,
             "type qualifiers ignored on function return type");
