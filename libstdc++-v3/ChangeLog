@@ -1,3 +1,9 @@
+2008-07-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc,
+	testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Use
+	-Wl,--no-enum-size-warning for arm*-*-linux*eabi.
+
 2008-07-09  Johannes Singler  <singler@ira.uka.de>
 
 	PR libstdc++/36729
