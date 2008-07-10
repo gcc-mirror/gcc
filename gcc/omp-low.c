@@ -6246,10 +6246,12 @@ lower_omp_2 (tree *tp, int *walk_subtrees, void *data)
   omp_context *ctx = (omp_context *) data;
 
   /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
-  if (TREE_CODE (t) == VAR_DECL
-      && ((ctx && DECL_HAS_VALUE_EXPR_P (t))
-	  || (task_shared_vars
-	      && bitmap_bit_p (task_shared_vars, DECL_UID (t)))))
+  if (TREE_CODE (t) == VAR_DECL && ctx && DECL_HAS_VALUE_EXPR_P (t))
+    return t;
+
+  if (task_shared_vars
+      && DECL_P (t)
+      && bitmap_bit_p (task_shared_vars, DECL_UID (t)))
     return t;
 
   /* If a global variable has been privatized, TREE_CONSTANT on

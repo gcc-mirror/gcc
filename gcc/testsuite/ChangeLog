@@ -1,5 +1,9 @@
 2008-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/36790
+	* gcc.dg/gomp/pr36790.c: New test.
+	* g++.dg/gomp/pr36790.C: New test.
+
 	PR rtl-optimization/36419
 	* g++.dg/eh/async-unwind1.C: New test.
 
