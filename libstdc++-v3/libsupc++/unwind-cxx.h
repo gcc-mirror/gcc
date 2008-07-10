@@ -201,6 +201,32 @@ __GXX_INIT_EXCEPTION_CLASS(_Unwind_Exception_Class c)
   c[7] = '\0';
 }
 
+static inline bool
+__is_gxx_forced_unwind_class(_Unwind_Exception_Class c)
+{
+  return c[0] == 'G'
+	 && c[1] == 'N'
+	 && c[2] == 'U'
+	 && c[3] == 'C'
+	 && c[4] == 'F'
+	 && c[5] == 'O'
+	 && c[6] == 'R'
+	 && c[7] == '\0';
+}
+
+static inline void
+__GXX_INIT_FORCED_UNWIND_CLASS(_Unwind_Exception_Class c)
+{
+  c[0] = 'G';
+  c[1] = 'N';
+  c[2] = 'U';
+  c[3] = 'C';
+  c[4] = 'F';
+  c[5] = 'O';
+  c[6] = 'R';
+  c[7] = '\0';
+}
+
 static inline void*
 __gxx_caught_object(_Unwind_Exception* eo)
 {
