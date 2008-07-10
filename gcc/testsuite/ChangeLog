@@ -1,3 +1,13 @@
+2008-07-09  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/no-asm-1.c: New test.
+	* gcc.dg/no-asm-2.c: New test.
+	* gcc.dg/no-asm-3.c: New test.
+	* gcc.dg/no-asm-4.c: New test.
+	* g++.dg/ext/no-asm-1.C: New test.
+	* g++.dg/ext/no-asm-2.C: New test.
+	* g++.dg/ext/no-gnu-keywords-1.C: New test.
+
 2008-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36760
