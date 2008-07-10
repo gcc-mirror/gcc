@@ -1,3 +1,14 @@
+2008-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36419
+	* g++.dg/eh/async-unwind1.C: New test.
+
+2008-07-10  Peter Maydell  <pmaydell@chiark.greenend.org.uk>
+
+	PR other/28322
+	* gcc.dg/pr28322-2.c: Check that emitted diagnostic for -Wno-foobar
+	is a warning and not an error.
+
 2008-07-09  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/no-asm-1.c: New test.
