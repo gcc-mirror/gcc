@@ -1,3 +1,8 @@
+2008-07-10  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/balanced_quicksort.h:
+        (qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
+
 2008-07-09  Andreas Beckmann  <gcc@abeckmann.de>
 
 	PR libstdc++/36552

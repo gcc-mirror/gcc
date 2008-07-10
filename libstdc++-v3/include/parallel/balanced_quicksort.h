@@ -122,11 +122,11 @@ template<typename RandomAccessIterator, typename Comparator>
 
     _GLIBCXX_PARALLEL_ASSERT(
            (!comp(*pivot_pos, *begin) && !comp(*(begin + n / 2), *pivot_pos))
-        || (!comp(*pivot_pos, *begin) && !comp(*end, *pivot_pos))
+        || (!comp(*pivot_pos, *begin) && !comp(*(end - 1), *pivot_pos))
         || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*begin, *pivot_pos))
-        || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*end, *pivot_pos))
-        || (!comp(*pivot_pos, *end) && !comp(*begin, *pivot_pos))
-        || (!comp(*pivot_pos, *end) && !comp(*(begin + n / 2), *pivot_pos)));
+        || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*(end - 1), *pivot_pos))
+        || (!comp(*pivot_pos, *(end - 1)) && !comp(*begin, *pivot_pos))
+        || (!comp(*pivot_pos, *(end - 1)) && !comp(*(begin + n / 2), *pivot_pos)));
 #endif
 
     // Swap pivot value to end.
