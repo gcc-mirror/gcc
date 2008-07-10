@@ -1,3 +1,9 @@
+2008-07-09  Andreas Beckmann  <gcc@abeckmann.de>
+
+	PR libstdc++/36552
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	null_metadata.hpp: Remove self-include.
+
 2008-07-09  Johannes Singler  <singler@ira.uka.de>
 
 	PR libstdc++/36729
