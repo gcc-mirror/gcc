@@ -457,14 +457,17 @@ complain_wrong_lang (const char *text, const struct cl_option *option,
 
 /* Buffer the unknown option described by the string OPT.  Currently,
    we only complain about unknown -Wno-* options if they may have
-   prevented a diagnostic. Otherwise, we just ignore them.  */
+   prevented a diagnostic. Otherwise, we just ignore them.
+   Note that if we do complain, it is only as a warning, not an error;
+   passing the compiler an unrecognised -Wno-* option should never
+   change whether the compilation succeeds or fails.  */
 
-static void postpone_unknown_option_error(const char *opt)
+static void postpone_unknown_option_warning(const char *opt)
 {
   VEC_safe_push (const_char_p, heap, ignored_options, opt);
 }
 
-/* Produce an error for each option previously buffered.  */
+/* Produce a warning for each option previously buffered.  */
 
 void print_ignored_options (void)
 {
@@ -476,7 +479,7 @@ void print_ignored_options (void)
     {
       const char *opt;
       opt = VEC_pop (const_char_p, ignored_options);
-      error ("unrecognized command line option \"%s\"", opt);
+      warning (0, "unrecognized command line option \"%s\"", opt);
     }
 
   input_location = saved_loc;
@@ -513,9 +516,9 @@ handle_option (const char **argv, unsigned int lang_mask)
       opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
       if (opt_index == cl_options_count && opt[1] == 'W')
 	{
-	  /* We don't generate errors for unknown -Wno-* options
+	  /* We don't generate warnings for unknown -Wno-* options
              unless we issue diagnostics.  */
-	  postpone_unknown_option_error (argv[0]);
+	  postpone_unknown_option_warning (argv[0]);
 	  result = 1;
 	  goto done;
 	}

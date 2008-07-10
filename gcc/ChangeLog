@@ -1,3 +1,13 @@
+2008-07-10  Peter Maydell  <pmaydell@chiark.greenend.org.uk>
+
+	PR other/28322
+	* opts.c (print_ignored_options): report postponed diagnostics for
+	unknown -Wno-* options as warnings, not errors.
+	(postpone_unknown_option_error): renamed to
+	postpone_unknown_option_warning.
+	* gcc.dg/pr28322-2.c: check that emitted diagnostic for -Wno-foobar
+	is a warning and not an error.
+
 2008-07-09  Doug Kwan  <dougkwan@google.com>
 
 	Revert:
