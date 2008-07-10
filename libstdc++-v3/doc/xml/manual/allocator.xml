@@ -472,8 +472,8 @@
        <para>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
-	 documentation, found <ulink
-	 url="../ext/mt_allocator.html">here</ulink>.
+	 documentation, found <link
+	 linkend="manual.ext.allocator.mt">here</link>.
        </para>
      </listitem>
 
@@ -484,8 +484,8 @@
        <para>
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
-	 documentation, found <ulink 
-	 url="../ext/ballocator_doc.html">here</ulink>.
+	 documentation, found <link 
+	 linkend="manual.ext.allocator.bitmap">here</link>.
        </para>
      </listitem>
    </orderedlist>

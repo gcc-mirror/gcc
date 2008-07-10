@@ -1,3 +1,9 @@
+2008-07-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36451
+	* doc/xml/manual/allocator.xml: Fix links.
+	* doc/html/*: Regenerate.
+	
 2008-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* libsupc++/unwind-cxx.h (__is_gxx_forced_unwind_class,
