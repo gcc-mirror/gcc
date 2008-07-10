@@ -204,16 +204,32 @@ xm_file=
 md_file=
 
 # Obsolete configurations.
-#case ${target} in
-# )
-#    if test "x$enable_obsolete" != xyes; then
-#      echo "*** Configuration ${target} is obsolete." >&2
-#      echo "*** Specify --enable-obsolete to build it anyway." >&2
-#      echo "*** Support will be REMOVED in the next major release of GCC," >&2
-#      echo "*** unless a maintainer comes forward." >&2
-#      exit 1
-#    fi;;
-#esac
+case ${target} in
+# Avoid generic cases below matching.
+   h8300-*-rtems* | h8300-*-elf* \
+ | sh-*-elf* | sh-*-symbianelf* | sh-*-linux* | sh-*-netbsdelf* \
+ | sh-*-rtems* | sh-wrs-vxworks) ;;
+   arm-*-coff*		\
+ | armel-*-coff*	\
+ | h8300-*-*		\
+ | i[34567]86-*-aout*	\
+ | i[34567]86-*-coff*	\
+ | m68k-*-aout*		\
+ | m68k-*-coff*		\
+ | sh-*-*		\
+ | mips-sgi-irix[56]*	\
+ | pdp11-*-bsd		\
+ | rs6000-ibm-aix4.[12]* \
+ | powerpc-ibm-aix4.[12]* \
+ )
+    if test "x$enable_obsolete" != xyes; then
+      echo "*** Configuration ${target} is obsolete." >&2
+      echo "*** Specify --enable-obsolete to build it anyway." >&2
+      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+      echo "*** unless a maintainer comes forward." >&2
+      exit 1
+    fi;;
+esac
 
 # Unsupported targets list.  Do not put an entry in this list unless
 # it would otherwise be caught by a more permissive pattern.  The list
