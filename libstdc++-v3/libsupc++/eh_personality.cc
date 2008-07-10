@@ -544,8 +544,12 @@ PERSONALITY_FUNCTION (int version,
 
 #ifdef __ARM_EABI_UNWINDER__
       throw_type = ue_header;
-      if ((actions & _UA_FORCE_UNWIND)
-	  || foreign_exception)
+      if (actions & _UA_FORCE_UNWIND)
+	{
+	  __GXX_INIT_FORCED_UNWIND_CLASS(ue_header->exception_class);
+	  thrown_ptr = 0;
+	}
+      else if (foreign_exception)
 	thrown_ptr = 0;
 #else
       // During forced unwinding, match a magic exception type.

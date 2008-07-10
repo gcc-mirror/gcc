@@ -1,3 +1,13 @@
+2008-07-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* libsupc++/unwind-cxx.h (__is_gxx_forced_unwind_class,
+	__GXX_INIT_FORCED_UNWIND_CLASS): Define for ARM EABI unwinder.
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Call
+	__GXX_INIT_FORCED_UNWIND_CLASS for forced unwind with ARM EABI
+	unwinder.
+	* libsupc++/eh_arm.cc (__cxa_type_match): Use
+	__is_gxx_forced_unwind_class to check for forced unwind.
+
 2008-07-09  Andreas Beckmann  <gcc@abeckmann.de>
 
 	PR libstdc++/36552

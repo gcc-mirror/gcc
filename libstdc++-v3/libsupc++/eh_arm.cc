@@ -46,12 +46,14 @@ __cxa_type_match(_Unwind_Exception* ue_header,
 		 bool is_reference __attribute__((__unused__)),
 		 void** thrown_ptr_p)
 {
-  bool foreign_exception = !__is_gxx_exception_class(ue_header->exception_class);
+  bool forced_unwind = __is_gxx_forced_unwind_class(ue_header->exception_class);
+  bool foreign_exception = !forced_unwind && !__is_gxx_exception_class(ue_header->exception_class);
   __cxa_exception* xh = __get_exception_header_from_ue(ue_header);
   const std::type_info* throw_type;
 
-  // XXX What to do with forced unwind?
-  if (foreign_exception)
+  if (forced_unwind)
+    throw_type = &typeid(abi::__forced_unwind);
+  else if (foreign_exception)
     throw_type = &typeid(abi::__foreign_exception);
   else
     throw_type = xh->exceptionType;
