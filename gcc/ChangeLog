@@ -1,3 +1,10 @@
+2008-07-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (create_expression_by_pieces): Add fold_convert
+	calls.
+	(eliminate): Ditto.
+	(execute_pre): Call loop_optimizer_finalize in early exit.
+
 2008-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36790

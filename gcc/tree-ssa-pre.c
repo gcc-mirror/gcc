@@ -2448,10 +2448,10 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
 	    if (!genop1)
 	      return NULL_TREE;
 	    genop1 = fold_convert (build_pointer_type (currop->type),
-		genop1);
+				   genop1);
 
 	    folded = fold_build1 (currop->opcode, currop->type,
-		genop1);
+				  genop1);
 	    return folded;
 	  }
       }
@@ -2694,10 +2694,15 @@ create_expression_by_pieces (basic_block block, pre_expr expr, tree stmts,
 							 stmts, domstmt);
 	      if (!genop1 || !genop2)
 		return NULL_TREE;
+	      genop1 = fold_convert (TREE_TYPE (nary->op[0]),
+				     genop1);
 	      /* Ensure op2 is a sizetype for POINTER_PLUS_EXPR.  It
 		 may be a constant with the wrong type.  */
 	      if (nary->opcode == POINTER_PLUS_EXPR)
 		genop2 = fold_convert (sizetype, genop2);
+	      else
+		genop2 = fold_convert (TREE_TYPE (nary->op[0]), genop2);
+	      
 	      folded = fold_build2 (nary->opcode, nary->type,
 				    genop1, genop2);
 	    }
@@ -2709,6 +2714,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr, tree stmts,
 							 stmts, domstmt);
 	      if (!genop1)
 		return NULL_TREE;
+	      genop1 = fold_convert (TREE_TYPE (nary->op[0]), genop1);
+
 	      folded = fold_build1 (nary->opcode, nary->type,
 				    genop1);
 	    }
@@ -3818,11 +3825,13 @@ eliminate (void)
 		  else
 		    gcc_unreachable ();
 		}
+
 	      /* If there is no existing leader but SCCVN knows this
 		 value is constant, use that constant.  */
 	      if (!sprime && is_gimple_min_invariant (VN_INFO (lhs)->valnum))
 		{
-		  sprime = VN_INFO (lhs)->valnum;
+		  sprime = fold_convert (TREE_TYPE (lhs),
+					 VN_INFO (lhs)->valnum);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
@@ -4171,7 +4180,11 @@ execute_pre (bool do_fre)
   if (!run_scc_vn (do_fre))
     {
       if (!do_fre)
-	remove_dead_inserted_code ();
+	{
+	  remove_dead_inserted_code ();
+	  loop_optimizer_finalize ();
+	}
+      
       return 0;
     }
   init_pre (do_fre);
