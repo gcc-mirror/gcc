@@ -285,7 +285,9 @@ structures.
 
 @menu
 * gfc_code:: Representation of Executable Statements.
+* gfc_expr:: Representation of Values and Expressions.
 @end menu
+
 
 @c gfc_code
 @c --------
@@ -401,6 +403,153 @@ Each @code{CASE} node has its @code{op} member set to @code{EXEC_SELECT}, too,
 its @code{next} member points to the code-chain to be executed in the current
 case-block, and @code{extx.case_list} contains the case-values this block
 corresponds to.  The @code{block} member links to the next case in the list.
+
+
+@c gfc_expr
+@c --------
+
+@node gfc_expr
+@section @code{gfc_expr}
+@tindex @code{gfc_expr}
+@tindex @code{struct gfc_expr}
+
+Expressions and ``values'', including constants, variable-, array- and
+component-references as well as complex expressions consisting of operators and
+function calls are internally represented as one or a whole tree of
+@code{gfc_expr} objects.  The member @code{expr_type} specifies the overall
+type of an expression (for instance, @code{EXPR_CONSTANT} for constants or
+@code{EXPR_VARIABLE} for variable references).  The members @code{ts} and
+@code{rank} as well as @code{shape}, which can be @code{NULL}, specify
+the type, rank and, if applicable, shape of the whole expression or expression
+tree of which the current structure is the root.  @code{where} is the locus of
+this expression in the source code.
+
+Depending on the flavour of the expression being described by the object
+(that is, the value of its @code{expr_type} member), the corresponding structure
+in the @code{value} union will usually contain additional data describing the
+expression's value in a type-specific manner.  The @code{ref} member is used to
+build chains of (array-, component- and substring-) references if the expression
+in question contains such references, see below for details.
+
+
+@subsection Constants
+
+Scalar constants are represented by @code{gfc_expr} nodes with their
+@code{expr_type} set to @code{EXPR_CONSTANT}.  The constant's value shall
+already be known at compile-time and is stored in the @code{logical},
+@code{integer}, @code{real}, @code{complex} or @code{character} struct inside
+@code{value}, depending on the constant's type specification.
+
+
+@subsection Operators
+
+Operator-expressions are expressions that are the result of the execution of
+some operator on one or two operands.  The expressions have an @code{expr_type}
+of @code{EXPR_OP}.  Their @code{value.op} structure contains additional data.
+
+@code{op1} and optionally @code{op2} if the operator is binary point to the
+two operands, and @code{operator} or @code{uop} describe the operator that
+should be evaluated on these operands, where @code{uop} describes a user-defined
+operator.
+
+
+@subsection Function Calls
+
+If the expression is the return value of a function-call, its @code{expr_type}
+is set to @code{EXPR_FUNCTION}, and @code{symtree} must point to the symtree
+identifying the function to be called.  @code{value.function.actual} holds the
+actual arguments given to the function as a linked list of
+@code{gfc_actual_arglist} nodes.
+
+The other members of @code{value.function} describe the function being called
+in more detail, containing a link to the intrinsic symbol or user-defined
+function symbol if the call is to an intrinsic or external function,
+respectively.  These values are determined during resolution-phase from the
+structure's @code{symtree} member.
+
+
+@subsection Array- and Structure-Constructors
+
+Array- and structure-constructors (one could probably call them ``array-'' and
+``derived-type constants'') are @code{gfc_expr} structures with their
+@code{expr_type} member set to @code{EXPR_ARRAY} or @code{EXPR_STRUCTURE},
+respectively.  For structure constructors, @code{symtree} points to the
+derived-type symbol for the type being constructed.
+
+The values for initializing each array element or structure component are
+stored as linked-list of @code{gfc_constructor} nodes in the
+@code{value.constructor} member.
+
+
+@subsection Null
+
+@code{NULL} is a special value for pointers; it can be of different base types.
+Such a @code{NULL} value is represented in the internal tree by a
+@code{gfc_expr} node with @code{expr_type} @code{EXPR_NULL}.  If the base type
+of the @code{NULL} expression is known, it is stored in @code{ts} (that's for
+instance the case for default-initializers of @code{ALLOCATABLE} components),
+but this member can also be set to @code{BT_UNKNOWN} if the information is not
+available (for instance, when the expression is a pointer-initializer
+@code{NULL()}).
+
+
+@subsection Variables and Reference Expressions
+
+Variable references are @code{gfc_expr} structures with their @code{expr_type}
+set to @code{EXPR_VARIABLE}; their @code{symtree} should point to the variable
+that is referenced.
+
+For this type of expression, it's also possible to chain array-, component-
+or substring-references to the original expression to get something like
+@samp{struct%component(2:5)}, where @code{component} is either an array or
+a @code{CHARACTER} member of @code{struct} that is of some derived-type.  Such a
+chain of references is achieved by a linked list headed by @code{ref} of the
+@code{gfc_expr} node.  For the example above it would be (@samp{==|} is the
+last @code{NULL} pointer):
+
+@smallexample
+EXPR_VARIABLE(struct) ==> REF_COMPONENT(component) ==> REF_ARRAY(2:5) ==|
+@end smallexample
+
+If @code{component} is a string rather than an array, the last element would be
+a @code{REF_SUBSTRING} reference, of course.  If the variable itself or some
+component referenced is an array and the expression should reference the whole
+array rather than being followed by an array-element or -section reference, a
+@code{REF_ARRAY} reference must be built as the last element in the chain with
+an array-reference type of @code{AR_FULL}. Consider this example code:
+
+@smallexample
+TYPE :: mytype
+  INTEGER :: array(42)
+END TYPE mytype
+
+TYPE(mytype) :: variable
+INTEGER :: local_array(5)
+
+CALL do_something (variable%array, local_array)
+@end smallexample
+
+The @code{gfc_expr} nodes representing the arguments to the @samp{do_something}
+call will have a reference-chain like this:
+
+@smallexample
+EXPR_VARIABLE(variable) ==> REF_COMPONENT(array) ==> REF_ARRAY(FULL) ==|
+EXPR_VARIABLE(local_array) ==> REF_ARRAY(FULL) ==|
+@end smallexample
+
+
+@subsection Constant Substring References
+
+@code{EXPR_SUBSTRING} is a special type of expression that encodes a substring
+reference of a constant string, as in the following code snippet:
+
+@smallexample
+x = "abcde"(1:2)
+@end smallexample
+
+In this case, @code{value.character} contains the full string's data as if it
+was a string constant, but the @code{ref} member is also set and points to a
+substring reference as described in the subsection above.
 
 
 @c ---------------------------------------------------------------------

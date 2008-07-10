@@ -1,3 +1,8 @@
+2008-07-10  Daniel Kraft  <d@domob.eu>
+
+	* gfc-internals.texi (section gfc_expr):  Created documentation about
+	the gfc_expr internal data structure.
+
 2008-07-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36670
