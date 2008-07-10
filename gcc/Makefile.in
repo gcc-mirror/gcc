@@ -155,10 +155,9 @@ coverageexts = .{gcda,gcno}
 # flags from configure.  The user is free to explicitly turn these flags
 # off if they wish.
 # LOOSE_WARN are the warning flags to use when compiling something
-# which is only compiled with gcc, such as libgcc and the frontends
-# other than C.
+# which is only compiled with gcc, such as libgcc.
 # STRICT_WARN are the additional warning flags to
-# apply to the back end and the C front end, which may be compiled
+# apply to the back end and some front ends, which may be compiled
 # with other compilers.
 LOOSE_WARN = @loose_warn@
 STRICT_WARN = @strict_warn@

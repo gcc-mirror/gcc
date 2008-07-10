@@ -7015,7 +7015,7 @@ fi
 loose_warn=
 save_CFLAGS="$CFLAGS"
 for option in -W -Wall -Wwrite-strings -Wstrict-prototypes \
-	  -Wmissing-prototypes -Wcast-qual -Wc++-compat; do
+	  -Wmissing-prototypes -Wcast-qual; do
   as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
@@ -7082,7 +7082,7 @@ CFLAGS="$save_CFLAGS"
 
 strict_warn=
 save_CFLAGS="$CFLAGS"
-for option in -Wold-style-definition \
+for option in -Wold-style-definition -Wc++-compat \
                           -Wmissing-format-attribute; do
   as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 

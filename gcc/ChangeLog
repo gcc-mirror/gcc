@@ -1,3 +1,10 @@
+2008-07-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (LOOSE_WARN, STRICT_WARN): Update comments.
+	* configure.ac (loose_warn): Move -Wc++-compat from here...
+	(strict_warn): ...to here.
+	* configure: Regenerate.
+
 2008-07-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (arm-*-coff*, armel-*-coff*, h8300-*-*,
