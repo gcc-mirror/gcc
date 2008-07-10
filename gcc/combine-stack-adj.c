@@ -1,6 +1,6 @@
 /* Combine stack adjustments.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -272,6 +272,72 @@ record_stack_memrefs (rtx *xp, void *data)
   return 0;
 }
 
+/* Adjust or create REG_FRAME_RELATED_EXPR note when merging a stack
+   adjustment into a frame related insn.  */
+
+static void
+adjust_frame_related_expr (rtx last_sp_set, rtx insn,
+			   HOST_WIDE_INT this_adjust)
+{
+  rtx note = find_reg_note (last_sp_set, REG_FRAME_RELATED_EXPR, NULL_RTX);
+  rtx new_expr = NULL_RTX;
+
+  if (note == NULL_RTX && RTX_FRAME_RELATED_P (insn))
+    return;
+
+  if (note
+      && GET_CODE (XEXP (note, 0)) == SEQUENCE
+      && XVECLEN (XEXP (note, 0), 0) >= 2)
+    {
+      rtx expr = XEXP (note, 0);
+      rtx last = XVECEXP (expr, 0, XVECLEN (expr, 0) - 1);
+      int i;
+
+      if (GET_CODE (last) == SET
+	  && RTX_FRAME_RELATED_P (last) == RTX_FRAME_RELATED_P (insn)
+	  && SET_DEST (last) == stack_pointer_rtx
+	  && GET_CODE (SET_SRC (last)) == PLUS
+	  && XEXP (SET_SRC (last), 0) == stack_pointer_rtx
+	  && GET_CODE (XEXP (SET_SRC (last), 1)) == CONST_INT)
+	{
+	  XEXP (SET_SRC (last), 1)
+	    = GEN_INT (INTVAL (XEXP (SET_SRC (last), 1)) + this_adjust);
+	  return;
+	}
+
+      new_expr = gen_rtx_SEQUENCE (VOIDmode,
+				   rtvec_alloc (XVECLEN (expr, 0) + 1));
+      for (i = 0; i < XVECLEN (expr, 0); i++)
+	XVECEXP (new_expr, 0, i) = XVECEXP (expr, 0, i);
+    }
+  else
+    {
+      new_expr = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
+      if (note)
+	XVECEXP (new_expr, 0, 0) = XEXP (note, 0);
+      else
+	{
+	  rtx expr = copy_rtx (single_set_for_csa (last_sp_set));
+
+	  XEXP (SET_SRC (expr), 1)
+	    = GEN_INT (INTVAL (XEXP (SET_SRC (expr), 1)) - this_adjust);
+	  RTX_FRAME_RELATED_P (expr) = 1;
+	  XVECEXP (new_expr, 0, 0) = expr;
+	}
+    }
+
+  XVECEXP (new_expr, 0, XVECLEN (new_expr, 0) - 1)
+    = copy_rtx (single_set_for_csa (insn));
+  RTX_FRAME_RELATED_P (XVECEXP (new_expr, 0, XVECLEN (new_expr, 0) - 1))
+    = RTX_FRAME_RELATED_P (insn);
+  if (note)
+    XEXP (note, 0) = new_expr;
+  else
+    REG_NOTES (last_sp_set)
+      = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, new_expr,
+			   REG_NOTES (last_sp_set));
+}
+
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
 static void
@@ -343,6 +409,9 @@ combine_stack_adjustments_for_block (basic_block bb)
 						  last_sp_adjust + this_adjust,
 						  this_adjust))
 		    {
+		      if (RTX_FRAME_RELATED_P (last_sp_set))
+			adjust_frame_related_expr (last_sp_set, insn,
+						   this_adjust);
 		      /* It worked!  */
 		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;
@@ -373,7 +442,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 		 deallocation+allocation conspired to cancel, we can
 		 delete the old deallocation insn.  */
 	      if (last_sp_set && last_sp_adjust == 0)
-		delete_insn (insn);
+		delete_insn (last_sp_set);
 	      free_csa_memlist (memlist);
 	      memlist = NULL;
 	      last_sp_set = insn;
