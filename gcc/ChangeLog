@@ -1,3 +1,13 @@
+2008-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36419
+	* combine-stack-adj.c (adjust_frame_related_expr): New function.
+	(combine_stack_adjustments_for_block): Call it if needed.  Delete
+	correct insn.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Adjust
+	DW_CFA_GNU_args_size if CSA pass merged some adjustments into
+	prologue sp adjustment.
+
 2008-07-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/35802

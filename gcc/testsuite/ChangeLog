@@ -1,3 +1,8 @@
+2008-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/36419
+	* g++.dg/eh/async-unwind1.C: New test.
+
 2008-07-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/35802

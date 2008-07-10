@@ -1570,6 +1570,32 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      && (!MEM_P (SET_DEST (elem)) || GET_CODE (expr) == SEQUENCE)
 	      && (RTX_FRAME_RELATED_P (elem) || par_index == 0))
 	    dwarf2out_frame_debug_expr (elem, label);
+	  else if (GET_CODE (elem) == SET
+		   && par_index != 0
+		   && !RTX_FRAME_RELATED_P (elem))
+	    {
+	      /* Stack adjustment combining might combine some post-prologue
+		 stack adjustment into a prologue stack adjustment.  */
+	      HOST_WIDE_INT offset = stack_adjust_offset (elem);
+
+	      if (offset != 0)
+		{
+		  if (cfa.reg == STACK_POINTER_REGNUM)
+		    cfa.offset += offset;
+
+#ifndef STACK_GROWS_DOWNWARD
+		  offset = -offset;
+#endif
+
+		  args_size += offset;
+		  if (args_size < 0)
+		    args_size = 0;
+
+		  def_cfa_1 (label, &cfa);
+		  if (flag_asynchronous_unwind_tables)
+		    dwarf2out_args_size (label, args_size);
+		}
+	    }
 	}
       return;
     }
