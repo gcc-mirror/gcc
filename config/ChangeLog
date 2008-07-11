@@ -1,3 +1,8 @@
+2008-07-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* mh-mingw (LDFLAGS): Append to rather than replacing previous
+	value.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* override.m4: Use m4_version_prereq throughout.
