@@ -6,4 +6,4 @@ struct A {
 };
 const char foo[] = "bar";
 const A a = { foo };
-extern const A* ap = &a;
+extern const A* ap = &a; //{ dg-warning "warning: 'ap' initialized and declared 'extern'" }

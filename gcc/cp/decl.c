@@ -8005,19 +8005,6 @@ grokdeclarator (const cp_declarator *declarator,
 	    storage_class = sc_none;
 	}
     }
-  else if (storage_class == sc_extern && initialized
-	   && !funcdef_flag)
-    {
-      if (toplevel_bindings_p ())
-	{
-	  /* It's common practice (and completely valid) to have a const
-	     be initialized and declared extern.  */
-	  if (!(type_quals & TYPE_QUAL_CONST))
-	    warning (0, "%qs initialized and declared %<extern%>", name);
-	}
-      else
-	error ("%qs has both %<extern%> and initializer", name);
-    }
   else if (storage_class == sc_extern && funcdef_flag
 	   && ! toplevel_bindings_p ())
     error ("nested function %qs declared %<extern%>", name);
@@ -9234,6 +9221,19 @@ grokdeclarator (const cp_declarator *declarator,
 		storage_class = sc_none;
 	      }
 	  }
+      }
+
+    if (storage_class == sc_extern && initialized && !funcdef_flag)
+      {
+	if (toplevel_bindings_p ())
+	  {
+	    /* It's common practice (and completely valid) to have a const
+	       be initialized and declared extern.  */
+	    if (!(type_quals & TYPE_QUAL_CONST))
+	      warning (0, "%qs initialized and declared %<extern%>", name);
+	  }
+	else
+	  error ("%qs has both %<extern%> and initializer", name);
       }
 
     /* Record `register' declaration for warnings on &

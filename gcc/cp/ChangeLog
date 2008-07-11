@@ -1,5 +1,12 @@
 2008-07-11  Dodji Seketeli  <dseketel@redhat.com>
 
+	PR c++/13101
+	* decl.c (grokdeclarator): Warn about initializing variables
+	  of storage class 'extern' only after the type of the declarator
+	  has been properly computed.
+
+2008-07-11  Dodji Seketeli  <dseketel@redhat.com>
+
 	PR c++/31754
 	* cp-tree.h (struct cp_decl_specifier_seq): add a location field. It
 	carries the location of the primary type.
@@ -13,7 +20,8 @@
 	cp_parser_type_specifier, cp_parser_simple_type_specifier,
 	cp_parser_omp_for_loop, cp_parser_pragma): use location in error messages.
 
-2008-06-30 Dodji Seketeli <dseketel@redhat.com>
+
+2008-07-11 Dodji Seketeli <dseketel@redhat.com>
 
 	PR c++/31754
 	* pt.c, semantic.c:
@@ -148,7 +156,7 @@
 	* pt.c: (tsubst_copy_and_build): Adjust.
 	(unify): Handle { }.
 	* name-lookup.c (arg_assoc_type): Handle init_list_type_node.
-	
+
 2008-07-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* typeck.c (comp_ptr_ttypes_real): Use vector_targets_convertible_p.
