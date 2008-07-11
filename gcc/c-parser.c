@@ -59,131 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 
-/* The reserved keyword table.  */
-struct resword
-{
-  const char *word;
-  ENUM_BITFIELD(rid) rid : 16;
-  unsigned int disable   : 16;
-};
-
-/* Disable mask.  Keywords are disabled if (reswords[i].disable &
-   mask) is _true_.  */
-#define D_C89	0x01	/* not in C89 */
-#define D_EXT	0x02	/* GCC extension */
-#define D_EXT89	0x04	/* GCC extension incorporated in C99 */
-#define D_OBJC	0x08	/* Objective C only */
-
-static const struct resword reswords[] =
-{
-  { "_Bool",		RID_BOOL,	0 },
-  { "_Complex",		RID_COMPLEX,	0 },
-  { "_Decimal32",       RID_DFLOAT32,  D_EXT },
-  { "_Decimal64",       RID_DFLOAT64,  D_EXT },
-  { "_Decimal128",      RID_DFLOAT128, D_EXT },
-  { "_Fract",           RID_FRACT,     D_EXT },
-  { "_Accum",           RID_ACCUM,     D_EXT },
-  { "_Sat",             RID_SAT,       D_EXT },
-  { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
-  { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
-  { "__alignof",	RID_ALIGNOF,	0 },
-  { "__alignof__",	RID_ALIGNOF,	0 },
-  { "__asm",		RID_ASM,	0 },
-  { "__asm__",		RID_ASM,	0 },
-  { "__attribute",	RID_ATTRIBUTE,	0 },
-  { "__attribute__",	RID_ATTRIBUTE,	0 },
-  { "__builtin_choose_expr", RID_CHOOSE_EXPR, 0 },
-  { "__builtin_offsetof", RID_OFFSETOF, 0 },
-  { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, 0 },
-  { "__builtin_va_arg",	RID_VA_ARG,	0 },
-  { "__complex",	RID_COMPLEX,	0 },
-  { "__complex__",	RID_COMPLEX,	0 },
-  { "__const",		RID_CONST,	0 },
-  { "__const__",	RID_CONST,	0 },
-  { "__extension__",	RID_EXTENSION,	0 },
-  { "__func__",		RID_C99_FUNCTION_NAME, 0 },
-  { "__imag",		RID_IMAGPART,	0 },
-  { "__imag__",		RID_IMAGPART,	0 },
-  { "__inline",		RID_INLINE,	0 },
-  { "__inline__",	RID_INLINE,	0 },
-  { "__label__",	RID_LABEL,	0 },
-  { "__real",		RID_REALPART,	0 },
-  { "__real__",		RID_REALPART,	0 },
-  { "__restrict",	RID_RESTRICT,	0 },
-  { "__restrict__",	RID_RESTRICT,	0 },
-  { "__signed",		RID_SIGNED,	0 },
-  { "__signed__",	RID_SIGNED,	0 },
-  { "__thread",		RID_THREAD,	0 },
-  { "__typeof",		RID_TYPEOF,	0 },
-  { "__typeof__",	RID_TYPEOF,	0 },
-  { "__volatile",	RID_VOLATILE,	0 },
-  { "__volatile__",	RID_VOLATILE,	0 },
-  { "asm",		RID_ASM,	D_EXT },
-  { "auto",		RID_AUTO,	0 },
-  { "break",		RID_BREAK,	0 },
-  { "case",		RID_CASE,	0 },
-  { "char",		RID_CHAR,	0 },
-  { "const",		RID_CONST,	0 },
-  { "continue",		RID_CONTINUE,	0 },
-  { "default",		RID_DEFAULT,	0 },
-  { "do",		RID_DO,		0 },
-  { "double",		RID_DOUBLE,	0 },
-  { "else",		RID_ELSE,	0 },
-  { "enum",		RID_ENUM,	0 },
-  { "extern",		RID_EXTERN,	0 },
-  { "float",		RID_FLOAT,	0 },
-  { "for",		RID_FOR,	0 },
-  { "goto",		RID_GOTO,	0 },
-  { "if",		RID_IF,		0 },
-  { "inline",		RID_INLINE,	D_EXT89 },
-  { "int",		RID_INT,	0 },
-  { "long",		RID_LONG,	0 },
-  { "register",		RID_REGISTER,	0 },
-  { "restrict",		RID_RESTRICT,	D_C89 },
-  { "return",		RID_RETURN,	0 },
-  { "short",		RID_SHORT,	0 },
-  { "signed",		RID_SIGNED,	0 },
-  { "sizeof",		RID_SIZEOF,	0 },
-  { "static",		RID_STATIC,	0 },
-  { "struct",		RID_STRUCT,	0 },
-  { "switch",		RID_SWITCH,	0 },
-  { "typedef",		RID_TYPEDEF,	0 },
-  { "typeof",		RID_TYPEOF,	D_EXT },
-  { "union",		RID_UNION,	0 },
-  { "unsigned",		RID_UNSIGNED,	0 },
-  { "void",		RID_VOID,	0 },
-  { "volatile",		RID_VOLATILE,	0 },
-  { "while",		RID_WHILE,	0 },
-  /* These Objective-C keywords are recognized only immediately after
-     an '@'.  */
-  { "class",		RID_AT_CLASS,		D_OBJC },
-  { "compatibility_alias", RID_AT_ALIAS,	D_OBJC },
-  { "defs",		RID_AT_DEFS,		D_OBJC },
-  { "encode",		RID_AT_ENCODE,		D_OBJC },
-  { "end",		RID_AT_END,		D_OBJC },
-  { "implementation",	RID_AT_IMPLEMENTATION,	D_OBJC },
-  { "interface",	RID_AT_INTERFACE,	D_OBJC },
-  { "private",		RID_AT_PRIVATE,		D_OBJC },
-  { "protected",	RID_AT_PROTECTED,	D_OBJC },
-  { "protocol",		RID_AT_PROTOCOL,	D_OBJC },
-  { "public",		RID_AT_PUBLIC,		D_OBJC },
-  { "selector",		RID_AT_SELECTOR,	D_OBJC },
-  { "throw",		RID_AT_THROW,		D_OBJC },
-  { "try",		RID_AT_TRY,		D_OBJC },
-  { "catch",		RID_AT_CATCH,		D_OBJC },
-  { "finally",		RID_AT_FINALLY,		D_OBJC },
-  { "synchronized",	RID_AT_SYNCHRONIZED,	D_OBJC },
-  /* These are recognized only in protocol-qualifier context
-     (see above) */
-  { "bycopy",		RID_BYCOPY,		D_OBJC },
-  { "byref",		RID_BYREF,		D_OBJC },
-  { "in",		RID_IN,			D_OBJC },
-  { "inout",		RID_INOUT,		D_OBJC },
-  { "oneway",		RID_ONEWAY,		D_OBJC },
-  { "out",		RID_OUT,		D_OBJC },
-};
-#define N_reswords (sizeof reswords / sizeof (struct resword))
-
 /* Initialization routine for this file.  */
 
 void
@@ -193,24 +68,41 @@ c_parse_init (void)
      identifiers.  */
   unsigned int i;
   tree id;
-  int mask = (flag_isoc99 ? 0 : D_C89)
-	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0);
+  int mask = 0;
 
+  mask |= D_CXXONLY;
+  if (!flag_isoc99)
+    mask |= D_C99;
+  if (flag_no_asm)
+    {
+      mask |= D_ASM | D_EXT;
+      if (!flag_isoc99)
+	mask |= D_EXT89;
+    }
   if (!c_dialect_objc ())
-     mask |= D_OBJC;
+    mask |= D_OBJC | D_CXX_OBJC;
 
   ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
-  for (i = 0; i < N_reswords; i++)
+  for (i = 0; i < num_c_common_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table
 	 and so create a canonical spelling that isn't a keyword.  */
-      if (reswords[i].disable & mask)
-	continue;
+      if (c_common_reswords[i].disable & mask)
+	{
+	  if (warn_cxx_compat
+	      && (c_common_reswords[i].disable & D_CXXWARN))
+	    {
+	      id = get_identifier (c_common_reswords[i].word);
+	      C_SET_RID_CODE (id, RID_CXX_COMPAT_WARN);
+	      C_IS_RESERVED_WORD (id) = 1;
+	    }
+	  continue;
+	}
 
-      id = get_identifier (reswords[i].word);
-      C_SET_RID_CODE (id, reswords[i].rid);
+      id = get_identifier (c_common_reswords[i].word);
+      C_SET_RID_CODE (id, c_common_reswords[i].rid);
       C_IS_RESERVED_WORD (id) = 1;
-      ridpointers [(int) reswords[i].rid] = id;
+      ridpointers [(int) c_common_reswords[i].rid] = id;
     }
 }
 
@@ -330,9 +222,16 @@ c_lex_one_token (c_parser *parser, c_token *token)
 	  {
 	    enum rid rid_code = C_RID_CODE (token->value);
 
-	    if (c_dialect_objc ())
+	    if (rid_code == RID_CXX_COMPAT_WARN)
 	      {
-		if (!OBJC_IS_AT_KEYWORD (rid_code)
+		warning (OPT_Wc___compat,
+			 "%Hidentifier %qs conflicts with C++ keyword",
+			 &token->location,
+			 IDENTIFIER_POINTER (token->value));
+	      }
+	    else if (c_dialect_objc ())
+	      {
+		if (!objc_is_reserved_word (token->value)
 		    && (!OBJC_IS_PQ_KEYWORD (rid_code)
 			|| parser->objc_pq_context))
 		  {
@@ -1129,7 +1028,7 @@ c_parser_external_declaration (c_parser *parser)
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_class_definition (parser);
 	  break;
-	case RID_AT_CLASS:
+	case RID_CLASS:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_class_declaration (parser);
 	  break;
@@ -3830,7 +3729,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	case RID_ASM:
 	  stmt = c_parser_asm_statement (parser);
 	  break;
-	case RID_AT_THROW:
+	case RID_THROW:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
@@ -3845,7 +3744,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	      goto expect_semicolon;
 	    }
 	  break;
-	case RID_AT_TRY:
+	case RID_TRY:
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_try_catch_statement (parser);
 	  break;
@@ -5906,19 +5805,19 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 	  break;
 	}
       /* Parse any objc-visibility-spec.  */
-      if (c_parser_next_token_is_keyword (parser, RID_AT_PRIVATE))
+      if (c_parser_next_token_is_keyword (parser, RID_PRIVATE))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (2);
 	  continue;
 	}
-      else if (c_parser_next_token_is_keyword (parser, RID_AT_PROTECTED))
+      else if (c_parser_next_token_is_keyword (parser, RID_PROTECTED))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (0);
 	  continue;
 	}
-      else if (c_parser_next_token_is_keyword (parser, RID_AT_PUBLIC))
+      else if (c_parser_next_token_is_keyword (parser, RID_PUBLIC))
 	{
 	  c_parser_consume_token (parser);
 	  objc_set_visibility (1);
@@ -5953,7 +5852,7 @@ static void
 c_parser_objc_class_declaration (c_parser *parser)
 {
   tree list = NULL_TREE;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_CLASS));
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_CLASS));
   c_parser_consume_token (parser);
   /* Any identifiers, including those declared as type names, are OK
      here.  */
@@ -6390,12 +6289,12 @@ c_parser_objc_try_catch_statement (c_parser *parser)
 {
   location_t loc;
   tree stmt;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_TRY));
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_TRY));
   c_parser_consume_token (parser);
   loc = c_parser_peek_token (parser)->location;
   stmt = c_parser_compound_statement (parser);
   objc_begin_try_stmt (loc, stmt);
-  while (c_parser_next_token_is_keyword (parser, RID_AT_CATCH))
+  while (c_parser_next_token_is_keyword (parser, RID_CATCH))
     {
       struct c_parm *parm;
       c_parser_consume_token (parser);

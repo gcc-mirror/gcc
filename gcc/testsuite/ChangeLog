@@ -1,3 +1,7 @@
+2008-07-11  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-2.c: New test.
+
 2008-07-11  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/13101
