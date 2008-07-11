@@ -1,3 +1,12 @@
+2008-07-11  Anatoly Sokolov  <aesok@post.ru>	
+
+	* config/avr/avr-protos.h (avr_peep2_scratch_safe): Remove prototype.
+	* config/avr/avr.c (avr_peep2_scratch_safe): Remove.
+	(avr_hard_regno_scratch_ok): New function.
+	(TARGET_HARD_REGNO_SCRATCH_OK): Define.
+	* config/avr/avr.md (all peepholes that request a scratch register):
+	Remove avr_peep2_scratch_safe use.
+
 2008-07-11  Tom Tromey  <tromey@redhat.com>
 	    Ian Lance Taylor  <iant@google.com>
 

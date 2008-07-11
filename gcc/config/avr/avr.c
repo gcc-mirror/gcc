@@ -85,6 +85,7 @@ static int avr_address_cost (rtx);
 static bool avr_return_in_memory (const_tree, const_tree);
 static struct machine_function * avr_init_machine_status (void);
 static rtx avr_builtin_setjmp_frame_value (void);
+static bool avr_hard_regno_scratch_ok (unsigned int);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -334,6 +335,9 @@ int avr_case_values_threshold = 30000;
 
 #undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
 #define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
+
+#undef TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5902,27 +5906,20 @@ avr_output_addr_vec_elt (FILE *stream, int value)
     fprintf (stream, "\trjmp .L%d\n", value);
 }
 
-/* Returns 1 if SCRATCH are safe to be allocated as a scratch
+/* Returns true if SCRATCH are safe to be allocated as a scratch
    registers (for a define_peephole2) in the current function.  */
 
-int
-avr_peep2_scratch_safe (rtx scratch)
+bool
+avr_hard_regno_scratch_ok (unsigned int regno)
 {
-  if ((interrupt_function_p (current_function_decl)
-       || signal_function_p (current_function_decl))
-      && leaf_function_p ())
-    {
-      int first_reg = true_regnum (scratch);
-      int last_reg = first_reg + GET_MODE_SIZE (GET_MODE (scratch)) - 1;
-      int reg;
+  /* Interrupt functions can only use registers that have already been saved
+     by the prologue, even if they would normally be call-clobbered.  */
 
-      for (reg = first_reg; reg <= last_reg; reg++)
-	{
-	  if (!df_regs_ever_live_p (reg))
-	    return 0;
-	}
-    }
-  return 1;
+  if ((cfun->machine->is_interrupt || cfun->machine->is_signal)
+      && !df_regs_ever_live_p (regno))
+    return false;
+
+  return true;
 }
 
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
