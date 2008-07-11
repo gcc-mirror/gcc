@@ -1,13 +1,14 @@
+// { dg-options "-fshow-column" }
 // PR c++/13975
 
-public: // { dg-error "" }
+public: // { dg-error "1: error: expected unqualified-id before 'public'" }
 
 int i;
 
-protected: // { dg-error "" }
+protected: // { dg-error "1: error: expected unqualified-id before 'protected'" }
 
 int j;
 
-private: // { dg-error "" }
+private: // { dg-error "1: error: expected unqualified-id before 'private'" }
 
 int k;

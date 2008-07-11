@@ -2502,29 +2502,33 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
 }
 
 /* Issue a diagnostic that NAME cannot be found in SCOPE.  DECL is
-   what we found when we tried to do the lookup.  */
+   what we found when we tried to do the lookup.
+   LOCATION is the location of the NAME identifier;
+   The location is used in the error message*/
 
 void
-qualified_name_lookup_error (tree scope, tree name, tree decl)
+qualified_name_lookup_error (tree scope, tree name,
+			     tree decl, location_t location)
 {
   if (scope == error_mark_node)
     ; /* We already complained.  */
   else if (TYPE_P (scope))
     {
       if (!COMPLETE_TYPE_P (scope))
-	error ("incomplete type %qT used in nested name specifier", scope);
+	error ("%Hincomplete type %qT used in nested name specifier",
+	       &location, scope);
       else if (TREE_CODE (decl) == TREE_LIST)
 	{
-	  error ("reference to %<%T::%D%> is ambiguous", scope, name);
+	  error ("%Hreference to %<%T::%D%> is ambiguous", &location, scope, name);
 	  print_candidates (decl);
 	}
       else
-	error ("%qD is not a member of %qT", name, scope);
+	error ("%H%qD is not a member of %qT", &location, name, scope);
     }
   else if (scope != global_namespace)
-    error ("%qD is not a member of %qD", name, scope);
+    error ("%H%qD is not a member of %qD", &location, name, scope);
   else
-    error ("%<::%D%> has not been declared", name);
+    error ("%H%<::%D%> has not been declared", &location, name);
 }
 
 /* If FNS is a member function, a set of member functions, or a
@@ -2589,7 +2593,6 @@ baselink_for_fns (tree fns)
    the use of "this" explicit.
 
    Upon return, *IDK will be filled in appropriately.  */
-
 tree
 finish_id_expression (tree id_expression,
 		      tree decl,
@@ -2602,7 +2605,8 @@ finish_id_expression (tree id_expression,
 		      bool done,
 		      bool address_p,
 		      bool template_arg_p,
-		      const char **error_msg)
+		      const char **error_msg,
+		      location_t location)
 {
   /* Initialize the output parameters.  */
   *idk = CP_ID_KIND_NONE;
@@ -2632,7 +2636,7 @@ finish_id_expression (tree id_expression,
 	      /* If the qualifying type is non-dependent (and the name
 		 does not name a conversion operator to a dependent
 		 type), issue an error.  */
-	      qualified_name_lookup_error (scope, id_expression, decl);
+	      qualified_name_lookup_error (scope, id_expression, decl, location);
 	      return error_mark_node;
 	    }
 	  else if (!scope)
