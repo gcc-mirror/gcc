@@ -1,3 +1,4 @@
+// { dg-options "-fshow-column" }
 // PR c++/13970
 
 struct X
@@ -18,5 +19,5 @@ struct X
         Zinc<int>( //);
 		  //    }
 
-}; // { dg-error "" }
+}; // { dg-error "2: error: expected '.' at end of input|1: error: expected primary-expression before '.' token|1: error: expected ';' before '.' token|1: error: expected unqualified-id at end of input" }
 

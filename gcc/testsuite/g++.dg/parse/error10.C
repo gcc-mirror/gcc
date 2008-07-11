@@ -1,5 +1,5 @@
 // PR c++/3478
-// { dg-options "" }
+// { dg-options "-fshow-column" }
 
 template <typename> struct A
 {
@@ -11,5 +11,9 @@ template <typename T> void foo()
   enum          A<void>::E e1;
   typename      A<T>::E    e2;
   enum          A<T>::E    e3;
-  enum typename A<T>::E    e4; // { dg-error "" }
+  enum typename A<T>::E    e4;
 }
+
+// Here, columns nums are not very accurate either. Still acceptable though
+// { dg-error "30: error: invalid type in declaration before ';' token" "" { target *-*-* } { 14 } }
+// { dg-error "30: error: two or more data types in declaration of 'e4'" "" { target *-*-* } { 14 } }

@@ -1,3 +1,10 @@
+2008-07-11 Dodji Seketeli <dseketel@redhat.com>
+
+	* g++.dg/parse/constructor1.C, g++.dg/parse/error*.C: update these
+	  tests to make them catch column number regressions. Make these tests
+	  run with the -fshow-column option.
+	* g++.dg/parse/error-column.C: new column number test.
+
 2008-07-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36765

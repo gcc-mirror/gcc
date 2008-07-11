@@ -273,7 +273,6 @@ proc g++_target_compile { source dest type options } {
     }
 
     lappend options "additional_flags=[libio_include_flags]"
-    lappend options "additional_flags=-fno-show-column"
     lappend options "compiler=$GXX_UNDER_TEST"
 
     set options [concat $gpp_compile_options $options]
