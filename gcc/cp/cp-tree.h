@@ -3927,6 +3927,9 @@ typedef struct cp_decl_specifier_seq {
      reflected here.  This field will be a TYPE, unless a typedef-name
      was used, in which case it will be a TYPE_DECL.  */
   tree type;
+  /* The location of the primary type. Mainly used for error
+     reporting.  */
+  location_t type_location;
   /* The attributes, if any, provided with the specifier sequence.  */
   tree attributes;
   /* If non-NULL, a built-in type that the user attempted to redefine
