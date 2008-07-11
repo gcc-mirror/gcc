@@ -1,3 +1,10 @@
+2008-07-11  Angelo Graziosi  <angelo.graziosi@alice.it>
+
+	* ggc-page.c (alloc_page):
+	Substituting xmalloc, xcalloc with
+	XNEWVEC and XCNEWVAR macros which add the
+	needed casts.
+
 2008-07-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36765

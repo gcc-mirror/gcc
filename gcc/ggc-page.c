@@ -799,7 +799,7 @@ alloc_page (unsigned order)
 	alloc_size = GGC_QUIRE_SIZE * G.pagesize;
       else
 	alloc_size = entry_size + G.pagesize - 1;
-      allocation = xmalloc (alloc_size);
+      allocation = XNEWVEC (char, alloc_size);
 
       page = (char *) (((size_t) allocation + G.pagesize - 1) & -G.pagesize);
       head_slop = page - allocation;
@@ -842,7 +842,7 @@ alloc_page (unsigned order)
 	  struct page_entry *e, *f = G.free_pages;
 	  for (a = enda - G.pagesize; a != page; a -= G.pagesize)
 	    {
-	      e = xcalloc (1, page_entry_size);
+	      e = XCNEWVAR (struct page_entry, page_entry_size);
 	      e->order = order;
 	      e->bytes = G.pagesize;
 	      e->page = a;
