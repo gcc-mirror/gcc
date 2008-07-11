@@ -1,3 +1,9 @@
+2008-07-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36765
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Add
+	aliases from HEAP vars to SMTs.
+
 2008-07-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (LOOSE_WARN, STRICT_WARN): Update comments.
