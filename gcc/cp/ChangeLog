@@ -1,4 +1,19 @@
-2008-07-11 Dodji Seketeli <dseketel@redhat.com>
+2008-07-11  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/31754
+	* cp-tree.h (struct cp_decl_specifier_seq): add a location field. It
+	carries the location of the primary type.
+	* parser.c (cp_parser_check_type_definition): update documentation.
+	(cp_parser_check_for_definition_in_return_type,
+	cp_parser_check_for_invalid_template_id,
+	cp_parser_set_decl_spec_type,
+	cp_parser_check_for_definition_in_return_type,
+	cp_parser_diagnose_invalid_type_name,
+	cp_parser_new_expression, cp_parser_explicit_instantiation,
+	cp_parser_type_specifier, cp_parser_simple_type_specifier,
+	cp_parser_omp_for_loop, cp_parser_pragma): use location in error messages.
+
+2008-06-30 Dodji Seketeli <dseketel@redhat.com>
 
 	PR c++/31754
 	* pt.c, semantic.c:

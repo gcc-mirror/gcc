@@ -1950,7 +1950,7 @@ static bool cp_parser_declares_only_class_p
 static void cp_parser_set_storage_class
   (cp_parser *, cp_decl_specifier_seq *, enum rid, location_t);
 static void cp_parser_set_decl_spec_type
-  (cp_decl_specifier_seq *, tree, bool);
+  (cp_decl_specifier_seq *, tree, location_t, bool);
 static bool cp_parser_friend_p
   (const cp_decl_specifier_seq *);
 static cp_token *cp_parser_require
@@ -1998,9 +1998,9 @@ static bool cp_parser_simulate_error
 static bool cp_parser_check_type_definition
   (cp_parser *);
 static void cp_parser_check_for_definition_in_return_type
-  (cp_declarator *, tree);
+  (cp_declarator *, tree, location_t type_location);
 static void cp_parser_check_for_invalid_template_id
-  (cp_parser *, tree);
+  (cp_parser *, tree, location_t location);
 static bool cp_parser_non_integral_constant_expression
   (cp_parser *, const char *);
 static void cp_parser_diagnose_invalid_type_name
@@ -2214,11 +2214,12 @@ cp_parser_check_type_definition (cp_parser* parser)
 /* This function is called when the DECLARATOR is processed.  The TYPE
    was a type defined in the decl-specifiers.  If it is invalid to
    define a type in the decl-specifiers for DECLARATOR, an error is
-   issued.  */
+   issued. TYPE_LOCATION is the location of TYPE and is used
+   for error reporting.  */
 
 static void
 cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
-					       tree type)
+					       tree type, location_t type_location)
 {
   /* [dcl.fct] forbids type definitions in return types.
      Unfortunately, it's not easy to know whether or not we are
@@ -2231,31 +2232,32 @@ cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
   if (declarator
       && declarator->kind == cdk_function)
     {
-      error ("new types may not be defined in a return type");
-      inform ("(perhaps a semicolon is missing after the definition of %qT)",
-	      type);
+      error ("%Hnew types may not be defined in a return type", &type_location);
+      inform ("%H(perhaps a semicolon is missing after the definition of %qT)",
+	      &type_location, type);
     }
 }
 
 /* A type-specifier (TYPE) has been parsed which cannot be followed by
    "<" in any valid C++ program.  If the next token is indeed "<",
    issue a message warning the user about what appears to be an
-   invalid attempt to form a template-id.  */
+   invalid attempt to form a template-id. LOCATION is the location
+   of the type-specifier (TYPE) */
 
 static void
 cp_parser_check_for_invalid_template_id (cp_parser* parser,
-					 tree type)
+					 tree type, location_t location)
 {
   cp_token_position start = 0;
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
       if (TYPE_P (type))
-	error ("%qT is not a template", type);
+	error ("%H%qT is not a template", &location, type);
       else if (TREE_CODE (type) == IDENTIFIER_NODE)
-	error ("%qE is not a template", type);
+	error ("%H%qE is not a template", &location, type);
       else
-	error ("invalid template-id");
+	error ("%Hinvalid template-id", &location);
       /* Remember the location of the invalid "<".  */
       if (cp_parser_uncommitted_to_tentative_parse_p (parser))
 	start = cp_lexer_token_position (parser->lexer, true);
@@ -2301,32 +2303,34 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
    qualifying scope (or NULL, if none) for ID.  This function commits
    to the current active tentative parse, if any.  (Otherwise, the
    problematic construct might be encountered again later, resulting
-   in duplicate error messages.)  */
+   in duplicate error messages.) LOCATION is the location of ID.  */
 
 static void
 cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 				      tree scope, tree id,
-				      location_t id_location)
+				      location_t location)
 {
   tree decl, old_scope;
   /* Try to lookup the identifier.  */
   old_scope = parser->scope;
   parser->scope = scope;
-  decl = cp_parser_lookup_name_simple (parser, id, id_location);
+  decl = cp_parser_lookup_name_simple (parser, id, location);
   parser->scope = old_scope;
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    error ("invalid use of template-name %qE without an argument list", decl);
+    error ("%Hinvalid use of template-name %qE without an argument list",
+           &location, decl);
   else if (TREE_CODE (id) == BIT_NOT_EXPR)
-    error ("invalid use of destructor %qD as a type", id);
+    error ("%Hinvalid use of destructor %qD as a type", &location, id);
   else if (TREE_CODE (decl) == TYPE_DECL)
     /* Something like 'unsigned A a;'  */
-    error ("invalid combination of multiple type-specifiers");
+    error ("%Hinvalid combination of multiple type-specifiers",
+           &location);
   else if (!parser->scope)
     {
       /* Issue an error message.  */
-      error ("%qE does not name a type", id);
+      error ("%H%qE does not name a type", &location, id);
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 
@@ -2358,8 +2362,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		    if (TREE_CODE (field) == TYPE_DECL
 			&& DECL_NAME (field) == id)
 		      {
-			inform ("(perhaps %<typename %T::%E%> was intended)",
-				BINFO_TYPE (b), id);
+			inform ("%H(perhaps %<typename %T::%E%> was intended)",
+				&location, BINFO_TYPE (b), id);
 			break;
 		      }
 		  if (field)
@@ -2373,10 +2377,11 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
   else if (parser->scope != error_mark_node)
     {
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
-	error ("%qE in namespace %qE does not name a type",
-	       id, parser->scope);
+	error ("%H%qE in namespace %qE does not name a type",
+	       &location, id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error ("%qE in class %qT does not name a type", id, parser->scope);
+	error ("%H%qE in class %qT does not name a type",
+               &location, id, parser->scope);
       else
 	gcc_unreachable ();
     }
@@ -5576,7 +5581,8 @@ cp_parser_new_expression (cp_parser* parser)
 	{
 	  error ("%Harray bound forbidden after parenthesized type-id",
 		 &token->location);
-	  inform ("try removing the parentheses around the type-id");
+	  inform ("%Htry removing the parentheses around the type-id",
+		 &token->location);
 	  cp_parser_direct_new_declarator (parser);
 	}
       nelts = NULL_TREE;
@@ -10599,6 +10605,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
   int declares_class_or_enum;
   cp_decl_specifier_seq decl_specifiers;
   tree extension_specifier = NULL_TREE;
+  cp_token *token;
 
   /* Look for an (optional) storage-class-specifier or
      function-specifier.  */
@@ -10621,6 +10628,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
      control while processing explicit instantiation directives.  */
   push_deferring_access_checks (dk_no_check);
   /* Parse a decl-specifier-seq.  */
+  token = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
 				CP_PARSER_FLAGS_OPTIONAL,
 				&decl_specifiers,
@@ -10653,7 +10661,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*member_p=*/false);
       if (declares_class_or_enum & 2)
 	cp_parser_check_for_definition_in_return_type (declarator,
-						       decl_specifiers.type);
+						       decl_specifiers.type,
+						       decl_specifiers.type_location);
       if (declarator != cp_error_declarator)
 	{
 	  decl = grokdeclarator (declarator, &decl_specifiers,
@@ -10825,6 +10834,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	  if (decl_specs)
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
+					  token->location,
 					  /*user_defined_p=*/true);
 	  return type_spec;
 	}
@@ -10849,6 +10859,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	  if (decl_specs)
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
+					  token->location,
 					  /*user_defined_p=*/true);
 	  return type_spec;
 	}
@@ -10870,6 +10881,7 @@ cp_parser_type_specifier (cp_parser* parser,
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type_spec,
+				      token->location,
 				      /*user_defined_p=*/true);
       return type_spec;
 
@@ -11045,6 +11057,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
+				      token->location,
 				      /*user_defined_p=*/true);
 
       return type;
@@ -11060,6 +11073,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
+				      token->location,
 				      /*user_defined_p=*/true);
 
       return type;
@@ -11081,6 +11095,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	      && token->keyword != RID_LONG))
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type,
+				      token->location,
 				      /*user_defined=*/false);
       if (decl_specs)
 	decl_specs->any_specifiers_p = true;
@@ -11091,7 +11106,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user thought
 	 that the type was a template.  */
-      cp_parser_check_for_invalid_template_id (parser, type);
+      cp_parser_check_for_invalid_template_id (parser, type, token->location);
 
       return TYPE_NAME (type);
     }
@@ -11120,6 +11135,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 						/*type_p=*/false,
 						/*is_declaration=*/false)
 	   != NULL_TREE);
+      token = cp_lexer_peek_token (parser->lexer);
       /* If we have seen a nested-name-specifier, and the next token
 	 is `template', then we are using the template-id production.  */
       if (parser->scope
@@ -11154,6 +11170,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	type = NULL_TREE;
       if (type && decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
+				      token->location,
 				      /*user_defined=*/true);
     }
 
@@ -11186,7 +11203,8 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  return qual_type;
 	}
 
-      cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type));
+      cp_parser_check_for_invalid_template_id (parser, TREE_TYPE (type),
+					       token->location);
     }
 
   return type;
@@ -11608,7 +11626,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
   /* A "<" cannot follow an elaborated type specifier.  If that
      happens, the user was probably trying to form a template-id.  */
-  cp_parser_check_for_invalid_template_id (parser, type);
+  cp_parser_check_for_invalid_template_id (parser, type, token->location);
 
   return type;
 }
@@ -12413,7 +12431,8 @@ cp_parser_init_declarator (cp_parser* parser,
 
   if (declares_class_or_enum & 2)
     cp_parser_check_for_definition_in_return_type (declarator,
-						   decl_specifiers->type);
+						   decl_specifiers->type,
+						   decl_specifiers->type_location);
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -14875,6 +14894,7 @@ cp_parser_class_head (cp_parser* parser,
       if (!cp_parser_parse_definitely (parser))
 	{
 	  invalid_nested_name_p = true;
+	  type_start_token = cp_lexer_peek_token (parser->lexer);
 	  id = cp_parser_identifier (parser);
 	  if (id == error_mark_node)
 	    id = NULL_TREE;
@@ -14918,7 +14938,10 @@ cp_parser_class_head (cp_parser* parser,
       if (!cp_parser_parse_definitely (parser))
 	{
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-	    id = cp_parser_identifier (parser);
+	    {
+	      type_start_token = cp_lexer_peek_token (parser->lexer);
+	      id = cp_parser_identifier (parser);
+	    }
 	  else
 	    id = NULL_TREE;
 	}
@@ -14932,7 +14955,8 @@ cp_parser_class_head (cp_parser* parser,
   pop_deferring_access_checks ();
 
   if (id)
-    cp_parser_check_for_invalid_template_id (parser, id);
+    cp_parser_check_for_invalid_template_id (parser, id,
+					     type_start_token->location);
 
   /* If it's not a `:' or a `{' then we can't really be looking at a
      class-head, since a class-head only appears as part of a
@@ -15521,7 +15545,8 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	      if (declares_class_or_enum & 2)
 		cp_parser_check_for_definition_in_return_type
-		  (declarator, decl_specifiers.type);
+					    (declarator, decl_specifiers.type,
+					     decl_specifiers.type_location);
 
 	      /* Look for an asm-specification.  */
 	      asm_specification = cp_parser_asm_specification_opt (parser);
@@ -18141,6 +18166,7 @@ cp_parser_set_storage_class (cp_parser *parser,
 static void
 cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 			      tree type_spec,
+			      location_t location,
 			      bool user_defined_p)
 {
   decl_specs->any_specifiers_p = true;
@@ -18167,6 +18193,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 	{
 	  decl_specs->type = type_spec;
 	  decl_specs->user_defined_type_p = false;
+	  decl_specs->type_location = location;
 	}
     }
   else if (decl_specs->type)
@@ -18176,6 +18203,7 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
       decl_specs->type = type_spec;
       decl_specs->user_defined_type_p = user_defined_p;
       decl_specs->redefined_builtin_type = NULL_TREE;
+      decl_specs->type_location = location;
     }
 }
 
@@ -21105,7 +21133,10 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
       else
 	{
 	  if (!collapse_err)
-	    error ("collapsed loops not perfectly nested");
+	    {
+	      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	      error ("%Hcollapsed loops not perfectly nested", &loc);
+	    }
 	  collapse_err = true;
 	  cp_parser_statement_seq_opt (parser, NULL);
 	  cp_parser_require (parser, CPP_CLOSE_BRACE, "%<}%>");
@@ -21593,8 +21624,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 	  cp_parser_omp_taskwait (parser, pragma_tok);
 	  return false;
 	case pragma_stmt:
-	  error ("%<#pragma omp taskwait%> may only be "
-		 "used in compound statements");
+	  error ("%H%<#pragma omp taskwait%> may only be "
+		 "used in compound statements",
+		 &pragma_tok->location);
 	  break;
 	default:
 	  goto bad_stmt;

@@ -1,6 +1,16 @@
 2008-07-11 Dodji Seketeli <dseketel@redhat.com>
 
-	* g++.dg/parse/constructor1.C, g++.dg/parse/error*.C: update these
+	* g++.dg/other/semicolon.C: Tighten this test, making it column aware.
+	* g++.dg/parse/error15.C: update this because of more accurate column
+	numbers in error reporting.
+	* g++.old-deja/g++.brendan/crash16.C: Tighten the test, making it
+	column aware.
+	* g++.old-deja/g++.law/ctors5.C: Likewise.
+	* g++.old-deja/g++.other/crash25.C: Likewise.
+
+2008-06-30 Dodji Seketeli <dseketel@redhat.com>
+
+	* g++.dg/parse/constructor1.C, g++.dg/parse/error*.C: Update these
 	  tests to make them catch column number regressions. Make these tests
 	  run with the -fshow-column option.
 	* g++.dg/parse/error-column.C: new column number test.
