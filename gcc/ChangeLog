@@ -1,3 +1,29 @@
+2008-07-11  Tom Tromey  <tromey@redhat.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* c-common.h (enum rid): Add RID_CXX_COMPAT_WARN.
+	(struct c_common_resword): Define.
+	(D_CONLY, D_CXXONLY, D_C99, D_CXX0X, D_EXT, D_EXT89): Define.
+	(D_ASM, D_OBJC, D_CXX_OBJC, D_CXXWARN): Define.
+	(c_common_reswords, num_c_common_reswords): Declare.
+	* c-common.c (c_common_reswords): New global const array.
+	(num_c_common_reswords): New const int.
+	* c-parser.c (struct resword, reswords): Don't define.
+	(D_C89, D_EXT, D_EXT89, D_OBJC): Don't define.
+	(c_parse_init): Clarify mask code.  Use c_common_reswords rather
+	than reswords.  If warning about C++ keywords, give them a special
+	RID code.
+	(c_lex_one_token): Warn about C++ keywords.  Call
+	objc_is_reserved_word rather than OBJC_IS_AT_KEYWORD.
+	(c_parser_external_declaration): Look for RID_xxx rather than
+	RID_AT_xxx, for ObjC++ keywords which are also C++ keywords.
+	(c_parser_statement_after_labels): Likewise.
+	(c_parser_objc_class_instance_variables): Likewise.
+	(c_parser_objc_class_declaration): Likewise.
+	(c_parser_objc_try_catch_statement): Likewise.
+	* c-decl.c (c_print_identifier): Ignore RID_CXX_COMPAT_WARN.
+	(declspecs_add_type): Likewise.
+
 2008-07-11  Angelo Graziosi  <angelo.graziosi@alice.it>
 
 	* ggc-page.c (alloc_page):

@@ -760,12 +760,9 @@ objc_is_reserved_word (tree ident)
   unsigned char code = C_RID_CODE (ident);
 
   return (OBJC_IS_AT_KEYWORD (code)
-#ifdef OBJCPLUS
 	  || code == RID_CLASS || code == RID_PUBLIC
 	  || code == RID_PROTECTED || code == RID_PRIVATE
-	  || code == RID_TRY || code == RID_THROW || code == RID_CATCH
-#endif
-	    );
+	  || code == RID_TRY || code == RID_THROW || code == RID_CATCH);
 }
 
 /* Return true if TYPE is 'id'.  */

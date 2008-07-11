@@ -1,3 +1,8 @@
+2008-07-11  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_is_reserved_word): Always check for RID_CLASS,
+	etc., not just when OBJCPLUS is defined.
+
 2008-06-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc-act.c (setup_string_decl, objc_build_string_object,
