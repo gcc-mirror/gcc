@@ -540,12 +540,14 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	case COMPONENT_REF:
 	  /* Record field as operand.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
+	  temp.op1 = TREE_OPERAND (ref, 2);
 	  break;
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
 	  /* Record index as operand.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	  temp.op1 = TREE_OPERAND (ref, 3);
+	  temp.op1 = TREE_OPERAND (ref, 2);
+	  temp.op2 = TREE_OPERAND (ref, 3);
 	  break;
 	case STRING_CST:
 	case INTEGER_CST:
