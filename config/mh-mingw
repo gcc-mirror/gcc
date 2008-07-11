@@ -3,4 +3,4 @@
 BOOT_CFLAGS += -D__USE_MINGW_ACCESS
 CFLAGS += -D__USE_MINGW_ACCESS
 # Increase stack limit to same as Linux default.
-LDFLAGS = -Wl,--stack,8388608
+LDFLAGS += -Wl,--stack,8388608
