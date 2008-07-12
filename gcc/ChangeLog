@@ -1,3 +1,8 @@
+2008-07-12  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/driver-native.c (host_detect_local_cpu): Handle
+	sb1 and r5000 cpus.
+
 2008-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/md.texi: Document the MIPS "v" constraint.
