@@ -143,7 +143,6 @@ sources = \
 	compatibility.cc \
 	complex_io.cc \
 	ctype.cc \
-	date_time.cc \
 	debug.cc \
 	functexcept.cc \
 	hash.cc \
@@ -266,11 +265,6 @@ hashtable_c++0x.o: hashtable_c++0x.cc
 limits_c++0x.lo: limits_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 limits_c++0x.o: limits_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-date_time.lo: date_time.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-date_time.o: date_time.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 atomic.lo: atomic.cc
