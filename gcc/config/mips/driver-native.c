@@ -63,6 +63,10 @@ host_detect_local_cpu (int argc, const char **argv)
 	else if (strstr (buf, "Godson2 V0.3") != NULL
 		 || strstr (buf, "Loongson-2 V0.3") != NULL)
 	  cpu = "loongson2f";
+	else if (strstr (buf, "SiByte SB1") != NULL)
+	  cpu = "sb1";
+	else if (strstr (buf, "R5000") != NULL)
+	  cpu = "r5000";
 	break;
       }
 
