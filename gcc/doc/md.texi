@@ -2507,6 +2507,10 @@ The @code{hi} and @code{lo} registers.
 A register suitable for use in an indirect jump.  This will always be
 @code{$25} for @option{-mabicalls}.
 
+@item v
+Register @code{$3}.  Do not use this constraint in new code;
+it is retained only for compatibility with glibc.
+
 @item y
 Equivalent to @code{r}; retained for backwards compatibility.
 
