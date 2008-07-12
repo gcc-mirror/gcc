@@ -7657,7 +7657,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
 
       if (c->ts.type == BT_DERIVED && c->pointer
-	  && c->ts.derived->components == NULL)
+	  && c->ts.derived->components == NULL
+	  && !c->ts.derived->attr.zero_comp)
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,

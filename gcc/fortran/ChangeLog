@@ -1,3 +1,8 @@
+2008-07-12  Daniel Kraft  <d@domob.eu>
+
+	* resolve.c (resolve_fl_derived):  Allow pointer components to empty
+	derived types fixing a missing part of PR fortran/33221.
+
 2008-07-10  Daniel Kraft  <d@domob.eu>
 
 	* gfc-internals.texi (section gfc_expr):  Created documentation about
