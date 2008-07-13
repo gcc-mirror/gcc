@@ -1,3 +1,9 @@
+2008-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36811
+	* langhooks.c (lhd_print_error_function): Deal with recursive
+	BLOCK trees.
+
 2008-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/md.texi: Document the MIPS "v" constraint.

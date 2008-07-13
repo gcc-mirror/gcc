@@ -394,7 +394,9 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 	  if (abstract_origin)
 	    {
 	      ao = BLOCK_ABSTRACT_ORIGIN (abstract_origin);
-	      while (TREE_CODE (ao) == BLOCK && BLOCK_ABSTRACT_ORIGIN (ao))
+	      while (TREE_CODE (ao) == BLOCK
+		     && BLOCK_ABSTRACT_ORIGIN (ao)
+		     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
 		ao = BLOCK_ABSTRACT_ORIGIN (ao);
 	      gcc_assert (TREE_CODE (ao) == FUNCTION_DECL);
 	      fndecl = ao;
@@ -424,7 +426,9 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 		{
 		  ao = BLOCK_ABSTRACT_ORIGIN (block);
 
-		  while (TREE_CODE (ao) == BLOCK && BLOCK_ABSTRACT_ORIGIN (ao))
+		  while (TREE_CODE (ao) == BLOCK
+			 && BLOCK_ABSTRACT_ORIGIN (ao)
+			 && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
 		    ao = BLOCK_ABSTRACT_ORIGIN (ao);
 
 		  if (TREE_CODE (ao) == FUNCTION_DECL)
