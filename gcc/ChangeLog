@@ -1,3 +1,17 @@
+2008-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (assembler_name_hash): New static var.
+	(hash_node_by_assembler_name, eq_assembler_name): New.
+	(cgraph_node_for_asm): Use hashtable.
+	(cgraph_remove_node): Maintain hashtable.
+	(change_decl_assembler_name): Sanity check that names are not changing
+	after aliasing was processed.
+	* cgraph.h (varpoon_node): Add next GGC marker.
+	* tree.c (decl_assembler_name_equal): Constify.
+	(decl_assembler_name_hash): New.
+	* tree.h (decl_assembler_name_equal): Constify.
+	(decl_assembler_name_hash): Update.
+
 2008-07-12  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/driver-native.c (host_detect_local_cpu): Handle

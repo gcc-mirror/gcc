@@ -224,7 +224,7 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-struct varpool_node GTY(())
+struct varpool_node GTY((chain_next ("%h.next")))
 {
   tree decl;
   /* Pointer to the next function in varpool_nodes.  */
