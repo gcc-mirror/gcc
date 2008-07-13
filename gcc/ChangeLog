@@ -1,3 +1,9 @@
+2008-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36811
+	* langhooks.c (lhd_print_error_function): Deal with recursive
+	BLOCK trees.
+
 2008-07-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (assembler_name_hash): New static var.
