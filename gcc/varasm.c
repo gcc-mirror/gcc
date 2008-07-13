@@ -5380,7 +5380,10 @@ assemble_alias (tree decl, tree target)
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
-  target_decl = find_decl_and_mark_needed (decl, target);
+  if (!flag_unit_at_a_time || cgraph_global_info_ready)
+    target_decl = find_decl_and_mark_needed (decl, target);
+  else
+    target_decl= NULL;
   if (target_decl && TREE_ASM_WRITTEN (target_decl))
     do_assemble_alias (decl, target);
   else
