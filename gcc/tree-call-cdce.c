@@ -142,8 +142,10 @@ check_target_format (tree arg)
   type = TREE_TYPE (arg);
   mode = TYPE_MODE (type);
   rfmt = REAL_MODE_FORMAT (mode);
-  if ((mode == SFmode && rfmt == &ieee_single_format)
-      || (mode == DFmode && rfmt == &ieee_double_format)
+  if ((mode == SFmode
+       && (rfmt == &ieee_single_format || rfmt == &mips_single_format))
+      || (mode == DFmode
+	  && (rfmt == &ieee_double_format || rfmt == &mips_double_format))
       /* For long double, we can not really check XFmode
          which is only defined on intel platforms.  
          Candidate pre-selection using builtin function 
@@ -151,6 +153,7 @@ check_target_format (tree arg)
          for long double modes: double, quad, and extended.  */
       || (mode != SFmode && mode != DFmode 
           && (rfmt == &ieee_quad_format
+	      || rfmt == &mips_quad_format
               || rfmt == &ieee_extended_intel_96_format 
               || rfmt == &ieee_extended_intel_128_format 
               || rfmt == &ieee_extended_intel_96_round_53_format)))
