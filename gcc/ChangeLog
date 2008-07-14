@@ -1,3 +1,7 @@
+2008-07-14  Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.in (IPA_PROP_H): Added ipa-prop.h to IPA_PROP_H variable.
+
 2008-07-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (insert_into_preds_of_block): Do not call
