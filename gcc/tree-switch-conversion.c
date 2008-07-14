@@ -622,7 +622,7 @@ gen_inbound_check (tree swtch)
   tree label_decl3 = create_artificial_label ();
   tree label1, label2, label3;
 
-  tree utype = unsigned_type_for (TREE_TYPE (info.index_expr));
+  tree utype;
   tree tmp_u;
   tree cast, cast_assign;
   tree ulb, minus, minus_assign;
@@ -637,6 +637,12 @@ gen_inbound_check (tree swtch)
 
   gcc_assert (info.default_values);
   bb0 = bb_for_stmt (swtch);
+
+  /* Make sure we do not generate arithmetics in a subrange.  */
+  if (TREE_TYPE (TREE_TYPE (info.index_expr)))
+    utype = unsigned_type_for (TREE_TYPE (TREE_TYPE (info.index_expr)));
+  else
+    utype = unsigned_type_for (TREE_TYPE (info.index_expr));
 
   /* (end of) block 0 */
   bsi = bsi_for_stmt (info.arr_ref_first);
