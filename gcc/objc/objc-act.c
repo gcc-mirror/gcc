@@ -1552,11 +1552,11 @@ synth_module_prologue (void)
   type = lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
 						objc_object_name,
 						objc_object_type));
-  DECL_IN_SYSTEM_HEADER (type) = 1;
+  TREE_NO_WARNING (type) = 1;
   type = lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
 						objc_class_name,
 						objc_class_type));
-  DECL_IN_SYSTEM_HEADER (type) = 1;
+  TREE_NO_WARNING (type) = 1;
 
   /* Forward-declare '@interface Protocol'.  */
 

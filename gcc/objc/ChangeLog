@@ -1,3 +1,8 @@
+2007-07-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* objc-act.c (synth_module_prologue): Use TREE_NO_WARNING instead
+	of DECL_IN_SYSTEM_HEADER.
+
 2008-07-11  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_is_reserved_word): Always check for RID_CLASS,
