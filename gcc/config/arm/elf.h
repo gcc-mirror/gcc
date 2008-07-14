@@ -36,7 +36,8 @@
 #ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "subtarget_extra_asm_spec",	SUBTARGET_EXTRA_ASM_SPEC }, \
-  { "subtarget_asm_float_spec", SUBTARGET_ASM_FLOAT_SPEC },
+  { "subtarget_asm_float_spec", SUBTARGET_ASM_FLOAT_SPEC }, \
+  SUBSUBTARGET_EXTRA_SPECS
 #endif
 
 #ifndef SUBTARGET_EXTRA_ASM_SPEC
@@ -47,6 +48,9 @@
 #define SUBTARGET_ASM_FLOAT_SPEC "\
 %{mapcs-float:-mfloat}"
 #endif
+
+#undef SUBSUBTARGET_EXTRA_SPECS
+#define SUBSUBTARGET_EXTRA_SPECS
 
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
