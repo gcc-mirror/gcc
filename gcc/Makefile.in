@@ -838,7 +838,7 @@ TREE_INLINE_H = tree-inline.h $(VARRAY_H) pointer-set.h
 REAL_H = real.h $(MACHMODE_H)
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBIMAP_H = ebitmap.h sbitmap.h
-IPA_PROP_H = $(TREE_H) vec.h
+IPA_PROP_H = ipa-prop.h $(TREE_H) vec.h
 
 #
 # Now figure out from those variables how to compile and link.
