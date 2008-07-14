@@ -1,3 +1,8 @@
+2008-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/36745
+	* g++.dg/torture/pr36745.C: Use __SIZE_TYPE__ in size_t typedef.
+
 2008-07-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/36745
