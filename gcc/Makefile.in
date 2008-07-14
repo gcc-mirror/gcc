@@ -257,6 +257,22 @@ build_file_translate = @build_file_translate@
 # Locate mkinstalldirs.
 mkinstalldirs=$(SHELL) $(srcdir)/../mkinstalldirs
 
+# write_entries_to_file - writes each entry in a list
+# to the specified file.  Entries are written in chunks of
+# $(write_entries_to_file_split) to accomodate systems with
+# severe command-line-length limitations.
+# Parameters:
+# $(1): variable containing entries to iterate over
+# $(2): output file
+write_entries_to_file_split = 50
+write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
+	$(foreach range, \
+	  $(shell i=1; while test $$i -le $(words $(1)); do \
+	     echo $$i; i=`expr $$i + $(write_entries_to_file_split)`; done), \
+	  $(shell echo $(wordlist $(range), \
+			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1)) \
+	     | tr ' ' '\n' >> $(2)))
+
 # --------
 # UNSORTED
 # --------
@@ -3196,20 +3212,12 @@ ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))
 # $(GTFILES) may be too long to put on a command line, so we have to
 # write it out to a file (taking care not to do that in a way that
 # overflows a command line!) and then have gengtype read the file in.
-# The extra blank line in this definition is crucial: it makes the
-# $(foreach ...) below expand to many lines instead of one.
-
-define echo_to_gi.list
-echo '$(gtyp)' >> tmp-gi.list
-
-endef
 
 $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h : s-gtype ; @true
 
 gtyp-input.list: s-gtyp-input ; @true
 s-gtyp-input: Makefile
-	rm -f tmp-gi.list
-	$(foreach gtyp, $(GTFILES), $(echo_to_gi.list))
+	@: $(call write_entries_to_file,$(GTFILES),tmp-gi.list)
 	$(SHELL) $(srcdir)/../move-if-change tmp-gi.list gtyp-input.list
 	$(STAMP) s-gtyp-input
 
