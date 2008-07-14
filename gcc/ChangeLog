@@ -1,3 +1,9 @@
+2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/35492.
+	* config/cris/cris.md ("*btst"): Remove last alternative
+	and related part in the condition.
+
 2008-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36811
