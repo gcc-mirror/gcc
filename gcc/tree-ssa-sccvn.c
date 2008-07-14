@@ -129,11 +129,6 @@ static vn_tables_t valid_info;
 
 static vn_tables_t optimistic_info;
 
-/* PRE hashtables storing information about mapping from expressions to
-   value handles.  */
-
-static vn_tables_t pre_info;
-
 /* Pointer to the set of hashtables that is currently being used.
    Should always point to either the optimistic_info, or the
    valid_info.  */
@@ -2376,15 +2371,6 @@ init_scc_vn (void)
   allocate_vn_table (valid_info);
   optimistic_info = XCNEW (struct vn_tables_s);
   allocate_vn_table (optimistic_info);
-  pre_info = NULL;
-}
-
-void
-switch_to_PRE_table (void)
-{
-  pre_info = XCNEW (struct vn_tables_s);
-  allocate_vn_table (pre_info);
-  current_info = pre_info;
 }
 
 void
@@ -2403,9 +2389,6 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && SSA_NAME_VALUE (name))
-	SSA_NAME_VALUE (name) = NULL;
-      if (name
 	  && VN_INFO (name)->needs_insertion)
 	release_ssa_name (name);
     }
@@ -2417,14 +2400,9 @@ free_scc_vn (void)
   XDELETE (valid_info);
   free_vn_table (optimistic_info);
   XDELETE (optimistic_info);
-  if (pre_info)
-    {
-      free_vn_table (pre_info);
-      XDELETE (pre_info);
-    }
 }
 
-/* Set the value ids in the valid/optimistic hash tables.  */
+/* Set the value ids in the valid hash tables.  */
 
 static void
 set_hashtable_value_ids (void)
@@ -2433,23 +2411,11 @@ set_hashtable_value_ids (void)
   vn_nary_op_t vno;
   vn_reference_t vr;
   vn_phi_t vp;
-  
+
   /* Now set the value ids of the things we had put in the hash
      table.  */
 
   FOR_EACH_HTAB_ELEMENT (valid_info->nary,
-			 vno, vn_nary_op_t, hi) 
-    {
-      if (vno->result)
-	{
-	  if (TREE_CODE (vno->result) == SSA_NAME)
-	    vno->value_id = VN_INFO (vno->result)->value_id;
-	  else if (is_gimple_min_invariant (vno->result))
-	    vno->value_id = get_or_alloc_constant_value_id (vno->result);
-	}
-    }
-
-  FOR_EACH_HTAB_ELEMENT (optimistic_info->nary,
 			 vno, vn_nary_op_t, hi) 
     {
       if (vno->result)
@@ -2472,31 +2438,8 @@ set_hashtable_value_ids (void)
 	    vp->value_id = get_or_alloc_constant_value_id (vp->result);
 	}
     }
-  FOR_EACH_HTAB_ELEMENT (optimistic_info->phis,
-			 vp, vn_phi_t, hi) 
-    {
-      if (vp->result)
-	{
-	  if (TREE_CODE (vp->result) == SSA_NAME)
-	    vp->value_id = VN_INFO (vp->result)->value_id;
-	  else if (is_gimple_min_invariant (vp->result))
-	    vp->value_id = get_or_alloc_constant_value_id (vp->result);
-	}
-    }
-
 
   FOR_EACH_HTAB_ELEMENT (valid_info->references,
-			 vr, vn_reference_t, hi) 
-    {
-      if (vr->result)
-	{
-	  if (TREE_CODE (vr->result) == SSA_NAME)
-	    vr->value_id = VN_INFO (vr->result)->value_id;
-	  else if (is_gimple_min_invariant (vr->result))
-	    vr->value_id = get_or_alloc_constant_value_id (vr->result);
-	}
-    }
-  FOR_EACH_HTAB_ELEMENT (optimistic_info->references,
 			 vr, vn_reference_t, hi) 
     {
       if (vr->result)
@@ -2577,7 +2520,6 @@ run_scc_vn (bool may_insert_arg)
 	  info = VN_INFO (name);
 	  if (TREE_CODE (info->valnum) == SSA_NAME
 	      && info->valnum != name
-	      && TREE_CODE (info->valnum) == SSA_NAME
 	      && info->value_id != VN_INFO (info->valnum)->value_id)
 	    {
 	      changed = true;
@@ -2594,16 +2536,13 @@ run_scc_vn (bool may_insert_arg)
       for (i = 0; i < num_ssa_names; i++)
 	{
 	  tree name = ssa_name (i);
-	  if (name && VN_INFO (name)->visited
-	      && (SSA_VAL (name) != name
-		  || is_gimple_min_invariant (VN_INFO (name)->expr)))
+	  if (name
+	      && VN_INFO (name)->visited
+	      && SSA_VAL (name) != name)
 	    {
 	      print_generic_expr (dump_file, name, 0);
 	      fprintf (dump_file, " = ");
-	      if (is_gimple_min_invariant (VN_INFO (name)->expr))
-		print_generic_expr (dump_file, VN_INFO (name)->expr, 0);
-	      else
-		print_generic_expr (dump_file, SSA_VAL (name), 0);
+	      print_generic_expr (dump_file, SSA_VAL (name), 0);
 	      fprintf (dump_file, "\n");
 	    }
 	}

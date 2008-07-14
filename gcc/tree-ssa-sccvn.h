@@ -140,7 +140,6 @@ extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
 bool run_scc_vn (bool);
 void free_scc_vn (void);
-void switch_to_PRE_table (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree, tree, tree, tree,

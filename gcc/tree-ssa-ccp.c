@@ -310,13 +310,10 @@ get_symbol_constant_value (tree sym)
       change the constant value of the PHI node, which allows for more
       constants to be propagated.
 
-   3- If SSA_NAME_VALUE is set and it is a constant, its value is
-      used.
-
-   4- Variables defined by statements other than assignments and PHI
+   3- Variables defined by statements other than assignments and PHI
       nodes are considered VARYING.
 
-   5- Initial values of variables that are not GIMPLE registers are
+   4- Initial values of variables that are not GIMPLE registers are
       considered VARYING.  */
 
 static prop_value_t
@@ -331,12 +328,6 @@ get_default_value (tree var)
       /* Short circuit for regular CCP.  We are not interested in any
 	 non-register when DO_STORE_CCP is false.  */
       val.lattice_val = VARYING;
-    }
-  else if (SSA_NAME_VALUE (var)
-	   && is_gimple_min_invariant (SSA_NAME_VALUE (var)))
-    {
-      val.lattice_val = CONSTANT;
-      val.value = SSA_NAME_VALUE (var);
     }
   else if ((cst_val = get_symbol_constant_value (sym)) != NULL_TREE)
     {
