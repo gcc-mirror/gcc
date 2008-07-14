@@ -684,7 +684,7 @@ cris_print_operand (FILE *file, rtx x, int code)
       /* Print the unsigned supplied integer as if it were signed
 	 and < 0, i.e print 255 or 65535 as -1, 254, 65534 as -2, etc.  */
       if (!CONST_INT_P (x)
-	  || ! CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
+	  || !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
 	LOSE_AND_RETURN ("invalid operand for 'b' modifier", x);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 	       INTVAL (x)| (INTVAL (x) <= 255 ? ~255 : ~65535));
@@ -1503,8 +1503,8 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 			   > CRIS_LAST_GENERAL_REGISTER))
 		   || (TARGET_V32
 		       && GET_CODE (SET_SRC (exp)) == CONST_INT
-		       && CONST_OK_FOR_LETTER_P (INTVAL (SET_SRC (exp)),
-						 'I')))
+		       && CRIS_CONST_OK_FOR_LETTER_P (INTVAL (SET_SRC (exp)),
+						      'I')))
 	    {
 	      /* There's no CC0 change for this case.  Just check
 		 for overlap.  */
@@ -1831,7 +1831,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (CONST_INT_P (XEXP (x, 1))
           /* Two constants may actually happen before optimization.  */
           && !CONST_INT_P (XEXP (x, 0))
-          && !CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
+          && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
 	{
 	  *total = (rtx_cost (XEXP (x, 0), outer_code) + 2
 		    + 2 * GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))));
@@ -1905,7 +1905,8 @@ cris_address_cost (rtx x)
 
       /* A BDAP -32768 .. 32767 is like BDAP quick, but with 2 extra
 	 bytes.  */
-      if (CONST_INT_P (tem2) && CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
+      if (CONST_INT_P (tem2)
+	  && CRIS_CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
 	return (2 + 2) / 2;
 
       /* A BDAP with some other constant is 2 bytes extra.  */

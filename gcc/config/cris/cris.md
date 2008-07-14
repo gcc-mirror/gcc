@@ -347,7 +347,7 @@
 (define_insn "*cmpdi_non_v32"
   [(set (cc0)
 	(compare (match_operand:DI 0 "nonimmediate_operand" "r,r,r,r,r,r,o")
-		 (match_operand:DI 1 "general_operand" "K,I,P,n,r,o,r")))]
+		 (match_operand:DI 1 "general_operand" "Kc,I,P,n,r,o,r")))]
   "!TARGET_V32"
   "@
    cmpq %1,%M0\;ax\;cmpq 0,%H0
@@ -361,7 +361,7 @@
 (define_insn "*cmpdi_v32"
   [(set (cc0)
 	(compare (match_operand:DI 0 "register_operand"  "r,r,r,r,r")
-		 (match_operand:DI 1 "nonmemory_operand" "K,I,P,n,r")))]
+		 (match_operand:DI 1 "nonmemory_operand" "Kc,I,P,n,r")))]
   "TARGET_V32"
   "@
    cmpq %1,%M0\;ax\;cmpq 0,%H0
@@ -458,9 +458,9 @@
 (define_insn "*btst"
   [(set (cc0)
 	(zero_extract
-	 (match_operand:SI 0 "nonmemory_operand" "r,r,r,r,r,r,n")
-	 (match_operand:SI 1 "const_int_operand" "K,n,K,n,K,n,n")
-	 (match_operand:SI 2 "nonmemory_operand" "M,M,K,n,r,r,r")))]
+	 (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
+	 (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
+	 (match_operand:SI 2 "nonmemory_operand" "M, M,Kc,n,r, r,r")))]
   ;; Either it is a single bit, or consecutive ones starting at 0.
   ;; The btst ones depend on stuff in NOTICE_UPDATE_CC.
   "CONST_INT_P (operands[1])
@@ -690,8 +690,8 @@
       && (!CONST_INT_P (operands[2])
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "move<m> [%3=%2%S1],%0";
@@ -717,8 +717,8 @@
       && (!CONST_INT_P (operands[2])
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
   if (which_alternative < 3)
     return "move.%s0 [%3=%1%S2],%0";
@@ -836,8 +836,8 @@
       && (!CONST_INT_P (operands[1])
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
   if (which_alternative == 1 || which_alternative == 5)
     return "#";
@@ -870,8 +870,8 @@
       && (!CONST_INT_P (operands[1])
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
   if (which_alternative == 1
       || which_alternative == 7
@@ -943,8 +943,8 @@
       && (!CONST_INT_P (operands[1])
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "clear<m> [%2=%1%S0]";
@@ -1286,8 +1286,8 @@
       && (!CONST_INT_P (operands[2])
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "mov%e4.%m4 [%3=%2%S1],%0";
@@ -1310,8 +1310,8 @@
       && (!CONST_INT_P (operands[2])
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "mov%e4<m> [%3=%2%S1],%0";
@@ -1647,8 +1647,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "%x5.%s0 [%4=%3%S2],%0";
@@ -1705,8 +1705,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "%x5<m> [%4=%3%S2],%0";
@@ -2137,8 +2137,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "%x5%E6.%m6 [%4=%3%S2],%0";
@@ -2166,8 +2166,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "%x5%E6<m> [%4=%3%S2],%0";
@@ -2246,8 +2246,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return "add%e5.b [%4=%3%S2],%0";
@@ -2274,8 +2274,8 @@
       && (!CONST_INT_P (operands[3])
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
+	  || CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
     return \"%x6%E5.%m5 [%4=%3%S2],%0\";
@@ -3238,7 +3238,7 @@
 (define_insn "<shlr>si3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(shift:SI (match_operand:SI 1 "register_operand" "0")
-		  (match_operand:SI 2 "nonmemory_operand" "Kr")))]
+		  (match_operand:SI 2 "nonmemory_operand" "Kcr")))]
   ""
 {
   if (REG_S_P (operands[2]))
@@ -3318,7 +3318,7 @@
 (define_insn "ashl<mode>3"
   [(set (match_operand:BW 0 "register_operand" "=r,r")
 	(ashift:BW (match_operand:BW 1 "register_operand" "0,0")
-		   (match_operand:BW 2 "nonmemory_operand" "r,K")))]
+		   (match_operand:BW 2 "nonmemory_operand" "r,Kc")))]
   ""
 {
   return
@@ -4668,8 +4668,8 @@
   "GET_MODE_SIZE (GET_MODE (operands[4])) <= UNITS_PER_WORD
    && REGNO (operands[3]) != REGNO (operands[0])
    && (BASE_P (operands[1]) || BASE_P (operands[2]))
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
    && (INTVAL (operands[2]) >= -128 && INTVAL (operands[2]) < 128)
    && TARGET_SIDE_EFFECT_PREFIXES"
   [(parallel
@@ -4704,8 +4704,8 @@
   "GET_MODE_SIZE (GET_MODE (operands[4])) <= UNITS_PER_WORD
    && REGNO (operands[4]) != REGNO (operands[0])
    && (BASE_P (operands[1]) || BASE_P (operands[2]))
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
    && (INTVAL (operands[2]) >= -128 && INTVAL (operands[2]) < 128)
    && TARGET_SIDE_EFFECT_PREFIXES"
   [(parallel
@@ -4742,8 +4742,8 @@
   ;; Change to GET_MODE_SIZE (GET_MODE (operands[3])) <= UNITS_PER_WORD?
   "GET_MODE (operands[3]) != DImode
    && REGNO (operands[0]) != REGNO (operands[3])
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
    && INTVAL (operands[2]) >= -128
    && INTVAL (operands[2]) <= 127
    && TARGET_SIDE_EFFECT_PREFIXES"
@@ -4934,7 +4934,7 @@
    ;; don't do this for a mem-volatile access.
   "REGNO (operands[2]) == REGNO (operands[0])
    && INTVAL (operands[3]) <= 65535 && INTVAL (operands[3]) >= 0
-   && !CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'I')
+   && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'I')
    && !side_effects_p (operands[1])"
   ;; FIXME: CC0 valid except for M (i.e. CC_NOT_NEGATIVE).
   [(set (match_dup 0) (match_dup 4))
@@ -4942,7 +4942,7 @@
 {
   enum machine_mode zmode = INTVAL (operands[3]) <= 255 ? QImode : HImode;
   enum machine_mode amode
-    = CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'O') ? SImode : zmode;
+    = CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'O') ? SImode : zmode;
   rtx op1
     = (REG_S_P (operands[1])
        ? gen_rtx_REG (zmode, REGNO (operands[1]))

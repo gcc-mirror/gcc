@@ -1,3 +1,14 @@
+2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/35492.
+	* config/cris/cris.h (CRIS_CONST_OK_FOR_LETTER_P): Renamed from
+	CONST_OK_FOR_LETTER_P.  All port-local users changed.
+	(CONST_OK_FOR_CONSTRAINT_P): Define; implement Kc as old K,
+	implement Kp matching power-of-two.
+	(CONSTRAINT_LEN): Define to match.
+	* config/cris/cris.md: Replace all use of constraint K with Kc.
+	("*btst*): Use Kp for operand 0 of last alternative.
+
 2008-07-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/36440
