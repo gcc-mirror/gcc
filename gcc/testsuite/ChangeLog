@@ -1,9 +1,14 @@
+2008-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36725
+	gfortran.dg/fmt_go_4.f08: New test.
+
 2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/35492
 	* gcc.c-torture/compile/pr35492.c: New test.
 
-2008-06-22  Daniel Kraft  <d@domob.eu>
+2008-07-12  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/used_types_21.f90:  New test.
 
