@@ -3026,6 +3026,14 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class class,
 	}
     }
 
+  /* A scratch address register is needed when a symbolic constant is
+     copied to r0 compiling with -fPIC.  In other cases the target
+     register might be used as temporary (see legitimize_pic_address).  */
+  if (in_p && SYMBOLIC_CONST (x) && flag_pic == 2 && class != ADDR_REGS)
+    sri->icode = (TARGET_64BIT ?
+		  CODE_FOR_reloaddi_PIC_addr :
+		  CODE_FOR_reloadsi_PIC_addr);
+
   /* Either scratch or no register needed.  */
   return NO_REGS;
 }
@@ -3272,7 +3280,10 @@ legitimize_pic_address (rtx orig, rtx reg)
           /* If the GOT offset might be >= 4k, we determine the position
              of the GOT entry via a PC-relative LARL (@GOTENT).  */
 
-          rtx temp = gen_reg_rtx (Pmode);
+          rtx temp = reg ? reg : gen_reg_rtx (Pmode);
+
+	  gcc_assert (REGNO (temp) >= FIRST_PSEUDO_REGISTER
+		      || REGNO_REG_CLASS (REGNO (temp)) == ADDR_REGS);
 
           new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTENT);
           new = gen_rtx_CONST (Pmode, new);
@@ -3287,7 +3298,10 @@ legitimize_pic_address (rtx orig, rtx reg)
           /* If the GOT offset might be >= 4k, we have to load it
              from the literal pool (@GOT).  */
 
-          rtx temp = gen_reg_rtx (Pmode);
+          rtx temp = reg ? reg : gen_reg_rtx (Pmode);
+
+	  gcc_assert (REGNO (temp) >= FIRST_PSEUDO_REGISTER
+		      || REGNO_REG_CLASS (REGNO (temp)) == ADDR_REGS);
 
 	  if (reload_in_progress || reload_completed)
 	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
@@ -3707,7 +3721,10 @@ legitimize_tls_address (rtx addr, rtx reg)
   return new;
 }
 
-/* Emit insns to move operands[1] into operands[0].  */
+/* Emit insns making the address in operands[1] valid for a standard
+   move to operands[0].  operands[1] is replaced by an address which
+   should be used instead of the former RTX to emit the move
+   pattern.  */
 
 void
 emit_symbolic_move (rtx *operands)
