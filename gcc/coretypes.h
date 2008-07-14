@@ -60,9 +60,11 @@ enum ir_type {
 
 /* Provide forward struct declaration so that we don't have to include
    all of cpplib.h whenever a random prototype includes a pointer.
-   Note that the cpp_reader typedef remains part of cpplib.h.  */
+   Note that the cpp_reader and cpp_token typedefs remain part of
+   cpplib.h.  */
 
 struct cpp_reader;
+struct cpp_token;
 
 /* The thread-local storage model associated with a given VAR_DECL
    or SYMBOL_REF.  This isn't used much, but both trees and RTL refer

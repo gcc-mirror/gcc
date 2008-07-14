@@ -532,6 +532,7 @@ extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
 extern int _cpp_warn_if_unused_macro (cpp_reader *, cpp_hashnode *, void *);
 extern void _cpp_push_token_context (cpp_reader *, cpp_hashnode *,
 				     const cpp_token *, unsigned int);
+extern void _cpp_backup_tokens_direct (cpp_reader *, unsigned int);
 
 /* In identifiers.c */
 extern void _cpp_init_hashtable (cpp_reader *, hash_table *);

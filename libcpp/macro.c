@@ -1251,16 +1251,21 @@ cpp_get_token (cpp_reader *pfile)
 
       if (!(node->flags & NODE_DISABLED))
 	{
-	  int ret;
+	  int ret = 0;
 	  /* If not in a macro context, and we're going to start an
 	     expansion, record the location.  */
 	  if (can_set && !context->macro)
 	    pfile->invocation_location = result->src_loc;
 	  if (pfile->state.prevent_expansion)
 	    break;
-	  ret = enter_macro_context (pfile, node, result);
-	  if (ret)
-	    {
+
+	  /* Conditional macros require that a predicate be evaluated
+	     first.  */
+	  if (((!(node->flags & NODE_CONDITIONAL))
+	       || (pfile->cb.macro_to_expand
+		   && (node = pfile->cb.macro_to_expand (pfile, result))))
+	      && (ret = enter_macro_context (pfile, node, result)))
+ 	    {
 	      if (pfile->state.in_directive || ret == 2)
 		continue;
 	      return padding_token (pfile, result);
@@ -1338,26 +1343,31 @@ cpp_scan_nooutput (cpp_reader *pfile)
   pfile->state.prevent_expansion--;
 }
 
+/* Step back one or more tokens obtained from the lexer.  */
+void
+_cpp_backup_tokens_direct (cpp_reader *pfile, unsigned int count)
+{
+  pfile->lookaheads += count;
+  while (count--)
+    {
+      pfile->cur_token--;
+      if (pfile->cur_token == pfile->cur_run->base
+          /* Possible with -fpreprocessed and no leading #line.  */
+          && pfile->cur_run->prev != NULL)
+        {
+          pfile->cur_run = pfile->cur_run->prev;
+          pfile->cur_token = pfile->cur_run->limit;
+        }
+    }
+}
+
 /* Step back one (or more) tokens.  Can only step back more than 1 if
    they are from the lexer, and not from macro expansion.  */
 void
 _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
 {
   if (pfile->context->prev == NULL)
-    {
-      pfile->lookaheads += count;
-      while (count--)
-	{
-	  pfile->cur_token--;
-	  if (pfile->cur_token == pfile->cur_run->base
-	      /* Possible with -fpreprocessed and no leading #line.  */
-	      && pfile->cur_run->prev != NULL)
-	    {
-	      pfile->cur_run = pfile->cur_run->prev;
-	      pfile->cur_token = pfile->cur_run->limit;
-	    }
-	}
-    }
+    _cpp_backup_tokens_direct (pfile, count);
   else
     {
       if (count != 1)
@@ -1382,6 +1392,11 @@ warn_of_redefinition (cpp_reader *pfile, const cpp_hashnode *node,
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
     return true;
+
+  /* Redefinitions of conditional (context-sensitive) macros, on
+     the other hand, must be allowed silently.  */
+  if (node->flags & NODE_CONDITIONAL)
+    return false;
 
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
@@ -1814,6 +1829,10 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_LIMIT_MACROS")
       && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_CONSTANT_MACROS"))
     node->flags |= NODE_WARN;
+
+  /* If user defines one of the conditional macros, remove the
+     conditional flag */
+  node->flags &= ~NODE_CONDITIONAL;
 
   return ok;
 }
