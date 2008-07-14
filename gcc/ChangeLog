@@ -1,3 +1,11 @@
+2008-07-14  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse5 cmov pattern): Update call of ix86_sse5_valid_op_p
+	* sse.md (sse5 patterns): Update call of ix86_sse5_valid_op_p;
+	fix predicates and constraints.
+	* i386.c (ix86_sse5_valid_op_p): Add commutative parameter.
+	* i386-protos.h (ix86_sse5_valid_op_p): Update declaration.
+
 2008-07-14  Doug Kwan  <dougkwan@google.com>
 
 	* config.gcc (arm*-*-eabi*): Include arm/eabi.h and use
