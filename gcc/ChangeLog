@@ -1,3 +1,10 @@
+2008-07-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (fully_constant_expression): Add fold_convert
+	calls.
+	(create_expression_by_pieces): Fix typo.
+	(do_regular_insertion): Use debug counter here too.
+
 2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/35492.

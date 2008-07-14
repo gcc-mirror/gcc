@@ -1068,8 +1068,14 @@ fully_constant_expression (pre_expr e)
 	      tree const1 = get_constant_for_value_id (vrep1);
 	      tree result = NULL;
 	      if (const0 && const1)
-		result = fold_binary (nary->opcode, nary->type, const0,
-				      const1);
+		{
+		  tree type1 = TREE_TYPE (nary->op[0]);
+		  tree type2 = TREE_TYPE (nary->op[1]);
+		  const0 = fold_convert (type1, const0);
+		  const1 = fold_convert (type2, const1);
+		  result = fold_binary (nary->opcode, nary->type, const0,
+					const1);
+		}
 	      if (result && is_gimple_min_invariant (result))
 		return get_or_alloc_expr_for_constant (result);
 	      return e;
@@ -1084,7 +1090,12 @@ fully_constant_expression (pre_expr e)
 	      tree const0 = get_constant_for_value_id (vrep0);
 	      tree result = NULL;
 	      if (const0)
-		result = fold_unary (nary->opcode, nary->type, const0);
+		{
+		  tree type1 = TREE_TYPE (nary->op[0]);
+		  const0 = fold_convert (type1, const0);
+		  result = fold_unary (nary->opcode, nary->type, const0);
+		}
+	      
 	      if (result && is_gimple_min_invariant (result))
 		return get_or_alloc_expr_for_constant (result);
 	      return e;
@@ -2701,7 +2712,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr, tree stmts,
 	      if (nary->opcode == POINTER_PLUS_EXPR)
 		genop2 = fold_convert (sizetype, genop2);
 	      else
-		genop2 = fold_convert (TREE_TYPE (nary->op[0]), genop2);
+		genop2 = fold_convert (TREE_TYPE (nary->op[1]), genop2);
 	      
 	      folded = fold_build2 (nary->opcode, nary->type,
 				    genop1, genop2);
@@ -2945,10 +2956,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	      /* When eliminating casts through unions,
 		 we sometimes want to convert a real to an integer,
 		 which fold_convert will ICE on  */
-	      if (fold_convertible_p (type, name))
+/*	      if (fold_convertible_p (type, name)) */
 		builtexpr = fold_convert (type, name);
-	      else
-		builtexpr = convert (type, name);
+/*	      else
+		builtexpr = convert (type, name);*/
 
 	      forcedexpr = force_gimple_operand (builtexpr,
 						 &stmts, true,
@@ -3159,7 +3170,7 @@ do_regular_insertion (basic_block block, basic_block dom)
 	     already existing along every predecessor, and
 	     it's defined by some predecessor, it is
 	     partially redundant.  */
-	  if (!cant_insert && !all_same && by_some)
+	  if (!cant_insert && !all_same && by_some && dbg_cnt (treepre_insert))
 	    {
 	      if (insert_into_preds_of_block (block, get_expression_id (expr),
 					      avail))
