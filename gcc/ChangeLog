@@ -1,3 +1,14 @@
+2008-07-14  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/36745
+	* config/s390/s390.c: (s390_secondary_reload): Add a secondary
+	reload for symbol refs moved to r0 with -fPIC.
+	(legitimize_pic_address): Use the target register as temporary
+	reg if possible.
+	(emit_symbolic_move): Adjust comment.
+	* config/s390/s390.md (reloadsi_PIC_addr, reloaddi_PIC_addr):
+	New expanders.
+
 2008-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* c-common.h (C_CPP_HASHNODE): New macro.
