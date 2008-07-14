@@ -188,6 +188,8 @@ enum c_tree_index
     CTI_MAX
 };
 
+#define C_CPP_HASHNODE(id) \
+  (&(((struct c_common_identifier *) (id))->node))
 #define C_RID_CODE(id) \
   ((enum rid) (((struct c_common_identifier *) (id))->node.rid_code))
 #define C_SET_RID_CODE(id, code) \

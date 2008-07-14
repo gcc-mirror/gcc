@@ -1,8 +1,13 @@
 /* { dg-do compile } */
+/* { dg-options "-ansi -maltivec" } */
+
 #include <altivec.h>
 vector char bool _4 ;
 vector char unsigned _31 ;
 vector char signed _59 ;
+/* bool is permitted in the predefine method, as it is expanded
+   unconditionally to int.  */
+bool _84 ;
 vector pixel _89 ;
 vector int bool _95 ;
 vector short bool _102 ;

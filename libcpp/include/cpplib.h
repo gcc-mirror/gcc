@@ -484,6 +484,10 @@ struct cpp_callbacks
   void (*read_pch) (cpp_reader *, const char *, int, const char *);
   missing_header_cb missing_header;
 
+  /* Context-sensitive macro support.  Returns macro (if any) that should
+     be expanded.  */
+  cpp_hashnode * (*macro_to_expand) (cpp_reader *, const cpp_token *);
+
   /* Called to emit a diagnostic if client_diagnostic option is true.
      This callback receives the translated message.  */
   void (*error) (cpp_reader *, int, const char *, va_list *)
@@ -558,6 +562,7 @@ extern const char *progname;
 #define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
 #define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
 #define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
+#define NODE_CONDITIONAL (1 << 8)	/* Conditional macro */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -629,8 +634,8 @@ struct cpp_hashnode GTY(())
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 8;	/* CPP node type.  */
-  unsigned char flags;			/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 7;	/* CPP node type.  */
+  unsigned int flags : 9;		/* CPP flags.  */
 
   union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
 };
@@ -717,6 +722,7 @@ extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  const cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
+extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
 extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,

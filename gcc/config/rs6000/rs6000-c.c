@@ -84,6 +84,149 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
+/* Keep the AltiVec keywords handy for fast comparisons.  */
+static tree __vector_keyword;
+static tree vector_keyword;
+static tree __pixel_keyword;
+static tree pixel_keyword;
+static tree __bool_keyword;
+static tree bool_keyword;
+
+/* Preserved across calls.  */
+static tree expand_bool_pixel;
+
+static cpp_hashnode *
+altivec_categorize_keyword (const cpp_token *tok)
+{
+  if (tok->type == CPP_NAME)
+    {
+      cpp_hashnode *ident = tok->val.node;
+
+      if (ident == C_CPP_HASHNODE (vector_keyword)
+	  || ident == C_CPP_HASHNODE (__vector_keyword))
+	return C_CPP_HASHNODE (__vector_keyword);
+
+      if (ident == C_CPP_HASHNODE (pixel_keyword)
+	  || ident ==  C_CPP_HASHNODE (__pixel_keyword))
+	return C_CPP_HASHNODE (__pixel_keyword);
+
+      if (ident == C_CPP_HASHNODE (bool_keyword)
+	  || ident == C_CPP_HASHNODE (__bool_keyword))
+	return C_CPP_HASHNODE (__bool_keyword);
+
+      return ident;
+    }
+
+  return 0;
+}
+
+static void
+init_vector_keywords (void)
+{
+  /* Keywords without two leading underscores are context-sensitive,
+     and hence implemented as conditional macros, controlled by the
+     rs6000_macro_to_expand() function below.  */
+
+  __vector_keyword = get_identifier ("__vector");
+  C_CPP_HASHNODE (__vector_keyword)->flags |= NODE_CONDITIONAL;
+
+  __pixel_keyword = get_identifier ("__pixel");
+  C_CPP_HASHNODE (__pixel_keyword)->flags |= NODE_CONDITIONAL;
+
+  __bool_keyword = get_identifier ("__bool");
+  C_CPP_HASHNODE (__bool_keyword)->flags |= NODE_CONDITIONAL;
+
+  vector_keyword = get_identifier ("vector");
+  C_CPP_HASHNODE (vector_keyword)->flags |= NODE_CONDITIONAL;
+
+  pixel_keyword = get_identifier ("pixel");
+  C_CPP_HASHNODE (pixel_keyword)->flags |= NODE_CONDITIONAL;
+
+  bool_keyword = get_identifier ("bool");
+  C_CPP_HASHNODE (bool_keyword)->flags |= NODE_CONDITIONAL;
+}
+
+/* Called to decide whether a conditional macro should be expanded.
+   Since we have exactly one such macro (i.e, 'vector'), we do not
+   need to examine the 'tok' parameter.  */
+
+static cpp_hashnode *
+rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
+{
+  cpp_hashnode *expand_this = tok->val.node;
+  cpp_hashnode *ident;
+
+  ident = altivec_categorize_keyword (tok);
+
+  if (ident == C_CPP_HASHNODE (__vector_keyword))
+    {
+      tok = cpp_peek_token (pfile, 0);
+      ident = altivec_categorize_keyword (tok);
+
+      if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+	{
+	  expand_this = C_CPP_HASHNODE (__vector_keyword);
+	  expand_bool_pixel = __pixel_keyword;
+	}
+      else if (ident == C_CPP_HASHNODE (__bool_keyword))
+	{
+	  expand_this = C_CPP_HASHNODE (__vector_keyword);
+	  expand_bool_pixel = __bool_keyword;
+	}
+      else if (ident)
+	{
+	  enum rid rid_code = (enum rid)(ident->rid_code);
+	  if (ident->type == NT_MACRO)
+	    {
+	      (void)cpp_get_token (pfile);
+	      tok = cpp_peek_token (pfile, 0);
+	      ident = altivec_categorize_keyword (tok);
+	      if (ident)
+		rid_code = (enum rid)(ident->rid_code);
+	    }
+
+	  if (rid_code == RID_UNSIGNED || rid_code == RID_LONG
+	      || rid_code == RID_SHORT || rid_code == RID_SIGNED
+	      || rid_code == RID_INT || rid_code == RID_CHAR
+	      || rid_code == RID_FLOAT)
+	    {
+	      expand_this = C_CPP_HASHNODE (__vector_keyword);
+	      /* If the next keyword is bool or pixel, it
+		 will need to be expanded as well.  */
+	      tok = cpp_peek_token (pfile, 1);
+	      ident = altivec_categorize_keyword (tok);
+
+	      if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+		expand_bool_pixel = __pixel_keyword;
+	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
+		expand_bool_pixel = __bool_keyword;
+	      else
+		{
+		  /* Try two tokens down, too.  */
+		  tok = cpp_peek_token (pfile, 2);
+		  ident = altivec_categorize_keyword (tok);
+		  if (ident ==  C_CPP_HASHNODE (__pixel_keyword))
+		    expand_bool_pixel = __pixel_keyword;
+		  else if (ident == C_CPP_HASHNODE (__bool_keyword))
+		    expand_bool_pixel = __bool_keyword;
+		}
+	    }
+	}
+    }
+  else if (expand_bool_pixel && ident == C_CPP_HASHNODE (__pixel_keyword))
+    {
+      expand_this = C_CPP_HASHNODE (__pixel_keyword);
+      expand_bool_pixel = 0;
+    }
+  else if (expand_bool_pixel && ident == C_CPP_HASHNODE (__bool_keyword))
+    {
+      expand_this = C_CPP_HASHNODE (__bool_keyword);
+      expand_bool_pixel = 0;
+    }
+
+  return expand_this;
+}
+
 void
 rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
@@ -120,6 +263,20 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__vector=__attribute__((altivec(vector__)))");
       builtin_define ("__pixel=__attribute__((altivec(pixel__))) unsigned short");
       builtin_define ("__bool=__attribute__((altivec(bool__))) unsigned");
+
+      if (!flag_iso)
+	{
+	  /* Define this when supporting context-sensitive keywords.  */
+	  builtin_define ("__APPLE_ALTIVEC__");
+	  
+	  builtin_define ("vector=vector");
+	  builtin_define ("pixel=pixel");
+	  builtin_define ("bool=bool");
+	  init_vector_keywords ();
+
+	  /* Enable context-sensitive macros.  */
+	  cpp_get_callbacks (pfile)->macro_to_expand = rs6000_macro_to_expand;
+	}
     }
   if (TARGET_SPE)
     builtin_define ("__SPE__");

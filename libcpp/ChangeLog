@@ -1,3 +1,20 @@
+2008-07-14  Ben Elliston  <bje@au.ibm.com>
+
+	* include/cpplib.h (NODE_CONDITIONAL): New.
+	(struct cpp_callbacks): New macro_to_expand field.
+	(struct cpp_hashnode): Adjust size of flags and type fields.
+	(cpp_peek_token): Prototype.
+	* lex.c (cpp_peek_token): New function.
+	(_cpp_temp_token): Protect pre-existing lookaheads.
+	* macro.c (cpp_get_token): Expand any conditional macros.
+	(_cpp_backup_tokens_direct): New.
+	(_cpp_backup_tokens): Call _cpp_backup_tokens_direct.
+	(warn_of_redefinition): Silently allow redefined conditional
+	macros.
+	(_cpp_create_definition): Remove the conditional flag when a user
+	defines one of the conditional macros.
+	* internal.h (_cpp_backup_tokens_direct): New prototype.
+
 2008-06-13  Andrew Haley  <aph@redhat.com>
 
 	PR preprocessor/33305

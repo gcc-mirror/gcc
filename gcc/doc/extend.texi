@@ -9120,9 +9120,10 @@ always specify the signedness.
 
 @item
 Compiling with @option{-maltivec} adds keywords @code{__vector},
-@code{__pixel}, and @code{__bool}.  Macros @option{vector},
-@code{pixel}, and @code{bool} are defined in @code{<altivec.h>} and can
-be undefined.
+@code{vector}, @code{__pixel}, @code{pixel}, @code{__bool} and
+@code{bool}.  When compiling ISO C, the context-sensitive substitution
+of the keywords @code{vector}, @code{pixel} and @code{bool} is
+disabled.  To use them, you must include @code{<altivec.h>} instead.
 
 @item
 GCC allows using a @code{typedef} name as the type specifier for a

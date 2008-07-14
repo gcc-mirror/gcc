@@ -1,3 +1,12 @@
+2008-07-14  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/powerpc/altivec-macros.c: New test.
+	* gcc.target/powerpc/altviec-26.c: Likewise.
+	* gcc.dg/vmx/1b-06.c: Remove bool variable.
+	* gcc.dg/vmx/1b-07.c: Likewise.
+	* gcc.dg/vmx/1b-06-ansi.c: New test for the pre-define method.
+	* gcc.dg/vmx/1b-07-ansi.c: Likewise.
+
 2008-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/36725
