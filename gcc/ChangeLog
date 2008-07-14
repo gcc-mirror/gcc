@@ -1,3 +1,22 @@
+2008-07-14  Doug Kwan  <dougkwan@google.com>
+
+	* config.gcc (arm*-*-eabi*): Include arm/eabi.h and use
+	additional option file arm/eabi.opt.
+	* config/arm/eabi.h (File): New configuration file for EABI targets.
+	* config/arm/elf.h (SUBTARGET_EXTRA_SPECS): Add
+	SUBSUBTARGET_EXTRA_SPECS.
+	(SUBSUBTARGET_EXTRA_SPECS): Provide empty default.
+	* config/arm/unknown-elf.h (UNKNOWN_ELF_STARTFILE_SPEC): Renamed
+	from STARTFILE_SPEC so that it can be referenced in an override.
+	(STARTFILE_SPEC): Use UNKNOWN_ELF_STARTFILE_SPEC.
+	(UNKNOWN_ELF_ENDFILE_SPEC): Renamed from ENDFILE_SPEC so that it
+	can be referenced in an override.
+	(ENDFILE_SPEC): Use UNKNOWN_ELF_ENDFILE_SPEC.
+	* config/arm/bpabi.h (BPABI_LINK_SPEC): Renamed from LINK_SPEC
+	so that it can be referenced in an override.
+	(LINK_SPEC): Use BPABI_LINK_SPEC.
+	* config/arm/eabi.opt (File): New.
+
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in (TARGET_DEF_H): Add targhooks.h.

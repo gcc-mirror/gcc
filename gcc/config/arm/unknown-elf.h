@@ -33,11 +33,15 @@
 #endif
 
 /* Now we define the strings used to build the spec file.  */
+#define UNKNOWN_ELF_STARTFILE_SPEC	" crti%O%s crtbegin%O%s crt0%O%s"
+
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC	" crti%O%s crtbegin%O%s crt0%O%s"
+#define STARTFILE_SPEC	UNKNOWN_ELF_STARTFILE_SPEC
+
+#define UNKNOWN_ELF_ENDFILE_SPEC	"crtend%O%s crtn%O%s"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC	"crtend%O%s crtn%O%s"
+#define ENDFILE_SPEC	UNKNOWN_ELF_ENDFILE_SPEC
 
 /* The __USES_INITFINI__ define is tested in newlib/libc/sys/arm/crt0.S
    to see if it needs to invoked _init() and _fini().  */
