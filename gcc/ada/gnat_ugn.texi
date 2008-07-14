@@ -98,6 +98,14 @@
 @set PLATFORM OpenVMS
 @end ifset
 
+@c @ovar(ARG)
+@c ----------
+@c The ARG is an optional argument.  To be used for macro arguments in
+@c their documentation (@defmac).
+@macro ovar{varname}
+@r{[}@var{\varname\}@r{]}@c
+@end macro
+
 @settitle @value{EDITION} User's Guide @value{PLATFORM}
 @dircategory GNU Ada tools
 @direntry
@@ -1005,7 +1013,7 @@ variables}.
 @emph{Emphasis}.
 
 @item
-[optional information or parameters]
+@r{[}optional information or parameters@r{]}
 
 @item
 Examples are described by text
@@ -2149,18 +2157,18 @@ alternative scheme for naming is specified by the use of
 @smallexample @c ada
 pragma Source_File_Name (
    Spec_File_Name  => FILE_NAME_PATTERN
- [,Casing          => CASING_SPEC]
- [,Dot_Replacement => STRING_LITERAL]);
+ @r{[},Casing          => CASING_SPEC@r{]}
+ @r{[},Dot_Replacement => STRING_LITERAL@r{]});
 
 pragma Source_File_Name (
    Body_File_Name  => FILE_NAME_PATTERN
- [,Casing          => CASING_SPEC]
- [,Dot_Replacement => STRING_LITERAL]);
+ @r{[},Casing          => CASING_SPEC@r{]}
+ @r{[},Dot_Replacement => STRING_LITERAL@r{]});
 
 pragma Source_File_Name (
    Subunit_File_Name  => FILE_NAME_PATTERN
- [,Casing             => CASING_SPEC]
- [,Dot_Replacement    => STRING_LITERAL]);
+ @r{[},Casing             => CASING_SPEC@r{]}
+ @r{[},Dot_Replacement    => STRING_LITERAL@r{]});
 
 FILE_NAME_PATTERN ::= STRING_LITERAL
 CASING_SPEC ::= Lowercase | Uppercase | Mixedcase
@@ -3669,7 +3677,7 @@ without generating code, then use the @option{-gnatc} switch.
 The basic command for compiling a file containing an Ada unit is
 
 @smallexample
-$ gcc -c [@var{switches}] @file{file name}
+$ gcc -c @ovar{switches} @file{file name}
 @end smallexample
 
 @noindent
@@ -3823,7 +3831,7 @@ See @ref{Stack Overflow Checking} for details.
 Makes the compiler output stack usage information for the program, on a
 per-function basis. See @ref{Static Stack Usage Analysis} for details.
 
-@item -fcallgraph-info[=su]
+@item -fcallgraph-info@r{[}=su@r{]}
 @cindex @option{-fcallgraph-info} (@command{gcc})
 Makes the compiler output callgraph information for the program, on a
 per-file basis.  The information is generated in the VCG format.  It can
@@ -3894,9 +3902,9 @@ Specify a configuration pragma file
 @end ifclear
 (@pxref{The Configuration Pragmas Files}).
 
-@item ^-gnateD^/DATA_PREPROCESSING=^symbol[=value]
+@item ^-gnateD^/DATA_PREPROCESSING=^symbol@r{[}=@var{value}@r{]}
 @cindex @option{-gnateD} (@command{gcc})
-Defines a symbol, associated with value, for preprocessing.
+Defines a symbol, associated with @var{value}, for preprocessing.
 (@pxref{Integrated Preprocessing}).
 
 @item -gnatef
@@ -4043,7 +4051,7 @@ Don't quit; generate @file{ALI} and tree files even if illegalities.
 @cindex @option{-gnatr} (@command{gcc})
 Treat pragma Restrictions as Restriction_Warnings.
 
-@item ^-gnatR[0/1/2/3[s]]^/REPRESENTATION_INFO^
+@item ^-gnatR@r{[}0@r{/}1@r{/}2@r{/}3@r{[}s@r{]]}^/REPRESENTATION_INFO^
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
 
@@ -4080,7 +4088,7 @@ Verbose mode. Full error output with source lines to @file{stdout}.
 Control level of validity checking. See separate section describing
 this feature.
 
-@item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}[,@dots{}])^
+@item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}@r{[},@dots{}@r{]})^
 @cindex @option{^-gnatw^/WARNINGS^} (@command{gcc})
 Warning mode where
 ^@var{xxx} is a string of option letters that^the list of options^ denotes
@@ -4160,7 +4168,7 @@ Inhibit the search of the default location for the GNAT Run Time
 Library (RTL) ALI files.
 
 @ifclear vms
-@item -O[@var{n}]
+@item -O@ovar{n}
 @cindex @option{-O} (@command{gcc})
 @var{n} controls the optimization level.
 
@@ -4196,7 +4204,7 @@ Equivalent to @option{/OPTIMIZE=NONE}.
 This is the default behavior in the absence of an @option{/OPTIMIZE}
 qualifier.
 
-@item /OPTIMIZE[=(keyword[,@dots{}])]
+@item /OPTIMIZE@r{[}=(keyword@r{[},@dots{}@r{]})@r{]}
 @cindex @option{/OPTIMIZE} (@code{GNAT COMPILE})
 Selects the level of optimization for your program. The supported
 keywords are as follows:
@@ -5505,8 +5513,8 @@ The pragmas have the form:
 
 @smallexample
 @cartouche
-   @b{pragma} Assert (@var{Boolean-expression} [,
-                      @var{static-string-expression}])
+   @b{pragma} Assert (@var{Boolean-expression} @r{[},
+                      @var{static-string-expression}@r{]})
    @b{pragma} Debug (@var{procedure call})
 @end cartouche
 @end smallexample
@@ -5527,7 +5535,7 @@ The @code{Debug} pragma causes @var{procedure} to be called. Note that
 debugging procedures to be called between declarations.
 
 @ifset vms
-@item /DEBUG[=debug-level]
+@item /DEBUG@r{[}=debug-level@r{]}
 @itemx  /NODEBUG
 Specifies how much debugging information is to be included in
 the resulting object file where 'debug-level' is one of the following:
@@ -6752,7 +6760,7 @@ If the switch @option{-gnatL} is used in conjunction with
 in the expanded source (as comment lines with the original line number).
 
 @table @code
-@item new @var{xxx} [storage_pool = @var{yyy}]
+@item new @var{xxx} @r{[}storage_pool = @var{yyy}@r{]}
 Shows the storage pool being used for an allocator.
 
 @item at end @var{procedure-name};
@@ -6778,14 +6786,14 @@ Combines the above two cases.
 A division or multiplication of fixed-point values which are treated as
 integers without any kind of scaling.
 
-@item free @var{expr} [storage_pool = @var{xxx}]
+@item free @var{expr} @r{[}storage_pool = @var{xxx}@r{]}
 Shows the storage pool associated with a @code{free} statement.
 
 @item [subtype or type declaration]
 Used to list an equivalent declaration for an internally generated
 type that is referenced elsewhere in the listing.
 
-@item freeze @var{type-name} [@var{actions}]
+@item freeze @var{type-name} @ovar{actions}
 Shows the point at which @var{type-name} is frozen, with possible
 associated actions to be performed at the freeze point.
 
@@ -6861,7 +6869,7 @@ Profile_Warnings, and pragma Restricted_Run_Time and pragma Ravenscar set
 restriction warnings rather than restrictions.
 
 @ifclear vms
-@item -gnatR[0|1|2|3[s]]
+@item -gnatR@r{[}0@r{|}1@r{|}2@r{|}3@r{[}s@r{]]}
 @cindex @option{-gnatR} (@command{gcc})
 This switch controls output from the compiler of a listing showing
 representation information for declared types and objects. For
@@ -7168,7 +7176,7 @@ Examples of valid lines in a preprocessor data file:
   --  list all symbols with their values.
 @end smallexample
 
-@item ^-gnateD^/DATA_PREPROCESSING=^symbol[=value]
+@item ^-gnateD^/DATA_PREPROCESSING=^symbol@r{[}=value@r{]}
 @cindex @option{-gnateD} (@command{gcc})
 Define or redefine a preprocessing symbol, associated with value. If no value
 is given on the command line, then the value of the symbol is @code{True}.
@@ -7475,14 +7483,14 @@ to be read by the @command{gnatlink} utility used to link the Ada application.
 The form of the @code{gnatbind} command is
 
 @smallexample
-$ gnatbind [@i{switches}] @i{mainprog}[.ali] [@i{switches}]
+$ gnatbind @ovar{switches} @var{mainprog}@r{[}.ali@r{]} @ovar{switches}
 @end smallexample
 
 @noindent
-where @file{@i{mainprog}.adb} is the Ada file containing the main program
+where @file{@var{mainprog}.adb} is the Ada file containing the main program
 unit body. If no switches are specified, @code{gnatbind} constructs an Ada
 package in two files whose names are
-@file{b~@i{mainprog}.ads}, and @file{b~@i{mainprog}.adb}.
+@file{b~@var{mainprog}.ads}, and @file{b~@var{mainprog}.adb}.
 For example, if given the
 parameter @file{hello.ali}, for a main program contained in file
 @file{hello.adb}, the binder output files would be @file{b~hello.ads}
@@ -7618,20 +7626,20 @@ Check only, no generation of binder output file.
 @cindex @option{^-C^/BIND_FILE=C^} (@command{gnatbind})
 Generate binder program in C
 
-@item ^-d^/DEFAULT_STACK_SIZE=^@var{nn}[k|m]
-@cindex @option{^-d^/DEFAULT_STACK_SIZE=^@var{nn}[k|m]} (@command{gnatbind})
+@item ^-d^/DEFAULT_STACK_SIZE=^@var{nn}@r{[}k@r{|}m@r{]}
+@cindex @option{^-d^/DEFAULT_STACK_SIZE=^@var{nn}@r{[}k@r{|}m@r{]}} (@command{gnatbind})
 This switch can be used to change the default task stack size value
 to a specified size @var{nn}, which is expressed in bytes by default, or
 in kilobytes when suffixed with @var{k} or in megabytes when suffixed
 with @var{m}.
-In the absence of a [k|m] suffix, this switch is equivalent, in effect,
-to completing all task specs with
+In the absence of a @samp{@r{[}k@r{|}m@r{]}} suffix, this switch is equivalent,
+in effect, to completing all task specs with
 @smallexample @c ada
    pragma Storage_Size (nn);
 @end smallexample
 When they do not already have such a pragma.
 
-@item ^-D^/DEFAULT_SECONDARY_STACK_SIZE=^@var{nn}[k|m]
+@item ^-D^/DEFAULT_SECONDARY_STACK_SIZE=^@var{nn}@r{[}k@r{|}m@r{]}
 @cindex @option{^-D^/DEFAULT_SECONDARY_STACK_SIZE=nnnnn^} (@command{gnatbind})
 This switch can be used to change the default secondary stack size value
 to a specified size @var{nn}, which is expressed in bytes by default, or
@@ -8448,8 +8456,8 @@ driver (see @ref{The GNAT Driver and Project Files}).
 The form of the @command{gnatlink} command is
 
 @smallexample
-$ gnatlink [@var{switches}] @var{mainprog}[.ali]
-           [@var{non-Ada objects}] [@var{linker options}]
+$ gnatlink @ovar{switches} @var{mainprog}@r{[}.ali@r{]}
+           @ovar{non-Ada objects} @ovar{linker options}
 @end smallexample
 
 @noindent
@@ -8727,8 +8735,8 @@ dependencies, they will always be tracked exactly correctly by
 The usual form of the @command{gnatmake} command is
 
 @smallexample
-$ gnatmake [@var{switches}] @var{file_name}
-      [@var{file_names}] [@var{mode_switches}]
+$ gnatmake @ovar{switches} @var{file_name}
+      @ovar{file_names} @ovar{mode_switches}
 @end smallexample
 
 @noindent
@@ -10266,7 +10274,7 @@ Note that @code{gnatelim} needs neither object nor ALI files.
 @code{gnatelim} has the following command-line interface:
 
 @smallexample
-$ gnatelim [options] name
+$ gnatelim @ovar{options} name
 @end smallexample
 
 @noindent
@@ -10417,7 +10425,7 @@ Generate a list of @code{Eliminate} pragmas
 $ PIPE GNAT ELIM MAIN_PROG > GNAT.ADC
 @end ifset
 @ifclear vms
-$ gnatelim main_prog >[>] gnat.adc
+$ gnatelim main_prog >@r{[}>@r{]} gnat.adc
 @end ifclear
 @end smallexample
 
@@ -10665,8 +10673,8 @@ in which GNAT processes the ACVC tests.
 The @code{gnatchop} command has the form:
 
 @smallexample
-$ gnatchop switches @var{file name} [@var{file name} @var{file name} @dots{}]
-      [@var{directory}]
+$ gnatchop switches @var{file name} @r{[}@var{file name} @dots{}@r{]}
+      @ovar{directory}
 @end smallexample
 
 @noindent
@@ -11089,8 +11097,8 @@ set of files.
 The usual form of the @code{gnatname} command is
 
 @smallexample
-$ gnatname [@var{switches}] @var{naming_pattern} [@var{naming_patterns}] \
-      [--and @var{switches}] @var{naming_pattern} [@var{naming_patterns}]]
+$ gnatname @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}
+      @r{[}--and @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}@r{]}
 @end smallexample
 
 @noindent
@@ -14903,14 +14911,15 @@ use the @code{gnat} driver (see @ref{The GNAT Driver and Project Files}).
 @noindent
 The command invocation for @code{gnatxref} is:
 @smallexample
-$ gnatxref [switches] sourcefile1 [sourcefile2 @dots{}]
+$ gnatxref @ovar{switches} @var{sourcefile1} @r{[}@var{sourcefile2} @dots{}@r{]}
 @end smallexample
 
 @noindent
 where
 
-@table @code
-@item sourcefile1, sourcefile2
+@table @var
+@item sourcefile1
+@itemx sourcefile2
 identifies the source files for which a report is to be generated. The
 ``with''ed units will be processed too. You must provide at least one file.
 
@@ -15034,17 +15043,17 @@ you can say @samp{gnatxref ^-ag^/ALL_FILES/IGNORE_LOCALS^} instead of
 The command line for @code{gnatfind} is:
 
 @smallexample
-$ gnatfind [switches] pattern[:sourcefile[:line[:column]]]
-      [file1 file2 @dots{}]
+$ gnatfind @ovar{switches} @var{pattern}@r{[}:@var{sourcefile}@r{[}:@var{line}@r{[}:@var{column}@r{]]]}
+      @r{[}@var{file1} @var{file2} @dots{}]
 @end smallexample
 
 @noindent
 where
 
-@table @code
+@table @var
 @item pattern
 An entity will be output only if it matches the regular expression found
-in @samp{pattern}, see @ref{Regular Expressions in gnatfind and gnatxref}.
+in @var{pattern}, see @ref{Regular Expressions in gnatfind and gnatxref}.
 
 Omitting the pattern is equivalent to specifying @samp{*}, which
 will match any entity. Note that if you do not provide a pattern, you
@@ -15056,8 +15065,8 @@ for matching purposes. At the current time there is no support for
 
 @item sourcefile
 @code{gnatfind} will look for references, bodies or declarations
-of symbols referenced in @file{sourcefile}, at line @samp{line}
-and column @samp{column}. See @ref{Examples of gnatfind Usage}
+of symbols referenced in @file{@var{sourcefile}}, at line @var{line}
+and column @var{column}. See @ref{Examples of gnatfind Usage}
 for syntax examples.
 
 @item line
@@ -15080,9 +15089,9 @@ directory whose name starts with @file{source} and whose extension is
 @file{adb}.
 
 The location of the spec of the entity will always be displayed, even if it
-isn't in one of @file{file1}, @file{file2},@enddots{}  The occurrences
-of the entity in the separate units of the ones given on the command
-line will also be displayed.
+isn't in one of @file{@var{file1}}, @file{@var{file2}},@enddots{}  The
+occurrences of the entity in the separate units of the ones given on the
+command line will also be displayed.
 
 Note that if you specify at least one file in this part, @code{gnatfind} may
 sometimes not be able to find the body of the subprograms.
@@ -15503,8 +15512,8 @@ $ gnatxref -v gnatfind.adb > tags
 will generate the tags file for @code{gnatfind} itself (if the sources
 are in the search path!).
 
-From @command{vi}, you can then use the command @samp{:tag @i{entity}}
-(replacing @i{entity} by whatever you are looking for), and vi will
+From @command{vi}, you can then use the command @samp{:tag @var{entity}}
+(replacing @var{entity} by whatever you are looking for), and vi will
 display a new file with the corresponding declaration of entity.
 @end ifclear
 
@@ -15614,7 +15623,7 @@ call @command{gnatpp} through the @command{gnat} driver
 The @command{gnatpp} command has the form
 
 @smallexample
-$ gnatpp [@var{switches}] @var{filename}
+$ gnatpp @ovar{switches} @var{filename}
 @end smallexample
 
 @noindent
@@ -15938,18 +15947,18 @@ The @option{GNAT}, @option{COMPACT}, and @option{UNCOMPACT} options for the
 These switches allow control over line length and indentation.
 
 @table @option
-@item ^-M@i{nnn}^/LINE_LENGTH_MAX=@i{nnn}^
+@item ^-M@var{nnn}^/LINE_LENGTH_MAX=@var{nnn}^
 @cindex @option{^-M^/LINE_LENGTH^} (@command{gnatpp})
-Maximum line length, @i{nnn} from 32@dots{}256, the default value is 79
+Maximum line length, @var{nnn} from 32@dots{}256, the default value is 79
 
-@item ^-i@i{nnn}^/INDENTATION_LEVEL=@i{nnn}^
+@item ^-i@var{nnn}^/INDENTATION_LEVEL=@var{nnn}^
 @cindex @option{^-i^/INDENTATION_LEVEL^} (@command{gnatpp})
-Indentation level, @i{nnn} from 1@dots{}9, the default value is 3
+Indentation level, @var{nnn} from 1@dots{}9, the default value is 3
 
-@item ^-cl@i{nnn}^/CONTINUATION_INDENT=@i{nnn}^
+@item ^-cl@var{nnn}^/CONTINUATION_INDENT=@var{nnn}^
 @cindex @option{^-cl^/CONTINUATION_INDENT^} (@command{gnatpp})
 Indentation level for continuation lines (relative to the line being
-continued), @i{nnn} from 1@dots{}9.
+continued), @var{nnn} from 1@dots{}9.
 The default
 value is one less then the (normal) indentation level, unless the
 indentation is set to 1 (in which case the default value for continuation
@@ -15980,12 +15989,12 @@ insertion, so that the formatted source reflects the original.
 @cindex @option{^-ff^/FORM_FEED_AFTER_PRAGMA_PAGE^} (@command{gnatpp})
 Insert a Form Feed character after a pragma Page.
 
-@item ^-T@i{nnn}^/MAX_INDENT=@i{nnn}^
+@item ^-T@var{nnn}^/MAX_INDENT=@var{nnn}^
 @cindex @option{^-T^/MAX_INDENT^} (@command{gnatpp})
 Do not use an additional indentation level for @b{case} alternatives
-and variants if there are @i{nnn} or more (the default
+and variants if there are @var{nnn} or more (the default
 value is 10).
-If @i{nnn} is 0, an additional indentation level is
+If @var{nnn} is 0, an additional indentation level is
 used for @b{case} alternatives and variants regardless of their number.
 @end table
 
@@ -16711,28 +16720,28 @@ through the @command{gnat} driver.
 The @command{gnatmetric} command has the form
 
 @smallexample
-$ gnatmetric [@i{switches}] @{@i{filename}@} [@i{-cargs gcc_switches}]
+$ gnatmetric @ovar{switches} @{@var{filename}@} @r{[}-cargs @var{gcc_switches}@r{]}
 @end smallexample
 
 @noindent
 where
 @itemize @bullet
 @item
-@i{switches} specify the metrics to compute and define the destination for
+@var{switches} specify the metrics to compute and define the destination for
 the output
 
 @item
-Each @i{filename} is the name (including the extension) of a source
+Each @var{filename} is the name (including the extension) of a source
 file to process. ``Wildcards'' are allowed, and
 the file name may contain path information.
-If no @i{filename} is supplied, then the @i{switches} list must contain
+If no @var{filename} is supplied, then the @var{switches} list must contain
 at least one
 @option{-files} switch (@pxref{Other gnatmetric Switches}).
 Including both a @option{-files} switch and one or more
-@i{filename} arguments is permitted.
+@var{filename} arguments is permitted.
 
 @item
-@i{-cargs gcc_switches} is a list of switches for
+@samp{-cargs @var{gcc_switches}} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatmetric} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
@@ -17476,7 +17485,7 @@ The @code{gnatkr} command has the form
 
 @ifclear vms
 @smallexample
-$ gnatkr @var{name} [@var{length}]
+$ gnatkr @var{name} @ovar{length}
 @end smallexample
 @end ifclear
 
@@ -17664,12 +17673,12 @@ all characters need to be in the ASCII set (no accented letters).
 To call @code{gnatprep} use
 
 @smallexample
-$ gnatprep [switches] infile outfile [deffile]
+$ gnatprep @ovar{switches} @var{infile} @var{outfile} @ovar{deffile}
 @end smallexample
 
 @noindent
 where
-@table @code
+@table @var
 @item switches
 is an optional sequence of switches as described in the next section.
 
@@ -17810,11 +17819,11 @@ The preprocessor conditional inclusion commands have the form
 @smallexample
 @group
 @cartouche
-#if @i{expression} [then]
+#if @i{expression} @r{[}then@r{]}
    lines
-#elsif @i{expression} [then]
+#elsif @i{expression} @r{[}then@r{]}
    lines
-#elsif @i{expression} [then]
+#elsif @i{expression} @r{[}then@r{]}
    lines
 @dots{}
 #else
@@ -17950,7 +17959,7 @@ supplied configuration pragmas.
 The @code{gnatlbr} command has the form
 
 @smallexample
-$ GNAT LIBRARY /[CREATE | SET | DELETE]=directory [/CONFIG=file]
+$ GNAT LIBRARY /@r{[}CREATE@r{|}SET@r{|}DELETE@r{]}=directory @r{[}/CONFIG=file@r{]}
 @end smallexample
 
 @node Switches for gnatlbr
@@ -19637,7 +19646,7 @@ Solaris and Windows NT/2000/XP (x86).
 The @code{gnatmem} command has the form
 
 @smallexample
-   $ gnatmem [switches] user_program
+   $ gnatmem @ovar{switches} user_program
 @end smallexample
 
 @noindent
@@ -20165,41 +20174,41 @@ driver (see @ref{The GNAT Driver and Project Files}).
 Invoking @command{gnatcheck} on the command line has the form:
 
 @smallexample
-$ gnatcheck [@i{switches}]  @{@i{filename}@}
-      [^-files^/FILES^=@{@i{arg_list_filename}@}]
-      [-cargs @i{gcc_switches}] [-rules @i{rule_options}]
+$ gnatcheck @ovar{switches}  @{@var{filename}@}
+      @r{[}^-files^/FILES^=@{@var{arg_list_filename}@}@r{]}
+      @r{[}-cargs @var{gcc_switches}@r{]} @r{[}-rules @var{rule_options}@r{]}
 @end smallexample
 
 @noindent
 where
 @itemize @bullet
 @item
-@i{switches} specify the general tool options
+@var{switches} specify the general tool options
 
 @item
-Each @i{filename} is the name (including the extension) of a source
+Each @var{filename} is the name (including the extension) of a source
 file to process. ``Wildcards'' are allowed, and
 the file name may contain path information.
 
 @item
-Each @i{arg_list_filename} is the name (including the extension) of a text
+Each @var{arg_list_filename} is the name (including the extension) of a text
 file containing the names of the source files to process, separated by spaces
 or line breaks.
 
 @item
-@i{gcc_switches} is a list of switches for
+@var{gcc_switches} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatcheck} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
 and use the @option{-gnatec} switch to set the configuration file.
 
 @item
-@i{rule_options} is a list of options for controlling a set of
+@var{rule_options} is a list of options for controlling a set of
 rules to be checked by @command{gnatcheck} (@pxref{gnatcheck Rule Options}).
 @end itemize
 
 @noindent
-Either a @i{filename} or an @i{arg_list_filename} must be supplied.
+Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be supplied.
 
 @menu
 * Format of the Report File::
@@ -20322,22 +20331,22 @@ Turn all the rule checks ON.
 Turn all the rule checks OFF.
 
 @cindex @option{+R} (@command{gnatcheck})
-@item +R@i{rule_id[:param]}
+@item +R@var{rule_id}@r{[}:@var{param}@r{]}
 Turn on the check for a specified rule with the specified parameter, if any.
-@i{rule_id} must be the identifier of one of the currently implemented rules
+@var{rule_id} must be the identifier of one of the currently implemented rules
 (use @option{^-h^/HELP^} for the list of implemented rules). Rule identifiers
-are not case-sensitive. The @i{param} item must
+are not case-sensitive. The @var{param} item must
 be a string representing a valid parameter(s) for the specified rule.
 If it contains any space characters then this string must be enclosed in
 quotation marks.
 
 @cindex @option{-R} (@command{gnatcheck})
-@item -R@i{rule_id[:param]}
+@item -R@var{rule_id}@r{[}:@var{param}@r{]}
 Turn off the check for a specified rule with the specified parameter, if any.
 
 @cindex @option{-from} (@command{gnatcheck})
-@item -from=@i{rule_option_filename}
-Read the rule options from the text file @i{rule_option_filename}, referred as
+@item -from=@var{rule_option_filename}
+Read the rule options from the text file @var{rule_option_filename}, referred as
 ``rule file'' below.
 
 @end table
@@ -20356,13 +20365,14 @@ The file may contain empty lines and Ada-style comments (comment
 lines and end-of-line comments). The rule file has free format; that is,
 you do not have to start a new rule option on a new line.
 
-A rule file may contain other @option{-from=@i{rule_option_filename}}
+A rule file may contain other @option{-from=@var{rule_option_filename}}
 options, each such option being replaced with the content of the
 corresponding rule file during the rule files processing. In case a
-cycle is detected (that is, @i{rule_file_1} reads rule options from
-@i{rule_file_2}, and  @i{rule_file_2} reads (directly or indirectly)
-rule options from @i{rule_file_1}), the processing
-of rule files is interrupted and a part of their content is ignored.
+cycle is detected (that is, @file{@var{rule_file_1}} reads rule options
+from @file{@var{rule_file_2}}, and @file{@var{rule_file_2}} reads
+(directly or indirectly) rule options from @file{@var{rule_file_1}}),
+the processing of rule files is interrupted and a part of their content
+is ignored.
 
 
 @node Adding the Results of Compiler Checks to gnatcheck Output
@@ -22010,12 +22020,12 @@ of @command{gnatstub} switches below.
 @command{gnatstub} has the command-line interface of the form
 
 @smallexample
-$ gnatstub [switches] filename [directory]
+$ gnatstub @ovar{switches} @var{filename} @ovar{directory}
 @end smallexample
 
 @noindent
 where
-@table @emph
+@table @var
 @item filename
 is the name of the source file that contains a library unit declaration
 for which a body must be created. The file name may contain the path
@@ -22285,7 +22295,7 @@ be able to click on any identifier and go to its declaration.
 
 The command line is as follow:
 @smallexample
-$ perl gnathtml.pl [^switches^options^] ada-files
+$ perl gnathtml.pl @ovar{^switches^options^} @var{ada-files}
 @end smallexample
 
 @noindent
@@ -22391,7 +22401,7 @@ is. The syntax of this line is:
 Alternatively, you may run the script using the following command line:
 
 @smallexample
-$ perl gnathtml.pl [switches] files
+$ perl gnathtml.pl @ovar{switches} @var{files}
 @end smallexample
 
 @ifset vms
@@ -24920,11 +24930,11 @@ HP Ada provides the following qualifiers to pass options to the linker
 
 @item  @option{/COMMAND}
 
-@item  @option{/[NO]MAP}
+@item  @option{/@r{[}NO@r{]}MAP}
 
-@item  @option{/OUTPUT=@i{file-spec}}
+@item  @option{/OUTPUT=@var{file-spec}}
 
-@item  @option{/[NO]DEBUG} and @option{/[NO]TRACEBACK}
+@item  @option{/@r{[}NO@r{]}DEBUG} and @option{/@r{[}NO@r{]}TRACEBACK}
 @end itemize
 
 @noindent
@@ -24932,11 +24942,11 @@ To pass options to the linker, GNAT provides the following
 switches:
 
 @itemize @bullet
-@item   @option{/EXECUTABLE=@i{exec-name}}
+@item   @option{/EXECUTABLE=@var{exec-name}}
 
 @item   @option{/VERBOSE}
 
-@item   @option{/[NO]DEBUG} and @option{/[NO]TRACEBACK}
+@item   @option{/@r{[}NO@r{]}DEBUG} and @option{/@r{[}NO@r{]}TRACEBACK}
 @end itemize
 
 @noindent
@@ -30940,12 +30950,12 @@ on the stack by the caller from right to left. The callee (and not the
 caller) is in charge of cleaning the stack on routine exit. In addition,
 the name of a routine with @code{Stdcall} calling convention is mangled by
 adding a leading underscore (as for the @code{C} calling convention) and a
-trailing @code{@@}@code{@i{nn}}, where @i{nn} is the overall size (in
+trailing @code{@@}@code{@var{nn}}, where @var{nn} is the overall size (in
 bytes) of the parameters passed to the routine.
 
 The name to use on the Ada side when importing a C routine with a
 @code{Stdcall} calling convention is the name of the C routine. The leading
-underscore and trailing @code{@@}@code{@i{nn}} are added automatically by
+underscore and trailing @code{@@}@code{@var{nn}} are added automatically by
 the compiler. For instance the Win32 function:
 
 @smallexample
@@ -30990,11 +31000,11 @@ pragma Import (Stdcall, Get_Val, Link_Name => "retrieve_val");
 @noindent
 then the imported routine is @code{retrieve_val}, that is, there is no
 decoration at all. No leading underscore and no Stdcall suffix
-@code{@@}@code{@i{nn}}.
+@code{@@}@code{@var{nn}}.
 
 @noindent
 This is especially important as in some special cases a DLL's entry
-point name lacks a trailing @code{@@}@code{@i{nn}} while the exported
+point name lacks a trailing @code{@@}@code{@var{nn}} while the exported
 name generated for a call has it.
 
 @noindent
@@ -31256,21 +31266,21 @@ suffix) has the following structure:
 @smallexample
 @group
 @cartouche
-[LIBRARY @i{name}]
-[DESCRIPTION @i{string}]
+@r{[}LIBRARY @var{name}@r{]}
+@r{[}DESCRIPTION @var{string}@r{]}
 EXPORTS
-   @i{symbol1}
-   @i{symbol2}
+   @var{symbol1}
+   @var{symbol2}
    @dots{}
 @end cartouche
 @end group
 @end smallexample
 
 @table @code
-@item LIBRARY @i{name}
+@item LIBRARY @var{name}
 This section, which is optional, gives the name of the DLL.
 
-@item DESCRIPTION @i{string}
+@item DESCRIPTION @var{string}
 This section, which is optional, gives a description string that will be
 embedded in the import library.
 
@@ -31291,7 +31301,7 @@ EXPORTS
 @end table
 
 @noindent
-Note that you must specify the correct suffix (@code{@@}@code{@i{nn}})
+Note that you must specify the correct suffix (@code{@@}@code{@var{nn}})
 (@pxref{Windows Calling Conventions}) for a Stdcall
 calling convention function in the exported symbols list.
 
@@ -31319,12 +31329,12 @@ $ dll2def API.dll > API.def
 @code{dll2def} is a very simple tool: it takes as input a DLL and prints
 to standard output the list of entry points in the DLL. Note that if
 some routines in the DLL have the @code{Stdcall} convention
-(@pxref{Windows Calling Conventions}) with stripped @code{@@}@i{nn}
+(@pxref{Windows Calling Conventions}) with stripped @code{@@}@var{nn}
 suffix then you'll have to edit @file{api.def} to add it, and specify
 @option{-k} to @command{gnatdll} when creating the import library.
 
 @noindent
-Here are some hints to find the right @code{@@}@i{nn} suffix.
+Here are some hints to find the right @code{@@}@var{nn} suffix.
 
 @enumerate
 @item
@@ -31355,8 +31365,8 @@ $ gnatdll -e API.def -d API.dll
 name of the DLL containing the services listed in the definition file
 @file{API.dll}. The name of the static import library generated is
 computed from the name of the definition file as follows: if the
-definition file name is @i{xyz}@code{.def}, the import library name will
-be @code{lib}@i{xyz}@code{.a}. Note that in the previous example option
+definition file name is @var{xyz}@code{.def}, the import library name will
+be @code{lib}@var{xyz}@code{.a}. Note that in the previous example option
 @option{-e} could have been removed because the name of the definition
 file (before the ``@code{.def}'' suffix) is the same as the name of the
 DLL (@pxref{Using gnatdll} for more information about @code{gnatdll}).
@@ -31833,23 +31843,23 @@ static import library for the DLL and the actual DLL. The form of the
 
 @smallexample
 @cartouche
-$ gnatdll [@var{switches}] @var{list-of-files} [-largs @var{opts}]
+$ gnatdll @ovar{switches} @var{list-of-files} @r{[}-largs @var{opts}@r{]}
 @end cartouche
 @end smallexample
 
 @noindent
-where @i{list-of-files} is a list of ALI and object files. The object
+where @var{list-of-files} is a list of ALI and object files. The object
 file list must be the exact list of objects corresponding to the non-Ada
 sources whose services are to be included in the DLL. The ALI file list
 must be the exact list of ALI files for the corresponding Ada sources
-whose services are to be included in the DLL. If @i{list-of-files} is
+whose services are to be included in the DLL. If @var{list-of-files} is
 missing, only the static import library is generated.
 
 @noindent
 You may specify any of the following switches to @code{gnatdll}:
 
 @table @code
-@item -a[@var{address}]
+@item -a@ovar{address}
 @cindex @option{-a} (@code{gnatdll})
 Build a non-relocatable DLL at @var{address}. If @var{address} is not
 specified the default address @var{0x11000000} will be used. By default,
@@ -31901,10 +31911,10 @@ object files needed to build the DLL.
 
 @item -k
 @cindex @option{-k} (@code{gnatdll})
-Removes the @code{@@}@i{nn} suffix from the import library's exported
+Removes the @code{@@}@var{nn} suffix from the import library's exported
 names, but keeps them for the link names. You must specify this
 option if you want to use a @code{Stdcall} function in a DLL for which
-the @code{@@}@i{nn} suffix has been removed. This is the case for most
+the @code{@@}@var{nn} suffix has been removed. This is the case for most
 of the Windows NT DLL for example. This option has no effect when
 @option{-n} option is specified.
 
@@ -32052,7 +32062,7 @@ common @code{dlltool} switches. The form of the @code{dlltool} command
 is
 
 @smallexample
-$ dlltool [@var{switches}]
+$ dlltool @ovar{switches}
 @end smallexample
 
 @noindent
@@ -32076,7 +32086,7 @@ DLL in the static import library generated by @code{dlltool} with switch
 
 @item -k
 @cindex @option{-k} (@command{dlltool})
-Kill @code{@@}@i{nn} from exported names
+Kill @code{@@}@var{nn} from exported names
 (@pxref{Windows Calling Conventions}
 for a discussion about @code{Stdcall}-style symbols.
 
@@ -32089,7 +32099,7 @@ Prints the @code{dlltool} switches with a concise description.
 Generate an export file @var{exportfile}. The export file contains the
 export table (list of symbols in the DLL) and is used to create the DLL.
 
-@item --output-lib @i{libfile}
+@item --output-lib @var{libfile}
 @cindex @option{--output-lib} (@command{dlltool})
 Generate a static import library @var{libfile}.
 
@@ -32097,9 +32107,9 @@ Generate a static import library @var{libfile}.
 @cindex @option{-v} (@command{dlltool})
 Verbose mode.
 
-@item --as @i{assembler-name}
+@item --as @var{assembler-name}
 @cindex @option{--as} (@command{dlltool})
-Use @i{assembler-name} as the assembler. The default is @code{as}.
+Use @var{assembler-name} as the assembler. The default is @code{as}.
 @end table
 
 @node GNAT and Windows Resources

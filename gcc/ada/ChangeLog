@@ -1,3 +1,11 @@
+2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/15479
+	* gnat_ugn.texi (@ovar): New macro, from autoconf.texi.
+	Replace backets around optional parameters with @ovar
+	where possible, use @r{[}, @r{]} otherwise.
+	Replace some @r, @i, and @emph with @var where appropriate.
+
 2008-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (make_type_from_size) <INTEGER_TYPE>: Fix typo and tidy up.
