@@ -1,5 +1,32 @@
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* Makefile.in (TARGET_DEF_H): Add targhooks.h.
+	(FIXED_VALUE_H): New variable.
+	(RTL_BASE_H): Use $(INPUT_H) and $(FIXED_VALUE_H) instead of
+	input.h, fixed-value.h.
+	(TREE_H): Use $(INPUT_H), add $(SYMTAB_H).
+	(BASIC_BLOCK_H): Use $(BITMAP_H).
+	(FUNCTION_H): Add varray.h.
+	(IPA_REFERENCE_H): Use $(BITMAP_H).
+	(CGRAPH_H): Add $(BASIC_BLOCK_H).
+	(DF_H): Use $(BITMAP_H).
+	(GGC_H): Add statistics.h.
+	(INSN_ADDR_H): New.
+	(INSN_ATTR_H): Use it.
+	(SYSTEM_H): Add safe-ctype.h, filenames.h.
+	(INPUT_H): New.
+	(SYMTAB_H): Add $(OBSTACK_H).
+	(CPP_INTERNAL_H): New.
+	(TREE_DUMP_H): Add tree-pass.h.
+	(TREE_FLOW_H): Use $(BITMAP_H)
+	(PRETTY_PRINT_H): Use $(INPUT_H).
+	(EBITMAP_H): Rename from typo-ed EBIMAP_H.
+	(GSTAB_H): New.
+	(BITMAP_H): New.
+	(many object files): Fix lots of header dependencies throughout.
+
+2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* Makefile.in (write_entries_to_file, write_entries_to_file_split):
 	New macros.
 	(s-gtyp-input): Use them to write tmp-gi.list.

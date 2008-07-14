@@ -1,3 +1,7 @@
+2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* check_makefile_deps.sh: New file.
+
 2008-05-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* patch_tester.sh (report): Do not print "Checker: ".

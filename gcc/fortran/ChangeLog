@@ -1,3 +1,7 @@
+2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Make-lang.in (gfortranspec.o): Fix dependencies.
+
 2008-07-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/36725

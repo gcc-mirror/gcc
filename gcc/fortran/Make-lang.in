@@ -77,7 +77,8 @@ fortran: f951$(exeext)
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: fortran
 
-gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) $(CONFIG_H)
+gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
+	$(CONFIG_H) coretypes.h intl.h
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
