@@ -1,7 +1,9 @@
+/* PR target/36745 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
 /* { dg-require-effective-target fpic } */
-typedef long unsigned int size_t;
+
+typedef __SIZE_TYPE__ size_t;
 class QBasicAtomicInt
 {
 public:
