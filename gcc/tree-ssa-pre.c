@@ -2949,18 +2949,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	     our IL requires all operands of a phi node have the same
 	     type.  */
 	  tree name = PRE_EXPR_NAME (eprime);
-	  if (TREE_TYPE (name) != type)
+	  if (!useless_type_conversion_p (type, TREE_TYPE (name)))
 	    {
 	      tree builtexpr;
 	      tree forcedexpr;
-	      /* When eliminating casts through unions,
-		 we sometimes want to convert a real to an integer,
-		 which fold_convert will ICE on  */
-/*	      if (fold_convertible_p (type, name)) */
-		builtexpr = fold_convert (type, name);
-/*	      else
-		builtexpr = convert (type, name);*/
-
+	      builtexpr = fold_convert (type, name);
 	      forcedexpr = force_gimple_operand (builtexpr,
 						 &stmts, true,
 						 NULL);
