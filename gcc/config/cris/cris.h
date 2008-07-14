@@ -668,7 +668,7 @@ enum reg_class
 
 /* We are now out of letters; we could use ten more.  This forces us to
    use C-code in the 'md' file.  FIXME: Use some EXTRA_CONSTRAINTS.  */
-#define CONST_OK_FOR_LETTER_P(VALUE, C)			\
+#define CRIS_CONST_OK_FOR_LETTER_P(VALUE, C)		\
  (							\
   /* MOVEQ, CMPQ, ANDQ, ORQ.  */			\
   (C) == 'I' ? (VALUE) >= -32 && (VALUE) <= 31 :	\
@@ -690,6 +690,16 @@ enum reg_class
   /* A 16-bit number signed *or* unsigned.  */		\
   (C) == 'P' ? (VALUE) >= -32768 && (VALUE) <= 65535 :	\
   0)
+
+#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, S)	\
+ (						\
+  ((C) != 'K' || (S)[1] == 'c')			\
+   ? CRIS_CONST_OK_FOR_LETTER_P (VALUE, C) :	\
+  ((C) == 'K' && (S)[1] == 'p')			\
+   ? exact_log2 (VALUE) >= 0 :			\
+  0)
+
+#define CONSTRAINT_LEN(C, S) ((C) == 'K' ? 2 : DEFAULT_CONSTRAINT_LEN (C, S))
 
 /* It is really simple to make up a 0.0; it is the same as int-0 in
    IEEE754.  */
