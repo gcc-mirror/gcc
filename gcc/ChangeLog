@@ -1,3 +1,8 @@
+2007-07-14  Rafael Avila de Espindola  <espindola@google.com>
+
+	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
+	is set.
+
 2008-07-14  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse5 cmov pattern): Update call of ix86_sse5_valid_op_p
