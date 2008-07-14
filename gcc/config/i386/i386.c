@@ -25853,11 +25853,12 @@ ix86_expand_round (rtx operand0, rtx operand1)
    OPERANDS is the array of operands.
    NUM is the number of operands.
    USES_OC0 is true if the instruction uses OC0 and provides 4 variants.
-   NUM_MEMORY is the maximum number of memory operands to accept.  */
+   NUM_MEMORY is the maximum number of memory operands to accept.  
+   when COMMUTATIVE is set, operand 1 and 2 can be swapped.  */
 
 bool
 ix86_sse5_valid_op_p (rtx operands[], rtx insn ATTRIBUTE_UNUSED, int num,
-		      bool uses_oc0, int num_memory)
+		      bool uses_oc0, int num_memory, bool commutative)
 {
   int mem_mask;
   int mem_count;
@@ -25941,6 +25942,8 @@ ix86_sse5_valid_op_p (rtx operands[], rtx insn ATTRIBUTE_UNUSED, int num,
 
       /* format, example pmacsdd:
 	 xmm1, xmm2, xmm3/mem, xmm1 */
+      if (commutative)
+	return (mem_mask == (1 << 2) || mem_mask == (1 << 1));
       else
 	return (mem_mask == (1 << 2));
     }
@@ -25975,6 +25978,8 @@ ix86_sse5_valid_op_p (rtx operands[], rtx insn ATTRIBUTE_UNUSED, int num,
 
          For the integer multiply/add instructions be more restrictive and
          require operands[2] and operands[3] to be the memory operands.  */
+      if (commutative)
+	return (mem_mask == ((1 << 1) | (1 << 3)) || ((1 << 2) | (1 << 3)));
       else
 	return (mem_mask == ((1 << 2) | (1 << 3)));
     }
