@@ -1,3 +1,10 @@
+2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (write_entries_to_file, write_entries_to_file_split):
+	New macros.
+	(s-gtyp-input): Use them to write tmp-gi.list.
+	(echo_to_gi.list): Remove.
+
 2008-07-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (pre_info): Remove.
