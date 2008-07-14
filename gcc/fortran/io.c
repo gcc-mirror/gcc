@@ -477,6 +477,7 @@ check_format (bool is_input)
   const char *unexpected_element  = _("Unexpected element");
   const char *unexpected_end	  = _("Unexpected end of format string");
   const char *zero_width	  = _("Zero width in format descriptor");
+  const char *g0_precision	= _("Specifying precision with G0 not allowed");
 
   const char *error;
   format_token t, u;
@@ -694,9 +695,19 @@ data_desc:
 	      error = zero_width;
 	      goto syntax;
 	    }
-	  else
-	    return gfc_notify_std (GFC_STD_F2008, "Fortran F2008: 'G0' in "
-				   "format at %C");
+
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran F2008: 'G0' in "
+			      "format at %C") == FAILURE)
+	    return FAILURE;
+
+	  u = format_lex ();
+          if (u == FMT_PERIOD)
+	    {
+	      error = g0_precision;
+	      goto syntax;
+	    }
+	  saved_token = u;
+	  goto between_desc;
 	}
 
       if (u == FMT_ERROR)

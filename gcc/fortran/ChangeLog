@@ -1,3 +1,8 @@
+2008-07-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/36725
+	* io.c: Add error check for g0 edit descriptor followed by '.'.
+
 2008-07-12  Daniel Kraft  <d@domob.eu>
 
 	* resolve.c (resolve_fl_derived):  Allow pointer components to empty
