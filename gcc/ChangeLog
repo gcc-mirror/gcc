@@ -1,3 +1,19 @@
+2008-07-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (pre_info): Remove.
+	(switch_to_PRE_table): Likewise.
+	(free_scc_vn): Do not clear SSA_NAME_VALUE.
+	Do not free pre_info.
+	(set_hashtable_value_ids): Do not create value-ids for the
+	optimistic tables.
+	(run_scc_vn): Remove double test.  Remove bogus special-case
+	in value-number printing.
+	* tree-ssa-sccvn.h (switch_to_PRE_table): Remove.
+	* tree-ssa-ccp.c (get_symbol_constant_value): Do not look at
+	SSA_NAME_VALUE.
+	* tree-flow-inline.h (get_value_handle): Remove.
+	* tree-flow.h (get_value_handle): Remove.
+
 2008-07-14  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-switch-conversion.c (gen_inbound_check): Make sure the type

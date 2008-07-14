@@ -1134,7 +1134,6 @@ void print_value_expressions (FILE *, unsigned int);
 tree make_value_handle (tree);
 void set_value_handle (tree, tree);
 bool expressions_equal_p (tree, tree);
-static inline tree get_value_handle (tree);
 void sort_vuses (VEC (tree, gc) *);
 void sort_vuses_heap (VEC (tree, heap) *);
 tree vn_lookup_or_add (tree);

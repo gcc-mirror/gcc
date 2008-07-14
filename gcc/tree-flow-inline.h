@@ -1659,34 +1659,6 @@ set_symbol_mem_tag (tree sym, tree tag)
   get_var_ann (sym)->symbol_mem_tag = tag;
 }
 
-/* Get the value handle of EXPR.  This is the only correct way to get
-   the value handle for a "thing".  If EXPR does not have a value
-   handle associated, it returns NULL_TREE.  
-   NB: If EXPR is min_invariant, this function is *required* to return
-   EXPR.  */
-
-static inline tree
-get_value_handle (tree expr)
-{
-  if (TREE_CODE (expr) == SSA_NAME)
-    return SSA_NAME_VALUE (expr);
-  else if (DECL_P (expr) || TREE_CODE (expr) == TREE_LIST
-	   || TREE_CODE (expr) == CONSTRUCTOR)
-    {
-      tree_ann_common_t ann = tree_common_ann (expr);
-      return ((ann) ? ann->value_handle : NULL_TREE);
-    }
-  else if (is_gimple_min_invariant (expr))
-    return expr;
-  else if (EXPR_P (expr))
-    {
-      tree_ann_common_t ann = tree_common_ann (expr);
-      return ((ann) ? ann->value_handle : NULL_TREE);
-    }
-  else
-    gcc_unreachable ();
-}
-
 /* Accessor to tree-ssa-operands.c caches.  */
 static inline struct ssa_operands *
 gimple_ssa_operands (const struct function *fun)
