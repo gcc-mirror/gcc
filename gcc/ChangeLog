@@ -1,5 +1,10 @@
 2008-07-14  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-switch-conversion.c (gen_inbound_check): Make sure the type
+	in which we generate arithmetics is not a subrange.
+
+2008-07-14  Martin Jambor  <mjambor@suse.cz>
+
 	* Makefile.in (IPA_PROP_H): Added ipa-prop.h to IPA_PROP_H variable.
 
 2008-07-14  Richard Guenther  <rguenther@suse.de>
