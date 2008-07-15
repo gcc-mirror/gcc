@@ -2582,6 +2582,8 @@ expressions_equal_p (tree e1, tree e2)
 
   te1 = TREE_TYPE (e1);
   te2 = TREE_TYPE (e2);
+  if (te1 != te2)
+    return false;
 
   if (TREE_CODE (e1) == TREE_LIST && TREE_CODE (e2) == TREE_LIST)
     {
