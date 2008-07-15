@@ -1,3 +1,14 @@
+2008-07-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36369
+	* c-common.c (strict_aliasing_warning): Do not warn for
+	TYPE_REF_CAN_ALIAS_ALL pointers.
+	(c_common_get_alias_set): may_alias types are not special.
+	* tree.c (build_pointer_type_for_mode): Look up the may_alias
+	attribute and set can_ref_all accordingly.
+	(build_reference_type_for_mode): Likewise.
+	* doc/extend.texi (may_alias): Clarify.
+
 2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:

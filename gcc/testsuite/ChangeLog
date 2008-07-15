@@ -1,3 +1,8 @@
+2008-07-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36369
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all.c: New testcase.
+
 2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/35492

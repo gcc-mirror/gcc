@@ -4182,10 +4182,16 @@ The @code{deprecated} attribute can also be used for functions and
 variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
 
 @item may_alias
-Accesses to objects with types with this attribute are not subjected to
-type-based alias analysis, but are instead assumed to be able to alias
-any other type of objects, just like the @code{char} type.  See
-@option{-fstrict-aliasing} for more information on aliasing issues.
+Accesses through pointers to types with this attribute are not subject
+to type-based alias analysis, but are instead assumed to be able to alias
+any other type of objects.  In the context of 6.5/7 an lvalue expression
+dereferencing such a pointer is treated like having a character type.
+See @option{-fstrict-aliasing} for more information on aliasing issues.
+This extension exists to support some vector APIs, in which pointers to
+one vector type are permitted to alias pointers to a different vector type.
+
+Note that an object of a type with this attribute does not have any
+special semantics.
 
 Example of use:
 
