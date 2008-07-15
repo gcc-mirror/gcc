@@ -1,3 +1,7 @@
+2008-07-15  Jan Hubicka  <jh@suse.cz>
+
+	* lang.c (java_init_options): Enable unit-at-a-time by default.
+
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Make-lang.in (jvspec.o): Fix dependencies.
