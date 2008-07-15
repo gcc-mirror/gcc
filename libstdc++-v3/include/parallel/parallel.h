@@ -45,4 +45,4 @@
 #include <parallel/tags.h>
 #include <parallel/settings.h>
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_PARALLEL_H */

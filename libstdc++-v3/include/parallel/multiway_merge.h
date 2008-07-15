@@ -2148,4 +2148,4 @@ stable_multiway_merge_sentinels(RandomAccessIteratorPairIterator seqs_begin
 
 }; // namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_MULTIWAY_MERGE_H */

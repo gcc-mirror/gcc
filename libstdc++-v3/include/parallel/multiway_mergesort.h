@@ -35,8 +35,8 @@
 
 // Written by Johannes Singler.
 
-#ifndef _GLIBCXX_PARALLEL_MERGESORT_H
-#define _GLIBCXX_PARALLEL_MERGESORT_H 1
+#ifndef _GLIBCXX_PARALLEL_MULTIWAY_MERGESORT_H
+#define _GLIBCXX_PARALLEL_MULTIWAY_MERGESORT_H 1
 
 #include <vector>
 
@@ -478,4 +478,4 @@ template<bool stable, bool exact, typename RandomAccessIterator,
   }
 } //namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_MULTIWAY_MERGESORT_H */

@@ -284,4 +284,4 @@ namespace __parallel
 } // end namespace
 } // end namespace
 
-#endif /* _GLIBCXX_ALGOBASE_H */
+#endif /* _GLIBCXX_PARALLEL_ALGOBASE_H */

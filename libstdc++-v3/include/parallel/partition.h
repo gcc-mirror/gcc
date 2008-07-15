@@ -432,4 +432,4 @@ template<typename RandomAccessIterator, typename Comparator>
 
 #undef _GLIBCXX_VOLATILE
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_PARTITION_H */

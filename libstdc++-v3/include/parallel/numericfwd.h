@@ -203,4 +203,4 @@ namespace __parallel
 } // end namespace
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_NUMERICFWD_H */

@@ -284,4 +284,4 @@ namespace __gnu_parallel
   };
 }
 
-#endif /* _GLIBCXX_SETTINGS_H */
+#endif /* _GLIBCXX_PARALLEL_SETTINGS_H */

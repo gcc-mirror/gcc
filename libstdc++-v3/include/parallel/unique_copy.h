@@ -35,8 +35,8 @@
 
 // Written by Robert Geisberger and Robin Dapp.
 
-#ifndef _GLIBCXX_PARALLEL_UNIQUE_H
-#define _GLIBCXX_PARALLEL_UNIQUE_H 1
+#ifndef _GLIBCXX_PARALLEL_UNIQUE_COPY_H
+#define _GLIBCXX_PARALLEL_UNIQUE_COPY_H 1
 
 #include <parallel/parallel.h>
 #include <parallel/multiseq_selection.h>
@@ -195,4 +195,4 @@ template<typename InputIterator, class OutputIterator>
 
 }//namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_UNIQUE_COPY_H */

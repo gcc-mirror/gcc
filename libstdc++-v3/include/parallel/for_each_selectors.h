@@ -363,4 +363,4 @@ namespace __gnu_parallel
     };
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_FOR_EACH_SELECTORS_H */

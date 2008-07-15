@@ -309,4 +309,4 @@ template<typename RandomAccessIterator,
   }
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_WORKSTEALING_H */

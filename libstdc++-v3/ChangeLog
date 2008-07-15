@@ -1,3 +1,14 @@
+2008-07-15  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/find_selectors.h:
+        Correct name for include guard #ifndef.
+        * include/parallel/balanced_quicksort.h: Likewise.
+        * include/parallel/unique_copy.h: Likewise.
+        * include/parallel/multiway_mergesort.h: Likewise.
+        * include/parallel/checkers.h: Likewise.
+        * include/parallel/[various files]:
+        Add/correct comment for #endif of include guard (at end of file) 
+
 2008-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/date_time: Remove, per N2549, in WP.

@@ -2367,4 +2367,4 @@ namespace __parallel
 } // end namespace
 } // end namespace
 
-#endif /* _GLIBCXX_ALGORITHM_H */
+#endif /* _GLIBCXX_PARALLEL_ALGO_H */

@@ -152,4 +152,4 @@ namespace __gnu_parallel
 
 #undef _GLIBCXX_VOLATILE
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_QUEUE_H */

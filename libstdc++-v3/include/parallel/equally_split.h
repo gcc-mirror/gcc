@@ -90,4 +90,4 @@ template<typename difference_type>
   }
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_EQUALLY_SPLIT_H */
