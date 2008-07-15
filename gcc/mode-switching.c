@@ -585,7 +585,7 @@ optimize_mode_switching (void)
   for (i = 0; i < max_num_modes; i++)
     {
       int current_mode[N_ENTITIES];
-      sbitmap *delete;
+      sbitmap *del;
       sbitmap *insert;
 
       /* Set the anticipatable and computing arrays.  */
@@ -612,7 +612,7 @@ optimize_mode_switching (void)
       FOR_EACH_BB (bb)
 	sbitmap_not (kill[bb->index], transp[bb->index]);
       edge_list = pre_edge_lcm (n_entities, transp, comp, antic,
-				kill, &insert, &delete);
+				kill, &insert, &del);
 
       for (j = n_entities - 1; j >= 0; j--)
 	{
@@ -663,7 +663,7 @@ optimize_mode_switching (void)
 	    }
 
 	  FOR_EACH_BB_REVERSE (bb)
-	    if (TEST_BIT (delete[bb->index], j))
+	    if (TEST_BIT (del[bb->index], j))
 	      {
 		make_preds_opaque (bb, j);
 		/* Cancel the 'deleted' mode set.  */
@@ -671,7 +671,7 @@ optimize_mode_switching (void)
 	      }
 	}
 
-      sbitmap_vector_free (delete);
+      sbitmap_vector_free (del);
       sbitmap_vector_free (insert);
       clear_aux_for_edges ();
       free_edge_list (edge_list);

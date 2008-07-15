@@ -1887,10 +1887,10 @@ df_insn_change_bb (rtx insn, basic_block new_bb)
 /* Helper function for df_ref_change_reg_with_loc.  */
 
 static void
-df_ref_change_reg_with_loc_1 (struct df_reg_info *old, struct df_reg_info *new,
+df_ref_change_reg_with_loc_1 (struct df_reg_info *old_df, struct df_reg_info *new_df,
 			      int new_regno, rtx loc)
 {
-  struct df_ref *the_ref = old->reg_chain;
+  struct df_ref *the_ref = old_df->reg_chain;
 
   while (the_ref)
     {
@@ -1908,18 +1908,18 @@ df_ref_change_reg_with_loc_1 (struct df_reg_info *old, struct df_reg_info *new,
 	  if (prev_ref)
 	    prev_ref->next_reg = next_ref;
 	  else
-	    old->reg_chain = next_ref;
+	    old_df->reg_chain = next_ref;
 	  if (next_ref)
 	    next_ref->prev_reg = prev_ref;
-	  old->n_refs--;
+	  old_df->n_refs--;
 
 	  /* Put the ref into the new regno chain.  */
 	  the_ref->prev_reg = NULL;
-	  the_ref->next_reg = new->reg_chain;
-	  if (new->reg_chain)
-	    new->reg_chain->prev_reg = the_ref;
-	  new->reg_chain = the_ref;
-	  new->n_refs++;
+	  the_ref->next_reg = new_df->reg_chain;
+	  if (new_df->reg_chain)
+	    new_df->reg_chain->prev_reg = the_ref;
+	  new_df->reg_chain = the_ref;
+	  new_df->n_refs++;
 	  df_set_bb_dirty (DF_REF_BB (the_ref));
 
 	  /* Need to resort the record that the ref was in because the

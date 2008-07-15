@@ -2791,7 +2791,7 @@ find_avail_set (int regno, rtx insn)
 static int
 cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
 {
-  rtx new, set_src, note_src;
+  rtx new_rtx, set_src, note_src;
   rtx set = pc_set (jump);
   rtx note = find_reg_equal_equiv_note (jump);
 
@@ -2823,22 +2823,22 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
   else
     setcc = NULL_RTX;
 
-  new = simplify_replace_rtx (set_src, from, src);
+  new_rtx = simplify_replace_rtx (set_src, from, src);
 
   /* If no simplification can be made, then try the next register.  */
-  if (rtx_equal_p (new, SET_SRC (set)))
+  if (rtx_equal_p (new_rtx, SET_SRC (set)))
     return 0;
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
-  if (new == pc_rtx)
+  if (new_rtx == pc_rtx)
     delete_insn (jump);
   else
     {
       /* Ensure the value computed inside the jump insn to be equivalent
          to one computed by setcc.  */
-      if (setcc && modified_in_p (new, setcc))
+      if (setcc && modified_in_p (new_rtx, setcc))
 	return 0;
-      if (! validate_unshare_change (jump, &SET_SRC (set), new, 0))
+      if (! validate_unshare_change (jump, &SET_SRC (set), new_rtx, 0))
 	{
 	  /* When (some) constants are not valid in a comparison, and there
 	     are two registers to be replaced by constants before the entire
@@ -2849,8 +2849,8 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
 	     we need to attach a note to the branch itself to make this
 	     optimization work.  */
 
-	  if (!rtx_equal_p (new, note_src))
-	    set_unique_reg_note (jump, REG_EQUAL, copy_rtx (new));
+	  if (!rtx_equal_p (new_rtx, note_src))
+	    set_unique_reg_note (jump, REG_EQUAL, copy_rtx (new_rtx));
 	  return 0;
 	}
 
@@ -2881,7 +2881,7 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
   /* If a conditional jump has been changed into unconditional jump, remove
      the jump and make the edge fallthru - this is always called in
      cfglayout mode.  */
-  if (new != pc_rtx && simplejump_p (jump))
+  if (new_rtx != pc_rtx && simplejump_p (jump))
     {
       edge e;
       edge_iterator ei;
@@ -3306,7 +3306,7 @@ find_implicit_sets (void)
 {
   basic_block bb, dest;
   unsigned int count;
-  rtx cond, new;
+  rtx cond, new_rtx;
 
   count = 0;
   FOR_EACH_BB (bb)
@@ -3327,9 +3327,9 @@ find_implicit_sets (void)
 	    if (dest && single_pred_p (dest)
 		&& dest != EXIT_BLOCK_PTR)
 	      {
-		new = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
+		new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
 					     XEXP (cond, 1));
-		implicit_sets[dest->index] = new;
+		implicit_sets[dest->index] = new_rtx;
 		if (dump_file)
 		  {
 		    fprintf(dump_file, "Implicit set of reg %d in ",
@@ -3539,7 +3539,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  unsigned int regno = REGNO (reg_used->reg_rtx);
 	  basic_block dest, old_dest;
 	  struct expr *set;
-	  rtx src, new;
+	  rtx src, new_rtx;
 
 	  if (regno >= max_gcse_regno)
 	    continue;
@@ -3560,7 +3560,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 					  SET_DEST (PATTERN (setcc)),
 					  SET_SRC (PATTERN (setcc)));
 
-	  new = simplify_replace_rtx (src, reg_used->reg_rtx,
+	  new_rtx = simplify_replace_rtx (src, reg_used->reg_rtx,
 				      SET_SRC (set->expr));
 
 	  /* Jump bypassing may have already placed instructions on
@@ -3568,14 +3568,14 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	     has instructions associated with it, as these insns won't
 	     get executed if the incoming edge is redirected.  */
 
-	  if (new == pc_rtx)
+	  if (new_rtx == pc_rtx)
 	    {
 	      edest = FALLTHRU_EDGE (bb);
 	      dest = edest->insns.r ? NULL : edest->dest;
 	    }
-	  else if (GET_CODE (new) == LABEL_REF)
+	  else if (GET_CODE (new_rtx) == LABEL_REF)
 	    {
-	      dest = BLOCK_FOR_INSN (XEXP (new, 0));
+	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
 	      /* Don't bypass edges containing instructions.  */
 	      edest = find_edge (bb, dest);
 	      if (edest && edest->insns.r)
@@ -4336,7 +4336,7 @@ pre_insert_copies (void)
 static rtx
 gcse_emit_move_after (rtx src, rtx dest, rtx insn)
 {
-  rtx new;
+  rtx new_rtx;
   rtx set = single_set (insn), set2;
   rtx note;
   rtx eqv;
@@ -4344,20 +4344,20 @@ gcse_emit_move_after (rtx src, rtx dest, rtx insn)
   /* This should never fail since we're creating a reg->reg copy
      we've verified to be valid.  */
 
-  new = emit_insn_after (gen_move_insn (dest, src), insn);
+  new_rtx = emit_insn_after (gen_move_insn (dest, src), insn);
 
   /* Note the equivalence for local CSE pass.  */
-  set2 = single_set (new);
+  set2 = single_set (new_rtx);
   if (!set2 || !rtx_equal_p (SET_DEST (set2), dest))
-    return new;
+    return new_rtx;
   if ((note = find_reg_equal_equiv_note (insn)))
     eqv = XEXP (note, 0);
   else
     eqv = SET_SRC (set);
 
-  set_unique_reg_note (new, REG_EQUAL, copy_insn_1 (eqv));
+  set_unique_reg_note (new_rtx, REG_EQUAL, copy_insn_1 (eqv));
 
-  return new;
+  return new_rtx;
 }
 
 /* Delete redundant computations.
@@ -5384,7 +5384,7 @@ update_ld_motion_stores (struct expr * expr)
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;
-	  rtx copy, new;
+	  rtx copy, new_rtx;
 
 	  /* If we've already copied it, continue.  */
 	  if (expr->reaching_reg == src)
@@ -5400,8 +5400,8 @@ update_ld_motion_stores (struct expr * expr)
 	    }
 
 	  copy = gen_move_insn ( reg, copy_rtx (SET_SRC (pat)));
-	  new = emit_insn_before (copy, insn);
-	  record_one_set (REGNO (reg), new);
+	  new_rtx = emit_insn_before (copy, insn);
+	  record_one_set (REGNO (reg), new_rtx);
 	  SET_SRC (pat) = reg;
 	  df_insn_rescan (insn);
 

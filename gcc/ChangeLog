@@ -1,5 +1,25 @@
 2008-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* df-problems.c (df_set_note): Avoid C++ keywords.
+	* df-scan.c (df_ref_change_reg_with_loc_1): Likewise.
+	* dse.c (record_store, remove_useless_values): Likewise.
+	* emit-rtl.c (gen_reg_rtx, update_reg_offset, gen_rtx_REG_offset,
+	gen_reg_rtx_offset, operand_subword, change_address_1,
+	change_address, adjust_address_1, offset_address,
+	widen_memory_access, emit_copy_of_insn_after): Likewise.
+	* explow.c (round_push, allocate_dynamic_stack_space): Likewise.
+	* fwprop.c (should_replace_address, propagate_rtx_1,
+	propagate_rtx, try_fwprop_subst, forward_propagate_and_simplify):
+	Likewise.
+	* gcse.c (cprop_jump, find_implicit_sets, bypass_block,
+	gcse_emit_move_after, update_ld_motion_stores): Likewise.
+	* lcm.c (compute_insert_delete, pre_edge_lcm,
+	compute_rev_insert_delete, pre_edge_rev_lcm): Likewise.
+	* lower-subreg.c (resolve_reg_notes): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+
+2008-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* bt-load.c (add_btr_def, migrate_btr_def,
 	branch_target_load_optimize): Avoid C++ keywords.
 	* caller-save.c (insert_restore, insert_save, insert_one_insn):
