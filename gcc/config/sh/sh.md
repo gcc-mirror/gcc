@@ -8880,9 +8880,6 @@ label:
   /* ??? Should we have a special alias set for the GOT?  */
   insn = emit_move_insn (operands[0], mem);
 
-  set_unique_reg_note (insn, REG_EQUAL,
-		       XVECEXP (XEXP (operands[1], 0), 0, 0));
-
   DONE;
 }")
 
