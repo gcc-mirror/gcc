@@ -1,3 +1,10 @@
+2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/36780
+	* config/sh/sh.h (GO_IF_LEGITIMATE_ADDRESS): Allow
+	(plus (plus (reg) (const_int)) (const_int)) when reload_in_progress.
+
 2008-07-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/35492.

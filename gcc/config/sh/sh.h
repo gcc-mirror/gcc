@@ -2496,6 +2496,18 @@ struct sh_args {
 	    goto LABEL;							\
 	}								\
     }									\
+  /* When reload in progress, find_reloads_subreg_address tries to	\
+     make a new reload for some types of address.  Unfortunately it	\
+     generates wrong code on SH.  See PR36780.  The following is to	\
+     avoid this issue.  */						\
+  if (!TARGET_SHMEDIA && reload_in_progress				\
+      && GET_CODE (X) == PLUS						\
+      && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
+      && GET_CODE (XEXP ((X), 0)) == PLUS				\
+      && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT		\
+      && BASE_REGISTER_RTX_P (XEXP (XEXP ((X), 0), 0))			\
+      && GET_CODE (XEXP ((X), 1)) == CONST_INT)				\
+    goto LABEL;								\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
