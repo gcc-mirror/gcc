@@ -1,3 +1,8 @@
+2008-07-15  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/libgcc-xtensa.ver: New file.
+	* config/xtensa/t-linux (SHLIB_MAPFILES): Append libgcc-xtensa.ver.
+
 2008-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36369
