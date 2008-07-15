@@ -1486,7 +1486,7 @@ mem_expr_equal_p (const_tree expr1, const_tree expr2)
   return 0;
 }
 
-/* Given REF, a MEM, and T, either the type of X or the expression
+/* Given REF (a MEM) and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  BITPOS is nonzero if
    there is an offset outstanding on T that will be applied later.  */
