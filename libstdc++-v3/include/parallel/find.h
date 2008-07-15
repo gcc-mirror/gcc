@@ -404,4 +404,4 @@ template<typename RandomAccessIterator1,
 #endif
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_FIND_H */

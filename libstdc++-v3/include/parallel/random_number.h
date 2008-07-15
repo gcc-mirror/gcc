@@ -127,4 +127,4 @@ namespace __gnu_parallel
 
 } // namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_RANDOM_NUMBER_H */

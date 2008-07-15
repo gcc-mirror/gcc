@@ -353,4 +353,4 @@ namespace __gnu_parallel
   }
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_COMPATIBILITY_H */

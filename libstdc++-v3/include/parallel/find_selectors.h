@@ -36,8 +36,8 @@
 
 // Written by Felix Putze.
 
-#ifndef _GLIBCXX_PARALLEL_FIND_FUNCTIONS_H
-#define _GLIBCXX_PARALLEL_FIND_FUNCTIONS_H 1
+#ifndef _GLIBCXX_PARALLEL_FIND_SELECTORS_H
+#define _GLIBCXX_PARALLEL_FIND_SELECTORS_H 1
 
 #include <parallel/tags.h>
 #include <parallel/basic_iterator.h>
@@ -195,4 +195,4 @@ namespace __gnu_parallel
   };
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_FIND_SELECTORS_H */

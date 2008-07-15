@@ -121,4 +121,4 @@ template<typename RandomAccessIterator,
 
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_OMP_LOOP_H */

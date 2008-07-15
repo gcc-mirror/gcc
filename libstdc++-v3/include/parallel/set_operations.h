@@ -527,4 +527,4 @@ template<typename InputIterator,
 
 }
 
-#endif // _GLIBCXX_SET_ALGORITHM_
+#endif /* _GLIBCXX_PARALLEL_SET_OPERATIONS_H */

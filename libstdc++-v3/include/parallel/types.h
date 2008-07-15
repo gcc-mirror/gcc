@@ -158,4 +158,4 @@ namespace __gnu_parallel
   static const lcas_t lcas_t_mask = ((lcas_t(1) << (lcas_t_bits / 2)) - 1);
 }
 
-#endif /* _GLIBCXX_TYPES_H */
+#endif /* _GLIBCXX_PARALLEL_TYPES_H */

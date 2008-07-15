@@ -636,5 +636,4 @@ namespace __gnu_parallel
 
 #undef S
 
-#endif
-
+#endif /* _GLIBCXX_PARALLEL_MULTISEQ_SELECTION_H */

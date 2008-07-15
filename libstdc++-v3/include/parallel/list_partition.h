@@ -179,4 +179,4 @@ namespace __gnu_parallel
     }
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_LIST_PARTITION_H */

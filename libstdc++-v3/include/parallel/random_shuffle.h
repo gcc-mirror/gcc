@@ -522,4 +522,4 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_RANDOM_SHUFFLE_H */

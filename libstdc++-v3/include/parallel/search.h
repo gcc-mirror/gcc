@@ -175,4 +175,4 @@ template<typename _RandomAccessIterator1,
   }
 } // end namespace
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_SEARCH_H */

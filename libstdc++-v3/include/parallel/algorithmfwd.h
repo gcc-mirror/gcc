@@ -892,4 +892,4 @@ namespace __parallel
 } // end namespace __parallel
 } // end namespace std
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_ALGORITHMFWD_H */

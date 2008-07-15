@@ -223,4 +223,4 @@ template<typename InputIterator,
   }
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_PARTIAL_SUM_H */

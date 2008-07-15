@@ -202,4 +202,4 @@ namespace __gnu_parallel
   };
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_ITERATOR_H */

@@ -232,4 +232,4 @@ namespace __gnu_parallel
     }
 } // end namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_SORT_H */

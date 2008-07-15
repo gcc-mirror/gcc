@@ -45,8 +45,8 @@
 
 // Written by Johannes Singler.
 
-#ifndef _GLIBCXX_PARALLEL_BAL_QUICKSORT_H
-#define _GLIBCXX_PARALLEL_BAL_QUICKSORT_H 1
+#ifndef _GLIBCXX_PARALLEL_BALANCED_QUICKSORT_H
+#define _GLIBCXX_PARALLEL_BALANCED_QUICKSORT_H 1
 
 #include <parallel/basic_iterator.h>
 #include <bits/stl_algo.h>
@@ -480,4 +480,4 @@ template<typename RandomAccessIterator, typename Comparator>
   }
 } // namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_BALANCED_QUICKSORT_H */

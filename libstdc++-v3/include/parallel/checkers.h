@@ -35,8 +35,8 @@
 
 // Written by Johannes Singler.
 
-#ifndef _GLIBCXX_PARALLEL_CHECKERS
-#define _GLIBCXX_PARALLEL_CHECKERS 1
+#ifndef _GLIBCXX_PARALLEL_CHECKERS_H
+#define _GLIBCXX_PARALLEL_CHECKERS_H 1
 
 #include <functional>
 #include <cstdio>
@@ -157,4 +157,4 @@ namespace __gnu_parallel
     }
 }
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_CHECKERS_H */

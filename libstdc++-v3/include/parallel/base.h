@@ -492,4 +492,4 @@ do 								        \
 
 } //namespace __gnu_parallel
 
-#endif
+#endif /* _GLIBCXX_PARALLEL_BASE_H */
