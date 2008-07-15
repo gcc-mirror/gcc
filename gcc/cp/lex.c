@@ -179,8 +179,9 @@ init_reswords (void)
     mask |= D_ASM | D_EXT;
   if (flag_no_gnu_keywords)
     mask |= D_EXT;
-  if (!c_dialect_objc())
-    mask |= D_OBJC;
+
+  /* The Objective-C keywords are all context-dependent.  */
+  mask |= D_OBJC;
 
   ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < num_c_common_reswords; i++)

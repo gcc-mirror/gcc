@@ -1,3 +1,7 @@
+2008-07-14  Jason Merrill  <jason@redhat.com>
+
+	* lex.c (init_reswords): Always set D_OBJC.
+
 2008-07-11  Tom Tromey  <tromey@redhat.com>
 	    Ian Lance Taylor  <iant@google.com>
 
