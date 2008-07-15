@@ -89,7 +89,8 @@ noinst_SCRIPTS = gappletviewer gjarsigner gkeytool \
 	gjar gnative2ascii gserialver gjavah grmiregistry \
 	gtnameserv gorbd grmid grmic
 bin_PROGRAMS =
-## FIXME: revisit this with a newer automake.
+## FIXME: remove these unneeded dependency lines once we can
+## require Automake 1.11.
 gappletviewer: gappletviewer.in
 gjarsigner: gjarsigner.in
 gkeytool: gkeytool.in

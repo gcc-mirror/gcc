@@ -246,3 +246,19 @@ EOF
   rm -f $JAVA_TEST $CLASS_TEST
   AC_SUBST(JAVAC_MEM_OPT)
 ])
+
+dnl ---------------------------------------------------------------
+dnl CLASSPATH_COND_IF(COND, SHELL-CONDITION, [IF-TRUE], [IF-FALSE])
+dnl ---------------------------------------------------------------
+dnl Automake 1.11 can emit conditional rules for AC_CONFIG_FILES,
+dnl using AM_COND_IF.  This wrapper uses it if it is available,
+dnl otherwise falls back to code compatible with Automake 1.9.6.
+AC_DEFUN([CLASSPATH_COND_IF],
+[m4_ifdef([AM_COND_IF],
+  [AM_COND_IF([$1], [$3], [$4])],
+  [if $2; then
+     m4_default([$3], [:])
+   else
+     m4_default([$4], [:])
+   fi
+])])

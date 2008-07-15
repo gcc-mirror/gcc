@@ -28343,9 +28343,11 @@ fi
                                                                                                                                                                                                                                                                                                                                                                                                                                                         ac_config_files="$ac_config_files Makefile doc/Makefile doc/api/Makefile external/Makefile external/sax/Makefile external/w3c_dom/Makefile external/relaxngDatatype/Makefile external/jsr166/Makefile gnu/classpath/Configuration.java gnu/java/security/Configuration.java include/Makefile native/Makefile native/fdlibm/Makefile native/jawt/Makefile native/jni/Makefile native/jni/classpath/Makefile native/jni/java-io/Makefile native/jni/java-lang/Makefile native/jni/java-net/Makefile native/jni/java-nio/Makefile native/jni/java-util/Makefile native/jni/gtk-peer/Makefile native/jni/gconf-peer/Makefile native/jni/gstreamer-peer/Makefile native/jni/qt-peer/Makefile native/jni/xmlj/Makefile native/jni/midi-alsa/Makefile native/jni/midi-dssi/Makefile native/jni/native-lib/Makefile native/plugin/Makefile resource/Makefile resource/META-INF/services/java.util.prefs.PreferencesFactory resource/META-INF/services/javax.sound.sampled.spi.AudioFileReader resource/META-INF/services/javax.sound.sampled.spi.MixerProvider scripts/Makefile scripts/classpath.spec lib/Makefile lib/gen-classlist.sh lib/copy-vmresources.sh scripts/check_jni_methods.sh tools/Makefile examples/Makefile examples/Makefile.jawt examples/Makefile.java2d"
 
 
-if test "x${COMPILE_WRAPPERS}" = xno
-then
-                                                                                                                        ac_config_files="$ac_config_files tools/gappletviewer tools/gjarsigner tools/gkeytool tools/gjar tools/gnative2ascii tools/gserialver tools/grmiregistry tools/gtnameserv tools/gorbd tools/grmid tools/grmic tools/gjavah"
+if test "x${COMPILE_WRAPPERS}" = xyes; then
+     :
+   else
+                                                                                                                             ac_config_files="$ac_config_files tools/gappletviewer tools/gjarsigner tools/gkeytool tools/gjar tools/gnative2ascii tools/gserialver tools/grmiregistry tools/gtnameserv tools/gorbd tools/grmid tools/grmic tools/gjavah"
+
 
           ac_config_commands="$ac_config_commands gappletviewer"
 
@@ -28371,7 +28373,9 @@ then
 
           ac_config_commands="$ac_config_commands gjavah"
 
-fi
+
+   fi
+
 
           ac_config_commands="$ac_config_commands gen-classlist"
 

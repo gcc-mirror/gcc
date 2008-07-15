@@ -1,3 +1,10 @@
+2008-07-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/acinclude.m4 (CLASSPATH_COND_IF): New macro.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* tools/Makefile.am (!CREATE_WRAPPERS): Update comment.
+
 2008-06-11  Andrew Haley  <aph@redhat.com>
 
 	* native/jawt/Makefile.am,
