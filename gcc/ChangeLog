@@ -1,3 +1,15 @@
+2008-07-15  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-sccvn.c (expressions_equal_p): Check type equality.
+	* tree-ssa-pre.c (pre_expr_eq): Ditto
+	(get_constant_for_value_id): Take a type as an argument.
+	(fully_constant_expression): Pass in type.
+	(find_or_generate_expression): Short circuit constant case.
+	(create_expression_by_pieces): Remove special casing of
+	pointer_plus.
+	(do_regular_insertion): Short circuit constant case.
+	(do_partial_partial_insertion): Ditto.
+
 2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/36782

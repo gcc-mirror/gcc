@@ -1,5 +1,5 @@
 /* This code used to crash fold_convert due to PRE
-   wanting to fold_convert from a REA_TYPE to an INTEGER_TYPE.  */
+   wanting to fold_convert from a REAL_TYPE to an INTEGER_TYPE.  */
 typedef unsigned int uint32_t;
 union double_union
 {
