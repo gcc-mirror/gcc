@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -79,6 +79,22 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using std::ptrdiff_t;
   using std::allocator;
   using std::_Destroy;
+
+  // See libstdc++/36832.
+  template<typename _ForwardIterator, typename _Allocator>
+    void
+    _Destroy_const(_ForwardIterator __first,
+		   _ForwardIterator __last, _Allocator __alloc)
+    {
+      for (; __first != __last; ++__first)
+	__alloc.destroy(&*__first);
+    }
+
+  template<typename _ForwardIterator, typename _Tp>
+    inline void
+    _Destroy_const(_ForwardIterator __first,
+		   _ForwardIterator __last, allocator<_Tp>)
+    { _Destroy(__first, __last); }
 
   // The _S_eos function is used for those functions that
   // convert to/from C-like strings to detect the end of the string.
@@ -1941,11 +1957,11 @@ protected:
 	this->_M_tree_ptr = _S_balance(this->_M_tree_ptr);
 	_S_unref(__old);
       }
-      
+
       void
       copy(_CharT* __buffer) const
       {
-	_Destroy(__buffer, __buffer + size(), _M_get_allocator());
+	_Destroy_const(__buffer, __buffer + size(), _M_get_allocator());
 	_S_flatten(this->_M_tree_ptr, __buffer);
       }
 
@@ -1959,8 +1975,8 @@ protected:
       {
 	size_t __size = size();
 	size_t __len = (__pos + __n > __size? __size - __pos : __n);
-	
-	_Destroy(__buffer, __buffer + __len, _M_get_allocator());
+
+	_Destroy_const(__buffer, __buffer + __len, _M_get_allocator());
 	_S_flatten(this->_M_tree_ptr, __pos, __len, __buffer);
 	return __len;
       }
