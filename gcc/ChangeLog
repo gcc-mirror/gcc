@@ -1,3 +1,9 @@
+2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/36782
+	* config/sh/sh.md (symGOT_load): Don't add REG_EQUAL note.
+
 2008-07-15  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/libgcc-xtensa.ver: New file.
