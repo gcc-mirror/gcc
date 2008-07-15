@@ -5280,7 +5280,7 @@ split_branches (rtx first)
 		    bp->insert_place = insn;
 		    bp->address = addr;
 		  }
-		ok = redirect_jump (insn, label, 1);
+		ok = redirect_jump (insn, label, 0);
 		gcc_assert (ok);
 	      }
 	    else

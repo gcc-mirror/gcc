@@ -1,6 +1,15 @@
 2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
+	PR target/36784
+	2008-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (split_branches): Pass zero to	redirect_jump
+	as 'delete_unused' argument.
+
+2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
 	PR target/36782
 	* config/sh/sh.md (symGOT_load): Don't add REG_EQUAL note.
 
