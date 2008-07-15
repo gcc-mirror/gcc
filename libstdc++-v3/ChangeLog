@@ -1,3 +1,10 @@
+2008-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/36832
+	* include/ext/rope (_Destroy_const): Add.
+	(rope<>::copy): Call it.
+	* testsuite/ext/rope/36832.cc: New.
+
 2008-07-10  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/balanced_quicksort.h:
