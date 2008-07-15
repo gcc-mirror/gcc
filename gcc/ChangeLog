@@ -1,3 +1,9 @@
+2008-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/36780
+	* config/sh/sh.h (GO_IF_LEGITIMATE_ADDRESS): Allow
+	(plus (plus (reg) (const_int)) (const_int)) when reload_in_progress.
+
 2008-07-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31568
