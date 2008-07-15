@@ -1,3 +1,8 @@
+2008-07-15  Kai Tietz  <kai.tietz@onevision.com>
+
+	* builtins.c (std_canonical_va_list): Treat structure based
+	va_list types.
+
 2008-07-15  Ben Elliston  <bje@au.ibm.com>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
