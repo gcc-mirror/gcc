@@ -301,31 +301,30 @@ add_btr_def (fibheap_t all_btr_defs, basic_block bb, int insn_luid, rtx insn,
 	     unsigned int dest_reg, int other_btr_uses_before_def,
 	     btr_def_group *all_btr_def_groups)
 {
-  btr_def this
-    = XOBNEW (&migrate_btrl_obstack, struct btr_def_s);
-  this->bb = bb;
-  this->luid = insn_luid;
-  this->insn = insn;
-  this->btr = dest_reg;
-  this->cost = basic_block_freq (bb);
-  this->has_ambiguous_use = 0;
-  this->other_btr_uses_before_def = other_btr_uses_before_def;
-  this->other_btr_uses_after_use = 0;
-  this->next_this_bb = NULL;
-  this->next_this_group = NULL;
-  this->uses = NULL;
-  this->live_range = NULL;
-  find_btr_def_group (all_btr_def_groups, this);
+  btr_def this_def = XOBNEW (&migrate_btrl_obstack, struct btr_def_s);
+  this_def->bb = bb;
+  this_def->luid = insn_luid;
+  this_def->insn = insn;
+  this_def->btr = dest_reg;
+  this_def->cost = basic_block_freq (bb);
+  this_def->has_ambiguous_use = 0;
+  this_def->other_btr_uses_before_def = other_btr_uses_before_def;
+  this_def->other_btr_uses_after_use = 0;
+  this_def->next_this_bb = NULL;
+  this_def->next_this_group = NULL;
+  this_def->uses = NULL;
+  this_def->live_range = NULL;
+  find_btr_def_group (all_btr_def_groups, this_def);
 
-  fibheap_insert (all_btr_defs, -this->cost, this);
+  fibheap_insert (all_btr_defs, -this_def->cost, this_def);
 
   if (dump_file)
     fprintf (dump_file,
       "Found target reg definition: sets %u { bb %d, insn %d }%s priority %d\n",
-      dest_reg, bb->index, INSN_UID (insn), (this->group ? "" : ":not const"),
-      this->cost);
+	     dest_reg, bb->index, INSN_UID (insn),
+	     (this_def->group ? "" : ":not const"), this_def->cost);
 
-  return this;
+  return this_def;
 }
 
 /* Create a new target register user structure, for a use in block BB,
@@ -1274,7 +1273,7 @@ migrate_btr_def (btr_def def, int min_cost)
   HARD_REG_SET btrs_live_in_range;
   int btr_used_near_def = 0;
   int def_basic_block_freq;
-  basic_block try;
+  basic_block attempt;
   int give_up = 0;
   int def_moved = 0;
   btr_user user;
@@ -1328,31 +1327,31 @@ migrate_btr_def (btr_def def, int min_cost)
 
   def_basic_block_freq = basic_block_freq (def->bb);
 
-  for (try = get_immediate_dominator (CDI_DOMINATORS, def->bb);
-       !give_up && try && try != ENTRY_BLOCK_PTR && def->cost >= min_cost;
-       try = get_immediate_dominator (CDI_DOMINATORS, try))
+  for (attempt = get_immediate_dominator (CDI_DOMINATORS, def->bb);
+       !give_up && attempt && attempt != ENTRY_BLOCK_PTR && def->cost >= min_cost;
+       attempt = get_immediate_dominator (CDI_DOMINATORS, attempt))
     {
       /* Try to move the instruction that sets the target register into
-	 basic block TRY.  */
-      int try_freq = basic_block_freq (try);
+	 basic block ATTEMPT.  */
+      int try_freq = basic_block_freq (attempt);
       edge_iterator ei;
       edge e;
 
-      /* If TRY has abnormal edges, skip it.  */
-      FOR_EACH_EDGE (e, ei, try->succs)
+      /* If ATTEMPT has abnormal edges, skip it.  */
+      FOR_EACH_EDGE (e, ei, attempt->succs)
 	if (e->flags & EDGE_COMPLEX)
 	  break;
       if (e)
 	continue;
 
       if (dump_file)
-	fprintf (dump_file, "trying block %d ...", try->index);
+	fprintf (dump_file, "trying block %d ...", attempt->index);
 
       if (try_freq < def_basic_block_freq
 	  || (try_freq == def_basic_block_freq && btr_used_near_def))
 	{
 	  int btr;
-	  augment_live_range (live_range, &btrs_live_in_range, def->bb, try,
+	  augment_live_range (live_range, &btrs_live_in_range, def->bb, attempt,
 			      flag_btr_bb_exclusive);
 	  if (dump_file)
 	    {
@@ -1363,7 +1362,7 @@ migrate_btr_def (btr_def def, int min_cost)
 	  btr = choose_btr (btrs_live_in_range);
 	  if (btr != -1)
 	    {
-	      move_btr_def (try, btr, def, live_range, &btrs_live_in_range);
+	      move_btr_def (attempt, btr, def, live_range, &btrs_live_in_range);
 	      bitmap_copy(live_range, def->live_range);
 	      btr_used_near_def = 0;
 	      def_moved = 1;
@@ -1459,8 +1458,8 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 static void
 branch_target_load_optimize (bool after_prologue_epilogue_gen)
 {
-  enum reg_class class = targetm.branch_target_register_class ();
-  if (class != NO_REGS)
+  enum reg_class klass = targetm.branch_target_register_class ();
+  if (klass != NO_REGS)
     {
       /* Initialize issue_rate.  */
       if (targetm.sched.issue_rate)
@@ -1482,7 +1481,7 @@ branch_target_load_optimize (bool after_prologue_epilogue_gen)
 
       /* Dominator info is also needed for migrate_btr_def.  */
       calculate_dominance_info (CDI_DOMINATORS);
-      migrate_btr_defs (class,
+      migrate_btr_defs (klass,
 		       (targetm.branch_target_register_callee_saved
 			(after_prologue_epilogue_gen)));
 

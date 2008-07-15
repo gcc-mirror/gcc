@@ -913,18 +913,18 @@ make_new_qty (unsigned int reg, enum machine_mode mode)
    OLD is not changing; NEW is.  */
 
 static void
-make_regs_eqv (unsigned int new, unsigned int old)
+make_regs_eqv (unsigned int new_reg, unsigned int old_reg)
 {
   unsigned int lastr, firstr;
-  int q = REG_QTY (old);
+  int q = REG_QTY (old_reg);
   struct qty_table_elem *ent;
 
   ent = &qty_table[q];
 
   /* Nothing should become eqv until it has a "non-invalid" qty number.  */
-  gcc_assert (REGNO_QTY_VALID_P (old));
+  gcc_assert (REGNO_QTY_VALID_P (old_reg));
 
-  REG_QTY (new) = q;
+  REG_QTY (new_reg) = q;
   firstr = ent->first_reg;
   lastr = ent->last_reg;
 
@@ -937,19 +937,19 @@ make_regs_eqv (unsigned int new, unsigned int old)
 	 that not only can they not be allocated by the compiler, but
 	 they cannot be used in substitutions or canonicalizations
 	 either.  */
-      && (new >= FIRST_PSEUDO_REGISTER || REGNO_REG_CLASS (new) != NO_REGS)
-      && ((new < FIRST_PSEUDO_REGISTER && FIXED_REGNO_P (new))
-	  || (new >= FIRST_PSEUDO_REGISTER
+      && (new_reg >= FIRST_PSEUDO_REGISTER || REGNO_REG_CLASS (new_reg) != NO_REGS)
+      && ((new_reg < FIRST_PSEUDO_REGISTER && FIXED_REGNO_P (new_reg))
+	  || (new_reg >= FIRST_PSEUDO_REGISTER
 	      && (firstr < FIRST_PSEUDO_REGISTER
-		  || (bitmap_bit_p (cse_ebb_live_out, new)
+		  || (bitmap_bit_p (cse_ebb_live_out, new_reg)
 		      && !bitmap_bit_p (cse_ebb_live_out, firstr))
-		  || (bitmap_bit_p (cse_ebb_live_in, new)
+		  || (bitmap_bit_p (cse_ebb_live_in, new_reg)
 		      && !bitmap_bit_p (cse_ebb_live_in, firstr))))))
     {
-      reg_eqv_table[firstr].prev = new;
-      reg_eqv_table[new].next = firstr;
-      reg_eqv_table[new].prev = -1;
-      ent->first_reg = new;
+      reg_eqv_table[firstr].prev = new_reg;
+      reg_eqv_table[new_reg].next = firstr;
+      reg_eqv_table[new_reg].prev = -1;
+      ent->first_reg = new_reg;
     }
   else
     {
@@ -959,15 +959,15 @@ make_regs_eqv (unsigned int new, unsigned int old)
 	 equivalent for anything.  */
       while (lastr < FIRST_PSEUDO_REGISTER && reg_eqv_table[lastr].prev >= 0
 	     && (REGNO_REG_CLASS (lastr) == NO_REGS || ! FIXED_REGNO_P (lastr))
-	     && new >= FIRST_PSEUDO_REGISTER)
+	     && new_reg >= FIRST_PSEUDO_REGISTER)
 	lastr = reg_eqv_table[lastr].prev;
-      reg_eqv_table[new].next = reg_eqv_table[lastr].next;
+      reg_eqv_table[new_reg].next = reg_eqv_table[lastr].next;
       if (reg_eqv_table[lastr].next >= 0)
-	reg_eqv_table[reg_eqv_table[lastr].next].prev = new;
+	reg_eqv_table[reg_eqv_table[lastr].next].prev = new_reg;
       else
-	qty_table[q].last_reg = new;
-      reg_eqv_table[lastr].next = new;
-      reg_eqv_table[new].prev = lastr;
+	qty_table[q].last_reg = new_reg;
+      reg_eqv_table[lastr].next = new_reg;
+      reg_eqv_table[new_reg].prev = lastr;
     }
 }
 
@@ -1584,7 +1584,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
 static void
 merge_equiv_classes (struct table_elt *class1, struct table_elt *class2)
 {
-  struct table_elt *elt, *next, *new;
+  struct table_elt *elt, *next, *new_elt;
 
   /* Ensure we start with the head of the classes.  */
   class1 = class1->first_same_value;
@@ -1628,8 +1628,8 @@ merge_equiv_classes (struct table_elt *class1, struct table_elt *class2)
 	      rehash_using_reg (exp);
 	      hash = HASH (exp, mode);
 	    }
-	  new = insert (exp, class1, hash, mode);
-	  new->in_memory = hash_arg_in_memory;
+	  new_elt = insert (exp, class1, hash, mode);
+	  new_elt->in_memory = hash_arg_in_memory;
 	}
     }
 }
@@ -2648,12 +2648,12 @@ validate_canon_reg (rtx *xloc, rtx insn)
 {
   if (*xloc)
     {
-      rtx new = canon_reg (*xloc, insn);
+      rtx new_rtx = canon_reg (*xloc, insn);
 
       /* If replacing pseudo with hard reg or vice versa, ensure the
          insn remains valid.  Likewise if the insn has MATCH_DUPs.  */
-      gcc_assert (insn && new);
-      validate_change (insn, xloc, new, 1);
+      gcc_assert (insn && new_rtx);
+      validate_change (insn, xloc, new_rtx, 1);
     }
 }
 
@@ -2948,7 +2948,7 @@ fold_rtx (rtx x, rtx insn)
   enum machine_mode mode;
   const char *fmt;
   int i;
-  rtx new = 0;
+  rtx new_rtx = 0;
   int changed = 0;
 
   /* Operands of X.  */
@@ -2974,8 +2974,8 @@ fold_rtx (rtx x, rtx insn)
     {
     case MEM:
     case SUBREG:
-      if ((new = equiv_constant (x)) != NULL_RTX)
-        return new;
+      if ((new_rtx = equiv_constant (x)) != NULL_RTX)
+        return new_rtx;
       return x;
 
     case CONST:
@@ -3150,7 +3150,7 @@ fold_rtx (rtx x, rtx insn)
 	if (const_arg0 != 0 && GET_CODE (const_arg0) == CONST)
 	  is_const = 1, const_arg0 = XEXP (const_arg0, 0);
 
-	new = simplify_unary_operation (code, mode,
+	new_rtx = simplify_unary_operation (code, mode,
 					const_arg0 ? const_arg0 : folded_arg0,
 					mode_arg0);
 	/* NEG of PLUS could be converted into MINUS, but that causes
@@ -3158,12 +3158,12 @@ fold_rtx (rtx x, rtx insn)
 	   (CONST (MINUS (CONST_INT) (SYMBOL_REF)))
 	   which many ports mistakenly treat as LEGITIMATE_CONSTANT_P.
 	   FIXME: those ports should be fixed.  */
-	if (new != 0 && is_const
-	    && GET_CODE (new) == PLUS
-	    && (GET_CODE (XEXP (new, 0)) == SYMBOL_REF
-		|| GET_CODE (XEXP (new, 0)) == LABEL_REF)
-	    && GET_CODE (XEXP (new, 1)) == CONST_INT)
-	  new = gen_rtx_CONST (mode, new);
+	if (new_rtx != 0 && is_const
+	    && GET_CODE (new_rtx) == PLUS
+	    && (GET_CODE (XEXP (new_rtx, 0)) == SYMBOL_REF
+		|| GET_CODE (XEXP (new_rtx, 0)) == LABEL_REF)
+	    && GET_CODE (XEXP (new_rtx, 1)) == CONST_INT)
+	  new_rtx = gen_rtx_CONST (mode, new_rtx);
       }
       break;
 
@@ -3324,7 +3324,7 @@ fold_rtx (rtx x, rtx insn)
       {
 	rtx op0 = const_arg0 ? const_arg0 : folded_arg0;
 	rtx op1 = const_arg1 ? const_arg1 : folded_arg1;
-        new = simplify_relational_operation (code, mode, mode_arg0, op0, op1);
+        new_rtx = simplify_relational_operation (code, mode, mode_arg0, op0, op1);
       }
       break;
 
@@ -3560,7 +3560,7 @@ fold_rtx (rtx x, rtx insn)
 	  break;
 	}
 
-      new = simplify_binary_operation (code, mode,
+      new_rtx = simplify_binary_operation (code, mode,
 				       const_arg0 ? const_arg0 : folded_arg0,
 				       const_arg1 ? const_arg1 : folded_arg1);
       break;
@@ -3575,7 +3575,7 @@ fold_rtx (rtx x, rtx insn)
 
     case RTX_TERNARY:
     case RTX_BITFIELD_OPS:
-      new = simplify_ternary_operation (code, mode, mode_arg0,
+      new_rtx = simplify_ternary_operation (code, mode, mode_arg0,
 					const_arg0 ? const_arg0 : folded_arg0,
 					const_arg1 ? const_arg1 : folded_arg1,
 					const_arg2 ? const_arg2 : XEXP (x, 2));
@@ -3585,7 +3585,7 @@ fold_rtx (rtx x, rtx insn)
       break;
     }
 
-  return new ? new : x;
+  return new_rtx ? new_rtx : x;
 }
 
 /* Return a constant value currently equivalent to X.
@@ -3609,16 +3609,16 @@ equiv_constant (rtx x)
 
   if (GET_CODE (x) == SUBREG)
     {
-      rtx new;
+      rtx new_rtx;
 
       /* See if we previously assigned a constant value to this SUBREG.  */
-      if ((new = lookup_as_function (x, CONST_INT)) != 0
-          || (new = lookup_as_function (x, CONST_DOUBLE)) != 0
-          || (new = lookup_as_function (x, CONST_FIXED)) != 0)
-        return new;
+      if ((new_rtx = lookup_as_function (x, CONST_INT)) != 0
+          || (new_rtx = lookup_as_function (x, CONST_DOUBLE)) != 0
+          || (new_rtx = lookup_as_function (x, CONST_FIXED)) != 0)
+        return new_rtx;
 
       if (REG_P (SUBREG_REG (x))
-	  && (new = equiv_constant (SUBREG_REG (x))) != 0)
+	  && (new_rtx = equiv_constant (SUBREG_REG (x))) != 0)
         return simplify_subreg (GET_MODE (x), SUBREG_REG (x),
 				GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 
@@ -4161,9 +4161,9 @@ cse_insn (rtx insn)
     {
       rtx dest = SET_DEST (sets[i].rtl);
       rtx src = SET_SRC (sets[i].rtl);
-      rtx new = canon_reg (src, insn);
+      rtx new_rtx = canon_reg (src, insn);
 
-      validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
+      validate_change (insn, &SET_SRC (sets[i].rtl), new_rtx, 1);
 
       if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
@@ -4811,12 +4811,12 @@ cse_insn (rtx insn)
 	  else if (validate_unshare_change
 		     (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
-	      rtx new = canon_reg (SET_SRC (sets[i].rtl), insn);
+	      rtx new_rtx = canon_reg (SET_SRC (sets[i].rtl), insn);
 
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
 
-	      validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
+	      validate_change (insn, &SET_SRC (sets[i].rtl), new_rtx, 1);
 	      apply_change_group ();
 
 	      break;
@@ -5016,10 +5016,10 @@ cse_insn (rtx insn)
 	     and hope for the best.  */
 	  if (n_sets == 1)
 	    {
-	      rtx new, note;
+	      rtx new_rtx, note;
 
-	      new = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
-	      JUMP_LABEL (new) = XEXP (src, 0);
+	      new_rtx = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
+	      JUMP_LABEL (new_rtx) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
 
 	      /* Make sure to copy over REG_NON_LOCAL_GOTO.  */
@@ -5027,11 +5027,11 @@ cse_insn (rtx insn)
 	      if (note)
 		{
 		  XEXP (note, 1) = NULL_RTX;
-		  REG_NOTES (new) = note;
+		  REG_NOTES (new_rtx) = note;
 		}
 
 	      delete_insn_and_edges (insn);
-	      insn = new;
+	      insn = new_rtx;
 	    }
 	  else
 	    INSN_CODE (insn) = -1;
@@ -5674,11 +5674,11 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
     case ZERO_EXTEND:
     case SUBREG:
       {
-	rtx new = cse_process_notes (XEXP (x, 0), object, changed);
+	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
 	/* We don't substitute VOIDmode constants into these rtx,
 	   since they would impede folding.  */
-	if (GET_MODE (new) != VOIDmode)
-	  validate_change (object, &XEXP (x, 0), new, 0);
+	if (GET_MODE (new_rtx) != VOIDmode)
+	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
 	return x;
       }
 
@@ -5694,9 +5694,9 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 	      && (CONSTANT_P (ent->const_rtx)
 		  || REG_P (ent->const_rtx)))
 	    {
-	      rtx new = gen_lowpart (GET_MODE (x), ent->const_rtx);
-	      if (new)
-		return copy_rtx (new);
+	      rtx new_rtx = gen_lowpart (GET_MODE (x), ent->const_rtx);
+	      if (new_rtx)
+		return copy_rtx (new_rtx);
 	    }
 	}
 
@@ -5718,10 +5718,10 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 static rtx
 cse_process_notes (rtx x, rtx object, bool *changed)
 {
-  rtx new = cse_process_notes_1 (x, object, changed);
-  if (new != x)
+  rtx new_rtx = cse_process_notes_1 (x, object, changed);
+  if (new_rtx != x)
     *changed = true;
-  return new;
+  return new_rtx;
 }
 
 

@@ -1,3 +1,16 @@
+2008-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bt-load.c (add_btr_def, migrate_btr_def,
+	branch_target_load_optimize): Avoid C++ keywords.
+	* caller-save.c (insert_restore, insert_save, insert_one_insn):
+	Likewise.
+	* combine.c (subst, simplify_set, make_extraction,
+	make_compound_operation, known_cond, simplify_shift_const_1):
+	Likewise.
+	* cse.c (make_regs_eqv, merge_equiv_classes, validate_canon_reg,
+	fold_rtx, equiv_constant, cse_insn, cse_process_notes_1):
+	Likewise.
+
 2008-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36369
