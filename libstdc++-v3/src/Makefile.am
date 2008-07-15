@@ -186,6 +186,7 @@ sources = \
 	wstring-inst.cc \
 	mutex.cc \
 	condition_variable.cc \
+	chrono.cc \
 	${host_sources} \
 	${host_sources_extra} 
 
@@ -271,6 +272,11 @@ atomic.lo: atomic.cc
 	$(LTCXXCOMPILE) -x c++ -std=gnu++0x -c $<
 atomic.o: atomic.cc
 	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
+
+chrono.lo: chrono.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+chrono.o: chrono.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT
 # Use special rules for compatibility-ldbl.cc compilation, as we need to

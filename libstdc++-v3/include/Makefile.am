@@ -32,6 +32,7 @@ std_headers = \
 	${std_srcdir}/array \
 	${std_srcdir}/bitset \
 	${std_srcdir}/c++0x_warning.h \
+	${std_srcdir}/chrono \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
 	${std_srcdir}/deque \

@@ -811,6 +811,15 @@
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_STDINT_TR1
 
+/* Defined if clock_gettime has monotonic clock support. */
+#undef _GLIBCXX_USE_CLOCK_MONOTONIC
+
+/* Defined if clock_gettime has realtime clock support. */
+#undef _GLIBCXX_USE_CLOCK_REALTIME
+
+/* Defined if gettimeofday is available. */
+#undef _GLIBCXX_USE_GETTIMEOFDAY
+
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS
 
