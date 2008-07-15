@@ -161,6 +161,12 @@ if $GLIBCXX_IS_NATIVE; then
   # For dev/random and dev/urandom for TR1.
   GLIBCXX_CHECK_RANDOM_TR1
 
+  # For clock_gettime support.
+  GLIBCXX_CHECK_CLOCK_GETTIME
+
+  # For gettimeofday support.
+  GLIBCXX_CHECK_GETTIMEOFDAY
+
   # For TLS support.
   GCC_CHECK_TLS
 

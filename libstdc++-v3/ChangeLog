@@ -1,3 +1,38 @@
+2008-07-15  Chris Fairles  <chris.fairles@gmail.com>
+
+        * include/std/chrono: New, as per N2661.
+        * src/chrono.cc: New.
+        * include/Makefile.am: Update.
+        * src/Makefile.am: Likewise.
+        * include/Makefile.in: Regenerate.
+        * src/Makefile.in: Likewise.
+        * acinclude.m4: Add tests for clock_gettime and gettimeofday that
+	define _GLIBCXX_HAS_CLOCK_GETTIME and/or _GLIBCXX_HAS_GETTIMEOFDAY.
+        * configure.ac: Use them.
+        * configure: Regenerate.
+        * config.h.in: Likewise.
+        * config/abi/pre/gnu.ver: Add symbols for system_clock::now() and
+        system_clock::is_monotonic.
+        * testsuite/20_util/duration/cons/1.cc: New.
+        * testsuite/20_util/duration/cons/2.cc: Likewise.
+        * testsuite/20_util/duration/cons/1_neg.cc: Likewise.
+        * testsuite/20_util/duration/requirements/explicit_instantiation/
+        explicit_instantiation.cc: Likewise.
+        * testsuite/20_util/duration/arithmetic/1.cc: Likewise.
+        * testsuite/20_util/duration/arithmetic/2.cc: Likewise.
+        * testsuite/20_util/duration/comparisons/1.cc: Likewise.
+        * testsuite/20_util/time_point/requirements/explicit_instantiation/
+        explicit_instantiation.cc: Likewise.
+        * testsuite/20_util/time_point/1.cc: Likewise.
+        * testsuite/20_util/time_point/2.cc: Likewise.
+        * testsuite/20_util/time_point/3.cc: Likewise.
+        * testsuite/20_util/clocks/1.cc: Likewise.
+        * testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: Add
+        missing headers.
+        * testsuite/17_intro/headers/c++200x/all.cc: Likewise.
+        * include/precompiled/stdc++.h: Likewise and remove <date_time>.
+        * doc/doxygen/user.cfg.in: Likewise.
+
 2008-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/36832

@@ -1,0 +1,49 @@
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+
+// Copyright (C) 2008 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+
+// 20.8.4 Class template time_point [time.point]
+
+#include <chrono>
+#include <testsuite_hooks.h>
+
+// 20.8.4.1 time_point constructors [time.point.cons]
+void
+test01()
+{
+  bool test __attribute__((unused)) = true;
+  using namespace std::chrono;
+  
+  time_point<system_clock> t1;
+  VERIFY(t1.time_since_epoch() == system_clock::duration::zero());
+
+  time_point<monotonic_clock> t2;
+  VERIFY(t2.time_since_epoch() == monotonic_clock::duration::zero());
+
+  time_point<high_resolution_clock> t3;
+  VERIFY(t3.time_since_epoch() == high_resolution_clock::duration::zero());
+}
+
+int
+main()
+{
+  test01();
+  return 0;
+}

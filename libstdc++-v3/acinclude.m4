@@ -1009,6 +1009,94 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
 
 dnl
+dnl Check for IEEE Std 1003.1-2001 clock_gettime required for 
+dnl 20.8.5 [time.clock] in the current C++0X working draft.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_CLOCK_GETTIME], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  
+  AC_CHECK_HEADERS(unistd.h, ac_has_unistd_h=yes, ac_has_unistd_h=no)
+  
+  ac_has_clock_monotonic=no;  
+  ac_has_clock_realtime=no;  
+  if test x"$ac_has_unistd_h" = x"yes"; then    
+    AC_MSG_CHECKING([for monotonic clock])
+    AC_TRY_LINK(
+      [#include <unistd.h>
+       #include <time.h>
+      ],
+      [#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
+        timespec tp;     
+       #endif
+        clock_gettime(CLOCK_MONOTONIC, &tp);
+      ], [ac_has_clock_monotonic=yes], [ac_has_clock_monotonic=no])
+    
+    AC_MSG_RESULT($ac_has_clock_monotonic)   
+    
+    AC_MSG_CHECKING([for realtime clock])
+    AC_TRY_LINK(
+      [#include <unistd.h>
+       #include <time.h>
+      ],
+      [#if _POSIX_TIMERS > 0
+        timespec tp;      
+       #endif
+        clock_gettime(CLOCK_REALTIME, &tp);
+      ], [ac_has_clock_realtime=yes], [ac_has_clock_realtime=no])
+    
+    AC_MSG_RESULT($ac_has_clock_realtime)
+  fi 
+  
+  if test x"$ac_has_clock_monotonic" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_CLOCK_MONOTONIC, 1,
+      [ Defined if clock_gettime has monotonic clock support. ])
+  fi
+  
+  if test x"$ac_has_clock_realtime" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_CLOCK_REALTIME, 1,
+      [ Defined if clock_gettime has realtime clock support. ])
+  fi
+  
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check for IEEE Std 1003.1-2001 gettimeofday required for 
+dnl 20.8.5 [time.clock] in the current C++0X working draft.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_GETTIMEOFDAY], [
+  
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  
+  ac_has_gettimeofday=no;
+  AC_CHECK_HEADERS(sys/time.h, ac_has_sys_time_h=yes, ac_has_sys_time_h=no)
+  if test x"$ac_has_sys_time_h" = x"yes"; then
+    AC_MSG_CHECKING([for gettimeofday])
+    AC_TRY_LINK([#include <sys/time.h>],
+      [timeval tv; gettimeofday(&tv, 0);],
+      [ac_has_gettimeofday=yes], [ac_has_gettimeofday=no])
+    
+    AC_MSG_RESULT($ac_has_gettimeofday)
+  fi
+  
+  if test x"$ac_has_gettimeofday" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_GETTIMEOFDAY, 1,
+      [ Defined if gettimeofday is available. ])
+  fi
+  
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check for ISO/IEC 9899:1999 "C99" support to ISO/IEC DTR 19768 "TR1"
 dnl facilities in Chapter 8, "C compatibility".
 dnl
