@@ -2028,8 +2028,7 @@ objc_build_constructor (tree type, tree elts)
   /* Adjust for impedance mismatch.  We should figure out how to build
      CONSTRUCTORs that consistently please both the C and C++ gods.  */
   if (!TREE_PURPOSE (elts))
-    TREE_TYPE (constructor) = NULL_TREE;
-  TREE_HAS_CONSTRUCTOR (constructor) = 1;
+    TREE_TYPE (constructor) = init_list_type_node;
 #endif
 
   return constructor;

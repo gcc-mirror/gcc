@@ -1,3 +1,8 @@
+2008-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR objc++/36723
+	* objc-act.c (objc_build_constructor): Update C++ tweak.
+
 2007-07-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* objc-act.c (synth_module_prologue): Use TREE_NO_WARNING instead
