@@ -1,3 +1,7 @@
+2008-07-15  Ben Elliston  <bje@au.ibm.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Improve comment.
+
 2007-07-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Don't warn if TREE_NO_WARNING
