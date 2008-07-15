@@ -1,3 +1,9 @@
+2008-07-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/31568
+	* config/rs6000/rs6000.c (print_operand <case 'y'>): Don't use
+	gcc_assert, instead call output_operand_lossage.
+
 2008-07-15  Kai Tietz  <kai.tietz@onevision.com>
 
 	* builtins.c (std_canonical_va_list): Treat structure based

@@ -12288,9 +12288,13 @@ print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "0,%s", reg_names[REGNO (tmp)]);
 	else
 	  {
-	    gcc_assert (GET_CODE (tmp) == PLUS
-			&& REG_P (XEXP (tmp, 0))
-			&& REG_P (XEXP (tmp, 1)));
+	    if (!GET_CODE (tmp) == PLUS
+		|| !REG_P (XEXP (tmp, 0))
+		|| !REG_P (XEXP (tmp, 1)))
+	      {
+		output_operand_lossage ("invalid %%y value, try using the 'Z' constraint");
+		break;
+	      }
 
 	    if (REGNO (XEXP (tmp, 0)) == 0)
 	      fprintf (file, "%s,%s", reg_names[ REGNO (XEXP (tmp, 1)) ],
