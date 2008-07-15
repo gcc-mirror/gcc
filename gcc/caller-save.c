@@ -660,7 +660,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
   rtx pat = NULL_RTX;
   int code;
   unsigned int numregs = 0;
-  struct insn_chain *new;
+  struct insn_chain *new_chain;
   rtx mem;
 
   /* A common failure mode if register status is not correct in the
@@ -713,13 +713,13 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 		     gen_rtx_REG (GET_MODE (mem),
 				  regno), mem);
   code = reg_restore_code (regno, GET_MODE (mem));
-  new = insert_one_insn (chain, before_p, code, pat);
+  new_chain = insert_one_insn (chain, before_p, code, pat);
 
   /* Clear status for all registers we restored.  */
   for (k = 0; k < i; k++)
     {
       CLEAR_HARD_REG_BIT (hard_regs_saved, regno + k);
-      SET_REGNO_REG_SET (&new->dead_or_set, regno + k);
+      SET_REGNO_REG_SET (&new_chain->dead_or_set, regno + k);
       n_regs_saved--;
     }
 
@@ -738,7 +738,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   rtx pat = NULL_RTX;
   int code;
   unsigned int numregs = 0;
-  struct insn_chain *new;
+  struct insn_chain *new_chain;
   rtx mem;
 
   /* A common failure mode if register status is not correct in the
@@ -790,13 +790,13 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
 		     gen_rtx_REG (GET_MODE (mem),
 				  regno));
   code = reg_save_code (regno, GET_MODE (mem));
-  new = insert_one_insn (chain, before_p, code, pat);
+  new_chain = insert_one_insn (chain, before_p, code, pat);
 
   /* Set hard_regs_saved and dead_or_set for all the registers we saved.  */
   for (k = 0; k < numregs; k++)
     {
       SET_HARD_REG_BIT (hard_regs_saved, regno + k);
-      SET_REGNO_REG_SET (&new->dead_or_set, regno + k);
+      SET_REGNO_REG_SET (&new_chain->dead_or_set, regno + k);
       n_regs_saved++;
     }
 
@@ -809,7 +809,7 @@ static struct insn_chain *
 insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 {
   rtx insn = chain->insn;
-  struct insn_chain *new;
+  struct insn_chain *new_chain;
 
 #ifdef HAVE_cc0
   /* If INSN references CC0, put our insns in front of the insn that sets
@@ -824,23 +824,23 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
     chain = chain->prev, insn = chain->insn;
 #endif
 
-  new = new_insn_chain ();
+  new_chain = new_insn_chain ();
   if (before_p)
     {
       rtx link;
 
-      new->prev = chain->prev;
-      if (new->prev != 0)
-	new->prev->next = new;
+      new_chain->prev = chain->prev;
+      if (new_chain->prev != 0)
+	new_chain->prev->next = new_chain;
       else
-	reload_insn_chain = new;
+	reload_insn_chain = new_chain;
 
-      chain->prev = new;
-      new->next = chain;
-      new->insn = emit_insn_before (pat, insn);
+      chain->prev = new_chain;
+      new_chain->next = chain;
+      new_chain->insn = emit_insn_before (pat, insn);
       /* ??? It would be nice if we could exclude the already / still saved
 	 registers from the live sets.  */
-      COPY_REG_SET (&new->live_throughout, &chain->live_throughout);
+      COPY_REG_SET (&new_chain->live_throughout, &chain->live_throughout);
       /* Registers that die in CHAIN->INSN still live in the new insn.  */
       for (link = REG_NOTES (chain->insn); link; link = XEXP (link, 1))
 	{
@@ -857,7 +857,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 		continue;
 	      for (i = hard_regno_nregs[regno][GET_MODE (reg)] - 1;
 		   i >= 0; i--)
-		SET_REGNO_REG_SET (&new->live_throughout, regno + i);
+		SET_REGNO_REG_SET (&new_chain->live_throughout, regno + i);
 	    }
 	}
 
@@ -885,41 +885,41 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 
 		      for (i = hard_regno_nregs[regno][GET_MODE (reg)] - 1;
 			   i >= 0; i--)
-			SET_REGNO_REG_SET (&new->live_throughout, regno + i);
+			SET_REGNO_REG_SET (&new_chain->live_throughout, regno + i);
 		    }
 		}
 	    }
 	  
 	}
 
-      CLEAR_REG_SET (&new->dead_or_set);
+      CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_HEAD (BASIC_BLOCK (chain->block)))
-	BB_HEAD (BASIC_BLOCK (chain->block)) = new->insn;
+	BB_HEAD (BASIC_BLOCK (chain->block)) = new_chain->insn;
     }
   else
     {
-      new->next = chain->next;
-      if (new->next != 0)
-	new->next->prev = new;
-      chain->next = new;
-      new->prev = chain;
-      new->insn = emit_insn_after (pat, insn);
+      new_chain->next = chain->next;
+      if (new_chain->next != 0)
+	new_chain->next->prev = new_chain;
+      chain->next = new_chain;
+      new_chain->prev = chain;
+      new_chain->insn = emit_insn_after (pat, insn);
       /* ??? It would be nice if we could exclude the already / still saved
 	 registers from the live sets, and observe REG_UNUSED notes.  */
-      COPY_REG_SET (&new->live_throughout, &chain->live_throughout);
+      COPY_REG_SET (&new_chain->live_throughout, &chain->live_throughout);
       /* Registers that are set in CHAIN->INSN live in the new insn.
 	 (Unless there is a REG_UNUSED note for them, but we don't
 	  look for them here.) */
       note_stores (PATTERN (chain->insn), add_stored_regs,
-		   &new->live_throughout);
-      CLEAR_REG_SET (&new->dead_or_set);
+		   &new_chain->live_throughout);
+      CLEAR_REG_SET (&new_chain->dead_or_set);
       if (chain->insn == BB_END (BASIC_BLOCK (chain->block)))
-	BB_END (BASIC_BLOCK (chain->block)) = new->insn;
+	BB_END (BASIC_BLOCK (chain->block)) = new_chain->insn;
     }
-  new->block = chain->block;
-  new->is_caller_save_insn = 1;
+  new_chain->block = chain->block;
+  new_chain->is_caller_save_insn = 1;
 
-  INSN_CODE (new->insn) = code;
-  return new;
+  INSN_CODE (new_chain->insn) = code;
+  return new_chain;
 }
 #include "gt-caller-save.h"
