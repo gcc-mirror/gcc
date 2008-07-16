@@ -163,12 +163,12 @@ variable_size (tree size)
 #endif
 
 /* Return the machine mode to use for a nonscalar of SIZE bits.  The
-   mode must be in class CLASS, and have exactly that many value bits;
+   mode must be in class MCLASS, and have exactly that many value bits;
    it may have padding as well.  If LIMIT is nonzero, modes of wider
    than MAX_FIXED_MODE_SIZE will not be used.  */
 
 enum machine_mode
-mode_for_size (unsigned int size, enum mode_class class, int limit)
+mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 {
   enum machine_mode mode;
 
@@ -176,7 +176,7 @@ mode_for_size (unsigned int size, enum mode_class class, int limit)
     return BLKmode;
 
   /* Get the first mode which has this size, in the specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
+  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if (GET_MODE_PRECISION (mode) == size)
       return mode;
@@ -187,7 +187,7 @@ mode_for_size (unsigned int size, enum mode_class class, int limit)
 /* Similar, except passed a tree node.  */
 
 enum machine_mode
-mode_for_size_tree (const_tree size, enum mode_class class, int limit)
+mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 {
   unsigned HOST_WIDE_INT uhwi;
   unsigned int ui;
@@ -198,20 +198,20 @@ mode_for_size_tree (const_tree size, enum mode_class class, int limit)
   ui = uhwi;
   if (uhwi != ui)
     return BLKmode;
-  return mode_for_size (ui, class, limit);
+  return mode_for_size (ui, mclass, limit);
 }
 
 /* Similar, but never return BLKmode; return the narrowest mode that
    contains at least the requested number of value bits.  */
 
 enum machine_mode
-smallest_mode_for_size (unsigned int size, enum mode_class class)
+smallest_mode_for_size (unsigned int size, enum mode_class mclass)
 {
   enum machine_mode mode;
 
   /* Get the first mode which has at least this size, in the
      specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
+  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     if (GET_MODE_PRECISION (mode) >= size)
       return mode;
