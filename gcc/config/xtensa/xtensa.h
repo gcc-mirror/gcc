@@ -608,22 +608,6 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 #define LIBCALL_OUTGOING_VALUE(MODE)			 		\
   XTENSA_LIBCALL_VALUE ((MODE), 1)
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-#define XTENSA_FUNCTION_VALUE(VALTYPE, FUNC, OUTGOINGP)			\
-  gen_rtx_REG ((INTEGRAL_TYPE_P (VALTYPE)				\
-	        && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)		\
-	       ? SImode: TYPE_MODE (VALTYPE),				\
-	       OUTGOINGP ? GP_OUTGOING_RETURN : GP_RETURN)
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)					\
-  XTENSA_FUNCTION_VALUE (VALTYPE, FUNC, 0)
-
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)				\
-  XTENSA_FUNCTION_VALUE (VALTYPE, FUNC, 1)
-
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which the values of called function may come back.  A
    register whose use for returning values is limited to serving as

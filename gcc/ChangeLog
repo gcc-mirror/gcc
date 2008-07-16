@@ -1,3 +1,10 @@
+2008-07-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (FUNCTION_OUTGOING_VALUE,
+	XTENSA_FUNCTION_VALUE, XTENSA_FUNCTION_VALUE): Remove.
+	* config/xtensa/xtensa.c (xtensa_function_value): New function.
+	(TARGET_FUNCTION_VALUE): Define.
+
 2008-07-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Add
