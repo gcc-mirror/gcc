@@ -40,7 +40,7 @@
 #endif
 
 #include <bits/c++config.h>
-#include <debug/debug.h>1
+#include <debug/debug.h>
 #include <type_traits>
 #include <utility>
 #include <tuple>
