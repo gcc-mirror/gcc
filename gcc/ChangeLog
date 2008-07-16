@@ -1,3 +1,10 @@
+2008-07-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/36827
+	* config/m32c/m32c.c (BIG_FB_ADJ): Move definition earlier.
+	(m32c_legitimate_address_p): Handle "++rii" addresses created by
+	m32c_legitimize_reload_address.
+
 2007-07-16  Rafael Avila de Espindola  <espindola@google.com>
 
        * c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
