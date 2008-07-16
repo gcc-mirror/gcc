@@ -165,6 +165,7 @@ namespace std
   template<intmax_t _Num, intmax_t _Den>
     const intmax_t ratio<_Num, _Den>::den;
 
+  /// ratio_add
   template<typename _R1, typename _R2>
     struct ratio_add
     {
@@ -180,6 +181,7 @@ namespace std
         __safe_multiply<_R1::den, (_R2::den / __gcd)>::value> type;
     };
 
+  /// ratio_subtract
   template<typename _R1, typename _R2>
     struct ratio_subtract
     {
@@ -188,6 +190,7 @@ namespace std
         ratio<-_R2::num, _R2::den>>::type type;
     };
 
+  /// ratio_multiply
   template<typename _R1, typename _R2>
     struct ratio_multiply
     {
@@ -205,6 +208,7 @@ namespace std
                         (_R2::den / __gcd1)>::value> type;
     };
 
+  /// ratio_divide
   template<typename _R1, typename _R2>
     struct ratio_divide
     {
@@ -215,11 +219,13 @@ namespace std
         ratio<_R2::den, _R2::num>>::type type;
     };
 
+  /// ratio_equal
   template<typename _R1, typename _R2>
     struct ratio_equal
     : integral_constant<bool, _R1::num == _R2::num && _R1::den == _R2::den>
     { };
   
+  /// ratio_not_equal
   template<typename _R1, typename _R2>
     struct ratio_not_equal
     : integral_constant<bool, !ratio_equal<_R1, _R2>::value>
@@ -243,21 +249,25 @@ namespace std
       __ratio_less_simple_impl<_R1, _R2>>::type
     { };
 
+  /// ratio_less
   template<typename _R1, typename _R2>
     struct ratio_less
     : __ratio_less_impl<_R1, _R2>::type
     { };
     
+  /// ratio_less_equal
   template<typename _R1, typename _R2>
     struct ratio_less_equal
     : integral_constant<bool, !ratio_less<_R2, _R1>::value>
     { };
   
+  /// ratio_greater
   template<typename _R1, typename _R2>
     struct ratio_greater
     : integral_constant<bool, ratio_less<_R2, _R1>::value>
     { };
 
+  /// ratio_greater_equal
   template<typename _R1, typename _R2>
     struct ratio_greater_equal
     : integral_constant<bool, !ratio_less<_R1, _R2>::value>

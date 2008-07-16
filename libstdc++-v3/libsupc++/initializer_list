@@ -28,6 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file initializer_list
+ *  This is a Standard C++ Library header.
+ */
+
 #ifndef __CXX_INITIALIZER_LIST
 #define __CXX_INITIALIZER_LIST
 
@@ -39,6 +43,7 @@
 
 namespace std
 {
+  /// initializer_list
   template<class _E>
     class initializer_list
     {

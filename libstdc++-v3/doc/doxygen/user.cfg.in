@@ -463,12 +463,14 @@ WARN_LOGFILE           =
 INPUT                  = @srcdir@/libsupc++/cxxabi.h \
                          @srcdir@/libsupc++/cxxabi-forced.h \
                          @srcdir@/libsupc++/exception \
+                         @srcdir@/libsupc++/initializer_list \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
                          include/algorithm \
                          include/array \
                          include/bitset \
                          include/chrono \
+                         include/complex \
                          include/condition_variable \
                          include/deque \
                          include/fstream \
@@ -1168,6 +1170,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __cplusplus \
 		         __GTHREADS \
+			 __GXX_EXPERIMENTAL_CXX0X__ \
                          "_GLIBCXX_STD_P= " \
                          "_GLIBCXX_STD_D= " \
                          _GLIBCXX_STD=std \
@@ -1183,16 +1186,18 @@ PREDEFINED             = __cplusplus \
                          _GLIBCXX_DEPRECATED \
                          _GLIBCXX_USE_WCHAR_T \
                          _GLIBCXX_USE_LONG_LONG \
+			 _GLIBCXX_USE_C99_STDINT_TR1 \
                          __glibcxx_function_requires=// \
                          __glibcxx_class_requires=// \
                          __glibcxx_class_requires2=// \
                          __glibcxx_class_requires3=// \
                          __glibcxx_class_requires4=//
 
-# If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
-# this tag can be used to specify a list of macro names that should be expanded. 
-# The macro definition that is found in the sources will be used. 
-# Use the PREDEFINED tag if you want to use a different macro definition.
+# If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES
+# then this tag can be used to specify a list of macro names that
+# should be expanded.  The macro definition that is found in the
+# sources will be used.  Use the PREDEFINED tag if you want to use a
+# different macro definition.
 
 EXPAND_AS_DEFINED      = 
 

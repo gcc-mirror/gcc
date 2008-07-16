@@ -120,7 +120,6 @@ namespace std
 #endif
     }
 
-
     void
     lock()
     {

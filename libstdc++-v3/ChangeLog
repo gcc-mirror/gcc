@@ -1,3 +1,15 @@
+2008-07-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Add complex, ratio,
+	intializer_list.
+	(PREDEFINED): Add _GLIBCXX_USE_C99_STDINT_TR1.
+	* doc/doxygen/doxygroups.cc: Add std::chrono.
+	* include/bits/unique_ptr.h (default_delete, unique_ptr): Add markup.
+	* libsupc++/initializer_list (initializer_list): Same.
+	* include/std/ratio: Same.
+	* include/std/chrono: Same.
+	* include/std/complex: Disambiguate file markup.
+
 2008-07-15  Chris Fairles  <chris.fairles@gmail.com>
 
         * include/std/chrono: New, as per N2661.
@@ -81,7 +93,7 @@
 	PR libstdc++/36451
 	* doc/xml/manual/allocator.xml: Fix links.
 	* doc/html/*: Regenerate.
-	
+
 2008-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* libsupc++/unwind-cxx.h (__is_gxx_forced_unwind_class,
@@ -97,7 +109,7 @@
 	PR libstdc++/36552
 	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
 	null_metadata.hpp: Remove self-include.
-	
+
 2008-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* testsuite/20_util/make_signed/requirements/typedefs-2.cc,
