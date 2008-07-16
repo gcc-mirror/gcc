@@ -1,5 +1,9 @@
 2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* recog.c (peephole2_optimize): Fix formatting.
+
+2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* c-pch.c (get_ident): Avoid C++ keywords.
 	* combine-stack-adj.c (single_set_for_csa): Likewise.
 	* final.c (asm_insn_count, final_scan_insn, alter_subreg,
