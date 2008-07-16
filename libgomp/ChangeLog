@@ -1,3 +1,8 @@
+2008-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* team.c (gomp_team_end): Free team immediately if it has
+	just one thread.
+
 2008-07-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* testsuite/libgomp.c++/c++.exp: Append multilib library path.

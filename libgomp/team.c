@@ -498,7 +498,8 @@ gomp_team_end (void)
   gomp_mutex_destroy (&team->work_share_list_free_lock);
 #endif
 
-  if (__builtin_expect (thr->ts.team != NULL, 0))
+  if (__builtin_expect (thr->ts.team != NULL, 0)
+      || __builtin_expect (team->nthreads == 1, 0))
     free_team (team);
   else
     {
