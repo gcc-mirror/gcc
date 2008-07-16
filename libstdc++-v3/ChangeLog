@@ -1,3 +1,7 @@
+2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unique_ptr.h: Remove stray character.
+
 2008-07-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Add complex, ratio,
