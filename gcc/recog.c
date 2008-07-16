@@ -3080,8 +3080,9 @@ peephole2_optimize (void)
 					REG_EH_REGION, NULL_RTX);
 
 		  /* Replace the old sequence with the new.  */
-		  attempt = emit_insn_after_setloc (attempt, peep2_insn_data[i].insn,
-					        INSN_LOCATOR (peep2_insn_data[i].insn));
+		  attempt = emit_insn_after_setloc (attempt,
+						    peep2_insn_data[i].insn,
+				       INSN_LOCATOR (peep2_insn_data[i].insn));
 		  before_try = PREV_INSN (insn);
 		  delete_insn_chain (insn, peep2_insn_data[i].insn, false);
 
