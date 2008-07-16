@@ -1291,6 +1291,16 @@ cgraph_output_in_order (void)
       nodes[i].u.a = pa;
     }
 
+  /* In toplevel reorder mode we output all statics; mark them as needed.  */
+  for (i = 0; i < max; ++i)
+    {
+      if (nodes[i].kind == ORDER_VAR)
+        {
+	  varpool_mark_needed_node (nodes[i].u.v);
+	}
+    }
+  varpool_empty_needed_queue ();
+
   for (i = 0; i < max; ++i)
     {
       switch (nodes[i].kind)
