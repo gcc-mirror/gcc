@@ -1,5 +1,14 @@
 2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Adjust
+	dg-error lines.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/20_util/duration/cons/1_neg.cc: Likewise.
+
+	* include/tr1_impl/type_traits: Fix comment typo.
+
+2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/unique_ptr.h: Remove stray character.
 
 2008-07-15  Benjamin Kosnik  <bkoz@redhat.com>
