@@ -1984,11 +1984,11 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
    True if REG's reg class either contains or is contained in CLASS.  */
 
 static int
-reg_meets_class_p (int reg, enum reg_class class)
+reg_meets_class_p (int reg, enum reg_class rclass)
 {
-  enum reg_class rclass = reg_preferred_class (reg);
-  return (reg_class_subset_p (rclass, class)
-	  || reg_class_subset_p (class, rclass));
+  enum reg_class rclass2 = reg_preferred_class (reg);
+  return (reg_class_subset_p (rclass2, rclass)
+	  || reg_class_subset_p (rclass, rclass2));
 }
 
 /* Update the class of QTYNO assuming that REG is being tied to it.  */
@@ -2139,7 +2139,7 @@ wipe_dead_reg (rtx reg, int output_p)
    register is available.  If not, return -1.  */
 
 static int
-find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
+find_free_reg (enum reg_class rclass, enum machine_mode mode, int qtyno,
 	       int accept_call_clobbered, int just_try_suggested,
 	       int born_index, int dead_index)
 {
@@ -2171,7 +2171,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
   for (ins = born_index; ins < dead_index; ins++)
     IOR_HARD_REG_SET (used, regs_live_at[ins]);
 
-  IOR_COMPL_HARD_REG_SET (used, reg_class_contents[(int) class]);
+  IOR_COMPL_HARD_REG_SET (used, reg_class_contents[(int) rclass]);
 
   /* Don't use the frame pointer reg in local-alloc even if
      we may omit the frame pointer, because if we do that and then we
@@ -2256,7 +2256,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
     {
       /* Don't try the copy-suggested regs again.  */
       qty_phys_num_copy_sugg[qtyno] = 0;
-      return find_free_reg (class, mode, qtyno, accept_call_clobbered, 1,
+      return find_free_reg (rclass, mode, qtyno, accept_call_clobbered, 1,
 			    born_index, dead_index);
     }
 
@@ -2274,7 +2274,7 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 				 optimize_size ? qty[qtyno].n_calls_crossed
 				 : qty[qtyno].freq_calls_crossed))
     {
-      i = find_free_reg (class, mode, qtyno, 1, 0, born_index, dead_index);
+      i = find_free_reg (rclass, mode, qtyno, 1, 0, born_index, dead_index);
       if (i >= 0)
 	caller_save_needed = 1;
       return i;

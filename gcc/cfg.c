@@ -597,7 +597,7 @@ dump_reg_info (FILE *file)
   fprintf (file, "%d registers.\n", max);
   for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
     {
-      enum reg_class class, altclass;
+      enum reg_class rclass, altclass;
       
       if (regstat_n_sets_and_refs)
 	fprintf (file, "\nRegister %d used %d times across %d insns",
@@ -628,17 +628,17 @@ dump_reg_info (FILE *file)
 	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
       
-      class = reg_preferred_class (i);
+      rclass = reg_preferred_class (i);
       altclass = reg_alternate_class (i);
-      if (class != GENERAL_REGS || altclass != ALL_REGS)
+      if (rclass != GENERAL_REGS || altclass != ALL_REGS)
 	{
-	  if (altclass == ALL_REGS || class == ALL_REGS)
-	    fprintf (file, "; pref %s", reg_class_names[(int) class]);
+	  if (altclass == ALL_REGS || rclass == ALL_REGS)
+	    fprintf (file, "; pref %s", reg_class_names[(int) rclass]);
 	  else if (altclass == NO_REGS)
-	    fprintf (file, "; %s or none", reg_class_names[(int) class]);
+	    fprintf (file, "; %s or none", reg_class_names[(int) rclass]);
 	  else
 	    fprintf (file, "; pref %s, else %s",
-		     reg_class_names[(int) class],
+		     reg_class_names[(int) rclass],
 		     reg_class_names[(int) altclass]);
 	}
       

@@ -419,30 +419,30 @@ init_eh_for_function (void)
 static struct eh_region *
 gen_eh_region (enum eh_region_type type, struct eh_region *outer)
 {
-  struct eh_region *new;
+  struct eh_region *new_eh;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (doing_eh (0));
 #endif
 
   /* Insert a new blank region as a leaf in the tree.  */
-  new = GGC_CNEW (struct eh_region);
-  new->type = type;
-  new->outer = outer;
+  new_eh = GGC_CNEW (struct eh_region);
+  new_eh->type = type;
+  new_eh->outer = outer;
   if (outer)
     {
-      new->next_peer = outer->inner;
-      outer->inner = new;
+      new_eh->next_peer = outer->inner;
+      outer->inner = new_eh;
     }
   else
     {
-      new->next_peer = cfun->eh->region_tree;
-      cfun->eh->region_tree = new;
+      new_eh->next_peer = cfun->eh->region_tree;
+      cfun->eh->region_tree = new_eh;
     }
 
-  new->region_number = ++cfun->eh->last_region_number;
+  new_eh->region_number = ++cfun->eh->last_region_number;
 
-  return new;
+  return new_eh;
 }
 
 struct eh_region *
@@ -3047,19 +3047,19 @@ action_record_hash (const void *pentry)
 static int
 add_action_record (htab_t ar_hash, int filter, int next)
 {
-  struct action_record **slot, *new, tmp;
+  struct action_record **slot, *new_ar, tmp;
 
   tmp.filter = filter;
   tmp.next = next;
   slot = (struct action_record **) htab_find_slot (ar_hash, &tmp, INSERT);
 
-  if ((new = *slot) == NULL)
+  if ((new_ar = *slot) == NULL)
     {
-      new = XNEW (struct action_record);
-      new->offset = VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data) + 1;
-      new->filter = filter;
-      new->next = next;
-      *slot = new;
+      new_ar = XNEW (struct action_record);
+      new_ar->offset = VARRAY_ACTIVE_SIZE (crtl->eh.action_record_data) + 1;
+      new_ar->filter = filter;
+      new_ar->next = next;
+      *slot = new_ar;
 
       /* The filter value goes in untouched.  The link to the next
 	 record is a "self-relative" byte offset, or zero to indicate
@@ -3072,7 +3072,7 @@ add_action_record (htab_t ar_hash, int filter, int next)
       push_sleb128 (&crtl->eh.action_record_data, next);
     }
 
-  return new->offset;
+  return new_ar->offset;
 }
 
 static int
@@ -3550,7 +3550,7 @@ static void
 output_ttype (tree type, int tt_format, int tt_format_size)
 {
   rtx value;
-  bool public = true;
+  bool is_public = true;
 
   if (type == NULL_TREE)
     value = const0_rtx;
@@ -3573,7 +3573,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 	      node = varpool_node (type);
 	      if (node)
 		varpool_mark_needed_node (node);
-	      public = TREE_PUBLIC (type);
+	      is_public = TREE_PUBLIC (type);
 	    }
 	}
       else
@@ -3588,7 +3588,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     assemble_integer (value, tt_format_size,
 		      tt_format_size * BITS_PER_UNIT, 1);
   else
-    dw2_asm_output_encoded_addr_rtx (tt_format, value, public, NULL);
+    dw2_asm_output_encoded_addr_rtx (tt_format, value, is_public, NULL);
 }
 
 void
