@@ -183,7 +183,7 @@ static int changes_allocated;
 static int num_changes = 0;
 
 /* Validate a proposed change to OBJECT.  LOC is the location in the rtl
-   at which NEW will be placed.  If OBJECT is zero, no validation is done,
+   at which NEW_RTX will be placed.  If OBJECT is zero, no validation is done,
    the change is simply made.
 
    Two types of objects are supported:  If OBJECT is a MEM, memory_address_p
@@ -201,16 +201,16 @@ static int num_changes = 0;
    Otherwise, perform the change and return 1.  */
 
 static bool
-validate_change_1 (rtx object, rtx *loc, rtx new, bool in_group, bool unshare)
+validate_change_1 (rtx object, rtx *loc, rtx new_rtx, bool in_group, bool unshare)
 {
   rtx old = *loc;
 
-  if (old == new || rtx_equal_p (old, new))
+  if (old == new_rtx || rtx_equal_p (old, new_rtx))
     return 1;
 
   gcc_assert (in_group != 0 || num_changes == 0);
 
-  *loc = new;
+  *loc = new_rtx;
 
   /* Save the information describing this change.  */
   if (num_changes >= changes_allocated)
@@ -253,18 +253,18 @@ validate_change_1 (rtx object, rtx *loc, rtx new, bool in_group, bool unshare)
    UNSHARE to false.  */
 
 bool
-validate_change (rtx object, rtx *loc, rtx new, bool in_group)
+validate_change (rtx object, rtx *loc, rtx new_rtx, bool in_group)
 {
-  return validate_change_1 (object, loc, new, in_group, false);
+  return validate_change_1 (object, loc, new_rtx, in_group, false);
 }
 
 /* Wrapper for validate_change_1 without the UNSHARE argument defaulting
    UNSHARE to true.  */
 
 bool
-validate_unshare_change (rtx object, rtx *loc, rtx new, bool in_group)
+validate_unshare_change (rtx object, rtx *loc, rtx new_rtx, bool in_group)
 {
-  return validate_change_1 (object, loc, new, in_group, true);
+  return validate_change_1 (object, loc, new_rtx, in_group, true);
 }
 
 
@@ -525,7 +525,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
   enum rtx_code code;
   enum machine_mode op0_mode = VOIDmode;
   int prev_changes = num_changes;
-  rtx new;
+  rtx new_rtx;
 
   if (!x)
     return;
@@ -633,25 +633,25 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
     case SIGN_EXTEND:
       if (GET_MODE (XEXP (x, 0)) == VOIDmode)
 	{
-	  new = simplify_gen_unary (code, GET_MODE (x), XEXP (x, 0),
+	  new_rtx = simplify_gen_unary (code, GET_MODE (x), XEXP (x, 0),
 				    op0_mode);
 	  /* If any of the above failed, substitute in something that
 	     we know won't be recognized.  */
-	  if (!new)
-	    new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-	  validate_change (object, loc, new, 1);
+	  if (!new_rtx)
+	    new_rtx = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	  validate_change (object, loc, new_rtx, 1);
 	}
       break;
     case SUBREG:
       /* All subregs possible to simplify should be simplified.  */
-      new = simplify_subreg (GET_MODE (x), SUBREG_REG (x), op0_mode,
+      new_rtx = simplify_subreg (GET_MODE (x), SUBREG_REG (x), op0_mode,
 			     SUBREG_BYTE (x));
 
       /* Subregs of VOIDmode operands are incorrect.  */
-      if (!new && GET_MODE (SUBREG_REG (x)) == VOIDmode)
-	new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-      if (new)
-	validate_change (object, loc, new, 1);
+      if (!new_rtx && GET_MODE (SUBREG_REG (x)) == VOIDmode)
+	new_rtx = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+      if (new_rtx)
+	validate_change (object, loc, new_rtx, 1);
       break;
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
@@ -2200,7 +2200,7 @@ preprocess_constraints (void)
 
 struct funny_match
 {
-  int this, other;
+  int this_op, other;
 };
 
 int
@@ -2350,7 +2350,7 @@ constrain_operands (int strict)
 		     output op is the one that will be printed.  */
 		  if (val == 2 && strict > 0)
 		    {
-		      funny_match[funny_match_index].this = opno;
+		      funny_match[funny_match_index].this_op = opno;
 		      funny_match[funny_match_index++].other = match;
 		    }
 		}
@@ -2583,7 +2583,7 @@ constrain_operands (int strict)
 	      while (--funny_match_index >= 0)
 		{
 		  recog_data.operand[funny_match[funny_match_index].other]
-		    = recog_data.operand[funny_match[funny_match_index].this];
+		    = recog_data.operand[funny_match[funny_match_index].this_op];
 		}
 
 	      return 1;
@@ -2987,7 +2987,7 @@ peephole2_optimize (void)
 	  prev = PREV_INSN (insn);
 	  if (INSN_P (insn))
 	    {
-	      rtx try, before_try, x;
+	      rtx attempt, before_try, x;
 	      int match_len;
 	      rtx note;
 	      bool was_call = false;
@@ -3008,13 +3008,13 @@ peephole2_optimize (void)
 		     substitution would lose the
 		     REG_FRAME_RELATED_EXPR that is attached.  */
 		  peep2_current_count = 0;
-		  try = NULL;
+		  attempt = NULL;
 		}
 	      else
 		/* Match the peephole.  */
-		try = peephole2_insns (PATTERN (insn), insn, &match_len);
+		attempt = peephole2_insns (PATTERN (insn), insn, &match_len);
 
-	      if (try != NULL)
+	      if (attempt != NULL)
 		{
 		  /* If we are splitting a CALL_INSN, look for the CALL_INSN
 		     in SEQ and copy our CALL_INSN_FUNCTION_USAGE and other
@@ -3032,7 +3032,7 @@ peephole2_optimize (void)
 			continue;
 		      was_call = true;
 
-		      new_insn = try;
+		      new_insn = attempt;
 		      while (new_insn != NULL_RTX)
 			{
 			  if (CALL_P (new_insn))
@@ -3080,7 +3080,7 @@ peephole2_optimize (void)
 					REG_EH_REGION, NULL_RTX);
 
 		  /* Replace the old sequence with the new.  */
-		  try = emit_insn_after_setloc (try, peep2_insn_data[i].insn,
+		  attempt = emit_insn_after_setloc (attempt, peep2_insn_data[i].insn,
 					        INSN_LOCATOR (peep2_insn_data[i].insn));
 		  before_try = PREV_INSN (insn);
 		  delete_insn_chain (insn, peep2_insn_data[i].insn, false);
@@ -3095,7 +3095,7 @@ peephole2_optimize (void)
 			if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 			  break;
 
-		      for (x = try ; x != before_try ; x = PREV_INSN (x))
+		      for (x = attempt ; x != before_try ; x = PREV_INSN (x))
 			if (CALL_P (x)
 			    || (flag_non_call_exceptions
 				&& may_trap_p (PATTERN (x))
@@ -3145,7 +3145,7 @@ peephole2_optimize (void)
 		  bitmap_copy (live, peep2_insn_data[i].live_before);
 
 		  /* Update life information for the new sequence.  */
-		  x = try;
+		  x = attempt;
 		  do
 		    {
 		      if (INSN_P (x))
@@ -3169,7 +3169,7 @@ peephole2_optimize (void)
 
 		  /* If we generated a jump instruction, it won't have
 		     JUMP_LABEL set.  Recompute after we're done.  */
-		  for (x = try; x != before_try; x = PREV_INSN (x))
+		  for (x = attempt; x != before_try; x = PREV_INSN (x))
 		    if (JUMP_P (x))
 		      {
 		        do_rebuild_jump_labels = true;

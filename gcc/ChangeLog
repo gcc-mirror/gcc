@@ -1,5 +1,25 @@
 2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* recog.c (validate_change_1, validate_change,
+	validate_unshare_change, validate_replace_rtx_1, struct
+	funny_match, constrain_operands, peephole2_optimize): Avoid C++
+	keywords.
+	* reload.c (push_secondary_reload, secondary_reload_class,
+	scratch_reload_class, find_valid_class, find_reusable_reload,
+	push_reload, find_dummy_reload, find_reloads_address_1,
+	find_reloads_address_part, find_equiv_reg): Likewise.
+	* reload1.c (spill_failure, eliminate_regs_1, allocate_reload_reg,
+	choose_reload_regs): Likewise.
+	* rtlanal.c (replace_rtx, nonzero_bits1, num_sign_bit_copies1):
+	Likewise.
+	* rtlhooks.c (gen_lowpart_if_possible): Likewise.
+	* sched-ebb.c (add_deps_for_risky_insns): Likewise.
+	* sched-rgn.c (concat_INSN_LIST): Likewise.
+	* stor-layout.c (mode_for_size, mode_for_size_tree,
+	smallest_mode_for_size): Likewise.
+
+2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cfg.c (dump_reg_info): Avoid C++ keywords.
 	* dwarf2asm.c (dw2_force_const_mem,
 	dw2_asm_output_encoded_addr_rtx): Likewise.

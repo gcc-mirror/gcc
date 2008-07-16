@@ -357,7 +357,7 @@ static void
 add_deps_for_risky_insns (rtx head, rtx tail)
 {
   rtx insn, prev;
-  int class;
+  int classification;
   rtx last_jump = NULL_RTX;
   rtx next_tail = NEXT_INSN (tail);
   basic_block last_block = NULL, bb;
@@ -372,9 +372,9 @@ add_deps_for_risky_insns (rtx head, rtx tail)
       }
     else if (INSN_P (insn) && last_jump != NULL_RTX)
       {
-	class = haifa_classify_insn (insn);
+	classification = haifa_classify_insn (insn);
 	prev = last_jump;
-	switch (class)
+	switch (classification)
 	  {
 	  case PFREE_CANDIDATE:
 	    if (flag_schedule_speculative_load)

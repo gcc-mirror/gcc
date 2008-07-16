@@ -2388,10 +2388,10 @@ static struct deps *bb_deps;
 static rtx
 concat_INSN_LIST (rtx copy, rtx old)
 {
-  rtx new = old;
+  rtx new_rtx = old;
   for (; copy ; copy = XEXP (copy, 1))
-    new = alloc_INSN_LIST (XEXP (copy, 0), new);
-  return new;
+    new_rtx = alloc_INSN_LIST (XEXP (copy, 0), new_rtx);
+  return new_rtx;
 }
 
 static void
