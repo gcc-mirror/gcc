@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp>
     struct is_member_pointer;
 
-  /// is_scalal
+  /// is_scalar
   template<typename _Tp>
     struct is_scalar
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
