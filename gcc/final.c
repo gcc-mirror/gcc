@@ -1377,20 +1377,20 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 static int
 asm_insn_count (rtx body)
 {
-  const char *template;
+  const char *templ;
   int count = 1;
 
   if (GET_CODE (body) == ASM_INPUT)
-    template = XSTR (body, 0);
+    templ = XSTR (body, 0);
   else
-    template = decode_asm_operands (body, NULL, NULL, NULL, NULL, NULL);
+    templ = decode_asm_operands (body, NULL, NULL, NULL, NULL, NULL);
 
-  if (!*template)
+  if (!*templ)
     return 0;
 
-  for (; *template; template++)
-    if (IS_ASM_LOGICAL_LINE_SEPARATOR (*template, template)
-	|| *template == '\n')
+  for (; *templ; templ++)
+    if (IS_ASM_LOGICAL_LINE_SEPARATOR (*templ, templ)
+	|| *templ == '\n')
       count++;
 
   return count;
@@ -2039,7 +2039,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
       {
 	rtx body = PATTERN (insn);
 	int insn_code_number;
-	const char *template;
+	const char *templ;
 
 #ifdef HAVE_conditional_execution
 	/* Reset this early so it is correct for ASM statements.  */
@@ -2556,12 +2556,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 
 	/* Find the proper template for this insn.  */
-	template = get_insn_template (insn_code_number, insn);
+	templ = get_insn_template (insn_code_number, insn);
 
 	/* If the C code returns 0, it means that it is a jump insn
 	   which follows a deleted test insn, and that test insn
 	   needs to be reinserted.  */
-	if (template == 0)
+	if (templ == 0)
 	  {
 	    rtx prev;
 
@@ -2584,12 +2584,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	/* If the template is the string "#", it means that this insn must
 	   be split.  */
-	if (template[0] == '#' && template[1] == '\0')
+	if (templ[0] == '#' && templ[1] == '\0')
 	  {
-	    rtx new = try_split (body, insn, 0);
+	    rtx new_rtx = try_split (body, insn, 0);
 
 	    /* If we didn't split the insn, go away.  */
-	    if (new == insn && PATTERN (new) == body)
+	    if (new_rtx == insn && PATTERN (new_rtx) == body)
 	      fatal_insn ("could not split insn", insn);
 
 #ifdef HAVE_ATTR_length
@@ -2599,7 +2599,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    gcc_unreachable ();
 #endif
 
-	    return new;
+	    return new_rtx;
 	  }
 
 #ifdef TARGET_UNWIND_INFO
@@ -2610,7 +2610,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 
 	/* Output assembler code from the template.  */
-	output_asm_insn (template, recog_data.operand);
+	output_asm_insn (templ, recog_data.operand);
 
 	/* If necessary, report the effect that the instruction has on
 	   the unwind info.   We've already done this for delay slots
@@ -2739,11 +2739,11 @@ alter_subreg (rtx *xp)
     }
   else
     {
-      rtx new = simplify_subreg (GET_MODE (x), y, GET_MODE (y),
+      rtx new_rtx = simplify_subreg (GET_MODE (x), y, GET_MODE (y),
 				 SUBREG_BYTE (x));
 
-      if (new != 0)
-	*xp = new;
+      if (new_rtx != 0)
+	*xp = new_rtx;
       else if (REG_P (y))
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
@@ -3097,7 +3097,7 @@ output_asm_operand_names (rtx *operands, int *oporder, int nops)
       of the operand, with no other punctuation.  */
 
 void
-output_asm_insn (const char *template, rtx *operands)
+output_asm_insn (const char *templ, rtx *operands)
 {
   const char *p;
   int c;
@@ -3110,11 +3110,11 @@ output_asm_insn (const char *template, rtx *operands)
 
   /* An insn may return a null string template
      in a case where no assembler code is needed.  */
-  if (*template == 0)
+  if (*templ == 0)
     return;
 
   memset (opoutput, 0, sizeof opoutput);
-  p = template;
+  p = templ;
   putc ('\t', asm_out_file);
 
 #ifdef ASM_OUTPUT_OPCODE

@@ -470,9 +470,9 @@ static int
 section_entry_eq (const void *p1, const void *p2)
 {
   const section *old = (const section *) p1;
-  const char *new = (const char *) p2;
+  const char *new_name = (const char *) p2;
 
-  return strcmp (old->named.name, new) == 0;
+  return strcmp (old->named.name, new_name) == 0;
 }
 
 static hashval_t
@@ -498,9 +498,9 @@ static int
 object_block_entry_eq (const void *p1, const void *p2)
 {
   const struct object_block *old = (const struct object_block *) p1;
-  const section *new = (const section *) p2;
+  const section *new_section = (const section *) p2;
 
-  return old->sect == new;
+  return old->sect == new_section;
 }
 
 static hashval_t

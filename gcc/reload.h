@@ -83,7 +83,7 @@ struct reload
   rtx out;
 
   /* The class of registers to reload into.  */
-  enum reg_class class;
+  enum reg_class rclass;
 
   /* The mode this operand should have when reloaded, on input.  */
   enum machine_mode inmode;

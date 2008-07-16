@@ -93,10 +93,10 @@ static const char *
 get_ident (void)
 {
   static char result[IDENT_LENGTH];
-  static const char template[IDENT_LENGTH] = "gpch.013";
+  static const char templ[IDENT_LENGTH] = "gpch.013";
   static const char c_language_chars[] = "Co+O";
 
-  memcpy (result, template, IDENT_LENGTH);
+  memcpy (result, templ, IDENT_LENGTH);
   result[4] = c_language_chars[c_language];
 
   return result;

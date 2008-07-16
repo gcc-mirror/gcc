@@ -143,14 +143,14 @@ single_set_for_csa (rtx insn)
 
   for (i = 1; i < XVECLEN (tmp, 0); ++i)
     {
-      rtx this = XVECEXP (tmp, 0, i);
+      rtx this_rtx = XVECEXP (tmp, 0, i);
 
       /* The special case is allowing a no-op set.  */
-      if (GET_CODE (this) == SET
-	  && SET_SRC (this) == SET_DEST (this))
+      if (GET_CODE (this_rtx) == SET
+	  && SET_SRC (this_rtx) == SET_DEST (this_rtx))
 	;
-      else if (GET_CODE (this) != CLOBBER
-	       && GET_CODE (this) != USE)
+      else if (GET_CODE (this_rtx) != CLOBBER
+	       && GET_CODE (this_rtx) != USE)
 	return NULL_RTX;
     }
 
