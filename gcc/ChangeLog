@@ -1,5 +1,21 @@
 2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-pch.c (get_ident): Avoid C++ keywords.
+	* combine-stack-adj.c (single_set_for_csa): Likewise.
+	* final.c (asm_insn_count, final_scan_insn, alter_subreg,
+	output_asm_insn): Likewise.
+	* reload.c (push_secondary_reload, find_reusable_reload,
+	push_reload, combine_reloads, find_reloads,
+	debug_reload_to_stream): Likewise.
+	* reload.h (struct reload): Likewise.
+	* reload1.c (reload_reg_class_lower, find_reg, find_reload_regs,
+	allocate_reload_reg, choose_reload_regs, emit_input_reload_insns,
+	emit_output_reload_insns): Likewise.
+	* targhooks.c (default_secondary_reload): Likewise.
+	* varasm.c (section_entry_eq, object_block_entry_eq): Likewise.
+
+2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* recog.c (validate_change_1, validate_change,
 	validate_unshare_change, validate_replace_rtx_1, struct
 	funny_match, constrain_operands, peephole2_optimize): Avoid C++

@@ -1637,8 +1637,8 @@ reload_reg_class_lower (const void *r1p, const void *r2p)
     return t;
 
   /* Count all solitary classes before non-solitary ones.  */
-  t = ((reg_class_size[(int) rld[r2].class] == 1)
-       - (reg_class_size[(int) rld[r1].class] == 1));
+  t = ((reg_class_size[(int) rld[r2].rclass] == 1)
+       - (reg_class_size[(int) rld[r1].rclass] == 1));
   if (t != 0)
     return t;
 
@@ -1648,7 +1648,7 @@ reload_reg_class_lower (const void *r1p, const void *r2p)
     return t;
 
   /* Consider reloads in order of increasing reg-class number.  */
-  t = (int) rld[r1].class - (int) rld[r2].class;
+  t = (int) rld[r1].rclass - (int) rld[r2].rclass;
   if (t != 0)
     return t;
 
@@ -1777,7 +1777,7 @@ find_reg (struct insn_chain *chain, int order)
 
   COPY_HARD_REG_SET (not_usable, bad_spill_regs);
   IOR_HARD_REG_SET (not_usable, bad_spill_regs_global);
-  IOR_COMPL_HARD_REG_SET (not_usable, reg_class_contents[rl->class]);
+  IOR_COMPL_HARD_REG_SET (not_usable, reg_class_contents[rl->rclass]);
 
   CLEAR_HARD_REG_SET (used_by_other_reload);
   for (k = 0; k < order; k++)
@@ -1918,7 +1918,7 @@ find_reload_regs (struct insn_chain *chain)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "reload failure for reload %d\n", r);
-	    spill_failure (chain->insn, rld[r].class);
+	    spill_failure (chain->insn, rld[r].rclass);
 	    failure = 1;
 	    return;
 	  }
@@ -5474,7 +5474,7 @@ allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
 
       for (count = 0; count < n_spills; count++)
 	{
-	  int rclass = (int) rld[r].class;
+	  int rclass = (int) rld[r].rclass;
 	  int regnum;
 
 	  i++;
@@ -5647,7 +5647,7 @@ choose_reload_regs (struct insn_chain *chain)
 	{
 	  max_group_size = MAX (rld[j].nregs, max_group_size);
 	  group_class
-	    = reg_class_superunion[(int) rld[j].class][(int) group_class];
+	    = reg_class_superunion[(int) rld[j].rclass][(int) group_class];
 	}
 
       save_reload_reg_rtx[j] = rld[j].reg_rtx;
@@ -5793,7 +5793,7 @@ choose_reload_regs (struct insn_chain *chain)
 #endif
 		  )
 		{
-		  enum reg_class rclass = rld[r].class, last_class;
+		  enum reg_class rclass = rld[r].rclass, last_class;
 		  rtx last_reg = reg_last_reload_reg[regno];
 		  enum machine_mode need_mode;
 
@@ -5857,7 +5857,7 @@ choose_reload_regs (struct insn_chain *chain)
 
 			  bad_for_class = 0;
 			  for (k = 0; k < nr; k++)
-			    bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
+			    bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].rclass],
 								  i+k);
 
 			  /* We found a register that contains the
@@ -5939,7 +5939,7 @@ choose_reload_regs (struct insn_chain *chain)
 		  || REG_P (rld[r].in)
 		  || MEM_P (rld[r].in))
 	      && (rld[r].nregs == max_group_size
-		  || ! reg_classes_intersect_p (rld[r].class, group_class)))
+		  || ! reg_classes_intersect_p (rld[r].rclass, group_class)))
 	    search_equiv = rld[r].in;
 	  /* If this is an output reload from a simple move insn, look
 	     if an equivalence for the input is available.  */
@@ -5956,7 +5956,7 @@ choose_reload_regs (struct insn_chain *chain)
 	  if (search_equiv)
 	    {
 	      rtx equiv
-		= find_equiv_reg (search_equiv, insn, rld[r].class,
+		= find_equiv_reg (search_equiv, insn, rld[r].rclass,
 				  -1, NULL, 0, rld[r].mode);
 	      int regno = 0;
 
@@ -5997,7 +5997,7 @@ choose_reload_regs (struct insn_chain *chain)
 		    {
 		      regs_used |= TEST_HARD_REG_BIT (reload_reg_used_at_all,
 						      i);
-		      bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
+		      bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].rclass],
 							   i);
 		    }
 
@@ -6135,9 +6135,9 @@ choose_reload_regs (struct insn_chain *chain)
 		  || rld[s].optional)
 		continue;
 
-	      if ((rld[s].class != rld[r].class
-		   && reg_classes_intersect_p (rld[r].class,
-					       rld[s].class))
+	      if ((rld[s].rclass != rld[r].rclass
+		   && reg_classes_intersect_p (rld[r].rclass,
+					       rld[s].rclass))
 		  || rld[s].nregs < rld[r].nregs)
 		break;
 	    }
@@ -6818,7 +6818,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
 	  sri.icode = CODE_FOR_nothing;
 	  sri.prev_sri = NULL;
-	  new_class = targetm.secondary_reload (1, real_oldequiv, rl->class,
+	  new_class = targetm.secondary_reload (1, real_oldequiv, rl->rclass,
 						mode, &sri);
 
 	  if (new_class == NO_REGS && sri.icode == CODE_FOR_nothing)
@@ -7008,7 +7008,7 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
 	  && reg_equiv_mem[REGNO (old)] != 0)
 	real_old = reg_equiv_mem[REGNO (old)];
 
-      if (secondary_reload_class (0, rl->class, mode, real_old) != NO_REGS)
+      if (secondary_reload_class (0, rl->rclass, mode, real_old) != NO_REGS)
 	{
 	  rtx second_reloadreg = reloadreg;
 	  reloadreg = rld[secondary_reload].reg_rtx;
