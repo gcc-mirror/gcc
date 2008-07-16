@@ -28,11 +28,14 @@
 /** @namespace std::tr1::__detail
  *  @brief Implementation details not part of the namespace std::tr1 interface.
 */
-/** @namespace std::regex_constants
- *  @brief ISO C++ 0x entities sub namespace for regex.
+/** @namespace std::chrono
+ *  @brief ISO C++ 0x entities sub namespace for time and date.
 */
 /** @namespace std::placeholders
  *  @brief ISO C++ 0x entities sub namespace for functional.
+*/
+/** @namespace std::regex_constants
+ *  @brief ISO C++ 0x entities sub namespace for regex.
 */
 /** @namespace std::this_thread
  *  @brief ISO C++ 0x entities sub namespace for thread.

@@ -40,13 +40,14 @@
 #endif
 
 #include <bits/c++config.h>
-#include <debug/debug.h>
+#include <debug/debug.h>1
 #include <type_traits>
 #include <utility>
 #include <tuple>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /// Primary template, default_delete.
   template<typename _Tp> 
     struct default_delete
       {
@@ -66,6 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
+  /// Specialization, default_delete.
   template<typename _Tp> 
     struct default_delete<_Tp[]>
     {
@@ -78,6 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
     };
 
+  /// 20.6.11.2 unique_ptr for single objects.
   template <typename _Tp, typename _Tp_Deleter = default_delete<_Tp> > 
     class unique_ptr
     {
@@ -224,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __tuple_type _M_t;
   };
  
-  // 20.6.11.3 unique_ptr for array objects with a runtime length
+  /// 20.6.11.3 unique_ptr for array objects with a runtime length
   // [unique.ptr.runtime]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length

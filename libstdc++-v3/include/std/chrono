@@ -166,6 +166,7 @@ namespace std
         { return numeric_limits<_Rep>::min(); }
       };
 
+    /// duration
     template<typename _Rep, typename _Period>
       struct duration
       {
@@ -430,61 +431,61 @@ namespace std
     typedef duration<int,     ratio<  60>> minutes;
     typedef duration<int,     ratio<3600>> hours;
 
+    /// time_point
     template<typename _Clock, typename _Duration>
-    struct time_point
-    {
-      typedef _Clock                    clock;
-      typedef _Duration                 duration;
-      typedef typename duration::rep    rep;
-      typedef typename duration::period period;
-
-      time_point()
-      : __d(duration::zero())
-      { }
-
-      explicit time_point(const duration& __dur)
-      : __d(duration::zero() + __dur)
-      { }
-
-      // conversions
-      template<typename _Duration2>
-        time_point(const time_point<clock, _Duration2>& __t)
-        : __d(__t.time_since_epoch())
-        { }
-
-      // observer
-      duration
-      time_since_epoch() const
-      { return __d; }
-
-      // arithmetic
-      time_point&
-      operator+=(const duration& __dur)
+      struct time_point
       {
-        __d += __dur;
-        return *this;
-      }
+	typedef _Clock                    clock;
+	typedef _Duration                 duration;
+	typedef typename duration::rep    rep;
+	typedef typename duration::period period;
 
-      time_point&
-      operator-=(const duration& __dur)
-      {
-        __d -= __dur;
-        return *this;
-      }
+	time_point() : __d(duration::zero())
+	{ }
 
-      // special values
-      // TODO: These should be constexprs.
-      static const time_point
-      min()
-      { return time_point(duration::min()); }
+	explicit time_point(const duration& __dur) 
+	: __d(duration::zero() + __dur)
+	{ }
 
-      static const time_point
-      max()
-      { return time_point(duration::max()); }
+	// conversions
+	template<typename _Duration2>
+	  time_point(const time_point<clock, _Duration2>& __t)
+	  : __d(__t.time_since_epoch())
+	  { }
 
-    private:
-      duration __d;
-    };
+	// observer
+	duration
+	time_since_epoch() const
+	{ return __d; }
+	
+	// arithmetic
+	time_point&
+	operator+=(const duration& __dur)
+	{
+	  __d += __dur;
+	  return *this;
+	}
+	
+	time_point&
+	operator-=(const duration& __dur)
+	{
+	  __d -= __dur;
+	  return *this;
+	}
+	
+	// special values
+	// TODO: These should be constexprs.
+	static const time_point
+	min()
+	{ return time_point(duration::min()); }
+	
+	static const time_point
+	max()
+	{ return time_point(duration::max()); }
+	
+      private:
+	duration __d;
+      };
   
     template<typename _ToDuration, typename _Clock, typename _Duration>
       inline time_point<_Clock, _ToDuration> 
@@ -565,6 +566,7 @@ namespace std
                  const time_point<_Clock, _Duration2>& __rhs)
       { return !(__lhs < __rhs); }
 
+    /// system_clock
     struct system_clock
     {
 #if defined(_GLIBCXX_USE_CLOCK_MONOTONIC) || \
