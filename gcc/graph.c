@@ -165,25 +165,25 @@ darkgrey\n  shape: ellipse" : "white",
 }
 
 static void
-draw_edge (FILE *fp, int from, int to, int bb_edge, int class)
+draw_edge (FILE *fp, int from, int to, int bb_edge, int color_class)
 {
   const char * color;
   switch (graph_dump_format)
     {
     case vcg:
       color = "";
-      if (class == 2)
+      if (color_class == 2)
 	color = "color: red ";
       else if (bb_edge)
 	color = "color: blue ";
-      else if (class == 3)
+      else if (color_class == 3)
 	color = "color: green ";
       fprintf (fp,
 	       "edge: { sourcename: \"%s.%d\" targetname: \"%s.%d\" %s",
 	       current_function_name (), from,
 	       current_function_name (), to, color);
-      if (class)
-	fprintf (fp, "class: %d ", class);
+      if (color_class)
+	fprintf (fp, "class: %d ", color_class);
       fputs ("}\n", fp);
       break;
     case no_graph:

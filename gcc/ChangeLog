@@ -1,3 +1,27 @@
+2008-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cfg.c (dump_reg_info): Avoid C++ keywords.
+	* dwarf2asm.c (dw2_force_const_mem,
+	dw2_asm_output_encoded_addr_rtx): Likewise.
+	* except.c (gen_eh_region, add_action_record, output_ttype):
+	Likewise.
+	* expmed.c (expand_shift): Likewise.
+	* global.c (find_reg): Likewise.
+	* graph.c (draw_edge): Likewise.
+	* local-alloc.c (reg_meets_class_p, find_free_reg): Likewise.
+	* optabs.c (expand_binop, expand_twoval_unop, expand_twoval_binop,
+	widen_clz, widen_bswap, expand_parity, expand_unop,
+	emit_cmp_and_jump_insn_1): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* ra.h (add_neighbor): Likewise.
+	* reg-stack.c (remove_regno_note, change_stack): Likewise.
+	* regclass.c (memory_move_secondary_cost, dump_regclass, regclass,
+	record_reg_classes, copy_cost, record_address_regs,
+	invalid_mode_change_p): Likewise.
+	* regrename.c (regrename_optimize, scan_rtx_reg,
+	dump_def_use_chain, find_oldest_value_reg,
+	replace_oldest_value_reg, copyprop_hardreg_forward_1): Likewise.
+
 2008-07-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Remove duplicate
