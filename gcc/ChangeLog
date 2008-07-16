@@ -1,3 +1,8 @@
+2007-07-16  Rafael Avila de Espindola  <espindola@google.com>
+
+       * c-decl.c (merge_decls): Keep DECL_SOURCE_LOCATION and
+       DECL_IN_SYSTEM_HEADER in sync.
+
 2008-07-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-sccvn.c (expressions_equal_p): Check type equality.

@@ -1679,12 +1679,27 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   if (TREE_DEPRECATED (newdecl))
     TREE_DEPRECATED (olddecl) = 1;
 
-  /* Keep source location of definition rather than declaration and of
-     prototype rather than non-prototype unless that prototype is
-     built-in.  */
-  if ((DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
-      || (old_is_prototype && !new_is_prototype
-	  && !C_DECL_BUILTIN_PROTOTYPE (olddecl)))
+  /* If a decl is in a system header and the other isn't, keep the one on the
+     system header. Otherwise, keep source location of definition rather than
+     declaration and of prototype rather than non-prototype unless that
+     prototype is built-in.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS)
+      && DECL_IN_SYSTEM_HEADER (olddecl)
+      && !DECL_IN_SYSTEM_HEADER (newdecl) )
+    {
+      DECL_IN_SYSTEM_HEADER (newdecl) = 1;
+      DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
+    }
+  else if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS)
+	   && DECL_IN_SYSTEM_HEADER (newdecl)
+	   && !DECL_IN_SYSTEM_HEADER (olddecl))
+    {
+      DECL_IN_SYSTEM_HEADER (olddecl) = 1;
+      DECL_SOURCE_LOCATION (olddecl) = DECL_SOURCE_LOCATION (newdecl);
+    }
+  else if ((DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
+	   || (old_is_prototype && !new_is_prototype
+	       && !C_DECL_BUILTIN_PROTOTYPE (olddecl)))
     DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 
   /* Merge the initialization information.  */
@@ -1700,12 +1715,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
     {
-      /* Merge the unused-warning information.  */
-      if (DECL_IN_SYSTEM_HEADER (olddecl))
-	DECL_IN_SYSTEM_HEADER (newdecl) = 1;
-      else if (DECL_IN_SYSTEM_HEADER (newdecl))
-	DECL_IN_SYSTEM_HEADER (olddecl) = 1;
-
       /* Merge the section attribute.
 	 We want to issue an error if the sections conflict but that
 	 must be done later in decl_attributes since we are called
