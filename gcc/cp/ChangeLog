@@ -1,3 +1,11 @@
+2008-07-16  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/13699
+	* gcc/cp/name-lookup.c (lookup_extern_c_fun_binding_in_all_ns):
+	New function.
+	(pushdecl_maybe_friend): Check if a redeclaration of extern C function
+	complies with exception specification constraints.
+
 2008-07-14  Jason Merrill  <jason@redhat.com>
 
 	* lex.c (init_reswords): Always set D_OBJC.

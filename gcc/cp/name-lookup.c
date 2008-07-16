@@ -50,6 +50,7 @@ static bool qualified_lookup_using_namespace (tree, tree,
 					      struct scope_binding *, int);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
+static cxx_binding* lookup_extern_c_fun_binding_in_all_ns (tree);
 
 /* The :: namespace.  */
 
@@ -759,6 +760,48 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		  /* We don't try to push this declaration since that
 		     causes a crash.  */
 		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
+		}
+	    }
+	}
+
+      /* If x has C linkage-specification, (extern "C"),
+	 lookup its binding, in case it's already bound to an object.
+	 The lookup is done in all namespaces.
+	 If we find an existing binding, make sure it has the same
+	 exception specification as x, otherwise, bail in error [7.5, 7.6].  */
+      if ((TREE_CODE (x) == FUNCTION_DECL)
+	  && DECL_EXTERN_C_P (x)
+          /* We should ignore declarations happening in system headers.  */
+	  && !DECL_IN_SYSTEM_HEADER (x))
+	{
+	  cxx_binding *function_binding =
+	      lookup_extern_c_fun_binding_in_all_ns (x);
+	  if (function_binding
+              && !DECL_IN_SYSTEM_HEADER (function_binding->value))
+	    {
+	      tree previous = function_binding->value;
+
+	      /* In case either x or previous is declared to throw an exception,
+	         make sure both exception speficications are equal.  */
+	      if (decls_match (x, previous))
+		{
+		  tree x_exception_spec = NULL_TREE;
+		  tree previous_exception_spec = NULL_TREE;
+
+		  x_exception_spec =
+				TYPE_RAISES_EXCEPTIONS (TREE_TYPE (x));
+		  previous_exception_spec =
+				TYPE_RAISES_EXCEPTIONS (TREE_TYPE (previous));
+		  if (!comp_except_specs (previous_exception_spec,
+					  x_exception_spec,
+					  true))
+		    {
+		      pedwarn ("declaration of %q#D with C language linkage", x);
+		      pedwarn ("conflicts with previous declaration %q+#D",
+			        previous);
+		      pedwarn ("due to different exception specifications");
+		      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+		    }
 		}
 	    }
 	}
@@ -1829,6 +1872,39 @@ binding_for_name (cxx_scope *scope, tree name)
   result->value_is_inherited = false;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = result;
   return result;
+}
+
+/* Walk through the bindings associated to the name of FUNCTION,
+   and return the first binding that declares a function with a
+   "C" linkage specification, a.k.a 'extern "C"'.
+   This function looks for the binding, regardless of which scope it
+   has been defined in. It basically looks in all the known scopes.
+   Note that this function does not lookup for bindings of builtin functions
+   or for functions declared in system headers.  */
+static cxx_binding*
+lookup_extern_c_fun_binding_in_all_ns (tree function)
+{
+  tree name;
+  cxx_binding *iter;
+
+  gcc_assert (function && TREE_CODE (function) == FUNCTION_DECL);
+
+  name = DECL_NAME (function);
+  gcc_assert (name && TREE_CODE (name) == IDENTIFIER_NODE);
+
+  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
+       iter;
+       iter = iter->previous)
+    {
+      if (iter->value
+	  && TREE_CODE (iter->value) == FUNCTION_DECL
+	  && DECL_EXTERN_C_P (iter->value)
+	  && !DECL_ARTIFICIAL (iter->value))
+	{
+	  return iter;
+	}
+    }
+  return NULL;
 }
 
 /* Insert another USING_DECL into the current binding level, returning

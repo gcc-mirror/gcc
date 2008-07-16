@@ -1,3 +1,8 @@
+2008-07-16  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/13699
+	* g++.dg/lookup/extern-c-redecl.C: New test.
+
 2008-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36369
