@@ -1,3 +1,8 @@
+2008-07-16  Olivier Hainque  <hainque@adacore.com>
+
+	* collect2.c (scan_prog_file, COFF version): Use CONST_CAST
+	instead of bare conversion to cast const-ness away.
+
 2008-07-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (FUNCTION_OUTGOING_VALUE,
