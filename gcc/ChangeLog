@@ -1,3 +1,8 @@
+2008-07-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (processor_target_table): Add
+	MASK_PPC_GPOPT for power4, power5, power5+, power6, and power6x.
+
 2008-07-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/36827
