@@ -287,6 +287,16 @@ ipa_check_create_edge_args (void)
 			   cgraph_edge_max_uid + 1);
 }
 
+/* Returns true if the array of edge infos is large enough to accomodate an
+   info for EDGE.  The main purpose of this function is that debug dumping
+   function can check info availability without causing reallocations.  */
+static inline bool
+ipa_edge_args_info_available_for_edge_p (struct cgraph_edge *edge)
+{
+  return ((unsigned) edge->uid < VEC_length (ipa_edge_args_t,
+					     ipa_edge_args_vector));
+}
+
 /* A function list element.  It is used to create a temporary worklist used in
    the propagation stage of IPCP. (can be used for more IPA optimizations)  */
 struct ipa_func_list
