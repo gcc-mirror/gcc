@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread } */
 /* { dg-options "-O3 -ftree-parallelize-loops=4" } */
 
 struct p7prior_s {
