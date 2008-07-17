@@ -1,3 +1,11 @@
+2008-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36825
+	PR fortran/36824
+	* array.c (gfc_match_array_spec): Fix array-rank check.
+	* resolve.c (resolve_fl_derived): Fix constentness check
+	for the array dimensions.
+
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Make-lang.in (gfortranspec.o): Fix dependencies.
