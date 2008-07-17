@@ -1,3 +1,17 @@
+2008-07-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Backport from mainline:
+
+	2008-05-27  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+		    Sa Liu  <saliu@de.ibm.com> 
+
+	* gcc.target/spu/muldivti3.c: New. Test TImode mul and div
+	functions on SPU.
+
+	2008-05-08  Sa Liu  <saliu@de.ibm.com>
+
+	* gcc.target/spu/subti3.c: New.
+
 2008-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36824

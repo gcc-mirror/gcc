@@ -27,7 +27,9 @@ LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/mfc_tag_reserve.c \
 			 $(srcdir)/config/spu/mfc_tag_release.c \
 			 $(srcdir)/config/spu/mfc_multi_tag_reserve.c \
-			 $(srcdir)/config/spu/mfc_multi_tag_release.c
+			 $(srcdir)/config/spu/mfc_multi_tag_release.c \
+			 $(srcdir)/config/spu/multi3.c \
+			 $(srcdir)/config/spu/divmodti4.c
 
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
    $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
