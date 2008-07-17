@@ -1,5 +1,11 @@
 2008-07-17  Olivier Hainque  <hainque@adacore.com>
 
+	* adaint.c (__MINGW32__ section): Include ctype.h and define
+	a fallback ISALPHA if IN_RTS.
+	(__gnat_is_absolute_path): Use ISALPHA instead of isalpha. 
+
+2008-07-17  Olivier Hainque  <hainque@adacore.com>
+
 	* utils.c (create_var_decl_1): Relax expectations on the PUBLIC_FLAG
 	argument, to apply to references in addition to definitions.  Prevent
 	setting TREE_STATIC on externals.
