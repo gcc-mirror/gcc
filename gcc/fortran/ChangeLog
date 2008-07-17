@@ -1,3 +1,9 @@
+2008-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36824
+	* resolve.c (resolve_fl_derived): Fix constantness check
+	for the array dimensions.
+
 2008-06-20  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

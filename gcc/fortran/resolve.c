@@ -7531,8 +7531,8 @@ resolve_fl_derived (gfc_symbol *sym)
       for (i = 0; i < c->as->rank; i++)
 	{
 	  if (c->as->lower[i] == NULL
-	      || !gfc_is_constant_expr (c->as->lower[i])
 	      || (resolve_index_expr (c->as->lower[i]) == FAILURE)
+	      || !gfc_is_constant_expr (c->as->lower[i])
 	      || c->as->upper[i] == NULL
 	      || (resolve_index_expr (c->as->upper[i]) == FAILURE)
 	      || !gfc_is_constant_expr (c->as->upper[i]))
