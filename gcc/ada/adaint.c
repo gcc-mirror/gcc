@@ -85,7 +85,15 @@
 
 #include "mingw32.h"
 #include <sys/utime.h>
+
+/* For isalpha-like tests in the compiler, we're expected to resort to
+   safe-ctype.h/ISALPHA.  This isn't available for the runtime library
+   build, so we fallback on ctype.h/isalpha there.  */
+
+#ifdef IN_RTS
 #include <ctype.h>
+#define ISALPHA isalpha
+#endif
 
 #elif defined (__Lynx__)
 
@@ -1642,7 +1650,7 @@ __gnat_is_absolute_path (char *name, int length)
   return (length != 0) &&
      (*name == '/' || *name == DIR_SEPARATOR
 #if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
-      || (length > 1 && isalpha (name[0]) && name[1] == ':')
+      || (length > 1 && ISALPHA (name[0]) && name[1] == ':')
 #endif
 	  );
 #endif
