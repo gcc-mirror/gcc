@@ -1,3 +1,10 @@
+2008-07-17  Olivier Hainque  <hainque@adacore.com>
+
+	* utils.c (create_var_decl_1): Relax expectations on the PUBLIC_FLAG
+	argument, to apply to references in addition to definitions.  Prevent
+	setting TREE_STATIC on externals.
+	(gnat_pushdecl): Always clear DECL_CONTEXT on public externals.
+
 2008-07-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/15479

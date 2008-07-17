@@ -1,3 +1,10 @@
+2008-07-17  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/tree_static_def.ad[bs]: Support for ...
+	* gnat.dg/tree_static_use.adb: New test.
+	* gnat.dg/decl_ctx_def.ads: Support for ...
+	* gnat.dg/decl_ctx_use.ad[bs]: New test.
+
 2008-07-17  Julian Brown  <julian@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 

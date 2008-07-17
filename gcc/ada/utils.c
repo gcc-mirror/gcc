@@ -418,9 +418,11 @@ gnat_poplevel ()
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
 {
-  /* If at top level, there is no context. But PARM_DECLs always go in the
-     level of its function.  */
-  if (global_bindings_p () && TREE_CODE (decl) != PARM_DECL)
+  /* If this decl is public external or at toplevel, there is no context.
+     But PARM_DECLs always go in the level of its function.  */
+  if (TREE_CODE (decl) != PARM_DECL
+      && ((DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
+	  || global_bindings_p ()))
     DECL_CONTEXT (decl) = 0;
   else
     {
@@ -1471,9 +1473,9 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
    CONST_FLAG is true if this variable is constant, in which case we might
    return a CONST_DECL node unless CONST_DECL_ALLOWED_P is false.
 
-   PUBLIC_FLAG is true if this definition is to be made visible outside of
-   the current compilation unit. This flag should be set when processing the
-   variable definitions in a package specification.
+   PUBLIC_FLAG is true if this is for a reference to a public entity or for a
+   definition to be made visible outside of the current compilation unit, for
+   instance variable definitions in a package specification.
 
    EXTERN_FLAG is nonzero when processing an external variable declaration (as
    opposed to a definition: no storage is to be allocated for the variable).
@@ -1549,7 +1551,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      variable if and only if it's not external. If we are not at the top level
      we allocate automatic storage unless requested not to.  */
   TREE_STATIC (var_decl)
-    = public_flag || (global_bindings_p () ? !extern_flag : static_flag);
+    = !extern_flag && (public_flag || static_flag || global_bindings_p ());
 
   if (asm_name && VAR_OR_FUNCTION_DECL_P (var_decl))
     SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
