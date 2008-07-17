@@ -1,3 +1,10 @@
+2008-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36855
+	* g++.dg/ext/has_trivial_destructor.C: Rename to...
+	* g++.dg/ext/has_trivial_destructor-1.C: ... this.
+	* g++.dg/ext/has_trivial_destructor-2.C: New.
+
 2008-07-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/36753
