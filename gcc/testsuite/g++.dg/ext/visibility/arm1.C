@@ -1,4 +1,5 @@
 // { dg-do compile { target arm*-*-eabi* arm*-*-symbianelf* } }
+// { dg-require-dll "" }
 // { dg-options "-fvisibility=hidden" }
 // Most class data should be exported.
 // { dg-final { scan-not-hidden "_ZTV1S" } }

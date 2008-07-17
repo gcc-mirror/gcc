@@ -1,3 +1,8 @@
+2008-07-17  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_cxx_determine_class_data_visibility): Make
+	no-op for targets which don't use DLLs.
+
 2008-07-17  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_print_all_lattices): New variable info, check

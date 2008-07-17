@@ -1963,6 +1963,14 @@ determine_visibility (tree decl)
 	  /* tinfo visibility is based on the type it's for.  */
 	  constrain_visibility
 	    (decl, type_visibility (TREE_TYPE (DECL_NAME (decl))));
+
+	  /* Give the target a chance to override the visibility associated
+	     with DECL.  */
+	  if (TREE_PUBLIC (decl)
+	      && !DECL_REALLY_EXTERN (decl)
+	      && CLASS_TYPE_P (TREE_TYPE (DECL_NAME (decl)))
+	      && !CLASSTYPE_VISIBILITY_SPECIFIED (TREE_TYPE (DECL_NAME (decl))))
+	    targetm.cxx.determine_class_data_visibility (decl);
 	}
       else if (use_template)
 	/* Template instantiations and specializations get visibility based

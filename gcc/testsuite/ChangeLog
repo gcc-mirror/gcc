@@ -1,3 +1,10 @@
+2008-07-17  Julian Brown  <julian@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/visibility/arm3.C: Add explanatory text. Skip on
+	non-DLL targets.
+	* g++.dg/ext/visibility/arm1.C: Skip on non-DLL targets.
+
 2008-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36855
