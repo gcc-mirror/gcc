@@ -1,3 +1,9 @@
+2008-07-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/36753
+	* fwprop.c (use_killed_between): Don't shortcut
+	single-definition global registers.
+
 2008-07-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/36827

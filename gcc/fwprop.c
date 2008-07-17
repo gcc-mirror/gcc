@@ -480,10 +480,15 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
     return true;
 
   /* Check if the reg in USE has only one definition.  We already
-     know that this definition reaches use, or we wouldn't be here.  */
+     know that this definition reaches use, or we wouldn't be here.
+     However, this is invalid for hard registers because if they are
+     live at the beginning of the function it does not mean that we
+     have an uninitialized access.  */
   regno = DF_REF_REGNO (use);
   def = DF_REG_DEF_CHAIN (regno);
-  if (def && (def->next_reg == NULL))
+  if (def
+      && def->next_reg == NULL
+      && regno >= FIRST_PSEUDO_REGISTER)
     return false;
 
   /* Check locally if we are in the same basic block.  */

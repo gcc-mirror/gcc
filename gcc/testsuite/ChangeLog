@@ -1,3 +1,8 @@
+2008-07-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/36753
+	* gcc.target/i386/pr36753.c: New.
+
 2008-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36369
