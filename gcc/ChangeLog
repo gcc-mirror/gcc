@@ -1,3 +1,8 @@
+2008-07-17  Roman Zippel <zippel@linux-m68k.org>
+
+	PR target/25343
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __mc68000__.
+
 2008-07-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/36753
