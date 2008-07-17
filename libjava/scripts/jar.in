@@ -96,7 +96,7 @@ copy () {
       return 0
     fi
 
-    if test -e "$2"/"$1"; then
+    if test -f "$2"/"$1"; then
       error "$1": Duplicate entry.
     fi
     dir=`dirname "$1"`
@@ -249,8 +249,7 @@ jar_list_verbose () {
 }
 
 # mkdir -p emulation based on the mkinstalldirs script.
-mkdir_p ()
-{
+func_mkdir_p () {
   for file
   do
     case $file in
@@ -290,7 +289,7 @@ mkdir_p ()
 if mkdir -p --version . >/dev/null 2>&1 && test ! -d ./--version; then
   mkdir_p='mkdir -p'
 else
-  mkdir_p='mkdir_p'
+  mkdir_p='func_mkdir_p'
   test -d ./-p && rmdir ./-p
   test -d ./--version && rmdir ./--version
 fi

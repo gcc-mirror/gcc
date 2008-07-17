@@ -1,3 +1,8 @@
+2008-07-16  Roger Sayle  <roger@eyesopen.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* scripts/jar.in: Fix portability problems with Solaris /bin/sh.
+
 2008-07-08  Matthias Klose  <doko@ubuntu.com>
 
 	* libtool-version: Bump soversion.
