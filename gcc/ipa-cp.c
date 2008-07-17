@@ -293,7 +293,11 @@ ipcp_print_all_lattices (FILE * f)
   fprintf (f, "\nLATTICE PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
+      struct ipa_node_params *info;
+
+      if (!node->analyzed)
+	continue;
+      info = IPA_NODE_REF (node);
       fprintf (f, "Printing lattices %s:\n", cgraph_node_name (node));
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
@@ -413,6 +417,11 @@ ipcp_init_stage (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      if (!node->analyzed)
+	continue;
+      /* Unreachable nodes should have been eliminated before ipcp.  */
+      gcc_assert (node->needed || node->reachable);
+
       ipa_count_formal_params (node);
       ipa_create_param_decls_array (node);
       ipcp_initialize_node_lattices (node);
@@ -421,9 +430,13 @@ ipcp_init_stage (void)
     }
   for (node = cgraph_nodes; node; node = node->next)
     {
+      if (!node->analyzed)
+	continue;
       /* building jump functions  */
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
+	  if (!cs->callee->analyzed)
+	    continue;
 	  ipa_count_arguments (cs);
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
@@ -480,6 +493,8 @@ ipcp_propagate_stage (void)
   struct ipa_func_list *wl;
   int count;
 
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
   /* Initialize worklist to contain all functions.  */
   wl = ipa_init_func_list ();
   while (wl)
@@ -550,12 +565,16 @@ ipcp_print_all_jump_functions (FILE * f)
   fprintf (f, "\nCALLSITE PARAM PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
+      if (!node->analyzed)
+	continue;
+
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
 	  fprintf (f, "callsite  %s ", cgraph_node_name (node));
 	  fprintf (f, "-> %s :: \n", cgraph_node_name (cs->callee));
 
-	  if (ipa_is_called_with_var_arguments (IPA_NODE_REF (cs->callee)))
+	  if (!ipa_edge_args_info_available_for_edge_p (cs)
+	      || ipa_is_called_with_var_arguments (IPA_NODE_REF (cs->callee)))
 	    continue;
 
 	  count = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
@@ -592,6 +611,8 @@ ipcp_function_scale_print (FILE * f)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      if (!node->analyzed)
+	continue;
       fprintf (f, "printing scale for %s: ", cgraph_node_name (node));
       fprintf (f, "value is  " HOST_WIDE_INT_PRINT_DEC
 	       "  \n", (HOST_WIDE_INT) ipcp_get_node_scale (node));
@@ -820,7 +841,7 @@ ipcp_update_callgraph (void)
   for (node = cgraph_nodes; node; node = node->next)
     {
       /* want to fix only original nodes  */
-      if (ipcp_node_is_clone (node))
+      if (!node->analyzed || ipcp_node_is_clone (node))
 	continue;
       for (cs = node->callees; cs; cs = cs->next_callee)
 	if (ipcp_node_is_clone (cs->callee))
@@ -906,13 +927,17 @@ ipcp_insert_stage (void)
   tree parm_tree;
   struct ipa_replace_map *replace_param;
 
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+
   for (node = cgraph_nodes; node; node = node->next)
     {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
-      /* Propagation of the constant is forbidden in 
-         certain conditions.  */
-      if (!node->analyzed || ipcp_node_not_modifiable_p (node)
-	  || ipa_is_called_with_var_arguments (info))
+      struct ipa_node_params *info;
+      /* Propagation of the constant is forbidden in certain conditions.  */
+      if (!node->analyzed || ipcp_node_not_modifiable_p (node))
+	  continue;
+      info = IPA_NODE_REF (node);
+      if (ipa_is_called_with_var_arguments (info))
 	continue;
       const_param = 0;
       count = ipa_get_param_count (info);

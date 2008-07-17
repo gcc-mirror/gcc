@@ -1,3 +1,23 @@
+2008-07-17  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_print_all_lattices): New variable info, check
+	that nodes are relevant by examining the node->analyzed flag.
+	(ipcp_init_stage): Check which nodes are relevant, assert that the
+	relevant ones are also required.
+	(ipcp_propagate_stage): Check on the side arrays are properly
+	allocated.
+	(ipcp_print_all_jump_functions): Make sure not to touch any node
+	that is not analyzed or an edge that does not have a corresponding
+	entry in the on-the-side vectors.
+	(ipcp_function_scale_print): Likewise.
+	(ipcp_update_callgraph): Check that the node is relevant.
+	(ipcp_insert_stage): Check that the node is relevant.  Check there is
+	an info for every node and edge.
+	* ipa-prop.c (ipa_init_func_list): Check the nodes are relevant.
+	(ipa_print_all_tree_maps): Likewise and a new variable info.
+	(ipa_print_all_params_modified): Likewise.
+	* ipa-prop.h (ipa_edge_args_info_available_for_edge_p): New function.
+
 2008-07-17  Roman Zippel <zippel@linux-m68k.org>
 
 	PR target/25343

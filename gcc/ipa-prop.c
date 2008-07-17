@@ -53,7 +53,13 @@ ipa_init_func_list (void)
 
   wl = NULL;
   for (node = cgraph_nodes; node; node = node->next)
-    ipa_push_func_to_list (&wl, node);
+    if (node->analyzed)
+      {
+	/* Unreachable nodes should have been eliminated before ipcp and
+	   inlining.  */
+	gcc_assert (node->needed || node->reachable);
+	ipa_push_func_to_list (&wl, node);
+      }
 
   return wl;
 }
@@ -521,7 +527,11 @@ ipa_print_all_tree_maps (FILE * f)
   fprintf (f, "\nPARAM TREE MAP PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
+      struct ipa_node_params *info;
+
+      if (!node->analyzed)
+	continue;
+      info = IPA_NODE_REF (node);
       fprintf (f, "function  %s Trees :: \n", cgraph_node_name (node));
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
@@ -547,7 +557,11 @@ ipa_print_all_params_modified (FILE * f)
   fprintf (f, "\nMODIFY PRINT\n");
   for (node = cgraph_nodes; node; node = node->next)
     {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
+      struct ipa_node_params *info;
+
+      if (!node->analyzed)
+	continue;
+      info = IPA_NODE_REF (node);
       fprintf (f, "function  %s :: \n", cgraph_node_name (node));
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
