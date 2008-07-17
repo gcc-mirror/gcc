@@ -1,3 +1,9 @@
+2008-07-17  Julian Brown  <julian@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (determine_visibility): Allow target to override
+	visibility of class data.
+
 2008-07-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36855

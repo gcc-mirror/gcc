@@ -18318,7 +18318,8 @@ arm_cxx_key_method_may_be_inline (void)
 static void
 arm_cxx_determine_class_data_visibility (tree decl)
 {
-  if (!TARGET_AAPCS_BASED)
+  if (!TARGET_AAPCS_BASED
+      || !TARGET_DLLIMPORT_DECL_ATTRIBUTES)
     return;
 
   /* In general, \S 3.2.5.5 of the ARM EABI requires that class data
