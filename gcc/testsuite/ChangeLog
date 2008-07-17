@@ -1,3 +1,9 @@
+2008-07-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/36443
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Temporarily unset
+	GCC_EXEC_PREFIX from environment when running $HOSTCC.
+
 2008-07-16  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/13699
