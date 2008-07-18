@@ -1,3 +1,8 @@
+2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/36858
+	* function.c (locate_and_pad_parm): Cap boundary earlier.
+
 2008-07-17  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_cxx_determine_class_data_visibility): Make

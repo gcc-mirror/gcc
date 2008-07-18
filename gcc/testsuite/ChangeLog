@@ -1,3 +1,8 @@
+2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/36858
+	* gcc.target/i386/vararg-1.c: New.
+
 2008-07-18  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/parameter_array_init_4.f90: Silence pedantic warning.
