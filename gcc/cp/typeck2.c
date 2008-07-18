@@ -727,17 +727,26 @@ digest_init_r (tree type, tree init, bool nested)
 	{
 	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
 
-	  if (char_type != char_type_node
-	      && TYPE_PRECISION (typ1) == BITS_PER_UNIT)
+	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      error ("char-array initialized from wide string");
-	      return error_mark_node;
+	      if (char_type != char_type_node)
+		{
+		  error ("char-array initialized from wide string");
+		  return error_mark_node;
+		}
 	    }
-	  if (char_type == char_type_node
-	      && TYPE_PRECISION (typ1) != BITS_PER_UNIT)
+	  else
 	    {
-	      error ("int-array initialized from non-wide string");
-	      return error_mark_node;
+	      if (char_type == char_type_node)
+		{
+		  error ("int-array initialized from non-wide string");
+		  return error_mark_node;
+		}
+	      else if (char_type != typ1)
+		{
+		  error ("int-array initialized from incompatible wide string");
+		  return error_mark_node;
+		}
 	    }
 
 	  TREE_TYPE (init) = type;

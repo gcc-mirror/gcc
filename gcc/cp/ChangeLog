@@ -1,4 +1,10 @@
-2008-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
+
+	* rtti.c (emit_support_tinfos): Add char16_type_node and
+	char32_type_node.
+	* typeck2.c (digest_init): Support char16_t and char32_t.
+
+2008-07-18  Kavih R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cvt.c (convert_to_void): Avoid C++ keywords.
 	* decl.c (walk_namespaces_r, wrapup_globals_for_namespace):
@@ -59,9 +65,9 @@
 2008-07-11  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/31754
-	* cp-tree.h (struct cp_decl_specifier_seq): add a location field. It
+	* cp-tree.h (struct cp_decl_specifier_seq): Add a location field. It
 	carries the location of the primary type.
-	* parser.c (cp_parser_check_type_definition): update documentation.
+	* parser.c (cp_parser_check_type_definition): Update documentation.
 	(cp_parser_check_for_definition_in_return_type,
 	cp_parser_check_for_invalid_template_id,
 	cp_parser_set_decl_spec_type,
@@ -69,18 +75,18 @@
 	cp_parser_diagnose_invalid_type_name,
 	cp_parser_new_expression, cp_parser_explicit_instantiation,
 	cp_parser_type_specifier, cp_parser_simple_type_specifier,
-	cp_parser_omp_for_loop, cp_parser_pragma): use location in error messages.
-
+	cp_parser_omp_for_loop, cp_parser_pragma): Use location in error
+	messages.
 
 2008-07-11 Dodji Seketeli <dseketel@redhat.com>
 
 	PR c++/31754
 	* pt.c, semantic.c:
 	* semantic.c (qualified_name_lookup_error, finish_id_expression):
-	add a location_t parameter so that
+	Add a location_t parameter so that
 	error message can have a more accurate location.
-	* cp-tree.h: updated prototype
-	* pt.c (tsubst_qualified_id): use location in error messages.
+	* cp-tree.h: Updated prototype
+	* pt.c (tsubst_qualified_id): Use location in error messages.
 	* parser.c (cp_parser_postfix_expression,
 	cp_parser_objc_statement, cp_parser_trait_expr,
 	cp_parser_token_is_class_key,
@@ -103,8 +109,8 @@
 	cp_parser_function_specifier_opt, cp_parser_decltype,
 	cp_parser_mem_initializer_list, cp_parser_mem_initializer,
 	cp_parser_mem_initializer_id, cp_parser_template_parameter,
-	cp_parser_type_parameter, cp_parser_template_id, cp_parser_template_name,
-	cp_parser_template_argument): likewise.
+	cp_parser_type_parameter, cp_parser_template_id,
+	cp_parser_template_name, cp_parser_template_argument): Likewise.
 
 2008-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
