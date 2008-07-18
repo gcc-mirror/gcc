@@ -89,8 +89,10 @@ test02()
 
   Gt gt;
 
+#ifndef _GLIBCXX_DEBUG
   //const int logN = static_cast<int>(std::log(static_cast<double>(N)) + 0.5);
   const int logN = 3;
+#endif
   
   int s1[N];
   std::copy(A, A + N, s1);
