@@ -48,7 +48,7 @@ extra_ldflags_libobjc = @extra_ldflags_libobjc@
 
 top_builddir = .
 
-include ../boehm-gc/threads.mk
+-include ../boehm-gc/threads.mk
 
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
