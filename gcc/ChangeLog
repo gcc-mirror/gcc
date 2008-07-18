@@ -1,3 +1,14 @@
+2008-07-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/35281
+	* expr.c (convert_move): Use a new pseudo for the intermediate
+	from_mode->word_mode result.
+	* fwprop.c (PR_CAN_APPEAR, PR_HANDLE_MEM): New.
+	(propagate_rtx_1): Handle PR_HANDLE_MEM.
+	(propagate_rtx): Pass PR_HANDLE_MEM if appropriate.
+	(varying_mem_p): Move above propagate_rtx.
+	(all_uses_available_at): Do not check MEMs.
+
 2008-07-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Backport from mainline:

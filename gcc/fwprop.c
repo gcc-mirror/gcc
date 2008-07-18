@@ -208,47 +208,76 @@ should_replace_address (rtx old, rtx new, enum machine_mode mode)
   return (gain > 0);
 }
 
+
+/* Flags for the last parameter of propagate_rtx_1.  */
+
+enum {
+  /* If PR_CAN_APPEAR is true, propagate_rtx_1 always returns true;
+     if it is false, propagate_rtx_1 returns false if, for at least
+     one occurrence OLD, it failed to collapse the result to a constant.
+     For example, (mult:M (reg:M A) (minus:M (reg:M B) (reg:M A))) may
+     collapse to zero if replacing (reg:M B) with (reg:M A).
+
+     PR_CAN_APPEAR is disregarded inside MEMs: in that case,
+     propagate_rtx_1 just tries to make cheaper and valid memory
+     addresses.  */
+  PR_CAN_APPEAR = 1,
+
+  /* If PR_HANDLE_MEM is not set, propagate_rtx_1 won't attempt any replacement
+     outside memory addresses.  This is needed because propagate_rtx_1 does
+     not do any analysis on memory; thus it is very conservative and in general
+     it will fail if non-read-only MEMs are found in the source expression.
+
+     PR_HANDLE_MEM is set when the source of the propagation was not
+     another MEM.  Then, it is safe not to treat non-read-only MEMs as
+     ``opaque'' objects.  */
+  PR_HANDLE_MEM = 2,
+};
+
+
 /* Replace all occurrences of OLD in *PX with NEW and try to simplify the
    resulting expression.  Replace *PX with a new RTL expression if an
    occurrence of OLD was found.
-
-   If CAN_APPEAR is true, we always return true; if it is false, we
-   can return false if, for at least one occurrence OLD, we failed to
-   collapse the result to a constant.  For example, (mult:M (reg:M A)
-   (minus:M (reg:M B) (reg:M A))) may collapse to zero if replacing
-   (reg:M B) with (reg:M A).
-
-   CAN_APPEAR is disregarded inside MEMs: in that case, we always return
-   true if the simplification is a cheaper and valid memory address.
 
    This is only a wrapper around simplify-rtx.c: do not add any pattern
    matching code here.  (The sole exception is the handling of LO_SUM, but
    that is because there is no simplify_gen_* function for LO_SUM).  */
 
 static bool
-propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
+propagate_rtx_1 (rtx *px, rtx old, rtx new, int flags)
 {
   rtx x = *px, tem = NULL_RTX, op0, op1, op2;
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   enum machine_mode op_mode;
+  bool can_appear = (flags & PR_CAN_APPEAR) != 0;
   bool valid_ops = true;
 
-  /* If X is OLD_RTX, return NEW_RTX.  Otherwise, if this is an expression,
-     try to build a new expression from recursive substitution.  */
+  if (!(flags & PR_HANDLE_MEM) && MEM_P (x) && !MEM_READONLY_P (x))
+    {
+      /* If unsafe, change MEMs to CLOBBERs or SCRATCHes (to preserve whether
+	 they have side effects or not).  */
+      *px = (side_effects_p (x)
+	     ? gen_rtx_CLOBBER (GET_MODE (x), const0_rtx)
+	     : gen_rtx_SCRATCH (GET_MODE (x)));
+      return false;
+    }
 
+  /* If X is OLD_RTX, return NEW_RTX.  But not if replacing only within an
+     address, and we are *not* inside one.  */
   if (x == old)
     {
       *px = new;
       return can_appear;
     }
 
+  /* If this is an expression, try recursive substitution.  */
   switch (GET_RTX_CLASS (code))
     {
     case RTX_UNARY:
       op0 = XEXP (x, 0);
       op_mode = GET_MODE (op0);
-      valid_ops &= propagate_rtx_1 (&op0, old, new, can_appear);
+      valid_ops &= propagate_rtx_1 (&op0, old, new, flags);
       if (op0 == XEXP (x, 0))
 	return true;
       tem = simplify_gen_unary (code, mode, op0, op_mode);
@@ -258,8 +287,8 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
     case RTX_COMM_ARITH:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
-      valid_ops &= propagate_rtx_1 (&op0, old, new, can_appear);
-      valid_ops &= propagate_rtx_1 (&op1, old, new, can_appear);
+      valid_ops &= propagate_rtx_1 (&op0, old, new, flags);
+      valid_ops &= propagate_rtx_1 (&op1, old, new, flags);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	return true;
       tem = simplify_gen_binary (code, mode, op0, op1);
@@ -270,8 +299,8 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
       op_mode = GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
-      valid_ops &= propagate_rtx_1 (&op0, old, new, can_appear);
-      valid_ops &= propagate_rtx_1 (&op1, old, new, can_appear);
+      valid_ops &= propagate_rtx_1 (&op0, old, new, flags);
+      valid_ops &= propagate_rtx_1 (&op1, old, new, flags);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	return true;
       tem = simplify_gen_relational (code, mode, op_mode, op0, op1);
@@ -283,9 +312,9 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
       op1 = XEXP (x, 1);
       op2 = XEXP (x, 2);
       op_mode = GET_MODE (op0);
-      valid_ops &= propagate_rtx_1 (&op0, old, new, can_appear);
-      valid_ops &= propagate_rtx_1 (&op1, old, new, can_appear);
-      valid_ops &= propagate_rtx_1 (&op2, old, new, can_appear);
+      valid_ops &= propagate_rtx_1 (&op0, old, new, flags);
+      valid_ops &= propagate_rtx_1 (&op1, old, new, flags);
+      valid_ops &= propagate_rtx_1 (&op2, old, new, flags);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1) && op2 == XEXP (x, 2))
 	return true;
       if (op_mode == VOIDmode)
@@ -298,7 +327,7 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
       if (code == SUBREG)
 	{
           op0 = XEXP (x, 0);
-	  valid_ops &= propagate_rtx_1 (&op0, old, new, can_appear);
+	  valid_ops &= propagate_rtx_1 (&op0, old, new, flags);
           if (op0 == XEXP (x, 0))
 	    return true;
 	  tem = simplify_gen_subreg (mode, op0, GET_MODE (SUBREG_REG (x)),
@@ -317,7 +346,8 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
 	    return true;
 
 	  op0 = new_op0 = targetm.delegitimize_address (op0);
-	  valid_ops &= propagate_rtx_1 (&new_op0, old, new, true);
+	  valid_ops &= propagate_rtx_1 (&new_op0, old, new,
+					flags | PR_CAN_APPEAR);
 
 	  /* Dismiss transformation that we do not want to carry on.  */
 	  if (!valid_ops
@@ -344,8 +374,8 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
 	  /* The only simplification we do attempts to remove references to op0
 	     or make it constant -- in both cases, op0's invalidity will not
 	     make the result invalid.  */
-	  propagate_rtx_1 (&op0, old, new, true);
-	  valid_ops &= propagate_rtx_1 (&op1, old, new, can_appear);
+	  propagate_rtx_1 (&op0, old, new, flags | PR_CAN_APPEAR);
+	  valid_ops &= propagate_rtx_1 (&op1, old, new, flags);
           if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	    return true;
 
@@ -387,6 +417,18 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
   return valid_ops || can_appear || CONSTANT_P (tem);
 }
 
+
+/* for_each_rtx traversal function that returns 1 if BODY points to
+   a non-constant mem.  */
+
+static int
+varying_mem_p (rtx *body, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x = *body;
+  return MEM_P (x) && !MEM_READONLY_P (x);
+}
+
+
 /* Replace all occurrences of OLD in X with NEW and try to simplify the
    resulting expression (in mode MODE).  Return a new expression if it is
    a constant, otherwise X.
@@ -400,14 +442,19 @@ propagate_rtx (rtx x, enum machine_mode mode, rtx old, rtx new)
 {
   rtx tem;
   bool collapsed;
+  int flags;
 
   if (REG_P (new) && REGNO (new) < FIRST_PSEUDO_REGISTER)
     return NULL_RTX;
 
-  new = copy_rtx (new);
+  flags = 0;
+  if (REG_P (new) || CONSTANT_P (new))
+    flags |= PR_CAN_APPEAR;
+  if (!for_each_rtx (&new, varying_mem_p, NULL))
+    flags |= PR_HANDLE_MEM;
 
   tem = x;
-  collapsed = propagate_rtx_1 (&tem, old, new, REG_P (new) || CONSTANT_P (new));
+  collapsed = propagate_rtx_1 (&tem, old, copy_rtx (new), flags);
   if (tem == x || !collapsed)
     return NULL_RTX;
 
@@ -521,16 +568,6 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
 }
 
 
-/* for_each_rtx traversal function that returns 1 if BODY points to
-   a non-constant mem.  */
-
-static int
-varying_mem_p (rtx *body, void *data ATTRIBUTE_UNUSED)
-{
-  rtx x = *body;
-  return MEM_P (x) && !MEM_READONLY_P (x);
-}
-
 /* Check if all uses in DEF_INSN can be used in TARGET_INSN.  This
    would require full computation of available expressions;
    we check only restricted conditions, see use_killed_between.  */
@@ -582,9 +619,7 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
 	}
     }
 
-  /* We don't do any analysis of memories or aliasing.  Reject any
-     instruction that involves references to non-constant memory.  */
-  return !for_each_rtx (&SET_SRC (def_set), varying_mem_p, NULL);
+  return true;
 }
 
 

@@ -1,3 +1,8 @@
+2008-07-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/35281
+	* gcc.target/i386/pr35281.c: New.
+
 2008-07-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Backport from mainline:
