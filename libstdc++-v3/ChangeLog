@@ -1,3 +1,11 @@
+2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
+	    Holger Hopp  <holger.hopp@sap.com>
+
+	* config/abi/pre/gnu.ver: Support char16_t and char32_t.
+	* testsuite/util/testsuite_abi.cc (check_version): Add
+	CXXABI_1.3.3 to known_versions.
+
+
 2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/vector (insert(iterator, _Tp&&), push_back(_Tp&&)):

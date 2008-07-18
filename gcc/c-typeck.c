@@ -4704,47 +4704,56 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 			 || typ1 == signed_char_type_node
 			 || typ1 == unsigned_char_type_node);
       bool wchar_array = !!comptypes (typ1, wchar_type_node);
-      if (char_array || wchar_array)
+      bool char16_array = !!comptypes (typ1, char16_type_node);
+      bool char32_array = !!comptypes (typ1, char32_type_node);
+
+      if (char_array || wchar_array || char16_array || char32_array)
 	{
 	  struct c_expr expr;
-	  bool char_string;
+	  tree typ2 = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)));
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  maybe_warn_string_init (type, expr);
-
-	  char_string
-	    = (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
-	       == char_type_node);
 
 	  if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
 			 TYPE_MAIN_VARIANT (type)))
 	    return inside_init;
 
-	  if (!wchar_array && !char_string)
+	  if (char_array)
 	    {
-	      error_init ("char-array initialized from wide string");
-	      return error_mark_node;
+	      if (typ2 != char_type_node)
+		{
+		  error_init ("char-array initialized from wide string");
+		  return error_mark_node;
+		}
 	    }
-	  if (char_string && !char_array)
+	  else
 	    {
-	      error_init ("wchar_t-array initialized from non-wide string");
-	      return error_mark_node;
+	      if (typ2 == char_type_node)
+		{
+		  error_init ("wide character array initialized from non-wide "
+			      "string");
+		  return error_mark_node;
+		}
+	      else if (!comptypes(typ1, typ2))
+		{
+		  error_init ("wide character array initialized from "
+			      "incompatible wide string");
+		  return error_mark_node;
+		}
 	    }
 
 	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != 0
 	      && TYPE_SIZE (type) != 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	      /* Subtract 1 (or sizeof (wchar_t))
+	      /* Subtract the size of a single (possibly wide) character
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
 	      && 0 > compare_tree_int (TYPE_SIZE_UNIT (type),
 				       TREE_STRING_LENGTH (inside_init)
-				       - ((TYPE_PRECISION (typ1)
-					   != TYPE_PRECISION (char_type_node))
-					  ? (TYPE_PRECISION (wchar_type_node)
-					     / BITS_PER_UNIT)
-					  : 1)))
+				       - (TYPE_PRECISION (typ1)
+					  / BITS_PER_UNIT)))
 	    pedwarn_init ("initializer-string for array of chars is too long");
 
 	  return inside_init;
@@ -6092,15 +6101,7 @@ set_nonincremental_init_from_string (tree str)
 
   gcc_assert (TREE_CODE (constructor_type) == ARRAY_TYPE);
 
-  if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (str)))
-      == TYPE_PRECISION (char_type_node))
-    wchar_bytes = 1;
-  else
-    {
-      gcc_assert (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (str)))
-		  == TYPE_PRECISION (wchar_type_node));
-      wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
-    }
+  wchar_bytes = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (str))) / BITS_PER_UNIT;
   charwidth = TYPE_PRECISION (char_type_node);
   type = TREE_TYPE (constructor_type);
   p = TREE_STRING_POINTER (str);
