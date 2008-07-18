@@ -1,0 +1,3 @@
+# to be used in libobjc for libobjc_gc
+
+thread_libs_and_flags = @THREADLIBS@ @extra_ldflags_libgc@
