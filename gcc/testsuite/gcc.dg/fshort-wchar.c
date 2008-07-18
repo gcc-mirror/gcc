@@ -2,6 +2,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-fshort-wchar" } */
+/* { dg-options "-fshort-wchar -Wl,--no-wchar-size-warning" { target arm*-*-*eabi } } */
 
 /* Source: Neil Booth, 10 Dec 2002.
 
