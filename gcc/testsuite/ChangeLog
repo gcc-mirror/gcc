@@ -1,3 +1,10 @@
+2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
+
+	* g++.dg/ext/utf-array.C: Fix broken merge/checkin.
+	* g++.dg/ext/utf-array-short-wchar.C: Idem
+	* gcc.dg/utf-array.c: Idem
+	* gcc.dg/utf-array-short-wchar.c: Idem
+
 2008-07-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/fshort-wchar.c: Use -Wl,--no-wchar-size-warning on
@@ -12,6 +19,13 @@
 
 	PR c++/36407
 	* g++.dg/conversion/op5.C: New testcase.
+
+2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
+
+	* g++.dg/ext/utf-array.C: Fix broken merge/checkin.
+	* g++.dg/ext/utf-array-short-wchar.C: Idem
+	* gcc.dg/utf-array.c: Idem
+	* gcc.dg/utf-array-short-wchar.c: Idem
 
 2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
 
