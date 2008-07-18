@@ -1,3 +1,15 @@
+2008-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36786
+	* config/i386/i386.md (x86_64_shift_adj_1): Rename from
+	x86_64_shift_adj.
+	(x86_64_shift_adj_2): New expander.
+	(x86_64_shift_adj_3): Ditto.
+	* config/i386/i386.c (ix86_split_ashr): Use gen_x86_64_shift_adj_3
+	to split TImode operands.
+	(ix86_split_ashl): Use gen_x86_64_shift_adj_2 to split TImode operands.
+	(ix86_split_lshr): Ditto.
+
 2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
 
 	* c-common.c (c_stddef_cpp_builtins): Define __CHAR16_TYPE__
@@ -107,8 +119,7 @@
 	* cfg.c (dump_reg_info): Avoid C++ keywords.
 	* dwarf2asm.c (dw2_force_const_mem,
 	dw2_asm_output_encoded_addr_rtx): Likewise.
-	* except.c (gen_eh_region, add_action_record, output_ttype):
-	Likewise.
+	* except.c (gen_eh_region, add_action_record, output_ttype): Likewise.
 	* expmed.c (expand_shift): Likewise.
 	* global.c (find_reg): Likewise.
 	* graph.c (draw_edge): Likewise.
@@ -209,11 +220,9 @@
 	* caller-save.c (insert_restore, insert_save, insert_one_insn):
 	Likewise.
 	* combine.c (subst, simplify_set, make_extraction,
-	make_compound_operation, known_cond, simplify_shift_const_1):
-	Likewise.
+	make_compound_operation, known_cond, simplify_shift_const_1): Likewise.
 	* cse.c (make_regs_eqv, merge_equiv_classes, validate_canon_reg,
-	fold_rtx, equiv_constant, cse_insn, cse_process_notes_1):
-	Likewise.
+	fold_rtx, equiv_constant, cse_insn, cse_process_notes_1): Likewise.
 
 2008-07-15  Richard Guenther  <rguenther@suse.de>
 
@@ -317,8 +326,7 @@
 
 	* tree-ssa-sccvn.c (pre_info): Remove.
 	(switch_to_PRE_table): Likewise.
-	(free_scc_vn): Do not clear SSA_NAME_VALUE.
-	Do not free pre_info.
+	(free_scc_vn): Do not clear SSA_NAME_VALUE.  Do not free pre_info.
 	(set_hashtable_value_ids): Do not create value-ids for the
 	optimistic tables.
 	(run_scc_vn): Remove double test.  Remove bogus special-case
@@ -340,8 +348,7 @@
 
 2008-07-14  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-pre.c (insert_into_preds_of_block): Do not call
-	convert.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Do not call convert.
 
 2008-07-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -371,8 +378,7 @@
 
 2008-07-13  Daniel Berlin  <dberlin@dberlin.org>
 
-	* tree-ssa-pre.c (fully_constant_expression): Add fold_convert
-	calls.
+	* tree-ssa-pre.c (fully_constant_expression): Add fold_convert calls.
 	(create_expression_by_pieces): Fix typo.
 	(do_regular_insertion): Use debug counter here too.
 
@@ -503,8 +509,7 @@
 
 2008-07-10  Daniel Berlin  <dberlin@dberlin.org>
 
-	* tree-ssa-pre.c (create_expression_by_pieces): Add fold_convert
-	calls.
+	* tree-ssa-pre.c (create_expression_by_pieces): Add fold_convert calls.
 	(eliminate): Ditto.
 	(execute_pre): Call loop_optimizer_finalize in early exit.
 
@@ -684,8 +689,7 @@
 
 2008-07-08  Jakub Jelinek  <jakub@redhat.com>
 
-	* tree-sra.c (sra_build_assignment): Handle CONVERT_EXPR_P
-	dst.
+	* tree-sra.c (sra_build_assignment): Handle CONVERT_EXPR_P dst.
 
 2008-07-05  Daniel Berlin  <dberlin@dberlin.org>
 	
@@ -693,7 +697,7 @@
 	Fix PR tree-optimization/35286
 	Fix PR tree-optimization/35287
 	* Makefile.in (OBJS-common): Remove tree-vn.o.
-	tree-vn.o: Remove.
+	(tree-vn.o): Remove.
 	* dbgcnt.def: Add treepre_insert debug counter.
 	* gcc/tree-flow.h (add_to_value): Updated for other changes.
 	(debug_value_expressions): Ditto.
@@ -731,23 +735,19 @@
 	(value_id_constant_p): Ditto.
 	(vn_reference_compute_hash): De-staticify.
 	(copy_reference_ops_from_ref): Don't use get_callee_fndecl.
-	Disable some code with a FIXME.
-	Remove VALUE_HANDLE use.
-	(valueize_refs): Update opcode if it changes from ssa name to
-	constant.
+	Disable some code with a FIXME.  Remove VALUE_HANDLE use.
+	(valueize_refs): Update opcode if it changes from ssa name to constant.
 	(vn_reference_lookup_1): Add new argument.
 	(vn_reference_lookup):  Ditto.
 	(vn_reference_lookup_pieces): New function.
-	(vn_reference_insert): Add return type. Modify to deal with value
-	ids.
+	(vn_reference_insert): Add return type. Modify to deal with value ids.
 	(vn_reference_insert_pieces):  New function.
 	(vn_nary_op_compute_hash): De-staticify.
 	(vn_nary_op_eq): Ditto.
 	(vn_nary_op_lookup_pieces): New function.
 	(vn_nary_op_lookup): Add new argument.  
 	(vn_nary_op_insert_pieces): New function.
-	(vn_nary_op_insert): Add return type. Modify to deal with value
-	ids.
+	(vn_nary_op_insert): Add return type. Modify to deal with value ids.
 	(vn_phi_insert): Ditto.
 	(visit_unary_op): Update for callee changes.
 	(visit_binary_op): Ditto.
@@ -827,17 +827,16 @@
 
 2008-07-07  Fernando Pereira <fernando@cs.ucla.edu>
 
-        * tree-ssa-structalias.c (compute_points_to_sets): Add call to
-        dump_constraint_graph.
-        (dump_constraint_edge): New function.
-        (dump_constraint_graph): New function.
-        (debug_constraint_graph): New function.
-        (dump_constraint): Removed useless comparison.
-        * tree-ssa-structalias.h (dump_constraint_edge): Declare.
-        (dump_constraint_graph): Declare.
-        (debug_constraint_graph): Declare.
-        * tree-dump.c (struct dump_option_value_info): Declare
-        TDF_GRAPH.
+	* tree-ssa-structalias.c (compute_points_to_sets): Add call to
+	dump_constraint_graph.
+	(dump_constraint_edge): New function.
+	(dump_constraint_graph): New function.
+	(debug_constraint_graph): New function.
+	(dump_constraint): Removed useless comparison.
+	* tree-ssa-structalias.h (dump_constraint_edge): Declare.
+	(dump_constraint_graph): Declare.
+	(debug_constraint_graph): Declare.
+	* tree-dump.c (struct dump_option_value_info): Declare TDF_GRAPH.
 
 2008-07-07  Kai Tietz  <kai.tietz@onevision.com>
 
@@ -902,8 +901,7 @@
 
 2008-07-07  Daniel Jacobowitz  <dan@codesourcery.com>
 
-	* function.c (assign_parm_remove_parallels): Check mode of
-	entry_parm.
+	* function.c (assign_parm_remove_parallels): Check mode of entry_parm.
 	(assign_parm_setup_block_p): Also check mode of entry_parm.
 
 2008-07-07  Richard Guenther  <rguenther@suse.de>
@@ -1073,14 +1071,13 @@
 
 2008-07-04  Roger Sayle  <roger@eyesopen.com>
 
-	* config/rs6000/host-darwin.c (darwin_rs6000_extra_siganls): Cast
+	* config/rs6000/host-darwin.c (darwin_rs6000_extra_signals): Cast
 	the "void*" result of xmalloc to "char*" to fix bootstrap breakage.
 
 2008-07-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/36684
-	* config/sh/sh.h (OVERRIDE_OPTIONS): Disable -fschedule-insns
-	for PIC.
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Disable -fschedule-insns for PIC.
 
 2008-07-04  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1125,8 +1122,7 @@
 	Likewise.
 	* ggc-common.c (hash_descriptor, eq_descriptor, hash_ptr, eq_ptr,
 	loc_descriptor, ggc_prune_ptr, ggc_free_overhead,
-	final_cmp_statistic, cmp_statistic, dump_ggc_loc_statistics):
-	Likewise.
+	final_cmp_statistic, cmp_statistic, dump_ggc_loc_statistics): Likewise.
 	* varray.c (hash_descriptor, eq_descriptor, varray_descriptor):
 	Likewise.
 
