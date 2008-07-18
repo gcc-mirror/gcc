@@ -114,9 +114,11 @@ io_kind;
    following enum makes things much more readable.  We also start
    values off at one instead of zero.  */
 
+/* FIXME: This macro is temporary until we convert everything.  */
+#define try gfc_try
 typedef enum
 { SUCCESS = 1, FAILURE }
-try;
+gfc_try;
 
 /* This is returned by gfc_notification_std to know if, given the flags
    that were given (-std=, -pedantic) we should issue an error, a warning
@@ -625,7 +627,9 @@ typedef struct
   ENUM_BITFIELD (save_state) save:2;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
-    protected:1,		/* Symbol has been marked as protected.  */
+    /* FIXME: This macro is temporary until we convert everything.  */
+#define protected is_protected
+    is_protected:1,		/* Symbol has been marked as protected.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
     use_only:1,			/* Symbol has been use-associated, with ONLY.  */
     use_rename:1,		/* Symbol has been use-associated and renamed.  */
@@ -980,13 +984,14 @@ gfc_interface;
 
 #define gfc_get_interface() XCNEW (gfc_interface)
 
-
+/* FIXME: This macro is temporary until we convert everything.  */
+#define operator op
 /* User operator nodes.  These are like stripped down symbols.  */
 typedef struct
 {
   const char *name;
 
-  gfc_interface *operator;
+  gfc_interface *op;
   struct gfc_namespace *ns;
   gfc_access access;
 }
@@ -1052,7 +1057,9 @@ typedef struct gfc_symbol
      the old symbol.  */
 
   struct gfc_symbol *old_symbol, *tlink;
-  unsigned mark:1, new:1;
+  /* FIXME: This macro is temporary until we convert everything.  */
+#define new gfc_new
+  unsigned mark:1, gfc_new:1;
   /* Nonzero if all equivalences associated with this symbol have been
      processed.  */
   unsigned equiv_built:1;

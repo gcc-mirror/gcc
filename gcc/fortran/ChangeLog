@@ -1,3 +1,8 @@
+2008-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arith.c (eval_type_intrinsic0): Avoid C++ keywords.
+	* gfortran.h (try, protected, operator, new): Likewise.
+
 2008-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36825
