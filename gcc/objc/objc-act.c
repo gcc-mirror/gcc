@@ -617,19 +617,19 @@ lookup_protocol_in_reflist (tree rproto_list, tree lproto)
 }
 
 void
-objc_start_class_interface (tree class, tree super_class, tree protos)
+objc_start_class_interface (tree klass, tree super_class, tree protos)
 {
   objc_interface_context
     = objc_ivar_context
-    = start_class (CLASS_INTERFACE_TYPE, class, super_class, protos);
+    = start_class (CLASS_INTERFACE_TYPE, klass, super_class, protos);
   objc_public_flag = 0;
 }
 
 void
-objc_start_category_interface (tree class, tree categ, tree protos)
+objc_start_category_interface (tree klass, tree categ, tree protos)
 {
   objc_interface_context
-    = start_class (CATEGORY_INTERFACE_TYPE, class, categ, protos);
+    = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos);
   objc_ivar_chain
     = continue_class (objc_interface_context);
 }
@@ -656,19 +656,19 @@ objc_finish_interface (void)
 }
 
 void
-objc_start_class_implementation (tree class, tree super_class)
+objc_start_class_implementation (tree klass, tree super_class)
 {
   objc_implementation_context
     = objc_ivar_context
-    = start_class (CLASS_IMPLEMENTATION_TYPE, class, super_class, NULL_TREE);
+    = start_class (CLASS_IMPLEMENTATION_TYPE, klass, super_class, NULL_TREE);
   objc_public_flag = 0;
 }
 
 void
-objc_start_category_implementation (tree class, tree categ)
+objc_start_category_implementation (tree klass, tree categ)
 {
   objc_implementation_context
-    = start_class (CATEGORY_IMPLEMENTATION_TYPE, class, categ, NULL_TREE);
+    = start_class (CATEGORY_IMPLEMENTATION_TYPE, klass, categ, NULL_TREE);
   objc_ivar_chain
     = continue_class (objc_implementation_context);
 }
@@ -779,13 +779,13 @@ objc_is_class_id (tree type)
   return OBJC_TYPE_NAME (type) == objc_class_id;
 }
 
-/* Construct a C struct with same name as CLASS, a base struct with tag
+/* Construct a C struct with same name as KLASS, a base struct with tag
    SUPER_NAME (if any), and FIELDS indicated.  */
 
 static tree
-objc_build_struct (tree class, tree fields, tree super_name)
+objc_build_struct (tree klass, tree fields, tree super_name)
 {
-  tree name = CLASS_NAME (class);
+  tree name = CLASS_NAME (klass);
   tree s = start_struct (RECORD_TYPE, name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
   tree t, objc_info = NULL_TREE;
@@ -845,7 +845,7 @@ objc_build_struct (tree class, tree fields, tree super_name)
 
   /* Point the struct at its related Objective-C class.  */
   INIT_TYPE_OBJC_INFO (s);
-  TYPE_OBJC_INTERFACE (s) = class;
+  TYPE_OBJC_INTERFACE (s) = klass;
 
   s = finish_struct (s, fields, NULL_TREE);
 
@@ -854,14 +854,14 @@ objc_build_struct (tree class, tree fields, tree super_name)
     {
       TYPE_OBJC_INFO (t) = TREE_VALUE (objc_info);
       /* Replace the IDENTIFIER_NODE with an actual @interface.  */
-      TYPE_OBJC_INTERFACE (t) = class;
+      TYPE_OBJC_INTERFACE (t) = klass;
     }
 
   /* Use TYPE_BINFO structures to point at the super class, if any.  */
   objc_xref_basetypes (s, super);
 
   /* Mark this struct as a class template.  */
-  CLASS_STATIC_TEMPLATE (class) = s;
+  CLASS_STATIC_TEMPLATE (klass) = s;
 
   return s;
 }
@@ -2418,7 +2418,7 @@ static void
 generate_static_references (void)
 {
   tree decls = NULL_TREE, expr = NULL_TREE;
-  tree class_name, class, decl, initlist;
+  tree class_name, klass, decl, initlist;
   tree cl_chain, in_chain, type
     = build_array_type (build_pointer_type (void_type_node), NULL_TREE);
   int num_inst, num_class;
@@ -2437,8 +2437,8 @@ generate_static_references (void)
       decl = start_var_decl (type, buf);
 
       /* Output {class_name, ...}.  */
-      class = TREE_VALUE (cl_chain);
-      class_name = get_objc_string_decl (OBJC_TYPE_NAME (class), class_names);
+      klass = TREE_VALUE (cl_chain);
+      class_name = get_objc_string_decl (OBJC_TYPE_NAME (klass), class_names);
       initlist = build_tree_list (NULL_TREE,
 				  build_unary_op (ADDR_EXPR, class_name, 1));
 
@@ -4102,13 +4102,13 @@ build_objc_exception_stuff (void)
    };  */
 
 static void
-build_private_template (tree class)
+build_private_template (tree klass)
 {
-  if (!CLASS_STATIC_TEMPLATE (class))
+  if (!CLASS_STATIC_TEMPLATE (klass))
     {
-      tree record = objc_build_struct (class,
-				       get_class_ivars (class, false),
-				       CLASS_SUPER_NAME (class));
+      tree record = objc_build_struct (klass,
+				       get_class_ivars (klass, false),
+				       CLASS_SUPER_NAME (klass));
 
       /* Set the TREE_USED bit for this struct, so that stab generator
 	 can emit stabs for this struct type.  */
@@ -5646,9 +5646,9 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
 /* Retrieve category interface CAT_NAME (if any) associated with CLASS.  */
 
 static inline tree
-lookup_category (tree class, tree cat_name)
+lookup_category (tree klass, tree cat_name)
 {
-  tree category = CLASS_CATEGORY_LIST (class);
+  tree category = CLASS_CATEGORY_LIST (klass);
 
   while (category && CLASS_SUPER_NAME (category) != cat_name)
     category = CLASS_CATEGORY_LIST (category);
@@ -6911,24 +6911,24 @@ add_method_to_hash_list (hash *hash_list, tree method)
 }
 
 static tree
-objc_add_method (tree class, tree method, int is_class)
+objc_add_method (tree klass, tree method, int is_class)
 {
   tree mth;
 
   if (!(mth = lookup_method (is_class
-			     ? CLASS_CLS_METHODS (class)
-			     : CLASS_NST_METHODS (class), method)))
+			     ? CLASS_CLS_METHODS (klass)
+			     : CLASS_NST_METHODS (klass), method)))
     {
       /* put method on list in reverse order */
       if (is_class)
 	{
-	  TREE_CHAIN (method) = CLASS_CLS_METHODS (class);
-	  CLASS_CLS_METHODS (class) = method;
+	  TREE_CHAIN (method) = CLASS_CLS_METHODS (klass);
+	  CLASS_CLS_METHODS (klass) = method;
 	}
       else
 	{
-	  TREE_CHAIN (method) = CLASS_NST_METHODS (class);
-	  CLASS_NST_METHODS (class) = method;
+	  TREE_CHAIN (method) = CLASS_NST_METHODS (klass);
+	  CLASS_NST_METHODS (klass) = method;
 	}
     }
   else
@@ -6938,8 +6938,8 @@ objc_add_method (tree class, tree method, int is_class)
 	 and/or return types. We do not do this for @implementations, because
 	 C/C++ will do it for us (i.e., there will be duplicate function
 	 definition errors).  */
-      if ((TREE_CODE (class) == CLASS_INTERFACE_TYPE
-	   || TREE_CODE (class) == CATEGORY_INTERFACE_TYPE)
+      if ((TREE_CODE (klass) == CLASS_INTERFACE_TYPE
+	   || TREE_CODE (klass) == CATEGORY_INTERFACE_TYPE)
 	  && !comp_proto_with_proto (method, mth, 1))
 	error ("duplicate declaration of method %<%c%s%>",
 		is_class ? '+' : '-',
@@ -6957,12 +6957,12 @@ objc_add_method (tree class, tree method, int is_class)
 	 instance methods listed in @protocol declarations to
 	 the class hash table, on the assumption that @protocols
 	 may be adopted by root classes or categories.  */
-      if (TREE_CODE (class) == CATEGORY_INTERFACE_TYPE
-	  || TREE_CODE (class) == CATEGORY_IMPLEMENTATION_TYPE)
-	class = lookup_interface (CLASS_NAME (class));
+      if (TREE_CODE (klass) == CATEGORY_INTERFACE_TYPE
+	  || TREE_CODE (klass) == CATEGORY_IMPLEMENTATION_TYPE)
+	klass = lookup_interface (CLASS_NAME (klass));
 
-      if (TREE_CODE (class) == PROTOCOL_INTERFACE_TYPE
-	  || !CLASS_SUPER_NAME (class))
+      if (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE
+	  || !CLASS_SUPER_NAME (klass))
 	add_method_to_hash_list (cls_method_hash_list, method);
     }
 
@@ -6995,31 +6995,31 @@ add_class (tree class_name, tree name)
 }
 
 static void
-add_category (tree class, tree category)
+add_category (tree klass, tree category)
 {
   /* Put categories on list in reverse order.  */
-  tree cat = lookup_category (class, CLASS_SUPER_NAME (category));
+  tree cat = lookup_category (klass, CLASS_SUPER_NAME (category));
 
   if (cat)
     {
       warning (0, "duplicate interface declaration for category %<%s(%s)%>",
-	       IDENTIFIER_POINTER (CLASS_NAME (class)),
+	       IDENTIFIER_POINTER (CLASS_NAME (klass)),
 	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (category)));
     }
   else
     {
-      CLASS_CATEGORY_LIST (category) = CLASS_CATEGORY_LIST (class);
-      CLASS_CATEGORY_LIST (class) = category;
+      CLASS_CATEGORY_LIST (category) = CLASS_CATEGORY_LIST (klass);
+      CLASS_CATEGORY_LIST (klass) = category;
     }
 }
 
 /* Called after parsing each instance variable declaration. Necessary to
    preserve typedefs and implement public/private...
 
-   PUBLIC is 1 for public, 0 for protected, and 2 for private.  */
+   VISIBILITY is 1 for public, 0 for protected, and 2 for private.  */
 
 static tree
-add_instance_variable (tree class, int public, tree field_decl)
+add_instance_variable (tree klass, int visibility, tree field_decl)
 {
   tree field_type = TREE_TYPE (field_decl);
   const char *ivar_name = DECL_NAME (field_decl)
@@ -7032,7 +7032,7 @@ add_instance_variable (tree class, int public, tree field_decl)
       error ("illegal reference type specified for instance variable %qs",
 	     ivar_name);
       /* Return class as is without adding this ivar.  */
-      return class;
+      return klass;
     }
 #endif
 
@@ -7042,7 +7042,7 @@ add_instance_variable (tree class, int public, tree field_decl)
     {
       error ("instance variable %qs has unknown size", ivar_name);
       /* Return class as is without adding this ivar.  */
-      return class;
+      return klass;
     }
 
 #ifdef OBJCPLUS
@@ -7088,7 +7088,7 @@ add_instance_variable (tree class, int public, tree field_decl)
 		     "for instance variable %qs",
 		     type_name, ivar_name);
 	      /* Return class as is without adding this ivar.  */
-	      return class;
+	      return klass;
 	    }
 
 	  /* User-defined constructors and destructors are not known to Obj-C
@@ -7109,7 +7109,7 @@ add_instance_variable (tree class, int public, tree field_decl)
 #endif
 
   /* Overload the public attribute, it is not used for FIELD_DECLs.  */
-  switch (public)
+  switch (visibility)
     {
     case 0:
       TREE_PUBLIC (field_decl) = 0;
@@ -7131,9 +7131,9 @@ add_instance_variable (tree class, int public, tree field_decl)
 
     }
 
-  CLASS_RAW_IVARS (class) = chainon (CLASS_RAW_IVARS (class), field_decl);
+  CLASS_RAW_IVARS (klass) = chainon (CLASS_RAW_IVARS (klass), field_decl);
 
-  return class;
+  return klass;
 }
 
 static tree
@@ -7176,16 +7176,16 @@ objc_is_public (tree expr, tree identifier)
     {
       if (TYPE_HAS_OBJC_INFO (basetype) && TYPE_OBJC_INTERFACE (basetype))
 	{
-	  tree class = lookup_interface (OBJC_TYPE_NAME (basetype));
+	  tree klass = lookup_interface (OBJC_TYPE_NAME (basetype));
 
-	  if (!class)
+	  if (!klass)
 	    {
 	      error ("cannot find interface declaration for %qs",
 		     IDENTIFIER_POINTER (OBJC_TYPE_NAME (basetype)));
 	      return 0;
 	    }
 
-	  if ((decl = is_ivar (get_class_ivars (class, true), identifier)))
+	  if ((decl = is_ivar (get_class_ivars (klass, true), identifier)))
 	    {
 	      if (TREE_PUBLIC (decl))
 		return 1;
@@ -7206,13 +7206,13 @@ objc_is_public (tree expr, tree identifier)
 		  if (basetype == curtype
 		      || DERIVED_FROM_P (basetype, curtype))
 		    {
-		      int private = is_private (decl);
+		      int priv = is_private (decl);
 
-		      if (private)
+		      if (priv)
 			error ("instance variable %qs is declared private",
 			       IDENTIFIER_POINTER (DECL_NAME (decl)));
 
-		      return !private;
+		      return !priv;
 		    }
 		}
 
@@ -7272,21 +7272,21 @@ check_methods (tree chain, tree list, int mtype)
     return first;
 }
 
-/* Check if CLASS, or its superclasses, explicitly conforms to PROTOCOL.  */
+/* Check if KLASS, or its superclasses, explicitly conforms to PROTOCOL.  */
 
 static int
-conforms_to_protocol (tree class, tree protocol)
+conforms_to_protocol (tree klass, tree protocol)
 {
    if (TREE_CODE (protocol) == PROTOCOL_INTERFACE_TYPE)
      {
-       tree p = CLASS_PROTOCOL_LIST (class);
+       tree p = CLASS_PROTOCOL_LIST (klass);
        while (p && TREE_VALUE (p) != protocol)
 	 p = TREE_CHAIN (p);
 
        if (!p)
 	 {
-	   tree super = (CLASS_SUPER_NAME (class)
-			 ? lookup_interface (CLASS_SUPER_NAME (class))
+	   tree super = (CLASS_SUPER_NAME (klass)
+			 ? lookup_interface (CLASS_SUPER_NAME (klass))
 			 : NULL_TREE);
 	   int tmp = super ? conforms_to_protocol (super, protocol) : 0;
 	   if (!tmp)
@@ -7440,7 +7440,7 @@ static tree
 start_class (enum tree_code code, tree class_name, tree super_name,
 	     tree protocol_list)
 {
-  tree class, decl;
+  tree klass, decl;
 
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
@@ -7456,8 +7456,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       objc_implementation_context = NULL_TREE;
     }
 
-  class = make_node (code);
-  TYPE_LANG_SLOT_1 (class) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
+  klass = make_node (code);
+  TYPE_LANG_SLOT_1 (klass) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
 
   /* Check for existence of the super class, if one was specified.  Note
      that we must have seen an @interface, not just a @class.  If we
@@ -7478,9 +7478,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	super_name = super;
     }
 
-  CLASS_NAME (class) = class_name;
-  CLASS_SUPER_NAME (class) = super_name;
-  CLASS_CLS_METHODS (class) = NULL_TREE;
+  CLASS_NAME (klass) = class_name;
+  CLASS_SUPER_NAME (klass) = super_name;
+  CLASS_CLS_METHODS (klass) = NULL_TREE;
 
   if (! objc_is_class_name (class_name)
       && (decl = lookup_name (class_name)))
@@ -7510,7 +7510,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       /* Reset for multiple classes per file.  */
       method_slot = 0;
 
-      objc_implementation_context = class;
+      objc_implementation_context = klass;
 
       /* Lookup the interface for this implementation.  */
 
@@ -7553,10 +7553,10 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 #endif
         IDENTIFIER_POINTER (class_name));
       else
-        add_class (class, class_name);
+        add_class (klass, class_name);
 
       if (protocol_list)
-	CLASS_PROTOCOL_LIST (class)
+	CLASS_PROTOCOL_LIST (klass)
 	  = lookup_and_install_protocols (protocol_list);
     }
 
@@ -7575,10 +7575,10 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  exit (FATAL_EXIT_CODE);
 	}
       else
-        add_category (class_category_is_assoc_with, class);
+        add_category (class_category_is_assoc_with, klass);
 
       if (protocol_list)
-	CLASS_PROTOCOL_LIST (class)
+	CLASS_PROTOCOL_LIST (klass)
 	  = lookup_and_install_protocols (protocol_list);
     }
 
@@ -7587,7 +7587,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       /* Reset for multiple classes per file.  */
       method_slot = 0;
 
-      objc_implementation_context = class;
+      objc_implementation_context = klass;
 
       /* For a category, class_name is really the name of the class that
 	 the following set of methods will be associated with.  We must
@@ -7600,21 +7600,21 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  exit (FATAL_EXIT_CODE);
         }
     }
-  return class;
+  return klass;
 }
 
 static tree
-continue_class (tree class)
+continue_class (tree klass)
 {
-  if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE
-      || TREE_CODE (class) == CATEGORY_IMPLEMENTATION_TYPE)
+  if (TREE_CODE (klass) == CLASS_IMPLEMENTATION_TYPE
+      || TREE_CODE (klass) == CATEGORY_IMPLEMENTATION_TYPE)
     {
       struct imp_entry *imp_entry;
 
       /* Check consistency of the instance variables.  */
 
-      if (CLASS_RAW_IVARS (class))
-	check_ivars (implementation_template, class);
+      if (CLASS_RAW_IVARS (klass))
+	check_ivars (implementation_template, klass);
 
       /* code generation */
 
@@ -7629,7 +7629,7 @@ continue_class (tree class)
       imp_entry = (struct imp_entry *) ggc_alloc (sizeof (struct imp_entry));
 
       imp_entry->next = imp_list;
-      imp_entry->imp_context = class;
+      imp_entry->imp_context = klass;
       imp_entry->imp_template = implementation_template;
 
       synth_forward_declarations ();
@@ -7639,7 +7639,7 @@ continue_class (tree class)
 
       /* Append to front and increment count.  */
       imp_list = imp_entry;
-      if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
+      if (TREE_CODE (klass) == CLASS_IMPLEMENTATION_TYPE)
 	imp_count++;
       else
 	cat_count++;
@@ -7651,13 +7651,13 @@ continue_class (tree class)
       return get_class_ivars (implementation_template, true);
     }
 
-  else if (TREE_CODE (class) == CLASS_INTERFACE_TYPE)
+  else if (TREE_CODE (klass) == CLASS_INTERFACE_TYPE)
     {
 #ifdef OBJCPLUS
       push_lang_context (lang_name_c);
 #endif /* OBJCPLUS */
 
-      build_private_template (class);
+      build_private_template (klass);
 
 #ifdef OBJCPLUS
       pop_lang_context ();
@@ -7673,9 +7673,9 @@ continue_class (tree class)
 /* This is called once we see the "@end" in an interface/implementation.  */
 
 static void
-finish_class (tree class)
+finish_class (tree klass)
 {
-  if (TREE_CODE (class) == CLASS_IMPLEMENTATION_TYPE)
+  if (TREE_CODE (klass) == CLASS_IMPLEMENTATION_TYPE)
     {
       /* All code generation is done in finish_objc.  */
 
@@ -7694,9 +7694,9 @@ finish_class (tree class)
 	}
     }
 
-  else if (TREE_CODE (class) == CATEGORY_IMPLEMENTATION_TYPE)
+  else if (TREE_CODE (klass) == CATEGORY_IMPLEMENTATION_TYPE)
     {
-      tree category = lookup_category (implementation_template, CLASS_SUPER_NAME (class));
+      tree category = lookup_category (implementation_template, CLASS_SUPER_NAME (klass));
 
       if (category)
 	{
