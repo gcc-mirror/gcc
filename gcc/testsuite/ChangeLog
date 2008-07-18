@@ -1,3 +1,8 @@
+2008-07-18  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/36407
+	* g++.dg/conversion/op5.C: New testcase.
+
 2008-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/35281

@@ -1,3 +1,9 @@
+2008-07-18  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/36407
+	* gcc/cp/call.c (convert_like_real): Don't take the error code path
+	  when a rvalue or base conversion has the bad_p field set.
+
 2008-07-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/34963
