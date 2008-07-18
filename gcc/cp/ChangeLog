@@ -1,3 +1,23 @@
+2008-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cvt.c (convert_to_void): Avoid C++ keywords.
+	* decl.c (walk_namespaces_r, wrapup_globals_for_namespace):
+	Likewise.
+	* friend.c (is_friend): Likewise.
+	* init.c (perform_member_init): Likewise.
+	* mangle.c (write_template_prefix, write_template_template_param):
+	Likewise.
+	* name-lookup.c (do_namespace_alias, do_using_directive,
+	parse_using_directive, ambiguous_decl, arg_assoc): Likewise.
+	* parser.c (cp_parser_template_id, cp_parser_namespace_definition,
+	cp_parser_objc_typename, cp_parser_objc_method_keyword_params):
+	Likewise.
+	* pt.c (is_specialization_of_friend, lookup_template_class,
+	push_tinst_level, instantiate_class_template,
+	tsubst_copy_and_build): Likewise.
+	* tree.c (add_stmt_to_compound): Likewise.
+	* typeck.c (finish_class_member_access_expr): Likewise.
+
 2008-07-17  Julian Brown  <julian@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 

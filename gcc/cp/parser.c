@@ -9890,7 +9890,7 @@ cp_parser_template_id (cp_parser *parser,
 		       bool is_declaration)
 {
   int i;
-  tree template;
+  tree templ;
   tree arguments;
   tree template_id;
   cp_token_position start_of_id = 0;
@@ -9945,14 +9945,14 @@ cp_parser_template_id (cp_parser *parser,
   /* Parse the template-name.  */
   is_identifier = false;
   token = cp_lexer_peek_token (parser->lexer);
-  template = cp_parser_template_name (parser, template_keyword_p,
-				      check_dependency_p,
-				      is_declaration,
-				      &is_identifier);
-  if (template == error_mark_node || is_identifier)
+  templ = cp_parser_template_name (parser, template_keyword_p,
+				   check_dependency_p,
+				   is_declaration,
+				   &is_identifier);
+  if (templ == error_mark_node || is_identifier)
     {
       pop_deferring_access_checks ();
-      return template;
+      return templ;
     }
 
   /* If we find the sequence `[:' after a template-name, it's probably
@@ -10015,10 +10015,10 @@ cp_parser_template_id (cp_parser *parser,
     }
 
   /* Build a representation of the specialization.  */
-  if (TREE_CODE (template) == IDENTIFIER_NODE)
-    template_id = build_min_nt (TEMPLATE_ID_EXPR, template, arguments);
-  else if (DECL_CLASS_TEMPLATE_P (template)
-	   || DECL_TEMPLATE_TEMPLATE_PARM_P (template))
+  if (TREE_CODE (templ) == IDENTIFIER_NODE)
+    template_id = build_min_nt (TEMPLATE_ID_EXPR, templ, arguments);
+  else if (DECL_CLASS_TEMPLATE_P (templ)
+	   || DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
       bool entering_scope;
       /* In "template <typename T> ... A<T>::", A<T> is the abstract A
@@ -10030,17 +10030,17 @@ cp_parser_template_id (cp_parser *parser,
 			&& cp_lexer_next_token_is (parser->lexer,
 						   CPP_SCOPE));
       template_id
-	= finish_template_type (template, arguments, entering_scope);
+	= finish_template_type (templ, arguments, entering_scope);
     }
   else
     {
       /* If it's not a class-template or a template-template, it should be
 	 a function-template.  */
-      gcc_assert ((DECL_FUNCTION_TEMPLATE_P (template)
-		   || TREE_CODE (template) == OVERLOAD
-		   || BASELINK_P (template)));
+      gcc_assert ((DECL_FUNCTION_TEMPLATE_P (templ)
+		   || TREE_CODE (templ) == OVERLOAD
+		   || BASELINK_P (templ)));
 
-      template_id = lookup_template_function (template, arguments);
+      template_id = lookup_template_function (templ, arguments);
     }
 
   /* If parsing tentatively, replace the sequence of tokens that makes
@@ -11901,14 +11901,14 @@ cp_parser_namespace_definition (cp_parser* parser)
      followed by a strong using directive.  */
   if (is_inline)
     {
-      tree namespace = current_namespace;
+      tree name_space = current_namespace;
       /* Set up namespace association.  */
-      DECL_NAMESPACE_ASSOCIATIONS (namespace)
-	= tree_cons (CP_DECL_CONTEXT (namespace), NULL_TREE,
-		     DECL_NAMESPACE_ASSOCIATIONS (namespace));
+      DECL_NAMESPACE_ASSOCIATIONS (name_space)
+	= tree_cons (CP_DECL_CONTEXT (name_space), NULL_TREE,
+		     DECL_NAMESPACE_ASSOCIATIONS (name_space));
       /* Import the contents of the inline namespace.  */
       pop_namespace ();
-      do_using_directive (namespace);
+      do_using_directive (name_space);
       push_namespace (identifier);
     }
 
@@ -19169,7 +19169,7 @@ cp_parser_objc_protocol_qualifiers (cp_parser* parser)
 static tree
 cp_parser_objc_typename (cp_parser* parser)
 {
-  tree typename = NULL_TREE;
+  tree type_name = NULL_TREE;
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
@@ -19184,10 +19184,10 @@ cp_parser_objc_typename (cp_parser* parser)
 	cp_type = cp_parser_type_id (parser);
 
       cp_parser_require (parser, CPP_CLOSE_PAREN, "%<)%>");
-      typename = build_tree_list (proto_quals, cp_type);
+      type_name = build_tree_list (proto_quals, cp_type);
     }
 
-  return typename;
+  return type_name;
 }
 
 /* Check to see if TYPE refers to an Objective-C selector name.  */
@@ -19244,7 +19244,7 @@ cp_parser_objc_method_keyword_params (cp_parser* parser)
 
   while (cp_parser_objc_selector_p (token->type) || token->type == CPP_COLON)
     {
-      tree selector = NULL_TREE, typename, identifier;
+      tree selector = NULL_TREE, type_name, identifier;
 
       if (token->type != CPP_COLON)
 	selector = cp_parser_objc_selector (parser);
@@ -19256,13 +19256,13 @@ cp_parser_objc_method_keyword_params (cp_parser* parser)
 
       maybe_unary_selector_p = false;
       cp_parser_require (parser, CPP_COLON, "%<:%>");
-      typename = cp_parser_objc_typename (parser);
+      type_name = cp_parser_objc_typename (parser);
       identifier = cp_parser_identifier (parser);
 
       params
 	= chainon (params,
 		   objc_build_keyword_decl (selector,
-					    typename,
+					    type_name,
 					    identifier));
 
       token = cp_lexer_peek_token (parser->lexer);

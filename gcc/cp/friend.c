@@ -59,15 +59,15 @@ is_friend (tree type, tree supplicant)
 	      tree friends = FRIEND_DECLS (list);
 	      for (; friends ; friends = TREE_CHAIN (friends))
 		{
-		  tree friend = TREE_VALUE (friends);
+		  tree this_friend = TREE_VALUE (friends);
 
-		  if (friend == NULL_TREE)
+		  if (this_friend == NULL_TREE)
 		    continue;
 
-		  if (supplicant == friend)
+		  if (supplicant == this_friend)
 		    return 1;
 
-		  if (is_specialization_of_friend (supplicant, friend))
+		  if (is_specialization_of_friend (supplicant, this_friend))
 		    return 1;
 		}
 	      break;

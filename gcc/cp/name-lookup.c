@@ -3310,18 +3310,18 @@ namespace_ancestor (tree ns1, tree ns2)
 /* Process a namespace-alias declaration.  */
 
 void
-do_namespace_alias (tree alias, tree namespace)
+do_namespace_alias (tree alias, tree name_space)
 {
-  if (namespace == error_mark_node)
+  if (name_space == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (namespace) == NAMESPACE_DECL);
+  gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
 
-  namespace = ORIGINAL_NAMESPACE (namespace);
+  name_space = ORIGINAL_NAMESPACE (name_space);
 
   /* Build the alias.  */
   alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);
-  DECL_NAMESPACE_ALIAS (alias) = namespace;
+  DECL_NAMESPACE_ALIAS (alias) = name_space;
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
   pushdecl (alias);
@@ -3459,46 +3459,46 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
 /* Process a using-directive.  */
 
 void
-do_using_directive (tree namespace)
+do_using_directive (tree name_space)
 {
   tree context = NULL_TREE;
 
-  if (namespace == error_mark_node)
+  if (name_space == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (namespace) == NAMESPACE_DECL);
+  gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
 
   if (building_stmt_tree ())
-    add_stmt (build_stmt (USING_STMT, namespace));
-  namespace = ORIGINAL_NAMESPACE (namespace);
+    add_stmt (build_stmt (USING_STMT, name_space));
+  name_space = ORIGINAL_NAMESPACE (name_space);
 
   if (!toplevel_bindings_p ())
     {
-      push_using_directive (namespace);
+      push_using_directive (name_space);
       context = current_scope ();
     }
   else
     {
       /* direct usage */
-      add_using_namespace (current_namespace, namespace, 0);
+      add_using_namespace (current_namespace, name_space, 0);
       if (current_namespace != global_namespace)
 	context = current_namespace;
     }
 
   /* Emit debugging info.  */
   if (!processing_template_decl)
-    (*debug_hooks->imported_module_or_decl) (namespace, context);
+    (*debug_hooks->imported_module_or_decl) (name_space, context);
 }
 
 /* Deal with a using-directive seen by the parser.  Currently we only
    handle attributes here, since they cannot appear inside a template.  */
 
 void
-parse_using_directive (tree namespace, tree attribs)
+parse_using_directive (tree name_space, tree attribs)
 {
   tree a;
 
-  do_using_directive (namespace);
+  do_using_directive (name_space);
 
   for (a = attribs; a; a = TREE_CHAIN (a))
     {
@@ -3507,14 +3507,14 @@ parse_using_directive (tree namespace, tree attribs)
 	{
 	  if (!toplevel_bindings_p ())
 	    error ("strong using only meaningful at namespace scope");
-	  else if (namespace != error_mark_node)
+	  else if (name_space != error_mark_node)
 	    {
-	      if (!is_ancestor (current_namespace, namespace))
+	      if (!is_ancestor (current_namespace, name_space))
 		error ("current namespace %qD does not enclose strongly used namespace %qD",
-		       current_namespace, namespace);
-	      DECL_NAMESPACE_ASSOCIATIONS (namespace)
+		       current_namespace, name_space);
+	      DECL_NAMESPACE_ASSOCIATIONS (name_space)
 		= tree_cons (current_namespace, 0,
-			     DECL_NAMESPACE_ASSOCIATIONS (namespace));
+			     DECL_NAMESPACE_ASSOCIATIONS (name_space));
 	    }
 	}
       else
@@ -3603,25 +3603,25 @@ merge_functions (tree s1, tree s2)
 /* This should return an error not all definitions define functions.
    It is not an error if we find two functions with exactly the
    same signature, only if these are selected in overload resolution.
-   old is the current set of bindings, new the freshly-found binding.
+   old is the current set of bindings, new_binding the freshly-found binding.
    XXX Do we want to give *all* candidates in case of ambiguity?
    XXX In what way should I treat extern declarations?
    XXX I don't want to repeat the entire duplicate_decls here */
 
 static void
-ambiguous_decl (struct scope_binding *old, cxx_binding *new, int flags)
+ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
 {
   tree val, type;
   gcc_assert (old != NULL);
 
   /* Copy the type.  */
-  type = new->type;
+  type = new_binding->type;
   if (LOOKUP_NAMESPACES_ONLY (flags)
       || (type && hidden_name_p (type) && !(flags & LOOKUP_HIDDEN)))
     type = NULL_TREE;
 
   /* Copy the value.  */
-  val = new->value;
+  val = new_binding->value;
   if (val)
     {
       if (hidden_name_p (val) && !(flags & LOOKUP_HIDDEN))
@@ -4772,21 +4772,21 @@ arg_assoc (struct arg_lookup *k, tree n)
 	 If T is a template-id, its associated namespaces and classes
 	 are the namespace in which the template is defined; for
 	 member templates, the member template's class...  */
-      tree template = TREE_OPERAND (n, 0);
+      tree templ = TREE_OPERAND (n, 0);
       tree args = TREE_OPERAND (n, 1);
       tree ctx;
       int ix;
 
-      if (TREE_CODE (template) == COMPONENT_REF)
-	template = TREE_OPERAND (template, 1);
+      if (TREE_CODE (templ) == COMPONENT_REF)
+	templ = TREE_OPERAND (templ, 1);
 
       /* First, the template.  There may actually be more than one if
 	 this is an overloaded function template.  But, in that case,
 	 we only need the first; all the functions will be in the same
 	 namespace.  */
-      template = OVL_CURRENT (template);
+      templ = OVL_CURRENT (templ);
 
-      ctx = CP_DECL_CONTEXT (template);
+      ctx = CP_DECL_CONTEXT (templ);
 
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	{

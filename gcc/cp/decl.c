@@ -800,12 +800,12 @@ insert_block (tree block)
    itself, calling F for each.  The DATA is passed to F as well.  */
 
 static int
-walk_namespaces_r (tree namespace, walk_namespaces_fn f, void* data)
+walk_namespaces_r (tree name_space, walk_namespaces_fn f, void* data)
 {
   int result = 0;
-  tree current = NAMESPACE_LEVEL (namespace)->namespaces;
+  tree current = NAMESPACE_LEVEL (name_space)->namespaces;
 
-  result |= (*f) (namespace, data);
+  result |= (*f) (name_space, data);
 
   for (; current; current = TREE_CHAIN (current))
     result |= walk_namespaces_r (current, f, data);
@@ -827,9 +827,9 @@ walk_namespaces (walk_namespaces_fn f, void* data)
    wrapup_global_declarations for this NAMESPACE.  */
 
 int
-wrapup_globals_for_namespace (tree namespace, void* data)
+wrapup_globals_for_namespace (tree name_space, void* data)
 {
-  struct cp_binding_level *level = NAMESPACE_LEVEL (namespace);
+  struct cp_binding_level *level = NAMESPACE_LEVEL (name_space);
   VEC(tree,gc) *statics = level->static_decls;
   tree *vec = VEC_address (tree, statics);
   int len = VEC_length (tree, statics);
