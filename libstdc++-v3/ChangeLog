@@ -1,3 +1,8 @@
+2008-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_c_std): Avoid unused
+	variable warnings leading to spurious fails of the test.
+
 2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Adjust

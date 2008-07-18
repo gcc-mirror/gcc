@@ -687,7 +687,7 @@ proc check_v3_target_c_std { } {
 	puts $f "  int i = std::tr1::isnan(f);"
 	puts $f "  "
 	puts $f "  using std::wctomb;"
-	puts $f "  return 0;"
+	puts $f "  return i;"
 	puts $f "}" 
 	close $f
 
