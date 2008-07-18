@@ -938,7 +938,7 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	    {
 	      tree e;
 	      enum tree_code code;
-	      enum tree_code_class class;
+	      enum tree_code_class tclass;
 
 	      e = expr;
 	      /* We might like to warn about (say) "(int) f()", as the
@@ -955,10 +955,10 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 		e = TREE_OPERAND (e, 0);
 
 	      code = TREE_CODE (e);
-	      class = TREE_CODE_CLASS (code);
-	      if ((class == tcc_comparison
-		   || class == tcc_unary
-		   || (class == tcc_binary
+	      tclass = TREE_CODE_CLASS (code);
+	      if ((tclass == tcc_comparison
+		   || tclass == tcc_unary
+		   || (tclass == tcc_binary
 		       && !(code == MODIFY_EXPR
 			    || code == INIT_EXPR
 			    || code == PREDECREMENT_EXPR

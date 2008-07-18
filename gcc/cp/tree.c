@@ -2594,17 +2594,17 @@ stabilize_expr (tree exp, tree* initp)
   return exp;
 }
 
-/* Add NEW, an expression whose value we don't care about, after the
+/* Add NEW_EXPR, an expression whose value we don't care about, after the
    similar expression ORIG.  */
 
 tree
-add_stmt_to_compound (tree orig, tree new)
+add_stmt_to_compound (tree orig, tree new_expr)
 {
-  if (!new || !TREE_SIDE_EFFECTS (new))
+  if (!new_expr || !TREE_SIDE_EFFECTS (new_expr))
     return orig;
   if (!orig || !TREE_SIDE_EFFECTS (orig))
-    return new;
-  return build2 (COMPOUND_EXPR, void_type_node, orig, new);
+    return new_expr;
+  return build2 (COMPOUND_EXPR, void_type_node, orig, new_expr);
 }
 
 /* Like stabilize_expr, but for a call whose arguments we want to

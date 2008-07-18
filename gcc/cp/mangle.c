@@ -974,19 +974,19 @@ write_template_prefix (const tree node)
   tree type = DECL_P (node) ? TREE_TYPE (node) : node;
   tree context = CP_DECL_CONTEXT (decl);
   tree template_info;
-  tree template;
+  tree templ;
   tree substitution;
 
   MANGLE_TRACE_TREE ("template-prefix", node);
 
   /* Find the template decl.  */
   if (decl_is_template_id (decl, &template_info))
-    template = TI_TEMPLATE (template_info);
+    templ = TI_TEMPLATE (template_info);
   else
     {
       gcc_assert (CLASSTYPE_TEMPLATE_ID_P (type));
 
-      template = TYPE_TI_TEMPLATE (type);
+      templ = TYPE_TI_TEMPLATE (type);
     }
 
   /* For a member template, though, the template name for the
@@ -1012,21 +1012,21 @@ write_template_prefix (const tree node)
      substitution candidate by a TREE_LIST whose purpose is `Outer<int>'
      and whose value is `Outer<T>::Inner<U>'.  */
   if (TYPE_P (context))
-    substitution = build_tree_list (context, template);
+    substitution = build_tree_list (context, templ);
   else
-    substitution = template;
+    substitution = templ;
 
   if (find_substitution (substitution))
     return;
 
   /* In G++ 3.2, the name of the template template parameter was used.  */
-  if (TREE_CODE (TREE_TYPE (template)) == TEMPLATE_TEMPLATE_PARM
+  if (TREE_CODE (TREE_TYPE (templ)) == TEMPLATE_TEMPLATE_PARM
       && !abi_version_at_least (2))
     G.need_abi_warning = true;
 
-  if (TREE_CODE (TREE_TYPE (template)) == TEMPLATE_TEMPLATE_PARM
+  if (TREE_CODE (TREE_TYPE (templ)) == TEMPLATE_TEMPLATE_PARM
       && abi_version_at_least (2))
-    write_template_param (TREE_TYPE (template));
+    write_template_param (TREE_TYPE (templ));
   else
     {
       write_prefix (context);
@@ -2480,24 +2480,24 @@ write_template_param (const tree parm)
 static void
 write_template_template_param (const tree parm)
 {
-  tree template = NULL_TREE;
+  tree templ = NULL_TREE;
 
   /* PARM, a TEMPLATE_TEMPLATE_PARM, is an instantiation of the
      template template parameter.  The substitution candidate here is
      only the template.  */
   if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
     {
-      template
+      templ
 	= TI_TEMPLATE (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm));
-      if (find_substitution (template))
+      if (find_substitution (templ))
 	return;
     }
 
   /* <template-param> encodes only the template parameter position,
      not its template arguments, which is fine here.  */
   write_template_param (parm);
-  if (template)
-    add_substitution (template);
+  if (templ)
+    add_substitution (templ);
 }
 
 /* Non-terminal <substitution>.
