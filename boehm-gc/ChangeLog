@@ -1,3 +1,9 @@
+2008-07-18  Matthias Klose  <doko@ubuntu.com> 
+ 
+	* configure.ac (AC_CONFIG_FILES): Add threads.mk. 
+	* threads.mk.in: New. 
+	* Makefile.in, configure: Regenerate. 
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.

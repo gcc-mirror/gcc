@@ -16103,7 +16103,7 @@ fi
                     ac_config_headers="$ac_config_headers include/gc_config.h include/gc_ext_config.h"
 
 
-                    ac_config_files="$ac_config_files Makefile include/Makefile"
+                              ac_config_files="$ac_config_files Makefile include/Makefile threads.mk"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -17035,6 +17035,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
+  "threads.mk" ) CONFIG_FILES="$CONFIG_FILES threads.mk" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "libtool" ) CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;

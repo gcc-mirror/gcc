@@ -41,7 +41,7 @@ check_PROGRAMS = gctest$(EXEEXT)
 DIST_COMMON = $(srcdir)/../config.guess $(srcdir)/../config.sub \
 	ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/../mkinstalldirs $(srcdir)/../compile \
+	$(srcdir)/../mkinstalldirs $(srcdir)/threads.mk.in \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
@@ -62,8 +62,8 @@ DIST_COMMON = $(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
 	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../compile \
-	$(srcdir)/../ltmain.sh $(srcdir)/../config.guess \
-	$(srcdir)/../config.sub
+	$(srcdir)/../compile $(srcdir)/../ltmain.sh \
+	$(srcdir)/../config.guess $(srcdir)/../config.sub
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -82,7 +82,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 CONFIG_HEADER = $(top_builddir)/include/gc_config.h \
 	$(top_builddir)/include/gc_ext_config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = threads.mk
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @POWERPC_DARWIN_TRUE@am__objects_1 = powerpc_darwin_mach_dep.lo
@@ -387,6 +387,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+threads.mk: $(top_builddir)/config.status $(srcdir)/threads.mk.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
