@@ -3258,13 +3258,13 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
+  if (boundary > PREFERRED_STACK_BOUNDARY)
+    boundary = PREFERRED_STACK_BOUNDARY;
   locate->where_pad = where_pad;
   locate->boundary = boundary;
 
   /* Remember if the outgoing parameter requires extra alignment on the
      calling function side.  */
-  if (boundary > PREFERRED_STACK_BOUNDARY)
-    boundary = PREFERRED_STACK_BOUNDARY;
   if (crtl->stack_alignment_needed < boundary)
     crtl->stack_alignment_needed = boundary;
 
