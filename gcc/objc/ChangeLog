@@ -1,3 +1,13 @@
+2008-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc-act.c (objc_start_class_interface,
+	objc_start_category_interface, objc_start_class_implementation,
+	objc_start_category_implementation, objc_build_struct,
+	generate_static_references, build_private_template,
+	lookup_category, objc_add_method, add_category,
+	add_instance_variable, objc_is_public, conforms_to_protocol,
+	start_class, continue_class, finish_class): Avoid C++ keywords.
+
 2008-07-14  Jason Merrill  <jason@redhat.com>
 
 	PR objc++/36723
