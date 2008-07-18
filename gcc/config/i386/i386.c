@@ -5511,6 +5511,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   int indirect_p = 0;
   tree ptrtype;
   enum machine_mode nat_mode;
+  int arg_boundary;
 
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT || is_va_list_char_pointer (TREE_TYPE (valist)))
@@ -5709,13 +5710,21 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
   /* ... otherwise out of the overflow area.  */
 
+  /* When we align parameter on stack for caller, if the parameter
+     alignment is beyond PREFERRED_STACK_BOUNDARY, it will be
+     aligned at PREFERRED_STACK_BOUNDARY.  We will match callee
+     here with caller.  */
+  arg_boundary = FUNCTION_ARG_BOUNDARY (VOIDmode, type);
+  if ((unsigned int) arg_boundary > PREFERRED_STACK_BOUNDARY)
+     arg_boundary = PREFERRED_STACK_BOUNDARY;
+
   /* Care for on-stack alignment if needed.  */
-  if (FUNCTION_ARG_BOUNDARY (VOIDmode, type) <= 64
+  if (arg_boundary <= 64
       || integer_zerop (TYPE_SIZE (type)))
     t = ovf;
  else
     {
-      HOST_WIDE_INT align = FUNCTION_ARG_BOUNDARY (VOIDmode, type) / 8;
+      HOST_WIDE_INT align = arg_boundary / 8;
       t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), ovf,
 		  size_int (align - 1));
       t = fold_convert (sizetype, t);

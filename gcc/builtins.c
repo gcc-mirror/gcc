@@ -4775,7 +4775,16 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
     type = build_pointer_type (type);
 
   align = PARM_BOUNDARY / BITS_PER_UNIT;
-  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type) / BITS_PER_UNIT;
+  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+
+  /* When we align parameter on stack for caller, if the parameter
+     alignment is beyond PREFERRED_STACK_BOUNDARY, it will be
+     aligned at PREFERRED_STACK_BOUNDARY.  We will match callee
+     here with caller.  */
+  if (boundary > PREFERRED_STACK_BOUNDARY)
+    boundary = PREFERRED_STACK_BOUNDARY;
+
+  boundary /= BITS_PER_UNIT;
 
   /* Hoist the valist value into a temporary for the moment.  */
   valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
