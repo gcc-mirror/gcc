@@ -1,3 +1,9 @@
+2008-07-18  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/36407
+	* call.c (convert_like_real): Don't take the error code path
+	  when a rvalue or base conversion has the bad_p field set.
+
 2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
 
 	* rtti.c (emit_support_tinfos): Add char16_type_node and
