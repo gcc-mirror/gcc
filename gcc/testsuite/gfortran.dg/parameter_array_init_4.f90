@@ -15,10 +15,10 @@ character(kind=1,len=*), parameter :: str1(2) = [ 1_'Ac',1_'cc']
 character(kind=1,len=*), parameter :: str_s1 = 'Acc'
 
 CHARACTER (kind=4,len=*) MY_STRING4(1:3), my_string_s4
-PARAMETER ( MY_STRING4 = (/ "A" , "B", "C" /) )
-PARAMETER ( MY_STRING_S4 = "AB C" )
-character(kind=4,len=*), parameter :: str4(2) = [ 1_'Ac',1_'cc']
-character(kind=4,len=*), parameter :: str_s4 = 'Acc'
+PARAMETER ( MY_STRING4 = (/ 4_"A" , 4_"B", 4_"C" /) )
+PARAMETER ( MY_STRING_S4 = 4_"AB C" )
+character(kind=4,len=*), parameter :: str4(2) = [ 4_'Ac',4_'cc']
+character(kind=4,len=*), parameter :: str_s4 = 4_'Acc'
 
 if(len(MY_STRING)   /= 1) call abort()
 if(    MY_STRING(1) /= "A" &
