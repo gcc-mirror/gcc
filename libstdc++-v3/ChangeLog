@@ -5,7 +5,6 @@
 	* testsuite/util/testsuite_abi.cc (check_version): Add
 	CXXABI_1.3.3 to known_versions.
 
-
 2008-07-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/vector (insert(iterator, _Tp&&), push_back(_Tp&&)):
