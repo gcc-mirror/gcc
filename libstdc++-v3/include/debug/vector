@@ -300,9 +300,11 @@ namespace __debug
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      void
-      push_back(_Tp&& __x)
-      { emplace_back(std::move(__x)); }
+      template<typename _Up = _Tp>
+        typename __gnu_cxx::__enable_if<!std::__are_same<_Up, bool>::__value,
+					void>::__type
+        push_back(_Tp&& __x)
+	{ emplace_back(std::move(__x)); }
 
       template<typename... _Args>
         void
@@ -360,9 +362,11 @@ namespace __debug
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      iterator
-      insert(iterator __position, _Tp&& __x)
-      { return emplace(__position, std::move(__x)); }
+      template<typename _Up = _Tp>
+        typename __gnu_cxx::__enable_if<!std::__are_same<_Up, bool>::__value,
+					iterator>::__type
+        insert(iterator __position, _Tp&& __x)
+        { return emplace(__position, std::move(__x)); }
 #endif
 
       void
