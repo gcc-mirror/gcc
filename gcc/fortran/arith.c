@@ -1739,12 +1739,12 @@ runtime:
 /* Modify type of expression for zero size array.  */
 
 static gfc_expr *
-eval_type_intrinsic0 (gfc_intrinsic_op operator, gfc_expr *op)
+eval_type_intrinsic0 (gfc_intrinsic_op iop, gfc_expr *op)
 {
   if (op == NULL)
     gfc_internal_error ("eval_type_intrinsic0(): op NULL");
 
-  switch (operator)
+  switch (iop)
     {
     case INTRINSIC_GE:
     case INTRINSIC_GE_OS:
