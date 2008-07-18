@@ -1,5 +1,10 @@
 2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/36859
+	* gcc.target/i386/vararg-2.c: New.
+
+2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/36858
 	* gcc.target/i386/vararg-1.c: New.
 

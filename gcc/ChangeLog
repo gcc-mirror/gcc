@@ -1,5 +1,12 @@
 2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/36859
+	* builtins.c (std_gimplify_va_arg_expr): Limit alignment to
+	PREFERRED_STACK_BOUNDARY.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Likewise.
+
+2008-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/36858
 	* function.c (locate_and_pad_parm): Cap boundary earlier.
 
