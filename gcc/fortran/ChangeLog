@@ -1,5 +1,11 @@
 2008-07-19  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/36795
+	* matchexp.c (gfc_get_parentheses): Remove obsolete workaround,
+	which caused the generation of wrong code.
+
+2008-07-19  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/36342
 	* scanner.c (load_file): Add argument to destinguish between
 	true filename and displayed filename.

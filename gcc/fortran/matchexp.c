@@ -130,13 +130,6 @@ gfc_get_parentheses (gfc_expr *e)
 {
   gfc_expr *e2;
 
-  /* This is a temporary fix, awaiting the patch for various
-     other character problems.  The resolution and translation
-     of substrings and concatenations are so kludged up that
-     putting parentheses around them breaks everything.  */
-  if (e->ts.type == BT_CHARACTER && e->ref)
-    return e;
-
   e2 = gfc_get_expr();
   e2->expr_type = EXPR_OP;
   e2->ts = e->ts;

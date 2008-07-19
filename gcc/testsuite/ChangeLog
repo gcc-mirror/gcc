@@ -1,3 +1,9 @@
+2008-07-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36795
+	* char_expr_1.f90: New.
+	* char_expr_2.f90: New.
+
 2008-07-19  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.dg/mallign.c: New test.
