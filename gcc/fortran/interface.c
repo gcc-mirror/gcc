@@ -1565,7 +1565,7 @@ compare_parameter_protected (gfc_symbol *formal, gfc_expr *actual)
   if (actual->expr_type != EXPR_VARIABLE)
     return 1;
 
-  if (!actual->symtree->n.sym->attr.protected)
+  if (!actual->symtree->n.sym->attr.is_protected)
     return 1;
 
   if (!actual->symtree->n.sym->attr.use_assoc)

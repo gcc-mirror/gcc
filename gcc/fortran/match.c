@@ -1287,7 +1287,7 @@ gfc_match_assignment (void)
       return MATCH_NO;
     }
 
-  if (lvalue->symtree->n.sym->attr.protected
+  if (lvalue->symtree->n.sym->attr.is_protected
       && lvalue->symtree->n.sym->attr.use_assoc)
     {
       gfc_current_locus = old_loc;
@@ -1347,7 +1347,7 @@ gfc_match_pointer_assignment (void)
   if (m != MATCH_YES)
     goto cleanup;
 
-  if (lvalue->symtree->n.sym->attr.protected
+  if (lvalue->symtree->n.sym->attr.is_protected
       && lvalue->symtree->n.sym->attr.use_assoc)
     {
       gfc_error ("Assigning to a PROTECTED pointer at %C");

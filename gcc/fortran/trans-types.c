@@ -1513,7 +1513,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 {
   char name[8 + GFC_RANK_DIGITS + GFC_MAX_SYMBOL_LEN];
   tree fat_type, base_type, arraytype, lower, upper, stride, tmp, rtype;
-  const char *typename;
+  const char *type_name;
   int n;
 
   base_type = gfc_get_array_descriptor_base (dimen);
@@ -1523,11 +1523,11 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
     tmp = DECL_NAME (tmp);
   if (tmp)
-    typename = IDENTIFIER_POINTER (tmp);
+    type_name = IDENTIFIER_POINTER (tmp);
   else
-    typename = "unknown";
+    type_name = "unknown";
   sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_%.*s", dimen,
-	   GFC_MAX_SYMBOL_LEN, typename);
+	   GFC_MAX_SYMBOL_LEN, type_name);
   TYPE_NAME (fat_type) = get_identifier (name);
 
   GFC_DESCRIPTOR_TYPE_P (fat_type) = 1;

@@ -8962,7 +8962,7 @@ resolve_equivalence (gfc_equiv *eq)
 
       sym = e->symtree->n.sym;
 
-      if (sym->attr.protected)
+      if (sym->attr.is_protected)
 	cnt_protected++;
       if (cnt_protected > 0 && cnt_protected != object)
        	{

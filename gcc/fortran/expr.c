@@ -3000,7 +3000,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
-  if (attr.protected && attr.use_assoc)
+  if (attr.is_protected && attr.use_assoc)
     {
       gfc_error ("Pointer assigment target has PROTECTED "
 		 "attribute at %L", &rvalue->where);

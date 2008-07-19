@@ -627,8 +627,6 @@ typedef struct
   ENUM_BITFIELD (save_state) save:2;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
-    /* FIXME: This macro is temporary until we convert everything.  */
-#define protected is_protected
     is_protected:1,		/* Symbol has been marked as protected.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
     use_only:1,			/* Symbol has been use-associated, with ONLY.  */

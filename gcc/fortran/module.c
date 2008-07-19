@@ -1741,7 +1741,7 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OPTIONAL, attr_bits);
       if (attr->pointer)
 	MIO_NAME (ab_attribute) (AB_POINTER, attr_bits);
-      if (attr->protected)
+      if (attr->is_protected)
 	MIO_NAME (ab_attribute) (AB_PROTECTED, attr_bits);
       if (attr->value)
 	MIO_NAME (ab_attribute) (AB_VALUE, attr_bits);
@@ -1836,7 +1836,7 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      attr->pointer = 1;
 	      break;
 	    case AB_PROTECTED:
-	      attr->protected = 1;
+	      attr->is_protected = 1;
 	      break;
 	    case AB_VALUE:
 	      attr->value = 1;
