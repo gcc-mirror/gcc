@@ -2903,7 +2903,7 @@ resolve_operator (gfc_expr *e)
 
   /* Resolve all subnodes-- give them types.  */
 
-  switch (e->value.op.operator)
+  switch (e->value.op.op)
     {
     default:
       if (gfc_resolve_expr (e->value.op.op2) == FAILURE)
@@ -2933,7 +2933,7 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
     }
 
-  switch (e->value.op.operator)
+  switch (e->value.op.op)
     {
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
@@ -2946,7 +2946,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg, _("Operand of unary numeric operator '%s' at %%L is %s"),
-	       gfc_op2string (e->value.op.operator), gfc_typename (&e->ts));
+	       gfc_op2string (e->value.op.op), gfc_typename (&e->ts));
       goto bad_op;
 
     case INTRINSIC_PLUS:
@@ -2962,7 +2962,7 @@ resolve_operator (gfc_expr *e)
 
       sprintf (msg,
 	       _("Operands of binary numeric operator '%s' at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
+	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
       goto bad_op;
 
@@ -2996,7 +2996,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg, _("Operands of logical operator '%s' at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
+	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
 
       goto bad_op;
@@ -3053,19 +3053,19 @@ resolve_operator (gfc_expr *e)
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	sprintf (msg,
 		 _("Logicals at %%L must be compared with %s instead of %s"),
-		 (e->value.op.operator == INTRINSIC_EQ 
-		  || e->value.op.operator == INTRINSIC_EQ_OS)
-		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.operator));
+		 (e->value.op.op == INTRINSIC_EQ 
+		  || e->value.op.op == INTRINSIC_EQ_OS)
+		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
       else
 	sprintf (msg,
 		 _("Operands of comparison operator '%s' at %%L are %s/%s"),
-		 gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
+		 gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 		 gfc_typename (&op2->ts));
 
       goto bad_op;
 
     case INTRINSIC_USER:
-      if (e->value.op.uop->operator == NULL)
+      if (e->value.op.uop->op == NULL)
 	sprintf (msg, _("Unknown operator '%s' at %%L"), e->value.op.uop->name);
       else if (op2 == NULL)
 	sprintf (msg, _("Operand of user operator '%s' at %%L is %s"),
@@ -3091,7 +3091,7 @@ resolve_operator (gfc_expr *e)
 
   t = SUCCESS;
 
-  switch (e->value.op.operator)
+  switch (e->value.op.op)
     {
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -4217,7 +4217,7 @@ gfc_resolve_character_operator (gfc_expr *e)
   gfc_expr *e1 = NULL;
   gfc_expr *e2 = NULL;
 
-  gcc_assert (e->value.op.operator == INTRINSIC_CONCAT);
+  gcc_assert (e->value.op.op == INTRINSIC_CONCAT);
 
   if (op1->ts.cl && op1->ts.cl->length)
     e1 = gfc_copy_expr (op1->ts.cl->length);
@@ -9165,7 +9165,7 @@ gfc_resolve_uops (gfc_symtree *symtree)
   gfc_resolve_uops (symtree->left);
   gfc_resolve_uops (symtree->right);
 
-  for (itr = symtree->n.uop->operator; itr; itr = itr->next)
+  for (itr = symtree->n.uop->op; itr; itr = itr->next)
     {
       sym = itr->sym;
       if (!sym->attr.function)

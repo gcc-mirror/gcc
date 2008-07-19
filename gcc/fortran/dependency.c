@@ -76,15 +76,15 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   int i;
 
   if (e1->expr_type == EXPR_OP
-      && (e1->value.op.operator == INTRINSIC_UPLUS
-	  || e1->value.op.operator == INTRINSIC_PARENTHESES))
+      && (e1->value.op.op == INTRINSIC_UPLUS
+	  || e1->value.op.op == INTRINSIC_PARENTHESES))
     return gfc_dep_compare_expr (e1->value.op.op1, e2);
   if (e2->expr_type == EXPR_OP
-      && (e2->value.op.operator == INTRINSIC_UPLUS
-	  || e2->value.op.operator == INTRINSIC_PARENTHESES))
+      && (e2->value.op.op == INTRINSIC_UPLUS
+	  || e2->value.op.op == INTRINSIC_PARENTHESES))
     return gfc_dep_compare_expr (e1, e2->value.op.op1);
 
-  if (e1->expr_type == EXPR_OP && e1->value.op.operator == INTRINSIC_PLUS)
+  if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
     {
       /* Compare X+C vs. X.  */
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
@@ -93,7 +93,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	return mpz_sgn (e1->value.op.op2->value.integer);
 
       /* Compare P+Q vs. R+S.  */
-      if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_PLUS)
+      if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
 	{
 	  int l, r;
 
@@ -126,7 +126,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
     }
 
   /* Compare X vs. X+C.  */
-  if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_PLUS)
+  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_PLUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e2->value.op.op2->ts.type == BT_INTEGER
@@ -135,7 +135,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
     }
 
   /* Compare X-C vs. X.  */
-  if (e1->expr_type == EXPR_OP && e1->value.op.operator == INTRINSIC_MINUS)
+  if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_MINUS)
     {
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e1->value.op.op2->ts.type == BT_INTEGER
@@ -143,7 +143,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	return -mpz_sgn (e1->value.op.op2->value.integer);
 
       /* Compare P-Q vs. R-S.  */
-      if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_MINUS)
+      if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
 	{
 	  int l, r;
 
@@ -163,7 +163,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
     }
 
   /* Compare X vs. X-C.  */
-  if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_MINUS)
+  if (e2->expr_type == EXPR_OP && e2->value.op.op == INTRINSIC_MINUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e2->value.op.op2->ts.type == BT_INTEGER
@@ -196,7 +196,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 
     case EXPR_OP:
       /* Intrinsic operators are the same if their operands are the same.  */
-      if (e1->value.op.operator != e2->value.op.operator)
+      if (e1->value.op.op != e2->value.op.op)
 	return -2;
       if (e1->value.op.op2 == 0)
 	{

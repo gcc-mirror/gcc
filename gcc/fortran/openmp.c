@@ -1093,7 +1093,7 @@ resolve_omp_atomic (gfc_code *code)
   if (expr2->expr_type == EXPR_OP)
     {
       gfc_expr *v = NULL, *e, *c;
-      gfc_intrinsic_op op = expr2->value.op.operator;
+      gfc_intrinsic_op op = expr2->value.op.op;
       gfc_intrinsic_op alt_op = INTRINSIC_NONE;
 
       switch (op)
@@ -1156,8 +1156,8 @@ resolve_omp_atomic (gfc_code *code)
 	    else if ((c = is_conversion (e, true)) != NULL)
 	      q = &e->value.function.actual->expr;
 	    else if (e->expr_type != EXPR_OP
-		     || (e->value.op.operator != op
-			 && e->value.op.operator != alt_op)
+		     || (e->value.op.op != op
+			 && e->value.op.op != alt_op)
 		     || e->rank != 0)
 	      break;
 	    else
@@ -1176,7 +1176,7 @@ resolve_omp_atomic (gfc_code *code)
 	  if (p != NULL)
 	    {
 	      e = *p;
-	      switch (e->value.op.operator)
+	      switch (e->value.op.op)
 		{
 		case INTRINSIC_MINUS:
 		case INTRINSIC_DIVIDE:

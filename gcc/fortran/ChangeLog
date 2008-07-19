@@ -1,5 +1,36 @@
 2008-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gfortran.h (operator): Remove macro.
+	(gfc_namespace, gfc_expr): Avoid C++ keywords.
+	* arith.c (eval_intrinsic, eval_intrinsic_f2, eval_intrinsic_f3):
+	Likewise.
+	* decl.c (access_attr_decl): Likewise.
+	* dependency.c (gfc_dep_compare_expr): Likewise.
+	* dump-parse-tree.c (show_expr, show_uop, show_namespace):
+	Likewise.
+	* expr.c (gfc_copy_expr, gfc_type_convert_binary,
+	simplify_intrinsic_op, check_intrinsic_op): Likewise.
+	* interface.c (fold_unary, gfc_match_generic_spec,
+	gfc_match_interface, gfc_match_end_interface,
+	check_operator_interface, check_uop_interfaces,
+	gfc_check_interfaces, gfc_extend_expr, gfc_extend_assign,
+	gfc_add_interface, gfc_current_interface_head,
+	gfc_set_current_interface_head): Likewise.
+	* iresolve.c (gfc_resolve_dot_product, gfc_resolve_matmul):
+	Likewise.
+	* matchexp.c (gfc_get_parentheses, build_node): Likewise.
+	* module.c (gfc_use_rename, gfc_match_use, find_use_name_n,
+	number_use_names, mio_expr, load_operator_interfaces, read_module,
+	write_operator, write_module): Likewise.
+	* openmp.c (resolve_omp_atomic): Likewise.
+	* resolve.c (resolve_operator, gfc_resolve_character_operator,
+	gfc_resolve_uops): Likewise.
+	* symbol.c (free_uop_tree, gfc_free_namespace): Likewise.
+	* trans-expr.c (gfc_conv_expr_op): Likewise.
+	* trans-openmp.c (gfc_trans_omp_atomic): Likewise.
+
+2008-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* gfortran.h (protected): Remove macro.
 	* dump-parse-tree.c (show_attr): Avoid C++ keywords.
 	* expr.c (gfc_check_pointer_assign): Likewise.

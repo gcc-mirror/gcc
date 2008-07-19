@@ -1552,7 +1552,7 @@ eval_f;
    operands are array constructors.  */
 
 static gfc_expr *
-eval_intrinsic (gfc_intrinsic_op operator,
+eval_intrinsic (gfc_intrinsic_op op,
 		eval_f eval, gfc_expr *op1, gfc_expr *op2)
 {
   gfc_expr temp, *result;
@@ -1561,7 +1561,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
   gfc_clear_ts (&temp.ts);
 
-  switch (operator)
+  switch (op)
     {
     /* Logical unary  */
     case INTRINSIC_NOT:
@@ -1650,19 +1650,19 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
       temp.expr_type = EXPR_OP;
       gfc_clear_ts (&temp.ts);
-      temp.value.op.operator = operator;
+      temp.value.op.op = op;
 
       temp.value.op.op1 = op1;
       temp.value.op.op2 = op2;
 
       gfc_type_convert_binary (&temp);
 
-      if (operator == INTRINSIC_EQ || operator == INTRINSIC_NE
-	  || operator == INTRINSIC_GE || operator == INTRINSIC_GT
-	  || operator == INTRINSIC_LE || operator == INTRINSIC_LT
-	  || operator == INTRINSIC_EQ_OS || operator == INTRINSIC_NE_OS
-	  || operator == INTRINSIC_GE_OS || operator == INTRINSIC_GT_OS
-	  || operator == INTRINSIC_LE_OS || operator == INTRINSIC_LT_OS)
+      if (op == INTRINSIC_EQ || op == INTRINSIC_NE
+	  || op == INTRINSIC_GE || op == INTRINSIC_GT
+	  || op == INTRINSIC_LE || op == INTRINSIC_LT
+	  || op == INTRINSIC_EQ_OS || op == INTRINSIC_NE_OS
+	  || op == INTRINSIC_GE_OS || op == INTRINSIC_GT_OS
+	  || op == INTRINSIC_LE_OS || op == INTRINSIC_LT_OS)
 	{
 	  temp.ts.type = BT_LOGICAL;
 	  temp.ts.kind = gfc_default_logical_kind;
@@ -1690,7 +1690,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
     }
 
   /* Try to combine the operators.  */
-  if (operator == INTRINSIC_POWER && op2->ts.type != BT_INTEGER)
+  if (op == INTRINSIC_POWER && op2->ts.type != BT_INTEGER)
     goto runtime;
 
   if (op1->expr_type != EXPR_CONSTANT
@@ -1725,7 +1725,7 @@ runtime:
   result->ts = temp.ts;
 
   result->expr_type = EXPR_OP;
-  result->value.op.operator = operator;
+  result->value.op.op = op;
 
   result->value.op.op1 = op1;
   result->value.op.op2 = op2;
@@ -1806,7 +1806,7 @@ reduce_binary0 (gfc_expr *op1, gfc_expr *op2)
 
 
 static gfc_expr *
-eval_intrinsic_f2 (gfc_intrinsic_op operator,
+eval_intrinsic_f2 (gfc_intrinsic_op op,
 		   arith (*eval) (gfc_expr *, gfc_expr **),
 		   gfc_expr *op1, gfc_expr *op2)
 {
@@ -1816,22 +1816,22 @@ eval_intrinsic_f2 (gfc_intrinsic_op operator,
   if (op2 == NULL)
     {
       if (gfc_zero_size_array (op1))
-	return eval_type_intrinsic0 (operator, op1);
+	return eval_type_intrinsic0 (op, op1);
     }
   else
     {
       result = reduce_binary0 (op1, op2);
       if (result != NULL)
-	return eval_type_intrinsic0 (operator, result);
+	return eval_type_intrinsic0 (op, result);
     }
 
   f.f2 = eval;
-  return eval_intrinsic (operator, f, op1, op2);
+  return eval_intrinsic (op, f, op1, op2);
 }
 
 
 static gfc_expr *
-eval_intrinsic_f3 (gfc_intrinsic_op operator,
+eval_intrinsic_f3 (gfc_intrinsic_op op,
 		   arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 		   gfc_expr *op1, gfc_expr *op2)
 {
@@ -1840,10 +1840,10 @@ eval_intrinsic_f3 (gfc_intrinsic_op operator,
 
   result = reduce_binary0 (op1, op2);
   if (result != NULL)
-    return eval_type_intrinsic0(operator, result);
+    return eval_type_intrinsic0(op, result);
 
   f.f3 = eval;
-  return eval_intrinsic (operator, f, op1, op2);
+  return eval_intrinsic (op, f, op1, op2);
 }
 
 

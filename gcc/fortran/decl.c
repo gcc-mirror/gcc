@@ -5630,7 +5630,7 @@ access_attr_decl (gfc_statement st)
   interface_type type;
   gfc_user_op *uop;
   gfc_symbol *sym;
-  gfc_intrinsic_op operator;
+  gfc_intrinsic_op op;
   match m;
 
   if (gfc_match (" ::") == MATCH_NO && gfc_match_space () == MATCH_NO)
@@ -5638,7 +5638,7 @@ access_attr_decl (gfc_statement st)
 
   for (;;)
     {
-      m = gfc_match_generic_spec (&type, name, &operator);
+      m = gfc_match_generic_spec (&type, name, &op);
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
@@ -5662,15 +5662,15 @@ access_attr_decl (gfc_statement st)
 	  break;
 
 	case INTERFACE_INTRINSIC_OP:
-	  if (gfc_current_ns->operator_access[operator] == ACCESS_UNKNOWN)
+	  if (gfc_current_ns->operator_access[op] == ACCESS_UNKNOWN)
 	    {
-	      gfc_current_ns->operator_access[operator] =
+	      gfc_current_ns->operator_access[op] =
 		(st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
 	    }
 	  else
 	    {
 	      gfc_error ("Access specification of the %s operator at %C has "
-			 "already been specified", gfc_op2string (operator));
+			 "already been specified", gfc_op2string (op));
 	      goto done;
 	    }
 

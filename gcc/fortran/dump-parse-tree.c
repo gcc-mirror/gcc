@@ -437,7 +437,7 @@ show_expr (gfc_expr *p)
 
     case EXPR_OP:
       fputc ('(', dumpfile);
-      switch (p->value.op.operator)
+      switch (p->value.op.op)
 	{
 	case INTRINSIC_UPLUS:
 	  fputs ("U+ ", dumpfile);
@@ -737,7 +737,7 @@ show_uop (gfc_user_op *uop)
   show_indent ();
   fprintf (dumpfile, "%s:", uop->name);
 
-  for (intr = uop->operator; intr; intr = intr->next)
+  for (intr = uop->op; intr; intr = intr->next)
     fprintf (dumpfile, " %s", intr->sym->name);
 }
 
@@ -1897,7 +1897,7 @@ show_namespace (gfc_namespace *ns)
       for (op = GFC_INTRINSIC_BEGIN; op != GFC_INTRINSIC_END; op++)
 	{
 	  /* User operator interfaces */
-	  intr = ns->operator[op];
+	  intr = ns->op[op];
 	  if (intr == NULL)
 	    continue;
 

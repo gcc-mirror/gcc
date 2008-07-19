@@ -969,7 +969,7 @@ gfc_trans_omp_atomic (gfc_code *code)
   if (expr2->expr_type == EXPR_OP)
     {
       gfc_expr *e;
-      switch (expr2->value.op.operator)
+      switch (expr2->value.op.op)
 	{
 	case INTRINSIC_PLUS:
 	  op = PLUS_EXPR;
