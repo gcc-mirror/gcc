@@ -1,3 +1,12 @@
+2008-07-19  Olivier Hainque  <hainque@adacore.com>
+
+	* dwarf2out.c (add_subscript_info): New explicit COLLAPSE_P
+	argument, saying whether nested array are to be collapsed
+	into a single array type DIE with multiple subscripts.
+	(gen_array_type_die): Factorize comments about the MIPS_DEBUG_INFO
+	issues, centralize the nested array types collapsing control and
+	disable the transformation for Ada.
+	
 2008-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36786

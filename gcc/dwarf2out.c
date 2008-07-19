@@ -4341,7 +4341,7 @@ static void tree_add_const_value_attribute (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_bound_info (dw_die_ref, enum dwarf_attribute, tree);
-static void add_subscript_info (dw_die_ref, tree);
+static void add_subscript_info (dw_die_ref, tree, bool);
 static void add_byte_size_attribute (dw_die_ref, tree);
 static void add_bit_offset_attribute (dw_die_ref, tree);
 static void add_bit_size_attribute (dw_die_ref, tree);
@@ -11220,36 +11220,21 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
     }
 }
 
-/* Note that the block of subscript information for an array type also
-   includes information about the element type of type given array type.  */
+/* Add subscript info to TYPE_DIE, describing an array TYPE, collapsing
+   possibly nested array subscripts in a flat sequence if COLLAPSE_P is true.
+   Note that the block of subscript information for an array type also
+   includes information about the element type of the given array type.  */
 
 static void
-add_subscript_info (dw_die_ref type_die, tree type)
+add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 {
-#ifndef MIPS_DEBUGGING_INFO
   unsigned dimension_number;
-#endif
   tree lower, upper;
   dw_die_ref subrange_die;
 
-  /* The GNU compilers represent multidimensional array types as sequences of
-     one dimensional array types whose element types are themselves array
-     types.  Here we squish that down, so that each multidimensional array
-     type gets only one array_type DIE in the Dwarf debugging info. The draft
-     Dwarf specification say that we are allowed to do this kind of
-     compression in C (because there is no difference between an array or
-     arrays and a multidimensional array in C) but for other source languages
-     (e.g. Ada) we probably shouldn't do this.  */
-
-  /* ??? The SGI dwarf reader fails for multidimensional arrays with a
-     const enum type.  E.g. const enum machine_mode insn_operand_mode[2][10].
-     We work around this by disabling this feature.  See also
-     gen_array_type_die.  */
-#ifndef MIPS_DEBUGGING_INFO
   for (dimension_number = 0;
-       TREE_CODE (type) == ARRAY_TYPE;
+       TREE_CODE (type) == ARRAY_TYPE && (dimension_number == 0 || collapse_p);
        type = TREE_TYPE (type), dimension_number++)
-#endif
     {
       tree domain = TYPE_DOMAIN (type);
 
@@ -11773,13 +11758,29 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref scope_die = scope_die_for (type, context_die);
   dw_die_ref array_die;
-  tree element_type;
 
-  /* ??? The SGI dwarf reader fails for array of array of enum types unless
-     the inner array type comes before the outer array type.  Thus we must
-     call gen_type_die before we call new_die.  See below also.  */
+  /* GNU compilers represent multidimensional array types as sequences of one
+     dimensional array types whose element types are themselves array types.
+     We sometimes squish that down to a single array_type DIE with multiple
+     subscripts in the Dwarf debugging info.  The draft Dwarf specification
+     say that we are allowed to do this kind of compression in C, because
+     there is no difference between an array of arrays and a multidimensional
+     array.  We don't do this for Ada to remain as close as possible to the
+     actual representation, which is especially important against the language
+     flexibilty wrt arrays of variable size.  */
+
+  bool collapse_nested_arrays = !is_ada ();
+  tree element_type;
+  
+  /* ??? The SGI dwarf reader fails for array of array of enum types
+     (e.g. const enum machine_mode insn_operand_mode[2][10]) unless the inner
+     array type comes before the outer array type.  We thus call gen_type_die
+     before we new_die and must prevent nested array types collapsing for this
+     target.  */
+
 #ifdef MIPS_DEBUGGING_INFO
   gen_type_die (TREE_TYPE (type), context_die);
+  collapse_nested_arrays = false;
 #endif
 
   array_die = new_die (DW_TAG_array_type, scope_die, type);
@@ -11818,19 +11819,16 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_AT_flag (array_die, DW_AT_declaration, 1);
   else
 #endif
-    add_subscript_info (array_die, type);
+    add_subscript_info (array_die, type, collapse_nested_arrays);
 
-  /* Add representation of the type of the elements of this array type.  */
+  /* Add representation of the type of the elements of this array type and
+     emit the corresponding DIE if we haven't done it already.  */  
   element_type = TREE_TYPE (type);
-
-  /* ??? The SGI dwarf reader fails for multidimensional arrays with a
-     const enum type.  E.g. const enum machine_mode insn_operand_mode[2][10].
-     We work around this by disabling this feature.  See also
-     add_subscript_info.  */
+  if (collapse_nested_arrays)
+    while (TREE_CODE (element_type) == ARRAY_TYPE)
+      element_type = TREE_TYPE (element_type);
+  
 #ifndef MIPS_DEBUGGING_INFO
-  while (TREE_CODE (element_type) == ARRAY_TYPE)
-    element_type = TREE_TYPE (element_type);
-
   gen_type_die (element_type, context_die);
 #endif
 
