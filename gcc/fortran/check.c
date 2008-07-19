@@ -876,10 +876,15 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       if (scalar_check (shift, 1) == FAILURE)
 	return FAILURE;
     }
-  else
+  else if (shift->rank != array->rank - 1 && shift->rank != 0)
     {
-      /* TODO: more requirements on shift parameter.  */
+      gfc_error ("SHIFT argument at %L of CSHIFT must have rank %d or be a "
+		 "scalar", &shift->where, array->rank - 1);
+      return FAILURE;
     }
+
+  /* TODO: Add shape conformance check between array (w/o dimension dim)
+     and shift. */
 
   if (dim_check (dim, 2, true) == FAILURE)
     return FAILURE;
@@ -1037,17 +1042,45 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       if (scalar_check (shift, 2) == FAILURE)
 	return FAILURE;
     }
-  else
+  else if (shift->rank != array->rank - 1 && shift->rank != 0)
     {
-      /* TODO: more weird restrictions on shift.  */
+      gfc_error ("SHIFT argument at %L of EOSHIFT must have rank %d or be a "
+		 "scalar", &shift->where, array->rank - 1);
+      return FAILURE;
     }
+
+  /* TODO: Add shape conformance check between array (w/o dimension dim)
+     and shift. */
 
   if (boundary != NULL)
     {
       if (same_type_check (array, 0, boundary, 2) == FAILURE)
 	return FAILURE;
 
-      /* TODO: more restrictions on boundary.  */
+      if (array->rank == 1)
+	{
+	  if (scalar_check (boundary, 2) == FAILURE)
+	    return FAILURE;
+	}
+      else if (boundary->rank != array->rank - 1 && boundary->rank != 0)
+	{
+	  gfc_error ("BOUNDARY argument at %L of EOSHIFT must have rank %d or be "
+		     "a scalar", &boundary->where, array->rank - 1);
+	  return FAILURE;
+	}
+
+      if (shift->rank == boundary->rank)
+	{
+	  int i;
+	  for (i = 0; i < shift->rank; i++)
+	    if (! identical_dimen_shape (shift, i, boundary, i))
+	      {
+		gfc_error ("Different shape in dimension %d for SHIFT and "
+			   "BOUNDARY arguments of EOSHIFT at %L", shift->rank,
+			   &boundary->where);
+		return FAILURE;
+	      }
+	}
     }
 
   if (dim_check (dim, 4, true) == FAILURE)
@@ -2885,6 +2918,25 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
   if (same_type_check (vector, 0, field, 2) == FAILURE)
     return FAILURE;
+
+  if (mask->rank != field->rank && field->rank != 0)
+    {
+      gfc_error ("FIELD argument at %L of UNPACK must have the same rank as "
+		 "MASK or be a scalar", &field->where);
+      return FAILURE;
+    }
+
+  if (mask->rank == field->rank)
+    {
+      int i;
+      for (i = 0; i < field->rank; i++)
+	if (! identical_dimen_shape (mask, i, field, i))
+	{
+	  gfc_error ("Different shape in dimension %d for MASK and FIELD "
+		     "arguments of UNPACK at %L", mask->rank, &field->where);
+	  return FAILURE;
+	}
+    }
 
   return SUCCESS;
 }
