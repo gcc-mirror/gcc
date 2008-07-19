@@ -1,5 +1,12 @@
 2008-07-19  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/36342
+	* scanner.c (load_file): Add argument to destinguish between
+	true filename and displayed filename.
+	(include_line,gfc_new_file): Adapt accordingly.
+
+2008-07-19  Tobias Burnus  <burnus@net-b.de>
+
 	* check.c (gfc_check_cshift,gfc_check_eoshift,gfc_check_unpack): Add rank
 	checks for cshift's shift and eoshift's shift and boundary args.
 	(gfc_check_unpack): Add rank and shape tests for unpack.
