@@ -6090,7 +6090,7 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 		 doesn't find any, then we may have just converted a
 		 valid address into an invalid one.  Check for that
 		 here.  */
-	      if (reloaded != 1
+	      if (reloaded == 0
 		  && !strict_memory_address_p (GET_MODE (tem),
 					       XEXP (tem, 0)))
 		push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
