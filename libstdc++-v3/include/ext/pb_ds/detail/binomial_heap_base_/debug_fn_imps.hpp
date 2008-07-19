@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -65,13 +65,15 @@ assert_max() const
     return;
   _GLIBCXX_DEBUG_ASSERT(base_type::parent(m_p_max) == NULL);
   for (const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-    _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
+    _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value,
+					      it.m_p_nd->m_value));
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool strictly_binomial, bool increasing) const
+assert_node_consistent(const_node_pointer p_nd, bool strictly_binomial,
+		       bool increasing) const
 {
   _GLIBCXX_DEBUG_ASSERT(increasing || strictly_binomial);
   base_type::assert_node_consistent(p_nd, false);
@@ -83,15 +85,20 @@ assert_node_consistent(const_node_pointer p_nd, bool strictly_binomial, bool inc
   assert_node_consistent(p_nd->m_p_next_sibling, strictly_binomial, increasing);
   assert_node_consistent(p_nd->m_p_l_child, true, false);
   if (p_nd->m_p_next_sibling != NULL)
-    if (increasing)
-      {
-	if (strictly_binomial)
-	  _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata < p_nd->m_p_next_sibling->m_metadata);
-	else
-	  _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata <= p_nd->m_p_next_sibling->m_metadata);
-      }
-    else
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata > p_nd->m_p_next_sibling->m_metadata);
+    {
+      if (increasing)
+	{
+	  if (strictly_binomial)
+	    _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata
+				  < p_nd->m_p_next_sibling->m_metadata);
+	  else
+	    _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata
+				  <= p_nd->m_p_next_sibling->m_metadata);
+	}
+      else
+	_GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata
+			      > p_nd->m_p_next_sibling->m_metadata);
+    }
 }
 
-#endif 
+#endif
