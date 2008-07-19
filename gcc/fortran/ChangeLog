@@ -1,3 +1,10 @@
+2008-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36366
+	* resolve.c (add_dt_to_dt_list):  New function.
+	(resolve_fl_derived): Call new function for pointer components
+	and when derived type resolved.
+
 2008-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36824

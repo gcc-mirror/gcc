@@ -1,3 +1,8 @@
+2008-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36366
+	* gfortran.dg/used_types_20.f90: New test.
+
 2008-07-18  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/36407
