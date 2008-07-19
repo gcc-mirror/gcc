@@ -982,8 +982,6 @@ gfc_interface;
 
 #define gfc_get_interface() XCNEW (gfc_interface)
 
-/* FIXME: This macro is temporary until we convert everything.  */
-#define operator op
 /* User operator nodes.  These are like stripped down symbols.  */
 typedef struct
 {
@@ -1184,7 +1182,7 @@ typedef struct gfc_namespace
   /* Points to the equivalence groups produced by trans_common.  */
   struct gfc_equiv_list *equiv_lists;
 
-  gfc_interface *operator[GFC_INTRINSIC_OPS];
+  gfc_interface *op[GFC_INTRINSIC_OPS];
 
   /* Points to the parent namespace, i.e. the namespace of a module or
      procedure in which the procedure belonging to this namespace is
@@ -1495,7 +1493,7 @@ typedef struct gfc_expr
 
     struct
     {
-      gfc_intrinsic_op operator;
+      gfc_intrinsic_op op;
       gfc_user_op *uop;
       struct gfc_expr *op1, *op2;
     }

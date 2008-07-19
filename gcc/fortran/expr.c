@@ -480,7 +480,7 @@ gfc_copy_expr (gfc_expr *p)
       break;
 
     case EXPR_OP:
-      switch (q->value.op.operator)
+      switch (q->value.op.op)
 	{
 	case INTRINSIC_NOT:
 	case INTRINSIC_PARENTHESES:
@@ -659,7 +659,7 @@ gfc_type_convert_binary (gfc_expr *e)
       e->ts = op1->ts;
 
       /* Special case for ** operator.  */
-      if (e->value.op.operator == INTRINSIC_POWER)
+      if (e->value.op.op == INTRINSIC_POWER)
 	goto done;
 
       gfc_convert_type (e->value.op.op2, &e->ts, 2);
@@ -830,12 +830,12 @@ simplify_intrinsic_op (gfc_expr *p, int type)
   gfc_intrinsic_op op;
   gfc_expr *op1, *op2, *result;
 
-  if (p->value.op.operator == INTRINSIC_USER)
+  if (p->value.op.op == INTRINSIC_USER)
     return SUCCESS;
 
   op1 = p->value.op.op1;
   op2 = p->value.op.op2;
-  op  = p->value.op.operator;
+  op  = p->value.op.op;
 
   if (gfc_simplify_expr (op1, type) == FAILURE)
     return FAILURE;
@@ -1840,7 +1840,7 @@ check_intrinsic_op (gfc_expr *e, try (*check_function) (gfc_expr *))
   if ((*check_function) (op1) == FAILURE)
     return FAILURE;
 
-  switch (e->value.op.operator)
+  switch (e->value.op.op)
     {
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
@@ -1883,7 +1883,7 @@ check_intrinsic_op (gfc_expr *e, try (*check_function) (gfc_expr *))
       if (!numeric_type (et0 (op1)) || !numeric_type (et0 (op2)))
 	goto not_numeric;
 
-      if (e->value.op.operator == INTRINSIC_POWER
+      if (e->value.op.op == INTRINSIC_POWER
 	  && check_function == check_init_expr && et0 (op2) != BT_INTEGER)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "

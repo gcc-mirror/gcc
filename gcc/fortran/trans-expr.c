@@ -1079,7 +1079,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
   checkstring = 0;
   lop = 0;
-  switch (expr->value.op.operator)
+  switch (expr->value.op.op)
     {
     case INTRINSIC_PARENTHESES:
       if (expr->ts.type == BT_REAL

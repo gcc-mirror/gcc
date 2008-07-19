@@ -705,7 +705,7 @@ gfc_resolve_dot_product (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 
   temp.expr_type = EXPR_OP;
   gfc_clear_ts (&temp.ts);
-  temp.value.op.operator = INTRINSIC_NONE;
+  temp.value.op.op = INTRINSIC_NONE;
   temp.value.op.op1 = a;
   temp.value.op.op2 = b;
   gfc_type_convert_binary (&temp);
@@ -1332,7 +1332,7 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
     {
       temp.expr_type = EXPR_OP;
       gfc_clear_ts (&temp.ts);
-      temp.value.op.operator = INTRINSIC_NONE;
+      temp.value.op.op = INTRINSIC_NONE;
       temp.value.op.op1 = a;
       temp.value.op.op2 = b;
       gfc_type_convert_binary (&temp);

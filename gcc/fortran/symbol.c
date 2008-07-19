@@ -2843,7 +2843,7 @@ free_uop_tree (gfc_symtree *uop_tree)
   free_uop_tree (uop_tree->left);
   free_uop_tree (uop_tree->right);
 
-  gfc_free_interface (uop_tree->n.uop->operator);
+  gfc_free_interface (uop_tree->n.uop->op);
 
   gfc_free (uop_tree->n.uop);
   gfc_free (uop_tree);
@@ -2997,7 +2997,7 @@ gfc_free_namespace (gfc_namespace *ns)
   gfc_free_equiv_lists (ns->equiv_lists);
 
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
-    gfc_free_interface (ns->operator[i]);
+    gfc_free_interface (ns->op[i]);
 
   gfc_free_data (ns->data);
   p = ns->contained;
