@@ -3836,7 +3836,7 @@ cleanup:
 static match
 match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
 {
-  gfc_forall_iterator *head, *tail, *new;
+  gfc_forall_iterator *head, *tail, *new_iter;
   gfc_expr *msk;
   match m;
 
@@ -3848,27 +3848,27 @@ match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
 
-  m = match_forall_iterator (&new);
+  m = match_forall_iterator (&new_iter);
   if (m == MATCH_ERROR)
     goto cleanup;
   if (m == MATCH_NO)
     goto syntax;
 
-  head = tail = new;
+  head = tail = new_iter;
 
   for (;;)
     {
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 
-      m = match_forall_iterator (&new);
+      m = match_forall_iterator (&new_iter);
       if (m == MATCH_ERROR)
 	goto cleanup;
 
       if (m == MATCH_YES)
 	{
-	  tail->next = new;
-	  tail = new;
+	  tail->next = new_iter;
+	  tail = new_iter;
 	  continue;
 	}
 

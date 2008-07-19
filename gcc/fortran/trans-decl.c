@@ -461,7 +461,7 @@ gfc_finish_decl (tree decl)
 static void
 gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 {
-  tree new;
+  tree new_type;
   /* TREE_ADDRESSABLE means the address of this variable is actually needed.
      This is the equivalent of the TARGET variables.
      We also need to set this if the variable is passed by reference in a
@@ -535,8 +535,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.volatile_)
     {
       TREE_THIS_VOLATILE (decl) = 1;
-      new = build_qualified_type (TREE_TYPE (decl), TYPE_QUAL_VOLATILE);
-      TREE_TYPE (decl) = new;
+      new_type = build_qualified_type (TREE_TYPE (decl), TYPE_QUAL_VOLATILE);
+      TREE_TYPE (decl) = new_type;
     } 
 
   /* Keep variables larger than max-stack-var-size off stack.  */

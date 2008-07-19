@@ -1,5 +1,34 @@
 2008-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gfortran.h (new): Remove macro.
+	* array.c (gfc_append_constructor, match_array_list,
+	gfc_match_array_constructor): Likewise.
+	* bbt.c (insert, gfc_insert_bbt): Likewise.
+	* decl.c (var_element, top_var_list, top_val_list, gfc_match_data,
+	get_proc_name): Likewise.
+	* expr.c (gfc_copy_actual_arglist): Likewise.
+	* interface.c (compare_actual_formal, check_new_interface,
+	gfc_add_interface): Likewise.
+	* intrinsic.c gfc_convert_type_warn, gfc_convert_chartype):
+	Likewise.
+	* io.c (match_io_iterator, match_io_list): Likewise.
+	* match.c (match_forall_header): Likewise.
+	* matchexp.c (build_node): Likewise.
+	* module.c (gfc_match_use): Likewise.
+	* scanner.c (load_file): Likewise.
+	* st.c (gfc_append_code): Likewise.
+	* symbol.c (save_symbol_data, gfc_get_sym_tree, gfc_undo_symbols,
+	gfc_commit_symbols): Likewise.
+	* trans-common.c (build_field): Likewise.
+	* trans-decl.c (gfc_finish_var_decl): Likewise.
+	* trans-expr.c (gfc_free_interface_mapping,
+	gfc_get_interface_mapping_charlen, gfc_add_interface_mapping,
+	gfc_finish_interface_mapping,
+	gfc_apply_interface_mapping_to_expr): Likewise.
+	* trans.h (gfc_interface_sym_mapping): Likewise.
+
+2008-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* gfortran.h (operator): Remove macro.
 	(gfc_namespace, gfc_expr): Avoid C++ keywords.
 	* arith.c (eval_intrinsic, eval_intrinsic_f2, eval_intrinsic_f3):

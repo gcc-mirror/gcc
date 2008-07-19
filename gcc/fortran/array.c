@@ -592,7 +592,7 @@ gfc_start_constructor (bt type, int kind, locus *where)
    node onto the constructor.  */
 
 void
-gfc_append_constructor (gfc_expr *base, gfc_expr *new)
+gfc_append_constructor (gfc_expr *base, gfc_expr *new_expr)
 {
   gfc_constructor *c;
 
@@ -608,9 +608,9 @@ gfc_append_constructor (gfc_expr *base, gfc_expr *new)
       c = c->next;
     }
 
-  c->expr = new;
+  c->expr = new_expr;
 
-  if (new->ts.type != base->ts.type || new->ts.kind != base->ts.kind)
+  if (new_expr->ts.type != base->ts.type || new_expr->ts.kind != base->ts.kind)
     gfc_internal_error ("gfc_append_constructor(): New node has wrong kind");
 }
 
@@ -755,7 +755,7 @@ static match match_array_cons_element (gfc_constructor **);
 static match
 match_array_list (gfc_constructor **result)
 {
-  gfc_constructor *p, *head, *tail, *new;
+  gfc_constructor *p, *head, *tail, *new_cons;
   gfc_iterator iter;
   locus old_loc;
   gfc_expr *e;
@@ -790,7 +790,7 @@ match_array_list (gfc_constructor **result)
       if (m == MATCH_ERROR)
 	goto cleanup;
 
-      m = match_array_cons_element (&new);
+      m = match_array_cons_element (&new_cons);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -801,8 +801,8 @@ match_array_list (gfc_constructor **result)
 	  goto cleanup;		/* Could be a complex constant */
 	}
 
-      tail->next = new;
-      tail = new;
+      tail->next = new_cons;
+      tail = new_cons;
 
       if (gfc_match_char (',') != MATCH_YES)
 	{
@@ -881,7 +881,7 @@ match_array_cons_element (gfc_constructor **result)
 match
 gfc_match_array_constructor (gfc_expr **result)
 {
-  gfc_constructor *head, *tail, *new;
+  gfc_constructor *head, *tail, *new_cons;
   gfc_expr *expr;
   gfc_typespec ts;
   locus where;
@@ -937,18 +937,18 @@ gfc_match_array_constructor (gfc_expr **result)
 
   for (;;)
     {
-      m = match_array_cons_element (&new);
+      m = match_array_cons_element (&new_cons);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
 
       if (head == NULL)
-	head = new;
+	head = new_cons;
       else
-	tail->next = new;
+	tail->next = new_cons;
 
-      tail = new;
+      tail = new_cons;
 
       if (gfc_match_char (',') == MATCH_NO)
 	break;

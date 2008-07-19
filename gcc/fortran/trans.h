@@ -710,7 +710,7 @@ typedef struct gfc_interface_sym_mapping
 {
   struct gfc_interface_sym_mapping *next;
   gfc_symbol *old;
-  gfc_symtree *new;
+  gfc_symtree *new_sym;
   gfc_expr *expr;
 }
 gfc_interface_sym_mapping;
