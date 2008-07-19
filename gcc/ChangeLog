@@ -1,3 +1,9 @@
+2008-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36877
+	* omp-low.c (expand_omp_atomic_fetch_op): Make sure the
+	return value of the builtin is ignored.
+
 2008-07-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/36780

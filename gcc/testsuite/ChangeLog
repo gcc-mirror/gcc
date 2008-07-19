@@ -1,3 +1,8 @@
+2008-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36877
+	* gcc.dg/gomp/atomic-11.c: New test.
+
 2008-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36366

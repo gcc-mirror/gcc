@@ -3757,6 +3757,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   bsi = bsi_last (load_bb);
   gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_LOAD);
   call = build_call_expr (decl, 2, addr, fold_convert (itype, rhs));
+  call = fold_convert (void_type_node, call);
   force_gimple_operand_bsi (&bsi, call, true, NULL_TREE, true, BSI_SAME_STMT);
   bsi_remove (&bsi, true);
 
