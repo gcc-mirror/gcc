@@ -551,6 +551,12 @@ along with GCC; see the file COPYING3.  If not see
 #define PUSH_ARGS_REVERSED 0
 #endif
 
+/* Default value for the alignment (in bits) a C conformant malloc has to
+   provide. This default is intended to be safe and always correct.  */
+#ifndef MALLOC_ABI_ALIGNMENT
+#define MALLOC_ABI_ALIGNMENT BITS_PER_WORD
+#endif
+
 /* If PREFERRED_STACK_BOUNDARY is not defined, set it to STACK_BOUNDARY.
    STACK_BOUNDARY is required.  */
 #ifndef PREFERRED_STACK_BOUNDARY

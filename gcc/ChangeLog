@@ -1,3 +1,9 @@
+2008-07-19  Olivier Hainque  <hainque@adacore.com>
+
+	* doc/tm.texi (MALLOC_ABI_ALIGNMENT): New macro. Alignment, in
+	bits, a C conformant malloc implementation has to provide.
+	* defaults.h (MALLOC_ABI_ALIGNMENT): Default to BITS_PER_WORD.
+
 2008-07-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/36780
