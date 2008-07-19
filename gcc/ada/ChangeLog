@@ -1,3 +1,8 @@
+2008-07-19  Olivier Hainque  <hainque@adacore.com>
+	 
+	* targtyps.c (get_target_default_allocator_alignment): Use
+	MALLOC_ABI_ALIGNMENT.
+
 2008-07-17  Olivier Hainque  <hainque@adacore.com>
 
 	* adaint.c (__MINGW32__ section): Include ctype.h and define

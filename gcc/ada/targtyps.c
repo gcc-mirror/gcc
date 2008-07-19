@@ -164,17 +164,13 @@ get_target_maximum_default_alignment (void)
    Stricter alignment requests trigger gigi's aligning_type circuitry for
    objects allocated by the default allocator.  */
 
-#ifndef MALLOC_ALIGNMENT
-#define MALLOC_ALIGNMENT BIGGEST_ALIGNMENT
-#endif
-
 Pos
 get_target_default_allocator_alignment (void)
 {
   /* ??? Need a way to get info about __gnat_malloc from here (whether
      it is handy and what alignment it honors).  */
 
-  return MALLOC_ALIGNMENT / BITS_PER_UNIT;
+  return MALLOC_ABI_ALIGNMENT / BITS_PER_UNIT;
 }
 
 /* Standard'Maximum_Allowed_Alignment.  Maximum alignment that we may

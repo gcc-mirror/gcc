@@ -1,3 +1,10 @@
+2008-07-19  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/mallign.c: New test.
+	* gnat.dg/allocator_maxalign1.adb: New test.
+	* gnat.dg/test_allocator_maxalign2.adb: Main caller for ...
+	* gnat.dg/allocator_maxalign2.ad[bs]: New test.
+
 2008-07-19  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/intrinsic_argument_conformance_2.f90: New.
