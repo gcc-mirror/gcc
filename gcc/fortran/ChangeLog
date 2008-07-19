@@ -1,3 +1,9 @@
+2008-07-19  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_cshift,gfc_check_eoshift,gfc_check_unpack): Add rank
+	checks for cshift's shift and eoshift's shift and boundary args.
+	(gfc_check_unpack): Add rank and shape tests for unpack.
+
 2008-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.h (new): Remove macro.

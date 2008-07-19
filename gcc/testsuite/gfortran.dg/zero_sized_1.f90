@@ -49,8 +49,8 @@ subroutine test_eoshift
   if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=1,boundary=42.0)/= 0)) call abort
   if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=2,boundary=42.0)/= 0)) call abort
 
-  if (any(eoshift(foo,dim=1,shift=1,boundary=(/42.0,-7.0/))/= 0)) call abort
-  if (any(eoshift(tempn(2:1),dim=1,shift=1,boundary=(/42.0,-7.0/))/= 0)) call abort
+  if (any(eoshift(foo,dim=1,shift=1,boundary=42.0)/= 0)) call abort
+  if (any(eoshift(tempn(2:1),dim=1,shift=1,boundary=-7.0)/= 0)) call abort
   if (any(eoshift(bar,shift=(/1,-1/),dim=1,boundary=(/42.0,-7.0/))/= 0)) call abort
   if (any(eoshift(bar,shift=(/1,-1/),dim=2,boundary=(/42.0,-7.0/))/= 0)) call abort
   if (any(eoshift(gee,shift=(/1,-1/),dim=1,boundary=(/42.0,-7.0/))/= 0)) call abort
@@ -159,15 +159,17 @@ end
 subroutine test_unpack
   integer :: tempn(1,5), tempv(5)
   integer,allocatable :: foo(:,:), bar(:)
+  integer :: zero
   tempn = 2 
   tempv = 5
+  zero = 0
   allocate(foo(0,1:7),bar(0:-1))
   if (any(unpack(tempv,tempv/=0,tempv) /= 5) .or. &
       size(unpack(tempv,tempv/=0,tempv)) /= 5) call abort
   if (any(unpack(tempv(1:0),tempv/=0,tempv) /= 5) .or. &
       size(unpack(tempv(1:0),tempv/=0,tempv)) /= 5) call abort
-  if (any(unpack(tempv,tempv(1:0)/=0,tempv) /= -47)) call abort
-  if (any(unpack(tempv(5:4),tempv(1:0)/=0,tempv) /= -47)) call abort
+  if (any(unpack(tempv,tempv(1:zero)/=0,tempv) /= -47)) call abort
+  if (any(unpack(tempv(5:4),tempv(1:zero)/=0,tempv) /= -47)) call abort
   if (any(unpack(bar,foo==foo,foo) /= -47)) call abort
   deallocate(foo,bar)
 end
