@@ -135,7 +135,7 @@
 #  define _GLIBCXX_STD __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE 0
+#  define _GLIBCXX_EXTERN_TEMPLATE -1
 # endif
 
 // parallel
@@ -145,7 +145,7 @@
 #  define _GLIBCXX_STD __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE 0
+#  define _GLIBCXX_EXTERN_TEMPLATE -1
 # endif
 
 // debug + parallel
@@ -155,7 +155,7 @@
 #  define _GLIBCXX_STD __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE 0
+#  define _GLIBCXX_EXTERN_TEMPLATE -1
 # endif
 
 # if __NO_INLINE__ && !__GXX_WEAK__

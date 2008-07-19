@@ -1,3 +1,16 @@
+2008-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pb_ds/detail/binomial_heap_base_/debug_fn_imps.hpp
+	(assert_node_consistent): Avoid ambiguous else warning.
+
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Include <iostream>.
+
+	* include/bits/c++config: In debug-mode (and parallel-mode) set
+	_GLIBCXX_EXTERN_TEMPLATE to -1, not 0, thus disabling extern
+	templates only for basic_string (per libstdc++/21674).
+	* include/bits/basic_string.tcc: Use extern templates when
+	_GLIBCXX_EXTERN_TEMPLATE > 0.
+
 2008-07-18  Kris Van Hees  <kris.van.hees@oracle.com>
 	    Holger Hopp  <holger.hopp@sap.com>
 
