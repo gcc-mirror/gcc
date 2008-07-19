@@ -2739,7 +2739,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
   switch (sym->attr.flavor)
     {
     case FL_VARIABLE:
-      if (sym->attr.protected && sym->attr.use_assoc)
+      if (sym->attr.is_protected && sym->attr.use_assoc)
 	{
 	  gfc_error ("Assigning to PROTECTED variable at %C");
 	  return MATCH_ERROR;

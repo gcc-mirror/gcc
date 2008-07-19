@@ -48,7 +48,7 @@ static enum
 { SZ_NOTHING = 0, SZ_SUBS, SZ_FUNCS, SZ_CONVS }
 sizing;
 
-enum class
+enum klass
 { NO_CLASS = 0, CLASS_ELEMENTAL, CLASS_INQUIRY, CLASS_TRANSFORMATIONAL };
 
 #define ACTUAL_NO	0
@@ -243,7 +243,7 @@ do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
      ZABS ZCOS ZEXP ZLOG ZSIN ZSQRT.  */
 
 static void
-add_sym (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type, int kind,
+add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type, int kind,
 	 int standard, gfc_check_f check, gfc_simplify_f simplify,
 	 gfc_resolve_f resolve, ...)
 {
@@ -332,7 +332,7 @@ add_sym (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type
    0 arguments.  */
 
 static void
-add_sym_0 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_0 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
 	   try (*check) (void),
 	   gfc_expr *(*simplify) (void),
@@ -374,7 +374,7 @@ add_sym_0s (const char *name, gfc_isym_id id, int standard, void (*resolve) (gfc
    1 arguments.  */
 
 static void
-add_sym_1 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_1 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
 	   try (*check) (gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *),
@@ -399,7 +399,7 @@ add_sym_1 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt ty
    1 arguments.  */
 
 static void
-add_sym_1s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, int standard,
+add_sym_1s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
 	    try (*check) (gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *),
 	    void (*resolve) (gfc_code *),
@@ -423,7 +423,7 @@ add_sym_1s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, 
    function.  MAX et al take 2 or more arguments.  */
 
 static void
-add_sym_1m (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_1m (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	    int kind, int standard,
 	    try (*check) (gfc_actual_arglist *),
 	    gfc_expr *(*simplify) (gfc_expr *),
@@ -450,7 +450,7 @@ add_sym_1m (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt t
    2 arguments.  */
 
 static void
-add_sym_2 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_2 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
 	   try (*check) (gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *),
@@ -477,7 +477,7 @@ add_sym_2 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt ty
    2 arguments.  */
 
 static void
-add_sym_2s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, int standard,
+add_sym_2s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
 	    try (*check) (gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *),
 	    void (*resolve) (gfc_code *),
@@ -503,7 +503,7 @@ add_sym_2s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, 
    3 arguments.  */
 
 static void
-add_sym_3 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_3 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
 	   try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
@@ -532,7 +532,7 @@ add_sym_3 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt ty
    might have to be reordered.  */
 
 static void
-add_sym_3ml (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_3ml (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	     int kind, int standard,
 	     try (*check) (gfc_actual_arglist *),
 	     gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
@@ -561,7 +561,7 @@ add_sym_3ml (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt 
    their argument also might have to be reordered.  */
 
 static void
-add_sym_3red (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_3red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	      int kind, int standard,
 	      try (*check) (gfc_actual_arglist *),
 	      gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
@@ -590,7 +590,7 @@ add_sym_3red (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt
    3 arguments.  */
 
 static void
-add_sym_3s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, int standard,
+add_sym_3s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
 	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
 	    void (*resolve) (gfc_code *),
@@ -618,7 +618,7 @@ add_sym_3s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, 
    4 arguments.  */
 
 static void
-add_sym_4 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type,
+add_sym_4 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
 	   try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
@@ -651,7 +651,7 @@ add_sym_4 (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt ty
    4 arguments.  */
 
 static void
-add_sym_4s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, int standard,
+add_sym_4s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
 	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
 				   gfc_expr *),
@@ -682,7 +682,7 @@ add_sym_4s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, 
    5 arguments.  */
 
 static void
-add_sym_5s (const char *name, gfc_isym_id id, enum class cl, bt type, int kind, int standard,
+add_sym_5s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
 	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,

@@ -570,7 +570,7 @@ show_attr (symbol_attribute *attr)
     fputs (" OPTIONAL", dumpfile);
   if (attr->pointer)
     fputs (" POINTER", dumpfile);
-  if (attr->protected)
+  if (attr->is_protected)
     fputs (" PROTECTED", dumpfile);
   if (attr->value)
     fputs (" VALUE", dumpfile);

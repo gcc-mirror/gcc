@@ -344,14 +344,14 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *intent_in = "INTENT(IN)", *intrinsic = "INTRINSIC",
     *intent_out = "INTENT(OUT)", *intent_inout = "INTENT(INOUT)",
     *allocatable = "ALLOCATABLE", *elemental = "ELEMENTAL",
-    *private = "PRIVATE", *recursive = "RECURSIVE",
+    *privat = "PRIVATE", *recursive = "RECURSIVE",
     *in_common = "COMMON", *result = "RESULT", *in_namelist = "NAMELIST",
-    *public = "PUBLIC", *optional = "OPTIONAL", *entry = "ENTRY",
+    *publik = "PUBLIC", *optional = "OPTIONAL", *entry = "ENTRY",
     *function = "FUNCTION", *subroutine = "SUBROUTINE",
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
     *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
     *cray_pointee = "CRAY POINTEE", *data = "DATA", *value = "VALUE",
-    *volatile_ = "VOLATILE", *protected = "PROTECTED",
+    *volatile_ = "VOLATILE", *is_protected = "PROTECTED",
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE";
   static const char *threadprivate = "THREADPRIVATE";
 
@@ -383,9 +383,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       if (attr->optional)
 	a1 = optional;
       if (attr->access == ACCESS_PRIVATE)
-	a1 = private;
+	a1 = privat;
       if (attr->access == ACCESS_PUBLIC)
-	a1 = public;
+	a1 = publik;
       if (attr->intent != INTENT_UNKNOWN)
 	a1 = intent;
 
@@ -541,9 +541,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       goto conflict;
     }
 
-  conf (protected, intrinsic)
-  conf (protected, external)
-  conf (protected, in_common)
+  conf (is_protected, intrinsic)
+  conf (is_protected, external)
+  conf (is_protected, in_common)
 
   conf (volatile_, intrinsic)
   conf (volatile_, external)
@@ -558,7 +558,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (procedure, allocatable)
   conf (procedure, dimension)
   conf (procedure, intrinsic)
-  conf (procedure, protected)
+  conf (procedure, is_protected)
   conf (procedure, target)
   conf (procedure, value)
   conf (procedure, volatile_)
@@ -585,7 +585,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (dummy);
       conf2 (volatile_);
       conf2 (pointer);
-      conf2 (protected);
+      conf2 (is_protected);
       conf2 (target);
       conf2 (external);
       conf2 (intrinsic);
@@ -599,7 +599,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
       if (attr->access == ACCESS_PUBLIC || attr->access == ACCESS_PRIVATE)
 	{
-	  a2 = attr->access == ACCESS_PUBLIC ? public : private;
+	  a2 = attr->access == ACCESS_PUBLIC ? publik : privat;
 	  gfc_error ("%s attribute applied to %s %s at %L", a2, a1,
 	    name, where);
 	  return FAILURE;
@@ -684,7 +684,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (subroutine);
       conf2 (entry);
       conf2 (pointer);
-      conf2 (protected);
+      conf2 (is_protected);
       conf2 (target);
       conf2 (dummy);
       conf2 (in_common);
@@ -976,7 +976,7 @@ gfc_add_protected (symbol_attribute *attr, const char *name, locus *where)
   if (check_used (attr, name, where))
     return FAILURE;
 
-  if (attr->protected)
+  if (attr->is_protected)
     {
 	if (gfc_notify_std (GFC_STD_LEGACY, 
 			    "Duplicate PROTECTED attribute specified at %L",
@@ -985,7 +985,7 @@ gfc_add_protected (symbol_attribute *attr, const char *name, locus *where)
 	  return FAILURE;
     }
 
-  attr->protected = 1;
+  attr->is_protected = 1;
   return check_conflict (attr, name, where);
 }
 
@@ -1582,7 +1582,7 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
   if (src->pointer && gfc_add_pointer (dest, where) == FAILURE)
     goto fail;
-  if (src->protected && gfc_add_protected (dest, NULL, where) == FAILURE)
+  if (src->is_protected && gfc_add_protected (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->save && gfc_add_save (dest, NULL, where) == FAILURE)
     goto fail;
