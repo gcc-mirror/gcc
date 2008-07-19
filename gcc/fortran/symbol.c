@@ -2451,7 +2451,7 @@ static void
 save_symbol_data (gfc_symbol *sym)
 {
 
-  if (sym->new || sym->old_symbol != NULL)
+  if (sym->gfc_new || sym->old_symbol != NULL)
     return;
 
   sym->old_symbol = XCNEW (gfc_symbol);
@@ -2495,7 +2495,7 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result)
       p->old_symbol = NULL;
       p->tlink = changed_syms;
       p->mark = 1;
-      p->new = 1;
+      p->gfc_new = 1;
       changed_syms = p;
 
       st = gfc_new_symtree (&ns->sym_root, name);
@@ -2643,7 +2643,7 @@ gfc_undo_symbols (void)
     {
       q = p->tlink;
 
-      if (p->new)
+      if (p->gfc_new)
 	{
 	  /* Symbol was new.  */
 	  if (p->attr.in_common && p->common_block->head)
@@ -2779,7 +2779,7 @@ gfc_commit_symbols (void)
       q = p->tlink;
       p->tlink = NULL;
       p->mark = 0;
-      p->new = 0;
+      p->gfc_new = 0;
       free_old_symbol (p);
     }
   changed_syms = NULL;
@@ -2808,7 +2808,7 @@ gfc_commit_symbol (gfc_symbol *sym)
 
   sym->tlink = NULL;
   sym->mark = 0;
-  sym->new = 0;
+  sym->gfc_new = 0;
 
   free_old_symbol (sym);
 }

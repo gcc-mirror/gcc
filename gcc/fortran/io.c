@@ -2623,7 +2623,7 @@ static match match_io_element (io_kind, gfc_code **);
 static match
 match_io_iterator (io_kind k, gfc_code **result)
 {
-  gfc_code *head, *tail, *new;
+  gfc_code *head, *tail, *new_code;
   gfc_iterator *iter;
   locus old_loc;
   match m;
@@ -2659,7 +2659,7 @@ match_io_iterator (io_kind k, gfc_code **result)
 	  break;
 	}
 
-      m = match_io_element (k, &new);
+      m = match_io_element (k, &new_code);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -2669,7 +2669,7 @@ match_io_iterator (io_kind k, gfc_code **result)
 	  goto cleanup;
 	}
 
-      tail = gfc_append_code (tail, new);
+      tail = gfc_append_code (tail, new_code);
 
       if (gfc_match_char (',') != MATCH_YES)
 	{
@@ -2683,15 +2683,15 @@ match_io_iterator (io_kind k, gfc_code **result)
   if (gfc_match_char (')') != MATCH_YES)
     goto syntax;
 
-  new = gfc_get_code ();
-  new->op = EXEC_DO;
-  new->ext.iterator = iter;
+  new_code = gfc_get_code ();
+  new_code->op = EXEC_DO;
+  new_code->ext.iterator = iter;
 
-  new->block = gfc_get_code ();
-  new->block->op = EXEC_DO;
-  new->block->next = head;
+  new_code->block = gfc_get_code ();
+  new_code->block->op = EXEC_DO;
+  new_code->block->next = head;
 
-  *result = new;
+  *result = new_code;
   return MATCH_YES;
 
 syntax:
@@ -2799,7 +2799,7 @@ match_io_element (io_kind k, gfc_code **cpp)
 static match
 match_io_list (io_kind k, gfc_code **head_p)
 {
-  gfc_code *head, *tail, *new;
+  gfc_code *head, *tail, *new_code;
   match m;
 
   *head_p = head = tail = NULL;
@@ -2808,15 +2808,15 @@ match_io_list (io_kind k, gfc_code **head_p)
 
   for (;;)
     {
-      m = match_io_element (k, &new);
+      m = match_io_element (k, &new_code);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
 
-      tail = gfc_append_code (tail, new);
+      tail = gfc_append_code (tail, new_code);
       if (head == NULL)
-	head = new;
+	head = new_code;
 
       if (gfc_match_eos () == MATCH_YES)
 	break;

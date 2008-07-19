@@ -1840,11 +1840,11 @@ load_file (const char *filename, bool initial)
 				&& line[2] == (unsigned char) '\xBF')))
 	{
 	  int n = line[1] == (unsigned char) '\xBB' ? 3 : 2;
-	  gfc_char_t *new = gfc_get_wide_string (line_len);
+	  gfc_char_t *new_char = gfc_get_wide_string (line_len);
 
-	  wide_strcpy (new, &line[n]);
+	  wide_strcpy (new_char, &line[n]);
 	  gfc_free (line);
-	  line = new;
+	  line = new_char;
 	  len -= n;
 	}
 

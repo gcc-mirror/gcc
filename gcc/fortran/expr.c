@@ -65,24 +65,24 @@ gfc_free_actual_arglist (gfc_actual_arglist *a1)
 gfc_actual_arglist *
 gfc_copy_actual_arglist (gfc_actual_arglist *p)
 {
-  gfc_actual_arglist *head, *tail, *new;
+  gfc_actual_arglist *head, *tail, *new_arg;
 
   head = tail = NULL;
 
   for (; p; p = p->next)
     {
-      new = gfc_get_actual_arglist ();
-      *new = *p;
+      new_arg = gfc_get_actual_arglist ();
+      *new_arg = *p;
 
-      new->expr = gfc_copy_expr (p->expr);
-      new->next = NULL;
+      new_arg->expr = gfc_copy_expr (p->expr);
+      new_arg->next = NULL;
 
       if (head == NULL)
-	head = new;
+	head = new_arg;
       else
-	tail->next = new;
+	tail->next = new_arg;
 
-      tail = new;
+      tail = new_arg;
     }
 
   return head;

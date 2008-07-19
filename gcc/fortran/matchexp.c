@@ -211,17 +211,17 @@ static gfc_expr *
 build_node (gfc_intrinsic_op op, locus *where,
 	    gfc_expr *op1, gfc_expr *op2)
 {
-  gfc_expr *new;
+  gfc_expr *new_expr;
 
-  new = gfc_get_expr ();
-  new->expr_type = EXPR_OP;
-  new->value.op.op = op;
-  new->where = *where;
+  new_expr = gfc_get_expr ();
+  new_expr->expr_type = EXPR_OP;
+  new_expr->value.op.op = op;
+  new_expr->where = *where;
 
-  new->value.op.op1 = op1;
-  new->value.op.op2 = op2;
+  new_expr->value.op.op1 = op1;
+  new_expr->value.op.op2 = op2;
 
-  return new;
+  return new_expr;
 }
 
 

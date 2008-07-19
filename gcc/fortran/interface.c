@@ -1823,7 +1823,7 @@ static int
 compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       int ranks_must_agree, int is_elemental, locus *where)
 {
-  gfc_actual_arglist **new, *a, *actual, temp;
+  gfc_actual_arglist **new_arg, *a, *actual, temp;
   gfc_formal_arglist *f;
   int i, n, na;
   unsigned long actual_size, formal_size;
@@ -1837,10 +1837,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   for (f = formal; f; f = f->next)
     n++;
 
-  new = (gfc_actual_arglist **) alloca (n * sizeof (gfc_actual_arglist *));
+  new_arg = (gfc_actual_arglist **) alloca (n * sizeof (gfc_actual_arglist *));
 
   for (i = 0; i < n; i++)
-    new[i] = NULL;
+    new_arg[i] = NULL;
 
   na = 0;
   f = formal;
@@ -1868,7 +1868,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	      return 0;
 	    }
 
-	  if (new[i] != NULL)
+	  if (new_arg[i] != NULL)
 	    {
 	      if (where)
 		gfc_error ("Keyword argument '%s' at %L is already associated "
@@ -2113,14 +2113,14 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (a == actual)
 	na = i;
 
-      new[i++] = a;
+      new_arg[i++] = a;
     }
 
   /* Make sure missing actual arguments are optional.  */
   i = 0;
   for (f = formal; f; f = f->next, i++)
     {
-      if (new[i] != NULL)
+      if (new_arg[i] != NULL)
 	continue;
       if (f->sym == NULL)
 	{
@@ -2142,27 +2142,27 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
      argument list with null arguments in the right places.  The head
      of the list remains the head.  */
   for (i = 0; i < n; i++)
-    if (new[i] == NULL)
-      new[i] = gfc_get_actual_arglist ();
+    if (new_arg[i] == NULL)
+      new_arg[i] = gfc_get_actual_arglist ();
 
   if (na != 0)
     {
-      temp = *new[0];
-      *new[0] = *actual;
+      temp = *new_arg[0];
+      *new_arg[0] = *actual;
       *actual = temp;
 
-      a = new[0];
-      new[0] = new[na];
-      new[na] = a;
+      a = new_arg[0];
+      new_arg[0] = new_arg[na];
+      new_arg[na] = a;
     }
 
   for (i = 0; i < n - 1; i++)
-    new[i]->next = new[i + 1];
+    new_arg[i]->next = new_arg[i + 1];
 
-  new[i]->next = NULL;
+  new_arg[i]->next = NULL;
 
   if (*ap == NULL && n > 0)
-    *ap = new[0];
+    *ap = new_arg[0];
 
   /* Note the types of omitted optional arguments.  */
   for (a = *ap, f = formal; a; a = a->next, f = f->next)
@@ -2732,16 +2732,16 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
    procedures can be present without interfaces.  */
 
 static try
-check_new_interface (gfc_interface *base, gfc_symbol *new)
+check_new_interface (gfc_interface *base, gfc_symbol *new_sym)
 {
   gfc_interface *ip;
 
   for (ip = base; ip; ip = ip->next)
     {
-      if (ip->sym == new)
+      if (ip->sym == new_sym)
 	{
 	  gfc_error ("Entity '%s' at %C is already present in the interface",
-		     new->name);
+		     new_sym->name);
 	  return FAILURE;
 	}
     }
@@ -2753,7 +2753,7 @@ check_new_interface (gfc_interface *base, gfc_symbol *new)
 /* Add a symbol to the current interface.  */
 
 try
-gfc_add_interface (gfc_symbol *new)
+gfc_add_interface (gfc_symbol *new_sym)
 {
   gfc_interface **head, *intr;
   gfc_namespace *ns;
@@ -2771,48 +2771,48 @@ gfc_add_interface (gfc_symbol *new)
 	  {
 	    case INTRINSIC_EQ:
 	    case INTRINSIC_EQ_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_EQ], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_EQ_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_EQ], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_EQ_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_NE:
 	    case INTRINSIC_NE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_NE], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_NE_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_NE], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_NE_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_GT:
 	    case INTRINSIC_GT_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_GT], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_GT_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_GT], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_GT_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_GE:
 	    case INTRINSIC_GE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_GE], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_GE_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_GE], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_GE_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_LT:
 	    case INTRINSIC_LT_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_LT], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_LT_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_LT], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_LT_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    case INTRINSIC_LE:
 	    case INTRINSIC_LE_OS:
-	      if (check_new_interface (ns->op[INTRINSIC_LE], new) == FAILURE ||
-	          check_new_interface (ns->op[INTRINSIC_LE_OS], new) == FAILURE)
+	      if (check_new_interface (ns->op[INTRINSIC_LE], new_sym) == FAILURE ||
+	          check_new_interface (ns->op[INTRINSIC_LE_OS], new_sym) == FAILURE)
 		return FAILURE;
 	      break;
 
 	    default:
-	      if (check_new_interface (ns->op[current_interface.op], new) == FAILURE)
+	      if (check_new_interface (ns->op[current_interface.op], new_sym) == FAILURE)
 		return FAILURE;
 	  }
 
@@ -2826,7 +2826,7 @@ gfc_add_interface (gfc_symbol *new)
 	  if (sym == NULL)
 	    continue;
 
-	  if (check_new_interface (sym->generic, new) == FAILURE)
+	  if (check_new_interface (sym->generic, new_sym) == FAILURE)
 	    return FAILURE;
 	}
 
@@ -2834,7 +2834,7 @@ gfc_add_interface (gfc_symbol *new)
       break;
 
     case INTERFACE_USER_OP:
-      if (check_new_interface (current_interface.uop->op, new)
+      if (check_new_interface (current_interface.uop->op, new_sym)
 	  == FAILURE)
 	return FAILURE;
 
@@ -2846,7 +2846,7 @@ gfc_add_interface (gfc_symbol *new)
     }
 
   intr = gfc_get_interface ();
-  intr->sym = new;
+  intr->sym = new_sym;
   intr->where = gfc_current_locus;
 
   intr->next = *head;

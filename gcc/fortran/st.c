@@ -58,20 +58,20 @@ gfc_get_code (void)
    its tail, returning a pointer to the new tail.  */
 
 gfc_code *
-gfc_append_code (gfc_code *tail, gfc_code *new)
+gfc_append_code (gfc_code *tail, gfc_code *new_code)
 {
   if (tail != NULL)
     {
       while (tail->next != NULL)
 	tail = tail->next;
 
-      tail->next = new;
+      tail->next = new_code;
     }
 
-  while (new->next != NULL)
-    new = new->next;
+  while (new_code->next != NULL)
+    new_code = new_code->next;
 
-  return new;
+  return new_code;
 }
 
 

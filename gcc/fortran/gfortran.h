@@ -1053,8 +1053,6 @@ typedef struct gfc_symbol
      the old symbol.  */
 
   struct gfc_symbol *old_symbol, *tlink;
-  /* FIXME: This macro is temporary until we convert everything.  */
-#define new gfc_new
   unsigned mark:1, gfc_new:1;
   /* Nonzero if all equivalences associated with this symbol have been
      processed.  */

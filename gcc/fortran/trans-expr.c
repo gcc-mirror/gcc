@@ -1460,9 +1460,9 @@ gfc_free_interface_mapping (gfc_interface_mapping * mapping)
   for (sym = mapping->syms; sym; sym = nextsym)
     {
       nextsym = sym->next;
-      gfc_free_symbol (sym->new->n.sym);
+      gfc_free_symbol (sym->new_sym->n.sym);
       gfc_free_expr (sym->expr);
-      gfc_free (sym->new);
+      gfc_free (sym->new_sym);
       gfc_free (sym);
     }
   for (cl = mapping->charlens; cl; cl = nextcl)
@@ -1481,14 +1481,14 @@ static gfc_charlen *
 gfc_get_interface_mapping_charlen (gfc_interface_mapping * mapping,
 				   gfc_charlen * cl)
 {
-  gfc_charlen *new;
+  gfc_charlen *new_charlen;
 
-  new = gfc_get_charlen ();
-  new->next = mapping->charlens;
-  new->length = gfc_copy_expr (cl->length);
+  new_charlen = gfc_get_charlen ();
+  new_charlen->next = mapping->charlens;
+  new_charlen->length = gfc_copy_expr (cl->length);
 
-  mapping->charlens = new;
-  return new;
+  mapping->charlens = new_charlen;
+  return new_charlen;
 }
 
 
@@ -1597,7 +1597,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   sm = XCNEW (gfc_interface_sym_mapping);
   sm->next = mapping->syms;
   sm->old = sym;
-  sm->new = new_symtree;
+  sm->new_sym = new_symtree;
   sm->expr = gfc_copy_expr (expr);
   mapping->syms = sm;
 
@@ -1689,10 +1689,10 @@ gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
   gfc_se se;
 
   for (sym = mapping->syms; sym; sym = sym->next)
-    if (sym->new->n.sym->ts.type == BT_CHARACTER
-	&& !sym->new->n.sym->ts.cl->backend_decl)
+    if (sym->new_sym->n.sym->ts.type == BT_CHARACTER
+	&& !sym->new_sym->n.sym->ts.cl->backend_decl)
       {
-	expr = sym->new->n.sym->ts.cl->length;
+	expr = sym->new_sym->n.sym->ts.cl->length;
 	gfc_apply_interface_mapping_to_expr (mapping, expr);
 	gfc_init_se (&se, NULL);
 	gfc_conv_expr (&se, expr);
@@ -1701,7 +1701,7 @@ gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
 	gfc_add_block_to_block (pre, &se.pre);
 	gfc_add_block_to_block (post, &se.post);
 
-	sym->new->n.sym->ts.cl->backend_decl = se.expr;
+	sym->new_sym->n.sym->ts.cl->backend_decl = se.expr;
       }
 }
 
@@ -1931,8 +1931,8 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
   for (sym = mapping->syms; sym; sym = sym->next)
     if (expr->symtree && sym->old == expr->symtree->n.sym)
       {
-	if (sym->new->n.sym->backend_decl)
-	  expr->symtree = sym->new;
+	if (sym->new_sym->n.sym->backend_decl)
+	  expr->symtree = sym->new_sym;
 	else if (sym->expr)
 	  gfc_replace_expr (expr, gfc_copy_expr (sym->expr));
       }
@@ -1964,9 +1964,9 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
       for (sym = mapping->syms; sym; sym = sym->next)
 	if (sym->old == expr->value.function.esym)
 	  {
-	    expr->value.function.esym = sym->new->n.sym;
+	    expr->value.function.esym = sym->new_sym->n.sym;
 	    gfc_map_fcn_formal_to_actual (expr, sym->expr, mapping);
-	    expr->value.function.esym->result = sym->new->n.sym;
+	    expr->value.function.esym->result = sym->new_sym->n.sym;
 	  }
       break;
 

@@ -3680,7 +3680,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   gfc_intrinsic_sym *sym;
   gfc_typespec from_ts;
   locus old_where;
-  gfc_expr *new;
+  gfc_expr *new_expr;
   int rank;
   mpz_t *shape;
 
@@ -3722,29 +3722,29 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   rank = expr->rank;
   shape = expr->shape;
 
-  new = gfc_get_expr ();
-  *new = *expr;
+  new_expr = gfc_get_expr ();
+  *new_expr = *expr;
 
-  new = gfc_build_conversion (new);
-  new->value.function.name = sym->lib_name;
-  new->value.function.isym = sym;
-  new->where = old_where;
-  new->rank = rank;
-  new->shape = gfc_copy_shape (shape, rank);
+  new_expr = gfc_build_conversion (new_expr);
+  new_expr->value.function.name = sym->lib_name;
+  new_expr->value.function.isym = sym;
+  new_expr->where = old_where;
+  new_expr->rank = rank;
+  new_expr->shape = gfc_copy_shape (shape, rank);
 
-  gfc_get_ha_sym_tree (sym->name, &new->symtree);
-  new->symtree->n.sym->ts = *ts;
-  new->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  new->symtree->n.sym->attr.function = 1;
-  new->symtree->n.sym->attr.elemental = 1;
-  new->symtree->n.sym->attr.pure = 1;
-  new->symtree->n.sym->attr.referenced = 1;
-  gfc_intrinsic_symbol(new->symtree->n.sym);
-  gfc_commit_symbol (new->symtree->n.sym);
+  gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
+  new_expr->symtree->n.sym->ts = *ts;
+  new_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+  new_expr->symtree->n.sym->attr.function = 1;
+  new_expr->symtree->n.sym->attr.elemental = 1;
+  new_expr->symtree->n.sym->attr.pure = 1;
+  new_expr->symtree->n.sym->attr.referenced = 1;
+  gfc_intrinsic_symbol(new_expr->symtree->n.sym);
+  gfc_commit_symbol (new_expr->symtree->n.sym);
 
-  *expr = *new;
+  *expr = *new_expr;
 
-  gfc_free (new);
+  gfc_free (new_expr);
   expr->ts = *ts;
 
   if (gfc_is_constant_expr (expr->value.function.actual->expr)
@@ -3779,7 +3779,7 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
   gfc_intrinsic_sym *sym;
   gfc_typespec from_ts;
   locus old_where;
-  gfc_expr *new;
+  gfc_expr *new_expr;
   int rank;
   mpz_t *shape;
 
@@ -3794,28 +3794,28 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
   rank = expr->rank;
   shape = expr->shape;
 
-  new = gfc_get_expr ();
-  *new = *expr;
+  new_expr = gfc_get_expr ();
+  *new_expr = *expr;
 
-  new = gfc_build_conversion (new);
-  new->value.function.name = sym->lib_name;
-  new->value.function.isym = sym;
-  new->where = old_where;
-  new->rank = rank;
-  new->shape = gfc_copy_shape (shape, rank);
+  new_expr = gfc_build_conversion (new_expr);
+  new_expr->value.function.name = sym->lib_name;
+  new_expr->value.function.isym = sym;
+  new_expr->where = old_where;
+  new_expr->rank = rank;
+  new_expr->shape = gfc_copy_shape (shape, rank);
 
-  gfc_get_ha_sym_tree (sym->name, &new->symtree);
-  new->symtree->n.sym->ts = *ts;
-  new->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  new->symtree->n.sym->attr.function = 1;
-  new->symtree->n.sym->attr.elemental = 1;
-  new->symtree->n.sym->attr.referenced = 1;
-  gfc_intrinsic_symbol(new->symtree->n.sym);
-  gfc_commit_symbol (new->symtree->n.sym);
+  gfc_get_ha_sym_tree (sym->name, &new_expr->symtree);
+  new_expr->symtree->n.sym->ts = *ts;
+  new_expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+  new_expr->symtree->n.sym->attr.function = 1;
+  new_expr->symtree->n.sym->attr.elemental = 1;
+  new_expr->symtree->n.sym->attr.referenced = 1;
+  gfc_intrinsic_symbol(new_expr->symtree->n.sym);
+  gfc_commit_symbol (new_expr->symtree->n.sym);
 
-  *expr = *new;
+  *expr = *new_expr;
 
-  gfc_free (new);
+  gfc_free (new_expr);
   expr->ts = *ts;
 
   if (gfc_is_constant_expr (expr->value.function.actual->expr)
