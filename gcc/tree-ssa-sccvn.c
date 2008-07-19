@@ -248,6 +248,24 @@ vn_constant_hash (const void *p1)
   return vc1->hashcode;
 }
 
+/* Lookup a value id for CONSTANT and return it.  If it does not
+   exist returns 0.  */
+
+unsigned int
+get_constant_value_id (tree constant)
+{
+  void **slot;
+  struct vn_constant_s vc;
+  
+  vc.hashcode = iterative_hash_expr (constant, 0);
+  vc.constant = constant;
+  slot = htab_find_slot_with_hash (constant_to_value_id, &vc,
+				   vc.hashcode, NO_INSERT);
+  if (slot)
+    return ((vn_constant_t)*slot)->value_id;
+  return 0;
+}
+
 /* Lookup a value id for CONSTANT, and if it does not exist, create a
    new one and return it.  If it does exist, return it.  */
 

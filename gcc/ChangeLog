@@ -1,3 +1,12 @@
+2008-07-19  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/36864
+	* tree-ssa-sccvn.h (get_constant_value_id): Declare.
+	* tree-ssa-sccvn.c (get_constant_value_id): New function.
+	* tree-ssa-pre.c (get_expr_value_id): For newly created
+	constant value-ids make sure to add the expression to its
+	expression-set.
+
 2008-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36877

@@ -599,7 +599,16 @@ get_expr_value_id (pre_expr expr)
   switch (expr->kind)
     {
     case CONSTANT:
-      return get_or_alloc_constant_value_id (PRE_EXPR_CONSTANT (expr));
+      {
+	unsigned int id;
+	id = get_constant_value_id (PRE_EXPR_CONSTANT (expr));
+	if (id == 0)
+	  {
+	    id = get_or_alloc_constant_value_id (PRE_EXPR_CONSTANT (expr));
+	    add_to_value (id, expr);
+	  }
+	return id;
+      }
     case NAME:
       return VN_INFO (PRE_EXPR_NAME (expr))->value_id;
     case NARY:

@@ -163,6 +163,7 @@ hashval_t vn_reference_compute_hash (const vn_reference_t);
 int vn_reference_eq (const void *, const void *);
 unsigned int get_max_value_id (void);
 unsigned int get_next_value_id (void);
+unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
 VEC (tree, gc) *shared_vuses_from_stmt (tree);
