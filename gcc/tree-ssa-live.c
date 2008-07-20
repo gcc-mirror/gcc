@@ -582,7 +582,8 @@ remove_unused_locals (void)
   var_ann_t ann;
   bitmap global_unused_vars = NULL;
 
-  mark_scope_block_unused (DECL_INITIAL (current_function_decl));
+  if (optimize)
+    mark_scope_block_unused (DECL_INITIAL (current_function_decl));
   /* Assume all locals are unused.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     var_ann (t)->used = false;
@@ -661,7 +662,8 @@ remove_unused_locals (void)
 
 	  if (TREE_CODE (var) == VAR_DECL
 	      && is_global_var (var)
-	      && bitmap_bit_p (global_unused_vars, DECL_UID (var)))
+	      && bitmap_bit_p (global_unused_vars, DECL_UID (var))
+	      && (optimize || DECL_ARTIFICIAL (var)))
 	    *cell = TREE_CHAIN (*cell);
 	  else
 	    cell = &TREE_CHAIN (*cell);
@@ -681,9 +683,11 @@ remove_unused_locals (void)
 	&& TREE_CODE (t) != RESULT_DECL
 	&& !(ann = var_ann (t))->used
 	&& !ann->symbol_mem_tag
-	&& !TREE_ADDRESSABLE (t))
+	&& !TREE_ADDRESSABLE (t)
+	&& (optimize || DECL_ARTIFICIAL (t)))
       remove_referenced_var (t);
-  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
+  if (optimize)
+    remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
 }
 
 

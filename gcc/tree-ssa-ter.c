@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
+#include "flags.h"
 
 
 /* Temporary Expression Replacement (TER)
@@ -364,6 +365,8 @@ is_replaceable_p (tree stmt)
   tree call_expr;
   use_operand_p use_p;
   tree def, use_stmt;
+  location_t locus1, locus2;
+  tree block1, block2;
 
   /* Only consider modify stmts.  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
@@ -386,12 +389,46 @@ is_replaceable_p (tree stmt)
   if (bb_for_stmt (use_stmt) != bb_for_stmt (stmt))
     return false;
 
+  if (GIMPLE_STMT_P (stmt))
+    {
+      locus1 = GIMPLE_STMT_LOCUS (stmt);
+      block1 = GIMPLE_STMT_BLOCK (stmt);
+    }
+  else
+    {
+      locus1 = *EXPR_LOCUS (stmt);
+      block1 = TREE_BLOCK (stmt);
+    }
+  if (GIMPLE_STMT_P (use_stmt))
+    {
+      locus2 = GIMPLE_STMT_LOCUS (use_stmt);
+      block2 = GIMPLE_STMT_BLOCK (use_stmt);
+    }
+  if (TREE_CODE (use_stmt) == PHI_NODE)
+    {
+      locus2 = 0;
+      block2 = NULL_TREE;
+    }
+  else
+    {
+      locus2 = *EXPR_LOCUS (use_stmt);
+      block2 = TREE_BLOCK (use_stmt);
+    }
+
+  if (!optimize
+      && ((locus1 && locus1 != locus2) || (block1 && block1 != block2)))
+    return false;
+
   /* Used in this block, but at the TOP of the block, not the end.  */
   if (TREE_CODE (use_stmt) == PHI_NODE)
     return false;
 
   /* There must be no VDEFs.  */
   if (!(ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF)))
+    return false;
+
+  /* Without alias info we can't move around loads.  */
+  if (stmt_ann (stmt)->references_memory && !optimize)
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
@@ -412,7 +449,6 @@ is_replaceable_p (tree stmt)
   /* Leave any stmt with volatile operands alone as well.  */
   if (stmt_ann (stmt)->has_volatile_ops)
     return false;
-  
 
   return true;
 }

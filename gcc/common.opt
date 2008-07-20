@@ -1157,7 +1157,7 @@ Common Report Var(flag_tree_sra) Optimization
 Perform scalar replacement of aggregates
 
 ftree-ter
-Common Report Var(flag_tree_ter) Optimization
+Common Report Var(flag_tree_ter) Init(1) Optimization
 Replace temporary expressions in the SSA->normal pass
 
 ftree-lrs

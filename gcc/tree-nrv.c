@@ -226,12 +226,18 @@ tree_nrv (void)
   return 0;
 }
 
+static bool
+gate_pass_return_slot (void)
+{
+  return optimize > 0;
+}
+
 struct gimple_opt_pass pass_nrv = 
 {
  {
   GIMPLE_PASS,
   "nrv",				/* name */
-  NULL,					/* gate */
+  gate_pass_return_slot,		/* gate */
   tree_nrv,				/* execute */
   NULL,					/* sub */
   NULL,					/* next */
