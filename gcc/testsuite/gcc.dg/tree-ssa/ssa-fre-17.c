@@ -18,6 +18,6 @@ int foo(int i, int j, int k)
   return f.doms[0LL].dom;
 }
 
-/* { dg-final { scan-tree-dump "Replaced f.doms\\\[0\\\].dom with i_" "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced f.doms\\\[0\\\].dom with i_" "fre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
 
