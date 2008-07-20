@@ -1366,7 +1366,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	if (!lowered)
           tree_lowering_passes (fndecl);
 	bitmap_obstack_initialize (NULL);
-	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)) && optimize)
+	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	  execute_pass_list (pass_early_local_passes.pass.sub);
 	bitmap_obstack_release (NULL);
 	tree_rest_of_compilation (fndecl);

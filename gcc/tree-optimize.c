@@ -341,20 +341,12 @@ execute_init_datastructures (void)
   return 0;
 }
 
-/* Gate: initialize or not the SSA datastructures.  */
-
-static bool
-gate_init_datastructures (void)
-{
-  return (optimize >= 1);
-}
-
 struct gimple_opt_pass pass_init_datastructures =
 {
  {
   GIMPLE_PASS,
   NULL,					/* name */
-  gate_init_datastructures,		/* gate */
+  NULL,					/* gate */
   execute_init_datastructures,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */

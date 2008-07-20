@@ -1,5 +1,23 @@
 2008-07-19  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_add_new_function): Do early local passes.
+	* tree-nrv.c (gate_pass_return_slot): New gate.
+	(pass_nrv): Add the gate.
+	* tree-ssa-coalese.c (hash_ssa_name_by_var, eq_ssa_name_by_var): New
+	functions.
+	(coalesce_ssa_name): Coalesce SSA names.
+	* tree-ssa-live.c (remove_unused_locals): Be more conservative when
+	not optimizing so unused user vars remains visible.
+	* common.opt (flag_tree_ter): Always enable by default.
+	* tree-ssa-ter.c: Include flags.h
+	(is_replaceable_p): Check that locations match; when aliasing is missing
+	be conservative about loads.
+	* tree-optimize.c (gate_init_datastructures): Remove.
+	(pass_init_datastructures): New.
+	* passes.c: Reorder passes so we always go into SSA.
+
+2008-07-19  Jan Hubicka  <jh@suse.cz>
+
 	* doc/extend.texi (flatten attribute): Remove note about unit-at-a-time
 	* doc/invoke.texi (--combine): Likewise.
 	(-finline-functions-called-once): Update levels when enabled.
