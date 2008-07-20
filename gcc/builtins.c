@@ -98,8 +98,8 @@ static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_interclass_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_cexpi (tree, rtx, rtx);
-static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
-static rtx expand_builtin_int_roundingfn_2 (tree, rtx, rtx);
+static rtx expand_builtin_int_roundingfn (tree, rtx);
+static rtx expand_builtin_int_roundingfn_2 (tree, rtx);
 static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
@@ -2464,11 +2464,10 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
    do not need to worry about setting errno to EDOM.
    If expanding via optab fails, lower expression to (int)(floor(x)).
    EXP is the expression that is a call to the builtin function;
-   if convenient, the result should be placed in TARGET.  SUBTARGET may
-   be used as the target for computing one of EXP's operands.  */
+   if convenient, the result should be placed in TARGET.  */
 
 static rtx
-expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
+expand_builtin_int_roundingfn (tree exp, rtx target)
 {
   convert_optab builtin_optab;
   rtx op0, insns, tmp;
@@ -2511,7 +2510,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
      side-effects more the once.  */
   CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
-  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
+  op0 = expand_expr (arg, NULL, VOIDmode, EXPAND_NORMAL);
 
   start_sequence ();
 
@@ -2592,11 +2591,10 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
    conversion (lrint).
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.
-   SUBTARGET may be used as the target for computing one of EXP's operands.  */
+   function; if convenient, the result should be placed in TARGET.  */
 
 static rtx
-expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
+expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 {
   convert_optab builtin_optab;
   rtx op0, insns;
@@ -2635,7 +2633,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
      side-effects more the once.  */
   CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
-  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
+  op0 = expand_expr (arg, NULL, VOIDmode, EXPAND_NORMAL);
 
   start_sequence ();
 
@@ -6207,7 +6205,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_LLCEIL):
     CASE_FLT_FN (BUILT_IN_LFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
-      target = expand_builtin_int_roundingfn (exp, target, subtarget);
+      target = expand_builtin_int_roundingfn (exp, target);
       if (target)
 	return target;
       break;
@@ -6216,7 +6214,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_LLRINT):
     CASE_FLT_FN (BUILT_IN_LROUND):
     CASE_FLT_FN (BUILT_IN_LLROUND):
-      target = expand_builtin_int_roundingfn_2 (exp, target, subtarget);
+      target = expand_builtin_int_roundingfn_2 (exp, target);
       if (target)
 	return target;
       break;
