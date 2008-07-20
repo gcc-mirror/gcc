@@ -474,7 +474,8 @@ build_one_array (tree swtch, int num, tree arr_index_type, tree phi, tree tidx)
   DECL_ARTIFICIAL (decl) = 1;
   TREE_CONSTANT (decl) = 1;
   add_referenced_var (decl);
-  assemble_variable (decl, 0, 0, 0);
+  varpool_mark_needed_node (varpool_node (decl));
+  varpool_finalize_decl (decl);
   mark_sym_for_renaming (decl);
 
   name = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)), NULL_TREE);

@@ -1,3 +1,8 @@
+2008-07-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/36879
+	* gcc.c-torture/execute/20080719-1.c: New testcase.
+
 2008-07-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/tree-ssa/data-dep-1.c: XFAIL.

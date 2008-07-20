@@ -1,3 +1,10 @@
+2008-07-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/36879
+	* tree-switch-conversion.c (build_one_array): Call
+	varpool_mark_needed_node and varpool_finalize_decl 
+	instead of assemble_variable.
+
 2008-07-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_add_new_function): Do early local passes.
