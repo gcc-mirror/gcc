@@ -5129,14 +5129,10 @@ Turning on optimization flags makes the compiler attempt to improve
 the performance and/or code size at the expense of compilation time
 and possibly the ability to debug the program.
 
-The compiler performs optimization based on the knowledge it has of
-the program.  Optimization levels @option{-O} and above, in
-particular, enable @emph{unit-at-a-time} mode, which allows the
-compiler to consider information gained from later functions in
-the file when compiling a function.  Compiling multiple files at
-once to a single output file in @emph{unit-at-a-time} mode allows
-the compiler to use information gained from all of the files when
-compiling each of them.
+The compiler performs optimization based on the knowledge it has of the
+program.  Compiling multiple files at once to a single output file mode allows
+the compiler to use information gained from all of the files when compiling
+each of them.
 
 Not all optimizations are controlled directly by a flag.  Only
 optimizations that have a flag are listed.
@@ -5342,7 +5338,7 @@ caller even if they are not marked @code{inline}.  If a call to a given
 function is integrated, then the function is not output as assembler code
 in its own right.
 
-Enabled if @option{-funit-at-a-time} is enabled.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3} and @option{-Os}.
 
 @item -fearly-inlining
 @opindex fearly-inlining
@@ -6316,39 +6312,11 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -funit-at-a-time
 @opindex funit-at-a-time
-Parse the whole compilation unit before starting to produce code.
-This allows some extra optimizations to take place but consumes
-more memory (in general).  There are some compatibility issues
-with @emph{unit-at-a-time} mode:
-@itemize @bullet
-@item
-enabling @emph{unit-at-a-time} mode may change the order
-in which functions, variables, and top-level @code{asm} statements
-are emitted, and will likely break code relying on some particular
-ordering.  The majority of such top-level @code{asm} statements,
-though, can be replaced by @code{section} attributes.  The
-@option{fno-toplevel-reorder} option may be used to keep the ordering
-used in the input file, at the cost of some optimizations.
+This option is left for compatibility reasons. @option{-funit-at-a-time}
+has no effect, while @option{-fno-unit-at-a-time} implies
+@option{-fno-toplevel-reorder} and @option{-fno-section-anchors}.
 
-@item
-@emph{unit-at-a-time} mode removes unreferenced static variables
-and functions.  This may result in undefined references
-when an @code{asm} statement refers directly to variables or functions
-that are otherwise unused.  In that case either the variable/function
-shall be listed as an operand of the @code{asm} statement operand or,
-in the case of top-level @code{asm} statements the attribute @code{used}
-shall be used on the declaration.
-
-@item
-Static functions now can use non-standard passing conventions that
-may break @code{asm} statements calling functions directly.  Again,
-attribute @code{used} will prevent this behavior.
-@end itemize
-
-As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
-but this scheme may not be supported by future releases of GCC@.
-
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled by default.
 
 @item -fno-toplevel-reorder
 @opindex fno-toplevel-reorder
@@ -6358,6 +6326,10 @@ input file.  When this option is used, unreferenced static variables
 will not be removed.  This option is intended to support existing code
 which relies on a particular ordering.  For new code, it is better to
 use attributes.
+
+Enabled at level @option{-O0}.  When disabled explicitly, it also imply
+@option{-fno-section-anchors} that is otherwise enabled at @option{-O0} on some
+targets.
 
 @item -fweb
 @opindex fweb
@@ -6944,12 +6916,10 @@ limit after inlining inlining is constrained by
 @option{--param large-function-growth}.  This parameter is useful primarily
 to avoid extreme compilation time caused by non-linear algorithms used by the
 backend.
-This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 2700.
 
 @item large-function-growth
 Specifies maximal growth of large function caused by inlining in percents.
-This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 100 which limits large function growth to 2.0 times
 the original size.
 
@@ -6966,7 +6936,6 @@ before applying @option{--param inline-unit-growth}.  The default is 10000
 
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.
-This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 30 which limits unit growth to 1.3 times the original
 size.
 
@@ -15616,7 +15585,7 @@ for any cases where this rule is relaxed.
 @item Each of the following options must be the same when building and using
 the precompiled header:
 
-@gccoptlist{-fexceptions -funit-at-a-time}
+@gccoptlist{-fexceptions}
 
 @item
 Some other command-line options starting with @option{-f},

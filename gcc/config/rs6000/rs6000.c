@@ -2111,7 +2111,7 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
      Skip section anchors for Objective C and Objective C++
      until front-ends fixed.  */
   if (!TARGET_MACHO && lang_hooks.name[4] != 'O')
-    flag_section_anchors = 1;
+    flag_section_anchors = 2;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */

@@ -849,15 +849,28 @@ decode_options (unsigned int argc, const char **argv)
 	}
     }
 
+
+  if (!flag_unit_at_a_time)
+    {
+      flag_section_anchors = 0;
+      flag_toplevel_reorder = 0;
+      flag_unit_at_a_time = 1;
+    }
+  if (!flag_toplevel_reorder)
+    {
+      if (flag_section_anchors == 1)
+        error ("Section anchors must be disabled when toplevel reorder is disabled.");
+      flag_section_anchors = 0;
+    }
+
   if (!optimize)
     {
       flag_merge_constants = 0;
-    }
 
-  if (!no_unit_at_a_time_default)
-    {
-      flag_unit_at_a_time = 1;
-      if (!optimize)
+      /* We disable toplevel reordering at -O0 to disable transformations that
+         might be surprising to end users and to get -fno-toplevel-reorder
+	 tested, but we keep section anchors.  */
+      if (flag_toplevel_reorder == 2)
         flag_toplevel_reorder = 0;
     }
 
