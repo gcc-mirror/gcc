@@ -1,3 +1,9 @@
+2008-07-19  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (expand_builtin_int_roundingfn,
+	expand_builtin_int_roundingfn_2): Do not take subtarget argument;
+	it is not useful.
+
 2008-07-19  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/36864
