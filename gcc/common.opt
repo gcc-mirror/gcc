@@ -1046,7 +1046,7 @@ Common Joined RejectNegative
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model
 
 ftoplevel-reorder
-Common Report Var(flag_toplevel_reorder) Init(1) Optimization
+Common Report Var(flag_toplevel_reorder) Init(2) Optimization
 Reorder top level functions, variables, and asms
 
 ftracer
@@ -1169,7 +1169,7 @@ Common Report Var(flag_tree_vrp) Init(0) Optimization
 Perform Value Range Propagation on trees
 
 funit-at-a-time
-Common Report Var(flag_unit_at_a_time) Optimization
+Common Report Var(flag_unit_at_a_time) Init(1) Optimization
 Compile whole compilation unit at a time
 
 funroll-loops

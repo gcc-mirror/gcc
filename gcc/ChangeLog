@@ -1,5 +1,23 @@
 2008-07-19  Jan Hubicka  <jh@suse.cz>
 
+	* doc/extend.texi (flatten attribute): Remove note about unit-at-a-time
+	* doc/invoke.texi (--combine): Likewise.
+	(-finline-functions-called-once): Update levels when enabled.
+	(-funit-at-a-time): Document new behaviour.
+	(-ftoplevel-reorder): Document that it is enabled -O0 and imply
+	-fno-section-anchors when disabled explicitly.
+	(inline params): They are not ignored now.
+	(precompiled headers): Remove unit-at-a-time as being incompatible.
+	* opts.c (decode_options): Handle unit-at-a-time as alias;
+	imply -fno-section-anchors when toplevel reorder is disabled
+	explicitly.
+	* common.opt (ftoplevel-reorder): Set default value to 2.
+	(funit-at-a-time): Set default value to 1.
+	* config/rs6000/rs6000.c (optimization_options): Set section anchors
+	to 2.
+
+2008-07-19  Jan Hubicka  <jh@suse.cz>
+
 	* builtins.c (expand_builtin_int_roundingfn,
 	expand_builtin_int_roundingfn_2): Do not take subtarget argument;
 	it is not useful.
