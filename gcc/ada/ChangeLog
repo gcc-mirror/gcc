@@ -1,3 +1,7 @@
+2008-07-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnathtml.pl: New file.
+
 2008-07-19  Olivier Hainque  <hainque@adacore.com>
 	 
 	* targtyps.c (get_target_default_allocator_alignment): Use
