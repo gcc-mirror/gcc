@@ -1,3 +1,14 @@
+2008-07-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/tree-ssa/ssa-fre-7.c: XFAIL.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-fre-9.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-fre-17.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-pre-15.c: Ditto.
+	* gcc.dg/tree-ssa/loadpre1.c: PASS.
+
 2008-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36877

@@ -25,6 +25,6 @@ void foo(double (*q)[4], struct Foo *tmp1)
     }
 }
 
-/* { dg-final { scan-tree-dump "Inserted .* &a" "fre" } } */
-/* { dg-final { scan-tree-dump "Replaced tmp1_.\\\(D\\\)->data" "fre" } } */
+/* { dg-final { scan-tree-dump "Inserted .* &a" "fre"  { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Replaced tmp1_.\\\(D\\\)->data" "fre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
