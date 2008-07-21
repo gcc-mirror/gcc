@@ -84,6 +84,11 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
             ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
         }
     }
+  else
+    {
+      if (size0 ((array_t *) ret) == 0)
+	return;
+    }
 
   which = which - 1;
 

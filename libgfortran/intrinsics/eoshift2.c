@@ -63,6 +63,7 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
   index_type dim;
   index_type len;
   index_type n;
+  index_type arraysize;
 
   /* The compiler cannot figure out that these are set, initialize
      them to avoid warnings.  */
@@ -70,11 +71,13 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
   soffset = 0;
   roffset = 0;
 
+  arraysize = size0 ((array_t *) array);
+
   if (ret->data == NULL)
     {
       int i;
 
-      ret->data = internal_malloc_size (size * size0 ((array_t *)array));
+      ret->data = internal_malloc_size (size * arraysize);
       ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
@@ -88,6 +91,14 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
             ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
         }
     }
+  else
+    {
+      if (size0 ((array_t *) ret) == 0)
+	return;
+    }
+
+  if (arraysize == 0 && filler == NULL)
+    return;
 
   which = which - 1;
 

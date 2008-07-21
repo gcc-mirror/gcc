@@ -97,9 +97,42 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type len;
   index_type n;
   int whichloop;
+  index_type arraysize;
 
   if (which < 1 || which > GFC_DESCRIPTOR_RANK (array))
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
+
+  arraysize = size0 ((array_t *) array);
+
+  if (ret->data == NULL)
+    {
+      int i;
+
+      ret->offset = 0;
+      ret->dtype = array->dtype;
+      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+        {
+          ret->dim[i].lbound = 0;
+          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+
+          if (i == 0)
+            ret->dim[i].stride = 1;
+          else
+            ret->dim[i].stride = (ret->dim[i-1].ubound + 1)
+				 * ret->dim[i-1].stride;
+        }
+
+      if (arraysize > 0)
+	ret->data = internal_malloc_size (size * arraysize);
+      else
+	{
+	  ret->data = internal_malloc_size (1);
+	  return;
+	}
+    }
+  
+  if (arraysize == 0)
+    return;
 
   which = which - 1;
   sstride[0] = 0;
@@ -141,34 +174,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   roffset = size;
   soffset = size;
   len = 0;
-
-  if (ret->data == NULL)
-    {
-      int i;
-      index_type arraysize = size0 ((array_t *)array);
-
-      ret->offset = 0;
-      ret->dtype = array->dtype;
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
-        {
-          ret->dim[i].lbound = 0;
-          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
-
-          if (i == 0)
-            ret->dim[i].stride = 1;
-          else
-            ret->dim[i].stride = (ret->dim[i-1].ubound + 1)
-				 * ret->dim[i-1].stride;
-        }
-
-      if (arraysize > 0)
-	ret->data = internal_malloc_size (size * arraysize);
-      else
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
-    }
 
   for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
     {
