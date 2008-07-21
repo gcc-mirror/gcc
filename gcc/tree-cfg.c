@@ -7200,7 +7200,7 @@ execute_warn_function_return (void)
 	      location = EXPR_LOCATION (last);
 	      if (location == UNKNOWN_LOCATION)
 		  location = cfun->function_end_locus;
-	      warning (OPT_Wreturn_type, "%Hcontrol reaches end of non-void function", &location);
+	      warning_at (location, OPT_Wreturn_type, "control reaches end of non-void function");
 	      TREE_NO_WARNING (cfun->decl) = 1;
 	      break;
 	    }

@@ -1,3 +1,16 @@
+2007-07-21  Rafael Avila de Espindola  <espindola@google.com>
+
+	* parser.c (cp_token): Remove in_system_header.
+	(eof_token): Remove in_system_header.
+	(cp_lexer_get_preprocessor_token): Don't set in_system_header.
+	(cp_lexer_set_source_position_from_token): Don't set in_system_header.
+	(cp_parser_member_declaration):  Use in_system_header_at.
+	* pt.c (lookup_template_class): Don't set DECL_IN_SYSTEM_HEADER.
+	(pop_tinst_level): Don't set in_system_header.
+	(instantiate_class_template): Don't set in_system_header.
+	(instantiate_decl): Don't set in_system_header.
+	(instantiate_pending_templates): Don't set in_system_header.
+
 2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36870

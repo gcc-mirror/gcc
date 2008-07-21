@@ -71,8 +71,6 @@ typedef struct cp_token GTY (())
   unsigned char flags;
   /* Identifier for the pragma.  */
   ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
-  /* True if this token is from a system header.  */
-  BOOL_BITFIELD in_system_header : 1;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
   /* True for a CPP_NAME token that is not a keyword (i.e., for which
@@ -97,7 +95,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, false, 0, { NULL },
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, 0, { NULL },
   0
 };
 
@@ -408,7 +406,6 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 			lexer == NULL ? 0 : C_LEX_RAW_STRINGS);
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
-  token->in_system_header = in_system_header;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -478,15 +475,13 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
     }
 }
 
-/* Update the globals input_location and in_system_header and the
-   input file stack from TOKEN.  */
+/* Update the globals input_location and the input file stack from TOKEN.  */
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
   if (token->type != CPP_EOF)
     {
       input_location = token->location;
-      in_system_header = token->in_system_header;
     }
 }
 
@@ -15391,7 +15386,7 @@ cp_parser_member_declaration (cp_parser* parser)
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (pedantic && !token->in_system_header)
+	  if (pedantic && !in_system_header_at (token->location))
 	    pedwarn ("%Hextra %<;%>", &token->location);
 	}
       else

@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_TOPLEV_H
 #define GCC_TOPLEV_H
+#include "input.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -58,6 +59,8 @@ extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
 extern void warning0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern void warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void warning_at (location_t, int, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(3,4);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;

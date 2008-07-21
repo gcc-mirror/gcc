@@ -202,11 +202,6 @@ tree current_function_decl;
    if none.  */
 const char * current_function_func_begin_label;
 
-/* Temporarily suppress certain warnings.
-   This is set while reading code from a system header file.  */
-
-int in_system_header = 0;
-
 /* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
 int flag_detailed_statistics = 0;
