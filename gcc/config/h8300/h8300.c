@@ -111,6 +111,7 @@ static unsigned int  h8300_bitfield_length        (rtx, rtx);
 static unsigned int  h8300_binary_length          (rtx, const h8300_length_table *);
 static bool          h8300_short_move_mem_p       (rtx, enum rtx_code);
 static unsigned int  h8300_move_length            (rtx *, const h8300_length_table *);
+static bool	     h8300_hard_regno_scratch_ok  (unsigned int);
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -5612,6 +5613,20 @@ h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
   return 1;
 }
 
+/* Returns true if register REGNO is safe to be allocated as a scratch
+   register in the current function.  */
+
+static bool
+h8300_hard_regno_scratch_ok (unsigned int regno)
+{
+  if (h8300_current_function_interrupt_function_p ()
+      && ! WORD_REG_USED (regno))
+    return false;
+
+  return true;
+}
+
+
 /* Return nonzero if X is a legitimate constant.  */
 
 int
@@ -5744,6 +5759,9 @@ h8300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG h8300_reorg
+
+#undef TARGET_HARD_REGNO_SCRATCH_OK
+#define TARGET_HARD_REGNO_SCRATCH_OK h8300_hard_regno_scratch_ok
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
