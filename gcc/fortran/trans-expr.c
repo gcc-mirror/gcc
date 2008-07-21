@@ -1927,7 +1927,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 
   /* ...and to the expression's symbol, if it has one.  */
   /* TODO Find out why the condition on expr->symtree had to be moved into
-     the loop rather than being ouside it, as originally.  */
+     the loop rather than being outside it, as originally.  */
   for (sym = mapping->syms; sym; sym = sym->next)
     if (expr->symtree && sym->old == expr->symtree->n.sym)
       {
@@ -2691,7 +2691,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     {
       if (se->direct_byref)
 	{
-	  /* Sometimes, too much indirection can be applied; eg. for
+	  /* Sometimes, too much indirection can be applied; e.g. for
 	     function_result = array_valued_recursive_function.  */
 	  if (TREE_TYPE (TREE_TYPE (se->expr))
 		&& TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr)))
@@ -3934,7 +3934,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 
 
 /* Makes sure se is suitable for passing as a function string parameter.  */
-/* TODO: Need to check all callers fo this function.  It may be abused.  */
+/* TODO: Need to check all callers of this function.  It may be abused.  */
 
 void
 gfc_conv_string_parameter (gfc_se * se)

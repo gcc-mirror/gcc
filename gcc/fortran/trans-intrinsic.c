@@ -2754,7 +2754,7 @@ gfc_conv_intrinsic_index_scan_verify (gfc_se * se, gfc_expr * expr,
   args = (tree *) alloca (sizeof (tree) * 5);
 
   /* Get number of arguments; characters count double due to the
-     string length argument. Kind= is not passed to the libary
+     string length argument. Kind= is not passed to the library
      and thus ignored.  */
   if (expr->value.function.actual->next->next->expr == NULL)
     num_args = 4;
@@ -4666,7 +4666,7 @@ gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 }
 
 
-/* Returns nonzero if the specified intrinsic function call maps directly to a
+/* Returns nonzero if the specified intrinsic function call maps directly to
    an external library call.  Should only be used for functions that return
    arrays.  */
 

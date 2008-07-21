@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
    In fortran all the rhs values of an assignment must be evaluated before
    any assignments take place.  This can require a temporary array to store the
    values.  We also require a temporary when we are passing array expressions
-   or vector subecripts as procedure parameters.
+   or vector subscripts as procedure parameters.
 
    Array sections are passed without copying to a temporary.  These use the
    scalarizer to determine the shape of the section.  The flag
@@ -1645,7 +1645,7 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
 /* Helper routine of gfc_trans_array_constructor to determine if the
    bounds of the loop specified by LOOP are constant and simple enough
    to use with gfc_trans_constant_array_constructor.  Returns the
-   the iteration count of the loop if suitable, and NULL_TREE otherwise.  */
+   iteration count of the loop if suitable, and NULL_TREE otherwise.  */
 
 static tree
 constant_array_constructor_loop_size (gfc_loopinfo * loop)
@@ -1901,8 +1901,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
   gfc_se se;
   int n;
 
-  /* TODO: This can generate bad code if there are ordering dependencies.
-     eg. a callee allocated function and an unknown size constructor.  */
+  /* TODO: This can generate bad code if there are ordering dependencies,
+     e.g., a callee allocated function and an unknown size constructor.  */
   gcc_assert (ss != NULL);
 
   for (; ss != gfc_ss_terminator; ss = ss->loop_chain)
@@ -4536,7 +4536,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
   tmp = gfc_build_array_ref (tmp, offset, NULL);
 
   /* Offset the data pointer for pointer assignments from arrays with
-     subreferences; eg. my_integer => my_type(:)%integer_component.  */
+     subreferences; e.g. my_integer => my_type(:)%integer_component.  */
   if (subref)
     {
       /* Go past the array reference.  */
@@ -4635,7 +4635,7 @@ get_elemental_fcn_charlen (gfc_expr *expr, gfc_se *se)
   arg = expr->value.function.actual;
   gfc_init_interface_mapping (&mapping);
 
-  /* Set se = NULL in the calls to the interface mapping, to supress any
+  /* Set se = NULL in the calls to the interface mapping, to suppress any
      backend stuff.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
     {
@@ -5865,7 +5865,7 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
   if (head == ss)
     {
       /* First operand is scalar.  We build the chain in reverse order, so
-         add the scarar SS after the second operand.  */
+         add the scalar SS after the second operand.  */
       head = head2;
       while (head && head->next != ss)
 	head = head->next;

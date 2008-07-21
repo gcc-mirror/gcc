@@ -1092,7 +1092,7 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 }
 
 /* Comparison between real values; returns 0 if (op1 .op. op2) is true.
-   This function mimics mpr_cmp but takes NaN into account.  */
+   This function mimics mpfr_cmp but takes NaN into account.  */
 
 static int
 compare_real (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
@@ -1159,7 +1159,7 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 
 
 /* Compare a pair of complex numbers.  Naturally, this is only for
-   equality and nonequality.  */
+   equality and inequality.  */
 
 static int
 compare_complex (gfc_expr *op1, gfc_expr *op2)
@@ -2084,7 +2084,7 @@ arith_error (arith rc, gfc_typespec *from, gfc_typespec *to, locus *where)
       gfc_internal_error ("gfc_arith_error(): Bad error code");
     }
 
-  /* TODO: Do something about the error, ie, throw exception, return
+  /* TODO: Do something about the error, i.e., throw exception, return
      NaN, etc.  */
 }
 

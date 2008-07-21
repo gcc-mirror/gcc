@@ -696,7 +696,7 @@ data_desc:
 	      goto syntax;
 	    }
 
-	  if (gfc_notify_std (GFC_STD_F2008, "Fortran F2008: 'G0' in "
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: 'G0' in "
 			      "format at %C") == FAILURE)
 	    return FAILURE;
 
@@ -2489,9 +2489,9 @@ gfc_resolve_dt (gfc_dt *dt)
       else
 	{
 	  /* At this point, we have an extra comma.  If io_unit has arrived as
-	     type chracter, we assume its really the "format" form of the I/O
+	     type character, we assume its really the "format" form of the I/O
 	     statement.  We set the io_unit to the default unit and format to
-	     the chracter expression.  See F95 Standard section 9.4.  */
+	     the character expression.  See F95 Standard section 9.4.  */
 	  io_kind k;
 	  k = dt->extra_comma->value.iokind;
 	  if (e->ts.type == BT_CHARACTER && (k == M_READ || k == M_PRINT))

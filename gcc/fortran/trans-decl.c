@@ -525,7 +525,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      a default initializer; this must be applied each time the variable
      comes into scope it therefore need not be static.  These variables
      are SAVE_NONE but have an initializer.  Otherwise explicitly
-     intitialized variables are SAVE_IMPLICIT and explicitly saved are
+     initialized variables are SAVE_IMPLICIT and explicitly saved are
      SAVE_EXPLICIT.  */
   if (!sym->attr.use_assoc
 	&& (sym->attr.save != SAVE_NONE || sym->attr.data
@@ -1584,7 +1584,7 @@ create_function_arglist (gfc_symbol * sym)
       if (f->sym->attr.proc_pointer)
         type = build_pointer_type (type);
 
-      /* Build a the argument declaration.  */
+      /* Build the argument declaration.  */
       parm = build_decl (PARM_DECL, gfc_sym_identifier (f->sym), type);
 
       /* Fill in arg stuff.  */

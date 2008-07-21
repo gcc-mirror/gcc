@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* The syntax of gfortran modules resembles that of lisp lists, ie a
+/* The syntax of gfortran modules resembles that of lisp lists, i.e. a
    sequence of atoms, which can be left or right parenthesis, names,
    integers or strings.  Parenthesis are always matched which allows
    us to skip over sections at high speed without having to know
@@ -446,7 +446,7 @@ associate_integer_pointer (pointer_info *p, void *gp)
    either store the pointer from an already-known value or create a
    fixup structure in order to store things later.  Returns zero if
    the reference has been actually stored, or nonzero if the reference
-   must be fixed later (ie associate_integer_pointer must be called
+   must be fixed later (i.e., associate_integer_pointer must be called
    sometime later.  Returns the pointer_info structure.  */
 
 static pointer_info *
@@ -3062,7 +3062,7 @@ mio_namelist (gfc_symbol *sym)
 }
 
 
-/* Save/restore lists of gfc_interface stuctures.  When loading an
+/* Save/restore lists of gfc_interface structures.  When loading an
    interface, we are really appending to the existing list of
    interfaces.  Checking for duplicate and ambiguous interfaces has to
    be done later when all symbols have been loaded.  */
@@ -3272,7 +3272,7 @@ find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
 }
 
 
-/* A recursive function to look for a speficic symbol by name and by
+/* A recursive function to look for a specific symbol by name and by
    module.  Whilst several symtrees might point to one symbol, its
    is sufficient for the purposes here than one exist.  Note that
    generic interfaces are distinguished as are symbols that have been

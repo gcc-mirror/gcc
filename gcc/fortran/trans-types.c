@@ -361,7 +361,7 @@ gfc_init_kinds (void)
       if (kind == 16)
 	saw_r16 = true;
 
-      /* Careful we don't stumble a wierd internal mode.  */
+      /* Careful we don't stumble a weird internal mode.  */
       gcc_assert (r_index <= 0 || gfc_real_kinds[r_index-1].kind != kind);
       /* Or have too many modes for the allocated space.  */
       gcc_assert (r_index != MAX_REAL_KINDS);
@@ -393,7 +393,7 @@ gfc_init_kinds (void)
       gfc_default_integer_kind = 8;
 
       /* Even if the user specified that the default integer kind be 8,
-         the numerica storage size isn't 64.  In this case, a warning will
+         the numeric storage size isn't 64.  In this case, a warning will
 	 be issued when NUMERIC_STORAGE_SIZE is used.  */
       gfc_numeric_storage_size = 4 * 8;
     }
@@ -1065,8 +1065,8 @@ gfc_get_element_type (tree type)
    ARRAYS comment.
 
    The data component points to the first element in the array.  The
-   offset field is the position of the origin of the array (ie element
-   (0, 0 ...)).  This may be outsite the bounds of the array.
+   offset field is the position of the origin of the array (i.e. element
+   (0, 0 ...)).  This may be outside the bounds of the array.
 
    An element is accessed by
     data[offset + index0*stride0 + index1*stride1 + index2*stride2]
@@ -1078,7 +1078,7 @@ gfc_get_element_type (tree type)
    elements of the origin (2^63 on 64-bit machines).  For example
     integer, dimension (80000:90000, 80000:90000, 2) :: array
    may not work properly on 32-bit machines because 80000*80000 >
-   2^31, so the calculation for stride02 would overflow.  This may
+   2^31, so the calculation for stride2 would overflow.  This may
    still work, but I haven't checked, and it relies on the overflow
    doing the right thing.
 
@@ -2163,7 +2163,7 @@ gfc_type_for_size (unsigned bits, int unsignedp)
 	}
 
       /* Handle TImode as a special case because it is used by some backends
-         (eg. ARM) even though it is not available for normal use.  */
+         (e.g. ARM) even though it is not available for normal use.  */
 #if HOST_BITS_PER_WIDE_INT >= 64
       if (bits == TYPE_PRECISION (intTI_type_node))
 	return intTI_type_node;

@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
    Foundation, Inc.
    Contributed by Paul Brook
 
@@ -137,7 +137,7 @@ typedef enum
   /* A non-elemental function call returning an array.  The call is executed
      before entering the scalarization loop, storing the result in a
      temporary.  This temporary is then used inside the scalarization loop.
-     Simple assignments, eg. a(:) = fn() are handles without a temporary
+     Simple assignments, e.g. a(:) = fn(), are handled without a temporary
      as a special case.  */
   GFC_SS_FUNCTION,
 
@@ -654,7 +654,7 @@ struct lang_decl		GTY(())
 #define GFC_TYPE_ARRAY_SIZE(node) (TYPE_LANG_SPECIFIC(node)->size)
 #define GFC_TYPE_ARRAY_OFFSET(node) (TYPE_LANG_SPECIFIC(node)->offset)
 #define GFC_TYPE_ARRAY_AKIND(node) (TYPE_LANG_SPECIFIC(node)->akind)
-/* Code should use gfc_get_dtype instead of accesing this directly.  It may
+/* Code should use gfc_get_dtype instead of accessing this directly.  It may
    not be known when the type is created.  */
 #define GFC_TYPE_ARRAY_DTYPE(node) (TYPE_LANG_SPECIFIC(node)->dtype)
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
