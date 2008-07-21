@@ -103,6 +103,11 @@ eoshift3 (gfc_array_char * const restrict ret,
             ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
         }
     }
+  else
+    {
+      if (size0 ((array_t *) ret) == 0)
+	return;
+    }
 
 
   extent[0] = 1;
