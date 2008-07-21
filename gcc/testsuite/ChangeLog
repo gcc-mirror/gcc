@@ -1,3 +1,13 @@
+2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36870
+	* g++.dg/ext/has_nothrow_assign_odr.C: New.
+	* g++.dg/ext/has_nothrow_copy_odr.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor_odr.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign.C: Adjust.
+	* g++.dg/ext/has_nothrow_copy.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor.C: Likewise.
+
 2008-07-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/36822
