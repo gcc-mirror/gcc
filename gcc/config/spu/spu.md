@@ -1718,26 +1718,83 @@
   [(set_attr "type" "multi0")
    (set_attr "length" "80")])
 
-(define_insn_and_split "div<mode>3"
+(define_expand "div<mode>3"
+  [(parallel
+    [(set (match_operand:VSF 0 "spu_reg_operand" "")	
+	  (div:VSF (match_operand:VSF 1 "spu_reg_operand" "")
+		   (match_operand:VSF 2 "spu_reg_operand" "")))
+     (clobber (match_scratch:VSF 3 ""))
+     (clobber (match_scratch:VSF 4 ""))
+     (clobber (match_scratch:VSF 5 ""))])]
+  ""
+  "")
+
+(define_insn_and_split "*div<mode>3_fast"
   [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
 	(div:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
 		 (match_operand:VSF 2 "spu_reg_operand" "r")))
    (clobber (match_scratch:VSF 3 "=&r"))
-   (clobber (match_scratch:VSF 4 "=&r"))]
-  ""
+   (clobber (match_scratch:VSF 4 "=&r"))
+   (clobber (scratch:VSF))]
+  "flag_unsafe_math_optimizations"
   "#"
   "reload_completed"
   [(set (match_dup:VSF 0)
 	(div:VSF (match_dup:VSF 1)
 		 (match_dup:VSF 2)))
    (clobber (match_dup:VSF 3))
-   (clobber (match_dup:VSF 4))]
+   (clobber (match_dup:VSF 4))
+   (clobber (scratch:VSF))]
   {
     emit_insn (gen_frest_<mode>(operands[3], operands[2]));
     emit_insn (gen_fi_<mode>(operands[3], operands[2], operands[3]));
     emit_insn (gen_mul<mode>3(operands[4], operands[1], operands[3]));
     emit_insn (gen_fnms_<mode>(operands[0], operands[4], operands[2], operands[1]));
     emit_insn (gen_fma_<mode>(operands[0], operands[0], operands[3], operands[4]));
+    DONE;
+  })
+
+(define_insn_and_split "*div<mode>3_adjusted"
+  [(set (match_operand:VSF 0 "spu_reg_operand" "=r")
+	(div:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
+		 (match_operand:VSF 2 "spu_reg_operand" "r")))
+   (clobber (match_scratch:VSF 3 "=&r"))
+   (clobber (match_scratch:VSF 4 "=&r"))
+   (clobber (match_scratch:VSF 5 "=&r"))]
+  "!flag_unsafe_math_optimizations"
+  "#"
+  "reload_completed"
+  [(set (match_dup:VSF 0)
+	(div:VSF (match_dup:VSF 1)
+		 (match_dup:VSF 2)))
+   (clobber (match_dup:VSF 3))
+   (clobber (match_dup:VSF 4))
+   (clobber (match_dup:VSF 5))]
+  {
+    emit_insn (gen_frest_<mode> (operands[3], operands[2]));
+    emit_insn (gen_fi_<mode> (operands[3], operands[2], operands[3]));
+    emit_insn (gen_mul<mode>3 (operands[4], operands[1], operands[3]));
+    emit_insn (gen_fnms_<mode> (operands[5], operands[4], operands[2], operands[1]));
+    emit_insn (gen_fma_<mode> (operands[3], operands[5], operands[3], operands[4]));
+
+   /* Due to truncation error, the quotient result may be low by 1 ulp.
+      Conditionally add one if the estimate is too small in magnitude.  */
+
+    emit_move_insn (gen_lowpart (<F2I>mode, operands[4]),
+		    spu_const (<F2I>mode, 0x80000000ULL));
+    emit_move_insn (gen_lowpart (<F2I>mode, operands[5]),
+		    spu_const (<F2I>mode, 0x3f800000ULL));
+    emit_insn (gen_selb (operands[5], operands[5], operands[1], operands[4]));
+
+    emit_insn (gen_add<f2i>3 (gen_lowpart (<F2I>mode, operands[4]),
+			      gen_lowpart (<F2I>mode, operands[3]),
+			      spu_const (<F2I>mode, 1)));
+    emit_insn (gen_fnms_<mode> (operands[0], operands[2], operands[4], operands[1]));
+    emit_insn (gen_mul<mode>3 (operands[0], operands[0], operands[5]));
+    emit_insn (gen_cgt_<f2i> (gen_lowpart (<F2I>mode, operands[0]),
+			      gen_lowpart (<F2I>mode, operands[0]),
+			      spu_const (<F2I>mode, -1)));
+    emit_insn (gen_selb (operands[0], operands[3], operands[4], operands[0]));
     DONE;
   })
 

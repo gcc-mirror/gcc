@@ -1,3 +1,14 @@
+2008-07-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.md ("div<mode>3"): Convert into expander, move
+	original insn and splitter contents into ...
+	("*div<mode>3_fast"): ... this new pattern.  Enable only if
+	flag_unsafe_math_optimizations.  Add dummy scratch register.
+	("*div<mode>3_adjusted"): New insn and splitter.  Enable only if
+	!flag_unsafe_math_optimizations.  Returns number with next
+	highest magnitude if this is still less or equal to the true
+	quotient in magnitude.
+
 2008-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36877
