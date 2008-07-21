@@ -99,32 +99,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   if (d < 0)
     internal_error (&dtp->common, "Unspecified precision");
 
-  /* Use sprintf to print the number in the format +D.DDDDe+ddd
-     For an N digit exponent, this gives us (MIN_FIELD_WIDTH-5)-N digits
-     after the decimal point, plus another one before the decimal point.  */
-
   sign = calculate_sign (dtp, sign_bit);
-
-  /* #   The result will always contain a decimal point, even if no
-   *     digits follow it
-   *
-   * -   The converted value is to be left adjusted on the field boundary
-   *
-   * +   A sign (+ or -) always be placed before a number
-   *
-   * MIN_FIELD_WIDTH  minimum field width
-   *
-   * *   (ndigits-1) is used as the precision
-   *
-   *   e format: [-]d.dddeÂ±dd where there is one digit before the
-   *   decimal-point character and the number of digits after it is
-   *   equal to the precision. The exponent always contains at least two
-   *   digits; if the value is zero, the exponent is 00.
-   */
-
-  /* Check the given string has punctuation in the correct places.  */
-  if (d != 0 && (buffer[2] != '.' || buffer[ndigits + 2] != 'e'))
-      internal_error (&dtp->common, "printf is broken");
+  
+  /* The following code checks the given string has punctuation in the correct
+     places.  Uncomment if needed for debugging.
+     if (d != 0 && ((buffer[2] != '.' && buffer[2] != ',')
+		    || buffer[ndigits + 2] != 'e'))
+       internal_error (&dtp->common, "printf is broken");  */
 
   /* Read the exponent back in.  */
   e = atoi (&buffer[ndigits + 3]) + 1;
@@ -702,7 +683,29 @@ OUTPUT_FLOAT_FMT_G(16)
 
 #undef OUTPUT_FLOAT_FMT_G
 
+
 /* Define a macro to build code for write_float.  */
+
+  /* Note: Before output_float is called, sprintf is used to print to buffer the
+     number in the format +D.DDDDe+ddd. For an N digit exponent, this gives us
+     (MIN_FIELD_WIDTH-5)-N digits after the decimal point, plus another one
+     before the decimal point.
+
+     #   The result will always contain a decimal point, even if no
+	 digits follow it
+
+     -   The converted value is to be left adjusted on the field boundary
+
+     +   A sign (+ or -) always be placed before a number
+
+     MIN_FIELD_WIDTH  minimum field width
+
+     *   (ndigits-1) is used as the precision
+
+     e format: [-]d.dddeÂ±dd where there is one digit before the
+       decimal-point character and the number of digits after it is
+       equal to the precision. The exponent always contains at least two
+       digits; if the value is zero, the exponent is 00.  */
 
 #ifdef HAVE_SNPRINTF
 
