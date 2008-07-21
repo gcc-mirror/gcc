@@ -1,3 +1,16 @@
+2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR c++/36871
+	PR c++/36872
+        * g++.dg/ext/has_nothrow_copy.C: Rename to...
+        * g++.dg/ext/has_nothrow_copy-1.C: ... this.
+        * g++.dg/ext/has_nothrow_copy-2.C: New.
+        * g++.dg/ext/has_nothrow_copy-3.C: Likewise.
+        * g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+        * g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+        * g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+        * g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+
 2008-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/36773
