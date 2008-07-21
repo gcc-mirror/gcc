@@ -60,7 +60,7 @@ struct fun_macro
   size_t offset;
 
   /* The line the macro name appeared on.  */
-  unsigned int line;
+  source_location line;
 
   /* Zero-based index of argument being currently lexed.  */
   unsigned int argc;

@@ -42,7 +42,8 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
   const unsigned char *cur, *base, *next_line, *rlimit;
   cppchar_t c, last_c;
   unsigned flags;
-  int lines, col;
+  linenum_type lines;
+  int col;
   source_location loc;
 
  restart:
