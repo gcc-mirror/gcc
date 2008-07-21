@@ -129,7 +129,7 @@ gfc_create_var (tree type, const char *prefix)
 }
 
 
-/* If the an expression is not constant, evaluate it now.  We assign the
+/* If the expression is not constant, evaluate it now.  We assign the
    result of the expression to an artificially created variable VAR, and
    return a pointer to the VAR_DECL node for this variable.  */
 

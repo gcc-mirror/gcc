@@ -1,3 +1,30 @@
+2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* expr.c (gfc_check_pointer_assign): Fix typo in string.
+	* io.c (check_format): Fix typo in string.  Fix comment typos.
+	* parse.c (gfc_global_used): Likewise.
+	* resolve.c (resolve_allocate_expr): Likewise.
+	* symbol.c (gfc_set_default_type): Likewise.
+	* arith.c: Fix typos in comments.
+	* array.c: Likewise.
+	* data.c: Likewise.
+	* decl.c: Likewise.
+	* dependency.c: Likewise.
+	* f95-lang.c: Likewise.
+	* gfortran.h: Likewise.
+	* matchexp.c: Likewise.
+	* module.c: Likewise.
+	* primary.c: Likewise.
+	* scanner.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans-common.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-expr.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* trans-types.c: Likewise.
+	* trans.c: Likewise.
+	* trans.h: Likewise.
+
 2008-07-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36795

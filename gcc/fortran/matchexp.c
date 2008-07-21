@@ -254,7 +254,7 @@ match_level_1 (gfc_expr **result)
 /* As a GNU extension we support an expanded level-2 expression syntax.
    Via this extension we support (arbitrary) nesting of unary plus and
    minus operations following unary and binary operators, such as **.
-   The grammar of section 7.1.1.3 is effectively rewitten as:
+   The grammar of section 7.1.1.3 is effectively rewritten as:
 
 	R704  mult-operand     is level-1-expr [ power-op ext-mult-operand ]
 	R704' ext-mult-operand is add-op ext-mult-operand

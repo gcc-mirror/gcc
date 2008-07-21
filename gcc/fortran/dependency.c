@@ -37,7 +37,7 @@ typedef enum
 {
   GFC_DEP_ERROR,
   GFC_DEP_EQUAL,	/* Identical Ranges.  */
-  GFC_DEP_FORWARD,	/* eg. a(1:3), a(2:4).  */
+  GFC_DEP_FORWARD,	/* e.g., a(1:3), a(2:4).  */
   GFC_DEP_OVERLAP,	/* May overlap in some other way.  */
   GFC_DEP_NODEP		/* Distinct ranges.  */
 }
@@ -523,7 +523,7 @@ gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
 
 
 /* Return 1 if e1 and e2 are equivalenced arrays, either
-   directly or indirectly; ie. equivalence (a,b) for a and b
+   directly or indirectly; i.e., equivalence (a,b) for a and b
    or equivalence (a,c),(b,c).  This function uses the equiv_
    lists, generated in trans-common(add_equivalences), that are
    guaranteed to pick up indirect equivalences.  We explicitly
@@ -1183,7 +1183,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
   while (lref && rref)
     {
       /* We're resolving from the same base symbol, so both refs should be
-	 the same type.  We traverse the reference chain intil we find ranges
+	 the same type.  We traverse the reference chain until we find ranges
 	 that are not equal.  */
       gcc_assert (lref->type == rref->type);
       switch (lref->type)

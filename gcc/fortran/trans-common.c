@@ -955,7 +955,7 @@ find_equivalence (segment_info *n)
    segment list multiple times to include indirect equivalences.  Since
    a new segment_info can inserted at the beginning of the segment list,
    depending on its offset, we have to force a final pass through the
-   loop by demanding that completion sees a pass with no matches; ie.
+   loop by demanding that completion sees a pass with no matches; i.e.,
    all symbols with equiv_built set and no new equivalences found.  */
 
 static void

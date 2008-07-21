@@ -1,3 +1,7 @@
+2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gfortran.dg/fmt_g0_3.f08: Fix typo in expected error message.
+
 2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR c++/36871

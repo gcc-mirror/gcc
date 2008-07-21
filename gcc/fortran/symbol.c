@@ -272,7 +272,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
         {
           /* Dummy args to a BIND(C) routine may not be interoperable if
              they are implicitly typed.  */
-          gfc_warning_now ("Implicity declared variable '%s' at %L may not "
+          gfc_warning_now ("Implicitly declared variable '%s' at %L may not "
                            "be C interoperable but it is a dummy argument to "
                            "the BIND(C) procedure '%s' at %L", sym->name,
                            &(sym->declared_at), sym->ns->proc_name->name,

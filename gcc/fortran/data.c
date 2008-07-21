@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Notes for DATA statement implementation:
 									       
    We first assign initial value to each symbol by gfc_assign_data_value
-   during resolveing DATA statement. Refer to check_data_variable and
+   during resolving DATA statement. Refer to check_data_variable and
    traverse_data_list in resolve.c.
 									       
    The complexity exists in the handling of array section, implied do
@@ -144,7 +144,7 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
 
 /* Create a character type initialization expression from RVALUE.
    TS [and REF] describe [the substring of] the variable being initialized.
-   INIT is thh existing initializer, not NULL.  Initialization is performed
+   INIT is the existing initializer, not NULL.  Initialization is performed
    according to normal assignment rules.  */
 
 static gfc_expr *
@@ -754,7 +754,7 @@ formalize_structure_cons (gfc_expr *expr)
 }
 
 
-/* Make sure an initialization expression is in normalized form.  Ie. all
+/* Make sure an initialization expression is in normalized form, i.e., all
    elements of the constructors are in the correct order.  */
 
 static void

@@ -2689,7 +2689,7 @@ gfc_match_rvalue (gfc_expr **result)
 }
 
 
-/* Match a variable, ie something that can be assigned to.  This
+/* Match a variable, i.e. something that can be assigned to.  This
    starts as a symbol, can be a structure component or an array
    reference.  It can be a function if the function doesn't have a
    separate RESULT variable.  If the symbol has not been previously
@@ -2714,7 +2714,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
      we force the changed_symbols mechanism to work by setting
      host_flag to 0. This prevents valid symbols that have the name
      of keywords, such as 'end', being turned into variables by
-     failed matching to assignments for, eg., END INTERFACE.  */
+     failed matching to assignments for, e.g., END INTERFACE.  */
   if (gfc_current_state () == COMP_MODULE
       || gfc_current_state () == COMP_INTERFACE
       || gfc_current_state () == COMP_CONTAINS)

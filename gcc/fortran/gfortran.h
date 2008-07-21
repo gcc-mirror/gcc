@@ -78,7 +78,7 @@ char *alloca ();
 #define stringize(x) expand_macro(x)
 #define expand_macro(x) # x
 
-/* For a the runtime library, a standard prefix is a requirement to
+/* For the runtime library, a standard prefix is a requirement to
    avoid cluttering the namespace with things nobody asked for.  It's
    ugly to look at and a pain to type when you add the prefix by hand,
    so we hide it behind a macro.  */
@@ -304,7 +304,7 @@ extern const mstring save_status[];
 enum gfc_isym_id
 {
   /* GFC_ISYM_NONE is used for intrinsics which will never be seen by
-     the backend (eg. KIND).  */
+     the backend (e.g. KIND).  */
   GFC_ISYM_NONE = 0,
   GFC_ISYM_ABORT,
   GFC_ISYM_ABS,
@@ -693,7 +693,7 @@ typedef struct
   unsigned cray_pointer:1, cray_pointee:1;
 
   /* The symbol is a derived type with allocatable components, pointer 
-     components or private components, possibly nested.  zer_comp
+     components or private components, possibly nested.  zero_comp
      is true if the derived type has no component at all.  */
   unsigned alloc_comp:1, pointer_comp:1, private_comp:1, zero_comp:1;
 
@@ -1960,7 +1960,7 @@ typedef struct gfc_finalizer
 {
   struct gfc_finalizer* next;
   gfc_symbol* procedure;
-  locus where; /* Where the FINAL declaration occured.  */
+  locus where; /* Where the FINAL declaration occurred.  */
 }
 gfc_finalizer;
 

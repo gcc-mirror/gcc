@@ -1917,7 +1917,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
 
 /* Open a new file and start scanning from that file. Returns SUCCESS
-   if everything went OK, FAILURE otherwise.  If form == FORM_UKNOWN
+   if everything went OK, FAILURE otherwise.  If form == FORM_UNKNOWN
    it tries to determine the source form from the filename, defaulting
    to free form.  */
 

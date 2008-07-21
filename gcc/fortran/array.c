@@ -1577,7 +1577,7 @@ resolve_array_list (gfc_constructor *p)
 }
 
 /* Resolve character array constructor. If it has a specified constant character
-   length, pad/trunkate the elements here; if the length is not specified and
+   length, pad/truncate the elements here; if the length is not specified and
    all elements are of compile-time known length, emit an error as this is
    invalid.  */
 
@@ -1675,7 +1675,7 @@ got_charlen:
 	 max_length only if they pass.  */
       gfc_extract_int (expr->ts.cl->length, &found_length);
 
-      /* Now pad/trunkate the elements accordingly to the specified character
+      /* Now pad/truncate the elements accordingly to the specified character
 	 length.  This is ok inside this conditional, as in the case above
 	 (without typespec) all elements are verified to have the same length
 	 anyway.  */
