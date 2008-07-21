@@ -186,6 +186,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       map(map&& __x)
       : _M_t(std::forward<_Rep_type>(__x._M_t)) { }
+
+      /**
+       *  @brief  Builds a %map from an initializer_list.
+       *  @param  l  An initializer_list.
+       *  @param  comp  A comparison object.
+       *  @param  a  An allocator object.
+       *
+       *  Create a %map consisting of copies of the elements in the
+       *  initializer_list @a l.
+       *  This is linear in N if the range is already sorted, and NlogN
+       *  otherwise (where N is @a l.size()).
+       */
+      map(initializer_list<value_type> __l,
+	  const _Compare& __c = _Compare(),
+	  const allocator_type& __a = allocator_type())
+	: _M_t(__c, __a)
+      { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 #endif
 
       /**
@@ -257,6 +274,25 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	// NB: DR 675.
 	this->clear();
 	this->swap(__x); 
+	return *this;
+      }
+
+      /**
+       *  @brief  %Map list assignment operator.
+       *  @param  l  An initializer_list.
+       *
+       *  This function fills a %map with copies of the elements in the
+       *  initializer list @a l.
+       *
+       *  Note that the assignment completely changes the %map and
+       *  that the resulting %map's size is the same as the number
+       *  of elements assigned.  Old data may be lost.
+       */
+      map&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l.begin(), __l.end());
 	return *this;
       }
 #endif
@@ -476,7 +512,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *                inserted.
        *
        *  Complexity similar to that of the range constructor.
-       *
        */
       void
       insert(std::initializer_list<value_type> __list)

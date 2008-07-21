@@ -45,6 +45,7 @@
 #include <cmath>
 #include <algorithm>
 #include <debug/debug.h>
+#include <initializer_list>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -144,6 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ///  Construct an array with the same size and values in @a ia.
       valarray(const indirect_array<_Tp>&);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      ///  Construct an array with an initializer_list of values.
+      valarray(initializer_list<_Tp>);
+#endif
+
       template<class _Dom>
 	valarray(const _Expr<_Dom, _Tp>& __e);
 
@@ -208,6 +214,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  ia  Array slice to get values from.
        */
       valarray<_Tp>& operator=(const indirect_array<_Tp>&);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Assign elements to an initializer_list.
+       *
+       *  Assign elements of array to values in @a l.  Results are undefined
+       *  if @a l does not have the same size as this array.
+       *
+       *  @param  l  initializer_list to get values from.
+       */
+      valarray& operator=(initializer_list<_Tp>);
+#endif
 
       template<class _Dom> valarray<_Tp>&
 	operator= (const _Expr<_Dom, _Tp>&);
@@ -615,6 +633,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	(__ia._M_array, __ia._M_index, _Array<_Tp>(_M_data), _M_size);
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    inline
+    valarray<_Tp>::valarray(initializer_list<_Tp> __l)
+      : _M_size(__l.size()), _M_data(__valarray_get_storage<_Tp>(__l.size()))
+    { std::__valarray_copy_construct (__l.begin(), __l.end(), _M_data); }
+#endif
+
   template<typename _Tp> template<class _Dom>
     inline
     valarray<_Tp>::valarray(const _Expr<_Dom, _Tp>& __e)
@@ -637,6 +663,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       std::__valarray_copy(__v._M_data, _M_size, _M_data);
       return *this;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    inline valarray<_Tp>&
+    valarray<_Tp>::operator=(initializer_list<_Tp> __l)
+    {
+      _GLIBCXX_DEBUG_ASSERT(_M_size == __l.size());
+      std::__valarray_copy(__l.begin(), __l.size(), _M_data);
+    }
+#endif
 
   template<typename _Tp>
     inline valarray<_Tp>&

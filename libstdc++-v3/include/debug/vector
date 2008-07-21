@@ -106,6 +106,11 @@ namespace __debug
 	this->_M_swap(__x);
 	__x._M_guaranteed_capacity = 0;
       }
+
+      vector(initializer_list<value_type> __l,
+	     const allocator_type& __a = allocator_type())
+	: _Base(__l, __a), _Safe_base(),
+	  _M_guaranteed_capacity(__l.size()) { }
 #endif
 
       ~vector() { }
@@ -128,6 +133,15 @@ namespace __debug
 	swap(__x);
 	return *this;
       }
+
+      vector&
+      operator=(initializer_list<value_type> __l)
+      {
+	static_cast<_Base&>(*this) = __l;
+	this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
+	return *this;
+      }
 #endif
 
       template<typename _InputIterator>
@@ -147,6 +161,16 @@ namespace __debug
 	this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      assign(initializer_list<value_type> __l)
+      {
+	_Base::assign(__l);
+	this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
+      }
+#endif
 
       using _Base::get_allocator;
 
@@ -367,6 +391,10 @@ namespace __debug
 					iterator>::__type
         insert(iterator __position, _Tp&& __x)
         { return emplace(__position, std::move(__x)); }
+
+      void
+      insert(iterator __position, initializer_list<value_type> __l)
+      { this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
       void

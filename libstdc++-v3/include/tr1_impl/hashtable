@@ -434,6 +434,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         void
         insert(_InputIterator __first, _InputIterator __last);
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      void
+      insert(initializer_list<value_type> __l)
+      { this->insert(__l.begin(), __l.end()); }
+#endif
+
       iterator
       erase(iterator);
 

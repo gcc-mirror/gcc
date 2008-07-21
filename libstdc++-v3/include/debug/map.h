@@ -98,6 +98,11 @@ namespace __debug
       map(map&& __x)
       : _Base(std::forward<map>(__x)), _Safe_base()
       { this->_M_swap(__x); }
+
+      map(initializer_list<value_type> __l,
+	  const _Compare& __c = _Compare(),
+	  const allocator_type& __a = allocator_type())
+	: _Base(__l, __c, __a), _Safe_base() { }
 #endif
 
       ~map() { }
@@ -117,6 +122,14 @@ namespace __debug
         // NB: DR 675.
 	clear();
 	swap(__x);
+	return *this;
+      }
+
+      map&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l);
 	return *this;
       }
 #endif
@@ -197,6 +210,12 @@ namespace __debug
 	return std::pair<iterator, bool>(iterator(__res.first, this),
 					 __res.second);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      insert(std::initializer_list<value_type> __list)
+      { _Base::insert(__list); }
+#endif
 
       iterator
       insert(iterator __position, const value_type& __x)

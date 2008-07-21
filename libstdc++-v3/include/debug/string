@@ -115,6 +115,12 @@ namespace __gnu_debug
       : _Base(__gnu_debug::__check_valid_range(__begin, __end), __end, __a)
       { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
+      : _Base(__l, __a)
+      { }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     ~basic_string() { }
 
     basic_string&
@@ -141,6 +147,16 @@ namespace __gnu_debug
       this->_M_invalidate_all();
       return *this;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    basic_string&
+    operator=(initializer_list<_CharT> __l)
+    {
+      *static_cast<_Base*>(this) = __l;
+      this->_M_invalidate_all();
+      return *this;
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
     // 21.3.2 iterators:
     iterator
@@ -259,6 +275,16 @@ namespace __gnu_debug
       return *this;
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    basic_string&
+    operator+=(initializer_list<_CharT> __l)
+    {
+      _M_base() += __l;
+      this->_M_invalidate_all();
+      return *this;
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     basic_string&
     append(const basic_string& __str)
     {
@@ -372,6 +398,16 @@ namespace __gnu_debug
 	return *this;
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    basic_string&
+    assign(initializer_list<_CharT> __l)
+    {
+      _Base::assign(__l);
+      this->_M_invalidate_all();
+      return *this;
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     basic_string&
     insert(size_type __pos1, const basic_string& __str)
     {
@@ -440,6 +476,15 @@ namespace __gnu_debug
 	_Base::insert(__p.base(), __first, __last);
 	this->_M_invalidate_all();
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    void
+    insert(iterator __p, initializer_list<_CharT> __l)
+    {
+      _Base::insert(__p, __l);
+      this->_M_invalidate_all();
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
     basic_string&
     erase(size_type __pos = 0, size_type __n = _Base::npos)
@@ -563,6 +608,17 @@ namespace __gnu_debug
 	this->_M_invalidate_all();
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      basic_string& replace(iterator __i1, iterator __i2,
+			    initializer_list<_CharT> __l)
+      {
+	__glibcxx_check_erase_range(__i1, __i2);
+	_Base::replace(__i1.base(), __i2.base(), __l);
+	this->_M_invalidate_all();
+	return *this;
+      }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
     size_type
     copy(_CharT* __s, size_type __n, size_type __pos = 0) const

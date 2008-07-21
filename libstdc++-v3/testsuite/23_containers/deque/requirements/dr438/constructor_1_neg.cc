@@ -19,7 +19,7 @@
 // USA.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1375 }
+// { dg-error "no matching" "" { target *-*-* } 1443 }
 // { dg-excess-errors "" }
 
 #include <deque>

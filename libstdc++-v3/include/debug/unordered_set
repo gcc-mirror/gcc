@@ -41,6 +41,7 @@
 # include <c++0x_warning.h>
 #endif
 
+#include <initializer_list>
 #include <debug/safe_association.h>
 #include <debug/safe_iterator.h>
 
@@ -65,6 +66,7 @@ namespace __debug
 
     public:
       typedef typename _Safe_assoc::size_type       size_type;
+      typedef typename _Safe_assoc::value_type      value_type;
       typedef typename _Safe_assoc::hasher          hasher;
       typedef typename _Safe_assoc::key_equal       key_equal;
       typedef typename _Safe_assoc::allocator_type allocator_type;
@@ -86,6 +88,13 @@ namespace __debug
 	: _Safe_assoc(__f, __l, __n, __hf, __eql, __a)
         { }
 
+      unordered_set(initializer_list<value_type> __l,
+		    size_type __n = 10,
+		    const hasher& __hf = hasher(),
+		    const key_equal& __eql = key_equal(),
+		    const allocator_type& __a = allocator_type())
+	: _Safe_assoc(__l, __n, __hf, __eql, __a) { }
+
       unordered_set(const _Safe_assoc& __x) 
       : _Safe_assoc(__x), _Safe_base() { }
 
@@ -98,6 +107,14 @@ namespace __debug
         // NB: DR 675.
 	clear();
 	swap(__x);
+	return *this;
+      }
+
+      unordered_set&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l);
 	return *this;
       }
 
@@ -162,6 +179,7 @@ namespace __debug
 
     public:
       typedef typename _Safe_assoc::size_type       size_type;
+      typedef typename _Safe_assoc::value_type      value_type;
       typedef typename _Safe_assoc::hasher          hasher;
       typedef typename _Safe_assoc::key_equal       key_equal;
       typedef typename _Safe_assoc::allocator_type allocator_type;
@@ -183,6 +201,13 @@ namespace __debug
 	: _Safe_assoc(__f, __l, __n, __hf, __eql, __a)
         { }
 
+      unordered_multiset(initializer_list<value_type> __l,
+			 size_type __n = 10,
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+	: _Safe_assoc(__l, __n, __hf, __eql, __a) { }
+
       unordered_multiset(const _Safe_assoc& __x) 
       : _Safe_assoc(__x), _Safe_base() { }
 
@@ -195,6 +220,14 @@ namespace __debug
         // NB: DR 675.
 	clear();
 	swap(__x);
+	return *this;
+      }
+
+      unordered_multiset&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l);
 	return *this;
       }
 
