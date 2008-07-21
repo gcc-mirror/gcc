@@ -1,5 +1,9 @@
 2008-07-21  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR rtl-optimization/33642
+	* gcc.c-torture/compile/pr11832.c: Skip for CRIS.
+	* gcc.c-torture/compile/pr33009.c: Likewise.
+
 	PR middle-end/36509
 	* gcc.dg/Wstrict-aliasing-float-ptr-int-obj.c: XFAIL.
 
