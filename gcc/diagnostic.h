@@ -183,9 +183,9 @@ extern diagnostic_context *global_dc;
 #define sorrycount diagnostic_kind_count (global_dc, DK_SORRY)
 
 /* Returns nonzero if warnings should be emitted.  */
-#define diagnostic_report_warnings_p()			\
+#define diagnostic_report_warnings_p(LOC)			\
   (!inhibit_warnings					\
-   && !(in_system_header && !warn_system_headers))
+   && !(in_system_header_at (LOC) && !warn_system_headers))
 
 #define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
 

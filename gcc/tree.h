@@ -3051,7 +3051,7 @@ struct tree_parm_decl GTY(())
 /* Nonzero for a given ..._DECL node means that no warnings should be
    generated just because this node is unused.  */
 #define DECL_IN_SYSTEM_HEADER(NODE) \
-  (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.in_system_header_flag)
+  (in_system_header_at (DECL_SOURCE_LOCATION (NODE)))
 
   /* Used to indicate that this DECL has weak linkage.  */
 #define DECL_WEAK(NODE) (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.weak_flag)
@@ -3179,7 +3179,6 @@ struct tree_decl_with_vis GTY(())
  unsigned shadowed_for_var_p : 1;
 
  /* Don't belong to VAR_DECL exclusively.  */
- unsigned in_system_header_flag : 1;
  unsigned weak_flag:1;
  unsigned seen_in_bind_expr : 1;
  unsigned comdat_flag : 1;
@@ -3191,7 +3190,7 @@ struct tree_decl_with_vis GTY(())
 
  /* Belongs to VAR_DECL exclusively.  */
  ENUM_BITFIELD(tls_model) tls_model : 3;
- /* 11 unused bits. */
+ /* 12 unused bits. */
 };
 
 /* In a VAR_DECL that's static,

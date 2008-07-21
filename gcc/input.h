@@ -41,6 +41,9 @@ typedef struct GTY (())
   int line;
 
   int column;
+
+  /* In a system header?. */
+  bool sysp;
 } expanded_location;
 
 extern expanded_location expand_location (source_location);
@@ -59,5 +62,7 @@ extern location_t input_location;
 
 #define input_line LOCATION_LINE (input_location)
 #define input_filename LOCATION_FILE (input_location)
+#define in_system_header_at(LOC) ((expand_location (LOC)).sysp != 0)
+#define in_system_header (in_system_header_at (input_location))
 
 #endif

@@ -239,7 +239,6 @@ fe_file_change (const struct line_map *new_map)
     }
 
   update_header_times (new_map->to_file);
-  in_system_header = new_map->sysp != 0;
   input_location = new_map->start_location;
 }
 

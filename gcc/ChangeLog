@@ -1,3 +1,35 @@
+2007-07-21  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in: Replace toplev.h with TOPLEV_H.
+	* c-decl.c (merge_decls): Don't set DECL_IN_SYSTEM_HEADER.
+	* c-lex.c (fe_file_change): Don't set in_system_header.
+	* c-parser.c (c_token): Remove in_system_header.
+	(c_lex_one_token): Don't set in_system_header.
+	(c_parser_set_source_position_from_token): Don't set in_system_header.
+	* diagnostic.c (diagnostic_report_diagnostic): Use location from
+	diagnostic_info.
+	(warning_at): New.
+	* diagnostic.h (diagnostic_report_warnings_p): Add LOC argument.
+	* flags.h (in_system_header): Remove.
+	* function.c (saved_in_system_header): Remove.
+	(push_cfun): Don't set in_system_header.
+	(pop_cfun): Don't set in_system_header.
+	(push_struct_function): Don't set in_system_header.
+	* input.h (expanded_location): Add sysp.
+	(in_system_header_at): New.
+	(in_system_header): New.
+	* toplev.c (in_system_header): Remove.
+	* toplev.h: Include input.h
+	(warning_at): New.
+	* tree-cfg.c (execute_warn_function_return): Call warning_at.
+	* tree-ssa.c (warn_uninit): Call warning_at.
+	(warn_uninitialized_var): Update calls to warn_uninit.
+	(warn_uninitialized_phi): Update calls to warn_uninit.
+	* tree.c (make_node_stat): Don't set DECL_IN_SYSTEM_HEADER.
+	(expand_location): Initialize xloc.sysp.
+	* tree.h (DECL_IN_SYSTEM_HEADER): Use in_system_header_at.
+	(tree_decl_with_vis): Remove in_system_header_flag.
+
 2008-07-21  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/36822

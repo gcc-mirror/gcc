@@ -143,11 +143,6 @@ extern HOST_WIDE_INT larger_than_size;
 extern bool warn_frame_larger_than;
 extern HOST_WIDE_INT frame_larger_than_size;
 
-/* Temporarily suppress certain warnings.
-   This is set while reading code from a system header file.  */
-
-extern int in_system_header;
-
 /* Nonzero for -dp: annotate the assembly with a comment describing the
    pattern and alternative used.  */
 
