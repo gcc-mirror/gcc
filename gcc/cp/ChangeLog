@@ -1,3 +1,10 @@
+2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36870
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Use
+	TYPE_NOTHROW_P, not TREE_NOTHROW.
+	(trait_expr_value): Likewise.
+
 2008-07-18  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/36407

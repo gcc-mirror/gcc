@@ -97,9 +97,7 @@ int main()
   assert (PTEST (C));
   assert (PTEST (C[]));
   assert (PTEST (D));
-#ifndef __PIC__
-  assert (PTEST (E));
-#endif
+  assert (NTEST (E));
   assert (NTEST (E1));
   assert (NTEST (F));
   assert (NTEST (G));
