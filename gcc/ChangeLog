@@ -1,3 +1,8 @@
+2008-07-21  DJ Delorie  <dj@redhat.com>
+
+	* config/h8300/h8300.c (h8300_hard_regno_scratch_ok): New.
+	(TARGET_HARD_REGNO_SCRATCH_OK): Define.
+
 2008-07-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.md ("div<mode>3"): Convert into expander, move
