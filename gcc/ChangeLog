@@ -1,3 +1,9 @@
+2008-07-21  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/36822
+	* recog.c (asm_operand_ok): Change the order of the extra
+	memory constraint checks.
+
 2008-07-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/36879

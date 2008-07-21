@@ -1686,15 +1686,13 @@ asm_operand_ok (rtx op, const char *constraint)
 		result = 1;
 	    }
 #ifdef EXTRA_CONSTRAINT_STR
+	  else if (EXTRA_MEMORY_CONSTRAINT (c, constraint))
+	    /* Every memory operand can be reloaded to fit.  */
+	    result = result || memory_operand (op, VOIDmode);
+	  else if (EXTRA_ADDRESS_CONSTRAINT (c, constraint))
+	    /* Every address operand can be reloaded to fit.  */
+	    result = result || address_operand (op, VOIDmode);
 	  else if (EXTRA_CONSTRAINT_STR (op, c, constraint))
-	    result = 1;
-	  else if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
-		   /* Every memory operand can be reloaded to fit.  */
-		   && memory_operand (op, VOIDmode))
-	    result = 1;
-	  else if (EXTRA_ADDRESS_CONSTRAINT (c, constraint)
-		   /* Every address operand can be reloaded to fit.  */
-		   && address_operand (op, VOIDmode))
 	    result = 1;
 #endif
 	  break;
