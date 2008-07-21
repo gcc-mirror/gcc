@@ -4677,8 +4677,20 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
     return false;
 
   for (; fns; fns = OVL_NEXT (fns))
-    if (!TYPE_NOTHROW_P (TREE_TYPE (OVL_CURRENT (fns))))
-      return false;
+    {
+      tree fn = OVL_CURRENT (fns);
+ 
+      if (assign_p)
+	{
+	  if (copy_fn_p (fn) == 0)
+	    continue;
+	}
+      else if (copy_fn_p (fn) <= 0)
+	continue;
+
+      if (!TYPE_NOTHROW_P (TREE_TYPE (fn)))
+	return false;
+    }
 
   return true;
 }

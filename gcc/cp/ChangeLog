@@ -1,3 +1,10 @@
+2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36871
+	PR c++/36872
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Only check
+	copy constructors and copy assignment operators proper.
+
 2008-07-21  Rafael Avila de Espindola  <espindola@google.com>
 
 	* parser.c (cp_token): Remove in_system_header.
