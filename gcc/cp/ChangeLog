@@ -1,3 +1,18 @@
+2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* call.c: Fix comment typos.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cxx-pretty-print.c: Likewise.
+	* decl.c: Likewise.
+	* init.c: Likewise.
+	* name-lookup.c: Likewise.
+	* operators.def: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+
 2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/36871

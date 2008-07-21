@@ -1578,7 +1578,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 	   a class derived from that class (_class.base.init_).  */
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
 	{
-	  /* Build a representation of a the qualified name suitable
+	  /* Build a representation of the qualified name suitable
 	     for use as the operand to "&" -- even though the "&" is
 	     not actually present.  */
 	  member = build2 (OFFSET_REF, TREE_TYPE (member), decl, member);

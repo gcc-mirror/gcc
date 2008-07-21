@@ -853,7 +853,7 @@ struct language_function GTY(())
 #define cp_function_chain (cfun->language)
 
 /* In a constructor destructor, the point at which all derived class
-   destroying/construction has been has been done. Ie. just before a
+   destroying/construction has been done.  I.e., just before a
    constructor returns, or before any base class destroying will be done
    in a destructor.  */
 
@@ -1917,7 +1917,7 @@ struct lang_decl GTY(())
 
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  This is used for both static member
-   VAR_DECLS, and FUNTION_DECLS that are defined in the class.  */
+   VAR_DECLS, and FUNCTION_DECLS that are defined in the class.  */
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
  (DECL_LANG_SPECIFIC (DECL)->decl_flags.initialized_in_class)
 
@@ -3199,7 +3199,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
       template <class T> struct S { friend void f(T) {}; };
    the declaration of `void f(int)' generated when S<int> is
    instantiated will not be a DECL_TEMPLATE_INSTANTIATION, but will be
-   a DECL_FRIEND_PSUEDO_TEMPLATE_INSTANTIATION.  */
+   a DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION.  */
 #define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
   (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
 

@@ -452,7 +452,7 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
      reinterpret_cast < type-id > ( expression )
      const_cast < type-id > ( expression )
      typeid ( expression )
-     typeif ( type-id )  */
+     typeid ( type-id )  */
 
 static void
 pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
@@ -810,7 +810,7 @@ pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
 {
   switch (TREE_CODE (t))
     {
-      /* Handle unfortunate OFFESET_REF overloading here.  */
+      /* Handle unfortunate OFFSET_REF overloading here.  */
     case OFFSET_REF:
       if (TYPE_P (TREE_OPERAND (t, 0)))
 	{
@@ -2016,7 +2016,7 @@ pp_cxx_template_parameter (cxx_pretty_printer *pp, tree t)
 	pp_cxx_identifier (pp, "...");
       if (DECL_NAME (parameter))
 	pp_cxx_tree_identifier (pp, DECL_NAME (parameter));
-      /* FIXME: Chech if we should print also default argument.  */
+      /* FIXME: Check if we should print also default argument.  */
       break;
 
     case PARM_DECL:

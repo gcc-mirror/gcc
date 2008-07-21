@@ -801,7 +801,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
 	     && TREE_CODE (TREE_CHAIN (field)) == FIELD_DECL)
 	field = TREE_CHAIN (field);
 
-      /* For ObjC ABI purposes, the "packed" size of a base class is the
+      /* For ObjC ABI purposes, the "packed" size of a base class is
 	 the sum of the offset and the size (in bits) of the last field
 	 in the class.  */
       DECL_SIZE (base)
@@ -1525,7 +1525,7 @@ synth_module_prologue (void)
   const struct gcc_debug_hooks *const save_hooks = debug_hooks;
 
   /* Suppress outputting debug symbols, because
-     dbxout_init hasn'r been called yet.  */
+     dbxout_init hasn't been called yet.  */
   write_symbols = NO_DEBUG;
   debug_hooks = &do_nothing_debug_hooks;
 

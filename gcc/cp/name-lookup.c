@@ -131,7 +131,7 @@ struct binding_table_s GTY(())
   binding_entry * GTY((length ("%h.chain_count"))) chain;
 
   /* The number of chains in this table.  This is the length of the
-     the member "chain" considered as an array.  */
+     member "chain" considered as an array.  */
   size_t chain_count;
 
   /* Number of "binding_entry"s in this table.  */
@@ -782,7 +782,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	      tree previous = function_binding->value;
 
 	      /* In case either x or previous is declared to throw an exception,
-	         make sure both exception speficications are equal.  */
+	         make sure both exception specifications are equal.  */
 	      if (decls_match (x, previous))
 		{
 		  tree x_exception_spec = NULL_TREE;

@@ -1645,7 +1645,7 @@ decay_conversion (tree exp)
   return exp;
 }
 
-/* Perform prepatory conversions, as part of the "usual arithmetic
+/* Perform preparatory conversions, as part of the "usual arithmetic
    conversions".  In particular, as per [expr]:
 
      Whenever an lvalue expression appears as an operand of an
@@ -3299,7 +3299,7 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 							TREE_TYPE (type1)))
 	return pointer_diff (op0, op1, common_type (type0, type1));
       /* In all other cases except pointer - int, the usual arithmetic
-	 rules aply.  */
+	 rules apply.  */
       else if (!(code0 == POINTER_TYPE && code1 == INTEGER_TYPE))
 	{
 	  common = 1;
@@ -3821,7 +3821,7 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	 For them, this optimization is safe only if
 	 both args are zero-extended or both are sign-extended.
 	 Otherwise, we might change the result.
-	 Eg, (short)-1 | (unsigned short)-1 is (int)-1
+	 E.g., (short)-1 | (unsigned short)-1 is (int)-1
 	 but calculated in (unsigned short) it would be (unsigned short)-1.  */
 
       if (shorten && none_complex)

@@ -1,3 +1,7 @@
+2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* objc-act.c: Fix comment typos.
+
 2008-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc-act.c (objc_start_class_interface,

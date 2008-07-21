@@ -683,7 +683,7 @@ c_build_qualified_type (tree type, int type_quals)
    arrays correctly.  In particular, if TYPE is an array of T's, and
    TYPE_QUALS is non-empty, returns an array of qualified T's.
 
-   FLAGS determines how to deal with illformed qualifications. If
+   FLAGS determines how to deal with ill-formed qualifications. If
    tf_ignore_bad_quals is set, then bad qualifications are dropped
    (this is permitted if TYPE was introduced via a typedef or template
    type parameter). If bad qualifications are dropped and tf_warning
@@ -795,8 +795,8 @@ cp_build_qualified_type_real (tree type,
       return make_pack_expansion (t);
     }
 
-  /* A reference or method type shall not be cv qualified.
-     [dcl.ref], [dct.fct]  */
+  /* A reference or method type shall not be cv-qualified.
+     [dcl.ref], [dcl.fct]  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TREE_CODE (type) == REFERENCE_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE))
