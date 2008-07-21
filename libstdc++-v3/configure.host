@@ -308,6 +308,11 @@ case "${host}" in
           abi_baseline_pair=${try_cpu}-linux-gnu
         fi
     esac
+    case "${host}" in
+      arm*-*-linux-*eabi)
+	port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
+	;;
+    esac
     ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
