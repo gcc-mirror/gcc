@@ -11,9 +11,9 @@ int foo() {
   float* r;
 
   if (flag) {
-    q = (float*) &x;  /* { dg-warning "type-punn" } */
+    q = (float*) &x;  /* { dg-warning "type-punn" "" { xfail *-*-* } } */
   } else {
-    q = (float*) &y;  /* { dg-warning "type-punn" } */
+    q = (float*) &y;  /* { dg-warning "type-punn" "" { xfail *-*-* } } */
   }
 
   *q = 1.0;
