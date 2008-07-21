@@ -1,3 +1,24 @@
+2008-07-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* include/line-map.h (linenum_type): New typedef.
+	(struct line_map): Use it.
+	(SOURCE_LINE): Second arguments is a LOCATION not a LINE.
+	(SOURCE_COLUMN): Likewise.
+	* macro.c (_cpp_builtin_macro_text): Use linenum_type. Don't store
+	source_location values in a variable of type linenum_type.
+	* directives.c (struct if_stack): Use linenum_type.
+	(strtoul_for_line): Rename as strtolinenum.
+	(do_line): Use linenum_type.
+	(do_linemarker): Use linenum_type and strtolinenum.
+	(_cpp_do_file_change): Use linenum_t.
+	* line-map.c (linemap_add): Likewise.
+	(linemap_line_start): Likewise.
+	* traditional.c (struct fun_macro): 'line' is a source_location.
+	* errors.c (print_location): Use linenum_type.
+	* directives-only.c (_cpp_preprocess_dir_only): Likewise.
+	* internal.h (CPP_INCREMENT_LINE): Likewise.
+	* lex.c (_cpp_skip_block_comment): Use source_location.
+	
 2008-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* include/cpplib.h (NODE_CONDITIONAL): New.

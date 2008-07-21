@@ -68,7 +68,7 @@ struct cset_converter
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
     const struct line_maps *line_table = PFILE->line_table; \
     const struct line_map *map = &line_table->maps[line_table->used-1]; \
-    unsigned int line = SOURCE_LINE (map, line_table->highest_line); \
+    linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
   } while (0)
 
@@ -585,7 +585,7 @@ extern int _cpp_do__Pragma (cpp_reader *);
 extern void _cpp_init_directives (cpp_reader *);
 extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
-				 unsigned int, unsigned int);
+				 linenum_type, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
 
 /* In directives.c */

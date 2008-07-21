@@ -85,7 +85,7 @@ linemap_free (struct line_maps *set)
 
 const struct line_map *
 linemap_add (struct line_maps *set, enum lc_reason reason,
-	     unsigned int sysp, const char *to_file, unsigned int to_line)
+	     unsigned int sysp, const char *to_file, linenum_type to_line)
 {
   struct line_map *map;
   source_location start_location = set->highest_location + 1;
@@ -182,13 +182,13 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 }
 
 source_location
-linemap_line_start (struct line_maps *set, unsigned int to_line,
+linemap_line_start (struct line_maps *set, linenum_type to_line,
 		    unsigned int max_column_hint)
 {
   struct line_map *map = &set->maps[set->used - 1];
   source_location highest = set->highest_location;
   source_location r;
-  unsigned int last_line = SOURCE_LINE (map, set->highest_line);
+  linenum_type last_line = SOURCE_LINE (map, set->highest_line);
   int line_delta = to_line - last_line;
   bool add_map = false;
   if (line_delta < 0

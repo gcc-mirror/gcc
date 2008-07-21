@@ -34,6 +34,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
    (e.g. a #line directive in C).  */
 enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 
+/* The type of line numbers.  */
+typedef unsigned int linenum_type;
+
 /* A logical line/column number, i.e. an "index" into a line_map.  */
 /* Long-term, we want to use this to replace struct location_s (in input.h),
    and effectively typedef source_location location_t.  */
@@ -57,7 +60,7 @@ typedef void *(*line_map_realloc) (void *, size_t);
 struct line_map GTY(())
 {
   const char *to_file;
-  unsigned int to_line;
+  linenum_type to_line;
   source_location start_location;
   int included_from;
   ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
@@ -119,7 +122,7 @@ extern void linemap_check_files_exited (struct line_maps *);
    the highest_location).  */
 
 extern source_location linemap_line_start
-(struct line_maps *set, unsigned int to_line,  unsigned int max_column_hint);
+(struct line_maps *set, linenum_type to_line,  unsigned int max_column_hint);
 
 /* Add a mapping of logical source line to physical source file and
    line number.
@@ -134,7 +137,7 @@ extern source_location linemap_line_start
    maps, so any stored line_map pointers should not be used.  */
 extern const struct line_map *linemap_add
   (struct line_maps *, enum lc_reason, unsigned int sysp,
-   const char *to_file, unsigned int to_line);
+   const char *to_file, linenum_type to_line);
 
 /* Given a logical line, returns the map from which the corresponding
    (source file, line) pair can be deduced.  */
@@ -148,11 +151,11 @@ extern void linemap_print_containing_files (struct line_maps *,
 					    const struct line_map *);
 
 /* Converts a map and a source_location to source line.  */
-#define SOURCE_LINE(MAP, LINE) \
-  ((((LINE) - (MAP)->start_location) >> (MAP)->column_bits) + (MAP)->to_line)
+#define SOURCE_LINE(MAP, LOC) \
+  ((((LOC) - (MAP)->start_location) >> (MAP)->column_bits) + (MAP)->to_line)
 
-#define SOURCE_COLUMN(MAP, LINE) \
-  (((LINE) - (MAP)->start_location) & ((1 << (MAP)->column_bits) - 1))
+#define SOURCE_COLUMN(MAP, LOC) \
+  (((LOC) - (MAP)->start_location) & ((1 << (MAP)->column_bits) - 1))
 
 /* Returns the last source line within a map.  This is the (last) line
    of the #include, or other directive, that caused a map change.  */

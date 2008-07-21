@@ -118,7 +118,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 {
   const struct line_map *map;
   const uchar *result = NULL;
-  unsigned int number = 1;
+  linenum_type number = 1;
 
   switch (node->value.builtin)
     {
@@ -200,11 +200,10 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
-      if (CPP_OPTION (pfile, traditional))
-	number = pfile->line_table->highest_line;
-      else
-	number = pfile->cur_token[-1].src_loc;
-      number = SOURCE_LINE (map, number);
+      number = SOURCE_LINE (map, 
+			    CPP_OPTION (pfile, traditional) 
+			    ? pfile->line_table->highest_line
+			    : pfile->cur_token[-1].src_loc);
       break;
 
       /* __STDC__ has the value 1 under normal circumstances.
