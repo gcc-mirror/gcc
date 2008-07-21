@@ -96,6 +96,11 @@ namespace __debug
       set(set&& __x)
       : _Base(std::forward<set>(__x)), _Safe_base()
       { this->_M_swap(__x); }
+
+      set(initializer_list<value_type> __l,
+	  const _Compare& __comp = _Compare(),
+	  const allocator_type& __a = allocator_type())
+	: _Base(__l, __comp, __a), _Safe_base() { }
 #endif
 
       ~set() { }
@@ -115,6 +120,14 @@ namespace __debug
         // NB: DR 675.
 	clear();
 	swap(__x);
+	return *this;
+      }
+
+      set&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l);
 	return *this;
       }
 #endif
@@ -201,6 +214,12 @@ namespace __debug
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first, __last);
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      insert(initializer_list<value_type> __l)
+      { _Base::insert(__l); }
+#endif
 
       void
       erase(iterator __position)

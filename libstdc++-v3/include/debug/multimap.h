@@ -99,6 +99,11 @@ namespace __debug
       multimap(multimap&& __x)
       : _Base(std::forward<multimap>(__x)), _Safe_base()
       { this->_M_swap(__x); }
+
+      multimap(initializer_list<value_type> __l,
+	       const _Compare& __c = _Compare(),
+	       const allocator_type& __a = allocator_type())
+	: _Base(__l, __c, __a), _Safe_base() { }
 #endif
 
       ~multimap() { }
@@ -118,6 +123,14 @@ namespace __debug
         // NB: DR 675.
 	clear();
 	swap(__x);
+	return *this;
+      }
+
+      multimap&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l);
 	return *this;
       }
 #endif
@@ -184,6 +197,12 @@ namespace __debug
       iterator
       insert(const value_type& __x)
       { return iterator(_Base::insert(__x), this); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      insert(std::initializer_list<value_type> __list)
+      { _Base::insert(__list); }
+#endif
 
       iterator
       insert(iterator __position, const value_type& __x)

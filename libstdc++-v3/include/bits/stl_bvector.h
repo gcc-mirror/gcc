@@ -62,6 +62,8 @@
 #ifndef _STL_BVECTOR_H
 #define _STL_BVECTOR_H 1
 
+#include <initializer_list>
+
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   typedef unsigned long _Bit_type;
@@ -529,6 +531,14 @@ template<typename _Alloc>
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     vector(vector&& __x)
     : _Base(std::forward<_Base>(__x)) { }
+
+    vector(initializer_list<bool> __l,
+	   const allocator_type& __a = allocator_type())
+      : _Base(__a)
+    {
+      _M_initialize_range(__l.begin(), __l.end(),
+			  random_access_iterator_tag());
+    }
 #endif
 
     template<typename _InputIterator>
@@ -566,6 +576,13 @@ template<typename _Alloc>
       this->swap(__x); 
       return *this;
     }
+
+    vector&
+    operator=(initializer_list<bool> __l)
+    {
+      this->assign (__l.begin(), __l.end());
+      return *this;
+    }
 #endif
 
     // assign(), a generalized assignment member function.  Two
@@ -584,6 +601,12 @@ template<typename _Alloc>
 	_M_assign_dispatch(__first, __last, _Integral());
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    void
+    assign(initializer_list<bool> __l)
+    { this->assign(__l.begin(), __l.end()); }
+#endif
+    
     iterator
     begin()
     { return this->_M_impl._M_start; }
@@ -776,6 +799,11 @@ template<typename _Alloc>
     void
     insert(iterator __position, size_type __n, const bool& __x)
     { _M_fill_insert(__position, __n, __x); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    void insert(iterator __p, initializer_list<bool> __l)
+    { this->insert(__p, __l.begin(), __l.end()); }
+#endif
 
     void
     pop_back()

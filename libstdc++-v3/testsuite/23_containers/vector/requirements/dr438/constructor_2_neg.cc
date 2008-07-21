@@ -19,7 +19,7 @@
 // USA.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 926 }
+// { dg-error "no matching" "" { target *-*-* } 998 }
 // { dg-excess-errors "" }
 
 #include <vector>

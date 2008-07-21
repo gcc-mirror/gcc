@@ -308,7 +308,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       __rc_string_base(__rc_string_base&& __rcs)
       : _M_dataplus(__rcs._M_get_allocator(), __rcs._M_data())
-      { __rcs._M_data(_S_empty_rep._M_refcopy()); }      
+      { __rcs._M_data(_S_empty_rep._M_refcopy()); }
+
+      __rc_string_base(std::initializer_list<_CharT> __l, const _Alloc& __a)
+      : _M_dataplus(__a, _S_construct(__l.begin(), __l.end(), __a)) { }
 #endif
 
       __rc_string_base(size_type __n, _CharT __c, const _Alloc& __a);

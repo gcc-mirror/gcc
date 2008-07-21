@@ -730,6 +730,13 @@ namespace regex_constants
 	: _M_flags(__f), _M_pattern(__first, __last), _M_mark_count(0)
         { _M_compile(); }
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      basic_regex(initializer_list<_Ch_type> __l,
+		  flag_type __f = regex_constants::ECMAScript)
+	: _M_flags(__f), _M_pattern(__l.begin(), __l.end()), _M_mark_count(0)
+        { _M_compile(); }
+#endif
+
       /**
        * @brief Destroys a basic regular expression.
        */
@@ -853,6 +860,13 @@ namespace regex_constants
         assign(_InputIterator __first, _InputIterator __last,
 	       flag_type __flags = regex_constants::ECMAScript)
         { return this->assign(string_type(__first, __last), __flags); }
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      basic_regex&
+      assign(initializer_list<_Ch_type> __l,
+	     flag_type __f = regex_constants::ECMAScript)
+      { return this->assign(__l.begin(), __l.end(), __f); }
+#endif
 
       // [7.8.4] const operations
       /**

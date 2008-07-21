@@ -147,9 +147,12 @@ GLIBCXX_3.4 {
     # Names not in an 'extern' block are mangled names.
 
     # std::string
-    _ZNSsC*;
+    _ZNSsC[12][EI][PRjmvN]*;
     _ZNSsD*;
-    _ZNSs[0-9][a-z]*;
+    _ZNSs[0-58-9][a-z]*;
+    _ZNSs[67][a-z]*E[PRcjmv]*;
+    _ZNSs7[a-z]*EES2_[NPRjm]*;
+    _ZNSs7[a-z]*EES2_S[12]*;
     _ZNSs12_Alloc_hiderC*;
     _ZNSs12_M_leak_hardEv;
     _ZNSs12_S_constructE[jm]cRKSaIcE;
@@ -172,9 +175,9 @@ GLIBCXX_3.4 {
     _ZNSs4_Rep20_S_empty_rep_storageE;
     _ZNSs4_Rep11_S_max_sizeE;
     _ZNSs4_Rep11_S_terminalE;
-    _ZNSsaSE*;
+    _ZNSsaSE[PRc]*;
     _ZNSsixE*;
-    _ZNSspLE*;
+    _ZNSspLE[PRc]*;
     _ZNKSs[0-9][a-z]*;
     _ZNKSs[0-9][0-9][a-z]*;
     _ZNKSs[a-z]*;
@@ -189,9 +192,12 @@ GLIBCXX_3.4 {
     _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_E*;
 
     # std::wstring
-    _ZNSbIwSt11char_traitsIwESaIwEEC*;
+    _ZNSbIwSt11char_traitsIwESaIwEEC[12][EI][PRjmvN]*;
     _ZNSbIwSt11char_traitsIwESaIwEED*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][a-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][a-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[67][a-z]*E[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjm]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_M_leak_hardEv;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jm]wRKS1_;
@@ -214,9 +220,9 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep20_S_empty_rep_storageE;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep11_S_max_sizeE;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep11_S_terminalE;
-    _ZNSbIwSt11char_traitsIwESaIwEEaSE*;
+    _ZNSbIwSt11char_traitsIwESaIwEEaSE[PRw]*;
     _ZNSbIwSt11char_traitsIwESaIwEEixE*;
-    _ZNSbIwSt11char_traitsIwESaIwEEpLE*;
+    _ZNSbIwSt11char_traitsIwESaIwEEpLE[PRw]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[0-9][0-9][a-z]*;
     _ZNKSbIwSt11char_traitsIwESaIwEE[a-z]*;
@@ -888,6 +894,24 @@ GLIBCXX_3.4.11 {
     # chrono
     _ZNSt6chrono12system_clock12is_monotonicE;
     _ZNSt6chrono12system_clock3nowEv;
+
+    # string/wstring initializer_list overloads
+    _ZNSs6appendESt16initializer_listIcE;
+    _ZNSs6assignESt16initializer_listIcE;
+    _ZNSs6insertEN9__gnu_cxx17__normal_iteratorIPcSsEESt16initializer_listIcE;
+    _ZNSs7replaceEN9__gnu_cxx17__normal_iteratorIPcSsEES2_St16initializer_listIcE;
+    _ZNSsC1ESt16initializer_listIcERKSaIcE;
+    _ZNSsC2ESt16initializer_listIcERKSaIcE;
+    _ZNSsaSESt16initializer_listIcE;
+    _ZNSspLESt16initializer_listIcE;
+    _ZNSbIwSt11char_traitsIwESaIwEE6appendESt16initializer_listIwE;
+    _ZNSbIwSt11char_traitsIwESaIwEE6assignESt16initializer_listIwE;
+    _ZNSbIwSt11char_traitsIwESaIwEE6insertEN9__gnu_cxx17__normal_iteratorIPwS2_EESt16initializer_listIwE;
+    _ZNSbIwSt11char_traitsIwESaIwEE7replaceEN9__gnu_cxx17__normal_iteratorIPwS2_EES6_St16initializer_listIwE;
+    _ZNSbIwSt11char_traitsIwESaIwEEC1ESt16initializer_listIwERKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEEC2ESt16initializer_listIwERKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEEaSESt16initializer_listIwE;
+    _ZNSbIwSt11char_traitsIwESaIwEEpLESt16initializer_listIwE;
 
 } GLIBCXX_3.4.10;
 

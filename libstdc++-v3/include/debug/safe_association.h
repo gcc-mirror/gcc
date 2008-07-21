@@ -105,6 +105,14 @@ namespace __gnu_debug
 		__l, __n, __hf, __eql, __a) 
         { }
 
+      _Safe_association(std::initializer_list<value_type> __l,
+			size_type __n,
+			const hasher& __hf,
+			const key_equal& __eql,
+			const allocator_type& __a = allocator_type())
+	: _Base(__l, __n, __hf, __eql, __a)
+      { }
+
       _Safe_association(const _Base& __x) : _Base(__x) { }
 
       _Safe_association(_Safe_association&& __x)
@@ -151,6 +159,10 @@ namespace __gnu_debug
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first.base(), __last.base());
 	}
+
+      void
+      insert(std::initializer_list<value_type> __l)
+      { _Base::insert(__l); }
 
       const_iterator
       find(const key_type& __key) const

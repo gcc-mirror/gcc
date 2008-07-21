@@ -65,6 +65,7 @@
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
+#include <initializer_list>
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
@@ -262,6 +263,25 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       vector(vector&& __x)
       : _Base(std::forward<_Base>(__x)) { }
+
+      /**
+       *  @brief  Builds a %vector from an initializer list.
+       *  @param  l  An initializer_list.
+       *  @param  a  An allocator.
+       *
+       *  Create a %vector consisting of copies of the elements in the
+       *  initializer_list @a l.
+       *
+       *  This will call the element type's copy constructor N times
+       *  (where N is @a l.size()) and do no memory reallocation.
+       */
+      vector(initializer_list<value_type> __l,
+	     const allocator_type& __a = allocator_type())
+	: _Base(__a)
+        {
+	  _M_range_initialize(__l.begin(), __l.end(),
+			      random_access_iterator_tag());
+	}
 #endif
 
       /**
@@ -327,6 +347,24 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	this->swap(__x); 
 	return *this;
       }
+
+      /**
+       *  @brief  %Vector list assignment operator.
+       *  @param  l  An initializer_list.
+       *
+       *  This function fills a %vector with copies of the elements in the
+       *  initializer list @a l.
+       *
+       *  Note that the assignment completely changes the %vector and
+       *  that the resulting %vector's size is the same as the number
+       *  of elements assigned.  Old data may be lost.
+       */
+      vector&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->assign(__l.begin(), __l.end());
+	return *this;
+      }
 #endif
 
       /**
@@ -363,6 +401,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	  _M_assign_dispatch(__first, __last, _Integral());
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Assigns an initializer list to a %vector.
+       *  @param  l  An initializer_list.
+       *
+       *  This function fills a %vector with copies of the elements in the
+       *  initializer list @a l.
+       *
+       *  Note that the assignment completely changes the %vector and
+       *  that the resulting %vector's size is the same as the number
+       *  of elements assigned.  Old data may be lost.
+       */
+      void
+      assign(initializer_list<value_type> __l)
+      { this->assign(__l.begin(), __l.end()); }
+#endif
 
       /// Get a copy of the memory allocation object.
       using _Base::get_allocator;
@@ -766,6 +821,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       iterator
       insert(iterator __position, value_type&& __x)
       { return emplace(__position, std::move(__x)); }
+
+      /**
+       *  @brief  Inserts an initializer_list into the %vector.
+       *  @param  position  An iterator into the %vector.
+       *  @param  l  An initializer_list.
+       *
+       *  This function will insert copies of the data in the 
+       *  initializer_list @a l into the %vector before the location
+       *  specified by @a position.
+       *
+       *  Note that this kind of operation could be expensive for a
+       *  %vector and if it is frequently used the user should
+       *  consider using std::list.
+       */
+      void
+      insert(iterator __position, initializer_list<value_type> __l)
+      { this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
       /**

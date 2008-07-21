@@ -184,6 +184,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       __sso_string_base(__sso_string_base&& __rcs);
+
+      __sso_string_base(std::initializer_list<_CharT> __l, const _Alloc& __a)
+      : _M_dataplus(__a, _M_local_data)
+      { _M_construct(__l.begin(), __l.end()); }
 #endif
 
       __sso_string_base(size_type __n, _CharT __c, const _Alloc& __a);

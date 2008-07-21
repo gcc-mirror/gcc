@@ -45,6 +45,7 @@
 
 #include <ext/atomicity.h>
 #include <debug/debug.h>
+#include <initializer_list>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -477,6 +478,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc());
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Construct string from an initializer list.
+       *  @param  l  std::initializer_list of characters.
+       *  @param  a  Allocator to use (default is default allocator).
+       */
+      basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc());
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
       /**
        *  @brief  Construct string as copy of a range.
        *  @param  beg  Start of range.
@@ -522,6 +532,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	this->assign(1, __c); 
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Set value to string constructed from initializer list.
+       *  @param  l  std::initializer_list.
+       */
+      basic_string&
+      operator=(initializer_list<_CharT> __l)
+      {
+	this->assign (__l.begin(), __l.end());
+	return *this;
+      }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
       // Iterators:
       /**
@@ -794,6 +817,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return *this;
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Append an initializer_list of characters.
+       *  @param l  The initializer_list of characters to be appended.
+       *  @return  Reference to this string.
+       */
+      basic_string&
+      operator+=(initializer_list<_CharT> __l)
+      { return this->append(__l.begin(), __l.end()); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
       /**
        *  @brief  Append a string to this string.
        *  @param str  The string to append.
@@ -848,6 +882,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string&
       append(size_type __n, _CharT __c);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Append an initializer_list of characters.
+       *  @param l  The initializer_list of characters to append.
+       *  @return  Reference to this string.
+       */
+      basic_string&
+      append(initializer_list<_CharT> __l)
+      { return this->append(__l.begin(), __l.end()); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
        *  @brief  Append a range of characters.
@@ -957,6 +1002,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         assign(_InputIterator __first, _InputIterator __last)
         { return this->replace(_M_ibegin(), _M_iend(), __first, __last); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Set value to an initializer_list of characters.
+       *  @param l  The initializer_list of characters to assign.
+       *  @return  Reference to this string.
+       */
+      basic_string&
+      assign(initializer_list<_CharT> __l)
+      { return this->assign(__l.begin(), __l.end()); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
       /**
        *  @brief  Insert multiple characters.
        *  @param p  Iterator referencing location in string to insert at.
@@ -988,6 +1044,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         void
         insert(iterator __p, _InputIterator __beg, _InputIterator __end)
         { this->replace(__p, __p, __beg, __end); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Insert an initializer_list of characters.
+       *  @param p  Iterator referencing location in string to insert at.
+       *  @param l  The initializer_list of characters to insert.
+       *  @throw  std::length_error  If new length exceeds @c max_size().
+       */
+      void
+      insert(iterator __p, initializer_list<_CharT> __l)
+      { this->insert(__p, __l.begin(), __l.end()); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
        *  @brief  Insert value of a string.
@@ -1434,6 +1502,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			     __k1.base(), __k2 - __k1);
       }
       
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Replace range of characters with initializer_list.
+       *  @param i1  Iterator referencing start of range to replace.
+       *  @param i2  Iterator referencing end of range to replace.
+       *  @param l  The initializer_list of characters to insert.
+       *  @return  Reference to this string.
+       *  @throw  std::length_error  If new length exceeds @c max_size().
+       *
+       *  Removes the characters in the range [i1,i2).  In place, characters
+       *  in the range [k1,k2) are inserted.  If the length of result exceeds
+       *  max_size(), length_error is thrown.  The value of the string doesn't
+       *  change if an error is thrown.
+      */
+      basic_string& replace(iterator __i1, iterator __i2,
+			    initializer_list<_CharT> __l)
+      { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     private:
       template<class _Integer>
 	basic_string&

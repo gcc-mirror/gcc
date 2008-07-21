@@ -273,6 +273,16 @@ atomic.lo: atomic.cc
 atomic.o: atomic.cc
 	$(CXXCOMPILE) -x c++ -std=gnu++0x -c $<
 
+string-inst.lo: string-inst.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+string-inst.o: string-inst.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+wstring-inst.lo: wstring-inst.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+wstring-inst.o: wstring-inst.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 chrono.lo: chrono.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 chrono.o: chrono.cc
