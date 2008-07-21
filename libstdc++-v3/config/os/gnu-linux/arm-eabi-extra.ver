@@ -1,0 +1,18 @@
+# Appended to version file.
+
+CXXABI_ARM_1.3.3 {
+   # ARM ABI helper functions provided in libsupc++.
+   __aeabi_atexit;
+   __aeabi_vec_ctor_nocookie_nodtor;
+   __aeabi_vec_ctor_cookie_nodtor;
+   __aeabi_vec_cctor_nocookie_nodtor;
+   __aeabi_vec_new_cookie_noctor;
+   __aeabi_vec_new_nocookie;
+   __aeabi_vec_new_cookie_nodtor;
+   __aeabi_vec_new_cookie;
+   __aeabi_vec_dtor;
+   __aeabi_vec_dtor_cookie;
+   __aeabi_vec_delete;
+   __aeabi_vec_delete3;
+   __aeabi_vec_delete3_nodtor;
+};

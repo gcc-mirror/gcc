@@ -1,3 +1,8 @@
+2008-07-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/os/gnu-linux/arm-eabi-extra.ver: New file.
+	* configure.host: Use it for arm*-*-linux-*eabi.
+
 2008-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/pb_ds/detail/binomial_heap_base_/debug_fn_imps.hpp
