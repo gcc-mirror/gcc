@@ -5,7 +5,7 @@
    non-overloadable operators (like the `?:' ternary operator).
    Written by Mark Mitchell <mark@codesourcery.com>
 
-   Copyright (C) 2000, 2001, 2002, 2003, 2005, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 
      A boolean value.  If nonzero, this is an assignment operator.
 
-   Before including this file, you should define DEFOPERATOR
+   Before including this file, you should define DEF_OPERATOR
    to take these arguments.
 
    There is code (such as in grok_op_properties) that depends on the

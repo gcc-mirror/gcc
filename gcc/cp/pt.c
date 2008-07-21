@@ -4241,7 +4241,7 @@ fold_non_dependent_expr (tree expr)
 
 /* EXPR is an expression which is used in a constant-expression context.
    For instance, it could be a VAR_DECL with a constant initializer.
-   Extract the innest constant expression.
+   Extract the innermost constant expression.
 
    This is basically a more powerful version of
    integral_constant_value, which can be used also in templates where
@@ -6401,7 +6401,7 @@ tsubst_friend_function (tree decl, tree args)
 
       /* Friend functions are looked up in the containing namespace scope.
 	 We must enter that scope, to avoid finding member functions of the
-	 current cless with same name.  */
+	 current class with same name.  */
       push_nested_namespace (ns);
       fns = tsubst_expr (DECL_TI_TEMPLATE (decl), args,
 			 tf_warning_or_error, NULL_TREE,
@@ -7104,7 +7104,7 @@ instantiate_class_template (tree type)
 		{
 		  tree r;
 
-		  /* The the file and line for this declaration, to
+		  /* The file and line for this declaration, to
 		     assist in error message reporting.  Since we
 		     called push_tinst_level above, we don't need to
 		     restore these.  */
@@ -7263,7 +7263,7 @@ instantiate_class_template (tree type)
 	      /* Build new DECL_FRIENDLIST.  */
 	      tree r;
 
-	      /* The the file and line for this declaration, to
+	      /* The file and line for this declaration, to
 		 assist in error message reporting.  Since we
 		 called push_tinst_level above, we don't need to
 		 restore these.  */
@@ -11173,7 +11173,7 @@ tsubst_copy_and_build (tree t,
 	tree init = RECUR (TREE_OPERAND (t, 3));
 
 	if (TREE_OPERAND (t, 3) && !init)
-	  /* If there was an initializer in the the original tree, but
+	  /* If there was an initializer in the original tree, but
 	     it instantiated to an empty list, then we should pass on
 	     VOID_ZERO_NODE to tell build_new that it was an empty
 	     initializer () rather than no initializer.  This can only
@@ -13563,7 +13563,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       /* CV qualifications for methods can never be deduced, they must
 	 match exactly.  We need to check them explicitly here,
 	 because type_unification_real treats them as any other
-	 cvqualified parameter.  */
+	 cv-qualified parameter.  */
       if (TREE_CODE (parm) == METHOD_TYPE
 	  && (!check_cv_quals_for_unify
 	      (UNIFY_ALLOW_NONE,

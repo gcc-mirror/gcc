@@ -315,7 +315,7 @@ current_tmpl_spec_kind (int n_class_scopes)
 
 	 template <class T> void S<T>::f(int);
 
-       The `class T' maches the `S<T>', leaving no template headers
+       The `class T' matches the `S<T>', leaving no template headers
        corresponding to the `f'.  */
     return tsk_none;
   else if (n_template_parm_scopes > n_class_scopes + 1)
@@ -4345,7 +4345,7 @@ check_array_designated_initializer (const constructor_elt *ce)
   if (ce->index)
     {
       /* The parser only allows identifiers as designated
-	 intializers.  */
+	 initializers.  */
       gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
       error ("name %qD used in a GNU-style designated "
 	     "initializer for an array", ce->index);
@@ -7050,7 +7050,7 @@ compute_array_index_type (tree name, tree size)
   
   if (!abi_version_at_least (2) && processing_template_decl)
     /* For abi-1, we handled all instances in templates the same way,
-       even when they were non-dependent. This effects the manglings
+       even when they were non-dependent. This affects the manglings
        produced.  So, we do the normal checking for non-dependent
        sizes, but at the end we'll return the same type that abi-1
        would have, but with TYPE_CANONICAL set to the "right"
@@ -10839,7 +10839,7 @@ finish_enum (tree enumtype)
       underlying_type = integer_types[itk_unsigned_long_long];
     }
 
-  /* Compute the minium and maximum values for the type.
+  /* Compute the minimum and maximum values for the type.
 
      [dcl.enum]
 
@@ -12195,7 +12195,7 @@ maybe_register_incomplete_var (tree var)
 }
 
 /* Called when a class type (given by TYPE) is defined.  If there are
-   any existing VAR_DECLs whose type hsa been completed by this
+   any existing VAR_DECLs whose type has been completed by this
    declaration, update them now.  */
 
 void
@@ -12260,7 +12260,7 @@ cxx_maybe_build_cleanup (tree decl)
 	 initial checks on the attribute.  Note that those checks
 	 include ensuring that the function found is not an overloaded
 	 function, or an object with an overloaded call operator,
-	 etc.; we can rely on the fact that the functionfound is an
+	 etc.; we can rely on the fact that the function found is an
 	 ordinary FUNCTION_DECL.  */
       fn = lookup_name (id);
       arg = build_address (decl);

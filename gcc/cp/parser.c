@@ -1372,7 +1372,7 @@ cp_parser_context_new (cp_parser_context* next)
 
   /* No errors have occurred yet in this context.  */
   context->status = CP_PARSER_STATUS_KIND_NO_ERROR;
-  /* If this is not the bottomost context, copy information that we
+  /* If this is not the bottommost context, copy information that we
      need from the previous context.  */
   if (next)
     {
@@ -6319,7 +6319,7 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
   enum tree_code op;
   cp_token *token;
 
-  /* Peek at the next toen.  */
+  /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
 
   switch (token->type)
@@ -10468,7 +10468,7 @@ cp_parser_template_argument (cp_parser* parser)
     {
       cp_parser_parse_tentatively (parser);
       argument = cp_parser_primary_expression (parser,
-					       /*adress_p=*/false,
+					       /*address_p=*/false,
 					       /*cast_p=*/false,
 					       /*template_arg_p=*/true,
 					       &idk);
@@ -12586,7 +12586,7 @@ cp_parser_init_declarator (cp_parser* parser,
       cp_parser_perform_template_parameter_access_checks (checks);
 
       /* Perform the access control checks for the declarator and the
-	 the decl-specifiers.  */
+	 decl-specifiers.  */
       perform_deferred_access_checks ();
 
       /* Restore the saved value.  */
@@ -12863,7 +12863,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	       int i (3);
 
 	     The first is the declaration of a function while the
-	     second is a the definition of a variable, including its
+	     second is the definition of a variable, including its
 	     initializer.
 
 	     Having seen only the parenthesis, we cannot know which of
@@ -15006,9 +15006,9 @@ cp_parser_class_head (cp_parser* parser,
 	}
       /* [dcl.meaning]
 
-	 A declarator-id shall not be qualified exception of the
+	 A declarator-id shall not be qualified except for the
 	 definition of a ... nested class outside of its class
-	 ... [or] a the definition or explicit instantiation of a
+	 ... [or] the definition or explicit instantiation of a
 	 class member of a namespace outside of its namespace.  */
       if (scope == nested_name_specifier)
 	{

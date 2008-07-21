@@ -3416,7 +3416,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 
   /* [expr.cond]
 
-     The first expr ession is implicitly converted to bool (clause
+     The first expression is implicitly converted to bool (clause
      _conv_).  */
   arg1 = perform_implicit_conversion (boolean_type_node, arg1, complain);
 
