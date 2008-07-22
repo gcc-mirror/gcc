@@ -102,7 +102,7 @@ static char *glue_header_name (cpp_reader *);
 static const char *parse_include (cpp_reader *, int *, const cpp_token ***);
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
-static int strtolinenum (const uchar *, unsigned int, linenum_type *);
+static bool strtolinenum (const uchar *, size_t, linenum_type *, bool *);
 static void do_diagnostic (cpp_reader *, int, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *, bool);
 static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
@@ -837,23 +837,30 @@ read_flag (cpp_reader *pfile, unsigned int last)
 }
 
 /* Subroutine of do_line and do_linemarker.  Convert a number in STR,
-   of length LEN, to binary; store it in NUMP, and return 0 if the
-   number was well-formed, 1 if not.  Temporary, hopefully.  */
-static int
-strtolinenum (const uchar *str, unsigned int len, linenum_type *nump)
+   of length LEN, to binary; store it in NUMP, and return false if the
+   number was well-formed, true if not. WRAPPED is set to true if the
+   number did not fit into 'unsigned long'.  */
+static bool
+strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
 {
   linenum_type reg = 0;
+  linenum_type reg_prev = 0;
+
   uchar c;
+  *wrapped = false;
   while (len--)
     {
       c = *str++;
       if (!ISDIGIT (c))
-	return 1;
+	return true;
       reg *= 10;
       reg += c - '0';
+      if (reg < reg_prev) 
+	*wrapped = true;
+      reg_prev = reg;
     }
   *nump = reg;
-  return 0;
+  return false;
 }
 
 /* Interpret #line command.
@@ -875,12 +882,13 @@ do_line (cpp_reader *pfile)
 
   /* C99 raised the minimum limit on #line numbers.  */
   linenum_type cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
+  bool wrapped;
 
   /* #line commands expand macros.  */
   token = cpp_get_token (pfile);
   if (token->type != CPP_NUMBER
       || strtolinenum (token->val.str.text, token->val.str.len,
-		       &new_lineno))
+		       &new_lineno, &wrapped))
     {
       if (token->type == CPP_EOF)
 	cpp_error (pfile, CPP_DL_ERROR, "unexpected end of file after #line");
@@ -891,8 +899,10 @@ do_line (cpp_reader *pfile)
       return;
     }
 
-  if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
+  if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap || wrapped))
     cpp_error (pfile, CPP_DL_PEDWARN, "line number out of range");
+  else if (wrapped)
+    cpp_error (pfile, CPP_DL_WARNING, "line number out of range");
 
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
@@ -929,6 +939,7 @@ do_linemarker (cpp_reader *pfile)
   unsigned int new_sysp = map->sysp;
   enum lc_reason reason = LC_RENAME;
   int flag;
+  bool wrapped;
 
   /* Back up so we can get the number again.  Putting this in
      _cpp_handle_directive risks two calls to _cpp_backup_tokens in
@@ -939,7 +950,7 @@ do_linemarker (cpp_reader *pfile)
   token = cpp_get_token (pfile);
   if (token->type != CPP_NUMBER
       || strtolinenum (token->val.str.text, token->val.str.len,
-		       &new_lineno))
+		       &new_lineno, &wrapped))
     {
       /* Unlike #line, there does not seem to be a way to get an EOF
 	 here.  So, it should be safe to always spell the token.  */

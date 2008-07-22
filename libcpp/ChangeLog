@@ -1,3 +1,10 @@
+2008-07-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28079
+	* directives.c (strtolinenum): Handle overflow.
+	(do_line): Give a warning if line number overflowed.
+	(do_linemarker): Update call to strtolinenum.
+
 2008-07-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* include/line-map.h (linenum_type): New typedef.
