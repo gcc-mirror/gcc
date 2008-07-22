@@ -1,6 +1,6 @@
 // Short-string-optimized versatile string base -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -184,10 +184,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       __sso_string_base(__sso_string_base&& __rcs);
-
-      __sso_string_base(std::initializer_list<_CharT> __l, const _Alloc& __a)
-      : _M_dataplus(__a, _M_local_data)
-      { _M_construct(__l.begin(), __l.end()); }
 #endif
 
       __sso_string_base(size_type __n, _CharT __c, const _Alloc& __a);

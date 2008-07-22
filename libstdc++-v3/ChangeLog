@@ -1,3 +1,15 @@
+2008-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/sso_string_base.h
+	(__sso_string_base<>::__sso_string_base(std::initializer_list<_CharT>,
+	const _Alloc&)): Remove.
+	* include/ext/rc_string_base.h
+	(__rc_string_base<>::__rc_string_base(std::initializer_list<_CharT>,
+	const _Alloc&)): Likewise.
+	* include/ext/vstring.h
+	(__versa_string<>::__versa_string(std::initializer_list<_CharT>,
+	const _Alloc&)): Adjust.
+
 2008-07-21  Jason Merrill  <jason@redhat.com>
 
 	Add initializer_list support as per N2679.
