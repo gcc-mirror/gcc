@@ -39,7 +39,7 @@ Boston, MA 02110-1301, USA.  */
    record, and we have to sift backwards to find the newline before
    that or the start of the file, whichever comes first.  */
 
-static const unsigned int READ_CHUNK = 4096;
+static const int READ_CHUNK = 4096;
 
 static void
 formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)

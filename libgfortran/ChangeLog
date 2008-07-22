@@ -1,3 +1,9 @@
+2008-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/36890
+	* io/file_pos.c:  Declare READ_CHUNK as signed to avoid
+	signed/unsigned comparison warning in formatted_backspace.
+
 2008-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/36773
