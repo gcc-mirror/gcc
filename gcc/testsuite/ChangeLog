@@ -1,3 +1,8 @@
+2008-07-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28079
+	* gcc.dg/cpp/line6.c: New.
+	
 2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gfortran.dg/fmt_g0_3.f08: Fix typo in expected error message.
