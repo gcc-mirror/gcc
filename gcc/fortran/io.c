@@ -119,6 +119,8 @@ format_token;
    process.  */
 static gfc_char_t *format_string;
 static int format_length, use_last_char;
+static char error_element;
+static locus format_locus;
 
 static format_token saved_token;
 
@@ -165,6 +167,9 @@ next_char (int in_string)
   if (mode == MODE_COPY)
     *format_string++ = c;
 
+  if (mode != MODE_STRING)
+    format_locus = gfc_current_locus;
+
   c = gfc_wide_toupper (c);
   return c;
 }
@@ -186,7 +191,7 @@ next_char_not_space (bool *error)
   char c;
   do
     {
-      c = next_char (0);
+      error_element = c = next_char (0);
       if (c == '\t')
 	{
 	  if (gfc_option.allow_std & GFC_STD_GNU)
@@ -431,14 +436,14 @@ format_lex (void)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: DP format "
 	      "specifier not allowed at %C") == FAILURE)
-	  return FMT_ERROR;
+	    return FMT_ERROR;
 	  token = FMT_DP;
 	}
       else if (c == 'C')
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: DC format "
 	      "specifier not allowed at %C") == FAILURE)
-	  return FMT_ERROR;
+	    return FMT_ERROR;
 	  token = FMT_DC;
 	}
       else
@@ -474,7 +479,8 @@ check_format (bool is_input)
 {
   const char *posint_required	  = _("Positive width required");
   const char *nonneg_required	  = _("Nonnegative width required");
-  const char *unexpected_element  = _("Unexpected element");
+  const char *unexpected_element  = _("Unexpected element '%c' in format string"
+				      " at %L");
   const char *unexpected_end	  = _("Unexpected end of format string");
   const char *zero_width	  = _("Zero width in format descriptor");
   const char *g0_precision	= _("Specifying precision with G0 not allowed");
@@ -960,10 +966,11 @@ extension_optional_comma:
   goto format_item;
 
 syntax:
-  gfc_error ("%s in format string at %C", error);
+  if (error == unexpected_element)
+    gfc_error (error, error_element, &format_locus);
+  else
+    gfc_error ("%s in format string at %L", error, &format_locus);
 fail:
-  /* TODO: More elaborate measures are needed to show where a problem
-     is within a format string that has been calculated.  */
   rv = FAILURE;
 
 finished:
@@ -982,6 +989,12 @@ check_format_string (gfc_expr *e, bool is_input)
 
   mode = MODE_STRING;
   format_string = e->value.character.string;
+
+  /* More elaborate measures are needed to show where a problem is within a
+     format string that has been calculated, but that's probably not worth the
+     effort.  */
+  format_locus = e->where;
+
   return check_format (is_input);
 }
 

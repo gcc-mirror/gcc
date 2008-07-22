@@ -1,3 +1,16 @@
+2008-07-22  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/29835
+	* io.c (error_element), (format_locus):  New static globals.
+	(unexpected_element):  Spelled out this message fully.
+	(next_char):  Keep track of locus when not MODE_STRING.
+	(next_char_not_space):  Remember last parsed element in error_element.
+	(format_lex):  Fix two indentation errors.
+	(check_format):  Use format_locus and possibly error_element for a
+	slightly better error message on invalid format.
+	(check_format_string):  Set format_locus to start of the string
+	expression used as format.
+
 2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* expr.c (gfc_check_pointer_assign): Fix typo in string.

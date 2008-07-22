@@ -50,6 +50,7 @@ typedef struct format_data
 {
   char *format_string, *string;
   const char *error;
+  char error_element;
   format_token saved_token;
   int value, format_string_len, reversion_ok;
   fnode *avail;
@@ -67,7 +68,7 @@ static const fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
 static const char posint_required[] = "Positive width required in format",
   period_required[] = "Period required in format",
   nonneg_required[] = "Nonnegative width required in format",
-  unexpected_element[] = "Unexpected element in format",
+  unexpected_element[] = "Unexpected element '%c' in format\n",
   unexpected_end[] = "Unexpected end of format string",
   bad_string[] = "Unterminated character constant in format",
   bad_hollerith[] = "Hollerith constant extends past the end of the format",
@@ -89,7 +90,7 @@ next_char (format_data *fmt, int literal)
 	return -1;
 
       fmt->format_string_len--;
-      c = toupper (*fmt->format_string++);
+      fmt->error_element = c = toupper (*fmt->format_string++);
     }
   while ((c == ' ' || c == '\t') && !literal);
 
@@ -948,7 +949,10 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
   if (f != NULL)
     fmt->format_string = f->source;
 
-  sprintf (buffer, "%s\n", message);
+  if (message == unexpected_element)
+    sprintf (buffer, message, fmt->error_element);
+  else
+    sprintf (buffer, "%s\n", message);
 
   j = fmt->format_string - dtp->format;
 
