@@ -1,3 +1,12 @@
+2008-07-22  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/29835
+	* io/format.c (struct format_data):  New member error_element.
+	(unexpected_element):  Added '%c' to message.
+	(next_char):  Keep track of last parsed character in fmt->error_element.
+	(format_error):  If the message is unexpected_element, output the
+	offending character, too.
+
 2008-07-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/36890
