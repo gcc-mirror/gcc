@@ -277,7 +277,7 @@ proc compat-execute { src1 sid use_alt } {
 
     # On the SPU, most of the compat test cases exceed local store size.
     # Use automatic overlay support to make them fit.
-    if { [istarget spu-*-elf*] } {
+    if { [check_effective_target_spu_auto_overlay] } {
 	set extra_flags_1 "$extra_flags_1 -Wl,--auto-overlay"
 	set extra_flags_1 "$extra_flags_1 -ffunction-sections"
 	set extra_flags_2 "$extra_flags_2 -ffunction-sections"

@@ -1,3 +1,10 @@
+2008-07-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_spu_auto_overlay):
+	New procedure.
+	* lib/compat.exp (compat-execute): Use it to test whether toolchain
+	supports automatic overlay generation for the SPU.
+
 2008-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/36877

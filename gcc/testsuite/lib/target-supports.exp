@@ -1315,6 +1315,19 @@ proc check_effective_target_powerpc_altivec { } {
     }
 }
 
+# Return 1 if this is a SPU target with a toolchain that
+# supports automatic overlay generation.
+
+proc check_effective_target_spu_auto_overlay { } {
+    if { [istarget spu*-*-elf*] } {
+	return [check_no_compiler_messages spu_auto_overlay executable {
+		int main (void) { }
+		} "-Wl,--auto-overlay" ]
+    } else {
+	return 0
+    }
+}
+
 # The VxWorks SPARC simulator accepts only EM_SPARC executables and
 # chokes on EM_SPARC32PLUS or EM_SPARCV9 executables.  Return 1 if the
 # test environment appears to run executables on such a simulator.
