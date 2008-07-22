@@ -163,8 +163,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  @param  l  std::initializer_list of characters.
        *  @param  a  Allocator to use (default is default allocator).
        */
-      __versa_string(std::initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
-	: __vstring_base(__l, __a) { }
+      __versa_string(std::initializer_list<_CharT> __l,
+		     const _Alloc& __a = _Alloc())
+      : __vstring_base(__l.begin(), __l.end(), __a) { }
 #endif
 
       /**
@@ -274,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __versa_string&
       operator=(std::initializer_list<_CharT> __l)
       {
-	this->assign (__l.begin(), __l.end());
+	this->assign(__l.begin(), __l.end());
 	return *this;
       }
 #endif
