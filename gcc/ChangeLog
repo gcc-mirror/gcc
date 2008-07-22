@@ -1,3 +1,8 @@
+2008-07-22  Rafael Avila de Espindola  <espindola@google.com>
+
+       * c-typeck.c (build_external_ref): Don't call assemble_external.
+       * final.c (output_operand): Call assemble_external.
+
 2008-07-21  DJ Delorie  <dj@redhat.com>
 
 	* config/h8300/h8300.c (h8300_hard_regno_scratch_ok): New.

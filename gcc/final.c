@@ -3344,6 +3344,14 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
   PRINT_OPERAND (asm_out_file, x, code);
+  if (x && MEM_P (x) && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+    {
+      tree t;
+      x = XEXP (x, 0);
+      t = SYMBOL_REF_DECL (x);
+      if (t)
+	assemble_external (t);
+    }
 }
 
 /* Print a memory reference operand for address X
