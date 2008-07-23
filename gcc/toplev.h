@@ -64,7 +64,9 @@ extern void warning_at (location_t, int, const char *, ...)
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void pedwarn (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void pedwarn0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+/* Pass one of the OPT_W* from options.h as the first parameter.  */
+extern void pedwarn (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);

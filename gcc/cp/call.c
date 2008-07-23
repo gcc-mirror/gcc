@@ -3404,8 +3404,9 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
      calculated only once.  */
   if (!arg2)
     {
-      if (pedantic && (complain & tf_error))
-	pedwarn ("ISO C++ forbids omitting the middle term of a ?: expression");
+      if (complain & tf_error)
+	pedwarn (OPT_pedantic, 
+		 "ISO C++ forbids omitting the middle term of a ?: expression");
 
       /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
       if (real_lvalue_p (arg1))
@@ -6760,7 +6761,7 @@ tweak:
 	{
 	  if (warn)
 	    {
-	      warning (0,
+	      pedwarn (0,
 	      "ISO C++ says that these are ambiguous, even "
 	      "though the worst conversion for the first is better than "
 	      "the worst conversion for the second:");

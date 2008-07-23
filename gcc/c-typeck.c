@@ -470,8 +470,8 @@ composite_type (tree t1, tree t2)
 		      {
 			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
 							 TREE_VALUE (p2));
-			if (pedantic)
-			  pedwarn ("function types not truly compatible in ISO C");
+			pedwarn (OPT_pedantic, 
+				 "function types not truly compatible in ISO C");
 			goto parm_done;
 		      }
 		  }
@@ -495,8 +495,8 @@ composite_type (tree t1, tree t2)
 		      {
 			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
 							 TREE_VALUE (p1));
-			if (pedantic)
-			  pedwarn ("function types not truly compatible in ISO C");
+			pedwarn (OPT_pedantic, 
+				 "function types not truly compatible in ISO C");
 			goto parm_done;
 		      }
 		  }
@@ -1039,8 +1039,8 @@ comp_target_types (tree ttl, tree ttr)
     mvr = TYPE_MAIN_VARIANT (mvr);
   val = comptypes (mvl, mvr);
 
-  if (val == 2 && pedantic)
-    pedwarn ("types are not quite compatible");
+  if (val == 2)
+    pedwarn (OPT_pedantic, "types are not quite compatible");
   return val;
 }
 
@@ -1363,7 +1363,7 @@ function_types_compatible_p (const_tree f1, const_tree f2)
   /* 'volatile' qualifiers on a function's return type used to mean
      the function is noreturn.  */
   if (TYPE_VOLATILE (ret1) != TYPE_VOLATILE (ret2))
-    pedwarn ("function return types not compatible due to %<volatile%>");
+    pedwarn (0, "function return types not compatible due to %<volatile%>");
   if (TYPE_VOLATILE (ret1))
     ret1 = build_qualified_type (TYPE_MAIN_VARIANT (ret1),
 				 TYPE_QUALS (ret1) & ~TYPE_QUAL_VOLATILE);
@@ -2115,9 +2115,11 @@ build_array_ref (tree array, tree index)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && C_DECL_REGISTER (foo))
-	    pedwarn ("ISO C forbids subscripting %<register%> array");
+	    pedwarn (OPT_pedantic, 
+		     "ISO C forbids subscripting %<register%> array");
 	  else if (!flag_isoc99 && !lvalue_p (foo))
-	    pedwarn ("ISO C90 forbids subscripting non-lvalue array");
+	    pedwarn (OPT_pedantic, 
+		     "ISO C90 forbids subscripting non-lvalue array");
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
@@ -2231,8 +2233,8 @@ build_external_ref (tree id, int fun, location_t loc)
 	   && (TREE_CODE (ref) != VAR_DECL || TREE_STATIC (ref))
 	   && ! TREE_PUBLIC (ref)
 	   && DECL_CONTEXT (ref) != current_function_decl)
-    pedwarn ("%H%qD is static but used in inline function %qD "
-	     "which is not static", &loc, ref, current_function_decl);
+    pedwarn (0, "%H%qD is static but used in inline function %qD "
+	      "which is not static", &loc, ref, current_function_decl);
 
   return ref;
 }
@@ -2456,7 +2458,7 @@ build_function_call (tree function, tree params)
       if (TREE_CONSTANT (result)
 	  && (name == NULL_TREE
 	      || strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10) != 0))
-	pedwarn_init ("initializer element is not constant");
+	pedwarn_init (0, "initializer element is not constant");
     }
   else
     result = fold_build_call_array (TREE_TYPE (fntype),
@@ -2800,13 +2802,12 @@ pointer_diff (tree op0, tree op1)
   tree con0, con1, lit0, lit1;
   tree orig_op1 = op1;
 
-  if (pedantic || warn_pointer_arith)
-    {
-      if (TREE_CODE (target_type) == VOID_TYPE)
-	pedwarn ("pointer of type %<void *%> used in subtraction");
-      if (TREE_CODE (target_type) == FUNCTION_TYPE)
-	pedwarn ("pointer to a function used in subtraction");
-    }
+  if (TREE_CODE (target_type) == VOID_TYPE)
+    pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+	     "pointer of type %<void *%> used in subtraction");
+  if (TREE_CODE (target_type) == FUNCTION_TYPE)
+    pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+	     "pointer to a function used in subtraction");
 
   /* If the conversion to ptrdiff_type does anything like widening or
      converting a partial to an integral mode, we get a convert_expression
@@ -2948,8 +2949,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       else if (typecode == COMPLEX_TYPE)
 	{
 	  code = CONJ_EXPR;
-	  if (pedantic)
-	    pedwarn ("ISO C does not support %<~%> for complex conjugation");
+	  pedwarn (OPT_pedantic, 
+		   "ISO C does not support %<~%> for complex conjugation");
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
@@ -3020,9 +3021,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	{
 	  tree real, imag;
 
-	  if (pedantic)
-	    pedwarn ("ISO C does not support %<++%> and %<--%>"
-		     " on complex types");
+	  pedwarn (OPT_pedantic, "ISO C does not support %<++%> and %<--%>"
+		   " on complex types");
 
 	  arg = stabilize_reference (arg);
 	  real = build_unary_op (REALPART_EXPR, arg, 1);
@@ -3067,14 +3067,15 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 		else
 		  error ("decrement of pointer to unknown structure");
 	      }
-	    else if ((pedantic || warn_pointer_arith)
-		     && (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
-			 || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
+	    else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
+		     || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
 	      {
 		if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
-		  pedwarn ("wrong type argument to increment");
+		  pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+			   "wrong type argument to increment");
 		else
-		  pedwarn ("wrong type argument to decrement");
+		  pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+			   "wrong type argument to decrement");
 	      }
 
 	    inc = c_size_in_bytes (TREE_TYPE (result_type));
@@ -3349,7 +3350,7 @@ c_mark_addressable (tree exp)
 		  ("global register variable %qD used in nested function", x);
 		return false;
 	      }
-	    pedwarn ("register variable %qD used in nested function", x);
+	    pedwarn (0, "register variable %qD used in nested function", x);
 	  }
 	else if (C_DECL_REGISTER (x))
 	  {
@@ -3456,8 +3457,9 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
     }
   else if (code1 == VOID_TYPE || code2 == VOID_TYPE)
     {
-      if (pedantic && (code1 != VOID_TYPE || code2 != VOID_TYPE))
-	pedwarn ("ISO C forbids conditional expr with only one void side");
+      if (code1 != VOID_TYPE || code2 != VOID_TYPE)
+	pedwarn (OPT_pedantic, 
+		 "ISO C forbids conditional expr with only one void side");
       result_type = void_type_node;
     }
   else if (code1 == POINTER_TYPE && code2 == POINTER_TYPE)
@@ -3470,30 +3472,30 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 	result_type = qualify_type (type1, type2);
       else if (VOID_TYPE_P (TREE_TYPE (type1)))
 	{
-	  if (pedantic && TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
-	    pedwarn ("ISO C forbids conditional expr between "
+	  if (TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
+	    pedwarn (OPT_pedantic, "ISO C forbids conditional expr between "
 		     "%<void *%> and function pointer");
 	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type1),
 							  TREE_TYPE (type2)));
 	}
       else if (VOID_TYPE_P (TREE_TYPE (type2)))
 	{
-	  if (pedantic && TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
-	    pedwarn ("ISO C forbids conditional expr between "
+	  if (TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
+	    pedwarn (OPT_pedantic, "ISO C forbids conditional expr between "
 		     "%<void *%> and function pointer");
 	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type2),
 							  TREE_TYPE (type1)));
 	}
       else
 	{
-	  pedwarn ("pointer type mismatch in conditional expression");
+	  pedwarn (0, "pointer type mismatch in conditional expression");
 	  result_type = build_pointer_type (void_type_node);
 	}
     }
   else if (code1 == POINTER_TYPE && code2 == INTEGER_TYPE)
     {
       if (!null_pointer_constant_p (orig_op2))
-	pedwarn ("pointer/integer type mismatch in conditional expression");
+	pedwarn (0, "pointer/integer type mismatch in conditional expression");
       else
 	{
 	  op2 = null_pointer_node;
@@ -3503,7 +3505,7 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   else if (code2 == POINTER_TYPE && code1 == INTEGER_TYPE)
     {
       if (!null_pointer_constant_p (orig_op1))
-	pedwarn ("pointer/integer type mismatch in conditional expression");
+	pedwarn (0, "pointer/integer type mismatch in conditional expression");
       else
 	{
 	  op1 = null_pointer_node;
@@ -3614,12 +3616,10 @@ build_c_cast (tree type, tree expr)
 
   if (type == TYPE_MAIN_VARIANT (TREE_TYPE (value)))
     {
-      if (pedantic)
-	{
-	  if (TREE_CODE (type) == RECORD_TYPE
-	      || TREE_CODE (type) == UNION_TYPE)
-	    pedwarn ("ISO C forbids casting nonscalar to the same type");
-	}
+      if (TREE_CODE (type) == RECORD_TYPE
+	  || TREE_CODE (type) == UNION_TYPE)
+	pedwarn (OPT_pedantic, 
+		 "ISO C forbids casting nonscalar to the same type");
     }
   else if (TREE_CODE (type) == UNION_TYPE)
     {
@@ -3635,8 +3635,7 @@ build_c_cast (tree type, tree expr)
 	{
 	  tree t;
 
-	  if (pedantic)
-	    pedwarn ("ISO C forbids casts to union type");
+	  pedwarn (OPT_pedantic, "ISO C forbids casts to union type");
 	  t = digest_init (type,
 			   build_constructor_single (type, field, value),
 			   true, 0);
@@ -3747,7 +3746,8 @@ build_c_cast (tree type, tree expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) == FUNCTION_TYPE
 	  && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
-	pedwarn ("ISO C forbids conversion of function pointer to object pointer type");
+	pedwarn (OPT_pedantic, "ISO C forbids "
+		 "conversion of function pointer to object pointer type");
 
       if (pedantic
 	  && TREE_CODE (type) == POINTER_TYPE
@@ -3755,7 +3755,8 @@ build_c_cast (tree type, tree expr)
 	  && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
 	  && !null_pointer_constant_p (value))
-	pedwarn ("ISO C forbids conversion of object pointer to function pointer type");
+	pedwarn (OPT_pedantic, "ISO C forbids "
+		 "conversion of object pointer to function pointer type");
 
       ovalue = value;
       value = convert (type, value);
@@ -3951,19 +3952,19 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
     switch (errtype)				\
       {						\
       case ic_argpass:				\
-	pedwarn (AR, parmnum, rname);		\
+	pedwarn (0, AR, parmnum, rname);	\
 	break;					\
       case ic_argpass_nonproto:			\
-	warning (0, AR, parmnum, rname);		\
+	warning (0, AR, parmnum, rname);	\
 	break;					\
       case ic_assign:				\
-	pedwarn (AS);				\
+	pedwarn (0, AS);			\
 	break;					\
       case ic_init:				\
-	pedwarn (IN);				\
+	pedwarn (0, IN);			\
 	break;					\
       case ic_return:				\
-	pedwarn (RE);				\
+	pedwarn (0, RE);			\
 	break;					\
       default:					\
 	gcc_unreachable ();			\
@@ -4170,8 +4171,9 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	      memb = marginal_memb;
 	    }
 
-	  if (pedantic && (!fundecl || !DECL_IN_SYSTEM_HEADER (fundecl)))
-	    pedwarn ("ISO C prohibits argument conversion to union type");
+	  if (!fundecl || !DECL_IN_SYSTEM_HEADER (fundecl))
+	    pedwarn (OPT_pedantic, 
+		     "ISO C prohibits argument conversion to union type");
 
 	  rhs = fold_convert (TREE_TYPE (memb), rhs);
 	  return build_constructor_single (type, memb, rhs);
@@ -4616,19 +4618,20 @@ error_init (const char *msgid)
     error ("(near initialization for %qs)", ofwhat);
 }
 
-/* Issue a pedantic warning for a bad initializer component.
-   MSGID identifies the message.
-   The component name is taken from the spelling stack.  */
+/* Issue a pedantic warning for a bad initializer component.  OPT is
+   the option OPT_* (from options.h) controlling this warning or 0 if
+   it is unconditionally given.  MSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
 
 void
-pedwarn_init (const char *msgid)
+pedwarn_init (int opt, const char *msgid)
 {
   char *ofwhat;
 
-  pedwarn ("%s", _(msgid));
+  pedwarn (opt, "%s", _(msgid));
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    pedwarn ("(near initialization for %qs)", ofwhat);
+    pedwarn (opt, "(near initialization for %qs)", ofwhat);
 }
 
 /* Issue a warning for a bad initializer component.  
@@ -4659,7 +4662,8 @@ maybe_warn_string_init (tree type, struct c_expr expr)
       && TREE_CODE (type) == ARRAY_TYPE
       && TREE_CODE (expr.value) == STRING_CST
       && expr.original_code != STRING_CST)
-    pedwarn_init ("array initialized from parenthesized string constant");
+    pedwarn_init (OPT_pedantic, 
+		  "array initialized from parenthesized string constant");
 }
 
 /* Digest the parser output INIT as an initializer for type TYPE.
@@ -4752,7 +4756,7 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 				       TREE_STRING_LENGTH (inside_init)
 				       - (TYPE_PRECISION (typ1)
 					  / BITS_PER_UNIT)))
-	    pedwarn_init ("initializer-string for array of chars is too long");
+	    pedwarn_init (0, "initializer-string for array of chars is too long");
 
 	  return inside_init;
 	}
@@ -4867,7 +4871,7 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	  if (inside_init == error_mark_node)
 	    error_init ("initializer element is not constant");
 	  else
-	    pedwarn_init ("initializer element is not constant");
+	    pedwarn_init (OPT_pedantic, "initializer element is not constant");
 	  if (flag_pedantic_errors)
 	    inside_init = error_mark_node;
 	}
@@ -5540,8 +5544,8 @@ pop_init_level (int implicit)
 
 	  if (constructor_depth > 2)
 	    error_init ("initialization of flexible array member in a nested context");
-	  else if (pedantic)
-	    pedwarn_init ("initialization of a flexible array member");
+	  else
+	    pedwarn_init (OPT_pedantic, "initialization of a flexible array member");
 
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
@@ -6278,7 +6282,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 	  value = error_mark_node;
 	}
       else if (require_constant_elements)
-	pedwarn ("initializer element is not computable at load time");
+	pedwarn (0, "initializer element is not computable at load time");
     }
 
   /* If this field is empty (and not at the end of structure),
@@ -6605,7 +6609,7 @@ process_init_element (struct c_expr value)
 
 	  if (constructor_fields == 0)
 	    {
-	      pedwarn_init ("excess elements in struct initializer");
+	      pedwarn_init (0, "excess elements in struct initializer");
 	      break;
 	    }
 
@@ -6688,7 +6692,7 @@ process_init_element (struct c_expr value)
 
 	  if (constructor_fields == 0)
 	    {
-	      pedwarn_init ("excess elements in union initializer");
+	      pedwarn_init (0, "excess elements in union initializer");
 	      break;
 	    }
 
@@ -6775,7 +6779,7 @@ process_init_element (struct c_expr value)
 	      && (tree_int_cst_lt (constructor_max_index, constructor_index)
 		  || integer_all_onesp (constructor_max_index)))
 	    {
-	      pedwarn_init ("excess elements in array initializer");
+	      pedwarn_init (0, "excess elements in array initializer");
 	      break;
 	    }
 
@@ -6805,7 +6809,7 @@ process_init_element (struct c_expr value)
 	    always have a fixed size derived from their type.  */
 	  if (tree_int_cst_lt (constructor_max_index, constructor_index))
 	    {
-	      pedwarn_init ("excess elements in vector initializer");
+	      pedwarn_init (0, "excess elements in vector initializer");
 	      break;
 	    }
 
@@ -6829,7 +6833,7 @@ process_init_element (struct c_expr value)
       else if (constructor_type != error_mark_node
 	       && constructor_fields == 0)
 	{
-	  pedwarn_init ("excess elements in scalar initializer");
+	  pedwarn_init (0, "excess elements in scalar initializer");
 	  break;
 	}
       else
@@ -7060,8 +7064,7 @@ c_finish_goto_label (tree label)
 tree
 c_finish_goto_ptr (tree expr)
 {
-  if (pedantic)
-    pedwarn ("ISO C forbids %<goto *expr;%>");
+  pedwarn (OPT_pedantic, "ISO C forbids %<goto *expr;%>");
   expr = convert (ptr_type_node, expr);
   return add_stmt (build1 (GOTO_EXPR, void_type_node, expr));
 }
@@ -7084,7 +7087,8 @@ c_finish_return (tree retval)
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
 	{
-	  pedwarn_c99 ("%<return%> with no value, in "
+	  pedwarn_c99 (flag_isoc99 ? 0 : OPT_Wreturn_type, 
+		       "%<return%> with no value, in "
 		       "function returning non-void");
 	  no_warning = true;
 	}
@@ -7093,9 +7097,10 @@ c_finish_return (tree retval)
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	pedwarn ("%<return%> with a value, in function returning void");
-      else if (pedantic)
-	pedwarn ("ISO C forbids %<return%> with expression, in function returning void");
+	pedwarn (0, "%<return%> with a value, in function returning void");
+      else 
+	pedwarn (OPT_pedantic, "ISO C forbids "
+		 "%<return%> with expression, in function returning void");
     }
   else
     {
@@ -8165,20 +8170,20 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		 whose value is 0 but which isn't a valid null ptr const.  */
 	      if (pedantic && !null_pointer_constant_p (orig_op0)
 		  && TREE_CODE (tt1) == FUNCTION_TYPE)
-		pedwarn ("ISO C forbids comparison of %<void *%>"
-			 " with function pointer");
+		pedwarn (OPT_pedantic, "ISO C forbids "
+			 "comparison of %<void *%> with function pointer");
 	    }
 	  else if (VOID_TYPE_P (tt1))
 	    {
 	      if (pedantic && !null_pointer_constant_p (orig_op1)
 		  && TREE_CODE (tt0) == FUNCTION_TYPE)
-		pedwarn ("ISO C forbids comparison of %<void *%>"
-			 " with function pointer");
+		pedwarn (OPT_pedantic, "ISO C forbids "
+			 "comparison of %<void *%> with function pointer");
 	    }
 	  else
 	    /* Avoid warning about the volatile ObjC EH puts on decls.  */
 	    if (!objc_ok)
-	      pedwarn ("comparison of distinct pointer types lacks a cast");
+	      pedwarn (0, "comparison of distinct pointer types lacks a cast");
 
 	  if (result_type == NULL_TREE)
 	    result_type = ptr_type_node;
@@ -8202,12 +8207,12 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  pedwarn ("comparison between pointer and integer");
+	  pedwarn (0, "comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  pedwarn ("comparison between pointer and integer");
+	  pedwarn (0, "comparison between pointer and integer");
 	}
       break;
 
@@ -8228,38 +8233,42 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      result_type = common_pointer_type (type0, type1);
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
 		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
-		pedwarn ("comparison of complete and incomplete pointers");
-	      else if (pedantic
-		       && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-		pedwarn ("ISO C forbids ordered comparisons of pointers to functions");
+		pedwarn (0, "comparison of complete and incomplete pointers");
+	      else if (TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
+		pedwarn (OPT_pedantic, "ISO C forbids "
+			 "ordered comparisons of pointers to functions");
 	    }
 	  else
 	    {
 	      result_type = ptr_type_node;
-	      pedwarn ("comparison of distinct pointer types lacks a cast");
+	      pedwarn (0, "comparison of distinct pointer types lacks a cast");
 	    }
 	}
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
 	{
 	  result_type = type0;
-	  if (pedantic || extra_warnings)
-	    pedwarn ("ordered comparison of pointer with integer zero");
+	  if (pedantic)
+	    pedwarn (OPT_pedantic, 
+		     "ordered comparison of pointer with integer zero");
+	  else if (extra_warnings)
+	    warning (OPT_Wextra,
+		     "ordered comparison of pointer with integer zero");
 	}
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
 	  result_type = type1;
-	  if (pedantic)
-	    pedwarn ("ordered comparison of pointer with integer zero");
+	  pedwarn (OPT_pedantic, 
+		   "ordered comparison of pointer with integer zero");
 	}
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  pedwarn ("comparison between pointer and integer");
+	  pedwarn (0, "comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  pedwarn ("comparison between pointer and integer");
+	  pedwarn (0, "comparison between pointer and integer");
 	}
       break;
 

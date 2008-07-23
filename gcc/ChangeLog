@@ -1,3 +1,23 @@
+2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35058
+	* diagnostic.c (pedwarn): Add opt parameter.
+	(pedwarn0): New.
+	* c-tree.h (pedwarn_init): Add opt parameter.
+	(pedwarn_c90): Likewise.
+	(pedwarn_c99): Likewise.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* toplev.h (pedwarn): Update declaration.
+	(pedwarn0): Declare.
+	* c-lex.c: All calls to pedwarn changed.
+	* builtins.c: All calls to pedwarn changed.
+	* toplev.c: All calls to pedwarn changed.
+	* c-decl.c: All calls to pedwarn changed.
+	* c-typeck.c: All calls to pedwarn changed.
+	* c-common.c: All calls to pedwarn changed.
+	* c-parser.c: All calls to pedwarn changed.
+	
 2008-07-23  Michael Meissner  <gnu@the-meissners.org>
 	    Karthik Kumar  <karthikkumar@gmail.com>
 

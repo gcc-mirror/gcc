@@ -522,16 +522,34 @@ warning_at (location_t location, int opt, const char *gmsgid, ...)
 
    Note that these diagnostics are issued independent of the setting
    of the -pedantic command-line switch.  To get a warning enabled
-   only with that switch, write "if (pedantic) pedwarn (...);"  */
+   only with that switch, use either "if (pedantic) pedwarn
+   (OPT_pedantic,...)" or just "pedwarn (OPT_pedantic,..)".  To get a
+   pedwarn independently of the -pedantic switch use "pedwarn (0,...)".  */
+
 void
-pedwarn (const char *gmsgid, ...)
+pedwarn (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-		       pedantic_warning_kind ());
+                      pedantic_warning_kind ());
+  diagnostic.option_index = opt;
+
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
+void
+pedwarn0 (const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
+                      pedantic_warning_kind ());
   report_diagnostic (&diagnostic);
   va_end (ap);
 }

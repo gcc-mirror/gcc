@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Issue an ISO C99 pedantic warning MSGID.  */
 
 void
-pedwarn_c99 (const char *gmsgid, ...)
+pedwarn_c99 (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
@@ -39,6 +39,7 @@ pedwarn_c99 (const char *gmsgid, ...)
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
 		       flag_isoc99 ? pedantic_warning_kind () : DK_WARNING);
+  diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
@@ -49,7 +50,7 @@ pedwarn_c99 (const char *gmsgid, ...)
    (There is no flag_c90.)  */
 
 void
-pedwarn_c90 (const char *gmsgid, ...)
+pedwarn_c90 (int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
@@ -57,6 +58,7 @@ pedwarn_c90 (const char *gmsgid, ...)
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
 		       flag_isoc99 ? DK_WARNING : pedantic_warning_kind ());
+  diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
   va_end (ap);
 }

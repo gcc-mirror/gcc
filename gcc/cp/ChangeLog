@@ -1,3 +1,15 @@
+2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35058
+	* typeck.c: All calls to pedwarn changed.
+	* decl.c: All calls to pedwarn changed.
+	* call.c: All calls to pedwarn changed.
+	* error.c: All calls to pedwarn changed.
+	* typeck2.c: All calls to pedwarn changed.
+	* pt.c: All calls to pedwarn changed.
+	* name-lookup.c: All calls to pedwarn changed.
+	* parser.c: All calls to pedwarn changed.
+
 2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* call.c: Fix comment typos.

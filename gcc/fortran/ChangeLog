@@ -1,3 +1,8 @@
+2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35058
+	* f95-lang.c (gfc_mark_addressable): All calls to pedwarn changed.
+
 2008-07-22  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/29835

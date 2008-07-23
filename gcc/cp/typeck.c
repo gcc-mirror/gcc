@@ -511,9 +511,10 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       tree attributes;
       tree result_type;
 
-      if (pedantic && TYPE_PTRFN_P (t2) && (complain & tf_error))
-	pedwarn ("ISO C++ forbids %s between pointer of type %<void *%> "
-		 "and pointer-to-function", location);
+      if (TYPE_PTRFN_P (t2) && (complain & tf_error))
+	pedwarn (OPT_pedantic, "ISO C++ forbids %s "
+		 "between pointer of type %<void *%> and pointer-to-function",
+		 location);
       result_type
 	= cp_build_qualified_type (void_type_node,
 				   (cp_type_quals (TREE_TYPE (t1))
@@ -1278,8 +1279,9 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
   type = non_reference (type);
   if (TREE_CODE (type) == METHOD_TYPE)
     {
-      if (complain && (pedantic || warn_pointer_arith))
-	pedwarn ("invalid application of %qs to a member function", 
+      if (complain)
+	pedwarn (pedantic ? OPT_pedantic : OPT_Wpointer_arith, 
+		 "invalid application of %qs to a member function", 
 		 operator_name_info[(int) op].name);
       value = size_one_node;
     }
@@ -2596,8 +2598,8 @@ build_array_ref (tree array, tree idx)
 	    return error_mark_node;
 	}
 
-      if (pedantic && !lvalue_p (array))
-	pedwarn ("ISO C++ forbids subscripting non-lvalue array");
+      if (!lvalue_p (array))
+	pedwarn (OPT_pedantic, "ISO C++ forbids subscripting non-lvalue array");
 
       /* Note in C++ it is valid to subscript a `register' array, since
 	 it is valid to take the address of something with that
@@ -2822,8 +2824,9 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
       fndecl = function;
 
       /* Convert anything with function type to a pointer-to-function.  */
-      if (pedantic && DECL_MAIN_P (function) && (complain & tf_error))
-	pedwarn ("ISO C++ forbids calling %<::main%> from within program");
+      if (DECL_MAIN_P (function) && (complain & tf_error))
+	pedwarn (OPT_pedantic, 
+		 "ISO C++ forbids calling %<::main%> from within program");
 
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
@@ -4101,15 +4104,12 @@ pointer_diff (tree op0, tree op1, tree ptrtype)
   if (!complete_type_or_else (target_type, NULL_TREE))
     return error_mark_node;
 
-  if (pedantic || warn_pointer_arith)
-    {
-      if (TREE_CODE (target_type) == VOID_TYPE)
-	permerror ("ISO C++ forbids using pointer of type %<void *%> in subtraction");
-      if (TREE_CODE (target_type) == FUNCTION_TYPE)
-	permerror ("ISO C++ forbids using pointer to a function in subtraction");
-      if (TREE_CODE (target_type) == METHOD_TYPE)
-	permerror ("ISO C++ forbids using pointer to a method in subtraction");
-    }
+  if (TREE_CODE (target_type) == VOID_TYPE)
+    permerror ("ISO C++ forbids using pointer of type %<void *%> in subtraction");
+  if (TREE_CODE (target_type) == FUNCTION_TYPE)
+    permerror ("ISO C++ forbids using pointer to a function in subtraction");
+  if (TREE_CODE (target_type) == METHOD_TYPE)
+    permerror ("ISO C++ forbids using pointer to a method in subtraction");
 
   /* First do the subtraction as integers;
      then drop through to build the divide operator.  */
@@ -4559,7 +4559,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  arg = build1 (CONVERT_EXPR, type, arg);
 	  return arg;
 	}
-      else if (pedantic && DECL_MAIN_P (arg))
+      else if (DECL_MAIN_P (arg))
         {
           /* ARM $3.4 */
           if (complain & tf_error)
@@ -4655,7 +4655,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
           /* Even if we're not being pedantic, we cannot allow this
              extension when we're instantiating in a SFINAE
              context.  */
-	  if (! lvalue_p (arg) && (pedantic || complain == tf_none))
+	  if (! lvalue_p (arg) && complain == tf_none)
             {
               if (complain & tf_error)
                 permerror ("ISO C++ forbids taking the address of a cast to a non-lvalue expression");
@@ -5443,7 +5443,8 @@ convert_member_func_to_ptr (tree type, tree expr)
 	      || TREE_CODE (intype) == METHOD_TYPE);
 
   if (pedantic || warn_pmf2ptr)
-    pedwarn ("converting from %qT to %qT", intype, type);
+    pedwarn (pedantic ? OPT_pedantic : OPT_Wpmf_conversions,
+	     "converting from %qT to %qT", intype, type);
 
   if (TREE_CODE (intype) == METHOD_TYPE)
     expr = build_addr_func (expr);
@@ -6980,7 +6981,6 @@ check_return_expr (tree retval, bool *no_warning)
       else
 	permerror ("return-statement with a value, in function "
 		   "returning 'void'");
-
       current_function_returns_null = 1;
 
       /* There's really no value to return, after all.  */
@@ -7347,7 +7347,8 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
       if (pedantic)
 	{
 	  tree bad_type = build_qualified_type (type, type_quals);
-	  pedwarn ("ignoring %qV qualifiers added to function type %qT",
+	  pedwarn (OPT_pedantic, 
+		   "ignoring %qV qualifiers added to function type %qT",
 		   bad_type, type);
 	}
 
