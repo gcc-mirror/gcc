@@ -225,7 +225,7 @@ for (i = 0; i < n_opts; i++) {
 print "};"
 
 print "";
-print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2)"
+print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
 print "";
 print "/* Save optimization variables into a structure.  */"
 print "void";

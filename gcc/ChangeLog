@@ -1,3 +1,10 @@
+2008-07-23  Michael Meissner  <gnu@the-meissners.org>
+
+	PR 36907
+	* opth-gen.awk: Suppress function specific features when building
+	target libraries.
+	* optc-gen.awk: Ditto.
+
 2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35058
