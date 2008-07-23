@@ -1,0 +1,13 @@
+i386.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(TM_P_H) $(REGS_H) hard-reg-set.h \
+  $(REAL_H) insn-config.h conditions.h output.h insn-codes.h \
+  $(INSN_ATTR_H) $(FLAGS_H) $(C_COMMON_H) except.h $(FUNCTION_H) \
+  $(RECOG_H) $(EXPR_H) $(OPTABS_H) toplev.h $(BASIC_BLOCK_H) \
+  $(GGC_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h $(CGRAPH_H) \
+  $(TREE_GIMPLE_H) dwarf2.h $(DF_H) tm-constrs.h $(PARAMS_H)
+
+i386-c.o: $(srcdir)/config/i386/i386-c.c \
+  $(srcdir)/config/i386/i386-protos.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(FLAGS_H) $(C_COMMON_H) $(GGC_H) \
+  $(TARGET_H) $(TARGET_DEF_H) $(CPPLIB_H) $(C_PRAGMA_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/i386-c.c

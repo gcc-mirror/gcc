@@ -870,6 +870,7 @@ extern tree c_staticp (tree);
 extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
+extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
 
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */
@@ -925,7 +926,6 @@ extern void warn_about_parentheses (enum tree_code, enum tree_code,
 extern void warn_for_unused_label (tree label);
 extern void warn_for_div_by_zero (tree divisor);
 
-
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, tree *, tree *);
@@ -944,6 +944,8 @@ extern void c_common_print_pch_checksum (FILE *f);
 /* In *-checksum.c */
 extern const unsigned char executable_checksum[16];
 
+/* In c-cppbuiltin.c  */
+extern void builtin_define_std (const char *macro);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);

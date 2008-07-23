@@ -963,6 +963,34 @@ struct gcc_target
     bool debug_form_tls_address;
   } emutls;  
 
+  struct target_option_hooks {
+    /* Function to validate the attribute((option(...))) strings or NULL.  If
+       the option is validated, it is assumed that DECL_FUNCTION_SPECIFIC will
+       be filled in in the function decl node.  */
+    bool (*valid_attribute_p) (tree, tree, tree, int);
+
+    /* Function to save any extra target state in the target options
+       structure.  */
+    void (*save) (struct cl_target_option *);
+
+    /* Function to restore any extra target state from the target options
+       structure.  */
+    void (*restore) (struct cl_target_option *);
+
+    /* Function to print any extra target state from the target options
+       structure.  */
+    void (*print) (FILE *, int, struct cl_target_option *);
+
+    /* Function to parse arguments to be validated for #pragma option, and to
+       change the state if the options are valid.  If the arguments are NULL,
+       use the default target options.  Return true if the options are valid,
+       and set the current state.  */
+    bool (*pragma_parse) (tree);
+
+    /* Function to determine if one function can inline another function.  */
+    bool (*can_inline_p) (tree, tree);
+  } target_option;
+
   /* For targets that need to mark extra registers as live on entry to
      the function, they should define this target hook and set their
      bits in the bitmap passed in. */  

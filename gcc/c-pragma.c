@@ -866,6 +866,313 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   GCC_BAD ("unknown option after %<#pragma GCC diagnostic%> kind");
 }
 
+/* Stack of the #pragma GCC options created with #pragma GCC option push.  */
+static GTY(()) VEC(tree,gc) *option_stack;
+
+/*  Parse #pragma GCC option (xxx) to set target specific options.  */
+static void
+handle_pragma_option(cpp_reader *ARG_UNUSED(dummy))
+{
+  enum cpp_ttype token;
+  const char *name;
+  tree x;
+  bool close_paren_needed_p = false;
+
+  if (cfun)
+    {
+      error ("#pragma GCC option is not allowed inside functions");
+      return;
+    }
+
+  if (!targetm.target_option.pragma_parse)
+    {
+      error ("#pragma GCC option is not supported for this system");
+      return;
+    }
+
+  token = pragma_lex (&x);
+  if (token == CPP_OPEN_PAREN)
+    {
+      close_paren_needed_p = true;
+      token = pragma_lex (&x);
+    }
+
+  if (token == CPP_NAME)
+    {
+      bool call_pragma_parse_p = false;
+      bool ok_p;
+
+      name = IDENTIFIER_POINTER (x);
+      if (strcmp (name, "reset") == 0)
+	{
+	  current_option_pragma = NULL_TREE;
+	  call_pragma_parse_p = true;
+	}
+
+      else if (strcmp (name, "push") == 0)
+	VEC_safe_push (tree, gc, option_stack,
+		       copy_list (current_option_pragma));
+
+      else if (strcmp (name, "pop") == 0)
+	{
+	  int len = VEC_length (tree, option_stack);
+	  if (len == 0)
+	    {
+	      GCC_BAD ("%<#pragma GCC option pop%> without a %<#pragma GCC "
+		       "option push%>");
+	      return;
+	    }
+	  else
+	    {
+	      VEC_truncate (tree, option_stack, len-1);
+	      current_option_pragma = ((len > 1)
+				       ? VEC_last (tree, option_stack)
+				       : NULL_TREE);
+
+	      call_pragma_parse_p = true;
+	    }
+	}
+
+      else
+	{
+	  GCC_BAD ("%<#pragma GCC option%> is not a string or "
+		   "push/pop/reset");
+	  return;
+	}
+
+      token = pragma_lex (&x);
+      if (close_paren_needed_p)
+	{
+	  if (token == CPP_CLOSE_PAREN)
+	    token = pragma_lex (&x);
+	  else
+	    GCC_BAD ("%<#pragma GCC option ([push|pop|reset])%> does not "
+		     "have a final %<)%>.");
+	}
+
+      if (token != CPP_EOF)
+	{
+	  GCC_BAD ("%<#pragma GCC option [push|pop|reset]%> is badly "
+		   "formed");
+	  return;
+	}
+
+      /* See if we need to call the pragma_parse hook.  This must occur at the
+	 end after processing all of the tokens, or we may get spurious errors
+	 when we define or undef macros.  */
+      ok_p = targetm.target_option.pragma_parse (current_option_pragma);
+      gcc_assert (ok_p);
+    }
+
+  else if (token != CPP_STRING)
+    {
+      GCC_BAD ("%<#pragma GCC option%> is not a string or push/pop/reset");
+      return;
+    }
+
+  /* Strings are user options.  */
+  else
+    {
+      tree args = NULL_TREE;
+
+      do
+	{
+	  /* Build up the strings now as a tree linked list.  Skip empty
+	     strings.  */
+	  if (TREE_STRING_LENGTH (x) > 0)
+	    args = tree_cons (NULL_TREE, x, args);
+
+	  token = pragma_lex (&x);
+	  while (token == CPP_COMMA)
+	    token = pragma_lex (&x);
+	}
+      while (token == CPP_STRING);
+
+      if (close_paren_needed_p)
+	{
+	  if (token == CPP_CLOSE_PAREN)
+	    token = pragma_lex (&x);
+	  else
+	    GCC_BAD ("%<#pragma GCC option (string [,string]...)%> does "
+		     "not have a final %<)%>.");
+	}
+
+      if (token != CPP_EOF)
+	{
+	  error ("#pragma GCC option string... is badly formed");
+	  return;
+	}
+
+      /* put arguments in the order the user typed them.  */
+      args = nreverse (args);
+
+      if (targetm.target_option.pragma_parse (args))
+	current_option_pragma = args;
+    }
+}
+
+/* Stack of the #pragma GCC optimize options created with #pragma GCC optimize
+   push.  */
+static GTY(()) VEC(tree,gc) *optimize_stack;
+
+/* Handle #pragma GCC optimize to set optimization options.  */
+static void
+handle_pragma_optimize(cpp_reader *ARG_UNUSED(dummy))
+{
+  enum cpp_ttype token;
+  const char *name;
+  tree x;
+  bool close_paren_needed_p = false;
+  tree optimization_previous_node = optimization_current_node;
+
+  if (cfun)
+    {
+      error ("#pragma GCC optimize is not allowed inside functions");
+      return;
+    }
+
+  token = pragma_lex (&x);
+  if (token == CPP_OPEN_PAREN)
+    {
+      close_paren_needed_p = true;
+      token = pragma_lex (&x);
+    }
+
+  if (token == CPP_NAME)
+    {
+      bool call_opt_p = false;
+
+      name = IDENTIFIER_POINTER (x);
+      if (strcmp (name, "reset") == 0)
+	{
+	  struct cl_optimization *def
+	    = TREE_OPTIMIZATION (optimization_default_node);
+	  current_optimize_pragma = NULL_TREE;
+	  optimization_current_node = optimization_default_node;
+	  cl_optimization_restore (def);
+	  call_opt_p = true;
+	}
+
+      else if (strcmp (name, "push") == 0)
+	VEC_safe_push (tree, gc, optimize_stack, current_optimize_pragma);
+
+      else if (strcmp (name, "pop") == 0)
+	{
+	  int len = VEC_length (tree, optimize_stack);
+	  if (len == 0)
+	    {
+	      GCC_BAD ("%<#pragma GCC optimize pop%> without a %<#pragma "
+		       "GCC optimize push%>");
+	      return;
+	    }
+	  else
+	    {
+	      VEC_truncate (tree, optimize_stack, len-1);
+	      current_optimize_pragma
+		= ((len > 1)
+		   ? VEC_last (tree, optimize_stack)
+		   : NULL_TREE);
+
+	      call_opt_p = true;
+	      if (current_optimize_pragma)
+		{
+		  bool ok_p
+		    = parse_optimize_options (current_optimize_pragma, false);
+		  gcc_assert (ok_p);	/* should be parsed previously.  */
+		  optimization_current_node = build_optimization_node ();
+		}
+	      else
+		{
+		  struct cl_optimization *opt
+		    = TREE_OPTIMIZATION (optimization_default_node);
+		  optimization_current_node = optimization_default_node;
+		  cl_optimization_restore (opt);
+		}
+	    }
+	}
+
+      else
+	{
+	  GCC_BAD ("%<#pragma GCC optimize%> is not a string or "
+		   "push/pop/reset");
+	  return;
+	}
+
+      token = pragma_lex (&x);
+      if (close_paren_needed_p)
+	{
+	  if (token == CPP_CLOSE_PAREN)
+	    token = pragma_lex (&x);
+	  else
+	    GCC_BAD ("%<#pragma GCC optimize ([push|pop|reset])%> does not "
+		     "have a final %<)%>.");
+	}
+
+      if (token != CPP_EOF)
+	{
+	  GCC_BAD ("%<#pragma GCC optimize [push|pop|reset]%> is badly "
+		   "formed");
+	  return;
+	}
+
+      if (call_opt_p &&
+	  (optimization_previous_node != optimization_current_node))
+	c_cpp_builtins_optimize_pragma (parse_in,
+					optimization_previous_node,
+					optimization_current_node);
+
+    }
+
+  else if (token != CPP_STRING && token != CPP_NUMBER)
+    {
+      GCC_BAD ("%<#pragma GCC optimize%> is not a string, number, or "
+	       "push/pop/reset");
+      return;
+    }
+
+  /* Strings/numbers are user options.  */
+  else
+    {
+      tree args = NULL_TREE;
+
+      do
+	{
+	  /* Build up the numbers/strings now as a list.  */
+	  if (token != CPP_STRING || TREE_STRING_LENGTH (x) > 0)
+	    args = tree_cons (NULL_TREE, x, args);
+
+	  token = pragma_lex (&x);
+	  while (token == CPP_COMMA)
+	    token = pragma_lex (&x);
+	}
+      while (token == CPP_STRING || token == CPP_NUMBER);
+
+      if (close_paren_needed_p)
+	{
+	  if (token == CPP_CLOSE_PAREN)
+	    token = pragma_lex (&x);
+	  else
+	    GCC_BAD ("%<#pragma GCC optimize (string [,string]...)%> does "
+		     "not have a final %<)%>.");
+	}
+
+      if (token != CPP_EOF)
+	{
+	  error ("#pragma GCC optimize string... is badly formed");
+	  return;
+	}
+
+      /* put arguments in the order the user typed them.  */
+      args = nreverse (args);
+
+      parse_optimize_options (args, false);
+      optimization_current_node = build_optimization_node ();
+      c_cpp_builtins_optimize_pragma (parse_in,
+				      optimization_previous_node,
+				      optimization_current_node);
+    }
+}
+
 /* A vector of registered pragma callbacks.  */
 
 DEF_VEC_O (pragma_handler);
@@ -1028,6 +1335,8 @@ init_pragma (void)
 #endif
 
   c_register_pragma ("GCC", "diagnostic", handle_pragma_diagnostic);
+  c_register_pragma ("GCC", "option", handle_pragma_option);
+  c_register_pragma ("GCC", "optimize", handle_pragma_optimize);
 
   c_register_pragma_with_expansion (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);

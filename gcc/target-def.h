@@ -758,6 +758,41 @@
     TARGET_EMUTLS_DEBUG_FORM_TLS_ADDRESS	\
   }
 
+/* Function specific option attribute support.  */
+#ifndef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P NULL
+#endif
+
+#ifndef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE NULL
+#endif
+
+#ifndef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE NULL
+#endif
+
+#ifndef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT NULL
+#endif
+
+#ifndef TARGET_OPTION_PRAGMA_PARSE
+#define TARGET_OPTION_PRAGMA_PARSE NULL
+#endif
+
+#ifndef TARGET_OPTION_CAN_INLINE_P
+#define TARGET_OPTION_CAN_INLINE_P default_target_option_can_inline_p
+#endif
+
+#define TARGET_OPTION_HOOKS			\
+  {						\
+    TARGET_OPTION_VALID_ATTRIBUTE_P,		\
+    TARGET_OPTION_SAVE,				\
+    TARGET_OPTION_RESTORE,			\
+    TARGET_OPTION_PRINT,			\
+    TARGET_OPTION_PRAGMA_PARSE,			\
+    TARGET_OPTION_CAN_INLINE_P,			\
+  }
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
@@ -854,6 +889,7 @@
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EMUTLS,				\
+  TARGET_OPTION_HOOKS,				\
   TARGET_EXTRA_LIVE_ON_ENTRY,			\
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\

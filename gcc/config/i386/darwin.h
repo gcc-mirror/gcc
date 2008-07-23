@@ -263,8 +263,8 @@ extern void darwin_x86_file_end (void);
    : (n) >= 11 && (n) <= 18 ? (n) + 1					\
    : (n))
 
-#undef REGISTER_TARGET_PRAGMAS
-#define REGISTER_TARGET_PRAGMAS() DARWIN_REGISTER_TARGET_PRAGMAS()
+#undef REGISTER_SUBTARGET_PRAGMAS
+#define REGISTER_SUBTARGET_PRAGMAS() DARWIN_REGISTER_TARGET_PRAGMAS()
 
 #undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES darwin_set_default_type_attributes

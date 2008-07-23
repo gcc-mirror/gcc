@@ -1792,6 +1792,8 @@ the enclosing block.
 @cindex functions that are passed arguments in registers on the 386
 @cindex functions that pop the argument stack on the 386
 @cindex functions that do not pop the argument stack on the 386
+@cindex functions that have different compilation options on the 386
+@cindex functions that have different optimization options
 
 In GNU C, you declare certain things about functions called in your program
 which help the compiler optimize function calls and check your code more
@@ -2662,6 +2664,207 @@ with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.  The @code{nothrow} attribute is not
 implemented in GCC versions earlier than 3.3.
 
+@item option
+@cindex @code{option} function attribute
+The @code{option} attribute is used to specify that a function is to
+be compiled with different target options than specified on the
+command line.  This can be used for instance to have functions
+compiled with a different ISA (instruction set architecture) than the
+default.  You can also use the @samp{#pragma GCC option} pragma to set
+more than one function to be compiled with specific target options.
+@xref{Function Specific Option Pragmas}, for details about the
+@samp{#pragma GCC option} pragma.
+
+For instance on a 386, you could compile one function with
+@code{option("sse4.1,arch=core2")} and another with
+@code{option("sse4a,arch=amdfam10")} that would be equivalent to
+compiling the first function with @option{-msse4.1} and
+@option{-march=core2} options, and the second function with
+@option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
+user to make sure that a function is only invoked on a machine that
+supports the particular ISA it was compiled for (for example by using
+@code{cpuid} on 386 to determine what feature bits and architecture
+family are used).
+
+@smallexample
+int core2_func (void) __attribute__ ((__option__ ("arch=core2")));
+int sse3_func (void) __attribute__ ((__option__ ("sse3")));
+@end smallexample
+
+On the 386, the following options are allowed:
+
+@table @samp
+@item abm
+@itemx no-abm
+@cindex option("abm")
+Enable/disable the generation of the advanced bit instructions.
+
+@item aes
+@itemx no-aes
+@cindex @code{option("aes")} attribute
+Enable/disable the generation of the AES instructions.
+
+@item mmx
+@itemx no-mmx
+@cindex @code{option("mmx")} attribute
+Enable/disable the generation of the MMX instructions.
+
+@item pclmul
+@itemx no-pclmul
+@cindex @code{option("pclmul")} attribute
+Enable/disable the generation of the PCLMUL instructions.
+
+@item popcnt
+@itemx no-popcnt
+@cindex @code{option("popcnt")} attribute
+Enable/disable the generation of the POPCNT instruction.
+
+@item sse
+@itemx no-sse
+@cindex @code{option("sse")} attribute
+Enable/disable the generation of the SSE instructions.
+
+@item sse2
+@itemx no-sse2
+@cindex @code{option("sse2")} attribute
+Enable/disable the generation of the SSE2 instructions.
+
+@item sse3
+@itemx no-sse3
+@cindex @code{option("sse3")} attribute
+Enable/disable the generation of the SSE3 instructions.
+
+@item sse4
+@itemx no-sse4
+@cindex @code{option("sse4")} attribute
+Enable/disable the generation of the SSE4 instructions (both SSE4.1
+and SSE4.2).
+
+@item sse4.1
+@itemx no-sse4.1
+@cindex @code{option("sse4.1")} attribute
+Enable/disable the generation of the sse4.1 instructions.
+
+@item sse4.2
+@itemx no-sse4.2
+@cindex @code{option("sse4.2")} attribute
+Enable/disable the generation of the sse4.2 instructions.
+
+@item sse4a
+@itemx no-sse4a
+@cindex @code{option("sse4a")} attribute
+Enable/disable the generation of the SSE4A instructions.
+
+@item sse5
+@itemx no-sse5
+@cindex @code{option("sse5")} attribute
+Enable/disable the generation of the SSE5 instructions.
+
+@item ssse3
+@itemx no-ssse3
+@cindex @code{option("ssse3")} attribute
+Enable/disable the generation of the SSSE3 instructions.
+
+@item cld
+@itemx no-cld
+@cindex @code{option("cld")} attribute
+Enable/disable the generation of the CLD before string moves.
+
+@item fancy-math-387
+@itemx no-fancy-math-387
+@cindex @code{option("fancy-math-387")} attribute
+Enable/disable the generation of the @code{sin}, @code{cos}, and
+@code{sqrt} instructions on the 387 floating point unit.
+
+@item fused-madd
+@itemx no-fused-madd
+@cindex @code{option("fused-madd")} attribute
+Enable/disable the generation of the fused multiply/add instructions.
+
+@item ieee-fp
+@itemx no-ieee-fp
+@cindex @code{option("ieee-fp")} attribute
+Enable/disable the generation of floating point that depends on IEEE arithmetic.
+
+@item inline-all-stringops
+@itemx no-inline-all-stringops
+@cindex @code{option("inline-all-stringops")} attribute
+Enable/disable inlining of string operations.
+
+@item inline-stringops-dynamically
+@itemx no-inline-stringops-dynamically
+@cindex @code{option("inline-stringops-dynamically")} attribute
+Enable/disable the generation of the inline code to do small string
+operations and calling the library routines for large operations.
+
+@item align-stringops
+@itemx no-align-stringops
+@cindex @code{option("align-stringops")} attribute
+Do/do not align destination of inlined string operations.
+
+@item recip
+@itemx no-recip
+@cindex @code{option("recip")} attribute
+Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
+instructions followed an additional Newton-Rhapson step instead of
+doing a floating point division.
+
+@item arch=@var{ARCH}
+@cindex @code{option("arch=@var{ARCH}")} attribute
+Specify the architecture to generate code for in compiling the function.
+
+@item tune=@var{TUNE}
+@cindex @code{option("tune=@var{TUNE}")} attribute
+Specify the architecture to tune for in compiling the function.
+
+@item fpmath=@var{FPMATH}
+@cindex @code{option("fpmath=@var{FPMATH}")} attribute
+Specify which floating point unit to use.  The
+@code{option("fpmath=sse,387")} option must be specified as
+@code{option("fpmath=sse+387")} because the comma would separate
+different options.
+@end table
+
+On the 386, you can use either multiple strings to specify multiple
+options, or you can separate the option with a comma (@code{,}).
+
+On the 386, the inliner will not inline a function that has different
+target options than the caller, unless the callee has a subset of the
+target options of the caller.  For example a function declared with
+@code{option("sse5")} can inline a function with
+@code{option("sse2")}, since @code{-msse5} implies @code{-msse2}.
+
+The @code{option} attribute is not implemented in GCC versions earlier
+than 4.4, and at present only the 386 uses it.
+
+@item optimize
+@cindex @code{optimize} function attribute
+The @code{optimize} attribute is used to specify that a function is to
+be compiled with different optimization options than specified on the
+command line.  Arguments can either be numbers or strings.  Numbers
+are assumed to be an optimization level.  Strings that begin with
+@code{O} are assumed to be an optimization option, while other options
+are assumed to be used with a @code{-f} prefix.  You can also use the
+@samp{#pragma GCC optimize} pragma to set the optimization options
+that affect more than one function.
+@xref{Function Specific Option Pragmas}, for details about the
+@samp{#pragma GCC option} pragma.
+
+This can be used for instance to have frequently executed functions
+compiled with more aggressive optimization options that produce faster
+and larger code, while other functions can be called with less
+aggressive options.  The @code{hot} attribute implies
+@code{optimize("O3")}, and @code{cold} attribute implies
+@code{optimize("Os")}.
+
+@smallexample
+int fast_func (void) __attribute__ ((__optimize__ ("O3,unroll-loops")));
+int slow_func (void) __attribute__ ((__optimize__ ("Os")));
+@end smallexample
+
+The inliner will not inline functions with a higher optimization level
+than the caller or different space/time trade offs.
+
 @item pure
 @cindex @code{pure} function attribute
 Many functions have no effects except the return value and their
@@ -2697,7 +2900,11 @@ all hot functions appears close together improving locality.
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
 
-The @code{hot} attribute is not implemented in GCC versions earlier than 4.3.
+The @code{hot} attribute is not implemented in GCC versions earlier
+than 4.3.
+
+Starting with GCC 4.4, the @code{hot} attribute sets
+@code{optimize("O3")} to turn on more aggressive optimization.
 
 @item cold
 @cindex @code{cold} function attribute
@@ -2714,7 +2921,10 @@ occasions.
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
 
-The @code{hot} attribute is not implemented in GCC versions earlier than 4.3.
+The @code{cold} attribute is not implemented in GCC versions earlier than 4.3.
+
+Starting with GCC 4.4, the @code{cold} attribute sets
+@code{optimize("Os")} to save space.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
@@ -11108,6 +11318,7 @@ for further explanation.
 * Diagnostic Pragmas::
 * Visibility Pragmas::
 * Push/Pop Macro Pragmas::
+* Function Specific Option Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -11457,6 +11668,80 @@ int x [X];
 
 In this example, the definition of X as 1 is saved by @code{#pragma
 push_macro} and restored by @code{#pragma pop_macro}.
+
+@node Function Specific Option Pragmas
+@subsection Function Specific Option Pragmas
+
+@table @code
+@item #pragma GCC option (@var{"string"}...)
+@cindex pragma GCC option
+
+This pragma allows you to set target specific options for functions
+defined later in the source file.  One or more strings can be
+specified.  Each function that is defined after this point will be as
+if @code{attribute((option("STRING")))} was specified for that
+function.  The parenthesis around the options is optional.
+@xref{Function Attributes}, for more information about the
+@code{option} attribute and the attribute syntax.
+
+The @samp{#pragma GCC option} pragma is not implemented in GCC
+versions earlier than 4.4, and is currently only implemented for the
+386 and x86_64 backend.
+@end table
+
+@table @code
+@item #pragma GCC option (push)
+@itemx #pragma GCC option (pop)
+@cindex pragma GCC option
+
+These pragmas maintain a stack of the current options.  It is
+intended for include files where you temporarily want to switch to
+using a different @samp{#pragma GCC option} and then to pop back to
+the previous options.
+@end table
+
+@table @code
+@item #pragma GCC option (reset)
+@cindex pragma, target option
+@cindex pragma GCC option
+
+This pragma clears the current @code{#pragma GCC options} to use the
+default switches as specified on the command line.
+@end table
+@table @code
+@item #pragma GCC optimize (@var{"string"}...)
+@cindex pragma GCC optimize
+
+This pragma allows you to set global optimization options for functions
+defined later in the source file.  One or more strings can be
+specified.  Each function that is defined after this point will be as
+if @code{attribute((optimize("STRING")))} was specified for that
+function.  The parenthesis around the options is optional.
+@xref{Function Attributes}, for more information about the
+@code{optimize} attribute and the attribute syntax.
+
+The @samp{#pragma GCC optimize} pragma is not implemented in GCC
+versions earlier than 4.4.
+@end table
+
+@table @code
+@item #pragma GCC optimize (push)
+@itemx #pragma GCC optimize (pop)
+@cindex pragma GCC optimize
+
+These pragmas maintain a stack of the current optimization options.
+It is intended for include files where you temporarily want to switch
+to using a different @code{#pragma GCC optimize} and then to pop back
+to the previous optimizations.
+@end table
+
+@table @code
+@item #pragma GCC optimize reset
+@cindex pragma GCC optimize
+
+This pragma clears the current @code{#pragma GCC optimize} to use the
+default switches as specified on the command line.
+@end table
 
 @node Unnamed Fields
 @section Unnamed struct/union fields within structs/unions

@@ -3731,13 +3731,30 @@ debug_find_var_in_block_tree (tree var, tree block)
 
 static bool in_dummy_function;
 
-/* Invoke the target hook when setting cfun.  */
+/* Invoke the target hook when setting cfun.  Update the optimization options
+   if the function uses different options than the default.  */
 
 static void
 invoke_set_current_function_hook (tree fndecl)
 {
   if (!in_dummy_function)
-    targetm.set_current_function (fndecl);
+    {
+      tree opts = ((fndecl)
+		   ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl)
+		   : optimization_default_node);
+
+      if (!opts)
+	opts = optimization_default_node;
+
+      /* Change optimization options if needed.  */
+      if (optimization_current_node != opts)
+	{
+	  optimization_current_node = opts;
+	  cl_optimization_restore (TREE_OPTIMIZATION (opts));
+	}
+
+      targetm.set_current_function (fndecl);
+    }
 }
 
 /* cfun should never be set directly; use this function.  */

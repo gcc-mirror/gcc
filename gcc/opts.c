@@ -809,12 +809,36 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 void
 decode_options (unsigned int argc, const char **argv)
 {
+  static bool first_time_p = true;
+  static int initial_max_aliased_vops;
+  static int initial_avg_aliased_vops;
+  static int initial_min_crossjump_insns;
+  static int initial_max_fields_for_field_sensitive;
+  static unsigned int initial_lang_mask;
+
   unsigned int i, lang_mask;
+  int opt1;
+  int opt2;
+  int opt3;
+  int opt1_max;
 
-  /* Perform language-specific options initialization.  */
-  lang_mask = lang_hooks.init_options (argc, argv);
+  if (first_time_p)
+    {
+      /* Perform language-specific options initialization.  */
+      initial_lang_mask = lang_mask = lang_hooks.init_options (argc, argv);
 
-  lang_hooks.initialize_diagnostics (global_dc);
+      lang_hooks.initialize_diagnostics (global_dc);
+
+      /* Save initial values of parameters we reset.  */
+      initial_max_aliased_vops = MAX_ALIASED_VOPS;
+      initial_avg_aliased_vops = AVG_ALIASED_VOPS;
+      initial_min_crossjump_insns
+	= compiler_params[PARAM_MIN_CROSSJUMP_INSNS].value;
+      initial_max_fields_for_field_sensitive
+	= compiler_params[PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE].value;
+    }
+  else
+    lang_mask = initial_lang_mask;
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -863,6 +887,9 @@ decode_options (unsigned int argc, const char **argv)
       flag_section_anchors = 0;
     }
 
+  /* Originally we just set the variables if a particular optimization level,
+     but with the advent of being able to change the optimization level for a
+     function, we need to reset optimizations.  */
   if (!optimize)
     {
       flag_merge_constants = 0;
@@ -873,139 +900,170 @@ decode_options (unsigned int argc, const char **argv)
       if (flag_toplevel_reorder == 2)
         flag_toplevel_reorder = 0;
     }
+  else
+    flag_merge_constants = 1;
 
-  if (optimize >= 1)
-    {
-      flag_defer_pop = 1;
+  /* -O1 optimizations.  */
+  opt1 = (optimize >= 1);
+  flag_defer_pop = opt1;
 #ifdef DELAY_SLOTS
-      flag_delayed_branch = 1;
+  flag_delayed_branch = opt1;
 #endif
 #ifdef CAN_DEBUG_WITHOUT_FP
-      flag_omit_frame_pointer = 1;
+  flag_omit_frame_pointer = opt1;
 #endif
-      flag_guess_branch_prob = 1;
-      flag_cprop_registers = 1;
-      flag_if_conversion = 1;
-      flag_if_conversion2 = 1;
-      flag_ipa_pure_const = 1;
-      flag_ipa_reference = 1;
-      flag_split_wide_types = 1;
-      flag_tree_ccp = 1;
-      flag_tree_dce = 1;
-      flag_tree_dom = 1;
-      flag_tree_dse = 1;
-      flag_tree_ter = 1;
-      flag_tree_sra = 1;
-      flag_tree_copyrename = 1;
-      flag_tree_fre = 1;
-      flag_tree_copy_prop = 1;
-      flag_tree_sink = 1;
+  flag_guess_branch_prob = opt1;
+  flag_cprop_registers = opt1;
+  flag_if_conversion = opt1;
+  flag_if_conversion2 = opt1;
+  flag_ipa_pure_const = opt1;
+  flag_ipa_reference = opt1;
+  flag_split_wide_types = opt1;
+  flag_tree_ccp = opt1;
+  flag_tree_dce = opt1;
+  flag_tree_dom = opt1;
+  flag_tree_dse = opt1;
+  flag_tree_ter = opt1;
+  flag_tree_sra = opt1;
+  flag_tree_copyrename = opt1;
+  flag_tree_fre = opt1;
+  flag_tree_copy_prop = opt1;
+  flag_tree_sink = opt1;
+  flag_tree_ch = opt1;
 
-      if (!optimize_size)
-	{
-	  /* Loop header copying usually increases size of the code.  This used
-	     not to be true, since quite often it is possible to verify that
-	     the condition is satisfied in the first iteration and therefore
-	     to eliminate it.  Jump threading handles these cases now.  */
-	  flag_tree_ch = 1;
-	}
-    }
-
-  if (optimize >= 2)
-    {
-      flag_inline_small_functions = 1;
-      flag_thread_jumps = 1;
-      flag_crossjumping = 1;
-      flag_optimize_sibling_calls = 1;
-      flag_forward_propagate = 1;
-      flag_cse_follow_jumps = 1;
-      flag_gcse = 1;
-      flag_expensive_optimizations = 1;
-      flag_rerun_cse_after_loop = 1;
-      flag_caller_saves = 1;
-      flag_peephole2 = 1;
+  /* -O2 optimizations.  */
+  opt2 = (optimize >= 2);
+  flag_inline_small_functions = opt2;
+  flag_thread_jumps = opt2;
+  flag_crossjumping = opt2;
+  flag_optimize_sibling_calls = opt2;
+  flag_forward_propagate = opt2;
+  flag_cse_follow_jumps = opt2;
+  flag_gcse = opt2;
+  flag_expensive_optimizations = opt2;
+  flag_rerun_cse_after_loop = opt2;
+  flag_caller_saves = opt2;
+  flag_peephole2 = opt2;
 #ifdef INSN_SCHEDULING
-      flag_schedule_insns = 1;
-      flag_schedule_insns_after_reload = 1;
+  flag_schedule_insns = opt2;
+  flag_schedule_insns_after_reload = opt2;
 #endif
-      flag_regmove = 1;
-      flag_strict_aliasing = 1;
-      flag_strict_overflow = 1;
-      flag_delete_null_pointer_checks = 1;
-      flag_reorder_blocks = 1;
-      flag_reorder_functions = 1;
-      flag_tree_store_ccp = 1;
-      flag_tree_vrp = 1;
+  flag_regmove = opt2;
+  flag_strict_aliasing = opt2;
+  flag_strict_overflow = opt2;
+  flag_delete_null_pointer_checks = opt2;
+  flag_reorder_blocks = opt2;
+  flag_reorder_functions = opt2;
+  flag_tree_store_ccp = opt2;
+  flag_tree_vrp = opt2;
+  flag_tree_builtin_call_dce = opt2;
+  flag_tree_pre = opt2;
       flag_tree_switch_conversion = 1;
 
-      if (!optimize_size)
-	{
-          /* Conditional DCE generates bigger code.  */
-          flag_tree_builtin_call_dce = 1;
-          /* PRE tends to generate bigger code.  */
-          flag_tree_pre = 1;
-	}
-
       /* Allow more virtual operators to increase alias precision.  */
-      set_param_value ("max-aliased-vops", 500);
 
-      /* Track fields in field-sensitive alias analysis.  */
-      set_param_value ("max-fields-for-field-sensitive", 100);
-    }
+  set_param_value ("max-aliased-vops",
+		   (opt2) ? 500 : initial_max_aliased_vops);
 
-  if (optimize >= 3)
+  /* Track fields in field-sensitive alias analysis.  */
+  set_param_value ("max-fields-for-field-sensitive",
+		   (opt2) ? 100 : initial_max_fields_for_field_sensitive);
+
+  /* -O3 optimizations.  */
+  opt3 = (optimize >= 3);
+  flag_predictive_commoning = opt3;
+  flag_inline_functions = opt3;
+  flag_unswitch_loops = opt3;
+  flag_gcse_after_reload = opt3;
+  flag_tree_vectorize = opt3;
+
+  /* Allow even more virtual operators.  Max-aliased-vops was set above for
+     -O2, so don't reset it unless we are at -O3.  */
+  if (opt3)
+    set_param_value ("max-aliased-vops", 1000);
+
+  set_param_value ("avg-aliased-vops", (opt3) ? 3 : initial_avg_aliased_vops);
+
+  /* Just -O1/-O0 optimizations.  */
+  opt1_max = (optimize <= 1);
+  align_loops = opt1_max;
+  align_jumps = opt1_max;
+  align_labels = opt1_max;
+  align_functions = opt1_max;
+
+  if (optimize_size)
     {
-      flag_predictive_commoning = 1;
+      /* Loop header copying usually increases size of the code.  This used not to
+	 be true, since quite often it is possible to verify that the condition is
+	 satisfied in the first iteration and therefore to eliminate it.  Jump
+	 threading handles these cases now.  */
+      flag_tree_ch = 0;
+
+      /* Conditional DCE generates bigger code.  */
+      flag_tree_builtin_call_dce = 0;
+
+      /* PRE tends to generate bigger code.  */
+      flag_tree_pre = 0;
+
+      /* These options are set with -O3, so reset for -Os */
+      flag_predictive_commoning = 0;
+      flag_inline_functions = 0;
+      flag_unswitch_loops = 0;
+      flag_gcse_after_reload = 0;
+      flag_tree_vectorize = 0;
+
+      /* Don't reorder blocks when optimizing for size because extra jump insns may
+	 be created; also barrier may create extra padding.
+
+	 More correctly we should have a block reordering mode that tried to
+	 minimize the combined size of all the jumps.  This would more or less
+	 automatically remove extra jumps, but would also try to use more short
+	 jumps instead of long jumps.  */
+      flag_reorder_blocks = 0;
+      flag_reorder_blocks_and_partition = 0;
+
+      /* Inlining of functions reducing size is a good idea regardless of them
+	 being declared inline.  */
       flag_inline_functions = 1;
-      flag_unswitch_loops = 1;
-      flag_gcse_after_reload = 1;
-      flag_tree_vectorize = 1;
 
-      /* Allow even more virtual operators.  */
-      set_param_value ("max-aliased-vops", 1000);
-      set_param_value ("avg-aliased-vops", 3);
-    }
-
-  if (optimize < 2 || optimize_size)
-    {
+      /* Don't align code.  */
       align_loops = 1;
       align_jumps = 1;
       align_labels = 1;
       align_functions = 1;
 
-      /* Don't reorder blocks when optimizing for size because extra
-	 jump insns may be created; also barrier may create extra padding.
+      /* Unroll/prefetch switches that may be set on the command line, and tend to
+	 generate bigger code.  */
+      flag_unroll_loops = 0;
+      flag_unroll_all_loops = 0;
+      flag_prefetch_loop_arrays = 0;
 
-	 More correctly we should have a block reordering mode that tried
-	 to minimize the combined size of all the jumps.  This would more
-	 or less automatically remove extra jumps, but would also try to
-	 use more short jumps instead of long jumps.  */
-      flag_reorder_blocks = 0;
-      flag_reorder_blocks_and_partition = 0;
-    }
-
-  if (optimize_size)
-    {
-      /* Inlining of functions reducing size is a good idea regardless
-	 of them being declared inline.  */
-      flag_inline_functions = 1;
+      /* Basic optimization options.  */
+      optimize_size = 1;
+      if (optimize > 2)
+	optimize = 2;
 
       /* We want to crossjump as much as possible.  */
       set_param_value ("min-crossjump-insns", 1);
     }
+  else
+    set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);
 
-  /* Initialize whether `char' is signed.  */
-  flag_signed_char = DEFAULT_SIGNED_CHAR;
-  /* Set this to a special "uninitialized" value.  The actual default is set
-     after target options have been processed.  */
-  flag_short_enums = 2;
+  if (first_time_p)
+    {
+      /* Initialize whether `char' is signed.  */
+      flag_signed_char = DEFAULT_SIGNED_CHAR;
+      /* Set this to a special "uninitialized" value.  The actual default is
+	 set after target options have been processed.  */
+      flag_short_enums = 2;
 
-  /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
-     modify it.  */
-  target_flags = targetm.default_target_flags;
+      /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
+	 modify it.  */
+      target_flags = targetm.default_target_flags;
 
-  /* Some targets have ABI-specified unwind tables.  */
-  flag_unwind_tables = targetm.unwind_tables_default;
+      /* Some targets have ABI-specified unwind tables.  */
+      flag_unwind_tables = targetm.unwind_tables_default;
+    }
 
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */
@@ -1014,15 +1072,18 @@ decode_options (unsigned int argc, const char **argv)
 
   handle_options (argc, argv, lang_mask);
 
-  if (flag_pie)
-    flag_pic = flag_pie;
-  if (flag_pic && !flag_pie)
-    flag_shlib = 1;
+  if (first_time_p)
+    {
+      if (flag_pie)
+	flag_pic = flag_pie;
+      if (flag_pic && !flag_pie)
+	flag_shlib = 1;
 
-  if (flag_no_inline == 2)
-    flag_no_inline = 0;
-  else
-    flag_really_no_inline = flag_no_inline;
+      if (flag_no_inline == 2)
+	flag_no_inline = 0;
+      else
+	flag_really_no_inline = flag_no_inline;
+    }
 
   /* Set flag_no_inline before the post_options () hook.  The C front
      ends use it to determine tree inlining defaults.  FIXME: such
@@ -1094,6 +1155,14 @@ decode_options (unsigned int argc, const char **argv)
        ("-freorder-blocks-and-partition does not work on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
+    }
+
+  /* Save the current optimization options if this is the first call.  */
+  if (first_time_p)
+    {
+      optimization_default_node = build_optimization_node ();
+      optimization_current_node = optimization_default_node;
+      first_time_p = false;
     }
 }
 
@@ -2085,6 +2154,18 @@ fast_math_flags_set_p (void)
 	  && flag_finite_math_only
 	  && !flag_signed_zeros
 	  && !flag_errno_math);
+}
+
+/* Return true iff flags are set as if -ffast-math but using the flags stored
+   in the struct cl_optimization structure.  */
+bool
+fast_math_flags_struct_set_p (struct cl_optimization *opt)
+{
+  return (!opt->flag_trapping_math
+	  && opt->flag_unsafe_math_optimizations
+	  && opt->flag_finite_math_only
+	  && !opt->flag_signed_zeros
+	  && !opt->flag_errno_math);
 }
 
 /* Handle a debug output -g switch.  EXTENDED is true or false to support

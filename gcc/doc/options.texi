@@ -35,8 +35,11 @@ has been declared in this way, it can be used as an option property.
 @xref{Option properties}.
 
 @item
-An option definition record.  These records have the following fields:
+A target specific save record to save additional information. These
+records have two fields: the string @samp{TargetSave}, and a
+declaration type to go in the @code{cl_target_option} structure.
 
+@item
 @enumerate
 @item
 the name of the option, with the leading ``-'' removed
@@ -124,7 +127,10 @@ This property cannot be used alongside @code{Joined} or @code{Separate}.
 @item UInteger
 The option's argument is a non-negative integer.  The option parser
 will check and convert the argument before passing it to the relevant
-option handler.
+option handler.  @code{UInteger} should also be used on options like
+@code{-falign-loops} where both @code{-falign-loops} and
+@code{-falign-loops}=@var{n} are supported to make sure the saved
+options are given a full integer.
 
 @item Var(@var{var})
 The state of this option should be stored in variable @var{var}.
@@ -221,4 +227,9 @@ The option should only be accepted if preprocessor condition
 option will be present even if @var{cond} is false; @var{cond} simply
 controls whether the option is accepted and whether it is printed in
 the @option{--help} output.
+
+@item Save
+Build the @code{cl_target_option} structure to hold a copy of the
+option, add the functions @code{cl_target_option_save} and
+@code{cl_target_option_restore} to save and restore the options.
 @end table

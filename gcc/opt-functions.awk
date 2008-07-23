@@ -128,6 +128,23 @@ function var_type(flags)
 		return "const char *"
 }
 
+# Return the type of variable that should be associated with the given flags
+# for use within a structure.  Simple variables are changed to unsigned char
+# type instead of int to save space.
+function var_type_struct(flags)
+{
+	if (flag_set_p("UInteger", flags))
+		return "int "
+	else if (!flag_set_p("Joined.*", flags)) {
+		if (flag_set_p(".*Mask.*", flags))
+			return "int "
+		else
+			return "unsigned char "
+	}
+	else
+		return "const char *"
+}
+
 # Given that an option has flags FLAGS, return an initializer for the
 # "var_cond" and "var_value" fields of its cl_options[] entry.
 function var_set(flags)
