@@ -345,7 +345,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type
   if (diag_type == 1)
     p_msg = warning0;
   else if (diag_type == 2)
-    p_msg = pedwarn;
+    p_msg = pedwarn0;
   else
     p_msg = error;
 

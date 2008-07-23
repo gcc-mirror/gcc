@@ -1,3 +1,9 @@
+2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 35058
+	* gcc.dg/Wdeclaration-after-statement-3.c: New.
+	* gcc/testsuite/gcc.dg/Wpointer-arith.c: New.
+	
 2008-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/36852

@@ -2162,7 +2162,8 @@ cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs,
 	    error ("%H%<long long long%> is too long for GCC", &location);
 	  else if (pedantic && !in_system_header && warn_long_long
                    && cxx_dialect == cxx98)
-	    pedwarn ("%HISO C++ 1998 does not support %<long long%>",
+	    pedwarn (OPT_Wlong_long, 
+		     "%HISO C++ 1998 does not support %<long long%>",
 		     &location);
 	}
       else if (count > 1)
@@ -3214,9 +3215,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	  {
 	    /* Statement-expressions are not allowed by the standard.  */
-	    if (pedantic)
-	      pedwarn ("%HISO C++ forbids braced-groups within expressions",
-		       &token->location);
+	    pedwarn (OPT_pedantic, 
+		     "%HISO C++ forbids braced-groups within expressions",
+		     &token->location);
 
 	    /* And they're not allowed outside of a function-body; you
 	       cannot, for example, write:
@@ -4545,8 +4546,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		/* Warn the user that a compound literal is not
 		   allowed in standard C++.  */
-		if (pedantic)
-		  pedwarn ("ISO C++ forbids compound-literals");
+		pedwarn (OPT_pedantic, "ISO C++ forbids compound-literals");
 		/* For simplicity, we disallow compound literals in
 		   constant-expressions.  We could
 		   allow compound literals of integer type, whose
@@ -7610,8 +7610,7 @@ cp_parser_jump_statement (cp_parser* parser)
       if (cp_lexer_next_token_is (parser->lexer, CPP_MULT))
 	{
 	  /* Issue a warning about this use of a GNU extension.  */
-	  if (pedantic)
-	    pedwarn ("%HISO C++ forbids computed gotos", &token->location);
+	  pedwarn (OPT_pedantic, "%HISO C++ forbids computed gotos", &token->location);
 	  /* Consume the '*' token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Parse the dependent expression.  */
@@ -7750,8 +7749,8 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	  /* A declaration consisting of a single semicolon is
 	     invalid.  Allow it unless we're being pedantic.  */
 	  cp_lexer_consume_token (parser->lexer);
-	  if (pedantic && !in_system_header)
-	    pedwarn ("extra %<;%>");
+	  if (!in_system_header)
+	    pedwarn (OPT_pedantic, "extra %<;%>");
 	  continue;
 	}
 
@@ -11734,8 +11733,8 @@ cp_parser_enumerator_list (cp_parser* parser, tree type)
       /* If the next token is a `}', there is a trailing comma.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (pedantic && !in_system_header)
-	    pedwarn ("comma at end of enumerator list");
+	  if (!in_system_header)
+	    pedwarn (OPT_pedantic, "comma at end of enumerator list");
 	  break;
 	}
     }
@@ -14369,8 +14368,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
 	{
 	  /* Warn the user that they are using an extension.  */
-	  if (pedantic)
-	    pedwarn ("ISO C++ does not allow designated initializers");
+	  pedwarn (OPT_pedantic, 
+		   "ISO C++ does not allow designated initializers");
 	  /* Consume the identifier.  */
 	  identifier = cp_lexer_consume_token (parser->lexer)->u.value;
 	  /* Consume the `:'.  */
@@ -15386,8 +15385,8 @@ cp_parser_member_declaration (cp_parser* parser)
       if (!decl_specifiers.any_specifiers_p)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  if (pedantic && !in_system_header_at (token->location))
-	    pedwarn ("%Hextra %<;%>", &token->location);
+	  if (!in_system_header_at (token->location))
+	    pedwarn (OPT_pedantic, "%Hextra %<;%>", &token->location);
 	}
       else
 	{
