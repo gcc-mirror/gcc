@@ -1017,10 +1017,18 @@ AC_DEFUN([GLIBCXX_CHECK_CLOCK_GETTIME], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
+  ac_save_LIBS="$LIBS"
+  
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  AC_SEARCH_LIBS(clock_gettime, [rt posix4])
   
+  case "$ac_cv_search_clock_gettime" in
+    -l*) GLIBCXX_LIBS=$ac_cv_search_clock_gettime
+  esac
+
   AC_CHECK_HEADERS(unistd.h, ac_has_unistd_h=yes, ac_has_unistd_h=no)
-  
+
   ac_has_clock_monotonic=no;  
   ac_has_clock_realtime=no;  
   if test x"$ac_has_unistd_h" = x"yes"; then    
@@ -1050,7 +1058,7 @@ AC_DEFUN([GLIBCXX_CHECK_CLOCK_GETTIME], [
     
     AC_MSG_RESULT($ac_has_clock_realtime)
   fi 
-  
+
   if test x"$ac_has_clock_monotonic" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_CLOCK_MONOTONIC, 1,
       [ Defined if clock_gettime has monotonic clock support. ])
@@ -1061,7 +1069,10 @@ AC_DEFUN([GLIBCXX_CHECK_CLOCK_GETTIME], [
       [ Defined if clock_gettime has realtime clock support. ])
   fi
   
+  AC_SUBST(GLIBCXX_LIBS)  
+
   CXXFLAGS="$ac_save_CXXFLAGS"
+  LIBS="$ac_save_LIBS"
   AC_LANG_RESTORE
 ])
 
