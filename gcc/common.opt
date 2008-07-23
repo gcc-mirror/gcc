@@ -59,11 +59,11 @@ Common Joined Separate UInteger
 -G<number>	Put global and static data smaller than <number> bytes into a special section (on some targets)
 
 O
-Common JoinedOrMissing
+Common JoinedOrMissing Optimization
 -O<number>	Set optimization level to <number>
 
 Os
-Common
+Common Optimization
 Optimize for space rather than speed
 
 W
@@ -275,28 +275,28 @@ fabi-version=
 Common Joined UInteger Var(flag_abi_version) Init(2)
 
 falign-functions
-Common Report Var(align_functions,0)
+Common Report Var(align_functions,0) Optimization UInteger
 Align the start of functions
 
 falign-functions=
 Common RejectNegative Joined UInteger
 
 falign-jumps
-Common Report Var(align_jumps,0) Optimization
+Common Report Var(align_jumps,0) Optimization UInteger
 Align labels which are only reached by jumping
 
 falign-jumps=
 Common RejectNegative Joined UInteger
 
 falign-labels
-Common Report Var(align_labels,0) Optimization
+Common Report Var(align_labels,0) Optimization UInteger
 Align all labels
 
 falign-labels=
 Common RejectNegative Joined UInteger
 
 falign-loops
-Common Report Var(align_loops) Optimization
+Common Report Var(align_loops) Optimization UInteger
 Align the start of loops
 
 falign-loops=
@@ -666,7 +666,7 @@ Common
 Does nothing.  Preserved for backward compatibility.
 
 fmath-errno
-Common Report Var(flag_errno_math) Init(1)
+Common Report Var(flag_errno_math) Init(1) Optimization
 Set errno after built-in math functions
 
 fmem-report
@@ -925,7 +925,7 @@ Reschedule instructions after register allocation
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
 ; of stalled insns into the ready list.
 fsched-stalled-insns
-Common Report Var(flag_sched_stalled_insns) Optimization
+Common Report Var(flag_sched_stalled_insns) Optimization UInteger
 Allow premature scheduling of queued insns
 
 fsched-stalled-insns=
@@ -937,7 +937,7 @@ Common RejectNegative Joined UInteger
 ; premature removal from the queue of stalled insns into the ready list (has
 ; an effect only if the flag 'sched_stalled_insns' is set).
 fsched-stalled-insns-dep
-Common Report Var(flag_sched_stalled_insns_dep,1) Init(1) Optimization
+Common Report Var(flag_sched_stalled_insns_dep,1) Init(1) Optimization UInteger
 Set dependence distance checking in premature scheduling of queued insns
 
 fsched-stalled-insns-dep=

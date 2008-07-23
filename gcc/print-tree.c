@@ -369,6 +369,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
 	fputs (" suppress-debug", file);
 
+      if (TREE_CODE (node) == FUNCTION_DECL
+	  && DECL_FUNCTION_SPECIFIC_TARGET (node))
+	fputs (" function-specific-target", file);
+      if (TREE_CODE (node) == FUNCTION_DECL
+	  && DECL_FUNCTION_SPECIFIC_OPTIMIZATION (node))
+	fputs (" function-specific-opt", file);
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_INLINE (node))
 	fputs (DECL_DECLARED_INLINE_P (node) ? " inline" : " autoinline", file);
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN (node))
@@ -929,6 +935,14 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		  print_node_brief (file, "", OMP_CLAUSE_OPERAND (node, i), 0);
 		}
 	    }
+	  break;
+
+	case OPTIMIZATION_NODE:
+	  cl_optimization_print (file, indent + 4, TREE_OPTIMIZATION (node));
+	  break;
+
+	case TARGET_OPTION_NODE:
+	  cl_target_option_print (file, indent + 4, TREE_TARGET_OPTION (node));
 	  break;
 
 	default:

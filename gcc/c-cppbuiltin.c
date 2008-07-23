@@ -405,6 +405,58 @@ builtin_define_stdint_macros (void)
   builtin_define_type_max ("__INTMAX_MAX__", intmax_type_node, intmax_long);
 }
 
+/* Adjust the optimization macros when a #pragma GCC optimization is done to
+   reflect the current level.  */
+void
+c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
+				tree cur_tree)
+{
+  struct cl_optimization *prev = TREE_OPTIMIZATION (prev_tree);
+  struct cl_optimization *cur  = TREE_OPTIMIZATION (cur_tree);
+  bool prev_fast_math;
+  bool cur_fast_math;
+
+  /* -undef turns off target-specific built-ins.  */
+  if (flag_undef)
+    return;
+
+  /* Other target-independent built-ins determined by command-line
+     options.  */
+  if (!prev->optimize_size && cur->optimize_size)
+    cpp_define (pfile, "__OPTIMIZE_SIZE__");
+  else if (prev->optimize_size && !cur->optimize_size)
+    cpp_undef (pfile, "__OPTIMIZE_SIZE__");
+
+  if (!prev->optimize && cur->optimize)
+    cpp_define (pfile, "__OPTIMIZE__");
+  else if (prev->optimize && !cur->optimize)
+    cpp_undef (pfile, "__OPTIMIZE__");
+
+  prev_fast_math = fast_math_flags_struct_set_p (prev);
+  cur_fast_math  = fast_math_flags_struct_set_p (cur);
+  if (!prev_fast_math && cur_fast_math)
+    cpp_define (pfile, "__FAST_MATH__");
+  else if (prev_fast_math && !cur_fast_math)
+    cpp_undef (pfile, "__FAST_MATH__");
+
+  if (!prev->flag_signaling_nans && cur->flag_signaling_nans)
+    cpp_define (pfile, "__SUPPORT_SNAN__");
+  else if (prev->flag_signaling_nans && !cur->flag_signaling_nans)
+    cpp_undef (pfile, "__SUPPORT_SNAN__");
+
+  if (!prev->flag_finite_math_only && cur->flag_finite_math_only)
+    {
+      cpp_undef (pfile, "__FINITE_MATH_ONLY__");
+      cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
+    }
+  else if (!prev->flag_finite_math_only && cur->flag_finite_math_only)
+    {
+      cpp_undef (pfile, "__FINITE_MATH_ONLY__");
+      cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
+    }
+}
+
+
 /* Hook that registers front end and target-specific built-ins.  */
 void
 c_cpp_builtins (cpp_reader *pfile)

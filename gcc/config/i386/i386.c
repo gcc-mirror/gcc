@@ -1210,7 +1210,11 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_GENERIC (m_GENERIC32 | m_GENERIC64)
 
 /* Feature tests against the various tunings.  */
-unsigned int ix86_tune_features[X86_TUNE_LAST] = {
+unsigned char ix86_tune_features[X86_TUNE_LAST];
+
+/* Feature tests against the various tunings used to create ix86_tune_features
+   based on the processor mask.  */
+static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_USE_LEAVE: Leave does not affect Nocona SPEC2000 results
      negatively, so enabling for Generic64 seems like good code size
      tradeoff.  We can't enable it for 32bit generic because it does not
@@ -1443,7 +1447,11 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
 };
 
 /* Feature tests against the various architecture variations.  */
-unsigned int ix86_arch_features[X86_ARCH_LAST] = {
+unsigned char ix86_arch_features[X86_ARCH_LAST];
+
+/* Feature tests against the various architecture variations, used to create
+   ix86_arch_features based on the processor mask.  */
+static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
   /* X86_ARCH_CMOVE: Conditional move was added for pentiumpro.  */
   ~(m_386 | m_486 | m_PENT | m_K6),
 
@@ -1773,12 +1781,36 @@ static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
 
+enum ix86_function_specific_strings
+{
+  IX86_FUNCTION_SPECIFIC_ARCH,
+  IX86_FUNCTION_SPECIFIC_TUNE,
+  IX86_FUNCTION_SPECIFIC_FPMATH,
+  IX86_FUNCTION_SPECIFIC_MAX
+};
+
+static char *ix86_target_string (int, int, const char *, const char *,
+				 const char *, bool);
+static void ix86_debug_options (void) ATTRIBUTE_UNUSED;
+static void ix86_function_specific_save (struct cl_target_option *);
+static void ix86_function_specific_restore (struct cl_target_option *);
+static void ix86_function_specific_print (FILE *, int,
+					  struct cl_target_option *);
+static bool ix86_valid_option_attribute_p (tree, tree, tree, int);
+static bool ix86_valid_option_attribute_inner_p (tree, char *[]);
+static bool ix86_can_inline_p (tree, tree);
+static void ix86_set_current_function (tree);
+
 
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  */
 #ifndef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
 #endif
+
+/* Whether -mtune= or -march= were specified */
+static int ix86_tune_defaulted;
+static int ix86_arch_specified;
 
 /* Bit flags that specify the ISA we are compiling for.  */
 int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT;
@@ -1815,6 +1847,18 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_SSE5_SET \
   (OPTION_MASK_ISA_SSE5 | OPTION_MASK_ISA_SSE4A_SET)
 
+/* AES and PCLMUL need SSE2 because they use xmm registers */
+#define OPTION_MASK_ISA_AES_SET \
+  (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2_SET)
+#define OPTION_MASK_ISA_PCLMUL_SET \
+  (OPTION_MASK_ISA_PCLMUL | OPTION_MASK_ISA_SSE2_SET)
+
+#define OPTION_MASK_ISA_ABM_SET \
+  (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
+#define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
+#define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
+#define OPTION_MASK_ISA_SAHF_SET OPTION_MASK_ISA_SAHF
+
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
 
@@ -1844,14 +1888,73 @@ static int ix86_isa_flags_explicit;
 
 #define OPTION_MASK_ISA_SSE4A_UNSET \
   (OPTION_MASK_ISA_SSE4A | OPTION_MASK_ISA_SSE5_UNSET)
-
 #define OPTION_MASK_ISA_SSE5_UNSET OPTION_MASK_ISA_SSE5
+#define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
+#define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
+#define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
+#define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
+#define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
+#define OPTION_MASK_ISA_SAHF_UNSET OPTION_MASK_ISA_SAHF
 
 /* Vectorization library interface and handlers.  */
 tree (*ix86_veclib_handler)(enum built_in_function, tree, tree) = NULL;
 static tree ix86_veclibabi_svml (enum built_in_function, tree, tree);
 static tree ix86_veclibabi_acml (enum built_in_function, tree, tree);
 
+/* Processor target table, indexed by processor number */
+struct ptt
+{
+  const struct processor_costs *cost;		/* Processor costs */
+  const int align_loop;				/* Default alignments.  */
+  const int align_loop_max_skip;
+  const int align_jump;
+  const int align_jump_max_skip;
+  const int align_func;
+};
+
+static const struct ptt processor_target_table[PROCESSOR_max] =
+{
+  {&i386_cost, 4, 3, 4, 3, 4},
+  {&i486_cost, 16, 15, 16, 15, 16},
+  {&pentium_cost, 16, 7, 16, 7, 16},
+  {&pentiumpro_cost, 16, 15, 16, 10, 16},
+  {&geode_cost, 0, 0, 0, 0, 0},
+  {&k6_cost, 32, 7, 32, 7, 32},
+  {&athlon_cost, 16, 7, 16, 7, 16},
+  {&pentium4_cost, 0, 0, 0, 0, 0},
+  {&k8_cost, 16, 7, 16, 7, 16},
+  {&nocona_cost, 0, 0, 0, 0, 0},
+  {&core2_cost, 16, 10, 16, 10, 16},
+  {&generic32_cost, 16, 7, 16, 7, 16},
+  {&generic64_cost, 16, 10, 16, 10, 16},
+  {&amdfam10_cost, 32, 24, 32, 7, 32}
+};
+
+static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
+{
+  "generic",
+  "i386",
+  "i486",
+  "pentium",
+  "pentium-mmx",
+  "pentiumpro",
+  "pentium2",
+  "pentium3",
+  "pentium4",
+  "pentium-m",
+  "prescott",
+  "nocona",
+  "core2",
+  "geode",
+  "k6",
+  "k6-2",
+  "k6-3",
+  "athlon",
+  "athlon-4",
+  "k8",
+  "amdfam10"
+};
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -2002,11 +2105,294 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+    case OPT_mabm:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_ABM_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_ABM_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_UNSET;
+	}
+      return true;
+
+    case OPT_mpopcnt:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_POPCNT_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_POPCNT_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_UNSET;
+	}
+      return true;
+
+    case OPT_msahf:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_SAHF_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_SAHF_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_UNSET;
+	}
+      return true;
+
+    case OPT_mcx16:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_CX16_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_CX16_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_UNSET;
+	}
+      return true;
+
+    case OPT_maes:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_AES_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_AES_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_UNSET;
+	}
+      return true;
+
+    case OPT_mpclmul:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_PCLMUL_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_UNSET;
+	}
+      return true;
+
     default:
       return true;
     }
 }
+
+/* Return a string the documents the current -m options.  The caller is
+   responsible for freeing the string.  */
 
+static char *
+ix86_target_string (int isa, int flags, const char *arch, const char *tune,
+		    const char *fpmath, bool add_nl_p)
+{
+  struct ix86_target_opts
+  {
+    const char *option;		/* option string */
+    int mask;			/* isa mask options */
+  };
+
+  /* This table is ordered so that options like -msse5 or -msse4.2 that imply
+     preceding options while match those first.  */
+  static struct ix86_target_opts isa_opts[] =
+  {
+    { "-m64",		OPTION_MASK_ISA_64BIT },
+    { "-msse5",		OPTION_MASK_ISA_SSE5 },
+    { "-msse4a",	OPTION_MASK_ISA_SSE4A },
+    { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
+    { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
+    { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
+    { "-msse3",		OPTION_MASK_ISA_SSE3 },
+    { "-msse2",		OPTION_MASK_ISA_SSE2 },
+    { "-msse",		OPTION_MASK_ISA_SSE },
+    { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
+    { "-mmmx",		OPTION_MASK_ISA_MMX },
+    { "-mabm",		OPTION_MASK_ISA_ABM },
+    { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
+    { "-maes",		OPTION_MASK_ISA_AES },
+    { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
+  };
+
+  /* Flag options.  */
+  static struct ix86_target_opts flag_opts[] =
+  {
+    { "-m128bit-long-double",		MASK_128BIT_LONG_DOUBLE },
+    { "-m80387",			MASK_80387 },
+    { "-maccumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS },
+    { "-malign-double",			MASK_ALIGN_DOUBLE },
+    { "-mcld",				MASK_CLD },
+    { "-mfp-ret-in-387",		MASK_FLOAT_RETURNS },
+    { "-mieee-fp",			MASK_IEEE_FP },
+    { "-minline-all-stringops",		MASK_INLINE_ALL_STRINGOPS },
+    { "-minline-stringops-dynamically",	MASK_INLINE_STRINGOPS_DYNAMICALLY },
+    { "-mms-bitfields",			MASK_MS_BITFIELD_LAYOUT },
+    { "-mno-align-stringops",		MASK_NO_ALIGN_STRINGOPS },
+    { "-mno-fancy-math-387",		MASK_NO_FANCY_MATH_387 },
+    { "-mno-fused-madd",		MASK_NO_FUSED_MADD },
+    { "-mno-push-args",			MASK_NO_PUSH_ARGS },
+    { "-mno-red-zone",			MASK_NO_RED_ZONE },
+    { "-momit-leaf-frame-pointer",	MASK_OMIT_LEAF_FRAME_POINTER },
+    { "-mrecip",			MASK_RECIP },
+    { "-mrtd",				MASK_RTD },
+    { "-msseregparm",			MASK_SSEREGPARM },
+    { "-mstack-arg-probe",		MASK_STACK_PROBE },
+    { "-mtls-direct-seg-refs",		MASK_TLS_DIRECT_SEG_REFS },
+  };
+
+  const char *opts[ (sizeof (isa_opts) / sizeof (isa_opts[0])
+		     + sizeof (flag_opts) / sizeof (flag_opts[0])
+		     + 6)][2];
+
+  char isa_other[40];
+  char target_other[40];
+  unsigned num = 0;
+  unsigned i, j;
+  char *ret;
+  char *ptr;
+  size_t len;
+  size_t line_len;
+  size_t sep_len;
+
+  memset (opts, '\0', sizeof (opts));
+
+  /* Add -march= option.  */
+  if (arch)
+    {
+      opts[num][0] = "-march=";
+      opts[num++][1] = arch;
+    }
+
+  /* Add -mtune= option.  */
+  if (tune)
+    {
+      opts[num][0] = "-mtune=";
+      opts[num++][1] = tune;
+    }
+
+  /* Pick out the options in isa options.  */
+  for (i = 0; i < sizeof (isa_opts) / sizeof (isa_opts[0]); i++)
+    {
+      if ((isa & isa_opts[i].mask) != 0)
+	{
+	  opts[num++][0] = isa_opts[i].option;
+	  isa &= ~ isa_opts[i].mask;
+	}
+    }
+
+  if (isa && add_nl_p)
+    {
+      opts[num++][0] = isa_other;
+      sprintf (isa_other, "(other isa: 0x%x)", isa);
+    }
+
+  /* Add flag options.  */
+  for (i = 0; i < sizeof (flag_opts) / sizeof (flag_opts[0]); i++)
+    {
+      if ((flags & flag_opts[i].mask) != 0)
+	{
+	  opts[num++][0] = flag_opts[i].option;
+	  flags &= ~ flag_opts[i].mask;
+	}
+    }
+
+  if (flags && add_nl_p)
+    {
+      opts[num++][0] = target_other;
+      sprintf (target_other, "(other flags: 0x%x)", isa);
+    }
+
+  /* Add -fpmath= option.  */
+  if (fpmath)
+    {
+      opts[num][0] = "-mfpmath=";
+      opts[num++][1] = fpmath;
+    }
+
+  /* Any options?  */
+  if (num == 0)
+    return NULL;
+
+  gcc_assert (num < sizeof (opts) / sizeof (opts[0]));
+
+  /* Size the string.  */
+  len = 0;
+  sep_len = (add_nl_p) ? 3 : 1;
+  for (i = 0; i < num; i++)
+    {
+      len += sep_len;
+      for (j = 0; j < 2; j++)
+	if (opts[i][j])
+	  len += strlen (opts[i][j]);
+    }
+
+  /* Build the string.  */
+  ret = ptr = (char *) xmalloc (len);
+  line_len = 0;
+
+  for (i = 0; i < num; i++)
+    {
+      size_t len2[2];
+
+      for (j = 0; j < 2; j++)
+	len2[j] = (opts[i][j]) ? strlen (opts[i][j]) : 0;
+
+      if (i != 0)
+	{
+	  *ptr++ = ' ';
+	  line_len++;
+
+	  if (add_nl_p && line_len + len2[0] + len2[1] > 70)
+	    {
+	      *ptr++ = '\\';
+	      *ptr++ = '\n';
+	      line_len = 0;
+	    }
+	}
+
+      for (j = 0; j < 2; j++)
+	if (opts[i][j])
+	  {
+	    memcpy (ptr, opts[i][j], len2[j]);
+	    ptr += len2[j];
+	    line_len += len2[j];
+	  }
+    }
+
+  *ptr = '\0';
+  gcc_assert (ret + len >= ptr);
+
+  return ret;
+}
+
+/* Function that is callable from the debugger to print the current
+   options.  */
+void
+ix86_debug_options (void)
+{
+  char *opts = ix86_target_string (ix86_isa_flags, target_flags,
+				   ix86_arch_string, ix86_tune_string,
+				   ix86_fpmath_string, true);
+
+  if (opts)
+    {
+      fprintf (stderr, "%s\n\n", opts);
+      free (opts);
+    }
+  else
+    fprintf (stderr, "<no options>\n\n");
+
+  return;
+}
+
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -2017,67 +2403,16 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 void
-override_options (void)
+override_options (bool main_args_p)
 {
   int i;
-  int ix86_tune_defaulted = 0;
-  int ix86_arch_specified = 0;
   unsigned int ix86_arch_mask, ix86_tune_mask;
+  const char *prefix;
+  const char *suffix;
+  const char *sw;
 
   /* Comes from final.c -- no real reason to change it.  */
 #define MAX_CODE_ALIGN 16
-
-  static struct ptt
-    {
-      const struct processor_costs *cost;	/* Processor costs */
-      const int align_loop;			/* Default alignments.  */
-      const int align_loop_max_skip;
-      const int align_jump;
-      const int align_jump_max_skip;
-      const int align_func;
-    }
-  const processor_target_table[PROCESSOR_max] =
-    {
-      {&i386_cost, 4, 3, 4, 3, 4},
-      {&i486_cost, 16, 15, 16, 15, 16},
-      {&pentium_cost, 16, 7, 16, 7, 16},
-      {&pentiumpro_cost, 16, 15, 16, 10, 16},
-      {&geode_cost, 0, 0, 0, 0, 0},
-      {&k6_cost, 32, 7, 32, 7, 32},
-      {&athlon_cost, 16, 7, 16, 7, 16},
-      {&pentium4_cost, 0, 0, 0, 0, 0},
-      {&k8_cost, 16, 7, 16, 7, 16},
-      {&nocona_cost, 0, 0, 0, 0, 0},
-      {&core2_cost, 16, 10, 16, 10, 16},
-      {&generic32_cost, 16, 7, 16, 7, 16},
-      {&generic64_cost, 16, 10, 16, 10, 16},
-      {&amdfam10_cost, 32, 24, 32, 7, 32}
-    };
-
-  static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
-    {
-      "generic",
-      "i386",
-      "i486",
-      "pentium",
-      "pentium-mmx",
-      "pentiumpro",
-      "pentium2",
-      "pentium3",
-      "pentium4",
-      "pentium-m",
-      "prescott",
-      "nocona",
-      "core2",
-      "geode",
-      "k6",
-      "k6-2",
-      "k6-3",
-      "athlon",
-      "athlon-4",
-      "k8",
-      "amdfam10"
-    };
 
   enum pta_flags
     {
@@ -2197,6 +2532,21 @@ override_options (void)
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
+  /* Set up prefix/suffix so the error messages refer to either the command
+     line argument, or the attribute(option).  */
+  if (main_args_p)
+    {
+      prefix = "-m";
+      suffix = "";
+      sw = "switch";
+    }
+  else
+    {
+      prefix = "option(\"";
+      suffix = "\")";
+      sw = "attribute";
+    }
+
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
@@ -2246,8 +2596,15 @@ override_options (void)
 	  else
 	    ix86_tune_string = "generic32";
 	}
+      /* If this call is for setting the option attribute, allow the
+	 generic32/generic64 that was previously set.  */
+      else if (!main_args_p
+	       && (!strcmp (ix86_tune_string, "generic32")
+		   || !strcmp (ix86_tune_string, "generic64")))
+	;
       else if (!strncmp (ix86_tune_string, "generic", 7))
-	error ("bad value (%s) for -mtune= switch", ix86_tune_string);
+	error ("bad value (%s) for %stune=%s %s",
+	       ix86_tune_string, prefix, suffix, sw);
     }
   else
     {
@@ -2288,11 +2645,13 @@ override_options (void)
       else if (!strcmp (ix86_stringop_string, "unrolled_loop"))
 	stringop_alg = unrolled_loop;
       else
-	error ("bad value (%s) for -mstringop-strategy= switch", ix86_stringop_string);
+	error ("bad value (%s) for %sstringop-strategy=%s %s",
+	       ix86_stringop_string, prefix, suffix, sw);
     }
   if (!strcmp (ix86_tune_string, "x86-64"))
-    warning (OPT_Wdeprecated, "-mtune=x86-64 is deprecated.  Use -mtune=k8 or "
-	     "-mtune=generic instead as appropriate.");
+    warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated.  Use "
+	     "%stune=k8%s or %stune=generic%s instead as appropriate.",
+	     prefix, suffix, prefix, suffix, prefix, suffix);
 
   if (!ix86_arch_string)
     ix86_arch_string = TARGET_64BIT ? "x86-64" : "i386";
@@ -2300,9 +2659,11 @@ override_options (void)
     ix86_arch_specified = 1;
 
   if (!strcmp (ix86_arch_string, "generic"))
-    error ("generic CPU can be used only for -mtune= switch");
+    error ("generic CPU can be used only for %stune=%s %s",
+	   prefix, suffix, sw);
   if (!strncmp (ix86_arch_string, "generic", 7))
-    error ("bad value (%s) for -march= switch", ix86_arch_string);
+    error ("bad value (%s) for %sarch=%s %s",
+	   ix86_arch_string, prefix, suffix, sw);
 
   if (ix86_cmodel_string != 0)
     {
@@ -2319,7 +2680,8 @@ override_options (void)
       else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
 	ix86_cmodel = CM_KERNEL;
       else
-	error ("bad value (%s) for -mcmodel= switch", ix86_cmodel_string);
+	error ("bad value (%s) for %scmodel=%s %s",
+	       ix86_cmodel_string, prefix, suffix, sw);
     }
   else
     {
@@ -2342,7 +2704,8 @@ override_options (void)
       else if (!strcmp (ix86_asm_string, "att"))
 	ix86_asm_dialect = ASM_ATT;
       else
-	error ("bad value (%s) for -masm= switch", ix86_asm_string);
+	error ("bad value (%s) for %sasm=%s %s",
+	       ix86_asm_string, prefix, suffix, sw);
     }
   if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
     error ("code model %qs not supported in the %s bit mode",
@@ -2395,31 +2758,37 @@ override_options (void)
 	if (processor_alias_table[i].flags & PTA_SSE5
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE5))
 	  ix86_isa_flags |= OPTION_MASK_ISA_SSE5;
-
-	if (processor_alias_table[i].flags & PTA_ABM)
-	  x86_abm = true;
-	if (processor_alias_table[i].flags & PTA_CX16)
-	  x86_cmpxchg16b = true;
-	if (processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM))
-	  x86_popcnt = true;
+	if (processor_alias_table[i].flags & PTA_ABM
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ABM))
+	  ix86_isa_flags |= OPTION_MASK_ISA_ABM;
+	if (processor_alias_table[i].flags & PTA_CX16
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_CX16))
+	  ix86_isa_flags |= OPTION_MASK_ISA_CX16;
+	if (processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM)
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_POPCNT))
+	  ix86_isa_flags |= OPTION_MASK_ISA_POPCNT;
+	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF))
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
+	  ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
+	if (processor_alias_table[i].flags & PTA_AES
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
+	if (processor_alias_table[i].flags & PTA_PCLMUL
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_PCLMUL))
+	  ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
-	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF)))
-	  x86_sahf = true;
-	if (processor_alias_table[i].flags & PTA_AES)
-	  x86_aes = true;
-	if (processor_alias_table[i].flags & PTA_PCLMUL)
-	  x86_pclmul = true;
 
 	break;
       }
 
   if (i == pta_size)
-    error ("bad value (%s) for -march= switch", ix86_arch_string);
+    error ("bad value (%s) for %sarch=%s %s",
+	   ix86_arch_string, prefix, suffix, sw);
 
   ix86_arch_mask = 1u << ix86_arch;
   for (i = 0; i < X86_ARCH_LAST; ++i)
-    ix86_arch_features[i] &= ix86_arch_mask;
+    ix86_arch_features[i] = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
 
   for (i = 0; i < pta_size; i++)
     if (! strcmp (ix86_tune_string, processor_alias_table[i].name))
@@ -2451,19 +2820,12 @@ override_options (void)
 	break;
       }
   if (i == pta_size)
-    error ("bad value (%s) for -mtune= switch", ix86_tune_string);
-
-  /* Enable SSE2 if AES or PCLMUL is enabled.  */
-  if ((x86_aes || x86_pclmul)
-      && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE2))
-    {
-      ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
-      ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
-    }
+    error ("bad value (%s) for %stune=%s %s",
+	   ix86_tune_string, prefix, suffix, sw);
 
   ix86_tune_mask = 1u << ix86_tune;
   for (i = 0; i < X86_TUNE_LAST; ++i)
-    ix86_tune_features[i] &= ix86_tune_mask;
+    ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
 
   if (optimize_size)
     ix86_cost = &size_cost;
@@ -2477,10 +2839,11 @@ override_options (void)
   if (ix86_regparm_string)
     {
       if (TARGET_64BIT)
-	warning (0, "-mregparm is ignored in 64-bit mode");
+	warning (0, "%sregparm%s is ignored in 64-bit mode", prefix, suffix);
       i = atoi (ix86_regparm_string);
       if (i < 0 || i > REGPARM_MAX)
-	error ("-mregparm=%d is not between 0 and %d", i, REGPARM_MAX);
+	error ("%sregparm=%d%s is not between 0 and %d",
+	       prefix, i, suffix, REGPARM_MAX);
       else
 	ix86_regparm = i;
     }
@@ -2492,12 +2855,14 @@ override_options (void)
      Remove this code in GCC 3.2 or later.  */
   if (ix86_align_loops_string)
     {
-      warning (0, "-malign-loops is obsolete, use -falign-loops");
+      warning (0, "%salign-loops%s is obsolete, use %salign-loops%s",
+	       prefix, suffix, prefix, suffix);
       if (align_loops == 0)
 	{
 	  i = atoi (ix86_align_loops_string);
 	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	    error ("%salign-loops=%d%s is not between 0 and %d",
+		   prefix, i, suffix, MAX_CODE_ALIGN);
 	  else
 	    align_loops = 1 << i;
 	}
@@ -2505,12 +2870,14 @@ override_options (void)
 
   if (ix86_align_jumps_string)
     {
-      warning (0, "-malign-jumps is obsolete, use -falign-jumps");
+      warning (0, "%salign-jumps%s is obsolete, use %salign-jumps%s",
+	       prefix, suffix, prefix, suffix);
       if (align_jumps == 0)
 	{
 	  i = atoi (ix86_align_jumps_string);
 	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	    error ("%salign-loops=%d%s is not between 0 and %d",
+		   prefix, i, suffix, MAX_CODE_ALIGN);
 	  else
 	    align_jumps = 1 << i;
 	}
@@ -2518,12 +2885,14 @@ override_options (void)
 
   if (ix86_align_funcs_string)
     {
-      warning (0, "-malign-functions is obsolete, use -falign-functions");
+      warning (0, "%salign-functions%s is obsolete, use %salign-functions%s",
+	       prefix, suffix, prefix, suffix);
       if (align_functions == 0)
 	{
 	  i = atoi (ix86_align_funcs_string);
 	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	    error ("%salign-loops=%d%s is not between 0 and %d",
+		   prefix, i, suffix, MAX_CODE_ALIGN);
 	  else
 	    align_functions = 1 << i;
 	}
@@ -2551,7 +2920,7 @@ override_options (void)
     {
       i = atoi (ix86_branch_cost_string);
       if (i < 0 || i > 5)
-	error ("-mbranch-cost=%d is not between 0 and 5", i);
+	error ("%sbranch-cost=%d%s is not between 0 and 5", prefix, i, suffix);
       else
 	ix86_branch_cost = i;
     }
@@ -2559,7 +2928,7 @@ override_options (void)
     {
       i = atoi (ix86_section_threshold_string);
       if (i < 0)
-	error ("-mlarge-data-threshold=%d is negative", i);
+	error ("%slarge-data-threshold=%d%s is negative", prefix, i, suffix);
       else
 	ix86_section_threshold = i;
     }
@@ -2573,8 +2942,8 @@ override_options (void)
       else if (strcmp (ix86_tls_dialect_string, "sun") == 0)
 	ix86_tls_dialect = TLS_DIALECT_SUN;
       else
-	error ("bad value (%s) for -mtls-dialect= switch",
-	       ix86_tls_dialect_string);
+	error ("bad value (%s) for %stls-dialect=%s %s",
+	       ix86_tls_dialect_string, prefix, suffix, sw);
     }
 
   if (ix87_precision_string)
@@ -2597,7 +2966,7 @@ override_options (void)
 	     | TARGET_SUBTARGET64_ISA_DEFAULT) & ~ix86_isa_flags_explicit);
 
       if (TARGET_RTD)
-	warning (0, "-mrtd is ignored in 64bit mode");
+	warning (0, "%srtd%s is ignored in 64bit mode", prefix, suffix);
     }
   else
     {
@@ -2643,7 +3012,7 @@ override_options (void)
 
   /* Turn on popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2 || TARGET_ABM)
-    x86_popcnt = true;
+    ix86_isa_flags |= OPTION_MASK_ISA_POPCNT & ~ix86_isa_flags_explicit;
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
      The default of 128 bits is for Pentium III's SSE __m128.  We can't
@@ -2654,8 +3023,8 @@ override_options (void)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
       if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
-	error ("-mpreferred-stack-boundary=%d is not between %d and 12", i,
-	       TARGET_64BIT ? 4 : 2);
+	error ("%spreferred-stack-boundary=%d%s is not between %d and 12",
+	       prefix, i, suffix, TARGET_64BIT ? 4 : 2);
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
@@ -2663,7 +3032,7 @@ override_options (void)
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM
       && ! TARGET_SSE)
-    error ("-msseregparm used without SSE enabled");
+    error ("%ssseregparm%s used without SSE enabled", prefix, suffix);
 
   ix86_fpmath = TARGET_FPMATH_DEFAULT;
   if (ix86_fpmath_string != 0)
@@ -2681,7 +3050,10 @@ override_options (void)
 	    ix86_fpmath = FPMATH_SSE;
 	}
       else if (! strcmp (ix86_fpmath_string, "387,sse")
-	       || ! strcmp (ix86_fpmath_string, "sse,387"))
+	       || ! strcmp (ix86_fpmath_string, "387+sse")
+	       || ! strcmp (ix86_fpmath_string, "sse,387")
+	       || ! strcmp (ix86_fpmath_string, "sse+387")
+	       || ! strcmp (ix86_fpmath_string, "both"))
 	{
 	  if (!TARGET_SSE)
 	    {
@@ -2697,7 +3069,8 @@ override_options (void)
 	    ix86_fpmath = (enum fpmath_unit) (FPMATH_SSE | FPMATH_387);
 	}
       else
-	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
+	error ("bad value (%s) for %sfpmath=%s %s",
+	       ix86_fpmath_string, prefix, suffix, sw);
     }
 
   /* If the i387 is disabled, then do not return values in it. */
@@ -2713,7 +3086,8 @@ override_options (void)
 	ix86_veclib_handler = ix86_veclibabi_acml;
       else
 	error ("unknown vectorization library ABI type (%s) for "
-	       "-mveclibabi= switch", ix86_veclibabi_string);
+	       "%sveclibabi=%s %s", ix86_veclibabi_string,
+	       prefix, suffix, sw);
     }
 
   if ((x86_accumulate_outgoing_args & ix86_tune_mask)
@@ -2732,7 +3106,8 @@ override_options (void)
     {
       if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
 	warning (0, "unwind tables currently require either a frame pointer "
-		 "or -maccumulate-outgoing-args for correctness");
+		 "or %saccumulate-outgoing-args%s for correctness",
+		 prefix, suffix);
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
@@ -2743,10 +3118,12 @@ override_options (void)
       && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
     {
       if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
-	warning (0, "stack probing requires -maccumulate-outgoing-args "
-		 "for correctness");
+	warning (0, "stack probing requires %saccumulate-outgoing-args%s "
+		 "for correctness", prefix, suffix);
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
+
+  TARGET_CMOVE = 0;
 
   /* For sane SSE instruction set generation we need fcomi instruction.
      It is safe to enable all CMOVE instructions.  */
@@ -2808,7 +3185,499 @@ override_options (void)
   if (!TARGET_64BIT)
     target_flags |= MASK_CLD & ~target_flags_explicit;
 #endif
+
+  /* Save the initial options in case the user does function specific options */
+  if (main_args_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node ();
 }
+
+/* Save the current options */
+
+static void
+ix86_function_specific_save (struct cl_target_option *ptr)
+{
+  gcc_assert (IN_RANGE (ix86_arch, 0, 255));
+  gcc_assert (IN_RANGE (ix86_tune, 0, 255));
+  gcc_assert (IN_RANGE (ix86_fpmath, 0, 255));
+  gcc_assert (IN_RANGE (ix86_branch_cost, 0, 255));
+
+  ptr->arch = ix86_arch;
+  ptr->tune = ix86_tune;
+  ptr->fpmath = ix86_fpmath;
+  ptr->branch_cost = ix86_branch_cost;
+  ptr->tune_defaulted = ix86_tune_defaulted;
+  ptr->arch_specified = ix86_arch_specified;
+  ptr->ix86_isa_flags_explicit = ix86_isa_flags_explicit;
+  ptr->target_flags_explicit = target_flags_explicit;
+}
+
+/* Restore the current options */
+
+static void
+ix86_function_specific_restore (struct cl_target_option *ptr)
+{
+  enum processor_type old_tune = ix86_tune;
+  enum processor_type old_arch = ix86_arch;
+  unsigned int ix86_arch_mask, ix86_tune_mask;
+  int i;
+
+  ix86_arch = ptr->arch;
+  ix86_tune = ptr->tune;
+  ix86_fpmath = ptr->fpmath;
+  ix86_branch_cost = ptr->branch_cost;
+  ix86_tune_defaulted = ptr->tune_defaulted;
+  ix86_arch_specified = ptr->arch_specified;
+  ix86_isa_flags_explicit = ptr->ix86_isa_flags_explicit;
+  target_flags_explicit = ptr->target_flags_explicit;
+
+  /* Recreate the arch feature tests if the arch changed */
+  if (old_arch != ix86_arch)
+    {
+      ix86_arch_mask = 1u << ix86_arch;
+      for (i = 0; i < X86_ARCH_LAST; ++i)
+	ix86_arch_features[i]
+	  = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
+    }
+
+  /* Recreate the tune optimization tests */
+  if (old_tune != ix86_tune)
+    {
+      ix86_tune_mask = 1u << ix86_tune;
+      for (i = 0; i < X86_TUNE_LAST; ++i)
+	ix86_tune_features[i]
+	  = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
+    }
+}
+
+/* Print the current options */
+
+static void
+ix86_function_specific_print (FILE *file, int indent,
+			      struct cl_target_option *ptr)
+{
+  char *target_string
+    = ix86_target_string (ptr->ix86_isa_flags, ptr->target_flags,
+			  NULL, NULL, NULL, false);
+
+  fprintf (file, "%*sarch = %d (%s)\n",
+	   indent, "",
+	   ptr->arch,
+	   ((ptr->arch < TARGET_CPU_DEFAULT_max)
+	    ? cpu_names[ptr->arch]
+	    : "<unknown>"));
+
+  fprintf (file, "%*stune = %d (%s)\n",
+	   indent, "",
+	   ptr->tune,
+	   ((ptr->tune < TARGET_CPU_DEFAULT_max)
+	    ? cpu_names[ptr->tune]
+	    : "<unknown>"));
+
+  fprintf (file, "%*sfpmath = %d%s%s\n", indent, "", ptr->fpmath,
+	   (ptr->fpmath & FPMATH_387) ? ", 387" : "",
+	   (ptr->fpmath & FPMATH_SSE) ? ", sse" : "");
+  fprintf (file, "%*sbranch_cost = %d\n", indent, "", ptr->branch_cost);
+
+  if (target_string)
+    {
+      fprintf (file, "%*s%s\n", indent, "", target_string);
+      free (target_string);
+    }
+}
+
+
+/* Inner function to process the attribute((option(...))), take an argument and
+   set the current options from the argument. If we have a list, recursively go
+   over the list.  */
+
+static bool
+ix86_valid_option_attribute_inner_p (tree args, char *p_strings[])
+{
+  char *next_optstr;
+  bool ret = true;
+
+#define IX86_ATTR_ISA(S,O)   { S, sizeof (S)-1, ix86_opt_isa, O, 0 }
+#define IX86_ATTR_STR(S,O)   { S, sizeof (S)-1, ix86_opt_str, O, 0 }
+#define IX86_ATTR_YES(S,O,M) { S, sizeof (S)-1, ix86_opt_yes, O, M }
+#define IX86_ATTR_NO(S,O,M)  { S, sizeof (S)-1, ix86_opt_no,  O, M }
+
+  enum ix86_opt_type
+  {
+    ix86_opt_unknown,
+    ix86_opt_yes,
+    ix86_opt_no,
+    ix86_opt_str,
+    ix86_opt_isa
+  };
+
+  static const struct
+  {
+    const char *string;
+    size_t len;
+    enum ix86_opt_type type;
+    int opt;
+    int mask;
+  } attrs[] = {
+    /* isa options */
+    IX86_ATTR_ISA ("3dnow",	OPT_m3dnow),
+    IX86_ATTR_ISA ("abm",	OPT_mabm),
+    IX86_ATTR_ISA ("aes",	OPT_maes),
+    IX86_ATTR_ISA ("mmx",	OPT_mmmx),
+    IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
+    IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
+    IX86_ATTR_ISA ("sse",	OPT_msse),
+    IX86_ATTR_ISA ("sse2",	OPT_msse2),
+    IX86_ATTR_ISA ("sse3",	OPT_msse3),
+    IX86_ATTR_ISA ("sse4",	OPT_msse4),
+    IX86_ATTR_ISA ("sse4.1",	OPT_msse4_1),
+    IX86_ATTR_ISA ("sse4.2",	OPT_msse4_2),
+    IX86_ATTR_ISA ("sse4a",	OPT_msse4a),
+    IX86_ATTR_ISA ("sse5",	OPT_msse5),
+    IX86_ATTR_ISA ("ssse3",	OPT_mssse3),
+
+    /* string options */
+    IX86_ATTR_STR ("arch=",	IX86_FUNCTION_SPECIFIC_ARCH),
+    IX86_ATTR_STR ("fpmath=",	IX86_FUNCTION_SPECIFIC_FPMATH),
+    IX86_ATTR_STR ("tune=",	IX86_FUNCTION_SPECIFIC_TUNE),
+
+    /* flag options */
+    IX86_ATTR_YES ("cld",
+		   OPT_mcld,
+		   MASK_CLD),
+
+    IX86_ATTR_NO ("fancy-math-387",
+		  OPT_mfancy_math_387,
+		  MASK_NO_FANCY_MATH_387),
+
+    IX86_ATTR_NO ("fused-madd",
+		  OPT_mfused_madd,
+		  MASK_NO_FUSED_MADD),
+
+    IX86_ATTR_YES ("ieee-fp",
+		   OPT_mieee_fp,
+		   MASK_IEEE_FP),
+
+    IX86_ATTR_YES ("inline-all-stringops",
+		   OPT_minline_all_stringops,
+		   MASK_INLINE_ALL_STRINGOPS),
+
+    IX86_ATTR_YES ("inline-stringops-dynamically",
+		   OPT_minline_stringops_dynamically,
+		   MASK_INLINE_STRINGOPS_DYNAMICALLY),
+
+    IX86_ATTR_NO ("align-stringops",
+		  OPT_mno_align_stringops,
+		  MASK_NO_ALIGN_STRINGOPS),
+
+    IX86_ATTR_YES ("recip",
+		   OPT_mrecip,
+		   MASK_RECIP),
+
+  };
+
+  /* If this is a list, recurse to get the options.  */
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      bool ret = true;
+
+      for (; args; args = TREE_CHAIN (args))
+	if (TREE_VALUE (args)
+	    && !ix86_valid_option_attribute_inner_p (TREE_VALUE (args), p_strings))
+	  ret = false;
+
+      return ret;
+    }
+
+  else if (TREE_CODE (args) != STRING_CST)
+    gcc_unreachable ();
+
+  /* Handle multiple arguments separated by commas.  */
+  next_optstr = ASTRDUP (TREE_STRING_POINTER (args));
+
+  while (next_optstr && *next_optstr != '\0')
+    {
+      char *p = next_optstr;
+      char *orig_p = p;
+      char *comma = strchr (next_optstr, ',');
+      const char *opt_string;
+      size_t len, opt_len;
+      int opt;
+      bool opt_set_p;
+      char ch;
+      unsigned i;
+      enum ix86_opt_type type = ix86_opt_unknown;
+      int mask = 0;
+
+      if (comma)
+	{
+	  *comma = '\0';
+	  len = comma - next_optstr;
+	  next_optstr = comma + 1;
+	}
+      else
+	{
+	  len = strlen (p);
+	  next_optstr = NULL;
+	}
+
+      /* Recognize no-xxx.  */
+      if (len > 3 && p[0] == 'n' && p[1] == 'o' && p[2] == '-')
+	{
+	  opt_set_p = false;
+	  p += 3;
+	  len -= 3;
+	}
+      else
+	opt_set_p = true;
+
+      /* Find the option.  */
+      ch = *p;
+      opt = N_OPTS;
+      for (i = 0; i < sizeof (attrs) / sizeof (attrs[0]); i++)
+	{
+	  type = attrs[i].type;
+	  opt_len = attrs[i].len;
+	  if (ch == attrs[i].string[0]
+	      && ((type != ix86_opt_str) ? len == opt_len : len > opt_len)
+	      && memcmp (p, attrs[i].string, opt_len) == 0)
+	    {
+	      opt = attrs[i].opt;
+	      mask = attrs[i].mask;
+	      opt_string = attrs[i].string;
+	      break;
+	    }
+	}
+
+      /* Process the option.  */
+      if (opt == N_OPTS)
+	{
+	  error ("attribute(option(\"%s\")) is unknown", orig_p);
+	  ret = false;
+	}
+
+      else if (type == ix86_opt_isa)
+	ix86_handle_option (opt, p, opt_set_p);
+
+      else if (type == ix86_opt_yes || type == ix86_opt_no)
+	{
+	  if (type == ix86_opt_no)
+	    opt_set_p = !opt_set_p;
+
+	  if (opt_set_p)
+	    target_flags |= mask;
+	  else
+	    target_flags &= ~mask;
+	}
+
+      else if (type == ix86_opt_str)
+	{
+	  if (p_strings[opt])
+	    {
+	      error ("option(\"%s\") was already specified", opt_string);
+	      ret = false;
+	    }
+	  else
+	    p_strings[opt] = xstrdup (p + opt_len);
+	}
+
+      else
+	gcc_unreachable ();
+    }
+
+  return ret;
+}
+
+/* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
+
+tree
+ix86_valid_option_attribute_tree (tree args)
+{
+  const char *orig_arch_string = ix86_arch_string;
+  const char *orig_tune_string = ix86_tune_string;
+  const char *orig_fpmath_string = ix86_fpmath_string;
+  int orig_tune_defaulted = ix86_tune_defaulted;
+  int orig_arch_specified = ix86_arch_specified;
+  char *option_strings[IX86_FUNCTION_SPECIFIC_MAX] = { NULL, NULL, NULL };
+  tree t = NULL_TREE;
+  int i;
+  struct cl_target_option *def
+    = TREE_TARGET_OPTION (target_option_default_node);
+
+  /* Process each of the options on the chain.  */
+  if (! ix86_valid_option_attribute_inner_p (args, option_strings))
+    return NULL_TREE;
+
+  /* If the changed options are different from the default, rerun override_options,
+     and then save the options away.  The string options are are attribute options,
+     and will be undone when we copy the save structure.  */
+  if (ix86_isa_flags != def->ix86_isa_flags
+      || target_flags != def->target_flags
+      || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
+      || option_strings[IX86_FUNCTION_SPECIFIC_TUNE]
+      || option_strings[IX86_FUNCTION_SPECIFIC_FPMATH])
+    {
+      /* If we are using the default tune= or arch=, undo the string assigned,
+	 and use the default.  */
+      if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH])
+	ix86_arch_string = option_strings[IX86_FUNCTION_SPECIFIC_ARCH];
+      else if (!orig_arch_specified)
+	ix86_arch_string = NULL;
+
+      if (option_strings[IX86_FUNCTION_SPECIFIC_TUNE])
+	ix86_tune_string = option_strings[IX86_FUNCTION_SPECIFIC_TUNE];
+      else if (orig_tune_defaulted)
+	ix86_tune_string = NULL;
+
+      /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
+      if (option_strings[IX86_FUNCTION_SPECIFIC_FPMATH])
+	ix86_fpmath_string = option_strings[IX86_FUNCTION_SPECIFIC_FPMATH];
+      else if (!TARGET_64BIT && TARGET_SSE)
+	ix86_fpmath_string = "sse,387";
+
+      /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
+      override_options (false);
+
+      /* Save the current options unless we are validating options for
+	 #pragma.  */
+      t = build_target_option_node ();
+
+      ix86_arch_string = orig_arch_string;
+      ix86_tune_string = orig_tune_string;
+      ix86_fpmath_string = orig_fpmath_string;
+
+      /* Free up memory allocated to hold the strings */
+      for (i = 0; i < IX86_FUNCTION_SPECIFIC_MAX; i++)
+	if (option_strings[i])
+	  free (option_strings[i]);
+    }
+
+  return t;
+}
+
+/* Hook to validate attribute((option("string"))).  */
+
+static bool
+ix86_valid_option_attribute_p (tree fndecl,
+			       tree ARG_UNUSED (name),
+			       tree args,
+			       int ARG_UNUSED (flags))
+{
+  struct cl_target_option cur_opts;
+  bool ret = true;
+  tree new_opts;
+
+  cl_target_option_save (&cur_opts);
+  new_opts = ix86_valid_option_attribute_tree (args);
+  if (!new_opts)
+    ret = false;
+
+  else if (fndecl)
+    DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_opts;
+
+  cl_target_option_restore (&cur_opts);
+  return ret;
+}
+
+
+/* Hook to determine if one function can safely inline another.  */
+
+static bool
+ix86_can_inline_p (tree caller, tree callee)
+{
+  bool ret = false;
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  /* If callee has no option attributes, then it is ok to inline.  */
+  if (!callee_tree)
+    ret = true;
+
+  /* If caller has no option attributes, but callee does then it is not ok to
+     inline.  */
+  else if (!caller_tree)
+    ret = false;
+
+  else
+    {
+      struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+      struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+
+      /* Callee's isa options should a subset of the caller's, i.e. a SSE5 function
+	 can inline a SSE2 function but a SSE2 function can't inline a SSE5
+	 function.  */
+      if ((caller_opts->ix86_isa_flags & callee_opts->ix86_isa_flags)
+	  != callee_opts->ix86_isa_flags)
+	ret = false;
+
+      /* See if we have the same non-isa options.  */
+      else if (caller_opts->target_flags != callee_opts->target_flags)
+	ret = false;
+
+      /* See if arch, tune, etc. are the same.  */
+      else if (caller_opts->arch != callee_opts->arch)
+	ret = false;
+
+      else if (caller_opts->tune != callee_opts->tune)
+	ret = false;
+
+      else if (caller_opts->fpmath != callee_opts->fpmath)
+	ret = false;
+
+      else if (caller_opts->branch_cost != callee_opts->branch_cost)
+	ret = false;
+
+      else
+	ret = true;
+    }
+
+  return ret;
+}
+
+
+/* Remember the last target of ix86_set_current_function.  */
+static GTY(()) tree ix86_previous_fndecl;
+
+/* Establish appropriate back-end context for processing the function
+   FNDECL.  The argument might be NULL to indicate processing at top
+   level, outside of any function scope.  */
+static void
+ix86_set_current_function (tree fndecl)
+{
+  /* Only change the context if the function changes.  This hook is called
+     several times in the course of compiling a function, and we don't want to
+     slow things down too much or call target_reinit when it isn't safe.  */
+  if (fndecl && fndecl != ix86_previous_fndecl)
+    {
+      tree old_tree = (ix86_previous_fndecl
+		       ? DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl)
+		       : NULL_TREE);
+
+      tree new_tree = (fndecl
+		       ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
+		       : NULL_TREE);
+
+      ix86_previous_fndecl = fndecl;
+      if (old_tree == new_tree)
+	;
+
+      else if (new_tree)
+	{
+	  cl_target_option_restore (TREE_TARGET_OPTION (new_tree));
+	  target_reinit ();
+	}
+
+      else if (old_tree)
+	{
+	  struct cl_target_option *def
+	    = TREE_TARGET_OPTION (target_option_current_node);
+
+	  cl_target_option_restore (def);
+	  target_reinit ();
+	}
+    }
+}
+
 
 /* Return true if this goes in large data/bss.  */
 
@@ -18129,22 +18998,29 @@ enum ix86_builtins
 /* Table for the ix86 builtin decls.  */
 static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 
-/* Add an ix86 target builtin function with CODE, NAME and TYPE.  Do so,
- * if the target_flags include one of MASK.  Stores the function decl
- * in the ix86_builtins array.
- * Returns the function decl or NULL_TREE, if the builtin was not added.  */
+/* Table to record which ISA options the builtin needs.  */
+static int ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
+
+/* Add an ix86 target builtin function with CODE, NAME and TYPE.  Save the MASK
+ * of which isa_flags to use in the ix86_builtins_isa array.  Stores the
+ * function decl in the ix86_builtins array.  Returns the function decl or
+ * NULL_TREE, if the builtin was not added.
+ *
+ * Record all builtins, even if it isn't an instruction set in the current ISA
+ * in case the user uses function specific options for a different ISA.  When
+ * the builtin is expanded, check at that time whether it is valid.  */
 
 static inline tree
 def_builtin (int mask, const char *name, tree type, enum ix86_builtins code)
 {
   tree decl = NULL_TREE;
 
-  if (mask & ix86_isa_flags
-      && (!(mask & OPTION_MASK_ISA_64BIT) || TARGET_64BIT))
+  if (!(mask & OPTION_MASK_ISA_64BIT) || TARGET_64BIT)
     {
       decl = add_builtin_function (name, type, code, BUILT_IN_MD,
 				   NULL, NULL_TREE);
       ix86_builtins[(int) code] = decl;
+      ix86_builtins_isa[(int) code] = mask;
     }
 
   return decl;
@@ -19187,9 +20063,10 @@ static const struct builtin_description bdesc_multi_arg[] =
   { OPTION_MASK_ISA_SSE5, CODE_FOR_sse5_pcom_tfv2di3,      "__builtin_ia32_pcomtrueuq", IX86_BUILTIN_PCOMTRUEUQ, PCOM_TRUE,    (int)MULTI_ARG_2_DI_TF },
 };
 
-/* Set up all the MMX/SSE builtins.  This is not called if TARGET_MMX
-   is zero.  Otherwise, if TARGET_SSE is not set, only expand the MMX
-   builtins.  */
+/* Set up all the MMX/SSE builtins, even builtins for instructions that are not
+   in the current target ISA to allow the user to compile particular modules
+   with different target specific options that differ from the command line
+   options.  */
 static void
 ix86_init_mmx_sse_builtins (void)
 {
@@ -20128,23 +21005,15 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_SSE3, "__builtin_ia32_mwait", void_ftype_unsigned_unsigned, IX86_BUILTIN_MWAIT);
 
   /* AES */
-  if (TARGET_AES)
-    {
-      /* Define AES built-in functions only if AES is enabled.  */
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesenc128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENC128);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesenclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENCLAST128);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesdec128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDEC128);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesdeclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDECLAST128);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesimc128", v2di_ftype_v2di, IX86_BUILTIN_AESIMC128);
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aeskeygenassist128", v2di_ftype_v2di_int, IX86_BUILTIN_AESKEYGENASSIST128);
-    }
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aesenc128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENC128);
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aesenclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENCLAST128);
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aesdec128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDEC128);
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aesdeclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDECLAST128);
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aesimc128", v2di_ftype_v2di, IX86_BUILTIN_AESIMC128);
+  def_builtin_const (OPTION_MASK_ISA_AES, "__builtin_ia32_aeskeygenassist128", v2di_ftype_v2di_int, IX86_BUILTIN_AESKEYGENASSIST128);
 
   /* PCLMUL */
-  if (TARGET_PCLMUL)
-    {
-      /* Define PCLMUL built-in function only if PCLMUL is enabled.  */
-      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_pclmulqdq128", v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PCLMULQDQ128);
-    }
+  def_builtin_const (OPTION_MASK_ISA_PCLMUL, "__builtin_ia32_pclmulqdq128", v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PCLMULQDQ128);
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V2SI_type_node, integer_type_node,
@@ -20399,8 +21268,7 @@ ix86_init_builtins (void)
   ix86_builtins[(int) IX86_BUILTIN_COPYSIGNQ] = decl;
   TREE_READONLY (decl) = 1;
 
-  if (TARGET_MMX)
-    ix86_init_mmx_sse_builtins ();
+  ix86_init_mmx_sse_builtins ();
   if (TARGET_64BIT)
     ix86_init_builtins_va_builtins_abi ();
 }
@@ -21615,6 +22483,28 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   rtx op0, op1, op2, pat;
   enum machine_mode mode0, mode1, mode2;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  /* Determine whether the builtin function is available under the current ISA.
+     Originally the builtin was not created if it wasn't applicable to the
+     current ISA based on the command line switches.  With function specific
+     options, we need to check in the context of the function making the call
+     whether it is supported.  */
+  if (ix86_builtins_isa[fcode]
+      && !(ix86_builtins_isa[fcode] & ix86_isa_flags))
+    {
+      char *opts = ix86_target_string (ix86_builtins_isa[fcode], 0, NULL,
+				       NULL, NULL, false);
+
+      if (!opts)
+	error ("%qE needs unknown isa option", fndecl);
+      else
+	{
+	  gcc_assert (opts != NULL);
+	  error ("%qE needs isa option %s", fndecl, opts);
+	  free (opts);
+	}
+      return const0_rtx;
+    }
 
   switch (fcode)
     {
@@ -26435,6 +27325,24 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST x86_builtin_vectorization_cost
+
+#undef TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P ix86_valid_option_attribute_p
+
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE ix86_function_specific_save
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE ix86_function_specific_restore
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT ix86_function_specific_print
+
+#undef TARGET_OPTION_CAN_INLINE_P
+#define TARGET_OPTION_CAN_INLINE_P ix86_can_inline_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

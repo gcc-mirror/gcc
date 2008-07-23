@@ -26,6 +26,7 @@
 BEGIN {
 	n_opts = 0
 	n_langs = 0
+	n_target_save = 0
 	n_extra_masks = 0
 	quote = "\042"
 	comma = ","
@@ -37,6 +38,11 @@ BEGIN {
 		if ($1 == "Language") {
 			langs[n_langs] = $2
 			n_langs++;
+		}
+		else if ($1 == "TargetSave") {
+			# Make sure the declarations are put in source order
+			target_save_decl[n_target_save] = $2
+			n_target_save++
 		}
 		else {
 			name = opt_args("Mask", $1)
@@ -64,14 +70,179 @@ print "extern int target_flags;"
 print "extern int target_flags_explicit;"
 print ""
 
+have_save = 0;
+
 for (i = 0; i < n_opts; i++) {
+	if (flag_set_p("Save", flags[i]))
+		have_save = 1;
+
 	name = var_name(flags[i]);
 	if (name == "")
 		continue;
 
+	if (name in var_seen)
+		continue;
+
+	var_seen[name] = 1;
 	print "extern " var_type(flags[i]) name ";"
 }
 print ""
+
+# All of the optimization switches gathered together so they can be saved and restored.
+# This will allow attribute((cold)) to turn on space optimization.
+
+# Change the type of normal switches from int to unsigned char to save space.
+# Also, order the structure so that pointer fields occur first, then int
+# fields, and then char fields to provide the best packing.
+
+print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2)"
+print ""
+print "/* Structure to save/restore optimization and target specific options.  */";
+print "struct cl_optimization GTY(())";
+print "{";
+
+n_opt_char = 2;
+n_opt_short = 0;
+n_opt_int = 0;
+n_opt_other = 0;
+var_opt_char[0] = "unsigned char optimize";
+var_opt_char[1] = "unsigned char optimize_size";
+
+for (i = 0; i < n_opts; i++) {
+	if (flag_set_p("Optimization", flags[i])) {
+		name = var_name(flags[i])
+		if(name == "")
+			continue;
+
+		if(name in var_opt_seen)
+			continue;
+
+		var_opt_seen[name]++;
+		otype = var_type_struct(flags[i]);
+		if (otype ~ "^((un)?signed +)?int *$")
+			var_opt_int[n_opt_int++] = otype name;
+
+		else if (otype ~ "^((un)?signed +)?short *$")
+			var_opt_short[n_opt_short++] = otype name;
+
+		else if (otype ~ "^((un)?signed +)?char *$")
+			var_opt_char[n_opt_char++] = otype name;
+
+		else
+			var_opt_other[n_opt_other++] = otype name;
+	}
+}
+
+for (i = 0; i < n_opt_other; i++) {
+	print "  " var_opt_other[i] ";";
+}
+
+for (i = 0; i < n_opt_int; i++) {
+	print "  " var_opt_int[i] ";";
+}
+
+for (i = 0; i < n_opt_short; i++) {
+	print "  " var_opt_short[i] ";";
+}
+
+for (i = 0; i < n_opt_char; i++) {
+	print "  " var_opt_char[i] ";";
+}
+
+print "};";
+print "";
+
+# Target and optimization save/restore/print functions.
+print "/* Structure to save/restore selected target specific options.  */";
+print "struct cl_target_option GTY(())";
+print "{";
+
+n_target_char = 0;
+n_target_short = 0;
+n_target_int = 0;
+n_target_other = 0;
+
+for (i = 0; i < n_target_save; i++) {
+	if (target_save_decl[i] ~ "^((un)?signed +)?int +[_a-zA-Z0-9]+$")
+		var_target_int[n_target_int++] = target_save_decl[i];
+
+	else if (target_save_decl[i] ~ "^((un)?signed +)?short +[_a-zA-Z0-9]+$")
+		var_target_short[n_target_short++] = target_save_decl[i];
+
+	else if (target_save_decl[i] ~ "^((un)?signed +)?char +[_a-zA-Z0-9]+$")
+		var_target_char[n_target_char++] = target_save_decl[i];
+
+	else
+		var_target_other[n_target_other++] = target_save_decl[i];
+}
+
+if (have_save) {
+	for (i = 0; i < n_opts; i++) {
+		if (flag_set_p("Save", flags[i])) {
+			name = var_name(flags[i])
+			if(name == "")
+				name = "target_flags";
+
+			if(name in var_save_seen)
+				continue;
+
+			var_save_seen[name]++;
+			otype = var_type_struct(flags[i])
+			if (otype ~ "^((un)?signed +)?int *$")
+				var_target_int[n_target_int++] = otype name;
+
+			else if (otype ~ "^((un)?signed +)?short *$")
+				var_target_short[n_target_short++] = otype name;
+
+			else if (otype ~ "^((un)?signed +)?char *$")
+				var_target_char[n_target_char++] = otype name;
+
+			else
+				var_target_other[n_target_other++] = otype name;
+		}
+	}
+} else {
+	var_target_int[n_target_int++] = "int target_flags";
+}
+
+for (i = 0; i < n_target_other; i++) {
+	print "  " var_target_other[i] ";";
+}
+
+for (i = 0; i < n_target_int; i++) {
+	print "  " var_target_int[i] ";";
+}
+
+for (i = 0; i < n_target_short; i++) {
+	print "  " var_target_short[i] ";";
+}
+
+for (i = 0; i < n_target_char; i++) {
+	print "  " var_target_char[i] ";";
+}
+
+print "};";
+print "";
+print "";
+print "/* Save optimization variables into a structure.  */"
+print "extern void cl_optimization_save (struct cl_optimization *);";
+print "";
+print "/* Restore optimization variables from a structure.  */";
+print "extern void cl_optimization_restore (struct cl_optimization *);";
+print "";
+print "/* Print optimization variables from a structure.  */";
+print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
+print "";
+print "/* Save selected option variables into a structure.  */"
+print "extern void cl_target_option_save (struct cl_target_option *);";
+print "";
+print "/* Restore selected option variables from a structure.  */"
+print "extern void cl_target_option_restore (struct cl_target_option *);";
+print "";
+print "/* Print target option variables from a structure.  */";
+print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
+print "#endif";
+print "";
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])

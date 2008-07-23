@@ -294,6 +294,8 @@ fido-*-*)
         ;;
 i[34567]86-*-*)
 	cpu_type=i386
+	c_target_objs="i386-c.o"
+	cxx_target_objs="i386-c.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
 		       nmmintrin.h bmmintrin.h mmintrin-common.h
@@ -301,6 +303,8 @@ i[34567]86-*-*)
 	;;
 x86_64-*-*)
 	cpu_type=i386
+	c_target_objs="i386-c.o"
+	cxx_target_objs="i386-c.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
 		       nmmintrin.h bmmintrin.h mmintrin-common.h
@@ -410,8 +414,8 @@ case ${target} in
   tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
   target_gtfiles="\$(srcdir)/config/darwin.c"
   extra_options="${extra_options} darwin.opt"
-  c_target_objs="darwin-c.o"
-  cxx_target_objs="darwin-c.o"
+  c_target_objs="${c_target_objs} darwin-c.o"
+  cxx_target_objs="${cxx_target_objs} darwin-c.o"
   fortran_target_objs="darwin-f.o"
   extra_objs="darwin.o"
   extra_gcc_objs="darwin-driver.o"
@@ -1028,16 +1032,16 @@ i[34567]86-*-darwin*)
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-generic}
-	tmake_file="t-darwin ${cpu_type}/t-darwin64 t-slibgcc-darwin i386/t-crtpc i386/t-crtfm"
+	tmake_file="${tmake_file} t-darwin ${cpu_type}/t-darwin64 t-slibgcc-darwin i386/t-crtpc i386/t-crtfm"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
-	tmake_file="i386/t-i386elf t-svr4"
+	tmake_file="${tmake_file} i386/t-i386elf t-svr4"
 	;;
 x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/x86-64.h"
-	tmake_file="i386/t-i386elf t-svr4"
+	tmake_file="${tmake_file} i386/t-i386elf t-svr4"
 	;;
 i[34567]86-*-aout*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/i386-aout.h"
@@ -1054,7 +1058,7 @@ i[34567]86-*-netbsdelf*)
 	;;
 i[34567]86-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h netbsd.h netbsd-aout.h i386/netbsd.h"
-	tmake_file=t-netbsd
+	tmake_file="${tmake_file} t-netbsd"
 	extra_parts=""
 	use_collect2=yes
 	;;
@@ -1065,7 +1069,7 @@ x86_64-*-netbsd*)
 i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
 	# needed to unconfuse gdb
-	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
+	tmake_file="${tmake_file} t-libc-ok t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
@@ -1126,7 +1130,7 @@ i[34567]86-*-gnu*)
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h
 	tm_file="dbxcoff.h ${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/djgpp.h"
-	tmake_file=i386/t-djgpp
+	tmake_file="${tmake_file} i386/t-djgpp"
 	extra_options="${extra_options} i386/djgpp.opt"
 	gnu_ld=yes
 	gas=yes
@@ -1134,7 +1138,7 @@ i[34567]86-pc-msdosdjgpp*)
 i[34567]86-*-lynxos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/lynx.h lynx.h"
-	tmake_file="i386/t-crtstuff t-lynx"
+	tmake_file="${tmake_file} i386/t-crtstuff t-lynx"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	extra_options="${extra_options} lynx.opt"
 	thread_file=lynx
@@ -1143,7 +1147,7 @@ i[34567]86-*-lynxos*)
 	;;
 i[3456x]86-*-netware*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h tm-dwarf2.h i386/netware.h"
- 	tmake_file=i386/t-netware
+ 	tmake_file="${tmake_file} i386/t-netware"
 	extra_objs=netware.o
 	case /${with_ld} in
 	*/nwld)
@@ -1162,14 +1166,14 @@ i[3456x]86-*-netware*)
 	;;
 i[34567]86-*-nto-qnx*)
 	tm_file="${tm_file} i386/att.h dbxelf.h tm-dwarf2.h elfos.h svr4.h i386/unix.h i386/nto.h"
-	tmake_file=i386/t-nto
+	tmake_file="${tmake_file} i386/t-nto"
 	gnu_ld=yes
 	gas=yes
 	;;
 i[34567]86-*-rtems*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/rtemself.h rtems.h"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
-	tmake_file="i386/t-rtems-i386 i386/t-crtstuff t-rtems"
+	tmake_file="${tmake_file} i386/t-rtems-i386 i386/t-crtstuff t-rtems"
 	;;
 i[34567]86-*-solaris2*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h"
@@ -1179,9 +1183,9 @@ i[34567]86-*-solaris2*)
 		;;
 	esac
 	tm_file="${tm_file} i386/sol2.h"
-	tmake_file="t-sol2 i386/t-sol2 t-svr4"
-	c_target_objs="sol2-c.o"
-	cxx_target_objs="sol2-c.o"
+	tmake_file="${tmake_file} t-sol2 i386/t-sol2 t-svr4"
+	c_target_objs="${c_target_objs} sol2-c.o"
+	cxx_target_objs="${cxx_target_objs} sol2-c.o"
 	extra_objs="sol2.o"
 	tm_p_file="${tm_p_file} sol2-protos.h"
 	if test x$gnu_ld = xyes; then
@@ -1247,12 +1251,12 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
 	xm_file=i386/xm-cygwin.h
-	tmake_file="i386/t-cygwin i386/t-cygming"
+	tmake_file="${tmake_file} i386/t-cygwin i386/t-cygming"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs="winnt.o winnt-stubs.o"
-	c_target_objs="cygwin2.o msformat-c.o"
-	cxx_target_objs="cygwin2.o winnt-cxx.o msformat-c.o"
+	c_target_objs="${c_target_objs} cygwin2.o msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} cygwin2.o winnt-cxx.o msformat-c.o"
 	extra_gcc_objs=cygwin1.o
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -1261,12 +1265,12 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 i[34567]86-*-mingw* | x86_64-*-mingw*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
 	xm_file=i386/xm-mingw32.h
-	tmake_file="i386/t-cygming i386/t-mingw32"
+	tmake_file="${tmake_file} i386/t-cygming i386/t-mingw32"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs="winnt.o winnt-stubs.o"
-	c_target_objs="msformat-c.o"
-	cxx_target_objs="winnt-cxx.o msformat-c.o"
+	c_target_objs="${c_target_objs} msformat-c.o"
+	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	default_use_cxa_atexit=yes
 	case ${enable_threads} in
 	  "" | yes | win32)
@@ -1291,7 +1295,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	;;
 i[34567]86-*-interix3*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h i386/i386-interix3.h interix.h interix3.h"
-	tmake_file="i386/t-interix"
+	tmake_file="${tmake_file} i386/t-interix"
 	extra_objs=winnt.o
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	if test x$enable_threads = xyes ; then
@@ -2369,10 +2373,10 @@ esac
 
 case ${target} in
 i[34567]86-*-linux* | x86_64-*-linux*)
-	tmake_file="${tmake_file} i386/t-pmm_malloc"
+	tmake_file="${tmake_file} i386/t-pmm_malloc i386/t-i386"
 	;;
 i[34567]86-*-* | x86_64-*-*)
-	tmake_file="${tmake_file} i386/t-gmm_malloc"
+	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"
 	;;
 esac
 

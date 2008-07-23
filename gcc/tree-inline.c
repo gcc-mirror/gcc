@@ -3683,3 +3683,34 @@ build_duplicate_type (tree type)
 
   return type;
 }
+
+/* Return whether it is safe to inline a function because it used different
+   target specific options or different optimization options.  */
+bool
+tree_can_inline_p (tree caller, tree callee)
+{
+  /* Don't inline a function with a higher optimization level than the
+     caller, or with different space constraints (hot/cold functions).  */
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee);
+
+  if (caller_tree != callee_tree)
+    {
+      struct cl_optimization *caller_opt
+	= TREE_OPTIMIZATION ((caller_tree)
+			     ? caller_tree
+			     : optimization_default_node);
+
+      struct cl_optimization *callee_opt
+	= TREE_OPTIMIZATION ((callee_tree)
+			     ? callee_tree
+			     : optimization_default_node);
+
+      if ((caller_opt->optimize > callee_opt->optimize)
+	  || (caller_opt->optimize_size != callee_opt->optimize_size))
+	return false;
+    }
+
+  /* Allow the backend to decide if inlining is ok.  */
+  return targetm.target_option.can_inline_p (caller, callee);
+}

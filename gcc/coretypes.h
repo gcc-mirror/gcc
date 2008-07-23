@@ -50,6 +50,8 @@ typedef union tree_node *tree;
 typedef const union tree_node *const_tree;
 union section;
 typedef union section section;
+struct cl_target_option;
+struct cl_optimization;
 
 /* The major intermediate representations of GCC.  */
 enum ir_type {

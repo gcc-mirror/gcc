@@ -1330,6 +1330,8 @@ a containing function, and the back end must take appropriate action.
 @findex DECL_GLOBAL_CTOR_P
 @findex DECL_GLOBAL_DTOR_P
 @findex GLOBAL_INIT_PRIORITY
+@findex DECL_FUNCTION_SPECIFIC_TARGET
+@findex DECL_FUNCTION_SPECIFIC_OPTIMIZATION
 
 The following macros and functions can be used on a @code{FUNCTION_DECL}:
 @ftable @code
@@ -1514,6 +1516,17 @@ is of the form `@code{()}'.
 This predicate holds if the function an overloaded
 @code{operator delete[]}.
 
+@item DECL_FUNCTION_SPECIFIC_TARGET
+This macro returns a tree node that holds the target options that are
+to be used to compile this particular function or @code{NULL_TREE} if
+the function is to be compiled with the target options specified on
+the command line.
+
+@item DECL_FUNCTION_SPECIFIC_OPTIMIZATION
+This macro returns a tree node that holds the optimization options
+that are to be used to compile this particular function or
+@code{NULL_TREE} if the function is to be compiled with the
+optimization options specified on the command line.
 @end ftable
 
 @c ---------------------------------------------------------------------
