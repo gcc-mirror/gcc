@@ -2791,7 +2791,7 @@ get_name:
 
   if (nl->type == GFC_DTYPE_DERIVED)
     nml_touch_nodes (nl);
-  if (component_flag)
+  if (component_flag && nl->var_rank > 0)
     nl = first_nl;
 
   /* Make sure no extraneous qualifiers are there.  */
