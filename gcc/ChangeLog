@@ -1,3 +1,406 @@
+2008-07-23  Michael Meissner  <gnu@the-meissners.org>
+	    Karthik Kumar  <karthikkumar@gmail.com>
+
+	* attribs.c (file scope): Include c-common.h.
+	(decl_attributes): Add support for #pragma GCC optimize and
+	#pragma GCC option.
+
+	* targhooks.c (default_can_inline_p): New function that is the
+	default for the TARGET_CAN_INLINE_P target hook.
+
+	* targhooks.h (default_can_inline_p): Add declaration.
+
+	* tree.c (cl_optimization_node): New static tree for building
+	OPTIMIZATION_NODE tree.
+	(cl_target_option_node): New static tree for building
+	TARGET_OPTION_NODE tree.
+	(cl_option_hash_table): New hash table for hashing
+	OPTIMIZATION_NODE and TARGET_OPTION_NODE trees.
+	(cl_option_hash_hash): New function to provide the hash value for
+	OPTIMIZATION_NODE and TARGET_OPTION_NODE trees.
+	(cl_option_hash_eq): New function to provide an equality test for
+	OPTIMIZATION_NODE and TARGET_OPTION_NODE trees.
+	(tree_code_size): Add support for OPTIMIZATION_NODE and
+	TARGET_OPTION_NODE trees.
+	(tree_code_structure): Add support for OPTIMIZATION_NODE and
+	TARGET_OPTION_NODE trees.
+	(build_optimization_node): Build a tree that has all of the
+	current optimization options.
+	(build_target_option_node): Build a tree that has the target
+	options that might be changed on a per function basis.
+
+	* tree.h (file scope): Include options.h.
+	(DECL_FUNCTION_SPECIFIC_TARGET): New accessor macro.
+	(DECL_FUNCTION_SPECIFIC_OPTIMIZATION): Ditto.
+	(TREE_OPTIMIZATION): Ditto.
+	(TREE_TARGET_SPECIFIC): Ditto.
+	(struct tree_function_decl): Add fields for remembering the
+	current optimization options and target specific options.
+	(struct tree_optimization_option): New tree variant that remembers
+	the optimization options.
+	(struct tree_target_option): New tree variant that remembers the
+	target specific flags that might change for compiling a particular
+	function.
+	(union tree_node): Include tree_optimization_option and
+	tree_target_option fields.
+	(enum tree_index): Add TI_OPTIMIZATION_DEFAULT,
+	TI_OPTIMIZATION_CURRENT, TI_OPTIMIZATION_COLD,
+	TI_OPTIMIZATION_HOT, TI_TARGET_OPTION_DEFAULT,
+	TI_TARGET_OPTION_CURRENT, TI_CURRENT_OPTION_PRAGMA,
+	TI_CURRENT_OPTIMIZE_PRAGMA entries for saving function specific
+	optimization and target options.
+	(optimization_default_node): New macro to refer to global_trees
+	field.
+	(optimization_current_node): Ditto.
+	(optimization_cold_node): Ditto.
+	(optimization_hot_node): Ditto.
+	(target_option_default_node): Ditto.
+	(target_option_current_node): Ditto.
+	(current_option_pragma): Ditto.
+	(current_optimize_pragma): Ditto.
+
+	* target.h (struct gcc_target): Add valid_option_attribute_p,
+	target_option_save, target_option_restore, target_option_print,
+	target_option_pragma_parse, and can_inline_p hooks.
+
+	* toplev.h (parse_optimize_options): Add declaration.
+	(fast_math_flags_struct_set_p): Ditto.
+
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): New function to
+	adjust the current __OPTIMIZE__, etc. macros when #pragma GCC
+	optimize is used.
+
+	* ipa-inline.c (cgraph_decide_inlining_of_small_function): Call
+	tree_can_inline_p hook to see if one function can inline another.
+	(cgraph_decide_inlining): Ditto.
+	(cgraph_decide_inlining_incrementally): Ditto.
+
+	* opts.c (decode_options): Add support for running multiple times
+	to allow functions with different target or optimization options
+	than was specified on the command line.
+	(fast_math_flags_struct_set_p): New function that is similar to
+	fast_math_flags_set_p, except it uses the values in the
+	cl_optimization structure instead of global variables.
+
+	* optc-gen.awk: Add support for TargetSave to allow a back end to
+	declare new fields that need to be saved when using function
+	specific options.  Include flags.h and target.h in the options.c
+	source.  Add support for Save to indicate which options can be set
+	for individual functions.  Generate cl_optimize_save,
+	cl_optimize_restore, cl_optimize_print, cl_target_option_save,
+	cl_target_option_restore, cl_target_option_print functions to
+	allow functions to use different optimization or target options.
+
+	* opt-functions.awk (var_type_struct): Return the type used for
+	storing the field in a structure.
+
+	* opth-gen.awk: Add support for TargetSave to allow a back end to
+	declare new fields that need to be saved when using function
+	specific options.  Add support for Save to indicate which options
+	can be set for individual functions.  Only generate one extern for
+	Mask fields.  Generate cl_optimization and cl_target_option
+	structures to remember optimization and target options.
+
+	* treestruct.def (TS_OPTIMIZATION): Add support for garbage
+	collecting new tree nodes.
+	(TS_TARGET_OPTION): Ditto.
+
+	* c-decl.c (merge_decls): Merge function specific target and
+	optimization options.
+
+	* function.c (invoke_set_current_function_hook): If the function
+	uses different optimization options, change the global variables
+	to reflect this.
+
+	* coretypes.h (struct cl_optimization): Add forward reference.
+	(struct cl_target_option): Ditto.
+
+	* c-pragma.c (option_stack): New static vector to remember the
+	current #pragma GCC option stack.
+	(handle_pragma_option): New function to support #pragma GCC option
+	to change target options.
+	(optimize_stack): New static vector to remember the current
+	#pragma GCC optimize stack.
+	(handle_pragma_optimize): New function to support #pragma GCC
+	optimize to change optimization options.
+	(init_pragma): Add support for #pragma GCC optimize and #pragma
+	GCC option.
+
+	* tree.def (OPTIMIZATION_NODE): New tree code for remembering
+	optimization options.
+	(TARGET_OPTION_NODE): New tree code for remembering certain target
+	options.
+
+	* print-tree.c (print_node): Add support for OPTIMIZATION_NODE and
+	TARGET_OPTION_NODE trees.
+
+	* common.opt (-O): Add Optimization flag.
+	(-Os): Ditto.
+	(-fmath-errno): Ditto.
+	(-falign-functions): Add UInteger flag to make sure flag gets full
+	int in cl_optimization structure.
+	(-falign-jumps): Ditto.
+	(-falign-labels): Ditto.
+	(-falign-loops): Ditto.
+	(-fsched-stalled-insns): Ditto.
+	(-fsched-stalled-insns-dep): Ditto.
+
+	* target-def.h (TARGET_VALID_OPTION_ATTRIBUTE_P): Add default
+	definition.
+	(TARGET_OPTION_SAVE): Ditto.
+	(TARGET_OPTION_RESTORE): Ditto.
+	(TARGET_OPTION_PRINT): Ditto.
+	(TARGET_OPTION_PRAGMA_PARSE): Ditto.
+	(TARGET_CAN_INLINE_P): Ditto.
+	(TARGET_INITIALIZER): Add new hooks.
+
+	* tree-inline.c (tree_can_inline_p): New function to determine
+	whether one function can inline another.  Check if the functions
+	use compatible optimization options, and also call the backend
+	can_inline_p hook.
+
+	* tree-inline.h (tree_can_inline_p): Add declaration.
+
+	* c-common.c (c_common_attribute): Add support for option and
+	optimize attributes.
+	(handle_option_attribute): Add support for the option attribute to
+	allow the user to specify different target options for compiling a
+	specific function.
+	(handle_optimize_attribute): Add support for the optimize
+	attribute to allow the user to specify different optimization
+	options for compiling a specific function.
+	(handle_hot_attribute): Turn on -O3 optimization for this one
+	function if it isn't the default optimization level.
+	(handle_cold_attribute): Turn on -Os optimization for this one
+	function if it insn't the default optimization.
+	(const_char_p): New const char * typedef.
+	(optimize_args): New static vector to remember the optimization
+	arguments.
+	(parse_optimize_options): New function to set up the optimization
+	arguments from either the optimize attribute or #pragma GCC
+	optimize.
+
+	* c-common.h (c_cpp_builtins_optimize_pragma): Add declaration.
+	(builtin_define_std): Ditto.
+
+	* config.gcc (i[3467]86-*-*): Add i386-c.o to C/C++ languages.
+	Add t-i386 Makefile fragment to add i386-c.o and i386.o
+	dependencies.
+	(x86_64-*-*): Ditto.
+
+	* Makefile.in (TREE_H): Add options.h.
+	(options.o): Add $(TARGET_H) $(FLAGS_H) dependencies.
+
+	* doc/extend.texi (option attribute): Document new attribute.
+	(optimize attribute): Ditto.
+	(hot attribute): Document hot attribute sets -O3.
+	(cold attribute): Document cold attribute sets -Os.
+	(#pragma GCC option): Document new pragma.
+	(#pragma GCC optimize): Ditto.
+
+	* doc/options.texi (TargetSave): Document TargetSave syntax.
+	(UInteger): Document UInteger must be used for certain flags.
+	(Save): Document Save option to create target specific options
+	that can be saved/restored on a function specific context.
+
+	* doc/c-tree.texi (DECL_FUNCTION_SPECIFIC_TARGET): Document new
+	macro.
+	(DECL_FUNCTION_SPECIFIC_OPTIMIZATION): Ditto.
+
+	* doc/tm.texi (TARGET_VALID_OPTION_ATTRIBUTE_P): Document new
+	hook.
+	(TARGET_OPTION_SAVE): Ditto.
+	(TARGET_OPTION_RESTORE): Ditto.
+	(TARGET_OPTION_PRINT): Ditto.
+	(TARGET_OPTION_PRAGMA_PARSE): Ditto.
+	(TARGET_CAN_INLINE_P): Ditto.
+
+	* doc/invoke.texi (-mfpmath=sse+387): Document as an alias for
+	-mfpmath=sse,387.
+	(-mfpmath=both): Ditto.
+
+2008-07-23  Michael Meissner  <gnu@the-meissners.org>
+	    Karthik Kumar  <karthikkumar@gmail.com>
+
+	* config/i386/i386.h (TARGET_ABM): Move switch into
+	ix86_isa_flags.
+	(TARGET_POPCNT): Ditto.
+	(TARGET_SAHF): Ditto.
+	(TARGET_AES): Ditto.
+	(TARGET_PCLMUL): Ditto.
+	(TARGET_CMPXCHG16B): Ditto.
+	(TARGET_RECIP): Move switch into target_flags.
+	(TARGET_FUSED_MADD): Ditto.
+	(ix86_arch_features): Make an unsigned char type.
+	(ix86_tune_features): Ditto.
+	(OVERRIDE_OPTIONS): Add bool argument to override_options call.
+	(TARGET_CPU_CPP_BUILTINS): Move into ix86_target_macros.
+	(REGISTER_TARGET_PRAGMAS): Define, call ix86_register_pragmas.
+
+	* config/i386/i386.opt (arch): New TargetSave field to define
+	fields that need to be saved for function specific option
+	support.
+	(tune): Ditto.
+	(fpmath): Ditto.
+	(branch_cost): Ditto.
+	(ix86_isa_flags_explicit): Ditto.
+	(tune_defaulted): Ditto.
+	(arch_specified): Ditto.
+	(-m128-long-double): Add Save flag to save option for target
+	specific option support.
+	(-m80387): Ditto.
+	(-maccumulate-outgoing-args): Ditto.
+	(-malign-double): Ditto.
+	(-malign-stringops): Ditto.
+	(-mfancy-math-387): Ditto.
+	(-mhard-float): Ditto.
+	(-mieee-fp): Ditto.
+	(-minline-all-stringops): Ditto.
+	(-minline-stringops-dynamically): Ditto.
+	(-mms-bitfields): Ditto.
+	(-mno-align-stringops): Ditto.
+	(-mno-fancy-math-387): Ditto.
+	(-mno-push-args): Ditto.
+	(-mno-red-zone): Ditto.
+	(-mpush-args): Ditto.
+	(-mred-zone): Ditto.
+	(-mrtd): Ditto.
+	(-msseregparm): Ditto.
+	(-mstack-arg-probe): Ditto.
+	(-m32): Ditto.
+	(-m64): Ditto.
+	(-mmmx): Ditto.
+	(-m3dnow): Ditto.
+	(-m3dnowa): Ditto.
+	(-msse): Ditto.
+	(-msse2): Ditto.
+	(-msse3): Ditto.
+	(-msse4.1): Ditto.
+	(-msse4.2): Ditto.
+	(-msse4): Ditto.
+	(-mno-sse4): Ditto.
+	(-msse4a): Ditto.
+	(-msse5): Ditto.
+	(-mrecip): Move flag into target_flags.
+	(-mcld): Ditto.
+	(-mno-fused-madd): Ditto.
+	(-mfused-madd): Ditto.
+	(-mabm): Move flag into ix86_isa_flags.
+	(-mcx16): Ditto.
+	(-mpopcnt): Ditto.
+	(-msahf): Ditto.
+	(-maes): Ditto.
+	(-mpclmul): Ditto.
+
+	* config/i386/i386-c.c: New file for #pragma support.
+	(ix86_target_macros_internal): New function to #define or #undef
+	target macros based when the user uses the #pragma GCC option to
+	change target options.
+	(ix86_pragma_option_parse): New function to add #pragma GCC option
+	support.
+	(ix86_target_macros): Move defining the target macros here from
+	TARGET_CPU_CPP_BUILTINS in i386.h.
+	(ix86_register_pragmas): Register the #pragma GCC option hook.  If
+	defined, initialize any subtarget #pragmas.
+
+	* config/i386/darwin.h (REGISTER_SUBTARGET_PRAGMAS): Rename from
+	REGISTER_TARGET_PRAGMAS.
+
+	* config/i386/t-i386: New file for x86 dependencies.
+	(i386.o): Make dependencies mirror the include files used.
+	(i386-c.o): New file, add dependencies.
+
+	* config/i386/i386-protos.h (override_options): Add bool
+	argument.
+	(ix86_valid_option_attribute_tree): Add declaration.
+	(ix86_target_macros): Ditto.
+	(ix86_register_macros): Ditto.
+
+	* config/i386/i386.c (ix86_tune_features): Move initialization of
+	the target masks to initial_ix86_tune_features to allow functions
+	to have different target options.  Make type unsigned char,
+	instead of unsigned int.
+	(initial_ix86_tune_features): New static vector to hold processor
+	masks for the tune variables.
+	(ix86_arch_features): Move initialization of the target masks to
+	initial_ix86_arch_features to allow functions to have different
+	target options.  Make type unsigned char, instead of unsigned
+	int.
+	(initial_ix86_arch_features): New static vector to hold processor
+	masks for the arch variables.
+	(enum ix86_function_specific_strings): New enum to describe the
+	string options used for attribute((option(...))).
+	(ix86_target_string): New function to return a string that
+	describes the target options.
+	(ix86_debug_options): New function to print the current options in
+	the debugger.
+	(ix86_function_specific_save): New function hook to save the
+	function specific global variables in the cl_target_option
+	structure.
+	(ix86_function_specific_restore): New function hook to restore the
+	function specific variables from the cl_target_option structure to
+	the global variables.
+	(ix86_function_specific_print): New function hook to print the
+	target specific options in the cl_target_option structure.
+	(ix86_valid_option_attribute_p): New function hook to validate
+	attribute((option(...))) arguments.
+	(ix86_valid_option_attribute_tree): New function that is common
+	code between attribute((option(...))) and #pragma GCC option
+	support that parses the options and returns a tree holding the
+	options.
+	(ix86_valid_option_attribute_inner_p): New helper function for
+	ix86_valid_option_attribute_tree.
+	(ix86_can_inline_p): New function hook to decide if one function
+	can inline another on a target specific basis.
+	(ix86_set_current_function); New function hook to switch target
+	options if the user used attribute((option(...))) or #pragma GCC
+	option.
+	(ix86_tune_defaulted): Move to static file scope from
+	override_options.
+	(ix86_arch_specified): Ditto.
+	(OPTION_MASK_ISA_AES_SET): New macro for moving switches into
+	ix86_isa_flags.
+	(OPTION_MASK_ISA_PCLMUL_SET): Ditto.
+	(OPTION_MASK_ISA_ABM_SET): Ditto.
+	(OPTION_MASK_ISA_POPCNT_SET): Ditto.
+	(OPTION_MASK_ISA_CX16_SET): Ditto.
+	(OPTION_MASK_ISA_SAHF_SET): Ditto.
+	(OPTION_MASK_ISA_AES_UNSET): Ditto.
+	(OPTION_MASK_ISA_PCLMUL_UNSET): Ditto.
+	(OPTION_MASK_ISA_ABM_UNSET): Ditto.
+	(OPTION_MASK_ISA_POPCNT_UNSET): Ditto.
+	(OPTION_MASK_ISA_CX16_UNSET): Ditto.
+	(OPTION_MASK_ISA_SAHF_UNSET): Ditto.
+	(struct ptt): Move to static file scope from override_options.
+	(processor_target_table): Ditto.
+	(cpu_names): Ditto.
+	(ix86_handle_option): Add support for options that are now isa
+	options.
+	(override_options): Add support for declaring functions that
+	support different target options than were specified on the
+	command line.  Move struct ptt, processor_target_table, cpu_names,
+	ix86_tune_defaulted, ix86_arch_specified to static file scope.
+	Add bool argument.  Fix up error messages so the appropriate error
+	is given for either command line or attribute.
+	(ix86_previous_fndecl): New static to remember previous function
+	declaration to see if we need to change target options.
+	(ix86_builtins_isa): New array to record the ISA of each builtin
+	function.
+	(def_builtin): Always create the builtin function, even if the
+	current ISA doesn't support it.
+	(ix86_init_mmx_sse_builtins): Remove TARGET_AES and TARGET_PCLMUL
+	tests for those builtins.
+	(ix86_init_builtins): Remove TARGET_MMX test for calling
+	ix86_init_mmx_sse_builtins.
+	(ix86_expand_builtin): If the current ISA doesn't support a given
+	builtin, signal an error.
+	(TARGET_VALID_OPTION_ATTRIBUTE_P): Set target hook.
+	(TARGET_SET_CURRENT_FUNCTION): Ditto.
+	(TARGET_OPTION_SAVE): Ditto.
+	(TARGET_OPTION_RESTORE): Ditto.
+	(TARGET_OPTION_PRINT): Ditto.
+	(TARGET_CAN_INLINE_P): Ditto.
+
 2008-07-22  Rafael Avila de Espindola  <espindola@google.com>
 
        * c-typeck.c (build_external_ref): Don't call assemble_external.
