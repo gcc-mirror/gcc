@@ -934,6 +934,7 @@ decode_options (unsigned int argc, const char **argv)
   /* -O2 optimizations.  */
   opt2 = (optimize >= 2);
   flag_inline_small_functions = opt2;
+  flag_indirect_inlining = opt2;
   flag_thread_jumps = opt2;
   flag_crossjumping = opt2;
   flag_optimize_sibling_calls = opt2;

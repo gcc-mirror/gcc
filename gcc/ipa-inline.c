@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tree-flow.h"
 #include "rtl.h"
+#include "ipa-prop.h"
 
 /* Mode incremental inliner operate on:
 
@@ -660,10 +661,12 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
 }
 
 /* Decide on recursive inlining: in the case function has recursive calls,
-   inline until body size reaches given argument.  */
+   inline until body size reaches given argument.  If any new indirect edges
+   are discovered in the process, add them to NEW_EDGES, unless it is NULL.  */
 
 static bool
-cgraph_decide_recursive_inlining (struct cgraph_node *node)
+cgraph_decide_recursive_inlining (struct cgraph_node *node,
+				  VEC (cgraph_edge_p, heap) *new_edges)
 {
   int limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE_AUTO);
   int max_depth = PARAM_VALUE (PARAM_MAX_INLINE_RECURSIVE_DEPTH_AUTO);
@@ -760,6 +763,8 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 	}
       cgraph_redirect_edge_callee (curr, master_clone);
       cgraph_mark_inline_edge (curr, false);
+      if (flag_indirect_inlining)
+	ipa_propagate_indirect_call_infos (curr, new_edges);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
     }
@@ -817,6 +822,20 @@ compute_max_insns (int insns)
 	  * (100 + PARAM_VALUE (PARAM_INLINE_UNIT_GROWTH)) / 100);
 }
 
+/* Compute badness of all edges in NEW_EDGES and add them to the HEAP.  */
+static void
+add_new_edges_to_heap (fibheap_t heap, VEC (cgraph_edge_p, heap) *new_edges)
+{
+  while (VEC_length (cgraph_edge_p, new_edges) > 0)
+    {
+      struct cgraph_edge *edge = VEC_pop (cgraph_edge_p, new_edges);
+
+      gcc_assert (!edge->aux);
+      edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge), edge);
+    }
+}
+
+
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap based on estimated
    growth of the overall number of instructions and then update the estimates.
@@ -833,6 +852,10 @@ cgraph_decide_inlining_of_small_functions (void)
   fibheap_t heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_insns, max_insns;
+  VEC (cgraph_edge_p, heap) *new_indirect_edges = NULL;
+
+  if (flag_indirect_inlining)
+    new_indirect_edges = VEC_alloc (cgraph_edge_p, heap, 8);
 
   if (dump_file)
     fprintf (dump_file, "\nDeciding on smaller functions:\n");
@@ -968,8 +991,10 @@ cgraph_decide_inlining_of_small_functions (void)
 	  where = edge->caller;
 	  if (where->global.inlined_to)
 	    where = where->global.inlined_to;
-	  if (!cgraph_decide_recursive_inlining (where))
+	  if (!cgraph_decide_recursive_inlining (where, new_indirect_edges))
 	    continue;
+	  if (flag_indirect_inlining)
+	    add_new_edges_to_heap (heap, new_indirect_edges);
           update_callee_keys (heap, where, updated_nodes);
 	}
       else
@@ -986,6 +1011,11 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	  callee = edge->callee;
 	  cgraph_mark_inline_edge (edge, true);
+	  if (flag_indirect_inlining)
+	    {
+	      ipa_propagate_indirect_call_infos (edge, new_indirect_edges);
+	      add_new_edges_to_heap (heap, new_indirect_edges);
+	    }
 	  update_callee_keys (heap, callee, updated_nodes);
 	}
       where = edge->caller;
@@ -1028,6 +1058,9 @@ cgraph_decide_inlining_of_small_functions (void)
 				           &edge->inline_failed))
 	edge->inline_failed = N_("--param inline-unit-growth limit reached");
     }
+
+  if (new_indirect_edges)
+    VEC_free (cgraph_edge_p, heap, new_indirect_edges);
   fibheap_delete (heap);
   BITMAP_FREE (updated_nodes);
 }
@@ -1112,6 +1145,8 @@ cgraph_decide_inlining (void)
 	      continue;
 	    }
 	  cgraph_mark_inline_edge (e, true);
+	  if (flag_indirect_inlining)
+	    ipa_propagate_indirect_call_infos (e, NULL);
 	  if (dump_file)
 	    fprintf (dump_file, 
 		     " Inlined into %s which now has %i insns.\n",
@@ -1132,6 +1167,11 @@ cgraph_decide_inlining (void)
 
   if (!flag_really_no_inline)
     cgraph_decide_inlining_of_small_functions ();
+
+  /* After this point, any edge discovery performed by indirect inlining is no
+     good so let's give up. */
+  if (flag_indirect_inlining)
+    free_all_ipa_structures_after_iinln ();
 
   if (!flag_really_no_inline
       && flag_inline_functions_called_once)
@@ -1612,6 +1652,31 @@ struct gimple_opt_pass pass_inline_parameters =
  }
 };
 
+/* This function performs intraprocedural analyzis in NODE that is required to
+   inline indirect calls.  */
+static void
+inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
+{
+  struct cgraph_edge *cs;
+
+  ipa_count_formal_params (node);
+  ipa_create_param_decls_array (node);
+  ipa_detect_param_modifications (node);
+  ipa_analyze_params_uses (node);
+
+  if (dump_file)
+    ipa_print_node_param_flags (dump_file, node);
+
+  for (cs = node->callees; cs; cs = cs->next_callee)
+    {
+      ipa_count_arguments (cs);
+      ipa_compute_jump_functions (cs);
+    }
+
+  if (dump_file)
+    ipa_print_node_jump_functions (dump_file, node);
+}
+
 /* Note function body size.  */
 static void
 inline_generate_summary (void)
@@ -1620,6 +1685,13 @@ inline_generate_summary (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int nnodes = cgraph_postorder (order);
   int i;
+
+  if (flag_indirect_inlining)
+    {
+      ipa_register_cgraph_hooks ();
+      ipa_check_create_node_params ();
+      ipa_check_create_edge_args ();
+    }
 
   for (i = nnodes - 1; i >= 0; i--)
     {
@@ -1632,6 +1704,10 @@ inline_generate_summary (void)
 	  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	  current_function_decl = node->decl;
 	  compute_inline_parameters (node);
+
+	  if (flag_indirect_inlining)
+	    inline_indirect_intraprocedural_analysis (node);
+
 	  pop_cfun ();
 	}
     }

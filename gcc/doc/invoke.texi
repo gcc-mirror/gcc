@@ -328,8 +328,8 @@ Objective-C and Objective-C++ Dialects}.
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
 -ffinite-math-only -ffloat-store -fforward-propagate @gol
 -ffunction-sections -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
--fgcse-sm -fif-conversion -fif-conversion2 -finline-functions @gol
--finline-functions-called-once -finline-limit=@var{n} @gol
+-fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
+-finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-marix-reorg -fipa-pta @gol 
 -fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
 -fipa-type-escape -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
@@ -5199,6 +5199,7 @@ also turns on the following optimization flags:
 -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations @gol
 -fgcse  -fgcse-lm  @gol
+-findirect-inlining @gol
 -foptimize-sibling-calls @gol
 -fpeephole2 @gol
 -fregmove @gol
@@ -5216,8 +5217,8 @@ invoking @option{-O2} on programs that use computed gotos.
 
 @item -O3
 @opindex O3
-Optimize yet more.  @option{-O3} turns on all optimizations specified by
-@option{-O2} and also turns on the @option{-finline-functions},
+Optimize yet more.  @option{-O3} turns on all optimizations specified
+by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
 @option{-fgcse-after-reload} and @option{-ftree-vectorize} options.
 
@@ -5316,6 +5317,15 @@ Integrate functions into their callers when their body is smaller than expected
 function call code (so overall size of program gets smaller).  The compiler
 heuristically decides which functions are simple enough to be worth integrating
 in this way.
+
+Enabled at level @option{-O2}.
+
+@item -findirect-inlining
+@opindex findirect-inlining
+Inline also indirect calls that are discovered to be known at compile
+time thanks to previous inlining.  This option has any effect only
+when inlining itself is turned on by the @option{-finline-functions}
+or @option{-finline-small-functions} options.
 
 Enabled at level @option{-O2}.
 

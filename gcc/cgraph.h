@@ -208,7 +208,9 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
      per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
   int frequency;
   /* Depth of loop nest, 1 means no loop nest.  */
-  int loop_nest;
+  unsigned int loop_nest : 31;
+  /* Whether this edge describes a call that was originally indirect.  */
+  unsigned int indirect_call : 1;
   /* Unique id of the edge.  */
   int uid;
 };
@@ -376,6 +378,7 @@ void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
+int compute_call_stmt_bb_frequency (basic_block bb);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);

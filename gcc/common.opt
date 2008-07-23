@@ -571,6 +571,10 @@ finhibit-size-directive
 Common Report Var(flag_inhibit_size_directive)
 Do not generate .size directives
 
+findirect-inlining
+Common Report Var(flag_indirect_inlining)
+Perform indirect inlining
+
 ; Nonzero means that functions declared `inline' will be treated
 ; as `static'.  Prevents generation of zillions of copies of unused
 ; static inline functions; instead, `inlines' are written out

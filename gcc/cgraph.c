@@ -625,6 +625,7 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   gcc_assert (freq >= 0);
   gcc_assert (freq <= CGRAPH_FREQ_MAX);
   edge->loop_nest = nest;
+  edge->indirect_call = 0;
   edge->uid = cgraph_edge_max_uid++;
   if (caller->call_site_hash)
     {
@@ -1048,6 +1049,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (!edge->inline_failed)
 	fprintf(f, "(inlined) ");
+      if (edge->indirect_call)
+	fprintf(f, "(indirect) ");
     }
 
   fprintf (f, "\n  calls: ");
@@ -1057,6 +1060,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	       edge->callee->uid);
       if (!edge->inline_failed)
 	fprintf(f, "(inlined) ");
+      if (edge->indirect_call)
+	fprintf(f, "(indirect) ");
       if (edge->count)
 	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
 		 (HOST_WIDEST_INT)edge->count);
@@ -1166,6 +1171,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 			    e->loop_nest + loop_nest);
 
   new->inline_failed = e->inline_failed;
+  new->indirect_call = e->indirect_call;
   if (update_original)
     {
       e->count -= new->count;
