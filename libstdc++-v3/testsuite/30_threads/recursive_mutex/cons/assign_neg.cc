@@ -39,4 +39,4 @@ void test01()
   m1 = m2;
 }
 // { dg-error "within this context" "" { target *-*-* } 39 } 
-// { dg-error "is private" "" { target *-*-* } 154 } 
+// { dg-error "is private" "" { target *-*-* } 160 } 

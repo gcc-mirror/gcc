@@ -48,8 +48,14 @@
 
 namespace std
 {
-  // XXX
-  class system_time;
+  namespace chrono
+  {
+    template<typename _Rep, typename _Period>
+      struct duration;
+
+    template<typename _Clock, typename _Duration>
+      struct time_point;
+  }
 
   /// mutex
   class mutex
@@ -74,22 +80,22 @@ namespace std
       int __e = __gthread_mutex_lock(&_M_mutex);
 
       // EINVAL, EAGAIN, EBUSY, EINVAL, EDEADLK(may)
-     if (__e)
-       __throw_system_error(__e);
+      if (__e)
+	__throw_system_error(__e);
     }
 
     bool
     try_lock()
     {
-     // XXX EINVAL, EAGAIN, EBUSY
-     return !__gthread_mutex_trylock(&_M_mutex);
+      // XXX EINVAL, EAGAIN, EBUSY
+      return !__gthread_mutex_trylock(&_M_mutex);
     }
 
     void
     unlock()
     {
       // XXX EINVAL, EAGAIN, EPERM
-     __gthread_mutex_unlock(&_M_mutex);
+      __gthread_mutex_unlock(&_M_mutex);
     }
 
     native_handle_type
@@ -101,7 +107,6 @@ namespace std
     mutex(const mutex&);
     mutex& operator=(const mutex&);
   };
-
 
   /// recursive_mutex
   class recursive_mutex
@@ -126,8 +131,8 @@ namespace std
       int __e = __gthread_recursive_mutex_lock(&_M_mutex);
 
       // EINVAL, EAGAIN, EBUSY, EINVAL, EDEADLK(may)
-     if (__e)
-       __throw_system_error(__e);
+      if (__e)
+	__throw_system_error(__e);
     }
 
     bool
@@ -145,7 +150,8 @@ namespace std
     }
 
     native_handle_type
-    native_handle() { return _M_mutex; }
+    native_handle()
+    { return _M_mutex; }
 
   private:
     native_handle_type _M_mutex;
@@ -154,9 +160,65 @@ namespace std
     recursive_mutex& operator=(const recursive_mutex&);
   };
 
+  /// timed_mutex
+  class timed_mutex
+  {
+  public:
+    typedef __gthread_mutex_t native_handle_type;
 
-  // class timed_mutex;
-  // class recursive_timed_mutex;
+    void lock();
+    bool try_lock();
+
+    template <class _Rep, class _Period>
+      bool
+      try_lock_for(const chrono::duration<_Rep, _Period>& __rtime);
+
+    template <class _Clock, class _Duration>
+      bool
+      try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime);
+
+    void unlock();
+
+    native_handle_type
+    native_handle()
+    { return _M_mutex; }
+    
+  private:
+    native_handle_type _M_mutex;
+
+    timed_mutex(const timed_mutex&);
+    timed_mutex& operator=(const timed_mutex&);
+  };
+
+  /// recursive_timed_mutex
+  class recursive_timed_mutex
+  {
+  public:
+    typedef __gthread_mutex_t native_handle_type;
+
+    void lock();
+    bool try_lock();
+
+    template <class _Rep, class _Period>
+      bool
+      try_lock_for(const chrono::duration<_Rep, _Period>& __rtime);
+
+    template <class _Clock, class _Duration>
+      bool
+      try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime);
+
+    void unlock();
+
+    native_handle_type
+    native_handle()
+    { return _M_mutex; }
+    
+  private:
+    native_handle_type _M_mutex;
+
+    recursive_timed_mutex(const recursive_timed_mutex&);
+    recursive_timed_mutex& operator=(const recursive_timed_mutex&);
+  };
 
   /// Do not acquire ownership of the mutex.
   struct defer_lock_t { };
@@ -211,19 +273,24 @@ namespace std
     public:
       typedef _Mutex mutex_type;
 
-      unique_lock() : _M_device(NULL), _M_owns(false) { }
+      unique_lock()
+      : _M_device(NULL), _M_owns(false)
+      { }
 
-      explicit unique_lock(mutex_type& __m) : _M_device(&__m)
+      explicit unique_lock(mutex_type& __m)
+      : _M_device(&__m)
       {
 	lock();
 	_M_owns = true;
       }
 
       unique_lock(mutex_type& __m, defer_lock_t)
-      : _M_device(&__m), _M_owns(false) { }
+      : _M_device(&__m), _M_owns(false)
+      { }
 
       unique_lock(mutex_type& __m, try_to_lock_t)
-      : _M_device(&__m), _M_owns(_M_device->try_lock()) { }
+      : _M_device(&__m), _M_owns(_M_device->try_lock())
+      { }
 
       unique_lock(mutex_type& __m, adopt_lock_t)
       : _M_device(&__m), _M_owns(true)
@@ -231,10 +298,13 @@ namespace std
 	// XXX calling thread owns mutex
       }
 
-      unique_lock(mutex_type& __m, const system_time& abs_time);
+      template<typename _Clock, typename _Duration>
+	unique_lock(mutex_type& __m, 
+		    const chrono::time_point<_Clock, _Duration>& __atime);
 
-      template<typename _Duration>
-	unique_lock(mutex_type& __m, const _Duration& rel_time);
+      template<typename _Rep, typename _Period>
+	unique_lock(mutex_type& __m, 
+		    const chrono::duration<_Rep, _Period>& __rtime);
 
       ~unique_lock()
       {
@@ -245,7 +315,6 @@ namespace std
       unique_lock(unique_lock&&);
 
       unique_lock& operator=(unique_lock&&);
-
 
       void
       lock()
@@ -276,12 +345,13 @@ namespace std
 	  throw lock_error();
       }
 
+      template<typename _Rep, typename _Period>
+	bool
+	try_lock_for(const chrono::duration<_Rep, _Period>& __rtime);
 
-      template<typename _Duration>
-	bool timed_lock(const _Duration& rel_time);
-
-      bool
-      timed_lock(const system_time& abs_time);
+      template<typename _Clock, typename _Duration>
+	bool
+	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime);
 
       void
       swap(unique_lock&& __u);
@@ -296,9 +366,11 @@ namespace std
       }
 
       bool
-      owns_lock() const { return _M_owns; }
+      owns_lock() const
+      { return _M_owns; }
 
-      operator bool () const { return owns_lock(); }
+      operator bool () const
+      { return owns_lock(); }
 
       mutex_type*
       mutex() const
