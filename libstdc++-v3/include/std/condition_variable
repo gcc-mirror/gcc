@@ -44,8 +44,14 @@
 
 namespace std 
 {
-  // XXX
-  class system_time;
+  namespace chrono
+  {
+    template<typename _Rep, typename _Period>
+      struct duration;
+
+    template<typename _Clock, typename _Duration>
+      struct time_point;
+  }
 
   /// condition_variable
   class condition_variable
@@ -78,22 +84,27 @@ namespace std
 	  wait(__lock);
       }
   
-    template<typename _Duration>
+    template<typename _Clock, typename _Duration>
       bool 
-      timed_wait(unique_lock<mutex>& __lock, const _Duration& __rtime);
+      wait_until(unique_lock<mutex>& __lock, 
+		 const chrono::time_point<_Clock, _Duration>& __atime);
 
-    bool 
-    timed_wait(unique_lock<mutex>& __lock, const system_time& __atime);
+    template<typename _Clock, typename _Duration, typename _Predicate>
+      bool
+      wait_until(unique_lock<mutex>& __lock,
+		 const chrono::time_point<_Clock, _Duration>& __atime,
+		 _Predicate __p);
 
-    template<typename _Predicate>
-      bool 
-      timed_wait(unique_lock<mutex>& __lock, const system_time& __atime,
-		 _Predicate pred);
+    template<typename _Rep, typename _Period>
+      bool
+      wait_for(unique_lock<mutex>& __lock,
+	       const chrono::duration<_Rep, _Period>& __rtime);
 
-    template<typename _Duration, typename _Predicate>
-      bool 
-      timed_wait(unique_lock<mutex>& __lock, const _Duration& __rtime, 
-		 _Predicate pred);
+    template<typename _Rep, typename _Period, typename _Predicate>
+      bool
+      wait_for(unique_lock<mutex>& __lock,
+	       const chrono::duration<_Rep, _Period>& __rtime,
+	       _Predicate __p);
 
     native_handle_type 
     native_handle() { return _M_cond; }
@@ -132,21 +143,27 @@ namespace std
       void 
       wait(_Lock& __lock, _Predicate __p);
 
-    template<typename _Lock>
+    template<typename _Lock, typename _Clock, typename _Duration>
       bool 
-      timed_wait(_Lock& __lock, const system_time& __atime);
+      wait_until(_Lock& __lock,
+		 const chrono::time_point<_Clock, _Duration>& __atime);
 
-    template<typename _Lock, typename _Duration>
+    template<typename _Lock, typename _Clock, 
+	     typename _Duration, typename _Predicate>
       bool 
-      timed_wait(_Lock& __lock, const _Duration& __rtime);
+      wait_until(_Lock& __lock,
+		 const chrono::time_point<_Clock, _Duration>& __atime,
+		 _Predicate __p);
+    
+    template<typename _Lock, typename _Rep, typename _Period>
+      bool
+      wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime);
 
-    template<typename _Lock, typename _Predicate>
-      bool 
-      timed_wait(_Lock& __lock, const system_time& __atime, _Predicate __p);
-
-    template<typename _Lock, typename _Duration, typename _Predicate>
-      bool 
-      timed_wait(_Lock& __lock, const _Duration& __rtime, _Predicate __p);
+    template<typename _Lock, typename _Rep,
+	     typename _Period, typename _Predicate>
+      bool
+      wait_for(_Lock& __lock, 
+	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p);
 
     native_handle_type 
     native_handle() { return _M_cond; }

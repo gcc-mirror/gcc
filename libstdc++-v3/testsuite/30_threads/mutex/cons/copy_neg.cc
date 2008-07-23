@@ -38,4 +38,4 @@ void test01()
   mutex_type m2(m1);
 }
 // { dg-error "within this context" "" { target *-*-* } 38 } 
-// { dg-error "is private" "" { target *-*-* } 101 } 
+// { dg-error "is private" "" { target *-*-* } 107 } 
