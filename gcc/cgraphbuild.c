@@ -122,6 +122,25 @@ initialize_inline_failed (struct cgraph_node *node)
     }
 }
 
+/* Computes the frequency of the call statement so that it can be stored in
+   cgraph_edge.  BB is the basic block of the call statement.  */
+int
+compute_call_stmt_bb_frequency (basic_block bb)
+{
+  int entry_freq = ENTRY_BLOCK_PTR->frequency;
+  int freq;
+
+  if (!entry_freq)
+    entry_freq = 1;
+
+  freq = (!bb->frequency && !entry_freq ? CGRAPH_FREQ_BASE
+	      : bb->frequency * CGRAPH_FREQ_BASE / entry_freq);
+  if (freq > CGRAPH_FREQ_MAX)
+    freq = CGRAPH_FREQ_MAX;
+
+  return freq;
+}
+
 /* Create cgraph edges for function calls.
    Also look for functions and variables having addresses taken.  */
 
@@ -133,10 +152,6 @@ build_cgraph_edges (void)
   struct pointer_set_t *visited_nodes = pointer_set_create ();
   block_stmt_iterator bsi;
   tree step;
-  int entry_freq = ENTRY_BLOCK_PTR->frequency;
-
-  if (!entry_freq)
-    entry_freq = 1;
 
   /* Create the callgraph edges and record the nodes referenced by the function.
      body.  */
@@ -151,12 +166,8 @@ build_cgraph_edges (void)
 	  {
 	    int i;
 	    int n = call_expr_nargs (call);
-	    int freq = (!bb->frequency && !entry_freq ? CGRAPH_FREQ_BASE
-			: bb->frequency * CGRAPH_FREQ_BASE / entry_freq);
-	    if (freq > CGRAPH_FREQ_MAX)
-	      freq = CGRAPH_FREQ_MAX;
 	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count, freq,
+				bb->count, compute_call_stmt_bb_frequency (bb),
 				bb->loop_depth);
 	    for (i = 0; i < n; i++)
 	      walk_tree (&CALL_EXPR_ARG (call, i),
@@ -227,10 +238,6 @@ rebuild_cgraph_edges (void)
   basic_block bb;
   struct cgraph_node *node = cgraph_node (current_function_decl);
   block_stmt_iterator bsi;
-  int entry_freq = ENTRY_BLOCK_PTR->frequency;
-
-  if (!entry_freq)
-    entry_freq = 1;
 
   cgraph_node_remove_callees (node);
 
@@ -244,14 +251,9 @@ rebuild_cgraph_edges (void)
 	tree decl;
 
 	if (call && (decl = get_callee_fndecl (call)))
-	  {
-	    int freq = (!bb->frequency && !entry_freq ? CGRAPH_FREQ_BASE
-			: bb->frequency * CGRAPH_FREQ_BASE / entry_freq);
-	    if (freq > CGRAPH_FREQ_MAX)
-	      freq = CGRAPH_FREQ_MAX;
-	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count, freq, bb->loop_depth);
-	   }
+	  cgraph_create_edge (node, cgraph_node (decl), stmt,
+			      bb->count, compute_call_stmt_bb_frequency (bb),
+			      bb->loop_depth);
       }
   initialize_inline_failed (node);
   gcc_assert (!node->global.inlined_to);

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree.h"
 #include "vec.h"
+#include "cgraph.h"
 
 /* The following definitions and interfaces are used by
    interprocedural analyses.  */
@@ -32,21 +33,23 @@ along with GCC; see the file COPYING3.  If not see
    Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
    Integer and real constants are represented as IPA_CONST and Fortran
-   constants are represented as IPA_CONST_REF.  */
+   constants are represented as IPA_CONST_REF.  Finally, IPA_CONST_MEMBER_PTR
+   stands for C++ member pointers constants.  */
 enum jump_func_type
 {
-  IPA_UNKNOWN,
+  IPA_UNKNOWN = 0,     /* newly allocated and zeroed jump functions default */
   IPA_CONST,
   IPA_CONST_REF,
+  IPA_CONST_MEMBER_PTR,
   IPA_PASS_THROUGH
 };
 
 /* All formal parameters in the program have a lattice associated with it
    computed by the interprocedural stage of IPCP.
    There are three main values of the lattice:
-   TOP - unknown.
-   BOTTOM - non constant.
-   CONSTANT_TYPE - constant value.
+   IPA_TOP - unknown,
+   IPA_BOTTOM - non constant,
+   IPA_CONST_VALUE - simple scalar constant,
    Cval of formal f will have a constant value if all callsites to this
    function have the same constant value passed to f.
    Integer and real constants are represented as IPA_CONST and Fortran
@@ -59,14 +62,24 @@ enum ipa_lattice_type
   IPA_TOP
 };
 
-/* Represents a value of a jump function.
-   value represents a constant.
-   formal_id is used only in jump function context and represents 
-   pass-through parameter (the formal of caller is passed as argument).  */
+/* Structure holding a C++ member pointer constant.  Holds a pointer to the
+   method and delta offset.  */
+struct ipa_member_ptr_cst
+{
+  tree pfn;
+  tree delta;
+};
+
+/* Represents a value of a jump function.  formal_id is used only in jump
+   function context and represents pass-through parameter (the formal parameter
+   of the caller is passed as argument).  constant represents the actual
+   constant in constant jump functions and member_cst holds constant c++ member
+   functions.  */
 union jump_func_value
 {
   unsigned int formal_id;
   tree constant;
+  struct ipa_member_ptr_cst member_cst;
 };
 
 /* A jump function for a callsite represents the values passed as actual 
@@ -101,10 +114,43 @@ struct ipa_replace_map
   bool ref_p;
 };
 
+/* ipa_param_flags contains various flags that describe how the associated
+   parameter is treated within a function. */
+struct ipa_param_flags
+{
+  /* Whether the value parameter has been modified within the function.  */
+  unsigned modified : 1;
+  /* Whether the parameter has been used as a call destination. */
+  unsigned called : 1;
+};
+
+/* Each instance of the following  structure describes a statement that calls a
+   function parameter.  Those referring  to statements within the same function
+   are linked in a list.  */
+struct ipa_param_call_note
+{
+  /* Linked list's next */
+  struct ipa_param_call_note *next;
+  /* Statement that contains the call to the parameter above.  */
+  tree stmt;
+  /* Index of the parameter that is called.  */
+  unsigned int formal_id;
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
+  /* Expected frequency of executions within the function. see cgraph_edge in
+     cgraph.h for more on this. */
+  int frequency;
+  /* Depth of loop nest, 1 means no loop nest.  */
+  int loop_nest;
+  /* Set when we have already found the target to be a compile time constant
+     and turned this into an edge or when the note was found unusable for some
+     reason.  */
+  bool processed;
+};
+
 /* ipa_node_params stores information related to formal parameters of functions
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */
-
 struct ipa_node_params
 {
   /* Number of formal parameters of this function.  When set to 0,
@@ -115,8 +161,10 @@ struct ipa_node_params
   struct ipcp_lattice *ipcp_lattices;
   /* Mapping each parameter to its PARM_DECL tree.  */
   tree *param_decls;
-  /* Indicating which parameter is modified in its function.  */
-  bool *modified_flags;
+  /* Various flags describing individual parameters.  */
+  struct ipa_param_flags *param_flags;
+  /* List of structures enumerating calls to a formal parameter.  */
+  struct ipa_param_call_note *param_calls;
   /* Only for versioned nodes this field would not be NULL,
      it points to the node that IPA cp cloned from.  */
   struct cgraph_node *ipcp_orig_node;
@@ -130,6 +178,10 @@ struct ipa_node_params
   /* Whether this function is called with variable number of actual
      arguments.  */
   unsigned called_with_var_arguments : 1;
+  /* Whether the modification analysis has already been performed. */
+  unsigned modification_analysis_done : 1;
+  /* Whether the param uses analysis has already been performed.  */
+  unsigned uses_analysis_done : 1;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that
@@ -164,7 +216,16 @@ ipa_get_ith_param (struct ipa_node_params *info, int i)
 static inline bool
 ipa_is_ith_param_modified (struct ipa_node_params *info, int i)
 {
-  return info->modified_flags[i];
+  return info->param_flags[i].modified;
+}
+
+/* Returns the called flag corresponding o the ith paramterer.  Note there is
+   no setter method as the goal is to set all flags when building the array in
+   ipa_detect_called_params.  */
+static inline bool
+ipa_is_ith_param_called (struct ipa_node_params *info, int i)
+{
+  return info->param_flags[i].called;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
@@ -255,6 +316,7 @@ void ipa_free_node_params_substructures (struct ipa_node_params *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
 void free_all_ipa_structures_after_ipa_cp (void);
+void free_all_ipa_structures_after_iinln (void);
 void ipa_register_cgraph_hooks (void);
 
 /* This function ensures the array of node param infos is big enough to
@@ -318,9 +380,15 @@ void ipa_count_arguments (struct cgraph_edge *);
 void ipa_count_formal_params (struct cgraph_node *);
 void ipa_create_param_decls_array (struct cgraph_node *);
 void ipa_detect_param_modifications (struct cgraph_node *);
+void ipa_analyze_params_uses (struct cgraph_node *);
+void ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
+					VEC (cgraph_edge_p, heap) *new_edges);
 
 /* Debugging interface.  */
 void ipa_print_all_tree_maps (FILE *);
-void ipa_print_all_params_modified (FILE *);
+void ipa_print_node_param_flags (FILE * f, struct cgraph_node *node);
+void ipa_print_all_param_flags (FILE *);
+void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
+void ipa_print_all_jump_functions (FILE * f);
 
 #endif /* IPA_PROP_H */

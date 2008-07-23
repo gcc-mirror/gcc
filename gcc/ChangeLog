@@ -1,3 +1,130 @@
+2008-07-23  Martin Jambor  <mjambor@suse.cz>
+
+        * ipa-cp.c (ipcp_print_edge_profiles): Test for node->analyzed
+	rather than for DECL_SAVED_TREE.
+	* ipa-prop.c: Include diagnostic.h.
+        (ipa_check_stmt_modifications): Check LHS of GIMPLE_MODIFY_EXPRs
+	thoroughly.
+	(ipa_detect_param_modifications): Function rewritten from scratch.
+	(ipa_compute_jump_functions): Changed accesses to modification flags.
+	(ipa_free_node_params_substructures): Update flags destruction.
+	(ipa_node_duplication_hook): Update flags duplication.
+	(ipa_print_all_params_modified): Updated flag access.
+	* ipa-prop.h (struct ipa_param_flags): New structure.
+        (struct ipa_node_params): New field modification_analysis_done,
+        modified_flags changed into param_flags.
+        (ipa_is_ith_param_modified): Changed to use new flags.
+	* Makefile.in (ipa-prop.o): Add $(DIAGNOSTIC_H) to dependencies.
+
+	* ipa-prop.c (ipa_print_all_jump_functions): Moved here from
+	ipa-cp.c and split into two functions.
+	(ipa_print_node_jump_functions): New function.
+	(compute_scalar_jump_functions): New function.
+	(type_like_member_ptr_p): New function.
+	(compute_pass_through_member_ptrs): New function.
+	(fill_member_ptr_cst_jump_function): New function.
+	(determine_cst_member_ptr): New function.
+	(compute_cst_member_ptr_arguments): New function.
+	(ipa_compute_jump_functions): Complete rewrite.
+	* ipa-prop.h (enum jump_func_type): Make explicit that we depend
+	on IPA_UNKNOWN being zero. Added value IPA_CONST_MEMBER_PTR.
+	(struct ipa_member_ptr_cst): New structure.
+	(union jump_func_value): New field member_cst.
+	* ipa-cp.c (ipcp_lat_is_insertable): New function.
+	(ipcp_lattice_from_jfunc): Produces bottom lattices for unhandled
+	jump function types.
+	(ipcp_print_all_lattices): Slight fprintf rearrangement.
+	(ipcp_print_all_structures): Call ipa_print_all_jump_functions
+	instead of ipcp_print_all_jump_functions.
+	(ipcp_insert_stage): Use ipcp_lat_is_insertable, create replace maps
+	only for replacable scalars.
+
+	* doc/invoke.texi (Optimize options): Add description of
+	-findirect-inlining.
+	* common.opt (flag_indirect_inlining): New flag.
+	* opts.c (decode_options): Set flag_indirect_inlining when 
+	optimize >= 3.
+
+	* ipa-inline.c: Include ipa-prop.h.
+	(inline_indirect_intraprocedural_analysis): New function.
+	(inline_generate_summary): Allocate parameter and argument info
+	structures, call inline_indirect_intraprocedural_analysis on each
+	node when doing indirect inlining and deallocate indirect inlining 
+	data structures in the end.
+	* ipa-prop.c (ipa_create_param_decls_array): Return if already done.
+	(free_all_ipa_structures_after_iinln): New function.
+	(free_all_ipa_structures_after_ipa_cp): Checks whether iinln will be 
+	done.
+	* Makefile.in (ipa-inline.o): Added $(IPA_PROP_H) to dependencies.
+
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): New function.
+	(build_cgraph_edges): Call compute_call_stmt_bb_frequency instead
+	of computing the frequency separately.
+	(rebuild_cgraph_edges): Call compute_call_stmt_bb_frequency instead
+	of computing the frequency separately.
+	* ipa-cp.c (ipcp_print_all_structures): Replace a call to 
+	ipa_print_all_param_modified with a call to ipa_print_all_param_flags.
+	* ipa-prop.c (ipa_get_member_ptr_load_param): New function.
+	(ipa_get_stmt_member_ptr_load_param): New function.
+	(ipa_is_ssa_with_stmt_def): New function.
+	(ipa_note_param_call): New function.
+	(ipa_analyze_call_uses): New function.
+	(ipa_analyze_stmt_uses): New function.
+	(ipa_analyze_params_uses): New function.
+	(ipa_free_node_params_substructures): Also free the param_calls linked
+	list.
+	(ipa_node_duplication_hook): Also duplicate the param_calls linked list.
+	(ipa_print_node_param_flags): New function.
+	(ipa_print_all_params_modified): Renamed to ipa_print_all_param_flags.
+	(ipa_print_all_param_flags): Calls ipa_print_node_param_flags.
+	* ipa-prop.h (struct ipa_param_flags): New field called.
+	(struct ipa_param_call_note): New structure.
+	(struct ipa_node_params): New fields param_calls and
+	uses_analysis_done.
+	(ipa_is_ith_param_called): New function.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Call
+	ipa_analyze_params_uses and dump parameter flags.
+
+	* ipa-inline.c (cgraph_decide_recursive_inlining): Call
+	ipa_propagate_indirect_call_infos if performing indirect inlining,
+	pass a new parameter new_edges to it.
+	(add_new_edges_to_heap): New fucntion.
+	(cgraph_decide_inlining_of_small_functions): New vector
+	new_indirect_edges for newly found indirect edges , call
+	ipa_propagate_indirect_call_infos after inlining.
+	(cgraph_decide_inlining): Call ipa_propagate_indirect_call_infos after
+	inlining if performing indirect inlining.  Call
+	free_all_ipa_structures_after_iinln when doing so too.
+	(inline_generate_summary): Do not call
+	free_all_ipa_structures_after_iinln here.
+	* ipa-prop.c (update_jump_functions_after_inlining): New function.
+	(print_edge_addition_message): New function.
+	(update_call_notes_after_inlining): New function.
+	(propagate_info_to_inlined_callees): New function.
+	(ipa_propagate_indirect_call_infos): New function.
+	* ipa-prop.h: Include cgraph.h
+	(struct ipa_param_call_note): Fields reordered, new field processed.
+	* cgraph.h (cgraph_edge): Shrink loop_nest field to 31 bits, add a new
+	flag indirect_call.
+	* cgraphunit.c (verify_cgraph_node): Allow indirect edges not to have
+	rediscovered call statements.
+	* cgraph.c (cgraph_create_edge): Initialize indirect_call to zero.
+	(dump_cgraph_node): Dump also the indirect_call flag.
+	(cgraph_clone_edge): Copy also the indirect_call flag.
+	* tree-inline.c (copy_bb): Do not check for fndecls from call
+	expressions, check for edge availability when moving clones.
+	(get_indirect_callee_fndecl): New function.
+	(expand_call_inline): If callee declaration is not apprent from
+	the statement, try calling get_indirect_callee_fndecl.  Do not
+	issue warnings or call sorry when not inlinings an indirect edge.
+	* Makefile.in (IPA_PROP_H): Added $(CGRAPH_H) to dependencies.
+
+	* ipa-prop.c (ipa_print_node_param_flags): Make the dump format a
+	bit more frandly to matching.
+	* testsuite/g++.dg/ipa/iinline-1.C: New testcase.
+	* testsuite/gcc.dg/ipa/iinline-1.c: New testcase.
+	* testsuite/gcc.dg/ipa/modif-1.c: New testcase.
+	
 2008-07-23  Michael Meissner  <gnu@the-meissners.org>
 
 	PR 36907
