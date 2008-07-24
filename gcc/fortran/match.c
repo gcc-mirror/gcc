@@ -1187,6 +1187,11 @@ loop:
 	}
 
     default:
+
+      /* gfc_next_ascii_char converts characters to lower-case, so we shouldn't
+	 expect an upper case character here!  */
+      gcc_assert (TOLOWER (c) == c);
+
       if (c == gfc_next_ascii_char ())
 	goto loop;
       break;

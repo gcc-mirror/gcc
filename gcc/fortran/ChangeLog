@@ -1,3 +1,8 @@
+2008-07-24  Daniel Kraft  <d@domob.eu>
+
+	* match.c (gfc_match):  Add assertion to catch wrong calls trying to
+	match upper-case characters.
+
 2008-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/29952
