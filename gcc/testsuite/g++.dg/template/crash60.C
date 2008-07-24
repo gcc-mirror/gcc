@@ -5,5 +5,5 @@ struct A
     template<int> void foo(X);  // { dg-error "declared" }
 };
 
-template<int> void f()(0);      // { dg-error "initialized" }
+template<int> void f()(0);      // { dg-error "initialize" }
  

@@ -35,4 +35,4 @@ struct C
   typename N::A f7;   // { dg-error "15: error: invalid use of template-name 'N::A' without an argument list" }
 };
 
-// { dg-bogus "bogus excess errors in declaration" "bogus excess errors in declaration" { xfail *-*-* } 17 }
+// { dg-bogus "bogus excess errors in declaration" "bogus excess errors in declaration" { target *-*-* } 17 }

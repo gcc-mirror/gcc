@@ -6,8 +6,10 @@
 // nested type.
 
 template <typename> struct A
-{					// { dg-error "candidates" }
+{					// { not-dg-error "candidates" }
     template <typename> A(typename A::X) {} // { dg-error "no type" }
 };
 
-A<void> a;	// { dg-error "instantiated|no match" }
+A<void> a;	// { not-dg-error "instantiated|no match" }
+// We currently don't give the "no match" error because we don't add the
+// invalid constructor template to TYPE_METHODS.

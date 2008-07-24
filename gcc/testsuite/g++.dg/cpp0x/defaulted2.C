@@ -1,0 +1,66 @@
+// Negative test for defaulted/deleted fns.
+// { dg-options "-std=c++0x" }
+
+void f();			// { dg-error "previous" }
+void f() = delete;		// { dg-error "deleted" }
+
+struct A
+{
+  A() { }			// { dg-error "previous" }
+  void f() = default;		// { dg-error "default" }
+};
+
+A::A() = default;		// { dg-error "redefinition" }
+
+void g() {}			// { dg-error "previous" }
+void g() = delete;		// { dg-error "redefinition" }
+
+struct B
+{
+  B() = default;
+};
+
+const B b;			// { dg-error "uninitialized const" }
+
+struct C
+{
+  virtual void f() = delete;	// { dg-error "overriding deleted" }
+};
+
+struct D: public C
+{
+  virtual void f();		// { dg-error "non-deleted function" }
+};
+
+struct E
+{
+  const B b;
+  E() { }			// { dg-error "uninitialized" }
+};
+
+struct F
+{
+  F() = default;
+  F(const F&) = delete;		// { dg-error "deleted" }
+};
+
+struct G
+{
+  G();
+};
+
+// ctor defaulted after class defn is not trivial
+G::G() = default;
+
+union U
+{
+  G g;				// { dg-error "constructor" }
+};
+
+int main()
+{
+  F f;
+  F f2(f);			// { dg-error "used" }
+  B* b = new const B;		// { dg-error "uninitialized const" }
+}
+
