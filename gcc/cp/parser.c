@@ -12378,7 +12378,7 @@ cp_parser_init_declarator (cp_parser* parser,
   tree initializer;
   tree decl = NULL_TREE;
   tree scope;
-  bool is_initialized;
+  int is_initialized;
   /* Only valid if IS_INITIALIZED is true.  In that case, CPP_EQ if
      initialized with "= ..", CPP_OPEN_PAREN if initialized with
      "(...)".  */
@@ -12514,8 +12514,18 @@ cp_parser_init_declarator (cp_parser* parser,
       || token->type == CPP_OPEN_PAREN
       || token->type == CPP_OPEN_BRACE)
     {
-      is_initialized = true;
+      is_initialized = 1;
       initialization_kind = token->type;
+
+      if (token->type == CPP_EQ
+	  && function_declarator_p (declarator))
+	{
+	  cp_token *t2 = cp_lexer_peek_nth_token (parser->lexer, 2);
+	  if (t2->keyword == RID_DEFAULT)
+	    is_initialized = 2;
+	  else if (t2->keyword == RID_DELETE)
+	    is_initialized = 3;
+	}
     }
   else
     {
@@ -12527,7 +12537,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	  cp_parser_error (parser, "expected initializer");
 	  return error_mark_node;
 	}
-      is_initialized = false;
+      is_initialized = 0;
       initialization_kind = CPP_EOF;
     }
 
@@ -15681,6 +15691,15 @@ cp_parser_pure_specifier (cp_parser* parser)
     return error_mark_node;
   /* Look for the `0' token.  */
   token = cp_lexer_consume_token (parser->lexer);
+
+  /* Accept = default or = delete in c++0x mode.  */
+  if (token->keyword == RID_DEFAULT
+      || token->keyword == RID_DELETE)
+    {
+      maybe_warn_cpp0x ("defaulted and deleted functions");
+      return token->u.value;
+    }
+
   /* c_lex_with_flags marks a single digit '0' with PURE_ZERO.  */
   if (token->type != CPP_NUMBER || !(token->flags & PURE_ZERO))
     {

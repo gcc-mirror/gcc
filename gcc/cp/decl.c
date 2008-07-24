@@ -1613,6 +1613,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  warning (OPT_Wredundant_decls, "redundant redeclaration of %qD in same scope", newdecl);
 	  warning (OPT_Wredundant_decls, "previous declaration of %q+D", olddecl);
 	}
+
+      if (DECL_DELETED_FN (newdecl))
+	{
+	  error ("deleted definition of %qD", newdecl);
+	  error ("after previous declaration %q+D", olddecl);
+	}
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
@@ -3931,13 +3937,14 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
    grokfield.)  The DECL corresponding to the DECLARATOR is returned.
    If an error occurs, the error_mark_node is returned instead.
    
-   DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED
-   is true if an explicit initializer is present, but false if this is
-   a variable implicitly initialized via a default constructor.
-   ATTRIBUTES and PREFIX_ATTRIBUTES are GNU attributes associated with
-   this declaration.  *PUSHED_SCOPE_P is set to the scope entered in
-   this function, if any; if set, the caller is responsible for
-   calling pop_scope.  */
+   DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED is 1
+   if an explicit initializer is present, or 2 for an explicitly defaulted
+   function, or 3 for an explicitly deleted function, but 0 if this is a
+   variable implicitly initialized via a default constructor.  ATTRIBUTES
+   and PREFIX_ATTRIBUTES are GNU attributes associated with this
+   declaration.  *PUSHED_SCOPE_P is set to the scope entered in this
+   function, if any; if set, the caller is responsible for calling
+   pop_scope.  */
 
 tree
 start_decl (const cp_declarator *declarator,
@@ -3991,12 +3998,15 @@ start_decl (const cp_declarator *declarator,
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
-	error ("typedef %qD is initialized (use __typeof__ instead)", decl);
+	error ("typedef %qD is initialized (use decltype instead)", decl);
 	return error_mark_node;
 
       case FUNCTION_DECL:
-	error ("function %q#D is initialized like a variable", decl);
-	return error_mark_node;
+	if (initialized == 3)
+	  /* We'll handle the rest of the semantics later, but we need to
+	     set this now so it's visible to duplicate_decls.  */
+	  DECL_DELETED_FN (decl) = 1;
+	break;
 
       default:
 	break;
@@ -5686,10 +5696,38 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else
 	abstract_virtuals_error (decl, type);
 
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  || TREE_TYPE (decl) == error_mark_node)
+      if (TREE_TYPE (decl) == error_mark_node)
 	/* No initialization required.  */
 	;
+      else if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  if (init)
+	    {
+	      if (init == ridpointers[(int)RID_DELETE])
+		{
+		  /* fixme check this is 1st decl */
+		  DECL_DELETED_FN (decl) = 1;
+		  DECL_DECLARED_INLINE_P (decl) = 1;
+		  DECL_INITIAL (decl) = error_mark_node;
+		}
+	      else if (init == ridpointers[(int)RID_DEFAULT])
+		{
+		  if (!defaultable_fn_p (decl))
+		    error ("%qD cannot be defaulted", decl);
+		  else
+		    {
+		      /* An out-of-class default definition is defined at
+			 the point where it is explicitly defaulted.  */
+		      DECL_DEFAULTED_FN (decl) = 1;
+		      if (DECL_INITIAL (decl) == error_mark_node)
+			synthesize_method (decl);
+		    }
+		}
+	      else
+		error ("function %q#D is initialized like a variable", decl);
+	    }
+	  /* else no initialization required.  */
+	}
       else if (DECL_EXTERNAL (decl)
 	       && ! (DECL_LANG_SPECIFIC (decl)
 		     && DECL_NOT_REALLY_EXTERN (decl)))
@@ -7361,7 +7399,7 @@ check_var_type (tree identifier, tree type)
       Don't make a DECL node; just return the ..._TYPE node.
      FIELD for a struct or union field; make a FIELD_DECL.
      BITFIELD for a field with specified width.
-   INITIALIZED is 1 if the decl has an initializer.
+   INITIALIZED is as for start_decl.
 
    ATTRLIST is a pointer to the list of attributes, which may be NULL
    if there are none; *ATTRLIST may be modified if attributes from inside
@@ -7458,6 +7496,9 @@ grokdeclarator (const cp_declarator *declarator,
     funcdef_flag = true, decl_context = FIELD;
   else if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
+
+  if (initialized > 1)
+    funcdef_flag = true;
 
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
@@ -9670,6 +9711,8 @@ grok_special_member_properties (tree decl)
 	     are no other parameters or else all other parameters have
 	     default arguments.  */
 	  TYPE_HAS_INIT_REF (class_type) = 1;
+	  if (!DECL_DEFAULTED_FN (decl))
+	    TYPE_HAS_COMPLEX_INIT_REF (class_type) = 1;
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_INIT_REF (class_type) = 1;
 	}
@@ -9691,6 +9734,8 @@ grok_special_member_properties (tree decl)
       if (assop)
 	{
 	  TYPE_HAS_ASSIGN_REF (class_type) = 1;
+	  if (!DECL_DEFAULTED_FN (decl))
+	    TYPE_HAS_COMPLEX_ASSIGN_REF (class_type) = 1;
 	  if (assop != 1)
 	    TYPE_HAS_CONST_ASSIGN_REF (class_type) = 1;
 	}

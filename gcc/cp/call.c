@@ -5090,6 +5090,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   int is_method = 0;
   int nargs;
   tree *argarray;
+  bool already_used = false;
 
   /* In a template, there is no need to perform all of the work that
      is normally done.  We are only interested in the type of the call
@@ -5310,7 +5311,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
       if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn)))
-	mark_used (fn);
+	{
+	  mark_used (fn);
+	  already_used = true;
+	}
 
       /* If we're creating a temp and we already have one, don't create a
 	 new one.  If we're not creating a temp but we get one, use
@@ -5370,7 +5374,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       return val;
     }
 
-  mark_used (fn);
+  if (!already_used)
+    mark_used (fn);
 
   if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {

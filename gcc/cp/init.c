@@ -346,7 +346,7 @@ build_value_init_1 (tree type, bool have_ctor)
 
   if (CLASS_TYPE_P (type))
     {
-      if (TYPE_HAS_USER_CONSTRUCTOR (type) && !have_ctor)
+      if (type_has_user_provided_constructor (type) && !have_ctor)
 	return build_cplus_new
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
@@ -516,8 +516,17 @@ perform_member_init (tree member, tree init)
                                             tf_warning_or_error));
 	}
       else
-	finish_expr_stmt (build_aggr_init (decl, init, 0, 
-                                           tf_warning_or_error));
+	{
+	  if (CP_TYPE_CONST_P (type)
+	      && init == NULL_TREE
+	      && !type_has_user_provided_default_constructor (type))
+	    /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
+	       vtable; still give this diagnostic.  */
+	    permerror ("%Juninitialized member %qD with %<const%> type %qT",
+		       current_function_decl, member, type);
+	  finish_expr_stmt (build_aggr_init (decl, init, 0, 
+					     tf_warning_or_error));
+	}
     }
   else
     {
@@ -1883,7 +1892,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
     return error_mark_node;
 
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || init);
-  if (CP_TYPE_CONST_P (elt_type) && !is_initialized)
+
+  if (CP_TYPE_CONST_P (elt_type) && !init
+      && !type_has_user_provided_default_constructor (elt_type))
     {
       if (complain & tf_error)
         error ("uninitialized const in %<new%> of %q#T", elt_type);

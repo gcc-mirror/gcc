@@ -1,3 +1,34 @@
+2008-07-23  Jason Merrill  <jason@redhat.com>
+
+	Implement defaulted/deleted functions as per N2346
+	* cp-tree.h (struct lang_decl_flags): Add defaulted_p bitfield.
+	(DECL_DELETED_FN): New macro.
+	(DECL_DEFAULTED_FN): New macro.
+	* class.c (user_provided_p): New fn.
+	(defaultable_fn_p): New fn.
+	(type_has_user_provided_constructor): New fn.
+	(type_has_user_provided_default_constructor): New fn.
+	(check_methods): A defaulted fn is still trivial.
+	(check_bases_and_members): Likewise.
+	* decl.c (grok_special_member_properties): Likewise.
+	(duplicate_decls): Complain about redeclaring a function as deleted.
+	(start_decl): initialized==2 means deleted.
+	(cp_finish_decl): Handle deleted/defaulted semantics.
+	* decl2.c (grokfield): Likewise.
+	(mark_used): Check DECL_DEFAULTED_FN instead of DECL_ARTIFICIAL.
+	Complain about using a deleted fn.
+	* init.c (build_value_init_1): Use type_has_user_provided_constructor.
+	(perform_member_init): Check for a user-provided default constructor
+	even if TYPE_NEEDS_CONSTRUCTING.
+	(build_new_1): Likewise.
+	* call.c (build_over_call): Don't call mark_used twice.
+	* method.c (implicitly_declare_fn): Set DECL_DEFAULTED_FN.
+	* search.c (check_final_overrider): Check for deleted mismatch.
+	* parser.c (cp_parser_init_declarator): Tell start_decl about =delete.
+	(cp_parser_pure_specifier): Handle =default and =delete.
+
+	* error.c (maybe_warn_cpp0x): Suggest -std=gnu++0x as well.
+
 2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35058
