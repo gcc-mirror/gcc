@@ -1,3 +1,8 @@
+2008-07-24  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/spu/vector.c: New test.
+	* gcc.target/spu/vector-ansi.c: Likewise.
+
 2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35058

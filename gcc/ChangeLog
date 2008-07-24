@@ -1,5 +1,14 @@
 2008-07-24  Ben Elliston  <bje@au.ibm.com>
 
+	* config/spu/spu-c.c (__vector_keyword): New variable.
+	(vector_keyword): Likewise.
+	(spu_categorize_keyword): New function.
+	(spu_macro_to_expand): Likewise.
+	(spu_cpu_cpp_builtins): Enable context-sensitive macros if not
+	compiling an ISO C dialect.
+
+2008-07-24  Ben Elliston  <bje@au.ibm.com>
+
 	* config/rs6000/rs6000-c.c: Move GTY(()) markers to match
 	conventional usage.
 
