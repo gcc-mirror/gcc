@@ -1731,7 +1731,7 @@ gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, int op)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss, 1);
   /* Generate the loop body.  */
@@ -1813,7 +1813,7 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss, 1);
   /* Generate the loop body.  */
@@ -1901,7 +1901,7 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
@@ -2019,7 +2019,7 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss1, 1);
   gfc_mark_ss_chain_used (arrayss2, 1);
@@ -2159,7 +2159,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gcc_assert (loop.dimen == 1);
 
@@ -2355,7 +2355,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
@@ -3434,6 +3434,10 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 	      && arg->expr->ref->u.ar.type == AR_FULL))
 	{
 	  tmp = build_fold_addr_expr (argse.expr);
+
+	  if (gfc_option.warn_array_temp)
+	    gfc_warning ("Creating array temporary at %L", &expr->where);
+
 	  source = build_call_expr (gfor_fndecl_in_pack, 1, tmp);
 	  source = gfc_evaluate_now (source, &argse.pre);
 
@@ -3587,7 +3591,8 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
      FIXME callee_alloc is not set!  */
 
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, mold_type, false, true, false);
+			       info, mold_type, false, true, false,
+			       &expr->where);
 
   /* Cast the pointer to the result.  */
   tmp = gfc_conv_descriptor_data_get (info->descriptor);

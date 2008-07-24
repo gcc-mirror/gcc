@@ -1,3 +1,64 @@
+2008-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/29952
+	* gfortran.h:  Add "warn_array_temp" to gfc_option_t.
+	* lang.opt:  Add -Warray-temporaries.
+	* invoke.texi:  Document -Warray-temporaries
+	* trans-array.h (gfc_trans_create_temp_array):  Add argument of
+	type *locus.
+	(gfc_conv_loop_setup):  Likewise.
+	* trans-array.c (gfc_trans_create_temp_array):  If
+	-Warray-temporaries is given and locus is present, warn about
+	creation of array temporaries.
+	(gfc_trans_array_constructor_subarray):  Add locus to call
+	of gfc_conv_loop_setup.
+	(gfc_trans_array_constructor):  Add where argument.  Pass where
+	argument to call of gfc_trans_create_temp_array.
+	(gfc_add_loop_ss_code):  Add where argument.  Pass where argument
+	to recursive call of gfc_add_loop_ss_code and to call of
+	gfc_trans_array_constructor.
+	(gfc_conv_loop_setup):  Add where argument.  Pass where argument
+	to calls to gfc_add_loop_ss_code and to gfc_trans_create_temp_array.
+	(gfc_conv_expr_descriptor):  Pass location to call of
+	gfc_conv_loop_setup.
+	(gfc_conv_array_parameter):  If -Warray-temporaries is given,
+	warn about creation of temporary arrays.
+	* trans-expr.c (gfc_conv_subref_array_arg):  Add where argument
+	to call to gfc_conv_loop_setup.
+	(gfc_conv_function_call):  Add where argument to call to
+	gfc_trans_creat_temp_array.
+	(gfc_trans_subarray_assign):  Likewise.
+	(gfc_trans_assignment_1):  Add where argument to call to
+	gfc_conv_loop_setup.
+	* trans-stmt.c (gfc_conv_elemental_dependencies):  Add where
+	argument to call to gfc_trans_create_temp_array.
+	(gfc_trans_call):  Add where argument to call to gfc_conv_loop_setup.
+	(generate_loop_for_temp_to_lhs):  Likewise.
+	(generate_loop_for_rhs_to_temp):  Likewise.
+	(compute_inner_temp_size):  Likewise.
+	(gfc_trans-pointer_assign_need_temp):  Likewise.
+	(gfc_evaluate_where_mask):  Likewise.
+	(gfc_trans_where_assign):  Likewise.
+	(gfc_trans_where_3):  Likewise.
+	* trans-io.c (transfer_srray_component):  Add where argument
+	to function. Add where argument to call to gfc_conv_loop_setup.
+	(transfer_expr):  Add where argument to call to
+	transfer_array_component.
+	(gfc_trans_transfer):  Add where expression to call to
+	gfc_conv_loop_setup.
+	* trans-intrinsic.c (gfc_conv_intrinsic_anyall):  Add
+	where argument to call to gfc_conv_loop_setup.
+	(gfc_conv_intrinsic_count):  Likewise.
+	(gfc_conv_intrinsic_arith):  Likewise.
+	(gfc_conv_intrinsic_dot_product):  Likewise.
+	(gfc_conv_intrinsic_minmaxloc):  Likewise.
+	(gfc_conv_intrinsic_minmaxval):  Likewise.
+	(gfc_conv_intrinsic_array_transfer):  Warn about
+	creation of temporary array.
+	Add where argument to call to gfc_trans_create_temp_array.
+	* options.c (gfc_init_options):  Initialize gfc_option.warn_array_temp.
+	(gfc_handle_option):  Set gfc_option.warn_array_temp.
+
 2008-07-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 35058

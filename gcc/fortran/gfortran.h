@@ -1873,6 +1873,7 @@ typedef struct
   int warn_tabs;
   int warn_underflow;
   int warn_character_truncation;
+  int warn_array_temp;
   int max_errors;
 
   int flag_all_intrinsics;
