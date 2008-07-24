@@ -85,12 +85,12 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
 /* Keep the AltiVec keywords handy for fast comparisons.  */
-static tree __vector_keyword;
-static tree vector_keyword;
-static tree __pixel_keyword;
-static tree pixel_keyword;
-static tree __bool_keyword;
-static tree bool_keyword;
+static GTY(()) tree __vector_keyword;
+static GTY(()) tree vector_keyword;
+static GTY(()) tree __pixel_keyword;
+static GTY(()) tree pixel_keyword;
+static GTY(()) tree __bool_keyword;
+static GTY(()) tree bool_keyword;
 
 /* Preserved across calls.  */
 static tree expand_bool_pixel;

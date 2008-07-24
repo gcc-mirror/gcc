@@ -1,3 +1,8 @@
+2008-07-24  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000-c.c: Move GTY(()) markers to match
+	conventional usage.
+
 2008-07-23  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* configure: Regenerate.
