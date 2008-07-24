@@ -1,3 +1,8 @@
+2008-07-23  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (infer_value_range): Ignore asm statements when
+	looking for memory accesses for -fdelete-null-pointer-checks.
+
 2008-07-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.md ("div<mode>3"): Convert into expander, move
