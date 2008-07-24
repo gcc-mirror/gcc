@@ -226,6 +226,7 @@ sub deps {
 	$mine{$f} = "\$(INCDIR)/$f";
 	$deps{$f} = join(' ', &deps_for("$incdir/$f"));
     }
+    $mine{'config.h'} = "config.h";
 
     opendir(INC, $srcdir);
     while ($f = readdir INC) {
@@ -233,8 +234,7 @@ sub deps {
 	$mine{$f} = "\$(srcdir)/$f";
 	$deps{$f} = join(' ', &deps_for("$srcdir/$f"));
     }
-
-    $mine{'config.h'} = "stamp-h";
+    $mine{'config.h'} = "config.h";
 
     open(IN, "$srcdir/Makefile.in");
     open(OUT, ">$srcdir/Makefile.tmp");

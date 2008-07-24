@@ -1,3 +1,10 @@
+2008-07-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* maint-tool (deps): Output config.h instead of stamp-h.
+	* Makefile.in: Rebuild deps.
+	(maintainer-clean-subdir): Depend on stamp-h rather than config.h.
+	Reverts 2007-07-11 change.
+
 2008-06-19  Eric Blake  <ebb9@byu.net>
 
 	Adjust strsignal to POSIX 200x prototype.
