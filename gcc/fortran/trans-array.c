@@ -576,7 +576,7 @@ tree
 gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			     gfc_loopinfo * loop, gfc_ss_info * info,
 			     tree eltype, bool dynamic, bool dealloc,
-			     bool callee_alloc)
+			     bool callee_alloc, locus * where)
 {
   tree type;
   tree desc;
@@ -589,6 +589,10 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   int dim;
 
   gcc_assert (info->dimen > 0);
+
+  if (gfc_option.warn_array_temp && where)
+    gfc_warning ("Creating array temporary at %L", where);
+
   /* Set the lower bound to zero.  */
   for (dim = 0; dim < info->dimen; dim++)
     {
@@ -1070,7 +1074,7 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
 
   /* Initialize the loop.  */
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, &expr->where);
 
   /* Make sure the constructed array has room for the new data.  */
   if (dynamic)
@@ -1683,7 +1687,7 @@ constant_array_constructor_loop_size (gfc_loopinfo * loop)
    simplest method.  */
 
 static void
-gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
+gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
 {
   gfc_constructor *c;
   tree offset;
@@ -1809,7 +1813,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
     loopfrom = NULL_TREE;
 
   gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
-			       type, dynamic, true, false);
+			       type, dynamic, true, false, where);
 
   if (loopfrom != NULL_TREE)
     {
@@ -1896,7 +1900,8 @@ gfc_set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss_info * info)
    but before the actual scalarizing loops.  */
 
 static void
-gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
+gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
+		      locus * where)
 {
   gfc_se se;
   int n;
@@ -1950,7 +1955,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  /* Add the expressions for scalar and vector subscripts.  */
 	  for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
 	    if (ss->data.info.subscript[n])
-	      gfc_add_loop_ss_code (loop, ss->data.info.subscript[n], true);
+	      gfc_add_loop_ss_code (loop, ss->data.info.subscript[n], true,
+				    where);
 
 	  gfc_set_vector_loop_bounds (loop, &ss->data.info);
 	  break;
@@ -1993,7 +1999,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	      gfc_add_block_to_block (&loop->pre, &se.pre);
 	      gfc_add_block_to_block (&loop->post, &se.post);
 	    }
-	  gfc_trans_array_constructor (loop, ss);
+	  gfc_trans_array_constructor (loop, ss, where);
 	  break;
 
         case GFC_SS_TEMP:
@@ -3327,7 +3333,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
    moved outside the loop.  */
 
 void
-gfc_conv_loop_setup (gfc_loopinfo * loop)
+gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 {
   int n;
   int dim;
@@ -3493,7 +3499,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
   /* Add all the scalar code that can be taken out of the loops.
      This may include calculating the loop bounds, so do it before
      allocating the temporary.  */
-  gfc_add_loop_ss_code (loop, loop->ss, false);
+  gfc_add_loop_ss_code (loop, loop->ss, false, where);
 
   /* If we want a temporary then create it.  */
   if (loop->temp_ss != NULL)
@@ -3515,7 +3521,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       loop->temp_ss->data.info.dimen = n;
       gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
 				   &loop->temp_ss->data.info, tmp, false, true,
-				   false);
+				   false, where);
     }
 
   for (n = 0; n < loop->temp_dim; n++)
@@ -4299,6 +4305,9 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       stmt_unpacked = build_call_expr (gfor_fndecl_in_pack, 1, tmp);
 
       stride = gfc_index_one_node;
+
+      if (gfc_option.warn_array_temp)
+	gfc_warning ("Creating array temporary at %L", &loc);
     }
 
   /* This is for the case where the array data is used directly without
@@ -4871,7 +4880,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
 
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, & expr->where);
 
   if (need_tmp)
     {
@@ -5219,6 +5228,10 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
     {
       desc = se->expr;
       /* Repack the array.  */
+
+      if (gfc_option.warn_array_temp)
+	gfc_warning ("Creating array temporary at %L", &expr->where);
+
       ptr = build_call_expr (gfor_fndecl_in_pack, 1, desc);
       ptr = gfc_evaluate_now (ptr, &se->pre);
       se->expr = ptr;

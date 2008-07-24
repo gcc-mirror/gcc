@@ -76,6 +76,10 @@ Wampersand
 Fortran Warning
 Warn about missing ampersand in continued character constants
 
+Warray-temporaries
+Fortran Warning
+Warn about creation of array temporaries
+
 Wcharacter-truncation
 Fortran Warning
 Warn about truncated character expressions

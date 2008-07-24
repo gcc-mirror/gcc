@@ -1900,7 +1900,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code);
    recursive.  */
 
 static tree
-transfer_array_component (tree expr, gfc_component * cm)
+transfer_array_component (tree expr, gfc_component * cm, locus * where)
 {
   tree tmp;
   stmtblock_t body;
@@ -1944,7 +1944,7 @@ transfer_array_component (tree expr, gfc_component * cm)
   gfc_init_loopinfo (&loop);
   gfc_add_ss_to_loop (&loop, ss);
   gfc_conv_ss_startstride (&loop);
-  gfc_conv_loop_setup (&loop);
+  gfc_conv_loop_setup (&loop, where);
   gfc_mark_ss_chain_used (ss, 1);
   gfc_start_scalarized_body (&loop, &body);
 
@@ -2089,7 +2089,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 
           if (c->dimension)
             {
-              tmp = transfer_array_component (tmp, c);
+              tmp = transfer_array_component (tmp, c, & code->loc);
               gfc_add_expr_to_block (&se->pre, tmp);
             }
           else
@@ -2213,7 +2213,7 @@ gfc_trans_transfer (gfc_code * code)
 
       /* Initialize the loop.  */
       gfc_conv_ss_startstride (&loop);
-      gfc_conv_loop_setup (&loop);
+      gfc_conv_loop_setup (&loop, &code->expr->where);
 
       /* The main loop body.  */
       gfc_mark_ss_chain_used (ss, 1);
