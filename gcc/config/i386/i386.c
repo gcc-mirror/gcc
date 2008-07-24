@@ -9123,7 +9123,8 @@ get_dllimport_decl (tree decl)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = targetm.strip_name_encoding (name);
-  prefix = name[0] == FASTCALL_PREFIX  ?  "*__imp_": "*__imp__";
+  prefix = name[0] == FASTCALL_PREFIX || user_label_prefix[0] == 0
+    ? "*__imp_" : "*__imp__";
   namelen = strlen (name);
   prefixlen = strlen (prefix);
   imp_name = (char *) alloca (namelen + prefixlen + 1);
