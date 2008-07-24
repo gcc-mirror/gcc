@@ -589,7 +589,7 @@ namespace std
 #endif      
 
       static time_point
-      now();      
+      now();   
 
       // Map to C API
       static std::time_t
