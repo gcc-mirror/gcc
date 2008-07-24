@@ -8,11 +8,11 @@
 ! PR fortran/32980
 !
 subroutine foo()
-intrinsic :: gamma
-intrinsic :: dgamma
-intrinsic :: lgamma
-intrinsic :: algama
-intrinsic :: dlgama
+intrinsic :: gamma ! { dg-error "Fortran 2008" }
+intrinsic :: dgamma ! { dg-error "extension" }
+intrinsic :: lgamma ! { dg-error "extension" }
+intrinsic :: algama ! { dg-error "extension" }
+intrinsic :: dlgama ! { dg-error "extension" }
 
 integer, parameter :: sp = kind(1.0)
 integer, parameter :: dp = kind(1.0d0)
@@ -20,13 +20,13 @@ integer, parameter :: dp = kind(1.0d0)
 real(sp) :: rsp = 1.0_sp
 real(dp) :: rdp = 1.0_dp
 
-rsp = gamma(rsp)  ! FIXME "is not included in the selected standard"
-rdp = gamma(rdp)  ! FIXME "is not included in the selected standard"
-rdp = dgamma(rdp) ! { dg-error "is not included in the selected standard" }
+rsp = gamma(rsp)
+rdp = gamma(rdp)
+rdp = dgamma(rdp)
 
-rsp = lgamma(rsp) ! { dg-error "is not included in the selected standard" }
-rdp = lgamma(rdp) ! { dg-error "is not included in the selected standard" }
-rsp = algama(rsp) ! { dg-error "is not included in the selected standard" }
-rdp = dlgama(rdp) ! { dg-error "is not included in the selected standard" }
+rsp = lgamma(rsp)
+rdp = lgamma(rdp)
+rsp = algama(rsp)
+rdp = dlgama(rdp)
 end subroutine foo
 end

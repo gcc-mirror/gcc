@@ -1,5 +1,48 @@
 2008-07-24  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/33141
+	* lang.opt (Wnonstd-intrinsics):  Removed option.
+	(Wintrinsics-std), (Wintrinsic-shadow):  New options.
+	* invoke.texi (Option Summary):  Removed -Wnonstd-intrinsics
+	from the list and added -Wintrinsics-std and -Wintrinsic-shadow.
+	(Error and Warning Options):  Documented the new options and removed
+	the documentation for -Wnonstd-intrinsics.
+	* gfortran.h (gfc_option_t):  New members warn_intrinsic_shadow and
+	warn_intrinsics_std, removed warn_nonstd_intrinsics.
+	(gfc_is_intrinsic):  Renamed from gfc_intrinsic_name.
+	(gfc_warn_intrinsic_shadow), (gfc_check_intrinsic_standard):  New.
+	* decl.c (match_procedure_decl):  Replaced gfc_intrinsic_name by
+	the new name gfc_is_intrinsic.
+	(warn_intrinsic_shadow):  New helper method.
+	(gfc_match_function_decl), (gfc_match_subroutine):  Call the new method
+	warn_intrinsic_shadow to check the just-parsed procedure.
+	* expr.c (check_init_expr):  Call new gfc_is_intrinsic to check whether
+	the function called is really an intrinsic in the selected standard.
+	* intrinsic.c (gfc_is_intrinsic):  Renamed from gfc_intrinsic_name and
+	extended to take into account the selected standard settings when trying
+	to find out whether a symbol is an intrinsic or not.
+	(gfc_check_intrinsic_standard):  Made public and extended.
+	(gfc_intrinsic_func_interface), (gfc_intrinsic_sub_interface):  Removed
+	the calls to check_intrinsic_standard, this check now happens inside
+	gfc_is_intrinsic.
+	(gfc_warn_intrinsic_shadow):  New method defined.
+	* options.c (gfc_init_options):  Initialize new warning flags to false
+	and removed intialization of Wnonstd-intrinsics flag.
+	(gfc_post_options):  Removed logic for Wnonstd-intrinsics flag.
+	(set_Wall):  Set new warning flags and removed Wnonstd-intrinsics flag.
+	(gfc_handle_option):  Handle the new flags and removed handling of the
+	old Wnonstd-intrinsics flag.
+	* primary.c (gfc_match_rvalue):  Replaced call to gfc_intrinsic_name by
+	the new name gfc_is_intrinsic.
+	* resolve.c (resolve_actual_arglist):  Ditto.
+	(resolve_generic_f), (resolve_unknown_f):  Ditto.
+	(is_external_proc):  Ditto.
+	(resolve_generic_s), (resolve_unknown_s):  Ditto.
+	(resolve_symbol):  Ditto and ensure for symbols declared INTRINSIC that
+	they are really available in the selected standard setting.
+
+2008-07-24  Daniel Kraft  <d@domob.eu>
+
 	* match.c (gfc_match):  Add assertion to catch wrong calls trying to
 	match upper-case characters.
 

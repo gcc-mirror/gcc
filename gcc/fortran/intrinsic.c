@@ -807,15 +807,47 @@ gfc_intrinsic_actual_ok (const char *name, const bool subroutine_flag)
 }
 
 
-/* Given a string, figure out if it is the name of an intrinsic
-   subroutine or function.  There are no generic intrinsic
-   subroutines, they are all specific.  */
+/* Given a symbol, find out if it is (and is to be treated) an intrinsic.  If
+   it's name refers to an intrinsic but this intrinsic is not included in the
+   selected standard, this returns FALSE and sets the symbol's external
+   attribute.  */
 
-int
-gfc_intrinsic_name (const char *name, int subroutine_flag)
+bool
+gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
 {
-  return subroutine_flag ? gfc_find_subroutine (name) != NULL
-			 : gfc_find_function (name) != NULL;
+  gfc_intrinsic_sym* isym;
+  const char* symstd;
+
+  /* If INTRINSIC/EXTERNAL state is already known, return.  */
+  if (sym->attr.intrinsic)
+    return true;
+  if (sym->attr.external)
+    return false;
+
+  if (subroutine_flag)
+    isym = gfc_find_subroutine (sym->name);
+  else
+    isym = gfc_find_function (sym->name);
+
+  /* No such intrinsic available at all?  */
+  if (!isym)
+    return false;
+
+  /* See if this intrinsic is allowed in the current standard.  */
+  if (gfc_check_intrinsic_standard (isym, &symstd, false, loc) == FAILURE)
+    {
+      if (gfc_option.warn_intrinsics_std)
+	gfc_warning_now ("The intrinsic '%s' at %L is not included in the"
+			 " selected standard but %s and '%s' will be treated as"
+			 " if declared EXTERNAL.  Use an appropriate -std=*"
+			 " option or define -fall-intrinsics to allow this"
+			 " intrinsic.", sym->name, &loc, symstd, sym->name);
+      sym->attr.external = 1;
+
+      return false;
+    }
+
+  return true;
 }
 
 
@@ -3448,21 +3480,82 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
 
 
 /* Check whether an intrinsic belongs to whatever standard the user
-   has chosen.  */
+   has chosen, taking also into account -fall-intrinsics.  Here, no
+   warning/error is emitted; but if symstd is not NULL, it is pointed to a
+   textual representation of the symbols standard status (like
+   "new in Fortran 2008", "a GNU extension" or "obsolescent in Fortran 95") that
+   can be used to construct a detailed warning/error message in case of
+   a FAILURE.  */
 
-static try
-check_intrinsic_standard (const char *name, int standard, locus *where)
+try
+gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
+			      const char** symstd, bool silent, locus where)
 {
-  /* Do not warn about GNU-extensions if -std=gnu.  */
-  if (!gfc_option.warn_nonstd_intrinsics
-      || (standard == GFC_STD_GNU && gfc_option.warn_std & GFC_STD_GNU))
+  const char* symstd_msg;
+
+  /* For -fall-intrinsics, just succeed.  */
+  if (gfc_option.flag_all_intrinsics)
     return SUCCESS;
 
-  if (gfc_notify_std (standard, "Intrinsic '%s' at %L is not included "
-		      "in the selected standard", name, where) == FAILURE)
-    return FAILURE;
+  /* Find the symbol's standard message for later usage.  */
+  switch (isym->standard)
+    {
+    case GFC_STD_F77:
+      symstd_msg = "available since Fortran 77";
+      break;
 
-  return SUCCESS;
+    case GFC_STD_F95_OBS:
+      symstd_msg = "obsolescent in Fortran 95";
+      break;
+
+    case GFC_STD_F95_DEL:
+      symstd_msg = "deleted in Fortran 95";
+      break;
+
+    case GFC_STD_F95:
+      symstd_msg = "new in Fortran 95";
+      break;
+
+    case GFC_STD_F2003:
+      symstd_msg = "new in Fortran 2003";
+      break;
+
+    case GFC_STD_F2008:
+      symstd_msg = "new in Fortran 2008";
+      break;
+
+    case GFC_STD_GNU:
+      symstd_msg = "a GNU Fortran extension";
+      break;
+
+    case GFC_STD_LEGACY:
+      symstd_msg = "for backward compatibility";
+      break;
+
+    default:
+      gfc_internal_error ("Invalid standard code on intrinsic '%s' (%d)",
+			  isym->name, isym->standard);
+    }
+
+  /* If warning about the standard, warn and succeed.  */
+  if (gfc_option.warn_std & isym->standard)
+    {
+      /* Do only print a warning if not a GNU extension.  */
+      if (!silent && isym->standard != GFC_STD_GNU)
+	gfc_warning ("Intrinsic '%s' (is %s) is used at %L",
+		     isym->name, _(symstd_msg), &where);
+
+      return SUCCESS;
+    }
+
+  /* If allowing the symbol's standard, succeed, too.  */
+  if (gfc_option.allow_std & isym->standard)
+    return SUCCESS;
+
+  /* Otherwise, fail.  */
+  if (symstd)
+    *symstd = _(symstd_msg);
+  return FAILURE;
 }
 
 
@@ -3507,9 +3600,6 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       gfc_suppress_error = 0;
       return MATCH_NO;
     }
-
-  if (check_intrinsic_standard (name, isym->standard, &expr->where) == FAILURE)
-    return MATCH_ERROR;
 
   if ((isym->id == GFC_ISYM_REAL || isym->id == GFC_ISYM_DBLE
        || isym->id == GFC_ISYM_CMPLX)
@@ -3604,9 +3694,6 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   isym = gfc_find_subroutine (name);
   if (isym == NULL)
     return MATCH_NO;
-
-  if (check_intrinsic_standard (name, isym->standard, &c->loc) == FAILURE)
-    return MATCH_ERROR;
 
   gfc_suppress_error = !error_flag;
 
@@ -3826,4 +3913,43 @@ gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
     }
 
   return SUCCESS;
+}
+
+
+/* Check if the passed name is name of an intrinsic (taking into account the
+   current -std=* and -fall-intrinsic settings).  If it is, see if we should
+   warn about this as a user-procedure having the same name as an intrinsic
+   (-Wintrinsic-shadow enabled) and do so if we should.  */
+
+void
+gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
+{
+  gfc_intrinsic_sym* isym;
+
+  /* If the warning is disabled, do nothing at all.  */
+  if (!gfc_option.warn_intrinsic_shadow)
+    return;
+
+  /* Try to find an intrinsic of the same name.  */
+  if (func)
+    isym = gfc_find_function (sym->name);
+  else  
+    isym = gfc_find_subroutine (sym->name);
+
+  /* If no intrinsic was found with this name or it's not included in the
+     selected standard, everything's fine.  */
+  if (!isym || gfc_check_intrinsic_standard (isym, NULL, true,
+					     sym->declared_at) == FAILURE)
+    return;
+
+  /* Emit the warning.  */
+  if (in_module)
+    gfc_warning ("'%s' declared at %L may shadow the intrinsic of the same"
+		 " name.  In order to call the intrinsic, explicit INTRINSIC"
+		 " declarations may be required.",
+		 sym->name, &sym->declared_at);
+  else
+    gfc_warning ("'%s' declared at %L is also the name of an intrinsic.  It can"
+		 " only be called via an explicit interface or if declared"
+		 " EXTERNAL.", sym->name, &sym->declared_at);
 }

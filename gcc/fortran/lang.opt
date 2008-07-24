@@ -96,9 +96,9 @@ Wline-truncation
 Fortran Warning
 Warn about truncated source lines
 
-Wnonstd-intrinsics
+Wintrinsics-std
 Fortran Warning
-Warn about usage of non-standard intrinsics
+Warn on intrinsics not part of the selected standard
 
 Wreturn-type
 Fortran Warning
@@ -115,6 +115,10 @@ Permit nonconforming uses of the tab character
 Wunderflow
 Fortran Warning
 Warn about underflow of numerical constant expressions
+
+Wintrinsic-shadow
+Fortran Warning
+Warn if a user-procedure has the same name as an intrinsic
 
 cpp
 Fortran Joined Separate Negative(nocpp)
