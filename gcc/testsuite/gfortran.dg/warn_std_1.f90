@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wnonstd-intrinsics -std=gnu" }
+! { dg-options "-std=gnu" }
 !
 ! PR fortran/32778 - pedantic warning: intrinsics that 
 !                    are GNU extensions not part of -std=gnu

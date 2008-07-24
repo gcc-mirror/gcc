@@ -4120,8 +4120,8 @@ match_procedure_decl (void)
       /* Handle intrinsic procedures.  */
       if (!(proc_if->attr.external || proc_if->attr.use_assoc
 	    || proc_if->attr.if_source == IFSRC_IFBODY)
-	  && (gfc_intrinsic_name (proc_if->name, 0)
-	      || gfc_intrinsic_name (proc_if->name, 1)))
+	  && (gfc_is_intrinsic (proc_if, 0, gfc_current_locus)
+	      || gfc_is_intrinsic (proc_if, 1, gfc_current_locus)))
 	proc_if->attr.intrinsic = 1;
       if (proc_if->attr.intrinsic
 	  && !gfc_intrinsic_actual_ok (proc_if->name, 0))
@@ -4336,6 +4336,22 @@ gfc_match_procedure (void)
 }
 
 
+/* Warn if a matched procedure has the same name as an intrinsic; this is
+   simply a wrapper around gfc_warn_intrinsic_shadow that interprets the current
+   parser-state-stack to find out whether we're in a module.  */
+
+static void
+warn_intrinsic_shadow (const gfc_symbol* sym, bool func)
+{
+  bool in_module;
+
+  in_module = (gfc_state_stack->previous
+	       && gfc_state_stack->previous->state == COMP_MODULE);
+
+  gfc_warn_intrinsic_shadow (sym, in_module, func);
+}
+
+
 /* Match a function declaration.  */
 
 match
@@ -4459,6 +4475,9 @@ gfc_match_function_decl (void)
 	  result->ts = current_ts;
 	  sym->result = result;
 	}
+
+      /* Warn if this procedure has the same name as an intrinsic.  */
+      warn_intrinsic_shadow (sym, true);
 
       return MATCH_YES;
     }
@@ -4841,6 +4860,9 @@ gfc_match_subroutine (void)
 
   if (copy_prefix (&sym->attr, &sym->declared_at) == FAILURE)
     return MATCH_ERROR;
+
+  /* Warn if it has the same name as an intrinsic.  */
+  warn_intrinsic_shadow (sym, false);
 
   return MATCH_YES;
 }

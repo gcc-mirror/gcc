@@ -1,3 +1,22 @@
+2008-07-24  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/33141
+	* gfortran.dg/intrinsic_shadow_1.f03:  New test for -Wintrinsic-shadow.
+	* gfortran.dg/intrinsic_shadow_2.f03:  Ditto.
+	* gfortran.dg/intrinsic_shadow_3.f03:  Ditto.
+	* gfortran.dg/intrinsic_std_1.f90:  New test for -Wintrinsics-std.
+	* gfortran.dg/intrinsic_std_2.f90:  Ditto.
+	* gfortran.dg/intrinsic_std_3.f90:  Ditto.
+	* gfortran.dg/intrinsic_std_4.f90:  Ditto.
+	* gfortran.dg/warn_std_1.f90:  Removed option -Wnonstd-intrinsics.
+	* gfortran.dg/warn_std_2.f90:  Replaced -Wnonstd-intrinsics by
+	-Wintrinsics-std and adapted expected errors/warnings.
+	* gfortran.dg/warn_std_3.f90:  Ditto.
+	* gfortran.dg/c_sizeof_2.f90:  Adapted expected error/warning message.
+	* gfortran.dg/gamma_2.f90:  Ditto.
+	* gfortran.dg/selected_char_kind_3.f90:  Ditto.
+	* gfortran.dg/fmt_g0_2.f08:  Call with -fall-intrinsics to allow abort.
+
 2008-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/29952

@@ -2413,8 +2413,8 @@ gfc_match_rvalue (gfc_expr **result)
 	    goto function0;
 
 	  if (sym->attr.flavor == FL_UNKNOWN) sym->attr.flavor = FL_PROCEDURE;
-	  if (gfc_intrinsic_name (sym->name, 0)
-	      || gfc_intrinsic_name (sym->name, 1))
+	  if (gfc_is_intrinsic (sym, 0, gfc_current_locus)
+	      || gfc_is_intrinsic (sym, 1, gfc_current_locus))
 	    sym->attr.intrinsic = 1;
 	  e = gfc_get_expr ();
 	  e->expr_type = EXPR_VARIABLE;

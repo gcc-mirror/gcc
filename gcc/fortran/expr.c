@@ -2160,7 +2160,6 @@ check_init_expr (gfc_expr *e)
 {
   match m;
   try t;
-  gfc_intrinsic_sym *isym;
 
   if (e == NULL)
     return SUCCESS;
@@ -2179,7 +2178,12 @@ check_init_expr (gfc_expr *e)
 
       if ((m = check_specification_function (e)) != MATCH_YES)
 	{
-	  if ((m = gfc_intrinsic_func_interface (e, 0)) != MATCH_YES)
+	  gfc_intrinsic_sym* isym;
+          gfc_symbol* sym;
+
+          sym = e->symtree->n.sym;
+	  if (!gfc_is_intrinsic (sym, 0, e->where)
+              || (m = gfc_intrinsic_func_interface (e, 0)) != MATCH_YES)
 	    {
 	      gfc_error ("Function '%s' in initialization expression at %L "
 			 "must be an intrinsic or a specification function",
@@ -2201,7 +2205,7 @@ check_init_expr (gfc_expr *e)
 
 	  /* Try to scalarize an elemental intrinsic function that has an
 	     array argument.  */
-	  isym = gfc_find_function (e->symtree->n.sym->name);
+          isym = gfc_find_function (e->symtree->n.sym->name);
 	  if (isym && isym->elemental
 		&& (t = scalarize_intrinsic_call (e)) == SUCCESS)
 	    break;

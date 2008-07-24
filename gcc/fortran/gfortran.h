@@ -1872,6 +1872,8 @@ typedef struct
   int warn_surprising;
   int warn_tabs;
   int warn_underflow;
+  int warn_intrinsic_shadow;
+  int warn_intrinsics_std;
   int warn_character_truncation;
   int warn_array_temp;
   int max_errors;
@@ -1915,7 +1917,6 @@ typedef struct
 
   int warn_std;
   int allow_std;
-  int warn_nonstd_intrinsics;
   int fshort_enums;
   int convert;
   int record_marker;
@@ -2255,13 +2256,17 @@ try gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int);
 try gfc_convert_chartype (gfc_expr *, gfc_typespec *);
 int gfc_generic_intrinsic (const char *);
 int gfc_specific_intrinsic (const char *);
-int gfc_intrinsic_name (const char *, int);
+bool gfc_is_intrinsic (gfc_symbol*, int, locus);
 int gfc_intrinsic_actual_ok (const char *, const bool);
 gfc_intrinsic_sym *gfc_find_function (const char *);
 gfc_intrinsic_sym *gfc_find_subroutine (const char *);
 
 match gfc_intrinsic_func_interface (gfc_expr *, int);
 match gfc_intrinsic_sub_interface (gfc_code *, int);
+
+void gfc_warn_intrinsic_shadow (const gfc_symbol*, bool, bool);
+try gfc_check_intrinsic_standard (const gfc_intrinsic_sym*, const char**,
+				  bool, locus);
 
 /* match.c -- FIXME */
 void gfc_free_iterator (gfc_iterator *, int);

@@ -138,8 +138,8 @@ and warnings}.
 @gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -Wall  -Waliasing  -Wampersand  -Warray-bounds -Wcharacter-truncation @gol
--Wconversion -Wimplicit-interface  -Wline-truncation  -Wnonstd-intrinsics @gol
--Wsurprising -Wno-tabs  -Wunderflow -Wunused-parameter}
+-Wconversion -Wimplicit-interface  -Wline-truncation  -Wintrinsics-std @gol
+-Wsurprising -Wno-tabs  -Wunderflow -Wunused-parameter -Wintrinsics-shadow}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -211,7 +211,9 @@ form is determined by the file extension.
 Accept all of the intrinsic procedures provided in libgfortran 
 without regard to the setting of @option{-std}.  In particular, 
 this option can be quite useful with @option{-std=f95}.  Additionally,
-@command{gfortran} will ignore @option{-Wnonstd-intrinsics}.
+@command{gfortran} will ignore @option{-Wintrinsics-std} and will never try
+to link to an @code{EXTERNAL} version if the intrinsic is not included in the
+selected standard.
 
 @item -fd-lines-as-code
 @item -fd-lines-as-comments
@@ -662,8 +664,8 @@ warnings.
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing},
-@option{-Wampersand}, @option{-Wsurprising}, @option{-Wnonstd-intrinsics},
-@option{-Wno-tabs}, and @option{-Wline-truncation}.
+@option{-Wampersand}, @option{-Wsurprising}, @option{-Wintrinsics-std},
+@option{-Wno-tabs}, @option{-Wintrinsic-shadow} and @option{-Wline-truncation}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -728,11 +730,15 @@ Warn if a procedure is called without an explicit interface.
 Note this only checks that an explicit interface is present.  It does not
 check that the declared interfaces are consistent across program units.
 
-@item -Wnonstd-intrinsics
-@opindex @code{Wnonstd-intrinsics}
+@item -Wintrinsics-std
+@opindex @code{Wintrinsics-std}
 @cindex warnings, non-standard intrinsics
-Warn if the user tries to use an intrinsic that does not belong to the 
-standard the user has chosen via the @option{-std} option.
+@cindex warnings, intrinsics of other standards
+Warn if @command{gfortran} finds a procedure named like an intrinsic not
+available in the currently selected standard (with @option{-std}) and treats
+it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
+be used to never trigger this behaviour and always link to the intrinsic
+regardless of the selected standard.
 
 @item -Wsurprising
 @opindex @code{Wsurprising}
@@ -771,6 +777,15 @@ is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @cindex underflow
 Produce a warning when numerical constant expressions are
 encountered, which yield an UNDERFLOW during compilation.
+
+@item -Wintrinsic-shadow
+@opindex @code{Wintrinsic-shadow}
+@cindex warnings, intrinsic
+@cindex intrinsic
+Warn if a user-defined procedure or module procedure has the same name as an
+intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
+@code{INTRINSIC} declaration might be needed to get calls later resolved to
+the desired intrinsic/procedure.
 
 @item -Wunused-parameter
 @opindex @code{Wunused-parameter}
