@@ -4115,7 +4115,8 @@ type_has_user_provided_default_constructor (tree t)
   for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
-      if (user_provided_p (fn)
+      if (TREE_CODE (fn) == FUNCTION_DECL
+	  && user_provided_p (fn)
 	  && (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
 	      == NULL_TREE))
 	return true;
