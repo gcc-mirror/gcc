@@ -22,10 +22,10 @@
 
 2008-07-23  Jan Hubicka  <jh@suse.cz>
 
-	* cp/decl.c (duplicate_decls): Update comment and unit-at-a-time.
+	* decl.c (duplicate_decls): Update comment and unit-at-a-time.
 	(grogfndecl): Drop flag_inline_trees code.
-	* cp/pt.c (instantiate_decl): Drop flag_iline_trees code.
-	* cp/lex.c (cxx_init): Do not set unit-at-a-time.
+	* pt.c (instantiate_decl): Drop flag_iline_trees code.
+	* lex.c (cxx_init): Do not set unit-at-a-time.
 
 2008-07-23  Jason Merrill  <jason@redhat.com>
 
