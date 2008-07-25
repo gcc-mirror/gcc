@@ -1,3 +1,10 @@
+2008-07-24  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set flag_omit_frame_pointer
+	to 2 instead of -1.
+	(OVERRIDE_OPTIONS): Check if flag_omit_frame_pointer is equal
+	to 2.
+
 2008-07-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (get_dllimport_decl): Treat user_label_prefix for
