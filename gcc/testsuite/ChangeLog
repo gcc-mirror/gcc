@@ -1,3 +1,10 @@
+2008-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36936
+	* gcc.target/i386/cmov8.c: New.
+	* gcc.target/i386/funcspec-10.c: Likewise.
+	* gcc.target/i386/funcspec-11.c: Likewise.
+
 2008-07-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_thumb1_ok):

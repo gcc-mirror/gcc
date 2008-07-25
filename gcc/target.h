@@ -989,6 +989,12 @@ struct gcc_target
 
     /* Function to determine if one function can inline another function.  */
     bool (*can_inline_p) (tree, tree);
+
+    /* Whether the cold attribute changes the optimization level.  */
+    bool cold_attribute_sets_optimization;
+
+    /* Whether the hot attribute changes the optimization level.  */
+    bool hot_attribute_sets_optimization;
   } target_option;
 
   /* For targets that need to mark extra registers as live on entry to

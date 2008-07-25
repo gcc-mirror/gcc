@@ -833,10 +833,9 @@ specified, 1 if @option{-O} is specified, and 0 if neither is specified.
 
 @var{size} is nonzero if @option{-Os} is specified and zero otherwise.
 
-You should not use this macro to change options that are not
-machine-specific.  These should uniformly selected by the same
-optimization level on all supported machines.  Use this macro to enable
-machine-specific optimizations.
+This macro is run once at program startup and when the optimization
+options are changed via @code{#pragma GCC optimize} or by using the
+@code{optimize} attribute.
 
 @strong{Do not examine @code{write_symbols} in
 this macro!} The debugging options are not supposed to alter the
