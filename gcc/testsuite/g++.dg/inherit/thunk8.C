@@ -3,7 +3,7 @@
    Make sure that won't happen anymore.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target arm32 } */
+/* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-options "-mthumb -fPIC" } */
 
 struct A {
