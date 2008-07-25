@@ -1,3 +1,10 @@
+2008-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* java/decl.c: Include cgraph.h
+	(end_java_method): Remove non-unit-at-a-time code.
+	(java_mark_decl_local): Likewise; sanity check that we don't touch
+	finalized nodes.
+
 2008-07-15  Jan Hubicka  <jh@suse.cz>
 
 	* lang.c (java_init_options): Enable unit-at-a-time by default.

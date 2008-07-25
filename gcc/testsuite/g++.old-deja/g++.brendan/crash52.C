@@ -10,4 +10,4 @@ public:
 
 A &f(A &a) {// { dg-error "" }  new decl.*
   std::cout << "Blah\n";
-}
+} // { dg-error "no return statement" }

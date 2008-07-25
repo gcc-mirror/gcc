@@ -247,17 +247,6 @@ cxx_init (void)
 
   cxx_init_decl_processing ();
 
-  /* The fact that G++ uses COMDAT for many entities (inline
-     functions, template instantiations, virtual tables, etc.) mean
-     that it is fundamentally unreliable to try to make decisions
-     about whether or not to output a particular entity until the end
-     of the compilation.  However, the inliner requires that functions
-     be provided to the back end if they are to be inlined.
-     Therefore, we always use unit-at-a-time mode; in that mode, we
-     can provide entities to the back end and it will decide what to
-     emit based on what is actually needed.  */
-  flag_unit_at_a_time = 1;
-
   if (c_common_init () == false)
     {
       input_location = saved_loc;

@@ -771,7 +771,7 @@ static_execute (void)
 static bool
 gate_pure_const (void)
 {
-  return (flag_unit_at_a_time != 0 && flag_ipa_pure_const 
+  return (flag_ipa_pure_const 
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !(errorcount || sorrycount));
 }

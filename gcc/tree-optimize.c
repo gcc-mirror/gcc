@@ -115,7 +115,7 @@ execute_early_local_optimizations (void)
      cgraph state so newly inserted functions are also early optimized.
      However we execute early local optimizations for lately inserted
      functions, in that case don't reset cgraph state back to IPA_SSA.  */
-  if (flag_unit_at_a_time && cgraph_state < CGRAPH_STATE_IPA_SSA)
+  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
     cgraph_state = CGRAPH_STATE_IPA_SSA;
   return 0;
 }
@@ -391,7 +391,7 @@ tree_rest_of_compilation (tree fndecl)
 
   timevar_push (TV_EXPAND);
 
-  gcc_assert (!flag_unit_at_a_time || cgraph_global_info_ready);
+  gcc_assert (cgraph_global_info_ready);
 
   node = cgraph_node (fndecl);
 
@@ -448,20 +448,17 @@ tree_rest_of_compilation (tree fndecl)
 	}
     }
 
-  if (!flag_inline_trees)
+  DECL_SAVED_TREE (fndecl) = NULL;
+  if (DECL_STRUCT_FUNCTION (fndecl) == 0
+      && !cgraph_node (fndecl)->origin)
     {
-      DECL_SAVED_TREE (fndecl) = NULL;
-      if (DECL_STRUCT_FUNCTION (fndecl) == 0
-	  && !cgraph_node (fndecl)->origin)
-	{
-	  /* Stop pointing to the local nodes about to be freed.
-	     But DECL_INITIAL must remain nonzero so we know this
-	     was an actual function definition.
-	     For a nested function, this is done in c_pop_function_context.
-	     If rest_of_compilation set this to 0, leave it 0.  */
-	  if (DECL_INITIAL (fndecl) != 0)
-	    DECL_INITIAL (fndecl) = error_mark_node;
-	}
+      /* Stop pointing to the local nodes about to be freed.
+	 But DECL_INITIAL must remain nonzero so we know this
+	 was an actual function definition.
+	 For a nested function, this is done in c_pop_function_context.
+	 If rest_of_compilation set this to 0, leave it 0.  */
+      if (DECL_INITIAL (fndecl) != 0)
+	DECL_INITIAL (fndecl) = error_mark_node;
     }
 
   input_location = saved_loc;

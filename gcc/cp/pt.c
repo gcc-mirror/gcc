@@ -15222,7 +15222,6 @@ instantiate_decl (tree d, int defer_ok,
 	 job, even though we'll not be emitting a copy of this
 	 function.  */
       if (!(TREE_CODE (d) == FUNCTION_DECL
-	    && flag_inline_trees
 	    && DECL_DECLARED_INLINE_P (d)))
 	goto out;
     }

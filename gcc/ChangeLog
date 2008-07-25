@@ -1,3 +1,79 @@
+2008-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (record_reference): Drop non-unit-at-a-time code.
+	(build_cgraph_edges): Likewise.
+	* cgraph.c (cgraph_node): Do not update assembler hash.
+	(cgraph_remove_node): Drop non-unit-at-a-time code.
+	* tree-pass.h (pass_O0_always_inline): Remove.
+	* ipa-reference.c (gate_reference): Remove unit-at-a-time check.
+	* toplev.c (process_options): Flag unit-at-a-time does not imply
+	no section anchors.
+	* cgraphunit.c: Update comments.
+	(decide_is_function_needed): Drop non-unit-at-a-time mode.
+	(cgraph_assemble_pending_functions): Remove.
+	(cgraph_reset_node): Drop non-unit-at-a-time code.
+	(cgraph_finalize_function): Likewise.
+	(cgraph_analyze_function): Likewise.
+	(cgraph_finalize_compilation_unit): Likewise.
+	(cgraph_expand_function): Likewise.
+	(cgraph_optimize): Likesise.
+	(save_inline_function_body): Likewise.
+	* ipa-pure-const.c (gate_pure_const): Drop flag_unit_at_a_time check.
+	* tree-ssa-alias.c (maybe_be_aliased): Likewise.
+	* ipa-inline.c: Update comments.
+	(enum inlining_mode): remove INLINE_SPEED.
+	(cgraph_clone_inlined_nodes): Drop unit-at-a-time check.
+	(cgraph_mark_inline_edge): Likewise.
+	(try_inline): Likewise.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(cgraph_gate_inlining): Remove.
+	(cgraph_early_inlining): Remove flag_unit_at_a_time checks.
+	(cgraph_gate_early_inlining): Likewise.
+	(gate_inline_passes): Remove.
+	(pass_inline_parameters, pass_ipa_inline): Remove gates.
+	(cgraph_gate_O0_always_inline, cgraph_O0_always_inline, 
+	pass_O0_always_inline): Remove.
+	* c-pch.c (c_pch_matching): Remove -funit-at-a-time.
+	* dwarf2out.c (reference_to_unused): Remove flag_unit_at_a_time check.
+	* opts.c (no_unit_at_a_time_default): Remove.
+	(decode_options): Remove flag_unit_at_a_time reset and warning.
+	* opts.h (no_unit_at_a_time_default): Remove.
+	* c-decl.c (diagnose_mismatched_decls): Do not require inline keyword
+	early in GNU dialect.
+	(merge_decls): Update comment; drop unit-at-a-time check.
+	(finish_decl): Likewise.
+	(grok_declaration): Remove flag_inline_trees code.
+	(finish_functions): Return on function returning non-void on all
+	statics.
+	* ipa-tye-escape.c (gate_type_escape_vars): Remove.
+	* cfgexpand.c (expand_one_static_var): Remove.
+	(expand_one_var): Remove expand_one_static_var call.
+	(expand_used_vars_for_block): Remove flag_unit_a_time check.
+	* c-opts.c (c_common_post_options): Remove flag_inline_trees code
+	and flag_unit_at_a-time compatibility checks.
+	* varasm.c (assemble_alias): Remove flag_unit_at_a_time check.
+	* tree-inline.c (flag_inline_trees): Remove.
+	(inlinable_function_p): Don't check it.
+	(expand_call_inline): Remove non-unit-at-a-time code.
+	* tree-inline.h (flag_inline_trees): Remove.
+	* tree-optimize.c (execute_early_local_optimizations): Remove
+	unit-at-a-time checks.
+	(tree_rest_of_compilation): Likewise.
+	* combine.c (setup_incoming_promotions): Likewise.
+	* tree-profile.c (tree_gen_ic_func_profiler): Likewise.
+	* tree-ssa-structalias.c (delete_points_to_sets): Likewise.
+	* passes.c (pass_inline_parameters): Update comments; remove
+	O0_alwaysinline pass.
+	(execute_one_ipa_transform_pass): Do not reset in_gimple_form.
+	(execute_one_pass): Likewise.
+	* i386.c (ix86_function_regparm): Remove unit-at-a-time check.
+	(ix86_function_sseregparm): Likewise.
+	* arm.c (arm_function_in_section_p): Likewise.
+	* bfin.c (bfin_load_pic_reg, bfin_function_ok_for_sibcall): Likewise.
+	* varpool.c: Update comments.
+	(decide_is_variable_needed): Remove unit-at-a-time checks.
+	(varpool_finalize_decl): Likewise.
+
 2008-07-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set flag_omit_frame_pointer

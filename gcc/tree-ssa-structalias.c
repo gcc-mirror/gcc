@@ -5559,8 +5559,7 @@ delete_points_to_sets (void)
 static bool
 gate_ipa_pta (void)
 {
-  return (flag_unit_at_a_time != 0
-	  && flag_ipa_pta
+  return (flag_ipa_pta
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !(errorcount || sorrycount));
 }

@@ -617,28 +617,6 @@ expand_one_stack_var (tree var)
   expand_one_stack_var_at (var, offset);
 }
 
-/* A subroutine of expand_one_var.  Called to assign rtl
-   to a TREE_STATIC VAR_DECL.  */
-
-static void
-expand_one_static_var (tree var)
-{
-  /* In unit-at-a-time all the static variables are expanded at the end
-     of compilation process.  */
-  if (flag_unit_at_a_time)
-    return;
-  /* If this is an inlined copy of a static local variable,
-     look up the original.  */
-  var = DECL_ORIGIN (var);
-
-  /* If we've already processed this variable because of that, do nothing.  */
-  if (TREE_ASM_WRITTEN (var))
-    return;
-
-  /* Otherwise, just emit the variable.  */
-  rest_of_decl_compilation (var, 0, 0);
-}
-
 /* A subroutine of expand_one_var.  Called to assign rtl to a VAR_DECL
    that will reside in a hard register.  */
 
@@ -742,10 +720,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
   else if (DECL_HAS_VALUE_EXPR_P (var))
     ;
   else if (TREE_STATIC (var))
-    {
-      if (really_expand)
-        expand_one_static_var (var);
-    }
+    ;
   else if (DECL_RTL_SET_P (var))
     ;
   else if (TREE_TYPE (var) == error_mark_node)
@@ -790,12 +765,7 @@ expand_used_vars_for_block (tree block, bool toplevel)
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
-    if (TREE_USED (t)
-	/* Force local static variables to be output when marked by
-	   used attribute.  For unit-at-a-time, cgraph code already takes
-	   care of this.  */
-	|| (!flag_unit_at_a_time && TREE_STATIC (t)
-	    && DECL_PRESERVE_P (t)))
+    if (TREE_USED (t))
       expand_one_var (t, toplevel, true);
 
   this_sv_num = stack_vars_num;

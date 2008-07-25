@@ -180,7 +180,7 @@ rest_of_decl_compilation (tree decl,
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.
 
-	 We do output all variables when unit-at-a-time is active and rely on
+	 We do output all variables and rely on
 	 callgraph code to defer them except for forward declarations
 	 (see gcc.c-torture/compile/920624-1.c) */
       if ((at_end
@@ -523,9 +523,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_inline_parameters);
   *p = NULL;
 
-  /* Interprocedural optimization passes. 
-     All these passes are ignored in -fno-unit-at-a-time
-     except for subpasses of early_local_passes.  */
+  /* Interprocedural optimization passes.  */
   p = &all_ipa_passes;
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_ipa_early_inline);
@@ -593,7 +591,6 @@ init_optimization_passes (void)
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   p = &all_passes;
-  NEXT_PASS (pass_O0_always_inline);
   NEXT_PASS (pass_all_optimizations);
     {
       struct opt_pass **p = &pass_all_optimizations.pass.sub;
@@ -1228,8 +1225,6 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
-  /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
-  in_gimple_form = false;
 }
 
 static bool
@@ -1329,8 +1324,6 @@ execute_one_pass (struct opt_pass *pass)
 		|| pass->type != RTL_PASS);
 
   current_pass = NULL;
-  /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
-  in_gimple_form = false;
 
   return true;
 }

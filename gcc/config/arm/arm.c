@@ -3267,11 +3267,6 @@ arm_function_in_section_p (tree decl, section *section)
   /* If DECL_SECTION_NAME is set, assume it is trustworthy.  */
   if (!DECL_SECTION_NAME (decl))
     {
-      /* Only cater for unit-at-a-time mode, where we know that the user
-	 cannot later specify a section for DECL.  */
-      if (!flag_unit_at_a_time)
-	return false;
-
       /* Make sure that we will not create a unique section for DECL.  */
       if (flag_function_sections || DECL_ONE_ONLY (decl))
 	return false;

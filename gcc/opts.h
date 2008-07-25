@@ -64,7 +64,6 @@ extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 extern const unsigned int cl_lang_count;
-extern bool no_unit_at_a_time_default;
 
 #define CL_PARAMS               (1 << 18) /* Fake entry.  Used to display --param info with --help.  */
 #define CL_WARNING		(1 << 19) /* Enables an (optional) warning message.  */

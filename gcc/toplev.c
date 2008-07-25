@@ -1702,9 +1702,6 @@ process_options (void)
   if (flag_asynchronous_unwind_tables)
     flag_unwind_tables = 1;
 
-  if (!flag_unit_at_a_time)
-    flag_section_anchors = 0;
-
   if (flag_value_profile_transformations)
     flag_profile_values = 1;
 
