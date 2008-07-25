@@ -463,7 +463,7 @@ do { \
 do {									\
   if (LEVEL)								\
     {									\
-      flag_omit_frame_pointer = -1;					\
+      flag_omit_frame_pointer = 2;					\
       if (! SIZE)							\
 	sh_div_str = "inv:minlat";					\
     }									\
@@ -690,7 +690,7 @@ do {									\
     if (! VALID_REGISTER_P (ADDREGNAMES_REGNO (regno)))			\
       sh_additional_register_names[regno][0] = '\0';			\
 									\
-  if (flag_omit_frame_pointer < 0)					\
+  if (flag_omit_frame_pointer == 2)					\
    {									\
      /* The debugging information is sufficient,			\
         but gdb doesn't implement this yet */				\
