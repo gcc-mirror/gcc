@@ -1,3 +1,8 @@
+2008-07-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
+	movv2si_internal): Add mem = reg alternative.
+
 2008-07-23  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (infer_value_range): Ignore asm statements when
