@@ -1,3 +1,9 @@
+2008-07-25  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR bootstrap/36918
+	* config/sparc/sparc.h (DEFAULT_PCC_STRUCT_RETURN): Define
+	DEFAULT_PCC_STRUCT_RETURN to 127.
+
 2008-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (record_reference): Drop non-unit-at-a-time code.
