@@ -1515,30 +1515,6 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		   "noinline follows inline declaration ", newdecl);
 	  warned = true;
 	}
-
-      /* Inline declaration after use or definition.
-	 ??? Should we still warn about this now we have unit-at-a-time
-	 mode and can get it right?
-	 Definitely don't complain if the decls are in different translation
-	 units.
-	 C99 permits this, so don't warn in that case.  (The function
-	 may not be inlined everywhere in function-at-a-time mode, but
-	 we still shouldn't warn.)  */
-      if (DECL_DECLARED_INLINE_P (newdecl) && !DECL_DECLARED_INLINE_P (olddecl)
-	  && same_translation_unit_p (olddecl, newdecl)
-	  && flag_gnu89_inline)
-	{
-	  if (TREE_USED (olddecl))
-	    {
-	      warning (0, "%q+D declared inline after being called", olddecl);
-	      warned = true;
-	    }
-	  else if (DECL_INITIAL (olddecl))
-	    {
-	      warning (0, "%q+D declared inline after its definition", olddecl);
-	      warned = true;
-	    }
-	}
     }
   else /* PARM_DECL, VAR_DECL */
     {
@@ -1801,9 +1777,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       if (new_is_definition && DECL_INITIAL (olddecl))
 	{
 	  if (TREE_USED (olddecl)
-	      /* In unit-at-a-time mode we never inline re-defined extern
-		 inline functions.  */
-	      && !flag_unit_at_a_time
+	      /* We never inline re-defined extern inline functions.
+		 FIXME: This would be better handled by keeping both functions
+		 as separate declarations.  */
 	      && cgraph_function_possibly_inlined_p (olddecl))
 	    (*debug_hooks->outlining_inline_function) (olddecl);
 
@@ -3618,10 +3594,6 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	}
     }
 
-  /* If this was marked 'used', be sure it will be output.  */
-  if (!flag_unit_at_a_time && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-    mark_decl_referenced (decl);
-
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (!DECL_FILE_SCOPE_P (decl)
@@ -4878,10 +4850,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (initialized)
 	      DECL_INLINE (decl) = 1;
 	  }
-	/* If -finline-functions, assume it can be inlined.  This does
-	   two things: let the function be deferred until it is actually
-	   needed, and let dwarf2 know that the function is inlinable.  */
-	else if (flag_inline_trees == 2 && initialized)
+	else if (initialized)
 	  DECL_INLINE (decl) = 1;
       }
     else
@@ -6755,9 +6724,9 @@ finish_function (void)
       && !MAIN_NAME_P (DECL_NAME (fndecl))
       /* Or if they didn't actually specify a return type.  */
       && !C_FUNCTION_IMPLICIT_INT (fndecl)
-      /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
-	 inline function, as we might never be compiled separately.  */
-      && DECL_INLINE (fndecl))
+      /* Normally, with -Wreturn-type, flow will complain, but we might
+         optimize out static functions.  */
+      && !TREE_PUBLIC (fndecl))
     {
       warning (OPT_Wreturn_type,
 	       "no return statement in function returning non-void");

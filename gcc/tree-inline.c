@@ -90,13 +90,6 @@ along with GCC; see the file COPYING3.  If not see
 
    See the CALL_EXPR handling case in copy_body_r ().  */
 
-/* 0 if we should not perform inlining.
-   1 if we should expand functions calls inline at the tree level.
-   2 if we should consider *all* functions to be inline
-   candidates.  */
-
-int flag_inline_trees = 0;
-
 /* To Do:
 
    o In order to make inlining-on-trees work, we pessimized
@@ -2100,24 +2093,6 @@ inlinable_function_p (tree fn)
   if (!DECL_SAVED_TREE (fn))
     return false;
 
-  /* If we're not inlining at all, then we cannot inline this function.  */
-  else if (!flag_inline_trees)
-    inlinable = false;
-
-  /* Only try to inline functions if DECL_INLINE is set.  This should be
-     true for all functions declared `inline', and for all other functions
-     as well with -finline-functions.
-
-     Don't think of disregarding DECL_INLINE when flag_inline_trees == 2;
-     it's the front-end that must set DECL_INLINE in this case, because
-     dwarf2out loses if a function that does not have DECL_INLINE set is
-     inlined anyway.  That is why we have both DECL_INLINE and
-     DECL_DECLARED_INLINE_P.  */
-  /* FIXME: When flag_inline_trees dies, the check for flag_unit_at_a_time
-	    here should be redundant.  */
-  else if (!DECL_INLINE (fn) && !flag_unit_at_a_time)
-    inlinable = false;
-
   else if (inline_forbidden_p (fn))
     {
       /* See if we should warn about uninlinable functions.  Previously,
@@ -2674,7 +2649,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
          where previous inlining turned indirect call into direct call by
          constant propagating arguments.  In all other cases we hit a bug
          (incorrect node sharing is most common reason for missing edges.  */
-      gcc_assert (dest->needed || !flag_unit_at_a_time);
+      gcc_assert (dest->needed);
       cgraph_create_edge (id->dst_node, dest, stmt,
 			  bb->count, CGRAPH_FREQ_BASE,
 			  bb->loop_depth)->inline_failed
@@ -2699,7 +2674,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn))
 	  /* Avoid warnings during early inline pass. */
-	  && (!flag_unit_at_a_time || cgraph_global_info_ready))
+	  && cgraph_global_info_ready)
 	{
 	  sorry ("inlining failed in call to %q+F: %s", fn, reason);
 	  sorry ("called from here");
@@ -2709,7 +2684,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 	       && strlen (reason)
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
 	       /* Avoid warnings during early inline pass. */
-	       && (!flag_unit_at_a_time || cgraph_global_info_ready))
+	       && cgraph_global_info_ready)
 	{
 	  warning (OPT_Winline, "inlining failed in call to %q+F: %s",
 		   fn, reason);

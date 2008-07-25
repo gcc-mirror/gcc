@@ -45,7 +45,6 @@ static const struct c_pch_matching
   const char *flag_name;
 } pch_matching[] = {
   { &flag_exceptions, "-fexceptions" },
-  { &flag_unit_at_a_time, "-funit-at-a-time" }
 };
 
 enum {

@@ -2217,8 +2217,7 @@ end_subprog_body (tree body)
 
   /* Deal with inline.  If declared inline or we should default to inline,
      set the flag in the decl.  */
-  DECL_INLINE (fndecl)
-    = DECL_DECLARED_INLINE_P (fndecl) || flag_inline_trees == 2;
+  DECL_INLINE (fndecl) = 1;
 
   /* We handle pending sizes via the elaboration of types, so we don't
      need to save them.  */

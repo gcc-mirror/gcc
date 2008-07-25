@@ -2192,7 +2192,7 @@ type_escape_execute (void)
 static bool
 gate_type_escape_vars (void)
 {
-  return (flag_unit_at_a_time != 0 && flag_ipa_type_escape
+  return (flag_ipa_type_escape
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !(errorcount || sorrycount));
 }

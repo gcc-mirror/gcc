@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 
       cgraph_decide_inlining implements heuristics taking whole callgraph
       into account, while cgraph_decide_inlining_incrementally considers
-      only one function at a time and is used in non-unit-at-a-time mode. 
+      only one function at a time and is used by early inliner.
 
    The inliner itself is split into several passes:
 
@@ -82,15 +82,13 @@ along with GCC; see the file COPYING3.  If not see
      to do inlining expanding code size it might result in unbounded growth of
      whole unit.
 
-     This is the main inlining pass in non-unit-at-a-time.
-
-     With unit-at-a-time the pass is run during conversion into SSA form.
-     Only functions already converted into SSA form are inlined, so the
-     conversion must happen in topological order on the callgraph (that is
-     maintained by pass manager).  The functions after inlining are early
-     optimized so the early inliner sees unoptimized function itself, but
-     all considered callees are already optimized allowing it to unfold
-     abstraction penalty on C++ effectively and cheaply.
+     The pass is run during conversion into SSA form.  Only functions already
+     converted into SSA form are inlined, so the conversion must happen in
+     topological order on the callgraph (that is maintained by pass manager).
+     The functions after inlining are early optimized so the early inliner sees
+     unoptimized function itself, but all considered callees are already
+     optimized allowing it to unfold abstraction penalty on C++ effectively and
+     cheaply.
 
    pass_ipa_early_inlining
 
@@ -150,16 +148,11 @@ along with GCC; see the file COPYING3.  If not see
    In SIZE mode, only functions that reduce function body size after inlining
    are inlined, this is used during early inlining.
 
-   In SPEED mode, all small functions are inlined.  This might result in
-   unbounded growth of compilation unit and is used only in non-unit-at-a-time
-   mode.
-
    in ALL mode, everything is inlined.  This is used during flattening.  */
 enum inlining_mode {
   INLINE_NONE = 0,
   INLINE_ALWAYS_INLINE,
   INLINE_SIZE,
-  INLINE_SPEED,
   INLINE_ALL
 };
 static bool
@@ -211,8 +204,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_o
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
 	  && !e->callee->needed
-	  && !cgraph_new_nodes
-	  && flag_unit_at_a_time)
+	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
 	  if (DECL_SAVED_TREE (e->callee->decl))
@@ -262,7 +254,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original)
   gcc_assert (e->inline_failed);
   e->inline_failed = NULL;
 
-  if (!e->callee->global.inlined && flag_unit_at_a_time)
+  if (!e->callee->global.inlined)
     DECL_POSSIBLY_INLINED (e->callee->decl) = true;
   e->callee->global.inlined = true;
 
@@ -1299,13 +1291,13 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
   if (e->inline_failed)
     cgraph_mark_inline (e);
 
-  /* In order to fully inline always_inline functions at -O0, we need to
+  /* In order to fully inline always_inline functions, we need to
      recurse here, since the inlined functions might not be processed by
      incremental inlining at all yet.  
 
      Also flattening needs to be done recursively.  */
 
-  if (!flag_unit_at_a_time || mode == INLINE_ALL || always_inline)
+  if (mode == INLINE_ALL || always_inline)
     cgraph_decide_inlining_incrementally (e->callee, mode, depth + 1);
   callee->aux = (void *)(size_t) callee_mode;
   return true;
@@ -1495,18 +1487,9 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	  }
 	if (cgraph_default_inline_p (e->callee, &failed_reason))
 	  inlined |= try_inline (e, mode, depth);
-	else if (!flag_unit_at_a_time)
-	  e->inline_failed = failed_reason;
       }
   node->aux = (void *)(size_t) old_mode;
   return inlined;
-}
-
-/* When inlining shall be performed.  */
-static bool
-cgraph_gate_inlining (void)
-{
-  return flag_inline_trees;
 }
 
 /* Because inlining might remove no-longer reachable nodes, we need to
@@ -1526,9 +1509,7 @@ cgraph_early_inlining (void)
 
   if (sorrycount || errorcount)
     return 0;
-  if (cgraph_decide_inlining_incrementally (node,
-					    flag_unit_at_a_time || optimize_size
-					    ? INLINE_SIZE : INLINE_SPEED, 0))
+  if (cgraph_decide_inlining_incrementally (node, INLINE_SIZE, 0))
     {
       timevar_push (TV_INTEGRATION);
       todo = optimize_inline_calls (current_function_decl);
@@ -1541,7 +1522,7 @@ cgraph_early_inlining (void)
 static bool
 cgraph_gate_early_inlining (void)
 {
-  return flag_inline_trees && flag_early_inlining;
+  return flag_early_inlining;
 }
 
 struct gimple_opt_pass pass_early_inline = 
@@ -1567,7 +1548,7 @@ struct gimple_opt_pass pass_early_inline =
 static bool
 cgraph_gate_ipa_early_inlining (void)
 {
-  return (flag_inline_trees && flag_early_inlining
+  return (flag_early_inlining
 	  && (flag_branch_probabilities || flag_test_coverage
 	      || profile_arc_flag));
 }
@@ -1626,19 +1607,12 @@ compute_inline_parameters_for_current (void)
   return 0;
 }
 
-/* When inlining shall be performed.  */
-static bool
-gate_inline_passes (void)
-{
-  return flag_inline_trees;
-}
-
 struct gimple_opt_pass pass_inline_parameters = 
 {
  {
   GIMPLE_PASS,
   NULL,	 				/* name */
-  gate_inline_passes,			/* gate */
+  NULL,					/* gate */
   compute_inline_parameters_for_current,/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -1746,7 +1720,7 @@ struct ipa_opt_pass pass_ipa_inline =
  {
   IPA_PASS,
   "inline",				/* name */
-  cgraph_gate_inlining,			/* gate */
+  NULL,					/* gate */
   cgraph_decide_inlining,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -1768,63 +1742,5 @@ struct ipa_opt_pass pass_ipa_inline =
  NULL,					/* variable_transform */
 };
 
-
-/* When inlining shall be performed.  */
-static bool
-cgraph_gate_O0_always_inline (void)
-{
-  return !flag_unit_at_a_time || !flag_inline_trees;
-}
-
-static unsigned int
-cgraph_O0_always_inline (void)
-{
-  struct cgraph_node *node = cgraph_node (current_function_decl);
-  unsigned int todo = 0;
-  bool inlined;
-
-  if (sorrycount || errorcount)
-    return 0;
-  inlined = cgraph_decide_inlining_incrementally (node, INLINE_SPEED, 0);
-  /* We might need the body of this function so that we can expand
-     it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (current_function_decl))
-    save_inline_function_body (node);
-  if (inlined || warn_inline)
-    {
-      timevar_push (TV_INTEGRATION);
-      todo = optimize_inline_calls (current_function_decl);
-      timevar_pop (TV_INTEGRATION);
-    }
-  /* In non-unit-at-a-time we must mark all referenced functions as needed.  */
-  if (!flag_unit_at_a_time)
-    {
-      struct cgraph_edge *e;
-      for (e = node->callees; e; e = e->next_callee)
-	if (e->callee->analyzed)
-          cgraph_mark_needed_node (e->callee);
-    }
-  return todo | execute_fixup_cfg ();
-}
-
-struct gimple_opt_pass pass_O0_always_inline = 
-{
- {
-  GIMPLE_PASS,
-  "always_inline",			/* name */
-  cgraph_gate_O0_always_inline,		/* gate */
-  cgraph_O0_always_inline,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
-  0,	                                /* properties_required */
-  PROP_cfg,				/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow
-  | TODO_verify_stmts			/* todo_flags_finish */
- }
-};
 
 #include "gt-ipa-inline.h"

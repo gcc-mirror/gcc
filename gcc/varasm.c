@@ -2228,7 +2228,7 @@ contains_pointers_p (tree type)
     }
 }
 
-/* In unit-at-a-time mode, we delay assemble_external processing until
+/* We delay assemble_external processing until
    the compilation unit is finalized.  This is the best we can do for
    right now (i.e. stage 3 of GCC 4.0) - the right thing is to delay
    it all the way to final.  See PR 17982 for further discussion.  */
@@ -5380,7 +5380,7 @@ assemble_alias (tree decl, tree target)
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
-  if (!flag_unit_at_a_time || cgraph_global_info_ready)
+  if (cgraph_global_info_ready)
     target_decl = find_decl_and_mark_needed (decl, target);
   else
     target_decl= NULL;

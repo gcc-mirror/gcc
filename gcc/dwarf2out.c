@@ -10448,8 +10448,6 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   if (DECL_P (*tp) && ! TREE_PUBLIC (*tp) && ! TREE_USED (*tp)
       && ! TREE_ASM_WRITTEN (*tp))
     return *tp;
-  else if (!flag_unit_at_a_time)
-    return NULL_TREE;
   /* ???  The C++ FE emits debug information for using decls, so
      putting gcc_unreachable here falls over.  See PR31899.  For now
      be conservative.  */

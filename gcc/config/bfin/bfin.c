@@ -1129,8 +1129,7 @@ bfin_load_pic_reg (rtx dest)
   struct cgraph_local_info *i = NULL;
   rtx addr, insn;
  
-  if (flag_unit_at_a_time)
-    i = cgraph_local_info (current_function_decl);
+  i = cgraph_local_info (current_function_decl);
  
   /* Functions local to the translation unit don't need to reload the
      pic reg, since the caller always passes a usable one.  */
@@ -1906,6 +1905,7 @@ static bool
 bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 			      tree exp ATTRIBUTE_UNUSED)
 {
+  struct cgraph_local_info *this_func, *called_func;
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
   if (fkind != SUBROUTINE)
     return false;
@@ -1917,17 +1917,10 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
      not need to reload P5 in the prologue, but the sibcall wil pop P5 in the
      sibcall epilogue, and we end up with the wrong value in P5.  */
 
-  if (!flag_unit_at_a_time || decl == NULL)
-    /* Not enough information.  */
-    return false;
-
-  {
-    struct cgraph_local_info *this_func, *called_func;
  
-    this_func = cgraph_local_info (current_function_decl);
-    called_func = cgraph_local_info (decl);
-    return !called_func->local || this_func->local;
-  }
+  this_func = cgraph_local_info (current_function_decl);
+  called_func = cgraph_local_info (decl);
+  return !called_func->local || this_func->local;
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at

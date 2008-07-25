@@ -49,6 +49,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "version.h"
 #include "tree-iterator.h"
 #include "langhooks.h"
+#include "cgraph.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
 extern void indent (void);
@@ -1797,14 +1798,6 @@ end_java_method (void)
 
   finish_method (fndecl);
 
-  if (! flag_unit_at_a_time)
-    {
-      /* Nulling these fields when we no longer need them saves
-	 memory.  */
-      DECL_SAVED_TREE (fndecl) = NULL;
-      DECL_STRUCT_FUNCTION (fndecl) = NULL;
-      DECL_INITIAL (fndecl) = NULL_TREE;
-    }
   current_function_decl = NULL_TREE;
 }
 
@@ -1854,15 +1847,12 @@ java_mark_decl_local (tree decl)
 {
   DECL_EXTERNAL (decl) = 0;
 
-  /* If we've already constructed DECL_RTL, give encode_section_info
-     a second chance, now that we've changed the flags.  */
-  /* ??? Ideally, we'd have flag_unit_at_a_time set, and not have done
-     anything that would have referenced DECL_RTL so far.  But at the
-     moment we force flag_unit_at_a_time off due to excessive memory
-     consumption when compiling large jar files.  Which probably means
-     that we need to re-order how we process jar files...  */
-  if (DECL_RTL_SET_P (decl))
-    make_decl_rtl (decl);
+#ifdef ENABLE_CHECKING
+  /* Double check that we didn't pass the function to the callgraph early.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    gcc_assert (!cgraph_node (decl)->local.finalized);
+#endif
+  gcc_assert (!DECL_RTL_SET_P (decl));
 }
 
 /* Given appropriate target support, G++ will emit hidden aliases for native

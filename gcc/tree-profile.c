@@ -311,11 +311,8 @@ tree_gen_ic_func_profiler (void)
   tree stmt1, stmt2;
   tree tree_uid, cur_func;
 
-  if (flag_unit_at_a_time)
-    {
-      if (!c_node->needed)
-	return;
-    }
+  if (!c_node->needed)
+    return;
   
   tree_init_edge_profiler ();
   

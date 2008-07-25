@@ -333,11 +333,6 @@ bool use_gnu_debug_info_extensions;
 /* The default visibility for all symbols (unless overridden) */
 enum symbol_visibility default_visibility = VISIBILITY_DEFAULT;
 
-/* Disable unit-at-a-time for frontends that might be still broken in this
-   respect.  */
-
-bool no_unit_at_a_time_default;
-
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
 
@@ -872,13 +867,11 @@ decode_options (unsigned int argc, const char **argv)
 	    }
 	}
     }
-
-
+  
   if (!flag_unit_at_a_time)
     {
       flag_section_anchors = 0;
       flag_toplevel_reorder = 0;
-      flag_unit_at_a_time = 1;
     }
   if (!flag_toplevel_reorder)
     {
@@ -1108,16 +1101,6 @@ decode_options (unsigned int argc, const char **argv)
 
   if (flag_really_no_inline == 2)
     flag_really_no_inline = flag_no_inline;
-
-  /* Inlining of functions called just once will only work if we can look
-     at the complete translation unit.  */
-  if (flag_inline_functions_called_once && !flag_unit_at_a_time)
-    {
-      flag_inline_functions_called_once = 0;
-      warning (OPT_Wdisabled_optimization,
-	       "-funit-at-a-time is required for inlining of functions "
-	       "that are only called once");
-    }
 
   /* The optimization to partition hot and cold basic blocks into separate
      sections of the .o and executable files does not work (currently)

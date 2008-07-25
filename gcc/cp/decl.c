@@ -1954,8 +1954,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	}
       else if (new_defines_function && DECL_INITIAL (olddecl))
 	{
-	  /* C++ is always in in unit-at-a-time mode, so we never
-	     inline re-defined extern inline functions.  */
+	  /* Never inline re-defined extern inline functions.
+	     FIXME: this could be better handled by keeping both
+	     function as separate declarations.  */
 	  DECL_INLINE (newdecl) = 0;
 	  DECL_UNINLINABLE (newdecl) = 1;
 	}
@@ -6643,7 +6644,7 @@ grokfndecl (tree ctype,
   /* We inline functions that are explicitly declared inline, or, when
      the user explicitly asks us to, all functions.  */
   if (DECL_DECLARED_INLINE_P (decl)
-      || (flag_inline_trees == 2 && !DECL_INLINE (decl) && funcdef_flag))
+      || (!DECL_INLINE (decl) && funcdef_flag))
     DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;

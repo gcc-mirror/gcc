@@ -1212,7 +1212,7 @@ ipa_unregister_cgraph_hooks (void)
 void
 free_all_ipa_structures_after_ipa_cp (void)
 {
-  if (!flag_indirect_inlining || !flag_inline_trees)
+  if (!flag_indirect_inlining)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();

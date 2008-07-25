@@ -1,3 +1,13 @@
+2008-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline-4.c: Remove.
+	* gcc.dg/pch/valid-3.hs: Remove.
+	* gcc.dg/pch/valid-3.c: Remove.
+	* g++.old-deja/g++.brendan/crash52.C: Accept returning void warning
+	* g++.old-deja/g++.jason/report.C: Likewise.
+	* testsuite/g++.dg/warn/pr23075.C: We get returning void warning
+	instead of control flow warning.
+
 2008-07-24  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/33141

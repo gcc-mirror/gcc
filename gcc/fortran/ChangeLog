@@ -1,3 +1,7 @@
+2008-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* fortran/options.c (gfc_post_options): Remove flag_unline_trees code.
+
 2008-07-24  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/33141

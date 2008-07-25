@@ -38,6 +38,7 @@ static tree
 record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
+  tree decl;
 
   switch (TREE_CODE (t))
     {
@@ -52,32 +53,23 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case FDESC_EXPR:
     case ADDR_EXPR:
-      if (flag_unit_at_a_time)
-	{
-	  /* Record dereferences to the functions.  This makes the
-	     functions reachable unconditionally.  */
-	  tree decl = TREE_OPERAND (*tp, 0);
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    cgraph_mark_needed_node (cgraph_node (decl));
-	}
+      /* Record dereferences to the functions.  This makes the
+	 functions reachable unconditionally.  */
+      decl = TREE_OPERAND (*tp, 0);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	cgraph_mark_needed_node (cgraph_node (decl));
       break;
 
     case OMP_PARALLEL:
-      if (flag_unit_at_a_time)
-	{
-	  if (OMP_PARALLEL_FN (*tp))
-	    cgraph_mark_needed_node (cgraph_node (OMP_PARALLEL_FN (*tp)));
-	}
+      if (OMP_PARALLEL_FN (*tp))
+	cgraph_mark_needed_node (cgraph_node (OMP_PARALLEL_FN (*tp)));
       break;
 
     case OMP_TASK:
-      if (flag_unit_at_a_time)
-	{
-	  if (OMP_TASK_FN (*tp))
-	    cgraph_mark_needed_node (cgraph_node (OMP_TASK_FN (*tp)));
-	  if (OMP_TASK_COPYFN (*tp))
-	    cgraph_mark_needed_node (cgraph_node (OMP_TASK_COPYFN (*tp)));
-	}
+      if (OMP_TASK_FN (*tp))
+	cgraph_mark_needed_node (cgraph_node (OMP_TASK_FN (*tp)));
+      if (OMP_TASK_COPYFN (*tp))
+	cgraph_mark_needed_node (cgraph_node (OMP_TASK_COPYFN (*tp)));
       break;
 
     default:
@@ -187,8 +179,7 @@ build_cgraph_edges (void)
     {
       tree decl = TREE_VALUE (step);
       if (TREE_CODE (decl) == VAR_DECL
-	  && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-	  && flag_unit_at_a_time)
+	  && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl)))
 	varpool_finalize_decl (decl);
       else if (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
 	walk_tree (&DECL_INITIAL (decl), record_reference, node, visited_nodes);

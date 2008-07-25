@@ -1314,7 +1314,7 @@ static_execute (void)
 static bool
 gate_reference (void)
 {
-  return (flag_unit_at_a_time != 0  && flag_ipa_reference
+  return (flag_ipa_reference
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !(errorcount || sorrycount));
 }
