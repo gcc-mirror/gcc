@@ -1,3 +1,46 @@
+2008-07-25  Michael Meissner  <gnu@the-meissners.org>
+
+	* doc/extend.texi (hot attribute): Document that the hot attribute
+	turns on -O3 for some ports.
+	(cold attribute): Document that the cold attribute turns on -Os
+	for some ports
+
+	* doc/tm.texi (OPTIMIZATION_OPTIONS): Update documentation to
+	reflect function specific option support.
+
+	* target.h (struct target_option_hooks): Add fields to say whether
+	the cold attribute implies -Os and the hot attribute implies -O3.
+
+	* target-def.h (TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION):
+	By default, do not turn on -Os for cold functions.
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): By default, do
+	not turn on -O3 for hot functions.
+
+	* c-common.c (handle_hot_attribute): Use target hook to determine
+	if hot functions should enable -O3.
+	(handle_cold_attribute): Use target hook to determine if cold
+	functions should enable -Os.
+
+	* config/i386/i386.c (ix86_target_string): Add -m3dnowa support.
+	(override_options): Move disable scheduling to
+	optimization_options.
+	(optimization_options): Disable scheduling here, not
+	override_options.
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): Define.
+	(TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION): Define.
+
+	* config/ia64/ia64.c (ia64_override_options): Move setting
+	scheduling flags to ia64_optimization_options.
+	(ia64_optimization_options): Disable scheduling options here, and
+	not in ia64_override_options.
+	(TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION): Define.
+	(TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION): Define.
+
+2008-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/36936
+	* config/i386/i386.c (override_options): Don't clear TARGET_CMOVE.
+
 2008-07-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/36926

@@ -2853,7 +2853,7 @@ that affect more than one function.
 This can be used for instance to have frequently executed functions
 compiled with more aggressive optimization options that produce faster
 and larger code, while other functions can be called with less
-aggressive options.  The @code{hot} attribute implies
+aggressive options.  On some targets, the @code{hot} attribute implies
 @code{optimize("O3")}, and @code{cold} attribute implies
 @code{optimize("Os")}.
 
@@ -2903,8 +2903,9 @@ are automatically detected and this attribute is ignored.
 The @code{hot} attribute is not implemented in GCC versions earlier
 than 4.3.
 
-Starting with GCC 4.4, the @code{hot} attribute sets
-@code{optimize("O3")} to turn on more aggressive optimization.
+Starting with GCC 4.4, the @code{cold} attribute sets
+@code{optimize("O3")} to turn on more aggressive optimization on the
+the i386, x86_64, and IA-64 targets.
 
 @item cold
 @cindex @code{cold} function attribute
@@ -2924,7 +2925,8 @@ are automatically detected and this attribute is ignored.
 The @code{cold} attribute is not implemented in GCC versions earlier than 4.3.
 
 Starting with GCC 4.4, the @code{cold} attribute sets
-@code{optimize("Os")} to save space.
+@code{optimize("Os")} to save space on the the i386, x86_64, and IA-64
+targets.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute

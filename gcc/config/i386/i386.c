@@ -2215,6 +2215,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-msse2",		OPTION_MASK_ISA_SSE2 },
     { "-msse",		OPTION_MASK_ISA_SSE },
     { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
+    { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
@@ -3123,8 +3124,6 @@ override_options (bool main_args_p)
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
-  TARGET_CMOVE = 0;
-
   /* For sane SSE instruction set generation we need fcomi instruction.
      It is safe to enable all CMOVE instructions.  */
   if (TARGET_SSE)
@@ -3138,11 +3137,6 @@ override_options (bool main_args_p)
     internal_label_prefix_len = p - internal_label_prefix;
     *p = '\0';
   }
-
-  /* When scheduling description is not available, disable scheduler pass
-     so it won't slow down the compilation and make x87 code slower.  */
-  if (!TARGET_SCHEDULE)
-    flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 
   if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
     set_param_value ("simultaneous-prefetches",
@@ -3910,6 +3904,11 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
   if (level > 1)
     flag_schedule_insns = 0;
 #endif
+
+  /* When scheduling description is not available, disable scheduler pass
+     so it won't slow down the compilation and make x87 code slower.  */
+  if (!TARGET_SCHEDULE)
+    flag_schedule_insns_after_reload = flag_schedule_insns = 0;
 
   if (TARGET_MACHO)
     /* The Darwin libraries never set errno, so we might as well
@@ -27344,6 +27343,12 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_OPTION_CAN_INLINE_P
 #define TARGET_OPTION_CAN_INLINE_P ix86_can_inline_p
+
+#undef TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION
+#define TARGET_OPTION_COLD_ATTRIBUTE_SETS_OPTIMIZATION true
+
+#undef TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION
+#define TARGET_OPTION_HOT_ATTRIBUTE_SETS_OPTIMIZATION true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
