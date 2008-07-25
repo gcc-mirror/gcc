@@ -1698,18 +1698,6 @@ perform_integral_promotions (tree expr)
   return expr;
 }
 
-/* Take the address of an inline function without setting TREE_ADDRESSABLE
-   or TREE_USED.  */
-
-tree
-inline_conversion (tree exp)
-{
-  if (TREE_CODE (exp) == FUNCTION_DECL)
-    exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
-
-  return exp;
-}
-
 /* Returns nonzero iff exp is a STRING_CST or the result of applying
    decay_conversion to one.  */
 
@@ -2828,14 +2816,7 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 	pedwarn (OPT_pedantic, 
 		 "ISO C++ forbids calling %<::main%> from within program");
 
-      /* Differs from default_conversion by not setting TREE_ADDRESSABLE
-	 (because calling an inline function does not mean the function
-	 needs to be separately compiled).  */
-
-      if (DECL_INLINE (function))
-	function = inline_conversion (function);
-      else
-	function = build_addr_func (function);
+      function = build_addr_func (function);
     }
   else
     {

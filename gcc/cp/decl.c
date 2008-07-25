@@ -1551,14 +1551,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 				 olddecl);
 		  }
 	      }
-
-	  if (DECL_DECLARED_INLINE_P (newdecl)
-	      && ! DECL_DECLARED_INLINE_P (olddecl)
-	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
-	    {
-	      warning (0, "%q#D was used before it was declared inline", newdecl);
-	      warning (0, "%Jprevious non-inline declaration here", olddecl);
-	    }
 	}
     }
 
@@ -5954,8 +5946,6 @@ start_cleanup_fn (void)
      actually needed.  It is unlikely that it will be inlined, since
      it is only called via a function pointer, but we avoid unnecessary
      emissions this way.  */
-  DECL_INLINE (fndecl) = 1;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
   DECL_INTERFACE_KNOWN (fndecl) = 1;
   /* Build the parameter.  */
   if (use_cxa_atexit)
@@ -12011,13 +12001,15 @@ finish_function (int flags)
       /* Don't complain if we abort or throw.  */
       && !current_function_returns_abnormally
       && !DECL_NAME (DECL_RESULT (fndecl))
-      /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
-	 inline function, as we might never be compiled separately.  */
-      && (DECL_INLINE (fndecl) || processing_template_decl)
+      && !TREE_NO_WARNING (fndecl)
       /* Structor return values (if any) are set by the compiler.  */
       && !DECL_CONSTRUCTOR_P (fndecl)
       && !DECL_DESTRUCTOR_P (fndecl))
-    warning (OPT_Wreturn_type, "no return statement in function returning non-void");
+    {
+      warning (OPT_Wreturn_type,
+ 	       "no return statement in function returning non-void");
+      TREE_NO_WARNING (fndecl) = 1;
+    }
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
