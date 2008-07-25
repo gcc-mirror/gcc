@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2007, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2008, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,6 +35,7 @@
 
 #ifdef IN_RTS
 #include "tconfig.h"
+#include "tsystem.h"
 /* In the top-of-tree GCC, tconfig does not include tm.h, but in GCC 3.2
    it does.  To avoid branching raise.c just for that purpose, we kludge by
    looking for a symbol always defined by tm.h and if it's not defined,
@@ -43,7 +44,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #endif
-#include "tsystem.h"
 #include <sys/stat.h>
 #include <stdarg.h>
 typedef char bool;
