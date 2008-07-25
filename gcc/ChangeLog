@@ -1,3 +1,9 @@
+2008-07-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/36926
+	* ipa-prop.c (ipa_analyze_call_uses): Call
+	ipa_is_ssa_with_stmt_def instead of SSA_NAME_IS_DEFAULT_DEF.
+
 2008-07-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
