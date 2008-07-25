@@ -1,3 +1,8 @@
+2008-07-25  Jason Merrill  <jason@redhat.com>
+
+	* class.c (type_has_user_provided_default_constructor): Handle
+	templates.
+
 2008-07-23  Jan Hubicka  <jh@suse.cz>
 
 	* cp/decl.c (duplicate_decls): Update comment and unit-at-a-time.
@@ -6,6 +11,9 @@
 	* cp/lex.c (cxx_init): Do not set unit-at-a-time.
 
 2008-07-23  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_unqualified_name): Avoid infinite recursion when
+	trying to mangle a decl with no name.
 
 	Implement defaulted/deleted functions as per N2346
 	* cp-tree.h (struct lang_decl_flags): Add defaulted_p bitfield.
