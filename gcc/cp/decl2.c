@@ -3422,7 +3422,7 @@ cp_write_global_declarations (void)
 	{
 	  /* Does it need synthesizing?  */
 	  if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
-	      && (! DECL_REALLY_EXTERN (decl) || DECL_INLINE (decl)))
+	      && (! DECL_REALLY_EXTERN (decl) || possibly_inlined_p (decl)))
 	    {
 	      /* Even though we're already at the top-level, we push
 		 there again.  That way, when we pop back a few lines
@@ -3683,6 +3683,22 @@ check_default_args (tree x)
     }
 }
 
+/* Return true if function DECL can be inlined.  This is used to force
+   instantiation of methods that might be interesting for inlining.  */
+bool
+possibly_inlined_p (tree decl)
+{
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  if (DECL_UNINLINABLE (decl))
+    return false;
+  if (!optimize)
+    return DECL_DECLARED_INLINE_P (decl);
+  /* When optimizing, we might inline everything when flatten
+     attribute or heuristics inlining for size or autoinlining
+     is used.  */
+  return true;
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  */
@@ -3780,8 +3796,9 @@ mark_used (tree decl)
 	   && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
 	   && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	       || (TREE_CODE (decl) == FUNCTION_DECL
-		   && DECL_INLINE (DECL_TEMPLATE_RESULT
-				   (template_for_substitution (decl))))
+		   && possibly_inlined_p
+		       (DECL_TEMPLATE_RESULT (
+		         template_for_substitution (decl))))
 	       /* We need to instantiate static data members so that there
 		  initializers are available in integral constant
 		  expressions.  */

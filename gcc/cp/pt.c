@@ -15144,7 +15144,8 @@ instantiate_decl (tree d, int defer_ok,
   if (external_p
       /* ... but we instantiate inline functions so that we can inline
 	 them and ... */
-      && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d))
+      && ! (TREE_CODE (d) == FUNCTION_DECL
+	    && possibly_inlined_p (d))
       /* ... we instantiate static data members whose values are
 	 needed in integral constant expressions.  */
       && ! (TREE_CODE (d) == VAR_DECL
@@ -15221,8 +15222,7 @@ instantiate_decl (tree d, int defer_ok,
       /* Instantiate inline functions so that the inliner can do its
 	 job, even though we'll not be emitting a copy of this
 	 function.  */
-      if (!(TREE_CODE (d) == FUNCTION_DECL
-	    && DECL_DECLARED_INLINE_P (d)))
+      if (!(TREE_CODE (d) == FUNCTION_DECL && possibly_inlined_p (d)))
 	goto out;
     }
 

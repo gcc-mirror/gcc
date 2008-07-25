@@ -1,3 +1,20 @@
+2008-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* typeck.c (inline_conversion): Remove.
+	(cp_build_function_call): Do not use inline_conversion.
+	* decl.c (duplicate_decls): Do not insist on inline being declared
+	early.
+	(start_cleanup_fn): Do not assume that INLINE flags prevent function
+	from being output.  We now remove static functions always.
+	(finish_function): Do return warning on all static functions.
+	* call.c (build_over_call): Do not use inline_conversion.
+	* cp-tree.h (possibly_inlined_p): Declare.
+	(inline_conversion): Remove.
+	* pt.c (instantiate_decl): Use possibly_inlined_p predicate.
+	* decl2.c (cp_write_global_declarations): Likewise.
+	(mark_used): Likewise.
+	(possibly_inlined_p): New functions.
+
 2008-07-25  Jason Merrill  <jason@redhat.com>
 
 	* class.c (type_has_user_provided_default_constructor): Handle

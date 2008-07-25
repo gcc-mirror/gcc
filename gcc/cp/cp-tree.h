@@ -4334,6 +4334,7 @@ extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
 extern tree build_artificial_parm		(tree, tree);
+extern bool possibly_inlined_p			(tree);
 
 /* in error.c */
 extern void init_error				(void);
@@ -4812,7 +4813,6 @@ extern int comp_cv_qual_signature		(tree, tree);
 extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code, bool);
 extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool);
 extern tree cxx_sizeof_nowarn                   (tree);
-extern tree inline_conversion			(tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
 extern tree unlowered_expr_type                 (const_tree);
 extern tree decay_conversion			(tree);

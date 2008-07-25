@@ -5400,8 +5400,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	fn = build_vfn_ref (argarray[0], DECL_VINDEX (fn));
       TREE_TYPE (fn) = t;
     }
-  else if (DECL_INLINE (fn))
-    fn = inline_conversion (fn);
   else
     fn = build_addr_func (fn);
 
