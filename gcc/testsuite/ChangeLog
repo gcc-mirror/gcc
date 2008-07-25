@@ -1,3 +1,9 @@
+2008-07-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb1_ok):
+	New.
+	* g++.dg/inherit/thunk8.C: Use it.
+
 2008-07-23  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.target/i386/20080723-1.c: New test.
