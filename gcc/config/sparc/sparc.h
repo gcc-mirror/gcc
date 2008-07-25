@@ -981,9 +981,12 @@ extern int sparc_mode_class[];
 
 /* Pick a default value we can notice from override_options:
    !v9: Default is on.
-   v9: Default is off.  */
+   v9: Default is off.
+   Originally it was -1, but later on the container of options changed to
+   unsigned byte, so we decided to pick 127 as default value, which does
+   reflect an undefined default value in case of 0/1.  */
 
-#define DEFAULT_PCC_STRUCT_RETURN -1
+#define DEFAULT_PCC_STRUCT_RETURN 127
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
