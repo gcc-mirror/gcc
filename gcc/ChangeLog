@@ -1,3 +1,10 @@
+2008-07-26  Olivier Hainque  <hainque@adacore.com>
+
+	* collect2.c (symkind): New enum.  Symbol kinds we care about.
+	(is_ctor_dtor): Return symkind instead of int.  Adjust prototype,
+	code and head comment accordingly.
+	(scan_prog_file): Use symkind names instead of bare integers.
+	
 2008-07-25  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_function_possibly_inlined_p): Do not rely on DECL_INLINE.
