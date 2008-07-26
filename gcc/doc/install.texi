@@ -3675,9 +3675,7 @@ or newer for a working GCC@.
 <hr />
 @end html
 @heading @anchor{powerpc-x-netbsd}powerpc-*-netbsd*
-PowerPC system in big endian mode running NetBSD@.  To build the
-documentation you will need Texinfo version 4.7 (NetBSD 1.5.1 included
-Texinfo version 3.12).
+PowerPC system in big endian mode running NetBSD@.
 
 @html
 <hr />
