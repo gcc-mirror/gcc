@@ -1,3 +1,8 @@
+2008-07-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (powerpc-*-netbsd*): Remove redundant texinfo
+	version requirements.
+
 2008-07-26  Olivier Hainque  <hainque@adacore.com>
 
 	* collect2.c (symkind): New enum.  Symbol kinds we care about.
