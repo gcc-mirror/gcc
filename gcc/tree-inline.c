@@ -2058,7 +2058,6 @@ inlinable_function_p (tree fn)
 
   /* We only warn for functions declared `inline' by the user.  */
   do_warning = (warn_inline
-		&& DECL_INLINE (fn)
 		&& DECL_DECLARED_INLINE_P (fn)
 		&& !DECL_IN_SYSTEM_HEADER (fn));
 

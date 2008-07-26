@@ -172,7 +172,6 @@ record_cdtor_fn (tree fndecl)
       VEC_safe_push (tree, gc, static_dtors, fndecl);
       DECL_STATIC_DESTRUCTOR (fndecl) = 0;
     }
-  DECL_INLINE (fndecl) = 1;
   node = cgraph_node (fndecl);
   node->local.disregard_inline_limits = 1;
   cgraph_mark_reachable_node (node);
@@ -1211,10 +1210,8 @@ bool
 cgraph_preserve_function_body_p (tree decl)
 {
   struct cgraph_node *node;
-  if (!cgraph_global_info_ready)
-    return (flag_really_no_inline
-	    ? DECL_DISREGARD_INLINE_LIMITS (decl)
-	    : DECL_INLINE (decl));
+
+  gcc_assert (cgraph_global_info_ready);
   /* Look if there is any clone around.  */
   for (node = cgraph_node (decl); node; node = node->next_clone)
     if (node->global.inlined_to)

@@ -1,3 +1,12 @@
+2008-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_function_possibly_inlined_p): Do not rely on DECL_INLINE.
+	* cgraphunit.c (record_cdtor_fn): Do not initialize DECL_INLINE
+	(cgraph_preserve_function_body_p): Do not rely on DECL_INLINE.
+	* dojump.c (clear_pending_stack_adjust): Likewise.
+	* print-tree.c (print_node): Ignore DECL_INLINE.
+	* tree-inline.c (inlinable_function_p): Likewise.
+	
 2008-07-25  Michael Meissner  <gnu@the-meissners.org>
 
 	* doc/extend.texi (hot attribute): Document that the hot attribute
