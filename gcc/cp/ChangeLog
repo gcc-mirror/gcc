@@ -1,3 +1,9 @@
+2008-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/36944
+	* class.c (type_has_user_provided_default_constructor): Handle
+	default parameters.
+
 2008-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (push_library_fn): Add a parameter for the exceptions that

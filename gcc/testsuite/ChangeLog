@@ -1,3 +1,8 @@
+2008-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/36944
+	* g++.dg/other/pr36944.C: New.
+
 2008-07-27  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/36724
