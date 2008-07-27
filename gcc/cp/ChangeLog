@@ -1,3 +1,17 @@
+2008-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (push_library_fn): Add a parameter for the exceptions that
+	the function may throw.
+	(push_void_library_fn, push_throw_library_fn, expand_static_init):
+	Adjust.
+	(build_library_fn): Change to static.
+	* cp-tree.h: Adjust declarations.
+	* except.c (declare_nothrow_library_fn): New.
+	(do_get_exception_ptr, do_begin_catch, do_free_exception,
+	do_allocate_exception):  Use the latter, adjust the declarations
+	(ie, add empty exception-specification), consistently with the
+	actual implementation in libsupc++.
+
 2008-07-25  Jan Hubicka  <jh@suse.cz>
 
 	* typeck.c (inline_conversion): Remove.

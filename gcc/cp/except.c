@@ -1,6 +1,7 @@
 /* Handle exceptional things in C++.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -160,6 +161,21 @@ build_exc_ptr (void)
   return build0 (EXC_PTR_EXPR, ptr_type_node);
 }
 
+/* Declare a function NAME, returning RETURN_TYPE, taking a single
+   parameter PARM_TYPE, with an empty exception specification.
+
+   Note that the C++ ABI document does not have a throw-specifier on
+   the routines declared below via this function.  The declarations
+   are consistent with the actual implementations in libsupc++.  */
+
+static tree
+declare_nothrow_library_fn (tree name, tree return_type, tree parm_type)
+{
+  tree tmp = tree_cons (NULL_TREE, parm_type, void_list_node);
+  return push_library_fn (name, build_function_type (return_type, tmp),
+			  empty_except_spec);
+}
+
 /* Build up a call to __cxa_get_exception_ptr so that we can build a
    copy constructor for the thrown object.  */
 
@@ -171,9 +187,8 @@ do_get_exception_ptr (void)
   fn = get_identifier ("__cxa_get_exception_ptr");
   if (!get_global_value_if_present (fn, &fn))
     {
-      /* Declare void* __cxa_get_exception_ptr (void *).  */
-      tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-      fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
+      /* Declare void* __cxa_get_exception_ptr (void *) throw().  */
+      fn = declare_nothrow_library_fn (fn, ptr_type_node, ptr_type_node);
     }
 
   return cp_build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
@@ -192,9 +207,8 @@ do_begin_catch (void)
   fn = get_identifier ("__cxa_begin_catch");
   if (!get_global_value_if_present (fn, &fn))
     {
-      /* Declare void* __cxa_begin_catch (void *).  */
-      tree tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-      fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
+      /* Declare void* __cxa_begin_catch (void *) throw().  */
+      fn = declare_nothrow_library_fn (fn, ptr_type_node, ptr_type_node);
     }
 
   return cp_build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
@@ -543,9 +557,8 @@ do_allocate_exception (tree type)
   fn = get_identifier ("__cxa_allocate_exception");
   if (!get_global_value_if_present (fn, &fn))
     {
-      /* Declare void *__cxa_allocate_exception(size_t).  */
-      tree tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
-      fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
+      /* Declare void *__cxa_allocate_exception(size_t) throw().  */
+      fn = declare_nothrow_library_fn (fn, ptr_type_node, size_type_node);
     }
 
   return cp_build_function_call (fn, 
@@ -565,9 +578,8 @@ do_free_exception (tree ptr)
   fn = get_identifier ("__cxa_free_exception");
   if (!get_global_value_if_present (fn, &fn))
     {
-      /* Declare void __cxa_free_exception (void *).  */
-      fn = push_void_library_fn (fn, tree_cons (NULL_TREE, ptr_type_node,
-						void_list_node));
+      /* Declare void __cxa_free_exception (void *) throw().  */
+      fn = declare_nothrow_library_fn (fn, void_type_node, ptr_type_node);
     }
 
   return cp_build_function_call (fn, tree_cons (NULL_TREE, ptr, NULL_TREE),
