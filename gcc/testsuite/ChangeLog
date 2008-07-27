@@ -1,3 +1,10 @@
+2008-07-27  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR tree-optimization/35252
+	* gcc.dg/vect/vect-complex-1.c, gcc.dg/vect/vect-complex-2.c,
+	gcc.dg/vect/fast-math-vect-complex-3.c,
+	gcc.dg/vect/vect-complex-4.c: New tests.
+
 2008-07-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/36944
