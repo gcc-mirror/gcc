@@ -1,3 +1,15 @@
+2008-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36132
+
+	* trans-array.c (gfc_conv_array_parameter): Fix packing/unpacking
+	for nonpresent optional actuals to optional formals.
+	* trans-array.h (gfc_conv_array_parameter): Update declaration.
+	* trans-expr.c (gfc_conv_function_call,gfc_trans_arrayfunc_assign):
+	Update gfc_conv_array_parameter calls.
+	* trans-intrinsics (gfc_conv_intrinsic_transfer,
+	gfc_conv_intrinsic_loc): Ditto.
+
 2008-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36366

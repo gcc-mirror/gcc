@@ -5064,7 +5064,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 /* TODO: Optimize passing g77 arrays.  */
 
 void
-gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
+gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
+			  const gfc_symbol *fsym)
 {
   tree ptr;
   tree desc;
@@ -5160,6 +5161,14 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       desc = se->expr;
       /* Repack the array.  */
       ptr = build_call_expr (gfor_fndecl_in_pack, 1, desc);
+
+      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	{
+	  tmp = gfc_conv_expr_present (sym);
+	  ptr = build3 (COND_EXPR, TREE_TYPE (se->expr), tmp, ptr,
+			null_pointer_node);
+	}
+
       ptr = gfc_evaluate_now (ptr, &se->pre);
       se->expr = ptr;
 
@@ -5182,6 +5191,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       tmp = gfc_conv_array_data (tmp);
       tmp = build2 (NE_EXPR, boolean_type_node,
 		    fold_convert (TREE_TYPE (tmp), ptr), tmp);
+
+      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			   gfc_conv_expr_present (sym), tmp);
+
       tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
 
       gfc_add_expr_to_block (&block, tmp);

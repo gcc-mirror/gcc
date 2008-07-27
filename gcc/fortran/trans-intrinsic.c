@@ -3263,7 +3263,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   if (ss == gfc_ss_terminator)
     gfc_conv_expr_reference (&argse, arg->expr);
   else
-    gfc_conv_array_parameter (&argse, arg->expr, ss, 1);
+    gfc_conv_array_parameter (&argse, arg->expr, ss, 1, NULL);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   ptr = argse.expr;
@@ -3696,7 +3696,7 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
   if (ss == gfc_ss_terminator)
     gfc_conv_expr_reference (se, arg_expr);
   else
-    gfc_conv_array_parameter (se, arg_expr, ss, 1); 
+    gfc_conv_array_parameter (se, arg_expr, ss, 1, NULL); 
   se->expr= convert (gfc_get_int_type (gfc_index_integer_kind), se->expr);
    
   /* Create a temporary variable for loc return value.  Without this, 

@@ -2259,7 +2259,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      f = f || !sym->attr.always_explicit;
 	  
 	      argss = gfc_walk_expr (arg->expr);
-	      gfc_conv_array_parameter (se, arg->expr, argss, f);
+	      gfc_conv_array_parameter (se, arg->expr, argss, f, NULL);
 	    }
 
 	  /* TODO -- the following two lines shouldn't be necessary, but
@@ -2466,7 +2466,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_subref_array_arg (&parmse, e, f,
 			fsym ? fsym->attr.intent : INTENT_INOUT);
 	      else
-	        gfc_conv_array_parameter (&parmse, e, argss, f);
+	        gfc_conv_array_parameter (&parmse, e, argss, f, fsym);
 
               /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
                  allocated on entry, it must be deallocated.  */
@@ -3989,7 +3989,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_start_block (&se.pre);
   se.want_pointer = 1;
 
-  gfc_conv_array_parameter (&se, expr1, ss, 0);
+  gfc_conv_array_parameter (&se, expr1, ss, 0, NULL);
 
   se.direct_byref = 1;
   se.ss = gfc_walk_expr (expr2);
