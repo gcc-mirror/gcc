@@ -668,7 +668,7 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 
       asprintf(&msg, "Label assigned to variable '%s' (%%ld) is not a format "
 	       "label", e->symtree->name);
-      gfc_trans_runtime_check (cond, &se.pre, &e->where, msg,
+      gfc_trans_runtime_check (true, false, cond, &se.pre, &e->where, msg,
 			       fold_convert (long_integer_type_node, tmp));
       gfc_free (msg);
 

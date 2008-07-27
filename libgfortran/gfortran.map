@@ -1072,6 +1072,7 @@ GFORTRAN_1.1 {
     _gfortran_pack_char4;
     _gfortran_pack_s_char4;
     _gfortran_reshape_char4;
+    _gfortran_runtime_warning_at;
     _gfortran_selected_char_kind;
     _gfortran_select_string_char4;
     _gfortran_spread_char4;

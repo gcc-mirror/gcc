@@ -1,3 +1,34 @@
+2008-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36132
+	PR fortran/29952
+	PR fortran/36909
+	* trans.c (gfc_trans_runtime_check): Allow run-time warning besides
+	run-time error.
+	* trans.h (gfc_trans_runtime_check): Update declaration.
+	* trans-array.c (gfc_trans_array_ctor_element,gfc_trans_array_bound_check,
+	gfc_conv_array_ref,gfc_conv_ss_startstride,gfc_trans_dummy_array_bias):
+	Updated gfc_trans_runtime_check calls.
+	(gfc_conv_array_parameter): Implement flag_check_array_temporaries,
+	fix packing/unpacking for nonpresent optional actuals to optional
+	formals.
+	* trans-array.h (gfc_conv_array_parameter): Update declaration.
+	* trans-expr.c (gfc_conv_substring,gfc_trans_arrayfunc_assign,
+	gfc_conv_function_call): Updated gfc_trans_runtime_check calls.
+	(gfc_conv_function_call): Update gfc_conv_array_parameter calls.
+	* trans-expr.c (gfc_trans_goto): Updated gfc_trans_runtime_check
+	calls.
+	* trans-io.c (set_string,gfc_conv_intrinsic_repeat): Ditto.
+	(gfc_conv_intrinsic_transfer,gfc_conv_intrinsic_loc): Same for
+	gfc_conv_array_parameter.
+	* trans-intrinsics.c (gfc_conv_intrinsic_bound): Ditto.
+	* trans-decl.c (gfc_build_builtin_function_decls): Add
+	gfor_fndecl_runtime_warning_at.
+	* lang.opt: New option fcheck-array-temporaries.
+	* gfortran.h (gfc_options): New flag_check_array_temporaries.
+	* options.c (gfc_init_options, gfc_handle_option): Handle flag.
+	* invoke.texi: New option fcheck-array-temporaries.
+
 2008-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* fortran/options.c (gfc_post_options): Remove flag_unline_trees code.

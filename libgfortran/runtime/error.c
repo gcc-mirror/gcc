@@ -285,6 +285,21 @@ runtime_error_at (const char *where, const char *message, ...)
 iexport(runtime_error_at);
 
 
+void
+runtime_warning_at (const char *where, const char *message, ...)
+{
+  va_list ap;
+
+  st_printf ("%s\n", where);
+  st_printf ("Fortran runtime warning: ");
+  va_start (ap, message);
+  st_vprintf (message, ap);
+  va_end (ap);
+  st_printf ("\n");
+}
+iexport(runtime_warning_at);
+
+
 /* void internal_error()-- These are this-can't-happen errors
  * that indicate something deeply wrong. */
 

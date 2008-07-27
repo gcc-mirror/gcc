@@ -351,13 +351,14 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
 /* Generate a runtime error if COND is true.  */
 
 void
-gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
-			 const char * msgid, ...)
+gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
+		     locus * where, const char * msgid, ...)
 {
   va_list ap;
   stmtblock_t block;
   tree body;
   tree tmp;
+  tree tmpvar = NULL;
   tree arg, arg2;
   tree *argarray;
   tree fntype;
@@ -376,6 +377,14 @@ gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
 	if (*p != '%')
 	  nargs++;
       }
+
+  if (once)
+    {
+       tmpvar = gfc_create_var (boolean_type_node, "print_warning");
+       TREE_STATIC (tmpvar) = 1;
+       DECL_INITIAL (tmpvar) = boolean_true_node;
+       gfc_add_expr_to_block (pblock, tmpvar);
+    }
 
   /* The code to generate the error.  */
   gfc_start_block (&block);
@@ -408,15 +417,24 @@ gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
     argarray[2+i] = va_arg (ap, tree);
   va_end (ap);
   
-  /* Build the function call to runtime_error_at; because of the variable
-     number of arguments, we can't use build_call_expr directly.  */
-  fntype = TREE_TYPE (gfor_fndecl_runtime_error_at);
+  /* Build the function call to runtime_(warning,error)_at; because of the
+     variable number of arguments, we can't use build_call_expr directly.  */
+  if (error)
+    fntype = TREE_TYPE (gfor_fndecl_runtime_error_at);
+  else
+    fntype = TREE_TYPE (gfor_fndecl_runtime_warning_at);
+
   tmp = fold_builtin_call_array (TREE_TYPE (fntype),
 				 fold_build1 (ADDR_EXPR,
 					      build_pointer_type (fntype),
-					      gfor_fndecl_runtime_error_at),
+					      error
+					      ? gfor_fndecl_runtime_error_at
+					      : gfor_fndecl_runtime_warning_at),
 				 nargs + 2, argarray);
   gfc_add_expr_to_block (&block, tmp);
+
+  if (once)
+    gfc_add_modify_expr (&block, tmpvar, boolean_false_node);
 
   body = gfc_finish_block (&block);
 
@@ -427,7 +445,12 @@ gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
   else
     {
       /* Tell the compiler that this isn't likely.  */
-      cond = fold_convert (long_integer_type_node, cond);
+      if (once)
+	cond = fold_build2 (TRUTH_AND_EXPR, long_integer_type_node, tmpvar,
+			    cond);
+      else
+	cond = fold_convert (long_integer_type_node, cond);
+
       tmp = build_int_cst (long_integer_type_node, 0);
       cond = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
       cond = fold_convert (boolean_type_node, cond);

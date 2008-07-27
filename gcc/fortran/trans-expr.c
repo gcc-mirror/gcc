@@ -328,7 +328,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else
 	asprintf (&msg, "Substring out of bounds: lower bound (%%ld)"
 		  "is less than one");
-      gfc_trans_runtime_check (fault, &se->pre, where, msg,
+      gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node,
 					     start.expr));
       gfc_free (msg);
@@ -344,7 +344,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       else
 	asprintf (&msg, "Substring out of bounds: upper bound (%%ld) "
 		  "exceeds string length (%%ld)");
-      gfc_trans_runtime_check (fault, &se->pre, where, msg,
+      gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node, end.expr),
 			       fold_convert (long_integer_type_node,
 					     se->string_length));
@@ -2299,7 +2299,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      f = f || !sym->attr.always_explicit;
 	  
 	      argss = gfc_walk_expr (arg->expr);
-	      gfc_conv_array_parameter (se, arg->expr, argss, f);
+	      gfc_conv_array_parameter (se, arg->expr, argss, f, NULL, NULL);
 	    }
 
 	  /* TODO -- the following two lines shouldn't be necessary, but
@@ -2535,7 +2535,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_subref_array_arg (&parmse, e, f,
 			fsym ? fsym->attr.intent : INTENT_INOUT);
 	      else
-	        gfc_conv_array_parameter (&parmse, e, argss, f);
+	        gfc_conv_array_parameter (&parmse, e, argss, f, fsym,
+					  sym->name);
 
               /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
                  allocated on entry, it must be deallocated.  */
@@ -2836,7 +2837,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		  tmp = gfc_conv_descriptor_data_get (info->descriptor);
 		  tmp = fold_build2 (NE_EXPR, boolean_type_node,
 				     tmp, info->data);
-		  gfc_trans_runtime_check (tmp, &se->pre, NULL, gfc_msg_fault);
+		  gfc_trans_runtime_check (true, false, tmp, &se->pre, NULL,
+					   gfc_msg_fault);
 		}
 	      se->expr = info->descriptor;
 	      /* Bundle in the string length.  */
@@ -4143,7 +4145,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_start_block (&se.pre);
   se.want_pointer = 1;
 
-  gfc_conv_array_parameter (&se, expr1, ss, 0);
+  gfc_conv_array_parameter (&se, expr1, ss, 0, NULL, NULL);
 
   se.direct_byref = 1;
   se.ss = gfc_walk_expr (expr2);
