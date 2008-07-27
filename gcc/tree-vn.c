@@ -52,20 +52,22 @@ make_value_handle (tree type)
 
 
 
-/* Compare two expressions E1 and E2 and return true if they are
-   equal.  */
+/* Compare two expressions E1 and E2 and return true if they are equal.  */
 
 bool
 expressions_equal_p (tree e1, tree e2)
 {
   tree te1, te2;
 
+  /* The obvious case.  */
   if (e1 == e2)
     return true;
 
-  te1 = TREE_TYPE (e1);
-  te2 = TREE_TYPE (e2);
+  /* If only one of them is null, they cannot be equal.  */
+  if (!e1 || !e2)
+    return false;
 
+  /* Recurse on elements of lists.  */
   if (TREE_CODE (e1) == TREE_LIST && TREE_CODE (e2) == TREE_LIST)
     {
       tree lop1 = e1;
@@ -80,12 +82,16 @@ expressions_equal_p (tree e1, tree e2)
 	    return false;
 	}
       return true;
-
     }
-  else if (TREE_CODE (e1) == TREE_CODE (e2)
-	   && (te1 == te2
-	       || types_compatible_p (te1, te2))
-	   && operand_equal_p (e1, e2, OEP_PURE_SAME))
+
+
+  te1 = TREE_TYPE (e1);
+  te2 = TREE_TYPE (e2);
+
+  /* Now perform the actual comparison.  */
+  if (TREE_CODE (e1) == TREE_CODE (e2)
+      && (te1 == te2 || types_compatible_p (te1, te2))
+      && operand_equal_p (e1, e2, OEP_PURE_SAME))
     return true;
 
   return false;

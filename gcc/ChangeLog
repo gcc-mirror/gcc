@@ -1,3 +1,9 @@
+2008-07-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/36830
+	* tree-vn.c (expressions_equal_p): Return false if only one operand
+	is null.
+
 2008-07-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
