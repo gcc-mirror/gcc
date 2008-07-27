@@ -319,7 +319,8 @@ static hashval_t
 vn_reference_op_compute_hash (const vn_reference_op_t vro1)
 {
   return iterative_hash_expr (vro1->op0, vro1->opcode)
-    + iterative_hash_expr (vro1->op1, vro1->opcode);
+    + iterative_hash_expr (vro1->op1, vro1->opcode)
+    + iterative_hash_expr (vro1->op2, vro1->opcode);
 }
 
 /* Return the hashcode for a given reference operation P1.  */
@@ -2587,22 +2588,24 @@ get_next_value_id (void)
 }
 
 
-/* Compare two expressions E1 and E2 and return true if they are
-   equal.  */
+/* Compare two expressions E1 and E2 and return true if they are equal.  */
 
 bool
 expressions_equal_p (tree e1, tree e2)
 {
-  tree te1, te2;
-
+  /* The obvious case.  */
   if (e1 == e2)
     return true;
 
-  te1 = TREE_TYPE (e1);
-  te2 = TREE_TYPE (e2);
-  if (te1 != te2)
+  /* If only one of them is null, they cannot be equal.  */
+  if (!e1 || !e2)
     return false;
 
+  /* Likewise if they are not of the same type.  */
+  if (TREE_TYPE (e1) != TREE_TYPE (e2))
+    return false;
+
+  /* Recurse on elements of lists.  */
   if (TREE_CODE (e1) == TREE_LIST && TREE_CODE (e2) == TREE_LIST)
     {
       tree lop1 = e1;
@@ -2617,10 +2620,11 @@ expressions_equal_p (tree e1, tree e2)
 	    return false;
 	}
       return true;
-
     }
-  else if (TREE_CODE (e1) == TREE_CODE (e2)
-	   && operand_equal_p (e1, e2, OEP_PURE_SAME))
+
+  /* Now perform the actual comparison.  */
+  if (TREE_CODE (e1) == TREE_CODE (e2)
+      && operand_equal_p (e1, e2, OEP_PURE_SAME))
     return true;
 
   return false;

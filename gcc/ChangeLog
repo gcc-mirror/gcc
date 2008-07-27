@@ -1,3 +1,9 @@
+2008-07-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/36830
+	* tree-ssa-sccvn.c (vn_reference_op_compute_hash): Hash operand #2.
+	(expressions_equal_p): Return false if only one operand is null.
+
 2008-07-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (powerpc-*-netbsd*): Remove redundant texinfo
