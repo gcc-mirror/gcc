@@ -1895,6 +1895,7 @@ typedef struct
   int flag_automatic;
   int flag_backslash;
   int flag_backtrace;
+  int flag_check_array_temporaries;
   int flag_allow_leading_underscore;
   int flag_dump_core;
   int flag_external_blas;

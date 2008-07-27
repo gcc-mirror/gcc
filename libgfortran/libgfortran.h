@@ -643,6 +643,9 @@ extern void runtime_error_at (const char *, const char *, ...)
      __attribute__ ((noreturn, format (printf, 2, 3)));
 iexport_proto(runtime_error_at);
 
+extern void runtime_warning_at (const char *, const char *, ...);
+iexport_proto(runtime_warning_at);
+
 extern void internal_error (st_parameter_common *, const char *)
   __attribute__ ((noreturn));
 internal_proto(internal_error);

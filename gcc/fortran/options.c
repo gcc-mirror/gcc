@@ -101,6 +101,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_backslash = 0;
   gfc_option.flag_module_private = 0;
   gfc_option.flag_backtrace = 0;
+  gfc_option.flag_check_array_temporaries = 0;
   gfc_option.flag_allow_leading_underscore = 0;
   gfc_option.flag_dump_core = 0;
   gfc_option.flag_external_blas = 0;
@@ -538,6 +539,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       
     case OPT_fbacktrace:
       gfc_option.flag_backtrace = value;
+      break;
+      
+    case OPT_fcheck_array_temporaries:
+      gfc_option.flag_check_array_temporaries = value;
       break;
       
     case OPT_fdump_core:

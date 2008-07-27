@@ -1022,7 +1022,7 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	      tree cond = fold_build2 (NE_EXPR, boolean_type_node,
 				       first_len_val, se->string_length);
 	      gfc_trans_runtime_check
-		(cond, &se->pre, &expr->where,
+		(true, false, cond, &se->pre, &expr->where,
 		 "Different CHARACTER lengths (%ld/%ld) in array constructor",
 		 fold_convert (long_integer_type_node, first_len_val),
 		 fold_convert (long_integer_type_node, se->string_length));
@@ -2235,7 +2235,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
   else
     asprintf (&msg, "%s, lower bound of dimension %d exceeded (%%ld < %%ld)",
 	      gfc_msg_fault, n+1);
-  gfc_trans_runtime_check (fault, &se->pre, where, msg,
+  gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			   fold_convert (long_integer_type_node, index),
 			   fold_convert (long_integer_type_node, tmp));
   gfc_free (msg);
@@ -2251,7 +2251,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
       else
 	asprintf (&msg, "%s, upper bound of dimension %d exceeded (%%ld > %%ld)",
 		  gfc_msg_fault, n+1);
-      gfc_trans_runtime_check (fault, &se->pre, where, msg,
+      gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node, index),
 			       fold_convert (long_integer_type_node, tmp));
       gfc_free (msg);
@@ -2445,7 +2445,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	  asprintf (&msg, "%s for array '%s', "
 	            "lower bound of dimension %d exceeded (%%ld < %%ld)",
 		    gfc_msg_fault, sym->name, n+1);
-	  gfc_trans_runtime_check (cond, &se->pre, where, msg,
+	  gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
 				   fold_convert (long_integer_type_node, tmp));
@@ -2462,7 +2462,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	      asprintf (&msg, "%s for array '%s', "
 			"upper bound of dimension %d exceeded (%%ld > %%ld)",
 			gfc_msg_fault, sym->name, n+1);
-	      gfc_trans_runtime_check (cond, &se->pre, where, msg,
+	      gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
 				   fold_convert (long_integer_type_node, tmp));
@@ -3026,7 +3026,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "Zero stride is not allowed, for dimension %d "
 			"of array '%s'", info->dim[n]+1,
 			ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg);
+	      gfc_trans_runtime_check (true, false, tmp, &inner,
+				       &ss->expr->where, msg);
 	      gfc_free (msg);
 
 	      desc = ss->data.info.descriptor;
@@ -3068,7 +3069,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "%s, lower bound of dimension %d of array '%s'"
 			" exceeded (%%ld < %%ld)", gfc_msg_fault,
 			info->dim[n]+1, ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
+	      gfc_trans_runtime_check (true, false, tmp, &inner,
+				       &ss->expr->where, msg,
 				       fold_convert (long_integer_type_node,
 						     info->start[n]),
 				       fold_convert (long_integer_type_node,
@@ -3084,7 +3086,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	          asprintf (&msg, "%s, upper bound of dimension %d of array "
 			    "'%s' exceeded (%%ld > %%ld)", gfc_msg_fault,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (true, false, tmp, &inner,
+			&ss->expr->where, msg,
 			fold_convert (long_integer_type_node, info->start[n]),
 			fold_convert (long_integer_type_node, ubound));
 		  gfc_free (msg);
@@ -3106,7 +3109,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "%s, lower bound of dimension %d of array '%s'"
 			" exceeded (%%ld < %%ld)", gfc_msg_fault,
 			info->dim[n]+1, ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
+	      gfc_trans_runtime_check (true, false, tmp, &inner,
+				       &ss->expr->where, msg,
 				       fold_convert (long_integer_type_node,
 						     tmp2),
 				       fold_convert (long_integer_type_node,
@@ -3121,7 +3125,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		  asprintf (&msg, "%s, upper bound of dimension %d of array "
 			    "'%s' exceeded (%%ld > %%ld)", gfc_msg_fault,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (true, false, tmp, &inner,
+			&ss->expr->where, msg,
 			fold_convert (long_integer_type_node, tmp2),
 			fold_convert (long_integer_type_node, ubound));
 		  gfc_free (msg);
@@ -3144,7 +3149,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		  asprintf (&msg, "%s, size mismatch for dimension %d "
 			    "of array '%s' (%%ld/%%ld)", gfc_msg_bounds,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp3, &inner, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (true, false, tmp3, &inner,
+					   &ss->expr->where, msg,
 			fold_convert (long_integer_type_node, tmp),
 			fold_convert (long_integer_type_node, size[n]));
 		  gfc_free (msg);
@@ -4383,7 +4389,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
               tmp = fold_build2 (NE_EXPR, gfc_array_index_type, tmp, stride2);
 	      asprintf (&msg, "%s for dimension %d of array '%s'",
 			gfc_msg_bounds, n+1, sym->name);
-	      gfc_trans_runtime_check (tmp, &block, &loc, msg);
+	      gfc_trans_runtime_check (true, false, tmp, &block, &loc, msg);
 	      gfc_free (msg);
 	    }
 	}
@@ -5133,7 +5139,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 /* TODO: Optimize passing g77 arrays.  */
 
 void
-gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
+gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
+			  const gfc_symbol *fsym, const char *proc_name)
 {
   tree ptr;
   tree desc;
@@ -5230,17 +5237,59 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       /* Repack the array.  */
 
       if (gfc_option.warn_array_temp)
-	gfc_warning ("Creating array temporary at %L", &expr->where);
+	{
+	  if (fsym)
+	    gfc_warning ("Creating array temporary at %L for argument '%s'",
+			 &expr->where, fsym->name);
+	  else
+	    gfc_warning ("Creating array temporary at %L", &expr->where);
+	}
 
       ptr = build_call_expr (gfor_fndecl_in_pack, 1, desc);
+
+      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	{
+	  tmp = gfc_conv_expr_present (sym);
+	  ptr = build3 (COND_EXPR, TREE_TYPE (se->expr), tmp, ptr,
+			null_pointer_node);
+	}
+
       ptr = gfc_evaluate_now (ptr, &se->pre);
+
       se->expr = ptr;
+
+      if (gfc_option.flag_check_array_temporaries)
+	{
+	  char * msg;
+
+	  if (fsym && proc_name)
+	    asprintf (&msg, "An array temporary was created for argument "
+		      "'%s' of procedure '%s'", fsym->name, proc_name);
+	  else
+	    asprintf (&msg, "An array temporary was created");
+
+	  tmp = build_fold_indirect_ref (desc);
+	  tmp = gfc_conv_array_data (tmp);
+	  tmp = fold_build2 (NE_EXPR, boolean_type_node,
+			     fold_convert (TREE_TYPE (tmp), ptr), tmp);
+
+	  if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	    tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			       gfc_conv_expr_present (sym), tmp);
+
+	  gfc_trans_runtime_check (false, true, tmp, &se->pre,
+				   &expr->where, msg);
+	  gfc_free (msg);
+	}
 
       gfc_start_block (&block);
 
       /* Copy the data back.  */
-      tmp = build_call_expr (gfor_fndecl_in_unpack, 2, desc, ptr);
-      gfc_add_expr_to_block (&block, tmp);
+      if (fsym == NULL || fsym->attr.intent != INTENT_IN)
+	{
+	  tmp = build_call_expr (gfor_fndecl_in_unpack, 2, desc, ptr);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
 
       /* Free the temporary.  */
       tmp = gfc_call_free (convert (pvoid_type_node, ptr));
@@ -5255,6 +5304,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       tmp = gfc_conv_array_data (tmp);
       tmp = fold_build2 (NE_EXPR, boolean_type_node,
 			 fold_convert (TREE_TYPE (tmp), ptr), tmp);
+
+      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			   gfc_conv_expr_present (sym), tmp);
+
       tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
 
       gfc_add_expr_to_block (&block, tmp);

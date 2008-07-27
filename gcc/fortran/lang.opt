@@ -156,6 +156,10 @@ fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger
 -fblas-matmul-limit=<n>        Size of the smallest matrix for which matmul will use BLAS
 
+fcheck-array-temporaries
+Fortran
+Produce a warning at runtime if a array temporary has been created for a procedure argument
+
 fconvert=big-endian
 Fortran RejectNegative
 Use big-endian format for unformatted files
