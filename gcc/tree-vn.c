@@ -84,7 +84,6 @@ expressions_equal_p (tree e1, tree e2)
       return true;
     }
 
-
   te1 = TREE_TYPE (e1);
   te2 = TREE_TYPE (e2);
 
