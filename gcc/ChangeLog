@@ -1,3 +1,9 @@
+2008-07-27  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR tree-optimization/35252
+	* tree-vect-analyze.c (vect_build_slp_tree): Make IMAGPART_EXPR and
+	REALPART_EXPR to be considered as same load operation.
+
 2008-07-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/36830
