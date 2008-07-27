@@ -3590,7 +3590,7 @@ build_library_fn_1 (tree name, enum tree_code operator_code, tree type)
    We assume that such functions never throw; if this is incorrect,
    callers should unset TREE_NOTHROW.  */
 
-tree
+static tree
 build_library_fn (tree name, tree type)
 {
   tree fn = build_library_fn_1 (name, ERROR_MARK, type);
@@ -3629,12 +3629,18 @@ build_cp_library_fn_ptr (const char* name, tree type)
 }
 
 /* Like build_library_fn, but also pushes the function so that we will
-   be able to find it via IDENTIFIER_GLOBAL_VALUE.  */
+   be able to find it via IDENTIFIER_GLOBAL_VALUE.  Also, the function
+   may throw exceptions listed in RAISES.  */
 
 tree
-push_library_fn (tree name, tree type)
+push_library_fn (tree name, tree type, tree raises)
 {
-  tree fn = build_library_fn (name, type);
+  tree fn;
+
+  if (raises)
+    type = build_exception_variant (type, raises);
+
+  fn = build_library_fn (name, type);
   pushdecl_top_level (fn);
   return fn;
 }
@@ -3659,7 +3665,7 @@ tree
 push_void_library_fn (tree name, tree parmtypes)
 {
   tree type = build_function_type (void_type_node, parmtypes);
-  return push_library_fn (name, type);
+  return push_library_fn (name, type, NULL_TREE);
 }
 
 /* Like push_library_fn, but also note that this function throws
@@ -3668,7 +3674,7 @@ push_void_library_fn (tree name, tree parmtypes)
 tree
 push_throw_library_fn (tree name, tree type)
 {
-  tree fn = push_library_fn (name, type);
+  tree fn = push_library_fn (name, type, NULL_TREE);
   TREE_THIS_VOLATILE (fn) = 1;
   TREE_NOTHROW (fn) = 0;
   return fn;
@@ -6169,9 +6175,10 @@ expand_static_init (tree decl, tree init)
 					 void_list_node);
 	      tree vfntype = build_function_type (void_type_node, argtypes);
 	      acquire_fn = push_library_fn
-		(acquire_fn, build_function_type (integer_type_node, argtypes));
-	      release_fn = push_library_fn (release_fn, vfntype);
-	      abort_fn = push_library_fn (abort_fn, vfntype);
+		(acquire_fn, build_function_type (integer_type_node, argtypes),
+		 NULL_TREE);
+	      release_fn = push_library_fn (release_fn, vfntype, NULL_TREE);
+	      abort_fn = push_library_fn (abort_fn, vfntype, NULL_TREE);
 	    }
 	  else
 	    {
