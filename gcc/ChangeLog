@@ -1,3 +1,10 @@
+2008-07-28  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Use the m4_do macro to concatenate the warnings into
+	one string in ACX_PROG_CC_WARNING_OPTS,
+	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC and ACX_PROG_CC_WARNINGS_ARE_ERRORS.
+	* configure: Regenerate.
+
 2008-07-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (insert_into_preds_of_block): Remove dead code.
