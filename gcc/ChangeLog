@@ -1,3 +1,10 @@
+2008-07-28  Simon Baldwin  <simonb@google.com>
+
+	* c-pragma.c (handle_pragma_message): New function.
+	(init_pragma): Register handle_pragma_message.
+	* doc/extend.texi (Diagnostic Pragmas): Added #pragma message
+	documentation.
+
 2008-07-27  Victor Kaplansky  <victork@il.ibm.com>
 
 	PR tree-optimization/35252

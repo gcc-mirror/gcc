@@ -1,3 +1,7 @@
+2008-07-28  Simon Baldwin  <simonb@google.com>
+
+	* gcc.dg/pragma-message.c: New.
+
 2008-07-27  Victor Kaplansky  <victork@il.ibm.com>
 
 	PR tree-optimization/35252

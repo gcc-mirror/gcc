@@ -1173,6 +1173,39 @@ handle_pragma_optimize(cpp_reader *ARG_UNUSED(dummy))
     }
 }
 
+/* Print a plain user-specified message.  */
+
+static void
+handle_pragma_message (cpp_reader *ARG_UNUSED(dummy))
+{
+  enum cpp_ttype token;
+  tree x, message = 0;
+
+  token = pragma_lex (&x);
+  if (token == CPP_OPEN_PAREN)
+    {
+      token = pragma_lex (&x);
+      if (token == CPP_STRING)
+        message = x;
+      else
+        GCC_BAD ("expected a string after %<#pragma message%>");
+      if (pragma_lex (&x) != CPP_CLOSE_PAREN)
+        GCC_BAD ("malformed %<#pragma message%>, ignored");
+    }
+  else if (token == CPP_STRING)
+    message = x;
+  else
+    GCC_BAD ("expected a string after %<#pragma message%>");
+
+  gcc_assert (message);
+
+  if (pragma_lex (&x) != CPP_EOF)
+    warning (OPT_Wpragmas, "junk at end of %<#pragma message%>");
+
+  if (TREE_STRING_LENGTH (message) > 1)
+    inform ("#pragma message: %s", TREE_STRING_POINTER (message));
+}
+
 /* A vector of registered pragma callbacks.  */
 
 DEF_VEC_O (pragma_handler);
@@ -1340,6 +1373,8 @@ init_pragma (void)
 
   c_register_pragma_with_expansion (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
+
+  c_register_pragma_with_expansion (0, "message", handle_pragma_message);
 
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();
