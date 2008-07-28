@@ -1,3 +1,11 @@
+2008-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/36949
+	* include/tr1_impl/boost_shared_ptr.h
+	(__shared_ptr(_Sp_make_shared_tag, _Alloc, _Args&&...): Call
+	__enable_shared_from_this_helper.
+	* testsuite/20_util/shared_ptr/creation/36949.cc: New.
+
 2008-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/36924
