@@ -1,6 +1,6 @@
 // <tr1_impl/boost_shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -505,13 +505,14 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
         __shared_ptr(_Sp_make_shared_tag __tag, _Alloc __a, _Args&&... __args)
-        : _M_ptr()
-        , _M_refcount(__tag, (_Tp*)0, __a, std::forward<_Args>(__args)...)
+        : _M_ptr(), _M_refcount(__tag, (_Tp*)0, __a,
+				std::forward<_Args>(__args)...)
         {
           // _M_ptr needs to point to the newly constructed object.
           // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
-          void * __p = _M_refcount._M_get_deleter(typeid(__tag));
+          void* __p = _M_refcount._M_get_deleter(typeid(__tag));
           _M_ptr = static_cast<_Tp*>(__p);
+	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
         }
 
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
