@@ -42,7 +42,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "except.h"
 #include "ggc.h"
-#include "tree-gimple.h"
+#include "tree-iterator.h"
+#include "gimple.h"
 #include "target.h"
 
 static void flush_quick_stack (void);
@@ -814,10 +815,20 @@ encode_newarray_type (tree type)
 static tree
 build_java_throw_out_of_bounds_exception (tree index)
 {
-  tree node = build_call_nary (int_type_node,
+  tree node;
+
+  /* We need to build a COMPOUND_EXPR because _Jv_ThrowBadArrayIndex()
+     has void return type.  We cannot just set the type of the CALL_EXPR below
+     to int_type_node because we would lose it during gimplification.  */
+  gcc_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (soft_badarrayindex_node))));
+  node = build_call_nary (void_type_node,
 			       build_address_of (soft_badarrayindex_node),
 			       1, index);
+  TREE_SIDE_EFFECTS (node) = 1;
+
+  node = build2 (COMPOUND_EXPR, int_type_node, node, integer_zero_node);
   TREE_SIDE_EFFECTS (node) = 1;	/* Allows expansion within ANDIF */
+
   return (node);
 }
 

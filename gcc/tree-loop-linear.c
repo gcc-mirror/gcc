@@ -89,13 +89,13 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 static void
-gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
-			  VEC (data_reference_p, heap) *datarefs,
-			  struct loop *loop,
-			  struct loop *first_loop,
-			  unsigned int *dependence_steps, 
-			  unsigned int *nb_deps_not_carried_by_loop, 
-			  double_int *access_strides)
+gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUSED,
+			  VEC (data_reference_p, heap) *datarefs ATTRIBUTE_UNUSED,
+			  struct loop *loop ATTRIBUTE_UNUSED,
+			  struct loop *first_loop ATTRIBUTE_UNUSED,
+			  unsigned int *dependence_steps ATTRIBUTE_UNUSED, 
+			  unsigned int *nb_deps_not_carried_by_loop ATTRIBUTE_UNUSED, 
+			  double_int *access_strides ATTRIBUTE_UNUSED)
 {
   unsigned int i, j;
   struct data_dependence_relation *ddr;
@@ -135,7 +135,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations,
     {
       unsigned int it;
       tree ref = DR_REF (dr);
-      tree stmt = DR_STMT (dr);
+      gimple stmt = DR_STMT (dr);
       struct loop *stmt_loop = loop_containing_stmt (stmt);
       struct loop *inner_loop = first_loop->inner;
 
@@ -319,9 +319,9 @@ linear_transform_loops (void)
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
   VEC(tree,heap) *lambda_parameters = NULL;
-  VEC(tree,heap) *remove_ivs = VEC_alloc (tree, heap, 3);
+  VEC(gimple,heap) *remove_ivs = VEC_alloc (gimple, heap, 3);
   struct loop *loop_nest;
-  tree oldiv_stmt;
+  gimple oldiv_stmt;
   unsigned i;
 
   FOR_EACH_LOOP (li, loop_nest, 0)
@@ -412,12 +412,12 @@ linear_transform_loops (void)
       free_data_refs (datarefs);
     }
 
-  for (i = 0; VEC_iterate (tree, remove_ivs, i, oldiv_stmt); i++)
+  for (i = 0; VEC_iterate (gimple, remove_ivs, i, oldiv_stmt); i++)
     remove_iv (oldiv_stmt);
 
   VEC_free (tree, heap, oldivs);
   VEC_free (tree, heap, invariants);
-  VEC_free (tree, heap, remove_ivs);
+  VEC_free (gimple, heap, remove_ivs);
   scev_reset ();
 
   if (modified)

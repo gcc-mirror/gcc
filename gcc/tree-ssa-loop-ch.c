@@ -50,8 +50,8 @@ static bool
 should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 				int *limit)
 {
-  block_stmt_iterator bsi;
-  tree last;
+  gimple_stmt_iterator bsi;
+  gimple last;
 
   /* Do not copy one block more than once (we do not really want to do
      loop peeling here).  */
@@ -71,19 +71,19 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
     return false;
 
   last = last_stmt (header);
-  if (TREE_CODE (last) != COND_EXPR)
+  if (gimple_code (last) != GIMPLE_COND)
     return false;
 
   /* Approximately copy the conditions that used to be used in jump.c --
      at most 20 insns and no calls.  */
-  for (bsi = bsi_start (header); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (bsi = gsi_start_bb (header); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      last = bsi_stmt (bsi);
+      last = gsi_stmt (bsi);
 
-      if (TREE_CODE (last) == LABEL_EXPR)
+      if (gimple_code (last) == GIMPLE_LABEL)
 	continue;
 
-      if (get_call_expr_in (last))
+      if (is_gimple_call (last))
 	return false;
 
       *limit -= estimate_num_insns (last, &eni_size_weights);
@@ -99,17 +99,17 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 static bool
 do_while_loop_p (struct loop *loop)
 {
-  tree stmt = last_stmt (loop->latch);
+  gimple stmt = last_stmt (loop->latch);
 
   /* If the latch of the loop is not empty, it is not a do-while loop.  */
   if (stmt
-      && TREE_CODE (stmt) != LABEL_EXPR)
+      && gimple_code (stmt) != GIMPLE_LABEL)
     return false;
 
   /* If the header contains just a condition, it is not a do-while loop.  */
   stmt = last_and_only_stmt (loop->header);
   if (stmt
-      && TREE_CODE (stmt) == COND_EXPR)
+      && gimple_code (stmt) == GIMPLE_COND)
     return false;
 
   return true;
@@ -196,7 +196,7 @@ copy_loop_headers (void)
 
       entry = loop_preheader_edge (loop);
 
-      if (!tree_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
+      if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
 	{
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
@@ -208,27 +208,27 @@ copy_loop_headers (void)
 	 we assume that "j < j + 10" is true.  We don't want to warn
 	 about that case for -Wstrict-overflow, because in general we
 	 don't warn about overflow involving loops.  Prevent the
-	 warning by setting TREE_NO_WARNING.  */
+	 warning by setting the no_warning flag in the condition.  */
       if (warn_strict_overflow > 0)
 	{
 	  unsigned int i;
 
 	  for (i = 0; i < n_bbs; ++i)
 	    {
-	      block_stmt_iterator bsi;
+	      gimple_stmt_iterator bsi;
 
-	      for (bsi = bsi_start (copied_bbs[i]);
-		   !bsi_end_p (bsi);
-		   bsi_next (&bsi))
+	      for (bsi = gsi_start_bb (copied_bbs[i]);
+		   !gsi_end_p (bsi);
+		   gsi_next (&bsi))
 		{
-		  tree stmt = bsi_stmt (bsi);
-		  if (TREE_CODE (stmt) == COND_EXPR)
-		    TREE_NO_WARNING (stmt) = 1;
-		  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+		  gimple stmt = gsi_stmt (bsi);
+		  if (gimple_code (stmt) == GIMPLE_COND)
+		    gimple_set_no_warning (stmt, true);
+		  else if (is_gimple_assign (stmt))
 		    {
-		      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-		      if (COMPARISON_CLASS_P (rhs))
-			TREE_NO_WARNING (stmt) = 1;
+		      enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+		      if (TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+			gimple_set_no_warning (stmt, true);
 		    }
 		}
 	    }

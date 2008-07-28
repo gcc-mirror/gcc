@@ -44,11 +44,8 @@ static void pretty_print_string (pretty_printer *, const char*);
 static void print_call_name (pretty_printer *, const_tree);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
-static void print_declaration (pretty_printer *, tree, int, int);
 static void print_struct_decl (pretty_printer *, const_tree, int, int);
 static void do_niy (pretty_printer *, const_tree);
-static void dump_vops (pretty_printer *, tree, int, int);
-static void dump_generic_bb_buff (pretty_printer *, basic_block, int, int);
 
 #define INDENT(SPACE) do { \
   int i; for (i = 0; i<SPACE; i++) pp_space (buffer); } while (0)
@@ -409,7 +406,7 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
 /* Dump the list of OpenMP clauses.  BUFFER, SPC and FLAGS are as in
    dump_generic_node.  */
 
-static void
+void
 dump_omp_clauses (pretty_printer *buffer, tree clause, int spc, int flags)
 {
   if (clause == NULL)
@@ -423,33 +420,6 @@ dump_omp_clauses (pretty_printer *buffer, tree clause, int spc, int flags)
       if (clause == NULL)
 	return;
       pp_space (buffer);
-    }
-}
-
-
-/* Dump the set of decls SYMS.  BUFFER, SPC and FLAGS are as in
-   dump_generic_node.  */
-
-static void
-dump_symbols (pretty_printer *buffer, bitmap syms, int flags)
-{
-  unsigned i;
-  bitmap_iterator bi;
-
-  if (syms == NULL)
-    pp_string (buffer, "NIL");
-  else
-    {
-      pp_string (buffer, " { ");
-
-      EXECUTE_IF_SET_IN_BITMAP (syms, 0, i, bi)
-	{
-	  tree sym = referenced_var_lookup (i);
-	  dump_generic_node (buffer, sym, 0, flags, false);
-	  pp_string (buffer, " ");
-	}
-
-      pp_string (buffer, "}");
     }
 }
 
@@ -471,18 +441,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
   if (node == NULL_TREE)
     return spc;
 
-  is_expr = EXPR_P (node) || GIMPLE_STMT_P (node);
-
-  /* We use has_stmt_ann because CALL_EXPR can be both an expression
-     and a statement, and we have no guarantee that it will have a
-     stmt_ann when it is used as an RHS expression.  stmt_ann will assert
-     if you call it on something with a non-stmt annotation attached.  */
-  if (TREE_CODE (node) != ERROR_MARK
-      && is_gimple_stmt (node)
-      && (flags & (TDF_VOPS|TDF_MEMSYMS))
-      && has_stmt_ann (node)
-      && TREE_CODE (node) != PHI_NODE)
-    dump_vops (buffer, node, spc, flags);
+  is_expr = EXPR_P (node);
 
   if (is_stmt && (flags & TDF_STMTADDR))
     pp_printf (buffer, "<&%p> ", (void *)node);
@@ -1095,24 +1054,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
     case INIT_EXPR:
-      dump_generic_node (buffer, GENERIC_TREE_OPERAND (node, 0), spc, flags,
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags,
 	  		 false);
       pp_space (buffer);
       pp_character (buffer, '=');
-      if (TREE_CODE (node) == GIMPLE_MODIFY_STMT
+      if (TREE_CODE (node) == MODIFY_EXPR
 	  && MOVE_NONTEMPORAL (node))
 	pp_string (buffer, "{nt}");
-      if (TREE_CODE (node) == GIMPLE_MODIFY_STMT)
-	{
-	stmt_ann_t ann;
-        if ((ann = stmt_ann (node))
-	    && ann->has_volatile_ops)
-	  pp_string (buffer, "{v}");
-        }
       pp_space (buffer);
-      dump_generic_node (buffer, GENERIC_TREE_OPERAND (node, 1), spc, flags,
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags,
 	  		 false);
       break;
 
@@ -1622,9 +1573,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       if (op0)
 	{
 	  pp_space (buffer);
-	  if (TREE_CODE (op0) == MODIFY_EXPR
-	      || TREE_CODE (op0) == GIMPLE_MODIFY_STMT)
-	    dump_generic_node (buffer, GENERIC_TREE_OPERAND (op0, 1),
+	  if (TREE_CODE (op0) == MODIFY_EXPR)
+	    dump_generic_node (buffer, TREE_OPERAND (op0, 1),
 			       spc, flags, false);
 	  else
 	    dump_generic_node (buffer, op0, spc, flags, false);
@@ -1730,7 +1680,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  dump_generic_node (buffer, CASE_LOW (node), spc, flags, false);
 	}
       else
-	pp_string (buffer, "default ");
+	pp_string (buffer, "default");
       pp_character (buffer, ':');
       break;
 
@@ -1743,28 +1693,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_character (buffer, '>');
       dump_generic_node (buffer, OBJ_TYPE_REF_TOKEN (node), spc, flags, false);
       pp_character (buffer, ')');
-      break;
-
-    case PHI_NODE:
-      {
-	int i;
-
-	dump_generic_node (buffer, PHI_RESULT (node), spc, flags, false);
-	pp_string (buffer, " = PHI <");
-	for (i = 0; i < PHI_NUM_ARGS (node); i++)
-	  {
-	    dump_generic_node (buffer, PHI_ARG_DEF (node, i), spc, flags, false);
-	    pp_string (buffer, "(");
-	    pp_decimal_int (buffer, PHI_ARG_EDGE (node, i)->src->index);
-	    pp_string (buffer, ")");
-	    if (i < PHI_NUM_ARGS (node) - 1)
-	      pp_string (buffer, ", ");
-	  }
-	pp_string (buffer, ">");
-
-	if (stmt_references_memory_p (node) && (flags & TDF_MEMSYMS))
-	  dump_symbols (buffer, STORED_SYMS (node), flags);
-      }
       break;
 
     case SSA_NAME:
@@ -1844,21 +1772,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case OMP_PARALLEL:
       pp_string (buffer, "#pragma omp parallel");
       dump_omp_clauses (buffer, OMP_PARALLEL_CLAUSES (node), spc, flags);
-      if (OMP_PARALLEL_FN (node))
-	{
-	  pp_string (buffer, " [child fn: ");
-	  dump_generic_node (buffer, OMP_PARALLEL_FN (node), spc, flags, false);
-
-	  pp_string (buffer, " (");
-
-	  if (OMP_PARALLEL_DATA_ARG (node))
-	    dump_generic_node (buffer, OMP_PARALLEL_DATA_ARG (node), spc, flags,
-		               false);
-	  else
-	    pp_string (buffer, "???");
-
-	  pp_string (buffer, ")]");
-	}
 
     dump_omp_body:
       if (!(flags & TDF_SLIM) && OMP_BODY (node))
@@ -1876,28 +1789,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case OMP_TASK:
       pp_string (buffer, "#pragma omp task");
       dump_omp_clauses (buffer, OMP_TASK_CLAUSES (node), spc, flags);
-      if (OMP_TASK_FN (node))
-	{
-	  pp_string (buffer, " [child fn: ");
-	  dump_generic_node (buffer, OMP_TASK_FN (node), spc, flags, false);
-
-	  pp_string (buffer, " (");
-
-	  if (OMP_TASK_DATA_ARG (node))
-	    dump_generic_node (buffer, OMP_TASK_DATA_ARG (node), spc, flags,
-			       false);
-	  else
-	    pp_string (buffer, "???");
-
-	  pp_character (buffer, ')');
-	  if (OMP_TASK_COPYFN (node))
-	    {
-	      pp_string (buffer, ", copy fn: ");
-	      dump_generic_node (buffer, OMP_TASK_COPYFN (node), spc,
-				 flags, false);
-	    }
-	  pp_character (buffer, ']');
-	}
       goto dump_omp_body;
 
     case OMP_FOR:
@@ -1956,21 +1847,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_SECTIONS:
       pp_string (buffer, "#pragma omp sections");
-      if (OMP_SECTIONS_CONTROL (node))
-	{
-	  pp_string (buffer, " <");
-	  dump_generic_node (buffer, OMP_SECTIONS_CONTROL (node), spc,
-			     flags, false);
-	  pp_string (buffer, ">");
-	}
       dump_omp_clauses (buffer, OMP_SECTIONS_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
-    case OMP_SECTIONS_SWITCH:
-      pp_string (buffer, "OMP_SECTIONS_SWITCH");
-      is_expr = false;
-      break;
- 
     case OMP_SECTION:
       pp_string (buffer, "#pragma omp section");
       goto dump_omp_body;
@@ -2005,43 +1884,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
       break;
 
-    case OMP_ATOMIC_LOAD:
-      pp_string (buffer, "#pragma omp atomic_load");
-      newline_and_indent (buffer, spc + 2);
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_space (buffer);
-      pp_character (buffer, '=');
-      pp_space (buffer);
-      pp_character (buffer, '*');
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      break;
-
-    case OMP_ATOMIC_STORE:
-      pp_string (buffer, "#pragma omp atomic_store (");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_character (buffer, ')');
-      break;
-
     case OMP_SINGLE:
       pp_string (buffer, "#pragma omp single");
       dump_omp_clauses (buffer, OMP_SINGLE_CLAUSES (node), spc, flags);
       goto dump_omp_body;
-
-    case OMP_RETURN:
-      pp_string (buffer, "OMP_RETURN");
-      if (OMP_RETURN_NOWAIT (node))
-	pp_string (buffer, " [nowait]");
-      is_expr = false;
-      break;
-
-    case OMP_CONTINUE:
-      pp_string (buffer, "OMP_CONTINUE <");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, " <- ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, ">");
-      is_expr = false;
-      break;
 
     case OMP_CLAUSE:
       dump_omp_clause (buffer, node, spc, flags);
@@ -2237,7 +2083,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
 /* Print the declaration of a variable.  */
 
-static void
+void
 print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
 {
   INDENT (spc);
@@ -2415,7 +2261,6 @@ op_prio (const_tree op)
       return 1;
 
     case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
     case INIT_EXPR:
       return 2;
 
@@ -2549,7 +2394,6 @@ op_symbol_code (enum tree_code code)
   switch (code)
     {
     case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
       return "=";
 
     case TRUTH_OR_EXPR:
@@ -2889,343 +2733,4 @@ newline_and_indent (pretty_printer *buffer, int spc)
 {
   pp_newline (buffer);
   INDENT (spc);
-}
-
-
-static void
-dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
-{
-  struct voptype_d *vdefs;
-  struct voptype_d *vuses;
-  int i, n;
-
-  if (!ssa_operands_active () || !stmt_references_memory_p (stmt))
-    return;
-
-  /* Even if the statement doesn't have virtual operators yet, it may
-     contain symbol information (this happens before aliases have been
-     computed).  */
-  if ((flags & TDF_MEMSYMS)
-      && VUSE_OPS (stmt) == NULL
-      && VDEF_OPS (stmt) == NULL)
-    {
-      if (LOADED_SYMS (stmt))
-	{
-	  pp_string (buffer, "# LOADS: ");
-	  dump_symbols (buffer, LOADED_SYMS (stmt), flags);
-	  newline_and_indent (buffer, spc);
-	}
-
-      if (STORED_SYMS (stmt))
-	{
-	  pp_string (buffer, "# STORES: ");
-	  dump_symbols (buffer, STORED_SYMS (stmt), flags);
-	  newline_and_indent (buffer, spc);
-	}
-
-      return;
-    }
-
-  vuses = VUSE_OPS (stmt);
-  while (vuses)
-    {
-      pp_string (buffer, "# VUSE <");
-
-      n = VUSE_NUM (vuses);
-      for (i = 0; i < n; i++)
-	{
-	  dump_generic_node (buffer, VUSE_OP (vuses, i), spc + 2, flags, false);
-	  if (i < n - 1)
-	    pp_string (buffer, ", ");
-	}
-
-      pp_string (buffer, ">");
-
-      if (flags & TDF_MEMSYMS)
-	dump_symbols (buffer, LOADED_SYMS (stmt), flags);
-
-      newline_and_indent (buffer, spc);
-      vuses = vuses->next;
-    }
-
-  vdefs = VDEF_OPS (stmt);
-  while (vdefs)
-    {
-      pp_string (buffer, "# ");
-      dump_generic_node (buffer, VDEF_RESULT (vdefs), spc + 2, flags, false);
-      pp_string (buffer, " = VDEF <");
-
-      n = VDEF_NUM (vdefs);
-      for (i = 0; i < n; i++)
-	{
-	  dump_generic_node (buffer, VDEF_OP (vdefs, i), spc + 2, flags, 0);
-	  if (i < n - 1)
-	    pp_string (buffer, ", ");
-	}
-
-      pp_string (buffer, ">");
-
-      if ((flags & TDF_MEMSYMS) && vdefs->next == NULL)
-	dump_symbols (buffer, STORED_SYMS (stmt), flags);
-
-      newline_and_indent (buffer, spc);
-      vdefs = vdefs->next;
-    }
-}
-
-
-/* Dumps basic block BB to FILE with details described by FLAGS and
-   indented by INDENT spaces.  */
-
-void
-dump_generic_bb (FILE *file, basic_block bb, int indent, int flags)
-{
-  maybe_init_pretty_print (file);
-  dump_generic_bb_buff (&buffer, bb, indent, flags);
-  pp_flush (&buffer);
-}
-
-/* Dumps header of basic block BB to buffer BUFFER indented by INDENT
-   spaces and details described by flags.  */
-
-static void
-dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
-{
-  edge e;
-  tree stmt;
-  edge_iterator ei;
-
-  if (flags & TDF_BLOCKS)
-    {
-      INDENT (indent);
-      pp_string (buffer, "# BLOCK ");
-      pp_decimal_int (buffer, bb->index);
-      if (bb->frequency)
-	{
-          pp_string (buffer, " freq:");
-          pp_decimal_int (buffer, bb->frequency);
-	}
-      if (bb->count)
-	{
-          pp_string (buffer, " count:");
-          pp_widest_integer (buffer, bb->count);
-	}
-
-      if (flags & TDF_LINENO)
-	{
-	  block_stmt_iterator bsi;
-
-	  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	    if (get_lineno (bsi_stmt (bsi)) != -1)
-	      {
-		pp_string (buffer, ", starting at line ");
-		pp_decimal_int (buffer, get_lineno (bsi_stmt (bsi)));
-		break;
-	      }
-	}
-      newline_and_indent (buffer, indent);
-
-      pp_string (buffer, "# PRED:");
-      pp_write_text_to_stream (buffer);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (flags & TDF_SLIM)
-	  {
-	    pp_string (buffer, " ");
-	    if (e->src == ENTRY_BLOCK_PTR)
-	      pp_string (buffer, "ENTRY");
-	    else
-	      pp_decimal_int (buffer, e->src->index);
-	  }
-	else
-	  dump_edge_info (buffer->buffer->stream, e, 0);
-      pp_newline (buffer);
-    }
-  else
-    {
-      stmt = first_stmt (bb);
-      if (!stmt || TREE_CODE (stmt) != LABEL_EXPR)
-	{
-	  INDENT (indent - 2);
-	  pp_string (buffer, "<bb ");
-	  pp_decimal_int (buffer, bb->index);
-	  pp_string (buffer, ">:");
-	  pp_newline (buffer);
-	}
-    }
-  pp_write_text_to_stream (buffer);
-  check_bb_profile (bb, buffer->buffer->stream);
-}
-
-/* Dumps end of basic block BB to buffer BUFFER indented by INDENT
-   spaces.  */
-
-static void
-dump_bb_end (pretty_printer *buffer, basic_block bb, int indent, int flags)
-{
-  edge e;
-  edge_iterator ei;
-
-  INDENT (indent);
-  pp_string (buffer, "# SUCC:");
-  pp_write_text_to_stream (buffer);
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (flags & TDF_SLIM)
-      {
-	pp_string (buffer, " ");
-	if (e->dest == EXIT_BLOCK_PTR)
-	  pp_string (buffer, "EXIT");
-	else
-	  pp_decimal_int (buffer, e->dest->index);
-      }
-    else
-      dump_edge_info (buffer->buffer->stream, e, 1);
-  pp_newline (buffer);
-}
-
-/* Dump PHI nodes of basic block BB to BUFFER with details described
-   by FLAGS and indented by INDENT spaces.  */
-
-static void
-dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
-{
-  tree phi = phi_nodes (bb);
-  if (!phi)
-    return;
-
-  for (; phi; phi = PHI_CHAIN (phi))
-    {
-      if (is_gimple_reg (PHI_RESULT (phi)) || (flags & TDF_VOPS))
-        {
-          INDENT (indent);
-          pp_string (buffer, "# ");
-          dump_generic_node (buffer, phi, indent, flags, false);
-          pp_newline (buffer);
-	  if (flags & TDF_VERBOSE)
-	    print_node (buffer->buffer->stream, "", phi, indent);
-        }
-    }
-}
-
-
-/* Dump jump to basic block BB that is represented implicitly in the cfg
-   to BUFFER.  */
-
-static void
-pp_cfg_jump (pretty_printer *buffer, basic_block bb)
-{
-  tree stmt;
-
-  stmt = first_stmt (bb);
-
-  pp_string (buffer, "goto <bb ");
-  pp_decimal_int (buffer, bb->index);
-  pp_string (buffer, ">");
-  if (stmt && TREE_CODE (stmt) == LABEL_EXPR)
-    {
-      pp_string (buffer, " (");
-      dump_generic_node (buffer, LABEL_EXPR_LABEL (stmt), 0, 0, false);
-      pp_string (buffer, ")");
-    }
-  pp_semicolon (buffer);
-}
-
-/* Dump edges represented implicitly in basic block BB to BUFFER, indented
-   by INDENT spaces, with details given by FLAGS.  */
-
-static void
-dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
-		     int flags)
-{
-  edge e;
-  edge_iterator ei;
-  tree stmt;
-
-  stmt = last_stmt (bb);
-  if (stmt && TREE_CODE (stmt) == COND_EXPR)
-    {
-      edge true_edge, false_edge;
-
-      /* When we are emitting the code or changing CFG, it is possible that
-	 the edges are not yet created.  When we are using debug_bb in such
-	 a situation, we do not want it to crash.  */
-      if (EDGE_COUNT (bb->succs) != 2)
-	return;
-      extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
-
-      INDENT (indent + 2);
-      pp_cfg_jump (buffer, true_edge->dest);
-      newline_and_indent (buffer, indent);
-      pp_string (buffer, "else");
-      newline_and_indent (buffer, indent + 2);
-      pp_cfg_jump (buffer, false_edge->dest);
-      pp_newline (buffer);
-      return;
-    }
-
-  /* If there is a fallthru edge, we may need to add an artificial goto to the
-     dump.  */
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
-  if (e && e->dest != bb->next_bb)
-    {
-      INDENT (indent);
-
-      if ((flags & TDF_LINENO) && e->goto_locus != UNKNOWN_LOCATION)
-	{
-	  expanded_location goto_xloc;
-	  goto_xloc = expand_location (e->goto_locus);
-	  pp_character (buffer, '[');
-	  if (goto_xloc.file)
-	    {
-	      pp_string (buffer, goto_xloc.file);
-	      pp_string (buffer, " : ");
-	    }
-	  pp_decimal_int (buffer, goto_xloc.line);
-	  pp_string (buffer, "] ");
-	}
-
-      pp_cfg_jump (buffer, e->dest);
-      pp_newline (buffer);
-    }
-}
-
-/* Dumps basic block BB to buffer BUFFER with details described by FLAGS and
-   indented by INDENT spaces.  */
-
-static void
-dump_generic_bb_buff (pretty_printer *buffer, basic_block bb,
-		      int indent, int flags)
-{
-  block_stmt_iterator bsi;
-  tree stmt;
-  int label_indent = indent - 2;
-
-  if (label_indent < 0)
-    label_indent = 0;
-
-  dump_bb_header (buffer, bb, indent, flags);
-
-  dump_phi_nodes (buffer, bb, indent, flags);
-
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-    {
-      int curr_indent;
-
-      stmt = bsi_stmt (bsi);
-
-      curr_indent = TREE_CODE (stmt) == LABEL_EXPR ? label_indent : indent;
-
-      INDENT (curr_indent);
-      dump_generic_node (buffer, stmt, curr_indent, flags, true);
-      pp_newline (buffer);
-      dump_histograms_for_stmt (cfun, buffer->buffer->stream, stmt);
-      if (flags & TDF_VERBOSE)
-	print_node (buffer->buffer->stream, "", stmt, curr_indent);
-    }
-
-  dump_implicit_edges (buffer, bb, indent, flags);
-
-  if (flags & TDF_BLOCKS)
-    dump_bb_end (buffer, bb, indent, flags);
 }

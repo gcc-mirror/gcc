@@ -95,6 +95,7 @@ struct bb_info {
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
 
+
 /* Counter summary from the last set of coverage counts read.  */
 
 const struct gcov_ctr_summary *profile_info;
@@ -671,7 +672,7 @@ compute_value_histograms (histogram_values values)
   for (i = 0; i < VEC_length (histogram_value, values); i++)
     {
       histogram_value hist = VEC_index (histogram_value, values, i);
-      tree stmt = hist->hvalue.stmt;
+      gimple stmt = hist->hvalue.stmt;
 
       t = (int) hist->type;
 
@@ -793,16 +794,16 @@ branch_prob (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  block_stmt_iterator bsi;
-	  tree last = NULL;
+	  gimple_stmt_iterator gsi;
+	  gimple last = NULL;
 
 	  /* It may happen that there are compiler generated statements
 	     without a locus at all.  Go through the basic block from the
 	     last to the first statement looking for a locus.  */
-	  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
+	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
 	    {
-	      last = bsi_stmt (bsi);
-	      if (EXPR_LOCUS (last))
+	      last = gsi_stmt (gsi);
+	      if (gimple_has_location (last))
 		break;
 	    }
 
@@ -811,13 +812,14 @@ branch_prob (void)
 	     Don't do that when the locuses match, so 
 	     if (blah) goto something;
 	     is not computed twice.  */
-	  if (last && EXPR_LOCUS (last)
-	      && e->goto_locus
+	  if (last
+	      && gimple_has_location (last)
+	      && e->goto_locus != UNKNOWN_LOCATION
 	      && !single_succ_p (bb)
 	      && (LOCATION_FILE (e->goto_locus)
-	          != LOCATION_FILE (EXPR_LOCATION  (last))
+	          != LOCATION_FILE (gimple_location (last))
 		  || (LOCATION_LINE (e->goto_locus)
-		      != LOCATION_LINE (EXPR_LOCATION  (last)))))
+		      != LOCATION_LINE (gimple_location  (last)))))
 	    {
 	      basic_block new = split_edge (e);
 	      single_succ_edge (new)->goto_locus = e->goto_locus;
@@ -982,7 +984,7 @@ branch_prob (void)
 
       FOR_EACH_BB (bb)
 	{
-	  block_stmt_iterator bsi;
+	  gimple_stmt_iterator gsi;
 
 	  offset = 0;
 
@@ -994,26 +996,18 @@ branch_prob (void)
 			       &offset, bb);
 	    }
 
-	  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
-	      tree stmt = bsi_stmt (bsi);
-	      if (EXPR_HAS_LOCATION (stmt))
-		output_location (EXPR_FILENAME (stmt), EXPR_LINENO (stmt),
-				 &offset, bb);
-	      /* Take into account modify statements nested in return
-		 produced by C++ NRV transformation.  */
-	      if (TREE_CODE (stmt) == RETURN_EXPR
-		  && TREE_OPERAND (stmt, 0)
-		  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR
-		  && EXPR_HAS_LOCATION (TREE_OPERAND (stmt, 0)))
-		output_location (EXPR_FILENAME (TREE_OPERAND (stmt, 0)),
-				 EXPR_LINENO (TREE_OPERAND (stmt, 0)),
+	      gimple stmt = gsi_stmt (gsi);
+	      if (gimple_has_location (stmt))
+		output_location (gimple_filename (stmt), gimple_lineno (stmt),
 				 &offset, bb);
 	    }
 
 	  /* Notice GOTO expressions we eliminated while constructing the
 	     CFG.  */
-	  if (single_succ_p (bb) && single_succ_edge (bb)->goto_locus)
+	  if (single_succ_p (bb)
+	      && single_succ_edge (bb)->goto_locus != UNKNOWN_LOCATION)
 	    {
 	      location_t curr_location = single_succ_edge (bb)->goto_locus;
 	      /* ??? The FILE/LINE API is inconsistent for these cases.  */
@@ -1063,7 +1057,7 @@ branch_prob (void)
 	instrument_values (values);
 
       /* Commit changes done by instrumentation.  */
-      bsi_commit_edge_inserts ();
+      gsi_commit_edge_inserts ();
     }
 
   free_aux_for_edges ();
@@ -1251,4 +1245,3 @@ tree_register_profile_hooks (void)
   gcc_assert (current_ir_type () == IR_GIMPLE);
   profile_hooks = &tree_profile_hooks;
 }
-

@@ -66,7 +66,7 @@ struct dom_walk_data
   /* Function to call to walk statements before the recursive walk
      of the dominator children.  */
   void (*before_dom_children_walk_stmts) (struct dom_walk_data *,
-					  basic_block, block_stmt_iterator);
+					  basic_block, gimple_stmt_iterator);
 
   /* Function to call after the statement walk occurring before the
      recursive walk of the dominator children.  */
@@ -81,7 +81,7 @@ struct dom_walk_data
   /* Function to call to walk statements after the recursive walk
      of the dominator children.  */
   void (*after_dom_children_walk_stmts) (struct dom_walk_data *,
-					 basic_block, block_stmt_iterator);
+					 basic_block, gimple_stmt_iterator);
 
   /* Function to call after the statement walk occurring after the
      recursive walk of the dominator children. 

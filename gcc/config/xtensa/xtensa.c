@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "df.h"
 
 
@@ -142,8 +142,9 @@ static section *xtensa_select_rtx_section (enum machine_mode, rtx,
 static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
+static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
+					 gimple_seq *);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
-static tree xtensa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, tree, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
@@ -2538,14 +2539,14 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   /* Call __builtin_saveregs; save the result in __va_reg */
   u = make_tree (sizetype, expand_builtin_saveregs ());
   u = fold_convert (ptr_type_node, u);
-  t = build2 (GIMPLE_MODIFY_STMT, ptr_type_node, reg, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, reg, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Set the __va_stk member to ($arg_ptr - 32).  */
   u = make_tree (ptr_type_node, virtual_incoming_args_rtx);
   u = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, u, size_int (-32));
-  t = build2 (GIMPLE_MODIFY_STMT, ptr_type_node, stk, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, stk, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -2554,7 +2555,7 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      alignment offset for __va_stk.  */
   if (arg_words >= MAX_ARGS_IN_REGISTERS)
     arg_words += 2;
-  t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, ndx,
+  t = build2 (MODIFY_EXPR, integer_type_node, ndx,
 	      build_int_cst (integer_type_node, arg_words * UNITS_PER_WORD));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2564,8 +2565,8 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 /* Implement `va_arg'.  */
 
 static tree
-xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
-			     tree *post_p ATTRIBUTE_UNUSED)
+xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
+			     gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   tree f_stk, stk;
   tree f_reg, reg;
@@ -2624,8 +2625,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 		  build_int_cst (integer_type_node, align - 1));
       t = build2 (BIT_AND_EXPR, integer_type_node, t,
 		  build_int_cst (integer_type_node, -align));
-      t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, orig_ndx, t);
-      gimplify_and_add (t, pre_p);
+      gimplify_assign (orig_ndx, t, pre_p);
     }
 
 
@@ -2635,8 +2635,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
   t = fold_convert (integer_type_node, va_size);
   t = build2 (PLUS_EXPR, integer_type_node, orig_ndx, t);
-  t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, ndx, t);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (ndx, t, pre_p);
 
 
   /* Check if the argument is in registers:
@@ -2661,8 +2660,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 		  NULL_TREE);
       gimplify_and_add (t, pre_p);
 
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, array, reg);
-      gimplify_and_add (t, pre_p);
+      gimplify_assign (array, reg, pre_p);
 
       t = build1 (GOTO_EXPR, void_type_node, lab_over);
       gimplify_and_add (t, pre_p);
@@ -2694,14 +2692,12 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
   t = size_binop (PLUS_EXPR, va_size, size_int (32));
   t = fold_convert (integer_type_node, t);
-  t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, ndx, t);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (ndx, t, pre_p);
 
   t = build1 (LABEL_EXPR, void_type_node, lab_false2);
   gimplify_and_add (t, pre_p);
 
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, array, stk);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (array, stk, pre_p);
 
   if (lab_over)
     {

@@ -144,6 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "input.h"
+#include "hashtab.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
 
@@ -163,6 +164,10 @@ static LOC vect_loop_location;
 
 /* Bitmap of virtual variables to be renamed.  */
 bitmap vect_memsyms_to_rename;
+
+/* Vector mapping GIMPLE stmt to stmt_vec_info. */
+VEC(vec_void_p,heap) *stmt_vec_info_vec;
+
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -198,18 +203,17 @@ rename_use_op (use_operand_p op_p)
 static void
 rename_variables_in_bb (basic_block bb)
 {
-  tree phi;
-  block_stmt_iterator bsi;
-  tree stmt;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
   use_operand_p use_p;
   ssa_op_iter iter;
   edge e;
   edge_iterator ei;
   struct loop *loop = bb->loop_father;
 
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      stmt = bsi_stmt (bsi);
+      stmt = gsi_stmt (gsi);
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
 	rename_use_op (use_p);
     }
@@ -218,8 +222,8 @@ rename_variables_in_bb (basic_block bb)
     {
       if (!flow_bb_inside_loop_p (loop, e->dest))
 	continue;
-      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-        rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e));
+      for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+        rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (gsi_stmt (gsi), e));
     }
 }
 
@@ -253,13 +257,14 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
 				       struct loop *new_loop, bool after)
 {
   tree new_ssa_name;
-  tree phi_new, phi_orig;
+  gimple phi_new, phi_orig;
   tree def;
   edge orig_loop_latch = loop_latch_edge (orig_loop);
   edge orig_entry_e = loop_preheader_edge (orig_loop);
   edge new_loop_exit_e = single_exit (new_loop);
   edge new_loop_entry_e = loop_preheader_edge (new_loop);
   edge entry_arg_e = (after ? orig_loop_latch : orig_entry_e);
+  gimple_stmt_iterator gsi_new, gsi_orig;
 
   /*
      step 1. For each loop-header-phi:
@@ -290,11 +295,14 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
   /* Scan the phis in the headers of the old and new loops
      (they are organized in exactly the same order).  */
 
-  for (phi_new = phi_nodes (new_loop->header),
-       phi_orig = phi_nodes (orig_loop->header);
-       phi_new && phi_orig;
-       phi_new = PHI_CHAIN (phi_new), phi_orig = PHI_CHAIN (phi_orig))
+  for (gsi_new = gsi_start_phis (new_loop->header),
+       gsi_orig = gsi_start_phis (orig_loop->header);
+       !gsi_end_p (gsi_new) && !gsi_end_p (gsi_orig);
+       gsi_next (&gsi_new), gsi_next (&gsi_orig))
     {
+      phi_new = gsi_stmt (gsi_new);
+      phi_orig = gsi_stmt (gsi_orig);
+
       /* step 1.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi_orig, entry_arg_e);
       add_phi_arg (phi_new, def, new_loop_entry_e);
@@ -485,8 +493,8 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
                                     bool is_new_loop, basic_block *new_exit_bb,
                                     bitmap *defs)
 {
-  tree orig_phi, new_phi;
-  tree update_phi, update_phi2;
+  gimple orig_phi, new_phi;
+  gimple update_phi, update_phi2;
   tree guard_arg, loop_arg;
   basic_block new_merge_bb = guard_edge->dest;
   edge e = EDGE_SUCC (new_merge_bb, 0);
@@ -495,16 +503,21 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
   edge new_exit_e;
   tree current_new_name;
   tree name;
+  gimple_stmt_iterator gsi_orig, gsi_update;
 
   /* Create new bb between loop and new_merge_bb.  */
   *new_exit_bb = split_edge (single_exit (loop));
 
   new_exit_e = EDGE_SUCC (*new_exit_bb, 0);
 
-  for (orig_phi = phi_nodes (orig_bb), update_phi = phi_nodes (update_bb);
-       orig_phi && update_phi;
-       orig_phi = PHI_CHAIN (orig_phi), update_phi = PHI_CHAIN (update_phi))
+  for (gsi_orig = gsi_start_phis (orig_bb),
+       gsi_update = gsi_start_phis (update_bb);
+       !gsi_end_p (gsi_orig) && !gsi_end_p (gsi_update);
+       gsi_next (&gsi_orig), gsi_next (&gsi_update))
     {
+      orig_phi = gsi_stmt (gsi_orig);
+      update_phi = gsi_stmt (gsi_update);
+
       /* Virtual phi; Mark it for renaming. We actually want to call
 	 mar_sym_for_renaming, but since all ssa renaming datastructures
 	 are going to be freed before we get to call ssa_update, we just
@@ -578,8 +591,6 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
       set_current_def (current_new_name, PHI_RESULT (new_phi));
       bitmap_set_bit (*defs, SSA_NAME_VERSION (current_new_name));
     }
-
-  set_phi_nodes (new_merge_bb, phi_reverse (phi_nodes (new_merge_bb)));
 }
 
 
@@ -613,8 +624,8 @@ static void
 slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
                                     bool is_new_loop, basic_block *new_exit_bb)
 {
-  tree orig_phi, new_phi;
-  tree update_phi, update_phi2;
+  gimple orig_phi, new_phi;
+  gimple update_phi, update_phi2;
   tree guard_arg, loop_arg;
   basic_block new_merge_bb = guard_edge->dest;
   edge e = EDGE_SUCC (new_merge_bb, 0);
@@ -623,15 +634,16 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
   tree orig_def, orig_def_new_name;
   tree new_name, new_name2;
   tree arg;
+  gimple_stmt_iterator gsi;
 
   /* Create new bb between loop and new_merge_bb.  */
   *new_exit_bb = split_edge (single_exit (loop));
 
   new_exit_e = EDGE_SUCC (*new_exit_bb, 0);
 
-  for (update_phi = phi_nodes (update_bb); update_phi; 
-       update_phi = PHI_CHAIN (update_phi))
+  for (gsi = gsi_start_phis (update_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      update_phi = gsi_stmt (gsi);
       orig_phi = update_phi;
       orig_def = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
       /* This loop-closed-phi actually doesn't represent a use
@@ -732,8 +744,6 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
                                                                 == guard_arg);
       SET_PHI_ARG_DEF (update_phi2, guard_edge->dest_idx, PHI_RESULT (new_phi));
     }
-
-  set_phi_nodes (new_merge_bb, phi_reverse (phi_nodes (new_merge_bb)));
 }
 
 
@@ -745,35 +755,40 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 void
 slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 {
-  tree indx_before_incr, indx_after_incr, cond_stmt, cond;
-  tree orig_cond;
+  tree indx_before_incr, indx_after_incr;
+  gimple cond_stmt;
+  gimple orig_cond;
   edge exit_edge = single_exit (loop);
-  block_stmt_iterator loop_cond_bsi;
-  block_stmt_iterator incr_bsi;
+  gimple_stmt_iterator loop_cond_gsi;
+  gimple_stmt_iterator incr_gsi;
   bool insert_after;
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
   LOC loop_loc;
+  enum tree_code code;
 
   orig_cond = get_loop_exit_condition (loop);
   gcc_assert (orig_cond);
-  loop_cond_bsi = bsi_for_stmt (orig_cond);
+  loop_cond_gsi = gsi_for_stmt (orig_cond);
 
-  standard_iv_increment_position (loop, &incr_bsi, &insert_after);
+  standard_iv_increment_position (loop, &incr_gsi, &insert_after);
   create_iv (init, step, NULL_TREE, loop,
-             &incr_bsi, insert_after, &indx_before_incr, &indx_after_incr);
+             &incr_gsi, insert_after, &indx_before_incr, &indx_after_incr);
 
-  if (exit_edge->flags & EDGE_TRUE_VALUE) /* 'then' edge exits the loop.  */
-    cond = build2 (GE_EXPR, boolean_type_node, indx_after_incr, niters);
-  else /* 'then' edge loops back.  */
-    cond = build2 (LT_EXPR, boolean_type_node, indx_after_incr, niters);
+  indx_after_incr = force_gimple_operand_gsi (&loop_cond_gsi, indx_after_incr,
+					      true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+  niters = force_gimple_operand_gsi (&loop_cond_gsi, niters, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
 
-  cond_stmt = build3 (COND_EXPR, TREE_TYPE (orig_cond), cond,
-		      NULL_TREE, NULL_TREE);
-  bsi_insert_before (&loop_cond_bsi, cond_stmt, BSI_SAME_STMT);
+  code = (exit_edge->flags & EDGE_TRUE_VALUE) ? GE_EXPR : LT_EXPR;
+  cond_stmt = gimple_build_cond (code, indx_after_incr, niters, NULL_TREE,
+				 NULL_TREE);
+
+  gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
-  bsi_remove (&loop_cond_bsi, true);
+  gsi_remove (&loop_cond_gsi, true);
 
   loop_loc = find_loop_location (loop);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -781,7 +796,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
       if (loop_loc != UNKNOWN_LOC)
         fprintf (dump_file, "\nloop at %s:%d: ",
                  LOC_FILE (loop_loc), LOC_LINE (loop_loc));
-      print_generic_expr (dump_file, cond_stmt, TDF_SLIM);
+      print_gimple_stmt (dump_file, cond_stmt, 0, TDF_SLIM);
     }
 
   loop->nb_iterations = niters;
@@ -799,8 +814,10 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
   bool at_exit;
   bool was_imm_dom;
   basic_block exit_dest; 
-  tree phi, phi_arg;
+  gimple phi;
+  tree phi_arg;
   edge exit, new_exit;
+  gimple_stmt_iterator gsi;
 
   at_exit = (e == single_exit (loop)); 
   if (!at_exit && e != loop_preheader_edge (loop))
@@ -837,8 +854,9 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 
   /* Duplicating phi args at exit bbs as coming 
      also from exit of duplicated loop.  */
-  for (phi = phi_nodes (exit_dest); phi; phi = PHI_CHAIN (phi))
+  for (gsi = gsi_start_phis (exit_dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      phi = gsi_stmt (gsi);
       phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, single_exit (loop));
       if (phi_arg)
 	{
@@ -880,8 +898,11 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 
       /* We have to add phi args to the loop->header here as coming 
 	 from new_exit_e edge.  */
-      for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (loop->header);
+           !gsi_end_p (gsi);
+           gsi_next (&gsi))
 	{
+	  phi = gsi_stmt (gsi);
 	  phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, entry_e);
 	  if (phi_arg)
 	    add_phi_arg (phi, phi_arg, new_exit_e);	
@@ -908,26 +929,26 @@ static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
 		       basic_block dom_bb)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   edge new_e, enter_e;
-  tree cond_stmt;
-  tree gimplify_stmt_list;
+  gimple cond_stmt;
+  gimple_seq gimplify_stmt_list = NULL;
 
   enter_e = EDGE_SUCC (guard_bb, 0);
   enter_e->flags &= ~EDGE_FALLTHRU;
   enter_e->flags |= EDGE_FALSE_VALUE;
-  bsi = bsi_last (guard_bb);
+  gsi = gsi_last_bb (guard_bb);
 
   cond =
     force_gimple_operand (cond, &gimplify_stmt_list, true,
 			  NULL_TREE);
-  cond_stmt = build3 (COND_EXPR, void_type_node, cond,
-		      NULL_TREE, NULL_TREE);
+  cond_stmt = gimple_build_cond (NE_EXPR, cond, integer_zero_node,
+				 NULL_TREE, NULL_TREE);
   if (gimplify_stmt_list)
-    bsi_insert_after (&bsi, gimplify_stmt_list, BSI_NEW_STMT);
+    gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
 
-  bsi = bsi_last (guard_bb);
-  bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
+  gsi = gsi_last_bb (guard_bb);
+  gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 
   /* Add new edge to connect guard block to the merge/loop-exit block.  */
   new_e = make_edge (guard_bb, exit_bb, EDGE_TRUE_VALUE);
@@ -949,8 +970,8 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
 {
   edge exit_e = single_exit (loop);
   edge entry_e = loop_preheader_edge (loop);
-  tree orig_cond = get_loop_exit_condition (loop);
-  block_stmt_iterator loop_exit_bsi = bsi_last (exit_e->src);
+  gimple orig_cond = get_loop_exit_condition (loop);
+  gimple_stmt_iterator loop_exit_gsi = gsi_last_bb (exit_e->src);
 
   if (need_ssa_update_p ())
     return false;
@@ -963,7 +984,7 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
       || !empty_block_p (loop->latch)
       || !single_exit (loop)
       /* Verify that new loop exit condition can be trivially modified.  */
-      || (!orig_cond || orig_cond != bsi_stmt (loop_exit_bsi))
+      || (!orig_cond || orig_cond != gsi_stmt (loop_exit_gsi))
       || (e != exit_e && e != entry_e))
     return false;
 
@@ -1017,12 +1038,12 @@ set_prologue_iterations (basic_block bb_before_first_loop,
 {
   edge e;
   basic_block cond_bb, then_bb;
-  tree var, prologue_after_cost_adjust_name, stmt;
-  block_stmt_iterator bsi;
-  tree newphi;
+  tree var, prologue_after_cost_adjust_name;
+  gimple_stmt_iterator gsi;
+  gimple newphi;
   edge e_true, e_false, e_fallthru;
-  tree cond_stmt;
-  tree gimplify_stmt_list;
+  gimple cond_stmt;
+  gimple_seq gimplify_stmt_list = NULL, stmts = NULL;
   tree cost_pre_condition = NULL_TREE;
   tree scalar_loop_iters = 
     unshare_expr (LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop)));
@@ -1050,25 +1071,25 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   cost_pre_condition =
     force_gimple_operand (cost_pre_condition, &gimplify_stmt_list,
 			  true, NULL_TREE);
-  cond_stmt = build3 (COND_EXPR, void_type_node, cost_pre_condition,
-		      NULL_TREE, NULL_TREE);
+  cond_stmt = gimple_build_cond (NE_EXPR, cost_pre_condition,
+				 integer_zero_node, NULL_TREE, NULL_TREE);
 
-  bsi = bsi_last (cond_bb);
+  gsi = gsi_last_bb (cond_bb);
   if (gimplify_stmt_list)
-    bsi_insert_after (&bsi, gimplify_stmt_list, BSI_NEW_STMT);
+    gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
 
-  bsi = bsi_last (cond_bb);
-  bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
+  gsi = gsi_last_bb (cond_bb);
+  gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 					  
   var = create_tmp_var (TREE_TYPE (scalar_loop_iters),
 			"prologue_after_cost_adjust");
   add_referenced_var (var);
   prologue_after_cost_adjust_name = 
-    force_gimple_operand (scalar_loop_iters, &stmt, false, var);
+    force_gimple_operand (scalar_loop_iters, &stmts, false, var);
 
-  bsi = bsi_last (then_bb);
-  if (stmt)
-    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+  gsi = gsi_last_bb (then_bb);
+  if (stmts)
+    gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
 
   newphi = create_phi_node (var, bb_before_first_loop);
   add_phi_arg (newphi, prologue_after_cost_adjust_name, e_fallthru);
@@ -1150,7 +1171,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
    cfg_hooks->split_edge, the function tree_split_edge 
    is actually called and, when calling cfg_hooks->duplicate_block,
    the function tree_duplicate_bb is called.  */
-  tree_register_cfg_hooks ();
+  gimple_register_cfg_hooks ();
 
 
   /* 1. Generate a copy of LOOP and put it on E (E is the entry/exit of LOOP).
@@ -1381,18 +1402,17 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 LOC
 find_loop_location (struct loop *loop)
 {
-  tree node = NULL_TREE;
+  gimple stmt = NULL;
   basic_block bb;
-  block_stmt_iterator si;
+  gimple_stmt_iterator si;
 
   if (!loop)
     return UNKNOWN_LOC;
 
-  node = get_loop_exit_condition (loop);
+  stmt = get_loop_exit_condition (loop);
 
-  if (node && CAN_HAVE_LOCATION_P (node) && EXPR_HAS_LOCATION (node)
-      && EXPR_FILENAME (node) && EXPR_LINENO (node))
-    return EXPR_LOC (node);
+  if (stmt && gimple_location (stmt) != UNKNOWN_LOC)
+    return gimple_location (stmt);
 
   /* If we got here the loop is probably not "well formed",
      try to estimate the loop location */
@@ -1402,11 +1422,11 @@ find_loop_location (struct loop *loop)
 
   bb = loop->header;
 
-  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
-      node = bsi_stmt (si);
-      if (node && CAN_HAVE_LOCATION_P (node) && EXPR_HAS_LOCATION (node))
-        return EXPR_LOC (node);
+      stmt = gsi_stmt (si);
+      if (gimple_location (stmt) != UNKNOWN_LOC)
+        return gimple_location (stmt);
     }
 
   return UNKNOWN_LOC;
@@ -1504,7 +1524,7 @@ vect_print_dump_info (enum verbosity_levels vl)
    Create and initialize a new stmt_vec_info struct for STMT.  */
 
 stmt_vec_info
-new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
+new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo)
 {
   stmt_vec_info res;
   res = (stmt_vec_info) xcalloc (1, sizeof (struct _stmt_vec_info));
@@ -1526,7 +1546,8 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_DR_STEP (res) = NULL;
   STMT_VINFO_DR_ALIGNED_TO (res) = NULL;
 
-  if (TREE_CODE (stmt) == PHI_NODE && is_loop_header_bb_p (bb_for_stmt (stmt)))
+  if (gimple_code (stmt) == GIMPLE_PHI
+      && is_loop_header_bb_p (gimple_bb (stmt)))
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
   else
     STMT_VINFO_DEF_TYPE (res) = vect_loop_def;
@@ -1534,22 +1555,39 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   STMT_SLP_TYPE (res) = 0;
-  DR_GROUP_FIRST_DR (res) = NULL_TREE;
-  DR_GROUP_NEXT_DR (res) = NULL_TREE;
+  DR_GROUP_FIRST_DR (res) = NULL;
+  DR_GROUP_NEXT_DR (res) = NULL;
   DR_GROUP_SIZE (res) = 0;
   DR_GROUP_STORE_COUNT (res) = 0;
   DR_GROUP_GAP (res) = 0;
-  DR_GROUP_SAME_DR_STMT (res) = NULL_TREE;
+  DR_GROUP_SAME_DR_STMT (res) = NULL;
   DR_GROUP_READ_WRITE_DEPENDENCE (res) = false;
 
   return res;
 }
 
+/* Create a hash table for stmt_vec_info. */
+
+void
+init_stmt_vec_info_vec (void)
+{
+  gcc_assert (!stmt_vec_info_vec);
+  stmt_vec_info_vec = VEC_alloc (vec_void_p, heap, 50);
+}
+
+/* Free hash table for stmt_vec_info. */
+
+void
+free_stmt_vec_info_vec (void)
+{
+  gcc_assert (stmt_vec_info_vec);
+  VEC_free (vec_void_p, heap, stmt_vec_info_vec);
+}
 
 /* Free stmt vectorization related info.  */
 
 void
-free_stmt_vec_info (tree stmt)
+free_stmt_vec_info (gimple stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
@@ -1557,8 +1595,8 @@ free_stmt_vec_info (tree stmt)
     return;
 
   VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
+  set_vinfo_for_stmt (stmt, NULL);
   free (stmt_info);
-  set_stmt_info (stmt_ann (stmt), NULL);
 }
 
 
@@ -1586,7 +1624,7 @@ new_loop_vec_info (struct loop *loop)
 {
   loop_vec_info res;
   basic_block *bbs;
-  block_stmt_iterator si;
+  gimple_stmt_iterator si;
   unsigned int i, nbbs;
 
   res = (loop_vec_info) xcalloc (1, sizeof (struct _loop_vec_info));
@@ -1598,7 +1636,6 @@ new_loop_vec_info (struct loop *loop)
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
-      tree phi;
 
       /* BBs in a nested inner-loop will have been already processed (because 
 	 we will have called vect_analyze_loop_form for any nested inner-loop).
@@ -1611,18 +1648,21 @@ new_loop_vec_info (struct loop *loop)
 	{
 	  /* Inner-loop bb.  */
 	  gcc_assert (loop->inner && bb->loop_father == loop->inner);
-	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
+	      gimple phi = gsi_stmt (si);
 	      stmt_vec_info stmt_info = vinfo_for_stmt (phi);
-	      loop_vec_info inner_loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+	      loop_vec_info inner_loop_vinfo =
+		STMT_VINFO_LOOP_VINFO (stmt_info);
 	      gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
 	      STMT_VINFO_LOOP_VINFO (stmt_info) = res;
 	    }
-	  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	   {
-	      tree stmt = bsi_stmt (si);
+	      gimple stmt = gsi_stmt (si);
 	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	      loop_vec_info inner_loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+	      loop_vec_info inner_loop_vinfo =
+		 STMT_VINFO_LOOP_VINFO (stmt_info);
 	      gcc_assert (loop->inner == LOOP_VINFO_LOOP (inner_loop_vinfo));
 	      STMT_VINFO_LOOP_VINFO (stmt_info) = res;
 	   }
@@ -1630,17 +1670,18 @@ new_loop_vec_info (struct loop *loop)
       else
 	{
 	  /* bb in current nest.  */
-	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
-	      stmt_ann_t ann = get_stmt_ann (phi);
-	      set_stmt_info (ann, new_stmt_vec_info (phi, res));
+	      gimple phi = gsi_stmt (si);
+	      gimple_set_uid (phi, 0);
+	      set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res));
 	    }
 
-	  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
-	      tree stmt = bsi_stmt (si);
-	      stmt_ann_t ann = stmt_ann (stmt);
-	      set_stmt_info (ann, new_stmt_vec_info (stmt, res));
+	      gimple stmt = gsi_stmt (si);
+	      gimple_set_uid (stmt, 0);
+	      set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res));
 	    }
 	}
     }
@@ -1667,10 +1708,12 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_DDRS (res) = VEC_alloc (ddr_p, heap, 10 * 10);
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
   LOOP_VINFO_MAY_MISALIGN_STMTS (res) =
-    VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS));
+    VEC_alloc (gimple, heap,
+	       PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS));
   LOOP_VINFO_MAY_ALIAS_DDRS (res) =
-    VEC_alloc (ddr_p, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
-  LOOP_VINFO_STRIDED_STORES (res) = VEC_alloc (tree, heap, 10);
+    VEC_alloc (ddr_p, heap,
+	       PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
+  LOOP_VINFO_STRIDED_STORES (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 10);
   LOOP_VINFO_SLP_UNROLLING_FACTOR (res) = 1;
 
@@ -1689,7 +1732,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   struct loop *loop;
   basic_block *bbs;
   int nbbs;
-  block_stmt_iterator si;
+  gimple_stmt_iterator si;
   int j;
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
@@ -1707,7 +1750,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
       free (LOOP_VINFO_BBS (loop_vinfo));
       free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
       free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
-      VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
+      VEC_free (gimple, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
 
       free (loop_vinfo);
       loop->aux = NULL;
@@ -1717,14 +1760,13 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   for (j = 0; j < nbbs; j++)
     {
       basic_block bb = bbs[j];
-      tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-        free_stmt_vec_info (phi);
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+        free_stmt_vec_info (gsi_stmt (si));
 
-      for (si = bsi_start (bb); !bsi_end_p (si); )
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); )
 	{
-	  tree stmt = bsi_stmt (si);
+	  gimple stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
 	  if (stmt_info)
@@ -1732,7 +1774,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 	      /* Check if this is a "pattern stmt" (introduced by the 
 		 vectorizer during the pattern recognition pass).  */
 	      bool remove_stmt_p = false;
-	      tree orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+	      gimple orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
 	      if (orig_stmt)
 		{
 		  stmt_vec_info orig_stmt_info = vinfo_for_stmt (orig_stmt);
@@ -1746,22 +1788,22 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 
 	      /* Remove dead "pattern stmts".  */
 	      if (remove_stmt_p)
-	        bsi_remove (&si, true);
+	        gsi_remove (&si, true);
 	    }
-	  bsi_next (&si);
+	  gsi_next (&si);
 	}
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
   free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
-  VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
+  VEC_free (gimple, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
   VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
   slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   for (j = 0; VEC_iterate (slp_instance, slp_instances, j, instance); j++)
     vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
   VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
-  VEC_free (tree, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
+  VEC_free (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
 
   free (loop_vinfo);
   loop->aux = NULL;
@@ -1850,7 +1892,7 @@ get_vectype_for_scalar_type (tree scalar_type)
 enum dr_alignment_support
 vect_supportable_dr_alignment (struct data_reference *dr)
 {
-  tree stmt = DR_STMT (dr);
+  gimple stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   enum machine_mode mode = (int) TYPE_MODE (vectype);
@@ -1972,14 +2014,14 @@ vect_supportable_dr_alignment (struct data_reference *dr)
    in reduction/induction computations).  */
 
 bool
-vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
+vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, gimple *def_stmt,
 		    tree *def, enum vect_def_type *dt)
 { 
   basic_block bb;
   stmt_vec_info stmt_vinfo;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  *def_stmt = NULL_TREE;
+  *def_stmt = NULL;
   *def = NULL_TREE;
   
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -2014,7 +2056,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
     }
     
   *def_stmt = SSA_NAME_DEF_STMT (operand);
-  if (*def_stmt == NULL_TREE )
+  if (*def_stmt == NULL)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "no def_stmt.");
@@ -2024,27 +2066,19 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
   if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "def_stmt: ");
-      print_generic_expr (vect_dump, *def_stmt, TDF_SLIM);
+      print_gimple_stmt (vect_dump, *def_stmt, 0, TDF_SLIM);
     }
 
   /* empty stmt is expected only in case of a function argument.
-     (Otherwise - we expect a phi_node or a GIMPLE_MODIFY_STMT).  */
-  if (IS_EMPTY_STMT (*def_stmt))
+     (Otherwise - we expect a phi_node or a GIMPLE_ASSIGN).  */
+  if (gimple_nop_p (*def_stmt))
     {
-      tree arg = TREE_OPERAND (*def_stmt, 0);
-      if (is_gimple_min_invariant (arg))
-        {
-          *def = operand;
-          *dt = vect_invariant_def;
-          return true;
-        }
-
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Unexpected empty stmt.");
-      return false;
+      *def = operand;
+      *dt = vect_invariant_def;
+      return true;
     }
 
-  bb = bb_for_stmt (*def_stmt);
+  bb = gimple_bb (*def_stmt);
   if (!flow_bb_inside_loop_p (loop, bb))
     *dt = vect_invariant_def;
   else
@@ -2063,16 +2097,21 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "type of def: %d.",*dt);
 
-  switch (TREE_CODE (*def_stmt))
+  switch (gimple_code (*def_stmt))
     {
-    case PHI_NODE:
-      *def = PHI_RESULT (*def_stmt);
+    case GIMPLE_PHI:
+      *def = gimple_phi_result (*def_stmt);
       break;
 
-    case GIMPLE_MODIFY_STMT:
-      *def = GIMPLE_STMT_OPERAND (*def_stmt, 0);
+    case GIMPLE_ASSIGN:
+      *def = gimple_assign_lhs (*def_stmt);
       break;
 
+    case GIMPLE_CALL:
+      *def = gimple_call_lhs (*def_stmt);
+      if (*def != NULL)
+	break;
+      /* FALLTHRU */
     default:
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "unsupported defining stmt: ");
@@ -2102,7 +2141,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
    CODE1 and CODE2 are CALL_EXPR.  */
 
 bool
-supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
+supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
                                 tree *decl1, tree *decl2,
                                 enum tree_code *code1, enum tree_code *code2)
 {
@@ -2113,8 +2152,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
   enum machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;
-  tree expr = GIMPLE_STMT_OPERAND (stmt, 1);
-  tree type = TREE_TYPE (expr);
+  tree type = gimple_expr_type (stmt);
   tree wide_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1, c2;
 
@@ -2256,14 +2294,13 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
 
 bool
 supportable_narrowing_operation (enum tree_code code,
-				 const_tree stmt, const_tree vectype,
+				 const_gimple stmt, const_tree vectype,
 				 enum tree_code *code1)
 {
   enum machine_mode vec_mode;
   enum insn_code icode1;
   optab optab1;
-  tree expr = GIMPLE_STMT_OPERAND (stmt, 1);
-  tree type = TREE_TYPE (expr);
+  tree type = gimple_expr_type (stmt);
   tree narrow_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1;
 
@@ -2340,6 +2377,15 @@ reduction_code_for_scalar_code (enum tree_code code,
   }
 }
 
+/* Error reporting helper for vect_is_simple_reduction below. GIMPLE statement
+   STMT is printed with a message MSG. */
+
+static void
+report_vect_op (gimple stmt, const char *msg)
+{
+  fprintf (vect_dump, "%s", msg);
+  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+}
 
 /* Function vect_is_simple_reduction
 
@@ -2360,17 +2406,16 @@ reduction_code_for_scalar_code (enum tree_code code,
    Condition 1 is tested here.
    Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.  */
 
-tree
-vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
+gimple
+vect_is_simple_reduction (loop_vec_info loop_info, gimple phi)
 {
-  struct loop *loop = (bb_for_stmt (phi))->loop_father;
+  struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   edge latch_e = loop_latch_edge (loop);
   tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
-  tree def_stmt, def1, def2;
+  gimple def_stmt, def1, def2;
   enum tree_code code;
-  int op_type;
-  tree operation, op1, op2;
+  tree op1, op2;
   tree type;
   int nloop_uses;
   tree name;
@@ -2383,8 +2428,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
   nloop_uses = 0;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
-      tree use_stmt = USE_STMT (use_p);
-      if (flow_bb_inside_loop_p (loop, bb_for_stmt (use_stmt))
+      gimple use_stmt = USE_STMT (use_p);
+      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
 	  && vinfo_for_stmt (use_stmt)
 	  && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt)))
         nloop_uses++;
@@ -2392,7 +2437,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "reduction used in loop.");
-          return NULL_TREE;
+          return NULL;
         }
     }
 
@@ -2403,7 +2448,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
 	  fprintf (vect_dump, "reduction: not ssa_name: ");
 	  print_generic_expr (vect_dump, loop_arg, TDF_SLIM);
 	}
-      return NULL_TREE;
+      return NULL;
     }
 
   def_stmt = SSA_NAME_DEF_STMT (loop_arg);
@@ -2411,22 +2456,22 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "reduction: no def_stmt.");
-      return NULL_TREE;
+      return NULL;
     }
 
-  if (TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT)
+  if (!is_gimple_assign (def_stmt))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        print_generic_expr (vect_dump, def_stmt, TDF_SLIM);
-      return NULL_TREE;
+        print_gimple_stmt (vect_dump, def_stmt, 0, TDF_SLIM);
+      return NULL;
     }
 
-  name = GIMPLE_STMT_OPERAND (def_stmt, 0);
+  name = gimple_assign_lhs (def_stmt);
   nloop_uses = 0;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
-      tree use_stmt = USE_STMT (use_p);
-      if (flow_bb_inside_loop_p (loop, bb_for_stmt (use_stmt))
+      gimple use_stmt = USE_STMT (use_p);
+      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
 	  && vinfo_for_stmt (use_stmt)
 	  && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt)))
 	nloop_uses++;
@@ -2434,47 +2479,37 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "reduction used in loop.");
-	  return NULL_TREE;
+	  return NULL;
 	}
     }
 
-  operation = GIMPLE_STMT_OPERAND (def_stmt, 1);
-  code = TREE_CODE (operation);
+  code = gimple_assign_rhs_code (def_stmt);
+
   if (!commutative_tree_code (code) || !associative_tree_code (code))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: not commutative/associative: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+        report_vect_op (def_stmt, "reduction: not commutative/associative: ");
+      return NULL;
     }
 
-  op_type = TREE_OPERAND_LENGTH (operation);
-  if (op_type != binary_op)
+  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: not binary operation: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: not binary operation: ");
+      return NULL;
     }
 
-  op1 = TREE_OPERAND (operation, 0);
-  op2 = TREE_OPERAND (operation, 1);
+  op1 = gimple_assign_rhs1 (def_stmt);
+  op2 = gimple_assign_rhs2 (def_stmt);
   if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: uses not ssa_names: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: uses not ssa_names: ");
+      return NULL;
     }
 
   /* Check that it's ok to change the order of the computation.  */
-  type = TREE_TYPE (operation);
+  type = TREE_TYPE (gimple_assign_lhs (def_stmt));
   if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1))
       || TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
     {
@@ -2487,7 +2522,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
           fprintf (vect_dump, ",");
           print_generic_expr (vect_dump, TREE_TYPE (op2), TDF_SLIM);
         }
-      return NULL_TREE;
+      return NULL;
     }
 
   /* Generally, when vectorizing a reduction we change the order of the
@@ -2503,32 +2538,24 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
     {
       /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: unsafe fp math optimization: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: unsafe fp math optimization: ");
+      return NULL;
     }
   else if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type)
 	   && !nested_in_vect_loop_p (vect_loop, def_stmt))
     {
       /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: unsafe int math optimization: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: unsafe int math optimization: ");
+      return NULL;
     }
   else if (SAT_FIXED_POINT_TYPE_P (type))
     {
       /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: unsafe fixed-point math optimization: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, 
+			"reduction: unsafe fixed-point math optimization: ");
+      return NULL;
     }
 
   /* reduction is safe. we're dealing with one of the following:
@@ -2537,14 +2564,11 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
    */
   def1 = SSA_NAME_DEF_STMT (op1);
   def2 = SSA_NAME_DEF_STMT (op2);
-  if (!def1 || !def2 || IS_EMPTY_STMT (def1) || IS_EMPTY_STMT (def2))
+  if (!def1 || !def2 || gimple_nop_p (def1) || gimple_nop_p (def2))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: no defs for operands: ");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: no defs for operands: ");
+      return NULL;
     }
 
 
@@ -2553,48 +2577,40 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
      or it's an induction (defined by a loop-header phi-node).  */
 
   if (def2 == phi
-      && flow_bb_inside_loop_p (loop, bb_for_stmt (def1))
-      && (TREE_CODE (def1) == GIMPLE_MODIFY_STMT 
+      && flow_bb_inside_loop_p (loop, gimple_bb (def1))
+      && (is_gimple_assign (def1)
 	  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_induction_def
-	  || (TREE_CODE (def1) == PHI_NODE 
+	  || (gimple_code (def1) == GIMPLE_PHI
 	      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_loop_def
-	      && !is_loop_header_bb_p (bb_for_stmt (def1)))))
+	      && !is_loop_header_bb_p (gimple_bb (def1)))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "detected reduction:");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
+	report_vect_op (def_stmt, "detected reduction:");
       return def_stmt;
     }
   else if (def1 == phi
-	   && flow_bb_inside_loop_p (loop, bb_for_stmt (def2))
-	   && (TREE_CODE (def2) == GIMPLE_MODIFY_STMT 
+	   && flow_bb_inside_loop_p (loop, gimple_bb (def2))
+	   && (is_gimple_assign (def2)
 	       || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_induction_def
-	       || (TREE_CODE (def2) == PHI_NODE
+	       || (gimple_code (def2) == GIMPLE_PHI
 		   && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_loop_def
-		   && !is_loop_header_bb_p (bb_for_stmt (def2)))))
+		   && !is_loop_header_bb_p (gimple_bb (def2)))))
     {
       /* Swap operands (just for simplicity - so that the rest of the code
 	 can assume that the reduction variable is always the last (second)
 	 argument).  */
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "detected reduction: need to swap operands:");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      swap_tree_operands (def_stmt, &TREE_OPERAND (operation, 0), 
-				    &TREE_OPERAND (operation, 1));
+	report_vect_op (def_stmt ,
+		        "detected reduction: need to swap operands:");
+      swap_tree_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
+			  gimple_assign_rhs2_ptr (def_stmt));
       return def_stmt;
     }
   else
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "reduction: unknown pattern.");
-          print_generic_expr (vect_dump, operation, TDF_SLIM);
-        }
-      return NULL_TREE;
+	report_vect_op (def_stmt, "reduction: unknown pattern.");
+      return NULL;
     }
 }
 
@@ -2673,6 +2689,8 @@ vectorize_loops (void)
      need to be renamed.  */
   vect_memsyms_to_rename = BITMAP_ALLOC (NULL);
 
+  init_stmt_vec_info_vec ();
+
   /*  ----------- Analyze loops. -----------  */
 
   /* If some loop was duplicated, it gets bigger number 
@@ -2716,6 +2734,8 @@ vectorize_loops (void)
       destroy_loop_vec_info (loop_vinfo, true);
       loop->aux = NULL;
     }
+
+  free_stmt_vec_info_vec ();
 
   return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
 }

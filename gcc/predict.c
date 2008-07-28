@@ -203,7 +203,7 @@ static struct pointer_map_t *bb_predictions;
    PREDICTOR.  */
 
 bool
-tree_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
+gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
   void **preds = pointer_map_contains (bb_predictions, bb);
@@ -305,7 +305,7 @@ rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 
 /* Predict edge E with the given PROBABILITY.  */
 void
-tree_predict_edge (edge e, enum br_predictor predictor, int probability)
+gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
   gcc_assert (profile_status != PROFILE_GUESSED);
   if ((e->src != ENTRY_BLOCK_PTR && EDGE_COUNT (e->src->succs) > 1)
@@ -947,36 +947,38 @@ guess_outgoing_edge_probabilities (basic_block bb)
   combine_predictions_for_insn (BB_END (bb), bb);
 }
 
-/* Return constant EXPR will likely have at execution time, NULL if unknown. 
-   The function is used by builtin_expect branch predictor so the evidence
-   must come from this construct and additional possible constant folding.
-  
-   We may want to implement more involved value guess (such as value range
-   propagation based prediction), but such tricks shall go to new
-   implementation.  */
+static tree expr_expected_value (tree, bitmap);
+
+/* Helper function for expr_expected_value.  */
 
 static tree
-expr_expected_value (tree expr, bitmap visited)
+expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitmap visited)
 {
-  if (TREE_CONSTANT (expr))
-    return expr;
-  else if (TREE_CODE (expr) == SSA_NAME)
+  gimple def;
+
+  if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
     {
-      tree def = SSA_NAME_DEF_STMT (expr);
+      if (TREE_CONSTANT (op0))
+	return op0;
+
+      if (code != SSA_NAME)
+	return NULL_TREE;
+
+      def = SSA_NAME_DEF_STMT (op0);
 
       /* If we were already here, break the infinite cycle.  */
-      if (bitmap_bit_p (visited, SSA_NAME_VERSION (expr)))
+      if (bitmap_bit_p (visited, SSA_NAME_VERSION (op0)))
 	return NULL;
-      bitmap_set_bit (visited, SSA_NAME_VERSION (expr));
+      bitmap_set_bit (visited, SSA_NAME_VERSION (op0));
 
-      if (TREE_CODE (def) == PHI_NODE)
+      if (gimple_code (def) == GIMPLE_PHI)
 	{
 	  /* All the arguments of the PHI node must have the same constant
 	     length.  */
-	  int i;
+	  int i, n = gimple_phi_num_args (def);
 	  tree val = NULL, new_val;
 
-	  for (i = 0; i < PHI_NUM_ARGS (def); i++)
+	  for (i = 0; i < n; i++)
 	    {
 	      tree arg = PHI_ARG_DEF (def, i);
 
@@ -999,81 +1001,121 @@ expr_expected_value (tree expr, bitmap visited)
 	    }
 	  return val;
 	}
-      if (TREE_CODE (def) != GIMPLE_MODIFY_STMT
-	  || GIMPLE_STMT_OPERAND (def, 0) != expr)
-	return NULL;
-      return expr_expected_value (GIMPLE_STMT_OPERAND (def, 1), visited);
-    }
-  else if (TREE_CODE (expr) == CALL_EXPR)
-    {
-      tree decl = get_callee_fndecl (expr);
-      if (!decl)
-	return NULL;
-      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (decl) == BUILT_IN_EXPECT)
+      if (is_gimple_assign (def))
 	{
-	  tree val;
-
-	  if (call_expr_nargs (expr) != 2)
+	  if (gimple_assign_lhs (def) != op0)
 	    return NULL;
-	  val = CALL_EXPR_ARG (expr, 0);
-	  if (TREE_CONSTANT (val))
-	    return val;
-	  return CALL_EXPR_ARG (expr, 1);
+
+	  return expr_expected_value_1 (TREE_TYPE (gimple_assign_lhs (def)),
+					gimple_assign_rhs1 (def),
+					gimple_assign_rhs_code (def),
+					gimple_assign_rhs2 (def),
+					visited);
 	}
+
+      if (is_gimple_call (def))
+	{
+	  tree decl = gimple_call_fndecl (def);
+	  if (!decl)
+	    return NULL;
+	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (decl) == BUILT_IN_EXPECT)
+	    {
+	      tree val;
+
+	      if (gimple_call_num_args (def) != 2)
+		return NULL;
+	      val = gimple_call_arg (def, 0);
+	      if (TREE_CONSTANT (val))
+		return val;
+	      return gimple_call_arg (def, 1);
+	    }
+	}
+
+      return NULL;
     }
-  if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
+
+  if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
     {
-      tree op0, op1, res;
-      op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
+      tree res;
+      op0 = expr_expected_value (op0, visited);
       if (!op0)
 	return NULL;
-      op1 = expr_expected_value (TREE_OPERAND (expr, 1), visited);
+      op1 = expr_expected_value (op1, visited);
       if (!op1)
 	return NULL;
-      res = fold_build2 (TREE_CODE (expr), TREE_TYPE (expr), op0, op1);
+      res = fold_build2 (code, type, op0, op1);
       if (TREE_CONSTANT (res))
 	return res;
       return NULL;
     }
-  if (UNARY_CLASS_P (expr))
+  if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS)
     {
-      tree op0, res;
-      op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
+      tree res;
+      op0 = expr_expected_value (op0, visited);
       if (!op0)
 	return NULL;
-      res = fold_build1 (TREE_CODE (expr), TREE_TYPE (expr), op0);
+      res = fold_build1 (code, type, op0);
       if (TREE_CONSTANT (res))
 	return res;
       return NULL;
     }
   return NULL;
 }
+
+/* Return constant EXPR will likely have at execution time, NULL if unknown. 
+   The function is used by builtin_expect branch predictor so the evidence
+   must come from this construct and additional possible constant folding.
+  
+   We may want to implement more involved value guess (such as value range
+   propagation based prediction), but such tricks shall go to new
+   implementation.  */
+
+static tree
+expr_expected_value (tree expr, bitmap visited)
+{
+  enum tree_code code;
+  tree op0, op1;
+
+  if (TREE_CONSTANT (expr))
+    return expr;
+
+  extract_ops_from_tree (expr, &code, &op0, &op1);
+  return expr_expected_value_1 (TREE_TYPE (expr),
+				op0, code, op1, visited);
+}
+
 
 /* Get rid of all builtin_expect calls we no longer need.  */
 static void
 strip_builtin_expect (void)
 {
   basic_block bb;
+  gimple ass_stmt;
+  tree var;
+
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator bi;
-      for (bi = bsi_start (bb); !bsi_end_p (bi); bsi_next (&bi))
+      gimple_stmt_iterator bi;
+      for (bi = gsi_start_bb (bb); !gsi_end_p (bi); gsi_next (&bi))
 	{
-	  tree stmt = bsi_stmt (bi);
+	  gimple stmt = gsi_stmt (bi);
 	  tree fndecl;
-	  tree call;
 
-	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && (call = GIMPLE_STMT_OPERAND (stmt, 1))
-	      && TREE_CODE (call) == CALL_EXPR
-	      && (fndecl = get_callee_fndecl (call))
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+	    continue;
+
+	  fndecl = gimple_call_fndecl (stmt);
+
+	  if (fndecl
 	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
-	      && call_expr_nargs (call) == 2)
+	      && gimple_call_num_args (stmt) == 2)
 	    {
-	      GIMPLE_STMT_OPERAND (stmt, 1) = CALL_EXPR_ARG (call, 0);
-	      update_stmt (stmt);
+	      var = gimple_call_lhs (stmt);
+	      ass_stmt = gimple_build_assign (var, gimple_call_arg (stmt, 0));
+
+	      gsi_replace (&bi, ass_stmt, true);
 	    }
 	}
     }
@@ -1083,27 +1125,26 @@ strip_builtin_expect (void)
 static void
 tree_predict_by_opcode (basic_block bb)
 {
-  tree stmt = last_stmt (bb);
+  gimple stmt = last_stmt (bb);
   edge then_edge;
-  tree cond;
-  tree op0;
+  tree op0, op1;
   tree type;
   tree val;
+  enum tree_code cmp;
   bitmap visited;
   edge_iterator ei;
 
-  if (!stmt || TREE_CODE (stmt) != COND_EXPR)
+  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
     return;
   FOR_EACH_EDGE (then_edge, ei, bb->succs)
     if (then_edge->flags & EDGE_TRUE_VALUE)
       break;
-  cond = TREE_OPERAND (stmt, 0);
-  if (!COMPARISON_CLASS_P (cond))
-    return;
-  op0 = TREE_OPERAND (cond, 0);
+  op0 = gimple_cond_lhs (stmt);
+  op1 = gimple_cond_rhs (stmt);
+  cmp = gimple_cond_code (stmt);
   type = TREE_TYPE (op0);
   visited = BITMAP_ALLOC (NULL);
-  val = expr_expected_value (cond, visited);
+  val = expr_expected_value_1 (boolean_type_node, op0, cmp, op1, visited);
   BITMAP_FREE (visited);
   if (val)
     {
@@ -1118,9 +1159,9 @@ tree_predict_by_opcode (basic_block bb)
      Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
   if (POINTER_TYPE_P (type))
     {
-      if (TREE_CODE (cond) == EQ_EXPR)
+      if (cmp == EQ_EXPR)
 	predict_edge_def (then_edge, PRED_TREE_POINTER, NOT_TAKEN);
-      else if (TREE_CODE (cond) == NE_EXPR)
+      else if (cmp == NE_EXPR)
 	predict_edge_def (then_edge, PRED_TREE_POINTER, TAKEN);
     }
   else
@@ -1129,7 +1170,7 @@ tree_predict_by_opcode (basic_block bb)
      EQ tests are usually false and NE tests are usually true. Also,
      most quantities are positive, so we can make the appropriate guesses
      about signed comparisons against zero.  */
-    switch (TREE_CODE (cond))
+    switch (cmp)
       {
       case EQ_EXPR:
       case UNEQ_EXPR:
@@ -1140,8 +1181,7 @@ tree_predict_by_opcode (basic_block bb)
 	  ;
 	/* Comparisons with 0 are often used for booleans and there is
 	   nothing useful to predict about them.  */
-	else if (integer_zerop (op0)
-		 || integer_zerop (TREE_OPERAND (cond, 1)))
+	else if (integer_zerop (op0) || integer_zerop (op1))
 	  ;
 	else
 	  predict_edge_def (then_edge, PRED_TREE_OPCODE_NONEQUAL, NOT_TAKEN);
@@ -1157,7 +1197,7 @@ tree_predict_by_opcode (basic_block bb)
 	/* Comparisons with 0 are often used for booleans and there is
 	   nothing useful to predict about them.  */
 	else if (integer_zerop (op0)
-		 || integer_zerop (TREE_OPERAND (cond, 1)))
+		 || integer_zerop (op1))
 	  ;
 	else
 	  predict_edge_def (then_edge, PRED_TREE_OPCODE_NONEQUAL, TAKEN);
@@ -1173,23 +1213,23 @@ tree_predict_by_opcode (basic_block bb)
 
       case LE_EXPR:
       case LT_EXPR:
-	if (integer_zerop (TREE_OPERAND (cond, 1))
-	    || integer_onep (TREE_OPERAND (cond, 1))
-	    || integer_all_onesp (TREE_OPERAND (cond, 1))
-	    || real_zerop (TREE_OPERAND (cond, 1))
-	    || real_onep (TREE_OPERAND (cond, 1))
-	    || real_minus_onep (TREE_OPERAND (cond, 1)))
+	if (integer_zerop (op1)
+	    || integer_onep (op1)
+	    || integer_all_onesp (op1)
+	    || real_zerop (op1)
+	    || real_onep (op1)
+	    || real_minus_onep (op1))
 	  predict_edge_def (then_edge, PRED_TREE_OPCODE_POSITIVE, NOT_TAKEN);
 	break;
 
       case GE_EXPR:
       case GT_EXPR:
-	if (integer_zerop (TREE_OPERAND (cond, 1))
-	    || integer_onep (TREE_OPERAND (cond, 1))
-	    || integer_all_onesp (TREE_OPERAND (cond, 1))
-	    || real_zerop (TREE_OPERAND (cond, 1))
-	    || real_onep (TREE_OPERAND (cond, 1))
-	    || real_minus_onep (TREE_OPERAND (cond, 1)))
+	if (integer_zerop (op1)
+	    || integer_onep (op1)
+	    || integer_all_onesp (op1)
+	    || real_zerop (op1)
+	    || real_onep (op1)
+	    || real_minus_onep (op1))
 	  predict_edge_def (then_edge, PRED_TREE_OPCODE_POSITIVE, TAKEN);
 	break;
 
@@ -1199,6 +1239,7 @@ tree_predict_by_opcode (basic_block bb)
 }
 
 /* Try to guess whether the value of return means error code.  */
+
 static enum br_predictor
 return_prediction (tree val, enum prediction *prediction)
 {
@@ -1243,10 +1284,10 @@ return_prediction (tree val, enum prediction *prediction)
 static void
 apply_return_prediction (void)
 {
-  tree return_stmt = NULL;
+  gimple return_stmt = NULL;
   tree return_val;
   edge e;
-  tree phi;
+  gimple phi;
   int phi_num_args, i;
   enum br_predictor pred;
   enum prediction direction;
@@ -1256,26 +1297,20 @@ apply_return_prediction (void)
     {
       return_stmt = last_stmt (e->src);
       if (return_stmt
-	  && TREE_CODE (return_stmt) == RETURN_EXPR)
+	  && gimple_code (return_stmt) == GIMPLE_RETURN)
 	break;
     }
   if (!e)
     return;
-  return_val = TREE_OPERAND (return_stmt, 0);
+  return_val = gimple_return_retval (return_stmt);
   if (!return_val)
     return;
-  if (TREE_CODE (return_val) == GIMPLE_MODIFY_STMT)
-    return_val = GIMPLE_STMT_OPERAND (return_val, 1);
   if (TREE_CODE (return_val) != SSA_NAME
       || !SSA_NAME_DEF_STMT (return_val)
-      || TREE_CODE (SSA_NAME_DEF_STMT (return_val)) != PHI_NODE)
+      || gimple_code (SSA_NAME_DEF_STMT (return_val)) != GIMPLE_PHI)
     return;
-  for (phi = SSA_NAME_DEF_STMT (return_val); phi; phi = PHI_CHAIN (phi))
-    if (PHI_RESULT (phi) == return_val)
-      break;
-  if (!phi)
-    return;
-  phi_num_args = PHI_NUM_ARGS (phi);
+  phi = SSA_NAME_DEF_STMT (return_val);
+  phi_num_args = gimple_phi_num_args (phi);
   pred = return_prediction (PHI_ARG_DEF (phi, 0), &direction);
 
   /* Avoid the degenerate case where all return values form the function
@@ -1289,7 +1324,7 @@ apply_return_prediction (void)
       {
 	pred = return_prediction (PHI_ARG_DEF (phi, i), &direction);
 	if (pred != PRED_NO_PREDICTION)
-	  predict_paths_leading_to (PHI_ARG_EDGE (phi, i)->src, pred,
+	  predict_paths_leading_to (gimple_phi_arg_edge (phi, i)->src, pred,
 				    direction);
       }
 }
@@ -1307,46 +1342,34 @@ tree_bb_level_predictions (void)
 
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator bsi = bsi_last (bb);
+      gimple_stmt_iterator gsi;
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi);)
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
-	  tree stmt = bsi_stmt (bsi);
+	  gimple stmt = gsi_stmt (gsi);
 	  tree decl;
-	  bool next = false;
 
-	  switch (TREE_CODE (stmt))
+	  if (is_gimple_call (stmt))
 	    {
-	      case GIMPLE_MODIFY_STMT:
-		if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
-		  {
-		    stmt = GIMPLE_STMT_OPERAND (stmt, 1);
-		    goto call_expr;
-		  }
-		break;
-	      case CALL_EXPR:
-call_expr:;
-		if (call_expr_flags (stmt) & ECF_NORETURN)
-		  predict_paths_leading_to (bb, PRED_NORETURN,
-		      			    NOT_TAKEN);
-		decl = get_callee_fndecl (stmt);
-		if (decl
-		    && lookup_attribute ("cold",
-					 DECL_ATTRIBUTES (decl)))
-		  predict_paths_leading_to (bb, PRED_COLD_FUNCTION,
-		      			    NOT_TAKEN);
-		break;
-	      case PREDICT_EXPR:
-		predict_paths_leading_to (bb, PREDICT_EXPR_PREDICTOR (stmt),
-		      			  PREDICT_EXPR_OUTCOME (stmt));
-		bsi_remove (&bsi, true);
-		next = true;
-		break;
-	      default:
-		break;
+	      if (gimple_call_flags (stmt) & ECF_NORETURN)
+		predict_paths_leading_to (bb, PRED_NORETURN,
+					  NOT_TAKEN);
+	      decl = gimple_call_fndecl (stmt);
+	      if (decl
+		  && lookup_attribute ("cold",
+				       DECL_ATTRIBUTES (decl)))
+		predict_paths_leading_to (bb, PRED_COLD_FUNCTION,
+					  NOT_TAKEN);
 	    }
-	  if (!next)
-	    bsi_next (&bsi);
+	  else if (gimple_code (stmt) == GIMPLE_PREDICT)
+	    {
+	      predict_paths_leading_to (bb, gimple_predict_predictor (stmt),
+					gimple_predict_outcome (stmt));
+	      gsi_remove (&gsi, true);
+	      continue;
+	    }
+
+	  gsi_next (&gsi);
 	}
     }
 }
@@ -1416,7 +1439,7 @@ tree_estimate_probability (void)
 	      && e->dest != EXIT_BLOCK_PTR
 	      && single_succ_p (e->dest)
 	      && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
-	      && TREE_CODE (last_stmt (e->dest)) == RETURN_EXPR)
+	      && gimple_code (last_stmt (e->dest)) == GIMPLE_RETURN)
 	    {
 	      edge e1;
 	      edge_iterator ei1;
@@ -1442,23 +1465,20 @@ tree_estimate_probability (void)
 	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
 	      && !dominated_by_p (CDI_POST_DOMINATORS, e->src, e->dest))
 	    {
-	      block_stmt_iterator bi;
+	      gimple_stmt_iterator bi;
 
 	      /* The call heuristic claims that a guarded function call
 		 is improbable.  This is because such calls are often used
 		 to signal exceptional situations such as printing error
 		 messages.  */
-	      for (bi = bsi_start (e->dest); !bsi_end_p (bi);
-		   bsi_next (&bi))
+	      for (bi = gsi_start_bb (e->dest); !gsi_end_p (bi);
+		   gsi_next (&bi))
 		{
-		  tree stmt = bsi_stmt (bi);
-		  if ((TREE_CODE (stmt) == CALL_EXPR
-		       || (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-			   && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1))
-			      == CALL_EXPR))
+		  gimple stmt = gsi_stmt (bi);
+		  if (is_gimple_call (stmt)
 		      /* Constant and pure calls are hardly used to signalize
 			 something exceptional.  */
-		      && TREE_SIDE_EFFECTS (stmt))
+		      && gimple_has_side_effects (stmt))
 		    {
 		      predict_edge_def (e, PRED_CALL, NOT_TAKEN);
 		      break;
@@ -1483,7 +1503,7 @@ tree_estimate_probability (void)
   remove_fake_exit_edges ();
   loop_optimizer_finalize ();
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_tree_cfg (dump_file, dump_flags);
+    gimple_dump_cfg (dump_file, dump_flags);
   if (profile_status == PROFILE_ABSENT)
     profile_status = PROFILE_GUESSED;
   return 0;

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "c-tree.h"
 #include "c-common.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "diagnostic.h"
 #include "hashtab.h"
 #include "output.h"

@@ -1,3 +1,48 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	2008-07-18  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c: Include tree-iterator.h.
+	* Make-lang.in (expr.o): Add tree-iterator.h dependency.
+
+	2008-07-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* java-gimplify.c: Include gimple.h instead of tree-gimple.h.
+	* expr.c: Same.
+
+	2008-07-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* java-gimplify.c (java_gimplify_expr): Same.
+	(java_gimplify_modify_expr): Same.
+	* java-tree.h: Rename GENERIC_NEXT to TREE_CHAIN.
+
+	2008-05-02  Diego Novillo  <dnovillo@google.com>
+
+	* expr.c (build_java_throw_out_of_bounds_exception): Fix
+	mixed declarations and code.
+
+	2008-05-02  Doug Kwan  <dougkwan@google.com>
+	
+	* expr.c (build_java_throw_out_of_bounds_exception ): Wrap call to
+	_Jv_ThrowBadArrayIndex with a COMPOUND_EXPR to return 0.
+
+	2008-02-19  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00804.html
+
+	* java-gimplify.c (java_gimplify_self_mod_expr): Change
+	gimple_seq arguments to gimple_seq *.  Update all users.
+
+	2007-11-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* java-gimplify.c (java_gimplify_expr): Make pre_p and post_p
+	sequences.
+	(java_gimplify_self_mod_expr): Same.                                    
+	* java-tree.h (java_gimplify_expr): Make pre_p and post_p               
+	sequences.
+
 2008-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* java/decl.c: Include cgraph.h

@@ -73,15 +73,17 @@ remove_fallthru_edge (VEC(edge,gc) *ev)
   return false;
 }
 
+
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
 
 static bool
-cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
+cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 {
   edge taken_edge;
   bool retval = false;
-  tree expr = bsi_stmt (bsi), val;
+  gimple stmt = gsi_stmt (gsi);
+  tree val;
 
   if (!single_succ_p (bb))
     {
@@ -90,26 +92,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
       bool warned;
 
       fold_defer_overflow_warnings ();
-
-      switch (TREE_CODE (expr))
-	{
-	case COND_EXPR:
-	  val = fold (COND_EXPR_COND (expr));
-	  break;
-
-	case SWITCH_EXPR:
-	  val = fold (SWITCH_COND (expr));
-	  if (TREE_CODE (val) != INTEGER_CST)
-	    {
-	      fold_undefer_and_ignore_overflow_warnings ();
-	      return false;
-	    }
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
+      val = gimple_fold (stmt);
       taken_edge = find_taken_edge (bb, val);
       if (!taken_edge)
 	{
@@ -126,7 +109,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 	      if (!warned)
 		{
 		  fold_undefer_overflow_warnings
-		    (true, expr, WARN_STRICT_OVERFLOW_CONDITIONAL);
+		    (true, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
 		  warned = true;
 		}
 
@@ -147,7 +130,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
     taken_edge = single_succ_edge (bb);
 
   bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
-  bsi_remove (&bsi, true);
+  gsi_remove (&gsi, true);
   taken_edge->flags = EDGE_FALLTHRU;
 
   return retval;
@@ -159,30 +142,30 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 static bool
 cleanup_control_flow_bb (basic_block bb)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   bool retval = false;
-  tree stmt;
+  gimple stmt;
 
   /* If the last statement of the block could throw and now cannot,
      we need to prune cfg.  */
-  retval |= tree_purge_dead_eh_edges (bb);
+  retval |= gimple_purge_dead_eh_edges (bb);
 
-  bsi = bsi_last (bb);
-  if (bsi_end_p (bsi))
+  gsi = gsi_last_bb (bb);
+  if (gsi_end_p (gsi))
     return retval;
 
-  stmt = bsi_stmt (bsi);
+  stmt = gsi_stmt (gsi);
 
-  if (TREE_CODE (stmt) == COND_EXPR
-      || TREE_CODE (stmt) == SWITCH_EXPR)
-    retval |= cleanup_control_expr_graph (bb, bsi);
-  /* If we had a computed goto which has a compile-time determinable
-     destination, then we can eliminate the goto.  */
-  else if (TREE_CODE (stmt) == GOTO_EXPR
-	   && TREE_CODE (GOTO_DESTINATION (stmt)) == ADDR_EXPR
-	   && (TREE_CODE (TREE_OPERAND (GOTO_DESTINATION (stmt), 0))
+  if (gimple_code (stmt) == GIMPLE_COND
+      || gimple_code (stmt) == GIMPLE_SWITCH)
+    retval |= cleanup_control_expr_graph (bb, gsi);
+  else if (gimple_code (stmt) == GIMPLE_GOTO
+	   && TREE_CODE (gimple_goto_dest (stmt)) == ADDR_EXPR
+	   && (TREE_CODE (TREE_OPERAND (gimple_goto_dest (stmt), 0))
 	       == LABEL_DECL))
     {
+      /* If we had a computed goto which has a compile-time determinable
+	 destination, then we can eliminate the goto.  */
       edge e;
       tree label;
       edge_iterator ei;
@@ -191,7 +174,7 @@ cleanup_control_flow_bb (basic_block bb)
       /* First look at all the outgoing edges.  Delete any outgoing
 	 edges which do not go to the right block.  For the one
 	 edge which goes to the right block, fix up its flags.  */
-      label = TREE_OPERAND (GOTO_DESTINATION (stmt), 0);
+      label = TREE_OPERAND (gimple_goto_dest (stmt), 0);
       target_block = label_to_block (label);
       for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
@@ -213,13 +196,15 @@ cleanup_control_flow_bb (basic_block bb)
 
       /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
 	 relevant information we need.  */
-      bsi_remove (&bsi, true);
+      gsi_remove (&gsi, true);
       retval = true;
     }
 
   /* Check for indirect calls that have been turned into
      noreturn calls.  */
-  else if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
+  else if (is_gimple_call (stmt)
+           && gimple_call_noreturn_p (stmt)
+           && remove_fallthru_edge (bb->succs))
     retval = true;
 
   return retval;
@@ -235,7 +220,7 @@ cleanup_control_flow_bb (basic_block bb)
 static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   edge_iterator ei;
   edge e, succ;
   basic_block dest;
@@ -244,7 +229,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   if (single_succ_p (bb) != 1
       /* If PHI_WANTED is false, BB must not have any PHI nodes.
 	 Otherwise, BB must have PHI nodes.  */
-      || (phi_nodes (bb) != NULL_TREE) != phi_wanted
+      || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted
       /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
       || single_succ (bb) == EXIT_BLOCK_PTR
       /* Nor should this be an infinite loop.  */
@@ -259,14 +244,14 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
   /* Now walk through the statements backward.  We can ignore labels,
      anything else means this is not a forwarder block.  */
-  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
+  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
-      tree stmt = bsi_stmt (bsi);
+      gimple stmt = gsi_stmt (gsi);
 
-      switch (TREE_CODE (stmt))
+      switch (gimple_code (stmt))
 	{
-	case LABEL_EXPR:
-	  if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
+	case GIMPLE_LABEL:
+	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
 	    return false;
 	  break;
 
@@ -333,12 +318,13 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
   int n1 = e1->dest_idx;
   int n2 = e2->dest_idx;
-  tree phi;
+  gimple_stmt_iterator gsi;
 
-  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
+  for (gsi = gsi_start_phis (dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      tree val1 = PHI_ARG_DEF (phi, n1);
-      tree val2 = PHI_ARG_DEF (phi, n2);
+      gimple phi = gsi_stmt (gsi);
+      tree val1 = gimple_phi_arg_def (phi, n1);
+      tree val2 = gimple_phi_arg_def (phi, n2);
 
       gcc_assert (val1 != NULL_TREE);
       gcc_assert (val2 != NULL_TREE);
@@ -357,10 +343,9 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  tree label;
-  tree phi;
+  gimple label;
   edge_iterator ei;
-  block_stmt_iterator bsi, bsi_to;
+  gimple_stmt_iterator gsi, gsi_to;
   bool seen_abnormal_edge = false;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
@@ -373,8 +358,8 @@ remove_forwarder_block (basic_block bb)
      it.  */
   label = first_stmt (dest);
   if (label
-      && TREE_CODE (label) == LABEL_EXPR
-      && DECL_NONLOCAL (LABEL_EXPR_LABEL (label)))
+      && gimple_code (label) == GIMPLE_LABEL
+      && DECL_NONLOCAL (gimple_label_label (label)))
     return false;
 
   /* If there is an abnormal edge to basic block BB, but not into
@@ -393,14 +378,14 @@ remove_forwarder_block (basic_block bb)
       seen_abnormal_edge = true;
 
       if (has_abnormal_incoming_edge_p (dest)
-	  || phi_nodes (dest) != NULL_TREE)
+	  || !gimple_seq_empty_p (phi_nodes (dest)))
 	return false;
     }
 
   /* If there are phi nodes in DEST, and some of the blocks that are
      predecessors of BB are also predecessors of DEST, check that the
      phi node arguments match.  */
-  if (phi_nodes (dest))
+  if (!gimple_seq_empty_p (phi_nodes (dest)))
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -431,8 +416,13 @@ remove_forwarder_block (basic_block bb)
 	{
 	  /* Create arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
-	    add_phi_arg (phi, PHI_ARG_DEF (phi, succ->dest_idx), s);
+	  for (gsi = gsi_start_phis (dest);
+	       !gsi_end_p (gsi);
+	       gsi_next (&gsi))
+	    {
+	      gimple phi = gsi_stmt (gsi);
+	      add_phi_arg (phi, gimple_phi_arg_def (phi, succ->dest_idx), s);
+	    }
 	}
     }
 
@@ -440,14 +430,13 @@ remove_forwarder_block (basic_block bb)
     {
       /* Move the labels to the new block, so that the redirection of
 	 the abnormal edges works.  */
-
-      bsi_to = bsi_start (dest);
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+      gsi_to = gsi_start_bb (dest);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  label = bsi_stmt (bsi);
-	  gcc_assert (TREE_CODE (label) == LABEL_EXPR);
-	  bsi_remove (&bsi, false);
-	  bsi_insert_before (&bsi_to, label, BSI_CONTINUE_LINKING);
+	  label = gsi_stmt (gsi);
+	  gcc_assert (gimple_code (label) == GIMPLE_LABEL);
+	  gsi_remove (&gsi, false);
+	  gsi_insert_before (&gsi_to, label, GSI_CONTINUE_LINKING);
 	}
     }
 
@@ -485,18 +474,18 @@ static bool
 split_bbs_on_noreturn_calls (void)
 {
   bool changed = false;
-  tree stmt;
+  gimple stmt;
   basic_block bb;
 
   /* Detect cases where a mid-block call is now known not to return.  */
   if (cfun->gimple_df)
-    while (VEC_length (tree, MODIFIED_NORETURN_CALLS (cfun)))
+    while (VEC_length (gimple, MODIFIED_NORETURN_CALLS (cfun)))
       {
-	stmt = VEC_pop (tree, MODIFIED_NORETURN_CALLS (cfun));
-	bb = bb_for_stmt (stmt);
+	stmt = VEC_pop (gimple, MODIFIED_NORETURN_CALLS (cfun));
+	bb = gimple_bb (stmt);
 	if (bb == NULL
 	    || last_stmt (bb) == stmt
-	    || !noreturn_call_p (stmt))
+	    || !gimple_call_noreturn_p (stmt))
 	  continue;
 
 	changed = true;
@@ -507,23 +496,23 @@ split_bbs_on_noreturn_calls (void)
   return changed;
 }
 
-/* If OMP_RETURN in basic block BB is unreachable, remove it.  */
+/* If GIMPLE_OMP_RETURN in basic block BB is unreachable, remove it.  */
 
 static bool
 cleanup_omp_return (basic_block bb)
 {
-  tree stmt = last_stmt (bb);
+  gimple stmt = last_stmt (bb);
   basic_block control_bb;
 
-  if (stmt == NULL_TREE
-      || TREE_CODE (stmt) != OMP_RETURN
+  if (stmt == NULL
+      || gimple_code (stmt) != GIMPLE_OMP_RETURN
       || !single_pred_p (bb))
     return false;
 
   control_bb = single_pred (bb);
   stmt = last_stmt (control_bb);
 
-  if (TREE_CODE (stmt) != OMP_SECTIONS_SWITCH)
+  if (gimple_code (stmt) != GIMPLE_OMP_SECTIONS_SWITCH)
     return false;
 
   /* The block with the control statement normally has two entry edges -- one
@@ -553,7 +542,6 @@ cleanup_tree_cfg_bb (basic_block bb)
   /* Forwarder blocks can carry line number information which is
      useful when debugging, so we only clean them up when
      optimizing.  */
-
   if (optimize > 0
       && tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
@@ -716,7 +704,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 {
   edge succ = single_succ_edge (bb);
   basic_block dest = succ->dest;
-  tree label;
+  gimple label;
   basic_block dombb, domdest, dom;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
@@ -729,15 +717,15 @@ remove_forwarder_block_with_phi (basic_block bb)
      merge it.  */
   label = first_stmt (dest);
   if (label
-      && TREE_CODE (label) == LABEL_EXPR
-      && DECL_NONLOCAL (LABEL_EXPR_LABEL (label)))
+      && gimple_code (label) == GIMPLE_LABEL
+      && DECL_NONLOCAL (gimple_label_label (label)))
     return;
 
   /* Redirect each incoming edge to BB to DEST.  */
   while (EDGE_COUNT (bb->preds) > 0)
     {
       edge e = EDGE_PRED (bb, 0), s;
-      tree phi;
+      gimple_stmt_iterator gsi;
 
       s = find_edge (e->src, dest);
       if (s)
@@ -765,9 +753,12 @@ remove_forwarder_block_with_phi (basic_block bb)
 
       /* Add to the PHI nodes at DEST each PHI argument removed at the
 	 destination of E.  */
-      for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (dest);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
 	{
-	  tree def = PHI_ARG_DEF (phi, succ->dest_idx);
+	  gimple phi = gsi_stmt (gsi);
+	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
@@ -879,7 +870,7 @@ merge_phi_nodes (void)
 	}
       else
 	{
-	  tree phi;
+	  gimple_stmt_iterator gsi;
 	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
 
 	  /* BB dominates DEST.  There may be many users of the PHI
@@ -887,11 +878,13 @@ merge_phi_nodes (void)
 	     can handle.  If the result of every PHI in BB is used
 	     only by a PHI in DEST, then we can trivially merge the
 	     PHI nodes from BB into DEST.  */
-	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      tree result = PHI_RESULT (phi);
+	      gimple phi = gsi_stmt (gsi);
+	      tree result = gimple_phi_result (phi);
 	      use_operand_p imm_use;
-	      tree use_stmt;
+	      gimple use_stmt;
 
 	      /* If the PHI's result is never used, then we can just
 		 ignore it.  */
@@ -900,15 +893,15 @@ merge_phi_nodes (void)
 
 	      /* Get the single use of the result of this PHI node.  */
   	      if (!single_imm_use (result, &imm_use, &use_stmt)
-		  || TREE_CODE (use_stmt) != PHI_NODE
-		  || bb_for_stmt (use_stmt) != dest
-		  || PHI_ARG_DEF (use_stmt, dest_idx) != result)
+		  || gimple_code (use_stmt) != GIMPLE_PHI
+		  || gimple_bb (use_stmt) != dest
+		  || gimple_phi_arg_def (use_stmt, dest_idx) != result)
 		break;
 	    }
 
 	  /* If the loop above iterated through all the PHI nodes
 	     in BB, then we can merge the PHIs from BB into DEST.  */
-	  if (!phi)
+	  if (gsi_end_p (gsi))
 	    *current++ = bb;
 	}
     }

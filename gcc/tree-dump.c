@@ -598,11 +598,6 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("op 1", TREE_OPERAND (t, 1));
       break;
 
-    case GIMPLE_MODIFY_STMT:
-      dump_child ("op 0", GIMPLE_STMT_OPERAND (t, 0));
-      dump_child ("op 1", GIMPLE_STMT_OPERAND (t, 1));
-      break;
-
     case COMPONENT_REF:
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
@@ -825,7 +820,8 @@ static const struct dump_option_value_info dump_options[] =
   {"memsyms", TDF_MEMSYMS},
   {"verbose", TDF_VERBOSE},
   {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA 
-	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE)},
+	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
+	    | TDF_RHS_ONLY)},
   {NULL, 0}
 };
 

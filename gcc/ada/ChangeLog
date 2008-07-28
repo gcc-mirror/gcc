@@ -1,3 +1,40 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	2008-07-22  Olivier Hainque  <hainque@adacore.com>
+
+	* gigi.h (end_subprog_body): New ELAB_P argument, saying if
+	this is called for an elab proc to be discarded if empty.
+	* utils.c (end_subprog_body): Honor ELAB_P.
+	(build_function_stub): Adjust call to end_subprog_body.
+	* trans.c (Subprogram_Body_to_gnu): Likewise.
+	(gigi): Reorganize processing of elab procs to prevent
+	gimplifying twice, using the new end_subprog_body argument.
+
+	2008-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* Make-lang.in (trans.o): Add tree-iterator.h dependency.
+	(utils.o): Likewise.
+	* trans.c: Include tree-iterator.h.
+	(gnat_gimplify_expr): Adjust prototype.  Fix typo.
+	(gnat_gimplify_stmt): Use SET_EXPR_LOCATION.
+	(set_expr_location_from_node): Likewise.
+	(gigi): Tuplify.
+	* ada-tree.h (union lang_tree_node): Use TREE_CHAIN instead
+	of GENERIC_NEXT.
+	* utils.c: Include tree-iterator.h.
+	* gigi.h (gnat_gimplify_expr): Adjust prototype.
+
+	2008-07-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans.c: Include gimple.h instead of tree-gimple.h.
+	* utils.c: Same.
+
+	2008-07-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans.c (gnat_gimplify_expr): Use gimplify_assign.
+
 2008-07-25  Jan Hubicka  <jh@suse.cz>
 
 	* utils.c (end_subprog_body): Remove inline trees check.

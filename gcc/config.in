@@ -126,6 +126,12 @@
 #undef ENABLE_TREE_CHECKING
 #endif
 
+/* Define if you want operations on GIMPLE (the basic data structure of
+   the high-level optimizers) to be checked for dynamic type safety at
+   runtime.  This is moderately expensive.  */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_GIMPLE_CHECKING
+#endif
 
 /* Define if you want all gimple types to be verified after gimplifiation.
    This is cheap. */

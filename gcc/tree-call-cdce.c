@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "timevar.h"
@@ -99,7 +99,7 @@ typedef struct input_domain
   bool is_ub_inclusive;
 } inp_domain;
 
-static VEC (tree, heap) *cond_dead_built_in_calls;
+static VEC (gimple, heap) *cond_dead_built_in_calls;
 
 /* A helper function to construct and return an input
    domain object.  LB is the lower bound, HAS_LB is 
@@ -174,16 +174,16 @@ check_target_format (tree arg)
 #define MAX_BASE_INT_BIT_SIZE 32
 
 static bool
-check_pow (tree pow_call)
+check_pow (gimple pow_call)
 {
   tree base, expn;
   enum tree_code bc, ec;
 
-  if (call_expr_nargs (pow_call) != 2)
+  if (gimple_call_num_args (pow_call) != 2)
     return false;
 
-  base = CALL_EXPR_ARG (pow_call, 0);
-  expn = CALL_EXPR_ARG (pow_call, 1);
+  base = gimple_call_arg (pow_call, 0);
+  expn = gimple_call_arg (pow_call, 1);
 
   if (!check_target_format (expn))
     return false;
@@ -212,20 +212,19 @@ check_pow (tree pow_call)
     }
   else if (bc == SSA_NAME)
     {
-      tree base_def, base_val, base_val0, base_var, type;
+      tree base_val0, base_var, type;
+      gimple base_def;
       int bit_sz;
 
       /* Only handles cases where base value is converted
          from integer values.  */ 
       base_def = SSA_NAME_DEF_STMT (base);
-      if (TREE_CODE (base_def) != GIMPLE_MODIFY_STMT)
+      if (gimple_code (base_def) != GIMPLE_ASSIGN)
         return false;
 
-      base_val = GIMPLE_STMT_OPERAND (base_def, 1);
-
-      if (TREE_CODE (base_val) != FLOAT_EXPR)
+      if (gimple_assign_rhs_code (base_def) != FLOAT_EXPR)
         return false;
-      base_val0 = TREE_OPERAND (base_val, 0);
+      base_val0 = gimple_assign_rhs1 (base_def);
 
       base_var = SSA_NAME_VAR (base_val0);
       if (!DECL_P  (base_var))
@@ -253,11 +252,11 @@ check_pow (tree pow_call)
    Returns true if the function call is a candidate.  */
 
 static bool
-check_builtin_call (tree bcall)
+check_builtin_call (gimple bcall)
 {
   tree arg;
 
-  arg = CALL_EXPR_ARG (bcall, 0);
+  arg = gimple_call_arg (bcall, 0);
   return check_target_format (arg);
 }
 
@@ -266,18 +265,18 @@ check_builtin_call (tree bcall)
    is a candidate.  */
 
 static bool
-is_call_dce_candidate (tree call)
+is_call_dce_candidate (gimple call)
 {
   tree fn;
   enum built_in_function fnc;
 
-  if (!flag_tree_builtin_call_dce)
+  /* Only potentially dead calls are considered.  */
+  if (gimple_call_lhs (call))
     return false;
 
-  gcc_assert (call && TREE_CODE (call) == CALL_EXPR);
-
-  fn = get_callee_fndecl (call);
-  if (!fn || !DECL_BUILT_IN (fn) 
+  fn = gimple_call_fndecl (call);
+  if (!fn
+      || !DECL_BUILT_IN (fn) 
       || (DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL))
     return false;
 
@@ -331,38 +330,35 @@ static void
 gen_one_condition (tree arg, int lbub, 
                    enum tree_code tcode,
                    const char *temp_name1,
-                   const char *temp_name2,
-                   VEC (tree, heap) *conds,
+		   const char *temp_name2,
+                   VEC (gimple, heap) *conds,
                    unsigned *nconds)
 {
   tree lbub_real_cst, lbub_cst, float_type;
   tree temp, tempn, tempc, tempcn;
-  tree stmt1, stmt2, stmt3;
+  gimple stmt1, stmt2, stmt3;
 
   float_type = TREE_TYPE (arg);
   lbub_cst = build_int_cst (integer_type_node, lbub);
   lbub_real_cst = build_real_from_int_cst (float_type, lbub_cst);
 
   temp = create_tmp_var (float_type, temp_name1);
-  stmt1 = build_gimple_modify_stmt (temp, arg);
+  stmt1 = gimple_build_assign (temp, arg);
   tempn = make_ssa_name (temp, stmt1);
-  GIMPLE_STMT_OPERAND (stmt1, 0) = tempn;
+  gimple_assign_set_lhs (stmt1, tempn);
 
   tempc = create_tmp_var (boolean_type_node, temp_name2);
-  stmt2 = build_gimple_modify_stmt (tempc,
-                                    fold_build2 (tcode,
-                                                 boolean_type_node,
-                                                 tempn, lbub_real_cst));
+  stmt2 = gimple_build_assign (tempc,
+                               fold_build2 (tcode,
+					    boolean_type_node,
+					    tempn, lbub_real_cst));
   tempcn = make_ssa_name (tempc, stmt2);
-  GIMPLE_STMT_OPERAND (stmt2, 0) = tempcn;
+  gimple_assign_set_lhs (stmt2, tempcn);
 
-  /* fold_built3 not used for gimple statement here,
-     as it will hit assertion.  */
-  stmt3 = build3 (COND_EXPR, void_type_node,
-                  tempcn, NULL_TREE, NULL_TREE);
-  VEC_quick_push (tree, conds, stmt1);
-  VEC_quick_push (tree, conds, stmt2);
-  VEC_quick_push (tree, conds, stmt3);
+  stmt3 = gimple_build_cond_from_tree (tempcn, NULL_TREE, NULL_TREE);
+  VEC_quick_push (gimple, conds, stmt1);
+  VEC_quick_push (gimple, conds, stmt2);
+  VEC_quick_push (gimple, conds, stmt3);
   (*nconds)++;
 }
 
@@ -377,7 +373,7 @@ gen_one_condition (tree arg, int lbub,
 
 static void
 gen_conditions_for_domain (tree arg, inp_domain domain,
-                           VEC (tree, heap) *conds, 
+                           VEC (gimple, heap) *conds, 
                            unsigned *nconds)
 {
   if (domain.has_lb)
@@ -391,7 +387,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
     {
       /* Now push a separator.  */
       if (domain.has_lb)
-        VEC_quick_push (tree, conds, NULL);
+        VEC_quick_push (gimple, conds, NULL);
 
       gen_one_condition (arg, domain.ub,
                          (domain.is_ub_inclusive
@@ -420,7 +416,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
 
 static void
 gen_conditions_for_pow_cst_base (tree base, tree expn,
-                                 VEC (tree, heap) *conds,
+                                 VEC (gimple, heap) *conds,
                                  unsigned *nconds)
 {
   inp_domain exp_domain; 
@@ -456,20 +452,21 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
 
 static void
 gen_conditions_for_pow_int_base (tree base, tree expn,
-                                 VEC (tree, heap) *conds,
+                                 VEC (gimple, heap) *conds,
                                  unsigned *nconds)
 {
-  tree base_def, base_nm, base_val, base_val0;
+  gimple base_def;
+  tree base_nm, base_val0;
   tree base_var, int_type;
   tree temp, tempn;
-  tree cst0, stmt1, stmt2;
+  tree cst0;
+  gimple stmt1, stmt2;
   int bit_sz, max_exp;
   inp_domain exp_domain;
 
   base_def = SSA_NAME_DEF_STMT (base);
-  base_nm = GIMPLE_STMT_OPERAND (base_def, 0);
-  base_val = GIMPLE_STMT_OPERAND (base_def, 1);
-  base_val0 = TREE_OPERAND (base_val, 0);
+  base_nm = gimple_assign_lhs (base_def);
+  base_val0 = gimple_assign_rhs1 (base_def);
   base_var = SSA_NAME_VAR (base_val0);
   int_type = TREE_TYPE (base_var);
   bit_sz = TYPE_PRECISION (int_type);
@@ -514,19 +511,17 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
      type is integer.  */
 
   /* Push a separator.  */
-  VEC_quick_push (tree, conds, NULL);
+  VEC_quick_push (gimple, conds, NULL);
 
   temp = create_tmp_var (int_type, "DCE_COND1");
   cst0 = build_int_cst (int_type, 0);
-  stmt1 = build_gimple_modify_stmt (temp, base_val0);
+  stmt1 = gimple_build_assign (temp, base_val0);
   tempn = make_ssa_name (temp, stmt1);
-  GIMPLE_STMT_OPERAND (stmt1, 0) = tempn;
-  stmt2 = build3 (COND_EXPR, void_type_node,
-                  fold_build2 (LE_EXPR, boolean_type_node, tempn, cst0),
-                  NULL_TREE, NULL_TREE);
+  gimple_assign_set_lhs (stmt1, tempn);
+  stmt2 = gimple_build_cond (LE_EXPR, tempn, cst0, NULL_TREE, NULL_TREE);
 
-  VEC_quick_push (tree, conds, stmt1);
-  VEC_quick_push (tree, conds, stmt2);
+  VEC_quick_push (gimple, conds, stmt1);
+  VEC_quick_push (gimple, conds, stmt2);
   (*nconds)++;
 }
 
@@ -548,7 +543,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
    and *NCONDS is the number of logical conditions.  */
 
 static void
-gen_conditions_for_pow (tree pow_call, VEC (tree, heap) *conds, 
+gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds, 
                         unsigned *nconds)
 {
   tree base, expn;
@@ -560,18 +555,16 @@ gen_conditions_for_pow (tree pow_call, VEC (tree, heap) *conds,
 
   *nconds = 0;
 
-  base = CALL_EXPR_ARG (pow_call, 0);
-  expn = CALL_EXPR_ARG (pow_call, 1);
+  base = gimple_call_arg (pow_call, 0);
+  expn = gimple_call_arg (pow_call, 1);
 
   bc = TREE_CODE (base);
   ec = TREE_CODE (expn);
 
   if (bc == REAL_CST)
-      gen_conditions_for_pow_cst_base (base, expn,
-                                       conds, nconds);
+      gen_conditions_for_pow_cst_base (base, expn, conds, nconds);
   else if (bc == SSA_NAME)
-      gen_conditions_for_pow_int_base (base, expn,
-                                       conds, nconds);
+      gen_conditions_for_pow_int_base (base, expn, conds, nconds);
   else
     gcc_unreachable ();
 }
@@ -689,22 +682,19 @@ get_no_error_domain (enum built_in_function fnc)
    condition are separated by NULL tree in the vector.  */
 
 static void
-gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap) *conds, 
+gen_shrink_wrap_conditions (gimple bi_call, VEC (gimple, heap) *conds, 
                             unsigned int *nconds)
 {
-  tree call, fn;
+  gimple call;
+  tree fn;
   enum built_in_function fnc;
 
   gcc_assert (nconds && conds);
-  gcc_assert (VEC_length (tree, conds) == 0);
-  gcc_assert (TREE_CODE (bi_call) == GIMPLE_MODIFY_STMT
-              || TREE_CODE (bi_call) == CALL_EXPR);
+  gcc_assert (VEC_length (gimple, conds) == 0);
+  gcc_assert (is_gimple_call (bi_call));
 
   call = bi_call;
-  if (TREE_CODE (call) == GIMPLE_MODIFY_STMT)
-    call = get_call_expr_in (bi_call);
-
-  fn = get_callee_fndecl (call);
+  fn = gimple_call_fndecl (call);
   gcc_assert (fn && DECL_BUILT_IN (fn));
   fnc = DECL_FUNCTION_CODE (fn);
   *nconds = 0;
@@ -716,7 +706,7 @@ gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap) *conds,
       tree arg;
       inp_domain domain = get_no_error_domain (fnc);
       *nconds = 0;
-      arg = CALL_EXPR_ARG (bi_call, 0);
+      arg = gimple_call_arg (bi_call, 0);
       gen_conditions_for_domain (arg, domain, conds, nconds);
     }
 
@@ -733,21 +723,21 @@ gen_shrink_wrap_conditions (tree bi_call, VEC (tree, heap) *conds,
    transformation actually happens.  */
 
 static bool 
-shrink_wrap_one_built_in_call (tree bi_call)
+shrink_wrap_one_built_in_call (gimple bi_call)
 {
-  block_stmt_iterator bi_call_bsi;
+  gimple_stmt_iterator bi_call_bsi;
   basic_block bi_call_bb, join_tgt_bb, guard_bb, guard_bb0;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
-  VEC (tree, heap) *conds;
+  VEC (gimple, heap) *conds;
   unsigned tn_cond_stmts, nconds;
   unsigned ci;
-  tree cond_expr = NULL;
-  tree cond_expr_start;
+  gimple cond_expr = NULL;
+  gimple cond_expr_start;
   tree bi_call_label_decl;
-  tree bi_call_label;
+  gimple bi_call_label;
 
-  conds = VEC_alloc (tree, heap, 12);
+  conds = VEC_alloc (gimple, heap, 12);
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
 
   /* This can happen if the condition generator decides
@@ -757,40 +747,40 @@ shrink_wrap_one_built_in_call (tree bi_call)
   if (nconds == 0)
     return false;
 
-  bi_call_bb = bb_for_stmt (bi_call);
+  bi_call_bb = gimple_bb (bi_call);
 
   /* Now find the join target bb -- split
      bi_call_bb if needed.  */
-  bi_call_bsi = bsi_for_stmt (bi_call);
+  bi_call_bsi = gsi_for_stmt (bi_call);
 
   join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
-  bi_call_bsi = bsi_for_stmt (bi_call);
+  bi_call_bsi = gsi_for_stmt (bi_call);
 
   join_tgt_bb = join_tgt_in_edge_from_call->dest;
 
   /* Now it is time to insert the first conditional expression
      into bi_call_bb and split this bb so that bi_call is
      shrink-wrapped.  */
-  tn_cond_stmts = VEC_length (tree, conds);
+  tn_cond_stmts = VEC_length (gimple, conds);
   cond_expr = NULL;
-  cond_expr_start = VEC_index (tree, conds, 0);
+  cond_expr_start = VEC_index (gimple, conds, 0);
   for (ci = 0; ci < tn_cond_stmts; ci++)
     {
-      tree c = VEC_index (tree, conds, ci);
+      gimple c = VEC_index (gimple, conds, ci);
       gcc_assert (c || ci != 0);
       if (!c)
         break;
-      bsi_insert_before (&bi_call_bsi, c, BSI_SAME_STMT);
+      gsi_insert_before (&bi_call_bsi, c, GSI_SAME_STMT);
       cond_expr = c;
     }
   nconds--;
   ci++;
-  gcc_assert (cond_expr && TREE_CODE (cond_expr) == COND_EXPR);
+  gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
 
   /* Now the label.  */
   bi_call_label_decl = create_artificial_label ();
-  bi_call_label = build1 (LABEL_EXPR, void_type_node, bi_call_label_decl);
-  bsi_insert_before (&bi_call_bsi, bi_call_label, BSI_SAME_STMT);
+  bi_call_label = gimple_build_label (bi_call_label_decl);
+  gsi_insert_before (&bi_call_bsi, bi_call_label, GSI_SAME_STMT);
 
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
@@ -810,21 +800,21 @@ shrink_wrap_one_built_in_call (tree bi_call)
     {
       unsigned ci0;
       edge bi_call_in_edge;
-      block_stmt_iterator guard_bsi = bsi_for_stmt (cond_expr_start);
+      gimple_stmt_iterator guard_bsi = gsi_for_stmt (cond_expr_start);
       ci0 = ci;
-      cond_expr_start = VEC_index (tree, conds, ci0);
+      cond_expr_start = VEC_index (gimple, conds, ci0);
       for (; ci < tn_cond_stmts; ci++)
         {
-          tree c = VEC_index (tree, conds, ci);
+          gimple c = VEC_index (gimple, conds, ci);
           gcc_assert (c || ci != ci0);
           if (!c)
             break;
-          bsi_insert_before (&guard_bsi, c, BSI_SAME_STMT);
+          gsi_insert_before (&guard_bsi, c, GSI_SAME_STMT);
           cond_expr = c;
         }
       nconds--;
       ci++;
-      gcc_assert (cond_expr && TREE_CODE (cond_expr) == COND_EXPR);
+      gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
       guard_bb_in_edge = split_block (guard_bb, cond_expr);
       guard_bb_in_edge->flags &= ~EDGE_FALLTHRU;
       guard_bb_in_edge->flags |= EDGE_FALSE_VALUE;
@@ -836,11 +826,11 @@ shrink_wrap_one_built_in_call (tree bi_call)
           REG_BR_PROB_BASE - bi_call_in_edge->probability;
     }
 
-  VEC_free (tree, heap, conds);
+  VEC_free (gimple, heap, conds);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       location_t loc;
-      loc = EXPR_LOCATION (bi_call);
+      loc = gimple_location (bi_call);
       fprintf (dump_file,
                "%s:%d: note: function call is shrink-wrapped"
                " into error conditions.\n",
@@ -859,13 +849,13 @@ shrink_wrap_conditional_dead_built_in_calls (void)
   bool changed = false;
   unsigned i = 0;
 
-  unsigned n = VEC_length (tree, cond_dead_built_in_calls);
+  unsigned n = VEC_length (gimple, cond_dead_built_in_calls);
   if (n == 0) 
     return false;
 
   for (; i < n ; i++)
     {
-      tree bi_call = VEC_index (tree, cond_dead_built_in_calls, i);
+      gimple bi_call = VEC_index (gimple, cond_dead_built_in_calls, i);
       changed |= shrink_wrap_one_built_in_call (bi_call);
     }
 
@@ -878,34 +868,33 @@ static unsigned int
 tree_call_cdce (void)
 {
   basic_block bb;
-  block_stmt_iterator i;
+  gimple_stmt_iterator i;
   bool something_changed = false;
-  cond_dead_built_in_calls = VEC_alloc (tree, heap, 64);
+  cond_dead_built_in_calls = VEC_alloc (gimple, heap, 64);
 
   FOR_EACH_BB (bb)
     {
       /* Collect dead call candidates.  */
-      for (i = bsi_start (bb); ! bsi_end_p (i); bsi_next (&i))
+      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
         {
-	  tree stmt = bsi_stmt (i);
-          if (TREE_CODE (stmt) == CALL_EXPR
+	  gimple stmt = gsi_stmt (i);
+          if (is_gimple_call (stmt)
               && is_call_dce_candidate (stmt))
             {
               if (dump_file && (dump_flags & TDF_DETAILS))
                 {
                   fprintf (dump_file, "Found conditional dead call: ");
-                  print_generic_stmt (dump_file, stmt, TDF_SLIM);
+                  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
                   fprintf (dump_file, "\n");
                 }
-              VEC_quick_push (tree, cond_dead_built_in_calls, stmt);
+              VEC_quick_push (gimple, cond_dead_built_in_calls, stmt);
             }
 	}
     }
 
-  something_changed =
-    shrink_wrap_conditional_dead_built_in_calls ();
+  something_changed = shrink_wrap_conditional_dead_built_in_calls ();
 
-  VEC_free (tree, heap, cond_dead_built_in_calls);
+  VEC_free (gimple, heap, cond_dead_built_in_calls);
 
   if (something_changed)
     {

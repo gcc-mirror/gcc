@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "tree-dump.h"
 #include "intl.h"
+#include "gimple.h"
 
 extern cpp_reader *parse_in;
 
@@ -3439,7 +3440,7 @@ cp_write_global_declarations (void)
 	      reconsider = true;
 	    }
 
-	  if (!DECL_SAVED_TREE (decl))
+	  if (!gimple_body (decl))
 	    continue;
 
 	  /* We lie to the back end, pretending that some functions

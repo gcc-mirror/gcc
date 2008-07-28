@@ -100,31 +100,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "target.h"
 
+
 /* local function prototypes */
 static unsigned int main_tree_if_conversion (void);
-static tree tree_if_convert_stmt (struct loop *loop, tree, tree,
-				  block_stmt_iterator *);
-static void tree_if_convert_cond_expr (struct loop *, tree, tree,
-				       block_stmt_iterator *);
-static bool if_convertible_phi_p (struct loop *, basic_block, tree);
-static bool if_convertible_gimple_modify_stmt_p (struct loop *, basic_block,
-    						 tree);
-static bool if_convertible_stmt_p (struct loop *, basic_block, tree);
+static tree tree_if_convert_stmt (struct loop *loop, gimple, tree,
+				  gimple_stmt_iterator *);
+static void tree_if_convert_cond_stmt (struct loop *, gimple, tree,
+				       gimple_stmt_iterator *);
+static bool if_convertible_phi_p (struct loop *, basic_block, gimple);
+static bool if_convertible_gimple_assign_stmt_p (struct loop *, basic_block,
+    						 gimple);
+static bool if_convertible_stmt_p (struct loop *, basic_block, gimple);
 static bool if_convertible_bb_p (struct loop *, basic_block, basic_block);
 static bool if_convertible_loop_p (struct loop *, bool);
 static void add_to_predicate_list (basic_block, tree);
 static tree add_to_dst_predicate_list (struct loop * loop, edge,
 				       tree, tree,
-				       block_stmt_iterator *);
+				       gimple_stmt_iterator *);
 static void clean_predicate_lists (struct loop *loop);
 static basic_block find_phi_replacement_condition (struct loop *loop,
 						   basic_block, tree *,
-						   block_stmt_iterator *);
-static void replace_phi_with_cond_gimple_modify_stmt (tree, tree, basic_block,
-                                               block_stmt_iterator *);
+						   gimple_stmt_iterator *);
+static void replace_phi_with_cond_gimple_assign_stmt (gimple, tree,
+						      basic_block,
+						      gimple_stmt_iterator *);
 static void process_phi_nodes (struct loop *);
 static void combine_blocks (struct loop *);
-static tree ifc_temp_var (tree, tree);
+static gimple ifc_temp_var (tree, tree);
 static bool pred_blocks_visited_p (basic_block, bitmap *);
 static basic_block * get_loop_body_in_if_conv_order (const struct loop *loop);
 static bool bb_with_exit_edge_p (struct loop *, basic_block);
@@ -143,7 +145,7 @@ static bool
 tree_if_conversion (struct loop *loop, bool for_vectorizer)
 {
   basic_block bb;
-  block_stmt_iterator itr;
+  gimple_stmt_iterator itr;
   unsigned int i;
 
   ifc_bbs = NULL;
@@ -176,12 +178,12 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
       /* Process all statements in this basic block.
 	 Remove conditional expression, if any, and annotate
 	 destination basic block(s) appropriately.  */
-      for (itr = bsi_start (bb); !bsi_end_p (itr); /* empty */)
+      for (itr = gsi_start_bb (bb); !gsi_end_p (itr); /* empty */)
 	{
-	  tree t = bsi_stmt (itr);
+	  gimple t = gsi_stmt (itr);
 	  cond = tree_if_convert_stmt (loop, t, cond, &itr);
-	  if (!bsi_end_p (itr))
-	    bsi_next (&itr);
+	  if (!gsi_end_p (itr))
+	    gsi_next (&itr);
 	}
 
       /* If current bb has only one successor, then consider it as an
@@ -214,41 +216,41 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 }
 
 /* if-convert stmt T which is part of LOOP.
-   If T is a GIMPLE_MODIFY_STMT than it is converted into conditional modify
+   If T is a GIMPLE_ASSIGN then it is converted into conditional modify
    expression using COND.  For conditional expressions, add condition in the
    destination basic block's predicate list and remove conditional
    expression itself. BSI is the iterator used to traverse statements of
    loop. It is used here when it is required to delete current statement.  */
 
 static tree
-tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
-		      block_stmt_iterator *bsi)
+tree_if_convert_stmt (struct loop *  loop, gimple t, tree cond,
+		      gimple_stmt_iterator *gsi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "------if-convert stmt\n");
-      print_generic_stmt (dump_file, t, TDF_SLIM);
+      print_gimple_stmt (dump_file, t, 0, TDF_SLIM);
       print_generic_stmt (dump_file, cond, TDF_SLIM);
     }
 
-  switch (TREE_CODE (t))
+  switch (gimple_code (t))
     {
       /* Labels are harmless here.  */
-    case LABEL_EXPR:
+    case GIMPLE_LABEL:
       break;
 
-    case GIMPLE_MODIFY_STMT:
-      /* This GIMPLE_MODIFY_STMT is killing previous value of LHS. Appropriate
+    case GIMPLE_ASSIGN:
+      /* This GIMPLE_ASSIGN is killing previous value of LHS. Appropriate
 	 value will be selected by PHI node based on condition. It is possible
 	 that before this transformation, PHI nodes was selecting default
 	 value and now it will use this new value. This is OK because it does 
 	 not change validity the program.  */
       break;
 
-    case COND_EXPR:
+    case GIMPLE_COND:
       /* Update destination blocks' predicate list and remove this
 	 condition expression.  */
-      tree_if_convert_cond_expr (loop, t, cond, bsi);
+      tree_if_convert_cond_stmt (loop, t, cond, gsi);
       cond = NULL_TREE;
       break;
 
@@ -258,41 +260,41 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
   return cond;
 }
 
-/* STMT is COND_EXPR. Update two destination's predicate list.
+/* STMT is a GIMPLE_COND. Update two destination's predicate list.
    Remove COND_EXPR, if it is not the loop exit condition. Otherwise
-   update loop exit condition appropriately.  BSI is the iterator
+   update loop exit condition appropriately.  GSI is the iterator
    used to traverse statement list. STMT is part of loop LOOP.  */
 
 static void
-tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
-			   block_stmt_iterator *bsi)
+tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
+			   gimple_stmt_iterator *gsi)
 {
   tree c, c2;
   edge true_edge, false_edge;
 
-  gcc_assert (TREE_CODE (stmt) == COND_EXPR);
+  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
 
-  c = COND_EXPR_COND (stmt);
+  c = fold_build2 (gimple_cond_code (stmt), boolean_type_node,
+		   gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
 
-  extract_true_false_edges_from_block (bb_for_stmt (stmt),
+  extract_true_false_edges_from_block (gimple_bb (stmt),
  				       &true_edge, &false_edge);
 
   /* Add new condition into destination's predicate list.  */
 
-  /* If 'c' is true then TRUE_EDGE is taken.  */
-  add_to_dst_predicate_list (loop, true_edge, cond,
-			     unshare_expr (c), bsi);
+  /* If C is true then TRUE_EDGE is taken.  */
+  add_to_dst_predicate_list (loop, true_edge, cond, c, gsi);
 
   /* If 'c' is false then FALSE_EDGE is taken.  */
   c2 = invert_truthvalue (unshare_expr (c));
-  add_to_dst_predicate_list (loop, false_edge, cond, c2, bsi);
+  add_to_dst_predicate_list (loop, false_edge, cond, c2, gsi);
 
   /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
      using new condition.  */
-  if (!bb_with_exit_edge_p (loop, bb_for_stmt (stmt)))
+  if (!bb_with_exit_edge_p (loop, gimple_bb (stmt)))
     {
-      bsi_remove (bsi, true);
+      gsi_remove (gsi, true);
       cond = NULL_TREE;
     }
   return;
@@ -306,22 +308,22 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
    - Virtual PHI on BB other than header.  */
 
 static bool
-if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
+if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "-------------------------\n");
-      print_generic_stmt (dump_file, phi, TDF_SLIM);
+      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
     }
 
-  if (bb != loop->header && PHI_NUM_ARGS (phi) != 2)
+  if (bb != loop->header && gimple_phi_num_args (phi) != 2)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "More than two phi node args.\n");
       return false;
     }
 
-  if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+  if (!is_gimple_reg (SSA_NAME_VAR (gimple_phi_result (phi))))
     {
       imm_use_iterator imm_iter;
       use_operand_p use_p;
@@ -332,9 +334,9 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
 	    fprintf (dump_file, "Virtual phi not on loop header.\n");
 	  return false;
 	}
-      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (phi))
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (phi))
 	{
-	  if (TREE_CODE (USE_STMT (use_p)) == PHI_NODE)
+	  if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Difficult to handle this virtual phi.\n");
@@ -346,37 +348,36 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
   return true;
 }
 
-/* Return true, if M_EXPR is if-convertible.
-   GIMPLE_MODIFY_STMT is not if-convertible if,
+/* Return true, if STMT is if-convertible.
+   GIMPLE_ASSIGN statement is not if-convertible if,
    - It is not movable.
    - It could trap.
    - LHS is not var decl.
-  GIMPLE_MODIFY_STMT is part of block BB, which is inside loop LOOP.
-*/
+  GIMPLE_ASSIGN is part of block BB, which is inside loop LOOP.  */
 
 static bool
-if_convertible_gimple_modify_stmt_p (struct loop *loop, basic_block bb,
-    				     tree m_expr)
+if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
+    				     gimple stmt)
 {
-  tree lhs, rhs;
+  tree lhs;
 
-  if (TREE_CODE (m_expr) != GIMPLE_MODIFY_STMT)
+  if (!is_gimple_assign (stmt))
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "-------------------------\n");
-      print_generic_stmt (dump_file, m_expr, TDF_SLIM);
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
 
-  lhs = GIMPLE_STMT_OPERAND (m_expr, 0);
-  rhs = GIMPLE_STMT_OPERAND (m_expr, 1);
+  lhs = gimple_assign_lhs (stmt);
 
   /* Some of these constrains might be too conservative.  */
-  if (stmt_ends_bb_p (m_expr) || stmt_ann (m_expr)->has_volatile_ops
+  if (stmt_ends_bb_p (stmt)
+      || gimple_has_volatile_ops (stmt)
       || (TREE_CODE (lhs) == SSA_NAME
           && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-      || TREE_SIDE_EFFECTS (rhs))
+      || gimple_has_side_effects (stmt))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
         fprintf (dump_file, "stmt not suitable for ifcvt\n");
@@ -385,57 +386,49 @@ if_convertible_gimple_modify_stmt_p (struct loop *loop, basic_block bb,
 
   /* See if it needs speculative loading or not.  */
   if (bb != loop->header
-      && tree_could_trap_p (GIMPLE_STMT_OPERAND (m_expr, 1)))
+      && gimple_assign_rhs_could_trap_p (stmt))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
 
-  if (TREE_CODE (GIMPLE_STMT_OPERAND (m_expr, 1)) == CALL_EXPR)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "CALL_EXPR \n");
-      return false;
-    }
-
-  if (TREE_CODE (GIMPLE_STMT_OPERAND (m_expr, 0)) != SSA_NAME
+  if (TREE_CODE (lhs) != SSA_NAME
       && bb != loop->header
       && !bb_with_exit_edge_p (loop, bb))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "LHS is not var\n");
-	  print_generic_stmt (dump_file, m_expr, TDF_SLIM);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
       return false;
     }
-
 
   return true;
 }
 
 /* Return true, iff STMT is if-convertible.
    Statement is if-convertible if,
-   - It is if-convertible GIMPLE_MODIFY_STMT
-   - IT is LABEL_EXPR or COND_EXPR.
+   - It is if-convertible GIMPLE_ASSGIN
+   - It is GIMPLE_LABEL or GIMPLE_COND.
    STMT is inside block BB, which is inside loop LOOP.  */
 
 static bool
-if_convertible_stmt_p (struct loop *loop, basic_block bb, tree stmt)
+if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
 {
-  switch (TREE_CODE (stmt))
+  switch (gimple_code (stmt))
     {
-    case LABEL_EXPR:
+    case GIMPLE_LABEL:
       break;
 
-    case GIMPLE_MODIFY_STMT:
+    case GIMPLE_ASSIGN:
 
-      if (!if_convertible_gimple_modify_stmt_p (loop, bb, stmt))
+      if (!if_convertible_gimple_assign_stmt_p (loop, bb, stmt))
 	return false;
       break;
 
-    case COND_EXPR:
+    case GIMPLE_COND:
       break;
 
     default:
@@ -443,7 +436,7 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, tree stmt)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "don't know what to do\n");
-	  print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
       return false;
       break;
@@ -521,9 +514,8 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 static bool
 if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 {
-  tree phi;
   basic_block bb;
-  block_stmt_iterator itr;
+  gimple_stmt_iterator itr;
   unsigned int i;
   edge e;
   edge_iterator ei;
@@ -584,22 +576,22 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 	return false;
 
       /* Check statements.  */
-      for (itr = bsi_start (bb); !bsi_end_p (itr); bsi_next (&itr))
-	if (!if_convertible_stmt_p (loop, bb, bsi_stmt (itr)))
+      for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
+	if (!if_convertible_stmt_p (loop, bb, gsi_stmt (itr)))
 	  return false;
       /* ??? Check data dependency for vectorizer.  */
 
       /* What about phi nodes ? */
-      phi = phi_nodes (bb);
+      itr = gsi_start_phis (bb);
 
       /* Clear aux field of incoming edges to a bb with a phi node.  */
-      if (phi)
+      if (!gsi_end_p (itr))
 	FOR_EACH_EDGE (e, ei, bb->preds)
 	  e->aux = NULL;
 
       /* Check statements.  */
-      for (; phi; phi = PHI_CHAIN (phi))
-	if (!if_convertible_phi_p (loop, bb, phi))
+      for (; !gsi_end_p (itr); gsi_next (&itr))
+	if (!if_convertible_phi_p (loop, bb, gsi_stmt (itr)))
 	  return false;
 
       if (bb_with_exit_edge_p (loop, bb))
@@ -637,7 +629,7 @@ add_to_predicate_list (basic_block bb, tree new_cond)
 static tree
 add_to_dst_predicate_list (struct loop * loop, edge e,
 			   tree prev_cond, tree cond,
-			   block_stmt_iterator *bsi)
+			   gimple_stmt_iterator *gsi)
 {
   tree new_cond = NULL_TREE;
 
@@ -649,13 +641,13 @@ add_to_dst_predicate_list (struct loop * loop, edge e,
   else
     {
       tree tmp;
-      tree tmp_stmt = NULL_TREE;
+      gimple tmp_stmt = NULL;
 
-      prev_cond = force_gimple_operand_bsi (bsi, unshare_expr (prev_cond),
-					    true, NULL, true, BSI_SAME_STMT);
+      prev_cond = force_gimple_operand_gsi (gsi, unshare_expr (prev_cond),
+					    true, NULL, true, GSI_SAME_STMT);
 
-      cond = force_gimple_operand_bsi (bsi, unshare_expr (cond),
-				       true, NULL, true, BSI_SAME_STMT);
+      cond = force_gimple_operand_gsi (gsi, unshare_expr (cond),
+				       true, NULL, true, GSI_SAME_STMT);
 
       /* Add the condition to aux field of the edge.  In case edge
 	 destination is a PHI node, this condition will be ANDed with
@@ -666,8 +658,8 @@ add_to_dst_predicate_list (struct loop * loop, edge e,
       tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
 		    unshare_expr (prev_cond), cond);
       tmp_stmt = ifc_temp_var (boolean_type_node, tmp);
-      bsi_insert_before (bsi, tmp_stmt, BSI_SAME_STMT);
-      new_cond = GIMPLE_STMT_OPERAND (tmp_stmt, 0);
+      gsi_insert_before (gsi, tmp_stmt, GSI_SAME_STMT);
+      new_cond = gimple_assign_lhs (tmp_stmt);
     }
   add_to_predicate_list (e->dest, new_cond);
   return new_cond;
@@ -703,7 +695,7 @@ clean_predicate_lists (struct loop *loop)
 static basic_block
 find_phi_replacement_condition (struct loop *loop, 
 				basic_block bb, tree *cond,
-                                block_stmt_iterator *bsi)
+                                gimple_stmt_iterator *gsi)
 {
   edge first_edge, second_edge;
   tree tmp_cond;
@@ -788,16 +780,16 @@ find_phi_replacement_condition (struct loop *loop,
      condition in vector compare operation. Using gimple value allows
      compiler to emit vector compare and select RTL without exposing
      compare's result.  */
-  *cond = force_gimple_operand_bsi (bsi, unshare_expr (*cond),
+  *cond = force_gimple_operand_gsi (gsi, unshare_expr (*cond),
 				    false, NULL_TREE,
-				    true, BSI_SAME_STMT);
+				    true, GSI_SAME_STMT);
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
     {
-      tree new_stmt;
+      gimple new_stmt;
 
       new_stmt = ifc_temp_var (TREE_TYPE (*cond), unshare_expr (*cond));
-      bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-      *cond = GIMPLE_STMT_OPERAND (new_stmt, 0);
+      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+      *cond = gimple_assign_lhs (new_stmt);
     }
 
   gcc_assert (*cond);
@@ -817,33 +809,33 @@ find_phi_replacement_condition (struct loop *loop,
 */
 
 static void
-replace_phi_with_cond_gimple_modify_stmt (tree phi, tree cond,
+replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
     					  basic_block true_bb,
-                                   	  block_stmt_iterator *bsi)
+                                   	  gimple_stmt_iterator *gsi)
 {
-  tree new_stmt;
+  gimple new_stmt;
   basic_block bb;
   tree rhs;
   tree arg_0, arg_1;
 
-  gcc_assert (TREE_CODE (phi) == PHI_NODE);
+  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
   
   /* If this is not filtered earlier, then now it is too late.  */
-  gcc_assert (PHI_NUM_ARGS (phi) == 2);
+  gcc_assert (gimple_phi_num_args (phi) == 2);
 
   /* Find basic block and initialize iterator.  */
-  bb = bb_for_stmt (phi);
+  bb = gimple_bb (phi);
 
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
   if (EDGE_PRED (bb, 1)->src == true_bb)
     {
-      arg_0 = PHI_ARG_DEF (phi, 1);
-      arg_1 = PHI_ARG_DEF (phi, 0);
+      arg_0 = gimple_phi_arg_def (phi, 1);
+      arg_1 = gimple_phi_arg_def (phi, 0);
     }
   else
     {
-      arg_0 = PHI_ARG_DEF (phi, 0);
-      arg_1 = PHI_ARG_DEF (phi, 1);
+      arg_0 = gimple_phi_arg_def (phi, 0);
+      arg_1 = gimple_phi_arg_def (phi, 1);
     }
 
   /* Build new RHS using selected condition and arguments.  */
@@ -851,20 +843,20 @@ replace_phi_with_cond_gimple_modify_stmt (tree phi, tree cond,
 	        unshare_expr (cond), unshare_expr (arg_0),
 	        unshare_expr (arg_1));
 
-  /* Create new MODIFY expression using RHS.  */
-  new_stmt = build_gimple_modify_stmt (unshare_expr (PHI_RESULT (phi)), rhs);
+  /* Create new GIMPLE_ASSIGN statement using RHS.  */
+  new_stmt = gimple_build_assign (unshare_expr (PHI_RESULT (phi)), rhs);
 
   /* Make new statement definition of the original phi result.  */
-  SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new_stmt;
+  SSA_NAME_DEF_STMT (gimple_phi_result (phi)) = new_stmt;
 
   /* Insert using iterator.  */
-  bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
+  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
   update_stmt (new_stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "new phi replacement stmt\n");
-      print_generic_stmt (dump_file, new_stmt, TDF_SLIM);
+      print_gimple_stmt (dump_file, new_stmt, 0, TDF_SLIM);
     }
 }
 
@@ -881,30 +873,31 @@ process_phi_nodes (struct loop *loop)
   /* Replace phi nodes with cond. modify expr.  */
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
-      tree phi, cond = NULL_TREE;
-      block_stmt_iterator bsi;
+      gimple phi;
+      tree cond = NULL_TREE;
+      gimple_stmt_iterator gsi, phi_gsi;
       basic_block true_bb = NULL;
       bb = ifc_bbs[i];
 
       if (bb == loop->header)
 	continue;
 
-      phi = phi_nodes (bb);
-      bsi = bsi_after_labels (bb);
+      phi_gsi = gsi_start_phis (bb);
+      gsi = gsi_after_labels (bb);
 
       /* BB has two predecessors. Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
-      if (phi)
-	true_bb = find_phi_replacement_condition (loop, bb, &cond, &bsi);
+      if (!gsi_end_p (phi_gsi))
+	true_bb = find_phi_replacement_condition (loop, bb, &cond, &gsi);
 
-      while (phi)
+      while (!gsi_end_p (phi_gsi))
 	{
-	  tree next = PHI_CHAIN (phi);
-	  replace_phi_with_cond_gimple_modify_stmt (phi, cond, true_bb, &bsi);
+	  phi = gsi_stmt (phi_gsi);
+	  replace_phi_with_cond_gimple_assign_stmt (phi, cond, true_bb, &gsi);
 	  release_phi_node (phi);
-	  phi = next;
+	  gsi_next (&phi_gsi);
 	}
-      set_phi_nodes (bb, NULL_TREE);
+      set_phi_nodes (bb, NULL);
     }
   return;
 }
@@ -978,8 +971,8 @@ combine_blocks (struct loop *loop)
   merge_target_bb = loop->header;
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
-      block_stmt_iterator bsi;
-      tree_stmt_iterator last;
+      gimple_stmt_iterator gsi;
+      gimple_stmt_iterator last;
 
       bb = ifc_bbs[i];
 
@@ -987,21 +980,21 @@ combine_blocks (struct loop *loop)
 	continue;
 
       /* Remove labels and make stmts member of loop->header.  */
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  if (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR)
-	    bsi_remove (&bsi, true);
+	  if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+	    gsi_remove (&gsi, true);
 	  else
 	    {
-	      set_bb_for_stmt (bsi_stmt (bsi), merge_target_bb);
-	      bsi_next (&bsi);
+	      gimple_set_bb (gsi_stmt (gsi), merge_target_bb);
+	      gsi_next (&gsi);
 	    }
 	}
 
       /* Update stmt list.  */
-      last = tsi_last (bb_stmt_list (merge_target_bb));
-      tsi_link_after (&last, bb_stmt_list (bb), TSI_NEW_STMT);
-      set_bb_stmt_list (bb, alloc_stmt_list());
+      last = gsi_last_bb (merge_target_bb);
+      gsi_insert_seq_after (&last, bb_seq (bb), GSI_NEW_STMT);
+      set_bb_seq (bb, NULL);
 
       delete_basic_block (bb);
     }
@@ -1015,30 +1008,29 @@ combine_blocks (struct loop *loop)
     merge_blocks (loop->header, exit_bb);
 }
 
-/* Make new  temp variable of type TYPE. Add GIMPLE_MODIFY_STMT to assign EXP
+/* Make a new temp variable of type TYPE. Add GIMPLE_ASSIGN to assign EXP
    to the new variable.  */
 
-static tree
+static gimple
 ifc_temp_var (tree type, tree exp)
 {
   const char *name = "_ifc_";
-  tree var, stmt, new_name;
-
-  if (is_gimple_reg (exp))
-    return exp;
+  tree var, new_name;
+  gimple stmt;
 
   /* Create new temporary variable.  */
   var = create_tmp_var (type, name);
   add_referenced_var (var);
 
   /* Build new statement to assign EXP to new variable.  */
-  stmt = build_gimple_modify_stmt (var, exp);
+  stmt = gimple_build_assign (var, exp);
 
   /* Get SSA name for the new variable and set make new statement
      its definition statement.  */
   new_name = make_ssa_name (var, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = new_name;
+  gimple_assign_set_lhs (stmt, new_name);
   SSA_NAME_DEF_STMT (new_name) = stmt;
+  update_stmt (stmt);
 
   return stmt;
 }

@@ -1,5 +1,5 @@
 /* Induction variable canonicalization.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -72,8 +72,9 @@ static void
 create_canonical_iv (struct loop *loop, edge exit, tree niter)
 {
   edge in;
-  tree cond, type, var;
-  block_stmt_iterator incr_at;
+  tree type, var;
+  gimple cond;
+  gimple_stmt_iterator incr_at;
   enum tree_code cmp;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -97,16 +98,16 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
   niter = fold_build2 (PLUS_EXPR, type,
 		       niter,
 		       build_int_cst (type, 1));
-  incr_at = bsi_last (in->src);
+  incr_at = gsi_last_bb (in->src);
   create_iv (niter,
 	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
 	     &incr_at, false, NULL, &var);
 
   cmp = (exit->flags & EDGE_TRUE_VALUE) ? EQ_EXPR : NE_EXPR;
-  COND_EXPR_COND (cond) = build2 (cmp, boolean_type_node,
-				  var,
-				  build_int_cst (type, 0));
+  gimple_cond_set_code (cond, cmp);
+  gimple_cond_set_lhs (cond, var);
+  gimple_cond_set_rhs (cond, build_int_cst (type, 0));
   update_stmt (cond);
 }
 
@@ -116,12 +117,12 @@ unsigned
 tree_num_loop_insns (struct loop *loop, eni_weights *weights)
 {
   basic_block *body = get_loop_body (loop);
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   unsigned size = 1, i;
 
   for (i = 0; i < loop->num_nodes; i++)
-    for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
-      size += estimate_num_insns (bsi_stmt (bsi), weights);
+    for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+      size += estimate_num_insns (gsi_stmt (gsi), weights);
   free (body);
 
   return size;
@@ -163,7 +164,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    enum unroll_level ul)
 {
   unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
-  tree cond;
+  gimple cond;
 
   if (loop->inner)
     return false;
@@ -216,11 +217,11 @@ try_unroll_loop_completely (struct loop *loop,
       sbitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
 
-      if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					       n_unroll, wont_exit,
-					       exit, &to_remove,
-					       DLTHE_FLAG_UPDATE_FREQ
-					       | DLTHE_FLAG_COMPLETTE_PEEL))
+      if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+						 n_unroll, wont_exit,
+						 exit, &to_remove,
+						 DLTHE_FLAG_UPDATE_FREQ
+						 | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
           free_original_copy_tables ();
 	  free (wont_exit);
@@ -239,8 +240,10 @@ try_unroll_loop_completely (struct loop *loop,
     }
 
   cond = last_stmt (exit->src);
-  COND_EXPR_COND (cond) = (exit->flags & EDGE_TRUE_VALUE) ? boolean_true_node
-    : boolean_false_node;
+  if (exit->flags & EDGE_TRUE_VALUE)
+    gimple_cond_make_true (cond);
+  else
+    gimple_cond_make_false (cond);
   update_stmt (cond);
   update_ssa (TODO_update_ssa);
 
@@ -386,11 +389,9 @@ empty_loop_p (struct loop *loop)
 {
   edge exit;
   struct tree_niter_desc niter;
-  tree phi, def;
   basic_block *body;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   unsigned i;
-  tree stmt;
 
   /* If the loop has multiple exits, it is too hard for us to handle.
      Similarly, if the exit is not dominating, we cannot determine
@@ -404,8 +405,11 @@ empty_loop_p (struct loop *loop)
     return false;
 
   /* Values of all loop exit phi nodes must be invariants.  */
-  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
+  for (gsi = gsi_start(phi_nodes (exit->dest)); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      gimple phi = gsi_stmt (gsi);
+      tree def;
+
       if (!is_gimple_reg (PHI_RESULT (phi)))
 	continue;
 
@@ -427,11 +431,12 @@ empty_loop_p (struct loop *loop)
 	  return false;
 	}
 	
-      for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  stmt = bsi_stmt (bsi);
+	  gimple stmt = gsi_stmt (gsi);
+
 	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS)
-	      || stmt_ann (stmt)->has_volatile_ops)
+	      || gimple_has_volatile_ops (stmt))
 	    {
 	      free (body);
 	      return false;
@@ -439,25 +444,19 @@ empty_loop_p (struct loop *loop)
 
 	  /* Also, asm statements and calls may have side effects and we
 	     cannot change the number of times they are executed.  */
-	  switch (TREE_CODE (stmt))
+	  switch (gimple_code (stmt))
 	    {
-	    case RETURN_EXPR:
-	    case GIMPLE_MODIFY_STMT:
-	      stmt = get_call_expr_in (stmt);
-	      if (!stmt)
-		break;
-
-	    case CALL_EXPR:
-	      if (TREE_SIDE_EFFECTS (stmt))
+	    case GIMPLE_CALL:
+	      if (gimple_has_side_effects (stmt))
 		{
 		  free (body);
 		  return false;
 		}
 	      break;
 
-	    case ASM_EXPR:
+	    case GIMPLE_ASM:
 	      /* We cannot remove volatile assembler.  */
-	      if (ASM_VOLATILE_P (stmt))
+	      if (gimple_asm_volatile_p (stmt))
 		{
 		  free (body);
 		  return false;
@@ -480,8 +479,7 @@ static void
 remove_empty_loop (struct loop *loop)
 {
   edge exit = single_dom_exit (loop), non_exit;
-  tree cond_stmt = last_stmt (exit->src);
-  tree do_exit;
+  gimple cond_stmt = last_stmt (exit->src);
   basic_block *body;
   unsigned n_before, freq_in, freq_h;
   gcov_type exit_count = exit->count;
@@ -494,11 +492,9 @@ remove_empty_loop (struct loop *loop)
     non_exit = EDGE_SUCC (exit->src, 1);
 
   if (exit->flags & EDGE_TRUE_VALUE)
-    do_exit = boolean_true_node;
+    gimple_cond_make_true (cond_stmt);
   else
-    do_exit = boolean_false_node;
-
-  COND_EXPR_COND (cond_stmt) = do_exit;
+    gimple_cond_make_false (cond_stmt);
   update_stmt (cond_stmt);
 
   /* Let us set the probabilities of the edges coming from the exit block.  */
@@ -569,3 +565,4 @@ remove_empty_loops (void)
     }
   return 0;
 }
+

@@ -1,5 +1,5 @@
 /* Target Prototypes for R8C/M16C/M32C
-   Copyright (C) 2005, 2007
+   Copyright (C) 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -108,7 +108,7 @@ int  m32c_split_psi_p (rtx *);
 #ifdef TREE_CODE
 
 void m32c_function_arg_advance (CUMULATIVE_ARGS *, MM, tree, int);
-tree m32c_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+tree m32c_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 void m32c_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 bool m32c_promote_function_return (const_tree);
 int  m32c_special_page_vector_p (tree);

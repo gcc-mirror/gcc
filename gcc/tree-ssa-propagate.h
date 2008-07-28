@@ -22,9 +22,21 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _TREE_SSA_PROPAGATE_H
 #define _TREE_SSA_PROPAGATE_H 1
 
-/* Use the TREE_VISITED bitflag to mark statements and PHI nodes that
-   have been deemed varying and should not be simulated again.  */
-#define DONT_SIMULATE_AGAIN(T)	TREE_VISITED (T)
+/* If SIM_P is true, statement S will be simulated again.  */
+
+static inline void
+prop_set_simulate_again (gimple s, bool visit_p)
+{
+  gimple_set_visited (s, visit_p);
+}
+
+/* Return true if statement T should be simulated again.  */
+
+static inline bool
+prop_simulate_again_p (gimple s)
+{
+  return gimple_visited_p (s);
+}
 
 /* Lattice values used for propagation purposes.  Specific instances
    of a propagation engine must return these values from the statement
@@ -106,20 +118,20 @@ typedef struct value_range_d value_range_t;
 
 
 /* Call-back functions used by the value propagation engine.  */
-typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (tree, edge *, tree *);
-typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (tree);
+typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple, edge *, tree *);
+typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gimple);
 
 
 /* In tree-ssa-propagate.c  */
 void ssa_propagate (ssa_prop_visit_stmt_fn, ssa_prop_visit_phi_fn);
-tree get_rhs (tree);
-bool valid_gimple_expression_p (tree expr);
-bool set_rhs (tree *, tree);
-tree first_vdef (tree);
-bool stmt_makes_single_load (tree);
-bool stmt_makes_single_store (tree);
-prop_value_t *get_value_loaded_by (tree, prop_value_t *);
-bool replace_uses_in (tree, bool *, prop_value_t *);
+bool valid_gimple_rhs_p (tree);
+bool valid_gimple_call_p (tree);
+void move_ssa_defining_stmt_for_defs (gimple, gimple);
+bool update_call_from_tree (gimple_stmt_iterator *, tree);
+tree first_vdef (gimple);
+bool stmt_makes_single_load (gimple);
+bool stmt_makes_single_store (gimple);
+prop_value_t *get_value_loaded_by (gimple, prop_value_t *);
 bool substitute_and_fold (prop_value_t *, bool);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

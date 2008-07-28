@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "c-common.h"
 #include "toplev.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "bitmap.h"
 #include "langhooks.h"
 

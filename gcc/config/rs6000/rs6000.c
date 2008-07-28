@@ -52,7 +52,7 @@
 #include "reload.h"
 #include "cfglayout.h"
 #include "sched-int.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-flow.h"
 #include "intl.h"
 #include "params.h"
@@ -958,7 +958,7 @@ static void rs6000_darwin_file_start (void);
 
 static tree rs6000_build_builtin_va_list (void);
 static void rs6000_va_start (tree, rtx);
-static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
+static tree rs6000_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool rs6000_must_pass_in_stack (enum machine_mode, const_tree);
 static bool rs6000_scalar_mode_supported_p (enum machine_mode);
 static bool rs6000_vector_mode_supported_p (enum machine_mode);
@@ -6713,9 +6713,12 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), unshare_expr (valist),
+		f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), unshare_expr (valist),
+		f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), unshare_expr (valist),
+		f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
   words = crtl->args.info.words;
@@ -6731,7 +6734,7 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   if (cfun->va_list_gpr_size)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (gpr), gpr,
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
 		  build_int_cst (NULL_TREE, n_gpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6739,7 +6742,7 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   if (cfun->va_list_fpr_size)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (fpr), fpr,
+      t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
 		  build_int_cst (NULL_TREE, n_fpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6750,7 +6753,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   if (words != 0)
     t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), t,
 	        size_int (words * UNITS_PER_WORD));
-  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -6767,7 +6770,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   if (cfun->machine->varargs_save_offset)
     t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (sav), t,
 	        size_int (cfun->machine->varargs_save_offset));
-  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (sav), sav, t);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -6775,7 +6778,8 @@ rs6000_va_start (tree valist, rtx nextarg)
 /* Implement va_arg.  */
 
 tree
-rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
+rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
+			gimple_seq *post_p)
 {
   tree f_gpr, f_fpr, f_res, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
@@ -6784,6 +6788,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   int align;
   tree ptrtype = build_pointer_type (type);
   int regalign = 0;
+  gimple stmt;
 
   if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
@@ -6802,14 +6807,14 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	  if (elem_size < UNITS_PER_WORD)
 	    {
 	      tree real_part, imag_part;
-	      tree post = NULL_TREE;
+	      gimple_seq post = NULL;
 
 	      real_part = rs6000_gimplify_va_arg (valist, elem_type, pre_p,
 						  &post);
 	      /* Copy the value into a temporary, lest the formal temporary
 		 be reused out from under us.  */
 	      real_part = get_initialized_tmp_var (real_part, pre_p, &post);
-	      append_to_statement_list (post, pre_p);
+	      gimple_seq_add_seq (pre_p, post);
 
 	      imag_part = rs6000_gimplify_va_arg (valist, elem_type, pre_p,
 						  post_p);
@@ -6829,9 +6834,12 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), unshare_expr (valist),
+		f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), unshare_expr (valist),
+		f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), unshare_expr (valist),
+		f_sav, NULL_TREE);
 
   size = int_size_in_bytes (type);
   rsize = (size + 3) / 4;
@@ -6885,18 +6893,19 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (n_reg == 2 && reg == gpr)
 	{
 	  regalign = 1;
-	  u = build2 (BIT_AND_EXPR, TREE_TYPE (reg), reg,
+	  u = build2 (BIT_AND_EXPR, TREE_TYPE (reg), unshare_expr (reg),
 		     build_int_cst (TREE_TYPE (reg), n_reg - 1));
-	  u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, u);
+	  u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg),
+		      unshare_expr (reg), u);
 	}
       /* _Decimal128 is passed in even/odd fpr pairs; the stored
 	 reg number is 0 for f1, so we want to make it odd.  */
       else if (reg == fpr && TYPE_MODE (type) == TDmode)
 	{
 	  regalign = 1;
-	  t = build2 (BIT_IOR_EXPR, TREE_TYPE (reg), reg,
+	  t = build2 (BIT_IOR_EXPR, TREE_TYPE (reg), unshare_expr (reg),
 		      build_int_cst (TREE_TYPE (reg), 1));
-	  u = build2 (MODIFY_EXPR, void_type_node, reg, t);
+	  u = build2 (MODIFY_EXPR, void_type_node, unshare_expr (reg), t);
 	}
 
       t = fold_convert (TREE_TYPE (reg), size_int (8 - n_reg + 1));
@@ -6909,7 +6918,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (sav_ofs)
 	t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
 
-      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg,
+      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), unshare_expr (reg),
 		  build_int_cst (TREE_TYPE (reg), n_reg));
       u = fold_convert (sizetype, u);
       u = build2 (MULT_EXPR, sizetype, u, size_int (sav_scale));
@@ -6922,22 +6931,18 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	  && TYPE_MODE (type) == SDmode)
 	t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
 
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
-      gimplify_and_add (t, pre_p);
+      gimplify_assign (addr, t, pre_p);
 
-      t = build1 (GOTO_EXPR, void_type_node, lab_over);
-      gimplify_and_add (t, pre_p);
+      gimple_seq_add_stmt (pre_p, gimple_build_goto (lab_over));
 
-      t = build1 (LABEL_EXPR, void_type_node, lab_false);
-      append_to_statement_list (t, pre_p);
+      stmt = gimple_build_label (lab_false);
+      gimple_seq_add_stmt (pre_p, stmt);
 
       if ((n_reg == 2 && !regalign) || n_reg > 2)
 	{
 	  /* Ensure that we don't find any more args in regs.
 	     Alignment has taken care of for special cases.  */
-	  t = build_gimple_modify_stmt (reg,
-					build_int_cst (TREE_TYPE (reg), 8));
-	  gimplify_and_add (t, pre_p);
+	  gimplify_assign (reg, build_int_cst (TREE_TYPE (reg), 8), pre_p);
 	}
     }
 
@@ -6955,17 +6960,15 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
-  u = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
-  gimplify_and_add (u, pre_p);
+  gimplify_assign (unshare_expr (addr), t, pre_p);
 
   t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t, size_int (size));
-  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (unshare_expr (ovf), t, pre_p);
 
   if (lab_over)
     {
-      t = build1 (LABEL_EXPR, void_type_node, lab_over);
-      append_to_statement_list (t, pre_p);
+      stmt = gimple_build_label (lab_over);
+      gimple_seq_add_stmt (pre_p, stmt);
     }
 
   if (STRICT_ALIGNMENT
@@ -11321,15 +11324,14 @@ rs6000_alloc_sdmode_stack_slot (void)
 {
   tree t;
   basic_block bb;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
 
   gcc_assert (cfun->machine->sdmode_stack_slot == NULL_RTX);
 
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	tree ret = walk_tree_without_duplicates (bsi_stmt_ptr (bsi),
-						 rs6000_check_sdmode, NULL);
+	tree ret = walk_gimple_op (gsi_stmt (gsi), rs6000_check_sdmode, NULL);
 	if (ret)
 	  {
 	    rtx stack = assign_stack_local (DDmode, GET_MODE_SIZE (DDmode), 0);

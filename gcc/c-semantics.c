@@ -43,7 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "predict.h"
 #include "tree-inline.h"
-#include "tree-gimple.h"
+#include "gimple.h"
+#include "tree-iterator.h"
 #include "langhooks.h"
 
 /* Create an empty statement tree rooted at T.  */

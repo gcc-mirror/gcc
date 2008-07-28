@@ -132,7 +132,7 @@ struct ipa_param_call_note
   /* Linked list's next */
   struct ipa_param_call_note *next;
   /* Statement that contains the call to the parameter above.  */
-  tree stmt;
+  gimple stmt;
   /* Index of the parameter that is called.  */
   unsigned int formal_id;
   /* Expected number of executions: calculated in profile.c.  */

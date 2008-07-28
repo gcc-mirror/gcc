@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "hashtab.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-ssa-operands.h"
 #include "cgraph.h"
 #include "ipa-reference.h"
@@ -141,12 +141,12 @@ struct gimple_df GTY(())
   /* Array of all variables referenced in the function.  */
   htab_t GTY((param_is (union tree_node))) referenced_vars;
 
-  /* A list of all the noreturn calls passed to modify_stmt.
+  /* A vector of all the noreturn calls passed to modify_stmt.
      cleanup_control_flow uses it to detect cases where a mid-block
      indirect call has been turned into a noreturn call.  When this
      happens, all the instructions after the call are no longer
      reachable and must be deleted as dead.  */
-  VEC(tree,gc) *modified_noreturn_calls;
+  VEC(gimple,gc) *modified_noreturn_calls;
 
   /* Array of all SSA_NAMEs used in the function.  */
   VEC(tree,gc) *ssa_names;
@@ -268,19 +268,27 @@ struct ptr_info_def GTY(())
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_base.ann
 ---------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN, STMT_ANN };
+enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN };
 
 struct tree_ann_common_d GTY(())
 {
   /* Annotation type.  */
   enum tree_ann_type type;
 
- /* Auxiliary info specific to a pass.  At all times, this
-    should either point to valid data or be NULL.  */ 
+  /* Record EH region number into a statement tree created during RTL
+     expansion (see gimple_to_tree).  */
+  int rn;
+
+  /* Auxiliary info specific to a pass.  At all times, this
+     should either point to valid data or be NULL.  */ 
   PTR GTY ((skip (""))) aux; 
 
   /* The value handle for this expression.  Used by GVN-PRE.  */
   tree GTY((skip)) value_handle;
+
+  /* Pointer to original GIMPLE statement.  Used during RTL expansion
+     (see gimple_to_tree).  */
+  gimple stmt;
 };
 
 /* It is advantageous to avoid things like life analysis for variables which
@@ -417,6 +425,42 @@ struct function_ann_d GTY(())
   ipa_reference_vars_info_t GTY ((skip)) reference_vars_info;
 };
 
+
+/* Immediate use lists are used to directly access all uses for an SSA
+   name and get pointers to the statement for each use. 
+
+   The structure ssa_use_operand_d consists of PREV and NEXT pointers
+   to maintain the list.  A USE pointer, which points to address where
+   the use is located and a LOC pointer which can point to the
+   statement where the use is located, or, in the case of the root
+   node, it points to the SSA name itself.
+
+   The list is anchored by an occurrence of ssa_operand_d *in* the
+   ssa_name node itself (named 'imm_uses').  This node is uniquely
+   identified by having a NULL USE pointer. and the LOC pointer
+   pointing back to the ssa_name node itself.  This node forms the
+   base for a circular list, and initially this is the only node in
+   the list.
+
+   Fast iteration allows each use to be examined, but does not allow
+   any modifications to the uses or stmts.
+
+   Normal iteration allows insertion, deletion, and modification. the
+   iterator manages this by inserting a marker node into the list
+   immediately before the node currently being examined in the list.
+   this marker node is uniquely identified by having null stmt *and* a
+   null use pointer.  
+
+   When iterating to the next use, the iteration routines check to see
+   if the node after the marker has changed. if it has, then the node
+   following the marker is now the next one to be visited. if not, the
+   marker node is moved past that node in the list (visualize it as
+   bumping the marker node through the list).  this continues until
+   the marker node is moved to the original anchor position. the
+   marker node is then removed from the list.
+
+   If iteration is halted early, the marker node must be removed from
+   the list before continuing.  */
 typedef struct immediate_use_iterator_d
 {
   /* This is the current use the iterator is processing.  */
@@ -476,50 +520,16 @@ typedef struct immediate_use_iterator_d
 
 
 
-struct stmt_ann_d GTY(())
-{
-  struct tree_ann_common_d common;
-
-  /* Basic block that contains this statement.  */
-  basic_block bb;
-
-  /* Operand cache for stmt.  */
-  struct stmt_operands_d GTY ((skip (""))) operands;
-
-  /* Set of variables that have had their address taken in the statement.  */
-  bitmap addresses_taken;
-
-  /* Unique identifier for this statement.  These ID's are to be
-     created by each pass on an as-needed basis in any order
-     convenient for the pass which needs statement UIDs.  This field
-     should only be accessed thru set_gimple_stmt_uid and
-     gimple_stmt_uid functions.  */
-  unsigned int uid;
-
-  /* Nonzero if the statement references memory (at least one of its
-     expressions contains a non-register operand).  */
-  unsigned references_memory : 1;
-
-  /* Nonzero if the statement has been modified (meaning that the operands
-     need to be scanned again).  */
-  unsigned modified : 1;
-
-  /* Nonzero if the statement makes references to volatile storage.  */
-  unsigned has_volatile_ops : 1;
-};
-
 union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
 {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) vdecl;
   struct function_ann_d GTY((tag ("FUNCTION_ANN"))) fdecl;
-  struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
 typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
 typedef struct function_ann_d *function_ann_t;
-typedef struct stmt_ann_d *stmt_ann_t;
 typedef struct tree_ann_common_d *tree_ann_common_t;
 
 static inline tree_ann_common_t tree_common_ann (const_tree);
@@ -528,18 +538,10 @@ static inline var_ann_t var_ann (const_tree);
 static inline var_ann_t get_var_ann (tree);
 static inline function_ann_t function_ann (const_tree);
 static inline function_ann_t get_function_ann (tree);
-static inline stmt_ann_t stmt_ann (tree);
-static inline bool has_stmt_ann (tree);
-static inline stmt_ann_t get_stmt_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
-static inline basic_block bb_for_stmt (tree);
-extern void set_bb_for_stmt (tree, basic_block);
-static inline bool noreturn_call_p (tree);
-static inline void update_stmt (tree);
-static inline bool stmt_modified_p (tree);
+static inline void update_stmt (gimple);
 static inline bitmap may_aliases (const_tree);
-static inline int get_lineno (const_tree);
-static inline bitmap addresses_taken (tree);
+static inline int get_lineno (const_gimple);
 
 /*---------------------------------------------------------------------------
                   Structure representing predictions in tree level.
@@ -553,8 +555,8 @@ struct edge_prediction GTY((chain_next ("%h.ep_next")))
 };
 
 /* Accessors for basic block annotations.  */
-static inline tree phi_nodes (const_basic_block);
-static inline void set_phi_nodes (basic_block, tree);
+static inline gimple_seq phi_nodes (const_basic_block);
+static inline void set_phi_nodes (basic_block, gimple_seq);
 
 /*---------------------------------------------------------------------------
 			      Global declarations
@@ -627,48 +629,6 @@ extern bool referenced_var_check_and_insert (tree);
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
 /*---------------------------------------------------------------------------
-			      Block iterators
----------------------------------------------------------------------------*/
-
-typedef struct {
-  tree_stmt_iterator tsi;
-  basic_block bb;
-} block_stmt_iterator;
-
-static inline block_stmt_iterator bsi_start (basic_block);
-static inline block_stmt_iterator bsi_last (basic_block);
-static inline block_stmt_iterator bsi_after_labels (basic_block);
-block_stmt_iterator bsi_for_stmt (tree);
-static inline bool bsi_end_p (block_stmt_iterator);
-static inline void bsi_next (block_stmt_iterator *);
-static inline void bsi_prev (block_stmt_iterator *);
-static inline tree bsi_stmt (block_stmt_iterator);
-static inline tree * bsi_stmt_ptr (block_stmt_iterator);
-
-extern void bsi_remove (block_stmt_iterator *, bool);
-extern void bsi_move_before (block_stmt_iterator *, block_stmt_iterator *);
-extern void bsi_move_after (block_stmt_iterator *, block_stmt_iterator *);
-extern void bsi_move_to_bb_end (block_stmt_iterator *, basic_block);
-
-enum bsi_iterator_update
-{
-  /* Note that these are intentionally in the same order as TSI_FOO.  They
-     mean exactly the same as their TSI_* counterparts.  */
-  BSI_NEW_STMT,
-  BSI_SAME_STMT,
-  BSI_CHAIN_START,
-  BSI_CHAIN_END,
-  BSI_CONTINUE_LINKING
-};
-
-extern void bsi_insert_before (block_stmt_iterator *, tree,
-			       enum bsi_iterator_update);
-extern void bsi_insert_after (block_stmt_iterator *, tree,
-			      enum bsi_iterator_update);
-
-extern void bsi_replace (const block_stmt_iterator *, tree, bool);
-
-/*---------------------------------------------------------------------------
 			      OpenMP Region Tree
 ---------------------------------------------------------------------------*/
 
@@ -702,7 +662,7 @@ struct omp_region
   tree ws_args;
 
   /* The code for the omp directive of this region.  */
-  enum tree_code type;
+  enum gimple_code type;
 
   /* Schedule kind, only used for OMP_FOR type regions.  */
   enum omp_clause_schedule_kind sched_kind;
@@ -712,7 +672,7 @@ struct omp_region
 };
 
 extern struct omp_region *root_omp_region;
-extern struct omp_region *new_omp_region (basic_block, enum tree_code,
+extern struct omp_region *new_omp_region (basic_block, enum gimple_code,
 					  struct omp_region *);
 extern void free_omp_regions (void);
 void omp_expand_local (basic_block);
@@ -725,20 +685,20 @@ tree copy_var_decl (tree, tree, tree);
 /* In tree-cfg.c  */
 
 /* Location to track pending stmt for edge insertion.  */
-#define PENDING_STMT(e)	((e)->insns.t)
+#define PENDING_STMT(e)	((e)->insns.g)
 
 extern void delete_tree_cfg_annotations (void);
-extern bool stmt_ends_bb_p (const_tree);
-extern bool is_ctrl_stmt (const_tree);
-extern bool is_ctrl_altering_stmt (const_tree);
-extern bool simple_goto_p (const_tree);
-extern bool tree_can_make_abnormal_goto (const_tree);
+extern bool stmt_ends_bb_p (gimple);
+extern bool is_ctrl_stmt (gimple);
+extern bool is_ctrl_altering_stmt (gimple);
+extern bool simple_goto_p (gimple);
+extern bool stmt_can_make_abnormal_goto (gimple);
 extern basic_block single_noncomplex_succ (basic_block bb);
-extern void tree_dump_bb (basic_block, FILE *, int);
-extern void debug_tree_bb (basic_block);
-extern basic_block debug_tree_bb_n (int);
-extern void dump_tree_cfg (FILE *, int);
-extern void debug_tree_cfg (int);
+extern void gimple_dump_bb (basic_block, FILE *, int, int);
+extern void gimple_debug_bb (basic_block);
+extern basic_block gimple_debug_bb_n (int);
+extern void gimple_dump_cfg (FILE *, int);
+extern void gimple_debug_cfg (int);
 extern void dump_cfg_stats (FILE *);
 extern void dot_cfg (void);
 extern void debug_cfg_stats (void);
@@ -749,40 +709,35 @@ extern void print_loops (FILE *, int);
 extern void print_loops_bb (FILE *, basic_block, int, int);
 extern void cleanup_dead_labels (void);
 extern void group_case_labels (void);
-extern tree first_stmt (basic_block);
-extern tree last_stmt (basic_block);
-extern tree last_and_only_stmt (basic_block);
+extern gimple first_stmt (basic_block);
+extern gimple last_stmt (basic_block);
+extern gimple last_and_only_stmt (basic_block);
 extern edge find_taken_edge (basic_block, tree);
 extern basic_block label_to_block_fn (struct function *, tree);
 #define label_to_block(t) (label_to_block_fn (cfun, t))
-extern void bsi_insert_on_edge (edge, tree);
-extern basic_block bsi_insert_on_edge_immediate (edge, tree);
-extern void bsi_commit_one_edge_insert (edge, basic_block *);
-extern void bsi_commit_edge_inserts (void);
-extern void notice_special_calls (tree);
+extern void notice_special_calls (gimple);
 extern void clear_special_calls (void);
 extern void verify_stmts (void);
 extern void verify_gimple (void);
-extern void verify_gimple_1 (tree);
-extern tree tree_block_label (basic_block);
+extern void verify_types_in_gimple_seq (gimple_seq);
+extern tree gimple_block_label (basic_block);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
-extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
+extern bool gimple_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *);
-extern bool tree_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
+extern bool gimple_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
 				      basic_block *);
 extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
 					  VEC(basic_block,heap) **bbs_p);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
-extern bool tree_purge_dead_abnormal_call_edges (basic_block);
-extern bool tree_purge_dead_eh_edges (basic_block);
-extern bool tree_purge_all_dead_eh_edges (const_bitmap);
-extern tree gimplify_val (block_stmt_iterator *, tree, tree);
-extern tree gimplify_build1 (block_stmt_iterator *, enum tree_code,
+extern bool gimple_purge_dead_abnormal_call_edges (basic_block);
+extern bool gimple_purge_dead_eh_edges (basic_block);
+extern bool gimple_purge_all_dead_eh_edges (const_bitmap);
+extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree);
-extern tree gimplify_build2 (block_stmt_iterator *, enum tree_code,
+extern tree gimplify_build2 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree, tree);
-extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
+extern tree gimplify_build3 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree, tree, tree);
 extern void init_empty_tree_cfg (void);
 extern void init_empty_tree_cfg_for_function (struct function *);
@@ -807,7 +762,6 @@ extern const char *op_symbol_code (enum tree_code);
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
 extern function_ann_t create_function_ann (tree);
-extern stmt_ann_t create_stmt_ann (tree);
 extern void renumber_gimple_stmt_uids (void);
 extern tree_ann_common_t create_tree_common_ann (tree);
 extern void dump_dfa_stats (FILE *);
@@ -819,27 +773,26 @@ extern void debug_variable (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_var (tree);
 extern void remove_referenced_var (tree);
-extern void mark_symbols_for_renaming (tree);
-extern void find_new_referenced_vars (tree *);
+extern void mark_symbols_for_renaming (gimple);
+extern void find_new_referenced_vars (gimple);
 extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
-extern bool stmt_references_abnormal_ssa_name (tree);
+extern bool stmt_references_abnormal_ssa_name (gimple);
 extern bool refs_may_alias_p (tree, tree);
-extern tree get_single_def_stmt (tree);
-extern tree get_single_def_stmt_from_phi (tree, tree);
-extern tree get_single_def_stmt_with_phi (tree, tree);
+extern gimple get_single_def_stmt (gimple);
+extern gimple get_single_def_stmt_from_phi (tree, gimple);
+extern gimple get_single_def_stmt_with_phi (tree, gimple);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
-extern tree create_phi_node (tree, basic_block);
-extern void add_phi_arg (tree, tree, edge);
+extern gimple create_phi_node (tree, basic_block);
+extern void add_phi_arg (gimple, tree, edge);
 extern void remove_phi_args (edge);
-extern void remove_phi_node (tree, tree, bool);
-extern tree phi_reverse (tree);
+extern void remove_phi_node (gimple_stmt_iterator *, bool);
 extern void init_phinodes (void);
 extern void fini_phinodes (void);
-extern void release_phi_node (tree);
+extern void release_phi_node (gimple);
 #ifdef GATHER_STATISTICS
 extern void phinodes_print_statistics (void);
 #endif
@@ -848,6 +801,8 @@ extern void phinodes_print_statistics (void);
 extern void record_vars_into (tree, tree);
 extern void record_vars (tree);
 extern bool block_may_fallthru (const_tree);
+extern bool gimple_seq_may_fallthru (gimple_seq);
+extern bool gimple_stmt_may_fallthru (gimple);
 
 /* In tree-ssa-alias.c  */
 extern unsigned int compute_may_aliases (void);
@@ -864,7 +819,7 @@ extern bool may_alias_p (tree, alias_set_type, tree, alias_set_type, bool);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern bool may_point_to_global_var (tree);
 extern void new_type_alias (tree, tree, tree);
-extern void count_uses_and_derefs (tree, tree, unsigned *, unsigned *,
+extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
 				   unsigned *);
 static inline bool ref_contains_array_ref (const_tree);
 static inline bool array_ref_contains_indirect_ref (const_tree);
@@ -881,7 +836,7 @@ extern void debug_all_mem_sym_stats (void);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */
-typedef bool (*walk_use_def_chains_fn) (tree, tree, void *);
+typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
 
 /* In tree-ssa-alias-warnings.c  */
 extern void strict_aliasing_warning_backend (void);
@@ -918,7 +873,6 @@ extern bool types_compatible_p (tree, tree);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
-extern bool stmt_references_memory_p (tree);
 extern bool ssa_undefined_value_p (tree);
 
 
@@ -926,14 +880,13 @@ extern bool ssa_undefined_value_p (tree);
 void update_ssa (unsigned);
 void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
-tree create_new_def_for (tree, tree, def_operand_p);
+tree create_new_def_for (tree, gimple, def_operand_p);
 bool need_ssa_update_p (void);
 bool name_mappings_registered_p (void);
 bool name_registered_for_update_p (tree);
 bitmap ssa_names_to_replace (void);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
-tree duplicate_ssa_name (tree, tree);
 void mark_sym_for_renaming (tree);
 void mark_set_for_renaming (bitmap);
 tree get_current_def (tree);
@@ -942,11 +895,11 @@ void set_current_def (tree, tree);
 /* In tree-ssanames.c  */
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);
-extern tree make_ssa_name_fn (struct function *, tree, tree);
-extern tree duplicate_ssa_name (tree, tree);
+extern tree make_ssa_name_fn (struct function *, tree, gimple);
+extern tree duplicate_ssa_name (tree, gimple);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern void release_ssa_name (tree);
-extern void release_defs (tree);
+extern void release_defs (gimple);
 extern void replace_ssa_name_symbol (tree, tree);
 
 #ifdef GATHER_STATISTICS
@@ -954,14 +907,14 @@ extern void ssanames_print_statistics (void);
 #endif
 
 /* In tree-ssa-ccp.c  */
-bool fold_stmt (tree *);
-bool fold_stmt_inplace (tree);
+bool fold_stmt (gimple_stmt_iterator *);
+bool fold_stmt_inplace (gimple);
 tree get_symbol_constant_value (tree);
 tree fold_const_aggregate_ref (tree);
 
 /* In tree-vrp.c  */
-tree vrp_evaluate_conditional (enum tree_code, tree, tree, tree);
-void simplify_stmt_using_ranges (tree);
+tree vrp_evaluate_conditional (enum tree_code, tree, tree, gimple);
+void simplify_stmt_using_ranges (gimple);
 
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);
@@ -972,8 +925,10 @@ int loop_depth_of_name (tree);
 extern void merge_alias_info (tree, tree);
 extern void propagate_value (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
+extern void propagate_tree_value_into_stmt (gimple_stmt_iterator *, tree);
 extern void replace_exp (use_operand_p, tree);
 extern bool may_propagate_copy (tree, tree);
+extern bool may_propagate_copy_into_stmt (gimple, tree);
 extern bool may_propagate_copy_into_asm (tree);
 
 /* Affine iv.  */
@@ -1046,8 +1001,8 @@ tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (void);
-bool scev_probably_wraps_p (tree, tree, tree, struct loop *, bool);
-bool convert_affine_scev (struct loop *, tree, tree *, tree *, tree, bool);
+bool scev_probably_wraps_p (tree, tree, gimple, struct loop *, bool);
+bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple, bool);
 
 bool nowrap_type_p (tree);
 enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
@@ -1058,14 +1013,14 @@ void free_numbers_of_iterations_estimates_loop (struct loop *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 void verify_loop_closed_ssa (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
-void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
+void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *, bool,
 		tree *, tree *);
 basic_block split_loop_exit_edge (edge);
-void standard_iv_increment_position (struct loop *, block_stmt_iterator *,
+void standard_iv_increment_position (struct loop *, gimple_stmt_iterator *,
 				     bool *);
 basic_block ip_end_pos (struct loop *);
 basic_block ip_normal_pos (struct loop *);
-bool tree_duplicate_loop_to_header_edge (struct loop *, edge,
+bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 					 unsigned int, sbitmap,
 					 edge, VEC (edge, heap) **,
 					 int);
@@ -1085,13 +1040,13 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     edge, struct tree_niter_desc *,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
-bool stmt_dominates_stmt_p (tree, tree);
-void mark_virtual_ops_for_renaming (tree);
+bool stmt_dominates_stmt_p (gimple, gimple);
+void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */
 extern bool potentially_threadable_block (basic_block);
-extern void thread_across_edge (tree, edge, bool,
-				VEC(tree, heap) **, tree (*) (tree, tree));
+extern void thread_across_edge (gimple, edge, bool,
+				VEC(tree, heap) **, tree (*) (gimple, gimple));
 
 /* In tree-ssa-loop-im.c  */
 /* The possibilities of statement movement.  */
@@ -1103,7 +1058,7 @@ enum move_pos
 				   become executed -- memory accesses, ... */
     MOVE_POSSIBLE		/* Unlimited movement.  */
   };
-extern enum move_pos movement_possibility (tree);
+extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
@@ -1113,15 +1068,22 @@ static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
 
 /* In tree-eh.c  */
-extern void make_eh_edges (tree);
+extern void make_eh_edges (gimple);
 extern bool tree_could_trap_p (tree);
+extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
+extern bool stmt_could_throw_p (gimple);
 extern bool tree_could_throw_p (tree);
-extern bool tree_can_throw_internal (const_tree);
-extern bool tree_can_throw_external (tree);
-extern int lookup_stmt_eh_region (const_tree);
-extern void add_stmt_to_eh_region (tree, int);
-extern bool remove_stmt_from_eh_region (tree);
-extern bool maybe_clean_or_replace_eh_stmt (tree, tree);
+extern bool stmt_can_throw_internal (gimple);
+extern void add_stmt_to_eh_region (gimple, int);
+extern bool remove_stmt_from_eh_region (gimple);
+extern bool maybe_clean_or_replace_eh_stmt (gimple, gimple);
+extern void add_stmt_to_eh_region_fn (struct function *, gimple, int);
+extern bool remove_stmt_from_eh_region_fn (struct function *, gimple);
+extern int lookup_stmt_eh_region_fn (struct function *, gimple);
+extern int lookup_expr_eh_region (tree);
+extern int lookup_stmt_eh_region (gimple);
+extern bool verify_eh_edges (gimple);
+
 
 /* In tree-ssa-pre.c  */
 struct pre_expr_d;
@@ -1137,21 +1099,21 @@ bool expressions_equal_p (tree, tree);
 void sort_vuses (VEC (tree, gc) *);
 void sort_vuses_heap (VEC (tree, heap) *);
 tree vn_lookup_or_add (tree);
-tree vn_lookup_or_add_with_stmt (tree, tree);
+tree vn_lookup_or_add_with_stmt (tree, gimple);
 tree vn_lookup_or_add_with_vuses (tree, VEC (tree, gc) *);
 void vn_add (tree, tree);
 void vn_add_with_vuses (tree, tree, VEC (tree, gc) *);
-tree vn_lookup_with_stmt (tree, tree);
+tree vn_lookup_with_stmt (tree, gimple);
 tree vn_lookup (tree);
 tree vn_lookup_with_vuses (tree, VEC (tree, gc) *);
 
 /* In tree-ssa-sink.c  */
-bool is_hidden_global_store (tree);
+bool is_hidden_global_store (gimple);
 
 /* In tree-sra.c  */
-void insert_edge_copies (tree, basic_block);
-void sra_insert_before (block_stmt_iterator *, tree);
-void sra_insert_after (block_stmt_iterator *, tree);
+void insert_edge_copies_seq (gimple_seq, basic_block);
+void sra_insert_before (gimple_stmt_iterator *, gimple_seq);
+void sra_insert_after (gimple_stmt_iterator *, gimple_seq);
 void sra_init_cache (void);
 bool sra_type_can_be_decomposed_p (tree);
 
@@ -1163,6 +1125,7 @@ extern void tree_check_data_deps (void);
 
 /* In tree-ssa-loop-ivopts.c  */
 bool expr_invariant_in_loop_p (struct loop *, tree);
+bool stmt_invariant_in_loop_p (struct loop *, gimple);
 bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode);
 unsigned multiply_by_cost (HOST_WIDE_INT, enum machine_mode);
 
@@ -1171,9 +1134,9 @@ extern bool thread_through_all_blocks (bool);
 extern void register_jump_thread (edge, edge);
 
 /* In gimplify.c  */
-tree force_gimple_operand (tree, tree *, bool, tree);
-tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree,
-			       bool, enum bsi_iterator_update);
+tree force_gimple_operand (tree, gimple_seq *, bool, tree);
+tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
+			       bool, enum gsi_iterator_update);
 tree gimple_fold_indirect_ref (tree);
 
 /* In tree-ssa-structalias.c */
@@ -1194,7 +1157,7 @@ struct mem_address
 };
 
 struct affine_tree_combination;
-tree create_mem_ref (block_stmt_iterator *, tree, 
+tree create_mem_ref (gimple_stmt_iterator *, tree, 
 		     struct affine_tree_combination *);
 rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
@@ -1206,7 +1169,7 @@ unsigned int execute_fixup_cfg (void);
 
 #include "tree-flow-inline.h"
 
-void swap_tree_operands (tree, tree *, tree *);
+void swap_tree_operands (gimple, tree *, tree *);
 
 int least_common_multiple (int, int);
 

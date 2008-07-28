@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-dump.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "tm.h"
@@ -2576,7 +2576,7 @@ gfc_trans_assign_aux_var (gfc_symbol * sym, tree fnbody)
 
   /* Set the initial value to length. See the comments in
      function gfc_add_assign_aux_vars in this file.  */
-  gfc_add_modify_expr (&body, GFC_DECL_STRING_LEN (sym->backend_decl),
+  gfc_add_modify (&body, GFC_DECL_STRING_LEN (sym->backend_decl),
 		       build_int_cst (NULL_TREE, -2));
 
   gfc_add_expr_to_block (&body, fnbody);
@@ -2607,7 +2607,7 @@ gfc_trans_vla_one_sizepos (tree *tp, stmtblock_t *body)
 
   var = gfc_create_var_np (TREE_TYPE (t), NULL);
   gfc_add_decl_to_function (var);
-  gfc_add_modify_expr (body, var, val);
+  gfc_add_modify (body, var, val);
   if (TREE_CODE (t) == SAVE_EXPR)
     TREE_OPERAND (t, 0) = var;
   *tp = var;
@@ -3412,7 +3412,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       tree alternate_return;
       alternate_return = gfc_get_fake_result_decl (sym, 0);
-      gfc_add_modify_expr (&body, alternate_return, integer_zero_node);
+      gfc_add_modify (&body, alternate_return, integer_zero_node);
     }
 
   if (ns->entries)

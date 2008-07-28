@@ -403,8 +403,7 @@ static inline void mark_all_vars_used (tree *, void *data);
 /* Helper function for mark_all_vars_used, called via walk_tree.  */
 
 static tree
-mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
-		      void *data)
+mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
 {
   tree t = *tp;
   enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
@@ -412,8 +411,8 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
 
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
-  if ((IS_EXPR_CODE_CLASS (c)
-       || IS_GIMPLE_STMT_CODE_CLASS (c))
+
+  if (IS_EXPR_CODE_CLASS (c)
       && (b = TREE_BLOCK (t)) != NULL)
     TREE_USED (b) = true;
 
@@ -584,6 +583,7 @@ remove_unused_locals (void)
 
   if (optimize)
     mark_scope_block_unused (DECL_INITIAL (current_function_decl));
+
   /* Assume all locals are unused.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     var_ann (t)->used = false;
@@ -591,23 +591,34 @@ remove_unused_locals (void)
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator bsi;
-      tree phi, def;
+      gimple_stmt_iterator gsi;
+      size_t i;
 
       /* Walk the statements.  */
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	mark_all_vars_used (bsi_stmt_ptr (bsi), NULL);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  tree b = gimple_block (stmt);
 
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	  if (b)
+	    TREE_USED (b) = true;
+
+	  for (i = 0; i < gimple_num_ops (stmt); i++)
+	    mark_all_vars_used (gimple_op_ptr (gsi_stmt (gsi), i), NULL);
+	}
+
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
           use_operand_p arg_p;
           ssa_op_iter i;
+	  tree def;
+	  gimple phi = gsi_stmt (gsi);
 
 	  /* No point processing globals.  */
-	  if (is_global_var (SSA_NAME_VAR (PHI_RESULT (phi))))
+	  if (is_global_var (SSA_NAME_VAR (gimple_phi_result (phi))))
 	    continue;
 
-          def = PHI_RESULT (phi);
+	  def = gimple_phi_result (phi);
 	  mark_all_vars_used (&def, NULL);
 
           FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_ALL_USES)
@@ -822,7 +833,7 @@ static void
 set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 {
   int p;
-  tree stmt;
+  gimple stmt;
   use_operand_p use;
   basic_block def_bb = NULL;
   imm_use_iterator imm_iter;
@@ -835,7 +846,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
   stmt = SSA_NAME_DEF_STMT (ssa_name);
   if (stmt)
     {
-      def_bb = bb_for_stmt (stmt);
+      def_bb = gimple_bb (stmt);
       /* Mark defs in liveout bitmap temporarily.  */
       if (def_bb)
 	bitmap_set_bit (live->liveout[def_bb->index], p);
@@ -847,16 +858,16 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
      add it to the list of live on entry blocks.  */
   FOR_EACH_IMM_USE_FAST (use, imm_iter, ssa_name)
     {
-      tree use_stmt = USE_STMT (use);
+      gimple use_stmt = USE_STMT (use);
       basic_block add_block = NULL;
 
-      if (TREE_CODE (use_stmt) == PHI_NODE)
+      if (gimple_code (use_stmt) == GIMPLE_PHI)
         {
 	  /* Uses in PHI's are considered to be live at exit of the SRC block
 	     as this is where a copy would be inserted.  Check to see if it is
 	     defined in that block, or whether its live on entry.  */
 	  int index = PHI_ARG_INDEX_FROM_USE (use);
-	  edge e = PHI_ARG_EDGE (use_stmt, index);
+	  edge e = gimple_phi_arg_edge (use_stmt, index);
 	  if (e->src != ENTRY_BLOCK_PTR)
 	    {
 	      if (e->src != def_bb)
@@ -866,7 +877,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
       else
         {
 	  /* If its not defined in this block, its live on entry.  */
-	  basic_block use_bb = bb_for_stmt (use_stmt);
+	  basic_block use_bb = gimple_bb (use_stmt);
 	  if (use_bb != def_bb)
 	    add_block = use_bb;
 	}  
@@ -891,9 +902,6 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 void
 calculate_live_on_exit (tree_live_info_p liveinfo)
 {
-  unsigned i;
-  int p;
-  tree t, phi;
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -905,20 +913,29 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB (bb)
     {
+      gimple_stmt_iterator gsi;
+      size_t i;
+
       /* Mark the PHI arguments which are live on exit to the pred block.  */
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	for (i = 0; i < (unsigned)PHI_NUM_ARGS (phi); i++)
-	  { 
-	    t = PHI_ARG_DEF (phi, i);
-	    if (TREE_CODE (t) != SSA_NAME)
-	      continue;
-	    p = var_to_partition (liveinfo->map, t);
-	    if (p == NO_PARTITION)
-	      continue;
-	    e = PHI_ARG_EDGE (phi, i);
-	    if (e->src != ENTRY_BLOCK_PTR)
-	      bitmap_set_bit (liveinfo->liveout[e->src->index], p);
-	  }
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  for (i = 0; i < gimple_phi_num_args (phi); i++)
+	    { 
+	      tree t = PHI_ARG_DEF (phi, i);
+	      int p;
+
+	      if (TREE_CODE (t) != SSA_NAME)
+		continue;
+
+	      p = var_to_partition (liveinfo->map, t);
+	      if (p == NO_PARTITION)
+		continue;
+	      e = gimple_phi_arg_edge (phi, i);
+	      if (e->src != ENTRY_BLOCK_PTR)
+		bitmap_set_bit (liveinfo->liveout[e->src->index], p);
+	    }
+	}
 
       /* Add each successors live on entry to this bock live on exit.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1067,7 +1084,7 @@ verify_live_on_entry (tree_live_info_p live)
 {
   unsigned i;
   tree var;
-  tree phi, stmt;
+  gimple stmt;
   basic_block bb;
   edge e;
   int num;
@@ -1091,13 +1108,13 @@ verify_live_on_entry (tree_live_info_p live)
 	  bitmap loe;
 	  var = partition_to_var (map, i);
 	  stmt = SSA_NAME_DEF_STMT (var);
-	  tmp = bb_for_stmt (stmt);
+	  tmp = gimple_bb (stmt);
 	  d = gimple_default_def (cfun, SSA_NAME_VAR (var));
 
 	  loe = live_on_entry (live, e->dest);
 	  if (loe && bitmap_bit_p (loe, i))
 	    {
-	      if (!IS_EMPTY_STMT (stmt))
+	      if (!gimple_nop_p (stmt))
 		{
 		  num++;
 		  print_generic_expr (stderr, var, TDF_SLIM);
@@ -1105,7 +1122,7 @@ verify_live_on_entry (tree_live_info_p live)
 		  if (tmp)
 		    fprintf (stderr, " in BB%d, ", tmp->index);
 		  fprintf (stderr, "by:\n");
-		  print_generic_expr (stderr, stmt, TDF_SLIM);
+		  print_gimple_stmt (stderr, stmt, 0, TDF_SLIM);
 		  fprintf (stderr, "\nIt is also live-on-entry to entry BB %d", 
 			   entry_block);
 		  fprintf (stderr, " So it appears to have multiple defs.\n");
@@ -1116,7 +1133,8 @@ verify_live_on_entry (tree_live_info_p live)
 		    {
 		      num++;
 		      print_generic_expr (stderr, var, TDF_SLIM);
-		      fprintf (stderr, " is live-on-entry to BB%d ",entry_block);
+		      fprintf (stderr, " is live-on-entry to BB%d ",
+			       entry_block);
 		      if (d)
 		        {
 			  fprintf (stderr, " but is not the default def of ");
@@ -1133,15 +1151,18 @@ verify_live_on_entry (tree_live_info_p live)
 	      {
 		/* The only way this var shouldn't be marked live on entry is 
 		   if it occurs in a PHI argument of the block.  */
-		int z, ok = 0;
-		for (phi = phi_nodes (e->dest); 
-		     phi && !ok; 
-		     phi = PHI_CHAIN (phi))
+		size_t z;
+		bool ok = false;
+		gimple_stmt_iterator gsi;
+		for (gsi = gsi_start_phis (e->dest);
+		     !gsi_end_p (gsi) && !ok;
+		     gsi_next (&gsi))
 		  {
-		    for (z = 0; z < PHI_NUM_ARGS (phi); z++)
-		      if (var == PHI_ARG_DEF (phi, z))
+		    gimple phi = gsi_stmt (gsi);
+		    for (z = 0; z < gimple_phi_num_args (phi); z++)
+		      if (var == gimple_phi_arg_def (phi, z))
 			{
-			  ok = 1;
+			  ok = true;
 			  break;
 			}
 		  }

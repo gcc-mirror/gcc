@@ -1106,13 +1106,13 @@ ada/trans.o : ada/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(EXPR_H) $(FLAGS_H) $(FUNCTION_H) ada/ada.h except.h \
    ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h \
    ada/einfo.h ada/namet.h ada/snames.h ada/stringt.h ada/urealp.h ada/fe.h \
-   $(ADA_TREE_H) ada/gigi.h gt-ada-trans.h
+   $(ADA_TREE_H) ada/gigi.h gt-ada-trans.h tree-iterator.h
 
 ada/utils.o : ada/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FLAGS_H) $(EXPR_H) convert.h defaults.h langhooks.h \
    ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h \
    ada/einfo.h ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) \
-   ada/gigi.h gt-ada-utils.h gtype-ada.h $(TARGET_H)
+   ada/gigi.h gt-ada-utils.h gtype-ada.h $(TARGET_H) tree-iterator.h
 
 ada/utils2.o : ada/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FLAGS_H) ada/ada.h ada/types.h ada/atree.h ada/nlists.h \

@@ -37,15 +37,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 struct field_access_site
 {
   /* Statement in which the access site occurs.  */
-  tree stmt;             /* D.2169_25 = D.2168_24->b;  */
+  gimple stmt;           /* D.2169_25 = D.2168_24->b;  */
   tree comp_ref;         /* D.2168_24->b  */
   tree field_decl;       /* b */
   tree ref;              /* D.2168_24  */
   tree num;              /* i.6_20  */
   tree offset;           /* D2167_22  */
   tree base;             /* p.5_23  */
-  tree ref_def_stmt;     /* D.2168_24 = D.2167_22 + p.5_23;  */
-  tree cast_stmt;        /* D.2167_22 = (struct str_t *) D.2166_21;
+  gimple ref_def_stmt;   /* D.2168_24 = D.2167_22 + p.5_23;  */
+  gimple cast_stmt;      /* D.2167_22 = (struct str_t *) D.2166_21;
                             This statement is not always present.  */
 };
 
@@ -53,7 +53,7 @@ struct field_access_site
 struct access_site
 {
   /* A statement in which the access site occurs.  */
-  tree stmt;
+  gimple stmt;
   /* A list of structure variables in the access site.  */
   VEC (tree, heap) *vars;
 };

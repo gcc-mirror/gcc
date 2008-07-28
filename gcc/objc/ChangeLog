@@ -1,3 +1,19 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	2008-07-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Make-lang.in (objc-lang.o): Depend on GIMPLE_H.
+	(objc-act.o): Rename TREE_GIMPLE_H to GIMPLE_H.
+	* objc-act.h: Include gimple.h instead of tree-gimple.h.
+	* ipa-reference.c: Same.
+
+	2007-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (objc_gimplify_expr): Change pre and post to sequences.
+	* objc-act.h (objc_gimplify_expr): Change prototype accordingly.
+
 2008-07-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* objc-act.c: Fix comment typos.

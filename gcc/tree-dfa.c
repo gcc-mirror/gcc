@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "diagnostic.h"
 #include "tree-dump.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
@@ -52,13 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Counters used to display DFA and SSA statistics.  */
 struct dfa_stats_d
 {
-  long num_stmt_anns;
   long num_var_anns;
   long num_defs;
   long num_uses;
   long num_phis;
   long num_phi_args;
-  int max_num_phi_args;
+  size_t max_num_phi_args;
   long num_vdefs;
   long num_vuses;
 };
@@ -66,7 +65,6 @@ struct dfa_stats_d
 
 /* Local functions.  */
 static void collect_dfa_stats (struct dfa_stats_d *);
-static tree collect_dfa_stats_r (tree *, int *, void *);
 static tree find_vars_r (tree *, int *, void *);
 
 
@@ -85,27 +83,28 @@ static unsigned int
 find_referenced_vars (void)
 {
   basic_block bb;
-  block_stmt_iterator si;
-  tree phi;
+  gimple_stmt_iterator si;
 
   FOR_EACH_BB (bb)
     {
-      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  tree *stmt_p = bsi_stmt_ptr (si);
-	  walk_tree (stmt_p, find_vars_r, NULL, NULL);
+	  size_t i;
+	  gimple stmt = gsi_stmt (si);
+	  for (i = 0; i < gimple_num_ops (stmt); i++)
+	    walk_tree (gimple_op_ptr (stmt, i), find_vars_r, NULL, NULL);
 	}
 
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	  int len = PHI_NUM_ARGS (phi);
-	  int i;
+	  gimple phi = gsi_stmt (si);
+	  size_t i, len = gimple_phi_num_args (phi);
 
-	  walk_tree (&phi, find_vars_r, NULL, NULL);
+	  walk_tree (gimple_phi_result_ptr (phi), find_vars_r, NULL, NULL);
 
 	  for (i = 0; i < len; i++)
 	    {
-	      tree arg = PHI_ARG_DEF (phi, i);
+	      tree arg = gimple_phi_arg_def (phi, i);
 	      walk_tree (&arg, find_vars_r, NULL, NULL);
 	    }
 	}
@@ -176,29 +175,6 @@ create_function_ann (tree t)
   return ann;
 }
 
-/* Create a new annotation for a statement node T.  */
-
-stmt_ann_t
-create_stmt_ann (tree t)
-{
-  stmt_ann_t ann;
-
-  gcc_assert (is_gimple_stmt (t));
-  gcc_assert (!t->base.ann || t->base.ann->common.type == STMT_ANN);
-
-  ann = GGC_CNEW (struct stmt_ann_d);
-
-  ann->common.type = STMT_ANN;
-
-  /* Since we just created the annotation, mark the statement modified.  */
-  ann->modified = true;
-
-  ann->uid = inc_gimple_stmt_max_uid (cfun);
-  t->base.ann = (tree_ann_t) ann;
-
-  return ann;
-}
-
 /* Renumber all of the gimple stmt uids.  */
 
 void 
@@ -209,17 +185,11 @@ renumber_gimple_stmt_uids (void)
   set_gimple_stmt_max_uid (cfun, 0);
   FOR_ALL_BB (bb)
     {
-      block_stmt_iterator bsi;
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      gimple_stmt_iterator bsi;
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  tree stmt = bsi_stmt (bsi);
-	  /* If the stmt has an annotation, then overwrite it, if not,
-	     the process of getting it will set the number
-	     properly.  */
-	  if (has_stmt_ann (stmt))
-	    set_gimple_stmt_uid (stmt, inc_gimple_stmt_max_uid (cfun));
-	  else
-	    get_stmt_ann (stmt);
+	  gimple stmt = gsi_stmt (bsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	}
     }
 }
@@ -237,6 +207,7 @@ create_tree_common_ann (tree t)
   ann = GGC_CNEW (struct tree_ann_common_d);
 
   ann->type = TREE_ANN_COMMON;
+  ann->rn = -1;
   t->base.ann = (tree_ann_t) ann;
 
   return ann;
@@ -448,11 +419,6 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "Referenced variables", (unsigned long)num_referenced_vars,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_stmt_anns * sizeof (struct stmt_ann_d);
-  total += size;
-  fprintf (file, fmt_str_1, "Statements annotated", dfa_stats.num_stmt_anns,
-	   SCALE (size), LABEL (size));
-
   size = dfa_stats.num_var_anns * sizeof (struct var_ann_d);
   total += size;
   fprintf (file, fmt_str_1, "Variables annotated", dfa_stats.num_var_anns,
@@ -478,7 +444,7 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "VDEF operands", dfa_stats.num_vdefs,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_phis * sizeof (struct tree_phi_node);
+  size = dfa_stats.num_phis * sizeof (struct gimple_statement_phi);
   total += size;
   fprintf (file, fmt_str_1, "PHI nodes", dfa_stats.num_phis,
 	   SCALE (size), LABEL (size));
@@ -495,9 +461,9 @@ dump_dfa_stats (FILE *file)
   fprintf (file, "\n");
 
   if (dfa_stats.num_phis)
-    fprintf (file, "Average number of arguments per PHI node: %.1f (max: %d)\n",
+    fprintf (file, "Average number of arguments per PHI node: %.1f (max: %ld)\n",
 	     (float) dfa_stats.num_phi_args / (float) dfa_stats.num_phis,
-	     dfa_stats.max_num_phi_args);
+	     (long) dfa_stats.max_num_phi_args);
 
   fprintf (file, "\n");
 }
@@ -516,75 +482,44 @@ debug_dfa_stats (void)
    DFA_STATS_P.  */
 
 static void
-collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
+collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
 {
-  struct pointer_set_t *pset;
   basic_block bb;
-  block_stmt_iterator i;
+  referenced_var_iterator vi;
+  tree var;
 
   gcc_assert (dfa_stats_p);
 
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
-  /* Walk all the trees in the function counting references.  Start at
-     basic block NUM_FIXED_BLOCKS, but don't stop at block boundaries.  */
-  pset = pointer_set_create ();
+  /* Count all the variable annotations.  */
+  FOR_EACH_REFERENCED_VAR (var, vi)
+    if (var_ann (var))
+      dfa_stats_p->num_var_anns++;
 
-  for (i = bsi_start (BASIC_BLOCK (NUM_FIXED_BLOCKS));
-       !bsi_end_p (i); bsi_next (&i))
-    walk_tree (bsi_stmt_ptr (i), collect_dfa_stats_r, (void *) dfa_stats_p,
-	       pset);
-
-  pointer_set_destroy (pset);
-
+  /* Walk all the statements in the function counting references.  */
   FOR_EACH_BB (bb)
     {
-      tree phi;
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      gimple_stmt_iterator si;
+
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
+	  gimple phi = gsi_stmt (si);
 	  dfa_stats_p->num_phis++;
-	  dfa_stats_p->num_phi_args += PHI_NUM_ARGS (phi);
-	  if (PHI_NUM_ARGS (phi) > dfa_stats_p->max_num_phi_args)
-	    dfa_stats_p->max_num_phi_args = PHI_NUM_ARGS (phi);
+	  dfa_stats_p->num_phi_args += gimple_phi_num_args (phi);
+	  if (gimple_phi_num_args (phi) > dfa_stats_p->max_num_phi_args)
+	    dfa_stats_p->max_num_phi_args = gimple_phi_num_args (phi);
 	}
-    }
-}
 
-
-/* Callback for walk_tree to collect DFA statistics for a tree and its
-   children.  */
-
-static tree
-collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		     void *data)
-{
-  tree t = *tp;
-  struct dfa_stats_d *dfa_stats_p = (struct dfa_stats_d *)data;
-
-  if (t->base.ann)
-    {
-      switch (ann_type (t->base.ann))
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
-	case STMT_ANN:
-	  {
-	    dfa_stats_p->num_stmt_anns++;
-	    dfa_stats_p->num_defs += NUM_SSA_OPERANDS (t, SSA_OP_DEF);
-	    dfa_stats_p->num_uses += NUM_SSA_OPERANDS (t, SSA_OP_USE);
-	    dfa_stats_p->num_vdefs += NUM_SSA_OPERANDS (t, SSA_OP_VDEF);
-	    dfa_stats_p->num_vuses += NUM_SSA_OPERANDS (t, SSA_OP_VUSE);
-	    break;
-	  }
-
-	case VAR_ANN:
-	  dfa_stats_p->num_var_anns++;
-	  break;
-
-	default:
-	  break;
+	  gimple stmt = gsi_stmt (si);
+	  dfa_stats_p->num_defs += NUM_SSA_OPERANDS (stmt, SSA_OP_DEF);
+	  dfa_stats_p->num_uses += NUM_SSA_OPERANDS (stmt, SSA_OP_USE);
+	  dfa_stats_p->num_vdefs += NUM_SSA_OPERANDS (stmt, SSA_OP_VDEF);
+	  dfa_stats_p->num_vuses += NUM_SSA_OPERANDS (stmt, SSA_OP_VUSE);
 	}
     }
-
-  return NULL;
 }
 
 
@@ -800,7 +735,7 @@ get_virtual_var (tree var)
    combination push_stmt_changes/pop_stmt_changes.  */
 
 void
-mark_symbols_for_renaming (tree stmt)
+mark_symbols_for_renaming (gimple stmt)
 {
   tree op;
   ssa_op_iter iter;
@@ -814,8 +749,9 @@ mark_symbols_for_renaming (tree stmt)
 }
 
 
-/* Find all variables within the gimplified statement that were not previously
-   visible to the function and add them to the referenced variables list.  */
+/* Find all variables within the gimplified statement that were not
+   previously visible to the function and add them to the referenced
+   variables list.  */
 
 static tree
 find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
@@ -835,10 +771,13 @@ find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
   return NULL;
 }
 
+
+/* Find any new referenced variables in STMT.  */
+
 void
-find_new_referenced_vars (tree *stmt_p)
+find_new_referenced_vars (gimple stmt)
 {
-  walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
+  walk_gimple_op (stmt, find_new_referenced_vars_1, NULL);
 }
 
 
@@ -1013,7 +952,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
    SSA_NAME_OCCURS_IN_ABNORMAL_PHI set, otherwise false.  */
 
 bool
-stmt_references_abnormal_ssa_name (tree stmt)
+stmt_references_abnormal_ssa_name (gimple stmt)
 {
   ssa_op_iter oi;
   use_operand_p use_p;
@@ -1163,25 +1102,25 @@ refs_may_alias_p (tree ref1, tree ref2)
    a PHI node as well.  Note that if all VUSEs are default definitions
    this function will return an empty statement.  */
 
-tree
-get_single_def_stmt (tree stmt)
+gimple
+get_single_def_stmt (gimple stmt)
 {
-  tree def_stmt = NULL_TREE;
+  gimple def_stmt = NULL;
   tree use;
   ssa_op_iter iter;
 
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_VIRTUAL_USES)
     {
-      tree tmp = SSA_NAME_DEF_STMT (use);
+      gimple tmp = SSA_NAME_DEF_STMT (use);
 
       /* ???  This is too simplistic for multiple virtual operands
 	 reaching different PHI nodes of the same basic blocks or for
 	 reaching all default definitions.  */
       if (def_stmt
 	  && def_stmt != tmp
-	  && !(IS_EMPTY_STMT (def_stmt)
-	       && IS_EMPTY_STMT (tmp)))
-	return NULL_TREE;
+	  && !(gimple_nop_p (def_stmt)
+	       && gimple_nop_p (tmp)))
+	return NULL;
 
       def_stmt = tmp;
     }
@@ -1195,25 +1134,25 @@ get_single_def_stmt (tree stmt)
    from a non-backedge.  Returns NULL_TREE if such statement within
    the above conditions cannot be found.  */
 
-tree
-get_single_def_stmt_from_phi (tree ref, tree phi)
+gimple
+get_single_def_stmt_from_phi (tree ref, gimple phi)
 {
   tree def_arg = NULL_TREE;
-  int i;
+  unsigned i;
 
   /* Find the single PHI argument that is not flowing in from a
      back edge and verify that the loop-carried definitions do
      not alias the reference we look for.  */
-  for (i = 0; i < PHI_NUM_ARGS (phi); ++i)
+  for (i = 0; i < gimple_phi_num_args (phi); ++i)
     {
       tree arg = PHI_ARG_DEF (phi, i);
-      tree def_stmt;
+      gimple def_stmt;
 
-      if (!(PHI_ARG_EDGE (phi, i)->flags & EDGE_DFS_BACK))
+      if (!(gimple_phi_arg_edge (phi, i)->flags & EDGE_DFS_BACK))
 	{
 	  /* Multiple non-back edges?  Do not try to handle this.  */
 	  if (def_arg)
-	    return NULL_TREE;
+	    return NULL;
 	  def_arg = arg;
 	  continue;
 	}
@@ -1223,14 +1162,14 @@ get_single_def_stmt_from_phi (tree ref, tree phi)
       def_stmt = SSA_NAME_DEF_STMT (arg);
       do
 	{
-	  if (TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT
-	      || refs_may_alias_p (ref, GIMPLE_STMT_OPERAND (def_stmt, 0)))
-	    return NULL_TREE;
+	  if (!is_gimple_assign (def_stmt)
+	      || refs_may_alias_p (ref, gimple_assign_lhs (def_stmt)))
+	    return NULL;
 	  /* ???  This will only work, reaching the PHI node again if
 	     there is a single virtual operand on def_stmt.  */
 	  def_stmt = get_single_def_stmt (def_stmt);
 	  if (!def_stmt)
-	    return NULL_TREE;
+	    return NULL;
 	}
       while (def_stmt != phi);
     }
@@ -1243,8 +1182,8 @@ get_single_def_stmt_from_phi (tree ref, tree phi)
    Take into account only definitions that alias REF if following
    back-edges when looking through a loop PHI node.  */
 
-tree
-get_single_def_stmt_with_phi (tree ref, tree stmt)
+gimple
+get_single_def_stmt_with_phi (tree ref, gimple stmt)
 {
   switch (NUM_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES))
     {
@@ -1253,11 +1192,11 @@ get_single_def_stmt_with_phi (tree ref, tree stmt)
 
     case 1:
       {
-	tree def_stmt = SSA_NAME_DEF_STMT (SINGLE_SSA_TREE_OPERAND
+	gimple def_stmt = SSA_NAME_DEF_STMT (SINGLE_SSA_TREE_OPERAND
 					     (stmt, SSA_OP_VIRTUAL_USES));
 	/* We can handle lookups over PHI nodes only for a single
 	   virtual operand.  */
-	if (TREE_CODE (def_stmt) == PHI_NODE)
+	if (gimple_code (def_stmt) == GIMPLE_PHI)
 	  return get_single_def_stmt_from_phi (ref, def_stmt);
 	return def_stmt;
       }

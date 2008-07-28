@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "ipa-utils.h"
 #include "c-common.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "cgraph.h"
 #include "output.h"
 #include "flags.h"
@@ -276,42 +276,47 @@ check_lhs_var (funct_state local, tree t)
    actual asm statement.  */
 
 static void
-get_asm_expr_operands (funct_state local, tree stmt)
+get_asm_expr_operands (funct_state local, gimple stmt)
 {
-  int noutputs = list_length (ASM_OUTPUTS (stmt));
+  size_t noutputs = gimple_asm_noutputs (stmt);
   const char **oconstraints
     = (const char **) alloca ((noutputs) * sizeof (const char *));
-  int i;
-  tree link;
+  size_t i;
+  tree op;
   const char *constraint;
   bool allows_mem, allows_reg, is_inout;
   
-  for (i=0, link = ASM_OUTPUTS (stmt); link; ++i, link = TREE_CHAIN (link))
+  for (i = 0; i < noutputs; i++)
     {
+      op = gimple_asm_output_op (stmt, i);
       oconstraints[i] = constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
       parse_output_constraint (&constraint, i, 0, 0,
 			       &allows_mem, &allows_reg, &is_inout);
       
-      check_lhs_var (local, TREE_VALUE (link));
+      check_lhs_var (local, TREE_VALUE (op));
     }
 
-  for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
+  for (i = 0; i < gimple_asm_ninputs (stmt); i++)
     {
+      op = gimple_asm_input_op (stmt, i);
       constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
       parse_input_constraint (&constraint, 0, 0, noutputs, 0,
 			      oconstraints, &allows_mem, &allows_reg);
       
-      check_rhs_var (local, TREE_VALUE (link));
+      check_rhs_var (local, TREE_VALUE (op));
     }
   
-  for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
-    if (simple_cst_equal(TREE_VALUE (link), memory_identifier_string) == 1) 
-      /* Abandon all hope, ye who enter here. */
-      local->pure_const_state = IPA_NEITHER;
+  for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
+    {
+      op = gimple_asm_clobber_op (stmt, i);
+      if (simple_cst_equal(TREE_VALUE (op), memory_identifier_string) == 1) 
+	/* Abandon all hope, ye who enter here. */
+	local->pure_const_state = IPA_NEITHER;
+    }
 
-  if (ASM_VOLATILE_P (stmt))
+  if (gimple_asm_volatile_p (stmt))
     local->pure_const_state = IPA_NEITHER;
 }
 
@@ -323,17 +328,20 @@ get_asm_expr_operands (funct_state local, tree stmt)
    the entire call expression.  */
 
 static void
-check_call (funct_state local, tree call_expr) 
+check_call (funct_state local, gimple call) 
 {
-  int flags = call_expr_flags (call_expr);
-  tree operand;
-  call_expr_arg_iterator iter;
-  tree callee_t = get_callee_fndecl (call_expr);
+  int flags = gimple_call_flags (call);
+  tree lhs, callee_t = gimple_call_fndecl (call);
   struct cgraph_node* callee;
   enum availability avail = AVAIL_NOT_AVAILABLE;
+  size_t i;
 
-  FOR_EACH_CALL_EXPR_ARG (operand, iter, call_expr)
-    check_rhs_var (local, operand);
+  lhs = gimple_call_lhs (call);
+  if (lhs)
+    check_lhs_var (local, lhs);
+
+  for (i = 0; i < gimple_call_num_args (call); i++)
+    check_rhs_var (local, gimple_call_arg (call, i));
   
   /* The const and pure flags are set by a variety of places in the
      compiler (including here).  If someone has already set the flags
@@ -405,11 +413,10 @@ check_call (funct_state local, tree call_expr)
    should be converted to use the operand scanner.  */
 
 static tree
-scan_function (tree *tp, 
-		      int *walk_subtrees, 
-		      void *data)
+scan_function_op (tree *tp, int *walk_subtrees, void *data)
 {
-  struct cgraph_node *fn = (struct cgraph_node *) data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  struct cgraph_node *fn = (struct cgraph_node *) wi->info;
   tree t = *tp;
   funct_state local = get_function_state (fn);
 
@@ -417,68 +424,8 @@ scan_function (tree *tp,
     {
     case VAR_DECL:
       if (DECL_INITIAL (t))
-	walk_tree (&DECL_INITIAL (t), scan_function, fn, visited_nodes);
+	walk_tree (&DECL_INITIAL (t), scan_function_op, data, visited_nodes);
       *walk_subtrees = 0;
-      break;
-
-    case GIMPLE_MODIFY_STMT:
-      {
-	/* First look on the lhs and see what variable is stored to */
-	tree lhs = GIMPLE_STMT_OPERAND (t, 0);
-	tree rhs = GIMPLE_STMT_OPERAND (t, 1);
-	check_lhs_var (local, lhs);
-
-	/* For the purposes of figuring out what the cast affects */
-
-	/* Next check the operands on the rhs to see if they are ok. */
-	switch (TREE_CODE_CLASS (TREE_CODE (rhs))) 
-	  {
-	  case tcc_binary:	    
- 	    {
- 	      tree op0 = TREE_OPERAND (rhs, 0);
- 	      tree op1 = TREE_OPERAND (rhs, 1);
- 	      check_rhs_var (local, op0);
- 	      check_rhs_var (local, op1);
-	    }
-	    break;
-	  case tcc_unary:
- 	    {
- 	      tree op0 = TREE_OPERAND (rhs, 0);
- 	      check_rhs_var (local, op0);
- 	    }
-
-	    break;
-	  case tcc_reference:
-	    check_rhs_var (local, rhs);
-	    break;
-	  case tcc_declaration:
-	    check_rhs_var (local, rhs);
-	    break;
-	  case tcc_expression:
-	    switch (TREE_CODE (rhs)) 
-	      {
-	      case ADDR_EXPR:
-		check_rhs_var (local, rhs);
-		break;
-	      default:
-		break;
-	      }
-	    break;
-	  case tcc_vl_exp:
-	    switch (TREE_CODE (rhs)) 
-	      {
-	      case CALL_EXPR:
-		check_call (local, rhs);
-		break;
-	      default:
-		break;
-	      }
-	    break;
-	  default:
-	    break;
-	  }
-	*walk_subtrees = 0;
-      }
       break;
 
     case ADDR_EXPR:
@@ -488,8 +435,75 @@ scan_function (tree *tp,
       *walk_subtrees = 0;
       break;
 
-    case LABEL_EXPR:
-      if (DECL_NONLOCAL (TREE_OPERAND (t, 0)))
+    default:
+      break;
+    }
+  return NULL;
+}
+
+static tree
+scan_function_stmt (gimple_stmt_iterator *gsi_p,
+		    bool *handled_ops_p,
+		    struct walk_stmt_info *wi)
+{
+  struct cgraph_node *fn = (struct cgraph_node *) wi->info;
+  gimple stmt = gsi_stmt (*gsi_p);
+  funct_state local = get_function_state (fn);
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      {
+	/* First look on the lhs and see what variable is stored to */
+	tree lhs = gimple_assign_lhs (stmt);
+	tree rhs1 = gimple_assign_rhs1 (stmt);
+	tree rhs2 = gimple_assign_rhs2 (stmt);
+	enum tree_code code = gimple_assign_rhs_code (stmt);
+
+	check_lhs_var (local, lhs);
+
+	/* For the purposes of figuring out what the cast affects */
+
+	/* Next check the operands on the rhs to see if they are ok. */
+	switch (TREE_CODE_CLASS (code))
+	  {
+	  case tcc_binary:	    
+ 	    {
+ 	      check_rhs_var (local, rhs1);
+ 	      check_rhs_var (local, rhs2);
+	    }
+	    break;
+	  case tcc_unary:
+ 	    {
+ 	      check_rhs_var (local, rhs1);
+ 	    }
+
+	    break;
+	  case tcc_reference:
+	    check_rhs_var (local, rhs1);
+	    break;
+	  case tcc_declaration:
+	    check_rhs_var (local, rhs1);
+	    break;
+	  case tcc_expression:
+	    switch (code)
+	      {
+	      case ADDR_EXPR:
+		check_rhs_var (local, rhs1);
+		break;
+	      default:
+		break;
+	      }
+	    break;
+	  default:
+	    break;
+	  }
+	*handled_ops_p = true;
+      }
+      break;
+
+    case GIMPLE_LABEL:
+      if (DECL_NONLOCAL (gimple_label_label (stmt)))
 	/* Target of long jump. */
 	{
 	  local->pure_const_state = IPA_NEITHER;
@@ -497,14 +511,14 @@ scan_function (tree *tp,
 	}
       break;
 
-    case CALL_EXPR: 
-      check_call (local, t);
-      *walk_subtrees = 0;
+    case GIMPLE_CALL:
+      check_call (local, stmt);
+      *handled_ops_p = true;
       break;
       
-    case ASM_EXPR:
-      get_asm_expr_operands (local, t);
-      *walk_subtrees = 0;
+    case GIMPLE_ASM:
+      get_asm_expr_operands (local, stmt);
+      *handled_ops_p = true;
       break;
       
     default:
@@ -567,11 +581,18 @@ analyze_function (struct cgraph_node *fn)
       
       FOR_EACH_BB_FN (this_block, this_cfun)
 	{
-	  block_stmt_iterator bsi;
-	  for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
+	  gimple_stmt_iterator gsi;
+	  struct walk_stmt_info wi;
+
+	  memset (&wi, 0, sizeof(wi));
+	  for (gsi = gsi_start_bb (this_block);
+	       !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      walk_tree (bsi_stmt_ptr (bsi), scan_function, 
-			 fn, visited_nodes);
+	      wi.info = fn;
+	      wi.pset = visited_nodes;
+	      walk_gimple_stmt (&gsi, scan_function_stmt, scan_function_op, 
+				&wi);
 	      if (l->pure_const_state == IPA_NEITHER) 
 		goto end;
 	    }

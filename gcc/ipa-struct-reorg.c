@@ -28,7 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "rtl.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-inline.h"
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
@@ -55,6 +55,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ipa-type-escape.h"
 #include "tree-dump.h"
 #include "c-common.h"
+#include "gimple.h"
 
 /* This optimization implements structure peeling.
 
@@ -168,7 +169,7 @@ typedef const struct new_var_data *const_new_var;
 /* This structure represents allocation site of the structure.  */
 typedef struct alloc_site
 {
-  tree stmt;
+  gimple stmt;
   d_str str;
 } alloc_site_t;
 
@@ -235,7 +236,7 @@ get_type_of_var (tree var)
 /* Set of actions we do for each newly generated STMT.  */ 
 
 static inline void
-finalize_stmt (tree stmt)
+finalize_stmt (gimple stmt)
 {
   update_stmt (stmt);
   mark_symbols_for_renaming (stmt);
@@ -244,9 +245,9 @@ finalize_stmt (tree stmt)
 /* This function finalizes STMT and appends it to the list STMTS.  */
 
 static inline void
-finalize_stmt_and_append (tree *stmts, tree stmt)
+finalize_stmt_and_append (gimple_seq *stmts, gimple stmt)
 {
-  append_to_statement_list (stmt, stmts);
+  gimple_seq_add_stmt (stmts, stmt);
   finalize_stmt (stmt);
 }
 
@@ -307,25 +308,24 @@ find_field_in_struct (d_str str, tree field_decl)
 static bool
 is_result_of_mult (tree arg, tree *num, tree struct_size)
 {
-  tree size_def_stmt = SSA_NAME_DEF_STMT (arg);
+  gimple size_def_stmt = SSA_NAME_DEF_STMT (arg);
 
   /* If the allocation statement was of the form
      D.2229_10 = <alloc_func> (D.2228_9);
      then size_def_stmt can be D.2228_9 = num.3_8 * 8;  */
 
-  if (size_def_stmt && TREE_CODE (size_def_stmt) == GIMPLE_MODIFY_STMT)
+  if (size_def_stmt && is_gimple_assign (size_def_stmt))
     {
-      tree lhs = GIMPLE_STMT_OPERAND (size_def_stmt, 0);
-      tree rhs = GIMPLE_STMT_OPERAND (size_def_stmt, 1);
+      tree lhs = gimple_assign_lhs (size_def_stmt);
 
       /* We expect temporary here.  */
       if (!is_gimple_reg (lhs))	
 	return false;
 
-      if (TREE_CODE (rhs) == MULT_EXPR)
+      if (gimple_assign_rhs_code (size_def_stmt) == MULT_EXPR)
 	{
-	  tree arg0 = TREE_OPERAND (rhs, 0);
-	  tree arg1 = TREE_OPERAND (rhs, 1);
+	  tree arg0 = gimple_assign_rhs1 (size_def_stmt);
+	  tree arg1 = gimple_assign_rhs2 (size_def_stmt);
 
 	  if (operand_equal_p (arg0, struct_size, OEP_ONLY_CONST))
 	    {
@@ -356,8 +356,9 @@ static bool
 decompose_indirect_ref_acc (tree str_decl, struct field_access_site *acc)
 {
   tree ref_var;
-  tree rhs, struct_size, op0, op1;
+  tree struct_size, op0, op1;
   tree before_cast;
+  enum tree_code rhs_code;
  
   ref_var = TREE_OPERAND (acc->ref, 0);
 
@@ -366,20 +367,20 @@ decompose_indirect_ref_acc (tree str_decl, struct field_access_site *acc)
 
   acc->ref_def_stmt = SSA_NAME_DEF_STMT (ref_var);
   if (!(acc->ref_def_stmt)
-      || (TREE_CODE (acc->ref_def_stmt) != GIMPLE_MODIFY_STMT))
+      || (gimple_code (acc->ref_def_stmt) != GIMPLE_ASSIGN))
     return false;
 
-  rhs = GIMPLE_STMT_OPERAND (acc->ref_def_stmt, 1);
+  rhs_code = gimple_assign_rhs_code (acc->ref_def_stmt);
 
-  if (TREE_CODE (rhs) != PLUS_EXPR
-      && TREE_CODE (rhs)!= MINUS_EXPR
-      && TREE_CODE (rhs) != POINTER_PLUS_EXPR)
+  if (rhs_code != PLUS_EXPR
+      && rhs_code != MINUS_EXPR
+      && rhs_code != POINTER_PLUS_EXPR)
     return false;
 
-  op0 = TREE_OPERAND (rhs, 0);
-  op1 = TREE_OPERAND (rhs, 1);
+  op0 = gimple_assign_rhs1 (acc->ref_def_stmt);
+  op1 = gimple_assign_rhs2 (acc->ref_def_stmt);
 
-  if (!is_array_access_through_pointer_and_index (TREE_CODE (rhs), op0, op1, 
+  if (!is_array_access_through_pointer_and_index (rhs_code, op0, op1, 
 						 &acc->base, &acc->offset, 
 						 &acc->cast_stmt))
     return false;
@@ -438,7 +439,7 @@ make_field_acc_node (void)
    if it is already in hashtable of function accesses F_ACCS.  */
 
 static struct field_access_site *
-is_in_field_accs (tree stmt, htab_t f_accs)
+is_in_field_accs (gimple stmt, htab_t f_accs)
 {
   return (struct field_access_site *) 
     htab_find_with_hash (f_accs, stmt, htab_hash_pointer (stmt));
@@ -466,7 +467,7 @@ add_field_acc_to_acc_sites (struct field_access_site *acc,
    accesses ACCS, this function creates it.  */ 
 
 static void
-add_access_to_acc_sites (tree stmt, tree var, htab_t accs)
+add_access_to_acc_sites (gimple stmt, tree var, htab_t accs)
 {
    struct access_site *acc;
 
@@ -538,23 +539,6 @@ finalize_new_vars_creation (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* This function updates statements in STMT_LIST with BB info.  */
-
-static void
-add_bb_info (basic_block bb, tree stmt_list)
-{
-  if (TREE_CODE (stmt_list) == STATEMENT_LIST)
-    {
-      tree_stmt_iterator tsi;
-      for (tsi = tsi_start (stmt_list); !tsi_end_p (tsi); tsi_next (&tsi))
-	{
-	  tree stmt = tsi_stmt (tsi);
-
-	  set_bb_for_stmt (stmt, bb);
-	}
-    }
-}
-
 /* This function looks for the variable of NEW_TYPE type, stored in VAR.
    It returns it, if found, and NULL_TREE otherwise.  */
 
@@ -610,12 +594,12 @@ find_new_var_of_type (tree orig_var, tree new_type)
    res = NUM * sizeof(TYPE) and returns it.
    res is filled into RES.  */
 
-static tree
+static gimple
 gen_size (tree num, tree type, tree *res)
 {
   tree struct_size = TYPE_SIZE_UNIT (type);
   HOST_WIDE_INT struct_size_int = TREE_INT_CST_LOW (struct_size);
-  tree new_stmt;
+  gimple new_stmt;
 
   *res = create_tmp_var (TREE_TYPE (num), NULL);
 
@@ -625,17 +609,13 @@ gen_size (tree num, tree type, tree *res)
   if (exact_log2 (struct_size_int) == -1)
     {
       tree size = build_int_cst (TREE_TYPE (num), struct_size_int);
-      new_stmt = build_gimple_modify_stmt (*res, build2 (MULT_EXPR,
-							 TREE_TYPE (num),
-							 num, size));
+      new_stmt = gimple_build_assign_with_ops (MULT_EXPR, *res, num, size);
     }
   else
     {
       tree C = build_int_cst (TREE_TYPE (num), exact_log2 (struct_size_int));
  
-      new_stmt = build_gimple_modify_stmt (*res, build2 (LSHIFT_EXPR, 
-							 TREE_TYPE (num),
-							 num, C));
+      new_stmt = gimple_build_assign_with_ops (LSHIFT_EXPR, *res, num, C);
     }
 
   finalize_stmt (new_stmt);
@@ -646,21 +626,18 @@ gen_size (tree num, tree type, tree *res)
    BEFORE_CAST to NEW_TYPE. The cast result variable is stored 
    into RES_P. ORIG_CAST_STMT is the original cast statement.  */
 
-static tree
-gen_cast_stmt (tree before_cast, tree new_type, tree orig_cast_stmt,
+static gimple
+gen_cast_stmt (tree before_cast, tree new_type, gimple orig_cast_stmt,
 	       tree *res_p)
 {
-  tree lhs, new_lhs, new_stmt;
-  gcc_assert (TREE_CODE (orig_cast_stmt) == GIMPLE_MODIFY_STMT);
-    
-  lhs = GIMPLE_STMT_OPERAND (orig_cast_stmt, 0);
+  tree lhs, new_lhs;
+  gimple new_stmt;
+
+  lhs = gimple_assign_lhs (orig_cast_stmt);
   new_lhs = find_new_var_of_type (lhs, new_type);
   gcc_assert (new_lhs);
 
-  new_stmt = build_gimple_modify_stmt (new_lhs, 
-				       build1 (NOP_EXPR, 
-					       TREE_TYPE (new_lhs),
-					       before_cast));
+  new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_lhs, before_cast, 0);
   finalize_stmt (new_stmt);
   *res_p = new_lhs;
   return new_stmt;
@@ -673,12 +650,14 @@ static edge
 make_edge_and_fix_phis_of_dest (basic_block bb, edge e)
 {
   edge new_e;
-  tree phi, arg;
+  tree arg;
+  gimple_stmt_iterator si;
 		      
   new_e = make_edge (bb, e->dest, e->flags);
 
-  for (phi = phi_nodes (new_e->dest); phi; phi = PHI_CHAIN (phi))
+  for (si = gsi_start_phis (new_e->dest); !gsi_end_p (si); gsi_next (&si))
     {
+      gimple phi = gsi_stmt (si);
       arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
       add_phi_arg (phi, arg, new_e); 
     }
@@ -686,32 +665,46 @@ make_edge_and_fix_phis_of_dest (basic_block bb, edge e)
   return new_e;
 }
 
-/* This function inserts NEW_STMTS before STMT.  */
+/* This function inserts NEW_STMT before STMT.  */
 
 static void
-insert_before_stmt (tree stmt, tree new_stmts)
+insert_before_stmt (gimple stmt, gimple new_stmt)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
 
-  if (!stmt || !new_stmts)
+  if (!stmt || !new_stmt)
     return;
 
-  bsi = bsi_for_stmt (stmt); 
-  bsi_insert_before (&bsi, new_stmts, BSI_SAME_STMT);   
+  bsi = gsi_for_stmt (stmt); 
+  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);   
 }
 
 /* Insert NEW_STMTS after STMT.  */
 
 static void
-insert_after_stmt (tree stmt, tree new_stmts)
+insert_seq_after_stmt (gimple stmt, gimple_seq new_stmts)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
 
   if (!stmt || !new_stmts)
     return;
 
-  bsi = bsi_for_stmt (stmt); 
-  bsi_insert_after (&bsi, new_stmts, BSI_SAME_STMT);   
+  bsi = gsi_for_stmt (stmt); 
+  gsi_insert_seq_after (&bsi, new_stmts, GSI_SAME_STMT);   
+}
+
+/* Insert NEW_STMT after STMT.  */
+
+static void
+insert_after_stmt (gimple stmt, gimple new_stmt)
+{
+  gimple_stmt_iterator bsi;
+
+  if (!stmt || !new_stmt)
+    return;
+
+  bsi = gsi_for_stmt (stmt); 
+  gsi_insert_after (&bsi, new_stmt, GSI_SAME_STMT);   
 }
 
 /* This function returns vector of allocation sites
@@ -730,20 +723,20 @@ get_fallocs (tree fn_decl)
    p_8 = (struct str_t *) D.2225_7;
    which is returned by this function.  */
 
-static tree
-get_final_alloc_stmt (tree alloc_stmt)
+static gimple
+get_final_alloc_stmt (gimple alloc_stmt)
 {
-  tree final_stmt;
+  gimple final_stmt;
   use_operand_p use_p;
   tree alloc_res;
 
   if (!alloc_stmt)
     return NULL;
   
-  if (TREE_CODE (alloc_stmt) != GIMPLE_MODIFY_STMT)
+  if (!is_gimple_call (alloc_stmt))
     return NULL;
 
-  alloc_res = GIMPLE_STMT_OPERAND (alloc_stmt, 0);
+  alloc_res = gimple_get_lhs (alloc_stmt);
 
   if (TREE_CODE (alloc_res) != SSA_NAME)
     return NULL;
@@ -758,7 +751,7 @@ get_final_alloc_stmt (tree alloc_stmt)
    sites of function FN_DECL. It returns false otherwise.  */
 
 static bool
-is_part_of_malloc (tree stmt, tree fn_decl)
+is_part_of_malloc (gimple stmt, tree fn_decl)
 {
   fallocs_t fallocs = get_fallocs (fn_decl);
   
@@ -767,8 +760,7 @@ is_part_of_malloc (tree stmt, tree fn_decl)
       alloc_site_t *call;
       unsigned i;
 
-      for (i = 0;
-	   VEC_iterate (alloc_site_t, fallocs->allocs, i, call); i++)
+      for (i = 0; VEC_iterate (alloc_site_t, fallocs->allocs, i, call); i++)
 	if (call->stmt == stmt
 	    || get_final_alloc_stmt (call->stmt) == stmt)
 	  return true;
@@ -780,7 +772,7 @@ is_part_of_malloc (tree stmt, tree fn_decl)
 struct find_stmt_data
 {
   bool found;
-  tree stmt;
+  gimple stmt;
 };
 
 /* This function looks for DATA->stmt among 
@@ -790,9 +782,8 @@ struct find_stmt_data
 static int
 find_in_field_accs (void **slot, void *data)
 {
-  struct field_access_site *f_acc = 
-    *(struct field_access_site **) slot;
-  tree stmt = ((struct find_stmt_data *)data)->stmt;
+  struct field_access_site *f_acc = *(struct field_access_site **) slot;
+  gimple stmt = ((struct find_stmt_data *)data)->stmt;
 
   if (f_acc->stmt == stmt
       || f_acc->ref_def_stmt == stmt
@@ -810,7 +801,7 @@ find_in_field_accs (void **slot, void *data)
    and false otherwise.  */
 
 static bool
-is_part_of_field_access (tree stmt, d_str str)
+is_part_of_field_access (gimple stmt, d_str str)
 {
   int i;
 
@@ -883,7 +874,8 @@ struct ref_pos
 static tree
 find_pos_in_stmt_1 (tree *tp, int *walk_subtrees, void * data)
 {
-  struct ref_pos * r_pos = (struct ref_pos *) data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  struct ref_pos *r_pos = (struct ref_pos *) wi->info;
   tree ref = r_pos->ref;
   tree t = *tp;
 
@@ -893,23 +885,8 @@ find_pos_in_stmt_1 (tree *tp, int *walk_subtrees, void * data)
       return t;
     }
 
-  switch (TREE_CODE (t))
-    {
-    case GIMPLE_MODIFY_STMT:
-      {
-	tree lhs = GIMPLE_STMT_OPERAND (t, 0);
-	tree rhs = GIMPLE_STMT_OPERAND (t, 1);
-	*walk_subtrees = 1;
-	walk_tree (&lhs, find_pos_in_stmt_1, data, NULL);
-	walk_tree (&rhs, find_pos_in_stmt_1, data, NULL);
-	*walk_subtrees = 0;	    
-      }
-      break;
-
-    default:
-      *walk_subtrees = 1;      
-    }
-    return NULL_TREE;
+  *walk_subtrees = 1;      
+  return NULL_TREE;
 }
 
 
@@ -917,13 +894,16 @@ find_pos_in_stmt_1 (tree *tp, int *walk_subtrees, void * data)
    It returns it, if found, and NULL otherwise.  */
 
 static tree *
-find_pos_in_stmt (tree stmt, tree ref)
+find_pos_in_stmt (gimple stmt, tree ref)
 {
   struct ref_pos r_pos;
+  struct walk_stmt_info wi;
 
   r_pos.ref = ref;
   r_pos.pos = NULL;
-  walk_tree (&stmt, find_pos_in_stmt_1, &r_pos, NULL);
+  memset (&wi, 0, sizeof (wi));
+  wi.info = &r_pos;
+  walk_gimple_op (stmt, find_pos_in_stmt_1, &wi);
 
   return r_pos.pos;
 }
@@ -1003,16 +983,15 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
   new_acc = build_comp_ref (new_ref, field_id, new_type);
   VEC_free (type_wrapper_t, heap, wrapper);  
 
-  if (TREE_CODE (acc->stmt) == GIMPLE_MODIFY_STMT)
+  if (is_gimple_assign (acc->stmt))
     {      
-      lhs = GIMPLE_STMT_OPERAND (acc->stmt, 0);
-      rhs = GIMPLE_STMT_OPERAND (acc->stmt, 1);
-      
-	
+      lhs = gimple_assign_lhs (acc->stmt);
+      rhs = gimple_assign_rhs1 (acc->stmt);
+
       if (lhs == acc->comp_ref)
-	GIMPLE_STMT_OPERAND (acc->stmt, 0) = new_acc;
+	gimple_assign_set_lhs (acc->stmt, new_acc);
       else if (rhs == acc->comp_ref)
-	GIMPLE_STMT_OPERAND (acc->stmt, 1) = new_acc;
+	gimple_assign_set_rhs1 (acc->stmt, new_acc);
       else
 	{
 	  pos = find_pos_in_stmt (acc->stmt, acc->comp_ref);
@@ -1070,18 +1049,15 @@ find_structure (tree type)
    like assignments:  p.8_7 = p; or statements with rhs of 
    tree codes PLUS_EXPR and MINUS_EXPR.  */
 
-static tree
-create_base_plus_offset (tree orig_stmt, tree new_type, 
-			 tree offset)
+static gimple
+create_base_plus_offset (gimple orig_stmt, tree new_type, tree offset)
 {
-  tree lhs, rhs;
-  tree new_lhs, new_rhs;
-  tree new_stmt;
+  tree lhs;
+  tree new_lhs;
+  gimple new_stmt;
+  tree new_op0 = NULL_TREE, new_op1 = NULL_TREE;
 
-  gcc_assert (TREE_CODE (orig_stmt) == GIMPLE_MODIFY_STMT);
-
-  lhs = GIMPLE_STMT_OPERAND (orig_stmt, 0);
-  rhs = GIMPLE_STMT_OPERAND (orig_stmt, 1);
+  lhs = gimple_assign_lhs (orig_stmt);
 
   gcc_assert (TREE_CODE (lhs) == VAR_DECL
 	      || TREE_CODE (lhs) == SSA_NAME);
@@ -1090,15 +1066,14 @@ create_base_plus_offset (tree orig_stmt, tree new_type,
   gcc_assert (new_lhs);
   finalize_var_creation (new_lhs);
 
-  switch (TREE_CODE (rhs))
+  switch (gimple_assign_rhs_code (orig_stmt))
     {
     case PLUS_EXPR:
     case MINUS_EXPR:
     case POINTER_PLUS_EXPR:
       {
-	tree op0 = TREE_OPERAND (rhs, 0);
-	tree op1 = TREE_OPERAND (rhs, 1);
-	tree new_op0 = NULL_TREE, new_op1 = NULL_TREE;
+	tree op0 = gimple_assign_rhs1 (orig_stmt);
+	tree op1 = gimple_assign_rhs2 (orig_stmt);
 	unsigned str0, str1;
 	unsigned length = VEC_length (structure, structures);
 	
@@ -1116,9 +1091,6 @@ create_base_plus_offset (tree orig_stmt, tree new_type,
 	  new_op0 = offset;
 	if (!new_op1)
 	  new_op1 = offset;
-
-	new_rhs = build2 (TREE_CODE (rhs), TREE_TYPE (new_op0), 
-			  new_op0, new_op1);
       }
       break;
 
@@ -1126,8 +1098,9 @@ create_base_plus_offset (tree orig_stmt, tree new_type,
       gcc_unreachable();
     }
   
-  new_stmt = build_gimple_modify_stmt (new_lhs, new_rhs);
-  finalize_stmt (new_stmt);	
+  new_stmt = gimple_build_assign_with_ops (gimple_assign_rhs_code (orig_stmt),
+                                           new_lhs, new_op0, new_op1);
+  finalize_stmt (new_stmt);
 
   return new_stmt;
 }
@@ -1140,9 +1113,10 @@ create_new_field_access (struct field_access_site *f_acc,
 			 struct field_entry field)
 {
   tree new_type = field.field_mapping;
-  tree new_stmt;
+  gimple new_stmt;
   tree size_res;
-  tree mult_stmt, cast_stmt;
+  gimple mult_stmt;
+  gimple cast_stmt;
   tree cast_res = NULL;
   
   if (f_acc->num)
@@ -1182,41 +1156,37 @@ create_new_field_access (struct field_access_site *f_acc,
    variable located in the condition statement at the position POS.  */
 
 static void
-create_new_stmts_for_cond_expr_1 (tree new_var, tree cond_stmt, bool pos)
+create_new_stmts_for_cond_expr_1 (tree new_var, gimple cond_stmt, unsigned pos)
 {
-  tree new_cond;
-  tree new_stmt;
+  gimple new_stmt;
   edge true_e = NULL, false_e = NULL;
   basic_block new_bb;
-  tree stmt_list;
+  gimple_stmt_iterator si;
 
-  extract_true_false_edges_from_block (bb_for_stmt (cond_stmt),
+  extract_true_false_edges_from_block (gimple_bb (cond_stmt),
 				       &true_e, &false_e);
 
-  new_cond = unshare_expr (COND_EXPR_COND (cond_stmt));
-
-  TREE_OPERAND (new_cond, pos) = new_var;
-				      
-  new_stmt = build3 (COND_EXPR, TREE_TYPE (cond_stmt),
-		     new_cond, NULL_TREE, NULL_TREE);
+  new_stmt = gimple_build_cond (gimple_cond_code (cond_stmt),
+			       pos == 0 ? new_var : gimple_cond_lhs (cond_stmt),
+			       pos == 1 ? new_var : gimple_cond_rhs (cond_stmt),
+			       NULL_TREE,
+			       NULL_TREE);
 
   finalize_stmt (new_stmt);
 
   /* Create new basic block after bb.  */
-  new_bb = create_empty_bb (bb_for_stmt (cond_stmt));
+  new_bb = create_empty_bb (gimple_bb (cond_stmt));
 
   /* Add new condition stmt to the new_bb.  */
-  stmt_list = bb_stmt_list (new_bb);
-  append_to_statement_list (new_stmt, &stmt_list);
-  add_bb_info (new_bb, stmt_list);
+  si = gsi_start_bb (new_bb);
+  gsi_insert_after (&si, new_stmt, GSI_NEW_STMT);
 
-		  
   /* Create false and true edges from new_bb.  */
   make_edge_and_fix_phis_of_dest (new_bb, true_e);
   make_edge_and_fix_phis_of_dest (new_bb, false_e);
 		  
   /* Redirect one of original edges to point to new_bb.  */
-  if (TREE_CODE (cond_stmt) == NE_EXPR)
+  if (gimple_cond_code (cond_stmt) == NE_EXPR)
     redirect_edge_succ (true_e, new_bb);
   else
     redirect_edge_succ (false_e, new_bb);
@@ -1227,23 +1197,22 @@ create_new_stmts_for_cond_expr_1 (tree new_var, tree cond_stmt, bool pos)
    recursively redirect edges to newly generated basic blocks.  */
 
 static void
-create_new_stmts_for_cond_expr (tree stmt)
+create_new_stmts_for_cond_expr (gimple stmt)
 {
-  tree cond = COND_EXPR_COND (stmt);
   tree arg0, arg1, arg;
   unsigned str0, str1;
   bool s0, s1;
   d_str str;
   tree type;
-  bool pos;
+  unsigned pos;
   int i;
   unsigned length = VEC_length (structure, structures);
 
-  gcc_assert (TREE_CODE (cond) == EQ_EXPR
-	      || TREE_CODE (cond) == NE_EXPR);
+  gcc_assert (gimple_cond_code (stmt) == EQ_EXPR
+	      || gimple_cond_code (stmt) == NE_EXPR);
 
-  arg0 = TREE_OPERAND (cond, 0);
-  arg1 = TREE_OPERAND (cond, 1);
+  arg0 = gimple_cond_lhs (stmt);
+  arg1 = gimple_cond_rhs (stmt);
 
   str0 = find_structure (strip_type (get_type_of_var (arg0)));
   str1 = find_structure (strip_type (get_type_of_var (arg1)));
@@ -1273,15 +1242,14 @@ create_new_stmts_for_cond_expr (tree stmt)
 /* Create a new general access to replace original access ACC
    for structure type NEW_TYPE.  */
 
-static tree
+static gimple
 create_general_new_stmt (struct access_site *acc, tree new_type)
 {
-  tree old_stmt = acc->stmt;
+  gimple old_stmt = acc->stmt;
   tree var;
-  tree new_stmt = unshare_expr (old_stmt);
+  gimple new_stmt = gimple_copy (old_stmt);
   unsigned i;
 
-  
   for (i = 0; VEC_iterate (tree, acc->vars, i, var); i++)
     {
       tree *pos;
@@ -1291,32 +1259,30 @@ create_general_new_stmt (struct access_site *acc, tree new_type)
       gcc_assert (new_var);
       finalize_var_creation (new_var);
 
-      if (TREE_CODE (new_stmt) == GIMPLE_MODIFY_STMT)
+      if (is_gimple_assign (new_stmt))
 	{
-      
-	  lhs = GIMPLE_STMT_OPERAND (new_stmt, 0);
-	  rhs = GIMPLE_STMT_OPERAND (new_stmt, 1);
+	  lhs = gimple_assign_lhs (new_stmt);
 	  
 	  if (TREE_CODE (lhs) == SSA_NAME)
 	    lhs = SSA_NAME_VAR (lhs);
-	  if (TREE_CODE (rhs) == SSA_NAME)
-	    rhs = SSA_NAME_VAR (rhs); 
+	  if (gimple_assign_rhs_code (new_stmt) == SSA_NAME)
+	    rhs = SSA_NAME_VAR (gimple_assign_rhs1 (new_stmt));
 
 	  /* It can happen that rhs is a constructor.
 	   Then we have to replace it to be of new_type.  */
-	  if (TREE_CODE (rhs) == CONSTRUCTOR)
+	  if (gimple_assign_rhs_code (new_stmt) == CONSTRUCTOR)
 	    {
 	      /* Dealing only with empty constructors right now.  */
 	      gcc_assert (VEC_empty (constructor_elt, 
 				     CONSTRUCTOR_ELTS (rhs)));
 	      rhs = build_constructor (new_type, 0);
-	      GIMPLE_STMT_OPERAND (new_stmt, 1) = rhs;
+	      gimple_assign_set_rhs1 (new_stmt, rhs);
 	    }
 	  
 	  if (lhs == var)
-	    GIMPLE_STMT_OPERAND (new_stmt, 0) = new_var;
+	    gimple_assign_set_lhs (new_stmt, new_var);
 	  else if (rhs == var)
-	    GIMPLE_STMT_OPERAND (new_stmt, 1) = new_var;
+	    gimple_assign_set_rhs1 (new_stmt, new_var);
 	  else
 	    {
 	      pos = find_pos_in_stmt (new_stmt, var);
@@ -1343,12 +1309,12 @@ static void
 create_new_stmts_for_general_acc (struct access_site *acc, d_str str)
 {
   tree type;
-  tree stmt = acc->stmt;
+  gimple stmt = acc->stmt;
   unsigned i;
 
   for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)
     {
-      tree new_stmt;
+      gimple new_stmt;
 
       new_stmt = create_general_new_stmt (acc, type);
       insert_after_stmt (stmt, new_stmt);
@@ -1361,10 +1327,10 @@ create_new_stmts_for_general_acc (struct access_site *acc, d_str str)
 static void
 create_new_general_access (struct access_site *acc, d_str str)
 {
-  tree stmt = acc->stmt;
-  switch (TREE_CODE (stmt))
+  gimple stmt = acc->stmt;
+  switch (gimple_code (stmt))
     {
-    case COND_EXPR:
+    case GIMPLE_COND:
       create_new_stmts_for_cond_expr (stmt);
       break;
 
@@ -1391,7 +1357,7 @@ create_new_acc (void **slot, void *data)
   basic_block bb = ((struct create_acc_data *)data)->bb;
   d_str str = ((struct create_acc_data *)data)->str;
 
-  if (bb_for_stmt (acc->stmt) == bb)
+  if (gimple_bb (acc->stmt) == bb)
     create_new_general_access (acc, str);
   return 1;
 }
@@ -1407,7 +1373,7 @@ create_new_field_acc (void **slot, void *data)
   d_str str = ((struct create_acc_data *)data)->str;
   int i = ((struct create_acc_data *)data)->field_index;
 
-  if (bb_for_stmt (f_acc->stmt) == bb)
+  if (gimple_bb (f_acc->stmt) == bb)
     create_new_field_access (f_acc, str->fields[i]);
   return 1;
 }
@@ -1462,11 +1428,11 @@ dump_field_acc (void **slot, void *data ATTRIBUTE_UNUSED)
 
   fprintf(dump_file, "\n");
   if (f_acc->stmt)
-    print_generic_stmt (dump_file, f_acc->stmt, 0);
+    print_gimple_stmt (dump_file, f_acc->stmt, 0, 0);
   if (f_acc->ref_def_stmt)
-    print_generic_stmt (dump_file, f_acc->ref_def_stmt, 0);
+    print_gimple_stmt (dump_file, f_acc->ref_def_stmt, 0, 0);
   if (f_acc->cast_stmt)
-    print_generic_stmt (dump_file, f_acc->cast_stmt, 0);
+    print_gimple_stmt (dump_file, f_acc->cast_stmt, 0, 0);
   return 1;
 }
 
@@ -1697,22 +1663,20 @@ free_field_accesses (htab_t f_accs)
    The edge origin is CONTEXT function.  */
 
 static void
-update_cgraph_with_malloc_call (tree malloc_stmt, tree context)
+update_cgraph_with_malloc_call (gimple malloc_stmt, tree context)
 {
-  tree call_expr;
   struct cgraph_node *src, *dest;
   tree malloc_fn_decl;
 
   if (!malloc_stmt)
     return;
 
-  call_expr = get_call_expr_in (malloc_stmt);
-  malloc_fn_decl = get_callee_fndecl (call_expr);
+  malloc_fn_decl = gimple_call_fndecl (malloc_stmt);
     
   src = cgraph_node (context);
   dest = cgraph_node (malloc_fn_decl);
   cgraph_create_edge (src, dest, malloc_stmt, 
-		      0, 0, bb_for_stmt (malloc_stmt)->loop_depth);
+		      0, 0, gimple_bb (malloc_stmt)->loop_depth);
 }
 
 /* This function generates set of statements required 
@@ -1720,40 +1684,39 @@ update_cgraph_with_malloc_call (tree malloc_stmt, tree context)
    The statements are stored in NEW_STMTS. The statement that contain
    call to malloc is returned. MALLOC_STMT is an original call to malloc.  */
 
-static tree
-create_new_malloc (tree malloc_stmt, tree new_type, tree *new_stmts, tree num)
+static gimple
+create_new_malloc (gimple malloc_stmt, tree new_type, gimple_seq *new_stmts,
+		   tree num)
 {
   tree new_malloc_size;
-  tree call_expr, malloc_fn_decl;
-  tree new_stmt, malloc_res;
-  tree call_stmt, final_stmt;
+  tree malloc_fn_decl;
+  gimple new_stmt;
+  tree malloc_res;
+  gimple call_stmt, final_stmt;
   tree cast_res;
 
   gcc_assert (num && malloc_stmt && new_type);
-  *new_stmts = alloc_stmt_list ();
+  *new_stmts = gimple_seq_alloc ();
 
   /* Generate argument to malloc as multiplication of num 
      and size of new_type.  */
   new_stmt = gen_size (num, new_type, &new_malloc_size);
-  append_to_statement_list (new_stmt, new_stmts);
+  gimple_seq_add_stmt (new_stmts, new_stmt);
 
   /* Generate new call for malloc.  */
   malloc_res = create_tmp_var (ptr_type_node, NULL);
+  add_referenced_var (malloc_res);
 
-  if (malloc_res)
-    add_referenced_var (malloc_res);
-
-  call_expr = get_call_expr_in (malloc_stmt);
-  malloc_fn_decl = get_callee_fndecl (call_expr);
-  call_expr = build_call_expr (malloc_fn_decl, 1, new_malloc_size); 
-  call_stmt = build_gimple_modify_stmt (malloc_res, call_expr);
+  malloc_fn_decl = gimple_call_fndecl (malloc_stmt);
+  call_stmt = gimple_build_call (malloc_fn_decl, 1, new_malloc_size); 
+  gimple_call_set_lhs (call_stmt, malloc_res);
   finalize_stmt_and_append (new_stmts, call_stmt);
 
   /* Create new cast statement. */
   final_stmt = get_final_alloc_stmt (malloc_stmt);
   gcc_assert (final_stmt);
   new_stmt = gen_cast_stmt (malloc_res, new_type, final_stmt, &cast_res);
-  append_to_statement_list (new_stmt, new_stmts);
+  gimple_seq_add_stmt (new_stmts, new_stmt);
  
   return call_stmt;      
 }
@@ -1764,11 +1727,10 @@ create_new_malloc (tree malloc_stmt, tree new_type, tree *new_stmts, tree num)
    they are filled into NEW_STMTS_P.  */
 
 static tree 
-gen_num_of_structs_in_malloc (tree stmt, tree str_decl, tree *new_stmts_p)
+gen_num_of_structs_in_malloc (gimple stmt, tree str_decl,
+			      gimple_seq *new_stmts_p)
 {
-  call_expr_arg_iterator iter;
   tree arg;
-  tree call_expr;
   tree struct_size;
   HOST_WIDE_INT struct_size_int;
 
@@ -1776,11 +1738,10 @@ gen_num_of_structs_in_malloc (tree stmt, tree str_decl, tree *new_stmts_p)
     return NULL_TREE;
 
   /* Get malloc argument.  */
-  call_expr = get_call_expr_in (stmt);
-  if (!call_expr)
+  if (!is_gimple_call (stmt))
     return NULL_TREE;
 
-  arg = first_call_expr_arg (call_expr, &iter);
+  arg = gimple_call_arg (stmt, 0);
 
   if (TREE_CODE (arg) != SSA_NAME
       && !TREE_CONSTANT (arg))
@@ -1793,7 +1754,8 @@ gen_num_of_structs_in_malloc (tree stmt, tree str_decl, tree *new_stmts_p)
 
   if (TREE_CODE (arg) == SSA_NAME)
     {
-      tree num, div_stmt;
+      tree num;
+      gimple div_stmt;
 
       if (is_result_of_mult (arg, &num, struct_size))
 	  return num;      
@@ -1804,23 +1766,16 @@ gen_num_of_structs_in_malloc (tree stmt, tree str_decl, tree *new_stmts_p)
 	add_referenced_var (num);
 
       if (exact_log2 (struct_size_int) == -1)
-	div_stmt = build_gimple_modify_stmt (num, 
-					     build2 (TRUNC_DIV_EXPR, 
-						     integer_type_node,
-						     arg, struct_size));
+	div_stmt = gimple_build_assign_with_ops (TRUNC_DIV_EXPR, num, arg,
+						 struct_size);
       else
 	{
 	  tree C =  build_int_cst (integer_type_node,
 				   exact_log2 (struct_size_int)); 
 
-	  div_stmt = 
-	    build_gimple_modify_stmt (num, build2 (RSHIFT_EXPR, 
-						   integer_type_node,
-						   arg, C)); 
+	  div_stmt = gimple_build_assign_with_ops (RSHIFT_EXPR, num, arg, C); 
 	}
-      *new_stmts_p = alloc_stmt_list ();
-      append_to_statement_list (div_stmt, 
-				new_stmts_p);
+      gimple_seq_add_stmt (new_stmts_p, div_stmt);
       finalize_stmt (div_stmt);
       return num;
     }
@@ -2049,7 +2004,7 @@ field_acc_hash (const void *x)
 static int
 field_acc_eq (const void *x, const void *y)
 {
-  return ((const struct field_access_site *)x)->stmt == (const_tree)y;
+  return ((const struct field_access_site *)x)->stmt == (const_gimple)y;
 }
 
 /* This function prints an access site, defined by SLOT.  */ 
@@ -2063,7 +2018,7 @@ dump_acc (void **slot, void *data ATTRIBUTE_UNUSED)
 
   fprintf(dump_file, "\n");
   if (acc->stmt)
-    print_generic_stmt (dump_file, acc->stmt, 0);
+    print_gimple_stmt (dump_file, acc->stmt, 0, 0);
   fprintf(dump_file, " : ");
 
   for (i = 0; VEC_iterate (tree, acc->vars, i, var); i++)
@@ -2146,35 +2101,33 @@ create_new_alloc_sites (fallocs_t m_data, tree context)
   alloc_site_t *call;
   unsigned j;
   
-  for (j = 0;
-       VEC_iterate (alloc_site_t, m_data->allocs, j, call); j++)
+  for (j = 0; VEC_iterate (alloc_site_t, m_data->allocs, j, call); j++)
     {
-      tree stmt = call->stmt;
+      gimple stmt = call->stmt;
       d_str str = call->str;
       tree num;
-      tree new_stmts = NULL_TREE;
-      tree last_stmt = get_final_alloc_stmt (stmt);
+      gimple_seq new_stmts = NULL;
+      gimple last_stmt = get_final_alloc_stmt (stmt);
       unsigned i;
       tree type;
 
       num = gen_num_of_structs_in_malloc (stmt, str->decl, &new_stmts);
       if (new_stmts)
 	{
-	  last_stmt = tsi_stmt (tsi_last (new_stmts));
-	  insert_after_stmt (last_stmt, new_stmts);
+	  last_stmt = gimple_seq_last_stmt (new_stmts);
+	  insert_seq_after_stmt (last_stmt, new_stmts);
 	}
       
       /* Generate an allocation sites for each new structure type.  */      
-      for (i = 0; 
-	   VEC_iterate (tree, str->new_types, i, type); i++)	
+      for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)	
 	{
-	  tree new_malloc_stmt = NULL_TREE;
-	  tree last_stmt_tmp = NULL_TREE;
+	  gimple new_malloc_stmt = NULL;
+	  gimple last_stmt_tmp = NULL;
 
-	  new_stmts = NULL_TREE;
+	  new_stmts = NULL;
 	  new_malloc_stmt = create_new_malloc (stmt, type, &new_stmts, num);
-	  last_stmt_tmp = tsi_stmt (tsi_last (new_stmts));
-	  insert_after_stmt (last_stmt, new_stmts);
+	  last_stmt_tmp = gimple_seq_last_stmt (new_stmts);
+	  insert_seq_after_stmt (last_stmt, new_stmts);
 	  update_cgraph_with_malloc_call (new_malloc_stmt, context);
 	  last_stmt = last_stmt_tmp;
 	}
@@ -2304,7 +2257,7 @@ acc_hash (const void *x)
 static int
 acc_eq (const void *x, const void *y)
 {
-  return ((const struct access_site *)x)->stmt == (const_tree)y;
+  return ((const struct access_site *)x)->stmt == (const_gimple)y;
 }
 
 /* Given a structure declaration STRUCT_DECL, and number of fields 
@@ -2405,25 +2358,19 @@ remove_structure (unsigned i)
    COND_STMT is a condition statement to check.  */
 
 static bool
-is_safe_cond_expr (tree cond_stmt)
+is_safe_cond_expr (gimple cond_stmt)
 {
-
   tree arg0, arg1;
   unsigned str0, str1;
   bool s0, s1;
   unsigned length = VEC_length (structure, structures);
 
-  tree cond = COND_EXPR_COND (cond_stmt);
-
-  if (TREE_CODE (cond) != EQ_EXPR
-      && TREE_CODE (cond) != NE_EXPR)
+  if (gimple_cond_code (cond_stmt) != EQ_EXPR
+      && gimple_cond_code (cond_stmt) != NE_EXPR)
     return false;
   
-  if (TREE_CODE_LENGTH (TREE_CODE (cond)) != 2)
-    return false;
-
-  arg0 = TREE_OPERAND (cond, 0);
-  arg1 = TREE_OPERAND (cond, 1);
+  arg0 = gimple_cond_lhs (cond_stmt);
+  arg1 = gimple_cond_rhs (cond_stmt);
 
   str0 = find_structure (strip_type (get_type_of_var (arg0)));
   str1 = find_structure (strip_type (get_type_of_var (arg1)));
@@ -2470,7 +2417,8 @@ exclude_from_accs (void **slot, void *data)
 static tree
 get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 {
-  tree stmt = (tree) data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  gimple stmt = (gimple) wi->info;
   tree t = *tp;
 
   if (!t)
@@ -2478,17 +2426,6 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 
   switch (TREE_CODE (t))
     {
-    case GIMPLE_MODIFY_STMT:
-      {
-	tree lhs = GIMPLE_STMT_OPERAND (t, 0);
-	tree rhs = GIMPLE_STMT_OPERAND (t, 1);
-	*walk_subtrees = 1;
-	walk_tree (&lhs, get_stmt_accesses, data, NULL);
-	walk_tree (&rhs, get_stmt_accesses, data, NULL);
-	*walk_subtrees = 0;	    
-      }
-      break;
-
     case BIT_FIELD_REF:
       {
 	tree var = TREE_OPERAND(t, 0);
@@ -2549,7 +2486,7 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 			    print_generic_expr (dump_file, type, 0);
 			    fprintf (dump_file, 
 				     " has complicate access in statement ");
-			    print_generic_stmt (dump_file, stmt, 0);
+			    print_gimple_stmt (dump_file, stmt, 0, 0);
 			  }
 			
 			remove_structure (i);
@@ -2558,7 +2495,7 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 		    else
 		      {
 			/* Increase count of field.  */
-			basic_block bb = bb_for_stmt (stmt);
+			basic_block bb = gimple_bb (stmt);
 			field->count += bb->count;
 
 			/* Add stmt to the acc_sites of field.  */
@@ -2568,18 +2505,6 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 		  }
 	      }	      
 	  }
-      }
-      break;
-
-    case MINUS_EXPR:
-    case PLUS_EXPR:
-      {
-	tree op0 = TREE_OPERAND (t, 0);
-	tree op1 = TREE_OPERAND (t, 1);
-	*walk_subtrees = 1;	    
-	walk_tree (&op0, get_stmt_accesses, data, NULL);
-	walk_tree (&op1, get_stmt_accesses, data, NULL);	
-	*walk_subtrees = 0;	    
       }
       break;
 
@@ -2615,14 +2540,6 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 	    add_access_to_acc_sites (stmt, t, str->accs);
 	  }
 	*walk_subtrees = 0;
-      }
-      break;
-
-    case CALL_EXPR:
-      {
-	/* It was checked as part of stage1 that structures 
-	   to be transformed cannot be passed as parameters of functions.  */
-	*walk_subtrees = 0;	    
       }
       break;
 
@@ -3019,7 +2936,7 @@ add_structure (tree type)
    allocates the structure represented by STR.  */
 
 static void
-add_alloc_site (tree fn_decl, tree stmt, d_str str)
+add_alloc_site (tree fn_decl, gimple stmt, d_str str)
 {
   fallocs_t fallocs = NULL;
   alloc_site_t m_call;
@@ -3049,7 +2966,7 @@ add_alloc_site (tree fn_decl, tree stmt, d_str str)
   if (dump_file)
     {
       fprintf (dump_file, "\nAdding stmt ");
-      print_generic_stmt (dump_file, stmt, 0);
+      print_gimple_stmt (dump_file, stmt, 0, 0);
       fprintf (dump_file, " to list of mallocs.");
     }
 }
@@ -3061,11 +2978,11 @@ add_alloc_site (tree fn_decl, tree stmt, d_str str)
    Otherwise I_P contains the length of the vector of structures.  */
 
 static bool
-is_alloc_of_struct (tree stmt, unsigned *i_p)
+is_alloc_of_struct (gimple stmt, unsigned *i_p)
 {
   tree lhs;
   tree type;
-  tree final_stmt;
+  gimple final_stmt;
 
   final_stmt = get_final_alloc_stmt (stmt);
 
@@ -3075,10 +2992,10 @@ is_alloc_of_struct (tree stmt, unsigned *i_p)
   /* final_stmt should be of the form:
      T.3 = (struct_type *) T.2; */
 
-  if (TREE_CODE (final_stmt) != GIMPLE_MODIFY_STMT)
+  if (gimple_code (final_stmt) != GIMPLE_ASSIGN)
     return false;
 
-  lhs = GIMPLE_STMT_OPERAND (final_stmt, 0);      
+  lhs = gimple_assign_lhs (final_stmt);
 
   type = get_type_of_var (lhs);
       
@@ -3128,13 +3045,13 @@ safe_cond_expr_check (void **slot, void *data)
 {
   struct access_site *acc = *(struct access_site **) slot;
 
-  if (TREE_CODE (acc->stmt) == COND_EXPR
+  if (gimple_code (acc->stmt) == GIMPLE_COND
       && !is_safe_cond_expr (acc->stmt))
     {
       if (dump_file)
 	{
 	  fprintf (dump_file, "\nUnsafe conditional statement ");
-	  print_generic_stmt (dump_file, acc->stmt, 0);
+	  print_gimple_stmt (dump_file, acc->stmt, 0, 0);
 	}
       *(bool *) data = false;
       return 0;
@@ -3163,21 +3080,25 @@ exclude_alloc_and_field_accs_1 (d_str str, struct cgraph_node *node)
 static void
 collect_accesses_in_bb (basic_block bb)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
+  struct walk_stmt_info wi;
 
-  for (bsi = bsi_start (bb); ! bsi_end_p (bsi); bsi_next (&bsi))
+  memset (&wi, 0, sizeof (wi));
+
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      tree stmt = bsi_stmt (bsi);
+      gimple stmt = gsi_stmt (bsi);
 
       /* In asm stmt we cannot always track the arguments,
 	 so we just give up.  */
-      if (TREE_CODE (stmt) == ASM_EXPR)
+      if (gimple_code (stmt) == GIMPLE_ASM)
 	{
 	  free_structures ();
 	  break;
 	}
 
-      walk_tree (&stmt, get_stmt_accesses, stmt, NULL);
+      wi.info = (void *) stmt;
+      walk_gimple_op (stmt, get_stmt_accesses, &wi);
     }
 }
 
@@ -3467,7 +3388,6 @@ program_redefines_malloc_p (void)
   struct cgraph_edge *c_edge;
   tree fndecl;
   tree fndecl2;
-  tree call_expr;
   
   for (c_node = cgraph_nodes; c_node; c_node = c_node->next)
     {
@@ -3475,17 +3395,16 @@ program_redefines_malloc_p (void)
 
       for (c_edge = c_node->callees; c_edge; c_edge = c_edge->next_callee)
 	{
-	  call_expr = get_call_expr_in (c_edge->call_stmt);
 	  c_node2 = c_edge->callee;
 	  fndecl2 = c_node2->decl;
-	  if (call_expr)
+	  if (is_gimple_call (c_edge->call_stmt))
 	    {
 	      const char * fname = get_name (fndecl2);
 
-	      if ((call_expr_flags (call_expr) & ECF_MALLOC) &&
-		  (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_MALLOC) &&
-		  (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_CALLOC) &&
-		  (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_ALLOCA))
+	      if ((gimple_call_flags (c_edge->call_stmt) & ECF_MALLOC)
+		  && (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_MALLOC)
+		  && (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_CALLOC)
+		  && (DECL_FUNCTION_CODE (fndecl2) != BUILT_IN_ALLOCA))
 		return true;
 
 	      /* Check that there is no __builtin_object_size,
@@ -3527,15 +3446,15 @@ collect_alloc_sites (void)
       {
 	for (cs = node->callees; cs; cs = cs->next_callee)
 	  {
-	    tree stmt = cs->call_stmt;
+	    gimple stmt = cs->call_stmt;
 
 	    if (stmt)
 	      {
-		tree call = get_call_expr_in (stmt);
 		tree decl;
 
-		if (call && (decl = get_callee_fndecl (call)) 
-		    && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+		if (is_gimple_call (stmt)
+		    && (decl = gimple_call_fndecl (stmt)) 
+		    && gimple_call_lhs (stmt))
 		  {
 		    unsigned i;
 
@@ -3555,7 +3474,7 @@ collect_alloc_sites (void)
 			      {
 				fprintf (dump_file, 
 					 "\nUnsupported allocation function ");
-				print_generic_stmt (dump_file, stmt, 0);
+				print_gimple_stmt (dump_file, stmt, 0, 0);
 			      }
 			    remove_structure (i);		
 			  }
@@ -4035,8 +3954,9 @@ reorg_structs_drive (void)
 static bool
 struct_reorg_gate (void)
 {
-  return flag_ipa_struct_reorg && flag_whole_program 
-    && (optimize > 0);
+  return flag_ipa_struct_reorg
+	 && flag_whole_program 
+	 && (optimize > 0);
 }
 
 struct simple_ipa_opt_pass pass_ipa_struct_reorg = 

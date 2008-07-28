@@ -74,7 +74,8 @@ static tree finalize_nrv_r (tree *, int *, void *);
 static tree
 finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
 {
-  struct nrv_data *dp = (struct nrv_data *)data;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  struct nrv_data *dp = (struct nrv_data *) wi->info;
 
   /* No need to walk into types.  */
   if (TYPE_P (*tp))
@@ -107,7 +108,7 @@ tree_nrv (void)
   tree result_type = TREE_TYPE (result);
   tree found = NULL;
   basic_block bb;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   struct nrv_data data;
 
   /* If this function does not return an aggregate type in memory, then
@@ -123,24 +124,29 @@ tree_nrv (void)
   /* Look through each block for assignments to the RESULT_DECL.  */
   FOR_EACH_BB (bb)
     {
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  tree stmt = bsi_stmt (bsi);
-	  tree ret_expr;
+	  gimple stmt = gsi_stmt (gsi);
+	  tree ret_val;
 
-	  if (TREE_CODE (stmt) == RETURN_EXPR)
+	  if (gimple_code (stmt) == GIMPLE_RETURN)
 	    {
 	      /* In a function with an aggregate return value, the
 		 gimplifier has changed all non-empty RETURN_EXPRs to
 		 return the RESULT_DECL.  */
-	      ret_expr = TREE_OPERAND (stmt, 0);
-	      if (ret_expr)
-		gcc_assert (ret_expr == result);
+	      ret_val = gimple_return_retval (stmt);
+	      if (ret_val)
+		gcc_assert (ret_val == result);
 	    }
-	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-		   && GIMPLE_STMT_OPERAND (stmt, 0) == result)
+	  else if (is_gimple_assign (stmt)
+		   && gimple_assign_lhs (stmt) == result)
 	    {
-	      ret_expr = GIMPLE_STMT_OPERAND (stmt, 1);
+              tree rhs;
+
+	      if (!gimple_assign_copy_p (stmt))
+		return 0;
+
+	      rhs = gimple_assign_rhs1 (stmt);
 
 	      /* Now verify that this return statement uses the same value
 		 as any previously encountered return statement.  */
@@ -149,11 +155,11 @@ tree_nrv (void)
 		  /* If we found a return statement using a different variable
 		     than previous return statements, then we can not perform
 		     NRV optimizations.  */
-		  if (found != ret_expr)
+		  if (found != rhs)
 		    return 0;
 		}
 	      else
-		found = ret_expr;
+		found = rhs;
 
 	      /* The returned value must be a local automatic variable of the
 		 same type and alignment as the function's result.  */
@@ -167,9 +173,9 @@ tree_nrv (void)
 					        TREE_TYPE (found)))
 		return 0;
 	    }
-	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	  else if (is_gimple_assign (stmt))
 	    {
-	      tree addr = get_base_address (GIMPLE_STMT_OPERAND (stmt, 0));
+	      tree addr = get_base_address (gimple_assign_lhs (stmt));
 	       /* If there's any MODIFY of component of RESULT, 
 		  then bail out.  */
 	      if (addr && addr == result)
@@ -205,18 +211,21 @@ tree_nrv (void)
   data.result = result;
   FOR_EACH_BB (bb)
     {
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  tree *tp = bsi_stmt_ptr (bsi);
+	  gimple stmt = gsi_stmt (gsi);
 	  /* If this is a copy from VAR to RESULT, remove it.  */
-	  if (TREE_CODE (*tp) == GIMPLE_MODIFY_STMT
-	      && GIMPLE_STMT_OPERAND (*tp, 0) == result
-	      && GIMPLE_STMT_OPERAND (*tp, 1) == found)
-	    bsi_remove (&bsi, true);
+	  if (gimple_assign_copy_p (stmt)
+	      && gimple_assign_lhs (stmt) == result
+	      && gimple_assign_rhs1 (stmt) == found)
+	    gsi_remove (&gsi, true);
 	  else
 	    {
-	      walk_tree (tp, finalize_nrv_r, &data, 0);
-	      bsi_next (&bsi);
+	      struct walk_stmt_info wi;
+	      memset (&wi, 0, sizeof (wi));
+	      wi.info = &data;
+	      walk_gimple_op (stmt, finalize_nrv_r, &wi);
+	      gsi_next (&gsi);
 	    }
 	}
     }
@@ -277,7 +286,7 @@ dest_safe_for_nrv_p (tree dest)
   return true;
 }
 
-/* Walk through the function looking for GIMPLE_MODIFY_STMTs with calls that
+/* Walk through the function looking for GIMPLE_ASSIGNs with calls that
    return in memory on the RHS.  For each of these, determine whether it is
    safe to pass the address of the LHS as the return slot, and mark the
    call appropriately if so.
@@ -296,21 +305,24 @@ execute_return_slot_opt (void)
 
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator i;
-      for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  tree stmt = bsi_stmt (i);
-	  tree call;
+	  gimple stmt = gsi_stmt (gsi);
+	  bool slot_opt_p;
 
-	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && (call = GIMPLE_STMT_OPERAND (stmt, 1),
-		  TREE_CODE (call) == CALL_EXPR)
-	      && !CALL_EXPR_RETURN_SLOT_OPT (call)
-	      && aggregate_value_p (call, call))
-	    /* Check if the location being assigned to is
-	       call-clobbered.  */
-	    CALL_EXPR_RETURN_SLOT_OPT (call) =
-	      dest_safe_for_nrv_p (GIMPLE_STMT_OPERAND (stmt, 0)) ? 1 : 0;
+	  if (is_gimple_call (stmt)
+	      && gimple_call_lhs (stmt)
+	      && !gimple_call_return_slot_opt_p (stmt)
+	      && aggregate_value_p (TREE_TYPE (gimple_call_lhs (stmt)),
+				    gimple_call_fndecl (stmt))
+	     )
+	    {
+	      /* Check if the location being assigned to is
+	         call-clobbered.  */
+	      slot_opt_p = dest_safe_for_nrv_p (gimple_call_lhs (stmt));
+	      gimple_call_set_return_slot_opt (stmt, slot_opt_p);
+	    }
 	}
     }
   return 0;

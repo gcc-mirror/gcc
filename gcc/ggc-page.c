@@ -172,7 +172,6 @@ along with GCC; see the file COPYING3.  If not see
    thing you need to do to add a new special allocation size.  */
 
 static const size_t extra_order_size_table[] = {
-  sizeof (struct stmt_ann_d),
   sizeof (struct var_ann_d),
   sizeof (struct tree_decl_non_common),
   sizeof (struct tree_field_decl),
@@ -184,9 +183,6 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct basic_block_def),
   sizeof (bitmap_element),
   sizeof (bitmap_head),
-  /* PHI nodes with one to three arguments are already covered by the
-     above sizes.  */
-  sizeof (struct tree_phi_node) + sizeof (struct phi_arg_d) * 3,
   TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* MEM, PLUS, etc.  */
   RTL_SIZE (9),			/* INSN */

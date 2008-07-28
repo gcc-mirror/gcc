@@ -1,5 +1,6 @@
 /* Callgraph construction.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -28,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "cgraph.h"
 #include "intl.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-pass.h"
 
 /* Walk tree and record all calls and references to functions/variables.
@@ -58,18 +59,6 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	cgraph_mark_needed_node (cgraph_node (decl));
-      break;
-
-    case OMP_PARALLEL:
-      if (OMP_PARALLEL_FN (*tp))
-	cgraph_mark_needed_node (cgraph_node (OMP_PARALLEL_FN (*tp)));
-      break;
-
-    case OMP_TASK:
-      if (OMP_TASK_FN (*tp))
-	cgraph_mark_needed_node (cgraph_node (OMP_TASK_FN (*tp)));
-      if (OMP_TASK_COPYFN (*tp))
-	cgraph_mark_needed_node (cgraph_node (OMP_TASK_COPYFN (*tp)));
       break;
 
     default:
@@ -107,7 +96,7 @@ initialize_inline_failed (struct cgraph_node *node)
 			   "considered for inlining");
       else if (!node->local.inlinable)
 	e->inline_failed = N_("function not inlinable");
-      else if (CALL_STMT_CANNOT_INLINE_P (e->call_stmt))
+      else if (gimple_call_cannot_inline_p (e->call_stmt))
 	e->inline_failed = N_("mismatched arguments");
       else
 	e->inline_failed = N_("function not considered for inlining");
@@ -142,34 +131,54 @@ build_cgraph_edges (void)
   basic_block bb;
   struct cgraph_node *node = cgraph_node (current_function_decl);
   struct pointer_set_t *visited_nodes = pointer_set_create ();
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   tree step;
 
   /* Create the callgraph edges and record the nodes referenced by the function.
      body.  */
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	tree stmt = bsi_stmt (bsi);
-	tree call = get_call_expr_in (stmt);
+	gimple stmt = gsi_stmt (gsi);
 	tree decl;
 
-	if (call && (decl = get_callee_fndecl (call)))
+	if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
 	  {
-	    int i;
-	    int n = call_expr_nargs (call);
+	    size_t i;
+	    size_t n = gimple_call_num_args (stmt);
 	    cgraph_create_edge (node, cgraph_node (decl), stmt,
 				bb->count, compute_call_stmt_bb_frequency (bb),
 				bb->loop_depth);
 	    for (i = 0; i < n; i++)
-	      walk_tree (&CALL_EXPR_ARG (call, i),
-			 record_reference, node, visited_nodes);
-	    if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-	      walk_tree (&GIMPLE_STMT_OPERAND (stmt, 0),
-			 record_reference, node, visited_nodes);
+	      walk_tree (gimple_call_arg_ptr (stmt, i), record_reference,
+			 node, visited_nodes);
+	    if (gimple_call_lhs (stmt))
+	      walk_tree (gimple_call_lhs_ptr (stmt), record_reference, node,
+		         visited_nodes);
 	  }
 	else
-	  walk_tree (bsi_stmt_ptr (bsi), record_reference, node, visited_nodes);
+	  {
+	    struct walk_stmt_info wi;
+	    memset (&wi, 0, sizeof (wi));
+	    wi.info = node;
+	    wi.pset = visited_nodes;
+	    walk_gimple_op (stmt, record_reference, &wi);
+	    if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
+		&& gimple_omp_parallel_child_fn (stmt))
+	      {
+		tree fn = gimple_omp_parallel_child_fn (stmt);
+		cgraph_mark_needed_node (cgraph_node (fn));
+	      }
+	    if (gimple_code (stmt) == GIMPLE_OMP_TASK)
+	      {
+		tree fn = gimple_omp_task_child_fn (stmt);
+		if (fn)
+		  cgraph_mark_needed_node (cgraph_node (fn));
+		fn = gimple_omp_task_copy_fn (stmt);
+		if (fn)
+		  cgraph_mark_needed_node (cgraph_node (fn));
+	      }
+	  }
       }
 
   /* Look for initializers of constant variables and private statics.  */
@@ -228,23 +237,23 @@ rebuild_cgraph_edges (void)
 {
   basic_block bb;
   struct cgraph_node *node = cgraph_node (current_function_decl);
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
 
   cgraph_node_remove_callees (node);
 
   node->count = ENTRY_BLOCK_PTR->count;
 
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	tree stmt = bsi_stmt (bsi);
-	tree call = get_call_expr_in (stmt);
+	gimple stmt = gsi_stmt (gsi);
 	tree decl;
 
-	if (call && (decl = get_callee_fndecl (call)))
+	if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
 	  cgraph_create_edge (node, cgraph_node (decl), stmt,
 			      bb->count, compute_call_stmt_bb_frequency (bb),
 			      bb->loop_depth);
+
       }
   initialize_inline_failed (node);
   gcc_assert (!node->global.inlined_to);

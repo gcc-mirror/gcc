@@ -9,7 +9,7 @@ void foo()
     {
       #pragma omp sections
       {
-	continue;		// { dg-error "invalid exit" }
+	continue;		// { dg-error "invalid branch" }
       }
     }
 
@@ -18,12 +18,12 @@ void foo()
     #pragma omp section
       { bad1: ; }
     #pragma omp section
-      goto bad1;		// { dg-error "invalid exit" }
+      goto bad1;		// { dg-error "invalid branch" }
     }
 
   #pragma omp sections
     {
-      goto bad2;		// { dg-error "invalid exit" }
+      goto bad2;		// { dg-error "invalid branch" }
     }
   bad2:;
 

@@ -1,4 +1,4 @@
-/* Tree lowering pass.  Lowers GIMPLE into unstructured form.
+/* GIMPLE lowering pass.  Converts High GIMPLE into Low GIMPLE.
 
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "varray.h"
-#include "tree-gimple.h"
+#include "gimple.h"
+#include "tree-iterator.h"
 #include "tree-inline.h"
 #include "diagnostic.h"
 #include "langhooks.h"
@@ -40,76 +41,123 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree-pass.h"
 
+/* The differences between High GIMPLE and Low GIMPLE are the
+   following:
+
+   1- Lexical scopes are removed (i.e., GIMPLE_BIND disappears).
+
+   2- GIMPLE_TRY and GIMPLE_CATCH are converted to abnormal control
+      flow and exception regions are built as an on-the-side region
+      hierarchy (See tree-eh.c:lower_eh_constructs).
+
+   3- Multiple identical return statements are grouped into a single
+      return and gotos to the unique return site.  */
+
+/* Match a return statement with a label.  During lowering, we identify
+   identical return statements and replace duplicates with a jump to
+   the corresponding label.  */
+struct return_statements_t
+{
+  tree label;
+  gimple stmt;
+};
+typedef struct return_statements_t return_statements_t;
+
+DEF_VEC_O(return_statements_t);
+DEF_VEC_ALLOC_O(return_statements_t,heap);
+
 struct lower_data
 {
   /* Block the current statement belongs to.  */
   tree block;
 
-  /* A TREE_LIST of label and return statements to be moved to the end
+  /* A vector of label and return statements to be moved to the end
      of the function.  */
-  tree return_statements;
+  VEC(return_statements_t,heap) *return_statements;
 
   /* True if the function calls __builtin_setjmp.  */
   bool calls_builtin_setjmp;
 };
 
-static void lower_stmt (tree_stmt_iterator *, struct lower_data *);
-static void lower_bind_expr (tree_stmt_iterator *, struct lower_data *);
-static void lower_cond_expr (tree_stmt_iterator *, struct lower_data *);
-static void lower_return_expr (tree_stmt_iterator *, struct lower_data *);
-static void lower_builtin_setjmp (tree_stmt_iterator *);
+static void lower_stmt (gimple_stmt_iterator *, struct lower_data *);
+static void lower_gimple_bind (gimple_stmt_iterator *, struct lower_data *);
+static void lower_gimple_return (gimple_stmt_iterator *, struct lower_data *);
+static void lower_builtin_setjmp (gimple_stmt_iterator *);
 
-/* Lower the body of current_function_decl.  */
+
+/* Lower the body of current_function_decl from High GIMPLE into Low
+   GIMPLE.  */
 
 static unsigned int
 lower_function_body (void)
 {
   struct lower_data data;
-  tree *body_p = &DECL_SAVED_TREE (current_function_decl);
-  tree bind = *body_p;
-  tree_stmt_iterator i;
-  tree t, x;
+  gimple_seq body = gimple_body (current_function_decl);
+  gimple_seq lowered_body;
+  gimple_stmt_iterator i;
+  gimple bind;
+  tree t;
+  gimple x;
 
-  gcc_assert (TREE_CODE (bind) == BIND_EXPR);
+  /* The gimplifier should've left a body of exactly one statement,
+     namely a GIMPLE_BIND.  */
+  gcc_assert (gimple_seq_first (body) == gimple_seq_last (body)
+	      && gimple_code (gimple_seq_first_stmt (body)) == GIMPLE_BIND);
 
   memset (&data, 0, sizeof (data));
   data.block = DECL_INITIAL (current_function_decl);
   BLOCK_SUBBLOCKS (data.block) = NULL_TREE;
   BLOCK_CHAIN (data.block) = NULL_TREE;
   TREE_ASM_WRITTEN (data.block) = 1;
+  data.return_statements = VEC_alloc (return_statements_t, heap, 8);
 
-  *body_p = alloc_stmt_list ();
-  i = tsi_start (*body_p);
-  tsi_link_after (&i, bind, TSI_NEW_STMT);
-  lower_bind_expr (&i, &data);
+  bind = gimple_seq_first_stmt (body);
+  lowered_body = NULL;
+  gimple_seq_add_stmt (&lowered_body, bind);
+  i = gsi_start (lowered_body);
+  lower_gimple_bind (&i, &data);
 
-  i = tsi_last (*body_p);
+  /* Once the old body has been lowered, replace it with the new
+     lowered sequence.  */
+  gimple_set_body (current_function_decl, lowered_body);
+
+  i = gsi_last (lowered_body);
 
   /* If the function falls off the end, we need a null return statement.
-     If we've already got one in the return_statements list, we don't
+     If we've already got one in the return_statements vector, we don't
      need to do anything special.  Otherwise build one by hand.  */
-  if (block_may_fallthru (*body_p)
-      && (data.return_statements == NULL
-          || TREE_OPERAND (TREE_VALUE (data.return_statements), 0) != NULL))
+  if (gimple_seq_may_fallthru (lowered_body)
+      && (VEC_empty (return_statements_t, data.return_statements)
+	  || gimple_return_retval (VEC_last (return_statements_t,
+			           data.return_statements)->stmt) != NULL))
     {
-      x = build1 (RETURN_EXPR, void_type_node, NULL);
-      SET_EXPR_LOCATION (x, cfun->function_end_locus);
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      x = gimple_build_return (NULL);
+      gimple_set_location (x, cfun->function_end_locus);
+      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
     }
 
   /* If we lowered any return statements, emit the representative
      at the end of the function.  */
-  for (t = data.return_statements ; t ; t = TREE_CHAIN (t))
+  while (!VEC_empty (return_statements_t, data.return_statements))
     {
-      x = build1 (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      return_statements_t t;
+
+      /* Unfortunately, we can't use VEC_pop because it returns void for
+	 objects.  */
+      t = *VEC_last (return_statements_t, data.return_statements);
+      VEC_truncate (return_statements_t,
+	  	    data.return_statements,
+	  	    VEC_length (return_statements_t,
+		      		data.return_statements) - 1);
+
+      x = gimple_build_label (t.label);
+      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
 
       /* Remove the line number from the representative return statement.
 	 It now fills in for many such returns.  Failure to remove this
 	 will result in incorrect results for coverage analysis.  */
-      x = TREE_VALUE (t);
-      SET_EXPR_LOCATION (x, UNKNOWN_LOCATION);
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      gimple_set_location (t.stmt, UNKNOWN_LOCATION);
+      gsi_insert_after (&i, t.stmt, GSI_CONTINUE_LINKING);
     }
 
   /* If the function calls __builtin_setjmp, we need to emit the computed
@@ -123,21 +171,21 @@ lower_function_body (void)
       /* This mark will create forward edges from every call site.  */
       DECL_NONLOCAL (disp_label) = 1;
       cfun->has_nonlocal_label = 1;
-      x = build1 (LABEL_EXPR, void_type_node, disp_label);
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      x = gimple_build_label (disp_label);
+      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
 
       /* Build 'DISP_VAR = __builtin_setjmp_dispatcher (DISP_LABEL);'
 	 and insert.  */
       disp_var = create_tmp_var (ptr_type_node, "setjmpvar");
       arg = build_addr (disp_label, current_function_decl);
       t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
-      t = build_call_expr (t, 1, arg);
-      x = build_gimple_modify_stmt (disp_var, t);
+      x = gimple_build_call (t, 1, arg);
+      gimple_call_set_lhs (x, disp_var);
 
       /* Build 'goto DISP_VAR;' and insert.  */
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
-      x = build1 (GOTO_EXPR, void_type_node, disp_var);
-      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
+      x = gimple_build_goto (disp_var);
+      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
     }
 
   gcc_assert (data.block == DECL_INITIAL (current_function_decl));
@@ -145,6 +193,7 @@ lower_function_body (void)
     = blocks_nreverse (BLOCK_SUBBLOCKS (data.block));
 
   clear_block_marks (data.block);
+  VEC_free(return_statements_t, heap, data.return_statements);
   return 0;
 }
 
@@ -168,134 +217,131 @@ struct gimple_opt_pass pass_lower_cf =
 };
 
 
-/* Lower the EXPR.  Unlike gimplification the statements are not relowered
+/* Lower sequence SEQ.  Unlike gimplification the statements are not relowered
    when they are changed -- if this has to be done, the lowering routine must
    do it explicitly.  DATA is passed through the recursion.  */
 
 static void
-lower_stmt_body (tree expr, struct lower_data *data)
+lower_sequence (gimple_seq seq, struct lower_data *data)
 {
-  tree_stmt_iterator tsi;
+  gimple_stmt_iterator gsi;
 
-  for (tsi = tsi_start (expr); !tsi_end_p (tsi); )
-    lower_stmt (&tsi, data);
+  for (gsi = gsi_start (seq); !gsi_end_p (gsi); )
+    lower_stmt (&gsi, data);
 }
 
 
-/* Lower the OpenMP directive statement pointed by TSI.  DATA is
+/* Lower the OpenMP directive statement pointed by GSI.  DATA is
    passed through the recursion.  */
 
 static void
-lower_omp_directive (tree_stmt_iterator *tsi, struct lower_data *data)
+lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
-  tree stmt;
+  gimple stmt;
   
-  stmt = tsi_stmt (*tsi);
+  stmt = gsi_stmt (*gsi);
 
-  lower_stmt_body (OMP_BODY (stmt), data);
-  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
-  tsi_link_before (tsi, OMP_BODY (stmt), TSI_SAME_STMT);
-  OMP_BODY (stmt) = NULL_TREE;
-  tsi_delink (tsi);
+  lower_sequence (gimple_omp_body (stmt), data);
+  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+  gsi_insert_seq_before (gsi, gimple_omp_body (stmt), GSI_SAME_STMT);
+  gimple_omp_set_body (stmt, NULL);
+  gsi_remove (gsi, false);
 }
 
 
-/* Lower statement TSI.  DATA is passed through the recursion.  */
+/* Lower statement GSI.  DATA is passed through the recursion.  */
 
 static void
-lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
+lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
-  tree stmt = tsi_stmt (*tsi);
+  gimple stmt = gsi_stmt (*gsi);
 
-  if (EXPR_HAS_LOCATION (stmt) && data)
-    TREE_BLOCK (stmt) = data->block;
+  gimple_set_block (stmt, data->block);
 
-  switch (TREE_CODE (stmt))
+  switch (gimple_code (stmt))
     {
-    case BIND_EXPR:
-      lower_bind_expr (tsi, data);
-      return;
-    case COND_EXPR:
-      lower_cond_expr (tsi, data);
-      return;
-    case RETURN_EXPR:
-      lower_return_expr (tsi, data);
+    case GIMPLE_BIND:
+      lower_gimple_bind (gsi, data);
       return;
 
-    case TRY_FINALLY_EXPR:
-    case TRY_CATCH_EXPR:
-      lower_stmt_body (TREE_OPERAND (stmt, 0), data);
-      lower_stmt_body (TREE_OPERAND (stmt, 1), data);
-      break;
-    case CATCH_EXPR:
-      lower_stmt_body (CATCH_BODY (stmt), data);
-      break;
-    case EH_FILTER_EXPR:
-      lower_stmt_body (EH_FILTER_FAILURE (stmt), data);
-      break;
-      
-    case NOP_EXPR:
-    case ASM_EXPR:
-    case GOTO_EXPR:
-    case PREDICT_EXPR:
-    case LABEL_EXPR:
-    case SWITCH_EXPR:
-    case CHANGE_DYNAMIC_TYPE_EXPR:
-    case OMP_FOR:
-    case OMP_SECTIONS:
-    case OMP_SECTIONS_SWITCH:
-    case OMP_SECTION:
-    case OMP_SINGLE:
-    case OMP_MASTER:
-    case OMP_ORDERED:
-    case OMP_CRITICAL:
-    case OMP_RETURN:
-    case OMP_ATOMIC_LOAD:
-    case OMP_ATOMIC_STORE:
-    case OMP_CONTINUE:
+    case GIMPLE_COND:
+      /* The gimplifier has already lowered this into gotos.  */
       break;
 
-    case GIMPLE_MODIFY_STMT:
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
-	stmt = GIMPLE_STMT_OPERAND (stmt, 1);
-      else
-	break;
-      /* FALLTHRU */
+    case GIMPLE_RETURN:
+      lower_gimple_return (gsi, data);
+      return;
 
-    case CALL_EXPR:
+    case GIMPLE_TRY:
+      lower_sequence (gimple_try_eval (stmt), data);
+      lower_sequence (gimple_try_cleanup (stmt), data);
+      break;
+
+    case GIMPLE_CATCH:
+      lower_sequence (gimple_catch_handler (stmt), data);
+      break;
+
+    case GIMPLE_EH_FILTER:
+      lower_sequence (gimple_eh_filter_failure (stmt), data);
+      break;
+
+    case GIMPLE_NOP:
+    case GIMPLE_ASM:
+    case GIMPLE_ASSIGN:
+    case GIMPLE_GOTO:
+    case GIMPLE_PREDICT:
+    case GIMPLE_LABEL:
+    case GIMPLE_SWITCH:
+    case GIMPLE_CHANGE_DYNAMIC_TYPE:
+    case GIMPLE_OMP_FOR:
+    case GIMPLE_OMP_SECTIONS:
+    case GIMPLE_OMP_SECTIONS_SWITCH:
+    case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_CRITICAL:
+    case GIMPLE_OMP_RETURN:
+    case GIMPLE_OMP_ATOMIC_LOAD:
+    case GIMPLE_OMP_ATOMIC_STORE:
+    case GIMPLE_OMP_CONTINUE:
+      break;
+
+    case GIMPLE_CALL:
       {
-	tree decl = get_callee_fndecl (stmt);
+	tree decl = gimple_call_fndecl (stmt);
+
 	if (decl
 	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	    && DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
 	  {
 	    data->calls_builtin_setjmp = true;
-	    lower_builtin_setjmp (tsi);
+	    lower_builtin_setjmp (gsi);
 	    return;
 	  }
       }
       break;
 
-    case OMP_PARALLEL:
-    case OMP_TASK:
-      lower_omp_directive (tsi, data);
+    case GIMPLE_OMP_PARALLEL:
+    case GIMPLE_OMP_TASK:
+      lower_omp_directive (gsi, data);
       return;
 
     default:
       gcc_unreachable ();
     }
 
-  tsi_next (tsi);
+  gsi_next (gsi);
 }
 
 /* Lower a bind_expr TSI.  DATA is passed through the recursion.  */
 
 static void
-lower_bind_expr (tree_stmt_iterator *tsi, struct lower_data *data)
+lower_gimple_bind (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
   tree old_block = data->block;
-  tree stmt = tsi_stmt (*tsi);
-  tree new_block = BIND_EXPR_BLOCK (stmt);
+  gimple stmt = gsi_stmt (*gsi);
+  tree new_block = gimple_bind_block (stmt);
 
   if (new_block)
     {
@@ -325,8 +371,8 @@ lower_bind_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 	}
     }
 
-  record_vars (BIND_EXPR_VARS (stmt));
-  lower_stmt_body (BIND_EXPR_BODY (stmt), data);
+  record_vars (gimple_bind_vars (stmt));
+  lower_sequence (gimple_bind_body (stmt), data);
 
   if (new_block)
     {
@@ -337,9 +383,9 @@ lower_bind_expr (tree_stmt_iterator *tsi, struct lower_data *data)
       data->block = old_block;
     }
 
-  /* The BIND_EXPR no longer carries any useful information -- kill it.  */
-  tsi_link_before (tsi, BIND_EXPR_BODY (stmt), TSI_SAME_STMT);
-  tsi_delink (tsi);
+  /* The GIMPLE_BIND no longer carries any useful information -- kill it.  */
+  gsi_insert_seq_before (gsi, gimple_bind_body (stmt), GSI_SAME_STMT);
+  gsi_remove (gsi, false);
 }
 
 /* Try to determine whether a TRY_CATCH expression can fall through.
@@ -389,6 +435,58 @@ try_catch_may_fallthru (const_tree stmt)
       return false;
     }
 }
+
+
+/* Same as above, but for a GIMPLE_TRY_CATCH.  */
+
+static bool
+gimple_try_catch_may_fallthru (gimple stmt)
+{
+  gimple_stmt_iterator i;
+
+  /* We don't handle GIMPLE_TRY_FINALLY.  */
+  gcc_assert (gimple_try_kind (stmt) == GIMPLE_TRY_CATCH);
+
+  /* If the TRY block can fall through, the whole TRY_CATCH can
+     fall through.  */
+  if (gimple_seq_may_fallthru (gimple_try_eval (stmt)))
+    return true;
+
+  i = gsi_start (gimple_try_cleanup (stmt));
+  switch (gimple_code (gsi_stmt (i)))
+    {
+    case GIMPLE_CATCH:
+      /* We expect to see a sequence of GIMPLE_CATCH stmts, each with a
+	 catch expression and a body.  The whole try/catch may fall
+	 through iff any of the catch bodies falls through.  */
+      for (; !gsi_end_p (i); gsi_next (&i))
+	{
+	  if (gimple_seq_may_fallthru (gimple_catch_handler (gsi_stmt (i))))
+	    return true;
+	}
+      return false;
+
+    case GIMPLE_EH_FILTER:
+      /* The exception filter expression only matters if there is an
+	 exception.  If the exception does not match EH_FILTER_TYPES,
+	 we will execute EH_FILTER_FAILURE, and we will fall through
+	 if that falls through.  If the exception does match
+	 EH_FILTER_TYPES, the stack unwinder will continue up the
+	 stack, so we will not fall through.  We don't know whether we
+	 will throw an exception which matches EH_FILTER_TYPES or not,
+	 so we just ignore EH_FILTER_TYPES and assume that we might
+	 throw an exception which doesn't match.  */
+      return gimple_seq_may_fallthru (gimple_eh_filter_failure (gsi_stmt (i)));
+
+    default:
+      /* This case represents statements to be executed when an
+	 exception occurs.  Those statements are implicitly followed
+	 by a GIMPLE_RESX to resume execution after the exception.  So
+	 in this case the try/catch never falls through.  */
+      return false;
+    }
+}
+
 
 /* Try to determine if we can fall out of the bottom of BLOCK.  This guess
    need not be 100% accurate; simply be conservative and return true if we
@@ -440,9 +538,9 @@ block_may_fallthru (const_tree block)
       return (block_may_fallthru (TREE_OPERAND (stmt, 0))
 	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
 
-    case GIMPLE_MODIFY_STMT:
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
-	stmt = GIMPLE_STMT_OPERAND (stmt, 1);
+    case MODIFY_EXPR:
+      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
+	stmt = TREE_OPERAND (stmt, 1);
       else
 	return true;
       /* FALLTHRU */
@@ -459,138 +557,110 @@ block_may_fallthru (const_tree block)
     }
 }
 
-/* Lower a cond_expr TSI.  DATA is passed through the recursion.  */
 
-static void
-lower_cond_expr (tree_stmt_iterator *tsi, struct lower_data *data)
+/* Try to determine if we can continue executing the statement
+   immediately following STMT.  This guess need not be 100% accurate;
+   simply be conservative and return true if we don't know.  This is
+   used only to avoid stupidly generating extra code. If we're wrong,
+   we'll just delete the extra code later.  */
+
+bool
+gimple_stmt_may_fallthru (gimple stmt)
 {
-  tree stmt = tsi_stmt (*tsi);
-  bool then_is_goto, else_is_goto;
-  tree then_branch, else_branch;
-  tree then_goto, else_goto;
-  
-  then_branch = COND_EXPR_THEN (stmt);
-  else_branch = COND_EXPR_ELSE (stmt);
+  if (!stmt)
+    return true;
 
-  lower_stmt_body (then_branch, data);
-  lower_stmt_body (else_branch, data);
-
-  then_goto = expr_only (then_branch);
-  then_is_goto = then_goto && simple_goto_p (then_goto);
-
-  else_goto = expr_only (else_branch);
-  else_is_goto = else_goto && simple_goto_p (else_goto);
-
-  if (!then_is_goto || !else_is_goto)
+  switch (gimple_code (stmt))
     {
-      tree then_label, else_label, end_label, t;
+    case GIMPLE_GOTO:
+    case GIMPLE_RETURN:
+    case GIMPLE_RESX:
+      /* Easy cases.  If the last statement of the seq implies 
+	 control transfer, then we can't fall through.  */
+      return false;
 
-      then_label = NULL_TREE;
-      else_label = NULL_TREE;
-      end_label = NULL_TREE;
- 
-      /* Replace the cond_expr with explicit gotos.  */
-      if (!then_is_goto)
-	{
-	  t = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-	  if (TREE_SIDE_EFFECTS (then_branch))
-	    then_label = t;
-	  else
-	    end_label = t;
-	  then_goto = build_and_jump (&LABEL_EXPR_LABEL (t));
-	}
+    case GIMPLE_SWITCH:
+      /* Switch has already been lowered and represents a
+	 branch to a selected label and hence can not fall through.  */
+      return true;
 
-      if (!else_is_goto)
-	{
-	  t = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-	  if (TREE_SIDE_EFFECTS (else_branch))
-	    else_label = t;
-	  else
-	    {
-	      /* Both THEN and ELSE can be no-ops if one or both contained an
-	         empty BIND_EXPR that was associated with the toplevel block
-	         of an inlined function.  In that case remove_useless_stmts
-	         can't have cleaned things up for us; kill the whole 
-	         conditional now.  */
-	      if (end_label)
-		{
-		  tsi_delink (tsi);
-		  return;
-		}
-	      else
-		end_label = t;
-	    }
-	  else_goto = build_and_jump (&LABEL_EXPR_LABEL (t));
-	}
+    case GIMPLE_COND:
+      /* GIMPLE_COND's are already lowered into a two-way branch.  They
+	 can't fall through.  */
+      return false;
 
-      if (then_label)
-	{
-	  bool may_fallthru = block_may_fallthru (then_branch);
+    case GIMPLE_BIND:
+      return gimple_seq_may_fallthru (gimple_bind_body (stmt));
 
-	  tsi_link_after (tsi, then_label, TSI_CONTINUE_LINKING);
-	  tsi_link_after (tsi, then_branch, TSI_CONTINUE_LINKING);
-  
-	  if (else_label && may_fallthru)
-	    {
-	      end_label = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-	      t = build_and_jump (&LABEL_EXPR_LABEL (end_label));
-	      tsi_link_after (tsi, t, TSI_CONTINUE_LINKING);
-	    }
-	}
-  
-      if (else_label)
-	{
-	  tsi_link_after (tsi, else_label, TSI_CONTINUE_LINKING);
-	  tsi_link_after (tsi, else_branch, TSI_CONTINUE_LINKING);
-	}
+    case GIMPLE_TRY:
+      if (gimple_try_kind (stmt) == GIMPLE_TRY_CATCH)
+        return gimple_try_catch_may_fallthru (stmt);
 
-      if (end_label)
-	tsi_link_after (tsi, end_label, TSI_CONTINUE_LINKING);
+      /* It must be a GIMPLE_TRY_FINALLY.  */
+
+      /* The finally clause is always executed after the try clause,
+	 so if it does not fall through, then the try-finally will not
+	 fall through.  Otherwise, if the try clause does not fall
+	 through, then when the finally clause falls through it will
+	 resume execution wherever the try clause was going.  So the
+	 whole try-finally will only fall through if both the try
+	 clause and the finally clause fall through.  */
+      return (gimple_seq_may_fallthru (gimple_try_eval (stmt))
+	      && gimple_seq_may_fallthru (gimple_try_cleanup (stmt)));
+
+    case GIMPLE_ASSIGN:
+      return true;
+
+    case GIMPLE_CALL:
+      /* Functions that do not return do not fall through.  */
+      return (gimple_call_flags (stmt) & ECF_NORETURN) == 0;
+    
+    default:
+      return true;
     }
-
-  COND_EXPR_THEN (stmt) = then_goto;
-  COND_EXPR_ELSE (stmt) = else_goto;
-
-  tsi_next (tsi);
 }
 
-/* Lower a return_expr TSI.  DATA is passed through the recursion.  */
+
+/* Same as gimple_stmt_may_fallthru, but for the gimple sequence SEQ.  */
+
+bool
+gimple_seq_may_fallthru (gimple_seq seq)
+{
+  return gimple_stmt_may_fallthru (gimple_seq_last_stmt (seq));
+}
+
+
+/* Lower a GIMPLE_RETURN GSI.  DATA is passed through the recursion.  */
 
 static void
-lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
+lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
-  tree stmt = tsi_stmt (*tsi);
-  tree value, t, label;
-
-  /* Extract the value being returned.  */
-  value = TREE_OPERAND (stmt, 0);
-  if (value && TREE_CODE (value) == GIMPLE_MODIFY_STMT)
-    value = GIMPLE_STMT_OPERAND (value, 1);
+  gimple stmt = gsi_stmt (*gsi);
+  gimple t;
+  int i;
+  return_statements_t tmp_rs;
 
   /* Match this up with an existing return statement that's been created.  */
-  for (t = data->return_statements; t ; t = TREE_CHAIN (t))
+  for (i = VEC_length (return_statements_t, data->return_statements) - 1;
+       i >= 0; i--)
     {
-      tree tvalue = TREE_OPERAND (TREE_VALUE (t), 0);
-      if (tvalue && TREE_CODE (tvalue) == GIMPLE_MODIFY_STMT)
-	tvalue = GIMPLE_STMT_OPERAND (tvalue, 1);
+      tmp_rs = *VEC_index (return_statements_t, data->return_statements, i);
 
-      if (value == tvalue)
-	{
-	  label = TREE_PURPOSE (t);
-	  goto found;
-	}
+      if (gimple_return_retval (stmt) == gimple_return_retval (tmp_rs.stmt))
+	goto found;
     }
 
   /* Not found.  Create a new label and record the return statement.  */
-  label = create_artificial_label ();
-  data->return_statements = tree_cons (label, stmt, data->return_statements);
+  tmp_rs.label = create_artificial_label ();
+  tmp_rs.stmt = stmt;
+  VEC_safe_push (return_statements_t, heap, data->return_statements, &tmp_rs);
 
   /* Generate a goto statement and remove the return statement.  */
  found:
-  t = build1 (GOTO_EXPR, void_type_node, label);
-  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
-  tsi_delink (tsi);
+  t = gimple_build_goto (tmp_rs.label);
+  gimple_set_location (t, gimple_location (stmt));
+  gsi_insert_before (gsi, t, GSI_SAME_STMT);
+  gsi_remove (gsi, false);
 }
 
 /* Lower a __builtin_setjmp TSI.
@@ -647,71 +717,66 @@ lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
    to the receivers, thus keeping the complexity explosion localized.  */
 
 static void
-lower_builtin_setjmp (tree_stmt_iterator *tsi)
+lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 {
-  tree stmt = tsi_stmt (*tsi);
+  gimple stmt = gsi_stmt (*gsi);
   tree cont_label = create_artificial_label ();
   tree next_label = create_artificial_label ();
   tree dest, t, arg;
+  gimple g;
 
   /* NEXT_LABEL is the label __builtin_longjmp will jump to.  Its address is
      passed to both __builtin_setjmp_setup and __builtin_setjmp_receiver.  */
   FORCED_LABEL (next_label) = 1;
 
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-    {
-      dest = GIMPLE_STMT_OPERAND (stmt, 0);
-      stmt = GIMPLE_STMT_OPERAND (stmt, 1);
-    }
-  else
-    dest = NULL_TREE;
+  dest = gimple_call_lhs (stmt);
 
   /* Build '__builtin_setjmp_setup (BUF, NEXT_LABEL)' and insert.  */
   arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
-  t = build_call_expr (t, 2, CALL_EXPR_ARG (stmt, 0), arg);
-  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
+  g = gimple_build_call (t, 2, gimple_call_arg (stmt, 0), arg);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 0' and insert.  */
   if (dest)
     {
-      t = build_gimple_modify_stmt (dest, fold_convert (TREE_TYPE (dest),
-							integer_zero_node));
-      SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
-      tsi_link_before (tsi, t, TSI_SAME_STMT);
+      g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
+						   integer_zero_node));
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
 
   /* Build 'goto CONT_LABEL' and insert.  */
-  t = build1 (GOTO_EXPR, void_type_node, cont_label);
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
+  g = gimple_build_goto (cont_label);
+  gsi_insert_before (gsi, g, TSI_SAME_STMT);
 
   /* Build 'NEXT_LABEL:' and insert.  */
-  t = build1 (LABEL_EXPR, void_type_node, next_label);
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
+  g = gimple_build_label (next_label);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build '__builtin_setjmp_receiver (NEXT_LABEL)' and insert.  */
   arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
-  t = build_call_expr (t, 1, arg);
-  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
+  g = gimple_build_call (t, 1, arg);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'DEST = 1' and insert.  */
   if (dest)
     {
-      t = build_gimple_modify_stmt (dest, fold_convert (TREE_TYPE (dest),
-							integer_one_node));
-      SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
-      tsi_link_before (tsi, t, TSI_SAME_STMT);
+      g = gimple_build_assign (dest, fold_convert (TREE_TYPE (dest),
+						   integer_one_node));
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
     }
 
   /* Build 'CONT_LABEL:' and insert.  */
-  t = build1 (LABEL_EXPR, void_type_node, cont_label);
-  tsi_link_before (tsi, t, TSI_SAME_STMT);
+  g = gimple_build_label (cont_label);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Remove the call to __builtin_setjmp.  */
-  tsi_delink (tsi);
+  gsi_remove (gsi, false);
 }
 
 

@@ -1231,16 +1231,16 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 			 VEC(tree,heap) * outerinductionvars,
 			 VEC(tree,heap) ** lboundvars,
 			 VEC(tree,heap) ** uboundvars,
-                         VEC(int,heap) ** steps,
+			 VEC(int,heap) ** steps,
                          struct obstack * lambda_obstack)
 {
-  tree phi;
-  tree exit_cond;
+  gimple phi;
+  gimple exit_cond;
   tree access_fn, inductionvar;
   tree step;
   lambda_loop lloop = NULL;
   lambda_linear_expression lbound, ubound;
-  tree test;
+  tree test_lhs, test_rhs;
   int stepint;
   int extra = 0;
   tree lboundvar, uboundvar, uboundresult;
@@ -1257,9 +1257,7 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
       return NULL;
     }
 
-  test = TREE_OPERAND (exit_cond, 0);
-
-  if (SSA_NAME_DEF_STMT (inductionvar) == NULL_TREE)
+  if (SSA_NAME_DEF_STMT (inductionvar) == NULL)
     {
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1270,10 +1268,10 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
     }
 
   phi = SSA_NAME_DEF_STMT (inductionvar);
-  if (TREE_CODE (phi) != PHI_NODE)
+  if (gimple_code (phi) != GIMPLE_PHI)
     {
-      phi = SINGLE_SSA_TREE_OPERAND (phi, SSA_OP_USE);
-      if (!phi)
+      tree op = SINGLE_SSA_TREE_OPERAND (phi, SSA_OP_USE);
+      if (!op)
 	{
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1283,16 +1281,14 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 	  return NULL;
 	}
 
-      phi = SSA_NAME_DEF_STMT (phi);
-      if (TREE_CODE (phi) != PHI_NODE)
+      phi = SSA_NAME_DEF_STMT (op);
+      if (gimple_code (phi) != GIMPLE_PHI)
 	{
-
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "Unable to convert loop: Cannot find PHI node for induction variable\n");
 	  return NULL;
 	}
-
     }
 
   /* The induction variable name/version we want to put in the array is the
@@ -1331,7 +1327,7 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 
   /* Only want phis for induction vars, which will have two
      arguments.  */
-  if (PHI_NUM_ARGS (phi) != 2)
+  if (gimple_phi_num_args (phi) != 2)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -1341,8 +1337,8 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 
   /* Another induction variable check. One argument's source should be
      in the loop, one outside the loop.  */
-  if (flow_bb_inside_loop_p (loop, PHI_ARG_EDGE (phi, 0)->src)
-      && flow_bb_inside_loop_p (loop, PHI_ARG_EDGE (phi, 1)->src))
+  if (flow_bb_inside_loop_p (loop, gimple_phi_arg_edge (phi, 0)->src)
+      && flow_bb_inside_loop_p (loop, gimple_phi_arg_edge (phi, 1)->src))
     {
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1352,7 +1348,7 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
       return NULL;
     }
 
-  if (flow_bb_inside_loop_p (loop, PHI_ARG_EDGE (phi, 0)->src))
+  if (flow_bb_inside_loop_p (loop, gimple_phi_arg_edge (phi, 0)->src))
     {
       lboundvar = PHI_ARG_DEF (phi, 1);
       lbound = gcc_tree_to_linear_expression (depth, lboundvar,
@@ -1378,21 +1374,23 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
     }
   /* One part of the test may be a loop invariant tree.  */
   VEC_reserve (tree, heap, *invariants, 1);
-  if (TREE_CODE (TREE_OPERAND (test, 1)) == SSA_NAME
-      && invariant_in_loop_and_outer_loops (loop, TREE_OPERAND (test, 1)))
-    VEC_quick_push (tree, *invariants, TREE_OPERAND (test, 1));
-  else if (TREE_CODE (TREE_OPERAND (test, 0)) == SSA_NAME
-	   && invariant_in_loop_and_outer_loops (loop, TREE_OPERAND (test, 0)))
-    VEC_quick_push (tree, *invariants, TREE_OPERAND (test, 0));
+  test_lhs = gimple_cond_lhs (exit_cond);
+  test_rhs = gimple_cond_rhs (exit_cond);
+
+  if (TREE_CODE (test_rhs) == SSA_NAME
+      && invariant_in_loop_and_outer_loops (loop, test_rhs))
+    VEC_quick_push (tree, *invariants, test_rhs);
+  else if (TREE_CODE (test_lhs) == SSA_NAME
+	   && invariant_in_loop_and_outer_loops (loop, test_lhs))
+    VEC_quick_push (tree, *invariants, test_lhs);
   
   /* The non-induction variable part of the test is the upper bound variable.
    */
-  if (TREE_OPERAND (test, 0) == inductionvar)
-    uboundvar = TREE_OPERAND (test, 1);
+  if (test_lhs == inductionvar)
+    uboundvar = test_rhs;
   else
-    uboundvar = TREE_OPERAND (test, 0);
+    uboundvar = test_lhs;
     
-
   /* We only size the vectors assuming we have, at max, 2 times as many
      invariants as we do loops (one for each bound).
      This is just an arbitrary number, but it has to be matched against the
@@ -1401,13 +1399,13 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   
 
   /* We might have some leftover.  */
-  if (TREE_CODE (test) == LT_EXPR)
+  if (gimple_cond_code (exit_cond) == LT_EXPR)
     extra = -1 * stepint;
-  else if (TREE_CODE (test) == NE_EXPR)
+  else if (gimple_cond_code (exit_cond) == NE_EXPR)
     extra = -1 * stepint;
-  else if (TREE_CODE (test) == GT_EXPR)
+  else if (gimple_cond_code (exit_cond) == GT_EXPR)
     extra = -1 * stepint;
-  else if (TREE_CODE (test) == EQ_EXPR)
+  else if (gimple_cond_code (exit_cond) == EQ_EXPR)
     extra = 1 * stepint;
   
   ubound = gcc_tree_to_linear_expression (depth, uboundvar,
@@ -1439,24 +1437,23 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
 static tree
 find_induction_var_from_exit_cond (struct loop *loop)
 {
-  tree expr = get_loop_exit_condition (loop);
+  gimple expr = get_loop_exit_condition (loop);
   tree ivarop;
-  tree test;
-  if (expr == NULL_TREE)
+  tree test_lhs, test_rhs;
+  if (expr == NULL)
     return NULL_TREE;
-  if (TREE_CODE (expr) != COND_EXPR)
+  if (gimple_code (expr) != GIMPLE_COND)
     return NULL_TREE;
-  test = TREE_OPERAND (expr, 0);
-  if (!COMPARISON_CLASS_P (test))
-    return NULL_TREE;
+  test_lhs = gimple_cond_lhs (expr);
+  test_rhs = gimple_cond_rhs (expr);
 
   /* Find the side that is invariant in this loop. The ivar must be the other
      side.  */
   
-  if (expr_invariant_in_loop_p (loop, TREE_OPERAND (test, 0)))
-      ivarop = TREE_OPERAND (test, 1);
-  else if (expr_invariant_in_loop_p (loop, TREE_OPERAND (test, 1)))
-      ivarop = TREE_OPERAND (test, 0);
+  if (expr_invariant_in_loop_p (loop, test_lhs))
+      ivarop = test_rhs;
+  else if (expr_invariant_in_loop_p (loop, test_rhs))
+      ivarop = test_lhs;
   else
     return NULL_TREE;
 
@@ -1548,7 +1545,7 @@ gcc_loopnest_to_lambda_loopnest (struct loop *loop_nest,
 static tree
 lbv_to_gcc_expression (lambda_body_vector lbv, 
 		       tree type, VEC(tree,heap) *induction_vars, 
-		       tree *stmts_to_insert)
+		       gimple_seq *stmts_to_insert)
 {
   int k;
   tree resvar;
@@ -1583,7 +1580,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		       tree type,
 		       VEC(tree,heap) *induction_vars,
 		       VEC(tree,heap) *invariants,
-		       enum tree_code wrap, tree *stmts_to_insert)
+		       enum tree_code wrap, gimple_seq *stmts_to_insert)
 {
   int k;
   tree resvar;
@@ -1641,17 +1638,19 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 /* Remove the induction variable defined at IV_STMT.  */
 
 void
-remove_iv (tree iv_stmt)
+remove_iv (gimple iv_stmt)
 {
-  if (TREE_CODE (iv_stmt) == PHI_NODE)
-    {
-      int i;
+  gimple_stmt_iterator si = gsi_for_stmt (iv_stmt);
 
-      for (i = 0; i < PHI_NUM_ARGS (iv_stmt); i++)
+  if (gimple_code (iv_stmt) == GIMPLE_PHI)
+    {
+      unsigned i;
+
+      for (i = 0; i < gimple_phi_num_args (iv_stmt); i++)
 	{
-	  tree stmt;
+	  gimple stmt;
 	  imm_use_iterator imm_iter;
-	  tree arg = PHI_ARG_DEF (iv_stmt, i);
+	  tree arg = gimple_phi_arg_def (iv_stmt, i);
 	  bool used = false;
 
 	  if (TREE_CODE (arg) != SSA_NAME)
@@ -1665,13 +1664,11 @@ remove_iv (tree iv_stmt)
 	    remove_iv (SSA_NAME_DEF_STMT (arg));
 	}
 
-      remove_phi_node (iv_stmt, NULL_TREE, true);
+      remove_phi_node (&si, true);
     }
   else
     {
-      block_stmt_iterator bsi = bsi_for_stmt (iv_stmt);
-
-      bsi_remove (&bsi, true);
+      gsi_remove (&si, true);
       release_defs (iv_stmt); 
     }
 }
@@ -1692,18 +1689,18 @@ void
 lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 				 VEC(tree,heap) *old_ivs,
 				 VEC(tree,heap) *invariants,
-				 VEC(tree,heap) **remove_ivs,
+				 VEC(gimple,heap) **remove_ivs,
 				 lambda_loopnest new_loopnest,
                                  lambda_trans_matrix transform,
                                  struct obstack * lambda_obstack)
 {
   struct loop *temp;
   size_t i = 0;
-  int j;
+  unsigned j;
   size_t depth = 0;
   VEC(tree,heap) *new_ivs = NULL;
   tree oldiv;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
 
   transform = lambda_trans_matrix_inverse (transform);
 
@@ -1720,13 +1717,15 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       lambda_loop newloop;
       basic_block bb;
       edge exit;
-      tree ivvar, ivvarinced, exitcond, stmts;
+      tree ivvar, ivvarinced;
+      gimple exitcond;
+      gimple_seq stmts;
       enum tree_code testtype;
       tree newupperbound, newlowerbound;
       lambda_linear_expression offset;
       tree type;
       bool insert_after;
-      tree inc_stmt;
+      gimple inc_stmt;
 
       oldiv = VEC_index (tree, old_ivs, i);
       type = TREE_TYPE (oldiv);
@@ -1749,6 +1748,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	    
       /* Now build the  new lower bounds, and insert the statements
          necessary to generate it on the loop preheader.  */
+      stmts = NULL;
       newlowerbound = lle_to_gcc_expression (LL_LOWER_BOUND (newloop),
 					     LL_LINEAR_OFFSET (newloop),
 					     type,
@@ -1757,11 +1757,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
       if (stmts)
 	{
-	  bsi_insert_on_edge (loop_preheader_edge (temp), stmts);
-	  bsi_commit_edge_inserts ();
+	  gsi_insert_seq_on_edge (loop_preheader_edge (temp), stmts);
+	  gsi_commit_edge_inserts ();
 	}
       /* Build the new upper bound and insert its statements in the
          basic block of the exit condition */
+      stmts = NULL;
       newupperbound = lle_to_gcc_expression (LL_UPPER_BOUND (newloop),
 					     LL_LINEAR_OFFSET (newloop),
 					     type,
@@ -1769,10 +1770,10 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 					     invariants, MIN_EXPR, &stmts);
       exit = single_exit (temp);
       exitcond = get_loop_exit_condition (temp);
-      bb = bb_for_stmt (exitcond);
-      bsi = bsi_after_labels (bb);
+      bb = gimple_bb (exitcond);
+      bsi = gsi_after_labels (bb);
       if (stmts)
-	bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
+	gsi_insert_seq_before (&bsi, stmts, GSI_NEW_STMT);
 
       /* Create the new iv.  */
 
@@ -1786,13 +1787,14 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	 dominate the block containing the exit condition.
 	 So we simply create our own incremented iv to use in the new exit
 	 test,  and let redundancy elimination sort it out.  */
-      inc_stmt = build2 (PLUS_EXPR, type, 
-			 ivvar, build_int_cst (type, LL_STEP (newloop)));
-      inc_stmt = build_gimple_modify_stmt (SSA_NAME_VAR (ivvar), inc_stmt);
+      inc_stmt = gimple_build_assign_with_ops (PLUS_EXPR, SSA_NAME_VAR (ivvar),
+					       ivvar,
+					       build_int_cst (type, LL_STEP (newloop)));
+
       ivvarinced = make_ssa_name (SSA_NAME_VAR (ivvar), inc_stmt);
-      GIMPLE_STMT_OPERAND (inc_stmt, 0) = ivvarinced;
-      bsi = bsi_for_stmt (exitcond);
-      bsi_insert_before (&bsi, inc_stmt, BSI_SAME_STMT);
+      gimple_assign_set_lhs (inc_stmt, ivvarinced);
+      bsi = gsi_for_stmt (exitcond);
+      gsi_insert_before (&bsi, inc_stmt, GSI_SAME_STMT);
 
       /* Replace the exit condition with the new upper bound
          comparison.  */
@@ -1806,9 +1808,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       if (exit->flags & EDGE_FALSE_VALUE)
 	testtype = swap_tree_comparison (testtype);
 
-      COND_EXPR_COND (exitcond) = build2 (testtype,
-					  boolean_type_node,
-					  newupperbound, ivvarinced);
+      gimple_cond_set_condition (exitcond, testtype, newupperbound, ivvarinced);
       update_stmt (exitcond);
       VEC_replace (tree, new_ivs, i, ivvar);
 
@@ -1824,10 +1824,10 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       imm_use_iterator imm_iter;
       use_operand_p use_p;
       tree oldiv_def;
-      tree oldiv_stmt = SSA_NAME_DEF_STMT (oldiv);
-      tree stmt;
+      gimple oldiv_stmt = SSA_NAME_DEF_STMT (oldiv);
+      gimple stmt;
 
-      if (TREE_CODE (oldiv_stmt) == PHI_NODE)
+      if (gimple_code (oldiv_stmt) == GIMPLE_PHI)
         oldiv_def = PHI_RESULT (oldiv_stmt);
       else
 	oldiv_def = SINGLE_SSA_TREE_OPERAND (oldiv_stmt, SSA_OP_DEF);
@@ -1835,7 +1835,8 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
       FOR_EACH_IMM_USE_STMT (stmt, imm_iter, oldiv_def)
         {
-	  tree newiv, stmts;
+	  tree newiv;
+	  gimple_seq stmts;
 	  lambda_body_vector lbv, newlbv;
 
 	  /* Compute the new expression for the induction
@@ -1847,28 +1848,29 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
           newlbv = lambda_body_vector_compute_new (transform, lbv,
                                                    lambda_obstack);
 
+	  stmts = NULL;
 	  newiv = lbv_to_gcc_expression (newlbv, TREE_TYPE (oldiv),
 					 new_ivs, &stmts);
 
-	  if (stmts && TREE_CODE (stmt) != PHI_NODE)
+	  if (stmts && gimple_code (stmt) != GIMPLE_PHI)
 	    {
-	      bsi = bsi_for_stmt (stmt);
-	      bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+	      bsi = gsi_for_stmt (stmt);
+	      gsi_insert_seq_before (&bsi, stmts, GSI_SAME_STMT);
 	    }
 
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 	    propagate_value (use_p, newiv);
 
-	  if (stmts && TREE_CODE (stmt) == PHI_NODE)
-	    for (j = 0; j < PHI_NUM_ARGS (stmt); j++)
-	      if (PHI_ARG_DEF (stmt, j) == newiv)
-		bsi_insert_on_edge (PHI_ARG_EDGE (stmt, j), stmts);
+	  if (stmts && gimple_code (stmt) == GIMPLE_PHI)
+	    for (j = 0; j < gimple_phi_num_args (stmt); j++)
+	      if (gimple_phi_arg_def (stmt, j) == newiv)
+		gsi_insert_seq_on_edge (gimple_phi_arg_edge (stmt, j), stmts);
 
 	  update_stmt (stmt);
 	}
 
       /* Remove the now unused induction variable.  */
-      VEC_safe_push (tree, heap, *remove_ivs, oldiv_stmt);
+      VEC_safe_push (gimple, heap, *remove_ivs, oldiv_stmt);
     }
   VEC_free (tree, heap, new_ivs);
 }
@@ -1877,13 +1879,13 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
    determining if we have a perfect loop nest.  */
 
 static bool
-not_interesting_stmt (tree stmt)
+not_interesting_stmt (gimple stmt)
 {
   /* Note that COND_EXPR's aren't interesting because if they were exiting the
      loop, we would have already failed the number of exits tests.  */
-  if (TREE_CODE (stmt) == LABEL_EXPR
-      || TREE_CODE (stmt) == GOTO_EXPR
-      || TREE_CODE (stmt) == COND_EXPR)
+  if (gimple_code (stmt) == GIMPLE_LABEL
+      || gimple_code (stmt) == GIMPLE_GOTO
+      || gimple_code (stmt) == GIMPLE_COND)
     return true;
   return false;
 }
@@ -1891,11 +1893,11 @@ not_interesting_stmt (tree stmt)
 /* Return TRUE if PHI uses DEF for it's in-the-loop edge for LOOP.  */
 
 static bool
-phi_loop_edge_uses_def (struct loop *loop, tree phi, tree def)
+phi_loop_edge_uses_def (struct loop *loop, gimple phi, tree def)
 {
-  int i;
-  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
-    if (flow_bb_inside_loop_p (loop, PHI_ARG_EDGE (phi, i)->src))
+  unsigned i;
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    if (flow_bb_inside_loop_p (loop, gimple_phi_arg_edge (phi, i)->src))
       if (PHI_ARG_DEF (phi, i) == def)
 	return true;
   return false;
@@ -1904,7 +1906,7 @@ phi_loop_edge_uses_def (struct loop *loop, tree phi, tree def)
 /* Return TRUE if STMT is a use of PHI_RESULT.  */
 
 static bool
-stmt_uses_phi_result (tree stmt, tree phi_result)
+stmt_uses_phi_result (gimple stmt, tree phi_result)
 {
   tree use = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
   
@@ -1920,9 +1922,9 @@ stmt_uses_phi_result (tree stmt, tree phi_result)
         i_3 = PHI (0, i_29);  */
 
 static bool
-stmt_is_bumper_for_loop (struct loop *loop, tree stmt)
+stmt_is_bumper_for_loop (struct loop *loop, gimple stmt)
 {
-  tree use;
+  gimple use;
   tree def;
   imm_use_iterator iter;
   use_operand_p use_p;
@@ -1934,7 +1936,7 @@ stmt_is_bumper_for_loop (struct loop *loop, tree stmt)
   FOR_EACH_IMM_USE_FAST (use_p, iter, def)
     {
       use = USE_STMT (use_p);
-      if (TREE_CODE (use) == PHI_NODE)
+      if (gimple_code (use) == GIMPLE_PHI)
 	{
 	  if (phi_loop_edge_uses_def (loop, use, def))
 	    if (stmt_uses_phi_result (stmt, PHI_RESULT (use)))
@@ -1976,7 +1978,7 @@ perfect_nest_p (struct loop *loop)
 {
   basic_block *bbs;
   size_t i;
-  tree exit_cond;
+  gimple exit_cond;
 
   /* Loops at depth 0 are perfect nests.  */
   if (!loop->inner)
@@ -1989,13 +1991,13 @@ perfect_nest_p (struct loop *loop)
     {
       if (bbs[i]->loop_father == loop)
 	{
-	  block_stmt_iterator bsi;
+	  gimple_stmt_iterator bsi;
 
-	  for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi); bsi_next (&bsi))
+	  for (bsi = gsi_start_bb (bbs[i]); !gsi_end_p (bsi); gsi_next (&bsi))
 	    {
-	      tree stmt = bsi_stmt (bsi);
+	      gimple stmt = gsi_stmt (bsi);
 
-	      if (TREE_CODE (stmt) == COND_EXPR
+	      if (gimple_code (stmt) == GIMPLE_COND
 		  && exit_cond != stmt)
 		goto non_perfectly_nested;
 
@@ -2023,10 +2025,10 @@ perfect_nest_p (struct loop *loop)
    of body basic block.  */
 
 static void
-replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x, 
+replace_uses_equiv_to_x_with_y (struct loop *loop, gimple stmt, tree x, 
 				int xstep, tree y, tree yinit,
 				htab_t replacements,
-				block_stmt_iterator *firstbsi)
+				gimple_stmt_iterator *firstbsi)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -2035,7 +2037,8 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
     {
       tree use = USE_FROM_PTR (use_p);
       tree step = NULL_TREE;
-      tree scev, init, val, var, setstmt;
+      tree scev, init, val, var;
+      gimple setstmt;
       struct tree_map *h, in;
       void **loc;
 
@@ -2098,12 +2101,12 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
 	 which sets Y.  */
       var = create_tmp_var (TREE_TYPE (use), "perfecttmp");
       add_referenced_var (var);
-      val = force_gimple_operand_bsi (firstbsi, val, false, NULL,
-				      true, BSI_SAME_STMT);
-      setstmt = build_gimple_modify_stmt (var, val);
+      val = force_gimple_operand_gsi (firstbsi, val, false, NULL,
+				      true, GSI_SAME_STMT);
+      setstmt = gimple_build_assign (var, val);
       var = make_ssa_name (var, setstmt);
-      GIMPLE_STMT_OPERAND (setstmt, 0) = var;
-      bsi_insert_before (firstbsi, setstmt, BSI_SAME_STMT);
+      gimple_assign_set_lhs (setstmt, var);
+      gsi_insert_before (firstbsi, setstmt, GSI_SAME_STMT);
       update_stmt (setstmt);
       SET_USE (use_p, var);
       h = GGC_NEW (struct tree_map);
@@ -2119,12 +2122,11 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
 /* Return true if STMT is an exit PHI for LOOP */
 
 static bool
-exit_phi_for_loop_p (struct loop *loop, tree stmt)
+exit_phi_for_loop_p (struct loop *loop, gimple stmt)
 {
-  
-  if (TREE_CODE (stmt) != PHI_NODE
-      || PHI_NUM_ARGS (stmt) != 1
-      || bb_for_stmt (stmt) != single_exit (loop)->dest)
+  if (gimple_code (stmt) != GIMPLE_PHI
+      || gimple_phi_num_args (stmt) != 1
+      || gimple_bb (stmt) != single_exit (loop)->dest)
     return false;
   
   return true;
@@ -2134,21 +2136,21 @@ exit_phi_for_loop_p (struct loop *loop, tree stmt)
    copying it to the beginning of that loop and changing the uses.  */
 
 static bool
-can_put_in_inner_loop (struct loop *inner, tree stmt)
+can_put_in_inner_loop (struct loop *inner, gimple stmt)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
   
-  gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
+  gcc_assert (is_gimple_assign (stmt));
   if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)
-      || !expr_invariant_in_loop_p (inner, GIMPLE_STMT_OPERAND (stmt, 1)))
+      || !stmt_invariant_in_loop_p (inner, stmt))
     return false;
   
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, GIMPLE_STMT_OPERAND (stmt, 0))
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_assign_lhs (stmt))
     {
       if (!exit_phi_for_loop_p (inner, USE_STMT (use_p)))
 	{
-	  basic_block immbb = bb_for_stmt (USE_STMT (use_p));
+	  basic_block immbb = gimple_bb (USE_STMT (use_p));
 
 	  if (!flow_bb_inside_loop_p (inner, immbb))
 	    return false;
@@ -2158,8 +2160,9 @@ can_put_in_inner_loop (struct loop *inner, tree stmt)
 }
 
 /* Return true if STMT can be put *after* the inner loop of LOOP.  */
+
 static bool
-can_put_after_inner_loop (struct loop *loop, tree stmt)
+can_put_after_inner_loop (struct loop *loop, gimple stmt)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2167,11 +2170,11 @@ can_put_after_inner_loop (struct loop *loop, tree stmt)
   if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return false;
   
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, GIMPLE_STMT_OPERAND (stmt, 0))
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_assign_lhs (stmt))
     {
       if (!exit_phi_for_loop_p (loop, USE_STMT (use_p)))
 	{
-	  basic_block immbb = bb_for_stmt (USE_STMT (use_p));
+	  basic_block immbb = gimple_bb (USE_STMT (use_p));
 	  
 	  if (!dominated_by_p (CDI_DOMINATORS,
 			       immbb,
@@ -2211,81 +2214,77 @@ can_duplicate_iv (tree iv, struct loop *loop)
    it has better cache behavior.  */
 
 static bool
-cannot_convert_modify_to_perfect_nest (tree stmt, struct loop *loop)
+cannot_convert_modify_to_perfect_nest (gimple stmt, struct loop *loop)
 {
-  
   use_operand_p use_a, use_b;
   imm_use_iterator imm_iter;
   ssa_op_iter op_iter, op_iter1;
-  tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
+  tree op0 = gimple_assign_lhs (stmt);
 
   /* The statement should not define a variable used in the inner
      loop.  */
   if (TREE_CODE (op0) == SSA_NAME
       && !can_duplicate_iv (op0, loop))
     FOR_EACH_IMM_USE_FAST (use_a, imm_iter, op0)
-      if (bb_for_stmt (USE_STMT (use_a))->loop_father
-	  == loop->inner)
+      if (gimple_bb (USE_STMT (use_a))->loop_father == loop->inner)
 	return true;
 
   FOR_EACH_SSA_USE_OPERAND (use_a, stmt, op_iter, SSA_OP_USE)
     {
-      tree node, op = USE_FROM_PTR (use_a);
+      gimple node;
+      tree op = USE_FROM_PTR (use_a);
 
       /* The variables should not be used in both loops.  */
       if (!can_duplicate_iv (op, loop))
 	FOR_EACH_IMM_USE_FAST (use_b, imm_iter, op)
-	  if (bb_for_stmt (USE_STMT (use_b))->loop_father
-	      == loop->inner)
+	  if (gimple_bb (USE_STMT (use_b))->loop_father == loop->inner)
 	    return true;
 
       /* The statement should not use the value of a scalar that was
 	 modified in the loop.  */
       node = SSA_NAME_DEF_STMT (op);
-      if (TREE_CODE (node) == PHI_NODE)
+      if (gimple_code (node) == GIMPLE_PHI)
 	FOR_EACH_PHI_ARG (use_b, node, op_iter1, SSA_OP_USE)
-	{
-	  tree arg = USE_FROM_PTR (use_b);
+	  {
+	    tree arg = USE_FROM_PTR (use_b);
 
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      tree arg_stmt = SSA_NAME_DEF_STMT (arg);
+	    if (TREE_CODE (arg) == SSA_NAME)
+	      {
+		gimple arg_stmt = SSA_NAME_DEF_STMT (arg);
 
-	      if (bb_for_stmt (arg_stmt)
-		  && (bb_for_stmt (arg_stmt)->loop_father
-		      == loop->inner))
-		return true;
-	    }
-	}
+		if (gimple_bb (arg_stmt)
+		    && (gimple_bb (arg_stmt)->loop_father == loop->inner))
+		  return true;
+	      }
+	  }
     }
 
   return false;
 }
-
 /* Return true when BB contains statements that can harm the transform
    to a perfect loop nest.  */
 
 static bool
 cannot_convert_bb_to_perfect_nest (basic_block bb, struct loop *loop)
 {
-  block_stmt_iterator bsi;
-  tree exit_condition = get_loop_exit_condition (loop);
+  gimple_stmt_iterator bsi;
+  gimple exit_condition = get_loop_exit_condition (loop);
 
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     { 
-      tree stmt = bsi_stmt (bsi);
+      gimple stmt = gsi_stmt (bsi);
 
       if (stmt == exit_condition
 	  || not_interesting_stmt (stmt)
 	  || stmt_is_bumper_for_loop (loop, stmt))
 	continue;
 
-      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+      if (is_gimple_assign (stmt))
 	{
 	  if (cannot_convert_modify_to_perfect_nest (stmt, loop))
 	    return true;
 
-	  if (can_duplicate_iv (GIMPLE_STMT_OPERAND (stmt, 0), loop))
+	  if (can_duplicate_iv (gimple_assign_lhs (stmt), loop))
 	    continue;
 
 	  if (can_put_in_inner_loop (loop->inner, stmt)
@@ -2298,13 +2297,14 @@ cannot_convert_bb_to_perfect_nest (basic_block bb, struct loop *loop)
 	 right now.  This test ensures that the statement comes
 	 completely *after* the inner loop.  */
       if (!dominated_by_p (CDI_DOMINATORS,
-			   bb_for_stmt (stmt), 
+			   gimple_bb (stmt), 
 			   loop->inner->header))
 	return true;
     }
 
   return false;
 }
+
 
 /* Return TRUE if LOOP is an imperfect nest that we can convert to a
    perfect one.  At the moment, we only handle imperfect nests of
@@ -2314,8 +2314,8 @@ static bool
 can_convert_to_perfect_nest (struct loop *loop)
 {
   basic_block *bbs;
-  tree phi;
   size_t i;
+  gimple_stmt_iterator si;
 
   /* Can't handle triply nested+ loops yet.  */
   if (!loop->inner || loop->inner->inner)
@@ -2329,8 +2329,10 @@ can_convert_to_perfect_nest (struct loop *loop)
 
   /* We also need to make sure the loop exit only has simple copy phis in it,
      otherwise we don't know how to transform it into a perfect nest.  */
-  for (phi = phi_nodes (single_exit (loop)->dest); phi; phi = PHI_CHAIN (phi))
-    if (PHI_NUM_ARGS (phi) != 1)
+  for (si = gsi_start_phis (single_exit (loop)->dest);
+       !gsi_end_p (si);
+       gsi_next (&si))
+    if (gimple_phi_num_args (gsi_stmt (si)) != 1)
       goto fail;
   
   free (bbs);
@@ -2385,17 +2387,17 @@ perfect_nestify (struct loop *loop,
 		 VEC(tree,heap) *loopivs)
 {
   basic_block *bbs;
-  tree exit_condition;
-  tree cond_stmt;
+  gimple exit_condition;
+  gimple cond_stmt;
   basic_block preheaderbb, headerbb, bodybb, latchbb, olddest;
   int i;
-  block_stmt_iterator bsi, firstbsi;
+  gimple_stmt_iterator bsi, firstbsi;
   bool insert_after;
   edge e;
   struct loop *newloop;
-  tree phi;
+  gimple phi;
   tree uboundvar;
-  tree stmt;
+  gimple stmt;
   tree oldivvar, ivvar, ivvarinced;
   VEC(tree,heap) *phis = NULL;
   htab_t replacements = NULL;
@@ -2406,8 +2408,9 @@ perfect_nestify (struct loop *loop,
   headerbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   
   /* Push the exit phi nodes that we are moving.  */
-  for (phi = phi_nodes (olddest); phi; phi = PHI_CHAIN (phi))
+  for (bsi = gsi_start_phis (olddest); !gsi_end_p (bsi); gsi_next (&bsi))
     {
+      phi = gsi_stmt (bsi);
       VEC_reserve (tree, heap, phis, 2);
       VEC_quick_push (tree, phis, PHI_RESULT (phi));
       VEC_quick_push (tree, phis, PHI_ARG_DEF (phi, 0));
@@ -2415,8 +2418,8 @@ perfect_nestify (struct loop *loop,
   e = redirect_edge_and_branch (single_succ_edge (preheaderbb), headerbb);
 
   /* Remove the exit phis from the old basic block.  */
-  while (phi_nodes (olddest) != NULL)
-    remove_phi_node (phi_nodes (olddest), NULL, false);
+  for (bsi = gsi_start_phis (olddest); !gsi_end_p (bsi); )
+    remove_phi_node (&bsi, false);
 
   /* and add them back to the new basic block.  */
   while (VEC_length (tree, phis) != 0)
@@ -2434,13 +2437,10 @@ perfect_nestify (struct loop *loop,
   bodybb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   latchbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   make_edge (headerbb, bodybb, EDGE_FALLTHRU); 
-  cond_stmt = build3 (COND_EXPR, void_type_node,
-		      build2 (NE_EXPR, boolean_type_node, 
-			      integer_one_node, 
-			      integer_zero_node), 
-		      NULL_TREE, NULL_TREE);
-  bsi = bsi_start (bodybb);
-  bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
+  cond_stmt = gimple_build_cond (NE_EXPR, integer_one_node, integer_zero_node,
+				 NULL_TREE, NULL_TREE);
+  bsi = gsi_start_bb (bodybb);
+  gsi_insert_after (&bsi, cond_stmt, GSI_NEW_STMT);
   e = make_edge (bodybb, olddest, EDGE_FALSE_VALUE);
   make_edge (bodybb, latchbb, EDGE_TRUE_VALUE);
   make_edge (latchbb, headerbb, EDGE_FALLTHRU);
@@ -2474,19 +2474,16 @@ perfect_nestify (struct loop *loop,
   exit_condition = get_loop_exit_condition (newloop);
   uboundvar = create_tmp_var (integer_type_node, "uboundvar");
   add_referenced_var (uboundvar);
-  stmt = build_gimple_modify_stmt (uboundvar, VEC_index (tree, ubounds, 0));
+  stmt = gimple_build_assign (uboundvar, VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = uboundvar;
+  gimple_assign_set_lhs (stmt, uboundvar);
 
   if (insert_after)
-    bsi_insert_after (&bsi, stmt, BSI_SAME_STMT);
+    gsi_insert_after (&bsi, stmt, GSI_SAME_STMT);
   else
-    bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
+    gsi_insert_before (&bsi, stmt, GSI_SAME_STMT);
   update_stmt (stmt);
-  COND_EXPR_COND (exit_condition) = build2 (GE_EXPR, 
-					    boolean_type_node,
-					    uboundvar,
-					    ivvarinced);
+  gimple_cond_set_condition (exit_condition, GE_EXPR, uboundvar, ivvarinced);
   update_stmt (exit_condition);
   replacements = htab_create_ggc (20, tree_map_hash,
 				  tree_map_eq, NULL);
@@ -2494,10 +2491,10 @@ perfect_nestify (struct loop *loop,
   /* Now move the statements, and replace the induction variable in the moved
      statements with the correct loop induction variable.  */
   oldivvar = VEC_index (tree, loopivs, 0);
-  firstbsi = bsi_start (bodybb);
+  firstbsi = gsi_start_bb (bodybb);
   for (i = loop->num_nodes - 1; i >= 0 ; i--)
     {
-      block_stmt_iterator tobsi = bsi_last (bodybb);
+      gimple_stmt_iterator tobsi = gsi_last_bb (bodybb);
       if (bbs[i]->loop_father == loop)
 	{
 	  /* If this is true, we are *before* the inner loop.
@@ -2513,22 +2510,22 @@ perfect_nestify (struct loop *loop,
 
 	  if (dominated_by_p (CDI_DOMINATORS, loop->inner->header, bbs[i]))
 	    {
-	      block_stmt_iterator header_bsi 
-		= bsi_after_labels (loop->inner->header);
+	      gimple_stmt_iterator header_bsi 
+		= gsi_after_labels (loop->inner->header);
 
-	      for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
+	      for (bsi = gsi_start_bb (bbs[i]); !gsi_end_p (bsi);)
 		{ 
-		  tree stmt = bsi_stmt (bsi);
+		  gimple stmt = gsi_stmt (bsi);
 
 		  if (stmt == exit_condition
 		      || not_interesting_stmt (stmt)
 		      || stmt_is_bumper_for_loop (loop, stmt))
 		    {
-		      bsi_next (&bsi);
+		      gsi_next (&bsi);
 		      continue;
 		    }
 
-		  bsi_move_before (&bsi, &header_bsi);
+		  gsi_move_before (&bsi, &header_bsi);
 		}
 	    }
 	  else
@@ -2536,16 +2533,17 @@ perfect_nestify (struct loop *loop,
 	      /* Note that the bsi only needs to be explicitly incremented
 		 when we don't move something, since it is automatically
 		 incremented when we do.  */
-	      for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi);)
+	      for (bsi = gsi_start_bb (bbs[i]); !gsi_end_p (bsi);)
 		{ 
 		  ssa_op_iter i;
-		  tree n, stmt = bsi_stmt (bsi);
+		  tree n;
+		  gimple stmt = gsi_stmt (bsi);
 		  
 		  if (stmt == exit_condition
 		      || not_interesting_stmt (stmt)
 		      || stmt_is_bumper_for_loop (loop, stmt))
 		    {
-		      bsi_next (&bsi);
+		      gsi_next (&bsi);
 		      continue;
 		    }
 		  
@@ -2553,7 +2551,7 @@ perfect_nestify (struct loop *loop,
 		    (loop, stmt, oldivvar, VEC_index (int, steps, 0), ivvar,
 		     VEC_index (tree, lbounds, 0), replacements, &firstbsi);
 
-		  bsi_move_before (&bsi, &tobsi);
+		  gsi_move_before (&bsi, &tobsi);
 		  
 		  /* If the statement has any virtual operands, they may
 		     need to be rewired because the original loop may
@@ -2793,7 +2791,7 @@ build_access_matrix (data_reference_p data_reference,
 {
   struct access_matrix *am = GGC_NEW (struct access_matrix);
   unsigned i, ndim = DR_NUM_DIMENSIONS (data_reference);
-  struct loop *loop = bb_for_stmt (DR_STMT (data_reference))->loop_father;
+  struct loop *loop = gimple_bb (DR_STMT (data_reference))->loop_father;
   struct loop *loop_nest = get_loop (loop_nest_num);
   unsigned nivs = loop_depth (loop) - loop_depth (loop_nest) + 1;
   unsigned lambda_nb_columns;

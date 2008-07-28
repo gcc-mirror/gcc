@@ -47,11 +47,20 @@ typedef struct rtvec_def *rtvec;
 typedef const struct rtvec_def *const_rtvec;
 union tree_node;
 typedef union tree_node *tree;
+union gimple_statement_d;
+typedef union gimple_statement_d *gimple;
 typedef const union tree_node *const_tree;
+typedef const union gimple_statement_d *const_gimple;
 union section;
 typedef union section section;
 struct cl_target_option;
 struct cl_optimization;
+struct gimple_seq_d;
+typedef struct gimple_seq_d *gimple_seq;
+typedef const struct gimple_seq_d *const_gimple_seq;
+struct gimple_seq_node_d;
+typedef struct gimple_seq_node_d *gimple_seq_node;
+typedef const struct gimple_seq_node_d *const_gimple_seq_node;
 
 /* The major intermediate representations of GCC.  */
 enum ir_type {

@@ -556,31 +556,31 @@ addr_to_parts (aff_tree *addr, struct mem_address *parts)
 /* Force the PARTS to register.  */
 
 static void
-gimplify_mem_ref_parts (block_stmt_iterator *bsi, struct mem_address *parts)
+gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
 {
   if (parts->base)
-    parts->base = force_gimple_operand_bsi (bsi, parts->base,
+    parts->base = force_gimple_operand_gsi (gsi, parts->base,
 					    true, NULL_TREE,
-					    true, BSI_SAME_STMT);
+					    true, GSI_SAME_STMT);
   if (parts->index)
-    parts->index = force_gimple_operand_bsi (bsi, parts->index,
+    parts->index = force_gimple_operand_gsi (gsi, parts->index,
 					     true, NULL_TREE,
-					     true, BSI_SAME_STMT);
+					     true, GSI_SAME_STMT);
 }
 
 /* Creates and returns a TARGET_MEM_REF for address ADDR.  If necessary
-   computations are emitted in front of BSI.  TYPE is the mode
+   computations are emitted in front of GSI.  TYPE is the mode
    of created memory reference.  */
 
 tree
-create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
+create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr)
 {
   tree mem_ref, tmp;
   tree atype;
   struct mem_address parts;
 
   addr_to_parts (addr, &parts);
-  gimplify_mem_ref_parts (bsi, &parts);
+  gimplify_mem_ref_parts (gsi, &parts);
   mem_ref = create_mem_ref_raw (type, &parts);
   if (mem_ref)
     return mem_ref;
@@ -591,10 +591,10 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
     {
       /* Move the multiplication to index.  */
       gcc_assert (parts.index);
-      parts.index = force_gimple_operand_bsi (bsi,
+      parts.index = force_gimple_operand_gsi (gsi,
 				fold_build2 (MULT_EXPR, sizetype,
 					     parts.index, parts.step),
-				true, NULL_TREE, true, BSI_SAME_STMT);
+				true, NULL_TREE, true, GSI_SAME_STMT);
       parts.step = NULL_TREE;
   
       mem_ref = create_mem_ref_raw (type, &parts);
@@ -616,11 +616,11 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 	  if (parts.index)
 	    {
 	      atype = TREE_TYPE (tmp);
-	      parts.base = force_gimple_operand_bsi (bsi,
+	      parts.base = force_gimple_operand_gsi (gsi,
 			fold_build2 (PLUS_EXPR, atype,
 				     fold_convert (atype, parts.base),
 				     tmp),
-			true, NULL_TREE, true, BSI_SAME_STMT);
+			true, NULL_TREE, true, GSI_SAME_STMT);
 	    }
 	  else
 	    {
@@ -643,11 +643,11 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
       if (parts.base)
 	{
 	  atype = TREE_TYPE (parts.base);
-	  parts.base = force_gimple_operand_bsi (bsi,
+	  parts.base = force_gimple_operand_gsi (gsi,
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
 			    	     parts.index),
-			true, NULL_TREE, true, BSI_SAME_STMT);
+			true, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	parts.base = parts.index;
@@ -664,11 +664,11 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
       if (parts.base)
 	{
 	  atype = TREE_TYPE (parts.base);
-	  parts.base = force_gimple_operand_bsi (bsi, 
+	  parts.base = force_gimple_operand_gsi (gsi, 
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
 				     fold_convert (sizetype, parts.offset)),
-			true, NULL_TREE, true, BSI_SAME_STMT);
+			true, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	parts.base = parts.offset;

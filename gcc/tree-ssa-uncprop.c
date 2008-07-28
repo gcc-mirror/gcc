@@ -1,5 +1,5 @@
 /* Routines for discovering and unpropagating edge equivalences.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,50 +65,35 @@ associate_equivalences_with_edges (void)
      then it might create a useful equivalence.  */
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator bsi = bsi_last (bb);
-      tree stmt;
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      gimple stmt;
 
       /* If the block does not end with a COND_EXPR or SWITCH_EXPR
 	 then there is nothing to do.  */
-      if (bsi_end_p (bsi))
+      if (gsi_end_p (gsi))
 	continue;
 
-      stmt = bsi_stmt (bsi);
+      stmt = gsi_stmt (gsi);
 
       if (!stmt)
 	continue;
 
       /* A COND_EXPR may create an equivalency in a variety of different
 	 ways.  */
-      if (TREE_CODE (stmt) == COND_EXPR)
+      if (gimple_code (stmt) == GIMPLE_COND)
 	{
-	  tree cond = COND_EXPR_COND (stmt);
 	  edge true_edge;
 	  edge false_edge;
 	  struct edge_equivalency *equivalency;
+	  enum tree_code code = gimple_cond_code (stmt);
 
 	  extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
-	  /* If the conditional is a single variable 'X', record 'X = 1'
-	     for the true edge and 'X = 0' on the false edge.  */
-	  if (TREE_CODE (cond) == SSA_NAME
-	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
-	    {
-	      equivalency = XNEW (struct edge_equivalency);
-	      equivalency->rhs = constant_boolean_node (1, TREE_TYPE (cond));
-	      equivalency->lhs = cond;
-	      true_edge->aux = equivalency;
-
-	      equivalency = XNEW (struct edge_equivalency);
-	      equivalency->rhs = constant_boolean_node (0, TREE_TYPE (cond));
-	      equivalency->lhs = cond;
-	      false_edge->aux = equivalency;
-	    }
 	  /* Equality tests may create one or two equivalences.  */
-	  else if (TREE_CODE (cond) == EQ_EXPR || TREE_CODE (cond) == NE_EXPR)
+	  if (code == EQ_EXPR || code == NE_EXPR)
 	    {
-	      tree op0 = TREE_OPERAND (cond, 0);
-	      tree op1 = TREE_OPERAND (cond, 1);
+	      tree op0 = gimple_cond_lhs (stmt);
+	      tree op1 = gimple_cond_rhs (stmt);
 
 	      /* Special case comparing booleans against a constant as we
 		 know the value of OP0 on both arms of the branch.  i.e., we
@@ -118,7 +103,7 @@ associate_equivalences_with_edges (void)
 		  && TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE
 		  && is_gimple_min_invariant (op1))
 		{
-		  if (TREE_CODE (cond) == EQ_EXPR)
+		  if (code == EQ_EXPR)
 		    {
 		      equivalency = XNEW (struct edge_equivalency);
 		      equivalency->lhs = op0;
@@ -170,7 +155,7 @@ associate_equivalences_with_edges (void)
 		  equivalency = XNEW (struct edge_equivalency);
 		  equivalency->lhs = op0;
 		  equivalency->rhs = op1;
-		  if (TREE_CODE (cond) == EQ_EXPR)
+		  if (code == EQ_EXPR)
 		    true_edge->aux = equivalency;
 		  else 
 		    false_edge->aux = equivalency;
@@ -184,15 +169,14 @@ associate_equivalences_with_edges (void)
       /* For a SWITCH_EXPR, a case label which represents a single
 	 value and which is the only case label which reaches the
 	 target block creates an equivalence.  */
-      if (TREE_CODE (stmt) == SWITCH_EXPR)
+      else if (gimple_code (stmt) == GIMPLE_SWITCH)
 	{
-	  tree cond = SWITCH_COND (stmt);
+	  tree cond = gimple_switch_index (stmt);
 
 	  if (TREE_CODE (cond) == SSA_NAME
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
-	      tree labels = SWITCH_LABELS (stmt);
-	      int i, n_labels = TREE_VEC_LENGTH (labels);
+	      int i, n_labels = gimple_switch_num_labels (stmt);
 	      tree *info = XCNEWVEC (tree, n_basic_blocks);
 
 	      /* Walk over the case label vector.  Record blocks
@@ -200,9 +184,8 @@ associate_equivalences_with_edges (void)
 		 a single value.  */
 	      for (i = 0; i < n_labels; i++)
 		{
-		  tree label = TREE_VEC_ELT (labels, i);
+		  tree label = gimple_switch_label (stmt, i);
 		  basic_block bb = label_to_block (CASE_LABEL (label));
-
 
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)
@@ -475,11 +458,12 @@ uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      destination of the edge.  Then remove the temporary equivalence.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      tree phi = phi_nodes (e->dest);
+      gimple_seq phis = phi_nodes (e->dest);
+      gimple_stmt_iterator gsi;
 
       /* If there are no PHI nodes in this destination, then there is
 	 no sense in recording any equivalences.  */
-      if (!phi)
+      if (!phis)
 	continue;
 
       /* Record any equivalency associated with E.  */
@@ -490,9 +474,10 @@ uncprop_into_successor_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	}
 
       /* Walk over the PHI nodes, unpropagating values.  */
-      for ( ; phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start (phis) ; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  /* Sigh.  We'll have more efficient access to this one day.  */
+	  gimple phi = gsi_stmt (gsi);
 	  tree arg = PHI_ARG_DEF (phi, e->dest_idx);
 	  struct equiv_hash_elt equiv_hash_elt;
 	  void **slot;
@@ -624,3 +609,4 @@ struct gimple_opt_pass pass_uncprop =
   TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
  }
 };
+

@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-flow.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "timevar.h"
@@ -208,8 +208,9 @@ extern void debug_sra_elt_name (struct sra_elt *);
 
 /* Forward declarations.  */
 static tree generate_element_ref (struct sra_elt *);
-static tree sra_build_assignment (tree dst, tree src);
-static void mark_all_v_defs (tree list);
+static gimple_seq sra_build_assignment (tree dst, tree src);
+static void mark_all_v_defs_seq (gimple_seq);
+static void mark_all_v_defs_stmt (gimple);
 
 
 /* Return true if DECL is an SRA candidate.  */
@@ -719,7 +720,7 @@ maybe_lookup_element_for_expr (tree expr)
    references, and categorize them.  */
 
 /* A set of callbacks for phases 2 and 4.  They'll be invoked for the
-   various kinds of references seen.  In all cases, *BSI is an iterator
+   various kinds of references seen.  In all cases, *GSI is an iterator
    pointing to the statement being processed.  */
 struct sra_walk_fns
 {
@@ -729,21 +730,21 @@ struct sra_walk_fns
      is a left-hand-side reference.  USE_ALL is true if we saw something we
      couldn't quite identify and had to force the use of the entire object.  */
   void (*use) (struct sra_elt *elt, tree *expr_p,
-	       block_stmt_iterator *bsi, bool is_output, bool use_all);
+	       gimple_stmt_iterator *gsi, bool is_output, bool use_all);
 
   /* Invoked when we have a copy between two scalarizable references.  */
   void (*copy) (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
-		block_stmt_iterator *bsi);
+		gimple_stmt_iterator *gsi);
 
   /* Invoked when ELT is initialized from a constant.  VALUE may be NULL,
      in which case it should be treated as an empty CONSTRUCTOR.  */
-  void (*init) (struct sra_elt *elt, tree value, block_stmt_iterator *bsi);
+  void (*init) (struct sra_elt *elt, tree value, gimple_stmt_iterator *gsi);
 
   /* Invoked when we have a copy between one scalarizable reference ELT
      and one non-scalarizable reference OTHER without side-effects. 
      IS_OUTPUT is true if ELT is on the left-hand side.  */
   void (*ldst) (struct sra_elt *elt, tree other,
-		block_stmt_iterator *bsi, bool is_output);
+		gimple_stmt_iterator *gsi, bool is_output);
 
   /* True during phase 2, false during phase 4.  */
   /* ??? This is a hack.  */
@@ -777,7 +778,7 @@ sra_find_candidate_decl (tree *tp, int *walk_subtrees,
    If we find one, invoke FNS->USE.  */
 
 static void
-sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
+sra_walk_expr (tree *expr_p, gimple_stmt_iterator *gsi, bool is_output,
 	       const struct sra_walk_fns *fns)
 {
   tree expr = *expr_p;
@@ -804,7 +805,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	    if (disable_scalarization)
 	      elt->cannot_scalarize = true;
 	    else
-	      fns->use (elt, expr_p, bsi, is_output, use_all_p);
+	      fns->use (elt, expr_p, gsi, is_output, use_all_p);
 	  }
 	return;
 
@@ -881,6 +882,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	goto use_all;
 
       case NOP_EXPR:
+      case CONVERT_EXPR:
 	/* Similarly, a nop explicitly wants to look at an object in a
 	   type other than the one we've scalarized.  */
 	goto use_all;
@@ -916,60 +918,62 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
       }
 }
 
-/* Walk a TREE_LIST of values looking for scalarizable aggregates.
+/* Walk the arguments of a GIMPLE_CALL looking for scalarizable aggregates.
    If we find one, invoke FNS->USE.  */
 
 static void
-sra_walk_tree_list (tree list, block_stmt_iterator *bsi, bool is_output,
-		    const struct sra_walk_fns *fns)
-{
-  tree op;
-  for (op = list; op ; op = TREE_CHAIN (op))
-    sra_walk_expr (&TREE_VALUE (op), bsi, is_output, fns);
-}
-
-/* Walk the arguments of a CALL_EXPR looking for scalarizable aggregates.
-   If we find one, invoke FNS->USE.  */
-
-static void
-sra_walk_call_expr (tree expr, block_stmt_iterator *bsi,
+sra_walk_gimple_call (gimple stmt, gimple_stmt_iterator *gsi,
 		    const struct sra_walk_fns *fns)
 {
   int i;
-  int nargs = call_expr_nargs (expr);
+  int nargs = gimple_call_num_args (stmt);
+
   for (i = 0; i < nargs; i++)
-    sra_walk_expr (&CALL_EXPR_ARG (expr, i), bsi, false, fns);
+    sra_walk_expr (gimple_call_arg_ptr (stmt, i), gsi, false, fns);
+
+  if (gimple_call_lhs (stmt))
+    sra_walk_expr (gimple_call_lhs_ptr (stmt), gsi, true, fns);
 }
 
-/* Walk the inputs and outputs of an ASM_EXPR looking for scalarizable
+/* Walk the inputs and outputs of a GIMPLE_ASM looking for scalarizable
    aggregates.  If we find one, invoke FNS->USE.  */
 
 static void
-sra_walk_asm_expr (tree expr, block_stmt_iterator *bsi,
+sra_walk_gimple_asm (gimple stmt, gimple_stmt_iterator *gsi,
 		   const struct sra_walk_fns *fns)
 {
-  sra_walk_tree_list (ASM_INPUTS (expr), bsi, false, fns);
-  sra_walk_tree_list (ASM_OUTPUTS (expr), bsi, true, fns);
+  size_t i;
+  for (i = 0; i < gimple_asm_ninputs (stmt); i++)
+    sra_walk_expr (&TREE_VALUE (gimple_asm_input_op (stmt, i)), gsi, false, fns);
+  for (i = 0; i < gimple_asm_noutputs (stmt); i++)
+    sra_walk_expr (&TREE_VALUE (gimple_asm_output_op (stmt, i)), gsi, true, fns);
 }
 
-/* Walk a GIMPLE_MODIFY_STMT and categorize the assignment appropriately.  */
+/* Walk a GIMPLE_ASSIGN and categorize the assignment appropriately.  */
 
 static void
-sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
-			     const struct sra_walk_fns *fns)
+sra_walk_gimple_assign (gimple stmt, gimple_stmt_iterator *gsi,
+			const struct sra_walk_fns *fns)
 {
-  struct sra_elt *lhs_elt, *rhs_elt;
+  struct sra_elt *lhs_elt = NULL, *rhs_elt = NULL;
   tree lhs, rhs;
 
-  lhs = GIMPLE_STMT_OPERAND (expr, 0);
-  rhs = GIMPLE_STMT_OPERAND (expr, 1);
+  /* If there is more than 1 element on the RHS, only walk the lhs.  */
+  if (!gimple_assign_single_p (stmt))
+    {
+      sra_walk_expr (gimple_assign_lhs_ptr (stmt), gsi, true, fns);
+      return;
+    }
+
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
   lhs_elt = maybe_lookup_element_for_expr (lhs);
   rhs_elt = maybe_lookup_element_for_expr (rhs);
 
   /* If both sides are scalarizable, this is a COPY operation.  */
   if (lhs_elt && rhs_elt)
     {
-      fns->copy (lhs_elt, rhs_elt, bsi);
+      fns->copy (lhs_elt, rhs_elt, gsi);
       return;
     }
 
@@ -977,9 +981,9 @@ sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
   if (rhs_elt)
     {
       if (!rhs_elt->is_scalar && !TREE_SIDE_EFFECTS (lhs))
-	fns->ldst (rhs_elt, lhs, bsi, false);
+	fns->ldst (rhs_elt, lhs, gsi, false);
       else
-	fns->use (rhs_elt, &GIMPLE_STMT_OPERAND (expr, 1), bsi, false, false);
+	fns->use (rhs_elt, gimple_assign_rhs1_ptr (stmt), gsi, false, false);
     }
 
   /* If it isn't scalarizable, there may be scalarizable variables within, so
@@ -988,13 +992,7 @@ sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
      that the statements get inserted in the proper place, before any
      copy-out operations.  */
   else
-    {
-      tree call = get_call_expr_in (rhs);
-      if (call)
-	sra_walk_call_expr (call, bsi, fns);
-      else
-	sra_walk_expr (&GIMPLE_STMT_OPERAND (expr, 1), bsi, false, fns);
-    }
+    sra_walk_expr (gimple_assign_rhs1_ptr (stmt), gsi, false, fns);
 
   /* Likewise, handle the LHS being scalarizable.  We have cases similar
      to those above, but also want to handle RHS being constant.  */
@@ -1005,7 +1003,7 @@ sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
       if (TREE_CODE (rhs) == COMPLEX_EXPR
 	  || TREE_CODE (rhs) == COMPLEX_CST
 	  || TREE_CODE (rhs) == CONSTRUCTOR)
-	fns->init (lhs_elt, rhs, bsi);
+	fns->init (lhs_elt, rhs, gsi);
 
       /* If this is an assignment from read-only memory, treat this as if
 	 we'd been passed the constructor directly.  Invoke INIT.  */
@@ -1013,7 +1011,7 @@ sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
 	       && TREE_STATIC (rhs)
 	       && TREE_READONLY (rhs)
 	       && targetm.binds_local_p (rhs))
-	fns->init (lhs_elt, DECL_INITIAL (rhs), bsi);
+	fns->init (lhs_elt, DECL_INITIAL (rhs), gsi);
 
       /* If this is a copy from a non-scalarizable lvalue, invoke LDST.
 	 The lvalue requirement prevents us from trying to directly scalarize
@@ -1021,19 +1019,19 @@ sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
 	 the function multiple times, and other evil things.  */
       else if (!lhs_elt->is_scalar
 	       && !TREE_SIDE_EFFECTS (rhs) && is_gimple_addressable (rhs))
-	fns->ldst (lhs_elt, rhs, bsi, true);
+	fns->ldst (lhs_elt, rhs, gsi, true);
 
       /* Otherwise we're being used in some context that requires the
 	 aggregate to be seen as a whole.  Invoke USE.  */
       else
-	fns->use (lhs_elt, &GIMPLE_STMT_OPERAND (expr, 0), bsi, true, false);
+	fns->use (lhs_elt, gimple_assign_lhs_ptr (stmt), gsi, true, false);
     }
 
   /* Similarly to above, LHS_ELT being null only means that the LHS as a
      whole is not a scalarizable reference.  There may be occurrences of
      scalarizable variables within, which implies a USE.  */
   else
-    sra_walk_expr (&GIMPLE_STMT_OPERAND (expr, 0), bsi, true, fns);
+    sra_walk_expr (gimple_assign_lhs_ptr (stmt), gsi, true, fns);
 }
 
 /* Entry point to the walk functions.  Search the entire function,
@@ -1044,22 +1042,20 @@ static void
 sra_walk_function (const struct sra_walk_fns *fns)
 {
   basic_block bb;
-  block_stmt_iterator si, ni;
+  gimple_stmt_iterator si, ni;
 
   /* ??? Phase 4 could derive some benefit to walking the function in
      dominator tree order.  */
 
   FOR_EACH_BB (bb)
-    for (si = bsi_start (bb); !bsi_end_p (si); si = ni)
+    for (si = gsi_start_bb (bb); !gsi_end_p (si); si = ni)
       {
-	tree stmt, t;
-	stmt_ann_t ann;
+	gimple stmt;
 
-	stmt = bsi_stmt (si);
-	ann = stmt_ann (stmt);
+	stmt = gsi_stmt (si);
 
 	ni = si;
-	bsi_next (&ni);
+	gsi_next (&ni);
 
 	/* If the statement has no virtual operands, then it doesn't
 	   make any structure references that we care about.  */
@@ -1067,35 +1063,28 @@ sra_walk_function (const struct sra_walk_fns *fns)
 	    && ZERO_SSA_OPERANDS (stmt, (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE)))
 	      continue;
 
-	switch (TREE_CODE (stmt))
+	switch (gimple_code (stmt))
 	  {
-	  case RETURN_EXPR:
+	  case GIMPLE_RETURN:
 	    /* If we have "return <retval>" then the return value is
 	       already exposed for our pleasure.  Walk it as a USE to
 	       force all the components back in place for the return.
-
-	       If we have an embedded assignment, then <retval> is of
-	       a type that gets returned in registers in this ABI, and
-	       we do not wish to extend their lifetimes.  Treat this
-	       as a USE of the variable on the RHS of this assignment.  */
-
-	    t = TREE_OPERAND (stmt, 0);
-	    if (t == NULL_TREE)
+	       */
+	    if (gimple_return_retval (stmt)  == NULL_TREE)
 	      ;
-	    else if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
-	      sra_walk_expr (&GIMPLE_STMT_OPERAND (t, 1), &si, false, fns);
 	    else
-	      sra_walk_expr (&TREE_OPERAND (stmt, 0), &si, false, fns);
+	      sra_walk_expr (gimple_return_retval_ptr (stmt), &si, false,
+                             fns);
 	    break;
 
-	  case GIMPLE_MODIFY_STMT:
-	    sra_walk_gimple_modify_stmt (stmt, &si, fns);
+	  case GIMPLE_ASSIGN:
+	    sra_walk_gimple_assign (stmt, &si, fns);
 	    break;
-	  case CALL_EXPR:
-	    sra_walk_call_expr (stmt, &si, fns);
+	  case GIMPLE_CALL:
+	    sra_walk_gimple_call (stmt, &si, fns);
 	    break;
-	  case ASM_EXPR:
-	    sra_walk_asm_expr (stmt, &si, fns);
+	  case GIMPLE_ASM:
+	    sra_walk_gimple_asm (stmt, &si, fns);
 	    break;
 
 	  default:
@@ -1136,7 +1125,7 @@ find_candidates_for_sra (void)
 
 static void
 scan_use (struct sra_elt *elt, tree *expr_p ATTRIBUTE_UNUSED,
-	  block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
+	  gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 	  bool is_output ATTRIBUTE_UNUSED, bool use_all ATTRIBUTE_UNUSED)
 {
   elt->n_uses += 1;
@@ -1144,7 +1133,7 @@ scan_use (struct sra_elt *elt, tree *expr_p ATTRIBUTE_UNUSED,
 
 static void
 scan_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
-	   block_stmt_iterator *bsi ATTRIBUTE_UNUSED)
+	   gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED)
 {
   lhs_elt->n_copies += 1;
   rhs_elt->n_copies += 1;
@@ -1152,14 +1141,14 @@ scan_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
 
 static void
 scan_init (struct sra_elt *lhs_elt, tree rhs ATTRIBUTE_UNUSED,
-	   block_stmt_iterator *bsi ATTRIBUTE_UNUSED)
+	   gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED)
 {
   lhs_elt->n_copies += 1;
 }
 
 static void
 scan_ldst (struct sra_elt *elt, tree other ATTRIBUTE_UNUSED,
-	   block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
+	   gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 	   bool is_output ATTRIBUTE_UNUSED)
 {
   elt->n_copies += 1;
@@ -1350,10 +1339,12 @@ instantiate_element (struct sra_elt *elt)
       || (var != elt->replacement
 	  && TREE_CODE (elt->replacement) == BIT_FIELD_REF))
     {
-      tree init = sra_build_assignment (var, fold_convert (TREE_TYPE (var),
-							   integer_zero_node));
-      insert_edge_copies (init, ENTRY_BLOCK_PTR);
-      mark_all_v_defs (init);
+      gimple_seq init = sra_build_assignment (var,
+                                              fold_convert (TREE_TYPE (var),
+                                                            integer_zero_node)
+                                             );
+      insert_edge_copies_seq (init, ENTRY_BLOCK_PTR);
+      mark_all_v_defs_seq (init);
     }
 
   if (dump_file)
@@ -2030,7 +2021,7 @@ decide_instantiations (void)
    non-scalar.  */
 
 static void
-mark_all_v_defs_1 (tree stmt)
+mark_all_v_defs_stmt (gimple stmt)
 {
   tree sym;
   ssa_op_iter iter;
@@ -2050,18 +2041,13 @@ mark_all_v_defs_1 (tree stmt)
    LIST for renaming.  */
 
 static void
-mark_all_v_defs (tree list)
+mark_all_v_defs_seq (gimple_seq seq)
 {
-  if (TREE_CODE (list) != STATEMENT_LIST)
-    mark_all_v_defs_1 (list);
-  else
-    {
-      tree_stmt_iterator i;
-      for (i = tsi_start (list); !tsi_end_p (i); tsi_next (&i))
-	mark_all_v_defs_1 (tsi_stmt (i));
-    }
-}
+  gimple_stmt_iterator gsi;
 
+  for (gsi = gsi_start (seq); !gsi_end_p (gsi); gsi_next (&gsi))
+    mark_all_v_defs_stmt (gsi_stmt (gsi));
+}
 
 /* Mark every replacement under ELT with TREE_NO_WARNING.  */
 
@@ -2155,9 +2141,11 @@ scalar_bitfield_p (tree bf)
 
 /* Create an assignment statement from SRC to DST.  */
 
-static tree
+static gimple_seq
 sra_build_assignment (tree dst, tree src)
 {
+  gimple stmt;
+  gimple_seq seq = NULL;
   /* Turning BIT_FIELD_REFs into bit operations enables other passes
      to do a much better job at optimizing the code.
      From dst = BIT_FIELD_REF <var, sz, off> we produce
@@ -2172,7 +2160,6 @@ sra_build_assignment (tree dst, tree src)
     {
       tree var, shift, width;
       tree utype, stype, stmp, utmp, dtmp;
-      tree list, stmt;
       bool unsignedp = (INTEGRAL_TYPE_P (TREE_TYPE (src))
 		        ? TYPE_UNSIGNED (TREE_TYPE (src)) : true);
 
@@ -2205,7 +2192,6 @@ sra_build_assignment (tree dst, tree src)
       else if (!TYPE_UNSIGNED (utype))
 	utype = unsigned_type_for (utype);
 
-      list = NULL;
       stmp = make_rename_temp (stype, "SR");
 
       /* Convert the base var of the BIT_FIELD_REF to the scalar type
@@ -2213,22 +2199,19 @@ sra_build_assignment (tree dst, tree src)
       if (!useless_type_conversion_p (stype, TREE_TYPE (var)))
 	{
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
-	    stmt = build_gimple_modify_stmt (stmp,
-					     fold_convert (stype, var));
+	    stmt = gimple_build_assign (stmp, fold_convert (stype, var));
 	  else
-	    stmt = build_gimple_modify_stmt (stmp,
-					     fold_build1 (VIEW_CONVERT_EXPR,
-							  stype, var));
-	  append_to_statement_list (stmt, &list);
+	    stmt = gimple_build_assign (stmp, fold_build1 (VIEW_CONVERT_EXPR,
+							   stype, var));
+	  gimple_seq_add_stmt (&seq, stmt);
 	  var = stmp;
 	}
 
       if (!integer_zerop (shift))
 	{
-	  stmt = build_gimple_modify_stmt (stmp,
-					   fold_build2 (RSHIFT_EXPR, stype,
-							var, shift));
-	  append_to_statement_list (stmt, &list);
+	  stmt = gimple_build_assign (stmp, fold_build2 (RSHIFT_EXPR, stype,
+							 var, shift));
+	  gimple_seq_add_stmt (&seq, stmt);
 	  var = stmp;
 	}
 
@@ -2241,10 +2224,9 @@ sra_build_assignment (tree dst, tree src)
 	  tree mask = int_const_binop (LSHIFT_EXPR, one, width, 0);
 	  mask = int_const_binop (MINUS_EXPR, mask, one, 0);
 
-	  stmt = build_gimple_modify_stmt (stmp,
-					   fold_build2 (BIT_AND_EXPR, stype,
-							var, mask));
-	  append_to_statement_list (stmt, &list);
+	  stmt = gimple_build_assign (stmp, fold_build2 (BIT_AND_EXPR, stype,
+							 var, mask));
+	  gimple_seq_add_stmt (&seq, stmt);
 	  var = stmp;
 	}
 
@@ -2254,8 +2236,8 @@ sra_build_assignment (tree dst, tree src)
 	{
 	  utmp = make_rename_temp (utype, "SR");
 
-	  stmt = build_gimple_modify_stmt (utmp, fold_convert (utype, var));
-	  append_to_statement_list (stmt, &list);
+	  stmt = gimple_build_assign (utmp, fold_convert (utype, var));
+	  gimple_seq_add_stmt (&seq, stmt);
 
 	  var = utmp;
 	}
@@ -2269,15 +2251,13 @@ sra_build_assignment (tree dst, tree src)
 					  size_binop (MINUS_EXPR, width,
 						      bitsize_int (1)), 0);
 
-	  stmt = build_gimple_modify_stmt (utmp,
-					   fold_build2 (BIT_XOR_EXPR, utype,
-							var, signbit));
-	  append_to_statement_list (stmt, &list);
+	  stmt = gimple_build_assign (utmp, fold_build2 (BIT_XOR_EXPR, utype,
+							 var, signbit));
+	  gimple_seq_add_stmt (&seq, stmt);
 
-	  stmt = build_gimple_modify_stmt (utmp,
-					   fold_build2 (MINUS_EXPR, utype,
-							utmp, signbit));
-	  append_to_statement_list (stmt, &list);
+	  stmt = gimple_build_assign (utmp, fold_build2 (MINUS_EXPR, utype,
+							 utmp, signbit));
+	  gimple_seq_add_stmt (&seq, stmt);
 
 	  var = utmp;
 	}
@@ -2298,15 +2278,15 @@ sra_build_assignment (tree dst, tree src)
 	  if (!is_gimple_reg (dst))
 	    {
 	      dtmp = make_rename_temp (TREE_TYPE (dst), "SR");
-	      stmt = build_gimple_modify_stmt (dtmp, var);
-	      append_to_statement_list (stmt, &list);
+	      stmt = gimple_build_assign (dtmp, var);
+	      gimple_seq_add_stmt (&seq, stmt);
 	      var = dtmp;
 	    }
 	}
-      stmt = build_gimple_modify_stmt (dst, var);
-      append_to_statement_list (stmt, &list);
+      stmt = gimple_build_assign (dst, var);
+      gimple_seq_add_stmt (&seq, stmt);
 
-      return list;
+      return seq;
     }
 
   /* fold_build3 (BIT_FIELD_REF, ...) sometimes returns a cast.  */
@@ -2329,7 +2309,9 @@ sra_build_assignment (tree dst, tree src)
 	   && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
     src = fold_convert (TREE_TYPE (dst), src);
 
-  return build_gimple_modify_stmt (dst, src);
+  stmt = gimple_build_assign (dst, src);
+  gimple_seq_add_stmt (&seq, stmt);
+  return seq;
 }
 
 /* BIT_FIELD_REFs must not be shared.  sra_build_elt_assignment()
@@ -2339,11 +2321,12 @@ sra_build_assignment (tree dst, tree src)
 /* Emit an assignment from SRC to DST, but if DST is a scalarizable
    BIT_FIELD_REF, turn it into bit operations.  */
 
-static tree
+static gimple_seq
 sra_build_bf_assignment (tree dst, tree src)
 {
   tree var, type, utype, tmp, tmp2, tmp3;
-  tree list, stmt;
+  gimple_seq seq;
+  gimple stmt;
   tree cst, cst2, mask;
   tree minshift, maxshift;
 
@@ -2355,7 +2338,7 @@ sra_build_bf_assignment (tree dst, tree src)
   if (!scalar_bitfield_p (dst))
     return sra_build_assignment (REPLDUP (dst), src);
 
-  list = NULL;
+  seq = NULL;
 
   cst = fold_convert (bitsizetype, TREE_OPERAND (dst, 2));
   cst2 = size_binop (PLUS_EXPR,
@@ -2404,11 +2387,11 @@ sra_build_bf_assignment (tree dst, tree src)
       tmp2 = make_rename_temp (utype, "SR");
 
       if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
-	stmt = build_gimple_modify_stmt (tmp2, fold_convert (utype, tmp));
+	stmt = gimple_build_assign (tmp2, fold_convert (utype, tmp));
       else
-	stmt = build_gimple_modify_stmt (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
-							    utype, tmp));
-      append_to_statement_list (stmt, &list);
+	stmt = gimple_build_assign (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
+						       utype, tmp));
+      gimple_seq_add_stmt (&seq, stmt);
     }
   else
     tmp2 = var;
@@ -2416,10 +2399,9 @@ sra_build_bf_assignment (tree dst, tree src)
   if (!integer_zerop (mask))
     {
       tmp = make_rename_temp (utype, "SR");
-      stmt = build_gimple_modify_stmt (tmp,
-				       fold_build2 (BIT_AND_EXPR, utype,
+      stmt = gimple_build_assign (tmp, fold_build2 (BIT_AND_EXPR, utype,
 						    tmp2, mask));
-      append_to_statement_list (stmt, &list);
+      gimple_seq_add_stmt (&seq, stmt);
     }
   else
     tmp = mask;
@@ -2428,28 +2410,31 @@ sra_build_bf_assignment (tree dst, tree src)
     tmp2 = src;
   else if (INTEGRAL_TYPE_P (TREE_TYPE (src)))
     {
+      gimple_seq tmp_seq;
       tmp2 = make_rename_temp (TREE_TYPE (src), "SR");
-      stmt = sra_build_assignment (tmp2, src);
-      append_to_statement_list (stmt, &list);
+      tmp_seq = sra_build_assignment (tmp2, src);
+      gimple_seq_add_seq (&seq, tmp_seq);
     }
   else
     {
+      gimple_seq tmp_seq;
       tmp2 = make_rename_temp
 	(lang_hooks.types.type_for_size
 	 (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (src))),
 	  1), "SR");
-      stmt = sra_build_assignment (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
+      tmp_seq = sra_build_assignment (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
 						      TREE_TYPE (tmp2), src));
-      append_to_statement_list (stmt, &list);
+      gimple_seq_add_seq (&seq, tmp_seq);
     }
 
   if (!TYPE_UNSIGNED (TREE_TYPE (tmp2)))
     {
+      gimple_seq tmp_seq;
       tree ut = unsigned_type_for (TREE_TYPE (tmp2));
       tmp3 = make_rename_temp (ut, "SR");
       tmp2 = fold_convert (ut, tmp2);
-      stmt = sra_build_assignment (tmp3, tmp2);
-      append_to_statement_list (stmt, &list);
+      tmp_seq = sra_build_assignment (tmp3, tmp2);
+      gimple_seq_add_seq (&seq, tmp_seq);
 
       tmp2 = fold_build1 (BIT_NOT_EXPR, utype, mask);
       tmp2 = int_const_binop (RSHIFT_EXPR, tmp2, minshift, true);
@@ -2459,8 +2444,8 @@ sra_build_bf_assignment (tree dst, tree src)
       if (tmp3 != tmp2)
 	{
 	  tmp3 = make_rename_temp (ut, "SR");
-	  stmt = sra_build_assignment (tmp3, tmp2);
-	  append_to_statement_list (stmt, &list);
+	  tmp_seq = sra_build_assignment (tmp3, tmp2);
+          gimple_seq_add_seq (&seq, tmp_seq);
 	}
 
       tmp2 = tmp3;
@@ -2468,20 +2453,20 @@ sra_build_bf_assignment (tree dst, tree src)
 
   if (TYPE_MAIN_VARIANT (TREE_TYPE (tmp2)) != TYPE_MAIN_VARIANT (utype))
     {
+      gimple_seq tmp_seq;
       tmp3 = make_rename_temp (utype, "SR");
       tmp2 = fold_convert (utype, tmp2);
-      stmt = sra_build_assignment (tmp3, tmp2);
-      append_to_statement_list (stmt, &list);
+      tmp_seq = sra_build_assignment (tmp3, tmp2);
+      gimple_seq_add_seq (&seq, tmp_seq);
       tmp2 = tmp3;
     }
 
   if (!integer_zerop (minshift))
     {
       tmp3 = make_rename_temp (utype, "SR");
-      stmt = build_gimple_modify_stmt (tmp3,
-				       fold_build2 (LSHIFT_EXPR, utype,
-						    tmp2, minshift));
-      append_to_statement_list (stmt, &list);
+      stmt = gimple_build_assign (tmp3, fold_build2 (LSHIFT_EXPR, utype,
+						     tmp2, minshift));
+      gimple_seq_add_stmt (&seq, stmt);
       tmp2 = tmp3;
     }
 
@@ -2489,35 +2474,34 @@ sra_build_bf_assignment (tree dst, tree src)
     tmp3 = make_rename_temp (utype, "SR");
   else
     tmp3 = var;
-  stmt = build_gimple_modify_stmt (tmp3,
-				   fold_build2 (BIT_IOR_EXPR, utype,
-						tmp, tmp2));
-  append_to_statement_list (stmt, &list);
+  stmt = gimple_build_assign (tmp3, fold_build2 (BIT_IOR_EXPR, utype,
+						 tmp, tmp2));
+      gimple_seq_add_stmt (&seq, stmt);
 
   if (tmp3 != var)
     {
       if (TREE_TYPE (var) == type)
-	stmt = build_gimple_modify_stmt (var,
-					 fold_convert (type, tmp3));
+	stmt = gimple_build_assign (var, fold_convert (type, tmp3));
       else
-	stmt = build_gimple_modify_stmt (var,
-					 fold_build1 (VIEW_CONVERT_EXPR,
+	stmt = gimple_build_assign (var, fold_build1 (VIEW_CONVERT_EXPR,
 						      TREE_TYPE (var), tmp3));
-      append_to_statement_list (stmt, &list);
+      gimple_seq_add_stmt (&seq, stmt);
     }
 
-  return list;
+  return seq;
 }
 
 /* Expand an assignment of SRC to the scalarized representation of
    ELT.  If it is a field group, try to widen the assignment to cover
    the full variable.  */
 
-static tree
+static gimple_seq
 sra_build_elt_assignment (struct sra_elt *elt, tree src)
 {
   tree dst = elt->replacement;
-  tree var, tmp, cst, cst2, list, stmt;
+  tree var, tmp, cst, cst2;
+  gimple stmt;
+  gimple_seq seq;
 
   if (TREE_CODE (dst) != BIT_FIELD_REF
       || !elt->in_bitfld_block)
@@ -2553,7 +2537,8 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (var))
 	      != TYPE_MAIN_VARIANT (TREE_TYPE (src)))
 	    {
-	      list = NULL;
+              gimple_seq tmp_seq;
+	      seq = NULL;
 
 	      if (!INTEGRAL_TYPE_P (TREE_TYPE (src)))
 		src = fold_build1 (VIEW_CONVERT_EXPR,
@@ -2564,15 +2549,15 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
 	      gcc_assert (TYPE_UNSIGNED (TREE_TYPE (src)));
 
 	      tmp = make_rename_temp (TREE_TYPE (src), "SR");
-	      stmt = build_gimple_modify_stmt (tmp, src);
-	      append_to_statement_list (stmt, &list);
+	      stmt = gimple_build_assign (tmp, src);
+	      gimple_seq_add_stmt (&seq, stmt);
 
-	      stmt = sra_build_assignment (var,
-					   fold_convert (TREE_TYPE (var),
-							 tmp));
-	      append_to_statement_list (stmt, &list);
+	      tmp_seq = sra_build_assignment (var,
+					      fold_convert (TREE_TYPE (var),
+							    tmp));
+	      gimple_seq_add_seq (&seq, tmp_seq);
 
-	      return list;
+	      return seq;
 	    }
 
 	  src = fold_convert (TREE_TYPE (var), src);
@@ -2595,9 +2580,10 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
 
 static void
 generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
-		     tree *list_p)
+		     gimple_seq *seq_p)
 {
   struct sra_elt *c;
+  gimple_seq tmp_seq;
   tree t;
 
   if (!copy_out && TREE_CODE (expr) == SSA_NAME
@@ -2611,24 +2597,25 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
       i = c->replacement;
 
       t = build2 (COMPLEX_EXPR, elt->type, r, i);
-      t = sra_build_bf_assignment (expr, t);
-      SSA_NAME_DEF_STMT (expr) = t;
-      append_to_statement_list (t, list_p);
+      tmp_seq = sra_build_bf_assignment (expr, t);
+      gcc_assert (gimple_seq_singleton_p (tmp_seq));
+      SSA_NAME_DEF_STMT (expr) = gimple_seq_first_stmt (tmp_seq);
+      gimple_seq_add_seq (seq_p, tmp_seq);
     }
   else if (elt->replacement)
     {
       if (copy_out)
-	t = sra_build_elt_assignment (elt, expr);
+	tmp_seq = sra_build_elt_assignment (elt, expr);
       else
-	t = sra_build_bf_assignment (expr, REPLDUP (elt->replacement));
-      append_to_statement_list (t, list_p);
+	tmp_seq = sra_build_bf_assignment (expr, REPLDUP (elt->replacement));
+      gimple_seq_add_seq (seq_p, tmp_seq);
     }
   else
     {
       FOR_EACH_ACTUAL_CHILD (c, elt)
 	{
 	  t = generate_one_element_ref (c, unshare_expr (expr));
-	  generate_copy_inout (c, copy_out, t, list_p);
+	  generate_copy_inout (c, copy_out, t, seq_p);
 	}
     }
 }
@@ -2638,7 +2625,7 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
    correspondence of instantiated elements.  */
 
 static void
-generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
+generate_element_copy (struct sra_elt *dst, struct sra_elt *src, gimple_seq *seq_p)
 {
   struct sra_elt *dc, *sc;
 
@@ -2653,7 +2640,7 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
 	    {
 	      sc = lookup_element (src, dcs->element, NULL, NO_INSERT);
 	      gcc_assert (sc);
-	      generate_element_copy (dcs, sc, list_p);
+	      generate_element_copy (dcs, sc, seq_p);
 	    }
 
 	  continue;
@@ -2685,17 +2672,17 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
 	  sc = lookup_element (src, f, NULL, NO_INSERT);
 	}
 
-      generate_element_copy (dc, sc, list_p);
+      generate_element_copy (dc, sc, seq_p);
     }
 
   if (dst->replacement)
     {
-      tree t;
+      gimple_seq tmp_seq;
 
       gcc_assert (src->replacement);
 
-      t = sra_build_elt_assignment (dst, REPLDUP (src->replacement));
-      append_to_statement_list (t, list_p);
+      tmp_seq = sra_build_elt_assignment (dst, REPLDUP (src->replacement));
+      gimple_seq_add_seq (seq_p, tmp_seq);
     }
 }
 
@@ -2705,7 +2692,7 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
    with generate_element_init.  */
 
 static void
-generate_element_zero (struct sra_elt *elt, tree *list_p)
+generate_element_zero (struct sra_elt *elt, gimple_seq *seq_p)
 {
   struct sra_elt *c;
 
@@ -2717,17 +2704,18 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
 
   if (!elt->in_bitfld_block)
     FOR_EACH_ACTUAL_CHILD (c, elt)
-      generate_element_zero (c, list_p);
+      generate_element_zero (c, seq_p);
 
   if (elt->replacement)
     {
       tree t;
+      gimple_seq tmp_seq;
 
       gcc_assert (elt->is_scalar);
       t = fold_convert (elt->type, integer_zero_node);
 
-      t = sra_build_elt_assignment (elt, t);
-      append_to_statement_list (t, list_p);
+      tmp_seq = sra_build_elt_assignment (elt, t);
+      gimple_seq_add_seq (seq_p, tmp_seq);
     }
 }
 
@@ -2735,11 +2723,10 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
    Add the result to *LIST_P.  */
 
 static void
-generate_one_element_init (struct sra_elt *elt, tree init, tree *list_p)
+generate_one_element_init (struct sra_elt *elt, tree init, gimple_seq *seq_p)
 {
-  /* The replacement can be almost arbitrarily complex.  Gimplify.  */
-  tree stmt = sra_build_elt_assignment (elt, init);
-  gimplify_and_add (stmt, list_p);
+  gimple_seq tmp_seq = sra_build_elt_assignment (elt, init);
+  gimple_seq_add_seq (seq_p, tmp_seq);
 }
 
 /* Generate a set of assignment statements in *LIST_P to set all instantiated
@@ -2749,7 +2736,7 @@ generate_one_element_init (struct sra_elt *elt, tree init, tree *list_p)
    handle.  */
 
 static bool
-generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
+generate_element_init_1 (struct sra_elt *elt, tree init, gimple_seq *seq_p)
 {
   bool result = true;
   enum tree_code init_code;
@@ -2767,7 +2754,7 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
     {
       if (elt->replacement)
 	{
-	  generate_one_element_init (elt, init, list_p);
+	  generate_one_element_init (elt, init, seq_p);
 	  elt->visited = true;
 	}
       return result;
@@ -2785,7 +2772,7 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
 	  else
 	    t = (init_code == COMPLEX_EXPR
 		 ? TREE_OPERAND (init, 1) : TREE_IMAGPART (init));
-	  result &= generate_element_init_1 (sub, t, list_p);
+	  result &= generate_element_init_1 (sub, t, seq_p);
 	}
       break;
 
@@ -2801,7 +2788,7 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
 		{
 	  	  sub = lookup_element (elt, lower, NULL, NO_INSERT);
 		  if (sub != NULL)
-		    result &= generate_element_init_1 (sub, value, list_p);
+		    result &= generate_element_init_1 (sub, value, seq_p);
 		  if (tree_int_cst_equal (lower, upper))
 		    break;
 		  lower = int_const_binop (PLUS_EXPR, lower,
@@ -2812,7 +2799,7 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
 	    {
 	      sub = lookup_element (elt, purpose, NULL, NO_INSERT);
 	      if (sub != NULL)
-		result &= generate_element_init_1 (sub, value, list_p);
+		result &= generate_element_init_1 (sub, value, seq_p);
 	    }
 	}
       break;
@@ -2829,96 +2816,86 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
    gimplification.  */
 
 static bool
-generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
+generate_element_init (struct sra_elt *elt, tree init, gimple_seq *seq_p)
 {
   bool ret;
   struct gimplify_ctx gctx;
 
   push_gimplify_context (&gctx);
-  ret = generate_element_init_1 (elt, init, list_p);
+  ret = generate_element_init_1 (elt, init, seq_p);
   pop_gimplify_context (NULL);
 
   /* The replacement can expose previously unreferenced variables.  */
-  if (ret && *list_p)
+  if (ret && *seq_p)
     {
-      tree_stmt_iterator i;
+      gimple_stmt_iterator i;
 
-      for (i = tsi_start (*list_p); !tsi_end_p (i); tsi_next (&i))
-	find_new_referenced_vars (tsi_stmt_ptr (i));
+      for (i = gsi_start (*seq_p); !gsi_end_p (i); gsi_next (&i))
+	find_new_referenced_vars (gsi_stmt (i));
     }
 
   return ret;
 }
 
-/* Insert STMT on all the outgoing edges out of BB.  Note that if BB
-   has more than one edge, STMT will be replicated for each edge.  Also,
-   abnormal edges will be ignored.  */
+/* Insert a gimple_seq SEQ on all the outgoing edges out of BB.  Note that
+   if BB has more than one edge, STMT will be replicated for each edge.
+   Also, abnormal edges will be ignored.  */
 
 void
-insert_edge_copies (tree stmt, basic_block bb)
+insert_edge_copies_seq (gimple_seq seq, basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  bool first_copy;
+  unsigned n_copies = -1;
 
-  first_copy = true;
   FOR_EACH_EDGE (e, ei, bb->succs)
-    {
-      /* We don't need to insert copies on abnormal edges.  The
-	 value of the scalar replacement is not guaranteed to
-	 be valid through an abnormal edge.  */
-      if (!(e->flags & EDGE_ABNORMAL))
-	{
-	  if (first_copy)
-	    {
-	      bsi_insert_on_edge (e, stmt);
-	      first_copy = false;
-	    }
-	  else
-	    bsi_insert_on_edge (e, unsave_expr_now (stmt));
-	}
-    }
+    if (!(e->flags & EDGE_ABNORMAL)) 
+      n_copies++;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_ABNORMAL)) 
+      gsi_insert_seq_on_edge (e, n_copies-- > 0 ? gimple_seq_copy (seq) : seq);
 }
 
-/* Helper function to insert LIST before BSI, and set up line number info.  */
+/* Helper function to insert LIST before GSI, and set up line number info.  */
 
 void
-sra_insert_before (block_stmt_iterator *bsi, tree list)
+sra_insert_before (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
-  tree stmt = bsi_stmt (*bsi);
+  gimple stmt = gsi_stmt (*gsi);
 
-  if (EXPR_HAS_LOCATION (stmt))
-    annotate_all_with_locus (&list, EXPR_LOCATION (stmt));
-  bsi_insert_before (bsi, list, BSI_SAME_STMT);
+  if (gimple_has_location (stmt))
+    annotate_all_with_location (seq, gimple_location (stmt));
+  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
 }
 
-/* Similarly, but insert after BSI.  Handles insertion onto edges as well.  */
+/* Similarly, but insert after GSI.  Handles insertion onto edges as well.  */
 
 void
-sra_insert_after (block_stmt_iterator *bsi, tree list)
+sra_insert_after (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
-  tree stmt = bsi_stmt (*bsi);
+  gimple stmt = gsi_stmt (*gsi);
 
-  if (EXPR_HAS_LOCATION (stmt))
-    annotate_all_with_locus (&list, EXPR_LOCATION (stmt));
+  if (gimple_has_location (stmt))
+    annotate_all_with_location (seq, gimple_location (stmt));
 
   if (stmt_ends_bb_p (stmt))
-    insert_edge_copies (list, bsi->bb);
+    insert_edge_copies_seq (seq, gsi_bb (*gsi));
   else
-    bsi_insert_after (bsi, list, BSI_SAME_STMT);
+    gsi_insert_seq_after (gsi, seq, GSI_SAME_STMT);
 }
 
-/* Similarly, but replace the statement at BSI.  */
+/* Similarly, but replace the statement at GSI.  */
 
 static void
-sra_replace (block_stmt_iterator *bsi, tree list)
+sra_replace (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
-  sra_insert_before (bsi, list);
-  bsi_remove (bsi, false);
-  if (bsi_end_p (*bsi))
-    *bsi = bsi_last (bsi->bb);
+  sra_insert_before (gsi, seq);
+  gsi_remove (gsi, false);
+  if (gsi_end_p (*gsi))
+    *gsi = gsi_last (gsi_seq (*gsi));
   else
-    bsi_prev (bsi);
+    gsi_prev (gsi);
 }
 
 /* Data structure that bitfield_overlaps_p fills in with information
@@ -3032,7 +3009,7 @@ bitfield_overlaps_p (tree blen, tree bpos, struct sra_elt *fld,
 
 static void
 sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
-				 tree *listp, tree blen, tree bpos,
+				 gimple_seq *seq_p, tree blen, tree bpos,
 				 struct sra_elt *elt)
 {
   struct sra_elt *fld;
@@ -3050,7 +3027,8 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 
       if (fld->replacement)
 	{
-	  tree infld, invar, st, type;
+	  tree infld, invar, type;
+          gimple_seq st;
 
 	  infld = fld->replacement;
 
@@ -3089,7 +3067,7 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	  else
 	    st = sra_build_bf_assignment (infld, invar);
 
-	  append_to_statement_list (st, listp);
+	  gimple_seq_add_seq (seq_p, st);
 	}
       else
 	{
@@ -3098,7 +3076,7 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	  if (flp.overlap_pos)
 	    sub = size_binop (PLUS_EXPR, sub, flp.overlap_pos);
 
-	  sra_explode_bitfield_assignment (var, sub, to_var, listp,
+	  sra_explode_bitfield_assignment (var, sub, to_var, seq_p,
 					   flen, fpos, fld);
 	}
     }
@@ -3111,7 +3089,8 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
    full variable back to the scalarized variables.  */
 
 static void
-sra_sync_for_bitfield_assignment (tree *listbeforep, tree *listafterp,
+sra_sync_for_bitfield_assignment (gimple_seq *seq_before_p,
+                                  gimple_seq *seq_after_p,
 				  tree blen, tree bpos,
 				  struct sra_elt *elt)
 {
@@ -3124,18 +3103,18 @@ sra_sync_for_bitfield_assignment (tree *listbeforep, tree *listafterp,
 	if (fld->replacement || (!flp.overlap_len && !flp.overlap_pos))
 	  {
 	    generate_copy_inout (fld, false, generate_element_ref (fld),
-				 listbeforep);
+				 seq_before_p);
 	    mark_no_warning (fld);
-	    if (listafterp)
+	    if (seq_after_p)
 	      generate_copy_inout (fld, true, generate_element_ref (fld),
-				   listafterp);
+				   seq_after_p);
 	  }
 	else
 	  {
 	    tree flen = flp.overlap_len ? flp.overlap_len : flp.field_len;
 	    tree fpos = flp.overlap_pos ? flp.overlap_pos : bitsize_int (0);
 
-	    sra_sync_for_bitfield_assignment (listbeforep, listafterp,
+	    sra_sync_for_bitfield_assignment (seq_before_p, seq_after_p,
 					      flen, fpos, fld);
 	  }
       }
@@ -3146,10 +3125,10 @@ sra_sync_for_bitfield_assignment (tree *listbeforep, tree *listafterp,
    aggregate.  IS_OUTPUT is true if ELT is being modified.  */
 
 static void
-scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
+scalarize_use (struct sra_elt *elt, tree *expr_p, gimple_stmt_iterator *gsi,
 	       bool is_output, bool use_all)
 {
-  tree stmt = bsi_stmt (*bsi);
+  gimple stmt = gsi_stmt (*gsi);
   tree bfexpr;
 
   if (elt->replacement)
@@ -3161,52 +3140,43 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (is_output
 	  && TREE_CODE (elt->replacement) == BIT_FIELD_REF
 	  && is_gimple_reg (TREE_OPERAND (elt->replacement, 0))
-	  && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	  && &GIMPLE_STMT_OPERAND (stmt, 0) == expr_p)
+	  && is_gimple_assign (stmt)
+	  && gimple_assign_lhs_ptr (stmt) == expr_p)
 	{
-	  tree newstmt = sra_build_elt_assignment
-	    (elt, GIMPLE_STMT_OPERAND (stmt, 1));
-	  if (TREE_CODE (newstmt) != STATEMENT_LIST)
-	    {
-	      tree list = NULL;
-	      append_to_statement_list (newstmt, &list);
-	      newstmt = list;
-	    }
-	  sra_replace (bsi, newstmt);
+          gimple_seq newseq;
+          /* RHS must be a single operand. */
+          gcc_assert (gimple_assign_single_p (stmt));
+	  newseq = sra_build_elt_assignment (elt, gimple_assign_rhs1 (stmt));
+	  sra_replace (gsi, newseq);
 	  return;
 	}
       else if (!is_output
 	       && TREE_CODE (elt->replacement) == BIT_FIELD_REF
-	       && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	       && &GIMPLE_STMT_OPERAND (stmt, 1) == expr_p)
+	       && is_gimple_assign (stmt)
+	       && gimple_assign_rhs1_ptr (stmt) == expr_p)
 	{
 	  tree tmp = make_rename_temp
-	    (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0)), "SR");
-	  tree newstmt = sra_build_assignment (tmp, REPLDUP (elt->replacement));
+	    (TREE_TYPE (gimple_assign_lhs (stmt)), "SR");
+	  gimple_seq newseq = sra_build_assignment (tmp, REPLDUP (elt->replacement));
 
-	  if (TREE_CODE (newstmt) != STATEMENT_LIST)
-	    {
-	      tree list = NULL;
-	      append_to_statement_list (newstmt, &list);
-	      newstmt = list;
-	    }
-	  sra_insert_before (bsi, newstmt);
+	  sra_insert_before (gsi, newseq);
 	  replacement = tmp;
 	}
       if (is_output)
-	  mark_all_v_defs (stmt);
+	  mark_all_v_defs_stmt (stmt);
       *expr_p = REPLDUP (replacement);
       update_stmt (stmt);
     }
   else if (use_all && is_output
-	   && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && is_gimple_assign (stmt)
 	   && TREE_CODE (bfexpr
-			 = GIMPLE_STMT_OPERAND (stmt, 0)) == BIT_FIELD_REF
+			 = gimple_assign_lhs (stmt)) == BIT_FIELD_REF
 	   && &TREE_OPERAND (bfexpr, 0) == expr_p
 	   && INTEGRAL_TYPE_P (TREE_TYPE (bfexpr))
 	   && TREE_CODE (TREE_TYPE (*expr_p)) == RECORD_TYPE)
     {
-      tree listbefore = NULL, listafter = NULL;
+      gimple_seq seq_before = NULL;
+      gimple_seq seq_after = NULL;
       tree blen = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 1));
       tree bpos = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 2));
       bool update = false;
@@ -3214,18 +3184,18 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (!elt->use_block_copy)
 	{
 	  tree type = TREE_TYPE (bfexpr);
-	  tree var = make_rename_temp (type, "SR"), tmp, st, vpos;
+	  tree var = make_rename_temp (type, "SR"), tmp, vpos;
+          gimple st;
 
-	  GIMPLE_STMT_OPERAND (stmt, 0) = var;
+	  gimple_assign_set_lhs (stmt, var);
 	  update = true;
 
 	  if (!TYPE_UNSIGNED (type))
 	    {
 	      type = unsigned_type_for (type);
 	      tmp = make_rename_temp (type, "SR");
-	      st = build_gimple_modify_stmt (tmp,
-					     fold_convert (type, var));
-	      append_to_statement_list (st, &listafter);
+	      st = gimple_build_assign (tmp, fold_convert (type, var));
+	      gimple_seq_add_stmt (&seq_after, st);
 	      var = tmp;
 	    }
 
@@ -3238,35 +3208,35 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	  else
 	    vpos = bitsize_int (0);
 	  sra_explode_bitfield_assignment
-	    (var, vpos, false, &listafter, blen, bpos, elt);
+	    (var, vpos, false, &seq_after, blen, bpos, elt);
 	}
       else
 	sra_sync_for_bitfield_assignment
-	  (&listbefore, &listafter, blen, bpos, elt);
+	  (&seq_before, &seq_after, blen, bpos, elt);
 
-      if (listbefore)
+      if (seq_before)
 	{
-	  mark_all_v_defs (listbefore);
-	  sra_insert_before (bsi, listbefore);
+	  mark_all_v_defs_seq (seq_before);
+	  sra_insert_before (gsi, seq_before);
 	}
-      if (listafter)
+      if (seq_after)
 	{
-	  mark_all_v_defs (listafter);
-	  sra_insert_after (bsi, listafter);
+	  mark_all_v_defs_seq (seq_after);
+	  sra_insert_after (gsi, seq_after);
 	}
 
       if (update)
 	update_stmt (stmt);
     }
   else if (use_all && !is_output
-	   && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && is_gimple_assign (stmt)
 	   && TREE_CODE (bfexpr
-			 = GIMPLE_STMT_OPERAND (stmt, 1)) == BIT_FIELD_REF
-	   && &TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 0) == expr_p
+			 = gimple_assign_rhs1 (stmt)) == BIT_FIELD_REF
+	   && &TREE_OPERAND (gimple_assign_rhs1 (stmt), 0) == expr_p
 	   && INTEGRAL_TYPE_P (TREE_TYPE (bfexpr))
 	   && TREE_CODE (TREE_TYPE (*expr_p)) == RECORD_TYPE)
     {
-      tree list = NULL;
+      gimple_seq seq = NULL;
       tree blen = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 1));
       tree bpos = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 2));
       bool update = false;
@@ -3281,9 +3251,9 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 
 	  var = make_rename_temp (type, "SR");
 
-	  append_to_statement_list (build_gimple_modify_stmt
-				    (var, build_int_cst_wide (type, 0, 0)),
-				    &list);
+	  gimple_seq_add_stmt (&seq,
+                               gimple_build_assign
+				 (var, build_int_cst_wide (type, 0, 0)));
 
 	  /* If VAR is wider than BLEN bits, it is padded at the
 	     most-significant end.  We want to set VPOS such that
@@ -3294,19 +3264,19 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	  else
 	    vpos = bitsize_int (0);
 	  sra_explode_bitfield_assignment
-	    (var, vpos, true, &list, blen, bpos, elt);
+	    (var, vpos, true, &seq, blen, bpos, elt);
 
-	  GIMPLE_STMT_OPERAND (stmt, 1) = var;
+	  gimple_assign_set_rhs1 (stmt, var);
 	  update = true;
 	}
       else
 	sra_sync_for_bitfield_assignment
-	  (&list, NULL, blen, bpos, elt);
+	  (&seq, NULL, blen, bpos, elt);
 
-      if (list)
+      if (seq)
 	{
-	  mark_all_v_defs (list);
-	  sra_insert_before (bsi, list);
+	  mark_all_v_defs_seq (seq);
+	  sra_insert_before (gsi, seq);
 	}
 
       if (update)
@@ -3314,7 +3284,7 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
     }
   else
     {
-      tree list = NULL;
+      gimple_seq seq = NULL;
 
       /* Otherwise we need some copies.  If ELT is being read, then we
 	 want to store all (modified) sub-elements back into the
@@ -3330,15 +3300,15 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	 This optimization would be most effective if sra_walk_function
 	 processed the blocks in dominator order.  */
 
-      generate_copy_inout (elt, is_output, generate_element_ref (elt), &list);
-      if (list == NULL)
+      generate_copy_inout (elt, is_output, generate_element_ref (elt), &seq);
+      if (seq == NULL)
 	return;
-      mark_all_v_defs (list);
+      mark_all_v_defs_seq (seq);
       if (is_output)
-	sra_insert_after (bsi, list);
+	sra_insert_after (gsi, seq);
       else
 	{
-	  sra_insert_before (bsi, list);
+	  sra_insert_before (gsi, seq);
 	  if (use_all)
 	    mark_no_warning (elt);
 	}
@@ -3350,21 +3320,24 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 
 static void
 scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
-		block_stmt_iterator *bsi)
+		gimple_stmt_iterator *gsi)
 {
-  tree list, stmt;
+  gimple_seq seq;
+  gimple stmt;
 
   if (lhs_elt->replacement && rhs_elt->replacement)
     {
       /* If we have two scalar operands, modify the existing statement.  */
-      stmt = bsi_stmt (*bsi);
+      stmt = gsi_stmt (*gsi);
 
       /* See the commentary in sra_walk_function concerning
 	 RETURN_EXPR, and why we should never see one here.  */
-      gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
+      gcc_assert (is_gimple_assign (stmt));
+      gcc_assert (gimple_assign_copy_p (stmt));
 
-      GIMPLE_STMT_OPERAND (stmt, 0) = lhs_elt->replacement;
-      GIMPLE_STMT_OPERAND (stmt, 1) = REPLDUP (rhs_elt->replacement);
+
+      gimple_assign_set_lhs (stmt, lhs_elt->replacement);
+      gimple_assign_set_rhs1 (stmt, REPLDUP (rhs_elt->replacement));
       update_stmt (stmt);
     }
   else if (lhs_elt->use_block_copy || rhs_elt->use_block_copy)
@@ -3377,22 +3350,22 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
 	 would at least allow those elements that are instantiated in
 	 both structures to be optimized well.  */
 
-      list = NULL;
+      seq = NULL;
       generate_copy_inout (rhs_elt, false,
-			   generate_element_ref (rhs_elt), &list);
-      if (list)
+			   generate_element_ref (rhs_elt), &seq);
+      if (seq)
 	{
-	  mark_all_v_defs (list);
-	  sra_insert_before (bsi, list);
+	  mark_all_v_defs_seq (seq);
+	  sra_insert_before (gsi, seq);
 	}
 
-      list = NULL;
+      seq = NULL;
       generate_copy_inout (lhs_elt, true,
-			   generate_element_ref (lhs_elt), &list);
-      if (list)
+			   generate_element_ref (lhs_elt), &seq);
+      if (seq)
 	{
-	  mark_all_v_defs (list);
-	  sra_insert_after (bsi, list);
+	  mark_all_v_defs_seq (seq);
+	  sra_insert_after (gsi, seq);
 	}
     }
   else
@@ -3401,14 +3374,14 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
 	 case perform pair-wise element assignments and replace the
 	 original block copy statement.  */
 
-      stmt = bsi_stmt (*bsi);
-      mark_all_v_defs (stmt);
+      stmt = gsi_stmt (*gsi);
+      mark_all_v_defs_stmt (stmt);
 
-      list = NULL;
-      generate_element_copy (lhs_elt, rhs_elt, &list);
-      gcc_assert (list);
-      mark_all_v_defs (list);
-      sra_replace (bsi, list);
+      seq = NULL;
+      generate_element_copy (lhs_elt, rhs_elt, &seq);
+      gcc_assert (seq);
+      mark_all_v_defs_seq (seq);
+      sra_replace (gsi, seq);
     }
 }
 
@@ -3418,23 +3391,23 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
    CONSTRUCTOR.  */
 
 static void
-scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
+scalarize_init (struct sra_elt *lhs_elt, tree rhs, gimple_stmt_iterator *gsi)
 {
   bool result = true;
-  tree list = NULL, init_list = NULL;
+  gimple_seq seq = NULL, init_seq = NULL;
 
   /* Generate initialization statements for all members extant in the RHS.  */
   if (rhs)
     {
       /* Unshare the expression just in case this is from a decl's initial.  */
       rhs = unshare_expr (rhs);
-      result = generate_element_init (lhs_elt, rhs, &init_list);
+      result = generate_element_init (lhs_elt, rhs, &init_seq);
     }
 
   /* CONSTRUCTOR is defined such that any member not mentioned is assigned
      a zero value.  Initialize the rest of the instantiated elements.  */
-  generate_element_zero (lhs_elt, &list);
-  append_to_statement_list (init_list, &list);
+  generate_element_zero (lhs_elt, &seq);
+  gimple_seq_add_seq (&seq, init_seq);
 
   if (!result)
     {
@@ -3444,11 +3417,11 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
 	 constants.  The easiest way to do this is to generate a complete
 	 copy-out, and then follow that with the constant assignments
 	 that we were able to build.  DCE will clean things up.  */
-      tree list0 = NULL;
+      gimple_seq seq0 = NULL;
       generate_copy_inout (lhs_elt, true, generate_element_ref (lhs_elt),
-			   &list0);
-      append_to_statement_list (list, &list0);
-      list = list0;
+			   &seq0);
+      gimple_seq_add_seq (&seq0, seq);
+      seq = seq0;
     }
 
   if (lhs_elt->use_block_copy || !result)
@@ -3456,20 +3429,20 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
       /* Since LHS is not fully instantiated, we must leave the structure
 	 assignment in place.  Treating this case differently from a USE
 	 exposes constants to later optimizations.  */
-      if (list)
+      if (seq)
 	{
-	  mark_all_v_defs (list);
-	  sra_insert_after (bsi, list);
+	  mark_all_v_defs_seq (seq);
+	  sra_insert_after (gsi, seq);
 	}
     }
   else
     {
       /* The LHS is fully instantiated.  The list of initializations
 	 replaces the original structure assignment.  */
-      gcc_assert (list);
-      mark_all_v_defs (bsi_stmt (*bsi));
-      mark_all_v_defs (list);
-      sra_replace (bsi, list);
+      gcc_assert (seq);
+      mark_all_v_defs_stmt (gsi_stmt (*gsi));
+      mark_all_v_defs_seq (seq);
+      sra_replace (gsi, seq);
     }
 }
 
@@ -3498,7 +3471,7 @@ mark_notrap (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
 static void
 scalarize_ldst (struct sra_elt *elt, tree other,
-		block_stmt_iterator *bsi, bool is_output)
+		gimple_stmt_iterator *gsi, bool is_output)
 {
   /* Shouldn't have gotten called for a scalar.  */
   gcc_assert (!elt->replacement);
@@ -3507,7 +3480,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
     {
       /* Since ELT is not fully instantiated, we have to leave the
 	 block copy in place.  Treat this as a USE.  */
-      scalarize_use (elt, NULL, bsi, is_output, false);
+      scalarize_use (elt, NULL, gsi, is_output, false);
     }
   else
     {
@@ -3515,19 +3488,21 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 	 case we can have each element stored/loaded directly to/from the
 	 corresponding slot in OTHER.  This avoids a block copy.  */
 
-      tree list = NULL, stmt = bsi_stmt (*bsi);
+      gimple_seq seq = NULL;
+      gimple stmt = gsi_stmt (*gsi);
 
-      mark_all_v_defs (stmt);
-      generate_copy_inout (elt, is_output, other, &list);
-      gcc_assert (list);
-      mark_all_v_defs (list);
+      mark_all_v_defs_stmt (stmt);
+      generate_copy_inout (elt, is_output, other, &seq);
+      gcc_assert (seq);
+      mark_all_v_defs_seq (seq);
 
       /* Preserve EH semantics.  */
       if (stmt_ends_bb_p (stmt))
 	{
-	  tree_stmt_iterator tsi;
-	  tree first, blist = NULL;
-	  bool thr = tree_could_throw_p (stmt);
+	  gimple_stmt_iterator si;
+	  gimple first;
+          gimple_seq blist = NULL;
+	  bool thr = stmt_could_throw_p (stmt);
 
 	  /* If the last statement of this BB created an EH edge
 	     before scalarization, we have to locate the first
@@ -3538,26 +3513,26 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 	     list will be added to normal outgoing edges of the same
 	     BB.  If they access any memory, it's the same memory, so
 	     we can assume they won't throw.  */
-	  tsi = tsi_start (list);
-	  for (first = tsi_stmt (tsi);
-	       thr && !tsi_end_p (tsi) && !tree_could_throw_p (first);
-	       first = tsi_stmt (tsi))
+	  si = gsi_start (seq);
+	  for (first = gsi_stmt (si);
+	       thr && !gsi_end_p (si) && !stmt_could_throw_p (first);
+	       first = gsi_stmt (si))
 	    {
-	      tsi_delink (&tsi);
-	      append_to_statement_list (first, &blist);
+	      gsi_remove (&si, false);
+	      gimple_seq_add_stmt (&blist, first);
 	    }
 
 	  /* Extract the first remaining statement from LIST, this is
 	     the EH statement if there is one.  */
-	  tsi_delink (&tsi);
+	  gsi_remove (&si, false);
 
 	  if (blist)
-	    sra_insert_before (bsi, blist);
+	    sra_insert_before (gsi, blist);
 
 	  /* Replace the old statement with this new representative.  */
-	  bsi_replace (bsi, first, true);
+	  gsi_replace (gsi, first, true);
 
-	  if (!tsi_end_p (tsi))
+	  if (!gsi_end_p (si))
 	    {
 	      /* If any reference would trap, then they all would.  And more
 		 to the point, the first would.  Therefore none of the rest
@@ -3566,16 +3541,16 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 		 TREE_THIS_NOTRAP in all INDIRECT_REFs.  */
 	      do
 		{
-		  walk_tree (tsi_stmt_ptr (tsi), mark_notrap, NULL, NULL);
-		  tsi_next (&tsi);
+		  walk_gimple_stmt (&si, NULL, mark_notrap, NULL);
+		  gsi_next (&si);
 		}
-	      while (!tsi_end_p (tsi));
+	      while (!gsi_end_p (si));
 
-	      insert_edge_copies (list, bsi->bb);
+	      insert_edge_copies_seq (seq, gsi_bb (*gsi));
 	    }
 	}
       else
-	sra_replace (bsi, list);
+	sra_replace (gsi, seq);
     }
 }
 
@@ -3584,7 +3559,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 static void
 scalarize_parms (void)
 {
-  tree list = NULL;
+  gimple_seq seq = NULL;
   unsigned i;
   bitmap_iterator bi;
 
@@ -3592,13 +3567,13 @@ scalarize_parms (void)
     {
       tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
-      generate_copy_inout (elt, true, var, &list);
+      generate_copy_inout (elt, true, var, &seq);
     }
 
-  if (list)
+  if (seq)
     {
-      insert_edge_copies (list, ENTRY_BLOCK_PTR);
-      mark_all_v_defs (list);
+      insert_edge_copies_seq (seq, ENTRY_BLOCK_PTR);
+      mark_all_v_defs_seq (seq);
     }
 }
 
@@ -3613,7 +3588,7 @@ scalarize_function (void)
 
   sra_walk_function (&fns);
   scalarize_parms ();
-  bsi_commit_edge_inserts ();
+  gsi_commit_edge_inserts ();
 }
 
 
@@ -3663,12 +3638,13 @@ debug_sra_elt_name (struct sra_elt *elt)
 void 
 sra_init_cache (void)
 {
-  if (sra_type_decomp_cache) 
+  if (sra_type_decomp_cache)
     return;
 
   sra_type_decomp_cache = BITMAP_ALLOC (NULL);
   sra_type_inst_cache = BITMAP_ALLOC (NULL);
 }
+
 
 /* Main entry point.  */
 

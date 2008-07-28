@@ -215,14 +215,24 @@ extern char *diagnostic_build_prefix (diagnostic_info *);
 extern char *file_name_as_prefix (const char *);
 
 /* In tree-pretty-print.c  */
+extern void print_declaration (pretty_printer *, tree, int, int);
 extern int dump_generic_node (pretty_printer *, tree, int, int, bool);
 extern void print_generic_stmt (FILE *, tree, int);
 extern void print_generic_stmt_indented (FILE *, tree, int, int);
 extern void print_generic_expr (FILE *, tree, int);
 extern void print_generic_decl (FILE *, tree, int);
+extern void debug_c_tree (tree);
+extern void dump_omp_clauses (pretty_printer *, tree, int, int);
 
+/* In gimple-pretty-print.c  */
 extern void debug_generic_expr (tree);
 extern void debug_generic_stmt (tree);
 extern void debug_tree_chain (tree);
-extern void debug_c_tree (tree);
+extern void debug_gimple_stmt (gimple);
+extern void debug_gimple_seq (gimple_seq);
+extern void print_gimple_seq (FILE *, gimple_seq, int, int);
+extern void print_gimple_stmt (FILE *, gimple, int, int);
+extern void print_gimple_expr (FILE *, gimple, int, int);
+extern void dump_gimple_stmt (pretty_printer *, gimple, int, int);
+
 #endif /* ! GCC_DIAGNOSTIC_H */

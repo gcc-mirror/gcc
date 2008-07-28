@@ -1,3 +1,20 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	* gcc.c-torture/compile/20080721-1.c: New testcase.
+	* gcc.dg/torture/20080716-1.c: Likewise.
+	* gcc.dg/tree-ssa/tailcall-3.c: Likewise.
+	* gcc.dg/tree-ssa/20080530.c: Likewise.
+	* gcc.dg/20080615-1.c: Likewise.
+	* g++.dg/torture/pr36826.C: Likewise.
+	* gcc.dg/fold-alloca-1.c: Look into cleanup_cfg1 dump instead of
+	useless dump.
+	* gcc.dg/tree-ssa/pr21658.c: Update search pattern.
+	* gfortran.dg/gomp/block-1.f90: Adjust dg-error.
+	* gcc.dg/tree-ssa/20030728-1.c: Test final_cleanup instead of
+	optimized dump.
+
 2008-07-28  Simon Baldwin  <simonb@google.com>
 
 	* gcc.dg/pragma-message.c: New.

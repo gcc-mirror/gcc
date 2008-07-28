@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "langhooks.h"
 #include "md5.h"
+#include "gimple.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -949,7 +950,7 @@ fold_defer_overflow_warnings (void)
    deferred code.  */
 
 void
-fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
+fold_undefer_overflow_warnings (bool issue, const_gimple stmt, int code)
 {
   const char *warnmsg;
   location_t locus;
@@ -971,7 +972,7 @@ fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
   if (!issue || warnmsg == NULL)
     return;
 
-  if (stmt != NULL_TREE && TREE_NO_WARNING (stmt))
+  if (gimple_no_warning_p (stmt))
     return;
 
   /* Use the smallest code level when deciding to issue the
@@ -982,10 +983,10 @@ fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
   if (!issue_strict_overflow_warning (code))
     return;
 
-  if (stmt == NULL_TREE || !expr_has_location (stmt))
+  if (stmt == NULL)
     locus = input_location;
   else
-    locus = expr_location (stmt);
+    locus = gimple_location (stmt);
   warning (OPT_Wstrict_overflow, "%H%s", &locus, warnmsg);
 }
 
@@ -995,7 +996,7 @@ fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
 void
 fold_undefer_and_ignore_overflow_warnings (void)
 {
-  fold_undefer_overflow_warnings (false, NULL_TREE, 0);
+  fold_undefer_overflow_warnings (false, NULL, 0);
 }
 
 /* Whether we are deferring overflow warnings.  */
@@ -2639,7 +2640,7 @@ fold_convert (tree type, tree arg)
 
     case VOID_TYPE:
       tem = fold_ignored_result (arg);
-      if (TREE_CODE (tem) == GIMPLE_MODIFY_STMT)
+      if (TREE_CODE (tem) == MODIFY_EXPR)
 	return tem;
       return fold_build1 (NOP_EXPR, type, tem);
 
@@ -2682,7 +2683,6 @@ maybe_lvalue_p (const_tree x)
   case WITH_CLEANUP_EXPR:
   case COMPOUND_EXPR:
   case MODIFY_EXPR:
-  case GIMPLE_MODIFY_STMT:
   case TARGET_EXPR:
   case COND_EXPR:
   case BIND_EXPR:
@@ -7847,17 +7847,16 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_convert (type, fold_addr_expr (base));
         }
 
-      if ((TREE_CODE (op0) == MODIFY_EXPR
-	   || TREE_CODE (op0) == GIMPLE_MODIFY_STMT)
-	  && TREE_CONSTANT (GENERIC_TREE_OPERAND (op0, 1))
+      if (TREE_CODE (op0) == MODIFY_EXPR
+	  && TREE_CONSTANT (TREE_OPERAND (op0, 1))
 	  /* Detect assigning a bitfield.  */
-	  && !(TREE_CODE (GENERIC_TREE_OPERAND (op0, 0)) == COMPONENT_REF
+	  && !(TREE_CODE (TREE_OPERAND (op0, 0)) == COMPONENT_REF
 	       && DECL_BIT_FIELD
-	       (TREE_OPERAND (GENERIC_TREE_OPERAND (op0, 0), 1))))
+	       (TREE_OPERAND (TREE_OPERAND (op0, 0), 1))))
 	{
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
-	  tem = fold_build1 (code, type, GENERIC_TREE_OPERAND (op0, 1));
+	  tem = fold_build1 (code, type, TREE_OPERAND (op0, 1));
 	  /* First do the assignment, then return converted constant.  */
 	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, tem);
 	  TREE_NO_WARNING (tem) = 1;
@@ -9249,8 +9248,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
   tree t1 = NULL_TREE;
   bool strict_overflow_p;
 
-  gcc_assert ((IS_EXPR_CODE_CLASS (kind)
-	       || IS_GIMPLE_STMT_CODE_CLASS (kind))
+  gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 2
 	      && op0 != NULL_TREE
 	      && op1 != NULL_TREE);
@@ -13169,8 +13167,7 @@ fold (tree expr)
       return expr;
     }
 
-  if (IS_EXPR_CODE_CLASS (kind)
-      || IS_GIMPLE_STMT_CODE_CLASS (kind))
+  if (IS_EXPR_CODE_CLASS (kind))
     {
       tree type = TREE_TYPE (t);
       tree op0, op1, op2;
@@ -14110,7 +14107,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.  */
 
 bool
-tree_call_nonnegative_warnv_p (enum tree_code code,  tree type, tree fndecl,
+tree_call_nonnegative_warnv_p (tree type, tree fndecl,
 			       tree arg0, tree arg1, bool *strict_overflow_p)
 {
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
@@ -14231,7 +14228,7 @@ tree_call_nonnegative_warnv_p (enum tree_code code,  tree type, tree fndecl,
       default:
 	break;
       }
-  return tree_simple_nonnegative_warnv_p (code,
+  return tree_simple_nonnegative_warnv_p (CALL_EXPR,
 					  type);
 }
 
@@ -14273,10 +14270,9 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 	    else
 	      break;
 	  }
-	if ((TREE_CODE (t) == MODIFY_EXPR
-	     || TREE_CODE (t) == GIMPLE_MODIFY_STMT)
-	    && GENERIC_TREE_OPERAND (t, 0) == temp)
-	  return tree_expr_nonnegative_warnv_p (GENERIC_TREE_OPERAND (t, 1),
+	if (TREE_CODE (t) == MODIFY_EXPR
+	    && TREE_OPERAND (t, 0) == temp)
+	  return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
 						strict_overflow_p);
 
 	return false;
@@ -14287,8 +14283,7 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 	tree arg0 = call_expr_nargs (t) > 0 ?  CALL_EXPR_ARG (t, 0) : NULL_TREE;
 	tree arg1 = call_expr_nargs (t) > 1 ?  CALL_EXPR_ARG (t, 1) : NULL_TREE;
 
-	return tree_call_nonnegative_warnv_p (TREE_CODE (t),
-					      TREE_TYPE (t),
+	return tree_call_nonnegative_warnv_p (TREE_TYPE (t),
 					      get_callee_fndecl (t),
 					      arg0,
 					      arg1,
@@ -14296,8 +14291,7 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
       }
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
-      return tree_expr_nonnegative_warnv_p (GENERIC_TREE_OPERAND (t, 1),
+      return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
 					    strict_overflow_p);
     case BIND_EXPR:
       return tree_expr_nonnegative_warnv_p (expr_last (TREE_OPERAND (t, 1)),
@@ -14672,9 +14666,8 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
     case BIND_EXPR:
-      return tree_expr_nonzero_warnv_p (GENERIC_TREE_OPERAND (t, 1),
+      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
 					strict_overflow_p);
 
     case SAVE_EXPR:

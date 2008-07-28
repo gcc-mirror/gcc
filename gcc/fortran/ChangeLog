@@ -1,3 +1,92 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	2008-07-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-expr.c: Include gimple.h instead of tree-gimple.h.
+	* trans-array.c: Same.
+	* trans-openmp.c: Same.
+	* trans-stmt.c: Same.
+	* f95-lang.c: Same.
+	* trans-io.c: Same.
+	* trans-decl.c: Same.
+	* trans-intrinsic.c: Same.
+	* trans.c: Same.  Include tree-iterator.h.
+	* Make-lang.in (trans.o): Depend on tree-iterator.h
+
+	2008-07-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-array.h (gfc_conv_descriptor_data_set_internal):
+	Rename to gfc_conv_descriptor_data_set.
+	(gfc_conv_descriptor_data_set_tuples): Remove.
+	* trans-array.c (gfc_conv_descriptor_data_get): Rename
+	from gfc_conv_descriptor_data_set_internal.
+	Remove last argument to gfc_add_modify.
+	(gfc_trans_allocate_array_storage): Rename gfc_add_modify_expr to
+	gfc_add_modify.
+	(gfc_trans_create_temp_array): Same.
+	(gfc_conv_array_transpose): Same.
+	(gfc_grow_array): Same.
+	(gfc_put_offset_into_var): Same.
+	(gfc_trans_array_ctor_element): Same.
+	(gfc_trans_array_constructor_subarray): Same.
+	(gfc_trans_array_constructor_value): Same.
+	(gfc_trans_scalarized_loop_end): Same.
+	(gfc_array_init_size): Same.
+	(gfc_array_allocate): Same.
+	(gfc_trans_array_bounds): Same.
+	(gfc_trans_auto_array_allocation): Same.
+	(gfc_trans_g77_array): Same.
+	(gfc_trans_dummy_array_bias): Same.
+	(gfc_conv_expr_descriptor): Same.
+	(structure_alloc_comps): Same.
+	* trans-expr.c: Same.
+	* trans-openmp.c (gfc_omp_clause_default_ctor): Same.
+	Rename gfc_conv_descriptor_data_set_tuples to
+	gfc_conv_descriptor_data_set.
+	(gfc_omp_clause_copy_ctor): Change build_gimple_modify_stmt to
+	build2_v.
+	(gfc_omp_clause_assign_op): Same.
+	(gfc_trans_omp_array_reduction): Rename gfc_add_modify_expr to
+	gfc_add_modify.
+	(gfc_trans_omp_atomic): Same.
+	(gfc_trans_omp_do): Same.  Change GIMPLE_MODIFY_STMT to MODIFY_EXPR.
+	Rename gfc_add_modify_stmt to gfc_add_modify.
+	* trans-stmt.c: Rename gfc_add_modify_expr to
+	gfc_add_modify.
+	* trans.c: Rename gfc_add_modify_expr to
+	gfc_add_modify.
+	(gfc_add_modify): Remove last argument.
+	Rename GIMPLE_MODIFY_STMT to MODIFY_EXPR.
+	* trans.h: Remove gfc_add_modify_expr, gfc_add_modify_stmt.
+	Add prototype for gfc_add_modify.
+	* f95-lang.c (union lang_tree_node): Rename GENERIC_NEXT to TREE_CHAIN.
+	* trans-decl.c: Rename gfc_add_modify_stmt to gfc_add_modify.
+	* trans-io.c: Same.
+	* trans-intrinsic.c: Same.
+
+	2008-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Make-lang.in (fortran-warn): Add -Wno-format.
+
+	2008-02-19  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00804.html
+
+	* fortran/Make-lang.in (fortran-warn): Remove.
+
+	2007-11-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-expr.c (gfc_trans_string_copy): Use "void *" when building a
+	memset.
+
+	2007-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Make-lang.in (fortran-warn): Set to -Wno-format.
+	* trans.c (gfc_trans_code): Update comment to say GENERIC.
+	Call tree_annotate_all_with_locus instead of annotate_all_with_locus.
+
 2008-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36132

@@ -57,8 +57,8 @@ tree_is_chrec (const_tree expr)
 extern tree chrec_fold_plus (tree, tree, tree);
 extern tree chrec_fold_minus (tree, tree, tree);
 extern tree chrec_fold_multiply (tree, tree, tree);
-extern tree chrec_convert (tree, tree, tree);
-extern tree chrec_convert_rhs (tree, tree, tree);
+extern tree chrec_convert (tree, tree, gimple);
+extern tree chrec_convert_rhs (tree, tree, gimple);
 extern tree chrec_convert_aggressive (tree, tree);
 
 /* Operations.  */

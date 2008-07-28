@@ -401,7 +401,7 @@ struct lang_hooks
 
   /* Perform language-specific gimplification on the argument.  Returns an
      enum gimplify_status, though we can't see that type here.  */
-  int (*gimplify_expr) (tree *, tree *, tree *);
+  int (*gimplify_expr) (tree *, gimple_seq *, gimple_seq *);
 
   /* Fold an OBJ_TYPE_REF expression to the address of a function.
      KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */

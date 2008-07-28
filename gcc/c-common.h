@@ -897,7 +897,7 @@ extern void dump_time_statistics (void);
 
 extern bool c_dump_tree (void *, tree);
 
-extern void c_warn_unused_result (tree *);
+extern void c_warn_unused_result (gimple_seq);
 
 extern void verify_sequence_points (tree);
 
@@ -928,7 +928,7 @@ extern void warn_for_div_by_zero (tree divisor);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
-extern int c_gimplify_expr (tree *, tree *, tree *);
+extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern tree c_build_bind_expr (tree, tree);
 
 /* In c-pch.c  */

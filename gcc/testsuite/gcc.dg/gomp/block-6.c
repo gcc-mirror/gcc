@@ -4,6 +4,6 @@ void foo()
 {
   #pragma omp ordered
     {
-      return;		// { dg-error "invalid exit" }
+      return;		// { dg-error "invalid branch" }
     }
 }

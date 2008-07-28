@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h" 
 #include "target.h"
 #include "output.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-flow.h"
 
 /*  This file contains basic routines manipulating variable pool.

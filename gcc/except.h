@@ -108,20 +108,13 @@ extern void dump_eh_tree (FILE *, struct function *);
 extern bool eh_region_outer_p (struct function *, int, int);
 extern int eh_region_outermost (struct function *, int, int);
 
-/* tree-eh.c */
-extern void add_stmt_to_eh_region_fn (struct function *, tree, int);
-extern bool remove_stmt_from_eh_region_fn (struct function *, tree);
-extern int lookup_stmt_eh_region_fn (struct function *, const_tree);
-extern int lookup_stmt_eh_region (const_tree);
-extern bool verify_eh_edges (tree);
-
 /* If non-NULL, this is a function that returns an expression to be
    executed if an unhandled exception is propagated out of a cleanup
    region.  For example, in C++, an exception thrown by a destructor
    during stack unwinding is required to result in a call to
    `std::terminate', so the C++ version of this function returns a
    CALL_EXPR for `std::terminate'.  */
-extern tree (*lang_protect_cleanup_actions) (void);
+extern gimple (*lang_protect_cleanup_actions) (void);
 
 /* Return true if type A catches type B.  */
 extern int (*lang_eh_type_covers) (tree a, tree b);
@@ -175,7 +168,7 @@ extern tree (*lang_eh_runtime_type) (tree);
 
 struct throw_stmt_node GTY(())
 {
-  tree stmt;
+  gimple stmt;
   int region_nr;
 };
 

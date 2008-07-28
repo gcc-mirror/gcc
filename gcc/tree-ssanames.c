@@ -115,17 +115,12 @@ ssanames_print_statistics (void)
    used without a preceding definition).  */
 
 tree
-make_ssa_name_fn (struct function *fn, tree var, tree stmt)
+make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 {
   tree t;
   use_operand_p imm;
 
-  gcc_assert (DECL_P (var)
-	      || TREE_CODE (var) == INDIRECT_REF);
-
-  gcc_assert (!stmt
-	      || EXPR_P (stmt) || GIMPLE_STMT_P (stmt)
-	      || TREE_CODE (stmt) == PHI_NODE);
+  gcc_assert (DECL_P (var));
 
   /* If our free list has an element, then use it.  */
   if (FREE_SSANAMES (fn))
@@ -161,7 +156,7 @@ make_ssa_name_fn (struct function *fn, tree var, tree stmt)
   imm->use = NULL;
   imm->prev = imm;
   imm->next = imm;
-  imm->stmt = t;
+  imm->loc.ssa_name = t;
 
   return t;
 }
@@ -219,7 +214,8 @@ release_ssa_name (tree var)
 
       imm->prev = imm;
       imm->next = imm;
-      imm->stmt = var;
+      imm->loc.ssa_name = var;
+
       /* First put back the right tree node so that the tree checking
 	 macros do not complain.  */
       TREE_SET_CODE (var, SSA_NAME);
@@ -243,7 +239,7 @@ release_ssa_name (tree var)
 /* Creates a duplicate of a ssa name NAME defined in statement STMT.  */
 
 tree
-duplicate_ssa_name (tree name, tree stmt)
+duplicate_ssa_name (tree name, gimple stmt)
 {
   tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
   struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
@@ -285,7 +281,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 /* Release all the SSA_NAMEs created by STMT.  */
 
 void
-release_defs (tree stmt)
+release_defs (gimple stmt)
 {
   tree def;
   ssa_op_iter iter;
