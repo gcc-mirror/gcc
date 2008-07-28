@@ -47,7 +47,6 @@ GFORTRAN_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gfortran|sed
 
 # Use strict warnings for this front end.
 fortran-warn = $(STRICT_WARN)
-fortran-warn += -Wno-format -Wno-missing-format-attribute -Wno-uninitialized # FIXME tuples: Do not merge.
 
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
