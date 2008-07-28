@@ -2991,8 +2991,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 			    }
 			  gsi_insert_seq_on_edge (pred, stmts);
 			}
-		      /* FIXME tuples
-		      gimple_set_plf (forcedexpr, NECESSARY, false); */
 		      avail[bprime->index] = get_or_alloc_expr_for_name (forcedexpr);
 		    }
 		}
@@ -3032,8 +3030,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 		    }
 		  gsi_insert_seq_on_edge (pred, stmts);
 		}
-	      /* FIXME tuples
-	      gimple_set_plf (forcedexpr, NECESSARY, false); */
 	      avail[bprime->index] = get_or_alloc_expr_for_name (forcedexpr);
 	    }
 	}
@@ -3451,120 +3447,6 @@ add_to_exp_gen (basic_block block, tree op)
 	bitmap_value_insert_into_set (maximal_set, result);
     }
 }
-
-/* FIXME tuples */
-#if 0
-/* For each real store operation of the form
-   *a = <value> that we see, create a corresponding fake store of the
-   form storetmp_<version> = *a.
-
-   This enables AVAIL computation to mark the results of stores as
-   available.  Without this, you'd need to do some computation to
-   mark the result of stores as ANTIC and AVAIL at all the right
-   points.
-   To save memory, we keep the store
-   statements pool allocated until we decide whether they are
-   necessary or not.  */
-
-static void
-insert_fake_stores (void)
-{
-  basic_block block;
-
-  FOR_ALL_BB (block)
-    {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_bb (block); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
-
-	  /* We can't generate SSA names for stores that are complex
-	     or aggregate.  We also want to ignore things whose
-	     virtual uses occur in abnormal phis.  */
-
-	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == INDIRECT_REF
-		  || handled_component_p (GIMPLE_STMT_OPERAND (stmt, 0)))
-	      && !AGGREGATE_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0))))
-	    {
-	      ssa_op_iter iter;
-	      def_operand_p defp;
-	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-	      tree new_tree, new_lhs;
-	      bool notokay = false;
-
-	      FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-		{
-		  tree defvar = DEF_FROM_PTR (defp);
-		  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (defvar))
-		    {
-		      notokay = true;
-		      break;
-		    }
-		}
-
-	      if (notokay)
-		continue;
-
-	      if (!storetemp || TREE_TYPE (rhs) != TREE_TYPE (storetemp))
-		{
-		  storetemp = create_tmp_var (TREE_TYPE (rhs), "storetmp");
-		  if (TREE_CODE (TREE_TYPE (storetemp)) == VECTOR_TYPE
-		      || TREE_CODE (TREE_TYPE (storetemp)) == COMPLEX_TYPE)
-		    DECL_GIMPLE_REG_P (storetemp) = 1;
-		  get_var_ann (storetemp);
-		}
-
-	      new_tree = build_gimple_modify_stmt (NULL_TREE, lhs);
-	      new_lhs = make_ssa_name (storetemp, new_tree);
-	      GIMPLE_STMT_OPERAND (new_tree, 0) = new_lhs;
-	      create_ssa_artificial_load_stmt (new_tree, stmt, false);
-
-	      gimple_set_plf (new_tree, NECESSARY, false);
-	      VEC_safe_push (gimple, heap, inserted_exprs, new_tree);
-	      VEC_safe_push (gimple, heap, need_creation, new_tree);
-	      bsi_insert_after (&bsi, new_tree, BSI_NEW_STMT);
-	    }
-	}
-    }
-}
-
-/* Turn the pool allocated fake stores that we created back into real
-   GC allocated ones if they turned out to be necessary to PRE some
-   expressions.  */
-
-static void
-realify_fake_stores (void)
-{
-  unsigned int i;
-  tree stmt;
-
-  for (i = 0; VEC_iterate (gimple, need_creation, i, stmt); i++)
-    {
-      if (gimple_plf (stmt, NECESSARY))
-	{
-	  block_stmt_iterator bsi, bsi2;
-	  tree rhs;
-
-	  /* Mark the temp variable as referenced */
-	  add_referenced_var (SSA_NAME_VAR (GIMPLE_STMT_OPERAND (stmt, 0)));
-
-	  /* Put the statement before the store in the IR stream
-	     as a plain ssa name copy.  */
-	  bsi = bsi_for_stmt (stmt);
-	  bsi_prev (&bsi);
-	  rhs = GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1);
-	  GIMPLE_STMT_OPERAND (stmt, 1) = rhs;
-	  bsi2 = bsi_for_stmt (stmt);
-	  bsi_remove (&bsi2, true);
-	  bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
-	}
-      else
-	release_defs (stmt);
-    }
-}
-#endif
 
 /* Create value ids for PHI in BLOCK.  */
 
@@ -4266,11 +4148,6 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
      loop_optimizer_init may create new phis, etc.  */
   if (!do_fre)
     loop_optimizer_init (LOOPS_NORMAL);
-  /* FIXME tuples */
-#if 0
-  if (0 && !do_fre)
-    insert_fake_stores ();
-#endif
 
   if (!run_scc_vn (do_fre))
     {
@@ -4326,14 +4203,7 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
   clear_expression_ids ();
   free_scc_vn ();
   if (!do_fre)
-    {
-      remove_dead_inserted_code ();
-  /* FIXME tuples */
-#if 0
-      if (0)
-	realify_fake_stores ();
-#endif
-    }
+    remove_dead_inserted_code ();
 
   fini_pre ();
 

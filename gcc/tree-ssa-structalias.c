@@ -3131,31 +3131,6 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 	  }
 	break;
       }
-    case tcc_unary:
-      {
-	/* FIXME tuples: this won't trigger, instead get_constraint_for
-	   needs to be fed with piecewise trees.  */
-	switch (TREE_CODE (t))
-	  {
-	  CASE_CONVERT:
-	    {
-	      tree op = TREE_OPERAND (t, 0);
-
-	      /* Cast from non-pointer to pointers are bad news for us.
-		 Anything else, we see through */
-	      if (!(POINTER_TYPE_P (TREE_TYPE (t))
-		    && ! POINTER_TYPE_P (TREE_TYPE (op))))
-		{
-		  get_constraint_for_1 (op, results, address_p);
-		  return;
-		}
-
-	      /* FALLTHRU  */
-	    }
-	  default:;
-	  }
-	break;
-      }
     case tcc_exceptional:
       {
 	switch (TREE_CODE (t))
@@ -3877,7 +3852,10 @@ find_func_aliases (gimple origt)
 	  if (gimple_assign_rhs_code (t) == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
-	  else if (rhsop)
+	  else if ((IS_CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
+		    && !(POINTER_TYPE_P (gimple_expr_type (t))
+			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
+		   || gimple_assign_single_p (t))
 	    get_constraint_for (rhsop, &rhsc);
 	  else
 	    {
@@ -3924,9 +3902,8 @@ find_func_aliases (gimple origt)
 	  if (could_have_pointers (gimple_assign_rhs1 (t)))
 	    make_escape_constraint (gimple_assign_rhs1 (t));
 	}
-      /* FIXME tuples
       else
-	gcc_unreachable ();  */
+	gcc_unreachable ();
     }
   else if (stmt_escape_type == ESCAPE_BAD_CAST)
     {
