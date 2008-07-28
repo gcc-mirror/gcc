@@ -3275,6 +3275,7 @@ build_vec_delete (tree base, tree maxindex,
     {
       /* Step back one from start of vector, and read dimension.  */
       tree cookie_addr;
+      tree size_ptr_type = build_pointer_type (sizetype);
 
       if (TREE_SIDE_EFFECTS (base))
 	{
@@ -3284,8 +3285,8 @@ build_vec_delete (tree base, tree maxindex,
       type = strip_array_types (TREE_TYPE (type));
       cookie_addr = fold_build1 (NEGATE_EXPR, sizetype, TYPE_SIZE_UNIT (sizetype));
       cookie_addr = build2 (POINTER_PLUS_EXPR,
-			    build_pointer_type (sizetype),
-			    base,
+			    size_ptr_type,
+			    fold_convert (size_ptr_type, base),
 			    cookie_addr);
       maxindex = cp_build_indirect_ref (cookie_addr, NULL, tf_warning_or_error);
     }

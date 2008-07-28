@@ -156,7 +156,7 @@ int access_matrix_get_index_for_parameter (tree, struct access_matrix *);
 struct data_reference
 {
   /* A pointer to the statement that contains this DR.  */
-  tree stmt;
+  gimple stmt;
   
   /* A pointer to the memory reference.  */
   tree ref;
@@ -368,7 +368,7 @@ typedef struct data_ref_loc_d
 DEF_VEC_O (data_ref_loc);
 DEF_VEC_ALLOC_O (data_ref_loc, heap);
 
-bool get_references_in_stmt (tree, VEC (data_ref_loc, heap) **);
+bool get_references_in_stmt (gimple, VEC (data_ref_loc, heap) **);
 void dr_analyze_innermost (struct data_reference *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
@@ -392,7 +392,7 @@ extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_ref (data_reference_p);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
-struct data_reference *create_data_ref (struct loop *, tree, tree, bool);
+struct data_reference *create_data_ref (struct loop *, tree, gimple, bool);
 bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 void compute_all_dependences (VEC (data_reference_p, heap) *,
 			      VEC (ddr_p, heap) **, VEC (loop_p, heap) *, bool);
@@ -462,7 +462,7 @@ ddr_dependence_level (ddr_p ddr)
 typedef struct rdg_vertex
 {
   /* The statement represented by this vertex.  */
-  tree stmt;
+  gimple stmt;
 
   /* True when the statement contains a write to memory.  */
   bool has_mem_write;
@@ -485,7 +485,7 @@ void debug_rdg_component (struct graph *, int);
 void dump_rdg (FILE *, struct graph *);
 void debug_rdg (struct graph *);
 void dot_rdg (struct graph *);
-int rdg_vertex_for_stmt (struct graph *, tree);
+int rdg_vertex_for_stmt (struct graph *, gimple);
 
 /* Data dependence type.  */
 
@@ -538,10 +538,10 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
   return var_index;
 }
 
-void stores_from_loop (struct loop *, VEC (tree, heap) **);
-void remove_similar_memory_refs (VEC (tree, heap) **);
+void stores_from_loop (struct loop *, VEC (gimple, heap) **);
+void remove_similar_memory_refs (VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
-bool have_similar_memory_accesses (tree, tree);
+bool have_similar_memory_accesses (gimple, gimple);
 
 /* Determines whether RDG vertices V1 and V2 access to similar memory
    locations, in which case they have to be in the same partition.  */

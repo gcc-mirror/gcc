@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "cgraph.h"
 #include "target-def.h"
+#include "gimple.h"
 #include "fixed-value.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
@@ -7376,71 +7377,67 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
    inlining, so we don't have to worry about that.  */
 
 void
-c_warn_unused_result (tree *top_p)
+c_warn_unused_result (gimple_seq seq)
 {
-  tree t = *top_p;
-  tree_stmt_iterator i;
   tree fdecl, ftype;
+  gimple_stmt_iterator i;
 
-  switch (TREE_CODE (t))
+  for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
     {
-    case STATEMENT_LIST:
-      for (i = tsi_start (*top_p); !tsi_end_p (i); tsi_next (&i))
-	c_warn_unused_result (tsi_stmt_ptr (i));
-      break;
+      gimple g = gsi_stmt (i);
 
-    case COND_EXPR:
-      c_warn_unused_result (&COND_EXPR_THEN (t));
-      c_warn_unused_result (&COND_EXPR_ELSE (t));
-      break;
-    case BIND_EXPR:
-      c_warn_unused_result (&BIND_EXPR_BODY (t));
-      break;
-    case TRY_FINALLY_EXPR:
-    case TRY_CATCH_EXPR:
-      c_warn_unused_result (&TREE_OPERAND (t, 0));
-      c_warn_unused_result (&TREE_OPERAND (t, 1));
-      break;
-    case CATCH_EXPR:
-      c_warn_unused_result (&CATCH_BODY (t));
-      break;
-    case EH_FILTER_EXPR:
-      c_warn_unused_result (&EH_FILTER_FAILURE (t));
-      break;
-
-    case CALL_EXPR:
-      if (TREE_USED (t))
-	break;
-
-      /* This is a naked call, as opposed to a CALL_EXPR nested inside
-	 a MODIFY_EXPR.  All calls whose value is ignored should be
-	 represented like this.  Look for the attribute.  */
-      fdecl = get_callee_fndecl (t);
-      if (fdecl)
-	ftype = TREE_TYPE (fdecl);
-      else
+      switch (gimple_code (g))
 	{
-	  ftype = TREE_TYPE (CALL_EXPR_FN (t));
-	  /* Look past pointer-to-function to the function type itself.  */
-	  ftype = TREE_TYPE (ftype);
-	}
+	case GIMPLE_BIND:
+	  c_warn_unused_result (gimple_bind_body (g));
+	  break;
+	case GIMPLE_TRY:
+	  c_warn_unused_result (gimple_try_eval (g));
+	  c_warn_unused_result (gimple_try_cleanup (g));
+	  break;
+	case GIMPLE_CATCH:
+	  c_warn_unused_result (gimple_catch_handler (g));
+	  break;
+	case GIMPLE_EH_FILTER:
+	  c_warn_unused_result (gimple_eh_filter_failure (g));
+	  break;
 
-      if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
-	{
-	  if (fdecl)
-	    warning (0, "%Hignoring return value of %qD, "
-		     "declared with attribute warn_unused_result",
-		     EXPR_LOCUS (t), fdecl);
+	case GIMPLE_CALL:
+	  if (gimple_call_lhs (g))
+	    break;
+
+	  /* This is a naked call, as opposed to a GIMPLE_CALL with an
+	     LHS.  All calls whose value is ignored should be
+	     represented like this.  Look for the attribute.  */
+	  fdecl = gimple_call_fn (g);
+	  if (TREE_CODE (fdecl) == FUNCTION_DECL)
+	    ftype = TREE_TYPE (fdecl);
 	  else
-	    warning (0, "%Hignoring return value of function "
-		     "declared with attribute warn_unused_result",
-		     EXPR_LOCUS (t));
-	}
-      break;
+	    {
+	      ftype = TREE_TYPE (fdecl);
+	      /* Look past pointer-to-function to the function type itself.  */
+	      ftype = TREE_TYPE (ftype);
+	    }
 
-    default:
-      /* Not a container, not a call, or a call whose value is used.  */
-      break;
+	  if (lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (ftype)))
+	    {
+	      location_t loc = gimple_location (g);
+
+	      if (fdecl)
+		warning (0, "%Hignoring return value of %qD, "
+			 "declared with attribute warn_unused_result",
+			 &loc, fdecl);
+	      else
+		warning (0, "%Hignoring return value of function "
+			 "declared with attribute warn_unused_result",
+			 &loc);
+	    }
+	  break;
+
+	default:
+	  /* Not a container, not a call, or a call whose value is used.  */
+	  break;
+	}
     }
 }
 

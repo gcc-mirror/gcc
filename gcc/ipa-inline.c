@@ -195,9 +195,11 @@ cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
    clones or re-using node originally representing out-of-line function call.
    */
 void
-cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_original)
+cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
+			    bool update_original)
 {
   HOST_WIDE_INT peak;
+
   if (duplicate)
     {
       /* We may eliminate the need for out-of-line copy to be output.
@@ -207,7 +209,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_o
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
-	  if (DECL_SAVED_TREE (e->callee->decl))
+	  if (gimple_body (e->callee->decl))
 	    overall_insns -= e->callee->global.insns, nfunctions_inlined++;
 	  duplicate = false;
 	}
@@ -289,7 +291,7 @@ cgraph_mark_inline (struct cgraph_edge *edge)
   struct cgraph_node *what = edge->callee;
   struct cgraph_edge *e, *next;
 
-  gcc_assert (!CALL_STMT_CANNOT_INLINE_P (edge->call_stmt));
+  gcc_assert (!gimple_call_cannot_inline_p (edge->call_stmt));
   /* Look for all calls, mark them inline and clone recursively
      all inlined functions.  */
   for (e = what->callers; e; e = next)
@@ -971,7 +973,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	}
       if (!tree_can_inline_p (edge->caller->decl, edge->callee->decl))
 	{
-	  CALL_STMT_CANNOT_INLINE_P (edge->call_stmt) = true;
+	  gimple_call_set_cannot_inline (edge->call_stmt, true);
 	  edge->inline_failed = N_("target specific option mismatch");
 	  if (dump_file)
 	    fprintf (dump_file, " inline_failed:%s.\n", edge->inline_failed);
@@ -992,7 +994,7 @@ cgraph_decide_inlining_of_small_functions (void)
       else
 	{
 	  struct cgraph_node *callee;
-	  if (CALL_STMT_CANNOT_INLINE_P (edge->call_stmt)
+	  if (gimple_call_cannot_inline_p (edge->call_stmt)
 	      || !cgraph_check_inline_limits (edge->caller, edge->callee,
 					      &edge->inline_failed, true))
 	    {
@@ -1126,14 +1128,14 @@ cgraph_decide_inlining (void)
       for (e = node->callers; e; e = next)
 	{
 	  next = e->next_caller;
-	  if (!e->inline_failed || CALL_STMT_CANNOT_INLINE_P (e->call_stmt))
+	  if (!e->inline_failed || gimple_call_cannot_inline_p (e->call_stmt))
 	    continue;
 	  if (cgraph_recursive_inlining_p (e->caller, e->callee,
 				  	   &e->inline_failed))
 	    continue;
 	  if (!tree_can_inline_p (e->caller->decl, e->callee->decl))
 	    {
-	      CALL_STMT_CANNOT_INLINE_P (e->call_stmt) = true;
+	      gimple_call_set_cannot_inline (e->call_stmt, true);
 	      continue;
 	    }
 	  cgraph_mark_inline_edge (e, true);
@@ -1172,15 +1174,18 @@ cgraph_decide_inlining (void)
 	fprintf (dump_file, "\nDeciding on functions called once:\n");
 
       /* And finally decide what functions are called once.  */
-
       for (i = nnodes - 1; i >= 0; i--)
 	{
 	  node = order[i];
 
-	  if (node->callers && !node->callers->next_caller && !node->needed
-	      && node->local.inlinable && node->callers->inline_failed
-	      && !CALL_STMT_CANNOT_INLINE_P (node->callers->call_stmt)
-	      && !DECL_EXTERNAL (node->decl) && !DECL_COMDAT (node->decl))
+	  if (node->callers
+	      && !node->callers->next_caller
+	      && !node->needed
+	      && node->local.inlinable
+	      && node->callers->inline_failed
+	      && !gimple_call_cannot_inline_p (node->callers->call_stmt)
+	      && !DECL_EXTERNAL (node->decl)
+	      && !DECL_COMDAT (node->decl))
 	    {
 	      if (dump_file)
 		{
@@ -1342,7 +1347,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
       if (!e->callee->local.disregard_inline_limits
 	  && (mode != INLINE_ALL || !e->callee->local.inlinable))
 	continue;
-      if (CALL_STMT_CANNOT_INLINE_P (e->call_stmt))
+      if (gimple_call_cannot_inline_p (e->call_stmt))
 	continue;
       /* When the edge is already inlined, we just need to recurse into
 	 it in order to fully flatten the leaves.  */
@@ -1369,7 +1374,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	}
       if (!tree_can_inline_p (node->decl, e->callee->decl))
 	{
-	  CALL_STMT_CANNOT_INLINE_P (e->call_stmt) = true;
+	  gimple_call_set_cannot_inline (e->call_stmt, true);
 	  if (dump_file)
 	    {
 	      indent_to (dump_file, depth);
@@ -1388,7 +1393,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (!DECL_SAVED_TREE (e->callee->decl) && !e->callee->inline_decl)
+      if (!gimple_body (e->callee->decl) && !e->callee->inline_decl)
 	{
 	  if (dump_file)
 	    {
@@ -1402,7 +1407,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
     }
 
   /* Now do the automatic inlining.  */
-  if (!flag_really_no_inline && mode != INLINE_ALL
+  if (!flag_really_no_inline
+      && mode != INLINE_ALL
       && mode != INLINE_ALWAYS_INLINE)
     for (e = node->callees; e; e = e->next_callee)
       {
@@ -1455,7 +1461,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	  }
 	if (!cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
 				        false)
-	    || CALL_STMT_CANNOT_INLINE_P (e->call_stmt))
+	    || gimple_call_cannot_inline_p (e->call_stmt))
 	  {
 	    if (dump_file)
 	      {
@@ -1464,7 +1470,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	      }
 	    continue;
 	  }
-	if (!DECL_SAVED_TREE (e->callee->decl) && !e->callee->inline_decl)
+	if (!gimple_body (e->callee->decl) && !e->callee->inline_decl)
 	  {
 	    if (dump_file)
 	      {
@@ -1476,7 +1482,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	  }
 	if (!tree_can_inline_p (node->decl, e->callee->decl))
 	  {
-	    CALL_STMT_CANNOT_INLINE_P (e->call_stmt) = true;
+	    gimple_call_set_cannot_inline (e->call_stmt, true);
 	    if (dump_file)
 	      {
 		indent_to (dump_file, depth);
@@ -1585,8 +1591,8 @@ compute_inline_parameters (struct cgraph_node *node)
     = inline_summary (node)->estimated_self_stack_size;
   node->global.stack_frame_offset = 0;
   node->local.inlinable = tree_inlinable_function_p (current_function_decl);
-  inline_summary (node)->self_insns = estimate_num_insns (current_function_decl,
-					                  &eni_inlining_weights);
+  inline_summary (node)->self_insns
+      = estimate_num_insns_fn (current_function_decl, &eni_inlining_weights);
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
       = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
@@ -1706,6 +1712,7 @@ inline_transform (struct cgraph_node *node)
   for (e = node->callees; e; e = e->next_callee)
     if (!e->inline_failed || warn_inline)
       break;
+
   if (e)
     {
       timevar_push (TV_INTEGRATION);

@@ -368,7 +368,8 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   int cnt = 0;
   edge e;
   basic_block bb;
-  tree cond, c0, c1;
+  tree c0, c1;
+  gimple cond;
   enum tree_code cmp;
 
   /* Get rid of unnecessary casts, but preserve the value of
@@ -427,12 +428,10 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      cond = COND_EXPR_COND (last_stmt (e->src));
-      if (!COMPARISON_CLASS_P (cond))
-	continue;
-      c0 = TREE_OPERAND (cond, 0);
-      cmp = TREE_CODE (cond);
-      c1 = TREE_OPERAND (cond, 1);
+      cond = last_stmt (e->src);
+      c0 = gimple_cond_lhs (cond);
+      cmp = gimple_cond_code (cond);
+      c1 = gimple_cond_rhs (cond);
 
       if (e->flags & EDGE_FALSE_VALUE)
 	cmp = invert_tree_comparison (cmp, false);
@@ -1349,7 +1348,7 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
       || operand_equal_p (expr, old, 0))
     return unshare_expr (new_tree);
 
-  if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
+  if (!EXPR_P (expr))
     return expr;
 
   n = TREE_OPERAND_LENGTH (expr);
@@ -1376,8 +1375,9 @@ tree
 expand_simple_operations (tree expr)
 {
   unsigned i, n;
-  tree ret = NULL_TREE, e, ee, stmt;
+  tree ret = NULL_TREE, e, ee, e1;
   enum tree_code code;
+  gimple stmt;
 
   if (expr == NULL_TREE)
     return expr;
@@ -1415,17 +1415,17 @@ expand_simple_operations (tree expr)
     return expr;
 
   stmt = SSA_NAME_DEF_STMT (expr);
-  if (TREE_CODE (stmt) == PHI_NODE)
+  if (gimple_code (stmt) == GIMPLE_PHI)
     {
       basic_block src, dest;
 
-      if (PHI_NUM_ARGS (stmt) != 1)
+      if (gimple_phi_num_args (stmt) != 1)
 	return expr;
       e = PHI_ARG_DEF (stmt, 0);
 
       /* Avoid propagating through loop exit phi nodes, which
 	 could break loop-closed SSA form restrictions.  */
-      dest = bb_for_stmt (stmt);
+      dest = gimple_bb (stmt);
       src = single_pred (dest);
       if (TREE_CODE (e) == SSA_NAME
 	  && src->loop_father != dest->loop_father)
@@ -1433,24 +1433,44 @@ expand_simple_operations (tree expr)
 
       return expand_simple_operations (e);
     }
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
     return expr;
 
-  e = GIMPLE_STMT_OPERAND (stmt, 1);
-  if (/* Casts are simple.  */
-      !CONVERT_EXPR_P (e)
-      /* Copies are simple.  */
-      && TREE_CODE (e) != SSA_NAME
-      /* Assignments of invariants are simple.  */
-      && !is_gimple_min_invariant (e)
+  e = gimple_assign_rhs1 (stmt);
+  code = gimple_assign_rhs_code (stmt);
+  if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
+    {
+      if (is_gimple_min_invariant (e))
+	return e;
+
+      if (code == SSA_NAME)
+	return expand_simple_operations (e);
+
+      return expr;
+    }
+
+  switch (code)
+    {
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      /* Casts are simple.  */
+      ee = expand_simple_operations (e);
+      return fold_build1 (code, TREE_TYPE (expr), ee);
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case POINTER_PLUS_EXPR:
       /* And increments and decrements by a constant are simple.  */
-      && !((TREE_CODE (e) == PLUS_EXPR
-	    || TREE_CODE (e) == MINUS_EXPR
-	    || TREE_CODE (e) == POINTER_PLUS_EXPR)
-	   && is_gimple_min_invariant (TREE_OPERAND (e, 1))))
-    return expr;
+      e1 = gimple_assign_rhs2 (stmt);
+      if (!is_gimple_min_invariant (e1))
+	return expr;
 
-  return expand_simple_operations (e);
+      ee = expand_simple_operations (e);
+      return fold_build2 (code, TREE_TYPE (expr), ee, e1);
+
+    default:
+      return expr;
+    }
 }
 
 /* Tries to simplify EXPR using the condition COND.  Returns the simplified
@@ -1585,6 +1605,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
 {
   edge e;
   basic_block bb;
+  gimple stmt;
   tree cond;
   int cnt = 0;
 
@@ -1605,7 +1626,11 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      cond = COND_EXPR_COND (last_stmt (e->src));
+      stmt = last_stmt (e->src);
+      cond = fold_build2 (gimple_cond_code (stmt),
+			  boolean_type_node,
+			  gimple_cond_lhs (stmt),
+			  gimple_cond_rhs (stmt));
       if (e->flags & EDGE_FALSE_VALUE)
 	cond = invert_truthvalue (cond);
       expr = tree_simplify_using_condition (cond, expr);
@@ -1676,9 +1701,9 @@ bool
 loop_only_exit_p (const struct loop *loop, const_edge exit)
 {
   basic_block *body;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
   unsigned i;
-  tree call;
+  gimple call;
 
   if (exit != single_exit (loop))
     return false;
@@ -1686,10 +1711,13 @@ loop_only_exit_p (const struct loop *loop, const_edge exit)
   body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     {
-      for (bsi = bsi_start (body[0]); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = gsi_start_bb (body[i]); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  call = get_call_expr_in (bsi_stmt (bsi));
-	  if (call && TREE_SIDE_EFFECTS (call))
+	  call = gsi_stmt (bsi);
+	  if (gimple_code (call) != GIMPLE_CALL)
+	    continue;
+
+	  if (gimple_has_side_effects (call))
 	    {
 	      free (body);
 	      return false;
@@ -1714,7 +1742,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 			   struct tree_niter_desc *niter,
 			   bool warn)
 {
-  tree stmt, cond, type;
+  gimple stmt;
+  tree type;
   tree op0, op1;
   enum tree_code code;
   affine_iv iv0, iv1;
@@ -1724,15 +1753,14 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 
   niter->assumptions = boolean_false_node;
   stmt = last_stmt (exit->src);
-  if (!stmt || TREE_CODE (stmt) != COND_EXPR)
+  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
     return false;
 
   /* We want the condition for staying inside loop.  */
-  cond = COND_EXPR_COND (stmt);
+  code = gimple_cond_code (stmt);
   if (exit->flags & EDGE_TRUE_VALUE)
-    cond = invert_truthvalue (cond);
+    code = invert_tree_comparison (code, false);
 
-  code = TREE_CODE (cond);
   switch (code)
     {
     case GT_EXPR:
@@ -1746,8 +1774,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
       return false;
     }
   
-  op0 = TREE_OPERAND (cond, 0);
-  op1 = TREE_OPERAND (cond, 1);
+  op0 = gimple_cond_lhs (stmt);
+  op1 = gimple_cond_rhs (stmt);
   type = TREE_TYPE (op0);
 
   if (TREE_CODE (type) != INTEGER_TYPE
@@ -1805,7 +1833,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   if (warn)
     {
       const char *wording;
-      location_t loc = EXPR_LOCATION (stmt);
+      location_t loc = gimple_location (stmt);
   
       /* We can provide a more specific warning if one of the operator is
 	 constant and the other advances by +1 or -1.  */
@@ -1915,36 +1943,43 @@ find_loop_niter (struct loop *loop, edge *exit)
    result by a chain of operations such that all but exactly one of their
    operands are constants.  */
 
-static tree
+static gimple
 chain_of_csts_start (struct loop *loop, tree x)
 {
-  tree stmt = SSA_NAME_DEF_STMT (x);
+  gimple stmt = SSA_NAME_DEF_STMT (x);
   tree use;
-  basic_block bb = bb_for_stmt (stmt);
+  basic_block bb = gimple_bb (stmt);
+  enum tree_code code;
 
   if (!bb
       || !flow_bb_inside_loop_p (loop, bb))
-    return NULL_TREE;
+    return NULL;
   
-  if (TREE_CODE (stmt) == PHI_NODE)
+  if (gimple_code (stmt) == GIMPLE_PHI)
     {
       if (bb == loop->header)
 	return stmt;
 
-      return NULL_TREE;
+      return NULL;
     }
 
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-    return NULL_TREE;
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+    return NULL;
 
-  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
-    return NULL_TREE;
-  if (SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF) == NULL_DEF_OPERAND_P)
-    return NULL_TREE;
+  code = gimple_assign_rhs_code (stmt);
+  if (gimple_references_memory_p (stmt)
+      /* Before alias information is computed, operand scanning marks
+	 statements that write memory volatile.  However, the statements
+	 that only read memory are not marked, thus gimple_references_memory_p
+	 returns false for them.  */
+      || TREE_CODE_CLASS (code) == tcc_reference
+      || TREE_CODE_CLASS (code) == tcc_declaration
+      || SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF) == NULL_DEF_OPERAND_P)
+    return NULL;
 
   use = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
   if (use == NULL_USE_OPERAND_P)
-    return NULL_TREE;
+    return NULL;
 
   return chain_of_csts_start (loop, use);
 }
@@ -1957,32 +1992,32 @@ chain_of_csts_start (struct loop *loop, tree x)
    * the value of the phi node in the next iteration can be derived from the
      value in the current iteration by a chain of operations with constants.
    
-   If such phi node exists, it is returned.  If X is a constant, X is returned
-   unchanged.  Otherwise NULL_TREE is returned.  */
+   If such phi node exists, it is returned, otherwise NULL is returned.  */
 
-static tree
+static gimple
 get_base_for (struct loop *loop, tree x)
 {
-  tree phi, init, next;
+  gimple phi;
+  tree init, next;
 
   if (is_gimple_min_invariant (x))
-    return x;
+    return NULL;
 
   phi = chain_of_csts_start (loop, x);
   if (!phi)
-    return NULL_TREE;
+    return NULL;
 
   init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
   next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 
   if (TREE_CODE (next) != SSA_NAME)
-    return NULL_TREE;
+    return NULL;
 
   if (!is_gimple_min_invariant (init))
-    return NULL_TREE;
+    return NULL;
 
   if (chain_of_csts_start (loop, next) != phi)
-    return NULL_TREE;
+    return NULL;
 
   return phi;
 }
@@ -1998,9 +2033,8 @@ get_base_for (struct loop *loop, tree x)
 static tree
 get_val_for (tree x, tree base)
 {
-  tree stmt, nx, val;
-  use_operand_p op;
-  ssa_op_iter iter;
+  gimple stmt;
+  tree nx, val, retval, rhs1, rhs2;
 
   gcc_assert (is_gimple_min_invariant (base));
 
@@ -2008,23 +2042,43 @@ get_val_for (tree x, tree base)
     return base;
 
   stmt = SSA_NAME_DEF_STMT (x);
-  if (TREE_CODE (stmt) == PHI_NODE)
+  if (gimple_code (stmt) == GIMPLE_PHI)
     return base;
 
-  FOR_EACH_SSA_USE_OPERAND (op, stmt, iter, SSA_OP_USE)
-    {
-      nx = USE_FROM_PTR (op);
-      val = get_val_for (nx, base);
-      SET_USE (op, val);
-      val = fold (GIMPLE_STMT_OPERAND (stmt, 1));
-      SET_USE (op, nx);
-      /* only iterate loop once.  */
-      return val;
-    }
+  gcc_assert (is_gimple_assign (stmt));
 
-  /* Should never reach here.  */
-  gcc_unreachable ();
+  /* STMT must be either an assignment of a single SSA name or an
+     expression involving an SSA name and a constant.  Try to fold that
+     expression using the value for the SSA name.  */
+  rhs1 = gimple_assign_rhs1 (stmt);
+  rhs2 = gimple_assign_rhs2 (stmt);
+  if (TREE_CODE (rhs1) == SSA_NAME)
+    nx = rhs1;
+  else if (rhs2 && TREE_CODE (rhs2) == SSA_NAME)
+    nx = rhs2;
+  else
+    gcc_unreachable ();
+
+  /* NX is now the SSA name for which we want to discover the base value.  */
+  val = get_val_for (nx, base);
+  if (rhs2)
+    {
+      /* If this is a binary expression, fold it.  If folding is
+	 not possible, return a tree expression with the RHS of STMT.  */
+      rhs1 = (nx == rhs1) ? val : rhs1;
+      rhs2 = (nx == rhs2) ? val : rhs2;
+      retval = fold_binary (gimple_assign_rhs_code (stmt),
+			    gimple_expr_type (stmt), rhs1, rhs2);
+      if (retval == NULL_TREE)
+	retval= build2 (gimple_assign_rhs_code (stmt),
+		        gimple_expr_type (stmt), rhs1, rhs2);
+    }
+  else
+    retval = val;
+      
+  return retval;
 }
+
 
 /* Tries to count the number of iterations of LOOP till it exits by EXIT
    by brute force -- i.e. by determining the value of the operands of the
@@ -2036,20 +2090,20 @@ get_val_for (tree x, tree base)
 tree
 loop_niter_by_eval (struct loop *loop, edge exit)
 {
-  tree cond, cnd, acnd;
-  tree op[2], val[2], next[2], aval[2], phi[2];
+  tree acnd;
+  tree op[2], val[2], next[2], aval[2];
+  gimple phi, cond;
   unsigned i, j;
   enum tree_code cmp;
 
   cond = last_stmt (exit->src);
-  if (!cond || TREE_CODE (cond) != COND_EXPR)
+  if (!cond || gimple_code (cond) != GIMPLE_COND)
     return chrec_dont_know;
 
-  cnd = COND_EXPR_COND (cond);
+  cmp = gimple_cond_code (cond);
   if (exit->flags & EDGE_TRUE_VALUE)
-    cnd = invert_truthvalue (cnd);
+    cmp = invert_tree_comparison (cmp, false);
 
-  cmp = TREE_CODE (cnd);
   switch (cmp)
     {
     case EQ_EXPR:
@@ -2058,8 +2112,8 @@ loop_niter_by_eval (struct loop *loop, edge exit)
     case GE_EXPR:
     case LT_EXPR:
     case LE_EXPR:
-      for (j = 0; j < 2; j++)
-	op[j] = TREE_OPERAND (cnd, j);
+      op[0] = gimple_cond_lhs (cond);
+      op[1] = gimple_cond_rhs (cond);
       break;
 
     default:
@@ -2068,23 +2122,19 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 
   for (j = 0; j < 2; j++)
     {
-      phi[j] = get_base_for (loop, op[j]);
-      if (!phi[j])
-	return chrec_dont_know;
-    }
-
-  for (j = 0; j < 2; j++)
-    {
-      if (TREE_CODE (phi[j]) == PHI_NODE)
+      if (is_gimple_min_invariant (op[j]))
 	{
-	  val[j] = PHI_ARG_DEF_FROM_EDGE (phi[j], loop_preheader_edge (loop));
-	  next[j] = PHI_ARG_DEF_FROM_EDGE (phi[j], loop_latch_edge (loop));
+	  val[j] = op[j];
+	  next[j] = NULL_TREE;
+	  op[j] = NULL_TREE;
 	}
       else
 	{
-	  val[j] = phi[j];
-	  next[j] = NULL_TREE;
-	  op[j] = NULL_TREE;
+	  phi = get_base_for (loop, op[j]);
+	  if (!phi)
+	    return chrec_dont_know;
+	  val[j] = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+	  next[j] = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 	}
     }
 
@@ -2166,17 +2216,48 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
 
 */
 
+static double_int derive_constant_upper_bound_ops (tree, tree,
+						   enum tree_code, tree);
+
+/* Returns a constant upper bound on the value of the right-hand side of
+   an assignment statement STMT.  */
+
+static double_int
+derive_constant_upper_bound_assign (gimple stmt)
+{
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree op0 = gimple_assign_rhs1 (stmt);
+  tree op1 = gimple_assign_rhs2 (stmt);
+
+  return derive_constant_upper_bound_ops (TREE_TYPE (gimple_assign_lhs (stmt)),
+					  op0, code, op1);
+}
+
 /* Returns a constant upper bound on the value of expression VAL.  VAL
    is considered to be unsigned.  If its type is signed, its value must
    be nonnegative.  */
  
 static double_int
-derive_constant_upper_bound (const_tree val)
+derive_constant_upper_bound (tree val)
 {
-  tree type = TREE_TYPE (val);
-  tree op0, op1, subtype, maxt;
+  enum tree_code code;
+  tree op0, op1;
+
+  extract_ops_from_tree (val, &code, &op0, &op1);
+  return derive_constant_upper_bound_ops (TREE_TYPE (val), op0, code, op1);
+}
+
+/* Returns a constant upper bound on the value of expression OP0 CODE OP1,
+   whose type is TYPE.  The expression is considered to be unsigned.  If
+   its type is signed, its value must be nonnegative.  */
+ 
+static double_int
+derive_constant_upper_bound_ops (tree type, tree op0,
+				 enum tree_code code, tree op1)
+{
+  tree subtype, maxt;
   double_int bnd, max, mmax, cst;
-  tree stmt;
+  gimple stmt;
 
   if (INTEGRAL_TYPE_P (type))
     maxt = TYPE_MAX_VALUE (type);
@@ -2185,13 +2266,12 @@ derive_constant_upper_bound (const_tree val)
 
   max = tree_to_double_int (maxt);
 
-  switch (TREE_CODE (val))
+  switch (code)
     {
     case INTEGER_CST:
-      return tree_to_double_int (val);
+      return tree_to_double_int (op0);
 
     CASE_CONVERT:
-      op0 = TREE_OPERAND (val, 0);
       subtype = TREE_TYPE (op0);
       if (!TYPE_UNSIGNED (subtype)
 	  /* If TYPE is also signed, the fact that VAL is nonnegative implies
@@ -2219,9 +2299,6 @@ derive_constant_upper_bound (const_tree val)
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
-      op0 = TREE_OPERAND (val, 0);
-      op1 = TREE_OPERAND (val, 1);
-
       if (TREE_CODE (op1) != INTEGER_CST
 	  || !tree_expr_nonnegative_p (op0))
 	return max;
@@ -2231,7 +2308,7 @@ derive_constant_upper_bound (const_tree val)
 	 of the signedness of the type.  */
       cst = tree_to_double_int (op1);
       cst = double_int_sext (cst, TYPE_PRECISION (type));
-      if (TREE_CODE (val) == PLUS_EXPR)
+      if (code != MINUS_EXPR)
 	cst = double_int_neg (cst);
 
       bnd = derive_constant_upper_bound (op0);
@@ -2285,8 +2362,6 @@ derive_constant_upper_bound (const_tree val)
 
     case FLOOR_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      op0 = TREE_OPERAND (val, 0);
-      op1 = TREE_OPERAND (val, 1);
       if (TREE_CODE (op1) != INTEGER_CST
 	  || tree_int_cst_sign_bit (op1))
 	return max;
@@ -2295,18 +2370,17 @@ derive_constant_upper_bound (const_tree val)
       return double_int_udiv (bnd, tree_to_double_int (op1), FLOOR_DIV_EXPR);
 
     case BIT_AND_EXPR:
-      op1 = TREE_OPERAND (val, 1);
       if (TREE_CODE (op1) != INTEGER_CST
 	  || tree_int_cst_sign_bit (op1))
 	return max;
       return tree_to_double_int (op1);
 
     case SSA_NAME:
-      stmt = SSA_NAME_DEF_STMT (val);
-      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
-	  || GIMPLE_STMT_OPERAND (stmt, 0) != val)
+      stmt = SSA_NAME_DEF_STMT (op0);
+      if (gimple_code (stmt) != GIMPLE_ASSIGN
+	  || gimple_assign_lhs (stmt) != op0)
 	return max;
-      return derive_constant_upper_bound (GIMPLE_STMT_OPERAND (stmt, 1));
+      return derive_constant_upper_bound_assign (stmt);
 
     default: 
       return max;
@@ -2349,7 +2423,7 @@ record_niter_bound (struct loop *loop, double_int i_bound, bool realistic,
 
 static void
 record_estimate (struct loop *loop, tree bound, double_int i_bound,
-		 tree at_stmt, bool is_exit, bool realistic, bool upper)
+		 gimple at_stmt, bool is_exit, bool realistic, bool upper)
 {
   double_int delta;
   edge exit;
@@ -2357,7 +2431,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Statement %s", is_exit ? "(exit)" : "");
-      print_generic_expr (dump_file, at_stmt, TDF_SLIM);
+      print_gimple_stmt (dump_file, at_stmt, 0, TDF_SLIM);
       fprintf (dump_file, " is %sexecuted at most ",
 	       upper ? "" : "probably ");
       print_generic_expr (dump_file, bound, TDF_SLIM);
@@ -2395,7 +2469,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
   if (is_exit
       || (exit != NULL
 	  && dominated_by_p (CDI_DOMINATORS,
-			     exit->src, bb_for_stmt (at_stmt))))
+			     exit->src, gimple_bb (at_stmt))))
     delta = double_int_one;
   else
     delta = double_int_two;
@@ -2415,7 +2489,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
    UPPER is true if we are sure the induction variable does not wrap.  */
 
 static void
-record_nonwrapping_iv (struct loop *loop, tree base, tree step, tree stmt,
+record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
 		       tree low, tree high, bool realistic, bool upper)
 {
   tree niter_bound, extreme, delta;
@@ -2434,7 +2508,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, tree stmt,
       fprintf (dump_file, " + ");
       print_generic_expr (dump_file, step, TDF_SLIM);
       fprintf (dump_file, " * iteration does not wrap in statement ");
-      print_generic_expr (dump_file, stmt, TDF_SLIM);
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
       fprintf (dump_file, " in loop %d.\n", loop->num);
     }
 
@@ -2515,7 +2589,7 @@ array_at_struct_end_p (tree ref)
 struct ilb_data
 {
   struct loop *loop;
-  tree stmt;
+  gimple stmt;
   bool reliable;
 };
 
@@ -2602,7 +2676,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
    STMT is guaranteed to be executed in every iteration of LOOP.*/
 
 static void
-infer_loop_bounds_from_ref (struct loop *loop, tree stmt, tree ref,
+infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref,
 			    bool reliable)
 {
   struct ilb_data data;
@@ -2618,14 +2692,12 @@ infer_loop_bounds_from_ref (struct loop *loop, tree stmt, tree ref,
    executed in every iteration of LOOP.  */
 
 static void
-infer_loop_bounds_from_array (struct loop *loop, tree stmt, bool reliable)
+infer_loop_bounds_from_array (struct loop *loop, gimple stmt, bool reliable)
 {
-  tree call;
-
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+  if (is_gimple_assign (stmt))
     {
-      tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
-      tree op1 = GIMPLE_STMT_OPERAND (stmt, 1);
+      tree op0 = gimple_assign_lhs (stmt);
+      tree op1 = gimple_assign_rhs1 (stmt);
 
       /* For each memory access, analyze its access function
 	 and record a bound on the loop iteration domain.  */
@@ -2635,17 +2707,21 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt, bool reliable)
       if (REFERENCE_CLASS_P (op1))
 	infer_loop_bounds_from_ref (loop, stmt, op1, reliable);
     }
-  
-  
-  call = get_call_expr_in (stmt);
-  if (call)
+  else if (is_gimple_call (stmt))
     {
-      tree arg;
-      call_expr_arg_iterator iter;
+      tree arg, lhs;
+      unsigned i, n = gimple_call_num_args (stmt);
 
-      FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
-	if (REFERENCE_CLASS_P (arg))
-	  infer_loop_bounds_from_ref (loop, stmt, arg, reliable);
+      lhs = gimple_call_lhs (stmt);
+      if (lhs && REFERENCE_CLASS_P (lhs))
+	infer_loop_bounds_from_ref (loop, stmt, lhs, reliable);
+
+      for (i = 0; i < n; i++)
+	{
+	  arg = gimple_call_arg (stmt, i);
+	  if (REFERENCE_CLASS_P (arg))
+	    infer_loop_bounds_from_ref (loop, stmt, arg, reliable);
+	}
     }
 }
 
@@ -2653,14 +2729,14 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt, bool reliable)
    that signed arithmetics in STMT does not overflow.  */
 
 static void
-infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
+infer_loop_bounds_from_signedness (struct loop *loop, gimple stmt)
 {
   tree def, base, step, scev, type, low, high;
 
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
     return;
 
-  def = GIMPLE_STMT_OPERAND (stmt, 0);
+  def = gimple_assign_lhs (stmt);
 
   if (TREE_CODE (def) != SSA_NAME)
     return;
@@ -2703,7 +2779,7 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 {
   unsigned i;
   basic_block *bbs;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
   basic_block bb;
   bool reliable;
   
@@ -2718,9 +2794,9 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 	 # of iterations of the loop.  However, we can use it as a guess.  */
       reliable = dominated_by_p (CDI_DOMINATORS, loop->latch, bb);
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  tree stmt = bsi_stmt (bsi);
+	  gimple stmt = gsi_stmt (bsi);
 
 	  infer_loop_bounds_from_array (loop, stmt, reliable);
 
@@ -2830,9 +2906,9 @@ estimate_numbers_of_iterations (void)
 /* Returns true if statement S1 dominates statement S2.  */
 
 bool
-stmt_dominates_stmt_p (tree s1, tree s2)
+stmt_dominates_stmt_p (gimple s1, gimple s2)
 {
-  basic_block bb1 = bb_for_stmt (s1), bb2 = bb_for_stmt (s2);
+  basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
 
   if (!bb1
       || s1 == s2)
@@ -2840,10 +2916,10 @@ stmt_dominates_stmt_p (tree s1, tree s2)
 
   if (bb1 == bb2)
     {
-      block_stmt_iterator bsi;
+      gimple_stmt_iterator bsi;
 
-      for (bsi = bsi_start (bb1); bsi_stmt (bsi) != s2; bsi_next (&bsi))
-	if (bsi_stmt (bsi) == s1)
+      for (bsi = gsi_start_bb (bb1); gsi_stmt (bsi) != s2; gsi_next (&bsi))
+	if (gsi_stmt (bsi) == s1)
 	  return true;
 
       return false;
@@ -2859,7 +2935,7 @@ stmt_dominates_stmt_p (tree s1, tree s2)
    statements in the loop.  */
 
 static bool
-n_of_executions_at_most (tree stmt,
+n_of_executions_at_most (gimple stmt,
 			 struct nb_iter_bound *niter_bound, 
 			 tree niter)
 {
@@ -2900,7 +2976,7 @@ n_of_executions_at_most (tree stmt,
   else
     {
       if (!stmt
-	  || (bb_for_stmt (stmt) != bb_for_stmt (niter_bound->stmt)
+	  || (gimple_bb (stmt) != gimple_bb (niter_bound->stmt)
 	      && !stmt_dominates_stmt_p (niter_bound->stmt, stmt)))
 	{
 	  bound = double_int_add (bound, double_int_one);
@@ -2943,7 +3019,7 @@ nowrap_type_p (tree type)
 
 bool
 scev_probably_wraps_p (tree base, tree step, 
-		       tree at_stmt, struct loop *loop,
+		       gimple at_stmt, struct loop *loop,
 		       bool use_overflow_semantics)
 {
   struct nb_iter_bound *bound;

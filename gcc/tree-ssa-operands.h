@@ -157,15 +157,7 @@ typedef struct stmt_operands_d *stmt_operands_p;
 #define SET_USE(USE, V)		set_ssa_use_from_ptr (USE, V)
 #define SET_DEF(DEF, V)		((*(DEF)) = (V))
 
-#define USE_STMT(USE)		(USE)->stmt
-
-#define DEF_OPS(STMT)		(stmt_ann (STMT)->operands.def_ops)
-#define USE_OPS(STMT)		(stmt_ann (STMT)->operands.use_ops)
-#define VUSE_OPS(STMT)		(stmt_ann (STMT)->operands.vuse_ops)
-#define VDEF_OPS(STMT)		(stmt_ann (STMT)->operands.vdef_ops)
-
-#define LOADED_SYMS(STMT)	(stmt_ann (STMT)->operands.loads)
-#define STORED_SYMS(STMT)	(stmt_ann (STMT)->operands.stores)
+#define USE_STMT(USE)		(USE)->loc.stmt
 
 #define USE_OP_PTR(OP)		(&((OP)->use_ptr))
 #define USE_OP(OP)		(USE_FROM_PTR (USE_OP_PTR (OP)))
@@ -187,11 +179,11 @@ typedef struct stmt_operands_d *stmt_operands_p;
 #define VDEF_NUM(OP)		VUSE_VECT_NUM_ELEM ((OP)->usev)
 #define VDEF_VECT(OP)		&((OP)->usev)
 
-#define PHI_RESULT_PTR(PHI)	get_phi_result_ptr (PHI)
+#define PHI_RESULT_PTR(PHI)	gimple_phi_result_ptr (PHI)
 #define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
 #define SET_PHI_RESULT(PHI, V)	SET_DEF (PHI_RESULT_PTR (PHI), (V))
 
-#define PHI_ARG_DEF_PTR(PHI, I)	get_phi_arg_def_ptr ((PHI), (I))
+#define PHI_ARG_DEF_PTR(PHI, I)	gimple_phi_arg_imm_use_ptr ((PHI), (I))
 #define PHI_ARG_DEF(PHI, I)	USE_FROM_PTR (PHI_ARG_DEF_PTR ((PHI), (I)))
 #define SET_PHI_ARG_DEF(PHI, I, V)					\
 				SET_USE (PHI_ARG_DEF_PTR ((PHI), (I)), (V))
@@ -204,14 +196,13 @@ typedef struct stmt_operands_d *stmt_operands_p;
 
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
-extern void free_ssa_operands (stmt_operands_p);
-extern void update_stmt_operands (tree);
-extern void free_stmt_operands (tree);
+extern void update_stmt_operands (gimple);
+extern void free_stmt_operands (gimple);
 extern bool verify_imm_links (FILE *f, tree var);
 
-extern void copy_virtual_operands (tree, tree);
+extern void copy_virtual_operands (gimple, gimple);
 extern int operand_build_cmp (const void *, const void *);
-extern void create_ssa_artificial_load_stmt (tree, tree, bool);
+extern void create_ssa_artificial_load_stmt (gimple, gimple, bool);
 
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);
@@ -222,10 +213,10 @@ extern void debug_decl_set (bitmap);
 
 extern bool ssa_operands_active (void);
 
-extern void add_to_addressable_set (tree, bitmap *);
-extern void push_stmt_changes (tree *);
-extern void pop_stmt_changes (tree *);
-extern void discard_stmt_changes (tree *);
+extern void push_stmt_changes (gimple *);
+extern void pop_stmt_changes (gimple *);
+extern void discard_stmt_changes (gimple *);
+void add_to_addressable_set (tree, bitmap *);
 
 enum ssa_op_iter_type {
   ssa_op_iter_none = 0,
@@ -250,7 +241,7 @@ typedef struct ssa_operand_iterator_d
   enum ssa_op_iter_type iter_type;
   int phi_i;
   int num_phi;
-  tree phi_stmt;
+  gimple phi_stmt;
   bool done;
   unsigned int vuse_index;
   unsigned int mayuse_index;
@@ -316,7 +307,7 @@ typedef struct ssa_operand_iterator_d
 /* This macro will execute a loop over a stmt, regardless of whether it is
    a real stmt or a PHI node, looking at the USE nodes matching FLAGS.  */
 #define FOR_EACH_PHI_OR_STMT_USE(USEVAR, STMT, ITER, FLAGS)	\
-  for ((USEVAR) = (TREE_CODE (STMT) == PHI_NODE 		\
+  for ((USEVAR) = (gimple_code (STMT) == GIMPLE_PHI 		\
 		   ? op_iter_init_phiuse (&(ITER), STMT, FLAGS)	\
 		   : op_iter_init_use (&(ITER), STMT, FLAGS));	\
        !op_iter_done (&(ITER));					\
@@ -325,7 +316,7 @@ typedef struct ssa_operand_iterator_d
 /* This macro will execute a loop over a stmt, regardless of whether it is
    a real stmt or a PHI node, looking at the DEF nodes matching FLAGS.  */
 #define FOR_EACH_PHI_OR_STMT_DEF(DEFVAR, STMT, ITER, FLAGS)	\
-  for ((DEFVAR) = (TREE_CODE (STMT) == PHI_NODE 		\
+  for ((DEFVAR) = (gimple_code (STMT) == GIMPLE_PHI 		\
 		   ? op_iter_init_phidef (&(ITER), STMT, FLAGS)	\
 		   : op_iter_init_def (&(ITER), STMT, FLAGS));	\
        !op_iter_done (&(ITER));					\

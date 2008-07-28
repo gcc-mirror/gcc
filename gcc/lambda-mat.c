@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "tree-flow.h"
 #include "lambda.h"
 
 static void lambda_matrix_get_column (lambda_matrix, int, int, 

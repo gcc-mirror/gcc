@@ -209,10 +209,10 @@ lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loop *,
                                                  struct obstack *);
 void lambda_loopnest_to_gcc_loopnest (struct loop *,
 				      VEC(tree,heap) *, VEC(tree,heap) *,
-				      VEC(tree,heap) **,
+				      VEC(gimple,heap) **,
                                       lambda_loopnest, lambda_trans_matrix,
                                       struct obstack *);
-void remove_iv (tree);
+void remove_iv (gimple);
 
 static inline void lambda_vector_negate (lambda_vector, lambda_vector, int);
 static inline void lambda_vector_mult_const (lambda_vector, lambda_vector, int, int);

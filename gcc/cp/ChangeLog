@@ -1,3 +1,143 @@
+2008-07-28  Richard Guenther  <rguenther@suse.de>
+
+	Merge from gimple-tuples-branch.
+
+	2008-07-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (gimplify_if_stmt): Set location on newly created
+	COND_EXPR.
+
+	2008-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (finish_function): Call gimple_body after cp_genericize.
+
+	2008-07-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* optimize.c: Include gimple.h instead of tree-gimple.h.
+	* Make-lang.in (cp-gimplify.o): Depend on tree-iterator.h.
+	* cp-gimplify.c: Rename tree-gimple.h to gimple.h.  Include
+	tree-iterator.h.
+
+	2008-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* optimize.c (maybe_clone_body): Clear DECL_SAVED_TREE for the clone.
+
+	2008-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr): Update comment.
+
+	2008-07-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-tree.h (union lang_tree_node): Rename GENERIC_NEXT to
+	TREE_CHAIN.
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Rename
+	GIMPLE_MODIFY_STMT to MODIFY_EXPR.
+	(cxx_omp_clause_copy_ctor): Same.
+	(cxx_omp_clause_assign_op): Same.
+
+	2008-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_omp_for): Add pre_p argument.  Tuplify.
+	(cp_gimplify_expr): Adjust caller.
+
+	2008-05-11 Doug Kwan  <dougkwan@google.com>
+
+	* init.c (build_vec_delete): Add type conversion for argument
+	0 of POINTER_PLUS_EXPR.
+
+	2008-04-29  Doug Kwan  <dougkwan@google.com>
+
+       * decl2 (File): Include "gimple.h"
+       (cp_write_global_declarations): Use gimple_body instead of
+       DECL_SAVED_TREE.
+       * Make-lang.in (cp/decl2.o): Add $(GIMPLE_H)
+
+	2008-04-10  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-04/msg00913.html
+
+	* optimize.c (maybe_clone_body): Re-enable call to
+	clone_body.
+	* cp-gimplify.c (cp_gimplify_omp_for): Mark disabled
+	code with call to gimple_unreachable.
+	(cp_genericize): Fix handling of clone bodies.
+
+	2008-04-04  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-04/msg00413.html
+
+	* optimize.c (maybe_clone_body): Re-enable.
+
+	2008-02-19  Diego Novillo  <dnovillo@google.com>
+		    Oleg Ryjkov  <olegr@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00804.html
+
+	* cp-gimplify.c (gimplify_for_stmt): Change gimple_seq
+	argument to gimple_seq *.  Update all users.
+	(gimplify_must_not_throw_expr): Likewise.
+
+	2008-02-04  Oleg Ryjkov <olegr@google.com>
+
+	* except.c: Include gimple.h
+	(cp_protect_cleanup_actions): Convert to tuples.
+	* Make-lang.in (cp/except.o): Add dependency on gimple.h
+
+	2007-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (gimplify_cp_loop): Call tree_annotate_all_with_locus
+	instead of annotating each block manually.
+
+	2007-10-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (gimplify_cp_loop): Tuplify.
+	(gimplify_for_stmt): Same.
+	(gimplify_switch_stmt): Same.
+	(cp_gimplify_expr): [FOR_STMT]: Do not call gimplify_for_stmt.  Return
+	GS_OK.
+	[WHILE_STMT]: Return GS_OK.
+	[SWITCH_STMT]: Same.
+	[CONTINUE_STMT]: Same.
+	[BREAK_STMT]: Same.
+	(cp_genericize): Set gimple_body() of cloned functions when needed.
+
+	2007-10-29  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* cp-gimplify.c: Move build_gimple_eh_filter_tree here.
+	(cp_gimplify_init_expr): Convert to tuples.
+	(gimplify_must_not_throw_expr): Make function return a
+	gimplify_status and convert to tuples.
+
+	2007-10-18  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* cp-gimplify.c (genericize_try_block): Enable and do not call
+	gimplify_stmt.
+	(genericize_catch_block): Same.
+	(genericize_eh_spec_block): Same.
+	Rename gimple_build_eh_filter_tree to build_gimple_eh_filter_tree.
+	(cp_gimplify_expr): Enable TRY_BLOCK, HANDLER, and EH_SPEC_BLOCK.
+
+	2007-10-16  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* optimize.c (maybe_clone_body): Comment out call to clone_body.
+	* decl.c (finish_function): Use gimple_body instead of
+	DECL_SAVED_TREE.
+	* cp-tree.h (cp_gimplify_expr): Last 2 arguments are sequences.
+	* cp-gimplify.c (genericize_try_block): Comment out.
+	(genericize_catch_block): Same.
+	(genericize_eh_spec_block): Same.
+	(gimplify_cp_loop): Comment out calls to gimplify_stmt.
+	(gimplify_for_stmt): Comment out.
+	(gimplify_switch_stmt): Comment out call to gimplify_stmt.
+	(cp_gimplify_omp_for): Same.
+	(gimplify_must_not_throw_expr): Argument pre_p is a sequence.
+	Comment out call to gimplify_stmt and append_to_statement_list.
+	Rename gimple_build_eh_filter_tree to build_gimple_eh_filter_tree.
+	(cp_gimplify_init_expr): Arguments pre_p and post_p are sequences.
+	(cp_gimplify_expr): Same.
+	Comment out calls to genericize_*_block.  Comment out call to
+	gimplify_for_stmt.
+
 2008-07-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/36944

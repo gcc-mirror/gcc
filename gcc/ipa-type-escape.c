@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "ipa-type-escape.h"
 #include "c-common.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "cgraph.h"
 #include "output.h"
 #include "flags.h"
@@ -136,8 +136,8 @@ static bitmap_obstack ipa_obstack;
 
 /* Static functions from this file that are used 
    before being defined.  */
-static unsigned int look_for_casts (tree lhs ATTRIBUTE_UNUSED, tree);
-static bool is_cast_from_non_pointer (tree, tree, void *);
+static unsigned int look_for_casts (tree);
+static bool is_cast_from_non_pointer (tree, gimple, void *);
 
 /* Get the name of TYPE or return the string "<UNNAMED>".  */
 static const char*
@@ -308,7 +308,7 @@ get_canon_type (tree type, bool see_thru_ptrs, bool see_thru_arrays)
     while (POINTER_TYPE_P (type))
 	type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 
-  result = splay_tree_lookup(type_to_canon_type, (splay_tree_key) type);
+  result = splay_tree_lookup (type_to_canon_type, (splay_tree_key) type);
   
   if (result == NULL)
     return discover_unique_type (type);
@@ -663,9 +663,7 @@ check_cast_type (tree to_type, tree from_type)
 static bool
 is_malloc_result (tree var)
 {
-  tree def_stmt;
-  tree rhs;
-  int flags;
+  gimple def_stmt;
 
   if (!var)
     return false;
@@ -675,20 +673,13 @@ is_malloc_result (tree var)
 
   def_stmt = SSA_NAME_DEF_STMT (var);
   
-  if (TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT)
+  if (!is_gimple_call (def_stmt))
     return false;
 
-  if (var != GIMPLE_STMT_OPERAND (def_stmt, 0))
+  if (var != gimple_call_lhs (def_stmt))
     return false;
 
-  rhs = get_call_expr_in (def_stmt);
-
-  if (!rhs)
-    return false;
-
-  flags = call_expr_flags (rhs);
-    
-  return ((flags & ECF_MALLOC) != 0);
+  return ((gimple_call_flags (def_stmt) & ECF_MALLOC) != 0);
 
 }
 
@@ -769,115 +760,98 @@ check_cast (tree to_type, tree from)
   return cast;
 }
 
+
+/* Scan assignment statement S to see if there are any casts within it.  */
+
+static unsigned int
+look_for_casts_stmt (gimple s)
+{
+  unsigned int cast = 0;
+
+  gcc_assert (is_gimple_assign (s));
+
+  if (gimple_assign_cast_p (s))
+    {
+      tree castfromvar = gimple_assign_rhs1 (s);
+      cast |= check_cast (TREE_TYPE (gimple_assign_lhs (s)), castfromvar);
+    }
+  else
+    {
+      size_t i;
+      for (i = 0; i < gimple_num_ops (s); i++)
+	cast |= look_for_casts (gimple_op (s, i));
+    }
+
+  if (!cast)
+    cast = CT_NO_CAST;
+
+  return cast;
+} 
+
+
 typedef struct cast 
 {
   int type;
-  tree stmt;
-}cast_t;
-
-/* This function is a callback for walk_tree called from 
-   is_cast_from_non_pointer. The data->type is set to be:
-
-   0      - if there is no cast
-   number - the number of casts from non-pointer type
-   -1     - if there is a cast that makes the type to escape
-
-   If data->type = number, then data->stmt will contain the 
-   last casting stmt met in traversing.  */
-
-static tree
-is_cast_from_non_pointer_1 (tree *tp, int *walk_subtrees, void *data)
-{
-  tree def_stmt = *tp;
-
-
-  if (pointer_set_insert (visited_stmts, def_stmt))
-    {
-      *walk_subtrees = 0;
-      return NULL;
-    }
-  
-  switch (TREE_CODE (def_stmt))
-    {
-    case GIMPLE_MODIFY_STMT:
-      {
-	use_operand_p use_p; 
-	ssa_op_iter iter;
-	tree lhs = GIMPLE_STMT_OPERAND (def_stmt, 0);
-	tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
-
-        unsigned int cast = look_for_casts (lhs, rhs);
-	/* Check that only one cast happened, and it's of 
-	   non-pointer type.  */
-	if ((cast & CT_FROM_NON_P) == (CT_FROM_NON_P) 
-	    && (cast & ~(CT_FROM_NON_P)) == 0)
-	  {
-	    ((cast_t *)data)->stmt = def_stmt;
-	    ((cast_t *)data)->type++;
-
-	    FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
-	      {
-		walk_use_def_chains (USE_FROM_PTR (use_p), is_cast_from_non_pointer, 
-				     data, false);
-		if (((cast_t*)data)->type == -1)
-		  return def_stmt;
-	      }
-	  }
-
-	/* Check that there is no cast, or cast is not harmful. */
-	else if ((cast & CT_NO_CAST) == (CT_NO_CAST)
-		 || (cast & CT_DOWN) == (CT_DOWN)
-		 || (cast & CT_UP) == (CT_UP)
-		 || (cast & CT_USELESS) == (CT_USELESS)
-		 || (cast & CT_FROM_MALLOC) == (CT_FROM_MALLOC))
-	  {
-	    FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
-	      {
-		walk_use_def_chains (USE_FROM_PTR (use_p), is_cast_from_non_pointer, 
-				     data, false);
-		if (((cast_t*)data)->type == -1)
-		  return def_stmt;
-	      }	    
-	  }
-
-	/* The cast is harmful.  */
-	else
-	  {
-	    ((cast_t *)data)->type = -1;
-	    return def_stmt;
-	  }
-
-	*walk_subtrees = 0;
-      }     
-      break;
-
-    default:
-      {
-	*walk_subtrees = 0;
-	break;
-      }
-    }
-
-  return NULL;
-}
+  gimple stmt;
+} cast_t;
 
 /* This function is a callback for walk_use_def_chains function called 
    from is_array_access_through_pointer_and_index.  */
 
 static bool
-is_cast_from_non_pointer (tree var, tree def_stmt, void *data)
+is_cast_from_non_pointer (tree var, gimple def_stmt, void *data)
 {
-
   if (!def_stmt || !var)
     return false;
   
-  if (TREE_CODE (def_stmt) == PHI_NODE)
+  if (gimple_code (def_stmt) == GIMPLE_PHI)
     return false;
 
   if (SSA_NAME_IS_DEFAULT_DEF (var))
       return false;
 
-  walk_tree (&def_stmt, is_cast_from_non_pointer_1, data, NULL);
+  if (is_gimple_assign (def_stmt))
+    {
+      use_operand_p use_p; 
+      ssa_op_iter iter;
+      unsigned int cast = look_for_casts_stmt (def_stmt);
+
+      /* Check that only one cast happened, and it's of non-pointer
+	 type.  */
+      if ((cast & CT_FROM_NON_P) == (CT_FROM_NON_P) 
+	  && (cast & ~(CT_FROM_NON_P)) == 0)
+	{
+	  ((cast_t *)data)->stmt = def_stmt;
+	  ((cast_t *)data)->type++;
+
+	  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
+	    {
+	      walk_use_def_chains (USE_FROM_PTR (use_p),
+				   is_cast_from_non_pointer, data, false);
+	      if (((cast_t*)data)->type == -1)
+		break;
+	    }
+	}
+      /* Check that there is no cast, or cast is not harmful. */
+      else if ((cast & CT_NO_CAST) == (CT_NO_CAST)
+	  || (cast & CT_DOWN) == (CT_DOWN)
+	  || (cast & CT_UP) == (CT_UP)
+	  || (cast & CT_USELESS) == (CT_USELESS)
+	  || (cast & CT_FROM_MALLOC) == (CT_FROM_MALLOC))
+	{
+	  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
+	    {
+	      walk_use_def_chains (USE_FROM_PTR (use_p),
+				   is_cast_from_non_pointer, data, false);
+	      if (((cast_t*)data)->type == -1)
+		break;
+	    }	    
+	}
+	/* The cast is harmful.  */
+	else
+	  ((cast_t *)data)->type = -1;
+    }     
+
   if (((cast_t*)data)->type == -1)
     return true;
   
@@ -930,9 +904,10 @@ is_cast_from_non_pointer (tree var, tree def_stmt, void *data)
 bool
 is_array_access_through_pointer_and_index (enum tree_code code, tree op0, 
 					   tree op1, tree *base, tree *offset,
-					   tree *offset_cast_stmt)
+					   gimple *offset_cast_stmt)
 {
-  tree before_cast, before_cast_def_stmt;
+  tree before_cast;
+  gimple before_cast_def_stmt;
   cast_t op0_cast, op1_cast;
 
   *base = NULL;
@@ -1014,26 +989,23 @@ is_array_access_through_pointer_and_index (enum tree_code code, tree op0,
   /* before_cast_def_stmt should be of the form:
      D.1605_6 = i.1_5 * 16; */
   
-  if (TREE_CODE (before_cast_def_stmt) == GIMPLE_MODIFY_STMT)
+  if (is_gimple_assign (before_cast_def_stmt))
     {
-      tree lhs = GIMPLE_STMT_OPERAND (before_cast_def_stmt,0);
-      tree rhs = GIMPLE_STMT_OPERAND (before_cast_def_stmt,1);
-
       /* We expect temporary here.  */
-      if (!is_gimple_reg (lhs))	
+      if (!is_gimple_reg (gimple_assign_lhs (before_cast_def_stmt)))
 	return false;
 
-      if (TREE_CODE (rhs) == MULT_EXPR)
+      if (gimple_assign_rhs_code (before_cast_def_stmt) == MULT_EXPR)
 	{
-	  tree arg0 = TREE_OPERAND (rhs, 0);
-	  tree arg1 = TREE_OPERAND (rhs, 1);
+	  tree arg0 = gimple_assign_rhs1 (before_cast_def_stmt);
+	  tree arg1 = gimple_assign_rhs2 (before_cast_def_stmt);
 	  tree unit_size = 
 	    TYPE_SIZE_UNIT (TREE_TYPE (TYPE_MAIN_VARIANT (TREE_TYPE (op0))));
 
 	  if (!(CONSTANT_CLASS_P (arg0) 
-	      && simple_cst_equal (arg0,unit_size))
+	      && simple_cst_equal (arg0, unit_size))
 	      && !(CONSTANT_CLASS_P (arg1) 
-	      && simple_cst_equal (arg1,unit_size)))
+	      && simple_cst_equal (arg1, unit_size)))
 	    return false;	      		   
 	}
       else
@@ -1173,7 +1145,11 @@ check_tree (tree t)
     check_tree (TREE_OPERAND (t, 0));
 
   if (SSA_VAR_P (t) || (TREE_CODE (t) == FUNCTION_DECL))
-    check_operand (t);
+    {
+      check_operand (t);
+      if (DECL_P (t) && DECL_INITIAL (t))
+	check_tree (DECL_INITIAL (t));
+    }
 }
 
 /* Create an address_of edge FROM_TYPE.TO_TYPE.  */
@@ -1260,14 +1236,12 @@ look_for_address_of (tree t)
 }
 
 
-/* Scan tree T to see if there are any casts within it.
-   LHS Is the LHS of the expression involving the cast.  */
+/* Scan tree T to see if there are any casts within it.  */
 
 static unsigned int 
-look_for_casts (tree lhs ATTRIBUTE_UNUSED, tree t)
+look_for_casts (tree t)
 {
   unsigned int cast = 0;
-
 
   if (is_gimple_cast (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
     {
@@ -1302,7 +1276,7 @@ static void
 check_rhs_var (tree t)
 {
   look_for_address_of (t);
-  check_tree(t);
+  check_tree (t);
 }
 
 /* Check to see if T is an assignment to a static var we are
@@ -1311,7 +1285,7 @@ check_rhs_var (tree t)
 static void
 check_lhs_var (tree t)
 {
-  check_tree(t);
+  check_tree (t);
 }
 
 /* This is a scaled down version of get_asm_expr_operands from
@@ -1322,35 +1296,15 @@ check_lhs_var (tree t)
    analyzed and STMT is the actual asm statement.  */
 
 static void
-get_asm_expr_operands (tree stmt)
+check_asm (gimple stmt)
 {
-  int noutputs = list_length (ASM_OUTPUTS (stmt));
-  const char **oconstraints
-    = (const char **) alloca ((noutputs) * sizeof (const char *));
-  int i;
-  tree link;
-  const char *constraint;
-  bool allows_mem, allows_reg, is_inout;
-  
-  for (i=0, link = ASM_OUTPUTS (stmt); link; ++i, link = TREE_CHAIN (link))
-    {
-      oconstraints[i] = constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-      parse_output_constraint (&constraint, i, 0, 0,
-			       &allows_mem, &allows_reg, &is_inout);
-      
-      check_lhs_var (TREE_VALUE (link));
-    }
+  size_t i;
 
-  for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
-    {
-      constraint
-	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-			      oconstraints, &allows_mem, &allows_reg);
-      
-      check_rhs_var (TREE_VALUE (link));
-    }
+  for (i = 0; i < gimple_asm_noutputs (stmt); i++)
+    check_lhs_var (gimple_asm_output_op (stmt, i));
+
+  for (i = 0; i < gimple_asm_ninputs (stmt); i++)
+    check_rhs_var (gimple_asm_input_op (stmt, i));
   
   /* There is no code here to check for asm memory clobbers.  The
      casual maintainer might think that such code would be necessary,
@@ -1360,22 +1314,22 @@ get_asm_expr_operands (tree stmt)
      assumed to already escape.  So, we are protected here.  */
 }
 
-/* Check the parameters of a function call to CALL_EXPR to mark the
+
+/* Check the parameters of function call to CALL to mark the
    types that pass across the function boundary.  Also check to see if
    this is either an indirect call, a call outside the compilation
    unit.  */
 
 static void
-check_call (tree call_expr) 
+check_call (gimple call)
 {
-  tree operand;
-  tree callee_t = get_callee_fndecl (call_expr);
+  tree callee_t = gimple_call_fndecl (call);
   struct cgraph_node* callee;
   enum availability avail = AVAIL_NOT_AVAILABLE;
-  call_expr_arg_iterator iter;
+  size_t i;
 
-  FOR_EACH_CALL_EXPR_ARG (operand, iter, call_expr)
-    check_rhs_var (operand);
+  for (i = 0; i < gimple_call_num_args (call); i++)
+    check_rhs_var (gimple_call_arg (call, i));
   
   if (callee_t)
     {
@@ -1388,12 +1342,11 @@ check_call (tree call_expr)
 	 parameters.  */
       if (TYPE_ARG_TYPES (TREE_TYPE (callee_t)))
 	{
-	  for (arg_type = TYPE_ARG_TYPES (TREE_TYPE (callee_t)),
-		 operand = first_call_expr_arg (call_expr, &iter);
+	  for (arg_type = TYPE_ARG_TYPES (TREE_TYPE (callee_t)), i = 0;
 	       arg_type && TREE_VALUE (arg_type) != void_type_node;
-	       arg_type = TREE_CHAIN (arg_type),
-		 operand = next_call_expr_arg (&iter))
+	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
+	      tree operand = gimple_call_arg (call, i);
 	      if (operand)
 		{
 		  last_arg_type = TREE_VALUE(arg_type);
@@ -1411,15 +1364,14 @@ check_call (tree call_expr)
 	  /* FIXME - According to Geoff Keating, we should never
 	     have to do this; the front ends should always process
 	     the arg list from the TYPE_ARG_LIST. */
-	  for (arg_type = DECL_ARGUMENTS (callee_t),
-		 operand = first_call_expr_arg (call_expr, &iter);
+	  for (arg_type = DECL_ARGUMENTS (callee_t), i = 0;
 	       arg_type;
-	       arg_type = TREE_CHAIN (arg_type),
-		 operand = next_call_expr_arg (&iter))
+	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
+	      tree operand = gimple_call_arg (call, i);
 	      if (operand)
 		{
-		  last_arg_type = TREE_TYPE(arg_type);
+		  last_arg_type = TREE_TYPE (arg_type);
 		  check_cast (last_arg_type, operand);
 		} 
 	      else 
@@ -1433,10 +1385,9 @@ check_call (tree call_expr)
       /* In the case where we have a var_args function, we need to
 	 check the remaining parameters against the last argument.  */
       arg_type = last_arg_type;
-      for (;
-	   operand != NULL_TREE;
-	   operand = next_call_expr_arg (&iter))
+      for ( ; i < gimple_call_num_args (call); i++)
 	{
+	  tree operand = gimple_call_arg (call, i);
 	  if (arg_type)
 	    check_cast (arg_type, operand);
 	  else 
@@ -1457,16 +1408,16 @@ check_call (tree call_expr)
      are any bits available for the callee (such as by declaration or
      because it is builtin) and process solely on the basis of those
      bits. */
-
   if (avail == AVAIL_NOT_AVAILABLE || avail == AVAIL_OVERWRITABLE)
     {
       /* If this is a direct call to an external function, mark all of
 	 the parameter and return types.  */
-      FOR_EACH_CALL_EXPR_ARG (operand, iter, call_expr)
+      for (i = 0; i < gimple_call_num_args (call); i++)
 	{
+	  tree operand = gimple_call_arg (call, i);
 	  tree type = get_canon_type (TREE_TYPE (operand), false, false);
 	  mark_interesting_type (type, EXPOSED_PARAMETER);
-    }
+	}
 	  
       if (callee_t) 
 	{
@@ -1494,7 +1445,8 @@ okay_pointer_operation (enum tree_code code, tree op0, tree op1)
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
       {
-	tree base, offset, offset_cast_stmt;
+	tree base, offset;
+	gimple offset_cast_stmt;
 
 	if (POINTER_TYPE_P (op0type)
 	    && TREE_CODE (op0) == SSA_NAME 
@@ -1528,150 +1480,124 @@ okay_pointer_operation (enum tree_code code, tree op0, tree op1)
   return false;
 }
 
-/* TP is the part of the tree currently under the microscope.
-   WALK_SUBTREES is part of the walk_tree api but is unused here.
-   DATA is cgraph_node of the function being walked.  */
 
-/* FIXME: When this is converted to run over SSA form, this code
-   should be converted to use the operand scanner.  */
 
-static tree
-scan_for_refs (tree *tp, int *walk_subtrees, void *data)
+/* Helper for scan_for_refs.  Check the operands of an assignment to
+   mark types that may escape.  */
+
+static void
+check_assign (gimple t)
 {
-  struct cgraph_node *fn = (struct cgraph_node *) data;
-  tree t = *tp;
+  /* First look on the lhs and see what variable is stored to */
+  check_lhs_var (gimple_assign_lhs (t));
 
-  switch (TREE_CODE (t))  
+  /* For the purposes of figuring out what the cast affects */
+
+  /* Next check the operands on the rhs to see if they are ok. */
+  switch (TREE_CODE_CLASS (gimple_assign_rhs_code (t)))
     {
-    case VAR_DECL:
-      if (DECL_INITIAL (t))
-	walk_tree (&DECL_INITIAL (t), scan_for_refs, fn, visited_nodes);
-      *walk_subtrees = 0;
-      break;
-
-    case GIMPLE_MODIFY_STMT:
+    case tcc_binary:	    
       {
-	/* First look on the lhs and see what variable is stored to */
-	tree lhs = GIMPLE_STMT_OPERAND (t, 0);
-	tree rhs = GIMPLE_STMT_OPERAND (t, 1);
+	tree op0 = gimple_assign_rhs1 (t);
+	tree type0 = get_canon_type (TREE_TYPE (op0), false, false);
+	tree op1 = gimple_assign_rhs2 (t);
+	tree type1 = get_canon_type (TREE_TYPE (op1), false, false);
 
-	check_lhs_var (lhs);
- 	check_cast (TREE_TYPE (lhs), rhs);
+	/* If this is pointer arithmetic of any bad sort, then
+	    we need to mark the types as bad.  For binary
+	    operations, no binary operator we currently support
+	    is always "safe" in regard to what it would do to
+	    pointers for purposes of determining which types
+	    escape, except operations of the size of the type.
+	    It is possible that min and max under the right set
+	    of circumstances and if the moon is in the correct
+	    place could be safe, but it is hard to see how this
+	    is worth the effort.  */
+	if (type0 && POINTER_TYPE_P (type0)
+	    && !okay_pointer_operation (gimple_assign_rhs_code (t), op0, op1))
+	  mark_interesting_type (type0, FULL_ESCAPE);
 
-	/* For the purposes of figuring out what the cast affects */
+	if (type1 && POINTER_TYPE_P (type1)
+	    && !okay_pointer_operation (gimple_assign_rhs_code (t), op1, op0))
+	  mark_interesting_type (type1, FULL_ESCAPE);
 
-	/* Next check the operands on the rhs to see if they are ok. */
-	switch (TREE_CODE_CLASS (TREE_CODE (rhs))) 
-	  {
-	  case tcc_binary:	    
- 	    {
- 	      tree op0 = TREE_OPERAND (rhs, 0);
-	      tree type0 = get_canon_type (TREE_TYPE (op0), false, false);
- 	      tree op1 = TREE_OPERAND (rhs, 1);
-	      tree type1 = get_canon_type (TREE_TYPE (op1), false, false);
- 
- 	      /* If this is pointer arithmetic of any bad sort, then
- 		 we need to mark the types as bad.  For binary
- 		 operations, no binary operator we currently support
- 		 is always "safe" in regard to what it would do to
- 		 pointers for purposes of determining which types
- 		 escape, except operations of the size of the type.
- 		 It is possible that min and max under the right set
- 		 of circumstances and if the moon is in the correct
- 		 place could be safe, but it is hard to see how this
- 		 is worth the effort.  */
- 
- 	      if (type0 && POINTER_TYPE_P (type0)
-		  && !okay_pointer_operation (TREE_CODE (rhs), op0, op1))
- 		mark_interesting_type (type0, FULL_ESCAPE);
- 	      if (type1 && POINTER_TYPE_P (type1)
-		  && !okay_pointer_operation (TREE_CODE (rhs), op1, op0))
- 		mark_interesting_type (type1, FULL_ESCAPE);
- 	      
-	      look_for_casts (lhs, op0);
-	      look_for_casts (lhs, op1);
- 	      check_rhs_var (op0);
- 	      check_rhs_var (op1);
-	    }
-	    break;
-	  case tcc_unary:
- 	    {
- 	      tree op0 = TREE_OPERAND (rhs, 0);
-	      tree type0 = get_canon_type (TREE_TYPE (op0), false, false);
-	      /* For unary operations, if the operation is NEGATE or
-		 ABS on a pointer, this is also considered pointer
-		 arithmetic and thus, bad for business.  */
- 	      if (type0 && (TREE_CODE (op0) == NEGATE_EXPR
- 		   || TREE_CODE (op0) == ABS_EXPR)
- 		  && POINTER_TYPE_P (type0))
- 		{
- 		  mark_interesting_type (type0, FULL_ESCAPE);
- 		}
- 	      check_rhs_var (op0);
-	      look_for_casts (lhs, op0);
-	      look_for_casts (lhs, rhs);
- 	    }
-
-	    break;
-	  case tcc_reference:
-	    look_for_casts (lhs, rhs);
-	    check_rhs_var (rhs);
-	    break;
-	  case tcc_declaration:
-	    check_rhs_var (rhs);
-	    break;
-	  case tcc_expression:
-	    switch (TREE_CODE (rhs)) 
-	      {
-	      case ADDR_EXPR:
-		look_for_casts (lhs, TREE_OPERAND (rhs, 0));
-		check_rhs_var (rhs);
-		break;
-	      default:
-		break;
-	      }
-	    break;
-	  case tcc_vl_exp:
-	    switch (TREE_CODE (rhs))
-	      {
-	      case CALL_EXPR:
-		/* If this is a call to malloc, squirrel away the
-		   result so we do mark the resulting cast as being
-		   bad.  */
-		check_call (rhs);
-		break;
-	      default:
-		break;
-	      }
-	    break;
-	  default:
-	    break;
-	  }
-	*walk_subtrees = 0;
+	look_for_casts (op0);
+	look_for_casts (op1);
+	check_rhs_var (op0);
+	check_rhs_var (op1);
       }
       break;
 
-    case ADDR_EXPR:
-      /* This case is here to find addresses on rhs of constructors in
-	 decl_initial of static variables. */
-      check_rhs_var (t);
-      *walk_subtrees = 0;
+    case tcc_unary:
+      {
+	tree op0 = gimple_assign_rhs1 (t);
+	tree type0 = get_canon_type (TREE_TYPE (op0), false, false);
+
+	/* For unary operations, if the operation is NEGATE or ABS on
+	   a pointer, this is also considered pointer arithmetic and
+	   thus, bad for business.  */
+	if (type0
+	    && POINTER_TYPE_P (type0)
+	    && (TREE_CODE (op0) == NEGATE_EXPR
+	      || TREE_CODE (op0) == ABS_EXPR))
+	  mark_interesting_type (type0, FULL_ESCAPE);
+
+	check_rhs_var (op0);
+	look_for_casts (op0);
+      }
       break;
 
-    case CALL_EXPR: 
+    case tcc_reference:
+      look_for_casts (gimple_assign_rhs1 (t));
+      check_rhs_var (gimple_assign_rhs1 (t));
+      break;
+
+    case tcc_declaration:
+      check_rhs_var (gimple_assign_rhs1 (t));
+      break;
+
+    case tcc_expression:
+      if (gimple_assign_rhs_code (t) == ADDR_EXPR)
+	{
+	  tree rhs = gimple_assign_rhs1 (t);
+	  look_for_casts (TREE_OPERAND (rhs, 0));
+	  check_rhs_var (rhs);
+	}
+      break;
+
+    default:
+      break;
+    }
+}
+
+
+/* Scan statement T for references to types and mark anything
+   interesting.  */
+
+static void
+scan_for_refs (gimple t)
+{
+  switch (gimple_code (t))  
+    {
+    case GIMPLE_ASSIGN:
+      check_assign (t);
+      break;
+
+    case GIMPLE_CALL: 
+      /* If this is a call to malloc, squirrel away the result so we
+	 do mark the resulting cast as being bad.  */
       check_call (t);
-      *walk_subtrees = 0;
       break;
       
-    case ASM_EXPR:
-      get_asm_expr_operands (t);
-      *walk_subtrees = 0;
+    case GIMPLE_ASM:
+      check_asm (t);
       break;
       
     default:
       break;
     }
-  return NULL;
+
+  return;
 }
 
 
@@ -1721,7 +1647,7 @@ analyze_variable (struct varpool_node *vnode)
   gcc_assert (TREE_CODE (global) == VAR_DECL);
 
   if (DECL_INITIAL (global))
-    walk_tree (&DECL_INITIAL (global), scan_for_refs, NULL, visited_nodes);
+    check_tree (DECL_INITIAL (global));
 }
 
 /* This is the main routine for finding the reference patterns for
@@ -1742,10 +1668,9 @@ analyze_function (struct cgraph_node *fn)
 
     FOR_EACH_BB_FN (this_block, this_cfun)
       {
-	block_stmt_iterator bsi;
-	for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
-	  walk_tree (bsi_stmt_ptr (bsi), scan_for_refs, 
-		     fn, visited_nodes);
+	gimple_stmt_iterator gsi;
+	for (gsi = gsi_start_bb (this_block); !gsi_end_p (gsi); gsi_next (&gsi))
+	  scan_for_refs (gsi_stmt (gsi));
       }
   }
 
@@ -1761,8 +1686,7 @@ analyze_function (struct cgraph_node *fn)
 	  if (TREE_CODE (var) == VAR_DECL 
 	      && DECL_INITIAL (var)
 	      && !TREE_STATIC (var))
-	    walk_tree (&DECL_INITIAL (var), scan_for_refs, 
-		       fn, visited_nodes);
+	    check_tree (DECL_INITIAL (var));
 	  get_canon_type (TREE_TYPE (var), false, false);
 	}
     }
@@ -2215,4 +2139,3 @@ struct simple_ipa_opt_pass pass_ipa_type_escape =
   0                                     /* todo_flags_finish */
  }
 };
-

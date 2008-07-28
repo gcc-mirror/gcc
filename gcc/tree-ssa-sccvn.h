@@ -104,7 +104,30 @@ typedef struct vn_constant_s
   hashval_t hashcode;
   tree constant;
 } *vn_constant_t;
-  
+
+/* Hash the constant CONSTANT with distinguishing type incompatible
+   constants in the types_compatible_p sense.  */
+
+static inline hashval_t
+vn_hash_constant_with_type (tree constant)
+{
+  tree type = TREE_TYPE (constant);
+  return (iterative_hash_expr (constant, 0)
+	  + INTEGRAL_TYPE_P (type)
+	  + (INTEGRAL_TYPE_P (type)
+	     ? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
+}
+
+/* Compare the constants C1 and C2 with distinguishing type incompatible
+   constants in the types_compatible_p sense.  */
+
+static inline bool
+vn_constant_eq_with_type (tree c1, tree c2)
+{
+  return (expressions_equal_p (c1, c2)
+	  && types_compatible_p (TREE_TYPE (c1), TREE_TYPE (c2)));
+}
+
 typedef struct vn_ssa_aux
 {
   /* Value number. This may be an SSA name or a constant.  */
@@ -138,16 +161,20 @@ typedef struct vn_ssa_aux
 /* Return the value numbering info for an SSA_NAME.  */
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
+tree vn_get_expr_for (tree);
 bool run_scc_vn (bool);
 void free_scc_vn (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
+tree vn_nary_op_lookup_stmt (gimple, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree, tree, tree, tree,
 			       vn_nary_op_t *);
 vn_nary_op_t vn_nary_op_insert (tree, tree);
+vn_nary_op_t vn_nary_op_insert_stmt (gimple, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree, tree, tree,
 				       tree, tree, unsigned int);
+void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
 tree vn_reference_lookup_pieces (VEC (tree, gc) *,
 				 VEC (vn_reference_op_s, heap) *,
 				 vn_reference_t *);
@@ -166,6 +193,6 @@ unsigned int get_next_value_id (void);
 unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
-VEC (tree, gc) *shared_vuses_from_stmt (tree);
-VEC (tree, gc) *copy_vuses_from_stmt (tree);
+VEC (tree, gc) *shared_vuses_from_stmt (gimple);
+VEC (tree, gc) *copy_vuses_from_stmt (gimple);
 #endif /* TREE_SSA_SCCVN_H  */

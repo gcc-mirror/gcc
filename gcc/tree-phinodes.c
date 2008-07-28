@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "toplev.h"
+#include "gimple.h"
 
 /* Rewriting a function into SSA form can create a huge number of PHIs
    many of which may be thrown away shortly after their creation if jumps
@@ -76,11 +77,10 @@ along with GCC; see the file COPYING3.  If not see
    the -2 on all the calculations below.  */
 
 #define NUM_BUCKETS 10
-static GTY ((deletable (""))) tree free_phinodes[NUM_BUCKETS - 2];
+static GTY ((deletable (""))) VEC(gimple,gc) *free_phinodes[NUM_BUCKETS - 2];
 static unsigned long free_phinode_count;
 
 static int ideal_phi_node_len (int);
-static void resize_phi_node (tree *, int);
 
 #ifdef GATHER_STATISTICS
 unsigned int phi_nodes_reused;
@@ -126,13 +126,13 @@ phinodes_print_statistics (void)
    happens to contain a PHI node with LEN arguments or more, return
    that one.  */
 
-static inline tree
-allocate_phi_node (int len)
+static inline gimple
+allocate_phi_node (size_t len)
 {
-  tree phi;
-  int bucket = NUM_BUCKETS - 2;
-  int size = (sizeof (struct tree_phi_node)
-	      + (len - 1) * sizeof (struct phi_arg_d));
+  gimple phi;
+  size_t bucket = NUM_BUCKETS - 2;
+  size_t size = sizeof (struct gimple_statement_phi)
+	        + (len - 1) * sizeof (struct phi_arg_d);
 
   if (free_phinode_count)
     for (bucket = len - 2; bucket < NUM_BUCKETS - 2; bucket++)
@@ -141,22 +141,27 @@ allocate_phi_node (int len)
 
   /* If our free list has an element, then use it.  */
   if (bucket < NUM_BUCKETS - 2
-      && PHI_ARG_CAPACITY (free_phinodes[bucket]) >= len)
+      && gimple_phi_capacity (VEC_index (gimple, free_phinodes[bucket], 0))
+	 >= len)
     {
       free_phinode_count--;
-      phi = free_phinodes[bucket];
-      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
+      phi = VEC_pop (gimple, free_phinodes[bucket]);
+      if (VEC_empty (gimple, free_phinodes[bucket]))
+	VEC_free (gimple, gc, free_phinodes[bucket]);
 #ifdef GATHER_STATISTICS
       phi_nodes_reused++;
 #endif
     }
   else
     {
-      phi = (tree) ggc_alloc (size);
+      phi = (gimple) ggc_alloc (size);
 #ifdef GATHER_STATISTICS
       phi_nodes_created++;
-      tree_node_counts[(int) phi_kind]++;
-      tree_node_sizes[(int) phi_kind] += size;
+	{
+	  enum gimple_alloc_kind kind = gimple_alloc_kind (GIMPLE_PHI);
+          gimple_alloc_counts[(int) kind]++;
+          gimple_alloc_sizes[(int) kind] += size;
+	}
 #endif
     }
 
@@ -184,7 +189,8 @@ ideal_phi_node_len (int len)
     len = 2;
 
   /* Compute the number of bytes of the original request.  */
-  size = sizeof (struct tree_phi_node) + (len - 1) * sizeof (struct phi_arg_d);
+  size = sizeof (struct gimple_statement_phi)
+	 + (len - 1) * sizeof (struct phi_arg_d);
 
   /* Round it up to the next power of two.  */
   log2 = ceil_log2 (size);
@@ -199,10 +205,10 @@ ideal_phi_node_len (int len)
 
 /* Return a PHI node with LEN argument slots for variable VAR.  */
 
-static tree
+static gimple
 make_phi_node (tree var, int len)
 {
-  tree phi;
+  gimple phi;
   int capacity, i;
 
   capacity = ideal_phi_node_len (len);
@@ -212,24 +218,25 @@ make_phi_node (tree var, int len)
   /* We need to clear the entire PHI node, including the argument
      portion, because we represent a "missing PHI argument" by placing
      NULL_TREE in PHI_ARG_DEF.  */
-  memset (phi, 0, (sizeof (struct tree_phi_node) - sizeof (struct phi_arg_d)
+  memset (phi, 0, (sizeof (struct gimple_statement_phi)
+		   - sizeof (struct phi_arg_d)
 		   + sizeof (struct phi_arg_d) * len));
-  TREE_SET_CODE (phi, PHI_NODE);
-  PHI_NUM_ARGS (phi) = len;
-  PHI_ARG_CAPACITY (phi) = capacity;
+  phi->gsbase.code = GIMPLE_PHI;
+  phi->gimple_phi.nargs = len;
+  phi->gimple_phi.capacity = capacity;
   if (TREE_CODE (var) == SSA_NAME)
-    SET_PHI_RESULT (phi, var);
+    gimple_phi_set_result (phi, var);
   else
-    SET_PHI_RESULT (phi, make_ssa_name (var, phi));
+    gimple_phi_set_result (phi, make_ssa_name (var, phi));
 
   for (i = 0; i < capacity; i++)
     {
       use_operand_p  imm;
-      imm = &(PHI_ARG_IMM_USE_NODE (phi, i));
-      imm->use = &(PHI_ARG_DEF_TREE (phi, i));
+      imm = gimple_phi_arg_imm_use_ptr (phi, i);
+      imm->use = gimple_phi_arg_def_ptr (phi, i);
       imm->prev = NULL;
       imm->next = NULL;
-      imm->stmt = phi;
+      imm->loc.stmt = phi;
     }
 
   return phi;
@@ -238,66 +245,66 @@ make_phi_node (tree var, int len)
 /* We no longer need PHI, release it so that it may be reused.  */
 
 void
-release_phi_node (tree phi)
+release_phi_node (gimple phi)
 {
-  int bucket;
-  int len = PHI_ARG_CAPACITY (phi);
-  int x;
+  size_t bucket;
+  size_t len = gimple_phi_capacity (phi);
+  size_t x;
 
-  for (x = 0; x < PHI_NUM_ARGS (phi); x++)
+  for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       use_operand_p  imm;
-      imm = &(PHI_ARG_IMM_USE_NODE (phi, x));
+      imm = gimple_phi_arg_imm_use_ptr (phi, x);
       delink_imm_use (imm);
     }
 
   bucket = len > NUM_BUCKETS - 1 ? NUM_BUCKETS - 1 : len;
   bucket -= 2;
-  PHI_CHAIN (phi) = free_phinodes[bucket];
-  free_phinodes[bucket] = phi;
+  VEC_safe_push (gimple, gc, free_phinodes[bucket], phi);
   free_phinode_count++;
 }
+
 
 /* Resize an existing PHI node.  The only way is up.  Return the
    possibly relocated phi.  */
 
 static void
-resize_phi_node (tree *phi, int len)
+resize_phi_node (gimple *phi, size_t len)
 {
-  int old_size, i;
-  tree new_phi;
+  size_t old_size, i;
+  gimple new_phi;
 
-  gcc_assert (len > PHI_ARG_CAPACITY (*phi));
+  gcc_assert (len > gimple_phi_capacity (*phi));
 
   /* The garbage collector will not look at the PHI node beyond the
      first PHI_NUM_ARGS elements.  Therefore, all we have to copy is a
      portion of the PHI node currently in use.  */
-  old_size = (sizeof (struct tree_phi_node)
-	     + (PHI_NUM_ARGS (*phi) - 1) * sizeof (struct phi_arg_d));
+  old_size = sizeof (struct gimple_statement_phi)
+	     + (gimple_phi_num_args (*phi) - 1) * sizeof (struct phi_arg_d);
 
   new_phi = allocate_phi_node (len);
 
   memcpy (new_phi, *phi, old_size);
 
-  for (i = 0; i < PHI_NUM_ARGS (new_phi); i++)
+  for (i = 0; i < gimple_phi_num_args (new_phi); i++)
     {
       use_operand_p imm, old_imm;
-      imm = &(PHI_ARG_IMM_USE_NODE (new_phi, i));
-      old_imm = &(PHI_ARG_IMM_USE_NODE (*phi, i));
-      imm->use = &(PHI_ARG_DEF_TREE (new_phi, i));
+      imm = gimple_phi_arg_imm_use_ptr (new_phi, i);
+      old_imm = gimple_phi_arg_imm_use_ptr (*phi, i);
+      imm->use = gimple_phi_arg_def_ptr (new_phi, i);
       relink_imm_use_stmt (imm, old_imm, new_phi);
     }
 
-  PHI_ARG_CAPACITY (new_phi) = len;
+  new_phi->gimple_phi.capacity = len;
 
-  for (i = PHI_NUM_ARGS (new_phi); i < len; i++)
+  for (i = gimple_phi_num_args (new_phi); i < len; i++)
     {
       use_operand_p imm;
-      imm = &(PHI_ARG_IMM_USE_NODE (new_phi, i));
-      imm->use = &(PHI_ARG_DEF_TREE (new_phi, i));
+      imm = gimple_phi_arg_imm_use_ptr (new_phi, i);
+      imm->use = gimple_phi_arg_def_ptr (new_phi, i);
       imm->prev = NULL;
       imm->next = NULL;
-      imm->stmt = new_phi;
+      imm->loc.stmt = new_phi;
     }
 
   *phi = new_phi;
@@ -308,22 +315,22 @@ resize_phi_node (tree *phi, int len)
 void
 reserve_phi_args_for_new_edge (basic_block bb)
 {
-  tree *loc;
-  int len = EDGE_COUNT (bb->preds);
-  int cap = ideal_phi_node_len (len + 4);
+  size_t len = EDGE_COUNT (bb->preds);
+  size_t cap = ideal_phi_node_len (len + 4);
+  gimple_stmt_iterator gsi;
 
-  for (loc = phi_nodes_ptr (bb);
-       *loc;
-       loc = &PHI_CHAIN (*loc))
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      if (len > PHI_ARG_CAPACITY (*loc))
+      gimple *loc = gsi_stmt_ptr (&gsi);
+
+      if (len > gimple_phi_capacity (*loc))
 	{
-	  tree old_phi = *loc;
+	  gimple old_phi = *loc;
 
 	  resize_phi_node (loc, cap);
 
-	  /* The result of the phi is defined by this phi node.  */
-	  SSA_NAME_DEF_STMT (PHI_RESULT (*loc)) = *loc;
+	  /* The result of the PHI is defined by this PHI node.  */
+	  SSA_NAME_DEF_STMT (gimple_phi_result (*loc)) = *loc;
 
 	  release_phi_node (old_phi);
 	}
@@ -337,26 +344,28 @@ reserve_phi_args_for_new_edge (basic_block bb)
 	 batch.  */
       SET_PHI_ARG_DEF (*loc, len - 1, NULL_TREE);
 
-      PHI_NUM_ARGS (*loc)++;
+      (*loc)->gimple_phi.nargs++;
     }
 }
 
 
 /* Create a new PHI node for variable VAR at basic block BB.  */
 
-tree
+gimple
 create_phi_node (tree var, basic_block bb)
 {
-  tree phi;
-
-  phi = make_phi_node (var, EDGE_COUNT (bb->preds));
+  gimple_stmt_iterator gsi;
+  gimple phi = make_phi_node (var, EDGE_COUNT (bb->preds));
 
   /* Add the new PHI node to the list of PHI nodes for block BB.  */
-  PHI_CHAIN (phi) = phi_nodes (bb);
-  set_phi_nodes (bb, phi);
+  if (phi_nodes (bb) == NULL)
+    set_phi_nodes (bb, gimple_seq_alloc ());
+
+  gsi = gsi_last (phi_nodes (bb));
+  gsi_insert_after (&gsi, phi, GSI_NEW_STMT);
 
   /* Associate BB to the PHI node.  */
-  set_bb_for_stmt (phi, bb);
+  gimple_set_bb (phi, bb);
 
   return phi;
 }
@@ -369,19 +378,19 @@ create_phi_node (tree var, basic_block bb)
    PHI points to the reallocated phi node when we return.  */
 
 void
-add_phi_arg (tree phi, tree def, edge e)
+add_phi_arg (gimple phi, tree def, edge e)
 {
   basic_block bb = e->dest;
 
-  gcc_assert (bb == bb_for_stmt (phi));
+  gcc_assert (bb == gimple_bb (phi));
 
   /* We resize PHI nodes upon edge creation.  We should always have
      enough room at this point.  */
-  gcc_assert (PHI_NUM_ARGS (phi) <= PHI_ARG_CAPACITY (phi));
+  gcc_assert (gimple_phi_num_args (phi) <= gimple_phi_capacity (phi));
 
   /* We resize PHI nodes upon edge creation.  We should always have
      enough room at this point.  */
-  gcc_assert (e->dest_idx < (unsigned int) PHI_NUM_ARGS (phi));
+  gcc_assert (e->dest_idx < gimple_phi_num_args (phi));
 
   /* Copy propagation needs to know what object occur in abnormal
      PHI nodes.  This is a convenient place to record such information.  */
@@ -401,22 +410,22 @@ add_phi_arg (tree phi, tree def, edge e)
    is consistent with how we remove an edge from the edge vector.  */
 
 static void
-remove_phi_arg_num (tree phi, int i)
+remove_phi_arg_num (gimple phi, int i)
 {
-  int num_elem = PHI_NUM_ARGS (phi);
+  int num_elem = gimple_phi_num_args (phi);
 
   gcc_assert (i < num_elem);
 
   /* Delink the item which is being removed.  */
-  delink_imm_use (&(PHI_ARG_IMM_USE_NODE (phi, i)));
+  delink_imm_use (gimple_phi_arg_imm_use_ptr (phi, i));
 
   /* If it is not the last element, move the last element
      to the element we want to delete, resetting all the links. */
   if (i != num_elem - 1)
     {
       use_operand_p old_p, new_p;
-      old_p = &PHI_ARG_IMM_USE_NODE (phi, num_elem - 1);
-      new_p = &PHI_ARG_IMM_USE_NODE (phi, i);
+      old_p = gimple_phi_arg_imm_use_ptr (phi, num_elem - 1);
+      new_p = gimple_phi_arg_imm_use_ptr (phi, i);
       /* Set use on new node, and link into last element's place.  */
       *(new_p->use) = *(old_p->use);
       relink_imm_use (new_p, old_p);
@@ -425,7 +434,7 @@ remove_phi_arg_num (tree phi, int i)
   /* Shrink the vector and return.  Note that we do not have to clear
      PHI_ARG_DEF because the garbage collector will not look at those
      elements beyond the first PHI_NUM_ARGS elements of the array.  */
-  PHI_NUM_ARGS (phi)--;
+  phi->gimple_phi.nargs--;
 }
 
 
@@ -434,60 +443,29 @@ remove_phi_arg_num (tree phi, int i)
 void
 remove_phi_args (edge e)
 {
-  tree phi;
+  gimple_stmt_iterator gsi;
 
-  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-    remove_phi_arg_num (phi, e->dest_idx);
+  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    remove_phi_arg_num (gsi_stmt (gsi), e->dest_idx);
 }
 
 
-/* Remove PHI node PHI from basic block BB.  If PREV is non-NULL, it is
-   used as the node immediately before PHI in the linked list.  If
-   RELEASE_LHS_P is true, the LHS of this PHI node is released into
-   the free pool of SSA names.  */
+/* Remove the PHI node pointed-to by iterator GSI from basic block BB.  After
+   removal, iterator GSI is updated to point to the next PHI node in the
+   sequence. If RELEASE_LHS_P is true, the LHS of this PHI node is released
+   into the free pool of SSA names.  */
 
 void
-remove_phi_node (tree phi, tree prev, bool release_lhs_p)
+remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
 {
-  tree *loc;
-
-  if (prev)
-    {
-      loc = &PHI_CHAIN (prev);
-    }
-  else
-    {
-      for (loc = phi_nodes_ptr (bb_for_stmt (phi));
-	   *loc != phi;
-	   loc = &PHI_CHAIN (*loc))
-	;
-    }
-
-  /* Remove PHI from the chain.  */
-  *loc = PHI_CHAIN (phi);
+  gimple phi = gsi_stmt (*gsi);
+  gsi_remove (gsi, false);
 
   /* If we are deleting the PHI node, then we should release the
      SSA_NAME node so that it can be reused.  */
   release_phi_node (phi);
   if (release_lhs_p)
-    release_ssa_name (PHI_RESULT (phi));
-}
-
-
-/* Reverse the order of PHI nodes in the chain PHI.
-   Return the new head of the chain (old last PHI node).  */
-
-tree
-phi_reverse (tree phi)
-{
-  tree prev = NULL_TREE, next;
-  for (; phi; phi = next)
-    {
-      next = PHI_CHAIN (phi);
-      PHI_CHAIN (phi) = prev;
-      prev = phi;
-    }
-  return prev;
+    release_ssa_name (gimple_phi_result (phi));
 }
 
 #include "gt-tree-phinodes.h"

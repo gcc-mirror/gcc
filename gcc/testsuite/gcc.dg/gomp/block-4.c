@@ -4,6 +4,6 @@ void foo()
 {
   #pragma omp critical
     {
-      return;		// { dg-error "invalid exit" }
+      return;		// { dg-error "invalid branch" }
     }
 }

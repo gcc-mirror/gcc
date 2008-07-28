@@ -86,7 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Protect cleanup actions with must-not-throw regions, with a call
    to the given failure handler.  */
-tree (*lang_protect_cleanup_actions) (void);
+gimple (*lang_protect_cleanup_actions) (void);
 
 /* Return true if type A catches type B.  */
 int (*lang_eh_type_covers) (tree a, tree b);

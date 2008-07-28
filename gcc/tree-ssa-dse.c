@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
    relationship between dead store and redundant load elimination.  In
    fact, they are the same transformation applied to different views of
    the CFG.  */
-   
+
 
 struct dse_global_data
 {
@@ -97,7 +97,7 @@ static void dse_initialize_block_local_data (struct dom_walk_data *,
 					     bool);
 static void dse_optimize_stmt (struct dom_walk_data *,
 			       basic_block,
-			       block_stmt_iterator);
+			       gimple_stmt_iterator);
 static void dse_record_phis (struct dom_walk_data *, basic_block);
 static void dse_finalize_block (struct dom_walk_data *, basic_block);
 static void record_voperand_set (bitmap, bitmap *, unsigned int);
@@ -105,12 +105,13 @@ static void record_voperand_set (bitmap, bitmap *, unsigned int);
 /* Returns uid of statement STMT.  */
 
 static unsigned
-get_stmt_uid (tree stmt)
+get_stmt_uid (gimple stmt)
 {
-  if (TREE_CODE (stmt) == PHI_NODE)
-    return SSA_NAME_VERSION (PHI_RESULT (stmt)) + gimple_stmt_max_uid (cfun);
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    return SSA_NAME_VERSION (gimple_phi_result (stmt))
+           + gimple_stmt_max_uid (cfun);
 
-  return gimple_stmt_uid (stmt);
+  return gimple_uid (stmt);
 }
 
 /* Set bit UID in bitmaps GLOBAL and *LOCAL, creating *LOCAL as needed.  */
@@ -162,7 +163,7 @@ memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   struct address_walk_data *walk_data = (struct address_walk_data *) data;
   tree expr = *expr_p;
-  tree def_stmt;
+  gimple def_stmt;
   basic_block def_bb;
 
   if (TREE_CODE (expr) != SSA_NAME)
@@ -174,7 +175,7 @@ memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
     return NULL_TREE;
 
   def_stmt = SSA_NAME_DEF_STMT (expr);
-  def_bb = bb_for_stmt (def_stmt);
+  def_bb = gimple_bb (def_stmt);
 
   /* DEF_STMT must dominate both stores.  So if it is in the same
      basic block as one, it does not post-dominate that store.  */
@@ -185,7 +186,7 @@ memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  || !dominated_by_p (CDI_POST_DOMINATORS, walk_data->store2_bb,
 			      def_bb))
 	/* Return non-NULL to stop the walk.  */
-	return def_stmt;
+	return *expr_p;
     }
 
   return NULL_TREE;
@@ -195,14 +196,14 @@ memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
    might be modified after STORE1, before control reaches STORE2.  */
 
 static bool
-memory_address_same (tree store1, tree store2)
+memory_address_same (gimple store1, gimple store2)
 {
   struct address_walk_data walk_data;
 
-  walk_data.store1_bb = bb_for_stmt (store1);
-  walk_data.store2_bb = bb_for_stmt (store2);
+  walk_data.store1_bb = gimple_bb (store1);
+  walk_data.store2_bb = gimple_bb (store2);
 
-  return (walk_tree (&GIMPLE_STMT_OPERAND (store1, 0), memory_ssa_name_same,
+  return (walk_tree (gimple_assign_lhs_ptr (store1), memory_ssa_name_same,
 		     &walk_data, NULL)
 	  == NULL);
 }
@@ -214,15 +215,15 @@ memory_address_same (tree store1, tree store2)
    STMT.  *USE_P is set to the vop killed by *USE_STMT.  */
 
 static bool
-get_kill_of_stmt_lhs (tree stmt,
+get_kill_of_stmt_lhs (gimple stmt,
 		      use_operand_p * first_use_p,
- 		      use_operand_p * use_p, tree * use_stmt)
+ 		      use_operand_p * use_p, gimple * use_stmt)
 {
   tree lhs;
 
-  gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
+  gcc_assert (is_gimple_assign (stmt));
 
-  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  lhs = gimple_assign_lhs (stmt);
 
   /* We now walk the chain of single uses of the single VDEFs.
      We succeeded finding a kill if the lhs of the use stmt is
@@ -231,7 +232,7 @@ get_kill_of_stmt_lhs (tree stmt,
      the stmt.  */
   do
     {
-      tree use_lhs, use_rhs;
+      tree use_lhs;
       def_operand_p def_p;
 
       /* The stmt must have a single VDEF.  */
@@ -245,17 +246,14 @@ get_kill_of_stmt_lhs (tree stmt,
       first_use_p = use_p;
 
       /* If there are possible hidden uses, give up.  */
-      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-	return false;
-      use_rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-      if (TREE_CODE (use_rhs) == CALL_EXPR
-	  || (!is_gimple_min_invariant (use_rhs)
-	      && TREE_CODE (use_rhs) != SSA_NAME))
+      if (!gimple_assign_single_p (stmt)
+	  || (TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME
+	      && !is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
 	return false;
 
       /* If the use stmts lhs matches the original lhs we have
 	 found the kill, otherwise continue walking.  */
-      use_lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+      use_lhs = gimple_assign_lhs (stmt);
       if (operand_equal_p (use_lhs, lhs, 0))
 	{
 	  *use_stmt = stmt;
@@ -266,16 +264,16 @@ get_kill_of_stmt_lhs (tree stmt,
 }
 
 /* A helper of dse_optimize_stmt.
-   Given a GIMPLE_MODIFY_STMT in STMT, check that each VDEF has one
+   Given a GIMPLE_ASSIGN in STMT, check that each VDEF has one
    use, and that one use is another VDEF clobbering the first one.
 
    Return TRUE if the above conditions are met, otherwise FALSE.  */
 
 static bool
-dse_possible_dead_store_p (tree stmt,
+dse_possible_dead_store_p (gimple stmt,
 			   use_operand_p *first_use_p,
 			   use_operand_p *use_p,
-			   tree *use_stmt,
+			   gimple *use_stmt,
 			   struct dse_global_data *dse_gd,
 			   struct dse_block_local_data *bd)
 {
@@ -283,8 +281,9 @@ dse_possible_dead_store_p (tree stmt,
   bool fail = false;
   def_operand_p var1;
   vuse_vec_p vv;
-  tree defvar = NULL_TREE, temp;
+  tree defvar = NULL_TREE;
   tree prev_defvar = NULL_TREE;
+  gimple temp;
 
   /* We want to verify that each virtual definition in STMT has
      precisely one use and that all the virtual definitions are
@@ -309,9 +308,9 @@ dse_possible_dead_store_p (tree stmt,
       gcc_assert (*use_p != NULL_USE_OPERAND_P);
       *first_use_p = *use_p;
 
-      /* ???  If we hit a PHI_NODE we could skip to the PHI_RESULT uses.
+      /* ???  If we hit a GIMPLE_PHI we could skip to the PHI_RESULT uses.
 	 Don't bother to do that for now.  */
-      if (TREE_CODE (temp) == PHI_NODE)
+      if (gimple_code (temp) == GIMPLE_PHI)
 	{
 	  fail = true;
 	  break;
@@ -326,10 +325,10 @@ dse_possible_dead_store_p (tree stmt,
 
 	   So we must make sure we're talking about the same LHS.
       */
-      if (TREE_CODE (temp) == GIMPLE_MODIFY_STMT)
+      if (is_gimple_assign (temp))
 	{
-	  tree base1 = get_base_address (GIMPLE_STMT_OPERAND (stmt, 0));
-	  tree base2 =  get_base_address (GIMPLE_STMT_OPERAND (temp, 0));
+	  tree base1 = get_base_address (gimple_assign_lhs (stmt));
+	  tree base2 = get_base_address (gimple_assign_lhs (temp));
 
 	  while (base1 && INDIRECT_REF_P (base1))
 	    base1 = TREE_OPERAND (base1, 0);
@@ -360,7 +359,7 @@ dse_possible_dead_store_p (tree stmt,
 
   if (fail)
     {
-      record_voperand_set (dse_gd->stores, &bd->stores, gimple_stmt_uid (stmt));
+      record_voperand_set (dse_gd->stores, &bd->stores, gimple_uid (stmt));
       return false;
     }
 
@@ -382,36 +381,35 @@ dse_possible_dead_store_p (tree stmt,
 static void
 dse_optimize_stmt (struct dom_walk_data *walk_data,
 		   basic_block bb ATTRIBUTE_UNUSED,
-		   block_stmt_iterator bsi)
+		   gimple_stmt_iterator gsi)
 {
   struct dse_block_local_data *bd
     = (struct dse_block_local_data *)
 	VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd
     = (struct dse_global_data *) walk_data->global_data;
-  tree stmt = bsi_stmt (bsi);
-  stmt_ann_t ann = stmt_ann (stmt);
+  gimple stmt = gsi_stmt (gsi);
 
   /* If this statement has no virtual defs, then there is nothing
      to do.  */
   if (ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF))
     return;
 
-  /* We know we have virtual definitions.  If this is a GIMPLE_MODIFY_STMT
+  /* We know we have virtual definitions.  If this is a GIMPLE_ASSIGN
      that's not also a function call, then record it into our table.  */
-  if (get_call_expr_in (stmt))
+  if (is_gimple_call (stmt) && gimple_call_fndecl (stmt))
     return;
 
-  if (ann->has_volatile_ops)
+  if (gimple_has_volatile_ops (stmt))
     return;
 
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+  if (is_gimple_assign (stmt))
     {
       use_operand_p first_use_p = NULL_USE_OPERAND_P;
       use_operand_p use_p = NULL;
-      tree use_stmt;
+      gimple use_stmt;
 
-      if (!dse_possible_dead_store_p (stmt, &first_use_p, &use_p, &use_stmt,
+      if (!dse_possible_dead_store_p (stmt, &first_use_p, &use_p, &use_stmt, 
 				      dse_gd, bd))
 	return;
 
@@ -421,8 +419,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 SSA-form variables in the address will have the same values.  */
       if (use_p != NULL_USE_OPERAND_P
           && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-          && !operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
-                               GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
+          && !operand_equal_p (gimple_assign_lhs (stmt),
+                               gimple_assign_lhs (use_stmt), 0)
           && memory_address_same (stmt, use_stmt))
         {
           /* If we have precisely one immediate use at this point, but
@@ -431,7 +429,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
              memory location.  */
           if (!get_kill_of_stmt_lhs (stmt, &first_use_p, &use_p, &use_stmt))
             {
-              record_voperand_set (dse_gd->stores, &bd->stores, gimple_stmt_uid (stmt));
+              record_voperand_set (dse_gd->stores, &bd->stores, 
+				   gimple_uid (stmt));
               return;
             }
         }
@@ -442,8 +441,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 memory location, then we may have found redundant store.  */
       if (use_p != NULL_USE_OPERAND_P
 	  && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-	  && operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
-			      GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
+	  && operand_equal_p (gimple_assign_lhs (stmt),
+			      gimple_assign_lhs (use_stmt), 0)
 	  && memory_address_same (stmt, use_stmt))
 	{
 	  ssa_op_iter op_iter;
@@ -462,18 +461,19 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	     *p = *u; *p = *v; where p might be v, then USE_STMT
 	     acts as a use as well as definition, so store in STMT
 	     is not dead.  */
-	  if (LOADED_SYMS (use_stmt)
-	      && bitmap_intersect_p (LOADED_SYMS (use_stmt),
-				     STORED_SYMS (use_stmt)))
+	  if (gimple_loaded_syms (use_stmt)
+	      && bitmap_intersect_p (gimple_loaded_syms (use_stmt),
+				     gimple_stored_syms (use_stmt)))
 	    {
-	      record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
+              record_voperand_set (dse_gd->stores, &bd->stores, 
+				   gimple_uid (stmt));
 	      return;
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
             {
               fprintf (dump_file, "  Deleted dead store '");
-              print_generic_expr (dump_file, bsi_stmt (bsi), dump_flags);
+              print_gimple_stmt (dump_file, gsi_stmt (gsi), dump_flags, 0);
               fprintf (dump_file, "'\n");
             }
 
@@ -481,7 +481,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	  stmt_lhs = USE_FROM_PTR (first_use_p);
 	  FOR_EACH_SSA_VDEF_OPERAND (var1, vv, stmt, op_iter)
 	    {
-	      tree usevar, temp;
+	      tree usevar;
+	      gimple temp;
 
 	      single_imm_use (DEF_FROM_PTR (var1), &use_p, &temp);
 	      gcc_assert (VUSE_VECT_NUM_ELEM (*vv) == 1);
@@ -494,14 +495,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	    }
 
 	  /* Remove the dead store.  */
-	  bsi_remove (&bsi, true);
+	  gsi_remove (&gsi, true);
 
 	  /* And release any SSA_NAMEs set in this statement back to the
 	     SSA_NAME manager.  */
 	  release_defs (stmt);
 	}
 
-      record_voperand_set (dse_gd->stores, &bd->stores, gimple_stmt_uid (stmt));
+      record_voperand_set (dse_gd->stores, &bd->stores, gimple_uid (stmt));
     }
 }
 
@@ -515,13 +516,15 @@ dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
 	VEC_last (void_p, walk_data->block_data_stack);
   struct dse_global_data *dse_gd
     = (struct dse_global_data *) walk_data->global_data;
-  tree phi;
+  gimple phi;
+  gimple_stmt_iterator gsi;
 
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-    if (!is_gimple_reg (PHI_RESULT (phi)))
-      record_voperand_set (dse_gd->stores,
-			   &bd->stores,
-			   get_stmt_uid (phi));
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      phi = gsi_stmt (gsi);
+      if (!is_gimple_reg (gimple_phi_result (phi)))
+	record_voperand_set (dse_gd->stores, &bd->stores, get_stmt_uid (phi));
+    }
 }
 
 static void
@@ -633,7 +636,7 @@ struct gimple_opt_pass pass_dse =
 static unsigned int
 execute_simple_dse (void)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   basic_block bb;
   bitmap variables_loaded = BITMAP_ALLOC (NULL);
   unsigned int todo = 0;
@@ -641,24 +644,29 @@ execute_simple_dse (void)
   /* Collect into VARIABLES LOADED all variables that are read in function
      body.  */
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      if (LOADED_SYMS (bsi_stmt (bsi)))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+
+      if (gimple_loaded_syms (gsi_stmt (gsi)))
 	bitmap_ior_into (variables_loaded,
-			 LOADED_SYMS (bsi_stmt (bsi)));
+			 gimple_loaded_syms (gsi_stmt (gsi)));
 
   /* Look for statements writing into the write only variables.
      And try to remove them.  */
 
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi);)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
       {
-	tree stmt = bsi_stmt (bsi), op;
+	gimple stmt = gsi_stmt (gsi);
+        tree op;
 	bool removed = false;
         ssa_op_iter iter;
 
-	if (STORED_SYMS (stmt) && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	    && TREE_CODE (stmt) != RETURN_EXPR
-	    && !bitmap_intersect_p (STORED_SYMS (stmt), variables_loaded))
+	if (gimple_stored_syms (stmt)
+	    && !bitmap_empty_p (gimple_stored_syms (stmt))
+            && (is_gimple_assign (stmt)
+	        || (is_gimple_call (stmt)
+                    && gimple_call_lhs (stmt)))
+	    && !bitmap_intersect_p (gimple_stored_syms (stmt), variables_loaded))
 	  {
 	    unsigned int i;
 	    bitmap_iterator bi;
@@ -673,7 +681,7 @@ execute_simple_dse (void)
 	       from removing them as dead.  The flag thus has no use for us
 	       and we need to look into all operands.  */
 	      
-	    EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	    EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
 	      {
 		tree var = referenced_var_lookup (i);
 		if (TREE_ADDRESSABLE (var)
@@ -682,8 +690,8 @@ execute_simple_dse (void)
 		  dead = false;
 	      }
 
-	    if (dead && LOADED_SYMS (stmt))
-	      EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
+	    if (dead && gimple_loaded_syms (stmt))
+	      EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
 		if (TREE_THIS_VOLATILE (referenced_var_lookup (i)))
 		  dead = false;
 
@@ -695,49 +703,44 @@ execute_simple_dse (void)
 	    /* Look for possible occurrence var = indirect_ref (...) where
 	       indirect_ref itself is volatile.  */
 
-	    if (dead && TREE_THIS_VOLATILE (GIMPLE_STMT_OPERAND (stmt, 1)))
+	    if (dead && is_gimple_assign (stmt)
+	        && TREE_THIS_VOLATILE (gimple_assign_rhs1 (stmt)))
 	      dead = false;
 
 	    if (dead)
 	      {
-		tree call = get_call_expr_in (stmt);
-
 		/* When LHS of var = call (); is dead, simplify it into
 		   call (); saving one operand.  */
-		if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-		    && call
-		    && TREE_SIDE_EFFECTS (call))
+                if (is_gimple_call (stmt)
+                    && gimple_has_side_effects (stmt))
 		  {
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
 			fprintf (dump_file, "Deleted LHS of call: ");
-			print_generic_stmt (dump_file, stmt, TDF_SLIM);
+			print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 			fprintf (dump_file, "\n");
 		      }
-		    push_stmt_changes (bsi_stmt_ptr (bsi));
-		    TREE_BLOCK (call) = TREE_BLOCK (stmt);
-		    bsi_replace (&bsi, call, false);
-		    maybe_clean_or_replace_eh_stmt (stmt, call);
-		    mark_symbols_for_renaming (call);
-		    pop_stmt_changes (bsi_stmt_ptr (bsi));
+		    push_stmt_changes (gsi_stmt_ptr (&gsi));
+                    gimple_call_set_lhs (stmt, NULL);
+		    pop_stmt_changes (gsi_stmt_ptr (&gsi));
 		  }
 		else
 		  {
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
 			fprintf (dump_file, "  Deleted dead store '");
-			print_generic_expr (dump_file, stmt, dump_flags);
+			print_gimple_stmt (dump_file, stmt, 0, dump_flags);
 			fprintf (dump_file, "'\n");
 		      }
 		    removed = true;
-		    bsi_remove (&bsi, true);
+		    gsi_remove (&gsi, true);
 		    todo |= TODO_cleanup_cfg;
 		  }
 		todo |= TODO_remove_unused_locals | TODO_ggc_collect;
 	      }
 	  }
 	if (!removed)
-	  bsi_next (&bsi);
+	  gsi_next (&gsi);
       }
   BITMAP_FREE (variables_loaded);
   return todo;

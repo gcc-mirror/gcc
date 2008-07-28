@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    Given a scalar variable to be analyzed, follow the SSA edge to
    its definition:
      
-   - When the definition is a GIMPLE_MODIFY_STMT: if the right hand side
+   - When the definition is a GIMPLE_ASSIGN: if the right hand side
    (RHS) of the definition cannot be statically analyzed, the answer
    of the analyzer is: "don't know".  
    Otherwise, for all the variables that are not yet analyzed in the
@@ -397,7 +397,7 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 
   if (TREE_CODE (chrec) == SSA_NAME)
     {
-      tree def = SSA_NAME_DEF_STMT (chrec);
+      gimple def = SSA_NAME_DEF_STMT (chrec);
       struct loop *def_loop = loop_containing_stmt (def);
       struct loop *loop = get_loop (loop_nb);
 
@@ -421,13 +421,13 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 /* Return true when PHI is a loop-phi-node.  */
 
 static bool
-loop_phi_node_p (tree phi)
+loop_phi_node_p (gimple phi)
 {
   /* The implementation of this function is based on the following
      property: "all the loop-phi-nodes of a loop are contained in the
      loop's header basic block".  */
 
-  return loop_containing_stmt (phi)->header == bb_for_stmt (phi);
+  return loop_containing_stmt (phi)->header == gimple_bb (phi);
 }
 
 /* Compute the scalar evolution for EVOLUTION_FN after crossing LOOP.
@@ -656,7 +656,7 @@ get_scalar_evolution (tree scalar)
 
 static tree
 add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
-		    tree at_stmt)
+		    gimple at_stmt)
 {
   tree type, left, right;
   struct loop *loop = get_loop (loop_nb), *chloop;
@@ -853,7 +853,7 @@ add_to_evolution_1 (unsigned loop_nb, tree chrec_before, tree to_add,
 
 static tree 
 add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
-		  tree to_add, tree at_stmt)
+		  tree to_add, gimple at_stmt)
 {
   tree type = chrec_type (to_add);
   tree res = NULL_TREE;
@@ -918,47 +918,14 @@ set_nb_iterations_in_loop (struct loop *loop,
    scalar evolution analysis.  For the moment, greedily select all the
    loop nests we could analyze.  */
 
-/* Return true when it is possible to analyze the condition expression
-   EXPR.  */
-
-static bool
-analyzable_condition (const_tree expr)
-{
-  tree condition;
-  
-  if (TREE_CODE (expr) != COND_EXPR)
-    return false;
-  
-  condition = TREE_OPERAND (expr, 0);
-  
-  switch (TREE_CODE (condition))
-    {
-    case SSA_NAME:
-      return true;
-      
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-      return true;
-      
-    default:
-      return false;
-    }
-  
-  return false;
-}
-
 /* For a loop with a single exit edge, return the COND_EXPR that
    guards the exit edge.  If the expression is too difficult to
    analyze, then give up.  */
 
-tree 
+gimple 
 get_loop_exit_condition (const struct loop *loop)
 {
-  tree res = NULL_TREE;
+  gimple res = NULL;
   edge exit_edge = single_exit (loop);
   
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -966,16 +933,16 @@ get_loop_exit_condition (const struct loop *loop)
   
   if (exit_edge)
     {
-      tree expr;
+      gimple stmt;
       
-      expr = last_stmt (exit_edge->src);
-      if (analyzable_condition (expr))
-	res = expr;
+      stmt = last_stmt (exit_edge->src);
+      if (gimple_code (stmt) == GIMPLE_COND)
+	res = stmt;
     }
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      print_generic_expr (dump_file, res, 0);
+      print_gimple_stmt (dump_file, res, 0, 0);
       fprintf (dump_file, ")\n");
     }
   
@@ -986,7 +953,7 @@ get_loop_exit_condition (const struct loop *loop)
 
 static void 
 get_exit_conditions_rec (struct loop *loop, 
-			 VEC(tree,heap) **exit_conditions)
+			 VEC(gimple,heap) **exit_conditions)
 {
   if (!loop)
     return;
@@ -997,10 +964,10 @@ get_exit_conditions_rec (struct loop *loop,
   
   if (single_exit (loop))
     {
-      tree loop_condition = get_loop_exit_condition (loop);
+      gimple loop_condition = get_loop_exit_condition (loop);
       
       if (loop_condition)
-	VEC_safe_push (tree, heap, *exit_conditions, loop_condition);
+	VEC_safe_push (gimple, heap, *exit_conditions, loop_condition);
     }
 }
 
@@ -1008,7 +975,7 @@ get_exit_conditions_rec (struct loop *loop,
    initializes the EXIT_CONDITIONS array.  */
 
 static void
-select_loops_exit_conditions (VEC(tree,heap) **exit_conditions)
+select_loops_exit_conditions (VEC(gimple,heap) **exit_conditions)
 {
   struct loop *function_body = current_loops->tree_root;
   
@@ -1025,59 +992,23 @@ typedef enum t_bool {
 } t_bool;
 
 
-static t_bool follow_ssa_edge (struct loop *loop, tree, tree, tree *, int);
+static t_bool follow_ssa_edge (struct loop *loop, gimple, gimple, tree *, int);
 
-/* Follow the ssa edge into the right hand side RHS of an assignment.
+/* Follow the ssa edge into the binary expression RHS0 CODE RHS1.
    Return true if the strongly connected component has been found.  */
 
 static t_bool
-follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs, 
-			tree halting_phi, tree *evolution_of_loop, int limit)
+follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
+			tree type, tree rhs0, enum tree_code code, tree rhs1,
+			gimple halting_phi, tree *evolution_of_loop, int limit)
 {
   t_bool res = t_false;
-  tree rhs0, rhs1;
-  tree type_rhs = TREE_TYPE (rhs);
   tree evol;
-  enum tree_code code;
-  
-  /* The RHS is one of the following cases:
-     - an SSA_NAME, 
-     - an INTEGER_CST,
-     - a PLUS_EXPR, 
-     - a POINTER_PLUS_EXPR, 
-     - a MINUS_EXPR,
-     - an ASSERT_EXPR,
-     - other cases are not yet handled.  */
-  code = TREE_CODE (rhs);
+
   switch (code)
     {
-    case NOP_EXPR:
-      /* This assignment is under the form "a_1 = (cast) rhs.  */
-      res = follow_ssa_edge_in_rhs (loop, at_stmt, TREE_OPERAND (rhs, 0),
-				    halting_phi, evolution_of_loop, limit);
-      *evolution_of_loop = chrec_convert (TREE_TYPE (rhs),
-					  *evolution_of_loop, at_stmt);
-      break;
-
-    case INTEGER_CST:
-      /* This assignment is under the form "a_1 = 7".  */
-      res = t_false;
-      break;
-      
-    case SSA_NAME:
-      /* This assignment is under the form: "a_1 = b_2".  */
-      res = follow_ssa_edge 
-	(loop, SSA_NAME_DEF_STMT (rhs), halting_phi, evolution_of_loop, limit);
-      break;
-      
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      /* This case is under the form "rhs0 + rhs1".  */
-      rhs0 = TREE_OPERAND (rhs, 0);
-      rhs1 = TREE_OPERAND (rhs, 1);
-      STRIP_TYPE_NOPS (rhs0);
-      STRIP_TYPE_NOPS (rhs1);
-
       if (TREE_CODE (rhs0) == SSA_NAME)
 	{
 	  if (TREE_CODE (rhs1) == SSA_NAME)
@@ -1092,13 +1023,12 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 
 	      evol = *evolution_of_loop;
 	      res = follow_ssa_edge 
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 &evol, limit);
+		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, &evol, limit);
 	      
 	      if (res == t_true)
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, 
-		   chrec_convert (type_rhs, evol, at_stmt), 
+		   chrec_convert (type, evol, at_stmt), 
 		   code, rhs1, at_stmt);
 	      
 	      else if (res == t_false)
@@ -1110,7 +1040,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		  if (res == t_true)
 		    *evolution_of_loop = add_to_evolution 
 		      (loop->num, 
-		       chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
+		       chrec_convert (type, *evolution_of_loop, at_stmt), 
 		       code, rhs0, at_stmt);
 
 		  else if (res == t_dont_know)
@@ -1130,7 +1060,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 		 evolution_of_loop, limit);
 	      if (res == t_true)
 		*evolution_of_loop = add_to_evolution 
-		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
+		  (loop->num, chrec_convert (type, *evolution_of_loop,
 					     at_stmt),
 		   code, rhs1, at_stmt);
 
@@ -1148,7 +1078,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	     evolution_of_loop, limit);
 	  if (res == t_true)
 	    *evolution_of_loop = add_to_evolution 
-	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop,
+	      (loop->num, chrec_convert (type, *evolution_of_loop,
 					 at_stmt),
 	       code, rhs0, at_stmt);
 
@@ -1161,16 +1091,10 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	   "a = ... + ...".  */
 	/* And there is nothing to do.  */
 	res = t_false;
-      
       break;
       
     case MINUS_EXPR:
       /* This case is under the form "opnd0 = rhs0 - rhs1".  */
-      rhs0 = TREE_OPERAND (rhs, 0);
-      rhs1 = TREE_OPERAND (rhs, 1);
-      STRIP_TYPE_NOPS (rhs0);
-      STRIP_TYPE_NOPS (rhs1);
-
       if (TREE_CODE (rhs0) == SSA_NAME)
 	{
 	  /* Match an assignment under the form: 
@@ -1186,7 +1110,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 				 evolution_of_loop, limit);
 	  if (res == t_true)
 	    *evolution_of_loop = add_to_evolution 
-	      (loop->num, chrec_convert (type_rhs, *evolution_of_loop, at_stmt),
+	      (loop->num, chrec_convert (type, *evolution_of_loop, at_stmt),
 	       MINUS_EXPR, rhs1, at_stmt);
 
 	  else if (res == t_dont_know)
@@ -1197,14 +1121,72 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	   "a = ... - ...".  */
 	/* And there is nothing to do.  */
 	res = t_false;
-      
       break;
+
+    default:
+      res = t_false;
+    }
+
+  return res;
+}
     
+/* Follow the ssa edge into the expression EXPR.
+   Return true if the strongly connected component has been found.  */
+
+static t_bool
+follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr, 
+		      gimple halting_phi, tree *evolution_of_loop, int limit)
+{
+  t_bool res = t_false;
+  tree rhs0, rhs1;
+  tree type = TREE_TYPE (expr);
+  enum tree_code code;
+  
+  /* The EXPR is one of the following cases:
+     - an SSA_NAME, 
+     - an INTEGER_CST,
+     - a PLUS_EXPR, 
+     - a POINTER_PLUS_EXPR, 
+     - a MINUS_EXPR,
+     - an ASSERT_EXPR,
+     - other cases are not yet handled.  */
+  code = TREE_CODE (expr);
+  switch (code)
+    {
+    case NOP_EXPR:
+      /* This assignment is under the form "a_1 = (cast) rhs.  */
+      res = follow_ssa_edge_expr (loop, at_stmt, TREE_OPERAND (expr, 0),
+				  halting_phi, evolution_of_loop, limit);
+      *evolution_of_loop = chrec_convert (type, *evolution_of_loop, at_stmt);
+      break;
+
+    case INTEGER_CST:
+      /* This assignment is under the form "a_1 = 7".  */
+      res = t_false;
+      break;
+      
+    case SSA_NAME:
+      /* This assignment is under the form: "a_1 = b_2".  */
+      res = follow_ssa_edge 
+	(loop, SSA_NAME_DEF_STMT (expr), halting_phi, evolution_of_loop, limit);
+      break;
+      
+    case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* This case is under the form "rhs0 +- rhs1".  */
+      rhs0 = TREE_OPERAND (expr, 0);
+      rhs1 = TREE_OPERAND (expr, 1);
+      STRIP_TYPE_NOPS (rhs0);
+      STRIP_TYPE_NOPS (rhs1);
+      return follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
+				     halting_phi, evolution_of_loop, limit);
+
     case ASSERT_EXPR:
       {
 	/* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
 	   It must be handled as a copy assignment of the form a_1 = a_2.  */
-	tree op0 = ASSERT_EXPR_VAR (rhs);
+	tree op0 = ASSERT_EXPR_VAR (expr);
 	if (TREE_CODE (op0) == SSA_NAME)
 	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (op0),
 				 halting_phi, evolution_of_loop, limit);
@@ -1222,12 +1204,37 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
   return res;
 }
 
+/* Follow the ssa edge into the right hand side of an assignment STMT.
+   Return true if the strongly connected component has been found.  */
+
+static t_bool
+follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
+			gimple halting_phi, tree *evolution_of_loop, int limit)
+{
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+
+  switch (get_gimple_rhs_class (code))
+    {
+    case GIMPLE_BINARY_RHS:
+      return follow_ssa_edge_binary (loop, stmt, type,
+				     gimple_assign_rhs1 (stmt), code,
+				     gimple_assign_rhs2 (stmt),
+				     halting_phi, evolution_of_loop, limit);
+    case GIMPLE_SINGLE_RHS:
+      return follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
+				   halting_phi, evolution_of_loop, limit);
+    default:
+      return t_false;
+    }
+}
+
 /* Checks whether the I-th argument of a PHI comes from a backedge.  */
 
 static bool
-backedge_phi_arg_p (const_tree phi, int i)
+backedge_phi_arg_p (gimple phi, int i)
 {
-  const_edge e = PHI_ARG_EDGE (phi, i);
+  const_edge e = gimple_phi_arg_edge (phi, i);
 
   /* We would in fact like to test EDGE_DFS_BACK here, but we do not care
      about updating it anywhere, and this should work as well most of the
@@ -1245,8 +1252,8 @@ backedge_phi_arg_p (const_tree phi, int i)
 static inline t_bool
 follow_ssa_edge_in_condition_phi_branch (int i,
 					 struct loop *loop, 
-					 tree condition_phi, 
-					 tree halting_phi,
+					 gimple condition_phi, 
+					 gimple halting_phi,
 					 tree *evolution_of_branch,
 					 tree init_cond, int limit)
 {
@@ -1280,11 +1287,11 @@ follow_ssa_edge_in_condition_phi_branch (int i,
 
 static t_bool
 follow_ssa_edge_in_condition_phi (struct loop *loop,
-				  tree condition_phi, 
-				  tree halting_phi, 
+				  gimple condition_phi, 
+				  gimple halting_phi, 
 				  tree *evolution_of_loop, int limit)
 {
-  int i;
+  int i, n;
   tree init = *evolution_of_loop;
   tree evolution_of_branch;
   t_bool res = follow_ssa_edge_in_condition_phi_branch (0, loop, condition_phi,
@@ -1297,10 +1304,11 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
   *evolution_of_loop = evolution_of_branch;
 
   /* If the phi node is just a copy, do not increase the limit.  */
-  if (PHI_NUM_ARGS (condition_phi) > 1)
+  n = gimple_phi_num_args (condition_phi);
+  if (n > 1)
     limit++;
 
-  for (i = 1; i < PHI_NUM_ARGS (condition_phi); i++)
+  for (i = 1; i < n; i++)
     {
       /* Quickly give up when the evolution of one of the branches is
 	 not known.  */
@@ -1328,8 +1336,8 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
 
 static t_bool
 follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
-				tree loop_phi_node, 
-				tree halting_phi,
+				gimple loop_phi_node, 
+				gimple halting_phi,
 				tree *evolution_of_loop, int limit)
 {
   struct loop *loop = loop_containing_stmt (loop_phi_node);
@@ -1340,19 +1348,19 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
   if (ev == PHI_RESULT (loop_phi_node))
     {
       t_bool res = t_false;
-      int i;
+      int i, n = gimple_phi_num_args (loop_phi_node);
 
-      for (i = 0; i < PHI_NUM_ARGS (loop_phi_node); i++)
+      for (i = 0; i < n; i++)
 	{
 	  tree arg = PHI_ARG_DEF (loop_phi_node, i);
 	  basic_block bb;
 
 	  /* Follow the edges that exit the inner loop.  */
-	  bb = PHI_ARG_EDGE (loop_phi_node, i)->src;
+	  bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
 	  if (!flow_bb_inside_loop_p (loop, bb))
-	    res = follow_ssa_edge_in_rhs (outer_loop, loop_phi_node,
-					  arg, halting_phi,
-					  evolution_of_loop, limit);
+	    res = follow_ssa_edge_expr (outer_loop, loop_phi_node,
+					arg, halting_phi,
+					evolution_of_loop, limit);
 	  if (res == t_true)
 	    break;
 	}
@@ -1366,20 +1374,20 @@ follow_ssa_edge_inner_loop_phi (struct loop *outer_loop,
 
   /* Otherwise, compute the overall effect of the inner loop.  */
   ev = compute_overall_effect_of_inner_loop (loop, ev);
-  return follow_ssa_edge_in_rhs (outer_loop, loop_phi_node, ev, halting_phi,
-				 evolution_of_loop, limit);
+  return follow_ssa_edge_expr (outer_loop, loop_phi_node, ev, halting_phi,
+			       evolution_of_loop, limit);
 }
 
 /* Follow an SSA edge from a loop-phi-node to itself, constructing a
    path that is analyzed on the return walk.  */
 
 static t_bool
-follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
+follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
 		 tree *evolution_of_loop, int limit)
 {
   struct loop *def_loop;
   
-  if (TREE_CODE (def) == NOP_EXPR)
+  if (gimple_nop_p (def))
     return t_false;
   
   /* Give up if the path is longer than the MAX that we allow.  */
@@ -1388,9 +1396,9 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
   
   def_loop = loop_containing_stmt (def);
   
-  switch (TREE_CODE (def))
+  switch (gimple_code (def))
     {
-    case PHI_NODE:
+    case GIMPLE_PHI:
       if (!loop_phi_node_p (def))
 	/* DEF is a condition-phi-node.  Follow the branches, and
 	   record their evolutions.  Finally, merge the collected
@@ -1419,15 +1427,13 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
       /* Outer loop.  */
       return t_false;
 
-    case GIMPLE_MODIFY_STMT:
-      return follow_ssa_edge_in_rhs (loop, def,
-				     GIMPLE_STMT_OPERAND (def, 1), 
-				     halting_phi, 
+    case GIMPLE_ASSIGN:
+      return follow_ssa_edge_in_rhs (loop, def, halting_phi, 
 				     evolution_of_loop, limit);
       
     default:
       /* At this level of abstraction, the program is just a set
-	 of GIMPLE_MODIFY_STMTs and PHI_NODEs.  In principle there is no
+	 of GIMPLE_ASSIGNs and PHI_NODEs.  In principle there is no
 	 other node to be handled.  */
       return t_false;
     }
@@ -1439,10 +1445,10 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
    function from LOOP_PHI_NODE to LOOP_PHI_NODE in the loop.  */
 
 static tree
-analyze_evolution_in_loop (tree loop_phi_node, 
+analyze_evolution_in_loop (gimple loop_phi_node, 
 			   tree init_cond)
 {
-  int i;
+  int i, n = gimple_phi_num_args (loop_phi_node);
   tree evolution_function = chrec_not_analyzed_yet;
   struct loop *loop = loop_containing_stmt (loop_phi_node);
   basic_block bb;
@@ -1451,18 +1457,19 @@ analyze_evolution_in_loop (tree loop_phi_node,
     {
       fprintf (dump_file, "(analyze_evolution_in_loop \n");
       fprintf (dump_file, "  (loop_phi_node = ");
-      print_generic_expr (dump_file, loop_phi_node, 0);
+      print_gimple_stmt (dump_file, loop_phi_node, 0, 0);
       fprintf (dump_file, ")\n");
     }
   
-  for (i = 0; i < PHI_NUM_ARGS (loop_phi_node); i++)
+  for (i = 0; i < n; i++)
     {
       tree arg = PHI_ARG_DEF (loop_phi_node, i);
-      tree ssa_chain, ev_fn;
+      gimple ssa_chain;
+      tree ev_fn;
       t_bool res;
 
       /* Select the edges that enter the loop body.  */
-      bb = PHI_ARG_EDGE (loop_phi_node, i)->src;
+      bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
       if (!flow_bb_inside_loop_p (loop, bb))
 	continue;
       
@@ -1509,24 +1516,25 @@ analyze_evolution_in_loop (tree loop_phi_node,
    loop, and leaves this task to the on-demand tree reconstructor.  */
 
 static tree 
-analyze_initial_condition (tree loop_phi_node)
+analyze_initial_condition (gimple loop_phi_node)
 {
-  int i;
+  int i, n;
   tree init_cond = chrec_not_analyzed_yet;
-  struct loop *loop = bb_for_stmt (loop_phi_node)->loop_father;
+  struct loop *loop = loop_containing_stmt (loop_phi_node);
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "(analyze_initial_condition \n");
       fprintf (dump_file, "  (loop_phi_node = \n");
-      print_generic_expr (dump_file, loop_phi_node, 0);
+      print_gimple_stmt (dump_file, loop_phi_node, 0, 0);
       fprintf (dump_file, ")\n");
     }
   
-  for (i = 0; i < PHI_NUM_ARGS (loop_phi_node); i++)
+  n = gimple_phi_num_args (loop_phi_node);
+  for (i = 0; i < n; i++)
     {
       tree branch = PHI_ARG_DEF (loop_phi_node, i);
-      basic_block bb = PHI_ARG_EDGE (loop_phi_node, i)->src;
+      basic_block bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
       
       /* When the branch is oriented to the loop's body, it does
      	 not contribute to the initial condition.  */
@@ -1565,7 +1573,7 @@ analyze_initial_condition (tree loop_phi_node)
 /* Analyze the scalar evolution for LOOP_PHI_NODE.  */
 
 static tree 
-interpret_loop_phi (struct loop *loop, tree loop_phi_node)
+interpret_loop_phi (struct loop *loop, gimple loop_phi_node)
 {
   tree res;
   struct loop *phi_loop = loop_containing_stmt (loop_phi_node);
@@ -1597,12 +1605,12 @@ interpret_loop_phi (struct loop *loop, tree loop_phi_node)
    analyzed.  */
 
 static tree
-interpret_condition_phi (struct loop *loop, tree condition_phi)
+interpret_condition_phi (struct loop *loop, gimple condition_phi)
 {
-  int i;
+  int i, n = gimple_phi_num_args (condition_phi);
   tree res = chrec_not_analyzed_yet;
   
-  for (i = 0; i < PHI_NUM_ARGS (condition_phi); i++)
+  for (i = 0; i < n; i++)
     {
       tree branch_chrec;
       
@@ -1621,88 +1629,83 @@ interpret_condition_phi (struct loop *loop, tree condition_phi)
   return res;
 }
 
-/* Interpret the right hand side of a GIMPLE_MODIFY_STMT OPND1.  If we didn't
+/* Interpret the operation RHS1 OP RHS2.  If we didn't
    analyze this node before, follow the definitions until ending
-   either on an analyzed GIMPLE_MODIFY_STMT, or on a loop-phi-node.  On the
+   either on an analyzed GIMPLE_ASSIGN, or on a loop-phi-node.  On the
    return path, this function propagates evolutions (ala constant copy
    propagation).  OPND1 is not a GIMPLE expression because we could
    analyze the effect of an inner loop: see interpret_loop_phi.  */
 
 static tree
-interpret_rhs_modify_stmt (struct loop *loop, tree at_stmt,
-			   	  tree opnd1, tree type)
+interpret_rhs_expr (struct loop *loop, gimple at_stmt,
+		    tree type, tree rhs1, enum tree_code code, tree rhs2)
 {
-  tree res, opnd10, opnd11, chrec10, chrec11;
+  tree res, chrec1, chrec2;
 
-  if (is_gimple_min_invariant (opnd1))
-    return chrec_convert (type, opnd1, at_stmt);
+  if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
+    {
+      if (is_gimple_min_invariant (rhs1))
+	return chrec_convert (type, rhs1, at_stmt);
 
-  switch (TREE_CODE (opnd1))
+      if (code == SSA_NAME)
+	return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
+			      at_stmt);
+
+      if (code == ASSERT_EXPR)
+	{
+	  rhs1 = ASSERT_EXPR_VAR (rhs1);
+	  return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
+				at_stmt);
+	}
+
+      return chrec_dont_know;
+    }
+
+  switch (code)
     {
     case POINTER_PLUS_EXPR:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      opnd11 = TREE_OPERAND (opnd1, 1);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10, at_stmt);
-      chrec11 = chrec_convert (sizetype, chrec11, at_stmt);
-      res = chrec_fold_plus (type, chrec10, chrec11);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec2 = analyze_scalar_evolution (loop, rhs2);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      chrec2 = chrec_convert (sizetype, chrec2, at_stmt);
+      res = chrec_fold_plus (type, chrec1, chrec2);
       break;
 
     case PLUS_EXPR:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      opnd11 = TREE_OPERAND (opnd1, 1);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10, at_stmt);
-      chrec11 = chrec_convert (type, chrec11, at_stmt);
-      res = chrec_fold_plus (type, chrec10, chrec11);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec2 = analyze_scalar_evolution (loop, rhs2);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      res = chrec_fold_plus (type, chrec1, chrec2);
       break;
       
     case MINUS_EXPR:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      opnd11 = TREE_OPERAND (opnd1, 1);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10, at_stmt);
-      chrec11 = chrec_convert (type, chrec11, at_stmt);
-      res = chrec_fold_minus (type, chrec10, chrec11);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec2 = analyze_scalar_evolution (loop, rhs2);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      res = chrec_fold_minus (type, chrec1, chrec2);
       break;
 
     case NEGATE_EXPR:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec10 = chrec_convert (type, chrec10, at_stmt);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
       /* TYPE may be integer, real or complex, so use fold_convert.  */
-      res = chrec_fold_multiply (type, chrec10,
+      res = chrec_fold_multiply (type, chrec1,
 				 fold_convert (type, integer_minus_one_node));
       break;
 
     case MULT_EXPR:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      opnd11 = TREE_OPERAND (opnd1, 1);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      chrec11 = analyze_scalar_evolution (loop, opnd11);
-      chrec10 = chrec_convert (type, chrec10, at_stmt);
-      chrec11 = chrec_convert (type, chrec11, at_stmt);
-      res = chrec_fold_multiply (type, chrec10, chrec11);
-      break;
-      
-    case SSA_NAME:
-      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd1),
-			   at_stmt);
-      break;
-
-    case ASSERT_EXPR:
-      opnd10 = ASSERT_EXPR_VAR (opnd1);
-      res = chrec_convert (type, analyze_scalar_evolution (loop, opnd10),
-			   at_stmt);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      chrec2 = analyze_scalar_evolution (loop, rhs2);
+      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      res = chrec_fold_multiply (type, chrec1, chrec2);
       break;
       
     CASE_CONVERT:
-      opnd10 = TREE_OPERAND (opnd1, 0);
-      chrec10 = analyze_scalar_evolution (loop, opnd10);
-      res = chrec_convert (type, chrec10, at_stmt);
+      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      res = chrec_convert (type, chrec1, at_stmt);
       break;
       
     default:
@@ -1711,6 +1714,39 @@ interpret_rhs_modify_stmt (struct loop *loop, tree at_stmt,
     }
   
   return res;
+}
+
+/* Interpret the expression EXPR.  */
+
+static tree
+interpret_expr (struct loop *loop, gimple at_stmt, tree expr)
+{
+  enum tree_code code;
+  tree type = TREE_TYPE (expr), op0, op1;
+
+  if (automatically_generated_chrec_p (expr))
+    return expr;
+
+  if (TREE_CODE (expr) == POLYNOMIAL_CHREC)
+    return chrec_dont_know;
+
+  extract_ops_from_tree (expr, &code, &op0, &op1);
+
+  return interpret_rhs_expr (loop, at_stmt, type,
+			     op0, code, op1);
+}
+
+/* Interpret the rhs of the assignment STMT.  */
+
+static tree
+interpret_gimple_assign (struct loop *loop, gimple stmt)
+{
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+
+  return interpret_rhs_expr (loop, stmt, type,
+			     gimple_assign_rhs1 (stmt), code,
+			     gimple_assign_rhs2 (stmt));
 }
 
 
@@ -1744,7 +1780,8 @@ compute_scalar_evolution_in_loop (struct loop *wrto_loop,
 static tree
 analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
 {
-  tree def, type = TREE_TYPE (var);
+  tree type = TREE_TYPE (var);
+  gimple def;
   basic_block bb;
   struct loop *def_loop;
 
@@ -1752,10 +1789,10 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
     return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
-    return interpret_rhs_modify_stmt (loop, NULL_TREE, var, type);
+    return interpret_expr (loop, NULL, var);
 
   def = SSA_NAME_DEF_STMT (var);
-  bb = bb_for_stmt (def);
+  bb = gimple_bb (def);
   def_loop = bb ? bb->loop_father : NULL;
 
   if (bb == NULL
@@ -1783,14 +1820,13 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
       goto set_and_end;
     }
 
-  switch (TREE_CODE (def))
+  switch (gimple_code (def))
     {
-    case GIMPLE_MODIFY_STMT:
-      res = interpret_rhs_modify_stmt (loop, def,
-	  			       GIMPLE_STMT_OPERAND (def, 1), type);
+    case GIMPLE_ASSIGN:
+      res = interpret_gimple_assign (loop, def);
       break;
 
-    case PHI_NODE:
+    case GIMPLE_PHI:
       if (loop_phi_node_p (def))
 	res = interpret_loop_phi (loop, def);
       else
@@ -1844,9 +1880,6 @@ analyze_scalar_evolution (struct loop *loop, tree var)
     }
 
   res = analyze_scalar_evolution_1 (loop, var, get_scalar_evolution (var));
-
-  if (TREE_CODE (var) == SSA_NAME && res == chrec_dont_know)
-    res = var;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ")\n");
@@ -1934,7 +1967,8 @@ loop_closed_phi_def (tree var)
 {
   struct loop *loop;
   edge exit;
-  tree phi;
+  gimple phi;
+  gimple_stmt_iterator psi;
 
   if (var == NULL_TREE
       || TREE_CODE (var) != SSA_NAME)
@@ -1945,9 +1979,12 @@ loop_closed_phi_def (tree var)
   if (!exit)
     return NULL_TREE;
 
-  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
-    if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == var)
-      return PHI_RESULT (phi);
+  for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); gsi_next (&psi))
+    {
+      phi = gsi_stmt (psi);
+      if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == var)
+	return PHI_RESULT (phi);
+    }
 
   return NULL_TREE;
 }
@@ -1987,7 +2024,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
   switch (TREE_CODE (chrec))
     {
     case SSA_NAME:
-      def_bb = bb_for_stmt (SSA_NAME_DEF_STMT (chrec));
+      def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
 
       /* A parameter (or loop invariant and we do not want to include
 	 evolutions in outer loops), nothing to do.  */
@@ -2073,7 +2110,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       if (CHREC_LEFT (chrec) != op0
 	  || CHREC_RIGHT (chrec) != op1)
 	{
-	  op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL_TREE);
+	  op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL);
 	  chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
 	}
       return chrec;
@@ -2095,8 +2132,8 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       if (TREE_OPERAND (chrec, 0) != op0
 	  || TREE_OPERAND (chrec, 1) != op1)
 	{
-	  op0 = chrec_convert (type, op0, NULL_TREE);
-	  op1 = chrec_convert_rhs (type, op1, NULL_TREE);
+	  op0 = chrec_convert (type, op0, NULL);
+	  op1 = chrec_convert_rhs (type, op1, NULL);
 	  chrec = chrec_fold_plus (type, op0, op1);
 	}
       return chrec;
@@ -2117,8 +2154,8 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       if (TREE_OPERAND (chrec, 0) != op0
 	  || TREE_OPERAND (chrec, 1) != op1)
 	{
-	  op0 = chrec_convert (type, op0, NULL_TREE);
-	  op1 = chrec_convert (type, op1, NULL_TREE);
+	  op0 = chrec_convert (type, op0, NULL);
+	  op1 = chrec_convert (type, op1, NULL);
 	  chrec = chrec_fold_minus (type, op0, op1);
 	}
       return chrec;
@@ -2139,8 +2176,8 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       if (TREE_OPERAND (chrec, 0) != op0
 	  || TREE_OPERAND (chrec, 1) != op1)
 	{
-	  op0 = chrec_convert (type, op0, NULL_TREE);
-	  op1 = chrec_convert (type, op1, NULL_TREE);
+	  op0 = chrec_convert (type, op0, NULL);
+	  op1 = chrec_convert (type, op1, NULL);
 	  chrec = chrec_fold_multiply (type, op0, op1);
 	}
       return chrec;
@@ -2168,7 +2205,7 @@ instantiate_scev_1 (struct loop *instantiation_loop,
       if (fold_conversions)
 	return fold_convert (TREE_TYPE (chrec), op0);
 
-      return chrec_convert (TREE_TYPE (chrec), op0, NULL_TREE);
+      return chrec_convert (TREE_TYPE (chrec), op0, NULL);
 
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
@@ -2388,14 +2425,14 @@ number_of_exit_cond_executions (struct loop *loop)
    from the EXIT_CONDITIONS array.  */
 
 static void 
-number_of_iterations_for_all_loops (VEC(tree,heap) **exit_conditions)
+number_of_iterations_for_all_loops (VEC(gimple,heap) **exit_conditions)
 {
   unsigned int i;
   unsigned nb_chrec_dont_know_loops = 0;
   unsigned nb_static_loops = 0;
-  tree cond;
+  gimple cond;
   
-  for (i = 0; VEC_iterate (tree, *exit_conditions, i, cond); i++)
+  for (i = 0; VEC_iterate (gimple, *exit_conditions, i, cond); i++)
     {
       tree res = number_of_latch_executions (loop_containing_stmt (cond));
       if (chrec_contains_undetermined (res))
@@ -2540,33 +2577,37 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
    index.  This allows the parallelization of the loop.  */
 
 static void 
-analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(tree,heap) **exit_conditions)
+analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(gimple,heap) **exit_conditions)
 {
   unsigned int i;
   struct chrec_stats stats;
-  tree cond;
+  gimple cond, phi;
+  gimple_stmt_iterator psi;
   
   reset_chrecs_counters (&stats);
   
-  for (i = 0; VEC_iterate (tree, *exit_conditions, i, cond); i++)
+  for (i = 0; VEC_iterate (gimple, *exit_conditions, i, cond); i++)
     {
       struct loop *loop;
       basic_block bb;
-      tree phi, chrec;
+      tree chrec;
       
       loop = loop_containing_stmt (cond);
       bb = loop->header;
       
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	if (is_gimple_reg (PHI_RESULT (phi)))
-	  {
-	    chrec = instantiate_parameters
-	      (loop, 
-	       analyze_scalar_evolution (loop, PHI_RESULT (phi)));
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+	{
+	  phi = gsi_stmt (psi);
+	  if (is_gimple_reg (PHI_RESULT (phi)))
+	    {
+	      chrec = instantiate_parameters 
+		        (loop, 
+			 analyze_scalar_evolution (loop, PHI_RESULT (phi)));
 	    
-	    if (dump_file && (dump_flags & TDF_STATS))
-	      gather_chrec_stats (chrec, &stats);
-	  }
+	      if (dump_file && (dump_flags & TDF_STATS))
+		gather_chrec_stats (chrec, &stats);
+	    }
+	}
     }
   
   if (dump_file && (dump_flags & TDF_STATS))
@@ -2671,10 +2712,10 @@ scev_reset (void)
    overflow (e.g.  because it is computed in signed arithmetics).  */
 
 bool
-simple_iv (struct loop *loop, tree stmt, tree op, affine_iv *iv,
+simple_iv (struct loop *loop, gimple stmt, tree op, affine_iv *iv,
 	   bool allow_nonconstant_step)
 {
-  basic_block bb = bb_for_stmt (stmt);
+  basic_block bb = gimple_bb (stmt);
   tree type, ev;
   bool folded_casts;
 
@@ -2730,16 +2771,16 @@ simple_iv (struct loop *loop, tree stmt, tree op, affine_iv *iv,
 void
 scev_analysis (void)
 {
-  VEC(tree,heap) *exit_conditions;
+  VEC(gimple,heap) *exit_conditions;
   
-  exit_conditions = VEC_alloc (tree, heap, 37);
+  exit_conditions = VEC_alloc (gimple, heap, 37);
   select_loops_exit_conditions (&exit_conditions);
 
   if (dump_file && (dump_flags & TDF_STATS))
     analyze_scalar_evolution_for_all_loop_phi_nodes (&exit_conditions);
   
   number_of_iterations_for_all_loops (&exit_conditions);
-  VEC_free (tree, heap, exit_conditions);
+  VEC_free (gimple, heap, exit_conditions);
 }
 
 /* Finalize the scalar evolution analysis.  */
@@ -2765,11 +2806,13 @@ unsigned int
 scev_const_prop (void)
 {
   basic_block bb;
-  tree name, phi, next_phi, type, ev;
+  tree name, type, ev;
+  gimple phi, ass;
   struct loop *loop, *ex_loop;
   bitmap ssa_names_to_remove = NULL;
   unsigned i;
   loop_iterator li;
+  gimple_stmt_iterator psi;
 
   if (number_of_loops () <= 1)
     return 0;
@@ -2778,8 +2821,9 @@ scev_const_prop (void)
     {
       loop = bb->loop_father;
 
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
 	{
+	  phi = gsi_stmt (psi);
 	  name = PHI_RESULT (phi);
 
 	  if (!is_gimple_reg (name))
@@ -2815,11 +2859,13 @@ scev_const_prop (void)
 
       EXECUTE_IF_SET_IN_BITMAP (ssa_names_to_remove, 0, i, bi)
 	{
+	  gimple_stmt_iterator psi;
 	  name = ssa_name (i);
 	  phi = SSA_NAME_DEF_STMT (name);
 
-	  gcc_assert (TREE_CODE (phi) == PHI_NODE);
-	  remove_phi_node (phi, NULL, true);
+	  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
+	  psi = gsi_for_stmt (phi);
+	  remove_phi_node (&psi, true);
 	}
 
       BITMAP_FREE (ssa_names_to_remove);
@@ -2830,8 +2876,8 @@ scev_const_prop (void)
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       edge exit;
-      tree def, rslt, ass, niter;
-      block_stmt_iterator bsi;
+      tree def, rslt, niter;
+      gimple_stmt_iterator bsi;
 
       /* If we do not know exact number of iterations of the loop, we cannot
 	 replace the final value.  */
@@ -2852,22 +2898,28 @@ scev_const_prop (void)
       /* Ensure that it is possible to insert new statements somewhere.  */
       if (!single_pred_p (exit->dest))
 	split_loop_exit_edge (exit);
-      bsi = bsi_after_labels (exit->dest);
+      bsi = gsi_after_labels (exit->dest);
 
       ex_loop = superloop_at_depth (loop,
 				    loop_depth (exit->dest->loop_father) + 1);
 
-      for (phi = phi_nodes (exit->dest); phi; phi = next_phi)
+      for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); )
 	{
-	  next_phi = PHI_CHAIN (phi);
+	  phi = gsi_stmt (psi);
 	  rslt = PHI_RESULT (phi);
 	  def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
 	  if (!is_gimple_reg (def))
-	    continue;
+	    {
+	      gsi_next (&psi);
+	      continue;
+	    }
 
 	  if (!POINTER_TYPE_P (TREE_TYPE (def))
 	      && !INTEGRAL_TYPE_P (TREE_TYPE (def)))
-	    continue;
+	    {
+	      gsi_next (&psi);
+	      continue;
+	    }
 
 	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def, NULL);
 	  def = compute_overall_effect_of_inner_loop (ex_loop, def);
@@ -2877,23 +2929,20 @@ scev_const_prop (void)
 		 of some ssa names, which may cause problems if they appear
 		 on abnormal edges.  */
 	      || contains_abnormal_ssa_name_p (def))
-	    continue;
+	    {
+	      gsi_next (&psi);
+	      continue;
+	    }
 
 	  /* Eliminate the PHI node and replace it by a computation outside
 	     the loop.  */
 	  def = unshare_expr (def);
-	  remove_phi_node (phi, NULL_TREE, false);
+	  remove_phi_node (&psi, false);
 
-	  ass = build_gimple_modify_stmt (rslt, NULL_TREE);
-	  SSA_NAME_DEF_STMT (rslt) = ass;
-	  {
-	    block_stmt_iterator dest = bsi;
-	    bsi_insert_before (&dest, ass, BSI_NEW_STMT);
-	    def = force_gimple_operand_bsi (&dest, def, false, NULL_TREE,
-					    true, BSI_SAME_STMT);
-	  }
-	  GIMPLE_STMT_OPERAND (ass, 1) = def;
-	  update_stmt (ass);
+	  def = force_gimple_operand_gsi (&bsi, def, false, NULL_TREE,
+      					  true, GSI_SAME_STMT);
+	  ass = gimple_build_assign (rslt, def);
+	  gsi_insert_before (&bsi, ass, GSI_SAME_STMT);
 	}
     }
   return 0;

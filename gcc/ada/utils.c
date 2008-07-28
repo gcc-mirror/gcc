@@ -43,7 +43,8 @@
 #include "function.h"
 #include "cgraph.h"
 #include "tree-inline.h"
-#include "tree-gimple.h"
+#include "tree-iterator.h"
+#include "gimple.h"
 #include "tree-dump.h"
 #include "pointer-set.h"
 #include "langhooks.h"
@@ -2199,12 +2200,12 @@ gnat_genericize (tree fndecl)
   pointer_set_destroy (p_set);
 }
 
-/* Finish the definition of the current subprogram and compile it all the way
-   to assembler language output.  BODY is the tree corresponding to
-   the subprogram.  */
+/* Finish the definition of the current subprogram BODY and compile it all the
+   way to assembler language output.  ELAB_P tells if this is called for an
+   elaboration routine, to be entirely discarded if empty.  */
 
 void
-end_subprog_body (tree body)
+end_subprog_body (tree body, bool elab_p)
 {
   tree fndecl = current_function_decl;
 
@@ -2246,7 +2247,13 @@ end_subprog_body (tree body)
   if (!DECL_CONTEXT (fndecl))
     {
       gnat_gimplify_function (fndecl);
-      cgraph_finalize_function (fndecl, false);
+
+      /* If this is an empty elaboration proc, just discard the node.
+	 Otherwise, compile further.  */
+      if (elab_p && empty_body_p (gimple_body (fndecl)))
+	cgraph_remove_node (cgraph_node (fndecl));
+      else
+	cgraph_finalize_function (fndecl, false);
     }
   else
     /* Register this function with cgraph just far enough to get it
@@ -3117,7 +3124,7 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   gnat_poplevel ();
 
   allocate_struct_function (gnu_stub_decl, false);
-  end_subprog_body (gnu_body);
+  end_subprog_body (gnu_body, false);
 }
 
 /* Build a type to be used to represent an aliased object whose nominal

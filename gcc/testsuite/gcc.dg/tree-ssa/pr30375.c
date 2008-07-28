@@ -22,5 +22,5 @@ void test_signed_msg_encoding(void)
     f();
 }
 
-/* { dg-final { scan-tree-dump-times "signInfo = {};" 1 "dse1" } } */
+/* { dg-final { scan-tree-dump-times "signInfo = {}" 1 "dse1" } } */
 /* { dg-final { cleanup-tree-dump "dse*" } } */

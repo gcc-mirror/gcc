@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
@@ -450,7 +450,7 @@ set_parameter_const (stmtblock_t *block, tree var, enum iofield type,
 		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
   tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
 		     NULL_TREE);
-  gfc_add_modify_expr (block, tmp, build_int_cst (TREE_TYPE (p->field), val));
+  gfc_add_modify (block, tmp, build_int_cst (TREE_TYPE (p->field), val));
   return p->mask;
 }
 
@@ -505,7 +505,7 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
 		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
 
   tmp = fold_build3 (COMPONENT_REF, dest_type, var, p->field, NULL_TREE);
-  gfc_add_modify_expr (block, tmp, se.expr);
+  gfc_add_modify (block, tmp, se.expr);
   return p->mask;
 }
 
@@ -535,7 +535,7 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
       /* If this is for the iostat variable initialize the
 	 user variable to LIBERROR_OK which is zero.  */
       if (type == IOPARM_common_iostat)
-	gfc_add_modify_expr (block, se.expr,
+	gfc_add_modify (block, se.expr,
 			     build_int_cst (TREE_TYPE (se.expr), LIBERROR_OK));
     }
   else
@@ -549,13 +549,13 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
       /* If this is for the iostat variable, initialize the
 	 user variable to LIBERROR_OK which is zero.  */
       if (type == IOPARM_common_iostat)
-	gfc_add_modify_expr (block, tmpvar,
+	gfc_add_modify (block, tmpvar,
 			     build_int_cst (TREE_TYPE (tmpvar), LIBERROR_OK));
 
       addr = build_fold_addr_expr (tmpvar);
 	/* After the I/O operation, we set the variable from the temporary.  */
       tmp = convert (TREE_TYPE (se.expr), tmpvar);
-      gfc_add_modify_expr (postblock, se.expr, tmp);
+      gfc_add_modify (postblock, se.expr, tmp);
      }
 
   if (p->param_type == IOPARM_ptype_common)
@@ -563,7 +563,7 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
 		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
   tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
 		     var, p->field, NULL_TREE);
-  gfc_add_modify_expr (block, tmp, addr);
+  gfc_add_modify (block, tmp, addr);
   return p->mask;
 }
 
@@ -672,9 +672,9 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 			       fold_convert (long_integer_type_node, tmp));
       gfc_free (msg);
 
-      gfc_add_modify_expr (&se.pre, io,
+      gfc_add_modify (&se.pre, io,
 		 fold_convert (TREE_TYPE (io), GFC_DECL_ASSIGN_ADDR (se.expr)));
-      gfc_add_modify_expr (&se.pre, len, GFC_DECL_STRING_LEN (se.expr));
+      gfc_add_modify (&se.pre, len, GFC_DECL_STRING_LEN (se.expr));
     }
   else
     {
@@ -688,8 +688,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 	gcc_unreachable ();
 
       gfc_conv_string_parameter (&se);
-      gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
-      gfc_add_modify_expr (&se.pre, len, se.string_length);
+      gfc_add_modify (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
+      gfc_add_modify (&se.pre, len, se.string_length);
     }
 
   gfc_add_block_to_block (block, &se.pre);
@@ -764,10 +764,10 @@ set_internal_unit (stmtblock_t * block, stmtblock_t * post_block,
 
   /* The cast is needed for character substrings and the descriptor
      data.  */
-  gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), tmp));
-  gfc_add_modify_expr (&se.pre, len,
+  gfc_add_modify (&se.pre, io, fold_convert (TREE_TYPE (io), tmp));
+  gfc_add_modify (&se.pre, len,
 		       fold_convert (TREE_TYPE (len), se.string_length));
-  gfc_add_modify_expr (&se.pre, desc, se.expr);
+  gfc_add_modify (&se.pre, desc, se.expr);
 
   gfc_add_block_to_block (block, &se.pre);
   gfc_add_block_to_block (post_block, &se.post);
@@ -865,7 +865,7 @@ set_error_locus (stmtblock_t * block, tree var, locus * where)
   str = gfc_build_cstring_const (f->filename);
 
   str = gfc_build_addr_expr (pchar_type_node, str);
-  gfc_add_modify_expr (block, locus_file, str);
+  gfc_add_modify (block, locus_file, str);
 
   line = LOCATION_LINE (where->lb->location);
   set_parameter_const (block, var, IOPARM_common_line, line);

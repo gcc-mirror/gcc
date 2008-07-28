@@ -102,13 +102,13 @@ ignore_bb_p (const_basic_block bb)
 static int
 count_insns (basic_block bb)
 {
-  block_stmt_iterator bsi;
-  tree stmt;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
   int n = 0;
 
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      stmt = bsi_stmt (bsi);
+      stmt = gsi_stmt (gsi);
       n += estimate_num_insns (stmt, &eni_size_weights);
     }
   return n;

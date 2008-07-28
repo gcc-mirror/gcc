@@ -359,18 +359,15 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 /* Create a new assignment statement and make it the first statement in the
    function.  PARM1 is the lhs of the assignment and VAL is the rhs. */
 static void
-constant_val_insert (tree parm1, tree val)
+constant_val_insert (tree parm1 ATTRIBUTE_UNUSED, tree val ATTRIBUTE_UNUSED)
 {
-  tree init_stmt = NULL;
+  gimple init_stmt = NULL;
   edge e_step;
 
-  init_stmt = build_gimple_modify_stmt (parm1, val);
-
-  if (init_stmt)
-    {
-      e_step = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun));
-      bsi_insert_on_edge_immediate (e_step, init_stmt);
-    }
+  init_stmt = gimple_build_assign (parm1, val);
+  gcc_assert (init_stmt);
+  e_step = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun));
+  gsi_insert_on_edge_immediate (e_step, init_stmt);
 }
 
 /* build INTEGER_CST tree with type TREE_TYPE and value according to LAT.
@@ -810,9 +807,7 @@ ipcp_update_callgraph (void)
 	    if (ipcp_need_redirect_p (cs))
 	      {
 		cgraph_redirect_edge_callee (cs, orig_callee);
-		TREE_OPERAND (CALL_EXPR_FN (get_call_expr_in (cs->call_stmt)),
-			      0) =
-		  orig_callee->decl;
+		gimple_call_set_fn (cs->call_stmt, orig_callee->decl);
 	      }
 	  }
     }
@@ -944,7 +939,7 @@ ipcp_insert_stage (void)
       if (const_param > 0)
 	{
 	  push_cfun (DECL_STRUCT_FUNCTION (node1->decl));
-	  tree_register_cfg_hooks ();
+	  gimple_register_cfg_hooks ();
 	  current_function_decl = node1->decl;
 
 	  for (i = 0; i < count; i++)

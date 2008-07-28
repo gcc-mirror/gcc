@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include <splay-tree.h>
 #include "cfglayout.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-flow.h"
 #include "tree-stdarg.h"
 #include "tm-constrs.h"
@@ -5817,11 +5817,11 @@ va_list_skip_additions (tree lhs)
       if (TREE_CODE (stmt) == PHI_NODE)
 	return stmt;
 
-      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
-	  || GIMPLE_STMT_OPERAND (stmt, 0) != lhs)
+      if (TREE_CODE (stmt) != MODIFY_EXPR
+	  || TREE_OPERAND (stmt, 0) != lhs)
 	return lhs;
 
-      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+      rhs = TREE_OPERAND (stmt, 1);
       if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
 	rhs = TREE_OPERAND (rhs, 0);
 
@@ -5856,11 +5856,17 @@ va_list_skip_additions (tree lhs)
    current statement.  */
 
 static bool
-alpha_stdarg_optimize_hook (struct stdarg_info *si, const_tree lhs, const_tree rhs)
+alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 {
   tree base, offset, arg1, arg2;
   int offset_arg = 1;
 
+#if 1
+  /* FIXME tuples.  */
+  (void) si;
+  (void) stmt;
+  return false;
+#else
   while (handled_component_p (rhs))
     rhs = TREE_OPERAND (rhs, 0);
   if (TREE_CODE (rhs) != INDIRECT_REF
@@ -5953,6 +5959,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_tree lhs, const_tree r
 escapes:
   si->va_list_escapes = true;
   return false;
+#endif
 }
 #endif
 
@@ -6087,7 +6094,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
     {
       nextarg = plus_constant (nextarg, offset);
       nextarg = plus_constant (nextarg, NUM_ARGS * UNITS_PER_WORD);
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (valist), valist,
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
 		  make_tree (ptr_type_node, nextarg));
       TREE_SIDE_EFFECTS (t) = 1;
 
@@ -6106,20 +6113,20 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
       t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
 		  size_int (offset));
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (base_field), base_field, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       t = build_int_cst (NULL_TREE, NUM_ARGS * UNITS_PER_WORD);
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (offset_field),
-	  	  offset_field, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 }
 
 static tree
-alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
+alpha_gimplify_va_arg_1 (tree type, tree base, gimple_seq offset,
+			 gimple_seq *pre_p)
 {
   tree type_size, ptr_type, addend, t, addr, internal_post;
 
@@ -6128,9 +6135,9 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
   if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
       t = build_int_cst (TREE_TYPE (offset), 6*8);
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (offset), offset,
-		  build2 (MAX_EXPR, TREE_TYPE (offset), offset, t));
-      gimplify_and_add (t, pre_p);
+      gimplify_assign (offset,
+		       build2 (MAX_EXPR, TREE_TYPE (offset), offset, t),
+		       pre_p);
     }
 
   addend = offset;
@@ -6182,15 +6189,15 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
       t = size_binop (MULT_EXPR, t, size_int (8));
     }
   t = fold_convert (TREE_TYPE (offset), t);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, offset,
-	      build2 (PLUS_EXPR, TREE_TYPE (offset), offset, t));
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (offset, build2 (PLUS_EXPR, TREE_TYPE (offset), offset, t),
+      		   pre_p);
 
   return build_va_arg_indirect_ref (addr);
 }
 
 static tree
-alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
+alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
+		       gimple_seq *post_p)
 {
   tree offset_field, base_field, offset, base, t, r;
   bool indirect;
@@ -6222,9 +6229,8 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p);
 
   /* Stuff the offset temporary back into its field.  */
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, offset_field,
-	      fold_convert (TREE_TYPE (offset_field), offset));
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (offset_field,
+		   fold_convert (TREE_TYPE (offset_field), offset), pre_p);
 
   if (indirect)
     r = build_va_arg_indirect_ref (r);

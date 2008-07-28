@@ -649,7 +649,7 @@ struct lang_identifier GTY(())
 /* The resulting tree type.  */
 union lang_tree_node 
   GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("(union lang_tree_node *)GENERIC_NEXT (&%h.generic)")))
+       chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
 
 {
   union tree_node GTY ((tag ("0"), 
@@ -1555,7 +1555,7 @@ enum
 #undef DEBUG_JAVA_BINDING_LEVELS
 
 extern void java_genericize (tree);
-extern int java_gimplify_expr (tree *, tree *, tree *);
+extern int java_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 
 extern FILE *finput;
 

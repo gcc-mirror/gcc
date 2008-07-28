@@ -882,14 +882,6 @@ DEFTREECODE (ASM_EXPR, "asm_expr", tcc_statement, 4)
    nodes to implement SSA versioning.  */
 DEFTREECODE (SSA_NAME, "ssa_name", tcc_exceptional, 0)
 
-/* SSA PHI operator.  PHI_RESULT is the new SSA_NAME node created by
-   the PHI node.  PHI_ARG_LENGTH is the number of arguments.
-   PHI_ARG_ELT returns the Ith tuple <ssa_name, edge> from the
-   argument list.  Each tuple contains the incoming reaching
-   definition (SSA_NAME node) and the edge via which that definition
-   is coming through.  */
-DEFTREECODE (PHI_NODE, "phi_node", tcc_exceptional, 0)
-
 /* Used to represent a typed exception handler.  CATCH_TYPES is the type (or
    list of types) handled, and CATCH_BODY is the code for the handler.  */
 DEFTREECODE (CATCH_EXPR, "catch_expr", tcc_statement, 2)
@@ -985,32 +977,15 @@ DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 7)
    exposed to TREE_RANGE_CHECK.  */
 /* OpenMP - #pragma omp parallel [clause1 ... clauseN]
    Operand 0: OMP_PARALLEL_BODY: Code to be executed by all threads.
-   Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.
-   Operand 2: OMP_PARALLEL_FN: FUNCTION_DECL used when outlining the
-	      body of the parallel region.  Only valid after
-	      pass_lower_omp.
-   Operand 3: OMP_PARALLEL_DATA_ARG: Local variable in the parent
-	      function containing data to be shared with the child
-	      function.  */
+   Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.  */
 
-DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 4)
+DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 2)
 
 /* OpenMP - #pragma omp task [clause1 ... clauseN]
    Operand 0: OMP_TASK_BODY: Code to be executed by all threads.
-   Operand 1: OMP_TASK_CLAUSES: List of clauses.
-   Operand 2: OMP_TASK_FN: FUNCTION_DECL used when outlining the
-	      body of the task region.  Only valid after
-	      pass_lower_omp.
-   Operand 3: OMP_TASK_DATA_ARG: Local variable in the parent
-	      function containing data to be shared with the child
-	      function.
-   Operand 4: OMP_TASK_COPYFN: FUNCTION_DECL used for constructing
-	      firstprivate variables.
-   Operand 5: OMP_TASK_ARG_SIZE: Length of the task argument block.
-   Operand 6: OMP_TASK_ARG_ALIGN: Required alignment of the task
-	      argument block.  */
+   Operand 1: OMP_TASK_CLAUSES: List of clauses.  */
 
-DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 7)
+DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
 
 /* OpenMP - #pragma omp for [clause1 ... clauseN]
    Operand 0: OMP_FOR_BODY: Loop body.
@@ -1026,7 +1001,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 7)
 	OMP_FOR structured block, but are evaluated before the loop
 	body begins.
 
-   VAR must be a signed integer variable, which is implicitly thread
+   VAR must be an integer or pointer variable, which is implicitly thread
    private.  N1, N2 and INCR are required to be loop invariant integer
    expressions that are evaluated without any synchronization.
    The evaluation order, frequency of evaluation and side-effects are
@@ -1035,14 +1010,8 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
 
 /* OpenMP - #pragma omp sections [clause1 ... clauseN]
    Operand 0: OMP_SECTIONS_BODY: Sections body.
-   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.
-   Operand 2: OMP_SECTIONS_CONTROL: The control variable used for deciding
-	      which of the sections to execute.  */
-DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 3)
-
-/* This tree immediately follows OMP_SECTIONS, and represents the switch
-   used to decide which branch is taken.  */
-DEFTREECODE (OMP_SECTIONS_SWITCH, "omp_sections_switch", tcc_statement, 0)
+   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 2)
 
 /* OpenMP - #pragma omp single
    Operand 0: OMP_SINGLE_BODY: Single section body.
@@ -1066,14 +1035,6 @@ DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 1)
    Operand 1: OMP_CRITICAL_NAME: Identifier for critical section.  */
 DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
 
-/* Return from an OpenMP directive.  */
-DEFTREECODE (OMP_RETURN, "omp_return", tcc_statement, 0)
-
-/* OpenMP - An intermediate tree code to mark the location of the
-   loop or sections iteration in the partially lowered code.
-   The arguments are definition and use of the control variable.  */
-DEFTREECODE (OMP_CONTINUE, "omp_continue", tcc_statement, 2)
-
 /* OpenMP - #pragma omp atomic
    Operand 0: The address at which the atomic operation is to be performed.
 	This address should be stabilized with save_expr.
@@ -1081,18 +1042,6 @@ DEFTREECODE (OMP_CONTINUE, "omp_continue", tcc_statement, 2)
 	at the address is used in the expression, it should appear as if
 	build_fold_indirect_ref of the address.  */
 DEFTREECODE (OMP_ATOMIC, "omp_atomic", tcc_statement, 2)
-
-/* Codes used for lowering of OMP_ATOMIC.  Although the form of the OMP_ATOMIC
-   statement is very simple (just in form mem op= expr), various implicit
-   conversions may cause the expression become more complex, so that it does
-   not fit the gimple grammar very well.  To overcome this problem, OMP_ATOMIC
-   is rewritten as a sequence of two codes in gimplification:
-
-   OMP_LOAD (tmp, mem)
-   val = some computations involving tmp;
-   OMP_STORE (val)  */
-DEFTREECODE (OMP_ATOMIC_LOAD, "omp_atomic_load", tcc_statement, 2)
-DEFTREECODE (OMP_ATOMIC_STORE, "omp_atomic_store", tcc_statement, 1)
 
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
@@ -1140,11 +1089,6 @@ DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
 DEFTREECODE (VEC_LSHIFT_EXPR, "vec_lshift_expr", tcc_binary, 2)
 DEFTREECODE (VEC_RSHIFT_EXPR, "vec_rshift_expr", tcc_binary, 2)
 
-/* GIMPLE tree codes.  */
-
-/* Assignment expression.  Operand 0 is the what to set; 1, the new value.  */
-DEFTREECODE (GIMPLE_MODIFY_STMT, "gimple_modify_stmt", tcc_gimple_stmt, 2)
-
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the
    elements of the two vectors will result in N products of size 2*S.

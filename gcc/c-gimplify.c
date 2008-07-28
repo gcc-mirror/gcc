@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varray.h"
 #include "c-tree.h"
 #include "c-common.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "tree-flow.h"
@@ -104,7 +104,6 @@ c_genericize (tree fndecl)
   /* Go ahead and gimplify for now.  */
   gimplify_function_tree (fndecl);
 
-  /* Dump the genericized tree IR.  */
   dump_function (TDI_generic, fndecl);
 
   /* Genericize all nested functions now.  We do things in this order so
@@ -118,14 +117,16 @@ c_genericize (tree fndecl)
 static void
 add_block_to_enclosing (tree block)
 {
+  unsigned i;
   tree enclosing;
+  gimple bind;
+  VEC(gimple, heap) *stack = gimple_bind_expr_stack ();
 
-  for (enclosing = gimple_current_bind_expr ();
-       enclosing; enclosing = TREE_CHAIN (enclosing))
-    if (BIND_EXPR_BLOCK (enclosing))
+  for (i = 0; VEC_iterate (gimple, stack, i, bind); i++)
+    if (gimple_bind_block (bind))
       break;
 
-  enclosing = BIND_EXPR_BLOCK (enclosing);
+  enclosing = gimple_bind_block (bind);
   BLOCK_SUBBLOCKS (enclosing) = chainon (BLOCK_SUBBLOCKS (enclosing), block);
 }
 
@@ -178,7 +179,7 @@ c_build_bind_expr (tree block, tree body)
    decl instead.  */
 
 static enum gimplify_status
-gimplify_compound_literal_expr (tree *expr_p, tree *pre_p)
+gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p)
 {
   tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (*expr_p);
   tree decl = DECL_EXPR_DECL (decl_s);
@@ -249,10 +250,12 @@ optimize_compound_literals_in_ctor (tree orig_ctor)
   return ctor;
 }
 
-/* Do C-specific gimplification.  Args are as for gimplify_expr.  */
+/* Do C-specific gimplification on *EXPR_P.  PRE_P and POST_P are as in
+   gimplify_expr.  */
 
 int
-c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
+c_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
+		 gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   enum tree_code code = TREE_CODE (*expr_p);
 

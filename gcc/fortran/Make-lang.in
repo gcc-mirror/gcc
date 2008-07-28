@@ -47,6 +47,7 @@ GFORTRAN_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gfortran|sed
 
 # Use strict warnings for this front end.
 fortran-warn = $(STRICT_WARN)
+fortran-warn += -Wno-format -Wno-missing-format-attribute -Wno-uninitialized # FIXME tuples: Do not merge.
 
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
@@ -311,9 +312,9 @@ fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   $(BUILTINS_DEF) fortran/types.def
 fortran/scanner.o: toplev.h fortran/cpp.h
 fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
-fortran/trans.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans.o: $(GFORTRAN_TRANS_DEPS) tree-iterator.h
 fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
-  $(CGRAPH_H) $(TARGET_H) $(FUNCTION_H) $(FLAGS_H) $(RTL_H) $(TREE_GIMPLE_H) \
+  $(CGRAPH_H) $(TARGET_H) $(FUNCTION_H) $(FLAGS_H) $(RTL_H) $(GIMPLE_H) \
   $(TREE_DUMP_H)
 fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
   $(REAL_H) toplev.h $(TARGET_H) $(FLAGS_H) dwarf2out.h

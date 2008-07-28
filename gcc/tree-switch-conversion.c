@@ -147,10 +147,10 @@ struct switch_conv_info
 
   /* The first load statement that loads a temporary from a new static array.
    */
-  tree arr_ref_first;
+  gimple arr_ref_first;
 
   /* The last load statement that loads a temporary from a new static array.  */
-  tree arr_ref_last;
+  gimple arr_ref_last;
 
   /* String reason why the case wasn't a good candidate that is written to the
      dump file, if there is one.  */
@@ -166,22 +166,21 @@ static struct switch_conv_info info;
    satisfies the size of the new array.  */
 
 static bool
-check_range (tree swtch)
+check_range (gimple swtch)
 {
   tree min_case, max_case;
-  tree cases = SWITCH_LABELS (swtch);
-  unsigned int branch_num = TREE_VEC_LENGTH (cases);
+  unsigned int branch_num = gimple_switch_num_labels (swtch);
   tree range_max;
 
   /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
      is a default label which is the last in the vector.  */
 
-  min_case = TREE_VEC_ELT (cases, 0);
+  min_case = gimple_switch_label (swtch, 1);
   info.range_min = CASE_LOW (min_case);
 
   gcc_assert (branch_num > 1);
-  gcc_assert (CASE_LOW (TREE_VEC_ELT (cases, branch_num - 1)) == NULL_TREE);
-  max_case = TREE_VEC_ELT (cases, branch_num - 2);
+  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
+  max_case = gimple_switch_label (swtch, branch_num - 1);
   if (CASE_HIGH (max_case) != NULL_TREE)
     range_max = CASE_HIGH (max_case);
   else
@@ -283,25 +282,26 @@ check_process_case (tree cs)
 static bool
 check_final_bb (void)
 {
-  tree phi;
+  gimple_stmt_iterator gsi;
 
   info.phi_count = 0;
-  for (phi = phi_nodes (info.final_bb); phi; phi = PHI_CHAIN (phi))
+  for (gsi = gsi_start_phis (info.final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      int i;
+      gimple phi = gsi_stmt (gsi);
+      unsigned int i;
 
       info.phi_count++;
 
-      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
-	  basic_block bb = PHI_ARG_EDGE (phi, i)->src;
+	  basic_block bb = gimple_phi_arg_edge (phi, i)->src;
 
 	  if ((bb == info.switch_bb
 	       || (single_pred_p (bb) && single_pred (bb) == info.switch_bb))
-	      && !is_gimple_min_invariant (PHI_ARG_ELT (phi, i).def))
+	      && !is_gimple_min_invariant (gimple_phi_arg_def (phi, i)))
 	    {
 	      info.reason = "   Non-invariant value from a case\n";
-	      return false; /* non invariant argument */
+	      return false; /* Non-invariant argument.  */
 	    }
 	}
     }
@@ -326,10 +326,8 @@ create_temp_arrays (void)
 						 sizeof (tree));
 
   for (i = 0; i < info.phi_count; i++)
-    {
-      info.constructors[i] = VEC_alloc (constructor_elt, gc,
-				   tree_low_cst (info.range_size, 1) + 1);
-    }
+    info.constructors[i]
+      = VEC_alloc (constructor_elt, gc, tree_low_cst (info.range_size, 1) + 1);
 }
 
 /* Free the arrays created by create_temp_arrays().  The vectors that are
@@ -351,10 +349,10 @@ free_temp_arrays (void)
 static void
 gather_default_values (tree default_case)
 {
-  tree phi;
+  gimple_stmt_iterator gsi;
   basic_block bb = label_to_block (CASE_LABEL (default_case));
   edge e;
-  int i;
+  int i = 0;
 
   gcc_assert (CASE_LOW (default_case) == NULL_TREE);
 
@@ -363,11 +361,12 @@ gather_default_values (tree default_case)
   else
     e = single_succ_edge (bb);
 
-  for (phi = phi_nodes (info.final_bb), i = 0; phi; phi = PHI_CHAIN (phi), i++)
+  for (gsi = gsi_start_phis (info.final_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      gimple phi = gsi_stmt (gsi);
       tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (val);
-      info.default_values[i] = val;
+      info.default_values[i++] = val;
     }
 }
 
@@ -376,18 +375,18 @@ gather_default_values (tree default_case)
    order of phi nodes.  SWTCH is the switch statement being converted.  */
 
 static void
-build_constructors (tree swtch)
+build_constructors (gimple swtch)
 {
-  int i;
-  tree cases = SWITCH_LABELS (swtch);
+  unsigned i, branch_num = gimple_switch_num_labels (swtch);
   tree pos = info.range_min;
 
-  for (i = 0; i < TREE_VEC_LENGTH (cases) - 1; i++)
+  for (i = 1; i < branch_num; i++)
     {
-      tree cs = TREE_VEC_ELT (cases, i);
+      tree cs = gimple_switch_label (swtch, i);
       basic_block bb = label_to_block (CASE_LABEL (cs));
       edge e;
-      tree phi, high;
+      tree high;
+      gimple_stmt_iterator gsi;
       int j;
 
       if (bb == info.final_bb)
@@ -405,7 +404,8 @@ build_constructors (tree swtch)
 
 	      elt = VEC_quick_push (constructor_elt,
 				    info.constructors[k], NULL);
-	      elt->index = int_const_binop (MINUS_EXPR, pos, info.range_min, 0);
+	      elt->index = int_const_binop (MINUS_EXPR, pos,
+					    info.range_min, 0);
 	      elt->value = info.default_values[k];
 	    }
 
@@ -418,8 +418,10 @@ build_constructors (tree swtch)
 	high = CASE_HIGH (cs);
       else
 	high = CASE_LOW (cs);
-      for (phi = phi_nodes (info.final_bb); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (info.final_bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
+	  gimple phi = gsi_stmt (gsi);
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  pos = CASE_LOW (cs);
 
@@ -449,15 +451,12 @@ build_constructors (tree swtch)
    is a temporary variable holding the index for loads from the new array.  */
 
 static void
-build_one_array (tree swtch, int num, tree arr_index_type, tree phi, tree tidx)
+build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
+		 tree tidx)
 {
-  tree array_type;
-  tree ctor;
-  tree decl;
-  tree value_type;
-  tree name;
-  tree fetch, load;
-  block_stmt_iterator bsi;
+  tree array_type, ctor, decl, value_type, name, fetch;
+  gimple load;
+  gimple_stmt_iterator gsi;
 
   gcc_assert (info.default_values[num]);
   value_type = TREE_TYPE (info.default_values[num]);
@@ -478,21 +477,19 @@ build_one_array (tree swtch, int num, tree arr_index_type, tree phi, tree tidx)
   varpool_finalize_decl (decl);
   mark_sym_for_renaming (decl);
 
-  name = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)), NULL_TREE);
+  name = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)), NULL);
   info.target_inbound_names[num] = name;
 
   fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,
 		  NULL_TREE);
-  load = build_gimple_modify_stmt (name, fetch);
+  load = gimple_build_assign (name, fetch);
   SSA_NAME_DEF_STMT (name) = load;
 
-  bsi = bsi_for_stmt (swtch);
-  bsi_insert_before (&bsi, load, BSI_SAME_STMT);
+  gsi = gsi_for_stmt (swtch);
+  gsi_insert_before (&gsi, load, GSI_SAME_STMT);
   mark_symbols_for_renaming (load);
 
   info.arr_ref_last = load;
-
-  return;
 }
 
 /* Builds and initializes static arrays initialized with values gathered from
@@ -500,54 +497,53 @@ build_one_array (tree swtch, int num, tree arr_index_type, tree phi, tree tidx)
    them.  */
 
 static void
-build_arrays (tree swtch)
+build_arrays (gimple swtch)
 {
   tree arr_index_type;
   tree tidx, sub;
-  block_stmt_iterator bsi;
-  tree phi = phi_nodes (info.final_bb);
+  gimple stmt;
+  gimple_stmt_iterator gsi;
   int i;
 
-  bsi = bsi_for_stmt (swtch);
+  gsi = gsi_for_stmt (swtch);
 
   arr_index_type = build_index_type (info.range_size);
   tidx = make_rename_temp (arr_index_type, "csti");
   sub = fold_build2 (MINUS_EXPR, TREE_TYPE (info.index_expr), info.index_expr,
 		     fold_convert (TREE_TYPE (info.index_expr),
 				   info.range_min));
-  sub = force_gimple_operand_bsi (&bsi, fold_convert (arr_index_type, sub),
-				  false, NULL, true, BSI_SAME_STMT);
-  sub = build_gimple_modify_stmt (tidx, sub);
+  sub = force_gimple_operand_gsi (&gsi, fold_convert (arr_index_type, sub),
+				  false, NULL, true, GSI_SAME_STMT);
+  stmt = gimple_build_assign (tidx, sub);
 
-  bsi_insert_before (&bsi, sub, BSI_SAME_STMT);
-  mark_symbols_for_renaming (sub);
-  info.arr_ref_first = sub;
+  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+  mark_symbols_for_renaming (stmt);
+  info.arr_ref_first = stmt;
 
-  for (phi = phi_nodes (info.final_bb), i = 0; phi; phi = PHI_CHAIN (phi), i++)
-    build_one_array (swtch, i, arr_index_type, phi, tidx);
-
-  return;
+  for (gsi = gsi_start_phis (info.final_bb), i = 0;
+       !gsi_end_p (gsi); gsi_next (&gsi), i++)
+    build_one_array (swtch, i, arr_index_type, gsi_stmt (gsi), tidx);
 }
 
 /* Generates and appropriately inserts loads of default values at the position
    given by BSI.  Returns the last inserted statement.  */
 
-static tree
-gen_def_assigns (block_stmt_iterator *bsi)
+static gimple
+gen_def_assigns (gimple_stmt_iterator *gsi)
 {
   int i;
-  tree assign = NULL_TREE;
+  gimple assign = NULL;
 
   for (i = 0; i < info.phi_count; i++)
     {
-      tree name = make_ssa_name (SSA_NAME_VAR (info.target_inbound_names[i]),
-				 NULL_TREE);
+      tree name
+	= make_ssa_name (SSA_NAME_VAR (info.target_inbound_names[i]), NULL);
 
       info.target_outbound_names[i] = name;
-      assign = build_gimple_modify_stmt (name, info.default_values[i]);
+      assign = gimple_build_assign (name, info.default_values[i]);
       SSA_NAME_DEF_STMT (name) = assign;
-      bsi_insert_before (bsi, assign, BSI_SAME_STMT);
-      find_new_referenced_vars (&assign);
+      gsi_insert_before (gsi, assign, GSI_SAME_STMT);
+      find_new_referenced_vars (assign);
       mark_symbols_for_renaming (assign);
     }
   return assign;
@@ -583,11 +579,13 @@ prune_bbs (basic_block bbd, basic_block final)
 static void
 fix_phi_nodes (edge e1f, edge e2f, basic_block bbf)
 {
-  tree phi;
+  gimple_stmt_iterator gsi;
   int i;
 
-  for (phi = phi_nodes (bbf), i = 0; phi; phi = PHI_CHAIN (phi), i++)
+  for (gsi = gsi_start_phis (bbf), i = 0;
+       !gsi_end_p (gsi); gsi_next (&gsi), i++)
     {
+      gimple phi = gsi_stmt (gsi);
       add_phi_arg (phi, info.target_inbound_names[i], e1f);
       add_phi_arg (phi, info.target_outbound_names[i], e2f);
     }
@@ -616,28 +614,29 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf)
 */
 
 static void
-gen_inbound_check (tree swtch)
+gen_inbound_check (gimple swtch)
 {
   tree label_decl1 = create_artificial_label ();
   tree label_decl2 = create_artificial_label ();
   tree label_decl3 = create_artificial_label ();
-  tree label1, label2, label3;
+  gimple label1, label2, label3;
 
   tree utype;
   tree tmp_u;
-  tree cast, cast_assign;
-  tree ulb, minus, minus_assign;
+  tree cast;
+  gimple cast_assign, minus_assign;
+  tree ulb, minus;
   tree bound;
 
-  tree if_expr;
+  gimple cond_stmt;
 
-  tree last_assign;
-  block_stmt_iterator bsi;
+  gimple last_assign;
+  gimple_stmt_iterator gsi;
   basic_block bb0, bb1, bb2, bbf, bbd;
   edge e01, e02, e21, e1d, e1f, e2f;
 
   gcc_assert (info.default_values);
-  bb0 = bb_for_stmt (swtch);
+  bb0 = gimple_bb (swtch);
 
   /* Make sure we do not generate arithmetics in a subrange.  */
   if (TREE_TYPE (TREE_TYPE (info.index_expr)))
@@ -646,52 +645,50 @@ gen_inbound_check (tree swtch)
     utype = unsigned_type_for (TREE_TYPE (info.index_expr));
 
   /* (end of) block 0 */
-  bsi = bsi_for_stmt (info.arr_ref_first);
+  gsi = gsi_for_stmt (info.arr_ref_first);
   tmp_u = make_rename_temp (utype, "csui");
 
   cast = fold_convert (utype, info.index_expr);
-  cast_assign = build_gimple_modify_stmt (tmp_u, cast);
-  find_new_referenced_vars (&cast_assign);
-  bsi_insert_before (&bsi, cast_assign, BSI_SAME_STMT);
+  cast_assign = gimple_build_assign (tmp_u, cast);
+  find_new_referenced_vars (cast_assign);
+  gsi_insert_before (&gsi, cast_assign, GSI_SAME_STMT);
   mark_symbols_for_renaming (cast_assign);
 
   ulb = fold_convert (utype, info.range_min);
   minus = fold_build2 (MINUS_EXPR, utype, tmp_u, ulb);
-  minus = force_gimple_operand_bsi (&bsi, minus, false, NULL, true,
-				    BSI_SAME_STMT);
-  minus_assign = build_gimple_modify_stmt (tmp_u, minus);
-  find_new_referenced_vars (&minus_assign);
-  bsi_insert_before (&bsi, minus_assign, BSI_SAME_STMT);
+  minus = force_gimple_operand_gsi (&gsi, minus, false, NULL, true,
+				    GSI_SAME_STMT);
+  minus_assign = gimple_build_assign (tmp_u, minus);
+  find_new_referenced_vars (minus_assign);
+  gsi_insert_before (&gsi, minus_assign, GSI_SAME_STMT);
   mark_symbols_for_renaming (minus_assign);
 
   bound = fold_convert (utype, info.range_size);
 
-  if_expr = build3 (COND_EXPR, void_type_node,
-		    build2 (LE_EXPR, boolean_type_node, tmp_u, bound),
-		    NULL_TREE, NULL_TREE);
+  cond_stmt = gimple_build_cond (LE_EXPR, tmp_u, bound, NULL_TREE, NULL_TREE);
 
-  find_new_referenced_vars (&if_expr);
-  bsi_insert_before (&bsi, if_expr, BSI_SAME_STMT);
-  mark_symbols_for_renaming (if_expr);
+  find_new_referenced_vars (cond_stmt);
+  gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
+  mark_symbols_for_renaming (cond_stmt);
 
   /* block 2 */
-  bsi = bsi_for_stmt (info.arr_ref_first);
-  label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
-  last_assign = gen_def_assigns (&bsi);
+  gsi = gsi_for_stmt (info.arr_ref_first);
+  label2 = gimple_build_label (label_decl2);
+  gsi_insert_before (&gsi, label2, GSI_SAME_STMT);
+  last_assign = gen_def_assigns (&gsi);
 
   /* block 1 */
-  bsi = bsi_for_stmt (info.arr_ref_first);
-  label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
+  gsi = gsi_for_stmt (info.arr_ref_first);
+  label1 = gimple_build_label (label_decl1);
+  gsi_insert_before (&gsi, label1, GSI_SAME_STMT);
 
   /* block F */
-  bsi = bsi_start (info.final_bb);
-  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
-  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
+  gsi = gsi_start_bb (info.final_bb);
+  label3 = gimple_build_label (label_decl3);
+  gsi_insert_before (&gsi, label3, GSI_SAME_STMT);
 
   /* cfg fix */
-  e02 = split_block (bb0, if_expr);
+  e02 = split_block (bb0, cond_stmt);
   bb2 = e02->dest;
 
   e21 = split_block (bb2, last_assign);
@@ -728,8 +725,8 @@ gen_inbound_check (tree swtch)
   bb2->frequency = EDGE_FREQUENCY (e02);
   bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
 
-  prune_bbs (bbd, info.final_bb); /* to keep calc_dfs_tree() in dominance.c
-				     happy */
+  prune_bbs (bbd, info.final_bb); /* To keep calc_dfs_tree() in dominance.c
+				     happy.  */
 
   fix_phi_nodes (e1f, e2f, bbf);
 
@@ -742,31 +739,24 @@ gen_inbound_check (tree swtch)
    one after another until one fails or the conversion is completed.  */
 
 static bool
-process_switch (tree swtch)
+process_switch (gimple swtch)
 {
-  int i;
-  tree cases;
+  unsigned int i, branch_num = gimple_switch_num_labels (swtch);
   tree index_type;
 
   /* Operand 2 is either NULL_TREE or a vector of cases (stmt.c).  */
-  if (TREE_OPERAND (swtch, 2) == NULL_TREE)
+  if (branch_num < 2)
     {
-      info.reason = "swtch has no labels\n";
+      info.reason = "switch has no labels\n";
       return false;
     }
 
-  /* Comment from stmt.c:
-     The switch body is lowered in gimplify.c, we should never have switches
-     with a non-NULL SWITCH_BODY here.  */
-  gcc_assert (!SWITCH_BODY (swtch));
-
-  cases = SWITCH_LABELS (swtch);
   info.final_bb = NULL;
-  info.switch_bb = bb_for_stmt (swtch);
-  info.index_expr = SWITCH_COND (swtch);
+  info.switch_bb = gimple_bb (swtch);
+  info.index_expr = gimple_switch_index (swtch);
   index_type = TREE_TYPE (info.index_expr);
-  info.arr_ref_first = NULL_TREE;
-  info.arr_ref_last = NULL_TREE;
+  info.arr_ref_first = NULL;
+  info.arr_ref_last = NULL;
   info.default_prob = 0;
   info.default_count = 0;
   info.other_count = 0;
@@ -785,16 +775,13 @@ process_switch (tree swtch)
 
   /* For all the cases, see whether they are empty, the assignments they
      represent constant and so on...  */
-  for (i = 0; i < TREE_VEC_LENGTH (cases); i++)
-    {
-      tree part_case = TREE_VEC_ELT (cases, i);
-      if (!check_process_case (part_case))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Processing of case %i failed\n", i);
-	  return false;
-	}
-    }
+  for (i = 0; i < branch_num; i++)
+    if (!check_process_case (gimple_switch_label (swtch, i)))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Processing of case %i failed\n", i);
+	return false;
+      }
 
   if (!check_final_bb ())
     return false;
@@ -803,7 +790,7 @@ process_switch (tree swtch)
      transformation.  */
 
   create_temp_arrays ();
-  gather_default_values (TREE_VEC_ELT (cases, TREE_VEC_LENGTH (cases) - 1));
+  gather_default_values (gimple_switch_label (swtch, 0));
   build_constructors (swtch);
 
   build_arrays (swtch); /* Build the static arrays and assignments.   */
@@ -824,17 +811,17 @@ do_switchconv (void)
 
   FOR_EACH_BB (bb)
   {
-    tree stmt = last_stmt (bb);
-    if (stmt && TREE_CODE (stmt) == SWITCH_EXPR)
+    gimple stmt = last_stmt (bb);
+    if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
       {
-	expanded_location loc = expand_location (EXPR_LOCATION (stmt));
-
 	if (dump_file)
 	  {
+	    expanded_location loc = expand_location (gimple_location (stmt));
+
 	    fprintf (dump_file, "beginning to process the following "
 		     "SWITCH statement (%s:%d) : ------- \n",
 		     loc.file, loc.line);
-	    print_generic_stmt (dump_file, stmt, 2);
+	    print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    fprintf (dump_file, "\n");
 	  }
 

@@ -101,14 +101,13 @@ recognize_if_then_else (basic_block cond_bb,
 static bool
 bb_no_side_effects_p (basic_block bb)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
 
-  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      tree stmt = bsi_stmt (bsi);
-      stmt_ann_t ann = stmt_ann (stmt);
+      gimple stmt = gsi_stmt (gsi);
 
-      if (ann->has_volatile_ops
+      if (gimple_has_volatile_ops (stmt)
 	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
 	return false;
     }
@@ -125,12 +124,16 @@ same_phi_args_p (basic_block bb1, basic_block bb2, basic_block dest)
 {
   edge e1 = find_edge (bb1, dest);
   edge e2 = find_edge (bb2, dest);
-  tree phi;
+  gimple_stmt_iterator gsi;
+  gimple phi;
 
-  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
-    if (!operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, e1),
-			  PHI_ARG_DEF_FROM_EDGE (phi, e2), 0))
-      return false;
+  for (gsi = gsi_start_phis (dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      phi = gsi_stmt (gsi);
+      if (!operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, e1),
+			    PHI_ARG_DEF_FROM_EDGE (phi, e2), 0))
+        return false;
+    }
 
   return true;
 }
@@ -146,71 +149,86 @@ get_name_for_bit_test (tree candidate)
   if (TREE_CODE (candidate) == SSA_NAME
       && has_single_use (candidate))
     {
-      tree def_stmt = SSA_NAME_DEF_STMT (candidate);
-      if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
-	  && CONVERT_EXPR_P (GIMPLE_STMT_OPERAND (def_stmt, 1)))
+      gimple def_stmt = SSA_NAME_DEF_STMT (candidate);
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_cast_p (def_stmt))
 	{
-	  tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
-	  if (TYPE_PRECISION (TREE_TYPE (rhs))
-	      <= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (rhs, 0))))
-	    return TREE_OPERAND (rhs, 0);
+	  if (TYPE_PRECISION (TREE_TYPE (candidate))
+	      <= TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt))))
+	    return gimple_assign_rhs1 (def_stmt);
 	}
     }
 
   return candidate;
 }
 
-/* Recognize a single bit test pattern in COND_EXPR and its defining
+/* Helpers for recognize_single_bit_test defined mainly for source code
+   formating.  */
+
+static int
+operand_precision (tree t)
+{
+  return TYPE_PRECISION (TREE_TYPE (t));
+}
+
+static bool
+integral_operand_p (tree t)
+{
+  return INTEGRAL_TYPE_P (TREE_TYPE (t));
+}
+
+/* Recognize a single bit test pattern in GIMPLE_COND and its defining
    statements.  Store the name being tested in *NAME and the bit
-   in *BIT.  The COND_EXPR computes *NAME & (1 << *BIT).
+   in *BIT.  The GIMPLE_COND computes *NAME & (1 << *BIT).
    Returns true if the pattern matched, false otherwise.  */
 
 static bool
-recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
+recognize_single_bit_test (gimple cond, tree *name, tree *bit)
 {
-  tree t;
+  gimple stmt;
 
   /* Get at the definition of the result of the bit test.  */
-  t = TREE_OPERAND (cond_expr, 0);
-  if (TREE_CODE (t) == NE_EXPR
-      && integer_zerop (TREE_OPERAND (t, 1)))
-    t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) != SSA_NAME)
+  if (gimple_cond_code (cond) != NE_EXPR
+      || TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
+      || !integer_zerop (gimple_cond_rhs (cond)))
     return false;
-  t = SSA_NAME_DEF_STMT (t);
-  if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
+  stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
+  if (!is_gimple_assign (stmt))
     return false;
-  t = GIMPLE_STMT_OPERAND (t, 1);
 
   /* Look at which bit is tested.  One form to recognize is
      D.1985_5 = state_3(D) >> control1_4(D);
      D.1986_6 = (int) D.1985_5;
      D.1987_7 = op0 & 1;
      if (D.1987_7 != 0)  */
-  if (TREE_CODE (t) == BIT_AND_EXPR
-      && integer_onep (TREE_OPERAND (t, 1))
-      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
+  if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
+      && integer_onep (gimple_assign_rhs2 (stmt))
+      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     {
-      tree orig_name = TREE_OPERAND (t, 0);
+      tree orig_name = gimple_assign_rhs1 (stmt);
 
       /* Look through copies and conversions to eventually
 	 find the stmt that computes the shift.  */
-      t = orig_name;
-      do {
-	t = SSA_NAME_DEF_STMT (t);
-	if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
-	  break;
-	t = GIMPLE_STMT_OPERAND (t, 1);
-	if (CONVERT_EXPR_P (t))
-	  t = TREE_OPERAND (t, 0);
-      } while (TREE_CODE (t) == SSA_NAME);
+      stmt = SSA_NAME_DEF_STMT (orig_name);
+
+      while (is_gimple_assign (stmt)
+	     && (gimple_assign_copy_p (stmt)
+		 || (gimple_assign_cast_p (stmt)
+		     && integral_operand_p (gimple_assign_lhs (stmt))
+		     && integral_operand_p (gimple_assign_rhs1 (stmt))
+		     && (operand_precision (gimple_assign_lhs (stmt))
+			 <= operand_precision (gimple_assign_rhs1 (stmt))))))
+	{
+	  stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	}
 
       /* If we found such, decompose it.  */
-      if (TREE_CODE (t) == RSHIFT_EXPR)
+      if (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == RSHIFT_EXPR)
 	{
 	  /* op0 & (1 << op1) */
-	  *bit = TREE_OPERAND (t, 1);
-	  *name = TREE_OPERAND (t, 0);
+	  *bit = gimple_assign_rhs2 (stmt);
+	  *name = gimple_assign_rhs1 (stmt);
 	}
       else
 	{
@@ -225,13 +243,13 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
   /* Another form is
      D.1987_7 = op0 & (1 << CST)
      if (D.1987_7 != 0)  */
-  if (TREE_CODE (t) == BIT_AND_EXPR
-      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
-      && integer_pow2p (TREE_OPERAND (t, 1)))
+  if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
+      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+      && integer_pow2p (gimple_assign_rhs2 (stmt)))
     {
-      *name = TREE_OPERAND (t, 0);
+      *name = gimple_assign_rhs1 (stmt);
       *bit = build_int_cst (integer_type_node,
-			    tree_log2 (TREE_OPERAND (t, 1)));
+			    tree_log2 (gimple_assign_rhs2 (stmt)));
       return true;
     }
 
@@ -239,31 +257,31 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
      D.1986_6 = 1 << control1_4(D)
      D.1987_7 = op0 & D.1986_6
      if (D.1987_7 != 0)  */
-  if (TREE_CODE (t) == BIT_AND_EXPR
-      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
-      && TREE_CODE (TREE_OPERAND (t, 1)) == SSA_NAME)
+  if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
+      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+      && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME)
     {
-      tree tmp;
+      gimple tmp;
 
       /* Both arguments of the BIT_AND_EXPR can be the single-bit
 	 specifying expression.  */
-      tmp = SSA_NAME_DEF_STMT (TREE_OPERAND (t, 0));
-      if (TREE_CODE (tmp) == GIMPLE_MODIFY_STMT
-	  && TREE_CODE (GIMPLE_STMT_OPERAND (tmp, 1)) == LSHIFT_EXPR
-	  && integer_onep (TREE_OPERAND (GIMPLE_STMT_OPERAND (tmp, 1), 0)))
+      tmp = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+      if (is_gimple_assign (tmp)
+	  && gimple_assign_rhs_code (tmp) == LSHIFT_EXPR
+	  && integer_onep (gimple_assign_rhs1 (tmp)))
 	{
-	  *name = TREE_OPERAND (t, 1);
-	  *bit = TREE_OPERAND (GIMPLE_STMT_OPERAND (tmp, 1), 1);
+	  *name = gimple_assign_rhs2 (stmt);
+	  *bit = gimple_assign_rhs2 (tmp);
 	  return true;
 	}
 
-      tmp = SSA_NAME_DEF_STMT (TREE_OPERAND (t, 1));
-      if (TREE_CODE (tmp) == GIMPLE_MODIFY_STMT
-	  && TREE_CODE (GIMPLE_STMT_OPERAND (tmp, 1)) == LSHIFT_EXPR
-	  && integer_onep (TREE_OPERAND (GIMPLE_STMT_OPERAND (tmp, 1), 0)))
+      tmp = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
+      if (is_gimple_assign (tmp)
+	  && gimple_assign_rhs_code (tmp) == LSHIFT_EXPR
+	  && integer_onep (gimple_assign_rhs1 (tmp)))
 	{
-	  *name = TREE_OPERAND (t, 0);
-	  *bit = TREE_OPERAND (GIMPLE_STMT_OPERAND (tmp, 1), 1);
+	  *name = gimple_assign_rhs1 (stmt);
+	  *bit = gimple_assign_rhs2 (tmp);
 	  return true;
 	}
     }
@@ -271,33 +289,28 @@ recognize_single_bit_test (tree cond_expr, tree *name, tree *bit)
   return false;
 }
 
-/* Recognize a bit test pattern in COND_EXPR and its defining
+/* Recognize a bit test pattern in a GIMPLE_COND and its defining
    statements.  Store the name being tested in *NAME and the bits
    in *BITS.  The COND_EXPR computes *NAME & *BITS.
    Returns true if the pattern matched, false otherwise.  */
 
 static bool
-recognize_bits_test (tree cond_expr, tree *name, tree *bits)
+recognize_bits_test (gimple cond, tree *name, tree *bits)
 {
-  tree t;
+  gimple stmt;
 
   /* Get at the definition of the result of the bit test.  */
-  t = TREE_OPERAND (cond_expr, 0);
-  if (TREE_CODE (t) == NE_EXPR
-      && integer_zerop (TREE_OPERAND (t, 1)))
-    t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) != SSA_NAME)
+  if (gimple_cond_code (cond) != NE_EXPR
+      || TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
+      || !integer_zerop (gimple_cond_rhs (cond)))
     return false;
-  t = SSA_NAME_DEF_STMT (t);
-  if (TREE_CODE (t) != GIMPLE_MODIFY_STMT)
-    return false;
-  t = GIMPLE_STMT_OPERAND (t, 1);
-
-  if (TREE_CODE (t) != BIT_AND_EXPR)
+  stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
+  if (!is_gimple_assign (stmt)
+      || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR)
     return false;
 
-  *name = get_name_for_bit_test (TREE_OPERAND (t, 0));
-  *bits = TREE_OPERAND (t, 1);
+  *name = get_name_for_bit_test (gimple_assign_rhs1 (stmt));
+  *bits = gimple_assign_rhs2 (stmt);
 
   return true;
 }
@@ -309,18 +322,18 @@ recognize_bits_test (tree cond_expr, tree *name, tree *bits)
 static bool
 ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 {
-  block_stmt_iterator bsi;
-  tree inner_cond, outer_cond;
+  gimple_stmt_iterator gsi;
+  gimple inner_cond, outer_cond;
   tree name1, name2, bit1, bit2;
 
   inner_cond = last_stmt (inner_cond_bb);
   if (!inner_cond
-      || TREE_CODE (inner_cond) != COND_EXPR)
+      || gimple_code (inner_cond) != GIMPLE_COND)
     return false;
 
   outer_cond = last_stmt (outer_cond_bb);
   if (!outer_cond
-      || TREE_CODE (outer_cond) != COND_EXPR)
+      || gimple_code (outer_cond) != GIMPLE_COND)
     return false;
 
   /* See if we test a single bit of the same name in both tests.  In
@@ -334,23 +347,23 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       tree t, t2;
 
       /* Do it.  */
-      bsi = bsi_for_stmt (inner_cond);
+      gsi = gsi_for_stmt (inner_cond);
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
 		       build_int_cst (TREE_TYPE (name1), 1), bit1);
       t2 = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
 		        build_int_cst (TREE_TYPE (name1), 1), bit2);
       t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), t, t2);
-      t = force_gimple_operand_bsi (&bsi, t, true, NULL_TREE,
-				    true, BSI_SAME_STMT);
+      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+				    true, GSI_SAME_STMT);
       t2 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (name1), name1, t);
-      t2 = force_gimple_operand_bsi (&bsi, t2, true, NULL_TREE,
-				     true, BSI_SAME_STMT);
-      COND_EXPR_COND (inner_cond) = fold_build2 (EQ_EXPR, boolean_type_node,
-						 t2, t);
+      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      t = fold_build2 (EQ_EXPR, boolean_type_node, t2, t);
+      gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
       /* Leave CFG optimization to cfg_cleanup.  */
-      COND_EXPR_COND (outer_cond) = boolean_true_node;
+      gimple_cond_set_condition_from_tree (outer_cond, boolean_true_node);
       update_stmt (outer_cond);
 
       if (dump_file)
@@ -378,17 +391,17 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 static bool
 ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 {
-  tree inner_cond, outer_cond;
+  gimple inner_cond, outer_cond;
   tree name1, name2, bits1, bits2;
 
   inner_cond = last_stmt (inner_cond_bb);
   if (!inner_cond
-      || TREE_CODE (inner_cond) != COND_EXPR)
+      || gimple_code (inner_cond) != GIMPLE_COND)
     return false;
 
   outer_cond = last_stmt (outer_cond_bb);
   if (!outer_cond
-      || TREE_CODE (outer_cond) != COND_EXPR)
+      || gimple_code (outer_cond) != GIMPLE_COND)
     return false;
 
   /* See if we have two bit tests of the same name in both tests.
@@ -397,7 +410,7 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
   if (recognize_bits_test (inner_cond, &name1, &bits1)
       && recognize_bits_test (outer_cond, &name2, &bits2))
     {
-      block_stmt_iterator bsi;
+      gimple_stmt_iterator gsi;
       tree t;
 
       /* Find the common name which is bit-tested.  */
@@ -428,19 +441,20 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 	return false;
 
       /* Do it.  */
-      bsi = bsi_for_stmt (inner_cond);
+      gsi = gsi_for_stmt (inner_cond);
       t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), bits1, bits2);
-      t = force_gimple_operand_bsi (&bsi, t, true, NULL_TREE,
-				    true, BSI_SAME_STMT);
+      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+				    true, GSI_SAME_STMT);
       t = fold_build2 (BIT_AND_EXPR, TREE_TYPE (name1), name1, t);
-      t = force_gimple_operand_bsi (&bsi, t, true, NULL_TREE,
-				    true, BSI_SAME_STMT);
-      COND_EXPR_COND (inner_cond) = fold_build2 (NE_EXPR, boolean_type_node, t,
-						 build_int_cst (TREE_TYPE (t), 0));
+      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
+				    true, GSI_SAME_STMT);
+      t = fold_build2 (NE_EXPR, boolean_type_node, t,
+		       build_int_cst (TREE_TYPE (t), 0));
+      gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
       /* Leave CFG optimization to cfg_cleanup.  */
-      COND_EXPR_COND (outer_cond) = boolean_false_node;
+      gimple_cond_set_condition_from_tree (outer_cond, boolean_false_node);
       update_stmt (outer_cond);
 
       if (dump_file)
@@ -460,17 +474,15 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
   /* See if we have two comparisons that we can merge into one.
      This happens for C++ operator overloading where for example
      GE_EXPR is implemented as GT_EXPR || EQ_EXPR.  */
-  else if (COMPARISON_CLASS_P (COND_EXPR_COND (inner_cond))
-	   && COMPARISON_CLASS_P (COND_EXPR_COND (outer_cond))
-	   && operand_equal_p (TREE_OPERAND (COND_EXPR_COND (inner_cond), 0),
-			       TREE_OPERAND (COND_EXPR_COND (outer_cond), 0), 0)
-	   && operand_equal_p (TREE_OPERAND (COND_EXPR_COND (inner_cond), 1),
-			       TREE_OPERAND (COND_EXPR_COND (outer_cond), 1), 0))
+  else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
+	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison
+	   && operand_equal_p (gimple_cond_lhs (inner_cond),
+			       gimple_cond_lhs (outer_cond), 0)
+	   && operand_equal_p (gimple_cond_rhs (inner_cond),
+			       gimple_cond_rhs (outer_cond), 0))
     {
-      tree ccond1 = COND_EXPR_COND (inner_cond);
-      tree ccond2 = COND_EXPR_COND (outer_cond);
-      enum tree_code code1 = TREE_CODE (ccond1);
-      enum tree_code code2 = TREE_CODE (ccond2);
+      enum tree_code code1 = gimple_cond_code (inner_cond);
+      enum tree_code code2 = gimple_cond_code (outer_cond);
       enum tree_code code;
       tree t;
 
@@ -487,7 +499,7 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 	code = LE_EXPR;
       else if (CHK (GT, GE))
 	code = GE_EXPR;
-      else if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (ccond1, 0)))
+      else if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (inner_cond)))
 	       || flag_unsafe_math_optimizations)
 	{
 	  if (CHK (LT, GT))
@@ -505,16 +517,16 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 #undef CHK
 
       /* Do it.  */
-      t = fold_build2 (code, boolean_type_node,
-		       TREE_OPERAND (ccond2, 0), TREE_OPERAND (ccond2, 1));
+      t = fold_build2 (code, boolean_type_node, gimple_cond_lhs (outer_cond),
+		       gimple_cond_rhs (outer_cond));
       t = canonicalize_cond_expr_cond (t);
       if (!t)
 	return false;
-      COND_EXPR_COND (inner_cond) = t;
+      gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
       /* Leave CFG optimization to cfg_cleanup.  */
-      COND_EXPR_COND (outer_cond) = boolean_false_node;
+      gimple_cond_set_condition_from_tree (outer_cond, boolean_false_node);
       update_stmt (outer_cond);
 
       if (dump_file)
@@ -611,10 +623,10 @@ tree_ssa_ifcombine (void)
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; ++i)
     {
       basic_block bb = bbs[i];
-      tree stmt = last_stmt (bb);
+      gimple stmt = last_stmt (bb);
 
       if (stmt
-	  && TREE_CODE (stmt) == COND_EXPR)
+	  && gimple_code (stmt) == GIMPLE_COND)
 	cfg_changed |= tree_ssa_ifcombine_bb (bb);
     }
 

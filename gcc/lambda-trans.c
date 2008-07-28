@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tree.h"
 #include "target.h"
+#include "tree-flow.h"
 #include "lambda.h"
 
 /* Allocate a new transformation matrix.  */

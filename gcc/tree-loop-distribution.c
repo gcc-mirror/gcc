@@ -84,22 +84,25 @@ static void
 update_phis_for_loop_copy (struct loop *orig_loop, struct loop *new_loop)
 {
   tree new_ssa_name;
-  tree phi_new, phi_orig;
+  gimple_stmt_iterator si_new, si_orig;
   edge orig_loop_latch = loop_latch_edge (orig_loop);
   edge orig_entry_e = loop_preheader_edge (orig_loop);
   edge new_loop_entry_e = loop_preheader_edge (new_loop);
 
   /* Scan the phis in the headers of the old and new loops
      (they are organized in exactly the same order).  */
-
-  for (phi_new = phi_nodes (new_loop->header),
-       phi_orig = phi_nodes (orig_loop->header);
-       phi_new && phi_orig;
-       phi_new = PHI_CHAIN (phi_new), phi_orig = PHI_CHAIN (phi_orig))
+  for (si_new = gsi_start_phis (new_loop->header),
+       si_orig = gsi_start_phis (orig_loop->header);
+       !gsi_end_p (si_new) && !gsi_end_p (si_orig);
+       gsi_next (&si_new), gsi_next (&si_orig))
     {
+      tree def;
+      gimple phi_new = gsi_stmt (si_new);
+      gimple phi_orig = gsi_stmt (si_orig);
+
       /* Add the first phi argument for the phi in NEW_LOOP (the one
 	 associated with the entry of NEW_LOOP)  */
-      tree def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_entry_e);
+      def = PHI_ARG_DEF_FROM_EDGE (phi_orig, orig_entry_e);
       add_phi_arg (phi_new, def, new_loop_entry_e);
 
       /* Add the second phi argument for the phi in NEW_LOOP (the one
@@ -171,7 +174,7 @@ static bool
 generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 {
   unsigned i, x;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
   basic_block *bbs;
 
   if (copy_p)
@@ -192,27 +195,19 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
   for (x = 0, i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
-      tree phi, prev = NULL_TREE, next;
 
-      for (phi = phi_nodes (bb); phi;)
+      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
 	if (!bitmap_bit_p (partition, x++))
-	  {
-	    next = PHI_CHAIN (phi);
-	    remove_phi_node (phi, prev, true);
-	    phi = next;
-	  }
+	  remove_phi_node (&bsi, true);
 	else
-	  {
-	    prev = phi;
-	    phi = PHI_CHAIN (phi);
-	  }
+	  gsi_next (&bsi);
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi);)
-	if (TREE_CODE (bsi_stmt (bsi)) != LABEL_EXPR
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi);)
+	if (gimple_code (gsi_stmt (bsi)) != GIMPLE_LABEL
 	    && !bitmap_bit_p (partition, x++))
-	  bsi_remove (&bsi, false);
+	  gsi_remove (&bsi, false);
 	else
-	  bsi_next (&bsi);
+	  gsi_next (&bsi);
 
 	mark_virtual_ops_in_bb (bb);
     }
@@ -224,22 +219,22 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 /* Generate a call to memset.  Return true when the operation succeeded.  */
 
 static bool
-generate_memset_zero (tree stmt, tree op0, tree nb_iter,
-		      block_stmt_iterator bsi)
+generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
+		      gimple_stmt_iterator bsi)
 {
-  tree s, t, stmts, nb_bytes, addr_base;
+  tree t, nb_bytes, addr_base;
   bool res = false;
-  tree stmt_list = NULL_TREE;
-  tree args [3];
-  tree fn_call, mem, fndecl, fntype, fn;
-  tree_stmt_iterator i;
+  gimple_seq stmts = NULL, stmt_list = NULL;
+  gimple fn_call;
+  tree mem, fndecl, fntype, fn;
+  gimple_stmt_iterator i;
   ssa_op_iter iter;
   struct data_reference *dr = XCNEW (struct data_reference);
 
   nb_bytes = fold_build2 (MULT_EXPR, TREE_TYPE (nb_iter),
 			  nb_iter, TYPE_SIZE_UNIT (TREE_TYPE (op0)));
   nb_bytes = force_gimple_operand (nb_bytes, &stmts, true, NULL);
-  append_to_statement_list_force (stmts, &stmt_list);
+  gimple_seq_add_seq (&stmt_list, stmts);
 
   DR_STMT (dr) = stmt;
   DR_REF (dr) = op0;
@@ -261,7 +256,7 @@ generate_memset_zero (tree stmt, tree op0, tree nb_iter,
       addr_base = size_binop (PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
       addr_base = fold_build2 (MINUS_EXPR, sizetype, addr_base, nb_bytes);
       addr_base = force_gimple_operand (addr_base, &stmts, true, NULL);
-      append_to_statement_list_force (stmts, &stmt_list);
+      gimple_seq_add_seq (&stmt_list, stmts);
 
       addr_base = fold_build2 (POINTER_PLUS_EXPR,
 			       TREE_TYPE (DR_BASE_ADDRESS (dr)),
@@ -271,23 +266,18 @@ generate_memset_zero (tree stmt, tree op0, tree nb_iter,
     goto end;
 
   mem = force_gimple_operand (addr_base, &stmts, true, NULL);
-  append_to_statement_list_force (stmts, &stmt_list);
-
+  gimple_seq_add_seq (&stmt_list, stmts);
 
   fndecl = implicit_built_in_decls [BUILT_IN_MEMSET];
   fntype = TREE_TYPE (fndecl);
   fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
-  args[0] = mem;
-  args[1] = integer_zero_node;
-  args[2] = nb_bytes;
+  fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
+  gimple_seq_add_stmt (&stmt_list, fn_call);
 
-  fn_call = build_call_array (fntype, fn, 3, args);
-  append_to_statement_list_force (fn_call, &stmt_list);
-
-  for (i = tsi_start (stmt_list); !tsi_end_p (i); tsi_next (&i))
+  for (i = gsi_start (stmt_list); !gsi_end_p (i); gsi_next (&i))
     {
-      s = tsi_stmt (i);
+      gimple s = gsi_stmt (i);
       update_stmt_if_modified (s);
 
       FOR_EACH_SSA_TREE_OPERAND (t, s, iter, SSA_OP_VIRTUAL_DEFS)
@@ -303,6 +293,7 @@ generate_memset_zero (tree stmt, tree op0, tree nb_iter,
     {
       if (TREE_CODE (t) == SSA_NAME)
 	{
+	  gimple s;
 	  imm_use_iterator imm_iter;
 
 	  FOR_EACH_IMM_USE_STMT (s, imm_iter, t)
@@ -313,7 +304,7 @@ generate_memset_zero (tree stmt, tree op0, tree nb_iter,
       mark_sym_for_renaming (t);
     }
 
-  bsi_insert_after (&bsi, stmt_list, BSI_CONTINUE_LINKING);
+  gsi_insert_seq_after (&bsi, stmt_list, GSI_CONTINUE_LINKING);
   res = true;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -334,9 +325,9 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   bool res = false;
   unsigned i, x = 0;
   basic_block *bbs;
-  tree write = NULL_TREE;
+  gimple write = NULL;
   tree op0, op1;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator bsi;
   tree nb_iter = number_of_exit_cond_executions (loop);
 
   if (!nb_iter || nb_iter == chrec_dont_know)
@@ -347,18 +338,17 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
-      tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	x++;
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
-	  tree stmt = bsi_stmt (bsi);
+	  gimple stmt = gsi_stmt (bsi);
 
 	  if (bitmap_bit_p (partition, x++)
-	      && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && !is_gimple_reg (GIMPLE_STMT_OPERAND (stmt, 0)))
+	      && is_gimple_assign (stmt)
+	      && !is_gimple_reg (gimple_assign_lhs (stmt)))
 	    {
 	      /* Don't generate the builtins when there are more than
 		 one memory write.  */
@@ -373,17 +363,18 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   if (!write)
     goto end;
 
-  op0 = GIMPLE_STMT_OPERAND (write, 0);
-  op1 = GIMPLE_STMT_OPERAND (write, 1);
+  op0 = gimple_assign_lhs (write);
+  op1 = gimple_assign_rhs1 (write);
 
   if (!(TREE_CODE (op0) == ARRAY_REF
 	|| TREE_CODE (op0) == INDIRECT_REF))
     goto end;
 
   /* The new statements will be placed before LOOP.  */
-  bsi = bsi_last (loop_preheader_edge (loop)->src);
+  bsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
-  if (integer_zerop (op1) || real_zerop (op1))
+  if (gimple_assign_rhs_code (write) == INTEGER_CST
+      && (integer_zerop (op1) || real_zerop (op1)))
     res = generate_memset_zero (write, op0, nb_iter, bsi);
 
   /* If this is the last partition for which we generate code, we have
@@ -557,7 +548,7 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
   ssa_op_iter iter;
   use_operand_p use_p;
   struct vertex *x = &(rdg->vertices[u]);
-  tree stmt = RDGV_STMT (x);
+  gimple stmt = RDGV_STMT (x);
   struct graph_edge *anti_dep = has_anti_dependence (x);
 
   /* Keep in the same partition the destination of an antidependence,
@@ -572,7 +563,7 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
 				       processed, part_has_writes);
     }
 
-  if (TREE_CODE (stmt) != PHI_NODE)
+  if (gimple_code (stmt) != GIMPLE_PHI)
     {
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VIRTUAL_USES)
 	{
@@ -580,7 +571,7 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
 
 	  if (TREE_CODE (use) == SSA_NAME)
 	    {
-	      tree def_stmt = SSA_NAME_DEF_STMT (use);
+	      gimple def_stmt = SSA_NAME_DEF_STMT (use);
 	      int v = rdg_vertex_for_stmt (rdg, def_stmt);
 
 	      if (v >= 0
@@ -591,10 +582,9 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
 	}
     }
 
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-      && has_upstream_mem_writes (u))
+  if (is_gimple_assign (stmt) && has_upstream_mem_writes (u))
     {
-      tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
+      tree op0 = gimple_assign_lhs (stmt);
 
       /* Scalar channels don't have enough space for transmitting data
 	 between tasks, unless we add more storage by privatizing.  */
@@ -667,7 +657,7 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, bitmap partition,
    blocks of LOOP.  */
 
 static void
-collect_condition_stmts (struct loop *loop, VEC (tree, heap) **conds)
+collect_condition_stmts (struct loop *loop, VEC (gimple, heap) **conds)
 {
   unsigned i;
   edge e;
@@ -675,10 +665,10 @@ collect_condition_stmts (struct loop *loop, VEC (tree, heap) **conds)
 
   for (i = 0; VEC_iterate (edge, exits, i, e); i++)
     {
-      tree cond = last_stmt (e->src);
+      gimple cond = last_stmt (e->src);
 
       if (cond)
-	VEC_safe_push (tree, heap, *conds, cond);
+	VEC_safe_push (gimple, heap, *conds, cond);
     }
 
   VEC_free (edge, heap, exits);
@@ -694,14 +684,14 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
 {
   unsigned i;
   bitmap_iterator bi;
-  VEC (tree, heap) *conds = VEC_alloc (tree, heap, 3);
+  VEC (gimple, heap) *conds = VEC_alloc (gimple, heap, 3);
 
   EXECUTE_IF_SET_IN_BITMAP (loops, 0, i, bi)
     collect_condition_stmts (get_loop (i), &conds);
 
-  while (!VEC_empty (tree, conds))
+  while (!VEC_empty (gimple, conds))
     {
-      tree cond = VEC_pop (tree, conds);
+      gimple cond = VEC_pop (gimple, conds);
       int v = rdg_vertex_for_stmt (rdg, cond);
       bitmap new_loops = BITMAP_ALLOC (NULL);
 
@@ -1050,11 +1040,11 @@ ldist_gen (struct loop *loop, struct graph *rdg,
    Returns the number of distributed loops.  */
 
 static int
-distribute_loop (struct loop *loop, VEC (tree, heap) *stmts)
+distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
 {
   bool res = false;
   struct graph *rdg;
-  tree s;
+  gimple s;
   unsigned i;
   VEC (int, heap) *vertices;
 
@@ -1085,7 +1075,7 @@ distribute_loop (struct loop *loop, VEC (tree, heap) *stmts)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  for (i = 0; VEC_iterate (tree, stmts, i, s); i++)
+  for (i = 0; VEC_iterate (gimple, stmts, i, s); i++)
     {
       int v = rdg_vertex_for_stmt (rdg, s);
 
@@ -1117,7 +1107,7 @@ tree_loop_distribution (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      VEC (tree, heap) *work_list = VEC_alloc (tree, heap, 3);
+      VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
 
       /* With the following working list, we're asking distribute_loop
 	 to separate the stores of the loop: when dependences allow,
@@ -1143,7 +1133,7 @@ tree_loop_distribution (void)
 
       verify_loop_structure ();
 
-      VEC_free (tree, heap, work_list);
+      VEC_free (gimple, heap, work_list);
     }
 
   return 0;

@@ -49,7 +49,7 @@ struct lpt_decision GTY (())
 struct nb_iter_bound GTY ((chain_next ("%h.next")))
 {
   /* The statement STMT is executed at most ...  */
-  tree stmt;
+  gimple stmt;
 
   /* ... BOUND + 1 times (BOUND must be an unsigned constant).
      The + 1 is added for the following reasons:

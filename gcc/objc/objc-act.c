@@ -9476,7 +9476,7 @@ objc_rewrite_function_call (tree function, tree params)
    of its cousins).  */
 
 enum gimplify_status
-objc_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
+objc_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
   enum gimplify_status r0, r1;
   if (TREE_CODE (*expr_p) == OBJ_TYPE_REF

@@ -37,16 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
 
-/* Initializes the loop structures.  */
-
-static void
-tree_loop_optimizer_init (void)
-{
-  loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_RECORDED_EXITS);
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-}
-
 /* The loop superpass.  */
 
 static bool
@@ -79,7 +69,10 @@ struct gimple_opt_pass pass_tree_loop =
 static unsigned int
 tree_ssa_loop_init (void)
 {
-  tree_loop_optimizer_init ();
+  loop_optimizer_init (LOOPS_NORMAL
+		       | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+
   if (number_of_loops () <= 1)
     return 0;
 

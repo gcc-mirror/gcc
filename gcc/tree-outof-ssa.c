@@ -141,9 +141,9 @@ create_temp (tree t)
 static void
 insert_copy_on_edge (edge e, tree dest, tree src)
 {
-  tree copy;
+  gimple copy;
 
-  copy = build_gimple_modify_stmt (dest, src);
+  copy = gimple_build_assign (dest, src);
   set_is_used (dest);
 
   if (TREE_CODE (src) == ADDR_EXPR)
@@ -157,11 +157,11 @@ insert_copy_on_edge (edge e, tree dest, tree src)
 	       "Inserting a copy on edge BB%d->BB%d :",
 	       e->src->index,
 	       e->dest->index);
-      print_generic_expr (dump_file, copy, dump_flags);
+      print_gimple_stmt (dump_file, copy, 0, dump_flags);
       fprintf (dump_file, "\n");
     }
 
-  bsi_insert_on_edge (e, copy);
+  gsi_insert_on_edge (e, copy);
 }
 
 
@@ -315,15 +315,17 @@ eliminate_name (elim_graph g, tree T)
 static void
 eliminate_build (elim_graph g, basic_block B)
 {
-  tree phi;
   tree T0, Ti;
   int p0, pi;
+  gimple_stmt_iterator gsi;
 
   clear_elim_graph (g);
   
-  for (phi = phi_nodes (B); phi; phi = PHI_CHAIN (phi))
+  for (gsi = gsi_start_phis (B); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      T0 = var_to_partition_to_var (g->map, PHI_RESULT (phi));
+      gimple phi = gsi_stmt (gsi);
+
+      T0 = var_to_partition_to_var (g->map, gimple_phi_result (phi));
       
       /* Ignore results which are not in partitions.  */
       if (T0 == NULL_TREE)
@@ -551,7 +553,7 @@ assign_vars (var_map map)
    If the stmt is changed, return true.  */ 
 
 static inline bool
-replace_use_variable (var_map map, use_operand_p p, tree *expr)
+replace_use_variable (var_map map, use_operand_p p, gimple *expr)
 {
   tree new_var;
   tree var = USE_FROM_PTR (p);
@@ -562,11 +564,7 @@ replace_use_variable (var_map map, use_operand_p p, tree *expr)
       int version = SSA_NAME_VERSION (var);
       if (expr[version])
         {
-	  tree new_expr = GIMPLE_STMT_OPERAND (expr[version], 1);
-	  SET_USE (p, new_expr);
-
-	  /* Clear the stmt's RHS, or GC might bite us.  */
-	  GIMPLE_STMT_OPERAND (expr[version], 1) = NULL_TREE;
+	  SET_USE (p, gimple_assign_rhs_to_tree (expr[version]));
 	  return true;
 	}
     }
@@ -614,20 +612,20 @@ static void
 eliminate_virtual_phis (void)
 {
   basic_block bb;
-  tree phi, next;
+  gimple_stmt_iterator gsi;
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = next)
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
         {
-	  next = PHI_CHAIN (phi);
-	  if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+	  gimple phi = gsi_stmt (gsi);
+	  if (!is_gimple_reg (SSA_NAME_VAR (gimple_phi_result (phi))))
 	    {
 #ifdef ENABLE_CHECKING
-	      int i;
+	      size_t i;
 	      /* There should be no arguments of this PHI which are in
 		 the partition list, or we get incorrect results.  */
-	      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	        {
 		  tree arg = PHI_ARG_DEF (phi, i);
 		  if (TREE_CODE (arg) == SSA_NAME 
@@ -636,13 +634,15 @@ eliminate_virtual_phis (void)
 		      fprintf (stderr, "Argument of PHI is not virtual (");
 		      print_generic_expr (stderr, arg, TDF_SLIM);
 		      fprintf (stderr, "), but the result is :");
-		      print_generic_stmt (stderr, phi, TDF_SLIM);
+		      print_gimple_stmt (stderr, phi, 0, TDF_SLIM);
 		      internal_error ("SSA corruption");
 		    }
 		}
 #endif
-	      remove_phi_node (phi, NULL_TREE, true);
+	      remove_phi_node (&gsi, true);
 	    }
+          else
+            gsi_next (&gsi);
 	}
     }
 }
@@ -655,13 +655,13 @@ eliminate_virtual_phis (void)
    variable.  */
 
 static void
-rewrite_trees (var_map map, tree *values)
+rewrite_trees (var_map map, gimple *values)
 {
   elim_graph g;
   basic_block bb;
-  block_stmt_iterator si;
+  gimple_stmt_iterator gsi;
   edge e;
-  tree phi;
+  gimple_seq phi;
   bool changed;
  
 #ifdef ENABLE_CHECKING
@@ -670,14 +670,14 @@ rewrite_trees (var_map map, tree *values)
      create incorrect code.  */
   FOR_EACH_BB (bb)
     {
-      tree phi;
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  tree T0 = var_to_partition_to_var (map, PHI_RESULT (phi));
+	  gimple phi = gsi_stmt (gsi);
+	  tree T0 = var_to_partition_to_var (map, gimple_phi_result (phi));
 	  if (T0 == NULL_TREE)
 	    {
-	      int i;
-	      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	      size_t i;
+	      for (i = 0; i < gimple_phi_num_args (phi); i++)
 		{
 		  tree arg = PHI_ARG_DEF (phi, i);
 
@@ -687,7 +687,7 @@ rewrite_trees (var_map map, tree *values)
 		      fprintf (stderr, "Argument of PHI is in a partition :(");
 		      print_generic_expr (stderr, arg, TDF_SLIM);
 		      fprintf (stderr, "), but the result is not :");
-		      print_generic_stmt (stderr, phi, TDF_SLIM);
+		      print_gimple_stmt (stderr, phi, 0, TDF_SLIM);
 		      internal_error ("SSA corruption");
 		    }
 		}
@@ -701,21 +701,18 @@ rewrite_trees (var_map map, tree *values)
   g->map = map;
   FOR_EACH_BB (bb)
     {
-      for (si = bsi_start (bb); !bsi_end_p (si); )
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
-	  tree stmt = bsi_stmt (si);
+	  gimple stmt = gsi_stmt (gsi);
 	  use_operand_p use_p, copy_use_p;
 	  def_operand_p def_p;
 	  bool remove = false, is_copy = false;
 	  int num_uses = 0;
-	  stmt_ann_t ann;
 	  ssa_op_iter iter;
 
-	  ann = stmt_ann (stmt);
 	  changed = false;
 
-	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT 
-	      && (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME))
+	  if (gimple_assign_copy_p (stmt))
 	    is_copy = true;
 
 	  copy_use_p = NULL_USE_OPERAND_P;
@@ -759,13 +756,13 @@ rewrite_trees (var_map map, tree *values)
 
 	  /* Remove any stmts marked for removal.  */
 	  if (remove)
-	    bsi_remove (&si, true);
+	    gsi_remove (&gsi, true);
 	  else
 	    {
 	      if (changed)
 		if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
-		  tree_purge_dead_eh_edges (bb);
-	      bsi_next (&si);
+		  gimple_purge_dead_eh_edges (bb);
+	      gsi_next (&gsi);
 	    }
 	}
 
@@ -784,7 +781,7 @@ rewrite_trees (var_map map, tree *values)
 /* These are the local work structures used to determine the best place to 
    insert the copies that were placed on edges by the SSA->normal pass..  */
 static VEC(edge,heap) *edge_leader;
-static VEC(tree,heap) *stmt_list;
+static VEC(gimple_seq,heap) *stmt_list;
 static bitmap leader_has_match = NULL;
 static edge leader_match = NULL;
 
@@ -803,22 +800,19 @@ same_stmt_list_p (edge e)
 /* Return TRUE if S1 and S2 are equivalent copies.  */
 
 static inline bool
-identical_copies_p (const_tree s1, const_tree s2)
+identical_copies_p (const_gimple s1, const_gimple s2)
 {
 #ifdef ENABLE_CHECKING
-  gcc_assert (TREE_CODE (s1) == GIMPLE_MODIFY_STMT);
-  gcc_assert (TREE_CODE (s2) == GIMPLE_MODIFY_STMT);
-  gcc_assert (DECL_P (GIMPLE_STMT_OPERAND (s1, 0)));
-  gcc_assert (DECL_P (GIMPLE_STMT_OPERAND (s2, 0)));
+  gcc_assert (is_gimple_assign (s1));
+  gcc_assert (is_gimple_assign (s2));
+  gcc_assert (DECL_P (gimple_assign_lhs (s1)));
+  gcc_assert (DECL_P (gimple_assign_lhs (s2)));
 #endif
 
-  if (GIMPLE_STMT_OPERAND (s1, 0) != GIMPLE_STMT_OPERAND (s2, 0))
+  if (gimple_assign_lhs (s1) != gimple_assign_lhs (s2))
     return false;
 
-  s1 = GIMPLE_STMT_OPERAND (s1, 1);
-  s2 = GIMPLE_STMT_OPERAND (s2, 1);
-
-  if (s1 != s2)
+  if (gimple_assign_rhs1 (s1) != gimple_assign_rhs1 (s2))
     return false;
 
   return true;
@@ -831,22 +825,19 @@ identical_copies_p (const_tree s1, const_tree s2)
 static inline bool 
 identical_stmt_lists_p (const_edge e1, const_edge e2)
 {
-  tree t1 = PENDING_STMT (e1);
-  tree t2 = PENDING_STMT (e2);
-  tree_stmt_iterator tsi1, tsi2;
+  gimple_seq t1 = PENDING_STMT (e1);
+  gimple_seq t2 = PENDING_STMT (e2);
+  gimple_stmt_iterator gsi1, gsi2;
 
-  gcc_assert (TREE_CODE (t1) == STATEMENT_LIST);
-  gcc_assert (TREE_CODE (t2) == STATEMENT_LIST);
-
-  for (tsi1 = tsi_start (t1), tsi2 = tsi_start (t2);
-       !tsi_end_p (tsi1) && !tsi_end_p (tsi2); 
-       tsi_next (&tsi1), tsi_next (&tsi2))
+  for (gsi1 = gsi_start (t1), gsi2 = gsi_start (t2);
+       !gsi_end_p (gsi1) && !gsi_end_p (gsi2); 
+       gsi_next (&gsi1), gsi_next (&gsi2))
     {
-      if (!identical_copies_p (tsi_stmt (tsi1), tsi_stmt (tsi2)))
+      if (!identical_copies_p (gsi_stmt (gsi1), gsi_stmt (gsi2)))
         break;
     }
 
-  if (!tsi_end_p (tsi1) || ! tsi_end_p (tsi2))
+  if (!gsi_end_p (gsi1) || !gsi_end_p (gsi2))
     return false;
 
   return true;
@@ -859,7 +850,7 @@ static void
 init_analyze_edges_for_bb (void)
 {
   edge_leader = VEC_alloc (edge, heap, 25);
-  stmt_list = VEC_alloc (tree, heap, 25);
+  stmt_list = VEC_alloc (gimple_seq, heap, 25);
   leader_has_match = BITMAP_ALLOC (NULL);
 }
 
@@ -870,7 +861,7 @@ static void
 fini_analyze_edges_for_bb (void)
 {
   VEC_free (edge, heap, edge_leader);
-  VEC_free (tree, heap, stmt_list);
+  VEC_free (gimple_seq, heap, stmt_list);
   BITMAP_FREE (leader_has_match);
 }
 
@@ -902,13 +893,14 @@ contains_tree_r (tree * tp, int *walk_subtrees, void *data)
 static bool
 process_single_block_loop_latch (edge single_edge)
 {
-  tree stmts;
+  gimple_seq stmts;
   basic_block b_exit, b_pheader, b_loop = single_edge->src;
   edge_iterator ei;
   edge e;
-  block_stmt_iterator bsi, bsi_exit;
-  tree_stmt_iterator tsi;
-  tree expr, stmt;
+  gimple_stmt_iterator gsi, gsi_exit;
+  gimple_stmt_iterator tsi;
+  tree expr;
+  gimple stmt;
   unsigned int count = 0;
 
   if (single_edge == NULL || (single_edge->dest != single_edge->src)
@@ -941,29 +933,31 @@ process_single_block_loop_latch (edge single_edge)
   if (b_exit == b_pheader || b_exit == b_loop || b_pheader == b_loop)
     return false;
 
-  bsi_exit = bsi_after_labels (b_exit);
+  gsi_exit = gsi_after_labels (b_exit);
 
   /* Get the last stmt in the loop body.  */
-  bsi = bsi_last (single_edge->src);
-  stmt = bsi_stmt (bsi);
+  gsi = gsi_last_bb (single_edge->src);
+  stmt = gsi_stmt (gsi);
 
-  if (TREE_CODE (stmt) != COND_EXPR)
+  if (gimple_code (stmt) != GIMPLE_COND)
     return false;
 
-  expr = COND_EXPR_COND (stmt);
+
+  expr = build2 (gimple_cond_code (stmt), boolean_type_node,
+                 gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
   /* Iterate over the insns on the latch and count them.  */
-  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+  for (tsi = gsi_start (stmts); !gsi_end_p (tsi); gsi_next (&tsi))
     {
-      tree stmt1 = tsi_stmt (tsi);
+      gimple stmt1 = gsi_stmt (tsi);
       tree var;
 
       count++;
       /* Check that the condition does not contain any new definition
          created in the latch as the stmts from the latch intended
          to precede it.  */
-      if (TREE_CODE (stmt1) != GIMPLE_MODIFY_STMT)
+      if (gimple_code (stmt1) != GIMPLE_ASSIGN)
         return false;
-      var = GIMPLE_STMT_OPERAND (stmt1, 0);
+      var = gimple_assign_lhs (stmt1);
       if (TREE_THIS_VOLATILE (var)
 	  || TYPE_VOLATILE (TREE_TYPE (var))
 	  || walk_tree (&expr, contains_tree_r, var, NULL))
@@ -999,25 +993,26 @@ process_single_block_loop_latch (edge single_edge)
      var = tmp_var;
      ... 
    */
-  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+  for (tsi = gsi_start (stmts); !gsi_end_p (tsi); gsi_next (&tsi))
     {
-      tree stmt1 = tsi_stmt (tsi);
-      tree var, tmp_var, copy;
+      gimple stmt1 = gsi_stmt (tsi);
+      tree var, tmp_var;
+      gimple copy;
 
       /* Create a new variable to load back the value of var in case
          we exit the loop.  */
-      var = GIMPLE_STMT_OPERAND (stmt1, 0);
+      var = gimple_assign_lhs (stmt1);
       tmp_var = create_temp (var);
-      copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (tmp_var), tmp_var, var);
+      copy = gimple_build_assign (tmp_var, var);
       set_is_used (tmp_var);
-      bsi_insert_before (&bsi, copy, BSI_SAME_STMT);
-      copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (tmp_var), var, tmp_var);
-      bsi_insert_before (&bsi_exit, copy, BSI_SAME_STMT);
+      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
+      copy = gimple_build_assign (var, tmp_var);
+      gsi_insert_before (&gsi_exit, copy, GSI_SAME_STMT);
     }
 
   PENDING_STMT (single_edge) = 0;
   /* Insert the new stmts to the loop body.  */
-  bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
+  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
 
   if (dump_file)
     fprintf (dump_file,
@@ -1038,8 +1033,8 @@ analyze_edges_for_bb (basic_block bb)
   int count;
   unsigned int x;
   bool have_opportunity;
-  block_stmt_iterator bsi;
-  tree stmt;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
   edge single_edge = NULL;
   bool is_label;
   edge leader;
@@ -1061,7 +1056,7 @@ analyze_edges_for_bb (basic_block bb)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (PENDING_STMT (e))
-	  bsi_commit_one_edge_insert (e, NULL);
+	  gsi_commit_one_edge_insert (e, NULL);
       return;
     }
 
@@ -1074,18 +1069,19 @@ analyze_edges_for_bb (basic_block bb)
 	  gcc_assert (!(e->flags & EDGE_ABNORMAL));
 	  if (e->flags & EDGE_FALLTHRU)
 	    {
-	      bsi = bsi_start (e->src);
-	      if (!bsi_end_p (bsi))
+	      gsi = gsi_start_bb (e->src);
+	      if (!gsi_end_p (gsi))
 	        {
-		  stmt = bsi_stmt (bsi);
-		  bsi_next (&bsi);
-		  gcc_assert (stmt != NULL_TREE);
-		  is_label = (TREE_CODE (stmt) == LABEL_EXPR);
+		  stmt = gsi_stmt (gsi);
+		  gsi_next (&gsi);
+		  gcc_assert (stmt != NULL);
+		  is_label = (gimple_code (stmt) == GIMPLE_LABEL);
 		  /* Punt if it has non-label stmts, or isn't local.  */
-		  if (!is_label || DECL_NONLOCAL (TREE_OPERAND (stmt, 0)) 
-		      || !bsi_end_p (bsi))
+		  if (!is_label
+		      || DECL_NONLOCAL (gimple_label_label (stmt)) 
+		      || !gsi_end_p (gsi))
 		    {
-		      bsi_commit_one_edge_insert (e, NULL);
+		      gsi_commit_one_edge_insert (e, NULL);
 		      continue;
 		    }
 		}
@@ -1103,7 +1099,7 @@ analyze_edges_for_bb (basic_block bb)
        /* Add stmts to the edge unless processed specially as a
           single-block loop latch edge. */
        if (!process_single_block_loop_latch (single_edge))
-         bsi_commit_one_edge_insert (single_edge, NULL);
+         gsi_commit_one_edge_insert (single_edge, NULL);
       }
       return;
     }
@@ -1111,7 +1107,7 @@ analyze_edges_for_bb (basic_block bb)
   /* Ensure that we have empty worklists.  */
 #ifdef ENABLE_CHECKING
   gcc_assert (VEC_length (edge, edge_leader) == 0);
-  gcc_assert (VEC_length (tree, stmt_list) == 0);
+  gcc_assert (VEC_length (gimple_seq, stmt_list) == 0);
   gcc_assert (bitmap_empty_p (leader_has_match));
 #endif
 
@@ -1144,7 +1140,7 @@ analyze_edges_for_bb (basic_block bb)
 	  if (!found)
 	    {
 	      VEC_safe_push (edge, heap, edge_leader, e);
-	      VEC_safe_push (tree, heap, stmt_list, PENDING_STMT (e));
+	      VEC_safe_push (gimple_seq, heap, stmt_list, PENDING_STMT (e));
 	    }
 	}
      }
@@ -1153,9 +1149,9 @@ analyze_edges_for_bb (basic_block bb)
   if (!have_opportunity)
     {
       for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
-	bsi_commit_one_edge_insert (leader, NULL);
+	gsi_commit_one_edge_insert (leader, NULL);
       VEC_truncate (edge, edge_leader, 0);
-      VEC_truncate (tree, stmt_list, 0);
+      VEC_truncate (gimple_seq, stmt_list, 0);
       bitmap_clear (leader_has_match);
       return;
     }
@@ -1170,8 +1166,8 @@ analyze_edges_for_bb (basic_block bb)
     if (bitmap_bit_p (leader_has_match, x))
       {
 	edge new_edge;
-	block_stmt_iterator bsi;
-	tree curr_stmt_list;
+	gimple_stmt_iterator gsi;
+	gimple_seq curr_stmt_list;
 
 	leader_match = leader;
 
@@ -1181,7 +1177,7 @@ analyze_edges_for_bb (basic_block bb)
 	   and use the saved stmt list.  */
 	PENDING_STMT (leader) = NULL;
 	leader->aux = leader;
-	curr_stmt_list = VEC_index (tree, stmt_list, x);
+	curr_stmt_list = VEC_index (gimple_seq, stmt_list, x);
 
         new_edge = make_forwarder_block (leader->dest, same_stmt_list_p, 
 					 NULL);
@@ -1191,7 +1187,7 @@ analyze_edges_for_bb (basic_block bb)
 	    fprintf (dump_file, "Splitting BB %d for Common stmt list.  ", 
 		     leader->dest->index);
 	    fprintf (dump_file, "Original block is now BB%d.\n", bb->index);
-	    print_generic_stmt (dump_file, curr_stmt_list, TDF_VOPS);
+	    print_gimple_seq (dump_file, curr_stmt_list, 0, TDF_VOPS);
 	  }
 
 	FOR_EACH_EDGE (e, ei, new_edge->src->preds)
@@ -1202,22 +1198,22 @@ analyze_edges_for_bb (basic_block bb)
 		       e->src->index, e->dest->index);
 	  }
 
-	bsi = bsi_last (leader->dest);
-	bsi_insert_after (&bsi, curr_stmt_list, BSI_NEW_STMT);
+	gsi = gsi_last_bb (leader->dest);
+	gsi_insert_seq_after (&gsi, curr_stmt_list, GSI_NEW_STMT);
 
 	leader_match = NULL;
 	/* We should never get a new block now.  */
       }
     else
       {
-	PENDING_STMT (leader) = VEC_index (tree, stmt_list, x);
-	bsi_commit_one_edge_insert (leader, NULL);
+	PENDING_STMT (leader) = VEC_index (gimple_seq, stmt_list, x);
+	gsi_commit_one_edge_insert (leader, NULL);
       }
 
    
   /* Clear the working data structures.  */
   VEC_truncate (edge, edge_leader, 0);
-  VEC_truncate (tree, stmt_list, 0);
+  VEC_truncate (gimple_seq, stmt_list, 0);
   bitmap_clear (leader_has_match);
 }
 
@@ -1297,9 +1293,9 @@ static void
 remove_ssa_form (bool perform_ter)
 {
   basic_block bb;
-  tree phi, next;
-  tree *values = NULL;
+  gimple *values = NULL;
   var_map map;
+  gimple_stmt_iterator gsi;
 
   map = coalesce_ssa_name ();
 
@@ -1336,13 +1332,8 @@ remove_ssa_form (bool perform_ter)
 
   /* Remove PHI nodes which have been translated back to real variables.  */
   FOR_EACH_BB (bb)
-    {
-      for (phi = phi_nodes (bb); phi; phi = next)
-	{
-	  next = PHI_CHAIN (phi);
-	  remove_phi_node (phi, NULL_TREE, true);
-	}
-    }
+    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
+      remove_phi_node (&gsi, true);
 
   /* If any copies were inserted on edges, analyze and insert them now.  */
   perform_edge_inserts ();
@@ -1364,25 +1355,25 @@ static void
 insert_backedge_copies (void)
 {
   basic_block bb;
+  gimple_stmt_iterator gsi;
 
   FOR_EACH_BB (bb)
     {
-      tree phi;
-
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  tree result = PHI_RESULT (phi);
+	  gimple phi = gsi_stmt (gsi);
+	  tree result = gimple_phi_result (phi);
 	  tree result_var;
-	  int i;
+	  size_t i;
 
 	  if (!is_gimple_reg (result))
 	    continue;
 
 	  result_var = SSA_NAME_VAR (result);
-	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
-	      tree arg = PHI_ARG_DEF (phi, i);
-	      edge e = PHI_ARG_EDGE (phi, i);
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      edge e = gimple_phi_arg_edge (phi, i);
 
 	      /* If the argument is not an SSA_NAME, then we will need a 
 		 constant initialization.  If the argument is an SSA_NAME with
@@ -1392,12 +1383,13 @@ insert_backedge_copies (void)
 		  && (TREE_CODE (arg) != SSA_NAME
 		      || SSA_NAME_VAR (arg) != result_var))
 		{
-		  tree stmt, name, last = NULL;
-		  block_stmt_iterator bsi;
+		  tree name;
+		  gimple stmt, last = NULL;
+		  gimple_stmt_iterator gsi2;
 
-		  bsi = bsi_last (PHI_ARG_EDGE (phi, i)->src);
-		  if (!bsi_end_p (bsi))
-		    last = bsi_stmt (bsi);
+		  gsi2 = gsi_last_bb (gimple_phi_arg_edge (phi, i)->src);
+		  if (!gsi_end_p (gsi2))
+		    last = gsi_stmt (gsi2);
 
 		  /* In theory the only way we ought to get back to the
 		     start of a loop should be with a COND_EXPR or GOTO_EXPR.
@@ -1418,17 +1410,17 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying variable of the 
 		     PHI result.  */
-		  stmt = build_gimple_modify_stmt (NULL_TREE,
-						   PHI_ARG_DEF (phi, i));
+		  stmt = gimple_build_assign (result_var,
+					      gimple_phi_arg_def (phi, i));
 		  name = make_ssa_name (result_var, stmt);
-		  GIMPLE_STMT_OPERAND (stmt, 0) = name;
+		  gimple_assign_set_lhs (stmt, name);
 
 		  /* Insert the new statement into the block and update
 		     the PHI node.  */
 		  if (last && stmt_ends_bb_p (last))
-		    bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+		    gsi_insert_before (&gsi2, stmt, GSI_NEW_STMT);
 		  else
-		    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+		    gsi_insert_after (&gsi2, stmt, GSI_NEW_STMT);
 		  SET_PHI_ARG_DEF (phi, i, name);
 		}
 	    }
@@ -1454,12 +1446,12 @@ rewrite_out_of_ssa (void)
   eliminate_virtual_phis ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_tree_cfg (dump_file, dump_flags & ~TDF_DETAILS);
+    gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
   remove_ssa_form (flag_tree_ter && !flag_mudflap);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_tree_cfg (dump_file, dump_flags & ~TDF_DETAILS);
+    gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
   cfun->gimple_df->in_ssa_p = false;
   return 0;

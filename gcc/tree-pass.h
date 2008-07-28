@@ -72,7 +72,9 @@ enum tree_dump_index
 #define TDF_DIAGNOSTIC	(1 << 15)	/* A dump to be put in a diagnostic
 					   message.  */
 #define TDF_VERBOSE     (1 << 16)       /* A dump that uses the full tree 
-					   dumper to print stmts. */
+					   dumper to print stmts.  */
+#define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
+					   a gimple stmt.  */
 
 extern char *get_dump_file_name (enum tree_dump_index);
 extern int dump_enabled_p (enum tree_dump_index);

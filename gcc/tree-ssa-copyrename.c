@@ -23,13 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "gimple.h"
 #include "flags.h"
 #include "basic-block.h"
 #include "function.h"
 #include "diagnostic.h"
 #include "bitmap.h"
 #include "tree-flow.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "tree-inline.h"
 #include "timevar.h"
 #include "hashtab.h"
@@ -300,8 +301,9 @@ rename_ssa_copies (void)
 {
   var_map map;
   basic_block bb;
-  block_stmt_iterator bsi;
-  tree phi, stmt, var, part_var;
+  gimple_stmt_iterator gsi;
+  tree var, part_var;
+  gimple stmt, phi;
   unsigned x;
   FILE *debug;
   bool updated = false;
@@ -316,16 +318,15 @@ rename_ssa_copies (void)
   FOR_EACH_BB (bb)
     {
       /* Scan for real copies.  */
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  stmt = bsi_stmt (bsi); 
-	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	  stmt = gsi_stmt (gsi);
+	  if (gimple_assign_ssa_name_copy_p (stmt))
 	    {
-	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
 
-              if (TREE_CODE (lhs) == SSA_NAME && TREE_CODE (rhs) == SSA_NAME)
-		updated |= copy_rename_partition_coalesce (map, lhs, rhs, debug);
+	      updated |= copy_rename_partition_coalesce (map, lhs, rhs, debug);
 	    }
 	}
     }
@@ -333,18 +334,21 @@ rename_ssa_copies (void)
   FOR_EACH_BB (bb)
     {
       /* Treat PHI nodes as copies between the result and each argument.  */
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
-          int i;
-	  tree res = PHI_RESULT (phi);
+          size_t i;
+	  tree res;
+
+	  phi = gsi_stmt (gsi);
+	  res = gimple_phi_result (phi);
 
 	  /* Do not process virtual SSA_NAMES.  */
 	  if (!is_gimple_reg (SSA_NAME_VAR (res)))
 	    continue;
 
-          for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+          for (i = 0; i < gimple_phi_num_args (phi); i++)
             {
-              tree arg = PHI_ARG_DEF (phi, i);
+              tree arg = gimple_phi_arg (phi, i)->def;
               if (TREE_CODE (arg) == SSA_NAME)
 		updated |= copy_rename_partition_coalesce (map, res, arg, debug);
             }
@@ -407,4 +411,3 @@ struct gimple_opt_pass pass_rename_ssa_copies =
   TODO_dump_func | TODO_verify_ssa      /* todo_flags_finish */
  }
 }; 
-

@@ -244,7 +244,7 @@ struct alias_match
 {
   tree rhs;
   bool is_rhs_pointer;
-  tree site;
+  gimple site;
 };
 
 
@@ -252,15 +252,14 @@ struct alias_match
    of STMT matches DATA.  */
 
 static bool
-find_alias_site_helper (tree var ATTRIBUTE_UNUSED, tree stmt, void *data)
+find_alias_site_helper (tree var ATTRIBUTE_UNUSED, gimple stmt, void *data)
 {
   struct alias_match *match = (struct alias_match *) data;
-  tree rhs_pointer = get_rhs (stmt);
+  tree rhs_pointer = NULL_TREE;
   tree to_match = NULL_TREE;
 
-  while (CONVERT_EXPR_P (rhs_pointer)
-         || TREE_CODE (rhs_pointer) == VIEW_CONVERT_EXPR)
-    rhs_pointer = TREE_OPERAND (rhs_pointer, 0);
+  if (gimple_assign_cast_p (stmt))
+    rhs_pointer = gimple_assign_rhs1 (stmt);
 
   if (!rhs_pointer)
     /* Not a type conversion.  */
@@ -287,7 +286,7 @@ find_alias_site_helper (tree var ATTRIBUTE_UNUSED, tree stmt, void *data)
    For now, just implement the case where OBJECT1 is an SSA name defined
    by a PHI statement.  */
 
-static tree
+static gimple
 find_alias_site (tree object1, bool is_ptr1 ATTRIBUTE_UNUSED,
                  tree object2, bool is_ptr2)
 {
@@ -295,10 +294,10 @@ find_alias_site (tree object1, bool is_ptr1 ATTRIBUTE_UNUSED,
 
   match.rhs = object2;
   match.is_rhs_pointer = is_ptr2;
-  match.site = NULL_TREE;
+  match.site = NULL;
 
   if (TREE_CODE (object1) != SSA_NAME)
-    return NULL_TREE;
+    return NULL;
 
   walk_use_def_chains (object1, find_alias_site_helper, &match, false);
   return match.site;
@@ -344,29 +343,55 @@ get_ssa_base (tree expr)
    objs: <ptr, 2>
    PTR shows up twice as an object, but is dereferenced only once.
 
-   The elements of the hash tables are tree_map objects.  */
+   The elements of the hash tables are gimple_map objects.  */
 struct reference_matches
 {
   htab_t ptrs;
   htab_t objs;
 };
 
+struct gimple_tree_map
+{
+  tree from;
+  gimple to;
+};
 
-/* Return the match, if any.  Otherwise, return NULL_TREE.  It will
-   return NULL_TREE even when a match was found, if the value associated
-   to KEY is NULL_TREE.  */
+/* Return true if the from tree in both gimple-tree maps are equal.
+   VA and VB are really instances of struct gimple_tree_map.  */
 
-static inline tree
+static int
+gimple_tree_map_eq (const void *va, const void *vb)
+{
+  const struct gimple_tree_map *const a = (const struct gimple_tree_map *) va;
+  const struct gimple_tree_map *const b = (const struct gimple_tree_map *) vb;
+  return (a->from == b->from);
+}
+
+/* Hash a from tree in a gimple_tree_map.  ITEM is really an instance
+   of struct gimple_tree_map.  */
+
+static unsigned int
+gimple_tree_map_hash (const void *item)
+{
+  return htab_hash_pointer (((const struct gimple_tree_map *)item)->from);
+}
+
+/* Return the match, if any.  Otherwise, return NULL.  It will return
+   NULL even when a match was found, if the value associated to KEY is
+   NULL.  */
+
+static inline gimple
 match (htab_t ref_map, tree key)
 {
-  struct tree_map *found;
+  struct gimple_tree_map *found;
   void **slot = NULL;
   slot = htab_find_slot (ref_map, &key, NO_INSERT);
 
   if (!slot)
-    return NULL_TREE;
+    return NULL;
 
-  found = (struct tree_map *) *slot;
+  found = (struct gimple_tree_map *) *slot;
+
   return found->to;
 }
 
@@ -375,9 +400,11 @@ match (htab_t ref_map, tree key)
    already exists and its value is NULL_TREE.  Otherwise, do nothing.  */
 
 static inline void
-maybe_add_match (htab_t ref_map, struct tree_map *key)
+maybe_add_match (htab_t ref_map, struct gimple_tree_map *key)
 {
-  struct tree_map *found = (struct tree_map *) htab_find (ref_map, key);
+  struct gimple_tree_map *found;
+  
+  found = (struct gimple_tree_map *) htab_find (ref_map, key);
 
   if (found && !found->to)
     found->to = key->to;
@@ -390,10 +417,12 @@ static void
 add_key (htab_t ht, tree t, alloc_pool references_pool)
 {
   void **slot;
-  struct tree_map *tp = (struct tree_map *) pool_alloc (references_pool);
+  struct gimple_tree_map *tp;
+  
+  tp = (struct gimple_tree_map *) pool_alloc (references_pool);
 
-  tp->base.from = t;
-  tp->to = NULL_TREE;
+  tp->from = t;
+  tp->to = NULL;
   slot = htab_find_slot (ht, &t, INSERT);
   *slot = (void *) tp;
 }
@@ -412,8 +441,9 @@ reference_table_alloc_pool (bool build)
   if (ref_table_alloc_pool || !build)
     return ref_table_alloc_pool;
 
-  ref_table_alloc_pool =
-    create_alloc_pool ("ref_table_alloc_pool", sizeof (struct tree_map), 20);
+  ref_table_alloc_pool = create_alloc_pool ("ref_table_alloc_pool",
+					    sizeof (struct gimple_tree_map),
+					    20);
 
   return ref_table_alloc_pool;
 }
@@ -430,8 +460,10 @@ build_reference_table (void)
   alloc_pool references_pool = reference_table_alloc_pool (true);
 
   ref_table = XNEW (struct reference_matches);
-  ref_table->objs = htab_create (10, tree_map_base_hash, tree_map_eq, NULL);
-  ref_table->ptrs = htab_create (10, tree_map_base_hash, tree_map_eq, NULL);
+  ref_table->objs = htab_create (10, gimple_tree_map_hash, gimple_tree_map_eq,
+				 NULL);
+  ref_table->ptrs = htab_create (10, gimple_tree_map_hash, gimple_tree_map_eq,
+				 NULL);
 
   for (i = 1; i < num_ssa_names; i++)
     {
@@ -518,8 +550,9 @@ find_references_in_tree_helper (tree *tp,
 				int *walk_subtrees ATTRIBUTE_UNUSED,
 				void *data)
 {
-  struct tree_map match;
+  struct gimple_tree_map match;
   static int parent_tree_code = ERROR_MARK;
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
 
   /* Do not report references just for the purpose of taking an address.
      XXX: we rely on the fact that the tree walk is in preorder
@@ -528,16 +561,16 @@ find_references_in_tree_helper (tree *tp,
   if (parent_tree_code == ADDR_EXPR)
     goto finish;
 
-  match.to = (tree) data;
+  match.to = (gimple) wi->info;
 
   if (TREE_CODE (*tp) == INDIRECT_REF)
     {
-      match.base.from = TREE_OPERAND (*tp, 0);
+      match.from = TREE_OPERAND (*tp, 0);
       maybe_add_match (reference_table (true)->ptrs, &match);
     }
   else
     {
-      match.base.from = *tp;
+      match.from = *tp;
       maybe_add_match (reference_table (true)->objs, &match);
     }
 
@@ -553,12 +586,16 @@ static void
 find_references_in_function (void)
 {
   basic_block bb;
-  block_stmt_iterator i;
+  gimple_stmt_iterator i;
 
   FOR_EACH_BB (bb)
-    for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
-      walk_tree (bsi_stmt_ptr (i), find_references_in_tree_helper,
-		 (void *) *bsi_stmt_ptr (i), NULL);
+    for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+      {
+	struct walk_stmt_info wi;
+	memset (&wi, 0, sizeof (wi));
+	wi.info = (void *) gsi_stmt (i);
+	walk_gimple_op (gsi_stmt (i), find_references_in_tree_helper, &wi);
+      }
 }
 
 
@@ -567,7 +604,7 @@ find_references_in_function (void)
    XXX: only the first site is returned in the current
    implementation.  If there are no matching sites, return NULL_TREE.  */
 
-static tree
+static gimple
 reference_site (tree object, bool is_ptr)
 {
   if (is_ptr)
@@ -590,19 +627,19 @@ reference_site (tree object, bool is_ptr)
 static void
 maybe_find_missing_stmts (tree object1, bool is_ptr1,
                           tree object2, bool is_ptr2,
-                          tree *alias_site,
-                          tree *deref_site1,
-                          tree *deref_site2)
+                          gimple *alias_site,
+                          gimple *deref_site1,
+                          gimple *deref_site2)
 {
   if (object1 && object2)
     {
-      if (!*alias_site || !EXPR_HAS_LOCATION (*alias_site))
+      if (!*alias_site || !gimple_has_location (*alias_site))
 	*alias_site = find_alias_site (object1, is_ptr1, object2, is_ptr2);
 
-      if (!*deref_site1 || !EXPR_HAS_LOCATION (*deref_site1))
+      if (!*deref_site1 || !gimple_has_location (*deref_site1))
 	*deref_site1 = reference_site (object1, is_ptr1);
 
-      if (!*deref_site2 || !EXPR_HAS_LOCATION (*deref_site2))
+      if (!*deref_site2 || !gimple_has_location (*deref_site2))
 	*deref_site2 = reference_site (object2, is_ptr2);
     }
 
@@ -683,7 +720,6 @@ get_maybe_star_prefix (tree object, bool is_ptr)
           && TREE_CODE (TREE_TYPE (object)) == POINTER_TYPE) ? "*" : "";
 }
 
-
 /* Callback for contains_node_type_p.
    Returns true if *T has tree code *(int*)DATA.  */
 
@@ -710,18 +746,13 @@ contains_node_type_p (tree t, int type)
 /* Return true if a warning was issued in the front end at STMT.  */
 
 static bool
-already_warned_in_frontend_p (tree stmt)
+already_warned_in_frontend_p (gimple stmt)
 {
-  tree rhs_pointer;
-
-  if (stmt == NULL_TREE)
+  if (stmt == NULL)
     return false;
 
-  rhs_pointer = get_rhs (stmt);
-
-  if ((CONVERT_EXPR_P (rhs_pointer)
-       || TREE_CODE (rhs_pointer) == VIEW_CONVERT_EXPR)
-      && TREE_NO_WARNING (rhs_pointer))
+  if (gimple_assign_cast_p (stmt)
+      && TREE_NO_WARNING (gimple_assign_rhs1 (stmt)))
     return true;
   else
     return false;
@@ -749,13 +780,13 @@ is_method_pointer (tree type)
    case, that is where a pointer was assigned to the address of an object.  */
 
 static bool
-strict_aliasing_warn (tree alias_site,
+strict_aliasing_warn (gimple alias_site,
                       tree object1, bool is_ptr1,
                       tree object2, bool is_ptr2,
 		      bool filter_artificials)
 {
-  tree ref_site1 = NULL_TREE;
-  tree ref_site2 = NULL_TREE;
+  gimple ref_site1 = NULL;
+  gimple ref_site2 = NULL;
   const char *name1;
   const char *name2;
   location_t alias_loc;
@@ -773,18 +804,18 @@ strict_aliasing_warn (tree alias_site,
   maybe_find_missing_stmts (object1, is_ptr1, object2, is_ptr2, &alias_site,
                             &ref_site1, &ref_site2);
 
-  if (EXPR_HAS_LOCATION (alias_site))
-    alias_loc = EXPR_LOCATION (alias_site);
+  if (gimple_has_location (alias_site))
+    alias_loc = gimple_location (alias_site);
   else
     return false;
 
-  if (EXPR_HAS_LOCATION (ref_site1))
-    ref1_loc = EXPR_LOCATION (ref_site1);
+  if (gimple_has_location (ref_site1))
+    ref1_loc = gimple_location (ref_site1);
   else
     ref1_loc = alias_loc;
 
-  if (EXPR_HAS_LOCATION (ref_site2))
-    ref2_loc = EXPR_LOCATION (ref_site2);
+  if (gimple_has_location (ref_site2))
+    ref2_loc = gimple_location (ref_site2);
   else
     ref2_loc = alias_loc;
 
@@ -900,7 +931,7 @@ skip_this_pointer (tree ptr ATTRIBUTE_UNUSED, struct ptr_info_def *pi)
 /* Find aliasing to named objects for pointer PTR.  */
 
 static void
-dsa_named_for (tree ptr)
+dsa_named_for (tree ptr ATTRIBUTE_UNUSED)
 {
   struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
 
@@ -970,7 +1001,7 @@ processed_func_p (tree func)
   void **slot = NULL;
 
   if (!seen)
-    seen = htab_create (10, tree_map_base_hash, tree_map_eq, NULL);
+    seen = htab_create (10, gimple_tree_map_hash, gimple_tree_map_eq, NULL);
 
   slot = htab_find_slot (seen, &func, INSERT);
   gcc_assert (slot);

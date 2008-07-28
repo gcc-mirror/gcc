@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "vec.h"
 #include "target.h"
+#include "gimple.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -3200,6 +3201,8 @@ expand_or_defer_fn (tree fn)
 	ggc_collect ();
       return;
     }
+
+  gcc_assert (gimple_body (fn));
 
   /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
   cp_walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),

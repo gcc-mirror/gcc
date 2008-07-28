@@ -121,7 +121,7 @@ ebitmap_iter_init (ebitmap_iterator *i, ebitmap bmp, unsigned int min)
 static inline bool
 ebitmap_iter_cond (ebitmap_iterator *i, unsigned int *n)
 {
-  unsigned int ourn;
+  unsigned int ourn = 0;
 
   if (i->size == 0)
     return false;

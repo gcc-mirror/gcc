@@ -46,7 +46,7 @@ struct histogram_value_t
   struct
     {
       tree value;		/* The value to profile.  */
-      tree stmt;		/* Insn containing the value.  */
+      gimple stmt;		/* Insn containing the value.  */
       gcov_type *counters;		        /* Pointer to first counter.  */
       struct histogram_value_t *next;		/* Linked list pointer.  */
     } hvalue;
@@ -71,7 +71,7 @@ DEF_VEC_ALLOC_P(histogram_value,heap);
 typedef VEC(histogram_value,heap) *histogram_values;
 
 /* Hooks registration.  */
-extern void tree_register_value_prof_hooks (void);
+extern void gimple_register_value_prof_hooks (void);
 
 /* IR-independent entry points.  */
 extern void find_values_to_profile (histogram_values *);
@@ -109,17 +109,19 @@ struct profile_hooks {
   void (*gen_ior_profiler) (histogram_value, unsigned, unsigned);
 };
 
-histogram_value gimple_histogram_value (struct function *, tree);
-histogram_value gimple_histogram_value_of_type (struct function *, tree, enum hist_type);
-void gimple_add_histogram_value (struct function *, tree, histogram_value);
-void dump_histograms_for_stmt (struct function *, FILE *, tree);
-void gimple_remove_histogram_value (struct function *, tree, histogram_value);
-void gimple_remove_stmt_histograms (struct function *, tree);
-void gimple_duplicate_stmt_histograms (struct function *, tree, struct function *, tree);
-void gimple_move_stmt_histograms (struct function *, tree, tree);
+histogram_value gimple_histogram_value (struct function *, gimple);
+histogram_value gimple_histogram_value_of_type (struct function *, gimple,
+						enum hist_type);
+void gimple_add_histogram_value (struct function *, gimple, histogram_value);
+void dump_histograms_for_stmt (struct function *, FILE *, gimple);
+void gimple_remove_histogram_value (struct function *, gimple, histogram_value);
+void gimple_remove_stmt_histograms (struct function *, gimple);
+void gimple_duplicate_stmt_histograms (struct function *, gimple,
+				       struct function *, gimple);
+void gimple_move_stmt_histograms (struct function *, gimple, gimple);
 void verify_histograms (void);
 void free_histograms (void);
-void stringop_block_profile (tree, unsigned int *, HOST_WIDE_INT *);
+void stringop_block_profile (gimple, unsigned int *, HOST_WIDE_INT *);
 
 /* In profile.c.  */
 extern void init_branch_prob (void);

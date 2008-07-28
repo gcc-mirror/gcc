@@ -233,8 +233,8 @@ extern tree gnat_to_gnu (Node_Id gnat_node);
 extern void gnat_expand_stmt (tree gnu_stmt);
 
 /* ??? missing documentation */
-extern int gnat_gimplify_expr (tree *expr_p, tree *pre_p,
-                               tree *post_p ATTRIBUTE_UNUSED);
+extern int gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
+                               gimple_seq *post_p ATTRIBUTE_UNUSED);
 
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise
@@ -668,10 +668,10 @@ extern tree create_label_decl (tree label_name);
    appearing in the subprogram.  */
 extern void begin_subprog_body (tree subprog_decl);
 
-/* Finish the definition of the current subprogram and compile it all the way
-   to assembler language output.  BODY is the tree corresponding to
-   the subprogram.  */
-extern void end_subprog_body (tree body);
+/* Finish the definition of the current subprogram BODY and compile it all the
+   way to assembler language output.  ELAB_P tells if this is called for an
+   elaboration routine, to be entirely discarded if empty.  */
+extern void end_subprog_body (tree body, bool elab_p);
 
 /* Build a template of type TEMPLATE_TYPE from the array bounds of ARRAY_TYPE.
    EXPR is an expression that we can use to locate any PLACEHOLDER_EXPRs.

@@ -73,7 +73,7 @@ extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
 /* Declarations for tree gimplification hooks.  */
-extern int lhd_gimplify_expr (tree *, tree *, tree *);
+extern int lhd_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern enum omp_clause_default_kind lhd_omp_predetermined_sharing (tree);
 extern tree lhd_omp_assignment (tree, tree, tree);
 struct gimplify_omp_ctx;

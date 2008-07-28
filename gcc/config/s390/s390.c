@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "optabs.h"
-#include "tree-gimple.h"
+#include "gimple.h"
 #include "df.h"
 
 
@@ -8424,15 +8424,15 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   if (cfun->va_list_gpr_size)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (gpr), gpr,
-	          build_int_cst (NULL_TREE, n_gpr));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+		  build_int_cst (NULL_TREE, n_gpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
   if (cfun->va_list_fpr_size)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (fpr), fpr,
+      t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
 	          build_int_cst (NULL_TREE, n_fpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -8452,7 +8452,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
       t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), t, size_int (off));
 
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -8465,7 +8465,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (sav), t,
 	          size_int (-RETURN_REGNUM * UNITS_PER_WORD));
   
-      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (sav), sav, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -8496,8 +8496,8 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
    } */
 
 static tree
-s390_gimplify_va_arg (tree valist, tree type, tree *pre_p, 
-		      tree *post_p ATTRIBUTE_UNUSED)
+s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p, 
+		      gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
@@ -8512,8 +8512,12 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
   sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+
+  /* The tree for args* cannot be shared between gpr/fpr and ovf since
+     both appear on a lhs.  */
+  valist = unshare_expr (valist);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
 
   size = int_size_in_bytes (type);
 
@@ -8598,14 +8602,11 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
 	      fold_convert (TREE_TYPE (reg), size_int (sav_scale)));
   t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t, fold_convert (sizetype, u));
 
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (addr, t, pre_p);
 
-  t = build1 (GOTO_EXPR, void_type_node, lab_over);
-  gimplify_and_add (t, pre_p);
+  gimple_seq_add_stmt (pre_p, gimple_build_goto (lab_over));
 
-  t = build1 (LABEL_EXPR, void_type_node, lab_false);
-  append_to_statement_list (t, pre_p);
+  gimple_seq_add_stmt (pre_p, gimple_build_label (lab_false));
 
 
   /* ... Otherwise out of the overflow area.  */
@@ -8617,16 +8618,13 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
 
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
-  u = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
-  gimplify_and_add (u, pre_p);
+  gimplify_assign (addr, t, pre_p);
 
   t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t, 
 	      size_int (size));
-  t = build2 (GIMPLE_MODIFY_STMT, ptr_type_node, ovf, t);
-  gimplify_and_add (t, pre_p);
+  gimplify_assign (ovf, t, pre_p);
 
-  t = build1 (LABEL_EXPR, void_type_node, lab_over);
-  append_to_statement_list (t, pre_p);
+  gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
 
   /* Increment register save count.  */

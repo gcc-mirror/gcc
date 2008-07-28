@@ -122,7 +122,7 @@ struct edge_def GTY(())
 
   /* Instructions queued on the edge.  */
   union edge_def_insns {
-    tree GTY ((tag ("true"))) t;
+    gimple_seq GTY ((tag ("true"))) g;
     rtx GTY ((tag ("false"))) r;
   } GTY ((desc ("current_ir_type () == IR_GIMPLE"))) insns;
 
@@ -231,7 +231,7 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   struct basic_block_def *next_bb;
 
   union basic_block_il_dependent {
-      struct tree_bb_info * GTY ((tag ("0"))) tree;
+      struct gimple_bb_info * GTY ((tag ("0"))) gimple;
       struct rtl_bb_info * GTY ((tag ("1"))) rtl;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
@@ -266,13 +266,13 @@ struct rtl_bb_info GTY(())
   int visited;
 };
 
-struct tree_bb_info GTY(())
+struct gimple_bb_info GTY(())
 {
-  /* Pointers to the first and last trees of the block.  */
-  tree stmt_list;
+  /* Sequence of statements in this block.  */
+  gimple_seq seq;
 
-  /* Chain of PHI nodes for this block.  */
-  tree phi_nodes;
+  /* PHI nodes for this block.  */
+  gimple_seq phi_nodes;
 };
 
 typedef struct basic_block_def *basic_block;
@@ -383,7 +383,7 @@ struct control_flow_graph GTY(())
   int x_last_basic_block;
 
   /* Mapping of labels to their associated blocks.  At present
-     only used for the tree CFG.  */
+     only used for the gimple CFG.  */
   VEC(basic_block,gc) *x_label_to_block_map;
 
   enum profile_status {
@@ -831,9 +831,9 @@ extern bool maybe_hot_bb_p (const_basic_block);
 extern bool maybe_hot_edge_p (edge);
 extern bool probably_cold_bb_p (const_basic_block);
 extern bool probably_never_executed_bb_p (const_basic_block);
-extern bool tree_predicted_by_p (const_basic_block, enum br_predictor);
+extern bool gimple_predicted_by_p (const_basic_block, enum br_predictor);
 extern bool rtl_predicted_by_p (const_basic_block, enum br_predictor);
-extern void tree_predict_edge (edge, enum br_predictor, int);
+extern void gimple_predict_edge (edge, enum br_predictor, int);
 extern void rtl_predict_edge (edge, enum br_predictor, int);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 extern void guess_outgoing_edge_probabilities (basic_block);

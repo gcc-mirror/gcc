@@ -1,0 +1,48 @@
+/* This file contains the definitions for the gimple IR structure
+   enumeration used in GCC.
+
+   Copyright (C) 2007 Free Software Foundation, Inc.
+   Contributed by Aldy Hernandez <aldyh@redhat.com>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* The format of this file is
+   DEFGSSTRUCT(GSS_enumeration value, printable name).
+   Each enum value should correspond with a single member of the union
+   gimple_statement_d.  */
+
+DEFGSSTRUCT(GSS_BASE, "base")
+DEFGSSTRUCT(GSS_WITH_OPS, "with_ops")
+DEFGSSTRUCT(GSS_WITH_MEM_OPS, "with_mem_ops")
+DEFGSSTRUCT(GSS_OMP, "omp")
+DEFGSSTRUCT(GSS_BIND, "bind")
+DEFGSSTRUCT(GSS_CATCH, "catch")
+DEFGSSTRUCT(GSS_EH_FILTER, "eh_filter")
+DEFGSSTRUCT(GSS_PHI, "phi")
+DEFGSSTRUCT(GSS_RESX, "resx")
+DEFGSSTRUCT(GSS_TRY, "try")
+DEFGSSTRUCT(GSS_WCE, "with_cleanup_expression")
+DEFGSSTRUCT(GSS_ASM, "asm")
+DEFGSSTRUCT(GSS_OMP_CRITICAL, "omp_critical")
+DEFGSSTRUCT(GSS_OMP_FOR, "omp_for")
+DEFGSSTRUCT(GSS_OMP_PARALLEL, "omp_parallel")
+DEFGSSTRUCT(GSS_OMP_TASK, "omp_task")
+DEFGSSTRUCT(GSS_OMP_SECTIONS, "sections")
+DEFGSSTRUCT(GSS_OMP_SINGLE, "single")
+DEFGSSTRUCT(GSS_OMP_CONTINUE, "omp_continue")
+DEFGSSTRUCT(GSS_OMP_ATOMIC_LOAD, "omp_atomic_load")
+DEFGSSTRUCT(GSS_OMP_ATOMIC_STORE, "omp_atomic_store")

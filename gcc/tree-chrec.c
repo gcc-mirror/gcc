@@ -343,9 +343,9 @@ chrec_fold_plus (tree type,
     return chrec_fold_automatically_generated_operands (op0, op1);
 
   if (integer_zerop (op0))
-    return chrec_convert (type, op1, NULL_TREE);
+    return chrec_convert (type, op1, NULL);
   if (integer_zerop (op1))
-    return chrec_convert (type, op0, NULL_TREE);
+    return chrec_convert (type, op0, NULL);
 
   if (POINTER_TYPE_P (type))
     code = POINTER_PLUS_EXPR;
@@ -577,7 +577,7 @@ chrec_apply (unsigned var,
   if (evolution_function_is_affine_p (chrec))
     {
       /* "{a, +, b} (x)"  ->  "a + b*x".  */
-      x = chrec_convert_rhs (type, x, NULL_TREE);
+      x = chrec_convert_rhs (type, x, NULL);
       res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
       if (!integer_zerop (CHREC_LEFT (chrec)))
 	res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
@@ -1115,7 +1115,7 @@ avoid_arithmetics_in_type_p (const_tree type)
   return false;
 }
 
-static tree chrec_convert_1 (tree, tree, tree, bool);
+static tree chrec_convert_1 (tree, tree, gimple, bool);
 
 /* Converts BASE and STEP of affine scev to TYPE.  LOOP is the loop whose iv
    the scev corresponds to.  AT_STMT is the statement at that the scev is
@@ -1127,7 +1127,7 @@ static tree chrec_convert_1 (tree, tree, tree, bool);
 
 bool
 convert_affine_scev (struct loop *loop, tree type,
-		     tree *base, tree *step, tree at_stmt,
+		     tree *base, tree *step, gimple at_stmt,
 		     bool use_overflow_semantics)
 {
   tree ct = TREE_TYPE (*step);
@@ -1228,7 +1228,7 @@ convert_affine_scev (struct loop *loop, tree type,
 /* Convert CHREC for the right hand side of a CREC.
    The increment for a pointer type is always sizetype.  */
 tree 
-chrec_convert_rhs (tree type, tree chrec, tree at_stmt)
+chrec_convert_rhs (tree type, tree chrec, gimple at_stmt)
 {
   if (POINTER_TYPE_P (type))
    type = sizetype;
@@ -1260,7 +1260,7 @@ chrec_convert_rhs (tree type, tree chrec, tree at_stmt)
 */
 
 tree 
-chrec_convert (tree type, tree chrec, tree at_stmt)
+chrec_convert (tree type, tree chrec, gimple at_stmt)
 {
   return chrec_convert_1 (type, chrec, at_stmt, true);
 }
@@ -1278,7 +1278,7 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
    tests, but also to enforce that the result follows them.  */
 
 static tree 
-chrec_convert_1 (tree type, tree chrec, tree at_stmt,
+chrec_convert_1 (tree type, tree chrec, gimple at_stmt,
 		 bool use_overflow_semantics)
 {
   tree ct, res;
@@ -1352,10 +1352,10 @@ chrec_convert_aggressive (tree type, tree chrec)
   right = CHREC_RIGHT (chrec);
   lc = chrec_convert_aggressive (type, left);
   if (!lc)
-    lc = chrec_convert (type, left, NULL_TREE);
+    lc = chrec_convert (type, left, NULL);
   rc = chrec_convert_aggressive (rtype, right);
   if (!rc)
-    rc = chrec_convert (rtype, right, NULL_TREE);
+    rc = chrec_convert (rtype, right, NULL);
  
   return build_polynomial_chrec (CHREC_VARIABLE (chrec), lc, rc);
 }

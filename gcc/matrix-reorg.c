@@ -107,9 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 
   Both optimizations are described in the paper "Matrix flattening and 
   transposing in GCC" which was presented in GCC summit 2006. 
-  http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf
-
- */
+  http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf.  */
 
 #include "config.h"
 #include "system.h"
@@ -145,8 +143,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 
-/*
-   We need to collect a lot of data from the original malloc,
+  /* FIXME tuples.  */
+#if 0
+/* We need to collect a lot of data from the original malloc,
    particularly as the gimplifier has converted:
 
    orig_var = (struct_type *) malloc (x * sizeof (struct_type *));
@@ -430,7 +429,7 @@ may_flatten_matrices_1 (tree stmt)
   switch (TREE_CODE (stmt))
     {
     case GIMPLE_MODIFY_STMT:
-      t = GIMPLE_STMT_OPERAND (stmt, 1);
+      t = TREE_OPERAND (stmt, 1);
       while (CONVERT_EXPR_P (t))
 	{
 	  if (TREE_TYPE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
@@ -775,7 +774,7 @@ analyze_matrix_allocation_site (struct matrix_info *mi, tree stmt,
 {
   if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+      tree rhs = TREE_OPERAND (stmt, 1);
 
       rhs = get_inner_of_cast_expr (rhs);
       if (TREE_CODE (rhs) == SSA_NAME)
@@ -910,7 +909,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 0; VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
        i++)
     {
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (acc_info->stmt, 1)) == POINTER_PLUS_EXPR
+      if (TREE_CODE (TREE_OPERAND (acc_info->stmt, 1)) == POINTER_PLUS_EXPR
 	  && acc_info->level < min_escape_l)
 	{
 	  loop = loop_containing_stmt (acc_info->stmt);
@@ -930,7 +929,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
 		    {
 		      acc_info->iterated_by_inner_most_loop_p = 1;
 		      mi->dim_hot_level[acc_info->level] +=
-			bb_for_stmt (acc_info->stmt)->count;
+			gimple_bb (acc_info->stmt)->count;
 		    }
 
 		}
@@ -952,7 +951,7 @@ get_index_from_offset (tree offset, tree def_stmt)
 
   if (TREE_CODE (def_stmt) == PHI_NODE)
     return NULL;
-  expr = get_inner_of_cast_expr (GIMPLE_STMT_OPERAND (def_stmt, 1));
+  expr = get_inner_of_cast_expr (TREE_OPERAND (def_stmt, 1));
   if (TREE_CODE (expr) == SSA_NAME)
     return get_index_from_offset (offset, SSA_NAME_DEF_STMT (expr));
   else if (TREE_CODE (expr) == MULT_EXPR)
@@ -980,9 +979,9 @@ update_type_size (struct matrix_info *mi, tree stmt, tree ssa_var,
 
   /* Update type according to the type of the INDIRECT_REF expr.   */
   if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == INDIRECT_REF)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == INDIRECT_REF)
     {
-      lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+      lhs = TREE_OPERAND (stmt, 0);
       gcc_assert (POINTER_TYPE_P
 		  (TREE_TYPE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
       type_size =
@@ -1139,8 +1138,8 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
 				  bool record_accesses)
 {
 
-  tree lhs = GIMPLE_STMT_OPERAND (use_stmt, 0);
-  tree rhs = GIMPLE_STMT_OPERAND (use_stmt, 1);
+  tree lhs = TREE_OPERAND (use_stmt, 0);
+  tree rhs = TREE_OPERAND (use_stmt, 1);
   struct ssa_acc_in_tree lhs_acc, rhs_acc;
 
   memset (&lhs_acc, 0, sizeof (lhs_acc));
@@ -1376,7 +1375,7 @@ check_var_notmodified_p (tree * tp, int *walk_subtrees, void *data)
 	stmt = bsi_stmt (bsi);
 	if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	  continue;
-	if (GIMPLE_STMT_OPERAND (stmt, 0) == t)
+	if (TREE_OPERAND (stmt, 0) == t)
 	  return stmt;
       }
   }
@@ -1425,7 +1424,7 @@ can_calculate_expr_before_stmt (tree expr, sbitmap visited)
 	return fold_build2 (TREE_CODE (expr), TREE_TYPE (expr), op1, op2);
       return NULL_TREE;
     case GIMPLE_MODIFY_STMT:
-      return can_calculate_expr_before_stmt (GIMPLE_STMT_OPERAND (expr, 1),
+      return can_calculate_expr_before_stmt (TREE_OPERAND (expr, 1),
 					     visited);
     case PHI_NODE:
       {
@@ -1588,9 +1587,9 @@ find_sites_in_func (bool record)
       {
 	stmt = bsi_stmt (bsi);
 	if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == VAR_DECL)
+	    && TREE_CODE (TREE_OPERAND (stmt, 0)) == VAR_DECL)
 	  {
-	    tmpmi.decl = GIMPLE_STMT_OPERAND (stmt, 0);
+	    tmpmi.decl = TREE_OPERAND (stmt, 0);
 	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
 							&tmpmi)))
 	      {
@@ -1599,16 +1598,16 @@ find_sites_in_func (bool record)
 	      }
 	  }
 	if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
-	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == VAR_DECL)
+	    && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
+	    && TREE_CODE (TREE_OPERAND (stmt, 1)) == VAR_DECL)
 	  {
-	    tmpmi.decl = GIMPLE_STMT_OPERAND (stmt, 1);
+	    tmpmi.decl = TREE_OPERAND (stmt, 1);
 	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
 							&tmpmi)))
 	      {
 		sbitmap_zero (visited_stmts_1);
 		analyze_matrix_accesses (mi,
-					 GIMPLE_STMT_OPERAND (stmt, 0), 0,
+					 TREE_OPERAND (stmt, 0), 0,
 					 false, visited_stmts_1, record);
 	      }
 	  }
@@ -1642,8 +1641,8 @@ record_all_accesses_in_func (void)
       if (!ssa_var
 	  || TREE_CODE (SSA_NAME_DEF_STMT (ssa_var)) != GIMPLE_MODIFY_STMT)
 	continue;
-      rhs = GIMPLE_STMT_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 1);
-      lhs = GIMPLE_STMT_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 0);
+      rhs = TREE_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 1);
+      lhs = TREE_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 0);
       if (TREE_CODE (rhs) != VAR_DECL && TREE_CODE (lhs) != VAR_DECL)
 	continue;
 
@@ -1741,7 +1740,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	}
       if (acc_info->is_alloc)
 	{
-	  if (acc_info->level >= 0 && bb_for_stmt (acc_info->stmt))
+	  if (acc_info->level >= 0 && gimple_bb (acc_info->stmt))
 	    {
 	      ssa_op_iter iter;
 	      tree def;
@@ -1751,7 +1750,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		mark_sym_for_renaming (SSA_NAME_VAR (def));
 	      bsi = bsi_for_stmt (stmt);
 	      gcc_assert (TREE_CODE (acc_info->stmt) == GIMPLE_MODIFY_STMT);
-	      if (TREE_CODE (GIMPLE_STMT_OPERAND (acc_info->stmt, 0)) ==
+	      if (TREE_CODE (TREE_OPERAND (acc_info->stmt, 0)) ==
 		  SSA_NAME && acc_info->level < min_escape_l - 1)
 		{
 		  imm_use_iterator imm_iter;
@@ -1759,7 +1758,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		  tree use_stmt;
 
 		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-					 GIMPLE_STMT_OPERAND (acc_info->stmt,
+					 TREE_OPERAND (acc_info->stmt,
 							      0))
 		    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 		  {
@@ -1768,22 +1767,22 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		    /* Emit convert statement to convert to type of use.  */
 		    conv =
 		      fold_build1 (CONVERT_EXPR,
-				   TREE_TYPE (GIMPLE_STMT_OPERAND
+				   TREE_TYPE (TREE_OPERAND
 					      (acc_info->stmt, 0)),
-				   TREE_OPERAND (GIMPLE_STMT_OPERAND
+				   TREE_OPERAND (TREE_OPERAND
 						 (acc_info->stmt, 1), 0));
 		    tmp =
 		      create_tmp_var (TREE_TYPE
-				      (GIMPLE_STMT_OPERAND
+				      (TREE_OPERAND
 				       (acc_info->stmt, 0)), "new");
 		    add_referenced_var (tmp);
 		    stmts =
 		      fold_build2 (GIMPLE_MODIFY_STMT,
-				   TREE_TYPE (GIMPLE_STMT_OPERAND
+				   TREE_TYPE (TREE_OPERAND
 					      (acc_info->stmt, 0)), tmp,
 				   conv);
 		    tmp = make_ssa_name (tmp, stmts);
-		    GIMPLE_STMT_OPERAND (stmts, 0) = tmp;
+		    TREE_OPERAND (stmts, 0) = tmp;
 		    bsi = bsi_for_stmt (acc_info->stmt);
 		    bsi_insert_after (&bsi, stmts, BSI_SAME_STMT);
 		    SET_USE (use_p, tmp);
@@ -1795,7 +1794,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	  free (acc_info);
 	  continue;
 	}
-      orig = GIMPLE_STMT_OPERAND (acc_info->stmt, 1);
+      orig = TREE_OPERAND (acc_info->stmt, 1);
       type = TREE_TYPE (orig);
       if (TREE_CODE (orig) == INDIRECT_REF
 	  && acc_info->level < min_escape_l - 1)
@@ -1804,8 +1803,8 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	     from "pointer to type" to "type".  */
 	  orig =
 	    build1 (NOP_EXPR, TREE_TYPE (orig),
-		    GIMPLE_STMT_OPERAND (orig, 0));
-	  GIMPLE_STMT_OPERAND (acc_info->stmt, 1) = orig;
+		    TREE_OPERAND (orig, 0));
+	  TREE_OPERAND (acc_info->stmt, 1) = orig;
 	}
       else if (TREE_CODE (orig) == POINTER_PLUS_EXPR
 	       && acc_info->level < (min_escape_l))
@@ -2095,7 +2094,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 					   true, BSI_SAME_STMT);
       /* GLOBAL_HOLDING_THE_SIZE = DIM_SIZE.  */
       tmp = fold_build2 (GIMPLE_MODIFY_STMT, type, dim_var, dim_size);
-      GIMPLE_STMT_OPERAND (tmp, 0) = dim_var;
+      TREE_OPERAND (tmp, 0) = dim_var;
       mark_symbols_for_renaming (tmp);
       bsi_insert_before (&bsi, tmp, BSI_SAME_STMT);
 
@@ -2104,7 +2103,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   update_ssa (TODO_update_ssa);
   /* Replace the malloc size argument in the malloc of level 0 to be
      the size of all the dimensions.  */
-  malloc_stmt = GIMPLE_STMT_OPERAND (call_stmt_0, 1);
+  malloc_stmt = TREE_OPERAND (call_stmt_0, 1);
   c_node = cgraph_node (mi->allocation_function_decl);
   old_size_0 = CALL_EXPR_ARG (malloc_stmt, 0);
   tmp = force_gimple_operand_bsi (&bsi, mi->dimension_size[0], true,
@@ -2128,7 +2127,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
       tree call;
 
       tree call_stmt = mi->malloc_for_level[i];
-      call = GIMPLE_STMT_OPERAND (call_stmt, 1);
+      call = TREE_OPERAND (call_stmt, 1);
       gcc_assert (TREE_CODE (call) == CALL_EXPR);
       e = cgraph_edge (c_node, call_stmt);
       gcc_assert (e);
@@ -2138,7 +2137,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
       bsi_remove (&bsi, true);
       /* remove the type cast stmt.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     GIMPLE_STMT_OPERAND (call_stmt, 0))
+			     TREE_OPERAND (call_stmt, 0))
       {
 	use_stmt1 = use_stmt;
 	bsi = bsi_for_stmt (use_stmt);
@@ -2146,7 +2145,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
       }
       /* Remove the assignment of the allocated area.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     GIMPLE_STMT_OPERAND (use_stmt1, 0))
+			     TREE_OPERAND (use_stmt1, 0))
       {
 	bsi = bsi_for_stmt (use_stmt);
 	bsi_remove (&bsi, true);
@@ -2204,12 +2203,13 @@ dump_matrix_reorg_analysis (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-
+#endif
 /* Perform matrix flattening.  */
 
 static unsigned int
 matrix_reorg (void)
 {
+#if 0 /* FIXME tuples */
   struct cgraph_node *node;
 
   if (profile_info)
@@ -2233,7 +2233,7 @@ matrix_reorg (void)
 	current_function_decl = node->decl;
 	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	bitmap_obstack_initialize (NULL);
-	tree_register_cfg_hooks ();
+	gimple_register_cfg_hooks ();
 
 	if (!gimple_in_ssa_p (cfun))
 	  {
@@ -2301,7 +2301,7 @@ matrix_reorg (void)
 	current_function_decl = node->decl;
 	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	bitmap_obstack_initialize (NULL);
-	tree_register_cfg_hooks ();
+	gimple_register_cfg_hooks ();
 	record_all_accesses_in_func ();
 	htab_traverse (matrices_to_reorg, transform_access_sites, NULL);
 	free_dominance_info (CDI_DOMINATORS);
@@ -2316,6 +2316,9 @@ matrix_reorg (void)
   set_cfun (NULL);
   matrices_to_reorg = NULL;
   return 0;
+#else
+  gcc_unreachable ();
+#endif
 }
 
 
@@ -2323,7 +2326,12 @@ matrix_reorg (void)
 static bool
 gate_matrix_reorg (void)
 {
+  /* FIXME tuples */
+#if 0
   return flag_ipa_matrix_reorg && flag_whole_program;
+#else
+  return false;
+#endif
 }
 
 struct simple_ipa_opt_pass pass_ipa_matrix_reorg = 
@@ -2344,3 +2352,4 @@ struct simple_ipa_opt_pass pass_ipa_matrix_reorg =
   TODO_dump_cgraph | TODO_dump_func	/* todo_flags_finish */
  }
 };
+

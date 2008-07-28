@@ -28,7 +28,7 @@ struct cfg_hooks
 
   /* Debugging.  */
   int (*verify_flow_info) (void);
-  void (*dump_bb) (basic_block, FILE *, int);
+  void (*dump_bb) (basic_block, FILE *, int, int);
 
   /* Basic CFG manipulation.  */
 
@@ -181,7 +181,7 @@ extern void lv_add_condition_to_bb (basic_block, basic_block, basic_block,
 				    void *);
 
 /* Hooks containers.  */
-extern struct cfg_hooks tree_cfg_hooks;
+extern struct cfg_hooks gimple_cfg_hooks;
 extern struct cfg_hooks rtl_cfg_hooks;
 extern struct cfg_hooks cfg_layout_rtl_cfg_hooks;
 
@@ -189,6 +189,6 @@ extern struct cfg_hooks cfg_layout_rtl_cfg_hooks;
 extern enum ir_type current_ir_type (void);
 extern void rtl_register_cfg_hooks (void);
 extern void cfg_layout_rtl_register_cfg_hooks (void);
-extern void tree_register_cfg_hooks (void);
+extern void gimple_register_cfg_hooks (void);
 
 #endif  /* GCC_CFGHOOKS_H */

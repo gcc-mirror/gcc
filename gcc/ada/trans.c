@@ -40,7 +40,8 @@
 #include "except.h"
 #include "debug.h"
 #include "output.h"
-#include "tree-gimple.h"
+#include "tree-iterator.h"
+#include "gimple.h"
 #include "ada.h"
 #include "types.h"
 #include "atree.h"
@@ -356,7 +357,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   for (info = elab_info_list; info; info = info->next)
     {
       tree gnu_body = DECL_SAVED_TREE (info->elab_proc);
-      tree gnu_stmts;
 
       /* Unshare SAVE_EXPRs between subprograms.  These are not unshared by
 	 the gimplifier for obvious reasons, but it turns out that we need to
@@ -368,30 +368,14 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 	 an upstream bug for which we would not change the outcome.  */
       walk_tree_without_duplicates (&gnu_body, unshare_save_expr, NULL);
 
-      /* Set the current function to be the elaboration procedure and gimplify
-	 what we have.  */
-      current_function_decl = info->elab_proc;
-      gimplify_body (&gnu_body, info->elab_proc, true);
+      /* Process the function as others, but for indicating this is an
+	 elab proc, to be discarded if empty, then propagate the status
+	 up to the GNAT tree node.  */
+      begin_subprog_body (info->elab_proc);
+      end_subprog_body (gnu_body, true);
 
-      /* We should have a BIND_EXPR, but it may or may not have any statements
-	 in it.  If it doesn't have any, we have nothing to do.  */
-      gnu_stmts = gnu_body;
-      if (TREE_CODE (gnu_stmts) == BIND_EXPR)
-	gnu_stmts = BIND_EXPR_BODY (gnu_stmts);
-
-      /* If there are no statements, there is no elaboration code.  */
-      if (!gnu_stmts || !STATEMENT_LIST_HEAD (gnu_stmts))
-	{
-	  Set_Has_No_Elaboration_Code (info->gnat_node, 1);
-	  cgraph_remove_node (cgraph_node (info->elab_proc));
-	}
-      else
-	{
-	  /* Otherwise, compile the function.  Note that we'll be gimplifying
-	     it twice, but that's fine for the nodes we use.  */
-	  begin_subprog_body (info->elab_proc);
-	  end_subprog_body (gnu_body);
-	}
+      if (empty_body_p (gimple_body (info->elab_proc)))
+	Set_Has_No_Elaboration_Code (info->gnat_node, 1);
     }
 
   /* We cannot track the location of errors past this point.  */
@@ -2003,7 +1987,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       : Sloc (gnat_node)),
      &DECL_STRUCT_FUNCTION (gnu_subprog_decl)->function_end_locus);
 
-  end_subprog_body (gnu_result);
+  end_subprog_body (gnu_result, false);
 
   /* Disconnect the trees for parameters that we made variables for from the
      GNAT entities since these are unusable after we end the function.  */
@@ -5334,7 +5318,8 @@ pop_stack (tree *gnu_stack_ptr)
 /* Generate GIMPLE in place for the expression at *EXPR_P.  */
 
 int
-gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
+gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
+		    gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   tree expr = *expr_p;
   tree op;
@@ -5419,14 +5404,14 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	       && TREE_CODE_CLASS (TREE_CODE (op)) != tcc_constant)
 	{
 	  tree new_var = create_tmp_var (TREE_TYPE (op), "A");
-	  tree mod = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (op), new_var, op);
+	  gimple stmt;
 
 	  TREE_ADDRESSABLE (new_var) = 1;
 
+	  stmt = gimplify_assign (new_var, op, pre_p);
 	  if (EXPR_HAS_LOCATION (op))
-	    SET_EXPR_LOCUS (mod, EXPR_LOCUS (op));
+	    gimple_set_location (stmt, *EXPR_LOCUS (op));
 
-	  gimplify_and_add (mod, pre_p);
 	  TREE_OPERAND (expr, 0) = new_var;
 	  recompute_tree_invariant_for_addr_expr (expr);
 	  return GS_ALL_DONE;
@@ -5494,7 +5479,7 @@ gnat_gimplify_stmt (tree *stmt_p)
 	  append_to_statement_list (LOOP_STMT_UPDATE (stmt), stmt_p);
 
 	t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
-	set_expr_location (t, DECL_SOURCE_LOCATION (gnu_end_label));
+	SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (gnu_end_label));
 	append_to_statement_list (t, stmt_p);
 
 	append_to_statement_list (build1 (LABEL_EXPR, void_type_node,
@@ -6913,7 +6898,7 @@ set_expr_location_from_node (tree node, Node_Id gnat_node)
   if (!Sloc_to_locus (Sloc (gnat_node), &locus))
     return;
 
-  set_expr_location (node, locus);
+  SET_EXPR_LOCATION (node, locus);
 }
 
 /* Return a colon-separated list of encodings contained in encoded Ada

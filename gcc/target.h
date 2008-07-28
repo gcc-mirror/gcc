@@ -707,8 +707,8 @@ struct gcc_target
   void (* expand_builtin_va_start) (tree valist, rtx nextarg);
 
   /* Gimplifies a VA_ARG_EXPR.  */
-  tree (* gimplify_va_arg_expr) (tree valist, tree type, tree *pre_p,
-				 tree *post_p);
+  tree (* gimplify_va_arg_expr) (tree valist, tree type, gimple_seq *pre_p,
+				 gimple_seq *post_p);
 
   /* Validity-checking routines for PCH files, target-specific.
      get_pch_validity returns a pointer to the data to be stored,
@@ -754,10 +754,9 @@ struct gcc_target
   void (* dwarf_handle_frame_unspec) (const char *, rtx, int);
 
   /* Perform architecture specific checking of statements gimplified
-     from VA_ARG_EXPR.  LHS is left hand side of MODIFY_EXPR, RHS
-     is right hand side.  Returns true if the statements doesn't need
-     to be checked for va_list references.  */
-  bool (* stdarg_optimize_hook) (struct stdarg_info *ai, const_tree lhs, const_tree rhs);
+     from VA_ARG_EXPR.  STMT is the statement.  Returns true if the statement
+     doesn't need to be checked for va_list references.  */
+  bool (* stdarg_optimize_hook) (struct stdarg_info *ai, const_gimple stmt);
 
   /* This target hook allows the operating system to override the DECL
      that represents the external variable that contains the stack

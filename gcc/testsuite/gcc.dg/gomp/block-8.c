@@ -7,5 +7,5 @@ int foo()
 
   #pragma omp parallel for
   for (i = 0; i < 10; ++i)
-    return 0;			// { dg-error "invalid exit" }
+    return 0;			// { dg-error "invalid branch" }
 }
