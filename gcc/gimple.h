@@ -1007,6 +1007,11 @@ extern bool validate_gimple_arglist (const_gimple, ...);
 /* In tree-ssa-operands.c  */
 extern void gimple_add_to_addresses_taken (gimple, tree);
 
+/* In tree-ssa.c  */
+extern bool tree_ssa_useless_type_conversion (tree);
+extern bool useless_type_conversion_p (tree, tree);
+extern bool types_compatible_p (tree, tree);
+
 /* Return the code for GIMPLE statement G.  */
 
 static inline enum gimple_code
@@ -1394,7 +1399,9 @@ gimple_expr_type (const_gimple stmt)
 	 convertible to one of its sub-types.  So always return
 	 the base type here.  */
       if (INTEGRAL_TYPE_P (type)
-	  && TREE_TYPE (type))
+	  && TREE_TYPE (type)
+	  /* But only if they are trivially convertible.  */
+	  && useless_type_conversion_p (type, TREE_TYPE (type)))
 	type = TREE_TYPE (type);
       return type;
     }
