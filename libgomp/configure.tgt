@@ -35,6 +35,10 @@ if test $enable_linux_futex = yes; then
 	config_path="linux/ia64 linux posix"
 	;;
 
+    mips*-*-linux*)
+	config_path="linux/mips linux posix"
+	;;
+
     powerpc*-*-linux*)
 	config_path="linux/powerpc linux posix"
 	;;
