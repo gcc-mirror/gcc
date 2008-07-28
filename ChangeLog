@@ -1,3 +1,7 @@
+2008-07-28 Aldy Hernandez <aldyh@redhat.com>
+
+	* MAINTAINERS: Add Jakub and myself as gimple maintainers.
+
 2008-07-11 Dodji Seketeli <dseketel@redhat.com>
 
 	* MAINTAINERS (Write after Approval): Add myself.
