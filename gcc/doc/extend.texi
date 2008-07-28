@@ -11616,6 +11616,35 @@ strict control over project policies.
 
 @end table
 
+GCC also offers a simple mechanism for printing messages during
+compilation.
+
+@table @code
+@item #pragma message @var{string}
+@cindex pragma, diagnostic
+
+Prints @var{string} as a compiler message on compilation.  The message
+is informational only, and is neither a compilation warning nor an error.
+
+@smallexample
+#pragma message "Compiling " __FILE__ "..."
+@end smallexample
+
+@var{string} may be parenthesized, and is printed with location
+information.  For example,
+
+@smallexample
+#define DO_PRAGMA(x) _Pragma (#x)
+#define TODO(x) DO_PRAGMA(message ("TODO - " #x))
+
+TODO(Remember to fix this)
+@end smallexample
+
+prints @samp{/tmp/file.c:4: note: #pragma message:
+TODO - Remember to fix this}.
+
+@end table
+
 @node Visibility Pragmas
 @subsection Visibility Pragmas
 
