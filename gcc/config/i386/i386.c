@@ -6680,7 +6680,7 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (mode == XFmode
-      && (optimize_size || TARGET_EXT_80387_CONSTANTS))
+      && (optimize_insn_for_size_p () || TARGET_EXT_80387_CONSTANTS))
     {
       int i;
 
@@ -16410,12 +16410,15 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 			   || (alg != rep_prefix_1_byte		\
 			       && alg != rep_prefix_4_byte      \
 			       && alg != rep_prefix_8_byte))
+  const struct processor_costs *cost;
+  
+  cost = optimize_insn_for_size_p () ? &size_cost : ix86_cost;
 
   *dynamic_check = -1;
   if (memset)
-    algs = &ix86_cost->memset[TARGET_64BIT != 0];
+    algs = &cost->memset[TARGET_64BIT != 0];
   else
-    algs = &ix86_cost->memcpy[TARGET_64BIT != 0];
+    algs = &cost->memcpy[TARGET_64BIT != 0];
   if (stringop_alg != no_stringop && ALG_USABLE_P (stringop_alg))
     return stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */

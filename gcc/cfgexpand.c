@@ -1798,6 +1798,7 @@ expand_gimple_basic_block (basic_block bb)
      access the BB sequence directly.  */
   stmts = bb_seq (bb);
   bb->il.gimple = NULL;
+  rtl_profile_for_bb (bb);
   init_rtl_bb_info (bb);
   bb->flags |= BB_RTL;
 
@@ -2020,6 +2021,8 @@ construct_exit_block (void)
   edge_iterator ei;
   rtx orig_end = BB_END (EXIT_BLOCK_PTR->prev_bb);
 
+  rtl_profile_for_bb (EXIT_BLOCK_PTR);
+
   /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
   if (cfun->function_end_locus != UNKNOWN_LOCATION)
@@ -2153,6 +2156,8 @@ gimple_expand_cfg (void)
   /* Some backends want to know that we are expanding to RTL.  */
   currently_expanding_to_rtl = 1;
 
+  rtl_profile_for_bb (ENTRY_BLOCK_PTR);
+
   insn_locators_alloc ();
   if (!DECL_BUILT_IN (current_function_decl))
     set_curr_insn_source_location (DECL_SOURCE_LOCATION (current_function_decl));
@@ -2216,6 +2221,9 @@ gimple_expand_cfg (void)
   lab_rtx_for_bb = pointer_map_create ();
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
     bb = expand_gimple_basic_block (bb);
+
+  /* Expansion is used by optimization passes too, set maybe_hot_insn_p
+     conservatively to true until they are all profile aware.  */
   pointer_map_destroy (lab_rtx_for_bb);
   free_histograms ();
 
@@ -2284,6 +2292,7 @@ gimple_expand_cfg (void)
   /* Tag the blocks with a depth number so that change_scope can find
      the common parent easily.  */
   set_block_levels (DECL_INITIAL (cfun->decl), 0);
+  default_rtl_profile ();
   return 0;
 }
 

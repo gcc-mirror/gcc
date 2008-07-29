@@ -397,6 +397,9 @@ struct rtl_data GTY(())
      Set in stmt.c if anything is allocated on the stack there.
      Set in reload1.c if anything is allocated on the stack there.  */
   bool frame_pointer_needed;
+
+  /* When set, expand should optimize for speed.  */
+  bool maybe_hot_insn_p;
 };
 
 #define return_label (crtl->x_return_label)
