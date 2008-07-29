@@ -1,3 +1,8 @@
+2008-07-29  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_expr): Clear TREE_SIDE_EFFECTS for
+	OBJ_TYPE_REF.
+
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-format.c (check_format_types): Revert unwanted checkin.
