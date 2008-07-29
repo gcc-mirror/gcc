@@ -178,6 +178,86 @@ probably_never_executed_bb_p (const_basic_block bb)
   return false;
 }
 
+/* Return true when current function should always be optimized for size.  */
+
+static bool
+always_optimize_for_size_p (void)
+{
+  return (optimize_size
+	  || cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED);
+}
+
+/* Return TRUE when BB should be optimized for size.  */
+
+bool
+optimize_bb_for_size_p (basic_block bb)
+{
+  return always_optimize_for_size_p () || !maybe_hot_bb_p (bb);
+}
+
+/* Return TRUE when BB should be optimized for speed.  */
+
+bool
+optimize_bb_for_speed_p (basic_block bb)
+{
+  return !optimize_bb_for_size_p (bb);
+}
+
+/* Return TRUE when BB should be optimized for size.  */
+
+bool
+optimize_edge_for_size_p (edge e)
+{
+  return always_optimize_for_size_p () || !maybe_hot_edge_p (e);
+}
+
+/* Return TRUE when BB should be optimized for speed.  */
+
+bool
+optimize_edge_for_speed_p (edge e)
+{
+  return !optimize_edge_for_size_p (e);
+}
+
+/* Return TRUE when BB should be optimized for size.  */
+
+bool
+optimize_insn_for_size_p (void)
+{
+  return always_optimize_for_size_p () || !crtl->maybe_hot_insn_p;
+}
+
+/* Return TRUE when BB should be optimized for speed.  */
+
+bool
+optimize_insn_for_speed_p (void)
+{
+  return !optimize_insn_for_size_p ();
+}
+
+/* Set RTL expansion for BB profile.  */
+
+void
+rtl_profile_for_bb (basic_block bb)
+{
+  crtl->maybe_hot_insn_p = maybe_hot_bb_p (bb);
+}
+
+/* Set RTL expansion for edge profile.  */
+
+void
+rtl_profile_for_edge (edge e)
+{
+  crtl->maybe_hot_insn_p = maybe_hot_edge_p (e);
+}
+
+/* Set RTL expansion to default mode (i.e. when profile info is not known).  */
+void
+default_rtl_profile (void)
+{
+  crtl->maybe_hot_insn_p = true;
+}
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 

@@ -831,6 +831,12 @@ extern bool maybe_hot_bb_p (const_basic_block);
 extern bool maybe_hot_edge_p (edge);
 extern bool probably_cold_bb_p (const_basic_block);
 extern bool probably_never_executed_bb_p (const_basic_block);
+extern bool optimize_bb_for_size_p (basic_block);
+extern bool optimize_bb_for_speed_p (basic_block);
+extern bool optimize_edge_for_size_p (edge);
+extern bool optimize_edge_for_speed_p (edge);
+extern bool optimize_insn_for_size_p (void);
+extern bool optimize_insn_for_speed_p (void);
 extern bool gimple_predicted_by_p (const_basic_block, enum br_predictor);
 extern bool rtl_predicted_by_p (const_basic_block, enum br_predictor);
 extern void gimple_predict_edge (edge, enum br_predictor, int);
@@ -988,6 +994,11 @@ bb_has_abnormal_pred (basic_block bb)
 
 /* In cfgloopmanip.c.  */
 extern edge mfb_kj_edge;
-bool mfb_keep_just (edge);
+extern bool mfb_keep_just (edge);
+
+/* In cfgexpand.c.  */
+extern void rtl_profile_for_bb (basic_block);
+extern void rtl_profile_for_edge (edge);
+extern void default_rtl_profile (void);
 
 #endif /* GCC_BASIC_BLOCK_H */

@@ -1,3 +1,23 @@
+2008-07-29  Jan HUbicka  <jh@suse.cz>
+
+	* predict.c (always_optimize_for_size_p): New function.
+	(optimize_bb_for_size_p, optimize_bb_for_speed_p,
+	optimize_edge_for_size_p, optimize_edge_for_speed_p,
+	optimize_insn_for_size_p, optimize_insn_for_speed_p): New global
+	functions.
+	(rtl_profile_for_bb, rtl_profile_for_edge, rtl_default_profile): New.
+	* function.c (prepare_function_start): Set default profile.
+	* function.h (rtl_data): Add maybe_hot_insn_p.
+	* cfgexpand.c (expand_gimple_basic_block): Set RTL profile.
+	(construct_exit_block): Likewise.
+	(tree_expand_cfg): Likewise.
+	* basic-block.h
+	(optimize_bb_for_size_p, optimize_bb_for_speed_p,
+	optimize_edge_for_size_p, optimize_edge_for_speed_p,
+	optimize_insn_for_size_p, optimize_insn_for_speed_p): Declare.
+	(rtl_profile_for_bb, rtl_profile_for_edge, default_rtl_profile):
+	Declare.
+
 2008-07-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 34985

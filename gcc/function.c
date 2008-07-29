@@ -3885,6 +3885,7 @@ prepare_function_start (void)
   init_emit ();
   init_varasm_status ();
   init_expr ();
+  default_rtl_profile ();
 
   cse_not_expected = ! optimize;
 
