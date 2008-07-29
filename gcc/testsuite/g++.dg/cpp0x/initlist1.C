@@ -56,6 +56,9 @@ void i(initializer_list<int> l)
   if (p != l.end()) abort();
 }
 
+struct U { U(int, int) {} };
+U ua[] = { { 3, 2 } };
+
 int main()
 {
   g({1,2,3});
