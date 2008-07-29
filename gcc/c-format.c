@@ -2262,7 +2262,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	  && TREE_CODE (cur_type) == INTEGER_TYPE
 	  && (!pedantic || i == 0 || (i == 1 && char_type_flag))
 	  && (TYPE_UNSIGNED (wanted_type)
-	      ? wanted_type == unsigned_type_for (cur_type)
+	      ? wanted_type == c_common_unsigned_type (cur_type)
 	      : wanted_type == c_common_signed_type (cur_type)))
 	continue;
       /* Likewise, "signed char", "unsigned char" and "char" are
