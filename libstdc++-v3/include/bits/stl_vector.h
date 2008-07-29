@@ -277,11 +277,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
-	: _Base(__a)
-        {
-	  _M_range_initialize(__l.begin(), __l.end(),
-			      random_access_iterator_tag());
-	}
+      : _Base(__a)
+      {
+	_M_range_initialize(__l.begin(), __l.end(),
+			    random_access_iterator_tag());
+      }
 #endif
 
       /**

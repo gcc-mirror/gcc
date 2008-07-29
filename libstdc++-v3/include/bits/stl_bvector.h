@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -534,7 +534,7 @@ template<typename _Alloc>
 
     vector(initializer_list<bool> __l,
 	   const allocator_type& __a = allocator_type())
-      : _Base(__a)
+    : _Base(__a)
     {
       _M_initialize_range(__l.begin(), __l.end(),
 			  random_access_iterator_tag());

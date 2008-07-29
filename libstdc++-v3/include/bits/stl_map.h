@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       map(initializer_list<value_type> __l,
 	  const _Compare& __c = _Compare(),
 	  const allocator_type& __a = allocator_type())
-	: _M_t(__c, __a)
+      : _M_t(__c, __a)
       { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 #endif
 

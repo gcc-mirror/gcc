@@ -198,7 +198,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       multimap(initializer_list<value_type> __l,
 	       const _Compare& __comp = _Compare(),
 	       const allocator_type& __a = allocator_type())
-        : _M_t(__comp, __a)
+      : _M_t(__comp, __a)
       { _M_t._M_insert_equal(__l.begin(), __l.end()); }
 #endif
 

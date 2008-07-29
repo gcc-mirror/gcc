@@ -100,7 +100,7 @@ namespace __debug
       multiset(initializer_list<value_type> __l,
 	       const _Compare& __comp = _Compare(),
 	       const allocator_type& __a = allocator_type())
-	: _Base(__l, __comp, __a), _Safe_base() { }
+      : _Base(__l, __comp, __a), _Safe_base() { }
 #endif
 
       ~multiset() { }

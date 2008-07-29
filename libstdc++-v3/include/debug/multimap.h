@@ -103,7 +103,7 @@ namespace __debug
       multimap(initializer_list<value_type> __l,
 	       const _Compare& __c = _Compare(),
 	       const allocator_type& __a = allocator_type())
-	: _Base(__l, __c, __a), _Safe_base() { }
+      : _Base(__l, __c, __a), _Safe_base() { }
 #endif
 
       ~multimap() { }

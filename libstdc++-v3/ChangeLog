@@ -1,5 +1,22 @@
 2008-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/set.h: Minor formatting fixes.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/safe_association.h: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+
+2008-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/utility: Include <initializer_list>, per the current WP.
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_cstdint): Tweak,

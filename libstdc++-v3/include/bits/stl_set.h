@@ -215,10 +215,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This is linear in N if the list is already sorted, and NlogN
        *  otherwise (where N is @a l.size()).
        */
-     set(initializer_list<value_type> __l,
-	 const _Compare& __comp = _Compare(),
-	 const allocator_type& __a = allocator_type())
-	: _M_t(__comp, __a)
+      set(initializer_list<value_type> __l,
+	  const _Compare& __comp = _Compare(),
+	  const allocator_type& __a = allocator_type())
+      : _M_t(__comp, __a)
       { _M_t._M_insert_unique(__l.begin(), __l.end()); }
 #endif
 
