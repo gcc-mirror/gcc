@@ -1,4 +1,6 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-cstdint "" }
+
 // 2008-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2008 Free Software Foundation
@@ -69,9 +71,8 @@ template<typename T, typename R>
 
 int main()
 {
-#if _GLIBCXX_USE_C99_STDINT_TR1
   do_test<char16_t, uint_least16_t>();
   do_test<char32_t, uint_least32_t>();
-#endif
+
   return 0;
 }

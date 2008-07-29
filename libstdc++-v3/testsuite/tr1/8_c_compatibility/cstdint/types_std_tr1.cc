@@ -1,8 +1,9 @@
 // { dg-do compile }
+// { dg-require-cstdint "" }
 
 // 2006-01-29  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +27,6 @@
 
 void test01()
 {
-#if _GLIBCXX_USE_C99_STDINT_TR1
-
   typedef std::tr1::int8_t          my_int8_t;
   typedef std::tr1::int16_t         my_int16_t;
   typedef std::tr1::int32_t         my_int32_t;
@@ -56,6 +55,4 @@ void test01()
   typedef std::tr1::uint_least64_t  my_uint_least64_t;
   typedef std::tr1::uintmax_t       my_uintmax_t;
   typedef std::tr1::uintptr_t       my_uintptr_t;
-  
-#endif
 }
