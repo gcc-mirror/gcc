@@ -1,3 +1,9 @@
+2008-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36852
+	* g++.dg/pch/array-1.C: New test.
+	* g++.dg/pch/array-1.Hs: New file.
+
 2008-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36132
