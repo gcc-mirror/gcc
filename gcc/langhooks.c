@@ -133,7 +133,7 @@ lhd_warn_unused_global_decl (const_tree decl)
   /* This is what used to exist in check_global_declarations.  Probably
      not many of these actually apply to non-C languages.  */
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
   if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
     return false;
