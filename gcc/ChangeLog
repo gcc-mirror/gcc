@@ -1,3 +1,9 @@
+2008-07-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_gimplify_va_arg_expr): Unshare the addr,
+	valist, next_fp, next_fp_tmp, next_fp_limit, next_o, next_o_limit,
+	next_stack, lab_false and lab_over trees.
+
 2008-07-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36957

@@ -7350,18 +7350,19 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  tree cmp;
 	  bool is_double = size == 8 && TREE_CODE (eff_type) == REAL_TYPE;
 
-	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_fp);
-	  gimplify_assign (addr, tmp, pre_p);
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, unshare_expr (next_fp));
+	  gimplify_assign (unshare_expr (addr), tmp, pre_p);
 
-	  gimplify_assign (next_fp_tmp, valist, pre_p);
+	  gimplify_assign (unshare_expr (next_fp_tmp), valist, pre_p);
 	  tmp = next_fp_limit;
 	  if (size > 4 && !is_double)
-	    tmp = build2 (POINTER_PLUS_EXPR, TREE_TYPE (tmp), tmp,
-			  size_int (4 - size));
-	  tmp = build2 (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
+	    tmp = build2 (POINTER_PLUS_EXPR, TREE_TYPE (tmp),
+			  unshare_expr (tmp), size_int (4 - size));
+	  tmp = build2 (GE_EXPR, boolean_type_node,
+			unshare_expr (next_fp_tmp), unshare_expr (tmp));
 	  cmp = build3 (COND_EXPR, void_type_node, tmp,
-		        build1 (GOTO_EXPR, void_type_node, lab_false),
-		        NULL_TREE);
+		        build1 (GOTO_EXPR, void_type_node,
+				unshare_expr (lab_false)), NULL_TREE);
 	  if (!is_double)
 	    gimplify_and_add (cmp, pre_p);
 
@@ -7372,8 +7373,8 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	      tmp = build2 (BIT_AND_EXPR, sizetype, tmp,
 			    size_int (UNITS_PER_WORD));
 	      tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			    next_fp_tmp, tmp);
-	      gimplify_assign (next_fp_tmp, tmp, pre_p);
+			    unshare_expr (next_fp_tmp), tmp);
+	      gimplify_assign (unshare_expr (next_fp_tmp), tmp, pre_p);
 	    }
 	  if (is_double)
 	    gimplify_and_add (cmp, pre_p);
@@ -7398,48 +7399,53 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	    }
 #endif /* FUNCTION_ARG_SCmode_WART */
 
-	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, unshare_expr (lab_over));
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, unshare_expr (lab_false));
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  gimplify_assign (addr, tmp, pre_p);
-	  gimplify_assign (next_fp_tmp, valist, pre_p);
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, unshare_expr (next_stack));
+	  gimplify_assign (unshare_expr (addr), tmp, pre_p);
+	  gimplify_assign (unshare_expr (next_fp_tmp),
+			   unshare_expr (valist), pre_p);
 
-	  gimplify_assign (valist, next_fp_tmp, post_p);
+	  gimplify_assign (unshare_expr (valist),
+			   unshare_expr (next_fp_tmp), post_p);
 	  valist = next_fp_tmp;
 	}
       else
 	{
-	  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, next_o,
-			size_int (rsize));
-	  tmp = build2 (GT_EXPR, boolean_type_node, tmp, next_o_limit);
+	  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node,
+			unshare_expr (next_o), size_int (rsize));
+	  tmp = build2 (GT_EXPR, boolean_type_node, tmp,
+			unshare_expr (next_o_limit));
 	  tmp = build3 (COND_EXPR, void_type_node, tmp,
-		        build1 (GOTO_EXPR, void_type_node, lab_false),
-		        NULL_TREE);
+		        build1 (GOTO_EXPR, void_type_node,
+				unshare_expr (lab_false)),
+			NULL_TREE);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
-	  gimplify_assign (addr, tmp, pre_p);
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, unshare_expr (next_o));
+	  gimplify_assign (unshare_expr (addr), tmp, pre_p);
 
-	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, unshare_expr (lab_over));
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, unshare_expr (lab_false));
 	  gimplify_and_add (tmp, pre_p);
 
 	  if (size > 4 && ! (TARGET_SH4 || TARGET_SH2A))
-	    gimplify_assign (next_o, next_o_limit, pre_p);
+	    gimplify_assign (unshare_expr (next_o),
+			     unshare_expr (next_o_limit), pre_p);
 
-	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  gimplify_assign (addr, tmp, pre_p);
+	  tmp = build1 (ADDR_EXPR, pptr_type_node, unshare_expr (next_stack));
+	  gimplify_assign (unshare_expr (addr), tmp, pre_p);
 	}
 
       if (!result)
 	{
-	  tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
+	  tmp = build1 (LABEL_EXPR, void_type_node, unshare_expr (lab_over));
 	  gimplify_and_add (tmp, pre_p);
 	}
     }
@@ -7452,7 +7458,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     {
       gimplify_assign (result, tmp, pre_p);
 
-      tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
+      tmp = build1 (LABEL_EXPR, void_type_node, unshare_expr (lab_over));
       gimplify_and_add (tmp, pre_p);
     }
   else
