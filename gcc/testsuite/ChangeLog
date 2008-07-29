@@ -1,3 +1,7 @@
+2008-07-29  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/pr32370.c: Force 64 bits on IA64.
+
 2008-07-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/extends_1.f03: New test.
