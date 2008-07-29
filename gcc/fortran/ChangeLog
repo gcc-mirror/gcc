@@ -1,3 +1,30 @@
+2008-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.h (try): Remove macro.  Replace try with gfc_try
+	throughout.
+	* array.c: Likewise.
+	* check.c: Likewise.
+	* cpp.c: Likewise.
+	* cpp.h: Likewise.
+	* data.c: Likewise.
+	* data.h: Likewise.
+	* decl.c: Likewise.
+	* error.c: Likewise.
+	* expr.c: Likewise.
+	* interface.c: Likewise.
+	* intrinsic.c: Likewise.
+	* intrinsic.h: Likewise.
+	* io.c: Likewise.
+	* match.h: Likewise.
+	* parse.c: Likewise.
+	* parse.h: Likewise.
+	* resolve.c: Likewise.
+	* scanner.c: Likewise.
+	* simplify.c: Likewise.
+	* symbol.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-types.c: Likewise.
+
 2008-07-28  Tobias Burnus  <burnus@net-b.de>
 
 	* Make-lang.in: Remove -Wno-* from fortran-warn.

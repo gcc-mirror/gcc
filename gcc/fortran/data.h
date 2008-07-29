@@ -19,6 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 
 void gfc_formalize_init_value (gfc_symbol *);
 void gfc_get_section_index (gfc_array_ref *, mpz_t *, mpz_t *);
-try gfc_assign_data_value (gfc_expr *, gfc_expr *, mpz_t);
+gfc_try gfc_assign_data_value (gfc_expr *, gfc_expr *, mpz_t);
 void gfc_assign_data_value_range (gfc_expr *, gfc_expr *, mpz_t, mpz_t);
 void gfc_advance_section (mpz_t *, gfc_array_ref *, mpz_t *);

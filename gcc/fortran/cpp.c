@@ -574,7 +574,7 @@ gfc_cpp_init (void)
     pp_dir_change (cpp_in, get_src_pwd ());
 }
 
-try
+gfc_try
 gfc_cpp_preprocess (const char *source_file)
 {
   if (!gfc_cpp_enabled ())

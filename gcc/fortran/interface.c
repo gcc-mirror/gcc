@@ -2218,7 +2218,7 @@ pair_cmp (const void *p1, const void *p2)
    refer to the same expression. The analysis is conservative.
    Returning FAILURE will produce no warning.  */
 
-static try
+static gfc_try
 compare_actual_expr (gfc_expr *e1, gfc_expr *e2)
 {
   const gfc_ref *r1, *r2;
@@ -2267,7 +2267,7 @@ compare_actual_expr (gfc_expr *e1, gfc_expr *e2)
    another, check that identical actual arguments aren't not
    associated with some incompatible INTENTs.  */
 
-static try
+static gfc_try
 check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
 {
   sym_intent f1_intent, f2_intent;
@@ -2275,7 +2275,7 @@ check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
   gfc_actual_arglist *a1;
   size_t n, i, j;
   argpair *p;
-  try t = SUCCESS;
+  gfc_try t = SUCCESS;
 
   n = 0;
   for (f1 = f, a1 = a;; f1 = f1->next, a1 = a1->next)
@@ -2355,7 +2355,7 @@ compare_parameter_intent (gfc_symbol *formal, gfc_expr *actual)
    another, check that they are compatible in the sense that intents
    are not mismatched.  */
 
-static try
+static gfc_try
 check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 {
   sym_intent f_intent;
@@ -2546,7 +2546,7 @@ find_sym_in_symtree (gfc_symbol *sym)
    interface.  If one is found, the expression node is replaced with
    the appropriate function call.  */
 
-try
+gfc_try
 gfc_extend_expr (gfc_expr *e)
 {
   gfc_actual_arglist *actual;
@@ -2677,7 +2677,7 @@ gfc_extend_expr (gfc_expr *e)
    SUCCESS if the node was replaced.  On FAILURE, no error is
    generated.  */
 
-try
+gfc_try
 gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
 {
   gfc_actual_arglist *actual;
@@ -2731,7 +2731,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
    the given interface list.  Ambiguity isn't checked yet since module
    procedures can be present without interfaces.  */
 
-static try
+static gfc_try
 check_new_interface (gfc_interface *base, gfc_symbol *new_sym)
 {
   gfc_interface *ip;
@@ -2752,7 +2752,7 @@ check_new_interface (gfc_interface *base, gfc_symbol *new_sym)
 
 /* Add a symbol to the current interface.  */
 
-try
+gfc_try
 gfc_add_interface (gfc_symbol *new_sym)
 {
   gfc_interface **head, *intr;

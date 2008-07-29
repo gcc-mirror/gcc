@@ -1672,7 +1672,7 @@ preprocessor_line (gfc_char_t *c)
 }
 
 
-static try load_file (const char *, const char *, bool);
+static gfc_try load_file (const char *, const char *, bool);
 
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
@@ -1751,7 +1751,7 @@ include_line (gfc_char_t *line)
 
 /* Load a file into memory by calling load_line until the file ends.  */
 
-static try
+static gfc_try
 load_file (const char *realfilename, const char *displayedname, bool initial)
 {
   gfc_char_t *line;
@@ -1921,10 +1921,10 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
    it tries to determine the source form from the filename, defaulting
    to free form.  */
 
-try
+gfc_try
 gfc_new_file (void)
 {
-  try result;
+  gfc_try result;
 
   if (gfc_cpp_enabled ())
     {

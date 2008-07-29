@@ -145,7 +145,7 @@ gfc_clear_new_implicit (void)
 
 /* Prepare for a new implicit range.  Sets flags in new_flag[].  */
 
-try
+gfc_try
 gfc_add_new_implicit_range (int c1, int c2)
 {
   int i;
@@ -172,7 +172,7 @@ gfc_add_new_implicit_range (int c1, int c2)
 /* Add a matched implicit range for gfc_set_implicit().  Check if merging
    the new implicit types back into the existing types will work.  */
 
-try
+gfc_try
 gfc_merge_new_implicit (gfc_typespec *ts)
 {
   int i;
@@ -230,7 +230,7 @@ gfc_get_default_type (gfc_symbol *sym, gfc_namespace *ns)
    letter of its name.  Fails if the letter in question has no default
    type.  */
 
-try
+gfc_try
 gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 {
   gfc_typespec *ts;
@@ -336,7 +336,7 @@ gfc_check_function_type (gfc_namespace *ns)
                                 goto conflict_std;\
                               }
 
-static try
+static gfc_try
 check_conflict (symbol_attribute *attr, const char *name, locus *where)
 {
   static const char *dummy = "DUMMY", *save = "SAVE", *pointer = "POINTER",
@@ -790,7 +790,7 @@ duplicate_attr (const char *attr, locus *where)
 /* Called from decl.c (attr_decl1) to check attributes, when declared
    separately.  */
 
-try
+gfc_try
 gfc_add_attribute (symbol_attribute *attr, locus *where)
 {
 
@@ -800,7 +800,7 @@ gfc_add_attribute (symbol_attribute *attr, locus *where)
   return check_conflict (attr, NULL, where);
 }
 
-try
+gfc_try
 gfc_add_allocatable (symbol_attribute *attr, locus *where)
 {
 
@@ -826,7 +826,7 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -852,7 +852,7 @@ gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_external (symbol_attribute *attr, locus *where)
 {
 
@@ -877,7 +877,7 @@ gfc_add_external (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_intrinsic (symbol_attribute *attr, locus *where)
 {
 
@@ -896,7 +896,7 @@ gfc_add_intrinsic (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_optional (symbol_attribute *attr, locus *where)
 {
 
@@ -914,7 +914,7 @@ gfc_add_optional (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_pointer (symbol_attribute *attr, locus *where)
 {
 
@@ -939,7 +939,7 @@ gfc_add_pointer (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_cray_pointer (symbol_attribute *attr, locus *where)
 {
 
@@ -951,7 +951,7 @@ gfc_add_cray_pointer (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_cray_pointee (symbol_attribute *attr, locus *where)
 {
 
@@ -970,7 +970,7 @@ gfc_add_cray_pointee (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_protected (symbol_attribute *attr, const char *name, locus *where)
 {
   if (check_used (attr, name, where))
@@ -990,7 +990,7 @@ gfc_add_protected (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_result (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1002,7 +1002,7 @@ gfc_add_result (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1031,7 +1031,7 @@ gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_value (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1052,7 +1052,7 @@ gfc_add_value (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 {
   /* No check_used needed as 11.2.1 of the F2003 standard allows
@@ -1071,7 +1071,7 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_threadprivate (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1089,7 +1089,7 @@ gfc_add_threadprivate (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_target (symbol_attribute *attr, locus *where)
 {
 
@@ -1107,7 +1107,7 @@ gfc_add_target (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_dummy (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1120,7 +1120,7 @@ gfc_add_dummy (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_in_common (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1139,7 +1139,7 @@ gfc_add_in_common (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_in_equivalence (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1155,7 +1155,7 @@ gfc_add_in_equivalence (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_data (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1167,7 +1167,7 @@ gfc_add_data (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_in_namelist (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1176,7 +1176,7 @@ gfc_add_in_namelist (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_sequence (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1188,7 +1188,7 @@ gfc_add_sequence (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_elemental (symbol_attribute *attr, locus *where)
 {
 
@@ -1206,7 +1206,7 @@ gfc_add_elemental (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_pure (symbol_attribute *attr, locus *where)
 {
 
@@ -1224,7 +1224,7 @@ gfc_add_pure (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_recursive (symbol_attribute *attr, locus *where)
 {
 
@@ -1242,7 +1242,7 @@ gfc_add_recursive (symbol_attribute *attr, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_entry (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1260,7 +1260,7 @@ gfc_add_entry (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_function (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1273,7 +1273,7 @@ gfc_add_function (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_subroutine (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1286,7 +1286,7 @@ gfc_add_subroutine (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_generic (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1299,7 +1299,7 @@ gfc_add_generic (symbol_attribute *attr, const char *name, locus *where)
 }
 
 
-try
+gfc_try
 gfc_add_proc (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1325,7 +1325,7 @@ gfc_add_proc (symbol_attribute *attr, const char *name, locus *where)
 /* Flavors are special because some flavors are not what Fortran
    considers attributes and can be reaffirmed multiple times.  */
 
-try
+gfc_try
 gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
 		locus *where)
 {
@@ -1361,7 +1361,7 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
 }
 
 
-try
+gfc_try
 gfc_add_procedure (symbol_attribute *attr, procedure_type t,
 		   const char *name, locus *where)
 {
@@ -1397,7 +1397,7 @@ gfc_add_procedure (symbol_attribute *attr, procedure_type t,
 }
 
 
-try
+gfc_try
 gfc_add_intent (symbol_attribute *attr, sym_intent intent, locus *where)
 {
 
@@ -1423,7 +1423,7 @@ gfc_add_intent (symbol_attribute *attr, sym_intent intent, locus *where)
 
 /* No checks for use-association in public and private statements.  */
 
-try
+gfc_try
 gfc_add_access (symbol_attribute *attr, gfc_access access,
 		const char *name, locus *where)
 {
@@ -1444,7 +1444,7 @@ gfc_add_access (symbol_attribute *attr, gfc_access access,
 
 /* Set the is_bind_c field for the given symbol_attribute.  */
 
-try
+gfc_try
 gfc_add_is_bind_c (symbol_attribute *attr, const char *name, locus *where,
                    int is_proc_lang_bind_spec)
 {
@@ -1468,7 +1468,7 @@ gfc_add_is_bind_c (symbol_attribute *attr, const char *name, locus *where,
 }
 
 
-try
+gfc_try
 gfc_add_explicit_interface (gfc_symbol *sym, ifsrc source,
 			    gfc_formal_arglist * formal, locus *where)
 {
@@ -1503,7 +1503,7 @@ gfc_add_explicit_interface (gfc_symbol *sym, ifsrc source,
 
 /* Add a type to a symbol.  */
 
-try
+gfc_try
 gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
 {
   sym_flavor flavor;
@@ -1555,7 +1555,7 @@ gfc_clear_attr (symbol_attribute *attr)
 /* Check for missing attributes in the new symbol.  Currently does
    nothing, but it's not clear that it is unnecessary yet.  */
 
-try
+gfc_try
 gfc_missing_attr (symbol_attribute *attr ATTRIBUTE_UNUSED,
 		  locus *where ATTRIBUTE_UNUSED)
 {
@@ -1568,7 +1568,7 @@ gfc_missing_attr (symbol_attribute *attr ATTRIBUTE_UNUSED,
    attributes have a lot of side-effects but cannot be present given
    where we are called from, so we ignore some bits.  */
 
-try
+gfc_try
 gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
 {
   int is_proc_lang_bind_spec;
@@ -1681,7 +1681,7 @@ fail:
    already present.  On success, the component pointer is modified to
    point to the additional component structure.  */
 
-try
+gfc_try
 gfc_add_component (gfc_symbol *sym, const char *name,
 		   gfc_component **component)
 {
@@ -2034,12 +2034,12 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
    updating the unknown state.  Returns FAILURE if something goes
    wrong.  */
 
-try
+gfc_try
 gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
 {
   gfc_sl_type label_type;
   int labelno;
-  try rc;
+  gfc_try rc;
 
   if (lp == NULL)
     return SUCCESS;
@@ -3257,12 +3257,12 @@ get_iso_c_binding_dt (int sym_id)
    for such.  If an error occurs, the errors are reported here, allowing for
    multiple errors to be handled for a single derived type.  */
 
-try
+gfc_try
 verify_bind_c_derived_type (gfc_symbol *derived_sym)
 {
   gfc_component *curr_comp = NULL;
-  try is_c_interop = FAILURE;
-  try retval = SUCCESS;
+  gfc_try is_c_interop = FAILURE;
+  gfc_try retval = SUCCESS;
    
   if (derived_sym == NULL)
     gfc_internal_error ("verify_bind_c_derived_type(): Given symbol is "
@@ -3406,7 +3406,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 
 /* Generate symbols for the named constants c_null_ptr and c_null_funptr.  */
 
-static try
+static gfc_try
 gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
                            const char *module_name)
 {

@@ -46,7 +46,7 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
 {
   gfc_expr *e;
   int i;
-  try re;
+  gfc_try re;
   mpz_t delta;
   mpz_t tmp;
 
@@ -247,7 +247,7 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
    LVALUE already has an initialization, we extend this, otherwise we
    create a new one.  */
 
-try
+gfc_try
 gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 {
   gfc_ref *ref;

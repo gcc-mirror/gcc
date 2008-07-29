@@ -175,7 +175,7 @@ find_char_conv (gfc_typespec *from, gfc_typespec *to)
    and call the proper check function rather than forcing each
    function to manipulate the argument list.  */
 
-static try
+static gfc_try
 do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 {
   gfc_expr *a1, *a2, *a3, *a4, *a5;
@@ -334,7 +334,7 @@ add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type
 static void
 add_sym_0 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
-	   try (*check) (void),
+	   gfc_try (*check) (void),
 	   gfc_expr *(*simplify) (void),
 	   void (*resolve) (gfc_expr *))
 {
@@ -376,7 +376,7 @@ add_sym_0s (const char *name, gfc_isym_id id, int standard, void (*resolve) (gfc
 static void
 add_sym_1 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
-	   try (*check) (gfc_expr *),
+	   gfc_try (*check) (gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *),
 	   void (*resolve) (gfc_expr *, gfc_expr *),
 	   const char *a1, bt type1, int kind1, int optional1)
@@ -400,7 +400,7 @@ add_sym_1 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
 
 static void
 add_sym_1s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
-	    try (*check) (gfc_expr *),
+	    gfc_try (*check) (gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *),
 	    void (*resolve) (gfc_code *),
 	    const char *a1, bt type1, int kind1, int optional1)
@@ -425,7 +425,7 @@ add_sym_1s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, 
 static void
 add_sym_1m (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	    int kind, int standard,
-	    try (*check) (gfc_actual_arglist *),
+	    gfc_try (*check) (gfc_actual_arglist *),
 	    gfc_expr *(*simplify) (gfc_expr *),
 	    void (*resolve) (gfc_expr *, gfc_actual_arglist *),
 	    const char *a1, bt type1, int kind1, int optional1,
@@ -452,7 +452,7 @@ add_sym_1m (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt t
 static void
 add_sym_2 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
-	   try (*check) (gfc_expr *, gfc_expr *),
+	   gfc_try (*check) (gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *),
 	   void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *),
 	   const char *a1, bt type1, int kind1, int optional1,
@@ -478,7 +478,7 @@ add_sym_2 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
 
 static void
 add_sym_2s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
-	    try (*check) (gfc_expr *, gfc_expr *),
+	    gfc_try (*check) (gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *),
 	    void (*resolve) (gfc_code *),
 	    const char *a1, bt type1, int kind1, int optional1,
@@ -505,7 +505,7 @@ add_sym_2s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, 
 static void
 add_sym_3 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
-	   try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
+	   gfc_try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
 	   void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	   const char *a1, bt type1, int kind1, int optional1,
@@ -534,7 +534,7 @@ add_sym_3 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
 static void
 add_sym_3ml (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	     int kind, int standard,
-	     try (*check) (gfc_actual_arglist *),
+	     gfc_try (*check) (gfc_actual_arglist *),
 	     gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
 	     void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	     const char *a1, bt type1, int kind1, int optional1,
@@ -563,7 +563,7 @@ add_sym_3ml (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt 
 static void
 add_sym_3red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	      int kind, int standard,
-	      try (*check) (gfc_actual_arglist *),
+	      gfc_try (*check) (gfc_actual_arglist *),
 	      gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
 	      void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	      const char *a1, bt type1, int kind1, int optional1,
@@ -591,7 +591,7 @@ add_sym_3red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt
 
 static void
 add_sym_3s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
-	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
+	    gfc_try (*check) (gfc_expr *, gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *),
 	    void (*resolve) (gfc_code *),
 	    const char *a1, bt type1, int kind1, int optional1,
@@ -620,7 +620,7 @@ add_sym_3s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, 
 static void
 add_sym_4 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type,
 	   int kind, int standard,
-	   try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
+	   gfc_try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	   gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
 				  gfc_expr *),
 	   void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
@@ -652,7 +652,7 @@ add_sym_4 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
 
 static void
 add_sym_4s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
-	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
+	    gfc_try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
 				   gfc_expr *),
 	    void (*resolve) (gfc_code *),
@@ -683,7 +683,7 @@ add_sym_4s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, 
 
 static void
 add_sym_5s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind, int standard,
-	    try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+	    gfc_try (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *),
 	    gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
 				   gfc_expr *, gfc_expr *),
@@ -3024,7 +3024,7 @@ remove_nullargs (gfc_actual_arglist **ap)
    wrong (say, a missing required argument) we abort sorting and
    return FAILURE.  */
 
-static try
+static gfc_try
 sort_actual (const char *name, gfc_actual_arglist **ap,
 	     gfc_intrinsic_arg *formal, locus *where)
 {
@@ -3145,7 +3145,7 @@ do_sort:
    list.  The lists are checked for agreement of type.  We don't check
    for arrayness here.  */
 
-static try
+static gfc_try
 check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 	       int error_flag)
 {
@@ -3277,7 +3277,7 @@ resolve_intrinsic (gfc_intrinsic_sym *specific, gfc_expr *e)
    of the simplification, SUCCESS if the simplification worked, even
    if nothing has changed in the expression itself.  */
 
-static try
+static gfc_try
 do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 {
   gfc_expr *result, *a1, *a2, *a3, *a4, *a5;
@@ -3406,11 +3406,11 @@ init_arglist (gfc_intrinsic_sym *isym)
    intrinsic's formal argument list.  Return SUCCESS if the expression
    and intrinsic match, FAILURE otherwise.  */
 
-static try
+static gfc_try
 check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
 {
   gfc_actual_arglist *arg, **ap;
-  try t;
+  gfc_try t;
 
   ap = &expr->value.function.actual;
 
@@ -3487,7 +3487,7 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
    can be used to construct a detailed warning/error message in case of
    a FAILURE.  */
 
-try
+gfc_try
 gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 			      const char** symstd, bool silent, locus where)
 {
@@ -3744,7 +3744,7 @@ fail:
 
 /* Call gfc_convert_type() with warning enabled.  */
 
-try
+gfc_try
 gfc_convert_type (gfc_expr *expr, gfc_typespec *ts, int eflag)
 {
   return gfc_convert_type_warn (expr, ts, eflag, 1);
@@ -3761,7 +3761,7 @@ gfc_convert_type (gfc_expr *expr, gfc_typespec *ts, int eflag)
 
    'wflag' controls the warning related to conversion.  */
 
-try
+gfc_try
 gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 {
   gfc_intrinsic_sym *sym;
@@ -3860,7 +3860,7 @@ bad:
 }
 
 
-try
+gfc_try
 gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
 {
   gfc_intrinsic_sym *sym;

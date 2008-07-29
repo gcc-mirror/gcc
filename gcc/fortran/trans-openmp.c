@@ -454,7 +454,7 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   tree decl, backend_decl, stmt;
   locus old_loc = gfc_current_locus;
   const char *iname;
-  try t;
+  gfc_try t;
 
   decl = OMP_CLAUSE_DECL (c);
   gfc_current_locus = where;

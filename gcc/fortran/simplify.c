@@ -3942,7 +3942,7 @@ gfc_simplify_shape (gfc_expr *source)
   gfc_expr *result, *e, *f;
   gfc_array_ref *ar;
   int n;
-  try t;
+  gfc_try t;
 
   if (source->rank == 0)
     return gfc_start_constructor (BT_INTEGER, gfc_default_integer_kind,
