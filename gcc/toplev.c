@@ -245,11 +245,6 @@ int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
 int flag_complex_method = 1;
 
-/* Nonzero means that we don't want inlining by virtue of -fno-inline,
-   not just because the tree inliner turned us off.  */
-
-int flag_really_no_inline = 2;
-
 /* Nonzero means we should be saving declaration info into a .X file.  */
 
 int flag_gen_aux_info = 0;

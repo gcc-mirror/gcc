@@ -7,5 +7,5 @@
     The warning about "no return statement in function
     returning non-void" is PR 13000. */
 
-static int foo (int a __attribute__((unused)) ) { } /* { dg-warning "control reaches end of non-void" } */
+static int foo (int a __attribute__((unused)) ) { } /* { dg-warning "no return statement" } */
 int main (void) { return foo (0); }

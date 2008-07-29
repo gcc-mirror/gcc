@@ -1018,10 +1018,6 @@ c_common_post_options (const char **pfilename)
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
 
-  /* Use tree inlining.  */
-  if (!flag_no_inline)
-    flag_no_inline = 1;
-
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)
@@ -1074,13 +1070,6 @@ c_common_post_options (const char **pfilename)
      in that standard.  */
   if (warn_overlength_strings == -1 || c_dialect_cxx ())
     warn_overlength_strings = 0;
-
-  /* Adjust various flags for C++ based on command-line settings.  */
-  if (c_dialect_cxx ())
-    {
-      if (!flag_no_inline)
-	flag_no_inline = 1;
-    } 
 
   /* In C, -Wconversion enables -Wsign-conversion (unless disabled
      through -Wno-sign-conversion). While in C++,

@@ -2554,7 +2554,7 @@ inlinable_function_p (tree fn)
 
   always_inline = lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn));
 
-  if (flag_really_no_inline
+  if (flag_no_inline
       && always_inline == NULL)
     {
       if (do_warning)
