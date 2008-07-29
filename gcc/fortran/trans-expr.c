@@ -1,6 +1,6 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -395,6 +395,40 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
 }
 
 
+/* This function deals with component references to components of the
+   parent type for derived type extensons.  */
+static void
+conv_parent_component_references (gfc_se * se, gfc_ref * ref)
+{
+  gfc_component *c;
+  gfc_component *cmp;
+  gfc_symbol *dt;
+  gfc_ref parent;
+
+  dt = ref->u.c.sym;
+  c = ref->u.c.component;
+
+  /* Build a gfc_ref to recursively call gfc_conv_component_ref.  */
+  parent.type = REF_COMPONENT;
+  parent.next = NULL;
+  parent.u.c.sym = dt;
+  parent.u.c.component = dt->components;
+
+  if (dt->attr.extension && dt->components)
+    {
+      /* Return if the component is not in the parent type.  */
+      for (cmp = dt->components->next; cmp; cmp = cmp->next)
+	if (strcmp (c->name, cmp->name) == 0)
+	  return;
+	
+      /* Otherwise build the reference and call self.  */
+      gfc_conv_component_ref (se, &parent);
+      parent.u.c.sym = dt->components->ts.derived;
+      parent.u.c.component = c;
+      conv_parent_component_references (se, &parent);
+    }
+}
+
 /* Return the contents of a variable. Also handles reference/pointer
    variables (all Fortran pointer references are implicit).  */
 
@@ -561,6 +595,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  break;
 
 	case REF_COMPONENT:
+	  if (ref->u.c.sym->attr.extension)
+	    conv_parent_component_references (se, ref);
+
 	  gfc_conv_component_ref (se, ref);
 	  break;
 

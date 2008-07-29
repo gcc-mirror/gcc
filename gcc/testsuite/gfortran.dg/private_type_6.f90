@@ -19,7 +19,7 @@ program foo_test
   TYPE(footype) :: foo
   TYPE(bartype) :: foo2
   foo  = footype(1) ! { dg-error "All components of 'footype' are PRIVATE" }
-  foo2 = bartype(1,2) ! { dg-error "'dummy2' is PRIVATE" }
+  foo2 = bartype(1,2) ! { dg-error "is a PRIVATE component" }
   foo2%dummy2 = 5 ! { dg-error "is a PRIVATE component" }
 end program foo_test
 ! { dg-final { cleanup-modules "foomod" } }

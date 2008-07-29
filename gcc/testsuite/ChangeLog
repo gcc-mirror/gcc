@@ -1,3 +1,15 @@
+2008-07-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/extends_1.f03: New test.
+	* gfortran.dg/extends_2.f03: New test.
+	* gfortran.dg/extends_3.f03: New test.
+	* gfortran.dg/extends_4.f03: New test.
+	* gfortran.dg/extends_5.f03: New test.
+	* gfortran.dg/extends_6.f03: New test.
+	* gfortran.dg/private_type_6.f90: Modify error message.
+	* gfortran.dg/structure_constructor_7.f03: Modify error message.
+	* gfortran.dg/structure_constructor_8.f03: Modify error message.
+
 2008-07-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36945

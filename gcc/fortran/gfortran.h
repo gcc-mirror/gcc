@@ -638,6 +638,7 @@ typedef struct
   unsigned untyped:1;           /* No implicit type could be found.  */
 
   unsigned is_bind_c:1;		/* say if is bound to C */
+  unsigned extension:1;		/* extends a derived type */
 
   /* These flags are both in the typespec and attribute.  The attribute
      list is what gets read from/written to a module file.  The typespec
@@ -1016,9 +1017,6 @@ typedef struct gfc_symbol
 
   gfc_formal_arglist *formal;
   struct gfc_namespace *formal_ns;
-
-  /* The namespace containing type-associated procedure symbols.  */
-  /* TODO: Make this union with formal?  */
   struct gfc_namespace *f2k_derived;
 
   struct gfc_expr *value;	/* Parameter/Initializer value */
