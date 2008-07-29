@@ -1,4 +1,18 @@
-2008-07-29  Jan HUbicka  <jh@suse.cz>
+2008-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* flags.h (flag_really_no_inline): Remove.
+	* cgraph.c (cgraph_function_possibly_inlined_p): Simplify.
+	* toplev.c (flag_really_no_inline): Remove.
+	* c-cppbuiltin.c (c_cpp_builtins): Use flag_no_inline.
+	* ipa-inline.c (cgraph_decide_inlining): Do not check flag_no_inline.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(compute_inline_parameters): Likewise.
+	* opts.c (decode_options): Simplify.
+	* c-opts.c (c_common_post_options): Do not set flag_no_inline.
+	* common.opt (finline): Initialize to 1.
+	* tree-inline.c (inlinable_function_p): Check flag_no_inline.
+
+2008-07-29  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (always_optimize_for_size_p): New function.
 	(optimize_bb_for_size_p, optimize_bb_for_speed_p,

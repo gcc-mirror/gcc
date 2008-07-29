@@ -1159,16 +1159,14 @@ cgraph_decide_inlining (void)
 		 overall_insns - old_insns);
     }
 
-  if (!flag_really_no_inline)
-    cgraph_decide_inlining_of_small_functions ();
+  cgraph_decide_inlining_of_small_functions ();
 
   /* After this point, any edge discovery performed by indirect inlining is no
      good so let's give up. */
   if (flag_indirect_inlining)
     free_all_ipa_structures_after_iinln ();
 
-  if (!flag_really_no_inline
-      && flag_inline_functions_called_once)
+  if (flag_inline_functions_called_once)
     {
       if (dump_file)
 	fprintf (dump_file, "\nDeciding on functions called once:\n");
@@ -1407,9 +1405,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
     }
 
   /* Now do the automatic inlining.  */
-  if (!flag_really_no_inline
-      && mode != INLINE_ALL
-      && mode != INLINE_ALWAYS_INLINE)
+  if (mode != INLINE_ALL && mode != INLINE_ALWAYS_INLINE)
     for (e = node->callees; e; e = e->next_callee)
       {
 	if (!e->callee->local.inlinable
@@ -1596,8 +1592,6 @@ compute_inline_parameters (struct cgraph_node *node)
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
       = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
-  if (flag_really_no_inline && !node->local.disregard_inline_limits)
-    node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.insns = inline_summary (node)->self_insns;
   return 0;

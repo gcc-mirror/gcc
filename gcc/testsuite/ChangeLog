@@ -1,3 +1,7 @@
+2008-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/20040206-1.c: Expect frontend warning now.
+
 2008-07-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 34985

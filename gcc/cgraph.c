@@ -1149,7 +1149,7 @@ bool
 cgraph_function_possibly_inlined_p (tree decl)
 {
   if (!cgraph_global_info_ready)
-    return !DECL_UNINLINABLE (decl) && !flag_really_no_inline;
+    return !DECL_UNINLINABLE (decl);
   return DECL_POSSIBLY_INLINED (decl);
 }
 

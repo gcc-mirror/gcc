@@ -169,11 +169,6 @@ extern int flag_pcc_struct_return;
 
 extern int flag_complex_method;
 
-/* Nonzero means that we don't want inlining by virtue of -fno-inline,
-   not just because the tree inliner turned us off.  */
-
-extern int flag_really_no_inline;
-
 /* Nonzero if we are only using compiler to check syntax errors.  */
 
 extern int rtl_dump_and_exit;

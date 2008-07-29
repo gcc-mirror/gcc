@@ -294,10 +294,6 @@ gfc_post_options (const char **pfilename)
 	gfc_warning_now ("'-fd-lines-as-code' has no effect in free form");
     }
 
-  /* Use tree inlining.  */
-  if (!flag_no_inline)
-    flag_no_inline = 1;
-
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
     gfc_option.warn_std |= GFC_STD_GNU;

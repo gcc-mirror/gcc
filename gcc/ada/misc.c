@@ -340,9 +340,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* ??? The warning machinery is outsmarted by Ada.  */
   warn_unused_parameter = 0;
 
-  if (!flag_no_inline)
-    flag_no_inline = 1;
-
   /* Force eliminate_unused_debug_types to 0 unless an explicit positive
      -f has been passed.  This forces the default to 0 for Ada, which might
      differ from the common default.  */

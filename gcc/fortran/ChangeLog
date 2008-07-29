@@ -1,3 +1,7 @@
+2008-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* options.c (gfc_post_options): Do not set flag_no_inline.
+
 2008-07-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36403

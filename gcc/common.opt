@@ -581,7 +581,7 @@ Perform indirect inlining
 ; only when actually used.  Used in conjunction with -g.  Also
 ; does the right thing with #pragma interface.
 finline
-Common Report Var(flag_no_inline,0) Init(2)
+Common Report Var(flag_no_inline,0) Init(0)
 Pay attention to the \"inline\" keyword
 
 finline-small-functions
