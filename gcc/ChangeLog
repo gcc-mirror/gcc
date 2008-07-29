@@ -1,5 +1,21 @@
 2008-07-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36945
+	* tree-ssa-sccvn.h (copy_reference_ops_from_ref): Declare.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Export.
+	Record invariant addresses un-decomposed.
+	(copy_reference_ops_from_call): Record reference call
+	arguments properly.  Simplify.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): New
+	helper split out from ...
+	(create_component_ref_by_pieces): ... here.  Simplify.
+	Prepare for recursive invocation for call arguments.
+	(create_expression_by_pieces): Adjust call to
+	create_component_ref_by_pieces.
+	(compute_avail): Process operand 2 of reference ops.
+
+2008-07-29  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (gimplify_expr): Clear TREE_SIDE_EFFECTS for
 	OBJ_TYPE_REF.
 
