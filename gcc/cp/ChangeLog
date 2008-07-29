@@ -1,3 +1,8 @@
+2008-07-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 34985
+	* decl.c (duplicate_decls): Merge USED flags.
+	
 2008-07-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36943

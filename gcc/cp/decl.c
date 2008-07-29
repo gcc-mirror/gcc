@@ -2056,6 +2056,12 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       ggc_free (DECL_LANG_SPECIFIC (olddecl));
     }
 
+   /* Merge the USED information.  */
+   if (TREE_USED (olddecl))
+     TREE_USED (newdecl) = 1;
+   else if (TREE_USED (newdecl))
+     TREE_USED (olddecl) = 1;
+
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       int function_size;
