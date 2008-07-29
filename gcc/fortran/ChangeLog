@@ -1,3 +1,12 @@
+2008-07-29  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/36403
+	* trans-intrinsic.c (conv_generic_with_optional_char_arg):  New method
+	to append a string-length even if the string argument is missing, e.g.
+	for EOSHIFT.
+	(gfc_conv_intrinsic_function):  Call the new method for EOSHIFT, PACK
+	and RESHAPE.
+
 2008-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.h (try): Remove macro.  Replace try with gfc_try
