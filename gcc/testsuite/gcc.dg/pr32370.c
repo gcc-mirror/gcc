@@ -5,12 +5,14 @@
 
 #if defined __i386__ || defined __x86_64__
 # define C "=S"
+# define TYPE unsigned long
 #elif defined __ia64__
 # define C "=a"
+# define TYPE unsigned long long
 #endif
 
 unsigned int
-foo (unsigned long port)
+foo (TYPE port)
 {
   unsigned int v;
   __asm__ __volatile__ ("" : C (v) : "Nd" (port));	/* { dg-error "while reloading\|has impossible" } */
