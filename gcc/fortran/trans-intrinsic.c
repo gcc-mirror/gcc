@@ -2652,6 +2652,64 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   se->expr = fold_build3 (COND_EXPR, type, tmp, args[0], rrot);
 }
 
+
+/* Process an intrinsic with unspecified argument-types that has an optional
+   argument (which could be of type character), e.g. EOSHIFT.  For those, we
+   need to append the string length of the optional argument if it is not
+   present and the type is really character.
+   primary specifies the position (starting at 1) of the non-optional argument
+   specifying the type and optional gives the position of the optional
+   argument in the arglist.  */
+
+static void
+conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
+				     unsigned primary, unsigned optional)
+{
+  gfc_actual_arglist* prim_arg;
+  gfc_actual_arglist* opt_arg;
+  unsigned cur_pos;
+  gfc_actual_arglist* arg;
+  gfc_symbol* sym;
+  tree append_args;
+
+  /* Find the two arguments given as position.  */
+  cur_pos = 0;
+  prim_arg = NULL;
+  opt_arg = NULL;
+  for (arg = expr->value.function.actual; arg; arg = arg->next)
+    {
+      ++cur_pos;
+
+      if (cur_pos == primary)
+	prim_arg = arg;
+      if (cur_pos == optional)
+	opt_arg = arg;
+
+      if (cur_pos >= primary && cur_pos >= optional)
+	break;
+    }
+  gcc_assert (prim_arg);
+  gcc_assert (prim_arg->expr);
+  gcc_assert (opt_arg);
+
+  /* If we do have type CHARACTER and the optional argument is really absent,
+     append a dummy 0 as string length.  */
+  append_args = NULL_TREE;
+  if (prim_arg->expr->ts.type == BT_CHARACTER && !opt_arg->expr)
+    {
+      tree dummy;
+
+      dummy = build_int_cst (gfc_charlen_type_node, 0);
+      append_args = gfc_chainon_list (append_args, dummy);
+    }
+
+  /* Build the call itself.  */
+  sym = gfc_get_symbol_for_expr (expr);
+  gfc_conv_function_call (se, sym, expr->value.function.actual, append_args);
+  gfc_free (sym);
+}
+
+
 /* The length of a character string.  */
 static void
 gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
@@ -4128,7 +4186,22 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	{
 	  if (lib == 1)
 	    se->ignore_optional = 1;
-	  gfc_conv_intrinsic_funcall (se, expr);
+
+	  switch (expr->value.function.isym->id)
+	    {
+	    case GFC_ISYM_EOSHIFT:
+	    case GFC_ISYM_PACK:
+	    case GFC_ISYM_RESHAPE:
+	      /* For all of those the first argument specifies the type and the
+		 third is optional.  */
+	      conv_generic_with_optional_char_arg (se, expr, 1, 3);
+	      break;
+
+	    default:
+	      gfc_conv_intrinsic_funcall (se, expr);
+	      break;
+	    }
+
 	  return;
 	}
     }
@@ -4604,6 +4677,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_UMASK:
     case GFC_ISYM_UNLINK:
       gfc_conv_intrinsic_funcall (se, expr);
+      break;
+
+    case GFC_ISYM_EOSHIFT:
+    case GFC_ISYM_PACK:
+    case GFC_ISYM_RESHAPE:
+      /* For those, expr->rank should always be >0 and thus the if above the
+	 switch should have matched.  */
+      gcc_unreachable ();
       break;
 
     default:
