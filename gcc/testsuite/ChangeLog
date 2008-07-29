@@ -1,3 +1,9 @@
+2008-07-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 34985
+	* gcc.dg/pr34985.c: New.
+	* g++.dg/warn/pr34985.C: New.
+	
 2008-07-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/36403
