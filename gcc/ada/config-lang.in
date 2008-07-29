@@ -1,11 +1,11 @@
 # Top level configure fragment for GNU Ada (GNAT).
-#   Copyright (C) 1994-2003, 2007 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
 #GCC is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
-#the Free Software Foundation; either version 3, or (at your option)
+#the Free Software Foundation; either version 2, or (at your option)
 #any later version.
 
 #GCC is distributed in the hope that it will be useful,
@@ -14,28 +14,15 @@
 #GNU General Public License for more details.
 
 #You should have received a copy of the GNU General Public License
-#along with GCC; see the file COPYING3.  If not see
-#<http://www.gnu.org/licenses/>.
-
-# Configure looks for the existence of this file to auto-config each language.
-# We define several parameters used by configure:
-#
-# language	- name of language as it would appear in $(LANGUAGES)
-# boot_language - "yes" if we need to build this language in stage1
-# compilers	- value to add to $(COMPILERS)
+#along with GCC; see the file COPYING.  If not, write to
+#the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+#Boston, MA 02110-1301, USA.
 
 language="ada"
-boot_language=yes
-boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
+gcc_subdir="ada/gcc-interface"
 
-compilers="gnat1\$(exeext)"
-
-gtfiles="\$(srcdir)/ada/ada-tree.h \$(srcdir)/ada/gigi.h \$(srcdir)/ada/decl.c \$(srcdir)/ada/trans.c \$(srcdir)/ada/utils.c"
-
-outputs=ada/Makefile
-
-target_libs="target-libada"
-lang_dirs="gnattools"
-
-# Ada will not work until the front end starts emitting GIMPLE trees.
-build_by_default=no
+if [ -f ${srcdir}/gcc/ada/gcc-interface/config-lang.in ]; then
+   . ${srcdir}/gcc/ada/gcc-interface/config-lang.in
+else
+   . ${srcdir}/ada/gcc-interface/config-lang.in
+fi

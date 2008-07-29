@@ -1,0 +1,102 @@
+; Options for the Ada front end.
+; Copyright (C) 2003, 2007 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+Ada
+
+I
+Ada Joined Separate
+; Documented for C
+
+Wall
+Ada
+; Documented for C
+
+Wmissing-prototypes
+Ada
+; Documented for C
+
+Wstrict-prototypes
+Ada
+; Documented for C
+
+Wwrite-strings
+Ada
+; Documented for C
+
+Wlong-long
+Ada
+; Documented for C
+
+Wvariadic-macros
+Ada
+; Documented for C
+
+Wold-style-definition
+Ada
+; Documented for C
+
+Wmissing-format-attribute
+Ada
+; Documented for C
+
+Woverlength-strings
+Ada
+; Documented for C
+
+nostdinc
+Ada RejectNegative
+; Don't look for source files
+
+nostdlib
+Ada
+; Don't look for object files
+
+feliminate-unused-debug-types
+Ada
+; Effect documented for C - intercepted for Ada to force the associated flag
+; not to be set by default, as it currently eliminates unreferenced parallel
+; types we need for encoding descriptions to the debugger.
+
+fRTS=
+Ada Joined RejectNegative
+; Selects the runtime
+
+gdwarf+
+Ada
+; Explicit request for dwarf debug info with GNAT specific extensions.
+
+gant
+Ada Joined Undocumented
+; Catches typos
+
+gnatO
+Ada Separate
+; Sets name of output ALI file (internal switch)
+
+gnat
+Ada Joined
+-gnat<options>	Specify options to GNAT
+
+; This comment is to ensure we retain the blank line above.
