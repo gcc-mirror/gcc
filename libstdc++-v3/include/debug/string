@@ -117,8 +117,8 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
-      : _Base(__l, __a)
-      { }
+    : _Base(__l, __a)
+    { }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
     ~basic_string() { }

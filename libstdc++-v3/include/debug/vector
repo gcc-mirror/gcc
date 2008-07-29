@@ -109,8 +109,8 @@ namespace __debug
 
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
-	: _Base(__l, __a), _Safe_base(),
-	  _M_guaranteed_capacity(__l.size()) { }
+      : _Base(__l, __a), _Safe_base(),
+	_M_guaranteed_capacity(__l.size()) { }
 #endif
 
       ~vector() { }

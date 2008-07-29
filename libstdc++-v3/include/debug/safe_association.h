@@ -1,6 +1,6 @@
 // Safe associated container base class implementation  -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -110,7 +110,7 @@ namespace __gnu_debug
 			const hasher& __hf,
 			const key_equal& __eql,
 			const allocator_type& __a = allocator_type())
-	: _Base(__l, __n, __hf, __eql, __a)
+      : _Base(__l, __n, __hf, __eql, __a)
       { }
 
       _Safe_association(const _Base& __x) : _Base(__x) { }

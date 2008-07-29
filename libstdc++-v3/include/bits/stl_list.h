@@ -553,7 +553,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       list(initializer_list<value_type> __l,
            const allocator_type& __a = allocator_type())
-        : _Base(__a)
+      : _Base(__a)
       { _M_initialize_dispatch(__l.begin(), __l.end(), __false_type()); }
 #endif
 
