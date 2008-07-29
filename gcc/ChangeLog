@@ -1,3 +1,7 @@
+2008-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-format.c (check_format_types): Revert unwanted checkin.
+
 2008-07-29  Jan Hubicka  <jh@suse.cz>
 
 	* flags.h (flag_really_no_inline): Remove.
