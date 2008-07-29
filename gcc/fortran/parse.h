@@ -61,7 +61,7 @@ extern gfc_state_data *gfc_state_stack;
 #define gfc_current_state() (gfc_state_stack->state)
 
 int gfc_check_do_variable (gfc_symtree *);
-try gfc_find_state (gfc_compile_state);
+gfc_try gfc_find_state (gfc_compile_state);
 gfc_state_data *gfc_enclosing_unit (gfc_compile_state *);
 const char *gfc_ascii_statement (gfc_statement);
 match gfc_match_enum (void);

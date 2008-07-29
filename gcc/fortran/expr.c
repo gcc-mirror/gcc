@@ -824,7 +824,7 @@ is_subref_array (gfc_expr * e)
 
 /* Try to collapse intrinsic expressions.  */
 
-static try
+static gfc_try
 simplify_intrinsic_op (gfc_expr *p, int type)
 {
   gfc_intrinsic_op op;
@@ -960,7 +960,7 @@ simplify_intrinsic_op (gfc_expr *p, int type)
 /* Subroutine to simplify constructor expressions.  Mutually recursive
    with gfc_simplify_expr().  */
 
-static try
+static gfc_try
 simplify_constructor (gfc_constructor *c, int type)
 {
   gfc_expr *p;
@@ -996,7 +996,7 @@ simplify_constructor (gfc_constructor *c, int type)
 
 /* Pull a single array element out of an array constructor.  */
 
-static try
+static gfc_try
 find_array_element (gfc_constructor *cons, gfc_array_ref *ar,
 		    gfc_constructor **rval)
 {
@@ -1007,7 +1007,7 @@ find_array_element (gfc_constructor *cons, gfc_array_ref *ar,
   mpz_t span;
   mpz_t tmp;
   gfc_expr *e;
-  try t;
+  gfc_try t;
 
   t = SUCCESS;
   e = NULL;
@@ -1115,7 +1115,7 @@ remove_subobject_ref (gfc_expr *p, gfc_constructor *cons)
 
 /* Pull an array section out of an array constructor.  */
 
-static try
+static gfc_try
 find_array_section (gfc_expr *expr, gfc_ref *ref)
 {
   int idx;
@@ -1142,7 +1142,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   gfc_expr *upper;
   gfc_expr *lower;
   gfc_constructor *vecsub[GFC_MAX_DIMENSIONS], *c;
-  try t;
+  gfc_try t;
 
   t = SUCCESS;
 
@@ -1373,7 +1373,7 @@ cleanup:
 
 /* Pull a substring out of an expression.  */
 
-static try
+static gfc_try
 find_substring_ref (gfc_expr *p, gfc_expr **newp)
 {
   int end;
@@ -1405,7 +1405,7 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
 /* Simplify a subobject reference of a constructor.  This occurs when
    parameter variable values are substituted.  */
 
-static try
+static gfc_try
 simplify_const_ref (gfc_expr *p)
 {
   gfc_constructor *cons;
@@ -1479,7 +1479,7 @@ simplify_const_ref (gfc_expr *p)
 
 /* Simplify a chain of references.  */
 
-static try
+static gfc_try
 simplify_ref_chain (gfc_ref *ref, int type)
 {
   int n;
@@ -1517,11 +1517,11 @@ simplify_ref_chain (gfc_ref *ref, int type)
 
 /* Try to substitute the value of a parameter variable.  */
 
-static try
+static gfc_try
 simplify_parameter_variable (gfc_expr *p, int type)
 {
   gfc_expr *e;
-  try t;
+  gfc_try t;
 
   e = gfc_copy_expr (p->symtree->n.sym->value);
   if (e == NULL)
@@ -1562,7 +1562,7 @@ simplify_parameter_variable (gfc_expr *p, int type)
    Returns FAILURE on error, SUCCESS otherwise.
    NOTE: Will return SUCCESS even if the expression can not be simplified.  */
 
-try
+gfc_try
 gfc_simplify_expr (gfc_expr *p, int type)
 {
   gfc_actual_arglist *ap;
@@ -1693,12 +1693,12 @@ et0 (gfc_expr *e)
 /* Check an intrinsic arithmetic operation to see if it is consistent
    with some type of expression.  */
 
-static try check_init_expr (gfc_expr *);
+static gfc_try check_init_expr (gfc_expr *);
 
 
 /* Scalarize an expression for an elemental intrinsic call.  */
 
-static try
+static gfc_try
 scalarize_intrinsic_call (gfc_expr *e)
 {
   gfc_actual_arglist *a, *b;
@@ -1831,8 +1831,8 @@ cleanup:
 }
 
 
-static try
-check_intrinsic_op (gfc_expr *e, try (*check_function) (gfc_expr *))
+static gfc_try
+check_intrinsic_op (gfc_expr *e, gfc_try (*check_function) (gfc_expr *))
 {
   gfc_expr *op1 = e->value.op.op1;
   gfc_expr *op2 = e->value.op.op2;
@@ -2155,11 +2155,11 @@ check_conversion (gfc_expr *e)
    intrinsics in the context of initialization expressions.  If
    FAILURE is returned an error message has been generated.  */
 
-static try
+static gfc_try
 check_init_expr (gfc_expr *e)
 {
   match m;
-  try t;
+  gfc_try t;
 
   if (e == NULL)
     return SUCCESS;
@@ -2334,7 +2334,7 @@ gfc_match_init_expr (gfc_expr **result)
 {
   gfc_expr *expr;
   match m;
-  try t;
+  gfc_try t;
 
   m = gfc_match_expr (&expr);
   if (m != MATCH_YES)
@@ -2375,13 +2375,13 @@ gfc_match_init_expr (gfc_expr **result)
 }
 
 
-static try check_restricted (gfc_expr *);
+static gfc_try check_restricted (gfc_expr *);
 
 /* Given an actual argument list, test to see that each argument is a
    restricted expression and optionally if the expression type is
    integer or character.  */
 
-static try
+static gfc_try
 restricted_args (gfc_actual_arglist *a)
 {
   for (; a; a = a->next)
@@ -2399,7 +2399,7 @@ restricted_args (gfc_actual_arglist *a)
 
 /* Make sure a non-intrinsic function is a specification function.  */
 
-static try
+static gfc_try
 external_spec_function (gfc_expr *e)
 {
   gfc_symbol *f;
@@ -2441,7 +2441,7 @@ external_spec_function (gfc_expr *e)
 /* Check to see that a function reference to an intrinsic is a
    restricted expression.  */
 
-static try
+static gfc_try
 restricted_intrinsic (gfc_expr *e)
 {
   /* TODO: Check constraints on inquiry functions.  7.1.6.2 (7).  */
@@ -2456,11 +2456,11 @@ restricted_intrinsic (gfc_expr *e)
    cousin check_init_expr(), an error message is generated if we
    return FAILURE.  */
 
-static try
+static gfc_try
 check_restricted (gfc_expr *e)
 {
   gfc_symbol *sym;
-  try t;
+  gfc_try t;
 
   if (e == NULL)
     return SUCCESS;
@@ -2568,7 +2568,7 @@ check_restricted (gfc_expr *e)
 /* Check to see that an expression is a specification expression.  If
    we return FAILURE, an error has been generated.  */
 
-try
+gfc_try
 gfc_specification_expr (gfc_expr *e)
 {
 
@@ -2611,12 +2611,12 @@ gfc_specification_expr (gfc_expr *e)
 
 /* Given two expressions, make sure that the arrays are conformable.  */
 
-try
+gfc_try
 gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
 {
   int op1_flag, op2_flag, d;
   mpz_t op1_size, op2_size;
-  try t;
+  gfc_try t;
 
   if (op1->rank == 0 || op2->rank == 0)
     return SUCCESS;
@@ -2661,7 +2661,7 @@ gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
 /* Given an assignable expression and an arbitrary expression, make
    sure that the assignment can take place.  */
 
-try
+gfc_try
 gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 {
   gfc_symbol *sym;
@@ -2870,7 +2870,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
    we only check rvalue if it's not an assignment to NULL() or a
    NULLIFY statement.  */
 
-try
+gfc_try
 gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 {
   symbol_attribute attr;
@@ -3018,11 +3018,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 /* Relative of gfc_check_assign() except that the lvalue is a single
    symbol.  Used for initialization assignments.  */
 
-try
+gfc_try
 gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 {
   gfc_expr lvalue;
-  try r;
+  gfc_try r;
 
   memset (&lvalue, '\0', sizeof (gfc_expr));
 

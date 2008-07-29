@@ -754,7 +754,7 @@ gfc_notification_std (int std)
    standard does not contain the requested bits.  Return FAILURE if
    an error is generated.  */
 
-try
+gfc_try
 gfc_notify_std (int std, const char *nocmsgid, ...)
 {
   va_list argp;

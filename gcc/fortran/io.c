@@ -474,7 +474,7 @@ format_lex (void)
    by itself, and we are checking it for validity.  The dual origin
    means that the warning message is a little less than great.  */
 
-static try
+static gfc_try
 check_format (bool is_input)
 {
   const char *posint_required	  = _("Positive width required");
@@ -489,7 +489,7 @@ check_format (bool is_input)
   format_token t, u;
   int level;
   int repeat;
-  try rv;
+  gfc_try rv;
 
   use_last_char = 0;
   saved_token = FMT_NONE;
@@ -981,7 +981,7 @@ finished:
 /* Given an expression node that is a constant string, see if it looks
    like a format string.  */
 
-static try
+static gfc_try
 check_format_string (gfc_expr *e, bool is_input)
 {
   if (!e || e->ts.type != BT_CHARACTER || e->expr_type != EXPR_CONSTANT)
@@ -1191,7 +1191,7 @@ match_ltag (const io_tag *tag, gfc_st_label ** label)
 
 /* Resolution of the FORMAT tag, to be called from resolve_tag.  */
 
-static try
+static gfc_try
 resolve_tag_format (const gfc_expr *e)
 {
   if (e->expr_type == EXPR_CONSTANT
@@ -1260,7 +1260,7 @@ resolve_tag_format (const gfc_expr *e)
 
 /* Do expression resolution and type-checking on an expression tag.  */
 
-static try
+static gfc_try
 resolve_tag (const io_tag *tag, gfc_expr *e)
 {
   if (e == NULL)
@@ -1417,7 +1417,7 @@ gfc_free_open (gfc_open *open)
 
 /* Resolve everything in a gfc_open structure.  */
 
-try
+gfc_try
 gfc_resolve_open (gfc_open *open)
 {
 
@@ -2017,7 +2017,7 @@ cleanup:
 
 /* Resolve everything in a gfc_close structure.  */
 
-try
+gfc_try
 gfc_resolve_close (gfc_close *close)
 {
   RESOLVE_TAG (&tag_unit, close->unit);
@@ -2141,7 +2141,7 @@ cleanup:
 }
 
 
-try
+gfc_try
 gfc_resolve_filepos (gfc_filepos *fp)
 {
   RESOLVE_TAG (&tag_unit, fp->unit);
@@ -2467,7 +2467,7 @@ gfc_free_dt (gfc_dt *dt)
 
 /* Resolve everything in a gfc_dt structure.  */
 
-try
+gfc_try
 gfc_resolve_dt (gfc_dt *dt)
 {
   gfc_expr *e;
@@ -3705,7 +3705,7 @@ cleanup:
 
 /* Resolve everything in a gfc_inquire structure.  */
 
-try
+gfc_try
 gfc_resolve_inquire (gfc_inquire *inquire)
 {
   RESOLVE_TAG (&tag_unit, inquire->unit);
@@ -3764,7 +3764,7 @@ gfc_free_wait (gfc_wait *wait)
 }
 
 
-try
+gfc_try
 gfc_resolve_wait (gfc_wait *wait)
 {
   RESOLVE_TAG (&tag_unit, wait->unit);

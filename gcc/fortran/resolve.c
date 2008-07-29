@@ -298,7 +298,7 @@ resolve_formal_arglists (gfc_namespace *ns)
 static void
 resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 {
-  try t;
+  gfc_try t;
 
   /* If this namespace is not a function or an entry master function,
      ignore it.  */
@@ -767,12 +767,12 @@ resolve_contained_functions (gfc_namespace *ns)
 /* Resolve all of the elements of a structure constructor and make sure that
    the types are correct.  */
 
-static try
+static gfc_try
 resolve_structure_cons (gfc_expr *expr)
 {
   gfc_constructor *cons;
   gfc_component *comp;
-  try t;
+  gfc_try t;
   symbol_attribute a;
 
   t = SUCCESS;
@@ -1017,7 +1017,7 @@ resolve_assumed_size_actual (gfc_expr *e)
    that look like procedure arguments are really simple variable
    references.  */
 
-static try
+static gfc_try
 resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 {
   gfc_symbol *sym;
@@ -1261,7 +1261,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
    procedures.  If called with c == NULL, we have a function, otherwise if
    expr == NULL, we have a subroutine.  */
 
-static try
+static gfc_try
 resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 {
   gfc_actual_arglist *arg0;
@@ -1506,7 +1506,7 @@ resolve_generic_f0 (gfc_expr *expr, gfc_symbol *sym)
 }
 
 
-static try
+static gfc_try
 resolve_generic_f (gfc_expr *expr)
 {
   gfc_symbol *sym;
@@ -1622,7 +1622,7 @@ found:
 }
 
 
-static try
+static gfc_try
 resolve_specific_f (gfc_expr *expr)
 {
   gfc_symbol *sym;
@@ -1656,7 +1656,7 @@ resolve_specific_f (gfc_expr *expr)
 
 /* Resolve a procedure call not known to be generic nor specific.  */
 
-static try
+static gfc_try
 resolve_unknown_f (gfc_expr *expr)
 {
   gfc_symbol *sym;
@@ -1796,10 +1796,10 @@ pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 }
 
 
-static try
+static gfc_try
 is_scalar_expr_ptr (gfc_expr *expr)
 {
-  try retval = SUCCESS;
+  gfc_try retval = SUCCESS;
   gfc_ref *ref;
   int start;
   int end;
@@ -1897,14 +1897,14 @@ is_scalar_expr_ptr (gfc_expr *expr)
    and, in the case of c_associated, set the binding label based on
    the arguments.  */
 
-static try
+static gfc_try
 gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                           gfc_symbol **new_sym)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
   int optional_arg = 0;
-  try retval = SUCCESS;
+  gfc_try retval = SUCCESS;
   gfc_symbol *args_sym;
   gfc_typespec *arg_ts;
   gfc_ref *parent_ref;
@@ -2161,13 +2161,13 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 /* TODO: Check procedure arguments so that an INTENT(IN) isn't passed
    to INTENT(OUT) or INTENT(INOUT).  */
 
-static try
+static gfc_try
 resolve_function (gfc_expr *expr)
 {
   gfc_actual_arglist *arg;
   gfc_symbol *sym;
   const char *name;
-  try t;
+  gfc_try t;
   int temp;
   procedure_type p = PROC_INTRINSIC;
 
@@ -2438,7 +2438,7 @@ resolve_generic_s0 (gfc_code *c, gfc_symbol *sym)
 }
 
 
-static try
+static gfc_try
 resolve_generic_s (gfc_code *c)
 {
   gfc_symbol *sym;
@@ -2698,7 +2698,7 @@ found:
 }
 
 
-static try
+static gfc_try
 resolve_specific_s (gfc_code *c)
 {
   gfc_symbol *sym;
@@ -2733,7 +2733,7 @@ resolve_specific_s (gfc_code *c)
 
 /* Resolve a subroutine call not known to be generic nor specific.  */
 
-static try
+static gfc_try
 resolve_unknown_s (gfc_code *c)
 {
   gfc_symbol *sym;
@@ -2772,10 +2772,10 @@ found:
    for functions, subroutines and functions are stored differently and this
    makes things awkward.  */
 
-static try
+static gfc_try
 resolve_call (gfc_code *c)
 {
-  try t;
+  gfc_try t;
   procedure_type ptype = PROC_INTRINSIC;
 
   if (c->symtree && c->symtree->n.sym
@@ -2864,10 +2864,10 @@ resolve_call (gfc_code *c)
    if their shapes do not match.  If either op1->shape or op2->shape is
    NULL, return SUCCESS.  */
 
-static try
+static gfc_try
 compare_shapes (gfc_expr *op1, gfc_expr *op2)
 {
-  try t;
+  gfc_try t;
   int i;
 
   t = SUCCESS;
@@ -2893,13 +2893,13 @@ compare_shapes (gfc_expr *op1, gfc_expr *op2)
 /* Resolve an operator expression node.  This can involve replacing the
    operation with a user defined function call.  */
 
-static try
+static gfc_try
 resolve_operator (gfc_expr *e)
 {
   gfc_expr *op1, *op2;
   char msg[200];
   bool dual_locus_error;
-  try t;
+  gfc_try t;
 
   /* Resolve all subnodes-- give them types.  */
 
@@ -3338,7 +3338,7 @@ compute_last_value_for_triplet (gfc_expr *start, gfc_expr *end,
 /* Compare a single dimension of an array reference to the array
    specification.  */
 
-static try
+static gfc_try
 check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 {
   mpz_t last_value;
@@ -3456,7 +3456,7 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 
 /* Compare an array reference with an array specification.  */
 
-static try
+static gfc_try
 compare_spec_to_ref (gfc_array_ref *ar)
 {
   gfc_array_spec *as;
@@ -3495,7 +3495,7 @@ compare_spec_to_ref (gfc_array_ref *ar)
 
 /* Resolve one part of an array index.  */
 
-try
+gfc_try
 gfc_resolve_index (gfc_expr *index, int check_scalar)
 {
   gfc_typespec ts;
@@ -3539,7 +3539,7 @@ gfc_resolve_index (gfc_expr *index, int check_scalar)
 
 /* Resolve a dim argument to an intrinsic function.  */
 
-try
+gfc_try
 gfc_resolve_dim_arg (gfc_expr *dim)
 {
   if (dim == NULL)
@@ -3644,7 +3644,7 @@ find_array_spec (gfc_expr *e)
 
 /* Resolve an array reference.  */
 
-static try
+static gfc_try
 resolve_array_ref (gfc_array_ref *ar)
 {
   int i, check_scalar;
@@ -3705,7 +3705,7 @@ resolve_array_ref (gfc_array_ref *ar)
 }
 
 
-static try
+static gfc_try
 resolve_substring (gfc_ref *ref)
 {
   if (ref->u.ss.start != NULL)
@@ -3837,7 +3837,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
 /* Resolve subtype references.  */
 
-static try
+static gfc_try
 resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension;
@@ -4035,11 +4035,11 @@ done:
 
 /* Resolve a variable expression.  */
 
-static try
+static gfc_try
 resolve_variable (gfc_expr *e)
 {
   gfc_symbol *sym;
-  try t;
+  gfc_try t;
 
   t = SUCCESS;
 
@@ -4285,10 +4285,10 @@ fixup_charlen (gfc_expr *e)
    with their operators, intrinsic operators are converted to function calls
    for overloaded types and unresolved function references are resolved.  */
 
-try
+gfc_try
 gfc_resolve_expr (gfc_expr *e)
 {
-  try t;
+  gfc_try t;
 
   if (e == NULL)
     return SUCCESS;
@@ -4373,7 +4373,7 @@ gfc_resolve_expr (gfc_expr *e)
 /* Resolve an expression from an iterator.  They must be scalar and have
    INTEGER or (optionally) REAL type.  */
 
-static try
+static gfc_try
 gfc_resolve_iterator_expr (gfc_expr *expr, bool real_ok,
 			   const char *name_msgid)
 {
@@ -4414,7 +4414,7 @@ gfc_resolve_iterator_expr (gfc_expr *expr, bool real_ok,
 /* Resolve the expressions in an iterator structure.  If REAL_OK is
    false allow only INTEGER type iterators, otherwise allow REAL types.  */
 
-try
+gfc_try
 gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
 {
   if (gfc_resolve_iterator_expr (iter->var, real_ok, "Loop variable")
@@ -4497,7 +4497,7 @@ forall_index (gfc_expr *expr, gfc_symbol *sym, int *f)
 /* Check whether the FORALL index appears in the expression or not.
    Returns SUCCESS if SYM is found in EXPR.  */
 
-try
+gfc_try
 find_forall_index (gfc_expr *expr, gfc_symbol *sym, int f)
 {
   if (gfc_traverse_expr (expr, sym, forall_index, f))
@@ -4597,7 +4597,7 @@ derived_inaccessible (gfc_symbol *sym)
 /* Resolve the argument of a deallocate expression.  The expression must be
    a pointer or a full array.  */
 
-static try
+static gfc_try
 resolve_deallocate_expr (gfc_expr *e)
 {
   symbol_attribute attr;
@@ -4712,7 +4712,7 @@ expr_to_initialize (gfc_expr *e)
    checks to see whether the expression is OK or not.  The expression must
    have a trailing array reference that gives the size of the array.  */
 
-static try
+static gfc_try
 resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 {
   int i, pointer, allocatable, dimension, check_intent_in;
@@ -5112,7 +5112,7 @@ check_case_overlap (gfc_case *list)
    Makes sure that all case expressions are scalar constants of the same
    type.  Return FAILURE if anything is wrong.  */
 
-static try
+static gfc_try
 validate_case_label_expr (gfc_expr *e, gfc_expr *case_expr)
 {
   if (e == NULL) return SUCCESS;
@@ -5181,7 +5181,7 @@ resolve_select (gfc_code *code)
   int seen_logical;
   int ncases;
   bt type;
-  try t;
+  gfc_try t;
 
   if (code->expr == NULL)
     {
@@ -5622,12 +5622,12 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
 
 /* Check whether EXPR1 has the same shape as EXPR2.  */
 
-static try
+static gfc_try
 resolve_where_shape (gfc_expr *expr1, gfc_expr *expr2)
 {
   mpz_t shape[GFC_MAX_DIMENSIONS];
   mpz_t shape2[GFC_MAX_DIMENSIONS];
-  try result = FAILURE;
+  gfc_try result = FAILURE;
   int i;
 
   /* Compare the rank.  */
@@ -5934,7 +5934,7 @@ static void resolve_code (gfc_code *, gfc_namespace *);
 void
 gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 {
-  try t;
+  gfc_try t;
 
   for (; b; b = b->block)
     {
@@ -6148,7 +6148,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
   int omp_workshare_save;
   int forall_save;
   code_stack frame;
-  try t;
+  gfc_try t;
 
   frame.prev = cs_base;
   frame.head = code;
@@ -6666,7 +6666,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 
 /* Resolve an index expression.  */
 
-static try
+static gfc_try
 resolve_index_expr (gfc_expr *e)
 {
   if (gfc_resolve_expr (e) == FAILURE)
@@ -6683,7 +6683,7 @@ resolve_index_expr (gfc_expr *e)
 
 /* Resolve a charlen structure.  */
 
-static try
+static gfc_try
 resolve_charlen (gfc_charlen *cl)
 {
   int i;
@@ -6983,7 +6983,7 @@ apply_default_init_local (gfc_symbol *sym)
 
 /* Resolution of common features of flavors variable and procedure.  */
 
-static try
+static gfc_try
 resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 {
   /* Constraints on deferred shape variable.  */
@@ -7025,7 +7025,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 /* Additional checks for symbols with flavor variable and derived
    type.  To be called from resolve_fl_variable.  */
 
-static try
+static gfc_try
 resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 {
   gcc_assert (sym->ts.type == BT_DERIVED);
@@ -7084,7 +7084,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 
 /* Resolve symbols with flavor variable.  */
 
-static try
+static gfc_try
 resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 {
   int no_init_flag, automatic_flag;
@@ -7209,7 +7209,7 @@ no_init_error:
 
 /* Resolve a procedure.  */
 
-static try
+static gfc_try
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
@@ -7451,12 +7451,12 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
    been defined and we now know their defined arguments, check that they fulfill
    the requirements of the standard for procedures used as finalizers.  */
 
-static try
+static gfc_try
 gfc_resolve_finalizers (gfc_symbol* derived)
 {
   gfc_finalizer* list;
   gfc_finalizer** prev_link; /* For removing wrong entries from the list.  */
-  try result = SUCCESS;
+  gfc_try result = SUCCESS;
   bool seen_scalar = false;
 
   if (!derived->f2k_derived || !derived->f2k_derived->finalizers)
@@ -7610,7 +7610,7 @@ add_dt_to_dt_list (gfc_symbol *derived)
 
 /* Resolve the components of a derived type.  */
 
-static try
+static gfc_try
 resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_component *c;
@@ -7707,7 +7707,7 @@ resolve_fl_derived (gfc_symbol *sym)
 }
 
 
-static try
+static gfc_try
 resolve_fl_namelist (gfc_symbol *sym)
 {
   gfc_namelist *nl;
@@ -7826,7 +7826,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 }
 
 
-static try
+static gfc_try
 resolve_fl_parameter (gfc_symbol *sym)
 {
   /* A parameter array's shape needs to be constant.  */
@@ -8098,7 +8098,7 @@ resolve_symbol (gfc_symbol *sym)
       sym->attr.use_assoc == 0 && sym->attr.dummy == 0 &&
       sym->attr.flavor != FL_PROCEDURE && sym->attr.flavor != FL_DERIVED)
     {
-      try t = SUCCESS;
+      gfc_try t = SUCCESS;
       
       /* First, make sure the variable is declared at the
 	 module-level scope (J3/04-007, Section 15.3).	*/
@@ -8311,7 +8311,7 @@ values;
 
 /* Advance the values structure to point to the next value in the data list.  */
 
-static try
+static gfc_try
 next_data_value (void)
 {
 
@@ -8328,13 +8328,13 @@ next_data_value (void)
 }
 
 
-static try
+static gfc_try
 check_data_variable (gfc_data_variable *var, locus *where)
 {
   gfc_expr *e;
   mpz_t size;
   mpz_t offset;
-  try t;
+  gfc_try t;
   ar_type mark = AR_UNKNOWN;
   int i;
   mpz_t section_index[GFC_MAX_DIMENSIONS];
@@ -8491,17 +8491,17 @@ check_data_variable (gfc_data_variable *var, locus *where)
 }
 
 
-static try traverse_data_var (gfc_data_variable *, locus *);
+static gfc_try traverse_data_var (gfc_data_variable *, locus *);
 
 /* Iterate over a list of elements in a DATA statement.  */
 
-static try
+static gfc_try
 traverse_data_list (gfc_data_variable *var, locus *where)
 {
   mpz_t trip;
   iterator_stack frame;
   gfc_expr *e, *start, *end, *step;
-  try retval = SUCCESS;
+  gfc_try retval = SUCCESS;
 
   mpz_init (frame.value);
 
@@ -8581,10 +8581,10 @@ cleanup:
 
 /* Type resolve variables in the variable list of a DATA statement.  */
 
-static try
+static gfc_try
 traverse_data_var (gfc_data_variable *var, locus *where)
 {
-  try t;
+  gfc_try t;
 
   for (; var; var = var->next)
     {
@@ -8605,7 +8605,7 @@ traverse_data_var (gfc_data_variable *var, locus *where)
    This is separate from the assignment checking because data lists should
    only be resolved once.  */
 
-static try
+static gfc_try
 resolve_data_variables (gfc_data_variable *d)
 {
   for (; d; d = d->next)
@@ -8821,7 +8821,7 @@ sequence_type (gfc_typespec ts)
 
 /* Resolve derived type EQUIVALENCE object.  */
 
-static try
+static gfc_try
 resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 {
   gfc_symbol *d;

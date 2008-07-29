@@ -124,14 +124,14 @@ int gfc_character_storage_size;
    if a mismatch occurs between ts->f90_type and ts->type; SUCCESS if
    they match.  */
 
-try
+gfc_try
 gfc_validate_c_kind (gfc_typespec *ts)
 {
    return ((ts->type == ts->f90_type) ? SUCCESS : FAILURE);
 }
 
 
-try
+gfc_try
 gfc_check_any_c_kind (gfc_typespec *ts)
 {
   int i;

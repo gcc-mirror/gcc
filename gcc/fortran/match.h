@@ -175,10 +175,10 @@ match gfc_match_volatile (void);
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */
 void set_com_block_bind_c (gfc_common_head *, int);
-try set_binding_label (char *, const char *, int);
-try set_verify_bind_c_sym (gfc_symbol *, int);
-try set_verify_bind_c_com_block (gfc_common_head *, int);
-try get_bind_c_idents (void);
+gfc_try set_binding_label (char *, const char *, int);
+gfc_try set_verify_bind_c_sym (gfc_symbol *, int);
+gfc_try set_verify_bind_c_com_block (gfc_common_head *, int);
+gfc_try get_bind_c_idents (void);
 match gfc_match_bind_c_stmt (void);
 match gfc_match_suffix (gfc_symbol *, gfc_symbol **);
 match gfc_match_bind_c (gfc_symbol *, bool);

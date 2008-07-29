@@ -923,7 +923,7 @@ pop_state (void)
 
 /* Try to find the given state in the state stack.  */
 
-try
+gfc_try
 gfc_find_state (gfc_compile_state state)
 {
   gfc_state_data *p;
@@ -1575,7 +1575,7 @@ typedef struct
 }
 st_state;
 
-static try
+static gfc_try
 verify_st_order (st_state *p, gfc_statement st)
 {
 
@@ -3563,7 +3563,7 @@ add_global_program (void)
 
 /* Top level parser.  */
 
-try
+gfc_try
 gfc_parse_file (void)
 {
   int seen_program, errors_before, errors;
