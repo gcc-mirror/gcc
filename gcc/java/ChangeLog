@@ -1,5 +1,8 @@
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* class.c (build_utf8_ref): Set DECL_SIZE and DECL_SIZE_UNIT
+	from ctype's sizes.
+
 	* class.c (build_utf8_ref): Pad initializer string to utf8const_type's
 	alignment.
 
