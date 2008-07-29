@@ -1,3 +1,14 @@
+2008-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/utility: Include <initializer_list>, per the current WP.
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_cstdint): Tweak,
+	don't use -std=gnu++0x unnecessarily.
+	* testsuite/18_support/numeric_limits/char16_32_t.cc: Use
+	dg-require-cstdint.
+	* testsuite/18_support/headers/cstdint/types_std_c++0x.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdint/types_std_tr1.cc: Likewise.
+
 2008-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/36949

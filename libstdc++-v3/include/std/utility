@@ -85,6 +85,7 @@
 #    undef _GLIBCXX_INCLUDE_AS_CXX0X
 #  endif
 #  include <bits/move.h>
+#  include <initializer_list>
 #endif
 
 #endif /* _GLIBCXX_UTILITY */
