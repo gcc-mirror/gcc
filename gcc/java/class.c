@@ -990,6 +990,8 @@ build_utf8_ref (tree name)
 
   TREE_CHAIN (decl) = utf8_decl_list;
   layout_decl (decl, 0);
+  DECL_SIZE (decl) = TYPE_SIZE (ctype);
+  DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (ctype);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
   varpool_mark_needed_node (varpool_node (decl));
