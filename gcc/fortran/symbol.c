@@ -1701,6 +1701,14 @@ gfc_add_component (gfc_symbol *sym, const char *name,
       tail = p;
     }
 
+  if (sym->attr.extension
+	&& gfc_find_component (sym->components->ts.derived, name))
+    {
+      gfc_error ("Component '%s' at %C already in the parent type "
+		 "at %L", name, &sym->components->ts.derived->declared_at);
+      return FAILURE;
+    }
+
   /* Allocate a new component.  */
   p = gfc_get_component ();
 
@@ -1830,17 +1838,36 @@ gfc_find_component (gfc_symbol *sym, const char *name)
     if (strcmp (p->name, name) == 0)
       break;
 
+  if (p == NULL
+	&& sym->attr.extension
+	&& sym->components->ts.type == BT_DERIVED)
+    {
+      p = gfc_find_component (sym->components->ts.derived, name);
+      /* Do not overwrite the error.  */
+      if (p == NULL)
+	return p;
+    }
+
   if (p == NULL)
     gfc_error ("'%s' at %C is not a member of the '%s' structure",
 	       name, sym->name);
-  else
+
+  else if (sym->attr.use_assoc)
     {
-      if (sym->attr.use_assoc && (sym->component_access == ACCESS_PRIVATE
-				  || p->access == ACCESS_PRIVATE))
+      if (p->access == ACCESS_PRIVATE)
 	{
 	  gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
 		     name, sym->name);
-	  p = NULL;
+	  return NULL;
+	}
+	
+      /* If there were components given and all components are private, error
+	 out at this place.  */
+      if (p->access != ACCESS_PUBLIC && sym->component_access == ACCESS_PRIVATE)
+	{
+	  gfc_error ("All components of '%s' are PRIVATE in structure"
+		     " constructor at %C", sym->name);
+	  return NULL;
 	}
     }
 

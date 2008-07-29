@@ -182,10 +182,10 @@ gfc_try get_bind_c_idents (void);
 match gfc_match_bind_c_stmt (void);
 match gfc_match_suffix (gfc_symbol *, gfc_symbol **);
 match gfc_match_bind_c (gfc_symbol *, bool);
-match gfc_get_type_attr_spec (symbol_attribute *);
+match gfc_get_type_attr_spec (symbol_attribute *, char*);
 
 /* primary.c.  */
-match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);
+match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **, bool);
 match gfc_match_variable (gfc_expr **, int);
 match gfc_match_equiv_variable (gfc_expr **);
 match gfc_match_actual_arglist (int, gfc_actual_arglist **);

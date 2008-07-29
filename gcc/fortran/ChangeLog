@@ -1,3 +1,42 @@
+2008-07-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (conv_parent_component_references): New function
+	to build missing parent references.
+	(gfc_conv_variable): Call it
+	* symbol.c (gfc_add_component): Check that component name in a
+	derived type extension does not appear in parent.
+	(gfc_find_component): For a derived type extension, check if
+	the component appears in the parent derived type by calling
+	self. Separate errors for private components and private types.
+	* decl.c (match_data_constant): Add extra arg to call to
+	gfc_match_structure_constructor.
+	(check_extended_derived_type): New function to check that a
+	parent derived type exists and that it is OK for exension.
+	(gfc_get_type_attr_spec): Add extra argument 'name' and return
+	it if extends is specified.
+	(gfc_match_derived_decl): Match derived type extension and
+	build a first component of the parent derived type if OK. Add
+	the f2k namespace if not present.
+	* gfortran.h : Add the extension attribute.
+	* module.c : Handle attribute 'extension'.
+	* match.h : Modify prototypes for gfc_get_type_attr_spec and
+	gfc_match_structure_constructor.
+	* primary.c (build_actual_constructor): New function extracted
+	from gfc_match_structure_constructor and modified to call self
+	iteratively to build derived type extensions, when f2k named
+	components are used.
+	(gfc_match_structure_constructor): Do not throw error for too
+	many components if a parent type is being handled. Use
+	gfc_find_component to generate errors for non-existent or
+	private components.  Iteratively call self for derived type
+	extensions so that parent constructor is built.  If extension
+	and components left over, throw error.
+	(gfc_match_rvalue): Add extra arg to call to
+	gfc_match_structure_constructor.
+
+	* trans-array.c (gfc_conv_resolve_dependencies): If lhs and rhs
+	are the same symbol, aliassing does not matter.
+
 2008-07-29  Jan Hubicka  <jh@suse.cz>
 
 	* options.c (gfc_post_options): Do not set flag_no_inline.

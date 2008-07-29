@@ -13,6 +13,6 @@ PROGRAM test
   TYPE(basics_t) :: basics
 
   basics = basics_t (42, 1.5, 1000) ! { dg-error "Too many components" }
-  basics = basics_t (42, xxx = 1000) ! { dg-error "Component 'xxx'" }
+  basics = basics_t (42, xxx = 1000) ! { dg-error "is not a member" }
 
 END PROGRAM test

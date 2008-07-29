@@ -47,8 +47,8 @@ PROGRAM test
   struct2 = allpriv_t ()
 
   ! These should fail
-  struct1 = haspriv_t (1, 2) ! { dg-error "'b' is PRIVATE" }
-  struct1 = haspriv_t (b = 2, a = 1) ! { dg-error "'b' is PRIVATE" }
+  struct1 = haspriv_t (1, 2) ! { dg-error "is a PRIVATE component" }
+  struct1 = haspriv_t (b = 2, a = 1) ! { dg-error "is a PRIVATE component" }
 
   ! This should fail as all components are private
   struct2 = allpriv_t (5) ! { dg-error "of 'allpriv_t' are PRIVATE" }

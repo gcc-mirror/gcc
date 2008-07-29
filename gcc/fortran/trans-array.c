@@ -3257,14 +3257,16 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
       if (ss->type != GFC_SS_SECTION)
 	continue;
 
-      if (gfc_could_be_alias (dest, ss)
-	    || gfc_are_equivalenced_arrays (dest->expr, ss->expr))
+      if (dest->expr->symtree->n.sym != ss->expr->symtree->n.sym)
 	{
-	  nDepend = 1;
-	  break;
+	  if (gfc_could_be_alias (dest, ss)
+		|| gfc_are_equivalenced_arrays (dest->expr, ss->expr))
+	    {
+	      nDepend = 1;
+	      break;
+	    }
 	}
-
-      if (dest->expr->symtree->n.sym == ss->expr->symtree->n.sym)
+      else
 	{
 	  lref = dest->expr->ref;
 	  rref = ss->expr->ref;
