@@ -1,3 +1,9 @@
+2008-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/36852
+	* tree.c (cplus_array_hash, build_cplus_array_type_1): Hash on
+	TYPE_UID instead of pointers.
+
 2008-07-29  Jan Hubicka  <jh@suse.cz>
 
  	* optimize.c (maybe_clone_body): Remove DECL_INLINE.
