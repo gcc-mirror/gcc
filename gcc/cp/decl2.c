@@ -837,7 +837,6 @@ grokfield (const cp_declarator *declarator,
 		  DECL_DEFAULTED_FN (value) = 1;
 		  DECL_INITIALIZED_IN_CLASS_P (value) = 1;
 		  DECL_DECLARED_INLINE_P (value) = 1;
-		  DECL_INLINE (value) = 1;
 		}
 	    }
 	  else if (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE)
@@ -2702,7 +2701,6 @@ start_static_storage_duration_function (unsigned count)
 			       type);
   TREE_PUBLIC (ssdf_decl) = 0;
   DECL_ARTIFICIAL (ssdf_decl) = 1;
-  DECL_INLINE (ssdf_decl) = 1;
 
   /* Put this function in the list of functions to be called from the
      static constructors and destructors.  */

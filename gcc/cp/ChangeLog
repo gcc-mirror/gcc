@@ -1,3 +1,15 @@
+2008-07-29  Jan Hubicka  <jh@suse.cz>
+
+ 	* optimize.c (maybe_clone_body): Remove DECL_INLINE.
+	* decl.c (duplicate_decls): Likewise.
+	(grokfndecl): Likewise.
+	(start_method): Likewise.
+	* method.c (make_thunk, make_alias_for, implicitly_declare_fn):
+	Likewise.
+	* pt.c (register_specialization, regenerate_decl_from_template):
+	Likewise.
+	* decl2.c (grokfield): Likewise.
+
 2008-07-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 34985
