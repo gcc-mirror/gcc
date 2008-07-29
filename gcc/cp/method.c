@@ -155,7 +155,6 @@ make_thunk (tree function, bool this_adjusting,
   DECL_NO_STATIC_CHAIN (thunk) = 1;
   /* The THUNK is not a pending inline, even if the FUNCTION is.  */
   DECL_PENDING_INLINE_P (thunk) = 0;
-  DECL_INLINE (thunk) = 0;
   DECL_DECLARED_INLINE_P (thunk) = 0;
   /* Nor has it been deferred.  */
   DECL_DEFERRED_FN (thunk) = 0;
@@ -281,7 +280,6 @@ make_alias_for (tree function, tree newid)
   DECL_ARTIFICIAL (alias) = 1;
   DECL_NO_STATIC_CHAIN (alias) = 1;
   DECL_PENDING_INLINE_P (alias) = 0;
-  DECL_INLINE (alias) = 0;
   DECL_DECLARED_INLINE_P (alias) = 0;
   DECL_DEFERRED_FN (alias) = 0;
   DECL_USE_TEMPLATE (alias) = 0;
@@ -1111,7 +1109,6 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   DECL_DEFAULTED_FN (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
-  DECL_INLINE (fn) = 1;
   gcc_assert (!TREE_USED (fn));
 
   /* Restore PROCESSING_TEMPLATE_DECL.  */

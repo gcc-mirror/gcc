@@ -1652,15 +1652,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      && DECL_INITIAL (new_result))
 	    {
 	      if (DECL_INITIAL (old_result))
-		{
-		  DECL_INLINE (old_result) = 0;
-		  DECL_UNINLINABLE (old_result) = 1;
-		}
+		DECL_UNINLINABLE (old_result) = 1;
 	      else
-		{
-		  DECL_INLINE (old_result) = DECL_INLINE (new_result);
-		  DECL_UNINLINABLE (old_result) = DECL_UNINLINABLE (new_result);
-		}
+		DECL_UNINLINABLE (old_result) = DECL_UNINLINABLE (new_result);
 	      DECL_EXTERNAL (old_result) = DECL_EXTERNAL (new_result);
 	      DECL_NOT_REALLY_EXTERN (old_result)
 		= DECL_NOT_REALLY_EXTERN (new_result);
@@ -1674,8 +1668,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	  else
 	    {
-	      DECL_INLINE (old_result)
-		|= DECL_INLINE (new_result);
 	      DECL_DECLARED_INLINE_P (old_result)
 		|= DECL_DECLARED_INLINE_P (new_result);
 	      DECL_DISREGARD_INLINE_LIMITS (old_result)
@@ -1949,7 +1941,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* Never inline re-defined extern inline functions.
 	     FIXME: this could be better handled by keeping both
 	     function as separate declarations.  */
-	  DECL_INLINE (newdecl) = 0;
 	  DECL_UNINLINABLE (newdecl) = 1;
 	}
       else
@@ -1958,12 +1949,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
 
 	  DECL_DECLARED_INLINE_P (newdecl) |= DECL_DECLARED_INLINE_P (olddecl);
-
-	  /* If either decl says `inline', this fn is inline, unless
-	     its definition was passed already.  */
-	  if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == NULL_TREE)
-	    DECL_INLINE (olddecl) = 1;
-	  DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
 
 	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
 	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
@@ -6649,11 +6634,6 @@ grokfndecl (tree ctype,
   /* If the declaration was declared inline, mark it as such.  */
   if (inlinep)
     DECL_DECLARED_INLINE_P (decl) = 1;
-  /* We inline functions that are explicitly declared inline, or, when
-     the user explicitly asks us to, all functions.  */
-  if (DECL_DECLARED_INLINE_P (decl)
-      || (!DECL_INLINE (decl) && funcdef_flag))
-    DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals && TREE_CODE (type) == FUNCTION_TYPE)
@@ -12138,8 +12118,6 @@ start_method (cp_decl_specifier_seq *declspecs,
   check_template_shadow (fndecl);
 
   DECL_DECLARED_INLINE_P (fndecl) = 1;
-  if (flag_default_inline)
-    DECL_INLINE (fndecl) = 1;
 
   /* We process method specializations in finish_struct_1.  */
   if (processing_template_decl && !DECL_TEMPLATE_SPECIALIZATION (fndecl))

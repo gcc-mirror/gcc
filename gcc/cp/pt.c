@@ -1289,12 +1289,8 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
 		to the primary function; now copy the inline bits to
 		the various clones.  */
 	      FOR_EACH_CLONE (clone, fn)
-		{
-		  DECL_DECLARED_INLINE_P (clone)
-		    = DECL_DECLARED_INLINE_P (fn);
-		  DECL_INLINE (clone)
-		    = DECL_INLINE (fn);
-		}
+		DECL_DECLARED_INLINE_P (clone)
+		  = DECL_DECLARED_INLINE_P (fn);
 	      check_specialization_namespace (fn);
 
 	      return fn;
@@ -14921,8 +14917,6 @@ regenerate_decl_from_template (tree decl, tree tmpl)
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))
 	DECL_DECLARED_INLINE_P (decl) = 1;
-      if (DECL_INLINE (code_pattern) && !DECL_INLINE (decl))
-	DECL_INLINE (decl) = 1;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     DECL_INITIAL (decl) =
