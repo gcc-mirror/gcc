@@ -5701,9 +5701,9 @@ process_inlined_subprograms (Node_Id gnat_node)
   Entity_Id gnat_entity;
   Node_Id gnat_body;
 
-  /* If we can inline, generate RTL for all the inlined subprograms.
+  /* If we can inline, generate Gimple for all the inlined subprograms.
      Define the entity first so we set DECL_EXTERNAL.  */
-  if (optimize > 0 && !flag_really_no_inline)
+  if (optimize > 0)
     for (gnat_entity = First_Inlined_Subprogram (gnat_node);
 	 Present (gnat_entity);
 	 gnat_entity = Next_Inlined_Subprogram (gnat_entity))
