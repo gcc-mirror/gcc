@@ -1786,7 +1786,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	    (*debug_hooks->outlining_inline_function) (olddecl);
 
 	  /* The new defn must not be inline.  */
-	  DECL_INLINE (newdecl) = 0;
 	  DECL_UNINLINABLE (newdecl) = 1;
 	}
       else
@@ -1841,22 +1840,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  gimple_set_body (newdecl, gimple_body (olddecl));
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 
-	  /* Set DECL_INLINE on the declaration if we've got a body
-	     from which to instantiate.  */
-	  if (DECL_INLINE (olddecl) && !DECL_UNINLINABLE (newdecl))
-	    {
-	      DECL_INLINE (newdecl) = 1;
-	      DECL_ABSTRACT_ORIGIN (newdecl)
-		= DECL_ABSTRACT_ORIGIN (olddecl);
-	    }
-	}
-      else
-	{
-	  /* If a previous declaration said inline, mark the
-	     definition as inlinable.  */
-	  if (DECL_DECLARED_INLINE_P (newdecl)
-	      && !DECL_UNINLINABLE (newdecl))
-	    DECL_INLINE (newdecl) = 1;
+	  /* See if we've got a function to instantiate from.  */
+	  if (DECL_SAVED_TREE (olddecl))
+	    DECL_ABSTRACT_ORIGIN (newdecl)
+	      = DECL_ABSTRACT_ORIGIN (olddecl);
 	}
     }
 
@@ -4851,19 +4838,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      pedwarn (0, "cannot inline function %<main%>");
 	  }
 	else if (declspecs->inline_p)
-	  {
-	    /* Record that the function is declared `inline'.  */
-	    DECL_DECLARED_INLINE_P (decl) = 1;
-
-	    /* Do not mark bare declarations as DECL_INLINE.  Doing so
-	       in the presence of multiple declarations can result in
-	       the abstract origin pointing between the declarations,
-	       which will confuse dwarf2out.  */
-	    if (initialized)
-	      DECL_INLINE (decl) = 1;
-	  }
-	else if (initialized)
-	  DECL_INLINE (decl) = 1;
+	  /* Record that the function is declared `inline'.  */
+	  DECL_DECLARED_INLINE_P (decl) = 1;
       }
     else
       {

@@ -461,8 +461,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  print_node (file, "size", DECL_SIZE (node), indent + 4);
 	  print_node (file, "unit size", DECL_SIZE_UNIT (node), indent + 4);
 	  
-	  if (TREE_CODE (node) != FUNCTION_DECL
-	      || DECL_INLINE (node) || DECL_BUILT_IN (node))
+	  if (TREE_CODE (node) != FUNCTION_DECL || DECL_BUILT_IN (node))
 	    indent_to (file, indent + 3);
 	  
 	  if (DECL_USER_ALIGN (node))

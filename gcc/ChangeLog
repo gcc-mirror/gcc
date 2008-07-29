@@ -1,3 +1,11 @@
+2008-07-29  Jan Hubicka  <jh@suse.cz>
+
+	* c-decl.c (merge_decls): Do not handle DECL_INLINE.
+	(grokdeclarator): Likewise.
+	* langhooks.c (lhd_warn_unused_global_decl): Use
+	DECL_DECLARED_INLINE_P.
+	* print-tree.c (print_node): Remove DECL_INLINE check.
+
 2008-07-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36945
