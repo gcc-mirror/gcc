@@ -930,8 +930,8 @@ static GTY(()) tree utf8_decl_list = NULL_TREE;
 tree
 build_utf8_ref (tree name)
 {
-  const char * name_ptr = IDENTIFIER_POINTER(name);
-  int name_len = IDENTIFIER_LENGTH(name);
+  const char * name_ptr = IDENTIFIER_POINTER (name);
+  int name_len = IDENTIFIER_LENGTH (name), name_pad;
   char buf[60];
   tree ctype, field = NULL_TREE, str_type, cinit, string;
   static int utf8_count = 0;
@@ -942,8 +942,11 @@ build_utf8_ref (tree name)
     return ref;
 
   ctype = make_node (RECORD_TYPE);
+  /* '\0' byte plus padding to utf8const_type's alignment.  */
+  name_pad = TYPE_ALIGN_UNIT (utf8const_type)
+	     - (name_len & (TYPE_ALIGN_UNIT (utf8const_type) - 1));
   str_type = build_prim_array_type (unsigned_byte_type_node,
-				    name_len + 1); /* Allow for final '\0'. */
+				    name_len + name_pad);
   PUSH_FIELD (ctype, field, "hash", unsigned_short_type_node);
   PUSH_FIELD (ctype, field, "length", unsigned_short_type_node);
   PUSH_FIELD (ctype, field, "data", str_type);
@@ -973,8 +976,7 @@ build_utf8_ref (tree name)
     {
       int decl_size;
       /* Ensure decl_size is a multiple of utf8const_type's alignment. */
-      decl_size = (name_len + 5 + TYPE_ALIGN_UNIT (utf8const_type) - 1)
-	& ~(TYPE_ALIGN_UNIT (utf8const_type) - 1);
+      decl_size = name_len + 4 + name_pad;
       if (flag_merge_constants && decl_size < 256)
 	{
 	  char buf[32];
