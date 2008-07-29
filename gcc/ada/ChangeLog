@@ -1,3 +1,7 @@
+2008-07-29  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS): Remove extra s-win32.o.
+
 2008-07-28  Jan Hubicka  <jh@suse.cz>
 
 	* misc.c (gnat_post_options): Do not set flag_no_inline.
