@@ -6630,6 +6630,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 				post_p, is_gimple_val, fb_rvalue);
 	    r1 = gimplify_expr (&OBJ_TYPE_REF_EXPR (*expr_p), pre_p,
 				post_p, is_gimple_val, fb_rvalue);
+	    TREE_SIDE_EFFECTS (*expr_p) = 0;
 	    ret = MIN (r0, r1);
 	  }
 	  break;
