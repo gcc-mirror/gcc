@@ -1,3 +1,8 @@
+2008-07-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36945
+	* gcc.dg/tree-ssa/ssa-pre-18.c: New testcase.
+
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36852

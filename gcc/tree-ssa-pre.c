@@ -2421,64 +2421,56 @@ static VEC(gimple,heap) *inserted_exprs;
    to see which expressions need to be put into GC'able memory  */
 static VEC(gimple, heap) *need_creation;
 
-/* For COMPONENT_REF's and ARRAY_REF's, we can't have any intermediates for the
-   COMPONENT_REF or INDIRECT_REF or ARRAY_REF portion, because we'd end up with
-   trying to rename aggregates into ssa form directly, which is a no
-   no.
+/* The actual worker for create_component_ref_by_pieces.  */
 
-   Thus, this routine doesn't create temporaries, it just builds a
-   single access expression for the array, calling
-   find_or_generate_expression to build the innermost pieces.
-
-   This function is a subroutine of create_expression_by_pieces, and
-   should not be called on it's own unless you really know what you
-   are doing.
-*/
 static tree
-create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
-				unsigned int operand,
-				gimple_seq *stmts,
-				gimple domstmt,
-				bool in_call)
+create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
+				  unsigned int *operand, gimple_seq *stmts,
+				  gimple domstmt)
 {
   vn_reference_op_t currop = VEC_index (vn_reference_op_s, ref->operands,
-					operand);
+					*operand);
   tree genop;
+  ++*operand;
   switch (currop->opcode)
     {
     case CALL_EXPR:
       {
 	tree folded;
-	unsigned int i;
-	vn_reference_op_t declop = VEC_index (vn_reference_op_s,
-					      ref->operands, 1);
-	unsigned int nargs = VEC_length (vn_reference_op_s, ref->operands) - 2;
-	tree *args = XNEWVEC (tree, nargs);
-
-	for (i = 0; i < nargs; i++)
+	unsigned int nargs = 0;
+	tree *args = XNEWVEC (tree, VEC_length (vn_reference_op_s,
+						ref->operands) - 1);
+	while (*operand < VEC_length (vn_reference_op_s, ref->operands))
 	  {
-	    args[i] = create_component_ref_by_pieces (block, ref,
-						      operand + 2 + i, stmts,
-						      domstmt, true);
+	    args[nargs] = create_component_ref_by_pieces_1 (block, ref,
+							    operand, stmts,
+							    domstmt);
+	    nargs++;
 	  }
 	folded = build_call_array (currop->type,
-				   TREE_CODE (declop->op0) == FUNCTION_DECL
-				   ? build_fold_addr_expr (declop->op0)
-				   : declop->op0,
+				   TREE_CODE (currop->op0) == FUNCTION_DECL
+				   ? build_fold_addr_expr (currop->op0)
+				   : currop->op0,
 				   nargs, args);
 	free (args);
 	return folded;
       }
       break;
+    case ADDR_EXPR:
+      if (currop->op0)
+	{
+	  gcc_assert (is_gimple_min_invariant (currop->op0));
+	  return currop->op0;
+	}
+      /* Fallthrough.  */
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       {
 	tree folded;
-	tree genop0 = create_component_ref_by_pieces (block, ref,
-						      operand + 1,
-						      stmts, domstmt,
-						      in_call);
+	tree genop0 = create_component_ref_by_pieces_1 (block, ref,
+							operand,
+							stmts, domstmt);
 	if (!genop0)
 	  return NULL_TREE;
 	folded = fold_build1 (currop->opcode, currop->type,
@@ -2490,45 +2482,25 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
     case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
       {
-	/* Inside a CALL_EXPR op0 is the actual indirect_ref.  */
-	if (in_call)
-	  {
-	    tree folded;
-	    tree op0 = TREE_OPERAND (currop->op0, 0);
-	    pre_expr op0expr = get_or_alloc_expr_for (op0);
-	    tree genop0 = find_or_generate_expression (block, op0expr, stmts,
-						       domstmt);
-	    if (!genop0)
-	      return NULL_TREE;
-	    folded = fold_build1 (currop->opcode, currop->type,
-				  genop0);
-	    return folded;
-	  }
-	else
-	  {
+	tree folded;
+	tree genop1 = create_component_ref_by_pieces_1 (block, ref,
+							operand,
+							stmts, domstmt);
+	if (!genop1)
+	  return NULL_TREE;
+	genop1 = fold_convert (build_pointer_type (currop->type),
+			       genop1);
 
-	    tree folded;
-	    tree genop1 = create_component_ref_by_pieces (block, ref,
-							  operand + 1,
-							  stmts, domstmt,
-							  in_call);
-	    if (!genop1)
-	      return NULL_TREE;
-	    genop1 = fold_convert (build_pointer_type (currop->type),
-				   genop1);
-
-	    folded = fold_build1 (currop->opcode, currop->type,
-				  genop1);
-	    return folded;
-	  }
+	folded = fold_build1 (currop->opcode, currop->type,
+			      genop1);
+	return folded;
       }
       break;
     case BIT_FIELD_REF:
       {
 	tree folded;
-	tree genop0 = create_component_ref_by_pieces (block, ref, operand + 1,
-						      stmts, domstmt,
-						      in_call);
+	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
+							stmts, domstmt);
 	pre_expr op1expr = get_or_alloc_expr_for (currop->op0);
 	pre_expr op2expr = get_or_alloc_expr_for (currop->op1);
 	tree genop1;
@@ -2553,17 +2525,14 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
     case ARRAY_RANGE_REF:
     case ARRAY_REF:
       {
-	vn_reference_op_t op0expr;
 	tree genop0;
 	tree genop1 = currop->op0;
 	pre_expr op1expr;
 	tree genop2 = currop->op1;
 	pre_expr op2expr;
 	tree genop3;
-	op0expr = VEC_index (vn_reference_op_s, ref->operands, operand + 1);
-	genop0 = create_component_ref_by_pieces (block, ref, operand + 1,
-						 stmts, domstmt,
-						 in_call);
+	genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
+						   stmts, domstmt);
 	if (!genop0)
 	  return NULL_TREE;
 	op1expr = get_or_alloc_expr_for (genop1);
@@ -2589,8 +2558,8 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
 	tree op1;
 	tree genop2 = currop->op1;
 	pre_expr op2expr;
-	op0 = create_component_ref_by_pieces (block, ref, operand + 1,
-					      stmts, domstmt, in_call);
+	op0 = create_component_ref_by_pieces_1 (block, ref, operand,
+						stmts, domstmt);
 	if (!op0)
 	  return NULL_TREE;
 	/* op1 should be a FIELD_DECL, which are represented by
@@ -2626,16 +2595,31 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
     case CONST_DECL:
     case RESULT_DECL:
     case FUNCTION_DECL:
-      /* For ADDR_EXPR in a CALL_EXPR, op0 is actually the entire
-	 ADDR_EXPR, not just it's operand.  */
-    case ADDR_EXPR:
-      if (currop->opcode == ADDR_EXPR)
-	gcc_assert (currop->op0 != NULL);
       return currop->op0;
 
     default:
       gcc_unreachable ();
     }
+}
+
+/* For COMPONENT_REF's and ARRAY_REF's, we can't have any intermediates for the
+   COMPONENT_REF or INDIRECT_REF or ARRAY_REF portion, because we'd end up with
+   trying to rename aggregates into ssa form directly, which is a no no.
+
+   Thus, this routine doesn't create temporaries, it just builds a
+   single access expression for the array, calling
+   find_or_generate_expression to build the innermost pieces.
+
+   This function is a subroutine of create_expression_by_pieces, and
+   should not be called on it's own unless you really know what you
+   are doing.  */
+
+static tree
+create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
+				gimple_seq *stmts, gimple domstmt)
+{
+  unsigned int op = 0;
+  return create_component_ref_by_pieces_1 (block, ref, &op, stmts, domstmt);
 }
 
 /* Find a leader for an expression, or generate one using
@@ -2743,8 +2727,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     case REFERENCE:
       {
 	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
-	folded = create_component_ref_by_pieces (block, ref, 0, stmts,
-						 domstmt, false);
+	folded = create_component_ref_by_pieces (block, ref, stmts, domstmt);
       }
       break;
     case NARY:
@@ -3616,6 +3599,8 @@ compute_avail (void)
 		      add_to_exp_gen (block, vro->op0);
 		    if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
 		      add_to_exp_gen (block, vro->op1);
+		    if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
+		      add_to_exp_gen (block, vro->op2);
 		  }
 		result = (pre_expr) pool_alloc (pre_expr_pool);
 		result->kind = REFERENCE;
@@ -3688,6 +3673,8 @@ compute_avail (void)
 			    add_to_exp_gen (block, vro->op0);
 			  if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
 			    add_to_exp_gen (block, vro->op1);
+			  if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
+			    add_to_exp_gen (block, vro->op2);
 			}
 		      result = (pre_expr) pool_alloc (pre_expr_pool);
 		      result->kind = REFERENCE;

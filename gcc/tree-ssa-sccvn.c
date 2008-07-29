@@ -557,7 +557,7 @@ shared_vuses_from_stmt (gimple stmt)
 /* Copy the operations present in load/store REF into RESULT, a vector of
    vn_reference_op_s's.  */
 
-static void
+void
 copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 {
   if (TREE_CODE (ref) == TARGET_MEM_REF)
@@ -646,6 +646,13 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	case SSA_NAME:
 	  temp.op0 = ref;
 	  break;
+	case ADDR_EXPR:
+	  if (is_gimple_min_invariant (ref))
+	    {
+	      temp.op0 = ref;
+	      break;
+	    }
+	  /* Fallthrough.  */
 	  /* These are only interesting for their operands, their
 	     existence, and their type.  They will never be the last
 	     ref in the chain of references (IE they require an
@@ -654,15 +661,15 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	case IMAGPART_EXPR:
 	case REALPART_EXPR:
 	case VIEW_CONVERT_EXPR:
-	case ADDR_EXPR:
 	  break;
 	default:
 	  gcc_unreachable ();
-
 	}
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
-      if (REFERENCE_CLASS_P (ref) || TREE_CODE (ref) == ADDR_EXPR)
+      if (REFERENCE_CLASS_P (ref)
+	  || (TREE_CODE (ref) == ADDR_EXPR
+	      && !is_gimple_min_invariant (ref)))
 	ref = TREE_OPERAND (ref, 0);
       else
 	ref = NULL_TREE;
@@ -677,7 +684,6 @@ copy_reference_ops_from_call (gimple call,
 			      VEC(vn_reference_op_s, heap) **result)
 {
   vn_reference_op_s temp;
-  tree callfn;
   unsigned i;
 
   /* Copy the call_expr opcode, type, function being called, and
@@ -685,33 +691,15 @@ copy_reference_ops_from_call (gimple call,
   memset (&temp, 0, sizeof (temp));
   temp.type = gimple_call_return_type (call);
   temp.opcode = CALL_EXPR;
+  temp.op0 = gimple_call_fn (call);
   VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
-  /* FIXME tuples
-     We make no attempt to simplify the called function because
-     the typical &FUNCTION_DECL form is also used in function pointer
-     cases that become constant.  If we simplify the original to
-     FUNCTION_DECL but not the function pointer case (which can
-     happen because we have no fold functions that operate on
-     vn_reference_t), we will claim they are not equivalent.
-
-     An example of this behavior can be see if CALL_EXPR_FN below is
-     replaced with get_callee_fndecl and gcc.dg/tree-ssa/ssa-pre-13.c
-     is compiled.  */
-  callfn = gimple_call_fn (call);
-  temp.type = TREE_TYPE (callfn);
-  temp.opcode = TREE_CODE (callfn);
-  temp.op0 = callfn;
-  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
-
+  /* Copy the call arguments.  As they can be references as well,
+     just chain them together.  */
   for (i = 0; i < gimple_call_num_args (call); ++i)
     {
       tree callarg = gimple_call_arg (call, i);
-      memset (&temp, 0, sizeof (temp));
-      temp.type = TREE_TYPE (callarg);
-      temp.opcode = TREE_CODE (callarg);
-      temp.op0 = callarg;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      copy_reference_ops_from_ref (callarg, result);
     }
   return;
 }
