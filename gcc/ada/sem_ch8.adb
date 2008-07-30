@@ -1598,6 +1598,7 @@ package body Sem_Ch8 is
                             & " dispatching operation", Nam);
                         return;
                   end case;
+
                exception
 
                   --  If no operation was found, and the type is limited,
@@ -1610,7 +1611,7 @@ package body Sem_Ch8 is
                            N, Prefix_Type);
                         return;
 
-                     --  Otherwise, compiler should have generated default.
+                     --  Otherwise, compiler should have generated default
 
                      else
                         raise;
