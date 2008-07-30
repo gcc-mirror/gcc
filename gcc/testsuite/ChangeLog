@@ -1,3 +1,7 @@
+2008-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/boolean_expr.ad[sb]: New test.
+
 2008-07-30  H.J. Lu  <hongjiu.lu@intel.com>
 	    Joey Ye  <joey.ye@intel.com>
 
@@ -3666,7 +3670,7 @@
 	PR fortran/35780
 	* gfortran.dg/simplify_argN_1.f90: New test.
 
-2008-04-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+2008-04-06  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/35832
 	* gfortran.dg/io_constraints_2.f90: Adapt to new error message.

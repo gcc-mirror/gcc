@@ -523,6 +523,13 @@ gnat_init_decl_processing (void)
      this before we can expand the GNAT types.  */
   size_type_node = gnat_type_for_size (GET_MODE_BITSIZE (Pmode), 0);
   set_sizetype (size_type_node);
+
+  /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
+  boolean_type_node = make_node (BOOLEAN_TYPE);
+  TYPE_PRECISION (boolean_type_node) = 1;
+  fixup_unsigned_type (boolean_type_node);
+  TYPE_RM_SIZE_NUM (boolean_type_node) = bitsize_int (1);
+
   build_common_tree_nodes_2 (0);
 
   ptr_void_type_node = build_pointer_type (void_type_node);
@@ -1762,7 +1769,8 @@ create_param_decl (tree param_name, tree param_type, bool readonly)
      lead to various ABI violations.  */
   if (targetm.calls.promote_prototypes (param_type)
       && (TREE_CODE (param_type) == INTEGER_TYPE
-	  || TREE_CODE (param_type) == ENUMERAL_TYPE)
+	  || TREE_CODE (param_type) == ENUMERAL_TYPE
+	  || TREE_CODE (param_type) == BOOLEAN_TYPE)
       && TYPE_PRECISION (param_type) < TYPE_PRECISION (integer_type_node))
     {
       /* We have to be careful about biased types here.  Make a subtype
@@ -2690,6 +2698,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     {
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       if (TYPE_VAX_FLOATING_POINT_P (type))
 	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
 	  {
@@ -2992,6 +3001,7 @@ build_vms_descriptor64 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     {
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       if (TYPE_VAX_FLOATING_POINT_P (type))
 	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
 	  {
@@ -4035,9 +4045,6 @@ convert (tree type, tree expr)
     case VOID_TYPE:
       return fold_build1 (CONVERT_EXPR, type, expr);
 
-    case BOOLEAN_TYPE:
-      return fold_convert (type, gnat_truthvalue_conversion (expr));
-
     case INTEGER_TYPE:
       if (TYPE_HAS_ACTUAL_BOUNDS_P (type)
 	  && (ecode == ARRAY_TYPE || ecode == UNCONSTRAINED_ARRAY_TYPE
@@ -4052,6 +4059,7 @@ convert (tree type, tree expr)
       /* ... fall through ... */
 
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       /* If we are converting an additive expression to an integer type
 	 with lower precision, be wary of the optimization that can be
 	 applied by convert_to_integer.  There are 2 problematic cases:
