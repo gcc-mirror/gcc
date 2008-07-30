@@ -1084,6 +1084,12 @@ macro must evaluate to a value equal to or larger than
 @code{STACK_BOUNDARY}.
 @end defmac
 
+@defmac INCOMING_STACK_BOUNDARY
+Define this macro if the incoming stack boundary may be different
+from @code{PREFERRED_STACK_BOUNDARY}.  This macro must evaluate
+to a value equal to or larger than @code{STACK_BOUNDARY}.
+@end defmac
+
 @defmac FUNCTION_BOUNDARY
 Alignment required for a function entry point, in bits.
 @end defmac
@@ -1120,6 +1126,18 @@ alignment computed in the usual way (including applying of
 alignment) is @var{computed}.  It overrides alignment only if the
 field alignment has not been set by the
 @code{__attribute__ ((aligned (@var{n})))} construct.
+@end defmac
+
+@defmac MAX_STACK_ALIGNMENT
+Biggest stack alignment guaranteed by the backend.  Use this macro
+to specify the maximum alignment of a variable on stack.
+
+If not defined, the default value is @code{STACK_BOUNDARY}.
+
+@c FIXME: The default should be @code{PREFERRED_STACK_BOUNDARY}.
+@c But the fix for PR 32893 indicates that we can only guarantee
+@c maximum stack alignment on stack up to @code{STACK_BOUNDARY}, not
+@c @code{PREFERRED_STACK_BOUNDARY}, if stack alignment isn't supported.
 @end defmac
 
 @defmac MAX_OFILE_ALIGNMENT
@@ -10585,6 +10603,17 @@ to the functions in @file{libgcc} that provide low-level support for
 call stack unwinding.  It is used in declarations in @file{unwind-generic.h}
 and the associated definitions of those functions.
 @end defmac
+
+@deftypefn {Target Hook} void TARGET_UPDATE_STACK_BOUNDARY (void)
+Define this macro to update the current function stack boundary if
+necessary.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_GET_DRAP_RTX (void)
+Define this macro to an rtx for Dynamic Realign Argument Pointer if a
+different argument pointer register is needed to access the function's
+argument list when stack is aligned.
+@end deftypefn
 
 @deftypefn {Target Hook} {bool} TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS (void)
 When optimization is disabled, this hook indicates whether or not

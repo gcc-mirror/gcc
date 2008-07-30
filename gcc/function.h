@@ -311,6 +311,9 @@ struct rtl_data GTY(())
      needed by inner routines.  */
   rtx x_arg_pointer_save_area;
 
+  /* Dynamic Realign Argument Pointer used for realigning stack.  */
+  rtx drap_reg;
+
   /* Offset to end of allocated area of stack frame.
      If stack grows down, this is the address of the last stack slot allocated.
      If stack grows up, this is the address for the next slot.  */
@@ -328,11 +331,25 @@ struct rtl_data GTY(())
   /* Current nesting level for temporaries.  */
   int x_temp_slot_level;
 
-  /* The largest alignment of slot allocated on the stack.  */
+  /* The largest alignment needed on the stack, including requirement
+     for outgoing stack alignment.  */
   unsigned int stack_alignment_needed;
 
-  /* Preferred alignment of the end of stack frame.  */
+  /* Preferred alignment of the end of stack frame, which is preferred
+     to call other functions.  */
   unsigned int preferred_stack_boundary;
+
+  /* The largest alignment of slot allocated on the stack.  */
+  unsigned int max_used_stack_slot_alignment;
+
+  /* The stack alignment estimated before reload, with consideration of
+     following factors:
+     1. Alignment of local stack variables (max_used_stack_slot_alignment)
+     2. Alignment requirement to call other functions 
+        (preferred_stack_boundary)
+     3. Alignment of non-local stack variables but might be spilled in
+        local stack.  */
+  unsigned int stack_alignment_estimated;
 
   /* For reorg.  */
 
@@ -393,13 +410,32 @@ struct rtl_data GTY(())
   /* Nonzero if code to initialize arg_pointer_save_area has been emitted.  */
   bool arg_pointer_save_area_init;
 
-  /* Nonzero means current function must be given a frame pointer.
-     Set in stmt.c if anything is allocated on the stack there.
-     Set in reload1.c if anything is allocated on the stack there.  */
+  /* Nonzero if current function must be given a frame pointer.
+     Set in global.c if anything is allocated on the stack there.  */
   bool frame_pointer_needed;
 
   /* When set, expand should optimize for speed.  */
   bool maybe_hot_insn_p;
+
+  /* Nonzero if function stack realignment is needed. This flag may be
+     set twice: before and after reload. It is set before reload wrt
+     stack alignment estimation before reload. It will be changed after 
+     reload if by then criteria of stack realignment is different. 
+     The value set after reload is the accurate one and is finalized.  */
+  bool stack_realign_needed;
+
+  /* Nonzero if function being compiled needs dynamic realigned
+     argument pointer (drap) if stack needs realigning.  */
+  bool need_drap;
+
+  /* Nonzero if function stack realignment estimation is done, namely
+     stack_realign_needed flag has been set before reload wrt
+     estimated stack alignment info.  */
+  bool stack_realign_processed;
+
+  /* Nonzero if function stack realignment has been finalized, namely
+     stack_realign_needed flag has been set and finalized after reload.  */
+  bool stack_realign_finalized;
 };
 
 #define return_label (crtl->x_return_label)
@@ -414,6 +450,8 @@ struct rtl_data GTY(())
 #define temp_slot_level (crtl->x_temp_slot_level)
 #define nonlocal_goto_handler_labels (crtl->x_nonlocal_goto_handler_labels)
 #define frame_pointer_needed (crtl->frame_pointer_needed)
+#define stack_realign_fp (crtl->stack_realign_needed && !crtl->need_drap)
+#define stack_realign_drap (crtl->stack_realign_needed && crtl->need_drap)
 
 extern GTY(()) struct rtl_data x_rtl;
 

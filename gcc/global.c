@@ -233,6 +233,7 @@ compute_regsets (HARD_REG_SET *elim_set,
     = (! flag_omit_frame_pointer
        || (cfun->calls_alloca && EXIT_IGNORE_STACK)
        || crtl->accesses_prior_frames
+       || crtl->stack_realign_needed
        || FRAME_POINTER_REQUIRED);
 
   frame_pointer_needed = need_fp;
@@ -256,7 +257,10 @@ compute_regsets (HARD_REG_SET *elim_set,
     {
       bool cannot_elim
 	= (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
-	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
+	   || (eliminables[i].to == STACK_POINTER_REGNUM
+	       && need_fp 
+	       && (! SUPPORTS_STACK_ALIGNMENT
+		   || ! stack_realign_fp)));
 
       if (!regs_asm_clobbered[eliminables[i].from])
 	{

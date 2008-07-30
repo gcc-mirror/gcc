@@ -112,6 +112,10 @@ mfancy-math-387
 Target RejectNegative Report InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
 Generate sin, cos, sqrt for FPU
 
+mforce-drap
+Target Report Var(ix86_force_drap)
+Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack
+
 mfp-ret-in-387
 Target Report Mask(FLOAT_RETURNS) Save
 Return values of functions in FPU registers
@@ -168,6 +172,10 @@ mpreferred-stack-boundary=
 Target RejectNegative Joined Var(ix86_preferred_stack_boundary_string)
 Attempt to keep stack aligned to this power of 2
 
+mincoming-stack-boundary=
+Target RejectNegative Joined Var(ix86_incoming_stack_boundary_string)
+Assume incoming stack aligned to this power of 2
+
 mpush-args
 Target Report InverseMask(NO_PUSH_ARGS, PUSH_ARGS) Save
 Use push instructions to save outgoing arguments
@@ -193,7 +201,7 @@ Target RejectNegative Mask(SSEREGPARM) Save
 Use SSE register passing conventions for SF and DF mode
 
 mstackrealign
-Target Report Var(ix86_force_align_arg_pointer)
+Target Report Var(ix86_force_align_arg_pointer) Init(-1)
 Realign stack in prologue
 
 mstack-arg-probe

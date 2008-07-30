@@ -3663,8 +3663,11 @@ update_eliminables (HARD_REG_SET *pset)
   frame_pointer_needed = 1;
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
-      if (ep->can_eliminate && ep->from == FRAME_POINTER_REGNUM
-	  && ep->to != HARD_FRAME_POINTER_REGNUM)
+      if (ep->can_eliminate
+	  && ep->from == FRAME_POINTER_REGNUM
+	  && ep->to != HARD_FRAME_POINTER_REGNUM
+	  && (! SUPPORTS_STACK_ALIGNMENT
+	      || ! crtl->stack_realign_needed))
 	frame_pointer_needed = 0;
 
       if (! ep->can_eliminate && ep->can_eliminate_previous)
@@ -3720,7 +3723,10 @@ init_elim_table (void)
       ep->to = ep1->to;
       ep->can_eliminate = ep->can_eliminate_previous
 	= (CAN_ELIMINATE (ep->from, ep->to)
-	   && ! (ep->to == STACK_POINTER_REGNUM && frame_pointer_needed));
+	   && ! (ep->to == STACK_POINTER_REGNUM
+		 && frame_pointer_needed 
+		 && (! SUPPORTS_STACK_ALIGNMENT
+		     || ! stack_realign_fp)));
     }
 #else
   reg_eliminate[0].from = reg_eliminate_1[0].from;

@@ -648,16 +648,32 @@ enum target_cpu_default
 #define STACK_BOUNDARY	(TARGET_64BIT && DEFAULT_ABI == MS_ABI ? 128 \
 							       : BITS_PER_WORD)
 
+/* Stack boundary of the main function guaranteed by OS.  */
+#define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
+
+/* Stack boundary guaranteed by ABI.  */
+#define ABI_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
+
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
 #define PREFERRED_STACK_BOUNDARY ix86_preferred_stack_boundary
 
-/* As of July 2001, many runtimes do not align the stack properly when
-   entering main.  This causes expand_main_function to forcibly align
-   the stack, which results in aligned frames for functions called from
-   main, though it does nothing for the alignment of main itself.  */
-#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN \
-  (ix86_preferred_stack_boundary > STACK_BOUNDARY && !TARGET_64BIT)
+/* It should be ABI_STACK_BOUNDARY.  But we set it to 128 bits for
+   both 32bit and 64bit, to support codes that need 128 bit stack
+   alignment for SSE instructions, but can't realign the stack.  */
+#define PREFERRED_STACK_BOUNDARY_DEFAULT 128
+
+/* 1 if -mstackrealign should be turned on by default.  It will
+   generate an alternate prologue and epilogue that realigns the
+   runtime stack if nessary.  This supports mixing codes that keep a
+   4-byte aligned stack, as specified by i386 psABI, with codes that
+   need a 16-byte aligned stack, as required by SSE instructions.  If
+   STACK_REALIGN_DEFAULT is 1 and PREFERRED_STACK_BOUNDARY_DEFAULT is
+   128, stacks for all functions may be realigned.  */
+#define STACK_REALIGN_DEFAULT 0
+
+/* Boundary (in *bits*) on which the incoming stack is aligned.  */
+#define INCOMING_STACK_BOUNDARY ix86_incoming_stack_boundary
 
 /* Target OS keeps a vector-aligned (128-bit, 16-byte) stack.  This is
    mandatory for the 64-bit ABI, and may or may not be true for other
@@ -683,6 +699,9 @@ enum target_cpu_default
    and Pentium Pro XFmode values at 128 bit boundaries.  */
 
 #define BIGGEST_ALIGNMENT 128
+
+/* Maximum stack alignment.  */
+#define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
 
 /* Decide whether a variable of mode MODE should be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
@@ -1110,7 +1129,7 @@ do {									\
    the pic register when possible.  The change is visible after the
    prologue has been emitted.  */
 
-#define REAL_PIC_OFFSET_TABLE_REGNUM  3
+#define REAL_PIC_OFFSET_TABLE_REGNUM  BX_REG
 
 #define PIC_OFFSET_TABLE_REGNUM				\
   ((TARGET_64BIT && ix86_cmodel == CM_SMALL_PIC)	\
@@ -1629,12 +1648,9 @@ typedef struct ix86_args {
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}	\
 
 /* Given FROM and TO register numbers, say whether this elimination is
-   allowed.  Frame pointer elimination is automatically handled.
+   allowed.   */
 
-   All other eliminations are valid.  */
-
-#define CAN_ELIMINATE(FROM, TO) \
-  ((TO) == STACK_POINTER_REGNUM ? !frame_pointer_needed : 1)
+#define CAN_ELIMINATE(FROM, TO) ix86_can_eliminate ((FROM), (TO))
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
@@ -2203,6 +2219,7 @@ enum asm_dialect {
 
 extern enum asm_dialect ix86_asm_dialect;
 extern unsigned int ix86_preferred_stack_boundary;
+extern unsigned int ix86_incoming_stack_boundary;
 extern int ix86_branch_cost, ix86_section_threshold;
 
 /* Smallest class containing REGNO.  */
@@ -2304,7 +2321,6 @@ struct machine_function GTY(())
 {
   struct stack_local_entry *stack_locals;
   const char *some_ld_name;
-  rtx force_align_arg_pointer;
   int save_varrargs_registers;
   int accesses_prev_frame;
   int optimize_mode_switching[MAX_386_ENTITIES];

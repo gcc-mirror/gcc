@@ -356,10 +356,16 @@ setup_save_areas (void)
 	if (! do_save)
 	  continue;
 
-	/* We have found an acceptable mode to store in.  */
+	/* We have found an acceptable mode to store in.  Since hard
+	   register is always saved in the widest mode available,
+	   the mode may be wider than necessary, it is OK to reduce
+	   the alignment of spill space.  We will verify that it is
+	   equal to or greater than required when we restore and save
+	   the hard register in insert_restore and insert_save.  */
 	regno_save_mem[i][j]
-	  = assign_stack_local (regno_save_mode[i][j],
-				GET_MODE_SIZE (regno_save_mode[i][j]), 0);
+	  = assign_stack_local_1 (regno_save_mode[i][j],
+				GET_MODE_SIZE (regno_save_mode[i][j]),
+				0, true);
 
 	/* Setup single word save area just in case...  */
 	for (k = 0; k < j; k++)

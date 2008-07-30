@@ -1,3 +1,169 @@
+2008-07-30  Joey Ye  <joey.ye@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Replace
+	virtual_incoming_args_rtx with crtl->args.internal_arg_pointer.
+	(expand_builtin_apply_args_1): Likewise.
+	(expand_builtin_longjmp): Need DRAP for stack alignment.
+	(expand_builtin_apply): Likewise.
+
+	* caller-save.c (setup_save_areas): Call assign_stack_local_1
+	instead of assign_stack_local to allow alignment reduction.
+
+	* calls.c (emit_call_1): Need DRAP for stack alignment if
+	return pops.
+	(expand_call): Replace virtual_incoming_args_rtx with
+	crtl->args.internal_arg_pointer.
+	* stmt.c (expand_nl_goto_receiver): Likewise.
+
+	* cfgexpand.c (get_decl_align_unit): Estimate stack variable
+	alignment and store to stack_alignment_estimated and
+	max_used_stack_slot_alignment.
+	(expand_one_var): Likewise.
+	(expand_stack_alignment): New function.
+	(tree_expand_cfg): Initialize max_used_stack_slot_alignment
+	and stack_alignment_estimated fields in rtl_data.  Call
+	expand_stack_alignment at end.
+
+	* defaults.h (INCOMING_STACK_BOUNDARY): New.
+	(MAX_STACK_ALIGNMENT): Likewise.
+	(MAX_SUPPORTED_STACK_ALIGNMENT): Likewise.
+	(SUPPORTS_STACK_ALIGNMENT): Likewise.
+
+	* emit-rtl.c (gen_reg_rtx): Estimate stack alignment for
+	stack alignment when generating virtual registers.
+
+	* function.c (assign_stack_local): Renamed to ...
+	(assign_stack_local_1): This.  Add a parameter to indicate
+	if it is OK to reduce alignment.
+	(assign_stack_local): Use it.
+	(instantiate_new_reg): Instantiate virtual incoming args rtx
+	to vDRAP if stack realignment and DRAP is needed.
+	(assign_parms): Collect parameter/return type alignment and
+	contribute to stack_alignment_estimated.
+	(locate_and_pad_parm): Likewise.
+	(get_arg_pointer_save_area): Replace virtual_incoming_args_rtx
+	with crtl->args.internal_arg_pointer.
+
+	* function.h (rtl_data): Add new field drap_reg,
+	max_used_stack_slot_alignment, stack_alignment_estimated,
+	stack_realign_needed, need_drap, stack_realign_processed and
+	stack_realign_finalized.
+	(stack_realign_fp): New macro.
+	(stack_realign_drap): Likewise.
+
+	* global.c (compute_regsets): Frame pointer is needed when
+	stack is realigned.  Can eliminate frame pointer when stack is
+	realigned and dynamic realigned argument pointer isn't used.
+
+	* reload1.c (update_eliminables):  Frame pointer is needed
+	when stack is realigned.
+	(init_elim_table): Can eliminate frame pointer when stack is
+	realigned and dynamic realigned argument pointer isn't used.
+
+	* rtl.h (assign_stack_local_1): Declare new funtion.
+
+	* target-def.h (TARGET_UPDATE_STACK_BOUNDARY): New.
+	(TARGET_GET_DRAP_RTX): Likewise.
+	(TARGET_CALLS): Add TARGET_UPDATE_STACK_BOUNDARY and
+	TARGET_GET_DRAP_RTX.
+
+	* target.h (gcc_target): Add update_stack_boundary and
+	get_drap_rtx.
+
+	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Replace
+	STACK_BOUNDARY with MAX_STACK_ALIGNMENT.
+
+2008-07-30  Xuepeng Guo  <xuepeng.guo@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* dwarf2out.c (dw_fde_struct): Add stack_realignment, drap_reg,
+	vdrap_reg, stack_realign and drap_reg_saved.
+	(add_cfi): Don't allow redefining CFA when DRAP is used.
+	(reg_save): Handle stack alignment.
+	(dwarf2out_frame_debug_expr): Add rules 16-20 to handle stack
+	alignment.  Don't generate DWARF information for (set fp sp)
+	when DRAP is used.
+	(dwarf2out_begin_prologue): Initialize drap_reg and vdrap_reg
+	to INVALID_REGNUM.
+	(int_loc_descriptor): Move prototype forward.  Also define if
+	DWARF2_UNWIND_INFO is true.
+	(output_cfa_loc): Handle DW_CFA_expression.
+	(build_cfa_aligned_loc): New.
+	(based_loc_descr): Update assert for stack realign.  For local
+	variables, use sp+offset when stack is aligned without drap and
+	fp+offset when stack is aligned with drap.  For arguments, use
+	cfa+offset when drap is used to align stack.
+
+2008-07-30  Joey Ye  <joey.ye@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_force_align_arg_pointer_string):
+	Break long line.
+	(ix86_gen_andsp): New.
+	(ix86_user_incoming_stack_boundary): Likewise.
+	(ix86_default_incoming_stack_boundary): Likewise.
+	(ix86_incoming_stack_boundary): Likewise.
+	(ix86_can_eliminate): Likewise.
+	(find_drap_reg): Likewise.
+	(ix86_update_stack_boundary): Likewise.
+	(ix86_get_drap_rtx): Likewise.
+	(ix86_finalize_stack_realign_flags): Likewise.
+	(TARGET_UPDATE_STACK_BOUNDARY): Likewise.
+	(TARGET_GET_DRAP_RTX): Likewise.
+	(override_options): Overide option value for new options.
+	(ix86_function_ok_for_sibcall): Remove check for
+	force_align_arg_pointer.
+	(ix86_handle_cconv_attribute): Likewise.
+	(ix86_function_regparm): Likewise.
+	(setup_incoming_varargs_64): Don't set stack_alignment_needed
+	here.
+	(ix86_va_start): Replace virtual_incoming_args_rtx with
+	crtl->args.internal_arg_pointer.
+	(ix86_select_alt_pic_regnum): Check DRAP register.
+	(ix86_save_reg): Replace force_align_arg_pointer with drap_reg.
+	(ix86_compute_frame_layout): Compute frame layout wrt stack
+	realignment.
+	(ix86_internal_arg_pointer): Just return
+	virtual_incoming_args_rtx.
+	(ix86_expand_prologue): Decide if stack realignment is needed
+	and generate prologue code accordingly.
+	(ix86_expand_epilogue): Generate epilogue code wrt stack
+	realignment is really needed or not.
+	
+	* config/i386/i386.h (MAIN_STACK_BOUNDARY): New.
+	(ABI_STACK_BOUNDARY): Likewise.
+	(PREFERRED_STACK_BOUNDARY_DEFAULT): Likewise.
+	(STACK_REALIGN_DEFAULT): Likewise.
+	(INCOMING_STACK_BOUNDARY): Likewise.
+	(MAX_STACK_ALIGNMENT): Likewise.
+	(ix86_incoming_stack_boundary): Likewise.
+	(FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): Removed.
+	(REAL_PIC_OFFSET_TABLE_REGNUM): Updated to use BX_REG.
+	(CAN_ELIMINATE): Defined with ix86_can_eliminate.
+	(machine_function): Remove force_align_arg_pointer.
+
+	* config/i386/i386.md (BX_REG): New.
+	(R13_REG): Likewise.
+
+	* config/i386/i386.opt (mforce_drap): New.
+	(mincoming-stack-boundary): Likewise.
+	(mstackrealign): Add Init(-1).
+
+	* config/i386/i386-protos.h (ix86_can_eliminate): New
+
+2008-07-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Update force_align_arg_pointer.
+
+	* doc/invoke.texi: Document -mincoming-stack-boundary.  Update
+	-mstackrealign.
+
+	* doc/tm.texi (MAX_STACK_ALIGNMENT): Add macro.
+	(INCOMING_STACK_BOUNDARY): Likewise.
+	(TARGET_UPDATE_STACK_BOUNDARY): New target hook.
+	(TARGET_GET_DRAP_RTX): Likewise.
+
 2008-07-30  Andreas Schwab  <schwab@suse.de>
 
 	PR rtl-optimization/36929
