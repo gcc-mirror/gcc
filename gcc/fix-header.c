@@ -562,7 +562,10 @@ recognized_function (const cpp_token *fname, unsigned int line, int kind,
   /* We only have a partial function declaration,
      so remember that we have to add a complete prototype.  */
   partial_count++;
-  partial = obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
+  partial
+    = (struct partial_proto *)
+      obstack_alloc (&scan_file_obstack,
+	 	     sizeof (struct partial_proto));
   partial->line_seen = line;
   partial->fn = fn;
   fn->partial = partial;
