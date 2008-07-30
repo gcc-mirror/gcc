@@ -1,3 +1,8 @@
+2008-07-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36967
+	* gfortran.dg/pr36967.f: New testcase.
+
 2008-07-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc.dg/visibility-14.c: New test.

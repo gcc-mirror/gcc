@@ -1707,7 +1707,7 @@ remove_stmt (gimple stmt)
       remove_phi_node (&psi, true);
 
       if (!next
-	  || !gimple_assign_copy_p (next)
+	  || !gimple_assign_ssa_name_copy_p (next)
 	  || gimple_assign_rhs1 (next) != name)
 	return;
 
@@ -1727,9 +1727,10 @@ remove_stmt (gimple stmt)
 
       mark_virtual_ops_for_renaming (stmt);
       gsi_remove (&bsi, true);
+      release_defs (stmt);
 
       if (!next
-	  || !gimple_assign_copy_p (next)
+	  || !gimple_assign_ssa_name_copy_p (next)
 	  || gimple_assign_rhs1 (next) != name)
 	return;
 
