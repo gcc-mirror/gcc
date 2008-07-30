@@ -1,3 +1,10 @@
+2008-07-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR target/35866
+
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
+	vector modes.
+
 2008-07-30  Rafael Avila de Espindola  <espindola@google.com>
 
        * final.c (call_from_call_insn): New.

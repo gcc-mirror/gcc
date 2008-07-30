@@ -644,12 +644,15 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 /* Define this macro to be the value 1 if unaligned accesses have a cost
    many times greater than aligned accesses, for example if they are
    emulated in a trap handler.  */
+/* Altivec vector memory instructions simply ignore the low bits; SPE
+   vector memory instructions trap on unaligned accesses.  */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
 	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode	\
 	|| (MODE) == DImode)						\
-       && (ALIGN) < 32))
+       && (ALIGN) < 32)							\
+   || (VECTOR_MODE_P ((MODE)) && (ALIGN) < GET_MODE_BITSIZE ((MODE))))
 
 /* Standard register usage.  */
 
