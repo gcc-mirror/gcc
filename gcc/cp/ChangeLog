@@ -1,3 +1,9 @@
+2008-07-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 34389
+	* typeck.c (build_binary_op): Encapsulate code into
+	shorten_binary_op.
+	
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36852

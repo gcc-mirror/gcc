@@ -8316,93 +8316,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
       if (shorten && none_complex)
 	{
-	  int unsigned0, unsigned1;
-	  tree arg0, arg1;
-	  int uns;
-	  tree type;
-
-	  /* Cast OP0 and OP1 to RESULT_TYPE.  Doing so prevents
-	     excessive narrowing when we call get_narrower below.  For
-	     example, suppose that OP0 is of unsigned int extended
-	     from signed char and that RESULT_TYPE is long long int.
-	     If we explicitly cast OP0 to RESULT_TYPE, OP0 would look
-	     like
-
-	       (long long int) (unsigned int) signed_char
-
-	     which get_narrower would narrow down to
-
-	       (unsigned int) signed char
-
-	     If we do not cast OP0 first, get_narrower would return
-	     signed_char, which is inconsistent with the case of the
-	     explicit cast.  */
-	  op0 = convert (result_type, op0);
-	  op1 = convert (result_type, op1);
-
-	  arg0 = get_narrower (op0, &unsigned0);
-	  arg1 = get_narrower (op1, &unsigned1);
-
-	  /* UNS is 1 if the operation to be done is an unsigned one.  */
-	  uns = TYPE_UNSIGNED (result_type);
-
 	  final_type = result_type;
-
-	  /* Handle the case that OP0 (or OP1) does not *contain* a conversion
-	     but it *requires* conversion to FINAL_TYPE.  */
-
-	  if ((TYPE_PRECISION (TREE_TYPE (op0))
-	       == TYPE_PRECISION (TREE_TYPE (arg0)))
-	      && TREE_TYPE (op0) != final_type)
-	    unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
-	  if ((TYPE_PRECISION (TREE_TYPE (op1))
-	       == TYPE_PRECISION (TREE_TYPE (arg1)))
-	      && TREE_TYPE (op1) != final_type)
-	    unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
-
-	  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
-
-	  /* For bitwise operations, signedness of nominal type
-	     does not matter.  Consider only how operands were extended.  */
-	  if (shorten == -1)
-	    uns = unsigned0;
-
-	  /* Note that in all three cases below we refrain from optimizing
-	     an unsigned operation on sign-extended args.
-	     That would not be valid.  */
-
-	  /* Both args variable: if both extended in same way
-	     from same width, do it in that width.
-	     Do it unsigned if args were zero-extended.  */
-	  if ((TYPE_PRECISION (TREE_TYPE (arg0))
-	       < TYPE_PRECISION (result_type))
-	      && (TYPE_PRECISION (TREE_TYPE (arg1))
-		  == TYPE_PRECISION (TREE_TYPE (arg0)))
-	      && unsigned0 == unsigned1
-	      && (unsigned0 || !uns))
-	    result_type
-	      = c_common_signed_or_unsigned_type
-	      (unsigned0, common_type (TREE_TYPE (arg0), TREE_TYPE (arg1)));
-	  else if (TREE_CODE (arg0) == INTEGER_CST
-		   && (unsigned1 || !uns)
-		   && (TYPE_PRECISION (TREE_TYPE (arg1))
-		       < TYPE_PRECISION (result_type))
-		   && (type
-		       = c_common_signed_or_unsigned_type (unsigned1,
-							   TREE_TYPE (arg1)))
-		   && !POINTER_TYPE_P (type)
-		   && int_fits_type_p (arg0, type))
-	    result_type = type;
-	  else if (TREE_CODE (arg1) == INTEGER_CST
-		   && (unsigned0 || !uns)
-		   && (TYPE_PRECISION (TREE_TYPE (arg0))
-		       < TYPE_PRECISION (result_type))
-		   && (type
-		       = c_common_signed_or_unsigned_type (unsigned0,
-							   TREE_TYPE (arg0)))
-		   && !POINTER_TYPE_P (type)
-		   && int_fits_type_p (arg1, type))
-	    result_type = type;
+	  result_type = shorten_binary_op (result_type, op0, op1, 
+					   shorten == -1);
 	}
 
       /* Shifts can be shortened if shifting right.  */

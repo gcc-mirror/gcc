@@ -1,3 +1,9 @@
+2008-07-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 34389
+	* gcc.dg/Wconversion-pr34389.c: New.
+	* g++.dg/warn/Wconversion-pr34389.C: New.
+	
 2008-07-29  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/pr32370.c: Force 64 bits on IA64.
