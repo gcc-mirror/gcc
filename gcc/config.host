@@ -141,26 +141,14 @@ case ${host} in
     prefix=/gnu
     local_prefix=/gnu
     ;;
-  hppa1.1-*-pro*)
-    host_xmake_file="${host_xmake_file} pa/x-ada"
-    ;;
-  hppa1.1-*-osf*)
-    host_xmake_file="${host_xmake_file} pa/x-ada"
-    ;;
-  hppa1.1-*-rtems*)
-    host_xmake_file="${host_xmake_file} pa/x-ada"
-    ;;
-  hppa1.1-*-bsd*)
-    host_xmake_file="${host_xmake_file} pa/x-ada"
-    ;;
   hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
     out_host_hook_obj=host-hpux.o
-    host_xmake_file="${host_xmake_file} pa/x-ada-hpux10 x-hpux"
+    host_xmake_file="${host_xmake_file} x-hpux"
     ;;
   hppa1.0-*-hpux11* | hppa1.1-*-hpux11* | hppa2*-*-hpux11* | \
   hppa*64*-*-hpux11*)
     out_host_hook_obj=host-hpux.o
-    host_xmake_file="${host_xmake_file} pa/x-ada x-hpux"
+    host_xmake_file="${host_xmake_file} x-hpux"
     ;;
   hppa*-*-linux*)
     out_host_hook_obj=host-hpux.o

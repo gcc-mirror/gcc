@@ -1,3 +1,8 @@
+2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-pa: New, from gcc/config/pa/x-ada.
+	* mh-pa-hpux10: New, from gcc/config/pa/x-ada-hpux10.
+
 2008-07-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* mh-mingw (LDFLAGS): Append to rather than replacing previous

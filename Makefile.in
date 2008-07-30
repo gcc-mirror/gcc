@@ -164,6 +164,7 @@ HOST_SUBDIR = @host_subdir@
 HOST_EXPORTS = \
 	$(BASE_EXPORTS) \
 	CC="$(CC)"; export CC; \
+	ADA_CFLAGS="$(ADA_CFLAGS)"; export ADA_CFLAGS; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
@@ -514,6 +515,7 @@ BASE_FLAGS_TO_PASS = \
 	"SHELL=$(SHELL)" \
 	"YACC=$(YACC)" \
 	"`echo 'ADAFLAGS=$(ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"`echo 'BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"BOOT_CFLAGS=$(BOOT_CFLAGS)" \

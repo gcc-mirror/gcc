@@ -1,3 +1,11 @@
+2008-07-30 Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Add makefile fragments for hpux.
+	* Makefile.def (flags_to_pass): Add ADA_CFLAGS.
+	* Makefile.tpl (HOST_EXPORTS): Pass ADA_CFLAGS.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2008-07-28 Aldy Hernandez <aldyh@redhat.com>
 
 	* MAINTAINERS: Add Jakub and myself as gimple maintainers.

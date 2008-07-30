@@ -172,6 +172,11 @@ some other filename (say @file{specs.install}), that will then be
 created out of the built-in specs, and introduce a @file{Makefile}
 rule to generate the @file{specs} file that's going to be used at
 build time out of your @file{specs.install}.
+
+@item T_CFLAGS
+These are extra flags to pass to the C compiler.  They are used both
+when building GCC, and when compiling things with the just-built GCC@.
+This variable is deprecated and should not be used.
 @end table
 
 @node Host Fragment
@@ -179,36 +184,5 @@ build time out of your @file{specs.install}.
 @cindex host makefile fragment
 @cindex @file{x-@var{host}}
 
-The use of @file{x-@var{host}} fragments is discouraged.  You should do
-so only if there is no other mechanism to get the behavior desired.
-Host fragments should never forcibly override variables set by the
-configure script, as they may have been adjusted by the user.
-
-Variables provided for host fragments to set include:
-
-@table @code
-
-@item X_CFLAGS
-@itemx X_CPPFLAGS
-These are extra flags to pass to the C compiler and preprocessor,
-respectively.  They are used both when building GCC, and when compiling
-things with the just-built GCC@.
-
-@item XCFLAGS
-These are extra flags to use when building the compiler.  They are not
-used when compiling @file{libgcc.a}.  However, they @emph{are} used when
-recompiling the compiler with itself in later stages of a bootstrap.
-
-@item BOOT_LDFLAGS
-Flags to be passed to the linker when recompiling the compiler with
-itself in later stages of a bootstrap.  You might need to use this if,
-for instance, one of the front ends needs more text space than the
-linker provides by default.
-
-@item EXTRA_PROGRAMS
-A list of additional programs required to use the compiler on this host,
-which should be compiled with GCC and installed alongside the front
-ends.  If you set this variable, you must also provide rules to build
-the extra programs.
-
-@end table
+The use of @file{x-@var{host}} fragments is discouraged.  You should only
+use it for makefile dependencies.

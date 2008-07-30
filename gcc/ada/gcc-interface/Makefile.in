@@ -66,22 +66,10 @@
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
 # to the stage2 and stage3 compilations
-# XCFLAGS is used for most compilations but not when using the GCC just built.
-XCFLAGS =
 CFLAGS = -g
 BOOT_CFLAGS = -O $(CFLAGS)
-# These exists to be overridden by the x-* and t-* files, respectively.
-X_CFLAGS =
+# These exists to be overridden by the t-* files, respectively.
 T_CFLAGS =
-
-X_CPPFLAGS =
-T_CPPFLAGS =
-
-X_ADA_CFLAGS =
-T_ADA_CFLAGS =
-
-X_ADAFLAGS =
-T_ADAFLAGS =
 
 CC = cc
 BISON = bison
@@ -119,11 +107,8 @@ GNATLIBFLAGS = -gnatpg -nostdinc
 GNATLIBCFLAGS = -g -O2
 GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -fexceptions \
 	-DIN_RTS
-ALL_ADA_CFLAGS = $(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
-ALL_ADAFLAGS = $(CFLAGS) $(ALL_ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) \
-	$(ADAFLAGS)
-MOST_ADAFLAGS = $(CFLAGS) $(ALL_ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) \
-	$(SOME_ADAFLAGS)
+ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
+MOST_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(SOME_ADAFLAGS)
 THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
@@ -144,9 +129,9 @@ hyphen = -
 P =
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
-# It omits XCFLAGS, and specifies -B./.
+# It specifies -B./.
 # It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
-GCC_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
+GCC_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
@@ -231,11 +216,10 @@ INTERNAL_CFLAGS = @CROSS@ -DIN_GCC
 
 # This is the variable actually used when we compile.
 LOOSE_CFLAGS = `echo $(CFLAGS) $(WARN2_CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS) \
-	$(XCFLAGS)
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS)
 
 # Likewise.
-ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+ALL_CPPFLAGS = $(CPPFLAGS)
 
 # This is where we get libiberty.a from.
 LIBIBERTY = ../../libiberty/libiberty.a
@@ -2260,15 +2244,15 @@ gen-soccon: gen-soccon.c gsocket.h
 
 cio.o     : cio.c
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init.o    : init.c adaint.h raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 initialize.o : initialize.c raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 targext.o : targext.c
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
@@ -2279,7 +2263,7 @@ targext.o : targext.c
 # the SEH handling on Windows. The reasons are not clear.
 seh_init.o : seh_init.c raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) -O0 \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.

@@ -45,11 +45,7 @@ CFLAGS=-g
 LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $(NOCOMMON_FLAG)
 
-ADA_CFLAGS=
-T_ADA_CFLAGS=
-# HPPA is literally the only target which sets X_ADA_CFLAGS
-X_ADA_CFLAGS=@x_ada_cflags@
-ALL_ADA_CFLAGS=$(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
+ADA_CFLAGS=@ADA_CFLAGS@
 
 # Variables for gnattools.
 ADAFLAGS= -gnatpg -gnata
@@ -83,6 +79,7 @@ TOOLS_FLAGS_TO_PASS_1= \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
 	"ADA_INCLUDES=-I- -I../rts $(ADA_INCLUDES_FOR_SUBDIR)"\
 	"exeext=$(exeext)" \
@@ -96,6 +93,7 @@ TOOLS_FLAGS_TO_PASS_1re= \
 	"CC=../../xgcc -B../../" \
 	"CFLAGS=$(CFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
 	"ADA_INCLUDES=-I../rts $(ADA_INCLUDES_FOR_SUBDIR)"\
 	"exeext=$(exeext)" \
@@ -112,6 +110,7 @@ TOOLS_FLAGS_TO_PASS_NATIVE= \
 	"CC=../../xgcc -B../../" \
 	"CFLAGS=$(CFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
 	"ADA_INCLUDES=-I../rts $(ADA_INCLUDES_FOR_SUBDIR)" \
 	"exeext=$(exeext)" \
@@ -128,6 +127,7 @@ TOOLS_FLAGS_TO_PASS_CROSS= \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)"	\
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
 	"ADA_INCLUDES=-I$(RTS_DIR)../adainclude -I$(RTS_DIR) $(ADA_INCLUDES_FOR_SUBDIR)" \
 	"exeext=$(exeext)" \

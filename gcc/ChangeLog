@@ -1,3 +1,14 @@
+2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Substitute ADA_CFLAGS.
+	* configure: Regenerate.
+	* config.host: Remove mention of pa/x-ada and pa/x-ada-hpux10 files.
+	* Makefile.in: Remove mention of X_* variables.
+	* config/pa/x-ada-hpux10: Remove.
+	* config/pa/x-ada: Remove.
+
+	* doc/fragments.texi: Update.
+
 2008-07-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/mips/irix-crti.asm: .hide __gcc_init and __gcc_fini.
