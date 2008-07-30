@@ -113,13 +113,13 @@ package Osint is
    --  to "<target>-gcc". In the specific case where AAMP_On_Target is set, the
    --  name "gcc" is mapped to "gnaamp", and names of the form "gnat*" are
    --  mapped to "gnaamp*". This function clobbers Name_Buffer and Name_Len.
-   --  Also look at any suffix, e.g. gnatmake-4.1 -> "gcc-4.1".
-   --  Prog is the default name of the current program being executed, e.g.
-   --  "gnatmake", "gnatlink".
+   --  Also look at any suffix, e.g. gnatmake-4.1 -> "gcc-4.1". Prog is the
+   --  default name of the current program being executed, e.g. "gnatmake",
+   --  "gnatlink".
 
    procedure Write_Program_Name;
-   --  Writes name of program as invoked to the current output
-   --  (normally standard output).
+   --  Writes name of program as invoked to the current output (normally
+   --  standard output).
 
    procedure Fail (S1 : String; S2 : String := ""; S3 : String := "");
    pragma No_Return (Fail);
@@ -243,8 +243,8 @@ package Osint is
    --  modified by update_path.
 
    procedure Add_Default_Search_Dirs;
-   --  This routine adds the default search dirs indicated by the
-   --  environment variables and sdefault package.
+   --  This routine adds the default search dirs indicated by the environment
+   --  variables and sdefault package.
 
    procedure Add_Lib_Search_Dir (Dir : String);
    --  Add Dir at the end of the library file search path
@@ -256,11 +256,11 @@ package Osint is
      (Search_Path : String_Access);
    function Get_Next_Dir_In_Path
      (Search_Path : String_Access) return String_Access;
-   --  These subprograms are used to parse out the directory names in a
-   --  search path specified by a Search_Path argument. The procedure
-   --  initializes an internal pointer to point to the initial directory
-   --  name, and calls to the function return successive directory names,
-   --  with a null pointer marking the end of the list.
+   --  These subprograms are used to parse out the directory names in a search
+   --  path specified by a Search_Path argument. The procedure initializes an
+   --  internal pointer to point to the initial directory name, and calls to
+   --  the function return successive directory names, with a null pointer
+   --  marking the end of the list.
 
    type Search_File_Type is (Include, Objects);
 
@@ -347,10 +347,9 @@ package Osint is
    --    LF/CR
    --    LF
 
-   --  The source is terminated by an EOF (16#1A#) character, which is
-   --  the last character of the returned source buffer (note that any
-   --  EOF characters in positions other than the last source character
-   --  are treated as representing blanks).
+   --  The source is terminated by an EOF (16#1A#) character, which is the last
+   --  character of the returned source buffer (note that any EOF characters in
+   --  positions other than the last source character are treated as blanks).
    --
    --  The logical lower bound of the source buffer is the input value of Lo,
    --  and on exit Hi is set to the logical upper bound of the source buffer.
