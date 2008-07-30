@@ -1,3 +1,8 @@
+2008-07-30  Rafael Avila de Espindola  <espindola@google.com>
+
+       * final.c (call_from_call_insn): New.
+       (final_scan_insn): Call assemble_external on FUNCTION_DECLs.
+
 2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Substitute ADA_CFLAGS.
