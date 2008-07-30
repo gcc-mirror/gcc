@@ -743,6 +743,9 @@ extern bool same_scalar_type_ignoring_signedness (tree, tree);
 #define c_sizeof(T)  c_sizeof_or_alignof_type (T, true, 1)
 #define c_alignof(T) c_sizeof_or_alignof_type (T, false, 1)
 
+/* Subroutine of build_binary_op, used for certain operations.  */
+extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise);
+
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */

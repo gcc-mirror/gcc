@@ -1,3 +1,12 @@
+2008-07-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 34389
+	* c-typeck.c (build_binary_op): Encapsulate code into...
+	* c-common.c (shorten_binary_op): ...this new function.
+	(conversion_warning): Use the new function. Handle non-negative
+	constant in bitwise-and.
+	* c-common.h (shorten_binary_op): Declare.
+	
 2008-07-30  Olivier Hainque  <hainque@adacore.com>
 
 	* scan.c (make_sstring_space): Add explicit conversions of

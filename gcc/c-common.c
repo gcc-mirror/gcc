@@ -1447,6 +1447,110 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   return false;
 }
 
+/* This is a helper function of build_binary_op.
+
+   For certain operations if both args were extended from the same
+   smaller type, do the arithmetic in that type and then extend.
+
+   BITWISE indicates a bitwise operation.
+   For them, this optimization is safe only if
+   both args are zero-extended or both are sign-extended.
+   Otherwise, we might change the result.
+   Eg, (short)-1 | (unsigned short)-1 is (int)-1
+   but calculated in (unsigned short) it would be (unsigned short)-1.  
+*/
+tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
+{
+  int unsigned0, unsigned1;
+  tree arg0, arg1;
+  int uns;
+  tree type;
+
+  /* Cast OP0 and OP1 to RESULT_TYPE.  Doing so prevents
+     excessive narrowing when we call get_narrower below.  For
+     example, suppose that OP0 is of unsigned int extended
+     from signed char and that RESULT_TYPE is long long int.
+     If we explicitly cast OP0 to RESULT_TYPE, OP0 would look
+     like
+     
+     (long long int) (unsigned int) signed_char
+
+     which get_narrower would narrow down to
+     
+     (unsigned int) signed char
+     
+     If we do not cast OP0 first, get_narrower would return
+     signed_char, which is inconsistent with the case of the
+     explicit cast.  */
+  op0 = convert (result_type, op0);
+  op1 = convert (result_type, op1);
+
+  arg0 = get_narrower (op0, &unsigned0);
+  arg1 = get_narrower (op1, &unsigned1);
+
+  /* UNS is 1 if the operation to be done is an unsigned one.  */
+  uns = TYPE_UNSIGNED (result_type);
+
+  /* Handle the case that OP0 (or OP1) does not *contain* a conversion
+     but it *requires* conversion to FINAL_TYPE.  */
+  
+  if ((TYPE_PRECISION (TREE_TYPE (op0))
+       == TYPE_PRECISION (TREE_TYPE (arg0)))
+      && TREE_TYPE (op0) != result_type)
+    unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
+  if ((TYPE_PRECISION (TREE_TYPE (op1))
+       == TYPE_PRECISION (TREE_TYPE (arg1)))
+      && TREE_TYPE (op1) != result_type)
+    unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
+  
+  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
+  
+  /* For bitwise operations, signedness of nominal type
+     does not matter.  Consider only how operands were extended.  */
+  if (bitwise)
+    uns = unsigned0;
+  
+  /* Note that in all three cases below we refrain from optimizing
+     an unsigned operation on sign-extended args.
+     That would not be valid.  */
+  
+  /* Both args variable: if both extended in same way
+     from same width, do it in that width.
+     Do it unsigned if args were zero-extended.  */
+  if ((TYPE_PRECISION (TREE_TYPE (arg0))
+       < TYPE_PRECISION (result_type))
+      && (TYPE_PRECISION (TREE_TYPE (arg1))
+	  == TYPE_PRECISION (TREE_TYPE (arg0)))
+      && unsigned0 == unsigned1
+      && (unsigned0 || !uns))
+    return c_common_signed_or_unsigned_type
+      (unsigned0, common_type (TREE_TYPE (arg0), TREE_TYPE (arg1)));
+
+  else if (TREE_CODE (arg0) == INTEGER_CST
+	   && (unsigned1 || !uns)
+	   && (TYPE_PRECISION (TREE_TYPE (arg1))
+	       < TYPE_PRECISION (result_type))
+	   && (type
+	       = c_common_signed_or_unsigned_type (unsigned1,
+						   TREE_TYPE (arg1)))
+	   && !POINTER_TYPE_P (type)
+	   && int_fits_type_p (arg0, type))
+    return type;
+
+  else if (TREE_CODE (arg1) == INTEGER_CST
+	   && (unsigned0 || !uns)
+	   && (TYPE_PRECISION (TREE_TYPE (arg0))
+	       < TYPE_PRECISION (result_type))
+	   && (type
+	       = c_common_signed_or_unsigned_type (unsigned0,
+						   TREE_TYPE (arg0)))
+	   && !POINTER_TYPE_P (type)
+	   && int_fits_type_p (arg1, type))
+    return type;
+
+  return result_type;
+}
+
 /* Warns if the conversion of EXPR to TYPE may alter a value.
    This is a helper function for warnings_for_convert_and_check.  */
 
@@ -1511,42 +1615,73 @@ conversion_warning (tree type, tree expr)
     }
   else /* 'expr' is not a constant.  */
     {
+      tree expr_type = TREE_TYPE (expr);
+
       /* Warn for real types converted to integer types.  */
-      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+      if (TREE_CODE (expr_type) == REAL_TYPE
           && TREE_CODE (type) == INTEGER_TYPE)
         give_warning = true;
 
-      else if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+      else if (TREE_CODE (expr_type) == INTEGER_TYPE
                && TREE_CODE (type) == INTEGER_TYPE)
         {
 	  /* Don't warn about unsigned char y = 0xff, x = (int) y;  */
 	  expr = get_unwidened (expr, 0);
+	  expr_type = TREE_TYPE (expr);
 
+	  /* Don't warn for short y; short x = ((int)y & 0xff);  */
+	  if (TREE_CODE (expr) == BIT_AND_EXPR 
+	      || TREE_CODE (expr) == BIT_IOR_EXPR 
+	      || TREE_CODE (expr) == BIT_XOR_EXPR)
+	    {
+	    /* It both args were extended from a shortest type, use
+	       that type if that is safe.  */
+	      expr_type = shorten_binary_op (expr_type, 
+					     TREE_OPERAND (expr, 0), 
+					     TREE_OPERAND (expr, 1), 
+					     /* bitwise */1);
+
+	      /* If one of the operands is a non-negative constant
+		 that fits in the target type, then the type of the
+		 other operand does not matter. */
+	      if (TREE_CODE (expr) == BIT_AND_EXPR)
+		{
+		  tree op0 = TREE_OPERAND (expr, 0);
+		  tree op1 = TREE_OPERAND (expr, 1);
+		  if ((TREE_CODE (op0) == INTEGER_CST
+		       && int_fits_type_p (op0, c_common_signed_type (type))
+		       && int_fits_type_p (op0, c_common_unsigned_type (type)))
+		      || (TREE_CODE (op1) == INTEGER_CST
+		       && int_fits_type_p (op1, c_common_signed_type (type))
+		       && int_fits_type_p (op1, c_common_unsigned_type (type))))
+		    return;
+		}
+	    }
           /* Warn for integer types converted to smaller integer types.  */
-          if (formal_prec < TYPE_PRECISION (TREE_TYPE (expr))) 
+          if (formal_prec < TYPE_PRECISION (expr_type)) 
 	    give_warning = true;
 
 	  /* When they are the same width but different signedness,
 	     then the value may change.  */
-	  else if ((formal_prec == TYPE_PRECISION (TREE_TYPE (expr))
-		    && TYPE_UNSIGNED (TREE_TYPE (expr)) != TYPE_UNSIGNED (type))
+	  else if ((formal_prec == TYPE_PRECISION (expr_type)
+		    && TYPE_UNSIGNED (expr_type) != TYPE_UNSIGNED (type))
 		   /* Even when converted to a bigger type, if the type is
 		      unsigned but expr is signed, then negative values
 		      will be changed.  */
-		   || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (TREE_TYPE (expr))))
+		   || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)))
 	    warning (OPT_Wsign_conversion,
 		     "conversion to %qT from %qT may change the sign of the result",
-		     type, TREE_TYPE (expr));
+		     type, expr_type);
         }
 
       /* Warn for integer types converted to real types if and only if
          all the range of values of the integer type cannot be
          represented by the real type.  */
-      else if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+      else if (TREE_CODE (expr_type) == INTEGER_TYPE
                && TREE_CODE (type) == REAL_TYPE)
         {
-          tree type_low_bound = TYPE_MIN_VALUE (TREE_TYPE (expr));
-          tree type_high_bound = TYPE_MAX_VALUE (TREE_TYPE (expr));
+          tree type_low_bound = TYPE_MIN_VALUE (expr_type);
+          tree type_high_bound = TYPE_MAX_VALUE (expr_type);
           REAL_VALUE_TYPE real_low_bound = real_value_from_int_cst (0, type_low_bound);
           REAL_VALUE_TYPE real_high_bound = real_value_from_int_cst (0, type_high_bound);
 
@@ -1556,16 +1691,16 @@ conversion_warning (tree type, tree expr)
         }
 
       /* Warn for real types converted to smaller real types.  */
-      else if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+      else if (TREE_CODE (expr_type) == REAL_TYPE
                && TREE_CODE (type) == REAL_TYPE
-               && formal_prec < TYPE_PRECISION (TREE_TYPE (expr)))
+               && formal_prec < TYPE_PRECISION (expr_type))
         give_warning = true;
 
 
       if (give_warning)
         warning (OPT_Wconversion,
                  "conversion to %qT from %qT may alter its value",
-                 type, TREE_TYPE (expr));
+                 type, expr_type);
     }
 }
 

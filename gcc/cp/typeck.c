@@ -3810,61 +3810,9 @@ cp_build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
       if (shorten && none_complex)
 	{
-	  int unsigned0, unsigned1;
-	  tree arg0 = get_narrower (op0, &unsigned0);
-	  tree arg1 = get_narrower (op1, &unsigned1);
-	  /* UNS is 1 if the operation to be done is an unsigned one.  */
-	  int uns = TYPE_UNSIGNED (result_type);
-	  tree type;
-
 	  final_type = result_type;
-
-	  /* Handle the case that OP0 does not *contain* a conversion
-	     but it *requires* conversion to FINAL_TYPE.  */
-
-	  if (op0 == arg0 && TREE_TYPE (op0) != final_type)
-	    unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
-	  if (op1 == arg1 && TREE_TYPE (op1) != final_type)
-	    unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
-
-	  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
-
-	  /* For bitwise operations, signedness of nominal type
-	     does not matter.  Consider only how operands were extended.  */
-	  if (shorten == -1)
-	    uns = unsigned0;
-
-	  /* Note that in all three cases below we refrain from optimizing
-	     an unsigned operation on sign-extended args.
-	     That would not be valid.  */
-
-	  /* Both args variable: if both extended in same way
-	     from same width, do it in that width.
-	     Do it unsigned if args were zero-extended.  */
-	  if ((TYPE_PRECISION (TREE_TYPE (arg0))
-	       < TYPE_PRECISION (result_type))
-	      && (TYPE_PRECISION (TREE_TYPE (arg1))
-		  == TYPE_PRECISION (TREE_TYPE (arg0)))
-	      && unsigned0 == unsigned1
-	      && (unsigned0 || !uns))
-	    result_type = c_common_signed_or_unsigned_type
-	      (unsigned0, common_type (TREE_TYPE (arg0), TREE_TYPE (arg1)));
-	  else if (TREE_CODE (arg0) == INTEGER_CST
-		   && (unsigned1 || !uns)
-		   && (TYPE_PRECISION (TREE_TYPE (arg1))
-		       < TYPE_PRECISION (result_type))
-		   && (type = c_common_signed_or_unsigned_type
-		       (unsigned1, TREE_TYPE (arg1)),
-		       int_fits_type_p (arg0, type)))
-	    result_type = type;
-	  else if (TREE_CODE (arg1) == INTEGER_CST
-		   && (unsigned0 || !uns)
-		   && (TYPE_PRECISION (TREE_TYPE (arg0))
-		       < TYPE_PRECISION (result_type))
-		   && (type = c_common_signed_or_unsigned_type
-		       (unsigned0, TREE_TYPE (arg0)),
-		       int_fits_type_p (arg1, type)))
-	    result_type = type;
+	  result_type = shorten_binary_op (result_type, op0, op1, 
+					   shorten == -1);
 	}
 
       /* Comparison operations are shortened too but differently.
