@@ -1,0 +1,47 @@
+# Copyright (C) 2008
+# Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Exit immediately if this isn't a x86 target.
+if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
+  return
+}
+
+load_lib gcc-dg.exp
+
+# Only run on targets which support automatic stack alignment.
+if { ![check_effective_target_automatic_stack_alignment] } then {
+    return
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS "-w"
+}
+
+# Initialize `dg'.
+dg-init
+
+set additional_flags "-mstackrealign"
+
+dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $additional_flags $DEFAULT_CFLAGS
+
+set additional_flags "-mno-stackrealign"
+
+dg-runtest [lsort [glob $srcdir/$subdir/*.c]] $additional_flags $DEFAULT_CFLAGS
+
+dg-finish
