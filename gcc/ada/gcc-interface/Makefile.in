@@ -1326,13 +1326,20 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     s-intman.adb<s-intman-dummy.adb \
     s-osinte.ads<s-osinte-rtx.ads \
     s-osprim.adb<s-osprim-rtx.adb \
-    s-taprop.adb<s-taprop-rtx.adb \
-    system.ads<system-rtx.ads
+    s-taprop.adb<s-taprop-rtx.adb
 
     EXTRA_GNATRTL_NONTASKING_OBJS = s-win32.o
 
-    MISCLIB = -lwsock32 -lrtapi_w32
-    THREADSLIB=-lrtapi_w32
+    ifeq ($(strip $(filter-out rtx_w32,$(THREAD_KIND))),)
+       LIBGNAT_TARGET_PAIRS += system.ads<system-rtx.ads
+
+       EH_MECHANISM=-gcc
+    else
+       LIBGNAT_TARGET_PAIRS += system.ads<system-rtx-rtss.ads
+
+       EH_MECHANISM=
+    endif
+
   else
     LIBGNAT_TARGET_PAIRS += \
     a-exetim.adb<a-exetim-mingw.adb \
@@ -1354,13 +1361,14 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     # ??? This will be replaced by gnatlib-shared-dual-win32 when GNAT
     # auto-import support for array/record will be done.
     GNATLIB_SHARED = gnatlib-shared-win32
+
+    EH_MECHANISM=-gcc
   endif
 
   TOOLS_TARGET_PAIRS= \
   mlib-tgt-specific.adb<mlib-tgt-specific-mingw.adb \
   indepsw.adb<indepsw-mingw.adb
 
-  EH_MECHANISM=-gcc
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   EXTRA_GNATTOOLS = ../../gnatdll$(exeext)
@@ -1706,7 +1714,7 @@ endif
 # while GNATRTL_OBJS lists the object files compiled from Ada sources that
 # go into the directory.  The pthreads emulation is built in the threads
 # subdirectory and copied.
-LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
+LIBGNAT_SRCS = adaint.c adaint.h argv.c cio.c cstreams.c \
   errno.c exit.c cal.c ctrl_c.c env.c env.h \
   raise.h raise.c sysdep.c aux-io.c init.c initialize.c seh_init.c \
   final.c tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c expect.c mkdir.c \
