@@ -3,6 +3,12 @@
 	* mh-pa: New, from gcc/config/pa/x-ada.
 	* mh-pa-hpux10: New, from gcc/config/pa/x-ada-hpux10.
 
+2008-07-25  Keith Seitz  <keiths@redhat.com>
+
+	* acinclude.m4: Remove libide, libgui, and all the other Tcl
+	functions.
+	* tcl.m4: New file.
+
 2008-07-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* mh-mingw (LDFLAGS): Append to rather than replacing previous
