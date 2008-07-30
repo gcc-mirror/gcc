@@ -1,3 +1,13 @@
+2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/15479
+	* gnat-style.texi: Remove AdaCore copyright statement and GPL
+	statement for GNAT.  Add @copying stanza, use it.  Update to
+	GFDL 1.2.  Do not list GFDL as Invariant Section, do not list
+	title as Front-Cover Text.
+	* gnat_rm.texi: Likewise.
+	* gnat_ugn.texi: Likewise.
+
 2008-07-29  Jan Hubicka  <jh@suse.cz>
 
 	* trans.c (process_inlined_subprograms): Remove tree_really_inline

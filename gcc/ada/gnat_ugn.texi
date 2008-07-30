@@ -1,25 +1,29 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
+
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 @c                                                                            o
 @c                            GNAT DOCUMENTATION                              o
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c                     Copyright (C) 1992-2008, AdaCore                       o
-@c                                                                            o
-@c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
-@c  terms of the  GNU General Public License as published  by the Free Soft-  o
-@c  ware  Foundation;  either version 2,  or (at your option) any later ver-  o
-@c  sion.  GNAT is distributed in the hope that it will be useful, but WITH-  o
-@c  OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY  o
-@c  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  o
-@c  for  more details.  You should have  received  a copy of the GNU General  o
-@c  Public License  distributed with GNAT;  see file COPYING.  If not, write  o
-@c  to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor,  o
-@c  Boston, MA 02110-1301, USA.                                               o
+@c   GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+@setfilename gnat_ugn.info
+
+@copying
+Copyright @copyright{} 1995-2005, 2006, 2007, 2008 Free Software Foundation,
+Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end copying
 
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 @c
@@ -76,8 +80,6 @@
 @c
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
-@setfilename gnat_ugn.info
-
 @set NOW January 2007
 @c This flag is used where the text refers to conditions that exist when the
 @c text was entered into the document but which may change over time.
@@ -117,21 +119,6 @@
 @setchapternewpage odd
 @syncodeindex fn cp
 @c %**end of header
-
-@copying
-Copyright @copyright{} 1995-2005, 2006, 2007, 2008 Free Software Foundation,
-Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2
-or any later version published by the Free Software Foundation;
-with the Invariant Sections being ``GNU Free Documentation License'', with the
-Front-Cover Texts being
-``@value{EDITION} User's Guide'',
-and with no Back-Cover Texts.
-A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-@end copying
 
 @titlepage
 @title @value{EDITION} User's Guide

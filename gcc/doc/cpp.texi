@@ -15,7 +15,7 @@ Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation.  A copy of
 the license is included in the
 @c man end

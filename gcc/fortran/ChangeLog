@@ -1,3 +1,11 @@
+2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gfc-internals.texi: Update to GFDL 1.2.  Do not list GPL as
+	Invariant Section.
+	* gfortran.texi: Likewise.
+	* intrinsic.texi: Do not list GPL as Invariant Section.
+	* invoke.texi: Likewise.  Update copyright years.
+
 2008-07-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-expr.c (conv_parent_component_references): New function

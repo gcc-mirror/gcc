@@ -1,3 +1,8 @@
+2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libgomp.texi: Update to GFDL 1.2.  Update copyright years.
+	Do not list GPL as Invariant Section.
+
 2008-07-28  Ilie Garbacea  <ilie@mips.com>
 	    Chao-ying Fu  <fu@mips.com>
 
