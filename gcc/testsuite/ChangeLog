@@ -1,3 +1,8 @@
+2008-07-30  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/36767
+	* g++.dg/parse/crash41.C: New test.
+
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36852

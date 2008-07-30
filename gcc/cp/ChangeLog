@@ -1,3 +1,11 @@
+2008-07-30  Dodji Seketeli  <dseketel@redhat.com>
+
+	PR c++/36767
+	* decl2.c (fix_temporary_vars_context_r): New function.
+	 (one_static_initialization_or_destruction): Make sure temporary
+	 variables part of the initialiser have their DECL_CONTEXT()
+	 properly set.
+
 2008-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/36852
