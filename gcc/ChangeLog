@@ -1,5 +1,10 @@
 2008-07-30  Nathan Froyd  <froydnj@codesourcery.com>
 
+        * config/arm/arm.c (arm_expand_prologue): Use 0-length rtvec
+        instead of NULL_RTVEC.
+
+2008-07-30  Nathan Froyd  <froydnj@codesourcery.com>
+
 	PR target/35866
 
 	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Add clause for
