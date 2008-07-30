@@ -544,6 +544,7 @@ gnat_print_type (FILE *file, tree node, int indent)
       break;
 
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       print_node (file, "RM size", TYPE_RM_SIZE_NUM (node), indent + 4);
       break;
 

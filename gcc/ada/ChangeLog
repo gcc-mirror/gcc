@@ -1,3 +1,23 @@
+2008-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/36554
+	* back_end.adb (Call_Back_End): Pass Standard_Boolean to gigi.
+	* gcc-interface/gigi.h (gigi): Take new standard_boolean parameter.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Subtype>:
+	Set precision to 1 for subtype of BOOLEAN_TYPE.
+	(set_rm_size): Set TYPE_RM_SIZE_NUM for BOOLEAN_TYPE.
+	(make_type_from_size): Deal with BOOLEAN_TYPE.
+	* gcc-interface/misc.c (gnat_print_type): Likewise.
+	* gcc-interface/trans.c (gigi): Take new standard_boolean parameter.
+	Set boolean_type_node as its translation in the table, as well
+	as boolean_false_node for False and boolean_true_node for True.
+	* gcc-interface/utils.c (gnat_init_decl_processing): Create custom
+	8-bit boolean_type_node and set its TYPE_RM_SIZE_NUM.
+	(create_param_decl): Deal with BOOLEAN_TYPE.
+	(build_vms_descriptor): Likewise.
+	(build_vms_descriptor64): Likewise.
+	(convert): Deal with BOOLEAN_TYPE like with ENUMERAL_TYPE.
+
 2008-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb: Minor reformatting
@@ -16948,7 +16968,7 @@ PR ada/10768
 	* utils.c (create_var_decl): Use have_global_bss_p when deciding
 	whether to make the decl common.
 
-2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2006-02-20  Rafael ï¿½vila de Espï¿½ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (Ada): Remove.
 	(.PHONY): Remove Ada
@@ -19406,11 +19426,11 @@ PR ada/10768
 
 	* s-bitops.adb: Clarify comment for Bits_Array
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael ï¿½vila de Espï¿½ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (ada.install-normal): Remove.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael ï¿½vila de Espï¿½ndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove all dependencies on s-gtype.
 

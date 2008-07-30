@@ -1536,15 +1536,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    gnu_expr, 0);
 
       gnu_type = make_node (INTEGER_TYPE);
+      TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
+
+      /* Set the precision to the Esize except for bit-packed arrays and
+	 subtypes of Standard.Boolean.  */
       if (Is_Packed_Array_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
 	  esize = UI_To_Int (RM_Size (gnat_entity));
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
 	}
+      else if (TREE_CODE (TREE_TYPE (gnu_type)) == BOOLEAN_TYPE)
+        esize = 1;
 
       TYPE_PRECISION (gnu_type) = esize;
-      TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
 
       TYPE_MIN_VALUE (gnu_type)
 	= convert (TREE_TYPE (gnu_type),
@@ -1596,7 +1601,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 are uninitialized.  Both goals are accomplished by wrapping the
 	 modular value in an enclosing struct.  */
       if (Is_Packed_Array_Type (gnat_entity)
-	    && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
+	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
 	  tree gnu_field_type = gnu_type;
 	  tree gnu_field;
@@ -7106,7 +7111,8 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   if (TREE_CODE (gnu_type) == INTEGER_TYPE
       && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
     TYPE_RM_SIZE_NUM (gnu_type) = size;
-  else if (TREE_CODE (gnu_type) == ENUMERAL_TYPE)
+  else if (TREE_CODE (gnu_type) == ENUMERAL_TYPE
+	   || TREE_CODE (gnu_type) == BOOLEAN_TYPE)
     TYPE_RM_SIZE_NUM (gnu_type) = size;
   else if ((TREE_CODE (gnu_type) == RECORD_TYPE
 	    || TREE_CODE (gnu_type) == UNION_TYPE
@@ -7124,7 +7130,7 @@ static tree
 make_type_from_size (tree type, tree size_tree, bool for_biased)
 {
   unsigned HOST_WIDE_INT size;
-  bool biased_p;
+  bool biased_p, boolean_p;
   tree new_type;
 
   /* If size indicates an error, just return TYPE to avoid propagating
@@ -7138,13 +7144,23 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
     {
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
+
+      boolean_p = (TREE_CODE (type) == BOOLEAN_TYPE
+		   || (TREE_CODE (type) == INTEGER_TYPE
+		       && TREE_TYPE (type)
+		       && TREE_CODE (TREE_TYPE (type)) == BOOLEAN_TYPE));
+
+      if (boolean_p)
+	size = round_up_to_align (size, BITS_PER_UNIT);
 
       /* Only do something if the type is not a packed array type and
 	 doesn't already have the proper size.  */
       if (TYPE_PACKED_ARRAY_TYPE_P (type)
-	  || (TYPE_PRECISION (type) == size && biased_p == for_biased))
+	  || (biased_p == for_biased && TYPE_PRECISION (type) == size)
+	  || (boolean_p && compare_tree_int (TYPE_SIZE (type), size) == 0))
 	break;
 
       biased_p |= for_biased;
@@ -7154,13 +7170,18 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	new_type = make_unsigned_type (size);
       else
 	new_type = make_signed_type (size);
+      if (boolean_p)
+	TYPE_PRECISION (new_type) = 1;
       TREE_TYPE (new_type) = TREE_TYPE (type) ? TREE_TYPE (type) : type;
       TYPE_MIN_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MIN_VALUE (type));
       TYPE_MAX_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MAX_VALUE (type));
       TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
-      TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
+      if (boolean_p)
+	TYPE_RM_SIZE_NUM (new_type) = bitsize_int (1);
+      else
+	TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
       return new_type;
 
     case RECORD_TYPE:

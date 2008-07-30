@@ -76,6 +76,7 @@ package body Back_End is
          number_file                   : Nat;
 
          file_info_ptr                 : Address;
+         gigi_standard_boolean         : Entity_Id;
          gigi_standard_integer         : Entity_Id;
          gigi_standard_long_long_float : Entity_Id;
          gigi_standard_exception_type  : Entity_Id;
@@ -112,6 +113,7 @@ package body Back_End is
          number_file        => Num_Source_Files,
 
          file_info_ptr                 => File_Info_Array'Address,
+         gigi_standard_boolean         => Standard_Boolean,
          gigi_standard_integer         => Standard_Integer,
          gigi_standard_long_long_float => Standard_Long_Long_Float,
          gigi_standard_exception_type  => Standard_Exception_Type,

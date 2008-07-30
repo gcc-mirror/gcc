@@ -231,12 +231,12 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
       struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
       struct List_Header *list_headers_ptr, Nat number_file,
-      struct File_Info_Type *file_info_ptr,
+      struct File_Info_Type *file_info_ptr, Entity_Id standard_boolean,
       Entity_Id standard_integer, Entity_Id standard_long_long_float,
       Entity_Id standard_exception_type, Int gigi_operating_mode)
 {
-  tree gnu_standard_long_long_float;
-  tree gnu_standard_exception_type;
+  Entity_Id gnat_literal;
+  tree gnu_standard_long_long_float, gnu_standard_exception_type, t;
   struct elab_info *info;
   int i;
 
@@ -311,12 +311,34 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   /* Give names and make TYPE_DECLs for common types.  */
   create_type_decl (get_identifier (SIZE_TYPE), sizetype,
 		    NULL, false, true, Empty);
+  create_type_decl (get_identifier ("boolean"), boolean_type_node,
+		    NULL, false, true, Empty);
   create_type_decl (get_identifier ("integer"), integer_type_node,
 		    NULL, false, true, Empty);
   create_type_decl (get_identifier ("unsigned char"), char_type_node,
 		    NULL, false, true, Empty);
   create_type_decl (get_identifier ("long integer"), long_integer_type_node,
 		    NULL, false, true, Empty);
+
+  /* Save the type we made for boolean as the type for Standard.Boolean.  */
+  save_gnu_tree (Base_Type (standard_boolean), TYPE_NAME (boolean_type_node),
+		 false);
+  gnat_literal = First_Literal (Base_Type (standard_boolean));
+  t = UI_To_gnu (Enumeration_Rep (gnat_literal), boolean_type_node);
+  gcc_assert (t == boolean_false_node);
+  t = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
+		       boolean_type_node, t, true, false, false, false,
+		       NULL, gnat_literal);
+  DECL_IGNORED_P (t) = 1;
+  save_gnu_tree (gnat_literal, t, false);
+  gnat_literal = Next_Literal (gnat_literal);
+  t = UI_To_gnu (Enumeration_Rep (gnat_literal), boolean_type_node);
+  gcc_assert (t == boolean_true_node);
+  t = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
+		       boolean_type_node, t, true, false, false, false,
+		       NULL, gnat_literal);
+  DECL_IGNORED_P (t) = 1;
+  save_gnu_tree (gnat_literal, t, false);
 
   /* Save the type we made for integer as the type for Standard.Integer.
      Then make the rest of the standard types.  Note that some of these

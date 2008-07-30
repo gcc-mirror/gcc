@@ -8846,7 +8846,8 @@ is_subrange_type (const_tree type)
     return false;
 
   if (TREE_CODE (subtype) != INTEGER_TYPE
-      && TREE_CODE (subtype) != ENUMERAL_TYPE)
+      && TREE_CODE (subtype) != ENUMERAL_TYPE
+      && TREE_CODE (subtype) != BOOLEAN_TYPE)
     return false;
 
   if (TREE_CODE (type) == TREE_CODE (subtype)
