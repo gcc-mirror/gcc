@@ -4798,11 +4798,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
 
   /* When we align parameter on stack for caller, if the parameter
-     alignment is beyond PREFERRED_STACK_BOUNDARY, it will be
-     aligned at PREFERRED_STACK_BOUNDARY.  We will match callee
+     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
+     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
      here with caller.  */
-  if (boundary > PREFERRED_STACK_BOUNDARY)
-    boundary = PREFERRED_STACK_BOUNDARY;
+  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
 
   boundary /= BITS_PER_UNIT;
 

@@ -1,3 +1,9 @@
+2008-07-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* builtins.c (std_gimplify_va_arg_expr): Replace
+	PREFERRED_STACK_BOUNDARY with MAX_SUPPORTED_STACK_ALIGNMENT.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Likewise.
+
 2008-07-30  Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
