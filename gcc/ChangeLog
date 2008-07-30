@@ -1,3 +1,9 @@
+2008-07-30  Laurent Guerby  <laurent@guerby.net>
+
+        PR ada/5911
+        * gnattools/Makefile.in: Replace stamp-gnatlib by
+        stamp-gnatlib-rts.
+	
 2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cpp.texi: Update to GFDL 1.2.

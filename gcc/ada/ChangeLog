@@ -1,3 +1,12 @@
+2008-07-30  Laurent Guerby  <laurent@guerby.net>
+
+        PR ada/5911
+        * gcc-interface/Makefile.in (MULTISUBDIR, RTSDIR): New variables.
+        Pass MULTISUBDIR to recursive make. Use $(RTSDIR) instead of rts.
+        Replace stamp-gnatlib* by stamp-gnatlib*-rts.
+        * gcc-interface/Make-lang.in: Replace stamp-gnatlib2
+        by stamp-gnatlib2-rts.
+	
 2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/15479
