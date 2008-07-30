@@ -1,3 +1,9 @@
+2008-07-30  Olivier Hainque  <hainque@adacore.com>
+
+	* config/mips/irix-crti.asm: .hide __gcc_init and __gcc_fini.
+	* config/mips/iris6.h (IRIX_SUBTARGET_LINK_SPEC, irix ld): Hide
+	__dso_handle explicitly here.
+
 2008-07-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/36830

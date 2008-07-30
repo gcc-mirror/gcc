@@ -49,8 +49,32 @@ along with GCC; see the file COPYING3.  If not see
 #define IRIX_SUBTARGET_LINK_SPEC \
   "%{mabi=32: -melf32bsmip}%{mabi=n32: -melf32bmipn32}%{mabi=64: -melf64bmip}"
 #else
+  /* Explicitly hide crt symbols that would normally be marked with
+     a "hidden" visibility attribute.
+     
+     We have traditionally disabled this attribute when using the
+     native linker because the native linker's visibility support is
+     not fully-compatible with the GNU linker's.  In particular, the
+     native linker does not pull in archive objects purely to resolve
+     references to the object's hidden symbols, whereas the GNU
+     linker does.
+     
+     The gcc build system currently hides symbols in some static
+     libraries (typically libgcov.a or libgcc.a) whenever visibility
+     attributes are supported.  On targets with GNU semantics, this
+     makes sure that uses of libx.so symbols in one dynamic object are
+     not resolved to libx.a symbols in another dynamic object.  But
+     on targets with IRIX semantics, hiding the symbols prevents the
+     static archive from working at all.
+     
+     It would probably be better to enable visiblity attributes for
+     IRIX ld and disable the static archives versioning.  It shouldn't
+     make anything worse, since libx.a symbols are global by default
+     anyway.  However, no-one has volunteered to do this yet.  */
+
 #define IRIX_SUBTARGET_LINK_SPEC \
   "%{w} -_SYSTYPE_SVR4 -woff 131 \
+   %{shared:-hidden_symbol __dso_handle} \
    %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64}%{!mabi*: -n32}"
 #endif
 
