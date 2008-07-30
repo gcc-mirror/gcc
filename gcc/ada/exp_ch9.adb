@@ -1661,26 +1661,26 @@ package body Exp_Ch9 is
             if Ekind (Subp_Id) = E_Function then
                return
                  Make_Subprogram_Body (Loc,
-                   Specification => Body_Spec,
-                   Declarations => Empty_List,
+                   Specification              => Body_Spec,
+                   Declarations               => Empty_List,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
                        Statements => New_List (
                          Make_Simple_Return_Statement (Loc,
                            Make_Function_Call (Loc,
-                             Name => Nam,
+                             Name                   => Nam,
                              Parameter_Associations => Actuals)))));
 
             else
                return
                  Make_Subprogram_Body (Loc,
-                   Specification => Body_Spec,
-                   Declarations => Empty_List,
+                   Specification              => Body_Spec,
+                   Declarations               => Empty_List,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
                        Statements => New_List (
                          Make_Procedure_Call_Statement (Loc,
-                           Name => Nam,
+                           Name                   => Nam,
                            Parameter_Associations => Actuals))));
             end if;
          end;
@@ -1860,11 +1860,10 @@ package body Exp_Ch9 is
             declare
                Obj_Param : constant Node_Id :=
                              First (Parameter_Specifications (Iface_Op_Spec));
-
             begin
                if not Out_Present (Obj_Param)
                  and then Nkind (Parameter_Type (Obj_Param)) /=
-                            N_Access_Definition
+                                                         N_Access_Definition
                then
                   return False;
                end if;
@@ -2044,10 +2043,11 @@ package body Exp_Ch9 is
             Obj_Param :=
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uO),
-                In_Present  => In_Present  (First_Param),
-                Out_Present => Out_Present (First_Param),
-                Parameter_Type => Obj_Param_Typ);
+                  Make_Defining_Identifier (Loc,
+                    Chars => Name_uO),
+                In_Present          => In_Present  (First_Param),
+                Out_Present         => Out_Present (First_Param),
+                Parameter_Type      => Obj_Param_Typ);
 
          --  If we are dealing with a primitive declared between two views,
          --  create a default parameter.
@@ -2069,14 +2069,14 @@ package body Exp_Ch9 is
          if Ekind (Subp_Id) = E_Function then
             return
               Make_Function_Specification (Loc,
-                Defining_Unit_Name => Wrapper_Id,
+                Defining_Unit_Name       => Wrapper_Id,
                 Parameter_Specifications => New_Formals,
-                Result_Definition =>
+                Result_Definition        =>
                   New_Copy (Result_Definition (Parent (Subp_Id))));
          else
             return
               Make_Procedure_Specification (Loc,
-                Defining_Unit_Name => Wrapper_Id,
+                Defining_Unit_Name       => Wrapper_Id,
                 Parameter_Specifications => New_Formals);
          end if;
       end;
@@ -11385,7 +11385,7 @@ package body Exp_Ch9 is
    begin
       return
         (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure)
-           and then Is_Private_Primitive (Id);
+          and then Is_Private_Primitive (Id);
    end Is_Private_Primitive_Subprogram;
 
    ------------------
