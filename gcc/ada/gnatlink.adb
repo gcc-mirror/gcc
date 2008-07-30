@@ -1670,6 +1670,7 @@ begin
          end if;
 
       elsif RTX_RTSS_Kernel_Module_On_Target then
+
          --  Use Microsoft linker for RTSS modules
 
          Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("link");
@@ -1899,6 +1900,7 @@ begin
             end loop;
 
          elsif RTX_RTSS_Kernel_Module_On_Target then
+
             --  Remove flags not relevant for Microsoft linker and adapt some
             --  others.
 
