@@ -1758,6 +1758,9 @@ call_from_call_insn (rtx insn)
 	{
 	default:
 	  gcc_unreachable ();
+	case COND_EXEC:
+	  x = COND_EXEC_CODE (x);
+	  break;
 	case PARALLEL:
 	  x = XVECEXP (x, 0, 0);
 	  break;
