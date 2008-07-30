@@ -1,3 +1,23 @@
+2008-07-30  Doug Rupp  <rupp@adacore.com>
+
+	* gigi.h (build_vms_descriptor64): New function prototype.
+	(fill_vms_descriptor): Modified function prototype.
+
+	* utils.c (build_vms_descriptor64): New function.
+
+	* utils2.c (fill_vms_descriptor): Fix handling on 32bit systems.
+
+	* trans.c (call_to_gnu): Call fill_vms_descriptor with new third
+	argument.
+
+	* decl.c (gnat_to_gnu_tree): For By_Descriptor mech, build both a
+	64bit and 32bit descriptor and save the 64bit version as an alternate
+	TREE_TYPE in the parameter.
+	(make_type_from_size) <RECORD_TYPE>: Use the appropriate mode for the
+	thin pointer.
+
+	* ada-tree.h (DECL_PARM_ALT, SET_DECL_PARM_ALT): New macros.
+
 2008-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* make.adb: Minor reformatting

@@ -678,13 +678,17 @@ extern void end_subprog_body (tree body, bool elab_p);
    Return a constructor for the template.  */
 extern tree build_template (tree template_type, tree array_type, tree expr);
 
-/* Build a VMS descriptor from a Mechanism_Type, which must specify
+/* Build a 32bit VMS descriptor from a Mechanism_Type, which must specify
    a descriptor type, and the GCC type of an object.  Each FIELD_DECL
    in the type contains in its DECL_INITIAL the expression to use when
    a constructor is made for the type.  GNAT_ENTITY is a gnat node used
    to print out an error message if the mechanism cannot be applied to
    an object of that type and also for the name.  */
 extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
+                                  Entity_Id gnat_entity);
+
+/* Build a 64bit VMS descriptor from a Mechanism_Type. See above. */
+extern tree build_vms_descriptor64 (tree type, Mechanism_Type mech,
                                   Entity_Id gnat_entity);
 
 /* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
@@ -844,9 +848,9 @@ extern tree build_allocator (tree type, tree init, tree result_type,
                              Node_Id gnat_node, bool);
 
 /* Fill in a VMS descriptor for EXPR and return a constructor for it.
-   GNAT_FORMAL is how we find the descriptor record.  */
-
-extern tree fill_vms_descriptor (tree expr, Entity_Id gnat_formal);
+   GNAT_FORMAL is how we find the descriptor record. GNAT_ACTUAL is how we
+   find the size of the allocator. */
+extern tree fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual);
 
 /* Indicate that we need to make the address of EXPR_NODE and it therefore
    should not be allocated in a register.  Return true if successful.  */
