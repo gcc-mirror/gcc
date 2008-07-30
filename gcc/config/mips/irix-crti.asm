@@ -49,3 +49,10 @@ __gcc_fini:
 	sd	$31,0($sp)
 	sd	$28,8($sp)
 #endif
+
+/* This object will typically be included in the final link for both
+   shared libraries and executable, and we need to hide the symbols to
+   prevent possible symbol preemption warnings from the SGI linker.  */
+.hidden __gcc_init
+.hidden __gcc_fini
+
