@@ -1,3 +1,85 @@
+2008-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnatlink.adb: Minor reformatting
+
+2008-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.adb (Check_RPC): Check version consistency even when not
+	generating RCI stubs. Provide more detailed error message in case of
+	mismatch.
+
+2008-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): When renaming an attribute
+	as a actual in an instance, check for a missing attribute to prevent
+	program_error on an illegal program.
+	
+	* exp_util.adb (Find_Prim_Op): Rather than Assert (False), raise program
+	error if primitive is not found, so that exception can be handled
+	elsewhere on illegal programs.
+
+2008-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* uintp.adb (UI_GCD): Fix potential overflow
+
+2008-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag245 is now used.
+	(Is_Primitive_Wrapper, Set_Is_Primitive_Wrapper): Relax the assertion
+	check to include functions.
+	(Is_Private_Primitive, Set_Is_Private_Primitive): New subprograms.
+	(Wrapped_Entity, Set_Wrapped_Entity): Relax the assertion check to
+	include functions.
+	(Write_Entity_Flags): Move flag Is_Primitive, add Is_Private_Primitive
+	to the list of displayed flags.
+
+	* einfo.ads: Update comment on the usage of Is_Primitive_Wrapper and
+	Wrapped_Entity. These two flags are now present in functions.
+	New flag Is_Private_Primitive.
+	(Is_Private_Primitive, Set_Is_Private_Primitive): New subprograms.
+
+	* exp_ch9.adb:
+	(Build_Wrapper_Bodies): New subprogram.
+	(Build_Wrapper_Body): The spec and body have been moved to in
+	Build_Wrapper_ Bodies. Code cleanup.
+	(Build_Wrapper_Spec): Moved to the spec of Exp_Ch9. Code cleanup.
+	Wrappers are now generated for primitives declared between the private
+	and full view of a concurrent type that implements an interface.
+	(Build_Wrapper_Specs): New subprogram.
+	(Expand_N_Protected_Body): Code reformatting. Replace the wrapper body
+	creation mechanism with a call to Build_Wrapper_Bodies.
+	(Expand_N_Protected_Type_Declaration): Code reformatting. Replace the
+	wrapper spec creation mechanism with a call to Build_Wrapper_Specs.
+	(Expand_N_Task_Body): Replace the wrapper body creation
+	mechanism with a call to Build_Wrapper_Bodies.
+	(Expand_N_Task_Type_Declaration): Replace the wrapper spec
+	creation mechanism with a call to Build_Wrapper_Specs.
+	(Is_Private_Primitive_Subprogram): New subprogram.
+	(Overriding_Possible): Code cleanup.
+	(Replicate_Entry_Formals): Renamed to Replicate_Formals, code cleanup.
+
+	* exp_ch9.ads (Build_Wrapper_Spec): Moved from the body of Exp_Ch9.
+
+	* sem_ch3.adb: Add with and use clause for Exp_Ch9.
+	(Process_Full_View): Build wrapper specs for all primitives
+	that belong to a private view completed by a concurrent type
+	implementing an interface.
+	
+	* sem_ch6.adb (Analyze_Subprogram_Body): When the current subprogram
+	is a primitive of a
+	concurrent type with a private view that implements an interface, try to
+	find the proper spec.
+	(Analyze_Subprogram_Declaration): Mark a subprogram as a private
+	primitive if the type of its first parameter is a non-generic tagged
+	private type.
+	(Analyze_Subprogram_Specification): Code reformatting.
+	(Disambiguate_Spec): New routine.
+	(Find_Corresponding_Spec): Add a flag to controll the output of errors.
+	(Is_Private_Concurrent_Primitive): New routine.
+
+	* sem_ch6.ads:
+	(Find_Corresponding_Spec): Add a formal to control the output of errors.
+
 2008-07-30  Doug Rupp  <rupp@adacore.com>
 
 	* gigi.h (build_vms_descriptor64): New function prototype.
