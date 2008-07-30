@@ -152,29 +152,25 @@ package body Exp_Ch9 is
    --       <formalN> : AnnN;
    --    end record;
 
-   function Build_Wrapper_Body
-     (Loc      : Source_Ptr;
-      Proc_Nam : Entity_Id;
-      Obj_Typ  : Entity_Id;
-      Formals  : List_Id) return Node_Id;
-   --  Ada 2005 (AI-345): Build the body that wraps a primitive operation
-   --  associated with a protected or task type. This is required to implement
-   --  dispatching calls through interfaces. Proc_Nam is the entry name to be
-   --  wrapped, Obj_Typ is the type of the newly added formal parameter to
-   --  handle object notation, Formals are the original entry formals that will
-   --  be explicitly replicated.
+   procedure Build_Wrapper_Bodies
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : Node_Id);
+   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
+   --  record of a concurrent type. N is the insertion node where all bodies
+   --  will be placed. This routine builds the bodies of the subprograms which
+   --  serve as an indirection mechanism to overriding primitives of concurrent
+   --  types, entries and protected procedures. Any new body is analyzed.
 
-   function Build_Wrapper_Spec
-     (Loc      : Source_Ptr;
-      Proc_Nam : Entity_Id;
-      Obj_Typ  : Entity_Id;
-      Formals  : List_Id) return Node_Id;
-   --  Ada 2005 (AI-345): Build the specification of a primitive operation
-   --  associated with a protected or task type. This is required implement
-   --  dispatching calls through interfaces. Proc_Nam is the entry name to be
-   --  wrapped, Obj_Typ is the type of the newly added formal parameter to
-   --  handle object notation, Formals are the original entry formals that will
-   --  be explicitly replicated.
+   procedure Build_Wrapper_Specs
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : in out Node_Id);
+   --  Ada 2005 (AI-345): Typ is either a concurrent type or the corresponding
+   --  record of a concurrent type. N is the insertion node where all specs
+   --  will be placed. This routine builds the specs of the subprograms which
+   --  serve as an indirection mechanism to overriding primitives of concurrent
+   --  types, entries and protected procedures. Any new spec is analyzed.
 
    function Build_Find_Body_Index (Typ : Entity_Id) return Node_Id;
    --  Build the function that translates the entry index in the call
@@ -358,6 +354,10 @@ package body Exp_Ch9 is
       Conctyp    : Entity_Id;
       Lo         : Node_Id;
       Hi         : Node_Id) return Boolean;
+
+   function Is_Private_Primitive_Subprogram (Id : Entity_Id) return Boolean;
+   --  Determine whether Id is a function or a procedure and is marked as a
+   --  private primitive.
 
    function Null_Statements (Stats : List_Id) return Boolean;
    --  Used to check DO-END sequence. Checks for equivalent of DO NULL; END.
@@ -1541,144 +1541,241 @@ package body Exp_Ch9 is
       return Rec_Nam;
    end Build_Parameter_Block;
 
-   ------------------------
-   -- Build_Wrapper_Body --
-   ------------------------
+   --------------------------
+   -- Build_Wrapper_Bodies --
+   --------------------------
 
-   function Build_Wrapper_Body
-     (Loc      : Source_Ptr;
-      Proc_Nam : Entity_Id;
-      Obj_Typ  : Entity_Id;
-      Formals  : List_Id) return Node_Id
+   procedure Build_Wrapper_Bodies
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : Node_Id)
    is
-      Actuals      : List_Id := No_List;
-      Body_Spec    : Node_Id;
-      Conv_Id      : Node_Id;
-      First_Formal : Node_Id;
-      Formal       : Node_Id;
+      Rec_Typ : Entity_Id;
+
+      function Build_Wrapper_Body
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Obj_Typ : Entity_Id;
+         Formals : List_Id) return Node_Id;
+      --  Ada 2005 (AI-345): Build the body that wraps a primitive operation
+      --  associated with a protected or task type. Subp_Id is the subprogram
+      --  name which will be wrapped. Obj_Typ is the type of the new formal
+      --  parameter which handles dispatching and object notation. Formals are
+      --  the original formals of Subp_Id which will be explicitly replicated.
+
+      ------------------------
+      -- Build_Wrapper_Body --
+      ------------------------
+
+      function Build_Wrapper_Body
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Obj_Typ : Entity_Id;
+         Formals : List_Id) return Node_Id
+      is
+         Body_Spec : Node_Id;
+
+      begin
+         Body_Spec := Build_Wrapper_Spec (Loc, Subp_Id, Obj_Typ, Formals);
+
+         --  The subprogram is not overriding or is not a primitive declared
+         --  between two views.
+
+         if No (Body_Spec) then
+            return Empty;
+         end if;
+
+         declare
+            Actuals      : List_Id := No_List;
+            Conv_Id      : Node_Id;
+            First_Formal : Node_Id;
+            Formal       : Node_Id;
+            Nam          : Node_Id;
+
+         begin
+            --  Map formals to actuals. Use the list built for the wrapper
+            --  spec, skipping the object notation parameter.
+
+            First_Formal := First (Parameter_Specifications (Body_Spec));
+
+            Formal := First_Formal;
+            Next (Formal);
+
+            if Present (Formal) then
+               Actuals := New_List;
+
+               while Present (Formal) loop
+                  Append_To (Actuals,
+                    Make_Identifier (Loc, Chars =>
+                      Chars (Defining_Identifier (Formal))));
+
+                  Next (Formal);
+               end loop;
+            end if;
+
+            --  Special processing for primitives declared between a private
+            --  type and its completion.
+
+            if Is_Private_Primitive_Subprogram (Subp_Id) then
+               if No (Actuals) then
+                  Actuals := New_List;
+               end if;
+
+               Prepend_To (Actuals,
+                 Unchecked_Convert_To (
+                   Corresponding_Concurrent_Type (Obj_Typ),
+                   Make_Identifier (Loc, Name_uO)));
+
+               Nam := New_Reference_To (Subp_Id, Loc);
+
+            else
+               --  An access-to-variable object parameter requires an explicit
+               --  dereference in the unchecked conversion. This case occurs
+               --  when a protected entry wrapper must override an interface
+               --  level procedure with interface access as first parameter.
+
+               --     O.all.Subp_Id (Formal_1 .. Formal_N)
+
+               if Nkind (Parameter_Type (First_Formal)) =
+                    N_Access_Definition
+               then
+                  Conv_Id :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix => Make_Identifier (Loc, Name_uO));
+               else
+                  Conv_Id := Make_Identifier (Loc, Name_uO);
+               end if;
+
+               Nam :=
+                 Make_Selected_Component (Loc,
+                   Prefix =>
+                     Unchecked_Convert_To (
+                       Corresponding_Concurrent_Type (Obj_Typ),
+                       Conv_Id),
+                   Selector_Name =>
+                     New_Reference_To (Subp_Id, Loc));
+            end if;
+
+            --  Create the subprogram body
+
+            if Ekind (Subp_Id) = E_Function then
+               return
+                 Make_Subprogram_Body (Loc,
+                   Specification => Body_Spec,
+                   Declarations => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Simple_Return_Statement (Loc,
+                           Make_Function_Call (Loc,
+                             Name => Nam,
+                             Parameter_Associations => Actuals)))));
+
+            else
+               return
+                 Make_Subprogram_Body (Loc,
+                   Specification => Body_Spec,
+                   Declarations => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Procedure_Call_Statement (Loc,
+                           Name => Nam,
+                           Parameter_Associations => Actuals))));
+            end if;
+         end;
+      end Build_Wrapper_Body;
+
+   --  Start of processing for Build_Wrapper_Bodies
 
    begin
-      Body_Spec := Build_Wrapper_Spec (Loc, Proc_Nam, Obj_Typ, Formals);
-
-      --  If we did not generate the specification do have nothing else to do
-
-      if Body_Spec = Empty then
-         return Empty;
-      end if;
-
-      --  Map formals to actuals. Use the list built for the wrapper spec,
-      --  skipping the object notation parameter.
-
-      First_Formal := First (Parameter_Specifications (Body_Spec));
-
-      Formal := First_Formal;
-      Next (Formal);
-
-      if Present (Formal) then
-         Actuals := New_List;
-
-         while Present (Formal) loop
-            Append_To (Actuals,
-              Make_Identifier (Loc, Chars =>
-                Chars (Defining_Identifier (Formal))));
-
-            Next (Formal);
-         end loop;
-      end if;
-
-      --  An access-to-variable first parameter will require an explicit
-      --  dereference in the unchecked conversion. This case occurs when
-      --  a protected entry wrapper must override an interface-level
-      --  procedure with interface access as first parameter.
-
-      --     SubprgName (O.all).Proc_Nam (Formal_1 .. Formal_N)
-
-      if Nkind (Parameter_Type (First_Formal)) = N_Access_Definition then
-         Conv_Id :=
-           Make_Explicit_Dereference (Loc,
-             Prefix =>
-               Make_Identifier (Loc, Chars => Name_uO));
+      if Is_Concurrent_Type (Typ) then
+         Rec_Typ := Corresponding_Record_Type (Typ);
       else
-         Conv_Id :=
-           Make_Identifier (Loc, Chars => Name_uO);
+         Rec_Typ := Typ;
       end if;
 
-      if Ekind (Proc_Nam) = E_Function then
-         return
-           Make_Subprogram_Body (Loc,
-             Specification => Body_Spec,
-             Declarations  => Empty_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>
-                   New_List (
-                     Make_Simple_Return_Statement (Loc,
-                        Make_Function_Call (Loc,
-                          Name =>
-                            Make_Selected_Component (Loc,
-                              Prefix =>
-                                Unchecked_Convert_To (
-                                  Corresponding_Concurrent_Type (Obj_Typ),
-                                  Conv_Id),
-                              Selector_Name =>
-                                New_Reference_To (Proc_Nam, Loc)),
-                          Parameter_Associations => Actuals)))));
-      else
-         return
-           Make_Subprogram_Body (Loc,
-             Specification => Body_Spec,
-             Declarations  => Empty_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>
-                   New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name =>
-                         Make_Selected_Component (Loc,
-                           Prefix =>
-                             Unchecked_Convert_To (
-                               Corresponding_Concurrent_Type (Obj_Typ),
-                               Conv_Id),
-                           Selector_Name =>
-                             New_Reference_To (Proc_Nam, Loc)),
-                       Parameter_Associations => Actuals))));
+      --  Generate wrapper bodies for a concurrent type which implements an
+      --  interface.
+
+      if Present (Interfaces (Rec_Typ)) then
+         declare
+            Insert_Nod : Node_Id;
+            Prim       : Entity_Id;
+            Prim_Elmt  : Elmt_Id;
+            Prim_Decl  : Node_Id;
+            Subp       : Entity_Id;
+            Wrap_Body  : Node_Id;
+            Wrap_Id    : Entity_Id;
+
+         begin
+            Insert_Nod := N;
+
+            --  Examine all primitive operations of the corresponding record
+            --  type, looking for wrapper specs. Generate bodies in order to
+            --  complete them.
+
+            Prim_Elmt := First_Elmt (Primitive_Operations (Rec_Typ));
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+
+               if (Ekind (Prim) = E_Function
+                     or else Ekind (Prim) = E_Procedure)
+                 and then Is_Primitive_Wrapper (Prim)
+               then
+                  Subp := Wrapped_Entity (Prim);
+                  Prim_Decl := Parent (Parent (Prim));
+
+                  Wrap_Body :=
+                    Build_Wrapper_Body (Loc,
+                      Subp_Id => Subp,
+                      Obj_Typ => Rec_Typ,
+                      Formals => Parameter_Specifications (Parent (Subp)));
+                  Wrap_Id := Defining_Unit_Name (Specification (Wrap_Body));
+
+                  Set_Corresponding_Spec (Wrap_Body, Prim);
+                  Set_Corresponding_Body (Prim_Decl, Wrap_Id);
+
+                  Insert_After (Insert_Nod, Wrap_Body);
+                  Insert_Nod := Wrap_Body;
+
+                  Analyze (Wrap_Body);
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end;
       end if;
-   end Build_Wrapper_Body;
+   end Build_Wrapper_Bodies;
 
    ------------------------
    -- Build_Wrapper_Spec --
    ------------------------
 
    function Build_Wrapper_Spec
-     (Loc      : Source_Ptr;
-      Proc_Nam : Entity_Id;
-      Obj_Typ  : Entity_Id;
-      Formals  : List_Id) return Node_Id
+     (Loc     : Source_Ptr;
+      Subp_Id : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Formals : List_Id) return Node_Id
    is
-      New_Name_Id : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc, Chars (Proc_Nam));
-
-      First_Param        : Node_Id := Empty;
-      Iface              : Entity_Id;
-      Iface_Elmt         : Elmt_Id := No_Elmt;
-      New_Formals        : List_Id;
-      Obj_Param          : Node_Id;
-      Obj_Param_Typ      : Node_Id;
-      Iface_Prim_Op      : Entity_Id;
-      Iface_Prim_Op_Elmt : Elmt_Id;
+      First_Param   : Node_Id;
+      Iface         : Entity_Id;
+      Iface_Elmt    : Elmt_Id;
+      Iface_Op      : Entity_Id;
+      Iface_Op_Elmt : Elmt_Id;
 
       function Overriding_Possible
-        (Iface_Prim_Op : Entity_Id;
-         Proc_Nam      : Entity_Id) return Boolean;
-      --  Determine whether a primitive operation can be overridden by the
-      --  wrapper. Iface_Prim_Op is the candidate primitive operation of an
-      --  abstract interface type, Proc_Nam is the generated entry wrapper.
+        (Iface_Op : Entity_Id;
+         Wrapper  : Entity_Id) return Boolean;
+      --  Determine whether a primitive operation can be overridden by Wrapper.
+      --  Iface_Op is the candidate primitive operation of an interface type,
+      --  Wrapper is the generated entry wrapper.
 
-      function Replicate_Entry_Formals
+      function Replicate_Formals
         (Loc     : Source_Ptr;
          Formals : List_Id) return List_Id;
-      --  An explicit parameter replication is required due to the
-      --  Is_Entry_Formal flag being set for all the formals. The explicit
+      --  An explicit parameter replication is required due to the Is_Entry_
+      --  Formal flag being set for all the formals of an entry. The explicit
       --  replication removes the flag that would otherwise cause a different
       --  path of analysis.
 
@@ -1687,18 +1784,15 @@ package body Exp_Ch9 is
       -------------------------
 
       function Overriding_Possible
-        (Iface_Prim_Op : Entity_Id;
-         Proc_Nam      : Entity_Id) return Boolean
+        (Iface_Op : Entity_Id;
+         Wrapper  : Entity_Id) return Boolean
       is
-         Prim_Op_Spec  : constant Node_Id := Parent (Iface_Prim_Op);
-         Proc_Spec     : constant Node_Id := Parent (Proc_Nam);
-
-         Is_Access_To_Variable : Boolean;
-         Is_Out_Present        : Boolean;
+         Iface_Op_Spec : constant Node_Id := Parent (Iface_Op);
+         Wrapper_Spec  : constant Node_Id := Parent (Wrapper);
 
          function Type_Conformant_Parameters
-           (Prim_Op_Param_Specs : List_Id;
-            Proc_Param_Specs    : List_Id) return Boolean;
+           (Iface_Op_Params : List_Id;
+            Wrapper_Params  : List_Id) return Boolean;
          --  Determine whether the parameters of the generated entry wrapper
          --  and those of a primitive operation are type conformant. During
          --  this check, the first parameter of the primitive operation is
@@ -1709,40 +1803,40 @@ package body Exp_Ch9 is
          --------------------------------
 
          function Type_Conformant_Parameters
-           (Prim_Op_Param_Specs : List_Id;
-            Proc_Param_Specs    : List_Id) return Boolean
+           (Iface_Op_Params : List_Id;
+            Wrapper_Params  : List_Id) return Boolean
          is
-            Prim_Op_Param : Node_Id;
-            Prim_Op_Typ   : Entity_Id;
-            Proc_Param    : Node_Id;
-            Proc_Typ      : Entity_Id;
+            Iface_Op_Param : Node_Id;
+            Iface_Op_Typ   : Entity_Id;
+            Wrapper_Param  : Node_Id;
+            Wrapper_Typ    : Entity_Id;
 
          begin
             --  Skip the first parameter of the primitive operation
 
-            Prim_Op_Param := Next (First (Prim_Op_Param_Specs));
-            Proc_Param    := First (Proc_Param_Specs);
-            while Present (Prim_Op_Param)
-              and then Present (Proc_Param)
+            Iface_Op_Param := Next (First (Iface_Op_Params));
+            Wrapper_Param  := First (Wrapper_Params);
+            while Present (Iface_Op_Param)
+              and then Present (Wrapper_Param)
             loop
-               Prim_Op_Typ := Find_Parameter_Type (Prim_Op_Param);
-               Proc_Typ    := Find_Parameter_Type (Proc_Param);
+               Iface_Op_Typ := Find_Parameter_Type (Iface_Op_Param);
+               Wrapper_Typ  := Find_Parameter_Type (Wrapper_Param);
 
                --  The two parameters must be mode conformant
 
                if not Conforming_Types
-                        (Prim_Op_Typ, Proc_Typ, Mode_Conformant)
+                        (Iface_Op_Typ, Wrapper_Typ, Mode_Conformant)
                then
                   return False;
                end if;
 
-               Next (Prim_Op_Param);
-               Next (Proc_Param);
+               Next (Iface_Op_Param);
+               Next (Wrapper_Param);
             end loop;
 
             --  One of the lists is longer than the other
 
-            if Present (Prim_Op_Param) or else Present (Proc_Param) then
+            if Present (Iface_Op_Param) or else Present (Wrapper_Param) then
                return False;
             end if;
 
@@ -1752,47 +1846,42 @@ package body Exp_Ch9 is
       --  Start of processing for Overriding_Possible
 
       begin
-         if Chars (Iface_Prim_Op) /= Chars (Proc_Nam) then
+         if Chars (Iface_Op) /= Chars (Wrapper) then
             return False;
          end if;
 
-         --  Special check for protected procedures: If an inherited subprogram
-         --  is implemented by a protected procedure or an entry, then the
-         --  first parameter of the inherited subprogram shall be of mode OUT
-         --  or IN OUT, or an access-to-variable parameter.
+         --  If an inherited subprogram is implemented by a protected procedure
+         --  or an entry, then the first parameter of the inherited subprogram
+         --  shall be of mode OUT or IN OUT, or access-to-variable parameter.
 
-         if Ekind (Iface_Prim_Op) = E_Procedure then
+         if Ekind (Iface_Op) = E_Procedure
+           and then Present (Parameter_Specifications (Iface_Op_Spec))
+         then
+            declare
+               Obj_Param : constant Node_Id :=
+                             First (Parameter_Specifications (Iface_Op_Spec));
 
-            Is_Out_Present :=
-              Present (Parameter_Specifications (Prim_Op_Spec))
-                and then
-              Out_Present (First (Parameter_Specifications (Prim_Op_Spec)));
-
-            Is_Access_To_Variable :=
-              Present (Parameter_Specifications (Prim_Op_Spec))
-                and then
-              Nkind (Parameter_Type
-                      (First
-                        (Parameter_Specifications (Prim_Op_Spec)))) =
-                                                          N_Access_Definition;
-
-            if not Is_Out_Present
-              and then not Is_Access_To_Variable
-            then
-               return False;
-            end if;
+            begin
+               if not Out_Present (Obj_Param)
+                 and then Nkind (Parameter_Type (Obj_Param)) /=
+                            N_Access_Definition
+               then
+                  return False;
+               end if;
+            end;
          end if;
 
-         return Type_Conformant_Parameters (
-           Parameter_Specifications (Prim_Op_Spec),
-           Parameter_Specifications (Proc_Spec));
+         return
+           Type_Conformant_Parameters (
+             Parameter_Specifications (Iface_Op_Spec),
+             Parameter_Specifications (Wrapper_Spec));
       end Overriding_Possible;
 
-      -----------------------------
-      -- Replicate_Entry_Formals --
-      -----------------------------
+      -----------------------
+      -- Replicate_Formals --
+      -----------------------
 
-      function Replicate_Entry_Formals
+      function Replicate_Formals
         (Loc     : Source_Ptr;
          Formals : List_Id) return List_Id
       is
@@ -1802,6 +1891,14 @@ package body Exp_Ch9 is
 
       begin
          Formal := First (Formals);
+
+         --  Skip the object parameter when dealing with primitives declared
+         --  between two views.
+
+         if Is_Private_Primitive_Subprogram (Subp_Id) then
+            Formal := Next (Formal);
+         end if;
+
          while Present (Formal) loop
 
             --  Create an explicit copy of the entry parameter
@@ -1835,166 +1932,228 @@ package body Exp_Ch9 is
          end loop;
 
          return New_Formals;
-      end Replicate_Entry_Formals;
+      end Replicate_Formals;
 
    --  Start of processing for Build_Wrapper_Spec
 
    begin
-      --  The mode is determined by the first parameter of the interface-level
-      --  procedure that the current entry is trying to override.
+      --  There is no point in building wrappers for non-tagged concurrent
+      --  types.
 
-      pragma Assert (Is_Non_Empty_List (Abstract_Interface_List (Obj_Typ)));
+      pragma Assert (Is_Tagged_Type (Obj_Typ));
 
-      --  We must examine all the protected operations of the implemented
-      --  interfaces in order to discover a possible overriding candidate.
+      --  An entry or a protected procedure can override a routine where the
+      --  controlling formal is either IN OUT, OUT or is of access-to-variable
+      --  type. Since the wrapper must have the exact same signature as that of
+      --  the overridden subprogram, we try to find the overriding candidate
+      --  and use its controlling formal.
 
-      Iface := Etype (First (Abstract_Interface_List (Obj_Typ)));
+      First_Param := Empty;
 
-      Examine_Parents : loop
-         if Present (Primitive_Operations (Iface)) then
-            Iface_Prim_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
-            while Present (Iface_Prim_Op_Elmt) loop
-               Iface_Prim_Op := Node (Iface_Prim_Op_Elmt);
+      --  Check every implemented interface
 
-               if not Is_Predefined_Dispatching_Operation (Iface_Prim_Op) then
-                  while Present (Alias (Iface_Prim_Op)) loop
-                     Iface_Prim_Op := Alias (Iface_Prim_Op);
-                  end loop;
-
-                  --  The current primitive operation can be overridden by the
-                  --  generated entry wrapper.
-
-                  if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
-                     First_Param := First  (Parameter_Specifications
-                                             (Parent (Iface_Prim_Op)));
-
-                     goto Found;
-                  end if;
-               end if;
-
-               Next_Elmt (Iface_Prim_Op_Elmt);
-            end loop;
-         end if;
-
-         exit Examine_Parents when Etype (Iface) = Iface;
-
-         Iface := Etype (Iface);
-      end loop Examine_Parents;
-
-      if Present (Interfaces
-                   (Corresponding_Record_Type (Scope (Proc_Nam))))
-      then
-         Iface_Elmt := First_Elmt
-                         (Interfaces
-                           (Corresponding_Record_Type (Scope (Proc_Nam))));
-         Examine_Interfaces : while Present (Iface_Elmt) loop
+      if Present (Interfaces (Obj_Typ)) then
+         Iface_Elmt := First_Elmt (Interfaces (Obj_Typ));
+         Search : while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
 
-            if Present (Primitive_Operations (Iface)) then
-               Iface_Prim_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
-               while Present (Iface_Prim_Op_Elmt) loop
-                  Iface_Prim_Op := Node (Iface_Prim_Op_Elmt);
+            --  Check every interface primitive
 
-                  if not Is_Predefined_Dispatching_Operation
-                           (Iface_Prim_Op)
-                  then
-                     while Present (Alias (Iface_Prim_Op)) loop
-                        Iface_Prim_Op := Alias (Iface_Prim_Op);
-                     end loop;
+            if Present (Primitive_Operations (Iface)) then
+               Iface_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
+               while Present (Iface_Op_Elmt) loop
+                  Iface_Op := Node (Iface_Op_Elmt);
+
+                  --  Ignore predefined primitives
+
+                  if not Is_Predefined_Dispatching_Operation (Iface_Op) then
+                     Iface_Op := Ultimate_Alias (Iface_Op);
 
                      --  The current primitive operation can be overridden by
                      --  the generated entry wrapper.
 
-                     if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
-                        First_Param := First (Parameter_Specifications
-                                               (Parent (Iface_Prim_Op)));
+                     if Overriding_Possible (Iface_Op, Subp_Id) then
+                        First_Param :=
+                          First (Parameter_Specifications (Parent (Iface_Op)));
 
-                        goto Found;
+                        exit Search;
                      end if;
                   end if;
 
-                  Next_Elmt (Iface_Prim_Op_Elmt);
+                  Next_Elmt (Iface_Op_Elmt);
                end loop;
             end if;
 
             Next_Elmt (Iface_Elmt);
-         end loop Examine_Interfaces;
+         end loop Search;
       end if;
 
-      --  Return if no interface primitive can be overridden
+      --  If the subprogram to be wrapped is not overriding anything or is not
+      --  a primitive declared between two views, do not produce anything. This
+      --  avoids spurious errors involving overriding.
 
-      return Empty;
+      if No (First_Param)
+        and then not Is_Private_Primitive_Subprogram (Subp_Id)
+      then
+         return Empty;
+      end if;
 
-      <<Found>>
+      declare
+         Wrapper_Id    : constant Entity_Id :=
+                           Make_Defining_Identifier (Loc, Chars (Subp_Id));
+         New_Formals   : List_Id;
+         Obj_Param     : Node_Id;
+         Obj_Param_Typ : Entity_Id;
 
-      New_Formals := Replicate_Entry_Formals (Loc, Formals);
+      begin
+         --  Minimum decoration is needed to catch the entity in
+         --  Sem_Ch6.Override_Dispatching_Operation.
 
-      --  ??? Certain source packages contain protected or task types that do
-      --  not implement any interfaces and are compiled with the -gnat05
-      --  switch.  In this case, a default first parameter is created.
-
-      --  If the interface operation has an access parameter, create a copy
-      --  of it, with the same null exclusion indicator if present.
-
-      if Present (First_Param) then
-         if Nkind (Parameter_Type (First_Param)) = N_Access_Definition then
-            Obj_Param_Typ :=
-              Make_Access_Definition (Loc,
-                Subtype_Mark =>
-                  New_Reference_To (Obj_Typ, Loc));
-            Set_Null_Exclusion_Present (Obj_Param_Typ,
-               Null_Exclusion_Present (Parameter_Type (First_Param)));
-
+         if Ekind (Subp_Id) = E_Function then
+            Set_Ekind (Wrapper_Id, E_Function);
          else
-            Obj_Param_Typ := New_Reference_To (Obj_Typ, Loc);
+            Set_Ekind (Wrapper_Id, E_Procedure);
          end if;
 
-         Obj_Param :=
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uO),
-             In_Present  => In_Present  (First_Param),
-             Out_Present => Out_Present (First_Param),
-             Parameter_Type => Obj_Param_Typ);
+         Set_Is_Primitive_Wrapper (Wrapper_Id);
+         Set_Wrapped_Entity       (Wrapper_Id, Subp_Id);
+         Set_Is_Private_Primitive (Wrapper_Id,
+           Is_Private_Primitive_Subprogram (Subp_Id));
 
-      else
-         Obj_Param :=
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uO),
-             In_Present  => True,
-             Out_Present => True,
-               Parameter_Type => New_Reference_To (Obj_Typ, Loc));
-      end if;
+         --  Process the formals
 
-      Prepend_To (New_Formals, Obj_Param);
+         New_Formals := Replicate_Formals (Loc, Formals);
 
-      --  Minimum decoration needed to catch the entity in
-      --  Sem_Ch6.Override_Dispatching_Operation
+         --  Routine Subp_Id has been found to override an interface primitive.
+         --  If the interface operation has an access parameter, create a copy
+         --  of it, with the same null exclusion indicator if present.
 
-      if Ekind (Proc_Nam) = E_Procedure
-        or else Ekind (Proc_Nam) = E_Entry
-      then
-         Set_Ekind                (New_Name_Id, E_Procedure);
-         Set_Is_Primitive_Wrapper (New_Name_Id);
-         Set_Wrapped_Entity       (New_Name_Id, Proc_Nam);
+         if Present (First_Param) then
+            if Nkind (Parameter_Type (First_Param)) = N_Access_Definition then
+               Obj_Param_Typ :=
+                 Make_Access_Definition (Loc,
+                   Subtype_Mark =>
+                     New_Reference_To (Obj_Typ, Loc));
+               Set_Null_Exclusion_Present (Obj_Param_Typ,
+                 Null_Exclusion_Present (Parameter_Type (First_Param)));
 
-         return
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name => New_Name_Id,
-             Parameter_Specifications => New_Formals);
+            else
+               Obj_Param_Typ := New_Reference_To (Obj_Typ, Loc);
+            end if;
 
-      else pragma Assert (Ekind (Proc_Nam) = E_Function);
-         Set_Ekind (New_Name_Id, E_Function);
+            Obj_Param :=
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uO),
+                In_Present  => In_Present  (First_Param),
+                Out_Present => Out_Present (First_Param),
+                Parameter_Type => Obj_Param_Typ);
 
-         return
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name => New_Name_Id,
-             Parameter_Specifications => New_Formals,
-             Result_Definition =>
-               New_Copy (Result_Definition (Parent (Proc_Nam))));
-      end if;
+         --  If we are dealing with a primitive declared between two views,
+         --  create a default parameter.
+
+         else pragma Assert (Is_Private_Primitive_Subprogram (Subp_Id));
+            Obj_Param :=
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uO),
+                In_Present => True,
+                Out_Present => Ekind (Subp_Id) /= E_Function,
+                  Parameter_Type => New_Reference_To (Obj_Typ, Loc));
+         end if;
+
+         Prepend_To (New_Formals, Obj_Param);
+
+         --  Build the final spec
+
+         if Ekind (Subp_Id) = E_Function then
+            return
+              Make_Function_Specification (Loc,
+                Defining_Unit_Name => Wrapper_Id,
+                Parameter_Specifications => New_Formals,
+                Result_Definition =>
+                  New_Copy (Result_Definition (Parent (Subp_Id))));
+         else
+            return
+              Make_Procedure_Specification (Loc,
+                Defining_Unit_Name => Wrapper_Id,
+                Parameter_Specifications => New_Formals);
+         end if;
+      end;
    end Build_Wrapper_Spec;
+
+   -------------------------
+   -- Build_Wrapper_Specs --
+   -------------------------
+
+   procedure Build_Wrapper_Specs
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      N   : in out Node_Id)
+   is
+      Def     : Node_Id;
+      Rec_Typ : Entity_Id;
+
+   begin
+      if Is_Protected_Type (Typ) then
+         Def := Protected_Definition (Parent (Typ));
+      else pragma Assert (Is_Task_Type (Typ));
+         Def := Task_Definition (Parent (Typ));
+      end if;
+
+      Rec_Typ := Corresponding_Record_Type (Typ);
+
+      --  Generate wrapper specs for a concurrent type which implements an
+      --  interface and has visible entries and/or protected procedures.
+
+      if Present (Interfaces (Rec_Typ))
+        and then Present (Def)
+        and then Present (Visible_Declarations (Def))
+      then
+         declare
+            Decl      : Node_Id;
+            Wrap_Decl : Node_Id;
+            Wrap_Spec : Node_Id;
+
+         begin
+            Decl := First (Visible_Declarations (Def));
+            while Present (Decl) loop
+               Wrap_Spec := Empty;
+
+               if Nkind (Decl) = N_Entry_Declaration
+                 and then Ekind (Defining_Identifier (Decl)) = E_Entry
+               then
+                  Wrap_Spec :=
+                    Build_Wrapper_Spec (Loc,
+                      Subp_Id => Defining_Identifier (Decl),
+                      Obj_Typ => Rec_Typ,
+                      Formals => Parameter_Specifications (Decl));
+
+               elsif Nkind (Decl) = N_Subprogram_Declaration then
+                  Wrap_Spec :=
+                    Build_Wrapper_Spec (Loc,
+                      Subp_Id => Defining_Unit_Name (Specification (Decl)),
+                      Obj_Typ => Rec_Typ,
+                      Formals =>
+                        Parameter_Specifications (Specification (Decl)));
+               end if;
+
+               if Present (Wrap_Spec) then
+                  Wrap_Decl :=
+                    Make_Subprogram_Declaration (Loc,
+                      Specification => Wrap_Spec);
+
+                  Insert_After (N, Wrap_Decl);
+                  N := Wrap_Decl;
+
+                  Analyze (Wrap_Decl);
+               end if;
+
+               Next (Decl);
+            end loop;
+         end;
+      end if;
+   end Build_Wrapper_Specs;
 
    ---------------------------
    -- Build_Find_Body_Index --
@@ -6903,13 +7062,13 @@ package body Exp_Ch9 is
    procedure Expand_N_Protected_Body (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Pid          : constant Entity_Id  := Corresponding_Spec (N);
+      Current_Node : Node_Id;
+      Disp_Op_Body : Node_Id;
+      New_Op_Body  : Node_Id;
+      Num_Entries  : Natural := 0;
       Op_Body      : Node_Id;
       Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
-      Disp_Op_Body : Node_Id;
-      New_Op_Body  : Node_Id;
-      Current_Node : Node_Id;
-      Num_Entries  : Natural := 0;
 
       function Build_Dispatching_Subprogram_Body
         (N        : Node_Id;
@@ -7002,14 +7161,12 @@ package body Exp_Ch9 is
          return;
       end if;
 
+      --  This is the proper body corresponding to a stub. The declarations
+      --  must be inserted at the point of the stub, which in turn is in the
+      --  declarative part of the parent unit.
+
       if Nkind (Parent (N)) = N_Subunit then
-
-         --  This is the proper body corresponding to a stub. The declarations
-         --  must be inserted at the point of the stub, which is in the decla-
-         --  rative part of the parent unit.
-
          Current_Node := Corresponding_Stub (Parent (N));
-
       else
          Current_Node := N;
       end if;
@@ -7171,63 +7328,12 @@ package body Exp_Ch9 is
          Analyze (New_Op_Body);
       end if;
 
-      --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies after
-      --  the protected body. At this point the entry specs have been created,
+      --  Ada 2005 (AI-345): Construct the primitive wrapper bodies after the
+      --  protected body. At this point all wrapper specs have been created,
       --  frozen and included in the dispatch table for the protected type.
 
-      pragma Assert (Present (Corresponding_Record_Type (Pid)));
-
-      if Ada_Version >= Ada_05
-        and then Present (Protected_Definition (Parent (Pid)))
-        and then Present (Interfaces (Corresponding_Record_Type (Pid)))
-      then
-         declare
-            Vis_Decl  : Node_Id :=
-                          First (Visible_Declarations
-                                  (Protected_Definition (Parent (Pid))));
-            Wrap_Body : Node_Id;
-
-         begin
-            --  Examine the visible declarations of the protected type, looking
-            --  for an entry declaration. We do not consider entry families
-            --  since they cannot have dispatching operations, thus they do not
-            --  need entry wrappers.
-
-            while Present (Vis_Decl) loop
-               if Nkind (Vis_Decl) = N_Entry_Declaration then
-                  Wrap_Body :=
-                    Build_Wrapper_Body (Loc,
-                      Proc_Nam => Defining_Identifier (Vis_Decl),
-                      Obj_Typ  => Corresponding_Record_Type (Pid),
-                      Formals  => Parameter_Specifications (Vis_Decl));
-
-                  if Wrap_Body /= Empty then
-                     Insert_After (Current_Node, Wrap_Body);
-                     Current_Node := Wrap_Body;
-
-                     Analyze (Wrap_Body);
-                  end if;
-
-               elsif Nkind (Vis_Decl) = N_Subprogram_Declaration then
-                  Wrap_Body :=
-                    Build_Wrapper_Body (Loc,
-                      Proc_Nam => Defining_Unit_Name
-                                        (Specification (Vis_Decl)),
-                      Obj_Typ  => Corresponding_Record_Type (Pid),
-                      Formals  => Parameter_Specifications
-                                        (Specification (Vis_Decl)));
-
-                  if Wrap_Body /= Empty then
-                     Insert_After (Current_Node, Wrap_Body);
-                     Current_Node := Wrap_Body;
-
-                     Analyze (Wrap_Body);
-                  end if;
-               end if;
-
-               Next (Vis_Decl);
-            end loop;
-         end;
+      if Ada_Version >= Ada_05 then
+         Build_Wrapper_Bodies (Loc, Pid, Current_Node);
       end if;
    end Expand_N_Protected_Body;
 
@@ -7625,67 +7731,11 @@ package body Exp_Ch9 is
       Analyze (Rec_Decl, Suppress => All_Checks);
 
       --  Ada 2005 (AI-345): Construct the primitive entry wrappers before
-      --  the corresponding record is frozen
+      --  the corresponding record is frozen. If any wrappers are generated,
+      --  Current_Node is updated accordingly.
 
-      if Ada_Version >= Ada_05
-        and then Present (Visible_Declarations (Pdef))
-        and then Present (Corresponding_Record_Type
-                           (Defining_Identifier (Parent (Pdef))))
-        and then Present (Interfaces
-                           (Corresponding_Record_Type
-                             (Defining_Identifier (Parent (Pdef)))))
-      then
-         declare
-            Current_Node : Node_Id := Rec_Decl;
-            Vis_Decl     : Node_Id;
-            Wrap_Spec    : Node_Id;
-            New_N        : Node_Id;
-
-         begin
-            --  Examine the visible declarations of the protected type, looking
-            --  for declarations of entries, and subprograms. We do not
-            --  consider entry families since they cannot have dispatching
-            --  operations, thus they do not need entry wrappers.
-
-            Vis_Decl := First (Visible_Declarations (Pdef));
-
-            while Present (Vis_Decl) loop
-
-               Wrap_Spec := Empty;
-
-               if Nkind (Vis_Decl) = N_Entry_Declaration
-                 and then No (Discrete_Subtype_Definition (Vis_Decl))
-               then
-                  Wrap_Spec :=
-                    Build_Wrapper_Spec (Loc,
-                      Proc_Nam => Defining_Identifier (Vis_Decl),
-                      Obj_Typ  => Defining_Identifier (Rec_Decl),
-                      Formals  => Parameter_Specifications (Vis_Decl));
-
-               elsif Nkind (Vis_Decl) = N_Subprogram_Declaration then
-                  Wrap_Spec :=
-                    Build_Wrapper_Spec (Loc,
-                      Proc_Nam => Defining_Unit_Name
-                                    (Specification (Vis_Decl)),
-                      Obj_Typ  => Defining_Identifier (Rec_Decl),
-                      Formals  => Parameter_Specifications
-                                    (Specification (Vis_Decl)));
-
-               end if;
-
-               if Wrap_Spec /= Empty then
-                  New_N := Make_Subprogram_Declaration (Loc,
-                             Specification => Wrap_Spec);
-
-                  Insert_After (Current_Node, New_N);
-                  Current_Node := New_N;
-
-                  Analyze (New_N);
-               end if;
-
-               Next (Vis_Decl);
-            end loop;
-         end;
+      if Ada_Version >= Ada_05 then
+         Build_Wrapper_Specs (Loc, Prot_Typ, Current_Node);
       end if;
 
       --  Collect pointers to entry bodies and their barriers, to be placed
@@ -7694,9 +7744,7 @@ package body Exp_Ch9 is
       --  this array. The array is declared after all protected subprograms.
 
       if Has_Entries (Prot_Typ) then
-         Entries_Aggr :=
-           Make_Aggregate (Loc, Expressions => New_List);
-
+         Entries_Aggr := Make_Aggregate (Loc, Expressions => New_List);
       else
          Entries_Aggr := Empty;
       end if;
@@ -9461,6 +9509,9 @@ package body Exp_Ch9 is
       Call  : Node_Id;
       New_N : Node_Id;
 
+      Insert_Nod : Node_Id;
+      --  Used to determine the proper location of wrapper body insertions
+
    begin
       --  Add renaming declarations for discriminals and a declaration for the
       --  entry family index (if applicable).
@@ -9527,56 +9578,17 @@ package body Exp_Ch9 is
       end if;
 
       --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies after
-      --  the task body. At this point the entry specs have been created,
+      --  the task body. At this point all wrapper specs have been created,
       --  frozen and included in the dispatch table for the task type.
 
-      pragma Assert (Present (Corresponding_Record_Type (Ttyp)));
+      if Ada_Version >= Ada_05 then
+         if Nkind (Parent (N)) = N_Subunit then
+            Insert_Nod := Corresponding_Stub (Parent (N));
+         else
+            Insert_Nod := N;
+         end if;
 
-      if Ada_Version >= Ada_05
-        and then Present (Task_Definition (Parent (Ttyp)))
-        and then Present (Interfaces (Corresponding_Record_Type (Ttyp)))
-      then
-         declare
-            Current_Node : Node_Id;
-            Vis_Decl     : Node_Id :=
-              First (Visible_Declarations (Task_Definition (Parent (Ttyp))));
-            Wrap_Body    : Node_Id;
-
-         begin
-            if Nkind (Parent (N)) = N_Subunit then
-               Current_Node := Corresponding_Stub (Parent (N));
-            else
-               Current_Node := N;
-            end if;
-
-            --  Examine the visible declarations of the task type, looking for
-            --  an entry declaration. We do not consider entry families since
-            --  they cannot have dispatching operations, thus they do not need
-            --  entry wrappers.
-
-            while Present (Vis_Decl) loop
-               if Nkind (Vis_Decl) = N_Entry_Declaration
-                 and then Ekind (Defining_Identifier (Vis_Decl)) = E_Entry
-               then
-                  --  Create the specification of the wrapper
-
-                  Wrap_Body :=
-                    Build_Wrapper_Body (Loc,
-                      Proc_Nam => Defining_Identifier (Vis_Decl),
-                      Obj_Typ  => Corresponding_Record_Type (Ttyp),
-                      Formals  => Parameter_Specifications (Vis_Decl));
-
-                  if Wrap_Body /= Empty then
-                     Insert_After (Current_Node, Wrap_Body);
-                     Current_Node := Wrap_Body;
-
-                     Analyze (Wrap_Body);
-                  end if;
-               end if;
-
-               Next (Vis_Decl);
-            end loop;
-         end;
+         Build_Wrapper_Bodies (Loc, Ttyp, Insert_Nod);
       end if;
    end Expand_N_Task_Body;
 
@@ -10025,51 +10037,8 @@ package body Exp_Ch9 is
       --  Ada 2005 (AI-345): Construct the primitive entry wrapper specs before
       --  the corresponding record has been frozen.
 
-      if Ada_Version >= Ada_05
-        and then Present (Taskdef)
-        and then Present (Corresponding_Record_Type
-                           (Defining_Identifier (Parent (Taskdef))))
-        and then Present (Interfaces
-                           (Corresponding_Record_Type
-                             (Defining_Identifier (Parent (Taskdef)))))
-      then
-         declare
-            Current_Node : Node_Id := Rec_Decl;
-            Vis_Decl     : Node_Id := First (Visible_Declarations (Taskdef));
-            Wrap_Spec    : Node_Id;
-            New_N        : Node_Id;
-
-         begin
-            --  Examine the visible declarations of the task type, looking for
-            --  an entry declaration. We do not consider entry families since
-            --  they cannot have dispatching operations, thus they do not need
-            --  entry wrappers.
-
-            while Present (Vis_Decl) loop
-               if Nkind (Vis_Decl) = N_Entry_Declaration
-                 and then Ekind (Defining_Identifier (Vis_Decl)) = E_Entry
-               then
-                  Wrap_Spec :=
-                    Build_Wrapper_Spec (Loc,
-                      Proc_Nam => Defining_Identifier (Vis_Decl),
-                      Obj_Typ  => Etype (Rec_Ent),
-                      Formals  => Parameter_Specifications (Vis_Decl));
-
-                  if Wrap_Spec /= Empty then
-                     New_N :=
-                       Make_Subprogram_Declaration (Loc,
-                         Specification => Wrap_Spec);
-
-                     Insert_After (Current_Node, New_N);
-                     Current_Node := New_N;
-
-                     Analyze (New_N);
-                  end if;
-               end if;
-
-               Next (Vis_Decl);
-            end loop;
-         end;
+      if Ada_Version >= Ada_05 then
+         Build_Wrapper_Specs (Loc, Tasktyp, Rec_Decl);
       end if;
 
       --  Ada 2005 (AI-345): We must defer freezing to allow further
@@ -11407,6 +11376,17 @@ package body Exp_Ch9 is
           (Denotes_Discriminant (Lo, True)
             or else Denotes_Discriminant (Hi, True));
    end Is_Potentially_Large_Family;
+
+   -------------------------------------
+   -- Is_Private_Primitive_Subprogram --
+   -------------------------------------
+
+   function Is_Private_Primitive_Subprogram (Id : Entity_Id) return Boolean is
+   begin
+      return
+        (Ekind (Id) = E_Function or else Ekind (Id) = E_Procedure)
+           and then Is_Private_Primitive (Id);
+   end Is_Private_Primitive_Subprogram;
 
    ------------------
    -- Index_Object --

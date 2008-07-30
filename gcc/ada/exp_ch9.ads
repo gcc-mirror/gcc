@@ -153,6 +153,18 @@ package Exp_Ch9 is
    --  aggregate. It replaces the call to Init (Args) done by
    --  Build_Task_Allocate_Block.
 
+   function Build_Wrapper_Spec
+     (Loc     : Source_Ptr;
+      Subp_Id : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Formals : List_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Build the specification of a primitive operation
+   --  associated with a protected or task type. This is required to implement
+   --  dispatching calls through interfaces. Subp_Id is the primitive to be
+   --  wrapped, Obj_Typ is the type of the newly added formal parameter to
+   --  handle object notation, Formals are the original entry formals that
+   --  will be explicitly replicated.
+
    function Concurrent_Ref (N : Node_Id) return Node_Id;
    --  Given the name of a concurrent object (task or protected object), or
    --  the name of an access to a concurrent object, this function returns an

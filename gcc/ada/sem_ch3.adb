@@ -31,6 +31,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
 with Exp_Ch3;  use Exp_Ch3;
+with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Dist; use Exp_Dist;
 with Exp_Tss;  use Exp_Tss;
@@ -15811,48 +15812,117 @@ package body Sem_Ch3 is
       --  If the private view was tagged, copy the new primitive operations
       --  from the private view to the full view.
 
-      --  Note: Subprograms covering interface primitives were previously
-      --  propagated to the full view by Derive_Progenitor_Primitives
-
-      if Is_Tagged_Type (Full_T)
-        and then not Is_Concurrent_Type (Full_T)
-      then
+      if Is_Tagged_Type (Full_T) then
          declare
-            Priv_List : Elist_Id;
-            Full_List : constant Elist_Id := Primitive_Operations (Full_T);
-            P1, P2    : Elmt_Id;
+            Disp_Typ  : Entity_Id;
+            Full_List : Elist_Id;
             Prim      : Entity_Id;
-            D_Type    : Entity_Id;
+            Prim_Elmt : Elmt_Id;
+            Priv_List : Elist_Id;
+
+            function Contains
+              (E : Entity_Id;
+               L : Elist_Id) return Boolean;
+            --  Determine whether list L contains element E
+
+            --------------
+            -- Contains --
+            --------------
+
+            function Contains
+              (E : Entity_Id;
+               L : Elist_Id) return Boolean
+            is
+               List_Elmt : Elmt_Id;
+
+            begin
+               List_Elmt := First_Elmt (L);
+               while Present (List_Elmt) loop
+                  if Node (List_Elmt) = E then
+                     return True;
+                  end if;
+
+                  Next_Elmt (List_Elmt);
+               end loop;
+
+               return False;
+            end Contains;
+
+         --  Start of processing
 
          begin
             if Is_Tagged_Type (Priv_T) then
                Priv_List := Primitive_Operations (Priv_T);
+               Prim_Elmt := First_Elmt (Priv_List);
 
-               P1 := First_Elmt (Priv_List);
-               while Present (P1) loop
-                  Prim := Node (P1);
+               --  In the case of a concurrent type completing a private tagged
+               --  type, primivies may have been declared in between the two
+               --  views. These subprograms need to be wrapped the same way
+               --  entries and protected procedures are handled because they
+               --  cannot be directly shared by the two views.
 
-                  --  Transfer explicit primitives, not those inherited from
-                  --  parent of partial view, which will be re-inherited on
-                  --  the full view.
+               if Is_Concurrent_Type (Full_T) then
+                  declare
+                     Conc_Typ  : constant Entity_Id :=
+                                   Corresponding_Record_Type (Full_T);
+                     Loc       : constant Source_Ptr := Sloc (Conc_Typ);
+                     Curr_Nod  : Node_Id := Parent (Conc_Typ);
+                     Wrap_Spec : Node_Id;
 
-                  if Comes_From_Source (Prim) then
-                     P2 := First_Elmt (Full_List);
-                     while Present (P2) and then Node (P2) /= Prim loop
-                        Next_Elmt (P2);
+                  begin
+                     while Present (Prim_Elmt) loop
+                        Prim := Node (Prim_Elmt);
+
+                        if Comes_From_Source (Prim)
+                          and then not Is_Abstract_Subprogram (Prim)
+                        then
+                           Wrap_Spec :=
+                             Make_Subprogram_Declaration (Loc,
+                               Specification =>
+                                 Build_Wrapper_Spec (Loc,
+                                   Subp_Id => Prim,
+                                   Obj_Typ => Conc_Typ,
+                                   Formals =>
+                                     Parameter_Specifications (
+                                       Parent (Prim))));
+
+                           Insert_After (Curr_Nod, Wrap_Spec);
+                           Curr_Nod := Wrap_Spec;
+
+                           Analyze (Wrap_Spec);
+                        end if;
+
+                        Next_Elmt (Prim_Elmt);
                      end loop;
 
-                     --  If not found, that is a new one
+                     return;
+                  end;
 
-                     if No (P2) then
+               --  For non-concurrent types, transfer explicit primitives, but
+               --  omit those inherited from the parent of the private view
+               --  since they will be re-inherited later on.
+
+               else
+                  Full_List := Primitive_Operations (Full_T);
+
+                  while Present (Prim_Elmt) loop
+                     Prim := Node (Prim_Elmt);
+
+                     if Comes_From_Source (Prim)
+                       and then not Contains (Prim, Full_List)
+                     then
                         Append_Elmt (Prim, Full_List);
                      end if;
-                  end if;
 
-                  Next_Elmt (P1);
-               end loop;
+                     Next_Elmt (Prim_Elmt);
+                  end loop;
+               end if;
+
+            --  Untagged private view
 
             else
+               Full_List := Primitive_Operations (Full_T);
+
                --  In this case the partial view is untagged, so here we locate
                --  all of the earlier primitives that need to be treated as
                --  dispatching (those that appear between the two views). Note
@@ -15871,10 +15941,9 @@ package body Sem_Ch3 is
                        or else
                      Ekind (Prim) = E_Function
                   then
+                     Disp_Typ := Find_Dispatching_Type (Prim);
 
-                     D_Type := Find_Dispatching_Type (Prim);
-
-                     if D_Type = Full_T
+                     if Disp_Typ = Full_T
                        and then (Chars (Prim) /= Name_Op_Ne
                                   or else Comes_From_Source (Prim))
                      then
@@ -15887,13 +15956,13 @@ package body Sem_Ch3 is
                         end if;
 
                      elsif Is_Dispatching_Operation (Prim)
-                       and then D_Type  /= Full_T
+                       and then Disp_Typ  /= Full_T
                      then
 
                         --  Verify that it is not otherwise controlled by a
                         --  formal or a return value of type T.
 
-                        Check_Controlling_Formals (D_Type, Prim);
+                        Check_Controlling_Formals (Disp_Typ, Prim);
                      end if;
                   end if;
 
