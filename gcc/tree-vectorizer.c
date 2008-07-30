@@ -1830,9 +1830,7 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);
   else
-    /* This used to be PREFERRED_STACK_BOUNDARY, however, that is not 100%
-       correct until someone implements forced stack alignment.  */
-    return (alignment <= STACK_BOUNDARY); 
+    return (alignment <= MAX_STACK_ALIGNMENT);
 }
 
 

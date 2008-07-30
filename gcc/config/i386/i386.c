@@ -1708,7 +1708,8 @@ static int ix86_regparm;
 
 /* -mstackrealign option */
 extern int ix86_force_align_arg_pointer;
-static const char ix86_force_align_arg_pointer_string[] = "force_align_arg_pointer";
+static const char ix86_force_align_arg_pointer_string[]
+  = "force_align_arg_pointer";
 
 static rtx (*ix86_gen_leave) (void);
 static rtx (*ix86_gen_pop1) (rtx);
@@ -1717,9 +1718,20 @@ static rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
 static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx);
 static rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
 static rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
+static rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
 
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
+
+/* Alignment for incoming stack boundary in bits specified at
+   command line.  */
+static unsigned int ix86_user_incoming_stack_boundary;
+
+/* Default alignment for incoming stack boundary in bits.  */
+static unsigned int ix86_default_incoming_stack_boundary;
+
+/* Alignment for incoming stack boundary in bits.  */
+unsigned int ix86_incoming_stack_boundary;
 
 /* Values 1-5: see jump.c */
 int ix86_branch_cost;
@@ -3015,11 +3027,9 @@ override_options (bool main_args_p)
   if (TARGET_SSE4_2 || TARGET_ABM)
     ix86_isa_flags |= OPTION_MASK_ISA_POPCNT & ~ix86_isa_flags_explicit;
 
-  /* Validate -mpreferred-stack-boundary= value, or provide default.
-     The default of 128 bits is for Pentium III's SSE __m128.  We can't
-     change it because of optimize_size.  Otherwise, we can't mix object
-     files compiled with -Os and -On.  */
-  ix86_preferred_stack_boundary = 128;
+  /* Validate -mpreferred-stack-boundary= value or default it to
+     PREFERRED_STACK_BOUNDARY_DEFAULT.  */
+  ix86_preferred_stack_boundary = PREFERRED_STACK_BOUNDARY_DEFAULT;
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
@@ -3028,6 +3038,31 @@ override_options (bool main_args_p)
 	       prefix, i, suffix, TARGET_64BIT ? 4 : 2);
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+    }
+
+  /* Set the default value for -mstackrealign.  */
+  if (ix86_force_align_arg_pointer == -1)
+    ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
+
+  /* Validate -mincoming-stack-boundary= value or default it to
+     ABI_STACK_BOUNDARY/PREFERRED_STACK_BOUNDARY.  */
+  if (ix86_force_align_arg_pointer)
+    ix86_default_incoming_stack_boundary = ABI_STACK_BOUNDARY;
+  else
+    ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
+  ix86_incoming_stack_boundary = ix86_default_incoming_stack_boundary;
+  if (ix86_incoming_stack_boundary_string)
+    {
+      i = atoi (ix86_incoming_stack_boundary_string);
+      if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
+	error ("-mincoming-stack-boundary=%d is not between %d and 12",
+	       i, TARGET_64BIT ? 4 : 2);
+      else
+	{
+	  ix86_user_incoming_stack_boundary = (1 << i) * BITS_PER_UNIT;
+	  ix86_incoming_stack_boundary
+	    = ix86_user_incoming_stack_boundary;
+	}
     }
 
   /* Accept -msseregparm only if at least SSE support is enabled.  */
@@ -3162,6 +3197,7 @@ override_options (bool main_args_p)
       ix86_gen_sub3_carry = gen_subdi3_carry_rex64;
       ix86_gen_one_cmpl2 = gen_one_cmpldi2;
       ix86_gen_monitor = gen_sse3_monitor64;
+      ix86_gen_andsp = gen_anddi3;
     }
   else
     {
@@ -3172,6 +3208,7 @@ override_options (bool main_args_p)
       ix86_gen_sub3_carry = gen_subsi3_carry;
       ix86_gen_one_cmpl2 = gen_one_cmplsi2;
       ix86_gen_monitor = gen_sse3_monitor;
+      ix86_gen_andsp = gen_andsi3;
     }
 
 #ifdef USE_IX86_CLD
@@ -4002,11 +4039,6 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       && ix86_function_regparm (TREE_TYPE (decl), NULL) >= 3)
     return false;
 
-  /* If we forced aligned the stack, then sibcalling would unalign the
-     stack, which may break the called function.  */
-  if (cfun->machine->force_align_arg_pointer)
-    return false;
-
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
@@ -4055,15 +4087,6 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 	  warning (OPT_Wattributes, "argument to %qs attribute larger than %d",
 		   IDENTIFIER_POINTER (name), REGPARM_MAX);
 	  *no_add_attrs = true;
-	}
-
-      if (!TARGET_64BIT
-	  && lookup_attribute (ix86_force_align_arg_pointer_string,
-			       TYPE_ATTRIBUTES (*node))
-	  && compare_tree_int (cst, REGPARM_MAX-1))
-	{
-	  error ("%s functions limited to %d register parameters",
-		 ix86_force_align_arg_pointer_string, REGPARM_MAX-1);
 	}
 
       return NULL_TREE;
@@ -4227,8 +4250,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	  /* We can't use regparm(3) for nested functions as these use
 	     static chain pointer in third argument.  */
 	  if (local_regparm == 3
-	      && (decl_function_context (decl)
-                  || ix86_force_align_arg_pointer)
+	      && decl_function_context (decl)
 	      && !DECL_NO_STATIC_CHAIN (decl))
 	    local_regparm = 2;
 
@@ -4237,13 +4259,11 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	     the callee DECL_STRUCT_FUNCTION is gone, so we fall back to
 	     scanning the attributes for the self-realigning property.  */
 	  f = DECL_STRUCT_FUNCTION (decl);
-	  if (local_regparm == 3
-	      && (f ? !!f->machine->force_align_arg_pointer
-		  : !!lookup_attribute (ix86_force_align_arg_pointer_string,
-					TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
-	    local_regparm = 2;
+          /* Since current internal arg pointer won't conflict with
+	     parameter passing regs, so no need to change stack
+	     realignment and adjust regparm number.
 
-	  /* Each fixed register usage increases register pressure,
+	     Each fixed register usage increases register pressure,
 	     so less registers should be used for argument passing.
 	     This functionality can be overriden by an explicit
 	     regparm value.  */
@@ -6154,14 +6174,6 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 
   /* Indicate to allocate space on the stack for varargs save area.  */
   ix86_save_varrargs_registers = 1;
-  /* We need 16-byte stack alignment to save SSE registers.  If user
-     asked for lower preferred_stack_boundary, lets just hope that he knows
-     what he is doing and won't varargs SSE values.
-
-     We also may end up assuming that only 64bit values are stored in SSE
-     register let some floating point program work.  */
-  if (ix86_preferred_stack_boundary >= BIGGEST_ALIGNMENT)
-    crtl->stack_alignment_needed = BIGGEST_ALIGNMENT;
 
   save_area = frame_pointer_rtx;
   set = get_varargs_alias_set ();
@@ -6344,7 +6356,7 @@ ix86_va_start (tree valist, rtx nextarg)
 
   /* Find the overflow area.  */
   type = TREE_TYPE (ovf);
-  t = make_tree (type, virtual_incoming_args_rtx);
+  t = make_tree (type, crtl->args.internal_arg_pointer);
   if (words != 0)
     t = build2 (POINTER_PLUS_EXPR, type, t,
 	        size_int (words * UNITS_PER_WORD));
@@ -7101,9 +7113,14 @@ ix86_select_alt_pic_regnum (void)
   if (current_function_is_leaf && !crtl->profile
       && !ix86_current_function_calls_tls_descriptor)
     {
-      int i;
+      int i, drap;
+      /* Can't use the same register for both PIC and DRAP.  */
+      if (crtl->drap_reg)
+	drap = REGNO (crtl->drap_reg);
+      else
+	drap = -1;
       for (i = 2; i >= 0; --i)
-        if (!df_regs_ever_live_p (i))
+        if (i != drap && !df_regs_ever_live_p (i))
 	  return i;
     }
 
@@ -7139,8 +7156,8 @@ ix86_save_reg (unsigned int regno, int maybe_eh_return)
 	}
     }
 
-  if (cfun->machine->force_align_arg_pointer
-      && regno == REGNO (cfun->machine->force_align_arg_pointer))
+  if (crtl->drap_reg
+      && regno == REGNO (crtl->drap_reg))
     return 1;
 
   return (df_regs_ever_live_p (regno)
@@ -7161,6 +7178,24 @@ ix86_nsaved_regs (void)
     if (ix86_save_reg (regno, true))
       nregs++;
   return nregs;
+}
+
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed.  If stack alignment is needed, we can only replace argument
+   pointer with hard frame pointer, or replace frame pointer with stack
+   pointer.  Otherwise, frame pointer elimination is automatically
+   handled and all other eliminations are valid.  */
+
+int
+ix86_can_eliminate (int from, int to)
+{
+  if (stack_realign_fp)
+    return ((from == ARG_POINTER_REGNUM
+	     && to == HARD_FRAME_POINTER_REGNUM)
+	    || (from == FRAME_POINTER_REGNUM
+		&& to == STACK_POINTER_REGNUM));
+  else
+    return to == STACK_POINTER_REGNUM ? !frame_pointer_needed : 1;
 }
 
 /* Return the offset between two registers, one to be eliminated, and the other
@@ -7206,6 +7241,10 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   stack_alignment_needed = crtl->stack_alignment_needed / BITS_PER_UNIT;
   preferred_alignment = crtl->preferred_stack_boundary / BITS_PER_UNIT;
 
+  gcc_assert (!size || stack_alignment_needed);
+  gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
+  gcc_assert (preferred_alignment <= stack_alignment_needed);
+
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers
      didn't change as reload does multiple calls to the function and does not
@@ -7248,18 +7287,9 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   frame->hard_frame_pointer_offset = offset;
 
-  /* Do some sanity checking of stack_alignment_needed and
-     preferred_alignment, since i386 port is the only using those features
-     that may break easily.  */
-
-  gcc_assert (!size || stack_alignment_needed);
-  gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
-  gcc_assert (preferred_alignment <= PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
-  gcc_assert (stack_alignment_needed
-	      <= PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
-
-  if (stack_alignment_needed < STACK_BOUNDARY / BITS_PER_UNIT)
-    stack_alignment_needed = STACK_BOUNDARY / BITS_PER_UNIT;
+  /* Set offset to aligned because the realigned frame tarts from here.  */
+  if (stack_realign_fp)
+    offset = (offset + stack_alignment_needed -1) & -stack_alignment_needed;
 
   /* Register save area */
   offset += frame->nregs * UNITS_PER_WORD;
@@ -7425,38 +7455,131 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset, int style)
     RTX_FRAME_RELATED_P (insn) = 1;
 }
 
+/* Find an available register to be used as dynamic realign argument
+   pointer regsiter.  Such a register will be written in prologue and
+   used in begin of body, so it must not be
+	1. parameter passing register.
+	2. GOT pointer.
+   We reuse static-chain register if it is available.  Otherwise, we
+   use DI for i386 and R13 for x86-64.  We chose R13 since it has
+   shorter encoding.
+
+   Return: the regno of chosen register.  */
+
+static unsigned int 
+find_drap_reg (void)
+{
+  tree decl = cfun->decl;
+
+  if (TARGET_64BIT)
+    {
+      /* Use R13 for nested function or function need static chain.
+	 Since function with tail call may use any caller-saved
+	 registers in epilogue, DRAP must not use caller-saved
+	 register in such case.  */
+      if ((decl_function_context (decl)
+	   && !DECL_NO_STATIC_CHAIN (decl))
+	  || crtl->tail_call_emit)
+	return R13_REG;
+
+      return R10_REG;
+    }
+  else
+    {
+      /* Use DI for nested function or function need static chain.
+	 Since function with tail call may use any caller-saved
+	 registers in epilogue, DRAP must not use caller-saved
+	 register in such case.  */
+      if ((decl_function_context (decl)
+	   && !DECL_NO_STATIC_CHAIN (decl))
+	  || crtl->tail_call_emit)
+	return DI_REG;
+    
+      /* Reuse static chain register if it isn't used for parameter
+         passing.  */
+      if (ix86_function_regparm (TREE_TYPE (decl), decl) <= 2
+	  && !lookup_attribute ("fastcall",
+    				TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+	return CX_REG;
+      else
+	return DI_REG;
+    }
+}
+
+/* Update incoming stack boundary and estimated stack alignment.  */
+
+static void
+ix86_update_stack_boundary (void)
+{
+  /* Prefer the one specified at command line. */
+  ix86_incoming_stack_boundary 
+    = (ix86_user_incoming_stack_boundary
+       ? ix86_user_incoming_stack_boundary
+       : ix86_default_incoming_stack_boundary);
+
+  /* Incoming stack alignment can be changed on individual functions
+     via force_align_arg_pointer attribute.  We use the smallest
+     incoming stack boundary.  */
+  if (ix86_incoming_stack_boundary > ABI_STACK_BOUNDARY
+      && lookup_attribute (ix86_force_align_arg_pointer_string,
+			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+    ix86_incoming_stack_boundary = ABI_STACK_BOUNDARY;
+
+  /* Stack at entrance of main is aligned by runtime.  We use the
+     smallest incoming stack boundary. */
+  if (ix86_incoming_stack_boundary > MAIN_STACK_BOUNDARY
+      && DECL_NAME (current_function_decl)
+      && MAIN_NAME_P (DECL_NAME (current_function_decl))
+      && DECL_FILE_SCOPE_P (current_function_decl))
+    ix86_incoming_stack_boundary = MAIN_STACK_BOUNDARY;
+
+  /* x86_64 vararg needs 16byte stack alignment for register save
+     area.  */
+  if (TARGET_64BIT
+      && cfun->stdarg
+      && crtl->stack_alignment_estimated < 128)
+    crtl->stack_alignment_estimated = 128;
+}
+
+/* Handle the TARGET_GET_DRAP_RTX hook.  Return NULL if no DRAP is
+   needed or an rtx for DRAP otherwise.  */
+
+static rtx
+ix86_get_drap_rtx (void)
+{
+  if (ix86_force_drap || !ACCUMULATE_OUTGOING_ARGS)
+    crtl->need_drap = true;
+
+  if (stack_realign_drap)
+    {
+      /* Assign DRAP to vDRAP and returns vDRAP */
+      unsigned int regno = find_drap_reg ();
+      rtx drap_vreg;
+      rtx arg_ptr;
+      rtx seq, insn;
+
+      arg_ptr = gen_rtx_REG (Pmode, regno);
+      crtl->drap_reg = arg_ptr;
+
+      start_sequence ();
+      drap_vreg = copy_to_reg (arg_ptr);
+      seq = get_insns ();
+      end_sequence ();
+      
+      insn = emit_insn_before (seq, NEXT_INSN (entry_of_function ()));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      return drap_vreg;
+    }
+  else
+    return NULL;
+}
+
 /* Handle the TARGET_INTERNAL_ARG_POINTER hook.  */
 
 static rtx
 ix86_internal_arg_pointer (void)
 {
-  bool has_force_align_arg_pointer =
-    (0 != lookup_attribute (ix86_force_align_arg_pointer_string,
-			    TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))));
-  if ((FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
-       && DECL_NAME (current_function_decl)
-       && MAIN_NAME_P (DECL_NAME (current_function_decl))
-       && DECL_FILE_SCOPE_P (current_function_decl))
-      || ix86_force_align_arg_pointer
-      || has_force_align_arg_pointer)
-    {
-      /* Nested functions can't realign the stack due to a register
-	 conflict.  */
-      if (DECL_CONTEXT (current_function_decl)
-	  && TREE_CODE (DECL_CONTEXT (current_function_decl)) == FUNCTION_DECL)
-	{
-	  if (ix86_force_align_arg_pointer)
-	    warning (0, "-mstackrealign ignored for nested functions");
-	  if (has_force_align_arg_pointer)
-	    error ("%s not supported for nested functions",
-		   ix86_force_align_arg_pointer_string);
-	  return virtual_incoming_args_rtx;
-	}
-      cfun->machine->force_align_arg_pointer = gen_rtx_REG (Pmode, CX_REG);
-      return copy_to_reg (cfun->machine->force_align_arg_pointer);
-    }
-  else
-    return virtual_incoming_args_rtx;
+  return virtual_incoming_args_rtx;
 }
 
 /* Handle the TARGET_DWARF_HANDLE_FRAME_UNSPEC hook.
@@ -7483,6 +7606,31 @@ ix86_dwarf_handle_frame_unspec (const char *label, rtx pattern, int index)
     }
 }
 
+/* Finalize stack_realign_needed flag, which will guide prologue/epilogue
+   to be generated in correct form.  */
+static void 
+ix86_finalize_stack_realign_flags (void)
+{
+  /* Check if stack realign is really needed after reload, and 
+     stores result in cfun */
+  unsigned int stack_realign = (ix86_incoming_stack_boundary
+				< (current_function_is_leaf
+				   ? crtl->max_used_stack_slot_alignment
+				   : crtl->stack_alignment_needed));
+
+  if (crtl->stack_realign_finalized)
+    {
+      /* After stack_realign_needed is finalized, we can't no longer
+	 change it.  */
+      gcc_assert (crtl->stack_realign_needed == stack_realign);
+    }
+  else
+    {
+      crtl->stack_realign_needed = stack_realign;
+      crtl->stack_realign_finalized = true;
+    }
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -7493,52 +7641,58 @@ ix86_expand_prologue (void)
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
 
+  ix86_finalize_stack_realign_flags ();
+
+  /* DRAP should not coexist with stack_realign_fp */
+  gcc_assert (!(crtl->drap_reg && stack_realign_fp));
+
   ix86_compute_frame_layout (&frame);
 
-  if (cfun->machine->force_align_arg_pointer)
+  /* Emit prologue code to adjust stack alignment and setup DRAP, in case
+     of DRAP is needed and stack realignment is really needed after reload */
+  if (crtl->drap_reg && crtl->stack_realign_needed)
     {
       rtx x, y;
+      int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
+      int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
+			      ? 0 : STACK_BOUNDARY / BITS_PER_UNIT);
+
+      gcc_assert (stack_realign_drap);
 
       /* Grab the argument pointer.  */
-      x = plus_constant (stack_pointer_rtx, 4);
-      y = cfun->machine->force_align_arg_pointer;
-      insn = emit_insn (gen_rtx_SET (VOIDmode, y, x));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      x = plus_constant (stack_pointer_rtx, 
+                         (STACK_BOUNDARY / BITS_PER_UNIT 
+			  + param_ptr_offset));
+      y = crtl->drap_reg;
 
-      /* The unwind info consists of two parts: install the fafp as the cfa,
-	 and record the fafp as the "save register" of the stack pointer.
-	 The later is there in order that the unwinder can see where it
-	 should restore the stack pointer across the and insn.  */
-      x = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx), UNSPEC_DEF_CFA);
-      x = gen_rtx_SET (VOIDmode, y, x);
-      RTX_FRAME_RELATED_P (x) = 1;
-      y = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, stack_pointer_rtx),
-			  UNSPEC_REG_SAVE);
-      y = gen_rtx_SET (VOIDmode, cfun->machine->force_align_arg_pointer, y);
-      RTX_FRAME_RELATED_P (y) = 1;
-      x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x, y));
-      x = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, x, NULL);
-      REG_NOTES (insn) = x;
+      /* Only need to push parameter pointer reg if it is caller
+	 saved reg */
+      if (!call_used_regs[REGNO (crtl->drap_reg)])
+	{
+	  /* Push arg pointer reg */
+	  insn = emit_insn (gen_push (y));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      insn = emit_insn (gen_rtx_SET (VOIDmode, y, x));
+      RTX_FRAME_RELATED_P (insn) = 1; 
 
       /* Align the stack.  */
-      emit_insn (gen_andsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (-16)));
-
-      /* And here we cheat like madmen with the unwind info.  We force the
-	 cfa register back to sp+4, which is exactly what it was at the
-	 start of the function.  Re-pushing the return address results in
-	 the return at the same spot relative to the cfa, and thus is
-	 correct wrt the unwind info.  */
-      x = cfun->machine->force_align_arg_pointer;
-      x = gen_frame_mem (Pmode, plus_constant (x, -4));
-      insn = emit_insn (gen_push (x));
+      insn = emit_insn ((*ix86_gen_andsp) (stack_pointer_rtx,
+					   stack_pointer_rtx,
+					   GEN_INT (-align_bytes)));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      x = GEN_INT (4);
-      x = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, x), UNSPEC_DEF_CFA);
-      x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
-      x = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, x, NULL);
-      REG_NOTES (insn) = x;
+      /* Replicate the return address on the stack so that return
+	 address can be reached via (argp - 1) slot.  This is needed
+	 to implement macro RETURN_ADDR_RTX and intrinsic function
+	 expand_builtin_return_addr etc.  */
+      x = crtl->drap_reg;
+      x = gen_frame_mem (Pmode,
+                         plus_constant (x,
+					-(STACK_BOUNDARY / BITS_PER_UNIT)));
+      insn = emit_insn (gen_push (x));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Note: AT&T enter does NOT have reversed args.  Enter is probably
@@ -7550,6 +7704,18 @@ ix86_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  if (stack_realign_fp)
+    {
+      int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
+      gcc_assert (align_bytes > STACK_BOUNDARY / BITS_PER_UNIT);
+
+      /* Align the stack.  */
+      insn = emit_insn ((*ix86_gen_andsp) (stack_pointer_rtx,
+					   stack_pointer_rtx,
+					   GEN_INT (-align_bytes)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -7567,7 +7733,9 @@ ix86_expand_prologue (void)
      a red zone location */
   if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE && frame.save_regs_using_mov
       && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT))
-    ix86_emit_save_regs_using_mov (frame_pointer_needed ? hard_frame_pointer_rtx
+    ix86_emit_save_regs_using_mov ((frame_pointer_needed
+				     && !crtl->stack_realign_needed) 
+                                   ? hard_frame_pointer_rtx
 				   : stack_pointer_rtx,
 				   -frame.nregs * UNITS_PER_WORD);
 
@@ -7626,8 +7794,11 @@ ix86_expand_prologue (void)
       && !(!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE
          && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT)))
     {
-      if (!frame_pointer_needed || !frame.to_allocate)
-        ix86_emit_save_regs_using_mov (stack_pointer_rtx, frame.to_allocate);
+      if (!frame_pointer_needed
+	  || !frame.to_allocate
+	  || crtl->stack_realign_needed)
+        ix86_emit_save_regs_using_mov (stack_pointer_rtx,
+				       frame.to_allocate);
       else
         ix86_emit_save_regs_using_mov (hard_frame_pointer_rtx,
 				       -frame.nregs * UNITS_PER_WORD);
@@ -7678,6 +7849,16 @@ ix86_expand_prologue (void)
       emit_insn (gen_blockage ());
     }
 
+  if (crtl->drap_reg && !crtl->stack_realign_needed)
+    {
+      /* vDRAP is setup but after reload it turns out stack realign
+         isn't necessary, here we will emit prologue to setup DRAP
+         without stack realign adjustment */
+      int drap_bp_offset = STACK_BOUNDARY / BITS_PER_UNIT * 2;
+      rtx x = plus_constant (hard_frame_pointer_rtx, drap_bp_offset);
+      insn = emit_insn (gen_rtx_SET (VOIDmode, crtl->drap_reg, x));
+    }
+
   /* Emit cld instruction if stringops are used in the function.  */
   if (TARGET_CLD && ix86_current_function_needs_cld)
     emit_insn (gen_cld ());
@@ -7719,9 +7900,16 @@ void
 ix86_expand_epilogue (int style)
 {
   int regno;
-  int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
+  int sp_valid;
   struct ix86_frame frame;
   HOST_WIDE_INT offset;
+
+  ix86_finalize_stack_realign_flags ();
+
+ /* When stack is realigned, SP must be valid.  */
+  sp_valid = (!frame_pointer_needed
+	      || current_function_sp_is_unchanging
+	      || stack_realign_fp);
 
   ix86_compute_frame_layout (&frame);
 
@@ -7756,11 +7944,16 @@ ix86_expand_epilogue (int style)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
 	 locations.  If both are available, default to ebp, since offsets
-	 are known to be small.  Only exception is esp pointing directly to the
-	 end of block of saved registers, where we may simplify addressing
-	 mode.  */
+	 are known to be small.  Only exception is esp pointing directly
+	 to the end of block of saved registers, where we may simplify
+	 addressing mode.  
 
-      if (!frame_pointer_needed || (sp_valid && !frame.to_allocate))
+	 If we are realigning stack with bp and sp, regs restore can't
+	 be addressed by bp. sp must be used instead.  */
+
+      if (!frame_pointer_needed
+	  || (sp_valid && !frame.to_allocate) 
+	  || stack_realign_fp)
 	ix86_emit_restore_regs_using_mov (stack_pointer_rtx,
 					  frame.to_allocate, style == 2);
       else
@@ -7771,6 +7964,9 @@ ix86_expand_epilogue (int style)
       if (style == 2)
 	{
 	  rtx tmp, sa = EH_RETURN_STACKADJ_RTX;
+
+	  /* Stack align doesn't work with eh_return.  */
+	  gcc_assert (!crtl->stack_realign_needed);
 
 	  if (frame_pointer_needed)
 	    {
@@ -7813,10 +8009,16 @@ ix86_expand_epilogue (int style)
   else
     {
       /* First step is to deallocate the stack frame so that we can
-	 pop the registers.  */
+	 pop the registers.
+
+	 If we realign stack with frame pointer, then stack pointer
+         won't be able to recover via lea $offset(%bp), %sp, because
+         there is a padding area between bp and sp for realign. 
+         "add $to_allocate, %sp" must be used instead.  */
       if (!sp_valid)
 	{
 	  gcc_assert (frame_pointer_needed);
+          gcc_assert (!stack_realign_fp);
 	  pro_epilogue_adjust_stack (stack_pointer_rtx,
 				     hard_frame_pointer_rtx,
 				     GEN_INT (offset), style);
@@ -7835,15 +8037,31 @@ ix86_expand_epilogue (int style)
 	  if (TARGET_USE_LEAVE)
 	    emit_insn ((*ix86_gen_leave) ());
 	  else
-	    emit_insn ((*ix86_gen_pop1) (hard_frame_pointer_rtx));
+            {
+              /* For stack realigned really happens, recover stack 
+                 pointer to hard frame pointer is a must, if not using 
+                 leave.  */
+              if (stack_realign_fp)
+		pro_epilogue_adjust_stack (stack_pointer_rtx,
+					   hard_frame_pointer_rtx,
+					   const0_rtx, style);
+	      emit_insn ((*ix86_gen_pop1) (hard_frame_pointer_rtx));
+            }
 	}
     }
 
-  if (cfun->machine->force_align_arg_pointer)
+  if (crtl->drap_reg && crtl->stack_realign_needed)
     {
-      emit_insn (gen_addsi3 (stack_pointer_rtx,
-			     cfun->machine->force_align_arg_pointer,
-			     GEN_INT (-4)));
+      int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
+			      ? 0 : STACK_BOUNDARY / BITS_PER_UNIT);
+      gcc_assert (stack_realign_drap);
+      emit_insn ((*ix86_gen_add3) (stack_pointer_rtx,
+				   crtl->drap_reg,
+				   GEN_INT (-(STACK_BOUNDARY / BITS_PER_UNIT
+					      + param_ptr_offset))));
+      if (!call_used_regs[REGNO (crtl->drap_reg)])
+	emit_insn ((*ix86_gen_pop1) (crtl->drap_reg));
+      
     }
 
   /* Sibcall epilogues don't want a return instruction.  */
@@ -27275,6 +27493,10 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_PASS_BY_REFERENCE ix86_pass_by_reference
 #undef TARGET_INTERNAL_ARG_POINTER
 #define TARGET_INTERNAL_ARG_POINTER ix86_internal_arg_pointer
+#undef TARGET_UPDATE_STACK_BOUNDARY
+#define TARGET_UPDATE_STACK_BOUNDARY ix86_update_stack_boundary
+#undef TARGET_GET_DRAP_RTX
+#define TARGET_GET_DRAP_RTX ix86_get_drap_rtx
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC ix86_dwarf_handle_frame_unspec
 #undef TARGET_STRICT_ARGUMENT_NAMING

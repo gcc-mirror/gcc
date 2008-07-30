@@ -864,8 +864,17 @@ rtx
 gen_reg_rtx (enum machine_mode mode)
 {
   rtx val;
+  unsigned int align = GET_MODE_ALIGNMENT (mode);
 
   gcc_assert (can_create_pseudo_p ());
+
+  /* If a virtual register with bigger mode alignment is generated,
+     increase stack alignment estimation because it might be spilled
+     to stack later.  */
+  if (SUPPORTS_STACK_ALIGNMENT 
+      && crtl->stack_alignment_estimated < align
+      && !crtl->stack_realign_processed)
+    crtl->stack_alignment_estimated = align;
 
   if (generating_concat_p
       && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT

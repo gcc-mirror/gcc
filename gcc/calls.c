@@ -415,6 +415,10 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
       rounded_stack_size -= n_popped;
       rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
       stack_pointer_delta -= n_popped;
+
+      /* If popup is needed, stack realign must use DRAP  */
+      if (SUPPORTS_STACK_ALIGNMENT)
+        crtl->need_drap = true;
     }
 
   if (!ACCUMULATE_OUTGOING_ARGS)
@@ -2405,7 +2409,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 incoming argument block.  */
       if (pass == 0)
 	{
-	  argblock = virtual_incoming_args_rtx;
+	  argblock = crtl->args.internal_arg_pointer;
 	  argblock
 #ifdef STACK_GROWS_DOWNWARD
 	    = plus_constant (argblock, crtl->args.pretend_args_size);

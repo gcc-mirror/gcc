@@ -555,7 +555,9 @@ Objective-C and Objective-C++ Dialects}.
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} -mcld -mcx16 -msahf -mrecip @gol
+-mpreferred-stack-boundary=@var{num}
+-mincoming-stack-boundary=@var{num}
+-mcld -mcx16 -msahf -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 @gol
 -maes -mpclmul @gol
 -msse4a -m3dnow -mpopcnt -mabm -msse5 @gol
@@ -10739,17 +10741,11 @@ when this option is used to set the precision to less than extended precision.
 
 @item -mstackrealign
 @opindex mstackrealign
-Realign the stack at entry.  On the Intel x86, the
-@option{-mstackrealign} option will generate an alternate prologue and
-epilogue that realigns the runtime stack.  This supports mixing legacy
-codes that keep a 4-byte aligned stack with modern codes that keep a
-16-byte stack for SSE compatibility.  The alternate prologue and
-epilogue are slower and bigger than the regular ones, and the
-alternate prologue requires an extra scratch register; this lowers the
-number of registers available if used in conjunction with the
-@code{regparm} attribute.  The @option{-mstackrealign} option is
-incompatible with the nested function prologue; this is considered a
-hard error.  See also the attribute @code{force_align_arg_pointer},
+Realign the stack at entry.  On the Intel x86, the @option{-mstackrealign}
+option will generate an alternate prologue and epilogue that realigns the
+runtime stack if necessary.  This supports mixing legacy codes that keep
+a 4-byte aligned stack with modern codes that keep a 16-byte stack for
+SSE compatibility.  See also the attribute @code{force_align_arg_pointer},
 applicable to individual functions.
 
 @item -mpreferred-stack-boundary=@var{num}
@@ -10757,6 +10753,12 @@ applicable to individual functions.
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
 byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
 the default is 4 (16 bytes or 128 bits).
+
+@item -mincoming-stack-boundary=@var{num}
+@opindex mincoming-stack-boundary
+Assume the incoming stack is aligned to a 2 raised to @var{num} byte
+boundary.  If @option{-mincoming-stack-boundary} is not specified,
+the one specified by @option{-mpreferred-stack-boundary} will be used.
 
 On Pentium and PentiumPro, @code{double} and @code{long double} values
 should be aligned to an 8 byte boundary (see @option{-malign-double}) or

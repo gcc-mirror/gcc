@@ -563,6 +563,12 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
+/* Set INCOMING_STACK_BOUNDARY to PREFERRED_STACK_BOUNDARY if it is not
+   defined.  */
+#ifndef INCOMING_STACK_BOUNDARY
+#define INCOMING_STACK_BOUNDARY PREFERRED_STACK_BOUNDARY
+#endif
+
 #ifndef TARGET_DEFAULT_PACK_STRUCT
 #define TARGET_DEFAULT_PACK_STRUCT 0
 #endif
@@ -949,6 +955,21 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 0
 #endif
+
+/* MAX_STACK_ALIGNMENT is the maximum stack alignment guaranteed by
+   the backend.  MAX_SUPPORTED_STACK_ALIGNMENT is the maximum best
+   effort stack alignment supported by the backend.  If the backend
+   supports stack alignment, MAX_SUPPORTED_STACK_ALIGNMENT and
+   MAX_STACK_ALIGNMENT are the same.  Otherwise, the incoming stack
+   boundary will limit the maximum guaranteed stack alignment.  */
+#ifdef MAX_STACK_ALIGNMENT
+#define MAX_SUPPORTED_STACK_ALIGNMENT MAX_STACK_ALIGNMENT
+#else
+#define MAX_STACK_ALIGNMENT STACK_BOUNDARY
+#define MAX_SUPPORTED_STACK_ALIGNMENT PREFERRED_STACK_BOUNDARY
+#endif
+
+#define SUPPORTS_STACK_ALIGNMENT (MAX_STACK_ALIGNMENT > STACK_BOUNDARY)
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT

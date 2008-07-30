@@ -350,10 +350,14 @@ get_stack_local_alignment (tree type, enum machine_mode mode)
    -2 means use BITS_PER_UNIT,
    positive specifies alignment boundary in bits.
 
+   If REDUCE_ALIGNMENT_OK is true, it is OK to reduce alignment.
+
    We do not round to stack_boundary here.  */
 
 rtx
-assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
+assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
+		      int align,
+		      bool reduce_alignment_ok ATTRIBUTE_UNUSED)
 {
   rtx x, addr;
   int bigend_correction = 0;
@@ -375,17 +379,52 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
   else
     alignment = align / BITS_PER_UNIT;
 
+  alignment_in_bits = alignment * BITS_PER_UNIT;
+
   if (FRAME_GROWS_DOWNWARD)
     frame_offset -= size;
 
-  /* Ignore alignment we can't do with expected alignment of the boundary.  */
-  if (alignment * BITS_PER_UNIT > PREFERRED_STACK_BOUNDARY)
-    alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+  /* Ignore alignment if it exceeds MAX_SUPPORTED_STACK_ALIGNMENT.  */
+  if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
+    {
+      alignment_in_bits = MAX_SUPPORTED_STACK_ALIGNMENT;
+      alignment = alignment_in_bits / BITS_PER_UNIT;
+    }
 
-  alignment_in_bits = alignment * BITS_PER_UNIT;
+  if (SUPPORTS_STACK_ALIGNMENT)
+    {
+      if (crtl->stack_alignment_estimated < alignment_in_bits)
+	{
+          if (!crtl->stack_realign_processed)
+	    crtl->stack_alignment_estimated = alignment_in_bits;
+          else
+	    {
+	      /* If stack is realigned and stack alignment value
+		 hasn't been finalized, it is OK not to increase
+		 stack_alignment_estimated.  The bigger alignment
+		 requirement is recorded in stack_alignment_needed
+		 below.  */
+	      gcc_assert (!crtl->stack_realign_finalized);
+	      if (!crtl->stack_realign_needed)
+		{
+		  /* It is OK to reduce the alignment as long as the
+		     requested size is 0 or the estimated stack
+		     alignment >= mode alignment.  */
+		  gcc_assert (reduce_alignment_ok
+		              || size == 0
+			      || (crtl->stack_alignment_estimated
+				  >= GET_MODE_ALIGNMENT (mode)));
+		  alignment_in_bits = crtl->stack_alignment_estimated;
+		  alignment = alignment_in_bits / BITS_PER_UNIT;
+		}
+	    }
+	}
+    }
 
   if (crtl->stack_alignment_needed < alignment_in_bits)
     crtl->stack_alignment_needed = alignment_in_bits;
+  if (crtl->max_used_stack_slot_alignment < crtl->stack_alignment_needed)
+    crtl->max_used_stack_slot_alignment = crtl->stack_alignment_needed;
 
   /* Calculate how many bytes the start of local variables is off from
      stack alignment.  */
@@ -448,6 +487,14 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
     frame_offset = 0;
 
   return x;
+}
+
+/* Wrap up assign_stack_local_1 with last parameter as false.  */
+
+rtx
+assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
+{
+  return assign_stack_local_1 (mode, size, align, false);
 }
 
 /* Removes temporary slot TEMP from LIST.  */
@@ -1167,7 +1214,17 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
   HOST_WIDE_INT offset;
 
   if (x == virtual_incoming_args_rtx)
-    new = arg_pointer_rtx, offset = in_arg_offset;
+    {
+      /* Replace virtual_incoming_args_rtx to internal arg pointer here */
+      if (crtl->args.internal_arg_pointer != virtual_incoming_args_rtx)
+        {
+          gcc_assert (stack_realign_drap);
+          new = crtl->args.internal_arg_pointer;
+          offset = 0;
+        }
+      else
+        new = arg_pointer_rtx, offset = in_arg_offset;
+    }
   else if (x == virtual_stack_vars_rtx)
     new = frame_pointer_rtx, offset = var_offset;
   else if (x == virtual_stack_dynamic_rtx)
@@ -2947,6 +3004,20 @@ assign_parms (tree fndecl)
 	  continue;
 	}
 
+      /* Estimate stack alignment from parameter alignment.  */
+      if (SUPPORTS_STACK_ALIGNMENT)
+        {
+          unsigned int align = FUNCTION_ARG_BOUNDARY (data.promoted_mode,
+						      data.passed_type);
+	  if (TYPE_ALIGN (data.nominal_type) > align)
+	    align = TYPE_ALIGN (data.passed_type);
+	  if (crtl->stack_alignment_estimated < align)
+	    {
+	      gcc_assert (!crtl->stack_realign_processed);
+	      crtl->stack_alignment_estimated = align;
+	    }
+	}
+	
       if (cfun->stdarg && !TREE_CHAIN (parm))
 	assign_parms_setup_varargs (&all, &data, false);
 
@@ -2983,6 +3054,28 @@ assign_parms (tree fndecl)
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
   emit_insn (all.first_conversion_insn);
+
+  /* Estimate reload stack alignment from scalar return mode.  */
+  if (SUPPORTS_STACK_ALIGNMENT)
+    {
+      if (DECL_RESULT (fndecl))
+	{
+	  tree type = TREE_TYPE (DECL_RESULT (fndecl));
+	  enum machine_mode mode = TYPE_MODE (type);
+
+	  if (mode != BLKmode
+	      && mode != VOIDmode
+	      && !AGGREGATE_TYPE_P (type))
+	    {
+	      unsigned int align = GET_MODE_ALIGNMENT (mode);
+	      if (crtl->stack_alignment_estimated < align)
+		{
+		  gcc_assert (!crtl->stack_realign_processed);
+		  crtl->stack_alignment_estimated = align;
+		}
+	    }
+	} 
+    }
 
   /* If we are receiving a struct value address as the first argument, set up
      the RTL for the function result. As this might require code to convert
@@ -3257,15 +3350,43 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
-  if (boundary > PREFERRED_STACK_BOUNDARY)
-    boundary = PREFERRED_STACK_BOUNDARY;
   locate->where_pad = where_pad;
+
+  /* Alignment can't exceed MAX_SUPPORTED_STACK_ALIGNMENT.  */
+  if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+
   locate->boundary = boundary;
+
+  if (SUPPORTS_STACK_ALIGNMENT)
+    {
+      /* stack_alignment_estimated can't change after stack has been
+	 realigned.  */
+      if (crtl->stack_alignment_estimated < boundary)
+        {
+          if (!crtl->stack_realign_processed)
+	    crtl->stack_alignment_estimated = boundary;
+	  else
+	    {
+	      /* If stack is realigned and stack alignment value
+		 hasn't been finalized, it is OK not to increase
+		 stack_alignment_estimated.  The bigger alignment
+		 requirement is recorded in stack_alignment_needed
+		 below.  */
+	      gcc_assert (!crtl->stack_realign_finalized
+			  && crtl->stack_realign_needed);
+	    }
+	}
+    }
 
   /* Remember if the outgoing parameter requires extra alignment on the
      calling function side.  */
   if (crtl->stack_alignment_needed < boundary)
     crtl->stack_alignment_needed = boundary;
+  if (crtl->max_used_stack_slot_alignment < crtl->stack_alignment_needed)
+    crtl->max_used_stack_slot_alignment = crtl->stack_alignment_needed;
+  if (crtl->preferred_stack_boundary < boundary)
+    crtl->preferred_stack_boundary = boundary;
 
 #ifdef ARGS_GROW_DOWNWARD
   locate->slot_offset.constant = -initial_offset_ptr->constant;
@@ -4602,7 +4723,8 @@ get_arg_pointer_save_area (void)
 	 generated stack slot may not be a valid memory address, so we
 	 have to check it and fix it if necessary.  */
       start_sequence ();
-      emit_move_insn (validize_mem (ret), virtual_incoming_args_rtx);
+      emit_move_insn (validize_mem (ret),
+                      crtl->args.internal_arg_pointer);
       seq = get_insns ();
       end_sequence ();
 
