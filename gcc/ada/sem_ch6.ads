@@ -136,8 +136,8 @@ package Sem_Ch6 is
       Get_Inst : Boolean := False) return Boolean;
    --  Check that the types of two formal parameters are conforming. In most
    --  cases this is just a name comparison, but within an instance it involves
-   --  generic actual types, and in the presence of anonymous access types
-   --  it must examine the designated types.
+   --  generic actual types, and in the presence of anonymous access types it
+   --  must examine the designated types.
 
    procedure Create_Extra_Formals (E : Entity_Id);
    --  For each parameter of a subprogram or entry that requires an additional
@@ -147,7 +147,9 @@ package Sem_Ch6 is
    --  the end of Subp's parameter list (with each subsequent extra formal
    --  being attached to the preceding extra formal).
 
-   function Find_Corresponding_Spec (N : Node_Id) return Entity_Id;
+   function Find_Corresponding_Spec
+     (N          : Node_Id;
+      Post_Error : Boolean := True) return Entity_Id;
    --  Use the subprogram specification in the body to retrieve the previous
    --  subprogram declaration, if any.
 

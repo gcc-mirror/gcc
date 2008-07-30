@@ -1306,6 +1306,17 @@ package body Sem_Ch6 is
       --  If pragma does not appear after the body, check whether there is
       --  an inline pragma before any local declarations.
 
+      function Disambiguate_Spec return Entity_Id;
+      --  When a primitive is declared between the private view and the full
+      --  view of a concurrent type which implements an interface, a special
+      --  mechanism is used to find the corresponding spec of the primitive
+      --  body.
+
+      function Is_Private_Concurrent_Primitive
+        (Subp_Id : Entity_Id) return Boolean;
+      --  Determine whether subprogram Subp_Id is a primitive of a concurrent
+      --  type that implements an interface and has a private view.
+
       procedure Set_Trivial_Subprogram (N : Node_Id);
       --  Sets the Is_Trivial_Subprogram flag in both spec and body of the
       --  subprogram whose body is being analyzed. N is the statement node
@@ -1457,6 +1468,128 @@ package body Sem_Ch6 is
          end if;
       end Check_Inline_Pragma;
 
+      -----------------------
+      -- Disambiguate_Spec --
+      -----------------------
+
+      function Disambiguate_Spec return Entity_Id is
+         Priv_Spec : Entity_Id;
+         Spec_N    : Entity_Id;
+
+         procedure Replace_Types (To_Corresponding : Boolean);
+         --  Depending on the flag, replace the type of formal parameters of
+         --  Body_Id if it is a concurrent type implementing interfaces with
+         --  the corresponding record type or the other way around.
+
+         procedure Replace_Types (To_Corresponding : Boolean) is
+            Formal     : Entity_Id;
+            Formal_Typ : Entity_Id;
+
+         begin
+            Formal := First_Formal (Body_Id);
+            while Present (Formal) loop
+               Formal_Typ := Etype (Formal);
+
+               --  From concurrent type to corresponding record
+
+               if To_Corresponding then
+                  if Is_Concurrent_Type (Formal_Typ)
+                    and then Present (Corresponding_Record_Type (Formal_Typ))
+                    and then Present (Interfaces (
+                               Corresponding_Record_Type (Formal_Typ)))
+                  then
+                     Set_Etype (Formal,
+                       Corresponding_Record_Type (Formal_Typ));
+                  end if;
+
+               --  From corresponding record to concurrent type
+
+               else
+                  if Is_Concurrent_Record_Type (Formal_Typ)
+                    and then Present (Interfaces (Formal_Typ))
+                  then
+                     Set_Etype (Formal,
+                       Corresponding_Concurrent_Type (Formal_Typ));
+                  end if;
+               end if;
+
+               Next_Formal (Formal);
+            end loop;
+         end Replace_Types;
+
+      --  Start of processing for Disambiguate_Spec
+
+      begin
+         --  Try to retrieve the specification of the body as is. All error
+         --  messages are suppressed because the body may not have a spec in
+         --  its current state.
+
+         Spec_N := Find_Corresponding_Spec (N, False);
+
+         --  It is possible that this is the body of a primitive declared
+         --  between a private and a full view of a concurrent type. The
+         --  controlling parameter of the spec carries the concurrent type,
+         --  not the corresponding record type as transformed by Analyze_
+         --  Subprogram_Specification. In such cases, we undo the change
+         --  made by the analysis of the specification and try to find the
+         --  spec again.
+
+         if No (Spec_N) then
+
+            --  Restore all references of corresponding record types to the
+            --  original concurrent types.
+
+            Replace_Types (To_Corresponding => False);
+            Priv_Spec := Find_Corresponding_Spec (N, False);
+
+            --  The current body truly belongs to a primitive declared between
+            --  a private and a full view. We leave the modified body as is,
+            --  and return the true spec.
+
+            if Present (Priv_Spec)
+              and then Is_Private_Primitive (Priv_Spec)
+            then
+               return Priv_Spec;
+            end if;
+
+            --  In case that this is some sort of error, restore the original
+            --  state of the body.
+
+            Replace_Types (To_Corresponding => True);
+         end if;
+
+         return Spec_N;
+      end Disambiguate_Spec;
+
+      -------------------------------------
+      -- Is_Private_Concurrent_Primitive --
+      -------------------------------------
+
+      function Is_Private_Concurrent_Primitive
+        (Subp_Id : Entity_Id) return Boolean
+      is
+         Formal_Typ : Entity_Id;
+
+      begin
+         if Present (First_Formal (Subp_Id)) then
+            Formal_Typ := Etype (First_Formal (Subp_Id));
+
+            if Is_Concurrent_Record_Type (Formal_Typ) then
+               Formal_Typ := Corresponding_Concurrent_Type (Formal_Typ);
+            end if;
+
+            --  The type of the first formal is a concurrent tagged type with
+            --  a private view.
+
+            return
+              Is_Concurrent_Type (Formal_Typ)
+                and then Is_Tagged_Type (Formal_Typ)
+                and then Has_Private_Declaration (Formal_Typ);
+         end if;
+
+         return False;
+      end Is_Private_Concurrent_Primitive;
+
       ----------------------------
       -- Set_Trivial_Subprogram --
       ----------------------------
@@ -1581,7 +1714,11 @@ package body Sem_Ch6 is
          if Nkind (N) = N_Subprogram_Body_Stub
            or else No (Corresponding_Spec (N))
          then
-            Spec_Id := Find_Corresponding_Spec (N);
+            if Is_Private_Concurrent_Primitive (Body_Id) then
+               Spec_Id := Disambiguate_Spec;
+            else
+               Spec_Id := Find_Corresponding_Spec (N);
+            end if;
 
             --  If this is a duplicate body, no point in analyzing it
 
@@ -2322,6 +2459,22 @@ package body Sem_Ch6 is
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
 
+      --  If the type of the first formal of the current subprogram is a non
+      --  generic tagged private type , mark the subprogram as being a private
+      --  primitive.
+
+      if Present (First_Formal (Designator)) then
+         declare
+            Formal_Typ : constant Entity_Id :=
+                           Etype (First_Formal (Designator));
+         begin
+            Set_Is_Private_Primitive (Designator,
+              Is_Tagged_Type (Formal_Typ)
+                and then Is_Private_Type (Formal_Typ)
+                and then not Is_Generic_Actual_Type (Formal_Typ));
+         end;
+      end if;
+
       --  Ada 2005 (AI-251): Abstract interface primitives must be abstract
       --  or null.
 
@@ -2435,8 +2588,6 @@ package body Sem_Ch6 is
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id is
       Designator : constant Entity_Id := Defining_Entity (N);
       Formals    : constant List_Id   := Parameter_Specifications (N);
-      Formal     : Entity_Id;
-      Formal_Typ : Entity_Id;
 
    --  Start of processing for Analyze_Subprogram_Specification
 
@@ -2466,21 +2617,29 @@ package body Sem_Ch6 is
          --  record, to match the proper signature of an overriding operation.
 
          if Ada_Version >= Ada_05 then
-            Formal := First_Formal (Designator);
-            while Present (Formal) loop
-               Formal_Typ := Etype (Formal);
+            declare
+               Formal     : Entity_Id;
+               Formal_Typ : Entity_Id;
+               Rec_Typ    : Entity_Id;
 
-               if Is_Concurrent_Type (Formal_Typ)
-                 and then Present (Corresponding_Record_Type (Formal_Typ))
-                 and then Present (Interfaces
-                                    (Corresponding_Record_Type (Formal_Typ)))
-               then
-                  Set_Etype (Formal,
-                    Corresponding_Record_Type (Formal_Typ));
-               end if;
+            begin
+               Formal := First_Formal (Designator);
+               while Present (Formal) loop
+                  Formal_Typ := Etype (Formal);
 
-               Formal := Next_Formal (Formal);
-            end loop;
+                  if Is_Concurrent_Type (Formal_Typ)
+                    and then Present (Corresponding_Record_Type (Formal_Typ))
+                  then
+                     Rec_Typ := Corresponding_Record_Type (Formal_Typ);
+
+                     if Present (Interfaces (Rec_Typ)) then
+                        Set_Etype (Formal, Rec_Typ);
+                     end if;
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+            end;
          end if;
 
          End_Scope;
@@ -5161,7 +5320,10 @@ package body Sem_Ch6 is
    -- Find_Corresponding_Spec --
    -----------------------------
 
-   function Find_Corresponding_Spec (N : Node_Id) return Entity_Id is
+   function Find_Corresponding_Spec
+     (N          : Node_Id;
+      Post_Error : Boolean := True) return Entity_Id
+   is
       Spec       : constant Node_Id   := Specification (N);
       Designator : constant Entity_Id := Defining_Entity (Spec);
 
@@ -5205,7 +5367,6 @@ package body Sem_Ch6 is
                end if;
 
                if not Has_Completion (E) then
-
                   if Nkind (N) /= N_Subprogram_Body_Stub then
                      Set_Corresponding_Spec (N, E);
                   end if;
@@ -5250,14 +5411,15 @@ package body Sem_Ch6 is
                      return Empty;
                   end if;
 
-               --  If body already exists, this is an error unless the
-               --  previous declaration is the implicit declaration of
-               --  a derived subprogram, or this is a spurious overloading
-               --  in an instance.
+               --  If the body already exists, then this is an error unless
+               --  the previous declaration is the implicit declaration of a
+               --  derived subprogram, or this is a spurious overloading in an
+               --  instance.
 
                elsif No (Alias (E))
                  and then not Is_Intrinsic_Subprogram (E)
                  and then not In_Instance
+                 and then Post_Error
                then
                   Error_Msg_Sloc := Sloc (E);
                   if Is_Imported (E) then
@@ -5269,16 +5431,17 @@ package body Sem_Ch6 is
                   end if;
                end if;
 
+            --  Child units cannot be overloaded, so a conformance mismatch
+            --  between body and a previous spec is an error.
+
             elsif Is_Child_Unit (E)
               and then
                 Nkind (Unit_Declaration_Node (Designator)) = N_Subprogram_Body
               and then
                 Nkind (Parent (Unit_Declaration_Node (Designator))) =
-                                                             N_Compilation_Unit
+                  N_Compilation_Unit
+              and then Post_Error
             then
-               --  Child units cannot be overloaded, so a conformance mismatch
-               --  between body and a previous spec is an error.
-
                Error_Msg_N
                  ("body of child unit does not match previous declaration", N);
             end if;
