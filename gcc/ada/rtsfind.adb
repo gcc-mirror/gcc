@@ -914,25 +914,6 @@ package body Rtsfind is
       ---------------
 
       procedure Check_RPC is
-
-         procedure Check_RPC_Failure (Msg : String);
-         pragma No_Return (Check_RPC_Failure);
-         --  Display Msg on standard error and raise Unrecoverable_Error
-
-         -----------------------
-         -- Check_RPC_Failure --
-         -----------------------
-
-         procedure Check_RPC_Failure (Msg : String) is
-         begin
-            Set_Standard_Error;
-            Write_Str (Msg);
-            Write_Eol;
-            raise Unrecoverable_Error;
-         end Check_RPC_Failure;
-
-      --  Start of processing for Check_RPC
-
       begin
          --  Bypass this check if debug flag -gnatdR set
 
@@ -940,30 +921,44 @@ package body Rtsfind is
             return;
          end if;
 
-         --  Otherwise we need the check if we are going after one of
-         --  the critical entities in System.RPC in stubs mode.
+         --  Otherwise we need the check if we are going after one of the
+         --  critical entities in System.RPC / System.Partition_Interface.
 
-         --  ??? Should we do this for other s-parint entities too?
-
-         if (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
-                      or else
-                        Distribution_Stub_Mode = Generate_Caller_Stub_Body)
-           and then (E = RE_Do_Rpc
-                       or else
-                     E = RE_Do_Apc
-                       or else
-                     E = RE_Params_Stream_Type
-                       or else
-                     E = RE_Request_Access)
+         if E = RE_Do_Rpc
+              or else
+            E = RE_Do_Apc
+              or else
+            E = RE_Params_Stream_Type
+              or else
+            E = RE_Request_Access
          then
-            if Get_PCS_Name = Name_No_DSA then
-               Check_RPC_Failure ("distribution feature not supported");
+            --  If generating RCI stubs, check that we have a real PCS
+
+            if (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
+                  or else
+                Distribution_Stub_Mode = Generate_Caller_Stub_Body)
+              and then Get_PCS_Name = Name_No_DSA
+            then
+               Set_Standard_Error;
+               Write_Str ("distribution feature not supported");
+               Write_Eol;
+               raise Unrecoverable_Error;
+
+            --  In all cases, check Exp_Dist and System.Partition_Interface
+            --  consistency.
 
             elsif Get_PCS_Version /=
                     Exp_Dist.PCS_Version_Number (Get_PCS_Name)
             then
-               Check_RPC_Failure ("PCS version mismatch");
-
+               Set_Standard_Error;
+               Write_Str ("PCS version mismatch: expander ");
+               Write_Int (Exp_Dist.PCS_Version_Number (Get_PCS_Name));
+               Write_Str (", PCS (");
+               Write_Name (Get_PCS_Name);
+               Write_Str (") ");
+               Write_Int (Get_PCS_Version);
+               Write_Eol;
+               raise Unrecoverable_Error;
             end if;
          end if;
       end Check_RPC;
