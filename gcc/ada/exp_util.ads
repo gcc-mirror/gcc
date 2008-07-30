@@ -360,7 +360,10 @@ package Exp_Util is
    --  Find the first primitive operation of type T whose name is 'Name'.
    --  This function allows the use of a primitive operation which is not
    --  directly visible. If T is a class wide type, then the reference is
-   --  to an operation of the corresponding root type.
+   --  to an operation of the corresponding root type. Raises Program_Error
+   --  exception if no primitive operation is found. This is normally an
+   --  internal error, but in some cases is an expected consequence of
+   --  illegalities elsewhere.
 
    function Find_Prim_Op
      (T    : Entity_Id;
@@ -370,6 +373,9 @@ package Exp_Util is
    --  with the indicated suffix). This function allows use of a primitive
    --  operation which is not directly visible. If T is a class wide type,
    --  then the reference is to an operation of the corresponding root type.
+   --  Raises Program_Error exception if no primitive operation is found.
+   --  This is normally an internal error, but in some cases is an expected
+   --  consequence of illegalities elsewhere.
 
    function Find_Protection_Object (Scop : Entity_Id) return Entity_Id;
    --  Traverse the scope stack starting from Scop and look for an entry,
