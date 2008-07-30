@@ -1,5 +1,26 @@
 2008-07-30  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch9.adb: Minor reformatting
+
+	* exp_util.ads (Find_Prim_Op): Document that Program_Error is raised
+	if no primitive operation is found.
+
+	* exp_util.adb: (Find_Prim_Op): Add comments for previous change
+
+	* sem_ch8.adb: Minor reformatting
+
+2008-07-30  Laurent Pautet  <pautet@adacore.com>
+
+	* g-pehage.adb:
+	Remove a limitation on the length of the words handled by the minimal
+	perfect hash function generator.
+
+	* g-pehage.ads:
+	Detail the use of subprograms Insert, Initialize, Compute and Finalize.
+	Fix some typos.
+
+2008-07-30  Robert Dewar  <dewar@adacore.com>
+
 	* gnatlink.adb: Minor reformatting
 
 2008-07-30  Thomas Quinot  <quinot@adacore.com>
