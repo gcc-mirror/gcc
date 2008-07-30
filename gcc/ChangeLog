@@ -1,3 +1,16 @@
+2008-07-30  Andrew Jenner  <andrew@codesourcery.com>
+
+	* config/arm/arm.c (arm_compute_static_chain_stack_bytes): New
+        function.
+	(arm_compute_initial_elimination_offset): Use it.
+	(arm_compute_save_reg_mask): Include static chain save slot when
+	calculating alignment.
+	(arm_get_frame_offsets): Ditto.
+	(thumb1_compute_save_reg_mask): Ensure we have a low register saved
+	that we can use to decrement the stack when the stack decrement
+	could be too big for an immediate value in a single insn.
+	(thumb1_expand_prologue): Avoid using r12 for stack decrement.
+
 2008-07-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36967
