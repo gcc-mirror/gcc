@@ -1,3 +1,10 @@
+2008-07-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cpp.texi: Update to GFDL 1.2.
+	* doc/gcc.texi: Do not list GPL as Invariant Section.
+	* doc/gccint.texi: Likewise.  Update copyright years.
+	* doc/install.texi: Update copyright years.
+
 2008-07-30  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/36955

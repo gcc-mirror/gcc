@@ -688,7 +688,9 @@ reading and writing.
 @c pexecute.txh:266
 @deftypefn Extension void pex_free (struct pex_obj @var{obj})
 
-Clean up and free all data associated with @var{obj}.
+Clean up and free all data associated with @var{obj}.  If you have not
+yet called @code{pex_get_times} or @code{pex_get_status}, this will
+try to kill the subprocesses.
 
 @end deftypefn
 
@@ -814,7 +816,7 @@ the output pipe is you, but you are blocked on the input pipe.
 
 @end deftypefn
 
-@c pexecute.txh:272
+@c pexecute.txh:274
 @deftypefn Extension {const char *} pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
 
 An interface to permit the easy execution of a
@@ -977,7 +979,7 @@ form @code{VAR=VALUE}, with the exception of the last element that must be
 
 @end deftypefn
 
-@c pexecute.txh:284
+@c pexecute.txh:286
 @deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags})
 
 This is the old interface to execute one or more programs.  It is
@@ -986,7 +988,7 @@ documented.
 
 @end deftypefn
 
-@c strsignal.c:539
+@c strsignal.c:541
 @deftypefn Supplemental void psignal (int @var{signo}, char *@var{message})
 
 Print @var{message} to the standard error, followed by a colon,
@@ -1005,7 +1007,7 @@ name is unset/removed.
 
 @end deftypefn
 
-@c pexecute.txh:292
+@c pexecute.txh:294
 @deftypefn Extension int pwait (int @var{pid}, int *@var{status}, int @var{flags})
 
 Another part of the old execution interface.
@@ -1256,7 +1258,7 @@ call to @code{strsignal}.
 
 @end deftypefn
 
-@c strsignal.c:446
+@c strsignal.c:448
 @deftypefn Extension {const char*} strsigno (int @var{signo})
 
 Given an signal number, returns a pointer to a string containing the
@@ -1322,7 +1324,7 @@ that the converted value is unsigned.
 
 @end deftypefn
 
-@c strsignal.c:500
+@c strsignal.c:502
 @deftypefn Extension int strtosigno (const char *@var{name})
 
 Given the symbolic name of a signal, map it to a signal number.  If no

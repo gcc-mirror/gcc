@@ -41,16 +41,16 @@
 
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
 2008 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'' and ``Funding
-Free Software'', the Front-Cover texts being (a) (see below), and with
-the Back-Cover Texts being (b) (see below).  A copy of the license is
-included in the section entitled ``GNU Free Documentation License''.
+Invariant Sections being ``Funding Free Software'', the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
 
 (a) The FSF's Front-Cover Text is:
 
