@@ -1581,7 +1581,10 @@ package body Exp_Util is
                 or else Etype (First_Entity (Op)) = Etype (Last_Entity (Op)));
 
          Next_Elmt (Prim);
-         pragma Assert (Present (Prim));
+
+         if No (Prim) then
+            raise Program_Error;
+         end if;
       end loop;
 
       return Node (Prim);
@@ -1608,7 +1611,10 @@ package body Exp_Util is
       Prim := First_Elmt (Primitive_Operations (Typ));
       while not Is_TSS (Node (Prim), Name) loop
          Next_Elmt (Prim);
-         pragma Assert (Present (Prim));
+
+         if No (Prim) then
+            raise Program_Error;
+         end if;
       end loop;
 
       return Node (Prim);

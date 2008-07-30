@@ -1578,25 +1578,44 @@ package body Sem_Ch8 is
                --  an abstract formal subprogram must be dispatching
                --  operation).
 
-               case Attribute_Name (Nam) is
-                  when Name_Input  =>
-                     Stream_Prim :=
-                       Find_Prim_Op (Prefix_Type, TSS_Stream_Input);
-                  when Name_Output =>
-                     Stream_Prim :=
-                       Find_Prim_Op (Prefix_Type, TSS_Stream_Output);
-                  when Name_Read   =>
-                     Stream_Prim :=
-                       Find_Prim_Op (Prefix_Type, TSS_Stream_Read);
-                  when Name_Write  =>
-                     Stream_Prim :=
-                       Find_Prim_Op (Prefix_Type, TSS_Stream_Write);
-                  when others      =>
-                     Error_Msg_N
-                       ("attribute must be a primitive dispatching operation",
-                        Nam);
-                     return;
-               end case;
+               begin
+                  case Attribute_Name (Nam) is
+                     when Name_Input  =>
+                        Stream_Prim :=
+                          Find_Prim_Op (Prefix_Type, TSS_Stream_Input);
+                     when Name_Output =>
+                        Stream_Prim :=
+                          Find_Prim_Op (Prefix_Type, TSS_Stream_Output);
+                     when Name_Read   =>
+                        Stream_Prim :=
+                          Find_Prim_Op (Prefix_Type, TSS_Stream_Read);
+                     when Name_Write  =>
+                        Stream_Prim :=
+                          Find_Prim_Op (Prefix_Type, TSS_Stream_Write);
+                     when others      =>
+                        Error_Msg_N
+                          ("attribute must be a primitive"
+                            & " dispatching operation", Nam);
+                        return;
+                  end case;
+               exception
+
+                  --  If no operation was found, and the type is limited,
+                  --  the user should have defined one.
+
+                  when Program_Error =>
+                     if Is_Limited_Type (Prefix_Type) then
+                        Error_Msg_NE
+                         ("stream operation not defined for type&",
+                           N, Prefix_Type);
+                        return;
+
+                     --  Otherwise, compiler should have generated default.
+
+                     else
+                        raise;
+                     end if;
+               end;
 
                --  Rewrite the attribute into the name of its corresponding
                --  primitive dispatching subprogram. We can then proceed with
