@@ -153,8 +153,8 @@ TOOLS_TARGET_PAIRS = @TOOLS_TARGET_PAIRS@
 gnattools: @default_gnattools_target@
 
 # Sanity check
-$(GCC_DIR)/stamp-gnatlib:
-	@if [ ! -f $(GCC_DIR)/stamp-gnatlib ] ; \
+$(GCC_DIR)/stamp-gnatlib-rts:
+	@if [ ! -f $(GCC_DIR)/stamp-gnatlib-rts ] ; \
         then \
           echo "Cannot build gnattools while gnatlib is out of date or unbuilt" ; \
           false; \
@@ -183,7 +183,7 @@ $(GCC_DIR)/stamp-tools:
 # to be able to build gnatmake without a version of gnatmake around. Once 
 # everything has been compiled once, gnatmake can be recompiled with itself 
 # (see target regnattools) 
-gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib
+gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib-rts
 	# gnattools1
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_1) \
@@ -195,7 +195,7 @@ gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib
 # gnatmake/link can be built with recent gnatmake/link if they are available.
 # This is especially convenient for building cross tools or for rebuilding
 # the tools when the original bootstrap has already be done.
-regnattools: $(GCC_DIR)/stamp-gnatlib
+regnattools: $(GCC_DIR)/stamp-gnatlib-rts
 	# gnattools1-re
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_1re) \
