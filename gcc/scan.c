@@ -35,7 +35,7 @@ make_sstring_space (sstring *str, int count)
   if (new_size <= cur_size)
     return;
 
-  str->base = xrealloc (str->base, new_size);
+  str->base = (char *) xrealloc (str->base, new_size);
   str->ptr = str->base + cur_size;
   str->limit = str->base + new_size;
 }
