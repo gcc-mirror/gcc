@@ -1,3 +1,42 @@
+2008-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb: Minor reformatting
+
+	* mlib-utl.adb: Minor reformatting
+
+	* osint.ads: Minor reformatting
+
+2008-07-30  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c
+	(__gnat_file_exists): Do not use __gnat_stat for RTX.
+	(__main for RTX in RTSS mode): Create this dummy procedure symbol to
+	avoid the use of this symbol from libgcc.a in RTX kernel mode.
+
+	* cio.c
+	(put_int, put_int_stderr, put_char, put_char_stderr): For RTX we call
+	the function RtPrintf for console output.
+	
+	* argv.c Do not use the environ variable for RTX.
+	
+	* gnatlink.adb (gnatlink): The part that handles the --RTS option has
+	been moved before the call to Osint.Add_Default_Search_Dirs in order
+	to take into account the flags in system.ads (RTX_RTSS_Kernel_Module)
+	from the appropriate run time.
+	
+	* targparm.ads
+	(RTX_RTSS_Kernel_Module_On_Target): Add this flag that is set to True if
+	target is a RTSS module for RTX.
+	
+	* targparm.adb (Targparm_Tags, RTX_Str, Targparm_Str): Add tag RTX for
+	RTX_RTSS_Kernel_Module
+	(Get_Target_Parameters): Add processing of RTX_RTSS_Kernel_Module flag.
+
+	* gcc-interface/Makefile.in (LIBGNAT_TARGET_PAIRS for RTX): Use gcc
+	exception handling mechanism for Windows and RTX in Win32 mode, but
+	not for RTX in kernel mode (RTSS).
+	(LIBGNAT_SRCS): Remove ada.h
+
 2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc-interface/Make-lang.in (ALL_ADAFLAGS): Remove X_ADAFLAGS and
