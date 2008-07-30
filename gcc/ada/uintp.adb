@@ -1832,7 +1832,7 @@ package body Uintp is
 
             Den1 := V_Hat + C;
             Den2 := V_Hat + D;
-            exit when (Den1 * Den2) = Int_0;
+            exit when Den1 = Int_0 or else Den2 = Int_0;
 
             --  Compute Q, the trial quotient
 
