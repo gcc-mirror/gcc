@@ -6585,12 +6585,12 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* ... otherwise out of the overflow area.  */
 
   /* When we align parameter on stack for caller, if the parameter
-     alignment is beyond PREFERRED_STACK_BOUNDARY, it will be
-     aligned at PREFERRED_STACK_BOUNDARY.  We will match callee
+     alignment is beyond MAX_SUPPORTED_STACK_ALIGNMENT, it will be
+     aligned at MAX_SUPPORTED_STACK_ALIGNMENT.  We will match callee
      here with caller.  */
   arg_boundary = FUNCTION_ARG_BOUNDARY (VOIDmode, type);
-  if ((unsigned int) arg_boundary > PREFERRED_STACK_BOUNDARY)
-     arg_boundary = PREFERRED_STACK_BOUNDARY;
+  if ((unsigned int) arg_boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+    arg_boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
 
   /* Care for on-stack alignment if needed.  */
   if (arg_boundary <= 64
