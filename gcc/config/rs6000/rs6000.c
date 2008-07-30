@@ -3948,6 +3948,8 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  insn = emit_call_insn (insn);
 	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r3);
+	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
 	  insn = get_insns ();
 	  end_sequence ();
 	  emit_libcall_block (insn, dest, r3, addr);
@@ -3970,6 +3972,8 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  insn = emit_call_insn (insn);
 	  RTL_CONST_CALL_P (insn) = 1;
 	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r3);
+	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
 	  insn = get_insns ();
 	  end_sequence ();
 	  tmp1 = gen_reg_rtx (Pmode);

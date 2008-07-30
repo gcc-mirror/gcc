@@ -1,3 +1,9 @@
+2008-07-30  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/36955
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Add
+	a use of pic_offset_table_rtx for -msecure-plt __tls_get_addr calls.
+
 2008-07-29  Jan Hubicka  <jh@suse.cz>
 
 	* c-decl.c (merge_decls): Do not handle DECL_INLINE.
