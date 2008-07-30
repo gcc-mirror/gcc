@@ -1484,75 +1484,17 @@ begin
       Exit_Program (E_Fatal);
    end if;
 
-   --  Get target parameters
+   --  Initialize packages to be used
 
    Namet.Initialize;
    Csets.Initialize;
    Snames.Initialize;
-   Osint.Add_Default_Search_Dirs;
-   Targparm.Get_Target_Parameters;
-
-   if VM_Target /= No_VM then
-      case VM_Target is
-         when JVM_Target => Gcc := new String'("jgnat");
-         when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
-         when No_VM      => raise Program_Error;
-      end case;
-
-      Ada_Bind_File := True;
-      Begin_Info := "--  BEGIN Object file/option list";
-      End_Info   := "--  END Object file/option list   ";
-   end if;
 
    --  We always compile with -c
 
    Binder_Options_From_ALI.Increment_Last;
    Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
      new String'("-c");
-
-   --  If the main program is in Ada it is compiled with the following
-   --  switches:
-
-   --    -gnatA   stops reading gnat.adc, since we don't know what
-   --             pragmas would work, and we do not need it anyway.
-
-   --    -gnatWb  allows brackets coding for wide characters
-
-   --    -gnatiw  allows wide characters in identifiers. This is needed
-   --             because bindgen uses brackets encoding for all upper
-   --             half and wide characters in identifier names.
-
-   if Ada_Bind_File then
-      Binder_Options_From_ALI.Increment_Last;
-      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
-        new String'("-gnatA");
-      Binder_Options_From_ALI.Increment_Last;
-      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
-        new String'("-gnatWb");
-      Binder_Options_From_ALI.Increment_Last;
-      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
-        new String'("-gnatiw");
-   end if;
-
-   --  Locate all the necessary programs and verify required files are present
-
-   Gcc_Path := System.OS_Lib.Locate_Exec_On_Path (Gcc.all);
-
-   if Gcc_Path = null then
-      Exit_With_Error ("Couldn't locate " & Gcc.all);
-   end if;
-
-   if Linker_Path = null then
-      if VM_Target = CLI_Target then
-         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("ilasm");
-
-         if Linker_Path = null then
-            Exit_With_Error ("Couldn't locate ilasm");
-         end if;
-      else
-         Linker_Path := Gcc_Path;
-      end if;
-   end if;
 
    if Ali_File_Name = null then
       Exit_With_Error ("no ali file given for link");
@@ -1624,6 +1566,18 @@ begin
                             := String_Access (Arg);
                      end if;
 
+                     --  Set the RTS_*_Path_Name variables, so that the
+                     --  correct directories will be set when
+                     --  Osint.Add_Default_Search_Dirs will be called later.
+
+                     Opt.RTS_Src_Path_Name :=
+                       Get_RTS_Search_Dir
+                         (Arg (Arg'First + 6 .. Arg'Last), Include);
+
+                     Opt.RTS_Lib_Path_Name :=
+                       Get_RTS_Search_Dir
+                         (Arg (Arg'First + 6 .. Arg'Last), Objects);
+
                      --  GNAT doesn't support the GCC multilib mechanism.
                      --  This means that, when a multilib switch is used
                      --  to request a particular compilation mode, the
@@ -1635,8 +1589,7 @@ begin
 
                      --  Pass -mrtp to the linker if --RTS=rtp was passed
 
-                     if Linker_Path = Gcc_Path
-                       and then Arg'Length > 8
+                     if Arg'Length > 8
                        and then Arg (Arg'First + 6 .. Arg'First + 8) = "rtp"
                      then
                         Linker_Options.Increment_Last;
@@ -1645,8 +1598,7 @@ begin
 
                      --  Pass -fsjlj to the linker if --RTS=sjlj was passed
 
-                     elsif Linker_Path = Gcc_Path
-                       and then Arg'Length > 9
+                     elsif Arg'Length > 9
                        and then Arg (Arg'First + 6 .. Arg'First + 9) = "sjlj"
                      then
                         Linker_Options.Increment_Last;
@@ -1658,6 +1610,77 @@ begin
             end loop;
          end if;
       end;
+   end if;
+
+   --  Get target parameters
+
+   Osint.Add_Default_Search_Dirs;
+   Targparm.Get_Target_Parameters;
+
+   if VM_Target /= No_VM then
+      case VM_Target is
+         when JVM_Target => Gcc := new String'("jgnat");
+         when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
+         when No_VM      => raise Program_Error;
+      end case;
+
+      Ada_Bind_File := True;
+      Begin_Info := "--  BEGIN Object file/option list";
+      End_Info   := "--  END Object file/option list   ";
+   end if;
+
+   --  If the main program is in Ada it is compiled with the following
+   --  switches:
+
+   --    -gnatA   stops reading gnat.adc, since we don't know what
+   --             pragmas would work, and we do not need it anyway.
+
+   --    -gnatWb  allows brackets coding for wide characters
+
+   --    -gnatiw  allows wide characters in identifiers. This is needed
+   --             because bindgen uses brackets encoding for all upper
+   --             half and wide characters in identifier names.
+
+   if Ada_Bind_File then
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatA");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatWb");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatiw");
+   end if;
+
+   --  Locate all the necessary programs and verify required files are present
+
+   Gcc_Path := System.OS_Lib.Locate_Exec_On_Path (Gcc.all);
+
+   if Gcc_Path = null then
+      Exit_With_Error ("Couldn't locate " & Gcc.all);
+   end if;
+
+   if Linker_Path = null then
+      if VM_Target = CLI_Target then
+         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("ilasm");
+
+         if Linker_Path = null then
+            Exit_With_Error ("Couldn't locate ilasm");
+         end if;
+
+      elsif RTX_RTSS_Kernel_Module_On_Target then
+         --  Use Microsoft linker for RTSS modules
+
+         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("link");
+
+         if Linker_Path = null then
+            Exit_With_Error ("Couldn't locate link");
+         end if;
+
+      else
+         Linker_Path := Gcc_Path;
+      end if;
    end if;
 
    Write_Header;
@@ -1679,6 +1702,11 @@ begin
          Linker_Options.Increment_Last;
          Linker_Options.Table (Linker_Options.Last) :=
            new String'("/OUTPUT=" & Output_File_Name.all);
+
+      elsif RTX_RTSS_Kernel_Module_On_Target then
+         Linker_Options.Increment_Last;
+         Linker_Options.Table (Linker_Options.Last) :=
+           new String'("/OUT:" & Output_File_Name.all);
 
       else
          Linker_Options.Increment_Last;
@@ -1869,6 +1897,119 @@ begin
                   Num_Args := Num_Args - 1;
                end if;
             end loop;
+
+         elsif RTX_RTSS_Kernel_Module_On_Target then
+            --  Remove flags not relevant for Microsoft linker and adapt some
+            --  others.
+
+            for J in reverse Linker_Options.First .. Linker_Options.Last loop
+
+               --  Remove flags that are not accepted
+               if Linker_Options.Table (J)'Length = 0
+                 or else Linker_Options.Table (J) (1 .. 2) = "-l"
+                 or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
+                 or else Linker_Options.Table (J) (1 .. 3) = "-sh"
+                 or else Linker_Options.Table (J) (1 .. 8) = "-Xlinker"
+                 or else Linker_Options.Table (J) (1 .. 9) = "-mthreads"
+               then
+                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+                  Linker_Options.Decrement_Last;
+                  Num_Args := Num_Args - 1;
+
+               --  Replace "-L" by its counterpart "/LIBPATH:" and UNIX "/" by
+               --  Windows "\".
+               elsif Linker_Options.Table (J) (1 .. 2) = "-L" then
+                  declare
+                     Libpath_Option : constant String_Access := new String'
+                       ("/LIBPATH:" &
+                        Linker_Options.Table (J)
+                          (3 .. Linker_Options.Table (J).all'Last));
+                  begin
+                     for Index in 10 .. Libpath_Option'Last loop
+                        if Libpath_Option (Index) = '/' then
+                           Libpath_Option (Index) := '\';
+                        end if;
+                     end loop;
+
+                     Linker_Options.Table (J) := Libpath_Option;
+                  end;
+
+               --  Replace "-g" by "/DEBUG"
+               elsif Linker_Options.Table (J) (1 .. 2) = "-g" then
+                  Linker_Options.Table (J) := new String'("/DEBUG");
+
+               --  Replace "-o" by "/OUT:"
+               elsif Linker_Options.Table (J) (1 .. 2) = "-o" then
+                  Linker_Options.Table (J + 1) := new String'
+                    ("/OUT:" & Linker_Options.Table (J + 1).all);
+
+                  Linker_Options.Table (J .. Linker_Options.Last - 1) :=
+                    Linker_Options.Table (J + 1 .. Linker_Options.Last);
+                  Linker_Options.Decrement_Last;
+                  Num_Args := Num_Args - 1;
+
+               --  Replace "--stack=" by "/STACK:"
+               elsif Linker_Options.Table (J) (1 .. 8) = "--stack=" then
+                  Linker_Options.Table (J) := new String'
+                    ("/STACK:" &
+                     Linker_Options.Table (J)
+                       (9 .. Linker_Options.Table (J).all'Last));
+
+               --  Replace "-v" by its counterpart "/VERBOSE"
+               elsif Linker_Options.Table (J) (1 .. 2) = "-v" then
+                  Linker_Options.Table (J) := new String'("/VERBOSE");
+               end if;
+            end loop;
+
+            --  Add some required flags to create RTSS modules
+
+            declare
+               Flags_For_Linker : constant array (1 .. 17) of String_Access :=
+                 (new String'("/NODEFAULTLIB"),
+                  new String'("/INCREMENTAL:NO"),
+                  new String'("/NOLOGO"),
+                  new String'("/DRIVER"),
+                  new String'("/ALIGN:0x20"),
+                  new String'("/SUBSYSTEM:NATIVE"),
+                  new String'("/ENTRY:_RtapiProcessEntryCRT@8"),
+                  new String'("/RELEASE"),
+                  new String'("startupCRT.obj"),
+                  new String'("rtxlibcmt.lib"),
+                  new String'("oldnames.lib"),
+                  new String'("rtapi_rtss.lib"),
+                  new String'("Rtx_Rtss.lib"),
+                  new String'("libkernel32.a"),
+                  new String'("libws2_32.a"),
+                  new String'("libmswsock.a"),
+                  new String'("libadvapi32.a"));
+               --  These flags need to be passed to Microsoft linker. They
+               --  come from the RTX documentation.
+
+               Gcc_Lib_Path : constant String_Access := new String'
+                 ("/LIBPATH:" & Include_Dir_Default_Prefix & "\..\");
+               --  Place to look for gcc related libraries, such as libgcc
+
+            begin
+               --  Replace UNIX "/" by Windows "\" in the path
+
+               for Index in 10 .. Gcc_Lib_Path.all'Last loop
+                  if Gcc_Lib_Path (Index) = '/' then
+                     Gcc_Lib_Path (Index) := '\';
+                  end if;
+               end loop;
+
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) := Gcc_Lib_Path;
+               Num_Args := Num_Args + 1;
+
+               for Index in Flags_For_Linker'Range loop
+                  Linker_Options.Increment_Last;
+                  Linker_Options.Table (Linker_Options.Last) :=
+                    Flags_For_Linker (Index);
+                  Num_Args := Num_Args + 1;
+               end loop;
+            end;
          end if;
 
          --  Remove duplicate stack size setting from the Linker_Options
@@ -1978,6 +2119,15 @@ begin
                   Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
                   Num_Args := Num_Args + 1;
                end if;
+
+            elsif RTX_RTSS_Kernel_Module_On_Target then
+
+               --  Force the use of the static libgcc for RTSS modules
+
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) :=
+                 new String'("libgcc.a");
+               Num_Args := Num_Args + 1;
             end if;
 
          end Clean_Link_Option_Set;

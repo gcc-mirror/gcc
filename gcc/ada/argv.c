@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2007, Free Software Foundation, Inc.           *
+ *         Copyright (C) 1992-2008, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -61,7 +61,7 @@ int gnat_argc = 0;
 const char **gnat_argv = (const char **) 0;
 const char **gnat_envp = (const char **) 0;
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (RTX)
 /* Note that on Windows environment the environ point to a buffer that could
    be reallocated if needed. It means that gnat_envp needs to be updated
    before using gnat_envp to point to the right environment space */

@@ -1061,6 +1061,7 @@ __gnat_readdir (DIR *dirp, char *buffer, int *len)
   /* Not supported in RTX */
 
   return NULL;
+
 #elif defined (__MINGW32__)
   struct _tdirent *dirent = _treaddir ((_TDIR*)dirp);
 
@@ -1606,7 +1607,7 @@ __gnat_stat (char *name, struct stat *statbuf)
 int
 __gnat_file_exists (char *name)
 {
-#if defined (__MINGW32__) && !defined (RTX)
+#ifdef __MINGW32__
   /*  On Windows do not use __gnat_stat() because a bug in Microsoft
   _stat() routine. When the system time-zone is set with a negative
   offset the _stat() routine fails on specific files like CON:  */
@@ -3048,11 +3049,14 @@ __gnat_sals_init_using_constructors ()
 #endif
 }
 
+#ifdef RTX
+
 /* In RTX mode, the procedure to get the time (as file time) is different
    in RTSS mode and Win32 mode. In order to avoid duplicating an Ada file,
    we introduce an intermediate procedure to link against the corresponding
    one in each situation. */
-#ifdef RTX
+
+extern void GetTimeAsFileTime(LPFILETIME pTime);
 
 void GetTimeAsFileTime(LPFILETIME pTime)
 {
@@ -3062,6 +3066,16 @@ void GetTimeAsFileTime(LPFILETIME pTime)
   GetSystemTimeAsFileTime (pTime); /* w32 interface */
 #endif
 }
+
+#ifdef RTSS
+/* Add symbol that is required to link. It would otherwise be taken from
+   libgcc.a and it would try to use the gcc constructors that are not
+   supported by Microsoft linker. */
+
+extern void __main (void);
+
+void __main (void) {}
+#endif
 #endif
 
 #if defined (linux) || defined(__GLIBC__)

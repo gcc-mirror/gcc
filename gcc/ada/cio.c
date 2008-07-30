@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -56,6 +56,11 @@
 #undef getchar
 #endif
 
+#ifdef RTX
+#include <windows.h>
+#include <Rtapi.h>
+#endif
+
 int
 get_char (void)
 {
@@ -78,27 +83,43 @@ get_int (void)
 void
 put_int (int x)
 {
+#ifdef RTX
+   RtPrintf ("%d", x);
+#else
    /* Use fprintf rather than printf, since the latter is unbuffered
       on vxworks */
    fprintf (stdout, "%d", x);
+#endif
 }
 
 void
 put_int_stderr (int x)
 {
+#ifdef RTX
+  RtPrintf ("%d", x);
+#else
   fprintf (stderr, "%d", x);
+#endif
 }
 
 void
 put_char (int c)
 {
+#ifdef RTX
+  RtPrintf ("%c", c);
+#else
   putchar (c);
+#endif
 }
 
 void
 put_char_stderr (int c)
 {
+#ifdef RTX
+  RtPrintf ("%c", c);
+#else
   fputc (c, stderr);
+#endif
 }
 
 #ifdef __vxworks

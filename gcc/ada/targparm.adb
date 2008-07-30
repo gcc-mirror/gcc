@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,7 @@ package body Targparm is
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
+      RTX,  --   RTX_RTSS_Kernel_Module
       S64,  --   Support_64_Bit_Divides
       SAG,  --   Support_Aggregates
       SCA,  --   Support_Composite_Assign
@@ -90,6 +91,7 @@ package body Targparm is
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
+   RTX_Str : aliased constant Source_Buffer := "RTX_RTSS_Kernel_Module";
    S64_Str : aliased constant Source_Buffer := "Support_64_Bit_Divides";
    SAG_Str : aliased constant Source_Buffer := "Support_Aggregates";
    SCA_Str : aliased constant Source_Buffer := "Support_Composite_Assign";
@@ -126,6 +128,7 @@ package body Targparm is
       MOV_Str'Access,
       MRN_Str'Access,
       PAS_Str'Access,
+      RTX_Str'Access,
       S64_Str'Access,
       SAG_Str'Access,
       SCA_Str'Access,
@@ -573,6 +576,7 @@ package body Targparm is
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;
+                     when RTX => RTX_RTSS_Kernel_Module_On_Target    := Result;
                      when S64 => Support_64_Bit_Divides_On_Target    := Result;
                      when SAG => Support_Aggregates_On_Target        := Result;
                      when SCA => Support_Composite_Assign_On_Target  := Result;
