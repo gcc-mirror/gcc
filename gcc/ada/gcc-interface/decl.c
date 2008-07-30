@@ -4774,6 +4774,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 {
   tree gnu_param_name = get_entity_name (gnat_param);
   tree gnu_param_type = gnat_to_gnu_type (Etype (gnat_param));
+  tree gnu_param_type_alt = NULL_TREE;
   bool in_param = (Ekind (gnat_param) == E_In_Parameter);
   /* The parameter can be indirectly modified if its address is taken.  */
   bool ro_param = in_param && !Address_Taken (gnat_param);
@@ -4820,12 +4821,20 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
     gnu_param_type
       = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_param_type))));
 
-  /* VMS descriptors are themselves passed by reference.  */
+  /* VMS descriptors are themselves passed by reference.
+     Build both a 32bit and 64bit descriptor, one of which will be chosen
+     in fill_vms_descriptor based on the allocator size */
   if (mech == By_Descriptor)
-    gnu_param_type
-      = build_pointer_type (build_vms_descriptor (gnu_param_type,
-						  Mechanism (gnat_param),
-						  gnat_subprog));
+    {
+      gnu_param_type_alt
+        = build_pointer_type (build_vms_descriptor64 (gnu_param_type,
+						      Mechanism (gnat_param),
+						      gnat_subprog));
+      gnu_param_type
+        = build_pointer_type (build_vms_descriptor (gnu_param_type,
+						    Mechanism (gnat_param),
+						    gnat_subprog));
+    }
 
   /* Arrays are passed as pointers to element type for foreign conventions.  */
   else if (foreign
@@ -4920,6 +4929,9 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor);
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
+
+  /* Save the 64bit descriptor for later. */
+  SET_DECL_PARM_ALT (gnu_param, gnu_param_type_alt);
 
   /* If no Mechanism was specified, indicate what we're using, then
      back-annotate it.  */
@@ -7155,9 +7167,15 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       /* Do something if this is a fat pointer, in which case we
 	 may need to return the thin pointer.  */
       if (TYPE_IS_FAT_POINTER_P (type) && size < POINTER_SIZE * 2)
-	return
-	  build_pointer_type
-	    (TYPE_OBJECT_RECORD_TYPE (TYPE_UNCONSTRAINED_ARRAY (type)));
+	{
+	  enum machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
+	  if (!targetm.valid_pointer_mode (p_mode))
+	    p_mode = ptr_mode;
+	  return
+	    build_pointer_type_for_mode
+	      (TYPE_OBJECT_RECORD_TYPE (TYPE_UNCONSTRAINED_ARRAY (type)),
+	       p_mode, 0);
+	}
       break;
 
     case POINTER_TYPE:

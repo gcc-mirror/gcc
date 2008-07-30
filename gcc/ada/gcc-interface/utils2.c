@@ -2151,15 +2151,43 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 }
 
 /* Fill in a VMS descriptor for EXPR and return a constructor for it.
-   GNAT_FORMAL is how we find the descriptor record.  */
+   GNAT_FORMAL is how we find the descriptor record.  GNAT_ACTUAL is
+   how we find the allocator size which determines whether to use the
+   alternate 64bit descriptor. */
 
 tree
-fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
+fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 {
-  tree record_type = TREE_TYPE (TREE_TYPE (get_gnu_tree (gnat_formal)));
   tree field;
+  tree parm_decl = get_gnu_tree (gnat_formal);
   tree const_list = NULL_TREE;
+  int size;
+  tree record_type;
 
+  /* A string literal will always be in 32bit space on VMS. Where
+     will it be on other 64bit systems???
+     An identifier's allocation may be unknown at compile time.
+     An explicit dereference could be either in 32bit or 64bit space.
+     Don't know about other possibilities, so assume unknown which
+     will result in fetching the 64bit descriptor. ??? */
+  if (Nkind (gnat_actual) == N_String_Literal)
+    size = 32;
+  else if (Nkind (gnat_actual) == N_Identifier)
+    size = UI_To_Int (Esize (Etype (gnat_actual)));
+  else if (Nkind (gnat_actual) == N_Explicit_Dereference)
+    size = UI_To_Int (Esize (Etype (Prefix (gnat_actual))));
+  else
+    size = 0;
+
+  /* If size is unknown, make it POINTER_SIZE */
+  if (size == 0)
+    size = POINTER_SIZE;
+
+  /* If size is 64bits grab the alternate 64bit descriptor. */
+  if (size == 64)
+    TREE_TYPE (parm_decl) = DECL_PARM_ALT (parm_decl);
+
+  record_type = TREE_TYPE (TREE_TYPE (parm_decl));
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
 
