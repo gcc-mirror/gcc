@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-std=gnu99 -msse2 -mstackrealign" } */
+/* { dg-options "-std=gnu99 -msse2 -mstackrealign -mpreferred-stack-boundary=4" } */
 
 #include "sse2-check.h"
 
@@ -28,7 +28,7 @@ sse2_test (void)
   int result;
   asm ("pushl %esi");		/* Disalign runtime stack.  */
   result = self_aligning_function (g_1, g_2);
-  asm ("popl %esi");
   if (result != 42)
     abort ();
+  asm ("popl %esi");
 }

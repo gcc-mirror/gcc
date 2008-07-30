@@ -1,3 +1,93 @@
+2008-07-30  H.J. Lu  <hongjiu.lu@intel.com>
+	    Joey Ye  <joey.ye@intel.com>
+
+	* gcc.dg/dfp/func-vararg-alternate-d128-2.c: New.
+	* gcc.dg/dfp/func-vararg-mixed-2.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-1.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-1.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-3.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-apply-4.c: Likewise.
+	* gcc.dg/torture/stackalign/builtin-return-1.c: Likewise.
+	* gcc.dg/torture/stackalign/check.h: Likewise.
+	* gcc.dg/torture/stackalign/comp-goto-1.c: Likewise.
+	* gcc.dg/torture/stackalign/fastcall-1.c: Likewise.
+	* gcc.dg/torture/stackalign/global-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-5.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-6.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-1.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-2.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-3.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-4.c: Likewise.
+	* gcc.dg/torture/stackalign/non-local-goto-5.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-2.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-3.c: Likewise.
+	* gcc.dg/torture/stackalign/regparm-1.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-1.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-2.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-3.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-4.c: Likewise.
+	* gcc.dg/torture/stackalign/sibcall-1.c: Likewise.
+	* gcc.dg/torture/stackalign/stackalign.exp: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-2.c: Likewise.
+	* gcc.target/i386/align-main-1.c: Likewise.
+	* gcc.target/i386/align-main-2.c: Likewise.
+	* gcc.target/i386/pr32000-2.c: Likewise.
+	* gcc.target/i386/stackalign/asm-1.c: Likewise.
+	* gcc.target/i386/stackalign/return-1.c: Likewise.
+	* gcc.target/i386/stackalign/return-2.c: Likewise.
+	* gcc.target/i386/stackalign/return-3.c: Likewise.
+	* gcc.target/i386/stackalign/return-4.c: Likewise.
+	* gcc.target/i386/stackalign/return-5.c: Likewise.
+	* gcc.target/i386/stackalign/return-6.c: Likewise.
+	* gcc.target/i386/stackalign/stackalign.exp: Likewise.
+	* g++.dg/torture/stackalign/check.h: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-fastcall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/torture/stackalign/stackalign.exp: Likewise.
+	* g++.dg/torture/stackalign/stdcall-1.C: Likewise.
+	* g++.dg/torture/stackalign/test-unwind.h: Likewise.
+	* g++.dg/torture/stackalign/throw-1.C: Likewise.
+	* g++.dg/torture/stackalign/throw-2.C: Likewise.
+	* g++.dg/torture/stackalign/throw-3.C: Likewise.
+	* g++.dg/torture/stackalign/throw-4.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-0.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-1.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-2.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-3.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-4.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-5.C: Likewise.
+	* g++.dg/torture/stackalign/unwind-6.C: Likewise.
+
+	* gcc.target/i386/20060512-1.c: Add -mpreferred-stack-boundary=4.
+	(main): Move "popl" after check.
+	* gcc.target/i386/20060512-3.c: Likewise.
+
+	* gcc.target/i386/20060512-2.c: Add -mpreferred-stack-boundary=4.
+	Remove dg-error.
+
+	* gcc.target/i386/20060512-4.c: Add -mpreferred-stack-boundary=4.
+	Remove dg-warning.
+
+	* lib/target-supports.exp (check_effective_target_unaligned_stack):
+	Always return 0.
+	(check_effective_target_automatic_stack_alignment): New.
+
 2008-07-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36967

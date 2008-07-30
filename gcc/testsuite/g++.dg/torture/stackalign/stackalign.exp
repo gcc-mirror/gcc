@@ -1,0 +1,39 @@
+# Copyright (C) 2008
+# Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib g++-dg.exp
+
+# Only run on targets which support automatic stack alignment.
+if { ![check_effective_target_automatic_stack_alignment] } then {
+    return
+}
+
+set additional_flags ""
+if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
+    lappend additional_flags "-mstackrealign"
+    lappend additional_flags "-mpreferred-stack-boundary=5"
+}
+
+dg-init
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] $additional_flags
+if { [check_effective_target_fpic] } then {
+    lappend additional_flags "-fpic"
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] $additional_flags
+}
+dg-finish
