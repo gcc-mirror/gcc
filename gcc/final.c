@@ -1744,6 +1744,31 @@ output_alternate_entry_point (FILE *file, rtx insn)
     }
 }
 
+/* Given a CALL_INSN, find and return the nested CALL. */
+static rtx
+call_from_call_insn (rtx insn)
+{
+  rtx x;
+  gcc_assert (CALL_P (insn));
+  x = PATTERN (insn);
+
+  while (GET_CODE (x) != CALL)
+    {
+      switch (GET_CODE (x))
+	{
+	default:
+	  gcc_unreachable ();
+	case PARALLEL:
+	  x = XVECEXP (x, 0, 0);
+	  break;
+	case SET:
+	  x = XEXP (x, 1);
+	  break;
+	}
+    }
+  return x;
+}
+
 /* The final scan for one insn, INSN.
    Args are same as in `final', except that INSN
    is the insn being scanned.
@@ -2608,6 +2633,20 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	   before get_insn_template breaks if the insns is split.  */
 	targetm.asm_out.unwind_emit (asm_out_file, insn);
 #endif
+
+	if (CALL_P (insn))
+	  {
+	    rtx x = call_from_call_insn (insn);
+	    x = XEXP (x, 0);
+	    if (x && MEM_P (x) && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+	      {
+		tree t;
+		x = XEXP (x, 0);
+		t = SYMBOL_REF_DECL (x);
+		if (t)
+		  assemble_external (t);
+	      }
+	  }
 
 	/* Output assembler code from the template.  */
 	output_asm_insn (templ, recog_data.operand);
