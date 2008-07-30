@@ -776,10 +776,9 @@ replace_inc_dec (rtx *r, void *d)
       {
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (Pmode, data->size);
-	add_insn_before (data->insn, 
-			 gen_rtx_SET (Pmode, r1, 
-				      gen_rtx_PLUS (Pmode, r1, c)),
-			 NULL);
+	emit_insn_before (gen_rtx_SET (Pmode, r1, 
+				       gen_rtx_PLUS (Pmode, r1, c)),
+			  data->insn);
 	return -1;
       }
 		 
@@ -788,10 +787,9 @@ replace_inc_dec (rtx *r, void *d)
       {
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (Pmode, -data->size);
-	add_insn_before (data->insn, 
-			 gen_rtx_SET (Pmode, r1, 
-				      gen_rtx_PLUS (Pmode, r1, c)),
-			 NULL);
+	emit_insn_before (gen_rtx_SET (Pmode, r1, 
+				       gen_rtx_PLUS (Pmode, r1, c)),
+			  data->insn);
 	return -1;
       }
 	
@@ -802,8 +800,7 @@ replace_inc_dec (rtx *r, void *d)
 	   insn that contained it.  */
 	rtx add = XEXP (x, 0);
 	rtx r1 = XEXP (add, 0);
-	add_insn_before (data->insn, 
-			 gen_rtx_SET (Pmode, r1, add), NULL);
+	emit_insn_before (gen_rtx_SET (Pmode, r1, add), data->insn);
 	return -1;
       }
 
@@ -820,12 +817,12 @@ static int
 replace_inc_dec_mem (rtx *r, void *d)
 {
   rtx x = *r;
-  if (GET_CODE (x) == MEM)
+  if (x != NULL_RTX && MEM_P (x))
     {
       struct insn_size data;
 
       data.size = GET_MODE_SIZE (GET_MODE (x));
-      data.insn = (rtx)d;
+      data.insn = (rtx) d;
 
       for_each_rtx (&XEXP (x, 0), replace_inc_dec, &data);
 	

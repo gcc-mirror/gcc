@@ -1,3 +1,10 @@
+2008-07-30  Andreas Schwab  <schwab@suse.de>
+
+	PR rtl-optimization/36929
+	* dse.c (replace_inc_dec): Use emit_insn_before instead of
+	add_insn_before and fix argument order.
+	(replace_inc_dec_mem): Handle NULL rtx.
+
 2008-07-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/mips/irix-crti.asm: .hide __gcc_init and __gcc_fini.
@@ -70,9 +77,9 @@
 	Backport from mainline:
 
 	2008-05-27  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
-		    Sa Liu  <saliu@de.ibm.com> 
+		    Sa Liu  <saliu@de.ibm.com>
 
-	* config/spu/spu.c (spu_init_libfuncs): Add __multi3, __divti3, 
+	* config/spu/spu.c (spu_init_libfuncs): Add __multi3, __divti3,
 	__modti3, __udivti3, __umodti3 and __udivmodti4.
 	* config/spu/t-spu-elf (LIB2FUNCS_STATIC_EXTRA): Add files
 	that implement TImode mul and div functions.
@@ -112,7 +119,7 @@
 	* config/sh/sh.md (symGOT_load): Don't add REG_EQUAL note.
 
 2008-07-15  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/libgcc-xtensa.ver: New file.
 	* config/xtensa/t-linux (SHLIB_MAPFILES): Append libgcc-xtensa.ver.
 
@@ -196,7 +203,7 @@
 	of address in original mode before reloading address.
 
 2008-07-07  Kaz Kojima  <kkojima@gcc.gnu.org>
-	
+
 	Backport from mainline:
 	PR target/36736
 	2008-02-29  Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -250,7 +257,7 @@
        	(df_scan_free_internal): Free data structures not
 	allocated in storage pools.
 	(df_mw_hardreg_chain_delete_eq_uses): Use df_scan_free_mws_vec.
-	(df_refs_add_to_chains): Use df_scan_free_ref_vec and 
+	(df_refs_add_to_chains): Use df_scan_free_ref_vec and
 	df_scan_free_mws_vec.
 	* dse.c (dse_step6): Free offset_map_p and offset_map_n
 	unconditionally.
@@ -413,13 +420,13 @@
 
 	PR target/36424
 	* config/avr/avr.h (HARD_REGNO_RENAME_OK): Define.
-	* config/avr/avr.c (avr_hard_regno_rename_ok): New function. 
-	* config/avr/avr-protos.h (avr_hard_regno_rename_ok): New prototype. 
+	* config/avr/avr.c (avr_hard_regno_rename_ok): New function.
+	* config/avr/avr-protos.h (avr_hard_regno_rename_ok): New prototype.
 
 2008-06-15  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	PR target/36336
-	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Add check for 
+	* config/avr/avr.h (LEGITIMIZE_RELOAD_ADDRESS): Add check for
 	reg_equiv_constant.
 
 2008-06-13  Jakub Jelinek  <jakub@redhat.com>
@@ -518,17 +525,17 @@
 
 	PR target/27386
 	* config/avr/avr.h: (PUSH_ROUNDING): Remove.
-	
+
 	PR target/30243
 	* builtins.c (expand_builtin_signbit): Don't take lowpart when
-	register is already smaller or equal to required mode. 	
+	register is already smaller or equal to required mode.
 
 	PR target/34932
 	* config/avr/avr.md (*addhi3_zero_extend2): Remove.
-	
+
 	* config/avr/avr.h (MAX_OFILE_ALIGNMENT): Define.
 
-	
+
 2008-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36291
@@ -621,7 +628,7 @@
 2008-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/36321
-	* config/i386/i386.md (allocate_stack_worker_64): Make sure 
+	* config/i386/i386.md (allocate_stack_worker_64): Make sure
 	argument operand in rax isn't removed.
 
 2008-05-23  Uros Bizjak  <ubizjak@gmail.com>
@@ -976,7 +983,7 @@
 2008-04-25  Pompapathi V Gadad <Pompapathi.V.Gadad@nsc.com>
 
 	* config.gcc (crx-*-elf): Remove deprecation.
-	
+
 2008-04-24  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline:
@@ -1206,7 +1213,7 @@
 
 	* doc/invoke.texi (-O3): Add -ftree-vectorize to the list of
 	optimizations turned on under -O3.
-	(ftree-vectorize): Add that the flag is turned on with -O3.	
+	(ftree-vectorize): Add that the flag is turned on with -O3.
 
 2008-03-19  Michael Matz  <matz@suse.de>
 
@@ -1514,7 +1521,7 @@
 	* config/rs6000/rs6000.c (rs6000_init_builtins): Call
 	SUBTARGET_INIT_BUILTINS if defined.
 	* config/darwin.c (darwin_patch_builtin,
-	darwin_patch_builtins): New functions. 
+	darwin_patch_builtins): New functions.
 
 2008-02-27  Richard Guenther  <rguenther@suse.de>
 
@@ -1591,7 +1598,7 @@
 
 	* config/h8300/h8300.c (h8300_expand_epilogue): Emit return insn
 	as a jump, not as a plain insn.
-	
+
 2008-02-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
@@ -1659,7 +1666,7 @@
 
 	Revert:
 
-	2008-02-15  Uros Bizjak  <ubizjak@gmail.com>	
+	2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
 	* config/i386/sfp-machine.h (CMPtype): Define as typedef using
 	libgcc_cmp_return mode.
 
@@ -1835,7 +1842,7 @@
 	Add -fdump-ipa-inline.
 	* tree-dump.c (dump_files): Remove tree-inlined dump.
 	* tree-pass.h (tree_dump_index): Remove TDI_inlined.
-	
+
 2008-02-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35171
@@ -1925,7 +1932,7 @@
 
 2008-02-08  Sa Liu  <saliu@de.ibm.com>
 
-	* config/spu/spu-builtins.def: Fixed wrong parameter type in spu 
+	* config/spu/spu-builtins.def: Fixed wrong parameter type in spu
 	intrinsics spu_convts, spu_convtu, spu_convtf.
 	* testsuite/gcc.target/spu/intrinsics-3.c: New. Test error messages.
 
@@ -1941,7 +1948,7 @@
 	optc-gen.awk.
 	* opts-common.c: Likewise.
 	* optc-gen.awk: Likewise.
-	
+
 2008-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h (FUNCTION_ARG_REGNO_P): Fix fprs for 64 bit.
@@ -1950,7 +1957,7 @@
 
 	PR rtl-opt/33410
 	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use an
-	EXPR_LIST for the REG_EQUAL instead of a comparison with a 
+	EXPR_LIST for the REG_EQUAL instead of a comparison with a
 	funny mode.
 
 2008-02-07  Uros Bizjak  <ubizjak@gmail.com>
@@ -1987,7 +1994,7 @@
 
 2008-02-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
-	* config/arm/rtems-elf.h (TARGET_OS_CPP_BUILTINS): Add 
+	* config/arm/rtems-elf.h (TARGET_OS_CPP_BUILTINS): Add
 	builtin_define ("__USE_INIT_FINI__").
 	* config/h8300/t-rtems (MULTILIB_OPTION,MULTILIB_DIRNAMES): Add
 	-msx multilibs.
@@ -2120,16 +2127,16 @@
 	* doc/c-tree.texi (Types): Fix grammar.
 	(Expression trees): Ditto.
 	* doc/passes.texi (Tree-SSA passes): Ditto.
-	
+
 	* doc/configterms.texi (Configure Terms): Fix typo.
 	* doc/cpp.texi (Common Predefined Macros): Ditto.
 	* doc/md.texi (Machine Constraints): Ditto.
-	
+
 	* doc/makefile.texi (Makefile): Add comma.
 
 2008-01-31  Tom Browder  <tom.browder@gmail.com>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/sourcebuild.texi (Front End): Remove references to CVS
 	and CVSROOT/modules.
 	(Texinfo Manuals): Replace reference to CVS by one to SVN.
@@ -2150,7 +2157,7 @@
 	options. Minor fixes.
 	(-std): Move reference to standards closer to where language
 	standards are first mentioned.
-	
+
 2008-01-31  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/34995
@@ -2246,7 +2253,7 @@
 2008-01-28  Andy Hutchinson   <hutchinsonandy@netscape.net>
 
 	PR target/34412
-	* config/avr/avr.c (expand_prologue): Use correct QI mode frame 
+	* config/avr/avr.c (expand_prologue): Use correct QI mode frame
 	pointer for tiny stack.
 
 2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
@@ -2331,7 +2338,7 @@
 	Change type of cost to comp_cost.
 	(determine_iv_cost): Increase cost of non-original ivs, instead
 	of decreasing the cost of original ones.
-	(get_address_cost): Indicate the complexity of the addressing mode 
+	(get_address_cost): Indicate the complexity of the addressing mode
 	in comp_cost.
 	(try_add_cand_for): Prefer using ivs not specific to some object.
 	* tree-flow.h (force_expr_to_var_cost): Declaration removed.
@@ -2574,10 +2581,10 @@
 	* ipa-struct-reorg.c (remove_str_allocs_in_func, remove_str_allocs):
 	New functions.
 	(remove_structure): Update allocations list before removing structure.
-	
+
 2008-01-25  Golovanevsky Olga  <olga@il.ibm.com>
 
-	* ipa-struct-reorg.c (is_safe_cond_expr, 
+	* ipa-struct-reorg.c (is_safe_cond_expr,
 	create_new_stmts_for_cond_expr): Use integer_zerop function,
 	that recognize not only zero-pointer, but zero-integer too.
 
@@ -2633,7 +2640,7 @@
 
 	PR c++/25701
 	* doc/gcc.texi (Software development): Add a direntry for g++.
-	
+
 2008-01-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (CC1PLUS_SPEC, OPTIMIZATION_OPTIONS): Drop
@@ -2661,17 +2668,17 @@
 	(avr_arch_types): Add 'avr31' and 'avr51' entries.
 	(avr_arch): Add 'ARCH_AVR31' and 'ARCH_AVR51'.
 	(avr_mcu_types): Add 'avr31' and 'avr51' architectures.
-	(avr_override_options): Init 'avr_current_arch'. 
+	(avr_override_options): Init 'avr_current_arch'.
 	(base_arch_s): Move from here...
-	* config/avr/avr.h (base_arch_s): ... here. Add new members 
-	'have_elpm', 'have_elpmx', 'have_eijmp_eicall', 'reserved'. Rename 
+	* config/avr/avr.h (base_arch_s): ... here. Add new members
+	'have_elpm', 'have_elpmx', 'have_eijmp_eicall', 'reserved'. Rename
 	'mega' to 'have_jmp_call'.
-	(TARGET_CPU_CPP_BUILTINS): Define "__AVR_HAVE_JMP_CALL__", 
+	(TARGET_CPU_CPP_BUILTINS): Define "__AVR_HAVE_JMP_CALL__",
 	"__AVR_HAVE_RAMPZ__", 	"__AVR_HAVE_ELPM__" and  "__AVR_HAVE_ELPMX__"
 	macros.
-	(LINK_SPEC, CRT_BINUTILS_SPECS, ASM_SPEC): Add 'avr31' and 'avr51' 
+	(LINK_SPEC, CRT_BINUTILS_SPECS, ASM_SPEC): Add 'avr31' and 'avr51'
 	architectures.
-	* config/avr/t-avr (MULTILIB_OPTIONS, MULTILIB_DIRNAMES, 
+	* config/avr/t-avr (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
 	MULTILIB_MATCHES): (Ditto.).
 
 2008-01-23  Richard Guenther  <rguenther@suse.de>
@@ -2841,7 +2848,7 @@
 
 2008-01-21  Alon Dayan  <alond@il.ibm.com>
 	    Olga Golovanevsky  <olga@il.ibm.com>
-	
+
 	PR tree-optimization/34701
 	* ipa-struct-reorg.c (gen_size): Fix the malloc parameter calculation
 	when the structure size is not a power of 2.
@@ -2849,7 +2856,7 @@
 2008-01-20  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* doc/install.texi: Add doc for --enable-checking=df.
-	
+
 2008-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/34808
@@ -2923,7 +2930,7 @@
 	(df_live_init): Init the df_live sets only with the variables
 	found live by df_lr.
 	(df_live_transfer_function): Use the df_lr sets to prune the
-	df_live sets as they are being computed.  
+	df_live sets as they are being computed.
 	(df_live_free): Free df_live_scratch.
 
 2008-01-18  Ian Lance Taylor  <iant@google.com>
@@ -3105,7 +3112,7 @@
 
 2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* tree-data-ref.c (subscript_dependence_tester_1): Call 
+	* tree-data-ref.c (subscript_dependence_tester_1): Call
 	free_conflict_function.
 	(compute_self_dependence): Same.
 
@@ -3144,7 +3151,7 @@
 	PR c++/24924
 	* c-opts (c_common_post_options): Do not enable CPP
 	flag_pedantic_errors by default.
-	
+
 2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/31944
@@ -3206,9 +3213,9 @@
 	correct type.
 
 2008-01-11  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (override_options): Set flag_shlib.
-	
+
 2008-01-11  James E. Wilson  <wilson@specifix.com>
 
 	PR target/26015
@@ -3216,8 +3223,8 @@
 
 2008-01-11  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr.c (expand_prologue, expand_epilogue): Don't 
-	save/restore frame pointer register and don't use 'call-prologues' 
+	* config/avr/avr.c (expand_prologue, expand_epilogue): Don't
+	save/restore frame pointer register and don't use 'call-prologues'
 	optimization in function with "OS_task" attribute.
 
 2008-01-11  Eric Botcazou  <ebotcazou@adacore.com>
@@ -3343,13 +3350,13 @@
 
 	2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
 	* config/i386/i386.c (ix86_builtin_reciprocal): Remove check
-	for TARGET_RECIP.	
-	
+	for TARGET_RECIP.
+
 2008-01-08  Jan Sjodin  <jan.sjodin@amd.com>
-	
+
 	* config/i386/i386.c (k8_cost, amdfam10_cost): Branch costs
 	for vectorization tuned.
-	
+
 2008-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34683
