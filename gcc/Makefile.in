@@ -113,15 +113,6 @@ VPATH = @srcdir@
 vpath %.texi $(gcc_docdir)
 vpath %.texi $(gcc_docdir)/include
 
-# ----
-# Default values for variables overridden in Makefile fragments.
-# These need to be quite early in the Makefile so as to avoid
-# trouble induced by changes in fragment ordering.
-# ----
-
-# For ada/Make-lang.in; overridden in, for example, config/pa/x-ada.
-X_ADA_CFLAGS =
-
 # --------
 # UNSORTED
 # --------
@@ -136,9 +127,11 @@ SUBDIRS =@subdirs@ build
 CONFIG_LANGUAGES = @all_selected_languages@
 LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 
-# Various ways of specifying flags for compilations:
+# Default values for variables overridden in Makefile fragments.
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
 # TCFLAGS is used for compilations with the GCC just built.
+# T_CFLAGS is used for all compilations and is overridden by t-* files.
+T_CFLAGS =
 TCFLAGS =
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -197,9 +190,6 @@ dominance.o-warn = -Wno-error
 WARN_CFLAGS = @warn_cflags@
 
 CPPFLAGS = @CPPFLAGS@
-
-# These exists to be overridden by the x-* and t-* files, respectively.
-T_CFLAGS =
 
 AWK = @AWK@
 CC = @CC@

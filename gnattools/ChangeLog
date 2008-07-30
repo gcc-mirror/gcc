@@ -1,3 +1,14 @@
+2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (x_ada_cflags): Remove.
+	(ADA_CFLAGS): Substitute.
+	* configure: Regenerate.
+	* Makefile.in (ADA_CFLAGS): Substitute.
+	(T_ADA_CFLAGS, X_ADA_CFLAGS, ALL_ADA_CFLAGS): Remove.
+	(TOOLS_FLAGS_TO_PASS_1, TOOLS_FLAGS_TO_PASS_1re,
+	TOOLS_FLAGS_TO_PASS_NATIVE, TOOLS_FLAGS_TO_PASS_CROSS):
+	Pass ADA_CFLAGS.
+
 2008-07-30  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/5911

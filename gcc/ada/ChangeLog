@@ -1,3 +1,18 @@
+2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc-interface/Make-lang.in (ALL_ADAFLAGS): Remove X_ADAFLAGS and
+	T_ADAFLAGS, replace ALL_ADA_CFLAGS with ADA_CFLAGS.
+	(ALL_ADA_CFLAGS): Remove, replace throughout with ADA_CFLAGS.
+	* gcc-interface/Makefile.in (XCFLAGS, X_CFLAGS, X_CPPFLAGS, T_CPPFLAGS,
+	X_ADA_CFLAGS, T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS, ADA_CFLAGS,
+	ALL_ADA_CFLAGS): Remove.
+	(ALL_ADAFLAGS, MOST_ADAFLAGS): Remove X_ADAFLAGS and T_ADAFLAGS,
+	replace ALL_ADA_CFLAGS with ADA_CFLAGS.
+	(GCC_CFLAGS): Remove X_CFLAGS.
+	(LOOSE_CFLAGS): Remove X_CFLAGS and XCFLAGS.
+	(ALL_CPPFLAGS): Remove X_CPPFLAGS and T_CPPFLAGS.
+	(ADA_CFLAGS): Substitute.
+
 2008-07-30  Laurent Guerby  <laurent@guerby.net>
 
         PR ada/5911

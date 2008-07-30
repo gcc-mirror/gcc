@@ -226,6 +226,7 @@ flags_to_pass = { flag= YACC ; };
 
 // Host tools
 flags_to_pass = { flag= ADAFLAGS ; optional=true ; };
+flags_to_pass = { flag= ADA_CFLAGS ; };
 flags_to_pass = { flag= AR_FLAGS ; };
 flags_to_pass = { flag= BOOT_ADAFLAGS ; optional=true ; };
 flags_to_pass = { flag= BOOT_CFLAGS ; };

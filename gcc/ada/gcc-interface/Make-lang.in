@@ -55,11 +55,9 @@ else
 ADAFLAGS= $(COMMON_ADAFLAGS)
 endif
 
-ALL_ADAFLAGS = $(CFLAGS) $(ALL_ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) \
-	$(ADAFLAGS)
+ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
-ALL_ADA_CFLAGS = $(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
 ADA_INCLUDES = -nostdinc -I- -I. -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
@@ -76,9 +74,9 @@ ADA_FLAGS_TO_PASS = \
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
 
-# FIXME: need to add $(ALL_ADA_CFLAGS) to .c.o suffix rule
+# FIXME: need to add $(ADA_CFLAGS) to .c.o suffix rule
 # Use loose warnings for this front end, but add some special flags
-ada-warn = $(ALL_ADA_CFLAGS) $(WERROR)
+ada-warn = $(ADA_CFLAGS) $(WERROR)
 # unresolved warnings in a couple of files
 ada/tracebak.o-warn = -Wno-error
 ada/b_gnat1.o-warn = -Wno-error
@@ -1058,25 +1056,25 @@ ada/targext.o : ada/targext.c $(SYSTEM_H) coretypes.h $(TM_H)
 		$< $(OUTPUT_OPTION)
 
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/init.o    : ada/init.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/initialize.o : ada/initialize.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/raise.o   : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
 ada/tracebak.o  : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	      -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
 ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
