@@ -659,21 +659,21 @@ package body Make is
    -- Compiler, Binder & Linker Data and Subprograms --
    ----------------------------------------------------
 
-   Gcc             : String_Access := Program_Name ("gcc", "gnatmake");
-   Gnatbind        : String_Access := Program_Name ("gnatbind", "gnatmake");
-   Gnatlink        : String_Access := Program_Name ("gnatlink", "gnatmake");
+   Gcc      : String_Access := Program_Name ("gcc", "gnatmake");
+   Gnatbind : String_Access := Program_Name ("gnatbind", "gnatmake");
+   Gnatlink : String_Access := Program_Name ("gnatlink", "gnatmake");
    --  Default compiler, binder, linker programs
 
-   Saved_Gcc       : String_Access := null;
-   Saved_Gnatbind  : String_Access := null;
-   Saved_Gnatlink  : String_Access := null;
+   Saved_Gcc      : String_Access := null;
+   Saved_Gnatbind : String_Access := null;
+   Saved_Gnatlink : String_Access := null;
    --  Given by the command line. Will be used, if non null
 
-   Gcc_Path        : String_Access :=
+   Gcc_Path      : String_Access :=
                        GNAT.OS_Lib.Locate_Exec_On_Path (Gcc.all);
-   Gnatbind_Path   : String_Access :=
+   Gnatbind_Path : String_Access :=
                        GNAT.OS_Lib.Locate_Exec_On_Path (Gnatbind.all);
-   Gnatlink_Path   : String_Access :=
+   Gnatlink_Path : String_Access :=
                        GNAT.OS_Lib.Locate_Exec_On_Path (Gnatlink.all);
    --  Path for compiler, binder, linker programs, defaulted now for gnatdist.
    --  Changed later if overridden on command line.
