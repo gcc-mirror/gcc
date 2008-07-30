@@ -1,4 +1,4 @@
-2008-07-25  Olivier Hainque  <hainque@adacore.com>
+2008-07-30  Olivier Hainque  <hainque@adacore.com>
 
 	* config/mips/irix-crti.asm: .hide __gcc_init and __gcc_fini.
 	* config/mips/iris6.h (IRIX_SUBTARGET_LINK_SPEC, irix ld): Hide
