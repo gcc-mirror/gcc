@@ -146,14 +146,14 @@ package Prj.Util is
    --  the last character of each line, if possible.
 
    type Text_File is limited private;
-   --  Represents a text file. Default is invalid text file
+   --  Represents a text file (default is invalid text file)
 
    function Is_Valid (File : Text_File) return Boolean;
-   --  Returns True if File designates an open text file that
-   --  has not yet been closed.
+   --  Returns True if File designates an open text file that has not yet been
+   --  closed.
 
    procedure Open (File : out Text_File; Name : String);
-   --  Open a text file. If this procedure fails, File is invalid
+   --  Open a text file to read (file is invalid if text file cannot be opened)
 
    function End_Of_File (File : Text_File) return Boolean;
    --  Returns True if the end of the text file File has been reached. Fails if
@@ -163,7 +163,7 @@ package Prj.Util is
      (File : Text_File;
       Line : out String;
       Last : out Natural);
-   --  Reads a line from an open text file. Fails if File is invalid
+   --  Reads a line from an open text file (fails if file is invalid)
 
    procedure Close (File : in out Text_File);
    --  Close an open text file. File becomes invalid. Fails if File is already

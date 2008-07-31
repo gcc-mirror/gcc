@@ -1251,9 +1251,6 @@ package Prj is
       Ada_Sources : String_List_Id := Nil_String;
       --  The list of all the Ada source file names (gnatmake only)
 
-      Sources : String_List_Id := Nil_String;
-      --  Identical to Ada_Sources (for upward compatibility with GPS)
-
       First_Source : Source_Id := No_Source;
       Last_Source  : Source_Id := No_Source;
       --  Head and tail of the list of sources

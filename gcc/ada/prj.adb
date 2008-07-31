@@ -114,7 +114,6 @@ package body Prj is
                       Ada_Sources_Present            => True,
                       Other_Sources_Present          => True,
                       Ada_Sources                    => Nil_String,
-                      Sources                        => Nil_String,
                       First_Source                   => No_Source,
                       Last_Source                    => No_Source,
                       Interfaces_Defined             => False,
