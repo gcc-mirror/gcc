@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,7 @@ package System.Regexp is
       Glob           : Boolean := False;
       Case_Sensitive : Boolean := True) return Regexp;
    --  Compiles a regular expression S. If the syntax of the given
-   --  expression is invalid (does not match above grammar, Error_In_Regexp
+   --  expression is invalid (does not match above grammar), Error_In_Regexp
    --  is raised. If Glob is True, the pattern is considered as a 'globbing
    --  pattern', that is a pattern as given by the second grammar above.
    --  As a special case, if Pattern is the empty string it will always
