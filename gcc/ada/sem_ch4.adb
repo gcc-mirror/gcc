@@ -6380,9 +6380,15 @@ package body Sem_Ch4 is
          -----------------------------
 
          function Valid_First_Argument_Of (Op : Entity_Id) return Boolean is
-            Typ : constant Entity_Id := Etype (First_Formal (Op));
+            Typ : Entity_Id := Etype (First_Formal (Op));
 
          begin
+            if Is_Concurrent_Type (Typ)
+              and then Present (Corresponding_Record_Type (Typ))
+            then
+               Typ := Corresponding_Record_Type (Typ);
+            end if;
+
             --  Simple case. Object may be a subtype of the tagged type or
             --  may be the corresponding record of a synchronized type.
 
