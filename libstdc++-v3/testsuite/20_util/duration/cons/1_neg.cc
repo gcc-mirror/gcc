@@ -41,6 +41,6 @@ test02()
 
 // { dg-error "instantiated from here" "" { target *-*-* } 30 }
 // { dg-error "instantiated from here" "" { target *-*-* } 39 }
-// { dg-error "not exactly representable" "" { target *-*-* } 203 }
-// { dg-error "integral duration with floating point" "" { target *-*-* } 187 }
+// { dg-error "not exactly representable" "" { target *-*-* } 218 }
+// { dg-error "integral duration with floating point" "" { target *-*-* } 208 }
 // { dg-excess-errors "In instantiation of" }

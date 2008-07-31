@@ -166,36 +166,51 @@ namespace std
         { return numeric_limits<_Rep>::min(); }
       };
 
+    template<typename _Tp>
+      struct __is_duration
+      : std::false_type
+      { };
+
+    template<typename _Rep, typename _Period>
+      struct __is_duration<duration<_Rep, _Period>>
+      : std::true_type
+      { };
+
+    template<typename T>
+      struct __is_ratio
+      : std::false_type
+      { };
+
+    template<intmax_t _Num, intmax_t _Den>
+      struct __is_ratio<ratio<_Num, _Den>>
+      : std::true_type
+      { };
+
     /// duration
     template<typename _Rep, typename _Period>
       struct duration
       {
+	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
+	static_assert(__is_ratio<_Period>::value, 
+		      "period must be a specialization of ratio");
         static_assert(_Period::num > 0, "period must be positive");
         
         typedef _Rep    rep;
         typedef _Period period;
         
-        // construction / destruction  
-        duration ()
-        : __r(rep(0))
-        { }
+        // 20.8.3.1 construction / copy / destroy
+	duration() = default;
 
         template<typename _Rep2>
           explicit duration(_Rep2 const& __rep)
           : __r(static_cast<rep>(__rep))
           {
-            static_assert(is_convertible<_Rep2,rep>::value == true 
-              && (treat_as_floating_point<rep>::value == true 
-              || (!treat_as_floating_point<rep>::value 
-              && !treat_as_floating_point<_Rep2>::value)), 
-              "cannot construct integral duration with floating point type");
+            static_assert(is_convertible<_Rep2,rep>::value 
+			  && (treat_as_floating_point<rep>::value 
+			      || !treat_as_floating_point<_Rep2>::value),
+	      "cannot construct integral duration with floating point type");
           }
 
-        duration(const duration& __d)
-        : __r(__d.count())
-        { }
-
-        // conversions
         template<typename _Rep2, typename _Period2>
           duration(const duration<_Rep2, _Period2>& __d)
           : __r(duration_cast<duration>(__d).count())
@@ -205,12 +220,16 @@ namespace std
               "the resulting duration is not exactly representable");
           }
 
-        // observer
+	~duration() = default;
+	duration(const duration&) = default;
+	duration& operator=(const duration&) = default;
+
+        // 20.8.3.2 observer
         rep
         count() const
         { return __r; }
 
-        // arithmetic
+        // 20.8.3.3 arithmetic
         duration
         operator+() const 
         { return *this; }
@@ -269,7 +288,7 @@ namespace std
           return *this;
         }
 
-        // special values
+        // 20.8.3.4 special values
         // TODO: These should be constexprs.
         static const duration
         zero()
@@ -324,22 +343,12 @@ namespace std
       operator*(const _Rep2& __s, const duration<_Rep1, _Period>& __d)
       { return __d * __s; }
 
-    template<typename _Tp>
-      struct __is_not_duration
-      : std::true_type
-      { };
-    
-    template<typename _Rep, typename _Period>
-      struct __is_not_duration<duration<_Rep, _Period>>
-      : std::false_type
-      { };
-  
     template<typename _Tp, typename _Up, typename _Ep = void>
       struct __division_impl;
   
     template<typename _Rep1, typename _Period, typename _Rep2>
       struct __division_impl<duration<_Rep1, _Period>, _Rep2, 
-        typename enable_if<__is_not_duration<_Rep2>::value>::type>
+        typename enable_if<!__is_duration<_Rep2>::value>::type>
       {
         typedef typename common_type<_Rep1, _Rep2>::type __cr;
         typedef 
