@@ -6414,6 +6414,10 @@ package body Sem_Ch4 is
          --  corresponding record (base) type.
 
          if Is_Concurrent_Type (Obj_Type) then
+            if not Present (Corresponding_Record_Type (Obj_Type)) then
+               return False;
+            end if;
+
             Corr_Type := Base_Type (Corresponding_Record_Type (Obj_Type));
             Elmt := First_Elmt (Primitive_Operations (Corr_Type));
 
