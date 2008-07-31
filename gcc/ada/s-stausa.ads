@@ -304,10 +304,6 @@ private
       Result_Id : Positive;
       --  Id of the result. If less than value given to gnatbind -u corresponds
       --  to the location in the result array of result for the current task.
-
-      Stack_Used_When_Filling : Natural := 0;
-      --  Amount of stack that was already used when actually filling the
-      --  memory, and therefore not analyzed.
    end record;
 
    Environment_Task_Analyzer : Stack_Analyzer;
