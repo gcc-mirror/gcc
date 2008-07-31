@@ -1,3 +1,16 @@
+2008-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_disp.adb (Prim_Op_Kind): Retrieve the full view when a private
+	tagged type is completed by a concurrent type.
+
+2008-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb:
+	(Resolve_Record_Aggregate): Bypass error that a type without
+	components must have a "null record" aggregate when compiling for Ada
+	2005, since it's legal to give an aggregate of form (others => <>)
+	for such a type.
+
 2008-07-31  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch4.adb (Valid_First_Argument_Of): Complete its functionality to
