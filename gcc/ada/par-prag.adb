@@ -1054,6 +1054,7 @@ begin
            Pragma_Atomic                        |
            Pragma_Atomic_Components             |
            Pragma_Attach_Handler                |
+           Pragma_Canonical_Streams             |
            Pragma_Check                         |
            Pragma_Check_Name                    |
            Pragma_Check_Policy                  |

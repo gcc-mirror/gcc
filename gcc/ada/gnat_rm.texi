@@ -104,6 +104,7 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Canonical_Streams::
 * Pragma Check::
 * Pragma Check_Name::
 * Pragma Check_Policy::
@@ -705,6 +706,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Canonical_Streams::
 * Pragma Check::
 * Pragma Check_Name::
 * Pragma Check_Policy::
@@ -1056,6 +1058,27 @@ You can also pass records by copy by specifying the convention
 @code{C_Pass_By_Copy} for the record type, or by using the extended
 @code{Import} and @code{Export} pragmas, which allow specification of
 passing mechanisms on a parameter by parameter basis.
+
+@node Pragma Canonical_Streams
+@unnumberedsec Canonical Streams
+@cindex Canonical streams
+@findex Canonical_Streams
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Canonical_Streams;
+@end smallexample
+
+@noindent
+This configuration pragma affects the behavior of stream attributes of any 
+@code{String}, @code{Wide_String} or @code{Wide_Wide_String} based type. When 
+this pragma is present, @code{'Input}, @code{'Output}, @code{'Read} and 
+@code{'Write} exibit Ada 95 canonical behavior, in other words, streaming of 
+values is done character by character.
+
+@noindent
+The use of this pragma is intended to bypass any implementation-related 
+optimizations allowed by Ada 2005 RM 13.13.2 (56/2) Implementation Permission.
 
 @node Pragma Check
 @unnumberedsec Pragma Check
