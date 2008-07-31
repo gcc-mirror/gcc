@@ -1564,9 +1564,14 @@ package body Sem_Ch6 is
          --  Subprogram_Specification. In such cases, we undo the change
          --  made by the analysis of the specification and try to find the
          --  spec again.
+         --  Note that wrappers already have their corresponding specs and
+         --  bodies set during their creation, so if the candidate spec is
+         --  a wrapper, then we definately need to swap all types to their
+         --  original concurrent status.
 
-         if No (Spec_N) then
-
+         if No (Spec_N)
+           or else Is_Primitive_Wrapper (Spec_N)
+         then
             --  Restore all references of corresponding record types to the
             --  original concurrent types.
 
