@@ -127,7 +127,11 @@ mkstemps (char *pattern, int suffix_len)
       if (fd >= 0)
 	/* The file does not exist.  */
 	return fd;
-      if (errno != EEXIST)
+      if (errno != EEXIST
+#ifdef EISDIR
+	  && errno != EISDIR
+#endif
+	 )
 	/* Fatal error (EPERM, ENOSPC etc).  Doesn't make sense to loop.  */
 	break;
 
