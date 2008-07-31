@@ -2368,13 +2368,19 @@ that for inlining to actually occur as a result of the use of this switch,
 it is necessary to compile in optimizing mode.
 
 @cindex @option{-gnatN} switch
-The use of @option{-gnatN} activates a more extensive inlining optimization
+The use of @option{-gnatN} activates  inlining optimization
 that is performed by the front end of the compiler. This inlining does
 not require that the code generation be optimized. Like @option{-gnatn},
 the use of this switch generates additional dependencies.
 Note that
 @option{-gnatN} automatically implies @option{-gnatn} so it is not necessary
 to specify both options.
+
+When using a gcc-based back end (in practice this means using any version
+of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+@option{-gnatN} is deprecated, and the use of @option{-gnatn} is preferred.
+Historically front end inlining was more extensive than the gcc back end
+inlining, but that is no longer the case.
 
 @item
 If an object file @file{O} depends on the proper body of a subunit through

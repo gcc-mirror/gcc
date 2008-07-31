@@ -3792,6 +3792,13 @@ package Sort is
 end Sort;
 @end smallexample
 
+@noindent
+Note: postcondition pragmas associated with subprograms that are
+marked as Inline_Always, or those marked as Inline with front-end
+inlining (-gnatN option set) are accepted and legality-checked
+by the compiler, but are ignored at run-time even if postcondition
+checking is enabled.
+
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -3826,12 +3833,21 @@ package Math_Functions is
 end Math_Functions;
 @end smallexample
 
-@code{Postcondition} pragmas may appear either immediate following the
+@noindent
+@code{Precondition} pragmas may appear either immediate following the
 (separate) declaration of a subprogram, or at the start of the
 declarations of a subprogram body. Only other pragmas may intervene
 (that is appear between the subprogram declaration and its
 postconditions, or appear before the postcondition in the
 declaration sequence in a subprogram body).
+
+Note: postcondition pragmas associated with subprograms that are
+marked as Inline_Always, or those marked as Inline with front-end
+inlining (-gnatN option set) are accepted and legality-checked
+by the compiler, but are ignored at run-time even if postcondition
+checking is enabled.
+
+
 
 @node Pragma Profile (Ravenscar)
 @unnumberedsec Pragma Profile (Ravenscar)
