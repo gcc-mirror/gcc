@@ -1,3 +1,31 @@
+2008-07-31  Bob Duff  <duff@adacore.com>
+
+	* sinput.adb (Skip_Line_Terminators): Fix handling of LF/CR -- it was
+	recognized as two end-of-lines, but it should be just one.
+
+2008-07-31  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting
+
+	* tbuild.ads: Fix several occurrences of incorrectly referring to
+	Name_Find as Find_Name.
+
+2008-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Aggr_Size_OK): If the aggregate has a single component
+	and the context is an object declaration with non-static bounds, treat
+	the aggregate as non-static.
+
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb, prj-part.ads, prj.adb, prj.ads, prj-env.adb:
+	Move back spec of Parse_Single_Project to body, as it is not called
+	outside of package Prj.Part.
+	(Project_Data): Remove components Linker_Name, Linker_Path and
+	Minimum_Linker_Options as they are no longer set.
+	Remove function There_Are_Ada_Sources from package Prj and move code
+	in the only place it was used, in Prj.Env.Set_Ada_Paths.
+
 2008-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb (Spec_PPC): Now defined for generic subprograms
