@@ -13674,6 +13674,22 @@ is_redundant_typedef (const_tree decl)
   return 0;
 }
 
+/* Returns the DIE for a context.  */
+
+static inline dw_die_ref
+get_context_die (tree context)
+{
+  if (context)
+    {
+      /* Find die that represents this context.  */
+      if (TYPE_P (context))
+	return force_type_die (context);
+      else
+	return force_decl_die (context);
+    }
+  return comp_unit_die;
+}
+
 /* Returns the DIE for decl.  A DIE will always be returned.  */
 
 static dw_die_ref
@@ -13685,18 +13701,7 @@ force_decl_die (tree decl)
   decl_die = lookup_decl_die (decl);
   if (!decl_die)
     {
-      dw_die_ref context_die;
-      tree decl_context = DECL_CONTEXT (decl);
-      if (decl_context)
-	{
-	  /* Find die that represents this context.  */
-	  if (TYPE_P (decl_context))
-	    context_die = force_type_die (decl_context);
-	  else
-	    context_die = force_decl_die (decl_context);
-	}
-      else
-	context_die = comp_unit_die;
+      dw_die_ref context_die = get_context_die (DECL_CONTEXT (decl));
 
       decl_die = lookup_decl_die (decl);
       if (decl_die)
@@ -13751,16 +13756,7 @@ force_type_die (tree type)
   type_die = lookup_type_die (type);
   if (!type_die)
     {
-      dw_die_ref context_die;
-      if (TYPE_CONTEXT (type))
-	{
-	  if (TYPE_P (TYPE_CONTEXT (type)))
-	    context_die = force_type_die (TYPE_CONTEXT (type));
-	  else
-	    context_die = force_decl_die (TYPE_CONTEXT (type));
-	}
-      else
-	context_die = comp_unit_die;
+      dw_die_ref context_die = get_context_die (TYPE_CONTEXT (type));
 
       type_die = modified_type_die (type, TYPE_READONLY (type),
 				    TYPE_VOLATILE (type), context_die);
@@ -14064,16 +14060,11 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
 
   /* Get the scope die for decl context. Use comp_unit_die for global module
      or decl. If die is not found for non globals, force new die.  */
-  if (!context)
-    scope_die = comp_unit_die;
-  else if (TYPE_P (context))
-    {
-      if (!should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
-	return;
-    scope_die = force_type_die (context);
-    }
-  else
-    scope_die = force_decl_die (context);
+  if (context
+      && TYPE_P (context)
+      && !should_emit_struct_debug (context, DINFO_USAGE_DIR_USE))
+    return;
+  scope_die = get_context_die (context);
 
   /* For TYPE_DECL or CONST_DECL, lookup TREE_TYPE.  */
   if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
@@ -14082,6 +14073,16 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
 	at_import_die = base_type_die (TREE_TYPE (decl));
       else
 	at_import_die = force_type_die (TREE_TYPE (decl));
+      /* For namespace N { typedef void T; } using N::T; base_type_die
+	 returns NULL, but DW_TAG_imported_declaration requires
+	 the DW_AT_import tag.  Force creation of DW_TAG_typedef.  */
+      if (!at_import_die)
+	{
+	  gcc_assert (TREE_CODE (decl) == TYPE_DECL);
+	  gen_typedef_die (decl, get_context_die (DECL_CONTEXT (decl)));
+	  at_import_die = lookup_type_die (TREE_TYPE (decl));
+	  gcc_assert (at_import_die);
+	}
     }
   else
     {
@@ -14093,21 +14094,14 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
 	  if (TREE_CODE (decl) == FIELD_DECL)
 	    {
 	      tree type = DECL_CONTEXT (decl);
-	      dw_die_ref type_context_die;
 
-	      if (TYPE_CONTEXT (type))
-		if (TYPE_P (TYPE_CONTEXT (type)))
-		  {
-		    if (!should_emit_struct_debug (TYPE_CONTEXT (type),
-						   DINFO_USAGE_DIR_USE))
-		      return;
-		  type_context_die = force_type_die (TYPE_CONTEXT (type));
-		  }
-	      else
-		type_context_die = force_decl_die (TYPE_CONTEXT (type));
-	      else
-		type_context_die = comp_unit_die;
-	      gen_type_die_for_member (type, decl, type_context_die);
+	      if (TYPE_CONTEXT (type)
+		  && TYPE_P (TYPE_CONTEXT (type))
+		  && !should_emit_struct_debug (TYPE_CONTEXT (type),
+						DINFO_USAGE_DIR_USE))
+		return;
+	      gen_type_die_for_member (type, decl,
+				       get_context_die (TYPE_CONTEXT (type)));
 	    }
 	  at_import_die = force_decl_die (decl);
 	}

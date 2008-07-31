@@ -1,5 +1,12 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/36278
+	* dwarf2out.c (get_context_die): New function.
+	(force_decl_die, force_type_die): Use it.
+	(dwarf2out_imported_module_or_decl): Likewise.  If base_type_die
+	returns NULL, force generation of DW_TAG_typedef and put that into
+	DW_AT_import.
+
 	PR preprocessor/36649
 	* c-pch.c (c_common_read_pch): Save and restore
 	line_table->trace_includes across PCH restore.

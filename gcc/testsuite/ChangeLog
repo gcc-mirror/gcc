@@ -1,5 +1,8 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/36278
+	* g++.dg/debug/namespace2.C: New test.
+
 	PR preprocessor/36649
 	* gcc.dg/pch/cpp-3.c: New test.
 	* gcc.dg/pch/cpp-3.hs: New file.
