@@ -840,7 +840,10 @@ package body Exp_Attr is
             --  attribute was the dereference, and didn't handle cases where
             --  the attribute is applied to a subcomponent of the dereference,
             --  since there's generally no available, appropriate access type
-            --  to convert to in that case.
+            --  to convert to in that case. The attribute is passed as the
+            --  point to insert the check, because the access parameter may
+            --  come from a renaming, possibly in a different scope, and the
+            --  check must be associated with the attribute itself.
 
             elsif Id = Attribute_Access
               and then Nkind (Enc_Object) = N_Explicit_Dereference
@@ -852,7 +855,7 @@ package body Exp_Attr is
               and then Present (Extra_Accessibility
                                 (Entity (Prefix (Enc_Object))))
             then
-               Apply_Accessibility_Check (Prefix (Enc_Object), Typ);
+               Apply_Accessibility_Check (Prefix (Enc_Object), Typ, N);
 
             --  Ada 2005 (AI-251): If the designated type is an interface we
             --  add an implicit conversion to force the displacement of the

@@ -3440,7 +3440,8 @@ package body Exp_Ch4 is
                           and then
                             Ekind (Etype (Nod)) = E_Anonymous_Access_Type
                         then
-                           Apply_Accessibility_Check (Nod, Typ);
+                           Apply_Accessibility_Check
+                             (Nod, Typ, Insert_Node => Nod);
                         end if;
 
                         Next_Elmt (Discr);
@@ -7552,9 +7553,9 @@ package body Exp_Ch4 is
 
          --  Apply an accessibility check when the conversion operand is an
          --  access parameter (or a renaming thereof), unless conversion was
-         --  expanded from an unchecked or unrestricted access attribute. Note
-         --  that other checks may still need to be applied below (such as
-         --  tagged type checks).
+         --  expanded from an Unchecked_ or Unrestricted_Access attribute.
+         --  Note that other checks may still need to be applied below (such
+         --  as tagged type checks).
 
          if Is_Entity_Name (Operand)
            and then
@@ -7568,9 +7569,10 @@ package body Exp_Ch4 is
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
-            Apply_Accessibility_Check (Operand, Target_Type);
+            Apply_Accessibility_Check
+              (Operand, Target_Type, Insert_Node => Operand);
 
-         --  If the level of the operand type is statically deeper then the
+         --  If the level of the operand type is statically deeper than the
          --  level of the target type, then force Program_Error. Note that this
          --  can only occur for cases where the attribute is within the body of
          --  an instantiation (otherwise the conversion will already have been
