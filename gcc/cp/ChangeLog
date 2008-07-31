@@ -1,5 +1,9 @@
 2008-07-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36633
+	* init.c (build_new_1): Don't convert pointer to the data type
+	until we're actually going to treat it as that type.
+
 	PR c++/11309
 	* tree.c (build_aggr_init_expr): Split out...
 	(build_cplus_new): ...from here.
