@@ -2696,7 +2696,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wstrict-overflow=1  @gol
 -Wswitch  @gol
 -Wtrigraphs  @gol
--Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol
+-Wuninitialized  @gol
 -Wunknown-pragmas  @gol
 -Wunused-function  @gol
 -Wunused-label     @gol
@@ -2730,7 +2730,7 @@ name is still supported, but the newer name is more descriptive.)
 -Woverride-init  @gol
 -Wsign-compare  @gol
 -Wtype-limits  @gol
--Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol
+-Wuninitialized  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}  @gol
 }
 
@@ -2892,8 +2892,7 @@ can be disabled with the @option{-Wno-nonnull} option.
 @opindex Winit-self
 @opindex Wno-init-self
 Warn about uninitialized variables which are initialized with themselves.
-Note this option can only be used with the @option{-Wuninitialized} option,
-which in turn only works with @option{-O1} and above.
+Note this option can only be used with the @option{-Wuninitialized} option.
 
 For example, GCC will warn about @code{i} being uninitialized in the
 following snippet only when @option{-Winit-self} has been specified:
@@ -3176,12 +3175,6 @@ either specify @samp{-Wextra -Wunused} (note that @samp{-Wall} implies
 Warn if an automatic variable is used without first being initialized or
 if a variable may be clobbered by a @code{setjmp} call.
 
-These warnings are possible only in optimizing compilation,
-because they require data flow information that is computed only
-when optimizing.  If you do not specify @option{-O}, you will not get
-these warnings. Instead, GCC will issue a warning about @option{-Wuninitialized}
-requiring @option{-O}.
-
 If you want to warn about code which uses the uninitialized value of the
 variable in its own initializer, use the @option{-Winit-self} option.
 
@@ -3252,8 +3245,7 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
-This warning is enabled by @option{-Wall} or @option{-Wextra} in
-optimizing compilations (@option{-O1} and above).
+This warning is enabled by @option{-Wall} or @option{-Wextra}.
 
 @item -Wunknown-pragmas
 @opindex Wunknown-pragmas
