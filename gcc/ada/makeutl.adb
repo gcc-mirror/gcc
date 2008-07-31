@@ -248,11 +248,9 @@ package body Makeutl is
 
       declare
          Path : constant String_Access := Locate_Exec_On_Path (Exec_Name);
-
       begin
          if Path = null then
             return "";
-
          else
             return Get_Install_Dir (Path.all);
          end if;
