@@ -1,5 +1,8 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/36419
+	* g++.dg/eh/async-unwind2.C: New test.
+
 	PR c++/36405
 	* g++.dg/rtti/typeid8.C: New test.
 
