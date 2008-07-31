@@ -1,3 +1,8 @@
+2008-07-31  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36978
+	* gcc.dg/torture/pr36978.c: New testcase.
+
 2008-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/sync_iface_test.ad[s,b]: New test.

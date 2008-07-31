@@ -123,8 +123,8 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
 	return NULL_TREE;
     }
 
-  cond = fold_build2 (gimple_cond_code (stmt), boolean_type_node,
-		      gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
+  cond = build2 (gimple_cond_code (stmt), boolean_type_node,
+		 gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
 
   /* To keep the things simple, we do not directly remove the conditions,
      but just replace tests with 0/1.  Prevent the infinite loop where we
