@@ -219,8 +219,10 @@ extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
 
 /* targparm: */
 
+#define Backend_Overflow_Checks_On_Target targparm__backend_overflow_checks_on_target
 #define Stack_Check_Probes_On_Target targparm__stack_check_probes_on_target
 #define Stack_Check_Limits_On_Target targparm__stack_check_limits_on_target
 
+extern Boolean Backend_Overflow_Checks_On_Target;
 extern Boolean Stack_Check_Probes_On_Target;
 extern Boolean Stack_Check_Limits_On_Target;

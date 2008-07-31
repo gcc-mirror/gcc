@@ -542,6 +542,7 @@ void
 init_gigi_decls (tree long_long_float_type, tree exception_type)
 {
   tree endlink, decl;
+  tree int64_type = gnat_type_for_size (64, 0);
   unsigned int i;
 
   /* Set the types that GCC and Gigi use from the front end.  We would like
@@ -628,6 +629,13 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
 						tree_cons (NULL_TREE,
 							   ptr_void_type_node,
 							   endlink)),
+			   NULL_TREE, false, true, true, NULL, Empty);
+
+  /* This is used for 64-bit multiplication with overflow checking.  */
+  mulv64_decl
+    = create_subprog_decl (get_identifier ("__gnat_mulv64"), NULL_TREE,
+			   build_function_type_list (int64_type, int64_type,
+						     int64_type, NULL_TREE),
 			   NULL_TREE, false, true, true, NULL, Empty);
 
   /* Make the types and functions used for exception processing.    */
