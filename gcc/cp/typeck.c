@@ -6114,7 +6114,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 		   ? 1 + (modifycode != INIT_EXPR): 0;
       return build_vec_init (lhs, NULL_TREE, newrhs,
-			     /*explicit_default_init_p=*/false,
+			     /*explicit_value_init_p=*/false,
 			     from_array, complain);
     }
 

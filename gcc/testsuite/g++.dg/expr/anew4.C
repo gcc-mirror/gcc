@@ -1,5 +1,4 @@
-// { dg-do run { xfail *-*-* } }
-// XFAILed until PR2123 is fixed
+// { dg-do run }
 // PR 11228: array operator new, with zero-initialization and a variable sized array.
 // Regression test for PR 
 // Author: Matt Austern <austern@apple.com>
