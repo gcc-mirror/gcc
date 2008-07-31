@@ -4104,6 +4104,46 @@ package body Prj.Nmsc is
          end if;
       end if;
 
+      --  Check if Linker'Switches or Linker'Default_Switches are declared.
+      --  Warn if they are declared, as it is a common error to think that
+      --  library are "linked" with Linker switches.
+
+      if Data.Library then
+         declare
+            Linker_Package_Id : constant Package_Id :=
+              Util.Value_Of (Name_Linker, Data.Decl.Packages, In_Tree);
+            Linker_Package : Package_Element;
+            Switches          : Array_Element_Id := No_Array_Element;
+
+         begin
+            if Linker_Package_Id /= No_Package then
+               Linker_Package := In_Tree.Packages.Table (Linker_Package_Id);
+
+               Switches :=
+                 Value_Of
+                   (Name      => Name_Switches,
+                    In_Arrays => Linker_Package.Decl.Arrays,
+                    In_Tree   => In_Tree);
+
+               if Switches = No_Array_Element then
+                  Switches :=
+                    Value_Of
+                      (Name      => Name_Default_Switches,
+                       In_Arrays => Linker_Package.Decl.Arrays,
+                       In_Tree   => In_Tree);
+               end if;
+
+               if Switches /= No_Array_Element then
+                  Error_Msg
+                    (Project, In_Tree,
+                     "?Linker switches not taken into account in library " &
+                     "projects",
+                     No_Location);
+               end if;
+            end if;
+         end;
+      end if;
+
       if Data.Extends /= No_Project then
          In_Tree.Projects.Table (Data.Extends).Library := False;
       end if;
