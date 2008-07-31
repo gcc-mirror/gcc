@@ -1,5 +1,31 @@
 2008-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* mlib-utl.ads: Minor reformatting
+
+2008-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	sem_attr.adb: 'Result can have an ambiguous prefix, and is resolved
+	from context. This attribute must be usable in Ada95 mode.
+	The attribute can appear in the body of a function marked
+	Inline_Always, but in this case the postocondition is not enforced.
+	
+	sem_prag.adb (Check_Precondition_Postcondition): within the expansion
+	of an inlined call pre- and postconditions are legal
+
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb, prj.ads, clean.adb, prj-nmsc.adb: Remove declarations that
+	were for gprmake only
+
+2008-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Update -gnatN documentation.
+
+	* gnat_rm.texi: Add note about pre/postcondition
+	pragmas not checked in conjunction with front-end inlining.
+
+2008-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* g-pehage.adb, g-pehage.ads: Minor reformatting
 
 2008-07-31  Arnaud Charlet  <charlet@adacore.com>
