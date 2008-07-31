@@ -26,6 +26,84 @@
 	Remove function There_Are_Ada_Sources from package Prj and move code
 	in the only place it was used, in Prj.Env.Set_Ada_Paths.
 
+2008-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* mlib-utl.ads: Fix typo.
+
+2008-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting
+
+2008-07-31  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Change the description of the
+	Overly_Nested_Control_Structures: now the rule always requires a
+	positive parameter for '+R' option
+
+2008-07-31  Thomas Quinot  <quinot@adacore.com>
+
+	* g-pehage.adb: Minor reformatting
+
+2008-07-31  Pascal Obry  <obry@adacore.com>
+
+	* s-finimp.ads: Minor reformatting.
+
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* s-regexp.ads: Minor comment fix
+
+2008-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-direio.adb (Reset): Replace pragma Unmodified by Warnings (Off),
+	so that we can compile this file successfully with -gnatc.
+
+2008-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Find_Stream_Subprogram): Check the base type instead
+	of the type when looking for stream subprograms for type String,
+	Wide_String and Wide_Wide_String.
+	
+	* s-ststop.adb: Change the initialization expression of constant
+	Use_Block_IO.
+
+2008-07-31  Geert Bosch  <bosch@adacore.com>
+
+	* arit64.c:
+	New file implementing __gnat_mulv64 signed integer multiplication with
+	overflow checking
+
+	* fe.h (Backend_Overflow_Checks_On_Target): Define for use by Gigi
+
+	* gcc-interface/gigi.h:
+	(standard_types): Add ADT_mulv64_decl
+	(mulv64_decl): Define subprogram declaration for __gnat_mulv64
+
+	* gcc-interface/utils.c:
+	(init_gigi_decls): Add initialization of mulv64_decl
+
+	* gcc-interface/trans.c:
+	(build_unary_op_trapv): New function
+	(build_binary_op_trapv): New function
+	(gnat_to_gnu): Use the above functions instead of
+	build_{unary,binary}_op
+
+	* gcc-interface/Makefile.in
+	(LIBGNAT_SRCS): Add arit64.c
+	(LIBGNAT_OBJS): Add arit64.o
+
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): Check if Linker'Switches or
+	Linker'Default_Switches are declared. Warn if they are declared.
+
+2008-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): Use
+	Insert_Actions to place the pointer declaration in the code, rather
+	than Insert_Before_And_Analyze, so that insertions of temporaries are
+	kept in the proper order when transient scopes are present.
+
+
 2008-07-31  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb (Spec_PPC): Now defined for generic subprograms
