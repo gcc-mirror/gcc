@@ -1,5 +1,7 @@
 2008-07-31  Arnaud Charlet  <charlet@adacore.com>
 
+	* gnat.dg/sync_iface_test.ad[s,b]: New test.
+
 	* gnat.dg/specs/sync_iface_test.ads: New test.
 
 2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
