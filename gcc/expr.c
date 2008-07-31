@@ -4280,6 +4280,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
      needs to be done.  Handling this in the normal way is safe because no
      computation is done before the call.  */
   if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from, from)
+      && COMPLETE_TYPE_P (TREE_TYPE (from))
       && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) == INTEGER_CST
       && ! ((TREE_CODE (to) == VAR_DECL || TREE_CODE (to) == PARM_DECL)
 	    && REG_P (DECL_RTL (to))))
