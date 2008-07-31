@@ -1,3 +1,9 @@
+2008-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/36649
+	* c-pch.c (c_common_read_pch): Save and restore
+	line_table->trace_includes across PCH restore.
+
 2008-07-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/36554
@@ -6,7 +12,7 @@
 2008-07-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR 36974
-	* final.c (call_from_call_insn): Handle COND_EXEC
+	* final.c (call_from_call_insn): Handle COND_EXEC.
 
 2008-07-30  H.J. Lu  <hongjiu.lu@intel.com>
 
