@@ -2353,16 +2353,16 @@ package body Prj.Env is
                                 (Data.Object_Directory.Name, In_Tree);
                            end if;
 
-                        --  For a non-library project, add the object
-                        --  directory, if it is not a virtual project, and if
-                        --  there are Ada sources in the project or one of the
-                        --  projects it extends. If there are no Ada sources,
-                        --  adding the object directory could disrupt the order
-                        --  of the object dirs in the path.
+                        --  For a non-library project, add object directory if
+                        --  it is not a virtual project, and if there are Ada
+                        --  sources in the project or one of the projects it
+                        --  extends. If there are no Ada sources, adding the
+                        --  object directory could disrupt the order of the
+                        --  object dirs in the path.
 
                         elsif not Data.Virtual then
                            declare
-                              Add_Object_Dir : Boolean := False;
+                              Add_Object_Dir : Boolean    := False;
                               Prj            : Project_Id := Project;
 
                            begin
