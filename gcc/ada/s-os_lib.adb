@@ -792,9 +792,9 @@ package body System.OS_Lib is
 
                      --  If it is not a digit, then there are no available
                      --  temp file names. Return Invalid_FD. There is almost
-                     --  no that this code will be ever be executed, since
-                     --  it would mean that there are one million temp files
-                     --  in the same directory!
+                     --  no chance that this code will be ever be executed,
+                     --  since it would mean that there are one million temp
+                     --  files in the same directory!
 
                      SSL.Unlock_Task.all;
                      FD := Invalid_FD;
