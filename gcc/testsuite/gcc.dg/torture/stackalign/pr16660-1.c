@@ -1,10 +1,12 @@
 /* { dg-do run } */
 
+#include "check.h"
+
 void
 f ()
 {
-  unsigned long tmp[4] __attribute__((aligned(16)));
-  asm("movaps %%xmm0, (%0)" : : "r" (tmp) : "memory");
+  unsigned long tmp[4] __attribute__((aligned(64)));
+  check (&tmp, 64);
 }
 
 int
