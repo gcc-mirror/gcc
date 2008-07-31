@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ package System.Finalization_Implementation is
    --  packages. They will be finalized after the main program completion.
 
    procedure Finalize_Global_List;
-   --  The procedure to be called in order to finalize the global list;
+   --  The procedure to be called in order to finalize the global list
 
    procedure Attach_To_Final_List
      (L       : in out SFR.Finalizable_Ptr;
@@ -102,7 +102,7 @@ package System.Finalization_Implementation is
    --  return object to the caller's finalization list.
 
    procedure Finalize_List (L : SFR.Finalizable_Ptr);
-   --  Call Finalize on each element of the list L;
+   --  Call Finalize on each element of the list L
 
    procedure Finalize_One (Obj  : in out SFR.Finalizable);
    --  Call Finalize on Obj and remove its final list
