@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -2070,16 +2070,16 @@ package body Exp_Ch6 is
             if Ekind (Etype (Prev)) in Private_Kind
               and then not Has_Discriminants (Base_Type (Etype (Prev)))
             then
-               Add_Extra_Actual (
-                 New_Occurrence_Of (Standard_False, Loc),
-                 Extra_Constrained (Formal));
+               Add_Extra_Actual
+                 (New_Occurrence_Of (Standard_False, Loc),
+                  Extra_Constrained (Formal));
 
             elsif Is_Constrained (Etype (Formal))
               or else not Has_Discriminants (Etype (Prev))
             then
-               Add_Extra_Actual (
-                 New_Occurrence_Of (Standard_True, Loc),
-                 Extra_Constrained (Formal));
+               Add_Extra_Actual
+                 (New_Occurrence_Of (Standard_True, Loc),
+                  Extra_Constrained (Formal));
 
             --  Do not produce extra actuals for Unchecked_Union parameters.
             --  Jump directly to the end of the loop.
@@ -2220,7 +2220,7 @@ package body Exp_Ch6 is
                      else
                         Add_Extra_Actual
                           (Make_Integer_Literal (Loc,
-                           Intval => Scope_Depth (Standard_Standard)),
+                             Intval => Scope_Depth (Standard_Standard)),
                            Extra_Accessibility (Formal));
                      end if;
                   end;
@@ -2231,11 +2231,25 @@ package body Exp_Ch6 is
                else
                   Add_Extra_Actual
                     (Make_Integer_Literal (Loc,
-                     Intval => Type_Access_Level (Etype (Prev_Orig))),
+                       Intval => Type_Access_Level (Etype (Prev_Orig))),
                      Extra_Accessibility (Formal));
                end if;
 
-            --  All cases other than thunks
+            --  If the actual is an access discriminant, then pass the level
+            --  of the enclosing object (RM05-3.10.2(12.4/2)).
+
+            elsif Nkind (Prev_Orig) = N_Selected_Component
+              and then Ekind (Entity (Selector_Name (Prev_Orig))) =
+                                                       E_Discriminant
+              and then Ekind (Etype (Entity (Selector_Name (Prev_Orig)))) =
+                                                       E_Anonymous_Access_Type
+            then
+               Add_Extra_Actual
+                 (Make_Integer_Literal (Loc,
+                    Intval => Object_Access_Level (Prefix (Prev_Orig))),
+                  Extra_Accessibility (Formal));
+
+            --  All other cases
 
             else
                case Nkind (Prev_Orig) is
@@ -2246,20 +2260,20 @@ package body Exp_Ch6 is
                         --  For X'Access, pass on the level of the prefix X
 
                         when Attribute_Access =>
-                           Add_Extra_Actual (
-                             Make_Integer_Literal (Loc,
-                               Intval =>
-                                 Object_Access_Level (Prefix (Prev_Orig))),
-                             Extra_Accessibility (Formal));
+                           Add_Extra_Actual
+                             (Make_Integer_Literal (Loc,
+                                Intval =>
+                                  Object_Access_Level (Prefix (Prev_Orig))),
+                              Extra_Accessibility (Formal));
 
                         --  Treat the unchecked attributes as library-level
 
                         when Attribute_Unchecked_Access |
                            Attribute_Unrestricted_Access =>
-                           Add_Extra_Actual (
-                             Make_Integer_Literal (Loc,
-                               Intval => Scope_Depth (Standard_Standard)),
-                             Extra_Accessibility (Formal));
+                           Add_Extra_Actual
+                             (Make_Integer_Literal (Loc,
+                                Intval => Scope_Depth (Standard_Standard)),
+                              Extra_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters
@@ -2274,19 +2288,19 @@ package body Exp_Ch6 is
                   --  current scope level.
 
                   when N_Allocator =>
-                     Add_Extra_Actual (
-                       Make_Integer_Literal (Loc,
-                        Scope_Depth (Current_Scope) + 1),
-                       Extra_Accessibility (Formal));
+                     Add_Extra_Actual
+                       (Make_Integer_Literal (Loc,
+                          Intval => Scope_Depth (Current_Scope) + 1),
+                        Extra_Accessibility (Formal));
 
                   --  For other cases we simply pass the level of the
                   --  actual's access type.
 
                   when others =>
-                     Add_Extra_Actual (
-                       Make_Integer_Literal (Loc,
-                         Intval => Type_Access_Level (Etype (Prev_Orig))),
-                       Extra_Accessibility (Formal));
+                     Add_Extra_Actual
+                       (Make_Integer_Literal (Loc,
+                          Intval => Type_Access_Level (Etype (Prev_Orig))),
+                        Extra_Accessibility (Formal));
 
                end case;
             end if;
