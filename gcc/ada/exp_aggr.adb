@@ -403,20 +403,20 @@ package body Exp_Aggr is
             return True;
          end if;
 
-         --  One-component aggregates are suspicious, and if the context
-         --  type is an object declaration with non-static bounds it will
-         --  trip gcc; such an aggregate must be expanded into a single
-         --  assignment.
+         --  One-component aggregates are suspicious, and if the context type
+         --  is an object declaration with non-static bounds it will trip gcc;
+         --  such an aggregate must be expanded into a single assignment.
 
          if Hiv = Lov
            and then Nkind (Parent (N)) = N_Object_Declaration
          then
             declare
                Index_Type : constant Entity_Id :=
-                       Etype
-                         (First_Index
-                           (Etype (Defining_Identifier (Parent (N)))));
-               Indx : Node_Id;
+                              Etype
+                                (First_Index
+                                   (Etype (Defining_Identifier (Parent (N)))));
+               Indx       : Node_Id;
+
             begin
                if not Compile_Time_Known_Value (Type_Low_Bound (Index_Type))
                   or else not Compile_Time_Known_Value
