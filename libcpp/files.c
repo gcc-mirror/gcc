@@ -1218,12 +1218,19 @@ cpp_change_file (cpp_reader *pfile, enum lc_reason reason,
   _cpp_do_file_change (pfile, reason, new_name, 1, 0);
 }
 
+struct report_missing_guard_data
+{
+  const char **paths;
+  size_t count;
+};
+
 /* Callback function for htab_traverse.  */
 static int
-report_missing_guard (void **slot, void *b)
+report_missing_guard (void **slot, void *d)
 {
   struct file_hash_entry *entry = (struct file_hash_entry *) *slot;
-  int *bannerp = (int *) b;
+  struct report_missing_guard_data *data
+    = (struct report_missing_guard_data *) d;
 
   /* Skip directories.  */
   if (entry->start_dir != NULL)
@@ -1233,19 +1240,25 @@ report_missing_guard (void **slot, void *b)
       /* We don't want MI guard advice for the main file.  */
       if (file->cmacro == NULL && file->stack_count == 1 && !file->main_file)
 	{
-	  if (*bannerp == 0)
+	  if (data->paths == NULL)
 	    {
-	      fputs (_("Multiple include guards may be useful for:\n"),
-		     stderr);
-	      *bannerp = 1;
+	      data->paths = XCNEWVEC (const char *, data->count);
+	      data->count = 0;
 	    }
 
-	  fputs (entry->u.file->path, stderr);
-	  putc ('\n', stderr);
+	  data->paths[data->count++] = file->path;
 	}
     }
 
-  return 0;
+  /* Keep traversing the hash table.  */
+  return 1;
+}
+
+/* Comparison function for qsort.  */
+static int
+report_missing_guard_cmp (const void *p1, const void *p2)
+{
+  return strcmp (*(const char *const *) p1, *(const char *const *) p2);
 }
 
 /* Report on all files that might benefit from a multiple include guard.
@@ -1253,9 +1266,29 @@ report_missing_guard (void **slot, void *b)
 void
 _cpp_report_missing_guards (cpp_reader *pfile)
 {
-  int banner = 0;
+  struct report_missing_guard_data data;
 
-  htab_traverse (pfile->file_hash, report_missing_guard, &banner);
+  data.paths = NULL;
+  data.count = htab_elements (pfile->file_hash);
+  htab_traverse (pfile->file_hash, report_missing_guard, &data);
+
+  if (data.paths != NULL)
+    {
+      size_t i;
+
+      /* Sort the paths to avoid outputting them in hash table
+	 order.  */
+      qsort (data.paths, data.count, sizeof (const char *),
+	     report_missing_guard_cmp);
+      fputs (_("Multiple include guards may be useful for:\n"),
+	     stderr);
+      for (i = 0; i < data.count; i++)
+	{
+	  fputs (data.paths[i], stderr);
+	  putc ('\n', stderr);
+	}
+      free (data.paths);
+    }
 }
 
 /* Locate HEADER, and determine whether it is newer than the current
