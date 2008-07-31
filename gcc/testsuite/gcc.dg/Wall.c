@@ -3,8 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
 
-void foo()
+void foo(int a)
 {
-  int a;
   5 * (a == 1) | (a == 2);  /* { dg-warning "no effect" "no effect" } */
 }
