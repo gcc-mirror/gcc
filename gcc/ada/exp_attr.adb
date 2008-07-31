@@ -651,6 +651,37 @@ package body Exp_Attr is
             Btyp_DDT   : constant Entity_Id := Directly_Designated_Type (Btyp);
             Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
 
+            function Enclosing_Object (N : Node_Id) return Node_Id;
+            --  If N denotes a compound name (selected component, indexed
+            --  component, or slice), returns the name of the outermost
+            --  such enclosing object. Otherwise returns N. If the object
+            --  is a renaming, then the renamed object is returned.
+
+            ----------------------
+            -- Enclosing_Object --
+            ----------------------
+
+            function Enclosing_Object (N : Node_Id) return Node_Id is
+               Obj_Name : Node_Id;
+
+            begin
+               Obj_Name := N;
+               while Nkind_In (Obj_Name, N_Selected_Component,
+                                         N_Indexed_Component,
+                                         N_Slice)
+               loop
+                  Obj_Name := Prefix (Obj_Name);
+               end loop;
+
+               return Get_Referenced_Object (Obj_Name);
+            end Enclosing_Object;
+
+            --  Local declarations
+
+            Enc_Object : constant Node_Id := Enclosing_Object (Ref_Object);
+
+         --  Start of processing for Access_Cases
+
          begin
             --  In order to improve the text of error messages, the designated
             --  type of access-to-subprogram itypes is set by the semantics as
@@ -800,35 +831,28 @@ package body Exp_Attr is
                end;
 
             --  If the prefix of an Access attribute is a dereference of an
-            --  access parameter (or a renaming of such a dereference) and
-            --  the context is a general access type (but not an anonymous
-            --  access type), then rewrite the attribute as a conversion of
-            --  the access parameter to the context access type. This will
-            --  result in an accessibility check being performed, if needed.
+            --  access parameter (or a renaming of such a dereference, or a
+            --  subcomponent of such a dereference) and the context is a
+            --  general access type (but not an anonymous access type), then
+            --  apply an accessibility check to the access parameter. We used
+            --  to rewrite the access parameter as a type conversion, but that
+            --  could only be done if the immediate prefix of the Access
+            --  attribute was the dereference, and didn't handle cases where
+            --  the attribute is applied to a subcomponent of the dereference,
+            --  since there's generally no available, appropriate access type
+            --  to convert to in that case.
 
-            --    (X.all'Access => Acc_Type (X))
-
-            --  Note: Limit the expansion of an attribute applied to a
-            --  dereference of an access parameter so that it's only done
-            --  for 'Access. This fixes a problem with 'Unrestricted_Access
-            --  that leads to errors in the case where the attribute type
-            --  is access-to-variable and the access parameter is
-            --  access-to-constant. The conversion is only done to get
-            --  accessibility checks, so it makes sense to limit it to
-            --  'Access.
-
-            elsif Nkind (Ref_Object) = N_Explicit_Dereference
-              and then Is_Entity_Name (Prefix (Ref_Object))
+            elsif Id = Attribute_Access
+              and then Nkind (Enc_Object) = N_Explicit_Dereference
+              and then Is_Entity_Name (Prefix (Enc_Object))
               and then Ekind (Btyp) = E_General_Access_Type
-              and then Ekind (Entity (Prefix (Ref_Object))) in Formal_Kind
-              and then Ekind (Etype (Entity (Prefix (Ref_Object))))
+              and then Ekind (Entity (Prefix (Enc_Object))) in Formal_Kind
+              and then Ekind (Etype (Entity (Prefix (Enc_Object))))
                          = E_Anonymous_Access_Type
               and then Present (Extra_Accessibility
-                                (Entity (Prefix (Ref_Object))))
+                                (Entity (Prefix (Enc_Object))))
             then
-               Rewrite (N,
-                 Convert_To (Typ, New_Copy_Tree (Prefix (Ref_Object))));
-               Analyze_And_Resolve (N, Typ);
+               Apply_Accessibility_Check (Prefix (Enc_Object), Typ);
 
             --  Ada 2005 (AI-251): If the designated type is an interface we
             --  add an implicit conversion to force the displacement of the
