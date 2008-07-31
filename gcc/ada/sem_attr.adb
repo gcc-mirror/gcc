@@ -1898,6 +1898,7 @@ package body Sem_Attr is
         and then Aname /= Name_Address
         and then Aname /= Name_Code_Address
         and then Aname /= Name_Count
+        and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
       then
          Error_Attr ("ambiguous prefix for % attribute", P);
@@ -3738,9 +3739,23 @@ package body Sem_Attr is
 
       when Attribute_Result => Result : declare
          CS : constant Entity_Id := Current_Scope;
-         PS : constant Entity_Id := Scope (CS);
+         PS : Entity_Id;
 
       begin
+         PS := Scope (CS);
+
+         --  If we are analyzing a body to be inlined, there is an additional
+         --  scope present, used to gather global references. Retrieve the
+         --  source scope.
+
+         if Chars (PS) = Name_uParent then
+            PS := Scope (PS);
+            if Warn_On_Redundant_Constructs then
+               Error_Msg_N
+                 ("postconditions on inlined functions not enforced", N);
+            end if;
+         end if;
+
          --  If we are in the scope of a function and in Spec_Expression mode,
          --  this is likely the prescan of the postcondition pragma, and we
          --  just set the proper type. If there is an error it will be caught
@@ -3775,9 +3790,13 @@ package body Sem_Attr is
          then
             --  Check OK prefix
 
-            if Nkind (P) /= N_Identifier
-              or else Chars (P) /= Chars (PS)
+            if (Nkind (P) = N_Identifier
+                  or else Nkind (P) = N_Operator_Symbol)
+              and then Chars (P) = Chars (PS)
             then
+               null;
+
+            else
                Error_Msg_NE
                  ("incorrect prefix for % attribute, expected &", P, PS);
                Error_Attr;
