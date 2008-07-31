@@ -583,6 +583,7 @@ package body Sem_Prag is
       --  expression, returns True if so, False if non-static or not String.
 
       procedure Pragma_Misplaced;
+      pragma No_Return (Pragma_Misplaced);
       --  Issue fatal error message for misplaced pragma
 
       procedure Process_Atomic_Shared_Volatile;
@@ -1350,8 +1351,47 @@ package body Sem_Prag is
 
       procedure Check_Precondition_Postcondition (In_Body : out Boolean) is
          P  : Node_Id;
-         S  : Entity_Id;
          PO : Node_Id;
+
+         procedure Chain_PPC (PO : Node_Id);
+         --  PO is the N_Subprogram_Declaration node for the subprogram to
+         --  which the precondition/postcondition applies. This procedure
+         --  completes the processing for the pragma.
+
+         ---------------
+         -- Chain_PPC --
+         ---------------
+
+         procedure Chain_PPC (PO : Node_Id) is
+            S : Node_Id;
+
+         begin
+            S := Defining_Unit_Name (Specification (PO));
+
+            --  Analyze the pragma unless it appears within a package spec,
+            --  which is the case where we delay the analysis of the PPC until
+            --  the end of the package declarations (for details, see
+            --  Analyze_Package_Specification.Analyze_PPCs).
+
+            if Ekind (Scope (S)) /= E_Package
+                 and then
+               Ekind (Scope (S)) /= E_Generic_Package
+            then
+               Analyze_PPC_In_Decl_Part (N, S);
+            end if;
+
+            --  Chain spec PPC pragma to list for subprogram
+
+            Set_Next_Pragma (N, Spec_PPC_List (S));
+            Set_Spec_PPC_List (S, N);
+
+            --  Return indicating spec case
+
+            In_Body := False;
+            return;
+         end Chain_PPC;
+
+         --  Start of processing for Check_Precondition_Postcondition
 
       begin
          if not Is_List_Member (N) then
@@ -1361,6 +1401,14 @@ package body Sem_Prag is
          --  Record whether pragma is enabled
 
          Set_PPC_Enabled (N, Check_Enabled (Pname));
+
+         --  If we are within an inlined body, the legality of the pragma
+         --  has been checked already.
+
+         if In_Inlined_Body then
+            In_Body := True;
+            return;
+         end if;
 
          --  Search prior declarations
 
@@ -1382,28 +1430,7 @@ package body Sem_Prag is
             --  Here if we hit a subprogram declaration
 
             elsif Nkind (PO) = N_Subprogram_Declaration then
-               S := Defining_Unit_Name (Specification (PO));
-
-               --  Analyze the pragma unless it appears within a package spec,
-               --  which is the case where we delay the analysis of the PPC
-               --  until the end of the package declarations (for details,
-               --  see Analyze_Package_Specification.Analyze_PPCs).
-
-               if Ekind (Scope (S)) /= E_Package
-                    and then
-                  Ekind (Scope (S)) /= E_Generic_Package
-               then
-                  Analyze_PPC_In_Decl_Part (N, S);
-               end if;
-
-               --  Chain spec PPC pragma to list for subprogram
-
-               Set_Next_Pragma (N, Spec_PPC_List (S));
-               Set_Spec_PPC_List (S, N);
-
-               --  Return indicating spec case
-
-               In_Body := False;
+               Chain_PPC (PO);
                return;
 
             --  If we encounter any other declaration moving back, misplaced
@@ -1422,11 +1449,22 @@ package body Sem_Prag is
             In_Body := True;
             return;
 
-         --  If not, it was misplaced
+         --  See if it is in the pragmas after a library level subprogram
 
-         else
-            Pragma_Misplaced;
+         elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+            declare
+               Decl : constant Node_Id := Unit (Parent (Parent (N)));
+            begin
+               if Nkind (Decl) = N_Subprogram_Declaration then
+                  Chain_PPC (Decl);
+                  return;
+               end if;
+            end;
          end if;
+
+         --  If we fall through, pragma was misplaced
+
+         Pragma_Misplaced;
       end Check_Precondition_Postcondition;
 
       -----------------------------
