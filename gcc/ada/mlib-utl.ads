@@ -47,13 +47,12 @@ package MLib.Utl is
    procedure Ar
      (Output_File : String;
       Objects     : Argument_List);
-   --  Run ar to move all the binaries inside the archive. If ranlib is on the
-   --  path, run it also. Output_File is the path name of the archive to
+   --  Run ar to move all the binaries inside the archive. If ranlib is on
+   --  the path, run it also. Output_File is the path name of the archive to
    --  create. Objects is the list of the path names of the object files to be
-   --  put in the archive.
-   --  This procedure currently assumes that it is always called in the context
-   --  of gnatmake. If other executable start using this procedure, an
-   --  additional parameter would need to be added, and calls to
+   --  put in the archive. This procedure currently assumes that it is always
+   --  called in the context of gnatmake. If other executable start using this
+   --  procedure, an additional parameter would need to be added, and calls to
    --  Osint.Program_Name updated accordingly in the body.
 
    function Lib_Directory return String;
