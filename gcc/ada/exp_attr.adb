@@ -5314,7 +5314,8 @@ package body Exp_Attr is
      (Typ : Entity_Id;
       Nam : TSS_Name_Type) return Entity_Id
    is
-      Ent : constant Entity_Id := TSS (Typ, Nam);
+      Base_Typ : constant Entity_Id := Base_Type (Typ);
+      Ent      : constant Entity_Id := TSS (Typ, Nam);
 
    begin
       if Present (Ent) then
@@ -5340,7 +5341,7 @@ package body Exp_Attr is
 
          --  String as defined in package Ada
 
-         if Typ = Standard_String then
+         if Base_Typ = Standard_String then
             if Nam = TSS_Stream_Input then
                return RTE (RE_String_Input);
 
@@ -5356,7 +5357,7 @@ package body Exp_Attr is
 
          --  Wide_String as defined in package Ada
 
-         elsif Typ = Standard_Wide_String then
+         elsif Base_Typ = Standard_Wide_String then
             if Nam = TSS_Stream_Input then
                return RTE (RE_Wide_String_Input);
 
@@ -5372,7 +5373,7 @@ package body Exp_Attr is
 
          --  Wide_Wide_String as defined in package Ada
 
-         elsif Typ = Standard_Wide_Wide_String then
+         elsif Base_Typ = Standard_Wide_Wide_String then
             if Nam = TSS_Stream_Input then
                return RTE (RE_Wide_Wide_String_Input);
 

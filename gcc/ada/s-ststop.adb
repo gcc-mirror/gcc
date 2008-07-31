@@ -92,17 +92,12 @@ package body System.Strings.Stream_Ops is
 
       subtype String_Block is String_Type (1 .. C_In_Default_Block);
 
-      --  Block IO is used in the following two scenarios:
-
-      --    1) When the size of the character type equals that of the stream
-      --    element type, regardless of endianness.
-
-      --    2) When using the standard stream IO routines for elementary
-      --    types which guarantees the same endianness over partitions.
+      --  Block IO is used when the low level can support block IO and the size
+      --  of the character type is a multiple of the stream element type.
 
       Use_Block_IO : constant Boolean :=
-                       C_Size = SE_Size
-                         or else Stream_Attributes.Block_IO_OK;
+                       Stream_Attributes.Block_IO_OK
+                         and then C_Size mod SE_Size = 0;
 
       --  Conversions to and from Default_Block
 
