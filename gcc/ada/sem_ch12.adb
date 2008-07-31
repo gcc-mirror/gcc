@@ -2413,10 +2413,9 @@ package body Sem_Ch12 is
                Error_Msg_N ("no visible entity matches specification", Def);
             end if;
 
+         --  More than one interpretation, so disambiguate as for a renaming
+
          else
-
-            --  Several interpretations. Disambiguate as for a renaming.
-
             declare
                I   : Interp_Index;
                I1  : Interp_Index := 0;
@@ -2427,7 +2426,6 @@ package body Sem_Ch12 is
                Subp := Any_Id;
                Get_First_Interp (Def, I, It);
                while Present (It.Nam) loop
-
                   if Entity_Matches_Spec (It.Nam, Nam) then
                      if Subp /= Any_Id then
                         It1 := Disambiguate (Def, I1, I, Etype (Subp));
