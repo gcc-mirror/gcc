@@ -260,7 +260,6 @@ static void sh_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tre
 static bool sh_strict_argument_naming (CUMULATIVE_ARGS *);
 static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
-static tree sh_canonical_va_list_type (tree);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
@@ -442,8 +441,6 @@ static int sh2a_function_vector_p (tree);
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
-#undef TARGET_CANONICAL_VA_LIST_TYPE
-#define TARGET_CANONICAL_VA_LIST_TYPE sh_canonical_va_list_type
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START sh_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
@@ -7146,14 +7143,6 @@ sh_build_builtin_va_list (void)
   layout_type (record);
 
   return record;
-}
-
-/* Return always va_list_type_node.  */
-
-static tree
-sh_canonical_va_list_type (tree type ATTRIBUTE_UNUSED)
-{
-  return va_list_type_node;
 }
 
 /* Implement `va_start' for varargs and stdarg.  */
