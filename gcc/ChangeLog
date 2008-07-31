@@ -1,5 +1,14 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/36419
+	* dwarf2out.c (barrier_args_size): New variable.
+	(compute_barrier_args_size, compute_barrier_args_size_1): New
+	functions.
+	(dwarf2out_stack_adjust): For BARRIERs call compute_barrier_args_size
+	if not called yet in the current function, use barrier_args_size
+	array to find the new args_size value.
+	(dwarf2out_frame_debug): Free and clear barrier_args_size.
+
 	PR debug/36278
 	* dwarf2out.c (get_context_die): New function.
 	(force_decl_die, force_type_die): Use it.

@@ -1106,6 +1106,162 @@ stack_adjust_offset (const_rtx pattern)
   return offset;
 }
 
+/* Precomputed args_size for CODE_LABELs and BARRIERs preceeding them,
+   indexed by INSN_UID.  */
+
+static HOST_WIDE_INT *barrier_args_size;
+
+/* Helper function for compute_barrier_args_size.  Handle one insn.  */
+
+static HOST_WIDE_INT
+compute_barrier_args_size_1 (rtx insn, HOST_WIDE_INT cur_args_size,
+			     VEC (rtx, heap) **next)
+{
+  HOST_WIDE_INT offset = 0;
+  int i;
+
+  if (! RTX_FRAME_RELATED_P (insn))
+    {
+      if (prologue_epilogue_contains (insn)
+	  || sibcall_epilogue_contains (insn))
+	/* Nothing */;
+      else if (GET_CODE (PATTERN (insn)) == SET)
+	offset = stack_adjust_offset (PATTERN (insn));
+      else if (GET_CODE (PATTERN (insn)) == PARALLEL
+	       || GET_CODE (PATTERN (insn)) == SEQUENCE)
+	{
+	  /* There may be stack adjustments inside compound insns.  Search
+	     for them.  */
+	  for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+	    if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET)
+	      offset += stack_adjust_offset (XVECEXP (PATTERN (insn), 0, i));
+	}
+    }
+  else
+    {
+      rtx expr = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
+
+      if (expr)
+	{
+	  expr = XEXP (expr, 0);
+	  if (GET_CODE (expr) == PARALLEL
+	      || GET_CODE (expr) == SEQUENCE)
+	    for (i = 1; i < XVECLEN (expr, 0); i++)
+	      {
+		rtx elem = XVECEXP (expr, 0, i);
+
+		if (GET_CODE (elem) == SET && !RTX_FRAME_RELATED_P (elem))
+		  offset += stack_adjust_offset (elem);
+	      }
+	}
+    }
+
+#ifndef STACK_GROWS_DOWNWARD
+  offset = -offset;
+#endif
+
+  cur_args_size += offset;
+  if (cur_args_size < 0)
+    cur_args_size = 0;
+
+  if (JUMP_P (insn))
+    {
+      rtx dest = JUMP_LABEL (insn);
+
+      if (dest)
+	{
+	  if (barrier_args_size [INSN_UID (dest)] < 0)
+	    {
+	      barrier_args_size [INSN_UID (dest)] = cur_args_size;
+	      VEC_safe_push (rtx, heap, *next, dest);
+	    }
+	  else
+	    gcc_assert (barrier_args_size[INSN_UID (dest)]
+			== cur_args_size);
+	}
+    }
+
+  return cur_args_size;
+}
+
+/* Walk the whole function and compute args_size on BARRIERs.  */
+
+static void
+compute_barrier_args_size (void)
+{
+  int max_uid = get_max_uid (), i;
+  rtx insn;
+  VEC (rtx, heap) *worklist, *next, *tmp;
+
+  barrier_args_size = XNEWVEC (HOST_WIDE_INT, max_uid);
+  for (i = 0; i < max_uid; i++)
+    barrier_args_size[i] = -1;
+
+  worklist = VEC_alloc (rtx, heap, 20);
+  next = VEC_alloc (rtx, heap, 20);
+  insn = get_insns ();
+  barrier_args_size[INSN_UID (insn)] = 0;
+  VEC_quick_push (rtx, worklist, insn);
+  for (;;)
+    {
+      while (!VEC_empty (rtx, worklist))
+	{
+	  rtx prev, body;
+	  HOST_WIDE_INT cur_args_size;
+
+	  insn = VEC_pop (rtx, worklist);
+	  cur_args_size = barrier_args_size[INSN_UID (insn)];
+	  prev = prev_nonnote_insn (insn);
+	  if (prev && BARRIER_P (prev))
+	    barrier_args_size[INSN_UID (prev)] = cur_args_size;
+
+	  for (; insn; insn = NEXT_INSN (insn))
+	    {
+	      if (INSN_DELETED_P (insn) || NOTE_P (insn))
+		continue;
+	      if (BARRIER_P (insn))
+		break;
+
+	      if (LABEL_P (insn))
+		{
+		  gcc_assert (barrier_args_size[INSN_UID (insn)] < 0
+			      || barrier_args_size[INSN_UID (insn)]
+				  == cur_args_size);
+		  continue;
+		}
+
+	      body = PATTERN (insn);
+	      if (GET_CODE (body) == SEQUENCE)
+		{
+		  for (i = 1; i < XVECLEN (body, 0); i++)
+		    cur_args_size
+		      = compute_barrier_args_size_1 (XVECEXP (body, 0, i),
+						     cur_args_size, &next);
+		  cur_args_size
+		    = compute_barrier_args_size_1 (XVECEXP (body, 0, 0),
+						   cur_args_size, &next);
+		}
+	      else
+		cur_args_size
+		  = compute_barrier_args_size_1 (insn, cur_args_size, &next);
+	    }
+	}
+
+      if (VEC_empty (rtx, next))
+	break;
+
+      /* Swap WORKLIST with NEXT and truncate NEXT for next iteration.  */
+      tmp = next;
+      next = worklist;
+      worklist = tmp;
+      VEC_truncate (rtx, next, 0);
+    }
+
+  VEC_free (rtx, heap, worklist);
+  VEC_free (rtx, heap, next);
+}
+
+
 /* Check INSN to see if it looks like a push or a stack adjustment, and
    make a note of it if it does.  EH uses this information to find out how
    much extra space it needs to pop off the stack.  */
@@ -1150,13 +1306,15 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
     }
   else if (BARRIER_P (insn))
     {
-      /* When we see a BARRIER, we know to reset args_size to 0.  Usually
-	 the compiler will have already emitted a stack adjustment, but
-	 doesn't bother for calls to noreturn functions.  */
-#ifdef STACK_GROWS_DOWNWARD
-      offset = -args_size;
-#else
-      offset = args_size;
+      if (barrier_args_size == NULL)
+	compute_barrier_args_size ();
+      offset = barrier_args_size[INSN_UID (insn)];
+      if (offset < 0)
+	offset = 0;
+
+      offset -= args_size;
+#ifndef STACK_GROWS_DOWNWARD
+      offset = -offset;
 #endif
     }
   else if (GET_CODE (PATTERN (insn)) == SET)
@@ -1954,6 +2112,12 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	  regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
 	}
       num_regs_saved_in_regs = 0;
+
+      if (barrier_args_size)
+	{
+	  XDELETEVEC (barrier_args_size);
+	  barrier_args_size = NULL;
+	}
       return;
     }
 
