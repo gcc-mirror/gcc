@@ -21541,7 +21541,7 @@ The control structures checked are the following:
 @end itemize
 
 @noindent
-The rule may have the following parameter for the @option{+R} option:
+The rule has the following parameter for the @option{+R} option:
 
 @table @emph
 @item N
@@ -21550,17 +21550,11 @@ level that is not flagged
 @end table
 
 @noindent
-If the parameter for the @option{+R} option is not a positive integer,
-the parameter is ignored and the rule is turned ON with the most recently
-specified maximal non-flagged nesting level.
+If the parameter for the @option{+R} option is not specified or
+if it is not a positive integer, @option{+R} option is ignored.
 
 If more then one  option is specified for the gnatcheck call, the later option and
 new parameter override the previous one(s).
-
-A @option{+R} option with no parameter turns the rule ON using the maximal
-non-flagged nesting level specified by the most recent @option{+R} option with
-a parameter, or the value 4 if there is no such previous @option{+R} option.
-
 
 
 @node Parameters_Out_Of_Order
