@@ -5496,7 +5496,7 @@ package body Exp_Ch6 is
       if Is_Constrained (Underlying_Type (Result_Subt)) then
          Insert_After_And_Analyze (Object_Decl, Ptr_Typ_Decl);
       else
-         Insert_Before_And_Analyze (Object_Decl, Ptr_Typ_Decl);
+         Insert_Action (Object_Decl, Ptr_Typ_Decl);
       end if;
 
       --  Finally, create an access object initialized to a reference to the
