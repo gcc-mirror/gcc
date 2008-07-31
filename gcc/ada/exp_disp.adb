@@ -6042,6 +6042,13 @@ package body Exp_Disp is
          Full_Typ := Corresponding_Concurrent_Type (Typ);
       end if;
 
+      --  When a private tagged type is completed by a concurrent type,
+      --  retrieve the full view.
+
+      if Is_Private_Type (Full_Typ) then
+         Full_Typ := Full_View (Full_Typ);
+      end if;
+
       if Ekind (Prim_Op) = E_Function then
 
          --  Protected function
