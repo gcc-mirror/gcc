@@ -102,6 +102,7 @@ int   __gl_zero_cost_exceptions          = 0;
 int   __gl_detect_blocking               = 0;
 int   __gl_default_stack_size            = -1;
 int   __gl_leap_seconds_support          = 0;
+int   __gl_canonical_streams             = 0;
 
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit.  */

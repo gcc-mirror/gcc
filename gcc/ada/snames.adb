@@ -183,6 +183,7 @@ package body Snames is
      "ada_2005#" &
      "assertion_policy#" &
      "c_pass_by_copy#" &
+     "canonical_streams#" &
      "check_name#" &
      "check_policy#" &
      "compile_time_error#" &

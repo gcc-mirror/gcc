@@ -10925,6 +10925,7 @@ recognized by GNAT:
    Ada_2005
    Assertion_Policy
    C_Pass_By_Copy
+   Canonical_Streams
    Check_Name
    Check_Policy
    Compile_Time_Error

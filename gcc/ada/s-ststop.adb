@@ -92,12 +92,23 @@ package body System.Strings.Stream_Ops is
 
       subtype String_Block is String_Type (1 .. C_In_Default_Block);
 
-      --  Block IO is used when the low level can support block IO and the size
-      --  of the character type is a multiple of the stream element type.
+      Flag : Integer;
+      pragma Import (C, Flag, "__gl_canonical_streams");
+      --  This imported value is used to determine whether configuration pragma
+      --  Canonical_Streams is present. A value of zero indicates whether any
+      --  stream-related optimizations are enabled, while a value of one
+      --  indicates a disabled status.
+
+      Canonical_Streams : constant Boolean := Flag = 1;
+
+      --  Block IO is used when the low level can support block IO, the size
+      --  of the character type is a multiple of the stream element type and
+      --  the compilation can use stream optimizations.
 
       Use_Block_IO : constant Boolean :=
                        Stream_Attributes.Block_IO_OK
-                         and then C_Size mod SE_Size = 0;
+                         and then C_Size mod SE_Size = 0
+                         and then not Canonical_Streams;
 
       --  Conversions to and from Default_Block
 

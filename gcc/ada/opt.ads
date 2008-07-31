@@ -283,6 +283,11 @@ package Opt is
    --  is set True, or if pragma No_Run_Time is used. See the spec of Rtsfind
    --  for details on the handling of the latter pragma.
 
+   Canonical_Streams : Boolean := False;
+   --  GNATBIND
+   --  Set to True if configuration pragma Canonical_Streams is present. It
+   --  controls the canonical behaviour of stream operations for String types.
+
    Constant_Condition_Warnings : Boolean := False;
    --  GNAT
    --  Set to True to activate warnings on constant conditions
