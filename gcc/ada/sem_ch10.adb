@@ -2660,13 +2660,18 @@ package body Sem_Ch10 is
       P     : Node_Id;
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id;
-      --  Comment required here ???
+      --  Build name to be used in implicit with_clause. In most cases this
+      --  is the source name, but if renamings are present we must make the
+      --  original unit visible, not the one it renames. The entity in the
+      --  use clause is the renamed unit, but the identifier is the one from
+      --  the source, which allows us to recover the unit renaming.
 
       ---------------------
       -- Build_Unit_Name --
       ---------------------
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id is
+         Ent      : Entity_Id;
          Renaming : Entity_Id;
          Result   : Node_Id;
 
@@ -2695,12 +2700,34 @@ package body Sem_Ch10 is
             end if;
 
          else
+            Ent := Entity (Nam);
+
+            if Present (Entity (Selector_Name (Nam)))
+              and then Chars (Entity (Selector_Name (Nam))) /= Chars (Ent)
+              and then
+                Nkind (Unit_Declaration_Node (Entity (Selector_Name (Nam))))
+                  = N_Package_Renaming_Declaration
+            then
+
+               --  The name in the with_clause is of the form A.B.C, and B
+               --  is given by a renaming declaration. In that case we may
+               --  not have analyzed the unit for B, but replaced it directly
+               --  in lib-load with the unit it renames. We have to make A.B
+               --  visible, so analyze the declaration for B now, in case it
+               --  has not been done yet.
+
+               Ent :=  Entity (Selector_Name (Nam));
+               Analyze
+                 (Parent
+                   (Unit_Declaration_Node (Entity (Selector_Name (Nam)))));
+            end if;
+
             Result :=
               Make_Expanded_Name (Loc,
                 Chars  => Chars (Entity (Nam)),
                 Prefix => Build_Unit_Name (Prefix (Nam)),
-                Selector_Name => New_Occurrence_Of (Entity (Nam), Loc));
-            Set_Entity (Result, Entity (Nam));
+                Selector_Name => New_Occurrence_Of (Ent, Loc));
+            Set_Entity (Result, Ent);
             return Result;
          end if;
       end Build_Unit_Name;
