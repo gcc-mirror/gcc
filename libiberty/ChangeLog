@@ -1,3 +1,7 @@
+2008-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* mkstemps.c (mkstemps): Keep looping even for EISDIR.
+
 2008-07-31  Denys Vlasenko  <dvlasenk@redhat.com>
 
 	* mkstemps.c (mkstemps): If open failed with errno other than
