@@ -2055,11 +2055,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       return rval;
     }
 
-  /* While we're working, use a pointer to the type we've actually
-     allocated. Store the result of the call in a variable so that we
-     can use it more than once.  */
-  full_pointer_type = build_pointer_type (full_type);
-  alloc_expr = get_target_expr (build_nop (full_pointer_type, alloc_call));
+  /* Store the result of the allocation call in a variable so that we can
+     use it more than once.  */
+  alloc_expr = get_target_expr (alloc_call);
   alloc_node = TARGET_EXPR_SLOT (alloc_expr);
 
   /* Strip any COMPOUND_EXPRs from ALLOC_CALL.  */
@@ -2111,16 +2109,17 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       tree size_ptr_type;
 
       /* Adjust so we're pointing to the start of the object.  */
-      data_addr = get_target_expr (build2 (POINTER_PLUS_EXPR, full_pointer_type,
-					   alloc_node, cookie_size));
+      data_addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
+			  alloc_node, cookie_size);
 
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
-      cookie_ptr = fold_build1 (NEGATE_EXPR, sizetype, size_in_bytes (sizetype));
+      cookie_ptr = size_binop (MINUS_EXPR, cookie_size, size_in_bytes (sizetype));
+      cookie_ptr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
+				alloc_node, cookie_ptr);
       size_ptr_type = build_pointer_type (sizetype);
-      cookie_ptr = build2 (POINTER_PLUS_EXPR, size_ptr_type,
-			   fold_convert (size_ptr_type, data_addr), cookie_ptr);
+      cookie_ptr = fold_convert (size_ptr_type, cookie_ptr);
       cookie = cp_build_indirect_ref (cookie_ptr, NULL, complain);
 
       cookie_expr = build2 (MODIFY_EXPR, sizetype, cookie, nelts);
@@ -2134,17 +2133,20 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
 	  cookie = cp_build_indirect_ref (cookie_ptr, NULL, complain);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
-			   size_in_bytes(elt_type));
+			   size_in_bytes (elt_type));
 	  cookie_expr = build2 (COMPOUND_EXPR, TREE_TYPE (cookie_expr),
 				cookie, cookie_expr);
 	}
-      data_addr = TARGET_EXPR_SLOT (data_addr);
     }
   else
     {
       cookie_expr = NULL_TREE;
       data_addr = alloc_node;
     }
+
+  /* Now use a pointer to the type we've actually allocated.  */
+  full_pointer_type = build_pointer_type (full_type);
+  data_addr = fold_convert (full_pointer_type, data_addr);
 
   /* Now initialize the allocated object.  Note that we preevaluate the
      initialization expression, apart from the actual constructor call or
@@ -2241,11 +2243,13 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	  /* The Standard is unclear here, but the right thing to do
 	     is to use the same method for finding deallocation
 	     functions that we use for finding allocation functions.  */
-	  cleanup = build_op_delete_call (dcode, alloc_node, size,
-					  globally_qualified_p,
-					  (placement_allocation_fn_p
-					   ? alloc_call : NULL_TREE),
-					  alloc_fn);
+	  cleanup = (build_op_delete_call
+		     (dcode,
+		      fold_convert (full_pointer_type, alloc_node),
+		      size,
+		      globally_qualified_p,
+		      placement_allocation_fn_p ? alloc_call : NULL_TREE,
+		      alloc_fn));
 
 	  if (!cleanup)
 	    /* We're done.  */;
@@ -2300,7 +2304,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   if (cookie_expr)
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), cookie_expr, rval);
 
-  if (rval == alloc_node)
+  if (rval == data_addr)
     /* If we don't have an initializer or a cookie, strip the TARGET_EXPR
        and return the call (which doesn't need to be adjusted).  */
     rval = TARGET_EXPR_INITIAL (alloc_expr);
