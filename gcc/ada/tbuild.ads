@@ -214,7 +214,7 @@ package Tbuild is
 
    --  Suffix is also a single upper case letter other than O,Q,U,W,X and is a
    --  required parameter (T is permitted). The constructed name is stored
-   --  using Find_Name so that it can be located using a subsequent Find_Name
+   --  using Name_Find so that it can be located using a subsequent Name_Find
    --  operation (i.e. it is properly hashed into the names table). The upper
    --  case letter given as the Suffix argument ensures that the name does
    --  not clash with any Ada identifier name. These generated names are
@@ -228,7 +228,7 @@ package Tbuild is
    --    Suffix & Suffix_Index'Image
    --  where Suffix is a single upper case letter other than O,Q,U,W,X and is
    --  a required parameter (T is permitted). The constructed name is stored
-   --  using Find_Name so that it can be located using a subsequent Find_Name
+   --  using Name_Find so that it can be located using a subsequent Name_Find
    --  operation (i.e. it is properly hashed into the names table). The upper
    --  case letter given as the Suffix argument ensures that the name does
    --  not clash with any Ada identifier name. These generated names are
