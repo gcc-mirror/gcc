@@ -417,20 +417,25 @@ struct rtl_data GTY(())
   /* When set, expand should optimize for speed.  */
   bool maybe_hot_insn_p;
 
-  /* Nonzero if function stack realignment is needed. This flag may be
-     set twice: before and after reload. It is set before reload wrt
-     stack alignment estimation before reload. It will be changed after 
-     reload if by then criteria of stack realignment is different. 
+  /* Nonzero if function stack realignment is needed.  This flag may be
+     set twice: before and after reload.  It is set before reload wrt
+     stack alignment estimation before reload.  It will be changed after
+     reload if by then criteria of stack realignment is different.
      The value set after reload is the accurate one and is finalized.  */
   bool stack_realign_needed;
+
+  /* Nonzero if function stack realignment is tried.  This flag is set
+     only once before reload.  It affects register elimination.  This
+     is used to generate DWARF debug info for stack variables.  */
+  bool stack_realign_tried;
 
   /* Nonzero if function being compiled needs dynamic realigned
      argument pointer (drap) if stack needs realigning.  */
   bool need_drap;
 
   /* Nonzero if function stack realignment estimation is done, namely
-     stack_realign_needed flag has been set before reload wrt
-     estimated stack alignment info.  */
+     stack_realign_needed flag has been set before reload wrt estimated
+     stack alignment info.  */
   bool stack_realign_processed;
 
   /* Nonzero if function stack realignment has been finalized, namely

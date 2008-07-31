@@ -2217,6 +2217,7 @@ expand_stack_alignment (void)
 
   crtl->stack_realign_needed
     = INCOMING_STACK_BOUNDARY < crtl->stack_alignment_estimated;
+  crtl->stack_realign_tried = crtl->stack_realign_needed;
 
   crtl->stack_realign_processed = true;
 

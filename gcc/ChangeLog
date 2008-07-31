@@ -1,3 +1,14 @@
+2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/36977
+	* cfgexpand.c (expand_stack_alignment): Set stack_realign_tried.
+
+	* dwarf2out.c (based_loc_descr): Check crtl->stack_realign_tried
+	for stack alignment.
+
+	* function.h (rtl_data): Add stack_realign_tried.  Update
+	comments.
+
 2008-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_canonical_va_list_type): Remove.
