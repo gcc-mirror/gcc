@@ -347,7 +347,7 @@ build_value_init_1 (tree type, bool have_ctor)
   if (CLASS_TYPE_P (type))
     {
       if (type_has_user_provided_constructor (type) && !have_ctor)
-	return build_cplus_new
+	return build_aggr_init_expr
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL_TREE, type, LOOKUP_NORMAL,
@@ -511,7 +511,7 @@ perform_member_init (tree member, tree init)
 	{
 	  /* Initialization of one array from another.  */
 	  finish_expr_stmt (build_vec_init (decl, NULL_TREE, TREE_VALUE (init),
-					    /*explicit_default_init_p=*/false,
+					    /*explicit_value_init_p=*/false,
 					    /* from_array=*/1,
                                             tf_warning_or_error));
 	}
@@ -1286,7 +1286,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       if (itype && cp_type_quals (itype) != TYPE_UNQUALIFIED)
 	itype = TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
       stmt_expr = build_vec_init (exp, NULL_TREE, init,
-				  /*explicit_default_init_p=*/false,
+				  /*explicit_value_init_p=*/false,
 				  itype && same_type_p (itype,
 							TREE_TYPE (exp)),
                                   complain);
@@ -2154,19 +2154,19 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   if (is_initialized)
     {
       bool stable;
+      bool explicit_value_init_p = false;
 
       init_expr = cp_build_indirect_ref (data_addr, NULL, complain);
 
+      if (init == void_zero_node)
+	{
+	  init = NULL_TREE;
+	  explicit_value_init_p = true;
+	}
+
       if (array_p)
 	{
-	  bool explicit_default_init_p = false;
-
-	  if (init == void_zero_node)
-	    {
-	      init = NULL_TREE;
-	      explicit_default_init_p = true;
-	    }
-	  else if (init)
+	  if (init)
             {
               if (complain & tf_error)
                 permerror ("ISO C++ forbids initialization in array new");
@@ -2179,7 +2179,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 						  integer_one_node,
 						  complain),
 			      init,
-			      explicit_default_init_p,
+			      explicit_value_init_p,
 			      /*from_array=*/0,
                               complain);
 
@@ -2190,17 +2190,19 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	}
       else
 	{
-	  if (init == void_zero_node)
-	    init = build_default_init (full_type, nelts);
-
-	  if (TYPE_NEEDS_CONSTRUCTING (type))
+	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
 	    {
 	      init_expr = build_special_member_call (init_expr,
 						     complete_ctor_identifier,
 						     init, elt_type,
 						     LOOKUP_NORMAL,
                                                      complain);
-	      stable = stabilize_init (init_expr, &init_preeval_expr);
+	    }
+	  else if (explicit_value_init_p)
+	    {
+	      /* Something like `new int()'.  */
+	      init_expr = build2 (INIT_EXPR, full_type,
+				  init_expr, build_value_init (full_type));
 	    }
 	  else
 	    {
@@ -2216,8 +2218,8 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
 	      init_expr = cp_build_modify_expr (init_expr, INIT_EXPR, init,
 						complain);
-	      stable = stabilize_init (init_expr, &init_preeval_expr);
 	    }
+	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
 
       if (init_expr == error_mark_node)
@@ -2662,8 +2664,8 @@ get_temp_regvar (tree type, tree init)
 
    INIT is the (possibly NULL) initializer.
 
-   If EXPLICIT_DEFAULT_INIT_P is true, then INIT must be NULL.  All
-   elements in the array are default-initialized.
+   If EXPLICIT_VALUE_INIT_P is true, then INIT must be NULL.  All
+   elements in the array are value-initialized.
 
    FROM_ARRAY is 0 if we should init everything with INIT
    (i.e., every element initialized from INIT).
@@ -2674,7 +2676,7 @@ get_temp_regvar (tree type, tree init)
 
 tree
 build_vec_init (tree base, tree maxindex, tree init,
-		bool explicit_default_init_p,
+		bool explicit_value_init_p,
 		int from_array, tsubst_flags_t complain)
 {
   tree rval;
@@ -2704,7 +2706,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (maxindex == NULL_TREE || maxindex == error_mark_node)
     return error_mark_node;
 
-  if (explicit_default_init_p)
+  if (explicit_value_init_p)
     gcc_assert (!init);
 
   inner_elt_type = strip_array_types (atype);
@@ -2840,7 +2842,7 @@ build_vec_init (tree base, tree maxindex, tree init,
      We do need to keep going if we're copying an array.  */
 
   if (from_array
-      || ((TYPE_NEEDS_CONSTRUCTING (type) || explicit_default_init_p)
+      || ((TYPE_NEEDS_CONSTRUCTING (type) || explicit_value_init_p)
 	  && ! (host_integerp (maxindex, 0)
 		&& (num_initialized_elts
 		    == tree_low_cst (maxindex, 0) + 1))))
@@ -2889,17 +2891,17 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      ("cannot initialize multi-dimensional array with initializer");
 	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
 				     0, 0,
-				     /*explicit_default_init_p=*/false,
+				     explicit_value_init_p,
 				     0, complain);
 	}
-      else if (!TYPE_NEEDS_CONSTRUCTING (type))
-	elt_init = (cp_build_modify_expr
-		    (to, INIT_EXPR,
-		     build_zero_init (type, size_one_node,
-				      /*static_storage_p=*/false),
-		     complain));
+      else if (explicit_value_init_p)
+	elt_init = build2 (INIT_EXPR, type, to,
+			   build_value_init (type));
       else
-	elt_init = build_aggr_init (to, init, 0, complain);
+	{
+	  gcc_assert (TYPE_NEEDS_CONSTRUCTING (type));
+	  elt_init = build_aggr_init (to, init, 0, complain);
+	}
 
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
       finish_expr_stmt (elt_init);

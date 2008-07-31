@@ -4,10 +4,10 @@
 
 int main() {
   int i;
-  void* operator new(unsigned s, int* p);
+  void* operator new(__SIZE_TYPE__ s, int* p);
   int* e = new(&i) int;                    // { dg-error "no matching function" }
   int* f = new int;
   return 0;
 }
 
-// { dg-excess-errors "operator new" }
+// { dg-error "candidate" "" { target *-*-* } 0 }

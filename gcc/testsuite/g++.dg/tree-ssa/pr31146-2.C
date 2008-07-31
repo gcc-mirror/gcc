@@ -20,5 +20,5 @@ double foo (void)
   return v.a[2];
 }
 
-/* { dg-final { scan-tree-dump "Replaced .*iftmp.* != 0B. with .1" "forwprop1" } } */
+/* { dg-final { scan-tree-dump "Replaced .* != 0B. with .1" "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

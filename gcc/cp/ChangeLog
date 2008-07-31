@@ -1,3 +1,14 @@
+2008-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11309
+	* tree.c (build_aggr_init_expr): Split out...
+	(build_cplus_new): ...from here.
+	(stabilize_init): Don't mess with AGGR_INIT_EXPR either.
+	* init.c (build_new_1): new T() means value-initialization, 
+	not default-initialization.
+	(build_vec_init): Likewise.
+	(build_value_init_1): Use build_aggr_init_expr.
+	
 2008-07-30  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/36767
