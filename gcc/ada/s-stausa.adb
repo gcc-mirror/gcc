@@ -258,20 +258,29 @@ package body System.Stack_Usage is
       --  big, the more an "instrumentation threshold at writing" error is
       --  likely to happen.
 
-      Current_Stack_Level : aliased Integer;
+      Stack_Used_When_Filling : Integer;
+      Current_Stack_Level     : aliased Integer;
 
    begin
       --  Readjust the pattern size. When we arrive in this function, there is
       --  already a given amount of stack used, that we won't analyze.
 
-      Analyzer.Stack_Used_When_Filling :=
+      Stack_Used_When_Filling :=
         Stack_Size
          (Analyzer.Bottom_Of_Stack,
           To_Stack_Address (Current_Stack_Level'Address))
           + Natural (Current_Stack_Level'Size);
 
-      Analyzer.Pattern_Size :=
-        Analyzer.Pattern_Size - Analyzer.Stack_Used_When_Filling;
+      if Stack_Used_When_Filling > Analyzer.Pattern_Size then
+         --  In this case, the known size of the stack is too small, we've
+         --  already taken more than expected, so there's no possible
+         --  computation
+
+         Analyzer.Pattern_Size := 0;
+      else
+         Analyzer.Pattern_Size :=
+           Analyzer.Pattern_Size - Stack_Used_When_Filling;
+      end if;
 
       declare
          Stack : aliased Stack_Slots
@@ -282,10 +291,15 @@ package body System.Stack_Usage is
 
          Analyzer.Stack_Overlay_Address := Stack'Address;
 
-         Analyzer.Bottom_Pattern_Mark :=
-           To_Stack_Address (Stack (Bottom_Slot_Index_In (Stack))'Address);
-         Analyzer.Top_Pattern_Mark :=
-           To_Stack_Address (Stack (Top_Slot_Index_In (Stack))'Address);
+         if Analyzer.Pattern_Size /= 0 then
+            Analyzer.Bottom_Pattern_Mark :=
+              To_Stack_Address (Stack (Bottom_Slot_Index_In (Stack))'Address);
+            Analyzer.Top_Pattern_Mark :=
+              To_Stack_Address (Stack (Top_Slot_Index_In (Stack))'Address);
+         else
+            Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Stack'Address);
+            Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Stack'Address);
+         end if;
 
          --  If Arr has been packed, the following assertion must be true (we
          --  add the size of the element whose address is:
@@ -539,20 +553,28 @@ package body System.Stack_Usage is
    -------------------
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
-      Measure : constant Natural :=
-                  Stack_Size
-                    (Analyzer.Topmost_Touched_Mark,
-                     Analyzer.Bottom_Of_Stack)
-                  + Analyzer.Stack_Used_When_Filling;
-
-      Result  : constant Task_Result :=
+      Result  : Task_Result :=
                   (Task_Name      => Analyzer.Task_Name,
                    Max_Size       => Analyzer.Stack_Size,
-                   Min_Measure    => Measure,
-                   Max_Measure    => Measure + Analyzer.Stack_Size
-                                             - Analyzer.Pattern_Size);
+                   Min_Measure    => 0,
+                   Max_Measure    => 0);
 
    begin
+      if Analyzer.Pattern_Size = 0 then
+         --  If we have that result, it means that we didn't do any computation
+         --  at all. In other words, we used at least everything (and possibly
+         --  more).
+
+         Result.Min_Measure := Analyzer.Stack_Size;
+         Result.Max_Measure := Analyzer.Stack_Size;
+      else
+         Result.Min_Measure := Stack_Size
+                    (Analyzer.Topmost_Touched_Mark,
+                     Analyzer.Bottom_Of_Stack);
+         Result.Max_Measure := Result.Min_Measure +
+           (Analyzer.Stack_Size - Analyzer.Pattern_Size);
+      end if;
+
       if Analyzer.Result_Id in Result_Array'Range then
 
          --  If the result can be stored, then store it in Result_Array
