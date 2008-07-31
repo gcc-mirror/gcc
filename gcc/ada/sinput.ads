@@ -565,12 +565,12 @@ package Sinput is
    procedure Skip_Line_Terminators
      (P        : in out Source_Ptr;
       Physical : out Boolean);
-   --  On entry, P points to a line terminator that has been encountered,
-   --  which is one of FF,LF,VT,CR or a wide character sequence whose value is
-   --  in category Separator,Line or Separator,Paragraph. The purpose of this
-   --  P points just past the character that was scanned. The purpose of this
-   --  routine is to distinguish physical and logical line endings. A physical
-   --  line ending is one of:
+   --  On entry, P points to a line terminator that has been encountered, which
+   --  is one of FF,LF,VT,CR or a wide character sequence whose value is in
+   --  category Separator,Line or Separator,Paragraph. P points just past the
+   --  character that was scanned. The purpose of this routine is to
+   --  distinguish physical and logical line endings. A physical line ending is
+   --  one of:
    --
    --     CR on its own (MAC System 7)
    --     LF on its own (Unix and unix-like systems)

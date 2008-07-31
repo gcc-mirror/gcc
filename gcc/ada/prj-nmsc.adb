@@ -4111,8 +4111,9 @@ package body Prj.Nmsc is
       if Data.Library then
          declare
             Linker_Package_Id : constant Package_Id :=
-              Util.Value_Of (Name_Linker, Data.Decl.Packages, In_Tree);
-            Linker_Package : Package_Element;
+                                  Util.Value_Of
+                                    (Name_Linker, Data.Decl.Packages, In_Tree);
+            Linker_Package    : Package_Element;
             Switches          : Array_Element_Id := No_Array_Element;
 
          begin
@@ -8843,7 +8844,6 @@ package body Prj.Nmsc is
             if Current_Source = Nil_String then
                Data.Ada_Sources :=
                  String_Element_Table.Last (In_Tree.String_Elements);
-               Data.Sources := Data.Ada_Sources;
             else
                In_Tree.String_Elements.Table (Current_Source).Next :=
                  String_Element_Table.Last (In_Tree.String_Elements);
@@ -8918,7 +8918,6 @@ package body Prj.Nmsc is
                   then
                      if Previous_Source = Nil_String then
                         Data.Ada_Sources := Nil_String;
-                        Data.Sources := Nil_String;
                      else
                         In_Tree.String_Elements.Table (Previous_Source).Next :=
                           Nil_String;
