@@ -1,5 +1,9 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/36970
+	* gcc.dg/free-1.c: New test.
+	* gcc.dg/free-2.c: New test.
+
 	PR debug/36278
 	* g++.dg/debug/namespace2.C: New test.
 

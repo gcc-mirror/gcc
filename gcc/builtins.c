@@ -207,6 +207,7 @@ static rtx expand_builtin_memory_chk (tree, rtx, enum machine_mode,
 				      enum built_in_function);
 static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
+static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
 static tree fold_builtin_strcat_chk (tree, tree, tree, tree);
 static tree fold_builtin_strncat_chk (tree, tree, tree, tree, tree);
@@ -6130,7 +6131,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   if (!optimize
       && !called_as_built_in (fndecl)
       && DECL_ASSEMBLER_NAME_SET_P (fndecl)
-      && fcode != BUILT_IN_ALLOCA)
+      && fcode != BUILT_IN_ALLOCA
+      && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
@@ -7005,6 +7007,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       maybe_emit_sprintf_chk_warning (exp, fcode);
+      break;
+
+    case BUILT_IN_FREE:
+      maybe_emit_free_warning (exp);
       break;
 
     default:	/* just do library call, if unknown builtin */
@@ -11979,6 +11985,27 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
       warning (0, "%Kcall to %D will always overflow destination buffer",
 	       exp, get_callee_fndecl (exp));
     }
+}
+
+/* Emit warning if a free is called with address of a variable.  */
+
+static void
+maybe_emit_free_warning (tree exp)
+{
+  tree arg = CALL_EXPR_ARG (exp, 0);
+
+  STRIP_NOPS (arg);
+  if (TREE_CODE (arg) != ADDR_EXPR)
+    return;
+
+  arg = get_base_address (TREE_OPERAND (arg, 0));
+  if (arg == NULL || INDIRECT_REF_P (arg))
+    return;
+
+  if (SSA_VAR_P (arg))
+    warning (0, "%Kattempt to free a non-heap object %qD", exp, arg);
+  else
+    warning (0, "%Kattempt to free a non-heap object", exp);
 }
 
 /* Fold a call to __builtin_object_size with arguments PTR and OST,
