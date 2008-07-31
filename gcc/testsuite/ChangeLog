@@ -1,3 +1,7 @@
+2008-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/missing_acc_check.adb: New test.
+
 2008-07-31  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/uninit-1-O0.c: New testcase.
