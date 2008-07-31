@@ -51,7 +51,7 @@ package MLib.Utl is
    --  the path, run it also. Output_File is the path name of the archive to
    --  create. Objects is the list of the path names of the object files to be
    --  put in the archive. This procedure currently assumes that it is always
-   --  called in the context of gnatmake. If other executable start using this
+   --  called in the context of gnatmake. If other executables start using this
    --  procedure, an additional parameter would need to be added, and calls to
    --  Osint.Program_Name updated accordingly in the body.
 
