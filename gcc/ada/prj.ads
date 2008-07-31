@@ -32,14 +32,11 @@
 with Casing; use Casing;
 with Namet;  use Namet;
 with Scans;  use Scans;
-with Table;
 with Types;  use Types;
 
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 with GNAT.Dynamic_Tables;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
-
-with System.HTable;
 
 package Prj is
 
@@ -838,164 +835,6 @@ package Prj is
    --  Similar to 'Value (but avoid use of this attribute in compiler)
    --  Raises Constraint_Error if not a Casing_Type image.
 
-   --  Declarations for gprmake:
-
-   First_Language_Index        : constant Language_Index := 1;
-   First_Language_Indexes_Last : constant Language_Index := 5;
-
-   Ada_Language_Index         : constant Language_Index :=
-                                  First_Language_Index;
-   C_Language_Index           : constant Language_Index :=
-                                  Ada_Language_Index + 1;
-   C_Plus_Plus_Language_Index : constant Language_Index :=
-                                  C_Language_Index + 1;
-
-   Last_Language_Index : Language_Index := No_Language_Index;
-
-   subtype First_Language_Indexes is Language_Index
-      range First_Language_Index .. First_Language_Indexes_Last;
-
-   package Language_Indexes is new System.HTable.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Language_Index,
-      No_Element => No_Language_Index,
-      Key        => Name_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  Mapping of language names to language indexes
-
-   package Language_Names is new Table.Table
-     (Table_Component_Type => Name_Id,
-      Table_Index_Type     => Language_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 4,
-      Table_Increment      => 100,
-      Table_Name           => "Prj.Language_Names");
-   --  The table for the name of programming languages
-
-   procedure Add_Language_Name (Name : Name_Id);
-
-   procedure Display_Language_Name (Language : Language_Index);
-
-   type Languages_In_Project is array (First_Language_Indexes) of Boolean;
-   --  Set of supported languages used in a project
-
-   No_Languages : constant Languages_In_Project := (others => False);
-   --  No supported languages are used
-
-   type Supp_Language_Index is new Nat;
-   No_Supp_Language_Index  : constant Supp_Language_Index := 0;
-
-   type Supp_Language is record
-      Index   : Language_Index := No_Language_Index;
-      Present : Boolean := False;
-      Next    : Supp_Language_Index := No_Supp_Language_Index;
-   end record;
-
-   package Present_Language_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Supp_Language,
-      Table_Index_Type     => Supp_Language_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 4,
-      Table_Increment      => 100);
-   --  The table for the presence of languages with an index that is outside
-   --  of First_Language_Indexes.
-
-   type Impl_Suffix_Array is array (First_Language_Indexes) of File_Name_Type;
-   --  Suffixes for the non spec sources of the different supported languages
-   --  in a project.
-
-   No_Impl_Suffixes : constant Impl_Suffix_Array := (others => No_File);
-   --  A default value for the non spec source suffixes
-
-   type Supp_Suffix is record
-      Index   : Language_Index      := No_Language_Index;
-      Suffix  : File_Name_Type      := No_File;
-      Next    : Supp_Language_Index := No_Supp_Language_Index;
-   end record;
-
-   package Supp_Suffix_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Supp_Suffix,
-      Table_Index_Type     => Supp_Language_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 4,
-      Table_Increment      => 100);
-   --  The table for the presence of languages with an index that is outside
-   --  of First_Language_Indexes.
-
-   type Lang_Kind is (GNU, Other);
-
-   type Language_Processing_Data is record
-      Compiler_Drivers     : Name_List_Index := No_Name_List;
-      Compiler_Paths       : Name_Id         := No_Name;
-      Compiler_Kinds       : Lang_Kind       := GNU;
-      Dependency_Options   : Name_List_Index := No_Name_List;
-      Compute_Dependencies : Name_List_Index := No_Name_List;
-      Include_Options      : Name_List_Index := No_Name_List;
-      Binder_Drivers       : Name_Id         := No_Name;
-      Binder_Driver_Paths  : Name_Id         := No_Name;
-   end record;
-
-   Default_Language_Processing_Data :
-     constant Language_Processing_Data :=
-       (Compiler_Drivers     => No_Name_List,
-        Compiler_Paths       => No_Name,
-        Compiler_Kinds       => GNU,
-        Dependency_Options   => No_Name_List,
-        Compute_Dependencies => No_Name_List,
-        Include_Options      => No_Name_List,
-        Binder_Drivers       => No_Name,
-        Binder_Driver_Paths  => No_Name);
-
-   type First_Language_Processing_Data is
-     array (First_Language_Indexes) of Language_Processing_Data;
-
-   Default_First_Language_Processing_Data :
-      constant First_Language_Processing_Data :=
-                 (others => Default_Language_Processing_Data);
-
-   type Supp_Language_Data is record
-      Index : Language_Index := No_Language_Index;
-      Data  : Language_Processing_Data := Default_Language_Processing_Data;
-      Next  : Supp_Language_Index := No_Supp_Language_Index;
-   end record;
-
-   package Supp_Language_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Supp_Language_Data,
-      Table_Index_Type     => Supp_Language_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 4,
-      Table_Increment      => 100);
-   --  The table for language data when there are more languages than
-   --  in First_Language_Indexes.
-
-   type Other_Source_Id is new Nat;
-   No_Other_Source : constant Other_Source_Id := 0;
-
-   type Other_Source is record
-      Language         : Language_Index;       --  language of the source
-      File_Name        : File_Name_Type;       --  source file simple name
-      Path_Name        : Path_Name_Type;       --  source full path name
-      Source_TS        : Time_Stamp_Type;      --  source file time stamp
-      Object_Name      : File_Name_Type;       --  object file simple name
-      Object_Path      : Path_Name_Type;       --  object full path name
-      Object_TS        : Time_Stamp_Type;      --  object file time stamp
-      Dep_Name         : File_Name_Type;       --  dependency file simple name
-      Dep_Path         : Path_Name_Type;       --  dependency full path name
-      Dep_TS           : Time_Stamp_Type;      --  dependency file time stamp
-      Naming_Exception : Boolean := False;     --  True if a naming exception
-      Next             : Other_Source_Id := No_Other_Source;
-   end record;
-   --  Data for a source in a language other than Ada
-
-   package Other_Source_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Other_Source,
-      Table_Index_Type     => Other_Source_Id,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 200,
-      Table_Increment      => 100);
-   --  The table for sources of languages other than Ada
-
    --  The following record contains data for a naming scheme
 
    type Naming_Data is record
@@ -1044,10 +883,6 @@ package Prj is
       --  An associative array listing body file names that do not have the
       --  body suffix. Not used by Ada. Indexed by programming language name.
 
-      --  For gprmake:
-
-      Impl_Suffixes : Impl_Suffix_Array   := No_Impl_Suffixes;
-      Supp_Suffixes : Supp_Language_Index := No_Supp_Language_Index;
    end record;
 
    function Spec_Suffix_Of
@@ -1407,6 +1242,12 @@ package Prj is
       -- Sources --
       -------------
 
+      Ada_Sources_Present : Boolean := True;
+      --  True if there are Ada sources in the project
+
+      Other_Sources_Present : Boolean := True;
+      --  True if there are non-Ada sources in the project
+
       Ada_Sources : String_List_Id := Nil_String;
       --  The list of all the Ada source file names (gnatmake only)
 
@@ -1515,32 +1356,6 @@ package Prj is
       --  True if there are comments in the project sources that cannot be kept
       --  in the project tree.
 
-      ------------------
-      --  For gprmake --
-      ------------------
-
-      Langs          : Languages_In_Project := No_Languages;
-      Supp_Languages : Supp_Language_Index  := No_Supp_Language_Index;
-      --  Indicate the different languages of the source of this project
-
-      Ada_Sources_Present : Boolean := True;
-      --  True if there are Ada sources in the project
-
-      Other_Sources_Present : Boolean := True;
-      --  True if there are sources from languages other than Ada in the
-      --  project.
-
-      First_Other_Source : Other_Source_Id := No_Other_Source;
-      --  First source of a language other than Ada
-
-      Last_Other_Source : Other_Source_Id := No_Other_Source;
-      --  Last source of a language other than Ada
-
-      First_Lang_Processing    : First_Language_Processing_Data :=
-                                   Default_First_Language_Processing_Data;
-      Supp_Language_Processing : Supp_Language_Index :=
-                                   No_Supp_Language_Index;
-      --  Language configurations
    end record;
 
    function Empty_Project (Tree : Project_Tree_Ref) return Project_Data;
@@ -1664,13 +1479,6 @@ package Prj is
          Files_HT          : Files_Htable.Instance;
          Source_Paths_HT   : Source_Paths_Htable.Instance;
 
-         --  For gprmake:
-
-         Present_Languages : Present_Language_Table.Instance;
-         Supp_Suffixes     : Supp_Suffix_Table.Instance;
-         Supp_Languages    : Supp_Language_Table.Instance;
-         Other_Sources     : Other_Source_Table.Instance;
-
          --  Private part
 
          Private_Part : Private_Project_Tree_Data;
@@ -1742,59 +1550,6 @@ package Prj is
    function Switches_Name
      (Source_File_Name : File_Name_Type) return File_Name_Type;
    --  Returns the switches file name corresponding to a source file name
-
-   --  For gprmake
-
-   function Body_Suffix_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return String;
-   --  Returns the suffix of sources of language Language in project In_Project
-   --  in project tree In_Tree.
-
-   function Is_Present
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Boolean;
-   --  Return True when Language is one of the languages used in
-   --  project In_Project.
-
-   procedure Set
-     (Language   : Language_Index;
-      Present    : Boolean;
-      In_Project : in out Project_Data;
-      In_Tree    : Project_Tree_Ref);
-   --  Indicate if Language is or not a language used in project In_Project
-
-   function Language_Processing_Data_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Language_Processing_Data;
-   --  Return the Language_Processing_Data for language Language in project
-   --  In_Project. Return the default when no Language_Processing_Data are
-   --  defined for the language.
-
-   procedure Set
-     (Language_Processing : Language_Processing_Data;
-      For_Language        : Language_Index;
-      In_Project          : in out Project_Data;
-      In_Tree             : Project_Tree_Ref);
-   --  Set the Language_Processing_Data for language Language in project
-   --  In_Project.
-
-   function Suffix_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return File_Name_Type;
-   --  Return the suffix for language Language in project In_Project. Return
-   --  No_Name when no suffix is defined for the language.
-
-   procedure Set
-     (Suffix       : File_Name_Type;
-      For_Language : Language_Index;
-      In_Project   : in out Project_Data;
-      In_Tree      : Project_Tree_Ref);
-   --  Set the suffix for language Language in project In_Project
 
    ----------------
    -- Temp Files --

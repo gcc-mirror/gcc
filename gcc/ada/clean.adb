@@ -826,9 +826,6 @@ package body Clean is
       Index2      : Int;
       Lib_File    : File_Name_Type;
 
-      Source_Id   : Other_Source_Id;
-      Source      : Other_Source;
-
       Global_Archive : Boolean := False;
 
    begin
@@ -881,7 +878,7 @@ package body Clean is
                --  Source_Dirs or Source_Files is specified as an empty list,
                --  so always look for Ada units in extending projects.
 
-               if Data.Langs (Ada_Language_Index)
+               if Data.Ada_Sources_Present
                  or else Data.Extends /= No_Project
                then
                   for Unit in Unit_Table.First ..
@@ -1044,40 +1041,6 @@ package body Clean is
                   end if;
                end if;
 
-               if Data.Other_Sources_Present then
-
-                  --  There is non-Ada code: delete the object files and
-                  --  the dependency files if they exist.
-
-                  Source_Id := Data.First_Other_Source;
-                  while Source_Id /= No_Other_Source loop
-                     Source :=
-                       Project_Tree.Other_Sources.Table (Source_Id);
-
-                     if Is_Regular_File
-                       (Get_Name_String (Source.Object_Name))
-                     then
-                        Delete (Obj_Dir, Get_Name_String (Source.Object_Name));
-                     end if;
-
-                     if
-                       Is_Regular_File (Get_Name_String (Source.Dep_Name))
-                     then
-                        Delete (Obj_Dir, Get_Name_String (Source.Dep_Name));
-                     end if;
-
-                     Source_Id := Source.Next;
-                  end loop;
-
-                  --  If it is a library with only non Ada sources, delete
-                  --  the fake archive and the dependency file, if they exist.
-
-                  if Data.Library
-                    and then not Data.Langs (Ada_Language_Index)
-                  then
-                     Clean_Archive (Project, Global => False);
-                  end if;
-               end if;
             end;
          end if;
 
