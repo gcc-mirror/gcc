@@ -28,6 +28,7 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Util; use Exp_Util;
 with Exp_Ch3;  use Exp_Ch3;
@@ -169,12 +170,15 @@ package body Exp_Aggr is
    -- Local Subprograms for Array Aggregate Expansion --
    -----------------------------------------------------
 
-   function Aggr_Size_OK (Typ : Entity_Id) return Boolean;
+   function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean;
    --  Very large static aggregates present problems to the back-end, and
    --  are transformed into assignments and loops. This function verifies
    --  that the total number of components of an aggregate is acceptable
    --  for transformation into a purely positional static form. It is called
    --  prior to calling Flatten.
+   --  This function also detects and warns about one-component aggregates
+   --  that appear in a non-static context. Even if the component value is
+   --  static, such an aggregate must be expanded into an assignment.
 
    procedure Convert_Array_Aggr_In_Allocator
      (Decl   : Node_Id;
@@ -291,7 +295,7 @@ package body Exp_Aggr is
    -- Aggr_Size_OK --
    ------------------
 
-   function Aggr_Size_OK (Typ : Entity_Id) return Boolean is
+   function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean is
       Lo   : Node_Id;
       Hi   : Node_Id;
       Indx : Node_Id;
@@ -397,6 +401,43 @@ package body Exp_Aggr is
 
          if Hiv < Lov then
             return True;
+         end if;
+
+         --  One-component aggregates are suspicious, and if the context
+         --  type is an object declaration with non-static bounds it will
+         --  trip gcc; such an aggregate must be expanded into a single
+         --  assignment.
+
+         if Hiv = Lov
+           and then Nkind (Parent (N)) = N_Object_Declaration
+         then
+            declare
+               Index_Type : constant Entity_Id :=
+                       Etype
+                         (First_Index
+                           (Etype (Defining_Identifier (Parent (N)))));
+               Indx : Node_Id;
+            begin
+               if not Compile_Time_Known_Value (Type_Low_Bound (Index_Type))
+                  or else not Compile_Time_Known_Value
+                                (Type_High_Bound (Index_Type))
+               then
+                  if Present (Component_Associations (N)) then
+                     Indx :=
+                       First (Choices (First (Component_Associations (N))));
+                     if Is_Entity_Name (Indx)
+                       and then not Is_Type (Entity (Indx))
+                     then
+                        Error_Msg_N
+                          ("single component aggregate in non-static context?",
+                            Indx);
+                        Error_Msg_N ("\maybe subtype name was meant?", Indx);
+                     end if;
+                  end if;
+
+                  return False;
+               end if;
+            end;
          end if;
 
          declare
@@ -3847,7 +3888,7 @@ package body Exp_Aggr is
       --  assignments to the target anyway, but it is conceivable that
       --  it will eventually be able to treat such aggregates statically???
 
-      if Aggr_Size_OK (Typ)
+      if Aggr_Size_OK (N, Typ)
         and then Flatten (N, First_Index (Typ), First_Index (Base_Type (Typ)))
       then
          if Static_Components then
@@ -6383,7 +6424,7 @@ package body Exp_Aggr is
                elsif Nkind (Expression (Expr)) /= N_Integer_Literal then
                   return False;
 
-               elsif not Aggr_Size_OK (Typ) then
+               elsif not Aggr_Size_OK (N, Typ) then
                   return False;
                end if;
 
