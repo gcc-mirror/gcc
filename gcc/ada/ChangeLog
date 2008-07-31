@@ -1,3 +1,45 @@
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Executable_Prefix_Path): If Locate_Exec_On_Path fails,
+	return the empty string, instead of raising Constraint_Error.
+
+2008-07-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.ads (Apply_Accessibility_Check): Add parameter Insert_Node.
+	
+	* checks.adb (Apply_Accessibility_Check): Insert the check on
+	Insert_Node.
+	
+	* exp_attr.adb:
+	(Expand_N_Attribute_Refernce, Attribute_Access): Pass attribute node
+	to new parameter Insert_Node on call to Apply_Accessibility_Check.
+	Necessary to distinguish the insertion node because the dereferenced
+	formal may come from a rename, but the check must be inserted in
+	front of the attribute.
+	
+	* exp_ch4.adb:
+	(Expand_N_Allocator): Pass actual for new Insert_Node parameter on
+	call to Apply_Accessibility_Check.
+	(Expand_N_Type_Conversion): Pass actual for new Insert_Node parameter
+	on call to Apply_Accessibility_Check.
+	Minor reformatting
+
+2008-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_type.adb (Has_Compatible_Type): Complete support for synchronized
+	types when the candidate type is a synchronized type.
+	
+	* sem_res.adb (Resolve_Actuals): Reorganize code handling synchronized
+	types, and complete management of synchronized types adding missing
+	code to handle formal that is a synchronized type.
+	
+	* sem_ch4.adb (Try_Primitive_Operation): Avoid testing attributes that
+	are not available and cause the compiler to blowup. Found compiling
+	test with switch -gnatc
+	
+	* sem_ch6.adb (Check_Synchronized_Overriding): Remove local subprogram
+	Has_Correct_Formal_Mode plus code cleanup.
+
 2008-07-31  Bob Duff  <duff@adacore.com>
 
 	* sinput.adb (Skip_Line_Terminators): Fix handling of LF/CR -- it was
