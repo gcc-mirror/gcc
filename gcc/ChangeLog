@@ -1,3 +1,9 @@
+2008-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/36649
+	* c-pch.c (c_common_read_pch): Save and restore
+	line_table->trace_includes across PCH restore.
+
 2008-07-30  Andreas Schwab  <schwab@suse.de>
 
 	PR rtl-optimization/36929

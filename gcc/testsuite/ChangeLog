@@ -1,3 +1,11 @@
+2008-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/36649
+	* gcc.dg/pch/cpp-3.c: New test.
+	* gcc.dg/pch/cpp-3.hs: New file.
+	* gcc.dg/pch/cpp-3a.h: New file.
+	* gcc.dg/pch/cpp-3b.h: New file.
+
 2008-07-30  Dodji Seketeli  <dseketel@redhat.com>
 
 	PR c++/36767

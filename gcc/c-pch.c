@@ -367,6 +367,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   struct c_pch_header h;
   struct save_macro_data *smd;
   expanded_location saved_loc;
+  bool saved_trace_includes;
 
   f = fdopen (fd, "rb");
   if (f == NULL)
@@ -419,6 +420,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     saved_loc.line = SOURCE_LINE (map, line_table->highest_line);
   }
 #endif
+  saved_trace_includes = line_table->trace_includes;
 
   cpp_prepare_state (pfile, &smd);
 
@@ -429,6 +431,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
 
   fclose (f);
 
+  line_table->trace_includes = saved_trace_includes;
   cpp_set_line_map (pfile, line_table);
   linemap_add (line_table, LC_RENAME, 0, saved_loc.file, saved_loc.line);
 
