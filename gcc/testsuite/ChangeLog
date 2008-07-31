@@ -1,3 +1,7 @@
+2008-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/specs/genericppc.ads: New test.
+
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/36970
