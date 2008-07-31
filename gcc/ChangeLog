@@ -1,5 +1,10 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/36970
+	* builtins.c (maybe_emit_free_warning): New function.
+	(expand_builtin): Process BUILT_IN_FREE even at -O0.  Call
+	maybe_emit_free_warning for BUILT_IN_FREE.
+
 	PR debug/36278
 	* dwarf2out.c (get_context_die): New function.
 	(force_decl_die, force_type_die): Use it.
