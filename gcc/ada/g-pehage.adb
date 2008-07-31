@@ -591,7 +591,7 @@ package body GNAT.Perfect_Hash_Generators is
    --  Start of processing for Assign_Values_To_Vertices
 
    begin
-      --  Value -1 denotes an unitialized value as it is supposed to
+      --  Value -1 denotes an uninitialized value as it is supposed to
       --  be in the range 0 .. NK.
 
       if G = No_Table then
@@ -1141,11 +1141,10 @@ package body GNAT.Perfect_Hash_Generators is
       Tries  : Positive     := Default_Tries)
    is
    begin
-      --  Deallocated the part of the table concerning the reduced
-      --  words. Initial words are already present in the table. We
-      --  may have reduced words already there because a previous
-      --  computation failed. We are currently retrying and the
-      --  reduced words have to be deallocated.
+      --  Deallocate the part of the table concerning the reduced words.
+      --  Initial words are already present in the table. We may have reduced
+      --  words already there because a previous computation failed. We are
+      --  currently retrying and the reduced words have to be deallocated.
 
       for W in NK .. WT.Last loop
          Free_Word (WT.Table (W));
