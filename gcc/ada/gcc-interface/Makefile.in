@@ -1335,7 +1335,9 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
 
        EH_MECHANISM=-gcc
     else
-       LIBGNAT_TARGET_PAIRS += system.ads<system-rtx-rtss.ads
+       LIBGNAT_TARGET_PAIRS += \
+       system.ads<system-rtx-rtss.ads \
+       s-parame.adb<s-parame-vxworks.adb
 
        EH_MECHANISM=
     endif
