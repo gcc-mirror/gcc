@@ -3,6 +3,11 @@
 	PR debug/36278
 	* g++.dg/debug/namespace2.C: New test.
 
+	* gcc.dg/pch/cpp-3.c: New test.
+	* gcc.dg/pch/cpp-3.hs: New file.
+	* gcc.dg/pch/cpp-3a.h: New file.
+	* gcc.dg/pch/cpp-3b.h: New file.
+
 2008-07-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_expr.ad[sb]: New test.
