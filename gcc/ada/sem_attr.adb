@@ -3739,21 +3739,17 @@ package body Sem_Attr is
 
       when Attribute_Result => Result : declare
          CS : constant Entity_Id := Current_Scope;
-         PS : Entity_Id;
+         PS : constant Entity_Id := Scope (CS);
 
       begin
-         PS := Scope (CS);
+         --  If the enclosing subprogram is always inlined, the enclosing
+         --  postcondition will not be propagated to the expanded call.
 
-         --  If we are analyzing a body to be inlined, there is an additional
-         --  scope present, used to gather global references. Retrieve the
-         --  source scope.
-
-         if Chars (PS) = Name_uParent then
-            PS := Scope (PS);
-            if Warn_On_Redundant_Constructs then
-               Error_Msg_N
-                 ("postconditions on inlined functions not enforced", N);
-            end if;
+         if Has_Pragma_Inline_Always (PS)
+           and then Warn_On_Redundant_Constructs
+         then
+            Error_Msg_N
+              ("postconditions on inlined functions not enforced?", N);
          end if;
 
          --  If we are in the scope of a function and in Spec_Expression mode,
@@ -3793,6 +3789,16 @@ package body Sem_Attr is
             if (Nkind (P) = N_Identifier
                   or else Nkind (P) = N_Operator_Symbol)
               and then Chars (P) = Chars (PS)
+            then
+               null;
+
+            --  Within an instance, the prefix designates the local renaming
+            --  of the original generic.
+
+            elsif Is_Entity_Name (P)
+              and then Ekind (Entity (P)) = E_Function
+              and then Present (Alias (Entity (P)))
+              and then Chars (Alias (Entity (P))) = Chars (PS)
             then
                null;
 

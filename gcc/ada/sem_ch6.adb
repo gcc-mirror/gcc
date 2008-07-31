@@ -891,6 +891,37 @@ package body Sem_Ch6 is
          end if;
 
          Set_Actual_Subtypes (N, Current_Scope);
+         Process_PPCs (N, Gen_Id, Body_Id);
+
+         --  If the generic unit carries pre- or post-conditions, copy them
+         --  to the original generic tree, so that they are properly added
+         --  to any instantiation.
+
+         declare
+            Orig : constant Node_Id := Original_Node (N);
+            Cond : Node_Id;
+
+         begin
+            Cond := First (Declarations (N));
+            while Present (Cond) loop
+               if Nkind (Cond) = N_Pragma
+                 and then Pragma_Name (Cond) = Name_Check
+               then
+                  Prepend (New_Copy_Tree (Cond), Declarations (Orig));
+
+               elsif Nkind (Cond) = N_Pragma
+                 and then Pragma_Name (Cond) = Name_Postcondition
+               then
+                  Set_Ekind (Defining_Entity (Orig), Ekind (Gen_Id));
+                  Prepend (New_Copy_Tree (Cond), Declarations (Orig));
+               else
+                  exit;
+               end if;
+
+               Next (Cond);
+            end loop;
+         end;
+
          Analyze_Declarations (Declarations (N));
          Check_Completion;
          Analyze (Handled_Statement_Sequence (N));
@@ -1872,6 +1903,10 @@ package body Sem_Ch6 is
             Set_Has_Delayed_Freeze (Spec_Id);
             Insert_Actions (N, Freeze_Entity (Spec_Id, Loc));
          end if;
+      end if;
+
+      if Chars (Body_Id) = Name_uPostconditions then
+         Set_Has_Postconditions (Current_Scope);
       end if;
 
       --  Place subprogram on scope stack, and make formals visible. If there
@@ -7752,8 +7787,16 @@ package body Sem_Ch6 is
          --  procedure. Note that it is only at the outer level that we
          --  do this fiddling, for the spec cases, the already preanalyzed
          --  parameters are not affected.
+         --  For a postcondition pragma within a generic, preserve the pragma
+         --  for later expansion.
 
          Set_Analyzed (CP, False);
+
+         if Nam = Name_Postcondition
+           and then not Expander_Active
+         then
+            return CP;
+         end if;
 
          --  Change pragma into corresponding pragma Check
 
@@ -7827,7 +7870,15 @@ package body Sem_Ch6 is
                   end if;
 
                   Analyze (Prag);
-                  Append (Grab_PPC (Name_Postcondition), Plist);
+
+                  --  If expansion is disabled, as in a generic unit,
+                  --  save pragma for later expansion.
+
+                  if not Expander_Active then
+                     Prepend (Grab_PPC (Name_Postcondition), Declarations (N));
+                  else
+                     Append (Grab_PPC (Name_Postcondition), Plist);
+                  end if;
                end if;
 
                Next (Prag);
@@ -7860,16 +7911,23 @@ package body Sem_Ch6 is
                   Plist := Empty_List;
                end if;
 
-               Append (Grab_PPC (Name_Postcondition), Plist);
+               if not Expander_Active then
+                  Prepend (Grab_PPC (Name_Postcondition), Declarations (N));
+               else
+                  Append (Grab_PPC (Name_Postcondition), Plist);
+               end if;
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
       end if;
 
-      --  If we had any postconditions, build the procedure
+      --  If we had any postconditions and expansion is enabled,, build
+      --  the Postconditions procedure.
 
-      if Present (Plist) then
+      if Present (Plist)
+        and then Expander_Active
+      then
          Subp := Defining_Entity (N);
 
          if Etype (Subp) /= Standard_Void_Type then
