@@ -6105,7 +6105,7 @@ package body Prj.Nmsc is
 
       --  We set the object directory to its default
 
-      Data.Object_Directory   := Data.Directory;
+      Data.Object_Directory := Data.Directory;
 
       if Object_Dir.Value /= Empty_String then
          Get_Name_String (Object_Dir.Value);
@@ -6170,7 +6170,7 @@ package body Prj.Nmsc is
            (Project,
             In_Tree,
             Name_Find,
-            Data.Directory.Name,
+            Data.Directory.Display_Name,
             Data.Object_Directory.Name,
             Data.Object_Directory.Display_Name,
             Create      => "object",
@@ -6213,7 +6213,7 @@ package body Prj.Nmsc is
               (Project,
                In_Tree,
                File_Name_Type (Exec_Dir.Value),
-               Data.Directory.Name,
+               Data.Directory.Display_Name,
                Data.Exec_Directory.Name,
                Data.Exec_Directory.Display_Name,
                Create   => "exec",
@@ -6311,7 +6311,7 @@ package body Prj.Nmsc is
             Data.Object_Directory := No_Path_Information;
          end if;
 
-         Data.Source_Dirs           := Nil_String;
+         Data.Source_Dirs := Nil_String;
 
       else
          declare
@@ -6323,8 +6323,7 @@ package body Prj.Nmsc is
 
             Source_Dir := Source_Dirs.Values;
             while Source_Dir /= Nil_String loop
-               Element :=
-                 In_Tree.String_Elements.Table (Source_Dir);
+               Element := In_Tree.String_Elements.Table (Source_Dir);
                Find_Source_Dirs
                  (File_Name_Type (Element.Value), Element.Location);
                Source_Dir := Element.Next;
@@ -6344,8 +6343,7 @@ package body Prj.Nmsc is
 
             Source_Dir := Excluded_Source_Dirs.Values;
             while Source_Dir /= Nil_String loop
-               Element :=
-                 In_Tree.String_Elements.Table (Source_Dir);
+               Element := In_Tree.String_Elements.Table (Source_Dir);
                Find_Source_Dirs
                  (File_Name_Type (Element.Value),
                   Element.Location,
@@ -6449,6 +6447,7 @@ package body Prj.Nmsc is
 
       if not Prj.Util.Is_Valid (File) then
          Error_Msg (Project, In_Tree, "file does not exist", Location);
+
       else
          --  Read the lines one by one
 
@@ -6554,9 +6553,9 @@ package body Prj.Nmsc is
          Last          : Natural           := File'Last;
          Standard_GNAT : Boolean;
          Spec          : constant File_Name_Type :=
-                             Spec_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
+                           Spec_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
          Body_Suff     : constant File_Name_Type :=
-                             Body_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
+                           Body_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
 
       begin
          Standard_GNAT := Spec = Default_Ada_Spec_Suffix
