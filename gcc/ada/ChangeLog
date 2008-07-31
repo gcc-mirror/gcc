@@ -1,5 +1,30 @@
 2008-07-31  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb (Spec_PPC): Now defined for generic subprograms
+	
+	* einfo.ads (Spec_PPC): Now defined for generic subprograms
+	
+	* sem_prag.adb (Check_Precondition_Postcondition): Handle generic
+	subprogram case
+
+2008-07-31  Vincent Celier  <celier@adacore.com>
+
+	* s-os_lib.adb: Minor comment fix
+
+2008-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): After analysis,
+	transfer pre/postconditions from generic copy to original tree, so that
+	they will appear in each instance.
+	(Process_PPCs): Do not transform postconditions into a procedure in a
+	generic context, to prevent double expansion of check pragmas.
+	
+	* sem_attr.adb: In an instance, the prefix of the 'result attribute
+	can be the renaming of the
+	current instance, so check validity of the name accordingly.
+
+2008-07-31  Robert Dewar  <dewar@adacore.com>
+
 	* mlib-utl.ads: Minor reformatting
 
 2008-07-31  Ed Schonberg  <schonberg@adacore.com>
