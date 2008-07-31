@@ -251,9 +251,12 @@ package body System.Direct_IO is
    -----------
 
    procedure Reset (File : in out File_Type; Mode : FCB.File_Mode) is
-      pragma Unmodified (File);
+      pragma Warnings (Off, File);
       --  File is actually modified via Unrestricted_Access below, but
       --  GNAT will generate a warning anyway.
+      --  Note that we do not use pragma Unmodified here, since in -gnatc
+      --  mode, GNAT will complain that File is modified for
+      --  "File.Index := 1;"
 
    begin
       FIO.Reset (AP (File)'Unrestricted_Access, Mode);
@@ -262,9 +265,8 @@ package body System.Direct_IO is
    end Reset;
 
    procedure Reset (File : in out File_Type) is
-      pragma Unmodified (File);
-      --  File is actually modified via Unrestricted_Access below, but
-      --  GNAT will generate a warning anyway.
+      pragma Warnings (Off, File);
+      --  See above (other Reset procedure) for explanations on this pragma
 
    begin
       FIO.Reset (AP (File)'Unrestricted_Access);
