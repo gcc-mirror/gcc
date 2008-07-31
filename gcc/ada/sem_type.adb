@@ -2106,9 +2106,16 @@ package body Sem_Type is
             --  to check whether it is a proper descendant.
 
            or else
-             (Is_Concurrent_Type (Etype (N))
+             (Is_Record_Type (Typ)
+                and then Is_Concurrent_Type (Etype (N))
                 and then Present (Corresponding_Record_Type (Etype (N)))
                 and then Covers (Typ, Corresponding_Record_Type (Etype (N))))
+
+           or else
+             (Is_Concurrent_Type (Typ)
+                and then Is_Record_Type (Etype (N))
+                and then Present (Corresponding_Record_Type (Typ))
+                and then Covers (Corresponding_Record_Type (Typ), Etype (N)))
 
            or else
              (not Is_Tagged_Type (Typ)

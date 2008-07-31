@@ -6599,12 +6599,6 @@ package body Sem_Ch6 is
          In_Scope    : Boolean;
          Typ         : Entity_Id;
 
-         function Has_Correct_Formal_Mode
-           (Tag_Typ : Entity_Id;
-            Subp    : Entity_Id) return Boolean;
-         --  For an overridden subprogram Subp, check whether the mode of its
-         --  first parameter is correct depending on the kind of Tag_Typ.
-
          function Matches_Prefixed_View_Profile
            (Prim_Params  : List_Id;
             Iface_Params : List_Id) return Boolean;
@@ -6612,39 +6606,6 @@ package body Sem_Ch6 is
          --  matches that of a potentially overridden interface subprogram
          --  Iface_Params. Also determine if the type of first parameter of
          --  Iface_Params is an implemented interface.
-
-         -----------------------------
-         -- Has_Correct_Formal_Mode --
-         -----------------------------
-
-         function Has_Correct_Formal_Mode
-           (Tag_Typ : Entity_Id;
-            Subp    : Entity_Id) return Boolean
-         is
-            Formal : constant Node_Id := First_Formal (Subp);
-
-         begin
-            --  In order for an entry or a protected procedure to override, the
-            --  first parameter of the overridden routine must be of mode
-            --  "out", "in out" or access-to-variable.
-
-            if (Ekind (Subp) = E_Entry
-                  or else Ekind (Subp) = E_Procedure)
-              and then Is_Protected_Type (Tag_Typ)
-              and then Ekind (Formal) /= E_In_Out_Parameter
-              and then Ekind (Formal) /= E_Out_Parameter
-              and then Nkind (Parameter_Type (Parent (Formal))) /=
-                         N_Access_Definition
-            then
-               return False;
-            end if;
-
-            --  All other cases are OK since a task entry or routine does not
-            --  have a restriction on the mode of the first parameter of the
-            --  overridden interface routine.
-
-            return True;
-         end Has_Correct_Formal_Mode;
 
          -----------------------------------
          -- Matches_Prefixed_View_Profile --
@@ -6723,15 +6684,15 @@ package body Sem_Ch6 is
                Iface_Id  := Defining_Identifier (Iface_Param);
                Iface_Typ := Find_Parameter_Type (Iface_Param);
 
-               if Is_Access_Type (Iface_Typ) then
-                  Iface_Typ := Directly_Designated_Type (Iface_Typ);
-               end if;
-
                Prim_Id  := Defining_Identifier (Prim_Param);
                Prim_Typ := Find_Parameter_Type (Prim_Param);
 
-               if Is_Access_Type (Prim_Typ) then
-                  Prim_Typ := Directly_Designated_Type (Prim_Typ);
+               if Ekind (Iface_Typ) = E_Anonymous_Access_Type
+                 and then Ekind (Prim_Typ) = E_Anonymous_Access_Type
+                 and then Is_Concurrent_Type (Designated_Type (Prim_Typ))
+               then
+                  Iface_Typ := Designated_Type (Iface_Typ);
+                  Prim_Typ := Designated_Type (Prim_Typ);
                end if;
 
                --  Case of multiple interface types inside a parameter profile
@@ -6864,60 +6825,63 @@ package body Sem_Ch6 is
             while Present (Hom) loop
                Subp := Hom;
 
-               --  Entries can override abstract or null interface
-               --  procedures
-
-               if Ekind (Def_Id) = E_Entry
-                 and then Ekind (Subp) = E_Procedure
-                 and then Nkind (Parent (Subp)) = N_Procedure_Specification
-                 and then (Is_Abstract_Subprogram (Subp)
-                             or else Null_Present (Parent (Subp)))
+               if Subp = Def_Id
+                 or else not Is_Overloadable (Subp)
+                 or else not Is_Primitive (Subp)
+                 or else not Is_Dispatching_Operation (Subp)
+                 or else not Is_Interface (Find_Dispatching_Type (Subp))
                then
-                  while Present (Alias (Subp)) loop
-                     Subp := Alias (Subp);
-                  end loop;
+                  null;
 
-                  if Matches_Prefixed_View_Profile
-                       (Parameter_Specifications (Parent (Def_Id)),
-                        Parameter_Specifications (Parent (Subp)))
-                  then
-                     Candidate := Subp;
+               --  Entries and procedures can override abstract or null
+               --  interface procedures
 
-                     --  Absolute match
-
-                     if Has_Correct_Formal_Mode (Typ, Candidate) then
-                        Overridden_Subp := Candidate;
-                        return;
-                     end if;
-                  end if;
-
-               --  Procedures can override abstract or null interface
-               --  procedures
-
-               elsif Ekind (Def_Id) = E_Procedure
+               elsif (Ekind (Def_Id) = E_Procedure
+                        or else Ekind (Def_Id) = E_Entry)
                  and then Ekind (Subp) = E_Procedure
-                 and then Nkind (Parent (Subp)) = N_Procedure_Specification
-                 and then (Is_Abstract_Subprogram (Subp)
-                             or else Null_Present (Parent (Subp)))
                  and then Matches_Prefixed_View_Profile
                             (Parameter_Specifications (Parent (Def_Id)),
                              Parameter_Specifications (Parent (Subp)))
                then
                   Candidate := Subp;
 
-                  --  Absolute match
+                  --  For an overridden subprogram Subp, check whether the mode
+                  --  of its first parameter is correct depending on the kind
+                  --  of synchronized type.
 
-                  if Has_Correct_Formal_Mode (Typ, Candidate) then
-                     Overridden_Subp := Candidate;
-                     return;
-                  end if;
+                  declare
+                     Formal : constant Node_Id := First_Formal (Candidate);
+
+                  begin
+                     --  In order for an entry or a protected procedure to
+                     --  override, the first parameter of the overridden
+                     --  routine must be of mode "out", "in out" or
+                     --  access-to-variable.
+
+                     if (Ekind (Candidate) = E_Entry
+                         or else Ekind (Candidate) = E_Procedure)
+                       and then Is_Protected_Type (Typ)
+                       and then Ekind (Formal) /= E_In_Out_Parameter
+                       and then Ekind (Formal) /= E_Out_Parameter
+                       and then Nkind (Parameter_Type (Parent (Formal)))
+                                  /= N_Access_Definition
+                     then
+                        null;
+
+                     --  All other cases are OK since a task entry or routine
+                     --  does not have a restriction on the mode of the first
+                     --  parameter of the overridden interface routine.
+
+                     else
+                        Overridden_Subp := Candidate;
+                        return;
+                     end if;
+                  end;
 
                --  Functions can override abstract interface functions
 
                elsif Ekind (Def_Id) = E_Function
                  and then Ekind (Subp) = E_Function
-                 and then Nkind (Parent (Subp)) = N_Function_Specification
-                 and then Is_Abstract_Subprogram (Subp)
                  and then Matches_Prefixed_View_Profile
                             (Parameter_Specifications (Parent (Def_Id)),
                              Parameter_Specifications (Parent (Subp)))
