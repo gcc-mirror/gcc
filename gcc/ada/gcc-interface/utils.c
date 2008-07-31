@@ -1755,7 +1755,7 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
      of a copy.  This is the case for true bitfields, but the DECL_BIT_FIELD
      value we have at this point is not accurate enough, so we don't account
      for this here and let finish_record_type decide.  */
-  if (!type_for_nonaliased_component_p (field_type))
+  if (!addressable && !type_for_nonaliased_component_p (field_type))
     addressable = 1;
 
   DECL_NONADDRESSABLE_P (field_decl) = !addressable;

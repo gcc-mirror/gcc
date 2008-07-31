@@ -3062,7 +3062,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 			/* Discard old fields that are outside the new type.
 			   This avoids confusing code scanning it to decide
-			   how to pass it to functions on some platforms.   */
+			   how to pass it to functions on some platforms.  */
 			if (TREE_CODE (gnu_new_pos) == INTEGER_CST
 			    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST
 			    && !integer_zerop (gnu_size)
