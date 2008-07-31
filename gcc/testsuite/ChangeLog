@@ -1,5 +1,15 @@
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/36649
+	* gcc.dg/pch/cpp-3.hs: Add include guards.
+	* gcc.dg/pch/cpp-3a.h: Likewise.
+	* gcc.dg/pch/cpp-3b.h: Likewise.
+	* gcc.dg/cpp/mi8.c: New test.
+	* gcc.dg/cpp/mi8a.h: New file.
+	* gcc.dg/cpp/mi8b.h: New file.
+	* gcc.dg/cpp/mi8c.h: New file.
+	* gcc.dg/cpp/mi8d.h: New file.
+
 	PR rtl-optimization/36419
 	* g++.dg/eh/async-unwind2.C: New test.
 
