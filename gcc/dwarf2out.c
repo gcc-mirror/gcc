@@ -387,6 +387,7 @@ static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
 static void dwarf2out_note_section_used (void);
 static void dwarf2out_stack_adjust (rtx, bool);
+static void dwarf2out_args_size_adjust (HOST_WIDE_INT, const char *);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (const_rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
@@ -1225,8 +1226,20 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
   if (offset == 0)
     return;
 
+  label = dwarf2out_cfi_label ();
+  dwarf2out_args_size_adjust (offset, label);
+}
+
+/* Adjust args_size based on stack adjustment OFFSET.  */
+
+static void
+dwarf2out_args_size_adjust (HOST_WIDE_INT offset, const char *label)
+{
   if (cfa.reg == STACK_POINTER_REGNUM)
     cfa.offset += offset;
+
+  if (cfa_store.reg == STACK_POINTER_REGNUM)
+    cfa_store.offset += offset;
 
 #ifndef STACK_GROWS_DOWNWARD
   offset = -offset;
@@ -1236,7 +1249,6 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
   if (args_size < 0)
     args_size = 0;
 
-  label = dwarf2out_cfi_label ();
   def_cfa_1 (label, &cfa);
   if (flag_asynchronous_unwind_tables)
     dwarf2out_args_size (label, args_size);
@@ -1668,22 +1680,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      HOST_WIDE_INT offset = stack_adjust_offset (elem);
 
 	      if (offset != 0)
-		{
-		  if (cfa.reg == STACK_POINTER_REGNUM)
-		    cfa.offset += offset;
-
-#ifndef STACK_GROWS_DOWNWARD
-		  offset = -offset;
-#endif
-
-		  args_size += offset;
-		  if (args_size < 0)
-		    args_size = 0;
-
-		  def_cfa_1 (label, &cfa);
-		  if (flag_asynchronous_unwind_tables)
-		    dwarf2out_args_size (label, args_size);
-		}
+		dwarf2out_args_size_adjust (offset, label);
 	    }
 	}
       return;
