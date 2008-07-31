@@ -149,6 +149,30 @@ package body Prj.Part is
    --  does not (because it is already extended), but other projects that it
    --  imports may need to be virtually extended.
 
+   type Extension_Origin is (None, Extending_Simple, Extending_All);
+   --  Type of parameter From_Extended for procedures Parse_Single_Project and
+   --  Post_Parse_Context_Clause. Extending_All means that we are parsing the
+   --  tree rooted at an extending all project.
+
+   procedure Parse_Single_Project
+     (In_Tree           : Project_Node_Tree_Ref;
+      Project           : out Project_Node_Id;
+      Extends_All       : out Boolean;
+      Path_Name         : String;
+      Extended          : Boolean;
+      From_Extended     : Extension_Origin;
+      In_Limited        : Boolean;
+      Packages_To_Check : String_List_Access;
+      Depth             : Natural;
+      Current_Dir       : String);
+   --  Parse a project file.
+   --  Recursive procedure: it calls itself for imported and extended
+   --  projects. When From_Extended is not None, if the project has already
+   --  been parsed and is an extended project A, return the ultimate
+   --  (not extended) project that extends A. When In_Limited is True,
+   --  the importing path includes at least one "limited with".
+   --  When parsing configuration projects, do not allow a depth > 1.
+
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
       Context_Clause : out With_Id);
