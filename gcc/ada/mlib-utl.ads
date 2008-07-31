@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2007, AdaCore                     --
+--                     Copyright (C) 2001-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,10 @@ package MLib.Utl is
    --  path, run it also. Output_File is the path name of the archive to
    --  create. Objects is the list of the path names of the object files to be
    --  put in the archive.
+   --  This procedure currently assumes that it is always called in the context
+   --  of gnatmake. If other executable start using this procedure, an
+   --  additional parameter would need to be added, and calls to
+   --  Osint.Program_Name updated accordingly in the body.
 
    function Lib_Directory return String;
    --  Return the directory containing libgnat
