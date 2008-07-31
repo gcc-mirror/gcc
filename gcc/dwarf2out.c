@@ -2024,6 +2024,13 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  gcc_unreachable ();
 	}
 
+        /* Rule 17 */
+        /* If the source operand of this MEM operation is not a
+	   register, basically the source is return address.  Here
+	   we only care how much stack grew and we don't save it.  */
+      if (!REG_P (src))
+        break;
+
       if (REGNO (src) != STACK_POINTER_REGNUM
 	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM
 	  && (unsigned) REGNO (src) == cfa.reg)
@@ -2082,12 +2089,6 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      break;
 	    }
 	}
-        /* Rule 17 */
-        /* If the source operand of this MEM operation is not a
-	   register, basically the source is return address.  Here
-	   we only care how much stack grew and we don't save it.  */
-      if (!REG_P (src))
-        break;
 
       def_cfa_1 (label, &cfa);
       {
