@@ -73,6 +73,11 @@ package Prj.Makr is
    --  check for non Ada sources.
    --
    --  At least one of Name_Patterns and Foreign_Patterns is not empty
+   --
+   --  Note that this procedure currently assumes that it is only used by
+   --  gnatname. If other processes start using it, then an additional
+   --  parameter would need to be added, and call to Osint.Program_Name
+   --  updated accordingly in the body.
 
    procedure Finalize;
    --  Write the configuration pragmas file or the project file indicated in a
