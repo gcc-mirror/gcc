@@ -1,3 +1,8 @@
+2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/torture/stackalign/pr16660-1.c: Include "check.h".
+	(f): Align to 64 byte.  Use check instead of asm statement.
+
 2008-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/missing_acc_check.adb: New test.
