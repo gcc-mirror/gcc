@@ -1,3 +1,11 @@
+2008-07-31  Robert Dewar  <dewar@adacore.com>
+
+	* g-pehage.adb, g-pehage.ads: Minor reformatting
+
+2008-07-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* mlib-utl.ads, prj-makr.ads: Add comments.
+
 2008-07-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* gcc-interface/Makefile.in (EXTRA_GNATRTL_NONTASKING_OBJS) 
