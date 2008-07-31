@@ -246,7 +246,17 @@ package body Makeutl is
       --  If we get here, the user has typed the executable name with no
       --  directory prefix.
 
-      return Get_Install_Dir (Locate_Exec_On_Path (Exec_Name).all);
+      declare
+         Path : constant String_Access := Locate_Exec_On_Path (Exec_Name);
+
+      begin
+         if Path = null then
+            return "";
+
+         else
+            return Get_Install_Dir (Path.all);
+         end if;
+      end;
    end Executable_Prefix_Path;
 
    ----------
