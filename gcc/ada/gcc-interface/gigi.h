@@ -394,6 +394,9 @@ enum standard_datatypes
   /* Likewise for freeing memory.  */
   ADT_free_decl,
 
+  /* Function decl node for 64-bit multiplication with overflow checking */
+  ADT_mulv64_decl,
+
   /* Types and decls used by our temporary exception mechanism.  See
      init_gigi_decls for details.  */
   ADT_jmpbuf_type,
@@ -425,6 +428,7 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
 #define malloc32_decl gnat_std_decls[(int) ADT_malloc32_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
+#define mulv64_decl gnat_std_decls[(int) ADT_mulv64_decl]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
 #define jmpbuf_ptr_type gnat_std_decls[(int) ADT_jmpbuf_ptr_type]
 #define get_jmpbuf_decl gnat_std_decls[(int) ADT_get_jmpbuf_decl]
