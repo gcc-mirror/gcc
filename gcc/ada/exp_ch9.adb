@@ -1634,7 +1634,7 @@ package body Exp_Ch9 is
                --  when a protected entry wrapper must override an interface
                --  level procedure with interface access as first parameter.
 
-               --     O.all.Subp_Id (Formal_1 .. Formal_N)
+               --     O.all.Subp_Id (Formal_1, ..., Formal_N)
 
                if Nkind (Parameter_Type (First_Formal)) =
                     N_Access_Definition
