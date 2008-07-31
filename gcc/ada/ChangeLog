@@ -1,3 +1,65 @@
+2008-07-31  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Valid_First_Argument_Of): Complete its functionality to
+	handle synchronized types. Required to handle well the object.operation
+	notation applied to synchronized types.
+
+2008-07-31  Quentin Ochem  <ochem@adacore.com>
+
+	* s-stausa.adb (Fill_Stack): Stack_Used_When_Filling is now stored
+	anymore - just used internally.
+	Added handling of very small tasks - when the theoretical size is
+	already full at the point of the call.
+	(Report_Result): Fixed result computation, Stack_Used_When_Filling does
+	not need to be added to the result.
+
+2008-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Disambiguate_Spec): Continue the disambiguation if the
+	corresponding spec is a primitive wrapper. Update comment.
+
+2008-07-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindgen.adb Comment reformatting. Update the list of run-time globals.
+	(Gen_Adainit_Ada): Add the declaration, import and value set for
+	configuration flag Canonical_Streams.
+	(Gen_Adainit_C): Add the declaration and initial value of external
+	symbol __gl_canonical_streams.
+	
+	* init.c: Update the list of global values computed by the binder.
+	
+	* opt.ads: Add flag Canonical_Streams.
+	
+	* par-prag.adb (Prag): Include Pragma_Canonical_Streams to the list of
+	semantically handled pragmas.
+	
+	* sem_prag.adb: Add an entry into enumeration type Sig_Flags.
+	(Analyze_Pragma): Add case for pragma Canonical_Streams.
+	
+	* snames.adb: Add character value for name Canonical_Streams.
+	
+	* snames.ads:
+	Add Name_Canonical_Streams to the list of configuration pragmas.
+	Add Pragma_Canonical_Streams to enumeration type Pragma_Id.
+	
+	* snames.h: Add a definition for Pragma_Canonical_Streams.
+	
+	* s-ststop.adb:
+	Add a flag and import to seize the value of external symbol
+	__gl_canonical_streams. Update comment and initial value of constant
+	Use_Block_IO.
+	
+	* gnat_rm.texi: Add section of pragma Canonical_Streams.
+	
+	* gnat_ugn.texi:
+	Add pragma Canonical_Streams to the list of configuration pragmas.
+
+2008-07-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Build_Unit_Name): If the unit name in a with_clause
+	has the form A.B.C and B is a unit renaming, analyze its compilation
+	unit and add a with_clause on A.b to the context.
+
 2008-07-31  Vincent Celier  <celier@adacore.com>
 
 	* makeutl.adb (Executable_Prefix_Path): If Locate_Exec_On_Path fails,
