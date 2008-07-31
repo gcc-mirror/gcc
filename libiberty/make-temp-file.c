@@ -23,6 +23,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <stdio.h>	/* May get P_tmpdir.  */
 #include <sys/types.h>
+#include <errno.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -166,11 +167,14 @@ make_temp_file (const char *suffix)
   strcpy (temp_filename + base_len + TEMP_FILE_LEN, suffix);
 
   fd = mkstemps (temp_filename, suffix_len);
-  /* If mkstemps failed, then something bad is happening.  Maybe we should
-     issue a message about a possible security attack in progress?  */
+  /* Mkstemps failed.  It may be EPERM, ENOSPC etc.  */
   if (fd == -1)
-    abort ();
-  /* Similarly if we can not close the file.  */
+    {
+      fprintf (stderr, "Cannot create temporary file in %s: %s\n",
+	       base, strerror (errno));
+      abort ();
+    }
+  /* We abort on failed close out of sheer paranoia.  */
   if (close (fd))
     abort ();
   return temp_filename;

@@ -1,3 +1,11 @@
+2008-07-31  Denys Vlasenko  <dvlasenk@redhat.com>
+
+	* mkstemps.c (mkstemps): If open failed with errno other than
+	EEXIST, return immediately.
+	* make-temp-file.c: Include errno.h.
+	(make_temp_file): If mkstemps failed, print an error message
+	before aborting.
+
 2008-07-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* maint-tool (deps): Output config.h instead of stamp-h.
