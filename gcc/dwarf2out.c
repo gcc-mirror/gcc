@@ -9453,8 +9453,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	     pointer + offset to access stack variables.  If stack
 	     is aligned without drap, use stack pointer + offset to
 	     access stack variables.  */
-	  if (fde
-	      && fde->stack_realign
+	  if (crtl->stack_realign_tried
 	      && cfa.reg == HARD_FRAME_POINTER_REGNUM
 	      && reg == frame_pointer_rtx)
 	    {
