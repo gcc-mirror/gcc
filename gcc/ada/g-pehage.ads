@@ -99,18 +99,18 @@ package GNAT.Perfect_Hash_Generators is
       K_To_V : Float        := Default_K_To_V;
       Optim  : Optimization := CPU_Time;
       Tries  : Positive     := Default_Tries);
-   --  Initialize the generator and its internal structures. Set the
-   --  ratio of vertices over keys in the random graphs. This value
-   --  has to be greater than 2.0 in order for the algorithm to
-   --  succeed. The word set is not modified (in particular when it is
-   --  already set). For instance, it is possible to run several times
-   --  the generator with different settings on the same words.
-
-   --  A classical way of doing is to Insert all the words and then to
-   --  invoke Initialize and Compute. If Compute fails to find a
-   --  perfect hash function, invoke Initialize another time with
-   --  other configuration parameters (probably with a greater K_To_V
-   --  ratio). Once successful, invoke Produce and Finalize.
+   --  Initialize the generator and its internal structures. Set the ratio of
+   --  vertices over keys in the random graphs. This value has to be greater
+   --  than 2.0 in order for the algorithm to succeed. The word set is not
+   --  modified (in particular when it is already set). For instance, it is
+   --  possible to run several times the generator with different settings on
+   --  the same words.
+   --
+   --  A classical way of doing is to Insert all the words and then to invoke
+   --  Initialize and Compute. If Compute fails to find a perfect hash
+   --  function, invoke Initialize another time with other configuration
+   --  parameters (probably with a greater K_To_V ratio). Once successful,
+   --  invoke Produce and Finalize.
 
    procedure Finalize;
    --  Deallocate the internal structures and the words table
@@ -219,8 +219,8 @@ package GNAT.Perfect_Hash_Generators is
       Length_2  : out Natural);
    --  Return the definition of the table Name. This includes the length of
    --  dimensions 1 and 2 and the size of an unsigned integer item. When
-   --  Length_2 is zero, the table has only one dimension. All the ranges start
-   --  from zero.
+   --  Length_2 is zero, the table has only one dimension. All the ranges
+   --  start from zero.
 
    function Value
      (Name : Table_Name;

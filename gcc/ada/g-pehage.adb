@@ -49,8 +49,8 @@ package body GNAT.Perfect_Hash_Generators is
 
    --             h (w) = (g (f1 (w)) + g (f2 (w))) mod m
 
-   --  where f1 and f2 are functions that map strings into integers, and g is a
-   --  function that maps integers into [0, m-1]. h can be order preserving.
+   --  where f1 and f2 are functions that map strings into integers, and g is
+   --  a function that maps integers into [0, m-1]. h can be order preserving.
    --  For instance, let W = {w_0, ..., w_i, ..., w_m-1}, h can be defined
    --  such that h (w_i) = i.
 
@@ -132,10 +132,10 @@ package body GNAT.Perfect_Hash_Generators is
    package WT is new GNAT.Table (Word_Type, Word_Id, 0, 32, 32);
    package IT is new GNAT.Table (Integer, Integer, 0, 32, 32);
    --  The two main tables. WT is used to store the words in their initial
-   --  version and in their reduced version (that is words reduced to
-   --  their significant characters). As an instance of GNAT.Table, WT does
-   --  not initialize string pointers to null. This initialization has to be
-   --  done manually when the table is allocated. IT is used to store several
+   --  version and in their reduced version (that is words reduced to their
+   --  significant characters). As an instance of GNAT.Table, WT does not
+   --  initialize string pointers to null. This initialization has to be done
+   --  manually when the table is allocated. IT is used to store several
    --  tables of components containing only integers.
 
    function Image (Int : Integer; W : Natural := 0) return String;
