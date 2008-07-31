@@ -2770,7 +2770,17 @@ package body Sem_Aggr is
          Error_Msg_N ("record aggregate cannot be null", N);
          return;
 
-      elsif No (First_Entity (Typ)) then
+      --  If the type has no components, then the aggregate should either
+      --  have "null record", or in Ada 2005 it could instead have a single
+      --  component association given by "others => <>". For Ada 95 we flag
+      --  an error at this point, but for Ada 2005 we proceed with checking
+      --  the associations below, which will catch the case where it's not
+      --  an aggregate with "others => <>". Note that the legality of a <>
+      --  aggregate for a null record type was established by AI05-016.
+
+      elsif No (First_Entity (Typ))
+         and then Ada_Version < Ada_05
+      then
          Error_Msg_N ("record aggregate must be null", N);
          return;
       end if;
