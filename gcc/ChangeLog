@@ -1,5 +1,11 @@
 2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR debug/36980
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Move rule 17 before
+	rule 19.
+
+2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR debug/36976
 	* dwarf2out.c (dwarf2out_args_size_adjust): New.
 	(dwarf2out_stack_adjust): Use it.
