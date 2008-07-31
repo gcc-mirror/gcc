@@ -2355,16 +2355,36 @@ package body Prj.Env is
 
                         --  For a non-library project, add the object
                         --  directory, if it is not a virtual project, and if
-                        --  there are Ada sources or if the project is an
-                        --  extending project. If there are no Ada sources,
+                        --  there are Ada sources in the project or one of the
+                        --  projects it extends. If there are no Ada sources,
                         --  adding the object directory could disrupt the order
                         --  of the object dirs in the path.
 
-                        elsif not Data.Virtual
-                          and then There_Are_Ada_Sources (In_Tree, Project)
-                        then
-                           Add_To_Object_Path
-                             (Data.Object_Directory.Name, In_Tree);
+                        elsif not Data.Virtual then
+                           declare
+                              Add_Object_Dir : Boolean := False;
+                              Prj            : Project_Id := Project;
+
+                           begin
+                              while not Add_Object_Dir
+                                and then Prj /= No_Project
+                              loop
+                                 if In_Tree.Projects.Table
+                                      (Prj).Ada_Sources /= Nil_String
+                                 then
+                                    Add_Object_Dir := True;
+
+                                 else
+                                    Prj :=
+                                      In_Tree.Projects.Table (Prj).Extends;
+                                 end if;
+                              end loop;
+
+                              if Add_Object_Dir then
+                                 Add_To_Object_Path
+                                   (Data.Object_Directory.Name, In_Tree);
+                              end if;
+                           end;
                         end if;
                      end if;
                   end if;

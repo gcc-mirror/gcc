@@ -143,9 +143,6 @@ package body Prj is
                       Objects_Path_File_Without_Libs => No_Path,
                       Config_File_Name               => No_Path,
                       Config_File_Temp               => False,
-                      Linker_Name                    => No_File,
-                      Linker_Path                    => No_Path,
-                      Minimum_Linker_Options         => No_Name_List,
                       Config_Checked                 => False,
                       Checked                        => False,
                       Seen                           => False,
@@ -1154,29 +1151,6 @@ package body Prj is
    begin
       return Extend_Name (Source_File_Name, Switches_Dependency_Suffix);
    end Switches_Name;
-
-   ---------------------------
-   -- There_Are_Ada_Sources --
-   ---------------------------
-
-   function There_Are_Ada_Sources
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id) return Boolean
-   is
-      Prj : Project_Id;
-
-   begin
-      Prj := Project;
-      while Prj /= No_Project loop
-         if In_Tree.Projects.Table (Prj).Ada_Sources /= Nil_String then
-            return True;
-         end if;
-
-         Prj := In_Tree.Projects.Table (Prj).Extends;
-      end loop;
-
-      return False;
-   end There_Are_Ada_Sources;
 
    -----------
    -- Value --

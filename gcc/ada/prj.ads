@@ -1289,20 +1289,6 @@ package Prj is
       --  use this field directly outside of the project manager, use
       --  Prj.Env.Ada_Include_Path instead.
 
-      -------------
-      -- Linking --
-      -------------
-
-      Linker_Name : File_Name_Type  := No_File;
-      --  Value of attribute Language_Processing'Linker in the project file
-
-      Linker_Path : Path_Name_Type  := No_Path;
-      --  Path of linker when attribute Language_Processing'Linker is specified
-
-      Minimum_Linker_Options : Name_List_Index := No_Name_List;
-      --  List of options specified in attribute
-      --  Language_Processing'Minimum_Linker_Options.
-
       -------------------
       -- Miscellaneous --
       -------------------
@@ -1371,12 +1357,6 @@ package Prj is
       Language_Name : Name_Id) return Boolean;
    --  Return True when Language_Name (which must be lower case) is one of the
    --  languages used for the project.
-
-   function There_Are_Ada_Sources
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id) return Boolean;
-   --  ??? needs comment
-   --  ??? Name sounds strange, suggested replacement: Ada_Sources_Present
 
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
