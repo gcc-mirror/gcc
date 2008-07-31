@@ -3527,10 +3527,11 @@ package Einfo is
 --       the corresponding parameter entities in the spec.
 
 --    Spec_PPC_List (Node24)
---       Present in subprogram entities. Points to a list of Precondition
---       and Postcondition N_Pragma nodes for preconditions and postconditions
---       declared in the spec. The last pragma encountered is at the head of
---       this list, so it is in reverse order of textual appearance.
+--       Present in subprogram and generic subprogram entities. Points to a
+--       list of Precondition and Postcondition pragma nodes for preconditions
+--       and postconditions declared in the spec. The last pragma encountered
+--       is at the head of this list, so it is in reverse order of textual
+--       appearance.
 
 --    Storage_Size_Variable (Node15) [implementation base type only]
 --       Present in access types and task type entities. This flag is set
@@ -5277,7 +5278,7 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for instance)
    --    Inner_Instances                     (Elist23)  (for generic proc)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Spec_PPC_List                       (Node24)   (non-generic case only)
+   --    Spec_PPC_List                       (Node24)
    --    Interface_Alias                     (Node25)
    --    Static_Initialization               (Node26)   (init_proc only)
    --    Overridden_Operation                (Node26)
