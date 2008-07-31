@@ -32,9 +32,11 @@ with Prj.Attr;
 with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Snames;   use Snames;
+with Table;
 with Uintp;    use Uintp;
 
 with System.Case_Util; use System.Case_Util;
+with System.HTable;
 
 package body Prj is
 
@@ -49,8 +51,6 @@ package body Prj is
    Configuration_Mode : Boolean := False;
 
    The_Empty_String : Name_Id;
-
-   Name_C_Plus_Plus : Name_Id;
 
    Default_Ada_Spec_Suffix_Id : File_Name_Type;
    Default_Ada_Body_Suffix_Id : File_Name_Type;
@@ -83,9 +83,7 @@ package body Prj is
                         Specs                     => No_Array_Element,
                         Bodies                    => No_Array_Element,
                         Specification_Exceptions  => No_Array_Element,
-                        Implementation_Exceptions => No_Array_Element,
-                        Impl_Suffixes             => No_Impl_Suffixes,
-                        Supp_Suffixes             => No_Supp_Language_Index);
+                        Implementation_Exceptions => No_Array_Element);
 
    Project_Empty : constant Project_Data :=
                      (Qualifier                      => Unspecified,
@@ -113,6 +111,8 @@ package body Prj is
                       Lib_Auto_Init                  => False,
                       Libgnarl_Needed                => Unknown,
                       Symbol_Data                    => No_Symbols,
+                      Ada_Sources_Present            => True,
+                      Other_Sources_Present          => True,
                       Ada_Sources                    => Nil_String,
                       Sources                        => Nil_String,
                       First_Source                   => No_Source,
@@ -152,17 +152,7 @@ package body Prj is
                       Seen                           => False,
                       Need_To_Build_Lib              => False,
                       Depth                          => 0,
-                      Unkept_Comments                => False,
-                      Langs                          => No_Languages,
-                      Supp_Languages                 => No_Supp_Language_Index,
-                      Ada_Sources_Present            => True,
-                      Other_Sources_Present          => True,
-                      First_Other_Source             => No_Other_Source,
-                      Last_Other_Source              => No_Other_Source,
-                      First_Lang_Processing          =>
-                        Default_First_Language_Processing_Data,
-                      Supp_Language_Processing       =>
-                        No_Supp_Language_Index);
+                      Unkept_Comments                => False);
 
    package Temp_Files is new Table.Table
      (Table_Component_Type => Path_Name_Type,
@@ -173,18 +163,6 @@ package body Prj is
       Table_Name           => "Makegpr.Temp_Files");
    --  Table to store the path name of all the created temporary files, so that
    --  they can be deleted at the end, or when the program is interrupted.
-
-   -----------------------
-   -- Add_Language_Name --
-   -----------------------
-
-   procedure Add_Language_Name (Name : Name_Id) is
-   begin
-      Last_Language_Index := Last_Language_Index + 1;
-      Language_Indexes.Set (Name, Last_Language_Index);
-      Language_Names.Increment_Last;
-      Language_Names.Table (Last_Language_Index) := Name;
-   end Add_Language_Name;
 
    -------------------
    -- Add_To_Buffer --
@@ -341,21 +319,6 @@ package body Prj is
       return "";
    end Body_Suffix_Of;
 
-   function Body_Suffix_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return String
-   is
-      Suffix_Id : constant File_Name_Type :=
-                    Suffix_Of (Language, In_Project, In_Tree);
-   begin
-      if Suffix_Id /= No_File then
-         return Get_Name_String (Suffix_Id);
-      else
-         return "." & Get_Name_String (Language_Names.Table (Language));
-      end if;
-   end Body_Suffix_Of;
-
    -----------------------------
    -- Default_Ada_Body_Suffix --
    -----------------------------
@@ -427,17 +390,6 @@ package body Prj is
    is
    begin
       Get_Name_String (In_Tree.Languages_Data.Table (Language).Display_Name);
-      Write_Str (Name_Buffer (1 .. Name_Len));
-   end Display_Language_Name;
-
-   ---------------------------
-   -- Display_Language_Name --
-   ---------------------------
-
-   procedure Display_Language_Name (Language : Language_Index) is
-   begin
-      Get_Name_String (Language_Names.Table (Language));
-      To_Upper (Name_Buffer (1 .. 1));
       Write_Str (Name_Buffer (1 .. Name_Len));
    end Display_Language_Name;
 
@@ -638,22 +590,12 @@ package body Prj is
          Name_Len := 1;
          Name_Buffer (1) := '/';
          Slash_Id := Name_Find;
-         Name_Len := 3;
-         Name_Buffer (1 .. 3) := "c++";
-         Name_C_Plus_Plus := Name_Find;
 
          Prj.Env.Initialize;
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
          Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));
          Set_Name_Table_Byte (Name_External, Token_Type'Pos (Tok_External));
-
-         Language_Indexes.Reset;
-         Last_Language_Index := No_Language_Index;
-         Language_Names.Init;
-         Add_Language_Name (Name_Ada);
-         Add_Language_Name (Name_C);
-         Add_Language_Name (Name_C_Plus_Plus);
       end if;
 
       if Tree /= No_Project_Tree then
@@ -728,84 +670,6 @@ package body Prj is
 
       return False;
    end Is_Extending;
-
-   ----------------
-   -- Is_Present --
-   ----------------
-
-   function Is_Present
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Boolean
-   is
-   begin
-      case Language is
-         when No_Language_Index =>
-            return False;
-
-         when First_Language_Indexes =>
-            return In_Project.Langs (Language);
-
-         when others =>
-            declare
-               Supp       : Supp_Language;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Supp_Languages;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Present_Languages.Table (Supp_Index);
-
-                  if Supp.Index = Language then
-                     return Supp.Present;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               return False;
-            end;
-      end case;
-   end Is_Present;
-
-   ---------------------------------
-   -- Language_Processing_Data_Of --
-   ---------------------------------
-
-   function Language_Processing_Data_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return Language_Processing_Data
-   is
-   begin
-      case Language is
-         when No_Language_Index =>
-            return Default_Language_Processing_Data;
-
-         when First_Language_Indexes =>
-            return In_Project.First_Lang_Processing (Language);
-
-         when others =>
-            declare
-               Supp       : Supp_Language_Data;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Supp_Language_Processing;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Supp_Languages.Table (Supp_Index);
-
-                  if Supp.Index = Language then
-                     return Supp.Data;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               return Default_Language_Processing_Data;
-            end;
-      end case;
-   end Language_Processing_Data_Of;
 
    -----------------------
    -- Objects_Exist_For --
@@ -980,13 +844,6 @@ package body Prj is
    begin
       Prj.Env.Initialize;
 
-      --  gprmake tables
-
-      Present_Language_Table.Init (Tree.Present_Languages);
-      Supp_Suffix_Table.Init      (Tree.Supp_Suffixes);
-      Supp_Language_Table.Init    (Tree.Supp_Languages);
-      Other_Source_Table.Init     (Tree.Other_Sources);
-
       --  Visible tables
 
       Language_Data_Table.Init      (Tree.Languages_Data);
@@ -1039,144 +896,6 @@ package body Prj is
         and then Left.Casing = Right.Casing
         and then Left.Separate_Suffix = Right.Separate_Suffix;
    end Same_Naming_Scheme;
-
-   ---------
-   -- Set --
-   ---------
-
-   procedure Set
-     (Language   : Language_Index;
-      Present    : Boolean;
-      In_Project : in out Project_Data;
-      In_Tree    : Project_Tree_Ref)
-   is
-   begin
-      case Language is
-         when No_Language_Index =>
-            null;
-
-         when First_Language_Indexes =>
-            In_Project.Langs (Language) := Present;
-
-         when others =>
-            declare
-               Supp       : Supp_Language;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Supp_Languages;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Present_Languages.Table (Supp_Index);
-
-                  if Supp.Index = Language then
-                     In_Tree.Present_Languages.Table (Supp_Index).Present :=
-                       Present;
-                     return;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               Supp := (Index => Language, Present => Present,
-                        Next  => In_Project.Supp_Languages);
-               Present_Language_Table.Increment_Last
-                 (In_Tree.Present_Languages);
-               Supp_Index :=
-                 Present_Language_Table.Last (In_Tree.Present_Languages);
-               In_Tree.Present_Languages.Table (Supp_Index) :=
-                 Supp;
-               In_Project.Supp_Languages := Supp_Index;
-            end;
-      end case;
-   end Set;
-
-   procedure Set
-     (Language_Processing : Language_Processing_Data;
-      For_Language        : Language_Index;
-      In_Project          : in out Project_Data;
-      In_Tree             : Project_Tree_Ref)
-   is
-   begin
-      case For_Language is
-         when No_Language_Index =>
-            null;
-
-         when First_Language_Indexes =>
-            In_Project.First_Lang_Processing (For_Language) :=
-              Language_Processing;
-
-         when others =>
-            declare
-               Supp       : Supp_Language_Data;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Supp_Language_Processing;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Supp_Languages.Table (Supp_Index);
-
-                  if Supp.Index = For_Language then
-                     In_Tree.Supp_Languages.Table
-                       (Supp_Index).Data := Language_Processing;
-                     return;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               Supp := (Index => For_Language, Data => Language_Processing,
-                        Next  => In_Project.Supp_Language_Processing);
-               Supp_Language_Table.Increment_Last
-                 (In_Tree.Supp_Languages);
-               Supp_Index := Supp_Language_Table.Last
-                               (In_Tree.Supp_Languages);
-               In_Tree.Supp_Languages.Table (Supp_Index) := Supp;
-               In_Project.Supp_Language_Processing := Supp_Index;
-            end;
-      end case;
-   end Set;
-
-   procedure Set
-     (Suffix       : File_Name_Type;
-      For_Language : Language_Index;
-      In_Project   : in out Project_Data;
-      In_Tree      : Project_Tree_Ref)
-   is
-   begin
-      case For_Language is
-         when No_Language_Index =>
-            null;
-
-         when First_Language_Indexes =>
-            In_Project.Naming.Impl_Suffixes (For_Language) := Suffix;
-
-         when others =>
-            declare
-               Supp       : Supp_Suffix;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Naming.Supp_Suffixes;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Supp_Suffixes.Table (Supp_Index);
-
-                  if Supp.Index = For_Language then
-                     In_Tree.Supp_Suffixes.Table (Supp_Index).Suffix := Suffix;
-                     return;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               Supp := (Index => For_Language, Suffix => Suffix,
-                        Next  => In_Project.Naming.Supp_Suffixes);
-               Supp_Suffix_Table.Increment_Last (In_Tree.Supp_Suffixes);
-               Supp_Index := Supp_Suffix_Table.Last (In_Tree.Supp_Suffixes);
-               In_Tree.Supp_Suffixes.Table (Supp_Index) := Supp;
-               In_Project.Naming.Supp_Suffixes := Supp_Index;
-            end;
-      end case;
-   end Set;
 
    ---------------------
    -- Set_Body_Suffix --
@@ -1425,45 +1144,6 @@ package body Prj is
          return Tree.Private_Part.Default_Naming;
       end if;
    end Standard_Naming_Data;
-
-   ---------------
-   -- Suffix_Of --
-   ---------------
-
-   function Suffix_Of
-     (Language   : Language_Index;
-      In_Project : Project_Data;
-      In_Tree    : Project_Tree_Ref) return File_Name_Type
-   is
-   begin
-      case Language is
-         when No_Language_Index =>
-            return No_File;
-
-         when First_Language_Indexes =>
-            return In_Project.Naming.Impl_Suffixes (Language);
-
-         when others =>
-            declare
-               Supp       : Supp_Suffix;
-               Supp_Index : Supp_Language_Index;
-
-            begin
-               Supp_Index := In_Project.Naming.Supp_Suffixes;
-               while Supp_Index /= No_Supp_Language_Index loop
-                  Supp := In_Tree.Supp_Suffixes.Table (Supp_Index);
-
-                  if Supp.Index = Language then
-                     return Supp.Suffix;
-                  end if;
-
-                  Supp_Index := Supp.Next;
-               end loop;
-
-               return No_File;
-            end;
-      end case;
-   end  Suffix_Of;
 
    -------------------
    -- Switches_Name --
