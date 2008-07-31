@@ -1354,9 +1354,10 @@ package body Sem_Prag is
          PO : Node_Id;
 
          procedure Chain_PPC (PO : Node_Id);
-         --  PO is the N_Subprogram_Declaration node for the subprogram to
-         --  which the precondition/postcondition applies. This procedure
-         --  completes the processing for the pragma.
+         --  If PO is a subprogram declaration node (or a generic subprogram
+         --  declaration node), then the precondition/postcondition applies
+         --  to this subprogram and the processing for the pragma is completed.
+         --  Otherwise the pragma is misplaced.
 
          ---------------
          -- Chain_PPC --
@@ -1366,6 +1367,14 @@ package body Sem_Prag is
             S : Node_Id;
 
          begin
+            if not Nkind_In (PO, N_Subprogram_Declaration,
+                                 N_Generic_Subprogram_Declaration)
+            then
+               Pragma_Misplaced;
+            end if;
+
+            --  Here if we have subprogram or generic subprogram declaration
+
             S := Defining_Unit_Name (Specification (PO));
 
             --  Analyze the pragma unless it appears within a package spec,
@@ -1427,16 +1436,11 @@ package body Sem_Prag is
             elsif not Comes_From_Source (PO) then
                null;
 
-            --  Here if we hit a subprogram declaration
-
-            elsif Nkind (PO) = N_Subprogram_Declaration then
-               Chain_PPC (PO);
-               return;
-
-            --  If we encounter any other declaration moving back, misplaced
+            --  Only remaining possibility is subprogram declaration
 
             else
-               Pragma_Misplaced;
+               Chain_PPC (PO);
+               return;
             end if;
          end loop;
 
@@ -1452,14 +1456,8 @@ package body Sem_Prag is
          --  See if it is in the pragmas after a library level subprogram
 
          elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
-            declare
-               Decl : constant Node_Id := Unit (Parent (Parent (N)));
-            begin
-               if Nkind (Decl) = N_Subprogram_Declaration then
-                  Chain_PPC (Decl);
-                  return;
-               end if;
-            end;
+            Chain_PPC (Unit (Parent (Parent (N))));
+            return;
          end if;
 
          --  If we fall through, pragma was misplaced
