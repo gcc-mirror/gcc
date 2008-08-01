@@ -903,7 +903,6 @@ package body Xref_Lib is
             P_Line, P_Column : Natural;
             pragma Warnings (Off, P_Line);
             pragma Warnings (Off, P_Column);
-
          begin
             Ptr := Ptr + 1;
             Parse_Number (Ali, Ptr, P_Line);
