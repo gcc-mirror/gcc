@@ -284,7 +284,7 @@ package Opt is
    --  for details on the handling of the latter pragma.
 
    Canonical_Streams : Boolean := False;
-   --  GNATBIND
+   --  GNAT, GNATBIND
    --  Set to True if configuration pragma Canonical_Streams is present. It
    --  controls the canonical behaviour of stream operations for String types.
 
