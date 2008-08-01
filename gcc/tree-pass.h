@@ -104,7 +104,8 @@ struct opt_pass
     SIMPLE_IPA_PASS,
     IPA_PASS
   } type;
-  /* Terse name of the pass used as a fragment of the dump file name.  */
+  /* Terse name of the pass used as a fragment of the dump file
+     name.  If the name starts with a star, no dump happens. */
   const char *name;
 
   /* If non-null, this pass and all sub-passes are executed only if
