@@ -295,15 +295,8 @@ package body Ch3 is
 
       else
          T_Type;
-
-         if Token = Tok_Identifier
-           and then Nkind (Token_Node) = N_Defining_Identifier
-         then
-            Ident_Node := Token_Node;
-            Scan; -- past defining identifier
-         else
-            Ident_Node := P_Defining_Identifier (C_Is);
-         end if;
+         Type_Token_Location := Type_Loc;
+         Ident_Node := P_Defining_Identifier (C_Is);
       end if;
 
       Discr_Sloc := Token_Ptr;

@@ -1,3 +1,37 @@
+2008-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Adjustment to previous fix for passing
+	correct accessibility levels. In the "when others" case, retrieve the
+	access level of the Etype of Prev rather than Prev_Orig, because the
+	original exression has not always been analyzed.
+
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting
+
+	* sem_ch4.adb: Minor reformatting
+	Minor code reorganization
+
+	* prj.ads: Minor reformatting
+
+	* s-os_lib.adb: Minor reformatting
+
+	* par-prag.adb (Prag, case Wide_Character_Encoding): Deal with upper
+	half encodings
+
+	* scans.ads: Minor reformatting.
+
+	* sem_prag.adb (Analyze_Pragma): Put entries in alpha order
+	(Analyze_Pragma): Make sure all GNAT pragmas call GNAT_Pragma
+
+	* sem_res.adb:
+	(Resolve_Call): Check violation of No_Specific_Termination_Handlers
+
+	* sem_ch12.adb: Minor comment reformatting
+
+	* par-ch3.adb (P_Type_Declaration): Properly handle missing type
+	keyword
+
 2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert_vms_descriptor): Add gnu_expr_alt_type
