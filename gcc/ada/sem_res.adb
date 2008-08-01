@@ -754,7 +754,22 @@ package body Sem_Res is
       C := N;
       loop
          P := Parent (C);
+
+         --  If no parent, then we were not inside a subprogram, this can for
+         --  example happen when processing certain pragmas in a spec. Just
+         --  return False in this case.
+
+         if No (P) then
+            return False;
+         end if;
+
+         --  Done if we get to subprogram body, this is definitely an infinite
+         --  recursion case if we did not find anything to stop us.
+
          exit when Nkind (P) = N_Subprogram_Body;
+
+         --  If appearing in conditional, result is false
+
          if Nkind_In (P, N_Or_Else,
                          N_And_Then,
                          N_If_Statement,
