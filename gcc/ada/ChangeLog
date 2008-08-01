@@ -1,3 +1,49 @@
+2008-08-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* cstreams.c (__gnat_full_name): RTSS applications cannot ask for the
+	current directory so only fully qualified names are allowed.
+
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi:
+	Minor editing, remove uncomfortable use of semicolon
+
+	* s-ststop.adb: Add some ??? comments
+
+	* sem_ch10.adb: Minor reformatting
+
+	* snames.ads:
+	Minor comment fixes, some pragmas were not properly
+	categorized in the comments, documentation change only
+
+	* xref_lib.adb: Minor reformatting
+
+	* sinput.adb: Minor reformatting
+
+	* gnatchop.adb: Minor reformatting
+
+	* sem_util.ads: Minor reformatting.
+
+	* opt.ads: Minor documentation fix
+
+	* scng.adb: Minor reformatting
+
+	* prj-part.adb: Update comments
+
+2008-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): If the target type is a
+	tagged synchronized type, use corresponding record type.
+
+2008-08-01  Doug Rupp  <rupp@adacore.com>
+
+	* mlib-tgt-specific-vms-alpha.adb (Build_Dynamic_Library): Output a
+	dummy transfer address for debugging.
+	
+	* mlib-tgt-specific-vms-ia64.adb (Build_Dynamic_Library): Likewise.
+
+	* vms_data.ads: vms_data.ads: New qualfier /MACHINE_CODE_LISTING
+
 2008-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Fix formatting.
