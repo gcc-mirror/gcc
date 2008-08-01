@@ -3753,6 +3753,38 @@ package body Sem_Ch12 is
       Analyze_Subprogram_Instantiation (N, E_Procedure);
    end Analyze_Procedure_Instantiation;
 
+   -----------------------------------
+   -- Need_Subprogram_Instance_Body --
+   -----------------------------------
+
+   function Need_Subprogram_Instance_Body
+     (N    : Node_Id;
+      Subp : Entity_Id) return Boolean
+   is
+   begin
+      if (Is_In_Main_Unit (N)
+            or else Is_Inlined (Subp)
+            or else Is_Inlined (Alias (Subp)))
+        and then (Operating_Mode = Generate_Code
+                    or else (Operating_Mode = Check_Semantics
+                               and then ASIS_Mode))
+        and then (Expander_Active or else ASIS_Mode)
+        and then not ABE_Is_Certain (N)
+        and then not Is_Eliminated (Subp)
+      then
+         Pending_Instantiations.Append
+           ((Inst_Node                => N,
+             Act_Decl                 => Unit_Declaration_Node (Subp),
+             Expander_Status          => Expander_Active,
+             Current_Sem_Unit         => Current_Sem_Unit,
+             Scope_Suppress           => Scope_Suppress,
+             Local_Suppress_Stack_Top => Local_Suppress_Stack_Top));
+         return True;
+      else
+         return False;
+      end if;
+   end Need_Subprogram_Instance_Body;
+
    --------------------------------------
    -- Analyze_Subprogram_Instantiation --
    --------------------------------------
@@ -4144,22 +4176,7 @@ package body Sem_Ch12 is
             --  If the context requires a full instantiation, mark node for
             --  subsequent construction of the body.
 
-            if (Is_In_Main_Unit (N)
-                  or else Is_Inlined (Act_Decl_Id))
-              and then (Operating_Mode = Generate_Code
-                          or else (Operating_Mode = Check_Semantics
-                                     and then ASIS_Mode))
-              and then (Expander_Active or else ASIS_Mode)
-              and then not ABE_Is_Certain (N)
-              and then not Is_Eliminated (Act_Decl_Id)
-            then
-               Pending_Instantiations.Append
-                 ((Inst_Node                => N,
-                   Act_Decl                 => Act_Decl,
-                   Expander_Status          => Expander_Active,
-                   Current_Sem_Unit         => Current_Sem_Unit,
-                   Scope_Suppress           => Scope_Suppress,
-                   Local_Suppress_Stack_Top => Local_Suppress_Stack_Top));
+            if Need_Subprogram_Instance_Body (N, Act_Decl_Id) then
 
                Check_Forward_Instantiation (Gen_Decl);
 
@@ -8698,6 +8715,13 @@ package body Sem_Ch12 is
 
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
+
+      --  Subprogram body may have been created already because of
+      --  an inline pragma.
+
+      if Present (Corresponding_Body (Act_Decl)) then
+         return;
+      end if;
 
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 

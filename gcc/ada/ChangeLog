@@ -1,3 +1,21 @@
+2008-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.ads (Need_Subprogram_Instance_Body): new function, to create
+	a pending instantiation for the body of a subprogram that is to be
+	inlined.
+
+	* sem_ch12.adb:
+	(Analyze_Subprogram_Instantiation): use Need_Subprogram_Instance_Body.
+
+	* sem_prag.adb (Make_Inline): If the pragma applies to an instance,
+	create a pending instance for its body, so that calls to the subprogram
+	can be inlined by the back-end.
+
+2008-08-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat_ugn.texi: Document the RTX run times (rts-rtx-rtss and
+	rts-rtx-w32).
+
 2008-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* scng.adb (Error_Illegal_Wide_Character): Bump scan pointer
