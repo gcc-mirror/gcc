@@ -58,4 +58,10 @@ package MLib.Utl is
    function Lib_Directory return String;
    --  Return the directory containing libgnat
 
+   procedure Specify_Adalib_Dir (Path : String);
+   --  Specify the path of the GNAT adalib directory, to be returned by
+   --  function Lib_Directory without looking for it. This is used only in
+   --  gprlib, because we cannot rely on the search in Lib_Directory, as the
+   --  GNAT version may be different for gprbuild/gprlib and the compiler.
+
 end MLib.Utl;

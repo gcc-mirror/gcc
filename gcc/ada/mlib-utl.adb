@@ -35,6 +35,10 @@ with System;
 
 package body MLib.Utl is
 
+   Adalib_Path : String_Access := null;
+   --  Path of the GNAT adalib directory, specified in procedure
+   --  Specify_Adalib_Dir. Used in function Lib_Directory.
+
    Gcc_Name : String_Access;
    --  Default value of the "gcc" executable used in procedure Gcc
 
@@ -597,6 +601,13 @@ package body MLib.Utl is
       Libgnat : constant String := Tgt.Libgnat;
 
    begin
+      --  If procedure Specify_Adalib_Dir has been called, used the specified
+      --  value.
+
+      if Adalib_Path /= null then
+         return Adalib_Path.all;
+      end if;
+
       Name_Len := Libgnat'Length;
       Name_Buffer (1 .. Name_Len) := Libgnat;
       Get_Name_String (Osint.Find_File (Name_Enter, Osint.Library));
@@ -605,5 +616,18 @@ package body MLib.Utl is
 
       return Name_Buffer (1 .. Name_Len - Libgnat'Length);
    end Lib_Directory;
+
+   ------------------------
+   -- Specify_Adalib_Dir --
+   ------------------------
+
+   procedure Specify_Adalib_Dir (Path : String) is
+   begin
+      if Path'Length = 0 then
+         Adalib_Path := null;
+      else
+         Adalib_Path := new String'(Path);
+      end if;
+   end Specify_Adalib_Dir;
 
 end MLib.Utl;
