@@ -649,7 +649,7 @@ package body Sinput is
       Chr : constant Character := Source (P);
 
    begin
-      if  Chr = CR then
+      if Chr = CR then
          if Source (P + 1) = LF then
             P := P + 2;
          else
