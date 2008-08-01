@@ -399,9 +399,12 @@ package Prj is
 
    No_Source : constant Source_Id := 0;
 
-   type Path_Syntax_Kind is (Canonical, Host);
-   --  Canonical = Unix style
-   --  Host = host specific syntax, for example on VMS (the default)
+   type Path_Syntax_Kind is
+     (Canonical,
+      --  Unix style
+
+      Host);
+      --  Host specific syntax, for example on VMS (the default)
 
    type Language_Config is record
       Kind : Language_Kind := File_Based;
