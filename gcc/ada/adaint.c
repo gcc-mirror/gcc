@@ -982,7 +982,11 @@ __gnat_named_file_length (char *name)
 void
 __gnat_tmp_name (char *tmp_filename)
 {
-#ifdef __MINGW32__
+#ifdef RTX
+  /* RTX in RTSS mode does not support tempnam nor tmpnam */
+  strcpy (tmp_filename, "c:\\WINDOWS\\Temp\\gnat-XXXXXX");
+
+#elif defined (__MINGW32__)
   {
     char *pname;
 
