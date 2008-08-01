@@ -1,3 +1,11 @@
+2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/deferred_const1.adb: New test.
+	* gnat.dg/deferred_const2.adb: Likewise.
+	* gnat.dg/deferred_const2_pkg.ad[sb]: New helper.
+	* gnat.dg/deferred_const3.adb: New test.
+	* gnat.dg/deferred_const3_pkg.ad[sb]: New helper.
+
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36988

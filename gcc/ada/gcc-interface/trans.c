@@ -3397,6 +3397,15 @@ gnat_to_gnu (Node_Id gnat_node)
       if (type_annotate_only && gnu_expr && TREE_CODE (gnu_expr) == ERROR_MARK)
 	gnu_expr = NULL_TREE;
 
+      /* If this is a deferred constant with an address clause, we ignore the
+	 full view since the clause is on the partial view and we cannot have
+	 2 different GCC trees for the object.  The only bits of the full view
+	 we will use is the initializer, but it will be directly fetched.  */
+      if (Ekind(gnat_temp) == E_Constant
+	  && Present (Address_Clause (gnat_temp))
+	  && Present (Full_View (gnat_temp)))
+	save_gnu_tree (Full_View (gnat_temp), error_mark_node, true);
+
       if (No (Freeze_Node (gnat_temp)))
 	gnat_to_gnu_entity (gnat_temp, gnu_expr, 1);
       break;
@@ -4541,21 +4550,22 @@ gnat_to_gnu (Node_Id gnat_node)
     /***************************************************/
 
     case N_Attribute_Definition_Clause:
-
       gnu_result = alloc_stmt_list ();
 
-      /* The only one we need deal with is for 'Address.  For the others, SEM
-	 puts the information elsewhere.  We need only deal with 'Address
-	 if the object has a Freeze_Node (which it never will currently).  */
-      if (Get_Attribute_Id (Chars (gnat_node)) != Attr_Address
-	  || No (Freeze_Node (Entity (Name (gnat_node)))))
+      /* The only one we need to deal with is 'Address since, for the others,
+	 the front-end puts the information elsewhere.  */
+      if (Get_Attribute_Id (Chars (gnat_node)) != Attr_Address)
 	break;
 
-      /* Get the value to use as the address and save it as the
-	 equivalent for GNAT_TEMP.  When the object is frozen,
-	 gnat_to_gnu_entity will do the right thing. */
-      save_gnu_tree (Entity (Name (gnat_node)),
-                     gnat_to_gnu (Expression (gnat_node)), true);
+      /* And we only deal with 'Address if the object has a Freeze node.  */
+      gnat_temp = Entity (Name (gnat_node));
+      if (No (Freeze_Node (gnat_temp)))
+	break;
+
+      /* Get the value to use as the address and save it as the equivalent
+	 for the object.  When it is frozen, gnat_to_gnu_entity will do the
+	 right thing.  */
+      save_gnu_tree (gnat_temp, gnat_to_gnu (Expression (gnat_node)), true);
       break;
 
     case N_Enumeration_Representation_Clause:

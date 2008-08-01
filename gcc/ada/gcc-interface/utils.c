@@ -3869,31 +3869,31 @@ update_pointer_to (tree old_type, tree new_type)
     }
 }
 
-/* Convert a pointer to a constrained array into a pointer to a fat
-   pointer.  This involves making or finding a template.  */
+/* Convert EXPR, a pointer to a constrained array, into a pointer to an
+   unconstrained one.  This involves making or finding a template.  */
 
 static tree
 convert_to_fat_pointer (tree type, tree expr)
 {
   tree template_type = TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (type))));
-  tree template, template_addr;
+  tree p_array_type = TREE_TYPE (TYPE_FIELDS (type));
   tree etype = TREE_TYPE (expr);
+  tree template;
 
-  /* If EXPR is a constant of zero, we make a fat pointer that has a null
-     pointer to the template and array.  */
+  /* If EXPR is null, make a fat pointer that contains null pointers to the
+     template and array.  */
   if (integer_zerop (expr))
     return
       gnat_build_constructor
 	(type,
 	 tree_cons (TYPE_FIELDS (type),
-		    convert (TREE_TYPE (TYPE_FIELDS (type)), expr),
+		    convert (p_array_type, expr),
 		    tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
 			       convert (build_pointer_type (template_type),
 					expr),
 			       NULL_TREE)));
 
-  /* If EXPR is a thin pointer, make the template and data from the record.  */
-
+  /* If EXPR is a thin pointer, make template and data from the record..  */
   else if (TYPE_THIN_POINTER_P (etype))
     {
       tree fields = TYPE_FIELDS (TREE_TYPE (etype));
@@ -3909,30 +3909,31 @@ convert_to_fat_pointer (tree type, tree expr)
 			     build_component_ref (expr, NULL_TREE,
 						  TREE_CHAIN (fields), false));
     }
+
+  /* Otherwise, build the constructor for the template.  */
   else
-    /* Otherwise, build the constructor for the template.  */
     template = build_template (template_type, TREE_TYPE (etype), expr);
 
-  template_addr = build_unary_op (ADDR_EXPR, NULL_TREE, template);
+  /* The final result is a constructor for the fat pointer.
 
-  /* The result is a CONSTRUCTOR for the fat pointer.
-
-     If expr is an argument of a foreign convention subprogram, the type it
-     points to is directly the component type. In this case, the expression
+     If EXPR is an argument of a foreign convention subprogram, the type it
+     points to is directly the component type.  In this case, the expression
      type may not match the corresponding FIELD_DECL type at this point, so we
-     call "convert" here to fix that up if necessary. This type consistency is
+     call "convert" here to fix that up if necessary.  This type consistency is
      required, for instance because it ensures that possible later folding of
-     component_refs against this constructor always yields something of the
+     COMPONENT_REFs against this constructor always yields something of the
      same type as the initial reference.
 
-     Note that the call to "build_template" above is still fine, because it
-     will only refer to the provided template_type in this case.  */
-   return
-     gnat_build_constructor
-     (type, tree_cons (TYPE_FIELDS (type),
- 		      convert (TREE_TYPE (TYPE_FIELDS (type)), expr),
- 		      tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
- 				 template_addr, NULL_TREE)));
+     Note that the call to "build_template" above is still fine because it
+     will only refer to the provided TEMPLATE_TYPE in this case.  */
+  return
+    gnat_build_constructor
+      (type,
+       tree_cons (TYPE_FIELDS (type),
+		  convert (p_array_type, expr),
+		  tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
+			     build_unary_op (ADDR_EXPR, NULL_TREE, template),
+			     NULL_TREE)));
 }
 
 /* Convert to a thin pointer type, TYPE.  The only thing we know how to convert
