@@ -16,6 +16,17 @@
 	if we do not unroll because we hit max-completely-peeled-insns.
 	Use our estimation for consistency, do allow shrinking.
 
+2008-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (override_options): Replace ABI_STACK_BOUNDARY
+	with MIN_STACK_BOUNDARY.
+	(ix86_update_stack_boundary): Likewise.
+	(ix86_expand_prologue): Assert MIN_STACK_BOUNDARY instead of
+	STACK_BOUNDARY.
+
+	* config/i386/i386.h (ABI_STACK_BOUNDARY): Renamed to ...
+	(MIN_STACK_BOUNDARY): This.
+
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36997
