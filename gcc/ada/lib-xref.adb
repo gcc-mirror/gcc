@@ -1834,7 +1834,11 @@ package body Lib.Xref is
                            Par : Node_Id;
 
                         begin
-                           if Ekind (Scope (E)) /= E_Generic_Package then
+                           --  The Present check here is an error defense
+
+                           if Present (Scope (E))
+                             and then Ekind (Scope (E)) /= E_Generic_Package
+                           then
                               return False;
                            end if;
 
