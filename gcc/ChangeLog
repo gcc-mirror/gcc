@@ -1,3 +1,9 @@
+2008-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36991
+	* gimplify.c (gimplify_init_constructor): Call tree_to_gimple_tuple
+	on expr_p before appending it to pre_p.
+
 2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	Backport from mainline:

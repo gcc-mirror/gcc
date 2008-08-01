@@ -1,3 +1,8 @@
+2008-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36991
+	* gcc.dg/pr36991.c: New test.
+
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/36649
