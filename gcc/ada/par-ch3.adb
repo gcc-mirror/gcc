@@ -206,6 +206,18 @@ package body Ch3 is
       Ident_Node := Token_Node;
       Scan; -- past the reserved identifier
 
+      --  If we already have a defining identifier, clean it out and make
+      --  a new clean identifier. This situation arises in some error cases
+      --  and we need to fix it.
+
+      if Nkind (Ident_Node) = N_Defining_Identifier then
+         Ident_Node :=
+           Make_Identifier (Sloc (Ident_Node),
+             Chars => Chars (Ident_Node));
+      end if;
+
+      --  Change identifier to defining identifier if not in error
+
       if Ident_Node /= Error then
          Change_Identifier_To_Defining_Identifier (Ident_Node);
       end if;
@@ -290,8 +302,7 @@ package body Ch3 is
          Scan; -- past TYPE
          Ident_Node := P_Defining_Identifier (C_Is);
 
-      --  Otherwise this is an error case, and we may already have converted
-      --  the current token to a defining identifier, so don't do it again!
+      --  Otherwise this is an error case
 
       else
          T_Type;
@@ -1349,7 +1360,6 @@ package body Ch3 is
       --  If we have a comma, then scan out the list of identifiers
 
       elsif Token = Tok_Comma then
-
          while Comma_Present loop
             Num_Idents := Num_Idents + 1;
             Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
