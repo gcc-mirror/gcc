@@ -3045,9 +3045,9 @@ override_options (bool main_args_p)
     ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
 
   /* Validate -mincoming-stack-boundary= value or default it to
-     ABI_STACK_BOUNDARY/PREFERRED_STACK_BOUNDARY.  */
+     MIN_STACK_BOUNDARY/PREFERRED_STACK_BOUNDARY.  */
   if (ix86_force_align_arg_pointer)
-    ix86_default_incoming_stack_boundary = ABI_STACK_BOUNDARY;
+    ix86_default_incoming_stack_boundary = MIN_STACK_BOUNDARY;
   else
     ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
   ix86_incoming_stack_boundary = ix86_default_incoming_stack_boundary;
@@ -7520,10 +7520,10 @@ ix86_update_stack_boundary (void)
   /* Incoming stack alignment can be changed on individual functions
      via force_align_arg_pointer attribute.  We use the smallest
      incoming stack boundary.  */
-  if (ix86_incoming_stack_boundary > ABI_STACK_BOUNDARY
+  if (ix86_incoming_stack_boundary > MIN_STACK_BOUNDARY
       && lookup_attribute (ix86_force_align_arg_pointer_string,
 			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
-    ix86_incoming_stack_boundary = ABI_STACK_BOUNDARY;
+    ix86_incoming_stack_boundary = MIN_STACK_BOUNDARY;
 
   /* Stack at entrance of main is aligned by runtime.  We use the
      smallest incoming stack boundary. */
@@ -7710,7 +7710,7 @@ ix86_expand_prologue (void)
   if (stack_realign_fp)
     {
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
-      gcc_assert (align_bytes > STACK_BOUNDARY / BITS_PER_UNIT);
+      gcc_assert (align_bytes > MIN_STACK_BOUNDARY / BITS_PER_UNIT);
 
       /* Align the stack.  */
       insn = emit_insn ((*ix86_gen_andsp) (stack_pointer_rtx,
