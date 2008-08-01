@@ -89,13 +89,6 @@
 	* par-ch3.adb (P_Type_Declaration): Properly handle missing type
 	keyword
 
-2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* gcc-interface/utils.c (convert_vms_descriptor): Add gnu_expr_alt_type
-	parameter.
-	Convert the expression to it instead of changing its type in place.
-	(build_function_stub): Adjust call to above function.
-
 2008-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb (Process_PPCs): Don't copy spec PPC to body if not
