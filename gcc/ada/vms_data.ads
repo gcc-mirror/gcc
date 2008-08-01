@@ -1745,6 +1745,15 @@ package VMS_Data is
    --   a body is compiled, the corresponding spec is also listed, along
    --   with any subunits.
 
+   S_GCC_Machine : aliased constant S := "/MACHINE_CODE_LISTING "          &
+                                             "-source-listing";
+   --        /NOMACHINE_CODE_LISTING (D)
+   --        /MACHINE_CODE_LISTING
+   --
+   --   Cause a full machine code listing of the file to be generated to
+   --   <filename>.lis. Interspersed source is included if the /DEBUG
+   --   qualifier is also present.
+
    S_GCC_Mapping : aliased constant S := "/MAPPING_FILE=<"                 &
                                             "-gnatem>";
    --        /MAPPING_FILE=file_name
@@ -3316,6 +3325,7 @@ package VMS_Data is
                      S_GCC_Length  'Access,
                      S_GCC_List    'Access,
                      S_GCC_Output  'Access,
+                     S_GCC_Machine 'Access,
                      S_GCC_Mapping 'Access,
                      S_GCC_Mess    'Access,
                      S_GCC_Nesting 'Access,
