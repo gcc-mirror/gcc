@@ -10877,11 +10877,11 @@ package body Sem_Ch12 is
                Set_Is_Immediately_Visible (P, False);
 
             --  If the current scope is itself an instantiation of a generic
-            --  nested within P, and we are in the private part of body of
-            --  this instantiation, restore the full views of P, that were
-            --  removed in End_Package_Scope above. This obscure case can
-            --  occur when a subunit of a generic contains an instance of
-            --  of a child unit of its generic parent unit.
+            --  nested within P, and we are in the private part of body of this
+            --  instantiation, restore the full views of P, that were removed
+            --  in End_Package_Scope above. This obscure case can occur when a
+            --  subunit of a generic contains an instance of a child unit of
+            --  its generic parent unit.
 
             elsif S = Current_Scope
               and then Is_Generic_Instance (S)
