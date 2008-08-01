@@ -2708,7 +2708,6 @@ package body Sem_Ch10 is
                 Nkind (Unit_Declaration_Node (Entity (Selector_Name (Nam))))
                   = N_Package_Renaming_Declaration
             then
-
                --  The name in the with_clause is of the form A.B.C, and B
                --  is given by a renaming declaration. In that case we may
                --  not have analyzed the unit for B, but replaced it directly
