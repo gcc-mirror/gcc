@@ -96,7 +96,6 @@
 	(dwarf2out_stack_adjust): Use it.
 	(dwarf2out_frame_debug_expr): Likewise.
 
->>>>>>> .r138449
 2008-07-31  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36978
