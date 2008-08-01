@@ -53,6 +53,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dist; use Sem_Dist;
 with Sem_Elim; use Sem_Elim;
@@ -3752,6 +3753,22 @@ package body Sem_Prag is
                     and then Present (Corresponding_Body (Decl))
                   then
                      Set_Inline_Flags (Corresponding_Body (Decl));
+
+                  elsif Is_Generic_Instance (Subp) then
+
+                     --  Indicate that the body needs to be created for
+                     --  inlining subsequent calls. The instantiation
+                     --  node follows the declaration of the wrapper
+                     --  package created for it.
+
+                     if Scope (Subp) /= Standard_Standard
+                       and then
+                         Need_Subprogram_Instance_Body
+                          (Next (Unit_Declaration_Node (Scope (Alias (Subp)))),
+                              Subp)
+                     then
+                        null;
+                     end if;
                   end if;
                end if;
 

@@ -106,6 +106,16 @@ package Sem_Ch12 is
    --  function and procedure instances. The flag Body_Optional has the
    --  same purpose as described for Instantiate_Package_Body.
 
+   function Need_Subprogram_Instance_Body
+     (N    : Node_Id;
+      Subp : Entity_Id) return Boolean;
+
+   --  If a subprogram instance is inlined, indicate that the body of it
+   --  must be created, to be used in inlined calls by the back-end. The
+   --  subprogram may be inlined because the generic itself carries the
+   --  pragma, or because a pragma appears for the instance in the scope.
+   --  of the instance.
+
    procedure Save_Global_References (N : Node_Id);
    --  Traverse the original generic unit, and capture all references to
    --  entities that are defined outside of the generic in the analyzed
