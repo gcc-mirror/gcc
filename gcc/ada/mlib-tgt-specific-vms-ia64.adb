@@ -275,26 +275,30 @@ package body MLib.Tgt.Specific is
             --  Create and write the auto-init assembly file
 
             declare
-               First_Line  : constant String :=
-                               ASCII.HT
-                               & ".type " & Init_Proc & "#, @function"
-                               & ASCII.LF;
-               Second_Line : constant String :=
-                               ASCII.HT
-                               & ".global " & Init_Proc & "#"
-                               & ASCII.LF;
-               Third_Line  : constant String :=
-                               ASCII.HT
-                               & ".global LIB$INITIALIZE#"
-                               & ASCII.LF;
-               Fourth_Line : constant String :=
-                               ASCII.HT
-                               & ".section LIB$INITIALIZE#,""a"",@progbits"
-                               & ASCII.LF;
-               Fifth_Line  : constant String :=
-                               ASCII.HT
-                               & "data4 @fptr(" & Init_Proc & "#)"
-                               & ASCII.LF;
+               use ASCII;
+
+               --  Output a dummy transfer address for debugging
+               --  followed by the LIB$INITIALIZE section.
+
+               Lines : constant String :=
+                 HT & ".pred.safe_across_calls p1-p5,p16-p63" & LF &
+                 HT & ".text" & LF &
+                 HT & ".align 16" & LF &
+                 HT & ".global __main#" & LF &
+                 HT & ".proc __main#" & LF &
+                      "__main:" & LF &
+                 HT & ".prologue" & LF &
+                 HT & ".body" & LF &
+                 HT & ".mib" & LF &
+                 HT & "nop 0" & LF &
+                 HT & "nop 0" & LF &
+                 HT & "br.ret.sptk.many b0" & LF &
+                 HT & ".endp __main#" & LF & LF &
+                 HT & ".type " & Init_Proc & "#, @function" & LF &
+                 HT & ".global " & Init_Proc & "#" & LF &
+                 HT & ".global LIB$INITIALIZE#" & LF &
+                 HT & ".section LIB$INITIALIZE#,""a"",@progbits" & LF &
+                 HT & "data4 @fptr(" & Init_Proc & "#)" & LF;
 
             begin
                Macro_File := Create_File (Macro_File_Name, Text);
@@ -302,37 +306,9 @@ package body MLib.Tgt.Specific is
 
                if OK then
                   Len := Write
-                    (Macro_File, First_Line (First_Line'First)'Address,
-                     First_Line'Length);
-                  OK := Len = First_Line'Length;
-               end if;
-
-               if OK then
-                  Len := Write
-                    (Macro_File, Second_Line (Second_Line'First)'Address,
-                     Second_Line'Length);
-                  OK := Len = Second_Line'Length;
-               end if;
-
-               if OK then
-                  Len := Write
-                    (Macro_File, Third_Line (Third_Line'First)'Address,
-                     Third_Line'Length);
-                  OK := Len = Third_Line'Length;
-               end if;
-
-               if OK then
-                  Len := Write
-                    (Macro_File, Fourth_Line (Fourth_Line'First)'Address,
-                     Fourth_Line'Length);
-                  OK := Len = Fourth_Line'Length;
-               end if;
-
-               if OK then
-                  Len := Write
-                    (Macro_File, Fifth_Line (Fifth_Line'First)'Address,
-                     Fifth_Line'Length);
-                  OK := Len = Fifth_Line'Length;
+                    (Macro_File, Lines (Lines'First)'Address,
+                     Lines'Length);
+                  OK := Len = Lines'Length;
                end if;
 
                if OK then

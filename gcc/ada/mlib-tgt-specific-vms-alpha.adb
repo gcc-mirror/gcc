@@ -276,12 +276,26 @@ package body MLib.Tgt.Specific is
             --  Create and write the auto-init assembly file
 
             declare
-               First_Line : constant String :=
-                              ASCII.HT & ".section LIB$INITIALIZE,GBL,NOWRT" &
-               ASCII.LF;
-               Second_Line : constant String :=
-                               ASCII.HT & ".long " & Init_Proc & ASCII.LF;
-               --  First and second lines of the auto-init assembly file
+               use ASCII;
+
+               --  Output a dummy transfer address for debugging
+               --  followed by the LIB$INITIALIZE section.
+
+               Lines : constant String :=
+                 HT & ".text" & LF &
+                 HT & ".align 4" & LF &
+                 HT & ".globl __main" & LF &
+                 HT & ".ent __main" & LF &
+                 "__main..en:" & LF &
+                 HT & ".base $27" & LF &
+                 HT & ".frame $29,0,$26,8" & LF &
+                 HT & "ret $31,($26),1" & LF &
+                 HT & ".link" & LF &
+                 "__main:" & LF &
+                 HT & ".pdesc __main..en,null" & LF &
+                 HT & ".end __main" & LF & LF &
+                 HT & ".section LIB$INITIALIZE,GBL,NOWRT" & LF &
+                 HT & ".long " & Init_Proc & LF;
 
             begin
                Macro_File := Create_File (Macro_File_Name, Text);
@@ -289,16 +303,9 @@ package body MLib.Tgt.Specific is
 
                if OK then
                   Len := Write
-                    (Macro_File, First_Line (First_Line'First)'Address,
-                     First_Line'Length);
-                  OK := Len = First_Line'Length;
-               end if;
-
-               if OK then
-                  Len := Write
-                    (Macro_File, Second_Line (Second_Line'First)'Address,
-                     Second_Line'Length);
-                  OK := Len = Second_Line'Length;
+                    (Macro_File, Lines (Lines'First)'Address,
+                     Lines'Length);
+                  OK := Len = Lines'Length;
                end if;
 
                if OK then
