@@ -651,14 +651,14 @@ enum target_cpu_default
 /* Stack boundary of the main function guaranteed by OS.  */
 #define MAIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
 
-/* Stack boundary guaranteed by ABI.  */
-#define ABI_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
+/* Minimum stack boundary.  */
+#define MIN_STACK_BOUNDARY (TARGET_64BIT ? 128 : 32)
 
 /* Boundary (in *bits*) on which the stack pointer prefers to be
    aligned; the compiler cannot rely on having this alignment.  */
 #define PREFERRED_STACK_BOUNDARY ix86_preferred_stack_boundary
 
-/* It should be ABI_STACK_BOUNDARY.  But we set it to 128 bits for
+/* It should be MIN_STACK_BOUNDARY.  But we set it to 128 bits for
    both 32bit and 64bit, to support codes that need 128 bit stack
    alignment for SSE instructions, but can't realign the stack.  */
 #define PREFERRED_STACK_BOUNDARY_DEFAULT 128
