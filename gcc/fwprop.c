@@ -231,7 +231,7 @@ enum {
      PR_HANDLE_MEM is set when the source of the propagation was not
      another MEM.  Then, it is safe not to treat non-read-only MEMs as
      ``opaque'' objects.  */
-  PR_HANDLE_MEM = 2,
+  PR_HANDLE_MEM = 2
 };
 
 

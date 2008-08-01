@@ -1,3 +1,7 @@
+2008-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* fwprop.c (PR_HANDLE_MEM): Remove trailing comma in enum.
+
 2008-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/36419
