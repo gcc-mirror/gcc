@@ -1,4 +1,13 @@
-2008-08-01  Basile Starynkevitch  <basile@starynkevitch>
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Do not generate libada-mk.  Do not subst
+	host_cc_for_libada.
+	* libada-mk.in: Remove.
+	* Makefile.in: Pass TARGET_LIBGCC2_CFLAGS to libgcc.mvars.
+	* configure: Regenerate.
+
+2008-08-01  Basile Starynkevitch  <basile@starynkevitch.net>
+
 	* tree-pass.h: Added comment about not dumping passes with name
 	starting with star in struct opt_pass.
 	* passes.c (register_dump_files_1): Don't do dump for a pass with

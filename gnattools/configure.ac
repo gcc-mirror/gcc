@@ -156,6 +156,13 @@ esac
 # From user or toplevel makefile.
 AC_SUBST(ADA_CFLAGS)
 
+AC_PROG_CC
+warn_cflags=
+if test "x$GCC" = "xyes"; then
+  warn_cflags='$(GCC_WARN_CFLAGS)'
+fi
+AC_SUBST(warn_cflags)
+
 # Output: create a Makefile.
 AC_CONFIG_FILES([Makefile])
 

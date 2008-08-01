@@ -1,3 +1,14 @@
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (warn_cflags): Substitute.
+	* configure: Regenerate.
+	* Makefile.in (libdir, exeext, WARN_CFLAGS): Substitute.
+	(GCC_WARN_CFLAGS): Remove NOCOMMON_FLAG.
+	(ADA_INCLUDE_DIR, ADA_RTL_OBJ_DIR): Remove as they were unused.
+	(libsubdir): Remove.
+	(libada-mk): Do not include.  Include libgcc.mvars instead.
+	(xmake_file): Remove, do not include.
+
 2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (x_ada_cflags): Remove.
