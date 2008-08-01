@@ -294,10 +294,10 @@ struct lang_type GTY(()) {tree t; };
 #define SET_DECL_FUNCTION_STUB(NODE, X) \
   SET_DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE), X)
 
-/* In a PARM_DECL, points to the alternate TREE_TYPE */
-#define DECL_PARM_ALT(NODE) \
+/* In a PARM_DECL, points to the alternate TREE_TYPE.  */
+#define DECL_PARM_ALT_TYPE(NODE) \
   GET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE))
-#define SET_DECL_PARM_ALT(NODE, X) \
+#define SET_DECL_PARM_ALT_TYPE(NODE, X) \
   SET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE), X)
 
 /* In a FIELD_DECL corresponding to a discriminant, contains the

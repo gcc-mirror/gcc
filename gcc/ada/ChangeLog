@@ -1,5 +1,15 @@
 2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (DECL_PARM_ALT): Now DECL_PARM_ALT_TYPE.
+	* gcc-interface/decl.c (gnat_to_gnu_param): Fix formatting, simplify
+	and adjust for above renaming.
+	* gcc-interface/utils.c (convert_vms_descriptor): Likewise. Add new
+	gnu_expr_alt_type parameter.  Convert the expression to it instead
+	of changing its type in place.
+	(build_function_stub): Adjust call to above function.
+
+2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Remove dead
 	code.  Do not get full definition of deferred constants with address
 	clause for a use.  Do not ignore deferred constant definitions with

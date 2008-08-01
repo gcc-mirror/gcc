@@ -4841,11 +4841,11 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
     gnu_param_type
       = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_param_type))));
 
-  /* VMS descriptors are themselves passed by reference.
-     Build both a 32bit and 64bit descriptor, one of which will be chosen
-     in fill_vms_descriptor. */
+  /* VMS descriptors are themselves passed by reference.  */
   if (mech == By_Descriptor)
     {
+      /* Build both a 32-bit and 64-bit descriptor, one of which will be
+	 chosen in fill_vms_descriptor.  */
       gnu_param_type_alt
         = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
 						      Mechanism (gnat_param),
@@ -4856,14 +4856,10 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 						    gnat_subprog));
     }
   else if (mech == By_Short_Descriptor)
-    {
-      gnu_param_type_alt = NULL_TREE;
-
-      gnu_param_type
-        = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
+    gnu_param_type
+      = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
 						    Mechanism (gnat_param),
 						    gnat_subprog));
-    }
 
   /* Arrays are passed as pointers to element type for foreign conventions.  */
   else if (foreign
@@ -4961,8 +4957,9 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
 
-  /* Save the alternate descriptor for later. */
-  SET_DECL_PARM_ALT (gnu_param, gnu_param_type_alt);
+  /* Save the alternate descriptor type, if any.  */
+  if (gnu_param_type_alt)
+    SET_DECL_PARM_ALT_TYPE (gnu_param, gnu_param_type_alt);
 
   /* If no Mechanism was specified, indicate what we're using, then
      back-annotate it.  */
