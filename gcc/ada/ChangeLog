@@ -1,3 +1,19 @@
+2008-08-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (__gnat_tmp_name): Refine the generation of temporary names
+	for RTX. Adding a suffix that is incremented at each iteration.
+
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Remove special casing of
+	Raise_Exception
+
+2008-08-01  Jerome Lambourg  <lambourg@adacore.com>
+
+	* s-os_lib.adb (Normalize_Pathname): Take care of double-quotes in
+	paths, which are authorized by Windows but can lead to errors when used
+	elsewhere.
+
 2008-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.ads (Need_Subprogram_Instance_Body): new function, to create
