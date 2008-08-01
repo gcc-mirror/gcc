@@ -1564,6 +1564,7 @@ package body Sem_Ch6 is
          --  Subprogram_Specification. In such cases, we undo the change
          --  made by the analysis of the specification and try to find the
          --  spec again.
+
          --  Note that wrappers already have their corresponding specs and
          --  bodies set during their creation, so if the candidate spec is
          --  a wrapper, then we definately need to swap all types to their
@@ -2404,17 +2405,6 @@ package body Sem_Ch6 is
                      if Ekind (Ent) = E_Procedure
                        and then No_Return (Ent)
                      then
-                        Set_Trivial_Subprogram (Stm);
-
-                     --  If the procedure name is Raise_Exception, then also
-                     --  assume that it raises an exception. The main target
-                     --  here is Ada.Exceptions.Raise_Exception, but this name
-                     --  is pretty evocative in any context! Note that the
-                     --  procedure in Ada.Exceptions is not marked No_Return
-                     --  because of the annoying case of the null exception Id
-                     --  when operating in Ada 95 mode.
-
-                     elsif Chars (Ent) = Name_Raise_Exception then
                         Set_Trivial_Subprogram (Stm);
                      end if;
                   end;
@@ -7756,6 +7746,7 @@ package body Sem_Ch6 is
          --  procedure. Note that it is only at the outer level that we
          --  do this fiddling, for the spec cases, the already preanalyzed
          --  parameters are not affected.
+
          --  For a postcondition pragma within a generic, preserve the pragma
          --  for later expansion.
 
@@ -7891,7 +7882,7 @@ package body Sem_Ch6 is
          end loop;
       end if;
 
-      --  If we had any postconditions and expansion is enabled,, build
+      --  If we had any postconditions and expansion is enabled, build
       --  the Postconditions procedure.
 
       if Present (Plist)
