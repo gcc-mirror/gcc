@@ -3890,17 +3890,23 @@ package body Sem_Prag is
          Link_Nam   : Node_Id;
          String_Val : String_Id;
 
-         procedure Check_Form_Of_Interface_Name (SN : Node_Id);
+         procedure Check_Form_Of_Interface_Name
+           (SN            : Node_Id;
+            Ext_Name_Case : Boolean);
          --  SN is a string literal node for an interface name. This routine
          --  performs some minimal checks that the name is reasonable. In
          --  particular that no spaces or other obviously incorrect characters
          --  appear. This is only a warning, since any characters are allowed.
+         --  Ext_Name_Case is True for an External_Name, False for a Link_Name.
 
          ----------------------------------
          -- Check_Form_Of_Interface_Name --
          ----------------------------------
 
-         procedure Check_Form_Of_Interface_Name (SN : Node_Id) is
+         procedure Check_Form_Of_Interface_Name
+           (SN            : Node_Id;
+            Ext_Name_Case : Boolean)
+         is
             S  : constant String_Id := Strval (Expr_Value_S (SN));
             SL : constant Nat       := String_Length (S);
             C  : Char_Code;
@@ -3913,15 +3919,31 @@ package body Sem_Prag is
             for J in 1 .. SL loop
                C := Get_String_Char (S, J);
 
-               if Warn_On_Export_Import
-                 and then
-                   (not In_Character_Range (C)
-                     or else (Get_Character (C) = ' '
-                               and then VM_Target /= CLI_Target)
-                     or else Get_Character (C) = ',')
+               --  Look for dubious character and issue unconditional warning.
+               --  Definitely dubious if not in character range.
+
+               if not In_Character_Range (C)
+
+                  --  Dubious if comma
+
+                  or else Get_Character (C) = ','
+
+                  --  For all cases except link names on a CLI target, spaces
+                  --  and slashes are also dubious (in CLI for link names, we
+                  --  use spaces and possibly slashes for special purposes).
+
+                  --  Where is this usage documented ???
+
+                  or else ((Ext_Name_Case or else VM_Target /= CLI_Target)
+                             and then (Get_Character (C) = ' '
+                                         or else
+                                       Get_Character (C) = '/'
+                                         or else
+                                       Get_Character (C) = '\'))
                then
-                  Error_Msg_N
-                    ("?interface name contains illegal character", SN);
+                  Error_Msg
+                    ("?interface name contains illegal character",
+                     Sloc (SN) + Source_Ptr (J));
                end if;
             end loop;
          end Check_Form_Of_Interface_Name;
@@ -3966,13 +3988,13 @@ package body Sem_Prag is
 
          if Present (Ext_Nam) then
             Check_Arg_Is_Static_Expression (Ext_Nam, Standard_String);
-            Check_Form_Of_Interface_Name (Ext_Nam);
+            Check_Form_Of_Interface_Name (Ext_Nam, Ext_Name_Case => True);
 
-            --  Verify that the external name is not the name of a local
-            --  entity, which would hide the imported one and lead to
-            --  run-time surprises. The problem can only arise for entities
-            --  declared in a package body (otherwise the external name is
-            --  fully qualified and won't conflict).
+            --  Verify that external name is not the name of a local entity,
+            --  which would hide the imported one and could lead to run-time
+            --  surprises. The problem can only arise for entities declared in
+            --  a package body (otherwise the external name is fully qualified
+            --  and will not conflict).
 
             declare
                Nam : Name_Id;
@@ -3995,10 +4017,10 @@ package body Sem_Prag is
                      Par := Parent (E);
                      while Present (Par) loop
                         if Nkind (Par) = N_Package_Body then
-                           Error_Msg_Sloc  := Sloc (E);
+                           Error_Msg_Sloc := Sloc (E);
                            Error_Msg_NE
                              ("imported entity is hidden by & declared#",
-                                 Ext_Arg, E);
+                              Ext_Arg, E);
                            exit;
                         end if;
 
@@ -4011,7 +4033,7 @@ package body Sem_Prag is
 
          if Present (Link_Nam) then
             Check_Arg_Is_Static_Expression (Link_Nam, Standard_String);
-            Check_Form_Of_Interface_Name (Link_Nam);
+            Check_Form_Of_Interface_Name (Link_Nam, Ext_Name_Case => False);
          end if;
 
          --  If there is no link name, just set the external name
