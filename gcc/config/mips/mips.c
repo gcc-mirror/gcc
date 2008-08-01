@@ -565,6 +565,8 @@ static const struct mips_cpu_info mips_cpu_info_table[] = {
   { "mips32", PROCESSOR_4KC, 32, PTF_AVOID_BRANCHLIKELY },
   { "mips32r2", PROCESSOR_M4K, 33, PTF_AVOID_BRANCHLIKELY },
   { "mips64", PROCESSOR_5KC, 64, PTF_AVOID_BRANCHLIKELY },
+  /* ??? For now just tune the generic MIPS64r2 for 5KC as well.   */
+  { "mips64r2", PROCESSOR_5KC, 65, PTF_AVOID_BRANCHLIKELY },
 
   /* MIPS I processors.  */
   { "r3000", PROCESSOR_R3000, 1, 0 },

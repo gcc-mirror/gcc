@@ -1542,7 +1542,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
 	;;
-mips64*-*-linux*)
+mips64*-*-linux* | mipsisa64*-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
 	tmake_file="${tmake_file} mips/t-linux64"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
@@ -1550,6 +1550,9 @@ mips64*-*-linux*)
 		mips64el-st-linux-gnu)
 			tm_file="${tm_file} mips/st.h"
 			tmake_file="${tmake_file} mips/t-st"
+			;;
+		mipsisa64r2*-*-linux*)
+			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
 			;;
 	esac
 	gnu_ld=yes
