@@ -2231,7 +2231,6 @@ package body Sem_Prag is
          Arg1x : constant Node_Id := Get_Pragma_Arg (Arg1);
 
       begin
-         GNAT_Pragma;
          Check_Arg_Count (2);
          Check_No_Identifiers;
          Check_Arg_Is_Static_Expression (Arg2, Standard_String);
@@ -2648,8 +2647,6 @@ package body Sem_Prag is
          Code_Val : Uint;
 
       begin
-         GNAT_Pragma;
-
          if not OpenVMS_On_Target then
             Error_Pragma
               ("?pragma% ignored (applies only to Open'V'M'S)");
@@ -2707,8 +2704,6 @@ package body Sem_Prag is
         (Arg_Internal : Node_Id := Empty)
       is
       begin
-         GNAT_Pragma;
-
          if No (Arg_Internal) then
             Error_Pragma ("Internal parameter required for pragma%");
          end if;
@@ -3325,7 +3320,6 @@ package body Sem_Prag is
          Exp : Node_Id;
 
       begin
-         GNAT_Pragma;
          Check_No_Identifiers;
          Check_At_Least_N_Arguments (1);
 
@@ -5805,11 +5799,11 @@ package body Sem_Prag is
 
          --  pragma Comment (static_string_EXPRESSION)
 
-         --  Processing for pragma Comment shares the circuitry for
-         --  pragma Ident. The only differences are that Ident enforces
-         --  a limit of 31 characters on its argument, and also enforces
-         --  limitations on placement for DEC compatibility. Pragma
-         --  Comment shares neither of these restrictions.
+         --  Processing for pragma Comment shares the circuitry for pragma
+         --  Ident. The only differences are that Ident enforces a limit of 31
+         --  characters on its argument, and also enforces limitations on
+         --  placement for DEC compatibility. Pragma Comment shares neither of
+         --  these restrictions.
 
          -------------------
          -- Common_Object --
@@ -5830,6 +5824,7 @@ package body Sem_Prag is
          --    (boolean_EXPRESSION, static_string_EXPRESSION);
 
          when Pragma_Compile_Time_Error =>
+            GNAT_Pragma;
             Process_Compile_Time_Warning_Or_Error;
 
          --------------------------
@@ -5840,6 +5835,7 @@ package body Sem_Prag is
          --    (boolean_EXPRESSION, static_string_EXPRESSION);
 
          when Pragma_Compile_Time_Warning =>
+            GNAT_Pragma;
             Process_Compile_Time_Warning_Or_Error;
 
          -------------------
@@ -6214,6 +6210,8 @@ package body Sem_Prag is
 
          when Pragma_CPP_Virtual => CPP_Virtual : declare
          begin
+            GNAT_Pragma;
+
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
                  ("'G'N'A'T pragma cpp'_virtual is now obsolete and has " &
@@ -6227,6 +6225,8 @@ package body Sem_Prag is
 
          when Pragma_CPP_Vtable => CPP_Vtable : declare
          begin
+            GNAT_Pragma;
+
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
                  ("'G'N'A'T pragma cpp'_vtable is now obsolete and has " &
@@ -6746,6 +6746,8 @@ package body Sem_Prag is
             Code     : Node_Id renames Args (4);
 
          begin
+            GNAT_Pragma;
+
             if Inside_A_Generic then
                Error_Pragma ("pragma% cannot be used for generic entities");
             end if;
@@ -7215,6 +7217,7 @@ package body Sem_Prag is
             Typ     : Entity_Id;
 
          begin
+            GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Arg_Is_Local_Name (Arg1);
@@ -7548,6 +7551,7 @@ package body Sem_Prag is
             Code     : Node_Id renames Args (4);
 
          begin
+            GNAT_Pragma;
             Gather_Associations (Names, Args);
 
             if Present (External) and then Present (Code) then
@@ -7833,6 +7837,7 @@ package body Sem_Prag is
          --  pragma Inline_Always ( NAME {, NAME} );
 
          when Pragma_Inline_Always =>
+            GNAT_Pragma;
             Process_Inline (True);
 
          --------------------
@@ -7842,6 +7847,7 @@ package body Sem_Prag is
          --  pragma Inline_Generic (NAME {, NAME});
 
          when Pragma_Inline_Generic =>
+            GNAT_Pragma;
             Process_Generic_List;
 
          ----------------------
@@ -8872,6 +8878,7 @@ package body Sem_Prag is
          --  it was misplaced.
 
          when Pragma_No_Body =>
+            GNAT_Pragma;
             Pragma_Misplaced;
 
          ---------------
@@ -8938,13 +8945,43 @@ package body Sem_Prag is
             end loop;
          end No_Return;
 
+         -----------------
+         -- No_Run_Time --
+         -----------------
+
+         --  pragma No_Run_Time;
+
+         --  Note: this pragma is retained for backwards compatibility.
+         --  See body of Rtsfind for full details on its handling.
+
+         when Pragma_No_Run_Time =>
+            GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
+            Check_Arg_Count (0);
+
+            No_Run_Time_Mode           := True;
+            Configurable_Run_Time_Mode := True;
+
+            --  Set Duration to 32 bits if word size is 32
+
+            if Ttypes.System_Word_Size = 32 then
+               Duration_32_Bits_On_Target := True;
+            end if;
+
+            --  Set appropriate restrictions
+
+            Set_Restriction (No_Finalization, N);
+            Set_Restriction (No_Exception_Handlers, N);
+            Set_Restriction (Max_Tasks, N, 0);
+            Set_Restriction (No_Tasking, N);
+
          ------------------------
          -- No_Strict_Aliasing --
          ------------------------
 
          --  pragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
 
-         when Pragma_No_Strict_Aliasing => No_Strict_Alias : declare
+         when Pragma_No_Strict_Aliasing => No_Strict_Aliasing : declare
             E_Id : Entity_Id;
 
          begin
@@ -8968,7 +9005,20 @@ package body Sem_Prag is
 
                Set_No_Strict_Aliasing (Implementation_Base_Type (E_Id));
             end if;
-         end No_Strict_Alias;
+         end No_Strict_Aliasing;
+
+         -----------------------
+         -- Normalize_Scalars --
+         -----------------------
+
+         --  pragma Normalize_Scalars;
+
+         when Pragma_Normalize_Scalars =>
+            Check_Ada_83_Warning;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Normalize_Scalars := True;
+            Init_Or_Norm_Scalars := True;
 
          -----------------
          -- Obsolescent --
@@ -9175,49 +9225,6 @@ package body Sem_Prag is
                end if;
             end if;
          end Obsolescent;
-
-         -----------------
-         -- No_Run_Time --
-         -----------------
-
-         --  pragma No_Run_Time
-
-         --  Note: this pragma is retained for backwards compatibility.
-         --  See body of Rtsfind for full details on its handling.
-
-         when Pragma_No_Run_Time =>
-            GNAT_Pragma;
-            Check_Valid_Configuration_Pragma;
-            Check_Arg_Count (0);
-
-            No_Run_Time_Mode           := True;
-            Configurable_Run_Time_Mode := True;
-
-            --  Set Duration to 32 bits if word size is 32
-
-            if Ttypes.System_Word_Size = 32 then
-               Duration_32_Bits_On_Target := True;
-            end if;
-
-            --  Set appropriate restrictions
-
-            Set_Restriction (No_Finalization, N);
-            Set_Restriction (No_Exception_Handlers, N);
-            Set_Restriction (Max_Tasks, N, 0);
-            Set_Restriction (No_Tasking, N);
-
-         -----------------------
-         -- Normalize_Scalars --
-         -----------------------
-
-         --  pragma Normalize_Scalars;
-
-         when Pragma_Normalize_Scalars =>
-            Check_Ada_83_Warning;
-            Check_Arg_Count (0);
-            Check_Valid_Configuration_Pragma;
-            Normalize_Scalars := True;
-            Init_Or_Norm_Scalars := True;
 
          --------------
          -- Optimize --
@@ -9455,19 +9462,6 @@ package body Sem_Prag is
             end if;
          end Preelab_Init;
 
-         -------------
-         -- Polling --
-         -------------
-
-         --  pragma Polling (ON | OFF);
-
-         when Pragma_Polling =>
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
-            Polling_Required := (Chars (Expression (Arg1)) = Name_On);
-
          --------------------
          -- Persistent_BSS --
          --------------------
@@ -9525,6 +9519,19 @@ package body Sem_Prag is
                Persistent_BSS_Mode := True;
             end if;
          end Persistent_BSS;
+
+         -------------
+         -- Polling --
+         -------------
+
+         --  pragma Polling (ON | OFF);
+
+         when Pragma_Polling =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
+            Polling_Required := (Chars (Expression (Arg1)) = Name_On);
 
          -------------------
          -- Postcondition --
@@ -11042,6 +11049,7 @@ package body Sem_Prag is
          --  or the identifier GCC, no other identifiers are acceptable.
 
          when Pragma_System_Name =>
+            GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Arg_Is_One_Of (Arg1, Name_Gcc, Name_Gnat);
@@ -11290,7 +11298,7 @@ package body Sem_Prag is
             Variant : Node_Id;
 
          begin
-            GNAT_Pragma;
+            Ada_2005_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Arg_Is_Local_Name (Arg1);
@@ -11657,7 +11665,7 @@ package body Sem_Prag is
          --  pragma Unsuppress (IDENTIFIER [, [On =>] NAME]);
 
          when Pragma_Unsuppress =>
-            GNAT_Pragma;
+            Ada_2005_Pragma;
             Process_Suppress_Unsuppress (False);
 
          -------------------
@@ -11981,6 +11989,7 @@ package body Sem_Prag is
          --  pragma Wide_Character_Encoding (IDENTIFIER);
 
          when Pragma_Wide_Character_Encoding =>
+            GNAT_Pragma;
 
             --  Nothing to do, handled in parser. Note that we do not enforce
             --  configuration pragma placement, this pragma can appear at any
