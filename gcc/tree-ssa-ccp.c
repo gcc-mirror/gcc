@@ -989,7 +989,13 @@ ccp_fold (gimple stmt)
 		 allowed places.  */
               if ((subcode == NOP_EXPR || subcode == CONVERT_EXPR)
 		  && ((POINTER_TYPE_P (TREE_TYPE (lhs))
-		       && POINTER_TYPE_P (TREE_TYPE (op0)))
+		       && POINTER_TYPE_P (TREE_TYPE (op0))
+		       /* Do not allow differences in volatile qualification
+			  as this might get us confused as to whether a
+			  propagation destination statement is volatile
+			  or not.  See PR36988.  */
+		       && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (lhs)))
+			   == TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (op0)))))
 		      || useless_type_conversion_p (TREE_TYPE (lhs),
 						    TREE_TYPE (op0))))
                 return op0;
