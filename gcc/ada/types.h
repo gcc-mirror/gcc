@@ -328,6 +328,15 @@ typedef Int Mechanism_Type;
 #define By_Descriptor_A    (-9)
 #define By_Descriptor_NCA  (-10)
 #define By_Descriptor_Last (-10)
+#define By_Short_Descriptor      (-11)
+#define By_Short_Descriptor_UBS  (-12)
+#define By_Short_Descriptor_UBSB (-13)
+#define By_Short_Descriptor_UBA  (-14)
+#define By_Short_Descriptor_S    (-15)
+#define By_Short_Descriptor_SB   (-16)
+#define By_Short_Descriptor_A    (-17)
+#define By_Short_Descriptor_NCA  (-18)
+#define By_Short_Descriptor_Last (-18)
 
 /* Internal to Gigi.  */
 #define By_Copy_Return     (-128)

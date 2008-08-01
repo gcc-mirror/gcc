@@ -2392,8 +2392,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  else
 	    gnu_actual = build_unary_op (ADDR_EXPR, NULL_TREE,
 					 fill_vms_descriptor (gnu_actual,
-							      gnat_formal,
-							      gnat_actual));
+							      gnat_formal));
 	}
       else
 	{
@@ -5910,7 +5909,7 @@ build_unary_op_trapv (enum tree_code code,
 {
   gcc_assert ((code == NEGATE_EXPR) || (code == ABS_EXPR));
 
-  operand = save_expr (operand);
+  operand = protect_multiple_eval (operand);
 
   return emit_check (build_binary_op (EQ_EXPR, integer_type_node,
 				      operand, TYPE_MIN_VALUE (gnu_type)),
@@ -5929,8 +5928,8 @@ build_binary_op_trapv (enum tree_code code,
 		       tree left,
 		       tree right)
 {
-  tree lhs = save_expr (left);
-  tree rhs = save_expr (right);
+  tree lhs = protect_multiple_eval (left);
+  tree rhs = protect_multiple_eval (right);
   tree type_max = TYPE_MAX_VALUE (gnu_type);
   tree type_min = TYPE_MIN_VALUE (gnu_type);
   tree gnu_expr;

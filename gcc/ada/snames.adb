@@ -415,6 +415,7 @@ package body Snames is
      "secondary_stack_size#" &
      "section#" &
      "semaphore#" &
+     "short_descriptor#" &
      "simple_barriers#" &
      "spec_file_name#" &
      "state#" &

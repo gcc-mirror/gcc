@@ -3872,6 +3872,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      ;
 	    else if (By_Descriptor_Last <= mech && mech <= By_Descriptor)
 	      mech = By_Descriptor;
+
+	    else if (By_Short_Descriptor_Last <= mech &&
+                     mech <= By_Short_Descriptor)
+	      mech = By_Short_Descriptor;
+
 	    else if (mech > 0)
 	      {
 		if (TREE_CODE (gnu_param_type) == UNCONSTRAINED_ARRAY_TYPE
@@ -3913,7 +3918,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      = chainon (gnu_param, gnu_stub_param_list);
 		    /* Change By_Descriptor parameter to By_Reference for
 		       the internal version of an exported subprogram.  */
-		    if (mech == By_Descriptor)
+		    if (mech == By_Descriptor || mech == By_Short_Descriptor)
 		      {
 			gnu_param
 			  = gnat_to_gnu_param (gnat_param, By_Reference,
@@ -4828,15 +4833,24 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 
   /* VMS descriptors are themselves passed by reference.
      Build both a 32bit and 64bit descriptor, one of which will be chosen
-     in fill_vms_descriptor based on the allocator size */
+     in fill_vms_descriptor. */
   if (mech == By_Descriptor)
     {
       gnu_param_type_alt
-        = build_pointer_type (build_vms_descriptor64 (gnu_param_type,
+        = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
 						      Mechanism (gnat_param),
 						      gnat_subprog));
       gnu_param_type
         = build_pointer_type (build_vms_descriptor (gnu_param_type,
+						    Mechanism (gnat_param),
+						    gnat_subprog));
+    }
+  else if (mech == By_Short_Descriptor)
+    {
+      gnu_param_type_alt = NULL_TREE;
+
+      gnu_param_type
+        = build_pointer_type (build_vms_descriptor32 (gnu_param_type,
 						    Mechanism (gnat_param),
 						    gnat_subprog));
     }
@@ -4920,6 +4934,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
       && !by_ref
       && (by_return
 	  || (mech != By_Descriptor
+              && mech != By_Short_Descriptor
 	      && !POINTER_TYPE_P (gnu_param_type)
 	      && !AGGREGATE_TYPE_P (gnu_param_type)))
       && !(Is_Array_Type (Etype (gnat_param))
@@ -4931,11 +4946,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 				 ro_param || by_ref || by_component_ptr);
   DECL_BY_REF_P (gnu_param) = by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
-  DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor);
+  DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor ||
+                                      mech == By_Short_Descriptor);
   DECL_POINTS_TO_READONLY_P (gnu_param)
     = (ro_param && (by_ref || by_component_ptr));
 
-  /* Save the 64bit descriptor for later. */
+  /* Save the alternate descriptor for later. */
   SET_DECL_PARM_ALT (gnu_param, gnu_param_type_alt);
 
   /* If no Mechanism was specified, indicate what we're using, then
