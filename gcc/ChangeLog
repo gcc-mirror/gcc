@@ -1,5 +1,10 @@
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36997
+	* gimplify.c (gimplify_call_expr): Set error_mark_node on GS_ERROR.
+
+2008-08-01  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/36988
 	* tree-ssa-ccp.c (ccp_fold): Conversions of constants only
 	do not matter if that doesn't change volatile qualification.

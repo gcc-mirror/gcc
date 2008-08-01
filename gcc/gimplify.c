@@ -2465,7 +2465,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
     }
   else
     {
-      *expr_p = NULL_TREE;
+      *expr_p = error_mark_node;
       return GS_ERROR;
     }
 
