@@ -1,3 +1,66 @@
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Process_PPCs): Don't copy spec PPC to body if not
+	generating code
+
+2008-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): If the expression to be
+	converted is a real literal and the target type has static bounds,
+	perform the conversion exactly to prevent floating-point anomalies on
+	some targets.
+
+2008-08-01  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attribute Compiler'Name_Syntax (<lang>)
+	
+	* prj-nmsc.adb (Process_Compiler): Recognize attribute Name_Syntax
+	
+	* prj.adb (Object_Exist_For): Use Object_Generated, not
+	Objects_Generated that is removed and was never modified anyway.
+
+	* prj.ads:
+	(Path_Syntax_Kind): New enumeration type
+	(Language_Config): New component Path_Syntax, defaulted to Host.
+	Components PIC_Option and Objects_Generated removed, as they are not
+	used.
+
+	* snames.adb: New standard name Path_Syntax
+	
+	* snames.ads: New standard name Path_Syntax
+
+2008-08-01  Vincent Celier  <celier@adacore.com>
+
+	* mlib-utl.adb:
+	(Adalib_Path): New variable to store the path of the adalib directory
+	when procedure Specify_Adalib_Dir is called.
+	(Lib_Directory): If Adalib_Path is not null, return its value
+	(Specify_Adalib_Dir): New procedure
+	
+	* mlib-utl.ads (Specify_Adalib_Dir): New procedure
+
+2008-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb:
+	(Check_Precondition_Postcondition): If not generating code, analyze the
+	expression in a postcondition that appears in a subprogram body, so that
+	it is properly decorated for ASIS use.
+
+2008-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Remove ugly special-case code that resets
+	Orig_Prev to Prev in the case where the actual is N_Function_Call or
+	N_Identifier. This was interfering with other cases that are rewritten
+	as N_Identifier, such as allocators, resulting in passing of the wrong
+	accessibility level, and based on testing this code is apparently no
+	longer needed at all.
+
+2008-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): Handle complex overloading of a
+	procedure call whose prefix
+	is a parameterless function call that returns an access_to_procedure.
+
 2008-08-01  Jose Ruiz  <ruiz@adacore.com>
 
 	* adaint.c (__gnat_tmp_name): Refine the generation of temporary names

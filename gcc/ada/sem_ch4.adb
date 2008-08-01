@@ -688,6 +688,9 @@ package body Sem_Ch4 is
       X       : Interp_Index;
       It      : Interp;
       Nam_Ent : Entity_Id;
+      Deref   : Boolean := False;
+      --  Flag indicates whether an interpretation of the prefix is a
+      --  parameterless call that returns an access_to_subprogram.
       Success : Boolean := False;
 
       function Name_Denotes_Function return Boolean;
@@ -874,6 +877,7 @@ package body Sem_Ch4 is
 
          while Present (It.Nam) loop
             Nam_Ent := It.Nam;
+            Deref   := False;
 
             --  Name may be call that returns an access to subprogram, or more
             --  generally an overloaded expression one of whose interpretations
@@ -888,11 +892,17 @@ package body Sem_Ch4 is
                Nam_Ent := Designated_Type (Nam_Ent);
 
             elsif Is_Access_Type (Etype (Nam_Ent))
-              and then not Is_Entity_Name (Nam)
+              and then
+                (not Is_Entity_Name (Nam)
+                   or else Nkind (N) = N_Procedure_Call_Statement)
               and then Ekind (Designated_Type (Etype (Nam_Ent)))
                                                           = E_Subprogram_Type
             then
                Nam_Ent := Designated_Type (Etype (Nam_Ent));
+
+               if Is_Entity_Name (Nam) then
+                  Deref := True;
+               end if;
             end if;
 
             Analyze_One_Call (N, Nam_Ent, False, Success);
@@ -904,7 +914,16 @@ package body Sem_Ch4 is
             --  guation is done directly in Resolve.
 
             if Success then
-               Set_Etype (Nam, It.Typ);
+               if Deref
+                 and then Nkind (Parent (N)) /= N_Explicit_Dereference
+               then
+                  Set_Entity (Nam, It.Nam);
+                  Insert_Explicit_Dereference (Nam);
+                  Set_Etype (Nam, Nam_Ent);
+
+               else
+                  Set_Etype (Nam, It.Typ);
+               end if;
 
             elsif Nkind_In (Name (N), N_Selected_Component,
                                       N_Function_Call)
@@ -1480,14 +1499,15 @@ package body Sem_Ch4 is
         and then Is_Overloaded (N)
       then
          --  The prefix may include access to subprograms and other access
-         --  types. If the context selects the interpretation that is a call,
-         --  we cannot rewrite the node yet, but we include the result of
-         --  the call interpretation.
+         --  types. If the context selects the interpretation that is a
+         --  function  call (not a procedure call) we cannot rewrite the
+         --  node yet, but we include the result of the call interpretation.
 
          Get_First_Interp (N, I, It);
          while Present (It.Nam) loop
             if Ekind (Base_Type (It.Typ)) = E_Subprogram_Type
                and then Etype (Base_Type (It.Typ)) /= Standard_Void_Type
+               and then Nkind (Parent (N)) /= N_Procedure_Call_Statement
             then
                Add_One_Interp (N, Etype (It.Typ), Etype (It.Typ));
             end if;
