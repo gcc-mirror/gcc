@@ -1926,8 +1926,10 @@ package body System.OS_Lib is
 
       if On_Windows then
          declare
-            Index : Natural := Path_Buffer'First;
+            Index : Natural;
+
          begin
+            Index := Path_Buffer'First;
             for Current in Path_Buffer'First .. End_Path loop
                if Path_Buffer (Current) /= '"' then
                   Path_Buffer (Index) := Path_Buffer (Current);
