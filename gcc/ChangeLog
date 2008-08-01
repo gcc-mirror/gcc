@@ -1,3 +1,7 @@
+2008-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/darwin.h (MAIN_STACK_BOUNDARY): Define to 128.
+
 2008-07-31  Steve Ellcey  <sje@cup.hp.com>
 
 	* expr.c (expand_assignment): Check for complete type.
