@@ -1,3 +1,9 @@
+2008-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/raise_from_pure.ad[bs],
+	* gnat.dg/wrap_raise_from_pure.ad[bs]: Support for ...
+	* gnat.dg/test_raise_from_pure.adb: New test.
+	
 2008-07-31  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/ext-1.c: New test.
