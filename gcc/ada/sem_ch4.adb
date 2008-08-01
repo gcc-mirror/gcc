@@ -684,14 +684,15 @@ package body Sem_Ch4 is
 
    procedure Analyze_Call (N : Node_Id) is
       Actuals : constant List_Id := Parameter_Associations (N);
-      Nam     : Node_Id          := Name (N);
+      Nam     : Node_Id;
       X       : Interp_Index;
       It      : Interp;
       Nam_Ent : Entity_Id;
-      Deref   : Boolean := False;
+      Success : Boolean := False;
+
+      Deref : Boolean := False;
       --  Flag indicates whether an interpretation of the prefix is a
       --  parameterless call that returns an access_to_subprogram.
-      Success : Boolean := False;
 
       function Name_Denotes_Function return Boolean;
       --  If the type of the name is an access to subprogram, this may be the
@@ -764,6 +765,8 @@ package body Sem_Ch4 is
       --  which will be reset if the type is successfully resolved.
 
       Set_Etype (N, Any_Type);
+
+      Nam := Name (N);
 
       if not Is_Overloaded (Nam) then
 
