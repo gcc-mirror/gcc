@@ -7775,6 +7775,12 @@ package body Sem_Ch6 is
    --  Start of processing for Process_PPCs
 
    begin
+      --  Nothing to do if we are not generating code
+
+      if Operating_Mode /= Generate_Code then
+         return;
+      end if;
+
       --  Grab preconditions from spec
 
       if Present (Spec_Id) then
