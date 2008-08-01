@@ -196,10 +196,14 @@ vpath % $(top_srcdir)
 libstdc___la_SOURCES = $(sources)
 
 libstdc___la_LIBADD = \
+	$(GLIBCXX_LIBS) \
 	$(top_builddir)/libmath/libmath.la \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
-libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
+libstdc___la_DEPENDENCIES = \
+	${version_dep} \
+	$(top_builddir)/libmath/libmath.la \
+	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm 

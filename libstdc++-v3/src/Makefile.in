@@ -72,6 +72,7 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+am__DEPENDENCIES_1 =
 am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
 	complex_io.cc ctype.cc debug.cc functexcept.cc hash.cc \
@@ -205,6 +206,7 @@ GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 GLIBCXX_LDBL_COMPAT_FALSE = @GLIBCXX_LDBL_COMPAT_FALSE@
 GLIBCXX_LDBL_COMPAT_TRUE = @GLIBCXX_LDBL_COMPAT_TRUE@
+GLIBCXX_LIBS = @GLIBCXX_LIBS@
 GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -428,10 +430,15 @@ sources = \
 
 libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD = \
+	$(GLIBCXX_LIBS) \
 	$(top_builddir)/libmath/libmath.la \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
-libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
+libstdc___la_DEPENDENCIES = \
+	${version_dep} \
+	$(top_builddir)/libmath/libmath.la \
+	$(top_builddir)/libsupc++/libsupc++convenience.la
+
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm 
 
