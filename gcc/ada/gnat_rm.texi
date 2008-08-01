@@ -1852,6 +1852,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
 @end smallexample
@@ -1884,6 +1885,9 @@ anonymous access parameter.
 @cindex OpenVMS
 @cindex Passing by descriptor
 Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
+The default behavior for Export_Function is to accept either 64bit or
+32bit descriptors unless short_descriptor is specified, then only 32bit
+descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -1953,6 +1957,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
 @end smallexample
@@ -1970,6 +1975,9 @@ pragma that specifies the desired foreign convention.
 @cindex OpenVMS
 @cindex Passing by descriptor
 Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
+The default behavior for Export_Procedure is to accept either 64bit or
+32bit descriptors unless short_descriptor is specified, then only 32bit
+descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -2035,6 +2043,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
 @end smallexample
@@ -2057,6 +2066,9 @@ pragma that specifies the desired foreign convention.
 @cindex OpenVMS
 @cindex Passing by descriptor
 Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
+The default behavior for Export_Valued_Procedure is to accept either 64bit or
+32bit descriptors unless short_descriptor is specified, then only 32bit
+descriptors are accepted.
 
 @cindex Suppressing external name
 Special treatment is given if the EXTERNAL is an explicit null
@@ -2483,6 +2495,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 @end smallexample
@@ -2516,6 +2529,8 @@ is used.
 @cindex OpenVMS
 @cindex Passing by descriptor
 Passing by descriptor is supported only on the OpenVMS ports of GNAT@.
+The default behavior for Import_Function is to pass a 64bit descriptor
+unless short_descriptor is specified, then a 32bit descriptor is passed.
 
 @code{First_Optional_Parameter} applies only to OpenVMS ports of GNAT@.
 It specifies that the designated parameter and all following parameters
@@ -2589,6 +2604,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 @end smallexample
@@ -2635,6 +2651,7 @@ MECHANISM_NAME ::=
   Value
 | Reference
 | Descriptor [([Class =>] CLASS_NAME)]
+| Short_Descriptor [([Class =>] CLASS_NAME)]
 
 CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 @end smallexample

@@ -95,6 +95,14 @@ package Sem_Mech is
    By_Descriptor_SB   : constant Mechanism_Type := -8;
    By_Descriptor_A    : constant Mechanism_Type := -9;
    By_Descriptor_NCA  : constant Mechanism_Type := -10;
+   By_Short_Descriptor      : constant Mechanism_Type := -11;
+   By_Short_Descriptor_UBS  : constant Mechanism_Type := -12;
+   By_Short_Descriptor_UBSB : constant Mechanism_Type := -13;
+   By_Short_Descriptor_UBA  : constant Mechanism_Type := -14;
+   By_Short_Descriptor_S    : constant Mechanism_Type := -15;
+   By_Short_Descriptor_SB   : constant Mechanism_Type := -16;
+   By_Short_Descriptor_A    : constant Mechanism_Type := -17;
+   By_Short_Descriptor_NCA  : constant Mechanism_Type := -18;
    --  These values are used only in OpenVMS ports of GNAT. Pass by descriptor
    --  is forced, as described in the OpenVMS ABI. The suffix indicates the
    --  descriptor type:
@@ -113,7 +121,7 @@ package Sem_Mech is
    --  type based on the Ada type in accordance with the OpenVMS ABI.
 
    subtype Descriptor_Codes is Mechanism_Type
-     range By_Descriptor_NCA .. By_Descriptor;
+     range By_Short_Descriptor_NCA .. By_Descriptor;
    --  Subtype including all descriptor mechanisms
 
    --  All the above special values are non-positive. Positive values for
