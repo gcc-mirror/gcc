@@ -690,7 +690,7 @@ package body Prj is
             if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
                return
                  In_Tree.Languages_Data.Table
-                   (Lang).Config.Objects_Generated;
+                   (Lang).Config.Object_Generated;
             end if;
 
             Lang := In_Tree.Languages_Data.Table (Lang).Next;

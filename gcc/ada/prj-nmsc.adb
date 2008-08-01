@@ -1509,6 +1509,22 @@ package body Prj.Nmsc is
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
+                        when Name_Path_Syntax =>
+                           begin
+                              In_Tree.Languages_Data.Table
+                                (Lang_Index).Config.Path_Syntax :=
+                                Path_Syntax_Kind'Value
+                                  (Get_Name_String (Element.Value.Value));
+
+                           exception
+                              when Constraint_Error =>
+                                 Error_Msg
+                                   (Project,
+                                    In_Tree,
+                                    "invalid value for Path_Syntax",
+                                    Element.Value.Location);
+                           end;
+
                         when Name_Pic_Option =>
 
                            --  Attribute Compiler_Pic_Option (<language>)

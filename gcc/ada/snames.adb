@@ -780,6 +780,7 @@ package body Snames is
      "objects_path#" &
      "objects_path_file#" &
      "object_dir#" &
+     "path_syntax#" &
      "pic_option#" &
      "pretty_printer#" &
      "prefix#" &
