@@ -338,8 +338,7 @@ package Scans is
    --  Flag array used to test for reserved word
 
    procedure Initialize_Ada_Keywords;
-   --  Set up Token_Type values in Names table entries for Ada reserved
-   --  words.
+   --  Set up Token_Type values in Names table entries for Ada reserved words
 
    --------------------------
    -- Scan State Variables --
