@@ -126,7 +126,6 @@ package body Bindgen is
    --     Detect_Blocking               : Integer;
    --     Default_Stack_Size            : Integer;
    --     Leap_Seconds_Support          : Integer;
-   --     Canonical_Streams             : Integer;
 
    --  Main_Priority is the priority value set by pragma Priority in the main
    --  program. If no such pragma is present, the value is -1.
@@ -211,10 +210,6 @@ package body Bindgen is
    --  Leap_Seconds_Support denotes whether leap seconds have been enabled or
    --  disabled. A value of zero indicates that leap seconds are turned "off",
    --  while a value of one signifies "on" status.
-
-   --  Canonical_Streams indicates whether stream-related optimizations are
-   --  active. A value of zero indicates that all optimizations are active,
-   --  while a value of one signifies that they have been disabled.
 
    -----------------------
    -- Local Subprograms --
@@ -596,9 +591,6 @@ package body Bindgen is
          WBI ("      Leap_Seconds_Support : Integer;");
          WBI ("      pragma Import (C, Leap_Seconds_Support, " &
               """__gl_leap_seconds_support"");");
-         WBI ("      Canonical_Streams : Integer;");
-         WBI ("      pragma Import (C, Canonical_Streams, " &
-              """__gl_canonical_streams"");");
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of if it's been called previously.
@@ -759,17 +751,6 @@ package body Bindgen is
          Set_String ("      Leap_Seconds_Support := ");
 
          if Leap_Seconds_Support then
-            Set_Int (1);
-         else
-            Set_Int (0);
-         end if;
-
-         Set_String (";");
-         Write_Statement_Buffer;
-
-         Set_String ("      Canonical_Streams := ");
-
-         if Canonical_Streams then
             Set_Int (1);
          else
             Set_Int (0);
@@ -1051,18 +1032,6 @@ package body Bindgen is
          Set_String ("   __gl_leap_seconds_support = ");
 
          if Leap_Seconds_Support then
-            Set_Int (1);
-         else
-            Set_Int (0);
-         end if;
-
-         Set_String (";");
-         Write_Statement_Buffer;
-
-         WBI ("   extern int __gl_canonical_streams;");
-         Set_String ("   __gl_canonical_streams = ");
-
-         if Canonical_Streams then
             Set_Int (1);
          else
             Set_Int (0);

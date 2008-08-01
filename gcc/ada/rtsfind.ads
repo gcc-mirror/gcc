@@ -1331,17 +1331,29 @@ package Rtsfind is
      RE_Str_Concat_5,                    -- System.String_Ops_Concat_5
 
      RE_String_Input,                    -- System.Strings.Stream_Ops
+     RE_String_Input_Blk_IO,             -- System.Strings.Stream_Ops
      RE_String_Output,                   -- System.Strings.Stream_Ops
+     RE_String_Output_Blk_IO,            -- System.Strings.Stream_Ops
      RE_String_Read,                     -- System.Strings.Stream_Ops
+     RE_String_Read_Blk_IO,              -- System.Strings.Stream_Ops
      RE_String_Write,                    -- System.Strings.Stream_Ops
+     RE_String_Write_Blk_IO,             -- System.Strings.Stream_Ops
      RE_Wide_String_Input,               -- System.Strings.Stream_Ops
+     RE_Wide_String_Input_Blk_IO,        -- System.Strings.Stream_Ops
      RE_Wide_String_Output,              -- System.Strings.Stream_Ops
+     RE_Wide_String_Output_Blk_IO,       -- System.Strings.Stream_Ops
      RE_Wide_String_Read,                -- System.Strings.Stream_Ops
+     RE_Wide_String_Read_Blk_IO,         -- System.Strings.Stream_Ops
      RE_Wide_String_Write,               -- System.Strings.Stream_Ops
+     RE_Wide_String_Write_Blk_IO,        -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Input,          -- System.Strings.Stream_Ops
+     RE_Wide_Wide_String_Input_Blk_IO,   -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Output,         -- System.Strings.Stream_Ops
+     RE_Wide_Wide_String_Output_Blk_IO,  -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Read,           -- System.Strings.Stream_Ops
+     RE_Wide_Wide_String_Read_Blk_IO,    -- System.Strings.Stream_Ops
      RE_Wide_Wide_String_Write,          -- System.Strings.Stream_Ops
+     RE_Wide_Wide_String_Write_Blk_IO,   -- System.Strings.Stream_Ops
 
      RE_Task_Info_Type,                  -- System.Task_Info
      RE_Unspecified_Task_Info,           -- System.Task_Info
@@ -2473,17 +2485,29 @@ package Rtsfind is
      RE_Str_Concat_5                     => System_String_Ops_Concat_5,
 
      RE_String_Input                     => System_Strings_Stream_Ops,
+     RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,
      RE_String_Output                    => System_Strings_Stream_Ops,
+     RE_String_Output_Blk_IO             => System_Strings_Stream_Ops,
      RE_String_Read                      => System_Strings_Stream_Ops,
+     RE_String_Read_Blk_IO               => System_Strings_Stream_Ops,
      RE_String_Write                     => System_Strings_Stream_Ops,
+     RE_String_Write_Blk_IO              => System_Strings_Stream_Ops,
      RE_Wide_String_Input                => System_Strings_Stream_Ops,
+     RE_Wide_String_Input_Blk_IO         => System_Strings_Stream_Ops,
      RE_Wide_String_Output               => System_Strings_Stream_Ops,
+     RE_Wide_String_Output_Blk_IO        => System_Strings_Stream_Ops,
      RE_Wide_String_Read                 => System_Strings_Stream_Ops,
+     RE_Wide_String_Read_Blk_IO          => System_Strings_Stream_Ops,
      RE_Wide_String_Write                => System_Strings_Stream_Ops,
+     RE_Wide_String_Write_Blk_IO         => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Input           => System_Strings_Stream_Ops,
+     RE_Wide_Wide_String_Input_Blk_IO    => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Output          => System_Strings_Stream_Ops,
+     RE_Wide_Wide_String_Output_Blk_IO   => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Read            => System_Strings_Stream_Ops,
+     RE_Wide_Wide_String_Read_Blk_IO     => System_Strings_Stream_Ops,
      RE_Wide_Wide_String_Write           => System_Strings_Stream_Ops,
+     RE_Wide_Wide_String_Write_Blk_IO    => System_Strings_Stream_Ops,
 
      RE_Task_Info_Type                   => System_Task_Info,
      RE_Unspecified_Task_Info            => System_Task_Info,

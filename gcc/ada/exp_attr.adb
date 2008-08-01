@@ -5365,53 +5365,100 @@ package body Exp_Attr is
         and then
           not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
       then
-
          --  String as defined in package Ada
 
          if Base_Typ = Standard_String then
-            if Nam = TSS_Stream_Input then
-               return RTE (RE_String_Input);
+            if Restriction_Active (No_Stream_Optimizations) then
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_String_Input);
 
-            elsif Nam = TSS_Stream_Output then
-               return RTE (RE_String_Output);
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_String_Output);
 
-            elsif Nam = TSS_Stream_Read then
-               return RTE (RE_String_Read);
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_String_Read);
 
-            else pragma Assert (Nam = TSS_Stream_Write);
-               return RTE (RE_String_Write);
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_String_Write);
+               end if;
+
+            else
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_String_Input_Blk_IO);
+
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_String_Output_Blk_IO);
+
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_String_Read_Blk_IO);
+
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_String_Write_Blk_IO);
+               end if;
             end if;
 
          --  Wide_String as defined in package Ada
 
          elsif Base_Typ = Standard_Wide_String then
-            if Nam = TSS_Stream_Input then
-               return RTE (RE_Wide_String_Input);
+            if Restriction_Active (No_Stream_Optimizations) then
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_Wide_String_Input);
 
-            elsif Nam = TSS_Stream_Output then
-               return RTE (RE_Wide_String_Output);
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_Wide_String_Output);
 
-            elsif Nam = TSS_Stream_Read then
-               return RTE (RE_Wide_String_Read);
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_Wide_String_Read);
 
-            else pragma Assert (Nam = TSS_Stream_Write);
-               return RTE (RE_Wide_String_Write);
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_Wide_String_Write);
+               end if;
+
+            else
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_Wide_String_Input_Blk_IO);
+
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_Wide_String_Output_Blk_IO);
+
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_Wide_String_Read_Blk_IO);
+
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_Wide_String_Write_Blk_IO);
+               end if;
             end if;
 
          --  Wide_Wide_String as defined in package Ada
 
          elsif Base_Typ = Standard_Wide_Wide_String then
-            if Nam = TSS_Stream_Input then
-               return RTE (RE_Wide_Wide_String_Input);
+            if Restriction_Active (No_Stream_Optimizations) then
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_Wide_Wide_String_Input);
 
-            elsif Nam = TSS_Stream_Output then
-               return RTE (RE_Wide_Wide_String_Output);
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_Wide_Wide_String_Output);
 
-            elsif Nam = TSS_Stream_Read then
-               return RTE (RE_Wide_Wide_String_Read);
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_Wide_Wide_String_Read);
 
-            else pragma Assert (Nam = TSS_Stream_Write);
-               return RTE (RE_Wide_Wide_String_Write);
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_Wide_Wide_String_Write);
+               end if;
+
+            else
+               if Nam = TSS_Stream_Input then
+                  return RTE (RE_Wide_Wide_String_Input_Blk_IO);
+
+               elsif Nam = TSS_Stream_Output then
+                  return RTE (RE_Wide_Wide_String_Output_Blk_IO);
+
+               elsif Nam = TSS_Stream_Read then
+                  return RTE (RE_Wide_Wide_String_Read_Blk_IO);
+
+               else pragma Assert (Nam = TSS_Stream_Write);
+                  return RTE (RE_Wide_Wide_String_Write_Blk_IO);
+               end if;
             end if;
          end if;
       end if;

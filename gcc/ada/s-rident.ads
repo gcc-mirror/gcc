@@ -102,6 +102,7 @@ package System.Rident is
       No_Select_Statements,                    -- GNAT (Ravenscar)
       No_Specific_Termination_Handlers,        -- (RM D.7(10.7/2))
       No_Standard_Storage_Pools,               -- GNAT
+      No_Stream_Optimizations,                 -- GNAT
       No_Streams,                              -- GNAT
       No_Task_Allocators,                      -- (RM D.7(7))
       No_Task_Attributes_Package,              -- GNAT

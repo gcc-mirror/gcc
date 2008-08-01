@@ -45,6 +45,8 @@
 --  will be expanded into:
 --
 --     String_Output (Some_Stream, Some_String);
+--       or
+--     String_Output_Blk_IO (Some_Stream, Some_String);
 
 pragma Warnings (Off);
 pragma Compiler_Unit;
@@ -62,7 +64,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class)
       return String;
 
+   function String_Input_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return String;
+
    procedure String_Output
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : String);
+
+   procedure String_Output_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : String);
 
@@ -70,7 +80,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : out String);
 
+   procedure String_Read_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out String);
+
    procedure String_Write
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : String);
+
+   procedure String_Write_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : String);
 
@@ -82,7 +100,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class)
       return Wide_String;
 
+   function Wide_String_Input_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return Wide_String;
+
    procedure Wide_String_Output
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Wide_String);
+
+   procedure Wide_String_Output_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_String);
 
@@ -90,7 +116,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : out Wide_String);
 
+   procedure Wide_String_Read_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Wide_String);
+
    procedure Wide_String_Write
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Wide_String);
+
+   procedure Wide_String_Write_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_String);
 
@@ -102,7 +136,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class)
       return Wide_Wide_String;
 
+   function Wide_Wide_String_Input_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return Wide_Wide_String;
+
    procedure Wide_Wide_String_Output
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Wide_Wide_String);
+
+   procedure Wide_Wide_String_Output_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_Wide_String);
 
@@ -110,7 +152,15 @@ package System.Strings.Stream_Ops is
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : out Wide_Wide_String);
 
+   procedure Wide_Wide_String_Read_Blk_IO
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : out Wide_Wide_String);
+
    procedure Wide_Wide_String_Write
+     (Strm : access Ada.Streams.Root_Stream_Type'Class;
+      Item : Wide_Wide_String);
+
+   procedure Wide_Wide_String_Write_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class;
       Item : Wide_Wide_String);
 
