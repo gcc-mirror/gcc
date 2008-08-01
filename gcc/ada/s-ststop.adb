@@ -98,8 +98,12 @@ package body System.Strings.Stream_Ops is
       --  Canonical_Streams is present. A value of zero indicates whether any
       --  stream-related optimizations are enabled, while a value of one
       --  indicates a disabled status.
+      --  What is all this rubbish about C flags for a global config pragma???
 
       Canonical_Streams : constant Boolean := Flag = 1;
+      --  This seems dubious, surely it should be (Flag /= 0) for normal
+      --  C semantics. Why not just import as a pragma Convention C Boolean
+      --  anyway, avoiding the need for junk flag ???
 
       --  Block IO is used when the low level can support block IO, the size
       --  of the character type is a multiple of the stream element type and
