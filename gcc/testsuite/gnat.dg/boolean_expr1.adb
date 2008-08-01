@@ -4,7 +4,7 @@
 -- { dg-do compile }
 -- { dg-options "-O2" }
 
-package body Boolean_Expr is
+package body Boolean_Expr1 is
 
    function Long_Float_Is_Valid (X : in Long_Float) return Boolean is
       Is_Nan : constant Boolean := X /= X;
@@ -27,4 +27,4 @@ package body Boolean_Expr is
          return "ERROR";
    end S;
 
-end Boolean_Expr;
+end Boolean_Expr1;
