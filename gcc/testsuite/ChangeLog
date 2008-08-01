@@ -1,3 +1,8 @@
+2008-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/36991
+	* gcc.dg/pr36991.c: New test.
+
 2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_expr.ad[sb]: Rename to boolean_expr1.ad[sb].
