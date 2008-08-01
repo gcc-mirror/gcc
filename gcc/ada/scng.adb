@@ -350,6 +350,7 @@ package body Scng is
 
       procedure Error_Illegal_Wide_Character is
       begin
+         Scan_Ptr := Scan_Ptr + 1;
          Error_Msg ("illegal wide character", Wptr);
       end Error_Illegal_Wide_Character;
 
