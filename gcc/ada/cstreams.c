@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -156,7 +156,18 @@ __gnat_constant_stdout (void)
 char *
 __gnat_full_name (char *nam, char *buffer)
 {
-#if defined(__EMX__) || defined (__MINGW32__)
+#ifdef RTSS
+  /* RTSS applications have no current-directory notion, so RTSS file I/O
+     requests must use fully qualified path names, such as:
+       c:\temp\MyFile.txt (for a file system object)
+       \\.\MyDevice0 (for a device object)
+   */
+  if (nam[1] == ':' || nam[0] == '\\')
+    strcpy (buffer, nam);
+  else
+    buffer[0] = '\0';
+
+#elif defined(__EMX__) || defined (__MINGW32__)
   /* If this is a device file return it as is; under Windows NT and
      OS/2 a device file end with ":".  */
   if (nam[strlen (nam) - 1] == ':')
