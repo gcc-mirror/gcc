@@ -23,6 +23,8 @@ ORIGINAL_AS_FOR_TARGET="@ORIGINAL_AS_FOR_TARGET@"
 ORIGINAL_LD_FOR_TARGET="@ORIGINAL_LD_FOR_TARGET@"
 ORIGINAL_NM_FOR_TARGET="@ORIGINAL_NM_FOR_TARGET@"
 exeext=@host_exeext@
+fast_install=@enable_fast_install@
+objdir=@objdir@
 
 invoked=`basename "$0"`
 case "$invoked" in
@@ -50,7 +52,23 @@ case "$original" in
     scriptdir=`cd "$tdir" && pwd`
 
     if test -x $scriptdir/../$dir/$prog; then
-      exec $scriptdir/../$dir/$prog ${1+"$@"}
+      test "$fast_install" = yes || exec $scriptdir/../$dir/$prog ${1+"$@"}
+
+      # if libtool did everything it needs to do, there's a fast path
+      lt_prog=$scriptdir/../$dir/$objdir/lt-$prog 
+      test -x $lt_prog && exec $lt_prog ${1+"$@"}
+
+      # libtool has not relinked ld-new yet, but we cannot just use the
+      # previous stage (because then the relinking would just never happen!).
+      # So we take extra care to use prev-ld/ld-new *on recursive calls*.
+      test -f $lt_prog-recursive && exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
+
+      touch $lt_prog-recursive
+      $scriptdir/../$dir/$prog ${1+"$@"}
+      result=$?
+      rm -f $lt_prog-recursive
+      exit $result
+
     else
       exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
     fi

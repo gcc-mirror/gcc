@@ -1,3 +1,12 @@
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/35752
+	* Makefile.in (objdir): Set it here.
+	* configure.ac: Not here.  Find dynamic linker characteristics.
+	* exec-tool.in: Use them.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2008-08-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* fwprop.c (PR_HANDLE_MEM): Remove trailing comma in enum.

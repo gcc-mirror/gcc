@@ -79,9 +79,8 @@ abs_docdir = @abs_srcdir@/doc
 # Top build directory for this package, relative to here.
 top_builddir = .
 
-# objdir is set by configure.
-# It's normally the absolute path to the current directory.
-objdir = @objdir@
+# The absolute path to the current directory.
+objdir := $(shell pwd)
 
 host_subdir=@host_subdir@
 build_subdir=@build_subdir@
