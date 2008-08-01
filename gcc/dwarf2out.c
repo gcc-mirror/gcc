@@ -1206,10 +1206,10 @@ compute_barrier_args_size (void)
     {
       while (!VEC_empty (rtx, worklist))
 	{
-	  rtx prev, body;
+	  rtx prev, body, first_insn;
 	  HOST_WIDE_INT cur_args_size;
 
-	  insn = VEC_pop (rtx, worklist);
+	  first_insn = insn = VEC_pop (rtx, worklist);
 	  cur_args_size = barrier_args_size[INSN_UID (insn)];
 	  prev = prev_nonnote_insn (insn);
 	  if (prev && BARRIER_P (prev))
@@ -1224,10 +1224,21 @@ compute_barrier_args_size (void)
 
 	      if (LABEL_P (insn))
 		{
-		  gcc_assert (barrier_args_size[INSN_UID (insn)] < 0
-			      || barrier_args_size[INSN_UID (insn)]
+		  if (insn == first_insn)
+		    continue;
+		  else if (barrier_args_size[INSN_UID (insn)] < 0)
+		    {
+		      barrier_args_size[INSN_UID (insn)] = cur_args_size;
+		      continue;
+		    }
+		  else
+		    {
+		      /* The insns starting with this label have been
+			 already scanned or are in the worklist.  */
+		      gcc_assert (barrier_args_size[INSN_UID (insn)]
 				  == cur_args_size);
-		  continue;
+		      break;
+		    }
 		}
 
 	      body = PATTERN (insn);
@@ -1306,11 +1317,18 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
     }
   else if (BARRIER_P (insn))
     {
-      if (barrier_args_size == NULL)
+      /* Don't call compute_barrier_args_size () if the only
+	 BARRIER is at the end of function.  */
+      if (barrier_args_size == NULL && next_nonnote_insn (insn))
 	compute_barrier_args_size ();
-      offset = barrier_args_size[INSN_UID (insn)];
-      if (offset < 0)
+      if (barrier_args_size == NULL)
 	offset = 0;
+      else
+	{
+	  offset = barrier_args_size[INSN_UID (insn)];
+	  if (offset < 0)
+	    offset = 0;
+	}
 
       offset -= args_size;
 #ifndef STACK_GROWS_DOWNWARD

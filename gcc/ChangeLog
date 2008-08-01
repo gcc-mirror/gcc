@@ -1,5 +1,11 @@
 2008-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (compute_barrier_args_size): Set barrier_args_size
+	for labels for which it hasn't been set yet.  If it has been set,
+	stop walking insns and continue with next worklist item.
+	(dwarf2out_stack_adjust): Don't call compute_barrier_args_size
+	if the only BARRIER is at the very end of a function.
+
 	PR tree-optimization/36991
 	* gimplify.c (gimplify_init_constructor): Call tree_to_gimple_tuple
 	on expr_p before appending it to pre_p.
