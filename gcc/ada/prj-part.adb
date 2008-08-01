@@ -165,13 +165,12 @@ package body Prj.Part is
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String);
-   --  Parse a project file.
-   --  Recursive procedure: it calls itself for imported and extended
-   --  projects. When From_Extended is not None, if the project has already
-   --  been parsed and is an extended project A, return the ultimate
-   --  (not extended) project that extends A. When In_Limited is True,
-   --  the importing path includes at least one "limited with".
-   --  When parsing configuration projects, do not allow a depth > 1.
+   --  Parse a project file. This is a recursive procedure: it calls itself for
+   --  imported and extended projects. When From_Extended is not None, if the
+   --  project has already been parsed and is an extended project A, return the
+   --  ultimate (not extended) project that extends A. When In_Limited is True,
+   --  the importing path includes at least one "limited with". When parsing
+   --  configuration projects, do not allow a depth > 1.
 
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
