@@ -5646,18 +5646,6 @@ package body Sem_Prag is
             end if;
          end C_Pass_By_Copy;
 
-         -----------------------
-         -- Canonical_Streams --
-         -----------------------
-
-         --  pragma Canonical_Streams;
-
-         when Pragma_Canonical_Streams =>
-            GNAT_Pragma;
-            Check_Arg_Count (0);
-            Check_Valid_Configuration_Pragma;
-            Canonical_Streams := True;
-
          -----------
          -- Check --
          -----------
@@ -12214,7 +12202,6 @@ package body Sem_Prag is
       Pragma_Atomic                        =>  0,
       Pragma_Atomic_Components             =>  0,
       Pragma_Attach_Handler                => -1,
-      Pragma_Canonical_Streams             => -1,
       Pragma_Check                         => 99,
       Pragma_Check_Name                    =>  0,
       Pragma_Check_Policy                  =>  0,

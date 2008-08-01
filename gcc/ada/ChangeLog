@@ -1,7 +1,32 @@
+2008-08-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* rtsfind.ads: Add block IO versions of stream routines for Strings.
+	
+	* bindgen.adb, gnat_rm.texi, gnat_ugn.texi, opt.ads,
+	sem_prag.adb, snames.adb, snames.ads, snames.h,
+	par-prag.adb: Undo previous stream related changes.
+	
+	* s-rident.ads: Add new restriction No_Stream_Optimizations.
+	
+	* s-ststop.ads, s-ststop.adb: Comment reformatting.
+	Define enumeration type to designate different IO mechanisms.
+	Enchance generic package Stream_Ops_Internal to include an
+	implementation of Input and Output.
+
+	* exp_attr.adb (Find_Stream_Subprogram): If restriction
+	No_Stream_Optimization is active, choose the default byte IO
+	implementations of stream attributes for Strings.
+	Otherwise use the corresponding block IO version.
+
 2008-08-01  Olivier Hainque  <hainque@adacore.com>
 	
-	* decl.c (gnat_to_gnu_entity) <case E_Function>: Do not turn Ada
-	Pure into GCC const, now implicitely implying nothrow as well.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Function>: Do not
+	turn Ada Pure into GCC const, now implicitely implying nothrow as well.
+
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch3.adb (P_Defining_Identifier): Avoid repeated attempt to
+	convert plain identifier into defining identifier.
 
 2008-08-01  Robert Dewar  <dewar@adacore.com>
 
