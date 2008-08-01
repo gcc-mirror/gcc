@@ -367,12 +367,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   switch (kind)
     {
     case E_Constant:
-      /* If this is a use of a deferred constant, get its full
-	 declaration.  */
-      if (!definition && Present (Full_View (gnat_entity)))
+      /* If this is a use of a deferred constant without address clause,
+	 get its full definition.  */
+      if (!definition
+	  && No (Address_Clause (gnat_entity))
+	  && Present (Full_View (gnat_entity)))
 	{
-	  gnu_decl = gnat_to_gnu_entity (Full_View (gnat_entity),
-					 gnu_expr, 0);
+	  gnu_decl
+	    = gnat_to_gnu_entity (Full_View (gnat_entity), gnu_expr, 0);
 	  saved = true;
 	  break;
 	}
@@ -391,12 +393,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      != N_Allocator))
 	gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
 
-      /* Ignore deferred constant definitions; they are processed fully in the
-	 front-end.  For deferred constant references get the full definition.
-	 On the other hand, constants that are renamings are handled like
-	 variable renamings.  If No_Initialization is set, this is not a
-	 deferred constant but a constant whose value is built manually.  */
-      if (definition && !gnu_expr
+      /* Ignore deferred constant definitions without address clause since
+	 they are processed fully in the front-end.  If No_Initialization
+	 is set, this is not a deferred constant but a constant whose value
+	 is built manually.  And constants that are renamings are handled
+	 like variables.  */
+      if (definition
+	  && !gnu_expr
+	  && No (Address_Clause (gnat_entity))
 	  && !No_Initialization (Declaration_Node (gnat_entity))
 	  && No (Renamed_Object (gnat_entity)))
 	{
@@ -404,12 +408,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  saved = true;
 	  break;
 	}
-      else if (!definition && IN (kind, Incomplete_Or_Private_Kind)
-	       && Present (Full_View (gnat_entity)))
+
+      /* Ignore constant definitions already marked with the error node.  See
+	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
+      if (definition
+	  && gnu_expr
+	  && present_gnu_tree (gnat_entity)
+	  && get_gnu_tree (gnat_entity) == error_mark_node)
 	{
-	  gnu_decl =  gnat_to_gnu_entity (Full_View (gnat_entity),
-					  NULL_TREE, 0);
-	  saved = true;
+	  maybe_present = true;
 	  break;
 	}
 
@@ -1037,17 +1044,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Is_Imported (gnat_entity) && !gnu_expr)
 	  gnu_expr = integer_zero_node;
 
-	/* If we are defining the object and it has an Address clause we must
-	   get the address expression from the saved GCC tree for the
-	   object if the object has a Freeze_Node.  Otherwise, we elaborate
-	   the address expression here since the front-end has guaranteed
-	   in that case that the elaboration has no effects.  Note that
-	   only the latter mechanism is currently in use.  */
+	/* If we are defining the object and it has an Address clause, we must
+	   either get the address expression from the saved GCC tree for the
+	   object if it has a Freeze node, or elaborate the address expression
+	   here since the front-end has guaranteed that the elaboration has no
+	   effects in this case.  */
 	if (definition && Present (Address_Clause (gnat_entity)))
 	  {
 	    tree gnu_address
-	      = (present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity)
-		: gnat_to_gnu (Expression (Address_Clause (gnat_entity))));
+	      = present_gnu_tree (gnat_entity)
+		? get_gnu_tree (gnat_entity)
+		: gnat_to_gnu (Expression (Address_Clause (gnat_entity)));
 
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
@@ -1063,6 +1070,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    const_flag = !Is_Public (gnat_entity)
 	      || compile_time_known_address_p (Expression (Address_Clause
 							   (gnat_entity)));
+
+	    /* If this is a deferred constant, the initializer is attached to
+	       the full view.  */
+	    if (kind == E_Constant && Present (Full_View (gnat_entity)))
+	      gnu_expr
+		= gnat_to_gnu
+		    (Expression (Declaration_Node (Full_View (gnat_entity))));
 
 	    /* If we don't have an initializing expression for the underlying
 	       variable, the initializing expression for the pointer is the
