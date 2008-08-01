@@ -395,7 +395,7 @@ package Snames is
    Name_Suppress_Exception_Locations   : constant Name_Id := N + 169; -- GNAT
    Name_Task_Dispatching_Policy        : constant Name_Id := N + 170;
    Name_Universal_Data                 : constant Name_Id := N + 171; -- AAMP
-   Name_Unsuppress                     : constant Name_Id := N + 172; -- GNAT
+   Name_Unsuppress                     : constant Name_Id := N + 172; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + 173; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + 174; -- GNAT
    Name_Warnings                       : constant Name_Id := N + 175; -- GNAT
@@ -456,6 +456,12 @@ package Snames is
    Name_Inline_Always                  : constant Name_Id := N + 219; -- GNAT
    Name_Inline_Generic                 : constant Name_Id := N + 220; -- GNAT
    Name_Inspection_Point               : constant Name_Id := N + 221;
+
+   --  Note: Interface is not in this list because its name matches   -- GNAT
+   --  an Ada 2005 keyword. However it is included in the definition
+   --  of the type Attribute_Id, and the functions Get_Pragma_Id and
+   --  Is_Pragma_Id correctly recognize and process Name_Storage_Size.
+
    Name_Interface_Name                 : constant Name_Id := N + 222; -- GNAT
    Name_Interrupt_Handler              : constant Name_Id := N + 223;
    Name_Interrupt_Priority             : constant Name_Id := N + 224;
@@ -525,7 +531,7 @@ package Snames is
    Name_Task_Storage                   : constant Name_Id := N + 271; -- VMS
    Name_Time_Slice                     : constant Name_Id := N + 272; -- GNAT
    Name_Title                          : constant Name_Id := N + 273; -- GNAT
-   Name_Unchecked_Union                : constant Name_Id := N + 274; -- GNAT
+   Name_Unchecked_Union                : constant Name_Id := N + 274; -- Ada 05
    Name_Unimplemented_Unit             : constant Name_Id := N + 275; -- GNAT
    Name_Universal_Aliasing             : constant Name_Id := N + 276; -- GNAT
    Name_Unmodified                     : constant Name_Id := N + 277; -- GNAT
