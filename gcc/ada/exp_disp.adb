@@ -766,6 +766,13 @@ package body Exp_Disp is
          Iface_Typ := Root_Type (Iface_Typ);
       end if;
 
+      --  If the target type is a tagged synchronized type, the dispatch table
+      --  info is in the correspondoing record type.
+
+      if Is_Concurrent_Type (Iface_Typ) then
+         Iface_Typ := Corresponding_Record_Type (Iface_Typ);
+      end if;
+
       pragma Assert (not Is_Static
         or else (not Is_Class_Wide_Type (Iface_Typ)
                   and then Is_Interface (Iface_Typ)));
