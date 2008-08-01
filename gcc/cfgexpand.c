@@ -2226,6 +2226,9 @@ expand_stack_alignment (void)
   gcc_assert (targetm.calls.get_drap_rtx != NULL);
   drap_rtx = targetm.calls.get_drap_rtx (); 
 
+  /* stack_realign_drap and drap_rtx must match.  */
+  gcc_assert ((stack_realign_drap != 0) == (drap_rtx != NULL));
+
   /* Do nothing if NULL is returned, which means DRAP is not needed.  */
   if (NULL != drap_rtx)
     {

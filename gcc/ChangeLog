@@ -1,3 +1,12 @@
+2008-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* cfgexpand.c (expand_stack_alignment): Assert that
+	stack_realign_drap and drap_rtx must match.
+
+	* function.c (instantiate_new_reg): If DRAP is used to realign
+	stack, replace virtual_incoming_args_rtx with internal arg
+	pointer.
+
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (fini_pre): Take in_fre parameter.  Free

@@ -1215,10 +1215,10 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
 
   if (x == virtual_incoming_args_rtx)
     {
-      /* Replace virtual_incoming_args_rtx to internal arg pointer here */
-      if (crtl->args.internal_arg_pointer != virtual_incoming_args_rtx)
+      if (stack_realign_drap)
         {
-          gcc_assert (stack_realign_drap);
+	  /* Replace virtual_incoming_args_rtx with internal arg
+	     pointer if DRAP is used to realign stack.  */
           new = crtl->args.internal_arg_pointer;
           offset = 0;
         }
