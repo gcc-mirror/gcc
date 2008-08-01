@@ -246,7 +246,7 @@ package Sem_Util is
    --  families constrained by discriminants.
 
    function Denotes_Variable (N : Node_Id) return Boolean;
-   --  Returns True if node N denotes a single variable without parentheses.
+   --  Returns True if node N denotes a single variable without parentheses
 
    function Depends_On_Discriminant (N : Node_Id) return Boolean;
    --  Returns True if N denotes a discriminant or if N is a range, a subtype
