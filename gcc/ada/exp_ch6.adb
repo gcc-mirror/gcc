@@ -2034,15 +2034,6 @@ package body Exp_Ch6 is
          Prev := Actual;
          Prev_Orig := Original_Node (Prev);
 
-         --  The original actual may have been a call written in prefix
-         --  form, and rewritten before analysis.
-
-         if not Analyzed (Prev_Orig)
-           and then Nkind_In (Actual, N_Function_Call, N_Identifier)
-         then
-            Prev_Orig := Prev;
-         end if;
-
          --  Ada 2005 (AI-251): Check if any formal is a class-wide interface
          --  to expand it in a further round.
 
