@@ -1,3 +1,17 @@
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+	    Chris Fairles  <chris.fairles@gmail.com>
+
+	* acinclude.m4 ([GLIBCXX_CHECK_CLOCK_GETTIME]): Reinstate clock_gettime
+	search, but only in libposix4, never link librt.
+	* src/Makefile.am: Reinstate previous change to add GLIBCXX_LIBS.
+        * configure: Regenerate.
+        * configure.in: Likewise.
+        * Makefile.in: Likewise.
+        * src/Makefile.in: Likewise.
+        * libsup++/Makefile.in: Likewise.
+        * po/Makefile.in: Likewise.
+        * doc/Makefile.in: Likewise.
+
 2008-07-31  Chris Fairles <chris.fairles@gmail.com>
 
         * include/std/chrono (duration): Use explicitly defaulted ctor, cctor,
