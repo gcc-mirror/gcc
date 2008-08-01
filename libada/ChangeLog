@@ -1,3 +1,16 @@
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (warn_cflags): Substitute.
+	* configure: Regenerate.
+	* Makefile.in (libdir, WARN_CFLAGS): Substitute.
+	(GCC_WARN_CFLAGS): Remove NOCOMMON_FLAG.
+	(ADA_CFLAGS, T_ADA_CFLAGS, X_ADA_CFLAGS, ALL_ADA_CFLAGS): Remove,
+	they were unused.
+	(libada-mk): Do not include.  Include libgcc.mvars instead.
+	(tmake_file): Remove, do not include.
+	(FLAGS_TO_PASS): Pass dummy values for exeext and CC.
+	* configure: Regenerate.
+
 2008-06-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: move sinclude of acx.m4 before AC_INIT,

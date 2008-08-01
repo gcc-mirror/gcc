@@ -1607,10 +1607,6 @@ do
 done
 tmake_file="${tmake_file_}"
 
-# This is a terrible hack which will go away some day.
-host_cc_for_libada=${CC}
-AC_SUBST(host_cc_for_libada)
-
 out_object_file=`basename $out_file .c`.o
 
 tm_file_list="options.h"
@@ -3569,7 +3565,7 @@ lang_tree_files=
 # `language' must be a single word so is spelled singularly.
 all_languages=
 all_compilers=
-all_outputs='Makefile gccbug libada-mk'
+all_outputs='Makefile gccbug'
 # List of language makefile fragments.
 all_lang_makefrags=
 # List of language subdirectory makefiles.  Deprecated.
