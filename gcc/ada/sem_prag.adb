@@ -1451,6 +1451,15 @@ package body Sem_Prag is
          if Nkind (Parent (N)) = N_Subprogram_Body
            and then List_Containing (N) = Declarations (Parent (N))
          then
+            if Operating_Mode /= Generate_Code then
+
+               --  Analyze expression in pragma, for correctness
+               --  and for ASIS use.
+
+               Preanalyze_Spec_Expression
+                 (Get_Pragma_Arg (Arg1), Standard_Boolean);
+            end if;
+
             In_Body := True;
             return;
 
