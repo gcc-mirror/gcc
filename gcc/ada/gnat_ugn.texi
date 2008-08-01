@@ -4034,11 +4034,11 @@ details.
 
 @item -gnatq
 @cindex @option{-gnatq} (@command{gcc})
-Don't quit; try semantics, even if parse errors.
+Don't quit. Try semantics, even if parse errors.
 
 @item -gnatQ
 @cindex @option{-gnatQ} (@command{gcc})
-Don't quit; generate @file{ALI} and tree files even if illegalities.
+Don't quit. Generate @file{ALI} and tree files even if illegalities.
 
 @item -gnatr
 @cindex @option{-gnatr} (@command{gcc})
