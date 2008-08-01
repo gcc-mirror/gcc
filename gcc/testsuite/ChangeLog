@@ -1,3 +1,7 @@
+2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/boolean_expr.ad[sb]: Rename to boolean_expr1.ad[sb].
+
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36997
