@@ -1,5 +1,14 @@
 2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
 
+	Backport from mainline:
+	2008-04-02  Andy Hutchinson <hutchinsonamdy@aim.com>
+
+	PR rtl-optimization/35542
+	* fwprop.c (forward_propagate_and_simplify): Replace
+	loc_reg_mentioned_in_p with reg_mentioned_p.
+
+2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR bootstrap/35752
 	* Makefile.in (objdir): Set it here.
 	* configure.ac: Not here.  Find dynamic linker characteristics.

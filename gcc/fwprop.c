@@ -964,7 +964,7 @@ forward_propagate_into (struct df_ref *use)
   else
     parent = PATTERN (use_insn);
 
-  if (!loc_mentioned_in_p (DF_REF_LOC (use), parent))
+  if (!reg_mentioned_p (DF_REF_REG (use), parent))
     return;
 
   def_insn = DF_REF_INSN (def);
