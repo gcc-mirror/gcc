@@ -2284,13 +2284,15 @@ package body Exp_Ch6 is
                           Intval => Scope_Depth (Current_Scope) + 1),
                         Extra_Accessibility (Formal));
 
-                  --  For other cases we simply pass the level of the
-                  --  actual's access type.
+                  --  For other cases we simply pass the level of the actual's
+                  --  access type. The type is retrieved from Prev rather than
+                  --  Prev_Orig, because in some cases Prev_Orig denotes a
+                  --  original expression that has not been analyzed.
 
                   when others =>
                      Add_Extra_Actual
                        (Make_Integer_Literal (Loc,
-                          Intval => Type_Access_Level (Etype (Prev_Orig))),
+                          Intval => Type_Access_Level (Etype (Prev))),
                         Extra_Accessibility (Formal));
 
                end case;
