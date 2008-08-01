@@ -406,7 +406,7 @@ register_dump_files_1 (struct opt_pass *pass, int properties)
       int new_properties = (properties | pass->properties_provided)
 			   & ~pass->properties_destroyed;
 
-      if (pass->name)
+      if (pass->name && pass->name[0] != '*')
         register_one_dump_file (pass);
 
       if (pass->sub)

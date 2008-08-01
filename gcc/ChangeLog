@@ -1,3 +1,11 @@
+2008-08-01  Basile Starynkevitch  <basile@starynkevitch>
+	* tree-pass.h: Added comment about not dumping passes with name
+	starting with star in struct opt_pass.
+	* passes.c (register_dump_files_1): Don't do dump for a pass with
+	name starting with star.
+	* doc/passes.texi (Pass manager): Mention pass names and special
+	meaning of star prefix to avoid dump.
+
 2008-07-31  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config.gcc (mipsisa64r2*-*-linux*): New configuration.  Set ISA
@@ -68,6 +76,7 @@
 	(dwarf2out_stack_adjust): Use it.
 	(dwarf2out_frame_debug_expr): Likewise.
 
+>>>>>>> .r138449
 2008-07-31  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36978

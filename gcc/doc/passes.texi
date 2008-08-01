@@ -166,6 +166,10 @@ not attempt to (re-)generate data structures or lower intermediate
 language form based on the requirements of the next pass.  Nevertheless,
 what is present is useful, and a far sight better than nothing at all.
 
+Each pass may have its own dump file (for GCC debugging purposes).
+Passes without any names, or with a name starting with a star, do not
+dump anything.
+
 TODO: describe the global variables set up by the pass manager,
 and a brief description of how a new pass should use it.
 I need to look at what info rtl passes use first@enddots{}
