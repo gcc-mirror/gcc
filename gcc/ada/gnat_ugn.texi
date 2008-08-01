@@ -25509,6 +25509,7 @@ information about several specific platforms.
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
 * Irix-Specific Considerations::
+* RTX-Specific Considerations::
 @end menu
 
 @node Summary of Run-Time Configurations
@@ -25618,6 +25619,15 @@ information about several specific platforms.
 @item @code{@ @ }@i{rts-sjlj (default)}
 @item @code{@ @ @ @ }Tasking    @tab native Win32 threads
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
+@*
+@item @b{x86-windows-rtx}
+@item @code{@ @ }@i{rts-rtx-rtss (default)}
+@item @code{@ @ @ @ }Tasking    @tab RTX real-time subsystem RTSS threads (kernel mode)
+@item @code{@ @ @ @ }Exceptions @tab SJLJ
+@*
+@item @code{@ @ }@i{rts-rtx-w32}
+@item @code{@ @ @ @ }Tasking    @tab RTX Win32 threads (user mode)
+@item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
 @item @b{x86_64-linux}
 @item @code{@ @ }@i{rts-native (default)}
@@ -25842,6 +25852,26 @@ following command line on a bash prompt:
 $  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`dirname \`gcc --print-file-name=libgcc_s.so\``
 @end group
 @end smallexample
+
+@node RTX-Specific Considerations
+@section RTX-Specific Considerations
+@cindex RTX libraries
+
+@noindent
+The Real-time Extension (RTX) to Windows is based on the Windows Win32
+API. Applications can be built to work in two different modes:
+
+@itemize @bullet
+@item
+Windows executables that run in Ring 3 to utilize memory protection
+(@emph{rts-rtx-w32}).
+
+@item
+Real-time subsystem (RTSS) executables that run in Ring 0, where
+performance can be optimized with RTSS applications taking precedent
+over all Windows applications (@emph{rts-rtx-rtss}).
+
+@end itemize
 
 @c *******************************
 @node Example of Binder Output File
