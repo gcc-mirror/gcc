@@ -1,5 +1,14 @@
 2008-08-01  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (fini_pre): Take in_fre parameter.  Free
+	loop information only if we initialized it.
+	(execute_pre): Call fini_pre with in_fre.
+	* tree-ssa-loop-ivcanon (try_unroll_loop_completely): Dump
+	if we do not unroll because we hit max-completely-peeled-insns.
+	Use our estimation for consistency, do allow shrinking.
+
+2008-08-01  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36997
 	* gimplify.c (gimplify_call_expr): Set error_mark_node on GS_ERROR.
 

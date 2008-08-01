@@ -4086,7 +4086,7 @@ init_pre (bool do_fre)
 /* Deallocate data structures used by PRE.  */
 
 static void
-fini_pre (void)
+fini_pre (bool do_fre)
 {
   basic_block bb;
 
@@ -4117,7 +4117,7 @@ fini_pre (void)
 
   BITMAP_FREE (need_eh_cleanup);
 
-  if (current_loops != NULL)
+  if (!do_fre)
     loop_optimizer_finalize ();
 }
 
@@ -4192,7 +4192,7 @@ execute_pre (bool do_fre ATTRIBUTE_UNUSED)
   if (!do_fre)
     remove_dead_inserted_code ();
 
-  fini_pre ();
+  fini_pre (do_fre);
 
   return todo;
 }
