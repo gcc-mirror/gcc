@@ -1,3 +1,60 @@
+2008-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* scng.adb (Error_Illegal_Wide_Character): Bump scan pointer
+
+2008-08-01  Doug Rupp  <rupp@adacore.com>
+
+	* gnat_rm.texi: Document new mechanism Short_Descriptor.
+	
+	* types.ads (Mechanism_Type): Modify range for new Short_Descriptor
+	mechanism values.
+
+	* sem_prag.adb (Set_Mechanism_Value): Enhance for Short_Descriptor
+	mechanism and Short_Descriptor mechanism values.
+
+	* snames.adb (preset_names): Add short_descriptor entry.
+
+	* snames.ads: Add Name_Short_Descriptor.
+
+	* types.h: Add new By_Short_Descriptor mechanism values.
+
+	* sem_mech.adb (Set_Mechanism_Value): Enhance for Short_Descriptor
+	mechanism and Short_Descriptor mechanism values.
+
+	* sem_mech.ads (Mechanism_Type): Add new By_Short_Descriptor mechanism
+	values.
+	(Descriptor_Codes): Modify range for new mechanism values.
+
+	* treepr.adb (Print_Entity_Enfo): Handle new By_Short_Descriptor
+	mechanism values.
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Handle By_Short_Descriptor.
+	(gnat_to_gnu_param): Handle By_Short_Descriptor.
+
+	* gcc-interface/gigi.h (build_vms_descriptor64): Remove prototype.
+	(build_vms_descriptor32): New prototype.
+	(fill_vms_descriptor): Remove unneeded gnat_actual parameter.
+
+	* gcc-interface/trans.c (call_to_gnu): Removed unneeded gnat_actual
+	argument in call fill_vms_descriptor.
+
+	* gcc-interface/utils.c (build_vms_descriptor32): Renamed from
+	build_vms_descriptor and enhanced to hande Short_Descriptor mechanism.
+	(build_vms_descriptor): Renamed from build_vms_descriptor64. 
+	(convert_vms_descriptor32): New function.
+	(convert_vms_descriptor64): New function.
+	(convert_vms_descriptor): Rewrite to handle both 32bit and 64bit
+	descriptors.
+
+	* gcc-interface/utils2.c (fill_vms_descriptor): Revert previous changes,
+	no longer needed.
+
+2008-08-01  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (__gnat_tmp_name): RTSS applications do not support tempnam
+	nor tmpnam, so we always use c:\WINDOWS\Temp\gnat-XXXXXX as temporary
+	name.
+
 2008-08-01  Jose Ruiz  <ruiz@adacore.com>
 
 	* cstreams.c (__gnat_full_name): RTSS applications cannot ask for the
