@@ -3564,45 +3564,54 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
     gcc_unreachable ();
 }
 
-/* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
-   pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
-   pointer type of GNU_EXPR.  GNAT_SUBPROG is the subprogram to which the
-   VMS descriptor is passed.  */
+/* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a
+   regular pointer or fat pointer type.  GNAT_SUBPROG is the subprogram to
+   which the VMS descriptor is passed.  */
 
 static tree
-convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
-			Entity_Id gnat_subprog)
+convert_vms_descriptor (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 {
   tree desc_type = TREE_TYPE (TREE_TYPE (gnu_expr));
   tree desc = build1 (INDIRECT_REF, desc_type, gnu_expr);
   tree mbo = TYPE_FIELDS (desc_type);
   const char *mbostr = IDENTIFIER_POINTER (DECL_NAME (mbo));
   tree mbmo = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (mbo)));
-  tree is64bit, gnu_expr32, gnu_expr64;
+  tree is64bit;
+  tree save_type = TREE_TYPE (gnu_expr);
+  tree gnu_expr32, gnu_expr64;
 
-  /* If the field name is not MBO, it must be 32-bit and no alternate.
-     Otherwise primary must be 64-bit and alternate 32-bit.  */
   if (strcmp (mbostr, "MBO") != 0)
+    /* If the field name is not MBO, it must be 32bit and no alternate */
     return convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
 
-  /* Build the test for 64-bit descriptor.  */
+  /* Otherwise primary must be 64bit and alternate 32bit */
+
+  /* Test for 64bit descriptor */
   mbo = build3 (COMPONENT_REF, TREE_TYPE (mbo), desc, mbo, NULL_TREE);
   mbmo = build3 (COMPONENT_REF, TREE_TYPE (mbmo), desc, mbmo, NULL_TREE);
-  is64bit
-    = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-		       build_binary_op (EQ_EXPR, integer_type_node,
-					convert (integer_type_node, mbo),
-					integer_one_node),
-		       build_binary_op (EQ_EXPR, integer_type_node,
-					convert (integer_type_node, mbmo),
-					integer_minus_one_node));
+  is64bit = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
+            build_binary_op (EQ_EXPR, integer_type_node,
+                                convert (integer_type_node, mbo),
+                                integer_one_node),
+            build_binary_op (EQ_EXPR, integer_type_node,
+                                convert (integer_type_node, mbmo),
+                                integer_minus_one_node));
 
-  /* Build the 2 possible end results.  */
-  gnu_expr64 = convert_vms_descriptor64 (gnu_type, gnu_expr, gnat_subprog);
-  gnu_expr = fold_convert (gnu_expr_alt_type, gnu_expr);
-  gnu_expr32 = convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
+  gnu_expr64 = convert_vms_descriptor64 (gnu_type, gnu_expr,
+                                         gnat_subprog);
+  /* Convert 32bit alternate. Hack alert ??? */
+  TREE_TYPE (gnu_expr) = DECL_PARM_ALT (gnu_expr);
+  gnu_expr32 = convert_vms_descriptor32 (gnu_type, gnu_expr,
+                                         gnat_subprog);
+  TREE_TYPE (gnu_expr) = save_type;
 
-  return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
+  if (POINTER_TYPE_P (gnu_type))
+     return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
+
+  else if (TYPE_FAT_POINTER_P (gnu_type))
+      return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
+  else
+    gcc_unreachable ();
 }
 
 /* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
@@ -3633,11 +3642,8 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
        gnu_arg_types = TREE_CHAIN (gnu_arg_types))
     {
       if (DECL_BY_DESCRIPTOR_P (gnu_stub_param))
-	gnu_param
-	  = convert_vms_descriptor (TREE_VALUE (gnu_arg_types),
-				    gnu_stub_param,
-				    DECL_PARM_ALT_TYPE (gnu_stub_param),
-				    gnat_subprog);
+	gnu_param = convert_vms_descriptor (TREE_VALUE (gnu_arg_types),
+					    gnu_stub_param, gnat_subprog);
       else
 	gnu_param = gnu_stub_param;
 
