@@ -986,7 +986,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 outputs.  */
       if (modulus && integer_pow2p (modulus))
 	modulus = NULL_TREE;
-
       goto common;
 
     case COMPLEX_EXPR:
@@ -1010,6 +1009,15 @@ build_binary_op (enum tree_code op_code, tree result_type,
       left_operand = convert (operation_type, left_operand);
       right_operand = convert (sizetype, right_operand);
       break;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* Avoid doing arithmetics in BOOLEAN_TYPE like the other compilers.
+	 Contrary to C, Ada doesn't allow arithmetics in Standard.Boolean
+	 but we can generate addition or subtraction for 'Succ and 'Pred.  */
+      if (operation_type && TREE_CODE (operation_type) == BOOLEAN_TYPE)
+	operation_type = left_base_type = right_base_type = integer_type_node;
+      goto common;
 
     default:
     common:

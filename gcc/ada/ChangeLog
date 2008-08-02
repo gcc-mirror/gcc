@@ -1,3 +1,8 @@
+2008-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_binary_op) <PLUS_EXPR, MINUS_EXPR>:
+	New case.  Convert BOOLEAN_TYPE operation to the default integer type.
+
 2008-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (DECL_PARM_ALT): Now DECL_PARM_ALT_TYPE.
