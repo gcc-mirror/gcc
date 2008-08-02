@@ -1,3 +1,9 @@
+2008-08-02  Keith Seitz  <keiths@redhat.com>
+
+	* tcl.m4 (SC_PATH_TCLCONFIG): Add some simple logic to deal
+	with cygwin.
+	(SC_PATH_TKCONFIG): Likewise.
+
 2008-07-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* mh-pa: New, from gcc/config/pa/x-ada.

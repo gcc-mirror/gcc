@@ -32,6 +32,10 @@ AC_DEFUN([SC_PATH_TCLCONFIG], [
 	AC_CACHE_VAL(ac_cv_c_tclconfig,[
 
 	    # First check to see if --with-tcl was specified.
+	    case "${host}" in
+		*-*-cygwin*) platDir="win" ;;
+		*) platDir="unix" ;;
+	    esac
 	    if test x"${with_tclconfig}" != x ; then
 		if test -f "${with_tclconfig}/tclConfig.sh" ; then
 		    ac_cv_c_tclconfig=`(cd ${with_tclconfig}; pwd)`
@@ -55,8 +59,8 @@ AC_DEFUN([SC_PATH_TCLCONFIG], [
 			`ls -dr ../../../tcl[[8-9]].[[0-9]].[[0-9]]* 2>/dev/null` \
 			`ls -dr ../../../tcl[[8-9]].[[0-9]] 2>/dev/null` \
 			`ls -dr ../../../tcl[[8-9]].[[0-9]]* 2>/dev/null` ; do
-		    if test -f "$i/unix/tclConfig.sh" ; then
-			ac_cv_c_tclconfig=`(cd $i/unix; pwd)`
+		    if test -f "$i/$platDir/tclConfig.sh" ; then
+			ac_cv_c_tclconfig=`(cd $i/$platDir; pwd)`
 			break
 		    fi
 		done
@@ -99,8 +103,8 @@ AC_DEFUN([SC_PATH_TCLCONFIG], [
 			`ls -dr ${srcdir}/../tcl[[8-9]].[[0-9]].[[0-9]]* 2>/dev/null` \
 			`ls -dr ${srcdir}/../tcl[[8-9]].[[0-9]] 2>/dev/null` \
 			`ls -dr ${srcdir}/../tcl[[8-9]].[[0-9]]* 2>/dev/null` ; do
-		    if test -f "$i/unix/tclConfig.sh" ; then
-		    ac_cv_c_tclconfig=`(cd $i/unix; pwd)`
+		    if test -f "$i/$platDir/tclConfig.sh" ; then
+		    ac_cv_c_tclconfig=`(cd $i/$platDir; pwd)`
 		    break
 		fi
 		done
@@ -161,6 +165,10 @@ AC_DEFUN([SC_PATH_TKCONFIG], [
 	    fi
 
 	    # then check for a private Tk library
+	    case "${host}" in
+		*-*-cygwin*) platDir="win" ;;
+		*) platDir="unix" ;;
+	    esac
 	    if test x"${ac_cv_c_tkconfig}" = x ; then
 		for i in \
 			../tk \
@@ -175,8 +183,8 @@ AC_DEFUN([SC_PATH_TKCONFIG], [
 			`ls -dr ../../../tk[[8-9]].[[0-9]].[[0-9]]* 2>/dev/null` \
 			`ls -dr ../../../tk[[8-9]].[[0-9]] 2>/dev/null` \
 			`ls -dr ../../../tk[[8-9]].[[0-9]]* 2>/dev/null` ; do
-		    if test -f "$i/unix/tkConfig.sh" ; then
-			ac_cv_c_tkconfig=`(cd $i/unix; pwd)`
+		    if test -f "$i/$platDir/tkConfig.sh" ; then
+			ac_cv_c_tkconfig=`(cd $i/$platDir; pwd)`
 			break
 		    fi
 		done
@@ -218,8 +226,8 @@ AC_DEFUN([SC_PATH_TKCONFIG], [
 			`ls -dr ${srcdir}/../tk[[8-9]].[[0-9]].[[0-9]]* 2>/dev/null` \
 			`ls -dr ${srcdir}/../tk[[8-9]].[[0-9]] 2>/dev/null` \
 			`ls -dr ${srcdir}/../tk[[8-9]].[[0-9]]* 2>/dev/null` ; do
-		    if test -f "$i/unix/tkConfig.sh" ; then
-			ac_cv_c_tkconfig=`(cd $i/unix; pwd)`
+		    if test -f "$i/$platDir/tkConfig.sh" ; then
+			ac_cv_c_tkconfig=`(cd $i/$platDir; pwd)`
 			break
 		    fi
 		done
