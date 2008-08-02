@@ -1,3 +1,20 @@
+2008-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR target/35252
+	* config/i386/sse.md (SSEMODE4S, SSEMODE2D): New mode iterators.
+	(ssedoublesizemode): New mode attribute.
+	(sse_shufps): Call gen_sse_shufps_v4sf.
+	(sse_shufps_1): Macroize.
+	(sse2_shufpd): Call gen_Sse_shufpd_v2df.
+	(sse2_shufpd_1): Macroize.
+	(vec_extract_odd, vec_extract_even): New expanders.
+	(vec_interleave_highv4sf, vec_interleave_lowv4sf,
+	vec_interleave_highv2df, vec_interleave_lowv2df): Likewise.
+	* i386.c (ix86_expand_vector_init_one_nonzero): Call
+	gen_sse_shufps_v4sf instead of gen_sse_shufps_1.
+	(ix86_expand_vector_set): Likewise.
+	(ix86_expand_reduc_v4sf): Likewise.
+
 2008-08-01  Doug Kwan  <dougkwan@google.com>
 
 	* matrix-reorg.c: Re-enable all code.
