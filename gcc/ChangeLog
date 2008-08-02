@@ -1,3 +1,46 @@
+2008-08-01  Doug Kwan  <dougkwan@google.com>
+
+	* matrix-reorg.c: Re-enable all code.
+	(struct malloc_call_data): Change CALL_STMT to gimple type.
+	(collect_data_for_malloc_call): Tuplify.
+ 	(struct access_site_info): Change STMT to gimple type.
+	(struct matrix_info): Change MIN_INDIRECT_LEVEL_ESCAPE_STMT,
+	and MALLOC_FOR_LEVEL to gimple and gimple pointer type.
+	(struct free_info): Change STMT to gimple type.
+ 	(struct matrix_access_phi_node):  Change PHI to gimple type.
+	(get_inner_of_cast_expr): Remove.
+	(may_flatten_matrices_1): Tuplify.
+	(may_flatten_matrices): Ditto.
+	(mark_min_matrix_escape_level): Ditto.
+ 	(ssa_accessed_in_tree): Refactor statement RHS related code into ...
+	(ssa_accessed_in_call_rhs): New
+	(ssa_accessed_in_assign_rhs): New
+	(record_access_alloc_site_info): Tuplify.
+	(add_allocation_site): Ditto.
+	(analyze_matrix_allocation_site): Ditto.
+	(analyze_transpose): Ditto.
+	(get_index_from_offset): Ditto.
+	(update_type_size): Ditto.
+	(analyze_accesses_for_call_expr): Tuplify and renamed into ...
+	(analyze_accesses_for_call_stmt): New. Also handle LHS of a call.
+	(analyze_accesses_for_phi_node): Tuplify.
+	(analyze_accesses_for_modify_stmt): Tuplify and renamed into ...
+	(analyze_accesses_for_assign_stmt): Remove code for handling call LHS.
+	(analyze_matrix_accesses): Tuplify.
+	(check_var_data): New call-back type for check_var_notmodified_p.
+	(check_var_notmodified_p): Tuplify and use call-back struct to
+	return statement found.
+	(can_calculate_expr_before_stmt): Factor out statement related code
+	into ...
+	(can_calculate_stmt_before_stmt): New.
+ 	(check_allocation_function): Tuplify.
+	(find_sites_in_func): Ditto.
+	(record_all_accesses_in_func): Ditto.
+	(transform_access_sites): Ditto.
+	(transform_allocation_sites): Ditto.
+	(matrix_reorg): Re-enable.
+	(gate_matrix_reorg): Re-enable.
+
 2008-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (compute_barrier_args_size): Set barrier_args_size
