@@ -36,6 +36,10 @@
 (define_mode_iterator SSEMODEF4 [SF DF V4SF V2DF])
 (define_mode_iterator SSEMODEF2P [V4SF V2DF])
 
+;; Int-float size matches
+(define_mode_iterator SSEMODE4S [V4SF V4SI])
+(define_mode_iterator SSEMODE2D [V2DF V2DI])
+
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse [(SF "sse") (DF "sse2") (V4SF "sse") (V2DF "sse2")])
 
@@ -56,6 +60,10 @@
 (define_mode_attr ssescalarmode [(V4SF "SF") (V2DF "DF")
 				 (V16QI "QI") (V8HI "HI")
 				 (V4SI "SI") (V2DI "DI")])
+
+;; Mapping of vector modes to a vector mode of double size
+(define_mode_attr ssedoublesizemode [(V2DF "V4DF") (V2DI "V4DI")
+				     (V4SF "V8SF") (V4SI "V8SI")])
 
 ;; Number of scalar elements in each vector type
 (define_mode_attr ssescalarnum [(V4SF "4") (V2DF "2")
@@ -2129,7 +2137,7 @@
   "TARGET_SSE"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_sse_shufps_1 (operands[0], operands[1], operands[2],
+  emit_insn (gen_sse_shufps_v4sf (operands[0], operands[1], operands[2],
 			       GEN_INT ((mask >> 0) & 3),
 			       GEN_INT ((mask >> 2) & 3),
 			       GEN_INT (((mask >> 4) & 3) + 4),
@@ -2137,12 +2145,12 @@
   DONE;
 })
 
-(define_insn "sse_shufps_1"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
-	(vec_select:V4SF
-	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "register_operand" "0")
-	    (match_operand:V4SF 2 "nonimmediate_operand" "xm"))
+(define_insn "sse_shufps_<mode>"
+  [(set (match_operand:SSEMODE4S 0 "register_operand" "=x")
+	(vec_select:SSEMODE4S
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE4S 1 "register_operand" "0")
+	    (match_operand:SSEMODE4S 2 "nonimmediate_operand" "xm"))
 	  (parallel [(match_operand 3 "const_0_to_3_operand" "")
 		     (match_operand 4 "const_0_to_3_operand" "")
 		     (match_operand 5 "const_4_to_7_operand" "")
@@ -2540,18 +2548,62 @@
   "TARGET_SSE2"
 {
   int mask = INTVAL (operands[3]);
-  emit_insn (gen_sse2_shufpd_1 (operands[0], operands[1], operands[2],
+  emit_insn (gen_sse2_shufpd_v2df (operands[0], operands[1], operands[2],
 				GEN_INT (mask & 1),
 				GEN_INT (mask & 2 ? 3 : 2)));
   DONE;
 })
 
-(define_insn "sse2_shufpd_1"
-  [(set (match_operand:V2DF 0 "register_operand" "=x")
-	(vec_select:V2DF
-	  (vec_concat:V4DF
-	    (match_operand:V2DF 1 "register_operand" "0")
-	    (match_operand:V2DF 2 "nonimmediate_operand" "xm"))
+(define_expand "vec_extract_even<mode>"
+  [(set (match_operand:SSEMODE4S 0 "register_operand" "")
+	(vec_select:SSEMODE4S
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE4S 1 "register_operand" "")
+	    (match_operand:SSEMODE4S 2 "nonimmediate_operand" ""))
+	  (parallel [(const_int 0)
+		     (const_int 2)
+		     (const_int 4)
+		     (const_int 6)])))]
+  "TARGET_SSE")
+
+(define_expand "vec_extract_odd<mode>"
+  [(set (match_operand:SSEMODE4S 0 "register_operand" "")
+	(vec_select:SSEMODE4S
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE4S 1 "register_operand" "")
+	    (match_operand:SSEMODE4S 2 "nonimmediate_operand" ""))
+	  (parallel [(const_int 1)
+		     (const_int 3)
+		     (const_int 5)
+		     (const_int 7)])))]
+  "TARGET_SSE")
+
+(define_expand "vec_extract_even<mode>"
+  [(set (match_operand:SSEMODE2D 0 "register_operand" "")
+	(vec_select:SSEMODE2D
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE2D 1 "register_operand" "")
+	    (match_operand:SSEMODE2D 2 "nonimmediate_operand" ""))
+	  (parallel [(const_int 0)
+	  	     (const_int 2)])))]
+  "TARGET_SSE2")
+
+(define_expand "vec_extract_odd<mode>"
+  [(set (match_operand:SSEMODE2D 0 "register_operand" "")
+	(vec_select:SSEMODE2D
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE2D 1 "register_operand" "")
+	    (match_operand:SSEMODE2D 2 "nonimmediate_operand" ""))
+	  (parallel [(const_int 1)
+	  	     (const_int 3)])))]
+  "TARGET_SSE2")
+
+(define_insn "sse2_shufpd_<mode>"
+  [(set (match_operand:SSEMODE2D 0 "register_operand" "=x")
+	(vec_select:SSEMODE2D
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:SSEMODE2D 1 "register_operand" "0")
+	    (match_operand:SSEMODE2D 2 "nonimmediate_operand" "xm"))
 	  (parallel [(match_operand 3 "const_0_to_1_operand" "")
 		     (match_operand 4 "const_2_to_3_operand" "")])))]
   "TARGET_SSE2"
@@ -4194,6 +4246,46 @@
   emit_insn (gen_sse2_punpcklqdq (operands[0], operands[1], operands[2]));
   DONE;
 })
+
+(define_expand "vec_interleave_highv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "")
+        (vec_select:V4SF
+          (vec_concat:V8SF
+            (match_operand:V4SF 1 "register_operand" "")
+            (match_operand:V4SF 2 "nonimmediate_operand" ""))
+          (parallel [(const_int 2) (const_int 6)
+                     (const_int 3) (const_int 7)])))]
+  "TARGET_SSE")
+
+(define_expand "vec_interleave_lowv4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "")
+        (vec_select:V4SF
+          (vec_concat:V8SF
+            (match_operand:V4SF 1 "register_operand" "")
+            (match_operand:V4SF 2 "nonimmediate_operand" ""))
+          (parallel [(const_int 0) (const_int 4)
+                     (const_int 1) (const_int 5)])))]
+  "TARGET_SSE")
+
+(define_expand "vec_interleave_highv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+        (vec_select:V2DF
+          (vec_concat:V4DF
+            (match_operand:V2DF 1 "register_operand" "")
+            (match_operand:V2DF 2 "nonimmediate_operand" ""))
+          (parallel [(const_int 1)
+                     (const_int 3)])))]
+  "TARGET_SSE2")
+
+(define_expand "vec_interleave_lowv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+        (vec_select:V2DF
+          (vec_concat:V4DF
+            (match_operand:V2DF 1 "register_operand" "")
+            (match_operand:V2DF 2 "nonimmediate_operand" ""))
+          (parallel [(const_int 0)
+                     (const_int 2)])))]
+  "TARGET_SSE2")
 
 (define_insn "sse2_packsswb"
   [(set (match_operand:V16QI 0 "register_operand" "=x")

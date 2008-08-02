@@ -2078,6 +2078,27 @@ proc check_effective_target_vect_extract_even_odd { } {
     return $et_vect_extract_even_odd_saved
 }
 
+# Return 1 if the target supports vector even/odd elements extraction of
+# vectors with SImode elements or larger, 0 otherwise.
+
+proc check_effective_target_vect_extract_even_odd_wide { } {
+    global et_vect_extract_even_odd_wide_saved
+    
+    if [info exists et_vect_extract_even_odd_wide_saved] {
+        verbose "check_effective_target_vect_extract_even_odd_wide: using cached result" 2
+    } else {
+        set et_vect_extract_even_odd_wide_saved 0 
+        if { [istarget powerpc*-*-*] 
+             || [istarget i?86-*-*]
+             || [istarget x86_64-*-*] } {
+           set et_vect_extract_even_odd_wide_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_extract_even_wide_odd: returning $et_vect_extract_even_odd_wide_saved" 2
+    return $et_vect_extract_even_odd_wide_saved
+}
+
 # Return 1 if the target supports vector interleaving, 0 otherwise.
 
 proc check_effective_target_vect_interleave { } {
@@ -2114,6 +2135,25 @@ proc check_effective_target_vect_strided { } {
 
     verbose "check_effective_target_vect_strided: returning $et_vect_strided_saved" 2
     return $et_vect_strided_saved
+}
+
+# Return 1 if the target supports vector interleaving and extract even/odd
+# for wide element types, 0 otherwise.
+proc check_effective_target_vect_strided_wide { } {
+    global et_vect_strided_wide_saved
+
+    if [info exists et_vect_strided_wide_saved] {
+        verbose "check_effective_target_vect_strided_wide: using cached result" 2
+    } else {
+        set et_vect_strided_wide_saved 0
+        if { [check_effective_target_vect_interleave]
+             && [check_effective_target_vect_extract_even_odd_wide] } {
+           set et_vect_strided_wide_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_strided_wide: returning $et_vect_strided_wide_saved" 2
+    return $et_vect_strided_wide_saved
 }
 
 # Return 1 if the target supports section-anchors

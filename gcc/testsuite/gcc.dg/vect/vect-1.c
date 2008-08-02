@@ -86,6 +86,6 @@ foo (int n)
   fbar (a);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_extract_even_odd } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_extract_even_odd } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_extract_even_odd_wide } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_extract_even_odd_wide } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

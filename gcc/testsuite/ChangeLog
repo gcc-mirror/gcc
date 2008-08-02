@@ -1,3 +1,22 @@
+2008-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR target/35252
+	* lib/target-supports.exp (vect_extract_even_odd_wide) Add.
+	(vect_strided_wide): Likewise.
+	* gcc.dg/vect/fast-math-pr35982.c: Enable for
+	vect_extract_even_odd_wide.
+	* gcc.dg/vect/fast-math-vect-complex-3.c: Likewise.
+	* gcc.dg/vect/vect-1.c: Likewise.
+	* gcc.dg/vect/vect-107.c: Likewise.
+	* gcc.dg/vect/vect-98.c: Likewise.
+	* gcc.dg/vect/vect-strided-float.c: Likewise.
+	* gcc.dg/vect/slp-11.c: Enable for vect_strided_wide.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-19.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-5.c: Likewise.
+
 2008-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_expr2.adb: New test.
