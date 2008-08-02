@@ -143,8 +143,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 
-  /* FIXME tuples.  */
-#if 0
 /* We need to collect a lot of data from the original malloc,
    particularly as the gimplifier has converted:
 
@@ -163,10 +161,13 @@ along with GCC; see the file COPYING3.  If not see
 
 struct malloc_call_data
 {
-  tree call_stmt;		/* Tree for "T4 = malloc (T3);"                     */
+  gimple call_stmt;		/* Tree for "T4 = malloc (T3);"                     */
   tree size_var;		/* Var decl for T3.                                 */
   tree malloc_size;		/* Tree for "<constant>", the rhs assigned to T3.   */
 };
+
+static tree can_calculate_expr_before_stmt (tree, sbitmap);
+static tree can_calculate_stmt_before_stmt (gimple, sbitmap);
 
 /* The front end of the compiler, when parsing statements of the form:
 
@@ -187,24 +188,20 @@ struct malloc_call_data
    need to find the rest of the variables/statements on our own.  That
    is what the following function does.  */
 static void
-collect_data_for_malloc_call (tree stmt, struct malloc_call_data *m_data)
+collect_data_for_malloc_call (gimple stmt, struct malloc_call_data *m_data)
 {
   tree size_var = NULL;
   tree malloc_fn_decl;
-  tree tmp;
   tree arg1;
 
-  gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
+  gcc_assert (is_gimple_call (stmt));
 
-  tmp = get_call_expr_in (stmt);
-  malloc_fn_decl = CALL_EXPR_FN (tmp);
-  if (TREE_CODE (malloc_fn_decl) != ADDR_EXPR
-      || TREE_CODE (TREE_OPERAND (malloc_fn_decl, 0)) != FUNCTION_DECL
-      || DECL_FUNCTION_CODE (TREE_OPERAND (malloc_fn_decl, 0)) !=
-      BUILT_IN_MALLOC)
+  malloc_fn_decl = gimple_call_fndecl (stmt);
+  if (malloc_fn_decl == NULL
+      || DECL_FUNCTION_CODE (malloc_fn_decl) != BUILT_IN_MALLOC)
     return;
 
-  arg1 = CALL_EXPR_ARG (tmp, 0);
+  arg1 = gimple_call_arg (stmt, 0);
   size_var = arg1;
 
   m_data->call_stmt = stmt;
@@ -223,7 +220,7 @@ collect_data_for_malloc_call (tree stmt, struct malloc_call_data *m_data)
 struct access_site_info
 {
   /* The statement (INDIRECT_REF or POINTER_PLUS_EXPR).  */
-  tree stmt;
+  gimple stmt;
 
   /* In case of POINTER_PLUS_EXPR, what is the offset.  */
   tree offset;
@@ -262,7 +259,7 @@ struct matrix_info
      0 to ACTUAL_DIM - k escapes.  */
   int min_indirect_level_escape;
 
-  tree min_indirect_level_escape_stmt;
+  gimple min_indirect_level_escape_stmt;
 
   /* Is the matrix transposed.  */
   bool is_transposed_p;
@@ -271,7 +268,7 @@ struct matrix_info
      We can use NUM_DIMS as the upper bound and allocate the array
      once with this number of elements and no need to use realloc and
      MAX_MALLOCED_LEVEL.  */
-  tree *malloc_for_level;
+  gimple *malloc_for_level;
 
   int max_malloced_level;
 
@@ -282,7 +279,7 @@ struct matrix_info
   /* The calls to free for each level of indirection.  */
   struct free_info
   {
-    tree stmt;
+    gimple stmt;
     tree func;
   } *free_stmts;
 
@@ -322,7 +319,7 @@ struct matrix_info
 
 struct matrix_access_phi_node
 {
-  tree phi;
+  gimple phi;
   int indirection_level;
 };
 
@@ -408,28 +405,20 @@ mtt_info_eq (const void *mtt1, const void *mtt2)
   return false;
 }
 
-/* Return the inner most tree that is not a cast.  */
-static tree
-get_inner_of_cast_expr (tree t)
-{
-  while (CONVERT_EXPR_P (t)
-	 || TREE_CODE (t) == VIEW_CONVERT_EXPR)
-    t = TREE_OPERAND (t, 0);
-
-  return t;
-}
-
 /* Return false if STMT may contain a vector expression.  
    In this situation, all matrices should not be flattened.  */
 static bool
-may_flatten_matrices_1 (tree stmt)
+may_flatten_matrices_1 (gimple stmt)
 {
   tree t;
 
-  switch (TREE_CODE (stmt))
+  switch (gimple_code (stmt))
     {
-    case GIMPLE_MODIFY_STMT:
-      t = TREE_OPERAND (stmt, 1);
+    case GIMPLE_ASSIGN:
+      if (!gimple_assign_cast_p (stmt))
+	return true;
+
+      t = gimple_assign_rhs1 (stmt);
       while (CONVERT_EXPR_P (t))
 	{
 	  if (TREE_TYPE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
@@ -450,7 +439,7 @@ may_flatten_matrices_1 (tree stmt)
 	  t = TREE_OPERAND (t, 0);
 	}
       break;
-    case ASM_EXPR:
+    case GIMPLE_ASM:
       /* Asm code could contain vector operations.  */
       return false;
       break;
@@ -468,15 +457,15 @@ may_flatten_matrices (struct cgraph_node *node)
   tree decl;
   struct function *func;
   basic_block bb;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
 
   decl = node->decl;
   if (node->analyzed)
     {
       func = DECL_STRUCT_FUNCTION (decl);
       FOR_EACH_BB_FN (bb, func)
-	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	if (!may_flatten_matrices_1 (bsi_stmt (bsi)))
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	if (!may_flatten_matrices_1 (gsi_stmt (gsi)))
 	  return false;
     }
   return true;
@@ -597,7 +586,7 @@ find_matrices_decl (void)
 
 /* Mark that the matrix MI escapes at level L.  */
 static void
-mark_min_matrix_escape_level (struct matrix_info *mi, int l, tree s)
+mark_min_matrix_escape_level (struct matrix_info *mi, int l, gimple s)
 {
   if (mi->min_indirect_level_escape == -1
       || (mi->min_indirect_level_escape > l))
@@ -610,19 +599,13 @@ mark_min_matrix_escape_level (struct matrix_info *mi, int l, tree s)
 /* Find if the SSA variable is accessed inside the
    tree and record the tree containing it.
    The only relevant uses are the case of SSA_NAME, or SSA inside
-   INDIRECT_REF, CALL_EXPR, PLUS_EXPR, POINTER_PLUS_EXPR, MULT_EXPR.  */
+   INDIRECT_REF, PLUS_EXPR, POINTER_PLUS_EXPR, MULT_EXPR.  */
 static void
 ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 {
-  tree call, decl;
-  tree arg;
-  call_expr_arg_iterator iter;
-
   a->t_code = TREE_CODE (t);
   switch (a->t_code)
     {
-      tree op1, op2;
-
     case SSA_NAME:
       if (t == a->ssa_var)
 	a->var_found = true;
@@ -632,24 +615,59 @@ ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 	  && TREE_OPERAND (t, 0) == a->ssa_var)
 	a->var_found = true;
       break;
-    case CALL_EXPR:
-      FOR_EACH_CALL_EXPR_ARG (arg, iter, t)
-      {
-	if (arg == a->ssa_var)
-	  {
-	    a->var_found = true;
-	    call = get_call_expr_in (t);
-	    if (call && (decl = get_callee_fndecl (call)))
-	      a->t_tree = decl;
-	    break;
-	  }
-      }
+    default:
+      break;
+    }
+}
+
+/* Find if the SSA variable is accessed on the right hand side of
+   gimple call STMT. */
+
+static void
+ssa_accessed_in_call_rhs (gimple stmt, struct ssa_acc_in_tree *a)
+{
+  tree decl;
+  tree arg;
+  size_t i;
+
+  a->t_code = CALL_EXPR;
+  for (i = 0; i < gimple_call_num_args (stmt); i++)
+    {
+      arg = gimple_call_arg (stmt, i);
+      if (arg == a->ssa_var)
+	{
+	  a->var_found = true;
+	  decl = gimple_call_fndecl (stmt);
+	  a->t_tree = decl;
+	  break;
+	}
+    }
+}
+
+/* Find if the SSA variable is accessed on the right hand side of
+   gimple assign STMT. */
+
+static void
+ssa_accessed_in_assign_rhs (gimple stmt, struct ssa_acc_in_tree *a)
+{
+
+  a->t_code = gimple_assign_rhs_code (stmt);
+  switch (a->t_code)
+    {
+      tree op1, op2;
+
+    case SSA_NAME:
+    case INDIRECT_REF:
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+    case VIEW_CONVERT_EXPR:
+      ssa_accessed_in_tree (gimple_assign_rhs1 (stmt), a);
       break;
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MULT_EXPR:
-      op1 = TREE_OPERAND (t, 0);
-      op2 = TREE_OPERAND (t, 1);
+      op1 = gimple_assign_rhs1 (stmt);
+      op2 = gimple_assign_rhs2 (stmt);
 
       if (op1 == a->ssa_var)
 	{
@@ -670,7 +688,7 @@ ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 /* Record the access/allocation site information for matrix MI so we can 
    handle it later in transformation.  */
 static void
-record_access_alloc_site_info (struct matrix_info *mi, tree stmt, tree offset,
+record_access_alloc_site_info (struct matrix_info *mi, gimple stmt, tree offset,
 			       tree index, int level, bool is_alloc)
 {
   struct access_site_info *acc_info;
@@ -697,7 +715,7 @@ record_access_alloc_site_info (struct matrix_info *mi, tree stmt, tree offset,
    all the allocation sites could be pre-calculated before the call to
    the malloc of level 0 (the main malloc call).  */
 static void
-add_allocation_site (struct matrix_info *mi, tree stmt, int level)
+add_allocation_site (struct matrix_info *mi, gimple stmt, int level)
 {
   struct malloc_call_data mcd;
 
@@ -740,13 +758,13 @@ add_allocation_site (struct matrix_info *mi, tree stmt, int level)
      calls like calloc and realloc.  */
   if (!mi->malloc_for_level)
     {
-      mi->malloc_for_level = XCNEWVEC (tree, level + 1);
+      mi->malloc_for_level = XCNEWVEC (gimple, level + 1);
       mi->max_malloced_level = level + 1;
     }
   else if (mi->max_malloced_level <= level)
     {
       mi->malloc_for_level
-	= XRESIZEVEC (tree, mi->malloc_for_level, level + 1);
+	= XRESIZEVEC (gimple, mi->malloc_for_level, level + 1);
 
       /* Zero the newly allocated items.  */
       memset (&(mi->malloc_for_level[mi->max_malloced_level + 1]),
@@ -769,79 +787,74 @@ add_allocation_site (struct matrix_info *mi, tree stmt, int level)
    Return if STMT is related to an allocation site.  */
 
 static void
-analyze_matrix_allocation_site (struct matrix_info *mi, tree stmt,
+analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 				int level, sbitmap visited)
 {
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+  if (gimple_assign_copy_p (stmt) || gimple_assign_cast_p (stmt))
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree rhs = gimple_assign_rhs1 (stmt);
 
-      rhs = get_inner_of_cast_expr (rhs);
       if (TREE_CODE (rhs) == SSA_NAME)
 	{
-	  tree def = SSA_NAME_DEF_STMT (rhs);
+	  gimple def = SSA_NAME_DEF_STMT (rhs);
 
 	  analyze_matrix_allocation_site (mi, def, level, visited);
-	  return;
-	}
-
-      /* A result of call to malloc.  */
-      else if (TREE_CODE (rhs) == CALL_EXPR)
-	{
-	  int call_flags = call_expr_flags (rhs);
-
-	  if (!(call_flags & ECF_MALLOC))
-	    {
-	      mark_min_matrix_escape_level (mi, level, stmt);
-	      return;
-	    }
-	  else
-	    {
-	      tree malloc_fn_decl;
-	      const char *malloc_fname;
-
-	      malloc_fn_decl = CALL_EXPR_FN (rhs);
-	      if (TREE_CODE (malloc_fn_decl) != ADDR_EXPR
-		  || TREE_CODE (TREE_OPERAND (malloc_fn_decl, 0)) !=
-		  FUNCTION_DECL)
-		{
-		  mark_min_matrix_escape_level (mi, level, stmt);
-		  return;
-		}
-	      malloc_fn_decl = TREE_OPERAND (malloc_fn_decl, 0);
-	      malloc_fname = IDENTIFIER_POINTER (DECL_NAME (malloc_fn_decl));
-	      if (DECL_FUNCTION_CODE (malloc_fn_decl) != BUILT_IN_MALLOC)
-		{
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Matrix %s is an argument to function %s\n",
-			     get_name (mi->decl), get_name (malloc_fn_decl));
-		  mark_min_matrix_escape_level (mi, level, stmt);
-		  return;
-		}
-	    }
-	  /* This is a call to malloc of level 'level'.  
-	     mi->max_malloced_level-1 == level  means that we've 
-	     seen a malloc statement of level 'level' before.  
-	     If the statement is not the same one that we've 
-	     seen before, then there's another malloc statement 
-	     for the same level, which means that we need to mark 
-	     it escaping.  */
-	  if (mi->malloc_for_level
-	      && mi->max_malloced_level-1 == level
-	      && mi->malloc_for_level[level] != stmt)
-	    {
-	      mark_min_matrix_escape_level (mi, level, stmt);
-	      return;
-	    }
-	  else
-	    add_allocation_site (mi, stmt, level);
 	  return;
 	}
       /* If we are back to the original matrix variable then we
          are sure that this is analyzed as an access site.  */
       else if (rhs == mi->decl)
 	return;
+    }
+  /* A result of call to malloc.  */
+  else if (is_gimple_call (stmt))
+    {
+      int call_flags = gimple_call_flags (stmt);
+
+      if (!(call_flags & ECF_MALLOC))
+	{
+	  mark_min_matrix_escape_level (mi, level, stmt);
+	  return;
+	}
+      else
+	{
+	  tree malloc_fn_decl;
+	  const char *malloc_fname;
+
+	  malloc_fn_decl = gimple_call_fndecl (stmt);
+	  if (malloc_fn_decl == NULL_TREE)
+	    {
+	      mark_min_matrix_escape_level (mi, level, stmt);
+	      return;
+	    }
+	  malloc_fname = IDENTIFIER_POINTER (DECL_NAME (malloc_fn_decl));
+	  if (DECL_FUNCTION_CODE (malloc_fn_decl) != BUILT_IN_MALLOC)
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Matrix %s is an argument to function %s\n",
+			 get_name (mi->decl), get_name (malloc_fn_decl));
+	      mark_min_matrix_escape_level (mi, level, stmt);
+	      return;
+	    }
+	}
+      /* This is a call to malloc of level 'level'.  
+	 mi->max_malloced_level-1 == level  means that we've 
+	 seen a malloc statement of level 'level' before.  
+	 If the statement is not the same one that we've 
+	 seen before, then there's another malloc statement 
+	 for the same level, which means that we need to mark 
+	 it escaping.  */
+      if (mi->malloc_for_level
+	  && mi->max_malloced_level-1 == level
+	  && mi->malloc_for_level[level] != stmt)
+	{
+	  mark_min_matrix_escape_level (mi, level, stmt);
+	  return;
+	}
+      else
+	add_allocation_site (mi, stmt, level);
+      return;
     }
   /* Looks like we don't know what is happening in this
      statement so be in the safe side and mark it as escaping.  */
@@ -909,7 +922,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 0; VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
        i++)
     {
-      if (TREE_CODE (TREE_OPERAND (acc_info->stmt, 1)) == POINTER_PLUS_EXPR
+      if (gimple_assign_rhs_code (acc_info->stmt) == POINTER_PLUS_EXPR
 	  && acc_info->level < min_escape_l)
 	{
 	  loop = loop_containing_stmt (acc_info->stmt);
@@ -945,19 +958,21 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
 /* Find the index which defines the OFFSET from base.  
    We walk from use to def until we find how the offset was defined.  */
 static tree
-get_index_from_offset (tree offset, tree def_stmt)
+get_index_from_offset (tree offset, gimple def_stmt)
 {
-  tree op1, op2, expr, index;
+  tree op1, op2, index;
 
-  if (TREE_CODE (def_stmt) == PHI_NODE)
+  if (gimple_code (def_stmt) == GIMPLE_PHI)
     return NULL;
-  expr = get_inner_of_cast_expr (TREE_OPERAND (def_stmt, 1));
-  if (TREE_CODE (expr) == SSA_NAME)
-    return get_index_from_offset (offset, SSA_NAME_DEF_STMT (expr));
-  else if (TREE_CODE (expr) == MULT_EXPR)
+  if ((gimple_assign_copy_p (def_stmt) || gimple_assign_cast_p (def_stmt))
+      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
+    return get_index_from_offset (offset,
+				  SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt)));
+  else if (is_gimple_assign (def_stmt)
+	   && gimple_assign_rhs_code (def_stmt) == MULT_EXPR)
     {
-      op1 = TREE_OPERAND (expr, 0);
-      op2 = TREE_OPERAND (expr, 1);
+      op1 = gimple_assign_rhs1 (def_stmt);
+      op2 = gimple_assign_rhs2 (def_stmt);
       if (TREE_CODE (op1) != INTEGER_CST && TREE_CODE (op2) != INTEGER_CST)
 	return NULL;
       index = (TREE_CODE (op1) == INTEGER_CST) ? op2 : op1;
@@ -971,17 +986,17 @@ get_index_from_offset (tree offset, tree def_stmt)
    of the type related to the SSA_VAR, or the type related to the
    lhs of STMT, in the case that it is an INDIRECT_REF.  */
 static void
-update_type_size (struct matrix_info *mi, tree stmt, tree ssa_var,
+update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
 		  int current_indirect_level)
 {
   tree lhs;
   HOST_WIDE_INT type_size;
 
   /* Update type according to the type of the INDIRECT_REF expr.   */
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-      && TREE_CODE (TREE_OPERAND (stmt, 0)) == INDIRECT_REF)
+  if (is_gimple_assign (stmt)
+      && TREE_CODE (gimple_assign_lhs (stmt)) == INDIRECT_REF)
     {
-      lhs = TREE_OPERAND (stmt, 0);
+      lhs = gimple_assign_lhs (stmt);
       gcc_assert (POINTER_TYPE_P
 		  (TREE_TYPE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
       type_size =
@@ -1026,24 +1041,66 @@ update_type_size (struct matrix_info *mi, tree stmt, tree ssa_var,
     }
 }
 
-/* USE_STMT represents a call_expr ,where one of the arguments is the 
+/* USE_STMT represents a GIMPLE_CALL, where one of the arguments is the 
    ssa var that we want to check because it came from some use of matrix 
    MI.  CURRENT_INDIRECT_LEVEL is the indirection level we reached so 
    far.  */
 
-static void
-analyze_accesses_for_call_expr (struct matrix_info *mi, tree use_stmt,
-				int current_indirect_level)
+static int
+analyze_accesses_for_call_stmt (struct matrix_info *mi, tree ssa_var,
+				gimple use_stmt, int current_indirect_level)
 {
-  tree call = get_call_expr_in (use_stmt);
-  if (call && get_callee_fndecl (call))
+  tree fndecl = gimple_call_fndecl (use_stmt);
+
+  if (gimple_call_lhs (use_stmt))
     {
-      if (DECL_FUNCTION_CODE (get_callee_fndecl (call)) != BUILT_IN_FREE)
+      tree lhs = gimple_call_lhs (use_stmt);
+      struct ssa_acc_in_tree lhs_acc, rhs_acc;
+
+      memset (&lhs_acc, 0, sizeof (lhs_acc));
+      memset (&rhs_acc, 0, sizeof (rhs_acc));
+
+      lhs_acc.ssa_var = ssa_var;
+      lhs_acc.t_code = ERROR_MARK;
+      ssa_accessed_in_tree (lhs, &lhs_acc);
+      rhs_acc.ssa_var = ssa_var;
+      rhs_acc.t_code = ERROR_MARK;
+      ssa_accessed_in_call_rhs (use_stmt, &rhs_acc);
+
+      /* The SSA must be either in the left side or in the right side,
+	 to understand what is happening.
+	 In case the SSA_NAME is found in both sides we should be escaping
+	 at this level because in this case we cannot calculate the
+	 address correctly.  */
+      if ((lhs_acc.var_found && rhs_acc.var_found
+	   && lhs_acc.t_code == INDIRECT_REF)
+	  || (!rhs_acc.var_found && !lhs_acc.var_found))
+	{
+	  mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
+	  return current_indirect_level;
+	}
+      gcc_assert (!rhs_acc.var_found || !lhs_acc.var_found);
+
+      /* If we are storing to the matrix at some level, then mark it as
+	 escaping at that level.  */
+      if (lhs_acc.var_found)
+	{
+	  int l = current_indirect_level + 1;
+
+	  gcc_assert (lhs_acc.t_code == INDIRECT_REF);
+	  mark_min_matrix_escape_level (mi, l, use_stmt);
+	  return current_indirect_level;
+	}
+    }
+
+  if (fndecl)
+    {
+      if (DECL_FUNCTION_CODE (fndecl) != BUILT_IN_FREE)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Matrix %s: Function call %s, level %d escapes.\n",
-		     get_name (mi->decl), get_name (get_callee_fndecl (call)),
+		     get_name (mi->decl), get_name (fndecl),
 		     current_indirect_level);
 	  mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
 	}
@@ -1060,6 +1117,7 @@ analyze_accesses_for_call_expr (struct matrix_info *mi, tree use_stmt,
 	  mi->free_stmts[l].func = current_function_decl;
 	}
     }
+  return current_indirect_level;
 }
 
 /* USE_STMT represents a phi node of the ssa var that we want to 
@@ -1073,7 +1131,7 @@ analyze_accesses_for_call_expr (struct matrix_info *mi, tree use_stmt,
    CURRENT_INDIRECT_LEVEL is the indirection level we reached so far.  */
 
 static void
-analyze_accesses_for_phi_node (struct matrix_info *mi, tree use_stmt,
+analyze_accesses_for_phi_node (struct matrix_info *mi, gimple use_stmt,
 			       int current_indirect_level, sbitmap visited,
 			       bool record_accesses)
 {
@@ -1090,18 +1148,18 @@ analyze_accesses_for_phi_node (struct matrix_info *mi, tree use_stmt,
 	{
 	  int level = MIN (maphi->indirection_level,
 			   current_indirect_level);
-	  int j;
-	  tree t = NULL_TREE;
+	  size_t j;
+	  gimple stmt = NULL;
 
 	  maphi->indirection_level = level;
-	  for (j = 0; j < PHI_NUM_ARGS (use_stmt); j++)
+	  for (j = 0; j < gimple_phi_num_args (use_stmt); j++)
 	    {
 	      tree def = PHI_ARG_DEF (use_stmt, j);
 
-	      if (TREE_CODE (SSA_NAME_DEF_STMT (def)) != PHI_NODE)
-		t = SSA_NAME_DEF_STMT (def);
+	      if (gimple_code (SSA_NAME_DEF_STMT (def)) != GIMPLE_PHI)
+		stmt = SSA_NAME_DEF_STMT (def);
 	    }
-	  mark_min_matrix_escape_level (mi, level, t);
+	  mark_min_matrix_escape_level (mi, level, stmt);
 	}
       return;
     }
@@ -1126,20 +1184,17 @@ analyze_accesses_for_phi_node (struct matrix_info *mi, tree use_stmt,
     }
 }
 
-/* USE_STMT represents a modify statement (the rhs or lhs include 
+/* USE_STMT represents an assign statement (the rhs or lhs include 
    the ssa var that we want to check  because it came from some use of matrix 
-   MI.
-   CURRENT_INDIRECT_LEVEL is the indirection level we reached so far.  */
+   MI.  CURRENT_INDIRECT_LEVEL is the indirection level we reached so far.  */
 
 static int
-analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
-				  tree use_stmt, int current_indirect_level,
+analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
+				  gimple use_stmt, int current_indirect_level,
 				  bool last_op, sbitmap visited,
 				  bool record_accesses)
 {
-
-  tree lhs = TREE_OPERAND (use_stmt, 0);
-  tree rhs = TREE_OPERAND (use_stmt, 1);
+  tree lhs = gimple_get_lhs (use_stmt);
   struct ssa_acc_in_tree lhs_acc, rhs_acc;
 
   memset (&lhs_acc, 0, sizeof (lhs_acc));
@@ -1150,7 +1205,7 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
   ssa_accessed_in_tree (lhs, &lhs_acc);
   rhs_acc.ssa_var = ssa_var;
   rhs_acc.t_code = ERROR_MARK;
-  ssa_accessed_in_tree (get_inner_of_cast_expr (rhs), &rhs_acc);
+  ssa_accessed_in_assign_rhs (use_stmt, &rhs_acc);
 
   /* The SSA must be either in the left side or in the right side,
      to understand what is happening.
@@ -1170,17 +1225,18 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
      escaping at that level.  */
   if (lhs_acc.var_found)
     {
-      tree def;
       int l = current_indirect_level + 1;
 
       gcc_assert (lhs_acc.t_code == INDIRECT_REF);
-      def = get_inner_of_cast_expr (rhs);
-      if (TREE_CODE (def) != SSA_NAME)
+
+      if (!(gimple_assign_copy_p (use_stmt)
+	    || gimple_assign_cast_p (use_stmt))
+	  || (TREE_CODE (gimple_assign_rhs1 (use_stmt)) != SSA_NAME))
 	mark_min_matrix_escape_level (mi, l, use_stmt);
       else
 	{
-	  def = SSA_NAME_DEF_STMT (def);
-	  analyze_matrix_allocation_site (mi, def, l, visited);
+	  gimple def_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (use_stmt));
+	  analyze_matrix_allocation_site (mi, def_stmt, l, visited);
 	  if (record_accesses)
 	    record_access_alloc_site_info (mi, use_stmt, NULL_TREE,
 					   NULL_TREE, l, true);
@@ -1192,17 +1248,6 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
      is used.  */
   if (rhs_acc.var_found)
     {
-      /* If we are passing the ssa name to a function call and
-         the pointer escapes when passed to the function 
-         (not the case of free), then we mark the matrix as 
-         escaping at this level.  */
-      if (rhs_acc.t_code == CALL_EXPR)
-	{
-	  analyze_accesses_for_call_expr (mi, use_stmt,
-					  current_indirect_level);
-
-	  return current_indirect_level;
-	}
       if (rhs_acc.t_code != INDIRECT_REF
 	  && rhs_acc.t_code != POINTER_PLUS_EXPR && rhs_acc.t_code != SSA_NAME)
 	{
@@ -1235,8 +1280,8 @@ analyze_accesses_for_modify_stmt (struct matrix_info *mi, tree ssa_var,
 	      tree index;
 	      tree op1, op2;
 
-	      op1 = TREE_OPERAND (rhs, 0);
-	      op2 = TREE_OPERAND (rhs, 1);
+	      op1 = gimple_assign_rhs1 (use_stmt);
+	      op2 = gimple_assign_rhs2 (use_stmt);
 
 	      op2 = (op1 == ssa_var) ? op2 : op1;
 	      if (TREE_CODE (op2) == INTEGER_CST)
@@ -1331,8 +1376,8 @@ analyze_matrix_accesses (struct matrix_info *mi, tree ssa_var,
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ssa_var)
   {
-    tree use_stmt = USE_STMT (use_p);
-    if (TREE_CODE (use_stmt) == PHI_NODE)
+    gimple use_stmt = USE_STMT (use_p);
+    if (gimple_code (use_stmt) == GIMPLE_PHI)
       /* We check all the escaping levels that get to the PHI node
          and make sure they are all the same escaping;
          if not (which is rare) we let the escaping level be the
@@ -1342,16 +1387,22 @@ analyze_matrix_accesses (struct matrix_info *mi, tree ssa_var,
       analyze_accesses_for_phi_node (mi, use_stmt, current_indirect_level,
 				     visited, record_accesses);
 
-    else if (TREE_CODE (use_stmt) == CALL_EXPR)
-      analyze_accesses_for_call_expr (mi, use_stmt, current_indirect_level);
-    else if (TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT)
+    else if (is_gimple_call (use_stmt))
+      analyze_accesses_for_call_stmt (mi, ssa_var, use_stmt,
+				      current_indirect_level);
+    else if (is_gimple_assign (use_stmt))
       current_indirect_level =
-	analyze_accesses_for_modify_stmt (mi, ssa_var, use_stmt,
+	analyze_accesses_for_assign_stmt (mi, ssa_var, use_stmt,
 					  current_indirect_level, last_op,
 					  visited, record_accesses);
   }
 }
 
+typedef struct 
+{
+  tree fn;
+  gimple stmt;
+} check_var_data;
 
 /* A walk_tree function to go over the VAR_DECL, PARM_DECL nodes of
    the malloc size expression and check that those aren't changed
@@ -1361,26 +1412,103 @@ check_var_notmodified_p (tree * tp, int *walk_subtrees, void *data)
 {
   basic_block bb;
   tree t = *tp;
-  tree fn = (tree) data;
-  block_stmt_iterator bsi;
-  tree stmt;
+  check_var_data *callback_data = (check_var_data*) data;
+  tree fn = callback_data->fn;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
 
   if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
     return NULL_TREE;
 
   FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (fn))
   {
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	stmt = bsi_stmt (bsi);
-	if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+	stmt = gsi_stmt (gsi);
+	if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
 	  continue;
-	if (TREE_OPERAND (stmt, 0) == t)
-	  return stmt;
+	if (gimple_get_lhs (stmt) == t)
+	  {
+	    callback_data->stmt = stmt;
+	    return t;
+	  }
       }
   }
   *walk_subtrees = 1;
   return NULL_TREE;
+}
+
+/* Go backwards in the use-def chains and find out the expression
+   represented by the possible SSA name in STMT, until it is composed
+   of only VAR_DECL, PARM_DECL and INT_CST.  In case of phi nodes
+   we make sure that all the arguments represent the same subexpression,
+   otherwise we fail.  */
+
+static tree
+can_calculate_stmt_before_stmt (gimple stmt, sbitmap visited)
+{
+  tree op1, op2, res;
+  enum tree_code code;
+
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      code = gimple_assign_rhs_code (stmt);
+      op1 = gimple_assign_rhs1 (stmt);
+	
+      switch (code)
+	{
+	case POINTER_PLUS_EXPR:
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	case MULT_EXPR:
+
+	  op2 = gimple_assign_rhs2 (stmt);
+	  op1 = can_calculate_expr_before_stmt (op1, visited);
+	  if (!op1)
+	    return NULL_TREE;
+	  op2 = can_calculate_expr_before_stmt (op2, visited);
+	  if (op2)
+	    return fold_build2 (code, gimple_expr_type (stmt), op1, op2);
+	  return NULL_TREE;
+
+	CASE_CONVERT:
+	  res = can_calculate_expr_before_stmt (op1, visited);
+	  if (res != NULL_TREE)
+	    return build1 (code, gimple_expr_type (stmt), res);
+	  else
+	    return NULL_TREE;
+
+	default:
+	  if (gimple_assign_single_p (stmt))
+	    return can_calculate_expr_before_stmt (op1, visited);
+	  else
+	    return NULL_TREE;
+	}
+
+    case GIMPLE_PHI:
+      {
+	size_t j;
+
+	res = NULL_TREE;
+	/* Make sure all the arguments represent the same value.  */
+	for (j = 0; j < gimple_phi_num_args (stmt); j++)
+	  {
+	    tree new_res;
+	    tree def = PHI_ARG_DEF (stmt, j);
+
+	    new_res = can_calculate_expr_before_stmt (def, visited);
+	    if (res == NULL_TREE)
+	      res = new_res;
+	    else if (!new_res || !expressions_equal_p (res, new_res))
+	      return NULL_TREE;
+	  }
+	return res;
+      }
+
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Go backwards in the use-def chains and find out the expression
@@ -1391,7 +1519,8 @@ check_var_notmodified_p (tree * tp, int *walk_subtrees, void *data)
 static tree
 can_calculate_expr_before_stmt (tree expr, sbitmap visited)
 {
-  tree def_stmt, op1, op2, res;
+  gimple def_stmt;
+  tree res;
 
   switch (TREE_CODE (expr))
     {
@@ -1402,55 +1531,13 @@ can_calculate_expr_before_stmt (tree expr, sbitmap visited)
 
       SET_BIT (visited, SSA_NAME_VERSION (expr));
       def_stmt = SSA_NAME_DEF_STMT (expr);
-      res = can_calculate_expr_before_stmt (def_stmt, visited);
+      res = can_calculate_stmt_before_stmt (def_stmt, visited);
       RESET_BIT (visited, SSA_NAME_VERSION (expr));
       return res;
     case VAR_DECL:
     case PARM_DECL:
     case INTEGER_CST:
       return expr;
-    case POINTER_PLUS_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case MULT_EXPR:
-      op1 = TREE_OPERAND (expr, 0);
-      op2 = TREE_OPERAND (expr, 1);
-
-      op1 = can_calculate_expr_before_stmt (op1, visited);
-      if (!op1)
-	return NULL_TREE;
-      op2 = can_calculate_expr_before_stmt (op2, visited);
-      if (op2)
-	return fold_build2 (TREE_CODE (expr), TREE_TYPE (expr), op1, op2);
-      return NULL_TREE;
-    case GIMPLE_MODIFY_STMT:
-      return can_calculate_expr_before_stmt (TREE_OPERAND (expr, 1),
-					     visited);
-    case PHI_NODE:
-      {
-	int j;
-
-	res = NULL_TREE;
-	/* Make sure all the arguments represent the same value.  */
-	for (j = 0; j < PHI_NUM_ARGS (expr); j++)
-	  {
-	    tree new_res;
-	    tree def = PHI_ARG_DEF (expr, j);
-
-	    new_res = can_calculate_expr_before_stmt (def, visited);
-	    if (res == NULL_TREE)
-	      res = new_res;
-	    else if (!new_res || !expressions_equal_p (res, new_res))
-	      return NULL_TREE;
-	  }
-	return res;
-      }
-    CASE_CONVERT:
-      res = can_calculate_expr_before_stmt (TREE_OPERAND (expr, 0), visited);
-      if (res != NULL_TREE)
-	return build1 (TREE_CODE (expr), TREE_TYPE (expr), res);
-      else
-	return NULL_TREE;
 
     default:
       return NULL_TREE;
@@ -1483,7 +1570,7 @@ static int
 check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   int level;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   basic_block bb_level_0;
   struct matrix_info *mi = (struct matrix_info *) *slot;
   sbitmap visited;
@@ -1504,16 +1591,17 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
     if (!mi->malloc_for_level[level])
       break;
 
-  mark_min_matrix_escape_level (mi, level, NULL_TREE);
+  mark_min_matrix_escape_level (mi, level, NULL);
 
-  bsi = bsi_for_stmt (mi->malloc_for_level[0]);
-  bb_level_0 = bsi.bb;
+  gsi = gsi_for_stmt (mi->malloc_for_level[0]);
+  bb_level_0 = gsi.bb;
 
   /* Check if the expression of the size passed to malloc could be
      pre-calculated before the malloc of level 0.  */
   for (level = 1; level < mi->min_indirect_level_escape; level++)
     {
-      tree call_stmt, size;
+      gimple call_stmt;
+      tree size;
       struct malloc_call_data mcd;
 
       call_stmt = mi->malloc_for_level[level];
@@ -1574,8 +1662,8 @@ find_sites_in_func (bool record)
 {
   sbitmap visited_stmts_1;
 
-  block_stmt_iterator bsi;
-  tree stmt;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
   basic_block bb;
   struct matrix_info tmpmi, *mi;
 
@@ -1583,13 +1671,16 @@ find_sites_in_func (bool record)
 
   FOR_EACH_BB (bb)
   {
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
-	stmt = bsi_stmt (bsi);
-	if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	    && TREE_CODE (TREE_OPERAND (stmt, 0)) == VAR_DECL)
+	tree lhs;
+
+	stmt = gsi_stmt (gsi);
+	lhs = gimple_get_lhs (stmt);
+	if (lhs != NULL_TREE
+	    && TREE_CODE (lhs) == VAR_DECL)
 	  {
-	    tmpmi.decl = TREE_OPERAND (stmt, 0);
+	    tmpmi.decl = lhs;
 	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
 							&tmpmi)))
 	      {
@@ -1597,17 +1688,17 @@ find_sites_in_func (bool record)
 		analyze_matrix_allocation_site (mi, stmt, 0, visited_stmts_1);
 	      }
 	  }
-	if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	    && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
-	    && TREE_CODE (TREE_OPERAND (stmt, 1)) == VAR_DECL)
+	if (is_gimple_assign (stmt)
+	    && gimple_assign_single_p (stmt)
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && TREE_CODE (gimple_assign_rhs1 (stmt)) == VAR_DECL)
 	  {
-	    tmpmi.decl = TREE_OPERAND (stmt, 1);
+	    tmpmi.decl = gimple_assign_rhs1 (stmt);
 	    if ((mi = (struct matrix_info *) htab_find (matrices_to_reorg,
 							&tmpmi)))
 	      {
 		sbitmap_zero (visited_stmts_1);
-		analyze_matrix_accesses (mi,
-					 TREE_OPERAND (stmt, 0), 0,
+		analyze_matrix_accesses (mi, lhs, 0,
 					 false, visited_stmts_1, record);
 	      }
 	  }
@@ -1639,10 +1730,11 @@ record_all_accesses_in_func (void)
       tree rhs, lhs;
 
       if (!ssa_var
-	  || TREE_CODE (SSA_NAME_DEF_STMT (ssa_var)) != GIMPLE_MODIFY_STMT)
+	  || !is_gimple_assign (SSA_NAME_DEF_STMT (ssa_var))
+	  || !gimple_assign_single_p (SSA_NAME_DEF_STMT (ssa_var)))
 	continue;
-      rhs = TREE_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 1);
-      lhs = TREE_OPERAND (SSA_NAME_DEF_STMT (ssa_var), 0);
+      rhs = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (ssa_var));
+      lhs = gimple_assign_lhs (SSA_NAME_DEF_STMT (ssa_var));
       if (TREE_CODE (rhs) != VAR_DECL && TREE_CODE (lhs) != VAR_DECL)
 	continue;
 
@@ -1718,10 +1810,11 @@ compute_offset (HOST_WIDE_INT orig, HOST_WIDE_INT new, tree result)
 static int
 transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 {
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   struct matrix_info *mi = (struct matrix_info *) *slot;
   int min_escape_l = mi->min_indirect_level_escape;
   struct access_site_info *acc_info;
+  enum tree_code code;
   int i;
 
   if (min_escape_l < 2 || !mi->access_l)
@@ -1729,8 +1822,6 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 0; VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
        i++)
     {
-      tree orig, type;
-
       /* This is possible because we collect the access sites before
          we determine the final minimum indirection level.  */
       if (acc_info->level >= min_escape_l)
@@ -1744,69 +1835,61 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	    {
 	      ssa_op_iter iter;
 	      tree def;
-	      tree stmt = acc_info->stmt;
+	      gimple stmt = acc_info->stmt;
+	      tree lhs;
 
 	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
 		mark_sym_for_renaming (SSA_NAME_VAR (def));
-	      bsi = bsi_for_stmt (stmt);
-	      gcc_assert (TREE_CODE (acc_info->stmt) == GIMPLE_MODIFY_STMT);
-	      if (TREE_CODE (TREE_OPERAND (acc_info->stmt, 0)) ==
-		  SSA_NAME && acc_info->level < min_escape_l - 1)
+	      gsi = gsi_for_stmt (stmt);
+	      gcc_assert (is_gimple_assign (acc_info->stmt));
+	      lhs = gimple_assign_lhs (acc_info->stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME
+		  && acc_info->level < min_escape_l - 1)
 		{
 		  imm_use_iterator imm_iter;
 		  use_operand_p use_p;
-		  tree use_stmt;
+		  gimple use_stmt;
 
-		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-					 TREE_OPERAND (acc_info->stmt,
-							      0))
+		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, lhs)
 		    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 		  {
-		    tree conv, tmp, stmts;
+		    tree rhs, tmp;
+		    gimple new_stmt;
 
+		    gcc_assert (gimple_assign_rhs_code (acc_info->stmt)
+				== INDIRECT_REF);
 		    /* Emit convert statement to convert to type of use.  */
-		    conv =
-		      fold_build1 (CONVERT_EXPR,
-				   TREE_TYPE (TREE_OPERAND
-					      (acc_info->stmt, 0)),
-				   TREE_OPERAND (TREE_OPERAND
-						 (acc_info->stmt, 1), 0));
-		    tmp =
-		      create_tmp_var (TREE_TYPE
-				      (TREE_OPERAND
-				       (acc_info->stmt, 0)), "new");
+		    tmp = create_tmp_var (TREE_TYPE (lhs), "new");
 		    add_referenced_var (tmp);
-		    stmts =
-		      fold_build2 (GIMPLE_MODIFY_STMT,
-				   TREE_TYPE (TREE_OPERAND
-					      (acc_info->stmt, 0)), tmp,
-				   conv);
-		    tmp = make_ssa_name (tmp, stmts);
-		    TREE_OPERAND (stmts, 0) = tmp;
-		    bsi = bsi_for_stmt (acc_info->stmt);
-		    bsi_insert_after (&bsi, stmts, BSI_SAME_STMT);
+		    rhs = gimple_assign_rhs1 (acc_info->stmt);
+		    new_stmt = gimple_build_assign (tmp,
+						    TREE_OPERAND (rhs, 0));
+		    tmp = make_ssa_name (tmp, new_stmt);
+		    gimple_assign_set_lhs (new_stmt, tmp);
+		    gsi = gsi_for_stmt (acc_info->stmt);
+		    gsi_insert_after (&gsi, new_stmt, GSI_SAME_STMT);
 		    SET_USE (use_p, tmp);
 		  }
 		}
 	      if (acc_info->level < min_escape_l - 1)
-		bsi_remove (&bsi, true);
+		gsi_remove (&gsi, true);
 	    }
 	  free (acc_info);
 	  continue;
 	}
-      orig = TREE_OPERAND (acc_info->stmt, 1);
-      type = TREE_TYPE (orig);
-      if (TREE_CODE (orig) == INDIRECT_REF
+      code = gimple_assign_rhs_code (acc_info->stmt);
+      if (code == INDIRECT_REF
 	  && acc_info->level < min_escape_l - 1)
 	{
 	  /* Replace the INDIRECT_REF with NOP (cast) usually we are casting
 	     from "pointer to type" to "type".  */
-	  orig =
-	    build1 (NOP_EXPR, TREE_TYPE (orig),
-		    TREE_OPERAND (orig, 0));
-	  TREE_OPERAND (acc_info->stmt, 1) = orig;
+	  tree t =
+	    build1 (NOP_EXPR, TREE_TYPE (gimple_assign_rhs1 (acc_info->stmt)),
+		    TREE_OPERAND (gimple_assign_rhs1 (acc_info->stmt), 0));
+	  gimple_assign_set_rhs_code (acc_info->stmt, NOP_EXPR);
+	  gimple_assign_set_rhs1 (acc_info->stmt, t);
 	}
-      else if (TREE_CODE (orig) == POINTER_PLUS_EXPR
+      else if (code == POINTER_PLUS_EXPR
 	       && acc_info->level < (min_escape_l))
 	{
 	  imm_use_iterator imm_iter;
@@ -1840,10 +1923,10 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		  total_elements = new_offset;
 		  if (new_offset != offset)
 		    {
-		      bsi = bsi_for_stmt (acc_info->stmt);
-		      tmp1 = force_gimple_operand_bsi (&bsi, total_elements,
+		      gsi = gsi_for_stmt (acc_info->stmt);
+		      tmp1 = force_gimple_operand_gsi (&gsi, total_elements,
 						       true, NULL,
-						       true, BSI_SAME_STMT);
+						       true, GSI_SAME_STMT);
 		    }
 		  else
 		    tmp1 = offset;
@@ -1856,16 +1939,16 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		fold_build2 (MULT_EXPR, sizetype, fold_convert (sizetype, acc_info->index),
 			    fold_convert (sizetype, d_size));
 	      add_referenced_var (d_size);
-	      bsi = bsi_for_stmt (acc_info->stmt);
-	      tmp1 = force_gimple_operand_bsi (&bsi, num_elements, true,
-					       NULL, true, BSI_SAME_STMT);
+	      gsi = gsi_for_stmt (acc_info->stmt);
+	      tmp1 = force_gimple_operand_gsi (&gsi, num_elements, true,
+					       NULL, true, GSI_SAME_STMT);
 	    }
 	  /* Replace the offset if needed.  */
 	  if (tmp1 != offset)
 	    {
 	      if (TREE_CODE (offset) == SSA_NAME)
 		{
-		  tree use_stmt;
+		  gimple use_stmt;
 
 		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, offset)
 		    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
@@ -1875,7 +1958,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	      else
 		{
 		  gcc_assert (TREE_CODE (offset) == INTEGER_CST);
-		  TREE_OPERAND (orig, 1) = tmp1;
+		  gimple_assign_set_rhs2 (acc_info->stmt, tmp1);
 		}
 	    }
 	}
@@ -1934,10 +2017,11 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   int i;
   struct matrix_info *mi;
-  tree type, call_stmt_0, malloc_stmt, oldfn, prev_dim_size, use_stmt;
+  tree type, oldfn, prev_dim_size;
+  gimple call_stmt_0, use_stmt;
   struct cgraph_node *c_node;
   struct cgraph_edge *e;
-  block_stmt_iterator bsi;
+  gimple_stmt_iterator gsi;
   struct malloc_call_data mcd;
   HOST_WIDE_INT element_size;
 
@@ -2020,17 +2104,20 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 1; i < mi->min_indirect_level_escape; i++)
     {
       tree t;
+      check_var_data data;
 
       /* mi->dimension_size must contain the expression of the size calculated
          in check_allocation_function.  */
       gcc_assert (mi->dimension_size[i]);
 
+      data.fn = mi->allocation_function_decl;
+      data.stmt = NULL;
       t = walk_tree_without_duplicates (&(mi->dimension_size[i]),
 					check_var_notmodified_p,
-					mi->allocation_function_decl);
+					&data);
       if (t != NULL_TREE)
 	{
-	  mark_min_matrix_escape_level (mi, i, t);
+	  mark_min_matrix_escape_level (mi, i, data.stmt);
 	  break;
 	}
     }
@@ -2040,7 +2127,7 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 
   /* Since we should make sure that the size expression is available
      before the call to malloc of level 0.  */
-  bsi = bsi_for_stmt (call_stmt_0);
+  gsi = gsi_for_stmt (call_stmt_0);
 
   /* Find out the size of each dimension by looking at the malloc
      sites and create a global variable to hold it.
@@ -2059,7 +2146,8 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 
   for (i = mi->min_indirect_level_escape - 1; i >= 0; i--)
     {
-      tree dim_size, dim_var, tmp;
+      tree dim_size, dim_var;
+      gimple stmt;
       tree d_type_size;
 
       /* Now put the size expression in a global variable and initialize it to
@@ -2090,24 +2178,22 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 
 	  dim_size = fold_build2 (MULT_EXPR, type, dim_size, prev_dim_size);
 	}
-      dim_size = force_gimple_operand_bsi (&bsi, dim_size, true, NULL,
-					   true, BSI_SAME_STMT);
+      dim_size = force_gimple_operand_gsi (&gsi, dim_size, true, NULL,
+					   true, GSI_SAME_STMT);
       /* GLOBAL_HOLDING_THE_SIZE = DIM_SIZE.  */
-      tmp = fold_build2 (GIMPLE_MODIFY_STMT, type, dim_var, dim_size);
-      TREE_OPERAND (tmp, 0) = dim_var;
-      mark_symbols_for_renaming (tmp);
-      bsi_insert_before (&bsi, tmp, BSI_SAME_STMT);
+      stmt = gimple_build_assign (dim_var, dim_size);
+      mark_symbols_for_renaming (stmt);
+      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 
       prev_dim_size = mi->dimension_size[i] = dim_var;
     }
   update_ssa (TODO_update_ssa);
   /* Replace the malloc size argument in the malloc of level 0 to be
      the size of all the dimensions.  */
-  malloc_stmt = TREE_OPERAND (call_stmt_0, 1);
   c_node = cgraph_node (mi->allocation_function_decl);
-  old_size_0 = CALL_EXPR_ARG (malloc_stmt, 0);
-  tmp = force_gimple_operand_bsi (&bsi, mi->dimension_size[0], true,
-				  NULL, true, BSI_SAME_STMT);
+  old_size_0 = gimple_call_arg (call_stmt_0, 0);
+  tmp = force_gimple_operand_gsi (&gsi, mi->dimension_size[0], true,
+				  NULL, true, GSI_SAME_STMT);
   if (TREE_CODE (old_size_0) == SSA_NAME)
     {
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, old_size_0)
@@ -2122,33 +2208,31 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
      check this outside of "cgraph.c".  */
   for (i = 1; i < mi->min_indirect_level_escape; i++)
     {
-      block_stmt_iterator bsi;
-      tree use_stmt1 = NULL;
-      tree call;
+      gimple_stmt_iterator gsi;
+      gimple use_stmt1 = NULL;
 
-      tree call_stmt = mi->malloc_for_level[i];
-      call = TREE_OPERAND (call_stmt, 1);
-      gcc_assert (TREE_CODE (call) == CALL_EXPR);
+      gimple call_stmt = mi->malloc_for_level[i];
+      gcc_assert (is_gimple_call (call_stmt));
       e = cgraph_edge (c_node, call_stmt);
       gcc_assert (e);
       cgraph_remove_edge (e);
-      bsi = bsi_for_stmt (call_stmt);
+      gsi = gsi_for_stmt (call_stmt);
       /* Remove the call stmt.  */
-      bsi_remove (&bsi, true);
+      gsi_remove (&gsi, true);
       /* remove the type cast stmt.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     TREE_OPERAND (call_stmt, 0))
+			     gimple_call_lhs (call_stmt))
       {
 	use_stmt1 = use_stmt;
-	bsi = bsi_for_stmt (use_stmt);
-	bsi_remove (&bsi, true);
+	gsi = gsi_for_stmt (use_stmt);
+	gsi_remove (&gsi, true);
       }
       /* Remove the assignment of the allocated area.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     TREE_OPERAND (use_stmt1, 0))
+			     gimple_get_lhs (use_stmt1))
       {
-	bsi = bsi_for_stmt (use_stmt);
-	bsi_remove (&bsi, true);
+	gsi = gsi_for_stmt (use_stmt);
+	gsi_remove (&gsi, true);
       }
     }
   update_ssa (TODO_update_ssa);
@@ -2158,24 +2242,21 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   /* Delete the calls to free.  */
   for (i = 1; i < mi->min_indirect_level_escape; i++)
     {
-      block_stmt_iterator bsi;
-      tree call;
+      gimple_stmt_iterator gsi;
 
       /* ??? wonder why this case is possible but we failed on it once.  */
       if (!mi->free_stmts[i].stmt)
 	continue;
 
-      call = TREE_OPERAND (mi->free_stmts[i].stmt, 1);
       c_node = cgraph_node (mi->free_stmts[i].func);
-
-      gcc_assert (TREE_CODE (mi->free_stmts[i].stmt) == CALL_EXPR);
+      gcc_assert (is_gimple_call (mi->free_stmts[i].stmt));
       e = cgraph_edge (c_node, mi->free_stmts[i].stmt);
       gcc_assert (e);
       cgraph_remove_edge (e);
       current_function_decl = mi->free_stmts[i].func;
       set_cfun (DECL_STRUCT_FUNCTION (mi->free_stmts[i].func));
-      bsi = bsi_for_stmt (mi->free_stmts[i].stmt);
-      bsi_remove (&bsi, true);
+      gsi = gsi_for_stmt (mi->free_stmts[i].stmt);
+      gsi_remove (&gsi, true);
     }
   /* Return to the previous situation.  */
   current_function_decl = oldfn;
@@ -2203,13 +2284,11 @@ dump_matrix_reorg_analysis (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-#endif
 /* Perform matrix flattening.  */
 
 static unsigned int
 matrix_reorg (void)
 {
-#if 0 /* FIXME tuples */
   struct cgraph_node *node;
 
   if (profile_info)
@@ -2316,9 +2395,6 @@ matrix_reorg (void)
   set_cfun (NULL);
   matrices_to_reorg = NULL;
   return 0;
-#else
-  gcc_unreachable ();
-#endif
 }
 
 
@@ -2326,12 +2402,7 @@ matrix_reorg (void)
 static bool
 gate_matrix_reorg (void)
 {
-  /* FIXME tuples */
-#if 0
   return flag_ipa_matrix_reorg && flag_whole_program;
-#else
-  return false;
-#endif
 }
 
 struct simple_ipa_opt_pass pass_ipa_matrix_reorg = 
