@@ -1,3 +1,9 @@
+2008-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (expand_binop, expand_builtin_pow, expand_builtin_powi,
+	expand_builtin_strcat): Upse optimize_insn_for_speed predicate.
+	* expmed.c (expand_smod_pow2): Likewise.
+
 2008-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36992
