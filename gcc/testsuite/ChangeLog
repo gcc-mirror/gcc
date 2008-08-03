@@ -1,3 +1,7 @@
+2008-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/fmt_t_7.f: Replace CR-LF with LF.
+
 2008-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36992

@@ -1,6 +1,6 @@
 ! { dg-do run { target fd_truncate } }
 ! PR34974 null bytes when reverse-tabbing long records
-! Test case prpared by Jerry DeLisle <jvdelisle@gcc.gnu.org>
+! Test case prepared by Jerry DeLisle <jvdelisle@gcc.gnu.org>
        program test
        character(1) :: a, b, c
        write (10,'(t50000,a,t1,a)') 'b', 'a'
