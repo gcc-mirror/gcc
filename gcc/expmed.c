@@ -3487,7 +3487,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 
   /* Avoid conditional branches when they're expensive.  */
   if (BRANCH_COST >= 2
-      && !optimize_size)
+      && optimize_insn_for_speed_p ())
     {
       rtx signmask = emit_store_flag (result, LT, op0, const0_rtx,
 				      mode, 0, -1);

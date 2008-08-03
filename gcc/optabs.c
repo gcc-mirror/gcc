@@ -1786,7 +1786,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   if ((binoptab == lshr_optab || binoptab == ashl_optab
        || binoptab == ashr_optab)
       && mclass == MODE_INT
-      && (GET_CODE (op1) == CONST_INT || !optimize_size)
+      && (GET_CODE (op1) == CONST_INT || optimize_insn_for_speed_p ())
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && optab_handler (binoptab, word_mode)->insn_code != CODE_FOR_nothing
       && optab_handler (ashl_optab, word_mode)->insn_code != CODE_FOR_nothing

@@ -2911,7 +2911,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
   if (real_identical (&c, &cint)
       && ((n >= -1 && n <= 2)
 	  || (flag_unsafe_math_optimizations
-	      && !optimize_size
+	      && optimize_insn_for_speed_p ()
 	      && powi_cost (n) <= POWI_MAX_MULTS)))
     {
       op = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
@@ -2935,7 +2935,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
       real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
       if (real_identical (&c2, &cint)
 	  && ((flag_unsafe_math_optimizations
-	       && !optimize_size
+	       && optimize_insn_for_speed_p ()
 	       && powi_cost (n/2) <= POWI_MAX_MULTS)
 	      || n == 1))
 	{
@@ -2980,7 +2980,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
       real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
       real_convert (&c2, mode, &c2);
       if (real_identical (&c2, &c)
-	  && ((!optimize_size
+	  && ((optimize_insn_for_speed_p ()
 	       && powi_cost (n/3) <= POWI_MAX_MULTS)
 	      || n == 1))
 	{
@@ -3042,7 +3042,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
       if ((TREE_INT_CST_HIGH (arg1) == 0
 	   || TREE_INT_CST_HIGH (arg1) == -1)
 	  && ((n >= -1 && n <= 2)
-	      || (! optimize_size
+	      || (optimize_insn_for_speed_p ()
 		  && powi_cost (n) <= POWI_MAX_MULTS)))
 	{
 	  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
@@ -4464,7 +4464,7 @@ expand_builtin_strcat (tree fndecl, tree exp, rtx target, enum machine_mode mode
       if (p && *p == '\0')
 	return expand_expr (dst, target, mode, EXPAND_NORMAL);
 
-      if (!optimize_size)
+      if (optimize_insn_for_speed_p ())
 	{
 	  /* See if we can store by pieces into (dst + strlen(dst)).  */
 	  tree newsrc, newdst,
