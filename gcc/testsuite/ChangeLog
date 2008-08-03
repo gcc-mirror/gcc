@@ -1,3 +1,9 @@
+2008-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36992
+	* gcc.target/i386/pr36992-1.c: New test.
+	* gcc.target/i386/pr36992-2.c: Ditto.
+
 2008-08-02  Richard Guenther  <rguenther@suse.de>
 
 	PR target/35252
@@ -458,16 +464,16 @@
 
 2008-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        PR c++/36871
+	PR c++/36871
 	PR c++/36872
-        * g++.dg/ext/has_nothrow_copy.C: Rename to...
-        * g++.dg/ext/has_nothrow_copy-1.C: ... this.
-        * g++.dg/ext/has_nothrow_copy-2.C: New.
-        * g++.dg/ext/has_nothrow_copy-3.C: Likewise.
-        * g++.dg/ext/has_nothrow_copy-4.C: Likewise.
-        * g++.dg/ext/has_nothrow_copy-5.C: Likewise.
-        * g++.dg/ext/has_nothrow_copy-6.C: Likewise.
-        * g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy.C: Rename to...
+	* g++.dg/ext/has_nothrow_copy-1.C: ... this.
+	* g++.dg/ext/has_nothrow_copy-2.C: New.
+	* g++.dg/ext/has_nothrow_copy-3.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-7.C: Likewise.
 
 2008-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
