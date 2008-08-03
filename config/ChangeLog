@@ -1,3 +1,7 @@
+2008-08-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* mt-spu (all-ld): Update for ld Makefile changes.
+
 2008-08-02  Keith Seitz  <keiths@redhat.com>
 
 	* tcl.m4 (SC_PATH_TCLCONFIG): Add some simple logic to deal

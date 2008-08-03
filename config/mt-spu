@@ -1,4 +1,2 @@
-# spu ld makefile invokes as-new in maintainer mode.
-all-ld: $(MAINT) all-gas
-# spu ld makefile invokes bin2c
-all-ld: all-binutils
+# spu ld makefile invokes as-new and bin2c in maintainer mode.
+all-ld: $(MAINT) all-gas all-binutils
