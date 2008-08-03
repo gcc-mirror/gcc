@@ -65,9 +65,9 @@
 
 (define_insn "*mov<mode>_internal_rex64"
   [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
-				"=rm,r,!?y,!?y ,m  ,!y,*Y2,x,x ,m,r,x")
+				"=rm,r,!?y,!?y ,m  ,!y,*Y2,x,x ,m,r,Yi")
 	(match_operand:MMXMODEI8 1 "vector_move_operand"
-				"Cr ,m,C  ,!?ym,!?y,*Y2,!y,C,xm,x,x,r"))]
+				"Cr ,m,C  ,!?ym,!?y,*Y2,!y,C,xm,x,Yi,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -124,9 +124,9 @@
 
 (define_insn "*movv2sf_internal_rex64"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-				"=rm,r ,!?y,!?y ,m ,!y,*Y2,x,x,x,m,r,x")
+				"=rm,r ,!?y,!?y ,m ,!y,*Y2,x,x,x,m,r,Yi")
         (match_operand:V2SF 1 "vector_move_operand"
-				"Cr ,m ,C  ,!?ym,!y,*Y2,!y,C,x,m,x,x,r"))]
+				"Cr ,m ,C  ,!?ym,!y,*Y2,!y,C,x,m,x,Yi,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
