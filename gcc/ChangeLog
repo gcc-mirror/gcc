@@ -1,3 +1,9 @@
+2008-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use Yi instead of x
+	to avoid inter-unit moves for !TARGET_INTER_UNIT_MOVES.
+	(*movv2sf_internal_rex64): Ditto.
+
 2008-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (expand_binop, expand_builtin_pow, expand_builtin_powi,
