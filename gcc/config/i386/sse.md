@@ -4777,7 +4777,7 @@
   "")
 
 (define_insn "*sse2_storeq_rex64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=mx,r,r")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=mx,*r,r")
 	(vec_select:DI
 	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yi,o")
 	  (parallel [(const_int 0)])))]
@@ -4940,10 +4940,10 @@
    (set_attr "mode" "TI,V4SF,V2SF")])
 
 (define_insn "vec_concatv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y2,?Y2,Y2,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,?Y2,Y2,x,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" "  m,*y ,0 ,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  "  C,  C,Y2,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " mY2,*y ,0 ,0,0,m")
+	  (match_operand:DI 2 "vector_move_operand"  " C  ,  C,Y2,x,m,0")))]
   "!TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
@@ -4956,10 +4956,10 @@
    (set_attr "mode" "TI,TI,TI,V4SF,V2SF,V2SF")])
 
 (define_insn "*vec_concatv2di_rex64_sse4_1"
-  [(set (match_operand:V2DI 0 "register_operand"     "=x,x,Yi,!x,x,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=x ,x ,Yi,!x,x,x,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " 0,m,r ,*y,0,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  "rm,C,C ,C ,x,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " 0 ,mx,r ,*y,0,0,0,m")
+	  (match_operand:DI 2 "vector_move_operand"  " rm,C ,C ,C ,x,x,m,0")))]
   "TARGET_64BIT && TARGET_SSE4_1"
   "@
    pinsrq\t{$0x1, %2, %0|%0, %2, 0x1}
@@ -4975,10 +4975,10 @@
    (set_attr "mode" "TI,TI,TI,TI,TI,V4SF,V2SF,V2SF")])
 
 (define_insn "*vec_concatv2di_rex64_sse"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y2,Yi,!Y2,Y2,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,Yi,!Y2,Y2,x,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" "  m,r ,*y ,0 ,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  "  C,C ,C  ,Y2,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " mY2,r ,*y ,0 ,0,0,m")
+	  (match_operand:DI 2 "vector_move_operand"  " C  ,C ,C  ,Y2,x,m,0")))]
   "TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
