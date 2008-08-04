@@ -1,3 +1,20 @@
+2008-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_type.adb, sem_ch4.adb, sprint.adb, exp_ch3.adb: Minor reformatting
+
+2008-08-04  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* g-soccon-mingw.ads: Fix value for MSG_WAITALL
+
+2008-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Add missing support for
+	 N_Private_Extension_Declaration nodes.
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting
+
 2008-08-04  Pascal Obry  <obry@adacore.com>
 
 	* adaint.h: Add missing prototype.

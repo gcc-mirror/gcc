@@ -2636,7 +2636,7 @@ package body Exp_Ch4 is
                New_Reference_To (Ind_Typ, Loc),
                New_Reference_To (Defining_Identifier (I_Decl), Loc)));
 
-      --  For other index types, computation is safe.
+      --  For other index types, computation is safe
 
       else
          H_Init := Ind_Val (Make_Op_Add (Loc, H_Init, L_Pos));
@@ -2667,7 +2667,7 @@ package body Exp_Ch4 is
 
       Declare_Decls := New_List (P_Decl, H_Decl, R_Decl);
 
-      --  Add constraint check for the modular index case.
+      --  Add constraint check for the modular index case
 
       if Is_Modular_Integer_Type (Ind_Typ)
         and then Esize (Ind_Typ) < Esize (Standard_Integer)
