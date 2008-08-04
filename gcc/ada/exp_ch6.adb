@@ -2286,7 +2286,7 @@ package body Exp_Ch6 is
 
                   --  For other cases we simply pass the level of the actual's
                   --  access type. The type is retrieved from Prev rather than
-                  --  Prev_Orig, because in some cases Prev_Orig denotes a
+                  --  Prev_Orig, because in some cases Prev_Orig denotes an
                   --  original expression that has not been analyzed.
 
                   when others =>
