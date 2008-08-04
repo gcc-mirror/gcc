@@ -8353,7 +8353,7 @@ package body Exp_Ch4 is
          --  chain. The Final_Chain that is thus created is shared by the
          --  access parameter. The access type is tested against the result
          --  type of the function to exclude allocators whose type is an
-         --  anonymous access result type.  We freeze the type at once to
+         --  anonymous access result type. We freeze the type at once to
          --  ensure that it is properly decorated for the back-end, even
          --  if the context and current scope is a loop.
 
