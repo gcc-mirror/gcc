@@ -1,5 +1,9 @@
 2008-08-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36963
+	* typeck2.c (check_narrowing): Allow narrowing conversion
+	from an explicit floating-point constant.
+
 	PR c++/37006
 	* pt.c (tsubst_decl): Leave DECL_INITIAL set on deleted
 	instantiations.
