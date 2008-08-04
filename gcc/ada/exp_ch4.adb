@@ -977,8 +977,7 @@ package body Exp_Ch4 is
          --  not allow sliding, but this check does (a relaxation from Ada 83).
 
          if Is_Constrained (DesigT)
-           and then not Subtypes_Statically_Match
-                          (T, DesigT)
+           and then not Subtypes_Statically_Match (T, DesigT)
          then
             Apply_Constraint_Check
               (Exp, DesigT, No_Sliding => False);
@@ -8354,7 +8353,9 @@ package body Exp_Ch4 is
          --  chain. The Final_Chain that is thus created is shared by the
          --  access parameter. The access type is tested against the result
          --  type of the function to exclude allocators whose type is an
-         --  anonymous access result type.
+         --  anonymous access result type.  We freeze the type at once to
+         --  ensure that it is properly decorated for the back-end, even
+         --  if the context and current scope is a loop.
 
          if Nkind (Associated_Node_For_Itype (PtrT))
               in N_Subprogram_Specification
@@ -8371,6 +8372,7 @@ package body Exp_Ch4 is
                      Subtype_Indication =>
                        New_Occurrence_Of (T, Loc))));
 
+            Freeze_Before (N, Owner);
             Build_Final_List (N, Owner);
             Set_Associated_Final_Chain (PtrT, Associated_Final_Chain (Owner));
 
