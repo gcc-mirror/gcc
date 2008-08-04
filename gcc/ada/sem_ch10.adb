@@ -2663,7 +2663,7 @@ package body Sem_Ch10 is
       --  Build name to be used in implicit with_clause. In most cases this
       --  is the source name, but if renamings are present we must make the
       --  original unit visible, not the one it renames. The entity in the
-      --  use clause is the renamed unit, but the identifier is the one from
+      --  with clause is the renamed unit, but the identifier is the one from
       --  the source, which allows us to recover the unit renaming.
 
       ---------------------
