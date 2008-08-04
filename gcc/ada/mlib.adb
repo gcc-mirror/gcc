@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,18 +310,9 @@ package body MLib is
       pragma Unreferenced (Success, Result);
 
    begin
-      if Is_Absolute_Path (Lib_Version) then
-         Version_Path := new String (1 .. Lib_Version'Length + 1);
-         Version_Path (1 .. Lib_Version'Length) := Lib_Version;
-
-      else
-         Version_Path :=
-           new String (1 .. Lib_Dir'Length + 1 + Lib_Version'Length + 1);
-         Version_Path (1 .. Version_Path'Last - 1) :=
-           Lib_Dir & Directory_Separator & Lib_Version;
-      end if;
-
-      Version_Path (Version_Path'Last) := ASCII.NUL;
+      Version_Path := new String (1 .. Lib_Version'Length + 1);
+      Version_Path (1 .. Lib_Version'Length) := Lib_Version;
+      Version_Path (Version_Path'Last)       := ASCII.NUL;
 
       if Maj_Version'Length = 0 then
          declare
@@ -339,6 +330,7 @@ package body MLib is
             Maj_Path : constant String :=
                          Lib_Dir & Directory_Separator & Maj_Version;
             Newpath2 : String (1 .. Maj_Path'Length + 1);
+            Maj_Ver  : String (1 .. Maj_Version'Length + 1);
 
          begin
             Newpath1 (1 .. Lib_Path'Length) := Lib_Path;
@@ -347,13 +339,16 @@ package body MLib is
             Newpath2 (1 .. Maj_Path'Length) := Maj_Path;
             Newpath2 (Newpath2'Last)        := ASCII.NUL;
 
+            Maj_Ver (1 .. Maj_Version'Length) := Maj_Version;
+            Maj_Ver (Maj_Ver'Last)            := ASCII.NUL;
+
             Delete_File (Maj_Path, Success);
 
             Result := Symlink (Version_Path (1)'Address, Newpath2'Address);
 
             Delete_File (Lib_Path, Success);
 
-            Result := Symlink (Newpath2'Address, Newpath1'Address);
+            Result := Symlink (Maj_Ver'Address, Newpath1'Address);
          end;
       end if;
    end Create_Sym_Links;
