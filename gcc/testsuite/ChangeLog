@@ -1,6 +1,7 @@
 2008-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/bip_aggregate_bug.adb: New test.
+	* gnat.dg/test_ai254.adb: New test.
 
 2008-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
