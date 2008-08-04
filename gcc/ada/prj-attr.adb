@@ -201,6 +201,7 @@ package body Prj.Attr is
    "Pbuilder#" &
    "Ladefault_switches#" &
    "Lcswitches#" &
+   "Lcglobal_compilation_switches#" &
    "Scexecutable#" &
    "SVexecutable_suffix#" &
    "SVglobal_configuration_pragmas#" &

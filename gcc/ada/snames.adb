@@ -727,6 +727,7 @@ package body Snames is
      "extends#" &
      "externally_built#" &
      "finder#" &
+     "global_compilation_switches#" &
      "global_configuration_pragmas#" &
      "global_config_file#" &
      "gnatls#" &
