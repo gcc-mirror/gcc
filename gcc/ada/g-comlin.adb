@@ -32,7 +32,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with GNAT.OS_Lib;      use GNAT.OS_Lib;
+with Ada.Strings.Unbounded;
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body GNAT.Command_Line is
 
@@ -101,8 +102,6 @@ package body GNAT.Command_Line is
    procedure Unchecked_Free is new Ada.Unchecked_Deallocation
      (Command_Line_Configuration_Record, Command_Line_Configuration);
 
-   type Boolean_Chars is array (Character) of Boolean;
-
    procedure Remove (Line : in out Argument_List_Access; Index : Integer);
    --  Remove a specific element from Line
 
@@ -110,9 +109,6 @@ package body GNAT.Command_Line is
      (Line : in out Argument_List_Access;
       Str  : String_Access);
    --  Append a new element to Line
-
-   function Args_From_Expanded (Args : Boolean_Chars) return String;
-   --  Return the string made of all characters with True in Args
 
    generic
       with procedure Callback (Simple_Switch : String);
@@ -1050,25 +1046,6 @@ package body GNAT.Command_Line is
       end if;
    end Free;
 
-   ------------------------
-   -- Args_From_Expanded --
-   ------------------------
-
-   function Args_From_Expanded (Args : Boolean_Chars) return String is
-      Result : String (1 .. Args'Length);
-      Index  : Natural := Result'First;
-
-   begin
-      for A in Args'Range loop
-         if Args (A) then
-            Result (Index) := A;
-            Index := Index + 1;
-         end if;
-      end loop;
-
-      return Result (1 .. Index - 1);
-   end Args_From_Expanded;
-
    ------------------
    -- Define_Alias --
    ------------------
@@ -1470,12 +1447,9 @@ package body GNAT.Command_Line is
       Result : Argument_List_Access;
       Params : Argument_List_Access)
    is
-      type Boolean_Array is array (Result'Range) of Boolean;
-
-      Matched   : Boolean_Array;
-      Count     : Natural;
+      Group     : Ada.Strings.Unbounded.Unbounded_String;
       First     : Natural;
-      From_Args : Boolean_Chars;
+      use type Ada.Strings.Unbounded.Unbounded_String;
 
    begin
       if Cmd.Config = null
@@ -1485,8 +1459,8 @@ package body GNAT.Command_Line is
       end if;
 
       for P in Cmd.Config.Prefixes'Range loop
-         Matched := (others => False);
-         Count   := 0;
+         Group   := Ada.Strings.Unbounded.Null_Unbounded_String;
+         First   := 0;
 
          for C in Result'Range loop
             if Result (C) /= null
@@ -1494,32 +1468,22 @@ package body GNAT.Command_Line is
               and then Looking_At
                 (Result (C).all, Result (C)'First, Cmd.Config.Prefixes (P).all)
             then
-               Matched (C) := True;
-               Count := Count + 1;
+               Group :=  Group &
+                 Result (C)
+                   (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
+                      Result (C)'Last);
+               if First = 0 then
+                  First := C;
+               end if;
+
+               Free (Result (C));
             end if;
          end loop;
 
-         if Count > 1 then
-            From_Args := (others => False);
-            First   := 0;
-
-            for M in Matched'Range loop
-               if Matched (M) then
-                  if First = 0 then
-                     First := M;
-                  end if;
-
-                  for A in Result (M)'First + Cmd.Config.Prefixes (P)'Length
-                    .. Result (M)'Last
-                  loop
-                     From_Args (Result (M)(A)) := True;
-                  end loop;
-                  Free (Result (M));
-               end if;
-            end loop;
-
+         if First > 0 then
             Result (First) := new String'
-              (Cmd.Config.Prefixes (P).all & Args_From_Expanded (From_Args));
+              (Cmd.Config.Prefixes (P).all &
+               Ada.Strings.Unbounded.To_String (Group));
          end if;
       end loop;
    end Group_Switches;
