@@ -1,3 +1,44 @@
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Add comments
+
+	* sem_ch4.adb (Analyze_Allocator): If the designated type is a non-null
+	access type and the allocator is not initialized, warn rather than
+	reporting an error.
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting
+
+	* exp_dist.adb: Minor reformatting
+
+	* g-comlin.adb: Minor reformatting
+
+2008-08-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Perform a conversion of the
+	target to the type of the aggregate in the case where the target object
+	is class-wide.
+
+	* exp_ch5.adb (Expand_Simple_Function_Return): When the function's
+	result type is class-wide and inherently limited, and the expression
+	has a specific type, create a return object of the specific type, for
+	more efficient handling of returns of build-in-place aggregates (avoids
+	conversions of the class-wide return object to the specific type on
+	component assignments).
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Suppress the error
+	about a type mismatch for a class-wide function with a return object
+	having a specific type when the object declaration doesn't come from
+	source. Such an object can result from the expansion of a simple return.
+
+2008-08-04  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* g-soccon-mingw-64.ads, system-mingw-x86_64.ads: New files.
+
+	* gcc-interface/Makefile.in: Use 64bit-specific system files when
+	compiling for 64bit windows.
+
 2008-08-04  Jerome Lambourg  <lambourg@adacore.com>
 
 	* g-comlin.adb (Group_Switches): Preserve the switch order when
