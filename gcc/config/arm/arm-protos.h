@@ -208,4 +208,6 @@ extern void arm_lang_object_attributes_init(void);
 
 extern const char *arm_mangle_type (const_tree);
 
+extern void arm_order_regs_for_local_alloc (void);
+
 #endif /* ! GCC_ARM_PROTOS_H */

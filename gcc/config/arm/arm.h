@@ -1080,6 +1080,9 @@ extern int arm_structure_size_boundary;
    127						\
 }
 
+/* Use different register alloc ordering for Thumb.  */
+#define ORDER_REGS_FOR_LOCAL_ALLOC arm_order_regs_for_local_alloc ()
+
 /* Interrupt functions can only use registers that have already been
    saved by the prologue, even if they would normally be
    call-clobbered.  */
