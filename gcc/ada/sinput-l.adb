@@ -28,6 +28,8 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Fname;    use Fname;
+with Hostparm;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -38,6 +40,8 @@ with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with System;   use System;
+
+with System.OS_Lib; use System.OS_Lib;
 
 with Unchecked_Conversion;
 
@@ -319,7 +323,7 @@ package body Sinput.L is
       --  source will be the last created, and we will be able to replace it
       --  and modify Hi without stepping on another buffer.
 
-      if T = Osint.Source then
+      if T = Osint.Source and then not Is_Internal_File_Name (N) then
          Prepare_To_Preprocess
            (Source => N, Preprocessing_Needed => Preprocessing_Needed);
       end if;
@@ -475,6 +479,8 @@ package body Sinput.L is
                --  Saved state of the Style_Check flag (which needs to be
                --  temporarily set to False during preprocessing, see below).
 
+               Modified : Boolean;
+
             begin
                --  If this is the first time we preprocess a source, allocate
                --  the preprocessing buffer.
@@ -512,7 +518,7 @@ package body Sinput.L is
                Save_Style_Check := Opt.Style_Check;
                Opt.Style_Check := False;
 
-               Preprocess;
+               Preprocess (Modified);
 
                --  Reset the scanner to its standard behavior, and restore the
                --  Style_Checks flag.
@@ -531,6 +537,54 @@ package body Sinput.L is
                   return No_Source_File;
 
                else
+                  --  Output the result of the preprocessing, if requested and
+                  --  the source has been modified by the preprocessing.
+
+                  if Generate_Processed_File and then Modified then
+                     declare
+                        FD     : File_Descriptor;
+                        NB     : Integer;
+                        Status : Boolean;
+
+                     begin
+                        Get_Name_String (N);
+
+                        if Hostparm.OpenVMS then
+                           Add_Str_To_Name_Buffer ("_prep");
+                        else
+                           Add_Str_To_Name_Buffer (".prep");
+                        end if;
+
+                        Delete_File (Name_Buffer (1 .. Name_Len), Status);
+
+                        FD :=
+                          Create_New_File (Name_Buffer (1 .. Name_Len), Text);
+
+                        Status := FD /= Invalid_FD;
+
+                        if Status then
+                           NB :=
+                             Write
+                               (FD,
+                                Prep_Buffer (1)'Address,
+                                Integer (Prep_Buffer_Last));
+                           Status := NB = Integer (Prep_Buffer_Last);
+                        end if;
+
+                        if Status then
+                           Close (FD, Status);
+                        end if;
+
+                        if not Status then
+                           Errout.Error_Msg
+                             ("could not write processed file """ &
+                              Name_Buffer (1 .. Name_Len) & '"',
+                              Lo);
+                           return No_Source_File;
+                        end if;
+                     end;
+                  end if;
+
                   --  Set the new value of Hi
 
                   Hi := Lo + Source_Ptr (Prep_Buffer_Last);
