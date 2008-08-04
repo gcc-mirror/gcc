@@ -1,3 +1,9 @@
+2008-08-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37006
+	* pt.c (tsubst_decl): Leave DECL_INITIAL set on deleted
+	instantiations.
+
 2008-08-04  Simon Baldwin  <simonb@google.com>
 
 	PR c++/36999
