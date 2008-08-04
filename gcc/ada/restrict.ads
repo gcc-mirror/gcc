@@ -50,6 +50,12 @@ package Restrict is
    --  pragma, and a value of System_Location is used for restrictions
    --  set from package Standard by the processing in Targparm.
 
+   Restriction_Profile_Name : array (All_Restrictions) of Profile_Name;
+   --  Entries in this array are valid only if the corresponding restriction
+   --  in Restrictions set. The value is the corresponding profile name if the
+   --  restriction was set by a Profile or Profile_Warnings pragma. The value
+   --  is No_Profile in all other cases.
+
    Main_Restrictions : Restrictions_Info := No_Restrictions;
    --  This variable records only restrictions found in any units of the
    --  main extended unit. These are the variables used for ali file output,
@@ -154,6 +160,10 @@ package Restrict is
 
       Warn : Boolean;
       --  True if from Restriction_Warnings, False if from Restrictions
+
+      Profile : Profile_Name;
+      --  Set to name of profile from which No_Dependence entry came, or to
+      --  No_Profile if a pragma Restriction set the No_Dependence entry.
    end record;
 
    package No_Dependence is new Table.Table (
@@ -190,14 +200,13 @@ package Restrict is
       V : Uint := Uint_Minus_1);
    --  Checks that the given restriction is not set, and if it is set, an
    --  appropriate message is posted on the given node. Also records the
-   --  violation in the appropriate internal arrays. Note that it is
-   --  mandatory to always use this routine to check if a restriction
-   --  is violated. Such checks must never be done directly by the caller,
-   --  since otherwise violations in the absence of restrictions are not
-   --  properly recorded. The value of V is relevant only for parameter
-   --  restrictions, and in this case indicates the exact count for the
-   --  violation. If the exact count is not known, V is left at its
-   --  default value of -1 which indicates an unknown count.
+   --  violation in the appropriate internal arrays. Note that it is mandatory
+   --  to always use this routine to check if a restriction is violated. Such
+   --  checks must never be done directly by the caller, since otherwise
+   --  violations in the absence of restrictions are not properly recorded. The
+   --  value of V is relevant only for parameter restrictions, and in this case
+   --  indicates the exact count for the violation. If the exact count is not
+   --  known, V is left at its default of -1 which indicates an unknown count.
 
    procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id);
    --  Called when a dependence on a unit is created (either implicitly, or by
@@ -302,18 +311,19 @@ package Restrict is
    --  parameter restriction, and the corresponding value V is given.
 
    procedure Set_Restriction_No_Dependence
-     (Unit : Node_Id;
-      Warn : Boolean);
+     (Unit    : Node_Id;
+      Warn    : Boolean;
+      Profile : Profile_Name := No_Profile);
    --  Sets given No_Dependence restriction in table if not there already.
    --  Warn is True if from Restriction_Warnings, or for Restrictions if flag
    --  Treat_Restrictions_As_Warnings is set. False if from Restrictions and
-   --  this flag is not set.
+   --  this flag is not set. Profile is set to a non-default value if the
+   --  No_Dependence restriction comes from a Profile pragma.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);
-   --  Tests to see if tasking operations are allowed by the current
-   --  restrictions settings. For tasking to be allowed Max_Tasks must
-   --  be non-zero.
+   --  Tests if tasking operations are allowed by the current restrictions
+   --  settings. For tasking to be allowed Max_Tasks must be non-zero.
 
 private
    type Save_Cunit_Boolean_Restrictions is
