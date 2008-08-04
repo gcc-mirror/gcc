@@ -1,3 +1,40 @@
+2008-08-04  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/utils2.c:
+	(fill_vms_descriptor): Raise CE if attempt made to pass 64bit pointer
+	in 32bit descriptor.
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch10.adb: Minor reformatting
+
+	* i-cobol.adb: Minor reformatting.
+
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): Create an itype reference for an
+	anonymous access return type of a regular function that is not a
+	compilation unit.
+
+2008-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New Builder attribute Global_Compilation_Switches
+	
+	* snames.adb: New standard name Global_Compilation_Switches
+	
+	* snames.ads: New standard name Global_Compilation_Switches
+
+	* make.adb: Correct spelling error in comment
+
+2008-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Check_Form_Of_Interface_Name): Fix handling for CLI
+	target.
+
+2008-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch10.adb: Minor comment fix.
+
 2008-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* restrict.adb: Improved messages for restriction warnings
