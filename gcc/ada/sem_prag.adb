@@ -3935,18 +3935,15 @@ package body Sem_Prag is
 
                if not In_Character_Range (C)
 
-                  --  Dubious if comma
+                  --  For all cases except external names on CLI target,
+                  --  commas, spaces and slashes are dubious (in CLI, we use
+                  --  spaces and commas in external names to specify assembly
+                  --  version and public key).
 
-                  or else Get_Character (C) = ','
-
-                  --  For all cases except link names on a CLI target, spaces
-                  --  and slashes are also dubious (in CLI for link names, we
-                  --  use spaces and possibly slashes for special purposes).
-
-                  --  Where is this usage documented ???
-
-                  or else ((Ext_Name_Case or else VM_Target /= CLI_Target)
+                  or else ((not Ext_Name_Case or else VM_Target /= CLI_Target)
                              and then (Get_Character (C) = ' '
+                                         or else
+                                       Get_Character (C) = ','
                                          or else
                                        Get_Character (C) = '/'
                                          or else
