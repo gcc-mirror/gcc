@@ -50,9 +50,9 @@ package System.Rident is
    --  The following enumeration type defines the set of restriction
    --  identifiers that are implemented in GNAT.
 
-   --  To add a new restriction identifier, add an entry with the name
-   --  to be used in the pragma, and add appropriate calls to the
-   --  Restrict.Check_Restriction routine.
+   --  To add a new restriction identifier, add an entry with the name to be
+   --  used in the pragma, and add calls to the Restrict.Check_Restriction
+   --  routine as appropriate.
 
    type Restriction_Id is
 
@@ -199,7 +199,7 @@ package System.Rident is
    subtype All_Parameter_Restrictions is
      Restriction_Id range
        Max_Protected_Entries .. Max_Storage_At_Blocking;
-   --  All restrictions that are take a parameter
+   --  All restrictions that take a parameter
 
    subtype Checked_Parameter_Restrictions is
      All_Parameter_Restrictions range
@@ -225,8 +225,8 @@ package System.Rident is
    subtype Checked_Val_Parameter_Restrictions is
      Checked_Parameter_Restrictions range
        Max_Protected_Entries .. Max_Tasks;
-   --  Restrictions with parameter where the count is known at least in
-   --  some cases by the compiler/binder.
+   --  Restrictions with parameter where the count is known at least in some
+   --  cases by the compiler/binder.
 
    subtype Checked_Zero_Parameter_Restrictions is
      Checked_Parameter_Restrictions range
@@ -307,24 +307,29 @@ package System.Rident is
    -- Profile Definitions and Data --
    ----------------------------------
 
-   type Profile_Name is (Ravenscar, Restricted);
-   --  Names of recognized profiles
+   type Profile_Name is (No_Profile, Ravenscar, Restricted);
+   --  Names of recognized profiles. No_Profile is used to indicate that a
+   --  restriction came from pragma Restrictions[_Warning], as opposed to
+   --  pragma Profile[_Warning].
+
+   subtype Profile_Name_Actual is Profile_Name range Ravenscar .. Restricted;
+   --  Actual used profile names
 
    type Profile_Data is record
       Set : Restriction_Flags;
-      --  Set to True if given restriction must be set for the profile,
-      --  and False if it need not be set (False does not mean that it
-      --  must not be set, just that it need not be set). If the flag
-      --  is True for a parameter restriction, then the Value array
-      --  gives the maximum value permitted by the profile.
+      --  Set to True if given restriction must be set for the profile, and
+      --  False if it need not be set (False does not mean that it must not be
+      --  set, just that it need not be set). If the flag is True for a
+      --  parameter restriction, then the Value array gives the maximum value
+      --  permitted by the profile.
 
       Value : Restriction_Values;
-      --  An entry in this array is meaningful only if the corresponding
-      --  flag in Set is True. In that case, the value in this array is
-      --  the maximum value of the parameter permitted by the profile.
+      --  An entry in this array is meaningful only if the corresponding flag
+      --  in Set is True. In that case, the value in this array is the maximum
+      --  value of the parameter permitted by the profile.
    end record;
 
-   Profile_Info : array (Profile_Name) of Profile_Data :=
+   Profile_Info : array (Profile_Name_Actual) of Profile_Data :=
 
                      --  Restricted Profile
 

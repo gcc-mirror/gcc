@@ -52,22 +52,20 @@ package body Restrict is
    -- Local Subprograms --
    -----------------------
 
-   procedure Restriction_Msg (Msg : String; R : String; N : Node_Id);
-   --  Output error message at node N with given text, replacing the
-   --  '%' in the message with the name of the restriction given as R,
-   --  cased according to the current identifier casing. We do not use
-   --  the normal insertion mechanism, since this requires an entry
-   --  in the Names table, and this table will be locked if we are
-   --  generating a message from gigi.
+   procedure Restriction_Msg (R : Restriction_Id; N : Node_Id);
+   --  Called if a violation of restriction R at node N is found. This routine
+   --  outputs the appropriate message or messages taking care of warning vs
+   --  real violation, serious vs non-serious, implicit vs explicit, the second
+   --  message giving the profile name if needed, and the location information.
 
    function Same_Unit (U1, U2 : Node_Id) return Boolean;
    --  Returns True iff U1 and U2 represent the same library unit. Used for
    --  handling of No_Dependence => Unit restriction case.
 
    function Suppress_Restriction_Message (N : Node_Id) return Boolean;
-   --  N is the node for a possible restriction violation message, but
-   --  the message is to be suppressed if this is an internal file and
-   --  this file is not the main unit.
+   --  N is the node for a possible restriction violation message, but the
+   --  message is to be suppressed if this is an internal file and this file is
+   --  not the main unit. Returns True if message is to be suppressed.
 
    -------------------
    -- Abort_Allowed --
@@ -148,7 +146,7 @@ package body Restrict is
             if Name_Len < 5
               or else (Name_Buffer (Name_Len - 3 .. Name_Len) /= ".ads"
                          and then
-                       Name_Buffer (Name_Len - 4 .. Name_Len) /= ".adb")
+                       Name_Buffer (Name_Len - 3 .. Name_Len) /= ".adb")
             then
                return;
             end if;
@@ -194,8 +192,6 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
-      Rimage : constant String := Restriction_Id'Image (R);
-
       VV : Integer;
       --  V converted to integer form. If V is greater than Integer'Last,
       --  it is reset to minus 1 (unknown value).
@@ -311,35 +307,7 @@ package body Restrict is
                    and then Restrictions.Value (R) = 0)
         or else Restrictions.Count (R) > Restrictions.Value (R)
       then
-         Error_Msg_Sloc := Restrictions_Loc (R);
-
-         --  If we have a location for the Restrictions pragma, output it
-
-         if Error_Msg_Sloc > No_Location
-           or else Error_Msg_Sloc = System_Location
-         then
-            if Restriction_Warnings (R) then
-               Restriction_Msg ("|violation of restriction %#?", Rimage, N);
-            else
-               --  Normally a restriction violation is a non-serious error,
-               --  but we treat violation of No_Finalization as a serious
-               --  error, since we want to turn off expansion in this case,
-               --  expansion just causes too many cascaded errors.
-
-               if R = No_Finalization then
-                  Restriction_Msg ("violation of restriction %#", Rimage, N);
-               else
-                  Restriction_Msg ("|violation of restriction %#", Rimage, N);
-               end if;
-            end if;
-
-         --  Otherwise we have the case of an implicit restriction
-         --  (e.g. a restriction implicitly set by another pragma)
-
-         else
-            Restriction_Msg
-              ("|violation of implicit restriction %", Rimage, N);
-         end if;
+         Restriction_Msg (R, N);
       end if;
    end Check_Restriction;
 
@@ -543,43 +511,147 @@ package body Restrict is
    -- Restriction_Msg --
    ---------------------
 
-   procedure Restriction_Msg (Msg : String; R : String; N : Node_Id) is
-      B : String (1 .. Msg'Length + 2 * R'Length + 1);
-      P : Natural := 1;
+   procedure Restriction_Msg (R : Restriction_Id; N : Node_Id) is
+      Msg : String (1 .. 100);
+      Len : Natural := 0;
+
+      procedure Add_Char (C : Character);
+      --  Append given character to Msg, bumping Len
+
+      procedure Add_Str (S : String);
+      --  Append given string to Msg, bumping Len appropriately
+
+      procedure Id_Case (S : String; Quotes : Boolean := True);
+      --  Given a string S, case it according to current identifier casing,
+      --  and store in Error_Msg_String. Then append `~` to the message buffer
+      --  to output the string unchanged surrounded in quotes. The quotes are
+      --  suppressed if Quotes = False.
+
+      --------------
+      -- Add_Char --
+      --------------
+
+      procedure Add_Char (C : Character) is
+      begin
+         Len := Len + 1;
+         Msg (Len) := C;
+      end Add_Char;
+
+      -------------
+      -- Add_Str --
+      -------------
+
+      procedure Add_Str (S : String) is
+      begin
+         Msg (Len + 1 .. Len + S'Length) := S;
+         Len := Len + S'Length;
+      end Add_Str;
+
+      -------------
+      -- Id_Case --
+      -------------
+
+      procedure Id_Case (S : String; Quotes : Boolean := True) is
+      begin
+         Name_Buffer (1 .. S'Last) := S;
+         Name_Len := S'Length;
+         Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+         Error_Msg_Strlen := Name_Len;
+         Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+
+         if Quotes then
+            Add_Str ("`~`");
+         else
+            Add_Char ('~');
+         end if;
+      end Id_Case;
+
+   --  Start of processing for Restriction_Msg
 
    begin
-      Name_Buffer (1 .. R'Last) := R;
-      Name_Len := R'Length;
-      Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+      --  Set warning message if warning
 
-      P := 0;
-      for J in Msg'Range loop
-         if Msg (J) = '%' then
-            P := P + 1;
-            B (P) := '`';
+      if Restriction_Warnings (R) then
+         Add_Char ('?');
 
-            --  Put characters of image in message, quoting upper case letters
+      --  If real violation (not warning), then mark it as non-serious unless
+      --  it is a violation of No_Finalization in which case we leave it as a
+      --  serious message, since otherwise we get crashes during attempts to
+      --  expand stuff that is not properly formed due to assumptions made
+      --  about no finalization being present.
 
-            for J in 1 .. Name_Len loop
-               if Name_Buffer (J) in 'A' .. 'Z' then
-                  P := P + 1;
-                  B (P) := ''';
-               end if;
+      elsif R /= No_Finalization then
+         Add_Char ('|');
+      end if;
 
-               P := P + 1;
-               B (P) := Name_Buffer (J);
-            end loop;
+      Error_Msg_Sloc := Restrictions_Loc (R);
 
-            P := P + 1;
-            B (P) := '`';
+      --  Set main message, adding implicit if no source location
 
-         else
-            P := P + 1;
-            B (P) := Msg (J);
+      if Error_Msg_Sloc > No_Location
+        or else Error_Msg_Sloc = System_Location
+      then
+         Add_Str ("violation of restriction ");
+      else
+         Add_Str ("violation of implicit restriction ");
+         Error_Msg_Sloc := No_Location;
+      end if;
+
+      --  Case of parametrized restriction
+
+      if R in All_Parameter_Restrictions then
+         Add_Char ('`');
+         Id_Case (Restriction_Id'Image (R), Quotes => False);
+         Add_Str (" = ^`");
+         Error_Msg_Uint_1 := UI_From_Int (Int (Restrictions.Value (R)));
+
+      --  Case of boolean restriction
+
+      else
+         Id_Case (Restriction_Id'Image (R));
+      end if;
+
+      --  Case of no secondary profile continuation message
+
+      if Restriction_Profile_Name (R) = No_Profile then
+         if Error_Msg_Sloc /= No_Location then
+            Add_Char ('#');
          end if;
-      end loop;
 
-      Error_Msg_N (B (1 .. P), N);
+         Add_Char ('!');
+         Error_Msg_N (Msg (1 .. Len), N);
+
+      --  Case of secondary profile continuation message present
+
+      else
+         Add_Char ('!');
+         Error_Msg_N (Msg (1 .. Len), N);
+
+         Len := 0;
+         Add_Char ('\');
+
+         --  Set as warning if warning case
+
+         if Restriction_Warnings (R) then
+            Add_Char ('?');
+         end if;
+
+         --  Set main message
+
+         Add_Str ("from profile ");
+         Id_Case (Profile_Name'Image (Restriction_Profile_Name (R)));
+
+         --  Add location if we have one
+
+         if Error_Msg_Sloc /= No_Location then
+            Add_Char ('#');
+         end if;
+
+         --  Output unconditional message and we are done
+
+         Add_Char ('!');
+         Error_Msg_N (Msg (1 .. Len), N);
+      end if;
    end Restriction_Msg;
 
    ---------------
@@ -634,6 +706,10 @@ package body Restrict is
                   Set_Restriction (J, N, V (J));
                end if;
 
+               --  Record that this came from a Profile[_Warnings] restriction
+
+               Restriction_Profile_Name (J) := P;
+
                --  Set warning flag, except that we do not set the warning
                --  flag if the restriction was already active and this is
                --  the warning case. That avoids a warning overriding a real
@@ -683,12 +759,16 @@ package body Restrict is
          Restricted_Profile_Cached := False;
       end if;
 
-      --  Set location, but preserve location of system
-      --  restriction for nice error msg with run time name
+      --  Set location, but preserve location of system restriction for nice
+      --  error msg with run time name.
 
       if Restrictions_Loc (R) /= System_Location then
          Restrictions_Loc (R) := Sloc (N);
       end if;
+
+      --  Note restriction came from restriction pragma, not profile
+
+      Restriction_Profile_Name (R) := No_Profile;
 
       --  Record the restriction if we are in the main unit, or in the extended
       --  main unit. The reason that we test separately for Main_Unit is that
@@ -731,12 +811,11 @@ package body Restrict is
          Restrictions_Loc (R) := Sloc (N);
       end if;
 
-      --  Record the restriction if we are in the main unit,
-      --  or in the extended main unit. The reason that we
-      --  test separately for Main_Unit is that gnat.adc is
-      --  processed with Current_Sem_Unit = Main_Unit, but
-      --  nodes in gnat.adc do not appear to be the extended
-      --  main source unit (they probably should do ???)
+      --  Record the restriction if we are in the main unit, or in the extended
+      --  main unit. The reason that we test separately for Main_Unit is that
+      --  gnat.adc is processed with Current_Sem_Unit = Main_Unit, but nodes in
+      --  gnat.adc do not appear to be the extended main source unit (they
+      --  probably should do ???)
 
       if Current_Sem_Unit = Main_Unit
         or else In_Extended_Main_Source_Unit (N)
@@ -751,6 +830,10 @@ package body Restrict is
             Main_Restrictions.Value (R) := V;
          end if;
       end if;
+
+      --  Note restriction came from restriction pragma, not profile
+
+      Restriction_Profile_Name (R) := No_Profile;
    end Set_Restriction;
 
    -----------------------------------
@@ -758,8 +841,9 @@ package body Restrict is
    -----------------------------------
 
    procedure Set_Restriction_No_Dependence
-     (Unit : Node_Id;
-      Warn : Boolean)
+     (Unit    : Node_Id;
+      Warn    : Boolean;
+      Profile : Profile_Name := No_Profile)
    is
    begin
       --  Loop to check for duplicate entry
@@ -782,7 +866,7 @@ package body Restrict is
 
       --  Entry is not currently in table
 
-      No_Dependence.Append ((Unit, Warn));
+      No_Dependence.Append ((Unit, Warn, Profile));
    end Set_Restriction_No_Dependence;
 
    ----------------------------------
