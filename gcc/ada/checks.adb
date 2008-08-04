@@ -2871,11 +2871,7 @@ package body Checks is
          --  be applied to a [sub]type that does not exclude null already.
 
          elsif Can_Never_Be_Null (Typ)
-
-            --  No need to check itypes that have a null exclusion because
-            --  they are already examined at their point of creation.
-
-           and then not Is_Itype (Typ)
+           and then Comes_From_Source (Typ)
          then
             Error_Msg_NE
               ("`NOT NULL` not allowed (& already excludes null)",
@@ -5306,10 +5302,20 @@ package body Checks is
       --  If known to be null, here is where we generate a compile time check
 
       if Known_Null (N) then
-         Apply_Compile_Time_Constraint_Error
-           (N,
-            "null value not allowed here?",
-            CE_Access_Check_Failed);
+
+         --  Avoid generating warning message inside init procs
+
+         if not Inside_Init_Proc then
+            Apply_Compile_Time_Constraint_Error
+              (N,
+               "null value not allowed here?",
+               CE_Access_Check_Failed);
+         else
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Reason => CE_Access_Check_Failed));
+         end if;
+
          Mark_Non_Null;
          return;
       end if;

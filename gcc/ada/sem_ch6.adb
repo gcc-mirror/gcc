@@ -1262,7 +1262,20 @@ package body Sem_Ch6 is
 
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
-            Typ := Access_Definition (N, Result_Definition (N));
+
+            --  Ada 2005 (AI-254): Handle anonymous access to subprograms
+
+            declare
+               AD : constant Node_Id :=
+                      Access_To_Subprogram_Definition (Result_Definition (N));
+            begin
+               if Present (AD) and then Protected_Present (AD) then
+                  Typ := Replace_Anonymous_Access_To_Protected_Subprogram (N);
+               else
+                  Typ := Access_Definition (N, Result_Definition (N));
+               end if;
+            end;
+
             Set_Parent (Typ, Result_Definition (N));
             Set_Is_Local_Anonymous_Access (Typ);
             Set_Etype (Designator, Typ);

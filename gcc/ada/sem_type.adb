@@ -766,7 +766,7 @@ package body Sem_Type is
       if T1 = T2 then
          return True;
 
-      elsif  BT1 = BT2
+      elsif BT1 = BT2
         or else BT1 = T2
         or else BT2 = T1
       then
