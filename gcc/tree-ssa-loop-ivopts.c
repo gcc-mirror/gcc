@@ -2275,9 +2275,11 @@ add_iv_value_candidates (struct ivopts_data *data,
   add_candidate (data, build_int_cst (basetype, 0),
 		 iv->step, true, use);
 
-  /* Third, try removing the constant offset.  */
+  /* Third, try removing the constant offset.  Make sure to even
+     add a candidate for &a[0] vs. (T *)&a.  */
   base = strip_offset (iv->base, &offset);
-  if (offset)
+  if (offset
+      || base != iv->base)
     add_candidate (data, base, iv->step, false, use);
 }
 
