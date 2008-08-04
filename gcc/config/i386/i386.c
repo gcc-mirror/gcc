@@ -7287,7 +7287,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   frame->hard_frame_pointer_offset = offset;
 
-  /* Set offset to aligned because the realigned frame tarts from here.  */
+  /* Set offset to aligned because the realigned frame starts from
+     here.  */
   if (stack_realign_fp)
     offset = (offset + stack_alignment_needed -1) & -stack_alignment_needed;
 
