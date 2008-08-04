@@ -7656,14 +7656,13 @@ ix86_expand_prologue (void)
       rtx x, y;
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
       int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
-			      ? 0 : STACK_BOUNDARY / BITS_PER_UNIT);
+			      ? 0 : UNITS_PER_WORD);
 
       gcc_assert (stack_realign_drap);
 
       /* Grab the argument pointer.  */
       x = plus_constant (stack_pointer_rtx, 
-                         (STACK_BOUNDARY / BITS_PER_UNIT 
-			  + param_ptr_offset));
+                         (UNITS_PER_WORD + param_ptr_offset));
       y = crtl->drap_reg;
 
       /* Only need to push parameter pointer reg if it is caller
@@ -7690,8 +7689,7 @@ ix86_expand_prologue (void)
 	 expand_builtin_return_addr etc.  */
       x = crtl->drap_reg;
       x = gen_frame_mem (Pmode,
-                         plus_constant (x,
-					-(STACK_BOUNDARY / BITS_PER_UNIT)));
+                         plus_constant (x, -UNITS_PER_WORD));
       insn = emit_insn (gen_push (x));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -7855,7 +7853,7 @@ ix86_expand_prologue (void)
       /* vDRAP is setup but after reload it turns out stack realign
          isn't necessary, here we will emit prologue to setup DRAP
          without stack realign adjustment */
-      int drap_bp_offset = STACK_BOUNDARY / BITS_PER_UNIT * 2;
+      int drap_bp_offset = UNITS_PER_WORD * 2;
       rtx x = plus_constant (hard_frame_pointer_rtx, drap_bp_offset);
       insn = emit_insn (gen_rtx_SET (VOIDmode, crtl->drap_reg, x));
     }
@@ -8054,11 +8052,11 @@ ix86_expand_epilogue (int style)
   if (crtl->drap_reg && crtl->stack_realign_needed)
     {
       int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
-			      ? 0 : STACK_BOUNDARY / BITS_PER_UNIT);
+			      ? 0 : UNITS_PER_WORD);
       gcc_assert (stack_realign_drap);
       emit_insn ((*ix86_gen_add3) (stack_pointer_rtx,
 				   crtl->drap_reg,
-				   GEN_INT (-(STACK_BOUNDARY / BITS_PER_UNIT
+				   GEN_INT (-(UNITS_PER_WORD
 					      + param_ptr_offset))));
       if (!call_used_regs[REGNO (crtl->drap_reg)])
 	emit_insn ((*ix86_gen_pop1) (crtl->drap_reg));
