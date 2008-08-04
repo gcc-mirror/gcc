@@ -3695,22 +3695,39 @@ package body Exp_Ch5 is
             Return_Object_Entity : constant Entity_Id :=
                                      Make_Defining_Identifier (Loc,
                                        New_Internal_Name ('R'));
-
-            Subtype_Ind : constant Node_Id := New_Occurrence_Of (R_Type, Loc);
-
-            Obj_Decl : constant Node_Id :=
-                         Make_Object_Declaration (Loc,
-                           Defining_Identifier => Return_Object_Entity,
-                           Object_Definition   => Subtype_Ind,
-                           Expression          => Exp);
-
-            Ext : constant Node_Id := Make_Extended_Return_Statement (Loc,
-                    Return_Object_Declarations => New_List (Obj_Decl));
+            Subtype_Ind : Node_Id;
 
          begin
-            Rewrite (N, Ext);
-            Analyze (N);
-            return;
+            --  If the result type of the function is class-wide and the
+            --  expression has a specific type, then we use the expression's
+            --  type as the type of the return object. In cases where the
+            --  expression is an aggregate that is built in place, this avoids
+            --  the need for an expensive conversion of the return object to
+            --  the specific type on assignments to the individual components.
+
+            if Is_Class_Wide_Type (R_Type)
+              and then not Is_Class_Wide_Type (Etype (Exp))
+            then
+               Subtype_Ind := New_Occurrence_Of (Etype (Exp), Loc);
+            else
+               Subtype_Ind := New_Occurrence_Of (R_Type, Loc);
+            end if;
+
+            declare
+               Obj_Decl : constant Node_Id :=
+                            Make_Object_Declaration (Loc,
+                              Defining_Identifier => Return_Object_Entity,
+                              Object_Definition   => Subtype_Ind,
+                              Expression          => Exp);
+
+               Ext : constant Node_Id := Make_Extended_Return_Statement (Loc,
+                       Return_Object_Declarations => New_List (Obj_Decl));
+
+            begin
+               Rewrite (N, Ext);
+               Analyze (N);
+               return;
+            end;
          end;
       end if;
 

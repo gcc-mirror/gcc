@@ -2436,8 +2436,12 @@ package body Exp_Aggr is
       --  to the actual type of the aggregate, so that the proper components
       --  are visible. We know already that the types are compatible.
 
+      --  There should also be a comment here explaining why the conversion
+      --  is needed in the case of interfaces.???
+
       if Present (Etype (Lhs))
-        and then Is_Interface (Etype (Lhs))
+        and then (Is_Interface (Etype (Lhs))
+                   or else Is_Class_Wide_Type (Etype (Lhs)))
       then
          Target := Unchecked_Convert_To (Typ, Lhs);
       else
