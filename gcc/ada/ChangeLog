@@ -1,3 +1,12 @@
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: (Large_Storage_Type): Improve previous change.
+
+2008-08-04  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, s-os_lib.adb, s-os_lib.ads: Use Windows ACL to deal with
+	file attributes.
+
 2008-08-04  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Access_Subprogram_Declaration): Adding missing support

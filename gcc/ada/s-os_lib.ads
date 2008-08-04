@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -472,6 +472,14 @@ package System.OS_Lib is
    --  not actually be readable due to some other process having exclusive
    --  access.
 
+   function Is_Executable_File (Name : String) return Boolean;
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is executable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be readable due to some other process having exclusive
+   --  access.
+
    function Is_Writable_File (Name : String) return Boolean;
    --  Determines if the given string, Name, is the name of an existing file
    --  that is writable. Returns True if so, False otherwise. Note that this
@@ -608,6 +616,7 @@ package System.OS_Lib is
    function Is_Regular_File (Name : C_File_Name) return Boolean;
    function Is_Directory (Name : C_File_Name) return Boolean;
    function Is_Readable_File (Name : C_File_Name) return Boolean;
+   function Is_Executable_File (Name : C_File_Name) return Boolean;
    function Is_Writable_File (Name : C_File_Name) return Boolean;
    function Is_Symbolic_Link (Name : C_File_Name) return Boolean;
 
