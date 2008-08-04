@@ -1865,7 +1865,7 @@ package body Make is
                                  ALI := No_ALI_Id;
 
                                  Verbose_Msg
-                                   (Unit_Name, " sources does not include ",
+                                   (Unit_Name, " sources do not include ",
                                     Name_Id (WR.Sfile));
 
                                  return;
