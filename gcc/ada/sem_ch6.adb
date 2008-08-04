@@ -606,17 +606,22 @@ package body Sem_Ch6 is
          --  definition matches the class-wide type. This prevents rejection
          --  in the case where the object declaration is initialized by a call
          --  to a build-in-place function with a specific result type and the
-         --  object entity had its type changed to that specific type. (Note
-         --  that the ARG believes that return objects should be allowed to
-         --  have a type covered by a class-wide result type in any case, so
-         --  once that relaxation is made (see AI05-32), the above check for
-         --  type compatibility should be changed to test Covers rather than
-         --  equality, and then the following special test will no longer be
-         --  needed. ???)
+         --  object entity had its type changed to that specific type. This is
+         --  also allowed in the case where Obj_Decl does not come from source,
+         --  which can occur for an expansion of a simple return statement of
+         --  a build-in-place class-wide function when the result expression
+         --  has a specific type, because a return object with a specific type
+         --  is created. (Note that the ARG believes that return objects should
+         --  be allowed to have a type covered by a class-wide result type in
+         --  any case, so once that relaxation is made (see AI05-32), the above
+         --  check for type compatibility should be changed to test Covers
+         --  rather than equality, and the following special test will no
+         --  longer be needed. ???)
 
          elsif Is_Class_Wide_Type (R_Type)
            and then
-             R_Type = Etype (Object_Definition (Original_Node (Obj_Decl)))
+             (R_Type = Etype (Object_Definition (Original_Node (Obj_Decl)))
+               or else not Comes_From_Source (Obj_Decl))
          then
             null;
 
