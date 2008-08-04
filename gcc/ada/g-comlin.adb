@@ -33,6 +33,7 @@
 
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Unbounded;
+
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body GNAT.Command_Line is
@@ -1468,10 +1469,12 @@ package body GNAT.Command_Line is
               and then Looking_At
                 (Result (C).all, Result (C)'First, Cmd.Config.Prefixes (P).all)
             then
-               Group :=  Group &
-                 Result (C)
-                   (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
+               Group :=
+                 Group &
+                   Result (C)
+                     (Result (C)'First + Cmd.Config.Prefixes (P)'Length ..
                       Result (C)'Last);
+
                if First = 0 then
                   First := C;
                end if;
@@ -1481,9 +1484,10 @@ package body GNAT.Command_Line is
          end loop;
 
          if First > 0 then
-            Result (First) := new String'
-              (Cmd.Config.Prefixes (P).all &
-               Ada.Strings.Unbounded.To_String (Group));
+            Result (First) :=
+              new String'
+                (Cmd.Config.Prefixes (P).all &
+                 Ada.Strings.Unbounded.To_String (Group));
          end if;
       end loop;
    end Group_Switches;
