@@ -935,13 +935,25 @@ package body Sem_Ch3 is
          Build_Itype_Reference (Anon_Type, Parent (Parent (Related_Nod)));
 
       --  Similarly, if the access definition is the return result of a
-      --  protected function, create an itype reference for it because it
-      --  will be used within the function body.
+      --  function, create an itype reference for it because it
+      --  will be used within the function body. For a regular function that
+      --  is not a compilation unit, insert reference after the declaration.
+      --  For a protected operation, insert it after the enclosing protected
+      --  type declaration. In either case, do not create a reference for a
+      --  type obtained through a limited_with clause, because this would
+      --  introduce semantic dependencies.
 
       elsif Nkind (Related_Nod) = N_Function_Specification
-        and then  Ekind (Current_Scope) = E_Protected_Type
+        and then not From_With_Type (Anon_Type)
       then
-         Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
+         if Ekind (Current_Scope) = E_Protected_Type then
+            Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
+
+         elsif Is_List_Member (Parent (Related_Nod))
+           and then Nkind (Parent (N)) /= N_Parameter_Specification
+         then
+            Build_Itype_Reference (Anon_Type, Parent (Related_Nod));
+         end if;
 
       --  Finally, create an itype reference for an object declaration of
       --  an anonymous access type. This is strictly necessary only for
