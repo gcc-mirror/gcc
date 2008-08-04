@@ -640,9 +640,13 @@ check_narrowing (tree type, tree init)
   tree ftype = TREE_TYPE (init);
   bool ok = true;
   REAL_VALUE_TYPE d;
+  bool was_decl = false;
 
   if (DECL_P (init))
-    init = decl_constant_value (init);
+    {
+      was_decl = true;
+      init = decl_constant_value (init);
+    }
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)
@@ -664,7 +668,12 @@ check_narrowing (tree type, tree init)
 	  if (TREE_CODE (init) == REAL_CST)
 	    {
 	      d = TREE_REAL_CST (init);
-	      if (exact_real_truncate (TYPE_MODE (type), &d))
+	      if (exact_real_truncate (TYPE_MODE (type), &d)
+		  /* FIXME: As a temporary workaround for PR 36963, don't
+		     complain about narrowing from a floating
+		     literal. Hopefully this will be resolved at the
+		     September 2008 C++ meeting. */
+		  || !was_decl)
 		ok = true;
 	    }
 	}
