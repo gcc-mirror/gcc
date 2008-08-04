@@ -187,6 +187,8 @@ struct vstring
 #if defined (_WIN32)
 #include <dir.h>
 #include <windows.h>
+#include <accctrl.h>
+#include <aclapi.h>
 #undef DIR_SEPARATOR
 #define DIR_SEPARATOR '\\'
 #endif
@@ -1512,10 +1514,6 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
 #endif
 }
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 /* Get the list of installed standard libraries from the
    HKEY_LOCAL_MACHINE\SOFTWARE\Ada Core Technologies\GNAT\Standard Libraries
    key.  */
@@ -1685,9 +1683,150 @@ __gnat_is_directory (char *name)
   return (!ret && S_ISDIR (statbuf.st_mode));
 }
 
+#if defined (_WIN32) && !defined (RTX)
+/*  This MingW section contains code to work with ACL. */
+static int
+__gnat_check_OWNER_ACL
+(char *name,
+ DWORD CheckAccessDesired,
+ GENERIC_MAPPING CheckGenericMapping)
+{
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+  DWORD dwAccessDesired, dwAccessAllowed;
+  PRIVILEGE_SET PrivilegeSet;
+  DWORD dwPrivSetSize = sizeof (PRIVILEGE_SET);
+  BOOL fAccessGranted = FALSE;
+  HANDLE hToken;
+  DWORD nLength;
+  SECURITY_DESCRIPTOR* pSD = NULL;
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  GetFileSecurity
+    (wname, OWNER_SECURITY_INFORMATION |
+     GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+     NULL, 0, &nLength);
+
+  if ((pSD = (PSECURITY_DESCRIPTOR) HeapAlloc
+       (GetProcessHeap (), HEAP_ZERO_MEMORY, nLength)) == NULL)
+    return 0;
+
+  /* Obtain the security descriptor. */
+
+  if (!GetFileSecurity
+      (wname, OWNER_SECURITY_INFORMATION |
+       GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+       pSD, nLength, &nLength))
+    return 0;
+
+  if (!ImpersonateSelf (SecurityImpersonation))
+    return 0;
+
+  if (!OpenThreadToken
+      (GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY, FALSE, &hToken))
+    return 0;
+
+  /*  Undoes the effect of ImpersonateSelf. */
+
+  RevertToSelf ();
+
+  /*  We want to test for write permissions. */
+
+  dwAccessDesired = CheckAccessDesired;
+
+  MapGenericMask (&dwAccessDesired, &CheckGenericMapping);
+
+  if (!AccessCheck
+      (pSD ,                 /* security descriptor to check */
+       hToken,               /* impersonation token */
+       dwAccessDesired,      /* requested access rights */
+       &CheckGenericMapping, /* pointer to GENERIC_MAPPING */
+       &PrivilegeSet,        /* receives privileges used in check */
+       &dwPrivSetSize,       /* size of PrivilegeSet buffer */
+       &dwAccessAllowed,     /* receives mask of allowed access rights */
+       &fAccessGranted))
+    return 0;
+
+  return fAccessGranted;
+}
+
+static void
+__gnat_set_OWNER_ACL
+(char *name,
+ DWORD AccessMode,
+ DWORD AccessPermissions)
+{
+  ACL* pOldDACL = NULL;
+  ACL* pNewDACL = NULL;
+  SECURITY_DESCRIPTOR* pSD = NULL;
+  EXPLICIT_ACCESS ea;
+  TCHAR username [100];
+  DWORD unsize = 100;
+
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  HANDLE file = CreateFile
+    (wname, READ_CONTROL | WRITE_DAC, 0, NULL,
+     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+  if (file == INVALID_HANDLE_VALUE)
+    return;
+
+  /*  Get current user, he will act as the owner */
+
+  if (!GetUserName (username, &unsize))
+    return;
+
+  if (GetSecurityInfo
+      (file,
+       SE_FILE_OBJECT,
+       DACL_SECURITY_INFORMATION,
+       NULL, NULL, &pOldDACL, NULL, &pSD) != ERROR_SUCCESS)
+    return;
+
+  ZeroMemory (&ea, sizeof (EXPLICIT_ACCESS));
+
+  ea.grfAccessMode = AccessMode;
+  ea.grfAccessPermissions = AccessPermissions;
+  ea.grfInheritance = CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE;
+  ea.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
+  ea.Trustee.TrusteeType = TRUSTEE_IS_USER;
+  ea.Trustee.ptstrName = username;
+
+  if (AccessMode == SET_ACCESS)
+    {
+      /*  SET_ACCESS, we want to set an explicte set of permissions, do not
+	  merge with current DACL.  */
+      if (SetEntriesInAcl (1, &ea, NULL, &pNewDACL) != ERROR_SUCCESS)
+	return;
+    }
+  else
+    if (SetEntriesInAcl (1, &ea, pOldDACL, &pNewDACL) != ERROR_SUCCESS)
+      return;
+
+  if (SetSecurityInfo
+      (file, SE_FILE_OBJECT,
+       DACL_SECURITY_INFORMATION, NULL, NULL, pNewDACL, NULL) != ERROR_SUCCESS)
+    return;
+
+  LocalFree (pSD);
+  LocalFree (pNewDACL);
+  CloseHandle (file);
+}
+#endif /* defined (_WIN32) && !defined (RTX) */
+
 int
 __gnat_is_readable_file (char *name)
 {
+#if defined (_WIN32) && !defined (RTX)
+  GENERIC_MAPPING GenericMapping;
+  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+  GenericMapping.GenericRead = GENERIC_READ;
+
+  return __gnat_check_OWNER_ACL (name, FILE_READ_DATA, GenericMapping);
+#else
   int ret;
   int mode;
   struct stat statbuf;
@@ -1695,11 +1834,20 @@ __gnat_is_readable_file (char *name)
   ret = __gnat_stat (name, &statbuf);
   mode = statbuf.st_mode & S_IRUSR;
   return (!ret && mode);
+#endif
 }
 
 int
 __gnat_is_writable_file (char *name)
 {
+#if defined (_WIN32) && !defined (RTX)
+  GENERIC_MAPPING GenericMapping;
+  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+  GenericMapping.GenericWrite = GENERIC_WRITE;
+
+  return __gnat_check_OWNER_ACL
+    (name, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping);
+#else
   int ret;
   int mode;
   struct stat statbuf;
@@ -1707,12 +1855,35 @@ __gnat_is_writable_file (char *name)
   ret = __gnat_stat (name, &statbuf);
   mode = statbuf.st_mode & S_IWUSR;
   return (!ret && mode);
+#endif
+}
+
+int
+__gnat_is_executable_file (char *name)
+{
+#if defined (_WIN32) && !defined (RTX)
+  GENERIC_MAPPING GenericMapping;
+  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+  GenericMapping.GenericExecute = GENERIC_EXECUTE;
+
+  return __gnat_check_OWNER_ACL (name, FILE_EXECUTE, GenericMapping);
+#else
+  int ret;
+  int mode;
+  struct stat statbuf;
+
+  ret = __gnat_stat (name, &statbuf);
+  mode = statbuf.st_mode & S_IXUSR;
+  return (!ret && mode);
+#endif
 }
 
 void
 __gnat_set_writable (char *name)
 {
-#if ! defined (__vxworks) && ! defined(__nucleus__)
+#if defined (_WIN32) && !defined (RTX)
+  __gnat_set_OWNER_ACL (name, GRANT_ACCESS, GENERIC_WRITE);
+#elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1726,7 +1897,9 @@ __gnat_set_writable (char *name)
 void
 __gnat_set_executable (char *name)
 {
-#if ! defined (__vxworks) && ! defined(__nucleus__)
+#if defined (_WIN32) && !defined (RTX)
+  __gnat_set_OWNER_ACL (name, GRANT_ACCESS, GENERIC_EXECUTE);
+#elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1740,7 +1913,9 @@ __gnat_set_executable (char *name)
 void
 __gnat_set_readonly (char *name)
 {
-#if ! defined (__vxworks) && ! defined(__nucleus__)
+#if defined (_WIN32) && !defined (RTX)
+  __gnat_set_OWNER_ACL (name, SET_ACCESS, GENERIC_READ);
+#elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)

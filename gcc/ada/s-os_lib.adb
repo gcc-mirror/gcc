@@ -1316,6 +1316,25 @@ package body System.OS_Lib is
       return Is_Readable_File (F_Name'Address);
    end Is_Readable_File;
 
+   ------------------------
+   -- Is_Executable_File --
+   ------------------------
+
+   function Is_Executable_File (Name : C_File_Name) return Boolean is
+      function Is_Executable_File (Name : Address) return Integer;
+      pragma Import (C, Is_Executable_File, "__gnat_is_executable_file");
+   begin
+      return Is_Executable_File (Name) /= 0;
+   end Is_Executable_File;
+
+   function Is_Executable_File (Name : String) return Boolean is
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Executable_File (F_Name'Address);
+   end Is_Executable_File;
+
    ---------------------
    -- Is_Regular_File --
    ---------------------
