@@ -115,7 +115,7 @@ package body Ch10 is
       P                  : Node_Id;
       SR_Present         : Boolean;
 
-      Cunit_Error_Flag   : Boolean := False;
+      Cunit_Error_Flag : Boolean := False;
       --  This flag is set True if we have to scan for a compilation unit
       --  token. It is used to ensure clean termination in such cases by
       --  not insisting on being at the end of file, and, in the syntax only
@@ -140,8 +140,8 @@ package body Ch10 is
 
       Config_Pragmas := No_List;
 
-      --  If we have an initial Source_Reference pragma, then remember
-      --  the fact to generate an NR parameter in the output line.
+      --  If we have an initial Source_Reference pragma, then remember the fact
+      --  to generate an NR parameter in the output line.
 
       SR_Present := False;
 
@@ -180,8 +180,7 @@ package body Ch10 is
          Item := P_Pragma;
 
          if Item = Error
-           or else not
-             Is_Configuration_Pragma_Name (Pragma_Name (Item))
+           or else not Is_Configuration_Pragma_Name (Pragma_Name (Item))
          then
             Restore_Scan_State (Scan_State);
             exit;
