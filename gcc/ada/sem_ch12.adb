@@ -8716,8 +8716,9 @@ package body Sem_Ch12 is
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
 
-      --  Subprogram body may have been created already because of
-      --  an inline pragma.
+      --  Subprogram body may have been created already because of an inline
+      --  pragma, or because of multiple elaborations of the enclosing package
+      --  when several instances of the subprogram appear in the main unit.
 
       if Present (Corresponding_Body (Act_Decl)) then
          return;
