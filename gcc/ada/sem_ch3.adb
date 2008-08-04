@@ -1056,7 +1056,6 @@ package body Sem_Ch3 is
                                    N_Object_Renaming_Declaration,
                                    N_Formal_Object_Declaration,
                                    N_Formal_Type_Declaration,
-                                   N_Formal_Object_Declaration,
                                    N_Task_Type_Declaration,
                                    N_Protected_Type_Declaration))
       loop
@@ -4476,9 +4475,17 @@ package body Sem_Ch3 is
 
       Mark_Rewrite_Insertion (Decl);
 
-      --  Insert the new declaration in the nearest enclosing scope
+      --  Insert the new declaration in the nearest enclosing scope. If the
+      --  node is a body and N is its return type, the declaration belongs in
+      --  the enclosing scope.
 
       P := Parent (N);
+      if Nkind (P) = N_Subprogram_Body
+        and then Nkind (N) = N_Function_Specification
+      then
+         P := Parent (P);
+      end if;
+
       while Present (P) and then not Has_Declarations (P) loop
          P := Parent (P);
       end loop;
@@ -4521,13 +4528,13 @@ package body Sem_Ch3 is
 
       Mark_Rewrite_Insertion (Comp);
 
-      --  Temporarily remove the current scope from the stack to add the new
-      --  declarations to the enclosing scope
-
       if Nkind_In (N, N_Object_Declaration, N_Access_Function_Definition) then
          Analyze (Decl);
 
       else
+         --  Temporarily remove the current scope (record or subprogram) from
+         --  the stack to add the new declarations to the enclosing scope.
+
          Scope_Stack.Decrement_Last;
          Analyze (Decl);
          Set_Is_Itype (Anon);
