@@ -1,3 +1,9 @@
+2008-08-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36691
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Correctly
+	check for no_overflow.
+
 2008-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (compute_barrier_args_size): Set barrier_args_size
