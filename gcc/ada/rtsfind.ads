@@ -209,6 +209,7 @@ package Rtsfind is
       System_Compare_Array_Unsigned_64,
       System_Compare_Array_Unsigned_8,
       System_DSA_Services,
+      System_DSA_Types,
       System_Exception_Table,
       System_Exceptions,
       System_Exn_Int,
@@ -696,6 +697,8 @@ package Rtsfind is
      RE_Get_Local_Partition_Id,          -- System.DSA_Services
      RE_Get_Passive_Partition_Id,        -- System.DSA_Services
 
+     RE_Any_Content_Ptr,                 -- System.DSA_Types
+
      RE_Register_Exception,              -- System.Exception_Table
 
      RE_Local_Raise,                     -- System.Exceptions
@@ -1157,6 +1160,7 @@ package Rtsfind is
      RE_BS_To_Any,                       -- System.Partition_Interface
      RE_Any_To_BS,                       -- System.Partition_Interface
 
+     RE_FA_A,                            -- System.Partition_Interface
      RE_FA_B,                            -- System.Partition_Interface
      RE_FA_C,                            -- System.Partition_Interface
      RE_FA_F,                            -- System.Partition_Interface
@@ -1205,7 +1209,7 @@ package Rtsfind is
      RE_TC_Build,                        -- System.Partition_Interface
      RE_Get_TC,                          -- System.Partition_Interface
      RE_Set_TC,                          -- System.Partition_Interface
-     RE_TC_Any,                          -- System.Partition_Interface
+     RE_TC_A,                            -- System.Partition_Interface
      RE_TC_B,                            -- System.Partition_Interface
      RE_TC_C,                            -- System.Partition_Interface
      RE_TC_F,                            -- System.Partition_Interface
@@ -1850,6 +1854,8 @@ package Rtsfind is
      RE_Get_Local_Partition_Id           => System_DSA_Services,
      RE_Get_Passive_Partition_Id         => System_DSA_Services,
 
+     RE_Any_Content_Ptr                  => System_DSA_Types,
+
      RE_Register_Exception               => System_Exception_Table,
 
      RE_Local_Raise                      => System_Exceptions,
@@ -2302,6 +2308,7 @@ package Rtsfind is
      RE_BS_To_Any                        => System_Partition_Interface,
      RE_Any_To_BS                        => System_Partition_Interface,
 
+     RE_FA_A                             => System_Partition_Interface,
      RE_FA_B                             => System_Partition_Interface,
      RE_FA_C                             => System_Partition_Interface,
      RE_FA_F                             => System_Partition_Interface,
@@ -2350,7 +2357,7 @@ package Rtsfind is
      RE_TC_Build                         => System_Partition_Interface,
      RE_Get_TC                           => System_Partition_Interface,
      RE_Set_TC                           => System_Partition_Interface,
-     RE_TC_Any                           => System_Partition_Interface,
+     RE_TC_A                             => System_Partition_Interface,
      RE_TC_B                             => System_Partition_Interface,
      RE_TC_C                             => System_Partition_Interface,
      RE_TC_F                             => System_Partition_Interface,

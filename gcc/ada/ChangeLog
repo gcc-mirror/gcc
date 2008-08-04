@@ -1,3 +1,30 @@
+2008-08-04  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Group_Switches): Preserve the switch order when
+	grouping and allow switch grouping of switches with more than one
+	character extension (e.g. gnatw.x).
+	(Args_From_Expanded): Remove this now obsolete method.
+
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Get_Allocator_Final_List): Freeze anonymous type for
+	chain at once, to ensure that type is properly decorated for back-end,
+	when allocator appears within a loop.
+
+2008-08-04  Kevin Pouget  <pouget@adacore.com>
+
+	* snames.h, snames.adb, snames.ads:
+	Add Attr_To_Any, Attr_From_Any and Attr_TypeCode defines.
+
+	* exp_dist.ads, exp_dist.adb: Add Build_From_Any_Call,
+	Build_To_Any_Call and Build_TypeCode_Call procedures.
+
+	* exp_attr.adb, sem_attr.adb: Add corresponding cases.
+
+	* rtsfind.ads: Add corresponding names.
+
+	* tbuild.adb: Update prefix restrictions to allow '_' character.
+
 2008-08-04  Doug Rupp  <rupp@adacore.com>
 
 	* gigi.h (fill_vms_descriptor): Add third parameter gnat_actual

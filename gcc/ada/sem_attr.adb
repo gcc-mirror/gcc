@@ -315,6 +315,9 @@ package body Sem_Attr is
       --  corresponding possible defined attribute function (e.g. for the
       --  Read attribute, Nam will be TSS_Stream_Read).
 
+      procedure Check_PolyORB_Attribute;
+      --  Validity checking for PolyORB/DSA attribute
+
       procedure Check_Task_Prefix;
       --  Verify that prefix of attribute N is a task or task type
 
@@ -1379,6 +1382,23 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be object");
          end if;
       end Check_Object_Reference;
+
+      ----------------------------
+      -- Check_PolyORB_Attribute --
+      ----------------------------
+
+      procedure Check_PolyORB_Attribute is
+      begin
+         Validate_Non_Static_Attribute_Function_Call;
+
+         Check_Type;
+         Check_Not_CPP_Type;
+
+         if Get_PCS_Name /= Name_PolyORB_DSA then
+            Error_Attr
+              ("attribute% requires the 'Poly'O'R'B 'P'C'S", N);
+         end if;
+      end Check_PolyORB_Attribute;
 
       ------------------------
       -- Check_Program_Unit --
@@ -2976,6 +2996,15 @@ package body Sem_Attr is
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
 
+      --------------
+      -- From_Any --
+      --------------
+
+      when Attribute_From_Any =>
+         Check_E1;
+         Check_PolyORB_Attribute;
+         Set_Etype (N, P_Base_Type);
+
       -----------------------
       -- Has_Access_Values --
       -----------------------
@@ -4238,6 +4267,15 @@ package body Sem_Attr is
          Analyze_And_Resolve (E1, Any_Integer);
          Set_Etype (N, RTE (RE_Address));
 
+      ------------
+      -- To_Any --
+      ------------
+
+      when Attribute_To_Any =>
+         Check_E1;
+         Check_PolyORB_Attribute;
+         Set_Etype (N, RTE (RE_Any));
+
       ----------------
       -- Truncation --
       ----------------
@@ -4256,6 +4294,15 @@ package body Sem_Attr is
          Check_Type;
          Check_Not_Incomplete_Type;
          Set_Etype (N, RTE (RE_Type_Class));
+
+      ------------
+      -- To_Any --
+      ------------
+
+      when Attribute_TypeCode =>
+         Check_E0;
+         Check_PolyORB_Attribute;
+         Set_Etype (N, RTE (RE_TypeCode));
 
       -----------------
       -- UET_Address --
@@ -7252,6 +7299,13 @@ package body Sem_Attr is
             end if;
          end if;
       end Width;
+
+      --  The following attributes denote function that cannot be folded
+
+      when Attribute_From_Any |
+           Attribute_To_Any   |
+           Attribute_TypeCode =>
+         null;
 
       --  The following attributes can never be folded, and furthermore we
       --  should not even have entered the case statement for any of these.

@@ -858,6 +858,25 @@ package body Exp_Dist is
 
    end PolyORB_Support;
 
+   --  The following PolyORB-specific subprograms are made visible to Exp_Attr:
+
+   function Build_From_Any_Call
+     (Typ   : Entity_Id;
+      N     : Node_Id;
+      Decls : List_Id) return Node_Id
+     renames PolyORB_Support.Helpers.Build_From_Any_Call;
+
+   function Build_To_Any_Call
+     (N     : Node_Id;
+      Decls : List_Id) return Node_Id
+     renames PolyORB_Support.Helpers.Build_To_Any_Call;
+
+   function Build_TypeCode_Call
+     (Loc   : Source_Ptr;
+      Typ   : Entity_Id;
+      Decls : List_Id) return Node_Id
+     renames PolyORB_Support.Helpers.Build_TypeCode_Call;
+
    ------------------------------------
    -- Local variables and structures --
    ------------------------------------
@@ -8218,12 +8237,11 @@ package body Exp_Dist is
          --  point type from Standard, or the smallest unsigned (modular) type
          --  from System.Unsigned_Types, whose range encompasses that of Typ.
 
-         function Make_Stream_Procedure_Function_Name
+         function Make_Helper_Function_Name
            (Loc : Source_Ptr;
             Typ : Entity_Id;
             Nam : Name_Id) return Entity_Id;
-         --  Return the name to be assigned for stream subprogram Nam of Typ.
-         --  (copied from exp_strm.adb, should be shared???)
+         --  Return the name to be assigned for helper subprogram Nam of Typ
 
          ------------------------------------------------------------
          -- Common subprograms for building various tree fragments --
@@ -8432,6 +8450,11 @@ package body Exp_Dist is
             elsif U_Type = Standard_String then
                Lib_RE := RE_FA_String;
 
+            --  Special DSA types
+
+            elsif Is_RTE (U_Type, RE_Any_Content_Ptr) then
+               Lib_RE := RE_FA_A;
+
             --  Other (non-primitive) types
 
             else
@@ -8493,8 +8516,7 @@ package body Exp_Dist is
                return;
             end if;
 
-            Fnam :=
-              Make_Stream_Procedure_Function_Name (Loc, Typ, Name_uFrom_Any);
+            Fnam := Make_Helper_Function_Name (Loc, Typ, Name_From_Any);
 
             Spec :=
               Make_Function_Specification (Loc,
@@ -9293,7 +9315,13 @@ package body Exp_Dist is
             elsif U_Type = Standard_String then
                Lib_RE := RE_TA_String;
 
+            --  Special DSA types
+
+            elsif Is_RTE (U_Type, RE_Any_Content_Ptr) then
+               Lib_RE := RE_TA_A;
+
             elsif U_Type = Underlying_Type (RTE (RE_TypeCode)) then
+               --  No corresponding FA_TC ???
                Lib_RE := RE_TA_TC;
 
             --  Other (non-primitive) types
@@ -9358,8 +9386,7 @@ package body Exp_Dist is
                return;
             end if;
 
-            Fnam :=
-              Make_Stream_Procedure_Function_Name (Loc, Typ, Name_uTo_Any);
+            Fnam := Make_Helper_Function_Name (Loc, Typ, Name_To_Any);
 
             Spec :=
               Make_Function_Specification (Loc,
@@ -9976,7 +10003,7 @@ package body Exp_Dist is
             --  not been set yet, so can't call Find_Inherited_TSS.
 
             if Typ = RTE (RE_Any) then
-               Fnam := RTE (RE_TC_Any);
+               Fnam := RTE (RE_TC_A);
 
             else
                --  First simple case where the TypeCode is present
@@ -10057,6 +10084,11 @@ package body Exp_Dist is
                elsif U_Type = Standard_String then
                   Lib_RE := RE_TC_String;
 
+               --  Special DSA types
+
+               elsif Is_RTE (U_Type, RE_Any_Content_Ptr) then
+                  Lib_RE := RE_TC_A;
+
                --  Other (non-primitive) types
 
                else
@@ -10100,8 +10132,7 @@ package body Exp_Dist is
             Stms  : constant List_Id := New_List;
 
             TCNam : constant Entity_Id :=
-                      Make_Stream_Procedure_Function_Name (Loc,
-                        Typ, Name_uTypeCode);
+                      Make_Helper_Function_Name (Loc, Typ, Name_TypeCode);
 
             Parameters : List_Id;
 
@@ -10964,30 +10995,40 @@ package body Exp_Dist is
             end;
          end Append_Array_Traversal;
 
-         -----------------------------------------
-         -- Make_Stream_Procedure_Function_Name --
-         -----------------------------------------
+         -------------------------------
+         -- Make_Helper_Function_Name --
+         -------------------------------
 
-         function Make_Stream_Procedure_Function_Name
+         function Make_Helper_Function_Name
            (Loc : Source_Ptr;
             Typ : Entity_Id;
             Nam : Name_Id) return Entity_Id
          is
          begin
-            --  For tagged types, we use a canonical name so that it matches
-            --  the primitive spec. For all other cases, we use a serialized
-            --  name so that multiple generations of the same procedure do not
-            --  clash.
 
-            if Is_Tagged_Type (Typ) then
-               return Make_Defining_Identifier (Loc, Nam);
-            else
+            declare
+               Serial : Nat := 0;
+               --  For tagged types, we use a canonical name so that it matches
+               --  the primitive spec. For all other cases, we use a serialized
+               --  name so that multiple generations of the same procedure do
+               --  not clash.
+            begin
+               if not Is_Tagged_Type (Typ) then
+                  Serial := Increment_Serial_Number;
+               end if;
+
+               --  Use prefixed underscore to avoid potential clash with used
+               --  identifier (we use attribute names for Nam).
+
                return
                  Make_Defining_Identifier (Loc,
                    Chars =>
-                     New_External_Name (Nam, ' ', Increment_Serial_Number));
-            end if;
-         end Make_Stream_Procedure_Function_Name;
+                     New_External_Name
+                       (Related_Id => Nam,
+                        Suffix => ' ', Suffix_Index => Serial,
+                        Prefix => '_'));
+            end;
+         end Make_Helper_Function_Name;
       end Helpers;
 
       -----------------------------------
