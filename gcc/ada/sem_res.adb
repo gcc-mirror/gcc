@@ -6572,8 +6572,8 @@ package body Sem_Res is
    procedure Resolve_Membership_Op (N : Node_Id; Typ : Entity_Id) is
       pragma Warnings (Off, Typ);
 
-      L : constant Node_Id   := Left_Opnd (N);
-      R : constant Node_Id   := Right_Opnd (N);
+      L : constant Node_Id := Left_Opnd (N);
+      R : constant Node_Id := Right_Opnd (N);
       T : Entity_Id;
 
    begin
@@ -6638,6 +6638,8 @@ package body Sem_Res is
    ------------------
 
    procedure Resolve_Null (N : Node_Id; Typ : Entity_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
    begin
       --  Handle restriction against anonymous null access values This
       --  restriction can be turned off using -gnatdj.
@@ -6663,6 +6665,26 @@ package body Sem_Res is
          else
             Error_Msg_N
               ("null cannot be of an anonymous access type", N);
+         end if;
+      end if;
+
+      --  Ada 2005 (AI-231): Generate the null-excluding check in case of
+      --  assignment to a null-excluding object
+
+      if Ada_Version >= Ada_05
+        and then Can_Never_Be_Null (Typ)
+        and then Nkind (Parent (N)) = N_Assignment_Statement
+      then
+         if not Inside_Init_Proc then
+            Insert_Action
+              (Compile_Time_Constraint_Error (N,
+                 "(Ada 2005) null not allowed in null-excluding objects?"),
+               Make_Raise_Constraint_Error (Loc,
+                 Reason => CE_Access_Check_Failed));
+         else
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Reason => CE_Access_Check_Failed));
          end if;
       end if;
 
@@ -9511,9 +9533,7 @@ package body Sem_Res is
       --  return statement, because in that case the accessibility check
       --  takes place after the return.
 
-      elsif (Ekind (Target_Type) = E_Access_Subprogram_Type
-               or else
-             Ekind (Target_Type) = E_Anonymous_Access_Subprogram_Type)
+      elsif Ekind (Target_Type) in Access_Subprogram_Kind
         and then No (Corresponding_Remote_Type (Opnd_Type))
       then
          if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type

@@ -1,3 +1,40 @@
+2008-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): Adding missing support
+	for N_Formal_Object_Declaration nodes. Adding kludge required by
+	First_Formal to provide its functionality with access to functions.
+	(Replace_Anonymous_Access_To_Protected_Subprogram): Add missing support
+	for anonymous access types returned by functions.
+
+	* sem_ch5.adb (Analyze_Assignment): Code cleanup to avoid duplicate
+	conversion of null-excluding access types (required only once to force
+	the generation of the required runtime check).
+
+	* sem_type.adb (Covers): minor reformating
+
+	* checks.adb (Null_Exclusion_Static_Checks): Avoid reporting errors
+	with internally generated nodes. Avoid generating the error inside init
+	procs.
+
+	* sem_res.adb (Resolve_Membership_Test): Minor reformating.
+	(Resolve_Null): Generate the null-excluding check in case of assignment
+	to a null-excluding object.
+	(Valid_Conversion): Add missing support for anonymous access to
+	subprograms.
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Add missing support for
+	anonymous access types whose designated type is an itype. This case
+	occurs with anonymous access to protected subprograms types.
+	(Analyze_Return_Type):  Add missing support for anonymous access to
+	protected subprogram.
+
+	* sem_eval.adb (Subtypes_Statically_Match): In case of access to
+	subprograms addition of missing check on matching convention. Required
+	to properly handle access to protected subprogram types.
+
+	* exp_ch3 (Build_Assignment): Code cleanup removing duplicated check on
+	null excluding access types.
+
 2008-08-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb: Add comments

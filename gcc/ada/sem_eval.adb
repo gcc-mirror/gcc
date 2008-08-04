@@ -4388,7 +4388,12 @@ package body Sem_Eval is
             return
               Subtype_Conformant
                 (Designated_Type (T1),
-                 Designated_Type (T2));
+                 Designated_Type (T2))
+
+               --  Convention check required to cover protected subprograms
+
+               and then Convention (Designated_Type (T1)) =
+                        Convention (Designated_Type (T2));
          else
             return
               Subtypes_Statically_Match
