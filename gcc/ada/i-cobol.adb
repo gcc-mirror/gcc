@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -337,7 +337,7 @@ package body Interfaces.COBOL is
       --  Here a swap is needed
 
       declare
-         Len  : constant Natural := B'Length;
+         Len : constant Natural := B'Length;
 
       begin
          for J in 1 .. Len / 2 loop
@@ -452,10 +452,15 @@ package body Interfaces.COBOL is
       --  Used for the nonseparate formats to embed the appropriate sign
       --  at the specified location (i.e. at Result (Loc))
 
+      -------------
+      -- Convert --
+      -------------
+
       procedure Convert (First, Last : Natural) is
-         J : Natural := Last;
+         J : Natural;
 
       begin
+         J := Last;
          while J >= First loop
             Result (J) :=
               COBOL_Character'Val
@@ -477,6 +482,10 @@ package body Interfaces.COBOL is
 
          raise Conversion_Error;
       end Convert;
+
+      ----------------
+      -- Embed_Sign --
+      ----------------
 
       procedure Embed_Sign (Loc : Natural) is
          Digit : Natural range 0 .. 9;
@@ -558,6 +567,10 @@ package body Interfaces.COBOL is
       --  Convert the number in Val into a sequence of Decimal_Element values,
       --  storing the result in Result (First .. Last). Raise Conversion_Error
       --  if the value is too large to fit.
+
+      -------------
+      -- Convert --
+      -------------
 
       procedure Convert (First, Last : Natural) is
          J : Natural := Last;
