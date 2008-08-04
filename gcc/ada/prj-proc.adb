@@ -83,12 +83,15 @@ package body Prj.Proc is
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
 
    procedure Copy_Package_Declarations
-     (From    : Declarations;
-      To      : in out Declarations;
-      New_Loc : Source_Ptr;
-      In_Tree : Project_Tree_Ref);
+     (From              : Declarations;
+      To                : in out Declarations;
+      New_Loc           : Source_Ptr;
+      Naming_Restricted : Boolean;
+      In_Tree           : Project_Tree_Ref);
    --  Copy a package declaration From to To for a renamed package. Change the
-   --  locations of all the attributes to New_Loc.
+   --  locations of all the attributes to New_Loc. When Naming_Restricted is
+   --  True, do not copy attributes Body, Spec, Implementation and
+   --  Specification.
 
    function Expression
      (Project                : Project_Id;
@@ -310,10 +313,11 @@ package body Prj.Proc is
    -------------------------------
 
    procedure Copy_Package_Declarations
-     (From    : Declarations;
-      To      : in out Declarations;
-      New_Loc : Source_Ptr;
-      In_Tree : Project_Tree_Ref)
+     (From              : Declarations;
+      To                : in out Declarations;
+      New_Loc           : Source_Ptr;
+      Naming_Restricted : Boolean;
+      In_Tree           : Project_Tree_Ref)
    is
       V1  : Variable_Id := From.Attributes;
       V2  : Variable_Id := No_Variable;
@@ -368,67 +372,73 @@ package body Prj.Proc is
 
       while A1 /= No_Array loop
 
-         --  Copy the array
-
          Arr := In_Tree.Arrays.Table (A1);
          A1  := Arr.Next;
 
-         --  Remove the Next component
-
-         Arr.Next := No_Array;
-
-         Array_Table.Increment_Last (In_Tree.Arrays);
-
-         --  Create new Array declaration
-         if To.Arrays = No_Array then
-            To.Arrays := Array_Table.Last (In_Tree.Arrays);
-
-         else
-            In_Tree.Arrays.Table (A2).Next :=
-              Array_Table.Last (In_Tree.Arrays);
-         end if;
-
-         A2 := Array_Table.Last (In_Tree.Arrays);
-
-         --  Don't store the array, as its first element has not been set yet
-
-         --  Copy the array elements of the array
-
-         E1 := Arr.Value;
-         Arr.Value := No_Array_Element;
-
-         while E1 /= No_Array_Element loop
-
-            --  Copy the array element
-
-            Elm := In_Tree.Array_Elements.Table (E1);
-            E1 := Elm.Next;
-
+         if not Naming_Restricted or else
+           (Arr.Name /= Snames.Name_Body
+            and then Arr.Name /= Snames.Name_Spec
+            and then Arr.Name /= Snames.Name_Implementation
+            and then Arr.Name /= Snames.Name_Specification)
+         then
             --  Remove the Next component
 
-            Elm.Next := No_Array_Element;
+            Arr.Next := No_Array;
 
-            --  Change the location
+            Array_Table.Increment_Last (In_Tree.Arrays);
 
-            Elm.Value.Location := New_Loc;
-            Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
+            --  Create new Array declaration
 
-            --  Create new array element
+            if To.Arrays = No_Array then
+               To.Arrays := Array_Table.Last (In_Tree.Arrays);
 
-            if Arr.Value = No_Array_Element then
-               Arr.Value := Array_Element_Table.Last (In_Tree.Array_Elements);
             else
-               In_Tree.Array_Elements.Table (E2).Next :=
-                 Array_Element_Table.Last (In_Tree.Array_Elements);
+               In_Tree.Arrays.Table (A2).Next :=
+                 Array_Table.Last (In_Tree.Arrays);
             end if;
 
-            E2 := Array_Element_Table.Last (In_Tree.Array_Elements);
-            In_Tree.Array_Elements.Table (E2) := Elm;
-         end loop;
+            A2 := Array_Table.Last (In_Tree.Arrays);
 
-         --  Finally, store the new array
+            --  Don't store the array as its first element has not been set yet
 
-         In_Tree.Arrays.Table (A2) := Arr;
+            --  Copy the array elements of the array
+
+            E1 := Arr.Value;
+            Arr.Value := No_Array_Element;
+            while E1 /= No_Array_Element loop
+
+               --  Copy the array element
+
+               Elm := In_Tree.Array_Elements.Table (E1);
+               E1 := Elm.Next;
+
+               --  Remove the Next component
+
+               Elm.Next := No_Array_Element;
+
+               --  Change the location
+
+               Elm.Value.Location := New_Loc;
+               Array_Element_Table.Increment_Last (In_Tree.Array_Elements);
+
+               --  Create new array element
+
+               if Arr.Value = No_Array_Element then
+                  Arr.Value :=
+                    Array_Element_Table.Last (In_Tree.Array_Elements);
+               else
+                  In_Tree.Array_Elements.Table (E2).Next :=
+                    Array_Element_Table.Last (In_Tree.Array_Elements);
+               end if;
+
+               E2 := Array_Element_Table.Last (In_Tree.Array_Elements);
+               In_Tree.Array_Elements.Table (E2) := Elm;
+            end loop;
+
+            --  Finally, store the new array
+
+            In_Tree.Arrays.Table (A2) := Arr;
+         end if;
       end loop;
    end Copy_Package_Declarations;
 
@@ -1343,14 +1353,15 @@ package body Prj.Proc is
                            --  renaming declaration.
 
                            Copy_Package_Declarations
-                             (From     =>
+                             (From              =>
                                 In_Tree.Packages.Table (Renamed_Package).Decl,
-                              To      =>
+                              To                =>
                                 In_Tree.Packages.Table (New_Pkg).Decl,
-                              New_Loc =>
+                              New_Loc           =>
                                 Location_Of
                                   (Current_Item, From_Project_Node_Tree),
-                              In_Tree => In_Tree);
+                              Naming_Restricted => False,
+                              In_Tree           => In_Tree);
                         end;
 
                      --  Standard package declaration, not renaming
@@ -2730,10 +2741,13 @@ package body Prj.Proc is
                            Next   => Processed_Data.Decl.Packages);
                         Processed_Data.Decl.Packages := Current_Pkg;
                         Copy_Package_Declarations
-                          (From  => Element.Decl,
-                           To    => In_Tree.Packages.Table (Current_Pkg).Decl,
-                           New_Loc => No_Location,
-                           In_Tree => In_Tree);
+                          (From              => Element.Decl,
+                           To                =>
+                             In_Tree.Packages.Table (Current_Pkg).Decl,
+                           New_Loc           => No_Location,
+                           Naming_Restricted =>
+                             Element.Name = Snames.Name_Naming,
+                           In_Tree           => In_Tree);
                      end if;
 
                      Extended_Pkg := Element.Next;
