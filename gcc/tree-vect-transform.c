@@ -3127,15 +3127,15 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   rhs_type = NULL_TREE;
   nargs = gimple_call_num_args (stmt);
 
+  /* Bail out if the function has more than two arguments, we
+     do not have interesting builtin functions to vectorize with
+     more than two arguments.  No arguments is also not good.  */
+  if (nargs == 0 || nargs > 2)
+    return false;
+
   for (i = 0; i < nargs; i++)
     {
       op = gimple_call_arg (stmt, i);
-
-      /* Bail out if the function has more than two arguments, we
-	 do not have interesting builtin functions to vectorize with
-	 more than two arguments.  */
-      if (i >= 2)
-	return false;
 
       /* We can only handle calls with arguments of the same type.  */
       if (rhs_type
@@ -3147,17 +3147,13 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 	}
       rhs_type = TREE_TYPE (op);
 
-      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[nargs]))
+      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[i]))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
 	  return false;
 	}
     }
-
-  /* No arguments is also not good.  */
-  if (nargs == 0)
-    return false;
 
   vectype_in = get_vectype_for_scalar_type (rhs_type);
   if (!vectype_in)
