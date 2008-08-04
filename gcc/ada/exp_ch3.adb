@@ -1543,7 +1543,7 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  Ada 2005 (AI-287) In case of default initialized components,
+            --  Ada 2005 (AI-287): In case of default initialized components,
             --  we need to generate the corresponding selected component node
             --  to access the discriminant value. In other cases this is not
             --  required because we are inside the init proc and we use the

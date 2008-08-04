@@ -2101,7 +2101,7 @@ package body Sem_Type is
          return
            Covers (Typ, Etype (N))
 
-            --  Ada 2005 (AI-345) The context may be a synchronized interface.
+            --  Ada 2005 (AI-345): The context may be a synchronized interface.
             --  If the type is already frozen use the corresponding_record
             --  to check whether it is a proper descendant.
 
