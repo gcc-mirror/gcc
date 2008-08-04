@@ -2398,6 +2398,8 @@ package body Freeze is
 
                         elsif Root_Type (F_Type) = Standard_Boolean
                           and then Convention (F_Type) = Convention_Ada
+                          and then not Has_Warnings_Off (F_Type)
+                          and then not Has_Size_Clause (F_Type)
                         then
                            Error_Msg_N
                              ("?& is an 8-bit Ada Boolean, "
@@ -2543,6 +2545,7 @@ package body Freeze is
                           and then Convention (R_Type) = Convention_Ada
                           and then not Has_Warnings_Off (E)
                           and then not Has_Warnings_Off (R_Type)
+                          and then not Has_Size_Clause (R_Type)
                         then
                            Error_Msg_N
                              ("?return type of & is an 8-bit "
