@@ -542,16 +542,33 @@ package body Sem_Ch6 is
 
          --  "return access T" case; check that the return statement also has
          --  "access T", and that the subtypes statically match:
+         --   if this is an access to subprogram the signatures must match.
 
          if R_Type_Is_Anon_Access then
             if R_Stm_Type_Is_Anon_Access then
-               if Base_Type (Designated_Type (R_Stm_Type)) /=
-                    Base_Type (Designated_Type (R_Type))
-                 or else not Subtypes_Statically_Match (R_Stm_Type, R_Type)
+               if
+                 Ekind (Designated_Type (R_Stm_Type)) /= E_Subprogram_Type
                then
-                  Error_Msg_N
-                    ("subtype must statically match function result subtype",
-                     Subtype_Mark (Subtype_Ind));
+                  if Base_Type (Designated_Type (R_Stm_Type)) /=
+                     Base_Type (Designated_Type (R_Type))
+                    or else not Subtypes_Statically_Match (R_Stm_Type, R_Type)
+                  then
+                     Error_Msg_N
+                      ("subtype must statically match function result subtype",
+                       Subtype_Mark (Subtype_Ind));
+                  end if;
+
+               else
+                  --  For two anonymous access to subprogram types, the
+                  --  types themselves must be type conformant.
+
+                  if not Conforming_Types
+                    (R_Stm_Type, R_Type, Fully_Conformant)
+                  then
+                     Error_Msg_N
+                      ("subtype must statically match function result subtype",
+                         Subtype_Ind);
+                  end if;
                end if;
 
             else

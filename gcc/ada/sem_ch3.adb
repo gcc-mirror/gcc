@@ -1054,6 +1054,7 @@ package body Sem_Ch3 is
                    or else
                  Nkind_In (D_Ityp, N_Object_Declaration,
                                    N_Object_Renaming_Declaration,
+                                   N_Formal_Object_Declaration,
                                    N_Formal_Type_Declaration,
                                    N_Task_Type_Declaration,
                                    N_Protected_Type_Declaration))
