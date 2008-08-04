@@ -1687,11 +1687,10 @@ __gnat_is_directory (char *name)
 /*  This MingW section contains code to work with ACL. */
 static int
 __gnat_check_OWNER_ACL
-(char *name,
+(TCHAR *wname,
  DWORD CheckAccessDesired,
  GENERIC_MAPPING CheckGenericMapping)
 {
-  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   DWORD dwAccessDesired, dwAccessAllowed;
   PRIVILEGE_SET PrivilegeSet;
   DWORD dwPrivSetSize = sizeof (PRIVILEGE_SET);
@@ -1699,8 +1698,6 @@ __gnat_check_OWNER_ACL
   HANDLE hToken;
   DWORD nLength;
   SECURITY_DESCRIPTOR* pSD = NULL;
-
-  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
   GetFileSecurity
     (wname, OWNER_SECURITY_INFORMATION |
@@ -1752,7 +1749,7 @@ __gnat_check_OWNER_ACL
 
 static void
 __gnat_set_OWNER_ACL
-(char *name,
+(TCHAR *wname,
  DWORD AccessMode,
  DWORD AccessPermissions)
 {
@@ -1762,10 +1759,6 @@ __gnat_set_OWNER_ACL
   EXPLICIT_ACCESS ea;
   TCHAR username [100];
   DWORD unsize = 100;
-
-  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
-
-  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
   HANDLE file = CreateFile
     (wname, READ_CONTROL | WRITE_DAC, 0, NULL,
@@ -1821,11 +1814,15 @@ int
 __gnat_is_readable_file (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   GENERIC_MAPPING GenericMapping;
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
   ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
   GenericMapping.GenericRead = GENERIC_READ;
 
-  return __gnat_check_OWNER_ACL (name, FILE_READ_DATA, GenericMapping);
+  return __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
 #else
   int ret;
   int mode;
@@ -1841,12 +1838,17 @@ int
 __gnat_is_writable_file (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   GENERIC_MAPPING GenericMapping;
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
   ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
   GenericMapping.GenericWrite = GENERIC_WRITE;
 
   return __gnat_check_OWNER_ACL
-    (name, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping);
+    (wname, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping)
+    && !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
 #else
   int ret;
   int mode;
@@ -1862,11 +1864,15 @@ int
 __gnat_is_executable_file (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   GENERIC_MAPPING GenericMapping;
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
   ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
   GenericMapping.GenericExecute = GENERIC_EXECUTE;
 
-  return __gnat_check_OWNER_ACL (name, FILE_EXECUTE, GenericMapping);
+  return __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
 #else
   int ret;
   int mode;
@@ -1882,7 +1888,13 @@ void
 __gnat_set_writable (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
-  __gnat_set_OWNER_ACL (name, GRANT_ACCESS, GENERIC_WRITE);
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, GENERIC_WRITE);
+  SetFileAttributes
+    (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -1898,7 +1910,11 @@ void
 __gnat_set_executable (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
-  __gnat_set_OWNER_ACL (name, GRANT_ACCESS, GENERIC_EXECUTE);
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, GENERIC_EXECUTE);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -1914,7 +1930,13 @@ void
 __gnat_set_readonly (char *name)
 {
 #if defined (_WIN32) && !defined (RTX)
-  __gnat_set_OWNER_ACL (name, SET_ACCESS, GENERIC_READ);
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  __gnat_set_OWNER_ACL (wname, SET_ACCESS, GENERIC_READ);
+  SetFileAttributes
+    (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
