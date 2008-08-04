@@ -1,3 +1,38 @@
+2008-08-04  Doug Rupp  <rupp@adacore.com>
+
+	* gigi.h (fill_vms_descriptor): Add third parameter gnat_actual
+	* trans.c (call_to_gnu): Call fill_vms_descriptor with new parameter.
+	* utils2.c (fill_vms_descriptor): Add third parameter for error sloc and
+	use it.  Calculate pointer range overflow using 64bit types.
+
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): A formal object declaration is a
+	legal context for an anonymous access to subprogram.
+
+	* sem_ch4.adb (Analyze_One_Call): If the call can be interpreted as an
+	indirect call, report success to the caller to include possible
+	interpretation.
+
+	* sem_ch6.adb (Check_Return_Type_Indication): Apply proper conformance
+	check when the type
+	of the extended return is an anonymous access_to_subprogram type.
+
+	* sem_res.adb:
+	(Resolve_Call): Insert a dereference if the type of the subprogram is an
+	access_to_subprogram and the context requires its return type, and a
+	dereference has not been introduced previously.
+
+2008-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb (Usage): Minor rewording of -gnatwz switch, to improve
+	gnatcheck support in GPS.
+
+2008-08-04  Vincent Celier  <celier@adacore.com>
+
+	* mlib.adb (Create_Sym_Links): Create relative symbolic links when
+	requested
+
 2008-08-04  Vincent Celier  <celier@adacore.com>
 
 	* gprep.adb (Process_One_File): Call Prep.Preprocess with a Boolean
