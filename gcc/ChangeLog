@@ -1,3 +1,7 @@
+2008-08-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-transform.c (vectorizable_call): Fix tuplification.
+
 2008-08-04  Paul Brook  <paul@codesourcery.com>
 
 	* cofig/arm/arm.c (thumb_core_reg_alloc_order): New.
