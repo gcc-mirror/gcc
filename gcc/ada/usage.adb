@@ -167,6 +167,11 @@ begin
    Write_Switch_Char ("ef");
    Write_Line ("Full source path in brief error messages");
 
+   --  Line for -gnateG switch
+
+   Write_Switch_Char ("eG");
+   Write_Line ("Generate preprocessed source");
+
    --  Line for -gnateI switch
 
    Write_Switch_Char ("eInn");
@@ -450,10 +455,10 @@ begin
    Write_Line ("        .X*  turn off warnings for non-local exceptions");
    Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
    Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
-   Write_Line ("        z*   turn on convention/size/align warnings for " &
-                                                  "unchecked conversion");
-   Write_Line ("        Z    turn off convention/size/align warnings for " &
-                                                  "unchecked conversion");
+   Write_Line ("        z*   turn on warnings for convention/size/align " &
+                               "mismatch on unchecked conversion");
+   Write_Line ("        Z    turn off warnings for convention/size/align " &
+                               "mismatch on unchecked conversion");
    Write_Line ("        *    indicates default in above list");
 
    --  Line for -gnatW switch
