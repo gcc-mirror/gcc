@@ -1,3 +1,32 @@
+2008-08-04  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h: Add missing prototype.
+
+	* adaint.c: Refine support for Windows file attributes.
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb:
+	(Valid_Conversion): Catch case of designated types having different
+	sizes, even though they statically match.
+
+2008-08-04  Javier Miranda  <miranda@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Match): Remove superfluous patch
+	added in previous patch to handle access to subprograms.
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb:
+	(Freeze_Entity): Only check No_Default_Initialization restriction for
+	constructs that come from source
+
+2008-08-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb: Minor comment fix.
+
+	* sem_ch4.adb: Minor reformatting.
+
 2008-08-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb: (Large_Storage_Type): Improve previous change.
