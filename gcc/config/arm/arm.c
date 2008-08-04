@@ -19046,4 +19046,28 @@ arm_mangle_type (const_tree type)
   return NULL;
 }
 
+/* Order of allocation of core registers for Thumb: this allocation is
+   written over the corresponding initial entries of the array
+   initialized with REG_ALLOC_ORDER.  We allocate all low registers
+   first.  Saving and restoring a low register is usually cheaper than
+   using a call-clobbered high register.  */
+
+static const int thumb_core_reg_alloc_order[] =
+{
+   3,  2,  1,  0,  4,  5,  6,  7,
+  14, 12,  8,  9, 10, 11, 13, 15
+};
+
+/* Adjust register allocation order when compiling for Thumb.  */
+
+void
+arm_order_regs_for_local_alloc (void)
+{
+  const int arm_reg_alloc_order[] = REG_ALLOC_ORDER;
+  memcpy(reg_alloc_order, arm_reg_alloc_order, sizeof (reg_alloc_order));
+  if (TARGET_THUMB)
+    memcpy (reg_alloc_order, thumb_core_reg_alloc_order,
+            sizeof (thumb_core_reg_alloc_order));
+}
+
 #include "gt-arm.h"

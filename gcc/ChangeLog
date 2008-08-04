@@ -1,3 +1,11 @@
+2008-08-04  Paul Brook  <paul@codesourcery.com>
+
+	* cofig/arm/arm.c (thumb_core_reg_alloc_order): New.
+	(arm_order_regs_for_local_alloc): New function.
+	* config/arm/arm-protos.h (arm_order_regs_for_local_alloc): Add
+	prototype.
+	* config/arm/arm.h (ORDER_REGS_FOR_LOCAL_ALLOC): Define.
+
 2008-08-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/37012
