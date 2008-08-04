@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,9 +106,10 @@ package Prep is
    --  Parse the definition file. The definition file must have already been
    --  loaded and the scanner initialized.
 
-   procedure Preprocess;
+   procedure Preprocess (Source_Modified : out Boolean);
    --  Preprocess the input file. The input file must have already been loaded
-   --  and the scanner initialized.
+   --  and the scanner initialized. Source_Modified is set to True iff the
+   --  preprocessor modified the source text.
 
    procedure Check_Command_Line_Symbol_Definition
      (Definition  : String;

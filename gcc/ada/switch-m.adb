@@ -267,14 +267,16 @@ package body Switch.M is
 
                   when 'e' =>
 
-                     --  Only -gnateD and -gnatep= need storing in ALI file
+                     --  Store -gnateD, -gnatep= and -gnateG in the ALI file.
+                     --  The other -gnate switches do not need to be stored.
 
                      Storing (First_Stored) := 'e';
                      Ptr := Ptr + 1;
 
                      if Ptr > Max
                        or else (Switch_Chars (Ptr) /= 'D'
-                                  and then Switch_Chars (Ptr) /= 'p')
+                                 and then Switch_Chars (Ptr) /= 'G'
+                                 and then Switch_Chars (Ptr) /= 'p')
                      then
                         Last := 0;
                         return;
@@ -292,7 +294,7 @@ package body Switch.M is
 
                      --  Processing for -gnatep=
 
-                     else
+                     elsif Switch_Chars (Ptr) = 'p' then
                         Ptr := Ptr + 1;
 
                         if Ptr = Max then
@@ -316,6 +318,9 @@ package body Switch.M is
                              Switch_Chars (Ptr .. Max);
                            Add_Switch_Component (To_Store);
                         end;
+
+                     elsif Switch_Chars (Ptr) = 'G' then
+                        Add_Switch_Component ("-gnateG");
                      end if;
 
                      return;

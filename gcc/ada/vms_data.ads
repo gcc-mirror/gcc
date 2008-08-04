@@ -1526,6 +1526,14 @@ package VMS_Data is
    --   /VERBOSE), then error lines start with the full path name of the
    --   project file, rather than its simple file name.
 
+   S_GCC_Generate : aliased constant S := "/GENERATE_PROCESSED_SOURCE "    &
+                                             "-gnateG";
+   --        /NOGENERATE_PROCESSED_SOURCE (D)
+   --        /GENERATE_PROCESSED_SOURCE
+   --
+   --        Generate a file <source>_prep if the integrated preprocessing
+   --        is modifying the source text.
+
    S_GCC_GNAT    : aliased constant S := "/GNAT_INTERNAL "                 &
                                             "-gnatg";
    --        /NOGNAT_INTERNAL (D)
@@ -3311,6 +3319,7 @@ package VMS_Data is
                      S_GCC_Follow  'Access,
                      S_GCC_Force   'Access,
                      S_GCC_Full    'Access,
+                     S_GCC_Generate'Access,
                      S_GCC_GNAT    'Access,
                      S_GCC_Help    'Access,
                      S_GCC_Ident   'Access,

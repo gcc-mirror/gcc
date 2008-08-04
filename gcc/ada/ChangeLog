@@ -1,3 +1,33 @@
+2008-08-04  Vincent Celier  <celier@adacore.com>
+
+	* gprep.adb (Process_One_File): Call Prep.Preprocess with a Boolean
+	variable, but don't check the resulting value as it has no impact on
+	the processing.
+	
+	* opt.ads:
+	(Generate_Processed_File): New Boolean flag, set to True in the compiler
+	when switch -gnateG is used.
+	
+	* prep.adb:
+	(Preprocess): new Boolean out parameter Source_Modified. Set it to True
+	when the source is modified by the preprocessor and there is no
+	preprocessing errors.
+	
+	* prep.ads (Preprocess): new Boolean out parameter Source_Modified
+	
+	* sinput-l.adb:
+	(Load_File): Output the result of preprocessing if the source text was
+	modified.
+	
+	* switch-c.adb (Scan_Front_End_Switches): Recognize switch -gnateG
+	
+	* switch-m.adb (Normalize_Compiler_Switches): Normalize switch -gnateG
+	
+	* ug_words: Add VMS equivalent for -gnateG
+	
+	* vms_data.ads:
+	Add VMS option /GENERATE_PROCESSED_SOURCE, equivalent to switch -gnateG
+
 2008-08-04  Doug Rupp  <rupp@adacore.com>
 
 	* gcc-interface/utils2.c:
