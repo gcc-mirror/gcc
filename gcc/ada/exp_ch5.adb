@@ -3906,6 +3906,7 @@ package body Exp_Ch5 is
          --  secondary stack.
 
          else
+            Check_Restriction (No_Secondary_Stack, N);
             Set_Storage_Pool (N, RTE (RE_SS_Pool));
 
             --  If we are generating code for the VM do not use
