@@ -1,3 +1,31 @@
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb: Improved messages for restriction warnings
+
+	* restrict.ads: Improved messages for restriction messages
+
+	* s-rident.ads (Profile_Name): Add No_Profile
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* system-darwin-x86.ads: Correct bad definition of Max_Nonbinary_Modulus
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Check for size clause for boolean warning
+
+2008-08-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb:
+	(Copy_Package_Declarations): When inheriting package Naming from a
+	project being extended, do not inherit source exception names.
+
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Precondition_Postcondition): When scanning the
+	list of declaration to find previous subprogram, do not go to the
+	original node of a generic unit.
+
 2008-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_binary_op) <PLUS_EXPR, MINUS_EXPR>:
