@@ -1,3 +1,7 @@
+2008-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/bip_aggregate_bug.adb: New test.
+
 2008-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/fmt_t_7.f: Replace CR-LF with LF.
@@ -30,6 +34,11 @@
 2008-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_expr2.adb: New test.
+
+2008-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/conv4.adb: New test.
+	* gnat.dg/overloading.adb: New test.
 
 2008-08-01  Jakub Jelinek  <jakub@redhat.com>
 
