@@ -1,5 +1,12 @@
 2008-08-04  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/37012
+	* config/i386/i386.c (ix86_expand_prologue): Use UNITS_PER_WORD
+	instead of STACK_BOUNDARY / BITS_PER_UNIT to align stack.
+	(ix86_expand_epilogue): Likewise.
+
+2008-08-04  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_compute_frame_layout): Fix a typo
 	in comments.
 
