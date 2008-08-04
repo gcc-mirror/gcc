@@ -498,7 +498,7 @@ package body Tbuild is
       Get_Name_String (Related_Id);
 
       if Prefix /= ' ' then
-         pragma Assert (Is_OK_Internal_Letter (Prefix));
+         pragma Assert (Is_OK_Internal_Letter (Prefix) or else Prefix = '_');
 
          for J in reverse 1 .. Name_Len loop
             Name_Buffer (J + 1) := Name_Buffer (J);
