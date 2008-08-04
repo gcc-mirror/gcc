@@ -1,3 +1,12 @@
+2008-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/postypes.h: Reinstate inclusion of <stdint.h>;
+	also define the __STDC_* macros.
+	(streamoff): Adjust.
+
+	* include/tr1_impl/cstdint: Check that the __STDC_* macros are
+	not defined before defining.
+
 2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
 	    Chris Fairles  <chris.fairles@gmail.com>
 
