@@ -2665,7 +2665,8 @@ package body Freeze is
                --  ever default initialized, and is why the check is deferred
                --  until freezing, at which point we know if Import applies.
 
-               if not Is_Imported (E)
+               if Comes_From_Source (E)
+                 and then not Is_Imported (E)
                  and then not Has_Init_Expression (Declaration_Node (E))
                  and then
                    ((Has_Non_Null_Base_Init_Proc (Etype (E))
