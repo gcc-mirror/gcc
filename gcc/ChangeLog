@@ -1,5 +1,11 @@
 2008-08-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/36691
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Correctly
+	check for no_overflow.
+
+2008-08-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vect-transform.c (vectorizable_call): Fix tuplification.
 
 2008-08-04  Paul Brook  <paul@codesourcery.com>
