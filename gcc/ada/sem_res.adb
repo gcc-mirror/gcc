@@ -9519,7 +9519,27 @@ package body Sem_Res is
                       (not Is_Constrained (Opnd)
                         or else not Is_Constrained (Target)))
                then
-                  return True;
+                  --  Special case, if Value_Size has been used to make the
+                  --  sizes different, the conversion is not allowed even
+                  --  though the subtypes statically match.
+
+                  if Known_Static_RM_Size (Target)
+                    and then Known_Static_RM_Size (Opnd)
+                    and then RM_Size (Target) /= RM_Size (Opnd)
+                  then
+                     Error_Msg_NE
+                       ("target designated subtype not compatible with }",
+                        N, Opnd);
+                     Error_Msg_NE
+                       ("\because sizes of the two designated subtypes differ",
+                        N, Opnd);
+                     return False;
+
+                  --  Normal case where conversion is allowed
+
+                  else
+                     return True;
+                  end if;
 
                else
                   Error_Msg_NE
