@@ -1281,10 +1281,10 @@ package body Sem_Prag is
             --  sequence, so the only way we get here is by being in the
             --  declarative part of the body.
 
-            elsif Nkind (P) = N_Subprogram_Body
-              or else Nkind (P) = N_Package_Body
-              or else Nkind (P) = N_Task_Body
-              or else Nkind (P) = N_Entry_Body
+            elsif Nkind_In (P, N_Subprogram_Body,
+                               N_Package_Body,
+                               N_Task_Body,
+                               N_Entry_Body)
             then
                return;
             end if;
@@ -2497,7 +2497,8 @@ package body Sem_Prag is
                end if;
                E := Alias (E);
 
-            elsif Nkind (Parent (E)) = N_Full_Type_Declaration
+            elsif Nkind_In (Parent (E), N_Full_Type_Declaration,
+                                        N_Private_Extension_Declaration)
               and then Scope (E) = Scope (Alias (E))
             then
                E := Alias (E);
@@ -2626,7 +2627,7 @@ package body Sem_Prag is
                  and then Comp_Unit = Get_Source_Unit (E1)
                  and then not Is_Formal_Subprogram (E1)
                  and then Nkind (Original_Node (Parent (E1))) /=
-                   N_Full_Type_Declaration
+                                                    N_Full_Type_Declaration
                then
                   if Present (Alias (E1))
                     and then Scope (E1) /= Scope (Alias (E1))
@@ -2966,9 +2967,8 @@ package body Sem_Prag is
                --  Pragma cannot apply to subprogram body
 
                if Is_Subprogram (Def_Id)
-                 and then
-                   Nkind (Parent
-                     (Declaration_Node (Def_Id))) = N_Subprogram_Body
+                 and then Nkind (Parent (Declaration_Node (Def_Id))) =
+                                                             N_Subprogram_Body
                then
                   Error_Pragma
                     ("pragma% requires separate spec"
@@ -3505,10 +3505,8 @@ package body Sem_Prag is
                      if Present (Decl)
                        and then Nkind (Decl) = N_Subprogram_Declaration
                        and then Present (Corresponding_Body (Decl))
-                       and then
-                         Nkind
-                           (Unit_Declaration_Node
-                             (Corresponding_Body (Decl))) =
+                       and then Nkind (Unit_Declaration_Node
+                                        (Corresponding_Body (Decl))) =
                                              N_Subprogram_Renaming_Declaration
                      then
                         Error_Msg_Sloc := Sloc (Def_Id);
