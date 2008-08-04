@@ -498,11 +498,24 @@ package body Sem_Ch4 is
             Set_Directly_Designated_Type (Acc_Type, Type_Id);
             Check_Fully_Declared (Type_Id, N);
 
-            --  Ada 2005 (AI-231)
+            --  Ada 2005 (AI-231) If the designated type is itself an access
+            --  type that excludes null, it's default initializastion will
+            --  be a null object, and we can insert an unconditional raise
+            --  before the allocator.
 
             if Can_Never_Be_Null (Type_Id) then
-               Error_Msg_N ("(Ada 2005) qualified expression required",
-                            Expression (N));
+               declare
+                  Not_Null_Check : constant Node_Id :=
+                                     Make_Raise_Constraint_Error (Sloc (E),
+                                       Reason => CE_Null_Not_Allowed);
+               begin
+                  if Expander_Active then
+                     Insert_Action (N, Not_Null_Check);
+                     Analyze (Not_Null_Check);
+                  else
+                     Error_Msg_N ("null value not allowed here?", E);
+                  end if;
+               end;
             end if;
 
             --  Check restriction against dynamically allocated protected
