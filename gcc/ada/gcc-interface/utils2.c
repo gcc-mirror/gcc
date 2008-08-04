@@ -2160,11 +2160,11 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 
 /* Fill in a VMS descriptor for EXPR and return a constructor for it.
    GNAT_FORMAL is how we find the descriptor record.  GNAT_ACTUAL is
-   how we find the allocator size which determines whether to use the
-   alternate 64bit descriptor. */
+   how we derive the source location to raise C_E on an out of range
+   pointer. */
 
 tree
-fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
+fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 {
   tree field;
   tree parm_decl = get_gnu_tree (gnat_formal);
@@ -2173,7 +2173,6 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
   int do_range_check =
       strcmp ("MBO",
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_FIELDS (record_type))));
-  tree malloc64low = build_int_cstu (long_integer_type_node, 0x80000000);
 
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
@@ -2189,15 +2188,20 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
       if (do_range_check &&
           strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), "POINTER") == 0)
         {
-          tree t = build3 (COND_EXPR, void_type_node,
-			   build_binary_op (GE_EXPR, long_integer_type_node,
-					    convert (long_integer_type_node,
-						     conexpr), 
-					    malloc64low),
-			   build_call_raise (CE_Range_Check_Failed, Empty,
-					     N_Raise_Constraint_Error),
-			   NULL_TREE);
-	  add_stmt_with_node (t, gnat_formal);
+	  tree pointer64type =
+	     build_pointer_type_for_mode (void_type_node, DImode, false);
+	  tree addr64expr = build_unary_op (ADDR_EXPR, pointer64type, expr);
+	  tree malloc64low =
+	     build_int_cstu (long_integer_type_node, 0x80000000);
+
+	  add_stmt (build3 (COND_EXPR, void_type_node,
+			    build_binary_op (GE_EXPR, long_integer_type_node,
+					     convert (long_integer_type_node,
+						      addr64expr), 
+					     malloc64low),
+			    build_call_raise (CE_Range_Check_Failed, gnat_actual,
+					      N_Raise_Constraint_Error),
+			    NULL_TREE));
         }
       const_list = tree_cons (field, conexpr, const_list);
     }
