@@ -4692,6 +4692,25 @@ package body Sem_Res is
          end loop;
       end if;
 
+      if Ekind (Etype (Nam)) = E_Access_Subprogram_Type
+         and then Ekind (Typ) /= E_Access_Subprogram_Type
+         and then Nkind (Subp) /= N_Explicit_Dereference
+         and then Present (Parameter_Associations (N))
+      then
+         --  The prefix is a parameterless function call that returns an
+         --  access to subprogram. If parameters are present in the current
+         --  call  add an explicit dereference.
+
+         --  The dereference is added either in Analyze_Call or here. Should
+         --  be consolidated ???
+
+         Set_Is_Overloaded (Subp, False);
+         Set_Etype (Subp, Etype (Nam));
+         Insert_Explicit_Dereference (Subp);
+         Nam := Designated_Type (Etype (Nam));
+         Resolve (Subp, Nam);
+      end if;
+
       --  Check that a call to Current_Task does not occur in an entry body
 
       if Is_RTE (Nam, RE_Current_Task) then
@@ -9487,7 +9506,10 @@ package body Sem_Res is
 
       --  Access to subprogram types. If the operand is an access parameter,
       --  the type has a deeper accessibility that any master, and cannot
-      --  be assigned.
+      --  be assigned. We must make an exception if the conversion is part
+      --  of an assignment and the target is the return object of an extended
+      --  return statement, because in that case the accessibility check
+      --  takes place after the return.
 
       elsif (Ekind (Target_Type) = E_Access_Subprogram_Type
                or else
@@ -9497,6 +9519,10 @@ package body Sem_Res is
          if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
            and then Is_Entity_Name (Operand)
            and then Ekind (Entity (Operand)) = E_In_Parameter
+           and then
+             (Nkind (Parent (N)) /= N_Assignment_Statement
+               or else not Is_Entity_Name (Name (Parent (N)))
+               or else not Is_Return_Object (Entity (Name (Parent (N)))))
          then
             Error_Msg_N
               ("illegal attempt to store anonymous access to subprogram",

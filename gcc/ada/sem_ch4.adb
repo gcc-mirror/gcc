@@ -2127,11 +2127,12 @@ package body Sem_Ch4 is
       --  is already known to be compatible, and because this may be an
       --  indexing of a call with default parameters.
 
-      Formal     : Entity_Id;
-      Actual     : Node_Id;
-      Is_Indexed : Boolean := False;
-      Subp_Type  : constant Entity_Id := Etype (Nam);
-      Norm_OK    : Boolean;
+      Formal      : Entity_Id;
+      Actual      : Node_Id;
+      Is_Indexed  : Boolean := False;
+      Is_Indirect : Boolean := False;
+      Subp_Type   : constant Entity_Id := Etype (Nam);
+      Norm_OK     : Boolean;
 
       function Operator_Hidden_By (Fun : Entity_Id) return Boolean;
       --  There may be a user-defined operator that hides the current
@@ -2240,6 +2241,13 @@ package body Sem_Ch4 is
       --  in prefix notation, so that the rebuilt parameter list has more than
       --  one actual.
 
+      if not Is_Overloadable (Nam)
+        and then Ekind (Nam) /= E_Subprogram_Type
+        and then Ekind (Nam) /= E_Entry_Family
+      then
+         return;
+      end if;
+
       if Present (Actuals)
         and then
           (Needs_No_Actuals (Nam)
@@ -2259,11 +2267,13 @@ package body Sem_Ch4 is
 
          --  The prefix can also be a parameterless function that returns an
          --  access to subprogram, in which case this is an indirect call.
+         --  If this succeeds, an explicit dereference is added later on,
+         --  in Analyze_Call or Resolve_Call.
 
          elsif Is_Access_Type (Subp_Type)
            and then Ekind (Designated_Type (Subp_Type)) = E_Subprogram_Type
          then
-            Is_Indexed := Try_Indirect_Call (N, Nam, Subp_Type);
+            Is_Indirect := Try_Indirect_Call (N, Nam, Subp_Type);
          end if;
 
       end if;
@@ -2278,13 +2288,21 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      Normalize_Actuals (N, Nam, (Report and not Is_Indexed), Norm_OK);
+      Normalize_Actuals
+        (N, Nam, (Report and not Is_Indexed and not Is_Indirect), Norm_OK);
 
       if not Norm_OK then
 
+         --  If an indirect call is a possible interpretation, indicate
+         --  success to the caller.
+
+         if Is_Indirect then
+            Success := True;
+            return;
+
          --  Mismatch in number or names of parameters
 
-         if Debug_Flag_E then
+         elsif Debug_Flag_E then
             Write_Str (" normalization fails in call ");
             Write_Int (Int (N));
             Write_Str (" with subprogram ");
@@ -2410,7 +2428,7 @@ package body Sem_Ch4 is
                      Write_Eol;
                   end if;
 
-                  if Report and not Is_Indexed then
+                  if Report and not Is_Indexed and not Is_Indirect then
 
                      --  Ada 2005 (AI-251): Complete the error notification
                      --  to help new Ada 2005 users
