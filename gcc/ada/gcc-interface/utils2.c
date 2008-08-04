@@ -2173,6 +2173,7 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
   int do_range_check =
       strcmp ("MBO",
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_FIELDS (record_type))));
+  tree malloc64low = build_int_cstu (long_integer_type_node, 0x80000000);
 
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
@@ -2189,14 +2190,14 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
           strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), "POINTER") == 0)
         {
           tree t = build3 (COND_EXPR, void_type_node,
-			   build_binary_op (LT_EXPR, integer_type_node,
-					    convert (integer_type_node,
+			   build_binary_op (GE_EXPR, long_integer_type_node,
+					    convert (long_integer_type_node,
 						     conexpr), 
-					    integer_zero_node),
+					    malloc64low),
 			   build_call_raise (CE_Range_Check_Failed, Empty,
 					     N_Raise_Constraint_Error),
 			   NULL_TREE);
-          add_stmt (t);
+	  add_stmt_with_node (t, gnat_formal);
         }
       const_list = tree_cons (field, conexpr, const_list);
     }
