@@ -446,16 +446,18 @@ package body Sem_Res is
                return;
             end if;
 
-            --   Detect a common beginner error:
+            --   Detect a common error:
 
             --   type R (D : Positive := 100) is record
             --     Name : String (1 .. D);
             --   end record;
 
-            --  The default value causes an object of type R to be
-            --  allocated with room for Positive'Last characters.
+            --  The default value causes an object of type R to be allocated
+            --  with room for Positive'Last characters. The RM does not mandate
+            --  the allocation of the maximum size, but that is what GNAT does
+            --  so we should warn the programmer that there is a problem.
 
-            declare
+            Check_Large : declare
                SI : Node_Id;
                T  : Entity_Id;
                TB : Node_Id;
@@ -480,8 +482,10 @@ package body Sem_Res is
                     and then Compile_Time_Known_Value (Type_High_Bound (T))
                     and then
                       Minimum_Size (T, Biased => True) >=
-                        Esize (Standard_Integer) - 1;
+                        RM_Size (Standard_Positive);
                end Large_Storage_Type;
+
+            --  Start of processing for Check_Large
 
             begin
                --  Check that the Disc has a large range
@@ -553,7 +557,7 @@ package body Sem_Res is
                <<No_Danger>>
                   null;
 
-            end;
+            end Check_Large;
          end if;
 
       --  Legal case is in index or discriminant constraint
