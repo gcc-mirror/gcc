@@ -2334,10 +2334,9 @@ package body Sprint is
                   Write_Str_With_Col_Check ("out ");
                end if;
 
-               --  Ada 2005 (AI-231) parameter specification may carry
-               --  null exclusion. Do not print it now if this is an
-               --  access parameter, it is emitted when the access
-               --  definition is displayed.
+               --  Ada 2005 (AI-231): Parameter specification may carry null
+               --  exclusion. Do not print it now if this is an access formal,
+               --  it is emitted when the access definition is displayed.
 
                if Null_Exclusion_Present (Node)
                  and then Nkind (Parameter_Type (Node))
