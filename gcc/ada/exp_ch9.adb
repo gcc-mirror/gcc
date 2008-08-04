@@ -4733,9 +4733,9 @@ package body Exp_Ch9 is
       Def1   : Node_Id;
 
    begin
-      --  Create access to protected subprogram with full signature
+      --  Create access to subprogram with full signature
 
-      if Nkind (Type_Definition (N)) = N_Access_Function_Definition then
+      if Etype (D_T) /= Standard_Void_Type then
          Def1 :=
            Make_Access_Function_Definition (Loc,
              Parameter_Specifications => P_List,
@@ -4753,8 +4753,8 @@ package body Exp_Ch9 is
           Defining_Identifier => D_T2,
           Type_Definition => Def1);
 
-      Analyze (Decl1);
       Insert_After (N, Decl1);
+      Analyze (Decl1);
 
       --  Create Equivalent_Type, a record with two components for an access to
       --  object and an access to subprogram.
@@ -4786,8 +4786,8 @@ package body Exp_Ch9 is
                 Make_Component_List (Loc,
                   Component_Items => Comps)));
 
-      Analyze (Decl2);
       Insert_After (Decl1, Decl2);
+      Analyze (Decl2);
       Set_Equivalent_Type (T, E_T);
    end Expand_Access_Protected_Subprogram_Type;
 
@@ -7062,6 +7062,7 @@ package body Exp_Ch9 is
    procedure Expand_N_Protected_Body (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Pid          : constant Entity_Id  := Corresponding_Spec (N);
+
       Current_Node : Node_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
@@ -7069,6 +7070,9 @@ package body Exp_Ch9 is
       Op_Body      : Node_Id;
       Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
+
+      Chain        : Entity_Id := Empty;
+      --  Finalization chain that may be attached to new body
 
       function Build_Dispatching_Subprogram_Body
         (N        : Node_Id;
@@ -7203,13 +7207,13 @@ package body Exp_Ch9 is
                   --  entity is not further elaborated, and so the chain
                   --  properly belongs to the newly created subprogram body.
 
-                  if Present
-                    (Finalization_Chain_Entity (Defining_Entity (Op_Body)))
-                  then
+                  Chain :=
+                    Finalization_Chain_Entity (Defining_Entity (Op_Body));
+
+                  if Present (Chain) then
                      Set_Finalization_Chain_Entity
                        (Protected_Body_Subprogram
-                         (Corresponding_Spec (Op_Body)),
-                       Finalization_Chain_Entity (Defining_Entity (Op_Body)));
+                         (Corresponding_Spec (Op_Body)), Chain);
                      Set_Analyzed
                          (Handled_Statement_Sequence (New_Op_Body), False);
                   end if;

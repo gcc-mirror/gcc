@@ -663,9 +663,9 @@ package body Sem_Ch6 is
             --  Analyze_Object_Declaration; we treat it as a normal
             --  object declaration.
 
+            Set_Is_Return_Object (Defining_Identifier (Obj_Decl));
             Analyze (Obj_Decl);
 
-            Set_Is_Return_Object (Defining_Identifier (Obj_Decl));
             Check_Return_Subtype_Indication (Obj_Decl);
 
             if Present (HSS) then
@@ -1804,12 +1804,19 @@ package body Sem_Ch6 is
             --  the body that depends on the subprogram having been frozen,
             --  such as uses of extra formals), so we force it to be frozen
             --  here. Same holds if the body and spec are compilation units.
+            --  Finally, if the return type is an anonymous access to protected
+            --  subprogram, it must be frozen before the body because its
+            --  expansion has generated an equivalent type that is used when
+            --  elaborating the body.
 
             if No (Spec_Id) then
                Freeze_Before (N, Body_Id);
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit then
                Freeze_Before (N, Spec_Id);
+
+            elsif Is_Access_Subprogram_Type (Etype (Body_Id)) then
+               Freeze_Before (N, Etype (Body_Id));
             end if;
 
          else
