@@ -1,3 +1,7 @@
+2008-08-04  Victor Kaplansky  <victork@il.ibm.com>
+
+	* gcc.dg/vect/vect-complex-5.c: New test.
+
 2008-08-04  Simon Baldwin  <simonb@google.com>
 
 	PR c++/36999
