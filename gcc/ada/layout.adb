@@ -83,16 +83,16 @@ package body Layout is
       Left_Opnd  : Node_Id;
       Right_Opnd : Node_Id) return Node_Id;
    --  This is like Make_Op_Multiply except that it optimizes some cases
-   --  knowing that associative rearrangement is allowed for constant
-   --  folding if one of the operands is a compile time known value
+   --  knowing that associative rearrangement is allowed for constant folding
+   --  if one of the operands is a compile time known value
 
    function Assoc_Subtract
      (Loc        : Source_Ptr;
       Left_Opnd  : Node_Id;
       Right_Opnd : Node_Id) return Node_Id;
    --  This is like Make_Op_Subtract except that it optimizes some cases
-   --  knowing that associative rearrangement is allowed for constant
-   --  folding if one of the operands is a compile time known value
+   --  knowing that associative rearrangement is allowed for constant folding
+   --  if one of the operands is a compile time known value
 
    function Bits_To_SU (N : Node_Id) return Node_Id;
    --  This is used when we cross the boundary from static sizes in bits to
@@ -159,21 +159,20 @@ package body Layout is
    --  Front-end layout of record type
 
    procedure Rewrite_Integer (N : Node_Id; V : Uint);
-   --  Rewrite node N with an integer literal whose value is V. The Sloc
-   --  for the new node is taken from N, and the type of the literal is
-   --  set to a copy of the type of N on entry.
+   --  Rewrite node N with an integer literal whose value is V. The Sloc for
+   --  the new node is taken from N, and the type of the literal is set to a
+   --  copy of the type of N on entry.
 
    procedure Set_And_Check_Static_Size
      (E      : Entity_Id;
       Esiz   : SO_Ref;
       RM_Siz : SO_Ref);
-   --  This procedure is called to check explicit given sizes (possibly
-   --  stored in the Esize and RM_Size fields of E) against computed
-   --  Object_Size (Esiz) and Value_Size (RM_Siz) values. Appropriate
-   --  errors and warnings are posted if specified sizes are inconsistent
-   --  with specified sizes. On return, the Esize and RM_Size fields of
-   --  E are set (either from previously given values, or from the newly
-   --  computed values, as appropriate).
+   --  This procedure is called to check explicit given sizes (possibly stored
+   --  in the Esize and RM_Size fields of E) against computed Object_Size
+   --  (Esiz) and Value_Size (RM_Siz) values. Appropriate errors and warnings
+   --  are posted if specified sizes are inconsistent with specified sizes. On
+   --  return, Esize and RM_Size fields of E are set (either from previously
+   --  given values, or from the newly computed values, as appropriate).
 
    procedure Set_Composite_Alignment (E : Entity_Id);
    --  This procedure is called for record types and subtypes, and also for
@@ -200,8 +199,8 @@ package body Layout is
       --  which must be obeyed. If so, we cannot increase the size in this
       --  routine.
 
-      --  For a type, the issue is whether an object size clause has been
-      --  set. A normal size clause constrains only the value size (RM_Size)
+      --  For a type, the issue is whether an object size clause has been set.
+      --  A normal size clause constrains only the value size (RM_Size)
 
       if Is_Type (E) then
          Esize_Set := Has_Object_Size_Clause (E);
@@ -247,14 +246,14 @@ package body Layout is
          return;
       end if;
 
-      --  Here we have a situation where the Esize is not a multiple of
-      --  the alignment. We must either increase Esize or reduce the
-      --  alignment to correct this situation.
+      --  Here we have a situation where the Esize is not a multiple of the
+      --  alignment. We must either increase Esize or reduce the alignment to
+      --  correct this situation.
 
       --  The case in which we can decrease the alignment is where the
       --  alignment was not set by an alignment clause, and the type in
-      --  question is a discrete type, where it is definitely safe to
-      --  reduce the alignment. For example:
+      --  question is a discrete type, where it is definitely safe to reduce
+      --  the alignment. For example:
 
       --    t : integer range 1 .. 2;
       --    for t'size use 8;
@@ -275,8 +274,8 @@ package body Layout is
          return;
       end if;
 
-      --  Now the only possible approach left is to increase the Esize
-      --  but we can't do that if the size was set by a specific clause.
+      --  Now the only possible approach left is to increase the Esize but we
+      --  can't do that if the size was set by a specific clause.
 
       if Esize_Set then
          Error_Msg_NE
@@ -606,9 +605,10 @@ package body Layout is
          Ent := Get_Dynamic_SO_Entity (D);
 
          if Is_Discrim_SO_Function (Ent) then
-            --  If a component is passed in whose type matches the type
-            --  of the function formal, then select that component from
-            --  the "V" parameter rather than passing "V" directly.
+
+            --  If a component is passed in whose type matches the type of
+            --  the function formal, then select that component from the "V"
+            --  parameter rather than passing "V" directly.
 
             if Present (Comp)
                and then Base_Type (Etype (Comp))
@@ -661,18 +661,18 @@ package body Layout is
                when Dynamic => Nod : Node_Id;
             end case;
          end record;
-      --  Shows the status of the value so far. Const means that the value
-      --  is constant, and Val is the current constant value. Dynamic means
-      --  that the value is dynamic, and in this case Nod is the Node_Id of
-      --  the expression to compute the value.
+      --  Shows the status of the value so far. Const means that the value is
+      --  constant, and Val is the current constant value. Dynamic means that
+      --  the value is dynamic, and in this case Nod is the Node_Id of the
+      --  expression to compute the value.
 
       Size : Val_Type;
       --  Calculated value so far if Size.Status = Const,
       --  or expression value so far if Size.Status = Dynamic.
 
       SU_Convert_Required : Boolean := False;
-      --  This is set to True if the final result must be converted from
-      --  bits to storage units (rounding up to a storage unit boundary).
+      --  This is set to True if the final result must be converted from bits
+      --  to storage units (rounding up to a storage unit boundary).
 
       -----------------------
       -- Local Subprograms --
@@ -799,9 +799,9 @@ package body Layout is
                     (Dynamic, Make_Integer_Literal (Loc, Size.Val / SSU));
                   SU_Convert_Required := False;
 
-               --  Otherwise, we go ahead and convert the value in bits,
-               --  and set SU_Convert_Required to True to ensure that the
-               --  final value is indeed properly converted.
+               --  Otherwise, we go ahead and convert the value in bits, and
+               --  set SU_Convert_Required to True to ensure that the final
+               --  value is indeed properly converted.
 
                else
                   Size := (Dynamic, Make_Integer_Literal (Loc, Size.Val));
@@ -827,8 +827,8 @@ package body Layout is
 
                Len := Convert_To (Standard_Unsigned, Len);
 
-               --  If we cannot verify that range cannot be super-flat,
-               --  we need a max with zero, since length must be non-neg.
+               --  If we cannot verify that range cannot be super-flat, we need
+               --  a max with zero, since length must be non-negative.
 
                if not OK or else LLo < 0 then
                   Len :=
@@ -846,8 +846,8 @@ package body Layout is
          Next_Index (Indx);
       end loop;
 
-      --  Here after processing all bounds to set sizes. If the value is
-      --  a constant, then it is bits, so we convert to storage units.
+      --  Here after processing all bounds to set sizes. If the value is a
+      --  constant, then it is bits, so we convert to storage units.
 
       if Size.Status = Const then
          return Bits_To_SU (Make_Integer_Literal (Loc, Size.Val));
@@ -900,10 +900,10 @@ package body Layout is
       -- How An Array Type is Laid Out --
       ------------------------------------
 
-      --  Here is what goes on. We need to multiply the component size of
-      --  the array (which has already been set) by the length of each of
-      --  the indexes. If all these values are known at compile time, then
-      --  the resulting size of the array is the appropriate constant value.
+      --  Here is what goes on. We need to multiply the component size of the
+      --  array (which has already been set) by the length of each of the
+      --  indexes. If all these values are known at compile time, then the
+      --  resulting size of the array is the appropriate constant value.
 
       --  If the component size or at least one bound is dynamic (but no
       --  discriminants are present), then the size will be computed as an
@@ -941,8 +941,8 @@ package body Layout is
       --  Value of size computed so far. See comments above
 
       Vtyp : Entity_Id := Empty;
-      --  Variant record type for the formal parameter of the
-      --  discriminant function V if Status = Discrim.
+      --  Variant record type for the formal parameter of the discriminant
+      --  function V if Status = Discrim.
 
       SU_Convert_Required : Boolean := False;
       --  This is set to True if the final result must be converted from
@@ -1064,7 +1064,7 @@ package body Layout is
       while Present (Indx) loop
          Ityp := Etype (Indx);
 
-         --  If an index of the array is a generic formal type then there's
+         --  If an index of the array is a generic formal type then there is
          --  no point in determining a size for the array type.
 
          if Is_Generic_Type (Ityp) then
@@ -1139,18 +1139,18 @@ package body Layout is
                     (Dynamic, Make_Integer_Literal (Loc, Size.Val / SSU));
                   SU_Convert_Required := False;
 
-               --  If the current value is a factor of the storage unit,
-               --  then we can use a value of one for the size and reduce
-               --  the strength of the later division.
+               --  If the current value is a factor of the storage unit, then
+               --  we can use a value of one for the size and reduce the
+               --  strength of the later division.
 
                elsif SSU mod Size.Val = 0 then
                   Storage_Divisor := SSU / Size.Val;
                   Size := (Dynamic, Make_Integer_Literal (Loc, Uint_1));
                   SU_Convert_Required := True;
 
-               --  Otherwise, we go ahead and convert the value in bits,
-               --  and set SU_Convert_Required to True to ensure that the
-               --  final value is indeed properly converted.
+               --  Otherwise, we go ahead and convert the value in bits, and
+               --  set SU_Convert_Required to True to ensure that the final
+               --  value is indeed properly converted.
 
                else
                   Size := (Dynamic, Make_Integer_Literal (Loc, Size.Val));
@@ -1165,8 +1165,8 @@ package body Layout is
 
             Len := Compute_Length (Lo, Hi);
 
-            --  If Len isn't a Length attribute, then its range needs to
-            --  be checked a possible Max with zero needs to be computed.
+            --  If Len isn't a Length attribute, then its range needs to be
+            --  checked a possible Max with zero needs to be computed.
 
             if Nkind (Len) /= N_Attribute_Reference
               or else Attribute_Name (Len) /= Name_Length
@@ -1193,9 +1193,8 @@ package body Layout is
                      return;
                   end if;
 
-                  --  If we cannot verify that range cannot be super-flat,
-                  --  we need a maximum with zero, since length cannot be
-                  --  negative.
+                  --  If we cannot verify that range cannot be super-flat, we
+                  --  need a max with zero, since length cannot be negative.
 
                   if not OK or else LLo < 0 then
                      Len :=
@@ -1221,9 +1220,9 @@ package body Layout is
          Next_Index (Indx);
       end loop;
 
-      --  Here after processing all bounds to set sizes. If the value is
-      --  a constant, then it is bits, and the only thing we need to do
-      --  is to check against explicit given size and do alignment adjust.
+      --  Here after processing all bounds to set sizes. If the value is a
+      --  constant, then it is bits, and the only thing we need to do is to
+      --  check against explicit given size and do alignment adjust.
 
       if Size.Status = Const then
          Set_And_Check_Static_Size (E, Size.Val, Size.Val);
@@ -1303,8 +1302,8 @@ package body Layout is
          return;
       end if;
 
-      --  Set size if not set for object and known for type. Use the
-      --  RM_Size if that is known for the type and Esize is not.
+      --  Set size if not set for object and known for type. Use the RM_Size if
+      --  that is known for the type and Esize is not.
 
       if Unknown_Esize (E) then
          if Known_Esize (T) then
@@ -1325,9 +1324,9 @@ package body Layout is
 
       Adjust_Esize_Alignment (E);
 
-      --  Final adjustment, if we don't know the alignment, and the Esize
-      --  was not set by an explicit Object_Size attribute clause, then
-      --  we reset the Esize to unknown, since we really don't know it.
+      --  Final adjustment, if we don't know the alignment, and the Esize was
+      --  not set by an explicit Object_Size attribute clause, then we reset
+      --  the Esize to unknown, since we really don't know it.
 
       if Unknown_Alignment (E)
         and then not Has_Size_Clause (E)
@@ -1505,8 +1504,8 @@ package body Layout is
                   New_Fbit := (New_Fbit + SSU - 1) / SSU * SSU;
                end if;
 
-               --  If old normalized position is static, we can go ahead
-               --  and compute the new normalized position directly.
+               --  If old normalized position is static, we can go ahead and
+               --  compute the new normalized position directly.
 
                if Known_Static_Normalized_Position (Prev_Comp) then
                   New_Npos := Old_Npos;
@@ -1619,11 +1618,11 @@ package body Layout is
             return;
          end if;
 
-         --  Check case of type of component has a scope of the record we
-         --  are laying out. When this happens, the type in question is an
-         --  Itype that has not yet been laid out (that's because such
-         --  types do not get frozen in the normal manner, because there
-         --  is no place for the freeze nodes).
+         --  Check case of type of component has a scope of the record we are
+         --  laying out. When this happens, the type in question is an Itype
+         --  that has not yet been laid out (that's because such types do not
+         --  get frozen in the normal manner, because there is no place for
+         --  the freeze nodes).
 
          if Scope (Ctyp) = E then
             Layout_Type (Ctyp);
@@ -1636,9 +1635,8 @@ package body Layout is
          end if;
 
          --  Set size of component from type. We use the Esize except in a
-         --  packed record, where we use the RM_Size (since that is exactly
-         --  what the RM_Size value, as distinct from the Object_Size is
-         --  useful for!)
+         --  packed record, where we use the RM_Size (since that is what the
+         --  RM_Size value, as distinct from the Object_Size is useful for!)
 
          if Is_Packed (E) then
             Set_Esize (Comp, RM_Size (Ctyp));
@@ -1915,10 +1913,10 @@ package body Layout is
 
          RM_Siz_Expr : Node_Id := Empty;
          --  Expression for the evolving RM_Siz value. This is typically a
-         --  conditional expression which involves tests of discriminant
-         --  values that are formed as references to the entity V. At
-         --  the end of scanning all the components, a suitable function
-         --  is constructed in which V is the parameter.
+         --  conditional expression which involves tests of discriminant values
+         --  that are formed as references to the entity V. At the end of
+         --  scanning all the components, a suitable function is constructed
+         --  in which V is the parameter.
 
          -----------------------
          -- Local Subprograms --
@@ -1928,14 +1926,14 @@ package body Layout is
            (Clist       : Node_Id;
             Esiz        : out SO_Ref;
             RM_Siz_Expr : out Node_Id);
-         --  Recursive procedure, called to lay out one component list
-         --  Esiz and RM_Siz_Expr are set to the Object_Size and Value_Size
-         --  values respectively representing the record size up to and
-         --  including the last component in the component list (including
-         --  any variants in this component list). RM_Siz_Expr is returned
-         --  as an expression which may in the general case involve some
-         --  references to the discriminants of the current record value,
-         --  referenced by selecting from the entity V.
+         --  Recursive procedure, called to lay out one component list Esiz
+         --  and RM_Siz_Expr are set to the Object_Size and Value_Size values
+         --  respectively representing the record size up to and including the
+         --  last component in the component list (including any variants in
+         --  this component list). RM_Siz_Expr is returned as an expression
+         --  which may in the general case involve some references to the
+         --  discriminants of the current record value, referenced by selecting
+         --  from the entity V.
 
          ---------------------------
          -- Layout_Component_List --
@@ -1982,9 +1980,9 @@ package body Layout is
                else
                   RMS_Ent := Get_Dynamic_SO_Entity (RM_Siz);
 
-                  --  If the size is represented by a function, then we
-                  --  create an appropriate function call using V as
-                  --  the parameter to the call.
+                  --  If the size is represented by a function, then we create
+                  --  an appropriate function call using V as the parameter to
+                  --  the call.
 
                   if Is_Discrim_SO_Function (RMS_Ent) then
                      RM_Siz_Expr :=
@@ -2080,9 +2078,9 @@ package body Layout is
                      --  individual variants, and xxDx are the discriminant
                      --  checking functions generated for the variant type.
 
-                     --  If this is the first variant, we simply set the
-                     --  result as the expression. Note that this takes
-                     --  care of the others case.
+                     --  If this is the first variant, we simply set the result
+                     --  as the expression. Note that this takes care of the
+                     --  others case.
 
                      if No (RM_Siz_Expr) then
                         RM_Siz_Expr := Bits_To_SU (RM_SizV);
@@ -2236,17 +2234,17 @@ package body Layout is
       --  All other cases
 
       else
-         --  Initialize alignment conservatively to 1. This value will
-         --  be increased as necessary during processing of the record.
+         --  Initialize alignment conservatively to 1. This value will be
+         --  increased as necessary during processing of the record.
 
          if Unknown_Alignment (E) then
             Set_Alignment (E, Uint_1);
          end if;
 
-         --  Initialize previous component. This is Empty unless there
-         --  are components which have already been laid out by component
-         --  clauses. If there are such components, we start our lay out of
-         --  the remaining components following the last such component.
+         --  Initialize previous component. This is Empty unless there are
+         --  components which have already been laid out by component clauses.
+         --  If there are such components, we start our lay out of the
+         --  remaining components following the last such component.
 
          Prev_Comp := Empty;
 
@@ -2303,8 +2301,8 @@ package body Layout is
       Desig_Type : Entity_Id;
 
    begin
-      --  For string literal types, for now, kill the size always, this
-      --  is because gigi does not like or need the size to be set ???
+      --  For string literal types, for now, kill the size always, this is
+      --  because gigi does not like or need the size to be set ???
 
       if Ekind (E) = E_String_Literal_Subtype then
          Set_Esize (E, Uint_0);
@@ -2312,14 +2310,14 @@ package body Layout is
          return;
       end if;
 
-      --  For access types, set size/alignment. This is system address
-      --  size, except for fat pointers (unconstrained array access types),
-      --  where the size is two times the address size, to accommodate the
-      --  two pointers that are required for a fat pointer (data and
-      --  template). Note that E_Access_Protected_Subprogram_Type is not
-      --  an access type for this purpose since it is not a pointer but is
-      --  equivalent to a record. For access subtypes, copy the size from
-      --  the base type since Gigi represents them the same way.
+      --  For access types, set size/alignment. This is system address size,
+      --  except for fat pointers (unconstrained array access types), where the
+      --  size is two times the address size, to accommodate the two pointers
+      --  that are required for a fat pointer (data and template). Note that
+      --  E_Access_Protected_Subprogram_Type is not an access type for this
+      --  purpose since it is not a pointer but is equivalent to a record. For
+      --  access subtypes, copy the size from the base type since Gigi
+      --  represents them the same way.
 
       if Is_Access_Type (E) then
 
@@ -2335,15 +2333,15 @@ package body Layout is
             Desig_Type := Non_Limited_View (Designated_Type (E));
          end if;
 
-         --  If Esize already set (e.g. by a size clause), then nothing
-         --  further to be done here.
+         --  If Esize already set (e.g. by a size clause), then nothing further
+         --  to be done here.
 
          if Known_Esize (E) then
             null;
 
-         --  Access to subprogram is a strange beast, and we let the
-         --  backend figure out what is needed (it may be some kind
-         --  of fat pointer, including the static link for example.
+         --  Access to subprogram is a strange beast, and we let the backend
+         --  figure out what is needed (it may be some kind of fat pointer,
+         --  including the static link for example.
 
          elsif Is_Access_Protected_Subprogram_Type (E) then
             null;
@@ -2354,9 +2352,9 @@ package body Layout is
             Set_Size_Info (E, Base_Type (E));
             Set_RM_Size   (E, RM_Size (Base_Type (E)));
 
-         --  For other access types, we use either address size, or, if
-         --  a fat pointer is used (pointer-to-unconstrained array case),
-         --  twice the address size to accommodate a fat pointer.
+         --  For other access types, we use either address size, or, if a fat
+         --  pointer is used (pointer-to-unconstrained array case), twice the
+         --  address size to accommodate a fat pointer.
 
          elsif Present (Desig_Type)
             and then Is_Array_Type (Desig_Type)
@@ -2378,9 +2376,9 @@ package body Layout is
                  ("?this access type does not correspond to C pointer", E);
             end if;
 
-         --  If the designated type is a limited view it is unanalyzed. We
-         --  can examine the declaration itself to determine whether it will
-         --  need a fat pointer.
+         --  If the designated type is a limited view it is unanalyzed. We can
+         --  examine the declaration itself to determine whether it will need a
+         --  fat pointer.
 
          elsif Present (Desig_Type)
             and then Present (Parent (Desig_Type))
@@ -2392,9 +2390,9 @@ package body Layout is
             Init_Size (E, 2 * System_Address_Size);
 
          --  When the target is AAMP, access-to-subprogram types are fat
-         --  pointers consisting of the subprogram address and a static
-         --  link (with the exception of library-level access types,
-         --  where a simple subprogram address is used).
+         --  pointers consisting of the subprogram address and a static link
+         --  (with the exception of library-level access types, where a simple
+         --  subprogram address is used).
 
          elsif AAMP_On_Target
            and then
@@ -2411,15 +2409,14 @@ package body Layout is
          --  On VMS, reset size to 32 for convention C access type if no
          --  explicit size clause is given and the default size is 64. Really
          --  we do not know the size, since depending on options for the VMS
-         --  compiler, the size of a pointer type can be 32 or 64, but
-         --  choosing 32 as the default improves compatibility with legacy
-         --  VMS code.
+         --  compiler, the size of a pointer type can be 32 or 64, but choosing
+         --  32 as the default improves compatibility with legacy VMS code.
 
          --  Note: we do not use Has_Size_Clause in the test below, because we
-         --  want to catch the case of a derived type inheriting a size
-         --  clause.  We want to consider this to be an explicit size clause
-         --  for this purpose, since it would be weird not to inherit the size
-         --  in this case.
+         --  want to catch the case of a derived type inheriting a size clause.
+         --  We want to consider this to be an explicit size clause for this
+         --  purpose, since it would be weird not to inherit the size in this
+         --  case.
 
          --  We do NOT do this if we are in -gnatdm mode on a non-VMS target
          --  since in that case we want the normal pointer representation.
@@ -2440,12 +2437,11 @@ package body Layout is
 
       elsif Is_Scalar_Type (E) then
 
-         --  For discrete types, the RM_Size and Esize must be set
-         --  already, since this is part of the earlier processing
-         --  and the front end is always required to lay out the
-         --  sizes of such types (since they are available as static
-         --  attributes). All we do is to check that this rule is
-         --  indeed obeyed!
+         --  For discrete types, the RM_Size and Esize must be set already,
+         --  since this is part of the earlier processing and the front end is
+         --  always required to lay out the sizes of such types (since they are
+         --  available as static attributes). All we do is to check that this
+         --  rule is indeed obeyed!
 
          if Is_Discrete_Type (E) then
 
@@ -2472,10 +2468,10 @@ package body Layout is
                         Init_Esize (E, S);
                         exit;
 
-                     --  If the RM_Size is greater than 64 (happens only
-                     --  when strange values are specified by the user,
-                     --  then Esize is simply a copy of RM_Size, it will
-                     --  be further refined later on)
+                     --  If the RM_Size is greater than 64 (happens only when
+                     --  strange values are specified by the user, then Esize
+                     --  is simply a copy of RM_Size, it will be further
+                     --  refined later on)
 
                      elsif S = 64 then
                         Set_Esize (E, RM_Size (E));
@@ -2490,8 +2486,8 @@ package body Layout is
                end;
             end if;
 
-         --  For non-discrete scalar types, if the RM_Size is not set,
-         --  then set it now to a copy of the Esize if the Esize is set.
+         --  For non-discrete scalar types, if the RM_Size is not set, then set
+         --  it now to a copy of the Esize if the Esize is set.
 
          else
             if Known_Esize (E) and then Unknown_RM_Size (E) then
@@ -2508,8 +2504,8 @@ package body Layout is
 
          if Known_RM_Size (E) and then Unknown_Esize (E) then
 
-            --  If the alignment is known, we bump the Esize up to the
-            --  next alignment boundary if it is not already on one.
+            --  If the alignment is known, we bump the Esize up to the next
+            --  alignment boundary if it is not already on one.
 
             if Known_Alignment (E) then
                declare
@@ -2520,18 +2516,17 @@ package body Layout is
                end;
             end if;
 
-         --  If Esize is set, and RM_Size is not, RM_Size is copied from
-         --  Esize at least for now this seems reasonable, and is in any
-         --  case needed for compatibility with old versions of gigi.
-         --  look to be unknown.
+         --  If Esize is set, and RM_Size is not, RM_Size is copied from Esize.
+         --  At least for now this seems reasonable, and is in any case needed
+         --  for compatibility with old versions of gigi.
 
          elsif Known_Esize (E) and then Unknown_RM_Size (E) then
             Set_RM_Size (E, Esize (E));
          end if;
 
-         --  For array base types, set component size if object size of
-         --  the component type is known and is a small power of 2 (8,
-         --  16, 32, 64), since this is what will always be used.
+         --  For array base types, set component size if object size of the
+         --  component type is known and is a small power of 2 (8, 16, 32, 64),
+         --  since this is what will always be used.
 
          if Ekind (E) = E_Array_Type
            and then Unknown_Component_Size (E)
@@ -2540,8 +2535,8 @@ package body Layout is
                CT : constant Entity_Id := Component_Type (E);
 
             begin
-               --  For some reasons, access types can cause trouble,
-               --  So let's just do this for discrete types ???
+               --  For some reasons, access types can cause trouble, So let's
+               --  just do this for discrete types ???
 
                if Present (CT)
                  and then Is_Discrete_Type (CT)
@@ -2646,9 +2641,9 @@ package body Layout is
             begin
                Set_Esize (E, RM_Size (E));
 
-               --  For scalar types, increase Object_Size to power of 2,
-               --  but not less than a storage unit in any case (i.e.,
-               --  normally this means it will be storage-unit addressable).
+               --  For scalar types, increase Object_Size to power of 2, but
+               --  not less than a storage unit in any case (i.e., normally
+               --  this means it will be storage-unit addressable).
 
                if Is_Scalar_Type (E) then
                   if Size <= System_Storage_Unit then
@@ -2700,16 +2695,15 @@ package body Layout is
       SC : Node_Id;
 
       procedure Check_Size_Too_Small (Spec : Uint; Min : Uint);
-      --  Spec is the number of bit specified in the size clause, and
-      --  Min is the minimum computed size. An error is given that the
-      --  specified size is too small if Spec < Min, and in this case
-      --  both Esize and RM_Size are set to unknown in E. The error
-      --  message is posted on node SC.
+      --  Spec is the number of bit specified in the size clause, and Min is
+      --  the minimum computed size. An error is given that the specified size
+      --  is too small if Spec < Min, and in this case both Esize and RM_Size
+      --  are set to unknown in E. The error message is posted on node SC.
 
       procedure Check_Unused_Bits (Spec : Uint; Max : Uint);
-      --  Spec is the number of bits specified in the size clause, and
-      --  Max is the maximum computed size. A warning is given about
-      --  unused bits if Spec > Max. This warning is posted on node SC.
+      --  Spec is the number of bits specified in the size clause, and Max is
+      --  the maximum computed size. A warning is given about unused bits if
+      --  Spec > Max. This warning is posted on node SC.
 
       --------------------------
       -- Check_Size_Too_Small --
@@ -2758,10 +2752,10 @@ package body Layout is
          end if;
       end if;
 
-      --  Case where Value_Size (RM_Size) is set by specific Value_Size
-      --  clause (we do not need to worry about Value_Size being set by
-      --  a Size clause, since that will have set Esize as well, and we
-      --  already took care of that case).
+      --  Case where Value_Size (RM_Size) is set by specific Value_Size clause
+      --  (we do not need to worry about Value_Size being set by a Size clause,
+      --  since that will have set Esize as well, and we already took care of
+      --  that case).
 
       if Known_Static_RM_Size (E) then
          SC := Get_Attribute_Definition_Clause (E, Attribute_Value_Size);
@@ -2949,8 +2943,8 @@ package body Layout is
          end if;
       end if;
 
-      --  Set chosen alignment, and increase Esize if necessary to match
-      --  the chosen alignment.
+      --  Set chosen alignment, and increase Esize if necessary to match the
+      --  chosen alignment.
 
       Set_Alignment (E, UI_From_Int (Align));
 
@@ -2969,21 +2963,21 @@ package body Layout is
       FST : constant Entity_Id := First_Subtype (Def_Id);
 
    begin
-      --  All discrete types except for the base types in standard
-      --  are constrained, so indicate this by setting Is_Constrained.
+      --  All discrete types except for the base types in standard are
+      --  constrained, so indicate this by setting Is_Constrained.
 
       Set_Is_Constrained (Def_Id);
 
-      --  We set generic types to have an unknown size, since the
-      --  representation of a generic type is irrelevant, in view
-      --  of the fact that they have nothing to do with code.
+      --  Set generic types to have an unknown size, since the representation
+      --  of a generic type is irrelevant, in view of the fact that they have
+      --  nothing to do with code.
 
       if Is_Generic_Type (Root_Type (FST)) then
          Set_RM_Size (Def_Id, Uint_0);
 
-      --  If the subtype statically matches the first subtype, then
-      --  it is required to have exactly the same layout. This is
-      --  required by aliasing considerations.
+      --  If the subtype statically matches the first subtype, then it is
+      --  required to have exactly the same layout. This is required by
+      --  aliasing considerations.
 
       elsif Def_Id /= FST and then
         Subtypes_Statically_Match (Def_Id, FST)
@@ -2991,9 +2985,9 @@ package body Layout is
          Set_RM_Size   (Def_Id, RM_Size (FST));
          Set_Size_Info (Def_Id, FST);
 
-      --  In all other cases the RM_Size is set to the minimum size.
-      --  Note that this routine is never called for subtypes for which
-      --  the RM_Size is set explicitly by an attribute clause.
+      --  In all other cases the RM_Size is set to the minimum size. Note that
+      --  this routine is never called for subtypes for which the RM_Size is
+      --  set explicitly by an attribute clause.
 
       else
          Set_RM_Size (Def_Id, UI_From_Int (Minimum_Size (Def_Id)));
@@ -3033,9 +3027,9 @@ package body Layout is
          return;
       end if;
 
-      --  Here we calculate the alignment as the largest power of two
-      --  multiple of System.Storage_Unit that does not exceed either
-      --  the actual size of the type, or the maximum allowed alignment.
+      --  Here we calculate the alignment as the largest power of two multiple
+      --  of System.Storage_Unit that does not exceed either the actual size of
+      --  the type, or the maximum allowed alignment.
 
       declare
          S : constant Int :=
@@ -3050,18 +3044,18 @@ package body Layout is
             A := 2 * A;
          end loop;
 
-         --  Now we think we should set the alignment to A, but we
-         --  skip this if an alignment is already set to a value
-         --  greater than A (happens for derived types).
+         --  Now we think we should set the alignment to A, but we skip this if
+         --  an alignment is already set to a value greater than A (happens for
+         --  derived types).
 
-         --  However, if the alignment is known and too small it
-         --  must be increased, this happens in a case like:
+         --  However, if the alignment is known and too small it must be
+         --  increased, this happens in a case like:
 
          --     type R is new Character;
          --     for R'Size use 16;
 
-         --  Here the alignment inherited from Character is 1, but
-         --  it must be increased to 2 to reflect the increased size.
+         --  Here the alignment inherited from Character is 1, but it must be
+         --  increased to 2 to reflect the increased size.
 
          if Unknown_Alignment (E) or else Alignment (E) < A then
             Init_Alignment (E, A);
@@ -3170,8 +3164,8 @@ package body Layout is
                    Make_Simple_Return_Statement (Loc,
                      Expression => Expr))));
 
-      --  The caller requests that the expression be encapsulated in
-      --  a parameterless function.
+      --  The caller requests that the expression be encapsulated in a
+      --  parameterless function.
 
       elsif Make_Func then
          Decl :=
