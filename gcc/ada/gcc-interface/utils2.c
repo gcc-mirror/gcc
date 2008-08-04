@@ -2169,19 +2169,37 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal)
   tree field;
   tree parm_decl = get_gnu_tree (gnat_formal);
   tree const_list = NULL_TREE;
-  tree record_type;
+  tree record_type = TREE_TYPE (TREE_TYPE (parm_decl));
+  int do_range_check =
+      strcmp ("MBO",
+	      IDENTIFIER_POINTER (DECL_NAME (TYPE_FIELDS (record_type))));
 
-  record_type = TREE_TYPE (TREE_TYPE (parm_decl));
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
 
   for (field = TYPE_FIELDS (record_type); field; field = TREE_CHAIN (field))
-    const_list
-      = tree_cons (field,
-		   convert (TREE_TYPE (field),
-			    SUBSTITUTE_PLACEHOLDER_IN_EXPR
-			    (DECL_INITIAL (field), expr)),
-		   const_list);
+    {
+      tree conexpr = convert (TREE_TYPE (field),
+			      SUBSTITUTE_PLACEHOLDER_IN_EXPR
+			      (DECL_INITIAL (field), expr));
+
+      /* Check to ensure that only 32bit pointers are passed in
+	 32bit descriptors */
+      if (do_range_check &&
+          strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), "POINTER") == 0)
+        {
+          tree t = build3 (COND_EXPR, void_type_node,
+			   build_binary_op (LT_EXPR, integer_type_node,
+					    convert (integer_type_node,
+						     conexpr), 
+					    integer_zero_node),
+			   build_call_raise (CE_Range_Check_Failed, Empty,
+					     N_Raise_Constraint_Error),
+			   NULL_TREE);
+          add_stmt (t);
+        }
+      const_list = tree_cons (field, conexpr, const_list);
+    }
 
   return gnat_build_constructor (record_type, nreverse (const_list));
 }
