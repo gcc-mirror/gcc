@@ -1,3 +1,28 @@
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Suppress range warnings in instances
+
+2008-08-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb:
+	(Replace_Anonymous_Access_To_Protected_Subprogram): Handle properly an
+	anonymous access to protected subprogram that is the return type of the
+	specification of a subprogram body.
+
+	* sem_ch6.adb:
+	(Analyze_Subprogram_Body): if the return type is an anonymous access to
+	subprogram, freeze it now to prevent access anomalies in the back-end.
+
+	* exp_ch9.adb: Minor code cleanup.
+	Make sure that new declarations are inserted into the tree before
+	analysis (from code reading).
+
+2008-08-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb:
+	(Expand_Simple_Function_Return): Check No_Secondary_Stack restriction
+	at point of return.
+
 2008-08-04  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_type.adb, sem_ch4.adb, sprint.adb, exp_ch3.adb: Minor reformatting
