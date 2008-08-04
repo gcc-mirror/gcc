@@ -1,5 +1,11 @@
 2008-08-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-loop-ivopts.c (add_iv_value_candidates): Also add
+	the candidate with the stripped base if that base is different
+	from the original base even for offset zero.
+
+2008-08-04  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/36691
 	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Correctly
 	check for no_overflow.
