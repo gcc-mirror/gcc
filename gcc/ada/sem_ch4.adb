@@ -1516,8 +1516,8 @@ package body Sem_Ch4 is
       then
          --  The prefix may include access to subprograms and other access
          --  types. If the context selects the interpretation that is a
-         --  function  call (not a procedure call) we cannot rewrite the
-         --  node yet, but we include the result of the call interpretation.
+         --  function call (not a procedure call) we cannot rewrite the node
+         --  yet, but we include the result of the call interpretation.
 
          Get_First_Interp (N, I, It);
          while Present (It.Nam) loop
