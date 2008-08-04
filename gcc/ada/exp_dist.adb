@@ -11005,13 +11005,13 @@ package body Exp_Dist is
             Nam : Name_Id) return Entity_Id
          is
          begin
-
             declare
                Serial : Nat := 0;
                --  For tagged types, we use a canonical name so that it matches
                --  the primitive spec. For all other cases, we use a serialized
                --  name so that multiple generations of the same procedure do
                --  not clash.
+
             begin
                if not Is_Tagged_Type (Typ) then
                   Serial := Increment_Serial_Number;
