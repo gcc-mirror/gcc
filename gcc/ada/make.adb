@@ -5110,39 +5110,42 @@ package body Make is
 
                   declare
                      Defaults : constant Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Name                    => Name_Ada,
-                          Index                   => 0,
-                          Attribute_Or_Array_Name => Name_Default_Switches,
-                          In_Package              => Builder_Package,
-                          In_Tree                 => Project_Tree);
+                                  Prj.Util.Value_Of
+                                    (Name                    => Name_Ada,
+                                     Index                   => 0,
+                                     Attribute_Or_Array_Name =>
+                                       Name_Default_Switches,
+                                     In_Package              =>
+                                       Builder_Package,
+                                     In_Tree                 => Project_Tree);
 
                      Switches : constant Array_Element_Id :=
-                          Prj.Util.Value_Of
-                             (Name      => Name_Switches,
-                              In_Arrays =>
-                                Project_Tree.Packages.Table
-                                  (Builder_Package).Decl.Arrays,
-                              In_Tree   => Project_Tree);
+                                  Prj.Util.Value_Of
+                                    (Name      => Name_Switches,
+                                     In_Arrays =>
+                                       Project_Tree.Packages.Table
+                                         (Builder_Package).Decl.Arrays,
+                                     In_Tree   => Project_Tree);
 
                      Other_Switches : constant Variable_Value :=
-                           Prj.Util.Value_Of
-                             (Name                    => All_Other_Names,
-                              Index                   => 0,
-                              Attribute_Or_Array_Name => Name_Switches,
-                              In_Package              => Builder_Package,
-                              In_Tree                 => Project_Tree);
+                                        Prj.Util.Value_Of
+                                          (Name        => All_Other_Names,
+                                           Index       => 0,
+                                           Attribute_Or_Array_Name
+                                                       => Name_Switches,
+                                           In_Package  => Builder_Package,
+                                           In_Tree     => Project_Tree);
 
                   begin
                      if Other_Switches /= Nil_Variable_Value then
                         if not Quiet_Output
                           and then Switches /= No_Array_Element
                           and then Project_Tree.Array_Elements.Table
-                                (Switches).Next /= No_Array_Element
+                                     (Switches).Next /= No_Array_Element
                         then
                            Write_Line
-                             ("Warning: using Builder'Switches(others), " &
-                              "as there are several mains");
+                             ("Warning: using Builder'Switches(others), "
+                              & "as there are several mains");
                         end if;
 
                         Add_Switches
@@ -5156,8 +5159,8 @@ package body Make is
                           and then Switches /= No_Array_Element
                         then
                            Write_Line
-                             ("Warning: using Builder'Default_Switches" &
-                              "(""Ada""), as there are several mains");
+                             ("Warning: using Builder'Default_Switches"
+                              & "(""Ada""), as there are several mains");
                         end if;
 
                         Add_Switches
@@ -5170,8 +5173,8 @@ package body Make is
                        and then Switches /= No_Array_Element
                      then
                         Write_Line
-                          ("Warning: using no switches from package " &
-                           "Builder, as there are several mains");
+                          ("Warning: using no switches from package "
+                           & "Builder, as there are several mains");
                      end if;
                   end;
                end if;
