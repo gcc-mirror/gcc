@@ -3454,7 +3454,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
     return GS_ERROR;
   else if (want_value)
     {
-      tree_to_gimple_tuple (expr_p);
+      if (*expr_p)
+	tree_to_gimple_tuple (expr_p);
 
       append_to_statement_list (*expr_p, pre_p);
       *expr_p = object;

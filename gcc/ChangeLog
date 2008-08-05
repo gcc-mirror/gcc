@@ -1,3 +1,9 @@
+2008-08-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37026
+	* gimplify.c (gimplify_init_constructor): Do not call
+	tree_to_gimple_tuple with NULL_TREE.
+
 2008-08-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36691
