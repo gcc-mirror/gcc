@@ -700,6 +700,8 @@ static const struct fpu_desc all_fpus[] =
   {"maverick",	FPUTYPE_MAVERICK},
   {"vfp",	FPUTYPE_VFP},
   {"vfp3",	FPUTYPE_VFP3},
+  {"vfpv3",	FPUTYPE_VFP3},
+  {"vfpv3-d16",	FPUTYPE_VFP3D16},
   {"neon",	FPUTYPE_NEON}
 };
 
@@ -716,6 +718,7 @@ static const enum fputype fp_model_for_fpu[] =
   ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA_EMU3  */
   ARM_FP_MODEL_MAVERICK,	/* FPUTYPE_MAVERICK  */
   ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP  */
+  ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP3D16  */
   ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP3  */
   ARM_FP_MODEL_VFP		/* FPUTYPE_NEON  */
 };
@@ -17738,8 +17741,12 @@ arm_file_start (void)
 	      fpu_name = "vfp";
 	      set_float_abi_attributes = 1;
 	      break;
+	    case FPUTYPE_VFP3D16:
+	      fpu_name = "vfpv3-d16";
+	      set_float_abi_attributes = 1;
+	      break;
 	    case FPUTYPE_VFP3:
-	      fpu_name = "vfp3";
+	      fpu_name = "vfpv3";
 	      set_float_abi_attributes = 1;
 	      break;
 	    case FPUTYPE_NEON:

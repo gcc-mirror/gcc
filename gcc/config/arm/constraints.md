@@ -46,7 +46,7 @@
  "The Cirrus Maverick co-processor registers.")
 
 (define_register_constraint "w"
-  "TARGET_32BIT ? (TARGET_VFP3 ? VFP_REGS : VFP_LO_REGS) : NO_REGS"
+  "TARGET_32BIT ? (TARGET_VFPD32 ? VFP_REGS : VFP_LO_REGS) : NO_REGS"
  "The VFP registers @code{d0}-@code{d15}, or @code{d0}-@code{d31} for VFPv3.")
 
 (define_register_constraint "x" "TARGET_32BIT ? VFP_D0_D7_REGS : NO_REGS"
