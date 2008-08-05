@@ -1,5 +1,34 @@
 2008-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu_spu_mfcio.h: Wrap in extern "C" if __cplusplus.
+	Reword some comments throughout the file.
+
+	(MFC_MIN_DMA_LIST_ELEMENTS): New define.
+	(MFC_MAX_DMA_LIST_ELEMENTS): Likewise.
+	(MFC_MIN_DMA_LIST_SIZE): Redefine in terms of MFC_MIN_DMA_LIST_ELEMENTS.
+	(MFC_MAX_DMA_LIST_SIZE): Redefine in terms of MFC_MAX_DMA_LIST_ELEMENTS.
+
+	(MFC_START_ENABLE): Remove PPU-only define.
+	(MFC_PUTS_CMD, MFC_PUTFS_CMD, MFC_PUTBS_CMD): Likewise.
+	(MFC_GETS_CMD, MFC_GETFS_CMD, MFC_GETBS_CMD): Likewise.
+
+	(MFC_PUTB_CMD, MFC_PUTF_CMD): Reimplement using symbolic constants.
+	(MFC_PUTL_CMD, MFC_PUTLB_CMD, MFC_PUTLF_CMD): Likewise.
+	(MFC_PUTR_CMD, MFC_PUTRB_CMD, MFC_PUTRF_CMD): Likewise.
+	(MFC_PUTRL_CMD, MFC_PUTRLB_CMD, MFC_PUTRLF_CMD): Likewise.
+	(MFC_GETB_CMD, MFC_GETF_CMD): Likewise.
+	(MFC_GETL_CMD, MFC_GETLB_CMD, MFC_GETLF_CMD): Likewise.
+	(MFC_SNDSIGB_CMD, MFC_SNDSIGF_CMD): Likewise.
+
+	(MFC_SDCRT_CMD, MFC_SDCRTST_CMD): New defines.
+	(MFC_SDCRZ_CMD, MFC_SDCRST_CMD, MFC_SDCRF_CMD): Likewise.
+	(mfc_sdcrt, mfc_sdcrtst): Likewise.
+	(mfc_sdcrz, mfc_sdcrst, mfc_sdcrf): Likewise.
+
+	(spu_read_machine_status): Fix typo.
+
+2008-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.h (CANNOT_CHANGE_MODE_CLASS): Allow (multi)word-sized
 	SUBREG of multi-word hard register.
 	* config/spu/spu.c (valid_subreg): Likewise.
