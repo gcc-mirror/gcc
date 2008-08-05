@@ -2189,6 +2189,7 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
 	.cfi_same_value 1
 	.cfi_def_cfa 1, 2
 	.cfi_escape 1, 2, 3, 4, 5
+	.cfi_personality 0, symbol
 	.cfi_endproc])
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_DIRECTIVE,
   [`if test $gcc_cv_as_cfi_directive = yes; then echo 1; else echo 0; fi`],

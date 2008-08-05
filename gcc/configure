@@ -20851,6 +20851,7 @@ fi
 	.cfi_same_value 1
 	.cfi_def_cfa 1, 2
 	.cfi_escape 1, 2, 3, 4, 5
+	.cfi_personality 0, symbol
 	.cfi_endproc' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
