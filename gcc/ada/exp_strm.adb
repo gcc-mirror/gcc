@@ -1113,12 +1113,22 @@ package body Exp_Strm is
          while Present (Discr) loop
             Cn := New_External_Name ('C', J);
 
-            Append_To (Decls,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Make_Defining_Identifier (Loc, Cn),
                 Object_Definition =>
-                 New_Occurrence_Of (Etype (Discr), Loc)));
+                  New_Occurrence_Of (Etype (Discr), Loc));
 
+            --  If the this  is an access discriminant, do not perform default
+            --  initialization.  The discriminant is about to get its value
+            --  from Read, and if the type is null excluding we do not want
+            --  spurious warnings on an initial null.
+
+            if Is_Access_Type (Etype (Discr)) then
+               Set_No_Initialization (Decl);
+            end if;
+
+            Append_To (Decls, Decl);
             Append_To (Decls,
               Make_Attribute_Reference (Loc,
                 Prefix => New_Occurrence_Of (Etype (Discr), Loc),
