@@ -2769,6 +2769,10 @@ package VMS_Data is
                                                "-gnatwb "                  &
                                             "NO_BAD_FIXED_VALUES "         &
                                                "-gnatwB "                  &
+                                            "BIASED_REPRESENTATION "       &
+                                               "-gnatw.b "                 &
+                                            "NO_BIASED_REPRESENTATION "    &
+                                               "-gnatw.B "                 &
                                             "CONDITIONALS "                &
                                                "-gnatwc "                  &
                                             "NOCONDITIONALS "              &
