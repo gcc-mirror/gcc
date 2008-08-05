@@ -2664,8 +2664,15 @@ package body Freeze is
                --  The check doesn't apply to imported objects, which are not
                --  ever default initialized, and is why the check is deferred
                --  until freezing, at which point we know if Import applies.
+               --  Deferred constants are also exempted from this test because
+               --  their completion is explicit, or through an import pragma.
 
-               if Comes_From_Source (E)
+               if Ekind (E) = E_Constant
+                 and then Present (Full_View (E))
+               then
+                  null;
+
+               elsif Comes_From_Source (E)
                  and then not Is_Imported (E)
                  and then not Has_Init_Expression (Declaration_Node (E))
                  and then
