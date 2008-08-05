@@ -1,3 +1,17 @@
+2008-08-05  Paul Brook  <paul@codesourcery.com>
+
+	* doc/invoke.texi: Document new ARM -mfpu= and -mcpu= options.
+	* config/arm/arm.c (all_fpus): Add vfpv3 and vfpv3-d16.
+	(fp_model_for_fpu): Add entry for FPUTYPE_VFP3D16.
+	(arm_file_start): Add FPUTYPE_VFP3D16.  Rename vfp3 to vfpv3.
+	* config/arm/arm.h (TARGET_VFPD32): Define.
+	(TARGET_VFP3): Use TARGET_VFPD32.
+	(fputype): Add FPUTYPE_VFP3D16.
+	(LAST_VFP_REGNUM): Use TARGET_VFPD32.
+	* config/arm/constraints.md ("w"): Use TARGET_VFPD32.
+	* config/arm/arm-cores.def: Add cortex-r4f.
+	* config/arm/arm-tune.md: Regenerate.
+
 2008-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu_spu_mfcio.h: Wrap in extern "C" if __cplusplus.

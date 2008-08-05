@@ -212,15 +212,20 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
 
 /* The following two macros concern the ability to execute coprocessor
-   instructions for VFPv3 or NEON.  TARGET_VFP3 is currently only ever
-   tested when we know we are generating for VFP hardware; we need to
-   be more careful with TARGET_NEON as noted below.  */
+   instructions for VFPv3 or NEON.  TARGET_VFP3/TARGET_VFPD32 are currently
+   only ever tested when we know we are generating for VFP hardware; we need
+   to be more careful with TARGET_NEON as noted below.  */
 
-/* FPU is VFPv3 (with twice the number of D registers).  Setting the FPU to
-   Neon automatically enables VFPv3 too.  */
+/* FPU is has the full VFPv3/NEON register file of 32 D registers.  */
+#define TARGET_VFPD32 (arm_fp_model == ARM_FP_MODEL_VFP \
+		       && (arm_fpu_arch == FPUTYPE_VFP3 \
+			   || arm_fpu_arch == FPUTYPE_NEON))
+
+/* FPU supports VFPv3 instructions.  */
 #define TARGET_VFP3 (arm_fp_model == ARM_FP_MODEL_VFP \
-		     && (arm_fpu_arch == FPUTYPE_VFP3 \
-			 || arm_fpu_arch == FPUTYPE_NEON))
+		     && (arm_fpu_arch == FPUTYPE_VFP3D16 \
+			 || TARGET_VFPD32))
+
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
    and TARGET_HARD_FLOAT to ensure that NEON instructions are
@@ -299,6 +304,8 @@ enum fputype
   FPUTYPE_MAVERICK,
   /* VFP.  */
   FPUTYPE_VFP,
+  /* VFPv3-D16.  */
+  FPUTYPE_VFP3D16,
   /* VFPv3.  */
   FPUTYPE_VFP3,
   /* Neon.  */
@@ -945,7 +952,7 @@ extern int arm_structure_size_boundary;
 #define FIRST_VFP_REGNUM	63
 #define D7_VFP_REGNUM		78  /* Registers 77 and 78 == VFP reg D7.  */
 #define LAST_VFP_REGNUM	\
-  (TARGET_VFP3 ? LAST_HI_VFP_REGNUM : LAST_LO_VFP_REGNUM)
+  (TARGET_VFPD32 ? LAST_HI_VFP_REGNUM : LAST_LO_VFP_REGNUM)
 
 #define IS_VFP_REGNUM(REGNUM) \
   (((REGNUM) >= FIRST_VFP_REGNUM) && ((REGNUM) <= LAST_VFP_REGNUM))
