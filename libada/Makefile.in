@@ -68,10 +68,10 @@ FLAGS_TO_PASS = \
         "CFLAGS=$(CFLAGS) $(WARN_CFLAGS)"
 
 # Rules to build gnatlib.
-.PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared
+.PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared oscons
 gnatlib: @default_gnatlib_target@
 
-gnatlib-plain: $(GCC_DIR)/ada/Makefile
+gnatlib-plain: oscons $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -82,7 +82,7 @@ gnatlib-plain: $(GCC_DIR)/ada/Makefile
 	  gnatlib \
 	&& touch stamp-libada
 
-gnatlib-sjlj gnatlib-zcx gnatlib-shared: $(GCC_DIR)/ada/Makefile
+gnatlib-sjlj gnatlib-zcx gnatlib-shared: oscons $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -92,6 +92,9 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: $(GCC_DIR)/ada/Makefile
 	  TRACE="$(TRACE)" \
 	  $@ \
 	&& touch stamp-libada
+
+oscons:
+	$(MAKE) -C $(GCC_DIR) THREAD_KIND="$(THREAD_KIND)" ada/s-oscons.ads
 
 # Check uninstalled version.
 check:
