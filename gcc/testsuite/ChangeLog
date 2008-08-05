@@ -1,6 +1,7 @@
 2008-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/access_discr2.adb: New test.
+	* gnat.dg/not_null.adb: New test.
 
 2008-08-04  Richard Guenther  <rguenther@suse.de>
 
