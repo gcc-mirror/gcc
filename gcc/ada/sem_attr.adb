@@ -3767,8 +3767,8 @@ package body Sem_Attr is
       ------------
 
       when Attribute_Result => Result : declare
-         CS : constant Entity_Id := Current_Scope;
-         PS : constant Entity_Id := Scope (CS);
+         CS : Entity_Id := Current_Scope;
+         PS : Entity_Id := Scope (CS);
 
       begin
          --  If the enclosing subprogram is always inlined, the enclosing
@@ -3808,44 +3808,61 @@ package body Sem_Attr is
             end if;
 
          --  Body case, where we must be inside a generated _Postcondition
-         --  procedure, or the attribute use is definitely misplaced.
-
-         elsif Chars (CS) = Name_uPostconditions
-           and then Ekind (PS) = E_Function
-         then
-            --  Check OK prefix
-
-            if (Nkind (P) = N_Identifier
-                  or else Nkind (P) = N_Operator_Symbol)
-              and then Chars (P) = Chars (PS)
-            then
-               null;
-
-            --  Within an instance, the prefix designates the local renaming
-            --  of the original generic.
-
-            elsif Is_Entity_Name (P)
-              and then Ekind (Entity (P)) = E_Function
-              and then Present (Alias (Entity (P)))
-              and then Chars (Alias (Entity (P))) = Chars (PS)
-            then
-               null;
-
-            else
-               Error_Msg_NE
-                 ("incorrect prefix for % attribute, expected &", P, PS);
-               Error_Attr;
-            end if;
-
-            Rewrite (N,
-              Make_Identifier (Sloc (N),
-                Chars => Name_uResult));
-            Analyze_And_Resolve (N, Etype (PS));
+         --  procedure, and the prefix must be on the scope stack,  or else
+         --  the attribute use is definitely misplaced. The condition itself
+         --  may have generated transient scopes, and is not necessarily the
+         --  current one.
 
          else
-            Error_Attr
-              ("% attribute can only appear in function Postcondition pragma",
-               P);
+            while Present (CS)
+              and then CS /= Standard_Standard
+            loop
+               if Chars (CS) = Name_uPostconditions then
+                  exit;
+               else
+                  CS := Scope (CS);
+               end if;
+            end loop;
+
+            PS := Scope (CS);
+
+            if Chars (CS) = Name_uPostconditions
+              and then Ekind (PS) = E_Function
+            then
+               --  Check OK prefix
+
+               if (Nkind (P) = N_Identifier
+                  or else Nkind (P) = N_Operator_Symbol)
+                 and then Chars (P) = Chars (PS)
+               then
+                  null;
+
+               --  Within an instance, the prefix designates the local renaming
+               --  of the original generic.
+
+               elsif Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Function
+                 and then Present (Alias (Entity (P)))
+                 and then Chars (Alias (Entity (P))) = Chars (PS)
+               then
+                  null;
+
+               else
+                  Error_Msg_NE
+                    ("incorrect prefix for % attribute, expected &", P, PS);
+                  Error_Attr;
+               end if;
+
+               Rewrite (N,
+                 Make_Identifier (Sloc (N),
+                   Chars => Name_uResult));
+               Analyze_And_Resolve (N, Etype (PS));
+
+            else
+               Error_Attr
+                 ("% attribute can only appear" &
+                   "  in function Postcondition pragma", P);
+            end if;
          end if;
       end Result;
 
@@ -7540,6 +7557,19 @@ package body Sem_Attr is
          begin
             if Is_Variable (P) then
                Note_Possible_Modification (P, Sure => False);
+            end if;
+
+            --  The following comes from a query by Adam Beneschan, concerning
+            --  improper use of universal_access in equality tests involving
+            --  anonymous access types. Another good reason for 'Ref, but
+            --  for now disable the test, which breaks several filed tests.
+
+            if Ekind (Typ) = E_Anonymous_Access_Type
+              and then Nkind_In (Parent (N), N_Op_Eq, N_Op_Ne)
+              and then False
+            then
+               Error_Msg_N ("need unique type to resolve 'Access", N);
+               Error_Msg_N ("\qualify attribute with some access type", N);
             end if;
 
             if Is_Entity_Name (P) then
