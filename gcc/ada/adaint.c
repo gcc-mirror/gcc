@@ -1943,7 +1943,7 @@ __gnat_set_readable (char *name)
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
   __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
-#else
+#elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1962,7 +1962,7 @@ __gnat_set_non_readable (char *name)
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
   __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
-#else
+#elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
