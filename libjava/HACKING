@@ -184,6 +184,6 @@ If you add a class to java.lang, java.io, or java.util
   entire contents of the namespace)
 
 * Then insert the output of `perl scripts/classes.pl' into the file
-  at that point.  This must be run from the build tree, in
-  <build>/classpath/lib; it uses the .class file name to determine
+  at that point.  This must be run from the source tree, in
+  libjava/classpath/lib; it uses the .class file name to determine
   what to print.
