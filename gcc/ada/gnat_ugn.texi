@@ -4832,6 +4832,21 @@ are not generated.
 This switch suppresses warnings for static fixed-point expressions whose
 value is not an exact multiple of Small.
 
+@item -gnatw.b
+@emph{Activate warnings on biased representation.}
+@cindex @option{-gnatw.b} (@command{gcc})
+@cindex Biased representation
+This switch activates warnings when a size clause, value size clause, component
+clause, or component size clause forces the use of biased representation for an
+integer type (e.g. representing a range of 10..11 in a single bit by using 0/1
+to represent 10/11). The default is that such warnings are generated.
+
+@item -gnatw.B
+@emph{Suppress warnings on biased representation.}
+@cindex @option{-gnatwB} (@command{gcc})
+This switch suppresses warnings for representation clauses that force the use
+of biased representation.
+
 @item -gnatwc
 @emph{Activate warnings on conditionals.}
 @cindex @option{-gnatwc} (@command{gcc})
@@ -20510,7 +20525,7 @@ used as a parameter of the @option{+R} or @option{-R} options.
 @ignore
 * Improperly_Called_Protected_Entries::
 @end ignore
-* Metrics_Violation::
+* Metrics::
 * Misnamed_Identifiers::
 * Multiple_Entries_In_Protected_Definitions::
 * Name_Clashes::
@@ -21011,64 +21026,25 @@ Flag each protected entry that can be called from more than one task.
 This rule has no parameters.
 @end ignore
 
-@node Metrics_Violation
-@subsection @code{Metrics_Violation}
+@node Metrics
+@subsection @code{Metrics}
 @cindex @code{Metrics} rule (for @command{gnatcheck})
 
 @noindent
-This is an umbrella rule for a set of metrics-based checks. The parameters of
-the rule specify which metrics should be checked, and a bound (upper or lower,
-depending on the metric) for each specified metric. A construct is
-flagged if a specified metric can be computed for it, and the resulting value
-is higher then the upper bound (or less than the lower bound) specified.
+This is an umbrella rule for a set of metrics-based checks. Each metric-based
+check has its own rule name that starts from the common prefix
+@code{Metrics_}. For @option{+R} option, this name ends with @code{_GT}
+(greater then) or @code{_LT} (less then). The parameter of the rule
+@option{+R} option specifies bound (upper or lower, depending on the metric)
+for the given metric. A construct is flagged if a specified metric can be
+computed for it, and the resulting value is higher then the upper bound (or
+less than the lower bound) specified. Parameters and metric names are not
+case-sensitive @option{-R} option does not have a parameter and it turns OFF
+the check for the metric indicated by the metric rule name.
 
-This rule has the following parameters:
-
-@itemize @bullet
-@item
-For the @option{+R} option:
-@table @code
-@item @i{Metric_Check_Name} < @i{LowerBound}
-Turns the check for the specified metric ON and specifies the lower bound
-for a given metric check
-
-@item @i{Metric_Check_Name} > @i{UpperBound}
-
-Turns the check for the specified metric ON and specifies the upper bound
-for a given metric check
-@end table
-
-@item
-For the @option{-R} option:
-@table @code
-@item @i{Metric_Check_Name}
-Turns the check for the specified metric OFF
-@end table
-@end itemize
-
-@noindent
-Parameters are not case-sensitive. @i{Metric_Check_Name} must be
-the name of a metric supported by the @code{Metrics_Violation} rule
-(see the table below),
-otherwise the parameter is ignored. Whether the upper or lower bound
-is specified for a given check, depends on the metric. If a
-parameter for the @option{+R} option specifies an invalid limit, a
-warning is issued and the parameter is ignored.
-
-The @option{-R} option without parameters turns OFF all the previously enabled
-metric checks. the @option{+R} option without parameters turns ON all the
-metric checks that have been defined by previous @option{+R} options with
-valid parameters. @option{+R} option with a valid
-parameter also turns ON all the other metric checks that have been defined
-by previous @option{+R} options with valid parameters if they have been
-disabled by @option{-R} option without parameters.
-
-By default no metrics checks are ON, so the @option{+R} option without
-parameters actually does not specify any check.
-
-The following table shows the available metrics-based checks,
-including the constraint that must be satisfied by the bound that
-is specified for the check.
+The following table shows the available metrics-based checks, including the
+constraint that must be satisfied by the bound that is specified for the check
+and what bound - upper (U) or lower (L) - should be specified.
 
 @multitable {@code{Cyclomatic_Complexity}}{Cyclomatic complexity}{Positive integer}
 @ifnothtml
@@ -21078,9 +21054,9 @@ is specified for the check.
 @item @b{Check Name} @tab @b{Description} @tab @b{Bounds Value}
 @end ifhtml
 @c Above conditional code is workaround to bug in texi2html (Feb 2008)
-@item @code{Essential_Complexity} @tab Essential complexity @tab Positive integer
-@item @code{Cyclomatic_Complexity} @tab Cyclomatic complexity @tab Positive integer
-@item @code{LSLOC} @tab Logical Source Lines of Code @tab Positive integer
+@item @code{Essential_Complexity} @tab Essential complexity @tab Positive integer (U)
+@item @code{Cyclomatic_Complexity} @tab Cyclomatic complexity @tab Positive integer (U)
+@item @code{LSLOC} @tab Logical Source Lines of Code @tab Positive integer (U)
 @end multitable
 
 @noindent
@@ -21089,10 +21065,15 @@ the same as for the corresponding metrics in @command{gnatmetric}.
 
 @emph{Example:} the rule
 @smallexample
-+RMetrics_Violation: Cyclomatic_Complexity > 7
++RMetrics_Cyclomatic_Complexity_GT : 7
 @end smallexample
 @noindent
 means that all bodies with cyclomatic complexity exceeding 7 will be flagged.
+
+To turn OFF the check for cyclomatic complexity metric, use the following option:
+@smallexample
+-RMetrics_Cyclomatic_Complexity
+@end smallexample
 
 @node Misnamed_Identifiers
 @subsection @code{Misnamed_Identifiers}
