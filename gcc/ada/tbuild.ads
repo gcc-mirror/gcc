@@ -202,11 +202,11 @@ package Tbuild is
    --
    --  Prefix is prepended only if Prefix is non-blank (in which case it
    --  must be an upper case letter other than O,Q,U,W (which are used for
-   --  identifier encoding, see Namet), and T is reserved for use by implicit
-   --  types, and X is reserved for use by debug type encoding (see package
-   --  Exp_Dbug). Note: the reason that Prefix is last is that it is almost
-   --  always omitted. The notable case of Prefix being non-null is when
-   --  it is 'T' for an implicit type.
+   --  identifier encoding, see Namet), or an underscore, and T is reserved for
+   --  use by implicit types, and X is reserved for use by debug type encoding
+   --  (see package Exp_Dbug). Note: the reason that Prefix is last is that it
+   --  is almost always omitted. The notable case of Prefix being non-null is
+   --  when it is 'T' for an implicit type.
 
    --  Suffix_Index'Image is appended only if the value of Suffix_Index is
    --  positive, or if Suffix_Index is negative 1, then a unique serialized
