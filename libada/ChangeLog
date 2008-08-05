@@ -1,3 +1,8 @@
+2008-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* Makefile.in (gnatlib*): Now depend on oscons target.
+	(oscons): New target.
+
 2008-08-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (warn_cflags): Substitute.
