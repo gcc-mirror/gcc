@@ -600,9 +600,11 @@ package body Prj.Util is
       Real_Index_1 := Index;
 
       if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
-         Get_Name_String (Index);
-         To_Lower (Name_Buffer (1 .. Name_Len));
-         Real_Index_1 := Name_Find;
+         if Index /= All_Other_Names then
+            Get_Name_String (Index);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Real_Index_1 := Name_Find;
+         end if;
       end if;
 
       while Current /= No_Array_Element loop
@@ -610,9 +612,11 @@ package body Prj.Util is
          Real_Index_2 := Element.Index;
 
          if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
-            Get_Name_String (Element.Index);
-            To_Lower (Name_Buffer (1 .. Name_Len));
-            Real_Index_2 := Name_Find;
+            if Element.Index /= All_Other_Names then
+               Get_Name_String (Element.Index);
+               To_Lower (Name_Buffer (1 .. Name_Len));
+               Real_Index_2 := Name_Find;
+            end if;
          end if;
 
          if Real_Index_1 = Real_Index_2 and then

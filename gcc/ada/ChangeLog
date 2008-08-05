@@ -1,3 +1,50 @@
+2008-08-05  Vincent Celier  <celier@adacore.com>
+
+	* mlib.adb: Update comments.
+
+	* make.adb (Switches_Of): Check for Switches (others), before checking
+	for Default_Switches ("Ada").
+	(Gnatmake): Use Builder'Switches (others) in preference to
+	Builder'Default_Switches ("Ada") if there are several mains.
+
+	* prj-attr-pm.adb:
+	(Add_Attribute): Add component Others_Allowed in Attribute_Record
+	aggregate.
+
+	* prj-attr.adb:
+	Add markers to indicates that attributes Switches allow others as index
+	(Others_Allowed_For): New Boolean function, returning True for
+	attributes with the mark.
+	(Initialize): Recognize optional letter 'O' as the marker for
+	associative array attributes where others is allowed as the index.
+
+	* prj-attr.ads:
+	(Others_Allowed_For): New Boolean function
+	(Attribute_Record): New Boolean component Others_Allowed
+	
+	* prj-dect.adb:
+	(Parse_Attribute_Declaration): For associative array attribute where
+	others is allowed as the index, allow others as an index.
+
+	* prj-nmsc.adb:
+	(Process_Binder): Skip associative array attributes with index others
+	(Process_Compiler): Ditto
+
+	* prj-util.adb:
+	(Value_Of (Index, In_Array)): Make no attempt to put in lower case when
+	index is All_Other_Names.
+
+	* prj.ads:
+	(All_Other_Names): New constant
+
+	* prj-proc.adb:
+	(Process_Declarative_Items): Skip associative array attribute when index
+	is reserved word "others".
+
+2008-08-05  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gen-oscons.c: Adapt for VMS where termios.h is not available.
+
 2008-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* a-rttiev.adb: Minor reformatting (comments)

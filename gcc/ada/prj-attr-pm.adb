@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ package body Prj.Attr.PM is
             Optional_Index    => False,
             Attr_Kind         => Unknown,
             Read_Only         => False,
+            Others_Allowed    => False,
             Next              =>
               Package_Attributes.Table (To_Package.Value).First_Attribute);
          Package_Attributes.Table (To_Package.Value).First_Attribute :=

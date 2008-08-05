@@ -169,6 +169,10 @@ package Prj.Attr is
    --  Returns Empty_Attribute if After is either Empty_Attribute or is the
    --  last of the list.
 
+   function Others_Allowed_For (Attribute : Attribute_Node_Id) return Boolean;
+   --  Returns True if the index for an associative array attributes may be
+   --  others.
+
    --------------
    -- Packages --
    --------------
@@ -282,6 +286,7 @@ private
       Optional_Index : Boolean;
       Attr_Kind      : Attribute_Kind;
       Read_Only      : Boolean;
+      Others_Allowed : Boolean;
       Next           : Attr_Node_Id;
    end record;
    --  Data for an attribute

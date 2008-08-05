@@ -223,8 +223,9 @@ package body Prj.Dect is
 
          else
             if Is_Read_Only (Current_Attribute) then
+               Error_Msg_Name_1 := Token_Name;
                Error_Msg
-                 ("read-only attribute cannot be given a value",
+                 ("read-only attribute %% cannot be given a value",
                   Token_Ptr);
             end if;
 
@@ -284,20 +285,33 @@ package body Prj.Dect is
          end if;
 
          Scan (In_Tree); --  past the left parenthesis
-         Expect (Tok_String_Literal, "literal string");
 
-         if Token = Tok_String_Literal then
-            Get_Name_String (Token_Name);
+         if Others_Allowed_For (Current_Attribute)
+           and then Token = Tok_Others
+         then
+            Set_Associative_Array_Index_Of
+              (Attribute, In_Tree, All_Other_Names);
+            Scan (In_Tree); --  past others
 
-            if Case_Insensitive (Attribute, In_Tree) then
-               To_Lower (Name_Buffer (1 .. Name_Len));
+         else
+            if Others_Allowed_For (Current_Attribute) then
+               Expect (Tok_String_Literal, "literal string or others");
+            else
+               Expect (Tok_String_Literal, "literal string");
             end if;
 
-            Set_Associative_Array_Index_Of (Attribute, In_Tree, Name_Find);
-            Scan (In_Tree); --  past the literal string index
+            if Token = Tok_String_Literal then
+               Get_Name_String (Token_Name);
 
-            if Token = Tok_At then
-               case Attribute_Kind_Of (Current_Attribute) is
+               if Case_Insensitive (Attribute, In_Tree) then
+                  To_Lower (Name_Buffer (1 .. Name_Len));
+               end if;
+
+               Set_Associative_Array_Index_Of (Attribute, In_Tree, Name_Find);
+               Scan (In_Tree); --  past the literal string index
+
+               if Token = Tok_At then
+                  case Attribute_Kind_Of (Current_Attribute) is
                   when Optional_Index_Associative_Array |
                        Optional_Index_Case_Insensitive_Associative_Array =>
                      Scan (In_Tree);
@@ -329,7 +343,8 @@ package body Prj.Dect is
                      if Token = Tok_Integer_Literal then
                         Scan (In_Tree);
                      end if;
-               end case;
+                  end case;
+               end if;
             end if;
          end if;
 
