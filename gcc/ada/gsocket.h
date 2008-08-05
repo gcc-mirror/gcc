@@ -30,6 +30,15 @@
  *                                                                          *
  ****************************************************************************/
 
+#if defined(__nucleus__)
+
+#warning Sockets not supported on this platform
+#undef HAVE_SOCKETS
+
+#else
+
+#define HAVE_SOCKETS
+
 #ifndef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED 1
 /* For HP-UX */
@@ -190,3 +199,5 @@
 #else
 # define Has_Sockaddr_Len 0
 #endif
+
+#endif /* defined(__nucleus__) */

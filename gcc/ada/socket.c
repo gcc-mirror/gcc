@@ -31,11 +31,11 @@
  ****************************************************************************/
 
 /*  This file provides a portable binding to the sockets API                */
-#if defined (__nucleus__)
-/* ??? Need proper implementation */
-#warning Sockets not yet supported on Nucleus
-#else
+
 #include "gsocket.h"
+
+#if defined(HAVE_SOCKETS)
+
 /* Include all the necessary system-specific headers and define the
  * necessary macros (shared with gen-oscons).
  */
@@ -417,4 +417,7 @@ __gnat_get_h_errno (void) {
   return h_errno;
 #endif
 }
-#endif /* __nucleus__ */
+
+#else
+#warning Sockets are not supported on this platform
+#endif /* defined(HAVE_SOCKETS) */
