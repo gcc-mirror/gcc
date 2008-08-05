@@ -152,8 +152,8 @@ package body Ada.Real_Time.Timing_Events is
             return;
          end if;
 
-         --  We have an event that has timed out so we will process it. It
-         --  must be the first in the queue so no search is needed.
+         --  We have an event that has timed out so we will process it. It must
+         --  be the first in the queue so no search is needed.
 
          All_Events.Delete_First;
 
@@ -174,7 +174,7 @@ package body Ada.Real_Time.Timing_Events is
          declare
             Handler : constant Timing_Event_Handler := Next_Event.Handler;
          begin
-            --  The first act is to clear the event, per D.15 (13/2). Besides,
+            --  The first act is to clear the event, per D.15(13/2). Besides,
             --  we cannot clear the handler pointer *after* invoking the
             --  handler because the handler may have re-inserted the event via
             --  Set_Event. Thus we take a copy and then clear the component.
@@ -186,7 +186,7 @@ package body Ada.Real_Time.Timing_Events is
             end if;
 
          --  Ignore exceptions propagated by Handler.all, as required by
-         --  RM-D.15(21/2)
+         --  RM D.15(21/2).
 
          exception
             when others =>
@@ -266,7 +266,7 @@ package body Ada.Real_Time.Timing_Events is
       Remove_From_Queue (Event'Unchecked_Access);
       Event.Handler := null;
 
-      --  RM-D.15(15/2) requires that at this point, we check whether the time
+      --  RM D.15(15/2) requires that at this point, we check whether the time
       --  has already passed, and if so, call Handler.all directly from here
       --  instead of doing the enqueuing below. However, this causes a nasty
       --  race condition and potential deadlock. If the current task has
@@ -294,7 +294,7 @@ package body Ada.Real_Time.Timing_Events is
       Remove_From_Queue (Event'Unchecked_Access);
       Event.Handler := null;
 
-      --  See comment in the other Set_Handler above.
+      --  See comment in the other Set_Handler above
 
       if Handler /= null then
          Event.Timeout := Clock + In_Time;
