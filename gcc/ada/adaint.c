@@ -1760,33 +1760,20 @@ __gnat_set_OWNER_ACL
   TCHAR username [100];
   DWORD unsize = 100;
 
-  HANDLE file = CreateFile
-    (wname, READ_CONTROL | WRITE_DAC, 0, NULL,
-     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-
-  if (file == INVALID_HANDLE_VALUE)
-    return;
-
   /*  Get current user, he will act as the owner */
 
   if (!GetUserName (username, &unsize))
     return;
 
-  if (GetSecurityInfo
-      (file,
+  if (GetNamedSecurityInfo
+      (wname,
        SE_FILE_OBJECT,
        DACL_SECURITY_INFORMATION,
        NULL, NULL, &pOldDACL, NULL, &pSD) != ERROR_SUCCESS)
     return;
 
-  ZeroMemory (&ea, sizeof (EXPLICIT_ACCESS));
-
-  ea.grfAccessMode = AccessMode;
-  ea.grfAccessPermissions = AccessPermissions;
-  ea.grfInheritance = CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE;
-  ea.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
-  ea.Trustee.TrusteeType = TRUSTEE_IS_USER;
-  ea.Trustee.ptstrName = username;
+  BuildExplicitAccessWithName
+    (&ea, username, AccessPermissions, AccessMode, NO_INHERITANCE);
 
   if (AccessMode == SET_ACCESS)
     {
@@ -1799,14 +1786,13 @@ __gnat_set_OWNER_ACL
     if (SetEntriesInAcl (1, &ea, pOldDACL, &pNewDACL) != ERROR_SUCCESS)
       return;
 
-  if (SetSecurityInfo
-      (file, SE_FILE_OBJECT,
+  if (SetNamedSecurityInfo
+      (wname, SE_FILE_OBJECT,
        DACL_SECURITY_INFORMATION, NULL, NULL, pNewDACL, NULL) != ERROR_SUCCESS)
     return;
 
   LocalFree (pSD);
   LocalFree (pNewDACL);
-  CloseHandle (file);
 }
 #endif /* defined (_WIN32) && !defined (RTX) */
 
@@ -1892,7 +1878,7 @@ __gnat_set_writable (char *name)
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, GENERIC_WRITE);
+  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_WRITE);
   SetFileAttributes
     (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
@@ -1914,7 +1900,7 @@ __gnat_set_executable (char *name)
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, GENERIC_EXECUTE);
+  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -1934,17 +1920,55 @@ __gnat_set_non_writable (char *name)
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, REVOKE_ACCESS, GENERIC_WRITE);
+  __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_WRITE);
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
-  {
-    statbuf.st_mode = statbuf.st_mode & 07577;
-    chmod (name, statbuf.st_mode);
-  }
+    {
+      statbuf.st_mode = statbuf.st_mode & 07577;
+      chmod (name, statbuf.st_mode);
+    }
+#endif
+}
+
+void
+__gnat_set_readable (char *name)
+{
+#if defined (_WIN32) && !defined (RTX)
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
+#else
+  struct stat statbuf;
+
+  if (stat (name, &statbuf) == 0)
+    {
+      chmod (name, statbuf.st_mode | S_IREAD);
+    }
+#endif
+}
+
+void
+__gnat_set_non_readable (char *name)
+{
+#if defined (_WIN32) && !defined (RTX)
+  TCHAR wname [GNAT_MAX_PATH_LEN + 2];
+
+  S2WSU (wname, name, GNAT_MAX_PATH_LEN + 2);
+
+  __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
+#else
+  struct stat statbuf;
+
+  if (stat (name, &statbuf) == 0)
+    {
+      chmod (name, statbuf.st_mode & (~S_IREAD));
+    }
 #endif
 }
 

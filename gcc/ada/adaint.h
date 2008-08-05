@@ -105,6 +105,8 @@ extern int    __gnat_is_executable_file            (char *name);
 extern void   __gnat_set_non_writable              (char *name);
 extern void   __gnat_set_writable                  (char *name);
 extern void   __gnat_set_executable                (char *name);
+extern void   __gnat_set_readable                  (char *name);
+extern void   __gnat_set_non_readable              (char *name);
 extern int    __gnat_is_symbolic_link		   (char *name);
 extern int    __gnat_portable_spawn                (char *[]);
 extern int    __gnat_portable_no_block_spawn       (char *[]);

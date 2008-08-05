@@ -511,6 +511,15 @@ package System.OS_Lib is
    procedure Set_Executable (Name : String);
    --  Change permissions on the named file to make it executable for its owner
 
+   procedure Set_Readable (Name : String);
+   --  Change permissions on the named file to make it readable for its
+   --  owner.
+
+   procedure Set_Non_Readable (Name : String);
+   --  Change permissions on the named file to make it non-readable for
+   --  its owner. The writable and executable permissions are not
+   --  modified.
+
    function Locate_Exec_On_Path
      (Exec_Name : String) return String_Access;
    --  Try to locate an executable whose name is given by Exec_Name in the
