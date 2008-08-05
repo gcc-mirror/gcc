@@ -46,7 +46,7 @@
 #include <limits.h>
 #include <fcntl.h>
 
-#ifndef __vxworks
+#if !defined (__vxworks) && !defined (__VMS)
 # include <termios.h>
 #endif
 
@@ -193,7 +193,7 @@ _NL
 #endif
 CND(FNDELAY, "Nonblocking")
 
-#if !defined(__vxworks)
+#if !defined(__vxworks) && !defined(__VMS)
 
 _NL
 TXT("   ----------------------")
@@ -507,7 +507,7 @@ CND(VLNEXT, "Literal next")
 #endif
 CND(VEOL2, "Alternative EOL")
 
-#endif /* !defined(__vxworks) */
+#endif /* !defined(__vxworks) && !defined(__VMS) */
 
 _NL
 TXT("   --------------")
