@@ -1447,7 +1447,7 @@ package body Sem_Util is
    --  Start of processing for Collect_Interfaces_Info
 
    begin
-      Collect_Interfaces  (T, Ifaces_List);
+      Collect_Interfaces (T, Ifaces_List);
       Collect_Interface_Components (T, Comps_List);
 
       --  Search for the record component and tag associated with each
