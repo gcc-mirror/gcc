@@ -56,6 +56,8 @@ package body Prj.Attr is
 
    --  The third optional letter is
    --     'R' to indicate that the attribute is read-only
+   --     'O' to indicate that others is allowed as an index for an associative
+   --     array
 
    --  End is indicated by two consecutive '#'
 
@@ -159,7 +161,7 @@ package body Prj.Attr is
 
    "Pcompiler#" &
    "Ladefault_switches#" &
-   "Lcswitches#" &
+   "LcOswitches#" &
    "SVlocal_configuration_pragmas#" &
    "Salocal_config_file#" &
 
@@ -200,7 +202,7 @@ package body Prj.Attr is
 
    "Pbuilder#" &
    "Ladefault_switches#" &
-   "Lcswitches#" &
+   "LcOswitches#" &
    "Lcglobal_compilation_switches#" &
    "Scexecutable#" &
    "SVexecutable_suffix#" &
@@ -216,7 +218,7 @@ package body Prj.Attr is
 
    "Pbinder#" &
    "Ladefault_switches#" &
-   "Lcswitches#" &
+   "LcOswitches#" &
 
    --  Configuration - Binding
 
@@ -231,7 +233,7 @@ package body Prj.Attr is
    "Plinker#" &
    "LVrequired_switches#" &
    "Ladefault_switches#" &
-   "Lcswitches#" &
+   "LcOswitches#" &
    "LVlinker_options#" &
    "SVmap_file_option#" &
 
@@ -246,49 +248,49 @@ package body Prj.Attr is
 
    "Pcross_reference#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Finder
 
    "Pfinder#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Pretty_Printer
 
    "Ppretty_printer#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package gnatstub
 
    "Pgnatstub#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Check
 
    "Pcheck#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Synchronize
 
    "Psynchronize#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Eliminate
 
    "Peliminate#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Metrics
 
    "Pmetrics#" &
    "Ladefault_switches#" &
-   "Lbswitches#" &
+   "LbOswitches#" &
 
    --  package Ide
 
@@ -411,6 +413,7 @@ package body Prj.Attr is
       Attribute_Name    : Name_Id           := No_Name;
       First_Attribute   : Attr_Node_Id      := Attr.First_Attribute;
       Read_Only         : Boolean;
+      Others_Allowed    : Boolean;
 
       function Attribute_Location return String;
       --  Returns a string depending if we are in the project level attributes
@@ -538,12 +541,16 @@ package body Prj.Attr is
 
             Start := Start + 1;
 
+            Read_Only := False;
+            Others_Allowed := False;
+
             if Initialization_Data (Start) = 'R' then
                Read_Only := True;
                Start := Start + 1;
 
-            else
-               Read_Only := False;
+            elsif Initialization_Data (Start) = 'O' then
+               Others_Allowed := True;
+               Start := Start + 1;
             end if;
 
             Finish := Start;
@@ -586,6 +593,7 @@ package body Prj.Attr is
                Optional_Index => Optional_Index,
                Attr_Kind      => Attr_Kind,
                Read_Only      => Read_Only,
+               Others_Allowed => Others_Allowed,
                Next           => Empty_Attr);
             Start := Finish + 1;
          end if;
@@ -642,6 +650,17 @@ package body Prj.Attr is
          return Attrs.Table (Attribute.Value).Optional_Index;
       end if;
    end Optional_Index_Of;
+
+   function Others_Allowed_For
+     (Attribute : Attribute_Node_Id) return Boolean
+   is
+   begin
+      if Attribute = Empty_Attribute then
+         return False;
+      else
+         return Attrs.Table (Attribute.Value).Others_Allowed;
+      end if;
+   end Others_Allowed_For;
 
    -----------------------
    -- Package_Name_List --
@@ -750,6 +769,7 @@ package body Prj.Attr is
          Optional_Index => Opt_Index,
          Attr_Kind      => Real_Attr_Kind,
          Read_Only      => False,
+         Others_Allowed => False,
          Next           => First_Attr);
 
       Package_Attributes.Table (In_Package.Value).First_Attribute :=
@@ -856,6 +876,7 @@ package body Prj.Attr is
             Optional_Index => Attributes (Index).Opt_Index,
             Attr_Kind      => Attr_Kind,
             Read_Only      => False,
+            Others_Allowed => False,
             Next           => First_Attr);
          First_Attr := Attrs.Last;
       end loop;
